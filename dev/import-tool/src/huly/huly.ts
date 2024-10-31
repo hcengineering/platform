@@ -102,8 +102,8 @@ class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
 }
 
 export class HulyImporter {
-  private readonly personsByName = new Map<string, Ref<Person>>()
-  private readonly accountsByEmail = new Map<string, Ref<PersonAccount>>()
+  private personsByName = new Map<string, Ref<Person>>()
+  private accountsByEmail = new Map<string, Ref<PersonAccount>>()
 
   constructor (
     private readonly client: TxOperations,
@@ -203,10 +203,10 @@ export class HulyImporter {
         autoJoin: projectHeader.autoJoin,
         projectType: this.findProjectType(projectHeader.projectType),
         docs: await this.processIssues(projectPath),
-        defaultAssignee: projectHeader.defaultAssignee
+        defaultAssignee: projectHeader.defaultAssignee !== undefined
           ? { name: projectHeader.defaultAssignee, email: '' }
           : undefined,
-        defaultIssueStatus: projectHeader.defaultIssueStatus
+        defaultIssueStatus: projectHeader.defaultIssueStatus !== undefined
           ? { name: projectHeader.defaultIssueStatus }
           : undefined,
         owners: projectHeader.owners?.map(name => ({ name, email: '' })),

@@ -1232,6 +1232,9 @@ dependencies:
   '@types/crypto-js':
     specifier: ^4.1.1
     version: 4.2.2
+  '@types/csvtojson':
+    specifier: ^2.0.0
+    version: 2.0.0
   '@types/diff':
     specifier: ~5.0.2
     version: 5.0.9
@@ -28356,7 +28359,7 @@ packages:
     dev: false
 
   file:projects/import-tool.tgz:
-    resolution: {integrity: sha512-QBo/RgAGnie95pESqQNJUQSCpQi1rEpXqZz1G1zZMfhAvisZtW2XutmaGMS1oDu2ZB05pk8WOO8x6bfdc+keZg==, tarball: file:projects/import-tool.tgz}
+    resolution: {integrity: sha512-0Q1/hHZxEdYFPr2qqfovlVJRA8JyvWsKtY3ubHrffnaAMbbN6BNWt6Jf+GzwyGeIwImLI2Oud2x/WqOFb/USdg==, tarball: file:projects/import-tool.tgz}
     name: '@rush-temp/import-tool'
     version: 0.0.0
     dependencies:
@@ -28364,6 +28367,7 @@ packages:
       '@types/domhandler': 2.4.5
       '@types/htmlparser2': 3.10.7
       '@types/jest': 29.5.12
+      '@types/js-yaml': 4.0.9
       '@types/mime-types': 2.1.4
       '@types/minio': 7.0.18
       '@types/node': 20.11.19
@@ -28383,6 +28387,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       htmlparser2: 9.1.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      js-yaml: 4.1.0
       mammoth: 1.8.0
       mime-types: 2.1.35
       prettier: 3.2.5
@@ -30465,7 +30470,7 @@ packages:
     dev: false
 
   file:projects/notification-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-xpvJbpFBrKB3RPG8SgT9+cJj2IkysBNcl4jQAV69ACUvnTQMh4RS9P31zpaO7CObYXrm9/ImRF0fXbH+AkiJsg==, tarball: file:projects/notification-resources.tgz}
+    resolution: {integrity: sha512-7qZrSN1845Nti1pousixaoWtM8ISlPYqgw5pK4UtuhEPdrfSq2NkCSSMnl3pOeSU6bVFzAeJ6YlTZs8Jl2wJ7A==, tarball: file:projects/notification-resources.tgz}
     id: file:projects/notification-resources.tgz
     name: '@rush-temp/notification-resources'
     version: 0.0.0
@@ -31360,7 +31365,7 @@ packages:
     dev: false
 
   file:projects/pod-server.tgz(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-R0fObVPXSToiK7ioPeEbZ1gZFFjswVFLPCojWYsoNsHg9TL+kTNUdST63PJr4GCr8XVv9VplfYYcEs7qSARvAw==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-boGyT8HkEJkWqcXXAAZ869HB68/GpHcMTUBZlhkUS9oztHADMfpAbGQ+yVVvypye4e9nsYTF1LhpsDrToOtPYw==, tarball: file:projects/pod-server.tgz}
     id: file:projects/pod-server.tgz
     name: '@rush-temp/pod-server'
     version: 0.0.0
@@ -32804,7 +32809,7 @@ packages:
     dev: false
 
   file:projects/server-ai-bot-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-m+ZYZxCuYOJxhC31c3misAQofis4BG32ek1OPxXXdpOOxPQUFI1WjmwVqJlZDTz3Yt9EXTGv3qkvrNwJuIyWZA==, tarball: file:projects/server-ai-bot-resources.tgz}
+    resolution: {integrity: sha512-UChmRA0uWxgRKIx9jl1+P4wlGdsdLjsMkR3VOFR3Ya/sYwYV78JOCBIvnsTox/vJha8hx4mynqxaTCSe2nqshA==, tarball: file:projects/server-ai-bot-resources.tgz}
     id: file:projects/server-ai-bot-resources.tgz
     name: '@rush-temp/server-ai-bot-resources'
     version: 0.0.0
@@ -32823,20 +32828,13 @@ packages:
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
-      - '@aws-sdk/credential-providers'
       - '@babel/core'
       - '@jest/types'
-      - '@mongodb-js/zstd'
       - '@types/node'
       - babel-jest
       - babel-plugin-macros
       - esbuild
-      - gcp-metadata
-      - kerberos
-      - mongodb-client-encryption
       - node-notifier
-      - snappy
-      - socks
       - supports-color
       - ts-node
     dev: false
@@ -33152,7 +33150,7 @@ packages:
     dev: false
 
   file:projects/server-client.tgz(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-L1a1mgOD2Qd1S0E6twotWEVeiFeZfvIK5v93gaPH+A5LkkQoOi4qXoEQv/Udul/cDP/MxPFA9HQ3WbdMIn8XYg==, tarball: file:projects/server-client.tgz}
+    resolution: {integrity: sha512-ixXx7EdCjt/KMKk6pVedAj/27hWqDwCBnHhmTJc694OR8wTEHyIaohP9t8gcjka/ugJRJJjOmAsF1sd8HphW4g==, tarball: file:projects/server-client.tgz}
     id: file:projects/server-client.tgz
     name: '@rush-temp/server-client'
     version: 0.0.0

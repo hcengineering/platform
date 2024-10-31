@@ -1,5 +1,6 @@
 ---
 class: tracker.class.Project
+projectType: Custom
 identifier: HULY
 private: false
 autoJoin: false

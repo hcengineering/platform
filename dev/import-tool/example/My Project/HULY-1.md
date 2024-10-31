@@ -10,11 +10,11 @@ component: Core
 milestone: Iteration 198
 comments:
   - author: John Doe
-    createdOn: 2022-02-05t10:30:00.10-05:00Z
+    date: 2022-02-05t10:30:00.10-05:00Z
     text: |
       Hello, world!
   - author: Joe Shmoe
-    createdOn: 2022-02-05t10:35:00.10-05:00Z
+    date: 2022-02-05t10:35:00.10-05:00Z
     text: |
       Hello, **world!**
 ---
@@ -34,4 +34,4 @@ Once you're familiar with Huly, feel free to delete these starter tasks or share
 
 🎉Congratulations! You’ve completed Task 1 just by getting started ✅ Click below to proceed to Task 2!
 
-### Next: Task 2 - Create your first project ➡️ [HULY-2](HULY-2.md)
+### Next: Task 2 - Create your first project ➡️ [HULY-2](HULY-1-subdocs/HULY-2.md)
