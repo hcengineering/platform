@@ -1469,26 +1469,6 @@ export function createModel (builder: Builder): void {
     propagate: []
   })
 
-  createAction(builder, {
-    label: recruit.string.MatchVacancy,
-    icon: recruit.icon.Vacancy,
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: recruit.component.MatchVacancy,
-      element: 'top',
-      fillProps: {
-        _objects: 'objects'
-      }
-    },
-    input: 'any',
-    category: recruit.category.Recruit,
-    target: recruit.mixin.Candidate,
-    context: {
-      mode: ['context', 'browser'],
-      group: 'create'
-    }
-  })
-
   builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.ObjectEditorFooter, {
     editor: tracker.component.RelatedIssuesSection,
     props: {

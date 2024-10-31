@@ -314,6 +314,16 @@ export function createModel (builder: Builder): void {
 
   defineActions(builder)
   defineNotifications(builder)
+
+  builder.mixin(chunter.class.InlineButton, core.class.Class, core.mixin.IndexConfiguration, {
+    indexes: [],
+    searchDisabled: true
+  })
+
+  builder.mixin(chunter.class.ChatSyncInfo, core.class.Class, core.mixin.IndexConfiguration, {
+    indexes: [],
+    searchDisabled: true
+  })
 }
 
 export default chunter

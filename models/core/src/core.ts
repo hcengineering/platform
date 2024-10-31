@@ -66,7 +66,6 @@ import {
   TypeCollaborativeDoc,
   TypeFileSize,
   TypeIntlString,
-  TypeRecord,
   TypeRef,
   TypeString,
   TypeTimestamp,
@@ -330,19 +329,6 @@ export class TDocIndexState extends TDoc implements DocIndexState {
   @Hidden()
     objectClass!: Ref<Class<Doc>>
 
-  @Prop(TypeRef(core.class.Doc), core.string.AttachedTo)
-  @Index(IndexKind.Indexed)
-  @Hidden()
-    attachedTo?: Ref<Doc>
-
-  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
-  @Index(IndexKind.Indexed)
-  @Hidden()
-    attachedToClass?: Ref<Class<Doc>>
-
-  // Indexable attributes of document.
-  attributes!: Record<string, any>
-
   @Prop(TypeBoolean(), getEmbeddedLabel('Removed'))
   @Hidden()
     removed!: boolean
@@ -350,16 +336,6 @@ export class TDocIndexState extends TDoc implements DocIndexState {
   @Prop(TypeBoolean(), getEmbeddedLabel('NeedIndexing'))
   @Hidden()
     needIndex!: boolean
-
-  // States for different stages
-  @Prop(TypeRecord(), getEmbeddedLabel('Stages'))
-  // @Index(IndexKind.Indexed)
-  @Hidden()
-    stages!: Record<string, boolean>
-
-  @Prop(TypeString(), getEmbeddedLabel('Generation'))
-  @Hidden()
-    generationId?: string
 }
 
 @Model(core.class.FullTextSearchContext, core.class.Doc, DOMAIN_MODEL)

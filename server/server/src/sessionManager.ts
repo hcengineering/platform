@@ -46,12 +46,12 @@ import {
   type Session,
   type Workspace
 } from '@hcengineering/server-core'
-import { type Token } from '@hcengineering/server-token'
+import { generateToken, type Token } from '@hcengineering/server-token'
 
 import { sendResponse } from './utils'
 
 const ticksPerSecond = 20
-const workspaceSoftShutdownTicks = 3 * ticksPerSecond
+const workspaceSoftShutdownTicks = 15 * ticksPerSecond
 
 interface WorkspaceLoginInfo extends Omit<BaseWorkspaceInfo, 'workspace'> {
   upgrade?: {
@@ -112,10 +112,13 @@ class TSessionManager implements SessionManager {
     ) => Session,
     readonly timeouts: Timeouts,
     readonly brandingMap: BrandingMap,
-    readonly profiling?: {
+    readonly profiling:
+    | {
       start: () => void
       stop: () => Promise<string | undefined>
     }
+    | undefined,
+    readonly accountsUrl: string
   ) {
     this.checkInterval = setInterval(() => {
       this.handleTick()
@@ -174,15 +177,20 @@ class TSessionManager implements SessionManager {
   ticks = 0
 
   handleTick (): void {
+    const now = Date.now()
     for (const [wsId, workspace] of this.workspaces.entries()) {
+      if (this.ticks % (60 * ticksPerSecond) === workspace.tickHash) {
+        // update account lastVisit every minute per every workspace.∏
+        void this.getWorkspaceInfo(this.ctx, workspace.token)
+      }
+
       for (const s of workspace.sessions) {
-        if (this.ticks % (5 * 60 * ticksPerSecond) === 0) {
+        if (this.ticks % (5 * 60 * ticksPerSecond) === workspace.tickHash) {
           s[1].session.mins5.find = s[1].session.current.find
           s[1].session.mins5.tx = s[1].session.current.tx
 
           s[1].session.current = { find: 0, tx: 0 }
         }
-        const now = Date.now()
         const lastRequestDiff = now - s[1].session.lastRequest
 
         let timeout = 60000
@@ -259,14 +267,10 @@ class TSessionManager implements SessionManager {
     return this.sessionFactory(token, pipeline, workspaceId, branding)
   }
 
-  async getWorkspaceInfo (
-    ctx: MeasureContext,
-    accounts: string,
-    token: string
-  ): Promise<WorkspaceLoginInfo | undefined> {
+  async getWorkspaceInfo (ctx: MeasureContext, token: string): Promise<WorkspaceLoginInfo | undefined> {
     try {
       const userInfo = await (
-        await fetch(accounts, {
+        await fetch(this.accountsUrl, {
           method: 'POST',
           headers: {
             Authorization: 'Bearer ' + token,
@@ -291,7 +295,7 @@ class TSessionManager implements SessionManager {
     }
   }
 
-  sessionCounter = 0
+  tickCounter = 0
 
   @withContext('📲 add-session')
   async addSession (
@@ -300,8 +304,7 @@ class TSessionManager implements SessionManager {
     token: Token,
     rawToken: string,
     pipelineFactory: PipelineFactory,
-    sessionId: string | undefined,
-    accountsUrl: string
+    sessionId: string | undefined
   ): Promise<
     | { session: Session, context: MeasureContext, workspaceId: string }
     | { upgrade: true, upgradeInfo?: WorkspaceLoginInfo['upgrade'] }
@@ -311,8 +314,7 @@ class TSessionManager implements SessionManager {
 
     let workspaceInfo: WorkspaceLoginInfo | undefined
     try {
-      workspaceInfo =
-        accountsUrl !== '' ? await this.getWorkspaceInfo(ctx, accountsUrl, rawToken) : this.wsFromToken(token)
+      workspaceInfo = await this.getWorkspaceInfo(ctx, rawToken)
     } catch (err: any) {
       this.updateConnectErrorInfo(token)
       return { error: err }
@@ -448,8 +450,8 @@ class TSessionManager implements SessionManager {
     session.sessionInstanceId = generateId()
     this.sessions.set(ws.id, { session, socket: ws })
     // We need to delete previous session with Id if found.
-    this.sessionCounter++
-    workspace.sessions.set(session.sessionId, { session, socket: ws, tickHash: this.sessionCounter % ticksPerSecond })
+    this.tickCounter++
+    workspace.sessions.set(session.sessionId, { session, socket: ws, tickHash: this.tickCounter % ticksPerSecond })
 
     // Mark workspace as init completed and we had at least one client.
     if (!workspace.workspaceInitCompleted) {
@@ -629,7 +631,9 @@ class TSessionManager implements SessionManager {
       workspaceId: token.workspace,
       workspaceName,
       branding,
-      workspaceInitCompleted: false
+      workspaceInitCompleted: false,
+      tickHash: this.tickCounter % ticksPerSecond,
+      token: generateToken(systemAccountEmail, token.workspace)
     }
     this.workspaces.set(toWorkspaceString(token.workspace), workspace)
     return workspace
@@ -1028,12 +1032,15 @@ export function createSessionManager (
   ) => Session,
   brandingMap: BrandingMap,
   timeouts: Timeouts,
-  profiling?: {
+  profiling:
+  | {
     start: () => void
     stop: () => Promise<string | undefined>
   }
+  | undefined,
+  accountsUrl: string
 ): SessionManager {
-  return new TSessionManager(ctx, sessionFactory, timeouts, brandingMap ?? null, profiling)
+  return new TSessionManager(ctx, sessionFactory, timeouts, brandingMap ?? null, profiling, accountsUrl)
 }
 
 /**
@@ -1069,7 +1076,8 @@ export function startSessionManager (
       pingTimeout: opt.pingTimeout ?? 10000,
       reconnectTimeout: 500
     },
-    opt.profiling
+    opt.profiling,
+    opt.accountsUrl
   )
   return {
     shutdown: opt.serverFactory(

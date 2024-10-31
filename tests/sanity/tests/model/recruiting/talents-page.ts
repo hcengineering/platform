@@ -218,11 +218,6 @@ export class TalentsPage extends CommonRecruitingPage {
     await this.selectFromDropdown(this.page, action)
   }
 
-  async checkMatchVacancy (talentName: string, score: string): Promise<void> {
-    await expect(this.textVacancyMatchingTalent()).toContainText(talentName, { ignoreCase: true })
-    await expect(this.textVacancyMatchingScore()).toContainText(score)
-  }
-
   async searchTalentByTalentName (talentName: TalentName): Promise<void> {
     await this.inputSearchIcon().click()
     await this.inputSearchTalent().fill(`${talentName.lastName} ${talentName.firstName}`)

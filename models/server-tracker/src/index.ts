@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import contact from '@hcengineering/contact'
 import core from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import tracker from '@hcengineering/model-tracker'
@@ -20,7 +21,6 @@ import notification from '@hcengineering/notification'
 import serverCore from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
 import serverTracker from '@hcengineering/server-tracker'
-import contact from '@hcengineering/contact'
 import serverView from '@hcengineering/server-view'
 
 export { serverTrackerId } from '@hcengineering/server-tracker'
@@ -43,14 +43,12 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, serverCore.mixin.SearchPresenter, {
-    searchConfig: {
-      iconConfig: {
-        component: tracker.component.IssueSearchIcon,
-        props: ['status', 'space']
-      },
-      shortTitle: 'identifier',
-      title: 'title'
-    }
+    iconConfig: {
+      component: tracker.component.IssueSearchIcon,
+      fields: [['status'], ['space']]
+    },
+    shortTitle: [['identifier']],
+    title: [['title']]
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

@@ -471,6 +471,6 @@ export interface JoinProps {
   toAlias: string // alias for the table
   toField: string // field to join on
   isReverse: boolean
-  toClass: Ref<Class<Doc>>
+  toClass?: Ref<Class<Doc>>
   classes?: Ref<Class<Doc>>[] // filter by classes
 }

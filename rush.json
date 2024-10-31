@@ -1442,6 +1442,26 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-fulltext",
+      "projectFolder": "pods/fulltext",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-fulltext",
+      "projectFolder": "server-plugins/fulltext",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-fulltext-resources",
+      "projectFolder": "server-plugins/fulltext-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-fulltext",
+      "projectFolder": "models/server-fulltext",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/hr",
       "projectFolder": "plugins/hr",
       "shouldPublish": true

@@ -66,6 +66,7 @@ import {
 } from '@hcengineering/server-core'
 import { createHash } from 'crypto'
 import type postgres from 'postgres'
+import { getDocFieldsByDomains, translateDomain } from './schemas'
 import { type ValueType } from './types'
 import {
   convertDoc,
@@ -83,7 +84,6 @@ import {
   parseUpdate,
   type PostgresClientReference
 } from './utils'
-import { getDocFieldsByDomains, translateDomain } from './schemas'
 
 abstract class PostgresAdapterBase implements DbAdapter {
   protected readonly _helper: DBCollectionHelper
@@ -364,6 +364,23 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const domain = translateDomain(options?.domain ?? this.hierarchy.getDomain(_class))
         const sqlChunks: string[] = []
         const joins = this.buildJoin(_class, options?.lookup)
+        if (options?.domainLookup !== undefined) {
+          const baseDomain = translateDomain(this.hierarchy.getDomain(_class))
+
+          const domain = translateDomain(options.domainLookup.domain)
+          const key = options.domainLookup.field
+          const as = `dl_lookup_${domain}_${key}`
+          joins.push({
+            isReverse: false,
+            table: domain,
+            path: options.domainLookup.field,
+            toAlias: as,
+            toField: '_id',
+            fromField: key,
+            fromAlias: baseDomain,
+            toClass: undefined
+          })
+        }
         const select = `SELECT ${this.getProjection(_class, domain, options?.projection, joins)} FROM ${domain}`
         const secJoin = this.addSecurity(query, domain, ctx.contextData)
         if (secJoin !== undefined) {
@@ -392,7 +409,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
         const finalSql: string = [select, ...sqlChunks].join(' ')
         const result = await connection.unsafe(finalSql)
-        if (options?.lookup === undefined) {
+        if (options?.lookup === undefined && options?.domainLookup === undefined) {
           return toFindResult(
             result.map((p) => parseDocWithProjection(p as any, options?.projection)),
             total
@@ -541,7 +558,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         if (res === undefined) continue
         const { obj, key } = res
         const val = this.getModelLookupValue<T>(doc, modelJoin, simpleJoins)
-        if (val !== undefined) {
+        if (val !== undefined && modelJoin.toClass !== undefined) {
           const res = this.modelDb.findAllSync(modelJoin.toClass, {
             [modelJoin.toField]: (doc as any)[modelJoin.fromField]
           })
@@ -1211,16 +1228,20 @@ abstract class PostgresAdapterBase implements DbAdapter {
     await connection`DELETE FROM ${connection(translateDomain(domain))} WHERE _id = ANY(${docs}) AND "workspaceId" = ${this.workspaceId.name}`
   }
 
-  async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
+  async groupBy<T, P extends Doc>(
+    ctx: MeasureContext,
+    domain: Domain,
+    field: string,
+    query?: DocumentQuery<P>
+  ): Promise<Map<T, number>> {
     const connection = (await this.getConnection(ctx)) ?? this.client
     const key = isDataField(domain, field) ? `data ->> '${field}'` : `"${field}"`
     const result = await ctx.with('groupBy', { domain }, async (ctx) => {
       try {
         const result = await connection.unsafe(
-          `SELECT DISTINCT ${key} as ${field} FROM ${translateDomain(domain)} WHERE "workspaceId" = $1`,
-          [this.workspaceId.name]
+          `SELECT DISTINCT ${key} as ${field}, Count(*) AS count FROM ${translateDomain(domain)} WHERE ${this.buildRawQuery(domain, query ?? {})} GROUP BY ${key}`
         )
-        return new Set(result.map((r) => r[field]))
+        return new Map(result.map((r) => [r[field.toLocaleLowerCase()], parseInt(r.count)]))
       } catch (err) {
         ctx.error('Error while grouping by', { domain, field })
         throw err

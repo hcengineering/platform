@@ -53,12 +53,8 @@ startBackup(
     return factory
   },
   (ctx, dbUrl, workspace, branding, externalStorage) => {
-    return getConfig(ctx, dbUrl, workspace, branding, ctx, {
+    return getConfig(ctx, dbUrl, ctx, {
       externalStorage,
-      fullTextUrl: '',
-      indexParallel: 0,
-      indexProcessing: 0,
-      rekoniUrl: '',
       disableTriggers: true
     })
   }

@@ -47,15 +47,11 @@ export function start (
   metrics: MeasureContext,
   dbUrl: string,
   opt: {
-    fullTextUrl: string
+    fulltextUrl: string
     storageConfig: StorageConfiguration
-    rekoniUrl: string
     port: number
     brandingMap: BrandingMap
     serverFactory: ServerFactory
-
-    indexProcessing: number // 1000
-    indexParallel: number // 2
 
     enableCompression?: boolean
 

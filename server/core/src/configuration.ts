@@ -43,7 +43,5 @@ export interface DbConfiguration {
   domains: Record<string, string>
   defaultAdapter: string
   metrics: MeasureContext
-  contentAdapters: Record<string, ContentTextAdapterConfiguration>
   serviceAdapters: Record<string, ServiceAdapterConfig>
-  defaultContentAdapter: string
 }

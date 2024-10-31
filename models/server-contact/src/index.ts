@@ -43,15 +43,15 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.class.Contact, core.class.Class, serverCore.mixin.SearchPresenter, {
-    searchConfig: {
-      iconConfig: {
-        component: contact.component.AvatarRef,
-        props: ['_id']
-      },
-      title: { props: ['name'] }
+    iconConfig: {
+      component: contact.component.AvatarRef,
+      fields: [['_id']]
     },
-    getSearchTitle: {
-      name: serverContact.function.ContactNameProvider
+    title: {
+      component: contact.component.ContactNamePresenter, // Will present on UI.
+      fields: [['name']],
+      template: [['func', serverContact.function.ContactNameProvider, 'true']],
+      extraFields: [[['func', serverContact.function.ContactNameProvider, 'false']]]
     }
   })
 

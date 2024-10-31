@@ -40,7 +40,6 @@
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/server-indexer": "^0.6.0",
     "@hcengineering/server-attachment": "^0.6.1",
     "@hcengineering/server-attachment-resources": "^0.6.0",
     "@hcengineering/server-collaboration": "^0.6.0",
@@ -49,7 +48,6 @@
     "@hcengineering/server-storage": "^0.6.0",
     "@hcengineering/postgres": "^0.6.0",
     "@hcengineering/mongo": "^0.6.1",
-    "@hcengineering/elastic": "^0.6.0",
     "@hcengineering/server-contact": "^0.6.1",
     "@hcengineering/server-contact-resources": "^0.6.0",
     "@hcengineering/server-notification": "^0.6.1",
@@ -173,6 +171,8 @@
     "@hcengineering/server-ai-bot": "^0.6.0",
     "@hcengineering/server-ai-bot-resources": "^0.6.0",
     "@hcengineering/time": "^0.6.0",
-    "@hcengineering/time-assets": "^0.6.0"
+    "@hcengineering/time-assets": "^0.6.0",
+    "@hcengineering/server-fulltext": "^0.6.0",
+    "@hcengineering/server-fulltext-resources": "^0.6.0"
   }
 }

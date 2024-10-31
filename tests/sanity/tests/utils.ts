@@ -16,6 +16,7 @@ export const PlatformUser = process.env.PLATFORM_USER as string
 export const PlatformUserSecond = process.env.PLATFORM_USER_SECOND as string
 export const PlatformSetting = process.env.SETTING as string
 export const PlatformSettingSecond = process.env.SETTING_SECOND as string
+
 export const DefaultWorkspace = 'SanityTest'
 export const LocalUrl = process.env.LOCAL_URL as string
 export const DevUrl = process.env.DEV_URL as string
@@ -81,6 +82,14 @@ function timestamp (): string {
 function count (): string {
   const val = counter++ & 0xffffff
   return toHex(val, 6)
+}
+
+export async function setTestOptions (page: Page): Promise<void> {
+  await page.evaluate(() => {
+    localStorage.setItem('#platform.notification.timeout', '0')
+    localStorage.setItem('#platform.testing.enabled', 'true')
+    localStorage.setItem('#platform.lazy.loading', 'false')
+  })
 }
 
 /**

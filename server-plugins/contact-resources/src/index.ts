@@ -31,7 +31,6 @@ import contact, {
 } from '@hcengineering/contact'
 import core, {
   Account,
-  Class,
   Doc,
   Hierarchy,
   Ref,
@@ -43,7 +42,8 @@ import core, {
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc,
-  concatLink
+  concatLink,
+  type Space
 } from '@hcengineering/core'
 import notification, { Collaborators } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
@@ -285,9 +285,17 @@ export function organizationTextPresenter (doc: Doc): string {
 /**
  * @public
  */
-export function contactNameProvider (hierarchy: Hierarchy, props: Record<string, string>): string {
-  const _class = props._class !== undefined ? (props._class as Ref<Class<Doc>>) : contact.class.Contact
-  return formatContactName(hierarchy, _class, props.name ?? '', props.lastNameFirst)
+export function contactNameProvider (
+  doc: Doc,
+  parent: Doc | undefined,
+  space: Space | undefined,
+  hierarchy: Hierarchy,
+  mode: string
+): string {
+  if (parent !== undefined && hierarchy.isDerived(parent._class, contact.class.Contact)) {
+    return formatContactName(hierarchy, parent._class, (parent as Contact).name ?? '', mode)
+  }
+  return formatContactName(hierarchy, doc._class, (doc as Contact).name ?? '', mode)
 }
 
 export async function getCurrentEmployeeName (control: TriggerControl, context: Record<string, Doc>): Promise<string> {
