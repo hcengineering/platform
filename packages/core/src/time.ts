@@ -16,8 +16,18 @@ import { Timestamp } from './classes'
 
 export function getDay (time: Timestamp): Timestamp {
   const date: Date = new Date(time)
-  date.setHours(0, 0, 0, 0)
-  return date.getTime()
+  return convertToDay(date).getTime()
+}
+
+export function convertToDay (date: Date): Date {
+  const originalDay: number = date.getDate()
+  const convertedDate: Date = new Date(date)
+  // Set 12 AM UTC time, since it will be the same day in most timezones
+  convertedDate.setUTCHours(12, 0, 0, 0)
+  if (convertedDate.getDate() !== originalDay) {
+    convertedDate.setDate(originalDay)
+  }
+  return convertedDate
 }
 
 export function getHour (time: Timestamp): Timestamp {
