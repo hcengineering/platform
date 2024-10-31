@@ -17,6 +17,7 @@
   import { getMetadata } from '@hcengineering/platform'
   import ui, { showPopup, deviceOptionsStore as deviceInfo } from '../..'
   import LangPopup from './LangPopup.svelte'
+  import Html from '../Html.svelte'
 
   let pressed: boolean = false
 
@@ -70,5 +71,7 @@
   class:pressed
   on:click={selectLanguage}
 >
-  {@html selected?.logo}
+  {#if selected}
+    <Html value={selected.logo} />
+  {/if}
 </button>
