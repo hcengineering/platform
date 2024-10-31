@@ -103,6 +103,7 @@
   {kind}
   {size}
   {justify}
+  disabled={readonly}
   showTooltip={label ? { label, direction: labelDirection } : undefined}
   on:click={addPerson}
 >

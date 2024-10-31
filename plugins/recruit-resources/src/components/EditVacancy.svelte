@@ -31,6 +31,7 @@
 
   export let _id: Ref<Vacancy>
   export let embedded: boolean = false
+  export let readonly = false
 
   let object: Required<Vacancy>
   let rawName: string = ''
@@ -140,6 +141,7 @@
         <DocAttributeBar
           {object}
           {mixins}
+          {readonly}
           ignoreKeys={['name', 'fullDescription', 'private', 'archived', 'type', 'owners']}
         />
       {/if}
@@ -151,6 +153,7 @@
       kind={'large-style'}
       focusable
       autoFocus={!embedded}
+      disabled={readonly}
       on:blur={save}
     />
 
@@ -160,14 +163,16 @@
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="utils">
-      <Button
-        icon={IconMoreH}
-        iconProps={{ size: 'medium' }}
-        kind={'icon'}
-        on:click={(e) => {
-          showMenu(e, { object, excludedActions: [view.action.Open] })
-        }}
-      />
+      {#if !readonly}
+        <Button
+          icon={IconMoreH}
+          iconProps={{ size: 'medium' }}
+          kind={'icon'}
+          on:click={(e) => {
+            showMenu(e, { object, excludedActions: [view.action.Open] })
+          }}
+        />
+      {/if}
       <Button
         icon={IconMixin}
         kind={'icon'}
@@ -187,6 +192,7 @@
         key={{ key: 'fullDescription', attr: descriptionKey }}
         bind:this={descriptionBox}
         placeholder={recruit.string.FullDescription}
+        {readonly}
         on:saved={(evt) => {
           saved = evt.detail
         }}
@@ -194,7 +200,7 @@
     </div>
 
     <div class="w-full mt-6">
-      <VacancyApplications objectId={object._id} />
+      <VacancyApplications objectId={object._id} {readonly} />
     </div>
     <div class="w-full mt-6">
       <Component is={tracker.component.RelatedIssuesSection} props={{ object, label: tracker.string.RelatedIssues }} />

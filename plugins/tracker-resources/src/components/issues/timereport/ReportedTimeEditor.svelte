@@ -106,14 +106,15 @@
 
     &:not(.readonly) {
       cursor: pointer;
-    }
-    .add-action {
-      visibility: hidden;
-    }
 
-    &:hover {
       .add-action {
-        visibility: visible;
+        visibility: hidden;
+      }
+
+      &:hover {
+        .add-action {
+          visibility: visible;
+        }
       }
     }
   }
