@@ -1,0 +1,34 @@
+
+{
+  "string": {
+    "More": "Di più...",
+    "Delete": "Elimina",
+    "ShowMenu": "Mostra il menu",
+    "HideMenu": "Nascondi il menu",
+    "Archive": "Archivia",
+    "Archived": "Archiviato",
+    "Open": "Apri",
+    "General": "Generale",
+    "Members": "Membri",
+    "Application": "Applicazione",
+    "BrowseSpaces": "Sfoglia gli spazi",
+    "AccountDisabled": "L'account è disabilitato",
+    "AccountDisabledDescr": "Contatta l'amministratore dello spazio di lavoro",
+    "HelpAndSupport": "Aiuto & Supporto",
+    "HelpCenter": "Centro assistenza",
+    "KeyboardShortcuts": "Scorciatoie da tastiera",
+    "Documentation": "Documentazione",
+    "OpenPlatformGuide": "Apri Huly Docs",
+    "AccessWorkspaceSettings": "Accedi alle impostazioni del tuo spazio di lavoro",
+    "HowToWorkFaster": "Impara a lavorare più velocemente",
+    "HiddenApplication": "Applicazione nascosta",
+    "OpenInNewTab": "Apri in una nuova scheda",
+    "NewVersionAvailable": "Nuova versione disponibile",
+    "PleaseUpdate": "Si prega di aggiornare",
+    "ServerUnderMaintenance": "Il server è in manutenzione",
+    "MobileNotSupported": "Spiacenti, il supporto per i dispositivi mobili arriverà presto. Nel frattempo, si prega di utilizzare un computer desktop",
+    "LogInAnyway": "Accedi comunque",
+    "WorkspaceCreating": "Creazione in corso...",
+    "AccessDenied": "L'oggetto non esiste o non hai autorizzazione per accedervi."
+  }
+}
