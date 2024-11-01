@@ -81,10 +81,9 @@ import {
   parseDoc,
   parseDocWithProjection,
   parseUpdate,
-  type PostgresClientReference,
-  translateDomain
+  type PostgresClientReference
 } from './utils'
-import { getDocFieldsByDomains } from './schemas'
+import { getDocFieldsByDomains, translateDomain } from './schemas'
 
 abstract class PostgresAdapterBase implements DbAdapter {
   protected readonly _helper: DBCollectionHelper

@@ -1,5 +1,4 @@
 import { DOMAIN_DOC_INDEX_STATE, DOMAIN_SPACE, DOMAIN_TX } from '@hcengineering/core'
-import { translateDomain } from './utils'
 
 type DataType = 'bigint' | 'bool' | 'text' | 'text[]'
 
@@ -55,6 +54,10 @@ const userNotificationSchema: Schema = {
 const docIndexStateSchema: Schema = {
   ...baseSchema,
   needIndex: ['bool', true]
+}
+
+export function translateDomain (domain: string): string {
+  return domain.replaceAll('-', '_')
 }
 
 export const domainSchemas: Record<string, Schema> = {

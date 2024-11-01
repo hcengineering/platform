@@ -33,7 +33,6 @@ import core, {
   WorkspaceId,
   WorkspaceIdWithUrl,
   type Client,
-  type Doc,
   type Ref,
   type WithLookup
 } from '@hcengineering/core'
@@ -118,7 +117,7 @@ export async function initModel (
       modifiedBy: core.account.System,
       modifiedOn: Date.now(),
       space: core.space.DerivedTx,
-      objectSpace: core.space.DerivedTx,
+      objectSpace: core.space.DerivedTx
     }
 
     await adapter.upload(ctx, DOMAIN_TX, [firstTx])

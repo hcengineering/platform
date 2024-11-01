@@ -14,5 +14,5 @@
 //
 
 export * from './storage'
-export { getDBClient, convertDoc, createTable, retryTxn, translateDomain } from './utils'
-export { getDocFieldsByDomains } from './schemas'
+export { getDBClient, convertDoc, createTable, retryTxn } from './utils'
+export { getDocFieldsByDomains, translateDomain } from './schemas'
