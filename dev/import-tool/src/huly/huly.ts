@@ -30,6 +30,7 @@ import {
   type MarkdownPreprocessor
 } from '../importer/importer'
 import { type FileUploader } from '../importer/uploader'
+import document from '@hcengineering/document'
 
 interface HulyComment {
   author: string
@@ -92,6 +93,18 @@ interface HulyWorkspaceHeader {
   }>
 }
 
+interface HulyDocumentHeader {
+  class: string
+  title?: string
+}
+
+interface ImportDocument {
+  class: string
+  title?: string
+  content: string
+  subdocs?: ImportDocument[]
+}
+
 class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
   constructor (private readonly personsByName: Map<string, Ref<Person>>) {}
 
@@ -128,24 +141,114 @@ export class HulyImporter {
   }
 
   private async processHulyFolder (folderPath: string): Promise<ImportWorkspace> {
-    // Read workspace configuration
     const wsConfig = await this.readYamlHeader(path.join(folderPath, 'README-ws.md'))
     const workspaceHeader = wsConfig as HulyWorkspaceHeader
 
-    // Process persons
     const persons = this.processPersons(workspaceHeader)
-
-    // Process project types
     const projectTypes = this.processProjectTypes(workspaceHeader)
-
-    // Process projects
-    const spaces = await this.processProjects(folderPath)
+    
+    // Process both projects and document spaces
+    const spaces = await this.processSpaces(folderPath)
 
     return {
       persons,
       projectTypes,
       spaces
     }
+  }
+
+  private async processSpaces (folderPath: string): Promise<ImportProject[]> {
+    const spaces: ImportProject[] = []
+    const folders = fs.readdirSync(folderPath)
+      .filter(f => fs.statSync(path.join(folderPath, f)).isDirectory())
+      .filter(f => f !== 'files')
+
+    for (const folder of folders) {
+      const spacePath = path.join(folderPath, folder)
+      
+      // Check if it's a project or document space by looking for README-prj.md
+      const isProject = fs.existsSync(path.join(spacePath, 'README-prj.md'))
+      
+      if (isProject) {
+        const project = await this.processProject(spacePath, folder)
+        spaces.push(project)
+      } else {
+        const docSpace = await this.processDocumentSpace(spacePath, folder)
+        spaces.push(docSpace)
+      }
+    }
+
+    return spaces
+  }
+
+  private async processProject(spacePath: string, name: string): Promise<ImportProject> {
+    const projectConfig = await this.readYamlHeader(path.join(spacePath, 'README-prj.md'))
+    const projectHeader = projectConfig as HulyProjectHeader
+
+    return {
+      class: 'tracker.class.Project',
+      name,
+      identifier: projectHeader.identifier,
+      private: projectHeader.private,
+      autoJoin: projectHeader.autoJoin,
+      projectType: this.findProjectType(projectHeader.projectType),
+      docs: await this.processIssues(spacePath),
+      defaultAssignee: projectHeader.defaultAssignee 
+        ? { name: projectHeader.defaultAssignee, email: '' }
+        : undefined,
+      defaultIssueStatus: projectHeader.defaultIssueStatus
+        ? { name: projectHeader.defaultIssueStatus }
+        : undefined,
+      owners: projectHeader.owners?.map(name => ({ name, email: '' })),
+      members: projectHeader.members?.map(name => ({ name, email: '' }))
+    }
+  }
+
+  private async processDocumentSpace(spacePath: string, name: string): Promise<ImportProject> {
+    return {
+      class: 'document.class.DocumentSpace',
+      name,
+      identifier: name.toLowerCase().replace(/\s+/g, '-'),
+      private: false,
+      autoJoin: true,
+      docs: await this.processDocuments(spacePath)
+    }
+  }
+
+  private async processDocuments(spacePath: string): Promise<ImportDocument[]> {
+    const documents: ImportDocument[] = []
+    const docFiles = fs.readdirSync(spacePath)
+      .filter(f => f.endsWith('.md') && !f.startsWith('README'))
+
+    for (const docFile of docFiles) {
+      const docPath = path.join(spacePath, docFile)
+      const docHeader = await this.readYamlHeader(docPath) as HulyDocumentHeader
+      
+      if (docHeader.class === 'document.class.Document') {
+        const content = await this.readMarkdownContent(docPath)
+        const title = docHeader.title ?? path.basename(docFile, '.md')
+
+        const doc: ImportDocument = {
+          class: docHeader.class,
+          title,
+          content,
+          subdocs: await this.processSubDocuments(spacePath, docFile)
+        }
+
+        documents.push(doc)
+      }
+    }
+
+    return documents
+  }
+
+  private async processSubDocuments(spacePath: string, parentFile: string): Promise<ImportDocument[]> {
+    const baseDir = path.join(spacePath, parentFile.replace('.md', '-subdocs'))
+    if (!fs.existsSync(baseDir)) {
+      return []
+    }
+
+    return await this.processDocuments(baseDir)
   }
 
   private async readYamlHeader (filePath: string): Promise<any> {
@@ -182,41 +285,6 @@ export class HulyImporter {
         }))
       }))
     })) ?? []
-  }
-
-  private async processProjects (folderPath: string): Promise<ImportProject[]> {
-    const projects: ImportProject[] = []
-    const projectFolders = fs.readdirSync(folderPath)
-      .filter(f => fs.statSync(path.join(folderPath, f)).isDirectory())
-      .filter(f => f !== 'files')
-
-    for (const projectFolder of projectFolders) {
-      const projectPath = path.join(folderPath, projectFolder)
-      const projectConfig = await this.readYamlHeader(path.join(projectPath, 'README-prj.md'))
-      const projectHeader = projectConfig as HulyProjectHeader
-
-      const project: ImportProject = {
-        class: 'tracker.class.Project',
-        name: projectFolder,
-        identifier: projectHeader.identifier,
-        private: projectHeader.private,
-        autoJoin: projectHeader.autoJoin,
-        projectType: this.findProjectType(projectHeader.projectType),
-        docs: await this.processIssues(projectPath),
-        defaultAssignee: projectHeader.defaultAssignee !== undefined
-          ? { name: projectHeader.defaultAssignee, email: '' }
-          : undefined,
-        defaultIssueStatus: projectHeader.defaultIssueStatus !== undefined
-          ? { name: projectHeader.defaultIssueStatus }
-          : undefined,
-        owners: projectHeader.owners?.map(name => ({ name, email: '' })),
-        members: projectHeader.members?.map(name => ({ name, email: '' }))
-      }
-
-      projects.push(project)
-    }
-
-    return projects
   }
 
   private async processIssues (projectPath: string): Promise<ImportIssue[]> {
