@@ -451,6 +451,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/api-client",
+      "projectFolder": "packages/api-client",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/collaboration",
       "projectFolder": "server/collaboration",
       "shouldPublish": false
