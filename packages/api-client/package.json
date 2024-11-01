@@ -5,7 +5,7 @@
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "author": "Anticrm Platform Contributors",
-  "template": "@hcengineering/node-package",
+  "template": "@hcengineering/default-package",
   "license": "EPL-2.0",
   "scripts": {
     "build": "compile",
