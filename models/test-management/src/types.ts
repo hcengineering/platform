@@ -20,13 +20,23 @@ import type {
   TestCaseType,
   TestCasePriority,
   TestCaseStatus,
-  TestProject
+  TestProject,
+  TestRun
 } from '@hcengineering/test-management'
 import { type Attachment } from '@hcengineering/attachment'
 import contact from '@hcengineering/contact'
 import chunter from '@hcengineering/chunter'
 import { getEmbeddedLabel } from '@hcengineering/platform'
-import { Account, IndexKind, type RolesAssignment, type Role, Ref, type Domain, type Type, type CollectionSize } from '@hcengineering/core'
+import {
+  Account,
+  IndexKind,
+  type RolesAssignment,
+  type Role,
+  Ref,
+  type Domain,
+  type Type,
+  type CollectionSize
+} from '@hcengineering/core'
 import {
   Mixin,
   Model,
@@ -154,3 +164,7 @@ export class TTestCase extends TDoc implements TestCase {
   @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number
 }
+
+@Model(testManagement.class.TestRun, core.class.Doc)
+@UX(testManagement.string.TestRun)
+export class TTestRun extends TDoc implements TestRun {}

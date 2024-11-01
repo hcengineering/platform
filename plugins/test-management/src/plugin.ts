@@ -28,7 +28,7 @@ import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
 import { ActionCategory, Viewlet } from '@hcengineering/view'
-import { TestSuite, TestCase, TestProject, TestCaseType, TestCasePriority, TestCaseStatus } from './types'
+import { TestSuite, TestCase, TestProject, TestCaseType, TestCasePriority, TestCaseStatus, TestRun } from './types'
 
 /** @public */
 export const testManagementId = 'testManagement' as Plugin
@@ -48,7 +48,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     Estimation: '' as Asset,
     TestSuite: '' as Asset,
     TestProject: '' as Asset,
-	TestSuites: '' as Asset,
+    TestSuites: '' as Asset,
+    TestRuns: '' as Asset
   },
   class: {
     TestCase: '' as Ref<Class<TestCase>>,
@@ -56,7 +57,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestProject: '' as Ref<Class<TestProject>>,
     TypeTestCaseType: '' as Ref<Class<Type<TestCaseType>>>,
     TypeTestCasePriority: '' as Ref<Class<Type<TestCasePriority>>>,
-    TypeTestCaseStatus: '' as Ref<Class<Type<TestCaseStatus>>>
+    TypeTestCaseStatus: '' as Ref<Class<Type<TestCaseStatus>>>,
+    TestRun: '' as Ref<Class<TestRun>>
   },
   descriptors: {
     ProjectType: '' as Ref<SpaceTypeDescriptor>
@@ -103,10 +105,13 @@ export const testManagementPlugin = plugin(testManagementId, {
     RoleLabel: '' as IntlString,
     ProjectMembers: '' as IntlString,
     ManageProjectStatuses: '' as IntlString,
-	  TestSuites: '' as IntlString,
+    TestSuites: '' as IntlString,
     CreateTestSuite: '' as IntlString,
     NamePlaceholder: '' as IntlString,
     DescriptionPlaceholder: '' as IntlString,
+    TestRuns: '' as IntlString,
+    NewTestRun: '' as IntlString,
+    TestRun: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>
@@ -120,8 +125,9 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestCaseStatusIcon: '' as AnyComponent,
     PriorityIconPresenter: '' as AnyComponent,
     TestCaseStatusPresenter: '' as AnyComponent,
-	  TestSuites: '' as AnyComponent,
-    CreateTestSuite: '' as AnyComponent
+    TestSuites: '' as AnyComponent,
+    CreateTestSuite: '' as AnyComponent,
+    NewTestRun: '' as AnyComponent
   },
   ids: {
     NoParent: '' as Ref<TestSuite>,

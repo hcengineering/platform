@@ -45,7 +45,8 @@ function defineApplication (
   opt: {
     allTestCasesId: string
     testCasesId: string
-	testSuitesId: string
+    testSuitesId: string
+    testRunsId: string
   }
 ): void {
   builder.createDoc(
@@ -121,6 +122,19 @@ function defineApplication (
                   createLabel: testManagement.string.CreateTestCase,
                   createComponent: testManagement.component.CreateTestCase
                 }
+              },
+              {
+                id: opt.testRunsId,
+                label: testManagement.string.TestRuns,
+                icon: testManagement.icon.TestRuns,
+                component: workbench.component.SpecialView,
+                componentProps: {
+                  _class: testManagement.class.TestRun,
+                  icon: testManagement.icon.TestRuns,
+                  title: testManagement.string.TestRuns,
+                  createLabel: testManagement.string.NewTestRun,
+                  createComponent: testManagement.component.NewTestRun
+                }
               }
             ]
           }
@@ -158,6 +172,7 @@ export function createModel (builder: Builder): void {
   const testCasesId = 'testCases'
   const allTestCasesId = 'allTestCases'
   const testSuitesId = 'testSuites'
+  const testRunsId = 'testRuns'
 
   definePresenters(builder)
 
@@ -225,7 +240,7 @@ export function createModel (builder: Builder): void {
     testManagement.ids.TestCaseRemovedViewlet
   ) */
 
-  defineApplication(builder, { allTestCasesId, testCasesId, testSuitesId })
+  defineApplication(builder, { allTestCasesId, testCasesId, testSuitesId, testRunsId })
 
   // defineActions(builder, issuesId, componentsId, myIssuesId)
 
@@ -340,9 +355,9 @@ function defineTestSuite (builder: Builder): void {
     components: { input: chunter.component.ChatMessageInput }
   })
 
-  //builder.mixin(products.class.Product, core.class.Class, view.mixin.ObjectIdentifier, {
+  // builder.mixin(products.class.Product, core.class.Class, view.mixin.ObjectIdentifier, {
   //  provider: products.function.ProductIdentifierProvider
-  //})
+  // })
 
   builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.ObjectEditor, {
     editor: testManagement.component.EditTestSuite
@@ -356,9 +371,9 @@ function defineTestSuite (builder: Builder): void {
     presenter: testManagement.component.TestSuitePresenter
   })
 
-  //builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.SpacePresenter, {
+  // builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.SpacePresenter, {
   //  presenter: documents.component.DocumentSpacePresenter
-  //})
+  // })
 
   builder.createDoc(
     view.class.Viewlet,
@@ -368,8 +383,8 @@ function defineTestSuite (builder: Builder): void {
       descriptor: view.viewlet.Table,
       config: ['name', 'description'],
       configOptions: {
-        //hiddenKeys: ['name'],
-      //sortable: true,
+        // hiddenKeys: ['name'],
+        // sortable: true,
         strict: true
       }
     },
@@ -397,9 +412,9 @@ function defineTestCase (builder: Builder): void {
     presenter: testManagement.component.TestCasePresenter
   })
 
-  //builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.SpacePresenter, {
+  // builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.SpacePresenter, {
   //  presenter: documents.component.DocumentSpacePresenter
-  //})
+  // })
 
   builder.createDoc(
     view.class.Viewlet,
@@ -409,8 +424,8 @@ function defineTestCase (builder: Builder): void {
       descriptor: view.viewlet.Table,
       config: ['name', 'description'],
       configOptions: {
-        //hiddenKeys: ['name'],
-      //sortable: true,
+        // hiddenKeys: ['name'],
+        // sortable: true,
         strict: true
       }
     },

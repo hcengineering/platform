@@ -90,3 +90,6 @@ export interface TestCase extends Doc {
   attachments?: CollectionSize<Attachment>
   comments?: number
 }
+
+/** @public */
+export interface TestRun extends Doc {}
