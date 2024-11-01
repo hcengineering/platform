@@ -56,6 +56,7 @@ export default plugin(serverTimeId, {
     OnToDoUpdate: '' as Resource<TriggerFunc>,
     OnToDoRemove: '' as Resource<TriggerFunc>,
     OnToDoCreate: '' as Resource<TriggerFunc>,
-    OnWorkSlotCreate: '' as Resource<TriggerFunc>
+    OnWorkSlotCreate: '' as Resource<TriggerFunc>,
+    OnWorkSlotUpdate: '' as Resource<TriggerFunc>
   }
 })
