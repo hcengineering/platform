@@ -105,6 +105,30 @@ interface ImportDocument {
   subdocs?: ImportDocument[]
 }
 
+interface HulySpaceHeader {
+  class: string
+  title?: string
+  identifier?: string
+  private?: boolean
+  autoJoin?: boolean
+  defaultAssignee?: string
+  defaultIssueStatus?: string
+  owners?: string[]
+  members?: string[]
+  projectType?: string
+  components?: Array<{
+    title: string
+    lead: string
+    description: string
+  }>
+  milestones?: Array<{
+    title: string
+    status: string
+    targetDate: string
+    description: string
+  }>
+}
+
 class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
   constructor (private readonly personsByName: Map<string, Ref<Person>>) {}
 
@@ -165,33 +189,45 @@ export class HulyImporter {
 
     for (const folder of folders) {
       const spacePath = path.join(folderPath, folder)
+      const readmePath = path.join(spacePath, 'README.md')
       
-      // Check if it's a project or document space by looking for README-prj.md
-      const isProject = fs.existsSync(path.join(spacePath, 'README-prj.md'))
-      
-      if (isProject) {
-        const project = await this.processProject(spacePath, folder)
-        spaces.push(project)
-      } else {
-        const docSpace = await this.processDocumentSpace(spacePath, folder)
-        spaces.push(docSpace)
+      if (!fs.existsSync(readmePath)) {
+        console.warn(`Skipping ${folder}: no README.md found`)
+        continue
+      }
+
+      const spaceConfig = await this.readYamlHeader(readmePath)
+      const spaceHeader = spaceConfig as HulySpaceHeader
+
+      switch (spaceHeader.class) {
+        case 'tracker.class.Project':
+          spaces.push(await this.processProject(spacePath, folder, spaceHeader))
+          break
+        case 'document.class.TeamSpace':
+          spaces.push(await this.processDocumentSpace(spacePath, folder, spaceHeader))
+          break
+        default:
+          console.warn(`Unknown space type: ${spaceHeader.class} in ${folder}`)
       }
     }
 
     return spaces
   }
 
-  private async processProject(spacePath: string, name: string): Promise<ImportProject> {
-    const projectConfig = await this.readYamlHeader(path.join(spacePath, 'README-prj.md'))
-    const projectHeader = projectConfig as HulyProjectHeader
-
+  private async processProject(
+    spacePath: string, 
+    name: string, 
+    projectHeader: HulySpaceHeader
+  ): Promise<ImportProject> {
     return {
-      class: 'tracker.class.Project',
-      name,
-      identifier: projectHeader.identifier,
-      private: projectHeader.private,
-      autoJoin: projectHeader.autoJoin,
-      projectType: this.findProjectType(projectHeader.projectType),
+      class: projectHeader.class,
+      name: projectHeader.title ?? name,
+      identifier: projectHeader.identifier ?? name.toLowerCase().replace(/\s+/g, '-'),
+      private: projectHeader.private ?? false,
+      autoJoin: projectHeader.autoJoin ?? true,
+      projectType: projectHeader.projectType 
+        ? this.findProjectType(projectHeader.projectType)
+        : undefined,
       docs: await this.processIssues(spacePath),
       defaultAssignee: projectHeader.defaultAssignee 
         ? { name: projectHeader.defaultAssignee, email: '' }
@@ -204,13 +240,19 @@ export class HulyImporter {
     }
   }
 
-  private async processDocumentSpace(spacePath: string, name: string): Promise<ImportProject> {
+  private async processDocumentSpace(
+    spacePath: string, 
+    name: string, 
+    spaceHeader: HulySpaceHeader
+  ): Promise<ImportProject> {
     return {
-      class: 'document.class.DocumentSpace',
-      name,
-      identifier: name.toLowerCase().replace(/\s+/g, '-'),
-      private: false,
-      autoJoin: true,
+      class: spaceHeader.class,
+      name: spaceHeader.title ?? name,
+      identifier: spaceHeader.identifier ?? name.toLowerCase().replace(/\s+/g, '-'),
+      private: spaceHeader.private ?? false,
+      autoJoin: spaceHeader.autoJoin ?? true,
+      owners: spaceHeader.owners?.map(name => ({ name, email: '' })),
+      members: spaceHeader.members?.map(name => ({ name, email: '' })),
       docs: await this.processDocuments(spacePath)
     }
   }
