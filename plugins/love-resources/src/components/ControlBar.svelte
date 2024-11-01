@@ -28,7 +28,8 @@
     getCurrentLocation,
     showPopup,
     type AnySvelteComponent,
-    type CompAndProps
+    type CompAndProps,
+    resizeObserver
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import plugin from '../plugin'
@@ -51,6 +52,7 @@
   import CamSettingPopup from './CamSettingPopup.svelte'
   import MicSettingPopup from './MicSettingPopup.svelte'
   import RoomAccessPopup from './RoomAccessPopup.svelte'
+  import { afterUpdate } from 'svelte'
 
   export let room: Room
   export let fullScreen: boolean = false
@@ -59,6 +61,11 @@
   const allowShare: boolean = true
   let allowLeave: boolean = false
   let popup: CompAndProps | undefined = undefined
+  let grow: HTMLElement
+  let leftPanel: HTMLElement
+  let leftPanelSize: number = 0
+  let noLabel: boolean = false
+  let combinePanel: boolean = false
 
   $: allowCam = $currentRoom?.type === RoomType.Video
   $: allowLeave = $myInfo?.room !== ($myOffice?._id ?? plugin.ids.Reception)
@@ -149,9 +156,22 @@
 
   const camKeys = client.getModel().findAllSync(view.class.Action, { _id: plugin.action.ToggleVideo })?.[0]?.keyBinding
   const micKeys = client.getModel().findAllSync(view.class.Action, { _id: plugin.action.ToggleMic })?.[0]?.keyBinding
+
+  const checkBar = (): void => {
+    if (grow === undefined || leftPanel === undefined) return
+    if (!noLabel && leftPanel.clientWidth > leftPanelSize) leftPanelSize = leftPanel.clientWidth
+    if (grow.clientWidth - 16 < leftPanel.clientWidth && !noLabel && !combinePanel) noLabel = true
+    else if (grow.clientWidth - 16 < leftPanel.clientWidth && noLabel && !combinePanel) combinePanel = true
+    else if (grow.clientWidth * 2 - 32 > leftPanel.clientWidth && noLabel && combinePanel) combinePanel = false
+    else if (grow.clientWidth - 32 >= leftPanelSize && noLabel && !combinePanel) noLabel = false
+  }
+  afterUpdate(() => {
+    checkBar()
+  })
 </script>
 
-<div class="bar w-full flex-center flex-gap-2 flex-no-shrink">
+<div class="bar w-full flex-center flex-gap-2 flex-no-shrink" class:combinePanel use:resizeObserver={checkBar}>
+  <div bind:this={grow} class="flex-grow" />
   {#if room._id !== plugin.ids.Reception}
     <ModernButton
       icon={roomAccessIcon[room.access]}
@@ -205,7 +225,7 @@
       />
     {/if}
   {/if}
-  <div class="bar__left-panel flex-gap-2 flex-center">
+  <div bind:this={leftPanel} class="bar__left-panel flex-gap-2 flex-center">
     {#if $isConnected}
       <ModernButton
         icon={$isFullScreen ? love.icon.ExitFullScreen : love.icon.FullScreen}
@@ -232,7 +252,7 @@
     {#if allowLeave}
       <ModernButton
         icon={plugin.icon.LeaveRoom}
-        label={plugin.string.LeaveRoom}
+        label={noLabel ? undefined : plugin.string.LeaveRoom}
         tooltip={{ label: plugin.string.LeaveRoom, direction: 'top' }}
         kind={'negative'}
         size={'large'}
@@ -240,6 +260,7 @@
       />
     {/if}
   </div>
+  <div class="flex-grow" />
   {#if popup && fullScreen}
     <PopupInstance
       is={popup.is}
@@ -259,6 +280,7 @@
 
 <style lang="scss">
   .bar {
+    overflow-x: auto;
     position: relative;
     padding: 1rem;
     border-top: 1px solid var(--theme-divider-color);
@@ -269,6 +291,10 @@
       bottom: 0;
       right: 1rem;
       height: 100%;
+    }
+
+    &.combinePanel .bar__left-panel {
+      position: static;
     }
   }
 </style>

@@ -38,6 +38,8 @@
 
   let sState: SeparatorState
   $: sState = typeof float === 'string' ? SeparatorState.FLOAT : float ? SeparatorState.HIDDEN : SeparatorState.NORMAL
+  const checkFullWidth = (): boolean =>
+    sState === SeparatorState.FLOAT && $deviceInfo.isMobile && $deviceInfo.isPortrait
 
   const direction: 'horizontal' | 'vertical' = 'horizontal'
   let separators: SeparatedItem[] | null = null
@@ -67,6 +69,10 @@
   let disabled: boolean = false
   let side: 'start' | 'end' | undefined = undefined
 
+  $: fs = $deviceInfo.fontSize
+  const remToPx = (rem: number): number => rem * fs
+  const pxToRem = (px: number): number => px / fs
+
   const fetchSeparators = (): void => {
     const res = getSeparators(name, float)
     if (res !== null && !Array.isArray(res)) panel = res
@@ -89,10 +95,6 @@
     }
     checkSizes()
   }
-
-  $: fs = $deviceInfo.fontSize
-  const remToPx = (rem: number): number => rem * fs
-  const pxToRem = (px: number): number => px / fs
 
   const convertSize = (prop: TSeparatedItem): string => (typeof prop === 'number' ? `${prop}px` : '')
 
@@ -229,6 +231,12 @@
 
   const checkSizes = (): void => {
     if (sState === SeparatorState.FLOAT) {
+      if (checkFullWidth() && panel != null) {
+        const s = pxToRem(window.innerWidth)
+        panel.size = s
+        panel.maxSize = s
+        panel.minSize = s
+      }
       if (parentElement != null && panel != null) initSize(parentElement, panel)
     } else if (sState === SeparatorState.NORMAL) {
       if (prevElement != null && prevElSize != null) initSize(prevElement, prevElSize)
@@ -442,12 +450,14 @@
       }
     } else if (sState === SeparatorState.FLOAT && parentElement != null) {
       parentElement.style.pointerEvents = 'all'
-      saveSeparator(name, float, panel)
+      if (!checkFullWidth()) saveSeparator(name, float, panel)
     }
     document.body.style.cursor = ''
   }
 
   function pointerDown (event: PointerEvent): void {
+    console.log('[!!!] pointerDown ', checkFullWidth())
+    if (checkFullWidth()) return
     prepareSeparation(event)
     document.addEventListener('pointermove', pointerMove)
     document.addEventListener('pointerup', pointerUp)
