@@ -30,7 +30,7 @@ import core, {
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
 import postgres from 'postgres'
-import { defaultSchema, domainSchemas, getSchema } from './schemas'
+import { getDocFieldsByDomains, getSchema, translateDomain } from './schemas'
 
 const connections = new Map<string, PostgresClientReferenceImpl>()
 
@@ -329,10 +329,6 @@ export class DBCollectionHelper implements DomainHelperOperations {
   }
 }
 
-export function translateDomain (domain: string): string {
-  return domain.replaceAll('-', '_')
-}
-
 export function parseDocWithProjection<T extends Doc> (doc: DBDoc, projection: Projection<T> | undefined): T {
   const { workspaceId, data, ...rest } = doc
   for (const key in rest) {
@@ -395,11 +391,6 @@ export interface DBDoc extends Doc {
 
 export function isDataField (domain: string, field: string): boolean {
   return !getDocFieldsByDomains(domain).includes(field)
-}
-
-export function getDocFieldsByDomains (domain: string): string[] {
-  const schema = domainSchemas[domain] ?? defaultSchema
-  return Object.keys(schema)
 }
 
 export interface JoinProps {

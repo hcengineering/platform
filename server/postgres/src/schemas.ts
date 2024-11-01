@@ -1,10 +1,10 @@
-import { DOMAIN_SPACE } from '@hcengineering/core'
+import { DOMAIN_DOC_INDEX_STATE, DOMAIN_SPACE, DOMAIN_TX } from '@hcengineering/core'
 
 type DataType = 'bigint' | 'bool' | 'text' | 'text[]'
 
 type Schema = Record<string, [DataType, boolean]>
 
-export const defaultSchema: Schema = {
+const baseSchema: Schema = {
   _id: ['text', true],
   _class: ['text', true],
   space: ['text', true],
@@ -12,25 +12,68 @@ export const defaultSchema: Schema = {
   createdBy: ['text', false],
   modifiedOn: ['bigint', true],
   createdOn: ['bigint', false],
+  '%hash%': ['text', false]
+}
+
+const defaultSchema: Schema = {
+  ...baseSchema,
   attachedTo: ['text', false]
 }
 
-export const spaceSchema: Schema = {
-  _id: ['text', true],
-  _class: ['text', true],
-  space: ['text', true],
-  modifiedBy: ['text', true],
-  createdBy: ['text', false],
-  modifiedOn: ['bigint', true],
-  createdOn: ['bigint', false],
+const spaceSchema: Schema = {
+  ...baseSchema,
   private: ['bool', true],
   members: ['text[]', true]
 }
 
+const txSchema: Schema = {
+  ...baseSchema,
+  objectSpace: ['text', true],
+  objectId: ['text', false]
+}
+
+const notificationSchema: Schema = {
+  ...baseSchema,
+  isViewed: ['bool', true],
+  archived: ['bool', true],
+  user: ['text', true]
+}
+
+const dncSchema: Schema = {
+  ...baseSchema,
+  objectId: ['text', true],
+  objectClass: ['text', true],
+  user: ['text', true]
+}
+
+const userNotificationSchema: Schema = {
+  ...baseSchema,
+  user: ['text', true]
+}
+
+const docIndexStateSchema: Schema = {
+  ...baseSchema,
+  needIndex: ['bool', true]
+}
+
+export function translateDomain (domain: string): string {
+  return domain.replaceAll('-', '_')
+}
+
 export const domainSchemas: Record<string, Schema> = {
-  [DOMAIN_SPACE]: spaceSchema
+  [DOMAIN_SPACE]: spaceSchema,
+  [DOMAIN_TX]: txSchema,
+  [translateDomain(DOMAIN_DOC_INDEX_STATE)]: docIndexStateSchema,
+  notification: notificationSchema,
+  [translateDomain('notification-dnc')]: dncSchema,
+  [translateDomain('notification-user')]: userNotificationSchema
 }
 
 export function getSchema (domain: string): Schema {
-  return domainSchemas[domain] ?? defaultSchema
+  return domainSchemas[translateDomain(domain)] ?? defaultSchema
+}
+
+export function getDocFieldsByDomains (domain: string): string[] {
+  const schema = domainSchemas[translateDomain(domain)] ?? defaultSchema
+  return Object.keys(schema)
 }

@@ -74,7 +74,6 @@ import {
   type DBDoc,
   escapeBackticks,
   getDBClient,
-  getDocFieldsByDomains,
   inferType,
   isDataField,
   isOwner,
@@ -82,9 +81,9 @@ import {
   parseDoc,
   parseDocWithProjection,
   parseUpdate,
-  type PostgresClientReference,
-  translateDomain
+  type PostgresClientReference
 } from './utils'
+import { getDocFieldsByDomains, translateDomain } from './schemas'
 
 abstract class PostgresAdapterBase implements DbAdapter {
   protected readonly _helper: DBCollectionHelper
@@ -1550,7 +1549,7 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
 
   async getModel (ctx: MeasureContext): Promise<Tx[]> {
     const res = await this
-      .client`SELECT * FROM ${this.client(translateDomain(DOMAIN_TX))} WHERE "workspaceId" = ${this.workspaceId.name} AND data->>'objectSpace' = ${core.space.Model} ORDER BY _id ASC, "modifiedOn" ASC`
+      .client`SELECT * FROM ${this.client(translateDomain(DOMAIN_TX))} WHERE "workspaceId" = ${this.workspaceId.name} AND "objectSpace" = ${core.space.Model} ORDER BY _id ASC, "modifiedOn" ASC`
 
     const model = res.map((p) => parseDoc<Tx>(p as any))
     // We need to put all core.account.System transactions first
