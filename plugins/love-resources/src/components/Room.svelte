@@ -17,7 +17,7 @@
   import { personByIdStore } from '@hcengineering/contact-resources'
   import { Room as TypeRoom } from '@hcengineering/love'
   import { getMetadata } from '@hcengineering/platform'
-  import { Label, Loading, resizeObserver } from '@hcengineering/ui'
+  import { Label, Loading, resizeObserver, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import {
     LocalParticipant,
     LocalTrackPublication,
@@ -333,7 +333,7 @@
   $: if (((document.fullscreenElement && !$isFullScreen) || $isFullScreen) && roomEl) toggleFullscreen()
 </script>
 
-<div bind:this={roomEl} class="flex-col-center w-full h-full" class:theme-dark={$isFullScreen}>
+<div bind:this={roomEl} class="flex-col-center w-full h-full right-navpanel-border" class:theme-dark={$isFullScreen}>
   {#if $isConnected && !$isCurrentInstanceConnected}
     <div class="flex justify-center error h-full w-full clear-mins">
       <Label label={love.string.AnotherWindowError} />
@@ -345,7 +345,13 @@
   {:else if loading}
     <Loading />
   {/if}
-  <div class="room-container" class:sharing={$screenSharing} class:many={columns > 3} class:hidden={loading}>
+  <div
+    class="room-container"
+    class:sharing={$screenSharing}
+    class:many={columns > 3}
+    class:hidden={loading}
+    class:mobile={$deviceInfo.isMobile}
+  >
     <div class="screenContainer">
       <video class="screen" bind:this={screen}></video>
     </div>
@@ -450,6 +456,15 @@
       &:not(.sharing) .videoGrid,
       &.sharing {
         gap: 0.5rem;
+      }
+    }
+
+    &.mobile {
+      padding: var(--spacing-0_5);
+
+      &:not(.sharing) .videoGrid,
+      &.sharing {
+        gap: var(--spacing-0_5);
       }
     }
   }

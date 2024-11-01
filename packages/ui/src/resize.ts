@@ -148,7 +148,7 @@ export function saveSeparator (
 }
 
 export const panelSeparators: DefSeparators = [
-  { minSize: 30, size: 'auto', maxSize: 'auto' },
+  { minSize: 20, size: 'auto', maxSize: 'auto' },
   { minSize: 17, size: 25, maxSize: 35, float: 'aside' }
 ]
 
