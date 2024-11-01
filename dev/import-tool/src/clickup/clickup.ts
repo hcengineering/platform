@@ -62,7 +62,7 @@ interface ImportIssueEx extends ImportIssue {
 }
 
 class ClickupMarkdownPreprocessor implements MarkdownPreprocessor {
-  private readonly MENTION_REGEX = /@([A-Za-z]+ [A-Za-z]+)/g
+  private readonly MENTION_REGEX = /@([\p{L}\p{M}]+ [\p{L}\p{M}]+)/gu
   constructor (private readonly personsByName: Map<string, Ref<Person>>) {}
 
   process (json: MarkupNode): MarkupNode {
