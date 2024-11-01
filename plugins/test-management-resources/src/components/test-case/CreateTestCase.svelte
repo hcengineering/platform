@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,6 +13,164 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Attachment } from '@hcengineering/attachment'
+  import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
+  import { TestCase, TestProject, TestSuite } from '@hcengineering/test-management'
+  import core, { fillDefaults, generateId, makeCollaborativeDoc, Ref, TxOperations, DocData } from '@hcengineering/core'
+  import { ObjectBox } from '@hcengineering/view-resources'
+  import { Card, SpaceSelector, getClient, updateMarkup } from '@hcengineering/presentation'
+  import { EmptyMarkup } from '@hcengineering/text'
+  import { Button, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
+
+  import ProjectPresenter from '../project/ProjectSpacePresenter.svelte'
+  import testManagement from '../../plugin'
+  //import { Analytics } from '@hcengineering/analytics'
+
+  export let onCreate: ((orgId: Ref<TestCase>, client: TxOperations) => Promise<void>) | undefined = undefined
+
+  export function canClose(): boolean {
+    return object.name === ''
+  }
+
+  export let space: Ref<TestProject>
+
+  let testSuiteId: Ref<TestSuite> | undefined
+
+  const id: Ref<TestCase> = generateId()
+
+  const object: DocData<TestCase> = {
+    name: '',
+    description: makeCollaborativeDoc(id, 'description'),
+    attachments: 0
+  } as unknown as TestCase
+
+  let _space = space
+
+  const dispatch = createEventDispatcher()
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  let description = EmptyMarkup
+
+  fillDefaults(hierarchy, object, testManagement.class.TestCase)
+
+  async function createTestCase(): Promise<void> {
+    const op = client.apply()
+    await updateMarkup(object.description, { description })
+    await op.createDoc(testManagement.class.TestCase, _space, object, id)
+    await descriptionBox.createAttachments(id, op)
+
+    if (onCreate !== undefined) {
+      await onCreate?.(id, op)
+    }
+    await op.commit()
+    //Analytics.handleEvent(TestManagementEvents.TestCaseCreated, { id })
+    dispatch('close', id)
+  }
+
+  function handleTestSuiteChange(): void {}
+
+  const manager = createFocusManager()
+
+  let descriptionBox: AttachmentStyledBox
+  let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
 </script>
 
-<div class="antiNav-subheader"></div>
+<FocusHandler {manager} />
+
+<Card
+  label={testManagement.string.CreateTestCase}
+  okAction={createTestCase}
+  hideAttachments={attachments.size === 0}
+  canSave={object.name.length > 0}
+  on:close={() => {
+    dispatch('close')
+  }}
+  on:changeContent
+>
+  <svelte:fragment slot="header">
+    <SpaceSelector
+      _class={testManagement.class.TestProject}
+      label={testManagement.string.TestProject}
+      bind:space={_space}
+      kind={'regular'}
+      size={'large'}
+      component={ProjectPresenter}
+      defaultIcon={testManagement.icon.Home}
+    />
+    <ObjectBox
+      _class={testManagement.class.TestSuite}
+      value={testSuiteId}
+      docQuery={{
+        space: _space
+      }}
+      on:change={handleTestSuiteChange}
+      kind={'regular'}
+      size={'small'}
+      label={testManagement.string.TestSuite}
+      icon={testManagement.icon.TestSuite}
+      searchField={'title'}
+      allowDeselect={true}
+      showNavigate={false}
+      docProps={{ disabled: true, noUnderline: true }}
+      focusIndex={20000}
+    />
+  </svelte:fragment>
+
+  <div class="flex-row-center clear-mins mb-3">
+    <EditBox
+      bind:value={object.name}
+      placeholder={testManagement.string.TestNamePlaceholder}
+      kind={'large-style'}
+      autoFocus
+    />
+  </div>
+
+  <AttachmentStyledBox
+    bind:this={descriptionBox}
+    objectId={id}
+    _class={testManagement.class.TestCase}
+    space={_space}
+    alwaysEdit
+    showButtons={false}
+    bind:content={description}
+    placeholder={core.string.Description}
+    kind="indented"
+    isScrollable={false}
+    enableBackReferences={true}
+    enableAttachments={false}
+    on:attachments={(ev) => {
+      if (ev.detail.size > 0) attachments = ev.detail.values
+      else if (ev.detail.size === 0 && ev.detail.values != null) {
+        attachments.clear()
+        attachments = attachments
+      }
+    }}
+  />
+
+  <svelte:fragment slot="attachments">
+    {#if attachments.size > 0}
+      {#each Array.from(attachments.values()) as attachment}
+        <AttachmentPresenter
+          value={attachment}
+          showPreview
+          removable
+          on:remove={(result) => {
+            if (result.detail !== undefined) descriptionBox.removeAttachmentById(result.detail._id)
+          }}
+        />
+      {/each}
+    {/if}
+  </svelte:fragment>
+
+  <svelte:fragment slot="footer">
+    <Button
+      icon={IconAttachment}
+      size="large"
+      on:click={() => {
+        descriptionBox.handleAttach()
+      }}
+    />
+  </svelte:fragment>
+</Card>

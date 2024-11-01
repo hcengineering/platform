@@ -41,6 +41,7 @@
     "DescriptionPlaceholder": "Description (optional)",
     "TestRuns": "Test runs",
     "NewTestRun": "New test run",
-    "TestRun": "Test run"
+    "TestRun": "Test run",
+    "TestNamePlaceholder": "Test case title"
   }
 }

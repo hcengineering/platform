@@ -111,7 +111,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     DescriptionPlaceholder: '' as IntlString,
     TestRuns: '' as IntlString,
     NewTestRun: '' as IntlString,
-    TestRun: '' as IntlString
+    TestRun: '' as IntlString,
+    TestNamePlaceholder: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>
@@ -128,7 +129,7 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestSuites: '' as AnyComponent,
     CreateTestSuite: '' as AnyComponent,
     NewTestRun: '' as AnyComponent
-  },
+    },
   ids: {
     NoParent: '' as Ref<TestSuite>,
     TestCaseUpdatedActivityViewlet: '' as Ref<TestCase>

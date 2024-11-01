@@ -15,7 +15,7 @@
 
 import { Attachment } from '@hcengineering/attachment'
 import { Employee } from '@hcengineering/contact'
-import { Doc, type CollectionSize, type Ref, type Markup, TypedSpace } from '@hcengineering/core'
+import { Doc, type CollectionSize, type Ref, type Markup, TypedSpace, CollaborativeDoc } from '@hcengineering/core'
 
 /** @public */
 export enum TestCaseType {
@@ -77,7 +77,7 @@ export interface TestSuite extends Doc {
 /** @public */
 export interface TestCase extends Doc {
   name: string
-  description?: string
+  description: CollaborativeDoc
   type: TestCaseType
   priority: TestCasePriority
   status: TestCaseStatus

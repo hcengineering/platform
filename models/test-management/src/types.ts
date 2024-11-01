@@ -35,7 +35,8 @@ import {
   Ref,
   type Domain,
   type Type,
-  type CollectionSize
+  type CollectionSize,
+  type CollaborativeDoc
 } from '@hcengineering/core'
 import {
   Mixin,
@@ -45,6 +46,7 @@ import {
   UX,
   TypeMarkup,
   Index,
+  TypeCollaborativeDoc,
   TypeString,
   Collection,
   ReadOnly,
@@ -127,9 +129,9 @@ export class TTestCase extends TDoc implements TestCase {
   @Index(IndexKind.FullText)
     name!: string
 
-  @Prop(TypeMarkup(), testManagement.string.TestDescription)
+  @Prop(TypeCollaborativeDoc(), testManagement.string.FullDescription)
   @Index(IndexKind.FullText)
-    description?: string
+    description!: CollaborativeDoc
 
   @Prop(TypeTestCaseType(), testManagement.string.TestType)
   @ReadOnly()
