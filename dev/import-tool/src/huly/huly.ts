@@ -51,16 +51,21 @@ interface HulyIssueHeader {
   comments?: HulyComment[]
 }
 
-interface HulyProjectHeader {
+interface HulyBaseSpaceHeader {
   class: string
-  projectType: string
-  identifier: string
-  private: boolean
-  autoJoin: boolean
-  defaultAssignee?: string
-  defaultIssueStatus?: string
+  title?: string
+  identifier?: string
+  private?: boolean
+  autoJoin?: boolean
   owners?: string[]
   members?: string[]
+}
+
+interface HulyProjectHeader extends HulyBaseSpaceHeader {
+  class: 'tracker.class.Project'
+  projectType?: string
+  defaultAssignee?: string
+  defaultIssueStatus?: string
   components?: Array<{
     title: string
     lead: string
@@ -72,6 +77,10 @@ interface HulyProjectHeader {
     targetDate: string
     description: string
   }>
+}
+
+interface HulyTeamspaceHeader extends HulyBaseSpaceHeader {
+  class: 'document.class.TeamSpace'
 }
 
 interface HulyWorkspaceHeader {
@@ -103,30 +112,6 @@ interface ImportDocument {
   title?: string
   content: string
   subdocs?: ImportDocument[]
-}
-
-interface HulySpaceHeader {
-  class: string
-  title?: string
-  identifier?: string
-  private?: boolean
-  autoJoin?: boolean
-  defaultAssignee?: string
-  defaultIssueStatus?: string
-  owners?: string[]
-  members?: string[]
-  projectType?: string
-  components?: Array<{
-    title: string
-    lead: string
-    description: string
-  }>
-  milestones?: Array<{
-    title: string
-    status: string
-    targetDate: string
-    description: string
-  }>
 }
 
 class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
@@ -197,17 +182,16 @@ export class HulyImporter {
       }
 
       const spaceConfig = await this.readYamlHeader(readmePath)
-      const spaceHeader = spaceConfig as HulySpaceHeader
-
-      switch (spaceHeader.class) {
+      
+      switch (spaceConfig.class) {
         case 'tracker.class.Project':
-          spaces.push(await this.processProject(spacePath, folder, spaceHeader))
+          spaces.push(await this.processProject(spacePath, folder, spaceConfig as HulyProjectHeader))
           break
         case 'document.class.TeamSpace':
-          spaces.push(await this.processDocumentSpace(spacePath, folder, spaceHeader))
+          spaces.push(await this.processDocumentSpace(spacePath, folder, spaceConfig as HulyTeamspaceHeader))
           break
         default:
-          console.warn(`Unknown space type: ${spaceHeader.class} in ${folder}`)
+          console.warn(`Unknown space type: ${spaceConfig.class} in ${folder}`)
       }
     }
 
@@ -217,7 +201,7 @@ export class HulyImporter {
   private async processProject(
     spacePath: string, 
     name: string, 
-    projectHeader: HulySpaceHeader
+    projectHeader: HulyProjectHeader
   ): Promise<ImportProject> {
     return {
       class: projectHeader.class,
@@ -243,7 +227,7 @@ export class HulyImporter {
   private async processDocumentSpace(
     spacePath: string, 
     name: string, 
-    spaceHeader: HulySpaceHeader
+    spaceHeader: HulyTeamspaceHeader
   ): Promise<ImportProject> {
     return {
       class: spaceHeader.class,
