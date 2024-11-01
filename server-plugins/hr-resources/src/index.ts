@@ -49,7 +49,7 @@ import {
 } from '@hcengineering/server-notification-resources'
 
 async function getOldDepartment (
-  currentTx: TxMixin<Employee, Staff> | TxUpdateDoc<Employee>,
+  currentTx: TxMixin<Employee, Staff>,
   control: TriggerControl
 ): Promise<Ref<Department> | undefined> {
   const txes = await control.findAll<TxMixin<Employee, Staff>>(
@@ -73,7 +73,7 @@ async function getOldDepartment (
 async function buildHierarchy (_id: Ref<Department>, control: TriggerControl): Promise<Department[]> {
   const res: Department[] = []
   const ancestors = new Map<Ref<Department>, Ref<Department>>()
-  const departments = await control.findAll(control.ctx, hr.class.Department, {})
+  const departments = await control.queryFind(control.ctx, hr.class.Department, {})
   for (const department of departments) {
     if (department._id === hr.ids.Head || department.parent === undefined) continue
     ancestors.set(department._id, department.parent)
@@ -240,20 +240,20 @@ export async function OnEmployee (tx: Tx, control: TriggerControl): Promise<Tx[]
  */
 export async function OnEmployeeDeactivate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx)
-  if (core.class.TxUpdateDoc !== actualTx._class) {
+  if (core.class.TxMixin !== actualTx._class) {
     return []
   }
-  const ctx = actualTx as TxUpdateDoc<Employee>
-  if (ctx.objectClass !== contact.mixin.Employee || ctx.operations.active !== false) {
+  const ctx = actualTx as TxMixin<Person, Employee>
+  if (ctx.mixin !== contact.mixin.Employee || ctx.attributes.active !== false) {
     return []
   }
 
   const targetAccount = control.modelDb.getAccountByPersonId(ctx.objectId) as PersonAccount[]
   if (targetAccount.length === 0) return []
-  const lastDepartment = await getOldDepartment(ctx, control)
-  if (lastDepartment === undefined) return []
+  const set = new Set(targetAccount.map((it) => it._id))
 
-  const removed = await buildHierarchy(lastDepartment, control)
+  const departments = await control.queryFind(control.ctx, hr.class.Department, {})
+  const removed = departments.filter((dep) => dep.members.some((p) => set.has(p)))
   return getTxes(
     control.txFactory,
     targetAccount.map((it) => it._id),
