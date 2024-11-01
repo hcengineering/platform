@@ -456,7 +456,6 @@
   }
 
   function pointerDown (event: PointerEvent): void {
-    console.log('[!!!] pointerDown ', checkFullWidth())
     if (checkFullWidth()) return
     prepareSeparation(event)
     document.addEventListener('pointermove', pointerMove)
