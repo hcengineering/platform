@@ -29,7 +29,7 @@ export interface LoginInfo {
   email: string
 }
 
-export async function listAccountWorkspaces (token: string): Promise<BaseWorkspaceInfo[]> {
+export async function listAccountWorkspaces (token: string, region: string | null = null): Promise<BaseWorkspaceInfo[]> {
   const accountsUrl = getAccoutsUrlOrFail()
   const workspaces = await (
     await fetch(accountsUrl, {
@@ -39,7 +39,7 @@ export async function listAccountWorkspaces (token: string): Promise<BaseWorkspa
       },
       body: JSON.stringify({
         method: 'listWorkspaces',
-        params: [token]
+        params: [token, region]
       })
     })
   ).json()
