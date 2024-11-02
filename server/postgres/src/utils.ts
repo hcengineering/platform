@@ -182,8 +182,9 @@ export function getDBClient (connectionString: string, database?: string): Postg
 
   if (existing === undefined) {
     const sql = postgres(connectionString, {
-      connectionString,
-      application_name: 'transactor',
+      connection: {
+        application_name: 'transactor'
+      },
       database,
       max: 10,
       transform: {
