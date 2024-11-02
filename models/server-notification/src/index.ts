@@ -33,6 +33,7 @@ import serverNotification, {
   type TypeMatch,
   type TypeMatchFunc
 } from '@hcengineering/server-notification'
+import contact from '@hcengineering/contact'
 
 export { serverNotificationId } from '@hcengineering/server-notification'
 
@@ -89,5 +90,14 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverNotification.trigger.OnDocRemove
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverNotification.trigger.OnEmployeeDeactivate,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxMixin,
+      mixin: contact.mixin.Employee
+    }
   })
 }
