@@ -446,6 +446,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/highlight",
+      "projectFolder": "packages/highlight",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/collaboration",
       "projectFolder": "server/collaboration",
       "shouldPublish": false

@@ -57,23 +57,25 @@
       </div>
     </div>
   {:else if !mini}
-    <ScrollerBar bind:scroller padding={'.25rem 0'}>
+    <div class="flex-row-center gap-1 py-1 overflow-x-auto">
       {#each $tabsStore as tab (tab._id)}
         <WorkbenchTabPresenter {tab} />
       {/each}
-    </ScrollerBar>
+    </div>
   {:else if selectedTab !== undefined}
     <WorkbenchTabPresenter tab={selectedTab} />
-    <ButtonIcon
-      bind:element
-      icon={IconMoreH}
-      iconProps={{ fill: 'var(--theme-dark-color)' }}
-      size={'extra-small'}
-      kind={'tertiary'}
-      hasMenu
-      {pressed}
-      on:click={showTabs}
-    />
+    {#if $tabsStore.length > 1}
+      <ButtonIcon
+        bind:element
+        icon={IconMoreH}
+        iconProps={{ fill: 'var(--theme-dark-color)' }}
+        size={'extra-small'}
+        kind={'tertiary'}
+        hasMenu
+        {pressed}
+        on:click={showTabs}
+      />
+    {/if}
   {/if}
   {#if !popup}
     <ButtonIcon

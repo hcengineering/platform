@@ -607,6 +607,8 @@ export async function createPushNotification (
   }
 }
 
+const errorMessages = ['expired', 'Unregistered', 'No such subscription']
+
 async function sendPushToSubscription (
   control: TriggerControl,
   targetUser: Ref<Account>,
@@ -617,9 +619,11 @@ async function sendPushToSubscription (
     await webpush.sendNotification(subscription, JSON.stringify(data))
   } catch (err) {
     control.ctx.info('Cannot send push notification to', { user: targetUser, err })
-    if (err instanceof WebPushError && err.body.includes('expired')) {
-      const tx = control.txFactory.createTxRemoveDoc(subscription._class, subscription.space, subscription._id)
-      await control.apply(control.ctx, [tx])
+    if (err instanceof WebPushError) {
+      if (errorMessages.some((p) => (err as WebPushError).body.includes(p))) {
+        const tx = control.txFactory.createTxRemoveDoc(subscription._class, subscription.space, subscription._id)
+        await control.apply(control.ctx, [tx])
+      }
     }
   }
 }

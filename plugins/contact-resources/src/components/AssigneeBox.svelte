@@ -184,7 +184,7 @@
               {getName(client.getHierarchy(), selected)}
             {/if}
           {:else}
-            <div class="flex-presenter not-selected">
+            <div class="flex-presenter not-selected" class:cursor-default={readonly}>
               {#if icon}
                 <div class="icon w-4 flex-no-shrink" class:small-gap={size === 'inline' || size === 'small'}>
                   <Icon {icon} size={'small'} />

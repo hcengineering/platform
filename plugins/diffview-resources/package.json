@@ -45,9 +45,9 @@
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/view-resources": "^0.6.0",
+    "@hcengineering/highlight": "^0.6.0",
     "@hcengineering/diffview": "^0.6.0",
     "fast-equals": "^5.0.1",
-    "highlight.js": "~11.8.0",
     "diff2html": "~3.4.35"
   }
 }

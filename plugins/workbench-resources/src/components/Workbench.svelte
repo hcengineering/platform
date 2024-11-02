@@ -647,6 +647,18 @@
   const checkOnHide = (): void => {
     if ($deviceInfo.navigator.visible && $deviceInfo.docWidth <= 1024) $deviceInfo.navigator.visible = false
   }
+  let oldNavVisible: boolean = $deviceInfo.navigator.visible
+  let oldASideVisible: boolean = $deviceInfo.aside.visible
+  $: if (oldNavVisible !== $deviceInfo.navigator.visible || oldASideVisible !== $deviceInfo.aside.visible) {
+    if ($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.navigator.float) {
+      if ($deviceInfo.navigator.visible && $deviceInfo.aside.visible) {
+        if (oldNavVisible) $deviceInfo.navigator.visible = false
+        else $deviceInfo.aside.visible = false
+      }
+    }
+    oldNavVisible = $deviceInfo.navigator.visible
+    oldASideVisible = $deviceInfo.aside.visible
+  }
   $: $deviceInfo.navigator.direction = $deviceInfo.isMobile && $deviceInfo.isPortrait ? 'horizontal' : 'vertical'
   let appsMini: boolean
   $: appsMini =
