@@ -17,6 +17,7 @@
 import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
 import contact, {
+  Employee,
   getAvatarProviderId,
   getGravatarUrl,
   Person,
@@ -1908,6 +1909,31 @@ async function OnActivityMessageRemove (message: ActivityMessage, control: Trigg
   return res
 }
 
+async function OnEmployeeDeactivate (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+  const actualTx = TxProcessor.extractTx(tx)
+  if (core.class.TxMixin !== actualTx._class) {
+    return []
+  }
+  const ctx = actualTx as TxMixin<Person, Employee>
+  if (ctx.mixin !== contact.mixin.Employee || ctx.attributes.active !== false) {
+    return []
+  }
+
+  const targetAccount = control.modelDb.getAccountByPersonId(ctx.objectId) as PersonAccount[]
+  if (targetAccount.length === 0) return []
+
+  const res: Tx[] = []
+  for (const acc of targetAccount) {
+    const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
+      user: acc._id
+    })
+    for (const sub of subscriptions) {
+      res.push(control.txFactory.createTxRemoveDoc(sub._class, sub.space, sub._id))
+    }
+  }
+  return res
+}
+
 async function OnDocRemove (originTx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
   const tx = TxProcessor.extractTx(originTx) as TxRemoveDoc<Doc>
 
@@ -1949,7 +1975,8 @@ export default async () => ({
   trigger: {
     OnAttributeCreate,
     OnAttributeUpdate,
-    OnDocRemove
+    OnDocRemove,
+    OnEmployeeDeactivate
   },
   function: {
     IsUserInFieldValueTypeMatch: isUserInFieldValueTypeMatch,
