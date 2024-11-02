@@ -17,11 +17,12 @@ mongodump --uri="${MONGO_URL}" --gzip --db '%github' --archive="${dump}/github.g
 
 echo '#restore script' > ${dump}/restore.sh
 echo "MONGO_URL=\"${MONGO_URL}\"" >> ${dump}/restore.sh
-echo "do_drop=false" >> ${dump}/restore.sh
+echo "do_drop=" >> ${dump}/restore.sh
+echo "#do_drop=--drop" >> ${dump}/restore.sh
 
-echo 'mongorestore --uri="${MONGO_URL}" --gzip --drop --nsFrom "account" --nsTo "account" --archive=./account.gz ' >> ${dump}/restore.sh
-echo 'mongorestore --uri="${MONGO_URL}" --gzip --drop --nsFrom "%ai-bot" --nsTo "%ai-bot" --archive=./ai-bot.gz ' >> ${dump}/restore.sh
-echo 'mongorestore --uri="${MONGO_URL}" --gzip --drop --nsFrom "%github" --nsTo "%github" --archive=./github.gz ' >> ${dump}/restore.sh
+echo 'mongorestore --uri="${MONGO_URL}" --gzip ${do_drop} --nsFrom "account" --nsTo "account" --archive=./account.gz ' >> ${dump}/restore.sh
+echo 'mongorestore --uri="${MONGO_URL}" --gzip ${do_drop} --nsFrom "%ai-bot" --nsTo "%ai-bot" --archive=./ai-bot.gz ' >> ${dump}/restore.sh
+echo 'mongorestore --uri="${MONGO_URL}" --gzip ${do_drop} --nsFrom "%github" --nsTo "%github" --archive=./github.gz ' >> ${dump}/restore.sh
 
 while IFS= read -r line; do
     arr=($line)
@@ -34,6 +35,6 @@ while IFS= read -r line; do
     else
         mongodump --uri="$MONGO_URL" --gzip --db $db --archive=$aName
     fi
-    echo "mongorestore --uri=\"\${MONGO_URL}\" --gzip --drop --nsFrom \"${db}\" --nsTo \"${db}\" --archive=./workspaces/${db}-${lastVisit}.gz" >> ${dump}/restore.sh
+    echo "mongorestore --uri=\"\${MONGO_URL}\" --gzip \${do_drop} --nsFrom \"${db}\" --nsTo \"${db}\" --archive=\"./workspaces/${db}-${lastVisit}.gz\"" >> ${dump}/restore.sh
 done < ${dump}/databases.list
 
