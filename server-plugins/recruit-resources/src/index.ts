@@ -85,20 +85,19 @@ export async function applicationTextPresenter (doc: Doc, control: TriggerContro
  * @public
  */
 export async function OnRecruitUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx)
-  const cud = actualTx as TxCUD<Doc>
-  if (!control.hierarchy.isDerived(cud.objectClass, recruit.class.Vacancy)) {
+  const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
+  if (!control.hierarchy.isDerived(actualTx.objectClass, recruit.class.Vacancy)) {
     return []
   }
 
   const res: Tx[] = []
 
   if (actualTx._class === core.class.TxCreateDoc) {
-    handleVacancyCreate(control, cud, actualTx, res)
+    handleVacancyCreate(control, actualTx, res)
   } else if (actualTx._class === core.class.TxUpdateDoc) {
-    await handleVacancyUpdate(control, cud, res)
+    await handleVacancyUpdate(control, actualTx, res)
   } else if (actualTx._class === core.class.TxRemoveDoc) {
-    await handleVacancyRemove(control, cud, actualTx)
+    handleVacancyRemove(control, actualTx, res)
   }
   return res
 }
@@ -156,16 +155,13 @@ async function handleVacancyUpdate (control: TriggerControl, cud: TxCUD<Doc>, re
   }
 }
 
-async function handleVacancyRemove (control: TriggerControl, cud: TxCUD<Doc>, actualTx: Tx): Promise<void> {
-  const removeTx = actualTx as TxRemoveDoc<Vacancy>
+function handleVacancyRemove (control: TriggerControl, cud: TxCUD<Doc>, res: Tx[]): void {
+  const removeTx = cud as TxRemoveDoc<Vacancy>
   // It could be null or new value
-  const txes = (
-    await control.findAll(control.ctx, core.class.TxCUD, {
-      objectId: removeTx.objectId
-    })
-  ).filter((it) => it._id !== removeTx._id)
-  const vacancy = TxProcessor.buildDoc2Doc(txes) as Vacancy
-  const res: Tx[] = []
+  const vacancy = control.removedMap.get(removeTx.objectId) as Vacancy
+  if (vacancy === undefined) {
+    return
+  }
   if (vacancy.company != null) {
     // We have old value
     res.push(
@@ -182,8 +178,8 @@ async function handleVacancyRemove (control: TriggerControl, cud: TxCUD<Doc>, ac
   }
 }
 
-function handleVacancyCreate (control: TriggerControl, cud: TxCUD<Doc>, actualTx: Tx, res: Tx[]): void {
-  const createTx = actualTx as TxCreateDoc<Vacancy>
+function handleVacancyCreate (control: TriggerControl, cud: TxCUD<Doc>, res: Tx[]): void {
+  const createTx = cud as TxCreateDoc<Vacancy>
   const vacancy = TxProcessor.createDoc2Doc(createTx)
   if (vacancy.company !== undefined) {
     res.push(

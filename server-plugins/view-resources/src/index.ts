@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { AnyAttribute, Hierarchy, Tx, TxCUD, TxProcessor, TxRemoveDoc } from '@hcengineering/core'
+import core, { AnyAttribute, Hierarchy, Tx, TxRemoveDoc } from '@hcengineering/core'
 import type { TriggerControl } from '@hcengineering/server-core'
 import view from '@hcengineering/view'
 
@@ -24,8 +24,7 @@ export async function OnCustomAttributeRemove (tx: Tx, control: TriggerControl):
   const hierarchy = control.hierarchy
   const ptx = tx as TxRemoveDoc<AnyAttribute>
   if (!checkTx(ptx, hierarchy)) return []
-  const txes = await control.findAll<TxCUD<AnyAttribute>>(control.ctx, core.class.TxCUD, { objectId: ptx.objectId })
-  const attribute = TxProcessor.buildDoc2Doc<AnyAttribute>(txes)
+  const attribute = control.removedMap.get(ptx.objectId) as AnyAttribute
   if (attribute === undefined) return []
   const preferences = await control.findAll(control.ctx, view.class.ViewletPreference, {
     config: attribute.name,

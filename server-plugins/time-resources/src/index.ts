@@ -69,6 +69,21 @@ export async function OnTask (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   return []
 }
 
+export async function OnWorkSlotUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const actualTx = TxProcessor.extractTx(tx) as TxCUD<WorkSlot>
+  if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.WorkSlot)) return []
+  if (!control.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc)) return []
+  const updTx = actualTx as TxUpdateDoc<WorkSlot>
+  const visibility = updTx.operations.visibility
+  if (visibility !== undefined) {
+    const workslot = (await control.findAll(control.ctx, time.class.WorkSlot, { _id: updTx.objectId }, { limit: 1 }))[0]
+    if (workslot === undefined) return []
+    const todo = (await control.findAll(control.ctx, time.class.ToDo, { _id: workslot.attachedTo }))[0]
+    return [control.txFactory.createTxUpdateDoc(todo._class, todo.space, todo._id, { visibility })]
+  }
+  return []
+}
+
 export async function OnWorkSlotCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx) as TxCUD<WorkSlot>
   if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.WorkSlot)) return []
@@ -578,6 +593,22 @@ async function changeIssueStatusHandler (
         }
       }
     }
+  } else if (status.category === task.statusCategory.Won || status.category === task.statusCategory.Lost) {
+    const issue = (await control.findAll(control.ctx, tracker.class.Issue, { _id: issueId }))[0]
+    if (issue !== undefined) {
+      const todos = await control.findAll(control.ctx, time.class.ToDo, {
+        attachedTo: issue._id,
+        doneOn: null
+      })
+      const res: Tx[] = []
+      const now = Date.now()
+      for (const todo of todos) {
+        if (todo.doneOn == null) {
+          res.push(control.txFactory.createTxUpdateDoc(todo._class, todo.space, todo._id, { doneOn: now }))
+        }
+      }
+      return res
+    }
   }
   return []
 }
@@ -648,6 +679,7 @@ export default async () => ({
     OnToDoUpdate,
     OnToDoRemove,
     OnToDoCreate,
-    OnWorkSlotCreate
+    OnWorkSlotCreate,
+    OnWorkSlotUpdate
   }
 })
