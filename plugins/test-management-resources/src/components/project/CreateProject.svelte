@@ -16,6 +16,7 @@
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
+  import { Asset } from '@hcengineering/platform'
   import core, {
     Account,
     Data,
@@ -28,10 +29,22 @@
     getCurrentAccount,
     WithLookup
   } from '@hcengineering/core'
-  import { TestProject } from '@hcengineering/test-management'
+  import view from '@hcengineering/view'
+  import testManagement, { testManagementId, TestProject } from '@hcengineering/test-management'
   import presentation, { Card, getClient, reduceCalls } from '@hcengineering/presentation'
-  import { EditBox, Label, Toggle } from '@hcengineering/ui'
-  import { SpaceTypeSelector } from '@hcengineering/view-resources'
+  import {
+    Button,
+    EditBox,
+    IconWithEmoji,
+    Label,
+    Toggle,
+    getColorNumberByText,
+    showPopup,
+    getPlatformColorDef,
+    getPlatformColorForTextDef,
+    themeStore
+  } from '@hcengineering/ui'
+  import { IconPicker, SpaceTypeSelector } from '@hcengineering/view-resources'
 
   import testManagementRes from '../../plugin'
 
@@ -44,6 +57,9 @@
   let name: string = project?.name ?? ''
   let description: string = project?.description ?? ''
   let isPrivate: boolean = project?.private ?? false
+  let icon: Asset | undefined = project?.icon ?? undefined
+  let color = project?.color ?? getColorNumberByText(name)
+  let isColorSelected = false
 
   let members: Ref<Account>[] =
     project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
@@ -59,8 +75,8 @@
     spaceType =
       id !== undefined
         ? await client
-          .getModel()
-          .findOne(core.class.SpaceType, { _id: id }, { lookup: { _id: { roles: core.class.Role } } })
+            .getModel()
+            .findOne(core.class.SpaceType, { _id: id }, { lookup: { _id: { roles: core.class.Role } } })
         : undefined
 
     if (project === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
@@ -70,7 +86,7 @@
     rolesAssignment = getRolesAssignment()
   })
 
-  function getRolesAssignment (): RolesAssignment {
+  function getRolesAssignment(): RolesAssignment {
     if (project === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
       return {}
     }
@@ -84,7 +100,7 @@
     }, {})
   }
 
-  async function handleSave (): Promise<void> {
+  async function handleSave(): Promise<void> {
     if (project === undefined) {
       await createTestProject()
     } else {
@@ -92,18 +108,19 @@
     }
   }
 
-  function getTestProjectData (): Omit<Data<TestProject>, 'type'> {
+  function getTestProjectData(): Omit<Data<TestProject>, 'type'> {
     return {
       name,
       description,
       private: isPrivate,
+      icon,
       members,
       owners,
       archived: false
     }
   }
 
-  async function updateTestProject (): Promise<void> {
+  async function updateTestProject(): Promise<void> {
     if (project === undefined || spaceType?.targetClass === undefined) {
       return
     }
@@ -118,6 +135,9 @@
     }
     if (data.private !== project?.private) {
       update.private = data.private
+    }
+    if (data.icon !== project?.icon) {
+      update.icon = data.icon
     }
     if (data.members.length !== project?.members.length) {
       update.members = data.members
@@ -157,7 +177,7 @@
     close()
   }
 
-  async function createTestProject (): Promise<void> {
+  async function createTestProject(): Promise<void> {
     if (typeId === undefined || spaceType?.targetClass === undefined) {
       return
     }
@@ -184,24 +204,24 @@
     close(driveId)
   }
 
-  function close (id?: Ref<TestProject>): void {
+  function close(id?: Ref<TestProject>): void {
     dispatch('close', id)
   }
 
-  function handleTypeChange (evt: CustomEvent<Ref<SpaceType>>): void {
+  function handleTypeChange(evt: CustomEvent<Ref<SpaceType>>): void {
     typeId = evt.detail
   }
 
   $: roles = (spaceType?.$lookup?.roles ?? []) as Role[]
 
-  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
+  function handleOwnersChanged(newOwners: Ref<Account>[]): void {
     owners = newOwners
 
     const newMembersSet = new Set([...members, ...newOwners])
     members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged (newMembers: Ref<Account>[]): void {
+  function handleMembersChanged(newMembers: Ref<Account>[]): void {
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
     const removedMembersSet = new Set(members.filter((m) => !newMembersSet.has(m)))
@@ -215,7 +235,19 @@
     members = newMembers
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function chooseIcon(ev: MouseEvent): void {
+    const icons = [testManagement.icon.Home, testManagement.icon.RedCircle]
+    const update = (result: any): void => {
+      if (result !== undefined && result !== null) {
+        icon = result.icon
+        color = result.color
+        isColorSelected = true
+      }
+    }
+    showPopup(IconPicker, { icon, color, icons }, 'top', update, update)
+  }
+
+  function handleRoleAssignmentChanged(roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }
@@ -282,56 +314,77 @@
   <div class="antiGrid">
     <div class="antiGrid-row">
       <div class="antiGrid-row__header">
-        <Label label={core.string.Owners} />
+        <Label label={testManagementRes.string.ChooseIcon} />
       </div>
-      <AccountArrayEditor
-        value={owners}
-        label={core.string.Owners}
-        onChange={handleOwnersChanged}
-        kind={'regular'}
+      <Button
+        icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? testManagement.icon.Home}
+        iconProps={icon === view.ids.IconWithEmoji
+          ? { icon: color }
+          : {
+              fill:
+                color !== undefined
+                  ? getPlatformColorDef(color, $themeStore.dark).icon
+                  : getPlatformColorForTextDef(name, $themeStore.dark).icon
+            }}
         size={'large'}
+        on:click={chooseIcon}
       />
     </div>
 
-    <div class="antiGrid-row">
-      <div class="antiGrid-row__header withDesciption">
-        <Label label={presentation.string.MakePrivate} />
-        <span><Label label={presentation.string.MakePrivateDescription} /></span>
-      </div>
-      <Toggle bind:on={isPrivate} disabled={!isPrivate && members.length === 0} />
-    </div>
-
-    <div class="antiGrid-row">
-      <div class="antiGrid-row__header">
-        <Label label={core.string.Members} />
-      </div>
-      <AccountArrayEditor
-        value={members}
-        label={core.string.Members}
-        onChange={handleMembersChanged}
-        kind={'regular'}
-        size={'large'}
-        allowGuests
-      />
-    </div>
-
-    {#each roles as role}
+    <div class="antiGrid">
       <div class="antiGrid-row">
         <div class="antiGrid-row__header">
-          <Label label={testManagementRes.string.RoleLabel} params={{ role: role.name }} />
+          <Label label={core.string.Owners} />
         </div>
         <AccountArrayEditor
-          value={rolesAssignment?.[role._id] ?? []}
-          label={core.string.Members}
-          includeItems={members}
-          readonly={members.length === 0}
-          onChange={(refs) => {
-            handleRoleAssignmentChanged(role._id, refs)
-          }}
+          value={owners}
+          label={core.string.Owners}
+          onChange={handleOwnersChanged}
           kind={'regular'}
           size={'large'}
         />
       </div>
-    {/each}
-  </div>
-</Card>
+
+      <div class="antiGrid-row">
+        <div class="antiGrid-row__header withDesciption">
+          <Label label={presentation.string.MakePrivate} />
+          <span><Label label={presentation.string.MakePrivateDescription} /></span>
+        </div>
+        <Toggle bind:on={isPrivate} disabled={!isPrivate && members.length === 0} />
+      </div>
+
+      <div class="antiGrid-row">
+        <div class="antiGrid-row__header">
+          <Label label={core.string.Members} />
+        </div>
+        <AccountArrayEditor
+          value={members}
+          label={core.string.Members}
+          onChange={handleMembersChanged}
+          kind={'regular'}
+          size={'large'}
+          allowGuests
+        />
+      </div>
+
+      {#each roles as role}
+        <div class="antiGrid-row">
+          <div class="antiGrid-row__header">
+            <Label label={testManagementRes.string.RoleLabel} params={{ role: role.name }} />
+          </div>
+          <AccountArrayEditor
+            value={rolesAssignment?.[role._id] ?? []}
+            label={core.string.Members}
+            includeItems={members}
+            readonly={members.length === 0}
+            onChange={(refs) => {
+              handleRoleAssignmentChanged(role._id, refs)
+            }}
+            kind={'regular'}
+            size={'large'}
+          />
+        </div>
+      {/each}
+    </div>
+  </div></Card
+>

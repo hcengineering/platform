@@ -49,7 +49,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestSuite: '' as Asset,
     TestProject: '' as Asset,
     TestSuites: '' as Asset,
-    TestRuns: '' as Asset
+    TestRuns: '' as Asset,
+    RedCircle: '' as Asset
   },
   class: {
     TestCase: '' as Ref<Class<TestCase>>,
@@ -112,7 +113,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestRuns: '' as IntlString,
     NewTestRun: '' as IntlString,
     TestRun: '' as IntlString,
-    TestNamePlaceholder: '' as IntlString
+    TestNamePlaceholder: '' as IntlString,
+    ChooseIcon: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>

@@ -16,6 +16,7 @@
 import { Attachment } from '@hcengineering/attachment'
 import { Employee } from '@hcengineering/contact'
 import { Doc, type CollectionSize, type Ref, type Markup, TypedSpace, CollaborativeDoc } from '@hcengineering/core'
+import { IconProps } from '@hcengineering/view'
 
 /** @public */
 export enum TestCaseType {
@@ -63,7 +64,7 @@ export enum TestCaseStatus {
 }
 
 /** @public */
-export interface TestProject extends TypedSpace {
+export interface TestProject extends TypedSpace, IconProps {
   fullDescription?: Markup
 }
 

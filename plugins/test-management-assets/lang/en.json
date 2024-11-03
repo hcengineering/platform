@@ -42,6 +42,7 @@
     "TestRuns": "Test runs",
     "NewTestRun": "New test run",
     "TestRun": "Test run",
-    "TestNamePlaceholder": "Test case title"
+    "TestNamePlaceholder": "Test case title",
+    "ChooseIcon": "Choose icon"
   }
 }
