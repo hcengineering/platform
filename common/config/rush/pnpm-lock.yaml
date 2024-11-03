@@ -25965,7 +25965,7 @@ packages:
     dev: false
 
   file:projects/api-client.tgz(bufferutil@4.0.8)(esbuild@0.20.1)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-5uJXwGF3zdcGZNZfYnXHXFfWobec2Q8uMDm66bn3OSGs104E24s0hf7n0W9MWhwypy/H6IH2wk38mGK5ZLD7YQ==, tarball: file:projects/api-client.tgz}
+    resolution: {integrity: sha512-9yCIV9fVPokQs4g2EMfE+XlnNdfpqzi/8Fx9gOza2YtXndwylsUPZ9yPzlq/DXkR7t0MvdZvkhs5FPCcGasEJQ==, tarball: file:projects/api-client.tgz}
     id: file:projects/api-client.tgz
     name: '@rush-temp/api-client'
     version: 0.0.0
@@ -25986,6 +25986,8 @@ packages:
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.6.2)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.6.2)
       typescript: 5.6.2
+      ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+    optionalDependencies:
       ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     transitivePeerDependencies:
       - '@babel/core'

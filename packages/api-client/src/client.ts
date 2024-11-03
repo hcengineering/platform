@@ -33,7 +33,7 @@ import {
   concatLink
 } from '@hcengineering/core'
 import client, { clientId } from '@hcengineering/client'
-import { addLocation, getResource, setMetadata } from '@hcengineering/platform'
+import { addLocation, getResource } from '@hcengineering/platform'
 
 import { login, selectWorkspace } from './account'
 import { type APIClient, type ConnectOptions, type ConnectSocketOptions } from './types'
@@ -54,13 +54,14 @@ export async function connect (url: string, options: ConnectOptions): Promise<AP
 export async function createClient (endpoint: string, token: string, options: ConnectSocketOptions): Promise<APIClient> {
   addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@hcengineering/client-resources'))
 
-  setMetadata(client.metadata.ClientSocketFactory, options.socketFactory)
-  setMetadata(client.metadata.UseBinaryProtocol, options.useBinaryProtocol)
-  setMetadata(client.metadata.UseProtocolCompression, options.useProtocolCompression)
-  setMetadata(client.metadata.ConnectionTimeout, options.connectionTimeout)
+  const { socketFactory, useProtocolCompression, connectionTimeout } = options
 
   const clientFactory = await getResource(client.function.GetClient)
-  const connection = await clientFactory(token, endpoint)
+  const connection = await clientFactory(token, endpoint, {
+    socketFactory,
+    useProtocolCompression,
+    connectionTimeout
+  })
   const account = await connection.getAccount()
 
   return new APIClientImpl(connection, account)

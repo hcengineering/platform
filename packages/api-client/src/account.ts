@@ -27,7 +27,6 @@ export interface WorkspaceLoginInfo extends LoginInfo {
   workspaceId: string
 }
 
-/** @public */
 export async function login (accountsUrl: string, user: string, password: string, workspace: string): Promise<string> {
   const response = await fetch(accountsUrl, {
     method: 'POST',
@@ -44,7 +43,6 @@ export async function login (accountsUrl: string, user: string, password: string
   return result.result?.token
 }
 
-/** @public */
 export async function selectWorkspace (
   accountsUrl: string,
   token: string,

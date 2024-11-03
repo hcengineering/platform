@@ -14,90 +14,84 @@
 //
 
 import { type ClientSocket, type ClientSocketFactory } from '@hcengineering/client'
-import WebSocket from 'ws'
 
 /** @public */
 export const NodeWebSocketFactory: ClientSocketFactory = (url: string): ClientSocket => {
-  return new NodeWebSocket(url)
-}
+  // We need to override default factory with 'ws' one.
+  // eslint-disable-next-line
+  const WebSocket = require('ws')
+  type WebSocketData = Parameters<typeof ws.on>[1]
 
-/** @public */
-export class NodeWebSocket implements ClientSocket {
-  readonly ws: WebSocket
+  const ws = new WebSocket(url)
 
-  onmessage?: ((this: ClientSocket, ev: MessageEvent) => any) | null
-  onclose?: ((this: ClientSocket, ev: CloseEvent) => any) | null
-  onopen?: ((this: ClientSocket, ev: Event) => any) | null
-  onerror?: ((this: ClientSocket, ev: Event) => any) | null
+  const client: ClientSocket = {
+    get readyState (): number {
+      return ws.readyState
+    },
 
-  constructor (url: string) {
-    this.ws = new WebSocket(url)
-
-    this.ws.on('message', (data: WebSocket.Data) => {
-      if (this.onmessage != null) {
-        const event = {
-          data,
-          type: 'message',
-          target: this
-        } as unknown as MessageEvent
-
-        this.onmessage(event)
+    send: (data: string | ArrayBufferLike | Blob | ArrayBufferView): void => {
+      if (data instanceof Blob) {
+        void data.arrayBuffer().then((buffer) => {
+          ws.send(buffer)
+        })
+      } else {
+        ws.send(data)
       }
-    })
+    },
 
-    this.ws.on('close', (code: number, reason: string) => {
-      if (this.onclose != null) {
-        const closeEvent = {
-          code,
-          reason,
-          wasClean: code === 1000,
-          type: 'close',
-          target: this
-        } as unknown as CloseEvent
-
-        this.onclose(closeEvent)
-      }
-    })
-
-    this.ws.on('open', () => {
-      if (this.onopen != null) {
-        const event = {
-          type: 'open',
-          target: this
-        } as unknown as Event
-
-        this.onopen(event)
-      }
-    })
-
-    this.ws.on('error', (error: Error) => {
-      if (this.onerror != null) {
-        const event = {
-          type: 'error',
-          target: this,
-          error
-        } as unknown as Event
-
-        this.onerror(event)
-      }
-    })
-  }
-
-  get readyState (): number {
-    return this.ws.readyState
-  }
-
-  send (data: string | ArrayBufferLike | Blob | ArrayBufferView): void {
-    if (data instanceof Blob) {
-      void data.arrayBuffer().then((buffer) => {
-        this.ws.send(buffer)
-      })
-    } else {
-      this.ws.send(data)
+    close: (code?: number): void => {
+      ws.close(code)
     }
   }
 
-  close (code?: number): void {
-    this.ws.close(code)
-  }
+  ws.on('message', (data: WebSocketData) => {
+    if (client.onmessage != null) {
+      const event = {
+        data,
+        type: 'message',
+        target: this
+      } as unknown as MessageEvent
+
+      client.onmessage(event)
+    }
+  })
+
+  ws.on('close', (code: number, reason: string) => {
+    if (client.onclose != null) {
+      const closeEvent = {
+        code,
+        reason,
+        wasClean: code === 1000,
+        type: 'close',
+        target: this
+      } as unknown as CloseEvent
+
+      client.onclose(closeEvent)
+    }
+  })
+
+  ws.on('open', () => {
+    if (client.onopen != null) {
+      const event = {
+        type: 'open',
+        target: this
+      } as unknown as Event
+
+      client.onopen(event)
+    }
+  })
+
+  ws.on('error', (error: Error) => {
+    if (client.onerror != null) {
+      const event = {
+        type: 'error',
+        target: this,
+        error
+      } as unknown as Event
+
+      client.onerror(event)
+    }
+  })
+
+  return client
 }
