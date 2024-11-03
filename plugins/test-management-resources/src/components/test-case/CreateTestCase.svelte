@@ -95,7 +95,7 @@
       label={testManagement.string.TestProject}
       bind:space={_space}
       kind={'regular'}
-      size={'large'}
+      size={'small'}
       component={ProjectPresenter}
       defaultIcon={testManagement.icon.Home}
     />
@@ -108,7 +108,7 @@
       on:change={handleTestSuiteChange}
       kind={'regular'}
       size={'small'}
-      label={testManagement.string.TestSuite}
+      label={testManagement.string.NoTestSuite}
       icon={testManagement.icon.TestSuite}
       searchField={'title'}
       allowDeselect={true}

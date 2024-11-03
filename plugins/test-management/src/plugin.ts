@@ -114,7 +114,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     NewTestRun: '' as IntlString,
     TestRun: '' as IntlString,
     TestNamePlaceholder: '' as IntlString,
-    ChooseIcon: '' as IntlString
+    ChooseIcon: '' as IntlString,
+    NoTestSuite: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>

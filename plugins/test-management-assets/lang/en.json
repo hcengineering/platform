@@ -43,6 +43,7 @@
     "NewTestRun": "New test run",
     "TestRun": "Test run",
     "TestNamePlaceholder": "Test case title",
-    "ChooseIcon": "Choose icon"
+    "ChooseIcon": "Choose icon",
+    "NoTestSuite": "No test suite"
   }
 }
