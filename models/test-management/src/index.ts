@@ -412,6 +412,10 @@ function defineTestCase (builder: Builder): void {
     presenter: testManagement.component.TestCasePresenter
   })
 
+  builder.mixin(testManagement.class.TypeTestCaseStatus, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
+  })
+
   // builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.SpacePresenter, {
   //  presenter: documents.component.DocumentSpacePresenter
   // })
@@ -422,7 +426,7 @@ function defineTestCase (builder: Builder): void {
     {
       attachTo: testManagement.class.TestCase,
       descriptor: view.viewlet.Table,
-      config: ['name', 'description'],
+      config: ['name', 'status'],
       configOptions: {
         // hiddenKeys: ['name'],
         // sortable: true,

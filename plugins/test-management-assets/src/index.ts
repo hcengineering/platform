@@ -29,5 +29,11 @@ loadMetadata(testManagement.icon, {
   TestProject: `${icons}#testCase`,
   TestSuites: `${icons}#testSuite`,
   TestRuns: `${icons}#testRun`,
-  RedCircle: `${icons}#red-circle`
+  RedCircle: `${icons}#red-circle`,
+
+  StatusDraft: `${icons}#status-draft`,
+  StatusReview: `${icons}#status-review`,
+  StatusReviewComments: `${icons}#status-review-comments`,
+  StatusApproved: `${icons}#status-approved`,
+  StatusRejected: `${icons}#status-canceled`
 })

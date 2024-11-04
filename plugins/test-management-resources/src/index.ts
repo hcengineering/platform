@@ -25,6 +25,7 @@ import EditTestCase from './components/test-case/EditTestCase.svelte'
 import TestCasePresenter from './components/test-case/TestCasePresenter.svelte'
 import CreateTestCase from './components/test-case/CreateTestCase.svelte'
 import NewTestRun from './components/test-run/NewTestRun.svelte'
+import TestCaseStatusPresenter from './components/test-case/TestCaseStatusPresenter.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -38,6 +39,7 @@ export default async (): Promise<Resources> => ({
     EditTestCase,
     TestCasePresenter,
     NewTestRun,
-    CreateTestCase
+    CreateTestCase,
+    TestCaseStatusPresenter
   }
 })

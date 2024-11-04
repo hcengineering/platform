@@ -15,12 +15,13 @@
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { TestCase, TestProject, TestSuite } from '@hcengineering/test-management'
+  import { TestCase, TestProject, TestSuite, TestCaseStatus } from '@hcengineering/test-management'
   import core, { fillDefaults, generateId, makeCollaborativeDoc, Ref, TxOperations, DocData } from '@hcengineering/core'
   import { ObjectBox } from '@hcengineering/view-resources'
   import { Card, SpaceSelector, getClient, updateMarkup } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
   import { Button, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
+  import StatusEditor from './StatusEditor.svelte'
   import { createEventDispatcher } from 'svelte'
 
   import ProjectPresenter from '../project/ProjectSpacePresenter.svelte'
@@ -42,6 +43,7 @@
   const object: DocData<TestCase> = {
     name: '',
     description: makeCollaborativeDoc(id, 'description'),
+    status: TestCaseStatus.Draft,
     attachments: 0
   } as unknown as TestCase
 
@@ -148,6 +150,10 @@
       }
     }}
   />
+
+  <svelte:fragment slot="pool">
+    <StatusEditor bind:value={object.status} {object} kind="regular" />
+  </svelte:fragment>
 
   <svelte:fragment slot="attachments">
     {#if attachments.size > 0}

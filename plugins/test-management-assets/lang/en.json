@@ -44,6 +44,12 @@
     "TestRun": "Test run",
     "TestNamePlaceholder": "Test case title",
     "ChooseIcon": "Choose icon",
-    "NoTestSuite": "No test suite"
+    "NoTestSuite": "No test suite",
+    "StatusDraft": "Draft",
+    "StatusReview": "Ready for review",
+    "StatusReviewComments": "Need to fix review comments",
+    "StatusApproved": "Approved",
+    "StatusRejected": "Rejected",
+    "SetStatus": "Set status"
   }
 }
