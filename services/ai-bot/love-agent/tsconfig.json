@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "esModuleInterop": true,
+    "target": "ESNext",
+    "moduleResolution": "node",
+    "sourceMap": true,
+
+    "declaration": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "declarationMap": true,
+    "disableReferencedProjectLoad": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "incremental": true,
+    "isolatedModules": true,
+
+    "rootDir": "./src",
+    "outDir": "./lib",
+    "declarationDir": "./types",
+    "tsBuildInfoFile": ".build/build.tsbuildinfo"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
