@@ -30,7 +30,15 @@ import core, {
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
 import postgres from 'postgres'
-import { getDocFieldsByDomains, getSchema, translateDomain } from './schemas'
+import {
+  addSchema,
+  type DataType,
+  getDocFieldsByDomains,
+  getIndex,
+  getSchema,
+  type Schema,
+  translateDomain
+} from './schemas'
 
 const connections = new Map<string, PostgresClientReferenceImpl>()
 
@@ -42,6 +50,7 @@ process.on('exit', () => {
 })
 
 const clientRefs = new Map<string, ClientRef>()
+const loadedDomains = new Set<string>()
 
 export async function retryTxn (
   pool: postgres.Sql,
@@ -53,44 +62,93 @@ export async function retryTxn (
   })
 }
 
-export async function createTable (client: postgres.Sql, domains: string[]): Promise<void> {
-  if (domains.length === 0) {
+export async function createTables (client: postgres.Sql, domains: string[]): Promise<void> {
+  const filtered = domains.filter((d) => !loadedDomains.has(d))
+  if (filtered.length === 0) {
     return
   }
-  const mapped = domains.map((p) => translateDomain(p))
+  const mapped = filtered.map((p) => translateDomain(p))
+  const inArr = mapped.map((it) => `'${it}'`).join(', ')
+  const tables = await client.unsafe(`
+    SELECT table_name 
+    FROM information_schema.tables 
+    WHERE table_name IN (${inArr})
+  `)
+
+  const exists = new Set(tables.map((it) => it.table_name))
+
   await retryTxn(client, async (client) => {
     for (const domain of mapped) {
-      const schema = getSchema(domain)
-      const fields: string[] = []
-      for (const key in schema) {
-        const val = schema[key]
-        fields.push(`"${key}" ${val[0]} ${val[1] ? 'NOT NULL' : ''}`)
+      if (exists.has(domain)) {
+        await getTableSchema(client, domain)
+      } else {
+        await createTable(client, domain)
       }
-      const colums = fields.join(', ')
-      const res = await client.unsafe(`CREATE TABLE IF NOT EXISTS ${domain} (
-          "workspaceId" text NOT NULL,
-          ${colums}, 
-          data JSONB NOT NULL,
-          PRIMARY KEY("workspaceId", _id)
-        )`)
-      if (res.count > 0) {
-        if (schema.attachedTo !== undefined) {
-          await client.unsafe(`
-            CREATE INDEX ${domain}_attachedTo ON ${domain} ("attachedTo")
-          `)
-        }
-        await client.unsafe(`
-          CREATE INDEX ${domain}_class ON ${domain} (_class)
-        `)
-        await client.unsafe(`
-          CREATE INDEX ${domain}_space ON ${domain} (space)
-        `)
-        await client.unsafe(`
-          CREATE INDEX ${domain}_idxgin ON ${domain} USING GIN (data)
-        `)
-      }
+      loadedDomains.add(domain)
     }
   })
+}
+
+async function getTableSchema (client: postgres.Sql, domain: string): Promise<void> {
+  const res = await client.unsafe(`SELECT column_name, data_type, is_nullable
+    FROM information_schema.columns
+    WHERE table_name = '${domain}';
+  `)
+
+  const schema: Schema = {}
+  for (const column of res) {
+    if (column.column_name === '"workspaceId"' || column.column_name === 'data') {
+      continue
+    }
+    schema[column.column_name] = {
+      type: parseDataType(column.data_type),
+      notNull: column.is_nullable === 'NO',
+      index: false
+    }
+  }
+
+  addSchema(domain, schema)
+}
+
+function parseDataType (type: string): DataType {
+  switch (type) {
+    case 'text':
+      return 'text'
+    case 'bigint':
+      return 'bigint'
+    case 'boolean':
+      return 'bool'
+    case 'ARRAY':
+      return 'text[]'
+  }
+  return 'text'
+}
+
+async function createTable (client: postgres.Sql, domain: string): Promise<void> {
+  const schema = getSchema(domain)
+  const fields: string[] = []
+  for (const key in schema) {
+    const val = schema[key]
+    fields.push(`"${key}" ${val.type} ${val.notNull ? 'NOT NULL' : ''}`)
+  }
+  const colums = fields.join(', ')
+  const res = await client.unsafe(`CREATE TABLE IF NOT EXISTS ${domain} (
+      "workspaceId" text NOT NULL,
+      ${colums}, 
+      data JSONB NOT NULL,
+      PRIMARY KEY("workspaceId", _id)
+    )`)
+  if (res.count > 0) {
+    for (const key in schema) {
+      const val = schema[key]
+      if (val.index) {
+        await client.unsafe(`
+          CREATE INDEX ${domain}_${key} ON ${domain} ${getIndex(val)} ("${key}")
+        `)
+      }
+      fields.push(`"${key}" ${val.type} ${val.notNull ? 'NOT NULL' : ''}`)
+    }
+  }
 }
 
 /**

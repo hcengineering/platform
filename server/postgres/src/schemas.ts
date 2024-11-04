@@ -1,59 +1,162 @@
 import { DOMAIN_DOC_INDEX_STATE, DOMAIN_SPACE, DOMAIN_TX } from '@hcengineering/core'
 
-type DataType = 'bigint' | 'bool' | 'text' | 'text[]'
+export type DataType = 'bigint' | 'bool' | 'text' | 'text[]'
 
-type Schema = Record<string, [DataType, boolean]>
+export function getIndex (field: FieldSchema): string {
+  if (field.indexType === undefined || field.indexType === 'btree') {
+    return ''
+  }
+  return ` USING ${field.indexType}`
+}
+
+export interface FieldSchema {
+  type: DataType
+  notNull: boolean
+  index: boolean
+  indexType?: 'btree' | 'gin' | 'gist' | 'brin' | 'hash'
+}
+
+export type Schema = Record<string, FieldSchema>
 
 const baseSchema: Schema = {
-  _id: ['text', true],
-  _class: ['text', true],
-  space: ['text', true],
-  modifiedBy: ['text', true],
-  createdBy: ['text', false],
-  modifiedOn: ['bigint', true],
-  createdOn: ['bigint', false],
-  '%hash%': ['text', false]
+  _id: {
+    type: 'text',
+    notNull: true,
+    index: false
+  },
+  _class: {
+    type: 'text',
+    notNull: true,
+    index: true
+  },
+  space: {
+    type: 'text',
+    notNull: true,
+    index: true
+  },
+  modifiedBy: {
+    type: 'text',
+    notNull: true,
+    index: false
+  },
+  createdBy: {
+    type: 'text',
+    notNull: false,
+    index: false
+  },
+  modifiedOn: {
+    type: 'bigint',
+    notNull: true,
+    index: false
+  },
+  createdOn: {
+    type: 'bigint',
+    notNull: false,
+    index: false
+  },
+  '%hash%': {
+    type: 'text',
+    notNull: false,
+    index: false
+  }
 }
 
 const defaultSchema: Schema = {
   ...baseSchema,
-  attachedTo: ['text', false]
+  attachedTo: {
+    type: 'text',
+    notNull: false,
+    index: true
+  }
 }
 
 const spaceSchema: Schema = {
   ...baseSchema,
-  private: ['bool', true],
-  members: ['text[]', true]
+  private: {
+    type: 'bool',
+    notNull: true,
+    index: true
+  },
+  members: {
+    type: 'text[]',
+    notNull: true,
+    index: true,
+    indexType: 'gin'
+  }
 }
 
 const txSchema: Schema = {
   ...baseSchema,
-  objectSpace: ['text', true],
-  objectId: ['text', false]
+  objectSpace: {
+    type: 'text',
+    notNull: true,
+    index: true
+  },
+  objectId: {
+    type: 'text',
+    notNull: false,
+    index: false
+  }
 }
 
 const notificationSchema: Schema = {
   ...baseSchema,
-  isViewed: ['bool', true],
-  archived: ['bool', true],
-  user: ['text', true]
+  isViewed: {
+    type: 'bool',
+    notNull: true,
+    index: true
+  },
+  archived: {
+    type: 'bool',
+    notNull: true,
+    index: true
+  },
+  user: {
+    type: 'text',
+    notNull: true,
+    index: true
+  }
 }
 
 const dncSchema: Schema = {
   ...baseSchema,
-  objectId: ['text', true],
-  objectClass: ['text', true],
-  user: ['text', true]
+  objectId: {
+    type: 'text',
+    notNull: true,
+    index: true
+  },
+  objectClass: {
+    type: 'text',
+    notNull: true,
+    index: false
+  },
+  user: {
+    type: 'text',
+    notNull: true,
+    index: true
+  }
 }
 
 const userNotificationSchema: Schema = {
   ...baseSchema,
-  user: ['text', true]
+  user: {
+    type: 'text',
+    notNull: true,
+    index: true
+  }
 }
 
 const docIndexStateSchema: Schema = {
   ...baseSchema,
-  needIndex: ['bool', true]
+  needIndex: {
+    type: 'bool',
+    notNull: true,
+    index: true
+  }
+}
+
+export function addSchema (domain: string, schema: Schema): void {
+  domainSchemas[translateDomain(domain)] = schema
 }
 
 export function translateDomain (domain: string): string {
