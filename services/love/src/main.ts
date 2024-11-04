@@ -156,6 +156,78 @@ export const main = async (): Promise<void> => {
     res.send()
   })
 
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.post('/startTranscription', async (req, res) => {
+    const token = extractToken(req.headers)
+
+    if (token === undefined) {
+      res.status(401).send()
+      return
+    }
+    // just check token
+    decodeToken(token)
+
+    const roomName = req.body.roomName
+    const language = req.body.language
+    if (roomName == null || language == null) {
+      res.status(400).send()
+      return
+    }
+    try {
+      await roomClient.updateRoomMetadata(roomName, JSON.stringify({ transcription: true, language }))
+      res.send()
+    } catch (e) {
+      console.error(e)
+      res.status(500).send()
+    }
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.post('/language', async (req, res) => {
+    const token = extractToken(req.headers)
+
+    if (token === undefined) {
+      res.status(401).send()
+      return
+    }
+    // just check token
+    decodeToken(token)
+
+    const roomName = req.body.roomName
+    const language = req.body.language
+    if (roomName == null || language == null) {
+      res.status(400).send()
+      return
+    }
+    try {
+      await roomClient.updateRoomMetadata(roomName, JSON.stringify({ language }))
+      res.send()
+    } catch (e) {
+      console.error(e)
+      res.status(500).send()
+    }
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.post('/stopTranscription', async (req, res) => {
+    const token = extractToken(req.headers)
+
+    if (token === undefined) {
+      res.status(401).send()
+      return
+    }
+    const roomName = req.body.roomName
+    // just check token
+    decodeToken(token)
+    try {
+      await roomClient.updateRoomMetadata(roomName, JSON.stringify({ transcription: false }))
+      res.send()
+    } catch (e) {
+      console.error(e)
+      res.status(500).send()
+    }
+  })
+
   const server = app.listen(port, () => {
     console.log(`Server listening on port ${port}`)
   })
