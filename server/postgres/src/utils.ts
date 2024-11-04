@@ -97,7 +97,7 @@ async function getTableSchema (client: postgres.Sql, domain: string): Promise<vo
 
   const schema: Schema = {}
   for (const column of res) {
-    if (column.column_name === '"workspaceId"' || column.column_name === 'data') {
+    if (column.column_name === 'workspaceId' || column.column_name === 'data') {
       continue
     }
     schema[column.column_name] = {
