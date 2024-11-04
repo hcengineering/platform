@@ -1669,12 +1669,14 @@ export function devTool (
   program
     .command('move-workspace-to-pg <workspace> <region>')
     .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
+    .option('-f|--force [force]', 'Force update', false)
     .action(
       async (
         workspace: string,
         region: string,
         cmd: {
           include: string
+          force: boolean
         }
       ) => {
         const { dbUrl } = prepareTools()
@@ -1694,7 +1696,8 @@ export function devTool (
             dbUrl,
             workspaceInfo,
             region,
-            cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim()))
+            cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
+            cmd.force
           )
         })
       }
