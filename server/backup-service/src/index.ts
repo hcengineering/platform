@@ -58,7 +58,8 @@ export function startBackup (
     workspaceStorageAdapter,
     (ctx, workspace, branding, externalStorage) => {
       return getConfig(ctx, mainDbUrl, workspace, branding, externalStorage)
-    }
+    },
+    config.Region
   )
 
   process.on('SIGINT', shutdown)
