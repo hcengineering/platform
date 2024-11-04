@@ -52,6 +52,7 @@
     "Portuguese": "Português",
     "Chinese": "中文",
     "French": "Français",
+    "Italian": "Italiano",
     "MinutesBefore": "{minutes, plural, =1 {за минуту} one {за # минуту} few {за # минуты} other {за # минут}}",
     "HoursBefore": "{hours, plural, =1 {за час} one {за # час} few {за # часа} other {за # часов}}",
     "DaysBefore": "{days, plural, =1 {за день} one {за # день} few {за # дня} other {за # дней}}",
