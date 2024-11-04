@@ -40,7 +40,6 @@ export type AuthOptions = PasswordAuthOptions | TokenAuthOptions
 /** @public */
 export interface ConnectSocketOptions {
   socketFactory?: ClientSocketFactory
-  useProtocolCompression?: boolean
   connectionTimeout?: number
 }
 

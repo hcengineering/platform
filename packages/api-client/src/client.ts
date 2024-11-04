@@ -54,12 +54,11 @@ export async function connect (url: string, options: ConnectOptions): Promise<AP
 export async function createClient (endpoint: string, token: string, options: ConnectSocketOptions): Promise<APIClient> {
   addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@hcengineering/client-resources'))
 
-  const { socketFactory, useProtocolCompression, connectionTimeout } = options
+  const { socketFactory, connectionTimeout } = options
 
   const clientFactory = await getResource(client.function.GetClient)
   const connection = await clientFactory(token, endpoint, {
     socketFactory,
-    useProtocolCompression,
     connectionTimeout
   })
   const account = await connection.getAccount()
