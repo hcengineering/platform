@@ -151,7 +151,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header adaptive={'disabled'}>
     <Breadcrumb
       icon={templatesPlugin.icon.Templates}
       label={templatesPlugin.string.Templates}

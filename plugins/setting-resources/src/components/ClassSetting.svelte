@@ -102,7 +102,7 @@
 
 <div class="hulyComponent">
   {#if !withoutHeader}
-    <Header>
+    <Header adaptive={'disabled'}>
       <Breadcrumb icon={setting.icon.Clazz} label={setting.string.ClassSetting} size={'large'} isCurrent />
     </Header>
   {/if}

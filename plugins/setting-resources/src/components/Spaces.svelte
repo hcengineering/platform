@@ -77,7 +77,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header adaptive={'disabled'}>
     <Breadcrumb icon={setting.icon.Views} label={setting.string.Spaces} size="large" isCurrent />
   </Header>
   <div class="hulyComponent-content__column content">

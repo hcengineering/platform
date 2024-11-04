@@ -117,7 +117,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header adaptive={'disabled'}>
     <Breadcrumb icon={setting.icon.Setting} label={setting.string.General} size={'large'} isCurrent />
   </Header>
   <div class="hulyComponent-content__column content">
