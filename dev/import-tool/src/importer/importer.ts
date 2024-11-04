@@ -82,15 +82,17 @@ export interface ImportStatus {
 export interface ImportSpace<T extends ImportDoc> {
   class: string
   name: string
+  private: boolean
+  autoJoin: boolean
   description?: string
-
+  owners?: ImportPerson[]
+  members?: ImportPerson[]
   docs: T[]
 }
 export interface ImportDoc {
   class: string
   title: string
   descrProvider: () => Promise<string>
-
   subdocs: ImportDoc[]
 }
 
@@ -106,18 +108,14 @@ export interface ImportDocument extends ImportDoc {
 export interface ImportProject extends ImportSpace<ImportIssue> {
   class: 'tracker.class.Project'
   identifier: string
-  private: boolean
-  autoJoin: boolean
   projectType: ImportProjectType
   defaultAssignee?: ImportPerson
   defaultIssueStatus?: ImportStatus
-  owners?: ImportPerson[]
-  members?: ImportPerson[]
   description?: string
 }
 
 export interface ImportIssue extends ImportDoc {
-  class: 'tracker.class.Issue'
+  class: 'tracker.class.Issue' // todo: doesn't have meaning here, move to huly.ts
   status: ImportStatus
   assignee?: Ref<Person>
   estimation?: number
@@ -317,6 +315,9 @@ export class WorkspaceImporter {
     parentsInfo: IssueParentInfo[]
   ): Promise<{ id: Ref<Issue>, identifier: string }> {
     console.log('Create issue: ', issue.title)
+    if (issue.title === undefined) {
+      console.log('Issue: ', issue)
+    }
     const issueResult = await this.createIssue(issue, project, parentId, parentsInfo)
     console.log('Issue created: ', issueResult)
 

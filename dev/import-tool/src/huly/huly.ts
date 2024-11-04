@@ -16,21 +16,24 @@
 import contact, { type Person, type PersonAccount } from '@hcengineering/contact'
 import { type Ref, type TxOperations } from '@hcengineering/core'
 import { type MarkupNode } from '@hcengineering/text'
-import * as yaml from 'js-yaml'
 import * as fs from 'fs'
+import * as yaml from 'js-yaml'
 import * as path from 'path'
 import {
+  type ImportTeamspace,
   WorkspaceImporter,
   type ImportComment,
   type ImportIssue,
+  type ImportPerson,
   type ImportProject,
   type ImportProjectType,
-  type ImportPerson,
   type ImportWorkspace,
-  type MarkdownPreprocessor
+  type MarkdownPreprocessor,
+  type ImportSpace,
+  type ImportDoc,
+  type ImportDocument
 } from '../importer/importer'
 import { type FileUploader } from '../importer/uploader'
-import document from '@hcengineering/document'
 
 interface HulyComment {
   author: string
@@ -51,18 +54,18 @@ interface HulyIssueHeader {
   comments?: HulyComment[]
 }
 
-interface HulyBaseSpaceHeader {
+interface HulySpaceHeader {
   class: string
   title?: string
-  identifier?: string
   private?: boolean
   autoJoin?: boolean
   owners?: string[]
   members?: string[]
 }
 
-interface HulyProjectHeader extends HulyBaseSpaceHeader {
+interface HulyProjectHeader extends HulySpaceHeader {
   class: 'tracker.class.Project'
+  identifier?: string
   projectType?: string
   defaultAssignee?: string
   defaultIssueStatus?: string
@@ -79,7 +82,7 @@ interface HulyProjectHeader extends HulyBaseSpaceHeader {
   }>
 }
 
-interface HulyTeamspaceHeader extends HulyBaseSpaceHeader {
+interface HulyTeamSpaceHeader extends HulySpaceHeader {
   class: 'document.class.TeamSpace'
 }
 
@@ -105,13 +108,6 @@ interface HulyWorkspaceHeader {
 interface HulyDocumentHeader {
   class: string
   title?: string
-}
-
-interface ImportDocument {
-  class: string
-  title?: string
-  content: string
-  subdocs?: ImportDocument[]
 }
 
 class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
@@ -142,20 +138,20 @@ export class HulyImporter {
     console.log('IMPORT DATA STRUCTURE: ', JSON.stringify(workspaceData, null, 4))
     console.log('========================================')
 
-    const postprocessor = new HulyMarkdownPreprocessor(this.personsByName)
-    await new WorkspaceImporter(this.client, this.fileUploader, workspaceData, postprocessor).performImport()
+    const preprocessor = new HulyMarkdownPreprocessor(this.personsByName)
+    await new WorkspaceImporter(this.client, this.fileUploader, workspaceData, preprocessor).performImport()
 
     console.log('========================================')
     console.log('IMPORT SUCCESS')
   }
 
   private async processHulyFolder (folderPath: string): Promise<ImportWorkspace> {
-    const wsConfig = await this.readYamlHeader(path.join(folderPath, 'README-ws.md'))
+    const wsConfig = await this.readYamlHeader(path.join(folderPath, 'README.md'))
     const workspaceHeader = wsConfig as HulyWorkspaceHeader
 
     const persons = this.processPersons(workspaceHeader)
     const projectTypes = this.processProjectTypes(workspaceHeader)
-    
+
     // Process both projects and document spaces
     const spaces = await this.processSpaces(folderPath)
 
@@ -166,8 +162,8 @@ export class HulyImporter {
     }
   }
 
-  private async processSpaces (folderPath: string): Promise<ImportProject[]> {
-    const spaces: ImportProject[] = []
+  private async processSpaces (folderPath: string): Promise<ImportSpace<ImportDoc>[]> {
+    const spaces: ImportSpace<ImportDoc>[] = []
     const folders = fs.readdirSync(folderPath)
       .filter(f => fs.statSync(path.join(folderPath, f)).isDirectory())
       .filter(f => f !== 'files')
@@ -175,20 +171,20 @@ export class HulyImporter {
     for (const folder of folders) {
       const spacePath = path.join(folderPath, folder)
       const readmePath = path.join(spacePath, 'README.md')
-      
+
       if (!fs.existsSync(readmePath)) {
         console.warn(`Skipping ${folder}: no README.md found`)
         continue
       }
 
       const spaceConfig = await this.readYamlHeader(readmePath)
-      
+
       switch (spaceConfig.class) {
         case 'tracker.class.Project':
           spaces.push(await this.processProject(spacePath, folder, spaceConfig as HulyProjectHeader))
           break
         case 'document.class.TeamSpace':
-          spaces.push(await this.processDocumentSpace(spacePath, folder, spaceConfig as HulyTeamspaceHeader))
+          spaces.push(await this.processTeamSpace(spacePath, folder, spaceConfig as HulyTeamSpaceHeader))
           break
         default:
           console.warn(`Unknown space type: ${spaceConfig.class} in ${folder}`)
@@ -198,25 +194,26 @@ export class HulyImporter {
     return spaces
   }
 
-  private async processProject(
-    spacePath: string, 
-    name: string, 
+  private async processProject (
+    spacePath: string,
+    name: string,
     projectHeader: HulyProjectHeader
   ): Promise<ImportProject> {
+    if (projectHeader.projectType === undefined) {
+      throw new Error(`Project type is not defined for ${name}`)
+    }
     return {
       class: projectHeader.class,
       name: projectHeader.title ?? name,
       identifier: projectHeader.identifier ?? name.toLowerCase().replace(/\s+/g, '-'),
       private: projectHeader.private ?? false,
       autoJoin: projectHeader.autoJoin ?? true,
-      projectType: projectHeader.projectType 
-        ? this.findProjectType(projectHeader.projectType)
-        : undefined,
+      projectType: this.findProjectType(projectHeader.projectType),
       docs: await this.processIssues(spacePath),
-      defaultAssignee: projectHeader.defaultAssignee 
+      defaultAssignee: projectHeader.defaultAssignee !== undefined
         ? { name: projectHeader.defaultAssignee, email: '' }
         : undefined,
-      defaultIssueStatus: projectHeader.defaultIssueStatus
+      defaultIssueStatus: projectHeader.defaultIssueStatus !== undefined
         ? { name: projectHeader.defaultIssueStatus }
         : undefined,
       owners: projectHeader.owners?.map(name => ({ name, email: '' })),
@@ -224,15 +221,14 @@ export class HulyImporter {
     }
   }
 
-  private async processDocumentSpace(
-    spacePath: string, 
-    name: string, 
-    spaceHeader: HulyTeamspaceHeader
-  ): Promise<ImportProject> {
+  private async processTeamSpace (
+    spacePath: string,
+    name: string,
+    spaceHeader: HulyTeamSpaceHeader
+  ): Promise<ImportTeamspace> {
     return {
       class: spaceHeader.class,
       name: spaceHeader.title ?? name,
-      identifier: spaceHeader.identifier ?? name.toLowerCase().replace(/\s+/g, '-'),
       private: spaceHeader.private ?? false,
       autoJoin: spaceHeader.autoJoin ?? true,
       owners: spaceHeader.owners?.map(name => ({ name, email: '' })),
@@ -241,23 +237,25 @@ export class HulyImporter {
     }
   }
 
-  private async processDocuments(spacePath: string): Promise<ImportDocument[]> {
+  private async processDocuments (spacePath: string): Promise<ImportDocument[]> {
     const documents: ImportDocument[] = []
     const docFiles = fs.readdirSync(spacePath)
-      .filter(f => f.endsWith('.md') && !f.startsWith('README'))
+      .filter(f => {
+        console.log('File: ', f)
+        return f.endsWith('.md') && f !== 'README.md'
+      })
 
     for (const docFile of docFiles) {
       const docPath = path.join(spacePath, docFile)
       const docHeader = await this.readYamlHeader(docPath) as HulyDocumentHeader
-      
+
       if (docHeader.class === 'document.class.Document') {
-        const content = await this.readMarkdownContent(docPath)
-        const title = docHeader.title ?? path.basename(docFile, '.md')
+        const title = path.basename(docFile, '.md')
 
         const doc: ImportDocument = {
           class: docHeader.class,
           title,
-          content,
+          descrProvider: async () => await this.readMarkdownContent(docPath),
           subdocs: await this.processSubDocuments(spacePath, docFile)
         }
 
@@ -268,7 +266,7 @@ export class HulyImporter {
     return documents
   }
 
-  private async processSubDocuments(spacePath: string, parentFile: string): Promise<ImportDocument[]> {
+  private async processSubDocuments (spacePath: string, parentFile: string): Promise<ImportDocument[]> {
     const baseDir = path.join(spacePath, parentFile.replace('.md', '-subdocs'))
     if (!fs.existsSync(baseDir)) {
       return []
@@ -278,6 +276,7 @@ export class HulyImporter {
   }
 
   private async readYamlHeader (filePath: string): Promise<any> {
+    console.log('Read YAML header from: ', filePath)
     const content = fs.readFileSync(filePath, 'utf8')
     const match = content.match(/^---\n([\s\S]*?)\n---/)
     if (match != null) {
@@ -316,7 +315,7 @@ export class HulyImporter {
   private async processIssues (projectPath: string): Promise<ImportIssue[]> {
     const issues: ImportIssue[] = []
     const issueFiles = fs.readdirSync(projectPath)
-      .filter(f => f.endsWith('.md') && f !== 'README-prj.md')
+      .filter(f => f.endsWith('.md') && f !== 'README.md')
 
     for (const issueFile of issueFiles) {
       const issuePath = path.join(projectPath, issueFile)
