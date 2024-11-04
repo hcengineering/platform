@@ -75,8 +75,8 @@
     spaceType =
       id !== undefined
         ? await client
-            .getModel()
-            .findOne(core.class.SpaceType, { _id: id }, { lookup: { _id: { roles: core.class.Role } } })
+          .getModel()
+          .findOne(core.class.SpaceType, { _id: id }, { lookup: { _id: { roles: core.class.Role } } })
         : undefined
 
     if (project === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
@@ -86,7 +86,7 @@
     rolesAssignment = getRolesAssignment()
   })
 
-  function getRolesAssignment(): RolesAssignment {
+  function getRolesAssignment (): RolesAssignment {
     if (project === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
       return {}
     }
@@ -100,7 +100,7 @@
     }, {})
   }
 
-  async function handleSave(): Promise<void> {
+  async function handleSave (): Promise<void> {
     if (project === undefined) {
       await createTestProject()
     } else {
@@ -108,7 +108,7 @@
     }
   }
 
-  function getTestProjectData(): Omit<Data<TestProject>, 'type'> {
+  function getTestProjectData (): Omit<Data<TestProject>, 'type'> {
     return {
       name,
       description,
@@ -120,7 +120,7 @@
     }
   }
 
-  async function updateTestProject(): Promise<void> {
+  async function updateTestProject (): Promise<void> {
     if (project === undefined || spaceType?.targetClass === undefined) {
       return
     }
@@ -177,7 +177,7 @@
     close()
   }
 
-  async function createTestProject(): Promise<void> {
+  async function createTestProject (): Promise<void> {
     if (typeId === undefined || spaceType?.targetClass === undefined) {
       return
     }
@@ -204,24 +204,24 @@
     close(driveId)
   }
 
-  function close(id?: Ref<TestProject>): void {
+  function close (id?: Ref<TestProject>): void {
     dispatch('close', id)
   }
 
-  function handleTypeChange(evt: CustomEvent<Ref<SpaceType>>): void {
+  function handleTypeChange (evt: CustomEvent<Ref<SpaceType>>): void {
     typeId = evt.detail
   }
 
   $: roles = (spaceType?.$lookup?.roles ?? []) as Role[]
 
-  function handleOwnersChanged(newOwners: Ref<Account>[]): void {
+  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
     owners = newOwners
 
     const newMembersSet = new Set([...members, ...newOwners])
     members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged(newMembers: Ref<Account>[]): void {
+  function handleMembersChanged (newMembers: Ref<Account>[]): void {
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
     const removedMembersSet = new Set(members.filter((m) => !newMembersSet.has(m)))
@@ -235,7 +235,7 @@
     members = newMembers
   }
 
-  function chooseIcon(ev: MouseEvent): void {
+  function chooseIcon (ev: MouseEvent): void {
     const icons = [testManagement.icon.Home, testManagement.icon.RedCircle]
     const update = (result: any): void => {
       if (result !== undefined && result !== null) {
@@ -247,7 +247,7 @@
     showPopup(IconPicker, { icon, color, icons }, 'top', update, update)
   }
 
-  function handleRoleAssignmentChanged(roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }

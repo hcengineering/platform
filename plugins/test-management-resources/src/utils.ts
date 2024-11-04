@@ -14,16 +14,9 @@
 //
 
 import { type Contact } from '@hcengineering/contact'
-import core, {
-  type Doc,
-  type Ref,
-  type TxCollectionCUD,
-  type TxCreateDoc,
-  type TxUpdateDoc
-} from '@hcengineering/core'
+import core, { type Doc, type Ref, type TxCollectionCUD, type TxCreateDoc, type TxUpdateDoc } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
-import {TestCase} from '@hcengineering/test-management'
-
+import { type TestCase } from '@hcengineering/test-management'
 
 export async function getPreviousAssignees (objectId: Ref<Doc> | undefined): Promise<Array<Ref<Contact>>> {
   if (objectId === undefined) {

@@ -14,12 +14,17 @@
 //
 
 import { Attachment } from '@hcengineering/attachment'
-import { type Asset, type IntlString } from '@hcengineering/platform'
 import { Employee } from '@hcengineering/contact'
-import { Doc, type CollectionSize, type Ref, type Markup, TypedSpace, CollaborativeDoc, AttachedDoc } from '@hcengineering/core'
+import {
+  Doc,
+  type CollectionSize,
+  type Ref,
+  type Markup,
+  TypedSpace,
+  CollaborativeDoc,
+  AttachedDoc
+} from '@hcengineering/core'
 import { IconProps } from '@hcengineering/view'
-
-import testManagement from './plugin'
 
 /** @public */
 export enum TestCaseType {

@@ -28,8 +28,14 @@ export const defaultTestCaseStatuses = [
 /** @public */
 export const testCaseStatusAssets: Record<TestCaseStatus, { icon: Asset, label: IntlString }> = {
   [TestCaseStatus.Draft]: { icon: testManagement.icon.StatusDraft, label: testManagement.string.StatusDraft },
-  [TestCaseStatus.ReadyForReview]: { icon: testManagement.icon.StatusReview, label: testManagement.string.StatusReview },
-  [TestCaseStatus.FixReviewComments]: { icon: testManagement.icon.StatusReviewComments, label: testManagement.string.StatusReviewComments },
+  [TestCaseStatus.ReadyForReview]: {
+    icon: testManagement.icon.StatusReview,
+    label: testManagement.string.StatusReview
+  },
+  [TestCaseStatus.FixReviewComments]: {
+    icon: testManagement.icon.StatusReviewComments,
+    label: testManagement.string.StatusReviewComments
+  },
   [TestCaseStatus.Approved]: { icon: testManagement.icon.StatusApproved, label: testManagement.string.StatusApproved },
   [TestCaseStatus.Rejected]: { icon: testManagement.icon.StatusRejected, label: testManagement.string.StatusRejected }
 }

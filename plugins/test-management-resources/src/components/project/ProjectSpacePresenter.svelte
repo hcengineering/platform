@@ -16,7 +16,13 @@
   import { Ref, Space } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { TestProject } from '@hcengineering/test-management'
-  import { IconWithEmoji, getPlatformColorDef, getPlatformColorForTextDef, themeStore, type Action } from '@hcengineering/ui'
+  import {
+    IconWithEmoji,
+    getPlatformColorDef,
+    getPlatformColorForTextDef,
+    themeStore,
+    type Action
+  } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { NavLink, TreeNode } from '@hcengineering/view-resources'
   import { SpacesNavModel, SpecialNavModel } from '@hcengineering/workbench'
@@ -32,7 +38,7 @@
 
   let specials: SpecialNavModel[] = []
 
-  async function updateSpecials(model: SpacesNavModel, space: TestProject): Promise<void> {
+  async function updateSpecials (model: SpacesNavModel, space: TestProject): Promise<void> {
     const newSpecials: SpecialNavModel[] = []
     for (const sp of model.specials ?? []) {
       let shouldAdd = true

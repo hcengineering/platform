@@ -27,11 +27,11 @@
   import AssigneeEditor from './AssigneeEditor.svelte'
   import ProjectPresenter from '../project/ProjectSpacePresenter.svelte'
   import testManagement from '../../plugin'
-  //import { Analytics } from '@hcengineering/analytics'
+  // import { Analytics } from '@hcengineering/analytics'
 
   export let onCreate: ((orgId: Ref<TestCase>, client: TxOperations) => Promise<void>) | undefined = undefined
 
-  export function canClose(): boolean {
+  export function canClose (): boolean {
     return object.name === ''
   }
 
@@ -59,7 +59,7 @@
 
   fillDefaults(hierarchy, object, testManagement.class.TestCase)
 
-  async function createTestCase(): Promise<void> {
+  async function createTestCase (): Promise<void> {
     const op = client.apply()
     await updateMarkup(object.description, { description })
     await op.createDoc(testManagement.class.TestCase, _space, object, id)
@@ -69,11 +69,11 @@
       await onCreate?.(id, op)
     }
     await op.commit()
-    //Analytics.handleEvent(TestManagementEvents.TestCaseCreated, { id })
+    // Analytics.handleEvent(TestManagementEvents.TestCaseCreated, { id })
     dispatch('close', id)
   }
 
-  function handleTestSuiteChange(): void {}
+  function handleTestSuiteChange (): void {}
 
   const manager = createFocusManager()
 

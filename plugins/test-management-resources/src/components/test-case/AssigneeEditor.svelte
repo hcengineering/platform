@@ -63,13 +63,13 @@
     if (Array.isArray(_object)) {
       for (const p of _object) {
         if ('_class' in p) {
-          //Analytics.handleEvent(TrackerEvents.IssueSetAssignee, { issue: p.identifier ?? p._id })
+          // Analytics.handleEvent(TrackerEvents.IssueSetAssignee, { issue: p.identifier ?? p._id })
           await ops.update(p, { assignee: newAssignee })
         }
       }
     } else {
       if ('_class' in _object) {
-        //Analytics.handleEvent(TrackerEvents.IssueSetAssignee, { issue: _object.identifier ?? _object._id })
+        // Analytics.handleEvent(TrackerEvents.IssueSetAssignee, { issue: _object.identifier ?? _object._id })
         await ops.update(_object, { assignee: newAssignee })
       }
     }

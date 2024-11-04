@@ -131,7 +131,7 @@ export const testManagementPlugin = plugin(testManagementId, {
     Unassigned: '' as IntlString,
     AssignTo: '' as IntlString,
     AssignedTo: '' as IntlString,
-    PreviousAssigned: '' as IntlString,
+    PreviousAssigned: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>
@@ -148,7 +148,7 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestSuites: '' as AnyComponent,
     CreateTestSuite: '' as AnyComponent,
     NewTestRun: '' as AnyComponent
-    },
+  },
   ids: {
     NoParent: '' as Ref<TestSuite>,
     TestCaseUpdatedActivityViewlet: '' as Ref<TestCase>
