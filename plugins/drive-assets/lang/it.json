@@ -1,0 +1,32 @@
+{
+  "string": {
+    "Drive": "Drive",
+    "Drives": "Drives",
+    "Grid": "Griglia",
+    "File": "File",
+    "Files": "File",
+    "FileVersion": "Versione del file",
+    "FileVersions": "Versioni del file",
+    "Folder": "Cartella",
+    "Folders": "Cartelle",
+    "Resource": "Risorsa",
+    "Name": "Nome",
+    "Description": "Descrizione",
+    "Parent": "Genitore",
+    "Path": "Percorso",
+    "Version": "Versione",
+    "Size": "Dimensione",
+    "ContentType": "Tipo di contenuto",
+    "LastModified": "Ultima modifica",
+    "Download": "Scarica",
+    "Upload": "Carica",
+    "CreateDrive": "Crea drive",
+    "CreateFolder": "Crea cartella",
+    "UploadFile": "Carica file",
+    "EditDrive": "Modifica drive",
+    "Rename": "Rinomina",
+    "Restore": "Ripristina",
+    "RoleLabel": "Ruolo",
+    "Root": "/"
+  }
+}
