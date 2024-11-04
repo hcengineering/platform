@@ -36,9 +36,6 @@
     "@types/jest": "^29.5.5",
     "@types/ws": "^8.5.11"
   },
-  "optionalDependencies": {
-    "ws": "^8.18.0"
-  },
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/client": "^0.6.18",
@@ -48,5 +45,8 @@
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
+  },
+  "optionalDependencies": {
+    "ws": "^8.18.0"
   }
 }
