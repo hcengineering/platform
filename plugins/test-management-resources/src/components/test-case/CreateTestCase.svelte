@@ -24,6 +24,7 @@
   import StatusEditor from './StatusEditor.svelte'
   import { createEventDispatcher } from 'svelte'
 
+  import AssigneeEditor from './AssigneeEditor.svelte'
   import ProjectPresenter from '../project/ProjectSpacePresenter.svelte'
   import testManagement from '../../plugin'
   //import { Analytics } from '@hcengineering/analytics'
@@ -44,6 +45,7 @@
     name: '',
     description: makeCollaborativeDoc(id, 'description'),
     status: TestCaseStatus.Draft,
+    assignee: null,
     attachments: 0
   } as unknown as TestCase
 
@@ -152,6 +154,12 @@
   />
 
   <svelte:fragment slot="pool">
+    <AssigneeEditor
+      object={{ ...object, space }}
+      kind={'regular'}
+      size={'large'}
+      on:change={({ detail }) => (object.assignee = detail)}
+    />
     <StatusEditor bind:value={object.status} {object} kind="regular" />
   </svelte:fragment>
 

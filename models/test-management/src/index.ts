@@ -426,7 +426,7 @@ function defineTestCase (builder: Builder): void {
     {
       attachTo: testManagement.class.TestCase,
       descriptor: view.viewlet.Table,
-      config: ['name', 'status'],
+      config: ['name', 'status', 'assignee'],
       configOptions: {
         // hiddenKeys: ['name'],
         // sortable: true,

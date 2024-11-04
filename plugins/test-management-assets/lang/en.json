@@ -50,6 +50,11 @@
     "StatusReviewComments": "Need to fix review comments",
     "StatusApproved": "Approved",
     "StatusRejected": "Rejected",
-    "SetStatus": "Set status"
+    "SetStatus": "Set status",
+    "Assignee": "Assignee",
+    "Unassigned": "Unassigned",
+    "AssignTo": "Assign to",
+    "AssignedTo": "Assigneed to",
+    "PreviousAssigned": "Previously assigned"
   }
 }

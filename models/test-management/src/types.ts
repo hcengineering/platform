@@ -53,7 +53,7 @@ import {
   TypeNumber
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
-import core, { TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
 
 import testManagement from './plugin'
 
@@ -124,7 +124,7 @@ export class TTestSuite extends TDoc implements TestSuite {
  */
 @Model(testManagement.class.TestCase, core.class.Doc, DOMAIN_TEST_MANAGEMENT)
 @UX(testManagement.string.TestCase, testManagement.icon.TestCase, testManagement.string.TestCase)
-export class TTestCase extends TDoc implements TestCase {
+export class TTestCase extends TAttachedDoc implements TestCase {
   @Prop(TypeString(), testManagement.string.TestName)
   @Index(IndexKind.FullText)
     name!: string
