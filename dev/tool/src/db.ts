@@ -20,7 +20,7 @@ import {
 import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import {
   convertDoc,
-  createTable,
+  createTables,
   getDBClient,
   getDocFieldsByDomains,
   retryTxn,
@@ -80,7 +80,7 @@ async function moveWorkspace (
       tables = tables.filter((t) => include.has(t))
     }
 
-    await createTable(pgClient, tables)
+    await createTables(pgClient, tables)
     const token = generateToken(systemAccountEmail, wsId)
     const endpoint = await getTransactorEndpoint(token, 'external')
     const connection = (await connect(endpoint, wsId, undefined, {

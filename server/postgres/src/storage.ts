@@ -69,7 +69,7 @@ import type postgres from 'postgres'
 import { type ValueType } from './types'
 import {
   convertDoc,
-  createTable,
+  createTables,
   DBCollectionHelper,
   type DBDoc,
   escapeBackticks,
@@ -1302,7 +1302,7 @@ class PostgresAdapter extends PostgresAdapterBase {
     if (excludeDomains !== undefined) {
       resultDomains = resultDomains.filter((it) => !excludeDomains.includes(it))
     }
-    await createTable(this.client, resultDomains)
+    await createTables(this.client, resultDomains)
     this._helper.domains = new Set(resultDomains as Domain[])
   }
 
@@ -1531,7 +1531,7 @@ class PostgresAdapter extends PostgresAdapterBase {
 class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
   async init (domains?: string[], excludeDomains?: string[]): Promise<void> {
     const resultDomains = domains ?? [DOMAIN_TX]
-    await createTable(this.client, resultDomains)
+    await createTables(this.client, resultDomains)
     this._helper.domains = new Set(resultDomains as Domain[])
   }
 
