@@ -32,7 +32,8 @@ import {
   TTestProject,
   TTestSuite,
   TTestCase,
-  TDefaultProjectTypeData
+  TDefaultProjectTypeData,
+  TTestRun
 } from './types'
 
 import testManagement from './plugin'
@@ -40,7 +41,7 @@ import { definePresenters } from './presenters'
 
 export { testManagementId } from '@hcengineering/test-management/src/index'
 
-function defineApplication (
+function defineApplication(
   builder: Builder,
   opt: {
     allTestCasesId: string
@@ -146,7 +147,7 @@ function defineApplication (
   )
 }
 
-export function createModel (builder: Builder): void {
+export function createModel(builder: Builder): void {
   builder.createModel(
     TTypeTestCaseType,
     TTypeTestCasePriority,
@@ -154,7 +155,8 @@ export function createModel (builder: Builder): void {
     TTestProject,
     TTestSuite,
     TTestCase,
-    TDefaultProjectTypeData
+    TDefaultProjectTypeData,
+    TTestRun
   )
 
   builder.mixin(testManagement.class.TestProject, core.class.Class, activity.mixin.ActivityDoc, {})
@@ -166,6 +168,7 @@ export function createModel (builder: Builder): void {
 
   defineTestSuite(builder)
   defineTestCase(builder)
+  defineTestRun(builder)
 
   // defineViewlets(builder)
 
@@ -189,10 +192,6 @@ export function createModel (builder: Builder): void {
   // builder.mixin(testManagement.class.TestCase, core.class.Class, setting.mixin.Editable, {
   //  value: true
   // })
-
-  builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ObjectPanel, {
-    component: testManagement.component.TestCase
-  })
 
   /*  builder.createDoc(
     activity.class.DocUpdateMessageViewlet,
@@ -302,7 +301,7 @@ export function createModel (builder: Builder): void {
   defineSpaceType(builder)
 }
 
-function defineSpaceType (builder: Builder): void {
+function defineSpaceType(builder: Builder): void {
   // builder.createModel(TClassicProjectTypeData)
   builder.createDoc(
     core.class.SpaceTypeDescriptor,
@@ -347,7 +346,7 @@ function defineSpaceType (builder: Builder): void {
   ) */
 }
 
-function defineTestSuite (builder: Builder): void {
+function defineTestSuite(builder: Builder): void {
   builder.mixin(testManagement.class.TestSuite, core.class.Class, activity.mixin.ActivityDoc, {})
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
@@ -392,7 +391,7 @@ function defineTestSuite (builder: Builder): void {
   )
 }
 
-function defineTestCase (builder: Builder): void {
+function defineTestCase(builder: Builder): void {
   builder.mixin(testManagement.class.TestCase, core.class.Class, activity.mixin.ActivityDoc, {})
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
@@ -426,7 +425,7 @@ function defineTestCase (builder: Builder): void {
     {
       attachTo: testManagement.class.TestCase,
       descriptor: view.viewlet.Table,
-      config: ['name', 'status', 'assignee'],
+      config: ['', 'status', 'assignee'],
       configOptions: {
         // hiddenKeys: ['name'],
         // sortable: true,
@@ -434,6 +433,43 @@ function defineTestCase (builder: Builder): void {
       }
     },
     testManagement.viewlet.TableTestCase
+  )
+}
+
+function defineTestRun(builder: Builder): void {
+  builder.mixin(testManagement.class.TestRun, core.class.Class, activity.mixin.ActivityDoc, {})
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: testManagement.class.TestRun,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
+  builder.mixin(testManagement.class.TestRun, core.class.Class, view.mixin.ObjectEditor, {
+    editor: testManagement.component.EditTestRun
+  })
+
+  builder.mixin(testManagement.class.TestRun, core.class.Class, view.mixin.ObjectPanel, {
+    component: testManagement.component.EditTestRun
+  })
+
+  builder.mixin(testManagement.class.TestRun, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: testManagement.component.TestRunPresenter
+  })
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: testManagement.class.TestRun,
+      descriptor: view.viewlet.Table,
+      config: [''],
+      configOptions: {
+        // hiddenKeys: ['name'],
+        // sortable: true,
+        strict: true
+      }
+    },
+    testManagement.viewlet.TableTestRun
   )
 }
 

@@ -101,4 +101,6 @@ export interface TestCase extends AttachedDoc {
 }
 
 /** @public */
-export interface TestRun extends Doc {}
+export interface TestRun extends Doc {
+  name: string
+}

@@ -169,4 +169,8 @@ export class TTestCase extends TAttachedDoc implements TestCase {
 
 @Model(testManagement.class.TestRun, core.class.Doc)
 @UX(testManagement.string.TestRun)
-export class TTestRun extends TDoc implements TestRun {}
+export class TTestRun extends TDoc implements TestRun {
+  @Prop(TypeString(), testManagement.string.TestRunName)
+  @Index(IndexKind.FullText)
+    name!: string
+}

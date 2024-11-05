@@ -13,11 +13,89 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
+  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
+  import { type Class, type Ref } from '@hcengineering/core'
+  import { TestCase } from '@hcengineering/test-management'
+  import { Panel } from '@hcengineering/panel'
+  import { EditBox } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
+  import testManagement from '../../plugin'
+
+  export let _id: Ref<TestCase>
+  export let _class: Ref<Class<TestCase>>
+
+  let object: TestCase | undefined
 
   const dispatch = createEventDispatcher()
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
 
-  onMount(() => {
-    dispatch('open', {})
+  let oldLabel: string | undefined = ''
+  let rawLabel: string | undefined = ''
+  let descriptionBox: AttachmentStyleBoxCollabEditor
+
+  const query = createQuery()
+
+  $: _id !== undefined &&
+    _class !== undefined &&
+    query.query(_class, { _id }, async (result) => {
+      ;[object] = result
   })
+
+  async function change<K extends keyof TestCase> (field: K, value: TestCase[K]) {
+    await client.update(object, { [field]: value })
+  }
+
+  let content: HTMLElement
+
+  $: if (oldLabel !== object?.name) {
+    oldLabel = object?.name
+    rawLabel = object?.name
+  }
+
+  $: descriptionKey = hierarchy.getAttribute(testManagement.class.TestCase, 'description')
+
+  onMount(() => dispatch('open', { ignoreKeys: [] }))
 </script>
+
+{#if object}
+  <ActionContext context={{ mode: 'editor' }} />
+  <Panel
+    {object}
+    title={object.name}
+    isHeader={false}
+    isAside={true}
+    isSub={false}
+    adaptive={'default'}
+    on:open
+    on:close={() => dispatch('close')}
+  >
+    <EditBox
+      bind:value={rawLabel}
+      placeholder={testManagement.string.NamePlaceholder}
+      kind="large-style"
+      on:blur={async () => {
+        const trimmedLabel = rawLabel.trim()
+
+        if (trimmedLabel.length === 0) {
+          rawLabel = oldLabel
+        } else if (trimmedLabel !== object.name) {
+          await change('name', trimmedLabel)
+        }
+      }}
+    />
+
+    <div class="w-full mt-6">
+      <AttachmentStyleBoxCollabEditor
+        focusIndex={30}
+        object={object}
+        key={{ key: 'description', attr: descriptionKey }}
+        bind:this={descriptionBox}
+        identifier={object?._id}
+        placeholder={testManagement.string.DescriptionPlaceholder}
+        boundary={content}
+      />
+    </div>
+  </Panel>
+{/if}

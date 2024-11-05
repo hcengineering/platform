@@ -32,7 +32,10 @@ export default mergeIds(testManagementId, testManganement, {
     TestSuitePresenter: '' as AnyComponent,
     NewProductHeader: '' as AnyComponent,
     EditTestSuite: '' as AnyComponent,
-    EditTestCase: '' as AnyComponent
+    EditTestCase: '' as AnyComponent,
+    CreateTestRun: '' as AnyComponent,
+    TestRunPresenter: '' as AnyComponent,
+    EditTestRun: '' as AnyComponent
   },
   function: {},
   role: {
