@@ -60,6 +60,10 @@
     "ExitingFullscreenMode": "Quitter le mode plein écran",
     "Select": "Sélectionner",
     "ChooseShare": "Choisissez ce que vous voulez partager",
-    "CreateMeeting": "Créer une réunion"
+    "CreateMeeting": "Créer une réunion",
+    "StartTranscription": "Démarrer la transcription",
+    "StopTranscription": "Arrêter la transcription",
+    "Meeting": "Réunion",
+    "Transcription": "Transcription"
   }
 }

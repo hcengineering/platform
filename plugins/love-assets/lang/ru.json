@@ -60,6 +60,10 @@
     "ExitingFullscreenMode": "Выход из полноэкранного режима",
     "Select": "Выбрать",
     "ChooseShare": "Выберите, чем вы хотите поделиться",
-    "CreateMeeting": "Создать встречу"
+    "CreateMeeting": "Создать встречу",
+    "StartTranscription": "Начать транскрипцию",
+    "StopTranscription": "Остановить транскрипцию",
+    "Meeting": "Встреча",
+    "Transcription": "Транскрипция"
   }
 }
