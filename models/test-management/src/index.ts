@@ -381,7 +381,7 @@ function defineTestSuite (builder: Builder): void {
     {
       attachTo: testManagement.class.TestSuite,
       descriptor: view.viewlet.Table,
-      config: ['name', 'description'],
+      config: ['', 'description'],
       configOptions: {
         // hiddenKeys: ['name'],
         // sortable: true,

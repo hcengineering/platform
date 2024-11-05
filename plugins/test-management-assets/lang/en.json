@@ -5,7 +5,7 @@
     "TestCaseType": "Type",
     "TestCasePriority": "Priority",
     "TestCaseStatus": "Status",
-    "TestSuite": "Test case type",
+    "TestSuite": "Test Suite",
     "SuiteName": "Name",
     "SuiteDescription": "Description",
     "Suite": "Suite",
