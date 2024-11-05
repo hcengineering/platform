@@ -461,9 +461,9 @@
 }
 .hulyModal-container {
   height: 100%;
-  border-top: 1px solid transparent;
   visibility: visible;
-
+  
+  &:not(.noTopIndent) { border-top: 1px solid transparent; }
   &.hidden {
     visibility: hidden;
   }

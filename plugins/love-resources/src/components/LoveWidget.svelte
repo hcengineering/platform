@@ -15,9 +15,7 @@
 <script lang="ts">
   import { Floor, Room } from '@hcengineering/love'
   import { Ref } from '@hcengineering/core'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
-  import ui, { Button, IconChevronLeft, ModernButton, Scroller } from '@hcengineering/ui'
-
+  import ui, { IconChevronLeft, ModernButton, Scroller } from '@hcengineering/ui'
   import FloorPreview from './FloorPreview.svelte'
   import { floors, rooms } from '../stores'
   import IconLayers from './icons/Layers.svelte'
@@ -44,26 +42,24 @@
   }
 </script>
 
-<div class="root">
-  {#if floorsSelector}
-    {#each $floors as floor, i}
-      <Button
-        kind={'ghost'}
-        size={'large'}
-        on:click={() => {
-          selectFloor(floor._id)
-        }}
-        justify={'left'}
-        label={getEmbeddedLabel(floor.name)}
-      />
-      {#if i !== $floors.length - 1}<div class="divider" />{/if}
-    {/each}
-    <div class="flex-row-center flex-reverse mt-4 w-full">
-      <ModernButton on:click={changeMode} icon={IconChevronLeft} label={ui.string.Back} />
-    </div>
-  {:else}
-    {#if selectedFloor}
-      <Scroller>
+<div class="hulyModal-container noTopIndent type-aside">
+  <div class="hulyModal-content">
+    <Scroller>
+      {#if floorsSelector}
+        {#each $floors as _floor}
+          <FloorPreview
+            showRoomName
+            floor={_floor}
+            rooms={getRooms($rooms, _floor._id)}
+            selected={selectedFloor?._id === _floor._id}
+            kind={'no-border'}
+            background={'var(--theme-panel-color)'}
+            on:select={() => {
+              selectFloor(_floor._id)
+            }}
+          />
+        {/each}
+      {:else if selectedFloor}
         <FloorPreview
           floor={selectedFloor}
           showRoomName
@@ -72,26 +68,19 @@
           isOpen
           disabled
           cropped
-          size={'small'}
           kind={'no-border'}
-          background={'var(--theme-popup-color)'}
+          background={'var(--theme-panel-color)'}
         />
-      </Scroller>
-    {/if}
-    {#if $floors.length > 1}
-      <div class="flex-row-center flex-reverse flex-no-shrink w-full mt-4 mr-2">
-        <ModernButton on:click={changeMode} icon={IconLayers} label={love.string.ChangeFloor} />
-      </div>
-    {/if}
+      {/if}
+    </Scroller>
+  </div>
+  {#if floorsSelector || $floors.length > 1}
+    <div class="hulyModal-footer">
+      <ModernButton
+        on:click={changeMode}
+        icon={floorsSelector ? IconChevronLeft : IconLayers}
+        label={floorsSelector ? ui.string.Back : love.string.ChangeFloor}
+      />
+    </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .root {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
-    padding-bottom: 1rem;
-  }
-</style>

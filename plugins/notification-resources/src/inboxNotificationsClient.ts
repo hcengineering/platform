@@ -167,6 +167,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       await op.updateDoc(notification._class, notification.space, notification._id, { isViewed: true })
     }
     await op.update(docNotifyContext, { lastViewedTimestamp: Date.now() })
+    await op.commit()
   }
 
   async forceReadDoc (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {

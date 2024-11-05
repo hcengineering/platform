@@ -58,7 +58,7 @@
 
     const data: Data<AnyAttribute> = {
       attributeOf: _class,
-      name: name.trim().replace('/', '').replace(' ', '') + '_' + generateId(),
+      name: 'custom' + generateId(),
       label: getEmbeddedLabel(name),
       isCustom: true,
       type,

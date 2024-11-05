@@ -20,7 +20,7 @@ import {
 import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import {
   convertDoc,
-  createTable,
+  createTables,
   getDBClient,
   getDocFieldsByDomains,
   retryTxn,
@@ -68,7 +68,8 @@ async function moveWorkspace (
   pgClient: postgres.Sql,
   ws: Workspace,
   region: string,
-  include?: Set<string>
+  include?: Set<string>,
+  force = false
 ): Promise<void> {
   try {
     const wsId = getWorkspaceId(ws.workspace)
@@ -79,7 +80,7 @@ async function moveWorkspace (
       tables = tables.filter((t) => include.has(t))
     }
 
-    await createTable(pgClient, tables)
+    await createTables(pgClient, tables)
     const token = generateToken(systemAccountEmail, wsId)
     const endpoint = await getTransactorEndpoint(token, 'external')
     const connection = (await connect(endpoint, wsId, undefined, {
@@ -102,11 +103,23 @@ async function moveWorkspace (
         insertFields.push(field)
       }
       while (true) {
+        const toRemove: string[] = []
         while (docs.length < 50000) {
           const doc = (await cursor.next()) as Doc | null
           if (doc === null) break
-          if (currentIds.has(doc._id)) continue
+          if (currentIds.has(doc._id)) {
+            if (force) {
+              toRemove.push(doc._id)
+            } else {
+              continue
+            }
+          }
           docs.push(doc)
+        }
+        if (toRemove.length > 0) {
+          await retryTxn(pgClient, async (client) => {
+            await client`DELETE FROM ${client(translateDomain(domain))} WHERE "workspaceId" = ${ws.workspace} AND _id IN (${client(toRemove)})`
+          })
         }
         if (docs.length === 0) break
         while (docs.length > 0) {
@@ -138,7 +151,8 @@ export async function moveWorkspaceFromMongoToPG (
   dbUrl: string | undefined,
   ws: Workspace,
   region: string,
-  include?: Set<string>
+  include?: Set<string>,
+  force?: boolean
 ): Promise<void> {
   if (dbUrl === undefined) {
     throw new Error('dbUrl is required')
@@ -148,7 +162,7 @@ export async function moveWorkspaceFromMongoToPG (
   const pg = getDBClient(dbUrl)
   const pgClient = await pg.getClient()
 
-  await moveWorkspace(accountDb, mongo, pgClient, ws, region, include)
+  await moveWorkspace(accountDb, mongo, pgClient, ws, region, include, force)
   pg.close()
   client.close()
 }

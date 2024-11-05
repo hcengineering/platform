@@ -1,0 +1,21 @@
+{
+  "string": {
+    "Cancel": "Annulla",
+    "Templates": "Modelli di Testo",
+    "TemplatesHeader": "MODELLI DI TESTO",
+    "CreateTemplate": "CREA MODELLO",
+    "SaveTemplate": "Salva modello",
+    "EditTemplate": "Modifica modello",
+    "ViewTemplate": "Visualizza modello",
+    "Suggested": "SUGGERITI",
+    "SearchTemplate": "cerca modello",
+    "TemplatePlaceholder": "Nuovo modello",
+    "Title": "Titolo",
+    "Message": "Messaggio",
+    "Field": "Campo",
+    "TemplateCategory": "Gruppo di modelli",
+    "CreateTemplateCategory": "Crea gruppo",
+    "Copy": "Copia",
+    "Template": "Modello"
+  }
+}

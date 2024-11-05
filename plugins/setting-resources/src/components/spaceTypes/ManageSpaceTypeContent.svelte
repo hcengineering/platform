@@ -149,7 +149,7 @@
   }}
 >
   {#if type !== undefined && descriptor !== undefined}
-    <Header>
+    <Header adaptive={'disabled'}>
       <Breadcrumbs
         items={bcItems}
         size="large"

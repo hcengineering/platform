@@ -816,11 +816,14 @@ export async function listWorkspaces (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  token: string
+  token: string,
+  region?: string | null
 ): Promise<WorkspaceInfo[]> {
   decodeToken(ctx, token) // Just verify token is valid
 
-  return (await db.workspace.find({})).filter((it) => it.disabled !== true).map(trimWorkspaceInfo)
+  return (await db.workspace.find(region != null ? { region } : {}))
+    .filter((it) => it.disabled !== true)
+    .map(trimWorkspaceInfo)
 }
 
 /**

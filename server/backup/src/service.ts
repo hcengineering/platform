@@ -66,7 +66,8 @@ class BackupWorker {
       workspace: WorkspaceIdWithUrl,
       branding: Branding | null,
       externalStorage: StorageAdapter
-    ) => DbConfiguration
+    ) => DbConfiguration,
+    readonly region: string
   ) {}
 
   canceled = false
@@ -113,7 +114,8 @@ class BackupWorker {
     const workspacesIgnore = new Set(this.config.SkipWorkspaces.split(';'))
     ctx.info('skipped workspaces', { workspacesIgnore })
     let skipped = 0
-    const workspaces = (await listAccountWorkspaces(this.config.Token)).filter((it) => {
+    const allWorkspaces = await listAccountWorkspaces(this.config.Token, this.region)
+    const workspaces = allWorkspaces.filter((it) => {
       const lastBackup = it.backupInfo?.lastBackup ?? 0
       if ((Date.now() - lastBackup) / 1000 < this.config.Interval) {
         // No backup required, interval not elapsed
@@ -337,9 +339,10 @@ export function backupService (
     workspace: WorkspaceIdWithUrl,
     branding: Branding | null,
     externalStorage: StorageAdapter
-  ) => DbConfiguration
+  ) => DbConfiguration,
+  region: string
 ): () => void {
-  const backupWorker = new BackupWorker(storage, config, pipelineFactory, workspaceStorageAdapter, getConfig)
+  const backupWorker = new BackupWorker(storage, config, pipelineFactory, workspaceStorageAdapter, getConfig, region)
 
   const shutdown = (): void => {
     void backupWorker.close()

@@ -52,6 +52,7 @@
     "Spanish": "Español",
     "Chinese": "中文",
     "French": "Français",
+    "Italian": "Italiano",
     "MinutesBefore": "{minutes, plural, =1 {un minuto antes} other {# minutos antes}}",
     "HoursBefore": "{hours, plural, =1 {una hora antes} other {# horas antes}}",
     "DaysBefore": "{days, plural, =1 {un día antes} other {# días antes}}",
