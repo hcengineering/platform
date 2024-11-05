@@ -220,6 +220,7 @@
   height: 100%;
   min-width: 0;
   min-height: 0;
+  border-right: 1px solid var(--theme-divider-color);
   border-radius: 0 var(--small-focus-BorderRadius) var(--small-focus-BorderRadius) 0;
 }
 
