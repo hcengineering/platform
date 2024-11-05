@@ -20,7 +20,7 @@ import { RemoteParticipant, RemoteTrack, RemoteTrackPublication, RoomEvent, Trac
 import { STT } from './stt.js'
 import { Metadata } from './type.js'
 
-function parseMetadata (metadata: string): Metadata {
+function parseMetadata(metadata: string): Metadata {
   try {
     return JSON.parse(metadata) as Metadata
   } catch (e) {
@@ -30,7 +30,7 @@ function parseMetadata (metadata: string): Metadata {
   return {}
 }
 
-function applyMetadata (data: string, stt: STT): void {
+function applyMetadata(data: string, stt: STT): void {
   if (data === '') return
   const metadata = parseMetadata(data)
 
@@ -76,23 +76,17 @@ export default defineAgent({
       }
     )
 
-    ctx.room.on(
-      RoomEvent.TrackMuted,
-      (publication) => {
-        if (publication.kind === TrackKind.KIND_AUDIO) {
-          stt.mute(publication.sid)
-        }
+    ctx.room.on(RoomEvent.TrackMuted, (publication) => {
+      if (publication.kind === TrackKind.KIND_AUDIO) {
+        stt.mute(publication.sid)
       }
-    )
+    })
 
-    ctx.room.on(
-      RoomEvent.TrackUnmuted,
-      (publication) => {
-        if (publication.kind === TrackKind.KIND_AUDIO) {
-          stt.unmute(publication.sid)
-        }
+    ctx.room.on(RoomEvent.TrackUnmuted, (publication) => {
+      if (publication.kind === TrackKind.KIND_AUDIO) {
+        stt.unmute(publication.sid)
       }
-    )
+    })
 
     ctx.addShutdownCallback(async () => {
       stt.close()
@@ -100,6 +94,11 @@ export default defineAgent({
   }
 })
 
-export function runAgent (): void {
-  cli.runApp(new WorkerOptions({ agent: fileURLToPath(import.meta.url), permissions: new WorkerPermissions(true, true, true, true, [], true) }))
+export function runAgent(): void {
+  cli.runApp(
+    new WorkerOptions({
+      agent: fileURLToPath(import.meta.url),
+      permissions: new WorkerPermissions(true, true, true, true, [], true)
+    })
+  )
 }
