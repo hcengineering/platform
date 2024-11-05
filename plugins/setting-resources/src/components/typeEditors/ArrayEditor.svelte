@@ -44,7 +44,8 @@
       )
     })
 
-  let refClass: Ref<Doc> | undefined = type !== undefined ? hierarchy.getClass(type.of._class)._id : undefined
+  let refClass: Ref<Doc> | undefined =
+    type?.of?._class !== undefined ? hierarchy.getClass(type.of._class)._id : undefined
 
   $: selected = types.find((p) => p._id === refClass)
 
