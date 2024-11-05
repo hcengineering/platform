@@ -57,8 +57,13 @@ export class CommonPage {
   buttonFilterApply = (): Locator => this.page.locator('div.selectPopup button[type="button"]', { hasText: 'Apply' })
   buttonClearFilters = (): Locator => this.page.locator('button > span', { hasText: 'Clear filters' })
   filterButton = (index: number): Locator => this.page.locator(`div.filter-section button:nth-child(${index})`)
+  filterRow = (): Locator => this.page.locator('div.filterbar-container')
   selectFilterSection = (label: string): Locator =>
-    this.page.locator('div.filterbar-container div.filter-section', { hasText: label })
+    this.filterRow().locator('div.filter-section', { hasText: label })
+
+  filterCloseButton = (label: string): Locator => this.selectFilterSection(label).locator('button .btn-icon')
+
+  addFilterButton = (): Locator => this.filterRow().locator('div.add-filter')
 
   selectPopupMenu = (filter: string): Locator =>
     this.page.locator('div.selectPopup [class*="menu"]', { hasText: filter })
@@ -216,8 +221,8 @@ export class CommonPage {
     await this.menuPopupItemButton(itemText).first().click()
   }
 
-  async selectFilter (filter: string, filterSecondLevel?: string): Promise<void> {
-    await this.buttonFilter().click()
+  async selectFilter (filter: string, filterSecondLevel?: string, addButton: Locator = this.buttonFilter()): Promise<void> {
+    await addButton.click()
     await this.selectPopupMenu(filter).click()
 
     if (filterSecondLevel !== null && typeof filterSecondLevel === 'string') {
@@ -324,5 +329,9 @@ export class CommonPage {
 
   async pressEscape (): Promise<void> {
     await this.page.keyboard.press('Escape')
+  }
+
+  async removeFilterOption (label: string): Promise<void> {
+    await this.filterCloseButton(label).click()
   }
 }
