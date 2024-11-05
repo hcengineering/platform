@@ -332,7 +332,12 @@ export async function assignWorkspace (
   return res.result as WorkspaceLoginInfo
 }
 
-export async function createAccount (email: string, password: string, firstName: string, lastName: string): Promise<WorkspaceLoginInfo> {
+export async function createAccount (
+  email: string,
+  password: string,
+  firstName: string,
+  lastName: string
+): Promise<WorkspaceLoginInfo> {
   const accountsUrl = getAccoutsUrlOrFail()
   const workspace = await (
     await fetch(accountsUrl, {
