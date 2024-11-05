@@ -415,6 +415,10 @@ function defineTestCase(builder: Builder): void {
     component: view.component.ValueFilter
   })
 
+  builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: testManagement.component.TestSuiteRefPresenter
+  })
+
   // builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.SpacePresenter, {
   //  presenter: documents.component.DocumentSpacePresenter
   // })
@@ -425,7 +429,7 @@ function defineTestCase(builder: Builder): void {
     {
       attachTo: testManagement.class.TestCase,
       descriptor: view.viewlet.Table,
-      config: ['', 'status', 'assignee'],
+      config: ['', 'suite', 'status', 'assignee'],
       configOptions: {
         // hiddenKeys: ['name'],
         // sortable: true,

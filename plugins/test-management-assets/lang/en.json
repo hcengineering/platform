@@ -55,6 +55,7 @@
     "Unassigned": "Unassigned",
     "AssignTo": "Assign to",
     "AssignedTo": "Assigneed to",
-    "PreviousAssigned": "Previously assigned"
+    "PreviousAssigned": "Previously assigned",
+    "NoTestCases": "There are no test cases in this test suite"
   }
 }

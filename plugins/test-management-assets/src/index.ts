@@ -30,6 +30,7 @@ loadMetadata(testManagement.icon, {
   TestSuites: `${icons}#testSuite`,
   TestRuns: `${icons}#testRun`,
   RedCircle: `${icons}#red-circle`,
+  Document: `${icons}#document`,
 
   StatusDraft: `${icons}#status-draft`,
   StatusReview: `${icons}#status-review`,

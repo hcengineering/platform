@@ -21,6 +21,7 @@ import ProjectSpacePresenter from './components/project/ProjectSpacePresenter.sv
 import CreateTestSuite from './components/test-suite/CreateTestSuite.svelte'
 import EditTestSuite from './components/test-suite/EditTestSuite.svelte'
 import TestSuitePresenter from './components/test-suite/TestSuitePresenter.svelte'
+import TestSuiteRefPresenter from './components/test-suite/TestSuiteRefPresenter.svelte'
 import EditTestCase from './components/test-case/EditTestCase.svelte'
 import TestCasePresenter from './components/test-case/TestCasePresenter.svelte'
 import CreateTestCase from './components/test-case/CreateTestCase.svelte'
@@ -32,7 +33,6 @@ import TestRunPresenter from './components/test-run/TestRunPresenter.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
-    TestCase,
     NewTestCaseHeader,
     CreateProject,
     ProjectSpacePresenter,
@@ -45,6 +45,7 @@ export default async (): Promise<Resources> => ({
     CreateTestCase,
     TestCaseStatusPresenter,
     EditTestRun,
-    TestRunPresenter
+    TestRunPresenter,
+    TestSuiteRefPresenter
   }
 })

@@ -46,7 +46,8 @@
     description: makeCollaborativeDoc(id, 'description'),
     status: TestCaseStatus.Draft,
     assignee: null,
-    attachments: 0
+    attachments: 0,
+    suite: undefined
   } as unknown as TestCase
 
   let _space = space
@@ -73,7 +74,9 @@
     dispatch('close', id)
   }
 
-  function handleTestSuiteChange (): void {}
+  function handleTestSuiteChange (evt: CustomEvent<Ref<TestSuite>>): void {
+    object.suite = evt.detail
+  }
 
   const manager = createFocusManager()
 

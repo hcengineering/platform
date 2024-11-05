@@ -55,7 +55,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     StatusReview: '' as Asset,
     StatusReviewComments: '' as Asset,
     StatusApproved: '' as Asset,
-    StatusRejected: '' as Asset
+    StatusRejected: '' as Asset,
+    Document: '' as Asset
   },
   class: {
     TestCase: '' as Ref<Class<TestCase>>,
@@ -132,7 +133,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     AssignTo: '' as IntlString,
     AssignedTo: '' as IntlString,
     PreviousAssigned: '' as IntlString,
-    TestRunName: '' as IntlString
+    TestRunName: '' as IntlString,
+    NoTestCases: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>
@@ -142,7 +144,6 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestCases: '' as AnyComponent,
     CreateProject: '' as AnyComponent,
     NewTestCaseHeader: '' as AnyComponent,
-    TestCase: '' as AnyComponent,
     TestCaseStatusIcon: '' as AnyComponent,
     PriorityIconPresenter: '' as AnyComponent,
     TestCaseStatusPresenter: '' as AnyComponent,
@@ -170,7 +171,8 @@ export const testManagementPlugin = plugin(testManagementId, {
   viewlet: {
     TableTestCase: '' as Ref<Viewlet>,
     TableTestSuites: '' as Ref<Viewlet>,
-    TableTestRun: '' as Ref<Viewlet>
+    TableTestRun: '' as Ref<Viewlet>,
+    SuiteTestCases: '' as Ref<Viewlet>
   },
   testCaseTypeStatus: {
     Draft: '' as Ref<Status>,

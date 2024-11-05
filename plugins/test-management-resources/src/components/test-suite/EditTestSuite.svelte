@@ -20,6 +20,8 @@
   import { Panel } from '@hcengineering/panel'
   import { EditBox } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
+  
+  import TestCasesList from './TestCasesList.svelte'
   import testManagement from '../../plugin'
 
   export let _id: Ref<TestSuite>
@@ -87,6 +89,10 @@
         kind={'emphasized'}
         showButtons={false}
       />
+    </div>
+
+    <div class="w-full mt-6">
+      <TestCasesList objectId={object._id} />
     </div>
   </Panel>
 {/if}
