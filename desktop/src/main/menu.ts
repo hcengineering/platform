@@ -16,6 +16,7 @@
 import { Menu, MenuItemConstructorOptions, type BrowserWindow } from 'electron'
 
 const isMac = process.platform === 'darwin'
+const isLinux = process.platform === 'linux'
 
 export const addMenus = (getWindow: () => BrowserWindow, sendCommand: (cmd: string, ...args: any[]) => void): void => {
   const template: MenuItemConstructorOptions[] = [
@@ -24,7 +25,7 @@ export const addMenus = (getWindow: () => BrowserWindow, sendCommand: (cmd: stri
       submenu: [
         {
           label: 'Settings',
-          accelerator: 'Meta+,',
+          accelerator: isLinux ? 'Ctrl+,' : 'Meta+,',
           click: () => { sendCommand('open-settings') }
         },
         {
