@@ -29,6 +29,7 @@
   export let orientation: 'horizontal' | 'vertical' = 'horizontal'
   export let kind: 'primary' | 'secondary' = 'primary'
   export let canClose = true
+  export let readonly = false
 
   const dispatch = createEventDispatcher()
 </script>
@@ -42,7 +43,14 @@
   class:active={highlighted}
   use:tooltip={{ label: label ? getEmbeddedLabel(label) : labelIntl }}
   on:click
-  on:contextmenu
+  on:contextmenu={(e) => {
+    e.preventDefault()
+    if (readonly) {
+      e.stopPropagation()
+    } else {
+      dispatch('contextmenu', e)
+    }
+  }}
 >
   <slot name="prefix" />
 
@@ -69,7 +77,7 @@
     {/if}
   </span>
 
-  {#if canClose}
+  {#if canClose && !readonly}
     <div class="close-button {orientation}">
       <ButtonIcon icon={IconClose} size="min" on:click={() => dispatch('close')} />
     </div>

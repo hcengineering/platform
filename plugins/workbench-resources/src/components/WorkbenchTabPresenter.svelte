@@ -91,11 +91,11 @@
     void closeTab(tab)
   }
 
-  function handleMenu (event: MouseEvent): void {
+  function handleMenu (event: CustomEvent<MouseEvent>): void {
     event.preventDefault()
     event.stopPropagation()
 
-    showMenu(event, { object: tab, baseMenuClass: workbench.class.WorkbenchTab })
+    showMenu(event.detail, { object: tab, baseMenuClass: workbench.class.WorkbenchTab })
   }
 </script>
 
