@@ -211,7 +211,8 @@ const view = plugin(viewId, {
     Join: '' as IntlString,
     Leave: '' as IntlString,
     Copied: '' as IntlString,
-    And: '' as IntlString
+    And: '' as IntlString,
+    Title: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
@@ -258,7 +259,8 @@ const view = plugin(viewId, {
     Video: '' as Asset,
     Audio: '' as Asset,
     File: '' as Asset,
-    PinTack: '' as Asset
+    PinTack: '' as Asset,
+    Feather: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,
