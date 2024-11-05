@@ -28,9 +28,21 @@ import {
   type Room,
   type RoomAccess,
   type RoomInfo,
-  type RoomType
+  type RoomType,
+  type RoomLanguage,
+  type MeetingMinutes
 } from '@hcengineering/love'
-import { type Builder, Index, Mixin, Model, Prop, TypeRef } from '@hcengineering/model'
+import {
+  type Builder,
+  Collection as PropCollection, Hidden,
+  Index,
+  Mixin,
+  Model,
+  Prop,
+  TypeRef,
+  TypeString,
+  UX
+} from '@hcengineering/model'
 import calendar, { TEvent } from '@hcengineering/model-calendar'
 import core, { TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
@@ -40,6 +52,9 @@ import notification from '@hcengineering/notification'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import workbench, { WidgetType } from '@hcengineering/workbench'
+import activity from '@hcengineering/activity'
+import chunter from '@hcengineering/chunter'
+
 import love from './plugin'
 
 export { loveId } from '@hcengineering/love'
@@ -62,6 +77,9 @@ export class TRoom extends TDoc implements Room {
   height!: number
   x!: number
   y!: number
+
+  language!: RoomLanguage
+  startWithTranscription!: boolean
 }
 
 @Model(love.class.Office, love.class.Room)
@@ -136,6 +154,22 @@ export class TMeeting extends TEvent implements Meeting {
   room!: Ref<Room>
 }
 
+@Model(love.class.MeetingMinutes, core.class.Doc, DOMAIN_LOVE)
+@UX(love.string.Meeting)
+export class TMeetingMinutes extends TDoc implements MeetingMinutes {
+  @Hidden()
+    sid!: string
+
+  @Prop(TypeString(), view.string.Title)
+    title!: string
+
+  @Prop(PropCollection(activity.class.ActivityMessage), love.string.Transcription)
+    transcription?: number
+
+  @Prop(PropCollection(activity.class.ActivityMessage), activity.string.Messages)
+    messages?: number
+}
+
 export default love
 
 export function createModel (builder: Builder): void {
@@ -148,7 +182,8 @@ export function createModel (builder: Builder): void {
     TDevicesPreference,
     TRoomInfo,
     TInvite,
-    TMeeting
+    TMeeting,
+    TMeetingMinutes
   )
 
   builder.createDoc(
@@ -182,12 +217,12 @@ export function createModel (builder: Builder): void {
     workbench.class.Widget,
     core.space.Model,
     {
-      label: love.string.MeetingRoom,
+      label: love.string.Meeting,
       type: WidgetType.Flexible,
       icon: love.icon.Cam,
-      component: love.component.VideoWidget
+      component: love.component.MeetingWidget
     },
-    love.ids.VideoWidget
+    love.ids.MeetingWidget
   )
 
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
@@ -317,4 +352,39 @@ export function createModel (builder: Builder): void {
     },
     love.action.ToggleVideo
   )
+
+  createAction(builder, {
+    action: love.actionImpl.CopyGuestLink,
+    label: love.string.CopyGuestLink,
+    icon: view.icon.Copy,
+    category: love.category.Office,
+    input: 'focus',
+    target: love.class.Room,
+    visibilityTester: love.function.CanCopyGuestLink,
+    context: {
+      mode: 'context'
+    }
+  })
+
+  createAction(builder, {
+    action: love.actionImpl.ShowRoomSettings,
+    label: love.string.Settings,
+    icon: view.icon.Setting,
+    category: love.category.Office,
+    input: 'focus',
+    target: love.class.Room,
+    visibilityTester: love.function.CanShowRoomSettings,
+    context: {
+      mode: 'context'
+    }
+  })
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: love.class.MeetingMinutes,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
+  builder.mixin(love.class.MeetingMinutes, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: love.component.MeetingMinutesPresenter
+  })
 }

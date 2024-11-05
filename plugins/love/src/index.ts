@@ -31,6 +31,54 @@ export interface Floor extends Doc {
   name: string
 }
 
+export type RoomLanguage =
+  | 'bg'
+  | 'ca'
+  | 'zh'
+  | 'zh-TW'
+  | 'zh-HK'
+  | 'cs'
+  | 'da'
+  | 'nl'
+  | 'en'
+  | 'en-US'
+  | 'en-AU'
+  | 'en-GB'
+  | 'en-NZ'
+  | 'en-IN'
+  | 'et'
+  | 'fi'
+  | 'nl-BE'
+  | 'fr'
+  | 'fr-CA'
+  | 'de'
+  | 'de-CH'
+  | 'el'
+  | 'hi'
+  | 'hu'
+  | 'id'
+  | 'it'
+  | 'ja'
+  | 'ko'
+  | 'lv'
+  | 'lt'
+  | 'ms'
+  | 'no'
+  | 'pl'
+  | 'pt'
+  | 'pt-BR'
+  | 'pt-PT'
+  | 'ro'
+  | 'ru'
+  | 'sk'
+  | 'es'
+  | 'es-419'
+  | 'sv'
+  | 'th'
+  | 'tr'
+  | 'uk'
+  | 'vi'
+
 export interface Room extends Doc {
   name: string
   type: RoomType
@@ -40,6 +88,8 @@ export interface Room extends Doc {
   height: number
   x: number
   y: number
+  language: RoomLanguage
+  startWithTranscription: boolean
 }
 
 export interface Office extends Room {
@@ -93,6 +143,13 @@ export interface DevicesPreference extends Preference {
   camEnabled: boolean
 }
 
+export interface MeetingMinutes extends Doc {
+  sid: string
+  title: string
+  transcription?: number
+  messages?: number
+}
+
 export * from './utils'
 
 const love = plugin(loveId, {
@@ -104,7 +161,8 @@ const love = plugin(loveId, {
     JoinRequest: '' as Ref<Class<JoinRequest>>,
     DevicesPreference: '' as Ref<Class<DevicesPreference>>,
     RoomInfo: '' as Ref<Class<RoomInfo>>,
-    Invite: '' as Ref<Class<Invite>>
+    Invite: '' as Ref<Class<Invite>>,
+    MeetingMinutes: '' as Ref<Class<MeetingMinutes>>
   },
   mixin: {
     Meeting: '' as Ref<Mixin<Meeting>>
@@ -123,7 +181,11 @@ const love = plugin(loveId, {
     RoomType: '' as IntlString,
     Knock: '' as IntlString,
     Open: '' as IntlString,
-    DND: '' as IntlString
+    DND: '' as IntlString,
+    StartTranscription: '' as IntlString,
+    StopTranscription: '' as IntlString,
+    Meeting: '' as IntlString,
+    Transcription: '' as IntlString
   },
   ids: {
     MainFloor: '' as Ref<Floor>,
@@ -131,7 +193,7 @@ const love = plugin(loveId, {
     InviteNotification: '' as Ref<NotificationType>,
     KnockNotification: '' as Ref<NotificationType>,
     LoveWidget: '' as Ref<Widget>,
-    VideoWidget: '' as Ref<Widget>
+    MeetingWidget: '' as Ref<Widget>
   },
   icon: {
     Love: '' as Asset,
