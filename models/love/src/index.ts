@@ -34,7 +34,8 @@ import {
 } from '@hcengineering/love'
 import {
   type Builder,
-  Collection as PropCollection, Hidden,
+  Collection as PropCollection,
+  Hidden,
   Index,
   Mixin,
   Model,
@@ -69,7 +70,7 @@ export class TRoom extends TDoc implements Room {
 
   access!: RoomAccess
 
-  @Prop(TypeRef(love.class.Floor), getEmbeddedLabel('Floor'))
+  @Prop(TypeRef(love.class.Floor), love.string.Floor)
   // @Index(IndexKind.Indexed)
     floor!: Ref<Floor>
 
@@ -100,7 +101,7 @@ export class TParticipantInfo extends TDoc implements ParticipantInfo {
   @Prop(TypeRef(contact.class.Person), getEmbeddedLabel('Person'))
     person!: Ref<Person>
 
-  @Prop(TypeRef(love.class.Room), getEmbeddedLabel('Room'))
+  @Prop(TypeRef(love.class.Room), love.string.Room)
     room!: Ref<Room>
 
   x!: number
@@ -114,7 +115,7 @@ export class TJoinRequest extends TDoc implements JoinRequest {
   @Prop(TypeRef(contact.class.Person), getEmbeddedLabel('From'))
     person!: Ref<Person>
 
-  @Prop(TypeRef(love.class.Room), getEmbeddedLabel('Room'))
+  @Prop(TypeRef(love.class.Room), love.string.Room)
     room!: Ref<Room>
 
   status!: RequestStatus
@@ -128,7 +129,7 @@ export class TInvite extends TDoc implements Invite {
   @Prop(TypeRef(contact.class.Person), getEmbeddedLabel('Target'))
     target!: Ref<Person>
 
-  @Prop(TypeRef(love.class.Room), getEmbeddedLabel('Room'))
+  @Prop(TypeRef(love.class.Room), love.string.Room)
     room!: Ref<Room>
 
   status!: RequestStatus
@@ -162,6 +163,9 @@ export class TMeetingMinutes extends TDoc implements MeetingMinutes {
 
   @Prop(TypeString(), view.string.Title)
     title!: string
+
+  @Prop(TypeRef(love.class.Room), love.string.Room)
+    room!: Ref<Room>
 
   @Prop(PropCollection(activity.class.ActivityMessage), love.string.Transcription)
     transcription?: number

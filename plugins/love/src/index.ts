@@ -146,6 +146,7 @@ export interface DevicesPreference extends Preference {
 export interface MeetingMinutes extends Doc {
   sid: string
   title: string
+  room: Ref<Room>
   transcription?: number
   messages?: number
 }

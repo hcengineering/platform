@@ -97,10 +97,26 @@ export const loveOperation: MigrateOperation = {
       {
         state: 'setup-defaults-settings',
         func: async (client: MigrationClient) => {
-          await client.update(DOMAIN_LOVE, { _class: love.class.Room, language: { $exists: false } }, { language: 'en' })
-          await client.update(DOMAIN_LOVE, { _class: love.class.Office, language: { $exists: false } }, { language: 'en' })
-          await client.update(DOMAIN_LOVE, { _class: love.class.Room, startWithTranscription: { $exists: false } }, { startWithTranscription: true })
-          await client.update(DOMAIN_LOVE, { _class: love.class.Office, startWithTranscription: { $exists: false } }, { startWithTranscription: false })
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Room, language: { $exists: false } },
+            { language: 'en' }
+          )
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Office, language: { $exists: false } },
+            { language: 'en' }
+          )
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Room, startWithTranscription: { $exists: false } },
+            { startWithTranscription: true }
+          )
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Office, startWithTranscription: { $exists: false } },
+            { startWithTranscription: false }
+          )
         }
       }
     ])
