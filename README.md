@@ -22,6 +22,12 @@ This project offers a convenient method to host Huly using `docker`, designed fo
 
 ![Alt](https://repobeats.axiom.co/api/embed/c42c99e21691fa60ea61b5cdf11c2e0647621534.svg "Repobeats analytics image")
 
+## Applications Overview
+- **Chat**: A real-time messaging application for teams.
+- **Project Management**: Tools to help teams manage tasks and projects effectively.
+- **CRM**: Manage customer relationships and interactions.
+
+
 ## Table of Content
 
 - [Huly Platform](#huly-platform)
@@ -32,6 +38,7 @@ This project offers a convenient method to host Huly using `docker`, designed fo
   - [Pre-requisites](#pre-requisites)
   - [Verification](#verification)
   - [Installation](#installation)
+  - [Configuration](#configuration)
   - [Build and run](#build-and-run)
   - [Run in development mode](#run-in-development-mode)
   - [Update project structure and database](#update-project-structure-and-database)
@@ -42,6 +49,7 @@ This project offers a convenient method to host Huly using `docker`, designed fo
     - [UI tests](#ui-tests)
   - [Package publishing](#package-publishing)
   - [Additional testing](#additional-testing)
+  - [Support](#support)
 
 ## Pre-requisites
 
@@ -58,11 +66,12 @@ To verify the installation, perform the following checks in your terminal:
   ```bash
   docker --version
   docker compose version
-## Fast start
-
+## Quick Start
+To quickly start the Huly platform, you can use the following command:
 ```bash
 sh ./scripts/fast-start.sh
 ```
+
 
 ## Installation
 
@@ -79,6 +88,16 @@ Alternatively, you can just execute:
 
 ```bash
 sh ./scripts/presetup-rush.sh
+```
+### Common Issues During Installation
+- **Permission Errors**: If you encounter permission issues, try running your terminal as an administrator or using `sudo` on Unix-based systems.
+- **Version Conflicts**: Ensure that your Node.js version matches the required version stated in the prerequisites.
+
+## Configuration
+After installation, you may need to set up your environment variables in a `.env` file. Here’s an example configuration:
+```plaintext
+DATABASE_URL=mongodb://localhost:27017/huly
+REDIS_URL=redis://localhost:6379
 ```
 
 ## Build and run
@@ -234,4 +253,7 @@ node ./common/scripts/bump.js -p projectName
 This project is tested with BrowserStack.
 
 <sub><sup>&copy; 2024 <a href="https://hardcoreeng.com">Hardcore Engineering Inc</a>.</sup></sub>
+
+## Support
+If you encounter any issues or have questions, feel free to reach out to our support team at support@huly.io or join our community on Discord.
 
