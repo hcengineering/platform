@@ -17,6 +17,7 @@ import { type CollaborativeDoc, DOMAIN_TX, MeasureMetricsContext, SortingOrder }
 import { type DocumentSnapshot, type Document, type Teamspace } from '@hcengineering/document'
 import {
   tryMigrate,
+  migrateSpaceRanks,
   type MigrateOperation,
   type MigrateUpdate,
   type MigrationClient,
@@ -270,6 +271,16 @@ async function restoreContentField (client: MigrationClient): Promise<void> {
   }
 }
 
+async function migrateRanks (client: MigrationClient): Promise<void> {
+  const classes = client.hierarchy.getDescendants(document.class.Teamspace)
+  for (const _class of classes) {
+    const spaces = await client.find<Teamspace>(DOMAIN_SPACE, { _class })
+    for (const space of spaces) {
+      await migrateSpaceRanks(client, DOMAIN_DOCUMENT, space)
+    }
+  }
+}
+
 export const documentOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, documentId, [
@@ -306,6 +317,10 @@ export const documentOperation: MigrateOperation = {
       {
         state: 'restoreContentField',
         func: restoreContentField
+      },
+      {
+        state: 'migrateRanks',
+        func: migrateRanks
       }
     ])
   },
