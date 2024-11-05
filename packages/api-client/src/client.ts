@@ -30,31 +30,40 @@ import {
   type TxResult,
   DocumentUpdate,
   TxOperations,
-  concatLink
+  AttachedDoc,
+  AttachedData,
+  Mixin,
+  MixinUpdate,
+  MixinData
 } from '@hcengineering/core'
 import client, { clientId } from '@hcengineering/client'
 import { addLocation, getResource } from '@hcengineering/platform'
 
 import { login, selectWorkspace } from './account'
-import { type APIClient, type ConnectOptions, type ConnectSocketOptions } from './types'
+import { type ServerConfig, loadServerConfig } from './config'
+import { type MarkupOperations, type MarkupFormat, type MarkupRef, createMarkupOperations } from './markup'
+import { type PlatformClient, type ConnectOptions } from './types'
 
-interface ServerConfig {
-  ACCOUNTS_URL: string
-}
-
-/** @public */
-export async function connect (url: string, options: ConnectOptions): Promise<APIClient> {
+/**
+ * Create platform client
+ * @public */
+export async function connect (url: string, options: ConnectOptions): Promise<PlatformClient> {
   const config = await loadServerConfig(url)
 
   const { endpoint, token } = await getWorkspaceToken(url, options, config)
-  return await createClient(endpoint, token, options)
+  return await createClient(url, endpoint, token, config, options)
 }
 
-/** @public */
-export async function createClient (endpoint: string, token: string, options: ConnectSocketOptions): Promise<APIClient> {
+async function createClient (
+  url: string,
+  endpoint: string,
+  token: string,
+  config: ServerConfig,
+  options: ConnectOptions
+): Promise<PlatformClient> {
   addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@hcengineering/client-resources'))
 
-  const { socketFactory, connectionTimeout } = options
+  const { workspace, socketFactory, connectionTimeout } = options
 
   const clientFactory = await getResource(client.function.GetClient)
   const connection = await clientFactory(token, endpoint, {
@@ -63,17 +72,23 @@ export async function createClient (endpoint: string, token: string, options: Co
   })
   const account = await connection.getAccount()
 
-  return new APIClientImpl(connection, account)
+  return new PlatformClientImpl(url, workspace, token, config, connection, account)
 }
 
-class APIClientImpl implements APIClient {
+class PlatformClientImpl implements PlatformClient {
   private readonly client: TxOperations
+  private readonly markup: MarkupOperations
 
   constructor (
+    private readonly url: string,
+    private readonly workspace: string,
+    private readonly token: string,
+    private readonly config: ServerConfig,
     private readonly connection: Client,
     private readonly account: Account
   ) {
     this.client = new TxOperations(connection, account._id)
+    this.markup = createMarkupOperations(url, workspace, token, config)
   }
 
   // Client
@@ -117,18 +132,93 @@ class APIClientImpl implements APIClient {
     return await this.client.createDoc(_class, space, attributes, id)
   }
 
-  updateDoc<T extends Doc>(
+  async updateDoc<T extends Doc>(
     _class: Ref<Class<T>>,
     space: Ref<Space>,
     objectId: Ref<T>,
     operations: DocumentUpdate<T>,
     retrieve?: boolean
   ): Promise<TxResult> {
-    return this.client.updateDoc(_class, space, objectId, operations, retrieve)
+    return await this.client.updateDoc(_class, space, objectId, operations, retrieve)
   }
 
-  removeDoc<T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, objectId: Ref<T>): Promise<TxResult> {
-    return this.client.removeDoc(_class, space, objectId)
+  async removeDoc<T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, objectId: Ref<T>): Promise<TxResult> {
+    return await this.client.removeDoc(_class, space, objectId)
+  }
+
+  async addCollection<T extends Doc, P extends AttachedDoc>(
+    _class: Ref<Class<P>>,
+    space: Ref<Space>,
+    attachedTo: Ref<T>,
+    attachedToClass: Ref<Class<T>>,
+    collection: Extract<keyof T, string> | string,
+    attributes: AttachedData<P>,
+    id?: Ref<P>
+  ): Promise<Ref<P>> {
+    return await this.client.addCollection(_class, space, attachedTo, attachedToClass, collection, attributes, id)
+  }
+
+  async updateCollection<T extends Doc, P extends AttachedDoc>(
+    _class: Ref<Class<P>>,
+    space: Ref<Space>,
+    objectId: Ref<P>,
+    attachedTo: Ref<T>,
+    attachedToClass: Ref<Class<T>>,
+    collection: Extract<keyof T, string> | string,
+    operations: DocumentUpdate<P>,
+    retrieve?: boolean
+  ): Promise<Ref<T>> {
+    return await this.client.updateCollection(
+      _class,
+      space,
+      objectId,
+      attachedTo,
+      attachedToClass,
+      collection,
+      operations,
+      retrieve
+    )
+  }
+
+  async removeCollection<T extends Doc, P extends AttachedDoc>(
+    _class: Ref<Class<P>>,
+    space: Ref<Space>,
+    objectId: Ref<P>,
+    attachedTo: Ref<T>,
+    attachedToClass: Ref<Class<T>>,
+    collection: Extract<keyof T, string> | string
+  ): Promise<Ref<T>> {
+    return await this.client.removeCollection(_class, space, objectId, attachedTo, attachedToClass, collection)
+  }
+
+  async createMixin<D extends Doc, M extends D>(
+    objectId: Ref<D>,
+    objectClass: Ref<Class<D>>,
+    objectSpace: Ref<Space>,
+    mixin: Ref<Mixin<M>>,
+    attributes: MixinData<D, M>
+  ): Promise<TxResult> {
+    return await this.client.createMixin(objectId, objectClass, objectSpace, mixin, attributes)
+  }
+
+  async updateMixin<D extends Doc, M extends D>(
+    objectId: Ref<D>,
+    objectClass: Ref<Class<D>>,
+    objectSpace: Ref<Space>,
+    mixin: Ref<Mixin<M>>,
+    attributes: MixinUpdate<D, M>
+  ): Promise<TxResult> {
+    return await this.client.updateMixin(objectId, objectClass, objectSpace, mixin, attributes)
+  }
+
+  // Markup
+
+  async fetchMarkup (objectId: Ref<Doc>, objectAttr: string, markup: MarkupRef, format: MarkupFormat): Promise<string> {
+    return await this.markup.fetchMarkup(objectId, objectAttr, markup, format)
+  }
+
+  async uploadMarkup (objectId: Ref<Doc>, objectAttr: string, markup: string, format: MarkupFormat): Promise<MarkupRef> {
+    return await this.markup.uploadMarkup(objectId, objectAttr, markup, format)
   }
 
   // AsyncDisposable
@@ -164,13 +254,4 @@ async function getWorkspaceToken (
   }
 
   return { endpoint: ws.endpoint, token: ws.token }
-}
-
-async function loadServerConfig (url: string): Promise<ServerConfig> {
-  const configUrl = concatLink(url, '/config.json')
-  const res = await fetch(configUrl)
-  if (res.ok) {
-    return (await res.json()) as ServerConfig
-  }
-  throw new Error('Failed to fetch config')
 }

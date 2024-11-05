@@ -25965,7 +25965,7 @@ packages:
     dev: false
 
   file:projects/api-client.tgz(bufferutil@4.0.8)(esbuild@0.20.1)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-9yCIV9fVPokQs4g2EMfE+XlnNdfpqzi/8Fx9gOza2YtXndwylsUPZ9yPzlq/DXkR7t0MvdZvkhs5FPCcGasEJQ==, tarball: file:projects/api-client.tgz}
+    resolution: {integrity: sha512-tyhf+5DHkF+HpWZlimhdgls3Gp3L7PR0UHYEu0YH7e0UmOoZSuvAVbRbwY/6UnVG1am+xQnrs0xiZ93AHIsgBA==, tarball: file:projects/api-client.tgz}
     id: file:projects/api-client.tgz
     name: '@rush-temp/api-client'
     version: 0.0.0
@@ -29926,7 +29926,7 @@ packages:
     dev: false
 
   file:projects/model-server-notification.tgz:
-    resolution: {integrity: sha512-BvMEE2VscXwLg1NPi1BYAraQLKEn13QZP1XPLb28ykYqF5qKljVSm19G5JV2RhnV/OsZcjYdakCsVpuY8XiLMA==, tarball: file:projects/model-server-notification.tgz}
+    resolution: {integrity: sha512-dhW2t2fFxSKG3P8ciSOjljl4obuWE6DYOBnTRtXgQOD30vi2UcqOlyYBlPuMeeNjkq/5wcG38lBNsIZtttYfOw==, tarball: file:projects/model-server-notification.tgz}
     name: '@rush-temp/model-server-notification'
     version: 0.0.0
     dependencies:
@@ -30429,7 +30429,7 @@ packages:
     dev: false
 
   file:projects/model.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-8Rge/rE550GSKnZADVxI1ykybyTMnaYeRp872Miu2IVHPknVie3N2ZZaLlH0T6M2tQBxqlnAE8VOr1ey9KNWIQ==, tarball: file:projects/model.tgz}
+    resolution: {integrity: sha512-l4nekIx9Ooq9cDdJ/uhRmAczXr7YNvdSKIFNDDCYqJmtpdTcVtCLFrm42r0Cof/r4iVn9iFH+sg9GTzL7VLBtw==, tarball: file:projects/model.tgz}
     id: file:projects/model.tgz
     name: '@rush-temp/model'
     version: 0.0.0

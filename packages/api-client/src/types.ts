@@ -14,34 +14,85 @@
 //
 
 import { type ClientSocketFactory } from '@hcengineering/client'
-import { Client, TxOperations } from '@hcengineering/core'
+import { type Client, type TxOperations } from '@hcengineering/core'
+import { type MarkupOperations } from './markup'
 
-/** @public */
-export type APIClient = AsyncDisposable &
-Pick<TxOperations, 'createDoc' | 'updateDoc' | 'removeDoc'> &
-Omit<Client, 'notify' | 'searchFulltext' | 'tx'>
+/**
+ * Platform API client
+ * @public
+ * */
+export type PlatformClient = AsyncDisposable &
+Pick<
+TxOperations,
+| 'createDoc'
+| 'updateDoc'
+| 'removeDoc'
+| 'addCollection'
+| 'updateCollection'
+| 'removeCollection'
+| 'createMixin'
+| 'updateMixin'
+> &
+Pick<Client, 'getHierarchy' | 'getModel' | 'findAll' | 'findOne' | 'close'> &
+MarkupOperations
 
-/** @public */
+/**
+ * Configuration options for password-based authentication
+ * @public
+ */
+
 export interface PasswordAuthOptions {
+  /** User's email address */
   email: string
+
+  /** User's password */
   password: string
+
+  /** Workspace URL name */
   workspace: string
 }
 
-/** @public */
+/**
+ * Configuration options for token-based authentication
+ * @public
+ */
 export interface TokenAuthOptions {
+  /** Authentication token */
   token: string
+
+  /** Workspace URL name */
   workspace: string
 }
 
-/** @public */
+/**
+ * Union type representing all authentication options
+ * Can be either password-based or token-based authentication
+ * @public
+ */
 export type AuthOptions = PasswordAuthOptions | TokenAuthOptions
 
-/** @public */
+/**
+ * Configuration options for socket connection
+ * @public
+ */
 export interface ConnectSocketOptions {
+  /**
+   * Optional factory for creating custom WebSocket implementations
+   * Particularly useful in Node.js environments where you might need
+   * to provide a specific WebSocket client implementation
+   * If not provided, a default WebSocket implementation will be used
+   */
   socketFactory?: ClientSocketFactory
+
+  /**
+   * Optional timeout duration for the connection attempt in milliseconds
+   * Specifies how long to wait for a connection before timing out
+   */
   connectionTimeout?: number
 }
 
-/** @public */
+/**
+ * API connect options
+ * @public
+ */
 export type ConnectOptions = ConnectSocketOptions & AuthOptions
