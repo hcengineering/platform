@@ -13,14 +13,18 @@
 // limitations under the License.
 //
 
+import { type Attachment } from '@hcengineering/attachment'
 import contact, { type Person, type PersonAccount } from '@hcengineering/contact'
-import { type Doc, generateId, type Ref, type TxOperations } from '@hcengineering/core'
+import { type Class, type Doc, generateId, type Ref, type Space, type TxOperations } from '@hcengineering/core'
 import { type Document } from '@hcengineering/document'
 import { MarkupMarkType, type MarkupNode, MarkupNodeType, traverseNode, traverseNodeMarks } from '@hcengineering/text'
+import { type Issue } from '@hcengineering/tracker'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
+import { contentType } from 'mime-types'
 import * as path from 'path'
 import {
+  type ImportAttachment,
   type ImportComment,
   type ImportDoc,
   type ImportDocument,
@@ -35,8 +39,6 @@ import {
   WorkspaceImporter
 } from '../importer/importer'
 import { type FileUploader } from '../importer/uploader'
-import { type Issue } from '@hcengineering/tracker'
-import { type Attachment } from '@hcengineering/attachment'
 
 interface HulyComment {
   author: string
@@ -114,31 +116,32 @@ interface HulyDocumentHeader {
 }
 
 class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
-  constructor (private readonly metadataByFilePath: Map<string, DocMetadata>, private readonly metadataById: Map<Ref<Doc>, DocMetadata>) {}
+  constructor (
+    private readonly metadataByFilePath: Map<string, DocMetadata>,
+    private readonly metadataById: Map<Ref<Doc>, DocMetadata>,
+    private readonly attachMetadataByPath: Map<string, AttachmentMetadata>
+  ) {}
 
-  process (json: MarkupNode, id: Ref<Doc>): MarkupNode {
+  process (json: MarkupNode, id: Ref<Doc>, spaceId: Ref<Space>): MarkupNode {
     traverseNode(json, (node) => {
       if (node.type === MarkupNodeType.image) {
         const src = node.attrs?.src
         if (src !== undefined) {
-          // const sourceMeta = this.metadataById.get(id)
-          // if (sourceMeta == null) {
-          //   console.warn(`Source metadata not found for ${id}`)
-          //   return
-          // }
-          // const href = decodeURI(src as string)
-          // const fullPath = path.resolve(path.dirname(sourceMeta.path), href)
-          // const data = fs.readFileSync(fullPath)
-          // const file = new File([data], sourceMeta.refTitle)
-          // const mimeType = file.type
+          const sourceMeta = this.metadataById.get(id)
+          if (sourceMeta == null) {
+            console.warn(`Source metadata not found for ${id}`)
+            return
+          }
+          const href = decodeURI(src as string)
+          const fullPath = path.resolve(path.dirname(sourceMeta.path), href)
+          const attachmentMeta = this.attachMetadataByPath.get(fullPath)
+          if (attachmentMeta === undefined) {
+            console.warn(`Attachment image not found for ${fullPath}`)
+            return
+          }
 
-          // console.log('Image: ', src)
-          // console.log('Image: ', fullPath)
-          // const notionId = getFileId('', src as string)
-          // const meta = documentMetaMap.get(notionId)
-          // if (meta !== undefined) {
-          //   alterImageNode(node, meta)
-          // }
+          this.attachMetadataByPath.set(fullPath, { ...attachmentMeta, parentId: id, parentClass: sourceMeta.class as Ref<Class<Doc<Space>>>, spaceId })
+          this.alterImageNode(node, attachmentMeta.id, this.getContentType(attachmentMeta.name))
         }
       } else {
         traverseNodeMarks(node, (mark) => {
@@ -162,6 +165,17 @@ class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
     return json
   }
 
+  private alterImageNode (node: MarkupNode, id: Ref<Attachment>, mimeType?: string): void {
+    node.type = MarkupNodeType.image
+    if (node.attrs !== undefined) { // todo: check if this is correct
+      node.attrs['file-id'] = id
+      node.attrs.src = id
+      if (mimeType !== undefined) {
+        node.attrs['data-file-type'] = mimeType
+      }
+    }
+  }
+
   private alterInternalLinkNode (node: MarkupNode, targetMeta: DocMetadata): void {
     node.type = MarkupNodeType.reference
     node.attrs = {
@@ -172,6 +186,11 @@ class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
       content: ''
     }
   }
+
+  private getContentType (fileName: string): string | undefined {
+    const mimeType = contentType(fileName)
+    return mimeType !== false ? mimeType : undefined
+  }
 }
 
 interface DocMetadata {
@@ -181,11 +200,19 @@ interface DocMetadata {
   refTitle: string
 }
 
+interface AttachmentMetadata {
+  id: Ref<Attachment>
+  name: string
+  path: string
+  parentId?: Ref<Doc>
+  parentClass?: Ref<Class<Doc<Space>>>
+  spaceId?: Ref<Space>
+}
+
 export class HulyImporter {
   private readonly metadataByFilePath = new Map<string, DocMetadata>()
   private readonly metadataById = new Map<Ref<Doc>, DocMetadata>()
-  private readonly idByPath = new Map<string, string>()
-  private readonly attachmentIdByPath = new Map<string, Ref<Attachment>>()
+  private readonly attachMetadataByPath = new Map<string, AttachmentMetadata>()
 
   private personsByName = new Map<string, Ref<Person>>()
   private accountsByEmail = new Map<string, Ref<PersonAccount>>()
@@ -205,9 +232,28 @@ export class HulyImporter {
     console.log('IMPORT DATA STRUCTURE: ', JSON.stringify(workspaceData, null, 4))
     console.log('========================================')
 
-    const preprocessor = new HulyMarkdownPreprocessor(this.metadataByFilePath, this.metadataById)
+    console.log('Processing documents...')
+    const preprocessor = new HulyMarkdownPreprocessor(this.metadataByFilePath, this.metadataById, this.attachMetadataByPath)
     await new WorkspaceImporter(this.client, this.fileUploader, workspaceData, preprocessor).performImport()
 
+    const attachments: ImportAttachment[] = Array.from(this.attachMetadataByPath.values())
+      .filter(attachment => attachment.parentId !== undefined)
+      .map(attachment => {
+        return {
+          id: attachment.id,
+          title: path.basename(attachment.path),
+          blobProvider: async () => {
+            const data = fs.readFileSync(attachment.path)
+            return new Blob([data])
+          },
+          parentId: attachment.parentId,
+          parentClass: attachment.parentClass,
+          spaceId: attachment.spaceId
+        }
+      })
+
+    console.log('Processing attachments...')
+    await new WorkspaceImporter(this.client, this.fileUploader, { attachments }, preprocessor).performImport()
     console.log('========================================')
     console.log('IMPORT SUCCESS')
   }
@@ -257,7 +303,7 @@ export class HulyImporter {
             console.warn(`Unknown space type: ${spaceConfig.class} in ${folder}`)
         }
       } catch (error) {
-        console.warn(`Invalid space configuration in ${folder}: ${error}`)
+        console.warn(`Invalid space configuration in ${folder}: `, error)
       }
     }
 
@@ -488,7 +534,7 @@ export class HulyImporter {
           // Skip files that are already processed as documents or issues
           if (!this.metadataByFilePath.has(fullPath)) {
             const attachmentId = generateId<Attachment>()
-            this.attachmentIdByPath.set(fullPath, attachmentId)
+            this.attachMetadataByPath.set(fullPath, { id: attachmentId, name: entry.name, path: fullPath })
             console.log(`Found attachment: ${fullPath} -> ${attachmentId}`)
           }
         }

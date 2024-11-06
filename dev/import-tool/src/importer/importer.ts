@@ -19,6 +19,7 @@ import { type Person } from '@hcengineering/contact'
 import core, {
   type Account,
   type AttachedData,
+  type Class,
   type CollaborativeDoc,
   type Data,
   type Doc,
@@ -27,6 +28,7 @@ import core, {
   makeCollaborativeDoc,
   type Mixin,
   type Ref,
+  type Space,
   SortingOrder,
   type Status,
   type Timestamp,
@@ -55,6 +57,7 @@ export interface ImportWorkspace {
   persons?: ImportPerson[]
   projectTypes?: ImportProjectType[]
   spaces?: ImportSpace<ImportDoc>[]
+  attachments?: ImportAttachment[]
 }
 
 export interface ImportPerson {
@@ -134,12 +137,22 @@ export interface ImportComment {
 }
 
 export interface ImportAttachment {
+  id?: Ref<Attachment>
   title: string
   blobProvider: () => Promise<Blob | null>
+  parentId?: Ref<Doc>
+  parentClass?: Ref<Class<Doc<Space>>>
+  spaceId?: Ref<Space>
 }
 
 export interface MarkdownPreprocessor {
-  process: (json: MarkupNode, id: Ref<Doc>) => MarkupNode
+  process: (json: MarkupNode, id: Ref<Doc>, spaceId: Ref<Space>) => MarkupNode
+}
+
+class NoopMarkdownPreprocessor implements MarkdownPreprocessor {
+  process (json: MarkupNode, id: Ref<Doc>, spaceId: Ref<Space>): MarkupNode {
+    return json
+  }
 }
 
 export class WorkspaceImporter {
@@ -151,13 +164,14 @@ export class WorkspaceImporter {
     private readonly client: TxOperations,
     private readonly fileUploader: FileUploader,
     private readonly workspaceData: ImportWorkspace,
-    private readonly preprocessor: MarkdownPreprocessor
+    private readonly preprocessor: MarkdownPreprocessor = new NoopMarkdownPreprocessor()
   ) {}
 
   public async performImport (): Promise<void> {
     await this.importPersons()
     await this.importProjectTypes()
     await this.importSpaces()
+    await this.importAttachments()
   }
 
   private async importPersons (): Promise<void> {
@@ -188,6 +202,17 @@ export class WorkspaceImporter {
       } else if (space.class === 'tracker.class.Project') {
         await this.importProject(space as ImportProject)
       }
+    }
+  }
+
+  private async importAttachments (): Promise<void> {
+    if (this.workspaceData.attachments === undefined) return
+
+    for (const attachment of this.workspaceData.attachments) {
+      if (attachment.parentId === undefined || attachment.parentClass === undefined || attachment.spaceId === undefined) {
+        throw new Error('Attachment is missing parentId, parentClass or spaceId')
+      }
+      await this.importAttachment(attachment.parentId, attachment.parentClass, attachment, attachment.spaceId)
     }
   }
 
@@ -274,7 +299,7 @@ export class WorkspaceImporter {
   ): Promise<Ref<Document>> {
     const id = doc.id ?? generateId<Document>()
     const content = await doc.descrProvider()
-    const collabId = await this.createCollaborativeContent(id, 'content', content)
+    const collabId = await this.createCollaborativeContent(id, 'content', content, teamspaceId)
 
     const lastRank = await getFirstRank(this.client, teamspaceId, parentId)
     const rank = makeRank(lastRank, undefined)
@@ -381,7 +406,7 @@ export class WorkspaceImporter {
   ): Promise<{ id: Ref<Issue>, identifier: string }> {
     const issueId = issue.id ?? generateId<Issue>()
     const content = await issue.descrProvider()
-    const collabId = await this.createCollaborativeContent(issueId, 'description', content)
+    const collabId = await this.createCollaborativeContent(issueId, 'description', content, project._id)
 
     const { number, identifier } = await this.getNextIssueIdentifier(project)
     const kind = await this.getIssueKind(project)
@@ -473,7 +498,7 @@ export class WorkspaceImporter {
 
   async createComment (issueId: Ref<Issue>, comment: ImportComment, projectId: Ref<Project>): Promise<void> {
     const json = parseMessageMarkdown(comment.text ?? '', 'image://')
-    const processedJson = this.preprocessor.process(json, issueId)
+    const processedJson = this.preprocessor.process(json, issueId, projectId)
     const markup = jsonToMarkup(processedJson)
 
     const value: AttachedData<ChatMessage> = {
@@ -495,34 +520,36 @@ export class WorkspaceImporter {
     )
 
     if (comment.attachments !== undefined) {
-      await this.importAttachments(commentId, comment.attachments, projectId)
+      for (const attachment of comment.attachments) {
+        await this.importAttachment(commentId, chunter.class.ChatMessage, attachment, projectId)
+      }
     }
   }
 
-  private async importAttachments (
-    commentId: Ref<ChatMessage>,
-    attachments: ImportAttachment[],
-    projectId: Ref<Project>
+  private async importAttachment (
+    parentId: Ref<Doc>,
+    parentClass: Ref<Class<Doc<Space>>>,
+    attachment: ImportAttachment,
+    spaceId: Ref<Space>
   ): Promise<void> {
-    for (const attach of attachments) {
-      const blob = await attach.blobProvider()
-      if (blob === null) {
-        console.warn('Failed to download attachment file: ', attach.title)
-        continue
-      }
+    const blob = await attachment.blobProvider()
+    if (blob === null) {
+      console.warn('Failed to read attachment file: ', attachment.title)
+      return
+    }
 
-      const attachmentId = await this.createAttachment(blob, attach, projectId, commentId)
-      if (attachmentId === null) {
-        console.warn('Failed to upload attachment file: ', attach.title)
-      }
+    const attachmentId = await this.createAttachment(blob, attachment, spaceId, parentId, parentClass)
+    if (attachmentId === null) {
+      console.warn('Failed to upload attachment file: ', attachment.title)
     }
   }
 
   private async createAttachment (
     blob: Blob,
     attach: ImportAttachment,
-    projectId: Ref<Project>,
-    commentId: Ref<ChatMessage>
+    spaceId: Ref<Space>,
+    parentId: Ref<Doc>,
+    parentClass: Ref<Class<Doc<Space>>>
   ): Promise<Ref<Attachment> | null> {
     const attachmentId = generateId<Attachment>()
     const file = new File([blob], attach.title)
@@ -538,9 +565,9 @@ export class WorkspaceImporter {
 
         await this.client.addCollection(
           attachment.class.Attachment,
-          projectId,
-          commentId,
-          chunter.class.ChatMessage,
+          spaceId,
+          parentId,
+          parentClass,
           'attachments',
           {
             file: uploadResult[0].id,
@@ -557,9 +584,9 @@ export class WorkspaceImporter {
   }
 
   // Collaborative content handling
-  private async createCollaborativeContent (id: Ref<Doc>, field: string, content: string): Promise<CollaborativeDoc> {
+  private async createCollaborativeContent (id: Ref<Doc>, field: string, content: string, spaceId: Ref<Space>): Promise<CollaborativeDoc> {
     const json = parseMessageMarkdown(content ?? '', 'image://')
-    const processedJson = this.preprocessor.process(json, id)
+    const processedJson = this.preprocessor.process(json, id, spaceId)
     const collabId = makeCollaborativeDoc(id, 'description')
 
     const yDoc = jsonToYDocNoSchema(processedJson, field)
