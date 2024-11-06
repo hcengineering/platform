@@ -35,7 +35,6 @@ interface Config {
   MaxContentTokens: number
   MaxHistoryRecords: number
   Port: number
-  ExternalTransactorURL: boolean
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
