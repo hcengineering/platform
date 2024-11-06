@@ -14,7 +14,8 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { IntlString, Asset } from '@hcengineering/platform'
+  import { IntlString, Asset, getResource } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
     Button,
@@ -28,7 +29,14 @@
     Header,
     Breadcrumb
   } from '@hcengineering/ui'
-  import { ViewOptions, Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
+  import {
+    ViewOptionModel,
+    ViewOptions,
+    ViewQueryOption,
+    Viewlet,
+    ViewletDescriptor,
+    ViewletPreference
+  } from '@hcengineering/view'
   import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
 
   export let _class: Ref<Class<Doc>>
@@ -44,6 +52,9 @@
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
   export let modes: IModeSelector<any> | undefined = undefined
 
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
   let filterVisible: boolean = false
@@ -52,9 +63,44 @@
   let viewlets: Array<WithLookup<Viewlet>> = []
   let viewOptions: ViewOptions | undefined
 
-  $: query = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}) }
+  $: _baseQuery = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}) }
+  $: query = { ..._baseQuery }
   $: searchQuery = search === '' ? query : { ...query, $search: search }
   $: resultQuery = searchQuery
+
+  $: void updateQuery(_baseQuery, viewOptions, viewlet)
+
+  async function updateQuery (
+    initialQuery: DocumentQuery<Doc>,
+    viewOptions: ViewOptions | undefined,
+    viewlet: Viewlet | undefined
+  ): Promise<void> {
+    query =
+      viewOptions !== undefined && viewlet !== undefined
+        ? await getViewQuery(initialQuery, viewOptions, viewlet.viewOptions?.other)
+        : initialQuery
+  }
+
+  async function getViewQuery (
+    query: DocumentQuery<Doc>,
+    viewOptions: ViewOptions,
+    viewOptionsModel: ViewOptionModel[] | undefined
+  ): Promise<DocumentQuery<Doc>> {
+    if (viewOptionsModel === undefined) return query
+    let result: DocumentQuery<Doc> = hierarchy.clone(query)
+    for (const viewOption of viewOptionsModel) {
+      if (viewOption.actionTarget !== 'query') continue
+      const queryOption = viewOption as ViewQueryOption
+      const f = await getResource(queryOption.action)
+      const resultP = f(viewOptions[queryOption.key] ?? queryOption.defaultValue, result)
+      if (resultP instanceof Promise) {
+        result = await resultP
+      } else {
+        result = resultP
+      }
+    }
+    return result
+  }
 
   function showCreateDialog (): void {
     if (createComponent === undefined) return
