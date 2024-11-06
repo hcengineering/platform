@@ -35,6 +35,7 @@ import {
   WorkspaceImporter
 } from '../importer/importer'
 import { type FileUploader } from '../importer/uploader'
+import { type Issue } from '@hcengineering/tracker'
 
 interface HulyComment {
   author: string
@@ -140,7 +141,7 @@ class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
     node.type = MarkupNodeType.reference
     node.attrs = {
       id: targetMeta.id,
-      label: targetMeta.title,
+      label: targetMeta.refTitle,
       objectclass: targetMeta.class,
       text: '',
       content: ''
@@ -152,7 +153,7 @@ interface DocMetadata {
   id: Ref<Doc>
   class: string
   path: string
-  title: string
+  refTitle: string
 }
 
 export class HulyImporter {
@@ -295,16 +296,16 @@ export class HulyImporter {
           id: generateId<Document>(),
           class: 'document:class:Document',
           path: docPath,
-          title
+          refTitle: title
         }
         this.metadataById.set(docMeta.id, docMeta)
         this.metadataByFilePath.set(docPath, docMeta)
         const doc: ImportDocument = {
           id: docMeta.id as Ref<Document>,
           class: 'document:class:Document',
-          title: docMeta.title,
           descrProvider: async () => await this.readMarkdownContent(docPath),
-          subdocs: await this.processSubDocuments(spacePath, docFile)
+          subdocs: await this.processSubDocuments(spacePath, docFile),
+          title
         }
 
         documents.push(doc)
@@ -369,19 +370,33 @@ export class HulyImporter {
       const issuePath = path.join(projectPath, issueFile)
       const issueHeader = await this.readYamlHeader(issuePath) as HulyIssueHeader
 
-      const issue: ImportIssue = {
-        class: 'tracker.class.Issue',
-        title: issueHeader.title,
-        descrProvider: async () => await this.readMarkdownContent(issuePath),
-        status: { name: issueHeader.status },
-        estimation: issueHeader.estimation,
-        remainingTime: issueHeader.remainingTime,
-        comments: this.processComments(issueHeader.comments),
-        subdocs: await this.processSubIssues(projectPath, issueFile),
-        assignee: this.personsByName.get(issueHeader.assignee)
-      }
+      if (issueHeader.class === 'tracker.class.Issue') {
+        const refTitle = path.basename(issueFile, '.md')
 
-      issues.push(issue)
+        const meta: DocMetadata = {
+          id: generateId<Issue>(),
+          class: 'tracker:class:Issue',
+          path: issuePath,
+          refTitle
+        }
+        this.metadataById.set(meta.id, meta)
+        this.metadataByFilePath.set(issuePath, meta)
+
+        const issue: ImportIssue = {
+          id: meta.id as Ref<Issue>,
+          class: 'tracker.class.Issue',
+          title: issueHeader.title,
+          descrProvider: async () => await this.readMarkdownContent(issuePath),
+          status: { name: issueHeader.status },
+          estimation: issueHeader.estimation,
+          remainingTime: issueHeader.remainingTime,
+          comments: this.processComments(issueHeader.comments),
+          subdocs: await this.processSubIssues(projectPath, issueFile),
+          assignee: this.personsByName.get(issueHeader.assignee)
+        }
+
+        issues.push(issue)
+      }
     }
 
     return issues
