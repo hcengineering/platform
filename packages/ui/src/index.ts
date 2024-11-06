@@ -237,6 +237,7 @@ export { default as IconKeyShift } from './components/icons/KeyShift.svelte'
 export { default as IconFolderCollapsed } from './components/icons/FolderCollapsed.svelte'
 export { default as IconFolderExpanded } from './components/icons/FolderExpanded.svelte'
 export { default as IconCheckmark } from './components/icons/Checkmark.svelte'
+export { default as IconToDetails } from './components/icons/ToDetails.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'
 export { default as Panel } from './components/Panel.svelte'

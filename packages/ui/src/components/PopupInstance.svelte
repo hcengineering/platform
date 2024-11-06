@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { deviceOptionsStore as deviceInfo, resizeObserver, testing } from '..'
+  import { deviceOptionsStore as deviceInfo, resizeObserver, testing, checkAdaptiveMatching } from '..'
   import { CompAndProps, fitPopupElement, pin } from '../popups'
   import type { AnySvelteComponent, DeviceOptions, PopupAlignment, PopupOptions, PopupPositionElement } from '../types'
 
@@ -75,6 +75,7 @@
   }
 
   $: document.body.style.cursor = drag ? 'all-scroll' : 'default'
+  $: docSize = checkAdaptiveMatching($deviceInfo.size, 'md')
 
   function _update (result: any): void {
     if (onUpdate !== undefined) onUpdate(result)
@@ -247,9 +248,6 @@
     }
   }
 
-  $: if ($deviceInfo.docWidth <= 900 && !docSize) docSize = true
-  $: if ($deviceInfo.docWidth > 900 && docSize) docSize = false
-
   onMount(() => {
     windowSize.width = $deviceInfo.docWidth
     windowSize.height = $deviceInfo.docHeight
@@ -310,8 +308,9 @@
     on:close={(ev) => {
       _close(ev?.detail)
     }}
-    on:fullsize={() => {
-      fullSize = !fullSize
+    on:fullsize={(ev) => {
+      if (ev.detail === undefined) return
+      fullSize = ev.detail
       fitPopup(modalHTML, element, contentPanel)
     }}
     on:dock={() => {

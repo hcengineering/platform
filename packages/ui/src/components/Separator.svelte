@@ -518,6 +518,7 @@
 
   let checkElements: boolean = false
   const resizeDocument = (): void => {
+    if (checkFullWidth()) checkSizes()
     if (parentElement == null || checkElements || sState !== SeparatorState.NORMAL) return
     checkElements = true
     setTimeout(() => {
