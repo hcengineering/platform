@@ -122,7 +122,7 @@ export const uis = plugin(uiId, {
     FullSize: '' as IntlString,
     UseMaxWidth: '' as IntlString,
     Sidebar: '' as IntlString,
-    Language: '' as IntlString,
+    Language: '' as IntlString
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>,

@@ -20,9 +20,9 @@
   export let room: Room
 </script>
 
-  <div class="root">
-    <VideoPopup room={room._id} isDock canUnpin={false} />
-  </div>
+<div class="root">
+  <VideoPopup room={room._id} isDock canUnpin={false} />
+</div>
 
 <style lang="scss">
   .root {

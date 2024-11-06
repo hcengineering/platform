@@ -13,16 +13,18 @@
 // limitations under the License.
 //
 
-import { Markup, MeasureContext } from '@hcengineering/core'
 import {
   aiBotAccountEmail,
   AIEventRequest,
   AIEventType,
   AIMessageEventRequest,
   AITransferEventRequest,
+  ConnectMeetingRequest,
+  DisconnectMeetingRequest,
   OnboardingEvent,
   OnboardingEventRequest,
   OpenChatInSidebarData,
+  PostTranscriptRequest,
   TranslateRequest,
   TranslateResponse
 } from '@hcengineering/ai-bot'
@@ -32,6 +34,8 @@ import { generateToken } from '@hcengineering/server-token'
 import OpenAI from 'openai'
 import { encodingForModel } from 'js-tiktoken'
 import { htmlToMarkup, markupToHTML } from '@hcengineering/text'
+import { Markup, MeasureContext, Ref, WorkspaceId } from '@hcengineering/core'
+import { Room } from '@hcengineering/love'
 
 import { WorkspaceClient } from './workspace/workspaceClient'
 import config from './config'
@@ -92,21 +96,34 @@ export class AIControl {
     const client = this.workspaces.get(workspace)
 
     if (client !== undefined) {
-      await client.close()
-      this.workspaces.delete(workspace)
+      if (client.canClose()) {
+        await client.close()
+        this.workspaces.delete(workspace)
+      } else {
+        this.updateClearInterval(workspace)
+      }
     }
     this.connectingWorkspaces.delete(workspace)
   }
 
+  updateClearInterval (workspace: string): void {
+    const newTimeoutId = setTimeout(() => {
+      void this.closeWorkspaceClient(workspace)
+    }, CLOSE_INTERVAL_MS)
+
+    this.closeWorkspaceTimeouts.set(workspace, newTimeoutId)
+  }
+
   async createWorkspaceClient (workspace: string, info: WorkspaceInfoRecord): Promise<WorkspaceClient | undefined> {
-    const isAssigned = await tryAssignToWorkspace( workspace, this.ctx)
+    const isAssigned = await tryAssignToWorkspace(workspace, this.ctx)
 
     if (!isAssigned) {
       return
     }
 
     const token = generateToken(aiBotAccountEmail, { name: workspace })
-    const endpoint = await getTransactorEndpoint(token)
+    // TODO: remove before commit
+    const endpoint = await getTransactorEndpoint(token, 'external')
 
     this.ctx.info('Listen workspace: ', { workspace })
 
@@ -140,11 +157,7 @@ export class AIControl {
       clearTimeout(timeoutId)
     }
 
-    const newTimeoutId = setTimeout(() => {
-      void this.closeWorkspaceClient(workspace)
-    }, CLOSE_INTERVAL_MS)
-
-    this.closeWorkspaceTimeouts.set(workspace, newTimeoutId)
+    this.updateClearInterval(workspace)
     this.connectingWorkspaces.delete(workspace)
   }
 
@@ -254,5 +267,33 @@ export class AIControl {
 
   async connect (workspace: string): Promise<void> {
     await this.initWorkspaceClient(workspace)
+  }
+
+  async loveConnect (workspace: WorkspaceId, request: ConnectMeetingRequest): Promise<void> {
+    const wsClient = await this.getWorkspaceClient(workspace.name)
+    if (wsClient === undefined) return
+
+    await wsClient.loveConnect(request)
+  }
+
+  async loveDisconnect (workspace: WorkspaceId, request: DisconnectMeetingRequest): Promise<void> {
+    const wsClient = await this.getWorkspaceClient(workspace.name)
+    if (wsClient === undefined) return
+
+    await wsClient.loveDisconnect(request)
+  }
+
+  async processLoveTranscript (request: PostTranscriptRequest): Promise<void> {
+    const parsed = request.roomName.split('_')
+
+    if (parsed.length < 3) return
+
+    const workspace = parsed[0]
+    const roomId = parsed[parsed.length - 1]
+
+    const wsClient = await this.getWorkspaceClient(workspace)
+    if (wsClient === undefined) return
+
+    await wsClient.processLoveTranscript(request.transcript, request.participant, roomId as Ref<Room>)
   }
 }

@@ -41,23 +41,16 @@
   import { onDestroy } from 'svelte'
   import workbench from '@hcengineering/workbench'
   import {
-    closeWidget, closeWidgetTab,
+    closeWidget,
+    closeWidgetTab,
     minimizeSidebar,
     sidebarStore,
-    SidebarVariant, updateWidgetState
+    SidebarVariant,
+    updateWidgetState
   } from '@hcengineering/workbench-resources'
 
   import love from '../plugin'
-  import {
-    activeInvites,
-    currentRoom,
-    infos,
-    myInfo,
-    myInvites,
-    myOffice,
-    myRequests,
-    rooms
-  } from '../stores'
+  import { activeInvites, currentRoom, infos, myInfo, myInvites, myOffice, myRequests, rooms } from '../stores'
   import {
     createMeetingVideoWidgetTab,
     createMeetingWidget,
@@ -281,7 +274,7 @@
   let prevLocation: Location = $location
   $: isMeetingWidgetOpened = $sidebarStore.widgetsState.has(love.ids.MeetingWidget)
 
-  $:widgetState = $sidebarStore.widgetsState.get(love.ids.MeetingWidget)
+  $: widgetState = $sidebarStore.widgetsState.get(love.ids.MeetingWidget)
   $: if (
     isMeetingWidgetOpened &&
     $sidebarStore.widget === undefined &&
@@ -320,9 +313,13 @@
       }
 
       // Show video in sidebar when leave office
-      if ($sidebarStore.widget === love.ids.MeetingWidget &&
-          prevLocation.path[2] === loveId &&
-          loc.path[2] !== loveId && widgetState !== undefined && widgetState.tabs.some(({ id }) => id === 'video')) {
+      if (
+        $sidebarStore.widget === love.ids.MeetingWidget &&
+        prevLocation.path[2] === loveId &&
+        loc.path[2] !== loveId &&
+        widgetState !== undefined &&
+        widgetState.tabs.some(({ id }) => id === 'video')
+      ) {
         updateWidgetState(love.ids.MeetingWidget, { openedByUser: false, tab: 'video' })
       }
 
@@ -347,7 +344,7 @@
 
   $: checkActiveVideo(
     $location,
-    $isCurrentInstanceConnected && ($currentRoom?.type === RoomType.Video || ($screenSharing)),
+    $isCurrentInstanceConnected && ($currentRoom?.type === RoomType.Video || $screenSharing),
     $currentRoom?._id
   )
 

@@ -26,7 +26,10 @@
 
   const dispatch = createEventDispatcher()
 
-  interface Group { id: string, label: IntlString }
+  interface Group {
+    id: string
+    label: IntlString
+  }
 
   const groups: Group[] = [{ id: 'transcription', label: love.string.Transcription }]
 
@@ -62,7 +65,7 @@
     </div>
     <div class="component">
       {#if selectedGroup.id === 'transcription'}
-        <RoomTranscriptionSettings {room}/>
+        <RoomTranscriptionSettings {room} />
       {/if}
     </div>
   </div>

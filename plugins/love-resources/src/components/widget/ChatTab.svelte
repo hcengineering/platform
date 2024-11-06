@@ -29,17 +29,17 @@
 
   function closeThread (): void {
     console.log('closeThread')
-    updateTabData(love.ids.MeetingWidget, 'chat', { thread: undefined})
+    updateTabData(love.ids.MeetingWidget, 'chat', { thread: undefined })
   }
-  </script>
+</script>
 
-    <ChannelEmbeddedContent
-      {width}
-      {height}
-      object={meetingMinutes}
-      threadId={widgetState.tabs.find(tab => tab.id === 'chat')?.data?.thread}
-      collection="messages"
-      on:channel={closeThread}
-      onReply={replyToThread}
-      on:close
-    />
+<ChannelEmbeddedContent
+  {width}
+  {height}
+  object={meetingMinutes}
+  threadId={widgetState.tabs.find((tab) => tab.id === 'chat')?.data?.thread}
+  collection="messages"
+  on:channel={closeThread}
+  onReply={replyToThread}
+  on:close
+/>

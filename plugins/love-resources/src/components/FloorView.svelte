@@ -13,10 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref} from '@hcengineering/core'
-  import {
-    Scroller
-  } from '@hcengineering/ui'
+  import { Ref } from '@hcengineering/core'
+  import { Scroller } from '@hcengineering/ui'
   import { ParticipantInfo, Room } from '@hcengineering/love'
   import { infos } from '../stores'
   import { calculateFloorSize } from '../utils'
@@ -33,10 +31,11 @@
 
   $: rows = calculateFloorSize(rooms) - 1
 </script>
-<Scroller padding='1rem' bottomPadding='4rem' horizontal>
-        <FloorGrid bind:floorContainer {rows} preview>
-          {#each rooms as room}
-            <RoomPreview {room} info={getInfo(room._id, $infos)} />
-          {/each}
-        </FloorGrid>
-    </Scroller>
+
+<Scroller padding="1rem" bottomPadding="4rem" horizontal>
+  <FloorGrid bind:floorContainer {rows} preview>
+    {#each rooms as room}
+      <RoomPreview {room} info={getInfo(room._id, $infos)} />
+    {/each}
+  </FloorGrid>
+</Scroller>

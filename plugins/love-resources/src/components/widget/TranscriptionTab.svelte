@@ -35,7 +35,7 @@
   {width}
   {height}
   object={meetingMinutes}
-  threadId={widgetState.tabs.find(tab => tab.id === 'transcription')?.data?.thread}
+  threadId={widgetState.tabs.find((tab) => tab.id === 'transcription')?.data?.thread}
   collection="transcription"
   on:channel={closeThread}
   onReply={replyToThread}

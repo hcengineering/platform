@@ -69,7 +69,7 @@ export async function connectMeeting (
 
   try {
     const req: ConnectMeetingRequest = { roomId, roomSid: sid, transcription: options.transcription ?? false, language }
-    await fetch(concatLink(url, '/connectMeeting'), {
+    await fetch(concatLink(url, 'love/connect'), {
       method: 'POST',
       headers: {
         Authorization: 'Bearer ' + token,
@@ -93,7 +93,7 @@ export async function disconnectMeeting (roomId: Ref<Room>): Promise<void> {
 
   try {
     const req: DisconnectMeetingRequest = { roomId }
-    await fetch(concatLink(url, '/disconnectMeeting'), {
+    await fetch(concatLink(url, 'love/disconnect'), {
       method: 'POST',
       headers: {
         Authorization: 'Bearer ' + token,

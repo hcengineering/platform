@@ -74,7 +74,7 @@
     >
       <svelte:fragment slot="header">
         <div class="mt-3">
-          <ThreadParentMessage {message} {readonly} {onReply}/>
+          <ThreadParentMessage {message} {readonly} {onReply} />
         </div>
 
         {#if (message.replies ?? $messagesStore?.length ?? 0) > 0}

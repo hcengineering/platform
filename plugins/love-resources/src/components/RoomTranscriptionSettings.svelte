@@ -33,12 +33,12 @@
     <div class="antiGrid-row__header">
       <Label label={ui.string.Language} />
     </div>
-        <RoomLanguageSelector {room} />
+    <RoomLanguageSelector {room} />
   </div>
   <div class="antiGrid-row">
     <div class="antiGrid-row__header">
       <Label label={love.string.StartWithTranscription} />
     </div>
-        <ModernToggle size="small" checked={room.startWithTranscription} on:change={toggleTranscribing} />
+    <ModernToggle size="small" checked={room.startWithTranscription} on:change={toggleTranscribing} />
   </div>
 </div>

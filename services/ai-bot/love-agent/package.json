@@ -15,7 +15,7 @@
     "build": "node esbuild.config.js",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint --fix src/**/*.ts",
-    "format": "pnpm lint:fix && prettier --write src/**/*.ts"
+    "format": "prettier --write src/**/*.ts && pnpm lint:fix"
   },
   "devDependencies": {
     "@types/node": "~20.11.16",

@@ -16,6 +16,7 @@
 import { Account, Class, Doc, Markup, Ref, Space, Timestamp } from '@hcengineering/core'
 import { ChatMessage } from '@hcengineering/chunter'
 import { Room, RoomLanguage } from '@hcengineering/love'
+import { Person } from '@hcengineering/contact'
 
 export enum AIEventType {
   Message = 'message',
@@ -71,6 +72,6 @@ export interface DisconnectMeetingRequest {
 
 export interface PostTranscriptRequest {
   transcript: string
-  participant: string
+  participant: Ref<Person>
   roomName: string
 }

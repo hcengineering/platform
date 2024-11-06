@@ -87,19 +87,19 @@
 </script>
 
 {#if widgetState && room}
-{#if widgetState.tab === 'video'}
-  <VideoTab {room}/>
+  {#if widgetState.tab === 'video'}
+    <VideoTab {room} />
   {:else if widgetState.tab === 'chat'}
-  {#if !isMeetingMinutesLoaded}
-    <Loading/>
+    {#if !isMeetingMinutesLoaded}
+      <Loading />
     {:else if meetingMinutes}
-  <ChatTab {meetingMinutes} {widgetState} {height} {width} on:close={handleClose}/>
+      <ChatTab {meetingMinutes} {widgetState} {height} {width} on:close={handleClose} />
     {/if}
   {:else if widgetState.tab === 'transcription'}
-  {#if !isMeetingMinutesLoaded}
-    <Loading/>
-  {:else if meetingMinutes}
-   <TranscriptionTab {meetingMinutes} {widgetState} {height} {width} on:close={handleClose}/>
-  {/if}
+    {#if !isMeetingMinutesLoaded}
+      <Loading />
+    {:else if meetingMinutes}
+      <TranscriptionTab {meetingMinutes} {widgetState} {height} {width} on:close={handleClose} />
+    {/if}
   {/if}
 {/if}

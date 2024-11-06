@@ -18,9 +18,9 @@ import { fileURLToPath } from 'node:url'
 import { RemoteParticipant, RemoteTrack, RemoteTrackPublication, RoomEvent, TrackKind } from '@livekit/rtc-node'
 
 import { STT } from './stt.js'
-import { Metadata } from './type.js'
+import { Metadata, TranscriptionStatus } from './type.js'
 
-function parseMetadata(metadata: string): Metadata {
+function parseMetadata (metadata: string): Metadata {
   try {
     return JSON.parse(metadata) as Metadata
   } catch (e) {
@@ -30,7 +30,7 @@ function parseMetadata(metadata: string): Metadata {
   return {}
 }
 
-function applyMetadata(data: string, stt: STT): void {
+function applyMetadata (data: string, stt: STT): void {
   if (data === '') return
   const metadata = parseMetadata(data)
 
@@ -38,9 +38,12 @@ function applyMetadata(data: string, stt: STT): void {
     stt.updateLanguage(metadata.language)
   }
 
-  if (metadata.transcription === true) {
+  if (metadata.transcription === TranscriptionStatus.InProgress) {
     stt.start()
-  } else if (metadata.transcription === false) {
+  } else if (
+    metadata.transcription === TranscriptionStatus.Completed ||
+    metadata.transcription === TranscriptionStatus.Idle
+  ) {
     stt.stop()
   }
 }
@@ -94,7 +97,7 @@ export default defineAgent({
   }
 })
 
-export function runAgent(): void {
+export function runAgent (): void {
   cli.runApp(
     new WorkerOptions({
       agent: fileURLToPath(import.meta.url),

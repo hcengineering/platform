@@ -55,18 +55,18 @@ export class STT {
   private readonly dgConnectionBySid = new Map<string, ListenLiveClient>()
   private readonly intervalBySid = new Map<string, NodeJS.Timeout>()
 
-  private readonly transcriptsBySid = new Map<string, { value: string; startedOn: number }>()
+  private readonly transcriptsBySid = new Map<string, { value: string, startedOn: number }>()
 
   private readonly interval: NodeJS.Timeout
 
-  constructor(private readonly name: string) {
+  constructor (private readonly name: string) {
     this.deepgram = createClient(config.DeepgramApiKey)
     this.interval = this.interval = setInterval(() => {
       this.sendTranscriptToPlatform()
     }, config.TranscriptDelay)
   }
 
-  sendTranscriptToPlatform(): void {
+  sendTranscriptToPlatform (): void {
     const now = Date.now()
     for (const [sid, transcript] of this.transcriptsBySid.entries()) {
       if (now - transcript.startedOn > config.TranscriptDelay) {
@@ -76,7 +76,7 @@ export class STT {
     }
   }
 
-  updateLanguage(language: string): void {
+  updateLanguage (language: string): void {
     const shouldRestart = (this.language ?? 'en') !== language
     this.language = language
     if (shouldRestart) {
@@ -85,7 +85,7 @@ export class STT {
     }
   }
 
-  start(): void {
+  start (): void {
     if (this.isInProgress) return
     this.isInProgress = true
 
@@ -94,7 +94,7 @@ export class STT {
     }
   }
 
-  stop(): void {
+  stop (): void {
     if (!this.isInProgress) return
     this.isInProgress = false
     for (const sid of this.trackBySid.keys()) {
@@ -102,15 +102,15 @@ export class STT {
     }
   }
 
-  mute(sid: string): void {
+  mute (sid: string): void {
     this.mutedTracks.add(sid)
   }
 
-  unmute(sid: string): void {
+  unmute (sid: string): void {
     this.mutedTracks.delete(sid)
   }
 
-  subscribe(track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant): void {
+  subscribe (track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant): void {
     if (this.trackBySid.has(publication.sid)) return
     this.trackBySid.set(publication.sid, track)
     this.participantBySid.set(publication.sid, participant)
@@ -122,14 +122,14 @@ export class STT {
     }
   }
 
-  unsubscribe(_: RemoteTrack | undefined, publication: RemoteTrackPublication, participant: RemoteParticipant): void {
+  unsubscribe (_: RemoteTrack | undefined, publication: RemoteTrackPublication, participant: RemoteParticipant): void {
     this.trackBySid.delete(publication.sid)
     this.participantBySid.delete(participant.sid)
     this.mutedTracks.delete(publication.sid)
     this.stopDeepgram(publication.sid)
   }
 
-  stopDeepgram(sid: string): void {
+  stopDeepgram (sid: string): void {
     const stream = this.streamBySid.get(sid)
     if (stream !== undefined) {
       stream.close()
@@ -151,7 +151,7 @@ export class STT {
     this.streamBySid.delete(sid)
   }
 
-  processTrack(sid: string): void {
+  processTrack (sid: string): void {
     const track = this.trackBySid.get(sid)
     if (track === undefined) return
     if (this.dgConnectionBySid.has(sid)) return
@@ -217,7 +217,7 @@ export class STT {
     void this.streamToDeepgram(sid, stream)
   }
 
-  async streamToDeepgram(sid: string, stream: AudioStream): Promise<void> {
+  async streamToDeepgram (sid: string, stream: AudioStream): Promise<void> {
     for await (const frame of stream) {
       if (!this.isInProgress) continue
       if (this.mutedTracks.has(sid)) continue
@@ -232,7 +232,7 @@ export class STT {
     }
   }
 
-  async sendToPlatform(transcript: string, sid: string): Promise<void> {
+  async sendToPlatform (transcript: string, sid: string): Promise<void> {
     const request = {
       transcript,
       participant: this.participantBySid.get(sid)?.identity,
@@ -240,7 +240,7 @@ export class STT {
     }
 
     try {
-      await fetch(`${config.PlatformUrl}/transcript`, {
+      await fetch(`${config.PlatformUrl}/love/transcript`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -253,7 +253,7 @@ export class STT {
     }
   }
 
-  close(): void {
+  close (): void {
     clearInterval(this.interval)
     for (const sid of this.transcriptsBySid.keys()) {
       this.trackBySid.delete(sid)

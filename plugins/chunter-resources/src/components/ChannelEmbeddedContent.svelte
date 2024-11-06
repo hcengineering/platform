@@ -43,7 +43,15 @@
 {#if renderChannel && visible}
   <div class="channel" class:invisible={threadId !== undefined} style:height style:width>
     {#key object._id}
-      <Channel {object} {context} syncLocation={false} freeze={threadId !== undefined} {collection} {withInput} {onReply}/>
+      <Channel
+        {object}
+        {context}
+        syncLocation={false}
+        freeze={threadId !== undefined}
+        {collection}
+        {withInput}
+        {onReply}
+      />
     {/key}
   </div>
 {/if}

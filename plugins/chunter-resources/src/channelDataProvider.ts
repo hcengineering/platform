@@ -201,7 +201,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       {
         attachedTo: this.chatId,
         space: this.space,
-        ...this.collection != null ? { collection: this.collection } : {}
+        ...(this.collection != null ? { collection: this.collection } : {})
       },
       (res) => {
         this.updatesDates(res)
@@ -286,7 +286,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       {
         attachedTo: this.chatId,
         space: this.space,
-        ...this.collection != null ? { collection: this.collection } : {},
+        ...(this.collection != null ? { collection: this.collection } : {}),
         ...query,
         ...(this.tailStart !== undefined ? { createdOn: { $gte: this.tailStart } } : {})
       },
@@ -341,7 +341,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       {
         attachedTo: this.chatId,
         space: this.space,
-        ...this.collection != null ? { collection: this.collection } : {},
+        ...(this.collection != null ? { collection: this.collection } : {}),
         createdOn: equal
           ? isBackward
             ? { $lte: loadAfter }

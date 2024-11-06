@@ -16,7 +16,8 @@
   import activity, {
     ActivityMessageViewlet,
     DisplayActivityMessage,
-    ActivityMessageViewType, ActivityMessage
+    ActivityMessageViewType,
+    ActivityMessage
   } from '@hcengineering/activity'
   import { Person } from '@hcengineering/contact'
   import { Avatar, SystemAvatar } from '@hcengineering/contact-resources'
@@ -148,9 +149,13 @@
     const showCustomPopup = !isTextClicked(event.target as HTMLElement, event.clientX, event.clientY)
     if (showCustomPopup) {
       const overrides = onReply ? new Map([[activity.action.Reply, onReply]]) : []
-      showMenu(event, { object: message, baseMenuClass: activity.class.ActivityMessage, excludedActions, overrides }, () => {
-        isActionsOpened = false
-      })
+      showMenu(
+        event,
+        { object: message, baseMenuClass: activity.class.ActivityMessage, excludedActions, overrides },
+        () => {
+          isActionsOpened = false
+        }
+      )
       isActionsOpened = true
     }
   }
@@ -249,7 +254,7 @@
         <slot name="content" {readonly} />
 
         {#if !hideFooter}
-          <Replies {embedded} object={message} {onReply}/>
+          <Replies {embedded} object={message} {onReply} />
         {/if}
         <ReactionsPresenter object={message} {readonly} />
         {#if parentMessage && showEmbedded}

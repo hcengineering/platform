@@ -96,14 +96,14 @@
   <div class="activityMessage-actionPopup">
     {#each inlineActions as inline}
       {#if inline.icon}
-          <ActivityMessageAction
-            label={inline.label}
-            size={inline.actionProps?.size ?? 'small'}
-            icon={inline.icon}
-            iconProps={inline.actionProps?.iconProps}
-            dataId={inline._id}
-            action={ev => handleAction(inline, ev)}
-          />
+        <ActivityMessageAction
+          label={inline.label}
+          size={inline.actionProps?.size ?? 'small'}
+          icon={inline.icon}
+          iconProps={inline.actionProps?.iconProps}
+          dataId={inline._id}
+          action={(ev) => handleAction(inline, ev)}
+        />
       {/if}
     {/each}
 

@@ -20,7 +20,7 @@ import {
   MeasureContext,
   systemAccountEmail
 } from '@hcengineering/core'
-import { generateToken, Token } from '@hcengineering/server-token'
+import { generateToken } from '@hcengineering/server-token'
 import { getWorkspaceInfo, assignWorkspace } from '@hcengineering/server-client'
 import aiBot, { aiBotAccountEmail } from '@hcengineering/ai-bot'
 
@@ -69,7 +69,7 @@ export async function tryAssignToWorkspace (
 
     if (isWorkspaceCreating(info?.mode)) {
       const t = setTimeout(() => {
-        void tryAssignToWorkspace( workspace, ctx, false)
+        void tryAssignToWorkspace(workspace, ctx, false)
       }, ASSIGN_WORKSPACE_DELAY_MS)
 
       timeoutByWorkspace.set(workspace, t)
@@ -85,7 +85,8 @@ export async function tryAssignToWorkspace (
       undefined,
       false,
       undefined,
-      aiBot.account.AIBot)
+      aiBot.account.AIBot
+    )
     ctx.info('Assigned to workspace: ', { workspace })
     return true
   } catch (e) {

@@ -13,7 +13,13 @@
 // limitations under the License.
 //
 
-import aiBot, { aiBotAccountEmail, AIMessageEventRequest, AITransferEventRequest } from '@hcengineering/ai-bot'
+import aiBot, {
+  aiBotAccountEmail,
+  AIMessageEventRequest,
+  AITransferEventRequest,
+  ConnectMeetingRequest,
+  DisconnectMeetingRequest
+} from '@hcengineering/ai-bot'
 import chunter, {
   ChatMessage,
   type ChatWidgetTab,
@@ -57,11 +63,14 @@ import { WithId } from 'mongodb'
 import OpenAI from 'openai'
 import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-collector'
 import workbench, { SidebarEvent, TxSidebarEvent } from '@hcengineering/workbench'
+import { generateToken } from '@hcengineering/server-token'
+import { Room } from '@hcengineering/love'
 
 import config from '../config'
 import { AIControl } from '../controller'
 import { connectPlatform, getDirect } from '../utils/platform'
 import { HistoryRecord } from '../types'
+import { LoveController } from './love'
 import { createChatCompletion, requestSummary } from '../utils/openai'
 
 const MAX_LOGIN_DELAY_MS = 15 * 1000 // 15 ses
@@ -90,6 +99,8 @@ export class WorkspaceClient {
 
   summarizing = new Set<Ref<Doc>>()
 
+  love: LoveController | undefined
+
   constructor (
     readonly transactorUrl: string,
     readonly token: string,
@@ -112,6 +123,12 @@ export class WorkspaceClient {
     const opClient = new TxOperations(this.client, aiBot.account.AIBot)
 
     await this.uploadAvatarFile(opClient)
+
+    if (this.aiPerson !== undefined && config.LoveEndpoint !== '') {
+      const token = generateToken(aiBotAccountEmail, { name: this.workspace })
+      this.love = new LoveController(this.workspace, this.ctx.newChild('love', {}), token, opClient, this.aiPerson)
+    }
+
     const typing = await opClient.findAll(chunter.class.TypingInfo, { user: aiBot.account.AIBot })
     this.typingMap = new Map(typing.map((t) => [t.objectId, t]))
     this.client.notify = (...txes: Tx[]) => {
@@ -614,6 +631,10 @@ export class WorkspaceClient {
   }
 
   protected async txHandler (_: TxOperations, txes: Tx[]): Promise<void> {
+    if (this.love !== undefined) {
+      this.love.txHandler(txes)
+    }
+
     for (const ttx of txes) {
       const tx = TxProcessor.extractTx(ttx)
 
@@ -666,5 +687,44 @@ export class WorkspaceClient {
     }
 
     await client.tx(tx)
+  }
+
+  async loveConnect (request: ConnectMeetingRequest): Promise<void> {
+    await this.opClient
+    if (this.love === undefined) {
+      console.error('Love is not initialized')
+      return
+    }
+    await this.love.connect(request)
+  }
+
+  async loveDisconnect (request: DisconnectMeetingRequest): Promise<void> {
+    // Just wait initialization
+    await this.opClient
+
+    if (this.love === undefined) {
+      this.ctx.error('Love controller is not initialized')
+      return
+    }
+
+    await this.love.disconnect(request.roomId)
+  }
+
+  async processLoveTranscript (text: string, participant: Ref<Person>, room: Ref<Room>): Promise<void> {
+    // Just wait initialization
+    await this.opClient
+
+    if (this.love === undefined) {
+      this.ctx.error('Love controller is not initialized')
+      return
+    }
+
+    await this.love.processTranscript(text, participant, room)
+  }
+
+  canClose (): boolean {
+    if (this.love === undefined) return true
+
+    return !this.love.hasActiveConnections()
   }
 }

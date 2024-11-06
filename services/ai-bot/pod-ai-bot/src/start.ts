@@ -17,15 +17,14 @@ import { setMetadata } from '@hcengineering/platform'
 import serverAiBot from '@hcengineering/server-ai-bot'
 import serverClient, { createAccount } from '@hcengineering/server-client'
 import serverToken from '@hcengineering/server-token'
-import { initStatisticsContext } from '@hcengineering/server-core'
 import { aiBotAccountEmail } from '@hcengineering/ai-bot'
+import { initStatisticsContext } from '@hcengineering/server-core'
 
 import { AIControl } from './controller'
 import config from './config'
 import { closeDB, DbStorage, getDB } from './storage'
 import { registerLoaders } from './loaders'
 import { createServer, listen } from './server/server'
-
 
 export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.ServerSecret)
@@ -34,8 +33,8 @@ export const start = async (): Promise<void> => {
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
 
   registerLoaders()
-  const ctx = initStatisticsContext('ai-bot-service', {})
 
+  const ctx = initStatisticsContext('ai-bot-service', {})
   ctx.info('AI Bot Service started', { firstName: config.FirstName, lastName: config.LastName })
 
   const db = await getDB()
@@ -50,12 +49,13 @@ export const start = async (): Promise<void> => {
     }
     await new Promise((resolve) => setTimeout(resolve, 3000))
   }
-  const aiController = new AIControl(storage, ctx)
-  const app = createServer(aiController)
+  const aiControl = new AIControl(storage, ctx)
+
+  const app = createServer(aiControl)
   const server = listen(app, config.Port)
 
   const onClose = (): void => {
-    void aiController.close()
+    void aiControl.close()
     void closeDB()
     server.close(() => process.exit())
   }

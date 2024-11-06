@@ -1,11 +1,11 @@
 import { Analytics } from '@hcengineering/analytics'
-import calendar, { getAllEvents, type Event } from '@hcengineering/calendar'
+import calendar, { type Event, getAllEvents } from '@hcengineering/calendar'
 import contact, { getName, type Person, type PersonAccount } from '@hcengineering/contact'
 import core, {
   AccountRole,
   concatLink,
-  getCurrentAccount,
   type Data,
+  getCurrentAccount,
   type IdMap,
   type Ref,
   type Space,
@@ -13,48 +13,49 @@ import core, {
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import {
-  RequestStatus,
-  RoomAccess,
-  RoomType,
-  isOffice,
-  loveId,
+  getFreeRoomPlace,
   type Invite,
+  isOffice,
   type JoinRequest,
+  LoveEvents,
+  loveId,
   type Meeting,
   type Office,
   type ParticipantInfo,
+  RequestStatus,
   type Room,
-  LoveEvents,
-  getFreeRoomPlace
+  RoomAccess,
+  RoomType,
+  TranscriptionStatus
 } from '@hcengineering/love'
 import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
 import presentation, {
+  copyTextToClipboard,
   createQuery,
-  getClient,
   type DocCreatePhase,
-  copyTextToClipboard
+  getClient
 } from '@hcengineering/presentation'
-import { getCurrentLocation, navigate, type DropdownTextItem, showPopup, type Location } from '@hcengineering/ui'
-import { KrispNoiseFilter, isKrispNoiseFilterSupported } from '@livekit/krisp-noise-filter'
+import { type DropdownTextItem, getCurrentLocation, type Location, navigate, showPopup } from '@hcengineering/ui'
+import { isKrispNoiseFilterSupported, KrispNoiseFilter } from '@livekit/krisp-noise-filter'
 import { BackgroundBlur, type BackgroundOptions, type ProcessorWrapper } from '@livekit/track-processors'
 import {
-  ConnectionState,
-  Room as LKRoom,
-  LocalAudioTrack,
-  LocalVideoTrack,
-  RoomEvent,
-  Track,
   type AudioCaptureOptions,
+  ConnectionState,
+  LocalAudioTrack,
   type LocalTrack,
   type LocalTrackPublication,
+  LocalVideoTrack,
   type RemoteParticipant,
   type RemoteTrack,
   type RemoteTrackPublication,
+  Room as LKRoom,
+  RoomEvent,
+  Track,
   type VideoCaptureOptions
 } from 'livekit-client'
 import { get, writable } from 'svelte/store'
 import aiBot from '@hcengineering/ai-bot'
-import { disconnectMeeting, connectMeeting } from '@hcengineering/ai-bot-resources'
+import { connectMeeting, disconnectMeeting } from '@hcengineering/ai-bot-resources'
 import { openWidget, sidebarStore, updateWidgetState } from '@hcengineering/workbench-resources'
 import { type Widget, type WidgetTab } from '@hcengineering/workbench'
 import view from '@hcengineering/view'
@@ -355,7 +356,7 @@ lk.on(RoomEvent.RoomMetadataChanged, (metadata) => {
       isRecording.set(data.recording)
     }
     if (data.transcription !== undefined) {
-      isTranscription.set(data.transcription)
+      isTranscription.set(data.transcription === TranscriptionStatus.InProgress)
     }
   } catch (err: any) {
     Analytics.handleError(err)
@@ -379,7 +380,7 @@ lk.on(RoomEvent.Disconnected, () => {
 
 function initRoomMetadata (metadata: string | undefined): void {
   if (metadata === undefined) return
-  let data: { transcription?: boolean } = {}
+  let data: { transcription?: TranscriptionStatus } = {}
   try {
     data = metadata === '' ? {} : JSON.parse(metadata)
   } catch (err: any) {
@@ -387,11 +388,14 @@ function initRoomMetadata (metadata: string | undefined): void {
     Analytics.handleError(err)
   }
 
-  isTranscription.set(data.transcription ?? false)
+  isTranscription.set(data.transcription === TranscriptionStatus.InProgress)
 
   const room = get(currentRoom)
 
-  if (data.transcription == null && room?.startWithTranscription === true) {
+  if (
+    (data.transcription == null || data.transcription === TranscriptionStatus.Idle) &&
+    room?.startWithTranscription === true
+  ) {
     void startTranscription(room)
   }
 }
@@ -908,14 +912,16 @@ export function isTranscriptionAllowed (): boolean {
 
 export function createMeetingWidget (widget: Widget, room: Ref<Room>, loc: Location, video: boolean): void {
   const tabs: WidgetTab[] = [
-    ...video
-      ? [{
-          id: 'video',
-          name: 'Video',
-          icon: love.icon.Cam,
-          readonly: true
-        }]
-      : [],
+    ...(video
+      ? [
+          {
+            id: 'video',
+            name: 'Video',
+            icon: love.icon.Cam,
+            readonly: true
+          }
+        ]
+      : []),
     {
       id: 'chat',
       name: 'Chat',
@@ -952,5 +958,8 @@ export function createMeetingVideoWidgetTab (widget: Widget, loc: Location): voi
     icon: love.icon.Cam,
     readonly: true
   }
-  updateWidgetState(widget._id, { tabs: [tab, ...widgetState.tabs], tab: state.widget === widget._id && loc.path[2] === loveId ? widgetState.tab : 'video' })
+  updateWidgetState(widget._id, {
+    tabs: [tab, ...widgetState.tabs],
+    tab: state.widget === widget._id && loc.path[2] === loveId ? widgetState.tab : 'video'
+  })
 }

@@ -31,6 +31,12 @@ export interface Floor extends Doc {
   name: string
 }
 
+export enum TranscriptionStatus {
+  Idle = 'idle',
+  InProgress = 'inProgress',
+  Completed = 'completed'
+}
+
 export type RoomLanguage =
   | 'bg'
   | 'ca'

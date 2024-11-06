@@ -145,7 +145,7 @@
 
 {#if message}
   {#key _id}
-    <ThreadContent bind:selectedMessageId {message} {autofocus} {onReply}/>
+    <ThreadContent bind:selectedMessageId {message} {autofocus} {onReply} />
   {/key}
 {:else if isLoading}
   <Loading />

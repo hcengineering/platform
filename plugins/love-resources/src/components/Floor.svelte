@@ -14,13 +14,7 @@
 -->
 <script lang="ts">
   import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import {
-    Breadcrumb,
-    Header,
-    IconEdit,
-    ModernButton,
-    Switcher
-  } from '@hcengineering/ui'
+  import { Breadcrumb, Header, IconEdit, ModernButton, Switcher } from '@hcengineering/ui'
   import { Floor, Room } from '@hcengineering/love'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
@@ -75,10 +69,10 @@
   </Header>
   <div class="hulyComponent-content__column content">
     {#if selectedViewlet === 'meetingMinutes'}
-      <MeetingsTable/>
-      {:else}
-      <FloorView {rooms}/>
-      {/if}
+      <MeetingsTable />
+    {:else}
+      <FloorView {rooms} />
+    {/if}
   </div>
   {#if $currentRoom}
     <ControlBar room={$currentRoom} />
