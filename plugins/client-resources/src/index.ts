@@ -106,7 +106,7 @@ export default async () => {
           const tokenPayload: { workspace: string, email: string } = decodeTokenPayload(token)
 
           const newOpt = { ...opt }
-          const connectTimeout = getMetadata(clientPlugin.metadata.ConnectionTimeout)
+          const connectTimeout = opt?.connectionTimeout ?? getMetadata(clientPlugin.metadata.ConnectionTimeout)
           let connectPromise: Promise<void> | undefined
           if ((connectTimeout ?? 0) > 0) {
             connectPromise = new Promise<void>((resolve, reject) => {
