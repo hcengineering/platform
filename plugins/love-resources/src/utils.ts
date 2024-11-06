@@ -24,11 +24,17 @@ import {
   type Office,
   type ParticipantInfo,
   type Room,
-  LoveEvents
+  LoveEvents,
+  getFreeRoomPlace
 } from '@hcengineering/love'
 import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
-import presentation, { createQuery, getClient, type DocCreatePhase } from '@hcengineering/presentation'
-import { getCurrentLocation, navigate, type DropdownTextItem } from '@hcengineering/ui'
+import presentation, {
+  createQuery,
+  getClient,
+  type DocCreatePhase,
+  copyTextToClipboard
+} from '@hcengineering/presentation'
+import { getCurrentLocation, navigate, type DropdownTextItem, showPopup, type Location } from '@hcengineering/ui'
 import { KrispNoiseFilter, isKrispNoiseFilterSupported } from '@livekit/krisp-noise-filter'
 import { BackgroundBlur, type BackgroundOptions, type ProcessorWrapper } from '@livekit/track-processors'
 import {
@@ -47,9 +53,16 @@ import {
   type VideoCaptureOptions
 } from 'livekit-client'
 import { get, writable } from 'svelte/store'
+import aiBot from '@hcengineering/ai-bot'
+import { disconnectMeeting, connectMeeting } from '@hcengineering/ai-bot-resources'
+import { openWidget, sidebarStore, updateWidgetState } from '@hcengineering/workbench-resources'
+import { type Widget, type WidgetTab } from '@hcengineering/workbench'
+import view from '@hcengineering/view'
+
 import { sendMessage } from './broadcast'
 import love from './plugin'
 import { $myPreferences, currentRoom } from './stores'
+import RoomSettingsPopup from './components/RoomSettingsPopup.svelte'
 
 export const selectedCamId = 'selectedDevice_cam'
 export const selectedMicId = 'selectedDevice_mic'
@@ -130,6 +143,7 @@ isCurrentInstanceConnected.subscribe((value) => {
 })
 export const screenSharing = writable<boolean>(false)
 export const isRecording = writable<boolean>(false)
+export const isTranscription = writable<boolean>(false)
 export const isRecordingAvailable = writable<boolean>(false)
 export const isMicEnabled = writable<boolean>(false)
 export const isCameraEnabled = writable<boolean>(false)
@@ -340,15 +354,20 @@ lk.on(RoomEvent.RoomMetadataChanged, (metadata) => {
     if (data.recording !== undefined) {
       isRecording.set(data.recording)
     }
+    if (data.transcription !== undefined) {
+      isTranscription.set(data.transcription)
+    }
   } catch (err: any) {
     Analytics.handleError(err)
   }
 })
+
 lk.on(RoomEvent.Connected, () => {
   isConnected.set(true)
   sendMessage({ type: 'connect', value: true })
   isCurrentInstanceConnected.set(true)
   isRecording.set(lk.isRecording)
+  initRoomMetadata(lk.metadata)
   Analytics.handleEvent(LoveEvents.ConnectedToRoom)
 })
 lk.on(RoomEvent.Disconnected, () => {
@@ -358,6 +377,24 @@ lk.on(RoomEvent.Disconnected, () => {
   Analytics.handleEvent(LoveEvents.DisconnectedFromRoom)
 })
 
+function initRoomMetadata (metadata: string | undefined): void {
+  if (metadata === undefined) return
+  let data: { transcription?: boolean } = {}
+  try {
+    data = metadata === '' ? {} : JSON.parse(metadata)
+  } catch (err: any) {
+    data = {}
+    Analytics.handleError(err)
+  }
+
+  isTranscription.set(data.transcription ?? false)
+
+  const room = get(currentRoom)
+
+  if (data.transcription == null && room?.startWithTranscription === true) {
+    void startTranscription(room)
+  }
+}
 export async function connect (name: string, room: Room, _id: string): Promise<void> {
   const wsURL = getMetadata(love.metadata.WebSocketURL)
   if (wsURL === undefined) {
@@ -554,25 +591,6 @@ export async function connectRoom (
 export const joinRequest: Ref<JoinRequest> | undefined = undefined
 const requestsQuery = createQuery(true)
 
-export function getFreePlace (room: Room, info: ParticipantInfo[]): { x: number, y: number } {
-  const me = getCurrentAccount()
-  let y = 0
-  while (true) {
-    for (let x = 0; x < room.width; x++) {
-      if (info.find((p) => p.x === x && p.y === y) === undefined) {
-        if (x === 0 && y === 0 && isOffice(room)) {
-          if (room.person === (me as PersonAccount).person) {
-            return { x: 0, y: 0 }
-          }
-        } else {
-          return { x, y }
-        }
-      }
-    }
-    y++
-  }
-}
-
 export function calculateFloorSize (_rooms: Room[], preview?: boolean): number {
   let fH: number = 5
   _rooms.forEach((room) => {
@@ -626,8 +644,8 @@ export async function tryConnect (
   currentInvites: Invite[],
   place?: { x: number, y: number }
 ): Promise<void> {
-  const me = getCurrentAccount()
-  const currentPerson = personByIdStore.get((me as PersonAccount).person)
+  const me = getCurrentAccount() as PersonAccount
+  const currentPerson = personByIdStore.get(me.person)
   if (currentPerson === undefined) return
   const client = getClient()
 
@@ -643,7 +661,7 @@ export async function tryConnect (
     place = undefined
   }
   if (place === undefined) {
-    place = getFreePlace(room, info)
+    place = getFreeRoomPlace(room, info, me.person)
   }
   const x: number = place.x
   const y: number = place.y
@@ -674,7 +692,7 @@ export async function tryConnect (
       room: room._id,
       status: RequestStatus.Pending
     })
-    requestsQuery.query(love.class.JoinRequest, { person: (me as PersonAccount).person, _id }, (res) => {
+    requestsQuery.query(love.class.JoinRequest, { person: me.person, _id }, (res) => {
       const req = res[0]
       if (req === undefined) return
       if (req.status === RequestStatus.Pending) return
@@ -727,14 +745,8 @@ export async function toggleVideo (): Promise<void> {
 
 export async function record (room: Room): Promise<void> {
   try {
-    const endpoint = getMetadata(love.metadata.ServiceEnpdoint)
-    if (endpoint === undefined) {
-      throw new Error('Love service endpoint not found')
-    }
-    const token = getMetadata(presentation.metadata.Token)
-    if (token === undefined) {
-      throw new Error('Token not found')
-    }
+    const endpoint = getLoveEndpoint()
+    const token = getPlatformToken()
     const roomName = getTokenRoomName(room.name, room._id)
     if (lk.isRecording) {
       await fetch(concatLink(endpoint, '/stopRecord'), {
@@ -804,4 +816,141 @@ export async function createMeeting (
     const link = await func(-1, '', -1, AccountRole.Guest, encodeURIComponent(JSON.stringify(navigateUrl)))
     await client.update(event, { location: link })
   }
+}
+
+export function getLoveEndpoint (): string {
+  const endpoint = getMetadata(love.metadata.ServiceEnpdoint)
+  if (endpoint === undefined) {
+    throw new Error('Love service endpoint not found')
+  }
+
+  return endpoint
+}
+
+export function getPlatformToken (): string {
+  const token = getMetadata(presentation.metadata.Token)
+  if (token === undefined) {
+    throw new Error('Token not found')
+  }
+
+  return token
+}
+
+export async function startTranscription (room: Room): Promise<void> {
+  const current = get(currentRoom)
+  if (current === undefined || room._id !== current._id) return
+
+  const sid = await lk.getSid()
+  await connectMeeting(room._id, sid, room.language, { transcription: true })
+}
+
+export async function stopTranscription (room: Room): Promise<void> {
+  const current = get(currentRoom)
+  if (current === undefined || room._id !== current._id) return
+
+  await disconnectMeeting(room._id)
+}
+
+export async function updateSessionLanguage (room: Room): Promise<void> {
+  const current = get(currentRoom)
+  if (current === undefined || room._id !== current._id || !get(isTranscription)) return
+
+  try {
+    const endpoint = getLoveEndpoint()
+    const token = getPlatformToken()
+    const roomName = getTokenRoomName(room.name, room._id)
+
+    await fetch(concatLink(endpoint, '/language'), {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ roomName, room: room.name, language: room.language })
+    })
+  } catch (err: any) {
+    Analytics.handleError(err)
+    console.error(err)
+  }
+}
+
+export async function showRoomSettings (room?: Room): Promise<void> {
+  if (room === undefined) return
+
+  showPopup(RoomSettingsPopup, { room }, 'top')
+}
+
+export async function copyGuestLink (room?: Room): Promise<void> {
+  if (room === undefined) return
+
+  await copyTextToClipboard(getRoomGuestLink(room))
+}
+
+async function getRoomGuestLink (room: Room): Promise<string> {
+  const client = getClient()
+  const roomInfo = await client.findOne(love.class.RoomInfo, { room: room._id })
+  if (roomInfo !== undefined) {
+    const navigateUrl = getCurrentLocation()
+    navigateUrl.query = {
+      sessionId: roomInfo._id
+    }
+
+    const func = await getResource(login.function.GetInviteLink)
+    return await func(24, '', -1, AccountRole.Guest, encodeURIComponent(JSON.stringify(navigateUrl)))
+  }
+  return ''
+}
+
+export function isTranscriptionAllowed (): boolean {
+  const url = getMetadata(aiBot.metadata.EndpointURL) ?? ''
+  return url !== ''
+}
+
+export function createMeetingWidget (widget: Widget, room: Ref<Room>, loc: Location, video: boolean): void {
+  const tabs: WidgetTab[] = [
+    ...video
+      ? [{
+          id: 'video',
+          name: 'Video',
+          icon: love.icon.Cam,
+          readonly: true
+        }]
+      : [],
+    {
+      id: 'chat',
+      name: 'Chat',
+      icon: view.icon.Bubble,
+      readonly: true
+    },
+    {
+      id: 'transcription',
+      name: 'Transcription',
+      icon: view.icon.Feather,
+      readonly: true
+    }
+  ]
+  openWidget(
+    widget,
+    {
+      room
+    },
+    { active: loc.path[2] !== loveId, openedByUser: false },
+    tabs
+  )
+}
+
+export function createMeetingVideoWidgetTab (widget: Widget, loc: Location): void {
+  const state = get(sidebarStore)
+  const { widgetsState } = state
+  const widgetState = widgetsState.get(widget._id)
+
+  if (widgetState === undefined) return
+
+  const tab: WidgetTab = {
+    id: 'video',
+    name: 'Video',
+    icon: love.icon.Cam,
+    readonly: true
+  }
+  updateWidgetState(widget._id, { tabs: [tab, ...widgetState.tabs], tab: state.widget === widget._id && loc.path[2] === loveId ? widgetState.tab : 'video' })
 }

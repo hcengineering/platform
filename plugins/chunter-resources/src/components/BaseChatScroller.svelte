@@ -18,6 +18,7 @@
   export let scroller: Scroller | undefined | null = undefined
   export let scrollDiv: HTMLDivElement | undefined | null = undefined
   export let contentDiv: HTMLDivElement | undefined | null = undefined
+  export let bottomStart: boolean = true
   export let loadingOverlay: boolean = false
   export let onScroll: () => void = () => {}
   export let onResize: () => void = () => {}
@@ -33,8 +34,8 @@
   bind:divScroll={scrollDiv}
   bind:divBox={contentDiv}
   scrollDirection="vertical-reverse"
-  noStretch
-  bottomStart
+  noStretch={bottomStart}
+  {bottomStart}
   disableOverscroll
   {onScroll}
   {onResize}

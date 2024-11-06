@@ -351,6 +351,21 @@ export function updateTabData (widget: Ref<Widget>, tabId: string, data: Record<
   })
 }
 
+export function updateWidgetState (widget: Ref<Widget>, newState: Partial<WidgetState>): void {
+  const state = get(sidebarStore)
+  const { widgetsState } = state
+  const widgetState = widgetsState.get(widget)
+
+  if (widgetState === undefined) return
+
+  widgetsState.set(widget, { ...widgetState, ...newState })
+
+  sidebarStore.set({
+    ...state,
+    widgetsState
+  })
+}
+
 export function getSidebarObject (): Partial<Pick<Doc, '_id' | '_class'>> {
   const state = get(sidebarStore)
   if (state.variant !== SidebarVariant.EXPANDED || state.widget == null) {

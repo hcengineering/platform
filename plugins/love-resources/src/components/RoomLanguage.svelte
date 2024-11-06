@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,21 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
-  import { ActivityMessage } from '@hcengineering/activity'
+  import { Room } from '@hcengineering/love'
 
-  export let message: ActivityMessage
-  export let readonly = false
-  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
+  import { languagesDisplayData } from '../types'
+
+  export let room: Room
+
+  $: lang = room.language
 </script>
 
-<ActivityMessagePresenter
-  value={message}
-  hideFooter
-  hoverStyles="filledHover"
-  withShowMore={false}
-  attachmentImageSize="x-large"
-  skipLabel
-  {readonly}
-  {onReply}
-/>
+<span title={languagesDisplayData[lang].label ?? languagesDisplayData.en.label}>
+  {languagesDisplayData[lang].emoji ?? languagesDisplayData.en.emoji}
+</span>

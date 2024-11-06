@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { personByIdStore } from '@hcengineering/contact-resources'
+  import { personByIdStore, personIdByAccountId } from '@hcengineering/contact-resources'
   import { Room as TypeRoom } from '@hcengineering/love'
   import { getMetadata } from '@hcengineering/platform'
   import { Label, Loading, resizeObserver, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
@@ -30,6 +30,11 @@
     TrackPublication
   } from 'livekit-client'
   import { onDestroy, onMount, tick } from 'svelte'
+  import presentation from '@hcengineering/presentation'
+  import aiBot from '@hcengineering/ai-bot'
+  import { Ref } from '@hcengineering/core'
+  import { Person, PersonAccount } from '@hcengineering/contact'
+
   import love from '../plugin'
   import { storePromise, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
   import {
@@ -43,7 +48,6 @@
   } from '../utils'
   import ControlBar from './ControlBar.svelte'
   import ParticipantView from './ParticipantView.svelte'
-  import presentation from '@hcengineering/presentation'
 
   export let withVideo: boolean
   export let room: TypeRoom
@@ -60,6 +64,9 @@
   const participantElements: ParticipantView[] = []
   let screen: HTMLVideoElement
   let roomEl: HTMLDivElement
+
+  let aiPersonId: Ref<Person> | undefined = undefined
+  $: aiPersonId = $personIdByAccountId.get(aiBot.account.AIBot as Ref<PersonAccount>)
 
   function handleTrackSubscribed (
     track: RemoteTrack,
@@ -278,6 +285,10 @@
 
   onDestroy(
     infos.subscribe((data) => {
+      const aiParticipant = aiPersonId !== undefined ? participants.find(({ _id }) => _id === aiPersonId) : undefined
+      if (aiParticipant && !data.some((it) => it.room === room._id && it.person === aiParticipant._id)) {
+        participants = participants.filter(({ _id }) => _id !== aiPersonId)
+      }
       for (const info of data) {
         if (info.room !== room._id) continue
         const current = participants.find((p) => p._id === info.person)
