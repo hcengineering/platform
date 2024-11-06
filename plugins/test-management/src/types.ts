@@ -22,7 +22,8 @@ import {
   type Markup,
   TypedSpace,
   CollaborativeDoc,
-  AttachedDoc
+  AttachedDoc,
+  Timestamp
 } from '@hcengineering/core'
 import { IconProps } from '@hcengineering/view'
 
@@ -103,4 +104,22 @@ export interface TestCase extends AttachedDoc {
 /** @public */
 export interface TestRun extends Doc {
   name: string
+  description: CollaborativeDoc
+  dueDate?: Timestamp
+  items?: CollectionSize<TestRunItem>
+}
+
+/** @public */
+export enum TestRunResult {
+  Passed,
+  Blocked,
+  Failed
+}
+
+/** @public */
+export interface TestRunItem extends Doc {
+  testRun: Ref<TestRun>
+  testCase: Ref<TestCase>
+  result?: TestRunResult
+  comments?: number
 }

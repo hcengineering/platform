@@ -21,7 +21,9 @@ import type {
   TestCasePriority,
   TestCaseStatus,
   TestProject,
-  TestRun
+  TestRun,
+  TestRunResult,
+  TestRunItem
 } from '@hcengineering/test-management'
 import { type Attachment } from '@hcengineering/attachment'
 import contact from '@hcengineering/contact'
@@ -29,11 +31,13 @@ import chunter from '@hcengineering/chunter'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import {
   Account,
+  DateRangeMode,
   IndexKind,
   type RolesAssignment,
   type Role,
   Ref,
   type Domain,
+  type Timestamp,
   type Type,
   type CollectionSize,
   type CollaborativeDoc
@@ -50,7 +54,8 @@ import {
   TypeString,
   Collection,
   ReadOnly,
-  TypeNumber
+  TypeNumber,
+  TypeDate
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import core, { TAttachedDoc, TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
@@ -167,10 +172,46 @@ export class TTestCase extends TAttachedDoc implements TestCase {
     comments?: number
 }
 
-@Model(testManagement.class.TestRun, core.class.Doc)
+@Model(testManagement.class.TestRun, core.class.Doc, DOMAIN_TEST_MANAGEMENT)
 @UX(testManagement.string.TestRun)
 export class TTestRun extends TDoc implements TestRun {
   @Prop(TypeString(), testManagement.string.TestRunName)
   @Index(IndexKind.FullText)
     name!: string
+
+  @Prop(TypeCollaborativeDoc(), testManagement.string.FullDescription)
+  @Index(IndexKind.FullText)
+    description!: CollaborativeDoc
+
+  @Prop(TypeDate(DateRangeMode.DATETIME), testManagement.string.DueDate)
+  declare dueDate?: Timestamp
+
+  @Prop(Collection(testManagement.class.TestRunItem), testManagement.string.TestRunItems, { shortLabel: testManagement.string.TestRunItem })
+    items?: CollectionSize<TestRunItem>
 }
+
+/** @public */
+export function TypeTestRunResult (): Type<TestRunResult> {
+  return { _class: testManagement.class.TypeTestRunResult, label: testManagement.string.TestRunResult }
+}
+
+@Model(testManagement.class.TypeTestRunResult, core.class.Type, DOMAIN_TEST_MANAGEMENT)
+@UX(testManagement.string.TestRunResult)
+export class TTypeTestRunResult extends TType {}
+
+@Model(testManagement.class.TestRunItem, core.class.Doc, DOMAIN_TEST_MANAGEMENT)
+@UX(testManagement.string.TestRunItem)
+export class TTestRunItem extends TDoc implements TestRunItem {
+  @Prop(TypeRef(testManagement.class.TestRun), testManagement.string.TestRun)
+    testRun!: Ref<TestRun>
+
+  @Prop(TypeRef(testManagement.class.TestCase), testManagement.string.TestCase)
+    testCase!: Ref<TestCase>
+
+  @Prop(TypeTestRunResult(), testManagement.string.TestRunResult)
+    result?: TestRunResult
+
+  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
+    comments?: number
+}
+

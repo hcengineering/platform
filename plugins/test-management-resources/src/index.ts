@@ -14,7 +14,6 @@
 //
 
 import { type Resources } from '@hcengineering/platform'
-import TestCase from './components/TestCase.svelte'
 import NewTestCaseHeader from './components/test-case/NewTestCaseHeader.svelte'
 import CreateProject from './components/project/CreateProject.svelte'
 import ProjectSpacePresenter from './components/project/ProjectSpacePresenter.svelte'
@@ -25,7 +24,7 @@ import TestSuiteRefPresenter from './components/test-suite/TestSuiteRefPresenter
 import EditTestCase from './components/test-case/EditTestCase.svelte'
 import TestCasePresenter from './components/test-case/TestCasePresenter.svelte'
 import CreateTestCase from './components/test-case/CreateTestCase.svelte'
-import CreateTestRun from './components/test-run/NewTestRun.svelte'
+import CreateTestRun from './components/test-run/CreateTestRun.svelte'
 import TestCaseStatusPresenter from './components/test-case/TestCaseStatusPresenter.svelte'
 import EditTestRun from './components/test-run/EditTestRun.svelte'
 import TestRunPresenter from './components/test-run/TestRunPresenter.svelte'
@@ -47,5 +46,5 @@ export default async (): Promise<Resources> => ({
     EditTestRun,
     TestRunPresenter,
     TestSuiteRefPresenter
-  }
+    }
 })

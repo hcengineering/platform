@@ -33,7 +33,9 @@ import {
   TTestSuite,
   TTestCase,
   TDefaultProjectTypeData,
-  TTestRun
+  TTestRun,
+  TTypeTestRunResult,
+  TTestRunItem
 } from './types'
 
 import testManagement from './plugin'
@@ -134,7 +136,7 @@ function defineApplication(
                   icon: testManagement.icon.TestRuns,
                   title: testManagement.string.TestRuns,
                   createLabel: testManagement.string.NewTestRun,
-                  createComponent: testManagement.component.NewTestRun
+                  createComponent: testManagement.component.CreateTestRun
                 }
               }
             ]
@@ -156,7 +158,9 @@ export function createModel(builder: Builder): void {
     TTestSuite,
     TTestCase,
     TDefaultProjectTypeData,
-    TTestRun
+    TTestRun,
+    TTestRunItem,
+    TTypeTestRunResult
   )
 
   builder.mixin(testManagement.class.TestProject, core.class.Class, activity.mixin.ActivityDoc, {})

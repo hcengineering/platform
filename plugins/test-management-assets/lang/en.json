@@ -56,6 +56,10 @@
     "AssignTo": "Assign to",
     "AssignedTo": "Assigneed to",
     "PreviousAssigned": "Previously assigned",
-    "NoTestCases": "There are no test cases in this test suite"
+    "NoTestCases": "There are no test cases in this test suite",
+    "CreateTestRun": "Create test run",
+    "TestRunNamePlaceholder": "Test run name",
+    "SelectTestSuites": "Select test suites",
+    "SelectTestCases": "Select test cases"
   }
 }

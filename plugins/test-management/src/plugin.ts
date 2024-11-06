@@ -28,7 +28,7 @@ import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
 import { ActionCategory, Viewlet } from '@hcengineering/view'
-import { TestSuite, TestCase, TestProject, TestCaseType, TestCasePriority, TestCaseStatus, TestRun } from './types'
+import { TestSuite, TestCase, TestProject, TestCaseType, TestCasePriority, TestCaseStatus, TestRun, TestRunItem, TestRunResult } from './types'
 
 /** @public */
 export const testManagementId = 'testManagement' as Plugin
@@ -65,7 +65,9 @@ export const testManagementPlugin = plugin(testManagementId, {
     TypeTestCaseType: '' as Ref<Class<Type<TestCaseType>>>,
     TypeTestCasePriority: '' as Ref<Class<Type<TestCasePriority>>>,
     TypeTestCaseStatus: '' as Ref<Class<Type<TestCaseStatus>>>,
-    TestRun: '' as Ref<Class<TestRun>>
+    TestRun: '' as Ref<Class<TestRun>>,
+    TestRunItem: '' as Ref<Class<TestRunItem>>,
+    TypeTestRunResult: '' as Ref<Class<Type<TestRunResult>>>,
   },
   descriptors: {
     ProjectType: '' as Ref<SpaceTypeDescriptor>
@@ -134,7 +136,15 @@ export const testManagementPlugin = plugin(testManagementId, {
     AssignedTo: '' as IntlString,
     PreviousAssigned: '' as IntlString,
     TestRunName: '' as IntlString,
-    NoTestCases: '' as IntlString
+    NoTestCases: '' as IntlString,
+    DueDate: '' as IntlString,
+    TestRunItems: '' as IntlString,
+    TestRunResult: '' as IntlString,
+    TestRunItem: '' as IntlString,
+    TestRunNamePlaceholder: '' as IntlString,
+    SelectTestSuites: '' as IntlString,
+    SelectTestCases: '' as IntlString,
+    CreateTestRun: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>
@@ -148,8 +158,7 @@ export const testManagementPlugin = plugin(testManagementId, {
     PriorityIconPresenter: '' as AnyComponent,
     TestCaseStatusPresenter: '' as AnyComponent,
     TestSuites: '' as AnyComponent,
-    CreateTestSuite: '' as AnyComponent,
-    NewTestRun: '' as AnyComponent
+    CreateTestSuite: '' as AnyComponent
   },
   ids: {
     NoParent: '' as Ref<TestSuite>,
