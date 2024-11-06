@@ -106,7 +106,7 @@ export class AIControl {
     }
 
     const token = generateToken(aiBotAccountEmail, { name: workspace })
-    const endpoint = await getTransactorEndpoint(token, config.ExternalTransactorURL ? 'external' : 'internal')
+    const endpoint = await getTransactorEndpoint(token)
 
     this.ctx.info('Listen workspace: ', { workspace })
 

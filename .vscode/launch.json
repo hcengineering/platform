@@ -472,8 +472,7 @@
         "PASSWORD": "password",
         "AVATAR_PATH": "./assets/avatar.png",
         "AVATAR_CONTENT_TYPE": ".png",
-        "OPENAI_API_KEY": "token",
-        "EXTERNAL_TRANSACTOR_URL": "true"
+        "OPENAI_API_KEY": "token"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,

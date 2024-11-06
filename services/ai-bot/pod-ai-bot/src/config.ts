@@ -60,8 +60,7 @@ const config: Config = (() => {
     OpenAIBaseUrl: process.env.OPENAI_BASE_URL ?? '',
     MaxContentTokens: parseNumber(process.env.MAX_CONTENT_TOKENS) ?? 128 * 100,
     MaxHistoryRecords: parseNumber(process.env.MAX_HISTORY_RECORDS) ?? 500,
-    Port: parseNumber(process.env.PORT) ?? 4010,
-    ExternalTransactorURL: process.env.EXTERNAL_TRANSACTOR_URL === 'true'
+    Port: parseNumber(process.env.PORT) ?? 4010
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)
