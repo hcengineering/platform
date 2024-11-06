@@ -438,6 +438,21 @@ function defineTestCase(builder: Builder): void {
     },
     testManagement.viewlet.TableTestCase
   )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: testManagement.class.TestCase,
+      descriptor: view.viewlet.Table,
+      config: ['', 'assignee', 'modifiedOn'],
+      configOptions: {
+        sortable: true,
+      },
+      variant: 'short'
+    },
+    testManagement.viewlet.SuiteTestCases
+  )
 }
 
 function defineTestRun(builder: Builder): void {

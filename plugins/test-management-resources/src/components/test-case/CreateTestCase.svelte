@@ -37,7 +37,7 @@
 
   export let space: Ref<TestProject>
 
-  let testSuiteId: Ref<TestSuite> | undefined
+  export let testSuiteId: Ref<TestSuite> | undefined
 
   const id: Ref<TestCase> = generateId()
 
@@ -47,7 +47,7 @@
     status: TestCaseStatus.Draft,
     assignee: null,
     attachments: 0,
-    suite: undefined
+    suite: testSuiteId
   } as unknown as TestCase
 
   let _space = space

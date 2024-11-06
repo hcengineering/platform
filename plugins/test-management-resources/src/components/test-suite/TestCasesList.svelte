@@ -21,19 +21,18 @@
   import { NavLink, Table, ViewletsSettingButton } from '@hcengineering/view-resources'
   import testManagement from '../../plugin'
   import CreateTestCase from '../test-case/CreateTestCase.svelte'
-  import IconApplication from '../icons/Application.svelte'
   import FileDuo from '../icons/FileDuo.svelte'
 
   export let objectId: Ref<TestSuite>
-  let applications: number
+  let testCases: number
 
   const query = createQuery()
   $: query.query(testManagement.class.TestCase, { suite: objectId }, (res) => {
-    applications = res.length
+    testCases = res.length
   })
 
   const createTestCase = (ev: MouseEvent): void => {
-    showPopup(CreateTestCase, { suite: objectId }, ev.target as HTMLElement)
+    showPopup(CreateTestCase, { testSuiteId: objectId }, ev.target as HTMLElement)
   }
 
   let viewlet: Viewlet | undefined
@@ -62,14 +61,14 @@
       <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createTestCase} />
     </div>
   </div>
-  {#if applications > 0}
+  {#if testCases > 0}
     {#if viewlet !== undefined && !loading}
       <Scroller horizontal>
         <Table
           _class={testManagement.class.TestCase}
           config={preference?.config ?? viewlet.config}
           query={{ suite: objectId }}
-          loadingProps={{ length: applications }}
+          loadingProps={{ length: testCases }}
         />
       </Scroller>
     {:else}
