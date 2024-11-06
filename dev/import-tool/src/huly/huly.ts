@@ -36,6 +36,7 @@ import {
 } from '../importer/importer'
 import { type FileUploader } from '../importer/uploader'
 import { type Issue } from '@hcengineering/tracker'
+import { Attachment } from '@hcengineering/attachment'
 
 interface HulyComment {
   author: string
@@ -117,21 +118,45 @@ class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
 
   process (json: MarkupNode, id: Ref<Doc>): MarkupNode {
     traverseNode(json, (node) => {
-      traverseNodeMarks(node, (mark) => {
-        if (mark.type === MarkupMarkType.link) {
-          const sourceMeta = this.metadataById.get(id)
-          if (sourceMeta == null) {
-            console.warn(`Source metadata not found for ${id}`)
-            return
-          }
-          const href = decodeURI(mark.attrs.href)
-          const fullPath = path.resolve(path.dirname(sourceMeta.path), href)
-          const targetMeta = this.metadataByFilePath.get(fullPath)
-          if (targetMeta != null) {
-            this.alterInternalLinkNode(node, targetMeta)
-          }
+      if (node.type === MarkupNodeType.image) {
+        const src = node.attrs?.src
+        if (src !== undefined) {
+          // const sourceMeta = this.metadataById.get(id)
+          // if (sourceMeta == null) {
+          //   console.warn(`Source metadata not found for ${id}`)
+          //   return
+          // }
+          // const href = decodeURI(src as string)
+          // const fullPath = path.resolve(path.dirname(sourceMeta.path), href)
+          // const data = fs.readFileSync(fullPath)
+          // const file = new File([data], sourceMeta.refTitle)
+          // const mimeType = file.type
+
+          // console.log('Image: ', src)
+          // console.log('Image: ', fullPath)
+          // const notionId = getFileId('', src as string)
+          // const meta = documentMetaMap.get(notionId)
+          // if (meta !== undefined) {
+          //   alterImageNode(node, meta)
+          // }
         }
-      })
+      } else {
+        traverseNodeMarks(node, (mark) => {
+          if (mark.type === MarkupMarkType.link) {
+            const sourceMeta = this.metadataById.get(id)
+            if (sourceMeta == null) {
+              console.warn(`Source metadata not found for ${id}`)
+              return
+            }
+            const href = decodeURI(mark.attrs.href)
+            const fullPath = path.resolve(path.dirname(sourceMeta.path), href)
+            const targetMeta = this.metadataByFilePath.get(fullPath)
+            if (targetMeta != null) {
+              this.alterInternalLinkNode(node, targetMeta)
+            }
+          }
+        })
+      }
       return true
     })
     return json
@@ -159,6 +184,7 @@ interface DocMetadata {
 export class HulyImporter {
   private readonly metadataByFilePath = new Map<string, DocMetadata>()
   private readonly metadataById = new Map<Ref<Doc>, DocMetadata>()
+  private readonly attachmentIdByPath = new Map<string, Ref<Attachment>>()
 
   private personsByName = new Map<string, Ref<Person>>()
   private accountsByEmail = new Map<string, Ref<PersonAccount>>()
