@@ -42,7 +42,7 @@
     "@hcengineering/ai-bot-resources": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/calendar": "^0.6.24",
-    "@hcengineering/chunter": "^0.6.0",
+    "@hcengineering/chunter": "^0.6.20",
     "@hcengineering/chunter-resources": "^0.6.0",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/contact-resources": "^0.6.0",

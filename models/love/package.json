@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@hcengineering/activity": "^0.6.0",
-    "@hcengineering/chunter": "^0.6.0",
+    "@hcengineering/chunter": "^0.6.20",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/drive": "^0.6.0",
