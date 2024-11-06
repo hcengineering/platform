@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { getCurrentAccount, type Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Scroller } from '@hcengineering/ui'
+  import { Scroller, resizeObserver } from '@hcengineering/ui'
   import { NavLink } from '@hcengineering/view-resources'
   import type { Application } from '@hcengineering/workbench'
   import workbench from '@hcengineering/workbench'
@@ -55,6 +55,7 @@
       gap={direction === 'horizontal' ? 'gap-1' : 'gapV-1'}
       horizontal={direction === 'horizontal'}
       contentDirection={direction}
+      align={direction === 'horizontal' ? 'center' : 'start'}
       buttons={'union'}
     >
       {#each topApps as app}

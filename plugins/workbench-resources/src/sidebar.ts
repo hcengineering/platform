@@ -15,7 +15,7 @@
 import { WorkbenchEvents, type Widget, type WidgetTab } from '@hcengineering/workbench'
 import { type Class, type Doc, getCurrentAccount, type Ref } from '@hcengineering/core'
 import { get, writable } from 'svelte/store'
-import { getCurrentLocation } from '@hcengineering/ui'
+import { getCurrentLocation, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 import { getResource } from '@hcengineering/platform'
 
 import { workspaceStore } from './utils'
@@ -252,6 +252,8 @@ export function createWidgetTab (widget: Widget, tab: WidgetTab, newTab = false)
     widgetsState,
     variant: SidebarVariant.EXPANDED
   })
+  const devInfo = get(deviceInfo)
+  if (devInfo.navigator.float && !devInfo.aside.visible) deviceInfo.set({ ...devInfo, aside: { visible: true } })
 }
 
 export function pinWidgetTab (widget: Widget, tabId: string): void {

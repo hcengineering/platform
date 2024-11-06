@@ -151,7 +151,7 @@
 <svelte:window bind:innerWidth={docWidth} bind:innerHeight={docHeight} />
 
 <Theme>
-  <div id="ui-root">
+  <div id="ui-root" class:mobile-theme={isMobile}>
     <div class="antiStatusBar">
       <div class="flex-row-center h-full content-color gap-3 pl-4">
         {#if desktopPlatform}
