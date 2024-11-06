@@ -38,8 +38,9 @@
   export let overflowExtra: boolean = false
   export let noPrint: boolean = false
   export let freezeBefore: boolean = false
-  export let doubleRowWidth = 768
+  export let doubleRowWidth: number = 768
   export let closeOnEscape: boolean = true
+  export let realWidth: number | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -78,6 +79,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   use:resizeObserver={(element) => {
+    realWidth = element.clientWidth
     if (!doubleRow && element.clientWidth <= doubleRowWidth) doubleRow = true
     else if (doubleRow && element.clientWidth > doubleRowWidth) doubleRow = false
   }}

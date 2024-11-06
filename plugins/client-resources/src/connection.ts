@@ -407,6 +407,7 @@ class Connection implements ClientConnection {
     this.binaryMode = false
     // Use defined factory or browser default one.
     const clientSocketFactory =
+      this.opt?.socketFactory ??
       getMetadata(client.metadata.ClientSocketFactory) ??
       ((url: string) => {
         const s = new WebSocket(url)
@@ -468,8 +469,9 @@ class Connection implements ClientConnection {
       if (this.websocket !== wsocket) {
         return
       }
-      const useBinary = getMetadata(client.metadata.UseBinaryProtocol) ?? true
-      const useCompression = getMetadata(client.metadata.UseProtocolCompression) ?? false
+      const useBinary = this.opt?.useBinaryProtocol ?? getMetadata(client.metadata.UseBinaryProtocol) ?? true
+      const useCompression =
+        this.opt?.useProtocolCompression ?? getMetadata(client.metadata.UseProtocolCompression) ?? false
       this.helloRecieved = false
       const helloRequest: HelloRequest = {
         method: 'hello',

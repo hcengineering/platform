@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Blob, Ref } from '@hcengineering/core'
   import { BlobMetadata } from '@hcengineering/presentation'
-  import { Button, closePopup, closeTooltip, IconDetailsFilled } from '@hcengineering/ui'
+  import { Button, closePopup, closeTooltip, IconToDetails } from '@hcengineering/ui'
   import workbench from '@hcengineering/workbench'
 
   import { openFilePreviewInSidebar } from '../utils'
@@ -28,7 +28,7 @@
 
 {#if file}
   <Button
-    icon={IconDetailsFilled}
+    icon={IconToDetails}
     kind="icon"
     on:click={() => {
       if (file === undefined) return

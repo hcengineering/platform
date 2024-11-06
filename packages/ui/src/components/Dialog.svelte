@@ -16,7 +16,17 @@
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
-  import { Button, Label, IconClose, IconScale, IconScaleFull, resizeObserver, tooltip } from '..'
+  import {
+    Button,
+    Label,
+    IconClose,
+    IconScale,
+    IconScaleFull,
+    resizeObserver,
+    tooltip,
+    deviceOptionsStore as deviceInfo,
+    checkAdaptiveMatching
+  } from '..'
 
   export let label: IntlString | undefined = undefined
   export let isFullSize: boolean = false
@@ -25,6 +35,12 @@
   const dispatch = createEventDispatcher()
 
   let fullSize: boolean = false
+  let toggleFullSize: boolean = fullSize
+  $: needFullSize = checkAdaptiveMatching($deviceInfo.size, 'md')
+  $: if ((needFullSize && !fullSize) || (!needFullSize && (fullSize || toggleFullSize))) {
+    fullSize = toggleFullSize ? true : needFullSize
+    dispatch('fullsize', fullSize)
+  }
 </script>
 
 <form
@@ -47,20 +63,18 @@
       {#if $$slots.utils}
         <slot name="utils" />
       {/if}
-      {#if $$slots.utils && isFullSize}
+      {#if $$slots.utils && isFullSize && !needFullSize}
         <div class="buttons-divider" />
       {/if}
-      {#if isFullSize}
+      {#if isFullSize && !needFullSize}
         <Button
           focusIndex={100010}
           icon={fullSize ? IconScale : IconScaleFull}
           kind={'ghost'}
           size={'medium'}
           selected={fullSize}
-          on:click={() => {
-            fullSize = !fullSize
-            dispatch('fullsize')
-          }}
+          id={'btnDialogFullScreen'}
+          on:click={() => (toggleFullSize = !toggleFullSize)}
         />
       {/if}
     </div>

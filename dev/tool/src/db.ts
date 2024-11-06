@@ -118,7 +118,9 @@ async function moveWorkspace (
         }
         if (toRemove.length > 0) {
           await retryTxn(pgClient, async (client) => {
-            await client`DELETE FROM ${client(translateDomain(domain))} WHERE "workspaceId" = ${ws.workspace} AND _id IN (${client(toRemove)})`
+            await client.unsafe(
+              `DELETE FROM ${translateDomain(domain)} WHERE "workspaceId" = '${ws.workspace}' AND _id IN (${toRemove.map((c) => `'${c}'`).join(', ')})`
+            )
           })
         }
         if (docs.length === 0) break

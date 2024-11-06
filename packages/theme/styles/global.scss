@@ -147,7 +147,7 @@ body {
   height: var(--app-height);
   width: 100%;
   overflow: hidden;
-  touch-action: none;
+  // touch-action: none;
 
   @media print {
     overflow: visible !important;
