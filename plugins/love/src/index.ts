@@ -186,7 +186,9 @@ const love = plugin(loveId, {
     StartTranscription: '' as IntlString,
     StopTranscription: '' as IntlString,
     Meeting: '' as IntlString,
-    Transcription: '' as IntlString
+    Transcription: '' as IntlString,
+    StartWithTranscription: '' as IntlString,
+    MeetingMinutes: '' as IntlString
   },
   ids: {
     MainFloor: '' as Ref<Floor>,

@@ -65,6 +65,8 @@
     "StartTranscription": "Iniciar transcrição",
     "StopTranscription": "Parar transcrição",
     "Meeting": "Reunião",
-    "Transcription": "Transcrição"
+    "Transcription": "Transcrição",
+    "StartWithTranscription": "Começar com transcrição",
+    "MeetingMinutes": "Minutos da reunião"
   }
 }

@@ -65,6 +65,8 @@
     "StartTranscription": "开始转录",
     "StopTranscription": "停止转录",
     "Meeting": "会议",
-    "Transcription": "转录"
+    "Transcription": "转录",
+    "StartWithTranscription": "开始转录",
+    "MeetingMinutes": "会议记录"
   }
 }

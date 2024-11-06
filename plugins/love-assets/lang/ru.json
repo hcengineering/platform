@@ -65,6 +65,8 @@
     "StartTranscription": "Начать транскрипцию",
     "StopTranscription": "Остановить транскрипцию",
     "Meeting": "Встреча",
-    "Transcription": "Транскрипция"
+    "Transcription": "Транскрипция",
+    "StartWithTranscription": "Начинать с транскрипцией",
+    "MeetingMinutes": "Протоколы встреч"
   }
 }

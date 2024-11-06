@@ -32,6 +32,13 @@
   export let readonly = false
 
   const dispatch = createEventDispatcher()
+
+  function handleContextMenu (e: MouseEvent): void {
+    if (readonly) return
+    e.preventDefault()
+    e.stopPropagation()
+    dispatch('contextmenu', e)
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -43,14 +50,7 @@
   class:active={highlighted}
   use:tooltip={{ label: label ? getEmbeddedLabel(label) : labelIntl }}
   on:click
-  on:contextmenu={(e) => {
-    e.preventDefault()
-    if (readonly) {
-      e.stopPropagation()
-    } else {
-      dispatch('contextmenu', e)
-    }
-  }}
+  on:contextmenu={handleContextMenu}
 >
   <slot name="prefix" />
 
@@ -109,13 +109,13 @@
       padding: 0.125rem 0.125rem 0.125rem 0.5rem;
       height: 1.625rem;
       min-height: 1.625rem;
-      min-width: 6rem;
+      min-width: 4rem;
     }
 
     &.vertical {
       padding: 0.5rem 0.125rem 0.125rem 0.125rem;
       width: 1.625rem;
-      min-height: 6rem;
+      min-height: 4rem;
       writing-mode: vertical-rl;
       text-orientation: sideways;
     }

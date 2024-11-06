@@ -65,6 +65,8 @@
     "StartTranscription": "Start transcription",
     "StopTranscription": "Stop transcription",
     "Meeting": "Meeting",
-    "Transcription": "Transcription"
+    "Transcription": "Transcription",
+    "StartWithTranscription": "Start with transcription",
+    "MeetingMinutes": "Meeting minutes"
   }
 }
