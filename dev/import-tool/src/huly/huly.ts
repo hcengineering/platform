@@ -36,7 +36,7 @@ import {
 } from '../importer/importer'
 import { type FileUploader } from '../importer/uploader'
 import { type Issue } from '@hcengineering/tracker'
-import { Attachment } from '@hcengineering/attachment'
+import { type Attachment } from '@hcengineering/attachment'
 
 interface HulyComment {
   author: string
@@ -184,6 +184,7 @@ interface DocMetadata {
 export class HulyImporter {
   private readonly metadataByFilePath = new Map<string, DocMetadata>()
   private readonly metadataById = new Map<Ref<Doc>, DocMetadata>()
+  private readonly idByPath = new Map<string, string>()
   private readonly attachmentIdByPath = new Map<string, Ref<Attachment>>()
 
   private personsByName = new Map<string, Ref<Person>>()
@@ -232,7 +233,6 @@ export class HulyImporter {
     const spaces: ImportSpace<ImportDoc>[] = []
     const folders = fs.readdirSync(folderPath)
       .filter(f => fs.statSync(path.join(folderPath, f)).isDirectory())
-      .filter(f => f !== 'files')
 
     for (const folder of folders) {
       const spacePath = path.join(folderPath, folder)
@@ -243,19 +243,26 @@ export class HulyImporter {
         continue
       }
 
-      const spaceConfig = await this.readYamlHeader(readmePath)
+      try {
+        const spaceConfig = await this.readYamlHeader(readmePath)
 
-      switch (spaceConfig.class) {
-        case 'tracker.class.Project':
-          spaces.push(await this.processProject(spacePath, folder, spaceConfig as HulyProjectHeader))
-          break
-        case 'document.class.TeamSpace':
-          spaces.push(await this.processTeamspace(spacePath, folder, spaceConfig as HulyTeamSpaceHeader))
-          break
-        default:
-          console.warn(`Unknown space type: ${spaceConfig.class} in ${folder}`)
+        switch (spaceConfig.class) {
+          case 'tracker.class.Project':
+            spaces.push(await this.processProject(spacePath, folder, spaceConfig as HulyProjectHeader))
+            break
+          case 'document.class.TeamSpace':
+            spaces.push(await this.processTeamspace(spacePath, folder, spaceConfig as HulyTeamSpaceHeader))
+            break
+          default:
+            console.warn(`Unknown space type: ${spaceConfig.class} in ${folder}`)
+        }
+      } catch (error) {
+        console.warn(`Invalid space configuration in ${folder}: ${error}`)
       }
     }
+
+    // Process attachments after all documents and issues are processed
+    await this.processAttachments(folderPath)
 
     return spaces
   }
@@ -466,5 +473,28 @@ export class HulyImporter {
       map.set(account.email, account._id)
       return map
     }, new Map())
+  }
+
+  private async processAttachments (folderPath: string): Promise<void> {
+    const processDir = async (dir: string): Promise<void> => {
+      const entries = fs.readdirSync(dir, { withFileTypes: true })
+
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name)
+
+        if (entry.isDirectory()) {
+          await processDir(fullPath)
+        } else if (entry.isFile()) {
+          // Skip files that are already processed as documents or issues
+          if (!this.metadataByFilePath.has(fullPath)) {
+            const attachmentId = generateId<Attachment>()
+            this.attachmentIdByPath.set(fullPath, attachmentId)
+            console.log(`Found attachment: ${fullPath} -> ${attachmentId}`)
+          }
+        }
+      }
+    }
+
+    await processDir(folderPath)
   }
 }
