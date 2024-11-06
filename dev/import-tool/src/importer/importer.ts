@@ -90,6 +90,7 @@ export interface ImportSpace<T extends ImportDoc> {
   docs: T[]
 }
 export interface ImportDoc {
+  id?: Ref<Doc>
   class: string
   title: string
   descrProvider: () => Promise<string>
@@ -101,7 +102,8 @@ export interface ImportTeamspace extends ImportSpace<ImportDocument> {
 }
 
 export interface ImportDocument extends ImportDoc {
-  class: 'document.class.Document'
+  class: 'document:class:Document'
+  id?: Ref<Document>
   subdocs: ImportDocument[]
 }
 
@@ -116,6 +118,7 @@ export interface ImportProject extends ImportSpace<ImportIssue> {
 
 export interface ImportIssue extends ImportDoc {
   class: 'tracker.class.Issue' // todo: doesn't have meaning here, move to huly.ts
+  id?: Ref<Issue>
   status: ImportStatus
   assignee?: Ref<Person>
   estimation?: number
@@ -136,7 +139,7 @@ export interface ImportAttachment {
 }
 
 export interface MarkdownPreprocessor {
-  process: (json: MarkupNode) => MarkupNode
+  process: (json: MarkupNode, id: Ref<Doc>) => MarkupNode
 }
 
 export class WorkspaceImporter {
@@ -269,7 +272,7 @@ export class WorkspaceImporter {
     parentId: Ref<Document>,
     teamspaceId: Ref<Teamspace>
   ): Promise<Ref<Document>> {
-    const id = generateId<Document>()
+    const id = doc.id ?? generateId<Document>()
     const content = await doc.descrProvider()
     const collabId = await this.createCollaborativeContent(id, 'content', content)
 
@@ -376,7 +379,7 @@ export class WorkspaceImporter {
     parentId: Ref<Issue>,
     parentsInfo: IssueParentInfo[]
   ): Promise<{ id: Ref<Issue>, identifier: string }> {
-    const issueId = generateId<Issue>()
+    const issueId = issue.id ?? generateId<Issue>()
     const content = await issue.descrProvider()
     const collabId = await this.createCollaborativeContent(issueId, 'description', content)
 
@@ -470,7 +473,7 @@ export class WorkspaceImporter {
 
   async createComment (issueId: Ref<Issue>, comment: ImportComment, projectId: Ref<Project>): Promise<void> {
     const json = parseMessageMarkdown(comment.text ?? '', 'image://')
-    const processedJson = this.preprocessor.process(json)
+    const processedJson = this.preprocessor.process(json, issueId)
     const markup = jsonToMarkup(processedJson)
 
     const value: AttachedData<ChatMessage> = {
@@ -556,7 +559,7 @@ export class WorkspaceImporter {
   // Collaborative content handling
   private async createCollaborativeContent (id: Ref<Doc>, field: string, content: string): Promise<CollaborativeDoc> {
     const json = parseMessageMarkdown(content ?? '', 'image://')
-    const processedJson = this.preprocessor.process(json)
+    const processedJson = this.preprocessor.process(json, id)
     const collabId = makeCollaborativeDoc(id, 'description')
 
     const yDoc = jsonToYDocNoSchema(processedJson, field)

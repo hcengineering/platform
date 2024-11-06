@@ -14,24 +14,25 @@
 //
 
 import contact, { type Person, type PersonAccount } from '@hcengineering/contact'
-import { type Ref, type TxOperations } from '@hcengineering/core'
-import { type MarkupNode } from '@hcengineering/text'
+import { type Doc, generateId, type Ref, type TxOperations } from '@hcengineering/core'
+import { type Document } from '@hcengineering/document'
+import { MarkupMarkType, type MarkupNode, MarkupNodeType, traverseNode, traverseNodeMarks } from '@hcengineering/text'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
 import * as path from 'path'
 import {
-  type ImportTeamspace,
-  WorkspaceImporter,
   type ImportComment,
+  type ImportDoc,
+  type ImportDocument,
   type ImportIssue,
   type ImportPerson,
   type ImportProject,
   type ImportProjectType,
+  type ImportSpace,
+  type ImportTeamspace,
   type ImportWorkspace,
   type MarkdownPreprocessor,
-  type ImportSpace,
-  type ImportDoc,
-  type ImportDocument
+  WorkspaceImporter
 } from '../importer/importer'
 import { type FileUploader } from '../importer/uploader'
 
@@ -111,15 +112,53 @@ interface HulyDocumentHeader {
 }
 
 class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
-  constructor (private readonly personsByName: Map<string, Ref<Person>>) {}
+  constructor (private readonly metadataByFilePath: Map<string, DocMetadata>, private readonly metadataById: Map<Ref<Doc>, DocMetadata>) {}
 
-  process (json: MarkupNode): MarkupNode {
-    // Process markdown if needed
+  process (json: MarkupNode, id: Ref<Doc>): MarkupNode {
+    traverseNode(json, (node) => {
+      traverseNodeMarks(node, (mark) => {
+        if (mark.type === MarkupMarkType.link) {
+          const sourceMeta = this.metadataById.get(id)
+          if (sourceMeta == null) {
+            console.warn(`Source metadata not found for ${id}`)
+            return
+          }
+          const href = decodeURI(mark.attrs.href)
+          const fullPath = path.resolve(path.dirname(sourceMeta.path), href)
+          const targetMeta = this.metadataByFilePath.get(fullPath)
+          if (targetMeta != null) {
+            this.alterInternalLinkNode(node, targetMeta)
+          }
+        }
+      })
+      return true
+    })
     return json
+  }
+
+  private alterInternalLinkNode (node: MarkupNode, targetMeta: DocMetadata): void {
+    node.type = MarkupNodeType.reference
+    node.attrs = {
+      id: targetMeta.id,
+      label: targetMeta.title,
+      objectclass: targetMeta.class,
+      text: '',
+      content: ''
+    }
   }
 }
 
+interface DocMetadata {
+  id: Ref<Doc>
+  class: string
+  path: string
+  title: string
+}
+
 export class HulyImporter {
+  private readonly metadataByFilePath = new Map<string, DocMetadata>()
+  private readonly metadataById = new Map<Ref<Doc>, DocMetadata>()
+
   private personsByName = new Map<string, Ref<Person>>()
   private accountsByEmail = new Map<string, Ref<PersonAccount>>()
 
@@ -138,7 +177,7 @@ export class HulyImporter {
     console.log('IMPORT DATA STRUCTURE: ', JSON.stringify(workspaceData, null, 4))
     console.log('========================================')
 
-    const preprocessor = new HulyMarkdownPreprocessor(this.personsByName)
+    const preprocessor = new HulyMarkdownPreprocessor(this.metadataByFilePath, this.metadataById)
     await new WorkspaceImporter(this.client, this.fileUploader, workspaceData, preprocessor).performImport()
 
     console.log('========================================')
@@ -184,7 +223,7 @@ export class HulyImporter {
           spaces.push(await this.processProject(spacePath, folder, spaceConfig as HulyProjectHeader))
           break
         case 'document.class.TeamSpace':
-          spaces.push(await this.processTeamSpace(spacePath, folder, spaceConfig as HulyTeamSpaceHeader))
+          spaces.push(await this.processTeamspace(spacePath, folder, spaceConfig as HulyTeamSpaceHeader))
           break
         default:
           console.warn(`Unknown space type: ${spaceConfig.class} in ${folder}`)
@@ -221,7 +260,7 @@ export class HulyImporter {
     }
   }
 
-  private async processTeamSpace (
+  private async processTeamspace (
     spacePath: string,
     name: string,
     spaceHeader: HulyTeamSpaceHeader
@@ -252,9 +291,18 @@ export class HulyImporter {
       if (docHeader.class === 'document.class.Document') {
         const title = path.basename(docFile, '.md')
 
+        const docMeta: DocMetadata = {
+          id: generateId<Document>(),
+          class: 'document:class:Document',
+          path: docPath,
+          title
+        }
+        this.metadataById.set(docMeta.id, docMeta)
+        this.metadataByFilePath.set(docPath, docMeta)
         const doc: ImportDocument = {
-          class: docHeader.class,
-          title,
+          id: docMeta.id as Ref<Document>,
+          class: 'document:class:Document',
+          title: docMeta.title,
           descrProvider: async () => await this.readMarkdownContent(docPath),
           subdocs: await this.processSubDocuments(spacePath, docFile)
         }
@@ -364,11 +412,11 @@ export class HulyImporter {
   }
 
   private async fillPersonsByNames (): Promise<void> {
-    this.personsByName = (await this.client.findAll(contact.class.Person, {}))
-      .reduce((map, person) => {
-        map.set(person.name, person._id)
-        return map
-      }, new Map())
+    const persons = await this.client.findAll(contact.class.Person, {})
+    this.personsByName = persons.reduce((map, person) => {
+      map.set(person.name, person._id)
+      return map
+    }, new Map())
   }
 
   private async fillAccountsByEmails (): Promise<void> {
