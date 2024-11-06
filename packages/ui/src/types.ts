@@ -304,6 +304,7 @@ export interface LabelAndProps {
   onUpdate?: (result: any) => void
   kind?: 'tooltip' | 'submenu' | 'popup'
   keys?: string[]
+  timeout?: number
 }
 
 export interface ListItem {
