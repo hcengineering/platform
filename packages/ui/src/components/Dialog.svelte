@@ -73,6 +73,7 @@
           kind={'ghost'}
           size={'medium'}
           selected={fullSize}
+          id={'btnDialogFullScreen'}
           on:click={() => (toggleFullSize = !toggleFullSize)}
         />
       {/if}
