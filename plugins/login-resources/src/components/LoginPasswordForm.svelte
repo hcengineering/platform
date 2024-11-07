@@ -24,6 +24,7 @@
   export let navigateUrl: string | undefined = undefined
   export let signUpDisabled = false
   let googleRecaptchaToken: string
+  const recaptchaAction  ='login-with-password'
 
   const fields = [
     { id: 'email', name: 'username', i18n: login.string.Email },
@@ -49,7 +50,8 @@
       const [loginStatus, result] = await doLogin({
         email: object.username,
         password: object.password,
-        googleRecaptchaToken
+        googleRecaptchaToken,
+        googleRecaptchaAction: recaptchaAction
       })
       status = loginStatus
       await doLoginNavigate(
@@ -74,4 +76,4 @@
   ignoreInitialValidation
   withProviders
 />
-<GoogleRecaptcha bind:googleRecaptchaToken recaptchaAction={'login-with-password'} />
+<GoogleRecaptcha bind:googleRecaptchaToken recaptchaAction={recaptchaAction} />
