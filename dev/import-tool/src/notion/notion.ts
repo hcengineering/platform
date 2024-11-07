@@ -409,7 +409,7 @@ async function importAttachment (
   }
 
   const file = new File([data], docMeta.name)
-  await fileUploader.uploadFile(docMeta.id as Ref<Doc>, docMeta.name, file)
+  await fileUploader.uploadFile(docMeta.id as Ref<Doc>, docMeta.id, file)
 
   const attachedData: AttachedData<Attachment> = {
     file: docMeta.id as Ref<Blob>,
@@ -442,7 +442,7 @@ async function importPageDocument (
   const md = data.toString() ?? ''
   const json = parseMessageMarkdown(md ?? '', 'image://')
   if (documentMetaMap !== undefined) {
-    preProcessMarkdown(json, documentMetaMap)
+    preProcessMarkdown(json, documentMetaMap, fileUploader)
   }
   const yDoc = jsonToYDocNoSchema(json, 'content')
   const buffer = yDocToBuffer(yDoc)
@@ -472,7 +472,11 @@ async function importPageDocument (
   await client.createDoc(document.class.Document, space, attachedData, id)
 }
 
-function preProcessMarkdown (json: MarkupNode, documentMetaMap: Map<string, DocumentMetadata>): void {
+function preProcessMarkdown (
+  json: MarkupNode,
+  documentMetaMap: Map<string, DocumentMetadata>,
+  fileUploader: FileUploader
+): void {
   traverseNode(json, (node) => {
     if (node.type === MarkupNodeType.image) {
       const src = node.attrs?.src
@@ -480,7 +484,7 @@ function preProcessMarkdown (json: MarkupNode, documentMetaMap: Map<string, Docu
         const notionId = getFileId('', src as string)
         const meta = documentMetaMap.get(notionId)
         if (meta !== undefined) {
-          alterImageNode(node, meta)
+          alterImageNode(node, meta, fileUploader.getFileUrl(meta.id))
         }
       }
     } else {
@@ -561,12 +565,21 @@ function alterInternalLinkNode (node: MarkupNode, targetMeta: DocumentMetadata):
   }
 }
 
-function alterImageNode (node: MarkupNode, meta: DocumentMetadata): void {
+function alterImageNode (node: MarkupNode, meta: DocumentMetadata, fileUrl: string): void {
   node.type = MarkupNodeType.image
   if (node.attrs !== undefined) {
-    node.attrs['file-id'] = meta.id
-    if (meta.mimeType !== undefined) {
-      node.attrs['data-file-type'] = meta.mimeType
+    node.attrs = {
+      'file-id': meta.id,
+      src: fileUrl,
+      width: node.attrs.width ?? null,
+      height: node.attrs.height ?? null,
+      align: node.attrs.align ?? null,
+      alt: meta.name,
+      title: meta.name
+    }
+    const mimeType = getContentType(meta.name)
+    if (mimeType !== undefined) {
+      node.attrs['data-file-type'] = mimeType
     }
   }
 }
