@@ -40,7 +40,7 @@
     "BotShortDescription": "使用此机器人，您可以获取所有通知并在不离开 Telegram 的情况下回复",
     "WelcomeMessage": "欢迎！ 我是一个机器人，将帮助您获取所有 {app} 通知并在不离开 Telegram 的情况下回复。",
     "TestMessage": "您的 {app} 帐户已连接。 您将收到通知。",
-    "ConnectMessage": "⚠️请将我连接到您的 {app} 帐户。\n发送 /connect 以生成代码并将其粘贴到 {app} 设置中。\n代码有效期 1 分钟。",
+    "ConnectMessage": "⚠️请将我连接到您的 {app} 帐户。\n发送 /connect 以生成代码并将其粘贴到 {app} 设置中。\n代码有效时间为 {minutes} 分钟。",
     "StopMessage": "您将不再收到有关 {app} 事件的通知。 如果您想重新启用它们，请发送 /start。",
     "StartBot": "启动机器人",
     "ConnectAccount": "通过 OTP 连接帐户",
