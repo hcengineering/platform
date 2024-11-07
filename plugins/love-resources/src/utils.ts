@@ -26,7 +26,8 @@ import {
   type Room,
   RoomAccess,
   RoomType,
-  TranscriptionStatus
+  TranscriptionStatus,
+  type RoomMetadata
 } from '@hcengineering/love'
 import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
 import presentation, {
@@ -351,7 +352,7 @@ lk.on(RoomEvent.RecordingStatusChanged, (evt) => {
 })
 lk.on(RoomEvent.RoomMetadataChanged, (metadata) => {
   try {
-    const data = JSON.parse(metadata)
+    const data = JSON.parse(metadata) as RoomMetadata
     if (data.recording !== undefined) {
       isRecording.set(data.recording)
     }
@@ -379,10 +380,9 @@ lk.on(RoomEvent.Disconnected, () => {
 })
 
 function initRoomMetadata (metadata: string | undefined): void {
-  if (metadata === undefined) return
-  let data: { transcription?: TranscriptionStatus } = {}
+  let data: RoomMetadata
   try {
-    data = metadata === '' ? {} : JSON.parse(metadata)
+    data = metadata == null || metadata === '' ? {} : JSON.parse(metadata)
   } catch (err: any) {
     data = {}
     Analytics.handleError(err)
