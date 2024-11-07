@@ -79,7 +79,7 @@ export function importTool (): void {
       return
     }
     const client = new TxOperations(connection, acc._id)
-    const fileUploader = new FrontFileUploader(getFrontUrl(), selectedWs.token)
+    const fileUploader = new FrontFileUploader(getFrontUrl(), selectedWs.workspaceId, selectedWs.token)
     try {
       await f(client, fileUploader)
     } catch (err: any) {

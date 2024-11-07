@@ -538,49 +538,51 @@ export class WorkspaceImporter {
       return
     }
 
-    const attachmentId = await this.createAttachment(blob, attachment, spaceId, parentId, parentClass)
+    const file = new File([blob], attachment.title)
+    const attachmentId = await this.createAttachment(attachment.id ?? generateId<Attachment>(), file, spaceId, parentId, parentClass)
     if (attachmentId === null) {
       console.warn('Failed to upload attachment file: ', attachment.title)
     }
   }
 
   private async createAttachment (
-    blob: Blob,
-    attach: ImportAttachment,
+    id: Ref<Attachment>,
+    file: File,
     spaceId: Ref<Space>,
     parentId: Ref<Doc>,
     parentClass: Ref<Class<Doc<Space>>>
   ): Promise<Ref<Attachment> | null> {
-    const attachmentId = attach.id ?? generateId<Attachment>()
-    const file = new File([blob], attach.title)
-
-    const response = await this.fileUploader.uploadFile(attachmentId, attachmentId, file)
-    if (response.status === 200) {
-      const responseText = await response.text()
-      if (responseText !== undefined) {
-        const uploadResult = JSON.parse(responseText) as UploadResult[]
-        if (!Array.isArray(uploadResult) || uploadResult.length === 0) {
-          return null
-        }
-
-        await this.client.addCollection(
-          attachment.class.Attachment,
-          spaceId,
-          parentId,
-          parentClass,
-          'attachments',
-          {
-            file: uploadResult[0].id,
-            lastModified: Date.now(),
-            name: file.name,
-            size: file.size,
-            type: file.type
-          },
-          attachmentId
-        )
-      }
+    const response = await this.fileUploader.uploadFile(id, id, file)
+    if (response.status !== 200) {
+      return null
     }
-    return attachmentId
+
+    const responseText = await response.text()
+    if (responseText === undefined) {
+      return null
+    }
+
+    const uploadResult = JSON.parse(responseText) as UploadResult[]
+    if (!Array.isArray(uploadResult) || uploadResult.length === 0) {
+      return null
+    }
+
+    await this.client.addCollection(
+      attachment.class.Attachment,
+      spaceId,
+      parentId,
+      parentClass,
+      'attachments',
+      {
+        file: uploadResult[0].id,
+        lastModified: Date.now(),
+        name: file.name,
+        size: file.size,
+        type: file.type
+      },
+      id
+    )
+    return id
   }
 
   // Collaborative content handling

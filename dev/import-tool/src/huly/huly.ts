@@ -117,6 +117,7 @@ interface HulyDocumentHeader {
 
 class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
   constructor (
+    private readonly urlProvider: (id: string) => string,
     private readonly metadataByFilePath: Map<string, DocMetadata>,
     private readonly metadataById: Map<Ref<Doc>, DocMetadata>,
     private readonly attachMetadataByPath: Map<string, AttachmentMetadata>
@@ -168,13 +169,9 @@ class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
   private alterImageNode (node: MarkupNode, id: string, name: string): void {
     node.type = MarkupNodeType.image
     if (node.attrs !== undefined) {
-      // const fileUrl = `http://localhost:8087/files/w-user1-ws9-67234042-da2a40a790-d830a7/${id}?file=${id}&workspace=w-user1-ws9-67234042-da2a40a790-d830a7` // should be like this
-      // const fileUrl = `http://localhost:8087/files/w-user1-ws9-67234042-da2a40a790-d830a7/${name}?file=${name}&workspace=w-user1-ws9-67234042-da2a40a790-d830a7`
-      const fileUrl = `http://localhost:8087/files/w-user1-ws9-67234042-da2a40a790-d830a7/${id}?file=${id}&workspace=w-user1-ws9-67234042-da2a40a790-d830a7`
-
       node.attrs = {
         'file-id': id,
-        src: fileUrl, // Используем полный URL
+        src: this.urlProvider(id),
         width: node.attrs.width ?? null,
         height: node.attrs.height ?? null,
         align: node.attrs.align ?? null,
@@ -244,10 +241,16 @@ export class HulyImporter {
     console.log('IMPORT DATA STRUCTURE: ', JSON.stringify(workspaceData, null, 4))
     console.log('========================================')
 
-    console.log('Processing documents...')
-    const preprocessor = new HulyMarkdownPreprocessor(this.metadataByFilePath, this.metadataById, this.attachMetadataByPath)
+    console.log('Importing documents...')
+    const preprocessor = new HulyMarkdownPreprocessor(
+      this.fileUploader.getFileUrl,
+      this.metadataByFilePath,
+      this.metadataById,
+      this.attachMetadataByPath
+    )
     await new WorkspaceImporter(this.client, this.fileUploader, workspaceData, preprocessor).performImport()
 
+    console.log('Importing attachments...')
     const attachments: ImportAttachment[] = Array.from(this.attachMetadataByPath.values())
       .filter(attachment => attachment.parentId !== undefined)
       .map(attachment => {
@@ -263,9 +266,8 @@ export class HulyImporter {
           spaceId: attachment.spaceId
         }
       })
-
-    console.log('Processing attachments...')
     await new WorkspaceImporter(this.client, this.fileUploader, { attachments }, preprocessor).performImport()
+
     console.log('========================================')
     console.log('IMPORT SUCCESS')
   }
@@ -284,7 +286,6 @@ export class HulyImporter {
       persons,
       projectTypes,
       spaces
-      // todo: + ,attachments
     }
   }
 
