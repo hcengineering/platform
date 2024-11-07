@@ -43,7 +43,7 @@
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/notification": "^0.6.23"
   },
-  "repository": "https://github.com/hcenginneing/anticrm",
+  "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   }

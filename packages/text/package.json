@@ -67,7 +67,7 @@
     "yjs": "^13.6.19",
     "y-prosemirror": "^1.2.12"
   },
-  "repository": "https://github.com/hcenginneing/anticrm",
+  "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   }
