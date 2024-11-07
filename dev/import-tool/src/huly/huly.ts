@@ -39,7 +39,6 @@ import {
   WorkspaceImporter
 } from '../importer/importer'
 import { type FileUploader } from '../importer/uploader'
-import { v4 as uuid } from 'uuid'
 
 interface HulyComment {
   author: string
@@ -142,7 +141,7 @@ class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
           }
 
           this.attachMetadataByPath.set(fullPath, { ...attachmentMeta, parentId: id, parentClass: sourceMeta.class as Ref<Class<Doc<Space>>>, spaceId })
-          this.alterImageNode(node, attachmentMeta.uuid, attachmentMeta.name)
+          this.alterImageNode(node, attachmentMeta.id, attachmentMeta.name)
         }
       } else {
         traverseNodeMarks(node, (mark) => {
@@ -166,15 +165,15 @@ class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
     return json
   }
 
-  private alterImageNode (node: MarkupNode, uuid: string, name: string): void {
+  private alterImageNode (node: MarkupNode, id: string, name: string): void {
     node.type = MarkupNodeType.image
     if (node.attrs !== undefined) {
       // const fileUrl = `http://localhost:8087/files/w-user1-ws9-67234042-da2a40a790-d830a7/${id}?file=${id}&workspace=w-user1-ws9-67234042-da2a40a790-d830a7` // should be like this
       // const fileUrl = `http://localhost:8087/files/w-user1-ws9-67234042-da2a40a790-d830a7/${name}?file=${name}&workspace=w-user1-ws9-67234042-da2a40a790-d830a7`
-      const fileUrl = `http://localhost:8087/files/w-user1-ws9-67234042-da2a40a790-d830a7/${uuid}?file=${uuid}&workspace=w-user1-ws9-67234042-da2a40a790-d830a7`
+      const fileUrl = `http://localhost:8087/files/w-user1-ws9-67234042-da2a40a790-d830a7/${id}?file=${id}&workspace=w-user1-ws9-67234042-da2a40a790-d830a7`
 
       node.attrs = {
-        'file-id': uuid,
+        'file-id': id,
         src: fileUrl, // Используем полный URL
         width: node.attrs.width ?? null,
         height: node.attrs.height ?? null,
@@ -214,7 +213,7 @@ interface DocMetadata {
 }
 
 interface AttachmentMetadata {
-  uuid: string
+  id: Ref<Attachment>
   name: string
   path: string
   parentId?: Ref<Doc>
@@ -253,7 +252,7 @@ export class HulyImporter {
       .filter(attachment => attachment.parentId !== undefined)
       .map(attachment => {
         return {
-          id: attachment.uuid as Ref<Attachment>,
+          id: attachment.id,
           title: path.basename(attachment.path),
           blobProvider: async () => {
             const data = fs.readFileSync(attachment.path)
@@ -547,8 +546,8 @@ export class HulyImporter {
         } else if (entry.isFile()) {
           // Skip files that are already processed as documents or issues
           if (!this.metadataByFilePath.has(fullPath)) {
-            const attachmentId = uuid()
-            this.attachMetadataByPath.set(fullPath, { uuid: attachmentId, name: entry.name, path: fullPath })
+            const attachmentId = generateId<Attachment>()
+            this.attachMetadataByPath.set(fullPath, { id: attachmentId, name: entry.name, path: fullPath })
             console.log(`Found attachment: ${fullPath} -> ${attachmentId}`)
           }
         }
