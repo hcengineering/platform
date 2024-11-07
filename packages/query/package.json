@@ -42,5 +42,9 @@
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/analytics": "^0.6.0",
     "fast-equals": "^5.0.1"
+  },
+  "repository": "https://github.com/hcengineering/platform",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }
