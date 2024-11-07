@@ -85,6 +85,12 @@ export type RoomLanguage =
   | 'uk'
   | 'vi'
 
+export interface RoomMetadata {
+  recording?: boolean
+  transcription?: TranscriptionStatus
+  language?: RoomLanguage
+}
+
 export interface Room extends Doc {
   name: string
   type: RoomType

@@ -99,7 +99,6 @@ export function initStatisticsContext (
       console.info('storing measurements into local file', metricsFile)
     }
     let oldMetricsValue = ''
-    const token = generateToken(systemAccountEmail, { name: '' }, { service: 'true' })
     const serviceId = encodeURIComponent(os.hostname() + '-' + serviceName)
 
     const intTimer = setInterval(() => {
@@ -118,6 +117,7 @@ export function initStatisticsContext (
         }
       }
       if (statsUrl !== undefined) {
+        const token = generateToken(systemAccountEmail, { name: '' }, { service: 'true' })
         const data: ServiceStatistics = {
           serviceName,
           cpu: getCPUInfo(),

@@ -40,7 +40,7 @@
     "BotShortDescription": "Con questo bot puoi ricevere tutte le notifiche e rispondere senza lasciare Telegram",
     "WelcomeMessage": "Benvenuto! Sono un bot che ti aiuterà a ricevere tutte le notifiche di {app} e a rispondere senza lasciare Telegram.",
     "TestMessage": "Il tuo account {app} è connesso. Riceverai le tue notifiche.",
-    "ConnectMessage": "⚠️Per favore collegami al tuo account {app}.\nInvia /connect per generare un codice e incollarlo nelle impostazioni di {app}.\nCodice valido per 1 minuto.",
+    "ConnectMessage": "⚠️Per favore collegami al tuo account {app}.\nInvia /connect per generare un codice e incollalo nelle impostazioni di {app}.\nCodice valido per {minutes} minuti.",
     "StopMessage": "Non riceverai più notifiche sugli eventi di {app}. Se vuoi riattivarle, basta inviare /start.",
     "StartBot": "Avvia il bot",
     "ConnectAccount": "Collega l'account tramite OTP",
