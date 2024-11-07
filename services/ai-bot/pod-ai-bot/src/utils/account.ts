@@ -13,62 +13,17 @@
 // limitations under the License.
 //
 
-import { LoginInfo, Workspace, WorkspaceLoginInfo } from '@hcengineering/account'
+import { LoginInfo, WorkspaceLoginInfo } from '@hcengineering/account'
 import aiBot, { aiBotAccountEmail } from '@hcengineering/ai-bot'
 import { AccountRole, isWorkspaceCreating, MeasureContext, systemAccountEmail } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
+import { assignWorkspace } from '@hcengineering/server-client'
 
 import config from '../config'
 import { wait } from './common'
 
 const ASSIGN_WORKSPACE_DELAY_MS = 5 * 1000 // 5 secs
 const MAX_ASSIGN_ATTEMPTS = 5
-
-export async function assignBotToWorkspace (workspace: string): Promise<Workspace> {
-  const token = generateToken(systemAccountEmail, { name: '-' }, { service: 'aibot' })
-  const accountsUrl = config.AccountsURL
-  const res = await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'assignWorkspace',
-        params: [
-          token,
-          aiBotAccountEmail,
-          workspace,
-          AccountRole.User,
-          undefined,
-          false,
-          undefined,
-          aiBot.account.AIBot
-        ]
-      })
-    })
-  ).json()
-
-  return res.result as Workspace
-}
-
-export async function createBotAccount (): Promise<Workspace> {
-  const accountsUrl = config.AccountsURL
-  const workspace = await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'createAccount',
-        params: [aiBotAccountEmail, config.Password, config.FirstName, config.LastName]
-      })
-    })
-  ).json()
-
-  return workspace.result as Workspace
-}
 
 export async function loginBot (): Promise<LoginInfo | undefined> {
   const accountsUrl = config.AccountsURL
@@ -155,7 +110,8 @@ export async function tryAssignToWorkspace (
       return false
     }
 
-    await assignBotToWorkspace(workspace)
+    const token = generateToken(systemAccountEmail, { name: '-' }, { service: 'aibot' })
+    await assignWorkspace(token, aiBotAccountEmail, workspace, AccountRole.User, undefined, false, aiBot.account.AIBot)
     ctx.info('Assigned to workspace: ', { workspace })
     return true
   } catch (e) {
