@@ -61,7 +61,7 @@
 
   $: $themeStore.language && validate($themeStore.language)
 
-  const validate = makeSequential(async function validateAsync (language: string): Promise<boolean> {
+  const validate = makeSequential(async function validateAsync(language: string): Promise<boolean> {
     if (ignoreInitialValidation) return true
     for (const field of fields) {
       const v = object[field.name]
@@ -101,7 +101,7 @@
 
   let inAction = false
 
-  function performAction (action: Action): void {
+  function performAction(action: Action): void {
     for (const field of fields) {
       trim(field.name)
     }
@@ -112,7 +112,7 @@
   }
   onMount(() => (ignoreInitialValidation = false))
 
-  function trim (field: string): void {
+  function trim(field: string): void {
     object[field] = (object[field] as string).trim()
   }
 

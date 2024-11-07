@@ -46,7 +46,17 @@ import login from './plugin'
 /**
  * Perform a login operation to required workspace with user credentials.
  */
-export async function doLogin (email: string, password: string): Promise<[Status, LoginInfo | undefined]> {
+export async function doLogin({
+  email,
+  password,
+  googleRecaptchaToken,
+  googleRecaptchaAction
+}: {
+  email: string
+  password: string
+  googleRecaptchaToken: string
+  googleRecaptchaAction: string
+}): Promise<[Status, LoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -55,7 +65,7 @@ export async function doLogin (email: string, password: string): Promise<[Status
 
   const request = {
     method: 'login',
-    params: [email, password]
+    params: [email, password, googleRecaptchaToken, googleRecaptchaAction]
   }
 
   try {
@@ -84,7 +94,7 @@ export async function doLogin (email: string, password: string): Promise<[Status
   }
 }
 
-export async function signUp (
+export async function signUp(
   email: string,
   password: string,
   first: string,
@@ -125,7 +135,7 @@ export async function signUp (
   }
 }
 
-export async function signUpOtp (email: string): Promise<[Status, OtpInfo | undefined]> {
+export async function signUpOtp(email: string): Promise<[Status, OtpInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -159,7 +169,7 @@ export async function signUpOtp (email: string): Promise<[Status, OtpInfo | unde
   }
 }
 
-export async function createWorkspace (
+export async function createWorkspace(
   workspaceName: string,
   region?: string
 ): Promise<[Status, (LoginInfo & { workspace: string }) | undefined]> {
@@ -208,17 +218,17 @@ export async function createWorkspace (
   }
 }
 
-function getLastVisitDays (it: Workspace): number {
+function getLastVisitDays(it: Workspace): number {
   return Math.floor((Date.now() - it.lastVisit) / (1000 * 3600 * 24))
 }
-function getWorkspaceSize (it: Workspace): number {
+function getWorkspaceSize(it: Workspace): number {
   let sz = 0
   sz += it.backupInfo?.dataSize ?? 0
   sz += it.backupInfo?.blobsSize ?? 0
   return sz
 }
 
-export async function getWorkspaces (): Promise<Workspace[]> {
+export async function getWorkspaces(): Promise<Workspace[]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -269,7 +279,7 @@ export async function getWorkspaces (): Promise<Workspace[]> {
   }
 }
 
-export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo | undefined> {
+export async function getAccount(doNavigate: boolean = true): Promise<LoginInfo | undefined> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -316,7 +326,7 @@ export interface RegionInfo {
   name: string
 }
 
-export async function getRegionInfo (doNavigate: boolean = true): Promise<RegionInfo[] | undefined> {
+export async function getRegionInfo(doNavigate: boolean = true): Promise<RegionInfo[] | undefined> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -358,7 +368,7 @@ export async function getRegionInfo (doNavigate: boolean = true): Promise<Region
   }
 }
 
-export async function selectWorkspace (
+export async function selectWorkspace(
   workspace: string,
   token?: string | null | undefined
 ): Promise<[Status, WorkspaceLoginInfo | undefined]> {
@@ -408,7 +418,7 @@ export async function selectWorkspace (
   }
 }
 
-export async function fetchWorkspace (workspace: string): Promise<[Status, WorkspaceLoginInfo | undefined]> {
+export async function fetchWorkspace(workspace: string): Promise<[Status, WorkspaceLoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -447,7 +457,7 @@ export async function fetchWorkspace (workspace: string): Promise<[Status, Works
     return [unknownError(err), undefined]
   }
 }
-export async function createMissingEmployee (workspace: string): Promise<[Status]> {
+export async function createMissingEmployee(workspace: string): Promise<[Status]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -487,7 +497,7 @@ export async function createMissingEmployee (workspace: string): Promise<[Status
   }
 }
 
-export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
+export function setLoginInfo(loginInfo: WorkspaceLoginInfo): void {
   const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
   tokens[loginInfo.workspace] = loginInfo.token
 
@@ -499,7 +509,7 @@ export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
   setMetadataLocalStorage(login.metadata.LoginEmail, loginInfo.email)
 }
 
-export function navigateToWorkspace (
+export function navigateToWorkspace(
   workspace: string,
   loginInfo?: WorkspaceLoginInfo,
   navigateUrl?: string,
@@ -532,7 +542,7 @@ export function navigateToWorkspace (
   }
 }
 
-export async function checkJoined (inviteId: string): Promise<[Status, WorkspaceLoginInfo | undefined]> {
+export async function checkJoined(inviteId: string): Promise<[Status, WorkspaceLoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -570,7 +580,7 @@ export async function checkJoined (inviteId: string): Promise<[Status, Workspace
   }
 }
 
-export async function getInviteLink (
+export async function getInviteLink(
   expHours: number,
   mask: string,
   limit: number | undefined,
@@ -597,7 +607,7 @@ export async function getInviteLink (
   return concatLink(host, url)
 }
 
-export async function getInviteLinkId (
+export async function getInviteLinkId(
   expHours: number,
   emailMask: string,
   limit: number,
@@ -644,7 +654,7 @@ export async function getInviteLinkId (
   return result.result
 }
 
-export async function join (
+export async function join(
   email: string,
   password: string,
   inviteId: string
@@ -682,7 +692,7 @@ export async function join (
   }
 }
 
-export async function signUpJoin (
+export async function signUpJoin(
   email: string,
   password: string,
   first: string,
@@ -722,7 +732,7 @@ export async function signUpJoin (
   }
 }
 
-export async function changePassword (oldPassword: string, password: string): Promise<void> {
+export async function changePassword(oldPassword: string, password: string): Promise<void> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -752,7 +762,7 @@ export async function changePassword (oldPassword: string, password: string): Pr
   }
 }
 
-export async function changeUsername (first: string, last: string): Promise<void> {
+export async function changeUsername(first: string, last: string): Promise<void> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -782,7 +792,7 @@ export async function changeUsername (first: string, last: string): Promise<void
   }
 }
 
-export async function leaveWorkspace (email: string): Promise<void> {
+export async function leaveWorkspace(email: string): Promise<void> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -806,7 +816,7 @@ export async function leaveWorkspace (email: string): Promise<void> {
   })
 }
 
-export async function sendInvite (email: string, personId?: Ref<Doc>, role?: AccountRole): Promise<void> {
+export async function sendInvite(email: string, personId?: Ref<Doc>, role?: AccountRole): Promise<void> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -832,7 +842,7 @@ export async function sendInvite (email: string, personId?: Ref<Doc>, role?: Acc
   })
 }
 
-export async function requestPassword (email: string): Promise<Status> {
+export async function requestPassword(email: string): Promise<Status> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -863,7 +873,7 @@ export async function requestPassword (email: string): Promise<Status> {
   }
 }
 
-export async function confirm (email: string): Promise<[Status, LoginInfo | undefined]> {
+export async function confirm(email: string): Promise<[Status, LoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -896,7 +906,7 @@ export async function confirm (email: string): Promise<[Status, LoginInfo | unde
   }
 }
 
-export async function restorePassword (token: string, password: string): Promise<[Status, LoginInfo | undefined]> {
+export async function restorePassword(token: string, password: string): Promise<[Status, LoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -930,19 +940,19 @@ export async function restorePassword (token: string, password: string): Promise
   }
 }
 
-async function handleStatusError (message: string, err: Status): Promise<void> {
+async function handleStatusError(message: string, err: Status): Promise<void> {
   const label = await translate(err.code, err.params, 'en')
   Analytics.handleError(new Error(`${message}: ${label}`))
 }
 
-export function getLoc (path: Pages): Location {
+export function getLoc(path: Pages): Location {
   const loc = getCurrentLocation()
   loc.path[1] = path
   loc.path.length = 2
   return loc
 }
 
-export function goTo (path: Pages, clearQuery: boolean = false): void {
+export function goTo(path: Pages, clearQuery: boolean = false): void {
   const loc = getLoc(path)
   if (clearQuery) {
     loc.query = undefined
@@ -950,14 +960,14 @@ export function goTo (path: Pages, clearQuery: boolean = false): void {
   navigate(loc, clearQuery)
 }
 
-export function getHref (path: Pages): string {
+export function getHref(path: Pages): string {
   const url = locationToUrl(getLoc(path))
   const frontUrl = getMetadata(presentation.metadata.FrontUrl)
   const host = frontUrl ?? document.location.origin
   return host + url
 }
 
-export async function afterConfirm (clearQuery = false): Promise<void> {
+export async function afterConfirm(clearQuery = false): Promise<void> {
   const joinedWS = await getWorkspaces()
   if (joinedWS.length === 0) {
     goTo('createWorkspace', clearQuery)
@@ -977,7 +987,7 @@ export async function afterConfirm (clearQuery = false): Promise<void> {
   }
 }
 
-export async function getLoginInfoFromQuery (): Promise<LoginInfo | undefined> {
+export async function getLoginInfoFromQuery(): Promise<LoginInfo | undefined> {
   const token = getCurrentLocation().query?.token
 
   if (token === undefined) {
@@ -1014,7 +1024,7 @@ export async function getLoginInfoFromQuery (): Promise<LoginInfo | undefined> {
   }
 }
 
-export async function getProviders (): Promise<string[]> {
+export async function getProviders(): Promise<string[]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -1037,7 +1047,7 @@ export async function getProviders (): Promise<string[]> {
   return []
 }
 
-export async function sendOtp (email: string): Promise<[Status, OtpInfo | undefined]> {
+export async function sendOtp(email: string): Promise<[Status, OtpInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -1073,7 +1083,7 @@ export async function sendOtp (email: string): Promise<[Status, OtpInfo | undefi
   }
 }
 
-export async function loginWithOtp (email: string, otp: string): Promise<[Status, LoginInfo | undefined]> {
+export async function loginWithOtp(email: string, otp: string): Promise<[Status, LoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -1111,7 +1121,7 @@ export async function loginWithOtp (email: string, otp: string): Promise<[Status
   }
 }
 
-export async function doLoginNavigate (
+export async function doLoginNavigate(
   result: LoginInfo | undefined,
   updateStatus: (status: Status) => void,
   navigateUrl?: string
