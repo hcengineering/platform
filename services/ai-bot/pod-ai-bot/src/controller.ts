@@ -122,8 +122,7 @@ export class AIControl {
     }
 
     const token = generateToken(aiBotAccountEmail, { name: workspace })
-    // TODO: remove before commit
-    const endpoint = await getTransactorEndpoint(token, 'external')
+    const endpoint = await getTransactorEndpoint(token)
 
     this.ctx.info('Listen workspace: ', { workspace })
 

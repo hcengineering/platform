@@ -385,6 +385,7 @@ services:
       - AVATAR_PATH=./avatar.png
       - AVATAR_CONTENT_TYPE=.png
       - STATS_URL=http://host.docker.internal:4900
+#      - LOVE_ENDPOINT=http://host.docker.internal:8096
 #      - OPENAI_API_KEY=token
     deploy:
       resources:
