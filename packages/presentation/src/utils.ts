@@ -657,6 +657,20 @@ export function isCollectionAttr (hierarchy: Hierarchy, key: KeyedAttribute): bo
 /**
  * @public
  */
+export function isMarkupAttr (hierarchy: Hierarchy, key: KeyedAttribute): boolean {
+  return hierarchy.isDerived(key.attr.type._class, core.class.TypeMarkup)
+}
+
+/**
+ * @public
+ */
+export function isCollabAttr (hierarchy: Hierarchy, key: KeyedAttribute): boolean {
+  return hierarchy.isDerived(key.attr.type._class, core.class.TypeCollaborativeDoc)
+}
+
+/**
+ * @public
+ */
 export function decodeTokenPayload (token: string): any {
   try {
     return JSON.parse(atob(token.split('.')[1]))
