@@ -77,16 +77,8 @@ export async function tryAssignToWorkspace (
       return false
     }
 
-    // const token = generateToken(systemAccountEmail, { name: '-' }, { service: 'aibot' })
-    await assignWorkspace(
-      aiBotAccountEmail,
-      workspace,
-      AccountRole.User,
-      undefined,
-      false,
-      undefined,
-      aiBot.account.AIBot
-    )
+    const token = generateToken(systemAccountEmail, { name: '-' }, { service: 'aibot' })
+    await assignWorkspace(token, aiBotAccountEmail, workspace, AccountRole.User, undefined, false, aiBot.account.AIBot)
     ctx.info('Assigned to workspace: ', { workspace })
     return true
   } catch (e) {

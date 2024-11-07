@@ -37,6 +37,7 @@
   noStretch={bottomStart}
   {bottomStart}
   disableOverscroll
+  disablePointerEventsOnScroll
   {onScroll}
   {onResize}
 >

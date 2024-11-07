@@ -160,6 +160,10 @@ export async function CanRenameFolder (doc: Folder | Folder[] | undefined): Prom
   return doc !== undefined && !Array.isArray(doc)
 }
 
+export function HideArchivedDrives (value: boolean, query: DocumentQuery<Drive>): DocumentQuery<Drive> {
+  return value ? { ...query, archived: false } : query
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     CreateDrive,
@@ -200,7 +204,8 @@ export default async (): Promise<Resources> => ({
     FileLinkProvider,
     FolderLinkProvider,
     CanRenameFile,
-    CanRenameFolder
+    CanRenameFolder,
+    HideArchivedDrives
   },
   resolver: {
     Location: resolveLocation

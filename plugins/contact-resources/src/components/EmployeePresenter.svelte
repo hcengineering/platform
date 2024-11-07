@@ -36,7 +36,8 @@
     }
     return {
       component: EmployeePreviewPopup,
-      props: { employeeId: value._id }
+      props: { employeeId: value._id },
+      timeout: 300
     }
   }
 </script>

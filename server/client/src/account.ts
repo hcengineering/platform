@@ -20,7 +20,6 @@ import {
   BackupStatus,
   AccountRole,
   Ref,
-  Client,
   Doc
 } from '@hcengineering/core'
 import { getMetadata, PlatformError, unknownError } from '@hcengineering/platform'
@@ -307,12 +306,12 @@ function getAccoutsUrlOrFail (): string {
 }
 
 export async function assignWorkspace (
+  token: string,
   email: string,
   workspace: string,
   role: AccountRole = AccountRole.User,
   personId?: Ref<Doc>,
   shouldReplaceAccount = false,
-  client?: Client,
   personAccountId?: Ref<Doc>
 ): Promise<WorkspaceLoginInfo> {
   const accountsUrl = getAccoutsUrlOrFail()
@@ -324,7 +323,7 @@ export async function assignWorkspace (
       },
       body: JSON.stringify({
         method: 'assignWorkspace',
-        params: [email, workspace, role, personId, shouldReplaceAccount, client, personAccountId]
+        params: [token, email, workspace, role, personId, shouldReplaceAccount, undefined, personAccountId]
       })
     })
   ).json()

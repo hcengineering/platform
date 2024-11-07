@@ -34,6 +34,7 @@ import { Doc as YDoc } from 'yjs'
 import { Context } from '../context'
 
 import { CollabStorageAdapter } from './adapter'
+import { areEqualMarkups } from '@hcengineering/text'
 
 export class PlatformStorageAdapter implements CollabStorageAdapter {
   constructor (private readonly storage: StorageAdapter) {}
@@ -156,6 +157,14 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
   ): Promise<void> {
     const { objectClass, objectId, objectAttr } = parsePlatformDocumentId(platformDocumentId)
 
+    const currMarkup = markup.curr[objectAttr]
+    const prevMarkup = markup.prev[objectAttr]
+
+    if (areEqualMarkups(currMarkup, prevMarkup)) {
+      ctx.info('markup not changed, skip platform update', { documentName })
+      return
+    }
+
     const attribute = client.getHierarchy().findAttribute(objectClass, objectAttr)
     if (attribute === undefined) {
       ctx.warn('attribute not found', { documentName, objectClass, objectAttr })
@@ -192,8 +201,8 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
         attributeUpdates: {
           attrKey: objectAttr,
           attrClass: core.class.TypeMarkup,
-          prevValue: markup.prev[objectAttr],
-          set: [markup.curr[objectAttr]],
+          prevValue: prevMarkup,
+          set: [currMarkup],
           added: [],
           removed: [],
           isMixin: hierarchy.isMixin(objectClass)
