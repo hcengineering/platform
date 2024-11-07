@@ -30,8 +30,8 @@ function parseMetadata (metadata: string): Metadata {
   return {}
 }
 
-function applyMetadata (data: string, stt: STT): void {
-  if (data === '') return
+function applyMetadata (data: string | undefined, stt: STT): void {
+  if (data == null || data === '') return
   const metadata = parseMetadata(data)
 
   if (metadata.language != null) {
@@ -53,7 +53,15 @@ export default defineAgent({
     await ctx.connect()
     await ctx.waitForParticipant()
 
-    const stt = new STT(ctx.room.name)
+    const roomName = ctx.room.name
+
+    if (roomName === undefined) {
+      console.error('Room name is undefined')
+      ctx.shutdown()
+      return
+    }
+
+    const stt = new STT(roomName)
 
     applyMetadata(ctx.room.metadata, stt)
 
