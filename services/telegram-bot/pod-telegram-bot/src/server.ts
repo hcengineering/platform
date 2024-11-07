@@ -208,6 +208,7 @@ export function createServer (
 
           for (const messageId of messageIds) {
             await worker.addNotificationRecord({
+              messageId: request.messageId,
               notificationId: request.notificationId,
               email: userRecord.email,
               workspace: request.workspace,

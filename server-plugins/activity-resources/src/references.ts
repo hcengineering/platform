@@ -256,6 +256,10 @@ export async function getPersonNotificationTxes (
       const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
         user: receiverInfo._id
       })
+
+      const msg = control.hierarchy.isDerived(data.mentionedInClass, activity.class.ActivityMessage)
+        ? (await control.findAll(control.ctx, data.mentionedInClass, { _id: data.mentionedIn }))[0]
+        : undefined
       await applyNotificationProviders(
         notificationData,
         notifyResult,
@@ -266,7 +270,9 @@ export async function getPersonNotificationTxes (
         doc,
         receiverInfo,
         senderInfo,
-        subscriptions
+        subscriptions,
+        notification.class.MentionInboxNotification,
+        msg as ActivityMessage
       )
     }
   }
