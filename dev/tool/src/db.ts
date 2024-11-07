@@ -72,6 +72,7 @@ async function moveWorkspace (
   force = false
 ): Promise<void> {
   try {
+    console.log('move workspace', ws.workspaceName ?? ws.workspace)
     const wsId = getWorkspaceId(ws.workspace)
     const mongoDB = getWorkspaceMongoDB(mongo, wsId)
     const collections = await mongoDB.collections()
@@ -104,7 +105,7 @@ async function moveWorkspace (
       }
       while (true) {
         const toRemove: string[] = []
-        while (docs.length < 50000) {
+        while (docs.length < 5000) {
           const doc = (await cursor.next()) as Doc | null
           if (doc === null) break
           if (currentIds.has(doc._id)) {
@@ -116,25 +117,30 @@ async function moveWorkspace (
           }
           docs.push(doc)
         }
-        if (toRemove.length > 0) {
+        while (toRemove.length > 0) {
+          const part = toRemove.splice(0, 100)
           await retryTxn(pgClient, async (client) => {
             await client.unsafe(
-              `DELETE FROM ${translateDomain(domain)} WHERE "workspaceId" = '${ws.workspace}' AND _id IN (${toRemove.map((c) => `'${c}'`).join(', ')})`
+              `DELETE FROM ${translateDomain(domain)} WHERE "workspaceId" = '${ws.workspace}' AND _id IN (${part.map((c) => `'${c}'`).join(', ')})`
             )
           })
         }
         if (docs.length === 0) break
         while (docs.length > 0) {
-          const part = docs.splice(0, 500)
+          const part = docs.splice(0, 100)
           const values: DBDoc[] = []
           for (let i = 0; i < part.length; i++) {
             const doc = part[i]
             const d = convertDoc(domain, doc, ws.workspace)
             values.push(d)
           }
-          await retryTxn(pgClient, async (client) => {
-            await client`INSERT INTO ${client(translateDomain(domain))} ${client(values, insertFields)}`
-          })
+          try {
+            await retryTxn(pgClient, async (client) => {
+              await client`INSERT INTO ${client(translateDomain(domain))} ${client(values, insertFields)}`
+            })
+          } catch (err) {
+            console.log('Error when insert', domain, err)
+          }
         }
       }
     }

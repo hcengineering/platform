@@ -92,7 +92,7 @@ export async function createTables (client: postgres.Sql, domains: string[]): Pr
 async function getTableSchema (client: postgres.Sql, domain: string): Promise<void> {
   const res = await client.unsafe(`SELECT column_name, data_type, is_nullable
     FROM information_schema.columns
-    WHERE table_name = '${domain}' ORDER BY ordinal_position ASC;
+    WHERE table_name = '${domain}' and table_schema = 'public' ORDER BY ordinal_position ASC;
   `)
 
   const schema: Schema = {}
