@@ -53,7 +53,7 @@ export async function updateContent (
             fragment.delete(0, fragment.length)
             applyUpdate(document, update)
           })
-        })
+        }, connection)
       })
     })
   } finally {
