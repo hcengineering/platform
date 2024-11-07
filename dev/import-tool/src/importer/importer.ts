@@ -551,10 +551,10 @@ export class WorkspaceImporter {
     parentId: Ref<Doc>,
     parentClass: Ref<Class<Doc<Space>>>
   ): Promise<Ref<Attachment> | null> {
-    const attachmentId = generateId<Attachment>()
+    const attachmentId = attach.id ?? generateId<Attachment>()
     const file = new File([blob], attach.title)
 
-    const response = await this.fileUploader.uploadFile(attachmentId, attach.title, file)
+    const response = await this.fileUploader.uploadFile(attachmentId, attachmentId, file)
     if (response.status === 200) {
       const responseText = await response.text()
       if (responseText !== undefined) {
