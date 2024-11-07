@@ -19,7 +19,7 @@ import serverClient from '@hcengineering/server-client'
 import { initStatisticsContext, StorageConfig, StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
-import { TranscriptionStatus } from '@hcengineering/love'
+import { RoomMetadata, TranscriptionStatus } from '@hcengineering/love'
 import cors from 'cors'
 import express from 'express'
 import { IncomingHttpHeaders } from 'http'
@@ -152,7 +152,7 @@ export const main = async (): Promise<void> => {
     }
     // just check token
     decodeToken(token)
-    await roomClient.updateRoomMetadata(req.body.roomName, JSON.stringify({ recording: false }))
+    await updateMetadata(roomClient, req.body.roomName, { recording: false })
     void stopEgress(egressClient, req.body.roomName)
     res.send()
   })
@@ -179,7 +179,7 @@ export const main = async (): Promise<void> => {
 
     const metadata = language != null ? { transcription, language } : { transcription }
     try {
-      await roomClient.updateRoomMetadata(roomName, JSON.stringify(metadata))
+      await updateMetadata(roomClient, roomName, metadata)
       res.send()
     } catch (e) {
       console.error(e)
@@ -205,7 +205,7 @@ export const main = async (): Promise<void> => {
       return
     }
     try {
-      await roomClient.updateRoomMetadata(roomName, JSON.stringify({ language }))
+      await updateMetadata(roomClient, roomName, { language })
       res.send()
     } catch (e) {
       console.error(e)
@@ -309,7 +309,28 @@ const startRecord = async (
       })
     }
   })
-  await roomClient.updateRoomMetadata(roomName, JSON.stringify({ recording: true }))
+  await updateMetadata(roomClient, roomName, { recording: true })
   await egressClient.startRoomCompositeEgress(roomName, { file: output }, { layout: 'grid' })
   return filepath
+}
+
+function parseMetadata (metadata?: string | null): RoomMetadata {
+  if (metadata === '' || metadata == null) return {}
+
+  try {
+    return JSON.parse(metadata) as RoomMetadata
+  } catch (e) {
+    return {}
+  }
+}
+
+async function updateMetadata (
+  roomClient: RoomServiceClient,
+  roomName: string,
+  metadata: Partial<RoomMetadata>
+): Promise<void> {
+  const room = (await roomClient.listRooms([roomName]))[0]
+  const currentMetadata = parseMetadata(room?.metadata)
+
+  await roomClient.updateRoomMetadata(roomName, JSON.stringify({ ...currentMetadata, ...metadata }))
 }
