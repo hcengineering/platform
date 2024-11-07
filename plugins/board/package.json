@@ -46,7 +46,7 @@
     "@hcengineering/preference": "^0.6.13",
     "@hcengineering/tags": "^0.6.16"
   },
-  "repository": "https://github.com/hcenginneing/anticrm",
+  "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   }

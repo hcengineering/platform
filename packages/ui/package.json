@@ -51,7 +51,7 @@
     "dompurify": "^3.1.6",
     "@hcengineering/analytics": "^0.6.0"
   },
-  "repository": "https://github.com/hcenginneing/anticrm",
+  "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   }
