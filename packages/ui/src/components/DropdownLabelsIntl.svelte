@@ -26,6 +26,7 @@
   import DropdownIcon from './icons/Dropdown.svelte'
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let iconProps: Record<string, any> = {}
   export let label: IntlString = ui.string.DropdownDefaultLabel
   export let params: Record<string, any> = {}
   export let items: DropdownIntlItem[]
@@ -78,6 +79,7 @@
 <div bind:this={container} class:min-w-0={minW0}>
   <Button
     {icon}
+    {iconProps}
     width={width ?? 'min-content'}
     {size}
     {kind}

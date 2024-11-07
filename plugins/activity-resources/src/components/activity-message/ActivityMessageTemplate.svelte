@@ -16,7 +16,8 @@
   import activity, {
     ActivityMessageViewlet,
     DisplayActivityMessage,
-    ActivityMessageViewType
+    ActivityMessageViewType,
+    ActivityMessage
   } from '@hcengineering/activity'
   import { Person } from '@hcengineering/contact'
   import { Avatar, SystemAvatar } from '@hcengineering/contact-resources'
@@ -63,6 +64,7 @@
   export let excludedActions: Ref<ViewAction>[] = []
   export let readonly: boolean = false
   export let onClick: (() => void) | undefined = undefined
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   export let socialIcon: Asset | undefined = undefined
 
@@ -146,9 +148,14 @@
     if (readonly) return
     const showCustomPopup = !isTextClicked(event.target as HTMLElement, event.clientX, event.clientY)
     if (showCustomPopup) {
-      showMenu(event, { object: message, baseMenuClass: activity.class.ActivityMessage, excludedActions }, () => {
-        isActionsOpened = false
-      })
+      const overrides = onReply ? new Map([[activity.action.Reply, onReply]]) : []
+      showMenu(
+        event,
+        { object: message, baseMenuClass: activity.class.ActivityMessage, excludedActions, overrides },
+        () => {
+          isActionsOpened = false
+        }
+      )
       isActionsOpened = true
     }
   }
@@ -247,7 +254,7 @@
         <slot name="content" {readonly} />
 
         {#if !hideFooter}
-          <Replies {embedded} object={message} />
+          <Replies {embedded} object={message} {onReply} />
         {/if}
         <ReactionsPresenter object={message} {readonly} />
         {#if parentMessage && showEmbedded}
@@ -263,6 +270,7 @@
             {actions}
             {withActionMenu}
             {excludedActions}
+            {onReply}
             onOpen={handleActionsOpened}
             onClose={handleActionsClosed}
           />

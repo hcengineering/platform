@@ -1,4 +1,4 @@
-import { type Person, type PersonAccount } from '@hcengineering/contact'
+import { type PersonAccount } from '@hcengineering/contact'
 import { getCurrentAccount, type Ref } from '@hcengineering/core'
 import {
   RequestStatus,
@@ -11,7 +11,10 @@ import {
   type Room
 } from '@hcengineering/love'
 import { createQuery, getClient } from '@hcengineering/presentation'
-import { derived, writable } from 'svelte/store'
+import { derived, get, writable } from 'svelte/store'
+import { personIdByAccountId } from '@hcengineering/contact-resources'
+import aiBot from '@hcengineering/ai-bot'
+
 import love from './plugin'
 
 export const rooms = writable<Room[]>([])
@@ -57,9 +60,14 @@ export const myPreferences = writable<DevicesPreference | undefined>()
 export let $myPreferences: DevicesPreference | undefined
 
 function filterParticipantInfo (value: ParticipantInfo[]): ParticipantInfo[] {
-  const map = new Map<Ref<Person>, ParticipantInfo>()
+  const map = new Map<string, ParticipantInfo>()
+  const aiPersonId = get(personIdByAccountId).get(aiBot.account.AIBot as Ref<PersonAccount>)
   for (const val of value) {
-    map.set(val.person, val)
+    if (aiPersonId !== undefined && val.person === aiPersonId) {
+      map.set(val._id, val)
+    } else {
+      map.set(val.person, val)
+    }
   }
   return Array.from(map.values())
 }

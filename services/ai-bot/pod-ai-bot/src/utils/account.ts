@@ -13,56 +13,23 @@
 // limitations under the License.
 //
 
-import { LoginInfo, WorkspaceLoginInfo } from '@hcengineering/account'
-import aiBot, { aiBotAccountEmail } from '@hcengineering/ai-bot'
-import { AccountRole, isWorkspaceCreating, MeasureContext, systemAccountEmail } from '@hcengineering/core'
+import {
+  AccountRole,
+  BaseWorkspaceInfo,
+  isWorkspaceCreating,
+  MeasureContext,
+  systemAccountEmail
+} from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
-import { assignWorkspace } from '@hcengineering/server-client'
+import { getWorkspaceInfo, assignWorkspace } from '@hcengineering/server-client'
+import aiBot, { aiBotAccountEmail } from '@hcengineering/ai-bot'
 
-import config from '../config'
 import { wait } from './common'
 
 const ASSIGN_WORKSPACE_DELAY_MS = 5 * 1000 // 5 secs
 const MAX_ASSIGN_ATTEMPTS = 5
 
-export async function loginBot (): Promise<LoginInfo | undefined> {
-  const accountsUrl = config.AccountsURL
-  const workspace = await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'login',
-        params: [aiBotAccountEmail, config.Password]
-      })
-    })
-  ).json()
-
-  return workspace.result as LoginInfo | undefined
-}
-
-export async function getWorkspaceInfo (token: string): Promise<WorkspaceLoginInfo> {
-  const accountsUrl = config.AccountsURL
-  const workspaceInfo = await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'getWorkspaceInfo',
-        params: []
-      })
-    })
-  ).json()
-
-  return workspaceInfo.result as WorkspaceLoginInfo
-}
-
-async function tryGetWorkspaceInfo (ws: string, ctx: MeasureContext): Promise<WorkspaceLoginInfo | undefined> {
+async function tryGetWorkspaceInfo (ws: string, ctx: MeasureContext): Promise<BaseWorkspaceInfo | undefined> {
   const systemToken = generateToken(systemAccountEmail, { name: ws })
   for (let i = 0; i < 5; i++) {
     try {

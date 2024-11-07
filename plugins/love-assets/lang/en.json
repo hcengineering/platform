@@ -60,6 +60,13 @@
     "ExitingFullscreenMode": "Exiting fullscreen mode",
     "Select": "Select",
     "ChooseShare": "Choose what to share",
-    "CreateMeeting": "Create meeting"
+    "CreateMeeting": "Create meeting",
+    "MoreOptions": "More options",
+    "StartTranscription": "Start transcription",
+    "StopTranscription": "Stop transcription",
+    "Meeting": "Meeting",
+    "Transcription": "Transcription",
+    "StartWithTranscription": "Start with transcription",
+    "MeetingMinutes": "Meeting minutes"
   }
 }

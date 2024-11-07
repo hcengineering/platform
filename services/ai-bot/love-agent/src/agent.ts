@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url'
 import { RemoteParticipant, RemoteTrack, RemoteTrackPublication, RoomEvent, TrackKind } from '@livekit/rtc-node'
 
 import { STT } from './stt.js'
-import { Metadata } from './type.js'
+import { Metadata, TranscriptionStatus } from './type.js'
 
 function parseMetadata (metadata: string): Metadata {
   try {
@@ -30,17 +30,20 @@ function parseMetadata (metadata: string): Metadata {
   return {}
 }
 
-function applyMetadata (data: string, stt: STT): void {
-  if (data === '') return
+function applyMetadata (data: string | undefined, stt: STT): void {
+  if (data == null || data === '') return
   const metadata = parseMetadata(data)
 
   if (metadata.language != null) {
     stt.updateLanguage(metadata.language)
   }
 
-  if (metadata.transcription === true) {
+  if (metadata.transcription === TranscriptionStatus.InProgress) {
     stt.start()
-  } else if (metadata.transcription === false) {
+  } else if (
+    metadata.transcription === TranscriptionStatus.Completed ||
+    metadata.transcription === TranscriptionStatus.Idle
+  ) {
     stt.stop()
   }
 }
@@ -50,7 +53,15 @@ export default defineAgent({
     await ctx.connect()
     await ctx.waitForParticipant()
 
-    const stt = new STT(ctx.room.name)
+    const roomName = ctx.room.name
+
+    if (roomName === undefined) {
+      console.error('Room name is undefined')
+      ctx.shutdown()
+      return
+    }
+
+    const stt = new STT(roomName)
 
     applyMetadata(ctx.room.metadata, stt)
 
@@ -76,23 +87,17 @@ export default defineAgent({
       }
     )
 
-    ctx.room.on(
-      RoomEvent.TrackMuted,
-      (publication) => {
-        if (publication.kind === TrackKind.KIND_AUDIO) {
-          stt.mute(publication.sid)
-        }
+    ctx.room.on(RoomEvent.TrackMuted, (publication) => {
+      if (publication.kind === TrackKind.KIND_AUDIO) {
+        stt.mute(publication.sid)
       }
-    )
+    })
 
-    ctx.room.on(
-      RoomEvent.TrackUnmuted,
-      (publication) => {
-        if (publication.kind === TrackKind.KIND_AUDIO) {
-          stt.unmute(publication.sid)
-        }
+    ctx.room.on(RoomEvent.TrackUnmuted, (publication) => {
+      if (publication.kind === TrackKind.KIND_AUDIO) {
+        stt.unmute(publication.sid)
       }
-    )
+    })
 
     ctx.addShutdownCallback(async () => {
       stt.close()
@@ -101,5 +106,10 @@ export default defineAgent({
 })
 
 export function runAgent (): void {
-  cli.runApp(new WorkerOptions({ agent: fileURLToPath(import.meta.url), permissions: new WorkerPermissions(true, true, true, true, [], true) }))
+  cli.runApp(
+    new WorkerOptions({
+      agent: fileURLToPath(import.meta.url),
+      permissions: new WorkerPermissions(true, true, true, true, [], true)
+    })
+  )
 }

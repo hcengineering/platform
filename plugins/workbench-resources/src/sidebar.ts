@@ -103,7 +103,8 @@ function setSidebarStateToLocalStorage (state: SidebarState): void {
 export function openWidget (
   widget: Widget,
   data?: Record<string, any>,
-  params?: { active: boolean, openedByUser: boolean }
+  params?: { active: boolean, openedByUser: boolean },
+  tabs?: WidgetTab[]
 ): void {
   const state = get(sidebarStore)
   const { widgetsState } = state
@@ -114,8 +115,8 @@ export function openWidget (
   widgetsState.set(widget._id, {
     _id: widget._id,
     data: data ?? widgetState?.data,
-    tab: widgetState?.tab,
-    tabs: widgetState?.tabs ?? [],
+    tab: widgetState?.tab ?? tabs?.[0]?.id,
+    tabs: widgetState?.tabs ?? tabs ?? [],
     openedByUser
   })
 
@@ -345,6 +346,21 @@ export function updateTabData (widget: Ref<Widget>, tabId: string, data: Record<
   const tabs = widgetState.tabs.map((it) => (it.id === tabId ? { ...it, data: { ...it.data, ...data } } : it))
 
   widgetsState.set(widget, { ...widgetState, tabs })
+
+  sidebarStore.set({
+    ...state,
+    widgetsState
+  })
+}
+
+export function updateWidgetState (widget: Ref<Widget>, newState: Partial<WidgetState>): void {
+  const state = get(sidebarStore)
+  const { widgetsState } = state
+  const widgetState = widgetsState.get(widget)
+
+  if (widgetState === undefined) return
+
+  widgetsState.set(widget, { ...widgetState, ...newState })
 
   sidebarStore.set({
     ...state,

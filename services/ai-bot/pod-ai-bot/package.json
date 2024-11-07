@@ -73,6 +73,7 @@
     "@hcengineering/setting": "^0.6.17",
     "@hcengineering/text": "^0.6.5",
     "@hcengineering/workbench": "^0.6.16",
+    "@hcengineering/love": "^0.6.0",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
     "express": "^4.19.2",

@@ -18,9 +18,10 @@ import {
   createClient,
   DeepgramClient,
   ListenLiveClient,
-  LiveTranscriptionEvents,
+  LiveSchema,
   LiveTranscriptionEvent,
-  LiveSchema
+  LiveTranscriptionEvents,
+  SOCKET_STATES
 } from '@deepgram/sdk'
 
 import config from './config.js'
@@ -121,11 +122,7 @@ export class STT {
     }
   }
 
-  unsubscribe (
-    _: RemoteTrack | undefined,
-    publication: RemoteTrackPublication,
-    participant: RemoteParticipant
-  ): void {
+  unsubscribe (_: RemoteTrack | undefined, publication: RemoteTrackPublication, participant: RemoteParticipant): void {
     this.trackBySid.delete(publication.sid)
     this.participantBySid.delete(participant.sid)
     this.mutedTracks.delete(publication.sid)
@@ -140,6 +137,7 @@ export class STT {
 
     const dgConnection = this.dgConnectionBySid.get(sid)
     if (dgConnection !== undefined) {
+      dgConnection.removeAllListeners()
       dgConnection.disconnect()
     }
 
@@ -182,7 +180,10 @@ export class STT {
           const prevValue = prevData?.value ?? ''
           if (data.is_final === true) {
             // TODO: how to join the final transcript ?
-            this.transcriptsBySid.set(sid, { value: prevValue + ' ' + transcript, startedOn: prevData?.startedOn ?? Date.now() })
+            this.transcriptsBySid.set(sid, {
+              value: prevValue + ' ' + transcript,
+              startedOn: prevData?.startedOn ?? Date.now()
+            })
           }
           if (data.speech_final === true) {
             const result = this.transcriptsBySid.get(sid)?.value
@@ -194,8 +195,18 @@ export class STT {
         }
       })
 
+      dgConnection.addListener(LiveTranscriptionEvents.UtteranceEnd, () => {
+        const result = this.transcriptsBySid.get(sid)?.value ?? ''
+        if (result.length > 0) {
+          void this.sendToPlatform(result, sid)
+
+          this.transcriptsBySid.delete(sid)
+        }
+      })
+
       dgConnection.on(LiveTranscriptionEvents.Close, (d) => {
         console.log('Connection closed.', d, track.sid)
+        this.stopDeepgram(track.sid)
       })
 
       dgConnection.on(LiveTranscriptionEvents.Error, (err) => {
@@ -215,6 +226,7 @@ export class STT {
         stream.close()
         return
       }
+      if (dgConnection.getReadyState() !== SOCKET_STATES.open) continue
       const buf = Buffer.from(frame.data.buffer)
       dgConnection.send(buf)
     }
@@ -228,7 +240,7 @@ export class STT {
     }
 
     try {
-      await fetch(`${config.PlatformUrl}/transcript`, {
+      await fetch(`${config.PlatformUrl}/love/transcript`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

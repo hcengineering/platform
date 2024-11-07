@@ -37,8 +37,13 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
+    "@hcengineering/activity": "^0.6.0",
+    "@hcengineering/ai-bot": "^0.6.0",
+    "@hcengineering/ai-bot-resources": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/calendar": "^0.6.24",
+    "@hcengineering/chunter": "^0.6.20",
+    "@hcengineering/chunter-resources": "^0.6.0",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/contact-resources": "^0.6.0",
     "@hcengineering/core": "^0.6.32",

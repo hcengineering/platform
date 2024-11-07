@@ -55,6 +55,7 @@
   export let readonly = false
   export let type: ActivityMessageViewType = 'default'
   export let onClick: (() => void) | undefined = undefined
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const client = getClient()
   const { pendingCreatedDocs } = client
@@ -255,6 +256,7 @@
     {inlineActions}
     {type}
     {onClick}
+    {onReply}
   >
     <svelte:fragment slot="header">
       <ChatMessageHeader label={viewlet?.label} />

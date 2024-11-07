@@ -17,15 +17,19 @@ import love, { loveId } from '@hcengineering/love'
 import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
 import { type DocCreateFunction } from '@hcengineering/presentation'
 import { type AnyComponent } from '@hcengineering/ui'
+import { type ViewActionAvailabilityFunction } from '@hcengineering/view'
 
 export default mergeIds(loveId, love, {
   component: {
     ControlExt: '' as AnyComponent,
     MeetingData: '' as AnyComponent,
-    EditMeetingData: '' as AnyComponent
+    EditMeetingData: '' as AnyComponent,
+    MeetingMinutesPresenter: '' as AnyComponent
   },
   function: {
-    CreateMeeting: '' as Resource<DocCreateFunction>
+    CreateMeeting: '' as Resource<DocCreateFunction>,
+    CanShowRoomSettings: '' as Resource<ViewActionAvailabilityFunction>,
+    CanCopyGuestLink: '' as Resource<ViewActionAvailabilityFunction>
   },
   string: {
     CreateMeeting: '' as IntlString,
@@ -79,6 +83,7 @@ export default mergeIds(loveId, love, {
     Invite: '' as IntlString,
     KnockAction: '' as IntlString,
     Select: '' as IntlString,
-    ChooseShare: '' as IntlString
+    ChooseShare: '' as IntlString,
+    MoreOptions: '' as IntlString
   }
 })

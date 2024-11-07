@@ -29,8 +29,16 @@
   export let orientation: 'horizontal' | 'vertical' = 'horizontal'
   export let kind: 'primary' | 'secondary' = 'primary'
   export let canClose = true
+  export let readonly = false
 
   const dispatch = createEventDispatcher()
+
+  function handleContextMenu (e: MouseEvent): void {
+    if (readonly) return
+    e.preventDefault()
+    e.stopPropagation()
+    dispatch('contextmenu', e)
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -42,7 +50,7 @@
   class:active={highlighted}
   use:tooltip={{ label: label ? getEmbeddedLabel(label) : labelIntl }}
   on:click
-  on:contextmenu
+  on:contextmenu={handleContextMenu}
 >
   <slot name="prefix" />
 
@@ -69,7 +77,7 @@
     {/if}
   </span>
 
-  {#if canClose}
+  {#if canClose && !readonly}
     <div class="close-button {orientation}">
       <ButtonIcon icon={IconClose} size="min" on:click={() => dispatch('close')} />
     </div>

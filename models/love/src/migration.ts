@@ -77,7 +77,9 @@ async function createReception (client: MigrationUpgradeClient): Promise<void> {
       width: 100,
       height: 0,
       x: 0,
-      y: 0
+      y: 0,
+      language: 'en',
+      startWithTranscription: false
     },
     love.ids.Reception
   )
@@ -90,6 +92,31 @@ export const loveOperation: MigrateOperation = {
         state: 'removeDeprecatedSpace',
         func: async (client: MigrationClient) => {
           await migrateSpace(client, 'love:space:Rooms' as Ref<Space>, core.space.Workspace, [DOMAIN_LOVE])
+        }
+      },
+      {
+        state: 'setup-defaults-settings',
+        func: async (client: MigrationClient) => {
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Room, language: { $exists: false } },
+            { language: 'en' }
+          )
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Office, language: { $exists: false } },
+            { language: 'en' }
+          )
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Room, startWithTranscription: { $exists: false } },
+            { startWithTranscription: true }
+          )
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Office, startWithTranscription: { $exists: false } },
+            { startWithTranscription: false }
+          )
         }
       }
     ])

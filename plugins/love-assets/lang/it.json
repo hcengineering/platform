@@ -60,6 +60,13 @@
     "ExitingFullscreenMode": "Uscita dalla modalità a schermo intero",
     "Select": "Seleziona",
     "ChooseShare": "Scegli cosa condividere",
-    "CreateMeeting": "Crea riunione"
+    "CreateMeeting": "Crea riunione",
+    "MoreOptions": "Altre opzioni",
+    "StartTranscription": "Avvia trascrizione",
+    "StopTranscription": "Interrompi trascrizione",
+    "Meeting": "Riunione",
+    "Transcription": "Trascrizione",
+    "StartWithTranscription": "Inizia con la trascrizione",
+    "MeetingMinutes": "Verbale della riunione"
   }
 }

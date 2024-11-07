@@ -17,7 +17,6 @@
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, Ref, toIdMap } from '@hcengineering/core'
   import {
-    Floor,
     Invite,
     isOffice,
     JoinRequest,
@@ -29,7 +28,7 @@
     RoomType
   } from '@hcengineering/love'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     closePopup,
     eventToHTMLElement,
@@ -39,84 +38,67 @@
     showPopup,
     tooltip
   } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
   import { onDestroy } from 'svelte'
   import workbench from '@hcengineering/workbench'
   import {
     closeWidget,
+    closeWidgetTab,
     minimizeSidebar,
-    openWidget,
     sidebarStore,
-    SidebarVariant
+    SidebarVariant,
+    updateWidgetState
   } from '@hcengineering/workbench-resources'
 
   import love from '../plugin'
+  import { activeInvites, currentRoom, infos, myInfo, myInvites, myOffice, myRequests, rooms } from '../stores'
   import {
-    activeFloor,
-    activeInvites,
-    currentRoom,
-    floors,
-    infos,
-    myInfo,
-    myInvites,
-    myOffice,
-    myRequests,
-    rooms
-  } from '../stores'
-  import {
+    createMeetingVideoWidgetTab,
+    createMeetingWidget,
     disconnect,
     getRoomName,
-    isCameraEnabled,
-    isConnected,
     isCurrentInstanceConnected,
-    isMicEnabled,
-    isSharingEnabled,
     leaveRoom,
-    screenSharing,
-    setCam,
-    setMic,
-    setShare
+    screenSharing
   } from '../utils'
   import ActiveInvitesPopup from './ActiveInvitesPopup.svelte'
-  import CamSettingPopup from './CamSettingPopup.svelte'
-  import FloorPopup from './FloorPopup.svelte'
   import InvitePopup from './InvitePopup.svelte'
-  import MicSettingPopup from './MicSettingPopup.svelte'
   import PersonActionPopup from './PersonActionPopup.svelte'
   import RequestPopup from './RequestPopup.svelte'
   import RequestingPopup from './RequestingPopup.svelte'
   import RoomPopup from './RoomPopup.svelte'
 
-  let allowCam: boolean = false
-  let allowLeave: boolean = false
+  const client = getClient()
 
-  $: allowCam = $currentRoom?.type === RoomType.Video
-  $: allowLeave = $myInfo !== undefined && $myInfo.room !== ($myOffice?._id ?? love.ids.Reception)
+  // let allowCam: boolean = false
+  // let allowLeave: boolean = false
+  //
+  // $: allowCam = $currentRoom?.type === RoomType.Video
+  // $: allowLeave = $myInfo !== undefined && $myInfo.room !== ($myOffice?._id ?? love.ids.Reception)
 
-  async function changeMute (): Promise<void> {
-    if (!$isConnected || $currentRoom?.type === RoomType.Reception) return
-    await setMic(!$isMicEnabled)
-  }
-
-  async function changeCam (): Promise<void> {
-    if (!$isConnected || !allowCam) return
-    await setCam(!$isCameraEnabled)
-  }
-
-  async function changeShare (): Promise<void> {
-    if (!$isConnected) return
-    await setShare(!$isSharingEnabled)
-  }
-
-  async function leave (): Promise<void> {
-    showPopup(MessageBox, {
-      label: love.string.LeaveRoom,
-      message: love.string.LeaveRoomConfirmation,
-      action: async () => {
-        await leaveRoom($myInfo, $myOffice)
-      }
-    })
-  }
+  // async function changeMute (): Promise<void> {
+  //   if (!$isConnected || $currentRoom?.type === RoomType.Reception) return
+  //   await setMic(!$isMicEnabled)
+  // }
+  //
+  // async function changeCam (): Promise<void> {
+  //   if (!$isConnected || !allowCam) return
+  //   await setCam(!$isCameraEnabled)
+  // }
+  //
+  // async function changeShare (): Promise<void> {
+  //   if (!$isConnected) return
+  //   await setShare(!$isSharingEnabled)
+  // }
+  //
+  // async function leave (): Promise<void> {
+  //   showPopup(MessageBox, {
+  //     label: love.string.LeaveRoom,
+  //     message: love.string.LeaveRoomConfirmation,
+  //     action: async () => {
+  //       await leaveRoom($myInfo, $myOffice)
+  //     }
+  //   })
+  // }
 
   interface ActiveRoom extends Room {
     participants: ParticipantInfo[]
@@ -142,17 +124,17 @@
     return arr
   }
 
-  let selectedFloor: Floor | undefined = $floors.find((f) => f._id === $activeFloor)
-  $: selectedFloor = $floors.find((f) => f._id === $activeFloor)
+  // let selectedFloor: Floor | undefined = $floors.find((f) => f._id === $activeFloor)
+  // $: selectedFloor = $floors.find((f) => f._id === $activeFloor)
 
   $: activeRooms = getActiveRooms($rooms, $infos)
 
-  function selectFloor (): void {
-    showPopup(FloorPopup, { selectedFloor }, myOfficeElement, (res) => {
-      if (res === undefined) return
-      selectedFloor = $floors.find((p) => p._id === res)
-    })
-  }
+  // function selectFloor (): void {
+  //   showPopup(FloorPopup, { selectedFloor }, myOfficeElement, (res) => {
+  //     if (res === undefined) return
+  //     selectedFloor = $floors.find((p) => p._id === res)
+  //   })
+  // }
 
   const query = createQuery()
   let requests: JoinRequest[] = []
@@ -279,68 +261,90 @@
 
   $: checkActiveInvites($activeInvites)
 
-  function micSettings (e: MouseEvent): void {
-    e.preventDefault()
-    showPopup(MicSettingPopup, {}, eventToHTMLElement(e))
-  }
+  // function micSettings (e: MouseEvent): void {
+  //   e.preventDefault()
+  //   showPopup(MicSettingPopup, {}, eventToHTMLElement(e))
+  // }
+  //
+  // function camSettings (e: MouseEvent): void {
+  //   e.preventDefault()
+  //   showPopup(CamSettingPopup, {}, eventToHTMLElement(e))
+  // }
 
-  function camSettings (e: MouseEvent): void {
-    e.preventDefault()
-    showPopup(CamSettingPopup, {}, eventToHTMLElement(e))
-  }
+  let prevLocation: Location = $location
+  $: isMeetingWidgetOpened = $sidebarStore.widgetsState.has(love.ids.MeetingWidget)
 
-  $: isVideoWidgetOpened = $sidebarStore.widgetsState.has(love.ids.VideoWidget)
-
+  $: widgetState = $sidebarStore.widgetsState.get(love.ids.MeetingWidget)
   $: if (
-    isVideoWidgetOpened &&
+    isMeetingWidgetOpened &&
     $sidebarStore.widget === undefined &&
     $location.path[2] !== loveId &&
-    $sidebarStore.widgetsState.get(love.ids.VideoWidget)?.closedByUser !== true
+    widgetState !== undefined &&
+    widgetState.closedByUser !== true &&
+    widgetState.tabs.some(({ id }) => id === 'video')
   ) {
-    sidebarStore.update((s) => ({ ...s, widget: love.ids.VideoWidget, variant: SidebarVariant.EXPANDED }))
+    sidebarStore.update((s) => ({ ...s, widget: love.ids.MeetingWidget, variant: SidebarVariant.EXPANDED }))
+    updateWidgetState(love.ids.MeetingWidget, { openedByUser: false, tab: 'video' })
   }
 
   function checkActiveVideo (loc: Location, video: boolean, room: Ref<Room> | undefined): void {
-    const widgetState = $sidebarStore.widgetsState.get(love.ids.VideoWidget)
-    const isOpened = widgetState !== undefined
+    const meetingWidgetState = $sidebarStore.widgetsState.get(love.ids.MeetingWidget)
+    const isMeetingWidgetCreated = meetingWidgetState !== undefined
 
     if (room === undefined) {
-      if (isOpened) {
-        closeWidget(love.ids.VideoWidget)
+      if (isMeetingWidgetCreated) {
+        closeWidget(love.ids.MeetingWidget)
       }
       return
     }
 
-    if (video) {
-      if (!isOpened) {
-        const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: love.ids.VideoWidget })[0]
-        if (widget === undefined) return
-        openWidget(
-          widget,
-          {
-            room
-          },
-          { active: loc.path[2] !== loveId, openedByUser: false }
-        )
+    if ($isCurrentInstanceConnected) {
+      const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: love.ids.MeetingWidget })[0]
+      if (widget === undefined) return
+
+      // Create widget in sidebar if not created
+      if (!isMeetingWidgetCreated) {
+        prevLocation = loc
+        createMeetingWidget(widget, room, loc, video)
+      } else if (video && !meetingWidgetState.tabs.some(({ id }) => id === 'video')) {
+        createMeetingVideoWidgetTab(widget, loc)
+      } else if (!video && meetingWidgetState.tabs.some(({ id }) => id === 'video')) {
+        void closeWidgetTab(widget, 'video')
       }
 
+      // Show video in sidebar when leave office
+      if (
+        $sidebarStore.widget === love.ids.MeetingWidget &&
+        prevLocation.path[2] === loveId &&
+        loc.path[2] !== loveId &&
+        widgetState !== undefined &&
+        widgetState.tabs.some(({ id }) => id === 'video')
+      ) {
+        updateWidgetState(love.ids.MeetingWidget, { openedByUser: false, tab: 'video' })
+      }
+
+      // Hide video in sidebar when open office app
       if (
         loc.path[2] === loveId &&
-        $sidebarStore.widget === love.ids.VideoWidget &&
-        widgetState?.openedByUser !== true
+        prevLocation.path[2] !== loveId &&
+        $sidebarStore.widget === love.ids.MeetingWidget &&
+        widgetState !== undefined &&
+        widgetState.tab === 'video'
       ) {
         minimizeSidebar()
       }
     } else {
-      if (isOpened) {
-        closeWidget(love.ids.VideoWidget)
+      if (isMeetingWidgetCreated) {
+        closeWidget(love.ids.MeetingWidget)
       }
     }
+
+    prevLocation = loc
   }
 
   $: checkActiveVideo(
     $location,
-    $isCurrentInstanceConnected && ($currentRoom?.type === RoomType.Video || ($screenSharing && !isSharingEnabled)),
+    $isCurrentInstanceConnected && ($currentRoom?.type === RoomType.Video || $screenSharing),
     $currentRoom?._id
   )
 
@@ -351,13 +355,8 @@
     closePopup(inviteCategory)
     closePopup(joinRequestCategory)
     closePopup(myJoinRequestCategory)
-    closeWidget(love.ids.VideoWidget)
+    closeWidget(love.ids.MeetingWidget)
   })
-
-  const client = getClient()
-
-  const camKeys = client.getModel().findAllSync(view.class.Action, { _id: love.action.ToggleVideo })?.[0]?.keyBinding
-  const micKeys = client.getModel().findAllSync(view.class.Action, { _id: love.action.ToggleMic })?.[0]?.keyBinding
 
   function participantClickHandler (e: MouseEvent, participant: ParticipantInfo): void {
     if ($myInfo !== undefined) {

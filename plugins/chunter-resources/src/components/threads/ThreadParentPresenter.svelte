@@ -18,6 +18,7 @@
 
   export let message: ActivityMessage
   export let readonly = false
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 </script>
 
 <ActivityMessagePresenter
@@ -28,4 +29,5 @@
   attachmentImageSize="x-large"
   skipLabel
   {readonly}
+  {onReply}
 />

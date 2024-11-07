@@ -53,6 +53,8 @@
   export let freeze = false
   export let loadMoreAllowed = true
   export let autofocus = true
+  export let withInput: boolean = true
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const minMsgHeightRem = 2
   const loadMoreThreshold = 200
@@ -572,6 +574,8 @@
     window.removeEventListener('blur', handleWindowBlur)
     removeTxListener(newMessageTxListener)
   })
+
+  $: showBlankView = !$isLoadingStore && messages.length === 0 && !isThread && !readonly
 </script>
 
 <div class="flex-col relative" class:h-full={fullHeight}>
@@ -584,11 +588,12 @@
     bind:scroller
     bind:scrollDiv
     bind:contentDiv
+    bottomStart={!showBlankView}
     loadingOverlay={$isLoadingStore || !isScrollInitialized}
     onScroll={handleScroll}
     onResize={handleResize}
   >
-    {#if !$isLoadingStore && messages.length === 0 && !isThread && !readonly}
+    {#if showBlankView}
       <BlankView
         icon={chunter.icon.Thread}
         header={chunter.string.NoMessagesInChannel}
@@ -628,6 +633,7 @@
         isHighlighted={isSelected}
         shouldScroll={false}
         {readonly}
+        {onReply}
       />
     {/each}
 
@@ -638,7 +644,7 @@
     {#if loadMoreAllowed && $canLoadNextForwardStore}
       <HistoryLoading isLoading={$isLoadingMoreStore} />
     {/if}
-    {#if !fixedInput}
+    {#if !fixedInput && withInput}
       <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} {autofocus} />
     {/if}
   </BaseChatScroller>
@@ -655,7 +661,7 @@
   {/if}
 </div>
 
-{#if fixedInput}
+{#if fixedInput && withInput}
   <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} {autofocus} />
 {/if}
 
