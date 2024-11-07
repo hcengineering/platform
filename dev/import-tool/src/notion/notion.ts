@@ -593,19 +593,27 @@ function isExternalLink (href: any): boolean {
   return URL.canParse(href)
 }
 
+function safeDecodeURI (uri: string): string {
+  try {
+    return decodeURI(uri)
+  } catch (e) {
+    return uri
+  }
+}
+
 function extractNotionId (fileName: string): string | undefined {
-  const decoded = decodeURI(fileName).trimEnd()
+  const decoded = safeDecodeURI(fileName).trimEnd()
   const matched = decoded.match(/ ([\w\d]{32}(_all)?)(\.|$)/)
   return matched !== null && matched.length >= 2 ? matched[1] : undefined
 }
 
 function extractExtension (fileName: string): string {
-  const decoded = decodeURI(fileName)
+  const decoded = safeDecodeURI(fileName)
   return parse(decoded).ext.toLowerCase()
 }
 
 function extractNameWoExtension (fileName: string): string {
-  const decoded = decodeURI(fileName)
+  const decoded = safeDecodeURI(fileName)
   return parse(decoded).name
 }
 
@@ -621,8 +629,8 @@ function getFileId (filePath: string, fileName: string): string {
   if (notionId !== '' && notionId !== undefined) {
     return notionId
   }
-  const decodedPath = decodeURI(filePath)
-  const decodedName = decodeURI(fileName)
+  const decodedPath = safeDecodeURI(filePath)
+  const decodedName = safeDecodeURI(fileName)
   return join(basename(decodedPath), decodedName)
 }
 
