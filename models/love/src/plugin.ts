@@ -27,7 +27,7 @@ export default mergeIds(loveId, love, {
     WorkbenchExtension: '' as AnyComponent,
     Settings: '' as AnyComponent,
     LoveWidget: '' as AnyComponent,
-    VideoWidget: '' as AnyComponent
+    MeetingWidget: '' as AnyComponent
   },
   app: {
     Love: '' as Ref<Doc>
@@ -37,7 +37,9 @@ export default mergeIds(loveId, love, {
   },
   actionImpl: {
     ToggleMic: '' as ViewAction,
-    ToggleVideo: '' as ViewAction
+    ToggleVideo: '' as ViewAction,
+    ShowRoomSettings: '' as ViewAction,
+    CopyGuestLink: '' as ViewAction
   },
   ids: {
     Settings: '' as Ref<Doc>,

@@ -13,7 +13,13 @@
 // limitations under the License.
 //
 
+export enum TranscriptionStatus {
+  Idle = 'idle',
+  InProgress = 'inProgress',
+  Completed = 'completed'
+}
+
 export interface Metadata {
-  transcription?: boolean
+  transcription?: TranscriptionStatus
   language?: string
 }

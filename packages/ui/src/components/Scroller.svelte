@@ -45,6 +45,7 @@
   export let stickedScrollBars: boolean = false
   export let thinScrollBars: boolean = false
   export let disableOverscroll = false
+  export let disablePointerEventsOnScroll = false
   export let onScroll: ((params: ScrollParams) => void) | undefined = undefined
   export let onResize: (() => void) | undefined = undefined
 
@@ -72,7 +73,9 @@
   let divHScroll: HTMLElement
   let divBar: HTMLElement
   let divBarH: HTMLElement
-  let isScrolling: 'vertical' | 'horizontal' | false = false
+  let isScrollingByBar: 'vertical' | 'horizontal' | false = false
+  let isScrolling: boolean = false
+  let scrollTimer: any = 0
   let dXY: number
   let belowContent: number | undefined = undefined
   let beforeContent: number | undefined = undefined
@@ -177,14 +180,15 @@
   const handleScroll = (event: PointerEvent): void => {
     scrolling = false
     if (
-      (divBar == null && isScrolling === 'vertical') ||
-      (divBarH == null && isScrolling === 'horizontal') ||
+      (divBar == null && isScrollingByBar === 'vertical') ||
+      (divBarH == null && isScrollingByBar === 'horizontal') ||
       divScroll == null
     ) {
       return
     }
+
     const rectScroll = divScroll.getBoundingClientRect()
-    if (isScrolling === 'vertical') {
+    if (isScrollingByBar === 'vertical') {
       let Y = Math.round(event.clientY) - dXY
       if (Y < rectScroll.top + shiftTop + 2) Y = rectScroll.top + shiftTop + 2
       if (Y > rectScroll.bottom - divBar.clientHeight - shiftBottom - 2) {
@@ -200,7 +204,7 @@
       } else {
         divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * procBar
       }
-    } else if (isScrolling === 'horizontal') {
+    } else if (isScrollingByBar === 'horizontal') {
       let X = Math.round(event.clientX) - dXY
       if (X < rectScroll.left + 2 + shiftLeft) X = rectScroll.left + 2 + shiftLeft
       if (X > rectScroll.right - divBarH.clientWidth - (mask !== 'none' ? 12 : 2) - shiftRight) {
@@ -219,7 +223,7 @@
     document.body.style.userSelect = 'auto'
     document.body.style.webkitUserSelect = 'auto'
     document.removeEventListener('pointerup', onScrollEnd)
-    isScrolling = false
+    isScrollingByBar = false
   }
   const onScrollStart = (event: PointerEvent, direction: 'vertical' | 'horizontal'): void => {
     if (divScroll == null) return
@@ -229,7 +233,7 @@
     document.addEventListener('pointermove', handleScroll)
     document.body.style.userSelect = 'none'
     document.body.style.webkitUserSelect = 'none'
-    isScrolling = direction
+    isScrollingByBar = direction
   }
 
   const renderFade = () => {
@@ -298,10 +302,10 @@
       renderFade()
     }
 
-    if (!isScrolling) {
+    if (!isScrollingByBar) {
       checkBar()
     }
-    if (!isScrolling && horizontal) {
+    if (!isScrollingByBar && horizontal) {
       checkBarH()
     }
   }
@@ -486,7 +490,7 @@
       (divBar == null && !horizontal) ||
       (divBarH == null && horizontal) ||
       divScroll == null ||
-      isScrolling !== false
+      isScrollingByBar !== false
     ) {
       return
     }
@@ -574,6 +578,11 @@
         ) {
           closeTooltip()
         }
+        clearTimeout(scrollTimer)
+        isScrolling = true
+        scrollTimer = setTimeout(() => {
+          isScrolling = false
+        }, 300)
       }}
     >
       <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -589,6 +598,7 @@
             : 'row'}
         style:height={contentDirection === 'vertical-reverse' ? 'max-content' : noStretch ? 'auto' : '100%'}
         style:align-items={align}
+        class:disableEvents={isScrolling && disablePointerEventsOnScroll}
         use:resizeObserver={() => {
           checkAutoScroll()
           checkFade()
@@ -655,7 +665,7 @@
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="track"
-      class:hovered={isScrolling === 'vertical'}
+      class:hovered={isScrollingByBar === 'vertical'}
       on:click|stopPropagation={(ev) => {
         clickOnTrack(ev)
       }}
@@ -663,7 +673,7 @@
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="bar"
-      class:hovered={isScrolling === 'vertical'}
+      class:hovered={isScrollingByBar === 'vertical'}
       class:reverse={scrollDirection === 'vertical-reverse'}
       bind:this={divBar}
       on:pointerdown|stopPropagation={(ev) => {
@@ -677,7 +687,7 @@
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="track-horizontal"
-      class:hovered={isScrolling === 'horizontal'}
+      class:hovered={isScrollingByBar === 'horizontal'}
       on:click|stopPropagation={(ev) => {
         clickOnTrack(ev, true)
       }}
@@ -685,7 +695,7 @@
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="bar-horizontal"
-      class:hovered={isScrolling === 'horizontal'}
+      class:hovered={isScrollingByBar === 'horizontal'}
       bind:this={divBarH}
       on:pointerdown|stopPropagation={(ev) => {
         onScrollStart(ev, 'horizontal')
@@ -1025,5 +1035,9 @@
     .track-horizontal {
       height: 6px;
     }
+  }
+
+  .disableEvents {
+    pointer-events: none !important;
   }
 </style>

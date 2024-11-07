@@ -92,12 +92,12 @@ export interface WidgetTab {
   icon?: Asset | AnySvelteComponent
   iconComponent?: AnyComponent
   iconProps?: Record<string, any>
-  widget?: Ref<Widget>
   isPinned?: boolean
   allowedPath?: string
   objectId?: Ref<Doc>
   objectClass?: Ref<Class<Doc>>
   data?: Record<string, any>
+  readonly?: boolean
 }
 
 export enum SidebarEvent {

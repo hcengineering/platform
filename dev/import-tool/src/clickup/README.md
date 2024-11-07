@@ -21,8 +21,9 @@ docker run \
 ```
 
 #### User Mapping
-* Users must be created in the platform before import
+* Users must be created in the platform before import (Under *Contacts/Employee*)
 * ClickUp assignees are mapped to platform users by full name (e.g., "Jane Doe")
+* Comments authors are mapped by email
 * If user is not found:
   * Task will be imported without assignee
   * Original assignee name will be added as a comment: *ClickUp assignee: John Smith*
@@ -30,3 +31,4 @@ docker run \
 #### Limitations
 * Checklist items are imported as unchecked since ClickUp export doesn't include checkbox states
 * Failed attachment downloads are skipped with warning messages (Original attachment URL is added as a comment)
+* Users import is not supported yet

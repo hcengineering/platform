@@ -32,6 +32,7 @@ import {
 import {
   createOrUpdate,
   migrateSpace,
+  migrateSpaceRanks,
   tryMigrate,
   tryUpgrade,
   type MigrateOperation,
@@ -44,6 +45,7 @@ import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags from '@hcengineering/model-tags'
 import {
   taskId,
+  type Project,
   type ProjectStatus,
   type ProjectType,
   type ProjectTypeDescriptor,
@@ -548,6 +550,16 @@ export async function migrateDefaultStatusesBase<T extends Task> (
   logger.log('Statuses updated: ', statusIdsBeingMigrated.length)
 }
 
+async function migrateRanks (client: MigrationClient): Promise<void> {
+  const classes = client.hierarchy.getDescendants(task.class.Project)
+  for (const _class of classes) {
+    const spaces = await client.find<Project>(DOMAIN_SPACE, { _class })
+    for (const space of spaces) {
+      await migrateSpaceRanks(client, DOMAIN_TASK, space)
+    }
+  }
+}
+
 function areSameArrays (arr1: any[] | undefined, arr2: any[] | undefined): boolean {
   if (arr1 === arr2) {
     return true
@@ -590,6 +602,10 @@ export const taskOperation: MigrateOperation = {
         func: async (client: MigrationClient): Promise<void> => {
           await client.update(DOMAIN_TASK, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
         }
+      },
+      {
+        state: 'migrateRanks',
+        func: migrateRanks
       }
     ])
   },

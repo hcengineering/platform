@@ -13,28 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Room as TypeRoom } from '@hcengineering/love'
-  import { Ref } from '@hcengineering/core'
-  import { closeWidget, WidgetState } from '@hcengineering/workbench-resources'
+  import { Room } from '@hcengineering/love'
 
-  import love from '../plugin'
-  import VideoPopup from './VideoPopup.svelte'
+  import VideoPopup from '../VideoPopup.svelte'
 
-  export let widgetState: WidgetState | undefined
-
-  let room: Ref<TypeRoom> | undefined = undefined
-  $: room = widgetState?.data?.room
-
-  $: if (widgetState?.data?.room === undefined) {
-    closeWidget(love.ids.VideoWidget)
-  }
+  export let room: Room
 </script>
 
-{#if room}
-  <div class="root">
-    <VideoPopup {room} isDock canUnpin={false} />
-  </div>
-{/if}
+<div class="root">
+  <VideoPopup room={room._id} isDock canUnpin={false} />
+</div>
 
 <style lang="scss">
   .root {

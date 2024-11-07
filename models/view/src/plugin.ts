@@ -110,7 +110,8 @@ export default mergeIds(viewId, view, {
     General: '' as IntlString,
     Navigation: '' as IntlString,
     Editor: '' as IntlString,
-    MarkdownFormatting: '' as IntlString
+    MarkdownFormatting: '' as IntlString,
+    HideArchived: '' as IntlString
   },
   function: {
     FilterArrayAllResult: '' as FilterFunction,

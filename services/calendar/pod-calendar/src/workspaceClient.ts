@@ -86,6 +86,7 @@ export class WorkspaceClient {
     if (current !== undefined) return current
     const newClient = await CalendarClient.create(this.credentials, user, this.mongo, this.client, this)
     this.clients.set(user.email, newClient)
+    console.log('create new client', user.email, this.workspace)
     return newClient
   }
 
@@ -151,6 +152,9 @@ export class WorkspaceClient {
 
   private getCalendarClientByCalendar (id: Ref<ExternalCalendar>): CalendarClient | undefined {
     const calendar = this.calendars.byId.get(id)
+    if (calendar === undefined) {
+      console.log("couldn't find calendar by id", id)
+    }
     return calendar != null ? this.clients.get(calendar.externalUser) : undefined
   }
 
@@ -216,14 +220,17 @@ export class WorkspaceClient {
     this.txHandlers.push(async (...tx: Tx[]) => {
       await this.txEventHandler(...tx)
     })
+    console.log('receive new events', this.workspace, newEvents.length)
     for (const newEvent of newEvents) {
       const client = this.getCalendarClientByCalendar(newEvent.calendar as Ref<ExternalCalendar>)
       if (client === undefined) {
+        console.log('Client not found', newEvent.calendar, this.workspace)
         return
       }
       await client.syncMyEvent(newEvent)
       await this.updateSyncTime()
     }
+    console.log('all messages synced', this.workspace)
   }
 
   private async txEventHandler (...txes: Tx[]): Promise<void> {

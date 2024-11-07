@@ -24,7 +24,7 @@
     Header,
     HeaderAdaptive,
     IconSettings,
-    IconDetailsFilled
+    IconToDetails
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import view from '@hcengineering/view'
@@ -58,6 +58,7 @@
   export let hideActions: boolean = false
   export let canOpenInSidebar: boolean = false
   export let closeOnEscape: boolean = true
+  export let realWidth: number | undefined = undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -74,6 +75,7 @@
   hideDescription={!description}
   adaptive={adaptive !== 'default' ? adaptive : withFilters ? 'freezeActions' : 'disabled'}
   {closeOnEscape}
+  bind:realWidth
   on:click
   on:close
 >
@@ -139,7 +141,7 @@
     <slot name="actions" {doubleRow} />
     {#if canOpenInSidebar}
       <Button
-        icon={IconDetailsFilled}
+        icon={IconToDetails}
         iconProps={{ size: 'small' }}
         kind={'icon'}
         showTooltip={{ label: workbench.string.OpenInSidebar }}

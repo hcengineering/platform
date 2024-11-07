@@ -15,7 +15,7 @@
 import { WorkbenchEvents, type Widget, type WidgetTab } from '@hcengineering/workbench'
 import { type Class, type Doc, getCurrentAccount, type Ref } from '@hcengineering/core'
 import { get, writable } from 'svelte/store'
-import { getCurrentLocation } from '@hcengineering/ui'
+import { getCurrentLocation, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 import { getResource } from '@hcengineering/platform'
 
 import { workspaceStore } from './utils'
@@ -103,7 +103,8 @@ function setSidebarStateToLocalStorage (state: SidebarState): void {
 export function openWidget (
   widget: Widget,
   data?: Record<string, any>,
-  params?: { active: boolean, openedByUser: boolean }
+  params?: { active: boolean, openedByUser: boolean },
+  tabs?: WidgetTab[]
 ): void {
   const state = get(sidebarStore)
   const { widgetsState } = state
@@ -114,8 +115,8 @@ export function openWidget (
   widgetsState.set(widget._id, {
     _id: widget._id,
     data: data ?? widgetState?.data,
-    tab: widgetState?.tab,
-    tabs: widgetState?.tabs ?? [],
+    tab: widgetState?.tab ?? tabs?.[0]?.id,
+    tabs: widgetState?.tabs ?? tabs ?? [],
     openedByUser
   })
 
@@ -252,6 +253,8 @@ export function createWidgetTab (widget: Widget, tab: WidgetTab, newTab = false)
     widgetsState,
     variant: SidebarVariant.EXPANDED
   })
+  const devInfo = get(deviceInfo)
+  if (devInfo.navigator.float && !devInfo.aside.visible) deviceInfo.set({ ...devInfo, aside: { visible: true } })
 }
 
 export function pinWidgetTab (widget: Widget, tabId: string): void {
@@ -343,6 +346,21 @@ export function updateTabData (widget: Ref<Widget>, tabId: string, data: Record<
   const tabs = widgetState.tabs.map((it) => (it.id === tabId ? { ...it, data: { ...it.data, ...data } } : it))
 
   widgetsState.set(widget, { ...widgetState, tabs })
+
+  sidebarStore.set({
+    ...state,
+    widgetsState
+  })
+}
+
+export function updateWidgetState (widget: Ref<Widget>, newState: Partial<WidgetState>): void {
+  const state = get(sidebarStore)
+  const { widgetsState } = state
+  const widgetState = widgetsState.get(widget)
+
+  if (widgetState === undefined) return
+
+  widgetsState.set(widget, { ...widgetState, ...newState })
 
   sidebarStore.set({
     ...state,

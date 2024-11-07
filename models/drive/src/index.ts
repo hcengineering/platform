@@ -268,7 +268,21 @@ function defineDrive (builder: Builder): void {
       configOptions: {
         hiddenKeys: ['name', 'description']
       },
-      config: ['', 'members', 'owners', 'private', 'archived']
+      config: ['', 'members', 'owners', 'private', 'archived'],
+      viewOptions: {
+        groupBy: [],
+        orderBy: [],
+        other: [
+          {
+            key: 'hideArchived',
+            type: 'toggle',
+            defaultValue: true,
+            actionTarget: 'query',
+            action: drive.function.HideArchivedDrives,
+            label: view.string.HideArchived
+          }
+        ]
+      }
     },
     drive.viewlet.DriveTable
   )

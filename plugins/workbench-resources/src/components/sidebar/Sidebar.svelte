@@ -76,9 +76,10 @@
 
 <style lang="scss">
   .sidebar-container {
+    overflow: hidden;
     flex-direction: row;
     min-width: 25rem;
-    border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
+    border-radius: var(--medium-BorderRadius);
 
     &.mini:not(.float) {
       width: 3.5rem !important;

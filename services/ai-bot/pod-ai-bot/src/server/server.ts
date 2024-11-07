@@ -17,7 +17,14 @@ import { Token } from '@hcengineering/server-token'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { type Server } from 'http'
-import { TranslateRequest, OnboardingEventRequest, AIEventRequest } from '@hcengineering/ai-bot'
+import {
+  TranslateRequest,
+  OnboardingEventRequest,
+  AIEventRequest,
+  ConnectMeetingRequest,
+  DisconnectMeetingRequest,
+  PostTranscriptRequest
+} from '@hcengineering/ai-bot'
 import { extractToken } from '@hcengineering/server-client'
 
 import { ApiError } from './error'
@@ -87,6 +94,46 @@ export function createServer (controller: AIControl): Express {
       const events = Array.isArray(req.body) ? req.body : [req.body]
 
       await controller.processEvent(token.workspace.name, events as AIEventRequest[])
+    })
+  )
+  app.post(
+    '/love/transcript',
+    wrapRequest(async (req, res) => {
+      if (req.body == null || Array.isArray(req.body) || typeof req.body !== 'object') {
+        throw new ApiError(400)
+      }
+
+      await controller.processLoveTranscript(req.body as PostTranscriptRequest)
+
+      res.status(200)
+      res.json({})
+    })
+  )
+
+  app.post(
+    '/love/connect',
+    wrapRequest(async (req, res, token) => {
+      if (req.body == null || Array.isArray(req.body) || typeof req.body !== 'object') {
+        throw new ApiError(400)
+      }
+
+      const request: ConnectMeetingRequest = req.body
+      await controller.loveConnect(token.workspace, request)
+
+      res.status(200)
+      res.json({})
+    })
+  )
+
+  app.post(
+    '/love/disconnect',
+    wrapRequest(async (req, res, token) => {
+      if (req.body == null || Array.isArray(req.body) || typeof req.body !== 'object') {
+        throw new ApiError(400)
+      }
+
+      const request: DisconnectMeetingRequest = req.body
+      await controller.loveDisconnect(token.workspace, request)
 
       res.status(200)
       res.json({})

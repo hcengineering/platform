@@ -88,7 +88,11 @@
   <ToDosNavigator bind:mode bind:tag bind:currentDate />
   <Separator name={'time'} float={$deviceInfo.navigator.float} index={0} color={'var(--theme-divider-color)'} />
 {/if}
-<div class="flex-col w-full clear-mins" class:left-divider={!$deviceInfo.navigator.visible} bind:this={mainPanel}>
+<div
+  class="flex-col w-full clear-mins mobile-wrapper"
+  class:left-divider={!$deviceInfo.navigator.visible}
+  bind:this={mainPanel}
+>
   <ToDos {mode} {tag} bind:currentDate />
 </div>
 {#if visibleCalendar}

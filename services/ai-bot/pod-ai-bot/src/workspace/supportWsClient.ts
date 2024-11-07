@@ -18,7 +18,7 @@ import { WorkspaceClient } from './workspaceClient'
 import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-collector'
 import aiBot from '@hcengineering/ai-bot'
 import chunter, { ChatMessage, ThreadMessage } from '@hcengineering/chunter'
-import { AIReplyTransferData } from './types'
+import { AIReplyTransferData } from '../types'
 import { MarkupMarkType, MarkupNodeType } from '@hcengineering/text'
 
 interface OnboardingChannelMetadata {

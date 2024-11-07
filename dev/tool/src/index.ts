@@ -1687,7 +1687,7 @@ export function devTool (
           if (workspaceInfo === null) {
             throw new Error(`workspace ${workspace} not found`)
           }
-          if (workspaceInfo.region === region) {
+          if (workspaceInfo.region === region && !cmd.force) {
             throw new Error(`workspace ${workspace} is already migrated`)
           }
           await moveWorkspaceFromMongoToPG(

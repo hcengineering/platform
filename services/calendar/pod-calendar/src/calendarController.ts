@@ -86,7 +86,7 @@ export class CalendarController {
         clearTimeout(timeout)
         clients.push(client)
       } catch (err) {
-        console.error(`Couldn't create client for ${workspace} ${token.userId}`)
+        console.error(`Couldn't create client for ${workspace} ${token.userId} ${token.email}`)
       }
     }
     for (const client of clients) {
@@ -95,6 +95,7 @@ export class CalendarController {
       })
     }
     void workspaceClient.sync()
+    console.log('Workspace started', workspace)
   }
 
   push (email: string, mode: 'events' | 'calendar', calendarId?: string): void {

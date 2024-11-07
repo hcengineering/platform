@@ -19,6 +19,7 @@ import serverClient from '@hcengineering/server-client'
 import { initStatisticsContext, StorageConfig, StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
+import { TranscriptionStatus } from '@hcengineering/love'
 import cors from 'cors'
 import express from 'express'
 import { IncomingHttpHeaders } from 'http'
@@ -154,6 +155,62 @@ export const main = async (): Promise<void> => {
     await roomClient.updateRoomMetadata(req.body.roomName, JSON.stringify({ recording: false }))
     void stopEgress(egressClient, req.body.roomName)
     res.send()
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.post('/transcription', async (req, res) => {
+    const token = extractToken(req.headers)
+
+    if (token === undefined) {
+      res.status(401).send()
+      return
+    }
+    // just check token
+    decodeToken(token)
+
+    const roomName = req.body.roomName
+    const language = req.body.language
+    const transcription = req.body.transcription as TranscriptionStatus
+
+    if (roomName == null) {
+      res.status(400).send()
+      return
+    }
+
+    const metadata = language != null ? { transcription, language } : { transcription }
+    try {
+      await roomClient.updateRoomMetadata(roomName, JSON.stringify(metadata))
+      res.send()
+    } catch (e) {
+      console.error(e)
+      res.status(500).send()
+    }
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.post('/language', async (req, res) => {
+    const token = extractToken(req.headers)
+
+    if (token === undefined) {
+      res.status(401).send()
+      return
+    }
+    // just check token
+    decodeToken(token)
+
+    const roomName = req.body.roomName
+    const language = req.body.language
+    if (roomName == null || language == null) {
+      res.status(400).send()
+      return
+    }
+    try {
+      await roomClient.updateRoomMetadata(roomName, JSON.stringify({ language }))
+      res.send()
+    } catch (e) {
+      console.error(e)
+      res.status(500).send()
+    }
   })
 
   const server = app.listen(port, () => {
