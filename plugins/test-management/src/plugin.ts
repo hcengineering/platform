@@ -181,7 +181,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     TableTestCase: '' as Ref<Viewlet>,
     TableTestSuites: '' as Ref<Viewlet>,
     TableTestRun: '' as Ref<Viewlet>,
-    SuiteTestCases: '' as Ref<Viewlet>
+    SuiteTestCases: '' as Ref<Viewlet>,
+    ListTestCase: '' as Ref<Viewlet>
   },
   testCaseTypeStatus: {
     Draft: '' as Ref<Status>,

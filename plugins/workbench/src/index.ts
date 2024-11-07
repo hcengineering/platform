@@ -170,6 +170,8 @@ export interface SpecialNavModel {
   accessLevel?: AccountRole
   component: AnyComponent
   componentProps?: Record<string, any>
+  navigationComponent?: AnyComponent
+  navigationComponentProps?: Record<string, any>
   // If not top and bottom, position will be sorted alphabetically.
   position?: 'top' | 'bottom' | string // undefined == 'top
   visibleIf?: Resource<(spaces: Space[]) => Promise<boolean>>

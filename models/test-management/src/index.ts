@@ -16,11 +16,12 @@
 import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import core from '@hcengineering/model-core'
-import { AccountRole } from '@hcengineering/core'
+import { AccountRole, SortingOrder } from '@hcengineering/core'
 
 import { type Builder } from '@hcengineering/model'
 import view from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
+import { type ViewOptionsModel } from '@hcengineering/view'
 
 import { testManagementId } from '@hcengineering/test-management'
 
@@ -124,6 +125,14 @@ function defineApplication(
                   title: testManagement.string.TestCases,
                   createLabel: testManagement.string.CreateTestCase,
                   createComponent: testManagement.component.CreateTestCase
+                },
+                navigationComponent: view.component.FoldersBrowser,
+                navigationComponentProps: {
+                  _class: testManagement.class.TestSuite,
+                  icon: testManagement.icon.TestSuites,
+                  title: testManagement.string.TestSuites,
+                  createLabel: testManagement.string.CreateTestSuite,
+                  createComponent: testManagement.component.CreateTestSuite
                 }
               },
               {
@@ -441,6 +450,53 @@ function defineTestCase(builder: Builder): void {
       }
     },
     testManagement.viewlet.TableTestCase
+  )
+
+  const viewOptions: ViewOptionsModel = {
+    groupBy: ['suite'],
+    orderBy: [
+      ['status', SortingOrder.Ascending],
+      ['modifiedOn', SortingOrder.Descending],
+      ['createdOn', SortingOrder.Descending]
+    ],
+    other: [
+      {
+        key: 'shouldShowAll',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'category',
+        action: view.function.ShowEmptyGroups,
+        label: view.string.ShowEmptyGroups
+      }
+    ]
+  }
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: testManagement.class.TestCase,
+      descriptor: view.viewlet.List,
+      configOptions: {
+        strict: true,
+        hiddenKeys: ['title']
+      },
+      config: [
+        { key: '', displayProps: { fixed: 'left', key: 'lead' } },
+        {
+          key: 'status',
+          props: { kind: 'list', size: 'small', shouldShowName: false }
+        },
+        { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'right', dividerBefore: true } },
+        {
+          key: 'assignee',
+          props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' },
+          displayProps: { key: 'assignee', fixed: 'right' }
+        }
+      ],
+      viewOptions: viewOptions
+    },
+    testManagement.viewlet.ListTestCase
   )
 
   builder.createDoc(
