@@ -401,7 +401,7 @@ export function start (
           }
 
           let blobInfo = await ctx.with(
-            'notoken-stat',
+            'stat',
             { workspace: payload.workspace.name },
             async (ctx) => await config.storageAdapter.stat(ctx, payload.workspace, uuid)
           )

@@ -144,7 +144,7 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
     return result
   }
 
-  @withContext('aggregator-delete', {})
+  @withContext('fallback-delete', {})
   async delete (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
     for (const { adapter } of this.adapters) {
       if (await adapter.exists(ctx, workspaceId)) {
@@ -153,7 +153,7 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
     }
   }
 
-  @withContext('aggregator-remove', {})
+  @withContext('fallback-remove', {})
   async remove (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]): Promise<void> {
     // Group by provider and delegate into it.
     for (const { adapter } of this.adapters) {
@@ -173,40 +173,30 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
     }
   }
 
-  @withContext('aggregator-stat', {})
-  async stat (ctx: MeasureContext, workspaceId: WorkspaceId, name: string): Promise<Blob | undefined> {
-    const result = await this.findProvider(ctx, workspaceId, name)
-    if (result !== undefined) {
-      result.stat.provider = result.name
-    }
-    return result?.stat
-  }
-
-  @withContext('aggregator-get', {})
-  async get (ctx: MeasureContext, workspaceId: WorkspaceId, name: string): Promise<Readable> {
-    const result = await this.findProvider(ctx, workspaceId, name)
-    if (result === undefined) {
-      throw new NoSuchKeyError(`${workspaceId.name} missing ${name}`)
-    }
-    return await result.adapter.get(ctx, workspaceId, result.stat._id)
-  }
-
-  @withContext('find-provider', {})
-  private async findProvider (
-    ctx: MeasureContext,
-    workspaceId: WorkspaceId,
-    objectName: string
-  ): Promise<{ name: string, adapter: StorageAdapter, stat: Blob } | undefined> {
-    // Group by provider and delegate into it.
+  @withContext('fallback-stat', {})
+  async stat (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Blob | undefined> {
     for (const { name, adapter } of this.adapters) {
       const stat = await adapter.stat(ctx, workspaceId, objectName)
       if (stat !== undefined) {
-        return { name, adapter, stat }
+        stat.provider = name
+        return stat
       }
     }
   }
 
-  @withContext('aggregator-partial', {})
+  @withContext('fallback-get', {})
+  async get (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Readable> {
+    for (const { adapter } of this.adapters) {
+      try {
+        return await adapter.get(ctx, workspaceId, objectName)
+      } catch (err: any) {
+        // ignore
+      }
+    }
+    throw new NoSuchKeyError(`${workspaceId.name} missing ${objectName}`)
+  }
+
+  @withContext('fallback-partial', {})
   async partial (
     ctx: MeasureContext,
     workspaceId: WorkspaceId,
@@ -214,20 +204,26 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
     offset: number,
     length?: number | undefined
   ): Promise<Readable> {
-    const result = await this.findProvider(ctx, workspaceId, objectName)
-    if (result === undefined) {
-      throw new NoSuchKeyError(`${workspaceId.name} missing ${objectName}`)
+    for (const { adapter } of this.adapters) {
+      try {
+        return await adapter.partial(ctx, workspaceId, objectName, offset, length)
+      } catch (err: any) {
+        // ignore
+      }
     }
-    return await result.adapter.partial(ctx, workspaceId, result.stat._id, offset, length)
+    throw new NoSuchKeyError(`${workspaceId.name} missing ${objectName}`)
   }
 
-  @withContext('aggregator-read', {})
+  @withContext('fallback-read', {})
   async read (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Buffer[]> {
-    const result = await this.findProvider(ctx, workspaceId, objectName)
-    if (result === undefined) {
-      throw new NoSuchKeyError(`${workspaceId.name} missing ${objectName}`)
+    for (const { adapter } of this.adapters) {
+      try {
+        return await adapter.read(ctx, workspaceId, objectName)
+      } catch (err: any) {
+        // Ignore
+      }
     }
-    return await result.adapter.read(ctx, workspaceId, result.stat._id)
+    throw new NoSuchKeyError(`${workspaceId.name} missing ${objectName}`)
   }
 
   @withContext('aggregator-put', {})
