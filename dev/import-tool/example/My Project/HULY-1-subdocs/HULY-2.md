@@ -9,11 +9,11 @@ remainingTime: 1
 component: Core
 milestone: Iteration 198
 comments:
-  - author: John Doe
+  - author: john.doe@example.com
     createdOn: 2022-02-05t10:30:00.10-05:00Z
     text: |
       Hello, world!
-  - author: Joe Shmoe
+  - author: joe.shmoe@example.com
     createdOn: 2022-02-05t10:35:00.10-05:00Z
     text: |
       Hello, **world!**

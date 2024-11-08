@@ -116,11 +116,14 @@ interface HulyDocumentHeader {
 }
 
 class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
+  private readonly MENTION_REGEX = /@([A-Za-z]+ [A-Za-z]+)/g
+
   constructor (
     private readonly urlProvider: (id: string) => string,
     private readonly metadataByFilePath: Map<string, DocMetadata>,
     private readonly metadataById: Map<Ref<Doc>, DocMetadata>,
-    private readonly attachMetadataByPath: Map<string, AttachmentMetadata>
+    private readonly attachMetadataByPath: Map<string, AttachmentMetadata>,
+    private readonly personsByName: Map<string, Ref<Person>>
   ) {}
 
   process (json: MarkupNode, id: Ref<Doc>, spaceId: Ref<Space>): MarkupNode {
@@ -160,10 +163,77 @@ class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
             }
           }
         })
+        this.findAndAlterMentions(node)
       }
       return true
     })
     return json
+  }
+
+  private findAndAlterMentions (node: MarkupNode): boolean {
+    if (node.type === MarkupNodeType.paragraph && node.content !== undefined) {
+      const newContent: MarkupNode[] = []
+      for (const childNode of node.content) {
+        if (childNode.type === MarkupNodeType.text && childNode.text !== undefined) {
+          let match
+          let lastIndex = 0
+          let hasMentions = false
+
+          while ((match = this.MENTION_REGEX.exec(childNode.text)) !== null) {
+            hasMentions = true
+            if (match.index > lastIndex) {
+              newContent.push({
+                type: MarkupNodeType.text,
+                text: childNode.text.slice(lastIndex, match.index),
+                marks: childNode.marks,
+                attrs: childNode.attrs
+              })
+            }
+
+            const name = match[1]
+            const personRef = this.personsByName.get(name)
+            if (personRef !== undefined) {
+              newContent.push({
+                type: MarkupNodeType.reference,
+                attrs: {
+                  id: personRef,
+                  label: name,
+                  objectclass: contact.class.Person
+                }
+              })
+            } else {
+              newContent.push({
+                type: MarkupNodeType.text,
+                text: match[0],
+                marks: childNode.marks,
+                attrs: childNode.attrs
+              })
+            }
+
+            lastIndex = this.MENTION_REGEX.lastIndex
+          }
+
+          if (hasMentions) {
+            if (lastIndex < childNode.text.length) {
+              newContent.push({
+                type: MarkupNodeType.text,
+                text: childNode.text.slice(lastIndex),
+                marks: childNode.marks,
+                attrs: childNode.attrs
+              })
+            }
+          } else {
+            newContent.push(childNode)
+          }
+        } else {
+          newContent.push(childNode)
+        }
+      }
+
+      node.content = newContent
+      return false
+    }
+    return true
   }
 
   private alterImageNode (node: MarkupNode, id: string, name: string): void {
@@ -246,7 +316,8 @@ export class HulyImporter {
       this.fileUploader.getFileUrl,
       this.metadataByFilePath,
       this.metadataById,
-      this.attachMetadataByPath
+      this.attachMetadataByPath,
+      this.personsByName
     )
     await new WorkspaceImporter(this.client, this.fileUploader, workspaceData, preprocessor).performImport()
 
@@ -520,11 +591,17 @@ export class HulyImporter {
   }
 
   private async fillPersonsByNames (): Promise<void> {
-    const persons = await this.client.findAll(contact.class.Person, {})
-    this.personsByName = persons.reduce((map, person) => {
-      map.set(person.name, person._id)
-      return map
-    }, new Map())
+    this.personsByName = (await this.client.findAll(contact.class.Person, {}))
+      .map((person) => {
+        return {
+          _id: person._id,
+          name: person.name.split(',').reverse().join(' ')
+        }
+      })
+      .reduce((refByName, person) => {
+        refByName.set(person.name, person._id)
+        return refByName
+      }, new Map())
   }
 
   private async fillAccountsByEmails (): Promise<void> {

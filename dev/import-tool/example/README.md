@@ -1,10 +1,10 @@
 ---
 persons:
   - name: John Doe
-    email: john@huly.io
+    email: john.doe@example.com
     role: Owner
   - name: Joe Shmoe
-    email: joe@huly.io
+    email: joe.shmoe@example.com
     role: User
 projectTypes:
   - name: Custom
