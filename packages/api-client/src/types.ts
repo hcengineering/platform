@@ -14,33 +14,144 @@
 //
 
 import { type ClientSocketFactory } from '@hcengineering/client'
-import { type Client, type TxOperations } from '@hcengineering/core'
+import {
+  type AttachedData,
+  type AttachedDoc,
+  type Class,
+  type Data,
+  type Doc,
+  type DocumentQuery,
+  type DocumentUpdate,
+  type FindOptions,
+  type FindResult,
+  type Hierarchy,
+  type Mixin,
+  type MixinData,
+  type MixinUpdate,
+  type ModelDb,
+  type Ref,
+  type Space,
+  type TxResult,
+  type WithLookup
+} from '@hcengineering/core'
 import { type MarkupOperations } from './markup'
 
 /**
  * Platform API client
  * @public
  * */
-export type PlatformClient = AsyncDisposable &
-Pick<
-TxOperations,
-| 'createDoc'
-| 'updateDoc'
-| 'removeDoc'
-| 'addCollection'
-| 'updateCollection'
-| 'removeCollection'
-| 'createMixin'
-| 'updateMixin'
-> &
-Pick<Client, 'getHierarchy' | 'getModel' | 'findAll' | 'findOne' | 'close'> &
-MarkupOperations
+export type PlatformClient = {
+  getHierarchy: () => Hierarchy
+
+  getModel: () => ModelDb
+
+  close: () => Promise<void>
+} & FindOperations &
+DocOperations &
+CollectionOperations &
+MixinOperations &
+MarkupOperations &
+AsyncDisposable
+
+/**
+ * @public
+ */
+export interface FindOperations {
+  findAll: <T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T> | undefined
+  ) => Promise<FindResult<T>>
+
+  findOne: <T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T> | undefined
+  ) => Promise<WithLookup<T> | undefined>
+}
+
+/**
+ * @public
+ */
+export interface DocOperations {
+  createDoc: <T extends Doc>(
+    _class: Ref<Class<T>>,
+    space: Ref<Space>,
+    attributes: Data<T>,
+    id?: Ref<T>
+  ) => Promise<Ref<T>>
+
+  updateDoc: <T extends Doc>(
+    _class: Ref<Class<T>>,
+    space: Ref<Space>,
+    objectId: Ref<T>,
+    operations: DocumentUpdate<T>,
+    retrieve?: boolean
+  ) => Promise<TxResult>
+
+  removeDoc: <T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, objectId: Ref<T>) => Promise<TxResult>
+}
+
+/**
+ * @public
+ */
+export interface CollectionOperations {
+  addCollection: <T extends Doc, P extends AttachedDoc>(
+    _class: Ref<Class<P>>,
+    space: Ref<Space>,
+    attachedTo: Ref<T>,
+    attachedToClass: Ref<Class<T>>,
+    collection: Extract<keyof T, string> | string,
+    attributes: AttachedData<P>,
+    id?: Ref<P>
+  ) => Promise<Ref<P>>
+
+  updateCollection: <T extends Doc, P extends AttachedDoc>(
+    _class: Ref<Class<P>>,
+    space: Ref<Space>,
+    objectId: Ref<P>,
+    attachedTo: Ref<T>,
+    attachedToClass: Ref<Class<T>>,
+    collection: Extract<keyof T, string> | string,
+    operations: DocumentUpdate<P>,
+    retrieve?: boolean
+  ) => Promise<Ref<T>>
+
+  removeCollection: <T extends Doc, P extends AttachedDoc>(
+    _class: Ref<Class<P>>,
+    space: Ref<Space>,
+    objectId: Ref<P>,
+    attachedTo: Ref<T>,
+    attachedToClass: Ref<Class<T>>,
+    collection: Extract<keyof T, string> | string
+  ) => Promise<Ref<T>>
+}
+
+/**
+ * @public
+ */
+export interface MixinOperations {
+  createMixin: <D extends Doc, M extends D>(
+    objectId: Ref<D>,
+    objectClass: Ref<Class<D>>,
+    objectSpace: Ref<Space>,
+    mixin: Ref<Mixin<M>>,
+    attributes: MixinData<D, M>
+  ) => Promise<TxResult>
+
+  updateMixin: <D extends Doc, M extends D>(
+    objectId: Ref<D>,
+    objectClass: Ref<Class<D>>,
+    objectSpace: Ref<Space>,
+    mixin: Ref<Mixin<M>>,
+    attributes: MixinUpdate<D, M>
+  ) => Promise<TxResult>
+}
 
 /**
  * Configuration options for password-based authentication
  * @public
  */
-
 export interface PasswordAuthOptions {
   /** User's email address */
   email: string
