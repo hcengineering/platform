@@ -4,8 +4,13 @@
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "types/**/*",
+    "tsconfig.json"
+  ],
   "author": "Anticrm Platform Contributors",
-  "template": "@hcengineering/default-package",
+  "template": "@hcengineering/api-package",
   "license": "EPL-2.0",
   "scripts": {
     "build": "compile",

@@ -62,6 +62,7 @@
     gap: var(--spacing-4);
   }
   &__container {
+    justify-content: stretch;
     height: 100%;
   }
   &__container:not(.columns),

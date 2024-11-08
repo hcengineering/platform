@@ -24,6 +24,7 @@ import {
 export interface FileUploader {
   uploadFile: (id: Ref<Doc>, name: string, file: File, contentType?: string) => Promise<Response>
   uploadCollaborativeDoc: (id: Ref<Doc>, collabId: CollaborativeDoc, data: Buffer) => Promise<Response>
+  getFileUrl: (id: string) => string
 }
 
 export interface UploadResult {
@@ -34,8 +35,11 @@ export interface UploadResult {
 export class FrontFileUploader implements FileUploader {
   constructor (
     private readonly frontUrl: string,
+    private readonly workspaceId: string,
     private readonly token: string
-  ) {}
+  ) {
+    this.getFileUrl = this.getFileUrl.bind(this)
+  }
 
   public async uploadFile (id: Ref<Doc>, name: string, file: File, contentType?: string): Promise<Response> {
     const form = new FormData()
@@ -53,6 +57,10 @@ export class FrontFileUploader implements FileUploader {
       },
       body: form
     })
+  }
+
+  public getFileUrl (id: string): string {
+    return concatLink(this.frontUrl, `/files/${this.workspaceId}/${id}?file=${id}&workspace=${this.workspaceId}`)
   }
 
   public async uploadCollaborativeDoc (id: Ref<Doc>, collabId: CollaborativeDoc, data: Buffer): Promise<Response> {
