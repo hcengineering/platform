@@ -302,7 +302,12 @@ export function inferType (val: any): string {
   }
   if (Array.isArray(val)) {
     const type = inferType(val[0])
-    return type + '[]'
+    if (type !== '') {
+      return type + '[]'
+    }
+  }
+  if (typeof val === 'object') {
+    return '::jsonb'
   }
   return ''
 }
@@ -388,7 +393,7 @@ export class DBCollectionHelper implements DomainHelperOperations {
   }
 }
 
-export function parseDocWithProjection<T extends Doc> (doc: DBDoc, projection: Projection<T> | undefined): T {
+export function parseDocWithProjection<T extends Doc> (doc: DBDoc, projection?: Projection<T> | undefined): T {
   const { workspaceId, data, ...rest } = doc
   for (const key in rest) {
     if ((rest as any)[key] === 'NULL' || (rest as any)[key] === null) {

@@ -29,6 +29,7 @@ import core, {
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, {
+  NoSuchKeyError,
   type BlobStorageIterator,
   type ListBlobResult,
   type StorageAdapter,
@@ -316,21 +317,26 @@ export class S3Service implements StorageAdapter {
   }
 
   async doGet (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string, range?: string): Promise<Readable> {
-    const res = await this.client.getObject({
-      Bucket: this.getBucketId(workspaceId),
-      Key: this.getDocumentKey(workspaceId, objectName),
-      Range: range
-    })
+    try {
+      const res = await this.client.getObject({
+        Bucket: this.getBucketId(workspaceId),
+        Key: this.getDocumentKey(workspaceId, objectName),
+        Range: range
+      })
 
-    const stream = res.Body?.transformToWebStream()
+      const stream = res.Body?.transformToWebStream()
 
-    if (stream !== undefined) {
-      return Readable.fromWeb(stream as ReadableStream<any>)
-    } else {
-      const readable = new Readable()
-      readable._read = () => {}
-      readable.push(null)
-      return readable
+      if (stream !== undefined) {
+        return Readable.fromWeb(stream as ReadableStream<any>)
+      } else {
+        const readable = new Readable()
+        readable._read = () => {}
+        readable.push(null)
+        return readable
+      }
+    } catch (err: any) {
+      // In case of error return undefined
+      throw new NoSuchKeyError(`${workspaceId.name} missing ${objectName}`, err)
     }
   }
 

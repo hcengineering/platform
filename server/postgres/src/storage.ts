@@ -1085,17 +1085,17 @@ abstract class PostgresAdapterBase implements DbAdapter {
         if (!initialized) {
           if (recheck === true) {
             await this.retryTxn(client, async (client) => {
-              await client`UPDATE ${client(translateDomain(domain))} SET jsonb_set(data, '{%hash%}', 'NULL', true) WHERE "workspaceId" = ${this.workspaceId.name} AND data ->> '%hash%' IS NOT NULL`
+              await client`UPDATE ${client(translateDomain(domain))} SET '%hash%' = NULL WHERE "workspaceId" = ${this.workspaceId.name} AND '%hash%' IS NOT NULL`
             })
           }
-          await init('_id, data', "data ->> '%hash%' IS NOT NULL AND data ->> '%hash%' <> ''")
+          await init('_id, data', "'%hash%' IS NOT NULL AND '%hash%' <> ''")
           initialized = true
         }
         let docs = await ctx.with('next', { mode }, async () => await next(50))
         if (docs.length === 0 && mode === 'hashed') {
           await close(cursorName)
           mode = 'non_hashed'
-          await init('*', "data ->> '%hash%' IS NULL OR data ->> '%hash%' = ''")
+          await init('*', "'%hash%' IS NULL OR '%hash%' = ''")
           docs = await ctx.with('next', { mode }, async () => await next(50))
         }
         if (docs.length === 0) {
@@ -1155,7 +1155,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       const connection = (await this.getConnection(ctx)) ?? this.client
       const res =
         await connection`SELECT * FROM ${connection(translateDomain(domain))} WHERE _id = ANY(${docs}) AND "workspaceId" = ${this.workspaceId.name}`
-      return res as any as Doc[]
+      return res.map((p) => parseDocWithProjection(p as any))
     })
   }
 

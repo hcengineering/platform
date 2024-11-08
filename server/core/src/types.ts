@@ -48,8 +48,8 @@ import type { Request, Response } from '@hcengineering/rpc'
 import type { Token } from '@hcengineering/server-token'
 import { type Readable } from 'stream'
 import type { DbAdapter, DomainHelper } from './adapter'
-import { type StorageAdapter } from './storage'
 import type { StatisticsElement } from './stats'
+import { type StorageAdapter } from './storage'
 
 export interface ServerFindOptions<T extends Doc> extends FindOptions<T> {
   domain?: Domain // Allow to find for Doc's in specified domain only.
@@ -517,6 +517,17 @@ export interface StorageConfig {
   kind: string
   endpoint: string
   port?: number
+}
+
+export class NoSuchKeyError extends Error {
+  code: string
+  constructor (
+    msg: string,
+    readonly cause?: any
+  ) {
+    super(msg)
+    this.code = 'NoSuchKey'
+  }
 }
 
 export interface StorageConfiguration {
