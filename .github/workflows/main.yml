@@ -496,6 +496,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
       - name: Cache node modules
         uses: actions/cache@v4
         env:
@@ -518,6 +521,14 @@ jobs:
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
+      - name: Docker build love-agent
+        run: |
+            cd ./services/ai-bot/love-agent
+            pnpm install && pnpm build
+            pnpm docker:build -v
+        env:
+          DOCKER_CLI_HINTS: false
+          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
       - name: Login to Docker Hub
         if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         uses: docker/login-action@v3
@@ -532,6 +543,12 @@ jobs:
         run: |
           echo Pushing release of tag ${{ github.ref }}
           node common/scripts/install-run-rush.js docker:push -v
+      - name: Docker push love-agent
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+        run: |
+          echo Pushing love-agent release of tag ${{ github.ref }}
+          cd ./services/ai-bot/love-agent
+          pnpm docker:push
   dist-build:
     # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
     if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
