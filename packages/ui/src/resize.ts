@@ -164,6 +164,11 @@ export const settingsSeparators: DefSeparators = [
   { minSize: 19, size: 30, maxSize: 32, float: 'aside' }
 ]
 
+export const twoPanelsSeparators: DefSeparators = [
+  { minSize: 12.5, size: 17.5, maxSize: 22.5, float: 'navigator' },
+  null
+]
+
 export const mainSeparators: DefSeparators = [
   { minSize: 30, size: 'auto', maxSize: 'auto' },
   { minSize: 25, size: 30, maxSize: 80, float: 'sidebar' }

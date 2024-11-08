@@ -79,7 +79,7 @@
     overflow: hidden;
     flex-direction: row;
     min-width: 25rem;
-    border-radius: var(--medium-BorderRadius);
+    border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
 
     &.mini:not(.float) {
       width: 3.5rem !important;
@@ -88,6 +88,9 @@
     }
     &.mini.float {
       justify-content: flex-end;
+    }
+    &.float > :global(.sidebar-content) {
+      border-top: none;
     }
   }
   @media (max-width: 1024px) {

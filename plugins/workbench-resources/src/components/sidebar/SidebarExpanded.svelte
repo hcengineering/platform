@@ -96,7 +96,7 @@
   }
 </script>
 
-<div class="content">
+<div class="sidebar-content">
   {#if widget?.component}
     <div class="component" use:resizeObserver={resize}>
       {#if widget.headerLabel}
@@ -145,7 +145,7 @@
 <WidgetsBar {widgets} {preferences} selected={widgetId} />
 
 <style lang="scss">
-  .content {
+  .sidebar-content {
     display: flex;
     flex-direction: column;
 

@@ -12,7 +12,7 @@ export class SidebarPage extends CommonPage {
   }
 
   sidebar = (): Locator => this.page.locator('#sidebar')
-  content = (): Locator => this.sidebar().locator('.content')
+  content = (): Locator => this.sidebar().locator('.sidebar-content')
   contentHeaderByTitle = (title: string): Locator =>
     this.content().locator(`.hulyHeader-titleGroup:has-text("${title}")`)
 

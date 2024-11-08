@@ -334,6 +334,8 @@ export function minimizeSidebar (closedByUser = false): void {
   }
 
   sidebarStore.set({ ...state, ...widgetsState, widget: undefined, variant: SidebarVariant.MINI })
+  const devInfo = get(deviceInfo)
+  if (devInfo.navigator.float && devInfo.aside.visible) deviceInfo.set({ ...devInfo, aside: { visible: false } })
 }
 
 export function updateTabData (widget: Ref<Widget>, tabId: string, data: Record<string, any>): void {
