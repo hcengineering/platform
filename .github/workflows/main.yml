@@ -540,6 +540,12 @@ jobs:
         run: |
           echo Pushing release of tag ${{ github.ref }}
           node common/scripts/install-run-rush.js docker:push -v
+      - name: Docker push love-agent
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+        run: |
+          echo Pushing love-agent release of tag ${{ github.ref }}
+          cd ./services/ai-bot/love-agent
+          pnpm docker:push
   dist-build:
     # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
     if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
