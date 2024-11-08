@@ -38,7 +38,7 @@ import {
 import templates from '@hcengineering/templates'
 import setting from './plugin'
 
-import workbench from '@hcengineering/model-workbench'
+import workbench, { WidgetType } from '@hcengineering/model-workbench'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 export { settingId } from '@hcengineering/setting'
@@ -131,6 +131,18 @@ export function createModel (builder: Builder): void {
     TWorkspaceSetting,
     TSpaceTypeEditor,
     TSpaceTypeCreator
+  )
+
+  builder.createDoc(
+    workbench.class.Widget,
+    core.space.Model,
+    {
+      label: setting.string.Settings,
+      type: WidgetType.Flexible,
+      icon: setting.icon.Setting,
+      component: setting.component.SettingsWidget
+    },
+    setting.ids.SettingsWidget
   )
 
   builder.mixin(setting.class.Integration, core.class.Class, notification.mixin.ClassCollaborators, {

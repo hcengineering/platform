@@ -17,7 +17,8 @@
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
-  import presentation, { closeClient, createQuery } from '@hcengineering/presentation'
+  import presentation, { closeClient, getClient, createQuery } from '@hcengineering/presentation'
+  import settingPlg from '../plugin'
   import setting, { SettingsCategory, SettingsEvents } from '@hcengineering/setting'
   import {
     Component,
@@ -35,12 +36,17 @@
     settingsSeparators,
     showPopup,
     type AnyComponent,
-    deviceOptionsStore as deviceInfo
+    deviceOptionsStore as deviceInfo,
+    resizeObserver,
+    deviceWidths
   } from '@hcengineering/ui'
-  import { NavFooter } from '@hcengineering/workbench-resources'
+  import { closeWidget, NavFooter, openWidget, minimizeSidebar } from '@hcengineering/workbench-resources'
+  import workbench from '@hcengineering/workbench'
   import { ComponentType, onDestroy, onMount } from 'svelte'
   import { clearSettingsStore, settingsStore, type SettingsStore } from '../store'
   import { Analytics } from '@hcengineering/analytics'
+
+  const client = getClient()
 
   let category: SettingsCategory | undefined
   let categoryId: string = ''
@@ -122,11 +128,26 @@
     return ss.component === undefined ? null : ss.component
   }
   $: asideComponent = updatedStore($settingsStore)
+  let moveASide: boolean = false
+  const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: settingPlg.ids.SettingsWidget })[0]
+  $: if (moveASide && asideComponent != null) {
+    openWidget(widget, { component: asideComponent, ...asideProps }, { active: true, openedByUser: true })
+    $deviceInfo.aside.visible = true
+  } else if ((moveASide && asideComponent == null) || (!moveASide && asideComponent != null)) {
+    closeWidget(widget._id)
+    minimizeSidebar()
+  }
 
   defineSeparators('setting', settingsSeparators)
 </script>
 
-<div class="hulyPanels-container">
+<div
+  class="hulyPanels-container"
+  use:resizeObserver={(el) => {
+    if (el.clientWidth < deviceWidths[2] && !moveASide) moveASide = true
+    else if (el.clientWidth >= deviceWidths[2] && moveASide) moveASide = false
+  }}
+>
   {#if $deviceInfo.navigator.visible}
     <div
       class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal'
@@ -208,7 +229,7 @@
       <Component is={category.component} props={{ kind: 'content' }} />
     {/if}
   </div>
-  {#if asideComponent != null}
+  {#if asideComponent != null && !moveASide}
     <Separator name={'setting'} index={1} color={'transparent'} separatorSize={0} short />
     <div class="hulySidePanel-container">
       {#key asideProps}

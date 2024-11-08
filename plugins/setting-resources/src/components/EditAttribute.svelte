@@ -35,6 +35,7 @@
   export let attribute: AnyAttribute
   export let exist: boolean
   export let disabled: boolean = true
+  export let noTopIndent: boolean = false
 
   let name: string
   let type: Type<PropertyType> | undefined = attribute.type
@@ -133,9 +134,8 @@
   okLabel={presentation.string.Save}
   okAction={save}
   canSave={!(name === undefined || name.trim().length === 0) && !disabled}
-  onCancel={() => {
-    clearSettingsStore()
-  }}
+  onCancel={clearSettingsStore}
+  {noTopIndent}
 >
   <svelte:fragment slot="actions">
     {#if !disabled}
