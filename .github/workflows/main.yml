@@ -497,6 +497,8 @@ jobs:
         with:
           node-version-file: '.nvmrc'
       - uses: pnpm/action-setup@v4
+        with:
+          version: latest
       - name: Cache node modules
         uses: actions/cache@v4
         env:
