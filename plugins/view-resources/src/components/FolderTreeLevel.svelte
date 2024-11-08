@@ -24,11 +24,16 @@
   export let selected: Ref<Doc> | undefined
   export let level: number = 0
   export let once: boolean = false
+  export let titleKey = 'title'
 
   const dispatch = createEventDispatcher()
 
+  function getTitle(doc: Doc): string {
+    return ((doc || {}) as any)[titleKey] || ''
+  }
+
   function getDescendants (obj: Ref<Doc>): Ref<Doc>[] {
-    return (descendants.get(obj) ?? []).sort((a, b) => a.title.localeCompare(b.title)).map((p) => p._id)
+    return (descendants.get(obj) ?? []).sort((a, b) => getTitle(a).localeCompare(getTitle(b))).map((p) => p._id)
   }
 
   function handleSelected (obj: Ref<Doc>): void {
@@ -46,7 +51,7 @@
     <TreeItem
       _id={doc._id}
       folderIcon
-      title={doc.title}
+      title={getTitle(doc)}
       selected={selected === doc._id}
       isFold
       empty={desc.length === 0}

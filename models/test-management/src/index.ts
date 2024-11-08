@@ -132,7 +132,9 @@ function defineApplication(
                   icon: testManagement.icon.TestSuites,
                   title: testManagement.string.TestSuites,
                   createLabel: testManagement.string.CreateTestSuite,
-                  createComponent: testManagement.component.CreateTestSuite
+                  createComponent: testManagement.component.CreateTestSuite,
+                  titleKey: 'name',
+                  parentKey: 'parent'
                 }
               },
               {

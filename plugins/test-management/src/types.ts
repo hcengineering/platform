@@ -82,6 +82,7 @@ export interface TestSuite extends Doc {
   space: Ref<TestProject>
   name: string
   description?: string
+  parent?: Ref<TestSuite>
 }
 
 /** @public */

@@ -13,18 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Action } from '@hcengineering/ui'
 
-  import TreeItem from './navigator/TreeItem.svelte'
   import FolderTreeLevel from './FolderTreeLevel.svelte'
-
-  //import { getFolderIdFromFragment, getFolderLink } from '../navigation'
-
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
+  export let titleKey: string = 'title'
+  export let parentKey: string = 'parent'
 
 
   export let currentFragment: string | undefined
@@ -34,33 +32,40 @@
   let folderById: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
   let descendants: Map<Ref<Doc> | null, Doc[]> = new Map<Ref<Doc>, Doc[]>()
 
+  function getTitle(doc: Doc): string {
+    return ((doc || {}) as any)[titleKey] || ''
+  }
+
+  function getParent(doc: Doc): Ref<Doc> | null {
+    return ((doc || {}) as any)[parentKey] || null
+  }
+
   function getDescendants (obj: Ref<Doc> | null): Ref<Doc>[] {
-    return (descendants.get(obj) ?? []).sort((a, b) => a.title.localeCompare(b.title)).map((p) => p._id)
+    return (descendants.get(obj) ?? []).sort((a, b) => getTitle(a).localeCompare(getTitle(b))).map((p) => p._id)
   }
 
   let selected: Ref<Doc> | undefined
-  let visibleItem: Doc | undefined
   //$: selected = getFolderIdFromFragment(currentFragment ?? '')
-  $: visibleItem = selected !== undefined ? folderById.get(selected as Ref<Doc>) : undefined
 
   const q = createQuery()
   q.query(
     _class,
-    query,
+    query || {},
     (result) => {
       folderById.clear()
       descendants.clear()
 
       for (const doc of result) {
-        const current = descendants.get(doc.parent) ?? []
+        const current = descendants.get(getParent(doc)) ?? []
         current.push(doc)
-        descendants.set(doc.parent || null, current)
+        descendants.set(getParent(doc), current)
         folderById.set(doc._id, doc)
       }
 
       folderById = folderById
       descendants = descendants
       folders = getDescendants(null)
+      console.log(folders)
     },
     {
       sort: {
@@ -70,6 +75,8 @@
   )
 
   function handleFolderSelected (_id: Ref<Doc>): void {
+    selected = _id
+    console.log('Handle selected:' + _id)
     //navigate(getFolderLink(_id))
   }
 
@@ -83,23 +90,9 @@
   {descendants}
   {folderById}
   {selected}
+  {titleKey}
   on:selected={(ev) => {
     handleFolderSelected(ev.detail)
   }}
 />
-{#if (selected || forciblyСollapsed) && visibleItem}
-  {@const folder = visibleItem}
-  <TreeItem
-    _id={folder._id}
-    folderIcon
-    iconProps={{ fill: 'var(--global-accent-IconColor)' }}
-    title={folder.title}
-    selected
-    isFold
-    empty
-    actions={async () => await getFolderActions(folder)}
-    shouldTooltip
-    forciblyСollapsed
-  />
-{/if}
 
