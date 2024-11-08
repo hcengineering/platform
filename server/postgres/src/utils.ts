@@ -307,6 +307,9 @@ export function inferType (val: any): string {
     }
   }
   if (typeof val === 'object') {
+    if (val instanceof Date) {
+      return '::text'
+    }
     return '::jsonb'
   }
   return ''
