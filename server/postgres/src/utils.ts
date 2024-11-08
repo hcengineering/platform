@@ -302,7 +302,12 @@ export function inferType (val: any): string {
   }
   if (Array.isArray(val)) {
     const type = inferType(val[0])
-    return type + '[]'
+    if (type !== '') {
+      return type + '[]'
+    }
+  }
+  if (typeof val === 'object') {
+    return '::jsonb'
   }
   return ''
 }
