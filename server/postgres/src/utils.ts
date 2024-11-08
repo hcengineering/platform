@@ -388,7 +388,7 @@ export class DBCollectionHelper implements DomainHelperOperations {
   }
 }
 
-export function parseDocWithProjection<T extends Doc> (doc: DBDoc, projection: Projection<T> | undefined): T {
+export function parseDocWithProjection<T extends Doc> (doc: DBDoc, projection?: Projection<T> | undefined): T {
   const { workspaceId, data, ...rest } = doc
   for (const key in rest) {
     if ((rest as any)[key] === 'NULL' || (rest as any)[key] === null) {
