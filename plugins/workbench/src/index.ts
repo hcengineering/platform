@@ -170,8 +170,6 @@ export interface SpecialNavModel {
   accessLevel?: AccountRole
   component: AnyComponent
   componentProps?: Record<string, any>
-  navigationComponent?: AnyComponent
-  navigationComponentProps?: Record<string, any>
   // If not top and bottom, position will be sorted alphabetically.
   position?: 'top' | 'bottom' | string // undefined == 'top
   visibleIf?: Resource<(spaces: Space[]) => Promise<boolean>>
@@ -181,6 +179,18 @@ export interface SpecialNavModel {
   notificationsCountProvider?: Resource<
   (inboxNotificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>) => number
   >
+  navigationModel?: ParentsNavigationModel
+}
+
+/**
+ * @public
+ */
+ export interface ParentsNavigationModel {
+  navigationComponent: AnyComponent
+  navigationComponentLabel: IntlString
+  navigationComponentIcon?: Asset
+  navigationComponentProps?: Record<string, any>,
+  syncLocationQuery?: boolean
 }
 
 /**

@@ -61,7 +61,7 @@ function defineApplication(
       icon: testManagement.icon.TestManagementApplication,
       alias: testManagementId,
       hidden: false,
-      // locationResolver: testManagement.resolver.Location,
+      locationResolver: testManagement.resolver.Location,
       navigatorModel: {
         specials: [
           {
@@ -101,7 +101,7 @@ function defineApplication(
             createComponent: testManagement.component.CreateProject,
             icon: testManagement.icon.Home,
             specials: [
-              {
+              /*{
                 id: opt.testSuitesId,
                 label: testManagement.string.TestSuites,
                 icon: testManagement.icon.TestSuites,
@@ -113,29 +113,35 @@ function defineApplication(
                   createLabel: testManagement.string.CreateTestSuite,
                   createComponent: testManagement.component.CreateTestSuite
                 }
-              },
+              },*/
               {
-                id: opt.testCasesId,
+                id: 'library',
                 label: testManagement.string.TestCases,
                 icon: testManagement.icon.TestCases,
                 component: workbench.component.SpecialView,
                 componentProps: {
                   _class: testManagement.class.TestCase,
                   icon: testManagement.icon.TestCases,
-                  title: testManagement.string.TestCases,
+                  label: testManagement.string.TestCases,
                   createLabel: testManagement.string.CreateTestCase,
                   createComponent: testManagement.component.CreateTestCase
                 },
-                navigationComponent: view.component.FoldersBrowser,
-                navigationComponentProps: {
-                  _class: testManagement.class.TestSuite,
-                  icon: testManagement.icon.TestSuites,
-                  title: testManagement.string.TestSuites,
-                  createLabel: testManagement.string.CreateTestSuite,
-                  createComponent: testManagement.component.CreateTestSuite,
-                  titleKey: 'name',
-                  parentKey: 'parent'
-                }
+                navigationModel: {
+                  navigationComponent: view.component.FoldersBrowser,
+                  navigationComponentLabel: testManagement.string.TestSuites,
+                  navigationComponentIcon: testManagement.icon.TestSuites,
+                  navigationComponentProps: {
+                    _class: testManagement.class.TestSuite,
+                    icon: testManagement.icon.TestSuites,
+                    title: testManagement.string.TestSuites,
+                    createLabel: testManagement.string.CreateTestSuite,
+                    createComponent: testManagement.component.CreateTestSuite,
+                    titleKey: 'name',
+                    parentKey: 'parent',
+                    getFolderLink: testManagement.function.GetTestSuiteLink
+                  },
+                  syncLocationQuery: true
+                },
               },
               {
                 id: opt.testRunsId,

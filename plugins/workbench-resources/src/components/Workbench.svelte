@@ -950,8 +950,7 @@
               model: navigatorModel, 
               ...specialComponent.componentProps, 
               currentSpace, 
-              navigationComponent: specialComponent?.navigationComponent, 
-              navigationComponentProps: specialComponent?.navigationComponentProps
+              navigationModel: specialComponent?.navigationModel
             }}
             on:action={(e) => {
               if (e?.detail) {

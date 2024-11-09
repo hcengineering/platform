@@ -15,7 +15,8 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Action } from '@hcengineering/ui'
+  import { Action, navigate } from '@hcengineering/ui'
+  import { getResource, type Resource } from '@hcengineering/platform'
 
   import FolderTreeLevel from './FolderTreeLevel.svelte'
 
@@ -23,6 +24,8 @@
   export let query: DocumentQuery<Doc>
   export let titleKey: string = 'title'
   export let parentKey: string = 'parent'
+  export let getFolderLink: Resource<(doc: Doc, props: Record<string, any>) => Location>
+  export let getFolderIdFromFragment: Resource<(fragment: string) => Ref<Doc> | undefined>
 
 
   export let currentFragment: string | undefined
@@ -45,6 +48,7 @@
   }
 
   let selected: Ref<Doc> | undefined
+  //$: selected = getFolderId(currentFragment ?? '')
   //$: selected = getFolderIdFromFragment(currentFragment ?? '')
 
   const q = createQuery()
@@ -74,10 +78,18 @@
     }
   )
 
-  function handleFolderSelected (_id: Ref<Doc>): void {
+  async function handleFolderSelected (_id: Ref<Doc>) {
     selected = _id
-    console.log('Handle selected:' + _id)
-    //navigate(getFolderLink(_id))
+    const folder = folderById.get(_id)
+    if (getFolderLink) {
+      const getFolderLinkFunction = await getResource(getFolderLink)
+      navigate(getFolderLinkFunction(_id, folder?.space))
+    }
+  }
+
+  async function getFolderId (currentFragment: string) {
+    const getFolderIdFunction = await getResource(getFolderIdFromFragment)
+    return getFolderIdFunction(currentFragment)
   }
 
   async function getFolderActions (obj: Doc): Promise<Action[]> {

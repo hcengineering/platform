@@ -14,18 +14,25 @@
 -->
 
 <script lang="ts">
-  import {AnyComponent, Component, Separator} from '@hcengineering/ui'
+  import {AnyComponent, Breadcrumb, Component, Header, Separator} from '@hcengineering/ui'
+  
+  import { IntlString, Asset } from '@hcengineering/platform'
 
   export let navigationComponent: AnyComponent
   export let navigationComponentProps: Record<string, any> | undefined
+  export let navigationComponentLabel: IntlString
+  export let navigationComponentIcon: Asset
+  export let mainComponentLabel: IntlString
+  export let mainComponentIcon: Asset
 
 </script>
 
 <div class="hulyComponent">
   <div class="hulyComponent-content__container columns">
     <div class="hulyComponent-content__column">
-      <span>All test suites</span>
-      <div class="antiNav-divider line"/>
+      <Header adaptive={'disabled'}>
+        <Breadcrumb icon={navigationComponentIcon} label={navigationComponentLabel} size={'large'} />
+      </Header>
       <Component
         is={navigationComponent}
         props={navigationComponentProps}
@@ -33,6 +40,9 @@
     </div>
     <Separator name={'navigationSection'} index={0} color={'var(--theme-divider-color)'} />
     <div class="hulyComponent-content__column">
+      <Header adaptive={'disabled'}>
+        <Breadcrumb icon={mainComponentIcon} label={mainComponentLabel} size={'large'} />
+      </Header>
       <slot />
     </div>
   </div>

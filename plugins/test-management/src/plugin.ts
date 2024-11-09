@@ -23,10 +23,11 @@ import {
   type SpaceTypeDescriptor,
   type SpaceType
 } from '@hcengineering/core'
-import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
+import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 
 import { plugin } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent, type Location, type ResolvedLocation } from '@hcengineering/ui'
+
 import { ActionCategory, Viewlet } from '@hcengineering/view'
 import { TestSuite, TestCase, TestProject, TestCaseType, TestCasePriority, TestCaseStatus, TestRun, TestRunItem, TestRunResult } from './types'
 
@@ -192,7 +193,13 @@ export const testManagementPlugin = plugin(testManagementId, {
   },
   taskType: {
     TestCase: '' as Ref<TestCase>
-  }
+  },
+  function: {
+    GetTestSuiteLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Location>,
+  },
+  resolver: {
+    Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
+  },
 })
 
 /**

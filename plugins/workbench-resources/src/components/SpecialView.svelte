@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { onDestroy } from 'svelte'
   import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString, Asset } from '@hcengineering/platform'
   import {
@@ -26,10 +27,14 @@
     SearchInput,
     showPopup,
     Header,
-    Breadcrumb
+    Breadcrumb,
+    Location,
+    getLocation,
+    resolvedLocationStore
   } from '@hcengineering/ui'
   import { ViewOptions, Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
   import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { ParentsNavigationModel } from '@hcengineering/workbench'
 
   import ComponentNavigator from './ComponentNavigator.svelte'
 
@@ -45,8 +50,7 @@
   export let descriptors: Array<Ref<ViewletDescriptor>> | undefined = undefined
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
   export let modes: IModeSelector<any> | undefined = undefined
-  export let navigationComponent: AnyComponent | undefined
-  export let navigationComponentProps: Record<string, any> | undefined
+  export let navigationModel: ParentsNavigationModel | undefined
 
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
@@ -56,7 +60,19 @@
   let viewlets: Array<WithLookup<Viewlet>> = []
   let viewOptions: ViewOptions | undefined
 
-  $: query = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}) }
+  let locationQuery = {}
+
+  if (navigationModel?.syncLocationQuery) {
+    locationQuery = getLocation()?.query ?? {}
+
+    onDestroy(resolvedLocationStore.subscribe(handleLocationChanged))
+
+    function handleLocationChanged (loc: Location): void {
+      query = {...query, ...(loc.query ?? {})}
+    }
+  }
+
+  $: query = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}), ...locationQuery }
   $: searchQuery = search === '' ? query : { ...query, $search: search }
   $: resultQuery = searchQuery
   
@@ -125,7 +141,7 @@
       resultQuery = { ...query, ...e.detail }
     }}
   />
-  {#if navigationComponent == undefined}
+  {#if navigationModel?.navigationComponent == undefined}
     <Component
       is={viewlet.$lookup.descriptor.component}
       props={{
@@ -145,8 +161,9 @@
     />
   {:else}
     <ComponentNavigator
-      {navigationComponent}
-      {navigationComponentProps}
+      mainComponentLabel={label}
+      mainComponentIcon={icon}
+      {...navigationModel}
     >
       <Component
         is={viewlet.$lookup.descriptor.component}
