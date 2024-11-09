@@ -61,6 +61,7 @@
     "@hcengineering/query": "^0.6.12",
     "@hcengineering/setting": "^0.6.17",
     "@hcengineering/tags": "^0.6.16",
+    "@hcengineering/tags-resources": "^0.6.0",
     "@hcengineering/task": "^0.6.20",
     "@hcengineering/task-resources": "^0.6.0",
     "@hcengineering/text-editor-resources": "^0.6.0",
