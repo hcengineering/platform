@@ -16,7 +16,7 @@ import testManagement, {
   type TestSuite,
   type TestProject
 } from '@hcengineering/test-management'
-import { type Doc, type Ref } from '@hcengineering/core'
+import { type Doc, type DocumentQuery, type Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
 import view, { type ObjectPanel } from '@hcengineering/view'
@@ -48,15 +48,15 @@ async function generateTestSuiteLocation (
 
   return {
     loc: {
+      ...loc,
       path: [appComponent, workspace, testManagementId, project, 'library', 'testSuite', doc._id],
-      fragment: loc.fragment,
       query: {
         suite: doc._id
       }
     },
     defaultLocation: {
-      path: [appComponent, workspace, testManagementId, project, 'library'],
-      fragment: loc.fragment
+      ...loc,
+      path: [appComponent, workspace, testManagementId, project, 'library']
     }
   }
 }
@@ -65,12 +65,14 @@ export function getTestSuiteLink (testSuite: Ref<TestSuite>, project: Ref<TestPr
   const loc = getCurrentResolvedLocation()
   loc.fragment = undefined
   loc.query = undefined
-  loc.path.length = 7
+  loc.path.length = testSuite ? 7 : 5
   loc.path[2] = testManagementId
   loc.path[3] = project
   loc.path[4] = 'library'
-  loc.path[5] = 'testSuite'
-  loc.path[6] = testSuite
+  if (testSuite) {
+    loc.path[5] = 'testSuite'
+    loc.path[6] = testSuite
+  }
 
   return loc
 }
@@ -79,6 +81,18 @@ export function getTestSuiteIdFromFragment (fragment: string): Ref<TestSuite> | 
   const props = decodeURIComponent(fragment).split('|')
 
   return props[6] != null ? (props[6] as Ref<TestSuite>) : undefined
+}
+
+export function syncQueryAndLocation (query: DocumentQuery<Doc> | undefined, loc: Location): DocumentQuery<Doc> | undefined {
+  const {suite} = loc?.query ?? {}
+  const {suite: skip, ...omittedQuery} = query ?? {}
+  if (suite === undefined) {
+    return omittedQuery
+  }
+  return {
+    ...(omittedQuery ?? {}),
+    suite
+  }
 }
 
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {

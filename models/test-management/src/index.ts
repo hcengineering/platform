@@ -138,9 +138,11 @@ function defineApplication(
                     createComponent: testManagement.component.CreateTestSuite,
                     titleKey: 'name',
                     parentKey: 'parent',
-                    getFolderLink: testManagement.function.GetTestSuiteLink
+                    getFolderLink: testManagement.function.GetTestSuiteLink,
+                    allObjectsLabel: testManagement.string.AllTestCases,
+                    allObjectsIcon: view.icon.List
                   },
-                  syncLocationQuery: true
+                  syncQueryAndLocation: testManagement.function.SyncQueryAndLocation
                 },
               },
               {

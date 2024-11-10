@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { AccountRole, Class, Doc, Mixin, Obj, Ref, Space, Tx } from '@hcengineering/core'
+import type { AccountRole, Class, Doc, DocumentQuery, Mixin, Obj, Ref, Space, Tx } from '@hcengineering/core'
 import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -190,7 +190,7 @@ export interface SpecialNavModel {
   navigationComponentLabel: IntlString
   navigationComponentIcon?: Asset
   navigationComponentProps?: Record<string, any>,
-  syncLocationQuery?: boolean
+  syncQueryAndLocation?: Resource<(query: DocumentQuery<Doc> | undefined, loc: Location) => DocumentQuery<Doc> | undefined>
 }
 
 /**

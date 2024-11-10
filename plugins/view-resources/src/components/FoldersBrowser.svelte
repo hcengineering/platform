@@ -15,8 +15,9 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Action, navigate } from '@hcengineering/ui'
+  import { Action, Button, Header, navigate } from '@hcengineering/ui'
   import { getResource, type Resource } from '@hcengineering/platform'
+  import { IntlString, Asset } from '@hcengineering/platform'
 
   import FolderTreeLevel from './FolderTreeLevel.svelte'
 
@@ -26,6 +27,8 @@
   export let parentKey: string = 'parent'
   export let getFolderLink: Resource<(doc: Doc, props: Record<string, any>) => Location>
   export let getFolderIdFromFragment: Resource<(fragment: string) => Ref<Doc> | undefined>
+  export let allObjectsIcon: Asset
+  export let allObjectsLabel: IntlString
 
 
   export let currentFragment: string | undefined
@@ -87,6 +90,15 @@
     }
   }
 
+  async function handleAllItemsSelected () {
+    const folder = selected && folderById.get(selected)
+    if (folder && getFolderLink) {
+      const getFolderLinkFunction = await getResource(getFolderLink)
+      navigate(getFolderLinkFunction(undefined, folder?.space))
+    }
+    selected = undefined
+  }
+
   async function getFolderId (currentFragment: string) {
     const getFolderIdFunction = await getResource(getFolderIdFromFragment)
     return getFolderIdFunction(currentFragment)
@@ -97,14 +109,29 @@
   }
 </script>
 
-<FolderTreeLevel
-  {folders}
-  {descendants}
-  {folderById}
-  {selected}
-  {titleKey}
-  on:selected={(ev) => {
-    handleFolderSelected(ev.detail)
-  }}
-/>
-
+<div>
+  {#if allObjectsLabel}
+    <Header adaptive={'disabled'}>
+      <Button
+        size={'large'}
+        kind={'link'}
+        icon={allObjectsIcon}
+        label={allObjectsLabel}
+        selected={!selected}
+        width="100%"
+        justify="left"
+        on:click={handleAllItemsSelected}
+      />
+    </Header>
+  {/if}
+  <FolderTreeLevel
+    {folders}
+    {descendants}
+    {folderById}
+    {selected}
+    {titleKey}
+    on:selected={(ev) => {
+      handleFolderSelected(ev.detail)
+    }}
+  />
+</div>

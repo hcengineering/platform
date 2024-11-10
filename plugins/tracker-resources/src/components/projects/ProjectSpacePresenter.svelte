@@ -64,7 +64,7 @@
 {#if specials}
   <TreeNode
     _id={space?._id}
-    icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : space?.icon ?? model.icon}
+    icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : space?.icon ?? model?.icon}
     iconProps={space?.icon === view.ids.IconWithEmoji
       ? { icon: space.color }
       : {

@@ -21,7 +21,8 @@ import {
   Type,
   type Status,
   type SpaceTypeDescriptor,
-  type SpaceType
+  type SpaceType,
+  type DocumentQuery
 } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 
@@ -196,6 +197,7 @@ export const testManagementPlugin = plugin(testManagementId, {
   },
   function: {
     GetTestSuiteLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Location>,
+    SyncQueryAndLocation: '' as Resource<(query: DocumentQuery<Doc> | undefined, loc: Location) => DocumentQuery<Doc> | undefined>
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>

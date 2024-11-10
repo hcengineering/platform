@@ -15,7 +15,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
   import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { IntlString, Asset } from '@hcengineering/platform'
+  import { IntlString, Asset, getResource } from '@hcengineering/platform'
   import {
     AnyComponent,
     Button,
@@ -62,13 +62,14 @@
 
   let locationQuery = {}
 
-  if (navigationModel?.syncLocationQuery) {
+  if (navigationModel?.syncQueryAndLocation) {
     locationQuery = getLocation()?.query ?? {}
 
     onDestroy(resolvedLocationStore.subscribe(handleLocationChanged))
 
-    function handleLocationChanged (loc: Location): void {
-      query = {...query, ...(loc.query ?? {})}
+    async function handleLocationChanged (loc: Location) {
+      const syncQueryFn = await getResource(navigationModel?.syncQueryAndLocation)
+      query = syncQueryFn(query, loc)
     }
   }
 
@@ -78,7 +79,7 @@
   
   function showCreateDialog (): void {
     if (createComponent === undefined) return
-    showPopup(createComponent, createComponentProps, 'top')
+    showPopup(createComponent, {...createComponentProps, space}, 'top')
   }
 </script>
 

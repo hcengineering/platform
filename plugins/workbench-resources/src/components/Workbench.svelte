@@ -950,6 +950,7 @@
               model: navigatorModel, 
               ...specialComponent.componentProps, 
               currentSpace, 
+              space: currentSpace,
               navigationModel: specialComponent?.navigationModel
             }}
             on:action={(e) => {
