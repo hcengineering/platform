@@ -152,6 +152,7 @@ export interface Config {
   TELEGRAM_BOT_URL?: string
   AI_URL?:string
   DISABLE_SIGNUP?: string
+  DEFAULT_LOGIN_METHOD?: 'otp'|'password'
   // Could be defined for dev environment
   FRONT_URL?: string
   PREVIEW_CONFIG?: string

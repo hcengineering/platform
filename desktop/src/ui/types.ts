@@ -29,7 +29,7 @@ export interface Config {
   ANALYTICS_COLLECTOR_URL?: string
   AI_URL?: string
   DISABLE_SIGNUP?: string
-  DEFAULT_LOGIN_METHOD?: string
+  DEFAULT_LOGIN_METHOD?: 'otp' | 'password'
   BRANDING_URL?: string
   PREVIEW_CONFIG: string
   UPLOAD_CONFIG: string

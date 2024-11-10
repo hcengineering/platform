@@ -73,7 +73,7 @@ export default plugin(loginId, {
     LastToken: '' as Metadata<string>,
     LoginEndpoint: '' as Metadata<string>,
     LoginEmail: '' as Metadata<string>,
-    DefaultLoginMethod: '' as Metadata<string>,
+    DefaultLoginMethod: '' as Metadata<'otp' | 'password'>,
     DisableSignUp: '' as Metadata<boolean>
   },
   component: {
