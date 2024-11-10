@@ -27,8 +27,9 @@ export interface Config {
   PRINT_URL?: string
   PUSH_PUBLIC_KEY: string
   ANALYTICS_COLLECTOR_URL?: string
-  AI_URL?:string
+  AI_URL?: string
   DISABLE_SIGNUP?: string
+  DEFAULT_LOGIN_METHOD?: string
   BRANDING_URL?: string
   PREVIEW_CONFIG: string
   UPLOAD_CONFIG: string

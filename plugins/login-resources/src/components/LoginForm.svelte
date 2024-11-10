@@ -18,14 +18,20 @@
   import LoginPasswordForm from './LoginPasswordForm.svelte'
   import LoginOtpForm from './LoginOtpForm.svelte'
   import BottomActionComponent from './BottomAction.svelte'
+  import { getMetadata } from '@hcengineering/platform'
   import login from '../plugin'
 
   export let navigateUrl: string | undefined = undefined
   export let signUpDisabled = false
+  const defaultLoginMethod = getMetadata(login.metadata.DefaultLoginMethod) ?? 'otp'
 
   let method: LoginMethods = LoginMethods.Otp
 
-  function changeMethod (event: CustomEvent<LoginMethods>): void {
+  if (defaultLoginMethod === 'password') {
+    method = LoginMethods.Password
+  }
+
+  function changeMethod(event: CustomEvent<LoginMethods>): void {
     method = event.detail
   }
 

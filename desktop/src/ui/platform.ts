@@ -112,7 +112,7 @@ import github, { githubId } from '@hcengineering/github'
 import { uiId } from '@hcengineering/ui/src/plugin'
 import { preferenceId } from '@hcengineering/preference'
 
-function configureI18n (): void {
+function configureI18n(): void {
   // Add localization
   addStringsLoader(platformId, async (lang: string) => await import(`@hcengineering/platform/lang/${lang}.json`))
   addStringsLoader(coreId, async (lang: string) => await import(`@hcengineering/core/lang/${lang}.json`))
@@ -187,7 +187,7 @@ function configureI18n (): void {
   addStringsLoader(analyticsCollectorId, async (lang: string) => await import(`@hcengineering/analytics-collector-assets/lang/${lang}.json`))
 }
 
-export async function configurePlatform (): Promise<void> {
+export async function configurePlatform(): Promise<void> {
   configureI18n()
 
   const ipcMain = (window as any).electron as IPCMainExposed
@@ -202,6 +202,7 @@ export async function configurePlatform (): Promise<void> {
 
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(login.metadata.DisableSignUp, config.DISABLE_SIGNUP === 'true')
+  setMetadata(login.metadata.DefaultLoginMethod, config.DEFAULT_LOGIN_METHOD)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
