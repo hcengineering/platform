@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
@@ -19,6 +20,7 @@
   import { getResource, type Resource } from '@hcengineering/platform'
   import { IntlString, Asset } from '@hcengineering/platform'
 
+  import {FoldersManager, FoldersStore, FoldersState} from '../stores/folderStore'
   import FolderTreeLevel from './FolderTreeLevel.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -30,25 +32,16 @@
   export let allObjectsIcon: Asset
   export let allObjectsLabel: IntlString
 
-
   export let currentFragment: string | undefined
   export let forciblyСollapsed: boolean = false
 
-  let folders: Ref<Doc>[] = []
-  let folderById: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
-  let descendants: Map<Ref<Doc> | null, Doc[]> = new Map<Ref<Doc>, Doc[]>()
+  let foldersState: FoldersState = FoldersState.empty()
 
-  function getTitle(doc: Doc): string {
-    return ((doc || {}) as any)[titleKey] || ''
-  }
+  let foldersManager: FoldersManager = new FoldersManager(titleKey, parentKey)
 
-  function getParent(doc: Doc): Ref<Doc> | null {
-    return ((doc || {}) as any)[parentKey] || null
-  }
-
-  function getDescendants (obj: Ref<Doc> | null): Ref<Doc>[] {
-    return (descendants.get(obj) ?? []).sort((a, b) => getTitle(a).localeCompare(getTitle(b))).map((p) => p._id)
-  }
+  FoldersStore.subscribe((newState) => {
+    foldersState = newState
+  })
 
   let selected: Ref<Doc> | undefined
   //$: selected = getFolderId(currentFragment ?? '')
@@ -59,20 +52,7 @@
     _class,
     query || {},
     (result) => {
-      folderById.clear()
-      descendants.clear()
-
-      for (const doc of result) {
-        const current = descendants.get(getParent(doc)) ?? []
-        current.push(doc)
-        descendants.set(getParent(doc), current)
-        folderById.set(doc._id, doc)
-      }
-
-      folderById = folderById
-      descendants = descendants
-      folders = getDescendants(null)
-      console.log(folders)
+      foldersManager.setFolders(result)
     },
     {
       sort: {
@@ -83,7 +63,7 @@
 
   async function handleFolderSelected (_id: Ref<Doc>) {
     selected = _id
-    const folder = folderById.get(_id)
+    const folder = foldersState.folderById.get(_id)
     if (getFolderLink) {
       const getFolderLinkFunction = await getResource(getFolderLink)
       navigate(getFolderLinkFunction(_id, folder?.space))
@@ -91,7 +71,7 @@
   }
 
   async function handleAllItemsSelected () {
-    const folder = selected && folderById.get(selected)
+    const folder = selected && foldersState.folderById.get(selected)
     if (folder && getFolderLink) {
       const getFolderLinkFunction = await getResource(getFolderLink)
       navigate(getFolderLinkFunction(undefined, folder?.space))
@@ -125,9 +105,9 @@
     </Header>
   {/if}
   <FolderTreeLevel
-    {folders}
-    {descendants}
-    {folderById}
+    folders={foldersState.folders}
+    descendants={foldersState.descendants}
+    folderById={foldersState.folderById}
     {selected}
     {titleKey}
     on:selected={(ev) => {
