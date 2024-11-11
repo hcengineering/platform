@@ -426,7 +426,9 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   async getDomainSpaces (ctx: MeasureContext, domain: Domain): Promise<Set<Ref<Space>>> {
     let domainSpaces = this._domainSpaces.get(domain)
     if (domainSpaces === undefined) {
-      const p = this.next?.groupBy<Ref<Space>>(ctx, domain, this.getKey(domain)) ?? Promise.resolve(new Set())
+      const p = (
+        this.next?.groupBy<Ref<Space>, Doc>(ctx, domain, this.getKey(domain)) ?? Promise.resolve(new Map())
+      ).then((r) => new Set<Ref<Space>>(r.keys()))
       this._domainSpaces.set(domain, p)
       domainSpaces = await p
       this._domainSpaces.set(domain, domainSpaces)

@@ -68,20 +68,16 @@ setMetadata(serverNotification.metadata.SesUrl, config.sesUrl ?? '')
 setMetadata(notification.metadata.PushPublicKey, config.pushPublicKey)
 setMetadata(serverNotification.metadata.PushPrivateKey, config.pushPrivateKey)
 setMetadata(serverNotification.metadata.PushSubject, config.pushSubject)
-setMetadata(serverCore.metadata.ElasticIndexName, config.elasticIndexName)
 setMetadata(serverCore.metadata.ElasticIndexVersion, 'v1')
 setMetadata(serverTelegram.metadata.BotUrl, process.env.TELEGRAM_BOT_URL)
 setMetadata(serverAiBot.metadata.SupportWorkspaceId, process.env.SUPPORT_WORKSPACE)
 setMetadata(serverAiBot.metadata.EndpointURL, process.env.AI_BOT_URL)
 
 const { shutdown, sessionManager } = start(metricsContext, config.dbUrl, {
-  fullTextUrl: config.elasticUrl,
+  fulltextUrl: config.fulltextUrl,
   storageConfig,
-  rekoniUrl: config.rekoniUrl,
   port: config.serverPort,
   serverFactory: startHttpServer,
-  indexParallel: 2,
-  indexProcessing: 500,
   brandingMap: loadBrandingMap(config.brandingPath),
   accountsUrl: config.accountsUrl,
   enableCompression: config.enableCompression,

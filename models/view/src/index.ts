@@ -1209,6 +1209,10 @@ export function createModel (builder: Builder): void {
   builder.mixin(core.class.Space, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Open, view.action.OpenInNewTab, view.action.Delete]
   })
+  builder.mixin(view.class.FilteredView, core.class.Class, core.mixin.IndexConfiguration, {
+    indexes: [],
+    searchDisabled: true
+  })
 }
 
 export default view

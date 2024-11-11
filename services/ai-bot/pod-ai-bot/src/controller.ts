@@ -21,6 +21,7 @@ import {
   AITransferEventRequest,
   ConnectMeetingRequest,
   DisconnectMeetingRequest,
+  IdentityResponse,
   OnboardingEvent,
   OnboardingEventRequest,
   OpenChatInSidebarData,
@@ -282,17 +283,28 @@ export class AIControl {
     await wsClient.loveDisconnect(request)
   }
 
-  async processLoveTranscript (request: PostTranscriptRequest): Promise<void> {
-    const parsed = request.roomName.split('_')
-
-    if (parsed.length < 3) return
-
+  async getLoveIdentity (roomName: string): Promise<IdentityResponse | undefined> {
+    const parsed = roomName.split('_')
     const workspace = parsed[0]
-    const roomId = parsed[parsed.length - 1]
+
+    if (workspace === null) return
 
     const wsClient = await this.getWorkspaceClient(workspace)
     if (wsClient === undefined) return
 
-    await wsClient.processLoveTranscript(request.transcript, request.participant, roomId as Ref<Room>)
+    return await wsClient.getLoveIdentity()
+  }
+
+  async processLoveTranscript (request: PostTranscriptRequest): Promise<void> {
+    const parsed = request.roomName.split('_')
+    const workspace = parsed[0]
+    const roomId = parsed[parsed.length - 1]
+
+    if (workspace === null || roomId === null) return
+
+    const wsClient = await this.getWorkspaceClient(workspace)
+    if (wsClient === undefined) return
+
+    await wsClient.processLoveTranscript(request.transcript, request.participant, roomId as Ref<Room>, request.final)
   }
 }

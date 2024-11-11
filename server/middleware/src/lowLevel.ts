@@ -58,8 +58,13 @@ export class LowLevelMiddleware extends BaseMiddleware implements Middleware {
       async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
         await adapterManager.getAdapter(domain, true).clean(ctx, domain, docs)
       },
-      groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
-        return adapterManager.getAdapter(domain, false).groupBy(ctx, domain, field)
+      groupBy<T, P extends Doc>(
+        ctx: MeasureContext,
+        domain: Domain,
+        field: string,
+        query?: DocumentQuery<P>
+      ): Promise<Map<T, number>> {
+        return adapterManager.getAdapter(domain, false).groupBy(ctx, domain, field, query)
       },
       rawFindAll<T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
         return adapterManager.getAdapter(domain, false).rawFindAll(domain, query, options)

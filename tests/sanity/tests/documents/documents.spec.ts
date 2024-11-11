@@ -1,9 +1,11 @@
-import { test } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { generateId, getSecondPage, PlatformSetting, PlatformURI } from '../utils'
 import { NewDocument, NewTeamspace } from '../model/documents/types'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { DocumentsPage } from '../model/documents/documents-page'
 import { DocumentContentPage } from '../model/documents/document-content-page'
+
+const retryOptions = { intervals: [100, 200, 1000], timeout: 60000 }
 
 test.use({
   storageState: PlatformSetting
@@ -114,7 +116,11 @@ test.describe('Documents tests', () => {
 
     await test.step('Create a child document', async () => {
       await documentsPage.clickAddDocumentIntoDocument(parentDocument.title)
+      await expect(async () => {
+        await documentContentPage.checkDocumentTitle('Untitled')
+      }).toPass(retryOptions)
       await documentContentPage.updateDocumentTitle(childDocument.title)
+
       const content = await documentContentPage.addContentToTheNewLine(contentFirst)
       await documentContentPage.checkContent(content)
     })

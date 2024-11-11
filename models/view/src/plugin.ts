@@ -78,7 +78,6 @@ export default mergeIds(viewId, view, {
     MarkupEditor: '' as AnyComponent,
     MarkupEditorPopup: '' as AnyComponent,
     ListView: '' as AnyComponent,
-    IndexedDocumentPreview: '' as AnyComponent,
     SpaceRefPresenter: '' as AnyComponent,
     EnumPresenter: '' as AnyComponent,
     StatusPresenter: '' as AnyComponent,

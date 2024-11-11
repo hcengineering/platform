@@ -4,9 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  livekit-server-sdk: 2.7.3
-
 importers:
 
   .:
@@ -15,8 +12,8 @@ importers:
         specifier: ^3.9.0
         version: 3.9.0
       '@livekit/agents':
-        specifier: ^0.3.5
-        version: 0.3.5
+        specifier: ^0.4.1
+        version: 0.4.1
       '@livekit/rtc-node':
         specifier: ^0.11.1
         version: 0.11.1
@@ -246,8 +243,8 @@ packages:
     resolution: {integrity: sha512-93zYdMES/c1D69yZiKDBj0V24vqNzB/koF26KPaagAfd3P/4gUlh3Dys5ogAK+Exi9QyzlD8x/08Zt7wIKcDcA==}
     deprecated: Use @eslint/object-schema instead
 
-  '@livekit/agents@0.3.5':
-    resolution: {integrity: sha512-qjEIRkr/HdOvEOnvLKZMfnQ472bShQ1Ai2KKng8a1caSDHiLhQBeSb1tzA1Evsmm1k8hilXqh+81/SDj4cfiDA==}
+  '@livekit/agents@0.4.1':
+    resolution: {integrity: sha512-zZnd19CWvm1i6PKzAgUw6gLdZOJ/QKzbIVSLNAZPQphCEEg3cPoe3fEf9XE7o9+n6e5sZ6FfmSUh/c7jxWmujw==}
 
   '@livekit/mutex@1.1.0':
     resolution: {integrity: sha512-XRLG+z/0uoyDioupjUiskjI06Y51U/IXVPJn7qJ+R3J75XX01irYVBM9MpxeJahpVoe9QhU4moIEolX+HO9U9g==}
@@ -1021,8 +1018,8 @@ packages:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
 
-  livekit-server-sdk@2.7.3:
-    resolution: {integrity: sha512-dBiyMJ2o3Adw7aBVuFxVOlYHmiZtGGS9zVksMuv/wiEVHY+6XSDzo0X67pZVkyGlq1moF4YZAReVY2Dbxve8NQ==}
+  livekit-server-sdk@2.8.1:
+    resolution: {integrity: sha512-l8egXU10jPuRJM2Df9Gk/KPEk6tBV0JEGG19cD5QeQtyIMgqULCCd/5yyG2FRvcWRf7pEyZZMXi63zDn7uaKHQ==}
     engines: {node: '>=19'}
 
   locate-path@6.0.0:
@@ -1069,8 +1066,8 @@ packages:
       encoding:
         optional: true
 
-  object-inspect@1.13.2:
-    resolution: {integrity: sha512-IRZSRuzJiynemAXPYtPe5BoI/RESNYR7TYm50MC5Mqbd3Jmw5y790sErYw3V6SryFJD64b74qQQs9wn5Bg/k3g==}
+  object-inspect@1.13.3:
+    resolution: {integrity: sha512-kDCGIbxkDSXE3euJZZXzc6to7fCrKHNI/hSRQnRuQ+BWjFNzZwiFF8fj/6o2t2G9/jTj8PSIYTfCLelLZEeRpA==}
     engines: {node: '>= 0.4'}
 
   object-keys@1.1.1:
@@ -1559,13 +1556,14 @@ snapshots:
 
   '@humanwhocodes/object-schema@2.0.3': {}
 
-  '@livekit/agents@0.3.5':
+  '@livekit/agents@0.4.1':
     dependencies:
       '@livekit/mutex': 1.1.0
       '@livekit/protocol': 1.27.1
       '@livekit/rtc-node': 0.11.1
+      '@livekit/typed-emitter': 3.0.0
       commander: 12.1.0
-      livekit-server-sdk: 2.7.3
+      livekit-server-sdk: 2.8.1
       pino: 8.21.0
       pino-pretty: 11.3.0
       ws: 8.18.0
@@ -1977,7 +1975,7 @@ snapshots:
       is-string: 1.0.7
       is-typed-array: 1.1.13
       is-weakref: 1.0.2
-      object-inspect: 1.13.2
+      object-inspect: 1.13.3
       object-keys: 1.1.1
       object.assign: 4.1.5
       regexp.prototype.flags: 1.5.3
@@ -2488,7 +2486,7 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  livekit-server-sdk@2.7.3:
+  livekit-server-sdk@2.8.1:
     dependencies:
       '@livekit/protocol': 1.27.1
       camelcase-keys: 9.1.3
@@ -2527,7 +2525,7 @@ snapshots:
     dependencies:
       whatwg-url: 5.0.0
 
-  object-inspect@1.13.2: {}
+  object-inspect@1.13.3: {}
 
   object-keys@1.1.1: {}
 
@@ -2748,7 +2746,7 @@ snapshots:
       call-bind: 1.0.7
       es-errors: 1.3.0
       get-intrinsic: 1.2.4
-      object-inspect: 1.13.2
+      object-inspect: 1.13.3
 
   slash@3.0.0: {}
 

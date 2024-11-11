@@ -99,8 +99,6 @@ services:
       - "host.docker.internal:host-gateway"
     ports:
       - 4900:4900
-    volumes:
-      - ./branding.json:/var/cfg/branding.json
     environment:
       - PORT=4900
       - SERVER_SECRET=secret
@@ -222,7 +220,6 @@ services:
       - "host.docker.internal:host-gateway"
     links:
       - mongodb
-      - elastic
       - minio
       - rekoni
       - account
@@ -240,21 +237,19 @@ services:
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
       - STATS_URL=http://host.docker.internal:4900
-      - ELASTIC_URL=http://host.docker.internal:9200
+      - FULLTEXT_URL=http://host.docker.internal:4700
       # - DB_URL=postgresql://postgres:example@postgres:5432
       - DB_URL=${MONGO_URL}
       - MONGO_URL=${MONGO_URL}
       - 'MONGO_OPTIONS={"appName": "transactor", "maxPoolSize": 10}'
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
-      - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - REKONI_URL=http://host.docker.internal:4004
+      - STORAGE_CONFIG=${STORAGE_CONFIG}      
       - FRONT_URL=http://host.docker.internal:8087
       # - APM_SERVER_URL=http://apm-server:8200
       - SES_URL=''
       - ACCOUNTS_URL=http://host.docker.internal:3000
-      - LAST_NAME_FIRST=true
-      - ELASTIC_INDEX_NAME=local_storage_index
+      - LAST_NAME_FIRST=true      
       - BRANDING_PATH=/var/cfg/branding.json
       - SUPPORT_WORKSPACE=support
       - AI_BOT_URL=http://host.docker.internal:4010
@@ -265,7 +260,6 @@ services:
       - "host.docker.internal:host-gateway"
     links:
       - postgres
-      - elastic
       - minio
       - rekoni
       - account
@@ -282,7 +276,7 @@ services:
       - SERVER_PORT=3331
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
-      - ELASTIC_URL=http://host.docker.internal:9200
+      - FULLTEXT_URL=http://host.docker.internal:4701
       - STATS_URL=http://host.docker.internal:4900
       - DB_URL=postgresql://postgres:example@postgres:5432
       - MONGO_URL=${MONGO_URL}
@@ -290,13 +284,11 @@ services:
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - REKONI_URL=http://host.docker.internal:4004
       - FRONT_URL=http://host.docker.internal:8087
       # - APM_SERVER_URL=http://apm-server:8200
       - SES_URL=''
       - ACCOUNTS_URL=http://host.docker.internal:3000
-      - LAST_NAME_FIRST=true
-      - ELASTIC_INDEX_NAME=local_storage_index
+      - LAST_NAME_FIRST=true      
       - BRANDING_PATH=/var/cfg/branding.json      
     restart: unless-stopped    
   rekoni:
@@ -308,6 +300,53 @@ services:
       resources:
         limits:
           memory: 1024M
+  fulltext:
+    image: hardcoreeng/fulltext
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    links:
+      - elastic
+      - mongodb
+    ports:
+      - 4700:4700
+    environment:
+      - SERVER_SECRET=secret
+      - DB_URL=${MONGO_URL}
+      - FULLTEXT_DB_URL=http://host.docker.internal:9200
+      - ELASTIC_INDEX_NAME=local_storage_index
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - STATS_URL=http://host.docker.internal:4900
+      - REKONI_URL=http://host.docker.internal:4004
+      - ACCOUNTS_URL=http://host.docker.internal:3000
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+  fulltext_pg:
+    image: hardcoreeng/fulltext
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    links:
+      - elastic
+      - postgres    
+    ports:
+      - 4701:4701
+    environment:
+      - PORT=4701
+      - SERVER_SECRET=secret
+      - DB_URL=postgresql://postgres:example@postgres:5432
+      - FULLTEXT_DB_URL=http://host.docker.internal:9200
+      - ELASTIC_INDEX_NAME=local_storage_index
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - STATS_URL=http://host.docker.internal:4900
+      - REKONI_URL=http://host.docker.internal:4004
+      - ACCOUNTS_URL=http://host.docker.internal:3000
+    deploy:
+      resources:
+        limits:
+          memory: 300M          
   print:
     image: hardcoreeng/print
     extra_hosts:

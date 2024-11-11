@@ -56,7 +56,7 @@ test.describe('Dynamic issues chats', () => {
     }
 
     await test.step('User 1 creates Issue for himself', async () => {
-      await prepareNewIssueWithOpenStep(page, newIssue)
+      await prepareNewIssueWithOpenStep(page, newIssue, false)
     })
 
     await test.step('User 1 has issue and linked chat', async () => {
@@ -84,7 +84,7 @@ test.describe('Dynamic issues chats', () => {
     }
 
     await test.step('User 1 creates an issue and assign it to User 2', async () => {
-      await prepareNewIssueWithOpenStep(page, newIssue)
+      await prepareNewIssueWithOpenStep(page, newIssue, false)
     })
 
     await test.step('User 2 has issue and linked chat', async () => {

@@ -31,8 +31,8 @@ import {
   type DocUpdateMessageViewletAttributesConfig,
   type IgnoreActivity,
   type Reaction,
-  type SavedMessage,
-  type ReplyProvider
+  type ReplyProvider,
+  type SavedMessage
 } from '@hcengineering/activity'
 import contact, { type Person } from '@hcengineering/contact'
 import core, {
@@ -67,19 +67,21 @@ import {
 } from '@hcengineering/model'
 import { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
+import presentation from '@hcengineering/model-presentation'
 import view from '@hcengineering/model-view'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import presentation from '@hcengineering/model-presentation'
 
-import activity from './plugin'
 import { buildActions } from './actions'
 import { buildNotifications } from './notification'
+import activity from './plugin'
 
 export { activityId } from '@hcengineering/activity'
 export { activityOperation, migrateMessagesSpace } from './migration'
 
 export const DOMAIN_ACTIVITY = 'activity' as Domain
+export const DOMAIN_USER_MENTION = 'user_mention' as Domain
+export const DOMAIN_REACTION = 'reaction' as Domain
 
 @Mixin(activity.mixin.ActivityDoc, core.class.Class)
 export class TActivityDoc extends TClass implements ActivityDoc {
@@ -213,7 +215,7 @@ export class TActivityMessagesFilter extends TDoc implements ActivityMessagesFil
   filter!: Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>
 }
 
-@Model(activity.class.Reaction, core.class.AttachedDoc, DOMAIN_ACTIVITY)
+@Model(activity.class.Reaction, core.class.AttachedDoc, DOMAIN_REACTION)
 @UX(activity.string.Reactions)
 export class TReaction extends TAttachedDoc implements Reaction {
   @Prop(TypeRef(activity.class.ActivityMessage), core.string.AttachedTo)
@@ -248,7 +250,7 @@ export class TReplyProvider extends TDoc implements ReplyProvider {
   function!: Resource<(message: ActivityMessage) => Promise<void>>
 }
 
-@Model(activity.class.UserMentionInfo, core.class.AttachedDoc, DOMAIN_ACTIVITY)
+@Model(activity.class.UserMentionInfo, core.class.AttachedDoc, DOMAIN_USER_MENTION)
 export class TUserMentionInfo extends TAttachedDoc {
   user!: Ref<Person>
   content!: string

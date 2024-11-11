@@ -21,8 +21,8 @@ dependencies:
     specifier: ^4.20240729.0
     version: 4.20241004.0
   '@elastic/elasticsearch':
-    specifier: ^7.14.0
-    version: 7.17.13
+    specifier: ^7.17.14
+    version: 7.17.14
   '@electron/notarize':
     specifier: ^2.3.2
     version: 2.3.2
@@ -467,6 +467,9 @@ dependencies:
   '@rush-temp/model-server-drive':
     specifier: file:./projects/model-server-drive.tgz
     version: file:projects/model-server-drive.tgz
+  '@rush-temp/model-server-fulltext':
+    specifier: file:./projects/model-server-fulltext.tgz
+    version: file:projects/model-server-fulltext.tgz
   '@rush-temp/model-server-gmail':
     specifier: file:./projects/model-server-gmail.tgz
     version: file:projects/model-server-gmail.tgz
@@ -617,6 +620,9 @@ dependencies:
   '@rush-temp/pod-front':
     specifier: file:./projects/pod-front.tgz
     version: file:projects/pod-front.tgz
+  '@rush-temp/pod-fulltext':
+    specifier: file:./projects/pod-fulltext.tgz
+    version: file:projects/pod-fulltext.tgz
   '@rush-temp/pod-github':
     specifier: file:./projects/pod-github.tgz
     version: file:projects/pod-github.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-prosemirror@1.2.12)
@@ -812,6 +818,12 @@ dependencies:
   '@rush-temp/server-drive-resources':
     specifier: file:./projects/server-drive-resources.tgz
     version: file:projects/server-drive-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
+  '@rush-temp/server-fulltext':
+    specifier: file:./projects/server-fulltext.tgz
+    version: file:projects/server-fulltext.tgz(esbuild@0.20.1)(ts-node@10.9.2)
+  '@rush-temp/server-fulltext-resources':
+    specifier: file:./projects/server-fulltext-resources.tgz
+    version: file:projects/server-fulltext-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
   '@rush-temp/server-github':
     specifier: file:./projects/server-github.tgz
     version: file:projects/server-github.tgz(esbuild@0.20.1)(ts-node@10.9.2)
@@ -3071,11 +3083,11 @@ packages:
       '@elastic/ecs-helpers': 2.1.1
     dev: false
 
-  /@elastic/elasticsearch@7.17.13:
-    resolution: {integrity: sha512-GMXtFVqd3FgUlTtPL/GDc+3GhwvfZ0kSuegCvVVqb58kd+0I6U6u7PL8QFRLHtwzqLEBmYLdwr4PRkBAWKGlzA==}
+  /@elastic/elasticsearch@7.17.14:
+    resolution: {integrity: sha512-6uQ1pVXutwz1Krwooo67W+3K8BwH1ASMh1WoHTpomUzw8EXecXN5lHIJ9EPqTHuv1WqR2LKkSJyagcq0HYUJpg==}
     engines: {node: '>=12'}
     dependencies:
-      debug: 4.3.4
+      debug: 4.3.5
       hpagent: 0.1.2
       ms: 2.1.3
       secure-json-parse: 2.7.0
@@ -23193,12 +23205,12 @@ packages:
     dev: false
 
   file:projects/elastic.tgz(@types/node@20.11.19)(esbuild@0.20.1):
-    resolution: {integrity: sha512-pNrJ3byQAXmu2LIoiS7ph3F/dImZtZBe/tSV3ATcOLuPiPxtd3f+3rMK6Ajszw1mxvlVdXBiDtHcaL3iwdx5ZQ==, tarball: file:projects/elastic.tgz}
+    resolution: {integrity: sha512-WGiDJdr4on2TaKPfaKntlenxzUJ5uuxtibsd/ZkppUh0BghpFSH37C8WGps7kQRS4oqpb+mB3QhxVhxIz2IvGg==, tarball: file:projects/elastic.tgz}
     id: file:projects/elastic.tgz
     name: '@rush-temp/elastic'
     version: 0.0.0
     dependencies:
-      '@elastic/elasticsearch': 7.17.13
+      '@elastic/elasticsearch': 7.17.14
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
@@ -23226,7 +23238,7 @@ packages:
     dev: false
 
   file:projects/front.tgz(esbuild@0.20.1):
-    resolution: {integrity: sha512-kbnGRdB+2sGaVlIVQlK7RJo8OwjxEgTaNzWOg+3CSzpLuJFGE29mFog3D7BB2Q2g7hkEip1B6SiXHR/leCVvVQ==, tarball: file:projects/front.tgz}
+    resolution: {integrity: sha512-Y14f9YJTEcruCyze5lu63lxO9ODS2tUcO4WvCVNnRlro0vT13XvmOw+eDiTvohHI2aHROX+NuJuIEtGlzyqLBw==, tarball: file:projects/front.tgz}
     id: file:projects/front.tgz
     name: '@rush-temp/front'
     version: 0.0.0
@@ -24355,7 +24367,7 @@ packages:
     dev: false
 
   file:projects/middleware.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-+LHNVG0cNOCtW49PLe0rmRphnhY2+TLFzsqVmzNahdBTv3PHdSQ0YtW94U8eomL9gd6h1hWnMjNlfbWlFKGEwA==, tarball: file:projects/middleware.tgz}
+    resolution: {integrity: sha512-XcnDd4BMYa4b8U2G4S6Hr2OAIMGQFNwzs8/EYYaEp+dmEx9lSibJByGSfaeZaMkrbVxO6auouuC1rWuZnmiieg==, tarball: file:projects/middleware.tgz}
     id: file:projects/middleware.tgz
     name: '@rush-temp/middleware'
     version: 0.0.0
@@ -24456,7 +24468,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz:
-    resolution: {integrity: sha512-FHdenDxGsdlbQ6948ecdTtmUq5jHHwbY/ZXllcSYgV5WoGxFG/kJvPH6mqrh2y5MMNDIkcQTkf2J65mAxxdL8w==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-lZSE4CGfPJX/cTsbqnSoz/ge496Cwl3zeRFHM2wrpgfCFyeCNp00xpRv62LPGe38dvHo/IIzy+Uu0RSVPHUOPw==, tarball: file:projects/model-all.tgz}
     name: '@rush-temp/model-all'
     version: 0.0.0
     dependencies:
@@ -25208,6 +25220,24 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       typescript: 5.3.3
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/model-server-fulltext.tgz:
+    resolution: {integrity: sha512-qOs1G3E2P64j6xsyD1w2+ZPLclBeAyx1xmGEI19kneyA8IB8NNRcpI5GIB9vIrYJ2lJUi0jyI+sHkLoxmgtBaA==, tarball: file:projects/model-server-fulltext.tgz}
+    name: '@rush-temp/model-server-fulltext'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      prettier: 3.2.5
+      typescript: 5.6.2
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -26539,7 +26569,7 @@ packages:
     dev: false
 
   file:projects/pod-front.tgz:
-    resolution: {integrity: sha512-YkIJf+SF6JuDvwC0ANFW/F/DLjC7M/5vm+aXzIK/CJUnojLex6nCeyDNzLqfl0E3oecLOKz13pRHsDzgNHYAGQ==, tarball: file:projects/pod-front.tgz}
+    resolution: {integrity: sha512-717gPfBibQBUuH6G8gN+SGt3xRVSHqMAc4pq2R+xmc4y0bb8pmROILpwF5pdLWzvIwtc0VeLKbk0fNxD+jeQ7A==, tarball: file:projects/pod-front.tgz}
     name: '@rush-temp/pod-front'
     version: 0.0.0
     dependencies:
@@ -26574,6 +26604,47 @@ packages:
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
       typescript: 5.3.3
       uuid: 8.3.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@swc/core'
+      - '@swc/wasm'
+      - babel-jest
+      - babel-plugin-macros
+      - node-notifier
+      - supports-color
+    dev: false
+
+  file:projects/pod-fulltext.tgz:
+    resolution: {integrity: sha512-TNpmIc39Ot7eD4avFPov9XJHNfcOjSAVFKtWlkkeWSBLte8BdQ2zYC2JZ3+Tb8Dzu1nX01UQm5WvRVWJY78R3A==, tarball: file:projects/pod-fulltext.tgz}
+    name: '@rush-temp/pod-fulltext'
+    version: 0.0.0
+    dependencies:
+      '@koa/cors': 5.0.0
+      '@types/jest': 29.5.12
+      '@types/koa': 2.15.0
+      '@types/koa-bodyparser': 4.3.12
+      '@types/koa-router': 7.4.8
+      '@types/koa__cors': 5.0.0
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      cross-env: 7.0.3
+      dotenv: 16.0.3
+      esbuild: 0.20.1
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      koa: 2.15.3
+      koa-bodyparser: 4.4.1
+      koa-router: 12.0.1
+      prettier: 3.2.5
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.6.2)
+      ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.6.2)
+      typescript: 5.6.2
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -26825,7 +26896,7 @@ packages:
     dev: false
 
   file:projects/pod-server.tgz(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-boGyT8HkEJkWqcXXAAZ869HB68/GpHcMTUBZlhkUS9oztHADMfpAbGQ+yVVvypye4e9nsYTF1LhpsDrToOtPYw==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-BV8NwL5NYGZtthvNwCy8vAMyZNBjbT8FmzRMaKq40wTer+rQ7T0xDrl96WBsIVsyv60knHY31oXjYkjE4P3M6A==, tarball: file:projects/pod-server.tgz}
     id: file:projects/pod-server.tgz
     name: '@rush-temp/pod-server'
     version: 0.0.0
@@ -28443,7 +28514,7 @@ packages:
     dev: false
 
   file:projects/server-backup.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-oDyT5+30r1kpzb+Cx/HTsY1f4fRjjtSy7n13JjzYPmkn37nVcHYb1X1RImHxhoiPehYWdftTsE5v5l2on0mOPg==, tarball: file:projects/server-backup.tgz}
+    resolution: {integrity: sha512-e0MNgA1LeSOikxK3b6X/HMuzpyQ4MjAoJtHi84X28nxD+49sEy1NctCTptyqz2qWWicAZAghKV46Qi9N9+RnEw==, tarball: file:projects/server-backup.tgz}
     id: file:projects/server-backup.tgz
     name: '@rush-temp/server-backup'
     version: 0.0.0
@@ -28977,6 +29048,66 @@ packages:
       - ts-node
     dev: false
 
+  file:projects/server-fulltext-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
+    resolution: {integrity: sha512-NebNMPNgIeG8N0qA5Q4ROcs5Jn/dmE0WX92uxw/qVUO/k8DLMxRsrFvyKrrMGtYgeivbxJPe6PEd3FijUAMfiw==, tarball: file:projects/server-fulltext-resources.tgz}
+    id: file:projects/server-fulltext-resources.tgz
+    name: '@rush-temp/server-fulltext-resources'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      prettier: 3.2.5
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.6.2)
+      typescript: 5.6.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+    dev: false
+
+  file:projects/server-fulltext.tgz(esbuild@0.20.1)(ts-node@10.9.2):
+    resolution: {integrity: sha512-QYDVer6XKHqKih+CXofNkysDl9TafFIlN5sw4GdJjLT3/AJt7L2FeCKMuPgMtYQhihj2kodtBfNUbnSeLA8qJw==, tarball: file:projects/server-fulltext.tgz}
+    id: file:projects/server-fulltext.tgz
+    name: '@rush-temp/server-fulltext'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      prettier: 3.2.5
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.6.2)
+      typescript: 5.6.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+    dev: false
+
   file:projects/server-github-model.tgz:
     resolution: {integrity: sha512-1qQ8IXhyHSiV5P+M7sGq0QHkkAG2n2DK3knDQJv/xzOQamJ6kcr2nlaqtAD48LfO1wVTtUkjwYwE9RbAEgpl5w==, tarball: file:projects/server-github-model.tgz}
     name: '@rush-temp/server-github-model'
@@ -29239,7 +29370,7 @@ packages:
     dev: false
 
   file:projects/server-indexer.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-rMMlimV5wzW1ZPKeGdkdpeODEn0cyYDQJWti1GmagrteQed+ZH0DL51uPP0z7aioLG/ODxgFZKj8GWD+tMSrnA==, tarball: file:projects/server-indexer.tgz}
+    resolution: {integrity: sha512-H/iX6BGnUy04J35NoefNnWyoCqEd5RFve5SMXioIuA4tWqglHcAz8JqyPPLlfN+onrsh4Pz0tTVRV6lOZXSXWw==, tarball: file:projects/server-indexer.tgz}
     id: file:projects/server-indexer.tgz
     name: '@rush-temp/server-indexer'
     version: 0.0.0
@@ -29520,7 +29651,7 @@ packages:
     dev: false
 
   file:projects/server-pipeline.tgz:
-    resolution: {integrity: sha512-gaF/29tMBmt1rcHqrdJ87g7xHkb39eb8oZfDEVzyeK7qwf1vRjOYE0el4Pp/5OvkBrZSQGEwKgfUK3lHI3iLJQ==, tarball: file:projects/server-pipeline.tgz}
+    resolution: {integrity: sha512-VCAeDWNsMsyk2flDq7dhTEuS204IxDIMmB8t44NfPWwciiA/9dwla/bq1Fewnmb/28XS1xdw0UuE+X+qX0AHGA==, tarball: file:projects/server-pipeline.tgz}
     name: '@rush-temp/server-pipeline'
     version: 0.0.0
     dependencies:
@@ -31515,12 +31646,12 @@ packages:
     dev: false
 
   file:projects/tool.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-Xiug9crD6dZ0BSoLCOQVEQE05/LitZ2QEPOeqZP0k9K31mffLqyYbCZfbRMvWMzBoFolNR8yUC38wIPvkRal1g==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-VMtn5vIgitHobfk3a7XXFR5cr1nCbF/KasUqkn+o+EBDB3H+1n9krwH41lyS9KRHDe6HelYQVcBAPbCn87oPcA==, tarball: file:projects/tool.tgz}
     id: file:projects/tool.tgz
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
-      '@elastic/elasticsearch': 7.17.13
+      '@elastic/elasticsearch': 7.17.14
       '@types/jest': 29.5.12
       '@types/mime-types': 2.1.4
       '@types/minio': 7.0.18

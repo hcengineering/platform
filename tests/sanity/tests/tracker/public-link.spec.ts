@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
+import { generateId, PlatformSetting, PlatformURI, setTestOptions } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { NewIssue } from '../model/tracker/types'
@@ -18,20 +18,23 @@ test.describe('Tracker public link issues tests', () => {
       const newContext = await browser.newContext({ storageState: PlatformSetting })
       const page = await newContext.newPage()
 
-      await page.goto(`${PlatformURI}/workbench/sanity-ws`)
+      try {
+        await page.goto(`${PlatformURI}/workbench/sanity-ws`)
+        await setTestOptions(page)
 
-      const leftSideMenuPage = new LeftSideMenuPage(page)
-      await leftSideMenuPage.clickTracker()
-      await prepareNewIssueWithOpenStep(page, publicLinkIssue)
+        const leftSideMenuPage = new LeftSideMenuPage(page)
+        await leftSideMenuPage.clickTracker()
+        await prepareNewIssueWithOpenStep(page, publicLinkIssue)
 
-      const issuesDetailsPage = new IssuesDetailsPage(page)
-      await issuesDetailsPage.moreActionOnIssue('Public link')
+        const issuesDetailsPage = new IssuesDetailsPage(page)
+        await issuesDetailsPage.moreActionOnIssue('Public link')
 
-      const publicLinkPopup = new PublicLinkPopup(page)
-      link = await publicLinkPopup.getPublicLink()
-
-      await page.close()
-      await newContext.close()
+        const publicLinkPopup = new PublicLinkPopup(page)
+        link = await publicLinkPopup.getPublicLink()
+      } finally {
+        await page.close()
+        await newContext.close()
+      }
     })
 
     await test.step('Check guest access to the issue', async () => {
@@ -40,19 +43,20 @@ test.describe('Tracker public link issues tests', () => {
       await clearSession.clearPermissions()
 
       const clearPage = await clearSession.newPage()
+      try {
+        await clearPage.goto(link)
 
-      await clearPage.goto(link)
-
-      const clearIssuesDetailsPage = new IssuesDetailsPage(clearPage)
-      await clearIssuesDetailsPage.waitDetailsOpened(publicLinkIssue.title)
-      await clearIssuesDetailsPage.checkIssue({
-        ...publicLinkIssue,
-        status: 'Backlog'
-      })
-      expect(clearPage.url()).toContain('guest')
-
-      await clearPage.close()
-      await clearSession.close()
+        const clearIssuesDetailsPage = new IssuesDetailsPage(clearPage)
+        await clearIssuesDetailsPage.waitDetailsOpened(publicLinkIssue.title)
+        await clearIssuesDetailsPage.checkIssue({
+          ...publicLinkIssue,
+          status: 'Backlog'
+        })
+        expect(clearPage.url()).toContain('guest')
+      } finally {
+        await clearPage.close()
+        await clearSession.close()
+      }
     })
   })
 
@@ -64,50 +68,55 @@ test.describe('Tracker public link issues tests', () => {
 
     const newContext = await browser.newContext({ storageState: PlatformSetting })
     const page = await newContext.newPage()
-    let link: string
-
-    await test.step('Get public link from popup', async () => {
-      await page.goto(`${PlatformURI}/workbench/sanity-ws`)
-
-      const leftSideMenuPage = new LeftSideMenuPage(page)
-      await leftSideMenuPage.clickTracker()
-      await prepareNewIssueWithOpenStep(page, publicLinkIssue)
-
-      const issuesDetailsPage = new IssuesDetailsPage(page)
-      await issuesDetailsPage.moreActionOnIssue('Public link')
-
-      const publicLinkPopup = new PublicLinkPopup(page)
-      link = await publicLinkPopup.getPublicLink()
-    })
 
     const clearSession = await browser.newContext()
     const clearPage = await clearSession.newPage()
+    try {
+      let link: string
 
-    await test.step('Check guest access to the issue', async () => {
-      await clearPage.goto(link)
+      await test.step('Get public link from popup', async () => {
+        await page.goto(`${PlatformURI}/workbench/sanity-ws`)
+        await setTestOptions(page)
 
-      const clearIssuesDetailsPage = new IssuesDetailsPage(clearPage)
-      await clearIssuesDetailsPage.waitDetailsOpened(publicLinkIssue.title)
-      await clearIssuesDetailsPage.checkIssue({
-        ...publicLinkIssue,
-        status: 'Backlog'
+        const leftSideMenuPage = new LeftSideMenuPage(page)
+        await leftSideMenuPage.clickTracker()
+        await prepareNewIssueWithOpenStep(page, publicLinkIssue)
+
+        const issuesDetailsPage = new IssuesDetailsPage(page)
+        await issuesDetailsPage.moreActionOnIssue('Public link')
+
+        const publicLinkPopup = new PublicLinkPopup(page)
+        link = await publicLinkPopup.getPublicLink()
       })
-      expect(clearPage.url()).toContain('guest')
-    })
 
-    await test.step('Revoke guest access to the issue', async () => {
-      const publicLinkPopup = new PublicLinkPopup(page)
-      await publicLinkPopup.revokePublicLink()
-    })
+      await test.step('Check guest access to the issue', async () => {
+        await clearPage.goto(link)
+        await setTestOptions(clearPage)
 
-    await test.step('Check guest access to the issue after the revoke', async () => {
-      await clearPage.goto(link)
-      await expect(clearPage.locator('div.antiPopup > h1')).toHaveText('Public link was revoked')
-    })
+        const clearIssuesDetailsPage = new IssuesDetailsPage(clearPage)
+        await clearIssuesDetailsPage.waitDetailsOpened(publicLinkIssue.title)
+        await clearIssuesDetailsPage.checkIssue({
+          ...publicLinkIssue,
+          status: 'Backlog'
+        })
+        expect(clearPage.url()).toContain('guest')
+      })
 
-    await clearPage.close()
-    await clearSession.close()
-    await page.close()
-    await newContext.close()
+      await test.step('Revoke guest access to the issue', async () => {
+        const publicLinkPopup = new PublicLinkPopup(page)
+        await publicLinkPopup.revokePublicLink()
+      })
+
+      await test.step('Check guest access to the issue after the revoke', async () => {
+        await clearPage.goto(link)
+        await setTestOptions(clearPage)
+        await expect(clearPage.locator('div.antiPopup > h1')).toHaveText('Public link was revoked')
+      })
+    } finally {
+      await clearPage.close()
+      await clearSession.close()
+      await page.close()
+      await newContext.close()
+    }
   })
 })

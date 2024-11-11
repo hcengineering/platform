@@ -58,13 +58,10 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(documents.class.DocumentMeta, core.class.Class, serverCore.mixin.SearchPresenter, {
-    searchConfig: {
-      iconConfig: {
-        component: documents.component.DocumentIcon,
-        props: []
-      },
-      title: 'title'
-    }
+    iconConfig: {
+      component: documents.component.DocumentIcon
+    },
+    title: [['title']]
   })
 
   builder.mixin(documents.class.ControlledDocument, core.class.Class, serverNotification.mixin.TextPresenter, {

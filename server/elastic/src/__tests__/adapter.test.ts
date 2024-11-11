@@ -21,13 +21,10 @@ import { createElasticAdapter } from '../adapter'
 
 describe('Elastic Adapter', () => {
   let adapter: FullTextAdapter
-
+  const ctx = new MeasureMetricsContext('-', {})
+  const ws1 = getWorkspaceId('ws1')
   beforeEach(async () => {
-    adapter = await createElasticAdapter(
-      process.env.ELASTIC_URL ?? 'http://localhost:9200/',
-      getWorkspaceId('ws1'),
-      new MeasureMetricsContext('-', {})
-    )
+    adapter = await createElasticAdapter(process.env.ELASTIC_URL ?? 'http://localhost:9200/')
   })
 
   afterEach(async () => {
@@ -44,16 +41,18 @@ describe('Elastic Adapter', () => {
       _class: ['class1' as Ref<Class<Doc>>],
       modifiedBy: 'andrey' as Ref<Account>,
       modifiedOn: 0,
-      space: ['space1' as Ref<Space>],
+      space: 'space1' as Ref<Space>,
       content0: 'hey there!'
     }
-    await adapter.index(doc)
-    const hits = await adapter.search(['class1' as Ref<Class<Doc>>], {}, 1)
+    await adapter.index(ctx, ws1, doc)
+    const hits = await adapter.search(ctx, ws1, ['class1' as Ref<Class<Doc>>], {}, 1)
     console.log(hits)
   })
 
   it('should find document with raw search', async () => {
     const result = await adapter.searchString(
+      ctx,
+      ws1,
       {
         query: 'hey'
       },
