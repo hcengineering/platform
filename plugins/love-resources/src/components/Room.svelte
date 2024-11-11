@@ -58,6 +58,7 @@
     connecting: boolean
     muted: boolean
     mirror: boolean
+    isAgent: boolean
   }
 
   let participants: ParticipantData[] = []
@@ -80,7 +81,7 @@
         const element = track.attach()
         attachTrack(element, participant)
       }
-      updateStyle(participants.length, $screenSharing)
+      updateStyle(getActiveParticipants(participants).length, $screenSharing)
     } else {
       const part = participants.find((p) => p._id === participant.identity)
       if (part !== undefined) {
@@ -105,7 +106,7 @@
       } else {
         track.detach(screen)
       }
-      updateStyle(participants.length, $screenSharing)
+      updateStyle(getActiveParticipants(participants).length, $screenSharing)
     }
   }
 
@@ -117,7 +118,7 @@
         const element = publication.track.attach()
         void attachTrack(element, participant)
       }
-      updateStyle(participants.length, $screenSharing)
+      updateStyle(getActiveParticipants(participants).length, $screenSharing)
     } else {
       const part = participants.find((p) => p._id === participant.identity)
       if (part !== undefined) {
@@ -135,7 +136,8 @@
         name: participant.name ?? '',
         muted: !participant.isMicrophoneEnabled,
         mirror: participant.isLocal,
-        connecting: false
+        connecting: false,
+        isAgent: participant.isAgent
       })
     }
     participants = participants
@@ -153,9 +155,6 @@
   }
 
   function attachParticipant (participant: Participant): void {
-    if (participant.isAgent && !$infos.some(({ person }) => person === participant.identity)) {
-      return
-    }
     const current = participants.find((p) => p._id === participant.identity)
     if (current !== undefined) {
       current.connecting = false
@@ -169,11 +168,12 @@
       name: participant.name ?? '',
       muted: !participant.isMicrophoneEnabled,
       mirror: participant.isLocal,
-      connecting: false
+      connecting: false,
+      isAgent: participant.isAgent
     }
     participants.push(value)
     participants = participants
-    updateStyle(participants.length, $screenSharing)
+    updateStyle(getActiveParticipants(participants).length, $screenSharing)
   }
 
   function handleParticipantDisconnected (participant: RemoteParticipant): void {
@@ -182,7 +182,7 @@
       participants.splice(index, 1)
       participants = participants
     }
-    updateStyle(participants.length, $screenSharing)
+    updateStyle(getActiveParticipants(participants).length, $screenSharing)
   }
 
   function muteHandler (publication: TrackPublication, participant: Participant): void {
@@ -210,7 +210,7 @@
     if (publication?.track?.kind === Track.Kind.Video) {
       if (publication.track.source === Track.Source.ScreenShare) {
         publication.track.detach(screen)
-        updateStyle(participants.length, $screenSharing)
+        updateStyle(getActiveParticipants(participants).length, $screenSharing)
       } else {
         const index = participants.findIndex((p) => p._id === participant.identity)
         if (index !== -1) {
@@ -288,10 +288,6 @@
 
   onDestroy(
     infos.subscribe((data) => {
-      const aiParticipant = aiPersonId !== undefined ? participants.find(({ _id }) => _id === aiPersonId) : undefined
-      if (aiParticipant && !data.some((it) => it.room === room._id && it.person === aiParticipant._id)) {
-        participants = participants.filter(({ _id }) => _id !== aiPersonId)
-      }
       for (const info of data) {
         if (info.room !== room._id) continue
         const current = participants.find((p) => p._id === info.person)
@@ -301,12 +297,13 @@
           name: info.name,
           muted: true,
           mirror: false,
-          connecting: true
+          connecting: true,
+          isAgent: aiPersonId === info.person
         }
         participants.push(value)
       }
       participants = participants
-      updateStyle(participants.length, $screenSharing)
+      updateStyle(getActiveParticipants(participants).length, $screenSharing)
     })
   )
 
@@ -345,9 +342,12 @@
     }
   }
   $: if (((document.fullscreenElement && !$isFullScreen) || $isFullScreen) && roomEl) toggleFullscreen()
-  $: filteredParticipants = $infos.some(({ person }) => person === aiPersonId)
-    ? participants
-    : participants.filter((p) => p._id !== aiPersonId)
+
+  function getActiveParticipants (participants: ParticipantData[]): ParticipantData[] {
+    return participants.filter((p) => !p.isAgent || $infos.some(({ person }) => person === p._id))
+  }
+
+  $: activeParticipants = getActiveParticipants(participants)
 </script>
 
 <div bind:this={roomEl} class="flex-col-center w-full h-full right-navpanel-border" class:theme-dark={$isFullScreen}>
@@ -382,7 +382,7 @@
         style={$screenSharing ? '' : gridStyle}
         class:scroll-m-0={$screenSharing}
       >
-        {#each filteredParticipants as participant, i (participant._id)}
+        {#each activeParticipants as participant, i (participant._id)}
           <ParticipantView
             bind:this={participantElements[i]}
             {...participant}
