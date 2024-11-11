@@ -1497,11 +1497,11 @@ dependencies:
     specifier: ~22.8.7
     version: 22.8.8
   electron:
-    specifier: ^32.1.1
-    version: 32.2.1
+    specifier: ^33.2.0
+    version: 33.2.0
   electron-builder:
-    specifier: ^25.0.5
-    version: 25.0.5
+    specifier: ^25.1.8
+    version: 25.1.8
   electron-context-menu:
     specifier: ^4.0.4
     version: 4.0.4
@@ -4113,6 +4113,17 @@ packages:
       - supports-color
     dev: false
 
+  /@electron/notarize@2.5.0:
+    resolution: {integrity: sha512-jNT8nwH1f9X5GEITXaQ8IF/KdskvIkOFfB2CvwumsveVidzpSc+mvhhTMdAGSYF3O+Nq49lJ7y+ssODRXu06+A==}
+    engines: {node: '>= 10.0.0'}
+    dependencies:
+      debug: 4.3.5
+      fs-extra: 9.1.0
+      promise-retry: 2.0.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /@electron/osx-sign@1.3.1:
     resolution: {integrity: sha512-BAfviURMHpmb1Yb50YbCxnOY0wfwaLXH5KJ4+80zS0gUkzDX3ec23naTlEqKsN+PwYn+a1cCzM7BJ4Wcd3sGzw==}
     engines: {node: '>=12.0.0'}
@@ -4128,8 +4139,8 @@ packages:
       - supports-color
     dev: false
 
-  /@electron/rebuild@3.6.0:
-    resolution: {integrity: sha512-zF4x3QupRU3uNGaP5X1wjpmcjfw1H87kyqZ00Tc3HvriV+4gmOGuvQjGNkrJuXdsApssdNyVwLsy+TaeTGGcVw==}
+  /@electron/rebuild@3.6.1:
+    resolution: {integrity: sha512-f6596ZHpEq/YskUd8emYvOUne89ij8mQgjYFA5ru25QwbrRO+t1SImofdDv7kKOuWCmVOuU5tvfkbgGxIl3E/w==}
     engines: {node: '>=12.13.0'}
     hasBin: true
     dependencies:
@@ -4160,7 +4171,7 @@ packages:
       debug: 4.3.5
       dir-compare: 4.2.0
       fs-extra: 11.2.0
-      minimatch: 9.0.3
+      minimatch: 9.0.5
       plist: 3.1.0
     transitivePeerDependencies:
       - supports-color
@@ -11018,42 +11029,45 @@ packages:
       tslib: 1.14.1
     dev: false
 
-  /app-builder-bin@5.0.0-alpha.7:
-    resolution: {integrity: sha512-ww2mK4ITUvqisnqOuUWAeHzokpPidyZ7a0ZkwW+V7sF5/Pdi2OldkRjAWqEzn6Xtmj3SLVT84as4wB59A6jJ4g==}
+  /app-builder-bin@5.0.0-alpha.10:
+    resolution: {integrity: sha512-Ev4jj3D7Bo+O0GPD2NMvJl+PGiBAfS7pUGawntBNpCbxtpncfUixqFj9z9Jme7V7s3LBGqsWZZP54fxBX3JKJw==}
     dev: false
 
-  /app-builder-lib@25.0.5(dmg-builder@25.0.5):
-    resolution: {integrity: sha512-rxgxMx1f7I4ZAP0jA5+5iB7X6x6MJvGF7GauRzQBnIVihwXX2HOiAE7yenyY9Ry5YAiH47MnCxdq413Wq6XOcQ==}
+  /app-builder-lib@25.1.8(dmg-builder@25.1.8):
+    resolution: {integrity: sha512-pCqe7dfsQFBABC1jeKZXQWhGcCPF3rPCXDdfqVKjIeWBcXzyC1iOWZdfFhGl+S9MyE/k//DFmC6FzuGAUudNDg==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
-      dmg-builder: 25.0.5
-      electron-builder-squirrel-windows: 25.0.5
+      dmg-builder: 25.1.8
+      electron-builder-squirrel-windows: 25.1.8
     dependencies:
       '@develar/schema-utils': 2.6.5
-      '@electron/notarize': 2.3.2
+      '@electron/notarize': 2.5.0
       '@electron/osx-sign': 1.3.1
-      '@electron/rebuild': 3.6.0
+      '@electron/rebuild': 3.6.1
       '@electron/universal': 2.0.1
       '@malept/flatpak-bundler': 0.4.0
       '@types/fs-extra': 9.0.13
       async-exit-hook: 2.0.1
       bluebird-lst: 1.0.9
-      builder-util: 25.0.3
-      builder-util-runtime: 9.2.5
+      builder-util: 25.1.7
+      builder-util-runtime: 9.2.10
       chromium-pickle-js: 0.2.0
+      config-file-ts: 0.2.8-rc1
       debug: 4.3.5
-      dmg-builder: 25.0.5
+      dmg-builder: 25.1.8
+      dotenv: 16.4.5
+      dotenv-expand: 11.0.6
       ejs: 3.1.9
-      electron-publish: 25.0.3
+      electron-publish: 25.1.7
       form-data: 4.0.0
       fs-extra: 10.1.0
       hosted-git-info: 4.1.0
       is-ci: 3.0.1
       isbinaryfile: 5.0.2
       js-yaml: 4.1.0
+      json5: 2.2.3
       lazy-val: 1.0.5
       minimatch: 10.0.1
-      read-config-file: 6.4.0
       resedit: 1.7.1
       sanitize-filename: 1.6.3
       semver: 7.6.3
@@ -11712,6 +11726,7 @@ packages:
 
   /boolean@3.2.0:
     resolution: {integrity: sha512-d0II/GO9uf9lfUHH2BQsjxzRJZBdsjgsBiW4BvhWk/3qoKwQFjIDVN19PfX8F2D/r9PCMTtLWjYVCFrpeYUzsw==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     requiresBuild: true
     dev: false
     optional: true
@@ -11893,6 +11908,16 @@ packages:
       node-gyp-build: 4.8.0
     dev: false
 
+  /builder-util-runtime@9.2.10:
+    resolution: {integrity: sha512-6p/gfG1RJSQeIbz8TK5aPNkoztgY1q5TgmGFMAXcY8itsGW6Y2ld1ALsZ5UJn8rog7hKF3zHx5iQbNQ8uLcRlw==}
+    engines: {node: '>=12.0.0'}
+    dependencies:
+      debug: 4.3.5
+      sax: 1.3.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /builder-util-runtime@9.2.5:
     resolution: {integrity: sha512-HjIDfhvqx/8B3TDN4GbABQcgpewTU4LMRTQPkVpKYV3lsuxEJoIfvg09GyWTNmfVNSUAYf+fbTN//JX4TH20pg==}
     engines: {node: '>=12.0.0'}
@@ -11903,20 +11928,20 @@ packages:
       - supports-color
     dev: false
 
-  /builder-util@25.0.3:
-    resolution: {integrity: sha512-eH5c1ukdY2xjtFQWQ6jlzEuXuqcuAVc3UQ6V6fdYu9Kg3CkDbCR82Mox42uaJDmee9WXSbP/88cOworFdOHPhw==}
+  /builder-util@25.1.7:
+    resolution: {integrity: sha512-7jPjzBwEGRbwNcep0gGNpLXG9P94VA3CPAZQCzxkFXiV2GMQKlziMbY//rXPI7WKfhsvGgFXjTcXdBEwgXw9ww==}
     dependencies:
       7zip-bin: 5.2.0
       '@types/debug': 4.1.12
-      app-builder-bin: 5.0.0-alpha.7
+      app-builder-bin: 5.0.0-alpha.10
       bluebird-lst: 1.0.9
-      builder-util-runtime: 9.2.5
+      builder-util-runtime: 9.2.10
       chalk: 4.1.2
       cross-spawn: 7.0.3
       debug: 4.3.5
       fs-extra: 10.1.0
-      http-proxy-agent: 5.0.0
-      https-proxy-agent: 5.0.1
+      http-proxy-agent: 7.0.2
+      https-proxy-agent: 7.0.5
       is-ci: 3.0.1
       js-yaml: 4.1.0
       source-map-support: 0.5.21
@@ -13329,12 +13354,12 @@ packages:
       path-type: 4.0.0
     dev: false
 
-  /dmg-builder@25.0.5:
-    resolution: {integrity: sha512-ocnZV44ZqInoSFaY54fF7BlCtw+WtbrjyPrkBhaB+Ztn7GPKjmFgRbIKytifJ8h9Cib8jdFRMgjCUtkU45Y6DA==}
+  /dmg-builder@25.1.8:
+    resolution: {integrity: sha512-NoXo6Liy2heSklTI5OIZbCgXC1RzrDQsZkeEwXhdOro3FT1VBOvbubvscdPnjVuQ4AMwwv61oaH96AbiYg9EnQ==}
     dependencies:
-      app-builder-lib: 25.0.5(dmg-builder@25.0.5)
-      builder-util: 25.0.3
-      builder-util-runtime: 9.2.5
+      app-builder-lib: 25.1.8(dmg-builder@25.1.8)
+      builder-util: 25.1.7
+      builder-util-runtime: 9.2.10
       fs-extra: 10.1.0
       iconv-lite: 0.6.3
       js-yaml: 4.1.0
@@ -13680,20 +13705,19 @@ packages:
       - supports-color
     dev: false
 
-  /electron-builder@25.0.5:
-    resolution: {integrity: sha512-Uj5LFRbUqNiVajsgqcwlKe+CHtwubK3hcoJsW5C2YiWodej2mmxM+LrTqga0rrWWHVMNmrcmGcS/WHpKwy6KEw==}
+  /electron-builder@25.1.8:
+    resolution: {integrity: sha512-poRgAtUHHOnlzZnc9PK4nzG53xh74wj2Jy7jkTrqZ0MWPoHGh1M2+C//hGeYdA+4K8w4yiVCNYoLXF7ySj2Wig==}
     engines: {node: '>=14.0.0'}
     hasBin: true
     dependencies:
-      app-builder-lib: 25.0.5(dmg-builder@25.0.5)
-      builder-util: 25.0.3
-      builder-util-runtime: 9.2.5
+      app-builder-lib: 25.1.8(dmg-builder@25.1.8)
+      builder-util: 25.1.7
+      builder-util-runtime: 9.2.10
       chalk: 4.1.2
-      dmg-builder: 25.0.5
+      dmg-builder: 25.1.8
       fs-extra: 10.1.0
       is-ci: 3.0.1
       lazy-val: 1.0.5
-      read-config-file: 6.4.0
       simple-update-notifier: 2.0.0
       yargs: 17.7.2
     transitivePeerDependencies:
@@ -13729,12 +13753,12 @@ packages:
     engines: {node: '>= 14'}
     dev: false
 
-  /electron-publish@25.0.3:
-    resolution: {integrity: sha512-wSGm+TFK2lArswIFBPLuIRHbo945s3MCvG5y1xVC57zL/PsrElUkaGH2ERtRrcKNpaDNq77rDA9JnMJhAFJjUg==}
+  /electron-publish@25.1.7:
+    resolution: {integrity: sha512-+jbTkR9m39eDBMP4gfbqglDd6UvBC7RLh5Y0MhFSsc6UkGHj9Vj9TWobxevHYMMqmoujL11ZLjfPpMX+Pt6YEg==}
     dependencies:
       '@types/fs-extra': 9.0.13
-      builder-util: 25.0.3
-      builder-util-runtime: 9.2.5
+      builder-util: 25.1.7
+      builder-util-runtime: 9.2.10
       chalk: 4.1.2
       fs-extra: 10.1.0
       lazy-val: 1.0.5
@@ -13779,8 +13803,8 @@ packages:
     resolution: {integrity: sha512-hWFbUk9u3fQHcKzTAcjZAN7XH9bL9oH9g20RRDU/DVDNqdMI03GzlBZfR/R8R1krYu9AT4biLqSCAxnt9LMAfA==}
     dev: false
 
-  /electron@32.2.1:
-    resolution: {integrity: sha512-GCPI/5hU34pPcNltNpz+uylhhuTm9BM0N8RmrbVgaWBodLSmmcCkvpgN0BseKhO6IwQOPzWaovrcZ/nPIpfGaQ==}
+  /electron@33.2.0:
+    resolution: {integrity: sha512-PVw1ICAQDPsnnsmpNFX/b1i/49h67pbSPxuIENd9K9WpGO1tsRaQt+K2bmXqTuoMJsbzIc75Ce8zqtuwBPqawA==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
     requiresBuild: true
@@ -21459,18 +21483,6 @@ packages:
       - supports-color
     dev: false
 
-  /read-config-file@6.4.0:
-    resolution: {integrity: sha512-uB5QOBeF84PT61GlV11OTV4jUGHAO3iDEOP6v9ygxhG6Bs9PLg7WsjNT6mtIX2G+x8lJTr4ZWNeG6LDTKkNf2Q==}
-    engines: {node: '>=12.0.0'}
-    dependencies:
-      config-file-ts: 0.2.8-rc1
-      dotenv: 16.4.5
-      dotenv-expand: 11.0.6
-      js-yaml: 4.1.0
-      json5: 2.2.3
-      lazy-val: 1.0.5
-    dev: false
-
   /read-pkg-up@7.0.1:
     resolution: {integrity: sha512-zK0TB7Xd6JpCLmlLmufqykGE+/TlOePD6qKClNW7hHDKFh/J7/7gCWGR7joEQEW1bKq3a3yUZSObOoWLFQ4ohg==}
     engines: {node: '>=8'}
@@ -27185,7 +27197,7 @@ packages:
     dev: false
 
   file:projects/desktop-1.tgz(webpack@5.90.3):
-    resolution: {integrity: sha512-rM1wKc4Rbw16Ur7VwAOQY55uUSOH1W6671Mhi5GKYwm93dofY7SSkNg83QD+Rt1w8SSckoKG7ScH11JYypDXNw==, tarball: file:projects/desktop-1.tgz}
+    resolution: {integrity: sha512-L25PjJOQ5AD4hPjxYiPkPyWDVa1jCpQysNfBCQpLULbG8kr+38/RxQiIX5RLcX4ST56vjPCGyc6tJmvpzsx/TQ==, tarball: file:projects/desktop-1.tgz}
     id: file:projects/desktop-1.tgz
     name: '@rush-temp/desktop-1'
     version: 0.0.0
@@ -27195,8 +27207,8 @@ packages:
       '@vercel/webpack-asset-relocator-loader': 1.7.4
       cross-env: 7.0.3
       dotenv: 16.0.3
-      electron: 32.2.1
-      electron-builder: 25.0.5
+      electron: 33.2.0
+      electron-builder: 25.1.8
       electron-squirrel-startup: 1.0.1
       node-loader: 2.0.0(webpack@5.90.3)
       typescript: 5.3.3
@@ -27312,7 +27324,7 @@ packages:
     dev: false
 
   file:projects/desktop.tgz(bufferutil@4.0.8)(sass@1.71.1)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-bAR3xXsPX0SRBzBNKHnhr4KdUZibYwt2pOQBKp1pcybJXnw9pwv8A7S6wYWgaG6o091zASbDD/EGvxOqZ/bdSQ==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-G9MTAkOtB4CKPtJZmNrcQXjaFTqn/Ek0yN3X3hXAuBhEV7Mo84fLpBjeK6KbHZZ0OIlG8oDMyYbJ32JbzYiKVQ==, tarball: file:projects/desktop.tgz}
     id: file:projects/desktop.tgz
     name: '@rush-temp/desktop'
     version: 0.0.0
@@ -27331,7 +27343,7 @@ packages:
       css-loader: 5.2.7(webpack@5.90.3)
       dotenv: 16.0.3
       dotenv-webpack: 8.0.1(webpack@5.90.3)
-      electron: 32.2.1
+      electron: 33.2.0
       electron-context-menu: 4.0.4
       electron-log: 5.1.7
       electron-squirrel-startup: 1.0.1
