@@ -1,9 +1,9 @@
 {
   "name": "@hcengineering/scripts",
   "version": "0.1.0",
-  "private": true,
   "devDependencies": {
     "esbuild": "^0.20.0",
     "sharp": "~0.32.0"
-  }
+  },
+  "private": true
 }
