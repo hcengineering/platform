@@ -606,7 +606,9 @@ export async function createPushNotification (
   const limiter = new RateLimiter(5)
 
   for (const subscription of userSubscriptions) {
-    await limiter.exec(async () => { await sendPushToSubscription(control, target, subscription, data) })
+    await limiter.exec(async () => {
+      await sendPushToSubscription(control, target, subscription, data)
+    })
   }
 }
 
