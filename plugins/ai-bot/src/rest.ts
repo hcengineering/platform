@@ -81,8 +81,3 @@ export interface IdentityResponse {
   identity: Ref<Person>
   name: string
 }
-
-export interface IdentityResponse {
-  identity: Ref<Person>
-  name: string
-}
