@@ -14,9 +14,7 @@
 //
 
 import type { AccountClient, ClientConnectEvent, MeasureContext, TxPersistenceStore } from '@hcengineering/core'
-import type { Plugin, Resource } from '@hcengineering/platform'
-import { Metadata, plugin } from '@hcengineering/platform'
-
+import { type Plugin, type Resource, type Metadata, plugin } from '@hcengineering/platform'
 /**
  * @public
  */

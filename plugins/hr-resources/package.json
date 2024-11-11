@@ -39,7 +39,7 @@
   "dependencies": {
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/platform": "^0.6.11",
-    "svelte": "^4.2.12",
+    "svelte": "^4.2.19",
     "@hcengineering/calendar": "^0.6.24",
     "@hcengineering/calendar-resources": "^0.6.0",
     "@hcengineering/hr": "^0.6.19",

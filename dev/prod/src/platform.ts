@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import platform, { Plugin, addLocation, addStringsLoader, platformId } from '@hcengineering/platform'
+import platform, { type Plugin, addLocation, addStringsLoader, platformId } from '@hcengineering/platform'
 
 import { activityId } from '@hcengineering/activity'
 import { attachmentId } from '@hcengineering/attachment'
