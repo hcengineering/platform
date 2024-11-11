@@ -155,6 +155,63 @@ const docIndexStateSchema: Schema = {
   }
 }
 
+const timeSchema: Schema = {
+  ...baseSchema,
+  workslots: {
+    type: 'bigint',
+    notNull: false,
+    index: true
+  },
+  doneOn: {
+    type: 'bigint',
+    notNull: false,
+    index: true
+  },
+  user: {
+    type: 'text',
+    notNull: true,
+    index: true
+  },
+  rank: {
+    type: 'text',
+    notNull: true,
+    index: false
+  }
+}
+
+const calendarSchema: Schema = {
+  ...baseSchema,
+  hidden: {
+    type: 'bool',
+    notNull: true,
+    index: true
+  }
+}
+
+const eventSchema: Schema = {
+  ...baseSchema,
+  calendar: {
+    type: 'text',
+    notNull: true,
+    index: true
+  },
+  date: {
+    type: 'bigint',
+    notNull: true,
+    index: true
+  },
+  dueDate: {
+    type: 'bigint',
+    notNull: true,
+    index: true
+  },
+  participants: {
+    type: 'text[]',
+    notNull: true,
+    index: true
+  }
+}
+
 export function addSchema (domain: string, schema: Schema): void {
   domainSchemas[translateDomain(domain)] = schema
 }
@@ -166,6 +223,9 @@ export function translateDomain (domain: string): string {
 export const domainSchemas: Record<string, Schema> = {
   [DOMAIN_SPACE]: spaceSchema,
   [DOMAIN_TX]: txSchema,
+  [translateDomain('time')]: timeSchema,
+  [translateDomain('calendar')]: calendarSchema,
+  [translateDomain('event')]: eventSchema,
   [translateDomain(DOMAIN_DOC_INDEX_STATE)]: docIndexStateSchema,
   notification: notificationSchema,
   [translateDomain('notification-dnc')]: dncSchema,
