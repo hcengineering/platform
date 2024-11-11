@@ -304,6 +304,7 @@ function defineApplication (
     componentsId: string
     milestonesId: string
     templatesId: string
+    labelsId: string
   }
 ): void {
   builder.createDoc(
@@ -365,6 +366,15 @@ function defineApplication (
               icon: view.icon.List,
               label: tracker.string.AllProjects
             }
+          },
+          {
+            id: opt.labelsId,
+            component: tracker.component.LabelsView,
+            accessLevel: AccountRole.User,
+            icon: tracker.icon.Labels,
+            label: tracker.string.Labels,
+            // createItemLabel: task.string.TaskCreateLabel,
+            position: 'bottom'
           }
         ],
         spaces: [
@@ -477,6 +487,7 @@ export function createModel (builder: Builder): void {
   const templatesId = 'templates'
   const myIssuesId = 'my-issues'
   const allIssuesId = 'all-issues'
+  const labelsId = 'labels'
   // const scrumsId = 'scrums'
 
   definePresenters(builder)
@@ -587,7 +598,7 @@ export function createModel (builder: Builder): void {
     tracker.ids.IssueTemplateUpdatedActivityViewlet
   )
 
-  defineApplication(builder, { myIssuesId, allIssuesId, issuesId, componentsId, milestonesId, templatesId })
+  defineApplication(builder, { myIssuesId, allIssuesId, issuesId, componentsId, milestonesId, templatesId, labelsId })
 
   defineActions(builder, issuesId, componentsId, myIssuesId)
 

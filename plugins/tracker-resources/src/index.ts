@@ -89,6 +89,7 @@ import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
 import SettingsRelatedTargets from './components/SettingsRelatedTargets.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
+import LabelsView from './components/LabelsView.svelte'
 import {
   getIssueIdByIdentifier,
   getIssueTitle,
@@ -660,7 +661,8 @@ export default async (): Promise<Resources> => ({
     IssueSearchIcon,
     MembersArrayEditor,
     IssueExtra,
-    IssueStatusPresenter
+    IssueStatusPresenter,
+    LabelsView
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>

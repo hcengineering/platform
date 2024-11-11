@@ -40,7 +40,7 @@
   "dependencies": {
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/platform": "^0.6.11",
-    "svelte": "^4.2.12",
+    "svelte": "^4.2.19",
     "@hcengineering/tags": "^0.6.16",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/presentation": "^0.6.3",
