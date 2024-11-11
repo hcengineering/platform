@@ -38,6 +38,7 @@ import core, {
   generateId,
   MeasureContext,
   MixinUpdate,
+  RateLimiter,
   Ref,
   RefTo,
   SortingOrder,
@@ -602,9 +603,10 @@ export async function createPushNotification (
   }
 
   webpush.setVapidDetails(subject, publicKey, privateKey)
+  const limiter = new RateLimiter(5)
 
   for (const subscription of userSubscriptions) {
-    void sendPushToSubscription(control, target, subscription, data)
+    await limiter.exec(async () => { await sendPushToSubscription(control, target, subscription, data) })
   }
 }
 
@@ -621,7 +623,7 @@ async function sendPushToSubscription (
   } catch (err) {
     control.ctx.info('Cannot send push notification to', { user: targetUser, err })
     if (err instanceof WebPushError) {
-      if (errorMessages.some((p) => (err as WebPushError).body.includes(p))) {
+      if (errorMessages.some((p) => JSON.stringify((err as WebPushError).body).includes(p))) {
         const tx = control.txFactory.createTxRemoveDoc(subscription._class, subscription.space, subscription._id)
         await control.apply(control.ctx, [tx])
       }
