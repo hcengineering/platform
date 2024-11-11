@@ -47,7 +47,7 @@
     "typescript": "^5.3.3",
     "ts-node": "^10.8.0",
     "ts-node-dev": "^2.0.0",
-    "electron": "^32.1.1",
+    "electron": "^33.2.0",
     "@types/node": "~20.11.16",
     "copy-webpack-plugin": "^11.0.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
