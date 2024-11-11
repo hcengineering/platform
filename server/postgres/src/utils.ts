@@ -307,9 +307,6 @@ export function inferType (val: any): string {
     }
   }
   if (typeof val === 'object') {
-    if (val == null) {
-      return ''
-    }
     if (val instanceof Date) {
       return '::text'
     }
