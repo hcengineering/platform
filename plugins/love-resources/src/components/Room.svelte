@@ -153,6 +153,12 @@
   }
 
   function attachParticipant (participant: Participant): void {
+    if (
+      participant.isAgent &&
+      !$infos.some(({ person }) => person === participant.identity)
+    ) {
+      return
+    }
     const current = participants.find((p) => p._id === participant.identity)
     if (current !== undefined) {
       current.connecting = false
@@ -342,6 +348,9 @@
     }
   }
   $: if (((document.fullscreenElement && !$isFullScreen) || $isFullScreen) && roomEl) toggleFullscreen()
+  $: filteredParticipants = $infos.some(({ person }) => person === aiPersonId)
+    ? participants
+    : participants.filter((p) => p._id !== aiPersonId)
 </script>
 
 <div bind:this={roomEl} class="flex-col-center w-full h-full right-navpanel-border" class:theme-dark={$isFullScreen}>
@@ -376,7 +385,7 @@
         style={$screenSharing ? '' : gridStyle}
         class:scroll-m-0={$screenSharing}
       >
-        {#each participants as participant, i (participant._id)}
+        {#each filteredParticipants as participant, i (participant._id)}
           <ParticipantView
             bind:this={participantElements[i]}
             {...participant}

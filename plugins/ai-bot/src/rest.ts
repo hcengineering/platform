@@ -75,3 +75,8 @@ export interface PostTranscriptRequest {
   participant: Ref<Person>
   roomName: string
 }
+
+export interface IdentityResponse {
+  identity: Ref<Person>
+  name: string
+}

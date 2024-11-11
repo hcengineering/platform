@@ -47,6 +47,13 @@ export class LoveController {
     }, 5000)
   }
 
+  getIdentity (): { identity: Ref<Person>, name: string } {
+    return {
+      identity: this.currentPerson._id,
+      name: this.currentPerson.name
+    }
+  }
+
   txHandler (txes: Tx[]): void {
     const hierarchy = this.client.getHierarchy()
     for (const tx of txes) {

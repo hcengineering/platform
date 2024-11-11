@@ -18,7 +18,8 @@ import aiBot, {
   AIMessageEventRequest,
   AITransferEventRequest,
   ConnectMeetingRequest,
-  DisconnectMeetingRequest
+  DisconnectMeetingRequest,
+  IdentityResponse
 } from '@hcengineering/ai-bot'
 import chunter, {
   ChatMessage,
@@ -720,6 +721,15 @@ export class WorkspaceClient {
     }
 
     await this.love.processTranscript(text, participant, room)
+  }
+
+  async getLoveIdentity (): Promise<IdentityResponse | undefined> {
+    // Just wait initialization
+    await this.opClient
+
+    if (this.love === undefined) return
+
+    return this.love.getIdentity()
   }
 
   canClose (): boolean {

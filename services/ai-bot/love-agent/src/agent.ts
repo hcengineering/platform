@@ -13,12 +13,13 @@
 // limitations under the License.
 //
 
-import { cli, defineAgent, type JobContext, WorkerOptions, WorkerPermissions } from '@livekit/agents'
+import { cli, defineAgent, type JobContext, JobRequest, WorkerOptions } from '@livekit/agents'
 import { fileURLToPath } from 'node:url'
 import { RemoteParticipant, RemoteTrack, RemoteTrackPublication, RoomEvent, TrackKind } from '@livekit/rtc-node'
 
 import { STT } from './stt.js'
 import { Metadata, TranscriptionStatus } from './type.js'
+import config from './config.js'
 
 function parseMetadata (metadata: string): Metadata {
   try {
@@ -28,6 +29,45 @@ function parseMetadata (metadata: string): Metadata {
   }
 
   return {}
+}
+
+async function requestIdentity (roomName: string): Promise<{ identity: string, name: string } | undefined> {
+  try {
+    const res = await fetch(`${config.PlatformUrl}/love/${roomName}/identity`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + config.PlatformToken
+      }
+    })
+
+    if (!res.ok) {
+      return undefined
+    }
+    return await res.json()
+  } catch (e) {
+    console.error('Error during request identity', e)
+  }
+}
+
+const requestFunc = async (req: JobRequest): Promise<void> => {
+  const roomName = req.room?.name
+
+  if (roomName == null) {
+    console.error('Room name is undefined', { room: req.room })
+    await req.reject()
+    return
+  }
+
+  const identity = await requestIdentity(roomName)
+
+  if (identity?.identity == null) {
+    console.error('No ai identity', { roomName })
+    await req.reject()
+    return
+  }
+
+  await req.accept(identity.name, identity.identity)
 }
 
 function applyMetadata (data: string | undefined, stt: STT): void {
@@ -109,7 +149,7 @@ export function runAgent (): void {
   cli.runApp(
     new WorkerOptions({
       agent: fileURLToPath(import.meta.url),
-      permissions: new WorkerPermissions(true, true, true, true, [], true)
+      requestFunc
     })
   )
 }
