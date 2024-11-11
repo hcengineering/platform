@@ -15,13 +15,14 @@
 
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
-  import { Action, Button, Header, navigate } from '@hcengineering/ui'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Action, IconEdit, navigate } from '@hcengineering/ui'
   import { getResource, type Resource } from '@hcengineering/platform'
   import { IntlString, Asset } from '@hcengineering/platform'
 
   import {FoldersManager, FoldersStore, FoldersState} from '../stores/folderStore'
   import FolderTreeLevel from './FolderTreeLevel.svelte'
+  import {TreeNode, TreeItem, getActions as getContributedActions } from '../index'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -35,6 +36,8 @@
   export let currentFragment: string | undefined
   export let forciblyСollapsed: boolean = false
 
+  const client = getClient()
+
   let foldersState: FoldersState = FoldersState.empty()
 
   let foldersManager: FoldersManager = new FoldersManager(titleKey, parentKey)
@@ -44,8 +47,7 @@
   })
 
   let selected: Ref<Doc> | undefined
-  //$: selected = getFolderId(currentFragment ?? '')
-  //$: selected = getFolderIdFromFragment(currentFragment ?? '')
+  let visibleItem: Doc | undefined
 
   const q = createQuery()
   q.query(
@@ -63,6 +65,7 @@
 
   async function handleFolderSelected (_id: Ref<Doc>) {
     selected = _id
+    visibleItem = selected !== undefined ? foldersState.folderById.get(selected as Ref<Doc>) : undefined
     const folder = foldersState.folderById.get(_id)
     if (getFolderLink) {
       const getFolderLinkFunction = await getResource(getFolderLink)
@@ -71,47 +74,75 @@
   }
 
   async function handleAllItemsSelected () {
+    selected = undefined
+    visibleItem = undefined
     const folder = selected && foldersState.folderById.get(selected)
     if (folder && getFolderLink) {
       const getFolderLinkFunction = await getResource(getFolderLink)
       navigate(getFolderLinkFunction(undefined, folder?.space))
     }
-    selected = undefined
-  }
-
-  async function getFolderId (currentFragment: string) {
-    const getFolderIdFunction = await getResource(getFolderIdFromFragment)
-    return getFolderIdFunction(currentFragment)
   }
 
   async function getFolderActions (obj: Doc): Promise<Action[]> {
+    const result: Action[] = []
+    const extraActions = await getContributedActions(client, obj)
+    for (const act of extraActions) {
+      result.push({
+        icon: act.icon ?? IconEdit,
+        label: act.label,
+        action: async (ctx: any, evt: Event) => {
+          const impl = await getResource(act.action)
+          await impl(obj, evt, act.actionProps)
+        }
+      })
+    }
+    return result
+  }
+
+  async function getRootActions (): Promise<Action[]> {
     return []
   }
 </script>
 
 <div>
-  {#if allObjectsLabel}
-    <Header adaptive={'disabled'}>
-      <Button
-        size={'large'}
-        kind={'link'}
-        icon={allObjectsIcon}
-        label={allObjectsLabel}
-        selected={!selected}
-        width="100%"
-        justify="left"
-        on:click={handleAllItemsSelected}
-      />
-    </Header>
-  {/if}
-  <FolderTreeLevel
-    folders={foldersState.folders}
-    descendants={foldersState.descendants}
-    folderById={foldersState.folderById}
-    {selected}
-    {titleKey}
-    on:selected={(ev) => {
-      handleFolderSelected(ev.detail)
-    }}
-  />
+  <TreeNode
+    icon={allObjectsIcon}
+    label={allObjectsLabel}
+    selected={!selected}
+    type={'nested-selectable'}
+    empty={foldersState?.folders?.length === 0}
+    actions={() => getRootActions()}
+    {forciblyСollapsed}
+    on:click={handleAllItemsSelected}
+  >
+    <FolderTreeLevel
+      folders={foldersState.folders}
+      descendants={foldersState.descendants}
+      folderById={foldersState.folderById}
+      {selected}
+      {titleKey}
+      on:selected={(ev) => {
+        handleFolderSelected(ev.detail)
+      }}
+    />
+    <svelte:fragment slot="visible">
+      {#if (selected || forciblyСollapsed) && visibleItem}
+        {@const folder = visibleItem}
+        {console.log("TreeItem")}
+        <TreeItem
+          _id={folder._id}
+          folderIcon
+          iconProps={{ fill: 'var(--global-accent-IconColor)' }}
+          title={folder.name}
+          selected
+          isFold
+          empty
+          actions={async () => await getFolderActions(folder)}
+          shouldTooltip
+          forciblyСollapsed
+        />
+        <span>It works</span>
+      {/if}
+    </svelte:fragment>
+  </TreeNode>
 </div>

@@ -19,8 +19,10 @@ import core from '@hcengineering/model-core'
 import { AccountRole, SortingOrder } from '@hcengineering/core'
 
 import { type Builder } from '@hcengineering/model'
-import view from '@hcengineering/model-view'
+import view, {createAction} from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
+import print from '@hcengineering/model-print'
+import tracker from '@hcengineering/model-tracker'
 import { type ViewOptionsModel } from '@hcengineering/view'
 
 import { testManagementId } from '@hcengineering/test-management'
@@ -130,6 +132,7 @@ function defineApplication(
                   navigationComponent: view.component.FoldersBrowser,
                   navigationComponentLabel: testManagement.string.TestSuites,
                   navigationComponentIcon: testManagement.icon.TestSuites,
+                  createComponent: testManagement.component.CreateTestSuite,
                   navigationComponentProps: {
                     _class: testManagement.class.TestSuite,
                     icon: testManagement.icon.TestSuites,
@@ -140,7 +143,7 @@ function defineApplication(
                     parentKey: 'parent',
                     getFolderLink: testManagement.function.GetTestSuiteLink,
                     allObjectsLabel: testManagement.string.AllTestCases,
-                    allObjectsIcon: view.icon.List
+                    allObjectsIcon: testManagement.icon.TestSuites
                   },
                   syncQueryAndLocation: testManagement.function.SyncQueryAndLocation
                 },
@@ -412,6 +415,56 @@ function defineTestSuite(builder: Builder): void {
     },
     testManagement.viewlet.TableTestSuites
   )
+
+    // Actions
+
+    builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.IgnoreActions, {
+      actions: [
+        view.action.Open,
+        view.action.OpenInNewTab,
+        print.action.Print,
+        tracker.action.EditRelatedTargets,
+        tracker.action.NewRelatedIssue
+      ]
+    })
+  
+    createAction(
+      builder,
+      {
+        action: testManagement.actionImpl.CreateChildTestSuite,
+        label: testManagement.string.CreateTestSuite,
+        icon: testManagement.icon.TestSuite,
+        category: testManagement.category.TestSuite,
+        input: 'none',
+        target: testManagement.class.TestSuite,
+        context: {
+          mode: ['context', 'browser'],
+          application: testManagement.app.TestManagement,
+          group: 'create'
+        }
+      },
+      testManagement.action.CreateChildTestSuite
+    )
+  
+    /*
+    createAction(
+      builder,
+      {
+        action: drive.actionImpl.RenameFolder,
+        label: drive.string.Rename,
+        icon: view.icon.Edit,
+        category: drive.category.Drive,
+        input: 'none',
+        target: drive.class.Folder,
+        context: {
+          mode: ['context', 'browser'],
+          application: drive.app.Drive,
+          group: 'edit'
+        },
+        visibilityTester: drive.function.CanRenameFolder
+      },
+      drive.action.RenameFolder
+    )*/
 }
 
 function defineTestCase(builder: Builder): void {

@@ -14,8 +14,13 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { getClient } from '@hcengineering/presentation'
   import { Doc, Ref } from '@hcengineering/core'
-  import TreeItem from './navigator/TreeItem.svelte'
+  import { Action, IconEdit } from '@hcengineering/ui'
+  import { getResource } from '@hcengineering/platform'
+
+  import { TreeItem, getActions as getContributedActions } from '../index'
+
 
   export let folders: Ref<Doc>[]
   export let folderById: Map<Ref<Doc>, Doc>
@@ -28,6 +33,8 @@
 
   const dispatch = createEventDispatcher()
 
+  const client = getClient()
+
   function getTitle(doc: Doc): string {
     return ((doc || {}) as any)[titleKey] || ''
   }
@@ -38,6 +45,22 @@
 
   function handleSelected (obj: Ref<Doc>): void {
     dispatch('selected', obj)
+  }
+
+  async function getActions (obj: Doc): Promise<Action[]> {
+    const result: Action[] = []
+    const extraActions = await getContributedActions(client, obj)
+    for (const act of extraActions) {
+      result.push({
+        icon: act.icon ?? IconEdit,
+        label: act.label,
+        action: async (ctx: any, evt: Event) => {
+          const impl = await getResource(act.action)
+          await impl(obj, evt, act.actionProps)
+        }
+      })
+    }
+    return result
   }
 
   $: _folders = folders.map((it) => folderById.get(it)).filter((it) => it !== undefined) as Doc[]
@@ -55,6 +78,7 @@
       selected={selected === doc._id}
       isFold
       empty={desc.length === 0}
+      actions={async () => await getActions(doc)}
       {level}
       shouldTooltip
       on:click={() => {

@@ -16,7 +16,11 @@
 import { type Contact } from '@hcengineering/contact'
 import core, { type Doc, type Ref, type TxCollectionCUD, type TxCreateDoc, type TxUpdateDoc } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
-import { type TestCase } from '@hcengineering/test-management'
+import { showPopup } from '@hcengineering/ui'
+import { TestProject, type TestCase, type TestSuite } from '@hcengineering/test-management'
+
+import CreateTestSuiteComponent from './components/test-suite/CreateTestSuite.svelte'
+import EditTestSuiteComponent from './components/test-suite/EditTestSuite.svelte'
 
 export async function getPreviousAssignees (objectId: Ref<Doc> | undefined): Promise<Array<Ref<Contact>>> {
   if (objectId === undefined) {
@@ -45,4 +49,25 @@ export async function getPreviousAssignees (objectId: Ref<Doc> | undefined): Pro
     set.add(createAssignee)
   }
   return Array.from(set)
+}
+
+export async function showCreateTestSuitePopup (
+  space: Ref<TestProject> | undefined,
+  parent: Ref<TestSuite>
+): Promise<void> {
+  showPopup(CreateTestSuiteComponent, { space, parent }, 'top')
+}
+
+export async function showEditTestSuitePopup (
+  suite: Ref<TestSuite>
+): Promise<void> {
+  showPopup(EditTestSuiteComponent, { _id: suite }, 'top')
+}
+
+export async function CreateChildTestSuiteAction (doc: TestSuite): Promise<void> {
+  await showCreateTestSuitePopup(doc.space, doc._id)
+}
+
+export async function EditTestSuiteAction (doc: TestSuite): Promise<void> {
+  await showEditTestSuitePopup(doc._id)
 }

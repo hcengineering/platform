@@ -14,24 +14,42 @@
 -->
 
 <script lang="ts">
-  import {AnyComponent, Breadcrumb, Component, Header, Separator} from '@hcengineering/ui'
-  
+  import {AnyComponent, Button, Breadcrumb, Component, IconAdd, Header, Separator, showPopup} from '@hcengineering/ui'
+  import { Ref, Space } from '@hcengineering/core'
   import { IntlString, Asset } from '@hcengineering/platform'
 
+  export let space: Ref<Space> | undefined = undefined
   export let navigationComponent: AnyComponent
   export let navigationComponentProps: Record<string, any> | undefined
   export let navigationComponentLabel: IntlString
   export let navigationComponentIcon: Asset
+  export let createComponent: AnyComponent | undefined
+  export let createComponentProps: Record<string, any> = {}
   export let mainComponentLabel: IntlString
   export let mainComponentIcon: Asset
 
+  function showCreateDialog (): void {
+    if (createComponent === undefined) return
+    showPopup(createComponent, {...createComponentProps, space}, 'top')
+  }
 </script>
 
 <div class="hulyComponent">
   <div class="hulyComponent-content__container columns">
     <div class="hulyComponent-content__column">
       <Header adaptive={'disabled'}>
-        <Breadcrumb icon={navigationComponentIcon} label={navigationComponentLabel} size={'large'} />
+        <Breadcrumb icon={navigationComponentIcon} label={navigationComponentLabel} size={'large'} isCurrent={true} />
+        <svelte:fragment slot="actions">
+          {#if createComponent}
+            <Button
+              icon={IconAdd}
+              kind={'icon'}
+              on:click={() => {
+                showCreateDialog()
+              }}
+            />
+          {/if}
+        </svelte:fragment>
       </Header>
       <Component
         is={navigationComponent}
@@ -41,7 +59,7 @@
     <Separator name={'navigationSection'} index={0} color={'var(--theme-divider-color)'} />
     <div class="hulyComponent-content__column">
       <Header adaptive={'disabled'}>
-        <Breadcrumb icon={mainComponentIcon} label={mainComponentLabel} size={'large'} />
+        <Breadcrumb icon={mainComponentIcon} label={mainComponentLabel} size={'large'} isCurrent />
       </Header>
       <slot />
     </div>

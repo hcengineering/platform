@@ -29,17 +29,16 @@ export function getPanelFragment<T extends Doc> (object: Pick<T, '_class' | '_id
   return getPanelURI(component, object._id, object._class, 'content')
 }
 
-async function generateTestSuiteLocation (
+async function generateProjectLocation (
   loc: Location,
-  project: Ref<TestProject>,
-  testSuite: Ref<TestSuite>
+  project: Ref<TestProject>
 ): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
-  const doc = await client.findOne(testManagement.class.TestSuite, { _id: testSuite })
+  const doc = await client.findOne(testManagement.class.TestProject, { _id: project })
   if (doc === undefined) {
     accessDeniedStore.set(true)
-    console.error(`Could not find test suite ${testSuite}.`)
+    console.error(`Could not find test project ${project}.`)
     return undefined
   }
 
@@ -49,10 +48,7 @@ async function generateTestSuiteLocation (
   return {
     loc: {
       ...loc,
-      path: [appComponent, workspace, testManagementId, project, 'library', 'testSuite', doc._id],
-      query: {
-        suite: doc._id
-      }
+      path: [appComponent, workspace, testManagementId, project, 'library']
     },
     defaultLocation: {
       ...loc,
@@ -64,14 +60,12 @@ async function generateTestSuiteLocation (
 export function getTestSuiteLink (testSuite: Ref<TestSuite>, project: Ref<TestProject>): Location {
   const loc = getCurrentResolvedLocation()
   loc.fragment = undefined
-  loc.query = undefined
-  loc.path.length = testSuite ? 7 : 5
+  loc.path.length = 5
   loc.path[2] = testManagementId
   loc.path[3] = project
   loc.path[4] = 'library'
-  if (testSuite) {
-    loc.path[5] = 'testSuite'
-    loc.path[6] = testSuite
+  loc.query = testSuite === undefined ? undefined : {
+    suite: testSuite
   }
 
   return loc
@@ -101,12 +95,9 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
   }
 
   const projectId = loc.path[3] as Ref<TestProject>
-  const testSuiteId = loc.path[6] as Ref<TestSuite>
-
-  if (testSuiteId !== undefined) {
-    return await generateTestSuiteLocation(loc, projectId, testSuiteId)
+  if (projectId) {
+    return generateProjectLocation(loc, projectId)
   }
-
   return undefined
 }
 

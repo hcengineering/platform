@@ -15,7 +15,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
   import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { IntlString, Asset, getResource } from '@hcengineering/platform'
+  import { IntlString, Asset } from '@hcengineering/platform'
   import {
     AnyComponent,
     Button,
@@ -60,22 +60,20 @@
   let viewlets: Array<WithLookup<Viewlet>> = []
   let viewOptions: ViewOptions | undefined
 
-  let locationQuery = {}
+  $: locationQuery = {}
+  $: query = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}), ...locationQuery }
+  $: searchQuery = search === '' ? query : { ...query, $search: search }
+  $: resultQuery = searchQuery
 
   if (navigationModel?.syncQueryAndLocation) {
     locationQuery = getLocation()?.query ?? {}
 
     onDestroy(resolvedLocationStore.subscribe(handleLocationChanged))
 
-    async function handleLocationChanged (loc: Location) {
-      const syncQueryFn = await getResource(navigationModel?.syncQueryAndLocation)
-      query = syncQueryFn(query, loc)
+    function handleLocationChanged (loc: Location) {
+      locationQuery = loc?.query ?? {}
     }
   }
-
-  $: query = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}), ...locationQuery }
-  $: searchQuery = search === '' ? query : { ...query, $search: search }
-  $: resultQuery = searchQuery
   
   function showCreateDialog (): void {
     if (createComponent === undefined) return
@@ -164,6 +162,7 @@
     <ComponentNavigator
       mainComponentLabel={label}
       mainComponentIcon={icon}
+      {space}
       {...navigationModel}
     >
       <Component

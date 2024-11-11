@@ -190,7 +190,9 @@ export interface SpecialNavModel {
   navigationComponentLabel: IntlString
   navigationComponentIcon?: Asset
   navigationComponentProps?: Record<string, any>,
-  syncQueryAndLocation?: Resource<(query: DocumentQuery<Doc> | undefined, loc: Location) => DocumentQuery<Doc> | undefined>
+  syncQueryAndLocation?: Resource<(query: DocumentQuery<Doc> | undefined, loc: Location) => DocumentQuery<Doc> | undefined>,
+  createComponent?: AnyComponent
+  createComponentProps?: Record<string, any>
 }
 
 /**

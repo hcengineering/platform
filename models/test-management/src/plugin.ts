@@ -18,11 +18,20 @@ import testManganement from '@hcengineering/test-management-resources/src/plugin
 import type { Doc, Ref, Role } from '@hcengineering/core'
 import { mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import type { Action } from '@hcengineering/view'
+import type { Action, ActionCategory, ViewAction } from '@hcengineering/view'
 
 export default mergeIds(testManagementId, testManganement, {
   action: {
-    DeleteTestCase: '' as Ref<Action<Doc, any>>
+    DeleteTestCase: '' as Ref<Action<Doc, any>>,
+    CreateChildTestSuite: '' as Ref<Action>,
+    EditTestSuite: '' as Ref<Action>
+  },
+  actionImpl: {
+    CreateChildTestSuite: '' as ViewAction,
+    EditTestSuite: '' as ViewAction
+  },
+  category: {
+    TestSuite: '' as Ref<ActionCategory>
   },
   component: {
     CreateTestCase: '' as AnyComponent,

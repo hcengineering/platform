@@ -39,6 +39,8 @@
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/model-notification": "^0.6.0",
     "@hcengineering/model-presentation": "^0.6.0",
+    "@hcengineering/model-print": "^0.6.0",
+    "@hcengineering/model-tracker": "^0.6.0",
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/model-workbench": "^0.6.1",
     "@hcengineering/model-activity": "^0.6.0",
