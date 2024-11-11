@@ -210,7 +210,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         await close(cursorName)
         return null
       }
-      return result.map((p) => parseDoc(p as any))
+      return result.map((p) => parseDoc(p as any, _domain))
     }
 
     await init()
@@ -254,7 +254,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     }
     const finalSql: string = [select, ...sqlChunks].join(' ')
     const result = await this.client.unsafe(finalSql)
-    return result.map((p) => parseDocWithProjection(p as any, options?.projection))
+    return result.map((p) => parseDocWithProjection(p as any, domain, options?.projection))
   }
 
   buildRawOrder<T extends Doc>(domain: string, sort: SortingQuery<T>): string {
@@ -303,7 +303,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     try {
       await this.retryTxn(conn, async (client) => {
         const res = await client.unsafe(`SELECT * FROM ${translateDomain(domain)} WHERE ${translatedQuery} FOR UPDATE`)
-        const docs = res.map((p) => parseDoc(p as any))
+        const docs = res.map((p) => parseDoc(p as any, domain))
         for (const doc of docs) {
           if (doc === undefined) continue
           const prevAttachedTo = (doc as any).attachedTo
@@ -411,11 +411,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const result = await connection.unsafe(finalSql)
         if (options?.lookup === undefined && options?.domainLookup === undefined) {
           return toFindResult(
-            result.map((p) => parseDocWithProjection(p as any, options?.projection)),
+            result.map((p) => parseDocWithProjection(p as any, domain, options?.projection)),
             total
           )
         } else {
-          const res = this.parseLookup<T>(result, joins, options?.projection)
+          const res = this.parseLookup<T>(result, joins, options?.projection, domain)
           return toFindResult(res, total)
         }
       } catch (err) {
@@ -444,7 +444,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
   private parseLookup<T extends Doc>(
     rows: any[],
     joins: JoinProps[],
-    projection: Projection<T> | undefined
+    projection: Projection<T> | undefined,
+    domain: string
   ): WithLookup<T>[] {
     const map = new Map<Ref<T>, WithLookup<T>>()
     const modelJoins: JoinProps[] = []
@@ -477,7 +478,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
               if (res === undefined) continue
               const { obj, key } = res
 
-              const parsed = row[column].map(parseDoc)
+              const parsed = row[column].map((p: any) => parseDoc(p, domain))
               obj[key] = parsed
             }
           } else if (column.startsWith('lookup_')) {
@@ -933,7 +934,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const val = value[operator]
         switch (operator) {
           case '$ne':
-            res.push(`${tkey} != '${val}'`)
+            if (val === null) {
+              res.push(`${tkey} IS NOT NULL`)
+            } else {
+              res.push(`${tkey} != '${val}'`)
+            }
             break
           case '$gt':
             res.push(`${tkey} > '${val}'`)
@@ -1082,7 +1087,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       if (result.length === 0) {
         return []
       }
-      return result.filter((it) => it != null).map((it) => parseDoc(it as any))
+      return result.filter((it) => it != null).map((it) => parseDoc(it as any, domain))
     }
 
     const flush = async (flush = false): Promise<void> => {
@@ -1172,7 +1177,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       const connection = (await this.getConnection(ctx)) ?? this.client
       const res =
         await connection`SELECT * FROM ${connection(translateDomain(domain))} WHERE _id = ANY(${docs}) AND "workspaceId" = ${this.workspaceId.name}`
-      return res.map((p) => parseDocWithProjection(p as any))
+      return res.map((p) => parseDocWithProjection(p as any, domain))
     })
   }
 
@@ -1257,7 +1262,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         try {
           const res =
             await client`SELECT * FROM ${client(translateDomain(domain))} WHERE _id = ANY(${ids}) AND "workspaceId" = ${this.workspaceId.name} FOR UPDATE`
-          const docs = res.map((p) => parseDoc(p as any))
+          const docs = res.map((p) => parseDoc(p as any, domain))
           const map = new Map(docs.map((d) => [d._id, d]))
           for (const [_id, ops] of operations) {
             const doc = map.get(_id)
@@ -1532,7 +1537,8 @@ class PostgresAdapter extends PostgresAdapterBase {
           forUpdate ? client` FOR UPDATE` : client``
         }`
       const dbDoc = res[0]
-      return dbDoc !== undefined ? parseDoc(dbDoc as any) : undefined
+      const domain = this.hierarchy.getDomain(_class)
+      return dbDoc !== undefined ? parseDoc(dbDoc as any, domain) : undefined
     })
   }
 
@@ -1572,7 +1578,7 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
     const res = await this
       .client`SELECT * FROM ${this.client(translateDomain(DOMAIN_TX))} WHERE "workspaceId" = ${this.workspaceId.name} AND "objectSpace" = ${core.space.Model} ORDER BY _id ASC, "modifiedOn" ASC`
 
-    const model = res.map((p) => parseDoc<Tx>(p as any))
+    const model = res.map((p) => parseDoc<Tx>(p as any, DOMAIN_TX))
     // We need to put all core.account.System transactions first
     const systemTx: Tx[] = []
     const userTx: Tx[] = []

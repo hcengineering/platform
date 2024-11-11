@@ -189,7 +189,7 @@ const calendarSchema: Schema = {
 }
 
 const eventSchema: Schema = {
-  ...baseSchema,
+  ...defaultSchema,
   calendar: {
     type: 'text',
     notNull: true,

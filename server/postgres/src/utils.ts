@@ -326,8 +326,8 @@ export function parseUpdate<T extends Doc> (
   const remainingData: Partial<T> = {}
 
   for (const key in ops) {
-    if (key === '$push' || key === '$pull') {
-      const val = (ops as any)[key]
+    const val = (ops as any)[key]
+    if (key.startsWith('$')) {
       for (const k in val) {
         if (getDocFieldsByDomains(domain).includes(k)) {
           ;(extractedFields as any)[k] = val[key]
@@ -337,9 +337,9 @@ export function parseUpdate<T extends Doc> (
       }
     } else {
       if (getDocFieldsByDomains(domain).includes(key)) {
-        ;(extractedFields as any)[key] = (ops as any)[key]
+        ;(extractedFields as any)[key] = val
       } else {
-        ;(remainingData as any)[key] = (ops as any)[key]
+        ;(remainingData as any)[key] = val
       }
     }
   }
@@ -396,8 +396,13 @@ export class DBCollectionHelper implements DomainHelperOperations {
   }
 }
 
-export function parseDocWithProjection<T extends Doc> (doc: DBDoc, projection?: Projection<T> | undefined): T {
+export function parseDocWithProjection<T extends Doc> (
+  doc: DBDoc,
+  domain: string,
+  projection?: Projection<T> | undefined
+): T {
   const { workspaceId, data, ...rest } = doc
+  const schema = getSchema(domain)
   for (const key in rest) {
     if ((rest as any)[key] === 'NULL' || (rest as any)[key] === null) {
       if (key === 'attachedTo') {
@@ -407,7 +412,7 @@ export function parseDocWithProjection<T extends Doc> (doc: DBDoc, projection?: 
         ;(rest as any)[key] = null
       }
     }
-    if (key === 'modifiedOn' || key === 'createdOn') {
+    if (schema[key] !== undefined && schema[key].type === 'bigint') {
       ;(rest as any)[key] = Number.parseInt((rest as any)[key])
     }
   }
@@ -427,7 +432,8 @@ export function parseDocWithProjection<T extends Doc> (doc: DBDoc, projection?: 
   return res
 }
 
-export function parseDoc<T extends Doc> (doc: DBDoc): T {
+export function parseDoc<T extends Doc> (doc: DBDoc, domain: string): T {
+  const schema = getSchema(domain)
   const { workspaceId, data, ...rest } = doc
   for (const key in rest) {
     if ((rest as any)[key] === 'NULL' || (rest as any)[key] === null) {
@@ -438,7 +444,7 @@ export function parseDoc<T extends Doc> (doc: DBDoc): T {
         ;(rest as any)[key] = null
       }
     }
-    if (key === 'modifiedOn' || key === 'createdOn') {
+    if (schema[key] !== undefined && schema[key].type === 'bigint') {
       ;(rest as any)[key] = Number.parseInt((rest as any)[key])
     }
   }
