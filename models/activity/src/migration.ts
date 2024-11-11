@@ -14,6 +14,7 @@
 //
 
 import { type ActivityMessage, type DocUpdateMessage, type Reaction } from '@hcengineering/activity'
+import contact from '@hcengineering/contact'
 import core, { type Class, type Doc, type Domain, groupByArray, type Ref, type Space } from '@hcengineering/core'
 import {
   type MigrateOperation,
@@ -25,10 +26,8 @@ import {
   tryMigrate
 } from '@hcengineering/model'
 import { htmlToMarkup } from '@hcengineering/text'
-import contact from '@hcengineering/contact'
-
+import { activityId, DOMAIN_ACTIVITY, DOMAIN_REACTION, DOMAIN_USER_MENTION } from './index'
 import activity from './plugin'
-import { activityId, DOMAIN_ACTIVITY } from './index'
 
 const DOMAIN_CHUNTER = 'chunter' as Domain
 
@@ -222,6 +221,13 @@ export const activityOperation: MigrateOperation = {
         state: 'fix-rename-backups',
         func: async (client: MigrationClient): Promise<void> => {
           await client.update(DOMAIN_ACTIVITY, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
+        }
+      },
+      {
+        state: 'move-reactions',
+        func: async (client: MigrationClient): Promise<void> => {
+          await client.move(DOMAIN_ACTIVITY, { _class: activity.class.Reaction }, DOMAIN_REACTION)
+          await client.move(DOMAIN_ACTIVITY, { _class: activity.class.UserMentionInfo }, DOMAIN_USER_MENTION)
         }
       }
     ])
