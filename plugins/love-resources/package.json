@@ -60,6 +60,6 @@
     "@livekit/krisp-noise-filter": "~0.2.1",
     "@livekit/track-processors": "~0.3.1",
     "livekit-client": "^2.0.10",
-    "svelte": "^4.2.12"
+    "svelte": "^4.2.19"
   }
 }

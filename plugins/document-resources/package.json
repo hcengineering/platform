@@ -41,7 +41,7 @@
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/activity-resources": "^0.6.1",
     "@hcengineering/platform": "^0.6.11",
-    "svelte": "^4.2.12",
+    "svelte": "^4.2.19",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/setting": "^0.6.17",
     "@hcengineering/presentation": "^0.6.3",

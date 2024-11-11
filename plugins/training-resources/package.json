@@ -58,6 +58,6 @@
     "@hcengineering/training": "^0.1.0",
     "fast-equals": "^5.0.1",
     "lexorank": "~1.0.4",
-    "svelte": "^4.2.12"
+    "svelte": "^4.2.19"
   }
 }
