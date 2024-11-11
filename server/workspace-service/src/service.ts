@@ -79,7 +79,7 @@ export class WorkspaceWorker {
   wakeup: () => void = () => {}
   defaultWakeup: () => void = () => {}
 
-  async start (ctx: MeasureContext, opt: WorkspaceOptions): Promise<void> {
+  async start (ctx: MeasureContext, opt: WorkspaceOptions, isCanceled: () => boolean): Promise<void> {
     this.defaultWakeup = () => {
       ctx.info("I'm busy", { version: this.version, region: this.region })
     }
@@ -92,7 +92,7 @@ export class WorkspaceWorker {
 
     ctx.info('Successfully connected to the account service')
 
-    while (true) {
+    while (!isCanceled()) {
       await this.waitForAvailableThread()
 
       const workspace = await ctx.with('get-pending-workspace', {}, async (ctx) => {

@@ -28,12 +28,15 @@ export interface Config {
   PUSH_PUBLIC_KEY: string
   ANALYTICS_COLLECTOR_URL?: string
   AI_URL?:string
+  DISABLE_SIGNUP?: string
   BRANDING_URL?: string
   PREVIEW_CONFIG: string
   UPLOAD_CONFIG: string
   DESKTOP_UPDATES_URL?: string
   DESKTOP_UPDATES_CHANNEL?: string
   TELEGRAM_BOT_URL?: string
+
+  STATS_URL?: string
 }
 
 export interface Branding {

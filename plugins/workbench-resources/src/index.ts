@@ -26,7 +26,7 @@ import ServerManager from './components/ServerManager.svelte'
 import WorkbenchTabs from './components/WorkbenchTabs.svelte'
 import { isAdminUser } from '@hcengineering/presentation'
 import { canCloseTab, closeTab, pinTab, unpinTab } from './workbench'
-import { closeWidgetTab, createWidgetTab } from './sidebar'
+import { closeWidgetTab, createWidgetTab, getSidebarObject } from './sidebar'
 
 async function hasArchiveSpaces (spaces: Space[]): Promise<boolean> {
   return spaces.find((sp) => sp.archived) !== undefined
@@ -37,6 +37,7 @@ export { default as NavHeader } from './components/NavHeader.svelte'
 export { default as SpecialElement } from './components/navigator/SpecialElement.svelte'
 export { default as SpaceView } from './components/SpaceView.svelte'
 export { default as TreeSeparator } from './components/navigator/TreeSeparator.svelte'
+export { default as WorkbenchTabs } from './components/WorkbenchTabs.svelte'
 export { SpecialView }
 
 export * from './utils'
@@ -57,7 +58,8 @@ export default async (): Promise<Resources> => ({
     IsOwner: async (docs: Space[]) => getCurrentAccount().role === AccountRole.Owner || isAdminUser(),
     CanCloseTab: canCloseTab,
     CreateWidgetTab: createWidgetTab,
-    CloseWidgetTab: closeWidgetTab
+    CloseWidgetTab: closeWidgetTab,
+    GetSidebarObject: getSidebarObject
   },
   actionImpl: {
     Navigate: doNavigate,

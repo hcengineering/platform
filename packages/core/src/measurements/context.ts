@@ -57,6 +57,7 @@ export class MeasureMetricsContext implements MeasureContext {
   private readonly fullParams: FullParamsType | (() => FullParamsType) = {}
   logger: MeasureLogger
   metrics: Metrics
+  id?: string
 
   st = Date.now()
   contextData: object = {}
@@ -125,6 +126,8 @@ export class MeasureMetricsContext implements MeasureContext {
       this,
       this.logParams
     )
+    result.id = this.id
+    result.onEnd = this.onEnd.bind(this)
     result.contextData = this.contextData
     return result
   }
@@ -197,6 +200,8 @@ export class MeasureMetricsContext implements MeasureContext {
   end (): void {
     this.done()
   }
+
+  async onEnd (ctx: MeasureContext): Promise<void> {}
 }
 
 /**

@@ -17,6 +17,7 @@
 import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
 import contact, {
+  Employee,
   getAvatarProviderId,
   getGravatarUrl,
   Person,
@@ -37,6 +38,7 @@ import core, {
   generateId,
   MeasureContext,
   MixinUpdate,
+  RateLimiter,
   Ref,
   RefTo,
   SortingOrder,
@@ -63,7 +65,6 @@ import notification, {
   InboxNotification,
   MentionInboxNotification,
   notificationId,
-  NotificationStatus,
   NotificationType,
   PushData,
   PushSubscription
@@ -545,7 +546,6 @@ export async function createPushFromInbox (
   )
   return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, receiver.space, {
     user: receiver._id,
-    status: NotificationStatus.New,
     title,
     body,
     senderId: sender._id,
@@ -603,11 +603,16 @@ export async function createPushNotification (
   }
 
   webpush.setVapidDetails(subject, publicKey, privateKey)
+  const limiter = new RateLimiter(5)
 
   for (const subscription of userSubscriptions) {
-    void sendPushToSubscription(control, target, subscription, data)
+    await limiter.exec(async () => {
+      await sendPushToSubscription(control, target, subscription, data)
+    })
   }
 }
+
+const errorMessages = ['expired', 'Unregistered', 'No such subscription']
 
 async function sendPushToSubscription (
   control: TriggerControl,
@@ -619,9 +624,11 @@ async function sendPushToSubscription (
     await webpush.sendNotification(subscription, JSON.stringify(data))
   } catch (err) {
     control.ctx.info('Cannot send push notification to', { user: targetUser, err })
-    if (err instanceof WebPushError && err.body.includes('expired')) {
-      const tx = control.txFactory.createTxRemoveDoc(subscription._class, subscription.space, subscription._id)
-      await control.apply(control.ctx, [tx])
+    if (err instanceof WebPushError) {
+      if (errorMessages.some((p) => JSON.stringify((err as WebPushError).body).includes(p))) {
+        const tx = control.txFactory.createTxRemoveDoc(subscription._class, subscription.space, subscription._id)
+        await control.apply(control.ctx, [tx])
+      }
     }
   }
 }
@@ -1717,7 +1724,7 @@ async function updateCollaborators (
 
   if (hierarchy.classHierarchyMixin(objectClass, activity.mixin.ActivityDoc) === undefined) return res
 
-  const contexts = await control.findAll(control.ctx, notification.class.DocNotifyContext, { attachedTo: objectId })
+  const contexts = await control.findAll(control.ctx, notification.class.DocNotifyContext, { objectId })
   const addedInfo = await getUsersInfo(ctx, toAdd as Ref<PersonAccount>[], control)
 
   for (const addedUser of addedInfo.values()) {
@@ -1906,6 +1913,31 @@ async function OnActivityMessageRemove (message: ActivityMessage, control: Trigg
   return res
 }
 
+async function OnEmployeeDeactivate (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+  const actualTx = TxProcessor.extractTx(tx)
+  if (core.class.TxMixin !== actualTx._class) {
+    return []
+  }
+  const ctx = actualTx as TxMixin<Person, Employee>
+  if (ctx.mixin !== contact.mixin.Employee || ctx.attributes.active !== false) {
+    return []
+  }
+
+  const targetAccount = control.modelDb.getAccountByPersonId(ctx.objectId) as PersonAccount[]
+  if (targetAccount.length === 0) return []
+
+  const res: Tx[] = []
+  for (const acc of targetAccount) {
+    const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
+      user: acc._id
+    })
+    for (const sub of subscriptions) {
+      res.push(control.txFactory.createTxRemoveDoc(sub._class, sub.space, sub._id))
+    }
+  }
+  return res
+}
+
 async function OnDocRemove (originTx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
   const tx = TxProcessor.extractTx(originTx) as TxRemoveDoc<Doc>
 
@@ -1947,7 +1979,8 @@ export default async () => ({
   trigger: {
     OnAttributeCreate,
     OnAttributeUpdate,
-    OnDocRemove
+    OnDocRemove,
+    OnEmployeeDeactivate
   },
   function: {
     IsUserInFieldValueTypeMatch: isUserInFieldValueTypeMatch,

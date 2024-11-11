@@ -43,6 +43,7 @@ services:
     links:
       - mongodb
       - minio
+      - postgres
     ports:
       - 3003:3003
     volumes:
@@ -59,6 +60,7 @@ services:
     image: hardcoreeng/workspace
     links:
       - mongodb
+      - postgres
       - minio
     volumes:
       - ./branding-test.json:/var/cfg/branding.json
@@ -106,6 +108,7 @@ services:
       - elastic
       - minio
       - rekoni
+      - postgres
       - account
     ports:
       - 3334:3334
@@ -114,20 +117,17 @@ services:
     environment:
       - SERVER_PROVIDER=${SERVER_PROVIDER}
       - SERVER_PORT=3334
-      - SERVER_SECRET=secret
-      - ELASTIC_URL=http://elastic:9200
+      - SERVER_SECRET=secret      
       - DB_URL=mongodb://mongodb:27018
-      - MONGO_URL=mongodb://mongodb:27018
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - REKONI_URL=http://rekoni:7
       - FRONT_URL=http://localhost:8083
       - ACCOUNTS_URL=http://account:3003
       - COLLABORATOR_URL=http://collaborator:3079
       - LAST_NAME_FIRST=true
-      - ELASTIC_INDEX_NAME=local_storage_index
       - BRANDING_PATH=/var/cfg/branding.json
+      - FULLTEXT_URL=http://fulltext:4710
   collaborator:
     image: hardcoreeng/collaborator
     links:
@@ -141,6 +141,7 @@ services:
       - SECRET=secret
       - ACCOUNTS_URL=http://account:3003
       - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - FULLTEXT_URL=http://fulltext:4710
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
@@ -151,3 +152,24 @@ services:
       resources:
         limits:
           memory: 1024M
+  fulltext:
+    image: hardcoreeng/fulltext
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    links:
+      - elastic
+      - mongodb
+      - postgres
+      - rekoni
+    ports:
+      - 4710:4710
+    environment:
+      - PORT=4710
+      - SERVER_SECRET=secret
+      - DB_URL=mongodb://mongodb:27018
+      - FULLTEXT_DB_URL=http://elastic:9200
+      - ELASTIC_INDEX_NAME=local_storage_index
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - REKONI_URL=http://rekoni:4007
+      - ACCOUNTS_URL=http://account:3003

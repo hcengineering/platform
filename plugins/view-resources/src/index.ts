@@ -127,7 +127,6 @@ import {
   valueNinResult
 } from './filter'
 
-import { IndexedDocumentPreview } from '@hcengineering/presentation'
 import { AggregationMiddleware, AnalyticsMiddleware } from './middleware'
 import { showEmptyGroups } from './viewOptions'
 import {
@@ -163,7 +162,6 @@ export { default as ViewletSelector } from './components/ViewletSelector.svelte'
 export { default as ViewletsSettingButton } from './components/ViewletsSettingButton.svelte'
 export { default as FilterButton } from './components/filter/FilterButton.svelte'
 export { default as FilterRemovedNotification } from './components/filter/FilterRemovedNotification.svelte'
-export { default as SourcePresenter } from './components/inference/SourcePresenter.svelte'
 export { default as List } from './components/list/List.svelte'
 export { default as NavLink } from './components/navigator/NavLink.svelte'
 export { default as StatusPresenter } from './components/status/StatusPresenter.svelte'
@@ -282,7 +280,6 @@ export default async (): Promise<Resources> => ({
     ListView,
     GrowPresenter,
     DividerPresenter,
-    IndexedDocumentPreview,
     SpaceRefPresenter,
     SpaceTypeSelector,
     EnumArrayEditor,

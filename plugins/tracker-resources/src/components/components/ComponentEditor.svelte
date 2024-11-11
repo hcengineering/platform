@@ -18,7 +18,7 @@
   import { RuleApplyResult, getClient, getDocRules } from '@hcengineering/presentation'
   import { Component, Issue, IssueTemplate, Project, TrackerEvents } from '@hcengineering/tracker'
   import { ButtonKind, ButtonShape, ButtonSize, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, afterUpdate } from 'svelte'
   import { Analytics } from '@hcengineering/analytics'
 
   import { activeComponent } from '../../issues'
@@ -46,6 +46,8 @@
   const client = getClient()
 
   const dispatch = createEventDispatcher()
+
+  let element: HTMLDivElement
 
   const handleComponentIdChanged = async (newComponentId: Ref<Component> | null | undefined) => {
     if (!isEditable || newComponentId === undefined || (!Array.isArray(value) && value.component === newComponentId)) {
@@ -101,11 +103,13 @@
       }
     }
   }
+
+  afterUpdate(() => dispatch('resize', element?.clientWidth))
 </script>
 
 {#if kind === 'list'}
   {#if !Array.isArray(value) && value.component}
-    <div class={compression ? 'label-wrapper' : 'clear-mins'}>
+    <div bind:this={element} class={compression ? 'label-wrapper' : 'clear-mins'}>
       <ComponentSelector
         {kind}
         {size}
@@ -127,6 +131,7 @@
   {/if}
 {:else}
   <div
+    bind:this={element}
     class="flex flex-wrap clear-mins"
     class:minus-margin={kind === 'list-header'}
     class:label-wrapper={compression}

@@ -25,6 +25,7 @@ import {
   type ActionCategory,
   type ViewAction,
   type ViewActionAvailabilityFunction,
+  type ViewQueryAction,
   type Viewlet,
   type ViewletDescriptor
 } from '@hcengineering/view'
@@ -54,7 +55,8 @@ export default mergeIds(driveId, drive, {
     FolderLinkProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     FileLinkProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     CanRenameFile: '' as Resource<ViewActionAvailabilityFunction>,
-    CanRenameFolder: '' as Resource<ViewActionAvailabilityFunction>
+    CanRenameFolder: '' as Resource<ViewActionAvailabilityFunction>,
+    HideArchivedDrives: '' as ViewQueryAction
   },
   completion: {
     FileQuery: '' as Resource<ObjectSearchFactory>,

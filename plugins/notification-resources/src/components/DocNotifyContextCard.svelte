@@ -30,16 +30,12 @@
 
   import InboxNotificationPresenter from './inbox/InboxNotificationPresenter.svelte'
   import NotifyContextIcon from './NotifyContextIcon.svelte'
-  import {
-    archiveContextNotifications,
-    isActivityNotification,
-    isMentionNotification,
-    unarchiveContextNotifications
-  } from '../utils'
+  import { isActivityNotification, isMentionNotification } from '../utils'
 
   export let value: DocNotifyContext
   export let notifications: WithLookup<DisplayInboxNotification>[]
   export let viewlets: ActivityNotificationViewlet[] = []
+  export let isArchiving = false
   export let archived = false
 
   const maxNotifications = 3
@@ -174,13 +170,8 @@
     isActionMenuOpened = false
   }
 
-  let archivingPromise: Promise<any> | undefined = undefined
-
   async function checkContext (): Promise<void> {
-    await archivingPromise
-    archivingPromise = archived ? unarchiveContextNotifications(value) : archiveContextNotifications(value)
-    await archivingPromise
-    archivingPromise = undefined
+    dispatch('archive')
   }
 
   // function canShowTooltip (group: InboxNotification[]): boolean {
@@ -231,7 +222,7 @@
 
       <div class="actions clear-mins">
         <div class="flex-center min-w-6">
-          {#if archivingPromise !== undefined}
+          {#if isArchiving}
             <Spinner size="small" />
           {:else}
             <CheckBox checked={archived} kind="todo" size="medium" on:value={checkContext} />
@@ -284,7 +275,7 @@
 
       <div class="actions clear-mins">
         <div class="flex-center">
-          {#if archivingPromise !== undefined}
+          {#if isArchiving}
             <Spinner size="small" />
           {:else}
             <CheckBox checked={archived} kind="todo" size="medium" on:value={checkContext} />

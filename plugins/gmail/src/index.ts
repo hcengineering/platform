@@ -16,8 +16,8 @@
 import { ChannelItem } from '@hcengineering/contact'
 import type { Account, AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
 import { NotificationProvider, NotificationType } from '@hcengineering/notification'
-import type { IntlString, Plugin } from '@hcengineering/platform'
-import { Metadata, plugin } from '@hcengineering/platform'
+import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
 import type { Handler, IntegrationType } from '@hcengineering/setting'
 import type { AnyComponent } from '@hcengineering/ui'
 

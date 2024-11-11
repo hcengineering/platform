@@ -17,8 +17,8 @@ import { ActivityMessage } from '@hcengineering/activity'
 import { ChannelItem } from '@hcengineering/contact'
 import { Account, AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
 import { InboxNotification, NotificationProvider, NotificationType } from '@hcengineering/notification'
-import type { IntlString, Plugin } from '@hcengineering/platform'
-import { Metadata, plugin } from '@hcengineering/platform'
+import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
 import type { Handler, IntegrationType } from '@hcengineering/setting'
 import { TemplateField } from '@hcengineering/templates'
 import type { AnyComponent } from '@hcengineering/ui'
@@ -132,6 +132,10 @@ export default plugin(telegramId, {
     ConnectTelegramBot: '' as IntlString,
     DisconnectMessage: '' as IntlString,
     SyncAllChannels: '' as IntlString,
-    SyncStarredChannels: '' as IntlString
+    SyncStarredChannels: '' as IntlString,
+    TelegramIntegrationDesc: '' as IntlString,
+    TelegramIntegrationDesc2: '' as IntlString,
+    ToSetupNotification: '' as IntlString,
+    TelegramNotificationPath: '' as IntlString
   }
 })

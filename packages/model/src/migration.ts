@@ -15,13 +15,16 @@ import core, {
   ModelDb,
   ObjQueryType,
   PushOptions,
+  Rank,
   Ref,
+  SortingOrder,
   Space,
   TxOperations,
   UnsetOptions,
   WorkspaceId,
   generateId
 } from '@hcengineering/core'
+import { makeRank } from '@hcengineering/rank'
 import { StorageAdapter } from '@hcengineering/storage'
 import { ModelLogger } from './utils'
 
@@ -29,7 +32,7 @@ import { ModelLogger } from './utils'
  * @public
  */
 export type MigrateUpdate<T extends Doc> = Partial<T> &
-Omit<PushOptions<T>, '$move'> &
+PushOptions<T> &
 IncOptions<T> &
 UnsetOptions &
 Record<string, any>
@@ -251,4 +254,35 @@ export async function migrateSpace (
     await client.update(domain, { space: from }, { space: to })
   }
   await client.update(DOMAIN_TX, { objectSpace: from }, { objectSpace: to })
+}
+
+export async function migrateSpaceRanks (client: MigrationClient, domain: Domain, space: Space): Promise<void> {
+  type WithRank = Doc & { rank: Rank }
+
+  const iterator = await client.traverse<WithRank>(
+    domain,
+    { space: space._id, rank: { $exists: true } },
+    { sort: { rank: SortingOrder.Ascending } }
+  )
+
+  try {
+    let rank = '0|100000:'
+
+    while (true) {
+      const docs = await iterator.next(1000)
+      if (docs === null || docs.length === 0) {
+        break
+      }
+
+      const updates: { filter: MigrationDocumentQuery<Doc<Space>>, update: MigrateUpdate<Doc<Space>> }[] = []
+      for (const doc of docs) {
+        rank = makeRank(rank, undefined)
+        updates.push({ filter: { _id: doc._id }, update: { rank } })
+      }
+
+      await client.bulk(domain, updates)
+    }
+  } finally {
+    await iterator.close()
+  }
 }

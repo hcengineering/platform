@@ -80,7 +80,7 @@ describe('server', () => {
         ],
         close: async () => {},
         domains: async () => [],
-        groupBy: async () => new Set(),
+        groupBy: async () => new Map(),
         find: (ctx: MeasureContext, domain: Domain) => ({
           next: async (ctx: MeasureContext) => undefined,
           close: async (ctx: MeasureContext) => {}
@@ -109,7 +109,7 @@ describe('server', () => {
   }
 
   afterAll(async () => {
-    await cancelOp()
+    await cancelOp.shutdown()
   })
 
   it('should connect to server', (done) => {
@@ -190,7 +190,7 @@ describe('server', () => {
             [],
             undefined
           ],
-          groupBy: async () => new Set(),
+          groupBy: async () => new Map(),
           close: async () => {},
           domains: async () => [],
           find: (ctx: MeasureContext, domain: Domain) => ({
@@ -278,7 +278,7 @@ describe('server', () => {
       console.error(err)
     } finally {
       console.log('calling shutdown')
-      await cancelOp()
+      await cancelOp.shutdown()
     }
   })
 })

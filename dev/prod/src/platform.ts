@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import platform, { Plugin, addLocation, addStringsLoader, platformId } from '@hcengineering/platform'
+import platform, { type Plugin, addLocation, addStringsLoader, platformId } from '@hcengineering/platform'
 
 import { activityId } from '@hcengineering/activity'
 import { attachmentId } from '@hcengineering/attachment'
@@ -153,11 +153,12 @@ export interface Config {
   BRANDING_URL?: string
   TELEGRAM_BOT_URL?: string
   AI_URL?:string
-
+  DISABLE_SIGNUP?: string
   // Could be defined for dev environment
   FRONT_URL?: string
   PREVIEW_CONFIG?: string
   UPLOAD_CONFIG?: string
+  STATS_URL?: string
 }
 
 export interface Branding {
@@ -295,6 +296,7 @@ export async function configurePlatform() {
   // tryOpenInDesktopApp(config.APP_PROTOCOL ?? 'huly://')
 
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
+  setMetadata(login.metadata.DisableSignUp, config.DISABLE_SIGNUP === 'true')
   setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
@@ -302,6 +304,7 @@ export async function configurePlatform() {
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
   setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG, config.UPLOAD_URL))
+  setMetadata(presentation.metadata.StatsUrl, config.STATS_URL)
 
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR)
 

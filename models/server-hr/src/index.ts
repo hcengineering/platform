@@ -77,6 +77,15 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverHr.trigger.OnEmployeeDeactivate,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxMixin,
+      mixin: contact.mixin.Employee
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverHr.trigger.OnPublicHolidayCreate,
     txMatch: {
       _class: core.class.TxCollectionCUD,

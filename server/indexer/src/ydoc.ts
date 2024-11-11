@@ -1,19 +1,21 @@
 import { type MeasureContext, type WorkspaceId } from '@hcengineering/core'
 import { type ContentTextAdapter } from '@hcengineering/server-core'
 import { pmNodeToText, yDocContentToNodes } from '@hcengineering/text'
-import { Readable } from 'node:stream'
 import { Buffer } from 'node:buffer'
+import { Readable } from 'node:stream'
 
 /**
  * @public
  */
-export async function createYDocAdapter (
-  _url: string,
-  _workspace: WorkspaceId,
-  _metrics: MeasureContext
-): Promise<ContentTextAdapter> {
+export async function createYDocAdapter (_url: string): Promise<ContentTextAdapter> {
   return {
-    content: async (_name: string, _type: string, data: Readable | Buffer | string): Promise<string> => {
+    content: async (
+      ctx: MeasureContext,
+      workspace: WorkspaceId,
+      _name: string,
+      _type: string,
+      data: Readable | Buffer | string
+    ): Promise<string> => {
       const chunks: any[] = []
 
       if (data instanceof Readable) {
@@ -42,9 +44,6 @@ export async function createYDocAdapter (
       }
 
       return ''
-    },
-    metrics (): MeasureContext {
-      return _metrics
     }
   }
 }

@@ -13,6 +13,8 @@
 
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   export let message: ActivityMessage
+  export let autofocus = true
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -65,12 +67,14 @@
       object={message}
       {channel}
       provider={dataProvider}
+      {autofocus}
       fullHeight={false}
       fixedInput={false}
+      {onReply}
     >
       <svelte:fragment slot="header">
         <div class="mt-3">
-          <ThreadParentMessage {message} {readonly} />
+          <ThreadParentMessage {message} {readonly} {onReply} />
         </div>
 
         {#if (message.replies ?? $messagesStore?.length ?? 0) > 0}

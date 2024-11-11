@@ -13,34 +13,18 @@
 // limitations under the License.
 //
 
-import type {
-  ContentTextAdapter,
-  FullTextAdapter,
-  FullTextAdapterFactory,
-  SessionFindAll
-} from '@hcengineering/server-core'
-import type { StorageAdapter } from '@hcengineering/storage'
-import type { FullTextPipelineStage } from './indexer'
+import type { ContentTextAdapterConfiguration, FullTextAdapterFactory } from '@hcengineering/server-core'
 
 export * from './fulltext'
 export * from './indexer'
 export * from './rekoni'
 export * from './ydoc'
 
-/**
- * @public
- */
-export type FullTextPipelineStageFactory = (
-  adapter: FullTextAdapter,
-  storageFindAll: SessionFindAll,
-  storageAdapter: StorageAdapter,
-  contentAdapter: ContentTextAdapter
-) => FullTextPipelineStage[]
-
 export interface FulltextDBConfiguration {
-  fulltextAdapter?: {
+  fulltextAdapter: {
     factory: FullTextAdapterFactory
     url: string
-    stages: FullTextPipelineStageFactory
   }
+  contentAdapters: Record<string, ContentTextAdapterConfiguration>
+  defaultContentAdapter: string
 }

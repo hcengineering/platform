@@ -65,7 +65,7 @@
       const prev = lastId
       lastId = _id
       void inboxClient.then(async (client) => {
-        await client.readDoc(pClient, prev)
+        await client.readDoc(prev)
       })
     }
   }
@@ -73,7 +73,7 @@
   onDestroy(async () => {
     await inboxClient.then(async (client) => {
       if (objectId === undefined) return
-      await client.readDoc(pClient, objectId)
+      await client.readDoc(objectId)
     })
   })
 

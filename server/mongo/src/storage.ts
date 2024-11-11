@@ -262,6 +262,10 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   }
 
+  async rawDeleteMany<T extends Doc>(domain: Domain, query: DocumentQuery<T>): Promise<void> {
+    await this.db.collection(domain).deleteMany(this.translateRawQuery(query))
+  }
+
   abstract init (): Promise<void>
 
   collection<TSchema extends Document = Document>(domain: Domain): Collection<TSchema> {
@@ -487,9 +491,13 @@ abstract class MongoAdapterBase implements DbAdapter {
     lookup: Lookup<T> | undefined,
     object: any,
     parent?: string,
-    parentObject?: any
+    parentObject?: any,
+    domainLookup?: {
+      field: string
+      domain: Domain
+    }
   ): Promise<void> {
-    if (lookup === undefined) return
+    if (lookup === undefined && domainLookup === undefined) return
     for (const key in lookup) {
       if (key === '_id') {
         await this.fillReverseLookup(clazz, lookup, object, parent, parentObject)
@@ -506,6 +514,14 @@ abstract class MongoAdapterBase implements DbAdapter {
       } else {
         await this.fillLookup(value, object, key, fullKey, targetObject)
       }
+    }
+    if (domainLookup !== undefined) {
+      if (object.$lookup === undefined) {
+        object.$lookup = {}
+      }
+      object.$lookup._id = object['dl_' + domainLookup.field + '_lookup'][0]
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete object['dl_' + domainLookup.field + '_lookup']
     }
   }
 
@@ -586,8 +602,18 @@ abstract class MongoAdapterBase implements DbAdapter {
     const pipeline: any[] = []
     const tquery = this.translateQuery(clazz, query, options)
 
-    const slowPipeline = isLookupQuery(query) || isLookupSort(options?.sort)
+    const slowPipeline = isLookupQuery(query) || isLookupSort(options?.sort) || options.domainLookup !== undefined
     const steps = this.getLookups(clazz, options?.lookup)
+
+    if (options.domainLookup !== undefined) {
+      steps.push({
+        from: options.domainLookup.domain,
+        localField: options.domainLookup.field,
+        foreignField: '_id',
+        as: 'dl_' + options.domainLookup.field + '_lookup'
+      })
+    }
+
     if (slowPipeline) {
       if (Object.keys(tquery.base).length > 0) {
         pipeline.push({ $match: tquery.base })
@@ -645,7 +671,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
     for (const row of result) {
       await ctx.with('fill-lookup', {}, async (ctx) => {
-        await this.fillLookupValue(ctx, clazz, options?.lookup, row)
+        await this.fillLookupValue(ctx, clazz, options?.lookup, row, undefined, undefined, options.domainLookup)
       })
       if (row.$lookup !== undefined) {
         for (const [, v] of Object.entries(row.$lookup)) {
@@ -779,7 +805,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     domain: Domain,
     field: string,
     query?: DocumentQuery<D>
-  ): Promise<Set<T>> {
+  ): Promise<Map<T, number>> {
     const result = await ctx.with('groupBy', { domain }, async (ctx) => {
       const coll = this.collection(domain)
       const grResult = await coll
@@ -787,12 +813,13 @@ abstract class MongoAdapterBase implements DbAdapter {
           ...(query !== undefined ? [{ $match: query }] : []),
           {
             $group: {
-              _id: '$' + field
+              _id: '$' + field,
+              count: { $sum: 1 }
             }
           }
         ])
         .toArray()
-      return new Set(grResult.map((it) => it._id as unknown as T))
+      return new Map(grResult.map((it) => [it._id as unknown as T, it.count]))
     })
     return result
   }
@@ -811,10 +838,12 @@ abstract class MongoAdapterBase implements DbAdapter {
       let result: FindResult<T>
       const domain = options?.domain ?? this.hierarchy.getDomain(_class)
       if (
-        options != null &&
-        (options?.lookup != null || this.isEnumSort(_class, options) || this.isRulesSort(options))
+        options?.lookup != null ||
+        this.isEnumSort(_class, options) ||
+        this.isRulesSort(options) ||
+        options?.domainLookup !== undefined
       ) {
-        return await this.findWithPipeline(ctx, domain, _class, query, options, stTime)
+        return await this.findWithPipeline(ctx, domain, _class, query, options ?? {}, stTime)
       }
       const coll = this.collection(domain)
 
@@ -1407,23 +1436,6 @@ class MongoAdapter extends MongoAdapterBase {
       modifiedOn: tx.modifiedOn
     }
     if (isOperator(tx.attributes)) {
-      const operator = Object.keys(tx.attributes)[0]
-      if (operator === '$move') {
-        const keyval = (tx.attributes as any).$move
-        const arr = tx.mixin + '.' + Object.keys(keyval)[0]
-        const desc = keyval[arr]
-        const ops: any = [
-          { updateOne: { filter, update: { $pull: { [arr]: desc.$value } } } },
-          {
-            updateOne: {
-              filter,
-              update: { $set: modifyOp, $push: { [arr]: { $each: [desc.$value], $position: desc.$position } } }
-            }
-          }
-        ]
-        bulk.bulkOperations.push(...ops)
-        return
-      }
       const update = { ...this.translateMixinAttrs(tx.mixin, tx.attributes), $set: { ...modifyOp } }
 
       bulk.bulkOperations.push({
@@ -1475,46 +1487,7 @@ class MongoAdapter extends MongoAdapterBase {
   protected txUpdateDoc (bulk: OperationBulk, tx: TxUpdateDoc<Doc>): void {
     if (isOperator(tx.operations)) {
       const operator = Object.keys(tx.operations)[0]
-      if (operator === '$move') {
-        const keyval = (tx.operations as any).$move
-        const arr = Object.keys(keyval)[0]
-        const desc = keyval[arr]
-
-        const ops: any = [
-          {
-            updateOne: {
-              filter: { _id: tx.objectId },
-              update: {
-                $set: {
-                  '%hash%': null
-                },
-                $pull: {
-                  [arr]: desc.$value
-                }
-              }
-            }
-          },
-          {
-            updateOne: {
-              filter: { _id: tx.objectId },
-              update: {
-                $set: {
-                  modifiedBy: tx.modifiedBy,
-                  modifiedOn: tx.modifiedOn,
-                  '%hash%': null
-                },
-                $push: {
-                  [arr]: {
-                    $each: [desc.$value],
-                    $position: desc.$position
-                  }
-                }
-              }
-            }
-          }
-        ]
-        bulk.bulkOperations.push(...ops)
-      } else if (operator === '$update') {
+      if (operator === '$update') {
         const keyval = (tx.operations as any).$update
         const arr = Object.keys(keyval)[0]
         const desc = keyval[arr] as QueryUpdate<any>
@@ -1665,7 +1638,7 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   @withContext('get-model')
   async getModel (ctx: MeasureContext): Promise<Tx[]> {
     const txCollection = this.db.collection<Tx>(DOMAIN_TX)
-    const cursor = txCollection.find({ objectSpace: core.space.Model })
+    const cursor = txCollection.find({ objectSpace: core.space.Model }, { sort: { _id: 1, modifiedOn: 1 } })
     const model = await toArray<Tx>(cursor)
     // We need to put all core.account.System transactions first
     const systemTx: Tx[] = []

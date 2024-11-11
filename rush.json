@@ -16,7 +16,7 @@
    * path segment in the "$schema" field for all your Rush config files.  This will ensure
    * correct error-underlining and tab-completion for editors such as VS Code.
    */
-  "rushVersion": "5.134.0",
+  "rushVersion": "5.140.1",
 
   /**
    * The next field selects which package manager should be installed and determines its version.
@@ -446,6 +446,16 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/highlight",
+      "projectFolder": "packages/highlight",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/api-client",
+      "projectFolder": "packages/api-client",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/collaboration",
       "projectFolder": "server/collaboration",
       "shouldPublish": false
@@ -826,6 +836,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-stats",
+      "projectFolder": "pods/stats",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/pod-server",
       "projectFolder": "pods/server",
       "shouldPublish": false
@@ -995,11 +1010,11 @@
       "projectFolder": "models/lead",
       "shouldPublish": false
     },
-    {
-      "packageName": "@hcengineering/storybook",
-      "projectFolder": "dev/storybook",
-      "shouldPublish": false
-    },
+    // {
+    //   "packageName": "@hcengineering/storybook",
+    //   "projectFolder": "dev/storybook",
+    //   "shouldPublish": false
+    // },
     {
       "packageName": "@hcengineering/model-gmail",
       "projectFolder": "models/gmail",
@@ -1424,6 +1439,26 @@
     {
       "packageName": "@hcengineering/pod-backup",
       "projectFolder": "pods/backup",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-fulltext",
+      "projectFolder": "pods/fulltext",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-fulltext",
+      "projectFolder": "server-plugins/fulltext",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-fulltext-resources",
+      "projectFolder": "server-plugins/fulltext-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-fulltext",
+      "projectFolder": "models/server-fulltext",
       "shouldPublish": false
     },
     {

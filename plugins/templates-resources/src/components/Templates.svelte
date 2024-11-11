@@ -17,7 +17,7 @@
     Breadcrumb,
     Separator,
     defineSeparators,
-    settingsSeparators,
+    twoPanelsSeparators,
     Scroller
   } from '@hcengineering/ui'
   import { getActions as getContributedActions, TreeItem, TreeNode } from '@hcengineering/view-resources'
@@ -147,11 +147,11 @@
   }
 
   let space: Ref<TemplateCategory> | undefined = undefined
-  defineSeparators('workspaceSettings', settingsSeparators)
+  defineSeparators('workspaceSettings', twoPanelsSeparators)
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header adaptive={'disabled'}>
     <Breadcrumb
       icon={templatesPlugin.icon.Templates}
       label={templatesPlugin.string.Templates}

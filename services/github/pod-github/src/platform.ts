@@ -162,10 +162,15 @@ export class PlatformWorker {
         errors = true
       }
       await new Promise<void>((resolve) => {
-        this.triggerCheckWorkspaces = resolve
-        this.ctx.info('Workspaces check triggered')
+        this.triggerCheckWorkspaces = () => {
+          this.ctx.info('Workspaces check triggered')
+          this.triggerCheckWorkspaces = () => {}
+          resolve()
+        }
         if (errors) {
-          setTimeout(resolve, 5000)
+          setTimeout(() => {
+            this.triggerCheckWorkspaces()
+          }, 5000)
         }
       })
     }
@@ -385,14 +390,57 @@ export class PlatformWorker {
         }
         const client = new TxOperations(platformClient, payload.accountId)
 
-        const personAuth = await client.findOne(github.class.GithubAuthentication, {
+        let personAuths = await client.findAll(github.class.GithubAuthentication, {
           attachedTo: payload.accountId
         })
-        if (personAuth !== undefined) {
-          if (revoke) {
+        if (personAuths.length > 1) {
+          for (const auth of personAuths.slice(1)) {
+            await client.remove(auth)
+          }
+          personAuths.length = 1
+        }
+
+        if (revoke) {
+          for (const personAuth of personAuths) {
             await client.remove(personAuth, Date.now(), payload.accountId)
-          } else {
-            await client.update<GithubAuthentication>(personAuth, update, false, Date.now(), payload.accountId)
+          }
+        } else {
+          if (personAuths.length > 0) {
+            await client.update<GithubAuthentication>(personAuths[0], update, false, Date.now(), payload.accountId)
+          } else if (dta !== undefined) {
+            const authId = await client.createDoc<GithubAuthentication>(
+              github.class.GithubAuthentication,
+              core.space.Workspace,
+              {
+                error: null,
+                authRequestTime: Date.now(),
+                createdAt: new Date(),
+                followers: 0,
+                following: 0,
+                nodeId: '',
+                updatedAt: new Date(),
+                url: '',
+                repositories: 0,
+                organizations: { totalCount: 0, nodes: [] },
+                closedIssues: 0,
+                openIssues: 0,
+                mergedPRs: 0,
+                openPRs: 0,
+                closedPRs: 0,
+                repositoryDiscussions: 0,
+                starredRepositories: 0,
+                ...update,
+                attachedTo: payload.accountId,
+                login: dta._id
+              },
+              undefined,
+              undefined,
+              payload.accountId
+            )
+
+            personAuths = await client.findAll(github.class.GithubAuthentication, {
+              _id: authId
+            })
           }
         }
 
@@ -449,9 +497,9 @@ export class PlatformWorker {
           }
         }
 
-        if (dta !== undefined && personAuth !== undefined) {
+        if (dta !== undefined && personAuths.length === 1) {
           try {
-            await syncUser(this.ctx, dta, personAuth, client, payload.accountId)
+            await syncUser(this.ctx, dta, personAuths[0], client, payload.accountId)
           } catch (err: any) {
             if (err.response?.data?.message === 'Bad credentials') {
               await this.revokeUserAuth(dta)
@@ -650,6 +698,9 @@ export class PlatformWorker {
   }
 
   private async checkWorkspaces (): Promise<boolean> {
+    this.ctx.info('************************* Check workspaces ************************* ', {
+      workspaces: this.clients.size
+    })
     let workspaces = await this.getWorkspaces()
     if (process.env.GITHUB_USE_WS !== undefined) {
       workspaces = [process.env.GITHUB_USE_WS]
@@ -660,7 +711,14 @@ export class PlatformWorker {
     let errors = 0
     let idx = 0
     const connecting = new Map<string, number>()
+    const st = Date.now()
     const connectingInfo = setInterval(() => {
+      this.ctx.info('****** connecting to workspaces ******', {
+        connecting: connecting.size,
+        time: Date.now() - st,
+        workspaces: workspaces.length,
+        queue: rateLimiter.processingQueue.size
+      })
       for (const [c, d] of connecting.entries()) {
         this.ctx.info('connecting to workspace', { workspace: c, time: Date.now() - d })
       }
@@ -727,7 +785,7 @@ export class PlatformWorker {
             }
           )
           if (worker !== undefined) {
-            workerCtx.info('Register worker Done', {
+            workerCtx.info('************************* Register worker Done ************************* ', {
               workspaceId: workspaceInfo.workspaceId,
               workspace: workspaceInfo.workspace,
               index: widx,
@@ -736,12 +794,15 @@ export class PlatformWorker {
             // No if no integration, we will try connect one more time in a time period
             this.clients.set(workspace, worker)
           } else {
-            workerCtx.info('Failed Register worker, timeout or integrations removed', {
-              workspaceId: workspaceInfo.workspaceId,
-              workspace: workspaceInfo.workspace,
-              index: widx,
-              total: workspaces.length
-            })
+            workerCtx.info(
+              '************************* Failed Register worker, timeout or integrations removed *************************',
+              {
+                workspaceId: workspaceInfo.workspaceId,
+                workspace: workspaceInfo.workspace,
+                index: widx,
+                total: workspaces.length
+              }
+            )
             errors++
           }
         } catch (e: any) {
@@ -754,6 +815,10 @@ export class PlatformWorker {
         }
       })
     }
+    this.ctx.info('************************* Waiting To complete Workspace processing ************************* ', {
+      workspaces: this.clients.size,
+      rateLimiter: rateLimiter.processingQueue.size
+    })
     try {
       await rateLimiter.waitProcessing()
     } catch (e: any) {
@@ -761,6 +826,11 @@ export class PlatformWorker {
       errors++
     }
     clearInterval(connectingInfo)
+
+    this.ctx.info('************************* Check close deleted ************************* ', {
+      workspaces: this.clients.size,
+      deleted: toDelete.size
+    })
     // Close deleted workspaces
     for (const deleted of Array.from(toDelete.keys())) {
       const ws = this.clients.get(deleted)
@@ -768,7 +838,7 @@ export class PlatformWorker {
         try {
           this.ctx.info('workspace removed from tracking list', { workspace: deleted })
           this.clients.delete(deleted)
-          await ws.close()
+          void ws.close()
         } catch (err: any) {
           Analytics.handleError(err)
           errors++

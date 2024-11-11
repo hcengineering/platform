@@ -46,7 +46,8 @@ export default mergeIds(settingId, setting, {
     InviteSetting: '' as AnyComponent,
     ArrayEditor: '' as AnyComponent,
     IntegrationPanel: '' as AnyComponent,
-    Configure: '' as AnyComponent
+    Configure: '' as AnyComponent,
+    SettingsWidget: '' as AnyComponent
   },
   category: {
     Settings: '' as Ref<ActionCategory>

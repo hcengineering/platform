@@ -158,6 +158,7 @@
   const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
   $deviceInfo.navigator.visible = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
+  $deviceInfo.aside.visible = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
 
   async function toggleNav (): Promise<void> {
     $deviceInfo.navigator.visible = !$deviceInfo.navigator.visible
@@ -215,9 +216,11 @@
       } else {
         const tabToReplace = tabs.findLast((t) => !t.isPinned)
         if (tabToReplace !== undefined) {
-          await client.update(tabToReplace, {
+          const op = client.apply(undefined, undefined, true)
+          await op.update(tabToReplace, {
             location: url
           })
+          await op.commit()
           selectTab(tabToReplace._id)
           prevTabIdStore.set(tabToReplace._id)
         } else {
@@ -633,14 +636,28 @@
   $: if ($deviceInfo.docWidth <= 1024 && !$deviceInfo.navigator.float) {
     $deviceInfo.navigator.visible = false
     $deviceInfo.navigator.float = true
+    $deviceInfo.aside.visible = false
   } else if ($deviceInfo.docWidth > 1024 && $deviceInfo.navigator.float) {
     if (getMetadata(workbench.metadata.NavigationExpandedDefault) === undefined) {
       $deviceInfo.navigator.float = false
       $deviceInfo.navigator.visible = true
+      $deviceInfo.aside.visible = true
     }
   }
   const checkOnHide = (): void => {
     if ($deviceInfo.navigator.visible && $deviceInfo.docWidth <= 1024) $deviceInfo.navigator.visible = false
+  }
+  let oldNavVisible: boolean = $deviceInfo.navigator.visible
+  let oldASideVisible: boolean = $deviceInfo.aside.visible
+  $: if (oldNavVisible !== $deviceInfo.navigator.visible || oldASideVisible !== $deviceInfo.aside.visible) {
+    if ($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.navigator.float) {
+      if ($deviceInfo.navigator.visible && $deviceInfo.aside.visible) {
+        if (oldNavVisible) $deviceInfo.navigator.visible = false
+        else $deviceInfo.aside.visible = false
+      }
+    }
+    oldNavVisible = $deviceInfo.navigator.visible
+    oldASideVisible = $deviceInfo.aside.visible
   }
   $: $deviceInfo.navigator.direction = $deviceInfo.isMobile && $deviceInfo.isPortrait ? 'horizontal' : 'vertical'
   let appsMini: boolean
@@ -860,7 +877,7 @@
           >
             <Component
               is={contact.component.Avatar}
-              props={{ person, name: person?.name, size: 'small', account: account._id }}
+              props={{ person, name: person?.name, size: 'small', account: account._id, showStatus: true }}
             />
           </div>
         </div>
@@ -872,7 +889,7 @@
         application: currentApplication?._id
       }}
     />
-    <div class="workbench-container inner">
+    <div class="workbench-container inner" class:rounded={$sidebarStore.variant === SidebarVariant.EXPANDED}>
       {#if mainNavigator}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -932,6 +949,7 @@
       <div
         bind:this={contentPanel}
         class={navigatorModel === undefined ? 'hulyPanels-container' : 'hulyComponent overflow-hidden'}
+        data-id={'contentPanel'}
       >
         {#if currentApplication && currentApplication.component}
           <Component
@@ -978,13 +996,28 @@
         </div>
       {/if}
     </div>
+    {#if !$deviceInfo.navigator.float}
+      {#if $sidebarStore.variant === SidebarVariant.EXPANDED}
+        <Separator name={'main'} index={0} color={'transparent'} separatorSize={0} short />
+      {/if}
+      <WidgetsBar />
+    {/if}
   </div>
-  {#if $sidebarStore.variant === SidebarVariant.EXPANDED}
-    <Separator name={'main'} index={0} color={'transparent'} separatorSize={0} short />
-  {/if}
-  <WidgetsBar />
   <Dock />
   <div bind:this={cover} class="cover" />
+  {#if $deviceInfo.navigator.float}
+    <div
+      class="antiPanel-navigator right no-print {$deviceInfo.navigator.direction === 'horizontal'
+        ? 'portrait'
+        : 'landscape'}"
+      style:display={$deviceInfo.aside.visible ? 'flex' : 'none'}
+    >
+      <Separator name={'main'} index={0} color={'transparent'} separatorSize={0} short float={'sidebar'} />
+      <div class="antiPanel-wrap__content hulyNavPanel-container">
+        <WidgetsBar />
+      </div>
+    </div>
+  {/if}
   <TooltipInstance />
   <PanelInstance bind:this={panelInstance} contentPanel={elementPanel}>
     <svelte:fragment slot="panel-header">
@@ -996,7 +1029,9 @@
       <ActionContext context={{ mode: 'popup' }} />
     </svelte:fragment>
   </Popup>
-  <ComponentExtensions extension={workbench.extensions.WorkbenchExtensions} />
+  <div class="hidden max-w-0 max-h-0">
+    <ComponentExtensions extension={workbench.extensions.WorkbenchExtensions} />
+  </div>
   <BrowserNotificatator />
 {/if}
 
@@ -1008,12 +1043,15 @@
     min-height: 0;
     width: 100%;
     height: 100%;
-    background-color: var(--theme-statusbar-color);
+    background-color: var(--theme-panel-color);
     touch-action: none;
 
     &.inner {
       background-color: var(--theme-navpanel-color);
-      border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
+
+      &.rounded {
+        border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
+      }
     }
     &:not(.inner)::after {
       position: absolute;
@@ -1021,11 +1059,13 @@
       inset: 0;
       border: 1px solid var(--theme-divider-color);
       border-radius: var(--medium-BorderRadius);
-      border-bottom-right-radius: 0;
-      border-top-right-radius: 0;
       pointer-events: none;
     }
-    .antiPanel-application {
+    .antiPanel-application.horizontal {
+      border-radius: 0 0 var(--medium-BorderRadius) var(--medium-BorderRadius);
+      border-top: none;
+    }
+    .antiPanel-application:not(.horizontal) {
       border-radius: var(--medium-BorderRadius) 0 0 var(--medium-BorderRadius);
       border-right: none;
     }
@@ -1073,11 +1113,11 @@
     }
     .logo-container.mini {
       left: 4px;
-      width: 1.5rem;
-      height: 1.5rem;
+      width: 1.75rem;
+      height: 1.75rem;
     }
     .topmenu-container.mini {
-      left: calc(1.5rem + 8px);
+      left: calc(1.75rem + 8px);
     }
   }
 

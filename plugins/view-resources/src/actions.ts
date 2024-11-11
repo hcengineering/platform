@@ -136,9 +136,10 @@ export async function getContextActions (
   context: {
     mode: ViewContextType
     application?: Ref<Doc>
-  }
+  },
+  derived: Ref<Class<Doc>> = core.class.Doc
 ): Promise<Action[]> {
-  const result = await getActions(client, doc, undefined, context.mode)
+  const result = await getActions(client, doc, derived, context.mode)
 
   if (context.application !== undefined) {
     return result.filter((it) => it.context.application === context.application || it.context.application === undefined)

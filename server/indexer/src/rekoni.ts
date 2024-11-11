@@ -5,14 +5,10 @@ import { generateToken } from '@hcengineering/server-token'
 /**
  * @public
  */
-export async function createRekoniAdapter (
-  url: string,
-  workspace: WorkspaceId,
-  _metrics: MeasureContext
-): Promise<ContentTextAdapter> {
-  const token = generateToken('anticrm-hcenginnering', workspace)
+export async function createRekoniAdapter (url: string): Promise<ContentTextAdapter> {
   return {
-    content: async (name: string, type: string, doc): Promise<string> => {
+    content: async (ctx: MeasureContext, workspace: WorkspaceId, name: string, type: string, doc): Promise<string> => {
+      const token = generateToken('anticrm-hcenginnering', workspace)
       try {
         // Node doesn't support Readable with fetch.
         const chunks: any[] = []
@@ -21,7 +17,7 @@ export async function createRekoniAdapter (
           doc.on('data', (chunk) => {
             len += (chunk as Buffer).length
             chunks.push(chunk)
-            if (len > 10 * 1024 * 1024) {
+            if (len > 30 * 1024 * 1024) {
               reject(new Error('file to big for content processing'))
             }
           })
@@ -38,27 +34,22 @@ export async function createRekoniAdapter (
           await fetch(`${url}/toText?name=${encodeURIComponent(name)}&type=${encodeURIComponent(type)}`, {
             method: 'POST',
             body,
-            // timeout: 15000,
             headers: {
               Authorization: 'Bearer ' + token,
-              'Content-type': typeof doc === 'string' ? 'text/plain' : 'application/octet-stream'
+              'Content-type': 'application/octet-stream'
             }
           } as any)
         ).json()
         if (r.error !== undefined) {
-          throw new Error(r.error)
+          throw new Error(JSON.stringify(r.error))
         }
         return r.content
       } catch (err: any) {
-        console.info('Content Processing error', name, type, doc, err)
         if (err.message === 'Response code 400 (Bad Request)' || err.code === 400) {
           return ''
         }
         throw err
       }
-    },
-    metrics (): MeasureContext {
-      return _metrics
     }
   }
 }

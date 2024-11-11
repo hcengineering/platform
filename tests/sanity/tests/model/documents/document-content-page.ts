@@ -23,6 +23,8 @@ export class DocumentContentPage extends CommonPage {
   readonly tooltipImageTools = (): Locator => this.page.locator('.tippy-box')
 
   readonly fullscreenImage = (): Locator => this.page.locator('.popup.fullsize img')
+  readonly fullscreenButton = (): Locator => this.page.locator('.popup #btnDialogFullScreen')
+  readonly imageInPopup = (): Locator => this.page.locator('.popup img')
 
   readonly proseTableColumnHandle = (col: number): Locator =>
     this.page.locator('table.proseTable').locator('tr').first().locator('td').nth(col).locator('div.table-col-handle')

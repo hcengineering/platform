@@ -16,7 +16,7 @@
 <script lang="ts">
   export let size: 'x-small' | 'small' | 'medium' | 'large'
   export let filled: boolean = false
-  const fill: string = 'currentColor'
+  export let fill: string = 'currentColor'
 </script>
 
 <svg class="svg-{size}" {fill} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">

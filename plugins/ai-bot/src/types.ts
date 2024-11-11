@@ -13,18 +13,6 @@
 // limitations under the License.
 //
 
-import { Markup } from '@hcengineering/core'
-
-export interface TranslateRequest {
-  text: Markup
-  lang: string
-}
-
-export interface TranslateResponse {
-  text: Markup
-  lang: string
-}
-
 export enum OnboardingEvent {
   OpenChatInSidebar = 'openChatInSidebar'
 }

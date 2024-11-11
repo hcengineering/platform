@@ -32,6 +32,7 @@
   export let padding: string | undefined = undefined
   export let hidden: boolean = false
   export let allowFullsize: boolean = false
+  export let noTopIndent: boolean = false
   export let hideFooter: boolean = false
   export let adaptive: 'default' | 'freezeActions' | 'doubleRow' | 'disabled' = 'disabled'
   export let showCancelButton: boolean = true
@@ -56,7 +57,7 @@
 
 <svelte:window on:keydown={onKeyDown} />
 
-<div class="hulyModal-container {type}" class:hidden>
+<div class="hulyModal-container {type}" class:hidden class:noTopIndent>
   <Header
     {type}
     {allowFullsize}

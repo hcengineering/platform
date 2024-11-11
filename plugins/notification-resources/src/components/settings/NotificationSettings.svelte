@@ -35,7 +35,7 @@
     resolvedLocationStore,
     Scroller,
     Separator,
-    settingsSeparators
+    twoPanelsSeparators
   } from '@hcengineering/ui'
 
   import notification from '../../plugin'
@@ -93,11 +93,11 @@
     unsubscribeTypeSetting()
     unsubscribeProviderSetting()
   })
-  defineSeparators('notificationSettings', settingsSeparators)
+  defineSeparators('notificationSettings', twoPanelsSeparators)
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header adaptive={'disabled'}>
     <Breadcrumb
       icon={notification.icon.Notifications}
       label={notification.string.Notifications}

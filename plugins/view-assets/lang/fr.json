@@ -120,6 +120,8 @@
     "MoreActions": "Plus d'actions",
     "Leave": "Quitter",
     "Join": "Rejoindre",
-    "Copied": "Copié"
+    "Copied": "Copié",
+    "Title": "Titre",
+    "HideArchived": "Masquer les archives"
   }
 }

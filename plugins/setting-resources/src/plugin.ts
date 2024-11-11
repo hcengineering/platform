@@ -13,12 +13,17 @@
 // limitations under the License.
 //
 
+import { type Ref } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import setting, { settingId } from '@hcengineering/setting'
 import { type AnyComponent } from '@hcengineering/ui'
+import { type Widget } from '@hcengineering/workbench'
 
 export default mergeIds(settingId, setting, {
+  ids: {
+    SettingsWidget: '' as Ref<Widget>
+  },
   component: {
     EditEnum: '' as AnyComponent,
     ManageSpaceTypes: '' as AnyComponent,

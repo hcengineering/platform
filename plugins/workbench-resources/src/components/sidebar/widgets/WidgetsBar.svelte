@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Widget, WidgetPreference, WidgetType } from '@hcengineering/workbench'
-  import { IconSettings, ModernButton, showPopup } from '@hcengineering/ui'
+  import { IconSettings, ModernButton, showPopup, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { Ref } from '@hcengineering/core'
 
   import WidgetPresenter from './/WidgetPresenter.svelte'
@@ -31,7 +31,8 @@
 
   function handleSelectWidget (widget: Widget): void {
     if (selected === widget._id) {
-      minimizeSidebar(true)
+      if ($deviceInfo.navigator.float) $deviceInfo.aside.visible = false
+      else minimizeSidebar(true)
     } else {
       openWidget(widget, $sidebarStore.widgetsState.get(widget._id)?.data, { active: true, openedByUser: true })
     }
@@ -95,13 +96,13 @@
   .root {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    padding-block: var(--spacing-2);
     height: 100%;
-    padding: 0.5rem 0;
     width: 3.5rem;
     min-width: 3.5rem;
     max-width: 3.5rem;
-    border-top: 1px solid var(--theme-divider-color);
+    background-color: var(--theme-navpanel-color);
+    border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
     overflow-y: auto;
   }
 

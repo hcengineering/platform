@@ -15,7 +15,6 @@
 
 import { saveCollaborativeDoc } from '@hcengineering/collaboration'
 import core, {
-  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_SPACE,
   DOMAIN_STATUS,
   DOMAIN_TX,
@@ -24,7 +23,6 @@ import core, {
   collaborativeDocParse,
   coreId,
   generateId,
-  isClassIndexable,
   makeCollaborativeDoc,
   type AnyAttribute,
   type Doc,
@@ -260,25 +258,6 @@ async function processMigrateContentFor (
 
 export const coreOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    // We need to delete all documents in doc index state for missing classes
-    const allClasses = client.hierarchy.getDescendants(core.class.Doc)
-    const contexts = new Map(
-      client.model.findAllSync(core.class.FullTextSearchContext, {}).map((it) => [it.toClass, it])
-    )
-
-    const allIndexed = allClasses.filter((it) => isClassIndexable(client.hierarchy, it, contexts))
-
-    // Next remove all non indexed classes and missing classes as well.
-    await client.update(
-      DOMAIN_DOC_INDEX_STATE,
-      { objectClass: { $nin: allIndexed } },
-      {
-        $set: {
-          removed: true,
-          needIndex: true
-        }
-      }
-    )
     await tryMigrate(client, coreId, [
       {
         state: 'statuses-to-model',
@@ -295,12 +274,6 @@ export const coreOperation: MigrateOperation = {
       {
         state: 'old-statuses-transactions',
         func: migrateStatusTransactions
-      },
-      {
-        state: 'add-need-index',
-        func: async (client: MigrationClient) => {
-          await client.update(DOMAIN_DOC_INDEX_STATE, {}, { $set: { needIndex: true } })
-        }
       },
       {
         state: 'collaborative-content-to-storage',

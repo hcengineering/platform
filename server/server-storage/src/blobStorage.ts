@@ -70,6 +70,8 @@ class StorageBlobAdapter implements DbAdapter {
     operations: DocumentUpdate<T>
   ): Promise<void> {}
 
+  async rawDeleteMany<T extends Doc>(domain: Domain, query: DocumentQuery<T>): Promise<void> {}
+
   async findAll<T extends Doc>(
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
@@ -79,8 +81,8 @@ class StorageBlobAdapter implements DbAdapter {
     return toFindResult([])
   }
 
-  async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
-    return new Set()
+  async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Map<T, number>> {
+    return new Map()
   }
 
   async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
@@ -133,6 +135,8 @@ export async function createStorageDataAdapter (
     throw new Error('minio storage adapter require minio')
   }
   // We need to create bucket if it doesn't exist
-  await storage.make(ctx, workspaceId)
+  if (!(await storage.exists(ctx, workspaceId))) {
+    await storage.make(ctx, workspaceId)
+  }
   return new StorageBlobAdapter(workspaceId, storage as StorageAdapterEx, ctx)
 }

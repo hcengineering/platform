@@ -25,7 +25,7 @@
     DatePresenter,
     deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, afterUpdate } from 'svelte'
   import { activeMilestone } from '../../issues'
   import tracker from '../../plugin'
   import MilestoneSelector from './MilestoneSelector.svelte'
@@ -50,6 +50,8 @@
 
   const client = getClient()
   const dispatch = createEventDispatcher()
+
+  let element: HTMLDivElement
 
   const handleMilestoneIdChanged = async (newMilestoneId: Ref<Milestone> | null | undefined) => {
     if (!isEditable || newMilestoneId === undefined || (!Array.isArray(value) && value.milestone === newMilestoneId)) {
@@ -86,11 +88,12 @@
   $: _space = space ?? (!Array.isArray(value) ? value.space : { $in: Array.from(new Set(value.map((it) => it.space))) })
 
   $: twoRows = $deviceInfo.twoRows
+  afterUpdate(() => dispatch('resize', element?.clientWidth))
 </script>
 
 {#if kind === 'list'}
   {#if !Array.isArray(value) && value.milestone}
-    <div class={compression ? 'label-wrapper' : 'clear-mins'}>
+    <div bind:this={element} class={compression ? 'label-wrapper' : 'clear-mins'}>
       <MilestoneSelector
         {kind}
         {size}
@@ -112,6 +115,7 @@
   {/if}
 {:else}
   <div
+    bind:this={element}
     class="flex flex-wrap clear-mins"
     class:minus-margin={kind === 'list-header'}
     class:label-wrapper={compression}

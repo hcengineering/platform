@@ -15,6 +15,9 @@
 
 import { CopyObjectCommand, PutObjectCommand, S3 } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
+import { NodeHttpHandler } from '@smithy/node-http-handler'
+import { Agent as HttpAgent } from 'http'
+import { Agent as HttpsAgent } from 'https'
 
 import core, {
   toWorkspaceString,
@@ -26,6 +29,7 @@ import core, {
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, {
+  NoSuchKeyError,
   type BlobStorageIterator,
   type ListBlobResult,
   type StorageAdapter,
@@ -70,7 +74,13 @@ export class S3Service implements StorageAdapter {
         accessKeyId: opt.accessKey,
         secretAccessKey: opt.secretKey
       },
-      region: opt.region ?? 'auto'
+      region: opt.region ?? 'auto',
+      requestHandler: new NodeHttpHandler({
+        connectionTimeout: 5000,
+        socketTimeout: 120000,
+        httpAgent: new HttpAgent({ maxSockets: 500, keepAlive: true }),
+        httpsAgent: new HttpsAgent({ maxSockets: 500, keepAlive: true })
+      })
     })
 
     this.expireTime = parseInt(this.opt.expireTime ?? '168') * 3600 // use 7 * 24 - hours as default value for expireF
@@ -307,21 +317,26 @@ export class S3Service implements StorageAdapter {
   }
 
   async doGet (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string, range?: string): Promise<Readable> {
-    const res = await this.client.getObject({
-      Bucket: this.getBucketId(workspaceId),
-      Key: this.getDocumentKey(workspaceId, objectName),
-      Range: range
-    })
+    try {
+      const res = await this.client.getObject({
+        Bucket: this.getBucketId(workspaceId),
+        Key: this.getDocumentKey(workspaceId, objectName),
+        Range: range
+      })
 
-    const stream = res.Body?.transformToWebStream()
+      const stream = res.Body?.transformToWebStream()
 
-    if (stream !== undefined) {
-      return Readable.fromWeb(stream as ReadableStream<any>)
-    } else {
-      const readable = new Readable()
-      readable._read = () => {}
-      readable.push(null)
-      return readable
+      if (stream !== undefined) {
+        return Readable.fromWeb(stream as ReadableStream<any>)
+      } else {
+        const readable = new Readable()
+        readable._read = () => {}
+        readable.push(null)
+        return readable
+      }
+    } catch (err: any) {
+      // In case of error return undefined
+      throw new NoSuchKeyError(`${workspaceId.name} missing ${objectName}`, err)
     }
   }
 

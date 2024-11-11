@@ -888,8 +888,7 @@ export function defineNotifications (builder: Builder): void {
 
 export function defineSearch (builder: Builder): void {
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
-    toClass: documents.class.Document,
-    parentPropagate: true
+    toClass: documents.class.Document
   })
 
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {

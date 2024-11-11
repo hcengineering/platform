@@ -16,5 +16,6 @@
   "AI_URL": "http://localhost:4010",
   "BRANDING_URL": "/branding.json",
   "VERSION": null,
-  "MODEL_VERSION": null
+  "MODEL_VERSION": null,
+  "STATS_URL": "http://localhost:4900"
 }

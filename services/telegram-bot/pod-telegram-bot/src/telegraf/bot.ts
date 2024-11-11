@@ -150,7 +150,10 @@ async function createSelectChannelKeyboard (
   const channels = await worker.getChannels(userRecord.email, workspace)
 
   if (channels.length === 0) {
-    await showNoChannelsMessage(ctx, worker, workspace)
+    const ws = await worker.getWorkspaceInfo(workspace)
+    await ctx.replyWithHTML(
+      `No channels found in workspace <b>${ws?.name ?? workspace}</b>.\nTo sync channels call /${Command.SyncAllChannels} or /${Command.SyncStarredChannels}`
+    )
     return
   }
 

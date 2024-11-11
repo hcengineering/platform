@@ -118,6 +118,7 @@ class AdapterStorage implements BackupStorage {
  */
 export async function createFileBackupStorage (fileName: string): Promise<BackupStorage> {
   if (!existsSync(fileName)) {
+    console.log(__dirname)
     await mkdir(fileName, { recursive: true })
   }
   return new FileStorage(fileName)

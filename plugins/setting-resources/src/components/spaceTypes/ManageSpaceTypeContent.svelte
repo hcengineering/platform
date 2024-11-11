@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onDestroy } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import core, {
     Class,
     Doc,
@@ -30,18 +30,14 @@
     resolvedLocationStore,
     resizeObserver,
     Breadcrumbs,
-    ButtonIcon,
     Header,
-    IconCopy,
-    IconDelete,
-    IconMoreV,
     AnySvelteComponent,
     navigate,
     getCurrentResolvedLocation,
-    IconWithEmoji
+    IconWithEmoji,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { showMenu } from '@hcengineering/view-resources'
   import setting, { SpaceTypeEditor } from '@hcengineering/setting'
   import { Asset, getResource } from '@hcengineering/platform'
   import view from '@hcengineering/view'
@@ -138,6 +134,12 @@
       navigate(loc)
     }
   }
+
+  onMount(() => {
+    setTimeout(() => {
+      if (type === undefined && descriptor === undefined) $deviceInfo.navigator.visible = true
+    }, 500)
+  })
 </script>
 
 <div
@@ -147,7 +149,7 @@
   }}
 >
   {#if type !== undefined && descriptor !== undefined}
-    <Header>
+    <Header adaptive={'disabled'}>
       <Breadcrumbs
         items={bcItems}
         size="large"

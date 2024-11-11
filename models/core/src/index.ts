@@ -39,12 +39,12 @@ import {
   TAttachedDoc,
   TAttribute,
   TBlob,
+  TCard,
   TClass,
   TCollection,
   TConfiguration,
   TConfigurationElement,
   TDoc,
-  TCard,
   TDocIndexState,
   TDomainIndexConfiguration,
   TEnum,
@@ -57,6 +57,7 @@ import {
   TObj,
   TPluginConfiguration,
   TRefTo,
+  TTransientConfiguration,
   TType,
   TTypeAny,
   TTypeBlob,
@@ -173,7 +174,8 @@ export function createModel (builder: Builder): void {
     TMigrationState,
     TBlob,
     TDomainIndexConfiguration,
-    TBenchmarkDoc
+    TBenchmarkDoc,
+    TTransientConfiguration
   )
 
   builder.createDoc(
@@ -293,16 +295,20 @@ export function createModel (builder: Builder): void {
     domain: DOMAIN_DOC_INDEX_STATE,
     indexes: [
       {
-        keys: { needIndex: 1 }
+        keys: { needIndex: 1, objectClass: 1 }
       }
     ],
     disabled: [
       { attachedToClass: 1 },
       { stages: 1 },
-      { generationId: 1 },
       { space: 1 },
       { _class: 1 },
+      { needIndex: 1 },
+      { objectClass: 1 },
+      { _class: 1 },
+      { attachedTo: 1 },
       { modifiedBy: 1 },
+      { modifiedOn: 1 },
       { createdBy: 1 },
       { createdBy: -1 },
       { createdOn: -1 }
@@ -316,4 +322,17 @@ export function createModel (builder: Builder): void {
 
   definePermissions(builder)
   defineSpaceType(builder)
+
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: core.class.MigrationState,
+    forceIndex: false
+  })
+  builder.mixin(core.class.Configuration, core.class.Class, core.mixin.IndexConfiguration, {
+    indexes: [],
+    searchDisabled: true
+  })
+  builder.mixin(core.class.MigrationState, core.class.Class, core.mixin.IndexConfiguration, {
+    indexes: [],
+    searchDisabled: true
+  })
 }

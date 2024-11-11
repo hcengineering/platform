@@ -31,7 +31,6 @@ import contact, {
 } from '@hcengineering/contact'
 import core, {
   Account,
-  Class,
   Doc,
   Hierarchy,
   Ref,
@@ -43,7 +42,8 @@ import core, {
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc,
-  concatLink
+  concatLink,
+  type Space
 } from '@hcengineering/core'
 import notification, { Collaborators } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
@@ -117,7 +117,7 @@ async function createPersonSpace (
   person: Ref<Person>,
   control: TriggerControl
 ): Promise<TxCUD<PersonSpace>[]> {
-  const personSpace = (await control.findAll(control.ctx, contact.class.PersonSpace, { person }, { limit: 1 })).shift()
+  const personSpace = (await control.findAll(control.ctx, contact.class.PersonSpace, { person }, { limit: 1 }))[0]
   if (personSpace !== undefined) {
     const toAdd = account.filter((it) => !personSpace.members.includes(it))
     if (toAdd.length === 0) return []
@@ -285,9 +285,17 @@ export function organizationTextPresenter (doc: Doc): string {
 /**
  * @public
  */
-export function contactNameProvider (hierarchy: Hierarchy, props: Record<string, string>): string {
-  const _class = props._class !== undefined ? (props._class as Ref<Class<Doc>>) : contact.class.Contact
-  return formatContactName(hierarchy, _class, props.name ?? '', props.lastNameFirst)
+export function contactNameProvider (
+  doc: Doc,
+  parent: Doc | undefined,
+  space: Space | undefined,
+  hierarchy: Hierarchy,
+  mode: string
+): string {
+  if (parent !== undefined && hierarchy.isDerived(parent._class, contact.class.Contact)) {
+    return formatContactName(hierarchy, parent._class, (parent as Contact).name ?? '', mode)
+  }
+  return formatContactName(hierarchy, doc._class, (doc as Contact).name ?? '', mode)
 }
 
 export async function getCurrentEmployeeName (control: TriggerControl, context: Record<string, Doc>): Promise<string> {

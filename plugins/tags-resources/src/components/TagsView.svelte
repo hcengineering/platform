@@ -95,7 +95,7 @@
     (tagElements?.get(b._id as Ref<TagElement>)?.count ?? 0) -
       (tagElements?.get(a._id as Ref<TagElement>)?.count ?? 0) ?? 0
 
-    // $: twoRows = $deviceInfo.twoRows
+  let visibleCategories: TagCategory[] = []
 </script>
 
 <Header adaptive={'disabled'}>
@@ -123,6 +123,9 @@
     category = evt.detail.category ?? undefined
     updateResultQuery(search, category)
   }}
+  on:categories={(evt) => {
+    visibleCategories = evt.detail
+  }}
 />
 <TableBrowser
   _class={tags.class.TagElement}
@@ -134,12 +137,16 @@
       props: { edit: true, keyTitle },
       sortingKey: 'title'
     },
-    {
-      key: '$lookup.category',
-      presenter: tags.component.CategoryPresenter,
-      sortingKey: 'category',
-      label: tags.string.CategoryLabel
-    },
+    ...(visibleCategories.length > 1
+      ? [
+          {
+            key: '$lookup.category',
+            presenter: tags.component.CategoryPresenter,
+            sortingKey: 'category',
+            label: tags.string.CategoryLabel
+          }
+        ]
+      : []),
     {
       key: '',
       presenter: tags.component.TagElementCountPresenter,

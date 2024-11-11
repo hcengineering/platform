@@ -27,11 +27,13 @@
 
   export let object: Doc
   export let context: DocNotifyContext | undefined
-  export let filters: Ref<ActivityMessagesFilter>[] = []
-  export let isAsideOpened = false
   export let syncLocation = true
+  export let autofocus = true
   export let freeze = false
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
+  export let collection: string | undefined = undefined
+  export let withInput: boolean = true
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -64,7 +66,6 @@
   let refsLoaded = false
 
   $: isDocChannel = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
-  $: collection = isDocChannel ? 'comments' : 'messages'
 
   $: void updateDataProvider(object._id, selectedMessageId)
 
@@ -89,7 +90,8 @@
         activity.class.ActivityMessage,
         selectedMessageId,
         loadAll,
-        hasRefs
+        hasRefs,
+        collection
       )
     }
   }
@@ -105,9 +107,12 @@
     channel={object}
     bind:selectedMessageId
     {object}
-    {collection}
+    collection={collection ?? (isDocChannel ? 'comments' : 'messages')}
     provider={dataProvider}
     {freeze}
+    {autofocus}
     loadMoreAllowed={!isDocChannel}
+    {withInput}
+    {onReply}
   />
 {/if}

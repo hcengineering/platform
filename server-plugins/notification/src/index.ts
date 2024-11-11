@@ -168,7 +168,8 @@ export default plugin(serverNotificationId, {
     OnAttributeCreate: '' as Resource<TriggerFunc>,
     OnAttributeUpdate: '' as Resource<TriggerFunc>,
     OnReactionChanged: '' as Resource<TriggerFunc>,
-    OnDocRemove: '' as Resource<TriggerFunc>
+    OnDocRemove: '' as Resource<TriggerFunc>,
+    OnEmployeeDeactivate: '' as Resource<TriggerFunc>
   },
   function: {
     IsUserInFieldValueTypeMatch: '' as TypeMatchFunc,

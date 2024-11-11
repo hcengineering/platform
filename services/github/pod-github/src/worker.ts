@@ -127,8 +127,9 @@ export class GithubWorker implements IntegrationManager {
     this.closing = true
     this.ctx.warn('Closing', { workspace: this.workspace.name })
     this.triggerSync()
-    await this.syncPromise
-    this.ctx.warn('ClosingDone', { workspace: this.workspace.name })
+    await Promise.all([await this.syncPromise, new Promise<void>((resolve) => setTimeout(resolve, 5000))])
+
+    this.ctx.warn('Closing Done', { workspace: this.workspace.name })
     await this.client.close()
   }
 

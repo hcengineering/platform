@@ -1,6 +1,7 @@
-import { Employee } from '@hcengineering/contact'
+import { Employee, Person } from '@hcengineering/contact'
 import { Data, Ref } from '@hcengineering/core'
-import love, { Office, Room, RoomAccess, RoomType, GRID_WIDTH } from '.'
+
+import love, { Office, Room, ParticipantInfo, RoomAccess, RoomType, GRID_WIDTH } from '.'
 
 interface Slot {
   _id?: Ref<Room>
@@ -27,7 +28,9 @@ export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Off
       height: 1,
       x: (index % 2) * 3,
       y: index - (index % 2),
-      person: employees[index] ?? null
+      person: employees[index] ?? null,
+      language: 'en',
+      startWithTranscription: false
     }
     res.push(office)
   }
@@ -39,7 +42,9 @@ export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Off
     width: 9,
     height: 3,
     x: 6,
-    y: 0
+    y: 0,
+    language: 'en',
+    startWithTranscription: true
   })
   res.push({
     name: 'Meeting Room 1',
@@ -49,7 +54,9 @@ export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Off
     width: 4,
     height: 3,
     x: 6,
-    y: 4
+    y: 4,
+    language: 'en',
+    startWithTranscription: true
   })
   res.push({
     name: 'Meeting Room 2',
@@ -59,7 +66,9 @@ export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Off
     width: 4,
     height: 3,
     x: 11,
-    y: 4
+    y: 4,
+    language: 'en',
+    startWithTranscription: true
   })
   res.push({
     name: 'Voice Room 1',
@@ -69,7 +78,9 @@ export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Off
     width: 4,
     height: 3,
     x: 6,
-    y: 8
+    y: 8,
+    language: 'en',
+    startWithTranscription: true
   })
   res.push({
     name: 'Voice Room 2',
@@ -79,7 +90,9 @@ export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Off
     width: 4,
     height: 3,
     x: 11,
-    y: 8
+    y: 8,
+    language: 'en',
+    startWithTranscription: true
   })
   return res
 }
@@ -179,4 +192,22 @@ export interface ScreenSource {
   name: string
   thumbnailURL: string
   appIconURL: string
+}
+
+export function getFreeRoomPlace (room: Room, info: ParticipantInfo[], person: Ref<Person>): { x: number, y: number } {
+  let y = 0
+  while (true) {
+    for (let x = 0; x < room.width; x++) {
+      if (info.find((p) => p.x === x && p.y === y) === undefined) {
+        if (x === 0 && y === 0 && isOffice(room)) {
+          if (room.person === person) {
+            return { x: 0, y: 0 }
+          }
+        } else {
+          return { x, y }
+        }
+      }
+    }
+    y++
+  }
 }

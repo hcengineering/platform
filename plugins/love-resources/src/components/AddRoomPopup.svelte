@@ -59,7 +59,9 @@
       width: 2,
       height: 1,
       type: val.type,
-      access: val.access
+      access: val.access,
+      language: 'en',
+      startWithTranscription: val._class !== love.class.Office
     }
     if (val._class === love.class.Office) {
       ;(data as Data<Office>).person = null

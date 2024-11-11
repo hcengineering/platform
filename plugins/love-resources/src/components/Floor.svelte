@@ -14,38 +14,48 @@
 -->
 <script lang="ts">
   import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import { Breadcrumb, Header, IconEdit, ModernButton, Scroller } from '@hcengineering/ui'
-  import { Floor, ParticipantInfo, Room } from '@hcengineering/love'
+  import { Breadcrumb, Header, IconEdit, ModernButton, Switcher } from '@hcengineering/ui'
+  import { Floor, Room } from '@hcengineering/love'
+  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import lovePlg from '../plugin'
-  import { currentRoom, floors, infos } from '../stores'
-  import { calculateFloorSize } from '../utils'
+  import { currentRoom, floors } from '../stores'
   import ControlBar from './ControlBar.svelte'
-  import FloorGrid from './FloorGrid.svelte'
-  import RoomPreview from './RoomPreview.svelte'
+  import MeetingsTable from './MeetingMinutesTable.svelte'
+  import FloorView from './FloorView.svelte'
 
   export let rooms: Room[] = []
   export let floor: Ref<Floor>
 
   const dispatch = createEventDispatcher()
 
-  let floorContainer: HTMLDivElement
+  let selectedViewlet: 'meetingMinutes' | 'floor' = 'floor'
 
   $: selectedFloor = $floors.filter((fl) => fl._id === floor)[0]
 
-  function getInfo (room: Ref<Room>, info: ParticipantInfo[]): ParticipantInfo[] {
-    return info.filter((p) => p.room === room)
-  }
-
   const me = getCurrentAccount()
+
   let editable: boolean = false
   $: editable = hasAccountRole(me, AccountRole.Maintainer)
-  $: rows = calculateFloorSize(rooms) - 1
 </script>
 
 <div class="hulyComponent">
   <Header allowFullsize adaptive={'disabled'}>
     <Breadcrumb title={selectedFloor?.name ?? ''} size={'large'} isCurrent />
+    <svelte:fragment slot="beforeTitle">
+      <Switcher
+        selected={selectedViewlet}
+        items={[
+          { id: 'floor', icon: lovePlg.icon.Love, tooltip: lovePlg.string.Floor },
+          { id: 'meetingMinutes', icon: view.icon.Table, tooltip: lovePlg.string.MeetingMinutes }
+        ]}
+        kind="subtle"
+        name="selector"
+        on:select={(e) => {
+          selectedViewlet = e.detail.id
+        }}
+      />
+    </svelte:fragment>
     <svelte:fragment slot="actions">
       {#if editable}
         <ModernButton
@@ -58,13 +68,11 @@
     </svelte:fragment>
   </Header>
   <div class="hulyComponent-content__column content">
-    <Scroller padding={'1rem'} bottomPadding={'4rem'} horizontal>
-      <FloorGrid bind:floorContainer {rows} preview>
-        {#each rooms as room}
-          <RoomPreview {room} info={getInfo(room._id, $infos)} />
-        {/each}
-      </FloorGrid>
-    </Scroller>
+    {#if selectedViewlet === 'meetingMinutes'}
+      <MeetingsTable />
+    {:else}
+      <FloorView {rooms} />
+    {/if}
   </div>
   {#if $currentRoom}
     <ControlBar room={$currentRoom} />

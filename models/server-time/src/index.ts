@@ -21,7 +21,7 @@ import { type Resource } from '@hcengineering/platform'
 import serverCore, { type TriggerControl } from '@hcengineering/server-core'
 import tracker from '@hcengineering/tracker'
 import serverTime, { type ToDoFactory, type OnToDo } from '@hcengineering/server-time'
-import { type ToDo, type WorkSlot } from '@hcengineering/time'
+import time, { type ToDo, type WorkSlot } from '@hcengineering/time'
 
 @Mixin(serverTime.mixin.ToDoFactory, core.class.Class)
 export class TToDoFactory extends TClass implements ToDoFactory {
@@ -45,6 +45,7 @@ export function createModel (builder: Builder): void {
     trigger: serverTime.trigger.OnToDoUpdate,
     txMatch: {
       _class: core.class.TxCollectionCUD,
+      'tx.objectClass': time.class.ToDo,
       'tx._class': core.class.TxUpdateDoc
     }
   })
@@ -53,6 +54,7 @@ export function createModel (builder: Builder): void {
     trigger: serverTime.trigger.OnToDoRemove,
     txMatch: {
       _class: core.class.TxCollectionCUD,
+      'tx.objectClass': time.class.ToDo,
       'tx._class': core.class.TxRemoveDoc
     }
   })
@@ -61,6 +63,7 @@ export function createModel (builder: Builder): void {
     trigger: serverTime.trigger.OnToDoCreate,
     txMatch: {
       _class: core.class.TxCollectionCUD,
+      'tx.objectClass': time.class.ToDo,
       'tx._class': core.class.TxCreateDoc
     },
     isAsync: true
@@ -70,7 +73,17 @@ export function createModel (builder: Builder): void {
     trigger: serverTime.trigger.OnWorkSlotCreate,
     txMatch: {
       _class: core.class.TxCollectionCUD,
+      'tx.objectClass': time.class.WorkSlot,
       'tx._class': core.class.TxCreateDoc
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverTime.trigger.OnWorkSlotUpdate,
+    txMatch: {
+      _class: core.class.TxCollectionCUD,
+      'tx.objectClass': time.class.WorkSlot,
+      'tx._class': core.class.TxUpdateDoc
     }
   })
 

@@ -32,7 +32,7 @@ export abstract class MemDb extends TxProcessor implements Storage {
   private readonly objectById = new Map<Ref<Doc>, Doc>()
 
   private readonly accountByPersonId = new Map<Ref<Doc>, Account[]>()
-  private readonly accountByEmail = new Map<string, Account>()
+  private readonly accountByEmail = new Map<string, [string, Account][]>()
 
   constructor (protected readonly hierarchy: Hierarchy) {
     super()
@@ -83,7 +83,14 @@ export abstract class MemDb extends TxProcessor implements Storage {
   }
 
   getAccountByEmail (email: Account['email']): Account | undefined {
-    return this.accountByEmail.get(email)
+    const accounts = this.accountByEmail.get(email)
+    if (accounts === undefined || accounts.length === 0) {
+      return undefined
+    }
+
+    if (accounts.length > 0) {
+      return accounts[accounts.length - 1][1]
+    }
   }
 
   findObject<T extends Doc>(_id: Ref<T>): T | undefined {
@@ -225,6 +232,14 @@ export abstract class MemDb extends TxProcessor implements Storage {
     )
   }
 
+  addAccount (account: Account): void {
+    if (!this.accountByEmail.has(account.email)) {
+      this.accountByEmail.set(account.email, [])
+    }
+
+    this.accountByEmail.get(account.email)?.push([account._id, account])
+  }
+
   addDoc (doc: Doc): void {
     this.hierarchy.getAncestors(doc._class).forEach((_class) => {
       const arr = this.getObjectsByClass(_class)
@@ -232,12 +247,27 @@ export abstract class MemDb extends TxProcessor implements Storage {
     })
     if (this.hierarchy.isDerived(doc._class, core.class.Account)) {
       const account = doc as Account
-      this.accountByEmail.set(account.email, account)
+
+      this.addAccount(account)
+
       if (account.person !== undefined) {
         this.accountByPersonId.set(account.person, [...(this.accountByPersonId.get(account.person) ?? []), account])
       }
     }
     this.objectById.set(doc._id, doc)
+  }
+
+  delAccount (account: Account): void {
+    const accounts = this.accountByEmail.get(account.email)
+    if (accounts !== undefined) {
+      const newAccounts = accounts.filter((it) => it[0] !== account._id)
+
+      if (newAccounts.length === 0) {
+        this.accountByEmail.delete(account.email)
+      } else {
+        this.accountByEmail.set(account.email, newAccounts)
+      }
+    }
   }
 
   delDoc (_id: Ref<Doc>): void {
@@ -251,7 +281,8 @@ export abstract class MemDb extends TxProcessor implements Storage {
     })
     if (this.hierarchy.isDerived(doc._class, core.class.Account)) {
       const account = doc as Account
-      this.accountByEmail.delete(account.email)
+      this.delAccount(account)
+
       if (account.person !== undefined) {
         const acc = this.accountByPersonId.get(account.person) ?? []
         this.accountByPersonId.set(
@@ -280,8 +311,8 @@ export abstract class MemDb extends TxProcessor implements Storage {
         }
       } else if (newEmail !== undefined) {
         const account = doc as Account
-        this.accountByEmail.delete(account.email)
-        this.accountByEmail.set(newEmail, account)
+        this.delAccount(account)
+        this.addAccount({ ...account, email: newEmail })
       }
     }
   }

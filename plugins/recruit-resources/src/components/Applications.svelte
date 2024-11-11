@@ -24,8 +24,8 @@
   import SectionEmpty from './SectionEmpty.svelte'
 
   export let objectId: Ref<Doc>
-
   export let applications: number
+  export let readonly: boolean = false
 
   const createApp = (ev: MouseEvent): void => {
     showPopup(CreateApplication, { candidate: objectId, preserveCandidate: true }, ev.target as HTMLElement)
@@ -46,7 +46,9 @@
         bind:loading
         bind:preference
       />
-      <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createApp} />
+      {#if !readonly}
+        <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createApp} />
+      {/if}
     </div>
   </svelte:fragment>
 
@@ -58,15 +60,18 @@
           config={preference?.config ?? viewlet.config}
           query={{ attachedTo: objectId, ...(viewlet?.baseQuery ?? {}) }}
           loadingProps={{ length: applications }}
+          {readonly}
         />
       </Scroller>
     {:else}
       <SectionEmpty icon={FileDuo} label={recruit.string.NoApplicationsForTalent}>
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <span class="over-underline content-color" on:click={createApp}>
-          <Label label={recruit.string.CreateAnApplication} />
-        </span>
+        {#if !readonly}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
+          <span class="over-underline content-color" on:click={createApp}>
+            <Label label={recruit.string.CreateAnApplication} />
+          </span>
+        {/if}
       </SectionEmpty>
     {/if}
   </svelte:fragment>

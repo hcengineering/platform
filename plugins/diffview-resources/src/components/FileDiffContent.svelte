@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Loading, themeStore } from '@hcengineering/ui'
+  import { Html, Loading, themeStore } from '@hcengineering/ui'
   import { DiffFile, DiffLine, DiffLineType, DiffViewMode } from '@hcengineering/diffview'
 
-  import { DiffLineRenderResult, RenderOptions, renderHunk } from '../highlight'
+  import { DiffLineRenderResult, RenderOptions, renderHunk } from '../render'
 
   export let file: DiffFile
   export let mode: DiffViewMode
@@ -110,7 +110,7 @@
                 <td class="num-line {lineClass}">{line.oldNumber ?? ''}</td>
                 <td class="num-line {lineClass}">{line.newNumber ?? ''}</td>
                 <td class="code-line select-text {lineClass}" data-code-marker={line.prefix}>
-                  {@html line.content}
+                  <Html value={line.content} />
                 </td>
               </tr>
             {/each}
@@ -130,11 +130,11 @@
               <tr>
                 <td class="num-line {beforeLineClass}">{before.oldNumber ?? ''}</td>
                 <td class="code-line select-text {beforeLineClass}" data-code-marker={before.prefix}>
-                  {@html before.content}
+                  <Html value={before.content} />
                 </td>
                 <td class="num-line {afterLineClass}">{after.newNumber ?? ''}</td>
                 <td class="code-line select-text {afterLineClass}" data-code-marker={after.prefix}>
-                  {@html after.content}
+                  <Html value={after.content} />
                 </td>
               </tr>
             {/each}

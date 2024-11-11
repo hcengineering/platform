@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.11",
-    "svelte": "^4.2.12",
+    "svelte": "^4.2.19",
     "@hcengineering/products": "^0.1.0",
     "@hcengineering/controlled-documents": "^0.1.0",
     "@hcengineering/attachment": "^0.6.14",

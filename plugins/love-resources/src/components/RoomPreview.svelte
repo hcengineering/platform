@@ -16,13 +16,14 @@
   import { Person, type PersonAccount } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, getCurrentAccount } from '@hcengineering/core'
-  import { ParticipantInfo, Room, RoomAccess, RoomType } from '@hcengineering/love'
-  import { Icon, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { isOffice, ParticipantInfo, Room, RoomAccess, RoomType } from '@hcengineering/love'
+  import { Icon, Label, eventToHTMLElement, showPopup, DropdownIntlItem } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
   import { invites, myInfo, myRequests } from '../stores'
   import { getRoomLabel, tryConnect } from '../utils'
   import PersonActionPopup from './PersonActionPopup.svelte'
+  import RoomLanguage from './RoomLanguage.svelte'
 
   export let room: Room
   export let info: ParticipantInfo[]
@@ -65,7 +66,7 @@
       if (room._id === $myInfo?.room || $myInfo === undefined) return
       showPopup(PersonActionPopup, { room, person: person._id }, eventToHTMLElement(e))
     } else {
-      tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites, { x, y })
+      void tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites, { x, y })
     }
   }
 
@@ -152,9 +153,9 @@
         }}
       >
         {#if personInfo}
-          <Avatar name={person?.name ?? personInfo.name} {person} size={'full'} />
+          <Avatar name={person?.name ?? personInfo.name} {person} size={'full'} showStatus={false} />
         {:else if hoveredRoomX === x && hoveredRoomY === y}
-          <Avatar name={meName} person={meAvatar} size={'full'} />
+          <Avatar name={meName} person={meAvatar} size={'full'} showStatus={false} />
         {/if}
       </div>
     {/each}
@@ -165,6 +166,9 @@
       <span class="overflow-label text-md flex-grow">
         <Label label={getRoomLabel(room, $personByIdStore)} />
       </span>
+      {#if !isOffice(room)}
+        <RoomLanguage {room} />
+      {/if}
       {#if room.access === RoomAccess.DND || room.type === RoomType.Video}
         <div class="flex-row-center flex-no-shrink h-full flex-gap-2">
           {#if room.access === RoomAccess.DND}

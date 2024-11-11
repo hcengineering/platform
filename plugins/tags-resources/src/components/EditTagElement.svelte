@@ -94,6 +94,18 @@
     }
     categoryItems = newItems
   })
+  const showColorPopup = (evt: MouseEvent): void => {
+    showPopup(
+      ColorsPopup,
+      { selected: getPlatformColorDef(data.color, $themeStore.dark).name },
+      eventToHTMLElement(evt),
+      (col) => {
+        if (col != null) {
+          data.color = col
+        }
+      }
+    )
+  }
 </script>
 
 <Card
@@ -107,37 +119,31 @@
   okLabel={tags.string.SaveLabel}
   on:changeContent
 >
-  <div class="flex-row-center">
-    <div class="flex-col">
+  <div class="flex-row-top clear-mins">
+    <div class="mr-3 flex-grow">
       <div class="fs-title flex-row-center">
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           class="color"
           style={getTagStyle(getPlatformColorDef(data.color, $themeStore.dark))}
-          on:click={(evt) => {
-            showPopup(
-              ColorsPopup,
-              { selected: getPlatformColorDef(data.color, $themeStore.dark).name },
-              eventToHTMLElement(evt),
-              (col) => {
-                if (col != null) {
-                  data.color = col
-                }
-              }
-            )
-          }}
+          on:click={showColorPopup}
         />
         <EditBox placeholder={tags.string.TagName} placeholderParam={{ word: keyTitle }} bind:value={data.title} />
       </div>
 
-      <div class="fs-title mt-4">
+      <div class="fs-title mt-4 flex-grow">
         <EditBox placeholder={tags.string.TagDescriptionPlaceholder} bind:value={data.description} />
       </div>
 
-      <div class="text-sm mt-4">
-        <DropdownLabels label={tags.string.CategoryLabel} bind:selected={data.category} items={categoryItems} />
-      </div>
+      {#if categoryItems.length > 1}
+        <div class="text-sm mt-4">
+          <DropdownLabels
+            label={tags.string.CategoryLabel}
+            kind={'regular'}
+            bind:selected={data.category}
+            items={categoryItems}
+          />
+        </div>
+      {/if}
     </div>
   </div>
 </Card>

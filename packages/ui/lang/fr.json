@@ -52,6 +52,7 @@
     "Spanish": "Español",
     "Chinese": "中文",
     "French": "Français",
+    "Italian": "Italiano",
     "MinutesBefore": "{minutes, plural, =1 {une minute avant} other {# minutes avant}}",
     "HoursBefore": "{hours, plural, =1 {une heure avant} other {# heures avant}}",
     "DaysBefore": "{days, plural, =1 {un jour avant} other {# jours avant}}",
@@ -93,6 +94,7 @@
     "TypeHere": "Tapez ici...",
     "FullSize": "Taille réelle",
     "UseMaxWidth": "Largeur maximale",
-    "Sidebar": "Barre latérale"
+    "Sidebar": "Barre latérale",
+    "Language": "Langue"
   }
 }

@@ -15,30 +15,30 @@
 
 import activity, { type ActivityMessageControl } from '@hcengineering/activity'
 import { chunterId, type ChunterSpace } from '@hcengineering/chunter'
-import presentation from '@hcengineering/model-presentation'
+import contact from '@hcengineering/contact'
 import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
+import presentation from '@hcengineering/model-presentation'
 import view from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { WidgetType } from '@hcengineering/workbench'
-import contact from '@hcengineering/contact'
 
-import chunter from './plugin'
 import { defineActions } from './actions'
 import { defineNotifications } from './notifications'
+import chunter from './plugin'
 import {
   DOMAIN_CHUNTER,
   TChannel,
   TChatMessage,
   TChatMessageViewlet,
   TChatSyncInfo,
+  TChunterExtension,
   TChunterSpace,
   TDirectMessage,
   TInlineButton,
   TObjectChatPanel,
   TThreadMessage,
-  TTypingInfo,
-  TChunterExtension
+  TTypingInfo
 } from './types'
 
 export { chunterId } from '@hcengineering/chunter'
@@ -159,6 +159,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(chunter.class.ThreadMessage, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: chunter.component.ThreadMessagePresenter
+  })
+
+  builder.mixin(chunter.class.TypingInfo, core.class.Class, core.mixin.TransientConfiguration, {
+    broadcastOnly: true
   })
 
   builder.createDoc(
@@ -310,6 +314,16 @@ export function createModel (builder: Builder): void {
 
   defineActions(builder)
   defineNotifications(builder)
+
+  builder.mixin(chunter.class.InlineButton, core.class.Class, core.mixin.IndexConfiguration, {
+    indexes: [],
+    searchDisabled: true
+  })
+
+  builder.mixin(chunter.class.ChatSyncInfo, core.class.Class, core.mixin.IndexConfiguration, {
+    indexes: [],
+    searchDisabled: true
+  })
 }
 
 export default chunter

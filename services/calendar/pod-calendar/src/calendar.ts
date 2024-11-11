@@ -673,7 +673,6 @@ export class CalendarClient {
   }
 
   private async syncEvent (calendarId: string, event: calendar_v3.Schema$Event, accessRole: string): Promise<void> {
-    console.log('SYNC EVENT CALL', calendarId, JSON.stringify(event))
     if (event.id != null) {
       const me = await this.getMe()
       const calendars = this.workspace.getMyCalendars(me)
@@ -681,7 +680,6 @@ export class CalendarClient {
         calendars.find((p) => p.externalId === event.organizer?.email) ??
         calendars.find((p) => p.externalId === calendarId) ??
         calendars[0]
-      console.log('Target space', _calendar)
       if (_calendar !== undefined) {
         const exists = (await this.client.findOne(calendar.class.Event, {
           eventId: event.id,
@@ -697,9 +695,7 @@ export class CalendarClient {
   }
 
   private async updateExtEvent (event: calendar_v3.Schema$Event, current: Event): Promise<void> {
-    console.log('UPDATE EVENT', current._id, JSON.stringify(event))
     if (event.status === 'cancelled' && current._class !== calendar.class.ReccuringInstance) {
-      console.log('REMOVE EVENT', current._id)
       await this.client.remove(current)
       return
     }
@@ -715,7 +711,6 @@ export class CalendarClient {
         current as ReccuringInstance
       )
       if (Object.keys(diff).length > 0) {
-        console.log('UPDATE REC INSTANCE DIFF', JSON.stringify(diff), JSON.stringify(current))
         await this.client.update(current, diff)
       }
     } else {
@@ -731,13 +726,11 @@ export class CalendarClient {
           current as ReccuringEvent
         )
         if (Object.keys(diff).length > 0) {
-          console.log('UPDATE REC EVENT DIFF', JSON.stringify(diff), JSON.stringify(current))
           await this.client.update(current, diff)
         }
       } else {
         const diff = this.getDiff(data, current)
         if (Object.keys(diff).length > 0) {
-          console.log('UPDATE EVENT DIFF', JSON.stringify(diff), JSON.stringify(current))
           await this.client.update(current, diff)
         }
       }
@@ -827,7 +820,6 @@ export class CalendarClient {
         }
       )
       await this.saveMixins(event, id)
-      console.log('SAVE INSTANCE', id, JSON.stringify(event))
     } else if (event.status !== 'cancelled') {
       if (event.recurrence != null) {
         const parseRule = parseRecurrenceStrings(event.recurrence)
@@ -847,7 +839,6 @@ export class CalendarClient {
           }
         )
         await this.saveMixins(event, id)
-        console.log('SAVE REC EVENT', id, JSON.stringify(event))
       } else {
         const id = await this.client.addCollection(
           calendar.class.Event,
@@ -858,7 +849,6 @@ export class CalendarClient {
           data
         )
         await this.saveMixins(event, id)
-        console.log('SAVE EVENT', id, JSON.stringify(event))
       }
     }
   }

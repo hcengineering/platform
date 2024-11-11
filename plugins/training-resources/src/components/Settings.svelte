@@ -83,7 +83,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header adaptive={'disabled'}>
     <Breadcrumb icon={training.icon.Training} label={training.string.Trainings} size="large" isCurrent />
   </Header>
   <div class="hulyComponent-content__column content">

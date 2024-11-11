@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 
-import { type BaseWorkspaceInfo, type Data, type Version, BackupStatus } from '@hcengineering/core'
+import {
+  type BaseWorkspaceInfo,
+  type Data,
+  type Version,
+  BackupStatus,
+  AccountRole,
+  Ref,
+  Doc
+} from '@hcengineering/core'
 import { getMetadata, PlatformError, unknownError } from '@hcengineering/platform'
 
 import plugin from './plugin'
@@ -29,7 +37,7 @@ export interface LoginInfo {
   email: string
 }
 
-export async function listAccountWorkspaces (token: string): Promise<BaseWorkspaceInfo[]> {
+export async function listAccountWorkspaces (token: string, region: string | null = null): Promise<BaseWorkspaceInfo[]> {
   const accountsUrl = getAccoutsUrlOrFail()
   const workspaces = await (
     await fetch(accountsUrl, {
@@ -39,7 +47,7 @@ export async function listAccountWorkspaces (token: string): Promise<BaseWorkspa
       },
       body: JSON.stringify({
         method: 'listWorkspaces',
-        params: [token]
+        params: [token, region]
       })
     })
   ).json()
@@ -295,4 +303,53 @@ function getAccoutsUrlOrFail (): string {
     throw new PlatformError(unknownError('No account endpoint specified'))
   }
   return accountsUrl
+}
+
+export async function assignWorkspace (
+  token: string,
+  email: string,
+  workspace: string,
+  role: AccountRole = AccountRole.User,
+  personId?: Ref<Doc>,
+  shouldReplaceAccount = false,
+  personAccountId?: Ref<Doc>
+): Promise<WorkspaceLoginInfo> {
+  const accountsUrl = getAccoutsUrlOrFail()
+  const res = await (
+    await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        method: 'assignWorkspace',
+        params: [token, email, workspace, role, personId, shouldReplaceAccount, undefined, personAccountId]
+      })
+    })
+  ).json()
+
+  return res.result as WorkspaceLoginInfo
+}
+
+export async function createAccount (
+  email: string,
+  password: string,
+  firstName: string,
+  lastName: string
+): Promise<WorkspaceLoginInfo> {
+  const accountsUrl = getAccoutsUrlOrFail()
+  const workspace = await (
+    await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        method: 'createAccount',
+        params: [email, password, firstName, lastName]
+      })
+    })
+  ).json()
+
+  return workspace.result as WorkspaceLoginInfo
 }

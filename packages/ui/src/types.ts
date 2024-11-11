@@ -304,6 +304,7 @@ export interface LabelAndProps {
   onUpdate?: (result: any) => void
   kind?: 'tooltip' | 'submenu' | 'popup'
   keys?: string[]
+  timeout?: number
 }
 
 export interface ListItem {
@@ -326,6 +327,7 @@ export interface DropdownIntlItem {
   id: string | number
   label: IntlString
   icon?: Asset | AnySvelteComponent | ComponentType
+  iconProps?: Record<string, any>
   params?: Record<string, any>
   description?: IntlString
   paramsDescription?: Record<string, any>
@@ -378,6 +380,7 @@ export interface DeviceOptions {
   isPortrait: boolean
   isMobile: boolean
   navigator: { visible: boolean, float: boolean, direction: 'vertical' | 'horizontal' }
+  aside: { visible: boolean }
   fontSize: number
   size: WidthType | null
   sizes: Record<WidthType, boolean>

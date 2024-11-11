@@ -104,6 +104,7 @@ import {
   serverDocumentsId,
   createModel as serverDocumentsModel
 } from '@hcengineering/model-server-controlled-documents'
+import { serverFulltextId, createModel as serverFulltextModel } from '@hcengineering/model-server-fulltext'
 
 import { type Plugin } from '@hcengineering/platform'
 
@@ -450,7 +451,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverProductsModel, serverProductsId],
     [serverTrainingModel, serverTrainingId],
     [serverDocumentsModel, serverDocumentsId],
-    [serverAiBotModel, serverAiBotId]
+    [serverAiBotModel, serverAiBotId],
+    [serverFulltextModel, serverFulltextId]
   ]
 
   for (const [b, id, config] of builders) {

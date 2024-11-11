@@ -5,6 +5,7 @@ import { type AnyComponent, type AnySvelteComponent } from '../../types'
 export interface Notification {
   id: string
   title: string
+  group?: string
   component: AnyComponent | AnySvelteComponent
   subTitle?: string
   subTitlePostfix?: string

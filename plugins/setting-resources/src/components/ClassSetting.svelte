@@ -27,7 +27,7 @@
     Header,
     Breadcrumb,
     defineSeparators,
-    settingsSeparators,
+    twoPanelsSeparators,
     Separator,
     NavGroup
   } from '@hcengineering/ui'
@@ -97,12 +97,12 @@
   $: if (ofClass !== undefined && _class !== undefined && !client.getHierarchy().isDerived(_class, ofClass)) {
     _class = ofClass
   }
-  defineSeparators('workspaceSettings', settingsSeparators)
+  defineSeparators('workspaceSettings', twoPanelsSeparators)
 </script>
 
 <div class="hulyComponent">
   {#if !withoutHeader}
-    <Header>
+    <Header adaptive={'disabled'}>
       <Breadcrumb icon={setting.icon.Clazz} label={setting.string.ClassSetting} size={'large'} isCurrent />
     </Header>
   {/if}

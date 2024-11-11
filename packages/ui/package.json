@@ -42,7 +42,7 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/theme": "^0.6.5",
     "@hcengineering/core": "^0.6.32",
-    "svelte": "^4.2.12",
+    "svelte": "^4.2.19",
     "fast-equals": "^5.0.1",
     "autolinker": "4.0.0",
     "emoji-regex": "^10.1.0",
@@ -51,7 +51,7 @@
     "dompurify": "^3.1.6",
     "@hcengineering/analytics": "^0.6.0"
   },
-  "repository": "https://github.com/hcenginneing/anticrm",
+  "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   }

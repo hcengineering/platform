@@ -23,7 +23,6 @@ import {
 } from '@hcengineering/model'
 import notification, {
   notificationId,
-  NotificationStatus,
   type BrowserNotification,
   type DocNotifyContext,
   type InboxNotification
@@ -399,13 +398,39 @@ export const notificationOperation: MigrateOperation = {
         func: async (client: MigrationClient): Promise<void> => {
           await client.update(DOMAIN_DOC_NOTIFY, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
         }
+      },
+      {
+        state: 'remove-update-txes-docnotify-ctx-v2',
+        func: async (client) => {
+          await client.deleteMany(DOMAIN_TX, {
+            _class: core.class.TxUpdateDoc,
+            objectClass: notification.class.DocNotifyContext,
+            'operations.lastViewedTimestamp': {
+              $exists: true
+            }
+          })
+          await client.deleteMany(DOMAIN_TX, {
+            _class: core.class.TxUpdateDoc,
+            objectClass: notification.class.DocNotifyContext,
+            'operations.lastUpdateTimestamp': {
+              $exists: true
+            }
+          })
+        }
+      },
+      {
+        state: 'remove-browser-notification-v2',
+        func: async (client) => {
+          await client.deleteMany<BrowserNotification>(DOMAIN_USER_NOTIFY, {
+            _class: notification.class.BrowserNotification
+          })
+
+          await client.deleteMany(DOMAIN_TX, {
+            objectClass: notification.class.BrowserNotification
+          })
+        }
       }
     ])
-
-    await client.deleteMany<BrowserNotification>(DOMAIN_USER_NOTIFY, {
-      _class: notification.class.BrowserNotification,
-      status: NotificationStatus.Notified
-    })
   },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

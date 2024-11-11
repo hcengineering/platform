@@ -121,7 +121,9 @@ const syncTabLoc = reduceCalls(async (): Promise<void> => {
     //   return
     // }
 
-    await getClient().diffUpdate(tab, { location: url, name })
+    const op = getClient().apply(undefined, undefined, true)
+    await op.diffUpdate(tab, { location: url, name })
+    await op.commit()
   }
 })
 

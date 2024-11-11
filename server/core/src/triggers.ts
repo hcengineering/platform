@@ -17,6 +17,7 @@
 import core, {
   TxFactory,
   TxProcessor,
+  generateId,
   groupByArray,
   matchQuery,
   type Class,
@@ -149,8 +150,14 @@ export class Triggers {
           trigger.resource,
           {},
           async (ctx) => {
+            if (mode === 'async') {
+              ctx.id = generateId()
+            }
             const tresult = await this.applyTrigger(ctx, ctrl, matches, { trigger, arrays })
             result.push(...tresult)
+            if (ctx.onEnd !== undefined && mode === 'async') {
+              await ctx.onEnd(ctx)
+            }
           },
           { count: matches.length, arrays }
         )

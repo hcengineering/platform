@@ -92,12 +92,12 @@
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
-      void notificationClient.then((client) => client.readDoc(getClient(), prev))
+      void notificationClient.then((client) => client.readDoc(prev))
     }
   }
 
   onDestroy(async () => {
-    void notificationClient.then((client) => client.readDoc(getClient(), _id))
+    void notificationClient.then((client) => client.readDoc(_id))
   })
 
   const starredQuery = createQuery()

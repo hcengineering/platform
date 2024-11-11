@@ -22,6 +22,7 @@ import core, {
   DOMAIN_MODEL,
   type Doc,
   type DocumentUpdate,
+  type LowLevelStorage,
   type MeasureContext,
   type Mixin,
   type Ref,
@@ -33,6 +34,7 @@ import core, {
   type TxRemoveDoc,
   type TxUpdateDoc,
   addOperation,
+  generateId,
   toFindResult,
   withContext
 } from '@hcengineering/core'
@@ -48,6 +50,7 @@ import type {
   TxMiddlewareResult
 } from '@hcengineering/server-core'
 import serverCore, { BaseMiddleware, SessionDataImpl, SessionFindAll, Triggers } from '@hcengineering/server-core'
+import { filterBroadcastOnly } from './utils'
 
 /**
  * @public
@@ -84,6 +87,9 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     if (this.context.storageAdapter == null) {
       throw new PlatformError(unknownError('Storage adapter should be specified'))
     }
+    if (this.context.lowLevelStorage == null) {
+      throw new PlatformError(unknownError('Low level storage should be specified'))
+    }
     this.storageAdapter = this.context.storageAdapter
     this.triggers.init(this.context.modelDb)
   }
@@ -91,7 +97,11 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   async tx (ctx: MeasureContext, tx: Tx[]): Promise<TxMiddlewareResult> {
     await this.triggers.tx(tx)
     const result = await this.provideTx(ctx, tx)
-    await this.processDerived(ctx, tx)
+
+    const ftx = filterBroadcastOnly(tx, this.context.hierarchy)
+    if (ftx.length > 0) {
+      await this.processDerived(ctx, ftx)
+    }
     return result
   }
 
@@ -118,6 +128,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     const triggerControl: Omit<TriggerControl, 'txFactory' | 'ctx' | 'txes'> = {
       removedMap: ctx.contextData.removedMap,
       workspace: this.context.workspace,
+      lowLevel: this.context.lowLevelStorage as LowLevelStorage,
       branding: this.context.branding,
       storageAdapter: this.storageAdapter,
       serviceAdaptersManager: this.context.serviceAdapterManager as ServiceAdaptersManager,
@@ -225,9 +236,15 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     )
 
     if (aresult.length > 0) {
-      await this.processDerivedTxes(ctx, aresult)
-      // We need to send all to recipients
-      await this.context.head?.handleBroadcast(ctx)
+      await ctx.with('process-aync-result', {}, async (ctx) => {
+        ctx.id = generateId()
+        await this.processDerivedTxes(ctx, aresult)
+        // We need to send all to recipients
+        await this.context.head?.handleBroadcast(ctx)
+        if (ctx.onEnd !== undefined) {
+          await ctx.onEnd(ctx)
+        }
+      })
     }
   }
 

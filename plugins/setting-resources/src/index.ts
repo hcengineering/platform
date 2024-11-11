@@ -58,6 +58,7 @@ import RefEditor from './components/typeEditors/RefEditor.svelte'
 import RoleAssignmentEditor from './components/typeEditors/RoleAssignmentEditor.svelte'
 import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
 import WorkspaceSettings from './components/WorkspaceSettings.svelte'
+import SettingsWidget from './components/SettingsWidget.svelte'
 import setting from './plugin'
 import { filterDescendants, getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue } from './utils'
 
@@ -121,7 +122,8 @@ export default async (): Promise<Resources> => ({
     SpaceTypePropertiesSectionEditor,
     SpaceTypeRolesSectionEditor,
     RoleEditor,
-    RoleAssignmentEditor
+    RoleAssignmentEditor,
+    SettingsWidget
   },
   actionImpl: {
     DeleteMixin

@@ -17,6 +17,7 @@
   import { getMetadata } from '@hcengineering/platform'
   import ui, { showPopup, deviceOptionsStore as deviceInfo } from '../..'
   import LangPopup from './LangPopup.svelte'
+  import Html from '../Html.svelte'
 
   let pressed: boolean = false
 
@@ -30,7 +31,8 @@
     { id: 'es', label: ui.string.Spanish, logo: '&#x1F1EA;&#x1F1F8;' },
     { id: 'ru', label: ui.string.Russian, logo: '&#x1F1F7;&#x1F1FA;' },
     { id: 'zh', label: ui.string.Chinese, logo: '&#x1F1E8;&#x1F1F3;' },
-    { id: 'fr', label: ui.string.French, logo: '&#x1F1EB;&#x1F1F7;' }
+    { id: 'fr', label: ui.string.French, logo: '&#x1F1EB;&#x1F1F7;' },
+    { id: 'it', label: ui.string.Italian, logo: '&#x1F1EE;&#x1F1F9;' }
   ].filter((lang) => uiLangs.has(lang.id))
   if (langs.findIndex((l) => l.id === currentLanguage) < 0 && langs.length !== 0) {
     setLanguage(langs[0].id)
@@ -70,5 +72,7 @@
   class:pressed
   on:click={selectLanguage}
 >
-  {@html selected?.logo}
+  {#if selected}
+    <Html value={selected.logo} />
+  {/if}
 </button>

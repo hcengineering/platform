@@ -78,6 +78,7 @@
   scrollbar-width: none;
   --body-font-size: .875rem;
   --status-bar-height: 36px;
+  --status-bar-normal-height: 36px;
   --panel-aside-width: 25rem; // 20rem;
   --font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
   --mono-font: 'IBM Plex Mono', monospace;
@@ -89,6 +90,10 @@
   
   &::after,
   &::before { box-sizing: border-box; }
+
+  @media (max-width: 480px) {
+    --status-bar-height: 70px;
+  }
 }
 :root {
   --app-height: 100%;
@@ -142,7 +147,7 @@ body {
   height: var(--app-height);
   width: 100%;
   overflow: hidden;
-  touch-action: none;
+  // touch-action: none;
 
   @media print {
     overflow: visible !important;

@@ -130,7 +130,6 @@ export async function openFilePreviewInSidebar (
     id: file,
     icon,
     name,
-    widget: attachment.ids.PreviewWidget,
     data: { file, name, contentType, metadata }
   }
   await createFn(widget, tab, true)

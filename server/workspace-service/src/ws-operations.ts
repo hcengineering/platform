@@ -34,7 +34,7 @@ function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: Workspace
     { targets: {}, txes: [] },
     wsUrl,
     null,
-    false,
+    true,
     new Map(),
     new Map(),
     pipeline.context.modelDb
@@ -86,7 +86,8 @@ export async function createWorkspace (
     version: Data<Version>,
     progress: number,
     message?: string
-  ) => Promise<void>
+  ) => Promise<void>,
+  external: boolean = false
 ): Promise<void> {
   const childLogger = ctx.newChild('createWorkspace', {}, { workspace: workspaceInfo.workspace })
   const ctxModellogger: ModelLogger = {
@@ -131,23 +132,20 @@ export async function createWorkspace (
         usePassedCtx: true
       })
       const txAdapter = await txFactory(ctx, hierarchy, dbUrl, wsId, modelDb, storageAdapter)
-
       await childLogger.withLog('init-workspace', {}, async (ctx) => {
-        await initModel(ctx, wsId, txes, txAdapter, storageAdapter, ctxModellogger, async (value) => {
-          await handleWsEvent?.('progress', version, 10 + Math.round((Math.min(value, 100) / 100) * 10))
-        })
+        await initModel(ctx, wsId, txes, txAdapter, storageAdapter, ctxModellogger, async (value) => {})
       })
 
       const client = new TxOperations(wrapPipeline(ctx, pipeline, wsUrl), core.account.ConfigUser)
 
       await updateModel(ctx, wsId, migrationOperation, client, pipeline, ctxModellogger, async (value) => {
-        await handleWsEvent?.('progress', version, 20 + Math.round((Math.min(value, 100) / 100) * 10))
+        await handleWsEvent?.('progress', version, 10 + Math.round((Math.min(value, 100) / 100) * 10))
       })
 
       ctx.info('Starting init script if any')
       await initializeWorkspace(ctx, branding, wsUrl, storageAdapter, client, ctxModellogger, async (value) => {
         ctx.info('Init script progress', { value })
-        await handleWsEvent?.('progress', version, 30 + Math.round((Math.min(value, 100) / 100) * 60))
+        await handleWsEvent?.('progress', version, 20 + Math.round((Math.min(value, 100) / 100) * 60))
       })
 
       await upgradeWorkspaceWith(
@@ -157,14 +155,16 @@ export async function createWorkspace (
         migrationOperation,
         workspaceInfo,
         pipeline,
+        client,
         storageAdapter,
         ctxModellogger,
         async (event, version, value) => {
           ctx.info('Init script progress', { event, value })
-          await handleWsEvent?.('progress', version, 90 + Math.round((Math.min(value, 100) / 100) * 10))
+          await handleWsEvent?.('progress', version, 80 + Math.round((Math.min(value, 100) / 100) * 20))
         },
         false,
-        false
+        'disable',
+        external
       )
 
       await handleWsEvent?.('create-done', version, 100, '')
@@ -216,6 +216,12 @@ export async function upgradeWorkspace (
       return
     }
 
+    const wsUrl: WorkspaceIdWithUrl = {
+      name: ws.workspace,
+      workspaceName: ws.workspaceName ?? '',
+      workspaceUrl: ws.workspaceUrl ?? ''
+    }
+
     await upgradeWorkspaceWith(
       ctx,
       version,
@@ -223,11 +229,12 @@ export async function upgradeWorkspace (
       migrationOperation,
       ws,
       pipeline,
+      wrapPipeline(ctx, pipeline, wsUrl),
       storageAdapter,
       logger,
       handleWsEvent,
       forceUpdate,
-      forceIndexes,
+      forceIndexes ? 'perform' : 'skip',
       external
     )
   } finally {
@@ -246,6 +253,7 @@ export async function upgradeWorkspaceWith (
   migrationOperation: [string, MigrateOperation][],
   ws: BaseWorkspaceInfo,
   pipeline: Pipeline,
+  connection: Client,
   storageAdapter: StorageAdapter,
   logger: ModelLogger = consoleModelLogger,
   handleWsEvent?: (
@@ -255,7 +263,7 @@ export async function upgradeWorkspaceWith (
     message?: string
   ) => Promise<void>,
   forceUpdate: boolean = true,
-  forceIndexes: boolean = false,
+  updateIndexes: 'perform' | 'skip' | 'disable' = 'skip',
   external: boolean = false
 ): Promise<void> {
   const versionStr = versionToString(version)
@@ -296,7 +304,7 @@ export async function upgradeWorkspaceWith (
       { targets: {}, txes: [] },
       wsUrl,
       null,
-      false,
+      true,
       new Map(),
       new Map(),
       pipeline.context.modelDb
@@ -310,13 +318,14 @@ export async function upgradeWorkspaceWith (
       wsId,
       txes,
       pipeline,
+      connection,
       storageAdapter,
       migrationOperation,
       logger,
       async (value) => {
         progress = value
       },
-      forceIndexes
+      updateIndexes
     )
 
     await handleWsEvent?.('upgrade-done', version, 100, '')

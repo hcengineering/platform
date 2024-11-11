@@ -22,6 +22,7 @@
 
   export let _id: Ref<ChunterSpace>
   export let _class: Ref<Class<ChunterSpace>>
+  export let autofocus = true
 
   const objectQuery = createQuery()
   const inboxClient = InboxNotificationsClientImpl.getClient()
@@ -37,5 +38,5 @@
 </script>
 
 {#if object}
-  <ChannelView {object} {context} on:close />
+  <ChannelView {object} {context} {autofocus} on:close />
 {/if}

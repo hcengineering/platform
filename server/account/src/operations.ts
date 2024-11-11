@@ -544,7 +544,7 @@ export async function join (
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(ctx, invite, email)
   ctx.info(`join attempt:${email}, ${workspace.name}`)
-  const ws = await assignWorkspace(
+  const ws = await assignAccountToWs(
     ctx,
     db,
     branding,
@@ -679,7 +679,7 @@ export async function signUpJoin (
     last,
     invite?.emailMask === email || invite?.personId !== undefined || sesURL === undefined || sesURL === ''
   )
-  const ws = await assignWorkspace(
+  const ws = await assignAccountToWs(
     ctx,
     db,
     branding,
@@ -816,11 +816,14 @@ export async function listWorkspaces (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  token: string
+  token: string,
+  region?: string | null
 ): Promise<WorkspaceInfo[]> {
   decodeToken(ctx, token) // Just verify token is valid
 
-  return (await db.workspace.find({})).filter((it) => it.disabled !== true).map(trimWorkspaceInfo)
+  return (await db.workspace.find(region != null ? { region } : {}))
+    .filter((it) => it.disabled !== true)
+    .map(trimWorkspaceInfo)
 }
 
 /**
@@ -1213,7 +1216,7 @@ async function postCreateUserWorkspace (
     }
   )
   try {
-    await assignWorkspace(
+    await assignAccountToWs(
       ctx,
       db,
       branding,
@@ -1610,6 +1613,38 @@ export async function assignWorkspace (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
+  token: string,
+  _email: string,
+  workspaceId: string,
+  role: AccountRole,
+  personId?: Ref<Person>,
+  shouldReplaceAccount: boolean = false,
+  client?: Client,
+  personAccountId?: Ref<PersonAccount>
+): Promise<Workspace> {
+  const decodedToken = decodeToken(ctx, token)
+  if (decodedToken.extra?.service !== 'aibot') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  return await assignAccountToWs(
+    ctx,
+    db,
+    branding,
+    _email,
+    workspaceId,
+    role,
+    personId,
+    shouldReplaceAccount,
+    client,
+    personAccountId
+  )
+}
+
+export async function assignAccountToWs (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
   _email: string,
   workspaceId: string,
   role: AccountRole,
@@ -1786,6 +1821,9 @@ async function createPersonAccount (
         personAccountId
       )
     } else {
+      if (roleOrder[existingAccount.role] < roleOrder[role]) {
+        await ops.update(existingAccount, { role })
+      }
       const person = await ops.findOne(contact.class.Person, { _id: existingAccount.person })
       if (person === undefined) {
         // Employee was deleted, let's restore it.
@@ -1794,10 +1832,16 @@ async function createPersonAccount (
         await ops.updateDoc(contact.class.PersonAccount, existingAccount.space, existingAccount._id, {
           person: employeeId
         })
-      } else if (ops.getHierarchy().hasMixin(person, contact.mixin.Employee)) {
-        const employee = ops.getHierarchy().as(person, contact.mixin.Employee)
-        if (!employee.active) {
-          await ops.update(employee, {
+      } else if (shouldCreateEmployee) {
+        if (ops.getHierarchy().hasMixin(person, contact.mixin.Employee)) {
+          const employee = ops.getHierarchy().as(person, contact.mixin.Employee)
+          if (!employee.active) {
+            await ops.update(employee, {
+              active: true
+            })
+          }
+        } else {
+          await ops.createMixin(person._id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
             active: true
           })
         }
@@ -2285,7 +2329,7 @@ export async function joinWithProvider (
         return result
       }
 
-      const wsRes = await assignWorkspace(
+      const wsRes = await assignAccountToWs(
         ctx,
         db,
         branding,
@@ -2309,7 +2353,7 @@ export async function joinWithProvider (
     }
     const newAccount = await createAcc(ctx, db, branding, email, null, first, last, true, true, extra)
     const token = generateToken(email, getWorkspaceId(''), getExtra(newAccount))
-    const ws = await assignWorkspace(
+    const ws = await assignAccountToWs(
       ctx,
       db,
       branding,

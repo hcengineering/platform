@@ -29,20 +29,28 @@
   export let orientation: 'horizontal' | 'vertical' = 'horizontal'
   export let kind: 'primary' | 'secondary' = 'primary'
   export let canClose = true
+  export let readonly = false
 
   const dispatch = createEventDispatcher()
+
+  function handleContextMenu (e: MouseEvent): void {
+    if (readonly) return
+    e.preventDefault()
+    e.stopPropagation()
+    dispatch('contextmenu', e)
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class="container main flex-row-center flex-gap-2 {orientation} {kind}"
+  class="container main flex-between flex-gap-2 {orientation} {kind}"
   style:max-width={orientation === 'horizontal' ? maxSize : 'auto'}
   style:max-height={orientation === 'vertical' ? maxSize : 'auto'}
   class:active={highlighted}
   use:tooltip={{ label: label ? getEmbeddedLabel(label) : labelIntl }}
   on:click
-  on:contextmenu
+  on:contextmenu={handleContextMenu}
 >
   <slot name="prefix" />
 
@@ -52,7 +60,7 @@
     </div>
   {/if}
 
-  <span class="overflow-label">
+  <span class="overflow-label flex-grow">
     {#if label}
       {label}
     {:else if labelIntl}
@@ -69,7 +77,7 @@
     {/if}
   </span>
 
-  {#if canClose}
+  {#if canClose && !readonly}
     <div class="close-button {orientation}">
       <ButtonIcon icon={IconClose} size="min" on:click={() => dispatch('close')} />
     </div>
@@ -100,11 +108,14 @@
     &.horizontal {
       padding: 0.125rem 0.125rem 0.125rem 0.5rem;
       height: 1.625rem;
+      min-height: 1.625rem;
+      min-width: 4rem;
     }
 
     &.vertical {
       padding: 0.5rem 0.125rem 0.125rem 0.125rem;
       width: 1.625rem;
+      min-height: 4rem;
       writing-mode: vertical-rl;
       text-orientation: sideways;
     }

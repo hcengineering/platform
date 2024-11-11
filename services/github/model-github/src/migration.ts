@@ -271,7 +271,6 @@ async function processMigrateMarkupFor (
   client: MigrationClient,
   iterator: MigrationIterator<DocSyncInfo>
 ): Promise<void> {
-  let processed = 0
   while (true) {
     const docs = await iterator.next(1000)
     if (docs === null || docs.length === 0) {
@@ -298,9 +297,6 @@ async function processMigrateMarkupFor (
     if (operations.length > 0) {
       await client.bulk(DOMAIN_GITHUB, operations)
     }
-
-    processed += docs.length
-    console.log('...processed', processed)
   }
 }
 

@@ -40,11 +40,12 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.11",
-    "svelte": "^4.2.12",
+    "svelte": "^4.2.19",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/core": "^0.6.32",
+    "@hcengineering/highlight": "^0.6.0",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/text": "^0.6.5",
     "@hcengineering/text-editor": "^0.6.0",

@@ -22,7 +22,8 @@ export const serverAiBotId = 'server-ai-bot' as Plugin
 
 export default plugin(serverAiBotId, {
   metadata: {
-    SupportWorkspaceId: '' as Metadata<string>
+    SupportWorkspaceId: '' as Metadata<string>,
+    EndpointURL: '' as Metadata<string>
   },
   trigger: {
     OnMessageSend: '' as Resource<TriggerFunc>,

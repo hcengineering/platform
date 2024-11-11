@@ -57,6 +57,8 @@ export interface SessionData {
 
   workspace: WorkspaceIdWithUrl
   branding: Branding | null
+
+  needWarmupFulltext?: boolean
 }
 
 /**
@@ -78,12 +80,19 @@ export interface LowLevelStorage {
   clean: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
 
   // Low level direct group API
-  groupBy: <T>(ctx: MeasureContext, domain: Domain, field: string) => Promise<Set<T>>
+  groupBy: <T, P extends Doc>(
+    ctx: MeasureContext,
+    domain: Domain,
+    field: string,
+    query?: DocumentQuery<P>
+  ) => Promise<Map<T, number>>
 
   // migrations
   rawFindAll: <T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<T[]>
 
   rawUpdate: <T extends Doc>(domain: Domain, query: DocumentQuery<T>, operations: DocumentUpdate<T>) => Promise<void>
+
+  rawDeleteMany: <T extends Doc>(domain: Domain, query: DocumentQuery<T>) => Promise<void>
 
   // Traverse documents
   traverse: <T extends Doc>(

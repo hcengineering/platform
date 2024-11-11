@@ -18,16 +18,27 @@ import core, {
   AccountRole,
   type Class,
   type Doc,
+  type DocumentUpdate,
   type Domain,
   type FieldIndexConfig,
   generateId,
+  type MixinUpdate,
   type Projection,
   type Ref,
   type WorkspaceId
 } from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
-import { Pool, type PoolClient } from 'pg'
+import postgres from 'postgres'
+import {
+  addSchema,
+  type DataType,
+  getDocFieldsByDomains,
+  getIndex,
+  getSchema,
+  type Schema,
+  translateDomain
+} from './schemas'
 
 const connections = new Map<string, PostgresClientReferenceImpl>()
 
@@ -39,83 +50,105 @@ process.on('exit', () => {
 })
 
 const clientRefs = new Map<string, ClientRef>()
+const loadedDomains = new Set<string>()
 
-export async function retryTxn (pool: Pool, operation: (client: PoolClient) => Promise<any>): Promise<any> {
-  const backoffInterval = 100 // millis
-  const maxTries = 5
-  let tries = 0
-  const client = await pool.connect()
-
-  try {
-    while (true) {
-      await client.query('BEGIN;')
-      tries++
-
-      try {
-        const result = await operation(client)
-        await client.query('COMMIT;')
-        return result
-      } catch (err: any) {
-        await client.query('ROLLBACK;')
-
-        if (err.code !== '40001' || tries === maxTries) {
-          throw err
-        } else {
-          console.log('Transaction failed. Retrying.')
-          console.log(err.message)
-          await new Promise((resolve) => setTimeout(resolve, tries * backoffInterval))
-        }
-      }
-    }
-  } finally {
-    client.release()
-  }
+export async function retryTxn (
+  pool: postgres.Sql,
+  operation: (client: postgres.TransactionSql) => Promise<any>
+): Promise<any> {
+  await pool.begin(async (client) => {
+    const result = await operation(client)
+    return result
+  })
 }
 
-export async function createTable (client: Pool, domains: string[]): Promise<void> {
-  if (domains.length === 0) {
+export async function createTables (client: postgres.Sql, domains: string[]): Promise<void> {
+  const filtered = domains.filter((d) => !loadedDomains.has(d))
+  if (filtered.length === 0) {
     return
   }
-  const mapped = domains.map((p) => translateDomain(p))
+  const mapped = filtered.map((p) => translateDomain(p))
   const inArr = mapped.map((it) => `'${it}'`).join(', ')
-  const exists = await client.query(`
+  const tables = await client.unsafe(`
     SELECT table_name 
     FROM information_schema.tables 
     WHERE table_name IN (${inArr})
   `)
 
-  const toCreate = mapped.filter((it) => !exists.rows.map((it) => it.table_name).includes(it))
+  const exists = new Set(tables.map((it) => it.table_name))
+
   await retryTxn(client, async (client) => {
-    for (const domain of toCreate) {
-      await client.query(
-        `CREATE TABLE ${domain} (
-          "workspaceId" VARCHAR(255) NOT NULL,
-          _id VARCHAR(255) NOT NULL,
-          _class VARCHAR(255) NOT NULL,
-          "createdBy" VARCHAR(255),
-          "modifiedBy" VARCHAR(255) NOT NULL,
-          "modifiedOn" bigint NOT NULL,
-          "createdOn" bigint,
-          space VARCHAR(255) NOT NULL,
-          "attachedTo" VARCHAR(255),
-          data JSONB NOT NULL,
-          PRIMARY KEY("workspaceId", _id)
-        )`
-      )
-      await client.query(`
-        CREATE INDEX ${domain}_attachedTo ON ${domain} ("attachedTo")
-      `)
-      await client.query(`
-        CREATE INDEX ${domain}_class ON ${domain} (_class)
-      `)
-      await client.query(`
-        CREATE INDEX ${domain}_space ON ${domain} (space)
-      `)
-      await client.query(`
-        CREATE INDEX ${domain}_idxgin ON ${domain} USING GIN (data)
-      `)
+    for (const domain of mapped) {
+      if (exists.has(domain)) {
+        await getTableSchema(client, domain)
+      } else {
+        await createTable(client, domain)
+      }
+      loadedDomains.add(domain)
     }
   })
+}
+
+async function getTableSchema (client: postgres.Sql, domain: string): Promise<void> {
+  const res = await client.unsafe(`SELECT column_name, data_type, is_nullable
+    FROM information_schema.columns
+    WHERE table_name = '${domain}' and table_schema = 'public' ORDER BY ordinal_position ASC;
+  `)
+
+  const schema: Schema = {}
+  for (const column of res) {
+    if (column.column_name === 'workspaceId' || column.column_name === 'data') {
+      continue
+    }
+    schema[column.column_name] = {
+      type: parseDataType(column.data_type),
+      notNull: column.is_nullable === 'NO',
+      index: false
+    }
+  }
+
+  addSchema(domain, schema)
+}
+
+function parseDataType (type: string): DataType {
+  switch (type) {
+    case 'text':
+      return 'text'
+    case 'bigint':
+      return 'bigint'
+    case 'boolean':
+      return 'bool'
+    case 'ARRAY':
+      return 'text[]'
+  }
+  return 'text'
+}
+
+async function createTable (client: postgres.Sql, domain: string): Promise<void> {
+  const schema = getSchema(domain)
+  const fields: string[] = []
+  for (const key in schema) {
+    const val = schema[key]
+    fields.push(`"${key}" ${val.type} ${val.notNull ? 'NOT NULL' : ''}`)
+  }
+  const colums = fields.join(', ')
+  const res = await client.unsafe(`CREATE TABLE IF NOT EXISTS ${domain} (
+      "workspaceId" text NOT NULL,
+      ${colums}, 
+      data JSONB NOT NULL,
+      PRIMARY KEY("workspaceId", _id)
+    )`)
+  if (res.count > 0) {
+    for (const key in schema) {
+      const val = schema[key]
+      if (val.index) {
+        await client.unsafe(`
+          CREATE INDEX ${domain}_${key} ON ${domain} ${getIndex(val)} ("${key}")
+        `)
+      }
+      fields.push(`"${key}" ${val.type} ${val.notNull ? 'NOT NULL' : ''}`)
+    }
+  }
 }
 
 /**
@@ -129,23 +162,23 @@ export async function shutdown (): Promise<void> {
 }
 
 export interface PostgresClientReference {
-  getClient: () => Promise<Pool>
+  getClient: () => Promise<postgres.Sql>
   close: () => void
 }
 
 class PostgresClientReferenceImpl {
   count: number
-  client: Pool | Promise<Pool>
+  client: postgres.Sql | Promise<postgres.Sql>
 
   constructor (
-    client: Pool | Promise<Pool>,
+    client: postgres.Sql | Promise<postgres.Sql>,
     readonly onclose: () => void
   ) {
     this.count = 0
     this.client = client
   }
 
-  async getClient (): Promise<Pool> {
+  async getClient (): Promise<postgres.Sql> {
     if (this.client instanceof Promise) {
       this.client = await this.client
     }
@@ -178,7 +211,7 @@ export class ClientRef implements PostgresClientReference {
   }
 
   closed = false
-  async getClient (): Promise<Pool> {
+  async getClient (): Promise<postgres.Sql> {
     if (!this.closed) {
       return await this.client.getClient()
     } else {
@@ -201,17 +234,24 @@ export class ClientRef implements PostgresClientReference {
  * @public
  */
 export function getDBClient (connectionString: string, database?: string): PostgresClientReference {
-  const key = `${connectionString}${process.env.postgree_OPTIONS ?? '{}'}`
+  const extraOptions = JSON.parse(process.env.POSTGRES_OPTIONS ?? '{}')
+  const key = `${connectionString}${extraOptions}`
   let existing = connections.get(key)
 
   if (existing === undefined) {
-    const pool = new Pool({
-      connectionString,
-      application_name: 'transactor',
-      database
+    const sql = postgres(connectionString, {
+      connection: {
+        application_name: 'transactor'
+      },
+      database,
+      max: 10,
+      transform: {
+        undefined: null
+      },
+      ...extraOptions
     })
 
-    existing = new PostgresClientReferenceImpl(pool, () => {
+    existing = new PostgresClientReferenceImpl(sql, () => {
       connections.delete(key)
     })
     connections.set(key, existing)
@@ -221,19 +261,92 @@ export function getDBClient (connectionString: string, database?: string): Postg
   return new ClientRef(existing)
 }
 
-export function convertDoc<T extends Doc> (doc: T, workspaceId: string): DBDoc {
-  const { _id, _class, createdBy, modifiedBy, modifiedOn, createdOn, space, attachedTo, ...data } = doc as any
-  return {
-    _id,
-    _class,
-    createdBy,
-    modifiedBy,
-    modifiedOn,
-    createdOn,
-    space,
-    attachedTo,
+export function convertDoc<T extends Doc> (domain: string, doc: T, workspaceId: string): DBDoc {
+  const extractedFields: Doc & Record<string, any> = {
+    _id: doc._id,
+    space: doc.space,
+    createdBy: doc.createdBy,
+    modifiedBy: doc.modifiedBy,
+    modifiedOn: doc.modifiedOn,
+    createdOn: doc.createdOn,
+    _class: doc._class
+  }
+  const remainingData: Partial<T> = {}
+
+  for (const key in doc) {
+    if (Object.keys(extractedFields).includes(key)) continue
+    if (getDocFieldsByDomains(domain).includes(key)) {
+      extractedFields[key] = doc[key]
+    } else {
+      remainingData[key] = doc[key]
+    }
+  }
+
+  const res: any = {
+    ...extractedFields,
     workspaceId,
-    data
+    data: remainingData
+  }
+  return res
+}
+
+export function inferType (val: any): string {
+  if (typeof val === 'string') {
+    return '::text'
+  }
+  if (typeof val === 'number') {
+    return '::numeric'
+  }
+  if (typeof val === 'boolean') {
+    return '::boolean'
+  }
+  if (Array.isArray(val)) {
+    const type = inferType(val[0])
+    if (type !== '') {
+      return type + '[]'
+    }
+  }
+  if (typeof val === 'object') {
+    if (val instanceof Date) {
+      return '::text'
+    }
+    return '::jsonb'
+  }
+  return ''
+}
+
+export function parseUpdate<T extends Doc> (
+  domain: string,
+  ops: DocumentUpdate<T> | MixinUpdate<Doc, T>
+): {
+    extractedFields: Partial<T>
+    remainingData: Partial<T>
+  } {
+  const extractedFields: Partial<T> = {}
+  const remainingData: Partial<T> = {}
+
+  for (const key in ops) {
+    if (key === '$push' || key === '$pull') {
+      const val = (ops as any)[key]
+      for (const k in val) {
+        if (getDocFieldsByDomains(domain).includes(k)) {
+          ;(extractedFields as any)[k] = val[key]
+        } else {
+          ;(remainingData as any)[k] = val[key]
+        }
+      }
+    } else {
+      if (getDocFieldsByDomains(domain).includes(key)) {
+        ;(extractedFields as any)[key] = (ops as any)[key]
+      } else {
+        ;(remainingData as any)[key] = (ops as any)[key]
+      }
+    }
+  }
+
+  return {
+    extractedFields,
+    remainingData
   }
 }
 
@@ -247,20 +360,22 @@ export function isOwner (account: Account): boolean {
 
 export class DBCollectionHelper implements DomainHelperOperations {
   constructor (
-    protected readonly client: Pool,
+    protected readonly client: postgres.Sql,
     protected readonly workspaceId: WorkspaceId
   ) {}
+
+  async dropIndex (domain: Domain, name: string): Promise<void> {}
 
   domains = new Set<Domain>()
   async create (domain: Domain): Promise<void> {}
 
   async exists (domain: Domain): Promise<boolean> {
-    const exists = await this.client.query(`
+    const exists = await this.client`
       SELECT table_name 
       FROM information_schema.tables 
-      WHERE table_name = '${translateDomain(domain)}'
-    `)
-    return exists.rows.length > 0
+      WHERE table_name = '${this.client(translateDomain(domain))}'
+    `
+    return exists.length > 0
   }
 
   async listDomains (): Promise<Set<Domain>> {
@@ -269,25 +384,19 @@ export class DBCollectionHelper implements DomainHelperOperations {
 
   async createIndex (domain: Domain, value: string | FieldIndexConfig<Doc>, options?: { name: string }): Promise<void> {}
 
-  async dropIndex (domain: Domain, name: string): Promise<void> {}
-
   async listIndexes (domain: Domain): Promise<{ name: string }[]> {
     return []
   }
 
   async estimatedCount (domain: Domain): Promise<number> {
-    const res = await this.client.query(`SELECT COUNT(_id) FROM ${translateDomain(domain)} WHERE "workspaceId" = $1`, [
-      this.workspaceId.name
-    ])
-    return res.rows[0].count
+    const res = await this
+      .client`SELECT COUNT(_id) FROM ${this.client(translateDomain(domain))} WHERE "workspaceId" = ${this.workspaceId.name}`
+
+    return res.count
   }
 }
 
-export function translateDomain (domain: string): string {
-  return domain.replaceAll('-', '_')
-}
-
-export function parseDocWithProjection<T extends Doc> (doc: DBDoc, projection: Projection<T> | undefined): T {
+export function parseDocWithProjection<T extends Doc> (doc: DBDoc, projection?: Projection<T> | undefined): T {
   const { workspaceId, data, ...rest } = doc
   for (const key in rest) {
     if ((rest as any)[key] === 'NULL' || (rest as any)[key] === null) {
@@ -343,39 +452,12 @@ export function parseDoc<T extends Doc> (doc: DBDoc): T {
 
 export interface DBDoc extends Doc {
   workspaceId: string
-  attachedTo?: Ref<Doc>
   data: Record<string, any>
+  [key: string]: any
 }
 
-export function isDataField (field: string): boolean {
-  return !docFields.includes(field)
-}
-
-export const docFields: string[] = [
-  '_id',
-  '_class',
-  'createdBy',
-  'modifiedBy',
-  'modifiedOn',
-  'createdOn',
-  'space',
-  'attachedTo'
-] as const
-
-export function getUpdateValue (value: any): string {
-  if (typeof value === 'string') {
-    return '"' + escapeDoubleQuotes(value) + '"'
-  }
-  if (typeof value === 'object') {
-    return JSON.stringify(value)
-  }
-  return value
-}
-
-function escapeDoubleQuotes (jsonString: string): string {
-  const unescapedQuotes = /(?<!\\)"/g
-
-  return jsonString.replace(unescapedQuotes, '\\"')
+export function isDataField (domain: string, field: string): boolean {
+  return !getDocFieldsByDomains(domain).includes(field)
 }
 
 export interface JoinProps {
@@ -386,6 +468,6 @@ export interface JoinProps {
   toAlias: string // alias for the table
   toField: string // field to join on
   isReverse: boolean
-  toClass: Ref<Class<Doc>>
+  toClass?: Ref<Class<Doc>>
   classes?: Ref<Class<Doc>>[] // filter by classes
 }

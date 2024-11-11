@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { getMetadata, translate } from '@hcengineering/platform'
-  import { Button, IconClose, Label, themeStore } from '@hcengineering/ui'
+  import { Button, Html, IconClose, Label, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import gmail from '../plugin'
   import { concatLink } from '@hcengineering/core'
@@ -70,7 +70,7 @@
   <div class="content">
     <Label label={gmail.string.RedirectGoogle} />
     <div class="mt-2">
-      {@html label}
+      <Html value={label} />
     </div>
 
     <div class="footer">

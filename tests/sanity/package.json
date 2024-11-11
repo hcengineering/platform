@@ -21,7 +21,7 @@
     "test": "",
     "uitest": "cross-env LOCAL_URL=http://localhost:3003/ DEV_URL= playwright test -c ./tests/playwright.config.ts",
     "staging-uitest": "cross-env PLATFORM_URI=https://front.hc.engineering/ playwright test -c ./tests/playwright.config.ts --grep @staging",
-    "dev-uitest": "cross-env PLATFORM_URI=http://localhost:8080 PLATFORM_TRANSACTOR=ws://localhost:3333 SETTING=storage-dev.json SETTING_SECOND=storageSecond-dev.json DEV_URL=http://localhost:8080/account playwright test -c ./tests/playwright.config.ts",
+    "dev-uitest": "cross-env PLATFORM_URI=http://localhost:8080 PLATFORM_TRANSACTOR=ws://localhost:3333 SETTING=storage-dev.json SETTING_SECOND=storageSecond-dev.json  DEV_URL=http://localhost:8080/account playwright test -c ./tests/playwright.config.ts",
     "debug": "cross-env LOCAL_URL=http://localhost:3003/ DEV_URL= playwright test -c ./tests/playwright.config.ts --debug --headed",
     "dev-debug": "cross-env PLATFORM_URI=http://localhost:8080 PLATFORM_TRANSACTOR=ws://localhost:3333 SETTING=storage-dev.json SETTING_SECOND=storageSecond-dev.json playwright test -c ./tests/playwright.config.ts --debug --headed",
     "codegen": "playwright codegen --load-storage storage.json http://localhost:8083/workbench/sanity-ws/",
@@ -41,9 +41,9 @@
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
     "typescript": "^5.3.3",
-    "@playwright/test": "^1.47.2",
-    "allure-playwright": "^3.0.4",
-    "allure-js-commons": "^3.0.4",
+    "@playwright/test": "^1.48.2",
+    "allure-playwright": "^3.0.6",
+    "allure-js-commons": "^3.0.6",
     "@faker-js/faker": "^8.4.1"
   },
   "dependencies": {

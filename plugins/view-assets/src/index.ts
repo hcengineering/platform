@@ -62,5 +62,6 @@ loadMetadata(view.icon, {
   Video: `${icons}#video`,
   Audio: `${icons}#audio`,
   File: `${icons}#file`,
-  PinTack: `${icons}#pin-tack`
+  PinTack: `${icons}#pin-tack`,
+  Feather: `${icons}#feather`
 })

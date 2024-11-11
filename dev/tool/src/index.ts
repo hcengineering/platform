@@ -15,7 +15,7 @@
 //
 
 import accountPlugin, {
-  assignWorkspace,
+  assignAccountToWs,
   confirmEmail,
   createAcc,
   createWorkspace as createWorkspaceRecord,
@@ -115,7 +115,7 @@ import {
 } from './clean'
 import { changeConfiguration } from './configuration'
 import { moveAccountDbFromMongoToPG, moveFromMongoToPG, moveWorkspaceFromMongoToPG } from './db'
-import { fixJsonMarkup, migrateMarkup, restoreLostMarkup } from './markup'
+import { fixJsonMarkup, migrateMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount } from './renameAccount'
 import { moveFiles, showLostFiles } from './storage'
@@ -320,7 +320,7 @@ export function devTool (
           console.log('assigning to workspace', workspaceInfo, endpoint)
           const client = await createClient(endpoint, token)
           console.log('assigning to workspace connected', workspaceInfo, endpoint)
-          await assignWorkspace(
+          await assignAccountToWs(
             toolCtx,
             db,
             null,
@@ -371,7 +371,7 @@ export function devTool (
           lastProcessingTime: Date.now() + 1000 * 60
         })
 
-        await createWorkspace(measureCtx, version, brandingObj, wsInfo, txes, migrateOperations)
+        await createWorkspace(measureCtx, version, brandingObj, wsInfo, txes, migrateOperations, undefined, true)
 
         await updateWorkspace(db, wsInfo, {
           mode: 'active',
@@ -1282,38 +1282,6 @@ export function devTool (
       })
     })
 
-  program.command('show-lost-markup <workspace>').action(async (workspace: string, cmd: any) => {
-    const { dbUrl } = prepareTools()
-    await withDatabase(dbUrl, async (db) => {
-      await withStorage(async (adapter) => {
-        try {
-          const workspaceId = getWorkspaceId(workspace)
-          const token = generateToken(systemAccountEmail, workspaceId)
-          const endpoint = await getTransactorEndpoint(token)
-          await restoreLostMarkup(toolCtx, workspaceId, endpoint, adapter, { command: 'show' })
-        } catch (err: any) {
-          console.error(err)
-        }
-      })
-    })
-  })
-
-  program.command('restore-lost-markup <workspace>').action(async (workspace: string, cmd: any) => {
-    const { dbUrl } = prepareTools()
-    await withDatabase(dbUrl, async (db) => {
-      await withStorage(async (adapter) => {
-        try {
-          const workspaceId = getWorkspaceId(workspace)
-          const token = generateToken(systemAccountEmail, workspaceId)
-          const endpoint = await getTransactorEndpoint(token)
-          await restoreLostMarkup(toolCtx, workspaceId, endpoint, adapter, { command: 'restore' })
-        } catch (err: any) {
-          console.error(err)
-        }
-      })
-    })
-  })
-
   program.command('fix-bw-workspace <workspace>').action(async (workspace: string) => {
     await withStorage(async (adapter) => {
       await fixMinioBW(toolCtx, getWorkspaceId(workspace), adapter)
@@ -1666,21 +1634,42 @@ export function devTool (
     })
   })
 
-  program.command('move-workspace-to-pg <workspace> <region>').action(async (workspace: string, region: string) => {
-    const { dbUrl } = prepareTools()
-    const mongodbUri = getMongoDBUrl()
+  program
+    .command('move-workspace-to-pg <workspace> <region>')
+    .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
+    .option('-f|--force [force]', 'Force update', false)
+    .action(
+      async (
+        workspace: string,
+        region: string,
+        cmd: {
+          include: string
+          force: boolean
+        }
+      ) => {
+        const { dbUrl } = prepareTools()
+        const mongodbUri = getMongoDBUrl()
 
-    await withDatabase(mongodbUri, async (db) => {
-      const workspaceInfo = await getWorkspaceById(db, workspace)
-      if (workspaceInfo === null) {
-        throw new Error(`workspace ${workspace} not found`)
+        await withDatabase(mongodbUri, async (db) => {
+          const workspaceInfo = await getWorkspaceById(db, workspace)
+          if (workspaceInfo === null) {
+            throw new Error(`workspace ${workspace} not found`)
+          }
+          if (workspaceInfo.region === region && !cmd.force) {
+            throw new Error(`workspace ${workspace} is already migrated`)
+          }
+          await moveWorkspaceFromMongoToPG(
+            db,
+            mongodbUri,
+            dbUrl,
+            workspaceInfo,
+            region,
+            cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
+            cmd.force
+          )
+        })
       }
-      if (workspaceInfo.region === region) {
-        throw new Error(`workspace ${workspace} is already migrated`)
-      }
-      await moveWorkspaceFromMongoToPG(db, mongodbUri, dbUrl, workspaceInfo, region)
-    })
-  })
+    )
 
   program.command('move-account-db-to-pg').action(async () => {
     const { dbUrl } = prepareTools()
@@ -1717,7 +1706,7 @@ export function devTool (
           lastProcessingTime: Date.now() + 1000 * 60
         })
 
-        await createWorkspace(measureCtx, version, null, wsInfo, txes, migrateOperations)
+        await createWorkspace(measureCtx, version, null, wsInfo, txes, migrateOperations, undefined, true)
 
         await updateWorkspace(db, wsInfo, {
           mode: 'active',
@@ -1726,7 +1715,7 @@ export function devTool (
           version
         })
         await createAcc(toolCtx, db, null, email, '1234', '', '', true)
-        await assignWorkspace(toolCtx, db, null, email, ws, AccountRole.User)
+        await assignAccountToWs(toolCtx, db, null, email, ws, AccountRole.User)
         console.log('Workspace created in', new Date().getTime() - start.getTime(), 'ms')
         const token = generateToken(systemAccountEmail, wsid)
         const endpoint = await getTransactorEndpoint(token, 'external')

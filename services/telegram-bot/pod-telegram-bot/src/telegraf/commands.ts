@@ -86,7 +86,8 @@ async function onStart (ctx: Context, worker: PlatformWorker): Promise<void> {
       await worker.updateTelegramUsername(record, ctx.from?.username)
     }
   } else {
-    const connectMessage = await translate(telegram.string.ConnectMessage, { app: config.App }, lang)
+    const minutes = Math.round(config.OtpTimeToLiveSec / 60)
+    const connectMessage = await translate(telegram.string.ConnectMessage, { app: config.App, minutes }, lang)
     const message = welcomeMessage + '\n\n' + commandsHelp + '\n\n' + connectMessage
 
     await ctx.reply(message)

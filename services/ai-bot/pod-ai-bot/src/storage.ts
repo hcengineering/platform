@@ -15,8 +15,8 @@
 
 import { MongoClientReference, getMongoClient } from '@hcengineering/mongo'
 import { Collection, Db, MongoClient, ObjectId, UpdateFilter, WithId } from 'mongodb'
-import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { Doc, Ref, SortingOrder } from '@hcengineering/core'
+import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 
 import config from './config'
 import { HistoryRecord } from './types'
@@ -61,16 +61,12 @@ export class DbStorage {
     await this.historyCollection.deleteMany({ _id: { $in: _ids } })
   }
 
-  async getActiveWorkspaces (): Promise<WorkspaceInfoRecord[]> {
-    return await this.workspacesInfoCollection.find({ active: true }).toArray()
-  }
-
-  async inactiveWorkspace (workspace: string): Promise<void> {
-    await this.workspacesInfoCollection.updateOne({ workspace }, { $set: { active: false } })
-  }
-
   async getWorkspace (workspace: string): Promise<WorkspaceInfoRecord | undefined> {
     return (await this.workspacesInfoCollection.findOne({ workspace })) ?? undefined
+  }
+
+  async addWorkspace (record: WorkspaceInfoRecord): Promise<void> {
+    await this.workspacesInfoCollection.insertOne(record)
   }
 
   async updateWorkspace (workspace: string, update: UpdateFilter<WorkspaceInfoRecord>): Promise<void> {

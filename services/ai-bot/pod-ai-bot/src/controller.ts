@@ -13,50 +13,50 @@
 // limitations under the License.
 //
 
-import { isWorkspaceCreating, Markup, MeasureContext, systemAccountEmail } from '@hcengineering/core'
 import {
   aiBotAccountEmail,
-  AIBotTransferEvent,
+  AIEventRequest,
+  AIEventType,
+  AIMessageEventRequest,
+  AITransferEventRequest,
+  ConnectMeetingRequest,
+  DisconnectMeetingRequest,
+  IdentityResponse,
   OnboardingEvent,
   OnboardingEventRequest,
   OpenChatInSidebarData,
+  PostTranscriptRequest,
   TranslateRequest,
   TranslateResponse
 } from '@hcengineering/ai-bot'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
-import { WorkspaceLoginInfo } from '@hcengineering/account'
 import OpenAI from 'openai'
 import { encodingForModel } from 'js-tiktoken'
 import { htmlToMarkup, markupToHTML } from '@hcengineering/text'
+import { Markup, MeasureContext, Ref, WorkspaceId } from '@hcengineering/core'
+import { Room } from '@hcengineering/love'
 
-import { WorkspaceClient } from './workspaceClient'
-import { assignBotToWorkspace, getWorkspaceInfo } from './account'
+import { WorkspaceClient } from './workspace/workspaceClient'
 import config from './config'
 import { DbStorage } from './storage'
-import { SupportWsClient } from './supportWsClient'
+import { SupportWsClient } from './workspace/supportWsClient'
 import { AIReplyTransferData } from './types'
+import { tryAssignToWorkspace } from './utils/account'
+import { translateHtml } from './utils/openai'
 
-const POLLING_INTERVAL_MS = 5 * 1000 // 5 seconds
 const CLOSE_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes
-const ASSIGN_WORKSPACE_DELAY_MS = 5 * 1000 // 5 secs
-const MAX_ASSIGN_ATTEMPTS = 5
 
-export class AIBotController {
+export class AIControl {
   private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
   private readonly closeWorkspaceTimeouts: Map<string, NodeJS.Timeout> = new Map<string, NodeJS.Timeout>()
   private readonly connectingWorkspaces: Set<string> = new Set<string>()
-
-  private readonly intervalId: NodeJS.Timeout
 
   readonly aiClient?: OpenAI
   readonly encoding = encodingForModel(config.OpenAIModel)
 
   supportClient: SupportWsClient | undefined = undefined
-
-  assignTimeout: NodeJS.Timeout | undefined
-  assignAttempts = 0
 
   constructor (
     readonly storage: DbStorage,
@@ -70,36 +70,19 @@ export class AIBotController {
         })
         : undefined
 
-    this.intervalId = setInterval(() => {
-      void this.updateWorkspaceClients()
-    }, POLLING_INTERVAL_MS)
+    void this.connectSupportWorkspace()
   }
 
-  async updateWorkspaceClients (): Promise<void> {
-    const activeRecords = await this.storage.getActiveWorkspaces()
+  async getWorkspaceRecord (workspace: string): Promise<WorkspaceInfoRecord> {
+    return (await this.storage.getWorkspace(workspace)) ?? { workspace: config.SupportWorkspace }
+  }
 
+  async connectSupportWorkspace (): Promise<void> {
     if (this.supportClient === undefined && !this.connectingWorkspaces.has(config.SupportWorkspace)) {
       this.connectingWorkspaces.add(config.SupportWorkspace)
-      const record = await this.storage.getWorkspace(config.SupportWorkspace)
-      this.supportClient = (await this.createWorkspaceClient(
-        config.SupportWorkspace,
-        record ?? { workspace: config.SupportWorkspace, active: true }
-      )) as SupportWsClient
+      const record = await this.getWorkspaceRecord(config.SupportWorkspace)
+      this.supportClient = (await this.createWorkspaceClient(config.SupportWorkspace, record)) as SupportWsClient
       this.connectingWorkspaces.delete(config.SupportWorkspace)
-    }
-
-    for (const record of activeRecords) {
-      const ws = record.workspace
-
-      if (this.workspaces.has(ws)) {
-        continue
-      }
-
-      if (this.connectingWorkspaces.has(ws)) {
-        continue
-      }
-
-      await this.initWorkspaceClient(ws, record)
     }
   }
 
@@ -111,75 +94,38 @@ export class AIBotController {
       this.closeWorkspaceTimeouts.delete(workspace)
     }
 
-    await this.storage.inactiveWorkspace(workspace)
-
     const client = this.workspaces.get(workspace)
 
     if (client !== undefined) {
-      await client.close()
-      this.workspaces.delete(workspace)
+      if (client.canClose()) {
+        await client.close()
+        this.workspaces.delete(workspace)
+      } else {
+        this.updateClearInterval(workspace)
+      }
     }
     this.connectingWorkspaces.delete(workspace)
   }
 
-  private async getWorkspaceInfo (ws: string): Promise<WorkspaceLoginInfo | undefined> {
-    const systemToken = generateToken(systemAccountEmail, { name: ws })
-    for (let i = 0; i < 5; i++) {
-      try {
-        const info = await getWorkspaceInfo(systemToken)
+  updateClearInterval (workspace: string): void {
+    const newTimeoutId = setTimeout(() => {
+      void this.closeWorkspaceClient(workspace)
+    }, CLOSE_INTERVAL_MS)
 
-        if (info == null) {
-          this.ctx.warn('Cannot find workspace info', { workspace: ws })
-          await wait(ASSIGN_WORKSPACE_DELAY_MS)
-          continue
-        }
-
-        return info
-      } catch (e) {
-        this.ctx.error('Error during get workspace info:', { e })
-        await wait(ASSIGN_WORKSPACE_DELAY_MS)
-      }
-    }
+    this.closeWorkspaceTimeouts.set(workspace, newTimeoutId)
   }
 
-  private async assignToWorkspace (workspace: string): Promise<void> {
-    clearTimeout(this.assignTimeout)
-    try {
-      const info = await this.getWorkspaceInfo(workspace)
+  async createWorkspaceClient (workspace: string, info: WorkspaceInfoRecord): Promise<WorkspaceClient | undefined> {
+    const isAssigned = await tryAssignToWorkspace(workspace, this.ctx)
 
-      if (info === undefined) {
-        void this.closeWorkspaceClient(workspace)
-        return
-      }
-
-      if (isWorkspaceCreating(info?.mode)) {
-        this.ctx.info('Workspace is creating -> waiting...', { workspace })
-        this.assignTimeout = setTimeout(() => {
-          void this.assignToWorkspace(workspace)
-        }, ASSIGN_WORKSPACE_DELAY_MS)
-        return
-      }
-
-      const result = await assignBotToWorkspace(workspace)
-      this.ctx.info('Assign to workspace result: ', { result, workspace })
-    } catch (e) {
-      this.ctx.error('Error during assign workspace:', { e })
-      if (this.assignAttempts < MAX_ASSIGN_ATTEMPTS) {
-        this.assignAttempts++
-        this.assignTimeout = setTimeout(() => {
-          void this.assignToWorkspace(workspace)
-        }, ASSIGN_WORKSPACE_DELAY_MS)
-      } else {
-        void this.closeWorkspaceClient(workspace)
-      }
+    if (!isAssigned) {
+      return
     }
-  }
 
-  async createWorkspaceClient (workspace: string, info: WorkspaceInfoRecord): Promise<WorkspaceClient> {
-    this.ctx.info('Listen workspace: ', { workspace })
-    await this.assignToWorkspace(workspace)
     const token = generateToken(aiBotAccountEmail, { name: workspace })
     const endpoint = await getTransactorEndpoint(token)
+
+    this.ctx.info('Listen workspace: ', { workspace })
 
     if (workspace === config.SupportWorkspace) {
       return new SupportWsClient(endpoint, token, workspace, this, this.ctx.newChild(workspace, {}), info)
@@ -188,14 +134,19 @@ export class AIBotController {
     return new WorkspaceClient(endpoint, token, workspace, this, this.ctx.newChild(workspace, {}), info)
   }
 
-  async initWorkspaceClient (workspace: string, info: WorkspaceInfoRecord): Promise<void> {
+  async initWorkspaceClient (workspace: string): Promise<void> {
     if (workspace === config.SupportWorkspace) {
       return
     }
     this.connectingWorkspaces.add(workspace)
 
     if (!this.workspaces.has(workspace)) {
-      const client = await this.createWorkspaceClient(workspace, info)
+      const record = await this.getWorkspaceRecord(workspace)
+      const client = await this.createWorkspaceClient(workspace, record)
+      if (client === undefined) {
+        this.connectingWorkspaces.delete(workspace)
+        return
+      }
 
       this.workspaces.set(workspace, client)
     }
@@ -206,11 +157,7 @@ export class AIBotController {
       clearTimeout(timeoutId)
     }
 
-    const newTimeoutId = setTimeout(() => {
-      void this.closeWorkspaceClient(workspace)
-    }, CLOSE_INTERVAL_MS)
-
-    this.closeWorkspaceTimeouts.set(workspace, newTimeoutId)
+    this.updateClearInterval(workspace)
     this.connectingWorkspaces.delete(workspace)
   }
 
@@ -226,9 +173,8 @@ export class AIBotController {
     await this.supportClient.transferAIReply(response, data)
   }
 
-  async transfer (event: AIBotTransferEvent): Promise<void> {
+  async transfer (event: AITransferEventRequest): Promise<void> {
     const workspace = event.toWorkspace
-    const info = await this.storage.getWorkspace(workspace)
 
     if (workspace === config.SupportWorkspace) {
       if (this.supportClient === undefined) return
@@ -237,25 +183,13 @@ export class AIBotController {
       return
     }
 
-    if (info === undefined) {
-      this.ctx.error('Workspace info not found -> cannot transfer event', { workspace })
-      return
-    }
-
-    await this.initWorkspaceClient(workspace, info)
-
-    const wsClient = this.workspaces.get(workspace)
-
-    if (wsClient === undefined) {
-      return
-    }
+    const wsClient = await this.getWorkspaceClient(workspace)
+    if (wsClient === undefined) return
 
     await wsClient.transfer(event)
   }
 
   async close (): Promise<void> {
-    clearInterval(this.intervalId)
-
     for (const workspace of this.workspaces.values()) {
       await workspace.close()
     }
@@ -266,16 +200,23 @@ export class AIBotController {
   }
 
   async updateAvatarInfo (workspace: string, path: string, lastModified: number): Promise<void> {
-    await this.storage.updateWorkspace(workspace, { $set: { avatarPath: path, avatarLastModified: lastModified } })
+    const record = await this.storage.getWorkspace(workspace)
+
+    if (record === undefined) {
+      await this.storage.addWorkspace({ workspace, avatarPath: path, avatarLastModified: lastModified })
+    } else {
+      await this.storage.updateWorkspace(workspace, { $set: { avatarPath: path, avatarLastModified: lastModified } })
+    }
+  }
+
+  async getWorkspaceClient (workspace: string): Promise<WorkspaceClient | undefined> {
+    await this.initWorkspaceClient(workspace)
+
+    return this.workspaces.get(workspace)
   }
 
   async openChatInSidebar (data: OpenChatInSidebarData): Promise<void> {
-    const record = await this.storage.getWorkspace(data.workspace)
-
-    await this.initWorkspaceClient(data.workspace, record ?? { workspace: data.workspace, active: true })
-
-    const wsClient = this.workspaces.get(data.workspace)
-
+    const wsClient = await this.getWorkspaceClient(data.workspace)
     if (wsClient === undefined) return
     await wsClient.openAIChatInSidebar(data.email)
   }
@@ -293,35 +234,77 @@ export class AIBotController {
       return undefined
     }
     const html = markupToHTML(req.text)
-    const start = Date.now()
-    const response = await this.aiClient.chat.completions.create({
-      model: config.OpenAITranslateModel,
-      messages: [
-        {
-          role: 'system',
-          content: `Your task is to translate the text into ${req.lang} while preserving the html structure and metadata`
-        },
-        {
-          role: 'user',
-          content: html
-        }
-      ]
-    })
-    const end = Date.now()
-    this.ctx.info('Translation time: ', { time: end - start })
-    const result = response.choices[0].message.content
-    const text = result !== null ? htmlToMarkup(result) : req.text
+    const result = await translateHtml(this.aiClient, html, req.lang)
+    const text = result !== undefined ? htmlToMarkup(result) : req.text
     return {
       text,
       lang: req.lang
     }
   }
-}
 
-async function wait (delay: number): Promise<void> {
-  await new Promise<void>((resolve) => {
-    setTimeout(() => {
-      resolve()
-    }, delay)
-  })
+  async processMessageEvent (workspace: string, event: AIMessageEventRequest): Promise<void> {
+    const wsClient = await this.getWorkspaceClient(workspace)
+    if (wsClient === undefined) return
+
+    await wsClient.processMessageEvent(event)
+  }
+
+  async processEvent (workspace: string, events: AIEventRequest[]): Promise<void> {
+    for (const event of events) {
+      switch (event.type) {
+        case AIEventType.Transfer:
+          await this.transfer(event as AITransferEventRequest)
+          break
+        case AIEventType.Message:
+          await this.processMessageEvent(workspace, event as AIMessageEventRequest)
+          break
+        default:
+          this.ctx.warn('unknown event', event)
+          break
+      }
+    }
+  }
+
+  async connect (workspace: string): Promise<void> {
+    await this.initWorkspaceClient(workspace)
+  }
+
+  async loveConnect (workspace: WorkspaceId, request: ConnectMeetingRequest): Promise<void> {
+    const wsClient = await this.getWorkspaceClient(workspace.name)
+    if (wsClient === undefined) return
+
+    await wsClient.loveConnect(request)
+  }
+
+  async loveDisconnect (workspace: WorkspaceId, request: DisconnectMeetingRequest): Promise<void> {
+    const wsClient = await this.getWorkspaceClient(workspace.name)
+    if (wsClient === undefined) return
+
+    await wsClient.loveDisconnect(request)
+  }
+
+  async getLoveIdentity (roomName: string): Promise<IdentityResponse | undefined> {
+    const parsed = roomName.split('_')
+    const workspace = parsed[0]
+
+    if (workspace === null) return
+
+    const wsClient = await this.getWorkspaceClient(workspace)
+    if (wsClient === undefined) return
+
+    return await wsClient.getLoveIdentity()
+  }
+
+  async processLoveTranscript (request: PostTranscriptRequest): Promise<void> {
+    const parsed = request.roomName.split('_')
+    const workspace = parsed[0]
+    const roomId = parsed[parsed.length - 1]
+
+    if (workspace === null || roomId === null) return
+
+    const wsClient = await this.getWorkspaceClient(workspace)
+    if (wsClient === undefined) return
+
+    await wsClient.processLoveTranscript(request.transcript, request.participant, roomId as Ref<Room>, request.final)
+  }
 }

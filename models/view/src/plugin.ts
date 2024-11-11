@@ -78,7 +78,6 @@ export default mergeIds(viewId, view, {
     MarkupEditor: '' as AnyComponent,
     MarkupEditorPopup: '' as AnyComponent,
     ListView: '' as AnyComponent,
-    IndexedDocumentPreview: '' as AnyComponent,
     SpaceRefPresenter: '' as AnyComponent,
     EnumPresenter: '' as AnyComponent,
     StatusPresenter: '' as AnyComponent,
@@ -111,7 +110,8 @@ export default mergeIds(viewId, view, {
     General: '' as IntlString,
     Navigation: '' as IntlString,
     Editor: '' as IntlString,
-    MarkdownFormatting: '' as IntlString
+    MarkdownFormatting: '' as IntlString,
+    HideArchived: '' as IntlString
   },
   function: {
     FilterArrayAllResult: '' as FilterFunction,

@@ -207,7 +207,21 @@ function defineTeamspace (builder: Builder): void {
       configOptions: {
         hiddenKeys: ['name', 'description']
       },
-      config: ['', 'members', 'private', 'archived']
+      config: ['', 'members', 'private', 'archived'],
+      viewOptions: {
+        groupBy: [],
+        orderBy: [],
+        other: [
+          {
+            key: 'hideArchived',
+            type: 'toggle',
+            defaultValue: true,
+            actionTarget: 'query',
+            action: document.function.HideArchivedTeamspaces,
+            label: view.string.HideArchived
+          }
+        ]
+      }
     },
     document.viewlet.TeamspaceTable
   )

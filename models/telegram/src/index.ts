@@ -156,6 +156,7 @@ export function createModel (builder: Builder): void {
     {
       label: telegram.string.Telegram,
       description: telegram.string.TelegramIntegrationDesc,
+      descriptionComponent: telegram.component.TelegramIntegrationDescription,
       icon: telegram.component.IconTelegram,
       allowMultiple: false,
       createComponent: telegram.component.Connect,
@@ -181,7 +182,6 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
     toClass: telegram.class.Message,
-    parentPropagate: false,
     childProcessingAllowed: true
   })
 
