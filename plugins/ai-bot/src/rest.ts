@@ -74,6 +74,7 @@ export interface PostTranscriptRequest {
   transcript: string
   participant: Ref<Person>
   roomName: string
+  final: boolean
 }
 
 export interface IdentityResponse {

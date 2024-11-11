@@ -79,11 +79,13 @@ function applyMetadata (data: string | undefined, stt: STT): void {
   }
 
   if (metadata.transcription === TranscriptionStatus.InProgress) {
+    console.log('Starting transcription', stt.name)
     stt.start()
   } else if (
     metadata.transcription === TranscriptionStatus.Completed ||
     metadata.transcription === TranscriptionStatus.Idle
   ) {
+    console.log('Stopping transcription', stt.name)
     stt.stop()
   }
 }

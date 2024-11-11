@@ -55,25 +55,8 @@ export class STT {
   private readonly dgConnectionBySid = new Map<string, ListenLiveClient>()
   private readonly intervalBySid = new Map<string, NodeJS.Timeout>()
 
-  private readonly transcriptsBySid = new Map<string, { value: string, startedOn: number }>()
-
-  private readonly interval: NodeJS.Timeout
-
-  constructor (private readonly name: string) {
+  constructor (readonly name: string) {
     this.deepgram = createClient(config.DeepgramApiKey)
-    this.interval = this.interval = setInterval(() => {
-      this.sendTranscriptToPlatform()
-    }, config.TranscriptDelay)
-  }
-
-  sendTranscriptToPlatform (): void {
-    const now = Date.now()
-    for (const [sid, transcript] of this.transcriptsBySid.entries()) {
-      if (now - transcript.startedOn > config.TranscriptDelay) {
-        void this.sendToPlatform(transcript.value, sid)
-        this.transcriptsBySid.delete(sid)
-      }
-    }
   }
 
   updateLanguage (language: string): void {
@@ -175,32 +158,16 @@ export class STT {
     dgConnection.on(LiveTranscriptionEvents.Open, () => {
       dgConnection.on(LiveTranscriptionEvents.Transcript, (data: LiveTranscriptionEvent) => {
         const transcript = data?.channel?.alternatives[0].transcript
-        if (transcript != null && transcript !== '') {
-          const prevData = this.transcriptsBySid.get(sid)
-          const prevValue = prevData?.value ?? ''
-          if (data.is_final === true) {
-            // TODO: how to join the final transcript ?
-            this.transcriptsBySid.set(sid, {
-              value: prevValue + ' ' + transcript,
-              startedOn: prevData?.startedOn ?? Date.now()
-            })
-          }
-          if (data.speech_final === true) {
-            const result = this.transcriptsBySid.get(sid)?.value
-            if (result != null) {
-              void this.sendToPlatform(result, sid)
-            }
-            this.transcriptsBySid.delete(sid)
-          }
+        const hasTranscript = transcript != null && transcript !== ''
+
+        if (!hasTranscript) {
+          return
         }
-      })
 
-      dgConnection.addListener(LiveTranscriptionEvents.UtteranceEnd, () => {
-        const result = this.transcriptsBySid.get(sid)?.value ?? ''
-        if (result.length > 0) {
-          void this.sendToPlatform(result, sid)
-
-          this.transcriptsBySid.delete(sid)
+        if (data.speech_final === true) {
+          void this.sendToPlatform(transcript, sid, true)
+        } else if (data.is_final === true) {
+          void this.sendToPlatform(transcript, sid, false)
         }
       })
 
@@ -232,11 +199,12 @@ export class STT {
     }
   }
 
-  async sendToPlatform (transcript: string, sid: string): Promise<void> {
+  async sendToPlatform (transcript: string, sid: string, isFinal = false): Promise<void> {
     const request = {
       transcript,
       participant: this.participantBySid.get(sid)?.identity,
-      roomName: this.name
+      roomName: this.name,
+      final: isFinal
     }
 
     try {
@@ -254,10 +222,9 @@ export class STT {
   }
 
   close (): void {
-    clearInterval(this.interval)
-    for (const sid of this.transcriptsBySid.keys()) {
-      this.trackBySid.delete(sid)
-      this.participantBySid.delete(sid)
+    this.trackBySid.clear()
+    this.participantBySid.clear()
+    for (const sid of this.dgConnectionBySid.keys()) {
       this.stopDeepgram(sid)
     }
   }

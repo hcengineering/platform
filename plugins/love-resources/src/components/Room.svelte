@@ -153,10 +153,7 @@
   }
 
   function attachParticipant (participant: Participant): void {
-    if (
-      participant.isAgent &&
-      !$infos.some(({ person }) => person === participant.identity)
-    ) {
+    if (participant.isAgent && !$infos.some(({ person }) => person === participant.identity)) {
       return
     }
     const current = participants.find((p) => p._id === participant.identity)

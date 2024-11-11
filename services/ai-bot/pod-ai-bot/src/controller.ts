@@ -305,6 +305,6 @@ export class AIControl {
     const wsClient = await this.getWorkspaceClient(workspace)
     if (wsClient === undefined) return
 
-    await wsClient.processLoveTranscript(request.transcript, request.participant, roomId as Ref<Room>)
+    await wsClient.processLoveTranscript(request.transcript, request.participant, roomId as Ref<Room>, request.final)
   }
 }

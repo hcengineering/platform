@@ -711,7 +711,7 @@ export class WorkspaceClient {
     await this.love.disconnect(request.roomId)
   }
 
-  async processLoveTranscript (text: string, participant: Ref<Person>, room: Ref<Room>): Promise<void> {
+  async processLoveTranscript (text: string, participant: Ref<Person>, room: Ref<Room>, final: boolean): Promise<void> {
     // Just wait initialization
     await this.opClient
 
@@ -720,7 +720,7 @@ export class WorkspaceClient {
       return
     }
 
-    await this.love.processTranscript(text, participant, room)
+    await this.love.processTranscript(text, participant, room, final)
   }
 
   async getLoveIdentity (): Promise<IdentityResponse | undefined> {
