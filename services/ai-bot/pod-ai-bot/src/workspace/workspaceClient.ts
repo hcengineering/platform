@@ -732,6 +732,15 @@ export class WorkspaceClient {
     return this.love.getIdentity()
   }
 
+  async getLoveIdentity (): Promise<IdentityResponse | undefined> {
+    // Just wait initialization
+    await this.opClient
+
+    if (this.love === undefined) return
+
+    return this.love.getIdentity()
+  }
+
   canClose (): boolean {
     if (this.love === undefined) return true
 
