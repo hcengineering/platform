@@ -360,16 +360,6 @@ export interface TransientConfiguration extends Class<Doc> {
  */
 export const DOMAIN_BLOB = 'blob' as Domain
 
-/**
- * Special domain to access s3 blob data.
- * @public
- */
-export const DOMAIN_FULLTEXT_BLOB = 'fulltext-blob' as Domain
-
-/**
- * Special domain to access s3 blob data.
- * @public
- */
 export const DOMAIN_DOC_INDEX_STATE = 'doc-index-state' as Domain
 
 // S P A C E
@@ -526,25 +516,8 @@ export function versionToString (version: Version | Data<Version>): string {
  */
 export interface DocIndexState extends Doc {
   objectClass: Ref<Class<Doc>>
-
-  attachedTo?: Ref<Doc>
-  attachedToClass?: Ref<Class<Doc>>
-
-  generationId?: string
-
-  // States for stages
-  stages: Record<string, boolean>
-
   needIndex: boolean
-
   removed: boolean
-
-  // Indexable attributes, including child ones.
-  attributes: Record<string, any>
-  mixins?: Ref<Class<Doc>>[]
-  // Full Summary
-  fullSummary?: string | null
-  shortSummary?: string | null
 }
 
 /**
@@ -593,9 +566,6 @@ export interface FullTextSearchContext extends Doc {
   propagate?: Ref<Class<Doc>>[]
   // If defined, will propagate all document from child's based on class
   propagateClasses?: Ref<Class<Doc>>[]
-
-  // Do we need to propagate child value to parent one. Default(true)
-  parentPropagate?: boolean
 
   childProcessingAllowed?: boolean
 }

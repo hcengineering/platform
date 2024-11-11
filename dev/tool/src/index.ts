@@ -115,7 +115,7 @@ import {
 } from './clean'
 import { changeConfiguration } from './configuration'
 import { moveAccountDbFromMongoToPG, moveFromMongoToPG, moveWorkspaceFromMongoToPG } from './db'
-import { fixJsonMarkup, migrateMarkup, restoreLostMarkup } from './markup'
+import { fixJsonMarkup, migrateMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount } from './renameAccount'
 import { moveFiles, showLostFiles } from './storage'
@@ -1281,38 +1281,6 @@ export function devTool (
         })
       })
     })
-
-  program.command('show-lost-markup <workspace>').action(async (workspace: string, cmd: any) => {
-    const { dbUrl } = prepareTools()
-    await withDatabase(dbUrl, async (db) => {
-      await withStorage(async (adapter) => {
-        try {
-          const workspaceId = getWorkspaceId(workspace)
-          const token = generateToken(systemAccountEmail, workspaceId)
-          const endpoint = await getTransactorEndpoint(token)
-          await restoreLostMarkup(toolCtx, workspaceId, endpoint, adapter, { command: 'show' })
-        } catch (err: any) {
-          console.error(err)
-        }
-      })
-    })
-  })
-
-  program.command('restore-lost-markup <workspace>').action(async (workspace: string, cmd: any) => {
-    const { dbUrl } = prepareTools()
-    await withDatabase(dbUrl, async (db) => {
-      await withStorage(async (adapter) => {
-        try {
-          const workspaceId = getWorkspaceId(workspace)
-          const token = generateToken(systemAccountEmail, workspaceId)
-          const endpoint = await getTransactorEndpoint(token)
-          await restoreLostMarkup(toolCtx, workspaceId, endpoint, adapter, { command: 'restore' })
-        } catch (err: any) {
-          console.error(err)
-        }
-      })
-    })
-  })
 
   program.command('fix-bw-workspace <workspace>').action(async (workspace: string) => {
     await withStorage(async (adapter) => {

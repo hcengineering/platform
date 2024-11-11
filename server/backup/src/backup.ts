@@ -23,7 +23,6 @@ import core, {
   Domain,
   DOMAIN_BLOB,
   DOMAIN_DOC_INDEX_STATE,
-  DOMAIN_FULLTEXT_BLOB,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
@@ -42,7 +41,6 @@ import core, {
 } from '@hcengineering/core'
 import { BlobClient, createClient } from '@hcengineering/server-client'
 import { type StorageAdapter } from '@hcengineering/server-core'
-import { fullTextPushStagePrefix } from '@hcengineering/server-indexer'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
 import { createReadStream, createWriteStream, existsSync, mkdirSync, statSync } from 'node:fs'
@@ -617,12 +615,7 @@ function prepareClonedDocuments (docs: Doc[], sourceConnection: CoreClient & Bac
 
     // if full text is skipped, we need to clean stages for indexes.
     if (p._class === core.class.DocIndexState) {
-      for (const k of Object.keys((p as DocIndexState).stages)) {
-        if (k.startsWith(fullTextPushStagePrefix)) {
-          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-          delete (p as DocIndexState).stages[k]
-        }
-      }
+      ;(p as DocIndexState).needIndex = true
     }
 
     if (collectionCud) {
@@ -1930,15 +1923,34 @@ export async function restore (
         }
       }
     }
+    async function performCleanDocIndexState (docsToRemove: Ref<Doc>[]): Promise<void> {
+      ctx.info('cleanup', { toRemove: docsToRemove.length, workspace: workspaceId.name, domain: c })
+      while (docsToRemove.length > 0) {
+        const part = docsToRemove.splice(0, 1000)
+        try {
+          const docs = (await connection.loadDocs(DOMAIN_DOC_INDEX_STATE, part)) as DocIndexState[]
+          docs.forEach((it) => {
+            it.needIndex = true
+            it.removed = true
+            it.modifiedOn = Date.now()
+          })
+          await connection.upload(DOMAIN_DOC_INDEX_STATE, docs)
+        } catch (err: any) {
+          ctx.error('failed to clean, will retry', { error: err, workspaceId: workspaceId.name })
+          docsToRemove.push(...part)
+        }
+      }
+    }
     if (c !== DOMAIN_BLOB) {
       // Clean domain documents if not blob
       if (docsToRemove.length > 0 && opt.merge !== true) {
         if (c === DOMAIN_DOC_INDEX_STATE) {
+          // We need to create a request to clean fulltext for selected docuemnts.
           // We need o clean a FULLTEXT domain as well
-          await performCleanOfDomain([...docsToRemove], DOMAIN_FULLTEXT_BLOB)
+          await performCleanDocIndexState([...docsToRemove])
+        } else {
+          await performCleanOfDomain(docsToRemove, c)
         }
-
-        await performCleanOfDomain(docsToRemove, c)
       }
     }
   }

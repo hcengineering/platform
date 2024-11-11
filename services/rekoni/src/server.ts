@@ -123,7 +123,7 @@ export const startServer = async (): Promise<void> => {
         temp.push(d)
       })
       bodyStream.on('end', function () {
-        resolve(Buffer.concat(temp))
+        resolve(Buffer.concat(temp as any))
       })
     })
 

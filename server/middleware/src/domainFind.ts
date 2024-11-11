@@ -69,7 +69,12 @@ export class DomainFindMiddleware extends BaseMiddleware implements Middleware {
     )
   }
 
-  groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
-    return this.adapterManager.getAdapter(domain, false).groupBy(ctx, domain, field)
+  groupBy<T, P extends Doc>(
+    ctx: MeasureContext,
+    domain: Domain,
+    field: string,
+    query?: DocumentQuery<P>
+  ): Promise<Map<T, number>> {
+    return this.adapterManager.getAdapter(domain, false).groupBy(ctx, domain, field, query)
   }
 }

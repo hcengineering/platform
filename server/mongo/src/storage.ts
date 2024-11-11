@@ -491,9 +491,13 @@ abstract class MongoAdapterBase implements DbAdapter {
     lookup: Lookup<T> | undefined,
     object: any,
     parent?: string,
-    parentObject?: any
+    parentObject?: any,
+    domainLookup?: {
+      field: string
+      domain: Domain
+    }
   ): Promise<void> {
-    if (lookup === undefined) return
+    if (lookup === undefined && domainLookup === undefined) return
     for (const key in lookup) {
       if (key === '_id') {
         await this.fillReverseLookup(clazz, lookup, object, parent, parentObject)
@@ -510,6 +514,14 @@ abstract class MongoAdapterBase implements DbAdapter {
       } else {
         await this.fillLookup(value, object, key, fullKey, targetObject)
       }
+    }
+    if (domainLookup !== undefined) {
+      if (object.$lookup === undefined) {
+        object.$lookup = {}
+      }
+      object.$lookup._id = object['dl_' + domainLookup.field + '_lookup'][0]
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete object['dl_' + domainLookup.field + '_lookup']
     }
   }
 
@@ -590,8 +602,18 @@ abstract class MongoAdapterBase implements DbAdapter {
     const pipeline: any[] = []
     const tquery = this.translateQuery(clazz, query, options)
 
-    const slowPipeline = isLookupQuery(query) || isLookupSort(options?.sort)
+    const slowPipeline = isLookupQuery(query) || isLookupSort(options?.sort) || options.domainLookup !== undefined
     const steps = this.getLookups(clazz, options?.lookup)
+
+    if (options.domainLookup !== undefined) {
+      steps.push({
+        from: options.domainLookup.domain,
+        localField: options.domainLookup.field,
+        foreignField: '_id',
+        as: 'dl_' + options.domainLookup.field + '_lookup'
+      })
+    }
+
     if (slowPipeline) {
       if (Object.keys(tquery.base).length > 0) {
         pipeline.push({ $match: tquery.base })
@@ -649,7 +671,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
     for (const row of result) {
       await ctx.with('fill-lookup', {}, async (ctx) => {
-        await this.fillLookupValue(ctx, clazz, options?.lookup, row)
+        await this.fillLookupValue(ctx, clazz, options?.lookup, row, undefined, undefined, options.domainLookup)
       })
       if (row.$lookup !== undefined) {
         for (const [, v] of Object.entries(row.$lookup)) {
@@ -783,7 +805,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     domain: Domain,
     field: string,
     query?: DocumentQuery<D>
-  ): Promise<Set<T>> {
+  ): Promise<Map<T, number>> {
     const result = await ctx.with('groupBy', { domain }, async (ctx) => {
       const coll = this.collection(domain)
       const grResult = await coll
@@ -791,12 +813,13 @@ abstract class MongoAdapterBase implements DbAdapter {
           ...(query !== undefined ? [{ $match: query }] : []),
           {
             $group: {
-              _id: '$' + field
+              _id: '$' + field,
+              count: { $sum: 1 }
             }
           }
         ])
         .toArray()
-      return new Set(grResult.map((it) => it._id as unknown as T))
+      return new Map(grResult.map((it) => [it._id as unknown as T, it.count]))
     })
     return result
   }
@@ -815,10 +838,12 @@ abstract class MongoAdapterBase implements DbAdapter {
       let result: FindResult<T>
       const domain = options?.domain ?? this.hierarchy.getDomain(_class)
       if (
-        options != null &&
-        (options?.lookup != null || this.isEnumSort(_class, options) || this.isRulesSort(options))
+        options?.lookup != null ||
+        this.isEnumSort(_class, options) ||
+        this.isRulesSort(options) ||
+        options?.domainLookup !== undefined
       ) {
-        return await this.findWithPipeline(ctx, domain, _class, query, options, stTime)
+        return await this.findWithPipeline(ctx, domain, _class, query, options ?? {}, stTime)
       }
       const coll = this.collection(domain)
 

@@ -221,7 +221,8 @@ export const contactPlugin = plugin(contactId, {
     EditOrganizationPanel: '' as AnyComponent,
     CollaborationUserAvatar: '' as AnyComponent,
     CreateGuest: '' as AnyComponent,
-    SpaceMembersEditor: '' as AnyComponent
+    SpaceMembersEditor: '' as AnyComponent,
+    ContactNamePresenter: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,

@@ -28,13 +28,11 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(document.class.Document, core.class.Class, serverCore.mixin.SearchPresenter, {
-    searchConfig: {
-      iconConfig: {
-        component: document.component.DocumentSearchIcon,
-        props: ['icon', 'color']
-      },
-      title: 'title'
-    }
+    iconConfig: {
+      component: document.component.DocumentSearchIcon,
+      fields: [['icon'], ['color']]
+    },
+    title: [['title']]
   })
 
   builder.mixin<Class<Doc>, ObjectDDParticipant>(

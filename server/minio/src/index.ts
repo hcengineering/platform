@@ -291,7 +291,8 @@ export class MinioService implements StorageAdapter {
         err?.code === 'NoSuchKey' ||
         err?.code === 'NotFound' ||
         err?.message === 'No such key' ||
-        err?.Code === 'NoSuchKey'
+        err?.Code === 'NoSuchKey' ||
+        err?.code === 'ECONNRESET'
       ) {
         // Do not print error in this case
         return

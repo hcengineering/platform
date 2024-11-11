@@ -104,7 +104,7 @@
     { ...categoryQueryOptions, limit: 1000 }
   )
 
-  $: if (fastDocs.length === 1000) {
+  $: if (fastDocs.length === 1000 && queryNoLookup.$search == null) {
     docsQuerySlow.query(
       _class,
       queryNoLookup,
@@ -113,6 +113,8 @@
       },
       categoryQueryOptions
     )
+  } else {
+    slowDocs = []
   }
 
   $: docs = [...fastDocs, ...slowDocs.filter((it) => !fastQueryIds.has(it._id))]

@@ -1240,7 +1240,6 @@ async function updateId (
       const { _id, space, modifiedBy, modifiedOn, createdBy, createdOn, _class, ...data } = docIndexState
       await txop.createDoc(docIndexState._class, docIndexState.space, {
         ...data,
-        stages: {},
         removed: false
       })
       await txop.update(docIndexState, { removed: true, needIndex: true })

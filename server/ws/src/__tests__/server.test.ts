@@ -80,7 +80,7 @@ describe('server', () => {
         ],
         close: async () => {},
         domains: async () => [],
-        groupBy: async () => new Set(),
+        groupBy: async () => new Map(),
         find: (ctx: MeasureContext, domain: Domain) => ({
           next: async (ctx: MeasureContext) => undefined,
           close: async (ctx: MeasureContext) => {}
@@ -190,7 +190,7 @@ describe('server', () => {
             [],
             undefined
           ],
-          groupBy: async () => new Set(),
+          groupBy: async () => new Map(),
           close: async () => {},
           domains: async () => [],
           find: (ctx: MeasureContext, domain: Domain) => ({

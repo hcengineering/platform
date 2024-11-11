@@ -123,6 +123,7 @@ import NameChangedActivityMessage from './components/activity/NameChangedActivit
 import IconAddMember from './components/icons/AddMember.svelte'
 import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import IconMembers from './components/icons/Members.svelte'
+import ContactNamePresenter from './components/ContactNamePresenter.svelte'
 
 import { get, writable } from 'svelte/store'
 import contact from './plugin'
@@ -380,7 +381,8 @@ export default async (): Promise<Resources> => ({
     PersonIcon,
     EditOrganizationPanel,
     ChannelIcon,
-    SpaceMembersEditor
+    SpaceMembersEditor,
+    ContactNamePresenter
   },
   completion: {
     EmployeeQuery: async (

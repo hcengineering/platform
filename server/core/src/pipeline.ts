@@ -105,8 +105,13 @@ class PipelineImpl implements Pipeline {
     return this.head !== undefined ? await this.head.loadModel(ctx, lastModelTx, hash) : []
   }
 
-  async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
-    return this.head !== undefined ? await this.head.groupBy(ctx, domain, field) : new Set()
+  async groupBy<T, P extends Doc>(
+    ctx: MeasureContext,
+    domain: Domain,
+    field: string,
+    query?: DocumentQuery<P>
+  ): Promise<Map<T, number>> {
+    return this.head !== undefined ? await this.head.groupBy(ctx, domain, field, query) : new Map()
   }
 
   async searchFulltext (ctx: MeasureContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {

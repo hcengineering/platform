@@ -34,7 +34,7 @@
       "request": "launch",
       "args": ["src/__start.ts"],
       "env": {
-        "ELASTIC_URL": "http://localhost:9200",
+        "FULLTEXT_URL": "http://localhost:4700",
         "MONGO_URL": "mongodb://localhost:27017",
         "DB_URL": "mongodb://localhost:27017",
         // "DB_URL": "postgresql://postgres:example@localhost:5432",
@@ -63,6 +63,34 @@
       "outputCapture": "std",
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/pods/server",
+      "protocol": "inspector"
+    },
+    {
+      "name": "Debug Fulltext",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "PORT": "4700",// For mongo
+        // "PORT": "4701", // for pg
+        "FULLTEXT_DB_URL": "http://localhost:9200",
+        "DB_URL": "mongodb://localhost:27017",
+        // "DB_URL": "postgresql://postgres:example@localhost:5432",
+        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        "SERVER_SECRET": "secret",
+        "REKONI_URL": "http://localhost:4004",
+        "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
+        "REGION":"pg",
+        "ELASTIC_INDEX_NAME": "local_storage_index",
+        "STATS_URL":"http://host.docker.internal:4900",
+        "ACCOUNTS_URL": "http://localhost:3000",
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "showAsyncStacks": true,
+      "outputCapture": "std",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/pods/fulltext",
       "protocol": "inspector"
     },
     {

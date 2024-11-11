@@ -14,15 +14,13 @@
 -->
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Scroller, tableSP, FadeOptions } from '@hcengineering/ui'
+  import { ActionContext } from '@hcengineering/presentation'
+  import { FadeOptions, Scroller, tableSP } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { onMount } from 'svelte'
   import { focusStore, ListSelectionProvider, SelectDirection } from '../selection'
   import { LoadingProps } from '../utils'
-  import SourcePresenter from './inference/SourcePresenter.svelte'
   import Table from './Table.svelte'
-  import { ActionContext } from '@hcengineering/presentation'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -55,26 +53,12 @@
   })
 
   // Search config
-  let _config = config
+  const _config = config
 
   let prefferedSorting: string = 'modifiedOn'
 
   function updateConfig (config: Array<BuildModelKey | string>, search?: string): void {
     const useSearch = search !== '' && search != null
-    _config = [
-      ...(useSearch
-        ? [
-            {
-              key: '',
-              presenter: SourcePresenter,
-              label: getEmbeddedLabel('#'),
-              sortingKey: '#score',
-              props: { search }
-            }
-          ]
-        : []),
-      ...config
-    ]
     prefferedSorting = !useSearch ? 'modifiedOn' : '#score'
   }
 

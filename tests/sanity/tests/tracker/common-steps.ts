@@ -14,13 +14,19 @@ export async function prepareNewIssueStep (page: Page, issue: NewIssue): Promise
   })
 }
 
-export async function prepareNewIssueWithOpenStep (page: Page, issue: NewIssue): Promise<string> {
+export async function prepareNewIssueWithOpenStep (
+  page: Page,
+  issue: NewIssue,
+  search: boolean = true
+): Promise<string> {
   return await test.step('Prepare Issue', async () => {
     const issuesPage = new IssuesPage(page)
     await issuesPage.linkSidebarAll().click()
     await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(issue)
-    await issuesPage.searchIssueByName(issue.title)
+    if (search) {
+      await issuesPage.searchIssueByName(issue.title)
+    }
     await issuesPage.openIssueByName(issue.title)
     return await issuesPage.getIssueId(issue.title)
   })

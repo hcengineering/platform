@@ -14,7 +14,6 @@
 //
 
 import {
-  MeasureMetricsContext,
   type Account,
   type Branding,
   type Class,
@@ -58,6 +57,11 @@ export interface ServerFindOptions<T extends Doc> extends FindOptions<T> {
   skipClass?: boolean
   skipSpace?: boolean
 
+  domainLookup?: {
+    field: string
+    domain: Domain
+  }
+
   // Optional measure context, for server side operations
   ctx?: MeasureContext
 }
@@ -81,7 +85,12 @@ export interface Middleware {
   ) => Promise<FindResult<T>>
   tx: (ctx: MeasureContext<SessionData>, tx: Tx[]) => Promise<TxResult>
 
-  groupBy: <T>(ctx: MeasureContext<SessionData>, domain: Domain, field: string) => Promise<Set<T>>
+  groupBy: <T, P extends Doc>(
+    ctx: MeasureContext<SessionData>,
+    domain: Domain,
+    field: string,
+    query?: DocumentQuery<P>
+  ) => Promise<Map<T, number>>
   searchFulltext: (
     ctx: MeasureContext<SessionData>,
     query: SearchQuery,
@@ -141,6 +150,8 @@ export interface DBAdapterManager {
   initAdapters: (ctx: MeasureContext) => Promise<void>
 
   closeContext: (ctx: MeasureContext) => Promise<void>
+
+  domainHelper?: DomainHelper
 }
 
 export interface PipelineContext {
@@ -215,6 +226,7 @@ export interface TriggerControl {
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
   hierarchy: Hierarchy
+  lowLevel: LowLevelStorage
   modelDb: ModelDb
   removedMap: Map<Ref<Doc>, Doc>
 
@@ -282,14 +294,16 @@ export interface EmbeddingSearchOption {
 export interface IndexedDoc {
   id: Ref<Doc>
   _class: Ref<Class<Doc>>[]
-  space: Ref<Space>[]
+  space: Ref<Space>
   modifiedOn: Timestamp
   modifiedBy: Ref<Account>
   attachedTo?: Ref<Doc>
   attachedToClass?: Ref<Class<Doc>>
   searchTitle?: string
+  searchTitle_fields?: any[]
   searchShortTitle?: string
-  searchIcon?: any
+  searchShortTitle_fields?: any[]
+  searchIcon_fields?: any[]
   fulltextSummary?: string
   [key: string]: any
 }
@@ -306,114 +320,96 @@ export interface SearchStringResult {
  * @public
  */
 export interface FullTextAdapter {
-  index: (doc: IndexedDoc) => Promise<TxResult>
-  update: (id: Ref<Doc>, update: Record<string, any>) => Promise<TxResult>
-  remove: (id: Ref<Doc>[]) => Promise<void>
-  updateMany: (docs: IndexedDoc[]) => Promise<TxResult[]>
-
+  index: (ctx: MeasureContext, workspace: WorkspaceId, doc: IndexedDoc) => Promise<TxResult>
+  update: (ctx: MeasureContext, workspace: WorkspaceId, id: Ref<Doc>, update: Record<string, any>) => Promise<TxResult>
+  remove: (ctx: MeasureContext, workspace: WorkspaceId, id: Ref<Doc>[]) => Promise<void>
+  updateMany: (ctx: MeasureContext, workspace: WorkspaceId, docs: IndexedDoc[]) => Promise<TxResult[]>
+  load: (ctx: MeasureContext, workspace: WorkspaceId, docs: Ref<Doc>[]) => Promise<IndexedDoc[]>
   searchString: (
+    ctx: MeasureContext,
+    workspace: WorkspaceId,
     query: SearchQuery,
     options: SearchOptions & { scoring?: SearchScoring[] }
   ) => Promise<SearchStringResult>
 
   search: (
+    ctx: MeasureContext,
+    workspace: WorkspaceId,
     _classes: Ref<Class<Doc>>[],
     search: DocumentQuery<Doc>,
     size: number | undefined,
     from?: number
   ) => Promise<IndexedDoc[]>
 
-  searchEmbedding: (
-    _classes: Ref<Class<Doc>>[],
-    search: DocumentQuery<Doc>,
-    embedding: number[],
-    options: EmbeddingSearchOption
-  ) => Promise<IndexedDoc[]>
-
   close: () => Promise<void>
-  metrics: () => MeasureContext
 
   // If no field is provided, will return existing mapping of all dimms.
-  initMapping: (field?: { key: string, dims: number }) => Promise<Record<string, number>>
-
-  load: (docs: Ref<Doc>[]) => Promise<IndexedDoc[]>
+  initMapping: (ctx: MeasureContext, field?: { key: string, dims: number }) => Promise<boolean>
 }
 
 /**
  * @public
  */
 export class DummyFullTextAdapter implements FullTextAdapter {
-  async initMapping (field?: { key: string, dims: number }): Promise<Record<string, number>> {
+  async initMapping (ctx: MeasureContext): Promise<boolean> {
+    return true
+  }
+
+  async index (ctx: MeasureContext, workspace: WorkspaceId, doc: IndexedDoc): Promise<TxResult> {
     return {}
   }
 
-  async index (doc: IndexedDoc): Promise<TxResult> {
-    return {}
-  }
-
-  async load (docs: Ref<Doc>[]): Promise<IndexedDoc[]> {
+  async load (ctx: MeasureContext, workspace: WorkspaceId, docs: Ref<Doc>[]): Promise<IndexedDoc[]> {
     return []
   }
 
-  async update (id: Ref<Doc>, update: Record<string, any>): Promise<TxResult> {
+  async update (
+    ctx: MeasureContext,
+    workspace: WorkspaceId,
+    id: Ref<Doc>,
+    update: Record<string, any>
+  ): Promise<TxResult> {
     return {}
   }
 
-  async updateMany (docs: IndexedDoc[]): Promise<TxResult[]> {
+  async updateMany (ctx: MeasureContext, workspace: WorkspaceId, docs: IndexedDoc[]): Promise<TxResult[]> {
     return []
   }
 
-  async searchString (query: SearchQuery, options: SearchOptions): Promise<SearchStringResult> {
+  async searchString (
+    ctx: MeasureContext,
+    workspace: WorkspaceId,
+    query: SearchQuery,
+    options: SearchOptions
+  ): Promise<SearchStringResult> {
     return { docs: [] }
   }
 
-  async search (query: any): Promise<IndexedDoc[]> {
+  async search (ctx: MeasureContext, workspace: WorkspaceId, query: any): Promise<IndexedDoc[]> {
     return []
   }
 
-  async searchEmbedding (
-    _classes: Ref<Class<Doc>>[],
-    search: DocumentQuery<Doc>,
-    embedding: number[],
-    options: EmbeddingSearchOption
-  ): Promise<IndexedDoc[]> {
-    return []
-  }
-
-  async remove (id: Ref<Doc>[]): Promise<void> {}
+  async remove (ctx: MeasureContext, workspace: WorkspaceId, id: Ref<Doc>[]): Promise<void> {}
 
   async close (): Promise<void> {}
-
-  metrics (): MeasureContext {
-    return new MeasureMetricsContext('', {}, {})
-  }
 }
 
 /**
  * @public
  */
-export type FullTextAdapterFactory = (
-  url: string,
-  workspace: WorkspaceId,
-  context: MeasureContext
-) => Promise<FullTextAdapter>
+export type FullTextAdapterFactory = (url: string) => Promise<FullTextAdapter>
 
 /**
  * @public
  */
 export interface ContentTextAdapter {
-  content: (name: string, type: string, doc: Readable) => Promise<string>
-  metrics: () => MeasureContext
+  content: (ctx: MeasureContext, workspace: WorkspaceId, name: string, type: string, doc: Readable) => Promise<string>
 }
 
 /**
  * @public
  */
-export type ContentTextAdapterFactory = (
-  url: string,
-  workspace: WorkspaceId,
-  context: MeasureContext
-) => Promise<ContentTextAdapter>
+export type ContentTextAdapterFactory = (url: string) => Promise<ContentTextAdapter>
 
 /**
  * @public
@@ -449,27 +445,32 @@ export type ObjectDDParticipantFunc = (
 /**
  * @public
  */
-export type SearchProps = Record<string, string>
+export type SearchPresenterProvider = (
+  doc: Doc,
+  parent: Doc | undefined,
+  space: Space | undefined,
+  hierarchy: Hierarchy,
+  mode: string
+) => string
 
+export type FieldParamKind = 'space' | 'parent'
+
+export type FieldTemplateParam =
+  | /* field */ [string]
+  | [/* kind */ 'func', /* Presenter function */ Resource<SearchPresenterProvider>, /* mode */ string]
+  | [/* kind */ FieldParamKind, /* field */ string]
 /**
+ * A concationation template, if string just put string, if obj, use source and field name.
  * @public
  */
-export type SearchPresenterProvider = (hierarchy: Hierarchy, props: SearchProps) => string
-/**
- * @public
- */
-export type SearchPresenterFunc = Record<string, Resource<SearchPresenterProvider>>
+export type FieldTemplate = /* text */ (string | /* field inject */ FieldTemplateParam)[]
+export interface FieldTemplateComponent {
+  component?: Resource<any>
+  fields?: FieldTemplateParam[] // Extra fields
 
-/**
- * @public
- */
-export type ClassSearchConfigProps = string | Record<string, string[]>
-
-/**
- * @public
- */
-export type ClassSearchConfigProperty = string | { tmpl?: string, props: ClassSearchConfigProps[] }
-
+  template?: FieldTemplate // Primary value in index
+  extraFields?: FieldTemplate[] // Additional values in index.
+}
 /**
  * @public
  */
@@ -482,21 +483,12 @@ export interface SearchScoring {
 /**
  * @public
  */
-export interface ClassSearchConfig {
-  icon?: Asset
-  iconConfig?: { component: any, props: ClassSearchConfigProps[] }
-  title: ClassSearchConfigProperty
-  shortTitle?: ClassSearchConfigProperty
-  scoring?: SearchScoring[]
-}
-
-/**
- * @public
- */
 export interface SearchPresenter extends Class<Doc> {
-  searchConfig: ClassSearchConfig
-  getSearchShortTitle?: SearchPresenterFunc
-  getSearchTitle?: SearchPresenterFunc
+  searchIcon?: Asset
+  iconConfig?: FieldTemplateComponent
+  title: FieldTemplateComponent | FieldTemplate
+  shortTitle?: FieldTemplateComponent | FieldTemplate
+  scoring?: SearchScoring[]
 }
 
 export interface ServiceAdapter {
@@ -628,7 +620,9 @@ export function disableLogging (): void {
 export interface Workspace {
   context: MeasureContext
   id: string
+  token: string // Account workspace update token.
   pipeline: Promise<Pipeline>
+  tickHash: number
   sessions: Map<string, { session: Session, socket: ConnectionSocket, tickHash: number }>
   upgrade: boolean
 
@@ -668,8 +662,7 @@ export interface SessionManager {
     token: Token,
     rawToken: string,
     pipelineFactory: PipelineFactory,
-    sessionId: string | undefined,
-    accountsUrl: string
+    sessionId: string | undefined
   ) => Promise<AddSessionResponse>
 
   broadcastAll: (workspace: Workspace, tx: Tx[], targets?: string[]) => void

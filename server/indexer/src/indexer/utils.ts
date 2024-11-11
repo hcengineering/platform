@@ -26,11 +26,10 @@ import core, {
   type Ref,
   type Space
 } from '@hcengineering/core'
-import plugin from '@hcengineering/server-core'
+import plugin, { type IndexedDoc } from '@hcengineering/server-core'
 import { type FullTextPipeline } from './types'
 
-export { docKey, docUpdKey, extractDocKey, isFullTextAttribute } from '@hcengineering/core'
-export type { IndexKeyOptions } from '@hcengineering/core'
+export { docKey, isFullTextAttribute } from '@hcengineering/core'
 
 /**
  * @public
@@ -97,42 +96,6 @@ export function traverseFullTextContexts (
   }
 }
 
-/**
- * @public
- */
-export function collectPropagate (pipeline: FullTextPipeline, objectClass: Ref<Class<Doc>>): Ref<Class<Doc>>[] {
-  let propagate = pipeline.propogage.get(objectClass)
-  if (propagate !== undefined) {
-    return propagate
-  }
-  const set = new Set<Ref<Class<Doc>>>()
-  traverseFullTextContexts(pipeline, objectClass, (fts) => {
-    fts?.propagate?.forEach((it) => {
-      set.add(it)
-    })
-  })
-
-  propagate = Array.from(set.values())
-  pipeline.propogage.set(objectClass, propagate)
-  return propagate
-}
-
-/**
- * @public
- */
-export function collectPropagateClasses (pipeline: FullTextPipeline, objectClass: Ref<Class<Doc>>): Ref<Class<Doc>>[] {
-  let propagate = pipeline.propogageClasses.get(objectClass)
-  if (propagate !== undefined) {
-    return propagate
-  }
-  const set = new Set<Ref<Class<Doc>>>()
-  traverseFullTextContexts(pipeline, objectClass, (fts) => fts?.propagateClasses?.forEach((it) => set.add(it)))
-
-  propagate = Array.from(set.values())
-  pipeline.propogageClasses.set(objectClass, propagate)
-  return propagate
-}
-
 const CUSTOM_ATTR_KEY = 'customAttributes'
 const CUSTOM_ATTR_UPDATE_KEY = 'attributes.customAttributes'
 
@@ -148,4 +111,17 @@ export function getCustomAttrKeys (): { customAttrKey: string, customAttrUKey: s
  */
 export function isCustomAttr (attr: string): boolean {
   return attr === CUSTOM_ATTR_KEY
+}
+/**
+ * @public
+ */
+export function createIndexedDoc (doc: Doc, mixins: Ref<Class<Doc>>[] | undefined, space: Ref<Space>): IndexedDoc {
+  const indexedDoc = {
+    id: doc._id,
+    _class: [doc._class, ...(mixins ?? [])],
+    modifiedBy: doc.modifiedBy,
+    modifiedOn: doc.modifiedOn,
+    space
+  }
+  return indexedDoc
 }

@@ -55,7 +55,7 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@elastic/elasticsearch": "^7.14.0",
+    "@elastic/elasticsearch": "^7.17.14",
     "@hcengineering/account": "^0.6.0",
     "@hcengineering/workspace-service": "^0.6.0",
     "@hcengineering/attachment": "^0.6.14",
