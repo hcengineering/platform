@@ -29,8 +29,8 @@ import TestCaseStatusPresenter from './components/test-case/TestCaseStatusPresen
 import EditTestRun from './components/test-run/EditTestRun.svelte'
 import TestRunPresenter from './components/test-run/TestRunPresenter.svelte'
 
-import {CreateChildTestSuiteAction, EditTestSuiteAction} from './utils'
-import {resolveLocation, getTestSuiteLink, syncQueryAndLocation} from './navigation'
+import { CreateChildTestSuiteAction, EditTestSuiteAction } from './utils'
+import { resolveLocation, getTestSuiteLink, syncQueryAndLocation } from './navigation'
 
 export default async (): Promise<Resources> => ({
   component: {

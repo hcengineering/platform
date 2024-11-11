@@ -30,7 +30,17 @@ import { plugin } from '@hcengineering/platform'
 import { type AnyComponent, type Location, type ResolvedLocation } from '@hcengineering/ui'
 
 import { ActionCategory, Viewlet } from '@hcengineering/view'
-import { TestSuite, TestCase, TestProject, TestCaseType, TestCasePriority, TestCaseStatus, TestRun, TestRunItem, TestRunResult } from './types'
+import {
+  TestSuite,
+  TestCase,
+  TestProject,
+  TestCaseType,
+  TestCasePriority,
+  TestCaseStatus,
+  TestRun,
+  TestRunItem,
+  TestRunResult
+} from './types'
 
 /** @public */
 export const testManagementId = 'testManagement' as Plugin
@@ -69,7 +79,7 @@ export const testManagementPlugin = plugin(testManagementId, {
     TypeTestCaseStatus: '' as Ref<Class<Type<TestCaseStatus>>>,
     TestRun: '' as Ref<Class<TestRun>>,
     TestRunItem: '' as Ref<Class<TestRunItem>>,
-    TypeTestRunResult: '' as Ref<Class<Type<TestRunResult>>>,
+    TypeTestRunResult: '' as Ref<Class<Type<TestRunResult>>>
   },
   descriptors: {
     ProjectType: '' as Ref<SpaceTypeDescriptor>
@@ -197,11 +207,13 @@ export const testManagementPlugin = plugin(testManagementId, {
   },
   function: {
     GetTestSuiteLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Location>,
-    SyncQueryAndLocation: '' as Resource<(query: DocumentQuery<Doc> | undefined, loc: Location) => DocumentQuery<Doc> | undefined>
+    SyncQueryAndLocation: '' as Resource<
+    (query: DocumentQuery<Doc> | undefined, loc: Location) => DocumentQuery<Doc> | undefined
+    >
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
-  },
+  }
 })
 
 /**

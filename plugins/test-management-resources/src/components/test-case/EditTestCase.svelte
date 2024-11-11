@@ -41,7 +41,7 @@
     _class !== undefined &&
     query.query(_class, { _id }, async (result) => {
       ;[object] = result
-  })
+    })
 
   async function change<K extends keyof TestCase> (field: K, value: TestCase[K]) {
     await client.update(object, { [field]: value })
@@ -89,7 +89,7 @@
     <div class="w-full mt-6">
       <AttachmentStyleBoxCollabEditor
         focusIndex={30}
-        object={object}
+        {object}
         key={{ key: 'description', attr: descriptionKey }}
         bind:this={descriptionBox}
         identifier={object?._id}

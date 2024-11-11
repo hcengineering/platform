@@ -20,7 +20,7 @@
   import { Panel } from '@hcengineering/panel'
   import { EditBox } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
-  
+
   import TestCasesList from './TestCasesList.svelte'
   import testManagement from '../../plugin'
 
@@ -41,7 +41,7 @@
     _class !== undefined &&
     query.query(_class, { _id }, async (result) => {
       ;[object] = result
-  })
+    })
 
   async function change<K extends keyof TestSuite> (field: K, value: TestSuite[K]) {
     await client.update(object, { [field]: value })

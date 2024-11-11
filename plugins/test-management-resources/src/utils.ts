@@ -17,7 +17,7 @@ import { type Contact } from '@hcengineering/contact'
 import core, { type Doc, type Ref, type TxCollectionCUD, type TxCreateDoc, type TxUpdateDoc } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
-import { TestProject, type TestCase, type TestSuite } from '@hcengineering/test-management'
+import { type TestProject, type TestCase, type TestSuite } from '@hcengineering/test-management'
 
 import CreateTestSuiteComponent from './components/test-suite/CreateTestSuite.svelte'
 import EditTestSuiteComponent from './components/test-suite/EditTestSuite.svelte'
@@ -58,9 +58,7 @@ export async function showCreateTestSuitePopup (
   showPopup(CreateTestSuiteComponent, { space, parent }, 'top')
 }
 
-export async function showEditTestSuitePopup (
-  suite: Ref<TestSuite>
-): Promise<void> {
+export async function showEditTestSuitePopup (suite: Ref<TestSuite>): Promise<void> {
   showPopup(EditTestSuiteComponent, { _id: suite }, 'top')
 }
 

@@ -110,6 +110,6 @@
     "@hcengineering/model-analytics-collector": "^0.6.0",
     "@hcengineering/model-server-ai-bot": "^0.6.0",
     "@hcengineering/model-ai-bot": "^0.6.0",
-	"@hcengineering/model-test-management": "^0.6.0"
+    "@hcengineering/model-test-management": "^0.6.0"
   }
 }

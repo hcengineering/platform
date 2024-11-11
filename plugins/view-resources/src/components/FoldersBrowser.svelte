@@ -16,13 +16,13 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Action, IconEdit, navigate } from '@hcengineering/ui'
+  import { Action, IconEdit, navigate, type Location } from '@hcengineering/ui'
   import { getResource, type Resource } from '@hcengineering/platform'
   import { IntlString, Asset } from '@hcengineering/platform'
 
-  import {FoldersManager, FoldersStore, FoldersState} from '../stores/folderStore'
+  import { FoldersManager, FoldersStore, FoldersState } from '../stores/folderStore'
   import FolderTreeLevel from './FolderTreeLevel.svelte'
-  import {TreeNode, TreeItem, getActions as getContributedActions } from '../index'
+  import { TreeNode, TreeItem, getActions as getContributedActions } from '../index'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -40,7 +40,7 @@
 
   let foldersState: FoldersState = FoldersState.empty()
 
-  let foldersManager: FoldersManager = new FoldersManager(titleKey, parentKey)
+  const foldersManager: FoldersManager = new FoldersManager(titleKey, parentKey)
 
   FoldersStore.subscribe((newState) => {
     foldersState = newState
@@ -52,7 +52,7 @@
   const q = createQuery()
   q.query(
     _class,
-    query || {},
+    query ?? {},
     (result) => {
       foldersManager.setFolders(result)
     },
@@ -63,9 +63,9 @@
     }
   )
 
-  async function handleFolderSelected (_id: Ref<Doc>) {
+  async function handleFolderSelected (_id: Ref<Doc>): Promise<void> {
     selected = _id
-    visibleItem = selected !== undefined ? foldersState.folderById.get(selected as Ref<Doc>) : undefined
+    visibleItem = selected !== undefined ? foldersState.folderById.get(selected) : undefined
     const folder = foldersState.folderById.get(_id)
     if (getFolderLink) {
       const getFolderLinkFunction = await getResource(getFolderLink)
@@ -73,7 +73,7 @@
     }
   }
 
-  async function handleAllItemsSelected () {
+  async function handleAllItemsSelected (): Promise<void> {
     selected = undefined
     visibleItem = undefined
     const folder = selected && foldersState.folderById.get(selected)
@@ -128,7 +128,6 @@
     <svelte:fragment slot="visible">
       {#if (selected || forciblyСollapsed) && visibleItem}
         {@const folder = visibleItem}
-        {console.log("TreeItem")}
         <TreeItem
           _id={folder._id}
           folderIcon
@@ -141,7 +140,6 @@
           shouldTooltip
           forciblyСollapsed
         />
-        <span>It works</span>
       {/if}
     </svelte:fragment>
   </TreeNode>

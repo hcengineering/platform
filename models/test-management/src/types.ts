@@ -189,7 +189,9 @@ export class TTestRun extends TDoc implements TestRun {
   @Prop(TypeDate(DateRangeMode.DATETIME), testManagement.string.DueDate)
   declare dueDate?: Timestamp
 
-  @Prop(Collection(testManagement.class.TestRunItem), testManagement.string.TestRunItems, { shortLabel: testManagement.string.TestRunItem })
+  @Prop(Collection(testManagement.class.TestRunItem), testManagement.string.TestRunItems, {
+    shortLabel: testManagement.string.TestRunItem
+  })
     items?: CollectionSize<TestRunItem>
 }
 
@@ -217,4 +219,3 @@ export class TTestRunItem extends TDoc implements TestRunItem {
   @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number
 }
-

@@ -11,21 +11,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Doc, Ref } from '@hcengineering/core'
+import { type Doc, type Ref } from '@hcengineering/core'
 import { writable, type Writable } from 'svelte/store'
 
 export class FoldersState {
-  folders: Ref<Doc>[]
+  folders: Array<Ref<Doc>>
   folderById: Map<Ref<Doc>, Doc>
   descendants: Map<Ref<Doc> | null, Doc[]>
 
-  constructor(folders: Ref<Doc>[], folderById: Map<Ref<Doc>, Doc>, descendants: Map<Ref<Doc> | null, Doc[]>) {
+  constructor (folders: Array<Ref<Doc>>, folderById: Map<Ref<Doc>, Doc>, descendants: Map<Ref<Doc> | null, Doc[]>) {
     this.folders = folders
     this.folderById = folderById
     this.descendants = descendants
   }
 
-  static empty(): FoldersState {
+  static empty (): FoldersState {
     return new FoldersState([], new Map<Ref<Doc>, Doc>(), new Map<Ref<Doc>, Doc[]>())
   }
 }
@@ -34,7 +34,7 @@ export const FoldersStore: Writable<FoldersState> = writable(FoldersState.empty(
 
 export const SelectedFolderStore: Writable<Ref<Doc> | undefined> = writable(undefined)
 
-export function setSelectedFolder(_id: Ref<Doc> | undefined): void {
+export function setSelectedFolder (_id: Ref<Doc> | undefined): void {
   SelectedFolderStore.set(_id)
 }
 
@@ -47,24 +47,24 @@ export class FoldersManager {
     this.parentKey = parentKey
   }
 
-  public getTitle(doc: Doc): string {
-    return ((doc || {}) as any)[this.titleKey] || ''
+  public getTitle (doc: Doc): string {
+    return (doc as any)?.[this.titleKey] ?? ''
   }
 
-  public getParent(doc: Doc): Ref<Doc> | null {
-    return ((doc || {}) as any)[this.parentKey] || null
+  public getParent (doc: Doc): Ref<Doc> | null {
+    return (doc as any)?.[this.parentKey] ?? null
   }
 
-  public getDescendants(descendants: Map<Ref<Doc> | null, Doc[]>, obj: Ref<Doc> | null): Ref<Doc>[] {
+  public getDescendants (descendants: Map<Ref<Doc> | null, Doc[]>, obj: Ref<Doc> | null): Array<Ref<Doc>> {
     return (descendants.get(obj) ?? [])
       .sort((a, b) => this.getTitle(a).localeCompare(this.getTitle(b)))
       .map((p) => p._id)
   }
 
-  public setFolders(result: Doc[]): void {
-    let folders: Ref<Doc>[] = []
-    let folderById: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
-    let descendants: Map<Ref<Doc> | null, Doc[]> = new Map<Ref<Doc>, Doc[]>()
+  public setFolders (result: Doc[]): void {
+    let folders: Array<Ref<Doc>> = []
+    const folderById: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
+    const descendants: Map<Ref<Doc> | null, Doc[]> = new Map<Ref<Doc>, Doc[]>()
 
     for (const doc of result) {
       const current = descendants.get(this.getParent(doc)) ?? []
@@ -73,8 +73,6 @@ export class FoldersManager {
       folderById.set(doc._id, doc)
     }
 
-    folderById = folderById
-    descendants = descendants
     folders = this.getDescendants(descendants, null)
     FoldersStore.set(new FoldersState(folders, folderById, descendants))
   }

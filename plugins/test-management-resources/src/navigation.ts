@@ -11,11 +11,7 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import testManagement, {
-  testManagementId,
-  type TestSuite,
-  type TestProject
-} from '@hcengineering/test-management'
+import testManagement, { testManagementId, type TestSuite, type TestProject } from '@hcengineering/test-management'
 import { type Doc, type DocumentQuery, type Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
@@ -64,9 +60,12 @@ export function getTestSuiteLink (testSuite: Ref<TestSuite>, project: Ref<TestPr
   loc.path[2] = testManagementId
   loc.path[3] = project
   loc.path[4] = 'library'
-  loc.query = testSuite === undefined ? undefined : {
-    suite: testSuite
-  }
+  loc.query =
+    testSuite === undefined
+      ? undefined
+      : {
+          suite: testSuite
+        }
 
   return loc
 }
@@ -77,9 +76,12 @@ export function getTestSuiteIdFromFragment (fragment: string): Ref<TestSuite> | 
   return props[6] != null ? (props[6] as Ref<TestSuite>) : undefined
 }
 
-export function syncQueryAndLocation (query: DocumentQuery<Doc> | undefined, loc: Location): DocumentQuery<Doc> | undefined {
-  const {suite} = loc?.query ?? {}
-  const {suite: skip, ...omittedQuery} = query ?? {}
+export function syncQueryAndLocation (
+  query: DocumentQuery<Doc> | undefined,
+  loc: Location
+): DocumentQuery<Doc> | undefined {
+  const { suite } = loc?.query ?? {}
+  const { suite: skip, ...omittedQuery } = query ?? {}
   if (suite === undefined) {
     return omittedQuery
   }
@@ -95,9 +97,8 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
   }
 
   const projectId = loc.path[3] as Ref<TestProject>
-  if (projectId) {
-    return generateProjectLocation(loc, projectId)
+  if (projectId !== undefined) {
+    return await generateProjectLocation(loc, projectId)
   }
   return undefined
 }
-

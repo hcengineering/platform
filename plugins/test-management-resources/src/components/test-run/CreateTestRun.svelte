@@ -25,7 +25,6 @@
   import { EditBox } from '@hcengineering/ui'
   import { EmptyMarkup } from '@hcengineering/text'
 
-
   import testManagement from '../../plugin'
   import ProjectPresenter from '../project/ProjectSpacePresenter.svelte'
 
@@ -37,7 +36,7 @@
 
   const object: Data<TestRun> = {
     name: '' as IntlString,
-    description: makeCollaborativeDoc(id, 'description'),
+    description: makeCollaborativeDoc(id, 'description')
   }
 
   let _space = space

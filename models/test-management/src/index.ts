@@ -19,7 +19,7 @@ import core from '@hcengineering/model-core'
 import { AccountRole, SortingOrder } from '@hcengineering/core'
 
 import { type Builder } from '@hcengineering/model'
-import view, {createAction} from '@hcengineering/model-view'
+import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
@@ -46,7 +46,7 @@ import { definePresenters } from './presenters'
 
 export { testManagementId } from '@hcengineering/test-management/src/index'
 
-function defineApplication(
+function defineApplication (
   builder: Builder,
   opt: {
     allTestCasesId: string
@@ -103,7 +103,7 @@ function defineApplication(
             createComponent: testManagement.component.CreateProject,
             icon: testManagement.icon.Home,
             specials: [
-              /*{
+              /* {
                 id: opt.testSuitesId,
                 label: testManagement.string.TestSuites,
                 icon: testManagement.icon.TestSuites,
@@ -115,7 +115,7 @@ function defineApplication(
                   createLabel: testManagement.string.CreateTestSuite,
                   createComponent: testManagement.component.CreateTestSuite
                 }
-              },*/
+              }, */
               {
                 id: 'library',
                 label: testManagement.string.TestCases,
@@ -146,7 +146,7 @@ function defineApplication(
                     allObjectsIcon: testManagement.icon.TestSuites
                   },
                   syncQueryAndLocation: testManagement.function.SyncQueryAndLocation
-                },
+                }
               },
               {
                 id: opt.testRunsId,
@@ -171,7 +171,7 @@ function defineApplication(
   )
 }
 
-export function createModel(builder: Builder): void {
+export function createModel (builder: Builder): void {
   builder.createModel(
     TTypeTestCaseType,
     TTypeTestCasePriority,
@@ -327,7 +327,7 @@ export function createModel(builder: Builder): void {
   defineSpaceType(builder)
 }
 
-function defineSpaceType(builder: Builder): void {
+function defineSpaceType (builder: Builder): void {
   // builder.createModel(TClassicProjectTypeData)
   builder.createDoc(
     core.class.SpaceTypeDescriptor,
@@ -372,7 +372,7 @@ function defineSpaceType(builder: Builder): void {
   ) */
 }
 
-function defineTestSuite(builder: Builder): void {
+function defineTestSuite (builder: Builder): void {
   builder.mixin(testManagement.class.TestSuite, core.class.Class, activity.mixin.ActivityDoc, {})
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
@@ -416,37 +416,37 @@ function defineTestSuite(builder: Builder): void {
     testManagement.viewlet.TableTestSuites
   )
 
-    // Actions
+  // Actions
 
-    builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.IgnoreActions, {
-      actions: [
-        view.action.Open,
-        view.action.OpenInNewTab,
-        print.action.Print,
-        tracker.action.EditRelatedTargets,
-        tracker.action.NewRelatedIssue
-      ]
-    })
-  
-    createAction(
-      builder,
-      {
-        action: testManagement.actionImpl.CreateChildTestSuite,
-        label: testManagement.string.CreateTestSuite,
-        icon: testManagement.icon.TestSuite,
-        category: testManagement.category.TestSuite,
-        input: 'none',
-        target: testManagement.class.TestSuite,
-        context: {
-          mode: ['context', 'browser'],
-          application: testManagement.app.TestManagement,
-          group: 'create'
-        }
-      },
-      testManagement.action.CreateChildTestSuite
-    )
-  
-    /*
+  builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [
+      view.action.Open,
+      view.action.OpenInNewTab,
+      print.action.Print,
+      tracker.action.EditRelatedTargets,
+      tracker.action.NewRelatedIssue
+    ]
+  })
+
+  createAction(
+    builder,
+    {
+      action: testManagement.actionImpl.CreateChildTestSuite,
+      label: testManagement.string.CreateTestSuite,
+      icon: testManagement.icon.TestSuite,
+      category: testManagement.category.TestSuite,
+      input: 'none',
+      target: testManagement.class.TestSuite,
+      context: {
+        mode: ['context', 'browser'],
+        application: testManagement.app.TestManagement,
+        group: 'create'
+      }
+    },
+    testManagement.action.CreateChildTestSuite
+  )
+
+  /*
     createAction(
       builder,
       {
@@ -464,10 +464,10 @@ function defineTestSuite(builder: Builder): void {
         visibilityTester: drive.function.CanRenameFolder
       },
       drive.action.RenameFolder
-    )*/
+    ) */
 }
 
-function defineTestCase(builder: Builder): void {
+function defineTestCase (builder: Builder): void {
   builder.mixin(testManagement.class.TestCase, core.class.Class, activity.mixin.ActivityDoc, {})
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
@@ -557,7 +557,7 @@ function defineTestCase(builder: Builder): void {
           displayProps: { key: 'assignee', fixed: 'right' }
         }
       ],
-      viewOptions: viewOptions
+      viewOptions
     },
     testManagement.viewlet.ListTestCase
   )
@@ -570,7 +570,7 @@ function defineTestCase(builder: Builder): void {
       descriptor: view.viewlet.Table,
       config: ['', 'assignee', 'modifiedOn'],
       configOptions: {
-        sortable: true,
+        sortable: true
       },
       variant: 'short'
     },
@@ -578,7 +578,7 @@ function defineTestCase(builder: Builder): void {
   )
 }
 
-function defineTestRun(builder: Builder): void {
+function defineTestRun (builder: Builder): void {
   builder.mixin(testManagement.class.TestRun, core.class.Class, activity.mixin.ActivityDoc, {})
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {

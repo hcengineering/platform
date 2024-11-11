@@ -74,10 +74,10 @@
       locationQuery = loc?.query ?? {}
     }
   }
-  
+
   function showCreateDialog (): void {
     if (createComponent === undefined) return
-    showPopup(createComponent, {...createComponentProps, space}, 'top')
+    showPopup(createComponent, { ...createComponentProps, space }, 'top')
   }
 </script>
 
@@ -140,7 +140,7 @@
       resultQuery = { ...query, ...e.detail }
     }}
   />
-  {#if navigationModel?.navigationComponent == undefined}
+  {#if navigationModel?.navigationComponent === undefined}
     <Component
       is={viewlet.$lookup.descriptor.component}
       props={{
@@ -159,12 +159,7 @@
       }}
     />
   {:else}
-    <ComponentNavigator
-      mainComponentLabel={label}
-      mainComponentIcon={icon}
-      {space}
-      {...navigationModel}
-    >
+    <ComponentNavigator mainComponentLabel={label} mainComponentIcon={icon} {space} {...navigationModel}>
       <Component
         is={viewlet.$lookup.descriptor.component}
         props={{

@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import {AnyComponent, Button, Breadcrumb, Component, IconAdd, Header, Separator, showPopup} from '@hcengineering/ui'
+  import { AnyComponent, Button, Breadcrumb, Component, IconAdd, Header, Separator, showPopup } from '@hcengineering/ui'
   import { Ref, Space } from '@hcengineering/core'
   import { IntlString, Asset } from '@hcengineering/platform'
 
@@ -30,7 +30,7 @@
 
   function showCreateDialog (): void {
     if (createComponent === undefined) return
-    showPopup(createComponent, {...createComponentProps, space}, 'top')
+    showPopup(createComponent, { ...createComponentProps, space }, 'top')
   }
 </script>
 
@@ -51,10 +51,7 @@
           {/if}
         </svelte:fragment>
       </Header>
-      <Component
-        is={navigationComponent}
-        props={navigationComponentProps}
-      />
+      <Component is={navigationComponent} props={navigationComponentProps} />
     </div>
     <Separator name={'navigationSection'} index={0} color={'var(--theme-divider-color)'} />
     <div class="hulyComponent-content__column">

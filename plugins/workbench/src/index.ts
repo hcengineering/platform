@@ -185,12 +185,14 @@ export interface SpecialNavModel {
 /**
  * @public
  */
- export interface ParentsNavigationModel {
+export interface ParentsNavigationModel {
   navigationComponent: AnyComponent
   navigationComponentLabel: IntlString
   navigationComponentIcon?: Asset
-  navigationComponentProps?: Record<string, any>,
-  syncQueryAndLocation?: Resource<(query: DocumentQuery<Doc> | undefined, loc: Location) => DocumentQuery<Doc> | undefined>,
+  navigationComponentProps?: Record<string, any>
+  syncQueryAndLocation?: Resource<
+  (query: DocumentQuery<Doc> | undefined, loc: Location) => DocumentQuery<Doc> | undefined
+  >
   createComponent?: AnyComponent
   createComponentProps?: Record<string, any>
 }

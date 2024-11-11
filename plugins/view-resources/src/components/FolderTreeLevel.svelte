@@ -21,7 +21,6 @@
 
   import { TreeItem, getActions as getContributedActions } from '../index'
 
-
   export let folders: Ref<Doc>[]
   export let folderById: Map<Ref<Doc>, Doc>
   export let descendants: Map<Ref<Doc>, Doc[]>
@@ -35,7 +34,7 @@
 
   const client = getClient()
 
-  function getTitle(doc: Doc): string {
+  function getTitle (doc: Doc): string {
     return ((doc || {}) as any)[titleKey] || ''
   }
 
