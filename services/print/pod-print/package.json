@@ -17,7 +17,7 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "mkdir -p bundle && esbuild src/index.ts --bundle --platform=node --keep-names > bundle/bundle.js",
+    "bundle": "node ../../../common/scripts/esbuild.js --keep-names=true",
     "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/print",
     "docker:tbuild": "docker build -t hardcoreeng/print . --platform=linux/amd64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/print",
     "docker:abuild": "docker build -t hardcoreeng/print . --platform=linux/arm64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/print",
