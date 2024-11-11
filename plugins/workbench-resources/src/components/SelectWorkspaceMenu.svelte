@@ -20,6 +20,7 @@
   import {
     Icon,
     IconCheck,
+    Label,
     Loading,
     Location,
     SearchEdit,
@@ -178,6 +179,9 @@
               <div class="flex-col flex-grow">
                 <span class="label overflow-label flex flex-grow flex-between">
                   {wsName}
+                  {#if ws.mode === 'archived'}
+                    - <Label label={presentation.string.Archived} />
+                  {/if}
                   {#if ws.region != null && ws.region !== ''}
                     - ({ws.region})
                   {/if}

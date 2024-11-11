@@ -42,7 +42,13 @@ import core, {
   toFindResult,
   type MeasureContext
 } from '@hcengineering/core'
-import { PlatformError, UNAUTHORIZED, broadcastEvent, getMetadata, unknownError } from '@hcengineering/platform'
+import platform, {
+  PlatformError,
+  UNAUTHORIZED,
+  broadcastEvent,
+  getMetadata,
+  unknownError
+} from '@hcengineering/platform'
 
 import { HelloRequest, HelloResponse, RPCHandler, ReqId, type Response } from '@hcengineering/rpc'
 
@@ -241,7 +247,12 @@ class Connection implements ClientConnection {
         Analytics.handleError(new PlatformError(resp.error))
         this.closed = true
         this.websocket?.close()
-        this.opt?.onUnauthorized?.()
+        if (resp.error?.code === UNAUTHORIZED.code) {
+          this.opt?.onUnauthorized?.()
+        }
+        if (resp.error?.code === platform.status.WorkspaceArchived) {
+          this.opt?.onArchived?.()
+        }
       }
       console.error(resp.error)
       return

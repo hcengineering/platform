@@ -214,7 +214,7 @@ export class WorkspaceWorker {
   }
 
   private async _upgradeWorkspace (ctx: MeasureContext, ws: BaseWorkspaceInfo, opt: WorkspaceOptions): Promise<void> {
-    if (ws.disabled === true || (opt.ignore ?? '').includes(ws.workspace)) {
+    if (ws.disabled === true || ws.mode === 'archived' || (opt.ignore ?? '').includes(ws.workspace)) {
       return
     }
     const t = Date.now()

@@ -595,7 +595,10 @@ export interface AddSessionActive {
   context: MeasureContext
   workspaceId: string
 }
-export type AddSessionResponse = AddSessionActive | { upgrade: true } | { error: any, terminate?: boolean }
+export type AddSessionResponse =
+  | AddSessionActive
+  | { upgrade: true }
+  | { error: any, terminate?: boolean, archived?: boolean }
 
 /**
  * @public
