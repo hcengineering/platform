@@ -323,6 +323,8 @@ export interface FullTextAdapter {
   index: (ctx: MeasureContext, workspace: WorkspaceId, doc: IndexedDoc) => Promise<TxResult>
   update: (ctx: MeasureContext, workspace: WorkspaceId, id: Ref<Doc>, update: Record<string, any>) => Promise<TxResult>
   remove: (ctx: MeasureContext, workspace: WorkspaceId, id: Ref<Doc>[]) => Promise<void>
+
+  clean: (ctx: MeasureContext, workspace: WorkspaceId) => Promise<void>
   updateMany: (ctx: MeasureContext, workspace: WorkspaceId, docs: IndexedDoc[]) => Promise<TxResult[]>
   load: (ctx: MeasureContext, workspace: WorkspaceId, docs: Ref<Doc>[]) => Promise<IndexedDoc[]>
   searchString: (
@@ -345,53 +347,6 @@ export interface FullTextAdapter {
 
   // If no field is provided, will return existing mapping of all dimms.
   initMapping: (ctx: MeasureContext, field?: { key: string, dims: number }) => Promise<boolean>
-}
-
-/**
- * @public
- */
-export class DummyFullTextAdapter implements FullTextAdapter {
-  async initMapping (ctx: MeasureContext): Promise<boolean> {
-    return true
-  }
-
-  async index (ctx: MeasureContext, workspace: WorkspaceId, doc: IndexedDoc): Promise<TxResult> {
-    return {}
-  }
-
-  async load (ctx: MeasureContext, workspace: WorkspaceId, docs: Ref<Doc>[]): Promise<IndexedDoc[]> {
-    return []
-  }
-
-  async update (
-    ctx: MeasureContext,
-    workspace: WorkspaceId,
-    id: Ref<Doc>,
-    update: Record<string, any>
-  ): Promise<TxResult> {
-    return {}
-  }
-
-  async updateMany (ctx: MeasureContext, workspace: WorkspaceId, docs: IndexedDoc[]): Promise<TxResult[]> {
-    return []
-  }
-
-  async searchString (
-    ctx: MeasureContext,
-    workspace: WorkspaceId,
-    query: SearchQuery,
-    options: SearchOptions
-  ): Promise<SearchStringResult> {
-    return { docs: [] }
-  }
-
-  async search (ctx: MeasureContext, workspace: WorkspaceId, query: any): Promise<IndexedDoc[]> {
-    return []
-  }
-
-  async remove (ctx: MeasureContext, workspace: WorkspaceId, id: Ref<Doc>[]): Promise<void> {}
-
-  async close (): Promise<void> {}
 }
 
 /**

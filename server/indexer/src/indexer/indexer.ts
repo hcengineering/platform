@@ -176,33 +176,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   @withContext('verify-workspace')
   async verifyWorkspace (ctx: MeasureContext, indexing: () => void): Promise<void> {
-    const fullReindex = 'full-text-indexer-v2'
-    const docStructure = 'full-text-structure-v2'
-    const indexes = 'verify-indexes-v2'
     // We need to apply migrations if required.
     const migrations = await this.storage.findAll<MigrationState>(ctx, core.class.MigrationState, {
       plugin: coreId
     })
-
-    if (migrations.find((it) => it.state === indexes) === undefined) {
-      ctx.warn('Rebuild DB index', { workspace: this.workspace.name })
-      // Clean all existing docs, they will be re-created on verify stage
-      await this.checkIndexes()
-
-      await this.addMigration(ctx, indexes)
-    }
-
-    if (migrations.find((it) => it.state === fullReindex) === undefined) {
-      ctx.warn('rebuilding index to v2', { workspace: this.workspace.name })
-      // Clean all existing docs, they will be re-created on verify stage
-      await this.storage.rawUpdate<DocIndexState & { attributes: any, stages: any }>(
-        DOMAIN_DOC_INDEX_STATE,
-        {},
-        { needIndex: true, attributes: null, stages: null }
-      )
-
-      await this.addMigration(ctx, fullReindex)
-    }
 
     // Verify class integrity if required
     const allClasses = this.hierarchy.getDescendants(core.class.Doc)
@@ -229,26 +206,55 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       })
     )
 
+    const indexes = 'verify-indexes-v2'
+    if (migrations.find((it) => it.state === indexes) === undefined) {
+      ctx.warn('Rebuild DB index', { workspace: this.workspace.name })
+      // Clean all existing docs, they will be re-created on verify stage
+      await this.checkIndexes()
+
+      await this.addMigration(ctx, indexes)
+      ctx.warn('Rebuild DB index complete', { workspace: this.workspace.name })
+    }
+
+    const fullReindex = 'full-text-indexer-v4'
+    if (migrations.find((it) => it.state === fullReindex) === undefined) {
+      ctx.warn('rebuilding index to v4', { workspace: this.workspace.name })
+      // Clean all existing docs, they will be re-created on verify stage
+      await this.storage.rawDeleteMany<DocIndexState>(DOMAIN_DOC_INDEX_STATE, {})
+      await this.fulltextAdapter.clean(ctx, this.workspace)
+      ctx.warn('rebuilding index to v3 complete', { workspace: this.workspace.name })
+
+      await this.addMigration(ctx, fullReindex)
+    }
+
+    const docStructure = 'full-text-structure-v4'
     if (migrations.find((it) => it.state === docStructure) === undefined) {
       ctx.warn('verify document structure', { version: docStructure, workspace: this.workspace.name })
 
       for (const [domain, classes] of this.byDomain.entries()) {
         await ctx.with('verify-domain', { domain }, async () => {
           // Iterate over all domain documents and add appropriate entries
-          const iterator = await this.storage.traverse(
+          const allDocs = await this.storage.rawFindAll(
             domain,
             { _class: { $in: classes } },
             { projection: { _class: 1, _id: 1 } }
           )
           try {
+            let processed = 0
             while (true) {
               indexing()
-              const docs = await iterator.next(1000)
-              if (docs == null || docs.length === 0) {
+              const docs = allDocs.splice(0, 1000)
+              if (docs.length === 0) {
                 break
               }
               const states = toIdMap(
-                await this.storage.rawFindAll(DOMAIN_DOC_INDEX_STATE, { _id: { $in: docs.map((it) => it._id) } })
+                await this.storage.rawFindAll(
+                  DOMAIN_DOC_INDEX_STATE,
+                  { _id: { $in: docs.map((it) => it._id) } },
+                  {
+                    projection: { _id: 1 }
+                  }
+                )
               )
               // Find missing documents
               const missingDocs = docs
@@ -258,11 +264,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               if (missingDocs.length > 0) {
                 await this.storage.upload(ctx, DOMAIN_DOC_INDEX_STATE, missingDocs)
               }
+              processed += docs.length
+              ctx.info('processed', { processed, allDocs: allDocs.length, domain })
             }
           } catch (err: any) {
             ctx.error('failed to restore index state', { err })
-          } finally {
-            await iterator.close()
           }
         })
       }
