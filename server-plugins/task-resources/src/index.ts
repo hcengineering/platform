@@ -24,7 +24,9 @@ export async function OnStateUpdate (txes: Tx[], control: TriggerControl): Promi
   const result: Tx[] = []
   for (const tx of txes) {
     const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-    if (!control.hierarchy.isDerived(actualTx.objectClass, task.class.Task)) return []
+    if (!control.hierarchy.isDerived(actualTx.objectClass, task.class.Task)) {
+      continue
+    }
     if (actualTx._class === core.class.TxCreateDoc) {
       const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<Task>)
       const status = control.modelDb.findAllSync(core.class.Status, { _id: doc.status })[0]

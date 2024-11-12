@@ -102,31 +102,34 @@ export function initStatisticsContext (
     const serviceId = encodeURIComponent(os.hostname() + '-' + serviceName)
 
     const intTimer = setInterval(() => {
-      if (metricsFile !== undefined || ops?.logConsole === true) {
-        const val = metricsToString(metricsContext.metrics, serviceName, 140)
-        if (val !== oldMetricsValue) {
-          oldMetricsValue = val
-          if (metricsFile !== undefined) {
-            writeFile(metricsFile, val).catch((err) => {
-              console.error(err)
-            })
-          }
-          if (ops?.logConsole === true) {
-            console.info('METRICS:', val)
+      try {
+        if (metricsFile !== undefined || ops?.logConsole === true) {
+          const val = metricsToString(metricsContext.metrics, serviceName, 140)
+          if (val !== oldMetricsValue) {
+            oldMetricsValue = val
+            if (metricsFile !== undefined) {
+              void writeFile(metricsFile, val).catch((err) => {
+                console.error(err)
+              })
+            }
+            if (ops?.logConsole === true) {
+              console.info('METRICS:', val)
+            }
           }
         }
-      }
-      if (statsUrl !== undefined) {
-        const token = generateToken(systemAccountEmail, { name: '' }, { service: 'true' })
-        const data: ServiceStatistics = {
-          serviceName,
-          cpu: getCPUInfo(),
-          memory: getMemoryInfo(),
-          stats: metricsContext.metrics,
-          workspaces: ops?.getUsers?.()
-        }
+        if (statsUrl !== undefined) {
+          const token = generateToken(systemAccountEmail, { name: '' }, { service: 'true' })
+          const data: ServiceStatistics = {
+            serviceName,
+            cpu: getCPUInfo(),
+            memory: getMemoryInfo(),
+            stats: metricsContext.metrics,
+            workspaces: ops?.getUsers?.()
+          }
 
-        try {
+          const statData = JSON.stringify(data)
+
+          metricsContext.info('send stats:', { size: statData.length })
           void fetch(
             concatLink(statsUrl, '/api/v1/statistics') + `/?token=${encodeURIComponent(token)}&name=${serviceId}`,
             {
@@ -134,19 +137,19 @@ export function initStatisticsContext (
               headers: {
                 'Content-Type': 'application/json'
               },
-              body: JSON.stringify(data)
+              body: statData
             }
           ).catch((err) => {
             errorToSend++
-            if (errorToSend % 20 === 0) {
+            if (errorToSend % 2 === 0) {
               console.error(err)
             }
           })
-        } catch (err: any) {
-          errorToSend++
-          if (errorToSend % 20 === 0) {
-            console.error(err)
-          }
+        }
+      } catch (err: any) {
+        errorToSend++
+        if (errorToSend % 20 === 0) {
+          console.error(err)
         }
       }
     }, METRICS_UPDATE_INTERVAL)
