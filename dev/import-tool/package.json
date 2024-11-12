@@ -14,7 +14,7 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "mkdir -p bundle && esbuild src/__start.ts --bundle --keep-names --platform=node --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --define:process.env.GIT_REVISION=$(../../common/scripts/git_version.sh) --outfile=bundle/bundle.js --log-level=error --sourcemap=external",
+    "bundle": "node ../../common/scripts/esbuild.js --entry=src/__start.ts --keep-names=true --define=MODEL_VERSION --define=GIT_REVISION --sourcemap=external",
     "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/import-tool",
     "docker:tbuild": "docker build -t hardcoreeng/import-tool . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/import-tool",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/import-tool staging",

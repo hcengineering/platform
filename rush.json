@@ -2157,6 +2157,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/scripts",
+      "projectFolder": "common/scripts",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/model-test-management",
       "projectFolder": "models/test-management",
       "shouldPublish": false

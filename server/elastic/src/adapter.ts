@@ -457,6 +457,36 @@ class ElasticAdapter implements FullTextAdapter {
     }
   }
 
+  async clean (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
+    try {
+      await this.client.deleteByQuery(
+        {
+          type: '_doc',
+          index: this.indexName,
+          body: {
+            query: {
+              bool: {
+                must: [
+                  {
+                    match: {
+                      workspaceId: { query: toWorkspaceString(workspaceId), operator: 'and' }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        undefined
+      )
+    } catch (e: any) {
+      if (e instanceof esErr.ResponseError && e.meta.statusCode === 404) {
+        return
+      }
+      throw e
+    }
+  }
+
   async load (ctx: MeasureContext, workspaceId: WorkspaceId, docs: Ref<Doc>[]): Promise<IndexedDoc[]> {
     const resp = await this.client.search({
       index: this.indexName,

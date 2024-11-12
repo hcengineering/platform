@@ -34,7 +34,7 @@ export enum TaskReproduce {
 export interface Task extends Doc {
   name: string
   description: string
-  rate?: number
+  rate?: number | null
   status?: TaskStatus
   reproduce?: TaskReproduce
   eta?: TaskEstimate | null

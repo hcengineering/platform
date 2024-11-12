@@ -743,6 +743,9 @@ dependencies:
   '@rush-temp/s3':
     specifier: file:./projects/s3.tgz
     version: file:projects/s3.tgz(esbuild@0.20.1)(ts-node@10.9.2)
+  '@rush-temp/scripts':
+    specifier: file:./projects/scripts.tgz
+    version: file:projects/scripts.tgz
   '@rush-temp/server':
     specifier: file:./projects/server.tgz
     version: file:projects/server.tgz(esbuild@0.20.1)(ts-node@10.9.2)
@@ -28298,6 +28301,15 @@ packages:
       - node-notifier
       - supports-color
       - ts-node
+    dev: false
+
+  file:projects/scripts.tgz:
+    resolution: {integrity: sha512-HS575HRsNygQqaTm8xnQfCbBXmnMVpuUf5n6Dyu9UNk0TZvMUBLbGjeHN91ZnpjcS+F8nOh9SY+eBhqfY0vAIQ==, tarball: file:projects/scripts.tgz}
+    name: '@rush-temp/scripts'
+    version: 0.0.0
+    dependencies:
+      esbuild: 0.20.1
+      sharp: 0.32.6
     dev: false
 
   file:projects/server-activity-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):

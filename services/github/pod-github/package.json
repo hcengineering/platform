@@ -17,7 +17,7 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "mkdir -p bundle && esbuild src/index.ts --keep-names --bundle --platform=node --outfile=bundle/bundle.js --log-level=error --sourcemap=external",
+    "bundle": "node ../../../common/scripts/esbuild.js --sourcemap=external",
     "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/github",
     "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/github staging",
     "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/github",
