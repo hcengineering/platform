@@ -244,6 +244,7 @@ export async function startIndexer (
         ctx.error('Workspace not available for token')
         return
       }
+      ctx.warn('indexer created', { workspace: workspace.name })
       idx = WorkspaceIndexer.create(
         ctx,
         opt.model,

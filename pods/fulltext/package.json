@@ -18,6 +18,7 @@
     "bundle": "mkdir -p bundle && rushx get-model && esbuild src/index.ts --keep-names --bundle --platform=node --external:*.node --outfile=bundle/bundle.js --log-level=error --sourcemap=external",
     "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/fulltext",
     "docker:tbuild": "docker build -t hardcoreeng/fulltext . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/fulltext",
+    "docker:abuild": "docker build -t hardcoreeng/fulltext . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/fulltext",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/fulltext staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/fulltext",
     "format": "format src",
