@@ -53,13 +53,8 @@ async function generateProjectLocation (
   }
 }
 
-export function getTestSuiteLink (testSuite: Ref<TestSuite>, project: Ref<TestProject>): Location {
+export function getTestSuiteLink (testSuite: Ref<TestSuite>): Location {
   const loc = getCurrentResolvedLocation()
-  loc.fragment = undefined
-  loc.path.length = 5
-  loc.path[2] = testManagementId
-  loc.path[3] = project
-  loc.path[4] = 'library'
   loc.query =
     testSuite === undefined
       ? undefined

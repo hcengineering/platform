@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Action, IconEdit, navigate, type Location } from '@hcengineering/ui'
   import { getResource, type Resource } from '@hcengineering/platform'
@@ -28,7 +28,7 @@
   export let query: DocumentQuery<Doc>
   export let titleKey: string = 'title'
   export let parentKey: string = 'parent'
-  export let getFolderLink: Resource<(doc: Doc, props: Record<string, any>) => Location>
+  export let getFolderLink: Resource<(doc: Ref<Doc> | undefined) => Location>
   export let getFolderIdFromFragment: Resource<(fragment: string) => Ref<Doc> | undefined>
   export let allObjectsIcon: Asset
   export let allObjectsLabel: IntlString
@@ -69,7 +69,7 @@
     const folder = foldersState.folderById.get(_id)
     if (getFolderLink) {
       const getFolderLinkFunction = await getResource(getFolderLink)
-      navigate(getFolderLinkFunction(_id, folder?.space))
+      navigate(getFolderLinkFunction(_id))
     }
   }
 
@@ -79,7 +79,7 @@
     const folder = selected && foldersState.folderById.get(selected)
     if (folder && getFolderLink) {
       const getFolderLinkFunction = await getResource(getFolderLink)
-      navigate(getFolderLinkFunction(undefined, folder?.space))
+      navigate(getFolderLinkFunction(undefined))
     }
   }
 
@@ -132,7 +132,7 @@
           _id={folder._id}
           folderIcon
           iconProps={{ fill: 'var(--global-accent-IconColor)' }}
-          title={folder.name}
+          title={foldersManager.getTitle(folder)}
           selected
           isFold
           empty

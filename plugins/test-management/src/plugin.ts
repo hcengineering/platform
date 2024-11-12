@@ -206,7 +206,7 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestCase: '' as Ref<TestCase>
   },
   function: {
-    GetTestSuiteLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Location>,
+    GetTestSuiteLink: '' as Resource<(doc: Ref<Doc>) => Location>,
     SyncQueryAndLocation: '' as Resource<
     (query: DocumentQuery<Doc> | undefined, loc: Location) => DocumentQuery<Doc> | undefined
     >

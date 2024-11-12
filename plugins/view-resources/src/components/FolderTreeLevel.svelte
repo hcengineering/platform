@@ -23,7 +23,7 @@
 
   export let folders: Ref<Doc>[]
   export let folderById: Map<Ref<Doc>, Doc>
-  export let descendants: Map<Ref<Doc>, Doc[]>
+  export let descendants: Map<Ref<Doc> | null, Doc[]>
 
   export let selected: Ref<Doc> | undefined
   export let level: number = 0
