@@ -233,7 +233,7 @@ export type ArrayMoveDescriptor<T extends object> = {
  * @public
  */
 export type NumberProperties<T extends object> = {
-  [P in keyof T]: T[P] extends number | undefined ? T[P] : never
+  [P in keyof T]: T[P] extends number | undefined | null ? T[P] : never
 }
 
 /**

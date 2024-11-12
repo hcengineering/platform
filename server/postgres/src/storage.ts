@@ -1492,7 +1492,7 @@ class PostgresAdapter extends PostgresAdapterBase {
       for (const key in remainingData) {
         if (ops[key] === undefined) continue
         const val = (remainingData as any)[key]
-        from = `jsonb_set(${from}, '{${key}}', to_jsonb($${paramsIndex++}${inferType(val)}) , true)`
+        from = `jsonb_set(${from}, '{${key}}', coalesce(to_jsonb($${paramsIndex++}${inferType(val)}), 'null') , true)`
         params.push(val)
         dataUpdated = true
       }
