@@ -56,6 +56,7 @@ export interface BackupConfig {
 }
 
 class BackupWorker {
+  downloadLimit: number = 100
   constructor (
     readonly storageAdapter: StorageAdapter,
     readonly config: BackupConfig,
@@ -67,7 +68,8 @@ class BackupWorker {
       branding: Branding | null,
       externalStorage: StorageAdapter
     ) => DbConfiguration,
-    readonly region: string
+    readonly region: string,
+    readonly recheck: boolean = false
   ) {}
 
   canceled = false
@@ -188,10 +190,10 @@ class BackupWorker {
           backup(ctx, '', getWorkspaceId(ws.workspace), storage, {
             skipDomains: [],
             force: true,
-            recheck: false,
+            recheck: this.recheck,
             timeout: this.config.Timeout * 1000,
             connectTimeout: 5 * 60 * 1000, // 5 minutes to,
-            blobDownloadLimit: 100,
+            blobDownloadLimit: this.downloadLimit,
             skipBlobContentTypes: [],
             storageAdapter: this.workspaceStorageAdapter,
             getLastTx: async (): Promise<Tx | undefined> => {
@@ -340,7 +342,8 @@ export function backupService (
     branding: Branding | null,
     externalStorage: StorageAdapter
   ) => DbConfiguration,
-  region: string
+  region: string,
+  recheck?: boolean
 ): () => void {
   const backupWorker = new BackupWorker(storage, config, pipelineFactory, workspaceStorageAdapter, getConfig, region)
 
@@ -350,4 +353,36 @@ export function backupService (
 
   void backupWorker.schedule(ctx)
   return shutdown
+}
+
+export async function doBackupWorkspace (
+  ctx: MeasureContext,
+  workspace: BaseWorkspaceInfo,
+  storage: StorageAdapter,
+  config: BackupConfig,
+  pipelineFactory: PipelineFactory,
+  workspaceStorageAdapter: StorageAdapter,
+  getConfig: (
+    ctx: MeasureContext,
+    workspace: WorkspaceIdWithUrl,
+    branding: Branding | null,
+    externalStorage: StorageAdapter
+  ) => DbConfiguration,
+  region: string,
+  recheck: boolean,
+  downloadLimit: number
+): Promise<boolean> {
+  const backupWorker = new BackupWorker(
+    storage,
+    config,
+    pipelineFactory,
+    workspaceStorageAdapter,
+    getConfig,
+    region,
+    recheck
+  )
+  backupWorker.downloadLimit = downloadLimit
+  const { processed } = await backupWorker.doBackup(ctx, [workspace], Number.MAX_VALUE)
+  await backupWorker.close()
+  return processed === 1
 }

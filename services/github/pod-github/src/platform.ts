@@ -750,8 +750,12 @@ export class PlatformWorker {
           errors++
           return
         }
+        if (workspaceInfo?.mode === 'archived') {
+          this.ctx.warn('Workspace is archived.', { workspace })
+          return
+        }
         if (workspaceInfo?.disabled === true) {
-          this.ctx.error('Workspace is disabled workspaceId', { workspace })
+          this.ctx.warn('Workspace is disabled', { workspace })
           return
         }
         try {

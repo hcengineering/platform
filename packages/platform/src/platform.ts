@@ -148,6 +148,7 @@ export default plugin(platformId, {
     AccountNotFound: '' as StatusCode<{ account: string }>,
     AccountNotConfirmed: '' as StatusCode<{ account: string }>,
     WorkspaceNotFound: '' as StatusCode<{ workspace: string }>,
+    WorkspaceArchived: '' as StatusCode<{ workspace: string }>,
     InvalidPassword: '' as StatusCode<{ account: string }>,
     AccountAlreadyExists: '' as StatusCode<{ account: string }>,
     AccountAlreadyConfirmed: '' as StatusCode<{ account: string }>,

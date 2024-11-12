@@ -32,10 +32,12 @@ import accountPlugin, {
   replacePassword,
   setAccountAdmin,
   setRole,
+  updateArchiveInfo,
   updateWorkspace,
   type AccountDB,
   type Workspace
 } from '@hcengineering/account'
+import { backupWorkspace } from '@hcengineering/backup-service'
 import { setMetadata } from '@hcengineering/platform'
 import {
   backup,
@@ -56,7 +58,13 @@ import serverClientPlugin, {
   listAccountWorkspaces,
   updateBackupInfo
 } from '@hcengineering/server-client'
-import { getServerPipeline, registerServerPlugins, registerStringLoaders } from '@hcengineering/server-pipeline'
+import {
+  createBackupPipeline,
+  getConfig,
+  getServerPipeline,
+  registerServerPlugins,
+  registerStringLoaders
+} from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
@@ -89,7 +97,7 @@ import contact from '@hcengineering/model-contact'
 import { getMongoClient, getWorkspaceMongoDB, shutdown } from '@hcengineering/mongo'
 import { backupDownload } from '@hcengineering/server-backup/src/backup'
 
-import type { StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
+import type { PipelineFactory, StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
 import { getMongoDBUrl } from './__start'
@@ -509,13 +517,10 @@ export function devTool (
     })
 
   program
-    .command('list-unused-workspaces-mongo')
-    .description(
-      'remove unused workspaces, please pass --remove to really delete them. Without it will only mark them disabled'
-    )
-    .option('-r|--remove [remove]', 'Force remove', false)
-    .option('-t|--timeout [timeout]', 'Timeout in days', '7')
-    .action(async (cmd: { remove: boolean, disable: boolean, exclude: string, timeout: string }) => {
+    .command('list-unused-workspaces')
+    .description('remove unused workspaces. Without it will only mark them disabled')
+    .option('-t|--timeout [timeout]', 'Timeout in days', '60')
+    .action(async (cmd: { disable: boolean, exclude: string, timeout: string }) => {
       const { dbUrl } = prepareTools()
       await withDatabase(dbUrl, async (db) => {
         const workspaces = new Map((await listWorkspacesPure(db)).map((p) => [p._id.toString(), p]))
@@ -524,52 +529,191 @@ export function devTool (
 
         const _timeout = parseInt(cmd.timeout) ?? 7
 
-        await withStorage(async (adapter) => {
-          // We need to update workspaces with missing workspaceUrl
-          const mongodbUri = getMongoDBUrl()
-          const client = getMongoClient(mongodbUri ?? dbUrl)
-          const _client = await client.getClient()
-          try {
-            for (const a of accounts) {
-              const authored = a.workspaces
-                .map((it) => workspaces.get(it.toString()))
-                .filter((it) => it !== undefined && it.createdBy?.trim() === a.email?.trim()) as Workspace[]
-              authored.sort((a, b) => b.lastVisit - a.lastVisit)
-              if (authored.length > 0) {
-                const lastLoginDays = Math.floor((Date.now() - a.lastVisit) / 1000 / 3600 / 24)
-                toolCtx.info(a.email, {
-                  workspaces: a.workspaces.length,
-                  firstName: a.first,
-                  lastName: a.last,
-                  lastLoginDays
-                })
-                for (const ws of authored) {
-                  const lastVisitDays = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
+        let used = 0
+        let unused = 0
 
-                  if (lastVisitDays > _timeout) {
-                    toolCtx.warn('  --- unused', {
-                      url: ws.workspaceUrl,
-                      id: ws.workspace,
-                      lastVisitDays
-                    })
-                    if (cmd.remove) {
-                      await dropWorkspaceFull(toolCtx, db, _client, null, ws.workspace, adapter)
+        for (const a of accounts) {
+          const authored = a.workspaces
+            .map((it) => workspaces.get(it.toString()))
+            .filter((it) => it !== undefined && it.createdBy?.trim() === a.email?.trim()) as Workspace[]
+          authored.sort((a, b) => b.lastVisit - a.lastVisit)
+          if (authored.length > 0) {
+            const lastLoginDays = Math.floor((Date.now() - a.lastVisit) / 1000 / 3600 / 24)
+            toolCtx.info(a.email, {
+              workspaces: a.workspaces.length,
+              firstName: a.first,
+              lastName: a.last,
+              lastLoginDays
+            })
+            for (const ws of authored) {
+              const lastVisitDays = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
+
+              if (lastVisitDays > _timeout) {
+                unused++
+                toolCtx.warn('  --- unused', {
+                  url: ws.workspaceUrl,
+                  id: ws.workspace,
+                  lastVisitDays
+                })
+              } else {
+                used++
+                toolCtx.warn('  +++ used', {
+                  url: ws.workspaceUrl,
+                  id: ws.workspace,
+                  createdBy: ws.createdBy,
+                  lastVisitDays
+                })
+              }
+            }
+          }
+        }
+
+        console.log('Used: ', used, 'Unused: ', unused)
+      })
+    })
+  program
+    .command('archive-workspaces-mongo')
+    .description('Archive and delete non visited workspaces...')
+    .option('-r|--remove [remove]', 'Pass to remove all data', false)
+    .option('--region [region]', 'Pass to remove all data', '')
+    .option('-t|--timeout [timeout]', 'Timeout in days', '60')
+    .option('-w|--workspace [workspace]', 'Force backup of selected workspace', '')
+    .action(
+      async (cmd: {
+        disable: boolean
+        exclude: string
+        timeout: string
+        remove: boolean
+        workspace: string
+        region: string
+      }) => {
+        const { dbUrl, txes } = prepareTools()
+        const mongodbUri = getMongoDBUrl()
+        await withDatabase(dbUrl, async (db) => {
+          const workspaces = (await listWorkspacesPure(db))
+            .sort((a, b) => a.lastVisit - b.lastVisit)
+            .filter((it) => cmd.workspace === '' || cmd.workspace === it.workspace)
+
+          const _timeout = parseInt(cmd.timeout) ?? 7
+
+          let unused = 0
+
+          // We need to update workspaces with missing workspaceUrl
+          const client = getMongoClient(mongodbUri ?? dbUrl)
+          const mongoClient = await client.getClient()
+          try {
+            for (const ws of workspaces) {
+              const lastVisitDays = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
+
+              if (lastVisitDays > _timeout && ws.mode !== 'archived') {
+                unused++
+                toolCtx.warn('--- unused', {
+                  url: ws.workspaceUrl,
+                  id: ws.workspace,
+                  lastVisitDays,
+                  mode: ws.mode
+                })
+                try {
+                  await backupWorkspace(
+                    toolCtx,
+                    ws,
+                    (dbUrl, storageAdapter) => {
+                      const factory: PipelineFactory = createBackupPipeline(toolCtx, dbUrl, txes, {
+                        externalStorage: storageAdapter,
+                        usePassedCtx: true
+                      })
+                      return factory
+                    },
+                    (ctx, dbUrls, workspace, branding, externalStorage) => {
+                      return getConfig(ctx, dbUrls, ctx, {
+                        externalStorage,
+                        disableTriggers: true
+                      })
+                    },
+                    cmd.region,
+                    true,
+                    5000, // 5 gigabytes per blob
+                    async (storage, workspaceStorage) => {
+                      if (cmd.remove) {
+                        await updateArchiveInfo(toolCtx, db, ws.workspace, true)
+                        const files = await workspaceStorage.listStream(toolCtx, { name: ws.workspace })
+
+                        while (true) {
+                          const docs = await files.next()
+                          if (docs.length === 0) {
+                            break
+                          }
+                          await workspaceStorage.remove(
+                            toolCtx,
+                            { name: ws.workspace },
+                            docs.map((it) => it._id)
+                          )
+                        }
+
+                        const mongoDb = getWorkspaceMongoDB(mongoClient, { name: ws.workspace })
+                        await mongoDb.dropDatabase()
+                      }
                     }
-                  } else {
-                    toolCtx.warn('  +++ used', {
-                      url: ws.workspaceUrl,
-                      id: ws.workspace,
-                      createdBy: ws.createdBy,
-                      lastVisitDays
-                    })
-                  }
+                  )
+                } catch (err: any) {
+                  toolCtx.error('Failed to backup/archive workspace', { workspace: ws.workspace })
                 }
               }
             }
           } finally {
             client.close()
           }
+          console.log('Processed unused workspaces', unused)
         })
+      }
+    )
+
+  program
+    .command('backup-all')
+    .description('Backup all workspaces...')
+    .option('--region [region]', 'Force backup of selected workspace', '')
+    .option('-w|--workspace [workspace]', 'Force backup of selected workspace', '')
+    .action(async (cmd: { workspace: string, region: string }) => {
+      const { dbUrl, txes } = prepareTools()
+      await withDatabase(dbUrl, async (db) => {
+        const workspaces = (await listWorkspacesPure(db))
+          .sort((a, b) => a.lastVisit - b.lastVisit)
+          .filter((it) => cmd.workspace === '' || cmd.workspace === it.workspace)
+
+        let processed = 0
+
+        // We need to update workspaces with missing workspaceUrl
+        for (const ws of workspaces) {
+          try {
+            if (
+              await backupWorkspace(
+                toolCtx,
+                ws,
+                (dbUrl, storageAdapter) => {
+                  const factory: PipelineFactory = createBackupPipeline(toolCtx, dbUrl, txes, {
+                    externalStorage: storageAdapter,
+                    usePassedCtx: true
+                  })
+                  return factory
+                },
+                (ctx, dbUrls, workspace, branding, externalStorage) => {
+                  return getConfig(ctx, dbUrls, ctx, {
+                    externalStorage,
+                    disableTriggers: true
+                  })
+                },
+                cmd.region,
+                true,
+                100
+              )
+            ) {
+              processed++
+            }
+          } catch (err: any) {
+            toolCtx.error('Failed to backup workspace', { workspace: ws.workspace })
+          }
+        }
+        console.log('Processed workspaces', processed)
       })
     })
 
@@ -656,7 +800,7 @@ export function devTool (
           try {
             for (const ws of workspacesJSON) {
               const lastVisit = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
-              if (lastVisit > 30) {
+              if (lastVisit > 60) {
                 await dropWorkspaceFull(toolCtx, db, _client, null, ws.workspace, storageAdapter)
               }
             }
@@ -693,6 +837,7 @@ export function devTool (
             !deepEqual(ws.version, version) ? `upgrade to ${versionToString(version)} is required` : ''
           )
           console.log('disabled:', ws.disabled)
+          console.log('mode:', ws.mode)
           console.log('created by:', ws.createdBy)
           console.log('members:', (ws.accounts ?? []).length)
           if (Number.isNaN(lastVisit)) {
@@ -1130,22 +1275,29 @@ export function devTool (
         })
       })
     })
-  program.command('clean-empty-buckets').action(async (cmd: any) => {
-    await withStorage(async (adapter) => {
-      const buckets = await adapter.listBuckets(toolCtx)
-      for (const ws of buckets) {
-        const l = await ws.list()
-        if ((await l.next()) === undefined) {
-          await l.close()
-          // No data, we could delete it.
-          console.log('Clean bucket', ws.name)
-          await ws.delete()
-        } else {
-          await l.close()
+  program
+    .command('clean-empty-buckets')
+    .option('--prefix [prefix]', 'Prefix', '')
+    .action(async (cmd: { prefix: string }) => {
+      await withStorage(async (adapter) => {
+        const buckets = await adapter.listBuckets(toolCtx)
+        for (const ws of buckets) {
+          if (ws.name.startsWith(cmd.prefix)) {
+            console.log('Checking', ws.name)
+            const l = await ws.list()
+            const docs = await l.next()
+            if (docs.length === 0) {
+              await l.close()
+              // No data, we could delete it.
+              console.log('Clean bucket', ws.name)
+              await ws.delete()
+            } else {
+              await l.close()
+            }
+          }
         }
-      }
+      })
     })
-  })
   program
     .command('upload-file <workspace> <local> <remote> <contentType>')
     .action(async (workspace: string, local: string, remote: string, contentType: string, cmd: any) => {
@@ -1213,6 +1365,10 @@ export function devTool (
                 if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
                   continue
                 }
+                if (workspace.mode === 'archived') {
+                  console.log('ignore archived workspace', workspace.workspace)
+                  continue
+                }
                 if (workspace.disabled === true && !cmd.disabled) {
                   console.log('ignore disabled workspace', workspace.workspace)
                   continue
@@ -1252,6 +1408,10 @@ export function devTool (
             workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
 
             for (const workspace of workspaces) {
+              if (workspace.mode === 'archived') {
+                console.log('ignore archived workspace', workspace.workspace)
+                continue
+              }
               if (workspace.disabled === true && !cmd.disabled) {
                 console.log('ignore disabled workspace', workspace.workspace)
                 continue

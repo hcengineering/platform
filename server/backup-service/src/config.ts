@@ -59,7 +59,7 @@ const required: Array<keyof Config> = [
   'WorkspaceStorage'
 ]
 
-const config: Config = (() => {
+export const config: () => Config = () => {
   const params: Partial<Config> = {
     AccountsURL: process.env[envMap.AccountsURL],
     Secret: process.env[envMap.Secret],
@@ -82,6 +82,4 @@ const config: Config = (() => {
   }
 
   return params as Config
-})()
-
-export default config
+}
