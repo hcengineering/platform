@@ -236,6 +236,9 @@
     "@hcengineering/test-management": "^0.6.0",
     "@hcengineering/test-management-assets": "^0.6.0",
     "@hcengineering/test-management-resources": "^0.6.0",
+    "@hcengineering/survey": "^0.0.1",
+    "@hcengineering/survey-assets": "^0.0.1",
+    "@hcengineering/survey-resources": "^0.0.1",
     "@sentry/svelte": "~7.101.0",
     "posthog-js": "~1.122.0"
   }

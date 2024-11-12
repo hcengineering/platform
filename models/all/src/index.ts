@@ -105,6 +105,7 @@ import {
   createModel as serverDocumentsModel
 } from '@hcengineering/model-server-controlled-documents'
 import { serverFulltextId, createModel as serverFulltextModel } from '@hcengineering/model-server-fulltext'
+import { surveyId, createModel as surveyModel } from '@hcengineering/model-survey'
 
 import { type Plugin } from '@hcengineering/platform'
 
@@ -420,6 +421,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         classFilter: defaultFilter
       }
     ],
+    [surveyModel, surveyId],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],

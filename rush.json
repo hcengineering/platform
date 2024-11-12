@@ -2180,6 +2180,26 @@
       "packageName": "@hcengineering/test-management-assets",
       "projectFolder": "plugins/test-management-assets",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/survey",
+      "projectFolder": "plugins/survey",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-survey",
+      "projectFolder": "models/survey",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/survey-assets",
+      "projectFolder": "plugins/survey-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/survey-resources",
+      "projectFolder": "plugins/survey-resources",
+      "shouldPublish": false
     }
   ]
 }

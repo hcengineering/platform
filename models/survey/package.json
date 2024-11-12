@@ -1,6 +1,6 @@
 {
-  "name": "@hcengineering/model-recruit",
-  "version": "0.6.0",
+  "name": "@hcengineering/model-survey",
+  "version": "0.0.1",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -28,34 +28,16 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@anticrm/skillset": "^0.6.0",
     "@hcengineering/activity": "^0.6.0",
-    "@hcengineering/chunter": "^0.6.20",
-    "@hcengineering/contact": "^0.6.24",
     "@hcengineering/core": "^0.6.32",
-    "@hcengineering/model": "^0.6.11",
-    "@hcengineering/model-attachment": "^0.6.0",
-    "@hcengineering/model-calendar": "^0.6.0",
+    "@hcengineering/model": "^0.6.11", 
     "@hcengineering/model-chunter": "^0.6.0",
-    "@hcengineering/model-contact": "^0.6.1",
     "@hcengineering/model-core": "^0.6.0",
-    "@hcengineering/model-notification": "^0.6.0",
-    "@hcengineering/model-presentation": "^0.6.0",
-    "@hcengineering/model-tags": "^0.6.0",
-    "@hcengineering/model-gmail": "^0.6.0",
-    "@hcengineering/model-task": "^0.6.0",
-    "@hcengineering/model-tracker": "^0.6.0",
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/model-workbench": "^0.6.1",
-    "@hcengineering/notification": "^0.6.23",
     "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/recruit": "^0.6.29",
-    "@hcengineering/recruit-resources": "^0.6.0",
-    "@hcengineering/setting": "^0.6.17",
     "@hcengineering/survey": "^0.0.1",
-    "@hcengineering/task": "^0.6.20",
-    "@hcengineering/ui": "^0.6.15",
-    "@hcengineering/view": "^0.6.13",
-    "@hcengineering/workbench": "^0.6.16"
+    "@hcengineering/survey-resources": "^0.0.1",
+    "@hcengineering/ui": "^0.6.15"
   }
 }
