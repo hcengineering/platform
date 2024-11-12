@@ -25,7 +25,7 @@
 
   import StatusEditor from './StatusEditor.svelte'
   import AssigneeEditor from './AssigneeEditor.svelte'
-  import ProjectPresenter from '../project/ProjectSpacePresenter.svelte'
+  import ProjectPresenter from '../project/ProjectPresenter.svelte'
   import testManagement from '../../plugin'
 
   export let onCreate: ((orgId: Ref<TestCase>, client: TxOperations) => Promise<void>) | undefined = undefined
