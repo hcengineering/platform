@@ -89,9 +89,7 @@ export class LiveQueryMiddleware extends BaseMiddleware implements Middleware {
   }
 
   async tx (ctx: MeasureContext, tx: Tx[]): Promise<TxMiddlewareResult> {
-    for (const _tx of tx) {
-      await this.liveQuery.tx(_tx)
-    }
+    await this.liveQuery.tx(...tx)
     return await this.provideTx(ctx, tx)
   }
 }

@@ -387,69 +387,72 @@ export async function generateDocUpdateMessages (
   return res
 }
 
-async function ActivityMessagesHandler (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
-  if (
-    control.hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage) ||
-    control.hierarchy.isDerived(tx.objectClass, notification.class.DocNotifyContext) ||
-    control.hierarchy.isDerived(tx.objectClass, notification.class.ActivityInboxNotification) ||
-    control.hierarchy.isDerived(tx.objectClass, notification.class.BrowserNotification)
-  ) {
-    return []
-  }
+async function ActivityMessagesHandler (_txes: TxCUD<Doc>[], control: TriggerControl): Promise<Tx[]> {
+  const ltxes = _txes.filter(
+    (it) =>
+      !(
+        control.hierarchy.isDerived(it.objectClass, activity.class.ActivityMessage) ||
+        control.hierarchy.isDerived(it.objectClass, notification.class.DocNotifyContext) ||
+        control.hierarchy.isDerived(it.objectClass, notification.class.ActivityInboxNotification) ||
+        control.hierarchy.isDerived(it.objectClass, notification.class.BrowserNotification)
+      )
+  )
 
   const cache: DocObjectCache = control.contextCache.get('ActivityMessagesHandler') ?? {
     docs: new Map(),
     transactions: new Map()
   }
   control.contextCache.set('ActivityMessagesHandler', cache)
+  const result: Tx[] = []
+  for (const tx of ltxes) {
+    const txes =
+      tx.space === core.space.DerivedTx
+        ? []
+        : await control.ctx.with('generateDocUpdateMessages', {}, (ctx) =>
+          generateDocUpdateMessages(ctx, tx, control, [], undefined, cache)
+        )
 
-  const txes =
-    tx.space === core.space.DerivedTx
-      ? []
-      : await control.ctx.with(
-        'generateDocUpdateMessages',
-        {},
-        async (ctx) => await generateDocUpdateMessages(ctx, tx, control, [], undefined, cache)
-      )
+    const messages = txes.map((messageTx) => TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>))
 
-  const messages = txes.map((messageTx) => TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>))
+    const notificationTxes = await control.ctx.with('createCollaboratorNotifications', {}, (ctx) =>
+      createCollaboratorNotifications(ctx, tx, control, messages, undefined, cache.docs as Map<Ref<Doc>, Doc>)
+    )
 
-  const notificationTxes = await control.ctx.with(
-    'createCollaboratorNotifications',
-    {},
-    async (ctx) =>
-      await createCollaboratorNotifications(ctx, tx, control, messages, undefined, cache.docs as Map<Ref<Doc>, Doc>)
-  )
-
-  const result = [...txes, ...notificationTxes]
-
+    result.push(...txes, ...notificationTxes)
+  }
   if (result.length > 0) {
     await control.apply(control.ctx, result)
   }
   return []
 }
 
-async function OnDocRemoved (originTx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
-  const tx = TxProcessor.extractTx(originTx) as TxCUD<Doc>
+async function OnDocRemoved (txes: TxCUD<Doc>[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const originTx of txes) {
+    const tx = TxProcessor.extractTx(originTx) as TxCUD<Doc>
 
-  if (tx._class !== core.class.TxRemoveDoc) {
-    return []
+    if (tx._class !== core.class.TxRemoveDoc) {
+      continue
+    }
+
+    const activityDocMixin = control.hierarchy.classHierarchyMixin(tx.objectClass, activity.mixin.ActivityDoc)
+
+    if (activityDocMixin === undefined) {
+      continue
+    }
+
+    const messages = await control.findAll(
+      control.ctx,
+      activity.class.ActivityMessage,
+      { attachedTo: tx.objectId },
+      { projection: { _id: 1, _class: 1, space: 1 } }
+    )
+
+    result.push(
+      ...messages.map((message) => control.txFactory.createTxRemoveDoc(message._class, message.space, message._id))
+    )
   }
-
-  const activityDocMixin = control.hierarchy.classHierarchyMixin(tx.objectClass, activity.mixin.ActivityDoc)
-
-  if (activityDocMixin === undefined) {
-    return []
-  }
-
-  const messages = await control.findAll(
-    control.ctx,
-    activity.class.ActivityMessage,
-    { attachedTo: tx.objectId },
-    { projection: { _id: 1, _class: 1, space: 1 } }
-  )
-
-  return messages.map((message) => control.txFactory.createTxRemoveDoc(message._class, message.space, message._id))
+  return result
 }
 
 async function ReactionNotificationContentProvider (

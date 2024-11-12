@@ -13,54 +13,50 @@
 // limitations under the License.
 //
 
+import { DocUpdateMessage } from '@hcengineering/activity'
+import { PersonAccount } from '@hcengineering/contact'
 import core, {
   Doc,
+  Ref,
   Tx,
   TxCUD,
   TxCollectionCUD,
   TxCreateDoc,
-  TxUpdateDoc,
   TxProcessor,
-  Ref,
+  TxUpdateDoc,
   type MeasureContext
 } from '@hcengineering/core'
-import request, { Request, RequestStatus } from '@hcengineering/request'
-import { getResource, translate } from '@hcengineering/platform'
-import type { TriggerControl } from '@hcengineering/server-core'
-import { pushDocUpdateMessages } from '@hcengineering/server-activity-resources'
-import { DocUpdateMessage } from '@hcengineering/activity'
 import notification from '@hcengineering/notification'
+import { getResource, translate } from '@hcengineering/platform'
+import request, { Request, RequestStatus } from '@hcengineering/request'
+import { pushDocUpdateMessages } from '@hcengineering/server-activity-resources'
+import type { TriggerControl } from '@hcengineering/server-core'
 import {
-  getNotificationTxes,
   getCollaborators,
+  getNotificationProviderControl,
+  getNotificationTxes,
   getTextPresenter,
   getUsersInfo,
-  toReceiverInfo,
-  getNotificationProviderControl
+  toReceiverInfo
 } from '@hcengineering/server-notification-resources'
-import { PersonAccount } from '@hcengineering/contact'
 
 /**
  * @public
  */
-export async function OnRequest (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  if (tx._class !== core.class.TxCollectionCUD) {
-    return []
-  }
-
+export async function OnRequest (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
-  const ptx = tx as TxCollectionCUD<Doc, Request>
-
-  if (!hierarchy.isDerived(ptx.tx.objectClass, request.class.Request)) {
-    return []
-  }
+  const ltxes = (
+    txes.filter((it) => it._class === core.class.TxCollectionCUD) as TxCollectionCUD<Doc, Request>[]
+  ).filter((it) => hierarchy.isDerived(it.tx.objectClass, request.class.Request))
 
   let res: Tx[] = []
 
-  res = res.concat(await getRequestNotificationTx(control.ctx, ptx, control))
+  for (const ptx of ltxes) {
+    res = res.concat(await getRequestNotificationTx(control.ctx, ptx, control))
 
-  if (ptx.tx._class === core.class.TxUpdateDoc) {
-    res = res.concat(await OnRequestUpdate(ptx, control))
+    if (ptx.tx._class === core.class.TxUpdateDoc) {
+      res = res.concat(await OnRequestUpdate(ptx, control))
+    }
   }
 
   return res
@@ -168,9 +164,10 @@ async function getRequestNotificationTx (
   }
 
   const notificationControl = await getNotificationProviderControl(ctx, control)
-  const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
-    user: { $in: collaborators }
-  })
+  const collaboratorsSet = new Set(collaborators)
+  const subscriptions = (await control.queryFind(control.ctx, notification.class.PushSubscription, {})).filter((it) =>
+    collaboratorsSet.has(it.user)
+  )
   for (const target of collaborators) {
     const targetInfo = toReceiverInfo(control.hierarchy, usersInfo.get(target))
     if (targetInfo === undefined) continue

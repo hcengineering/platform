@@ -56,6 +56,7 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - MODEL_ENABLED=*
       - BRANDING_PATH=/var/cfg/branding.json
+      - STATS_URL=http://stats:4901
   workspace:
     image: hardcoreeng/workspace
     links:
@@ -72,6 +73,7 @@ services:
       - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://account:3003
       - BRANDING_PATH=/var/cfg/branding.json
+      - STATS_URL=http://stats:4901
     restart: unless-stopped
   front:
     image: hardcoreeng/front
@@ -100,6 +102,8 @@ services:
       - COLLABORATOR_URL=ws://localhost:3079
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - BRANDING_URL=http://localhost:8083/branding-test.json
+      - STATS_URL=http://stats:4901
+      - STATS_API=http://localhost:4901
   transactor:
     image: hardcoreeng/transactor
     pull_policy: never
@@ -128,6 +132,7 @@ services:
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
       - FULLTEXT_URL=http://fulltext:4710
+      - STATS_URL=http://stats:4901
   collaborator:
     image: hardcoreeng/collaborator
     links:
@@ -142,20 +147,18 @@ services:
       - ACCOUNTS_URL=http://account:3003
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FULLTEXT_URL=http://fulltext:4710
+      - STATS_URL=http://stats:4901
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
     restart: on-failure
     ports:
       - 4007:4004
-    deploy:
-      resources:
-        limits:
-          memory: 1024M
+    environment:
+      - STATS_URL=http://stats:4901
+    
   fulltext:
     image: hardcoreeng/fulltext
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     links:
       - elastic
@@ -173,3 +176,12 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - REKONI_URL=http://rekoni:4007
       - ACCOUNTS_URL=http://account:3003
+      - STATS_URL=http://stats:4901
+  stats:
+    image: hardcoreeng/stats
+    ports:
+      - 4901:4901
+    environment:
+      - PORT=4901
+      - SERVER_SECRET=secret
+    restart: unless-stopped      

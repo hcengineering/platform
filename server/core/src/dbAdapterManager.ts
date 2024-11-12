@@ -169,6 +169,23 @@ export class DbAdapterManagerImpl implements DBAdapterManager {
     }
   }
 
+  getAdapterName (domain: Domain): string {
+    const adapterName = this.conf.domains[domain]
+    return adapterName ?? this.conf.defaultAdapter
+  }
+
+  getAdapterByName (name: string): DbAdapter {
+    if (name === this.conf.defaultAdapter) {
+      return this.defaultAdapter
+    }
+    const adapter = this.adapters.get(name) ?? this.defaultAdapter
+    if (adapter === undefined) {
+      throw new Error('adapter not provided: ' + name)
+    }
+
+    return adapter
+  }
+
   public getAdapter (domain: Domain, requireExists: boolean): DbAdapter {
     const name = this.conf.domains[domain] ?? '#default'
     const adapter = this.adapters.get(name) ?? this.defaultAdapter

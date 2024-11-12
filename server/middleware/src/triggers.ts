@@ -51,6 +51,7 @@ import type {
 } from '@hcengineering/server-core'
 import serverCore, { BaseMiddleware, SessionDataImpl, SessionFindAll, Triggers } from '@hcengineering/server-core'
 import { filterBroadcastOnly } from './utils'
+import { QueryJoiner } from './queryJoin'
 
 /**
  * @public
@@ -106,13 +107,14 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   }
 
   private async processDerived (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<void> {
-    const findAll: SessionFindAll = async (ctx, _class, query, options) => {
+    const _findAll: SessionFindAll = async (ctx, _class, query, options) => {
       const _ctx: MeasureContext = (options as ServerFindOptions<Doc>)?.ctx ?? ctx
       delete (options as ServerFindOptions<Doc>)?.ctx
       if (_ctx.contextData !== undefined) {
         _ctx.contextData.isTriggerCtx = true
       }
 
+      // Use live query
       const results = await this.findAll(_ctx, _class, query, options)
       return toFindResult(
         results.map((v) => {
@@ -121,6 +123,12 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
         results.total
       )
     }
+    const joiner = new QueryJoiner(_findAll)
+
+    const findAll: SessionFindAll = async (ctx, _class, query, options) => {
+      return await joiner.findAll(ctx, _class, query, options)
+    }
+
     const removed = await ctx.with('process-remove', {}, (ctx) => this.processRemove(ctx, txes, findAll))
     const collections = await ctx.with('process-collection', {}, (ctx) => this.processCollection(ctx, txes, findAll))
     const moves = await ctx.with('process-move', {}, (ctx) => this.processMove(ctx, txes, findAll))
@@ -223,6 +231,10 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       this.context.modelDb
     )
     ctx.contextData = asyncContextData
+
+    if (!((ctx as MeasureContext<SessionDataImpl>).contextData.isAsyncContext ?? false)) {
+      ctx.id = generateId()
+    }
     const aresult = await this.triggers.apply(
       ctx,
       txes,
@@ -236,15 +248,14 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     )
 
     if (aresult.length > 0) {
-      await ctx.with('process-aync-result', {}, async (ctx) => {
-        ctx.id = generateId()
+      await ctx.with('process-async-result', {}, async (ctx) => {
         await this.processDerivedTxes(ctx, aresult)
         // We need to send all to recipients
         await this.context.head?.handleBroadcast(ctx)
-        if (ctx.onEnd !== undefined) {
-          await ctx.onEnd(ctx)
-        }
       })
+    }
+    if (ctx.onEnd !== undefined) {
+      await ctx.onEnd(ctx)
     }
   }
 

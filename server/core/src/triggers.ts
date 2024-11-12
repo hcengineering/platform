@@ -17,7 +17,6 @@
 import core, {
   TxFactory,
   TxProcessor,
-  generateId,
   groupByArray,
   matchQuery,
   type Class,
@@ -134,7 +133,6 @@ export class Triggers {
     mode: 'sync' | 'async'
   ): Promise<Tx[]> {
     const result: Tx[] = []
-
     for (const { query, trigger, arrays } of this.triggers) {
       if ((trigger.isAsync ? 'async' : 'sync') !== mode) {
         continue
@@ -150,19 +148,14 @@ export class Triggers {
           trigger.resource,
           {},
           async (ctx) => {
-            if (mode === 'async') {
-              ctx.id = generateId()
-            }
             const tresult = await this.applyTrigger(ctx, ctrl, matches, { trigger, arrays })
             result.push(...tresult)
-            if (ctx.onEnd !== undefined && mode === 'async') {
-              await ctx.onEnd(ctx)
-            }
           },
           { count: matches.length, arrays }
         )
       }
     }
+
     return result
   }
 

@@ -253,29 +253,40 @@ test.describe('Inbox tests', () => {
     const linkText = await page.locator('.antiPopup .link').textContent()
     const page2 = await browser.newPage()
     try {
-      const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
-      const inboxPageSecond = new InboxPage(page2)
+      const channelPage2 = new ChannelPage(page2)
+      const leftSideMenuPage2 = new LeftSideMenuPage(page2)
+      const inboxPage2 = new InboxPage(page2)
       await leftSideMenuPage.clickOnCloseInvite()
       await page2.goto(linkText ?? '')
-      const joinPage = new SignInJoinPage(page2)
-      await joinPage.join(newUser2)
+
+      const joinPage2 = new SignInJoinPage(page2)
+      await joinPage2.join(newUser2)
+
+      await leftSideMenuPage2.clickChunter()
+      await channelPage2.clickChannel('general')
 
       await leftSideMenuPage.clickChunter()
       await channelPage.clickChannel('general')
       await channelPage.sendMessage('Test message')
+
+      await leftSideMenuPage2.clickNotification()
+      await inboxPage2.clickOnInboxFilter('Channels')
+
       await leftSideMenuPage.clickTracker()
 
       const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
       await prepareNewIssueWithOpenStep(page, newIssue, false)
       await issuesDetailsPage.checkIssue(newIssue)
-      await leftSideMenuPageSecond.clickTracker()
-      await leftSideMenuPageSecond.clickNotification()
-      await inboxPageSecond.clickOnInboxFilter('Channels')
-      await inboxPageSecond.checkIfInboxChatExists(newIssue.title, false)
-      await inboxPageSecond.checkIfInboxChatExists('Test message', true)
-      await inboxPageSecond.clickOnInboxFilter('Issues')
-      await inboxPageSecond.checkIfIssueIsPresentInInbox(newIssue.title)
-      await inboxPageSecond.checkIfInboxChatExists('Channel general', false)
+
+      await leftSideMenuPage2.clickTracker()
+      await leftSideMenuPage2.clickNotification()
+
+      await inboxPage2.clickOnInboxFilter('Channels')
+      await inboxPage2.checkIfInboxChatExists(newIssue.title, false)
+      await inboxPage2.checkIfInboxChatExists('Test message', true)
+      await inboxPage2.clickOnInboxFilter('Issues')
+      await inboxPage2.checkIfIssueIsPresentInInbox(newIssue.title)
+      await inboxPage2.checkIfInboxChatExists('Channel general', false)
     } finally {
       await page2.close()
     }

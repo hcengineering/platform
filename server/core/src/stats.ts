@@ -126,21 +126,28 @@ export function initStatisticsContext (
           workspaces: ops?.getUsers?.()
         }
 
-        void fetch(
-          concatLink(statsUrl, '/api/v1/statistics') + `/?token=${encodeURIComponent(token)}&name=${serviceId}`,
-          {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-          }
-        ).catch((err) => {
+        try {
+          void fetch(
+            concatLink(statsUrl, '/api/v1/statistics') + `/?token=${encodeURIComponent(token)}&name=${serviceId}`,
+            {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(data)
+            }
+          ).catch((err) => {
+            errorToSend++
+            if (errorToSend % 20 === 0) {
+              console.error(err)
+            }
+          })
+        } catch (err: any) {
           errorToSend++
           if (errorToSend % 20 === 0) {
             console.error(err)
           }
-        })
+        }
       }
     }, METRICS_UPDATE_INTERVAL)
 
