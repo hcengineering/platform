@@ -24,7 +24,7 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
-import { DOMAIN_CALENDAR } from '.'
+import { DOMAIN_CALENDAR, DOMAIN_EVENT } from '.'
 import calendar from './plugin'
 
 async function migrateCalendars (client: MigrationClient): Promise<void> {
@@ -136,6 +136,16 @@ export const calendarOperation: MigrateOperation = {
       {
         state: 'migrate_calendars',
         func: migrateCalendars
+      },
+      {
+        state: 'move-events',
+        func: async (client) => {
+          await client.move(
+            DOMAIN_CALENDAR,
+            { _class: { $in: client.hierarchy.getDescendants(calendar.class.Event) } },
+            DOMAIN_EVENT
+          )
+        }
       }
     ])
   },
