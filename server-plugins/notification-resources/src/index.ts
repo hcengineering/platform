@@ -1001,9 +1001,10 @@ export async function createCollabDocInfo (
   }
 
   const settings = await getNotificationProviderControl(ctx, control)
-  const subscriptions = await control.findAll(ctx, notification.class.PushSubscription, {
-    user: { $in: Array.from(targets) }
-  })
+  const subscriptions = (await control.queryFind(ctx, notification.class.PushSubscription, {})).filter((it) =>
+    targets.has(it.user as Ref<PersonAccount>)
+  )
+
   for (const target of targets) {
     const info: ReceiverInfo | undefined = toReceiverInfo(control.hierarchy, usersInfo.get(target))
 
@@ -1938,36 +1939,34 @@ async function OnEmployeeDeactivate (tx: TxCUD<Doc>, control: TriggerControl): P
   return res
 }
 
-async function OnDocRemove (originTx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
-  const tx = TxProcessor.extractTx(originTx) as TxRemoveDoc<Doc>
-
-  if (tx._class !== core.class.TxRemoveDoc) return []
-
+async function OnDocRemove (txes: TxCUD<Doc>[], control: TriggerControl): Promise<Tx[]> {
+  const ltxes = txes
+    .map((it) => TxProcessor.extractTx(it))
+    .filter((it) => it._class === core.class.TxRemoveDoc) as TxRemoveDoc<Doc>[]
   const res: Tx[] = []
+  for (const tx of ltxes) {
+    if (control.hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage)) {
+      const message = control.removedMap.get(tx.objectId) as ActivityMessage | undefined
 
-  if (control.hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage)) {
-    const message = control.removedMap.get(tx.objectId) as ActivityMessage | undefined
-
-    if (message !== undefined) {
-      const txes = await OnActivityMessageRemove(message, control)
-      res.push(...txes)
-    }
-  } else if (control.hierarchy.isDerived(tx.objectClass, notification.class.DocNotifyContext)) {
-    const contextsCache: ContextsCache | undefined = control.cache.get(ContextsCacheKey)
-    if (contextsCache !== undefined) {
-      for (const [key, value] of contextsCache.contexts.entries()) {
-        if (value === tx.objectId) {
-          contextsCache.contexts.delete(key)
+      if (message !== undefined) {
+        const txes = await OnActivityMessageRemove(message, control)
+        res.push(...txes)
+      }
+    } else if (control.hierarchy.isDerived(tx.objectClass, notification.class.DocNotifyContext)) {
+      const contextsCache: ContextsCache | undefined = control.cache.get(ContextsCacheKey)
+      if (contextsCache !== undefined) {
+        for (const [key, value] of contextsCache.contexts.entries()) {
+          if (value === tx.objectId) {
+            contextsCache.contexts.delete(key)
+          }
         }
       }
+
+      res.push(...(await removeContextNotifications(control, [tx.objectId as Ref<DocNotifyContext>])))
     }
 
-    return await removeContextNotifications(control, [tx.objectId as Ref<DocNotifyContext>])
+    res.push(...(await removeCollaboratorDoc(tx, control)))
   }
-
-  const txes = await removeCollaboratorDoc(tx, control)
-
-  res.push(...txes)
   return res
 }
 

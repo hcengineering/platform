@@ -16,6 +16,7 @@
 
 import { type Builder, Mixin, Model } from '@hcengineering/model'
 
+import contact from '@hcengineering/contact'
 import core, { type Ref } from '@hcengineering/core'
 import { TClass, TDoc } from '@hcengineering/model-core'
 import { TNotificationType } from '@hcengineering/model-notification'
@@ -33,7 +34,6 @@ import serverNotification, {
   type TypeMatch,
   type TypeMatchFunc
 } from '@hcengineering/server-notification'
-import contact from '@hcengineering/contact'
 
 export { serverNotificationId } from '@hcengineering/server-notification'
 
@@ -89,7 +89,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverNotification.trigger.OnDocRemove
+    trigger: serverNotification.trigger.OnDocRemove,
+    arrays: true
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

@@ -141,6 +141,9 @@ export type TxMiddlewareResult = TxResult
 export interface DBAdapterManager {
   getAdapter: (domain: Domain, requireExists: boolean) => DbAdapter
 
+  getAdapterName: (domain: Domain) => string
+  getAdapterByName: (name: string, requireExists: boolean) => DbAdapter
+
   getDefaultAdapter: () => DbAdapter
 
   close: () => Promise<void>

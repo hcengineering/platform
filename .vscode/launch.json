@@ -55,7 +55,8 @@
         // "VERSION": "0.6.289",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
-        "AI_BOT_URL": "http://localhost:4010"
+        "AI_BOT_URL": "http://localhost:4010",
+        "STATS_URL": "http://host.docker.internal:4900",
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",

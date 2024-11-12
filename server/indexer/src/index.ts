@@ -18,7 +18,6 @@ import type { ContentTextAdapterConfiguration, FullTextAdapterFactory } from '@h
 export * from './fulltext'
 export * from './indexer'
 export * from './rekoni'
-export * from './ydoc'
 
 export interface FulltextDBConfiguration {
   fulltextAdapter: {

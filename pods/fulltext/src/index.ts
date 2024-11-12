@@ -20,7 +20,7 @@ import { initStatisticsContext, type StorageConfiguration } from '@hcengineering
 import { join } from 'path'
 
 import { createElasticAdapter } from '@hcengineering/elastic'
-import { createRekoniAdapter, createYDocAdapter, type FulltextDBConfiguration } from '@hcengineering/server-indexer'
+import { createRekoniAdapter, type FulltextDBConfiguration } from '@hcengineering/server-indexer'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { readFileSync } from 'fs'
 import { startIndexer } from './server'
@@ -80,11 +80,6 @@ const config: FulltextDBConfiguration = {
       factory: createRekoniAdapter,
       contentType: '*',
       url: rekoniUrl
-    },
-    YDoc: {
-      factory: createYDocAdapter,
-      contentType: 'application/ydoc',
-      url: ''
     }
   },
   defaultContentAdapter: 'Rekoni'

@@ -23,6 +23,8 @@ fi
 # Create user record in accounts
 ./tool.sh create-account user1 -f John -l Appleseed -p 1234
 ./tool.sh create-account user2 -f Kainin -l Dirak -p 1234
+./tool.sh create-account super -f Super -l User -p 1234
+./tool.sh set-user-admin super true
 ./tool.sh assign-workspace user1 sanity-ws
 ./tool.sh assign-workspace user2 sanity-ws
 ./tool.sh set-user-role user1 sanity-ws OWNER
