@@ -2155,6 +2155,11 @@
       "packageName": "@hcengineering/cloud-datalake",
       "projectFolder": "workers/datalake",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/scripts",
+      "projectFolder": "common/scripts",
+      "shouldPublish": false
     }
   ]
 }
