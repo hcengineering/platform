@@ -39,9 +39,9 @@
   export let createComponent: AnyComponent | undefined = undefined
   export let createComponentProps: Record<string, any> = {}
   export let mainComponentLabel: IntlString
-  export let mainComponentIcon: Asset
+  export let mainComponentIcon: Asset | undefined = undefined
   export let query: DocumentQuery<Doc> = {}
-  export let syncQueryAndLocation
+  export let syncWithLocationQuery: boolean = true
   export let mainComponent: AnyComponent | AnySvelteComponent
   export let mainComponentProps = {}
 
@@ -51,7 +51,7 @@
   $: spaceQuery = space !== undefined ? { space } : {}
   $: resultQuery = mergeQueries(query, mergeQueries(spaceQuery, locationQuery)) ?? {}
 
-  if (syncQueryAndLocation) {
+  if (syncWithLocationQuery) {
     locationQuery = getLocation()?.query as any
     onDestroy(
       resolvedLocationStore.subscribe((newLocation) => {

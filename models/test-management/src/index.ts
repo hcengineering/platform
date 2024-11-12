@@ -105,7 +105,7 @@ function defineApplication (
                     allObjectsLabel: testManagement.string.AllTestCases,
                     allObjectsIcon: testManagement.icon.TestSuites
                   },
-                  syncQueryAndLocation: testManagement.function.SyncQueryAndLocation
+                  syncWithLocationQuery: true
                 }
               }
               /* TODO: UBERF-8584

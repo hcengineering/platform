@@ -30,7 +30,7 @@ import EditTestRun from './components/test-run/EditTestRun.svelte'
 import TestRunPresenter from './components/test-run/TestRunPresenter.svelte'
 
 import { CreateChildTestSuiteAction, EditTestSuiteAction } from './utils'
-import { resolveLocation, getTestSuiteLink, syncQueryAndLocation } from './navigation'
+import { resolveLocation, getTestSuiteLink } from './navigation'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -50,8 +50,7 @@ export default async (): Promise<Resources> => ({
     TestSuiteRefPresenter
   },
   function: {
-    GetTestSuiteLink: getTestSuiteLink,
-    SyncQueryAndLocation: syncQueryAndLocation
+    GetTestSuiteLink: getTestSuiteLink
   },
   resolver: {
     Location: resolveLocation

@@ -30,7 +30,7 @@
     WithLookup
   } from '@hcengineering/core'
   import view from '@hcengineering/view'
-  import testManagement, { testManagementId, TestProject } from '@hcengineering/test-management'
+  import testManagement, { TestProject } from '@hcengineering/test-management'
   import presentation, { Card, getClient, reduceCalls } from '@hcengineering/presentation'
   import {
     Button,
@@ -182,26 +182,26 @@
       return
     }
 
-    const driveId = generateId<TestProject>()
-    const driveData = getTestProjectData()
+    const projectId = generateId<TestProject>()
+    const projectData = getTestProjectData()
 
     await client.createDoc(
       testManagementRes.class.TestProject,
       core.space.Space,
-      { ...driveData, type: typeId },
-      driveId
+      { ...projectData, type: typeId },
+      projectId
     )
 
     // Create space type's mixin with roles assignments
     await client.createMixin(
-      driveId,
+      projectId,
       testManagementRes.class.TestProject,
       core.space.Space,
       spaceType.targetClass,
       rolesAssignment
     )
-    // Analytics.handleEvent(TestProjectEvents.TestProjectCreated, { id: driveId })
-    close(driveId)
+    // TODO: Analytics.handleEvent(TestProjectEvents.TestProjectCreated, { id: projectId })
+    close(projectId)
   }
 
   function close (id?: Ref<TestProject>): void {

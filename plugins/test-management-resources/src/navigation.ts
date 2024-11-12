@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import testManagement, { testManagementId, type TestSuite, type TestProject } from '@hcengineering/test-management'
-import { type Doc, type DocumentQuery, type Ref } from '@hcengineering/core'
+import { type Doc, type Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
 import view, { type ObjectPanel } from '@hcengineering/view'
@@ -69,21 +69,6 @@ export function getTestSuiteIdFromFragment (fragment: string): Ref<TestSuite> | 
   const props = decodeURIComponent(fragment).split('|')
 
   return props[6] != null ? (props[6] as Ref<TestSuite>) : undefined
-}
-
-export function syncQueryAndLocation (
-  query: DocumentQuery<Doc> | undefined,
-  loc: Location
-): DocumentQuery<Doc> | undefined {
-  const { suite } = loc?.query ?? {}
-  const { suite: skip, ...omittedQuery } = query ?? {}
-  if (suite === undefined) {
-    return omittedQuery
-  }
-  return {
-    ...(omittedQuery ?? {}),
-    suite
-  }
 }
 
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {

@@ -21,7 +21,7 @@
 
   const client = getClient()
 
-  async function newProduct (): Promise<void> {
+  async function newTestCase (): Promise<void> {
     showPopup(CreateTestCase, {}, 'top', async (id) => {
       if (id != null) {
         const doc = await client.findOne(testManagement.class.TestCase, { _id: id })
@@ -40,6 +40,6 @@
     kind={'primary'}
     justify={'left'}
     width="100%"
-    on:click={newProduct}
+    on:click={newTestCase}
   />
 </div>

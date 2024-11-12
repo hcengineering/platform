@@ -39,7 +39,6 @@ export default mergeIds(testManagementId, testManganement, {
     ProjectPresenter: '' as AnyComponent,
     ProjectSpacePresenter: '' as AnyComponent,
     TestSuitePresenter: '' as AnyComponent,
-    NewProductHeader: '' as AnyComponent,
     EditTestSuite: '' as AnyComponent,
     EditTestCase: '' as AnyComponent,
     CreateTestRun: '' as AnyComponent,
