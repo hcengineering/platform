@@ -308,7 +308,7 @@ class TSessionManager implements SessionManager {
   ): Promise<
     | { session: Session, context: MeasureContext, workspaceId: string }
     | { upgrade: true, upgradeInfo?: WorkspaceLoginInfo['upgrade'] }
-    | { error: any, terminate?: boolean }
+    | { error: any, terminate?: boolean, archived?: boolean }
     > {
     const wsString = toWorkspaceString(token.workspace)
 
@@ -323,6 +323,11 @@ class TSessionManager implements SessionManager {
     if (workspaceInfo === undefined) {
       this.updateConnectErrorInfo(token)
       return { upgrade: true }
+    }
+
+    if (workspaceInfo.mode === 'archived') {
+      // No access to disabled workspaces for regular users
+      return { error: new Error('Workspace is archived'), terminate: true, archived: true }
     }
 
     if (workspaceInfo.disabled === true && token.email !== systemAccountEmail && token.extra?.admin !== 'true') {

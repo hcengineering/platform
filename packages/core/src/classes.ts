@@ -642,7 +642,14 @@ export interface DomainIndexConfiguration extends Doc {
   skip?: string[]
 }
 
-export type WorkspaceMode = 'pending-creation' | 'creating' | 'upgrading' | 'pending-deletion' | 'deleting' | 'active'
+export type WorkspaceMode =
+  | 'pending-creation'
+  | 'creating'
+  | 'upgrading'
+  | 'pending-deletion'
+  | 'deleting'
+  | 'active'
+  | 'archived'
 
 export interface BackupStatus {
   dataSize: number
@@ -664,9 +671,7 @@ export interface BaseWorkspaceInfo {
   workspaceName?: string // An displayed workspace name
   createdOn: number
   lastVisit: number
-
   createdBy: string
-
   mode: WorkspaceMode
   progress?: number // Some progress
 

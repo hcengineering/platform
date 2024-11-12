@@ -342,6 +342,28 @@
       "protocol": "inspector"
     },
     {
+      "name": "Debug archive tool",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts", "archive-workspaces-mongo", "--timeout", "7", "--remove"],
+      "env": {
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "STORAGE": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        "WORKSPACE_STORAGE": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        "MONGO_URL": "mongodb://localhost:27017",
+        "DB_URL": "mongodb://localhost:27017",
+        "SERVER_SECRET": "secret",
+        "SECRET": "secret",
+        "BUCKET_NAME":"backups"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "showAsyncStacks": true,
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/dev/tool",
+      "protocol": "inspector"
+    },
+    {
       "name": "Debug Github integration",
       "type": "node",
       "request": "launch",
