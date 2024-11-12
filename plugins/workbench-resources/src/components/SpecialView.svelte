@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { onDestroy } from 'svelte'
   import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString, Asset, getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
@@ -27,7 +28,10 @@
     SearchInput,
     showPopup,
     Header,
-    Breadcrumb
+    Breadcrumb,
+    Location,
+    getLocation,
+    resolvedLocationStore
   } from '@hcengineering/ui'
   import {
     ViewOptionModel,
@@ -70,7 +74,8 @@
   $: _baseQuery = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}) }
   $: query = { ..._baseQuery }
   $: searchQuery = search === '' ? query : { ...query, $search: search }
-  $: resultQuery = searchQuery
+  $: locationQuery = {}
+  $: resultQuery = {...locationQuery, ...searchQuery}
 
   $: void updateQuery(_baseQuery, viewOptions, viewlet)
 
@@ -104,6 +109,15 @@
       }
     }
     return result
+  }
+
+  if (navigationModel?.syncQueryAndLocation) {
+    locationQuery = getLocation()?.query ?? {}
+    onDestroy(resolvedLocationStore.subscribe(handleLocationChanged))
+
+    function handleLocationChanged (loc: Location) {
+      locationQuery = loc?.query ?? {}
+    }
   }
 
   function showCreateDialog (): void {
