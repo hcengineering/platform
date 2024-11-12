@@ -42,14 +42,10 @@ function defineDefaultProject (builder: Builder): void {
     testManagement.descriptors.ProjectType
   )
 
-  builder.createDoc(
-    core.class.SpaceType,
-    core.space.Model,
-    {
-      name: 'Default project type',
-      descriptor: testManagement.descriptors.ProjectType,
-      roles: 0,
-      targetClass: testManagement.mixin.DefaultProjectTypeData
-    }
-  )
+  builder.createDoc(core.class.SpaceType, core.space.Model, {
+    name: 'Default project type',
+    descriptor: testManagement.descriptors.ProjectType,
+    roles: 0,
+    targetClass: testManagement.mixin.DefaultProjectTypeData
+  })
 }

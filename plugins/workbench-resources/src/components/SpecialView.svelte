@@ -28,10 +28,7 @@
     SearchInput,
     showPopup,
     Header,
-    Breadcrumb,
-    Location,
-    getLocation,
-    resolvedLocationStore
+    Breadcrumb
   } from '@hcengineering/ui'
   import {
     ViewOptionModel,
@@ -74,8 +71,7 @@
   $: _baseQuery = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}) }
   $: query = { ..._baseQuery }
   $: searchQuery = search === '' ? query : { ...query, $search: search }
-  $: locationQuery = {}
-  $: resultQuery = {...locationQuery, ...searchQuery}
+  $: resultQuery = searchQuery
 
   $: void updateQuery(_baseQuery, viewOptions, viewlet)
 
@@ -109,15 +105,6 @@
       }
     }
     return result
-  }
-
-  if (navigationModel?.syncQueryAndLocation) {
-    locationQuery = getLocation()?.query ?? {}
-    onDestroy(resolvedLocationStore.subscribe(handleLocationChanged))
-
-    function handleLocationChanged (loc: Location) {
-      locationQuery = loc?.query ?? {}
-    }
   }
 
   function showCreateDialog (): void {
@@ -204,24 +191,27 @@
       }}
     />
   {:else}
-    <ComponentNavigator mainComponentLabel={label} mainComponentIcon={icon} {space} {...navigationModel}>
-      <Component
-        is={viewlet.$lookup.descriptor.component}
-        props={{
-          _class,
-          space,
-          options: viewlet.options,
-          config: preference?.config ?? viewlet.config,
-          viewlet,
-          viewOptions,
-          viewOptionsConfig: viewlet.viewOptions?.other,
-          createItemDialog: createComponent,
-          createItemLabel: createLabel,
-          query: resultQuery,
-          totalQuery: query,
-          ...viewlet.props
-        }}
-      />
-    </ComponentNavigator>
+    <ComponentNavigator
+      query={resultQuery}
+      mainComponentLabel={label}
+      mainComponentIcon={icon}
+      {space}
+      mainComponent={viewlet.$lookup.descriptor.component}
+      mainComponentProps={{
+        _class,
+        space,
+        options: viewlet.options,
+        config: preference?.config ?? viewlet.config,
+        viewlet,
+        viewOptions,
+        viewOptionsConfig: viewlet.viewOptions?.other,
+        createItemDialog: createComponent,
+        createItemLabel: createLabel,
+        query: resultQuery,
+        totalQuery: query,
+        ...viewlet.props
+      }}
+      {...navigationModel}
+    />
   {/if}
 {/if}

@@ -76,11 +76,8 @@
   async function handleAllItemsSelected (): Promise<void> {
     selected = undefined
     visibleItem = undefined
-    const folder = selected && foldersState.folderById.get(selected)
-    if (folder && getFolderLink) {
-      const getFolderLinkFunction = await getResource(getFolderLink)
-      navigate(getFolderLinkFunction(undefined))
-    }
+    const getFolderLinkFunction = await getResource(getFolderLink)
+    navigate(getFolderLinkFunction(undefined))
   }
 
   async function getFolderActions (obj: Doc): Promise<Action[]> {

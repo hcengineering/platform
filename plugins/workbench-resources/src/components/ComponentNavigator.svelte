@@ -14,8 +14,21 @@
 -->
 
 <script lang="ts">
-  import { AnyComponent, Button, Breadcrumb, Component, IconAdd, Header, Separator, showPopup } from '@hcengineering/ui'
-  import { Ref, Space } from '@hcengineering/core'
+  import { onDestroy } from 'svelte'
+  import {
+    AnyComponent,
+    AnySvelteComponent,
+    Button,
+    Breadcrumb,
+    Component,
+    IconAdd,
+    Header,
+    Separator,
+    showPopup,
+    getLocation,
+    resolvedLocationStore
+  } from '@hcengineering/ui'
+  import { Doc, DocumentQuery, Ref, Space, mergeQueries } from '@hcengineering/core'
   import { IntlString, Asset } from '@hcengineering/platform'
 
   export let space: Ref<Space> | undefined = undefined
@@ -27,6 +40,23 @@
   export let createComponentProps: Record<string, any> = {}
   export let mainComponentLabel: IntlString
   export let mainComponentIcon: Asset
+  export let query: DocumentQuery<Doc> = {}
+  export let syncQueryAndLocation
+  export let mainComponent: AnyComponent | AnySvelteComponent
+  export let mainComponentProps = {}
+
+  let locationQuery: DocumentQuery<Doc> = {}
+  let resultQuery: DocumentQuery<Doc> = {}
+  $: resultQuery = mergeQueries(query, locationQuery) ?? {}
+
+  if (syncQueryAndLocation) {
+    locationQuery = getLocation()?.query
+    onDestroy(resolvedLocationStore.subscribe(handleLocationChanged))
+
+    function handleLocationChanged (loc: Location) {
+      locationQuery = loc?.query ?? {}
+    }
+  }
 
   function showCreateDialog (): void {
     if (createComponent === undefined) return
@@ -38,7 +68,7 @@
   <div class="hulyComponent-content__container columns">
     <div class="hulyComponent-content__column">
       <Header adaptive={'disabled'}>
-        <Breadcrumb icon={navigationComponentIcon} label={navigationComponentLabel} size={'large'} isCurrent={true} />
+        <Breadcrumb icon={navigationComponentIcon} label={navigationComponentLabel} size={'large'} />
         <svelte:fragment slot="actions">
           {#if createComponent}
             <Button
@@ -56,9 +86,16 @@
     <Separator name={'navigationSection'} index={0} color={'var(--theme-divider-color)'} />
     <div class="hulyComponent-content__column">
       <Header adaptive={'disabled'}>
-        <Breadcrumb icon={mainComponentIcon} label={mainComponentLabel} size={'large'} isCurrent />
+        <Breadcrumb icon={mainComponentIcon} label={mainComponentLabel} size={'large'} />
       </Header>
-      <slot />
+      <Component
+        is={mainComponent}
+        props={{
+          ...(mainComponentProps ?? {}),
+          query: resultQuery,
+          totalQuery: resultQuery
+        }}
+      />
     </div>
   </div>
 </div>
