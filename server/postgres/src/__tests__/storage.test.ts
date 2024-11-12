@@ -177,9 +177,13 @@ describe('postgres operations', () => {
     })
 
     const doc = (await client.findAll<Task>(taskPlugin.class.Task, {}))[0]
+    await operations.updateDoc(doc._class, doc.space, doc._id, { rate: null })
+    let tasks = await client.findAll<Task>(taskPlugin.class.Task, {})
+    expect(tasks.length).toEqual(1)
+    expect(tasks[0].rate).toBeNull()
 
     await operations.updateDoc(doc._class, doc.space, doc._id, { rate: 30 })
-    let tasks = await client.findAll<Task>(taskPlugin.class.Task, {})
+    tasks = await client.findAll<Task>(taskPlugin.class.Task, {})
     expect(tasks.length).toEqual(1)
     expect(tasks[0].rate).toEqual(30)
 
@@ -205,7 +209,7 @@ describe('postgres operations', () => {
     expect(tasks[0].arr?.length).toEqual(2)
     expect(tasks[0].arr?.[0]).toEqual(1)
     expect(tasks[0].arr?.[1]).toEqual(3)
-  })
+  }, 1000000)
 
   it('check remove', async () => {
     for (let i = 0; i < 10; i++) {

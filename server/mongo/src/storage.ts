@@ -1052,21 +1052,20 @@ abstract class MongoAdapterBase implements DbAdapter {
     return {
       next: async () => {
         if (iterator === undefined) {
-          if (recheck === true) {
-            await coll.updateMany({ '%hash%': { $ne: null } }, { $set: { '%hash%': null } })
-          }
           iterator = coll.find(
-            { '%hash%': { $nin: ['', null] } },
-            {
-              projection: {
-                '%hash%': 1,
-                _id: 1
-              }
-            }
+            recheck === true ? {} : { '%hash%': { $nin: ['', null] } },
+            recheck === true
+              ? {}
+              : {
+                  projection: {
+                    '%hash%': 1,
+                    _id: 1
+                  }
+                }
           )
         }
         let d = await ctx.with('next', { mode }, async () => await iterator.next())
-        if (d == null && mode === 'hashed') {
+        if (d == null && mode === 'hashed' && recheck !== true) {
           mode = 'non-hashed'
           await iterator.close()
           iterator = coll.find({ '%hash%': { $in: ['', null] } })
@@ -1074,10 +1073,10 @@ abstract class MongoAdapterBase implements DbAdapter {
         }
         const result: DocInfo[] = []
         if (d != null) {
-          result.push(this.toDocInfo(d, bulkUpdate))
+          result.push(this.toDocInfo(d, bulkUpdate, recheck))
         }
         if (iterator.bufferedCount() > 0) {
-          result.push(...iterator.readBufferedDocuments().map((it) => this.toDocInfo(it, bulkUpdate)))
+          result.push(...iterator.readBufferedDocuments().map((it) => this.toDocInfo(it, bulkUpdate, recheck)))
         }
         await ctx.with('flush', {}, async () => {
           await flush()
@@ -1096,13 +1095,14 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   }
 
-  private toDocInfo (d: Doc, bulkUpdate: Map<Ref<Doc>, string>): DocInfo {
+  private toDocInfo (d: Doc, bulkUpdate: Map<Ref<Doc>, string>, recheck?: boolean): DocInfo {
     let digest: string | null = (d as any)['%hash%']
     if ('%hash%' in d) {
       delete d['%hash%']
     }
     const pos = (digest ?? '').indexOf('|')
-    if (digest == null || digest === '') {
+    const oldDigest = digest
+    if (digest == null || digest === '' || recheck === true) {
       let size = estimateDocSize(d)
 
       if (this.options?.calculateHash !== undefined) {
@@ -1112,8 +1112,11 @@ abstract class MongoAdapterBase implements DbAdapter {
         updateHashForDoc(hash, d)
         digest = hash.digest('base64')
       }
+      const newDigest = `${digest}|${size.toString(16)}`
 
-      bulkUpdate.set(d._id, `${digest}|${size.toString(16)}`)
+      if (recheck !== true || oldDigest !== newDigest) {
+        bulkUpdate.set(d._id, `${digest}|${size.toString(16)}`)
+      }
       return {
         id: d._id,
         hash: digest,

@@ -14,7 +14,7 @@
     "build": "compile",
     "build:watch": "compile",
     "_phase:bundle": "rushx bundle",
-    "bundle": "mkdir -p bundle && node esbuild.js",
+    "bundle": "node esbuild.js",
     "run-local": "cross-env SERVER_SECRET=secret MONGO_URL=mongodb://localhost:27017 COLLABORATOR_URL=ws://localhost:3078 STORAGE_CONFIG=minio|minio?accessKey=minioadmin&secretKey=minioadmin node --nolazy -r ts-node/register ./src/__start.ts",
     "run": "cross-env node -r ts-node/register --max-old-space-size=8000 ./src/__start.ts",
     "format": "format src",
