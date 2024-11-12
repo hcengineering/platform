@@ -2,7 +2,6 @@
   "extends": "./node_modules/@hcengineering/platform-rig/profiles/model/tsconfig.json",
 
   "compilerOptions": {
-    "experimentalDecorators": true,
     "rootDir": "./src",
     "outDir": "./lib",
     "declarationDir": "./types",

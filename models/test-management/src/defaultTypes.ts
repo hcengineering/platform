@@ -46,7 +46,7 @@ function defineDefaultProject (builder: Builder): void {
     core.class.SpaceType,
     core.space.Model,
     {
-      name: 'Default drive type',
+      name: 'Default project type',
       descriptor: testManagement.descriptors.ProjectType,
       roles: 0,
       targetClass: testManagement.mixin.DefaultProjectTypeData

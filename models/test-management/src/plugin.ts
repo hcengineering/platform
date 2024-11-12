@@ -15,7 +15,7 @@
 
 import { testManagementId } from '@hcengineering/test-management'
 import testManganement from '@hcengineering/test-management-resources/src/plugin'
-import type { Doc, Ref, Role } from '@hcengineering/core'
+import type { Doc, Ref } from '@hcengineering/core'
 import { mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import type { Action, ActionCategory, ViewAction } from '@hcengineering/view'

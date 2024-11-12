@@ -249,7 +249,6 @@ function defineSpaceType (builder: Builder): void {
     },
     testManagement.spaceType.DefaultProject
   )
-
 }
 
 function defineTestSuite (builder: Builder): void {
