@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { TestCase, TestProject, TestSuite, TestCaseStatus } from '@hcengineering/test-management'
@@ -20,10 +21,9 @@
   import { ObjectBox } from '@hcengineering/view-resources'
   import { Card, SpaceSelector, getClient, updateMarkup } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
-  import { Button, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
-  import StatusEditor from './StatusEditor.svelte'
-  import { createEventDispatcher } from 'svelte'
+  import { Button, createFocusManager, EditBox, FocusHandler, IconAttachment, getLocation } from '@hcengineering/ui'
 
+  import StatusEditor from './StatusEditor.svelte'
   import AssigneeEditor from './AssigneeEditor.svelte'
   import ProjectPresenter from '../project/ProjectSpacePresenter.svelte'
   import testManagement from '../../plugin'
@@ -38,6 +38,7 @@
 
   export let testSuiteId: Ref<TestSuite> | undefined
 
+  testSuiteId = testSuiteId ?? (getLocation()?.query?.suite as Ref<TestSuite>)
   const id: Ref<TestCase> = generateId()
 
   const object: Data<TestCase> = {
