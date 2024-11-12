@@ -103,19 +103,6 @@ function defineApplication (
             createComponent: testManagement.component.CreateProject,
             icon: testManagement.icon.Home,
             specials: [
-              /* {
-                id: opt.testSuitesId,
-                label: testManagement.string.TestSuites,
-                icon: testManagement.icon.TestSuites,
-                component: workbench.component.SpecialView,
-                componentProps: {
-                  _class: testManagement.class.TestSuite,
-                  icon: testManagement.icon.TestSuites,
-                  title: testManagement.string.TestSuites,
-                  createLabel: testManagement.string.CreateTestSuite,
-                  createComponent: testManagement.component.CreateTestSuite
-                }
-              }, */
               {
                 id: 'library',
                 label: testManagement.string.TestCases,
@@ -196,8 +183,6 @@ export function createModel (builder: Builder): void {
   defineTestCase(builder)
   defineTestRun(builder)
 
-  // defineViewlets(builder)
-
   const testCasesId = 'testCases'
   const allTestCasesId = 'allTestCases'
   const testSuitesId = 'testSuites'
@@ -205,99 +190,7 @@ export function createModel (builder: Builder): void {
 
   definePresenters(builder)
 
-  /*   builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ObjectTitle, {
-    titleProvider: testManagement.function.TestCaseTitleProvider
-  }) */
-
-  // defineSortAndGrouping(builder)
-
-  // builder.mixin(testManagement.class.TestCase, core.class.Class, notification.mixin.ClassCollaborators, {
-  //  fields: ['createdBy', 'assignee']
-  // })
-
-  // builder.mixin(testManagement.class.TestCase, core.class.Class, setting.mixin.Editable, {
-  //  value: true
-  // })
-
-  /*  builder.createDoc(
-    activity.class.DocUpdateMessageViewlet,
-    core.space.Model,
-    {
-      objectClass: testManagement.class.TestCase,
-      action: 'update',
-      icon: testManagement.icon.TestCase,
-      config: {
-        status: {
-          iconPresenter: testManagement.component.TestCaseStatusIcon
-        },
-        priority: {
-          iconPresenter: testManagement.component.PriorityIconPresenter
-        },
-        estimation: {
-          icon: testManagement.icon.Estimation
-        }
-      }
-    },
-    testManagement.ids.TestCaseUpdatedActivityViewlet
-  )
-
-  builder.createDoc(
-    activity.class.DocUpdateMessageViewlet,
-    core.space.Model,
-    {
-      objectClass: testManagement.class.TestCase,
-      action: 'create',
-      icon: testManagement.icon.TestCase,
-      valueAttr: 'title'
-    },
-    testManagement.ids.TestCaseUpdatedActivityViewlet
-  ) */
-
-  /*  builder.createDoc(
-    activity.class.DocUpdateMessageViewlet,
-    core.space.Model,
-    {
-      objectClass: testManagement.class.TestCase,
-      action: 'remove',
-      icon: testManagement.icon.TestCase,
-      valueAttr: 'title'
-    },
-    testManagement.ids.TestCaseRemovedViewlet
-  ) */
-
   defineApplication(builder, { allTestCasesId, testCasesId, testSuitesId, testRunsId })
-
-  // defineActions(builder, issuesId, componentsId, myIssuesId)
-
-  // defineFilters(builder)
-
-  /*   builder.createDoc(
-    presentation.class.ObjectSearchCategory,
-    core.space.Model,
-    {
-      icon: testManagement.icon.TestManagementApplication,
-      label: testManagement.string.SearchIssue,
-      title: testManagement.string.TestCases,
-      query: testManagement.completion.TestCaseQuery,
-      context: ['search', 'mention', 'spotlight'],
-      classToSearch: testManagement.class.TestCase,
-      priority: 300
-    },
-    testManagement.completion.TestCaseCategory
-  ) */
-
-  // defineNotifications(builder)
-
-  /*   builder.createDoc(
-    chunter.class.ChatMessageViewlet,
-    core.space.Model,
-    {
-      messageClass: chunter.class.ChatMessage,
-      objectClass: testManagement.class.TestCase,
-      label: chunter.string.LeftComment
-    },
-    testManagement.ids.TestCaseChatMessageViewlet
-  ) */
 
   builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ObjectIcon, {
     component: testManagement.component.TestCaseStatusPresenter
@@ -328,7 +221,6 @@ export function createModel (builder: Builder): void {
 }
 
 function defineSpaceType (builder: Builder): void {
-  // builder.createModel(TClassicProjectTypeData)
   builder.createDoc(
     core.class.SpaceTypeDescriptor,
     core.space.Model,
@@ -358,18 +250,6 @@ function defineSpaceType (builder: Builder): void {
     testManagement.spaceType.DefaultProject
   )
 
-  /* builder.createDoc(
-    core.class.Doc,
-    core.space.Model,
-    {
-      baseClass: testManagement.class.TestCase,
-      allowCreate: true,
-      description: testManagement.string.TestCase,
-      icon: testManagement.icon.TestCase,
-      name: testManagement.string.TestCase
-    },
-    testManagement.descriptors.TestCase
-  ) */
 }
 
 function defineTestSuite (builder: Builder): void {
@@ -379,10 +259,6 @@ function defineTestSuite (builder: Builder): void {
     ofClass: testManagement.class.TestSuite,
     components: { input: chunter.component.ChatMessageInput }
   })
-
-  // builder.mixin(products.class.Product, core.class.Class, view.mixin.ObjectIdentifier, {
-  //  provider: products.function.ProductIdentifierProvider
-  // })
 
   builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.ObjectEditor, {
     editor: testManagement.component.EditTestSuite
@@ -396,10 +272,6 @@ function defineTestSuite (builder: Builder): void {
     presenter: testManagement.component.TestSuitePresenter
   })
 
-  // builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.SpacePresenter, {
-  //  presenter: documents.component.DocumentSpacePresenter
-  // })
-
   builder.createDoc(
     view.class.Viewlet,
     core.space.Model,
@@ -408,8 +280,6 @@ function defineTestSuite (builder: Builder): void {
       descriptor: view.viewlet.Table,
       config: ['', 'description'],
       configOptions: {
-        // hiddenKeys: ['name'],
-        // sortable: true,
         strict: true
       }
     },
@@ -445,26 +315,6 @@ function defineTestSuite (builder: Builder): void {
     },
     testManagement.action.CreateChildTestSuite
   )
-
-  /*
-    createAction(
-      builder,
-      {
-        action: drive.actionImpl.RenameFolder,
-        label: drive.string.Rename,
-        icon: view.icon.Edit,
-        category: drive.category.Drive,
-        input: 'none',
-        target: drive.class.Folder,
-        context: {
-          mode: ['context', 'browser'],
-          application: drive.app.Drive,
-          group: 'edit'
-        },
-        visibilityTester: drive.function.CanRenameFolder
-      },
-      drive.action.RenameFolder
-    ) */
 }
 
 function defineTestCase (builder: Builder): void {
@@ -495,10 +345,6 @@ function defineTestCase (builder: Builder): void {
     presenter: testManagement.component.TestSuiteRefPresenter
   })
 
-  // builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.SpacePresenter, {
-  //  presenter: documents.component.DocumentSpacePresenter
-  // })
-
   builder.createDoc(
     view.class.Viewlet,
     core.space.Model,
@@ -507,8 +353,6 @@ function defineTestCase (builder: Builder): void {
       descriptor: view.viewlet.Table,
       config: ['', 'suite', 'status', 'assignee'],
       configOptions: {
-        // hiddenKeys: ['name'],
-        // sortable: true,
         strict: true
       }
     },
@@ -606,8 +450,6 @@ function defineTestRun (builder: Builder): void {
       descriptor: view.viewlet.Table,
       config: [''],
       configOptions: {
-        // hiddenKeys: ['name'],
-        // sortable: true,
         strict: true
       }
     },

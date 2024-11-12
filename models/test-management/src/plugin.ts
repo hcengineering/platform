@@ -46,11 +46,5 @@ export default mergeIds(testManagementId, testManganement, {
     TestRunPresenter: '' as AnyComponent,
     EditTestRun: '' as AnyComponent,
     TestSuiteRefPresenter: '' as AnyComponent
-  },
-  function: {},
-  role: {
-    QARA: '' as Ref<Role>,
-    Manager: '' as Ref<Role>,
-    QualifiedUser: '' as Ref<Role>
   }
 })

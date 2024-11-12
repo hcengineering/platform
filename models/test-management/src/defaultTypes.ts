@@ -51,6 +51,5 @@ function defineDefaultProject (builder: Builder): void {
       roles: 0,
       targetClass: testManagement.mixin.DefaultProjectTypeData
     }
-    // testManagement.spaceType.DefaultProject
   )
 }
