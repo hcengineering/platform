@@ -6,8 +6,8 @@ autoJoin: false
 defaultAssignee: John Doe
 defaultIssueStatus: Backlog
 owners:
-    - John Doe
+    - john.doe@example.com
 members:
-    - John Doe
-    - Joe Shmoe
+    - john.doe@example.com
+    - joe.shmoe@example.com
 description: This is my first project in Huly! 🎉

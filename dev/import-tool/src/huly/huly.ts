@@ -422,8 +422,8 @@ export class HulyImporter {
       defaultIssueStatus: projectHeader.defaultIssueStatus !== undefined
         ? { name: projectHeader.defaultIssueStatus }
         : undefined,
-      owners: projectHeader.owners?.map(name => ({ name, email: '' })),
-      members: projectHeader.members?.map(name => ({ name, email: '' }))
+      owners: projectHeader.owners?.map(email => ({ name: '', email })),
+      members: projectHeader.members?.map(email => ({ name: '', email }))
     }
   }
 
@@ -437,8 +437,8 @@ export class HulyImporter {
       name: spaceHeader.title ?? name,
       private: spaceHeader.private ?? false,
       autoJoin: spaceHeader.autoJoin ?? true,
-      owners: spaceHeader.owners?.map(name => ({ name, email: '' })),
-      members: spaceHeader.members?.map(name => ({ name, email: '' })),
+      owners: spaceHeader.owners?.map(email => ({ name: '', email })),
+      members: spaceHeader.members?.map(email => ({ name: '', email })),
       docs: await this.processDocuments(spacePath)
     }
   }

@@ -15,7 +15,7 @@
 import attachment, { type Attachment } from '@hcengineering/attachment'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import { yDocToBuffer } from '@hcengineering/collaboration'
-import { type Person } from '@hcengineering/contact'
+import contact, { type Person } from '@hcengineering/contact'
 import core, {
   type Account,
   type AttachedData,
@@ -157,7 +157,6 @@ class NoopMarkdownPreprocessor implements MarkdownPreprocessor {
 }
 
 export class WorkspaceImporter {
-  private readonly personsByName = new Map<string, Ref<Person>>()
   private readonly issueStatusByName = new Map<string, Ref<IssueStatus>>()
   private readonly projectTypeByName = new Map<string, Ref<ProjectType>>()
 
@@ -169,20 +168,9 @@ export class WorkspaceImporter {
   ) {}
 
   public async performImport (): Promise<void> {
-    await this.importPersons()
     await this.importProjectTypes()
     await this.importSpaces()
     await this.importAttachments()
-  }
-
-  private async importPersons (): Promise<void> {
-    if (this.workspaceData.persons === undefined) return
-
-    for (const person of this.workspaceData.persons) {
-      const personId = generateId<Person>()
-      this.personsByName.set(person.name, personId)
-      // TODO: Implement person creation
-    }
   }
 
   private async importProjectTypes (): Promise<void> {
@@ -284,13 +272,22 @@ export class WorkspaceImporter {
       title: space.name,
       name: space.name,
       private: false,
-      members: [],
-      owners: [],
+      owners: await this.findAccountsIfAny(space.owners),
+      members: await this.findAccountsIfAny(space.members),
       autoJoin: false,
       archived: false
     }
     await this.client.createDoc(document.class.Teamspace, core.space.Space, data, teamspaceId)
     return teamspaceId
+  }
+
+  private async findAccountsIfAny (contacts?: ImportPerson[]): Promise<Ref<Account>[]> {
+    if (contacts === undefined || contacts.length === 0) {
+      return []
+    }
+    const emails = contacts.map((contact) => contact.email)
+    const accounts = await this.client.findAll(contact.class.PersonAccount, { email: { $in: emails } })
+    return accounts.map((account: Account) => account._id)
   }
 
   async createDocument (
@@ -343,7 +340,7 @@ export class WorkspaceImporter {
     project: Project,
     parentsInfo: IssueParentInfo[]
   ): Promise<{ id: Ref<Issue>, identifier: string }> {
-    console.log('Create issue: ', issue.title)
+    console.log('Creating issue: ', issue.title)
     if (issue.title === undefined) {
       console.log('Issue: ', issue)
     }
@@ -382,12 +379,14 @@ export class WorkspaceImporter {
         : tracker.status.Backlog
 
     const identifier = await this.uniqueProjectIdentifier(project.identifier)
+    const members = await this.findAccountsIfAny(project.members)
+    const owners = await this.findAccountsIfAny(project.owners)
     const projectData = {
       name: project.name,
       description: project.description ?? '',
       private: project.private,
-      members: [],
-      owners: [],
+      members,
+      owners,
       archived: false,
       autoJoin: project.autoJoin,
       identifier,

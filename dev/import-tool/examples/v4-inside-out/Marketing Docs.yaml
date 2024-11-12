@@ -1,6 +1,6 @@
 class: document.class.TeamSpace
-members: [John Doe, Joe Shmoe]
-owners: [John Doe]
+members: [john.doe@example.com, joe.shmoe@example.com]
+owners: [john.doe@example.com]
 autoJoin: true
 private: false
 title: Marketing Docs
