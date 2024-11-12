@@ -101,7 +101,7 @@
   }
 </script>
 
-<div>
+<div class="folders-browser">
   <TreeNode
     icon={allObjectsIcon}
     label={allObjectsLabel}
@@ -141,3 +141,10 @@
     </svelte:fragment>
   </TreeNode>
 </div>
+
+<style lang="scss">
+  .folders-browser {
+    display: flex;
+    padding-top: 1rem;
+  }
+</style>

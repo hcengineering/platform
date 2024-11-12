@@ -193,6 +193,8 @@ export interface ParentsNavigationModel {
   navigationComponent: AnyComponent
   navigationComponentLabel: IntlString
   navigationComponentIcon?: Asset
+  mainComponentLabel: IntlString
+  mainComponentIcon?: Asset
   navigationComponentProps?: Record<string, any>
   syncQueryAndLocation?: Resource<
   (query: DocumentQuery<Doc> | undefined, loc: Location) => DocumentQuery<Doc> | undefined

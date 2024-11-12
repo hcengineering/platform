@@ -193,8 +193,6 @@
   {:else}
     <ComponentNavigator
       query={resultQuery}
-      mainComponentLabel={label}
-      mainComponentIcon={icon}
       {space}
       mainComponent={viewlet.$lookup.descriptor.component}
       mainComponentProps={{

@@ -47,15 +47,17 @@
 
   let locationQuery: DocumentQuery<Doc> = {}
   let resultQuery: DocumentQuery<Doc> = {}
-  $: resultQuery = mergeQueries(query, locationQuery) ?? {}
+  let spaceQuery: DocumentQuery<Doc> = {}
+  $: spaceQuery = space !== undefined ? { space } : {}
+  $: resultQuery = mergeQueries(query, mergeQueries(spaceQuery, locationQuery)) ?? {}
 
   if (syncQueryAndLocation) {
-    locationQuery = getLocation()?.query
-    onDestroy(resolvedLocationStore.subscribe(handleLocationChanged))
-
-    function handleLocationChanged (loc: Location) {
-      locationQuery = loc?.query ?? {}
-    }
+    locationQuery = getLocation()?.query as any
+    onDestroy(
+      resolvedLocationStore.subscribe((newLocation) => {
+        locationQuery = newLocation?.query ?? {}
+      })
+    )
   }
 
   function showCreateDialog (): void {
@@ -64,38 +66,42 @@
   }
 </script>
 
-<div class="hulyComponent">
-  <div class="hulyComponent-content__container columns">
-    <div class="hulyComponent-content__column">
-      <Header adaptive={'disabled'}>
-        <Breadcrumb icon={navigationComponentIcon} label={navigationComponentLabel} size={'large'} />
-        <svelte:fragment slot="actions">
-          {#if createComponent}
-            <Button
-              icon={IconAdd}
-              kind={'icon'}
-              on:click={() => {
-                showCreateDialog()
-              }}
-            />
-          {/if}
-        </svelte:fragment>
-      </Header>
-      <Component is={navigationComponent} props={navigationComponentProps} />
-    </div>
-    <Separator name={'navigationSection'} index={0} color={'var(--theme-divider-color)'} />
-    <div class="hulyComponent-content__column">
-      <Header adaptive={'disabled'}>
-        <Breadcrumb icon={mainComponentIcon} label={mainComponentLabel} size={'large'} />
-      </Header>
-      <Component
-        is={mainComponent}
-        props={{
-          ...(mainComponentProps ?? {}),
-          query: resultQuery,
-          totalQuery: resultQuery
-        }}
-      />
-    </div>
+<div class="hulyComponent-content__container columns">
+  <div class="hulyComponent-content__column">
+    <Header adaptive={'disabled'}>
+      <Breadcrumb icon={navigationComponentIcon} label={navigationComponentLabel} size={'large'} />
+      <svelte:fragment slot="actions">
+        {#if createComponent}
+          <Button
+            icon={IconAdd}
+            kind={'icon'}
+            on:click={() => {
+              showCreateDialog()
+            }}
+          />
+        {/if}
+      </svelte:fragment>
+    </Header>
+    <Component
+      is={navigationComponent}
+      props={{
+        ...navigationComponentProps,
+        query: spaceQuery
+      }}
+    />
+  </div>
+  <Separator name={'navigationSection'} index={0} color={'var(--theme-divider-color)'} />
+  <div class="hulyComponent-content__column">
+    <Header adaptive={'disabled'}>
+      <Breadcrumb icon={mainComponentIcon} label={mainComponentLabel} size={'large'} />
+    </Header>
+    <Component
+      is={mainComponent}
+      props={{
+        ...(mainComponentProps ?? {}),
+        query: resultQuery,
+        totalQuery: resultQuery
+      }}
+    />
   </div>
 </div>

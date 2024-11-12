@@ -60,6 +60,7 @@
     "CreateTestRun": "Create test run",
     "TestRunNamePlaceholder": "Test run name",
     "SelectTestSuites": "Select test suites",
-    "SelectTestCases": "Select test cases"
+    "SelectTestCases": "Select test cases",
+    "TestLibrary": "Test library"
   }
 }

@@ -60,6 +60,7 @@
     "CreateTestRun": "Создать тест план",
     "TestRunNamePlaceholder": "Название тест плана",
     "SelectTestSuites": "Выбрать наборы тестов",
-    "SelectTestCases": "Выьрать тест-кейсы"
+    "SelectTestCases": "Выбрать тест-кейсы",
+    "TestLibrary": "Библиотека тестов"
   }
 }

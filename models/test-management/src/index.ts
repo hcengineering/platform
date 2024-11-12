@@ -16,7 +16,7 @@
 import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import core from '@hcengineering/model-core'
-import { AccountRole, SortingOrder } from '@hcengineering/core'
+import { SortingOrder } from '@hcengineering/core'
 
 import { type Builder } from '@hcengineering/model'
 import view, { createAction } from '@hcengineering/model-view'
@@ -65,35 +65,6 @@ function defineApplication (
       hidden: false,
       locationResolver: testManagement.resolver.Location,
       navigatorModel: {
-        specials: [
-          {
-            id: opt.allTestCasesId,
-            position: 'top',
-            label: testManagement.string.AllTestCases,
-            icon: testManagement.icon.TestCases,
-            component: testManagement.component.TestCases,
-            componentProps: {
-              space: undefined,
-              icon: testManagement.icon.TestCases,
-              title: testManagement.string.AllTestCases,
-              allProjectsTypes: true
-            }
-          },
-          {
-            id: 'all-projects',
-            component: workbench.component.SpecialView,
-            icon: view.icon.List,
-            accessLevel: AccountRole.User,
-            label: testManagement.string.AllProjects,
-            position: 'bottom',
-            spaceClass: testManagement.class.TestProject,
-            componentProps: {
-              _class: testManagement.class.TestProject,
-              icon: view.icon.List,
-              label: testManagement.string.AllProjects
-            }
-          }
-        ],
         spaces: [
           {
             id: 'projects',
@@ -105,13 +76,13 @@ function defineApplication (
             specials: [
               {
                 id: 'library',
-                label: testManagement.string.TestCases,
-                icon: testManagement.icon.TestCases,
+                label: testManagement.string.TestLibrary,
+                icon: testManagement.icon.TestLibrary,
                 component: workbench.component.SpecialView,
                 componentProps: {
                   _class: testManagement.class.TestCase,
-                  icon: testManagement.icon.TestCases,
-                  label: testManagement.string.TestCases,
+                  icon: testManagement.icon.TestLibrary,
+                  label: testManagement.string.TestLibrary,
                   createLabel: testManagement.string.CreateTestCase,
                   createComponent: testManagement.component.CreateTestCase
                 },
@@ -119,6 +90,8 @@ function defineApplication (
                   navigationComponent: view.component.FoldersBrowser,
                   navigationComponentLabel: testManagement.string.TestSuites,
                   navigationComponentIcon: testManagement.icon.TestSuites,
+                  mainComponentLabel: testManagement.string.TestCases,
+                  mainComponentIcon: testManagement.icon.TestCases,
                   createComponent: testManagement.component.CreateTestSuite,
                   navigationComponentProps: {
                     _class: testManagement.class.TestSuite,
@@ -134,7 +107,8 @@ function defineApplication (
                   },
                   syncQueryAndLocation: testManagement.function.SyncQueryAndLocation
                 }
-              },
+              }
+              /* TODO: UBERF-8584
               {
                 id: opt.testRunsId,
                 label: testManagement.string.TestRuns,
@@ -147,7 +121,7 @@ function defineApplication (
                   createLabel: testManagement.string.NewTestRun,
                   createComponent: testManagement.component.CreateTestRun
                 }
-              }
+              } */
             ]
           }
         ]

@@ -31,10 +31,10 @@ loadMetadata(testManagement.icon, {
   TestRuns: `${icons}#testRun`,
   RedCircle: `${icons}#red-circle`,
   Document: `${icons}#document`,
-
   StatusDraft: `${icons}#status-draft`,
   StatusReview: `${icons}#status-review`,
   StatusReviewComments: `${icons}#status-review-comments`,
   StatusApproved: `${icons}#status-approved`,
-  StatusRejected: `${icons}#status-canceled`
+  StatusRejected: `${icons}#status-canceled`,
+  TestLibrary: `${icons}#test-library`
 })

@@ -68,7 +68,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     StatusReviewComments: '' as Asset,
     StatusApproved: '' as Asset,
     StatusRejected: '' as Asset,
-    Document: '' as Asset
+    Document: '' as Asset,
+    TestLibrary: '' as Asset
   },
   class: {
     TestCase: '' as Ref<Class<TestCase>>,
@@ -156,7 +157,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestRunNamePlaceholder: '' as IntlString,
     SelectTestSuites: '' as IntlString,
     SelectTestCases: '' as IntlString,
-    CreateTestRun: '' as IntlString
+    CreateTestRun: '' as IntlString,
+    TestLibrary: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>

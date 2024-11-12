@@ -60,6 +60,7 @@
     "CreateTestRun": "Créer une série de tests",
     "TestRunNamePlaceholder": "Nom de l'exécution du test",
     "SelectTestSuites": "Sélectionnez les suites de tests",
-    "SelectTestCases": "Sélectionnez des cas de test"
+    "SelectTestCases": "Sélectionnez des cas de test",
+    "TestLibrary": "Bibliothèque de tests"
   }
 }

@@ -60,6 +60,7 @@
     "CreateTestRun": "建立測試運行",
     "TestRunNamePlaceholder": "測試運行名稱",
     "SelectTestSuites": "選擇測試套件",
-    "SelectTestCases": "選擇測試用例"
+    "SelectTestCases": "選擇測試用例",
+    "TestLibrary": "測試庫"
   }
 }
