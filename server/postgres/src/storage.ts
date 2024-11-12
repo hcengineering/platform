@@ -304,7 +304,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
       const conn = await this.client.reserve()
       try {
         await this.retryTxn(conn, async (client) => {
-          const res = await client.unsafe(`SELECT * FROM ${translateDomain(domain)} WHERE ${translatedQuery} FOR UPDATE`)
+          const res = await client.unsafe(
+            `SELECT * FROM ${translateDomain(domain)} WHERE ${translatedQuery} FOR UPDATE`
+          )
           const docs = res.map((p) => parseDoc(p as any, domain))
           for (const doc of docs) {
             if (doc === undefined) continue
