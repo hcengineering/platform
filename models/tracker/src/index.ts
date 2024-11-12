@@ -761,7 +761,7 @@ function defineSpaceType (builder: Builder): void {
     task.class.TaskType,
     core.space.Model,
     {
-      parent: tracker.ids.ClassingProjectType,
+      parent: pluginState.spaceType.ClassingProjectType,
       statuses: classicStatuses,
       descriptor: tracker.descriptors.Issue,
       name: 'Issue',
@@ -789,6 +789,6 @@ function defineSpaceType (builder: Builder): void {
       statuses: classicStatuses.map((s) => ({ _id: s, taskType: tracker.taskTypes.Issue })),
       targetClass: tracker.mixin.ClassicProjectTypeData
     },
-    tracker.ids.ClassingProjectType
+    pluginState.spaceType.ClassingProjectType
   )
 }

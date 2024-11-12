@@ -36,6 +36,7 @@ import { Preference } from '@hcengineering/preference'
 import { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
 import { ToDo } from '@hcengineering/time'
 import {
+  ProjectType,
   ProjectTypeDescriptor,
   Task,
   Project as TaskProject,
@@ -385,6 +386,10 @@ const pluginState = plugin(trackerId, {
     NoParent: '' as Ref<Issue>,
     IssueDraft: '',
     IssueDraftChild: ''
+  },
+  spaceType: {
+    ClassingProjectType: '' as Ref<ProjectType>,
+    DefaultProjectType: '' as Ref<ProjectType>
   },
   status: {
     Backlog: '' as Ref<Status>,

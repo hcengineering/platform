@@ -113,7 +113,7 @@ export interface ImportDocument extends ImportDoc {
 export interface ImportProject extends ImportSpace<ImportIssue> {
   class: 'tracker.class.Project'
   identifier: string
-  projectType: ImportProjectType
+  projectType?: ImportProjectType
   defaultAssignee?: ImportPerson
   defaultIssueStatus?: ImportStatus
   description?: string
@@ -371,11 +371,16 @@ export class WorkspaceImporter {
 
   async createProject (project: ImportProject): Promise<Ref<Project>> {
     const projectId = generateId<Project>()
-    const projectType = this.projectTypeByName.get(project.projectType.name)
+
+    const projectType = project.projectType !== undefined
+      ? this.projectTypeByName.get(project.projectType.name)
+      : tracker.spaceType.ClassingProjectType
+
     const defaultIssueStatus =
       project.defaultIssueStatus !== undefined
         ? this.issueStatusByName.get(project.defaultIssueStatus.name)
         : tracker.status.Backlog
+
     const identifier = await this.uniqueProjectIdentifier(project.identifier)
     const projectData = {
       name: project.name,

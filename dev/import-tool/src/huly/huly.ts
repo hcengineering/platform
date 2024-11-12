@@ -402,16 +402,19 @@ export class HulyImporter {
     name: string,
     projectHeader: HulyProjectHeader
   ): Promise<ImportProject> {
-    if (projectHeader.projectType === undefined) {
-      throw new Error(`Project type is not defined for ${name}`)
-    }
+    // if (projectHeader.projectType === undefined) {
+    //   throw new Error(`Project type is not defined for ${name}`)
+    // }
+    const projectType = projectHeader.projectType !== undefined
+      ? this.findProjectType(projectHeader.projectType)
+      : undefined
     return {
       class: projectHeader.class,
       name: projectHeader.title ?? name,
       identifier: projectHeader.identifier ?? name.toLowerCase().replace(/\s+/g, '-'),
       private: projectHeader.private ?? false,
       autoJoin: projectHeader.autoJoin ?? true,
-      projectType: this.findProjectType(projectHeader.projectType),
+      projectType,
       docs: await this.processIssues(spacePath),
       defaultAssignee: projectHeader.defaultAssignee !== undefined
         ? { name: projectHeader.defaultAssignee, email: '' }

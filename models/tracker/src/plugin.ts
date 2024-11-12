@@ -84,9 +84,7 @@ export default mergeIds(trackerId, tracker, {
     IssueChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
     IssueTemplateChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
     ComponentChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
-    MilestoneChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
-    ClassingProjectType: '' as Ref<ProjectType>,
-    DefaultProjectType: '' as Ref<ProjectType>
+    MilestoneChatMessageViewlet: '' as Ref<ChatMessageViewlet>
   },
   completion: {
     IssueQuery: '' as Resource<ObjectSearchFactory>,

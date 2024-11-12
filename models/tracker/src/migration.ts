@@ -39,7 +39,7 @@ import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import { DOMAIN_TASK, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
 import task from '@hcengineering/task'
-import { type IssueStatus, TimeReportDayType, trackerId, type Issue, type Project } from '@hcengineering/tracker'
+import pluginState, { type IssueStatus, TimeReportDayType, trackerId, type Issue, type Project } from '@hcengineering/tracker'
 
 import tracker from './plugin'
 import contact from '@hcengineering/model-contact'
@@ -112,7 +112,7 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
             defaultIssueStatus: state._id,
             defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
             defaultAssignee: undefined,
-            type: tracker.ids.ClassingProjectType
+            type: pluginState.spaceType.ClassingProjectType
           },
           tracker.project.DefaultProject
         )
@@ -168,7 +168,7 @@ async function migrateIdentifiers (client: MigrationClient): Promise<void> {
 }
 
 async function migrateDefaultStatuses (client: MigrationClient, logger: ModelLogger): Promise<void> {
-  const defaultTypeId = tracker.ids.ClassingProjectType
+  const defaultTypeId = pluginState.spaceType.ClassingProjectType
   const typeDescriptor = tracker.descriptors.ProjectType
   const baseClass = tracker.class.Project
   const defaultTaskTypeId = tracker.taskTypes.Issue
@@ -285,7 +285,7 @@ async function migrateStatusesToModel (client: MigrationClient): Promise<void> {
 }
 
 async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void> {
-  const oldSpaceTypeMixin = `${tracker.ids.ClassingProjectType}:type:mixin`
+  const oldSpaceTypeMixin = `${pluginState.spaceType.ClassingProjectType}:type:mixin`
   const newSpaceTypeMixin = tracker.mixin.ClassicProjectTypeData
   const oldTaskTypeMixin = `${tracker.taskTypes.Issue}:type:mixin`
   const newTaskTypeMixin = tracker.mixin.IssueTypeData
