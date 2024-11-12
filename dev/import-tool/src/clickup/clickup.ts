@@ -290,7 +290,8 @@ class ClickupImporter {
       remainingTime,
       comments: comments.concat(attachments).concat(serviceComments),
       subdocs: [],
-      assignee
+      assignee,
+      number: 111  //todo: update for new v4 format
     }
   }
 

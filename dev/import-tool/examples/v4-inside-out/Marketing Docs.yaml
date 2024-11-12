@@ -1,0 +1,7 @@
+class: document.class.TeamSpace
+members: [John Doe, Joe Shmoe]
+owners: [John Doe]
+autoJoin: true
+private: false
+title: Marketing Docs
+description: This is my first teamspace in Huly! 🎉

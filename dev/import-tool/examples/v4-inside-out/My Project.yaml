@@ -1,0 +1,13 @@
+class: tracker.class.Project
+identifier: HULY
+title: My Project
+private: false
+autoJoin: false
+defaultAssignee: John Doe
+defaultIssueStatus: Backlog
+owners:
+    - John Doe
+members:
+    - John Doe
+    - Joe Shmoe
+description: This is my first project in Huly! 🎉

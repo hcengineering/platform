@@ -123,6 +123,7 @@ export interface ImportIssue extends ImportDoc {
   class: 'tracker.class.Issue' // todo: doesn't have meaning here, move to huly.ts
   id?: Ref<Issue>
   status: ImportStatus
+  number: number
   assignee?: Ref<Person>
   estimation?: number
   remainingTime?: number
