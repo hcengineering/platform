@@ -44,7 +44,9 @@
     })
 
   async function change<K extends keyof TestCase> (field: K, value: TestCase[K]) {
-    await client.update(object, { [field]: value })
+    if (object !== undefined) {
+      await client.update(object, { [field]: value })
+    }
   }
 
   let content: HTMLElement
@@ -76,12 +78,12 @@
       placeholder={testManagement.string.NamePlaceholder}
       kind="large-style"
       on:blur={async () => {
-        const trimmedLabel = rawLabel.trim()
+        const trimmedLabel = rawLabel?.trim()
 
-        if (trimmedLabel.length === 0) {
+        if (trimmedLabel?.length === 0) {
           rawLabel = oldLabel
-        } else if (trimmedLabel !== object.name) {
-          await change('name', trimmedLabel)
+        } else if (trimmedLabel !== object?.name) {
+          await change('name', trimmedLabel ?? '')
         }
       }}
     />

@@ -16,7 +16,7 @@
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { TestCase, TestProject, TestSuite, TestCaseStatus } from '@hcengineering/test-management'
-  import core, { fillDefaults, generateId, makeCollaborativeDoc, Ref, TxOperations, DocData } from '@hcengineering/core'
+  import core, { fillDefaults, generateId, makeCollaborativeDoc, Ref, TxOperations, Data } from '@hcengineering/core'
   import { ObjectBox } from '@hcengineering/view-resources'
   import { Card, SpaceSelector, getClient, updateMarkup } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
@@ -27,7 +27,6 @@
   import AssigneeEditor from './AssigneeEditor.svelte'
   import ProjectPresenter from '../project/ProjectSpacePresenter.svelte'
   import testManagement from '../../plugin'
-  // import { Analytics } from '@hcengineering/analytics'
 
   export let onCreate: ((orgId: Ref<TestCase>, client: TxOperations) => Promise<void>) | undefined = undefined
 
@@ -41,7 +40,7 @@
 
   const id: Ref<TestCase> = generateId()
 
-  const object: DocData<TestCase> = {
+  const object: Data<TestCase> = {
     name: '',
     description: makeCollaborativeDoc(id, 'description'),
     status: TestCaseStatus.Draft,
@@ -70,7 +69,6 @@
       await onCreate?.(id, op)
     }
     await op.commit()
-    // Analytics.handleEvent(TestManagementEvents.TestCaseCreated, { id })
     dispatch('close', id)
   }
 

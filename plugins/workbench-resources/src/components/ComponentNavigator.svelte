@@ -20,10 +20,10 @@
 
   export let space: Ref<Space> | undefined = undefined
   export let navigationComponent: AnyComponent
-  export let navigationComponentProps: Record<string, any> | undefined
+  export let navigationComponentProps: Record<string, any> | undefined = undefined
   export let navigationComponentLabel: IntlString
-  export let navigationComponentIcon: Asset
-  export let createComponent: AnyComponent | undefined
+  export let navigationComponentIcon: Asset | undefined = undefined
+  export let createComponent: AnyComponent | undefined = undefined
   export let createComponentProps: Record<string, any> = {}
   export let mainComponentLabel: IntlString
   export let mainComponentIcon: Asset
