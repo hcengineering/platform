@@ -52,8 +52,6 @@ interface HulyIssueHeader {
   priority: string
   estimation: number
   remainingTime: number
-  component: string
-  milestone: string
   comments?: HulyComment[]
 }
 
@@ -73,17 +71,7 @@ interface HulyProjectHeader extends HulySpaceHeader {
   projectType?: string
   defaultAssignee?: string
   defaultIssueStatus?: string
-  components?: Array<{
-    title: string
-    lead: string
-    description: string
-  }>
-  milestones?: Array<{
-    title: string
-    status: string
-    targetDate: string
-    description: string
-  }>
+  description?: string
 }
 
 interface HulyTeamSpaceHeader extends HulySpaceHeader {
@@ -569,7 +557,8 @@ export class HulyImporter {
         ? { name: projectHeader.defaultIssueStatus }
         : undefined,
       owners: projectHeader.owners?.map(email => ({ name: '', email })),
-      members: projectHeader.members?.map(email => ({ name: '', email }))
+      members: projectHeader.members?.map(email => ({ name: '', email })),
+      description: projectHeader.description
     }
   }
 
