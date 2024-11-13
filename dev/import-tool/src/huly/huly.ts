@@ -29,7 +29,6 @@ import {
   type ImportDoc,
   type ImportDocument,
   type ImportIssue,
-  type ImportContact,
   type ImportProject,
   type ImportProjectType,
   type ImportSpace,
@@ -93,11 +92,6 @@ interface HulyTeamSpaceHeader extends HulySpaceHeader {
 }
 
 interface HulyWorkspaceSettings {
-  persons?: Array<{
-    name: string
-    email: string
-    role: string
-  }>
   projectTypes?: Array<{
     name: string
     taskTypes?: Array<{
@@ -348,14 +342,12 @@ export class HulyImporter {
     const wsSettingsPath = path.join(folderPath, 'settings.yaml')
     const wsSettings = yaml.load(fs.readFileSync(wsSettingsPath, 'utf8')) as HulyWorkspaceSettings
 
-    const persons = this.processPersons(wsSettings)
     const projectTypes = this.processProjectTypes(wsSettings)
 
     // Process both projects and document spaces
     const spaces = await this.processSpaces(folderPath)
 
     return {
-      contacts: persons,
       projectTypes,
       spaces
     }
@@ -500,13 +492,6 @@ export class HulyImporter {
     const content = fs.readFileSync(filePath, 'utf8')
     const match = content.match(/^---\n[\s\S]*?\n---\n(.*)$/s)
     return match != null ? match[1] : content
-  }
-
-  private processPersons (wsHeader: HulyWorkspaceSettings): ImportContact[] {
-    return wsHeader.persons?.map(person => ({
-      name: person.name,
-      email: person.email
-    })) ?? []
   }
 
   private processProjectTypes (wsHeader: HulyWorkspaceSettings): ImportProjectType[] {
