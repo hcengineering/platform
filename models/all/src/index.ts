@@ -95,11 +95,17 @@ import documents, { documentsId, createModel as documentsModel } from '@hcengine
 import products, { productsId, createModel as productsModel } from '@hcengineering/model-products'
 import { serverProductsId, createModel as serverProductsModel } from '@hcengineering/model-server-products'
 import { serverTrainingId, createModel as serverTrainingModel } from '@hcengineering/model-server-training'
+import testManagement, {
+  testManagementId,
+  createModel as testManagementModel
+} from '@hcengineering/model-test-management'
+
 import {
   serverDocumentsId,
   createModel as serverDocumentsModel
 } from '@hcengineering/model-server-controlled-documents'
 import { serverFulltextId, createModel as serverFulltextModel } from '@hcengineering/model-server-fulltext'
+import { surveyId, createModel as surveyModel } from '@hcengineering/model-survey'
 
 import { type Plugin } from '@hcengineering/platform'
 
@@ -404,6 +410,18 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         classFilter: defaultFilter
       }
     ],
+    [
+      testManagementModel,
+      testManagementId,
+      {
+        label: testManagement.string.ConfigLabel,
+        description: testManagement.string.ConfigDescription,
+        enabled: false,
+        beta: false,
+        classFilter: defaultFilter
+      }
+    ],
+    [surveyModel, surveyId],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],

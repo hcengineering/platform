@@ -25,7 +25,8 @@ export { serverRequestId } from '@hcengineering/server-request'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverRequest.trigger.OnRequest
+    trigger: serverRequest.trigger.OnRequest,
+    arrays: true
   })
 
   builder.mixin(request.class.Request, core.class.Class, serverNotification.mixin.TextPresenter, {

@@ -63,7 +63,7 @@ import type {
   StorageAdapter
 } from '@hcengineering/server-core'
 import { RateLimiter, SessionDataImpl } from '@hcengineering/server-core'
-import { jsonToText, markupToJSON } from '@hcengineering/text'
+import { jsonToText, markupToJSON, pmNodeToText, yDocContentToNodes } from '@hcengineering/text'
 import { findSearchPresenter, updateDocWithPresenter } from '../mapper'
 import { type FullTextPipeline } from './types'
 import { createIndexedDoc, createStateDoc, getContent } from './utils'
@@ -786,12 +786,21 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     if (collaborativeDoc !== undefined && collaborativeDoc !== '') {
       const { documentId } = collaborativeDocParse(collaborativeDoc)
 
-      const docInfo: Blob | undefined = await this.storageAdapter?.stat(ctx, this.workspace, documentId)
       try {
-        await this.handleBlob(ctx, docInfo, indexedDoc)
+        const readable = await this.storageAdapter?.read(ctx, this.workspace, documentId)
+        const nodes = yDocContentToNodes(Buffer.concat(readable as any))
+        let textContent = nodes.map(pmNodeToText).join('\n')
+        textContent = textContent
+          .split(/ +|\t+|\f+/)
+          .filter((it) => it)
+          .join(' ')
+          .split(/\n\n+/)
+          .join('\n')
+
+        indexedDoc.fulltextSummary += '\n' + textContent
       } catch (err: any) {
         Analytics.handleError(err)
-        ctx.error('failed to handle blob', { _id: docInfo?._id, workspace: this.workspace.name })
+        ctx.error('failed to handle blob', { _id: documentId, workspace: this.workspace.name })
       }
     }
   }

@@ -1151,7 +1151,7 @@
       "shouldPublish": false
     },
     {
-    "packageName": "@hcengineering/tags",
+      "packageName": "@hcengineering/tags",
       "projectFolder": "plugins/tags",
       "shouldPublish": true
     },
@@ -1960,7 +1960,7 @@
       "packageName": "@hcengineering/diffview-resources",
       "projectFolder": "plugins/diffview-resources",
       "shouldPublish": false
-    },  
+    },
     {
       "packageName": "@hcengineering/github",
       "projectFolder": "services/github/github",
@@ -2159,6 +2159,46 @@
     {
       "packageName": "@hcengineering/scripts",
       "projectFolder": "common/scripts",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-test-management",
+      "projectFolder": "models/test-management",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/test-management",
+      "projectFolder": "plugins/test-management",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/test-management-resources",
+      "projectFolder": "plugins/test-management-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/test-management-assets",
+      "projectFolder": "plugins/test-management-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/survey",
+      "projectFolder": "plugins/survey",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-survey",
+      "projectFolder": "models/survey",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/survey-assets",
+      "projectFolder": "plugins/survey-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/survey-resources",
+      "projectFolder": "plugins/survey-resources",
       "shouldPublish": false
     }
   ]

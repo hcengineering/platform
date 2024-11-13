@@ -50,23 +50,26 @@ import tracker, { Issue, IssueStatus, Project, TimeSpendReport } from '@hcengine
 /**
  * @public
  */
-export async function OnTask (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-  const mixin = control.hierarchy.classHierarchyMixin<Class<Doc>, ToDoFactory>(
-    actualTx.objectClass,
-    serverTime.mixin.ToDoFactory
-  )
-  if (mixin !== undefined) {
-    if (actualTx._class !== core.class.TxRemoveDoc) {
-      const factory = await getResource(mixin.factory)
-      return await factory(tx, control)
-    } else {
-      const todos = await control.findAll(control.ctx, time.class.ToDo, { attachedTo: actualTx.objectId })
-      return todos.map((p) => control.txFactory.createTxRemoveDoc(p._class, p.space, p._id))
+export async function OnTask (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
+    const mixin = control.hierarchy.classHierarchyMixin<Class<Doc>, ToDoFactory>(
+      actualTx.objectClass,
+      serverTime.mixin.ToDoFactory
+    )
+    if (mixin !== undefined) {
+      if (actualTx._class !== core.class.TxRemoveDoc) {
+        const factory = await getResource(mixin.factory)
+        result.push(...(await factory(tx, control)))
+      } else {
+        const todos = await control.findAll(control.ctx, time.class.ToDo, { attachedTo: actualTx.objectId })
+        result.push(...todos.map((p) => control.txFactory.createTxRemoveDoc(p._class, p.space, p._id)))
+      }
     }
   }
 
-  return []
+  return result
 }
 
 export async function OnWorkSlotUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {

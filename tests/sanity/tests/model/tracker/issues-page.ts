@@ -121,6 +121,11 @@ export class IssuesPage extends CommonTrackerPage {
       .locator('button')
 
   selectPopup = (): Locator => this.page.locator('.selectPopup >> button:has-text("Appleseed John")')
+
+  closePopup = async (): Promise<void> => {
+    await this.page.locator('.selectPopup').press('Escape')
+  }
+
   notificationTimeoutSetting = (timeout: string): Promise<void> => {
     return this.page.evaluate((timeout) => {
       localStorage.setItem('#platform.notification.timeout', timeout)

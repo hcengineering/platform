@@ -13,6 +13,15 @@
 // limitations under the License.
 //
 
+import aiBot, {
+  aiBotAccountEmail,
+  AIEventType,
+  AIMessageEventRequest,
+  AITransferEventRequest
+} from '@hcengineering/ai-bot'
+import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-collector'
+import chunter, { ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
+import contact, { PersonAccount } from '@hcengineering/contact'
 import core, {
   AccountRole,
   AttachedDoc,
@@ -27,17 +36,8 @@ import core, {
   TxUpdateDoc,
   UserStatus
 } from '@hcengineering/core'
-import { TriggerControl } from '@hcengineering/server-core'
-import chunter, { ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
-import aiBot, {
-  aiBotAccountEmail,
-  AIEventType,
-  AIMessageEventRequest,
-  AITransferEventRequest
-} from '@hcengineering/ai-bot'
-import contact, { PersonAccount } from '@hcengineering/contact'
 import { ActivityInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
-import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-collector'
+import { TriggerControl } from '@hcengineering/server-core'
 
 import { createAccountRequest, getSupportWorkspaceId, sendAIEvents } from './utils'
 
@@ -241,34 +241,38 @@ async function onSupportWorkspaceMessage (control: TriggerControl, message: Chat
 }
 
 export async function OnMessageSend (
-  originTx: TxCollectionCUD<Doc, AttachedDoc>,
+  originTxs: TxCollectionCUD<Doc, AttachedDoc>[],
   control: TriggerControl
 ): Promise<Tx[]> {
   const { hierarchy } = control
-  const tx = TxProcessor.extractTx(originTx) as TxCreateDoc<ChatMessage>
-  if (tx._class !== core.class.TxCreateDoc || !hierarchy.isDerived(tx.objectClass, chunter.class.ChatMessage)) {
+  const txes = originTxs
+    .map((it) => TxProcessor.extractTx(it) as TxCreateDoc<ChatMessage>)
+    .filter(
+      (it) =>
+        it._class === core.class.TxCreateDoc &&
+        hierarchy.isDerived(it.objectClass, chunter.class.ChatMessage) &&
+        !(it.modifiedBy === aiBot.account.AIBot || it.modifiedBy === core.account.System)
+    )
+  if (txes.length === 0) {
     return []
   }
+  for (const tx of txes) {
+    const isThread = hierarchy.isDerived(tx.objectClass, chunter.class.ThreadMessage)
+    const message = TxProcessor.createDoc2Doc(tx)
 
-  if (tx.modifiedBy === aiBot.account.AIBot || tx.modifiedBy === core.account.System) {
-    return []
-  }
+    const docClass = isThread ? (message as ThreadMessage).objectClass : message.attachedToClass
 
-  const isThread = hierarchy.isDerived(tx.objectClass, chunter.class.ThreadMessage)
-  const message = TxProcessor.createDoc2Doc(tx)
+    if (!hierarchy.isDerived(docClass, chunter.class.ChunterSpace)) {
+      continue
+    }
 
-  const docClass = isThread ? (message as ThreadMessage).objectClass : message.attachedToClass
+    if (docClass === chunter.class.DirectMessage) {
+      await onBotDirectMessageSend(control, message)
+    }
 
-  if (!hierarchy.isDerived(docClass, chunter.class.ChunterSpace)) {
-    return []
-  }
-
-  if (docClass === chunter.class.DirectMessage) {
-    await onBotDirectMessageSend(control, message)
-  }
-
-  if (docClass === analyticsCollector.class.OnboardingChannel) {
-    await onSupportWorkspaceMessage(control, message)
+    if (docClass === analyticsCollector.class.OnboardingChannel) {
+      await onSupportWorkspaceMessage(control, message)
+    }
   }
 
   return []

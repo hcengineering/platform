@@ -102,7 +102,7 @@ services:
     environment:
       - PORT=4900
       - SERVER_SECRET=secret
-    restart: unless-stopped    
+    restart: unless-stopped
   workspace:
     image: hardcoreeng/workspace
     extra_hosts:
@@ -221,7 +221,6 @@ services:
     links:
       - mongodb
       - minio
-      - rekoni
       - account
       - stats
       # - apm-server
@@ -261,7 +260,6 @@ services:
     links:
       - postgres
       - minio
-      - rekoni
       - account
       - stats
       # - apm-server
@@ -296,10 +294,6 @@ services:
     restart: unless-stopped
     ports:
       - 4004:4004
-    deploy:
-      resources:
-        limits:
-          memory: 1024M
   fulltext:
     image: hardcoreeng/fulltext
     extra_hosts:
@@ -319,10 +313,6 @@ services:
       - STATS_URL=http://host.docker.internal:4900
       - REKONI_URL=http://host.docker.internal:4004
       - ACCOUNTS_URL=http://host.docker.internal:3000
-    deploy:
-      resources:
-        limits:
-          memory: 300M
   fulltext_pg:
     image: hardcoreeng/fulltext
     extra_hosts:
@@ -343,10 +333,6 @@ services:
       - STATS_URL=http://host.docker.internal:4900
       - REKONI_URL=http://host.docker.internal:4004
       - ACCOUNTS_URL=http://host.docker.internal:3000
-    deploy:
-      resources:
-        limits:
-          memory: 300M          
   print:
     image: hardcoreeng/print
     extra_hosts:
@@ -358,10 +344,6 @@ services:
       - SECRET=secret
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - STATS_URL=http://host.docker.internal:4900
-    deploy:
-      resources:
-        limits:
-          memory: 300M
   sign:
     image: hardcoreeng/sign
     extra_hosts:
@@ -382,10 +364,6 @@ services:
       - SERVICE_ID=sign-service      
       - BRANDING_PATH=/var/cfg/branding.json
       - STATS_URL=http://host.docker.internal:4900
-    deploy:
-      resources:
-        limits:
-          memory: 300M
   analytics:
     image: hardcoreeng/analytics-collector
     extra_hosts:
@@ -402,10 +380,6 @@ services:
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - SUPPORT_WORKSPACE=support
       - STATS_URL=http://host.docker.internal:4900
-    deploy:
-      resources:
-        limits:
-          memory: 300M
   aiBot:
     image: hardcoreeng/ai-bot
     ports:
@@ -426,10 +400,6 @@ services:
       - STATS_URL=http://host.docker.internal:4900
 #      - LOVE_ENDPOINT=http://host.docker.internal:8096
 #      - OPENAI_API_KEY=token
-    deploy:
-      resources:
-        limits:
-          memory: 300M
 #  telegram-bot:
 #    image: hardcoreeng/telegram-bot
 #   extra_hosts:
@@ -445,10 +415,6 @@ services:
 #      - ACCOUNTS_URL=http://host.docker.internal:3000
 #      - SERVICE_ID=telegram-bot-service
 #      - STATS_URL=http://host.docker.internal:4900
-#    deploy:
-#      resources:
-#        limits:
-#          memory: 300M
 volumes:
   db:
   dbpg:

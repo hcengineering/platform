@@ -330,6 +330,7 @@ module.exports = [
       disableDotRule: true
     },
     host: '0.0.0.0',
+    allowedHosts: 'all',
     hot: true,
     client: {
       logging: "info",

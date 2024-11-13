@@ -3,11 +3,11 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
+import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
 import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import { startFront } from '@hcengineering/front/src/starter'
-import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
-import { join } from 'path'
 import { initStatisticsContext } from '@hcengineering/server-core'
+import { join } from 'path'
 
 configureAnalytics(process.env.SENTRY_DSN, {})
 Analytics.setTag('application', 'front')
@@ -45,5 +45,5 @@ startFront(metricsContext, {
   ANALYTICS_COLLECTOR_URL: process.env.ANALYTICS_COLLECTOR_URL,
   AI_URL: process.env.AI_URL,
   TELEGRAM_BOT_URL: process.env.TELEGRAM_BOT_URL,
-  STATS_URL: process.env.STATS_URL
+  STATS_URL: process.env.STATS_API ?? process.env.STATS_URL
 })

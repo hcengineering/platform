@@ -20,31 +20,36 @@ import task, { Task } from '@hcengineering/task'
 /**
  * @public
  */
-export async function OnStateUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-  if (!control.hierarchy.isDerived(actualTx.objectClass, task.class.Task)) return []
-  if (actualTx._class === core.class.TxCreateDoc) {
-    const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<Task>)
-    const status = (await control.modelDb.findAll(core.class.Status, { _id: doc.status }))[0]
-    if (status?.category === task.statusCategory.Lost || status?.category === task.statusCategory.Won) {
-      return [control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, { isDone: true })]
+export async function OnStateUpdate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
+    if (!control.hierarchy.isDerived(actualTx.objectClass, task.class.Task)) {
+      continue
     }
-  } else if (actualTx._class === core.class.TxUpdateDoc) {
-    const updateTx = actualTx as TxUpdateDoc<Task>
-    if (updateTx.operations.status !== undefined) {
-      const status = (await control.modelDb.findAll(core.class.Status, { _id: updateTx.operations.status }))[0]
+    if (actualTx._class === core.class.TxCreateDoc) {
+      const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<Task>)
+      const status = control.modelDb.findAllSync(core.class.Status, { _id: doc.status })[0]
       if (status?.category === task.statusCategory.Lost || status?.category === task.statusCategory.Won) {
-        return [
-          control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
-            isDone: true
-          })
-        ]
-      } else {
-        return [
-          control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
-            isDone: false
-          })
-        ]
+        result.push(control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, { isDone: true }))
+      }
+    } else if (actualTx._class === core.class.TxUpdateDoc) {
+      const updateTx = actualTx as TxUpdateDoc<Task>
+      if (updateTx.operations.status !== undefined) {
+        const status = control.modelDb.findAllSync(core.class.Status, { _id: updateTx.operations.status })[0]
+        if (status?.category === task.statusCategory.Lost || status?.category === task.statusCategory.Won) {
+          result.push(
+            control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
+              isDone: true
+            })
+          )
+        } else {
+          result.push(
+            control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
+              isDone: false
+            })
+          )
+        }
       }
     }
   }

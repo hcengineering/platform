@@ -15,7 +15,17 @@
 
 import { Event } from '@hcengineering/calendar'
 import type { Channel, Organization, Person } from '@hcengineering/contact'
-import type { AttachedData, AttachedDoc, CollaborativeDoc, Markup, Ref, Status, Timestamp } from '@hcengineering/core'
+import type {
+  AttachedData,
+  AttachedDoc,
+  CollaborativeDoc,
+  Collection,
+  Markup,
+  Ref,
+  Status,
+  Timestamp
+} from '@hcengineering/core'
+import { Poll } from '@hcengineering/survey'
 import { TagReference } from '@hcengineering/tags'
 import type { Project, Task } from '@hcengineering/task'
 
@@ -71,6 +81,7 @@ export interface Applicant extends Task {
   attachedTo: Ref<Candidate>
   status: Ref<Status>
   startDate: Timestamp | null
+  polls?: Collection<Poll>
 }
 
 /** @public */

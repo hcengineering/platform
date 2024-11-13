@@ -183,6 +183,22 @@ export interface SpecialNavModel {
   notificationsCountProvider?: Resource<
   (inboxNotificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>) => number
   >
+  navigationModel?: ParentsNavigationModel
+}
+
+/**
+ * @public
+ */
+export interface ParentsNavigationModel {
+  navigationComponent: AnyComponent
+  navigationComponentLabel: IntlString
+  navigationComponentIcon?: Asset
+  mainComponentLabel: IntlString
+  mainComponentIcon?: Asset
+  navigationComponentProps?: Record<string, any>
+  syncWithLocationQuery?: boolean
+  createComponent?: AnyComponent
+  createComponentProps?: Record<string, any>
 }
 
 /**

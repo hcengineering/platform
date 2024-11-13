@@ -35,7 +35,8 @@ import core, {
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc,
-  UserStatus
+  UserStatus,
+  type MeasureContext
 } from '@hcengineering/core'
 import notification, { DocNotifyContext, NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString, translate } from '@hcengineering/platform'
@@ -151,7 +152,7 @@ async function OnThreadMessageCreated (originTx: TxCUD<Doc>, control: TriggerCon
   return [lastReplyTx, repliedPersonTx]
 }
 
-async function OnChatMessageCreated (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
   const actualTx = TxProcessor.extractTx(tx) as TxCreateDoc<ChatMessage>
 
@@ -163,9 +164,7 @@ async function OnChatMessageCreated (tx: TxCUD<Doc>, control: TriggerControl): P
     return []
   }
 
-  const targetDoc = (
-    await control.findAll(control.ctx, message.attachedToClass, { _id: message.attachedTo }, { limit: 1 })
-  )[0]
+  const targetDoc = (await control.findAll(ctx, message.attachedToClass, { _id: message.attachedTo }, { limit: 1 }))[0]
   if (targetDoc === undefined) {
     return []
   }
@@ -190,7 +189,7 @@ async function OnChatMessageCreated (tx: TxCUD<Doc>, control: TriggerControl): P
       )
     }
   } else {
-    const collaborators = await getDocCollaborators(control.ctx, targetDoc, mixin, control)
+    const collaborators = await getDocCollaborators(ctx, targetDoc, mixin, control)
     if (!collaborators.includes(message.modifiedBy)) {
       collaborators.push(message.modifiedBy)
     }
@@ -272,33 +271,19 @@ export async function ChunterTrigger (tx: TxCUD<Doc>, control: TriggerControl): 
     actualTx._class === core.class.TxCreateDoc &&
     control.hierarchy.isDerived(actualTx.objectClass, chunter.class.ThreadMessage)
   ) {
-    res.push(
-      ...(await control.ctx.with(
-        'OnThreadMessageCreated',
-        {},
-        async (ctx) => await OnThreadMessageCreated(tx, control)
-      ))
-    )
+    res.push(...(await control.ctx.with('OnThreadMessageCreated', {}, (ctx) => OnThreadMessageCreated(tx, control))))
   }
   if (
     actualTx._class === core.class.TxRemoveDoc &&
     control.hierarchy.isDerived(actualTx.objectClass, chunter.class.ThreadMessage)
   ) {
-    res.push(
-      ...(await control.ctx.with(
-        'OnThreadMessageDeleted',
-        {},
-        async (ctx) => await OnThreadMessageDeleted(tx, control)
-      ))
-    )
+    res.push(...(await control.ctx.with('OnThreadMessageDeleted', {}, (ctx) => OnThreadMessageDeleted(tx, control))))
   }
   if (
     actualTx._class === core.class.TxCreateDoc &&
     control.hierarchy.isDerived(actualTx.objectClass, chunter.class.ChatMessage)
   ) {
-    res.push(
-      ...(await control.ctx.with('OnChatMessageCreated', {}, async (ctx) => await OnChatMessageCreated(tx, control)))
-    )
+    res.push(...(await control.ctx.with('OnChatMessageCreated', {}, (ctx) => OnChatMessageCreated(ctx, tx, control))))
   }
   return res
 }

@@ -2,50 +2,51 @@
 // Copyright @ 2022-2023 Hardcore Engineering Inc.
 //
 
+import attachment, { type Attachment } from '@hcengineering/attachment'
 import {
+  clone,
+  loadCollaborativeDoc,
+  saveCollaborativeDoc,
+  YAbstractType,
+  YXmlElement,
+  YXmlText
+} from '@hcengineering/collaboration'
+import {
+  type ChangeControl,
+  type ControlledDocument,
+  createChangeControl,
+  createDocumentTemplate,
+  type DocumentCategory,
+  documentsId,
+  DocumentState
+} from '@hcengineering/controlled-documents'
+import {
+  type Class,
   type Data,
-  type Ref,
-  TxOperations,
-  generateId,
+  type Doc,
   DOMAIN_TX,
+  generateId,
   makeCollaborativeDoc,
   MeasureMetricsContext,
-  type Class,
-  type Doc,
-  SortingOrder
+  type Ref,
+  SortingOrder,
+  toIdMap,
+  TxOperations
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
   createOrUpdate,
-  type MigrateUpdate,
-  type MigrationDocumentQuery,
-  tryMigrate,
-  tryUpgrade,
   type MigrateOperation,
+  type MigrateUpdate,
   type MigrationClient,
-  type MigrationUpgradeClient
+  type MigrationDocumentQuery,
+  type MigrationUpgradeClient,
+  tryMigrate,
+  tryUpgrade
 } from '@hcengineering/model'
+import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import core from '@hcengineering/model-core'
 import tags from '@hcengineering/tags'
-import {
-  type ChangeControl,
-  type DocumentCategory,
-  DocumentState,
-  documentsId,
-  createDocumentTemplate,
-  type ControlledDocument,
-  createChangeControl
-} from '@hcengineering/controlled-documents'
-import {
-  loadCollaborativeDoc,
-  saveCollaborativeDoc,
-  YXmlElement,
-  YXmlText,
-  YAbstractType,
-  clone
-} from '@hcengineering/collaboration'
-import attachment, { type Attachment } from '@hcengineering/attachment'
-import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 
 import documents, { DOMAIN_DOCUMENTS } from './index'
 
@@ -210,6 +211,7 @@ async function createDocumentCategories (tx: TxOperations): Promise<void> {
     { code: 'CM', title: 'Client Management' }
   ]
 
+  const catsCache = toIdMap(await tx.findAll(documents.class.DocumentCategory, {}))
   const ops = tx.apply()
   for (const c of categories) {
     await createOrUpdate(
@@ -217,7 +219,8 @@ async function createDocumentCategories (tx: TxOperations): Promise<void> {
       documents.class.DocumentCategory,
       documents.space.QualityDocuments,
       { ...c, attachments: 0 },
-      ((documents.category.DOC as string) + ' - ' + c.code) as Ref<DocumentCategory>
+      ((documents.category.DOC as string) + ' - ' + c.code) as Ref<DocumentCategory>,
+      catsCache
     )
   }
   await ops.commit()
