@@ -80,7 +80,7 @@ async function createReception (client: MigrationUpgradeClient): Promise<void> {
       y: 0,
       language: 'en',
       startWithTranscription: false,
-      description: makeCollaborativeDoc(love.class.Room, 'description')
+      description: makeCollaborativeDoc(love.ids.Reception, 'description')
     },
     love.ids.Reception
   )
