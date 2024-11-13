@@ -75,7 +75,7 @@ export class ImportWorkspaceBuilder {
     }
 
     if (projectIssues.has(issue.number)) {
-      this.addError(issuePath, `Duplicate issue number ${issue.number} in project`)
+      this.addError(issuePath, `Duplicate issue number ${issue.number} in project ${projectPath}`)
     } else {
       this.validateAndAdd(
         'issue',
@@ -135,6 +135,13 @@ export class ImportWorkspaceBuilder {
       const teamspace = this.teamspaces.get(teamspacePath)
       if (teamspace !== undefined) {
         teamspace.docs = Array.from(docs.values())
+      }
+    }
+
+    for (const [projectPath, issues] of this.issuesByProject) {
+      const project = this.projects.get(projectPath)
+      if (project !== undefined) {
+        project.docs = Array.from(issues.values())
       }
     }
 
@@ -214,6 +221,9 @@ export class ImportWorkspaceBuilder {
     }
     if (issue.class !== 'tracker.class.Issue') {
       errors.push('invalid class')
+    }
+    if (issue.number === undefined || issue.number <= 0) {
+      errors.push('valid issue number is required')
     }
     return errors
   }
