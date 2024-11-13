@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { onDestroy } from 'svelte'
   import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString, Asset, getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
@@ -38,6 +39,9 @@
     ViewletPreference
   } from '@hcengineering/view'
   import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { ParentsNavigationModel } from '@hcengineering/workbench'
+
+  import ComponentNavigator from './ComponentNavigator.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
@@ -51,6 +55,7 @@
   export let descriptors: Array<Ref<ViewletDescriptor>> | undefined = undefined
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
   export let modes: IModeSelector<any> | undefined = undefined
+  export let navigationModel: ParentsNavigationModel | undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -104,7 +109,7 @@
 
   function showCreateDialog (): void {
     if (createComponent === undefined) return
-    showPopup(createComponent, createComponentProps, 'top')
+    showPopup(createComponent, { ...createComponentProps, space }, 'top')
   }
 </script>
 
@@ -167,21 +172,44 @@
       resultQuery = { ...query, ...e.detail }
     }}
   />
-  <Component
-    is={viewlet.$lookup.descriptor.component}
-    props={{
-      _class,
-      space,
-      options: viewlet.options,
-      config: preference?.config ?? viewlet.config,
-      viewlet,
-      viewOptions,
-      viewOptionsConfig: viewlet.viewOptions?.other,
-      createItemDialog: createComponent,
-      createItemLabel: createLabel,
-      query: resultQuery,
-      totalQuery: query,
-      ...viewlet.props
-    }}
-  />
+  {#if navigationModel?.navigationComponent === undefined}
+    <Component
+      is={viewlet.$lookup.descriptor.component}
+      props={{
+        _class,
+        space,
+        options: viewlet.options,
+        config: preference?.config ?? viewlet.config,
+        viewlet,
+        viewOptions,
+        viewOptionsConfig: viewlet.viewOptions?.other,
+        createItemDialog: createComponent,
+        createItemLabel: createLabel,
+        query: resultQuery,
+        totalQuery: query,
+        ...viewlet.props
+      }}
+    />
+  {:else}
+    <ComponentNavigator
+      query={resultQuery}
+      {space}
+      mainComponent={viewlet.$lookup.descriptor.component}
+      mainComponentProps={{
+        _class,
+        space,
+        options: viewlet.options,
+        config: preference?.config ?? viewlet.config,
+        viewlet,
+        viewOptions,
+        viewOptionsConfig: viewlet.viewOptions?.other,
+        createItemDialog: createComponent,
+        createItemLabel: createLabel,
+        query: resultQuery,
+        totalQuery: query,
+        ...viewlet.props
+      }}
+      {...navigationModel}
+    />
+  {/if}
 {/if}

@@ -964,7 +964,13 @@
         {:else if specialComponent}
           <Component
             is={specialComponent.component}
-            props={{ model: navigatorModel, ...specialComponent.componentProps, currentSpace }}
+            props={{
+              model: navigatorModel,
+              ...specialComponent.componentProps,
+              currentSpace,
+              space: currentSpace,
+              navigationModel: specialComponent?.navigationModel
+            }}
             on:action={(e) => {
               if (e?.detail) {
                 const loc = getCurrentLocation()
