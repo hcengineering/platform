@@ -138,7 +138,12 @@ class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
             return
           }
 
-          this.attachMetadataByPath.set(fullPath, { ...attachmentMeta, parentId: id, parentClass: sourceMeta.class as Ref<Class<Doc<Space>>>, spaceId })
+          this.attachMetadataByPath.set(fullPath, {
+            ...attachmentMeta,
+            spaceId,
+            parentId: id,
+            parentClass: sourceMeta.class as Ref<Class<Doc<Space>>>
+          })
           this.alterImageNode(node, attachmentMeta.id, attachmentMeta.name)
         }
       } else {
@@ -151,9 +156,24 @@ class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
             }
             const href = decodeURI(mark.attrs.href)
             const fullPath = path.resolve(path.dirname(sourceMeta.path), href)
-            const targetMeta = this.metadataByFilePath.get(fullPath)
-            if (targetMeta != null) {
-              this.alterInternalLinkNode(node, targetMeta)
+            if (this.metadataByFilePath.has(fullPath)) {
+              const targetDocMeta = this.metadataByFilePath.get(fullPath)
+              if (targetDocMeta !== undefined) {
+                this.alterInternalLinkNode(node, targetDocMeta)
+              }
+            } else if (this.attachMetadataByPath.has(fullPath)) {
+              const attachmentMeta = this.attachMetadataByPath.get(fullPath)
+              if (attachmentMeta !== undefined) {
+                this.alterAttachmentLinkNode(node, attachmentMeta)
+                this.attachMetadataByPath.set(fullPath, {
+                  ...attachmentMeta,
+                  spaceId,
+                  parentId: id,
+                  parentClass: sourceMeta.class as Ref<Class<Doc<Space>>>
+                })
+              }
+            } else {
+              console.warn('unknown link, leave as is:', fullPath)
             }
           }
         })
@@ -257,6 +277,21 @@ class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
       objectclass: targetMeta.class,
       text: '',
       content: ''
+    }
+  }
+
+  private alterAttachmentLinkNode (node: MarkupNode, targetMeta: AttachmentMetadata): void {
+    const stats = fs.statSync(targetMeta.path)
+    node.type = MarkupNodeType.file
+    node.attrs = {
+      'file-id': targetMeta.id,
+      'data-file-name': targetMeta.name,
+      'data-file-size': stats.size,
+      'data-file-href': targetMeta.path
+    }
+    const mimeType = this.getContentType(targetMeta.name)
+    if (mimeType !== undefined) {
+      node.attrs['data-file-type'] = mimeType
     }
   }
 
