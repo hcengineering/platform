@@ -385,11 +385,8 @@ const pluginState = plugin(trackerId, {
   ids: {
     NoParent: '' as Ref<Issue>,
     IssueDraft: '',
-    IssueDraftChild: ''
-  },
-  spaceType: {
-    ClassingProjectType: '' as Ref<ProjectType>,
-    DefaultProjectType: '' as Ref<ProjectType>
+    IssueDraftChild: '',
+    ClassingProjectType: '' as Ref<ProjectType>
   },
   status: {
     Backlog: '' as Ref<Status>,

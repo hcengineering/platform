@@ -370,7 +370,7 @@ export class WorkspaceImporter {
 
     const projectType = project.projectType !== undefined
       ? this.projectTypeByName.get(project.projectType.name)
-      : tracker.spaceType.ClassingProjectType
+      : tracker.ids.ClassingProjectType
 
     const defaultIssueStatus =
       project.defaultIssueStatus !== undefined
