@@ -16,9 +16,9 @@
 import { type Attachment } from '@hcengineering/attachment'
 import contact, { type Person, type PersonAccount } from '@hcengineering/contact'
 import { type Class, type Doc, generateId, type Ref, type Space, type TxOperations } from '@hcengineering/core'
-import { type Document } from '@hcengineering/document'
+import document, { type Document } from '@hcengineering/document'
 import { MarkupMarkType, type MarkupNode, MarkupNodeType, traverseNode, traverseNodeMarks } from '@hcengineering/text'
-import { type Issue } from '@hcengineering/tracker'
+import tracker, { type Issue } from '@hcengineering/tracker'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
 import { contentType } from 'mime-types'
@@ -45,7 +45,7 @@ interface HulyComment {
 }
 
 interface HulyIssueHeader {
-  class: string
+  class: 'tracker:class:Issue'
   title: string
   assignee: string
   status: string
@@ -56,7 +56,7 @@ interface HulyIssueHeader {
 }
 
 interface HulySpaceHeader {
-  class: string
+  class: 'tracker:class:Project' | 'document:class:Teamspace'
   title: string
   private?: boolean
   autoJoin?: boolean
@@ -65,7 +65,7 @@ interface HulySpaceHeader {
 }
 
 interface HulyProjectHeader extends HulySpaceHeader {
-  class: 'tracker.class.Project'
+  class: 'tracker:class:Project'
   identifier: string
   projectType?: string
   defaultAssignee?: string
@@ -74,7 +74,12 @@ interface HulyProjectHeader extends HulySpaceHeader {
 }
 
 interface HulyTeamSpaceHeader extends HulySpaceHeader {
-  class: 'document.class.TeamSpace'
+  class: 'document:class:Teamspace'
+}
+
+interface HulyDocumentHeader {
+  class: 'document:class:Document'
+  title: string
 }
 
 interface HulyWorkspaceSettings {
@@ -89,11 +94,6 @@ interface HulyWorkspaceSettings {
       }>
     }>
   }>
-}
-
-interface HulyDocumentHeader {
-  class: string
-  title: string
 }
 
 class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
@@ -321,7 +321,7 @@ export class HulyImporter {
     await this.cachePersonsByNames()
     await this.cacheAccountsByEmails()
 
-    const workspaceData = await this.processHulyFolder(folderPath)
+    const workspaceData = await this.processImportTree(folderPath)
 
     console.log('========================================')
     console.log('IMPORT DATA STRUCTURE: ', JSON.stringify(workspaceData, null, 4))
@@ -359,7 +359,7 @@ export class HulyImporter {
     console.log('IMPORT SUCCESS')
   }
 
-  private async processHulyFolder (folderPath: string): Promise<ImportWorkspace> {
+  private async processImportTree (folderPath: string): Promise<ImportWorkspace> {
     const builder = new ImportWorkspaceBuilder(true) // strict mode
 
     // Load workspace settings
@@ -389,7 +389,7 @@ export class HulyImporter {
         const spaceConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as HulySpaceHeader
 
         switch (spaceConfig.class) {
-          case 'tracker.class.Project': {
+          case tracker.class.Project: {
             const project = await this.processProject(spaceConfig as HulyProjectHeader)
             builder.addProject(spacePath, project)
 
@@ -398,13 +398,17 @@ export class HulyImporter {
             break
           }
 
-          case 'document.class.TeamSpace': {
+          case document.class.Teamspace: {
             const teamspace = await this.processTeamspace(spaceConfig as HulyTeamSpaceHeader)
             builder.addTeamspace(spacePath, teamspace)
 
             // Process all documents recursively and add them to builder
             await this.processDocumentsRecursively(builder, spacePath, spacePath)
             break
+          }
+
+          default: {
+            console.warn(`Skipping ${folder}: unknown space class ${spaceConfig.class}`)
           }
         }
       } catch (error) {
@@ -429,14 +433,14 @@ export class HulyImporter {
     for (const issueFile of issueFiles) {
       const issuePath = path.join(currentPath, issueFile)
       const issueHeader = await this.readYamlHeader(issuePath) as HulyIssueHeader
-      const numberMatch = issueFile.match(/^(\d+)\./)
 
-      if (issueHeader.class === 'tracker.class.Issue' && numberMatch != null) {
-        const issueNumber = numberMatch[1]
+      if (issueHeader.class === tracker.class.Issue) {
+        const numberMatch = issueFile.match(/^(\d+)\./)
+        const issueNumber = numberMatch?.[1]
 
         const meta: DocMetadata = {
           id: generateId<Issue>(),
-          class: 'tracker:class:Issue',
+          class: tracker.class.Issue,
           path: issuePath,
           refTitle: projectIdentifier + '-' + issueNumber
         }
@@ -445,9 +449,9 @@ export class HulyImporter {
 
         const issue: ImportIssue = {
           id: meta.id as Ref<Issue>,
-          class: 'tracker.class.Issue',
+          class: tracker.class.Issue,
           title: issueHeader.title,
-          number: parseInt(issueNumber),
+          number: parseInt(issueNumber ?? 'NaN'),
           descrProvider: async () => await this.readMarkdownContent(issuePath),
           status: { name: issueHeader.status },
           estimation: issueHeader.estimation,
@@ -464,6 +468,8 @@ export class HulyImporter {
         if (fs.existsSync(subDir) && fs.statSync(subDir).isDirectory()) {
           await this.processIssuesRecursively(builder, projectIdentifier, projectPath, subDir, issuePath)
         }
+      } else {
+        console.warn(`Skipping ${issueFile}: unknown issue class ${issueHeader.class}`)
       }
     }
   }
@@ -481,10 +487,10 @@ export class HulyImporter {
       const docPath = path.join(currentPath, docFile)
       const docHeader = await this.readYamlHeader(docPath) as HulyDocumentHeader
 
-      if (docHeader.class === 'document.class.Document') {
+      if (docHeader.class === document.class.Document) {
         const docMeta: DocMetadata = {
           id: generateId<Document>(),
-          class: 'document:class:Document',
+          class: document.class.Document,
           path: docPath,
           refTitle: docHeader.title
         }
@@ -493,7 +499,7 @@ export class HulyImporter {
 
         const doc: ImportDocument = {
           id: docMeta.id as Ref<Document>,
-          class: 'document:class:Document',
+          class: document.class.Document,
           title: docHeader.title,
           descrProvider: async () => await this.readMarkdownContent(docPath),
           subdocs: [] // Will be added via builder
@@ -506,6 +512,8 @@ export class HulyImporter {
         if (fs.existsSync(subDir) && fs.statSync(subDir).isDirectory()) {
           await this.processDocumentsRecursively(builder, teamspacePath, subDir, docPath)
         }
+      } else {
+        console.warn(`Skipping ${docFile}: unknown document class ${docHeader.class}`)
       }
     }
   }
@@ -540,7 +548,7 @@ export class HulyImporter {
       : undefined
 
     return {
-      class: projectHeader.class,
+      class: tracker.class.Project,
       title: projectHeader.title,
       identifier: projectHeader.identifier,
       private: projectHeader.private ?? false,
@@ -563,7 +571,7 @@ export class HulyImporter {
     spaceHeader: HulyTeamSpaceHeader
   ): Promise<ImportTeamspace> {
     return {
-      class: spaceHeader.class,
+      class: document.class.Teamspace,
       title: spaceHeader.title,
       private: spaceHeader.private ?? false,
       autoJoin: spaceHeader.autoJoin ?? true,

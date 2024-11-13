@@ -82,35 +82,35 @@ export interface ImportStatus {
 }
 
 export interface ImportSpace<T extends ImportDoc> {
-  class: string
+  class: Ref<Class<Space>>
   title: string
   private: boolean
-  autoJoin: boolean
+  autoJoin?: boolean
   description?: string
   owners?: ImportContact[]
   members?: ImportContact[]
   docs: T[]
 }
 export interface ImportDoc {
+  class: Ref<Class<Doc<Space>>>
   id?: Ref<Doc>
-  class: string
   title: string
   descrProvider: () => Promise<string>
   subdocs: ImportDoc[]
 }
 
 export interface ImportTeamspace extends ImportSpace<ImportDocument> {
-  class: 'document.class.TeamSpace'
+  class: Ref<Class<Teamspace>>
 }
 
 export interface ImportDocument extends ImportDoc {
-  class: 'document:class:Document'
   id?: Ref<Document>
+  class: Ref<Class<Document>>
   subdocs: ImportDocument[]
 }
 
 export interface ImportProject extends ImportSpace<ImportIssue> {
-  class: 'tracker.class.Project'
+  class: Ref<Class<Project>>
   identifier: string
   projectType?: ImportProjectType
   defaultAssignee?: ImportContact
@@ -119,10 +119,10 @@ export interface ImportProject extends ImportSpace<ImportIssue> {
 }
 
 export interface ImportIssue extends ImportDoc {
-  class: 'tracker.class.Issue' // todo: doesn't have meaning here, move to huly.ts
   id?: Ref<Issue>
+  class: Ref<Class<Issue>>
   status: ImportStatus
-  number: number
+  number?: number
   assignee?: Ref<Person>
   estimation?: number
   remainingTime?: number
@@ -185,9 +185,9 @@ export class WorkspaceImporter {
     if (this.workspaceData.spaces === undefined) return
 
     for (const space of this.workspaceData.spaces) {
-      if (space.class === 'document.class.TeamSpace') {
+      if (space.class === document.class.Teamspace) {
         await this.importTeamspace(space as ImportTeamspace)
-      } else if (space.class === 'tracker.class.Project') {
+      } else if (space.class === tracker.class.Project) {
         await this.importProject(space as ImportProject)
       }
     }
@@ -244,7 +244,9 @@ export class WorkspaceImporter {
   }
 
   async importTeamspace (space: ImportTeamspace): Promise<Ref<Teamspace>> {
+    console.log('Creating teamspace: ', space.title)
     const teamspaceId = await this.createTeamspace(space)
+    console.log('Teamspace created: ', teamspaceId)
     for (const doc of space.docs) {
       await this.createDocumentWithSubdocs(doc, document.ids.NoParent, teamspaceId)
     }
@@ -256,7 +258,9 @@ export class WorkspaceImporter {
     parentId: Ref<Document>,
     teamspaceId: Ref<Teamspace>
   ): Promise<Ref<Document>> {
+    console.log('Creating document: ', doc.title)
     const documentId = await this.createDocument(doc, parentId, teamspaceId)
+    console.log('Document created: ', documentId)
     for (const child of doc.subdocs) {
       await this.createDocumentWithSubdocs(child, documentId, teamspaceId)
     }
@@ -318,7 +322,7 @@ export class WorkspaceImporter {
   }
 
   async importProject (project: ImportProject): Promise<Ref<Project>> {
-    console.log('Create project: ', project.title)
+    console.log('Creating project: ', project.title)
     const projectId = await this.createProject(project)
     console.log('Project created: ' + projectId)
 
@@ -340,9 +344,6 @@ export class WorkspaceImporter {
     parentsInfo: IssueParentInfo[]
   ): Promise<{ id: Ref<Issue>, identifier: string }> {
     console.log('Creating issue: ', issue.title)
-    if (issue.title === undefined) {
-      console.log('Issue: ', issue)
-    }
     const issueResult = await this.createIssue(issue, project, parentId, parentsInfo)
     console.log('Issue created: ', issueResult)
 

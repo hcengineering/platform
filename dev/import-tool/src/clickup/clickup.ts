@@ -15,6 +15,7 @@
 import contact, { type Person, type PersonAccount } from '@hcengineering/contact'
 import { type Ref, type Timestamp, type TxOperations } from '@hcengineering/core'
 import { MarkupNodeType, traverseNode, type MarkupNode } from '@hcengineering/text'
+import tracker from '@hcengineering/tracker'
 import csv from 'csvtojson'
 import { download } from '../importer/dowloader'
 import {
@@ -206,7 +207,7 @@ class ClickupImporter {
     for (const projectName of projects) {
       const identifier = this.getProjectIdentifier(projectName)
       importProjectsByName.set(projectName, {
-        class: 'tracker.class.Project',
+        class: tracker.class.Project,
         title: projectName,
         identifier,
         private: false,
@@ -280,7 +281,7 @@ class ClickupImporter {
     }
 
     return {
-      class: 'tracker.class.Issue',
+      class: tracker.class.Issue,
       title: clickup['Task Name'],
       descrProvider: () => {
         return Promise.resolve(description)
@@ -290,8 +291,7 @@ class ClickupImporter {
       remainingTime,
       comments: comments.concat(attachments).concat(serviceComments),
       subdocs: [],
-      assignee,
-      number: 111  //todo: update for new v4 format
+      assignee
     }
   }
 

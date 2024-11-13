@@ -1,5 +1,5 @@
 ---
-class: document.class.Document
+class: document:class:Document
 title: The Wonders of Deep Sea Creatures
 ---
 

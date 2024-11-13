@@ -1,4 +1,4 @@
-class: tracker.class.Project
+class: tracker:class:Project
 identifier: DEEP
 title: Deep Project
 private: false

@@ -6,6 +6,8 @@ import {
   type ImportTeamspace,
   type ImportWorkspace
 } from './importer'
+import tracker from '@hcengineering/tracker'
+import document from '@hcengineering/document'
 
 export interface ValidationError {
   path: string
@@ -221,8 +223,8 @@ export class ImportWorkspaceBuilder {
     if (!this.validateStringDefined(project.identifier)) {
       errors.push('identifier is required')
     }
-    if (project.class !== 'tracker.class.Project') {
-      errors.push('invalid class')
+    if (project.class !== tracker.class.Project) {
+      errors.push('invalid class: ' + project.class)
     }
     return errors
   }
@@ -232,8 +234,8 @@ export class ImportWorkspaceBuilder {
     if (!this.validateStringDefined(teamspace.title)) {
       errors.push('title is required')
     }
-    if (teamspace.class !== 'document.class.TeamSpace') {
-      errors.push('invalid class')
+    if (teamspace.class !== document.class.Teamspace) {
+      errors.push('invalid class: ' + teamspace.class)
     }
     return errors
   }
@@ -244,13 +246,13 @@ export class ImportWorkspaceBuilder {
       errors.push('title is required')
     }
     if (issue.status == null) {
-      errors.push('status is required')
+      errors.push('status is required: ')
     }
-    if (issue.class !== 'tracker.class.Issue') {
-      errors.push('invalid class')
+    if (issue.class !== tracker.class.Issue) {
+      errors.push('invalid class: ' + issue.class)
     }
-    if (issue.number == null || issue.number <= 0) {
-      errors.push('valid issue number is required')
+    if (issue.number !== undefined && (issue.number < 0 || Number.isNaN(issue.number))) {
+      errors.push('invalid issue number: ' + issue.number)
     }
     return errors
   }
@@ -260,8 +262,8 @@ export class ImportWorkspaceBuilder {
     if (!this.validateStringDefined(doc.title)) {
       errors.push('title is required')
     }
-    if (doc.class !== 'document:class:Document') {
-      errors.push('invalid class')
+    if (doc.class !== document.class.Document) {
+      errors.push('invalid class: ' + doc.class)
     }
     return errors
   }

@@ -1,4 +1,4 @@
-class: document.class.TeamSpace
+class: document:class:Teamspace
 members: [john.doe@example.com, joe.shmoe@example.com]
 owners: [john.doe@example.com]
 private: false
