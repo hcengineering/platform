@@ -18,6 +18,7 @@ import {
   Account,
   IndexKind,
   type CollaborativeDoc,
+  type Collection as Array,
   type Domain,
   type Markup,
   type Ref,
@@ -59,7 +60,7 @@ import type {
   Vacancy,
   VacancyList
 } from '@hcengineering/recruit'
-import survey from '@hcengineering/survey'
+import survey, { type Poll } from '@hcengineering/survey'
 import recruit from './plugin'
 
 @Model(recruit.class.Vacancy, task.class.Project)
@@ -162,7 +163,7 @@ export class TApplicant extends TTask implements Applicant {
   declare status: Ref<Status>
 
   @Prop(Collection(survey.class.Poll), survey.string.Polls)
-    polls?: number
+    polls?: Array<Poll>
 }
 
 @Model(recruit.class.ApplicantMatch, core.class.AttachedDoc, DOMAIN_TASK)

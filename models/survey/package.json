@@ -1,10 +1,10 @@
 {
   "name": "@hcengineering/model-survey",
-  "version": "0.0.1",
+  "version": "0.6.0",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
-  "author": "Anticrm Platform Contributors",
+  "author": "Hardcore Engineering Inc",
   "template": "@hcengineering/model-package",
   "license": "EPL-2.0",
   "scripts": {
@@ -36,8 +36,8 @@
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/model-workbench": "^0.6.1",
     "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/survey": "^0.0.1",
-    "@hcengineering/survey-resources": "^0.0.1",
+    "@hcengineering/survey": "^0.6.0",
+    "@hcengineering/survey-resources": "^0.6.0",
     "@hcengineering/ui": "^0.6.15"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/survey",
-  "version": "0.0.1",
+  "version": "0.6.0",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -9,7 +9,7 @@
     "types/**/*",
     "tsconfig.json"
   ],
-  "author": "Anticrm Platform Contributors",
+  "author": "Hardcore Engineering Inc",
   "license": "EPL-2.0",
   "scripts": {
     "build": "compile",

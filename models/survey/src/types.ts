@@ -14,14 +14,13 @@
 //
 
 import { IndexKind, type Domain, type Ref } from '@hcengineering/core'
-import { ArrOf, Index, Model, Prop, TypeRecord, TypeRef, TypeString, UX } from '@hcengineering/model'
+import { ArrOf, Hidden, Index, Model, Prop, TypeRecord, TypeRef, TypeString, UX } from '@hcengineering/model'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import { type Poll, type Question, type Survey } from '@hcengineering/survey'
 import survey from './plugin'
 
 export const DOMAIN_SURVEY = 'survey' as Domain
-export const DOMAIN_POLL = 'survey-poll' as Domain
 
 @Model(survey.class.Survey, core.class.Doc, DOMAIN_SURVEY)
 @UX(survey.string.Survey, survey.icon.Survey, 'SURV', 'name', undefined, survey.string.Surveys)
@@ -37,7 +36,7 @@ export class TSurvey extends TDoc implements Survey {
     questions?: Question[]
 }
 
-@Model(survey.class.Poll, core.class.Doc, DOMAIN_POLL)
+@Model(survey.class.Poll, core.class.Doc, DOMAIN_SURVEY)
 @UX(survey.string.Poll, survey.icon.Poll, 'POLL', undefined, undefined, survey.string.Polls)
 export class TPoll extends TAttachedDoc implements Poll {
   @Prop(TypeRef(survey.class.Survey), survey.string.Survey)
@@ -50,5 +49,6 @@ export class TPoll extends TAttachedDoc implements Poll {
     prompt!: string
 
   @Prop(ArrOf(TypeRecord()), getEmbeddedLabel('Answers'))
+  @Hidden()
     results?: { question: string, answer: string[] }[]
 }

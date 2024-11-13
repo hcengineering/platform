@@ -1,8 +1,8 @@
 {
   "name": "@hcengineering/survey-assets",
-  "version": "0.0.1",
+  "version": "0.6.0",
   "main": "src/index.ts",
-  "author": "Anticrm Platform Contributors",
+  "author": "Hardcore Engineering Inc",
   "template": "@hcengineering/assets-package",
   "license": "EPL-2.0",
   "scripts": {
@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/survey": "^0.0.1"
+    "@hcengineering/survey": "^0.6.0"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {
