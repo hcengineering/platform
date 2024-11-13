@@ -61,6 +61,7 @@ import analyticsCollector, {analyticsCollectorId} from '@hcengineering/analytics
 import { uploaderId } from '@hcengineering/uploader'
 import aiBot, { aiBotId } from '@hcengineering/ai-bot'
 import { testManagementId } from '@hcengineering/test-management'
+import { surveyId } from '@hcengineering/survey'
 
 import { bitrixId } from '@hcengineering/bitrix'
 
@@ -105,6 +106,7 @@ import '@hcengineering/analytics-collector-assets'
 import '@hcengineering/text-editor-assets'
 import '@hcengineering/uploader-assets'
 import '@hcengineering/test-management-assets'
+import '@hcengineering/survey-assets'
 
 import github, { githubId } from '@hcengineering/github'
 import '@hcengineering/github-assets'
@@ -234,6 +236,7 @@ function configureI18n(): void {
    addStringsLoader(printId, async (lang: string) => await import(`@hcengineering/print-assets/lang/${lang}.json`))
    addStringsLoader(analyticsCollectorId, async (lang: string) => await import(`@hcengineering/analytics-collector-assets/lang/${lang}.json`))
    addStringsLoader(testManagementId, async (lang: string) => await import(`@hcengineering/test-management-assets/lang/${lang}.json`))
+   addStringsLoader(surveyId, async (lang: string) => await import(`@hcengineering/survey-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform() {
@@ -403,6 +406,7 @@ export async function configurePlatform() {
   addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
   addLocation(uploaderId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/uploader-resources'))
   addLocation(testManagementId, () => import(/* webpackChunkName: "test-management" */ '@hcengineering/test-management-resources'))
+  addLocation(surveyId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/survey-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

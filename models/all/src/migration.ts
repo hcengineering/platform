@@ -53,6 +53,7 @@ import { requestOperation } from '@hcengineering/model-request'
 import { analyticsCollectorOperation } from '@hcengineering/model-analytics-collector'
 import { workbenchOperation } from '@hcengineering/model-workbench'
 import { testManagementOperation } from '@hcengineering/model-test-management'
+import { surveyOperation } from '@hcengineering/model-survey'
 
 export const migrateOperations: [string, MigrateOperation][] = [
   ['core', coreOperation],
@@ -94,5 +95,6 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['notification', notificationOperation],
   ['analyticsCollector', analyticsCollectorOperation],
   ['workbench', workbenchOperation],
-  ['testManagement', testManagementOperation]
+  ['testManagement', testManagementOperation],
+  ['survey', surveyOperation]
 ]

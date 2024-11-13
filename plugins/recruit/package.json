@@ -41,6 +41,7 @@
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/chunter": "^0.6.20",
+    "@hcengineering/survey": "^0.6.0",
     "@hcengineering/task": "^0.6.20",
     "@hcengineering/calendar": "^0.6.24",
     "@hcengineering/ui": "^0.6.15",
