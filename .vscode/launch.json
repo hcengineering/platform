@@ -543,7 +543,7 @@
       "name": "Debug Huly import",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "import-huly-issues", "/home/anna/xored/huly/platform/dev/import-tool/examples/v4-inside-out", "-u", "user1", "-pw", "1234", "-ws", "ws10"],
+      "args": ["src/__start.ts", "import-huly-issues", "/home/anna/xored/huly/platform/dev/import-tool/example", "-u", "user1", "-pw", "1234", "-ws", "ws10"],
       "env": {
         "FRONT_URL": "http://localhost:8087",
       },
