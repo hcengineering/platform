@@ -106,7 +106,7 @@ interface HulyWorkspaceSettings {
 
 interface HulyDocumentHeader {
   class: string
-  title?: string
+  title: string
 }
 
 class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
@@ -372,7 +372,7 @@ export class HulyImporter {
             builder.addProject(spacePath, project)
 
             // Process all issues recursively and add them to builder
-            await this.processIssuesRecursively(spacePath, builder, spacePath)
+            await this.processIssuesRecursively(builder, project.identifier, spacePath, spacePath)
             break
           }
 
@@ -381,7 +381,7 @@ export class HulyImporter {
             builder.addTeamspace(spacePath, teamspace)
 
             // Process all documents recursively and add them to builder
-            await this.processDocumentsRecursively(spacePath, builder, spacePath)
+            await this.processDocumentsRecursively(builder, spacePath, spacePath)
             break
           }
         }
@@ -395,9 +395,10 @@ export class HulyImporter {
   }
 
   private async processIssuesRecursively (
-    currentPath: string,
     builder: ImportWorkspaceBuilder,
+    projectIdentifier: string,
     projectPath: string,
+    currentPath: string,
     parentIssuePath?: string
   ): Promise<void> {
     const issueFiles = fs.readdirSync(currentPath)
@@ -410,13 +411,12 @@ export class HulyImporter {
 
       if (issueHeader.class === 'tracker.class.Issue' && numberMatch != null) {
         const issueNumber = numberMatch[1]
-        const refTitle = issueHeader.title ?? path.basename(issueFile, '.md')
 
         const meta: DocMetadata = {
           id: generateId<Issue>(),
           class: 'tracker:class:Issue',
           path: issuePath,
-          refTitle
+          refTitle: projectIdentifier + '-' + issueNumber
         }
         this.metadataById.set(meta.id, meta)
         this.metadataByFilePath.set(issuePath, meta)
@@ -424,14 +424,14 @@ export class HulyImporter {
         const issue: ImportIssue = {
           id: meta.id as Ref<Issue>,
           class: 'tracker.class.Issue',
-          title: issueHeader.title ?? refTitle,
+          title: issueHeader.title,
           number: parseInt(issueNumber),
           descrProvider: async () => await this.readMarkdownContent(issuePath),
           status: { name: issueHeader.status },
           estimation: issueHeader.estimation,
           remainingTime: issueHeader.remainingTime,
           comments: this.processComments(issueHeader.comments),
-          subdocs: [], // Будут добавлены через билдер
+          subdocs: [], // Will be added via builder
           assignee: this.personsByName.get(issueHeader.assignee)
         }
 
@@ -440,16 +440,16 @@ export class HulyImporter {
         // Process sub-issues if they exist
         const subDir = path.join(currentPath, issueFile.replace('.md', ''))
         if (fs.existsSync(subDir) && fs.statSync(subDir).isDirectory()) {
-          await this.processIssuesRecursively(subDir, builder, projectPath, issuePath)
+          await this.processIssuesRecursively(builder, projectIdentifier, projectPath, subDir, issuePath)
         }
       }
     }
   }
 
   private async processDocumentsRecursively (
-    currentPath: string,
     builder: ImportWorkspaceBuilder,
     teamspacePath: string,
+    currentPath: string,
     parentDocPath?: string
   ): Promise<void> {
     const docFiles = fs.readdirSync(currentPath)
@@ -464,7 +464,7 @@ export class HulyImporter {
           id: generateId<Document>(),
           class: 'document:class:Document',
           path: docPath,
-          refTitle: docHeader.title ?? path.basename(docFile, '.md')
+          refTitle: docHeader.title
         }
         this.metadataById.set(docMeta.id, docMeta)
         this.metadataByFilePath.set(docPath, docMeta)
@@ -474,7 +474,7 @@ export class HulyImporter {
           class: 'document:class:Document',
           title: docHeader.title ?? path.basename(docFile, '.md'),
           descrProvider: async () => await this.readMarkdownContent(docPath),
-          subdocs: [] // Будут добавлены через билдер
+          subdocs: [] // Will be added via builder
         }
 
         builder.addDocument(teamspacePath, docPath, doc, parentDocPath)
@@ -482,7 +482,7 @@ export class HulyImporter {
         // Process subdocuments if they exist
         const subDir = path.join(currentPath, docFile.replace('.md', ''))
         if (fs.existsSync(subDir) && fs.statSync(subDir).isDirectory()) {
-          await this.processDocumentsRecursively(subDir, builder, teamspacePath, docPath)
+          await this.processDocumentsRecursively(builder, teamspacePath, subDir, docPath)
         }
       }
     }
