@@ -26,7 +26,10 @@
     Separator,
     showPopup,
     getLocation,
-    resolvedLocationStore
+    resolvedLocationStore,
+    deviceOptionsStore as deviceInfo,
+    defineSeparators,
+    workbenchSeparators
   } from '@hcengineering/ui'
   import { Doc, DocumentQuery, Ref, Space, mergeQueries } from '@hcengineering/core'
   import { IntlString, Asset } from '@hcengineering/platform'
@@ -64,33 +67,56 @@
     if (createComponent === undefined) return
     showPopup(createComponent, { ...createComponentProps, space }, 'top')
   }
+  defineSeparators('parentsNavigator', workbenchSeparators)
 </script>
 
 <div class="hulyComponent-content__container columns">
-  <div class="hulyComponent-content__column">
-    <Header adaptive={'disabled'}>
-      <Breadcrumb icon={navigationComponentIcon} label={navigationComponentLabel} size={'large'} />
-      <svelte:fragment slot="actions">
-        {#if createComponent}
-          <Button
-            icon={IconAdd}
-            kind={'icon'}
-            on:click={() => {
-              showCreateDialog()
-            }}
-          />
-        {/if}
-      </svelte:fragment>
-    </Header>
-    <Component
-      is={navigationComponent}
-      props={{
-        ...navigationComponentProps,
-        query: spaceQuery
-      }}
+  {#if $deviceInfo.navigator.visible}
+    <div
+      class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal'
+        ? 'portrait'
+        : 'landscape'} border-left"
+    >
+      <div class="hulyComponent-content__column">
+        <Header adaptive={'disabled'}>
+          <Breadcrumb icon={navigationComponentIcon} label={navigationComponentLabel} size={'large'} />
+          <svelte:fragment slot="actions">
+            {#if createComponent}
+              <Button
+                icon={IconAdd}
+                kind={'icon'}
+                on:click={() => {
+                  showCreateDialog()
+                }}
+              />
+            {/if}
+          </svelte:fragment>
+        </Header>
+        <Component
+          is={navigationComponent}
+          props={{
+            ...navigationComponentProps,
+            query: spaceQuery
+          }}
+        />
+      </div>
+      <Separator
+        name={'parentsNavigator'}
+        float={$deviceInfo.navigator.float ? 'navigator' : true}
+        index={0}
+        color={'transparent'}
+      />
+    </div>
+
+    <Separator
+      name={'parentsNavigator'}
+      float={$deviceInfo.navigator.float}
+      index={0}
+      color={'transparent'}
+      separatorSize={0}
+      short
     />
-  </div>
-  <Separator name={'navigationSection'} index={0} color={'var(--theme-divider-color)'} />
+  {/if}
   <div class="hulyComponent-content__column">
     <Header adaptive={'disabled'}>
       <Breadcrumb icon={mainComponentIcon} label={mainComponentLabel} size={'large'} />
