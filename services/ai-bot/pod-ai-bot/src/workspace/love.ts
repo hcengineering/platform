@@ -9,8 +9,7 @@ import core, {
   TxCreateDoc,
   TxUpdateDoc,
   MeasureContext,
-  Markup,
-  generateId
+  Markup
 } from '@hcengineering/core'
 import { Person } from '@hcengineering/contact'
 import love, {
@@ -22,26 +21,10 @@ import love, {
   TranscriptionStatus
 } from '@hcengineering/love'
 import { ConnectMeetingRequest } from '@hcengineering/ai-bot'
-import chunter, { ChatMessage } from '@hcengineering/chunter'
+import chunter from '@hcengineering/chunter'
 import { jsonToMarkup, MarkupNodeType } from '@hcengineering/text'
 
 import config from '../config'
-
-class Transcriptions {
-  private readonly transcriptionByPerson = new Map<Ref<Person>, { _id: Ref<ChatMessage>, text: string }>()
-
-  get (person: Ref<Person>): { _id: Ref<ChatMessage>, text: string } | undefined {
-    return this.transcriptionByPerson.get(person)
-  }
-
-  set (person: Ref<Person>, value: { _id: Ref<ChatMessage>, text: string }): void {
-    this.transcriptionByPerson.set(person, value)
-  }
-
-  delete (person: Ref<Person>): void {
-    this.transcriptionByPerson.delete(person)
-  }
-}
 
 export class LoveController {
   private readonly roomSidById = new Map<Ref<Room>, string>()
@@ -50,7 +33,6 @@ export class LoveController {
   private participantsInfo: ParticipantInfo[] = []
   private rooms: Room[] = []
   private readonly meetingMinutes: MeetingMinutes[] = []
-  private readonly activeTranscriptions = new Map<Ref<Room>, Transcriptions>()
 
   constructor (
     private readonly workspace: string,
@@ -167,8 +149,6 @@ export class LoveController {
   async disconnect (roomId: Ref<Room>): Promise<void> {
     this.ctx.info('Disconnecting', { roomId })
 
-    this.activeTranscriptions.delete(roomId)
-
     const participant = await this.getRoomParticipant(roomId, this.currentPerson._id)
     if (participant !== undefined) {
       await this.client.remove(participant)
@@ -202,41 +182,22 @@ export class LoveController {
     const doc = await this.getMeetingMinutes(room, sid)
 
     if (doc === undefined) return
+    const op = this.client.apply(undefined, undefined, true)
 
-    const transcriptions = this.activeTranscriptions.get(roomId) ?? new Transcriptions()
-    const activeTranscription = transcriptions.get(participant.person)
-
-    if (activeTranscription === undefined) {
-      const _id = generateId<ChatMessage>()
-      if (!final) {
-        transcriptions.set(participant.person, { _id, text })
-        this.activeTranscriptions.set(roomId, transcriptions)
-      }
-
-      await this.client.addCollection(
-        chunter.class.ChatMessage,
-        core.space.Workspace,
-        doc._id,
-        doc._class,
-        'transcription',
-        {
-          message: this.transcriptToMarkup(text)
-        },
-        _id,
-        undefined,
-        personAccount._id
-      )
-    } else {
-      const mergedText = activeTranscription.text + ' ' + text
-      if (!final) {
-        transcriptions.set(participant.person, { _id: activeTranscription._id, text: mergedText })
-      } else {
-        transcriptions.delete(participant.person)
-      }
-      await this.client.updateDoc(chunter.class.ChatMessage, core.space.Workspace, activeTranscription._id, {
-        message: this.transcriptToMarkup(mergedText)
-      })
-    }
+    await op.addCollection(
+      chunter.class.ChatMessage,
+      core.space.Workspace,
+      doc._id,
+      doc._class,
+      'transcription',
+      {
+        message: this.transcriptToMarkup(text)
+      },
+      undefined,
+      undefined,
+      personAccount._id
+    )
+    await op.commit()
   }
 
   hasActiveConnections (): boolean {
