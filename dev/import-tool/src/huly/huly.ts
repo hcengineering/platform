@@ -57,12 +57,11 @@ interface HulyIssueHeader {
 
 interface HulySpaceHeader {
   class: string
-  title?: string
+  title: string
   private?: boolean
   autoJoin?: boolean
   owners?: string[]
   members?: string[]
-  identifier?: string
 }
 
 interface HulyProjectHeader extends HulySpaceHeader {
@@ -544,7 +543,7 @@ export class HulyImporter {
 
     return {
       class: projectHeader.class,
-      name: projectHeader.title ?? name,
+      title: projectHeader.title ?? name,
       identifier: projectHeader.identifier ?? name.toLowerCase().replace(/\s+/g, '-'),
       private: projectHeader.private ?? false,
       autoJoin: projectHeader.autoJoin ?? true,
@@ -569,7 +568,7 @@ export class HulyImporter {
   ): Promise<ImportTeamspace> {
     return {
       class: spaceHeader.class,
-      name: spaceHeader.title ?? name,
+      title: spaceHeader.title ?? name,
       private: spaceHeader.private ?? false,
       autoJoin: spaceHeader.autoJoin ?? true,
       owners: spaceHeader.owners?.map(email => ({ name: '', email })),

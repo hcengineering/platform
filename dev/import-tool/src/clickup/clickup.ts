@@ -207,7 +207,7 @@ class ClickupImporter {
       const identifier = this.getProjectIdentifier(projectName)
       importProjectsByName.set(projectName, {
         class: 'tracker.class.Project',
-        name: projectName,
+        title: projectName,
         identifier,
         private: false,
         autoJoin: false,

@@ -1,7 +1,6 @@
 class: document.class.TeamSpace
 members: [john.doe@example.com, joe.shmoe@example.com]
 owners: [john.doe@example.com]
-autoJoin: true
 private: false
 title: Marketing Docs
 description: This is my first teamspace in Huly! 🎉

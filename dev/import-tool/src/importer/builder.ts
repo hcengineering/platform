@@ -216,7 +216,7 @@ export class ImportWorkspaceBuilder {
 
   private validateProject (project: ImportProject): string[] {
     const errors: string[] = []
-    if (!this.validateStringDefined(project.name)) {
+    if (!this.validateStringDefined(project.title)) {
       errors.push('name is required')
     }
     if (!this.validateStringDefined(project.identifier)) {
@@ -230,7 +230,7 @@ export class ImportWorkspaceBuilder {
 
   private validateTeamspace (teamspace: ImportTeamspace): string[] {
     const errors: string[] = []
-    if (!this.validateStringDefined(teamspace.name)) {
+    if (!this.validateStringDefined(teamspace.title)) {
       errors.push('name is required')
     }
     if (teamspace.class !== 'document.class.TeamSpace') {
@@ -271,7 +271,7 @@ export class ImportWorkspaceBuilder {
     // Validate project type references
     for (const project of this.projects.values()) {
       if (project.projectType !== undefined && !this.projectTypes.has(project.projectType.name)) {
-        this.addError(project.name, `Referenced project type ${project.projectType.name} not found`)
+        this.addError(project.title, `Referenced project type ${project.projectType.name} not found`)
       }
     }
   }

@@ -83,7 +83,7 @@ export interface ImportStatus {
 
 export interface ImportSpace<T extends ImportDoc> {
   class: string
-  name: string
+  title: string
   private: boolean
   autoJoin: boolean
   description?: string
@@ -268,12 +268,12 @@ export class WorkspaceImporter {
     const data = {
       type: document.spaceType.DefaultTeamspaceType,
       description: space.description ?? '',
-      title: space.name,
-      name: space.name,
-      private: false,
+      title: space.title,
+      name: space.title,
+      private: space.private,
       owners: await this.findAccountsIfAny(space.owners),
       members: await this.findAccountsIfAny(space.members),
-      autoJoin: false,
+      autoJoin: space.autoJoin,
       archived: false
     }
     await this.client.createDoc(document.class.Teamspace, core.space.Space, data, teamspaceId)
@@ -318,7 +318,7 @@ export class WorkspaceImporter {
   }
 
   async importProject (project: ImportProject): Promise<Ref<Project>> {
-    console.log('Create project: ', project.name)
+    console.log('Create project: ', project.title)
     const projectId = await this.createProject(project)
     console.log('Project created: ' + projectId)
 
@@ -381,7 +381,7 @@ export class WorkspaceImporter {
     const members = await this.findAccountsIfAny(project.members)
     const owners = await this.findAccountsIfAny(project.owners)
     const projectData = {
-      name: project.name,
+      name: project.title,
       description: project.description ?? '',
       private: project.private,
       members,
