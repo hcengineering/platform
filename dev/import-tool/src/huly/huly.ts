@@ -397,7 +397,8 @@ export class HulyImporter {
   private async processIssuesRecursively (
     currentPath: string,
     builder: ImportWorkspaceBuilder,
-    projectPath: string
+    projectPath: string,
+    parentIssuePath?: string
   ): Promise<void> {
     const issueFiles = fs.readdirSync(currentPath)
       .filter(f => f.endsWith('.md'))
@@ -434,12 +435,12 @@ export class HulyImporter {
           assignee: this.personsByName.get(issueHeader.assignee)
         }
 
-        builder.addIssue(projectPath, issuePath, issue)
+        builder.addIssue(projectPath, issuePath, issue, parentIssuePath)
 
         // Process sub-issues if they exist
         const subDir = path.join(currentPath, issueFile.replace('.md', ''))
         if (fs.existsSync(subDir) && fs.statSync(subDir).isDirectory()) {
-          await this.processIssuesRecursively(subDir, builder, projectPath)
+          await this.processIssuesRecursively(subDir, builder, projectPath, issuePath)
         }
       }
     }
@@ -448,7 +449,8 @@ export class HulyImporter {
   private async processDocumentsRecursively (
     currentPath: string,
     builder: ImportWorkspaceBuilder,
-    teamspacePath: string
+    teamspacePath: string,
+    parentDocPath?: string
   ): Promise<void> {
     const docFiles = fs.readdirSync(currentPath)
       .filter(f => f.endsWith('.md'))
@@ -475,12 +477,12 @@ export class HulyImporter {
           subdocs: [] // Будут добавлены через билдер
         }
 
-        builder.addDocument(teamspacePath, docPath, doc)
+        builder.addDocument(teamspacePath, docPath, doc, parentDocPath)
 
         // Process subdocuments if they exist
         const subDir = path.join(currentPath, docFile.replace('.md', ''))
         if (fs.existsSync(subDir) && fs.statSync(subDir).isDirectory()) {
-          await this.processDocumentsRecursively(subDir, builder, teamspacePath)
+          await this.processDocumentsRecursively(subDir, builder, teamspacePath, docPath)
         }
       }
     }

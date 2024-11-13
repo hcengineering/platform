@@ -21,8 +21,10 @@ export class ImportWorkspaceBuilder {
   private readonly projects = new Map<string, ImportProject>()
   private readonly teamspaces = new Map<string, ImportTeamspace>()
   private readonly projectTypes = new Map<string, ImportProjectType>()
-  private readonly issuesByProject = new Map<string, Map<number, ImportIssue>>()
+  private readonly issuesByProject = new Map<string, Map<string, ImportIssue>>()
+  private readonly issueParents = new Map<string, string>()
   private readonly documentsByTeamspace = new Map<string, Map<string, ImportDocument>>()
+  private readonly documentParents = new Map<string, string>()
   private readonly errors = new Map<string, ValidationError>()
 
   constructor (
@@ -64,17 +66,20 @@ export class ImportWorkspaceBuilder {
     return this
   }
 
-  addIssue (projectPath: string, issuePath: string, issue: ImportIssue): this {
+  addIssue (projectPath: string, issuePath: string, issue: ImportIssue, parentIssuePath?: string): this {
     if (!this.issuesByProject.has(projectPath)) {
       this.issuesByProject.set(projectPath, new Map())
     }
 
     const projectIssues = this.issuesByProject.get(projectPath)
     if (projectIssues === undefined) {
-      throw new Error(`Unexpected: Project ${projectPath} has no issues`)
+      throw new Error(`Project ${projectPath} not found`)
     }
 
-    if (projectIssues.has(issue.number)) {
+    const duplicateIssue = Array.from(projectIssues.values())
+      .find(existingIssue => existingIssue.number === issue.number)
+
+    if (duplicateIssue !== undefined) {
       this.addError(issuePath, `Duplicate issue number ${issue.number} in project ${projectPath}`)
     } else {
       this.validateAndAdd(
@@ -83,20 +88,24 @@ export class ImportWorkspaceBuilder {
         issue,
         (i) => this.validateIssue(i),
         projectIssues,
-        issue.number
+        issuePath
       )
+
+      if (parentIssuePath !== undefined) {
+        this.issueParents.set(issuePath, parentIssuePath)
+      }
     }
     return this
   }
 
-  addDocument (teamspacePath: string, docPath: string, doc: ImportDocument): this {
+  addDocument (teamspacePath: string, docPath: string, doc: ImportDocument, parentDocPath?: string): this {
     if (!this.documentsByTeamspace.has(teamspacePath)) {
       this.documentsByTeamspace.set(teamspacePath, new Map())
     }
 
     const docs = this.documentsByTeamspace.get(teamspacePath)
     if (docs === undefined) {
-      throw new Error(`Unexpected: Teamspace ${teamspacePath} has no documents`)
+      throw new Error(`Teamspace ${teamspacePath} not found`)
     }
 
     this.validateAndAdd(
@@ -107,6 +116,11 @@ export class ImportWorkspaceBuilder {
       docs,
       docPath
     )
+
+    if (parentDocPath !== undefined) {
+      this.documentParents.set(docPath, parentDocPath)
+    }
+
     return this
   }
 
@@ -134,14 +148,28 @@ export class ImportWorkspaceBuilder {
     for (const [teamspacePath, docs] of this.documentsByTeamspace) {
       const teamspace = this.teamspaces.get(teamspacePath)
       if (teamspace !== undefined) {
-        teamspace.docs = Array.from(docs.values())
+        const rootDocPaths = Array.from(docs.keys())
+          .filter(docPath => !this.documentParents.has(docPath))
+
+        for (const rootPath of rootDocPaths) {
+          this.buildDocumentHierarchy(rootPath, docs)
+        }
+
+        teamspace.docs = rootDocPaths.map(path => docs.get(path)).filter(Boolean) as ImportDocument[]
       }
     }
 
     for (const [projectPath, issues] of this.issuesByProject) {
       const project = this.projects.get(projectPath)
       if (project !== undefined) {
-        project.docs = Array.from(issues.values())
+        const rootIssuePaths = Array.from(issues.keys())
+          .filter(issuePath => !this.issueParents.has(issuePath))
+
+        for (const rootPath of rootIssuePaths) {
+          this.buildIssueHierarchy(rootPath, issues)
+        }
+
+        project.docs = rootIssuePaths.map(path => issues.get(path)).filter(Boolean) as ImportIssue[]
       }
     }
 
@@ -265,5 +293,39 @@ export class ImportWorkspaceBuilder {
 
   private addError (path: string, error: string): void {
     this.errors.set(path, { path, error })
+  }
+
+  private buildDocumentHierarchy (
+    docPath: string,
+    allDocs: Map<string, ImportDocument>
+  ): void {
+    const doc = allDocs.get(docPath)
+    if (doc === undefined) return
+
+    const childDocs = Array.from(allDocs.entries())
+      .filter(([childPath]) => this.documentParents.get(childPath) === docPath)
+      .map(([childPath, childDoc]) => {
+        this.buildDocumentHierarchy(childPath, allDocs)
+        return childDoc
+      })
+
+    doc.subdocs = childDocs
+  }
+
+  private buildIssueHierarchy (
+    issuePath: string,
+    allIssues: Map<string, ImportIssue>
+  ): void {
+    const issue = allIssues.get(issuePath)
+    if (issue === undefined) return
+
+    const childIssues = Array.from(allIssues.entries())
+      .filter(([childPath]) => this.issueParents.get(childPath) === issuePath)
+      .map(([childPath, childIssue]) => {
+        this.buildIssueHierarchy(childPath, allIssues)
+        return childIssue
+      })
+
+    issue.subdocs = childIssues
   }
 }
