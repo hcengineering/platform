@@ -1,5 +1,5 @@
 import { Employee, Person } from '@hcengineering/contact'
-import { Data, Ref } from '@hcengineering/core'
+import { Data, generateId, makeCollaborativeDoc, Ref } from '@hcengineering/core'
 
 import love, { Office, Room, ParticipantInfo, RoomAccess, RoomType, GRID_WIDTH } from '.'
 
@@ -15,11 +15,13 @@ export function isOffice (room: Data<Room>): room is Office {
   return (room as Office).person !== undefined
 }
 
-export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Office>[] {
-  const res: Data<Room | Office>[] = []
+export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Office> & { _id: Ref<Room> })[] {
+  const res: (Data<Room | Office> & { _id: Ref<Room> })[] = []
   // create 12 offices
   for (let index = 0; index < 12; index++) {
-    const office: Data<Office> = {
+    const _id = generateId<Office>()
+    const office: Data<Office> & { _id: Ref<Office> } = {
+      _id,
       name: '',
       type: RoomType.Audio,
       access: RoomAccess.Knock,
@@ -30,11 +32,15 @@ export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Off
       y: index - (index % 2),
       person: employees[index] ?? null,
       language: 'en',
-      startWithTranscription: false
+      startWithTranscription: false,
+      description: makeCollaborativeDoc(_id, 'description')
     }
     res.push(office)
   }
+  const allHands = generateId<Room>()
+
   res.push({
+    _id: allHands,
     name: 'All hands',
     type: RoomType.Video,
     access: RoomAccess.Open,
@@ -44,9 +50,13 @@ export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Off
     x: 6,
     y: 0,
     language: 'en',
-    startWithTranscription: true
+    startWithTranscription: true,
+    description: makeCollaborativeDoc(allHands, 'description')
   })
+
+  const meetingRoom1 = generateId<Room>()
   res.push({
+    _id: meetingRoom1,
     name: 'Meeting Room 1',
     type: RoomType.Video,
     access: RoomAccess.Open,
@@ -56,9 +66,12 @@ export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Off
     x: 6,
     y: 4,
     language: 'en',
-    startWithTranscription: true
+    startWithTranscription: true,
+    description: makeCollaborativeDoc(meetingRoom1, 'description')
   })
+  const meetingRoom2 = generateId<Room>()
   res.push({
+    _id: meetingRoom2,
     name: 'Meeting Room 2',
     type: RoomType.Video,
     access: RoomAccess.Open,
@@ -68,9 +81,12 @@ export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Off
     x: 11,
     y: 4,
     language: 'en',
-    startWithTranscription: true
+    startWithTranscription: true,
+    description: makeCollaborativeDoc(meetingRoom2, 'description')
   })
+  const voiceRoom1 = generateId<Room>()
   res.push({
+    _id: voiceRoom1,
     name: 'Voice Room 1',
     type: RoomType.Audio,
     access: RoomAccess.Open,
@@ -80,9 +96,12 @@ export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Off
     x: 6,
     y: 8,
     language: 'en',
-    startWithTranscription: true
+    startWithTranscription: false,
+    description: makeCollaborativeDoc(voiceRoom1, 'description')
   })
+  const voiceRoom2 = generateId<Room>()
   res.push({
+    _id: voiceRoom2,
     name: 'Voice Room 2',
     type: RoomType.Audio,
     access: RoomAccess.Open,
@@ -92,7 +111,8 @@ export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Off
     x: 11,
     y: 8,
     language: 'en',
-    startWithTranscription: true
+    startWithTranscription: false,
+    description: makeCollaborativeDoc(voiceRoom2, 'description')
   })
   return res
 }

@@ -142,6 +142,7 @@ export class LoveController {
 
     const room = await this.getRoom(request.roomId)
     if (room === undefined) {
+      this.ctx.error('Room not found', request)
       this.roomSidById.delete(request.roomId)
       this.connectedRooms.delete(request.roomId)
       return
@@ -191,8 +192,15 @@ export class LoveController {
       return
     }
 
-    const doc = await this.getMeetingMinutes(roomId, this.roomSidById.get(roomId) ?? '')
+    const sid = this.roomSidById.get(roomId)
+
+    if (sid === undefined) {
+      return
+    }
+
     const personAccount = this.client.getModel().getAccountByPersonId(participant.person)[0]
+    const doc = await this.getMeetingMinutes(room, sid)
+
     if (doc === undefined) return
 
     const transcriptions = this.activeTranscriptions.get(roomId) ?? new Transcriptions()
@@ -246,18 +254,15 @@ export class LoveController {
     )
   }
 
-  async getMeetingMinutes (room: Ref<Room>, sid: string): Promise<MeetingMinutes | undefined> {
+  async getMeetingMinutes (room: Room, sid: string): Promise<MeetingMinutes | undefined> {
     if (sid === '') return undefined
 
-    const existing = this.meetingMinutes.find((m) => m.room === room && m.sid === sid)
-    if (existing !== undefined) return existing
+    const doc =
+      this.meetingMinutes.find((m) => m.sid === sid) ?? (await this.client.findOne(love.class.MeetingMinutes, { sid }))
 
-    const doc = await this.client.findOne(love.class.MeetingMinutes, {
-      room,
-      sid
-    })
-
-    if (doc === undefined) return
+    if (doc === undefined) {
+      return undefined
+    }
 
     this.meetingMinutes.push(doc)
     return doc

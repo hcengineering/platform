@@ -290,7 +290,10 @@ export class AIControl {
     if (workspace === null) return
 
     const wsClient = await this.getWorkspaceClient(workspace)
-    if (wsClient === undefined) return
+    if (wsClient === undefined) {
+      this.ctx.error('Workspace not found', { workspace })
+      return
+    }
 
     return await wsClient.getLoveIdentity()
   }

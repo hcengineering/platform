@@ -67,6 +67,10 @@
     "Meeting": "Meeting",
     "Transcription": "Transcription",
     "StartWithTranscription": "Start with transcription",
-    "MeetingMinutes": "Meeting minutes"
+    "MeetingMinutes": "Meeting minutes",
+    "StartMeeting": "Start meeting",
+    "Video": "Video",
+    "NoMeetingMinutes": "No meeting minutes",
+    "JoinMeeting": "Join meeting"
   }
 }

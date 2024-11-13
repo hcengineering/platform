@@ -13,23 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import { Breadcrumb, Header, IconEdit, ModernButton, Switcher } from '@hcengineering/ui'
+  import { AccountRole, Ref, getCurrentAccount, hasAccountRole, WithLookup } from '@hcengineering/core'
+  import { Breadcrumb, Header, IconEdit, ModernButton, Component } from '@hcengineering/ui'
   import { Floor, Room } from '@hcengineering/love'
-  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
+  import { ViewletSelector } from '@hcengineering/view-resources'
+  import { Viewlet, ViewletPreference } from '@hcengineering/view'
+
   import lovePlg from '../plugin'
   import { currentRoom, floors } from '../stores'
   import ControlBar from './ControlBar.svelte'
-  import MeetingsTable from './MeetingMinutesTable.svelte'
-  import FloorView from './FloorView.svelte'
 
   export let rooms: Room[] = []
   export let floor: Ref<Floor>
 
   const dispatch = createEventDispatcher()
 
-  let selectedViewlet: 'meetingMinutes' | 'floor' = 'floor'
+  let viewlet: WithLookup<Viewlet> | undefined
+  let preference: ViewletPreference | undefined
+  let loading = false
 
   $: selectedFloor = $floors.filter((fl) => fl._id === floor)[0]
 
@@ -43,18 +45,7 @@
   <Header allowFullsize adaptive={'disabled'}>
     <Breadcrumb title={selectedFloor?.name ?? ''} size={'large'} isCurrent />
     <svelte:fragment slot="beforeTitle">
-      <Switcher
-        selected={selectedViewlet}
-        items={[
-          { id: 'floor', icon: lovePlg.icon.Love, tooltip: lovePlg.string.Floor },
-          { id: 'meetingMinutes', icon: view.icon.Table, tooltip: lovePlg.string.MeetingMinutes }
-        ]}
-        kind="subtle"
-        name="selector"
-        on:select={(e) => {
-          selectedViewlet = e.detail.id
-        }}
-      />
+      <ViewletSelector bind:viewlet bind:preference bind:loading viewletQuery={{ attachTo: lovePlg.class.Floor }} />
     </svelte:fragment>
     <svelte:fragment slot="actions">
       {#if editable}
@@ -68,10 +59,8 @@
     </svelte:fragment>
   </Header>
   <div class="hulyComponent-content__column content">
-    {#if selectedViewlet === 'meetingMinutes'}
-      <MeetingsTable />
-    {:else}
-      <FloorView {rooms} />
+    {#if viewlet?.$lookup?.descriptor?.component}
+      <Component is={viewlet.$lookup.descriptor.component} props={{ floor, rooms }} on:open />
     {/if}
   </div>
   {#if $currentRoom}

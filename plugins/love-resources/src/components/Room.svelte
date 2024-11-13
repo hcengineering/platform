@@ -327,21 +327,57 @@
 
   const handleFullScreen = () => ($isFullScreen = document.fullscreenElement != null)
 
-  function toggleFullscreen () {
-    if (!document.fullscreenElement) {
+  function checkFullscreen (): void {
+    const needFullScreen = $isFullScreen
+    if (document.fullscreenElement && !needFullScreen) {
+      document
+        .exitFullscreen()
+        .then(() => {
+          $isFullScreen = false
+        })
+        .catch((err) => {
+          console.log(`Error exiting fullscreen mode: ${err.message} (${err.name})`)
+          $isFullScreen = false
+        })
+    } else if (!document.fullscreenElement && needFullScreen) {
       roomEl
         .requestFullscreen()
-        .then(() => ($isFullScreen = true))
+        .then(() => {
+          $isFullScreen = true
+        })
         .catch((err) => {
           console.log(`Error attempting to enable fullscreen mode: ${err.message} (${err.name})`)
           $isFullScreen = false
         })
-    } else {
-      document.exitFullscreen()
-      $isFullScreen = false
     }
   }
-  $: if (((document.fullscreenElement && !$isFullScreen) || $isFullScreen) && roomEl) toggleFullscreen()
+
+  function onFullScreen (): void {
+    const needFullScreen = !$isFullScreen
+    if (!document.fullscreenElement && needFullScreen) {
+      roomEl
+        .requestFullscreen()
+        .then(() => {
+          $isFullScreen = true
+        })
+        .catch((err) => {
+          console.log(`Error attempting to enable fullscreen mode: ${err.message} (${err.name})`)
+          $isFullScreen = false
+        })
+    } else if (!needFullScreen) {
+      document
+        .exitFullscreen()
+        .then(() => {
+          $isFullScreen = false
+        })
+        .catch((err) => {
+          console.log(`Error exiting fullscreen mode: ${err.message} (${err.name})`)
+          $isFullScreen = false
+        })
+    }
+  }
+
+  $: if (((document.fullscreenElement && !$isFullScreen) || $isFullScreen) && roomEl) checkFullscreen()
 
   function getActiveParticipants (participants: ParticipantData[]): ParticipantData[] {
     return participants.filter((p) => !p.isAgent || $infos.some(({ person }) => person === p._id))
@@ -396,7 +432,7 @@
     {/if}
   </div>
   {#if $currentRoom}
-    <ControlBar room={$currentRoom} fullScreen={$isFullScreen} />
+    <ControlBar room={$currentRoom} fullScreen={$isFullScreen} {onFullScreen} />
   {/if}
 </div>
 

@@ -8,7 +8,8 @@ import {
   type JoinRequest,
   type Office,
   type ParticipantInfo,
-  type Room
+  type Room,
+  type MeetingMinutes
 } from '@hcengineering/love'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
@@ -58,6 +59,9 @@ export const activeInvites = derived(invites, (val) => {
 
 export const myPreferences = writable<DevicesPreference | undefined>()
 export let $myPreferences: DevicesPreference | undefined
+
+export const meetingMinutesStore = writable<MeetingMinutes | undefined>(undefined)
+export const selectedRoomPlace = writable<{ _id: Ref<Room>, x: number, y: number } | undefined>(undefined)
 
 function filterParticipantInfo (value: ParticipantInfo[]): ParticipantInfo[] {
   const map = new Map<string, ParticipantInfo>()

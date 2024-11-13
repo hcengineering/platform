@@ -67,6 +67,10 @@
     "Meeting": "Riunione",
     "Transcription": "Trascrizione",
     "StartWithTranscription": "Inizia con la trascrizione",
-    "MeetingMinutes": "Verbale della riunione"
+    "MeetingMinutes": "Verbale della riunione",
+    "StartMeeting": "Inizia riunione",
+    "Video": "Video",
+    "NoMeetingMinutes": "Nessun verbale della riunione",
+    "JoinMeeting": "Unisciti alla riunione"
   }
 }

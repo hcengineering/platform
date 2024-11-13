@@ -83,6 +83,11 @@
       on:configure={() => (configure = false)}
     />
   {:else}
-    <Floor rooms={getRooms($rooms, selectedFloor)} floor={selectedFloor} on:configure={() => (configure = true)} />
+    <Floor
+      rooms={getRooms($rooms, selectedFloor)}
+      floor={selectedFloor}
+      on:configure={() => (configure = true)}
+      on:open
+    />
   {/if}
 </div>

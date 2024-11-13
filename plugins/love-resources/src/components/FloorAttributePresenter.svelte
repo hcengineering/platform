@@ -13,27 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { MeetingMinutes, Room } from '@hcengineering/love'
+  import { ObjectMention } from '@hcengineering/view-resources'
+  import { Floor } from '@hcengineering/love'
+  import { Ref } from '@hcengineering/core'
 
-  import VideoPopup from '../VideoPopup.svelte'
-  import MeetingWidgetHeader from './MeetingWidgetHeader.svelte'
+  import { floors } from '../stores'
 
-  export let room: Room
-  export let doc: MeetingMinutes | undefined = undefined
+  export let value: Ref<Floor>
+  export let inline: boolean = false
+
+  $: floor = $floors.find((f) => f._id === value)
 </script>
 
-<MeetingWidgetHeader {doc} {room} on:close />
-<div class="root">
-  <VideoPopup room={room._id} isDock canUnpin={false} />
-</div>
-
-<style lang="scss">
-  .root {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    align-items: center;
-    background-color: var(--theme-statusbar-color);
-    overflow: hidden;
-  }
-</style>
+{#if floor}
+  {#if inline}
+    <ObjectMention object={floor} />
+  {:else}
+    <div class="flex-presenter overflow-label sm-tool-icon">
+      {floor.name}
+    </div>
+  {/if}
+{/if}

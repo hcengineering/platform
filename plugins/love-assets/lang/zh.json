@@ -67,6 +67,10 @@
     "Meeting": "会议",
     "Transcription": "转录",
     "StartWithTranscription": "开始转录",
-    "MeetingMinutes": "会议记录"
+    "MeetingMinutes": "会议记录",
+    "StartMeeting": "开始会议",
+    "Video": "视频",
+    "NoMeetingMinutes": "无会议记录",
+    "JoinMeeting": "加入会议"
   }
 }

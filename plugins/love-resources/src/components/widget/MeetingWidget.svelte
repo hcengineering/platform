@@ -14,15 +14,14 @@
 -->
 <script lang="ts">
   import { closeWidget, minimizeSidebar, WidgetState } from '@hcengineering/workbench-resources'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import core, { Ref } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
   import { MeetingMinutes, Room } from '@hcengineering/love'
   import { Loading } from '@hcengineering/ui'
 
   import love from '../../plugin'
   import VideoTab from './VideoTab.svelte'
   import { isCurrentInstanceConnected, lk } from '../../utils'
-  import { rooms } from '../../stores'
+  import { currentRoom, meetingMinutesStore } from '../../stores'
   import ChatTab from './ChatTab.svelte'
   import TranscriptionTab from './TranscriptionTab.svelte'
 
@@ -31,54 +30,43 @@
   export let width: string
 
   const meetingQuery = createQuery()
-  const client = getClient()
 
   let meetingMinutes: MeetingMinutes | undefined = undefined
   let isMeetingMinutesLoaded = false
 
-  let roomId: Ref<Room> | undefined = undefined
   let room: Room | undefined = undefined
   let sid: string | undefined = undefined
 
-  $: roomId = widgetState?.data?.room
-  $: room = roomId !== undefined ? $rooms.find((r) => r._id === roomId) : undefined
+  $: room = $currentRoom
 
   void lk.getSid().then((res) => {
     sid = res
   })
 
-  $: if (!$isCurrentInstanceConnected || widgetState?.data?.room === undefined) {
+  $: if (
+    !$isCurrentInstanceConnected ||
+    widgetState?.data?.room === undefined ||
+    $currentRoom === undefined ||
+    $currentRoom._id !== widgetState?.data?.room
+  ) {
     closeWidget(love.ids.MeetingWidget)
   }
 
-  $: if (roomId !== meetingMinutes?.room) {
+  $: if (meetingMinutes?.sid !== sid) {
     meetingMinutes = undefined
     isMeetingMinutesLoaded = false
   }
 
-  $: if ($isCurrentInstanceConnected && room && sid) {
-    meetingQuery.query(love.class.MeetingMinutes, { room: room._id, sid }, async (res) => {
+  $: if (sid != null && room !== undefined) {
+    meetingQuery.query(love.class.MeetingMinutes, { sid, attachedTo: room._id }, async (res) => {
       meetingMinutes = res[0]
-      if (meetingMinutes !== undefined) {
-        isMeetingMinutesLoaded = true
-      } else {
-        void createMeetingMinutes()
-      }
+      meetingMinutesStore.set(meetingMinutes)
+      isMeetingMinutesLoaded = true
     })
   } else {
     meetingQuery.unsubscribe()
     meetingMinutes = undefined
     isMeetingMinutesLoaded = sid !== undefined
-  }
-
-  async function createMeetingMinutes (): Promise<void> {
-    if (sid === undefined || room === undefined) return
-    const dateStr = new Date().toISOString().replace('T', '_').slice(0, 19)
-    await client.createDoc(love.class.MeetingMinutes, core.space.Workspace, {
-      title: room.name + '_' + dateStr,
-      room: room._id,
-      sid
-    })
   }
 
   function handleClose (): void {
@@ -88,18 +76,18 @@
 
 {#if widgetState && room}
   {#if widgetState.tab === 'video'}
-    <VideoTab {room} />
+    <VideoTab {room} doc={meetingMinutes} on:close={handleClose} />
   {:else if widgetState.tab === 'chat'}
     {#if !isMeetingMinutesLoaded}
       <Loading />
     {:else if meetingMinutes}
-      <ChatTab {meetingMinutes} {widgetState} {height} {width} on:close={handleClose} />
+      <ChatTab {meetingMinutes} {room} {widgetState} {height} {width} on:close={handleClose} />
     {/if}
   {:else if widgetState.tab === 'transcription'}
     {#if !isMeetingMinutesLoaded}
       <Loading />
     {:else if meetingMinutes}
-      <TranscriptionTab {meetingMinutes} {widgetState} {height} {width} on:close={handleClose} />
+      <TranscriptionTab {meetingMinutes} {room} {widgetState} {height} {width} on:close={handleClose} />
     {/if}
   {/if}
 {/if}
