@@ -18,8 +18,9 @@
   import { getMetadata } from '@hcengineering/platform'
   import { Label, Loading, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
-  import presentation from '@hcengineering/presentation'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import { EditDoc } from '@hcengineering/view-resources'
+  import { subscribeDoc } from '@hcengineering/notification-resources'
 
   import love from '../plugin'
   import { storePromise, currentRoom, infos, invites, myInfo, myRequests, meetingMinutesStore } from '../stores'
@@ -60,6 +61,10 @@
   let replacedPanel: HTMLElement
   $: $deviceInfo.replacedPanel = replacedPanel
   onDestroy(() => ($deviceInfo.replacedPanel = undefined))
+
+  $: if ($meetingMinutesStore) {
+    void subscribeDoc(getClient(), $meetingMinutesStore._class, $meetingMinutesStore._id, 'add', $meetingMinutesStore)
+  }
 </script>
 
 <div class="antiPanel-component filledNav" bind:this={replacedPanel}>

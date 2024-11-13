@@ -431,6 +431,10 @@ export function createModel (builder: Builder): void {
     components: { input: chunter.component.ChatMessageInput }
   })
 
+  builder.mixin(love.class.MeetingMinutes, core.class.Class, activity.mixin.ActivityDoc, {})
+
+  builder.mixin(love.class.Room, core.class.Class, activity.mixin.ActivityDoc, {})
+
   builder.mixin(love.class.MeetingMinutes, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: love.component.MeetingMinutesPresenter
   })
@@ -520,6 +524,41 @@ export function createModel (builder: Builder): void {
     },
     love.viewlet.FloorMeetingMinutes
   )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      label: chunter.string.Chat,
+      generated: false,
+      hidden: false,
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: chunter.class.ChatMessage,
+      attachedToClass: love.class.MeetingMinutes,
+      txMatch: {
+        'attributes.collection': 'messages'
+      },
+      defaultEnabled: false,
+      group: love.ids.LoveNotificationGroup
+    },
+    love.ids.MeetingMinutesChatNotification
+  )
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.InboxNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [love.ids.MeetingMinutesChatNotification]
+  })
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.PushNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [love.ids.MeetingMinutesChatNotification]
+  })
+
+  builder.mixin(love.class.MeetingMinutes, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: ['createdBy']
+  })
 
   builder.mixin(love.class.Room, core.class.Class, core.mixin.IndexConfiguration, {
     indexes: [],
