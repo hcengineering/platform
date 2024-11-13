@@ -62,7 +62,7 @@ class ElasticAdapter implements FullTextAdapter {
   async initMapping (ctx: MeasureContext): Promise<boolean> {
     const indexName = this.indexName
     try {
-      const existingVersions = await ctx.with('get-indexes', {}, () =>
+      const existingVersions = await ctx.withSync('get-indexes', {}, () =>
         this.client.indices.get({
           index: [`${this.indexBaseName}_*`]
         })

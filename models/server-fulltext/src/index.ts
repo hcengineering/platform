@@ -21,7 +21,6 @@ import serverFulltext from '@hcengineering/server-fulltext'
 export { serverFulltextId } from '@hcengineering/server-fulltext'
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverFulltext.trigger.OnChange,
-    arrays: true
+    trigger: serverFulltext.trigger.OnChange
   })
 }

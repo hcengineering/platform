@@ -1125,8 +1125,8 @@ export class GithubWorker implements IntegrationManager {
     const docs = await this.ctx.with(
       'find-doc-sync-info',
       {},
-      async (ctx) =>
-        await this._client.findAll<DocSyncInfo>(
+      (ctx) =>
+        this._client.findAll<DocSyncInfo>(
           github.class.DocSyncInfo,
           {
             needSync: { $ne: githubSyncVersion },

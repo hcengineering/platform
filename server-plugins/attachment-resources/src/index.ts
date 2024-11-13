@@ -23,19 +23,24 @@ import type { TriggerControl } from '@hcengineering/server-core'
  * @public
  */
 export async function OnAttachmentDelete (
-  tx: Tx,
+  txes: Tx[],
   { removedMap, ctx, storageAdapter, workspace }: TriggerControl
 ): Promise<Tx[]> {
-  const rmTx = TxProcessor.extractTx(tx) as TxRemoveDoc<Attachment>
+  const toDelete: string[] = []
+  for (const tx of txes) {
+    const rmTx = TxProcessor.extractTx(tx) as TxRemoveDoc<Attachment>
 
-  // Obtain document being deleted.
-  const attach = removedMap.get(rmTx.objectId) as Attachment
+    // Obtain document being deleted.
+    const attach = removedMap.get(rmTx.objectId) as Attachment
 
-  if (attach === undefined) {
-    return []
+    if (attach === undefined) {
+      continue
+    }
+    toDelete.push(attach.file)
   }
-
-  await storageAdapter.remove(ctx, workspace, [attach.file])
+  if (toDelete.length > 0) {
+    await storageAdapter.remove(ctx, workspace, toDelete)
+  }
 
   return []
 }

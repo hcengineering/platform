@@ -35,24 +35,27 @@ import view from '@hcengineering/view'
 /**
  * @public
  */
-export async function OnPublicLinkCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const res: Tx[] = []
+export async function OnPublicLinkCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const extractedTx = TxProcessor.extractTx(tx)
 
-  const extractedTx = TxProcessor.extractTx(tx)
+    const createTx = extractedTx as TxCreateDoc<PublicLink>
 
-  const createTx = extractedTx as TxCreateDoc<PublicLink>
+    const link = TxProcessor.createDoc2Doc<PublicLink>(createTx)
 
-  const link = TxProcessor.createDoc2Doc<PublicLink>(createTx)
+    if (link.url !== '') {
+      continue
+    }
 
-  if (link.url !== '') return res
+    const resTx = control.txFactory.createTxUpdateDoc(link._class, link.space, link._id, {
+      url: generateUrl(link._id, control.workspace, control.branding?.front)
+    })
 
-  const resTx = control.txFactory.createTxUpdateDoc(link._class, link.space, link._id, {
-    url: generateUrl(link._id, control.workspace, control.branding?.front)
-  })
+    result.push(resTx)
+  }
 
-  res.push(resTx)
-
-  return res
+  return result
 }
 
 export function getPublicLinkUrl (workspace: WorkspaceIdWithUrl, brandedFront?: string): string {

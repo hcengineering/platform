@@ -99,8 +99,8 @@ export class DbAdapterManagerImpl implements DBAdapterManager {
     }
   }
 
-  async initAdapters (ctx: MeasureContext): Promise<void> {
-    await ctx.with('init-adapters', {}, async (ctx) => {
+  initAdapters (ctx: MeasureContext): Promise<void> {
+    return ctx.with('init-adapters', {}, async (ctx) => {
       for (const [key, adapter] of this.adapters) {
         // already initialized
         if (key !== this.conf.domains[DOMAIN_TX] && adapter.init !== undefined) {

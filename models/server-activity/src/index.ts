@@ -44,13 +44,11 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverActivity.trigger.ActivityMessagesHandler,
-    arrays: true,
     isAsync: true
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverActivity.trigger.OnDocRemoved,
-    arrays: true
+    trigger: serverActivity.trigger.OnDocRemoved
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

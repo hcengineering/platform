@@ -49,7 +49,7 @@ export async function TagElementRemove (
 /**
  * @public
  */
-export async function onTagReference (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+export async function OnTagReference (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
     const actualTx = TxProcessor.extractTx(tx)
@@ -89,7 +89,7 @@ export async function onTagReference (txes: Tx[], control: TriggerControl): Prom
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    onTagReference
+    onTagReference: OnTagReference
   },
   function: {
     TagElementRemove

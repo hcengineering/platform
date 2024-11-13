@@ -161,13 +161,13 @@ export class Client {
 
     try {
       if (size === undefined || size < 64 * 1024 * 1024) {
-        await ctx.with('direct-upload', {}, async (ctx) => {
-          await this.uploadWithFormData(ctx, workspace, objectName, stream, metadata)
-        })
+        await ctx.with('direct-upload', {}, (ctx) =>
+          this.uploadWithFormData(ctx, workspace, objectName, stream, metadata)
+        )
       } else {
-        await ctx.with('signed-url-upload', {}, async (ctx) => {
-          await this.uploadWithSignedURL(ctx, workspace, objectName, stream, metadata)
-        })
+        await ctx.with('signed-url-upload', {}, (ctx) =>
+          this.uploadWithSignedURL(ctx, workspace, objectName, stream, metadata)
+        )
       }
     } catch (err) {
       console.error('failed to put object', { workspace, objectName, err })

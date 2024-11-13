@@ -38,7 +38,6 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTime.trigger.OnTask,
-    arrays: true,
     isAsync: true
   })
 

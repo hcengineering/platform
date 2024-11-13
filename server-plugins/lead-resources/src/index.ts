@@ -43,48 +43,51 @@ export async function leadTextPresenter (doc: Doc): Promise<string> {
 /**
  * @public
  */
-export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  let ownerId: Ref<PersonAccount> | undefined
-  if (control.hierarchy.isDerived(tx._class, core.class.TxCreateDoc)) {
-    const createTx = tx as TxCreateDoc<PersonAccount>
+export async function OnWorkspaceOwnerAdded (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    let ownerId: Ref<PersonAccount> | undefined
+    if (control.hierarchy.isDerived(tx._class, core.class.TxCreateDoc)) {
+      const createTx = tx as TxCreateDoc<PersonAccount>
 
-    if (createTx.attributes.role === AccountRole.Owner) {
-      ownerId = createTx.objectId
+      if (createTx.attributes.role === AccountRole.Owner) {
+        ownerId = createTx.objectId
+      }
+    } else if (control.hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
+      const updateTx = tx as TxUpdateDoc<PersonAccount>
+
+      if (updateTx.operations.role === AccountRole.Owner) {
+        ownerId = updateTx.objectId
+      }
     }
-  } else if (control.hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
-    const updateTx = tx as TxUpdateDoc<PersonAccount>
 
-    if (updateTx.operations.role === AccountRole.Owner) {
-      ownerId = updateTx.objectId
+    if (ownerId === undefined) {
+      continue
+    }
+
+    const targetFunnel = (
+      await control.findAll(control.ctx, lead.class.Funnel, {
+        _id: lead.space.DefaultFunnel
+      })
+    )[0]
+
+    if (targetFunnel === undefined) {
+      continue
+    }
+
+    if (
+      targetFunnel.owners === undefined ||
+      targetFunnel.owners.length === 0 ||
+      targetFunnel.owners[0] === core.account.System
+    ) {
+      const updTx = control.txFactory.createTxUpdateDoc(lead.class.Funnel, targetFunnel.space, targetFunnel._id, {
+        owners: [ownerId]
+      })
+      result.push(updTx)
     }
   }
 
-  if (ownerId === undefined) {
-    return []
-  }
-
-  const targetFunnel = (
-    await control.findAll(control.ctx, lead.class.Funnel, {
-      _id: lead.space.DefaultFunnel
-    })
-  )[0]
-
-  if (targetFunnel === undefined) {
-    return []
-  }
-
-  if (
-    targetFunnel.owners === undefined ||
-    targetFunnel.owners.length === 0 ||
-    targetFunnel.owners[0] === core.account.System
-  ) {
-    const updTx = control.txFactory.createTxUpdateDoc(lead.class.Funnel, targetFunnel.space, targetFunnel._id, {
-      owners: [ownerId]
-    })
-    return [updTx]
-  }
-
-  return []
+  return result
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

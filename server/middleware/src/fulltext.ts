@@ -16,6 +16,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import core, {
   docKey,
+  DOMAIN_DOC_INDEX_STATE,
   isFullTextAttribute,
   isIndexedAttribute,
   toFindResult,
@@ -80,8 +81,11 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
   }
 
   async handleBroadcast (ctx: MeasureContext<SessionData>): Promise<void> {
-    if (ctx.contextData.needWarmupFulltext === true) {
-      void this.sendWarmup()
+    if (ctx.contextData.fulltextUpdates !== undefined && ctx.contextData.fulltextUpdates.size > 0) {
+      const toUpdate = Array.from(ctx.contextData.fulltextUpdates.values())
+      ctx.contextData.fulltextUpdates.clear()
+      await this.context.lowLevelStorage?.upload(ctx, DOMAIN_DOC_INDEX_STATE, toUpdate)
+      this.sendWarmup()
     }
     await super.handleBroadcast(ctx)
   }
@@ -95,15 +99,15 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
     )
 
     // Send one warumup so reindex will
-    void this.sendWarmup()
+    this.sendWarmup()
   }
 
-  async sendWarmup (): Promise<void> {
+  sendWarmup (): void {
     if (!this.warmupTriggered) {
       this.warmupTriggered = true
       setTimeout(() => {
         this.warmupTriggered = false
-        void this._sendWarmup()
+        void this._sendWarmup().catch(() => {})
       }, 25)
     }
   }

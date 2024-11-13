@@ -72,62 +72,88 @@ export async function OnTask (txes: Tx[], control: TriggerControl): Promise<Tx[]
   return result
 }
 
-export async function OnWorkSlotUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx) as TxCUD<WorkSlot>
-  if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.WorkSlot)) return []
-  if (!control.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc)) return []
-  const updTx = actualTx as TxUpdateDoc<WorkSlot>
-  const visibility = updTx.operations.visibility
-  if (visibility !== undefined) {
-    const workslot = (await control.findAll(control.ctx, time.class.WorkSlot, { _id: updTx.objectId }, { limit: 1 }))[0]
-    if (workslot === undefined) return []
+export async function OnWorkSlotUpdate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const actualTx = TxProcessor.extractTx(tx) as TxCUD<WorkSlot>
+    if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.WorkSlot)) {
+      continue
+    }
+    if (!control.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc)) {
+      continue
+    }
+    const updTx = actualTx as TxUpdateDoc<WorkSlot>
+    const visibility = updTx.operations.visibility
+    if (visibility !== undefined) {
+      const workslot = (
+        await control.findAll(control.ctx, time.class.WorkSlot, { _id: updTx.objectId }, { limit: 1 })
+      )[0]
+      if (workslot === undefined) {
+        continue
+      }
+      const todo = (await control.findAll(control.ctx, time.class.ToDo, { _id: workslot.attachedTo }))[0]
+      result.push(control.txFactory.createTxUpdateDoc(todo._class, todo.space, todo._id, { visibility }))
+    }
+  }
+  return result
+}
+
+export async function OnWorkSlotCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  for (const tx of txes) {
+    const actualTx = TxProcessor.extractTx(tx) as TxCUD<WorkSlot>
+    if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.WorkSlot)) {
+      continue
+    }
+    if (!control.hierarchy.isDerived(actualTx._class, core.class.TxCreateDoc)) {
+      continue
+    }
+    const workslot = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<WorkSlot>)
+    const workslots = await control.findAll(control.ctx, time.class.WorkSlot, { attachedTo: workslot.attachedTo })
+    if (workslots.length > 1) {
+      continue
+    }
     const todo = (await control.findAll(control.ctx, time.class.ToDo, { _id: workslot.attachedTo }))[0]
-    return [control.txFactory.createTxUpdateDoc(todo._class, todo.space, todo._id, { visibility })]
-  }
-  return []
-}
-
-export async function OnWorkSlotCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx) as TxCUD<WorkSlot>
-  if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.WorkSlot)) return []
-  if (!control.hierarchy.isDerived(actualTx._class, core.class.TxCreateDoc)) return []
-  const workslot = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<WorkSlot>)
-  const workslots = await control.findAll(control.ctx, time.class.WorkSlot, { attachedTo: workslot.attachedTo })
-  if (workslots.length > 1) return []
-  const todo = (await control.findAll(control.ctx, time.class.ToDo, { _id: workslot.attachedTo }))[0]
-  if (todo === undefined) return []
-  if (!control.hierarchy.isDerived(todo.attachedToClass, tracker.class.Issue)) return []
-  const issue = (await control.findAll(control.ctx, tracker.class.Issue, { _id: todo.attachedTo as Ref<Issue> }))[0]
-  if (issue === undefined) return []
-  const project = (await control.findAll(control.ctx, task.class.Project, { _id: issue.space }))[0]
-  if (project !== undefined) {
-    const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
-    if (type?.classic) {
-      const taskType = (await control.modelDb.findAll(task.class.TaskType, { _id: issue.kind }))[0]
-      if (taskType !== undefined) {
-        const statuses = await control.modelDb.findAll(core.class.Status, { _id: { $in: taskType.statuses } })
-        const statusMap = toIdMap(statuses)
-        const typeStatuses = taskType.statuses.map((p) => statusMap.get(p)).filter((p) => p !== undefined) as Status[]
-        const current = statusMap.get(issue.status)
-        if (current === undefined) return []
-        if (current.category !== task.statusCategory.UnStarted && current.category !== task.statusCategory.ToDo) {
-          return []
-        }
-        const nextStatus = typeStatuses.find((p) => p.category === task.statusCategory.Active)
-        if (nextStatus !== undefined) {
-          const factory = new TxFactory(control.txFactory.account)
-          const innerTx = factory.createTxUpdateDoc(issue._class, issue.space, issue._id, {
-            status: nextStatus._id
-          })
-          const outerTx = factory.createTxCollectionCUD(
-            issue.attachedToClass,
-            issue.attachedTo,
-            issue.space,
-            issue.collection,
-            innerTx
-          )
-          await control.apply(control.ctx, [outerTx])
-          return []
+    if (todo === undefined) {
+      continue
+    }
+    if (!control.hierarchy.isDerived(todo.attachedToClass, tracker.class.Issue)) {
+      continue
+    }
+    const issue = (await control.findAll(control.ctx, tracker.class.Issue, { _id: todo.attachedTo as Ref<Issue> }))[0]
+    if (issue === undefined) {
+      continue
+    }
+    const project = (await control.findAll(control.ctx, task.class.Project, { _id: issue.space }))[0]
+    if (project !== undefined) {
+      const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
+      if (type?.classic) {
+        const taskType = (await control.modelDb.findAll(task.class.TaskType, { _id: issue.kind }))[0]
+        if (taskType !== undefined) {
+          const statuses = await control.modelDb.findAll(core.class.Status, { _id: { $in: taskType.statuses } })
+          const statusMap = toIdMap(statuses)
+          const typeStatuses = taskType.statuses.map((p) => statusMap.get(p)).filter((p) => p !== undefined) as Status[]
+          const current = statusMap.get(issue.status)
+          if (current === undefined) {
+            continue
+          }
+          if (current.category !== task.statusCategory.UnStarted && current.category !== task.statusCategory.ToDo) {
+            continue
+          }
+          const nextStatus = typeStatuses.find((p) => p.category === task.statusCategory.Active)
+          if (nextStatus !== undefined) {
+            const factory = new TxFactory(control.txFactory.account)
+            const innerTx = factory.createTxUpdateDoc(issue._class, issue.space, issue._id, {
+              status: nextStatus._id
+            })
+            const outerTx = factory.createTxCollectionCUD(
+              issue.attachedToClass,
+              issue.attachedTo,
+              issue.space,
+              issue.collection,
+              innerTx
+            )
+            await control.apply(control.ctx, [outerTx])
+          }
         }
       }
     }
@@ -135,45 +161,62 @@ export async function OnWorkSlotCreate (tx: Tx, control: TriggerControl): Promis
   return []
 }
 
-export async function OnToDoRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx) as TxCUD<ToDo>
-  if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.ToDo)) return []
-  if (!control.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)) return []
-  const todo = control.removedMap.get(actualTx.objectId) as ToDo
-  if (todo === undefined) return []
-  // it was closed, do nothing
-  if (todo.doneOn != null) return []
-  const todos = await control.findAll(control.ctx, time.class.ToDo, { attachedTo: todo.attachedTo })
-  if (todos.length > 0) return []
-  const issue = (await control.findAll(control.ctx, tracker.class.Issue, { _id: todo.attachedTo as Ref<Issue> }))[0]
-  if (issue === undefined) return []
-  const project = (await control.findAll(control.ctx, task.class.Project, { _id: issue.space }))[0]
-  if (project !== undefined) {
-    const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
-    if (type !== undefined && type.classic) {
-      const factory = new TxFactory(control.txFactory.account)
-      const taskType = (await control.modelDb.findAll(task.class.TaskType, { _id: issue.kind }))[0]
-      if (taskType !== undefined) {
-        const statuses = await control.modelDb.findAll(core.class.Status, { _id: { $in: taskType.statuses } })
-        const statusMap = toIdMap(statuses)
-        const typeStatuses = taskType.statuses.map((p) => statusMap.get(p)).filter((p) => p !== undefined) as Status[]
-        const current = statusMap.get(issue.status)
-        if (current === undefined) return []
-        if (current.category !== task.statusCategory.Active && current.category !== task.statusCategory.ToDo) return []
-        const nextStatus = typeStatuses.find((p) => p.category === task.statusCategory.UnStarted)
-        if (nextStatus !== undefined) {
-          const innerTx = factory.createTxUpdateDoc(issue._class, issue.space, issue._id, {
-            status: nextStatus._id
-          })
-          const outerTx = factory.createTxCollectionCUD(
-            issue.attachedToClass,
-            issue.attachedTo,
-            issue.space,
-            issue.collection,
-            innerTx
-          )
-          await control.apply(control.ctx, [outerTx])
-          return []
+export async function OnToDoRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  for (const tx of txes) {
+    const actualTx = TxProcessor.extractTx(tx) as TxCUD<ToDo>
+    if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.ToDo)) {
+      continue
+    }
+    if (!control.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)) {
+      continue
+    }
+    const todo = control.removedMap.get(actualTx.objectId) as ToDo
+    if (todo === undefined) {
+      continue
+    }
+    // it was closed, do nothing
+    if (todo.doneOn != null) {
+      continue
+    }
+    const todos = await control.findAll(control.ctx, time.class.ToDo, { attachedTo: todo.attachedTo })
+    if (todos.length > 0) {
+      continue
+    }
+    const issue = (await control.findAll(control.ctx, tracker.class.Issue, { _id: todo.attachedTo as Ref<Issue> }))[0]
+    if (issue === undefined) {
+      continue
+    }
+    const project = (await control.findAll(control.ctx, task.class.Project, { _id: issue.space }))[0]
+    if (project !== undefined) {
+      const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
+      if (type !== undefined && type.classic) {
+        const factory = new TxFactory(control.txFactory.account)
+        const taskType = (await control.modelDb.findAll(task.class.TaskType, { _id: issue.kind }))[0]
+        if (taskType !== undefined) {
+          const statuses = await control.modelDb.findAll(core.class.Status, { _id: { $in: taskType.statuses } })
+          const statusMap = toIdMap(statuses)
+          const typeStatuses = taskType.statuses.map((p) => statusMap.get(p)).filter((p) => p !== undefined) as Status[]
+          const current = statusMap.get(issue.status)
+          if (current === undefined) {
+            continue
+          }
+          if (current.category !== task.statusCategory.Active && current.category !== task.statusCategory.ToDo) {
+            continue
+          }
+          const nextStatus = typeStatuses.find((p) => p.category === task.statusCategory.UnStarted)
+          if (nextStatus !== undefined) {
+            const innerTx = factory.createTxUpdateDoc(issue._class, issue.space, issue._id, {
+              status: nextStatus._id
+            })
+            const outerTx = factory.createTxCollectionCUD(
+              issue.attachedToClass,
+              issue.attachedTo,
+              issue.space,
+              issue.collection,
+              innerTx
+            )
+            await control.apply(control.ctx, [outerTx])
+          }
         }
       }
     }
@@ -181,102 +224,114 @@ export async function OnToDoRemove (tx: Tx, control: TriggerControl): Promise<Tx
   return []
 }
 
-export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
-  const createTx = TxProcessor.extractTx(tx) as TxCreateDoc<ToDo>
+  for (const tx of txes) {
+    const createTx = TxProcessor.extractTx(tx) as TxCreateDoc<ToDo>
 
-  if (!hierarchy.isDerived(createTx.objectClass, time.class.ToDo)) return []
-  if (!hierarchy.isDerived(createTx._class, core.class.TxCreateDoc)) return []
+    if (!hierarchy.isDerived(createTx.objectClass, time.class.ToDo)) {
+      continue
+    }
+    if (!hierarchy.isDerived(createTx._class, core.class.TxCreateDoc)) {
+      continue
+    }
 
-  const mixin = hierarchy.classHierarchyMixin(
-    createTx.objectClass as Ref<Class<Doc>>,
-    notification.mixin.ClassCollaborators
-  )
-
-  if (mixin === undefined) {
-    return []
-  }
-
-  const todo = TxProcessor.createDoc2Doc(createTx)
-  const account = control.modelDb.getAccountByPersonId(todo.user) as PersonAccount[]
-
-  if (account.length === 0) {
-    return []
-  }
-
-  const object = (await control.findAll(control.ctx, todo.attachedToClass, { _id: todo.attachedTo }))[0]
-  if (object === undefined) return []
-
-  const person = (
-    await control.findAll(
-      control.ctx,
-      contact.mixin.Employee,
-      { _id: todo.user as Ref<Employee>, active: true },
-      { limit: 1 }
+    const mixin = hierarchy.classHierarchyMixin(
+      createTx.objectClass as Ref<Class<Doc>>,
+      notification.mixin.ClassCollaborators
     )
-  )[0]
-  if (person === undefined) return []
 
-  const personSpace = (
-    await control.findAll(control.ctx, contact.class.PersonSpace, { person: todo.user }, { limit: 1 })
-  )[0]
-  if (personSpace === undefined) return []
+    if (mixin === undefined) {
+      continue
+    }
 
-  // TODO: Select a proper account
-  const receiverInfo: ReceiverInfo = {
-    _id: account[0]._id,
-    account: account[0],
-    person,
-    space: personSpace._id
-  }
+    const todo = TxProcessor.createDoc2Doc(createTx)
+    const account = control.modelDb.getAccountByPersonId(todo.user) as PersonAccount[]
 
-  const senderAccount = control.modelDb.findAllSync(contact.class.PersonAccount, {
-    _id: tx.modifiedBy as Ref<PersonAccount>
-  })[0]
-  const senderPerson =
-    senderAccount !== undefined
-      ? (await control.findAll(control.ctx, contact.class.Person, { _id: senderAccount.person }))[0]
-      : undefined
+    if (account.length === 0) {
+      continue
+    }
 
-  const senderInfo: SenderInfo = {
-    _id: tx.modifiedBy,
-    account: senderAccount,
-    person: senderPerson
-  }
-  const notificationControl = await getNotificationProviderControl(control.ctx, control)
-  const notifyResult = await isShouldNotifyTx(control, createTx, tx, todo, account, true, false, notificationControl)
-  const content = await getNotificationContent(tx, account, senderInfo, todo, control)
-  const data: Partial<Data<CommonInboxNotification>> = {
-    ...content,
-    header: time.string.ToDo,
-    headerIcon: time.icon.Planned,
-    headerObjectId: object._id,
-    headerObjectClass: object._class,
-    messageHtml: jsonToMarkup(nodeDoc(nodeParagraph(nodeText(todo.title))))
-  }
+    const object = (await control.findAll(control.ctx, todo.attachedToClass, { _id: todo.attachedTo }))[0]
+    if (object === undefined) {
+      continue
+    }
 
-  const txes = await getCommonNotificationTxes(
-    control.ctx,
-    control,
-    object,
-    data,
-    receiverInfo,
-    senderInfo,
-    object._id,
-    object._class,
-    object.space,
-    createTx.modifiedOn,
-    notifyResult,
-    notification.class.CommonInboxNotification,
-    tx
-  )
+    const person = (
+      await control.findAll(
+        control.ctx,
+        contact.mixin.Employee,
+        { _id: todo.user as Ref<Employee>, active: true },
+        { limit: 1 }
+      )
+    )[0]
+    if (person === undefined) {
+      continue
+    }
 
-  await control.apply(control.ctx, txes)
+    const personSpace = (
+      await control.findAll(control.ctx, contact.class.PersonSpace, { person: todo.user }, { limit: 1 })
+    )[0]
+    if (personSpace === undefined) {
+      continue
+    }
 
-  const ids = txes.map((it) => it._id)
-  control.ctx.contextData.broadcast.targets.notifications = (it) => {
-    if (ids.includes(it._id)) {
-      return [receiverInfo.account.email]
+    // TODO: Select a proper account
+    const receiverInfo: ReceiverInfo = {
+      _id: account[0]._id,
+      account: account[0],
+      person,
+      space: personSpace._id
+    }
+
+    const senderAccount = control.modelDb.findAllSync(contact.class.PersonAccount, {
+      _id: tx.modifiedBy as Ref<PersonAccount>
+    })[0]
+    const senderPerson =
+      senderAccount !== undefined
+        ? (await control.findAll(control.ctx, contact.class.Person, { _id: senderAccount.person }))[0]
+        : undefined
+
+    const senderInfo: SenderInfo = {
+      _id: tx.modifiedBy,
+      account: senderAccount,
+      person: senderPerson
+    }
+    const notificationControl = await getNotificationProviderControl(control.ctx, control)
+    const notifyResult = await isShouldNotifyTx(control, createTx, tx, todo, account, true, false, notificationControl)
+    const content = await getNotificationContent(tx, account, senderInfo, todo, control)
+    const data: Partial<Data<CommonInboxNotification>> = {
+      ...content,
+      header: time.string.ToDo,
+      headerIcon: time.icon.Planned,
+      headerObjectId: object._id,
+      headerObjectClass: object._class,
+      messageHtml: jsonToMarkup(nodeDoc(nodeParagraph(nodeText(todo.title))))
+    }
+
+    const txes = await getCommonNotificationTxes(
+      control.ctx,
+      control,
+      object,
+      data,
+      receiverInfo,
+      senderInfo,
+      object._id,
+      object._class,
+      object.space,
+      createTx.modifiedOn,
+      notifyResult,
+      notification.class.CommonInboxNotification,
+      tx
+    )
+
+    await control.apply(control.ctx, txes)
+
+    const ids = txes.map((it) => it._id)
+    control.ctx.contextData.broadcast.targets.notifications = (it) => {
+      if (ids.includes(it._id)) {
+        return [receiverInfo.account.email]
+      }
     }
   }
   return []
@@ -285,39 +340,92 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
 /**
  * @public
  */
-export async function OnToDoUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx) as TxCUD<ToDo>
-  if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.ToDo)) return []
-  if (!control.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc)) return []
-  const updTx = actualTx as TxUpdateDoc<ToDo>
-  const doneOn = updTx.operations.doneOn
-  const title = updTx.operations.title
-  const description = updTx.operations.description
-  const visibility = updTx.operations.visibility
-  if (doneOn != null) {
-    const events = await control.findAll(control.ctx, time.class.WorkSlot, { attachedTo: updTx.objectId })
-    const res: Tx[] = []
-    const resEvents: WorkSlot[] = []
-    for (const event of events) {
-      if (event.date > doneOn) {
-        const innerTx = control.txFactory.createTxRemoveDoc(event._class, event.space, event._id)
-        const outerTx = control.txFactory.createTxCollectionCUD(
-          event.attachedToClass,
-          event.attachedTo,
-          event.space,
-          event.collection,
-          innerTx
-        )
-        res.push(outerTx)
-      } else if (event.dueDate > doneOn) {
-        const upd: DocumentUpdate<WorkSlot> = {
-          dueDate: doneOn
+export async function OnToDoUpdate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const actualTx = TxProcessor.extractTx(tx) as TxCUD<ToDo>
+    if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.ToDo)) {
+      continue
+    }
+    if (!control.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc)) {
+      continue
+    }
+    const updTx = actualTx as TxUpdateDoc<ToDo>
+    const doneOn = updTx.operations.doneOn
+    const title = updTx.operations.title
+    const description = updTx.operations.description
+    const visibility = updTx.operations.visibility
+    if (doneOn != null) {
+      const events = await control.findAll(control.ctx, time.class.WorkSlot, { attachedTo: updTx.objectId })
+      const resEvents: WorkSlot[] = []
+      for (const event of events) {
+        if (event.date > doneOn) {
+          const innerTx = control.txFactory.createTxRemoveDoc(event._class, event.space, event._id)
+          const outerTx = control.txFactory.createTxCollectionCUD(
+            event.attachedToClass,
+            event.attachedTo,
+            event.space,
+            event.collection,
+            innerTx
+          )
+          result.push(outerTx)
+        } else if (event.dueDate > doneOn) {
+          const upd: DocumentUpdate<WorkSlot> = {
+            dueDate: doneOn
+          }
+          if (title !== undefined) {
+            upd.title = title
+          }
+          if (description !== undefined) {
+            upd.description = description
+          }
+          const innerTx = control.txFactory.createTxUpdateDoc(event._class, event.space, event._id, upd)
+          const outerTx = control.txFactory.createTxCollectionCUD(
+            event.attachedToClass,
+            event.attachedTo,
+            event.space,
+            event.collection,
+            innerTx
+          )
+          result.push(outerTx)
+          resEvents.push({
+            ...event,
+            dueDate: doneOn
+          })
+        } else {
+          resEvents.push(event)
         }
+      }
+      const todo = (await control.findAll(control.ctx, time.class.ToDo, { _id: updTx.objectId }))[0]
+      if (todo === undefined) {
+        continue
+      }
+      const funcs = control.hierarchy.classHierarchyMixin<Class<Doc>, OnToDo>(
+        todo.attachedToClass,
+        serverTime.mixin.OnToDo
+      )
+      if (funcs !== undefined) {
+        const func = await getResource(funcs.onDone)
+        const todoRes = await func(control, resEvents, todo)
+        await control.apply(control.ctx, todoRes)
+      }
+      continue
+    }
+    if (title !== undefined || description !== undefined || visibility !== undefined) {
+      const events = await control.findAll(control.ctx, time.class.WorkSlot, { attachedTo: updTx.objectId })
+      for (const event of events) {
+        const upd: DocumentUpdate<WorkSlot> = {}
         if (title !== undefined) {
           upd.title = title
         }
         if (description !== undefined) {
           upd.description = description
+        }
+        if (visibility !== undefined) {
+          const newVisibility = visibility === 'public' ? 'public' : 'freeBusy'
+          if (event.visibility !== newVisibility) {
+            upd.visibility = newVisibility
+          }
         }
         const innerTx = control.txFactory.createTxUpdateDoc(event._class, event.space, event._id, upd)
         const outerTx = control.txFactory.createTxCollectionCUD(
@@ -327,58 +435,11 @@ export async function OnToDoUpdate (tx: Tx, control: TriggerControl): Promise<Tx
           event.collection,
           innerTx
         )
-        res.push(outerTx)
-        resEvents.push({
-          ...event,
-          dueDate: doneOn
-        })
-      } else {
-        resEvents.push(event)
+        result.push(outerTx)
       }
     }
-    const todo = (await control.findAll(control.ctx, time.class.ToDo, { _id: updTx.objectId }))[0]
-    if (todo === undefined) return res
-    const funcs = control.hierarchy.classHierarchyMixin<Class<Doc>, OnToDo>(
-      todo.attachedToClass,
-      serverTime.mixin.OnToDo
-    )
-    if (funcs !== undefined) {
-      const func = await getResource(funcs.onDone)
-      const todoRes = await func(control, resEvents, todo)
-      await control.apply(control.ctx, todoRes)
-    }
-    return res
   }
-  if (title !== undefined || description !== undefined || visibility !== undefined) {
-    const events = await control.findAll(control.ctx, time.class.WorkSlot, { attachedTo: updTx.objectId })
-    const res: Tx[] = []
-    for (const event of events) {
-      const upd: DocumentUpdate<WorkSlot> = {}
-      if (title !== undefined) {
-        upd.title = title
-      }
-      if (description !== undefined) {
-        upd.description = description
-      }
-      if (visibility !== undefined) {
-        const newVisibility = visibility === 'public' ? 'public' : 'freeBusy'
-        if (event.visibility !== newVisibility) {
-          upd.visibility = newVisibility
-        }
-      }
-      const innerTx = control.txFactory.createTxUpdateDoc(event._class, event.space, event._id, upd)
-      const outerTx = control.txFactory.createTxCollectionCUD(
-        event.attachedToClass,
-        event.attachedTo,
-        event.space,
-        event.collection,
-        innerTx
-      )
-      res.push(outerTx)
-    }
-    return res
-  }
-  return []
+  return result
 }
 
 /**

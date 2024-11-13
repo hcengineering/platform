@@ -341,7 +341,7 @@ export class S3Service implements StorageAdapter {
   }
 
   @withContext('put')
-  async put (
+  put (
     ctx: MeasureContext,
     workspaceId: WorkspaceId,
     objectName: string,
@@ -350,7 +350,7 @@ export class S3Service implements StorageAdapter {
     size?: number
   ): Promise<UploadedObjectInfo> {
     if (size !== undefined && size < 1024 * 1024 * 5) {
-      return await ctx.with(
+      return ctx.with(
         'simple-put',
         {},
         async () => {
@@ -371,7 +371,7 @@ export class S3Service implements StorageAdapter {
       )
       // Less 5Mb
     } else {
-      return await ctx.with(
+      return ctx.with(
         'multipart-upload',
         {},
         async () => {

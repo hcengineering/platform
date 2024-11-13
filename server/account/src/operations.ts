@@ -1087,10 +1087,8 @@ export async function workerHandshake (
     return
   }
 
-  const workspacesCnt = await ctx.with(
-    'count-workspaces-in-region',
-    {},
-    async (ctx) => await countWorkspacesInRegion(db, region, version, Date.now() - 24 * 60 * 60 * 1000)
+  const workspacesCnt = await ctx.with('count-workspaces-in-region', {}, (ctx) =>
+    countWorkspacesInRegion(db, region, version, Date.now() - 24 * 60 * 60 * 1000)
   )
 
   await db.upgrade.insertOne({
@@ -1485,7 +1483,7 @@ export async function getWorkspaceInfo (
     workspace: workspace.name
   }
   if (email !== systemAccountEmail && !guest) {
-    account = await ctx.with('get-account', {}, async () => await getAccount(db, email))
+    account = await ctx.with('get-account', {}, () => getAccount(db, email))
     if (account === null) {
       ctx.error('no account', { email, token })
       throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -1520,9 +1518,7 @@ export async function getWorkspaceInfo (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
   if (ws.mode !== 'archived' && _updateLastVisit && (isAccount(account) || email === systemAccountEmail)) {
-    void ctx.with('update-last-visit', {}, async () => {
-      await updateLastVisit(db, ws, account as Account)
-    })
+    void ctx.with('update-last-visit', {}, () => updateLastVisit(db, ws, account as Account))
   }
 
   const clientWs: ClientWSInfoWithUpgrade = mapToClientWorkspace(ws)

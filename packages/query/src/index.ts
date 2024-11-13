@@ -1317,84 +1317,73 @@ export class LiveQuery implements WithTx, Client {
     return result
   }
 
-  triggerInProgress = true
-
   private async checkUpdateEvents (evt: TxWorkspaceEvent, trigger = true): Promise<void> {
-    if (this.triggerInProgress) {
-      this.triggerInProgress = false
-      const h = this.client.getHierarchy()
-      function hasClass (q: Query, classes: Ref<Class<Doc>>[]): boolean {
-        return (
-          classes.includes(q._class) || classes.some((it) => h.isDerived(q._class, it) || h.isDerived(it, q._class))
-        )
+    const h = this.client.getHierarchy()
+    function hasClass (q: Query, classes: Ref<Class<Doc>>[]): boolean {
+      return classes.includes(q._class) || classes.some((it) => h.isDerived(q._class, it) || h.isDerived(it, q._class))
+    }
+    if (evt.event === WorkspaceEvent.IndexingUpdate) {
+      const indexingParam = evt.params as IndexingUpdateEvent
+      for (const q of [...this.queue]) {
+        if (hasClass(q, indexingParam._class) && q.query.$search !== undefined) {
+          if (!this.removeFromQueue(q)) {
+            try {
+              await this.refresh(q)
+            } catch (err: any) {
+              Analytics.handleError(err)
+              console.error(err)
+            }
+          } else {
+            const queries = this.queries.get(q._class)
+            const pos = queries?.indexOf(q) ?? -1
+            if (pos >= 0 && queries !== undefined) {
+              queries.splice(pos, 1)
+              if (queries?.length === 0) {
+                this.queries.delete(q._class)
+              }
+            }
+          }
+        }
       }
-      if (evt.event === WorkspaceEvent.IndexingUpdate) {
-        const indexingParam = evt.params as IndexingUpdateEvent
-        for (const q of [...this.queue]) {
+      for (const v of this.queries.values()) {
+        for (const q of v) {
           if (hasClass(q, indexingParam._class) && q.query.$search !== undefined) {
-            if (!this.removeFromQueue(q)) {
-              try {
-                await this.refresh(q)
-              } catch (err: any) {
-                Analytics.handleError(err)
-                console.error(err)
-              }
-            } else {
-              const queries = this.queries.get(q._class)
-              const pos = queries?.indexOf(q) ?? -1
-              if (pos >= 0 && queries !== undefined) {
-                queries.splice(pos, 1)
-                if (queries?.length === 0) {
-                  this.queries.delete(q._class)
-                }
-              }
-            }
-          }
-        }
-        for (const v of this.queries.values()) {
-          for (const q of v) {
-            if (hasClass(q, indexingParam._class) && q.query.$search !== undefined) {
-              try {
-                await this.refresh(q)
-              } catch (err: any) {
-                Analytics.handleError(err)
-                console.error(err)
-              }
+            try {
+              await this.refresh(q)
+            } catch (err: any) {
+              Analytics.handleError(err)
+              console.error(err)
             }
           }
         }
       }
-      if (evt.event === WorkspaceEvent.BulkUpdate) {
-        const params = evt.params as BulkUpdateEvent
-        for (const q of [...this.queue]) {
+    }
+    if (evt.event === WorkspaceEvent.BulkUpdate) {
+      const params = evt.params as BulkUpdateEvent
+      for (const q of [...this.queue]) {
+        if (hasClass(q, params._class)) {
+          if (!this.removeFromQueue(q)) {
+            try {
+              await this.refresh(q)
+            } catch (err: any) {
+              Analytics.handleError(err)
+              console.error(err)
+            }
+          }
+        }
+      }
+      for (const v of this.queries.values()) {
+        for (const q of v) {
           if (hasClass(q, params._class)) {
-            if (!this.removeFromQueue(q)) {
-              try {
-                await this.refresh(q)
-              } catch (err: any) {
-                Analytics.handleError(err)
-                console.error(err)
-              }
-            }
-          }
-        }
-        for (const v of this.queries.values()) {
-          for (const q of v) {
-            if (hasClass(q, params._class)) {
-              try {
-                await this.refresh(q)
-              } catch (err: any) {
-                Analytics.handleError(err)
-                console.error(err)
-              }
+            try {
+              await this.refresh(q)
+            } catch (err: any) {
+              Analytics.handleError(err)
+              console.error(err)
             }
           }
         }
       }
-      setTimeout(() => {
-        this.triggerInProgress = true
-        void this.checkUpdateEvents(evt, false)
-      }, 20000)
     }
   }
 

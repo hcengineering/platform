@@ -129,8 +129,8 @@ export class StorageExtension implements Extension {
     const { ctx, adapter } = this.configuration
 
     try {
-      return await ctx.with('load-document', {}, async (ctx) => {
-        return await adapter.loadDocument(ctx, documentName as DocumentId, context)
+      return await ctx.with('load-document', {}, (ctx) => {
+        return adapter.loadDocument(ctx, documentName as DocumentId, context)
       })
     } catch (err) {
       ctx.error('failed to load document', { documentName, error: err })
@@ -145,12 +145,12 @@ export class StorageExtension implements Extension {
       const prevMarkup = this.markups.get(documentName) ?? {}
       const currMarkup = this.configuration.transformer.fromYdoc(document)
 
-      await ctx.with('save-document', {}, async (ctx) => {
-        await adapter.saveDocument(ctx, documentName as DocumentId, document, context, {
+      await ctx.with('save-document', {}, (ctx) =>
+        adapter.saveDocument(ctx, documentName as DocumentId, document, context, {
           prev: prevMarkup,
           curr: currMarkup
         })
-      })
+      )
 
       this.markups.set(documentName, currMarkup)
     } catch (err) {

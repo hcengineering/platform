@@ -84,22 +84,23 @@ export async function applicationTextPresenter (doc: Doc, control: TriggerContro
 /**
  * @public
  */
-export async function OnRecruitUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-  if (!control.hierarchy.isDerived(actualTx.objectClass, recruit.class.Vacancy)) {
-    return []
-  }
+export async function OnRecruitUpdate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
+    if (!control.hierarchy.isDerived(actualTx.objectClass, recruit.class.Vacancy)) {
+      continue
+    }
 
-  const res: Tx[] = []
-
-  if (actualTx._class === core.class.TxCreateDoc) {
-    handleVacancyCreate(control, actualTx, res)
-  } else if (actualTx._class === core.class.TxUpdateDoc) {
-    await handleVacancyUpdate(control, actualTx, res)
-  } else if (actualTx._class === core.class.TxRemoveDoc) {
-    handleVacancyRemove(control, actualTx, res)
+    if (actualTx._class === core.class.TxCreateDoc) {
+      handleVacancyCreate(control, actualTx, result)
+    } else if (actualTx._class === core.class.TxUpdateDoc) {
+      await handleVacancyUpdate(control, actualTx, result)
+    } else if (actualTx._class === core.class.TxRemoveDoc) {
+      handleVacancyRemove(control, actualTx, result)
+    }
   }
-  return res
+  return result
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

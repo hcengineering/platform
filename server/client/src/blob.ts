@@ -62,7 +62,7 @@ export class BlobClient {
         if (i === 4) {
           ctx.error('Failed to check file', { name, error: err })
         }
-        await new Promise<void>((resolve) => setTimeout(resolve, 500))
+        await new Promise<void>((resolve) => setTimeout(resolve, 10))
       }
     }
     return false
@@ -189,7 +189,7 @@ export class BlobClient {
             })
             throw err
           }
-          await new Promise<void>((resolve) => setTimeout(resolve, 1000))
+          await new Promise<void>((resolve) => setTimeout(resolve, 10))
           // retry
         }
       }

@@ -201,9 +201,7 @@ abstract class MongoAdapterBase implements DbAdapter {
         }
         return docs
       },
-      close: async () => {
-        await cursor.close()
-      }
+      close: () => cursor.close()
     }
   }
 
@@ -262,8 +260,8 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   }
 
-  async rawDeleteMany<T extends Doc>(domain: Domain, query: DocumentQuery<T>): Promise<void> {
-    await this.db.collection(domain).deleteMany(this.translateRawQuery(query))
+  rawDeleteMany<T extends Doc>(domain: Domain, query: DocumentQuery<T>): Promise<void> {
+    return this.db.collection(domain).deleteMany(this.translateRawQuery(query)).then()
   }
 
   abstract init (): Promise<void>
@@ -280,8 +278,9 @@ abstract class MongoAdapterBase implements DbAdapter {
     return []
   }
 
-  async close (): Promise<void> {
+  close (): Promise<void> {
     this.client.close()
+    return Promise.resolve()
   }
 
   private translateQuery<T extends Doc>(
@@ -460,13 +459,13 @@ abstract class MongoAdapterBase implements DbAdapter {
     return result
   }
 
-  private async fillLookup<T extends Doc>(
+  private fillLookup<T extends Doc>(
     _class: Ref<Class<T>>,
     object: any,
     key: string,
     fullKey: string,
     targetObject: any
-  ): Promise<void> {
+  ): void {
     if (targetObject.$lookup === undefined) {
       targetObject.$lookup = {}
     }
@@ -481,11 +480,11 @@ abstract class MongoAdapterBase implements DbAdapter {
         }
       }
     } else {
-      targetObject.$lookup[key] = (await this.modelDb.findAll(_class, { _id: targetObject[key] }))[0]
+      targetObject.$lookup[key] = this.modelDb.findAllSync(_class, { _id: targetObject[key] })[0]
     }
   }
 
-  private async fillLookupValue<T extends Doc>(
+  private fillLookupValue<T extends Doc>(
     ctx: MeasureContext,
     clazz: Ref<Class<T>>,
     lookup: Lookup<T> | undefined,
@@ -496,11 +495,11 @@ abstract class MongoAdapterBase implements DbAdapter {
       field: string
       domain: Domain
     }
-  ): Promise<void> {
+  ): void {
     if (lookup === undefined && domainLookup === undefined) return
     for (const key in lookup) {
       if (key === '_id') {
-        await this.fillReverseLookup(clazz, lookup, object, parent, parentObject)
+        this.fillReverseLookup(clazz, lookup, object, parent, parentObject)
         continue
       }
       const value = (lookup as any)[key]
@@ -509,10 +508,10 @@ abstract class MongoAdapterBase implements DbAdapter {
       const targetObject = parentObject ?? object
       if (Array.isArray(value)) {
         const [_class, nested] = value
-        await this.fillLookup(_class, object, key, fullKey, targetObject)
-        await this.fillLookupValue(ctx, _class, nested, object, fullKey, targetObject.$lookup[key])
+        this.fillLookup(_class, object, key, fullKey, targetObject)
+        this.fillLookupValue(ctx, _class, nested, object, fullKey, targetObject.$lookup[key])
       } else {
-        await this.fillLookup(value, object, key, fullKey, targetObject)
+        this.fillLookup(value, object, key, fullKey, targetObject)
       }
     }
     if (domainLookup !== undefined) {
@@ -525,13 +524,13 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   }
 
-  private async fillReverseLookup<T extends Doc>(
+  private fillReverseLookup<T extends Doc>(
     clazz: Ref<Class<T>>,
     lookup: ReverseLookups,
     object: any,
     parent?: string,
     parentObject?: any
-  ): Promise<void> {
+  ): void {
     const targetObject = parentObject ?? object
     if (targetObject.$lookup === undefined) {
       targetObject.$lookup = {}
@@ -554,17 +553,17 @@ abstract class MongoAdapterBase implements DbAdapter {
         const arr = object[fullKey]
         targetObject.$lookup[key] = arr
       } else {
-        const arr = await this.modelDb.findAll(_class, { [attr]: targetObject._id })
+        const arr = this.modelDb.findAllSync(_class, { [attr]: targetObject._id })
         targetObject.$lookup[key] = arr
       }
     }
   }
 
-  private async fillSortPipeline<T extends Doc>(
+  private fillSortPipeline<T extends Doc>(
     clazz: Ref<Class<T>>,
     options: FindOptions<T> | undefined,
     pipeline: any[]
-  ): Promise<void> {
+  ): void {
     if (options?.sort !== undefined) {
       const sort = {} as any
       for (const _key in options.sort) {
@@ -630,7 +629,7 @@ abstract class MongoAdapterBase implements DbAdapter {
       }
     }
     const totalPipeline: any[] = [...pipeline]
-    await this.fillSortPipeline(clazz, options, pipeline)
+    this.fillSortPipeline(clazz, options, pipeline)
     if (options?.limit !== undefined || typeof query._id === 'string') {
       pipeline.push({ $limit: options?.limit ?? 1 })
     }
@@ -652,14 +651,11 @@ abstract class MongoAdapterBase implements DbAdapter {
     let result: WithLookup<T>[] = []
     let total = options?.total === true ? 0 : -1
     try {
-      await ctx.with(
+      result = await ctx.with(
         'aggregate',
         { clazz },
-        async (ctx) => {
-          result = await toArray(cursor)
-        },
+        (ctx) => toArray(cursor),
         () => ({
-          size: result.length,
           domain,
           pipeline,
           clazz
@@ -670,8 +666,8 @@ abstract class MongoAdapterBase implements DbAdapter {
       throw e
     }
     for (const row of result) {
-      await ctx.with('fill-lookup', {}, async (ctx) => {
-        await this.fillLookupValue(ctx, clazz, options?.lookup, row, undefined, undefined, options.domainLookup)
+      ctx.withSync('fill-lookup', {}, (ctx) => {
+        this.fillLookupValue(ctx, clazz, options?.lookup, row, undefined, undefined, options.domainLookup)
       })
       if (row.$lookup !== undefined) {
         for (const [, v] of Object.entries(row.$lookup)) {
@@ -688,7 +684,7 @@ abstract class MongoAdapterBase implements DbAdapter {
       const arr = await ctx.with(
         'aggregate-total',
         {},
-        async (ctx) => await toArray(totalCursor),
+        (ctx) => toArray(totalCursor),
         () => ({
           domain,
           pipeline,
@@ -800,13 +796,13 @@ abstract class MongoAdapterBase implements DbAdapter {
   }
 
   @withContext('groupBy')
-  async groupBy<T, D extends Doc = Doc>(
+  groupBy<T, D extends Doc = Doc>(
     ctx: MeasureContext,
     domain: Domain,
     field: string,
     query?: DocumentQuery<D>
   ): Promise<Map<T, number>> {
-    const result = await ctx.with('groupBy', { domain }, async (ctx) => {
+    return ctx.with('groupBy', { domain }, async (ctx) => {
       const coll = this.collection(domain)
       const grResult = await coll
         .aggregate([
@@ -821,10 +817,9 @@ abstract class MongoAdapterBase implements DbAdapter {
         .toArray()
       return new Map(grResult.map((it) => [it._id as unknown as T, it.count]))
     })
-    return result
   }
 
-  async findAll<T extends Doc>(
+  findAll<T extends Doc>(
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
@@ -833,7 +828,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     const stTime = Date.now()
     const mongoQuery = this.translateQuery(_class, query, options)
     const fQuery = { ...mongoQuery.base, ...mongoQuery.lookup }
-    return await addOperation(ctx, 'find-all', {}, async () => {
+    return addOperation(ctx, 'find-all', {}, async () => {
       const st = Date.now()
       let result: FindResult<T>
       const domain = options?.domain ?? this.hierarchy.getDomain(_class)
@@ -911,15 +906,11 @@ abstract class MongoAdapterBase implements DbAdapter {
       }
       // Error in case of timeout
       try {
-        let res: T[] = []
-        await ctx.with(
+        const res: T[] = await ctx.with(
           'find-all',
           {},
-          async (ctx) => {
-            res = await toArray(cursor)
-          },
+          (ctx) => toArray(cursor),
           () => ({
-            size: res.length,
             queueTime: stTime - st,
             mongoQuery,
             options,
@@ -1031,18 +1022,15 @@ abstract class MongoAdapterBase implements DbAdapter {
     const flush = async (flush = false): Promise<void> => {
       if (bulkUpdate.size > 1000 || flush) {
         if (bulkUpdate.size > 0) {
-          await ctx.with(
-            'bulk-write-find',
-            {},
-            async () =>
-              await coll.bulkWrite(
-                Array.from(bulkUpdate.entries()).map((it) => ({
-                  updateOne: {
-                    filter: { _id: it[0], '%hash%': null },
-                    update: { $set: { '%hash%': it[1] } }
-                  }
-                }))
-              )
+          await ctx.with('bulk-write-find', {}, () =>
+            coll.bulkWrite(
+              Array.from(bulkUpdate.entries()).map((it) => ({
+                updateOne: {
+                  filter: { _id: it[0], '%hash%': null },
+                  update: { $set: { '%hash%': it[1] } }
+                }
+              }))
+            )
           )
         }
         bulkUpdate.clear()
@@ -1064,12 +1052,12 @@ abstract class MongoAdapterBase implements DbAdapter {
                 }
           )
         }
-        let d = await ctx.with('next', { mode }, async () => await iterator.next())
+        let d = await ctx.with('next', { mode }, () => iterator.next())
         if (d == null && mode === 'hashed' && recheck !== true) {
           mode = 'non-hashed'
           await iterator.close()
           iterator = coll.find({ '%hash%': { $in: ['', null] } })
-          d = await ctx.with('next', { mode }, async () => await iterator.next())
+          d = await ctx.with('next', { mode }, () => iterator.next())
         }
         const result: DocInfo[] = []
         if (d != null) {
@@ -1078,18 +1066,12 @@ abstract class MongoAdapterBase implements DbAdapter {
         if (iterator.bufferedCount() > 0) {
           result.push(...iterator.readBufferedDocuments().map((it) => this.toDocInfo(it, bulkUpdate, recheck)))
         }
-        await ctx.with('flush', {}, async () => {
-          await flush()
-        })
+        await ctx.with('flush', {}, () => flush())
         return result
       },
       close: async () => {
-        await ctx.with('flush', {}, async () => {
-          await flush(true)
-        })
-        await ctx.with('close', {}, async () => {
-          await iterator.close()
-        })
+        await ctx.with('flush', {}, () => flush(true))
+        await ctx.with('close', {}, () => iterator.close())
         ctx.end()
       }
     }
@@ -1131,8 +1113,8 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   }
 
-  async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return await ctx.with('load', { domain }, async () => {
+  load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return ctx.with('load', { domain }, async () => {
       if (docs.length === 0) {
         return []
       }
@@ -1142,16 +1124,16 @@ abstract class MongoAdapterBase implements DbAdapter {
     })
   }
 
-  async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
-    await ctx.with('upload', { domain }, async () => {
+  upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
+    return ctx.with('upload', { domain }, () => {
       const coll = this.collection(domain)
 
-      await uploadDocuments(ctx, docs, coll)
+      return uploadDocuments(ctx, docs, coll)
     })
   }
 
-  async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
-    await ctx.with('update', { domain }, async () => {
+  update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
+    return ctx.with('update', { domain }, async () => {
       const coll = this.collection(domain)
 
       // remove old and insert new ones
@@ -1163,8 +1145,8 @@ abstract class MongoAdapterBase implements DbAdapter {
           await ctx.with(
             'bulk-update',
             {},
-            async () => {
-              await coll.bulkWrite(
+            () => {
+              return coll.bulkWrite(
                 part.map((it) => {
                   const { $unset, ...set } = it[1] as any
                   if ($unset !== undefined) {
@@ -1205,8 +1187,8 @@ abstract class MongoAdapterBase implements DbAdapter {
     })
   }
 
-  async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    await ctx.with('clean', {}, async () => {
+  clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    return ctx.with('clean', {}, async () => {
       if (docs.length > 0) {
         await this.db.collection<Doc>(domain).deleteMany({ _id: { $in: docs } })
       }

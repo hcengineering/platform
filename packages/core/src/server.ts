@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Account, Doc, Domain, Ref } from './classes'
+import type { Account, Doc, DocIndexState, Domain, Ref } from './classes'
 import { MeasureContext } from './measurements'
 import { DocumentQuery, FindOptions } from './storage'
 import type { DocumentUpdate, Tx } from './tx'
@@ -58,7 +58,7 @@ export interface SessionData {
   workspace: WorkspaceIdWithUrl
   branding: Branding | null
 
-  needWarmupFulltext?: boolean
+  fulltextUpdates?: Map<Ref<DocIndexState>, DocIndexState>
 }
 
 /**
