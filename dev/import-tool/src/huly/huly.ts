@@ -38,6 +38,7 @@ import {
   WorkspaceImporter
 } from '../importer/importer'
 import { type FileUploader } from '../importer/uploader'
+import { ImportWorkspaceBuilder } from '../importer/builder'
 
 interface HulyComment {
   author: string
@@ -339,18 +340,63 @@ export class HulyImporter {
   }
 
   private async processHulyFolder (folderPath: string): Promise<ImportWorkspace> {
+    const builder = new ImportWorkspaceBuilder(true) // strict mode
+
+    // Load workspace settings
     const wsSettingsPath = path.join(folderPath, 'settings.yaml')
     const wsSettings = yaml.load(fs.readFileSync(wsSettingsPath, 'utf8')) as HulyWorkspaceSettings
 
-    const projectTypes = this.processProjectTypes(wsSettings)
-
-    // Process both projects and document spaces
-    const spaces = await this.processSpaces(folderPath)
-
-    return {
-      projectTypes,
-      spaces
+    // Add project types
+    for (const pt of this.processProjectTypes(wsSettings)) {
+      builder.addProjectType(pt)
     }
+
+    // Process spaces
+    const folders = fs.readdirSync(folderPath)
+      .filter(f => fs.statSync(path.join(folderPath, f)).isDirectory())
+
+    for (const folder of folders) {
+      const spacePath = path.join(folderPath, folder)
+      const yamlPath = path.join(folderPath, `${folder}.yaml`)
+
+      if (!fs.existsSync(yamlPath)) {
+        console.warn(`Skipping ${folder}: no ${folder}.yaml found`)
+        continue
+      }
+
+      try {
+        console.log(`Processing ${folder}...`)
+        const spaceConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as HulySpaceHeader
+
+        switch (spaceConfig.class) {
+          case 'tracker.class.Project': {
+            const project = await this.processProject(spacePath, folder, spaceConfig as HulyProjectHeader)
+            builder.addProject(spacePath, project)
+
+            // Add issues
+            for (const issue of await this.processIssues(spacePath)) {
+              builder.addIssue(spacePath, issue.id as string, issue)
+            }
+            break
+          }
+
+          case 'document.class.TeamSpace': {
+            const teamspace = await this.processTeamspace(spacePath, folder, spaceConfig as HulyTeamSpaceHeader)
+            builder.addTeamspace(spacePath, teamspace)
+
+            // Add documents
+            for (const doc of await this.processDocuments(spacePath)) {
+              builder.addDocument(spacePath, doc.id as string, doc)
+            }
+            break
+          }
+        }
+      } catch (error) {
+        console.warn(`Invalid space configuration in ${folder}: `, error)
+      }
+    }
+
+    return builder.build()
   }
 
   private async processSpaces (folderPath: string): Promise<ImportSpace<ImportDoc>[]> {
@@ -371,14 +417,17 @@ export class HulyImporter {
         const spaceConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as HulySpaceHeader
 
         switch (spaceConfig.class) {
-          case 'tracker.class.Project':
+          case 'tracker.class.Project': {
             spaces.push(await this.processProject(spacePath, folder, spaceConfig as HulyProjectHeader))
             break
-          case 'document.class.TeamSpace':
+          }
+          case 'document.class.TeamSpace': {
             spaces.push(await this.processTeamspace(spacePath, folder, spaceConfig as HulyTeamSpaceHeader))
             break
-          default:
+          }
+          default: {
             console.warn(`Unknown space type: ${spaceConfig.class} in ${folder}`)
+          }
         }
       } catch (error) {
         console.warn(`Invalid space configuration in ${folder}: `, error)
@@ -394,12 +443,10 @@ export class HulyImporter {
     name: string,
     projectHeader: HulyProjectHeader
   ): Promise<ImportProject> {
-    // if (projectHeader.projectType === undefined) {
-    //   throw new Error(`Project type is not defined for ${name}`)
-    // }
     const projectType = projectHeader.projectType !== undefined
       ? this.findProjectType(projectHeader.projectType)
       : undefined
+
     return {
       class: projectHeader.class,
       name: projectHeader.title ?? name,
