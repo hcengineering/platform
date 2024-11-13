@@ -87,13 +87,12 @@ export interface TestSuite extends Doc {
 }
 
 /** @public */
-export interface TestCase extends AttachedDoc {
+export interface TestCase extends AttachedDoc<TestSuite, 'testCases', TestProject> {
   name: string
   description: CollaborativeDoc
   type: TestCaseType
   priority: TestCasePriority
   status: TestCaseStatus
-  suite: Ref<TestSuite>
   assignee: Ref<Employee>
   attachments?: CollectionSize<Attachment>
   comments?: number

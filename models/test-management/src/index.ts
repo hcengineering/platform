@@ -46,15 +46,7 @@ import { definePresenters } from './presenters'
 
 export { testManagementId } from '@hcengineering/test-management/src/index'
 
-function defineApplication (
-  builder: Builder,
-  opt: {
-    allTestCasesId: string
-    testCasesId: string
-    testSuitesId: string
-    testRunsId: string
-  }
-): void {
+function defineApplication (builder: Builder): void {
   builder.createDoc(
     workbench.class.Application,
     core.space.Model,
@@ -158,14 +150,9 @@ export function createModel (builder: Builder): void {
   defineTestCase(builder)
   defineTestRun(builder)
 
-  const testCasesId = 'testCases'
-  const allTestCasesId = 'allTestCases'
-  const testSuitesId = 'testSuites'
-  const testRunsId = 'testRuns'
-
   definePresenters(builder)
 
-  defineApplication(builder, { allTestCasesId, testCasesId, testSuitesId, testRunsId })
+  defineApplication(builder)
 
   builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ObjectIcon, {
     component: testManagement.component.TestCaseStatusPresenter
@@ -325,7 +312,7 @@ function defineTestCase (builder: Builder): void {
     {
       attachTo: testManagement.class.TestCase,
       descriptor: view.viewlet.Table,
-      config: ['', 'suite', 'status', 'assignee'],
+      config: ['', { key: 'attachedTo', label: testManagement.string.TestSuite }, 'status', 'assignee'],
       configOptions: {
         strict: true
       }
@@ -334,7 +321,7 @@ function defineTestCase (builder: Builder): void {
   )
 
   const viewOptions: ViewOptionsModel = {
-    groupBy: ['suite'],
+    groupBy: ['attachedTo'],
     orderBy: [
       ['status', SortingOrder.Ascending],
       ['modifiedOn', SortingOrder.Descending],

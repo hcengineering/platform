@@ -61,7 +61,7 @@
       label={testManagement.string.TestProject}
       bind:space={_space}
       kind={'regular'}
-      size={'large'}
+      size={'small'}
       component={ProjectPresenter}
       defaultIcon={testManagement.icon.Home}
     />

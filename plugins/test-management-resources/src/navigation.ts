@@ -59,7 +59,7 @@ export function getTestSuiteLink (testSuite: Ref<TestSuite>): Location {
     testSuite === undefined
       ? undefined
       : {
-          suite: testSuite
+          attachedTo: testSuite
         }
 
   return loc

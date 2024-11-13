@@ -40,7 +40,8 @@ import {
   type Timestamp,
   type Type,
   type CollectionSize,
-  type CollaborativeDoc
+  type CollaborativeDoc,
+  type Class
 } from '@hcengineering/core'
 import {
   Mixin,
@@ -54,8 +55,8 @@ import {
   TypeString,
   Collection,
   ReadOnly,
-  TypeNumber,
-  TypeDate
+  TypeDate,
+  Hidden
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import core, { TAttachedDoc, TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
@@ -138,6 +139,24 @@ export class TTestSuite extends TDoc implements TestSuite {
 @Model(testManagement.class.TestCase, core.class.AttachedDoc, DOMAIN_TEST_MANAGEMENT)
 @UX(testManagement.string.TestCase, testManagement.icon.TestCase, testManagement.string.TestCase)
 export class TTestCase extends TAttachedDoc implements TestCase {
+  @Prop(TypeRef(testManagement.class.TestProject), core.string.Space)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare space: Ref<TestProject>
+
+  @Prop(TypeRef(testManagement.class.TestSuite), core.string.AttachedTo)
+  @Index(IndexKind.Indexed)
+  declare attachedTo: Ref<TestSuite>
+
+  @Prop(TypeRef(testManagement.class.TestSuite), core.string.AttachedToClass)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare attachedToClass: Ref<Class<TestSuite>>
+
+  @Prop(TypeString(), core.string.Collection)
+  @Hidden()
+  override collection: 'testCases' = 'testCases'
+
   @Prop(TypeString(), testManagement.string.TestName)
   @Index(IndexKind.FullText)
     name!: string
@@ -157,18 +176,6 @@ export class TTestCase extends TAttachedDoc implements TestCase {
   @Prop(TypeTestCaseStatus(), testManagement.string.TestStatus)
   @ReadOnly()
     status!: TestCaseStatus
-
-  @Prop(TypeNumber(), testManagement.string.TestEstimatedTime)
-    estimatedTime!: number
-
-  @Prop(TypeMarkup(), testManagement.string.TestPreconditions)
-    preconditions?: string
-
-  @Prop(TypeMarkup(), testManagement.string.TestSteps)
-    steps?: string
-
-  @Prop(TypeRef(testManagement.class.TestSuite), testManagement.string.TestSuite)
-    suite!: Ref<TestSuite>
 
   @Prop(TypeRef(contact.mixin.Employee), testManagement.string.TestAssignee)
     assignee!: Ref<Employee>

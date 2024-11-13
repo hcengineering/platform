@@ -53,9 +53,9 @@ export async function getPreviousAssignees (objectId: Ref<Doc> | undefined): Pro
 
 export async function showCreateTestSuitePopup (
   space: Ref<TestProject> | undefined,
-  parent: Ref<TestSuite>
+  parentId: Ref<TestSuite>
 ): Promise<void> {
-  showPopup(CreateTestSuiteComponent, { space, parent }, 'top')
+  showPopup(CreateTestSuiteComponent, { space, parentId }, 'top')
 }
 
 export async function showEditTestSuitePopup (suite: Ref<TestSuite>): Promise<void> {

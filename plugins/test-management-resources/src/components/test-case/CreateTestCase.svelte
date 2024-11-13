@@ -38,7 +38,7 @@
 
   export let testSuiteId: Ref<TestSuite> | undefined
 
-  testSuiteId = testSuiteId ?? (getLocation()?.query?.suite as Ref<TestSuite>)
+  testSuiteId = testSuiteId ?? (getLocation()?.query?.attachedTo as Ref<TestSuite>)
   const id: Ref<TestCase> = generateId()
 
   const object: Data<TestCase> = {
@@ -47,7 +47,7 @@
     status: TestCaseStatus.Draft,
     assignee: null,
     attachments: 0,
-    suite: testSuiteId
+    attachedTo: testSuiteId
   } as unknown as TestCase
 
   let _space = space
@@ -82,7 +82,7 @@
   }
 
   function handleTestSuiteChange (evt: CustomEvent<Ref<TestSuite>>): void {
-    object.suite = evt.detail
+    object.attachedTo = evt.detail
   }
 
   const manager = createFocusManager()
