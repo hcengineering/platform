@@ -18,7 +18,7 @@
   import activity, { ActivityExtension } from '@hcengineering/activity'
   import { getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, Icon, Label } from '@hcengineering/ui'
-  import { Asset, getResource, translate } from '@hcengineering/platform'
+  import { Asset, getResource, IntlString } from '@hcengineering/platform'
   import view from '@hcengineering/view'
 
   import { getChannelName, getObjectIcon } from '../utils'
@@ -38,10 +38,8 @@
   $: extensions = client.getModel().findAllSync(activity.class.ActivityExtension, { ofClass: object._class })
 
   let icon: Asset | AnySvelteComponent | undefined = undefined
-  let name: string | undefined = undefined
 
   $: void updateIcon(object._class)
-  $: void updateName(object)
 
   async function updateIcon (_class: Ref<Class<Doc>>): Promise<void> {
     if (isThread) {
@@ -58,9 +56,11 @@
     icon = result
   }
 
-  async function updateName (object: Doc): Promise<void> {
-    const titleIntl = client.getHierarchy().getClass(object._class).label
-    name = (await getChannelName(object._id, object._class, object)) ?? (await translate(titleIntl, {}))
+  async function getName (object: Doc): Promise<{ name: string | undefined, label: IntlString | undefined }> {
+    const name = await getChannelName(object._id, object._class, object)
+    const label = client.getHierarchy().getClass(object._class).label
+
+    return { name, label }
   }
 </script>
 
@@ -82,9 +82,13 @@
         {#if icon}
           <Icon {icon} size="x-small" />
         {/if}
-        {#if name}
-          {name}
-        {/if}
+        {#await getName(object) then data}
+          {#if data.name}
+            {data.name}
+          {:else if data.label}
+            <Label label={data.label} />
+          {/if}
+        {/await}
       </span>
     {/if}
   </div>
