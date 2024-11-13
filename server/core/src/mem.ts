@@ -133,20 +133,20 @@ class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
     this.modeldb = new ModelDb(hierarchy)
   }
 
-  async findAll<T extends Doc>(
+  findAll<T extends Doc>(
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    return await this.modeldb.findAll(_class, query, options)
+    return ctx.withSync('inmem-find', {}, () => this.modeldb.findAll(_class, query, options))
   }
 
-  async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return await this.modeldb.findAll(core.class.Doc, { _id: { $in: docs } })
+  load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return this.modeldb.findAll(core.class.Doc, { _id: { $in: docs } })
   }
 
-  async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
+  tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     // Filter transactions with broadcast only flags
     const ftx = tx.filter((it) => {
       if (TxProcessor.isExtendsCUD(it._class)) {
@@ -161,9 +161,9 @@ class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
       return true
     })
     if (ftx.length === 0) {
-      return []
+      return Promise.resolve([])
     }
-    return await this.modeldb.tx(...ftx)
+    return this.modeldb.tx(...ftx)
   }
 }
 

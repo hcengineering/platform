@@ -14,7 +14,6 @@ export { serverGithubId } from '@hcengineering/server-github'
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverGithub.trigger.OnProjectChanges,
-    arrays: true,
     isAsync: true
   })
 

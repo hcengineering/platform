@@ -791,21 +791,27 @@ async function ActivityReferenceRemove (tx: Tx, etx: TxCUD<Doc>, control: Trigge
 /**
  * @public
  */
-export async function ReferenceTrigger (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+export async function ReferenceTrigger (txes: TxCUD<Doc>[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
 
-  const etx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-  if (control.hierarchy.isDerived(etx.objectClass, activity.class.ActivityReference)) return []
-  if (control.hierarchy.isDerived(etx.objectClass, notification.class.InboxNotification)) return []
+  for (const tx of txes) {
+    const etx = TxProcessor.extractTx(tx) as TxCUD<Doc>
+    if (control.hierarchy.isDerived(etx.objectClass, activity.class.ActivityReference)) {
+      continue
+    }
+    if (control.hierarchy.isDerived(etx.objectClass, notification.class.InboxNotification)) {
+      continue
+    }
 
-  if (etx._class === core.class.TxCreateDoc) {
-    result.push(...(await ActivityReferenceCreate(tx, etx, control)))
-  }
-  if (etx._class === core.class.TxUpdateDoc) {
-    result.push(...(await ActivityReferenceUpdate(tx, etx, control)))
-  }
-  if (etx._class === core.class.TxRemoveDoc) {
-    result.push(...(await ActivityReferenceRemove(tx, etx, control)))
+    if (etx._class === core.class.TxCreateDoc) {
+      result.push(...(await ActivityReferenceCreate(tx, etx, control)))
+    }
+    if (etx._class === core.class.TxUpdateDoc) {
+      result.push(...(await ActivityReferenceUpdate(tx, etx, control)))
+    }
+    if (etx._class === core.class.TxRemoveDoc) {
+      result.push(...(await ActivityReferenceRemove(tx, etx, control)))
+    }
   }
   return result
 }

@@ -55,8 +55,8 @@ export class LowLevelMiddleware extends BaseMiddleware implements Middleware {
         return adapterManager.getAdapter(domain, true).upload(ctx, domain, docs)
       },
 
-      async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-        await adapterManager.getAdapter(domain, true).clean(ctx, domain, docs)
+      clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+        return adapterManager.getAdapter(domain, true).clean(ctx, domain, docs)
       },
       groupBy<T, P extends Doc>(
         ctx: MeasureContext,

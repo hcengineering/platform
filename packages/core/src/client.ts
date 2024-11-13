@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import { BackupClient, DocChunk } from './backup'
 import { Account, AttachedDoc, Class, DOMAIN_MODEL, Doc, Domain, Ref, Timestamp } from './classes'
 import core from './component'
@@ -249,12 +250,10 @@ export async function createClient (
     }
     lastTx = tx.reduce((cur, it) => (it.modifiedOn > cur ? it.modifiedOn : cur), 0)
   }
-  const conn = await ctx.with('connect', {}, async () => await connect(txHandler))
+  const conn = await ctx.with('connect', {}, () => connect(txHandler))
 
-  await ctx.with(
-    'load-model',
-    { reload: false },
-    async (ctx) => await loadModel(ctx, conn, modelFilter, hierarchy, model, false, txPersistence)
+  await ctx.with('load-model', { reload: false }, (ctx) =>
+    loadModel(ctx, conn, modelFilter, hierarchy, model, false, txPersistence)
   )
 
   txBuffer = txBuffer.filter((tx) => tx.space !== core.space.Model)
@@ -273,10 +272,8 @@ export async function createClient (
       return
     }
     // Find all new transactions and apply
-    const loadModelResponse = await ctx.with(
-      'connect',
-      { reload: true },
-      async (ctx) => await loadModel(ctx, conn, modelFilter, hierarchy, model, true, txPersistence)
+    const loadModelResponse = await ctx.with('connect', { reload: true }, (ctx) =>
+      loadModel(ctx, conn, modelFilter, hierarchy, model, true, txPersistence)
     )
 
     if (event === ClientConnectEvent.Reconnected && loadModelResponse.full) {
@@ -284,9 +281,7 @@ export async function createClient (
       hierarchy = new Hierarchy()
       model = new ModelDb(hierarchy)
 
-      await ctx.with('build-model', {}, async (ctx) => {
-        await buildModel(ctx, loadModelResponse, modelFilter, hierarchy, model)
-      })
+      await ctx.with('build-model', {}, (ctx) => buildModel(ctx, loadModelResponse, modelFilter, hierarchy, model))
       await oldOnConnect?.(ClientConnectEvent.Upgraded)
 
       // No need to fetch more stuff since upgrade was happened.
@@ -300,15 +295,12 @@ export async function createClient (
     }
 
     // We need to look for last {transactionThreshold} transactions and if it is more since lastTx one we receive, we need to perform full refresh.
-    const atxes = await ctx.with(
-      'find-atx',
-      {},
-      async () =>
-        await conn.findAll(
-          core.class.Tx,
-          { modifiedOn: { $gt: lastTx }, objectSpace: { $ne: core.space.Model } },
-          { sort: { modifiedOn: SortingOrder.Ascending, _id: SortingOrder.Ascending }, limit: transactionThreshold }
-        )
+    const atxes = await ctx.with('find-atx', {}, () =>
+      conn.findAll(
+        core.class.Tx,
+        { modifiedOn: { $gt: lastTx }, objectSpace: { $ne: core.space.Model } },
+        { sort: { modifiedOn: SortingOrder.Ascending, _id: SortingOrder.Ascending }, limit: transactionThreshold }
+      )
     )
 
     let needFullRefresh = false
@@ -364,12 +356,16 @@ async function tryLoadModel (
   }
 
   // Save concatenated
-  void (await ctx.with('persistence-store', {}, (ctx) =>
-    persistence?.store({
-      ...result,
-      transactions: !result.full ? current.transactions.concat(result.transactions) : result.transactions
+  void ctx
+    .with('persistence-store', {}, (ctx) =>
+      persistence?.store({
+        ...result,
+        transactions: !result.full ? current.transactions.concat(result.transactions) : result.transactions
+      })
+    )
+    .catch((err) => {
+      Analytics.handleError(err)
     })
-  ))
 
   if (!result.full && !reload) {
     result.transactions = current.transactions.concat(result.transactions)
@@ -432,7 +428,7 @@ async function buildModel (
 
   const atxes = modelResponse.transactions
 
-  await ctx.with('split txes', {}, async () => {
+  ctx.withSync('split txes', {}, () => {
     atxes.forEach((tx) =>
       ((tx.modifiedBy === core.account.ConfigUser || tx.modifiedBy === core.account.System) && !isPersonAccount(tx)
         ? systemTx
@@ -448,7 +444,7 @@ async function buildModel (
     txes = await modelFilter(txes)
   }
 
-  await ctx.with('build hierarchy', {}, async () => {
+  ctx.withSync('build hierarchy', {}, () => {
     for (const tx of txes) {
       try {
         hierarchy.tx(tx)
@@ -461,7 +457,7 @@ async function buildModel (
       }
     }
   })
-  await ctx.with('build model', {}, async (ctx) => {
+  ctx.withSync('build model', {}, (ctx) => {
     model.addTxes(ctx, txes, false)
   })
 }

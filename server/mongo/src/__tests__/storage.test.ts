@@ -134,7 +134,6 @@ describe('mongo operations', () => {
   })
 
   it('check add', async () => {
-    jest.setTimeout(500000)
     const times: number[] = []
     for (let i = 0; i < 50; i++) {
       const t = Date.now()
@@ -153,7 +152,6 @@ describe('mongo operations', () => {
   })
 
   it('check find by criteria', async () => {
-    jest.setTimeout(20000)
     for (let i = 0; i < 50; i++) {
       await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
         name: `my-task-${i}`,

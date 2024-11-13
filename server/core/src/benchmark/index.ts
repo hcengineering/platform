@@ -90,7 +90,7 @@ class BenchmarkDbAdapter extends DummyDbAdapter {
     return toFindResult<T>(result as T[])
   }
 
-  async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
+  tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     if (benchData === '') {
       benchData = genData(1024 * 1024)
     }
@@ -102,16 +102,16 @@ class BenchmarkDbAdapter extends DummyDbAdapter {
         if (request?.size != null) {
           const dataSize =
             typeof request.size === 'number' ? request.size : request.size.from + Math.random() * request.size.to
-          return [
+          return Promise.resolve([
             {
               response: benchData.slice(0, dataSize)
             }
-          ]
+          ])
         }
       }
     }
 
-    return [{}]
+    return Promise.resolve([{}])
   }
 }
 /**

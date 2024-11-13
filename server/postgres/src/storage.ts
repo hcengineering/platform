@@ -402,13 +402,13 @@ abstract class PostgresAdapterBase implements DbAdapter {
     }
   }
 
-  async findAll<T extends Doc>(
+  findAll<T extends Doc>(
     ctx: MeasureContext<SessionData>,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: ServerFindOptions<T>
   ): Promise<FindResult<T>> {
-    return await ctx.with('findAll', { _class }, async () => {
+    return ctx.with('findAll', { _class }, async () => {
       try {
         const domain = translateDomain(options?.domain ?? this.hierarchy.getDomain(_class))
         const sqlChunks: string[] = []
@@ -1142,9 +1142,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
     const flush = async (flush = false): Promise<void> => {
       if (bulkUpdate.size > 1000 || flush) {
         if (bulkUpdate.size > 0) {
-          await ctx.with('bulk-write-find', {}, async () => {
+          await ctx.with('bulk-write-find', {}, () => {
             const updates = new Map(Array.from(bulkUpdate.entries()).map((it) => [it[0], { '%hash%': it[1] }]))
-            await this.update(ctx, domain, updates)
+            return this.update(ctx, domain, updates)
           })
         }
         bulkUpdate.clear()
@@ -1162,12 +1162,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
           await init('_id, data', "'%hash%' IS NOT NULL AND '%hash%' <> ''")
           initialized = true
         }
-        let docs = await ctx.with('next', { mode }, async () => await next(50))
+        let docs = await ctx.with('next', { mode }, () => next(50))
         if (docs.length === 0 && mode === 'hashed') {
           await close(cursorName)
           mode = 'non_hashed'
           await init('*', "'%hash%' IS NULL OR '%hash%' = ''")
-          docs = await ctx.with('next', { mode }, async () => await next(50))
+          docs = await ctx.with('next', { mode }, () => next(50))
         }
         if (docs.length === 0) {
           return []
@@ -1190,9 +1190,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
             bulkUpdate.set(d._id, `${digest}|${size.toString(16)}`)
 
-            await ctx.with('flush', {}, async () => {
-              await flush()
-            })
+            await ctx.with('flush', {}, () => flush())
             result.push({
               id: d._id,
               hash: digest,
@@ -1209,17 +1207,15 @@ abstract class PostgresAdapterBase implements DbAdapter {
         return result
       },
       close: async () => {
-        await ctx.with('flush', {}, async () => {
-          await flush(true)
-        })
+        await ctx.with('flush', {}, () => flush(true))
         await close(cursorName)
         ctx.end()
       }
     }
   }
 
-  async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return await ctx.with('load', { domain }, async () => {
+  load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return ctx.with('load', { domain }, async () => {
       if (docs.length === 0) {
         return []
       }
@@ -1230,8 +1226,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
     })
   }
 
-  async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
-    await ctx.with('upload', { domain }, async (ctx) => {
+  upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
+    return ctx.with('upload', { domain }, async (ctx) => {
       const arr = docs.concat()
       const fields = getDocFieldsByDomains(domain)
       const filedsWithData = [...fields, 'data']
@@ -1282,15 +1278,15 @@ abstract class PostgresAdapterBase implements DbAdapter {
     await connection`DELETE FROM ${connection(translateDomain(domain))} WHERE _id = ANY(${docs}) AND "workspaceId" = ${this.workspaceId.name}`
   }
 
-  async groupBy<T, P extends Doc>(
+  groupBy<T, P extends Doc>(
     ctx: MeasureContext,
     domain: Domain,
     field: string,
     query?: DocumentQuery<P>
   ): Promise<Map<T, number>> {
-    const connection = (await this.getConnection(ctx)) ?? this.client
     const key = isDataField(domain, field) ? `data ->> '${field}'` : `"${field}"`
-    const result = await ctx.with('groupBy', { domain }, async (ctx) => {
+    return ctx.with('groupBy', { domain }, async (ctx) => {
+      const connection = (await this.getConnection(ctx)) ?? this.client
       try {
         const result = await connection.unsafe(
           `SELECT DISTINCT ${key} as ${field}, Count(*) AS count FROM ${translateDomain(domain)} WHERE ${this.buildRawQuery(domain, query ?? {})} GROUP BY ${key}`
@@ -1301,13 +1297,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
         throw err
       }
     })
-    return result
   }
 
-  async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
+  update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
     const ids = Array.from(operations.keys())
-    await this.withConnection(ctx, async (client) => {
-      await this.retryTxn(client, async (client) => {
+    return this.withConnection(ctx, (client) => {
+      return this.retryTxn(client, async (client) => {
         try {
           const res =
             await client`SELECT * FROM ${client(translateDomain(domain))} WHERE _id = ANY(${ids}) AND "workspaceId" = ${this.workspaceId.name} FOR UPDATE`
@@ -1476,17 +1471,17 @@ class PostgresAdapter extends PostgresAdapterBase {
 
   protected async txCreateDoc (ctx: MeasureContext, tx: TxCreateDoc<Doc>): Promise<TxResult> {
     const doc = TxProcessor.createDoc2Doc(tx)
-    return await ctx.with('create-doc', { _class: doc._class }, async (_ctx) => {
-      return await this.insert(_ctx, this.hierarchy.getDomain(doc._class), [doc])
+    return await ctx.with('create-doc', { _class: doc._class }, (_ctx) => {
+      return this.insert(_ctx, this.hierarchy.getDomain(doc._class), [doc])
     })
   }
 
-  protected async txUpdateDoc (ctx: MeasureContext, tx: TxUpdateDoc<Doc>): Promise<TxResult> {
-    return await ctx.with('tx-update-doc', { _class: tx.objectClass }, async (_ctx) => {
+  protected txUpdateDoc (ctx: MeasureContext, tx: TxUpdateDoc<Doc>): Promise<TxResult> {
+    return ctx.with('tx-update-doc', { _class: tx.objectClass }, (_ctx) => {
       if (isOperator(tx.operations)) {
         let doc: Doc | undefined
         const ops: any = { '%hash%': null, ...tx.operations }
-        return await _ctx.with(
+        return _ctx.with(
           'update with operations',
           { operations: JSON.stringify(Object.keys(tx.operations)) },
           async (ctx) => {
@@ -1517,17 +1512,13 @@ class PostgresAdapter extends PostgresAdapterBase {
           }
         )
       } else {
-        return await this.updateDoc(_ctx, tx, tx.retrieve ?? false)
+        return this.updateDoc(_ctx, tx, tx.retrieve ?? false)
       }
     })
   }
 
-  private async updateDoc<T extends Doc>(
-    ctx: MeasureContext,
-    tx: TxUpdateDoc<T>,
-    retrieve: boolean
-  ): Promise<TxResult> {
-    return await ctx.with('update jsonb_set', {}, async (_ctx) => {
+  private updateDoc<T extends Doc>(ctx: MeasureContext, tx: TxUpdateDoc<T>, retrieve: boolean): Promise<TxResult> {
+    return ctx.with('update jsonb_set', {}, async (_ctx) => {
       const updates: string[] = ['"modifiedBy" = $1', '"modifiedOn" = $2']
       const params: any[] = [tx.modifiedBy, tx.modifiedOn, tx.objectId, this.workspaceId.name]
       let paramsIndex = 5
@@ -1555,12 +1546,12 @@ class PostgresAdapter extends PostgresAdapterBase {
       }
       await this.withConnection(ctx, async (connection) => {
         try {
-          await this.retryTxn(connection, async (client) => {
-            await client.unsafe(
+          await this.retryTxn(connection, (client) =>
+            client.unsafe(
               `UPDATE ${translateDomain(this.hierarchy.getDomain(tx.objectClass))} SET ${updates.join(', ')} WHERE _id = $3 AND "workspaceId" = $4`,
               params
             )
-          })
+          )
           if (retrieve) {
             const object = await this.findDoc(_ctx, connection, tx.objectClass, tx.objectId)
             return { object }
@@ -1573,14 +1564,14 @@ class PostgresAdapter extends PostgresAdapterBase {
     })
   }
 
-  private async findDoc (
+  private findDoc (
     ctx: MeasureContext,
     client: postgres.Sql | postgres.ReservedSql,
     _class: Ref<Class<Doc>>,
     _id: Ref<Doc>,
     forUpdate: boolean = false
   ): Promise<Doc | undefined> {
-    return await ctx.with('find-doc', { _class }, async () => {
+    return ctx.with('find-doc', { _class }, async () => {
       const res =
         await client`SELECT * FROM ${this.client(translateDomain(this.hierarchy.getDomain(_class)))} WHERE _id = ${_id} AND "workspaceId" = ${this.workspaceId.name} ${
           forUpdate ? client` FOR UPDATE` : client``
@@ -1595,9 +1586,11 @@ class PostgresAdapter extends PostgresAdapterBase {
     await ctx.with('tx-remove-doc', { _class: tx.objectClass }, async (_ctx) => {
       const domain = translateDomain(this.hierarchy.getDomain(tx.objectClass))
       await this.withConnection(_ctx, async (connection) => {
-        await this.retryTxn(connection, async (client) => {
-          await client`DELETE FROM ${client(domain)} WHERE _id = ${tx.objectId} AND "workspaceId" = ${this.workspaceId.name}`
-        })
+        await this.retryTxn(
+          connection,
+          (client) =>
+            client`DELETE FROM ${client(domain)} WHERE _id = ${tx.objectId} AND "workspaceId" = ${this.workspaceId.name}`
+        )
       })
     })
     return {}

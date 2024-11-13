@@ -264,9 +264,7 @@ export async function upgradeModel (
 
       const t = Date.now()
       try {
-        await ctx.with(op[0], {}, async (ctx) => {
-          await preMigrate(preMigrateClient, logger)
-        })
+        await ctx.with(op[0], {}, (ctx) => preMigrate(preMigrateClient, logger))
       } catch (err: any) {
         logger.error(`error during pre-migrate: ${op[0]} ${err.message}`, err)
         throw err
@@ -309,9 +307,7 @@ export async function upgradeModel (
     for (const op of migrateOperations) {
       try {
         const t = Date.now()
-        await ctx.with(op[0], {}, async () => {
-          await op[1].migrate(migrateClient, logger)
-        })
+        await ctx.with(op[0], {}, () => op[1].migrate(migrateClient, logger))
         const tdelta = Date.now() - t
         if (tdelta > 0) {
           logger.log('migrate:', { workspaceId: workspaceId.name, operation: op[0], time: Date.now() - t })
@@ -340,9 +336,7 @@ export async function upgradeModel (
     let i = 0
     for (const op of migrateOperations) {
       const t = Date.now()
-      await ctx.with(op[0], {}, async () => {
-        await op[1].upgrade(migrateState, async () => connection, logger)
-      })
+      await ctx.with(op[0], {}, () => op[1].upgrade(migrateState, async () => connection, logger))
       const tdelta = Date.now() - t
       if (tdelta > 0) {
         logger.log('upgrade:', { operation: op[0], time: tdelta, workspaceId: workspaceId.name })

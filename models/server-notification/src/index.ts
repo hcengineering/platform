@@ -89,8 +89,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverNotification.trigger.OnDocRemove,
-    arrays: true
+    trigger: serverNotification.trigger.OnDocRemove
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

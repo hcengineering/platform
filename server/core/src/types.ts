@@ -260,7 +260,7 @@ export interface TriggerControl {
 /**
  * @public
  */
-export type TriggerFunc = (tx: Tx | Tx[], ctrl: TriggerControl) => Promise<Tx[]>
+export type TriggerFunc = (tx: Tx[], ctrl: TriggerControl) => Promise<Tx[]>
 
 /**
  * @public
@@ -273,9 +273,6 @@ export interface Trigger extends Doc {
 
   // We should match transaction
   txMatch?: DocumentQuery<Tx>
-
-  // If set trigger will handle Tx[] instead of Tx
-  arrays?: boolean
 }
 
 /**
@@ -572,6 +569,11 @@ export function disableLogging (): void {
   LOGGING_ENABLED = false
 }
 
+interface TickHandler {
+  ticks: number
+  operation: () => void
+}
+
 /**
  * @public
  */
@@ -581,6 +583,9 @@ export interface Workspace {
   token: string // Account workspace update token.
   pipeline: Promise<Pipeline>
   tickHash: number
+
+  tickHandlers: Map<string, TickHandler>
+
   sessions: Map<string, { session: Session, socket: ConnectionSocket, tickHash: number }>
   upgrade: boolean
 

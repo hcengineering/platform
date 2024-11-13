@@ -126,11 +126,9 @@ export class DatalakeService implements StorageAdapter {
       size
     }
 
-    await ctx.with('put', {}, async (ctx) => {
-      await withRetry(ctx, 5, async () => {
-        await this.client.putObject(ctx, workspaceId, objectName, stream, metadata, size)
-      })
-    })
+    await ctx.with('put', {}, (ctx) =>
+      withRetry(ctx, 5, () => this.client.putObject(ctx, workspaceId, objectName, stream, metadata, size))
+    )
 
     return {
       etag: '',

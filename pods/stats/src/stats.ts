@@ -62,7 +62,11 @@ export function serveStats (ctx: MeasureContext, onClose?: () => void): void {
       credentials: true
     })
   )
-  app.use(bodyParser())
+  app.use(
+    bodyParser({
+      jsonLimit: '150mb'
+    })
+  )
 
   router.get('/api/v1/overview', (req, res) => {
     try {

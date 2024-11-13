@@ -42,14 +42,8 @@ async function loadCollaborativeDocVersion (
   documentId: string,
   versionId: string
 ): Promise<YDoc | undefined> {
-  const yContent = await ctx.with('yDocFromStorage', { type: 'content' }, async (ctx) => {
-    return await yDocFromStorage(
-      ctx,
-      storageAdapter,
-      workspace,
-      documentId,
-      new YDoc({ guid: generateId(), gc: false })
-    )
+  const yContent = await ctx.with('yDocFromStorage', { type: 'content' }, (ctx) => {
+    return yDocFromStorage(ctx, storageAdapter, workspace, documentId, new YDoc({ guid: generateId(), gc: false }))
   })
 
   // the document does not exist
@@ -62,8 +56,8 @@ async function loadCollaborativeDocVersion (
   }
 
   const historyDocumentId = collaborativeHistoryDocId(documentId)
-  const yHistory = await ctx.with('yDocFromStorage', { type: 'history' }, async (ctx) => {
-    return await yDocFromStorage(ctx, storageAdapter, workspace, historyDocumentId, new YDoc({ guid: generateId() }))
+  const yHistory = await ctx.with('yDocFromStorage', { type: 'history' }, (ctx) => {
+    return yDocFromStorage(ctx, storageAdapter, workspace, historyDocumentId, new YDoc({ guid: generateId() }))
   })
 
   // the history document does not exist
@@ -122,9 +116,7 @@ export async function saveCollaborativeDocVersion (
 ): Promise<void> {
   await ctx.with('saveCollaborativeDoc', {}, async (ctx) => {
     if (versionId === 'HEAD') {
-      await ctx.with('yDocToStorage', {}, async () => {
-        await yDocToStorage(ctx, storageAdapter, workspace, documentId, ydoc)
-      })
+      await ctx.with('yDocToStorage', {}, () => yDocToStorage(ctx, storageAdapter, workspace, documentId, ydoc))
     } else {
       console.warn('Cannot save non HEAD document version', documentId, versionId)
     }
@@ -149,9 +141,7 @@ export async function removeCollaborativeDoc (
       }
     }
     if (toRemove.length > 0) {
-      await ctx.with('remove', {}, async () => {
-        await storageAdapter.remove(ctx, workspace, toRemove)
-      })
+      await ctx.with('remove', {}, () => storageAdapter.remove(ctx, workspace, toRemove))
     }
   })
 }

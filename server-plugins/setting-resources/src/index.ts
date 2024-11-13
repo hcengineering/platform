@@ -92,23 +92,31 @@ export async function getOwnerPosition (
 /**
  * @public
  */
-export async function OnRoleNameUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx)
-  const updateTx = actualTx as TxUpdateDoc<Role>
+export async function OnRoleNameUpdate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const actualTx = TxProcessor.extractTx(tx)
+    const updateTx = actualTx as TxUpdateDoc<Role>
 
-  if (updateTx.operations?.name === undefined) return []
+    if (updateTx.operations?.name === undefined) {
+      continue
+    }
 
-  // Update the related mixin attribute
-  const roleAttribute = await control.modelDb.findOne(core.class.Attribute, {
-    name: updateTx.objectId
-  })
-  if (roleAttribute === undefined) return []
+    // Update the related mixin attribute
+    const roleAttribute = await control.modelDb.findOne(core.class.Attribute, {
+      name: updateTx.objectId
+    })
+    if (roleAttribute === undefined) {
+      continue
+    }
 
-  const updAttrTx = control.txFactory.createTxUpdateDoc(core.class.Attribute, core.space.Model, roleAttribute._id, {
-    label: getEmbeddedLabel(updateTx.operations.name)
-  })
-
-  return [updAttrTx]
+    result.push(
+      control.txFactory.createTxUpdateDoc(core.class.Attribute, core.space.Model, roleAttribute._id, {
+        label: getEmbeddedLabel(updateTx.operations.name)
+      })
+    )
+  }
+  return result
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

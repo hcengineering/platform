@@ -50,63 +50,71 @@ import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { workbenchId } from '@hcengineering/workbench'
 
-export async function OnSpaceTypeMembers (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const ctx = tx as TxUpdateDoc<SpaceType>
+export async function OnSpaceTypeMembers (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
-  const newMember = ctx.operations.$push?.members as Ref<Account>
-  if (newMember !== undefined) {
-    const spaces = await control.findAll(control.ctx, core.class.Space, { type: ctx.objectId })
-    for (const space of spaces) {
-      if (space.members.includes(newMember)) continue
-      const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
-        $push: {
-          members: newMember
-        }
-      })
-      result.push(pushTx)
+  for (const tx of txes) {
+    const ctx = tx as TxUpdateDoc<SpaceType>
+    const newMember = ctx.operations.$push?.members as Ref<Account>
+    if (newMember !== undefined) {
+      const spaces = await control.findAll(control.ctx, core.class.Space, { type: ctx.objectId })
+      for (const space of spaces) {
+        if (space.members.includes(newMember)) continue
+        const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+          $push: {
+            members: newMember
+          }
+        })
+        result.push(pushTx)
+      }
     }
-  }
-  const oldMember = ctx.operations.$pull?.members as Ref<Account>
-  if (ctx.operations.$pull?.members !== undefined) {
-    const spaces = await control.findAll(control.ctx, core.class.Space, { type: ctx.objectId })
-    for (const space of spaces) {
-      if (!space.members.includes(oldMember)) continue
-      const pullTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
-        $pull: {
-          members: oldMember
-        }
-      })
-      result.push(pullTx)
+    const oldMember = ctx.operations.$pull?.members as Ref<Account>
+    if (ctx.operations.$pull?.members !== undefined) {
+      const spaces = await control.findAll(control.ctx, core.class.Space, { type: ctx.objectId })
+      for (const space of spaces) {
+        if (!space.members.includes(oldMember)) continue
+        const pullTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+          $pull: {
+            members: oldMember
+          }
+        })
+        result.push(pullTx)
+      }
     }
   }
   return result
 }
 
-export async function OnEmployeeCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const mixinTx = tx as TxMixin<Person, Employee>
-  if (mixinTx.attributes.active !== true) return []
-  const acc = control.modelDb.getAccountByPersonId(mixinTx.objectId)
-  if (acc.length === 0) return []
-  const spaces = await control.findAll(control.ctx, core.class.Space, { autoJoin: true })
+export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
+  for (const tx of _txes) {
+    const mixinTx = tx as TxMixin<Person, Employee>
+    if (mixinTx.attributes.active !== true) {
+      continue
+    }
+    const acc = control.modelDb.getAccountByPersonId(mixinTx.objectId)
+    if (acc.length === 0) {
+      continue
+    }
+    const spaces = await control.findAll(control.ctx, core.class.Space, { autoJoin: true })
 
-  const txes = await createPersonSpace(
-    acc.map((it) => it._id),
-    mixinTx.objectId,
-    control
-  )
-  result.push(...txes)
+    const txes = await createPersonSpace(
+      acc.map((it) => it._id),
+      mixinTx.objectId,
+      control
+    )
+    result.push(...txes)
 
-  for (const space of spaces) {
-    const toAdd = acc.filter((it) => !space.members.includes(it._id))
-    if (toAdd.length === 0) continue
-    for (const a of toAdd) {
-      const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
-        $push: {
-          members: a._id
-        }
-      })
-      result.push(pushTx)
+    for (const space of spaces) {
+      const toAdd = acc.filter((it) => !space.members.includes(it._id))
+      if (toAdd.length === 0) continue
+      for (const a of toAdd) {
+        const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+          $push: {
+            members: a._id
+          }
+        })
+        result.push(pushTx)
+      }
     }
   }
   return result
@@ -142,32 +150,37 @@ async function createPersonSpace (
   ]
 }
 
-export async function OnPersonAccountCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const acc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<PersonAccount>)
-  const person = (
-    await control.findAll(
-      control.ctx,
-      contact.mixin.Employee,
-      { _id: acc.person as Ref<Employee>, active: true },
-      { limit: 1 }
-    )
-  )[0]
-  if (person === undefined) return []
+export async function OnPersonAccountCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
   const spaces = await control.findAll(control.ctx, core.class.Space, { autoJoin: true })
 
-  const result: Tx[] = []
-  const txes = await createPersonSpace([acc._id], person._id, control)
+  for (const tx of txes) {
+    const acc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<PersonAccount>)
+    const person = (
+      await control.findAll(
+        control.ctx,
+        contact.mixin.Employee,
+        { _id: acc.person as Ref<Employee>, active: true },
+        { limit: 1 }
+      )
+    )[0]
+    if (person === undefined) {
+      continue
+    }
 
-  result.push(...txes)
+    const txes = await createPersonSpace([acc._id], person._id, control)
 
-  for (const space of spaces) {
-    if (space.members.includes(acc._id)) continue
-    const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
-      $push: {
-        members: acc._id
-      }
-    })
-    result.push(pushTx)
+    result.push(...txes)
+
+    for (const space of spaces) {
+      if (space.members.includes(acc._id)) continue
+      const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+        $push: {
+          members: acc._id
+        }
+      })
+      result.push(pushTx)
+    }
   }
   return result
 }
@@ -176,29 +189,30 @@ export async function OnPersonAccountCreate (tx: Tx, control: TriggerControl): P
  * @public
  */
 export async function OnContactDelete (
-  tx: Tx,
+  txes: Tx[],
   { findAll, hierarchy, storageAdapter, workspace, removedMap, txFactory, ctx }: TriggerControl
 ): Promise<Tx[]> {
-  const rmTx = tx as TxRemoveDoc<Contact>
-
-  const removeContact = removedMap.get(rmTx.objectId) as Contact
-  if (removeContact === undefined) {
-    return []
-  }
-
   const result: Tx[] = []
+  for (const tx of txes) {
+    const rmTx = tx as TxRemoveDoc<Contact>
 
-  const members = await findAll(ctx, contact.class.Member, { contact: removeContact._id })
-  for (const member of members) {
-    const removeTx = txFactory.createTxRemoveDoc(member._class, member.space, member._id)
-    const tx = txFactory.createTxCollectionCUD(
-      member.attachedToClass,
-      member.attachedTo,
-      member.space,
-      member.collection,
-      removeTx
-    )
-    result.push(tx)
+    const removeContact = removedMap.get(rmTx.objectId) as Contact
+    if (removeContact === undefined) {
+      continue
+    }
+
+    const members = await findAll(ctx, contact.class.Member, { contact: removeContact._id })
+    for (const member of members) {
+      const removeTx = txFactory.createTxRemoveDoc(member._class, member.space, member._id)
+      const tx = txFactory.createTxCollectionCUD(
+        member.attachedToClass,
+        member.attachedTo,
+        member.space,
+        member.collection,
+        removeTx
+      )
+      result.push(tx)
+    }
   }
 
   return result
@@ -207,36 +221,37 @@ export async function OnContactDelete (
 /**
  * @public
  */
-export async function OnChannelUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const uTx = tx as TxUpdateDoc<Channel>
-
+export async function OnChannelUpdate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
+  for (const tx of txes) {
+    const uTx = tx as TxUpdateDoc<Channel>
 
-  if (uTx.operations.$inc?.items !== undefined) {
-    const doc = (await control.findAll(control.ctx, uTx.objectClass, { _id: uTx.objectId }, { limit: 1 }))[0]
-    if (doc !== undefined) {
-      if (control.hierarchy.hasMixin(doc, notification.mixin.Collaborators)) {
-        const collab = control.hierarchy.as(doc, notification.mixin.Collaborators) as Doc as Collaborators
-        if (collab.collaborators.includes(tx.modifiedBy)) {
-          result.push(
-            control.txFactory.createTxMixin(doc._id, doc._class, doc.space, notification.mixin.Collaborators, {
-              $push: {
-                collaborators: tx.modifiedBy
-              }
-            })
-          )
-        }
-      } else {
-        const res = control.txFactory.createTxMixin<Doc, Collaborators>(
-          doc._id,
-          doc._class,
-          doc.space,
-          notification.mixin.Collaborators,
-          {
-            collaborators: [tx.modifiedBy]
+    if (uTx.operations.$inc?.items !== undefined) {
+      const doc = (await control.findAll(control.ctx, uTx.objectClass, { _id: uTx.objectId }, { limit: 1 }))[0]
+      if (doc !== undefined) {
+        if (control.hierarchy.hasMixin(doc, notification.mixin.Collaborators)) {
+          const collab = control.hierarchy.as(doc, notification.mixin.Collaborators) as Doc as Collaborators
+          if (collab.collaborators.includes(tx.modifiedBy)) {
+            result.push(
+              control.txFactory.createTxMixin(doc._id, doc._class, doc.space, notification.mixin.Collaborators, {
+                $push: {
+                  collaborators: tx.modifiedBy
+                }
+              })
+            )
           }
-        )
-        result.push(res)
+        } else {
+          const res = control.txFactory.createTxMixin<Doc, Collaborators>(
+            doc._id,
+            doc._class,
+            doc.space,
+            notification.mixin.Collaborators,
+            {
+              collaborators: [tx.modifiedBy]
+            }
+          )
+          result.push(res)
+        }
       }
     }
   }

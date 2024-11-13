@@ -169,8 +169,8 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
     rpcCtx.info('rpc', { method: request.method, connectionId: context.connectionId, mode: token.extra?.mode ?? '' })
     await rpcCtx.with('/rpc', { method: request.method }, async (ctx) => {
       try {
-        const response: RpcResponse = await rpcCtx.with(request.method, {}, async (ctx) => {
-          return await method(ctx, context, documentId, request.payload, { hocuspocus, storageAdapter, transformer })
+        const response: RpcResponse = await rpcCtx.with(request.method, {}, (ctx) => {
+          return method(ctx, context, documentId, request.payload, { hocuspocus, storageAdapter, transformer })
         })
         res.status(200).send(response)
       } catch (err: any) {
