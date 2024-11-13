@@ -17,6 +17,7 @@
 import core, {
   TxFactory,
   TxProcessor,
+  generateId,
   groupByArray,
   matchQuery,
   type Class,
@@ -41,8 +42,6 @@ import serverCore from './plugin'
 interface TriggerRecord {
   query?: DocumentQuery<Tx>
   trigger: { op: TriggerFunc | Promise<TriggerFunc>, resource: Resource<TriggerFunc>, isAsync: boolean }
-
-  arrays: boolean
 }
 /**
  * @public
@@ -67,12 +66,12 @@ export class Triggers {
     const isAsync = t.isAsync === true
     this.triggers.push({
       query: match,
-      trigger: { op: func, resource: trigger, isAsync },
-      arrays: t.arrays === true
+      trigger: { op: func, resource: trigger, isAsync }
     })
   }
 
-  async tx (txes: Tx[]): Promise<void> {
+  tresolve = Promise.resolve()
+  tx (txes: Tx[]): Promise<void> {
     for (const tx of txes) {
       if (tx._class === core.class.TxCreateDoc) {
         const createTx = tx as TxCreateDoc<Doc>
@@ -82,13 +81,14 @@ export class Triggers {
         }
       }
     }
+    return this.tresolve
   }
 
   async applyTrigger (
     ctx: MeasureContext,
     ctrl: Omit<TriggerControl, 'txFactory'>,
     matches: Tx[],
-    { trigger, arrays }: TriggerRecord
+    { trigger }: TriggerRecord
   ): Promise<Tx[]> {
     const result: Tx[] = []
     const apply: Tx[] = []
@@ -98,29 +98,26 @@ export class Triggers {
       ...ctrl,
       ctx,
       txFactory: null as any, // Will be set later
-      apply: async (ctx, tx, needResult) => {
+      apply: (ctx, tx, needResult) => {
         if (needResult !== true) {
           apply.push(...tx)
         }
         ctrl.txes.push(...tx) // We need to put them so other triggers could check if similar operation is already performed.
-        return await ctrl.apply(ctx, tx, needResult)
+        return ctrl.apply(ctx, tx, needResult)
       }
     }
     if (trigger.op instanceof Promise) {
       trigger.op = await trigger.op
     }
     for (const [k, v] of group.entries()) {
-      const m = arrays ? [v] : v
       tctrl.txFactory = new TxFactory(k, true)
-      for (const tx of m) {
-        try {
-          const tresult = await trigger.op(tx, tctrl)
-          result.push(...tresult)
-          ctrl.txes.push(...tresult)
-        } catch (err: any) {
-          ctx.error('failed to process trigger', { trigger: trigger.resource, tx, err })
-          Analytics.handleError(err)
-        }
+      try {
+        const tresult = await trigger.op(v, tctrl)
+        result.push(...tresult)
+        ctrl.txes.push(...tresult)
+      } catch (err: any) {
+        ctx.error('failed to process trigger', { trigger: trigger.resource, err })
+        Analytics.handleError(err)
       }
     }
     return result.concat(apply)
@@ -133,7 +130,7 @@ export class Triggers {
     mode: 'sync' | 'async'
   ): Promise<Tx[]> {
     const result: Tx[] = []
-    for (const { query, trigger, arrays } of this.triggers) {
+    for (const { query, trigger } of this.triggers) {
       if ((trigger.isAsync ? 'async' : 'sync') !== mode) {
         continue
       }
@@ -148,10 +145,16 @@ export class Triggers {
           trigger.resource,
           {},
           async (ctx) => {
-            const tresult = await this.applyTrigger(ctx, ctrl, matches, { trigger, arrays })
+            if (mode === 'async') {
+              ctx.id = generateId()
+            }
+            const tresult = await this.applyTrigger(ctx, ctrl, matches, { trigger })
             result.push(...tresult)
+            if (ctx.onEnd !== undefined && mode === 'async') {
+              await ctx.onEnd(ctx)
+            }
           },
-          { count: matches.length, arrays }
+          { count: matches.length }
         )
       }
     }

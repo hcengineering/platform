@@ -54,6 +54,7 @@
   export let loadMoreAllowed = true
   export let autofocus = true
   export let withInput: boolean = true
+  export let readonly: boolean = false
   export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const minMsgHeightRem = 2
@@ -113,7 +114,9 @@
   $: notifyContext = $contextByDocStore.get(doc._id)
   $: isThread = hierarchy.isDerived(doc._class, activity.class.ActivityMessage)
   $: isChunterSpace = hierarchy.isDerived(doc._class, chunter.class.ChunterSpace)
-  $: readonly = hierarchy.isDerived(channel._class, core.class.Space) ? (channel as Space).archived : false
+  $: readonly = hierarchy.isDerived(channel._class, core.class.Space)
+    ? readonly || (channel as Space).archived
+    : readonly
 
   $: separatorIndex =
     $newTimestampStore !== undefined
@@ -575,7 +578,7 @@
     removeTxListener(newMessageTxListener)
   })
 
-  $: showBlankView = !$isLoadingStore && messages.length === 0 && !isThread && !readonly
+  $: showBlankView = !$isLoadingStore && messages.length === 0 && !isThread
 </script>
 
 <div class="flex-col relative" class:h-full={fullHeight}>
@@ -597,7 +600,7 @@
       <BlankView
         icon={chunter.icon.Thread}
         header={chunter.string.NoMessagesInChannel}
-        label={chunter.string.SendMessagesInChannel}
+        label={readonly ? undefined : chunter.string.SendMessagesInChannel}
       />
     {/if}
 
@@ -644,7 +647,7 @@
     {#if loadMoreAllowed && $canLoadNextForwardStore}
       <HistoryLoading isLoading={$isLoadingMoreStore} />
     {/if}
-    {#if !fixedInput && withInput}
+    {#if !fixedInput && withInput && !readonly}
       <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} {autofocus} />
     {/if}
   </BaseChatScroller>
@@ -661,8 +664,12 @@
   {/if}
 </div>
 
-{#if fixedInput && withInput}
+{#if fixedInput && withInput && !readonly}
   <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} {autofocus} />
+{/if}
+
+{#if readonly}
+  <div class="h-6" />
 {/if}
 
 <style lang="scss">

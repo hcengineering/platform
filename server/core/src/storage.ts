@@ -41,7 +41,7 @@ export class BackupClientOps {
   idIndex = 0
   chunkInfo = new Map<number, ChunkInfo>()
 
-  async loadChunk (
+  loadChunk (
     ctx: MeasureContext,
     domain: Domain,
     idx?: number,
@@ -51,7 +51,7 @@ export class BackupClientOps {
       docs: DocInfo[]
       finished: boolean
     }> {
-    return await ctx.with('load-chunk', { domain }, async (ctx) => {
+    return ctx.with('load-chunk', {}, async (ctx) => {
       idx = idx ?? this.idIndex++
       let chunk: ChunkInfo | undefined = this.chunkInfo.get(idx)
       if (chunk !== undefined) {
@@ -90,8 +90,8 @@ export class BackupClientOps {
     })
   }
 
-  async closeChunk (ctx: MeasureContext, idx: number): Promise<void> {
-    await ctx.with('close-chunk', {}, async () => {
+  closeChunk (ctx: MeasureContext, idx: number): Promise<void> {
+    return ctx.with('close-chunk', {}, async () => {
       const chunk = this.chunkInfo.get(idx)
       this.chunkInfo.delete(idx)
       if (chunk != null) {

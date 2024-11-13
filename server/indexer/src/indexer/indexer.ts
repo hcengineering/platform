@@ -309,7 +309,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       const { classUpdate: _classes, processed } = await this.metrics.with(
         'processIndex',
         { workspace: this.workspace.name },
-        async (ctx) => await this.processIndex(ctx, indexing)
+        (ctx) => this.processIndex(ctx, indexing)
       )
 
       // Also update doc index state queries.
@@ -445,8 +445,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           let result: FindResult<DocIndexState> | WithLookup<DocIndexState>[] = await ctx.with(
             'get-indexable',
             {},
-            async (ctx) => {
-              return await this.storage.findAll(ctx, core.class.DocIndexState, q, {
+            (ctx) => {
+              return this.storage.findAll(ctx, core.class.DocIndexState, q, {
                 limit: globalIndexer.processingSize,
                 skipClass: true,
                 skipSpace: true,
@@ -589,9 +589,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       await pushQueue.exec(async () => {
         try {
           try {
-            await ctx.with('push-elastic', {}, async () => {
-              await this.fulltextAdapter.updateMany(ctx, this.workspace, docs)
-            })
+            await ctx.with('push-elastic', {}, () => this.fulltextAdapter.updateMany(ctx, this.workspace, docs))
           } catch (err: any) {
             Analytics.handleError(err)
             // Try to push one by one

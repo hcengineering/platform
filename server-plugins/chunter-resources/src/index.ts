@@ -203,16 +203,20 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
   return res
 }
 
-async function ChatNotificationsHandler (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx) as TxCreateDoc<ChatMessage>
+async function ChatNotificationsHandler (txes: TxCUD<Doc>[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const actualTx = TxProcessor.extractTx(tx) as TxCreateDoc<ChatMessage>
 
-  if (actualTx._class !== core.class.TxCreateDoc) {
-    return []
+    if (actualTx._class !== core.class.TxCreateDoc) {
+      continue
+    }
+
+    const chatMessage = TxProcessor.createDoc2Doc(actualTx)
+
+    result.push(...(await createCollaboratorNotifications(control.ctx, tx, control, [chatMessage])))
   }
-
-  const chatMessage = TxProcessor.createDoc2Doc(actualTx)
-
-  return await createCollaboratorNotifications(control.ctx, tx, control, [chatMessage])
+  return result
 }
 
 function joinChannel (control: TriggerControl, channel: Channel, user: Ref<Account>): Tx[] {
@@ -263,27 +267,29 @@ async function OnThreadMessageDeleted (tx: Tx, control: TriggerControl): Promise
 /**
  * @public
  */
-export async function ChunterTrigger (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+export async function ChunterTrigger (txes: TxCUD<Doc>[], control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
-  const actualTx = TxProcessor.extractTx(tx) as TxCreateDoc<ChatMessage>
+  for (const tx of txes) {
+    const actualTx = TxProcessor.extractTx(tx) as TxCreateDoc<ChatMessage>
 
-  if (
-    actualTx._class === core.class.TxCreateDoc &&
-    control.hierarchy.isDerived(actualTx.objectClass, chunter.class.ThreadMessage)
-  ) {
-    res.push(...(await control.ctx.with('OnThreadMessageCreated', {}, (ctx) => OnThreadMessageCreated(tx, control))))
-  }
-  if (
-    actualTx._class === core.class.TxRemoveDoc &&
-    control.hierarchy.isDerived(actualTx.objectClass, chunter.class.ThreadMessage)
-  ) {
-    res.push(...(await control.ctx.with('OnThreadMessageDeleted', {}, (ctx) => OnThreadMessageDeleted(tx, control))))
-  }
-  if (
-    actualTx._class === core.class.TxCreateDoc &&
-    control.hierarchy.isDerived(actualTx.objectClass, chunter.class.ChatMessage)
-  ) {
-    res.push(...(await control.ctx.with('OnChatMessageCreated', {}, (ctx) => OnChatMessageCreated(ctx, tx, control))))
+    if (
+      actualTx._class === core.class.TxCreateDoc &&
+      control.hierarchy.isDerived(actualTx.objectClass, chunter.class.ThreadMessage)
+    ) {
+      res.push(...(await control.ctx.with('OnThreadMessageCreated', {}, (ctx) => OnThreadMessageCreated(tx, control))))
+    }
+    if (
+      actualTx._class === core.class.TxRemoveDoc &&
+      control.hierarchy.isDerived(actualTx.objectClass, chunter.class.ThreadMessage)
+    ) {
+      res.push(...(await control.ctx.with('OnThreadMessageDeleted', {}, (ctx) => OnThreadMessageDeleted(tx, control))))
+    }
+    if (
+      actualTx._class === core.class.TxCreateDoc &&
+      control.hierarchy.isDerived(actualTx.objectClass, chunter.class.ChatMessage)
+    ) {
+      res.push(...(await control.ctx.with('OnChatMessageCreated', {}, (ctx) => OnChatMessageCreated(ctx, tx, control))))
+    }
   }
   return res
 }
@@ -342,20 +348,21 @@ export async function getChunterNotificationContent (
   }
 }
 
-async function OnChatMessageRemoved (tx: TxCollectionCUD<Doc, ChatMessage>, control: TriggerControl): Promise<Tx[]> {
-  if (tx.tx._class !== core.class.TxRemoveDoc) {
-    return []
-  }
-
+async function OnChatMessageRemoved (txes: TxCollectionCUD<Doc, ChatMessage>[], control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
-  const notifications = await control.findAll(control.ctx, notification.class.InboxNotification, {
-    attachedTo: tx.tx.objectId
-  })
+  for (const tx of txes) {
+    if (tx.tx._class !== core.class.TxRemoveDoc) {
+      continue
+    }
 
-  notifications.forEach((notification) => {
-    res.push(control.txFactory.createTxRemoveDoc(notification._class, notification.space, notification._id))
-  })
+    const notifications = await control.findAll(control.ctx, notification.class.InboxNotification, {
+      attachedTo: tx.tx.objectId
+    })
 
+    notifications.forEach((notification) => {
+      res.push(control.txFactory.createTxRemoveDoc(notification._class, notification.space, notification._id))
+    })
+  }
   return res
 }
 
@@ -470,22 +477,26 @@ export async function syncChat (control: TriggerControl, status: UserStatus, dat
   await control.apply(control.ctx, res, true)
 }
 
-async function OnUserStatus (originTx: TxCUD<UserStatus>, control: TriggerControl): Promise<Tx[]> {
-  const tx = TxProcessor.extractTx(originTx) as TxCUD<UserStatus>
-  if (tx.objectClass !== core.class.UserStatus) return []
-  if (tx._class === core.class.TxCreateDoc) {
-    const createTx = tx as TxCreateDoc<UserStatus>
-    const { online } = createTx.attributes
-    if (online) {
-      const status = TxProcessor.createDoc2Doc(createTx)
-      await syncChat(control, status, originTx.modifiedOn)
+async function OnUserStatus (txes: TxCUD<UserStatus>[], control: TriggerControl): Promise<Tx[]> {
+  for (const originTx of txes) {
+    const tx = TxProcessor.extractTx(originTx) as TxCUD<UserStatus>
+    if (tx.objectClass !== core.class.UserStatus) {
+      continue
     }
-  } else if (tx._class === core.class.TxUpdateDoc) {
-    const updateTx = tx as TxUpdateDoc<UserStatus>
-    const { online } = updateTx.operations
-    if (online === true) {
-      const status = (await control.findAll(control.ctx, core.class.UserStatus, { _id: updateTx.objectId }))[0]
-      await syncChat(control, status, originTx.modifiedOn)
+    if (tx._class === core.class.TxCreateDoc) {
+      const createTx = tx as TxCreateDoc<UserStatus>
+      const { online } = createTx.attributes
+      if (online) {
+        const status = TxProcessor.createDoc2Doc(createTx)
+        await syncChat(control, status, originTx.modifiedOn)
+      }
+    } else if (tx._class === core.class.TxUpdateDoc) {
+      const updateTx = tx as TxUpdateDoc<UserStatus>
+      const { online } = updateTx.operations
+      if (online === true) {
+        const status = (await control.findAll(control.ctx, core.class.UserStatus, { _id: updateTx.objectId }))[0]
+        await syncChat(control, status, originTx.modifiedOn)
+      }
     }
   }
 

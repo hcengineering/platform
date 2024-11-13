@@ -75,23 +75,24 @@ export async function FindMessages (
 /**
  * @public
  */
-export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const res: Tx[] = []
-
-  const message = TxProcessor.createDoc2Doc<TelegramMessage>(tx as TxCreateDoc<TelegramMessage>)
-  const channel = (
-    await control.findAll(control.ctx, contact.class.Channel, { _id: message.attachedTo }, { limit: 1 })
-  )[0]
-  if (channel !== undefined) {
-    if (channel.lastMessage === undefined || channel.lastMessage < message.sendOn) {
-      const tx = control.txFactory.createTxUpdateDoc(channel._class, channel.space, channel._id, {
-        lastMessage: message.sendOn
-      })
-      res.push(tx)
+export async function OnMessageCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const message = TxProcessor.createDoc2Doc<TelegramMessage>(tx as TxCreateDoc<TelegramMessage>)
+    const channel = (
+      await control.findAll(control.ctx, contact.class.Channel, { _id: message.attachedTo }, { limit: 1 })
+    )[0]
+    if (channel !== undefined) {
+      if (channel.lastMessage === undefined || channel.lastMessage < message.sendOn) {
+        const tx = control.txFactory.createTxUpdateDoc(channel._class, channel.space, channel._id, {
+          lastMessage: message.sendOn
+        })
+        result.push(tx)
+      }
     }
   }
 
-  return res
+  return result
 }
 
 /**

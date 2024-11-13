@@ -157,7 +157,13 @@ export async function showApplication (app: Application): Promise<void> {
 }
 
 export const workspacesStore = writable<Workspace[]>([])
-export const workspaceStore = derived(location, (loc: Location) => loc.path[1])
+export const locationWorkspaceStore = derived(location, (loc: Location) => loc.path[1])
+export const currentWorkspaceStore = derived(
+  [workspacesStore, locationWorkspaceStore],
+  ([$workspaces, $locationWorkspace]) => {
+    return $workspaces.find((it) => it.workspace === $locationWorkspace)
+  }
+)
 
 /**
  * @public

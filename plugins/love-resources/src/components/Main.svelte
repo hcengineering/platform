@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { RoomType } from '@hcengineering/love'
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
-  import { currentRoom } from '../stores'
-  import { screenSharing } from '../utils'
+  import { onDestroy } from 'svelte'
+
   import Hall from './Hall.svelte'
-  import RoomComponent from './Room.svelte'
-  import { onMount, onDestroy } from 'svelte'
+  import { currentRoom } from '../stores'
+  import { isConnected } from '../utils'
+  import ActiveMeeting from './ActiveMeeting.svelte'
 
   const localNav: boolean = $deviceInfo.navigator.visible
   const savedNav = localStorage.getItem('love-visibleNav')
@@ -31,9 +31,9 @@
   })
 </script>
 
-<div class="hulyPanels-container" class:left-divider={$screenSharing || $currentRoom?.type === RoomType.Video}>
-  {#if ($currentRoom !== undefined && $screenSharing) || $currentRoom?.type === RoomType.Video}
-    <RoomComponent withVideo={$currentRoom.type === RoomType.Video} room={$currentRoom} />
+<div class="hulyPanels-container">
+  {#if $currentRoom && $isConnected}
+    <ActiveMeeting room={$currentRoom} />
   {:else}
     <Hall />
   {/if}

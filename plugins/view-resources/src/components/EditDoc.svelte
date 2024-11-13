@@ -39,6 +39,7 @@
   export let _class: Ref<Class<Doc>>
   export let embedded: boolean = false
   export let readonly: boolean = false
+  export let selectedAside: boolean | undefined = undefined
 
   let realObjectClass: Ref<Class<Doc>> = _class
   let lastId: Ref<Doc> | undefined
@@ -225,6 +226,7 @@
     allowClose={!embedded}
     isAside={true}
     {embedded}
+    {selectedAside}
     bind:content
     bind:panelWidth
     bind:innerWidth

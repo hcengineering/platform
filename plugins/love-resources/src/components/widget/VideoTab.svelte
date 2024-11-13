@@ -13,13 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Room } from '@hcengineering/love'
+  import { MeetingMinutes, Room } from '@hcengineering/love'
 
   import VideoPopup from '../VideoPopup.svelte'
+  import MeetingWidgetHeader from './MeetingWidgetHeader.svelte'
 
   export let room: Room
+  export let doc: MeetingMinutes | undefined = undefined
 </script>
 
+<MeetingWidgetHeader {doc} {room} on:close />
 <div class="root">
   <VideoPopup room={room._id} isDock canUnpin={false} />
 </div>

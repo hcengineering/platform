@@ -141,9 +141,7 @@ export class PlatformWorker {
     for (const [workspace, users] of workspaces) {
       const worker = this.clients.get(workspace)
       if (worker !== undefined) {
-        await this.ctx.with('syncUsers', {}, async (ctx) => {
-          await worker.syncUserData(ctx, users)
-        })
+        await this.ctx.with('syncUsers', {}, (ctx) => worker.syncUserData(ctx, users))
       }
     }
     this.periodicSyncPromise = undefined

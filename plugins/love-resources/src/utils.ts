@@ -5,8 +5,10 @@ import core, {
   AccountRole,
   concatLink,
   type Data,
+  generateId,
   getCurrentAccount,
   type IdMap,
+  makeCollaborativeDoc,
   type Ref,
   type Space,
   type TxOperations
@@ -27,7 +29,8 @@ import {
   RoomAccess,
   RoomType,
   TranscriptionStatus,
-  type RoomMetadata
+  type RoomMetadata,
+  type MeetingMinutes
 } from '@hcengineering/love'
 import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
 import presentation, {
@@ -36,7 +39,7 @@ import presentation, {
   type DocCreatePhase,
   getClient
 } from '@hcengineering/presentation'
-import { type DropdownTextItem, getCurrentLocation, type Location, navigate, showPopup } from '@hcengineering/ui'
+import { type DropdownTextItem, getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
 import { isKrispNoiseFilterSupported, KrispNoiseFilter } from '@livekit/krisp-noise-filter'
 import { BackgroundBlur, type BackgroundOptions, type ProcessorWrapper } from '@livekit/track-processors'
 import {
@@ -57,13 +60,20 @@ import {
 import { get, writable } from 'svelte/store'
 import aiBot from '@hcengineering/ai-bot'
 import { connectMeeting, disconnectMeeting } from '@hcengineering/ai-bot-resources'
-import { openWidget, sidebarStore, updateWidgetState } from '@hcengineering/workbench-resources'
+import {
+  openWidget,
+  sidebarStore,
+  updateWidgetState,
+  currentWorkspaceStore,
+  openWidgetTab
+} from '@hcengineering/workbench-resources'
 import { type Widget, type WidgetTab } from '@hcengineering/workbench'
 import view from '@hcengineering/view'
+import chunter from '@hcengineering/chunter'
 
 import { sendMessage } from './broadcast'
 import love from './plugin'
-import { $myPreferences, currentRoom } from './stores'
+import { $myPreferences, meetingMinutesStore, currentRoom } from './stores'
 import RoomSettingsPopup from './components/RoomSettingsPopup.svelte'
 
 export const selectedCamId = 'selectedDevice_cam'
@@ -92,7 +102,9 @@ export async function getToken (
 
 function getTokenRoomName (roomName: string, roomId: Ref<Room>): string {
   const loc = getCurrentLocation()
-  return `${loc.path[1]}_${roomName}_${roomId}`
+  const currentWorkspace = get(currentWorkspaceStore)
+
+  return `${currentWorkspace?.workspaceId ?? loc.path[1]}_${roomName}_${roomId}`
 }
 
 export const lk: LKRoom = new LKRoom({
@@ -432,6 +444,7 @@ export async function disconnect (): Promise<void> {
   isMicEnabled.set(false)
   isCameraEnabled.set(false)
   isSharingEnabled.set(false)
+  meetingMinutesStore.set(undefined)
   sendMessage({ type: 'mic', value: false })
   sendMessage({ type: 'cam', value: false })
   sendMessage({ type: 'share', value: false })
@@ -580,6 +593,46 @@ async function connectLK (currentPerson: Person, room: Room): Promise<void> {
   ])
 }
 
+async function createMeetingMinutes (room: Room): Promise<void> {
+  const client = getClient()
+  const sid = await lk.getSid()
+
+  if (sid !== undefined) {
+    const doc = await client.findOne(love.class.MeetingMinutes, { sid })
+
+    if (doc === undefined) {
+      const dateStr = new Date().toISOString().replace('T', ' ').slice(0, 19)
+      const _id = generateId<MeetingMinutes>()
+      const newDoc: MeetingMinutes = {
+        _id,
+        _class: love.class.MeetingMinutes,
+        sid,
+        attachedTo: room._id,
+        attachedToClass: room._class,
+        collection: 'meetings',
+        space: core.space.Workspace,
+        title: room.name + ' ' + dateStr,
+        description: makeCollaborativeDoc(_id, 'description'),
+        modifiedBy: getCurrentAccount()._id,
+        modifiedOn: Date.now()
+      }
+
+      await client.addCollection(
+        love.class.MeetingMinutes,
+        core.space.Workspace,
+        room._id,
+        room._class,
+        'meetings',
+        { sid, title: newDoc.title, description: newDoc.description },
+        _id
+      )
+      meetingMinutesStore.set(newDoc)
+    } else {
+      meetingMinutesStore.set(doc)
+    }
+  }
+}
+
 export async function connectRoom (
   x: number,
   y: number,
@@ -590,6 +643,7 @@ export async function connectRoom (
   await disconnect()
   await moveToRoom(x, y, currentInfo, currentPerson, room, getMetadata(presentation.metadata.SessionId) ?? null)
   await connectLK(currentPerson, room)
+  await createMeetingMinutes(room)
 }
 
 export const joinRequest: Ref<JoinRequest> | undefined = undefined
@@ -910,13 +964,13 @@ export function isTranscriptionAllowed (): boolean {
   return url !== ''
 }
 
-export function createMeetingWidget (widget: Widget, room: Ref<Room>, loc: Location, video: boolean): void {
+export function createMeetingWidget (widget: Widget, room: Ref<Room>, video: boolean): void {
   const tabs: WidgetTab[] = [
     ...(video
       ? [
           {
             id: 'video',
-            name: 'Video',
+            label: love.string.Video,
             icon: love.icon.Cam,
             readonly: true
           }
@@ -924,13 +978,13 @@ export function createMeetingWidget (widget: Widget, room: Ref<Room>, loc: Locat
       : []),
     {
       id: 'chat',
-      name: 'Chat',
+      label: chunter.string.Chat,
       icon: view.icon.Bubble,
       readonly: true
     },
     {
       id: 'transcription',
-      name: 'Transcription',
+      label: love.string.Transcription,
       icon: view.icon.Feather,
       readonly: true
     }
@@ -940,12 +994,12 @@ export function createMeetingWidget (widget: Widget, room: Ref<Room>, loc: Locat
     {
       room
     },
-    { active: loc.path[2] !== loveId, openedByUser: false },
+    { active: true, openedByUser: false },
     tabs
   )
 }
 
-export function createMeetingVideoWidgetTab (widget: Widget, loc: Location): void {
+export function createMeetingVideoWidgetTab (widget: Widget): void {
   const state = get(sidebarStore)
   const { widgetsState } = state
   const widgetState = widgetsState.get(widget._id)
@@ -954,12 +1008,23 @@ export function createMeetingVideoWidgetTab (widget: Widget, loc: Location): voi
 
   const tab: WidgetTab = {
     id: 'video',
-    name: 'Video',
+    label: love.string.Video,
     icon: love.icon.Cam,
     readonly: true
   }
   updateWidgetState(widget._id, {
     tabs: [tab, ...widgetState.tabs],
-    tab: state.widget === widget._id && loc.path[2] === loveId ? widgetState.tab : 'video'
+    tab: 'video'
   })
+  openWidgetTab(love.ids.MeetingWidget, 'video')
+}
+
+export async function getMeetingMinutesTitle (
+  client: TxOperations,
+  ref: Ref<MeetingMinutes>,
+  doc?: MeetingMinutes
+): Promise<string> {
+  const meeting = doc ?? (await client.findOne(love.class.MeetingMinutes, { _id: ref }))
+
+  return meeting?.title ?? ''
 }

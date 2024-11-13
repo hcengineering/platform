@@ -53,21 +53,23 @@ import {
 import { ReferenceTrigger } from './references'
 import { getAttrName, getCollectionAttribute, getDocUpdateAction, getTxAttributesUpdates } from './utils'
 
-export async function OnReactionChanged (originTx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const tx = originTx as TxCollectionCUD<ActivityMessage, Reaction>
-  const innerTx = TxProcessor.extractTx(tx) as TxCUD<Reaction>
+export async function OnReactionChanged (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  for (const originTx of txes) {
+    const tx = originTx as TxCollectionCUD<ActivityMessage, Reaction>
+    const innerTx = TxProcessor.extractTx(tx) as TxCUD<Reaction>
 
-  if (innerTx._class === core.class.TxCreateDoc) {
-    const txes = await createReactionNotifications(tx, control)
+    if (innerTx._class === core.class.TxCreateDoc) {
+      const txes = await createReactionNotifications(tx, control)
 
-    await control.apply(control.ctx, txes)
-    return []
-  }
+      await control.apply(control.ctx, txes)
+      continue
+    }
 
-  if (innerTx._class === core.class.TxRemoveDoc) {
-    const txes = await removeReactionNotifications(tx, control)
-    await control.apply(control.ctx, txes)
-    return []
+    if (innerTx._class === core.class.TxRemoveDoc) {
+      const txes = await removeReactionNotifications(tx, control)
+      await control.apply(control.ctx, txes)
+      continue
+    }
   }
 
   return []
@@ -304,11 +306,8 @@ export async function generateDocUpdateMessages (
   switch (tx._class) {
     case core.class.TxCreateDoc: {
       const doc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<Doc>)
-      return await ctx.with(
-        'pushDocUpdateMessages',
-        {},
-        async (ctx) =>
-          await pushDocUpdateMessages(ctx, control, res, doc, originTx ?? tx, undefined, objectCache, controlRules)
+      return await ctx.with('pushDocUpdateMessages', {}, (ctx) =>
+        pushDocUpdateMessages(ctx, control, res, doc, originTx ?? tx, undefined, objectCache, controlRules)
       )
     }
     case core.class.TxMixin:
@@ -322,20 +321,8 @@ export async function generateDocUpdateMessages (
         doc = (await control.findAll(ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
         objectCache?.docs?.set(tx.objectId, doc)
       }
-      return await ctx.with(
-        'pushDocUpdateMessages',
-        {},
-        async (ctx) =>
-          await pushDocUpdateMessages(
-            ctx,
-            control,
-            res,
-            doc ?? undefined,
-            originTx ?? tx,
-            undefined,
-            objectCache,
-            controlRules
-          )
+      return await ctx.with('pushDocUpdateMessages', {}, (ctx) =>
+        pushDocUpdateMessages(ctx, control, res, doc ?? undefined, originTx ?? tx, undefined, objectCache, controlRules)
       )
     }
     case core.class.TxCollectionCUD: {
@@ -363,20 +350,17 @@ export async function generateDocUpdateMessages (
         }
         if (doc !== undefined) {
           objectCache?.docs?.set(tx.objectId, doc)
-          return await ctx.with(
-            'pushDocUpdateMessages',
-            {},
-            async (ctx) =>
-              await pushDocUpdateMessages(
-                ctx,
-                control,
-                res,
-                doc ?? undefined,
-                originTx ?? tx,
-                undefined,
-                objectCache,
-                controlRules
-              )
+          return await ctx.with('pushDocUpdateMessages', {}, (ctx) =>
+            pushDocUpdateMessages(
+              ctx,
+              control,
+              res,
+              doc ?? undefined,
+              originTx ?? tx,
+              undefined,
+              objectCache,
+              controlRules
+            )
           )
         }
       }

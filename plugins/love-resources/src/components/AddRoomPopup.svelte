@@ -1,5 +1,5 @@
 <script lang="ts">
-  import core, { Class, Data, Ref } from '@hcengineering/core'
+  import core, { Class, Data, generateId, makeCollaborativeDoc, Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Button, DropdownIntlItem } from '@hcengineering/ui'
@@ -51,6 +51,7 @@
     const client = getClient()
     const floorRooms = $rooms.filter((r) => r.floor === floor)
     const pos = getFreePosition(floorRooms, 2, 1)
+    const _id = generateId<Room>()
     const data: Data<Room> = {
       floor,
       name: val._class === love.class.Office ? '' : await translate(val.label, {}),
@@ -61,12 +62,13 @@
       type: val.type,
       access: val.access,
       language: 'en',
-      startWithTranscription: val._class !== love.class.Office
+      startWithTranscription: val._class !== love.class.Office && val.type === RoomType.Video,
+      description: makeCollaborativeDoc(_id, 'description')
     }
     if (val._class === love.class.Office) {
       ;(data as Data<Office>).person = null
     }
-    await client.createDoc(val._class, core.space.Workspace, data)
+    await client.createDoc(val._class, core.space.Workspace, data, _id)
     dispatch('close')
   }
 </script>

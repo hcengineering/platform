@@ -452,9 +452,7 @@ export async function cloneWorkspace (
           ctx.info('clone domain...', { domain: c, workspace: targetWorkspaceId.name })
 
           // We need to clean target connection before copying something.
-          await ctx.with('clean-domain', { domain: c }, async (ctx) => {
-            await cleanDomain(ctx, targetConnection, c)
-          })
+          await ctx.with('clean-domain', { domain: c }, (ctx) => cleanDomain(ctx, targetConnection, c))
 
           const changes: Snapshot = {
             added: new Map(),
@@ -474,7 +472,7 @@ export async function cloneWorkspace (
           await ctx.with('retrieve-domain-info', { domain: c }, async (ctx) => {
             while (true) {
               try {
-                const it = await ctx.with('load-chunk', {}, async () => await sourceConnection.loadChunk(c, idx))
+                const it = await ctx.with('load-chunk', {}, () => sourceConnection.loadChunk(c, idx))
                 idx = it.idx
 
                 let needRetrieve: Ref<Doc>[] = []
@@ -510,9 +508,7 @@ export async function cloneWorkspace (
               } catch (err: any) {
                 ctx.error('failed to clone', { err, workspace: targetWorkspaceId.name })
                 if (idx !== undefined) {
-                  await ctx.with('load-chunk', {}, async () => {
-                    await sourceConnection.closeChunk(idx as number)
-                  })
+                  await ctx.with('load-chunk', {}, () => sourceConnection.closeChunk(idx as number))
                 }
                 // Try again
                 idx = undefined
@@ -527,7 +523,7 @@ export async function cloneWorkspace (
               ctx.info('Retrieve chunk:', { count: needRetrieve.length })
               let docs: Doc[] = []
               try {
-                docs = await ctx.with('load-docs', {}, async (ctx) => await sourceConnection.loadDocs(c, needRetrieve))
+                docs = await ctx.with('load-docs', {}, (ctx) => sourceConnection.loadDocs(c, needRetrieve))
                 if (clearTime) {
                   docs = prepareClonedDocuments(docs, sourceConnection)
                 }
@@ -561,14 +557,7 @@ export async function cloneWorkspace (
                   }
                 }
                 await executor.waitProcessing()
-                await ctx.with(
-                  'upload-docs',
-                  {},
-                  async (ctx) => {
-                    await targetConnection.upload(c, docs)
-                  },
-                  { length: docs.length }
-                )
+                await ctx.with('upload-docs', {}, (ctx) => targetConnection.upload(c, docs), { length: docs.length })
                 await progress((100 / domains.length) * i + (100 / domains.length / processed) * domainProgress)
               } catch (err: any) {
                 console.log(err)

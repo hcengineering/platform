@@ -13,13 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import love, { MeetingMinutes } from '@hcengineering/love'
+  import love, { MeetingMinutes, Room } from '@hcengineering/love'
   import { ChannelEmbeddedContent } from '@hcengineering/chunter-resources'
   import { ActivityMessage } from '@hcengineering/activity'
   import { updateTabData, WidgetState } from '@hcengineering/workbench-resources'
+  import MeetingWidgetHeader from './MeetingWidgetHeader.svelte'
 
   export let widgetState: WidgetState
   export let meetingMinutes: MeetingMinutes
+  export let room: Room
   export let height: string
   export let width: string
 
@@ -28,7 +30,6 @@
   }
 
   function closeThread (): void {
-    console.log('closeThread')
     updateTabData(love.ids.MeetingWidget, 'chat', { thread: undefined })
   }
 </script>
@@ -42,4 +43,8 @@
   on:channel={closeThread}
   onReply={replyToThread}
   on:close
-/>
+>
+  <svelte:fragment slot="header">
+    <MeetingWidgetHeader doc={meetingMinutes} {room} on:close />
+  </svelte:fragment>
+</ChannelEmbeddedContent>

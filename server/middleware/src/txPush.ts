@@ -62,7 +62,7 @@ export class TxMiddleware extends BaseMiddleware implements Middleware {
       txPromise = ctx.with(
         'domain-tx',
         {},
-        async (ctx) => await this.adapterManager.getAdapter(DOMAIN_TX, true).tx(ctx, ...txToStore),
+        (ctx) => this.adapterManager.getAdapter(DOMAIN_TX, true).tx(ctx, ...txToStore),
         {
           count: txToStore.length,
           txes: Array.from(new Set(txToStore.map((it) => it._class)))
@@ -70,7 +70,7 @@ export class TxMiddleware extends BaseMiddleware implements Middleware {
       )
     }
     if (txPromise !== undefined) {
-      return (await Promise.all([txPromise, this.provideTx(ctx, txes)]))[1]
+      await txPromise
     }
     return await this.provideTx(ctx, txes)
   }

@@ -180,7 +180,7 @@ export const main = async (): Promise<void> => {
     const metadata = language != null ? { transcription, language } : { transcription }
     try {
       await updateMetadata(roomClient, roomName, metadata)
-      res.send()
+      res.status(200).send()
     } catch (e) {
       console.error(e)
       res.status(500).send()

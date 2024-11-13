@@ -47,6 +47,8 @@ const consoleLogger = (logParams: Record<string, any>): MeasureLogger => ({
 
 const noParamsLogger = consoleLogger({})
 
+const nullPromise = Promise.resolve()
+
 /**
  * @public
  */
@@ -148,6 +150,9 @@ export class MeasureMetricsContext implements MeasureContext {
           c.end()
         })
       } else {
+        if (value == null) {
+          return nullPromise as Promise<T>
+        }
         return Promise.resolve(value)
       }
     } finally {

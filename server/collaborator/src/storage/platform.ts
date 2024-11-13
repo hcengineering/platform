@@ -33,8 +33,8 @@ import { Doc as YDoc } from 'yjs'
 
 import { Context } from '../context'
 
-import { CollabStorageAdapter } from './adapter'
 import { areEqualMarkups } from '@hcengineering/text'
+import { CollabStorageAdapter } from './adapter'
 
 export class PlatformStorageAdapter implements CollabStorageAdapter {
   constructor (private readonly storage: StorageAdapter) {}
@@ -89,9 +89,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
   ): Promise<void> {
     const { clientFactory } = context
 
-    const client = await ctx.with('connect', {}, async () => {
-      return await clientFactory()
-    })
+    const client = await ctx.with('connect', {}, () => clientFactory())
 
     try {
       try {
@@ -107,9 +105,9 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       const { platformDocumentId } = context
       if (platformDocumentId !== undefined) {
         ctx.info('save document content to platform', { documentId, platformDocumentId })
-        await ctx.with('save-to-platform', {}, async (ctx) => {
-          await this.saveDocumentToPlatform(ctx, client, documentId, platformDocumentId, markup)
-        })
+        await ctx.with('save-to-platform', {}, (ctx) =>
+          this.saveDocumentToPlatform(ctx, client, documentId, platformDocumentId, markup)
+        )
       }
     } finally {
       await client.close()
@@ -123,11 +121,11 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
   ): Promise<YDoc | undefined> {
     const { collaborativeDoc } = parseDocumentId(documentId)
 
-    return await ctx.with('load-document', {}, async (ctx) => {
-      return await withRetry(ctx, 5, async () => {
+    return await ctx.with('load-document', {}, (ctx) =>
+      withRetry(ctx, 5, async () => {
         return await loadCollaborativeDoc(ctx, this.storage, context.workspaceId, collaborativeDoc)
       })
-    })
+    )
   }
 
   async saveDocumentToStorage (
@@ -138,11 +136,11 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
   ): Promise<void> {
     const { collaborativeDoc } = parseDocumentId(documentId)
 
-    await ctx.with('save-document', {}, async (ctx) => {
-      await withRetry(ctx, 5, async () => {
+    await ctx.with('save-document', {}, (ctx) =>
+      withRetry(ctx, 5, async () => {
         await saveCollaborativeDoc(ctx, this.storage, context.workspaceId, collaborativeDoc, document)
       })
-    })
+    )
   }
 
   async saveDocumentToPlatform (
@@ -171,8 +169,8 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       return
     }
 
-    const current = await ctx.with('query', {}, async () => {
-      return await client.findOne(objectClass, { _id: objectId })
+    const current = await ctx.with('query', {}, () => {
+      return client.findOne(objectClass, { _id: objectId })
     })
 
     if (current === undefined) {
@@ -189,11 +187,9 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     const collaborativeDoc = (current as any)[objectAttr] as CollaborativeDoc
     const newCollaborativeDoc = collaborativeDocWithLastVersion(collaborativeDoc, `${Date.now()}`)
 
-    await ctx.with('update', {}, async () => {
-      await client.diffUpdate(current, { [objectAttr]: newCollaborativeDoc })
-    })
+    await ctx.with('update', {}, () => client.diffUpdate(current, { [objectAttr]: newCollaborativeDoc }))
 
-    await ctx.with('activity', {}, async () => {
+    await ctx.with('activity', {}, () => {
       const data: AttachedData<DocUpdateMessage> = {
         objectId,
         objectClass,
@@ -208,7 +204,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
           isMixin: hierarchy.isMixin(objectClass)
         }
       }
-      await client.addCollection(
+      return client.addCollection(
         activity.class.DocUpdateMessage,
         current.space,
         current._id,

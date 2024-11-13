@@ -129,7 +129,6 @@ export function initStatisticsContext (
 
           const statData = JSON.stringify(data)
 
-          metricsContext.info('send stats:', { size: statData.length })
           void fetch(
             concatLink(statsUrl, '/api/v1/statistics') + `/?token=${encodeURIComponent(token)}&name=${serviceId}`,
             {

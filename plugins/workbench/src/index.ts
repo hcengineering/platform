@@ -89,6 +89,7 @@ export interface WidgetPreference extends Preference {
 export interface WidgetTab {
   id: string
   name?: string
+  label?: IntlString
   icon?: Asset | AnySvelteComponent
   iconComponent?: AnyComponent
   iconProps?: Record<string, any>
@@ -280,6 +281,7 @@ export default plugin(workbenchId, {
   function: {
     CreateWidgetTab: '' as Resource<(widget: Widget, tab: WidgetTab, newTab: boolean) => Promise<void>>,
     CloseWidgetTab: '' as Resource<(widget: Widget, tab: string) => Promise<void>>,
+    CloseWidget: '' as Resource<(widget: Ref<Widget>) => Promise<void>>,
     GetSidebarObject: '' as Resource<() => Partial<Pick<Doc, '_id' | '_class'>>>
   },
   actionImpl: {

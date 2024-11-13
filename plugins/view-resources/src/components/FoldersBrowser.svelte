@@ -14,9 +14,9 @@
 -->
 
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Action, IconEdit, navigate, type Location } from '@hcengineering/ui'
+  import { Action, IconEdit, navigate, type Location, Scroller } from '@hcengineering/ui'
   import { getResource, type Resource } from '@hcengineering/platform'
   import { IntlString, Asset } from '@hcengineering/platform'
 
@@ -45,7 +45,7 @@
     foldersState = newState
   })
 
-  let selected: Ref<Doc> | undefined
+  let selected: Ref<Doc> = noParentId
   let visibleItem: Doc | undefined
 
   const q = createQuery()
@@ -65,7 +65,6 @@
   async function handleFolderSelected (_id: Ref<Doc>): Promise<void> {
     selected = _id
     visibleItem = selected !== undefined ? foldersState.folderById.get(selected) : undefined
-    const folder = foldersState.folderById.get(_id)
     if (getFolderLink) {
       const getFolderLinkFunction = await getResource(getFolderLink)
       navigate(getFolderLinkFunction(_id))
@@ -100,7 +99,7 @@
   }
 </script>
 
-<div class="folders-browser">
+<Scroller padding={'1rem 0'}>
   <TreeNode
     _id={noParentId}
     icon={allObjectsIcon}
@@ -139,11 +138,4 @@
       {/if}
     </svelte:fragment>
   </TreeNode>
-</div>
-
-<style lang="scss">
-  .folders-browser {
-    display: flex;
-    padding-top: 1rem;
-  }
-</style>
+</Scroller>

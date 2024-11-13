@@ -22,7 +22,6 @@ export { serverTaskId } from '@hcengineering/server-task'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTask.trigger.OnStateUpdate,
-    arrays: true
+    trigger: serverTask.trigger.OnStateUpdate
   })
 }

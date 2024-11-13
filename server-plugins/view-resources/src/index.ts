@@ -20,24 +20,30 @@ import view from '@hcengineering/view'
 /**
  * @public
  */
-export async function OnCustomAttributeRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const hierarchy = control.hierarchy
-  const ptx = tx as TxRemoveDoc<AnyAttribute>
-  if (!checkTx(ptx, hierarchy)) return []
-  const attribute = control.removedMap.get(ptx.objectId) as AnyAttribute
-  if (attribute === undefined) return []
-  const preferences = await control.findAll(control.ctx, view.class.ViewletPreference, {
-    config: attribute.name,
-    space: core.space.Workspace
-  })
-  const res: Tx[] = []
-  for (const preference of preferences) {
-    const tx = control.txFactory.createTxUpdateDoc(preference._class, preference.space, preference._id, {
-      $pull: { config: attribute.name }
+export async function OnCustomAttributeRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const hierarchy = control.hierarchy
+    const ptx = tx as TxRemoveDoc<AnyAttribute>
+    if (!checkTx(ptx, hierarchy)) {
+      continue
+    }
+    const attribute = control.removedMap.get(ptx.objectId) as AnyAttribute
+    if (attribute === undefined) {
+      continue
+    }
+    const preferences = await control.findAll(control.ctx, view.class.ViewletPreference, {
+      config: attribute.name,
+      space: core.space.Workspace
     })
-    res.push(tx)
+    for (const preference of preferences) {
+      const tx = control.txFactory.createTxUpdateDoc(preference._class, preference.space, preference._id, {
+        $pull: { config: attribute.name }
+      })
+      result.push(tx)
+    }
   }
-  return res
+  return result
 }
 
 function checkTx (ptx: TxRemoveDoc<AnyAttribute>, hierarchy: Hierarchy): boolean {

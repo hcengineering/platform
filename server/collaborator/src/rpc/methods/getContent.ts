@@ -27,8 +27,8 @@ export async function getContent (
 ): Promise<GetContentResponse> {
   const { hocuspocus, transformer } = params
 
-  const connection = await ctx.with('connect', {}, async () => {
-    return await hocuspocus.openDirectConnection(documentId, context)
+  const connection = await ctx.with('connect', {}, () => {
+    return hocuspocus.openDirectConnection(documentId, context)
   })
 
   try {

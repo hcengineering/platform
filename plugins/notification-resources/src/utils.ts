@@ -226,49 +226,45 @@ export async function unarchiveContextNotifications (doc?: DocNotifyContext): Pr
   }
 }
 
-enum OpWithMe {
-  Add = 'add',
-  Remove = 'remove'
-}
-
-async function updateMeInCollaborators (
+export async function subscribeDoc (
   client: TxOperations,
   docClass: Ref<Class<Doc>>,
   docId: Ref<Doc>,
-  op: OpWithMe
+  op: 'add' | 'remove',
+  doc?: Doc
 ): Promise<void> {
   const me = getCurrentAccount()._id
   const hierarchy = client.getHierarchy()
-  const target = await client.findOne(docClass, { _id: docId })
-  if (target !== undefined) {
-    if (hierarchy.hasMixin(target, notification.mixin.Collaborators)) {
-      const collab = hierarchy.as(target, notification.mixin.Collaborators)
-      let collabUpdate: DocumentUpdate<Collaborators> | undefined
 
-      if (collab.collaborators.includes(me) && op === OpWithMe.Remove) {
-        collabUpdate = {
-          $pull: {
-            collaborators: me
-          }
-        }
-      } else if (!collab.collaborators.includes(me) && op === OpWithMe.Add) {
-        collabUpdate = {
-          $push: {
-            collaborators: me
-          }
+  if (hierarchy.classHierarchyMixin(docClass, notification.mixin.ClassCollaborators) === undefined) return
+
+  const target = doc ?? (await client.findOne(docClass, { _id: docId }))
+  if (target === undefined) return
+  if (hierarchy.hasMixin(target, notification.mixin.Collaborators)) {
+    const collab = hierarchy.as(target, notification.mixin.Collaborators)
+    let collabUpdate: DocumentUpdate<Collaborators> | undefined
+
+    if (collab.collaborators.includes(me) && op === 'remove') {
+      collabUpdate = {
+        $pull: {
+          collaborators: me
         }
       }
-
-      if (collabUpdate !== undefined) {
-        await client.updateMixin(
-          collab._id,
-          collab._class,
-          collab.space,
-          notification.mixin.Collaborators,
-          collabUpdate
-        )
+    } else if (!collab.collaborators.includes(me) && op === 'add') {
+      collabUpdate = {
+        $push: {
+          collaborators: me
+        }
       }
     }
+
+    if (collabUpdate !== undefined) {
+      await client.updateMixin(collab._id, collab._class, collab.space, notification.mixin.Collaborators, collabUpdate)
+    }
+  } else if (op === 'add') {
+    await client.createMixin(docId, docClass, target.space, notification.mixin.Collaborators, {
+      collaborators: [me]
+    })
   }
 }
 
@@ -277,7 +273,7 @@ async function updateMeInCollaborators (
  */
 export async function unsubscribe (context: DocNotifyContext): Promise<void> {
   const client = getClient()
-  await updateMeInCollaborators(client, context.objectClass, context.objectId, OpWithMe.Remove)
+  await subscribeDoc(client, context.objectClass, context.objectId, 'remove')
 }
 
 /**
@@ -285,7 +281,7 @@ export async function unsubscribe (context: DocNotifyContext): Promise<void> {
  */
 export async function subscribe (docClass: Ref<Class<Doc>>, docId: Ref<Doc>): Promise<void> {
   const client = getClient()
-  await updateMeInCollaborators(client, docClass, docId, OpWithMe.Add)
+  await subscribeDoc(client, docClass, docId, 'add')
 }
 
 export async function pinDocNotifyContext (object: DocNotifyContext): Promise<void> {

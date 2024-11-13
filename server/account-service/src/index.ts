@@ -228,11 +228,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
       host = new URL(origin).host
     }
     const branding = host !== undefined ? brandings[host] : null
-    const result = await measureCtx.with(
-      request.method,
-      {},
-      async (ctx) => await method(ctx, db, branding, request, token)
-    )
+    const result = await measureCtx.with(request.method, {}, (ctx) => method(ctx, db, branding, request, token))
 
     ctx.body = result
   })

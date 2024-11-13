@@ -15,18 +15,19 @@
 
 import core, {
   DocIndexState,
-  DOMAIN_DOC_INDEX_STATE,
-  getFullTextContext,
   isClassIndexable,
+  isFullTextAttribute,
   Tx,
   TxProcessor,
+  type AnyAttribute,
   type AttachedDoc,
   type Class,
   type Doc,
   type FullTextSearchContext,
   type Ref,
   type TxCollectionCUD,
-  type TxCUD
+  type TxCUD,
+  type TxUpdateDoc
 } from '@hcengineering/core'
 import { TriggerControl } from '@hcengineering/server-core'
 
@@ -38,13 +39,17 @@ export async function OnChange (txes: Tx[], control: TriggerControl): Promise<Tx
     control.contextCache.set(indexingCtx, contexts)
   }
 
-  const docsToUpsert = new Map<Ref<DocIndexState>, DocIndexState>()
+  if (control.ctx.contextData.fulltextUpdates === undefined) {
+    control.ctx.contextData.fulltextUpdates = new Map()
+  }
+  const docsToUpsert = control.ctx.contextData.fulltextUpdates
 
   for (let tx of txes) {
     if (tx._class === core.class.TxCollectionCUD) {
       const txcol = tx as TxCollectionCUD<Doc, AttachedDoc>
       tx = txcol.tx
     }
+    const attrs = new Map<string, AnyAttribute>()
     if (TxProcessor.isExtendsCUD(tx._class)) {
       const cud = tx as TxCUD<Doc>
 
@@ -52,6 +57,35 @@ export async function OnChange (txes: Tx[], control: TriggerControl): Promise<Tx
         // No need, since no indixable fields or attachments.
         continue
       }
+
+      // We need to check if operation has indexable attributes.
+      if (cud._class === core.class.TxUpdateDoc) {
+        let hasFulltext = false
+        // We could skip updates for a lot of transactions if they have non idexable attributes
+        const upd = cud as TxUpdateDoc<Doc>
+        for (const [k] of Object.entries(upd.operations)) {
+          if (k.startsWith('$') || k === 'modifiedOn') {
+            // Is operator
+            // Skip operator changes
+          } else {
+            const key = upd.objectClass + '.' + k
+            const attr = attrs.get(key) ?? control.hierarchy.getAttribute(upd.objectClass, k)
+            if (attr !== undefined) {
+              attrs.set(key, attr ?? null)
+            }
+            if (attr != null) {
+              if (isFullTextAttribute(attr)) {
+                hasFulltext = true
+              }
+            }
+          }
+        }
+        if (!hasFulltext) {
+          // No full text changes, no indexing is required
+          continue
+        }
+      }
+
       docsToUpsert.set(cud.objectId as Ref<DocIndexState>, {
         _id: cud.objectId as Ref<DocIndexState>,
         _class: core.class.DocIndexState,
@@ -62,24 +96,7 @@ export async function OnChange (txes: Tx[], control: TriggerControl): Promise<Tx
         space: cud.space,
         removed: cud._class === core.class.TxRemoveDoc
       })
-
-      const propagate = getFullTextContext(control.hierarchy, cud.objectClass, contexts).propagate
-      if (propagate !== undefined && propagate.length > 0) {
-        control.ctx.contextData.needWarmupFulltext = true
-        await control.ctx.with('clean-childs', { _class: cud.objectClass }, () => {
-          // We need to propagate all changes to all child's of following classes.
-          return control.lowLevel.rawUpdate<DocIndexState>(
-            DOMAIN_DOC_INDEX_STATE,
-            { attachedTo: cud.objectClass, objectClass: { $in: propagate } },
-            { needIndex: true }
-          )
-        })
-      }
     }
-  }
-  if (docsToUpsert.size > 0) {
-    control.ctx.contextData.needWarmupFulltext = true
-    await control.lowLevel.upload(control.ctx, DOMAIN_DOC_INDEX_STATE, Array.from(docsToUpsert.values()))
   }
   return []
 }

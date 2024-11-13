@@ -51,7 +51,6 @@ import type {
 } from '@hcengineering/server-core'
 import serverCore, { BaseMiddleware, SessionDataImpl, SessionFindAll, Triggers } from '@hcengineering/server-core'
 import { filterBroadcastOnly } from './utils'
-import { QueryJoiner } from './queryJoin'
 
 /**
  * @public
@@ -107,7 +106,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   }
 
   private async processDerived (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<void> {
-    const _findAll: SessionFindAll = async (ctx, _class, query, options) => {
+    const findAll: SessionFindAll = async (ctx, _class, query, options) => {
       const _ctx: MeasureContext = (options as ServerFindOptions<Doc>)?.ctx ?? ctx
       delete (options as ServerFindOptions<Doc>)?.ctx
       if (_ctx.contextData !== undefined) {
@@ -122,11 +121,6 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
         }),
         results.total
       )
-    }
-    const joiner = new QueryJoiner(_findAll)
-
-    const findAll: SessionFindAll = async (ctx, _class, query, options) => {
-      return await joiner.findAll(ctx, _class, query, options)
     }
 
     const removed = await ctx.with('process-remove', {}, (ctx) => this.processRemove(ctx, txes, findAll))
@@ -267,14 +261,14 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async getCollectionUpdateTx<D extends Doc>(
+  private getCollectionUpdateTx<D extends Doc>(
     _id: Ref<D>,
     _class: Ref<Class<D>>,
     modifiedBy: Ref<Account>,
     modifiedOn: number,
     attachedTo: Pick<Doc, '_class' | 'space'>,
     update: DocumentUpdate<D>
-  ): Promise<Tx> {
+  ): Tx {
     const txFactory = new TxFactory(modifiedBy, true)
     const baseClass = this.context.hierarchy.getBaseClass(_class)
     if (baseClass !== _class) {
@@ -363,7 +357,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       const attr = this.context.hierarchy.findAttribute(oldAttachedTo._class, colTx.collection)
 
       if (attr !== undefined) {
-        oldTx = await this.getCollectionUpdateTx(_id, _class, tx.modifiedBy, colTx.modifiedOn, oldAttachedTo, {
+        oldTx = this.getCollectionUpdateTx(_id, _class, tx.modifiedBy, colTx.modifiedOn, oldAttachedTo, {
           $inc: { [colTx.collection]: -1 }
         })
       }
@@ -375,7 +369,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     let newTx: Tx | null = null
     const newAttr = this.context.hierarchy.findAttribute(newAttachedToClass, newAttachedToCollection)
     if (newAttachedTo !== undefined && newAttr !== undefined) {
-      newTx = await this.getCollectionUpdateTx(
+      newTx = this.getCollectionUpdateTx(
         newAttachedTo._id,
         newAttachedTo._class,
         tx.modifiedBy,
@@ -419,7 +413,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
           const attachedTo = (await findAll(ctx, _class, { _id }, { limit: 1 }))[0]
           if (attachedTo !== undefined) {
             result.push(
-              await this.getCollectionUpdateTx(
+              this.getCollectionUpdateTx(
                 _id,
                 _class,
                 tx.modifiedBy,
@@ -496,8 +490,8 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
         serverCore.mixin.ObjectDDParticipant
       )
       const collector = await getResource(removeParticipand.collectDocs)
-      const docs = await collector(object, this.context.hierarchy, async (_class, query, options) => {
-        return await findAll(ctx, _class, query, options)
+      const docs = await collector(object, this.context.hierarchy, (_class, query, options) => {
+        return findAll(ctx, _class, query, options)
       })
       for (const d of docs) {
         result.push(...this.deleteObject(ctx, d, ctx.contextData.removedMap))

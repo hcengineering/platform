@@ -278,7 +278,7 @@ export async function OnMessageSend (
   return []
 }
 
-export async function OnMention (tx: TxCreateDoc<MentionInboxNotification>, control: TriggerControl): Promise<Tx[]> {
+export async function OnMention (tx: TxCreateDoc<MentionInboxNotification>[], control: TriggerControl): Promise<Tx[]> {
   // Note: temporally commented until open ai will be added
   // if (tx.objectClass !== notification.class.MentionInboxNotification || tx._class !== core.class.TxCreateDoc) {
   //   return []
@@ -308,7 +308,7 @@ export async function OnMention (tx: TxCreateDoc<MentionInboxNotification>, cont
 }
 
 export async function OnMessageNotified (
-  tx: TxCreateDoc<ActivityInboxNotification>,
+  tx: TxCreateDoc<ActivityInboxNotification>[],
   control: TriggerControl
 ): Promise<Tx[]> {
   // Note: temporally commented until open ai will be added
@@ -363,44 +363,46 @@ export async function OnMessageNotified (
   return []
 }
 
-export async function OnUserStatus (originTx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const tx = TxProcessor.extractTx(originTx) as TxCUD<UserStatus>
+export async function OnUserStatus (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  for (const originTx of txes) {
+    const tx = TxProcessor.extractTx(originTx) as TxCUD<UserStatus>
 
-  if (
-    tx.objectClass !== core.class.UserStatus ||
-    ![core.class.TxCreateDoc, core.class.TxUpdateDoc].includes(tx._class)
-  ) {
-    return []
-  }
-
-  if (tx._class === core.class.TxCreateDoc) {
-    const createTx = tx as TxCreateDoc<UserStatus>
-    const status = TxProcessor.createDoc2Doc(createTx)
-    if (status.user === aiBot.account.AIBot || status.user === core.account.System || !status.online) {
-      return []
-    }
-  }
-
-  if (tx._class === core.class.TxUpdateDoc) {
-    const updateTx = tx as TxUpdateDoc<UserStatus>
-    const val = updateTx.operations.online
-    if (val !== true) {
-      return []
+    if (
+      tx.objectClass !== core.class.UserStatus ||
+      ![core.class.TxCreateDoc, core.class.TxUpdateDoc].includes(tx._class)
+    ) {
+      continue
     }
 
-    const status = (await control.findAll(control.ctx, core.class.UserStatus, { _id: updateTx.objectId }))[0]
-    if (status === undefined || status.user === aiBot.account.AIBot || status.user === core.account.System) {
-      return []
+    if (tx._class === core.class.TxCreateDoc) {
+      const createTx = tx as TxCreateDoc<UserStatus>
+      const status = TxProcessor.createDoc2Doc(createTx)
+      if (status.user === aiBot.account.AIBot || status.user === core.account.System || !status.online) {
+        continue
+      }
     }
+
+    if (tx._class === core.class.TxUpdateDoc) {
+      const updateTx = tx as TxUpdateDoc<UserStatus>
+      const val = updateTx.operations.online
+      if (val !== true) {
+        continue
+      }
+
+      const status = (await control.findAll(control.ctx, core.class.UserStatus, { _id: updateTx.objectId }))[0]
+      if (status === undefined || status.user === aiBot.account.AIBot || status.user === core.account.System) {
+        continue
+      }
+    }
+
+    const account = control.modelDb.findAllSync(contact.class.PersonAccount, { email: aiBotAccountEmail })[0]
+
+    if (account !== undefined) {
+      continue
+    }
+
+    await createAccountRequest(control.workspace, control.ctx)
   }
-
-  const account = control.modelDb.findAllSync(contact.class.PersonAccount, { email: aiBotAccountEmail })[0]
-
-  if (account !== undefined) {
-    return []
-  }
-
-  await createAccountRequest(control.workspace, control.ctx)
 
   return []
 }

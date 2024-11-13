@@ -9,8 +9,7 @@ import core, {
   TxCreateDoc,
   TxUpdateDoc,
   MeasureContext,
-  Markup,
-  generateId
+  Markup
 } from '@hcengineering/core'
 import { Person } from '@hcengineering/contact'
 import love, {
@@ -22,26 +21,10 @@ import love, {
   TranscriptionStatus
 } from '@hcengineering/love'
 import { ConnectMeetingRequest } from '@hcengineering/ai-bot'
-import chunter, { ChatMessage } from '@hcengineering/chunter'
+import chunter from '@hcengineering/chunter'
 import { jsonToMarkup, MarkupNodeType } from '@hcengineering/text'
 
 import config from '../config'
-
-class Transcriptions {
-  private readonly transcriptionByPerson = new Map<Ref<Person>, { _id: Ref<ChatMessage>, text: string }>()
-
-  get (person: Ref<Person>): { _id: Ref<ChatMessage>, text: string } | undefined {
-    return this.transcriptionByPerson.get(person)
-  }
-
-  set (person: Ref<Person>, value: { _id: Ref<ChatMessage>, text: string }): void {
-    this.transcriptionByPerson.set(person, value)
-  }
-
-  delete (person: Ref<Person>): void {
-    this.transcriptionByPerson.delete(person)
-  }
-}
 
 export class LoveController {
   private readonly roomSidById = new Map<Ref<Room>, string>()
@@ -50,7 +33,6 @@ export class LoveController {
   private participantsInfo: ParticipantInfo[] = []
   private rooms: Room[] = []
   private readonly meetingMinutes: MeetingMinutes[] = []
-  private readonly activeTranscriptions = new Map<Ref<Room>, Transcriptions>()
 
   constructor (
     private readonly workspace: string,
@@ -142,6 +124,7 @@ export class LoveController {
 
     const room = await this.getRoom(request.roomId)
     if (room === undefined) {
+      this.ctx.error('Room not found', request)
       this.roomSidById.delete(request.roomId)
       this.connectedRooms.delete(request.roomId)
       return
@@ -166,8 +149,6 @@ export class LoveController {
   async disconnect (roomId: Ref<Room>): Promise<void> {
     this.ctx.info('Disconnecting', { roomId })
 
-    this.activeTranscriptions.delete(roomId)
-
     const participant = await this.getRoomParticipant(roomId, this.currentPerson._id)
     if (participant !== undefined) {
       await this.client.remove(participant)
@@ -191,44 +172,32 @@ export class LoveController {
       return
     }
 
-    const doc = await this.getMeetingMinutes(roomId, this.roomSidById.get(roomId) ?? '')
-    const personAccount = this.client.getModel().getAccountByPersonId(participant.person)[0]
-    if (doc === undefined) return
+    const sid = this.roomSidById.get(roomId)
 
-    const transcriptions = this.activeTranscriptions.get(roomId) ?? new Transcriptions()
-    const activeTranscription = transcriptions.get(participant.person)
-
-    if (activeTranscription === undefined) {
-      const _id = generateId<ChatMessage>()
-      if (!final) {
-        transcriptions.set(participant.person, { _id, text })
-        this.activeTranscriptions.set(roomId, transcriptions)
-      }
-
-      await this.client.addCollection(
-        chunter.class.ChatMessage,
-        core.space.Workspace,
-        doc._id,
-        doc._class,
-        'transcription',
-        {
-          message: this.transcriptToMarkup(text)
-        },
-        _id,
-        undefined,
-        personAccount._id
-      )
-    } else {
-      const mergedText = activeTranscription.text + ' ' + text
-      if (!final) {
-        transcriptions.set(participant.person, { _id: activeTranscription._id, text: mergedText })
-      } else {
-        transcriptions.delete(participant.person)
-      }
-      await this.client.updateDoc(chunter.class.ChatMessage, core.space.Workspace, activeTranscription._id, {
-        message: this.transcriptToMarkup(mergedText)
-      })
+    if (sid === undefined) {
+      return
     }
+
+    const personAccount = this.client.getModel().getAccountByPersonId(participant.person)[0]
+    const doc = await this.getMeetingMinutes(room, sid)
+
+    if (doc === undefined) return
+    const op = this.client.apply(undefined, undefined, true)
+
+    await op.addCollection(
+      chunter.class.ChatMessage,
+      core.space.Workspace,
+      doc._id,
+      doc._class,
+      'transcription',
+      {
+        message: this.transcriptToMarkup(text)
+      },
+      undefined,
+      undefined,
+      personAccount._id
+    )
+    await op.commit()
   }
 
   hasActiveConnections (): boolean {
@@ -246,18 +215,15 @@ export class LoveController {
     )
   }
 
-  async getMeetingMinutes (room: Ref<Room>, sid: string): Promise<MeetingMinutes | undefined> {
+  async getMeetingMinutes (room: Room, sid: string): Promise<MeetingMinutes | undefined> {
     if (sid === '') return undefined
 
-    const existing = this.meetingMinutes.find((m) => m.room === room && m.sid === sid)
-    if (existing !== undefined) return existing
+    const doc =
+      this.meetingMinutes.find((m) => m.sid === sid) ?? (await this.client.findOne(love.class.MeetingMinutes, { sid }))
 
-    const doc = await this.client.findOne(love.class.MeetingMinutes, {
-      room,
-      sid
-    })
-
-    if (doc === undefined) return
+    if (doc === undefined) {
+      return undefined
+    }
 
     this.meetingMinutes.push(doc)
     return doc
