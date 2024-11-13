@@ -51,7 +51,7 @@ export const start = async (): Promise<void> => {
   }
   const aiControl = new AIControl(storage, ctx)
 
-  const app = createServer(aiControl)
+  const app = createServer(aiControl, ctx)
   const server = listen(app, config.Port)
 
   const onClose = (): void => {
