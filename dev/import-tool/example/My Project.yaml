@@ -1,0 +1,13 @@
+class: tracker.class.Project
+identifier: DEEP
+title: Deep Project
+private: false
+autoJoin: false
+defaultAssignee: John Doe
+defaultIssueStatus: Backlog
+owners:
+    - john.doe@example.com
+members:
+    - john.doe@example.com
+    - joe.shmoe@example.com
+description: This is my first project in Huly! 🎉
