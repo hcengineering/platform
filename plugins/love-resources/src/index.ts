@@ -12,6 +12,12 @@ import WorkbenchExtension from './components/WorkbenchExtension.svelte'
 import LoveWidget from './components/LoveWidget.svelte'
 import MeetingWidget from './components/widget/MeetingWidget.svelte'
 import MeetingMinutesPresenter from './components/MeetingMinutesPresenter.svelte'
+import MeetingMinutesSection from './components/MeetingMinutesSection.svelte'
+import EditMeetingMinutes from './components/EditMeetingMinutes.svelte'
+import EditRoom from './components/EditRoom.svelte'
+import FloorAttributePresenter from './components/FloorAttributePresenter.svelte'
+import FloorView from './components/FloorView.svelte'
+import MeetingMinutesTable from './components/MeetingMinutesTable.svelte'
 
 import {
   copyGuestLink,
@@ -20,7 +26,8 @@ import {
   startTranscription,
   stopTranscription,
   toggleMic,
-  toggleVideo
+  toggleVideo,
+  getMeetingMinutesTitle
 } from './utils'
 
 export { setCustomCreateScreenTracks } from './utils'
@@ -36,7 +43,13 @@ export default async (): Promise<Resources> => ({
     EditMeetingData,
     LoveWidget,
     MeetingWidget,
-    MeetingMinutesPresenter
+    MeetingMinutesPresenter,
+    MeetingMinutesSection,
+    EditMeetingMinutes,
+    EditRoom,
+    FloorAttributePresenter,
+    FloorView,
+    MeetingMinutesTable
   },
   function: {
     CreateMeeting: createMeeting,
@@ -50,7 +63,8 @@ export default async (): Promise<Resources> => ({
     },
     CanCopyGuestLink: () => {
       return hasAccountRole(getCurrentAccount(), AccountRole.User)
-    }
+    },
+    MeetingMinutesTitleProvider: getMeetingMinutesTitle
   },
   actionImpl: {
     ToggleMic: toggleMic,

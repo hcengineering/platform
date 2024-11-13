@@ -231,7 +231,8 @@ export const posAlignment = [
   'centered',
   'center',
   'status',
-  'movable'
+  'movable',
+  'full-centered'
 ] as const
 
 export type PopupPosAlignment = (typeof posAlignment)[number]

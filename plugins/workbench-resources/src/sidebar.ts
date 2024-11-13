@@ -18,7 +18,7 @@ import { get, writable } from 'svelte/store'
 import { getCurrentLocation, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 import { getResource } from '@hcengineering/platform'
 
-import { workspaceStore } from './utils'
+import { locationWorkspaceStore } from './utils'
 import { Analytics } from '@hcengineering/analytics'
 
 export enum SidebarVariant {
@@ -50,14 +50,14 @@ export const defaultSidebarState: SidebarState = {
 
 export const sidebarStore = writable<SidebarState>(defaultSidebarState)
 
-workspaceStore.subscribe((workspace) => {
+locationWorkspaceStore.subscribe((workspace) => {
   sidebarStore.set(getSidebarStateFromLocalStorage(workspace ?? ''))
 })
 
 sidebarStore.subscribe(setSidebarStateToLocalStorage)
 
 export function syncSidebarState (): void {
-  const workspace = get(workspaceStore)
+  const workspace = get(locationWorkspaceStore)
   sidebarStore.set(getSidebarStateFromLocalStorage(workspace ?? ''))
 }
 function getSideBarLocalStorageKey (workspace: string): string | undefined {
@@ -89,7 +89,7 @@ function getSidebarStateFromLocalStorage (workspace: string): SidebarState {
 }
 
 function setSidebarStateToLocalStorage (state: SidebarState): void {
-  const workspace = get(workspaceStore)
+  const workspace = get(locationWorkspaceStore)
   if (workspace == null || workspace === '') return
 
   const sidebarStateLocalStorageKey = getSideBarLocalStorageKey(workspace)
@@ -214,6 +214,8 @@ export function openWidgetTab (widget: Ref<Widget>, tab: string): void {
   Analytics.handleEvent(WorkbenchEvents.SidebarOpenWidget, { widget, tab: newTab?.name })
   sidebarStore.set({
     ...state,
+    widget,
+    variant: SidebarVariant.EXPANDED,
     widgetsState
   })
 }

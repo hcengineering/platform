@@ -62,6 +62,7 @@ export async function createAccountRequest (workspace: WorkspaceId, ctx: Measure
   }
 
   try {
+    ctx.info('Requesting AI account creation', { url, workspace })
     await fetch(concatLink(url, '/connect'), {
       method: 'POST',
       headers: {

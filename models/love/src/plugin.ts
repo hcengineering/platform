@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { type Doc, type Ref } from '@hcengineering/core'
-import { type NotificationGroup } from '@hcengineering/notification'
-import { mergeIds } from '@hcengineering/platform'
+import { type Client, type Doc, type Ref } from '@hcengineering/core'
+import { type NotificationType, type NotificationGroup } from '@hcengineering/notification'
+import { type Resource, mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
 import { type ActionCategory, type ViewAction } from '@hcengineering/view'
 import { loveId } from '@hcengineering/love'
@@ -43,6 +43,10 @@ export default mergeIds(loveId, love, {
   },
   ids: {
     Settings: '' as Ref<Doc>,
-    LoveNotificationGroup: '' as Ref<NotificationGroup>
+    LoveNotificationGroup: '' as Ref<NotificationGroup>,
+    MeetingMinutesChatNotification: '' as Ref<NotificationType>
+  },
+  function: {
+    MeetingMinutesTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
   }
 })

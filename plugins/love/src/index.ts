@@ -1,12 +1,12 @@
 import { Event } from '@hcengineering/calendar'
 import { Person } from '@hcengineering/contact'
-import { Class, Doc, Mixin, Ref } from '@hcengineering/core'
+import { AttachedDoc, Class, CollaborativeDoc, Doc, Mixin, Ref } from '@hcengineering/core'
 import { Drive } from '@hcengineering/drive'
 import { NotificationType } from '@hcengineering/notification'
 import { Asset, IntlString, Metadata, Plugin, plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
 import { AnyComponent } from '@hcengineering/ui/src/types'
-import { Action } from '@hcengineering/view'
+import { Action, Viewlet, ViewletDescriptor } from '@hcengineering/view'
 import { Widget } from '@hcengineering/workbench'
 
 export const loveId = 'love' as Plugin
@@ -102,6 +102,9 @@ export interface Room extends Doc {
   y: number
   language: RoomLanguage
   startWithTranscription: boolean
+  description: CollaborativeDoc
+  attachments?: number
+  meetings?: number
 }
 
 export interface Office extends Room {
@@ -155,12 +158,13 @@ export interface DevicesPreference extends Preference {
   camEnabled: boolean
 }
 
-export interface MeetingMinutes extends Doc {
+export interface MeetingMinutes extends AttachedDoc {
   sid: string
   title: string
-  room: Ref<Room>
   transcription?: number
   messages?: number
+  description: CollaborativeDoc
+  attachments?: number
 }
 
 export * from './utils'
@@ -200,7 +204,11 @@ const love = plugin(loveId, {
     Meeting: '' as IntlString,
     Transcription: '' as IntlString,
     StartWithTranscription: '' as IntlString,
-    MeetingMinutes: '' as IntlString
+    MeetingMinutes: '' as IntlString,
+    StartMeeting: '' as IntlString,
+    Video: '' as IntlString,
+    NoMeetingMinutes: '' as IntlString,
+    JoinMeeting: '' as IntlString
   },
   ids: {
     MainFloor: '' as Ref<Floor>,
@@ -243,6 +251,13 @@ const love = plugin(loveId, {
   },
   component: {
     SelectScreenSourcePopup: '' as AnyComponent
+  },
+  viewlet: {
+    TableMeetingMinutes: '' as Ref<Viewlet>,
+    MeetingMinutesDescriptor: '' as Ref<ViewletDescriptor>,
+    FloorDescriptor: '' as Ref<ViewletDescriptor>,
+    Floor: '' as Ref<Viewlet>,
+    FloorMeetingMinutes: '' as Ref<Viewlet>
   }
 })
 

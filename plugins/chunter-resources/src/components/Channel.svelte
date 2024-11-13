@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocNotifyContext } from '@hcengineering/notification'
-  import activity, { ActivityMessage, ActivityMessagesFilter, WithReferences } from '@hcengineering/activity'
+  import activity, { ActivityMessage, WithReferences } from '@hcengineering/activity'
   import { getClient, isSpace } from '@hcengineering/presentation'
   import { getMessageFromLoc, messageInFocus } from '@hcengineering/activity-resources'
   import { location as locationStore } from '@hcengineering/ui'
@@ -26,10 +26,11 @@
   import ReverseChannelScrollView from './ReverseChannelScrollView.svelte'
 
   export let object: Doc
-  export let context: DocNotifyContext | undefined
+  export let context: DocNotifyContext | undefined = undefined
   export let syncLocation = true
   export let autofocus = true
   export let freeze = false
+  export let readonly = false
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   export let collection: string | undefined = undefined
   export let withInput: boolean = true
@@ -113,6 +114,7 @@
     {autofocus}
     loadMoreAllowed={!isDocChannel}
     {withInput}
+    {readonly}
     {onReply}
   />
 {/if}

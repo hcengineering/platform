@@ -14,9 +14,9 @@
 //
 
 import contact from '@hcengineering/contact'
-import { type Space, TxOperations, type Ref } from '@hcengineering/core'
+import { type Space, TxOperations, type Ref, makeCollaborativeDoc } from '@hcengineering/core'
 import drive from '@hcengineering/drive'
-import { RoomAccess, RoomType, createDefaultRooms, isOffice, loveId, type Floor } from '@hcengineering/love'
+import { RoomAccess, RoomType, createDefaultRooms, isOffice, loveId, type Floor, type Room } from '@hcengineering/love'
 import {
   createDefaultSpace,
   migrateSpace,
@@ -28,7 +28,7 @@ import {
 } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import love from './plugin'
-import { DOMAIN_LOVE } from '.'
+import { DOMAIN_LOVE, DOMAIN_MEETING_MINUTES } from '.'
 
 async function createDefaultFloor (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(love.class.Floor, {
@@ -56,7 +56,7 @@ async function createRooms (client: MigrationUpgradeClient): Promise<void> {
   const data = createDefaultRooms(employees.map((p) => p._id))
   for (const room of data) {
     const _class = isOffice(room) ? love.class.Office : love.class.Room
-    await tx.createDoc(_class, core.space.Workspace, room)
+    await tx.createDoc(_class, core.space.Workspace, room, room._id)
   }
 }
 
@@ -79,7 +79,8 @@ async function createReception (client: MigrationUpgradeClient): Promise<void> {
       x: 0,
       y: 0,
       language: 'en',
-      startWithTranscription: false
+      startWithTranscription: false,
+      description: makeCollaborativeDoc(love.ids.Reception, 'description')
     },
     love.ids.Reception
   )
@@ -109,14 +110,37 @@ export const loveOperation: MigrateOperation = {
           )
           await client.update(
             DOMAIN_LOVE,
-            { _class: love.class.Room, startWithTranscription: { $exists: false } },
+            { _class: love.class.Room, type: RoomType.Video, startWithTranscription: { $exists: false } },
             { startWithTranscription: true }
+          )
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Room, startWithTranscription: { $exists: false } },
+            { startWithTranscription: false }
           )
           await client.update(
             DOMAIN_LOVE,
             { _class: love.class.Office, startWithTranscription: { $exists: false } },
             { startWithTranscription: false }
           )
+        }
+      },
+      {
+        state: 'move-meeting-minutes',
+        func: async (client) => {
+          await client.move(DOMAIN_LOVE, { _class: love.class.MeetingMinutes }, DOMAIN_MEETING_MINUTES)
+        }
+      },
+      {
+        state: 'create-description-collaborative',
+        func: async (client) => {
+          const rooms = await client.find<Room>(DOMAIN_LOVE, { _class: { $in: [love.class.Room, love.class.Office] } })
+          for (const room of rooms) {
+            const description = room.description
+            if (description == null) {
+              await client.update(DOMAIN_LOVE, room, { description: makeCollaborativeDoc(room._id, 'description') })
+            }
+          }
         }
       }
     ])

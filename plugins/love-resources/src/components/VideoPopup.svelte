@@ -28,6 +28,12 @@
     TrackPublication
   } from 'livekit-client'
   import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte'
+  import { Ref } from '@hcengineering/core'
+  import { MessageBox } from '@hcengineering/presentation'
+  import { Person, PersonAccount } from '@hcengineering/contact'
+  import aiBot from '@hcengineering/ai-bot'
+  import { personIdByAccountId } from '@hcengineering/contact-resources'
+
   import love from '../plugin'
   import { currentRoom, infos, myInfo, myOffice } from '../stores'
   import {
@@ -44,8 +50,6 @@
     setShare
   } from '../utils'
   import ParticipantView from './ParticipantView.svelte'
-  import { Ref } from '@hcengineering/core'
-  import { MessageBox } from '@hcengineering/presentation'
 
   export let isDock: boolean = false
   export let room: Ref<TypeRoom>
@@ -57,7 +61,11 @@
     muted: boolean
     mirror: boolean
     connecting: boolean
+    isAgent: boolean
   }
+
+  let aiPersonId: Ref<Person> | undefined = undefined
+  $: aiPersonId = $personIdByAccountId.get(aiBot.account.AIBot as Ref<PersonAccount>)
 
   const dispatch = createEventDispatcher()
 
@@ -126,7 +134,8 @@
         name: participant.name ?? '',
         muted: !participant.isMicrophoneEnabled,
         mirror: participant.isLocal,
-        connecting: false
+        connecting: false,
+        isAgent: participant.isAgent
       })
     }
     participants = participants
@@ -149,7 +158,8 @@
       name: participant.name ?? '',
       muted: !participant.isMicrophoneEnabled,
       mirror: participant.isLocal,
-      connecting: false
+      connecting: false,
+      isAgent: participant.isAgent
     }
     participants.push(value)
     participants = participants
@@ -227,7 +237,8 @@
           name: info.name,
           muted: true,
           mirror: false,
-          connecting: true
+          connecting: true,
+          isAgent: info.person === aiPersonId
         }
         participants.push(value)
       }
@@ -291,6 +302,12 @@
       }
     }, 10)
   }
+
+  function getActiveParticipants (participants: ParticipantData[]): ParticipantData[] {
+    return participants.filter((p) => !p.isAgent || $infos.some(({ person }) => person === p._id))
+  }
+
+  $: activeParticipants = getActiveParticipants(participants)
 </script>
 
 <div class="antiPopup videoPopup-container" class:isDock>
@@ -346,7 +363,7 @@
     <video class="screen" bind:this={screen}></video>
   </div>
   <Scroller bind:divScroll noStretch padding={'0 .5rem'} gap={'flex-gap-2'} onResize={dispatchFit} stickedScrollBars>
-    {#each participants as participant, i (participant._id)}
+    {#each activeParticipants as participant, i (participant._id)}
       <div class="video">
         <ParticipantView bind:this={participantElements[i]} {...participant} small />
       </div>

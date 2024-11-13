@@ -17,11 +17,15 @@
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, getCurrentAccount } from '@hcengineering/core'
   import { isOffice, ParticipantInfo, Room, RoomAccess, RoomType } from '@hcengineering/love'
-  import { Icon, Label, eventToHTMLElement, showPopup, DropdownIntlItem } from '@hcengineering/ui'
+  import { Icon, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { getClient } from '@hcengineering/presentation'
+  import { openDoc } from '@hcengineering/view-resources'
+  import { get } from 'svelte/store'
+
   import love from '../plugin'
-  import { invites, myInfo, myRequests } from '../stores'
-  import { getRoomLabel, tryConnect } from '../utils'
+  import { myInfo, selectedRoomPlace, currentRoom, meetingMinutesStore } from '../stores'
+  import { getRoomLabel, lk } from '../utils'
   import PersonActionPopup from './PersonActionPopup.svelte'
   import RoomLanguage from './RoomLanguage.svelte'
 
@@ -36,7 +40,6 @@
   const meName = $personByIdStore.get(me.person)?.name
   const meAvatar = $personByIdStore.get(me.person)
 
-  let container: HTMLDivElement
   let hoveredRoomX: number | undefined = undefined
   let hoveredRoomY: number | undefined = undefined
 
@@ -61,12 +64,23 @@
     hovered = false
   }
 
-  function clickHandler (e: MouseEvent, x: number, y: number, person: Person | undefined): void {
+  async function clickHandler (e: MouseEvent, x: number, y: number, person: Person | undefined): Promise<void> {
     if (person !== undefined) {
       if (room._id === $myInfo?.room || $myInfo === undefined) return
       showPopup(PersonActionPopup, { room, person: person._id }, eventToHTMLElement(e))
     } else {
-      void tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites, { x, y })
+      const client = getClient()
+      const hierarchy = client.getHierarchy()
+      if ($currentRoom?._id === room._id) {
+        const sid = await lk.getSid()
+        const meetingMinutes =
+          get(meetingMinutesStore) ?? (await client.findOne(love.class.MeetingMinutes, { sid, attachedTo: room._id }))
+        if (meetingMinutes === undefined) return
+        await openDoc(hierarchy, meetingMinutes)
+      } else {
+        selectedRoomPlace.set({ _id: room._id, x, y })
+        await openDoc(hierarchy, room)
+      }
     }
   }
 
@@ -112,7 +126,6 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <div
-  bind:this={container}
   class="floorGrid-room"
   class:preview
   class:hovered

@@ -727,7 +727,10 @@ export class WorkspaceClient {
     // Just wait initialization
     await this.opClient
 
-    if (this.love === undefined) return
+    if (this.love === undefined) {
+      this.ctx.error('Love is not initialized')
+      return
+    }
 
     return this.love.getIdentity()
   }

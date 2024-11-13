@@ -67,6 +67,10 @@
     "Meeting": "Reunión",
     "Transcription": "Transcripción",
     "StartWithTranscription": "Iniciar con transcripción",
-    "MeetingMinutes": "Minutos de la reunión"
+    "MeetingMinutes": "Minutos de la reunión",
+    "StartMeeting": "Iniciar reunión",
+    "Video": "Video",
+    "NoMeetingMinutes": "Sin minutos de reunión",
+    "JoinMeeting": "Unirse a la reunión"
   }
 }

@@ -32,6 +32,7 @@
   export let showHeader: boolean = true
   export let syncLocation = true
   export let autofocus = true
+  export let readonly: boolean = false
   export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const client = getClient()
@@ -145,7 +146,7 @@
 
 {#if message}
   {#key _id}
-    <ThreadContent bind:selectedMessageId {message} {autofocus} {onReply} />
+    <ThreadContent bind:selectedMessageId {message} {autofocus} {readonly} {onReply} />
   {/key}
 {:else if isLoading}
   <Loading />

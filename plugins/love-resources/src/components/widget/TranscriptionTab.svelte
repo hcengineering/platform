@@ -13,31 +13,28 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import love, { MeetingMinutes } from '@hcengineering/love'
+  import { MeetingMinutes, Room } from '@hcengineering/love'
   import { ChannelEmbeddedContent } from '@hcengineering/chunter-resources'
-  import { ActivityMessage } from '@hcengineering/activity'
-  import { updateTabData, WidgetState } from '@hcengineering/workbench-resources'
+  import { WidgetState } from '@hcengineering/workbench-resources'
+  import MeetingWidgetHeader from './MeetingWidgetHeader.svelte'
 
   export let widgetState: WidgetState
   export let meetingMinutes: MeetingMinutes
+  export let room: Room
   export let height: string
   export let width: string
-
-  function replyToThread (message: ActivityMessage): void {
-    updateTabData(love.ids.MeetingWidget, 'transcription', { thread: message._id })
-  }
-  function closeThread (): void {
-    updateTabData(love.ids.MeetingWidget, 'transcription', { thread: undefined })
-  }
 </script>
 
 <ChannelEmbeddedContent
   {width}
   {height}
+  readonly
   object={meetingMinutes}
-  threadId={widgetState.tabs.find((tab) => tab.id === 'transcription')?.data?.thread}
+  threadId={undefined}
   collection="transcription"
-  on:channel={closeThread}
-  onReply={replyToThread}
   on:close
-/>
+>
+  <svelte:fragment slot="header">
+    <MeetingWidgetHeader doc={meetingMinutes} {room} on:close />
+  </svelte:fragment>
+</ChannelEmbeddedContent>

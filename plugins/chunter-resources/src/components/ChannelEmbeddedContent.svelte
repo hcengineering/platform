@@ -27,6 +27,7 @@
   export let threadId: Ref<ActivityMessage> | undefined
   export let collection: string | undefined = undefined
   export let withInput: boolean = true
+  export let readonly: boolean = false
   export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const notificationsClient = InboxNotificationsClientImpl.getClient()
@@ -43,6 +44,7 @@
 {#if renderChannel && visible}
   <div class="channel" class:invisible={threadId !== undefined} style:height style:width>
     {#key object._id}
+      <slot name="header" />
       <Channel
         {object}
         {context}
@@ -51,13 +53,14 @@
         {collection}
         {withInput}
         {onReply}
+        {readonly}
       />
     {/key}
   </div>
 {/if}
 {#if threadId && visible}
   <div class="thread" style:height style:width>
-    <ThreadView _id={threadId} syncLocation={false} {onReply} on:channel on:close />
+    <ThreadView _id={threadId} syncLocation={false} {onReply} {readonly} on:channel on:close />
   </div>
 {/if}
 

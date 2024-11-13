@@ -42,6 +42,7 @@
   export let context: DocNotifyContext | undefined
   export let autofocus = true
   export let embedded: boolean = false
+  export let readonly: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -54,7 +55,7 @@
     isThreadOpened = newLocation.path[4] != null
   })
 
-  $: readonly = hierarchy.isDerived(object._class, core.class.Space) ? (object as Space).archived : false
+  $: readonly = hierarchy.isDerived(object._class, core.class.Space) ? readonly || (object as Space).archived : readonly
   $: showJoinOverlay = shouldShowJoinOverlay(object)
   $: isDocChat = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
   $: withAside =

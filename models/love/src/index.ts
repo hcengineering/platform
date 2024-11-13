@@ -14,7 +14,14 @@
 //
 
 import contact, { type Employee, type Person } from '@hcengineering/contact'
-import { AccountRole, type Domain, DOMAIN_TRANSIENT, IndexKind, type Ref } from '@hcengineering/core'
+import {
+  AccountRole,
+  type Domain,
+  DOMAIN_TRANSIENT,
+  IndexKind,
+  type Ref,
+  type CollaborativeDoc
+} from '@hcengineering/core'
 import {
   type DevicesPreference,
   type Floor,
@@ -34,18 +41,21 @@ import {
 } from '@hcengineering/love'
 import {
   type Builder,
+  Collection,
   Collection as PropCollection,
   Hidden,
   Index,
   Mixin,
   Model,
   Prop,
+  ReadOnly,
+  TypeCollaborativeDoc,
   TypeRef,
   TypeString,
   UX
 } from '@hcengineering/model'
 import calendar, { TEvent } from '@hcengineering/model-calendar'
-import core, { TDoc } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import presentation from '@hcengineering/model-presentation'
 import view, { createAction } from '@hcengineering/model-view'
@@ -55,22 +65,32 @@ import setting from '@hcengineering/setting'
 import workbench, { WidgetType } from '@hcengineering/workbench'
 import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
+import attachment from '@hcengineering/attachment'
 
 import love from './plugin'
 
 export { loveId } from '@hcengineering/love'
 export * from './migration'
 export const DOMAIN_LOVE = 'love' as Domain
+export const DOMAIN_MEETING_MINUTES = 'meeting-minutes' as Domain
 
 @Model(love.class.Room, core.class.Doc, DOMAIN_LOVE)
+@UX(love.string.Room, love.icon.Love)
 export class TRoom extends TDoc implements Room {
-  name!: string
+  @Prop(TypeString(), core.string.Name)
+  @Index(IndexKind.FullText)
+    name!: string
+
+  @Prop(TypeCollaborativeDoc(), core.string.Description)
+  @Index(IndexKind.FullText)
+    description!: CollaborativeDoc
 
   type!: RoomType
 
   access!: RoomAccess
 
   @Prop(TypeRef(love.class.Floor), love.string.Floor)
+  @ReadOnly()
   // @Index(IndexKind.Indexed)
     floor!: Ref<Floor>
 
@@ -81,12 +101,20 @@ export class TRoom extends TDoc implements Room {
 
   language!: RoomLanguage
   startWithTranscription!: boolean
+
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
+    attachments?: number
+
+  @Prop(PropCollection(love.class.MeetingMinutes), love.string.MeetingMinutes)
+    meetings?: number
 }
 
 @Model(love.class.Office, love.class.Room)
+@UX(love.string.Office, love.icon.Love)
 export class TOffice extends TRoom implements Office {
   @Prop(TypeRef(contact.mixin.Employee), contact.string.Employee)
   @Index(IndexKind.Indexed)
+  @ReadOnly()
     person!: Ref<Employee> | null
 }
 
@@ -155,22 +183,27 @@ export class TMeeting extends TEvent implements Meeting {
   room!: Ref<Room>
 }
 
-@Model(love.class.MeetingMinutes, core.class.Doc, DOMAIN_LOVE)
-@UX(love.string.Meeting)
-export class TMeetingMinutes extends TDoc implements MeetingMinutes {
+@Model(love.class.MeetingMinutes, core.class.Doc, DOMAIN_MEETING_MINUTES)
+@UX(love.string.MeetingMinutes, love.icon.Cam)
+export class TMeetingMinutes extends TAttachedDoc implements MeetingMinutes {
   @Hidden()
     sid!: string
 
   @Prop(TypeString(), view.string.Title)
+  @Index(IndexKind.FullText)
     title!: string
 
-  @Prop(TypeRef(love.class.Room), love.string.Room)
-    room!: Ref<Room>
+  @Prop(TypeCollaborativeDoc(), core.string.Description)
+  @Index(IndexKind.FullText)
+    description!: CollaborativeDoc
 
-  @Prop(PropCollection(activity.class.ActivityMessage), love.string.Transcription)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
+    attachments?: number
+
+  @Prop(PropCollection(chunter.class.ChatMessage), love.string.Transcription)
     transcription?: number
 
-  @Prop(PropCollection(activity.class.ActivityMessage), activity.string.Messages)
+  @Prop(PropCollection(chunter.class.ChatMessage), activity.string.Messages)
     messages?: number
 }
 
@@ -384,12 +417,147 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: love.class.Room,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: love.class.Office,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: love.class.MeetingMinutes,
     components: { input: chunter.component.ChatMessageInput }
   })
 
+  builder.mixin(love.class.MeetingMinutes, core.class.Class, activity.mixin.ActivityDoc, {})
+
+  builder.mixin(love.class.Room, core.class.Class, activity.mixin.ActivityDoc, {})
+
   builder.mixin(love.class.MeetingMinutes, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: love.component.MeetingMinutesPresenter
+  })
+
+  builder.mixin(love.class.MeetingMinutes, core.class.Class, view.mixin.CollectionEditor, {
+    editor: love.component.MeetingMinutesSection
+  })
+
+  builder.mixin(love.class.MeetingMinutes, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: love.function.MeetingMinutesTitleProvider
+  })
+
+  builder.mixin(love.class.Room, core.class.Class, view.mixin.ObjectEditor, {
+    editor: love.component.EditRoom
+  })
+
+  builder.mixin(love.class.MeetingMinutes, core.class.Class, view.mixin.ObjectEditor, {
+    editor: love.component.EditMeetingMinutes
+  })
+
+  builder.mixin(love.class.Floor, core.class.Class, view.mixin.AttributeEditor, {
+    inlineEditor: love.component.FloorAttributePresenter
+  })
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: love.class.MeetingMinutes,
+      descriptor: view.viewlet.Table,
+      config: [
+        '',
+        { key: 'messages', displayProps: { key: 'messages', suffix: true } },
+        { key: 'transcription', displayProps: { key: 'transcription', suffix: true } },
+        'modifiedOn',
+        'modifiedBy'
+      ],
+      configOptions: {
+        hiddenKeys: ['description'],
+        sortable: true
+      },
+      options: {}
+    },
+    love.viewlet.TableMeetingMinutes
+  )
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: love.string.Floor,
+      icon: love.icon.Love,
+      component: love.component.FloorView
+    },
+    love.viewlet.FloorDescriptor
+  )
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: love.string.MeetingMinutes,
+      icon: view.icon.Table,
+      component: love.component.MeetingMinutesTable
+    },
+    love.viewlet.MeetingMinutesDescriptor
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: love.class.Floor,
+      descriptor: love.viewlet.FloorDescriptor,
+      config: []
+    },
+    love.viewlet.Floor
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: love.class.Floor,
+      descriptor: love.viewlet.MeetingMinutesDescriptor,
+      config: []
+    },
+    love.viewlet.FloorMeetingMinutes
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      label: chunter.string.Chat,
+      generated: false,
+      hidden: false,
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: chunter.class.ChatMessage,
+      attachedToClass: love.class.MeetingMinutes,
+      txMatch: {
+        'attributes.collection': 'messages'
+      },
+      defaultEnabled: false,
+      group: love.ids.LoveNotificationGroup
+    },
+    love.ids.MeetingMinutesChatNotification
+  )
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.InboxNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [love.ids.MeetingMinutesChatNotification]
+  })
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.PushNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [love.ids.MeetingMinutesChatNotification]
+  })
+
+  builder.mixin(love.class.MeetingMinutes, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: ['createdBy']
   })
 
   builder.mixin(love.class.Room, core.class.Class, core.mixin.IndexConfiguration, {

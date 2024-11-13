@@ -67,6 +67,10 @@
     "Meeting": "Встреча",
     "Transcription": "Транскрипция",
     "StartWithTranscription": "Начинать с транскрипцией",
-    "MeetingMinutes": "Протоколы встреч"
+    "MeetingMinutes": "Результаты встреч",
+    "StartMeeting": "Начать встречу",
+    "Video": "Видео",
+    "NoMeetingMinutes": "Нет результатов встреч",
+    "JoinMeeting": "Присоединиться к встрече"
   }
 }

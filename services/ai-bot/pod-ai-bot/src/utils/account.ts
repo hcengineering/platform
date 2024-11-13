@@ -64,6 +64,7 @@ export async function tryAssignToWorkspace (
     const info = await tryGetWorkspaceInfo(workspace, ctx)
 
     if (info === undefined) {
+      ctx.error('Workspace not found', { workspace })
       return false
     }
 

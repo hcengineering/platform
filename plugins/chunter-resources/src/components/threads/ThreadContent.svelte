@@ -14,6 +14,7 @@
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   export let message: ActivityMessage
   export let autofocus = true
+  export let readonly: boolean = false
   export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const client = getClient()
@@ -56,8 +57,8 @@
 
   $: messagesStore = dataProvider?.messagesStore
   $: readonly = hierarchy.isDerived(message.attachedToClass, core.class.Space)
-    ? (channel as Space)?.archived ?? false
-    : false
+    ? (readonly || (channel as Space)?.archived) ?? false
+    : readonly
 </script>
 
 <div class="hulyComponent-content hulyComponent-content__container noShrink">

@@ -23,11 +23,14 @@ import core, {
   TxMixin,
   TxProcessor,
   TxUpdateDoc,
-  UserStatus
+  UserStatus,
+  Doc,
+  concatLink
 } from '@hcengineering/core'
 import love, {
   Invite,
   JoinRequest,
+  MeetingMinutes,
   ParticipantInfo,
   RequestStatus,
   RoomAccess,
@@ -35,14 +38,15 @@ import love, {
   loveId
 } from '@hcengineering/love'
 import notification from '@hcengineering/notification'
-import { translate } from '@hcengineering/platform'
-import { TriggerControl } from '@hcengineering/server-core'
+import { getMetadata, translate } from '@hcengineering/platform'
+import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import {
   createPushNotification,
   getNotificationProviderControl,
   isAllowed
 } from '@hcengineering/server-notification-resources'
 import { workbenchId } from '@hcengineering/workbench'
+import view from '@hcengineering/view'
 
 export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
@@ -370,8 +374,31 @@ export async function OnInvite (txes: Tx[], control: TriggerControl): Promise<Tx
   return []
 }
 
+export async function meetingMinutesHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
+  const meetingMinutes = doc as MeetingMinutes
+  const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
+
+  const panelProps = [view.component.EditDoc, meetingMinutes._id, meetingMinutes._class]
+  const fragment = encodeURIComponent(panelProps.join('|'))
+  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${loveId}#${fragment}`
+  const link = concatLink(front, path)
+  return `<a href="${link}">${meetingMinutes.title}</a>`
+}
+
+/**
+ * @public
+ */
+export async function meetingMinutesTextPresenter (doc: Doc): Promise<string> {
+  const meetingMinutes = doc as MeetingMinutes
+  return meetingMinutes.title
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
+  function: {
+    MeetingMinutesHTMLPresenter: meetingMinutesHTMLPresenter,
+    MeetingMinutesTextPresenter: meetingMinutesTextPresenter
+  },
   trigger: {
     OnEmployee,
     OnUserStatus,

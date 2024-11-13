@@ -1,21 +1,57 @@
-<!--
-// Copyright © 2024 Hardcore Engineering Inc.
-//
-// Licensed under the Eclipse Public License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License. You may
-// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//
-// See the License for the specific language governing permissions and
-// limitations under the License.
--->
 <script lang="ts">
-  import { TableBrowser } from '@hcengineering/view-resources'
+  import { Floor, Room } from '@hcengineering/love'
+  import { Component } from '@hcengineering/ui'
+  import view, { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
+  import core, { WithLookup } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
 
-  import love from '../plugin'
+  import lovePlg from '../plugin'
+
+  export let floor: Floor
+  export let rooms: Room[] = []
+
+  const client = getClient()
+  let viewlet: WithLookup<Viewlet> | undefined
+  let viewOptions: ViewOptions | undefined
+  let preference: ViewletPreference | undefined
+
+  const preferenceQuery = createQuery()
+
+  void client
+    .findAll(
+      view.class.Viewlet,
+      { _id: lovePlg.viewlet.TableMeetingMinutes },
+      { lookup: { descriptor: view.class.ViewletDescriptor } }
+    )
+    .then((res) => {
+      viewlet = res[0]
+    })
+
+  $: preferenceQuery.query(
+    view.class.ViewletPreference,
+    {
+      space: core.space.Workspace,
+      attachedTo: lovePlg.viewlet.TableMeetingMinutes
+    },
+    (res) => {
+      preference = res[0]
+    },
+    { limit: 1 }
+  )
 </script>
 
-<TableBrowser _class={love.class.MeetingMinutes} query={{}} config={['', 'modifiedOn']} />
+{#if viewlet?.$lookup?.descriptor?.component}
+  <Component
+    is={viewlet.$lookup.descriptor.component}
+    props={{
+      _class: lovePlg.class.MeetingMinutes,
+      config: preference?.config ?? viewlet.config,
+      options: viewlet.options,
+      query: { attachedTo: { $in: rooms.map((p) => p._id) } },
+      viewlet,
+      viewOptions,
+      viewOptionsConfig: viewlet.viewOptions?.other,
+      enableChecking: false
+    }}
+  />
+{/if}

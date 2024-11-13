@@ -27,6 +27,7 @@ import {
   aiBotAccountEmail
 } from '@hcengineering/ai-bot'
 import { extractToken } from '@hcengineering/server-client'
+import { MeasureContext } from '@hcengineering/core'
 
 import { ApiError } from './error'
 import { AIControl } from '../controller'
@@ -54,7 +55,7 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
   void handleRequest(fn, req, res, next)
 }
 
-export function createServer (controller: AIControl): Express {
+export function createServer (controller: AIControl, ctx: MeasureContext): Express {
   const app = express()
   app.use(cors())
   app.use(express.json())
@@ -78,6 +79,7 @@ export function createServer (controller: AIControl): Express {
   app.post(
     '/connect',
     wrapRequest(async (_, res, token) => {
+      ctx.info('Request to connect to workspace', { workspace: token.workspace.name })
       await controller.connect(token.workspace.name)
 
       res.status(200)
