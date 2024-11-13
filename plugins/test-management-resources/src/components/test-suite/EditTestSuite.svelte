@@ -27,7 +27,7 @@
   export let _id: Ref<TestSuite>
   export let _class: Ref<Class<TestSuite>>
 
-  let object: TestSuite | undefined
+  let object: TestSuite
 
   const dispatch = createEventDispatcher()
   const client = getClient()

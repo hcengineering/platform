@@ -19,20 +19,27 @@
   import { StyledTextArea } from '@hcengineering/text-editor-resources'
   import { TestSuite, TestProject } from '@hcengineering/test-management'
   import { EditBox } from '@hcengineering/ui'
+  import { ObjectBox } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import testManagement from '../../plugin'
   import ProjectPresenter from '../project/ProjectSpacePresenter.svelte'
 
   export let space: Ref<TestProject>
+  export let parentId: Ref<TestSuite> = testManagement.ids.NoParent
   const dispatch = createEventDispatcher()
   const client = getClient()
 
   const object: Data<TestSuite> = {
     name: '' as IntlString,
-    description: ''
+    description: '',
+    parent: parentId
   }
 
   let _space = space
+
+  function handleTestSuiteChange (evt: CustomEvent<Ref<TestSuite>>): void {
+    object.parent = evt.detail
+  }
 
   async function onSave () {
     await client.createDoc(testManagement.class.TestSuite, _space, object)
@@ -57,6 +64,23 @@
       size={'large'}
       component={ProjectPresenter}
       defaultIcon={testManagement.icon.Home}
+    />
+    <ObjectBox
+      _class={testManagement.class.TestSuite}
+      value={parentId}
+      docQuery={{
+        space: _space
+      }}
+      on:change={handleTestSuiteChange}
+      kind={'regular'}
+      size={'small'}
+      label={testManagement.string.NoTestSuite}
+      icon={testManagement.icon.TestSuite}
+      searchField={'title'}
+      allowDeselect={true}
+      showNavigate={false}
+      docProps={{ disabled: true, noUnderline: true }}
+      focusIndex={20000}
     />
   </svelte:fragment>
   <EditBox

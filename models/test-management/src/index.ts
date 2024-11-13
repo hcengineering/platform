@@ -101,6 +101,7 @@ function defineApplication (
                     createComponent: testManagement.component.CreateTestSuite,
                     titleKey: 'name',
                     parentKey: 'parent',
+                    noParentId: testManagement.ids.NoParent,
                     getFolderLink: testManagement.function.GetTestSuiteLink,
                     allObjectsLabel: testManagement.string.AllTestCases,
                     allObjectsIcon: testManagement.icon.TestSuites

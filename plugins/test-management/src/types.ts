@@ -82,7 +82,8 @@ export interface TestSuite extends Doc {
   space: Ref<TestProject>
   name: string
   description?: string
-  parent?: Ref<TestSuite>
+  parent: Ref<TestSuite>
+  testCases?: CollectionSize<TestCase>
 }
 
 /** @public */
@@ -92,10 +93,6 @@ export interface TestCase extends AttachedDoc {
   type: TestCaseType
   priority: TestCasePriority
   status: TestCaseStatus
-  // Estimated time in minutes
-  estimatedTime: number
-  preconditions?: string
-  steps?: string
   suite: Ref<TestSuite>
   assignee: Ref<Employee>
   attachments?: CollectionSize<Attachment>
@@ -118,7 +115,7 @@ export enum TestRunResult {
 }
 
 /** @public */
-export interface TestRunItem extends Doc {
+export interface TestRunItem extends AttachedDoc {
   testRun: Ref<TestRun>
   testCase: Ref<TestCase>
   result?: TestRunResult

@@ -122,7 +122,12 @@ export class TTestSuite extends TDoc implements TestSuite {
     description?: string
 
   @Prop(TypeRef(testManagement.class.TestSuite), testManagement.string.TestSuite)
-    parent?: Ref<TestSuite>
+    parent!: Ref<TestSuite>
+
+  @Prop(Collection(testManagement.class.TestCase), testManagement.string.TestCases, {
+    shortLabel: testManagement.string.TestCase
+  })
+    testCases?: CollectionSize<TestCase>
 
   declare space: Ref<TestProject>
 }
@@ -130,7 +135,7 @@ export class TTestSuite extends TDoc implements TestSuite {
 /**
  * @public
  */
-@Model(testManagement.class.TestCase, core.class.Doc, DOMAIN_TEST_MANAGEMENT)
+@Model(testManagement.class.TestCase, core.class.AttachedDoc, DOMAIN_TEST_MANAGEMENT)
 @UX(testManagement.string.TestCase, testManagement.icon.TestCase, testManagement.string.TestCase)
 export class TTestCase extends TAttachedDoc implements TestCase {
   @Prop(TypeString(), testManagement.string.TestName)
@@ -187,7 +192,7 @@ export class TTestRun extends TDoc implements TestRun {
     description!: CollaborativeDoc
 
   @Prop(TypeDate(DateRangeMode.DATETIME), testManagement.string.DueDate)
-  declare dueDate?: Timestamp
+    dueDate?: Timestamp
 
   @Prop(Collection(testManagement.class.TestRunItem), testManagement.string.TestRunItems, {
     shortLabel: testManagement.string.TestRunItem
@@ -204,9 +209,9 @@ export function TypeTestRunResult (): Type<TestRunResult> {
 @UX(testManagement.string.TestRunResult)
 export class TTypeTestRunResult extends TType {}
 
-@Model(testManagement.class.TestRunItem, core.class.Doc, DOMAIN_TEST_MANAGEMENT)
+@Model(testManagement.class.TestRunItem, core.class.AttachedDoc, DOMAIN_TEST_MANAGEMENT)
 @UX(testManagement.string.TestRunItem)
-export class TTestRunItem extends TDoc implements TestRunItem {
+export class TTestRunItem extends TAttachedDoc implements TestRunItem {
   @Prop(TypeRef(testManagement.class.TestRun), testManagement.string.TestRun)
     testRun!: Ref<TestRun>
 

@@ -28,19 +28,18 @@
   export let query: DocumentQuery<Doc>
   export let titleKey: string = 'title'
   export let parentKey: string = 'parent'
+  export let noParentId: Ref<Doc>
   export let getFolderLink: Resource<(doc: Ref<Doc> | undefined) => Location>
-  export let getFolderIdFromFragment: Resource<(fragment: string) => Ref<Doc> | undefined>
   export let allObjectsIcon: Asset
   export let allObjectsLabel: IntlString
 
-  export let currentFragment: string | undefined
   export let forciblyСollapsed: boolean = false
 
   const client = getClient()
 
   let foldersState: FoldersState = FoldersState.empty()
 
-  const foldersManager: FoldersManager = new FoldersManager(titleKey, parentKey)
+  const foldersManager: FoldersManager = new FoldersManager(titleKey, parentKey, noParentId)
 
   FoldersStore.subscribe((newState) => {
     foldersState = newState
@@ -74,7 +73,7 @@
   }
 
   async function handleAllItemsSelected (): Promise<void> {
-    selected = undefined
+    selected = noParentId
     visibleItem = undefined
     const getFolderLinkFunction = await getResource(getFolderLink)
     navigate(getFolderLinkFunction(undefined))
@@ -103,9 +102,10 @@
 
 <div class="folders-browser">
   <TreeNode
+    _id={noParentId}
     icon={allObjectsIcon}
     label={allObjectsLabel}
-    selected={!selected}
+    selected={selected === noParentId}
     type={'nested-selectable'}
     empty={foldersState?.folders?.length === 0}
     actions={() => getRootActions()}
@@ -117,7 +117,6 @@
       descendants={foldersState.descendants}
       folderById={foldersState.folderById}
       {selected}
-      {titleKey}
       on:selected={(ev) => {
         handleFolderSelected(ev.detail)
       }}

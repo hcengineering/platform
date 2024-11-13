@@ -23,19 +23,18 @@
 
   export let folders: Ref<Doc>[]
   export let folderById: Map<Ref<Doc>, Doc>
-  export let descendants: Map<Ref<Doc> | null, Doc[]>
+  export let descendants: Map<Ref<Doc>, Doc[]>
 
   export let selected: Ref<Doc> | undefined
   export let level: number = 0
   export let once: boolean = false
-  export let titleKey = 'title'
 
   const dispatch = createEventDispatcher()
 
   const client = getClient()
 
   function getTitle (doc: Doc): string {
-    return ((doc || {}) as any)[titleKey] || ''
+    return (doc as any)?.title || ''
   }
 
   function getDescendants (obj: Ref<Doc>): Ref<Doc>[] {
@@ -83,6 +82,12 @@
       on:click={() => {
         handleSelected(doc._id)
       }}
-    />
+    >
+      <svelte:fragment slot="dropbox">
+        {#if desc.length > 0 && !once}
+          <svelte:self folders={desc} {descendants} {folderById} {selected} level={level + 1} on:selected />
+        {/if}
+      </svelte:fragment>
+    </TreeItem>
   {/if}
 {/each}

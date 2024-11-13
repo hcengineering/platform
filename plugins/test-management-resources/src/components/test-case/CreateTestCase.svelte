@@ -63,7 +63,15 @@
   async function createTestCase (): Promise<void> {
     const op = client.apply()
     await updateMarkup(object.description, { description })
-    await op.createDoc(testManagement.class.TestCase, _space, object, id)
+    await op.addCollection(
+      testManagement.class.TestCase,
+      _space,
+      testSuiteId ?? testManagement.ids.NoParent,
+      testManagement.class.TestSuite,
+      'testCases',
+      object,
+      id
+    )
     await descriptionBox.createAttachments(id, op)
 
     if (onCreate !== undefined) {

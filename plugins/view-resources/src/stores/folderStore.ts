@@ -17,9 +17,9 @@ import { writable, type Writable } from 'svelte/store'
 export class FoldersState {
   folders: Array<Ref<Doc>>
   folderById: Map<Ref<Doc>, Doc>
-  descendants: Map<Ref<Doc> | null, Doc[]>
+  descendants: Map<Ref<Doc>, Doc[]>
 
-  constructor (folders: Array<Ref<Doc>>, folderById: Map<Ref<Doc>, Doc>, descendants: Map<Ref<Doc> | null, Doc[]>) {
+  constructor (folders: Array<Ref<Doc>>, folderById: Map<Ref<Doc>, Doc>, descendants: Map<Ref<Doc>, Doc[]>) {
     this.folders = folders
     this.folderById = folderById
     this.descendants = descendants
@@ -41,21 +41,23 @@ export function setSelectedFolder (_id: Ref<Doc> | undefined): void {
 export class FoldersManager {
   titleKey: string
   parentKey: string
+  noParentId: Ref<Doc>
 
-  constructor (titleKey: string, parentKey: string) {
+  constructor (titleKey: string, parentKey: string, noParentId: Ref<Doc>) {
     this.titleKey = titleKey
     this.parentKey = parentKey
+    this.noParentId = noParentId
   }
 
   public getTitle (doc: Doc): string {
     return (doc as any)?.[this.titleKey] ?? ''
   }
 
-  public getParent (doc: Doc): Ref<Doc> | null {
-    return (doc as any)?.[this.parentKey] ?? null
+  public getParent (doc: Doc): Ref<Doc> {
+    return (doc as any)?.[this.parentKey] ?? this.noParentId
   }
 
-  public getDescendants (descendants: Map<Ref<Doc> | null, Doc[]>, obj: Ref<Doc> | null): Array<Ref<Doc>> {
+  public getDescendants (descendants: Map<Ref<Doc>, Doc[]>, obj: Ref<Doc>): Array<Ref<Doc>> {
     return (descendants.get(obj) ?? [])
       .sort((a, b) => this.getTitle(a).localeCompare(this.getTitle(b)))
       .map((p) => p._id)
@@ -64,16 +66,21 @@ export class FoldersManager {
   public setFolders (result: Doc[]): void {
     let folders: Array<Ref<Doc>> = []
     const folderById: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
-    const descendants: Map<Ref<Doc> | null, Doc[]> = new Map<Ref<Doc>, Doc[]>()
+    const descendants: Map<Ref<Doc>, Doc[]> = new Map<Ref<Doc>, Doc[]>()
 
     for (const doc of result) {
-      const current = descendants.get(this.getParent(doc)) ?? []
-      current.push(doc)
-      descendants.set(this.getParent(doc), current)
-      folderById.set(doc._id, doc)
+      const mappedDoc = {
+        title: this.getTitle(doc),
+        parent: this.getParent(doc),
+        ...doc
+      }
+      const current = descendants.get(this.getParent(mappedDoc)) ?? []
+      current.push(mappedDoc)
+      descendants.set(this.getParent(mappedDoc), current)
+      folderById.set(mappedDoc._id, mappedDoc)
     }
 
-    folders = this.getDescendants(descendants, null)
+    folders = this.getDescendants(descendants, this.noParentId)
     FoldersStore.set(new FoldersState(folders, folderById, descendants))
   }
 }
