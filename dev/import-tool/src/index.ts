@@ -134,7 +134,7 @@ export function importTool (): void {
 
   // import-clickup-tasks /home/anna/work/clickup/aleksandr/debug/tasks.csv --workspace ws1 --user user1 --password 1234
   program
-    .command('import-huly-issues <dir>')
+    .command('import-huly-format <dir>')
     .description('import issues in Unified Huly Format')
     .requiredOption('-u, --user <user>', 'user')
     .requiredOption('-pw, --password <password>', 'password')

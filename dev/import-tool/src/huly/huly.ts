@@ -161,7 +161,7 @@ class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
                 })
               }
             } else {
-              console.warn('unknown link, leave as is:', fullPath)
+              console.log('Unknown link type, leave it as is:', href)
             }
           }
         })
@@ -319,8 +319,8 @@ export class HulyImporter {
   ) {}
 
   async importHulyFolder (folderPath: string): Promise<void> {
-    await this.fillPersonsByNames()
-    await this.fillAccountsByEmails()
+    await this.cachePersonsByNames()
+    await this.cacheAccountsByEmails()
 
     const workspaceData = await this.processHulyFolder(folderPath)
 
@@ -601,7 +601,7 @@ export class HulyImporter {
     }
   }
 
-  private async fillPersonsByNames (): Promise<void> {
+  private async cachePersonsByNames (): Promise<void> {
     this.personsByName = (await this.client.findAll(contact.class.Person, {}))
       .map((person) => {
         return {
@@ -615,7 +615,7 @@ export class HulyImporter {
       }, new Map())
   }
 
-  private async fillAccountsByEmails (): Promise<void> {
+  private async cacheAccountsByEmails (): Promise<void> {
     const accounts = await this.client.findAll(contact.class.PersonAccount, {})
     this.accountsByEmail = accounts.reduce((map, account) => {
       map.set(account.email, account._id)
