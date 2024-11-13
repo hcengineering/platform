@@ -138,10 +138,10 @@ export class ImportWorkspaceBuilder {
   build (): ImportWorkspace {
     const validation = this.validate()
     if (this.strictMode && !validation.isValid) {
-      throw new Error('Invalid workspace: ' +
+      throw new Error('Invalid workspace: \n' +
         Array.from(validation.errors.values())
-          .map(e => `${e.path}: ${e.error}`)
-          .join(', ')
+          .map(e => `    * ${e.path}: ${e.error}`)
+          .join(';\n')
       )
     }
 
@@ -192,12 +192,11 @@ export class ImportWorkspaceBuilder {
   ): void {
     const errors = validator(item)
     if (errors.length > 0) {
-      this.addError(path, `Invalid ${type}: ${errors.join(', ')}`)
+      this.addError(path, `Invalid ${type} at ${path}: \n${errors.map(e => `    * ${e}`).join('\n')}`)
       if (this.strictMode) {
-        throw new Error(`Invalid ${type} at ${path}: ${errors.join(', ')}`)
+        throw new Error(`Invalid ${type} at ${path}: \n${errors.map(e => `    * ${e}`).join('\n')}`)
       }
     } else {
-      // Используем path как ключ, если key не предоставлен
       collection.set((key ?? path) as K, item)
     }
   }
@@ -217,7 +216,7 @@ export class ImportWorkspaceBuilder {
   private validateProject (project: ImportProject): string[] {
     const errors: string[] = []
     if (!this.validateStringDefined(project.title)) {
-      errors.push('name is required')
+      errors.push('title is required')
     }
     if (!this.validateStringDefined(project.identifier)) {
       errors.push('identifier is required')
@@ -231,7 +230,7 @@ export class ImportWorkspaceBuilder {
   private validateTeamspace (teamspace: ImportTeamspace): string[] {
     const errors: string[] = []
     if (!this.validateStringDefined(teamspace.title)) {
-      errors.push('name is required')
+      errors.push('title is required')
     }
     if (teamspace.class !== 'document.class.TeamSpace') {
       errors.push('invalid class')
@@ -244,13 +243,13 @@ export class ImportWorkspaceBuilder {
     if (!this.validateStringDefined(issue.title)) {
       errors.push('title is required')
     }
-    if (issue.status === undefined || issue.status === null) {
+    if (issue.status == null) {
       errors.push('status is required')
     }
     if (issue.class !== 'tracker.class.Issue') {
       errors.push('invalid class')
     }
-    if (issue.number === undefined || issue.number <= 0) {
+    if (issue.number == null || issue.number <= 0) {
       errors.push('valid issue number is required')
     }
     return errors

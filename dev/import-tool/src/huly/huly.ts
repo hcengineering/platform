@@ -66,7 +66,7 @@ interface HulySpaceHeader {
 
 interface HulyProjectHeader extends HulySpaceHeader {
   class: 'tracker.class.Project'
-  identifier?: string
+  identifier: string
   projectType?: string
   defaultAssignee?: string
   defaultIssueStatus?: string
@@ -390,7 +390,7 @@ export class HulyImporter {
 
         switch (spaceConfig.class) {
           case 'tracker.class.Project': {
-            const project = await this.processProject(spacePath, folder, spaceConfig as HulyProjectHeader)
+            const project = await this.processProject(spaceConfig as HulyProjectHeader)
             builder.addProject(spacePath, project)
 
             // Process all issues recursively and add them to builder
@@ -399,7 +399,7 @@ export class HulyImporter {
           }
 
           case 'document.class.TeamSpace': {
-            const teamspace = await this.processTeamspace(spacePath, folder, spaceConfig as HulyTeamSpaceHeader)
+            const teamspace = await this.processTeamspace(spaceConfig as HulyTeamSpaceHeader)
             builder.addTeamspace(spacePath, teamspace)
 
             // Process all documents recursively and add them to builder
@@ -494,7 +494,7 @@ export class HulyImporter {
         const doc: ImportDocument = {
           id: docMeta.id as Ref<Document>,
           class: 'document:class:Document',
-          title: docHeader.title ?? path.basename(docFile, '.md'),
+          title: docHeader.title,
           descrProvider: async () => await this.readMarkdownContent(docPath),
           subdocs: [] // Will be added via builder
         }
@@ -533,8 +533,6 @@ export class HulyImporter {
   }
 
   private async processProject (
-    spacePath: string,
-    name: string,
     projectHeader: HulyProjectHeader
   ): Promise<ImportProject> {
     const projectType = projectHeader.projectType !== undefined
@@ -543,8 +541,8 @@ export class HulyImporter {
 
     return {
       class: projectHeader.class,
-      title: projectHeader.title ?? name,
-      identifier: projectHeader.identifier ?? name.toLowerCase().replace(/\s+/g, '-'),
+      title: projectHeader.title,
+      identifier: projectHeader.identifier,
       private: projectHeader.private ?? false,
       autoJoin: projectHeader.autoJoin ?? true,
       projectType,
@@ -562,13 +560,11 @@ export class HulyImporter {
   }
 
   private async processTeamspace (
-    spacePath: string,
-    name: string,
     spaceHeader: HulyTeamSpaceHeader
   ): Promise<ImportTeamspace> {
     return {
       class: spaceHeader.class,
-      title: spaceHeader.title ?? name,
+      title: spaceHeader.title,
       private: spaceHeader.private ?? false,
       autoJoin: spaceHeader.autoJoin ?? true,
       owners: spaceHeader.owners?.map(email => ({ name: '', email })),
@@ -636,7 +632,6 @@ export class HulyImporter {
           if (!this.metadataByFilePath.has(fullPath)) {
             const attachmentId = generateId<Attachment>()
             this.attachMetadataByPath.set(fullPath, { id: attachmentId, name: entry.name, path: fullPath })
-            console.log(`Found attachment: ${fullPath} -> ${attachmentId}`)
           }
         }
       }

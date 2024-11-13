@@ -412,7 +412,10 @@ export class WorkspaceImporter {
     const content = await issue.descrProvider()
     const collabId = await this.createCollaborativeContent(issueId, 'description', content, project._id)
 
-    const { number, identifier } = await this.getNextIssueIdentifier(project)
+    const { number, identifier } = issue.number !== undefined
+      ? { number: issue.number, identifier: `${project.identifier}-${issue.number}` }
+      : await this.getNextIssueIdentifier(project)
+
     const kind = await this.getIssueKind(project)
     const rank = await this.getIssueRank(project)
     const status = await this.findIssueStatusByName(issue.status.name)
