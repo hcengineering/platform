@@ -54,13 +54,12 @@ import tracker, {
 import { type FileUploader, type UploadResult } from './uploader'
 
 export interface ImportWorkspace {
-  persons?: ImportPerson[]
   projectTypes?: ImportProjectType[]
   spaces?: ImportSpace<ImportDoc>[]
   attachments?: ImportAttachment[]
 }
 
-export interface ImportPerson {
+export interface ImportContact {
   name: string
   email: string
 }
@@ -88,8 +87,8 @@ export interface ImportSpace<T extends ImportDoc> {
   private: boolean
   autoJoin: boolean
   description?: string
-  owners?: ImportPerson[]
-  members?: ImportPerson[]
+  owners?: ImportContact[]
+  members?: ImportContact[]
   docs: T[]
 }
 export interface ImportDoc {
@@ -114,7 +113,7 @@ export interface ImportProject extends ImportSpace<ImportIssue> {
   class: 'tracker.class.Project'
   identifier: string
   projectType?: ImportProjectType
-  defaultAssignee?: ImportPerson
+  defaultAssignee?: ImportContact
   defaultIssueStatus?: ImportStatus
   description?: string
 }
@@ -281,7 +280,7 @@ export class WorkspaceImporter {
     return teamspaceId
   }
 
-  private async findAccountsIfAny (contacts?: ImportPerson[]): Promise<Ref<Account>[]> {
+  private async findAccountsIfAny (contacts?: ImportContact[]): Promise<Ref<Account>[]> {
     if (contacts === undefined || contacts.length === 0) {
       return []
     }

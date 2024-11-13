@@ -29,7 +29,7 @@ import {
   type ImportDoc,
   type ImportDocument,
   type ImportIssue,
-  type ImportPerson,
+  type ImportContact,
   type ImportProject,
   type ImportProjectType,
   type ImportSpace,
@@ -355,7 +355,7 @@ export class HulyImporter {
     const spaces = await this.processSpaces(folderPath)
 
     return {
-      persons,
+      contacts: persons,
       projectTypes,
       spaces
     }
@@ -502,7 +502,7 @@ export class HulyImporter {
     return match != null ? match[1] : content
   }
 
-  private processPersons (wsHeader: HulyWorkspaceSettings): ImportPerson[] {
+  private processPersons (wsHeader: HulyWorkspaceSettings): ImportContact[] {
     return wsHeader.persons?.map(person => ({
       name: person.name,
       email: person.email
