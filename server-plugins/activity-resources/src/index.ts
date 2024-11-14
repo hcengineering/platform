@@ -250,7 +250,8 @@ export async function generateDocUpdateMessages (
   tx: TxCUD<Doc>,
   control: ActivityControl,
   res: TxCUD<DocUpdateMessage>[] = [],
-  objectCache?: DocObjectCache
+  objectCache?: DocObjectCache,
+  skipAttached: boolean = false
 ): Promise<TxCUD<DocUpdateMessage>[]> {
   if (tx.space === core.space.DerivedTx) {
     return res
@@ -287,7 +288,8 @@ export async function generateDocUpdateMessages (
     }
   }
 
-  if (tx.attachedTo !== undefined && tx.attachedToClass !== undefined) {
+  if (tx.attachedTo !== undefined && tx.attachedToClass !== undefined && !skipAttached) {
+    res = await generateDocUpdateMessages(ctx, tx, control, res, objectCache, true)
     if ([core.class.TxCreateDoc, core.class.TxRemoveDoc].includes(tx._class)) {
       if (!isActivityDoc(tx.attachedToClass, control.hierarchy)) {
         return res

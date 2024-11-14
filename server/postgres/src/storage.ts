@@ -1495,7 +1495,7 @@ class PostgresAdapter extends PostgresAdapterBase {
     return ctx.with('update jsonb_set', {}, async (_ctx) => {
       const updates: string[] = ['"modifiedBy" = $1', '"modifiedOn" = $2']
       const params: any[] = [tx.modifiedBy, tx.modifiedOn, tx.objectId, this.workspaceId.name]
-      let paramsIndex = params.length + 1 = params.length + 1
+      let paramsIndex = params.length + 1
       const domain = this.hierarchy.getDomain(tx.objectClass)
       const { extractedFields, remainingData } = parseUpdate(domain, tx.operations)
       const { space, attachedTo, ...ops } = tx.operations as any
