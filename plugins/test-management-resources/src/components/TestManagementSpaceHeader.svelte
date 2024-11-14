@@ -109,7 +109,6 @@
         justify={'left'}
         kind={'primary'}
         label={testManagement.string.CreateTestCase}
-        mainButtonId={'new-document'}
         dropdownIcon={IconDropdown}
         {dropdownItems}
         disabled={currentSpace === undefined}
