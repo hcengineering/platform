@@ -15,7 +15,6 @@
 
 import core, {
   AccountRole,
-  type AttachedDoc,
   type Class,
   type Doc,
   type DocInfo,
@@ -44,7 +43,6 @@ import core, {
   type StorageIterator,
   toFindResult,
   type Tx,
-  type TxCollectionCUD,
   type TxCreateDoc,
   type TxCUD,
   type TxMixin,
@@ -1380,8 +1378,6 @@ class PostgresAdapter extends PostgresAdapterBase {
     switch (tx._class) {
       case core.class.TxCreateDoc:
         return await this.txCreateDoc(ctx, tx as TxCreateDoc<Doc>)
-      case core.class.TxCollectionCUD:
-        return await this.txCollectionCUD(ctx, tx as TxCollectionCUD<Doc, AttachedDoc>)
       case core.class.TxUpdateDoc:
         return await this.txUpdateDoc(ctx, tx as TxUpdateDoc<Doc>)
       case core.class.TxRemoveDoc:
@@ -1395,28 +1391,6 @@ class PostgresAdapter extends PostgresAdapterBase {
         console.error('Unknown/Unsupported operation:', tx._class, tx)
         break
     }
-  }
-
-  protected async txCollectionCUD (
-    ctx: MeasureContext,
-    tx: TxCollectionCUD<Doc, AttachedDoc>
-  ): Promise<TxResult | undefined> {
-    // We need update only create transactions to contain attached, attachedToClass.
-    if (tx.tx._class === core.class.TxCreateDoc) {
-      const createTx = tx.tx as TxCreateDoc<AttachedDoc>
-      const d: TxCreateDoc<AttachedDoc> = {
-        ...createTx,
-        attributes: {
-          ...createTx.attributes,
-          attachedTo: tx.objectId,
-          attachedToClass: tx.objectClass,
-          collection: tx.collection
-        }
-      }
-      return await this.txCreateDoc(ctx, d)
-    }
-    // We could cast since we know collection cud is supported.
-    return await this.process(ctx, tx.tx as Tx)
   }
 
   private async txMixin (ctx: MeasureContext, tx: TxMixin<Doc, Doc>): Promise<TxResult> {

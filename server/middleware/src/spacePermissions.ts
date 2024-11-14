@@ -14,7 +14,6 @@
 //
 import core, {
   Account,
-  AttachedDoc,
   Class,
   Doc,
   Permission,
@@ -26,7 +25,6 @@ import core, {
   Tx,
   TxApplyIf,
   TxCUD,
-  TxCollectionCUD,
   TxCreateDoc,
   TxMixin,
   TxProcessor,
@@ -245,46 +243,34 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     return this.context.hierarchy.isDerived(tx.objectClass, core.class.Space)
   }
 
-  private isTxCollectionCUD (tx: TxCUD<Doc>): tx is TxCollectionCUD<Doc, AttachedDoc> {
-    return this.context.hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)
-  }
-
   private isRoleTxCUD (tx: TxCUD<Doc>): tx is TxCUD<Role> {
     return this.context.hierarchy.isDerived(tx.objectClass, core.class.Role)
   }
 
-  private handlePermissionsUpdatesFromRoleTx (ctx: MeasureContext, tx: TxCUD<Doc>): void {
-    if (!this.isTxCollectionCUD(tx)) {
+  private handlePermissionsUpdatesFromRoleTx (ctx: MeasureContext, actualTx: TxCUD<Doc>): void {
+    if (actualTx._class !== core.class.TxUpdateDoc) {
       return
     }
 
-    const actualTx = TxProcessor.extractTx(tx)
-    if (!TxProcessor.isExtendsCUD(actualTx._class)) {
+    const targetSpaceTypeId = actualTx.attachedTo
+    if (targetSpaceTypeId === undefined) {
       return
     }
 
-    const actualCudTx = actualTx as TxCUD<Doc>
-
-    if (!this.isRoleTxCUD(actualCudTx)) {
+    if (!this.isRoleTxCUD(actualTx)) {
       return
     }
 
     // We are only interested in updates of the existing roles because:
     // When role is created it always has empty set of permissions
     // And it's not currently possible to delete a role
-
-    if (actualCudTx._class !== core.class.TxUpdateDoc) {
-      return
-    }
-
-    const updateTx = actualCudTx as TxUpdateDoc<Role>
+    const updateTx = actualTx as TxUpdateDoc<Role>
 
     if (updateTx.operations.permissions === undefined) {
       return
     }
 
     // Find affected spaces
-    const targetSpaceTypeId = tx.objectId
     const affectedSpacesIds = Object.entries(this.typeBySpace)
       .filter(([, typeId]) => typeId === targetSpaceTypeId)
       .map(([spaceId]) => spaceId) as Ref<TypedSpace>[]
@@ -358,12 +344,6 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
         this.checkPermissions(ctx, t)
       }
       return
-    }
-
-    if (tx._class === core.class.TxCollectionCUD) {
-      const actualTx = TxProcessor.extractTx(tx)
-
-      this.checkPermissions(ctx, actualTx)
     }
 
     const cudTx = tx as TxCUD<Doc>

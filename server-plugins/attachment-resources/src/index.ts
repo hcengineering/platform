@@ -16,7 +16,6 @@
 
 import type { Attachment } from '@hcengineering/attachment'
 import type { Tx, TxRemoveDoc } from '@hcengineering/core'
-import { TxProcessor } from '@hcengineering/core'
 import type { TriggerControl } from '@hcengineering/server-core'
 
 /**
@@ -28,7 +27,7 @@ export async function OnAttachmentDelete (
 ): Promise<Tx[]> {
   const toDelete: string[] = []
   for (const tx of txes) {
-    const rmTx = TxProcessor.extractTx(tx) as TxRemoveDoc<Attachment>
+    const rmTx = tx as TxRemoveDoc<Attachment>
 
     // Obtain document being deleted.
     const attach = removedMap.get(rmTx.objectId) as Attachment

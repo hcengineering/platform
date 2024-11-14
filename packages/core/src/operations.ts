@@ -123,7 +123,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
       modifiedBy
     )
     await this.tx(tx)
-    return tx.tx.objectId as unknown as Ref<P>
+    return tx.objectId as unknown as Ref<P>
   }
 
   async updateCollection<T extends Doc, P extends AttachedDoc>(
@@ -148,7 +148,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
       modifiedBy
     )
     await this.tx(tx)
-    return tx.objectId
+    return attachedTo
   }
 
   async removeCollection<T extends Doc, P extends AttachedDoc>(
@@ -171,7 +171,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
       modifiedBy
     )
     await this.tx(tx)
-    return tx.objectId
+    return attachedTo
   }
 
   updateDoc<T extends Doc>(

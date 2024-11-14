@@ -21,6 +21,7 @@ import aiBot, {
   DisconnectMeetingRequest,
   IdentityResponse
 } from '@hcengineering/ai-bot'
+import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-collector'
 import chunter, {
   ChatMessage,
   type ChatWidgetTab,
@@ -50,29 +51,28 @@ import core, {
   Ref,
   Space,
   Tx,
+  TxCUD,
   TxOperations,
-  TxProcessor,
   TxRemoveDoc
 } from '@hcengineering/core'
+import { Room } from '@hcengineering/love'
 import { countTokens } from '@hcengineering/openai'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getOrCreateOnboardingChannel } from '@hcengineering/server-analytics-collector-resources'
 import { BlobClient, login } from '@hcengineering/server-client'
+import { generateToken } from '@hcengineering/server-token'
 import { jsonToMarkup, MarkdownParser, markupToText } from '@hcengineering/text'
+import workbench, { SidebarEvent, TxSidebarEvent } from '@hcengineering/workbench'
 import fs from 'fs'
 import { WithId } from 'mongodb'
 import OpenAI from 'openai'
-import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-collector'
-import workbench, { SidebarEvent, TxSidebarEvent } from '@hcengineering/workbench'
-import { generateToken } from '@hcengineering/server-token'
-import { Room } from '@hcengineering/love'
 
 import config from '../config'
 import { AIControl } from '../controller'
-import { connectPlatform, getDirect } from '../utils/platform'
 import { HistoryRecord } from '../types'
-import { LoveController } from './love'
 import { createChatCompletion, requestSummary } from '../utils/openai'
+import { connectPlatform, getDirect } from '../utils/platform'
+import { LoveController } from './love'
 
 const MAX_LOGIN_DELAY_MS = 15 * 1000 // 15 ses
 const UPDATE_TYPING_TIMEOUT_MS = 1000
@@ -133,7 +133,7 @@ export class WorkspaceClient {
     const typing = await opClient.findAll(chunter.class.TypingInfo, { user: aiBot.account.AIBot })
     this.typingMap = new Map(typing.map((t) => [t.objectId, t]))
     this.client.notify = (...txes: Tx[]) => {
-      void this.txHandler(opClient, txes)
+      void this.txHandler(opClient, txes as TxCUD<Doc>[])
     }
     this.ctx.info('Initialized workspace', { workspace: this.workspace })
 
@@ -631,14 +631,12 @@ export class WorkspaceClient {
     }
   }
 
-  protected async txHandler (_: TxOperations, txes: Tx[]): Promise<void> {
+  protected async txHandler (_: TxOperations, txes: TxCUD<Doc>[]): Promise<void> {
     if (this.love !== undefined) {
       this.love.txHandler(txes)
     }
 
-    for (const ttx of txes) {
-      const tx = TxProcessor.extractTx(ttx)
-
+    for (const tx of txes) {
       if (tx._class === core.class.TxRemoveDoc) {
         await this.handleRemoveTx(tx as TxRemoveDoc<Doc>)
       }

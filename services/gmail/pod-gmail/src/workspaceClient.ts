@@ -16,13 +16,11 @@
 import contact, { type Employee, type PersonAccount, type Channel as PlatformChannel } from '@hcengineering/contact'
 import core, {
   type Account,
-  type AttachedDoc,
   type Client,
   type Doc,
   MeasureContext,
   type Ref,
   type Tx,
-  type TxCollectionCUD,
   type TxCreateDoc,
   TxProcessor,
   type TxRemoveDoc,
@@ -273,10 +271,6 @@ export class WorkspaceClient {
         await this.txCreateChannel(tx as TxCreateDoc<Doc>)
         return
       }
-      case core.class.TxCollectionCUD: {
-        await this.txCollectionCUD(tx as TxCollectionCUD<Doc, AttachedDoc>)
-        return
-      }
       case core.class.TxUpdateDoc: {
         await this.txUpdateChannel(tx as TxUpdateDoc<Doc>)
         return
@@ -285,10 +279,6 @@ export class WorkspaceClient {
         await this.txRemoveChannel(tx as TxRemoveDoc<Doc>)
       }
     }
-  }
-
-  private async txCollectionCUD (tx: TxCollectionCUD<Doc, AttachedDoc>): Promise<void> {
-    await this.txHandler(tx.tx)
   }
 
   private async txCreateChannel (tx: TxCreateDoc<Doc>): Promise<void> {

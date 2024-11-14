@@ -5,7 +5,6 @@
 import chunter from '@hcengineering/chunter'
 import contact, { PersonAccount } from '@hcengineering/contact'
 import core, {
-  AttachedDoc,
   Doc,
   DocumentUpdate,
   Hierarchy,
@@ -14,7 +13,6 @@ import core, {
   Storage,
   Tx,
   TxCUD,
-  TxCollectionCUD,
   TxProcessor,
   TxUpdateDoc,
   systemAccountEmail,
@@ -34,13 +32,11 @@ export async function OnProjectChanges (txes: Tx[], control: TriggerControl): Pr
   const cache = new Map<string, any>()
 
   const toApply: Tx[] = []
-  for (const tx of txes) {
-    const ltx = TxProcessor.extractTx(tx)
-
+  for (const ltx of txes) {
     if (ltx._class === core.class.TxMixin && (ltx as TxMixin<Doc, Doc>).mixin === github.mixin.GithubIssue) {
       const mix = ltx as TxMixin<Doc, Doc>
       // Do not spend time to wait for trigger processing
-      await updateDocSyncInfo(control, tx, mix.objectSpace, mix, cache, toApply)
+      await updateDocSyncInfo(control, ltx, mix.objectSpace, mix, cache, toApply)
       continue
     }
 
@@ -57,18 +53,17 @@ export async function OnProjectChanges (txes: Tx[], control: TriggerControl): Pr
       }
 
       if (isDocSyncUpdateRequired(control.hierarchy, cud)) {
-        await updateDocSyncInfo(control, tx, space, cud, cache, toApply)
+        await updateDocSyncInfo(control, ltx, space, cud, cache, toApply)
       }
       if (control.hierarchy.isDerived(cud.objectClass, time.class.ToDo)) {
-        if (tx._class === core.class.TxCollectionCUD) {
-          const coll = tx as TxCollectionCUD<Doc, AttachedDoc>
-          if (control.hierarchy.isDerived(coll.objectClass, github.class.GithubPullRequest)) {
+        if (cud.attachedToClass !== undefined && cud.attachedTo !== undefined) {
+          if (control.hierarchy.isDerived(cud.attachedToClass, github.class.GithubPullRequest)) {
             // Ok we got todo change for pull request, let's mark it for sync.
             result.push(
               control.txFactory.createTxUpdateDoc<DocSyncInfo>(
                 github.class.DocSyncInfo,
-                coll.objectSpace,
-                coll.objectId as Ref<DocSyncInfo>,
+                ltx.objectSpace,
+                cud.attachedTo as Ref<DocSyncInfo>,
                 {
                   needSync: ''
                 }
@@ -241,10 +236,9 @@ function createSyncDoc (
     needSync: '',
     derivedVersion: ''
   }
-  if (tx._class === core.class.TxCollectionCUD) {
-    const coll = tx as TxCollectionCUD<Doc, AttachedDoc>
+  if ((tx as TxCUD<Doc>).attachedTo !== undefined) {
     // Collection CUD, we could assign attachedTo
-    data.attachedTo = coll.objectId
+    data.attachedTo = (tx as TxCUD<Doc>).attachedTo
   }
 
   toApply.push(

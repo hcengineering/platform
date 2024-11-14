@@ -51,7 +51,7 @@ import view from '@hcengineering/view'
 export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    const actualTx = TxProcessor.extractTx(tx) as TxMixin<Person, Employee>
+    const actualTx = tx as TxMixin<Person, Employee>
     if (actualTx._class !== core.class.TxMixin) {
       continue
     }
@@ -140,7 +140,7 @@ async function removeUserInfo (acc: Ref<Account>, control: TriggerControl): Prom
 export async function OnUserStatus (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    const actualTx = TxProcessor.extractTx(tx) as TxCUD<UserStatus>
+    const actualTx = tx as TxCUD<UserStatus>
     if (actualTx.objectClass !== core.class.UserStatus) {
       continue
     }
@@ -243,7 +243,7 @@ async function setDefaultRoomAccess (info: ParticipantInfo, control: TriggerCont
 export async function OnParticipantInfo (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    const actualTx = TxProcessor.extractTx(tx) as TxCUD<ParticipantInfo>
+    const actualTx = tx as TxCUD<ParticipantInfo>
     if (actualTx._class === core.class.TxCreateDoc) {
       const info = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<ParticipantInfo>)
       result.push(...(await roomJoinHandler(info, control)))
@@ -277,7 +277,7 @@ export async function OnParticipantInfo (txes: Tx[], control: TriggerControl): P
 
 export async function OnKnock (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   for (const tx of txes) {
-    const actualTx = TxProcessor.extractTx(tx) as TxCreateDoc<JoinRequest>
+    const actualTx = tx as TxCreateDoc<JoinRequest>
     if (actualTx._class === core.class.TxCreateDoc) {
       const request = TxProcessor.createDoc2Doc(actualTx)
       if (request.status === RequestStatus.Pending) {
@@ -327,7 +327,7 @@ export async function OnKnock (txes: Tx[], control: TriggerControl): Promise<Tx[
 
 export async function OnInvite (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   for (const tx of txes) {
-    const actualTx = TxProcessor.extractTx(tx) as TxCreateDoc<Invite>
+    const actualTx = tx as TxCreateDoc<Invite>
     if (actualTx._class === core.class.TxCreateDoc) {
       const invite = TxProcessor.createDoc2Doc(actualTx)
       if (invite.status === RequestStatus.Pending) {

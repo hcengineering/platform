@@ -25,7 +25,6 @@ import {
   type Ref,
   type Space,
   type Status,
-  type TxCollectionCUD,
   type TxCreateDoc,
   type TxUpdateDoc
 } from '@hcengineering/core'
@@ -447,8 +446,8 @@ export async function migrateDefaultStatusesBase<T extends Task> (
   }
   logger.log('affectedBaseTasks updated: ', counter)
 
-  const baseTaskCreateTxes = await client.find<TxCollectionCUD<T, T>>(DOMAIN_TX, {
-    _class: core.class.TxCollectionCUD,
+  const baseTaskCreateTxes = await client.find<any>(DOMAIN_TX, {
+    _class: 'core:class:TxCollectionCUD' as any,
     'tx._class': core.class.TxCreateDoc,
     'tx.objectClass': { $in: baseTaskClasses },
     'tx.attributes.status': { $in: statusIdsBeingMigrated }
@@ -468,8 +467,8 @@ export async function migrateDefaultStatusesBase<T extends Task> (
   }
   logger.log('Base task create TXes updated: ', counter)
 
-  const baseTaskUpdateTxes = await client.find<TxCollectionCUD<T, T>>(DOMAIN_TX, {
-    _class: core.class.TxCollectionCUD,
+  const baseTaskUpdateTxes = await client.find<any>(DOMAIN_TX, {
+    _class: 'core:class:TxCollectionCUD' as any,
     'tx._class': core.class.TxUpdateDoc,
     'tx.objectClass': { $in: baseTaskClasses },
     'tx.operations.status': { $in: statusIdsBeingMigrated }

@@ -34,7 +34,6 @@ import core, {
   Ref,
   Space,
   Tx,
-  TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
   TxProcessor
@@ -54,19 +53,18 @@ import { ReferenceTrigger } from './references'
 import { getAttrName, getCollectionAttribute, getDocUpdateAction, getTxAttributesUpdates } from './utils'
 
 export async function OnReactionChanged (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  for (const originTx of txes) {
-    const tx = originTx as TxCollectionCUD<ActivityMessage, Reaction>
-    const innerTx = TxProcessor.extractTx(tx) as TxCUD<Reaction>
+  for (const tx of txes) {
+    const innerTx = tx as TxCUD<Reaction>
 
     if (innerTx._class === core.class.TxCreateDoc) {
-      const txes = await createReactionNotifications(tx, control)
+      const txes = await createReactionNotifications(innerTx, control)
 
       await control.apply(control.ctx, txes)
       continue
     }
 
     if (innerTx._class === core.class.TxRemoveDoc) {
-      const txes = await removeReactionNotifications(tx, control)
+      const txes = await removeReactionNotifications(innerTx, control)
       await control.apply(control.ctx, txes)
       continue
     }
@@ -75,15 +73,13 @@ export async function OnReactionChanged (txes: Tx[], control: TriggerControl): P
   return []
 }
 
-export async function removeReactionNotifications (
-  tx: TxCollectionCUD<ActivityMessage, Reaction>,
-  control: TriggerControl
-): Promise<Tx[]> {
+export async function removeReactionNotifications (tx: TxCUD<Reaction>, control: TriggerControl): Promise<Tx[]> {
+  if (tx.attachedTo === undefined) return []
   const message = (
     await control.findAll(
       control.ctx,
       activity.class.ActivityMessage,
-      { objectId: tx.tx.objectId },
+      { objectId: tx.attachedTo },
       { projection: { _id: 1, _class: 1, space: 1 } }
     )
   )[0]
@@ -103,13 +99,11 @@ export async function removeReactionNotifications (
   return res
 }
 
-export async function createReactionNotifications (
-  tx: TxCollectionCUD<ActivityMessage, Reaction>,
-  control: TriggerControl
-): Promise<Tx[]> {
-  const createTx = TxProcessor.extractTx(tx) as TxCreateDoc<Reaction>
-
-  const parentMessage = (await control.findAll(control.ctx, activity.class.ActivityMessage, { _id: tx.objectId }))[0]
+export async function createReactionNotifications (tx: TxCUD<Reaction>, control: TriggerControl): Promise<Tx[]> {
+  if (tx.attachedTo === undefined) return []
+  const parentMessage = (
+    await control.findAll(control.ctx, activity.class.ActivityMessage, { _id: tx.attachedTo as Ref<ActivityMessage> })
+  )[0]
 
   if (parentMessage === undefined) {
     return []
@@ -127,8 +121,8 @@ export async function createReactionNotifications (
     txId: tx._id,
     attachedTo: parentMessage._id,
     attachedToClass: parentMessage._class,
-    objectId: createTx.objectId,
-    objectClass: createTx.objectClass,
+    objectId: tx.objectId,
+    objectClass: tx.objectClass,
     action: 'create',
     collection: 'docUpdateMessages',
     updateCollection: tx.collection
@@ -142,14 +136,13 @@ export async function createReactionNotifications (
 
   res.push(messageTx)
 
-  const docUpdateMessage = TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>)
+  const docUpdateMessage = TxProcessor.createDoc2Doc(messageTx as TxCreateDoc<DocUpdateMessage>)
 
   res = res.concat(
     await createCollabDocInfo(
       control.ctx,
       [user] as Ref<PersonAccount>[],
       control,
-      tx.tx,
       tx,
       parentMessage,
       [docUpdateMessage],
@@ -176,7 +169,7 @@ function getDocUpdateMessageTx (
   object: Doc,
   rawMessage: Data<DocUpdateMessage>,
   modifiedBy?: Ref<Account>
-): TxCollectionCUD<Doc, DocUpdateMessage> {
+): TxCUD<DocUpdateMessage> {
   const { hierarchy } = control
   const space = isSpace(object, hierarchy) ? object._id : object.space
   const innerTx = control.txFactory.createTxCreateDoc(
@@ -202,13 +195,13 @@ function getDocUpdateMessageTx (
 export async function pushDocUpdateMessages (
   ctx: MeasureContext,
   control: ActivityControl,
-  res: TxCollectionCUD<Doc, DocUpdateMessage>[],
+  res: TxCUD<DocUpdateMessage>[],
   object: Doc | undefined,
   originTx: TxCUD<Doc>,
   modifiedBy?: Ref<Account>,
   objectCache?: DocObjectCache,
   controlRules?: ActivityMessageControl[]
-): Promise<TxCollectionCUD<Doc, DocUpdateMessage>[]> {
+): Promise<TxCUD<DocUpdateMessage>[]> {
   if (object === undefined) {
     return res
   }
@@ -217,24 +210,18 @@ export async function pushDocUpdateMessages (
     return res
   }
 
-  const tx =
-    originTx._class === core.class.TxCollectionCUD ? (originTx as TxCollectionCUD<Doc, AttachedDoc>).tx : originTx
-
   const rawMessage: Data<DocUpdateMessage> = {
     txId: originTx._id,
     attachedTo: object._id,
     attachedToClass: object._class,
-    objectId: tx.objectId,
-    objectClass: tx.objectClass,
-    action: getDocUpdateAction(control, tx),
+    objectId: originTx.objectId,
+    objectClass: originTx.objectClass,
+    action: getDocUpdateAction(control, originTx),
     collection: 'docUpdateMessages',
-    updateCollection:
-      originTx._class === core.class.TxCollectionCUD
-        ? (originTx as TxCollectionCUD<Doc, AttachedDoc>).collection
-        : undefined
+    updateCollection: originTx.collection
   }
 
-  const attributesUpdates = await getTxAttributesUpdates(ctx, control, originTx, tx, object, objectCache, controlRules)
+  const attributesUpdates = await getTxAttributesUpdates(ctx, control, originTx, object, objectCache, controlRules)
 
   for (const attributeUpdates of attributesUpdates) {
     res.push(
@@ -262,27 +249,25 @@ export async function generateDocUpdateMessages (
   ctx: MeasureContext,
   tx: TxCUD<Doc>,
   control: ActivityControl,
-  res: TxCollectionCUD<Doc, DocUpdateMessage>[] = [],
-  originTx?: TxCUD<Doc>,
+  res: TxCUD<DocUpdateMessage>[] = [],
   objectCache?: DocObjectCache
-): Promise<TxCollectionCUD<Doc, DocUpdateMessage>[]> {
+): Promise<TxCUD<DocUpdateMessage>[]> {
   if (tx.space === core.space.DerivedTx) {
     return res
   }
 
   const { hierarchy } = control
-  const etx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-
   if (
     hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage) ||
-    hierarchy.isDerived(etx.objectClass, activity.class.ActivityMessage)
+    (tx.attachedToClass !== undefined && hierarchy.isDerived(tx.attachedToClass, activity.class.ActivityMessage))
   ) {
     return res
   }
 
   if (
     hierarchy.classHierarchyMixin(tx.objectClass, activity.mixin.IgnoreActivity) !== undefined ||
-    hierarchy.classHierarchyMixin(etx.objectClass, activity.mixin.IgnoreActivity) !== undefined
+    (tx.attachedToClass !== undefined &&
+      hierarchy.classHierarchyMixin(tx.attachedToClass, activity.mixin.IgnoreActivity) !== undefined)
   ) {
     return res
   }
@@ -294,11 +279,39 @@ export async function generateDocUpdateMessages (
   if (controlRules.length > 0) {
     for (const r of controlRules) {
       for (const s of r.skip) {
-        const otx = originTx ?? etx
-        if (matchQuery(otx !== undefined ? [tx, otx] : [tx], s, r.objectClass, hierarchy).length > 0) {
+        if (matchQuery([tx], s, r.objectClass, hierarchy).length > 0) {
           // Match found, we need to skip
           return res
         }
+      }
+    }
+  }
+
+  if (tx.attachedTo !== undefined && tx.attachedToClass !== undefined) {
+    if ([core.class.TxCreateDoc, core.class.TxRemoveDoc].includes(tx._class)) {
+      if (!isActivityDoc(tx.attachedToClass, control.hierarchy)) {
+        return res
+      }
+
+      let doc = objectCache?.docs?.get(tx.attachedTo)
+      if (doc === undefined) {
+        doc = (await control.findAll(ctx, tx.attachedToClass, { _id: tx.attachedTo }, { limit: 1 }))[0]
+      }
+      if (doc === undefined) {
+        const createTx = (
+          await control.findAll(ctx, core.class.TxCreateDoc, { objectId: tx.attachedTo }, { limit: 1 })
+        )[0]
+
+        doc = createTx !== undefined ? TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>) : undefined
+      }
+      if (doc !== undefined) {
+        objectCache?.docs?.set(tx.attachedTo, doc)
+        return await ctx.with(
+          'pushDocUpdateMessages',
+          {},
+          async (ctx) =>
+            await pushDocUpdateMessages(ctx, control, res, doc ?? undefined, tx, undefined, objectCache, controlRules)
+        )
       }
     }
   }
@@ -307,64 +320,24 @@ export async function generateDocUpdateMessages (
     case core.class.TxCreateDoc: {
       const doc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<Doc>)
       return await ctx.with('pushDocUpdateMessages', {}, (ctx) =>
-        pushDocUpdateMessages(ctx, control, res, doc, originTx ?? tx, undefined, objectCache, controlRules)
+        pushDocUpdateMessages(ctx, control, res, doc, tx, undefined, objectCache, controlRules)
       )
     }
     case core.class.TxMixin:
     case core.class.TxUpdateDoc: {
-      if (!isActivityDoc(tx.objectClass, control.hierarchy)) {
-        return res
-      }
-
-      let doc = objectCache?.docs?.get(tx.objectId)
-      if (doc === undefined) {
-        doc = (await control.findAll(ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
-        objectCache?.docs?.set(tx.objectId, doc)
-      }
-      return await ctx.with('pushDocUpdateMessages', {}, (ctx) =>
-        pushDocUpdateMessages(ctx, control, res, doc ?? undefined, originTx ?? tx, undefined, objectCache, controlRules)
-      )
-    }
-    case core.class.TxCollectionCUD: {
-      const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-      res = await generateDocUpdateMessages(ctx, actualTx, control, res, tx, objectCache)
-      if ([core.class.TxCreateDoc, core.class.TxRemoveDoc].includes(actualTx._class)) {
-        if (!isActivityDoc(tx.objectClass, control.hierarchy)) {
-          return res
-        }
-
+      if (isActivityDoc(tx.objectClass, control.hierarchy)) {
         let doc = objectCache?.docs?.get(tx.objectId)
         if (doc === undefined) {
           doc = (await control.findAll(ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
-        }
-        if (doc === undefined) {
-          const isAttachedDoc = hierarchy.isDerived(tx.objectClass, core.class.AttachedDoc)
-          const createTx = isAttachedDoc
-            ? (await control.findAll(ctx, core.class.TxCollectionCUD, { 'tx.objectId': tx.objectId }, { limit: 1 }))[0]
-            : (await control.findAll(ctx, core.class.TxCreateDoc, { objectId: tx.objectId }, { limit: 1 }))[0]
-
-          doc =
-            createTx !== undefined
-              ? TxProcessor.createDoc2Doc(TxProcessor.extractTx(createTx) as TxCreateDoc<Doc>)
-              : undefined
-        }
-        if (doc !== undefined) {
           objectCache?.docs?.set(tx.objectId, doc)
-          return await ctx.with('pushDocUpdateMessages', {}, (ctx) =>
-            pushDocUpdateMessages(
-              ctx,
-              control,
-              res,
-              doc ?? undefined,
-              originTx ?? tx,
-              undefined,
-              objectCache,
-              controlRules
-            )
-          )
         }
+        return await ctx.with(
+          'pushDocUpdateMessages',
+          {},
+          async (ctx) =>
+            await pushDocUpdateMessages(ctx, control, res, doc ?? undefined, tx, undefined, objectCache, controlRules)
+        )
       }
-      return res
     }
   }
 
@@ -393,10 +366,10 @@ async function ActivityMessagesHandler (_txes: TxCUD<Doc>[], control: TriggerCon
       tx.space === core.space.DerivedTx
         ? []
         : await control.ctx.with('generateDocUpdateMessages', {}, (ctx) =>
-          generateDocUpdateMessages(ctx, tx, control, [], undefined, cache)
+          generateDocUpdateMessages(ctx, tx, control, [], cache)
         )
 
-    const messages = txes.map((messageTx) => TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>))
+    const messages = txes.map((messageTx) => TxProcessor.createDoc2Doc(messageTx as TxCreateDoc<DocUpdateMessage>))
 
     const notificationTxes = await control.ctx.with('createCollaboratorNotifications', {}, (ctx) =>
       createCollaboratorNotifications(ctx, tx, control, messages, undefined, cache.docs as Map<Ref<Doc>, Doc>)
@@ -412,9 +385,7 @@ async function ActivityMessagesHandler (_txes: TxCUD<Doc>[], control: TriggerCon
 
 async function OnDocRemoved (txes: TxCUD<Doc>[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
-  for (const originTx of txes) {
-    const tx = TxProcessor.extractTx(originTx) as TxCUD<Doc>
-
+  for (const tx of txes) {
     if (tx._class !== core.class.TxRemoveDoc) {
       continue
     }
@@ -445,7 +416,7 @@ async function ReactionNotificationContentProvider (
   _: Ref<Account>,
   control: TriggerControl
 ): Promise<NotificationContent> {
-  const tx = TxProcessor.extractTx(originTx) as TxCreateDoc<Reaction>
+  const tx = originTx as TxCreateDoc<Reaction>
   const presenter = getTextPresenter(doc._class, control.hierarchy)
   const reaction = TxProcessor.createDoc2Doc(tx)
 

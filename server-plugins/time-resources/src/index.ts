@@ -50,21 +50,20 @@ import tracker, { Issue, IssueStatus, Project, TimeSpendReport } from '@hcengine
 /**
  * @public
  */
-export async function OnTask (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+export async function OnTask (txes: TxCUD<Doc>[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
     const mixin = control.hierarchy.classHierarchyMixin<Class<Doc>, ToDoFactory>(
-      actualTx.objectClass,
+      tx.objectClass,
       serverTime.mixin.ToDoFactory
     )
     if (mixin !== undefined) {
-      if (actualTx._class !== core.class.TxRemoveDoc) {
+      if (tx._class !== core.class.TxRemoveDoc) {
         const factory = await getResource(mixin.factory)
-        result.push(...(await factory(tx, control)))
+        return await factory(tx, control)
       } else {
-        const todos = await control.findAll(control.ctx, time.class.ToDo, { attachedTo: actualTx.objectId })
-        result.push(...todos.map((p) => control.txFactory.createTxRemoveDoc(p._class, p.space, p._id)))
+        const todos = await control.findAll(control.ctx, time.class.ToDo, { attachedTo: tx.objectId })
+        return todos.map((p) => control.txFactory.createTxRemoveDoc(p._class, p.space, p._id))
       }
     }
   }
@@ -75,7 +74,7 @@ export async function OnTask (txes: Tx[], control: TriggerControl): Promise<Tx[]
 export async function OnWorkSlotUpdate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    const actualTx = TxProcessor.extractTx(tx) as TxCUD<WorkSlot>
+    const actualTx = tx as TxCUD<WorkSlot>
     if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.WorkSlot)) {
       continue
     }
@@ -100,7 +99,7 @@ export async function OnWorkSlotUpdate (txes: Tx[], control: TriggerControl): Pr
 
 export async function OnWorkSlotCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   for (const tx of txes) {
-    const actualTx = TxProcessor.extractTx(tx) as TxCUD<WorkSlot>
+    const actualTx = tx as TxCUD<WorkSlot>
     if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.WorkSlot)) {
       continue
     }
@@ -163,7 +162,7 @@ export async function OnWorkSlotCreate (txes: Tx[], control: TriggerControl): Pr
 
 export async function OnToDoRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   for (const tx of txes) {
-    const actualTx = TxProcessor.extractTx(tx) as TxCUD<ToDo>
+    const actualTx = tx as TxCUD<ToDo>
     if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.ToDo)) {
       continue
     }
@@ -227,7 +226,7 @@ export async function OnToDoRemove (txes: Tx[], control: TriggerControl): Promis
 export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
   for (const tx of txes) {
-    const createTx = TxProcessor.extractTx(tx) as TxCreateDoc<ToDo>
+    const createTx = tx as TxCreateDoc<ToDo>
 
     if (!hierarchy.isDerived(createTx.objectClass, time.class.ToDo)) {
       continue
@@ -298,7 +297,7 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
       person: senderPerson
     }
     const notificationControl = await getNotificationProviderControl(control.ctx, control)
-    const notifyResult = await isShouldNotifyTx(control, createTx, tx, todo, account, true, false, notificationControl)
+    const notifyResult = await isShouldNotifyTx(control, createTx, todo, account, true, false, notificationControl)
     const content = await getNotificationContent(tx, account, senderInfo, todo, control)
     const data: Partial<Data<CommonInboxNotification>> = {
       ...content,
@@ -343,7 +342,7 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
 export async function OnToDoUpdate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    const actualTx = TxProcessor.extractTx(tx) as TxCUD<ToDo>
+    const actualTx = tx as TxCUD<ToDo>
     if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.ToDo)) {
       continue
     }
@@ -445,8 +444,7 @@ export async function OnToDoUpdate (txes: Tx[], control: TriggerControl): Promis
 /**
  * @public
  */
-export async function IssueToDoFactory (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx) as TxCUD<Issue>
+export async function IssueToDoFactory (actualTx: TxCUD<Issue>, control: TriggerControl): Promise<Tx[]> {
   if (!control.hierarchy.isDerived(actualTx.objectClass, tracker.class.Issue)) return []
   if (control.hierarchy.isDerived(actualTx._class, core.class.TxCreateDoc)) {
     const issue = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<Issue>)

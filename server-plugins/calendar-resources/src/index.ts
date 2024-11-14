@@ -86,7 +86,7 @@ export async function ReminderTextPresenter (doc: Doc, control: TriggerControl):
 export async function OnPersonAccountCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<PersonAccount>
+    const ctx = tx as TxCreateDoc<PersonAccount>
     const user = TxProcessor.createDoc2Doc(ctx)
 
     result.push(
@@ -126,7 +126,7 @@ function getEventPerson (current: Event, calendars: Calendar[], control: Trigger
 async function OnEvent (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    const ctx = TxProcessor.extractTx(tx) as TxCUD<Event>
+    const ctx = tx as TxCUD<Event>
     if (ctx._class === core.class.TxCreateDoc) {
       result.push(...(await onEventCreate(ctx as TxCreateDoc<Event>, control)))
     } else if (ctx._class === core.class.TxUpdateDoc) {

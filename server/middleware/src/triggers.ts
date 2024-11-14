@@ -28,9 +28,8 @@ import core, {
   type Ref,
   type SessionData,
   type Tx,
-  type TxCollectionCUD,
+  TxCUD,
   TxFactory,
-  TxProcessor,
   type TxRemoveDoc,
   type TxUpdateDoc,
   addOperation,
@@ -289,11 +288,10 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     const result: Tx[] = []
 
     for (const tx of txes) {
-      const actualTx = TxProcessor.extractTx(tx)
-      if (!this.context.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)) {
+      if (!this.context.hierarchy.isDerived(tx._class, core.class.TxRemoveDoc)) {
         continue
       }
-      const rtx = actualTx as TxRemoveDoc<Doc>
+      const rtx = tx as TxRemoveDoc<Doc>
       const object = ctx.contextData.removedMap.get(rtx.objectId)
       if (object === undefined) {
         continue
@@ -330,18 +328,20 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     return result
   }
 
-  private async updateCollection (ctx: MeasureContext, tx: Tx, findAll: SessionFindAll): Promise<Tx[]> {
-    if (tx._class !== core.class.TxCollectionCUD) {
+  private async updateCollection (
+    ctx: MeasureContext,
+    colTx: TxUpdateDoc<AttachedDoc>,
+    findAll: SessionFindAll
+  ): Promise<Tx[]> {
+    if (colTx.attachedTo === undefined || colTx.attachedToClass === undefined || colTx.collection === undefined) {
       return []
     }
 
-    const colTx = tx as TxCollectionCUD<Doc, AttachedDoc>
-    const _id = colTx.objectId
-    const _class = colTx.objectClass
-    const { operations } = colTx.tx as TxUpdateDoc<AttachedDoc>
+    const _id = colTx.attachedTo
+    const _class = colTx.attachedToClass
+    const { operations } = colTx
 
     if (
-      colTx.tx._class !== core.class.TxUpdateDoc ||
       this.context.hierarchy.getDomain(_class) === DOMAIN_MODEL // We could not update increments for model classes
     ) {
       return []
@@ -357,7 +357,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       const attr = this.context.hierarchy.findAttribute(oldAttachedTo._class, colTx.collection)
 
       if (attr !== undefined) {
-        oldTx = this.getCollectionUpdateTx(_id, _class, tx.modifiedBy, colTx.modifiedOn, oldAttachedTo, {
+        oldTx = this.getCollectionUpdateTx(_id, _class, colTx.modifiedBy, colTx.modifiedOn, oldAttachedTo, {
           $inc: { [colTx.collection]: -1 }
         })
       }
@@ -372,7 +372,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       newTx = this.getCollectionUpdateTx(
         newAttachedTo._id,
         newAttachedTo._class,
-        tx.modifiedBy,
+        colTx.modifiedBy,
         colTx.modifiedOn,
         newAttachedTo,
         { $inc: { [newAttachedToCollection]: 1 } }
@@ -389,10 +389,10 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   ): Promise<Tx[]> {
     const result: Tx[] = []
     for (const tx of txes) {
-      if (tx._class === core.class.TxCollectionCUD) {
-        const colTx = tx as TxCollectionCUD<Doc, AttachedDoc>
-        const _id = colTx.objectId
-        const _class = colTx.objectClass
+      const colTx = tx as TxCUD<AttachedDoc>
+      if (colTx.attachedTo !== undefined && colTx.attachedToClass !== undefined && colTx.collection !== undefined) {
+        const _id = colTx.attachedTo
+        const _class = colTx.attachedToClass
 
         // Skip model operations
         if (this.context.hierarchy.getDomain(_class) === DOMAIN_MODEL) {
@@ -400,11 +400,11 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
           continue
         }
 
-        const isCreateTx = colTx.tx._class === core.class.TxCreateDoc
-        const isDeleteTx = colTx.tx._class === core.class.TxRemoveDoc
-        const isUpdateTx = colTx.tx._class === core.class.TxUpdateDoc
+        const isCreateTx = colTx._class === core.class.TxCreateDoc
+        const isDeleteTx = colTx._class === core.class.TxRemoveDoc
+        const isUpdateTx = colTx._class === core.class.TxUpdateDoc
         if (isUpdateTx) {
-          result.push(...(await this.updateCollection(ctx, tx, findAll)))
+          result.push(...(await this.updateCollection(ctx, colTx as TxUpdateDoc<AttachedDoc>, findAll)))
         }
 
         if ((isCreateTx || isDeleteTx) && !ctx.contextData.removedMap.has(_id)) {
@@ -503,11 +503,10 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   private async processMove (ctx: MeasureContext, txes: Tx[], findAll: SessionFindAll): Promise<Tx[]> {
     const result: Tx[] = []
     for (const tx of txes) {
-      const actualTx = TxProcessor.extractTx(tx)
-      if (!this.context.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc)) {
+      if (!this.context.hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
         continue
       }
-      const rtx = actualTx as TxUpdateDoc<Doc>
+      const rtx = tx as TxUpdateDoc<Doc>
       if (rtx.operations.space === undefined || rtx.operations.space === rtx.objectSpace) {
         continue
       }

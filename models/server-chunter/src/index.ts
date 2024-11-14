@@ -78,18 +78,16 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverChunter.trigger.OnChatMessageRemoved,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx._class': core.class.TxRemoveDoc,
-      'tx.objectClass': chunter.class.ChatMessage
+      _class: core.class.TxRemoveDoc,
+      objectClass: chunter.class.ChatMessage
     }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverChunter.trigger.ChatNotificationsHandler,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx._class': core.class.TxCreateDoc,
-      'tx.objectClass': chunter.class.ChatMessage
+      _class: core.class.TxCreateDoc,
+      objectClass: chunter.class.ChatMessage
     },
     isAsync: true
   })

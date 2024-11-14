@@ -1,17 +1,18 @@
-import core, {
-  Ref,
-  TxOperations,
-  concatLink,
-  Tx,
-  TxProcessor,
-  TxCUD,
-  Doc,
-  TxCreateDoc,
-  TxUpdateDoc,
-  MeasureContext,
-  Markup
-} from '@hcengineering/core'
+import { ConnectMeetingRequest } from '@hcengineering/ai-bot'
+import chunter from '@hcengineering/chunter'
 import { Person } from '@hcengineering/contact'
+import core, {
+  concatLink,
+  Doc,
+  Markup,
+  MeasureContext,
+  Ref,
+  TxCreateDoc,
+  TxCUD,
+  TxOperations,
+  TxProcessor,
+  TxUpdateDoc
+} from '@hcengineering/core'
 import love, {
   getFreeRoomPlace,
   MeetingMinutes,
@@ -20,8 +21,6 @@ import love, {
   RoomLanguage,
   TranscriptionStatus
 } from '@hcengineering/love'
-import { ConnectMeetingRequest } from '@hcengineering/ai-bot'
-import chunter from '@hcengineering/chunter'
 import { jsonToMarkup, MarkupNodeType } from '@hcengineering/text'
 
 import config from '../config'
@@ -54,12 +53,10 @@ export class LoveController {
     }
   }
 
-  txHandler (txes: Tx[]): void {
+  txHandler (txes: TxCUD<Doc>[]): void {
     const hierarchy = this.client.getHierarchy()
-    for (const tx of txes) {
-      if (!hierarchy.isDerived(tx._class, core.class.TxCUD)) continue
-      const etx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-
+    for (const etx of txes) {
+      if (!hierarchy.isDerived(etx._class, core.class.TxCUD)) continue
       if (etx._class === core.class.TxCreateDoc) {
         if (etx.objectClass === love.class.ParticipantInfo) {
           this.participantsInfo.push(TxProcessor.createDoc2Doc(etx as TxCreateDoc<ParticipantInfo>))
