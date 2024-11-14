@@ -944,7 +944,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       } else {
         tKey += arr[i]
         if (i !== arr.length - 1) {
-          tKey += '.'
+          tKey += ','
         }
       }
       // Check if key is belong to mixin class, we need to add prefix.
