@@ -38,51 +38,50 @@ import {
 import { type FileUploader } from '../importer/uploader'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 
-interface HulyComment {
+interface UnifiedComment {
   author: string
   date: string
   text: string
 }
 
-interface HulyIssueHeader {
+interface UnifiedIssueHeader {
   class: 'tracker:class:Issue'
   title: string
   assignee: string
   status: string
   priority: string
-  estimation: number
-  remainingTime: number
-  comments?: HulyComment[]
+  estimation: number // in hours
+  remainingTime: number // in hours
+  comments?: UnifiedComment[]
 }
 
-interface HulySpaceHeader {
+interface UnifiedSpaceHeader {
   class: 'tracker:class:Project' | 'document:class:Teamspace'
   title: string
   private?: boolean
   autoJoin?: boolean
   owners?: string[]
   members?: string[]
-}
-
-interface HulyProjectHeader extends HulySpaceHeader {
-  class: 'tracker:class:Project'
-  identifier: string
-  projectType?: string
-  defaultAssignee?: string
-  defaultIssueStatus?: string
   description?: string
 }
 
-interface HulyTeamSpaceHeader extends HulySpaceHeader {
+interface UnifiedProjectSettings extends UnifiedSpaceHeader {
+  class: 'tracker:class:Project'
+  identifier: string
+  projectType?: string
+  defaultIssueStatus?: string
+}
+
+interface UnifiedTeamspaceSettings extends UnifiedSpaceHeader {
   class: 'document:class:Teamspace'
 }
 
-interface HulyDocumentHeader {
+interface UnifiedDocumentHeader {
   class: 'document:class:Document'
   title: string
 }
 
-interface HulyWorkspaceSettings {
+interface UnifiedWorkspaceSettings {
   projectTypes?: Array<{
     name: string
     taskTypes?: Array<{
@@ -258,7 +257,7 @@ interface AttachmentMetadata {
   spaceId?: Ref<Space>
 }
 
-export class HulyImporter {
+export class UnifiedFormatImporter {
   private readonly metadataByFilePath = new Map<string, DocMetadata>()
   private readonly metadataById = new Map<Ref<Doc>, DocMetadata>()
   private readonly attachMetadataByPath = new Map<string, AttachmentMetadata>()
@@ -271,11 +270,11 @@ export class HulyImporter {
     private readonly fileUploader: FileUploader
   ) {}
 
-  async importHulyFolder (folderPath: string): Promise<void> {
+  async importFolder (folderPath: string): Promise<void> {
     await this.cachePersonsByNames()
     await this.cacheAccountsByEmails()
 
-    const workspaceData = await this.processImportTree(folderPath)
+    const workspaceData = await this.processImportFolder(folderPath)
 
     console.log('========================================')
     console.log('IMPORT DATA STRUCTURE: ', JSON.stringify(workspaceData, null, 4))
@@ -313,12 +312,12 @@ export class HulyImporter {
     console.log('IMPORT SUCCESS')
   }
 
-  private async processImportTree (folderPath: string): Promise<ImportWorkspace> {
+  private async processImportFolder (folderPath: string): Promise<ImportWorkspace> {
     const builder = new ImportWorkspaceBuilder(true) // strict mode
 
     // Load workspace settings
     const wsSettingsPath = path.join(folderPath, 'settings.yaml')
-    const wsSettings = yaml.load(fs.readFileSync(wsSettingsPath, 'utf8')) as HulyWorkspaceSettings
+    const wsSettings = yaml.load(fs.readFileSync(wsSettingsPath, 'utf8')) as UnifiedWorkspaceSettings
 
     // Add project types
     for (const pt of this.processProjectTypes(wsSettings)) {
@@ -340,11 +339,11 @@ export class HulyImporter {
 
       try {
         console.log(`Processing ${folder}...`)
-        const spaceConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as HulySpaceHeader
+        const spaceConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as UnifiedSpaceHeader
 
         switch (spaceConfig.class) {
           case tracker.class.Project: {
-            const project = await this.processProject(spaceConfig as HulyProjectHeader)
+            const project = await this.processProject(spaceConfig as UnifiedProjectSettings)
             builder.addProject(spacePath, project)
 
             // Process all issues recursively and add them to builder
@@ -353,7 +352,7 @@ export class HulyImporter {
           }
 
           case document.class.Teamspace: {
-            const teamspace = await this.processTeamspace(spaceConfig as HulyTeamSpaceHeader)
+            const teamspace = await this.processTeamspace(spaceConfig as UnifiedTeamspaceSettings)
             builder.addTeamspace(spacePath, teamspace)
 
             // Process all documents recursively and add them to builder
@@ -386,7 +385,7 @@ export class HulyImporter {
 
     for (const issueFile of issueFiles) {
       const issuePath = path.join(currentPath, issueFile)
-      const issueHeader = await this.readYamlHeader(issuePath) as HulyIssueHeader
+      const issueHeader = await this.readYamlHeader(issuePath) as UnifiedIssueHeader
 
       if (issueHeader.class === tracker.class.Issue) {
         const numberMatch = issueFile.match(/^(\d+)\./)
@@ -439,7 +438,7 @@ export class HulyImporter {
 
     for (const docFile of docFiles) {
       const docPath = path.join(currentPath, docFile)
-      const docHeader = await this.readYamlHeader(docPath) as HulyDocumentHeader
+      const docHeader = await this.readYamlHeader(docPath) as UnifiedDocumentHeader
 
       if (docHeader.class === document.class.Document) {
         const docMeta: DocMetadata = {
@@ -472,7 +471,7 @@ export class HulyImporter {
     }
   }
 
-  private processComments (comments: HulyComment[] = []): ImportComment[] {
+  private processComments (comments: UnifiedComment[] = []): ImportComment[] {
     return comments.map(comment => ({
       text: comment.text,
       author: this.accountsByEmail.get(comment.author),
@@ -480,7 +479,7 @@ export class HulyImporter {
     }))
   }
 
-  private processProjectTypes (wsHeader: HulyWorkspaceSettings): ImportProjectType[] {
+  private processProjectTypes (wsHeader: UnifiedWorkspaceSettings): ImportProjectType[] {
     return wsHeader.projectTypes?.map(pt => ({
       name: pt.name,
       taskTypes: pt.taskTypes?.map(tt => ({
@@ -495,7 +494,7 @@ export class HulyImporter {
   }
 
   private async processProject (
-    projectHeader: HulyProjectHeader
+    projectHeader: UnifiedProjectSettings
   ): Promise<ImportProject> {
     const projectType = projectHeader.projectType !== undefined
       ? this.findProjectType(projectHeader.projectType)
@@ -519,7 +518,7 @@ export class HulyImporter {
   }
 
   private async processTeamspace (
-    spaceHeader: HulyTeamSpaceHeader
+    spaceHeader: UnifiedTeamspaceSettings
   ): Promise<ImportTeamspace> {
     return {
       class: document.class.Teamspace,
@@ -528,6 +527,7 @@ export class HulyImporter {
       autoJoin: spaceHeader.autoJoin ?? true,
       owners: spaceHeader.owners,
       members: spaceHeader.members,
+      description: spaceHeader.description,
       docs: []
     }
   }

@@ -24,7 +24,7 @@ import { importNotion } from './notion/notion'
 import { setMetadata } from '@hcengineering/platform'
 import { FrontFileUploader, type FileUploader } from './importer/uploader'
 import { ClickupImporter } from './clickup/clickup'
-import { HulyImporter } from './huly/huly'
+import { UnifiedFormatImporter } from './huly/unified'
 
 /**
  * @public
@@ -142,8 +142,8 @@ export function importTool (): void {
     .action(async (dir: string, cmd) => {
       const { workspace, user, password } = cmd
       await authorize(user, password, workspace, async (client, uploader) => {
-        const importer = new HulyImporter(client, uploader)
-        await importer.importHulyFolder(dir)
+        const importer = new UnifiedFormatImporter(client, uploader)
+        await importer.importFolder(dir)
       })
     })
 
