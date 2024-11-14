@@ -292,20 +292,20 @@ export async function OnIssueUpdate (txes: Tx[], control: TriggerControl): Promi
 }
 
 async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, control: TriggerControl): Promise<Tx[]> {
-  const { attachedTo, attachedToClass } = cud
-  if (attachedToClass === undefined || attachedTo === undefined) {
+  const { attachedTo: attachedToId, attachedToClass } = cud
+  if (attachedToClass === undefined || attachedToId === undefined) {
     return []
   }
-  const objectId = attachedTo as Ref<Issue>
+  const attachedTo = attachedToId as Ref<Issue>
   switch (cud._class) {
     case core.class.TxCreateDoc: {
       const ccud = cud as TxCreateDoc<TimeSpendReport>
-      const [currentIssue] = await control.findAll(control.ctx, tracker.class.Issue, { _id: objectId }, { limit: 1 })
+      const [currentIssue] = await control.findAll(control.ctx, tracker.class.Issue, { _id: attachedTo }, { limit: 1 })
       const res = [
         control.txFactory.createTxUpdateDoc<Issue>(
           attachedToClass,
           cud.objectSpace,
-          objectId,
+          attachedTo,
           {
             $inc: { reportedTime: ccud.attributes.value }
           },
@@ -329,13 +329,18 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, control: Trigger
         const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
 
         const res: Tx[] = []
-        const [currentIssue] = await control.findAll(control.ctx, tracker.class.Issue, { _id: objectId }, { limit: 1 })
+        const [currentIssue] = await control.findAll(
+          control.ctx,
+          tracker.class.Issue,
+          { _id: attachedTo },
+          { limit: 1 }
+        )
         if (doc !== undefined) {
           res.push(
             control.txFactory.createTxUpdateDoc<Issue>(
               attachedToClass,
               cud.objectSpace,
-              objectId,
+              attachedTo,
               {
                 $inc: { reportedTime: upd.operations.value - doc.value }
               },
@@ -354,7 +359,7 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, control: Trigger
       break
     }
     case core.class.TxRemoveDoc: {
-      if (!control.removedMap.has(objectId)) {
+      if (!control.removedMap.has(attachedTo)) {
         const logTxes = Array.from(
           await control.findAll(control.ctx, core.class.TxCUD, {
             objectId: cud.objectId
@@ -365,14 +370,14 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, control: Trigger
           const [currentIssue] = await control.findAll(
             control.ctx,
             tracker.class.Issue,
-            { _id: objectId },
+            { _id: attachedTo },
             { limit: 1 }
           )
           const res = [
             control.txFactory.createTxUpdateDoc<Issue>(
               attachedToClass,
               cud.objectSpace,
-              objectId,
+              attachedTo,
               {
                 $inc: { reportedTime: -1 * doc.value }
               },

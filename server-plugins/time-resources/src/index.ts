@@ -60,10 +60,10 @@ export async function OnTask (txes: TxCUD<Doc>[], control: TriggerControl): Prom
     if (mixin !== undefined) {
       if (tx._class !== core.class.TxRemoveDoc) {
         const factory = await getResource(mixin.factory)
-        return await factory(tx, control)
+        result.push(...(await factory(tx, control)))
       } else {
         const todos = await control.findAll(control.ctx, time.class.ToDo, { attachedTo: tx.objectId })
-        return todos.map((p) => control.txFactory.createTxRemoveDoc(p._class, p.space, p._id))
+        result.push(...todos.map((p) => control.txFactory.createTxRemoveDoc(p._class, p.space, p._id)))
       }
     }
   }

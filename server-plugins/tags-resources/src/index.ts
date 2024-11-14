@@ -65,7 +65,7 @@ export async function OnTagReference (txes: Tx[], control: TriggerControl): Prom
       const res = control.txFactory.createTxUpdateDoc(tags.class.TagElement, core.space.Workspace, doc.tag, {
         $inc: { refCount: 1 }
       })
-      return [res]
+      result.push(res)
     }
     if (isRemove) {
       const ctx = actualTx as TxRemoveDoc<TagReference>

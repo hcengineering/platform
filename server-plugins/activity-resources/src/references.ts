@@ -665,36 +665,36 @@ async function getRemoveActivityReferenceTxes (
   return txes
 }
 
-function guessReferenceTx (
+function guessReferenceObj (
   hierarchy: Hierarchy,
   tx: TxCUD<Doc>
 ): {
-    _id: Ref<Doc>
-    _class: Ref<Class<Doc>>
+    objectId: Ref<Doc>
+    objectClass: Ref<Class<Doc>>
   } {
   // Try to guess reference target Tx for TxCollectionCUD txes based on collaborators availability
   if (tx.attachedToClass !== undefined && tx.attachedTo !== undefined) {
     if (hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage)) {
       return {
-        _id: tx.attachedTo,
-        _class: tx.attachedToClass
+        objectId: tx.attachedTo,
+        objectClass: tx.attachedToClass
       }
     }
 
     const mixin = hierarchy.classHierarchyMixin(tx.objectClass, notification.mixin.ClassCollaborators)
     return mixin !== undefined
       ? {
-          _id: tx.objectId,
-          _class: tx.objectClass
+          objectId: tx.objectId,
+          objectClass: tx.objectClass
         }
       : {
-          _id: tx.attachedTo,
-          _class: tx.attachedToClass
+          objectId: tx.attachedTo,
+          objectClass: tx.attachedToClass
         }
   }
   return {
-    _id: tx.objectId,
-    _class: tx.objectClass
+    objectId: tx.objectId,
+    objectClass: tx.objectClass
   }
 }
 
@@ -708,7 +708,7 @@ async function ActivityReferenceCreate (tx: TxCUD<Doc>, control: TriggerControl)
   const txFactory = new TxFactory(control.txFactory.account)
 
   const doc = TxProcessor.createDoc2Doc(ctx)
-  const targetTx = guessReferenceTx(control.hierarchy, tx)
+  const target = guessReferenceObj(control.hierarchy, tx)
 
   const txes: Tx[] = await getCreateReferencesTxes(
     control.ctx,
@@ -716,8 +716,8 @@ async function ActivityReferenceCreate (tx: TxCUD<Doc>, control: TriggerControl)
     control.storageAdapter,
     txFactory,
     doc,
-    targetTx._id,
-    targetTx._class,
+    target.objectId,
+    target.objectClass,
     tx.objectSpace,
     tx
   )
@@ -756,7 +756,7 @@ async function ActivityReferenceUpdate (tx: TxCUD<Doc>, control: TriggerControl)
 
   const txFactory = new TxFactory(control.txFactory.account)
   const doc = TxProcessor.updateDoc2Doc(rawDoc, ctx)
-  const targetTx = guessReferenceTx(control.hierarchy, tx)
+  const target = guessReferenceObj(control.hierarchy, tx)
 
   const txes: Tx[] = await getUpdateReferencesTxes(
     control.ctx,
@@ -764,8 +764,8 @@ async function ActivityReferenceUpdate (tx: TxCUD<Doc>, control: TriggerControl)
     control.storageAdapter,
     txFactory,
     doc,
-    targetTx._id,
-    targetTx._class,
+    target.objectId,
+    target.objectClass,
     tx.objectSpace,
     tx
   )
