@@ -25,7 +25,7 @@
   const client = getClient()
 
   async function changeTitle (): Promise<void> {
-    await client.diffUpdate(object, { title: object.title })
+    await client.update(object, { title: object.title })
   }
 </script>
 
