@@ -313,7 +313,8 @@ export class UnifiedFormatImporter {
   }
 
   private async processImportFolder (folderPath: string): Promise<ImportWorkspace> {
-    const builder = new ImportWorkspaceBuilder(true) // strict mode
+    const builder = new ImportWorkspaceBuilder(this.client, true)
+    await builder.initCache()
 
     // Load workspace settings
     const wsSettingsPath = path.join(folderPath, 'settings.yaml')
@@ -407,6 +408,7 @@ export class UnifiedFormatImporter {
           number: parseInt(issueNumber ?? 'NaN'),
           descrProvider: async () => await this.readMarkdownContent(issuePath),
           status: { name: issueHeader.status },
+          priority: issueHeader.priority,
           estimation: issueHeader.estimation,
           remainingTime: issueHeader.remainingTime,
           comments: this.processComments(issueHeader.comments),
@@ -549,6 +551,7 @@ export class UnifiedFormatImporter {
   }
 
   private findProjectType (name: string): ImportProjectType {
+    // todo: implement
     return {
       name,
       taskTypes: []

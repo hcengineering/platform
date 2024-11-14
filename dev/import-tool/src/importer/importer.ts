@@ -77,6 +77,11 @@ export interface ImportStatus {
   description?: string
 }
 
+export interface ImportPriority {
+  name: string
+  description?: string
+}
+
 type Email = string
 export interface ImportSpace<T extends ImportDoc> {
   class: Ref<Class<Space>>
@@ -118,6 +123,7 @@ export interface ImportIssue extends ImportDoc {
   id?: Ref<Issue>
   class: Ref<Class<Issue>>
   status: ImportStatus
+  priority?: string
   number?: number
   assignee?: Ref<Person>
   estimation?: number
@@ -405,6 +411,9 @@ export class WorkspaceImporter {
     const kind = await this.getIssueKind(project)
     const rank = await this.getIssueRank(project)
     const status = await this.findIssueStatusByName(issue.status.name)
+    const priority = issue.priority !== undefined
+      ? IssuePriority[issue.priority as keyof typeof IssuePriority]
+      : IssuePriority.NoPriority
 
     const estimation = issue.estimation ?? 0
     const remainingTime = issue.remainingTime ?? 0
@@ -417,7 +426,7 @@ export class WorkspaceImporter {
       component: null,
       number,
       status,
-      priority: IssuePriority.NoPriority,
+      priority,
       rank,
       comments: issue.comments?.length ?? 0,
       subIssues: issue.subdocs.length,

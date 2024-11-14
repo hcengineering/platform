@@ -1,3 +1,6 @@
+import { type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
+import document from '@hcengineering/document'
+import tracker, { IssuePriority, type IssueStatus } from '@hcengineering/tracker'
 import {
   type ImportDocument,
   type ImportIssue,
@@ -6,8 +9,6 @@ import {
   type ImportTeamspace,
   type ImportWorkspace
 } from './importer'
-import tracker from '@hcengineering/tracker'
-import document from '@hcengineering/document'
 
 export interface ValidationError {
   path: string
@@ -29,9 +30,17 @@ export class ImportWorkspaceBuilder {
   private readonly documentParents = new Map<string, string>()
   private readonly errors = new Map<string, ValidationError>()
 
+  private readonly issueStatusCache = new Map<string, Ref<IssueStatus>>()
+
   constructor (
+    private readonly client: TxOperations,
     private readonly strictMode: boolean = true
   ) {}
+
+  async initCache (): Promise<this> {
+    await this.cacheIssueStatuses()
+    return this
+  }
 
   addProjectType (projectType: ImportProjectType): this {
     this.validateAndAdd(
@@ -184,6 +193,17 @@ export class ImportWorkspaceBuilder {
     }
   }
 
+  async cacheIssueStatuses (): Promise<void> {
+    const query: DocumentQuery<Status> = {
+      ofAttribute: tracker.attribute.IssueStatus
+    }
+
+    const statuses = await this.client.findAll(tracker.class.IssueStatus, query)
+    for (const status of statuses) {
+      this.issueStatusCache.set(status.name, status._id)
+    }
+  }
+
   private validateAndAdd<T, K>(
     type: string,
     path: string,
@@ -247,6 +267,11 @@ export class ImportWorkspaceBuilder {
     }
     if (issue.status == null) {
       errors.push('status is required: ')
+    } else if (!this.issueStatusCache.has(issue.status.name)) {
+      errors.push('status not found: ' + issue.status.name)
+    }
+    if (issue.priority != null && IssuePriority[issue.priority as keyof typeof IssuePriority] === undefined) {
+      errors.push('priority not found: ' + issue.priority)
     }
     if (issue.class !== tracker.class.Issue) {
       errors.push('invalid class: ' + issue.class)
