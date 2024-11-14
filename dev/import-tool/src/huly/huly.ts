@@ -110,131 +110,96 @@ class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
   process (json: MarkupNode, id: Ref<Doc>, spaceId: Ref<Space>): MarkupNode {
     traverseNode(json, (node) => {
       if (node.type === MarkupNodeType.image) {
-        const src = node.attrs?.src
-        if (src !== undefined) {
-          const sourceMeta = this.metadataById.get(id)
-          if (sourceMeta == null) {
-            console.warn(`Source metadata not found for ${id}`)
-            return
-          }
-          const href = decodeURI(src as string)
-          const fullPath = path.resolve(path.dirname(sourceMeta.path), href)
-          const attachmentMeta = this.attachMetadataByPath.get(fullPath)
-          if (attachmentMeta === undefined) {
-            console.warn(`Attachment image not found for ${fullPath}`)
-            return
-          }
-
-          this.attachMetadataByPath.set(fullPath, {
-            ...attachmentMeta,
-            spaceId,
-            parentId: id,
-            parentClass: sourceMeta.class as Ref<Class<Doc<Space>>>
-          })
-          this.alterImageNode(node, attachmentMeta.id, attachmentMeta.name)
-        }
+        this.processImageNode(node, id, spaceId)
       } else {
-        traverseNodeMarks(node, (mark) => {
-          if (mark.type === MarkupMarkType.link) {
-            const sourceMeta = this.metadataById.get(id)
-            if (sourceMeta == null) {
-              console.warn(`Source metadata not found for ${id}`)
-              return
-            }
-            const href = decodeURI(mark.attrs.href)
-            const fullPath = path.resolve(path.dirname(sourceMeta.path), href)
-            if (this.metadataByFilePath.has(fullPath)) {
-              const targetDocMeta = this.metadataByFilePath.get(fullPath)
-              if (targetDocMeta !== undefined) {
-                this.alterInternalLinkNode(node, targetDocMeta)
-              }
-            } else if (this.attachMetadataByPath.has(fullPath)) {
-              const attachmentMeta = this.attachMetadataByPath.get(fullPath)
-              if (attachmentMeta !== undefined) {
-                this.alterAttachmentLinkNode(node, attachmentMeta)
-                this.attachMetadataByPath.set(fullPath, {
-                  ...attachmentMeta,
-                  spaceId,
-                  parentId: id,
-                  parentClass: sourceMeta.class as Ref<Class<Doc<Space>>>
-                })
-              }
-            } else {
-              console.log('Unknown link type, leave it as is:', href)
-            }
-          }
-        })
-        this.findAndAlterMentions(node)
+        this.processLinkMarks(node, id, spaceId)
+        this.processMentions(node)
       }
       return true
     })
     return json
   }
 
-  private findAndAlterMentions (node: MarkupNode): boolean {
-    if (node.type === MarkupNodeType.paragraph && node.content !== undefined) {
-      const newContent: MarkupNode[] = []
-      for (const childNode of node.content) {
-        if (childNode.type === MarkupNodeType.text && childNode.text !== undefined) {
-          let match
-          let lastIndex = 0
-          let hasMentions = false
+  private processImageNode (node: MarkupNode, id: Ref<Doc>, spaceId: Ref<Space>): void {
+    const src = node.attrs?.src
+    if (src === undefined) return
 
-          while ((match = this.MENTION_REGEX.exec(childNode.text)) !== null) {
-            hasMentions = true
-            if (match.index > lastIndex) {
-              newContent.push({
-                type: MarkupNodeType.text,
-                text: childNode.text.slice(lastIndex, match.index),
-                marks: childNode.marks,
-                attrs: childNode.attrs
-              })
-            }
+    const sourceMeta = this.getSourceMetadata(id)
+    if (sourceMeta == null) return
 
-            const name = match[1]
-            const personRef = this.personsByName.get(name)
-            if (personRef !== undefined) {
-              newContent.push({
-                type: MarkupNodeType.reference,
-                attrs: {
-                  id: personRef,
-                  label: name,
-                  objectclass: contact.class.Person
-                }
-              })
-            } else {
-              newContent.push({
-                type: MarkupNodeType.text,
-                text: match[0],
-                marks: childNode.marks,
-                attrs: childNode.attrs
-              })
-            }
+    const href = decodeURI(src as string)
+    const fullPath = path.resolve(path.dirname(sourceMeta.path), href)
+    const attachmentMeta = this.attachMetadataByPath.get(fullPath)
 
-            lastIndex = this.MENTION_REGEX.lastIndex
-          }
-
-          if (hasMentions) {
-            if (lastIndex < childNode.text.length) {
-              newContent.push({
-                type: MarkupNodeType.text,
-                text: childNode.text.slice(lastIndex),
-                marks: childNode.marks,
-                attrs: childNode.attrs
-              })
-            }
-          } else {
-            newContent.push(childNode)
-          }
-        } else {
-          newContent.push(childNode)
-        }
-      }
-
-      node.content = newContent
-      return false
+    if (attachmentMeta === undefined) {
+      console.warn(`Attachment image not found for ${fullPath}`)
+      return
     }
-    return true
+
+    this.updateAttachmentMetadata(fullPath, attachmentMeta, id, spaceId, sourceMeta)
+    this.alterImageNode(node, attachmentMeta.id, attachmentMeta.name)
+  }
+
+  private processLinkMarks (node: MarkupNode, id: Ref<Doc>, spaceId: Ref<Space>): void {
+    traverseNodeMarks(node, (mark) => {
+      if (mark.type !== MarkupMarkType.link) return
+
+      const sourceMeta = this.getSourceMetadata(id)
+      if (sourceMeta == null) return
+
+      const href = decodeURI(mark.attrs.href)
+      const fullPath = path.resolve(path.dirname(sourceMeta.path), href)
+
+      if (this.metadataByFilePath.has(fullPath)) {
+        const targetDocMeta = this.metadataByFilePath.get(fullPath)
+        if (targetDocMeta !== undefined) {
+          this.alterInternalLinkNode(node, targetDocMeta)
+        }
+      } else if (this.attachMetadataByPath.has(fullPath)) {
+        const attachmentMeta = this.attachMetadataByPath.get(fullPath)
+        if (attachmentMeta !== undefined) {
+          this.alterAttachmentLinkNode(node, attachmentMeta)
+          this.updateAttachmentMetadata(fullPath, attachmentMeta, id, spaceId, sourceMeta)
+        }
+      } else {
+        console.log('Unknown link type, leave it as is:', href)
+      }
+    })
+  }
+
+  private processMentions (node: MarkupNode): void {
+    if (node.type !== MarkupNodeType.paragraph || node.content === undefined) return
+
+    const newContent: MarkupNode[] = []
+    for (const childNode of node.content) {
+      if (childNode.type === MarkupNodeType.text && childNode.text !== undefined) {
+        this.processMentionTextNode(childNode, newContent)
+      } else {
+        newContent.push(childNode)
+      }
+    }
+    node.content = newContent
+  }
+
+  private processMentionTextNode (node: MarkupNode, newContent: MarkupNode[]): void {
+    if (node.text === undefined) return
+
+    let match
+    let lastIndex = 0
+    let hasMentions = false
+
+    while ((match = this.MENTION_REGEX.exec(node.text)) !== null) {
+      hasMentions = true
+      this.addTextBeforeMention(newContent, node, lastIndex, match.index)
+      this.addMentionNode(newContent, match[1], node)
+      lastIndex = this.MENTION_REGEX.lastIndex
+    }
+
+    if (hasMentions) {
+      this.addRemainingText(newContent, node, lastIndex)
+    } else {
+      newContent.push(node)
+    }
   }
 
   private alterImageNode (node: MarkupNode, id: string, name: string): void {
@@ -285,6 +250,74 @@ class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
   private getContentType (fileName: string): string | undefined {
     const mimeType = contentType(fileName)
     return mimeType !== false ? mimeType : undefined
+  }
+
+  private getSourceMetadata (id: Ref<Doc>): DocMetadata | null {
+    const sourceMeta = this.metadataById.get(id)
+    if (sourceMeta == null) {
+      console.warn(`Source metadata not found for ${id}`)
+      return null
+    }
+    return sourceMeta
+  }
+
+  private updateAttachmentMetadata (
+    fullPath: string,
+    attachmentMeta: AttachmentMetadata,
+    id: Ref<Doc>,
+    spaceId: Ref<Space>,
+    sourceMeta: DocMetadata
+  ): void {
+    this.attachMetadataByPath.set(fullPath, {
+      ...attachmentMeta,
+      spaceId,
+      parentId: id,
+      parentClass: sourceMeta.class as Ref<Class<Doc<Space>>>
+    })
+  }
+
+  private addTextBeforeMention (newContent: MarkupNode[], node: MarkupNode, lastIndex: number, matchIndex: number): void {
+    if (node.text === undefined) return
+    if (matchIndex > lastIndex) {
+      newContent.push({
+        type: MarkupNodeType.text,
+        text: node.text.slice(lastIndex, matchIndex),
+        marks: node.marks,
+        attrs: node.attrs
+      })
+    }
+  }
+
+  private addMentionNode (newContent: MarkupNode[], name: string, originalNode: MarkupNode): void {
+    const personRef = this.personsByName.get(name)
+    if (personRef !== undefined) {
+      newContent.push({
+        type: MarkupNodeType.reference,
+        attrs: {
+          id: personRef,
+          label: name,
+          objectclass: contact.class.Person
+        }
+      })
+    } else {
+      newContent.push({
+        type: MarkupNodeType.text,
+        text: `@${name}`,
+        marks: originalNode.marks,
+        attrs: originalNode.attrs
+      })
+    }
+  }
+
+  private addRemainingText (newContent: MarkupNode[], node: MarkupNode, lastIndex: number): void {
+    if (node.text !== undefined && lastIndex < node.text.length) {
+      newContent.push({
+        type: MarkupNodeType.text,
+        text: node.text.slice(lastIndex),
+        marks: node.marks,
+        attrs: node.attrs
+      })
+    }
   }
 }
 
