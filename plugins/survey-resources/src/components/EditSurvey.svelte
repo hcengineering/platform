@@ -17,9 +17,10 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
   import { Survey } from '@hcengineering/survey'
-  import { EditBox, FocusHandler, Label, createFocusManager } from '@hcengineering/ui'
+  import { EditBox, FocusHandler, Label, createFocusManager, Icon } from '@hcengineering/ui'
   import EditQuestion from './EditQuestion.svelte'
   import survey from '../plugin'
+  import IconQuestion from './icons/Question.svelte'
 
   const manager = createFocusManager()
   const client = getClient()
@@ -87,85 +88,85 @@
 <FocusHandler {manager} />
 
 {#if object !== undefined}
-  <div class="flex-grow flex-col">
-    <div class="name">
-      <EditBox disabled={readonly} placeholder={survey.string.Name} bind:value={object.name} on:change={nameChange} />
-    </div>
-    <div class="prompt">
-      <EditBox
-        disabled={readonly}
-        placeholder={survey.string.PromptPlaceholder}
-        bind:value={object.prompt}
-        on:change={promptChange}
-      />
-    </div>
-    <div class="antiSection">
-      <div class="antiSection-header">
-        <span class="antiSection-header__title">
-          <Label label={survey.string.Questions} />
-        </span>
+  <div class="flex-row-center flex-no-shrink step-tb-6">
+    <EditBox
+      disabled={readonly}
+      placeholder={survey.string.Name}
+      bind:value={object.name}
+      kind={'large-style'}
+      on:change={nameChange}
+    />
+    {#if showPeviewButton}
+      <Button icon={survey.icon.Poll} label={survey.string.SurveyPreview} on:click={previewSurveyForm} />
+    {/if}
+  </div>
+  <div class="step-tb-6">
+    <EditBox
+      disabled={readonly}
+      placeholder={survey.string.PromptPlaceholder}
+      bind:value={object.prompt}
+      on:change={promptChange}
+    />
+  </div>
+  <div class="antiSection step-tb-6">
+    <div class="antiSection-header mb-3">
+      <div class="antiSection-header__icon">
+        <Icon icon={IconQuestion} size={'small'} />
       </div>
-      {#each questions as question, index}
-        <div
-          role="listitem"
-          on:dragover={(ev) => {
-            dragOver(ev, index)
-          }}
-          on:dragleave={(ev) => {
-            dragLeave(ev, index)
-          }}
-          on:drop={dragDrop}
-          class:dragged-over={draggedIndex !== undefined &&
-            draggedOverIndex === index &&
-            draggedOverIndex !== draggedIndex &&
-            draggedOverIndex !== draggedIndex + 1}
-        >
-          <EditQuestion
-            {index}
-            {readonly}
-            parent={object}
-            on:dragStart={() => {
-              draggedIndex = index
-            }}
-            on:dragEnd={() => {
-              draggedIndex = undefined
-              draggedOverIndex = undefined
-            }}
-          />
-        </div>
-      {/each}
-      {#if !readonly}
-        <div
-          role="listitem"
-          on:dragover={(ev) => {
-            dragOver(ev, questions.length)
-          }}
-          on:dragleave={(ev) => {
-            dragLeave(ev, questions.length)
-          }}
-          on:drop={dragDrop}
-          class:dragged-over={draggedOverIndex === questions.length && draggedIndex !== questions.length - 1}
-        >
-          <EditQuestion parent={object} index={-1} />
-        </div>
-      {/if}
+      <span class="antiSection-header__title">
+        <Label label={survey.string.Questions} />
+      </span>
     </div>
+    {#each questions as question, index}
+      <div
+        role="listitem"
+        on:dragover={(ev) => {
+          dragOver(ev, index)
+        }}
+        on:dragleave={(ev) => {
+          dragLeave(ev, index)
+        }}
+        on:drop={dragDrop}
+        class:dragged-over={draggedIndex !== undefined &&
+          draggedOverIndex === index &&
+          draggedOverIndex !== draggedIndex &&
+          draggedOverIndex !== draggedIndex + 1}
+      >
+        <EditQuestion
+          {index}
+          {readonly}
+          parent={object}
+          on:dragStart={() => {
+            draggedIndex = index
+          }}
+          on:dragEnd={() => {
+            draggedIndex = undefined
+            draggedOverIndex = undefined
+          }}
+        />
+      </div>
+    {/each}
+    {#if !readonly}
+      <div
+        role="listitem"
+        on:dragover={(ev) => {
+          dragOver(ev, questions.length)
+        }}
+        on:dragleave={(ev) => {
+          dragLeave(ev, questions.length)
+        }}
+        on:drop={dragDrop}
+        class:dragged-over={draggedOverIndex === questions.length && draggedIndex !== questions.length - 1}
+      >
+        <EditQuestion parent={object} index={-1} />
+      </div>
+    {/if}
   </div>
 {/if}
 
 <style lang="scss">
-  .name {
-    font-weight: 500;
-    font-size: 1.25rem;
-    color: var(--caption-color);
-    display: flex;
-  }
-  .prompt {
-    font-weight: 400;
-    font-size: 1.05rem;
-    color: var(--caption-color);
-    margin-top: 1em;
-    margin-bottom: 1em;
+  div[role='listitem'] + div[role='listitem'] {
+    margin-top: var(--spacing-1);
   }
   .dragged-over {
     transition: box-shadow 0.1s ease-in;

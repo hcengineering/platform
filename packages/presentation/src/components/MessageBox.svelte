@@ -93,6 +93,11 @@
     user-select: none;
     box-shadow: var(--theme-popup-shadow);
 
+    @media screen and (max-width: 480px) {
+      width: 100%;
+      max-width: 100%;
+    }
+
     .message {
       margin-bottom: 1.75rem;
       color: var(--theme-content-color);

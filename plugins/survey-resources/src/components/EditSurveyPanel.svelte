@@ -19,9 +19,9 @@
   import { Panel } from '@hcengineering/panel'
   import { createQuery } from '@hcengineering/presentation'
   import { Survey } from '@hcengineering/survey'
-  import { Button, Icon, IconMoreH, Label, tooltip } from '@hcengineering/ui'
+  import { Button, Icon, IconMoreH, Label, tooltip, Breadcrumb } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { DocNavLink, showMenu } from '@hcengineering/view-resources'
+  import { showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import EditSurvey from './EditSurvey.svelte'
   import EditPoll from './EditPoll.svelte'
@@ -53,7 +53,7 @@
   <Panel
     isHeader={false}
     isSub={false}
-    isAside={true}
+    isAside={false}
     {embedded}
     {object}
     on:open
@@ -63,9 +63,7 @@
     withoutInput={readonly}
   >
     <svelte:fragment slot="title">
-      <DocNavLink noUnderline {object}>
-        <div class="title">{object.name}</div>
-      </DocNavLink>
+      <Breadcrumb icon={survey.icon.Survey} title={object.name} size={'large'} isCurrent />
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
@@ -97,6 +95,13 @@
           }}
         />
       {/if}
+      <Button
+        icon={survey.icon.Poll}
+        label={survey.string.SurveyPreview}
+        on:click={() => {
+          editor.previewSurveyForm()
+        }}
+      />
     </svelte:fragment>
 
     <div class="flex-col flex-grow flex-no-shrink">

@@ -207,11 +207,11 @@
   p:last-child { margin-block-end: 0; }
 }
 
-@supports (selector(:has(.text-editor-image-container))) {
-  p:has(> .text-editor-image-container) {
-    user-select: none;
-  }
-}
+// @supports (selector(:has(.text-editor-image-container))) {
+//   p:has(> .text-editor-image-container) {
+//     user-select: none;
+//   }
+// }
 
 .text-editor-image-container {
   display: flex;
@@ -444,4 +444,9 @@
   &.delete {
     background: var(--text-editor-highlighted-node-delete-background-color);
   }
+}
+
+// Hiding the selection of an empty line
+.select-text p > br.ProseMirror-trailingBreak::selection {
+  background: transparent;
 }
