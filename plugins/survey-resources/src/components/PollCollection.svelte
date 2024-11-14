@@ -16,13 +16,14 @@
 -->
 <script lang="ts">
   import type { Class, Doc, Ref, Space } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
   import { Survey } from '@hcengineering/survey'
-  import { Button, IconAdd, Label, Section, showPopup } from '@hcengineering/ui'
-  import { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { Table, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
-  import SurveyForm from './SurveyForm.svelte'
+  import { Button, IconAdd, Label, Section, navigate, showPopup } from '@hcengineering/ui'
+  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { Table, ViewletSelector, ViewletSettingButton, getObjectLinkFragment } from '@hcengineering/view-resources'
   import SurveyPopup from './SurveyPopup.svelte'
   import survey from '../plugin'
+  import { makePollData } from '../utils'
 
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
@@ -34,12 +35,28 @@
   let viewlet: Viewlet | undefined
   let preference: ViewletPreference | undefined
 
-  function createPoll (ev: MouseEvent): void {
-    showPopup(SurveyPopup, {}, ev.target as HTMLElement, (result) => {
+  function selectSurvey (ev: MouseEvent): void {
+    showPopup(SurveyPopup, {}, ev.target as HTMLElement, async (result) => {
       if (result != null) {
-        showPopup(SurveyForm, { source: result as Survey, objectId, space, _class }, 'top')
+        await createPoll(result as Survey)
       }
     })
+  }
+
+  async function createPoll (source: Survey): Promise<void> {
+    const client = getClient()
+    const pollId = await client.addCollection(survey.class.Poll, space, objectId, _class, 'polls', makePollData(source))
+
+    const poll = await client.findOne(survey.class.Survey, { _id: pollId })
+    if (poll === undefined) {
+      console.error(`Could not find just created poll ${pollId}.`)
+      return
+    }
+
+    const hierarchy = client.getHierarchy()
+    const panel = hierarchy.classHierarchyMixin(poll._class as Ref<Class<Doc>>, view.mixin.ObjectPanel)
+    const loc = await getObjectLinkFragment(hierarchy, poll, {}, panel?.component)
+    navigate(loc)
   }
 </script>
 
@@ -55,7 +72,7 @@
       />
       <ViewletSettingButton kind={'tertiary'} bind:viewlet />
       {#if !readonly}
-        <Button id={survey.string.CreatePoll} icon={IconAdd} kind={'ghost'} on:click={createPoll} />
+        <Button id={survey.string.CreatePoll} icon={IconAdd} kind={'ghost'} on:click={selectSurvey} />
       {/if}
     </div>
   </svelte:fragment>
@@ -78,7 +95,7 @@
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         {#if !readonly}
-          <span class="over-underline content-color" on:click={createPoll}>
+          <span class="over-underline content-color" on:click={selectSurvey}>
             <Label label={survey.string.CreatePoll} />
           </span>
         {/if}

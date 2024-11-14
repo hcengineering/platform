@@ -14,9 +14,9 @@
 //
 
 import { Class, Doc, Ref, Space } from '@hcengineering/core'
-import { plugin, IntlString, type Asset, type Plugin, type Resource } from '@hcengineering/platform'
+import { plugin, IntlString, type Asset, type Plugin } from '@hcengineering/platform'
 import { Viewlet } from '@hcengineering/view'
-import { type AnyComponent, type ResolvedLocation } from '@hcengineering/ui'
+import { AnyComponent } from '@hcengineering/ui'
 import { Poll, Survey } from './types'
 
 export * from './types'
@@ -30,6 +30,7 @@ const survey = plugin(surveyId, {
   },
   icon: {
     Application: '' as Asset,
+    Info: '' as Asset,
     Poll: '' as Asset,
     Question: '' as Asset,
     QuestionKindString: '' as Asset,
@@ -37,7 +38,10 @@ const survey = plugin(surveyId, {
     QuestionKindOptions: '' as Asset,
     QuestionIsMandatory: '' as Asset,
     QuestionHasCustomOption: '' as Asset,
-    Survey: '' as Asset
+    Submit: '' as Asset,
+    Survey: '' as Asset,
+    ValidateOk: '' as Asset,
+    ValidateFail: '' as Asset
   },
   space: {
     Survey: '' as Ref<Space>
@@ -52,9 +56,12 @@ const survey = plugin(surveyId, {
     Application: '' as IntlString,
     Close: '' as IntlString,
     Control: '' as IntlString,
+    Completed: '' as IntlString,
     CreatePoll: '' as IntlString,
     CreateSurvey: '' as IntlString,
     DeleteOption: '' as IntlString,
+    DeletePoll: '' as IntlString,
+    DeletePollConfirm: '' as IntlString,
     DeleteQuestion: '' as IntlString,
     DeleteQuestionConfirm: '' as IntlString,
     Name: '' as IntlString,
@@ -75,16 +82,24 @@ const survey = plugin(surveyId, {
     QuestionIsMandatory: '' as IntlString,
     QuestionHasCustomOption: '' as IntlString,
     QuestionOptions: '' as IntlString,
-    QuestionOptionPlaceholder: '' as IntlString,
     QuestionPlaceholder: '' as IntlString,
-    QuestionEmptyPlaceholder: '' as IntlString,
+    QuestionPlaceholderEmpty: '' as IntlString,
+    QuestionPlaceholderOption: '' as IntlString,
+    QuestionTooltipMandatory: '' as IntlString,
+    QuestionTooltipCustomOption: '' as IntlString,
     Survey: '' as IntlString,
     Surveys: '' as IntlString,
+    SurveyEdit: '' as IntlString,
     SurveyPreview: '' as IntlString,
-    SurveySubmit: '' as IntlString
+    SurveySubmit: '' as IntlString,
+    SurveySubmitConfirm: '' as IntlString,
+    ValidateFail: '' as IntlString,
+    ValidateInfo: '' as IntlString,
+    ValidateOk: '' as IntlString
   },
   component: {
     CreateSurvey: '' as AnyComponent,
+    EditPollPanel: '' as AnyComponent,
     EditSurveyPanel: '' as AnyComponent,
     PollCollection: '' as AnyComponent,
     PollPresenter: '' as AnyComponent,
@@ -93,9 +108,6 @@ const survey = plugin(surveyId, {
   viewlet: {
     TableSurvey: '' as Ref<Viewlet>,
     TablePoll: '' as Ref<Viewlet>
-  },
-  resolver: {
-    Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
   }
 })
 

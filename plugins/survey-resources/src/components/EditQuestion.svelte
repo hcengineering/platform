@@ -17,7 +17,16 @@
 <script lang="ts">
   import { MessageBox, getClient } from '@hcengineering/presentation'
   import { Question, QuestionKind, Survey } from '@hcengineering/survey'
-  import { Button, EditBox, IconDelete, SelectPopup, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    EditBox,
+    Icon,
+    IconDelete,
+    SelectPopup,
+    eventToHTMLElement,
+    showPopup,
+    tooltip
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import survey from '../plugin'
 
@@ -342,10 +351,20 @@
       <div class="text">
         <EditBox
           disabled={readonly}
-          placeholder={survey.string.QuestionEmptyPlaceholder}
+          placeholder={survey.string.QuestionPlaceholderEmpty}
           bind:value={question.name}
           on:change={changeName}
         />
+        {#if question.hasCustomOption && question.kind !== QuestionKind.STRING}
+          <span class="question-param-icon" use:tooltip={{ label: survey.string.QuestionTooltipCustomOption }}>
+            <Icon icon={survey.icon.QuestionHasCustomOption} size="medium" fill="var(--theme-won-color)" />
+          </span>
+        {/if}
+        {#if question.isMandatory}
+          <span class="question-param-icon" use:tooltip={{ label: survey.string.QuestionTooltipMandatory }}>
+            <Icon icon={survey.icon.QuestionIsMandatory} size="medium" fill="var(--theme-urgent-color)" />
+          </span>
+        {/if}
       </div>
     {/if}
   </div>
@@ -390,7 +409,7 @@
           <div class="text">
             <EditBox
               disabled={readonly}
-              placeholder={survey.string.QuestionOptionPlaceholder}
+              placeholder={survey.string.QuestionPlaceholderOption}
               bind:value={options[index]}
               on:change={async () => {
                 await changeOption(index)
@@ -415,7 +434,7 @@
       >
         <Button noFocus={true} icon={survey.icon.Question} kind="list" size="small" />
         <div class="text">
-          <EditBox placeholder={survey.string.QuestionOptionPlaceholder} bind:value={newOption} on:change={addOption} />
+          <EditBox placeholder={survey.string.QuestionPlaceholderOption} bind:value={newOption} on:change={addOption} />
         </div>
       </div>
     {/if}
@@ -443,6 +462,7 @@
     margin-left: 1em;
     margin-right: 1em;
     flex-grow: 1;
+    display: flex;
   }
   .option {
     display: flex;
@@ -458,5 +478,8 @@
   .dragged-over {
     transition: box-shadow 0.1s ease-in;
     box-shadow: 0 -3px 0 0 var(--primary-button-outline);
+  }
+  .question-param-icon {
+    margin-left: 0.5em;
   }
 </style>
