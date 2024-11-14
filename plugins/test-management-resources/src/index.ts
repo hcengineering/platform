@@ -14,7 +14,7 @@
 //
 
 import { type Resources } from '@hcengineering/platform'
-import NewTestCaseHeader from './components/test-case/NewTestCaseHeader.svelte'
+import TestManagementSpaceHeader from './components/TestManagementSpaceHeader.svelte'
 import CreateProject from './components/project/CreateProject.svelte'
 import ProjectSpacePresenter from './components/project/ProjectSpacePresenter.svelte'
 import CreateTestSuite from './components/test-suite/CreateTestSuite.svelte'
@@ -34,7 +34,7 @@ import { resolveLocation, getTestSuiteLink } from './navigation'
 
 export default async (): Promise<Resources> => ({
   component: {
-    NewTestCaseHeader,
+    TestManagementSpaceHeader,
     CreateProject,
     ProjectSpacePresenter,
     CreateTestSuite,

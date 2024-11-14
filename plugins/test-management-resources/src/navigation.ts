@@ -14,9 +14,17 @@
 import testManagement, { testManagementId, type TestSuite, type TestProject } from '@hcengineering/test-management'
 import { type Doc, type Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
-import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
+import {
+  getCurrentResolvedLocation,
+  getLocation,
+  getPanelURI,
+  type Location,
+  type ResolvedLocation
+} from '@hcengineering/ui'
 import view, { type ObjectPanel } from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
+
+const SUITE_KEY = 'attachedTo'
 
 export function getPanelFragment<T extends Doc> (object: Pick<T, '_class' | '_id'>): string {
   const hierarchy = getClient().getHierarchy()
@@ -59,7 +67,7 @@ export function getTestSuiteLink (testSuite: Ref<TestSuite>): Location {
     testSuite === undefined
       ? undefined
       : {
-          attachedTo: testSuite
+          [SUITE_KEY]: testSuite
         }
 
   return loc
@@ -69,6 +77,11 @@ export function getTestSuiteIdFromFragment (fragment: string): Ref<TestSuite> | 
   const props = decodeURIComponent(fragment).split('|')
 
   return props[6] != null ? (props[6] as Ref<TestSuite>) : undefined
+}
+
+export function getTestSuiteIdFromLocation (): Ref<TestSuite> {
+  const location = getLocation()
+  return (location?.query?.[SUITE_KEY] as Ref<TestSuite>) ?? testManagement.ids.NoParent
 }
 
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
