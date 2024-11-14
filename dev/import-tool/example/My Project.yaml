@@ -2,7 +2,6 @@ class: tracker:class:Project
 identifier: DEEP
 title: Deep Project
 private: false
-defaultAssignee: John Doe
 defaultIssueStatus: Backlog
 owners:
     - john.doe@example.com

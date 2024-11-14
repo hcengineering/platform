@@ -555,14 +555,11 @@ export class HulyImporter {
       autoJoin: projectHeader.autoJoin ?? true,
       projectType,
       docs: [],
-      defaultAssignee: projectHeader.defaultAssignee !== undefined
-        ? { name: projectHeader.defaultAssignee, email: '' }
-        : undefined,
       defaultIssueStatus: projectHeader.defaultIssueStatus !== undefined
         ? { name: projectHeader.defaultIssueStatus }
         : undefined,
-      owners: projectHeader.owners?.map(email => ({ name: '', email })),
-      members: projectHeader.members?.map(email => ({ name: '', email })),
+      owners: projectHeader.owners,
+      members: projectHeader.members,
       description: projectHeader.description
     }
   }
@@ -575,8 +572,8 @@ export class HulyImporter {
       title: spaceHeader.title,
       private: spaceHeader.private ?? false,
       autoJoin: spaceHeader.autoJoin ?? true,
-      owners: spaceHeader.owners?.map(email => ({ name: '', email })),
-      members: spaceHeader.members?.map(email => ({ name: '', email })),
+      owners: spaceHeader.owners,
+      members: spaceHeader.members,
       docs: []
     }
   }

@@ -59,11 +59,6 @@ export interface ImportWorkspace {
   attachments?: ImportAttachment[]
 }
 
-export interface ImportContact {
-  name: string
-  email: string
-}
-
 export interface ImportProjectType {
   name: string
   taskTypes?: ImportTaskType[]
@@ -81,14 +76,15 @@ export interface ImportStatus {
   description?: string
 }
 
+type Email = string
 export interface ImportSpace<T extends ImportDoc> {
   class: Ref<Class<Space>>
   title: string
   private: boolean
   autoJoin?: boolean
   description?: string
-  owners?: ImportContact[]
-  members?: ImportContact[]
+  owners?: Email[]
+  members?: Email[]
   docs: T[]
 }
 export interface ImportDoc {
@@ -113,7 +109,6 @@ export interface ImportProject extends ImportSpace<ImportIssue> {
   class: Ref<Class<Project>>
   identifier: string
   projectType?: ImportProjectType
-  defaultAssignee?: ImportContact
   defaultIssueStatus?: ImportStatus
   description?: string
 }
@@ -284,11 +279,10 @@ export class WorkspaceImporter {
     return teamspaceId
   }
 
-  private async findAccountsIfAny (contacts?: ImportContact[]): Promise<Ref<Account>[]> {
-    if (contacts === undefined || contacts.length === 0) {
+  private async findAccountsIfAny (emails?: Email[]): Promise<Ref<Account>[]> {
+    if (emails === undefined || emails.length === 0) {
       return []
     }
-    const emails = contacts.map((contact) => contact.email)
     const accounts = await this.client.findAll(contact.class.PersonAccount, { email: { $in: emails } })
     return accounts.map((account: Account) => account._id)
   }
