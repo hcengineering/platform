@@ -376,7 +376,7 @@ export class WorkspaceImporter {
       autoJoin: project.autoJoin,
       identifier,
       sequence: 0,
-      defaultIssueStatus: defaultIssueStatus ?? tracker.status.Backlog, // todo: test with no status
+      defaultIssueStatus: defaultIssueStatus ?? tracker.status.Backlog,
       defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
       type: projectType as Ref<ProjectType>
     }
@@ -594,8 +594,7 @@ export class WorkspaceImporter {
   async findIssueStatusByName (name: string): Promise<Ref<IssueStatus>> {
     const query: DocumentQuery<Status> = {
       name,
-      ofAttribute: tracker.attribute.IssueStatus,
-      category: task.statusCategory.Active
+      ofAttribute: tracker.attribute.IssueStatus
     }
 
     const status = await this.client.findOne(tracker.class.IssueStatus, query)
