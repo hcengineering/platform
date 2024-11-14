@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-    import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
   import presentation from '@hcengineering/presentation'
   import { personByIdStore } from '@hcengineering/contact-resources'
@@ -47,8 +47,8 @@
 
     if (
       !$isConnected &&
-        !$isCurrentInstanceConnected &&
-        $myInfo?.sessionId === getMetadata(presentation.metadata.SessionId)
+      !$isCurrentInstanceConnected &&
+      $myInfo?.sessionId === getMetadata(presentation.metadata.SessionId)
     ) {
       const info = $infos.filter((p) => p.room === room._id)
       await tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites)
@@ -57,5 +57,5 @@
 </script>
 
 <div class="hulyPanels-container">
-    <Hall />
+  <Hall />
 </div>

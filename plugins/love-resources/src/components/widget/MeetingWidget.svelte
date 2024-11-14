@@ -60,7 +60,9 @@
   $: if (sid != null && room !== undefined) {
     meetingQuery.query(love.class.MeetingMinutes, { sid, attachedTo: room._id }, async (res) => {
       meetingMinutes = res[0]
-      meetingMinutesStore.set(meetingMinutes)
+      if (meetingMinutes) {
+        meetingMinutesStore.set(meetingMinutes)
+      }
       isMeetingMinutesLoaded = true
     })
   } else {

@@ -29,7 +29,8 @@
     type CompAndProps,
     IconMoreV,
     ButtonMenu,
-    DropdownIntlItem, IconMaximize
+    DropdownIntlItem,
+    IconMaximize
   } from '@hcengineering/ui'
   import view, { Action } from '@hcengineering/view'
   import { getActions } from '@hcengineering/view-resources'
@@ -268,9 +269,9 @@
           direction: 'top'
         }}
         kind={'secondary'}
-        iconSize='medium'
+        iconSize="medium"
         size={'large'}
-        on:click={ maximize}
+        on:click={maximize}
       />
     {/if}
     {#if $isConnected && moreItems.length > 0}

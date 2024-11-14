@@ -72,6 +72,9 @@
     "StartMeeting": "Начать встречу",
     "Video": "Видео",
     "NoMeetingMinutes": "Нет результатов встреч",
-    "JoinMeeting": "Присоединиться к встрече"
+    "JoinMeeting": "Присоединиться к встрече",
+    "MeetingStart": "Начало встречи",
+    "MeetingEnd": "Конец встречи",
+    "Status": "Статус"
   }
 }

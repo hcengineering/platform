@@ -72,6 +72,9 @@
     "StartMeeting": "开始会议",
     "Video": "视频",
     "NoMeetingMinutes": "无会议记录",
-    "JoinMeeting": "加入会议"
+    "JoinMeeting": "加入会议",
+    "MeetingStart": "会议开始",
+    "MeetingEnd": "会议结束",
+    "Status": "状态"
   }
 }

@@ -13,29 +13,30 @@
 // limitations under the License.
 //
 
-import contact, { Employee, Person, PersonAccount, formatName, getName } from '@hcengineering/contact'
+import contact, { Employee, formatName, getName, Person, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
+  concatLink,
+  Doc,
   Ref,
   Tx,
-  TxCUD,
   TxCreateDoc,
+  TxCUD,
   TxMixin,
   TxProcessor,
   TxUpdateDoc,
-  UserStatus,
-  Doc,
-  concatLink
+  UserStatus
 } from '@hcengineering/core'
 import love, {
   Invite,
+  isOffice,
   JoinRequest,
+  loveId,
   MeetingMinutes,
+  MeetingStatus,
   ParticipantInfo,
   RequestStatus,
-  RoomAccess,
-  isOffice,
-  loveId
+  RoomAccess
 } from '@hcengineering/love'
 import notification from '@hcengineering/notification'
 import { getMetadata, translate } from '@hcengineering/platform'
@@ -240,6 +241,40 @@ async function setDefaultRoomAccess (info: ParticipantInfo, control: TriggerCont
   return res
 }
 
+async function finishMeetingMinutes (
+  info: ParticipantInfo,
+  control: TriggerControl,
+  tx: TxCUD<ParticipantInfo>
+): Promise<Tx[]> {
+  const res: Tx[] = []
+  const roomInfos = await control.queryFind(control.ctx, love.class.RoomInfo, {})
+  const roomInfo = roomInfos.find((ri) => ri.persons.includes(info.person))
+
+  if (roomInfo === undefined) {
+    return res
+  }
+
+  const currentPersons = roomInfo.persons.filter((p) => p !== info.person)
+
+  if (currentPersons.length === 0) {
+    const meetingMinutes = await control.findAll(control.ctx, love.class.MeetingMinutes, {
+      attachedTo: roomInfo.room,
+      status: MeetingStatus.Active
+    })
+
+    for (const meeting of meetingMinutes) {
+      res.push(
+        control.txFactory.createTxUpdateDoc(meeting._class, meeting.space, meeting._id, {
+          status: MeetingStatus.Finished,
+          meetingEnd: tx.modifiedOn
+        })
+      )
+    }
+  }
+
+  return res
+}
+
 export async function OnParticipantInfo (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
@@ -254,6 +289,7 @@ export async function OnParticipantInfo (txes: Tx[], control: TriggerControl): P
         continue
       }
       result.push(...(await setDefaultRoomAccess(removedInfo, control)))
+      result.push(...(await finishMeetingMinutes(removedInfo, control, actualTx)))
       continue
     }
     if (actualTx._class === core.class.TxUpdateDoc) {
@@ -269,6 +305,7 @@ export async function OnParticipantInfo (txes: Tx[], control: TriggerControl): P
       }
       result.push(...(await rejectJoinRequests(info, control)))
       result.push(...(await setDefaultRoomAccess(info, control)))
+      result.push(...(await finishMeetingMinutes(info, control, actualTx)))
       result.push(...(await roomJoinHandler(info, control)))
     }
   }

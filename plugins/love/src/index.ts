@@ -1,6 +1,6 @@
 import { Event } from '@hcengineering/calendar'
 import { Person } from '@hcengineering/contact'
-import { AttachedDoc, Class, CollaborativeDoc, Doc, Mixin, Ref } from '@hcengineering/core'
+import { AttachedDoc, Class, CollaborativeDoc, Doc, Mixin, Ref, Timestamp } from '@hcengineering/core'
 import { Drive } from '@hcengineering/drive'
 import { NotificationType } from '@hcengineering/notification'
 import { Asset, IntlString, Metadata, Plugin, plugin } from '@hcengineering/platform'
@@ -105,6 +105,7 @@ export interface Room extends Doc {
   description: CollaborativeDoc
   attachments?: number
   meetings?: number
+  messages?: number
 }
 
 export interface Office extends Room {
@@ -158,12 +159,22 @@ export interface DevicesPreference extends Preference {
   camEnabled: boolean
 }
 
+export enum MeetingStatus {
+  Active,
+  Finished
+}
+
 export interface MeetingMinutes extends AttachedDoc {
   sid: string
+
   title: string
+  description: CollaborativeDoc
+
+  status: MeetingStatus
+  meetingEnd?: Timestamp
+
   transcription?: number
   messages?: number
-  description: CollaborativeDoc
   attachments?: number
 }
 
@@ -209,7 +220,10 @@ const love = plugin(loveId, {
     StartMeeting: '' as IntlString,
     Video: '' as IntlString,
     NoMeetingMinutes: '' as IntlString,
-    JoinMeeting: '' as IntlString
+    JoinMeeting: '' as IntlString,
+    MeetingStart: '' as IntlString,
+    MeetingEnd: '' as IntlString,
+    Status: '' as IntlString
   },
   ids: {
     MainFloor: '' as Ref<Floor>,

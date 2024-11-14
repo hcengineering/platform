@@ -27,10 +27,10 @@
 
     return $isConnected
   }
-  </script>
+</script>
 
 {#if $currentRoom && showControlBar($currentRoom, $location, $myOffice)}
-  <div class="flex-grow flex-shrink" >
-  <ControlBar room={$currentRoom} />
+  <div class="flex-grow flex-shrink">
+    <ControlBar room={$currentRoom} />
   </div>
 {/if}

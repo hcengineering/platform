@@ -19,11 +19,10 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import { personByIdStore } from '@hcengineering/contact-resources'
   import { IntlString } from '@hcengineering/platform'
-  import { openDoc } from '@hcengineering/view-resources'
 
   import love from '../plugin'
   import { getRoomName, tryConnect } from '../utils'
-  import { infos, invites, myInfo, myRequests, selectedRoomPlace, meetingMinutesStore } from '../stores'
+  import { infos, invites, myInfo, myRequests, selectedRoomPlace, myOffice, currentRoom } from '../stores'
 
   export let object: Room
   export let readonly: boolean = false
@@ -60,12 +59,6 @@
     )
     connecting = false
     selectedRoomPlace.set(undefined)
-
-    const meeting = $meetingMinutesStore
-
-    if (meeting !== undefined) {
-      await openDoc(client.getHierarchy(), meeting)
-    }
   }
 
   let connectLabel: IntlString = love.string.StartMeeting
@@ -88,9 +81,9 @@
         focusIndex={1}
       />
     </div>
-    {#if (object._id !== $myInfo?.room && $myInfo !== undefined)}
-    <ModernButton label={connectLabel} size="large" kind={'primary'} on:click={connect} loading={connecting} />
-      {/if}
+    {#if object._id !== $myOffice?._id && ($currentRoom?._id !== object._id || connecting)}
+      <ModernButton label={connectLabel} size="large" kind={'primary'} on:click={connect} loading={connecting} />
+    {/if}
   </div>
 </div>
 

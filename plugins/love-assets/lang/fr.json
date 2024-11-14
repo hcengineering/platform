@@ -72,6 +72,9 @@
     "StartMeeting": "Démarrer la réunion",
     "Video": "Vidéo",
     "NoMeetingMinutes": "Pas de minutes de réunion",
-    "JoinMeeting": "Rejoindre la réunion"
+    "JoinMeeting": "Rejoindre la réunion",
+    "MeetingStart": "Début de la réunion",
+    "MeetingEnd": "Fin de la réunion",
+    "Status": "Statut"
   }
 }

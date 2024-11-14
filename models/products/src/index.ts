@@ -159,7 +159,7 @@ function defineProduct (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: products.class.Product,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.mixin(products.class.Product, core.class.Class, view.mixin.ObjectEditor, {
@@ -299,7 +299,7 @@ function defineProductVersion (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: products.class.ProductVersion,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.mixin(products.class.ProductVersion, core.class.Class, view.mixin.ObjectEditor, {

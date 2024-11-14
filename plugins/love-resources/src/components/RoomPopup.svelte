@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Person, PersonAccount } from '@hcengineering/contact'
   import { personByIdStore, UserInfo } from '@hcengineering/contact-resources'
-  import { IdMap, getCurrentAccount } from '@hcengineering/core'
+  import { IdMap, getCurrentAccount, Ref, Class, Doc } from '@hcengineering/core'
   import ui, {
     ModernButton,
     SplitButton,
@@ -40,8 +40,10 @@
     roomAccessLabel
   } from '@hcengineering/love'
   import { createEventDispatcher } from 'svelte'
+  import { getObjectLinkFragment } from '@hcengineering/view-resources'
+  import { getClient } from '@hcengineering/presentation'
   import love from '../plugin'
-  import { currentRoom, infos, invites, myInfo, myOffice, myRequests } from '../stores'
+  import { currentRoom, infos, invites, myInfo, myOffice, myRequests, meetingMinutesStore } from '../stores'
   import {
     getRoomName,
     isCameraEnabled,
@@ -58,9 +60,11 @@
   import CamSettingPopup from './CamSettingPopup.svelte'
   import MicSettingPopup from './MicSettingPopup.svelte'
   import RoomAccessPopup from './RoomAccessPopup.svelte'
+  import view from '@hcengineering/view'
 
   export let room: Room
 
+  const client = getClient()
   function getPerson (info: ParticipantInfo | undefined, employees: IdMap<Person>): Person | undefined {
     if (info !== undefined) {
       return employees.get(info.person)
@@ -104,12 +108,20 @@
     dispatch('close')
   }
 
-  function back (): void {
-    closePanel()
-    const loc = getCurrentLocation()
-    loc.path[2] = loveId
-    loc.path.length = 3
-    navigate(loc)
+  async function back (): Promise<void> {
+    const meetingMinutes = $meetingMinutesStore
+    if (meetingMinutes !== undefined) {
+      const hierarchy = client.getHierarchy()
+      const panelComponent = hierarchy.classHierarchyMixin(
+        meetingMinutes._class as Ref<Class<Doc>>,
+        view.mixin.ObjectPanel
+      )
+      const comp = panelComponent?.component ?? view.component.EditDoc
+      const loc = await getObjectLinkFragment(hierarchy, meetingMinutes, {}, comp)
+      loc.path[2] = loveId
+      loc.path.length = 3
+      navigate(loc)
+    }
   }
 
   function micSettings (e: MouseEvent): void {

@@ -43,7 +43,6 @@ import {
   ListItemPresenter,
   ObjectEditor,
   ObjectEditorFooter,
-  ObjectPanelFooter,
   ObjectEditorHeader,
   ObjectFactory,
   ObjectIcon,

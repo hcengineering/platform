@@ -359,8 +359,8 @@
 
     <svelte:fragment slot="panel-footer">
       {#if panelFooter}
-      <Component is={panelFooter.footer} props={{ object, _class, ...panelFooter.props, readonly }} />
-        {/if}
+        <Component is={panelFooter.footer} props={{ object, _class, ...panelFooter.props, readonly }} />
+      {/if}
     </svelte:fragment>
   </Panel>
 {/if}

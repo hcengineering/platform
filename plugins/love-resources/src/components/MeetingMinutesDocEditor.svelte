@@ -17,7 +17,14 @@
   import { ObjectPresenter } from '@hcengineering/view-resources'
 
   export let object: MeetingMinutes
-
 </script>
 
-<ObjectPresenter objectId={object.attachedTo} _class={object.attachedToClass} shouldShowAvatar={false} disabled props={{ type: 'text' }}/>
+<span class="label flex-row-center ml-3 no-word-wrap">
+  <ObjectPresenter
+    objectId={object.attachedTo}
+    _class={object.attachedToClass}
+    shouldShowAvatar={false}
+    disabled
+    props={{ type: 'text' }}
+  />
+</span>
