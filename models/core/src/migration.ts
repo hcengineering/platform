@@ -294,9 +294,13 @@ export const coreOperation: MigrateOperation = {
         func: async (client) => {
           let processed = 0
           while (true) {
-            const txes = await client.find<TxCUD<Doc>>(DOMAIN_TX, {
-              _class: 'core:class:TxCollectionCUD' as Ref<Class<Doc>>
-            }, { limit: 5000 })
+            const txes = await client.find<TxCUD<Doc>>(
+              DOMAIN_TX,
+              {
+                _class: 'core:class:TxCollectionCUD' as Ref<Class<Doc>>
+              },
+              { limit: 5000 }
+            )
             if (txes.length === 0) break
             for (const tx of txes) {
               processed++
