@@ -166,7 +166,7 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestCaseSearchIcon: '' as AnyComponent,
     TestCases: '' as AnyComponent,
     CreateProject: '' as AnyComponent,
-    NewTestCaseHeader: '' as AnyComponent,
+    TestManagementSpaceHeader: '' as AnyComponent,
     TestCaseStatusIcon: '' as AnyComponent,
     PriorityIconPresenter: '' as AnyComponent,
     TestCaseStatusPresenter: '' as AnyComponent,

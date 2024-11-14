@@ -119,7 +119,7 @@ function defineApplication (builder: Builder): void {
           }
         ]
       },
-      navHeaderComponent: testManagement.component.NewTestCaseHeader
+      navHeaderComponent: testManagement.component.TestManagementSpaceHeader
     },
     testManagement.app.TestManagement
   )

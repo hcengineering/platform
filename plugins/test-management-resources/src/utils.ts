@@ -21,6 +21,8 @@ import { type TestProject, type TestCase, type TestSuite } from '@hcengineering/
 
 import CreateTestSuiteComponent from './components/test-suite/CreateTestSuite.svelte'
 import EditTestSuiteComponent from './components/test-suite/EditTestSuite.svelte'
+import CreateTestCase from './components/test-case/CreateTestCase.svelte'
+import CreateProject from './components/project/CreateProject.svelte'
 
 export async function getPreviousAssignees (objectId: Ref<Doc> | undefined): Promise<Array<Ref<Contact>>> {
   if (objectId === undefined) {
@@ -60,6 +62,14 @@ export async function showCreateTestSuitePopup (
 
 export async function showEditTestSuitePopup (suite: Ref<TestSuite>): Promise<void> {
   showPopup(EditTestSuiteComponent, { _id: suite }, 'top')
+}
+
+export async function showCreateTestCasePopup (space: Ref<TestProject>, testSuiteId: Ref<TestSuite>): Promise<void> {
+  showPopup(CreateTestCase, { space, testSuiteId }, 'top')
+}
+
+export async function showCreateProjectPopup (): Promise<void> {
+  showPopup(CreateProject, {}, 'top')
 }
 
 export async function CreateChildTestSuiteAction (doc: TestSuite): Promise<void> {
