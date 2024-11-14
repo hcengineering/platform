@@ -653,7 +653,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     try {
       result = await ctx.with(
         'aggregate',
-        { clazz },
+        {},
         (ctx) => toArray(cursor),
         () => ({
           domain,
@@ -846,7 +846,7 @@ abstract class MongoAdapterBase implements DbAdapter {
         // Skip sort/projection/etc.
         return await ctx.with(
           'find-one',
-          { domain },
+          {},
           async (ctx) => {
             const findOptions: MongoFindOptions = {}
 
@@ -1029,7 +1029,8 @@ abstract class MongoAdapterBase implements DbAdapter {
                   filter: { _id: it[0], '%hash%': null },
                   update: { $set: { '%hash%': it[1] } }
                 }
-              }))
+              })),
+              { ordered: false }
             )
           )
         }
@@ -1125,7 +1126,7 @@ abstract class MongoAdapterBase implements DbAdapter {
   }
 
   upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
-    return ctx.with('upload', { domain }, () => {
+    return ctx.with('upload', { domain }, (ctx) => {
       const coll = this.collection(domain)
 
       return uploadDocuments(ctx, docs, coll)
@@ -1654,9 +1655,7 @@ export async function uploadDocuments (ctx: MeasureContext, docs: Doc[], coll: C
         if ('%hash%' in it) {
           delete it['%hash%']
         }
-        const cs = ctx.newChild('calc-size', {})
-        const size = calculateObjectSize(it)
-        cs.end()
+        const size = digest != null ? calculateObjectSize(it) : 0
 
         return {
           replaceOne: {
@@ -1665,7 +1664,10 @@ export async function uploadDocuments (ctx: MeasureContext, docs: Doc[], coll: C
             upsert: true
           }
         }
-      })
+      }),
+      {
+        ordered: false
+      }
     )
   }
 }

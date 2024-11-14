@@ -545,11 +545,8 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           url: issueExternal.url,
           workspace: this.provider.getWorkspaceId().name
         })
-        target.prjData = await this.ctx.withLog(
-          'add issue to project v2',
-          {},
-          async () =>
-            await this.addIssueToProject(container, okit, issueExternal, target.target.projectNodeId as string)
+        target.prjData = await this.ctx.withLog('add issue to project v2', {}, () =>
+          this.addIssueToProject(container, okit, issueExternal, target.target.projectNodeId as string)
         )
         if (target.prjData !== undefined) {
           issueExternal.projectItems.nodes.push(target.prjData)

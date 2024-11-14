@@ -86,18 +86,9 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
         body: req.body
       })
 
-      ctx.info('map-installation', {
-        workspace: decodedToken.workspace.name,
-        installationid: payloadData.installationId
-      })
-      await ctx.withLog('map-installation', {}, async (ctx) => {
-        await worker.mapInstallation(
-          ctx,
-          decodedToken.workspace.name,
-          payloadData.installationId,
-          payloadData.accountId
-        )
-      })
+      await ctx.with('map-installation', {}, (ctx) =>
+        worker.mapInstallation(ctx, decodedToken.workspace.name, payloadData.installationId, payloadData.accountId)
+      )
       res.status(200)
       res.json({})
     } catch (err: any) {
@@ -136,7 +127,7 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
         code: payloadData.code,
         state: payloadData.state
       })
-      await ctx.withLog('request-github-access-token', {}, async (ctx) => {
+      await ctx.with('request-github-access-token', {}, async (ctx) => {
         await worker.requestGithubAccessToken({
           workspace: decodedToken.workspace.name,
           accountId: payloadData.accountId,
@@ -172,9 +163,9 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
         workspace: decodedToken.workspace.name,
         installationId: payloadData.installationId
       })
-      await ctx.withLog('remove-installation', {}, async (ctx) => {
-        await worker.removeInstallation(ctx, decodedToken.workspace.name, payloadData.installationId)
-      })
+      await ctx.with('remove-installation', {}, (ctx) =>
+        worker.removeInstallation(ctx, decodedToken.workspace.name, payloadData.installationId)
+      )
       res.status(200)
       res.json({})
     } catch (err: any) {

@@ -64,22 +64,7 @@ export class MeasureMetricsContext implements MeasureContext {
   st = Date.now()
   contextData: object = {}
   private done (value?: number, override?: boolean): void {
-    updateMeasure(
-      this.metrics,
-      this.st,
-      this.params,
-      this.fullParams,
-      (spend) => {
-        this.logger.logOperation(this.name, spend, {
-          ...this.params,
-          ...(typeof this.fullParams === 'function' ? this.fullParams() : this.fullParams),
-          ...this.fullParams,
-          ...(this.logParams ?? {})
-        })
-      },
-      value,
-      override
-    )
+    updateMeasure(this.metrics, this.st, this.params, this.fullParams, (spend) => {}, value, override)
   }
 
   constructor (
@@ -144,7 +129,7 @@ export class MeasureMetricsContext implements MeasureContext {
     let needFinally = true
     try {
       const value = op(c)
-      if (value != null && value instanceof Promise) {
+      if (value instanceof Promise) {
         needFinally = false
         return value.finally(() => {
           c.end()
