@@ -69,7 +69,7 @@ export async function OnChange (txes: Tx[], control: TriggerControl): Promise<Tx
             // Skip operator changes
           } else {
             const key = upd.objectClass + '.' + k
-            const attr = attrs.get(key) ?? control.hierarchy.getAttribute(upd.objectClass, k)
+            const attr = attrs.get(key) ?? control.hierarchy.findAttribute(upd.objectClass, k)
             if (attr !== undefined) {
               attrs.set(key, attr ?? null)
             }
