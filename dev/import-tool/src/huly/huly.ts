@@ -33,10 +33,10 @@ import {
   type ImportProjectType,
   type ImportTeamspace,
   type ImportWorkspace,
-  type MarkdownPreprocessor,
   WorkspaceImporter
 } from '../importer/importer'
 import { type FileUploader } from '../importer/uploader'
+import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 
 interface HulyComment {
   author: string
@@ -96,16 +96,16 @@ interface HulyWorkspaceSettings {
   }>
 }
 
-class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
-  private readonly MENTION_REGEX = /@([A-Za-z]+ [A-Za-z]+)/g
-
+class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
   constructor (
     private readonly urlProvider: (id: string) => string,
     private readonly metadataByFilePath: Map<string, DocMetadata>,
     private readonly metadataById: Map<Ref<Doc>, DocMetadata>,
     private readonly attachMetadataByPath: Map<string, AttachmentMetadata>,
-    private readonly personsByName: Map<string, Ref<Person>>
-  ) {}
+    personsByName: Map<string, Ref<Person>>
+  ) {
+    super(personsByName)
+  }
 
   process (json: MarkupNode, id: Ref<Doc>, spaceId: Ref<Space>): MarkupNode {
     traverseNode(json, (node) => {
@@ -165,41 +165,6 @@ class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
         console.log('Unknown link type, leave it as is:', href)
       }
     })
-  }
-
-  private processMentions (node: MarkupNode): void {
-    if (node.type !== MarkupNodeType.paragraph || node.content === undefined) return
-
-    const newContent: MarkupNode[] = []
-    for (const childNode of node.content) {
-      if (childNode.type === MarkupNodeType.text && childNode.text !== undefined) {
-        this.processMentionTextNode(childNode, newContent)
-      } else {
-        newContent.push(childNode)
-      }
-    }
-    node.content = newContent
-  }
-
-  private processMentionTextNode (node: MarkupNode, newContent: MarkupNode[]): void {
-    if (node.text === undefined) return
-
-    let match
-    let lastIndex = 0
-    let hasMentions = false
-
-    while ((match = this.MENTION_REGEX.exec(node.text)) !== null) {
-      hasMentions = true
-      this.addTextBeforeMention(newContent, node, lastIndex, match.index)
-      this.addMentionNode(newContent, match[1], node)
-      lastIndex = this.MENTION_REGEX.lastIndex
-    }
-
-    if (hasMentions) {
-      this.addRemainingText(newContent, node, lastIndex)
-    } else {
-      newContent.push(node)
-    }
   }
 
   private alterImageNode (node: MarkupNode, id: string, name: string): void {
@@ -274,50 +239,6 @@ class HulyMarkdownPreprocessor implements MarkdownPreprocessor {
       parentId: id,
       parentClass: sourceMeta.class as Ref<Class<Doc<Space>>>
     })
-  }
-
-  private addTextBeforeMention (newContent: MarkupNode[], node: MarkupNode, lastIndex: number, matchIndex: number): void {
-    if (node.text === undefined) return
-    if (matchIndex > lastIndex) {
-      newContent.push({
-        type: MarkupNodeType.text,
-        text: node.text.slice(lastIndex, matchIndex),
-        marks: node.marks,
-        attrs: node.attrs
-      })
-    }
-  }
-
-  private addMentionNode (newContent: MarkupNode[], name: string, originalNode: MarkupNode): void {
-    const personRef = this.personsByName.get(name)
-    if (personRef !== undefined) {
-      newContent.push({
-        type: MarkupNodeType.reference,
-        attrs: {
-          id: personRef,
-          label: name,
-          objectclass: contact.class.Person
-        }
-      })
-    } else {
-      newContent.push({
-        type: MarkupNodeType.text,
-        text: `@${name}`,
-        marks: originalNode.marks,
-        attrs: originalNode.attrs
-      })
-    }
-  }
-
-  private addRemainingText (newContent: MarkupNode[], node: MarkupNode, lastIndex: number): void {
-    if (node.text !== undefined && lastIndex < node.text.length) {
-      newContent.push({
-        type: MarkupNodeType.text,
-        text: node.text.slice(lastIndex),
-        marks: node.marks,
-        attrs: node.attrs
-      })
-    }
   }
 }
 

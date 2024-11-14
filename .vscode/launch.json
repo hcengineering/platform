@@ -514,7 +514,7 @@
       "name": "Debug Notion import",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "import-notion-to-teamspace", "/home/anna/work/notion/natalya/Export-fad9ecb4-a1a5-4623-920d-df32dd423743", "-u", "user1", "-pw", "1234", "-ws", "ws5", "-ts", "notion", ],
+      "args": ["src/__start.ts", "import-notion-to-teamspace", "/home/anna/work/notion/natalya/Export-fad9ecb4-a1a5-4623-920d-df32dd423743", "-u", "user1", "-pw", "1234", "-ws", "ws10", "-ts", "notion", ],
       // "args": ["src/__start.ts", "import-notion-with-teamspaces", "/home/anna/work/notion/natalya/Export-fad9ecb4-a1a5-4623-920d-df32dd423743", "-u", "user1", "-pw", "1234", "-ws", "ws1"],
       "env": {
         "FRONT_URL": "http://localhost:8087",
@@ -529,7 +529,7 @@
       "name": "Debug ClickUp import",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "import-clickup-tasks", "/home/anna/work/clickup/aleksandr/debug/mentions.csv", "-u", "user1", "-pw", "1234", "-ws", "ws5"],
+      "args": ["src/__start.ts", "import-clickup-tasks", "/home/anna/work/clickup/aleksandr/debug/mentions.csv", "-u", "user1", "-pw", "1234", "-ws", "ws10"],
       "env": {
         "FRONT_URL": "http://localhost:8087",
       },

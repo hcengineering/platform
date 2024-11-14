@@ -28,8 +28,8 @@ import core, {
   makeCollaborativeDoc,
   type Mixin,
   type Ref,
-  type Space,
   SortingOrder,
+  type Space,
   type Status,
   type Timestamp,
   type TxOperations
@@ -42,7 +42,7 @@ import task, {
   type TaskType,
   type TaskTypeWithFactory
 } from '@hcengineering/task'
-import { jsonToMarkup, jsonToYDocNoSchema, type MarkupNode, parseMessageMarkdown } from '@hcengineering/text'
+import { jsonToMarkup, jsonToYDocNoSchema, parseMessageMarkdown } from '@hcengineering/text'
 import tracker, {
   type Issue,
   type IssueParentInfo,
@@ -51,6 +51,7 @@ import tracker, {
   type Project,
   TimeReportDayType
 } from '@hcengineering/tracker'
+import { type MarkdownPreprocessor, NoopMarkdownPreprocessor } from './preprocessor'
 import { type FileUploader, type UploadResult } from './uploader'
 
 export interface ImportWorkspace {
@@ -138,16 +139,6 @@ export interface ImportAttachment {
   parentId?: Ref<Doc>
   parentClass?: Ref<Class<Doc<Space>>>
   spaceId?: Ref<Space>
-}
-
-export interface MarkdownPreprocessor {
-  process: (json: MarkupNode, id: Ref<Doc>, spaceId: Ref<Space>) => MarkupNode
-}
-
-class NoopMarkdownPreprocessor implements MarkdownPreprocessor {
-  process (json: MarkupNode, id: Ref<Doc>, spaceId: Ref<Space>): MarkupNode {
-    return json
-  }
 }
 
 export class WorkspaceImporter {
