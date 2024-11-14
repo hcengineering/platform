@@ -292,21 +292,29 @@ export const coreOperation: MigrateOperation = {
       {
         state: 'remove-collection-txes',
         func: async (client) => {
-          const txes = await client.find<TxCUD<Doc>>(DOMAIN_TX, {
-            _class: 'core:class:TxCollectionCUD' as Ref<Class<Doc>>
-          })
-          for (const tx of txes) {
-            await client.update(
-              DOMAIN_TX,
-              { _id: tx._id },
-              {
-                $set: {
-                  attachedTo: tx.objectId,
-                  attachedToClass: tx.objectClass,
-                  ...(tx as any).tx
+          let processed = 0
+          while (true) {
+            const txes = await client.find<TxCUD<Doc>>(DOMAIN_TX, {
+              _class: 'core:class:TxCollectionCUD' as Ref<Class<Doc>>
+            }, { limit: 5000 })
+            if (txes.length === 0) break
+            for (const tx of txes) {
+              processed++
+              await client.update(
+                DOMAIN_TX,
+                { _id: tx._id },
+                {
+                  $set: {
+                    attachedTo: tx.objectId,
+                    attachedToClass: tx.objectClass,
+                    ...(tx as any).tx
+                  }
                 }
+              )
+              if (processed % 1000 === 0) {
+                console.log('processed', processed)
               }
-            )
+            }
           }
         }
       }
