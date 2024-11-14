@@ -35,8 +35,8 @@ import {
   type ImportWorkspace,
   WorkspaceImporter
 } from '../importer/importer'
-import { type FileUploader } from '../importer/uploader'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
+import { type FileUploader } from '../importer/uploader'
 
 interface UnifiedComment {
   author: string
@@ -441,10 +441,7 @@ export class UnifiedFormatImporter {
     return person
   }
 
-  private findAccountByEmail (email?: string): Ref<PersonAccount> | undefined {
-    if (email === undefined) {
-      return undefined
-    }
+  private findAccountByEmail (email: string): Ref<PersonAccount> {
     const account = this.accountsByEmail.get(email)
     if (account === undefined) {
       throw new Error(`Account not found: ${email}`)
@@ -532,14 +529,18 @@ export class UnifiedFormatImporter {
       identifier: projectHeader.identifier,
       private: projectHeader.private ?? false,
       autoJoin: projectHeader.autoJoin ?? true,
+      description: projectHeader.description,
       projectType,
-      docs: [],
       defaultIssueStatus: projectHeader.defaultIssueStatus !== undefined
         ? { name: projectHeader.defaultIssueStatus }
         : undefined,
-      owners: projectHeader.owners,
-      members: projectHeader.members,
-      description: projectHeader.description
+      owners: projectHeader.owners !== undefined
+        ? projectHeader.owners.map(email => this.findAccountByEmail(email))
+        : [],
+      members: projectHeader.members !== undefined
+        ? projectHeader.members.map(email => this.findAccountByEmail(email))
+        : [],
+      docs: []
     }
   }
 
@@ -551,9 +552,13 @@ export class UnifiedFormatImporter {
       title: spaceHeader.title,
       private: spaceHeader.private ?? false,
       autoJoin: spaceHeader.autoJoin ?? true,
-      owners: spaceHeader.owners,
-      members: spaceHeader.members,
       description: spaceHeader.description,
+      owners: spaceHeader.owners !== undefined
+        ? spaceHeader.owners.map(email => this.findAccountByEmail(email))
+        : [],
+      members: spaceHeader.members !== undefined
+        ? spaceHeader.members.map(email => this.findAccountByEmail(email))
+        : [],
       docs: []
     }
   }

@@ -15,7 +15,7 @@
 import attachment, { type Attachment } from '@hcengineering/attachment'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import { yDocToBuffer } from '@hcengineering/collaboration'
-import contact, { type Person } from '@hcengineering/contact'
+import { type Person } from '@hcengineering/contact'
 import core, {
   type Account,
   type AttachedData,
@@ -31,7 +31,7 @@ import core, {
   SortingOrder,
   type Space,
   type Status,
-  Timestamp,
+  type Timestamp,
   type TxOperations
 } from '@hcengineering/core'
 import document, { type Document, getFirstRank, type Teamspace } from '@hcengineering/document'
@@ -82,15 +82,14 @@ export interface ImportPriority {
   description?: string
 }
 
-type Email = string
 export interface ImportSpace<T extends ImportDoc> {
   class: Ref<Class<Space>>
   title: string
   private: boolean
   autoJoin?: boolean
   description?: string
-  owners?: Email[]
-  members?: Email[]
+  owners?: Ref<Account>[]
+  members?: Ref<Account>[]
   docs: T[]
 }
 export interface ImportDoc {
@@ -267,21 +266,13 @@ export class WorkspaceImporter {
       title: space.title,
       name: space.title,
       private: space.private,
-      owners: await this.findAccountsIfAny(space.owners),
-      members: await this.findAccountsIfAny(space.members),
+      owners: space.owners ?? [],
+      members: space.members ?? [],
       autoJoin: space.autoJoin,
       archived: false
     }
     await this.client.createDoc(document.class.Teamspace, core.space.Space, data, teamspaceId)
     return teamspaceId
-  }
-
-  private async findAccountsIfAny (emails?: Email[]): Promise<Ref<Account>[]> {
-    if (emails === undefined || emails.length === 0) {
-      return []
-    }
-    const accounts = await this.client.findAll(contact.class.PersonAccount, { email: { $in: emails } })
-    return accounts.map((account: Account) => account._id)
   }
 
   async createDocument (
@@ -370,14 +361,12 @@ export class WorkspaceImporter {
         : tracker.status.Backlog
 
     const identifier = await this.uniqueProjectIdentifier(project.identifier)
-    const members = await this.findAccountsIfAny(project.members)
-    const owners = await this.findAccountsIfAny(project.owners)
     const projectData = {
       name: project.title,
       description: project.description ?? '',
       private: project.private,
-      members,
-      owners,
+      members: project.members ?? [],
+      owners: project.owners ?? [],
       archived: false,
       autoJoin: project.autoJoin,
       identifier,
