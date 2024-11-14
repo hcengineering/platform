@@ -734,8 +734,8 @@ export abstract class IssueSyncManagerBase {
       await this.ctx.withLog(
         'create mixin issue',
         {},
-        async () =>
-          await this.client.createMixin<Issue, Issue>(
+        () =>
+          this.client.createMixin<Issue, Issue>(
             existing._id as Ref<GithubIssueP>,
             existing._class,
             existing.space,
@@ -1259,7 +1259,8 @@ export abstract class IssueSyncManagerBase {
         if (!cnt) {
           Analytics.handleError(err)
           this.ctx.error('Error', { err })
-          await derivedClient.update(info, { error: errorToObj(err) })
+          await derivedClient.update(info, { error: errorToObj(err), needSync: githubSyncVersion })
+          return false
         }
       }
     }

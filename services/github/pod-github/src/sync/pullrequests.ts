@@ -343,12 +343,12 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
 
   private async createSyncData (
     pullRequestExternal: PullRequestExternalData,
-    derivedClient: TxOperations | undefined,
+    derivedClient: TxOperations,
     repo: GithubIntegrationRepository,
     account: Ref<Account>
   ): Promise<void> {
     const lastModified = new Date(pullRequestExternal.updatedAt).getTime()
-    await derivedClient?.createDoc(github.class.DocSyncInfo, repo.githubProject as Ref<GithubProject>, {
+    await derivedClient.createDoc(github.class.DocSyncInfo, repo.githubProject as Ref<GithubProject>, {
       url: pullRequestExternal.url.toLowerCase(),
       needSync: '', // we need to sync to retrieve patch in background
       githubNumber: pullRequestExternal.number,
@@ -426,8 +426,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         target.prjData = await this.ctx.withLog(
           'add pull request to project}',
           {},
-          async () =>
-            await this.addIssueToProject(container, okit, pullRequestExternal, target.target.projectNodeId as string),
+          () => this.addIssueToProject(container, okit, pullRequestExternal, target.target.projectNodeId as string),
           { url: pullRequestExternal.url }
         )
         if (target.prjData !== undefined) {
@@ -575,8 +574,8 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
           await this.ctx.withLog(
             'update pull request patch',
             {},
-            async () => {
-              await this.handlePatch(
+            () =>
+              this.handlePatch(
                 info,
                 container,
                 pullRequestExternal,
@@ -587,8 +586,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
                 },
                 lastModified,
                 accountGH
-              )
-            },
+              ),
             { url: pullRequestExternal.url }
           )
         }
@@ -606,8 +604,8 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         const update = await this.ctx.withLog(
           'perform pull request diff update',
           {},
-          async () =>
-            await this.handleDiffUpdate(
+          () =>
+            this.handleDiffUpdate(
               target,
               { ...(existing as any), description },
               info,

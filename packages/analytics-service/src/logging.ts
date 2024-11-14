@@ -7,8 +7,6 @@ import { basename, dirname, join } from 'path'
 import winston from 'winston'
 import DailyRotateFile from 'winston-daily-rotate-file'
 
-const PLATFORM_OPERATION_LOGGING = process.env.PLATFORM_OPERATION_LOGGING === 'true'
-
 export class SplitLogger implements MeasureLogger {
   logger: winston.Logger
 
@@ -110,9 +108,7 @@ export class SplitLogger implements MeasureLogger {
   }
 
   logOperation (operation: string, time: number, params: ParamsType): void {
-    if (PLATFORM_OPERATION_LOGGING) {
-      this.logger.info({ operation, time, ...params })
-    }
+    this.logger.info(operation, { time, ...params })
   }
 
   childLogger (name: string, params: Record<string, string>): MeasureLogger {
