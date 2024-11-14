@@ -28,8 +28,8 @@
 
   const query = createQuery()
 
-  let loading = true
   let hasProject = currentSpace !== undefined
+  let loading = !hasProject
   if (!hasProject) {
     query.query(
       testManagement.class.TestProject,
