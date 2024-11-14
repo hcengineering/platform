@@ -47,11 +47,11 @@ interface UnifiedComment {
 interface UnifiedIssueHeader {
   class: 'tracker:class:Issue'
   title: string
-  assignee: string
   status: string
-  priority: string
-  estimation: number // in hours
-  remainingTime: number // in hours
+  assignee?: string
+  priority?: string
+  estimation?: number // in hours
+  remainingTime?: number // in hours
   comments?: UnifiedComment[]
 }
 
@@ -366,7 +366,8 @@ export class UnifiedFormatImporter {
           }
         }
       } catch (error) {
-        console.warn(`Invalid space configuration in ${folder}: `, error)
+        const message = error instanceof Error ? error.message : String(error)
+        throw new Error(`Invalid space configuration in ${folder}: ${message}`)
       }
     }
 
@@ -413,7 +414,7 @@ export class UnifiedFormatImporter {
           remainingTime: issueHeader.remainingTime,
           comments: this.processComments(issueHeader.comments),
           subdocs: [], // Will be added via builder
-          assignee: this.personsByName.get(issueHeader.assignee)
+          assignee: this.findPersonByName(issueHeader.assignee)
         }
 
         builder.addIssue(projectPath, issuePath, issue, parentIssuePath)
@@ -427,6 +428,28 @@ export class UnifiedFormatImporter {
         console.warn(`Skipping ${issueFile}: unknown issue class ${issueHeader.class}`)
       }
     }
+  }
+
+  private findPersonByName (name?: string): Ref<Person> | undefined {
+    if (name === undefined) {
+      return undefined
+    }
+    const person = this.personsByName.get(name)
+    if (person === undefined) {
+      throw new Error(`Person not found: ${name}`)
+    }
+    return person
+  }
+
+  private findAccountByEmail (email?: string): Ref<PersonAccount> | undefined {
+    if (email === undefined) {
+      return undefined
+    }
+    const account = this.accountsByEmail.get(email)
+    if (account === undefined) {
+      throw new Error(`Account not found: ${email}`)
+    }
+    return account
   }
 
   private async processDocumentsRecursively (
@@ -474,11 +497,12 @@ export class UnifiedFormatImporter {
   }
 
   private processComments (comments: UnifiedComment[] = []): ImportComment[] {
-    return comments.map(comment => ({
-      text: comment.text,
-      author: this.accountsByEmail.get(comment.author),
-      date: new Date(comment.date).getTime()
-    }))
+    return comments.map(comment => {
+      return {
+        text: comment.text,
+        author: this.findAccountByEmail(comment.author)
+      }
+    })
   }
 
   private processProjectTypes (wsHeader: UnifiedWorkspaceSettings): ImportProjectType[] {

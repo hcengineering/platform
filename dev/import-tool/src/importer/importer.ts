@@ -31,7 +31,7 @@ import core, {
   SortingOrder,
   type Space,
   type Status,
-  type Timestamp,
+  Timestamp,
   type TxOperations
 } from '@hcengineering/core'
 import document, { type Document, getFirstRank, type Teamspace } from '@hcengineering/document'
