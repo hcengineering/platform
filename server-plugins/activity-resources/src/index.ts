@@ -79,7 +79,7 @@ export async function removeReactionNotifications (tx: TxCUD<Reaction>, control:
     await control.findAll(
       control.ctx,
       activity.class.ActivityMessage,
-      { objectId: tx.attachedTo },
+      { objectId: tx.objectId },
       { projection: { _id: 1, _class: 1, space: 1 } }
     )
   )[0]
