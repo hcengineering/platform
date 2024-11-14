@@ -20,7 +20,8 @@ import {
   DOMAIN_TRANSIENT,
   IndexKind,
   type Ref,
-  type CollaborativeDoc
+  type CollaborativeDoc,
+  Doc
 } from '@hcengineering/core'
 import {
   type DevicesPreference,
@@ -186,6 +187,11 @@ export class TMeeting extends TEvent implements Meeting {
 @Model(love.class.MeetingMinutes, core.class.Doc, DOMAIN_MEETING_MINUTES)
 @UX(love.string.MeetingMinutes, love.icon.Cam, undefined, undefined, love.string.MeetingsMinutes)
 export class TMeetingMinutes extends TAttachedDoc implements MeetingMinutes {
+  @Prop(TypeRef(core.class.Doc), love.string.Room,  {editor: love.component.MeetingMinutesDocEditor })
+  @Index(IndexKind.Indexed)
+  @ReadOnly()
+  declare attachedTo: Ref<Doc>
+
   @Hidden()
     sid!: string
 
@@ -437,6 +443,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(love.class.MeetingMinutes, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: love.component.MeetingMinutesPresenter
+  })
+
+  builder.mixin(love.class.Room, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: love.component.RoomPresenter
   })
 
   builder.mixin(love.class.MeetingMinutes, core.class.Class, view.mixin.CollectionEditor, {

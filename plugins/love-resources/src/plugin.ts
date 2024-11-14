@@ -25,6 +25,7 @@ export default mergeIds(loveId, love, {
     MeetingData: '' as AnyComponent,
     EditMeetingData: '' as AnyComponent,
     MeetingMinutesPresenter: '' as AnyComponent,
+    RoomPresenter: '' as AnyComponent,
     MeetingMinutesSection: '' as AnyComponent,
     EditMeetingMinutes: '' as AnyComponent,
     EditRoom: '' as AnyComponent,
@@ -32,6 +33,7 @@ export default mergeIds(loveId, love, {
     MeetingMinutesTable: '' as AnyComponent,
     FloorView: '' as AnyComponent,
     PanelControlBar: '' as AnyComponent,
+    MeetingMinutesDocEditor: '' as AnyComponent
   },
   function: {
     CreateMeeting: '' as Resource<DocCreateFunction>,
