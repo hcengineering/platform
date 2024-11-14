@@ -29,7 +29,7 @@
     type CompAndProps,
     IconMoreV,
     ButtonMenu,
-    DropdownIntlItem
+    DropdownIntlItem, IconMaximize
   } from '@hcengineering/ui'
   import view, { Action } from '@hcengineering/view'
   import { getActions } from '@hcengineering/view-resources'
@@ -60,8 +60,10 @@
   import RoomAccessPopup from './RoomAccessPopup.svelte'
   import RoomLanguageSelector from './RoomLanguageSelector.svelte'
   import ControlBarContainer from './ControlBarContainer.svelte'
+  import RoomModal from './RoomModal.svelte'
 
   export let room: Room
+  export let canMaximize: boolean = true
   export let fullScreen: boolean = false
   export let onFullScreen: (() => void) | undefined = undefined
 
@@ -159,6 +161,10 @@
     await fn(room)
   }
   $: withVideo = $screenSharing || room.type === RoomType.Video
+
+  function maximize (): void {
+    showPopup(RoomModal, { room }, 'full-centered')
+  }
 </script>
 
 <ControlBarContainer bind:noLabel>
@@ -251,6 +257,20 @@
         on:click={() => {
           $isFullScreen = !$isFullScreen
         }}
+      />
+    {/if}
+
+    {#if ($screenSharing || room.type === RoomType.Video) && $isConnected && canMaximize}
+      <ModernButton
+        icon={IconMaximize}
+        tooltip={{
+          label: love.string.FullscreenMode,
+          direction: 'top'
+        }}
+        kind={'secondary'}
+        iconSize='medium'
+        size={'large'}
+        on:click={ maximize}
       />
     {/if}
     {#if $isConnected && moreItems.length > 0}

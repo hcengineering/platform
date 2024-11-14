@@ -30,7 +30,8 @@ export default mergeIds(loveId, love, {
     EditRoom: '' as AnyComponent,
     FloorAttributePresenter: '' as AnyComponent,
     MeetingMinutesTable: '' as AnyComponent,
-    FloorView: '' as AnyComponent
+    FloorView: '' as AnyComponent,
+    PanelControlBar: '' as AnyComponent,
   },
   function: {
     CreateMeeting: '' as Resource<DocCreateFunction>,

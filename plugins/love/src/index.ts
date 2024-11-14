@@ -205,6 +205,7 @@ const love = plugin(loveId, {
     Transcription: '' as IntlString,
     StartWithTranscription: '' as IntlString,
     MeetingMinutes: '' as IntlString,
+    MeetingsMinutes: '' as IntlString,
     StartMeeting: '' as IntlString,
     Video: '' as IntlString,
     NoMeetingMinutes: '' as IntlString,

@@ -184,7 +184,7 @@ export class TMeeting extends TEvent implements Meeting {
 }
 
 @Model(love.class.MeetingMinutes, core.class.Doc, DOMAIN_MEETING_MINUTES)
-@UX(love.string.MeetingMinutes, love.icon.Cam)
+@UX(love.string.MeetingMinutes, love.icon.Cam, undefined, undefined, love.string.MeetingsMinutes)
 export class TMeetingMinutes extends TAttachedDoc implements MeetingMinutes {
   @Hidden()
     sid!: string
@@ -573,5 +573,13 @@ export function createModel (builder: Builder): void {
   builder.mixin(love.class.Floor, core.class.Class, core.mixin.IndexConfiguration, {
     indexes: [],
     searchDisabled: true
+  })
+
+  builder.mixin(love.class.Room, core.class.Class, view.mixin.ObjectPanelFooter, {
+    editor: love.component.PanelControlBar
+  })
+
+  builder.mixin(love.class.MeetingMinutes, core.class.Class, view.mixin.ObjectPanelFooter, {
+    editor: love.component.PanelControlBar
   })
 }

@@ -18,6 +18,7 @@ import EditRoom from './components/EditRoom.svelte'
 import FloorAttributePresenter from './components/FloorAttributePresenter.svelte'
 import FloorView from './components/FloorView.svelte'
 import MeetingMinutesTable from './components/MeetingMinutesTable.svelte'
+import PanelControlBar from './components/PanelControlBar.svelte'
 
 import {
   copyGuestLink,
@@ -49,7 +50,8 @@ export default async (): Promise<Resources> => ({
     EditRoom,
     FloorAttributePresenter,
     FloorView,
-    MeetingMinutesTable
+    MeetingMinutesTable,
+    PanelControlBar
   },
   function: {
     CreateMeeting: createMeeting,

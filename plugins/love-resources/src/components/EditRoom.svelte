@@ -14,15 +14,16 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { EditBox, ModernButton, closePanel } from '@hcengineering/ui'
+  import { EditBox, ModernButton } from '@hcengineering/ui'
   import { Room, isOffice } from '@hcengineering/love'
   import { createEventDispatcher, onMount } from 'svelte'
   import { personByIdStore } from '@hcengineering/contact-resources'
   import { IntlString } from '@hcengineering/platform'
+  import { openDoc } from '@hcengineering/view-resources'
 
   import love from '../plugin'
   import { getRoomName, tryConnect } from '../utils'
-  import { infos, invites, myInfo, myRequests, selectedRoomPlace } from '../stores'
+  import { infos, invites, myInfo, myRequests, selectedRoomPlace, meetingMinutesStore } from '../stores'
 
   export let object: Room
   export let readonly: boolean = false
@@ -59,8 +60,12 @@
     )
     connecting = false
     selectedRoomPlace.set(undefined)
-    closePanel()
-    dispatch('close')
+
+    const meeting = $meetingMinutesStore
+
+    if (meeting !== undefined) {
+      await openDoc(client.getHierarchy(), meeting)
+    }
   }
 
   let connectLabel: IntlString = love.string.StartMeeting
@@ -83,7 +88,9 @@
         focusIndex={1}
       />
     </div>
+    {#if (object._id !== $myInfo?.room && $myInfo !== undefined)}
     <ModernButton label={connectLabel} size="large" kind={'primary'} on:click={connect} loading={connecting} />
+      {/if}
   </div>
 </div>
 
