@@ -137,7 +137,7 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: survey.class.Poll,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.mixin(survey.class.Poll, core.class.Class, view.mixin.CollectionEditor, {

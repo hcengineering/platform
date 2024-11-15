@@ -152,7 +152,6 @@
 
     return _id !== meetingMinutes._id
   }
-
 </script>
 
 <div class="antiPopup room-popup">
