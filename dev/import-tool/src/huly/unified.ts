@@ -327,45 +327,45 @@ export class UnifiedFormatImporter {
       }
     }
 
-    // Process spaces
-    const folders = fs.readdirSync(folderPath)
-      .filter(f => fs.statSync(path.join(folderPath, f)).isDirectory())
+    // Process all yaml files first
+    const yamlFiles = fs.readdirSync(folderPath)
+      .filter(f => f.endsWith('.yaml') && f !== 'settings.yaml')
 
-    for (const folder of folders) {
-      const spacePath = path.join(folderPath, folder)
-      const yamlPath = path.join(folderPath, `${folder}.yaml`)
-
-      if (!fs.existsSync(yamlPath)) {
-        console.warn(`Skipping ${folder}: no ${folder}.yaml found`)
-        continue
-      }
+    for (const yamlFile of yamlFiles) {
+      const yamlPath = path.join(folderPath, yamlFile)
+      const spaceName = path.basename(yamlFile, '.yaml')
+      const spacePath = path.join(folderPath, spaceName)
 
       try {
-        console.log(`Processing ${folder}...`)
+        console.log(`Processing ${spaceName}...`)
         const spaceConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as UnifiedSpaceSettings
 
         switch (spaceConfig.class) {
           case tracker.class.Project: {
             const project = await this.processProject(spaceConfig as UnifiedProjectSettings)
             builder.addProject(spacePath, project)
-            await this.processIssuesRecursively(builder, project.identifier, spacePath, spacePath)
+            if (fs.existsSync(spacePath) && fs.statSync(spacePath).isDirectory()) {
+              await this.processIssuesRecursively(builder, project.identifier, spacePath, spacePath)
+            }
             break
           }
 
           case document.class.Teamspace: {
             const teamspace = await this.processTeamspace(spaceConfig as UnifiedTeamspaceSettings)
             builder.addTeamspace(spacePath, teamspace)
-            await this.processDocumentsRecursively(builder, spacePath, spacePath)
+            if (fs.existsSync(spacePath) && fs.statSync(spacePath).isDirectory()) {
+              await this.processDocumentsRecursively(builder, spacePath, spacePath)
+            }
             break
           }
 
           default: {
-            console.warn(`Skipping ${folder}: unknown space class ${spaceConfig.class}`)
+            console.warn(`Skipping ${spaceName}: unknown space class ${spaceConfig.class}`)
           }
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
-        throw new Error(`Invalid space configuration in ${folder}: ${message}`)
+        throw new Error(`Invalid space configuration in ${spaceName}: ${message}`)
       }
     }
 
