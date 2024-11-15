@@ -23,12 +23,12 @@
     IconUpOutline,
     Label,
     eventToHTMLElement,
-    getCurrentLocation,
+    Location,
     location,
     navigate,
     showPopup,
     Scroller,
-    closePanel
+    panelstore
   } from '@hcengineering/ui'
   import {
     ParticipantInfo,
@@ -37,7 +37,8 @@
     isOffice,
     loveId,
     roomAccessIcon,
-    roomAccessLabel
+    roomAccessLabel,
+    MeetingMinutes
   } from '@hcengineering/love'
   import { createEventDispatcher } from 'svelte'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
@@ -141,6 +142,17 @@
   }
 
   const me = (getCurrentAccount() as PersonAccount).person
+  function canGoBack (joined: boolean, location: Location, meetingMinutes?: MeetingMinutes): boolean {
+    if (!joined) return false
+    if (location.path[2] !== loveId) return true
+    if (meetingMinutes === undefined) return false
+
+    const panel = $panelstore.panel
+    const { _id } = panel ?? {}
+
+    return _id !== meetingMinutes._id
+  }
+
 </script>
 
 <div class="antiPopup room-popup">
@@ -227,7 +239,7 @@
           on:click={connect}
         />
       {/if}
-      {#if $location.path[2] !== loveId}
+      {#if canGoBack(joined, $location, $currentMeetingMinutes)}
         <ModernButton icon={IconArrowLeft} label={ui.string.Back} kind={'secondary'} size={'large'} on:click={back} />
       {/if}
     </div>
