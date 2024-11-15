@@ -14,17 +14,41 @@
 -->
 <script lang="ts">
   import { MeetingMinutes } from '@hcengineering/love'
-  import { ObjectPresenter } from '@hcengineering/view-resources'
+  import { ObjectPresenter, openDoc } from '@hcengineering/view-resources'
+  import view from '@hcengineering/view'
+  import { ActionIcon } from '@hcengineering/ui'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import type { Doc } from '@hcengineering/core'
 
   export let object: MeetingMinutes
+
+  const client = getClient()
+  const docQuery = createQuery()
+
+  let doc: Doc | undefined
+
+  $: docQuery.query(object.attachedToClass, { _id: object.attachedTo }, (r) => {
+    doc = r.shift()
+  })
 </script>
 
-<span class="label flex-row-center ml-3 no-word-wrap">
-  <ObjectPresenter
-    objectId={object.attachedTo}
-    _class={object.attachedToClass}
-    shouldShowAvatar={false}
-    disabled
-    props={{ type: 'text' }}
-  />
-</span>
+{#if doc}
+  <span class="label flex-row-center flex-gap-4 ml-3 no-word-wrap">
+    <ObjectPresenter
+      objectId={doc._id}
+      _class={doc._class}
+      value={doc}
+      shouldShowAvatar={false}
+      disabled
+      props={{ type: 'text' }}
+    />
+    <ActionIcon
+      icon={view.icon.Open}
+      size={'small'}
+      action={async () => {
+        if (doc === undefined) return
+        await openDoc(client.getHierarchy(), doc)
+      }}
+    />
+  </span>
+{/if}
