@@ -40,7 +40,6 @@ import { type FileUploader } from '../importer/uploader'
 
 interface UnifiedComment {
   author: string
-  date: string
   text: string
 }
 
@@ -55,7 +54,7 @@ interface UnifiedIssueHeader {
   comments?: UnifiedComment[]
 }
 
-interface UnifiedSpaceHeader {
+interface UnifiedSpaceSettings {
   class: 'tracker:class:Project' | 'document:class:Teamspace'
   title: string
   private?: boolean
@@ -65,14 +64,14 @@ interface UnifiedSpaceHeader {
   description?: string
 }
 
-interface UnifiedProjectSettings extends UnifiedSpaceHeader {
+interface UnifiedProjectSettings extends UnifiedSpaceSettings {
   class: 'tracker:class:Project'
   identifier: string
   projectType?: string
   defaultIssueStatus?: string
 }
 
-interface UnifiedTeamspaceSettings extends UnifiedSpaceHeader {
+interface UnifiedTeamspaceSettings extends UnifiedSpaceSettings {
   class: 'document:class:Teamspace'
 }
 
@@ -86,7 +85,7 @@ interface UnifiedWorkspaceSettings {
     name: string
     taskTypes?: Array<{
       name: string
-      description: string
+      description?: string
       statuses: Array<{
         name: string
         description: string
@@ -258,8 +257,8 @@ interface AttachmentMetadata {
 }
 
 export class UnifiedFormatImporter {
-  private readonly metadataByFilePath = new Map<string, DocMetadata>()
   private readonly metadataById = new Map<Ref<Doc>, DocMetadata>()
+  private readonly metadataByFilePath = new Map<string, DocMetadata>()
   private readonly attachMetadataByPath = new Map<string, AttachmentMetadata>()
 
   private personsByName = new Map<string, Ref<Person>>()
@@ -306,23 +305,26 @@ export class UnifiedFormatImporter {
           spaceId: attachment.spaceId
         }
       })
-    await new WorkspaceImporter(this.client, this.fileUploader, { attachments }, preprocessor).performImport()
+    await new WorkspaceImporter(this.client, this.fileUploader, { attachments }).performImport()
 
     console.log('========================================')
     console.log('IMPORT SUCCESS')
   }
 
   private async processImportFolder (folderPath: string): Promise<ImportWorkspace> {
-    const builder = new ImportWorkspaceBuilder(this.client, true)
+    const builder = new ImportWorkspaceBuilder(this.client)
     await builder.initCache()
 
-    // Load workspace settings
+    // Load workspace settings if exists
     const wsSettingsPath = path.join(folderPath, 'settings.yaml')
-    const wsSettings = yaml.load(fs.readFileSync(wsSettingsPath, 'utf8')) as UnifiedWorkspaceSettings
+    if (fs.existsSync(wsSettingsPath)) {
+      const wsSettingsFile = fs.readFileSync(wsSettingsPath, 'utf8')
+      const wsSettings = yaml.load(wsSettingsFile) as UnifiedWorkspaceSettings
 
-    // Add project types
-    for (const pt of this.processProjectTypes(wsSettings)) {
-      builder.addProjectType(pt)
+      // Add project types
+      for (const pt of this.processProjectTypes(wsSettings)) {
+        builder.addProjectType(pt)
+      }
     }
 
     // Process spaces
@@ -340,14 +342,12 @@ export class UnifiedFormatImporter {
 
       try {
         console.log(`Processing ${folder}...`)
-        const spaceConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as UnifiedSpaceHeader
+        const spaceConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as UnifiedSpaceSettings
 
         switch (spaceConfig.class) {
           case tracker.class.Project: {
             const project = await this.processProject(spaceConfig as UnifiedProjectSettings)
             builder.addProject(spacePath, project)
-
-            // Process all issues recursively and add them to builder
             await this.processIssuesRecursively(builder, project.identifier, spacePath, spacePath)
             break
           }
@@ -355,8 +355,6 @@ export class UnifiedFormatImporter {
           case document.class.Teamspace: {
             const teamspace = await this.processTeamspace(spaceConfig as UnifiedTeamspaceSettings)
             builder.addTeamspace(spacePath, teamspace)
-
-            // Process all documents recursively and add them to builder
             await this.processDocumentsRecursively(builder, spacePath, spacePath)
             break
           }
@@ -372,6 +370,7 @@ export class UnifiedFormatImporter {
     }
 
     await this.processAttachments(folderPath)
+
     return builder.build()
   }
 
@@ -389,6 +388,11 @@ export class UnifiedFormatImporter {
       const issuePath = path.join(currentPath, issueFile)
       const issueHeader = await this.readYamlHeader(issuePath) as UnifiedIssueHeader
 
+      if (issueHeader.class === undefined) {
+        console.warn(`Skipping ${issueFile}: not an issue`)
+        continue
+      }
+
       if (issueHeader.class === tracker.class.Issue) {
         const numberMatch = issueFile.match(/^(\d+)\./)
         const issueNumber = numberMatch?.[1]
@@ -397,8 +401,9 @@ export class UnifiedFormatImporter {
           id: generateId<Issue>(),
           class: tracker.class.Issue,
           path: issuePath,
-          refTitle: projectIdentifier + '-' + issueNumber
+          refTitle: `${projectIdentifier}-${issueNumber}`
         }
+
         this.metadataById.set(meta.id, meta)
         this.metadataByFilePath.set(issuePath, meta)
 
@@ -425,7 +430,7 @@ export class UnifiedFormatImporter {
           await this.processIssuesRecursively(builder, projectIdentifier, projectPath, subDir, issuePath)
         }
       } else {
-        console.warn(`Skipping ${issueFile}: unknown issue class ${issueHeader.class}`)
+        throw new Error(`Unknown issue class ${issueHeader.class} in ${issueFile}`)
       }
     }
   }
@@ -462,6 +467,11 @@ export class UnifiedFormatImporter {
       const docPath = path.join(currentPath, docFile)
       const docHeader = await this.readYamlHeader(docPath) as UnifiedDocumentHeader
 
+      if (docHeader.class === undefined) {
+        console.warn(`Skipping ${docFile}: not a document`)
+        continue
+      }
+
       if (docHeader.class === document.class.Document) {
         const docMeta: DocMetadata = {
           id: generateId<Document>(),
@@ -469,6 +479,7 @@ export class UnifiedFormatImporter {
           path: docPath,
           refTitle: docHeader.title
         }
+
         this.metadataById.set(docMeta.id, docMeta)
         this.metadataByFilePath.set(docPath, docMeta)
 
@@ -488,7 +499,7 @@ export class UnifiedFormatImporter {
           await this.processDocumentsRecursively(builder, teamspacePath, subDir, docPath)
         }
       } else {
-        console.warn(`Skipping ${docFile}: unknown document class ${docHeader.class}`)
+        throw new Error(`Unknown document class ${docHeader.class} in ${docFile}`)
       }
     }
   }
@@ -519,10 +530,6 @@ export class UnifiedFormatImporter {
   private async processProject (
     projectHeader: UnifiedProjectSettings
   ): Promise<ImportProject> {
-    const projectType = projectHeader.projectType !== undefined
-      ? this.findProjectType(projectHeader.projectType)
-      : undefined
-
     return {
       class: tracker.class.Project,
       title: projectHeader.title,
@@ -530,7 +537,6 @@ export class UnifiedFormatImporter {
       private: projectHeader.private ?? false,
       autoJoin: projectHeader.autoJoin ?? true,
       description: projectHeader.description,
-      projectType,
       defaultIssueStatus: projectHeader.defaultIssueStatus !== undefined
         ? { name: projectHeader.defaultIssueStatus }
         : undefined,
@@ -577,14 +583,6 @@ export class UnifiedFormatImporter {
     const content = fs.readFileSync(filePath, 'utf8')
     const match = content.match(/^---\n[\s\S]*?\n---\n(.*)$/s)
     return match != null ? match[1] : content
-  }
-
-  private findProjectType (name: string): ImportProjectType {
-    // todo: implement
-    return {
-      name,
-      taskTypes: []
-    }
   }
 
   private async cachePersonsByNames (): Promise<void> {

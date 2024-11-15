@@ -77,11 +77,6 @@ export interface ImportStatus {
   description?: string
 }
 
-export interface ImportPriority {
-  name: string
-  description?: string
-}
-
 export interface ImportSpace<T extends ImportDoc> {
   class: Ref<Class<Space>>
   title: string
@@ -93,8 +88,8 @@ export interface ImportSpace<T extends ImportDoc> {
   docs: T[]
 }
 export interface ImportDoc {
-  class: Ref<Class<Doc<Space>>>
   id?: Ref<Doc>
+  class: Ref<Class<Doc<Space>>>
   title: string
   descrProvider: () => Promise<string>
   subdocs: ImportDoc[]
