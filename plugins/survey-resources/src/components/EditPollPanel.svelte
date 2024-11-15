@@ -17,35 +17,50 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { Panel } from '@hcengineering/panel'
-  import { createQuery } from '@hcengineering/presentation'
-  import { Survey } from '@hcengineering/survey'
-  import { Button, Icon, IconMoreH, Label, tooltip } from '@hcengineering/ui'
+  import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
+  import { Poll } from '@hcengineering/survey'
+  import { Button, IconMoreH, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { DocNavLink, showMenu } from '@hcengineering/view-resources'
+  import { DocNavLink, ParentsNavigator, showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import EditSurvey from './EditSurvey.svelte'
   import EditPoll from './EditPoll.svelte'
   import survey from '../plugin'
-  import { makePollData } from '../utils'
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
 
-  export let _id: Ref<Survey>
+  export let _id: Ref<Poll>
   export let embedded: boolean = false
   export let readonly: boolean = false
 
-  let object: Survey | undefined = undefined
-  let preview = false
+  let object: Poll | undefined = undefined
   let canSubmit = false
 
   $: updateObject(_id)
-  $: poll = preview && object !== undefined ? makePollData(object) : undefined
 
-  function updateObject (_id: Ref<Survey>): void {
-    query.query(survey.class.Survey, { _id }, (result) => {
+  function updateObject (_id: Ref<Poll>): void {
+    query.query(survey.class.Poll, { _id }, (result) => {
       object = result[0]
     })
+  }
+
+  async function submit (): Promise<void> {
+    if (object === undefined) {
+      return
+    }
+    showPopup(
+      MessageBox,
+      {
+        label: survey.string.SurveySubmit,
+        message: survey.string.SurveySubmitConfirm
+      },
+      undefined,
+      async (result?: boolean) => {
+        if (result === true && object !== undefined) {
+          await getClient().updateDoc(object._class, object.space, object._id, { isCompleted: true })
+        }
+      }
+    )
   }
 </script>
 
@@ -63,6 +78,7 @@
     withoutInput={readonly}
   >
     <svelte:fragment slot="title">
+      {#if !embedded}<ParentsNavigator element={object} />{/if}
       <DocNavLink noUnderline {object}>
         <div class="title">{object.name}</div>
       </DocNavLink>
@@ -70,24 +86,16 @@
 
     <svelte:fragment slot="utils">
       {#if !readonly}
-        {#if preview}
-          {#if canSubmit}
-            <span use:tooltip={{ label: survey.string.ValidateOk }}>
-              <Icon size="x-large" icon={survey.icon.ValidateOk} fill="var(--theme-won-color)" />
-            </span>
-          {:else}
-            <span use:tooltip={{ label: survey.string.ValidateFail }}>
-              <Icon size="x-large" icon={survey.icon.ValidateFail} iconProps={{ opacity: 0.75 }} />
-            </span>
-          {/if}
+        {#if !(object.isCompleted ?? false)}
+          <Button
+            icon={survey.icon.Submit}
+            label={survey.string.SurveySubmit}
+            kind={'primary'}
+            disabled={!canSubmit}
+            showTooltip={{ label: canSubmit ? undefined : survey.string.ValidateFail }}
+            on:click={submit}
+          />
         {/if}
-        <Button
-          icon={preview ? survey.icon.Survey : survey.icon.Poll}
-          label={preview ? survey.string.SurveyEdit : survey.string.SurveyPreview}
-          on:click={() => {
-            preview = !preview
-          }}
-        />
         <Button
           icon={IconMoreH}
           iconProps={{ size: 'medium' }}
@@ -100,19 +108,7 @@
     </svelte:fragment>
 
     <div class="flex-col flex-grow flex-no-shrink">
-      {#if preview}
-        {#if poll !== undefined}
-          <div class="antiSection-empty solid flex-row mt-3">
-            <Icon icon={survey.icon.Info} size="large" />
-            <span class="content-dark-color" style="margin-left:1em">
-              <Label label={survey.string.ValidateInfo} />
-            </span>
-          </div>
-          <EditPoll object={poll} bind:canSubmit />
-        {/if}
-      {:else}
-        <EditSurvey {object} {readonly} />
-      {/if}
+      <EditPoll {object} {readonly} bind:canSubmit />
     </div>
   </Panel>
 {/if}

@@ -21,6 +21,7 @@
   import { getResource } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { Vacancy } from '@hcengineering/recruit'
+  import survey from '@hcengineering/survey'
   import tracker from '@hcengineering/tracker'
   import { Button, Component, EditBox, IconMixin, IconMoreH, Label } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -201,6 +202,9 @@
 
     <div class="w-full mt-6">
       <VacancyApplications objectId={object._id} {readonly} />
+    </div>
+    <div class="w-full mt-6">
+      <Component is={survey.component.PollCollection} props={{ object, label: survey.string.Polls }} />
     </div>
     <div class="w-full mt-6">
       <Component is={tracker.component.RelatedIssuesSection} props={{ object, label: tracker.string.RelatedIssues }} />

@@ -14,7 +14,18 @@
 //
 
 import { IndexKind, type Domain, type Ref } from '@hcengineering/core'
-import { ArrOf, Hidden, Index, Model, Prop, TypeRecord, TypeRef, TypeString, UX } from '@hcengineering/model'
+import {
+  ArrOf,
+  Hidden,
+  Index,
+  Model,
+  Prop,
+  TypeBoolean,
+  TypeRecord,
+  TypeRef,
+  TypeString,
+  UX
+} from '@hcengineering/model'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import { type Poll, type Question, type Survey } from '@hcengineering/survey'
@@ -48,7 +59,10 @@ export class TPoll extends TAttachedDoc implements Poll {
   @Prop(TypeString(), survey.string.Prompt)
     prompt!: string
 
-  @Prop(ArrOf(TypeRecord()), getEmbeddedLabel('Answers'))
+  @Prop(ArrOf(TypeRecord()), getEmbeddedLabel('Questions'))
   @Hidden()
-    results?: { question: string, answer: string[] }[]
+    questions?: Question[]
+
+  @Prop(TypeBoolean(), survey.string.Completed)
+    isCompleted?: boolean
 }

@@ -17,9 +17,8 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
   import { Survey } from '@hcengineering/survey'
-  import { Button, EditBox, FocusHandler, Label, createFocusManager, showPopup } from '@hcengineering/ui'
+  import { EditBox, FocusHandler, Label, createFocusManager } from '@hcengineering/ui'
   import EditQuestion from './EditQuestion.svelte'
-  import SurveyForm from './SurveyForm.svelte'
   import survey from '../plugin'
 
   const manager = createFocusManager()
@@ -27,7 +26,6 @@
 
   export let object: Survey
   export let readonly: boolean = false
-  export let showPeviewButton = true
 
   $: questions = object?.questions ?? []
 
@@ -37,10 +35,6 @@
 
   async function promptChange (): Promise<void> {
     await client.updateDoc(object._class, object.space, object._id, { prompt: object.prompt })
-  }
-
-  export function previewSurveyForm (): void {
-    showPopup(SurveyForm, { source: object }, 'top')
   }
 
   let draggedIndex: number | undefined = undefined
@@ -96,9 +90,6 @@
   <div class="flex-grow flex-col">
     <div class="name">
       <EditBox disabled={readonly} placeholder={survey.string.Name} bind:value={object.name} on:change={nameChange} />
-      {#if showPeviewButton}
-        <Button icon={survey.icon.Poll} label={survey.string.SurveyPreview} on:click={previewSurveyForm} />
-      {/if}
     </div>
     <div class="prompt">
       <EditBox
