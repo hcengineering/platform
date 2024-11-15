@@ -20,7 +20,7 @@
   import { Component, showPanel } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import time from '../plugin'
-  import { getObjectLinkId } from '@hcengineering/view-resources'
+  import { DocReferencePresenter, getObjectLinkId } from '@hcengineering/view-resources'
 
   export let todo: ToDo
   export let kind: 'default' | 'todo-line' = 'default'
@@ -50,16 +50,22 @@
   }
 </script>
 
-{#if presenter?.presenter && doc}
-  {#if kind === 'default'}
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="cursor-pointer clear-mins" on:click={click}>
-      <Component is={presenter.presenter} props={{ value: doc, withoutSpace }} />
-    </div>
+{#if doc}
+  {#if presenter?.presenter}
+    {#if kind === 'default'}
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <div class="cursor-pointer clear-mins" on:click={click}>
+        <Component is={presenter.presenter} props={{ value: doc, withoutSpace }} />
+      </div>
+    {:else}
+      <Component is={presenter.presenter} props={{ value: doc, withoutSpace }} on:click={click}>
+        <slot />
+      </Component>
+    {/if}
   {:else}
-    <Component is={presenter.presenter} props={{ value: doc, withoutSpace }} on:click={click}>
+    <DocReferencePresenter value={doc} on:click={click}>
       <slot />
-    </Component>
+    </DocReferencePresenter>
   {/if}
 {/if}

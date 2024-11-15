@@ -51,7 +51,8 @@
       viewlet,
       viewOptions,
       viewOptionsConfig: viewlet.viewOptions?.other,
-      enableChecking: false
+      enableChecking: false,
+      prefferedSorting: 'createdOn'
     }}
   />
 {/if}

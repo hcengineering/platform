@@ -22,7 +22,8 @@ import {
   type Ref,
   type CollaborativeDoc,
   type Doc,
-  type Timestamp
+  type Timestamp,
+  type CollectionSize
 } from '@hcengineering/core'
 import {
   type DevicesPreference,
@@ -71,6 +72,7 @@ import workbench, { WidgetType } from '@hcengineering/workbench'
 import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import attachment from '@hcengineering/attachment'
+import time, { type ToDo, type Todoable } from '@hcengineering/time'
 
 import love from './plugin'
 
@@ -192,8 +194,8 @@ export class TMeeting extends TEvent implements Meeting {
 }
 
 @Model(love.class.MeetingMinutes, core.class.Doc, DOMAIN_MEETING_MINUTES)
-@UX(love.string.MeetingMinutes, love.icon.Cam, undefined, undefined, love.string.MeetingsMinutes)
-export class TMeetingMinutes extends TAttachedDoc implements MeetingMinutes {
+@UX(love.string.MeetingMinutes, love.icon.Cam, undefined, 'createdOn', undefined, love.string.MeetingsMinutes)
+export class TMeetingMinutes extends TAttachedDoc implements MeetingMinutes, Todoable {
   @Prop(TypeRef(core.class.Doc), love.string.Room, { editor: love.component.MeetingMinutesDocEditor })
   @Index(IndexKind.Indexed)
   @ReadOnly()
@@ -233,6 +235,9 @@ export class TMeetingMinutes extends TAttachedDoc implements MeetingMinutes {
   @Prop(TypeTimestamp(), love.string.MeetingEnd)
   @ReadOnly()
     meetingEnd?: Timestamp
+
+  @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
+    todos?: CollectionSize<ToDo>
 }
 
 export default love
