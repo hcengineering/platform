@@ -75,6 +75,8 @@
     "JoinMeeting": "Присоединиться к встрече",
     "MeetingStart": "Начало встречи",
     "MeetingEnd": "Конец встречи",
-    "Status": "Статус"
+    "Status": "Статус",
+    "Active": "Активно",
+    "Finished": "Завершено"
   }
 }

@@ -75,6 +75,8 @@
     "JoinMeeting": "加入会议",
     "MeetingStart": "会议开始",
     "MeetingEnd": "会议结束",
-    "Status": "状态"
+    "Status": "状态",
+    "Active": "活动",
+    "Finished": "已完成"
   }
 }

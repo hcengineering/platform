@@ -75,6 +75,8 @@
     "JoinMeeting": "Unirse a la reunión",
     "MeetingStart": "Inicio de la reunión",
     "MeetingEnd": "Fin de la reunión",
-    "Status": "Estado"
+    "Status": "Estado",
+    "Active": "Activo",
+    "Finished": "Terminado"
   }
 }

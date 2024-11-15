@@ -75,6 +75,8 @@
     "JoinMeeting": "Join meeting",
     "MeetingStart": "Meeting start",
     "MeetingEnd": "Meeting end",
-    "Status": "Status"
+    "Status": "Status",
+    "Active": "Active",
+    "Finished": "Finished"
   }
 }

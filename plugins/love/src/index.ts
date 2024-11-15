@@ -223,7 +223,9 @@ const love = plugin(loveId, {
     JoinMeeting: '' as IntlString,
     MeetingStart: '' as IntlString,
     MeetingEnd: '' as IntlString,
-    Status: '' as IntlString
+    Status: '' as IntlString,
+    Active: '' as IntlString,
+    Finished: '' as IntlString
   },
   ids: {
     MainFloor: '' as Ref<Floor>,

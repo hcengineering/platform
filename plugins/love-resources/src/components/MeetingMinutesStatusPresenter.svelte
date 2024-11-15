@@ -15,7 +15,8 @@
 <script lang="ts">
   import { MeetingMinutes, MeetingStatus } from '@hcengineering/love'
   import { StateType, StateTag } from '@hcengineering/ui'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
+
+  import love from '../plugin'
 
   export let object: MeetingMinutes | undefined
   export let value: MeetingStatus | undefined
@@ -23,11 +24,11 @@
 
   const displayData = {
     [MeetingStatus.Active]: {
-      label: getEmbeddedLabel('Active'),
+      label: love.string.Active,
       type: StateType.Positive
     },
     [MeetingStatus.Finished]: {
-      label: getEmbeddedLabel('Finished'),
+      label: love.string.Finished,
       type: StateType.Regular
     }
   }
