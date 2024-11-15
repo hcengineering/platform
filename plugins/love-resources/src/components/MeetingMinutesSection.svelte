@@ -35,7 +35,7 @@
   <svelte:fragment slot="header">
     <div class="flex-row-center gap-2 reverse">
       <ViewletsSettingButton
-        viewletQuery={{ _id: love.viewlet.TableMeetingMinutes }}
+        viewletQuery={{ _id: love.viewlet.TableMeetingMinutesEmbedded }}
         kind={'tertiary'}
         bind:viewlet
         bind:loading
@@ -45,20 +45,10 @@
   </svelte:fragment>
 
   <svelte:fragment slot="content">
-    {#if meetings > 0}
+    {#if meetings > 0 && viewlet}
       <Table
         _class={love.class.MeetingMinutes}
-        config={preference?.config ?? [
-          '',
-          {
-            key: 'status',
-            label: love.string.Status,
-            presenter: love.component.MeetingMinutesStatusPresenter
-          },
-          'messages',
-          'createdOn',
-          'meetingEnd'
-        ]}
+        config={preference?.config ?? viewlet.config}
         query={{ attachedTo: objectId }}
         loadingProps={{ length: meetings }}
         {readonly}

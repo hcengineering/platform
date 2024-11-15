@@ -515,6 +515,26 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: love.class.MeetingMinutes,
+      descriptor: view.viewlet.Table,
+      config: [
+        '',
+        { key: 'status', presenter: love.component.MeetingMinutesStatusPresenter, label: love.string.Status },
+        'createdOn',
+        'meetingEnd'
+      ],
+      configOptions: {
+        sortable: true
+      },
+      variant: 'embedded'
+    },
+    love.viewlet.TableMeetingMinutesEmbedded
+  )
+
+  builder.createDoc(
     view.class.ViewletDescriptor,
     core.space.Model,
     {

@@ -269,6 +269,7 @@ const love = plugin(loveId, {
   },
   viewlet: {
     TableMeetingMinutes: '' as Ref<Viewlet>,
+    TableMeetingMinutesEmbedded: '' as Ref<Viewlet>,
     MeetingMinutesDescriptor: '' as Ref<ViewletDescriptor>,
     FloorDescriptor: '' as Ref<ViewletDescriptor>,
     Floor: '' as Ref<Viewlet>,
