@@ -43,7 +43,7 @@
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
   import { getClient } from '@hcengineering/presentation'
   import love from '../plugin'
-  import { currentRoom, infos, invites, myInfo, myOffice, myRequests, meetingMinutesStore } from '../stores'
+  import { currentRoom, infos, invites, myInfo, myOffice, myRequests, currentMeetingMinutes } from '../stores'
   import {
     getRoomName,
     isCameraEnabled,
@@ -109,7 +109,7 @@
   }
 
   async function back (): Promise<void> {
-    const meetingMinutes = $meetingMinutesStore
+    const meetingMinutes = $currentMeetingMinutes
     if (meetingMinutes !== undefined) {
       const hierarchy = client.getHierarchy()
       const panelComponent = hierarchy.classHierarchyMixin(

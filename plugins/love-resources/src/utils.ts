@@ -82,7 +82,7 @@ import { openDoc } from '@hcengineering/view-resources'
 
 import { sendMessage } from './broadcast'
 import love from './plugin'
-import { $myPreferences, currentRoom, meetingMinutesStore, selectedRoomPlace } from './stores'
+import { $myPreferences, currentRoom, currentMeetingMinutes, selectedRoomPlace } from './stores'
 import RoomSettingsPopup from './components/RoomSettingsPopup.svelte'
 
 export const selectedCamId = 'selectedDevice_cam'
@@ -478,7 +478,7 @@ function closeMeetingMinutes (): void {
   const loc = getCurrentLocation()
 
   if (loc.path[2] === loveId) {
-    const meetingMinutes = get(meetingMinutesStore)
+    const meetingMinutes = get(currentMeetingMinutes)
     const panel = get(panelstore).panel
     const { _id } = panel ?? {}
 
@@ -486,7 +486,7 @@ function closeMeetingMinutes (): void {
       closePanel()
     }
   }
-  meetingMinutesStore.set(undefined)
+  currentMeetingMinutes.set(undefined)
 }
 
 export async function setCam (value: boolean): Promise<void> {
@@ -660,13 +660,13 @@ async function openMeetingMinutes (room: Room): Promise<void> {
         { sid, title: newDoc.title, description: newDoc.description, status: newDoc.status },
         _id
       )
-      meetingMinutesStore.set(newDoc)
+      currentMeetingMinutes.set(newDoc)
       const loc = getCurrentLocation()
       if (loc.path[2] === loveId) {
         await openDoc(client.getHierarchy(), newDoc)
       }
     } else {
-      meetingMinutesStore.set(doc)
+      currentMeetingMinutes.set(doc)
       const loc = getCurrentLocation()
       if (loc.path[2] === loveId) {
         await openDoc(client.getHierarchy(), doc)

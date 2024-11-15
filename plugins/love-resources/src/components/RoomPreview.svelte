@@ -24,7 +24,7 @@
   import { get } from 'svelte/store'
 
   import love from '../plugin'
-  import { myInfo, selectedRoomPlace, currentRoom, meetingMinutesStore } from '../stores'
+  import { myInfo, selectedRoomPlace, currentRoom, currentMeetingMinutes } from '../stores'
   import { getRoomLabel, lk } from '../utils'
   import PersonActionPopup from './PersonActionPopup.svelte'
   import RoomLanguage from './RoomLanguage.svelte'
@@ -70,7 +70,7 @@
     if ($currentRoom?._id === room._id) {
       const sid = await lk.getSid()
       const meetingMinutes =
-        get(meetingMinutesStore) ?? (await client.findOne(love.class.MeetingMinutes, { sid, attachedTo: room._id }))
+        get(currentMeetingMinutes) ?? (await client.findOne(love.class.MeetingMinutes, { sid, attachedTo: room._id }))
       if (meetingMinutes === undefined) {
         await openDoc(hierarchy, room)
       } else {

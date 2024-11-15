@@ -21,7 +21,7 @@
   import love from '../../plugin'
   import VideoTab from './VideoTab.svelte'
   import { isCurrentInstanceConnected, lk } from '../../utils'
-  import { currentRoom, meetingMinutesStore } from '../../stores'
+  import { currentRoom, currentMeetingMinutes } from '../../stores'
   import ChatTab from './ChatTab.svelte'
   import TranscriptionTab from './TranscriptionTab.svelte'
 
@@ -61,7 +61,7 @@
     meetingQuery.query(love.class.MeetingMinutes, { sid, attachedTo: room._id }, async (res) => {
       meetingMinutes = res[0]
       if (meetingMinutes) {
-        meetingMinutesStore.set(meetingMinutes)
+        currentMeetingMinutes.set(meetingMinutes)
       }
       isMeetingMinutesLoaded = true
     })

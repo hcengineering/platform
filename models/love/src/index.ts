@@ -608,10 +608,6 @@ export function createModel (builder: Builder): void {
     searchDisabled: true
   })
 
-  builder.mixin(love.class.Room, core.class.Class, view.mixin.ObjectPanelFooter, {
-    editor: love.component.PanelControlBar
-  })
-
   builder.mixin(love.class.MeetingMinutes, core.class.Class, view.mixin.ObjectPanelFooter, {
     editor: love.component.PanelControlBar
   })

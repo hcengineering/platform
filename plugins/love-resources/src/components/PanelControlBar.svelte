@@ -14,22 +14,15 @@
 -->
 
 <script lang="ts">
-  import { location, Location } from '@hcengineering/ui'
-  import { loveId, Room, Office } from '@hcengineering/love'
+  import { MeetingMinutes } from '@hcengineering/love'
 
   import ControlBar from './ControlBar.svelte'
-  import { isConnected } from '../utils'
-  import { currentRoom, myOffice } from '../stores'
+  import { currentRoom, currentMeetingMinutes } from '../stores'
 
-  function showControlBar (room: Room, loc: Location, myOffice?: Office): boolean {
-    if (loc.path[2] !== loveId) return false
-    if (room._id !== myOffice?._id) return true
-
-    return $isConnected
-  }
+  export let object: MeetingMinutes
 </script>
 
-{#if $currentRoom && showControlBar($currentRoom, $location, $myOffice)}
+{#if $currentRoom && $currentMeetingMinutes?._id === object._id}
   <div class="flex-grow flex-shrink">
     <ControlBar room={$currentRoom} />
   </div>
