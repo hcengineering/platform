@@ -86,7 +86,7 @@ const spaceSchema: Schema = {
 }
 
 const txSchema: Schema = {
-  ...baseSchema,
+  ...defaultSchema,
   objectSpace: {
     type: 'text',
     notNull: true,

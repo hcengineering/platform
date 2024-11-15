@@ -26,7 +26,6 @@ import core, {
   matchQuery,
   toFindResult,
   withContext,
-  type AttachedDoc,
   type Class,
   type Doc,
   type DocInfo,
@@ -53,7 +52,6 @@ import core, {
   type StorageIterator,
   type Tx,
   type TxCUD,
-  type TxCollectionCUD,
   type TxCreateDoc,
   type TxMixin,
   type TxRemoveDoc,
@@ -653,7 +651,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     try {
       result = await ctx.with(
         'aggregate',
-        { clazz },
+        {},
         (ctx) => toArray(cursor),
         () => ({
           domain,
@@ -846,7 +844,7 @@ abstract class MongoAdapterBase implements DbAdapter {
         // Skip sort/projection/etc.
         return await ctx.with(
           'find-one',
-          { domain },
+          {},
           async (ctx) => {
             const findOptions: MongoFindOptions = {}
 
@@ -1029,7 +1027,8 @@ abstract class MongoAdapterBase implements DbAdapter {
                   filter: { _id: it[0], '%hash%': null },
                   update: { $set: { '%hash%': it[1] } }
                 }
-              }))
+              })),
+              { ordered: false }
             )
           )
         }
@@ -1125,7 +1124,7 @@ abstract class MongoAdapterBase implements DbAdapter {
   }
 
   upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
-    return ctx.with('upload', { domain }, () => {
+    return ctx.with('upload', { domain }, (ctx) => {
       const coll = this.collection(domain)
 
       return uploadDocuments(ctx, docs, coll)
@@ -1217,9 +1216,6 @@ class MongoAdapter extends MongoAdapterBase {
     switch (tx._class) {
       case core.class.TxCreateDoc:
         this.txCreateDoc(bulk, tx as TxCreateDoc<Doc>)
-        break
-      case core.class.TxCollectionCUD:
-        this.txCollectionCUD(bulk, tx as TxCollectionCUD<Doc, AttachedDoc>)
         break
       case core.class.TxUpdateDoc:
         this.txUpdateDoc(bulk, tx as TxUpdateDoc<Doc>)
@@ -1388,26 +1384,6 @@ class MongoAdapter extends MongoAdapterBase {
       await Promise.all(promises)
     }
     return result
-  }
-
-  protected txCollectionCUD (bulk: OperationBulk, tx: TxCollectionCUD<Doc, AttachedDoc>): void {
-    // We need update only create transactions to contain attached, attachedToClass.
-    if (tx.tx._class === core.class.TxCreateDoc) {
-      const createTx = tx.tx as TxCreateDoc<AttachedDoc>
-      const d: TxCreateDoc<AttachedDoc> = {
-        ...createTx,
-        attributes: {
-          ...createTx.attributes,
-          attachedTo: tx.objectId,
-          attachedToClass: tx.objectClass,
-          collection: tx.collection
-        }
-      }
-      this.txCreateDoc(bulk, d)
-      return
-    }
-    // We could cast since we know collection cud is supported.
-    this.updateBulk(bulk, tx.tx)
   }
 
   protected txRemoveDoc (bulk: OperationBulk, tx: TxRemoveDoc<Doc>): void {
@@ -1654,9 +1630,7 @@ export async function uploadDocuments (ctx: MeasureContext, docs: Doc[], coll: C
         if ('%hash%' in it) {
           delete it['%hash%']
         }
-        const cs = ctx.newChild('calc-size', {})
-        const size = calculateObjectSize(it)
-        cs.end()
+        const size = digest != null ? calculateObjectSize(it) : 0
 
         return {
           replaceOne: {
@@ -1665,7 +1639,10 @@ export async function uploadDocuments (ctx: MeasureContext, docs: Doc[], coll: C
             upsert: true
           }
         }
-      })
+      }),
+      {
+        ordered: false
+      }
     )
   }
 }

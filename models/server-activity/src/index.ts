@@ -36,14 +36,16 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverActivity.trigger.OnReactionChanged,
     txMatch: {
-      collection: 'reactions',
-      _class: core.class.TxCollectionCUD
+      collection: 'reactions'
     },
     isAsync: true
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverActivity.trigger.ActivityMessagesHandler,
+    txMatch: {
+      objectClass: { $nin: [activity.class.ActivityMessage, notification.class.DocNotifyContext] }
+    },
     isAsync: true
   })
 
@@ -54,8 +56,8 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverActivity.trigger.ReferenceTrigger,
     txMatch: {
-      'tx.objectClass': { $ne: activity.class.ActivityReference },
-      objectClass: {
+      objectClass: { $ne: activity.class.ActivityReference },
+      attachedToClass: {
         $nin: [
           notification.class.InboxNotification,
           notification.class.DocNotifyContext,

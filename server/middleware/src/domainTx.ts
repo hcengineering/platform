@@ -120,7 +120,7 @@ export class DomainTxMiddleware extends BaseMiddleware implements Middleware {
 
     const domains = new Set<Domain>()
     for (const tx of txes) {
-      const txCUD = TxProcessor.extractTx(tx) as TxCUD<Doc>
+      const txCUD = tx as TxCUD<Doc>
       if (!TxProcessor.isExtendsCUD(txCUD._class)) {
         // Skip unsupported tx
         ctx.error('Unsupported transaction', tx)

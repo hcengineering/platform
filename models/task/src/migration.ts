@@ -25,7 +25,6 @@ import {
   type Ref,
   type Space,
   type Status,
-  type TxCollectionCUD,
   type TxCreateDoc,
   type TxUpdateDoc
 } from '@hcengineering/core'
@@ -446,48 +445,6 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     }
   }
   logger.log('affectedBaseTasks updated: ', counter)
-
-  const baseTaskCreateTxes = await client.find<TxCollectionCUD<T, T>>(DOMAIN_TX, {
-    _class: core.class.TxCollectionCUD,
-    'tx._class': core.class.TxCreateDoc,
-    'tx.objectClass': { $in: baseTaskClasses },
-    'tx.attributes.status': { $in: statusIdsBeingMigrated }
-  })
-
-  logger.log('Base task create TXes: ', baseTaskCreateTxes.length)
-
-  counter = 0
-  for (const baseTaskCreateTx of baseTaskCreateTxes) {
-    const tx = baseTaskCreateTx.tx as TxCreateDoc<T>
-    const newStatus = getNewStatus(tx.attributes.status)
-
-    if (newStatus !== tx.attributes.status) {
-      counter++
-      await client.update(DOMAIN_TX, { _id: baseTaskCreateTx._id }, { $set: { 'tx.attributes.status': newStatus } })
-    }
-  }
-  logger.log('Base task create TXes updated: ', counter)
-
-  const baseTaskUpdateTxes = await client.find<TxCollectionCUD<T, T>>(DOMAIN_TX, {
-    _class: core.class.TxCollectionCUD,
-    'tx._class': core.class.TxUpdateDoc,
-    'tx.objectClass': { $in: baseTaskClasses },
-    'tx.operations.status': { $in: statusIdsBeingMigrated }
-  })
-
-  logger.log('Base task update TXes: ', baseTaskUpdateTxes.length)
-
-  counter = 0
-  for (const baseTaskUpdateTx of baseTaskUpdateTxes) {
-    const tx = baseTaskUpdateTx.tx as TxUpdateDoc<T>
-    const newStatus = tx.operations.status !== undefined ? getNewStatus(tx.operations.status) : undefined
-
-    if (newStatus !== tx.operations.status) {
-      counter++
-      await client.update(DOMAIN_TX, { _id: baseTaskUpdateTx._id }, { $set: { 'tx.operations.status': newStatus } })
-    }
-  }
-  logger.log('Base task update TXes updated: ', counter)
 
   const baseTaskUpdateMessages = await client.find<DocUpdateMessage>(DOMAIN_ACTIVITY, {
     _class: activity.class.DocUpdateMessage,

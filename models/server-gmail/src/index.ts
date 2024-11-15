@@ -42,9 +42,8 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverGmail.trigger.OnMessageCreate,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx.objectClass': gmail.class.Message,
-      'tx._class': core.class.TxCreateDoc
+      _class: core.class.TxCreateDoc,
+      objectClass: gmail.class.Message
     }
   })
 

@@ -15,14 +15,14 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { BackupClient, DocChunk } from './backup'
-import { Account, AttachedDoc, Class, DOMAIN_MODEL, Doc, Domain, Ref, Timestamp } from './classes'
+import { Account, Class, DOMAIN_MODEL, Doc, Domain, Ref, Timestamp } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { MeasureContext, MeasureMetricsContext } from './measurements'
 import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, FulltextStorage, Storage, TxResult, WithLookup } from './storage'
 import { SearchOptions, SearchQuery, SearchResult, SortingOrder } from './storage'
-import { Tx, TxCUD, TxCollectionCUD } from './tx'
+import { Tx, TxCUD } from './tx'
 import { toFindResult } from './utils'
 
 const transactionThreshold = 500
@@ -307,9 +307,8 @@ export async function createClient (
     // if we have attachment document create/delete we need to full refresh, since some derived data could be missing
     for (const tx of atxes) {
       if (
-        tx._class === core.class.TxCollectionCUD &&
-        ((tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxCreateDoc ||
-          (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxRemoveDoc)
+        (tx as TxCUD<Doc>).attachedTo !== undefined &&
+        (tx._class === core.class.TxCreateDoc || tx._class === core.class.TxRemoveDoc)
       ) {
         needFullRefresh = true
         break

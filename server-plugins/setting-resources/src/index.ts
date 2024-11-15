@@ -14,7 +14,7 @@
 //
 
 import contact, { Person, PersonAccount, getFirstName, getLastName } from '@hcengineering/contact'
-import core, { Account, Doc, Ref, Role, Tx, TxProcessor, TxUpdateDoc } from '@hcengineering/core'
+import core, { Account, Doc, Ref, Role, Tx, TxUpdateDoc } from '@hcengineering/core'
 import { getEmbeddedLabel, translate } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
 import setting, { Integration } from '@hcengineering/setting'
@@ -95,9 +95,7 @@ export async function getOwnerPosition (
 export async function OnRoleNameUpdate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    const actualTx = TxProcessor.extractTx(tx)
-    const updateTx = actualTx as TxUpdateDoc<Role>
-
+    const updateTx = tx as TxUpdateDoc<Role>
     if (updateTx.operations?.name === undefined) {
       continue
     }

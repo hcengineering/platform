@@ -15,22 +15,41 @@
 
 import { type Resources } from '@hcengineering/platform'
 import CreateSurvey from './components/CreateSurvey.svelte'
+import EditPollPanel from './components/EditPollPanel.svelte'
 import EditSurveyPanel from './components/EditSurveyPanel.svelte'
 import PollCollection from './components/PollCollection.svelte'
-import PollPresenter from './components/PollPresenter.svelte'
 import SurveyPresenter from './components/SurveyPresenter.svelte'
 
-import { resolveLocation } from './utils'
+import {
+  deletePoll,
+  getPollLink,
+  getSurveyLink,
+  pollTitleProvider,
+  resolveLocation,
+  surveyTitleProvider
+} from './utils'
+
+export * from './utils'
 
 export default async (): Promise<Resources> => ({
   component: {
     CreateSurvey,
+    EditPollPanel,
     EditSurveyPanel,
     PollCollection,
-    PollPresenter,
+    PollPresenter: SurveyPresenter,
     SurveyPresenter
   },
   resolver: {
     Location: resolveLocation
+  },
+  function: {
+    GetPollLink: getPollLink,
+    GetSurveyLink: getSurveyLink,
+    PollTitleProvider: pollTitleProvider,
+    SurveyTitleProvider: surveyTitleProvider
+  },
+  actionImpl: {
+    DeletePoll: deletePoll
   }
 })

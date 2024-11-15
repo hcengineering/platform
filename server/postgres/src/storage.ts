@@ -15,7 +15,6 @@
 
 import core, {
   AccountRole,
-  type AttachedDoc,
   type Class,
   type Doc,
   type DocInfo,
@@ -44,7 +43,6 @@ import core, {
   type StorageIterator,
   toFindResult,
   type Tx,
-  type TxCollectionCUD,
   type TxCreateDoc,
   type TxCUD,
   type TxMixin,
@@ -313,8 +311,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
             const prevAttachedTo = (doc as any).attachedTo
             TxProcessor.applyUpdate(doc, operations)
             const converted = convertDoc(domain, doc, this.workspaceId.name)
-            let paramsIndex = 3
             const params: any[] = [doc._id, this.workspaceId.name]
+            let paramsIndex = params.length + 1
             const updates: string[] = []
             const { extractedFields, remainingData } = parseUpdate(domain, operations)
             const newAttachedTo = (doc as any).attachedTo
@@ -356,7 +354,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     const translatedQuery = this.buildRawQuery(domain, query)
     const updates: string[] = []
     const params: any[] = []
-    let paramsIndex = 5
+    let paramsIndex = params.length + 1
     const { extractedFields, remainingData } = parseUpdate(domain, operations)
     const { space, attachedTo, ...ops } = operations as any
     for (const key in extractedFields) {
@@ -944,7 +942,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       } else {
         tKey += arr[i]
         if (i !== arr.length - 1) {
-          tKey += '.'
+          tKey += ','
         }
       }
       // Check if key is belong to mixin class, we need to add prefix.
@@ -1380,8 +1378,6 @@ class PostgresAdapter extends PostgresAdapterBase {
     switch (tx._class) {
       case core.class.TxCreateDoc:
         return await this.txCreateDoc(ctx, tx as TxCreateDoc<Doc>)
-      case core.class.TxCollectionCUD:
-        return await this.txCollectionCUD(ctx, tx as TxCollectionCUD<Doc, AttachedDoc>)
       case core.class.TxUpdateDoc:
         return await this.txUpdateDoc(ctx, tx as TxUpdateDoc<Doc>)
       case core.class.TxRemoveDoc:
@@ -1395,28 +1391,6 @@ class PostgresAdapter extends PostgresAdapterBase {
         console.error('Unknown/Unsupported operation:', tx._class, tx)
         break
     }
-  }
-
-  protected async txCollectionCUD (
-    ctx: MeasureContext,
-    tx: TxCollectionCUD<Doc, AttachedDoc>
-  ): Promise<TxResult | undefined> {
-    // We need update only create transactions to contain attached, attachedToClass.
-    if (tx.tx._class === core.class.TxCreateDoc) {
-      const createTx = tx.tx as TxCreateDoc<AttachedDoc>
-      const d: TxCreateDoc<AttachedDoc> = {
-        ...createTx,
-        attributes: {
-          ...createTx.attributes,
-          attachedTo: tx.objectId,
-          attachedToClass: tx.objectClass,
-          collection: tx.collection
-        }
-      }
-      return await this.txCreateDoc(ctx, d)
-    }
-    // We could cast since we know collection cud is supported.
-    return await this.process(ctx, tx.tx as Tx)
   }
 
   private async txMixin (ctx: MeasureContext, tx: TxMixin<Doc, Doc>): Promise<TxResult> {
@@ -1521,7 +1495,7 @@ class PostgresAdapter extends PostgresAdapterBase {
     return ctx.with('update jsonb_set', {}, async (_ctx) => {
       const updates: string[] = ['"modifiedBy" = $1', '"modifiedOn" = $2']
       const params: any[] = [tx.modifiedBy, tx.modifiedOn, tx.objectId, this.workspaceId.name]
-      let paramsIndex = 5
+      let paramsIndex = params.length + 1
       const domain = this.hierarchy.getDomain(tx.objectClass)
       const { extractedFields, remainingData } = parseUpdate(domain, tx.operations)
       const { space, attachedTo, ...ops } = tx.operations as any

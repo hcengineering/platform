@@ -215,17 +215,7 @@ async function getMixinWithForeignProperties (
               { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
             )
 
-            const collectionTx = await connection.findAll(
-              core.class.TxCollectionCUD,
-              {
-                'tx._class': core.class.TxUpdateDoc,
-                'tx.objectId': doc._id,
-                [`tx.operations.${property}`]: { $exists: true }
-              },
-              { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
-            )
-
-            const cModifiedOn = Math.max(updateDocTx[0]?.modifiedOn ?? 0, collectionTx[0]?.modifiedOn ?? 0)
+            const cModifiedOn = updateDocTx[0]?.modifiedOn ?? 0
             const mModifiedOn = mixinTx[0]?.modifiedOn ?? 0
 
             properties.push({ name: property, cValue, mValue, cModifiedOn, mModifiedOn })

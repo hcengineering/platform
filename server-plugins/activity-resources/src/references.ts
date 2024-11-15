@@ -18,7 +18,6 @@ import { loadCollaborativeDoc, yDocToBuffer } from '@hcengineering/collaboration
 import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
-  AttachedDoc,
   Class,
   CollaborativeDoc,
   Data,
@@ -28,7 +27,6 @@ import core, {
   Ref,
   Space,
   Tx,
-  TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
   TxFactory,
@@ -359,12 +357,11 @@ async function getMessageNotifyResult (
   reference: Data<ActivityReference>,
   account: PersonAccount[],
   control: TriggerControl,
-  originTx: TxCUD<Doc>,
+  tx: TxCUD<Doc>,
   doc: Doc,
   notificationControl: NotificationProviderControl
 ): Promise<NotifyResult> {
   const { hierarchy } = control
-  const tx = TxProcessor.extractTx(originTx) as TxCUD<Doc>
 
   if (
     reference.attachedDocClass === undefined ||
@@ -384,7 +381,7 @@ async function getMessageNotifyResult (
     return new Map()
   }
 
-  return await isShouldNotifyTx(control, tx, originTx, doc, account, false, false, notificationControl, undefined)
+  return await isShouldNotifyTx(control, tx, doc, account, false, false, notificationControl, undefined)
 }
 
 function isMarkupType (type: Ref<Class<Type<any>>>): boolean {
@@ -668,24 +665,41 @@ async function getRemoveActivityReferenceTxes (
   return txes
 }
 
-function guessReferenceTx (hierarchy: Hierarchy, tx: TxCUD<Doc>): TxCUD<Doc> {
+function guessReferenceObj (
+  hierarchy: Hierarchy,
+  tx: TxCUD<Doc>
+): {
+    objectId: Ref<Doc>
+    objectClass: Ref<Class<Doc>>
+  } {
   // Try to guess reference target Tx for TxCollectionCUD txes based on collaborators availability
-  if (hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
-    const cltx = tx as TxCollectionCUD<Doc, AttachedDoc>
-    tx = TxProcessor.extractTx(cltx) as TxCUD<Doc>
-
+  if (tx.attachedToClass !== undefined && tx.attachedTo !== undefined) {
     if (hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage)) {
-      return cltx
+      return {
+        objectId: tx.attachedTo,
+        objectClass: tx.attachedToClass
+      }
     }
 
     const mixin = hierarchy.classHierarchyMixin(tx.objectClass, notification.mixin.ClassCollaborators)
-    return mixin !== undefined ? tx : cltx
+    return mixin !== undefined
+      ? {
+          objectId: tx.objectId,
+          objectClass: tx.objectClass
+        }
+      : {
+          objectId: tx.attachedTo,
+          objectClass: tx.attachedToClass
+        }
   }
-  return tx
+  return {
+    objectId: tx.objectId,
+    objectClass: tx.objectClass
+  }
 }
 
-async function ActivityReferenceCreate (tx: TxCUD<Doc>, etx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
-  const ctx = etx as TxCreateDoc<Doc>
+async function ActivityReferenceCreate (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+  const ctx = tx as TxCreateDoc<Doc>
 
   if (ctx._class !== core.class.TxCreateDoc) return []
   if (control.hierarchy.isDerived(ctx.objectClass, notification.class.InboxNotification)) return []
@@ -694,7 +708,7 @@ async function ActivityReferenceCreate (tx: TxCUD<Doc>, etx: TxCUD<Doc>, control
   const txFactory = new TxFactory(control.txFactory.account)
 
   const doc = TxProcessor.createDoc2Doc(ctx)
-  const targetTx = guessReferenceTx(control.hierarchy, tx)
+  const target = guessReferenceObj(control.hierarchy, tx)
 
   const txes: Tx[] = await getCreateReferencesTxes(
     control.ctx,
@@ -702,9 +716,9 @@ async function ActivityReferenceCreate (tx: TxCUD<Doc>, etx: TxCUD<Doc>, control
     control.storageAdapter,
     txFactory,
     doc,
-    targetTx.objectId,
-    targetTx.objectClass,
-    targetTx.objectSpace,
+    target.objectId,
+    target.objectClass,
+    tx.objectSpace,
     tx
   )
 
@@ -715,8 +729,8 @@ async function ActivityReferenceCreate (tx: TxCUD<Doc>, etx: TxCUD<Doc>, control
   return []
 }
 
-async function ActivityReferenceUpdate (tx: TxCUD<Doc>, etx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
-  const ctx = etx as TxUpdateDoc<Doc>
+async function ActivityReferenceUpdate (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+  const ctx = tx as TxUpdateDoc<Doc>
   const attributes = control.hierarchy.getAllAttributes(ctx.objectClass)
 
   let hasUpdates = false
@@ -742,7 +756,7 @@ async function ActivityReferenceUpdate (tx: TxCUD<Doc>, etx: TxCUD<Doc>, control
 
   const txFactory = new TxFactory(control.txFactory.account)
   const doc = TxProcessor.updateDoc2Doc(rawDoc, ctx)
-  const targetTx = guessReferenceTx(control.hierarchy, tx)
+  const target = guessReferenceObj(control.hierarchy, tx)
 
   const txes: Tx[] = await getUpdateReferencesTxes(
     control.ctx,
@@ -750,9 +764,9 @@ async function ActivityReferenceUpdate (tx: TxCUD<Doc>, etx: TxCUD<Doc>, control
     control.storageAdapter,
     txFactory,
     doc,
-    targetTx.objectId,
-    targetTx.objectClass,
-    targetTx.objectSpace,
+    target.objectId,
+    target.objectClass,
+    tx.objectSpace,
     tx
   )
 
@@ -763,8 +777,8 @@ async function ActivityReferenceUpdate (tx: TxCUD<Doc>, etx: TxCUD<Doc>, control
   return []
 }
 
-async function ActivityReferenceRemove (tx: Tx, etx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
-  const ctx = etx as TxRemoveDoc<Doc>
+async function ActivityReferenceRemove (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+  const ctx = tx as TxRemoveDoc<Doc>
   const attributes = control.hierarchy.getAllAttributes(ctx.objectClass)
 
   let hasMarkdown = false
@@ -795,22 +809,21 @@ export async function ReferenceTrigger (txes: TxCUD<Doc>[], control: TriggerCont
   const result: Tx[] = []
 
   for (const tx of txes) {
-    const etx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-    if (control.hierarchy.isDerived(etx.objectClass, activity.class.ActivityReference)) {
+    if (control.hierarchy.isDerived(tx.objectClass, activity.class.ActivityReference)) {
       continue
     }
-    if (control.hierarchy.isDerived(etx.objectClass, notification.class.InboxNotification)) {
+    if (control.hierarchy.isDerived(tx.objectClass, notification.class.InboxNotification)) {
       continue
     }
 
-    if (etx._class === core.class.TxCreateDoc) {
-      result.push(...(await ActivityReferenceCreate(tx, etx, control)))
+    if (tx._class === core.class.TxCreateDoc) {
+      result.push(...(await ActivityReferenceCreate(tx, control)))
     }
-    if (etx._class === core.class.TxUpdateDoc) {
-      result.push(...(await ActivityReferenceUpdate(tx, etx, control)))
+    if (tx._class === core.class.TxUpdateDoc) {
+      result.push(...(await ActivityReferenceUpdate(tx, control)))
     }
-    if (etx._class === core.class.TxRemoveDoc) {
-      result.push(...(await ActivityReferenceRemove(tx, etx, control)))
+    if (tx._class === core.class.TxRemoveDoc) {
+      result.push(...(await ActivityReferenceRemove(tx, control)))
     }
   }
   return result

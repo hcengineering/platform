@@ -38,10 +38,19 @@ export interface Question {
   hasCustomOption: boolean
 }
 
+export interface AnsweredQuestion extends Question {
+  answer?: string
+  answers?: number[]
+}
+
 /** @public */
-export interface Poll extends AttachedDoc {
+export interface PollData {
   survey: Ref<Survey>
   name: string
   prompt: string
-  results?: { question: string, answer: string[] }[]
+  questions?: AnsweredQuestion[]
+  isCompleted?: boolean
 }
+
+/** @public */
+export interface Poll extends PollData, AttachedDoc {}

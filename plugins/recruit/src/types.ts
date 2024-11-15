@@ -38,6 +38,7 @@ export interface Vacancy extends Project {
   company?: Ref<Organization>
   comments?: number
   number: number
+  polls?: Collection<Poll>
 }
 
 /** @public */
@@ -54,6 +55,7 @@ export interface Candidate extends Person {
   source?: string
   skills?: number
   reviews?: number
+  polls?: Collection<Poll>
 }
 
 /** @public */

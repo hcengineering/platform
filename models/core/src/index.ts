@@ -24,12 +24,7 @@ import {
   DOMAIN_STATUS,
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
-  systemAccountEmail,
-  type AttachedDoc,
-  type Class,
-  type Doc,
-  type IndexingConfiguration,
-  type TxCollectionCUD
+  systemAccountEmail
 } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import { TBenchmarkDoc } from './benchmark'
@@ -91,17 +86,7 @@ import {
 import { defineSpaceType } from './spaceType'
 import { TDomainStatusPlaceholder, TStatus, TStatusCategory } from './status'
 import { TUserStatus } from './transient'
-import {
-  TTx,
-  TTxApplyIf,
-  TTxCollectionCUD,
-  TTxCreateDoc,
-  TTxCUD,
-  TTxMixin,
-  TTxRemoveDoc,
-  TTxUpdateDoc,
-  TTxWorkspaceEvent
-} from './tx'
+import { TTx, TTxApplyIf, TTxCreateDoc, TTxCUD, TTxMixin, TTxRemoveDoc, TTxUpdateDoc, TTxWorkspaceEvent } from './tx'
 
 export { coreId, DOMAIN_SPACE } from '@hcengineering/core'
 export * from './core'
@@ -122,7 +107,6 @@ export function createModel (builder: Builder): void {
     TTxCUD,
     TTxCreateDoc,
     TAttachedDoc,
-    TTxCollectionCUD,
     TTxMixin,
     TTxUpdateDoc,
     TTxRemoveDoc,
@@ -188,14 +172,6 @@ export function createModel (builder: Builder): void {
     core.account.System
   )
 
-  builder.mixin<Class<TxCollectionCUD<Doc, AttachedDoc>>, IndexingConfiguration<TxCollectionCUD<Doc, AttachedDoc>>>(
-    core.class.TxCollectionCUD,
-    core.class.Class,
-    core.mixin.IndexConfiguration,
-    {
-      indexes: ['tx.objectId', 'tx.operations.attachedTo']
-    }
-  )
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_TX,
     disabled: [

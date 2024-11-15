@@ -44,7 +44,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverCalendar.trigger.OnEvent,
     txMatch: {
-      'tx.objectClass': calendar.class.Event
+      objectClass: calendar.class.Event
     }
   })
 

@@ -21,7 +21,7 @@
     Space,
     Timestamp,
     Tx,
-    TxCollectionCUD,
+    TxCUD,
     TxProcessor
   } from '@hcengineering/core'
   import activity, { ActivityMessage } from '@hcengineering/activity'
@@ -546,11 +546,9 @@
   }
 
   const newMessageTxListener = (tx: Tx): void => {
-    if (tx._class !== core.class.TxCollectionCUD) return
-    const ctx = tx as TxCollectionCUD<Doc, ActivityMessage>
-    if (ctx.objectId !== doc._id) return
-    const etx = TxProcessor.extractTx(tx)
-    if (etx._class !== core.class.TxCreateDoc) return
+    const ctx = tx as TxCUD<ActivityMessage>
+    if (ctx.attachedTo !== doc._id) return
+    if (ctx._class !== core.class.TxCreateDoc) return
     if (shouldScrollToNew) {
       void wait().then(scrollToNewMessages)
     }

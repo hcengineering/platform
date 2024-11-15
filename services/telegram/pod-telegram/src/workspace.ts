@@ -2,14 +2,13 @@ import attachment, { Attachment } from '@hcengineering/attachment'
 import contact, {
   Channel,
   Employee,
-  Contact as PContact,
-  PersonAccount,
   getFirstName,
-  getLastName
+  getLastName,
+  Contact as PContact,
+  PersonAccount
 } from '@hcengineering/contact'
 import core, {
   Account,
-  AttachedDoc,
   Blob,
   Client,
   Doc,
@@ -17,8 +16,8 @@ import core, {
   MeasureContext,
   Ref,
   Tx,
-  TxCollectionCUD,
   TxCreateDoc,
+  TxCUD,
   TxFactory,
   TxOperations,
   TxProcessor,
@@ -95,10 +94,6 @@ export class WorkspaceWorker {
           await this.txCreateDoc(tx as TxCreateDoc<Doc>)
           return
         }
-        case core.class.TxCollectionCUD: {
-          await this.txCollectionCUD(tx as TxCollectionCUD<Doc, AttachedDoc>)
-          return
-        }
         case core.class.TxUpdateDoc: {
           await this.txUpdateDoc(tx as TxUpdateDoc<Doc>)
           return
@@ -122,10 +117,6 @@ export class WorkspaceWorker {
         console.log(err)
       }
     }
-  }
-
-  private async txCollectionCUD (tx: TxCollectionCUD<Doc, AttachedDoc>): Promise<void> {
-    await this.txHandler(tx.tx)
   }
 
   private async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {
@@ -551,27 +542,30 @@ export class WorkspaceWorker {
     }
   }
 
-  private makePlatformMsg (
-    event: Event,
-    record: UserRecord,
-    channel: Channel
-  ): TxCollectionCUD<Channel, TelegramMessage> {
+  private makePlatformMsg (event: Event, record: UserRecord, channel: Channel): TxCUD<TelegramMessage> {
     const factory = new TxFactory(record.userId as Ref<Account>)
+    const modifiedOn = event.msg.date * 1000
     const tx = factory.createTxCollectionCUD<Channel, TelegramMessage>(
       channel._class,
       channel._id,
       channel.space,
       'items',
-      factory.createTxCreateDoc<TelegramMessage>(telegramP.class.Message, core.space.Workspace, {
-        attachedTo: channel._id,
-        attachedToClass: channel._class,
-        collection: 'items',
-        sendOn: event.msg.date * 1000,
-        content: telegramToPlatform(event.msg),
-        incoming: event.msg.out !== true
-      })
+      factory.createTxCreateDoc<TelegramMessage>(
+        telegramP.class.Message,
+        core.space.Workspace,
+        {
+          attachedTo: channel._id,
+          attachedToClass: channel._class,
+          collection: 'items',
+          sendOn: event.msg.date * 1000,
+          content: telegramToPlatform(event.msg),
+          incoming: event.msg.out !== true
+        },
+        undefined,
+        modifiedOn
+      ),
+      modifiedOn
     )
-    tx.tx.modifiedOn = event.msg.date * 1000
     return tx
   }
 
@@ -660,9 +654,9 @@ export class WorkspaceWorker {
   private async makePlatformAttachments (
     event: Event,
     record: UserRecord,
-    createTx: TxCollectionCUD<Channel, TelegramMessage>
+    createTx: TxCUD<TelegramMessage>
   ): Promise<void> {
-    const msg = TxProcessor.createDoc2Doc(createTx.tx as TxCreateDoc<TelegramMessage>)
+    const msg = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<TelegramMessage>)
     const factory = new TxFactory(record.userId as Ref<Account>)
     const files = await getFiles(event.msg)
     for (const file of files) {
@@ -670,24 +664,30 @@ export class WorkspaceWorker {
         const id = uuid()
         file.size = file.size ?? file.file.length
         await this.storageAdapter.put(this.ctx, { name: this.workspace }, id, file.file, file.type, file.size)
+        const modifiedOn = event.msg.date * 1000
         const tx = factory.createTxCollectionCUD<TelegramMessage, Attachment>(
           msg._class,
           msg._id,
           msg.space,
           'attachments',
-          factory.createTxCreateDoc<Attachment>(attachment.class.Attachment, msg.space, {
-            name: file.name,
-            file: id as Ref<Blob>,
-            type: file.type,
-            size: file.size,
-            lastModified: file.lastModified,
-            collection: 'attachments',
-            attachedTo: msg._id,
-            attachedToClass: msg._class
-          })
+          factory.createTxCreateDoc<Attachment>(
+            attachment.class.Attachment,
+            msg.space,
+            {
+              name: file.name,
+              file: id as Ref<Blob>,
+              type: file.type,
+              size: file.size,
+              lastModified: file.lastModified,
+              collection: 'attachments',
+              attachedTo: msg._id,
+              attachedToClass: msg._class
+            },
+            undefined,
+            modifiedOn
+          ),
+          modifiedOn
         )
-        tx.modifiedOn = event.msg.date * 1000
-        tx.tx.modifiedOn = event.msg.date * 1000
         await this.client.tx(tx)
       } catch (e) {
         console.error(e)

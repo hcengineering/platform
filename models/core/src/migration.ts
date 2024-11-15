@@ -15,11 +15,14 @@
 
 import { saveCollaborativeDoc } from '@hcengineering/collaboration'
 import core, {
+  type Class,
   DOMAIN_SPACE,
   DOMAIN_STATUS,
   DOMAIN_TX,
   MeasureMetricsContext,
   RateLimiter,
+  type Ref,
+  type TxCUD,
   collaborativeDocParse,
   coreId,
   generateId,
@@ -284,6 +287,39 @@ export const coreOperation: MigrateOperation = {
         func: async (client: MigrationClient): Promise<void> => {
           await client.update(DOMAIN_TX, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
           await client.update(DOMAIN_SPACE, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
+        }
+      },
+      {
+        state: 'remove-collection-txes',
+        func: async (client) => {
+          let processed = 0
+          while (true) {
+            const txes = await client.find<TxCUD<Doc>>(
+              DOMAIN_TX,
+              {
+                _class: 'core:class:TxCollectionCUD' as Ref<Class<Doc>>
+              },
+              { limit: 5000 }
+            )
+            if (txes.length === 0) break
+            for (const tx of txes) {
+              processed++
+              await client.update(
+                DOMAIN_TX,
+                { _id: tx._id },
+                {
+                  $set: {
+                    attachedTo: tx.objectId,
+                    attachedToClass: tx.objectClass,
+                    ...(tx as any).tx
+                  }
+                }
+              )
+              if (processed % 1000 === 0) {
+                console.log('processed', processed)
+              }
+            }
+          }
         }
       }
     ])
