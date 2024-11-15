@@ -20,12 +20,10 @@ import core, {
   Tx,
   TxProcessor,
   type AnyAttribute,
-  type AttachedDoc,
   type Class,
   type Doc,
   type FullTextSearchContext,
   type Ref,
-  type TxCollectionCUD,
   type TxCUD,
   type TxUpdateDoc
 } from '@hcengineering/core'
@@ -44,11 +42,7 @@ export async function OnChange (txes: Tx[], control: TriggerControl): Promise<Tx
   }
   const docsToUpsert = control.ctx.contextData.fulltextUpdates
 
-  for (let tx of txes) {
-    if (tx._class === core.class.TxCollectionCUD) {
-      const txcol = tx as TxCollectionCUD<Doc, AttachedDoc>
-      tx = txcol.tx
-    }
+  for (const tx of txes) {
     const attrs = new Map<string, AnyAttribute>()
     if (TxProcessor.isExtendsCUD(tx._class)) {
       const cud = tx as TxCUD<Doc>

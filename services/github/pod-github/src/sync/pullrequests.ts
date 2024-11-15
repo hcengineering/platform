@@ -9,7 +9,6 @@ import core, {
   SortingOrder,
   Status,
   TxCUD,
-  TxCollectionCUD,
   TxMixin,
   TxOperations,
   TxProcessor,
@@ -652,17 +651,17 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     // We also need to track deleted Todos,
     const removedTodos: GithubTodo[] = []
 
-    const removedTodoOps = await client.findAll<TxCollectionCUD<Doc, ToDo>>(
-      core.class.TxCollectionCUD,
+    const removedTodoOps = await client.findAll<TxCUD<ToDo>>(
+      core.class.TxCUD,
       {
-        objectId: pullRequest._id,
-        'tx.objectClass': time.class.ProjectToDo,
-        'tx.objectId': { $nin: allTodos.map((it) => it._id) }
+        attachedTo: pullRequest._id,
+        objectClass: time.class.ProjectToDo,
+        objectId: { $nin: allTodos.map((it) => it._id) }
       },
       { sort: { modifiedOn: SortingOrder.Ascending } }
     )
 
-    const todoIds = removedTodoOps.filter((it) => it.tx._class === core.class.TxCreateDoc).map((it) => it.tx.objectId)
+    const todoIds = removedTodoOps.filter((it) => it._class === core.class.TxCreateDoc).map((it) => it.objectId)
 
     const mixinOps = await client.findAll<TxMixin<ToDo, GithubTodo>>(
       core.class.TxMixin,
@@ -678,8 +677,8 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
 
     // We need to rebuild removed todos's if pressent.
     for (const tx of removedTodoOps) {
-      const ops = groupedByTodo.get(tx.tx.objectId)
-      groupedByTodo.set(tx.tx.objectId, [...(ops ?? []), tx.tx])
+      const ops = groupedByTodo.get(tx.objectId)
+      groupedByTodo.set(tx.objectId, [...(ops ?? []), tx])
     }
 
     for (const tx of mixinOps) {

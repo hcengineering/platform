@@ -330,8 +330,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return res
   }
 
-  private async processTxSpaceDomain (sctx: MeasureContext, tx: TxCUD<Doc>): Promise<void> {
-    const actualTx = TxProcessor.extractTx(tx)
+  private async processTxSpaceDomain (sctx: MeasureContext, actualTx: TxCUD<Doc>): Promise<void> {
     if (actualTx._class === core.class.TxCreateDoc) {
       const ctx = actualTx as TxCreateDoc<Doc>
       const doc = TxProcessor.createDoc2Doc(ctx)

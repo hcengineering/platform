@@ -300,8 +300,7 @@ export class AnalyticsMiddleware extends BasePresentationMiddleware implements P
   }
 
   private async handleTx (...txes: Tx[]): Promise<void> {
-    for (const tx of txes) {
-      const etx = TxProcessor.extractTx(tx)
+    for (const etx of txes) {
       if (etx._class === core.class.TxApplyIf) {
         const applyIf = etx as TxApplyIf
         void this.handleTx(...applyIf.txes)

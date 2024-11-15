@@ -134,7 +134,7 @@ function getTxes (
 export async function OnDepartmentStaff (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    const ctx = TxProcessor.extractTx(tx) as TxMixin<Employee, Staff>
+    const ctx = tx as TxMixin<Employee, Staff>
 
     const targetAccount = control.modelDb.getAccountByPersonId(ctx.objectId) as PersonAccount[]
     if (targetAccount.length === 0) {
@@ -193,7 +193,7 @@ export async function OnDepartmentStaff (txes: Tx[], control: TriggerControl): P
 export async function OnDepartmentRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    const ctx = TxProcessor.extractTx(tx) as TxRemoveDoc<Department>
+    const ctx = tx as TxRemoveDoc<Department>
 
     const department = control.removedMap.get(ctx.objectId) as Department
     if (department === undefined) {
@@ -235,7 +235,7 @@ export async function OnDepartmentRemove (txes: Tx[], control: TriggerControl): 
 export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    const ctx = TxProcessor.extractTx(tx) as TxMixin<Person, Employee>
+    const ctx = tx as TxMixin<Person, Employee>
 
     const person = (await control.findAll(control.ctx, contact.class.Person, { _id: ctx.objectId }))[0]
     if (person === undefined) {
@@ -262,11 +262,10 @@ export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<
 export async function OnEmployeeDeactivate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    const actualTx = TxProcessor.extractTx(tx)
-    if (core.class.TxMixin !== actualTx._class) {
+    if (core.class.TxMixin !== tx._class) {
       continue
     }
-    const ctx = actualTx as TxMixin<Person, Employee>
+    const ctx = tx as TxMixin<Person, Employee>
     if (ctx.mixin !== contact.mixin.Employee || ctx.attributes.active !== false) {
       continue
     }
@@ -348,7 +347,7 @@ async function sendEmailNotifications (
  */
 export async function OnRequestCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   for (const tx of txes) {
-    const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<Request>
+    const ctx = tx as TxCreateDoc<Request>
 
     const sender = getPersonAccountById(ctx.modifiedBy, control)
     if (sender === undefined) {
@@ -367,7 +366,7 @@ export async function OnRequestCreate (txes: Tx[], control: TriggerControl): Pro
  */
 export async function OnRequestUpdate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   for (const tx of txes) {
-    const ctx = TxProcessor.extractTx(tx) as TxUpdateDoc<Request>
+    const ctx = tx as TxUpdateDoc<Request>
 
     const sender = getPersonAccountById(ctx.modifiedBy, control)
     if (sender === undefined) {
@@ -389,7 +388,7 @@ export async function OnRequestUpdate (txes: Tx[], control: TriggerControl): Pro
  */
 export async function OnRequestRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   for (const tx of txes) {
-    const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<Request>
+    const ctx = tx as TxCreateDoc<Request>
 
     const sender = getPersonAccountById(ctx.modifiedBy, control)
     if (sender === undefined) {
@@ -448,7 +447,7 @@ export async function RequestTextPresenter (doc: Doc, control: TriggerControl): 
 export async function OnPublicHolidayCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<PublicHoliday>
+    const ctx = tx as TxCreateDoc<PublicHoliday>
 
     const sender = getPersonAccountById(ctx.modifiedBy, control)
     if (sender === undefined) {

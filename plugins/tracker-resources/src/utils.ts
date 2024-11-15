@@ -30,7 +30,6 @@ import core, {
   type Space,
   type Status,
   type StatusCategory,
-  type TxCollectionCUD,
   type TxCreateDoc,
   type TxOperations,
   type TxResult,
@@ -340,26 +339,25 @@ export function subIssueListProvider (subIssues: Issue[], target: Ref<Issue>): v
   }
 }
 
-export async function getPreviousAssignees (objectId: Ref<Doc> | undefined): Promise<Array<Ref<Contact>>> {
+export async function getPreviousAssignees (objectId: Ref<Issue> | undefined): Promise<Array<Ref<Contact>>> {
   if (objectId === undefined) {
     return []
   }
   const client = getClient()
   const createTx = (
-    await client.findAll<TxCollectionCUD<Issue, Issue>>(core.class.TxCollectionCUD, {
-      'tx.objectId': objectId,
-      'tx._class': core.class.TxCreateDoc
+    await client.findAll<TxCreateDoc<Issue>>(core.class.TxCreateDoc, {
+      objectId
     })
   )[0]
-  const updateTxes = await client.findAll<TxCollectionCUD<Issue, Issue>>(
-    core.class.TxCollectionCUD,
-    { 'tx.objectId': objectId, 'tx._class': core.class.TxUpdateDoc, 'tx.operations.assignee': { $exists: true } },
+  const updateTxes = await client.findAll<TxUpdateDoc<Issue>>(
+    core.class.TxUpdateDoc,
+    { objectId, 'operations.assignee': { $exists: true } },
     { sort: { modifiedOn: -1 } }
   )
   const set = new Set<Ref<Contact>>()
-  const createAssignee = (createTx?.tx as TxCreateDoc<Issue>)?.attributes?.assignee
+  const createAssignee = createTx?.attributes?.assignee
   for (const tx of updateTxes) {
-    const assignee = (tx.tx as TxUpdateDoc<Issue>).operations.assignee
+    const assignee = tx.operations.assignee
     if (assignee == null) continue
     set.add(assignee)
   }

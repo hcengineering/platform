@@ -15,6 +15,7 @@
 
 import core from '@hcengineering/core/src/component'
 import { type Builder } from '@hcengineering/model'
+import task from '@hcengineering/task'
 import serverCore from '@hcengineering/server-core'
 import serverTask from '@hcengineering/server-task'
 
@@ -22,6 +23,9 @@ export { serverTaskId } from '@hcengineering/server-task'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTask.trigger.OnStateUpdate
+    trigger: serverTask.trigger.OnStateUpdate,
+    txMatch: {
+      objectClass: task.class.Task
+    }
   })
 }

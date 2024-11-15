@@ -20,7 +20,6 @@ import { loadCollaborativeDoc, saveCollaborativeDoc, yDocToBuffer } from '@hceng
 import contact from '@hcengineering/contact'
 import core, {
   type ArrOf,
-  type AttachedDoc,
   type BackupClient,
   type Class,
   ClassifierKind,
@@ -47,7 +46,6 @@ import core, {
   type StatusCategory,
   type Tx,
   type TxCUD,
-  type TxCollectionCUD,
   type TxCreateDoc,
   type TxMixin,
   TxOperations,
@@ -158,16 +156,6 @@ export async function cleanWorkspace (
               await db.collection(DOMAIN_TX).deleteMany({ objectId: (tx as TxRemoveDoc<Doc>).objectId })
               processed++
             }
-            if (
-              tx._class === core.class.TxCollectionCUD &&
-              (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxRemoveDoc
-            ) {
-              // We need to remove all update and create operations for document
-              await db.collection(DOMAIN_TX).deleteMany({
-                'tx.objectId': ((tx as TxCollectionCUD<Doc, AttachedDoc>).tx as TxRemoveDoc<Doc>).objectId
-              })
-              processed++
-            }
           }
           if (processed % 1000 === 0) {
             console.log('processed', processed)
@@ -219,18 +207,13 @@ export async function cleanRemovedTransactions (workspaceId: WorkspaceId, transa
   try {
     let count = 0
     while (true) {
-      const removedDocs = await connection.findAll(
-        core.class.TxCollectionCUD,
-        { 'tx._class': core.class.TxRemoveDoc },
-        { limit: 1000 }
-      )
+      const removedDocs = await connection.findAll(core.class.TxRemoveDoc, {}, { limit: 1000 })
       if (removedDocs.length === 0) {
         break
       }
 
-      const toRemove = await connection.findAll(core.class.TxCollectionCUD, {
-        'tx._class': { $in: [core.class.TxCreateDoc, core.class.TxRemoveDoc, core.class.TxUpdateDoc] },
-        'tx.objectId': { $in: removedDocs.map((it) => it.tx.objectId) }
+      const toRemove = await connection.findAll(core.class.TxCUD, {
+        objectId: { $in: removedDocs.map((it) => it.objectId) }
       })
       await connection.clean(
         DOMAIN_TX,
@@ -368,20 +351,18 @@ export async function fixCommentDoubleIdCreate (workspaceId: WorkspaceId, transa
     mode: 'backup'
   })) as unknown as CoreClient & BackupClient
   try {
-    const commentTxes = await connection.findAll(core.class.TxCollectionCUD, {
-      'tx._class': core.class.TxCreateDoc,
-      'tx.objectClass': chunter.class.ChatMessage
+    const commentTxes = await connection.findAll(core.class.TxCreateDoc, {
+      objectClass: chunter.class.ChatMessage
     })
-    const commentTxesRemoved = await connection.findAll(core.class.TxCollectionCUD, {
-      'tx._class': core.class.TxRemoveDoc,
-      'tx.objectClass': chunter.class.ChatMessage
+    const commentTxesRemoved = await connection.findAll(core.class.TxRemoveDoc, {
+      objectClass: chunter.class.ChatMessage
     })
-    const removed = new Map(commentTxesRemoved.map((it) => [it.tx.objectId, it]))
+    const removed = new Map(commentTxesRemoved.map((it) => [it.objectId, it]))
     // Do not checked removed
     const objSet = new Set<Ref<Doc>>()
     const oldValue = new Map<Ref<Doc>, string>()
     for (const c of commentTxes) {
-      const cid = c.tx.objectId
+      const cid = c.objectId
       if (removed.has(cid)) {
         continue
       }
@@ -389,7 +370,7 @@ export async function fixCommentDoubleIdCreate (workspaceId: WorkspaceId, transa
       objSet.add(cid)
       if (has) {
         // We have found duplicate one, let's rename it.
-        const doc = TxProcessor.createDoc2Doc<ChatMessage>(c.tx as unknown as TxCreateDoc<ChatMessage>)
+        const doc = TxProcessor.createDoc2Doc<ChatMessage>(c as unknown as TxCreateDoc<ChatMessage>)
         if (doc.message !== '' && doc.message.trim() !== '<p></p>') {
           await connection.clean(DOMAIN_TX, [c._id])
           if (oldValue.get(cid) === doc.message.trim()) {
@@ -398,8 +379,8 @@ export async function fixCommentDoubleIdCreate (workspaceId: WorkspaceId, transa
             oldValue.set(doc._id, doc.message)
             console.log('renaming', cid, doc.message)
             // Remove previous transaction.
-            c.tx.objectId = generateId()
-            doc._id = c.tx.objectId as Ref<ChatMessage>
+            c.objectId = generateId()
+            doc._id = c.objectId as Ref<ChatMessage>
             await connection.upload(DOMAIN_TX, [c])
             // Also we need to create snapsot
             await connection.upload(DOMAIN_ACTIVITY, [doc])

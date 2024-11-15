@@ -137,7 +137,7 @@ export class Triggers {
       let matches = tx
       if (query !== undefined) {
         this.addDerived(query, 'objectClass')
-        this.addDerived(query, 'tx.objectClass')
+        this.addDerived(query, 'attachedToClass')
         matches = matchQuery(tx, query, core.class.Tx, ctrl.hierarchy) as Tx[]
       }
       if (matches.length > 0) {

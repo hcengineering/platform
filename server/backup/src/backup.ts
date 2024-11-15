@@ -16,7 +16,6 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  AttachedDoc,
   BackupClient,
   Client as CoreClient,
   Doc,
@@ -32,7 +31,6 @@ import core, {
   Ref,
   SortingOrder,
   systemAccountEmail,
-  TxCollectionCUD,
   WorkspaceId,
   type BackupStatus,
   type Blob,
@@ -525,7 +523,7 @@ export async function cloneWorkspace (
               try {
                 docs = await ctx.with('load-docs', {}, (ctx) => sourceConnection.loadDocs(c, needRetrieve))
                 if (clearTime) {
-                  docs = prepareClonedDocuments(docs, sourceConnection)
+                  docs = prepareClonedDocuments(docs)
                 }
                 const executor = new RateLimiter(10)
                 for (const d of docs) {
@@ -593,37 +591,17 @@ export async function cloneWorkspace (
   )
 }
 
-function prepareClonedDocuments (docs: Doc[], sourceConnection: CoreClient & BackupClient): Doc[] {
+function prepareClonedDocuments (docs: Doc[]): Doc[] {
   docs = docs.map((p) => {
-    let collectionCud = false
-    try {
-      collectionCud = sourceConnection.getHierarchy().isDerived(p._class, core.class.TxCollectionCUD)
-    } catch (err: any) {
-      console.log(err)
-    }
-
     // if full text is skipped, we need to clean stages for indexes.
     if (p._class === core.class.DocIndexState) {
       ;(p as DocIndexState).needIndex = true
     }
 
-    if (collectionCud) {
-      return {
-        ...p,
-        modifiedOn: Date.now(),
-        createdOn: Date.now(),
-        tx: {
-          ...(p as TxCollectionCUD<Doc, AttachedDoc>).tx,
-          modifiedOn: Date.now(),
-          createdOn: Date.now()
-        }
-      }
-    } else {
-      return {
-        ...p,
-        modifiedOn: Date.now(),
-        createdOn: Date.now()
-      }
+    return {
+      ...p,
+      modifiedOn: Date.now(),
+      createdOn: Date.now()
     }
   })
   return docs

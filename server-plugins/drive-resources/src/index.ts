@@ -22,8 +22,7 @@ import {
   type TxRemoveDoc,
   DocumentQuery,
   FindOptions,
-  FindResult,
-  TxProcessor
+  FindResult
 } from '@hcengineering/core'
 import drive, { type FileVersion, type Folder } from '@hcengineering/drive'
 import type { TriggerControl } from '@hcengineering/server-core'
@@ -36,7 +35,7 @@ export async function OnFileVersionDelete (
   const result: Tx[] = []
   const toDelete: string[] = []
   for (const tx of txes) {
-    const rmTx = TxProcessor.extractTx(tx) as TxRemoveDoc<FileVersion>
+    const rmTx = tx as TxRemoveDoc<FileVersion>
 
     // Obtain document being deleted.
     const version = removedMap.get(rmTx.objectId) as FileVersion

@@ -47,7 +47,6 @@ import core, {
   type Space,
   type Tx,
   type TxCUD,
-  type TxCollectionCUD,
   type TxCreateDoc,
   type TxMixin,
   type TxOperations,
@@ -1319,25 +1318,19 @@ export async function buildRemovedDoc<T extends Doc> (
   objectId: Ref<T>,
   _class: Ref<Class<T>>
 ): Promise<T | undefined> {
-  const isAttached = client.getHierarchy().isDerived(_class, core.class.AttachedDoc)
   const txes = await client.findAll<TxCUD<Doc>>(
-    isAttached ? core.class.TxCollectionCUD : core.class.TxCUD,
-    isAttached
-      ? { 'tx.objectId': objectId }
-      : {
-          objectId
-        },
+    core.class.TxCUD,
+    {
+      objectId
+    },
     { sort: { modifiedOn: 1 } }
   )
-  const createTx = isAttached
-    ? txes.map((tx) => (tx as TxCollectionCUD<Doc, AttachedDoc>).tx).find((tx) => tx._class === core.class.TxCreateDoc)
-    : txes.find((tx) => tx._class === core.class.TxCreateDoc)
+  const createTx = txes.find((tx) => tx._class === core.class.TxCreateDoc)
 
   if (createTx === undefined) return
   let doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
 
-  for (let tx of txes) {
-    tx = TxProcessor.extractTx(tx) as TxCUD<Doc>
+  for (const tx of txes) {
     if (tx._class === core.class.TxUpdateDoc) {
       doc = TxProcessor.updateDoc2Doc(doc, tx as TxUpdateDoc<Doc>)
     } else if (tx._class === core.class.TxMixin) {

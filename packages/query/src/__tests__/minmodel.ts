@@ -189,13 +189,6 @@ export function genMinModel (): TxCUD<Doc>[] {
     })
   )
   txes.push(
-    createClass(core.class.TxCollectionCUD, {
-      label: 'TxCollectionCUD' as IntlString,
-      extends: core.class.TxCUD,
-      kind: ClassifierKind.CLASS
-    })
-  )
-  txes.push(
     createClass(core.class.TxMixin, {
       label: 'TxMixin' as IntlString,
       extends: core.class.TxCUD,

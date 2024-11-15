@@ -25,7 +25,6 @@
     Tx,
     TxCUD,
     TxCreateDoc,
-    TxProcessor,
     TxUpdateDoc,
     getCurrentAccount
   } from '@hcengineering/core'
@@ -66,8 +65,7 @@
     { modifiedBy: { $in: Array.from(personAccounts.map((it) => it._id)) }, modifiedOn: { $gt: fromDate, $lt: toDate } },
     (res) => {
       const map = new Map<Ref<Account>, Tx[]>()
-      for (const _t of res) {
-        const t = TxProcessor.extractTx(_t)
+      for (const t of res) {
         const account = t.createdBy ?? t.modifiedBy
         map.set(account, [...(map.get(account) ?? []), t])
       }

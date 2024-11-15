@@ -87,7 +87,7 @@ export async function applicationTextPresenter (doc: Doc, control: TriggerContro
 export async function OnRecruitUpdate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
+    const actualTx = tx as TxCUD<Doc>
     if (!control.hierarchy.isDerived(actualTx.objectClass, recruit.class.Vacancy)) {
       continue
     }

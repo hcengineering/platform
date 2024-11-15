@@ -677,23 +677,32 @@ describe('query', () => {
         )
       )
     }
-    const pp = new Promise((resolve) => {
-      liveQuery.query<AttachedComment>(
-        test.class.TestComment,
-        { _id: parentComment },
-        (result) => {
-          attempt++
-          const comment = result[0]
-          if (comment !== undefined) {
-            expect((comment.$lookup as any)?.comments).toHaveLength(childLength - attempt)
-          }
-          if (attempt === childLength) {
-            resolve(null)
-          }
-        },
-        { lookup: { _id: { comments: test.class.TestComment } } }
-      )
+
+    let secondPromise: Promise<void> | undefined
+    const firstCallback = new Promise<void>((resolve) => {
+      secondPromise = new Promise<void>((_resolve) => {
+        liveQuery.query<AttachedComment>(
+          test.class.TestComment,
+          { _id: parentComment },
+          (result) => {
+            attempt++
+            if (attempt === 0) {
+              resolve()
+            }
+            const comment = result[0]
+            if (comment !== undefined) {
+              expect((comment.$lookup as any)?.comments).toHaveLength(childLength - attempt)
+            }
+            if (attempt === childLength) {
+              _resolve()
+            }
+          },
+          { lookup: { _id: { comments: test.class.TestComment } } }
+        )
+      })
     })
+
+    await firstCallback
 
     for (const child of childs) {
       await factory.removeCollection(
@@ -705,7 +714,7 @@ describe('query', () => {
         'comments'
       )
     }
-    await pp
+    await secondPromise
   })
 
   it('lookup query update doc', async () => {

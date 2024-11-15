@@ -20,7 +20,6 @@ import core, {
   Ref,
   Tx,
   TxCUD,
-  TxCollectionCUD,
   TxCreateDoc,
   TxProcessor,
   TxUpdateDoc,
@@ -43,27 +42,24 @@ import {
 /**
  * @public
  */
-export async function OnRequest (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+export async function OnRequest (txes: TxCUD<Doc>[], control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
-  const ltxes = (
-    txes.filter((it) => it._class === core.class.TxCollectionCUD) as TxCollectionCUD<Doc, Request>[]
-  ).filter((it) => hierarchy.isDerived(it.tx.objectClass, request.class.Request))
+  const ltxes = txes.filter((it) => hierarchy.isDerived(it.objectClass, request.class.Request))
 
   let res: Tx[] = []
 
   for (const ptx of ltxes) {
-    res = res.concat(await getRequestNotificationTx(control.ctx, ptx, control))
+    res = res.concat(await getRequestNotificationTx(control.ctx, ptx as TxCUD<Request>, control))
 
-    if (ptx.tx._class === core.class.TxUpdateDoc) {
-      res = res.concat(await OnRequestUpdate(ptx, control))
+    if (ptx._class === core.class.TxUpdateDoc) {
+      res = res.concat(await OnRequestUpdate(ptx as TxUpdateDoc<Request>, control))
     }
   }
 
   return res
 }
 
-async function OnRequestUpdate (tx: TxCollectionCUD<Doc, Request>, control: TriggerControl): Promise<Tx[]> {
-  const ctx = tx.tx as TxUpdateDoc<Request>
+async function OnRequestUpdate (ctx: TxUpdateDoc<Request>, control: TriggerControl): Promise<Tx[]> {
   const applyTxes: Tx[] = []
 
   if (ctx.operations.$push?.approved !== undefined) {
@@ -75,9 +71,9 @@ async function OnRequestUpdate (tx: TxCollectionCUD<Doc, Request>, control: Trig
       })
       collectionTx.space = core.space.Tx
       const resTx = control.txFactory.createTxCollectionCUD(
-        tx.objectClass,
-        tx.objectId,
-        tx.objectSpace,
+        ctx.attachedToClass ?? ctx.objectClass,
+        ctx.attachedTo ?? ctx.objectId,
+        ctx.objectSpace,
         'requests',
         collectionTx
       )
@@ -88,9 +84,9 @@ async function OnRequestUpdate (tx: TxCollectionCUD<Doc, Request>, control: Trig
     }
 
     const approvedDateTx = control.txFactory.createTxCollectionCUD(
-      tx.objectClass,
-      tx.objectId,
-      tx.objectSpace,
+      ctx.attachedToClass ?? ctx.objectClass,
+      ctx.attachedTo ?? ctx.objectId,
+      ctx.objectSpace,
       'requests',
       control.txFactory.createTxUpdateDoc(ctx.objectClass, ctx.objectSpace, ctx.objectId, {
         $push: { approvedDates: Date.now() }
@@ -130,14 +126,15 @@ async function getRequest (tx: TxCUD<Request>, control: TriggerControl): Promise
 // We need request-specific logic to attach a activity message on request create/update to parent, but use request collaborators for notifications
 async function getRequestNotificationTx (
   ctx: MeasureContext,
-  tx: TxCollectionCUD<Doc, Request>,
+  tx: TxCUD<Request>,
   control: TriggerControl
 ): Promise<Tx[]> {
-  const request = await getRequest(tx.tx, control)
+  if (tx.attachedToClass === undefined || tx.attachedTo === undefined) return []
+  const request = await getRequest(tx, control)
 
   if (request === undefined) return []
 
-  const doc = (await control.findAll(control.ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+  const doc = (await control.findAll(control.ctx, tx.attachedToClass, { _id: tx.attachedTo }, { limit: 1 }))[0]
 
   if (doc === undefined) return []
 
@@ -149,9 +146,9 @@ async function getRequestNotificationTx (
   res.push(...messagesTxes)
 
   const messages = messagesTxes.map((messageTx) =>
-    TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>)
+    TxProcessor.createDoc2Doc(messageTx as TxCreateDoc<DocUpdateMessage>)
   )
-  const collaborators = await getCollaborators(control.ctx, request, control, tx.tx, res)
+  const collaborators = await getCollaborators(control.ctx, request, control, tx, res)
 
   if (collaborators.length === 0) return res
 
@@ -176,7 +173,6 @@ async function getRequestNotificationTx (
       ctx,
       control,
       request,
-      tx.tx,
       tx,
       targetInfo,
       senderInfo,

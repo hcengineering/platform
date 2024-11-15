@@ -15,12 +15,12 @@
 
 import { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { Lookup, MeasureContext, ReverseLookups, getObjectValue } from '.'
-import type { Account, AttachedDoc, Class, Doc, Ref } from './classes'
+import type { Account, Class, Doc, Ref } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { checkMixinKey, matchQuery, resultSort } from './query'
 import type { DocumentQuery, FindOptions, FindResult, LookupData, Storage, TxResult, WithLookup } from './storage'
-import type { Tx, TxCollectionCUD, TxCreateDoc, TxMixin, TxRemoveDoc, TxUpdateDoc } from './tx'
+import type { Tx, TxCreateDoc, TxMixin, TxRemoveDoc, TxUpdateDoc } from './tx'
 import { TxProcessor } from './tx'
 import { toFindResult } from './utils'
 
@@ -363,25 +363,6 @@ export class ModelDb extends MemDb {
         case core.class.TxCreateDoc:
           this.addDoc(TxProcessor.createDoc2Doc(tx as TxCreateDoc<Doc>, clone))
           break
-        case core.class.TxCollectionCUD: {
-          // We need update only create transactions to contain attached, attachedToClass.
-          const cud = tx as TxCollectionCUD<Doc, AttachedDoc<Doc>>
-          if (cud.tx._class === core.class.TxCreateDoc) {
-            const createTx = cud.tx as TxCreateDoc<AttachedDoc>
-            const d: TxCreateDoc<AttachedDoc> = {
-              ...createTx,
-              attributes: {
-                ...createTx.attributes,
-                attachedTo: cud.objectId,
-                attachedToClass: cud.objectClass,
-                collection: cud.collection
-              }
-            }
-            this.addDoc(TxProcessor.createDoc2Doc(d as TxCreateDoc<Doc>, clone))
-          }
-          this.addTxes(ctx, [cud.tx], clone)
-          break
-        }
         case core.class.TxUpdateDoc: {
           const cud = tx as TxUpdateDoc<Doc>
           const doc = this.findObject(cud.objectId)

@@ -29,7 +29,6 @@ import core, {
   Ref,
   toWorkspaceString,
   Tx,
-  TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
   TxProcessor,
@@ -240,25 +239,20 @@ async function onSupportWorkspaceMessage (control: TriggerControl, message: Chat
   await sendAIEvents([transferEvent], control.workspace, control.ctx)
 }
 
-export async function OnMessageSend (
-  originTxs: TxCollectionCUD<Doc, AttachedDoc>[],
-  control: TriggerControl
-): Promise<Tx[]> {
+export async function OnMessageSend (originTxs: TxCUD<AttachedDoc>[], control: TriggerControl): Promise<Tx[]> {
   const { hierarchy } = control
-  const txes = originTxs
-    .map((it) => TxProcessor.extractTx(it) as TxCreateDoc<ChatMessage>)
-    .filter(
-      (it) =>
-        it._class === core.class.TxCreateDoc &&
-        hierarchy.isDerived(it.objectClass, chunter.class.ChatMessage) &&
-        !(it.modifiedBy === aiBot.account.AIBot || it.modifiedBy === core.account.System)
-    )
+  const txes = originTxs.filter(
+    (it) =>
+      it._class === core.class.TxCreateDoc &&
+      hierarchy.isDerived(it.objectClass, chunter.class.ChatMessage) &&
+      !(it.modifiedBy === aiBot.account.AIBot || it.modifiedBy === core.account.System)
+  )
   if (txes.length === 0) {
     return []
   }
   for (const tx of txes) {
     const isThread = hierarchy.isDerived(tx.objectClass, chunter.class.ThreadMessage)
-    const message = TxProcessor.createDoc2Doc(tx)
+    const message = TxProcessor.createDoc2Doc(tx as TxCreateDoc<ChatMessage>)
 
     const docClass = isThread ? (message as ThreadMessage).objectClass : message.attachedToClass
 
@@ -365,7 +359,7 @@ export async function OnMessageNotified (
 
 export async function OnUserStatus (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   for (const originTx of txes) {
-    const tx = TxProcessor.extractTx(originTx) as TxCUD<UserStatus>
+    const tx = originTx as TxCUD<UserStatus>
 
     if (
       tx.objectClass !== core.class.UserStatus ||

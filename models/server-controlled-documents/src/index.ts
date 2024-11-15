@@ -33,11 +33,10 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverDocuments.trigger.OnDocApprovalRequestApproved,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      objectClass: documents.class.ControlledDocument,
-      'tx._class': core.class.TxUpdateDoc,
-      'tx.objectClass': documents.class.DocumentApprovalRequest,
-      'tx.operations.status': RequestStatus.Completed
+      _class: core.class.TxUpdateDoc,
+      attachedToClass: documents.class.ControlledDocument,
+      objectClass: documents.class.DocumentApprovalRequest,
+      'operations.status': RequestStatus.Completed
     }
   })
 
