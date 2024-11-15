@@ -231,12 +231,33 @@ export class ImportWorkspaceBuilder {
     return errors
   }
 
-  private validateStringDefined (value: string | null | undefined): boolean {
-    return value !== '' && value !== null && value !== undefined
-  }
-
   private validateProject (project: ImportProject): string[] {
     const errors: string[] = []
+
+    errors.push(...this.validateType(project.title, 'string', 'title'))
+    errors.push(...this.validateType(project.identifier, 'string', 'identifier'))
+    errors.push(...this.validateType(project.class, 'string', 'class'))
+
+    if (project.private !== undefined) {
+      errors.push(...this.validateType(project.private, 'boolean', 'private'))
+    }
+
+    if (project.autoJoin !== undefined) {
+      errors.push(...this.validateType(project.autoJoin, 'boolean', 'autoJoin'))
+    }
+
+    if (project.owners !== undefined) {
+      errors.push(...this.validateArray(project.owners, 'string', 'owners'))
+    }
+
+    if (project.members !== undefined) {
+      errors.push(...this.validateArray(project.members, 'string', 'members'))
+    }
+
+    if (project.description !== undefined) {
+      errors.push(...this.validateType(project.description, 'string', 'description'))
+    }
+
     if (!this.validateStringDefined(project.title)) {
       errors.push('title is required')
     }
@@ -251,6 +272,30 @@ export class ImportWorkspaceBuilder {
 
   private validateTeamspace (teamspace: ImportTeamspace): string[] {
     const errors: string[] = []
+
+    errors.push(...this.validateType(teamspace.title, 'string', 'title'))
+    errors.push(...this.validateType(teamspace.class, 'string', 'class'))
+
+    if (teamspace.private !== undefined) {
+      errors.push(...this.validateType(teamspace.private, 'boolean', 'private'))
+    }
+
+    if (teamspace.autoJoin !== undefined) {
+      errors.push(...this.validateType(teamspace.autoJoin, 'boolean', 'autoJoin'))
+    }
+
+    if (teamspace.owners !== undefined) {
+      errors.push(...this.validateArray(teamspace.owners, 'string', 'owners'))
+    }
+
+    if (teamspace.members !== undefined) {
+      errors.push(...this.validateArray(teamspace.members, 'string', 'members'))
+    }
+
+    if (teamspace.description !== undefined) {
+      errors.push(...this.validateType(teamspace.description, 'string', 'description'))
+    }
+
     if (!this.validateStringDefined(teamspace.title)) {
       errors.push('title is required')
     }
@@ -262,9 +307,30 @@ export class ImportWorkspaceBuilder {
 
   private validateIssue (issue: ImportIssue): string[] {
     const errors: string[] = []
-    if (!this.validateStringDefined(issue.title)) {
-      errors.push('title is required')
+
+    errors.push(...this.validateType(issue.title, 'string', 'title'))
+    errors.push(...this.validateType(issue.class, 'string', 'class'))
+
+    if (issue.number !== undefined) {
+      errors.push(...this.validateType(issue.number, 'number', 'number'))
     }
+
+    if (issue.estimation !== undefined) {
+      errors.push(...this.validateType(issue.estimation, 'number', 'estimation'))
+    }
+
+    if (issue.remainingTime !== undefined) {
+      errors.push(...this.validateType(issue.remainingTime, 'number', 'remainingTime'))
+    }
+
+    if (issue.priority !== undefined) {
+      errors.push(...this.validateType(issue.priority, 'string', 'priority'))
+    }
+
+    if (issue.assignee !== undefined) {
+      errors.push(...this.validateType(issue.assignee, 'string', 'assignee'))
+    }
+
     if (issue.status == null) {
       errors.push('status is required: ')
     } else if (!this.issueStatusCache.has(issue.status.name)) {
@@ -300,6 +366,10 @@ export class ImportWorkspaceBuilder {
 
   private validatePossitiveNumber (value: any): boolean {
     return typeof value === 'number' && !Number.isNaN(value) && value >= 0
+  }
+
+  private validateStringDefined (value: string | null | undefined): boolean {
+    return typeof value === 'string' && value !== '' && value !== null && value !== undefined
   }
 
   private validateDocument (doc: ImportDocument): string[] {
@@ -373,5 +443,56 @@ export class ImportWorkspaceBuilder {
       })
 
     issue.subdocs = childIssues
+  }
+
+  private validateType (value: unknown, type: 'string' | 'number' | 'boolean', fieldName: string): string[] {
+    const errors: string[] = []
+    switch (type) {
+      case 'string':
+        if (typeof value !== 'string') {
+          errors.push(`${fieldName} must be string, got ${typeof value}`)
+        }
+        break
+      case 'number':
+        if (typeof value !== 'number') {
+          errors.push(`${fieldName} must be number, got ${typeof value}`)
+        }
+        break
+      case 'boolean':
+        if (typeof value !== 'boolean') {
+          errors.push(`${fieldName} must be boolean, got ${typeof value}`)
+        }
+        break
+    }
+    return errors
+  }
+
+  private validateArray (value: unknown, itemType: 'string' | 'number' | 'boolean', fieldName: string): string[] {
+    const errors: string[] = []
+    if (!Array.isArray(value)) {
+      errors.push(`${fieldName} must be an array`)
+      return errors
+    }
+
+    for (let i = 0; i < value.length; i++) {
+      switch (itemType) {
+        case 'string':
+          if (typeof value[i] !== 'string') {
+            errors.push(`${fieldName}[${i}] must be string, got ${typeof value[i]}`)
+          }
+          break
+        case 'number':
+          if (typeof value[i] !== 'number') {
+            errors.push(`${fieldName}[${i}] must be number, got ${typeof value[i]}`)
+          }
+          break
+        case 'boolean':
+          if (typeof value[i] !== 'boolean') {
+            errors.push(`${fieldName}[${i}] must be boolean, got ${typeof value[i]}`)
+          }
+          break
+      }
+    }
+    return errors
   }
 }
