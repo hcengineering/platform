@@ -276,10 +276,30 @@ export class ImportWorkspaceBuilder {
     if (issue.class !== tracker.class.Issue) {
       errors.push('invalid class: ' + issue.class)
     }
-    if (issue.number !== undefined && (issue.number < 0 || Number.isNaN(issue.number))) {
+    if (issue.number !== undefined && !this.validatePossitiveNumber(issue.number)) {
       errors.push('invalid issue number: ' + issue.number)
     }
+    if (issue.estimation != null && !this.validatePossitiveNumber(issue.estimation)) {
+      errors.push('invalid estimation: ' + issue.estimation)
+    }
+    if (issue.remainingTime != null && !this.validatePossitiveNumber(issue.remainingTime)) {
+      errors.push('invalid remaining time: ' + issue.remainingTime)
+    }
+    if (issue.comments != null && issue.comments.length > 0) {
+      for (const comment of issue.comments) {
+        if (comment.author == null) {
+          errors.push('comment author is required')
+        }
+        if (!this.validateStringDefined(comment.text)) {
+          errors.push('comment text is required')
+        }
+      }
+    }
     return errors
+  }
+
+  private validatePossitiveNumber (value: any): boolean {
+    return typeof value === 'number' && !Number.isNaN(value) && value >= 0
   }
 
   private validateDocument (doc: ImportDocument): string[] {
