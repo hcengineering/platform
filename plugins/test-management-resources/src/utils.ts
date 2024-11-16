@@ -14,7 +14,7 @@
 //
 
 import { type Contact } from '@hcengineering/contact'
-import core, { type Doc, type Ref, type TxCreateDoc, type TxUpdateDoc } from '@hcengineering/core'
+import core, { type Doc, type Ref, type TxCollectionCUD, type TxCreateDoc, type TxUpdateDoc } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
 import { type TestProject, type TestCase, type TestSuite } from '@hcengineering/test-management'
@@ -23,6 +23,7 @@ import CreateTestSuiteComponent from './components/test-suite/CreateTestSuite.sv
 import EditTestSuiteComponent from './components/test-suite/EditTestSuite.svelte'
 import CreateTestCase from './components/test-case/CreateTestCase.svelte'
 import CreateProject from './components/project/CreateProject.svelte'
+import CreateTestRun from './components/test-run/CreateTestRun.svelte'
 
 export async function getPreviousAssignees (objectId: Ref<Doc> | undefined): Promise<Array<Ref<Contact>>> {
   if (objectId === undefined) {
@@ -30,19 +31,20 @@ export async function getPreviousAssignees (objectId: Ref<Doc> | undefined): Pro
   }
   const client = getClient()
   const createTx = (
-    await client.findAll<TxCreateDoc<TestCase>>(core.class.TxCreateDoc, {
-      objectId: objectId as Ref<TestCase>
+    await client.findAll<TxCollectionCUD<TestCase, TestCase>>(core.class.TxCollectionCUD, {
+      'tx.objectId': objectId,
+      'tx._class': core.class.TxCreateDoc
     })
   )[0]
-  const updateTxes = await client.findAll<TxUpdateDoc<TestCase>>(
-    core.class.TxUpdateDoc,
-    { objectId: objectId as Ref<TestCase>, 'operations.assignee': { $exists: true } },
+  const updateTxes = await client.findAll<TxCollectionCUD<TestCase, TestCase>>(
+    core.class.TxCollectionCUD,
+    { 'tx.objectId': objectId, 'tx._class': core.class.TxUpdateDoc, 'tx.operations.assignee': { $exists: true } },
     { sort: { modifiedOn: -1 } }
   )
   const set = new Set<Ref<Contact>>()
-  const createAssignee = createTx?.attributes?.assignee
+  const createAssignee = (createTx?.tx as TxCreateDoc<TestCase>)?.attributes?.assignee
   for (const tx of updateTxes) {
-    const assignee = tx.operations.assignee
+    const assignee = (tx.tx as TxUpdateDoc<TestCase>).operations.assignee
     if (assignee == null) continue
     set.add(assignee)
   }
@@ -71,10 +73,19 @@ export async function showCreateProjectPopup (): Promise<void> {
   showPopup(CreateProject, {}, 'top')
 }
 
+export async function showCreateTestRunPopup (testCases: TestCase[]): Promise<void> {
+  const spaceProp = testCases?.length > 0 ? {space: testCases[0].space} : {}
+  showPopup(CreateTestRun, {testCases, ...spaceProp}, 'top')
+}
+
 export async function CreateChildTestSuiteAction (doc: TestSuite): Promise<void> {
   await showCreateTestSuitePopup(doc.space, doc._id)
 }
 
 export async function EditTestSuiteAction (doc: TestSuite): Promise<void> {
   await showEditTestSuitePopup(doc._id)
+}
+
+export async function RunSelectedTestsAction (testCases: TestCase[]): Promise<void> {
+  await showCreateTestRunPopup(testCases)
 }

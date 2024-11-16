@@ -115,7 +115,6 @@ export enum TestRunResult {
 
 /** @public */
 export interface TestRunItem extends AttachedDoc {
-  testRun: Ref<TestRun>
   testCase: Ref<TestCase>
   result?: TestRunResult
   comments?: number

@@ -17,11 +17,10 @@
 
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { ObjectBox } from '@hcengineering/view-resources'
   import core, { Data, Ref, generateId, makeCollaborativeDoc } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
-  import { TestRun, TestProject } from '@hcengineering/test-management'
+  import { TestCase, TestRun, TestProject, TestRunItem } from '@hcengineering/test-management'
   import { EditBox } from '@hcengineering/ui'
   import { EmptyMarkup } from '@hcengineering/text'
 
@@ -29,6 +28,7 @@
   import ProjectPresenter from '../project/ProjectSpacePresenter.svelte'
 
   export let space: Ref<TestProject>
+  export let testCases: TestCase[]
   const dispatch = createEventDispatcher()
   const client = getClient()
 
@@ -47,7 +47,27 @@
   let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
 
   async function onSave () {
-    await client.createDoc(testManagement.class.TestRun, _space, object)
+    // TODO: Use one operation
+    const testRun = await client.createDoc(testManagement.class.TestRun, _space, object)
+    const createPromises = testCases.map(testCase => {
+      const testRunData: Data<TestRunItem> = {
+        attachedTo: testRun,
+        attachedToClass: testManagement.class.TestRun,
+        testCase: testCase._id,
+        collection: 'testCases'
+      }
+      const testRunId: Ref<TestRunItem> = generateId()
+      return client.addCollection(
+        testManagement.class.TestRunItem,
+        _space,
+        testRun,
+        testManagement.class.TestRun,
+        'testCases',
+        testRunData,
+        testRunId
+      )
+    })
+    await Promise.all(createPromises)
   }
 </script>
 
@@ -98,38 +118,4 @@
       }
     }}
   />
-  <svelte:fragment slot="pool">
-    <ObjectBox
-      _class={testManagement.class.TestSuite}
-      value={null}
-      docQuery={{
-        space: _space
-      }}
-      kind={'regular'}
-      size={'small'}
-      label={testManagement.string.SelectTestSuites}
-      icon={testManagement.icon.TestSuite}
-      searchField={'title'}
-      allowDeselect={true}
-      showNavigate={false}
-      docProps={{ disabled: true, noUnderline: true }}
-      focusIndex={20000}
-    />
-    <ObjectBox
-      _class={testManagement.class.TestCase}
-      value={null}
-      docQuery={{
-        space: _space
-      }}
-      kind={'regular'}
-      size={'small'}
-      label={testManagement.string.SelectTestCases}
-      icon={testManagement.icon.TestCase}
-      searchField={'title'}
-      allowDeselect={true}
-      showNavigate={false}
-      docProps={{ disabled: true, noUnderline: true }}
-      focusIndex={20000}
-    />
-  </svelte:fragment>
 </Card>

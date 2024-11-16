@@ -28,7 +28,7 @@ import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platfor
 import { plugin } from '@hcengineering/platform'
 import { type AnyComponent, type Location, type ResolvedLocation } from '@hcengineering/ui'
 
-import { ActionCategory, Viewlet } from '@hcengineering/view'
+import { Action, ActionCategory, ViewAction, Viewlet } from '@hcengineering/view'
 import {
   TestSuite,
   TestCase,
@@ -48,6 +48,17 @@ export const testManagementId = 'testManagement' as Plugin
 export const testManagementPlugin = plugin(testManagementId, {
   app: {
     TestManagement: '' as Ref<Doc>
+  },
+  action: {
+    DeleteTestCase: '' as Ref<Action<Doc, any>>,
+    CreateChildTestSuite: '' as Ref<Action>,
+    EditTestSuite: '' as Ref<Action>,
+    RunSelectedTests: '' as Ref<Action>
+  },
+  actionImpl: {
+    CreateChildTestSuite: '' as ViewAction,
+    EditTestSuite: '' as ViewAction,
+    RunSelectedTests: '' as ViewAction
   },
   icon: {
     TestManagement: '' as Asset,
@@ -171,7 +182,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     PriorityIconPresenter: '' as AnyComponent,
     TestCaseStatusPresenter: '' as AnyComponent,
     TestSuites: '' as AnyComponent,
-    CreateTestSuite: '' as AnyComponent
+    CreateTestSuite: '' as AnyComponent,
+    TestRunFromSelection: '' as AnyComponent
   },
   ids: {
     NoParent: '' as Ref<TestSuite>,

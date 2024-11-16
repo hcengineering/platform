@@ -21,17 +21,9 @@ import { type AnyComponent } from '@hcengineering/ui/src/types'
 import type { Action, ActionCategory, ViewAction } from '@hcengineering/view'
 
 export default mergeIds(testManagementId, testManganement, {
-  action: {
-    DeleteTestCase: '' as Ref<Action<Doc, any>>,
-    CreateChildTestSuite: '' as Ref<Action>,
-    EditTestSuite: '' as Ref<Action>
-  },
-  actionImpl: {
-    CreateChildTestSuite: '' as ViewAction,
-    EditTestSuite: '' as ViewAction
-  },
   category: {
-    TestSuite: '' as Ref<ActionCategory>
+    TestSuite: '' as Ref<ActionCategory>,
+    TestCase: '' as Ref<ActionCategory>,
   },
   component: {
     CreateTestCase: '' as AnyComponent,
@@ -44,6 +36,7 @@ export default mergeIds(testManagementId, testManganement, {
     CreateTestRun: '' as AnyComponent,
     TestRunPresenter: '' as AnyComponent,
     EditTestRun: '' as AnyComponent,
-    TestSuiteRefPresenter: '' as AnyComponent
+    TestSuiteRefPresenter: '' as AnyComponent,
+    RunSelectedTestsButton: '' as AnyComponent,
   }
 })

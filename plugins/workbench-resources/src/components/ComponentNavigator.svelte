@@ -43,6 +43,7 @@
   export let createComponentProps: Record<string, any> = {}
   export let mainComponentLabel: IntlString
   export let mainComponentIcon: Asset | undefined = undefined
+  export let mainHeaderComponent: AnyComponent
   export let query: DocumentQuery<Doc> = {}
   export let syncWithLocationQuery: boolean = true
   export let mainComponent: AnyComponent | AnySvelteComponent
@@ -120,6 +121,11 @@
   <div class="hulyComponent-content__column">
     <Header adaptive={'disabled'}>
       <Breadcrumb icon={mainComponentIcon} label={mainComponentLabel} size={'large'} />
+      <svelte:fragment slot="actions">
+      {#if mainHeaderComponent}
+          <Component is={mainHeaderComponent}/>
+      {/if}
+      </svelte:fragment>
     </Header>
     <Component
       is={mainComponent}

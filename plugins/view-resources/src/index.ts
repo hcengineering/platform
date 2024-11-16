@@ -166,6 +166,7 @@ export { default as List } from './components/list/List.svelte'
 export { default as NavLink } from './components/navigator/NavLink.svelte'
 export { default as StatusPresenter } from './components/status/StatusPresenter.svelte'
 export { default as StatusRefPresenter } from './components/status/StatusRefPresenter.svelte'
+export { default as SelectionActionButton } from './components/SelectionActionButton.svelte'
 
 export * from './filter'
 export * from './middleware'

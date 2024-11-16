@@ -219,8 +219,18 @@ export class TTypeTestRunResult extends TType {}
 @Model(testManagement.class.TestRunItem, core.class.AttachedDoc, DOMAIN_TEST_MANAGEMENT)
 @UX(testManagement.string.TestRunItem)
 export class TTestRunItem extends TAttachedDoc implements TestRunItem {
-  @Prop(TypeRef(testManagement.class.TestRun), testManagement.string.TestRun)
-    testRun!: Ref<TestRun>
+  @Prop(TypeRef(testManagement.class.TestRun), core.string.AttachedTo)
+    @Index(IndexKind.Indexed)
+    declare attachedTo: Ref<TestRun>
+  
+  @Prop(TypeRef(testManagement.class.TestRun), core.string.AttachedToClass)
+    @Index(IndexKind.Indexed)
+    @Hidden()
+    declare attachedToClass: Ref<Class<TestRun>>
+  
+  @Prop(TypeString(), core.string.Collection)
+    @Hidden()
+    override collection: 'testCases' = 'testCases'
 
   @Prop(TypeRef(testManagement.class.TestCase), testManagement.string.TestCase)
     testCase!: Ref<TestCase>

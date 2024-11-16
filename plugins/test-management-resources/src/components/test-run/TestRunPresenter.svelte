@@ -13,6 +13,28 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { TestRun } from '@hcengineering/test-management'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { tooltip } from '@hcengineering/ui'
+  import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
+
+  export let value: TestRun | undefined
+  export let inline: boolean = false
+  export let disabled: boolean = false
+  export let accent: boolean = false
+  export let noUnderline: boolean = false
 </script>
 
-<div class="antiNav-subheader"></div>
+{#if value}
+  {#if inline}
+    <ObjectMention object={value} {disabled} {accent} {noUnderline} />
+  {:else}
+    <DocNavLink object={value} {disabled} {accent} {noUnderline}>
+      <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
+        <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
+          {value.name}
+        </span>
+      </div>
+    </DocNavLink>
+  {/if}
+{/if}

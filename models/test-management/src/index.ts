@@ -55,7 +55,7 @@ function defineApplication (builder: Builder): void {
       icon: testManagement.icon.TestManagementApplication,
       alias: testManagementId,
       hidden: false,
-      locationResolver: testManagement.resolver.Location,
+      //locationResolver: testManagement.resolver.Location,
       navigatorModel: {
         spaces: [
           {
@@ -85,6 +85,7 @@ function defineApplication (builder: Builder): void {
                   mainComponentLabel: testManagement.string.TestCases,
                   mainComponentIcon: testManagement.icon.TestCases,
                   createComponent: testManagement.component.CreateTestSuite,
+                  mainHeaderComponent: testManagement.component.RunSelectedTestsButton,
                   navigationComponentProps: {
                     _class: testManagement.class.TestSuite,
                     icon: testManagement.icon.TestSuites,
@@ -100,10 +101,9 @@ function defineApplication (builder: Builder): void {
                   },
                   syncWithLocationQuery: true
                 }
-              }
-              /* TODO: UBERF-8584
+              },
               {
-                id: opt.testRunsId,
+                id: 'testRuns',
                 label: testManagement.string.TestRuns,
                 icon: testManagement.icon.TestRuns,
                 component: workbench.component.SpecialView,
@@ -114,7 +114,7 @@ function defineApplication (builder: Builder): void {
                   createLabel: testManagement.string.NewTestRun,
                   createComponent: testManagement.component.CreateTestRun
                 }
-              } */
+              }
             ]
           }
         ]
@@ -275,6 +275,24 @@ function defineTestSuite (builder: Builder): void {
       }
     },
     testManagement.action.CreateChildTestSuite
+  )
+
+  createAction(
+    builder,
+    {
+      action: testManagement.actionImpl.RunSelectedTests,
+      label: testManagement.string.CreateTestRun,
+      icon: testManagement.icon.TestRuns,
+      category: testManagement.category.TestCase,
+      input: 'selection',
+      target: testManagement.class.TestCase,
+      context: {
+        mode: ['context'],
+        application: testManagement.app.TestManagement,
+        group: 'create'
+      }
+    },
+    testManagement.action.RunSelectedTests
   )
 }
 
