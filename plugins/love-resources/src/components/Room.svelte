@@ -50,6 +50,7 @@
   import ParticipantView from './ParticipantView.svelte'
 
   export let withVideo: boolean
+  export let canMaximize: boolean = true
   export let room: TypeRoom
 
   interface ParticipantData {
@@ -432,7 +433,7 @@
     {/if}
   </div>
   {#if $currentRoom}
-    <ControlBar room={$currentRoom} fullScreen={$isFullScreen} {onFullScreen} />
+    <ControlBar room={$currentRoom} fullScreen={$isFullScreen} {onFullScreen} {canMaximize} />
   {/if}
 </div>
 

@@ -949,7 +949,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: github.class.GithubPullRequest,
     components: {
-      input: chunter.component.ChatMessageInput
+      input: { component: chunter.component.ChatMessageInput }
     }
   })
 

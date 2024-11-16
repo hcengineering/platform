@@ -72,9 +72,6 @@
 
   async function updateDataProvider (attachedTo: Ref<Doc>, selectedMessageId?: Ref<ActivityMessage>): Promise<void> {
     if (dataProvider === undefined) {
-      // For now loading all messages for documents with activity. Need to correct handle aggregation with pagination.
-      // Perhaps we should load all activity messages once, and keep loading in chunks only for ChatMessages then merge them correctly with activity messages
-      const loadAll = isDocChannel
       const ctx =
         context ??
         (await client.findOne(notification.class.DocNotifyContext, {
@@ -90,7 +87,7 @@
         attachedTo,
         activity.class.ActivityMessage,
         selectedMessageId,
-        loadAll,
+        false,
         hasRefs,
         collection
       )
@@ -112,7 +109,7 @@
     provider={dataProvider}
     {freeze}
     {autofocus}
-    loadMoreAllowed={!isDocChannel}
+    loadMoreAllowed
     {withInput}
     {readonly}
     {onReply}

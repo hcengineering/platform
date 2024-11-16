@@ -14,12 +14,15 @@
 -->
 <script lang="ts">
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
-  import { onDestroy } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
+  import presentation from '@hcengineering/presentation'
+  import { personByIdStore } from '@hcengineering/contact-resources'
 
   import Hall from './Hall.svelte'
-  import { currentRoom } from '../stores'
-  import { isConnected } from '../utils'
-  import ActiveMeeting from './ActiveMeeting.svelte'
+  import { getMetadata } from '@hcengineering/platform'
+  import love from '../plugin'
+  import { tryConnect, isConnected, isCurrentInstanceConnected } from '../utils'
+  import { infos, invites, myInfo, myRequests, storePromise, currentRoom } from '../stores'
 
   const localNav: boolean = $deviceInfo.navigator.visible
   const savedNav = localStorage.getItem('love-visibleNav')
@@ -29,12 +32,30 @@
   onDestroy(() => {
     $deviceInfo.navigator.visible = localNav
   })
+
+  onMount(async () => {
+    const wsURL = getMetadata(love.metadata.WebSocketURL)
+
+    if (wsURL === undefined) {
+      return
+    }
+
+    await $storePromise
+    const room = $currentRoom
+
+    if (room === undefined) return
+
+    if (
+      !$isConnected &&
+      !$isCurrentInstanceConnected &&
+      $myInfo?.sessionId === getMetadata(presentation.metadata.SessionId)
+    ) {
+      const info = $infos.filter((p) => p.room === room._id)
+      await tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites)
+    }
+  })
 </script>
 
 <div class="hulyPanels-container">
-  {#if $currentRoom && $isConnected}
-    <ActiveMeeting room={$currentRoom} />
-  {:else}
-    <Hall />
-  {/if}
+  <Hall />
 </div>

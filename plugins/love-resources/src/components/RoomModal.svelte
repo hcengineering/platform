@@ -38,6 +38,6 @@
     padding="0"
     on:close={() => dispatch('close')}
   >
-    <RoomComponent withVideo={$currentRoom.type === RoomType.Video} room={$currentRoom} />
+    <RoomComponent withVideo={$currentRoom.type === RoomType.Video} room={$currentRoom} canMaximize={false} />
   </Modal>
 {/if}

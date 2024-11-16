@@ -236,6 +236,11 @@ export interface ObjectEditorFooter extends Class<Doc> {
   props?: Record<string, any>
 }
 
+export interface ObjectPanelFooter extends Class<Doc> {
+  editor: AnyComponent
+  props?: Record<string, any>
+}
+
 /**
  * @public
  */

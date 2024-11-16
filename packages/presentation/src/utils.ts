@@ -626,7 +626,7 @@ export async function getAttributeEditor (
 
 function filterKeys (hierarchy: Hierarchy, keys: KeyedAttribute[], ignoreKeys: string[]): KeyedAttribute[] {
   const docKeys: Set<string> = new Set<string>(hierarchy.getAllAttributes(core.class.AttachedDoc).keys())
-  keys = keys.filter((k) => !docKeys.has(k.key))
+  keys = keys.filter((k) => !docKeys.has(k.key) || k.attr.editor !== undefined)
   keys = keys.filter((k) => !ignoreKeys.includes(k.key))
   return keys
 }

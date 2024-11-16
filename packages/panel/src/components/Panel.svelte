@@ -158,6 +158,11 @@
   <svelte:fragment slot="pre-utils">
     <slot name="pre-utils" />
   </svelte:fragment>
+
+  <svelte:fragment slot="panel-footer">
+    <slot name="panel-footer" />
+  </svelte:fragment>
+
   <svelte:fragment slot="utils">
     {#if isUtils && $$slots.utils}
       <slot name="utils" />

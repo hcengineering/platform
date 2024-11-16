@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,23 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
-  import { ActivityExtension, ActivityExtensionKind } from '@hcengineering/activity'
-  import { Component } from '@hcengineering/ui'
+  import { MeetingMinutes } from '@hcengineering/love'
 
-  export let kind: ActivityExtensionKind
-  export let extensions: ActivityExtension[] = []
-  export let props: Record<string, any> = {}
+  import ControlBar from './ControlBar.svelte'
+  import { currentRoom, currentMeetingMinutes } from '../stores'
 
-  $: extension = extensions.find((e) => e.components[kind] !== undefined)
+  export let object: MeetingMinutes
 </script>
 
-{#if extension}
-  <Component
-    is={extension.components[kind].component}
-    props={{ ...extension.components[kind].props, ...props }}
-    on:close
-    on:open
-    on:submit
-  />
+{#if $currentRoom && $currentMeetingMinutes?._id === object._id}
+  <div class="flex-grow flex-shrink">
+    <ControlBar room={$currentRoom} />
+  </div>
 {/if}

@@ -16,7 +16,16 @@
 import contact from '@hcengineering/contact'
 import { type Space, TxOperations, type Ref, makeCollaborativeDoc } from '@hcengineering/core'
 import drive from '@hcengineering/drive'
-import { RoomAccess, RoomType, createDefaultRooms, isOffice, loveId, type Floor, type Room } from '@hcengineering/love'
+import {
+  MeetingStatus,
+  RoomAccess,
+  RoomType,
+  createDefaultRooms,
+  isOffice,
+  loveId,
+  type Floor,
+  type Room
+} from '@hcengineering/love'
 import {
   createDefaultSpace,
   migrateSpace,
@@ -141,6 +150,16 @@ export const loveOperation: MigrateOperation = {
               await client.update(DOMAIN_LOVE, room, { description: makeCollaborativeDoc(room._id, 'description') })
             }
           }
+        }
+      },
+      {
+        state: 'default-meeting-minutes-status',
+        func: async (client) => {
+          await client.update(
+            DOMAIN_MEETING_MINUTES,
+            { status: { $exists: false } },
+            { status: MeetingStatus.Finished }
+          )
         }
       }
     ])

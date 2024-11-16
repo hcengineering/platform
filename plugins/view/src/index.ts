@@ -91,6 +91,7 @@ const view = plugin(viewId, {
     ObjectPresenter: '' as Ref<Mixin<ObjectPresenter>>,
     ObjectEditorHeader: '' as Ref<Mixin<ObjectEditorHeader>>,
     ObjectEditorFooter: '' as Ref<Mixin<ObjectEditorFooter>>,
+    ObjectPanelFooter: '' as Ref<Mixin<ObjectEditorFooter>>,
     ObjectValidator: '' as Ref<Mixin<ObjectValidator>>,
     ObjectFactory: '' as Ref<Mixin<ObjectFactory>>,
     ObjectTitle: '' as Ref<Mixin<ObjectTitle>>,
