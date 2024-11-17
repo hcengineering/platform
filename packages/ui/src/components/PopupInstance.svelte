@@ -76,6 +76,12 @@
 
   $: document.body.style.cursor = drag ? 'all-scroll' : 'default'
   $: docSize = checkAdaptiveMatching($deviceInfo.size, 'md')
+  $: isFullMobile =
+    $deviceInfo.isMobile &&
+    $deviceInfo.isPortrait &&
+    ['right', 'top', 'float', 'full', 'content', 'middle', 'centered', 'center', 'full-centered'].some(
+      (el) => element === el
+    )
 
   function _update (result: any): void {
     if (onUpdate !== undefined) onUpdate(result)
@@ -100,7 +106,7 @@
     contentPanel: HTMLElement | undefined
   ): void => {
     const device: DeviceOptions = $deviceInfo
-    if ((fullSize || docSize) && (element === 'float' || element === 'centered')) {
+    if (((fullSize || docSize) && (element === 'float' || element === 'centered')) || isFullMobile) {
       options = fitPopupElement(modalHTML, device, 'full', contentPanel, clientWidth, clientHeight)
       options.props.maxHeight = '100vh'
       if (!modalHTML.classList.contains('fullsize')) modalHTML.classList.add('fullsize')

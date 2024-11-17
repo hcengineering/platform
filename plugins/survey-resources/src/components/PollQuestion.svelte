@@ -16,7 +16,7 @@
 -->
 <script lang="ts">
   import { generateId } from '@hcengineering/core'
-  import { EditBox, Icon, Label, tooltip } from '@hcengineering/ui'
+  import { EditBox, Icon, Label, tooltip, ModernCheckbox, ModernRadioButton } from '@hcengineering/ui'
   import { AnsweredQuestion, QuestionKind } from '@hcengineering/survey'
   import { createEventDispatcher } from 'svelte'
   import survey from '../plugin'
@@ -133,110 +133,105 @@
     }
     return []
   }
+  $: console.log('[!!!] question: ', question)
 </script>
 
-<div class="antiSection">
-  <div class="antiSection-header">
-    <span class="antiSection-header__title" style="display:flex">
-      {question.name}
-      {#if question.isMandatory && !readonly}
-        <span style="margin-left:0.25em" use:tooltip={{ label: survey.string.QuestionTooltipMandatory }}>
-          <Icon icon={survey.icon.QuestionIsMandatory} size="tiny" fill="var(--theme-urgent-color)" />
-        </span>
-      {/if}
-    </span>
+<div class="question-answer-container flex-col flex-gap-3">
+  <div class="flex-row-center flex-gap-1 flex-no-shrink">
+    <span class="text-lg caption-color font-medium">{question.name}</span>
+    {#if question.isMandatory && !readonly}
+      <div
+        class="flex-no-shrink"
+        style:transform={'translateY(-0.25rem)'}
+        use:tooltip={{ label: survey.string.QuestionTooltipMandatory }}
+      >
+        <Icon icon={survey.icon.QuestionIsMandatory} size={'xx-small'} fill="var(--theme-urgent-color)" />
+      </div>
+    {/if}
   </div>
   {#if readonly}
     {#each getReadonlyAnswers() as answer}
       {#if answer}
-        <div class="answer">{answer}</div>
+        <div class="pl-6">{answer}</div>
       {:else}
-        <div class="answer empty">
+        <div class="pl-6 content-halfcontent-color">
           <Label label={survey.string.NoAnswer} />
         </div>
       {/if}
     {/each}
   {:else if question.kind === QuestionKind.OPTION}
-    {#each question.options ?? [] as option, i}
-      <div class="option">
-        <input type="radio" id={`${id}-${i}`} value={i} bind:group={selectedOption} on:change={optionChange} />
-        <label class="option__label" for={`${id}-${i}`}>
-          {option}
-        </label>
-      </div>
-    {/each}
-    {#if question.hasCustomOption}
-      <div class="option">
-        <input
-          type="radio"
-          id={`${id}-custom`}
-          value={customOption}
+    <div class="flex-col flex-gap-2 px-6">
+      {#each question.options ?? [] as option, i}
+        <ModernRadioButton
+          id={`${id}-${i}`}
+          value={i}
+          label={option}
           bind:group={selectedOption}
           on:change={optionChange}
         />
-        <label class="option__label" for={`${id}-custom`}>
-          <Label label={survey.string.AnswerCustomOption} />
-        </label>
+      {/each}
+      {#if question.hasCustomOption}
+        <ModernRadioButton
+          id={`${id}-custom`}
+          value={customOption}
+          labelIntl={survey.string.AnswerCustomOption}
+          bind:group={selectedOption}
+          on:change={optionChange}
+        />
         {#if selectedOption === customOption}
-          <div class="option__custom">
-            <EditBox bind:value={answer} on:change={answerChange} placeholder={survey.string.AnswerPlaceholder} />
+          <div class="pl-6">
+            <EditBox
+              kind={'ghost-large'}
+              bind:value={answer}
+              placeholder={survey.string.AnswerPlaceholder}
+              focusable
+              autoFocus
+              on:change={answerChange}
+            />
           </div>
         {/if}
-      </div>
-    {/if}
+      {/if}
+    </div>
   {:else if question.kind === QuestionKind.OPTIONS}
-    {#each question.options ?? [] as option, i}
-      <div class="option">
-        <input type="checkbox" id={`${id}-${i}`} bind:checked={selectedOptions[i]} on:change={optionsChange} />
-        <label class="option__label" for={`${id}-${i}`}>
-          {option}
-        </label>
-      </div>
-    {/each}
-    {#if question.hasCustomOption}
-      <div class="option">
-        <input
-          type="checkbox"
+    <div class="flex-col flex-gap-2 px-6">
+      {#each question.options ?? [] as option, i}
+        <ModernCheckbox id={`${id}-${i}`} label={option} bind:checked={selectedOptions[i]} on:change={optionsChange} />
+      {/each}
+      {#if question.hasCustomOption}
+        <ModernCheckbox
           id={`${id}-custom`}
+          labelIntl={survey.string.AnswerCustomOption}
           bind:checked={selectedOptions[customOption]}
           on:change={optionsChange}
         />
-        <label class="option__label" for={`${id}-custom`}>
-          <Label label={survey.string.AnswerCustomOption} />
-        </label>
         {#if selectedOptions[customOption]}
-          <div class="option__custom">
-            <EditBox bind:value={answer} on:change={answerChange} placeholder={survey.string.AnswerPlaceholder} />
+          <div class="pl-6">
+            <EditBox
+              kind={'ghost-large'}
+              bind:value={answer}
+              placeholder={survey.string.AnswerPlaceholder}
+              focusable
+              autoFocus
+              on:change={answerChange}
+            />
           </div>
         {/if}
-      </div>
-    {/if}
-  {:else}
-    <div class="option">
-      <EditBox bind:value={answer} on:change={answerChange} placeholder={survey.string.AnswerPlaceholder} />
+      {/if}
     </div>
+  {:else}
+    <EditBox
+      kind={'ghost-large'}
+      bind:value={answer}
+      placeholder={survey.string.AnswerPlaceholder}
+      focusable
+      on:change={answerChange}
+    />
   {/if}
 </div>
 
 <style lang="scss">
-  .option {
-    margin-left: 1em;
-    margin-top: 0.5em;
-  }
-  .option__label {
-    cursor: pointer;
-    margin-left: 0.25em;
-  }
-  .option__custom {
-    margin-left: 2em;
-    margin-top: 0.5em;
-  }
-  .answer {
-    margin-left: 2em;
-    margin-top: 0.5em;
-
-    &.empty {
-      opacity: 0.7;
-    }
+  :global(.question-answer-container + .question-answer-container) {
+    padding-top: var(--spacing-2);
+    border-top: 1px solid var(--theme-divider-color);
   }
 </style>

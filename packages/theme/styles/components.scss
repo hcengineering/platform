@@ -543,6 +543,11 @@
     .hulyModal-footer {
       padding: var(--spacing-1_5);
     }
+    @media screen and (max-width: 480px) {
+      width: 100vw;
+      height: var(--app-height);
+      min-width: 20rem;
+    }
   }
   &.type-aside,
   &.type-popup {
