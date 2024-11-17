@@ -96,9 +96,6 @@
       kind={'large-style'}
       on:change={nameChange}
     />
-    {#if showPeviewButton}
-      <Button icon={survey.icon.Poll} label={survey.string.SurveyPreview} on:click={previewSurveyForm} />
-    {/if}
   </div>
   <div class="step-tb-6">
     <EditBox

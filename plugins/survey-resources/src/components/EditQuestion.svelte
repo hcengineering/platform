@@ -18,15 +18,15 @@
   import { MessageBox, getClient } from '@hcengineering/presentation'
   import { Question, QuestionKind, Survey } from '@hcengineering/survey'
   import {
-   
     EditBox,
     Icon,
     IconDelete,
     SelectPopup,
     eventToHTMLElement,
     showPopup,
-    tooltip
- , ButtonIcon, Icon } from '@hcengineering/ui'
+    tooltip,
+    ButtonIcon
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import survey from '../plugin'
 
@@ -378,21 +378,15 @@
         bind:value={question.name}
         on:change={changeName}
       />
-        {#if question.hasCustomOption && question.kind !== QuestionKind.STRING}
-          <span class="question-param-icon" use:tooltip={{ label: survey.string.QuestionTooltipCustomOption }}>
-            <Icon icon={survey.icon.QuestionHasCustomOption} size="medium" fill="var(--theme-won-color)" />
-          </span>
-        {/if}
-        {#if question.isMandatory}
-          <span class="question-param-icon" use:tooltip={{ label: survey.string.QuestionTooltipMandatory }}>
-            <Icon icon={survey.icon.QuestionIsMandatory} size="medium" fill="var(--theme-urgent-color)" />
-          </span>
-        {/if}
-      {#if question.hasCustomOption}
-        <Icon icon={survey.icon.QuestionHasCustomOption} size={'small'} />
+      {#if question.hasCustomOption && question.kind !== QuestionKind.STRING}
+        <div class="flex-no-shrink" use:tooltip={{ label: survey.string.QuestionTooltipCustomOption }}>
+          <Icon icon={survey.icon.QuestionHasCustomOption} size={'small'} />
+        </div>
       {/if}
       {#if question.isMandatory}
-        <Icon icon={survey.icon.QuestionIsMandatory} size={'small'} />
+        <div class="flex-no-shrink" use:tooltip={{ label: survey.string.QuestionTooltipMandatory }}>
+          <Icon icon={survey.icon.QuestionIsMandatory} size={'small'} />
+        </div>
       {/if}
     {/if}
   </div>
@@ -477,7 +471,6 @@
     &:focus-within {
       background-color: var(--theme-list-row-color);
     }
-    display: flex;
   }
   .option {
     padding: var(--spacing-0_5) var(--spacing-0_5) var(--spacing-0_5) var(--spacing-5_5);
@@ -488,8 +481,5 @@
   .dragged-over {
     transition: box-shadow 0.1s ease-in;
     box-shadow: 0 -3px 0 0 var(--primary-button-outline);
-  }
-  .question-param-icon {
-    margin-left: 0.5em;
   }
 </style>

@@ -70,13 +70,13 @@
       {#if !readonly}
         {#if preview}
           {#if canSubmit}
-            <span use:tooltip={{ label: survey.string.ValidateOk }}>
-              <Icon size="x-large" icon={survey.icon.ValidateOk} fill="var(--theme-won-color)" />
-            </span>
+            <div use:tooltip={{ label: survey.string.ValidateOk }}>
+              <Icon size="x-large" icon={survey.icon.ValidateOk} fill="var(--positive-button-default)" />
+            </div>
           {:else}
-            <span use:tooltip={{ label: survey.string.ValidateFail }}>
-              <Icon size="x-large" icon={survey.icon.ValidateFail} iconProps={{ opacity: 0.75 }} />
-            </span>
+            <div use:tooltip={{ label: survey.string.ValidateFail }}>
+              <Icon size="x-large" icon={survey.icon.ValidateFail} fill="var(--theme-trans-color)" />
+            </div>
           {/if}
         {/if}
         <Button
@@ -95,21 +95,14 @@
           }}
         />
       {/if}
-      <Button
-        icon={survey.icon.Poll}
-        label={survey.string.SurveyPreview}
-        on:click={() => {
-          editor.previewSurveyForm()
-        }}
-      />
     </svelte:fragment>
 
     <div class="flex-col flex-grow flex-no-shrink">
       {#if preview}
         {#if poll !== undefined}
-          <div class="antiSection-empty solid flex-row mt-3">
-            <Icon icon={survey.icon.Info} size="large" />
-            <span class="content-dark-color" style="margin-left:1em">
+          <div class="antiSection-empty solid mb-8">
+            <Icon icon={survey.icon.Info} size={'large'} />
+            <span class="content-dark-color text-balance" style="margin-left:1em">
               <Label label={survey.string.ValidateInfo} />
             </span>
           </div>
