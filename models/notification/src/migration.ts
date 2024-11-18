@@ -274,7 +274,7 @@ export const notificationOperation: MigrateOperation = {
         state: 'remove-old-classes',
         func: async (client) => {
           await client.deleteMany(DOMAIN_NOTIFICATION, { _class: 'notification:class:DocUpdates' as Ref<Class<Doc>> })
-          await client.deleteMany(DOMAIN_MODEL_TX, { objectClass: 'notification:class:DocUpdates' as Ref<Class<Doc>> })
+          await client.deleteMany(DOMAIN_TX, { objectClass: 'notification:class:DocUpdates' as Ref<Class<Doc>> })
         }
       },
       {
@@ -410,14 +410,14 @@ export const notificationOperation: MigrateOperation = {
       {
         state: 'remove-update-txes-docnotify-ctx-v2',
         func: async (client) => {
-          await client.deleteMany(DOMAIN_MODEL_TX, {
+          await client.deleteMany(DOMAIN_TX, {
             _class: core.class.TxUpdateDoc,
             objectClass: notification.class.DocNotifyContext,
             'operations.lastViewedTimestamp': {
               $exists: true
             }
           })
-          await client.deleteMany(DOMAIN_MODEL_TX, {
+          await client.deleteMany(DOMAIN_TX, {
             _class: core.class.TxUpdateDoc,
             objectClass: notification.class.DocNotifyContext,
             'operations.lastUpdateTimestamp': {
