@@ -24,7 +24,7 @@
   import { get } from 'svelte/store'
 
   import love from '../plugin'
-  import { myInfo, selectedRoomPlace, currentRoom, meetingMinutesStore } from '../stores'
+  import { myInfo, selectedRoomPlace, currentRoom, currentMeetingMinutes } from '../stores'
   import { getRoomLabel, lk } from '../utils'
   import PersonActionPopup from './PersonActionPopup.svelte'
   import RoomLanguage from './RoomLanguage.svelte'
@@ -64,23 +64,32 @@
     hovered = false
   }
 
-  async function clickHandler (e: MouseEvent, x: number, y: number, person: Person | undefined): Promise<void> {
+  async function openRoom (x: number, y: number): Promise<void> {
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
+    if ($currentRoom?._id === room._id) {
+      const sid = await lk.getSid()
+      const meetingMinutes =
+        get(currentMeetingMinutes) ?? (await client.findOne(love.class.MeetingMinutes, { sid, attachedTo: room._id }))
+      if (meetingMinutes === undefined) {
+        await openDoc(hierarchy, room)
+      } else {
+        await openDoc(hierarchy, meetingMinutes)
+      }
+    } else {
+      selectedRoomPlace.set({ _id: room._id, x, y })
+      await openDoc(hierarchy, room)
+    }
+  }
+
+  async function placeClickHandler (e: MouseEvent, x: number, y: number, person: Person | undefined): Promise<void> {
+    e.stopPropagation()
+    e.preventDefault()
     if (person !== undefined) {
       if (room._id === $myInfo?.room || $myInfo === undefined) return
       showPopup(PersonActionPopup, { room, person: person._id }, eventToHTMLElement(e))
     } else {
-      const client = getClient()
-      const hierarchy = client.getHierarchy()
-      if ($currentRoom?._id === room._id) {
-        const sid = await lk.getSid()
-        const meetingMinutes =
-          get(meetingMinutesStore) ?? (await client.findOne(love.class.MeetingMinutes, { sid, attachedTo: room._id }))
-        if (meetingMinutes === undefined) return
-        await openDoc(hierarchy, meetingMinutes)
-      } else {
-        selectedRoomPlace.set({ _id: room._id, x, y })
-        await openDoc(hierarchy, room)
-      }
+      await openRoom(x, y)
     }
   }
 
@@ -121,6 +130,10 @@
     }
     return init
   }
+
+  async function handleClick (): Promise<void> {
+    await openRoom(0, 0)
+  }
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -141,6 +154,7 @@
   on:mouseover|stopPropagation
   on:mouseenter|stopPropagation={mouseEnter}
   on:mouseleave|stopPropagation={mouseLeave}
+  on:click|stopPropagation={handleClick}
 >
   {#each new Array(room.height) as _, y}
     {#each new Array(room.width + extraRow) as _, x}
@@ -162,7 +176,7 @@
           hoveredRoomY = undefined
         }}
         on:click={(e) => {
-          clickHandler(e, x, y, person)
+          placeClickHandler(e, x, y, person)
         }}
       >
         {#if personInfo}

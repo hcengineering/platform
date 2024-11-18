@@ -60,7 +60,7 @@
   }
 </script>
 
-<div class="antiSection">
+<div class="antiSection flex-gap-4">
   {#if hasText(object.prompt)}
     <div class="antiSection-header">
       <span class="antiSection-header__title">
@@ -70,21 +70,13 @@
   {/if}
   {#each object.questions ?? [] as question, index}
     {#if isQuestionValid(question)}
-      <div class="question">
-        <PollQuestion
-          bind:this={questionNodes[index]}
-          bind:isAnswered={isAnswered[index]}
-          readonly={readonly || object.isCompleted}
-          on:answered={saveAnswers}
-          {question}
-        />
-      </div>
+      <PollQuestion
+        bind:this={questionNodes[index]}
+        bind:isAnswered={isAnswered[index]}
+        readonly={readonly || object.isCompleted}
+        on:answered={saveAnswers}
+        {question}
+      />
     {/if}
   {/each}
 </div>
-
-<style lang="scss">
-  .question {
-    margin-top: 1.25em;
-  }
-</style>

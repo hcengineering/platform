@@ -30,7 +30,8 @@ import {
   RoomType,
   TranscriptionStatus,
   type RoomMetadata,
-  type MeetingMinutes
+  type MeetingMinutes,
+  MeetingStatus
 } from '@hcengineering/love'
 import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
 import presentation, {
@@ -39,7 +40,14 @@ import presentation, {
   type DocCreatePhase,
   getClient
 } from '@hcengineering/presentation'
-import { type DropdownTextItem, getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
+import {
+  type DropdownTextItem,
+  getCurrentLocation,
+  navigate,
+  showPopup,
+  panelstore,
+  closePanel
+} from '@hcengineering/ui'
 import { isKrispNoiseFilterSupported, KrispNoiseFilter } from '@livekit/krisp-noise-filter'
 import { BackgroundBlur, type BackgroundOptions, type ProcessorWrapper } from '@livekit/track-processors'
 import {
@@ -70,10 +78,11 @@ import {
 import { type Widget, type WidgetTab } from '@hcengineering/workbench'
 import view from '@hcengineering/view'
 import chunter from '@hcengineering/chunter'
+import { openDoc } from '@hcengineering/view-resources'
 
 import { sendMessage } from './broadcast'
 import love from './plugin'
-import { $myPreferences, meetingMinutesStore, currentRoom } from './stores'
+import { $myPreferences, currentRoom, currentMeetingMinutes, selectedRoomPlace } from './stores'
 import RoomSettingsPopup from './components/RoomSettingsPopup.svelte'
 
 export const selectedCamId = 'selectedDevice_cam'
@@ -444,7 +453,6 @@ export async function disconnect (): Promise<void> {
   isMicEnabled.set(false)
   isCameraEnabled.set(false)
   isSharingEnabled.set(false)
-  meetingMinutesStore.set(undefined)
   sendMessage({ type: 'mic', value: false })
   sendMessage({ type: 'cam', value: false })
   sendMessage({ type: 'share', value: false })
@@ -463,6 +471,22 @@ export async function leaveRoom (ownInfo: ParticipantInfo | undefined, ownOffice
     }
   }
   await disconnect()
+  closeMeetingMinutes()
+}
+
+function closeMeetingMinutes (): void {
+  const loc = getCurrentLocation()
+
+  if (loc.path[2] === loveId) {
+    const meetingMinutes = get(currentMeetingMinutes)
+    const panel = get(panelstore).panel
+    const { _id } = panel ?? {}
+
+    if (_id !== undefined && meetingMinutes !== undefined && _id === meetingMinutes._id) {
+      closePanel()
+    }
+  }
+  currentMeetingMinutes.set(undefined)
 }
 
 export async function setCam (value: boolean): Promise<void> {
@@ -593,7 +617,7 @@ async function connectLK (currentPerson: Person, room: Room): Promise<void> {
   ])
 }
 
-async function createMeetingMinutes (room: Room): Promise<void> {
+async function openMeetingMinutes (room: Room): Promise<void> {
   const client = getClient()
   const sid = await lk.getSid()
 
@@ -601,7 +625,17 @@ async function createMeetingMinutes (room: Room): Promise<void> {
     const doc = await client.findOne(love.class.MeetingMinutes, { sid })
 
     if (doc === undefined) {
-      const dateStr = new Date().toISOString().replace('T', ' ').slice(0, 19)
+      const date = new Date()
+        .toLocaleDateString('en-GB', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          timeZone: 'UTC'
+        })
+        .replace(',', ' at')
       const _id = generateId<MeetingMinutes>()
       const newDoc: MeetingMinutes = {
         _id,
@@ -611,24 +645,35 @@ async function createMeetingMinutes (room: Room): Promise<void> {
         attachedToClass: room._class,
         collection: 'meetings',
         space: core.space.Workspace,
-        title: room.name + ' ' + dateStr,
+        title: `${room.name} ${date}`,
         description: makeCollaborativeDoc(_id, 'description'),
+        status: MeetingStatus.Active,
         modifiedBy: getCurrentAccount()._id,
         modifiedOn: Date.now()
       }
-
       await client.addCollection(
         love.class.MeetingMinutes,
         core.space.Workspace,
         room._id,
         room._class,
         'meetings',
-        { sid, title: newDoc.title, description: newDoc.description },
+        { sid, title: newDoc.title, description: newDoc.description, status: newDoc.status },
         _id
       )
-      meetingMinutesStore.set(newDoc)
+      currentMeetingMinutes.set(newDoc)
+      const loc = getCurrentLocation()
+      if (loc.path[2] === loveId) {
+        await openDoc(client.getHierarchy(), newDoc)
+      }
     } else {
-      meetingMinutesStore.set(doc)
+      currentMeetingMinutes.set(doc)
+      const loc = getCurrentLocation()
+      if (loc.path[2] === loveId) {
+        await openDoc(client.getHierarchy(), doc)
+      }
+      if (doc.status !== MeetingStatus.Active) {
+        void client.update(doc, { status: MeetingStatus.Active, meetingEnd: undefined })
+      }
     }
   }
 }
@@ -643,7 +688,8 @@ export async function connectRoom (
   await disconnect()
   await moveToRoom(x, y, currentInfo, currentPerson, room, getMetadata(presentation.metadata.SessionId) ?? null)
   await connectLK(currentPerson, room)
-  await createMeetingMinutes(room)
+  selectedRoomPlace.set(undefined)
+  await openMeetingMinutes(room)
 }
 
 export const joinRequest: Ref<JoinRequest> | undefined = undefined

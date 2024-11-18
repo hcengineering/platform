@@ -15,24 +15,43 @@
 <script lang="ts">
   import type { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { Label, Section } from '@hcengineering/ui'
-  import { Table } from '@hcengineering/view-resources'
-  import love from '@hcengineering/love'
+  import { Table, ViewletsSettingButton } from '@hcengineering/view-resources'
+  import { Viewlet, ViewletPreference } from '@hcengineering/view'
+
+  import love from '../plugin'
 
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
   export let readonly: boolean = false
   export let meetings: number
+
+  let viewlet: Viewlet | undefined
+  let preference: ViewletPreference | undefined
+  let loading = true
 </script>
 
 <Section label={love.string.MeetingMinutes} icon={love.icon.Cam}>
+  <svelte:fragment slot="header">
+    <div class="flex-row-center gap-2 reverse">
+      <ViewletsSettingButton
+        viewletQuery={{ _id: love.viewlet.TableMeetingMinutesEmbedded }}
+        kind={'tertiary'}
+        bind:viewlet
+        bind:loading
+        bind:preference
+      />
+    </div>
+  </svelte:fragment>
+
   <svelte:fragment slot="content">
-    {#if meetings > 0}
+    {#if meetings > 0 && viewlet}
       <Table
         _class={love.class.MeetingMinutes}
-        config={['', 'transcription', 'messages']}
+        config={preference?.config ?? viewlet.config}
         query={{ attachedTo: objectId }}
         loadingProps={{ length: meetings }}
+        prefferedSorting="createdOn"
         {readonly}
       />
     {:else}

@@ -33,6 +33,7 @@
   export let enableChecking = true
   export let tableId: string | undefined = undefined
   export let fade: FadeOptions = tableSP
+  export let prefferedSorting: string = 'modifiedOn'
 
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
@@ -55,11 +56,9 @@
   // Search config
   const _config = config
 
-  let prefferedSorting: string = 'modifiedOn'
-
   function updateConfig (config: Array<BuildModelKey | string>, search?: string): void {
     const useSearch = search !== '' && search != null
-    prefferedSorting = !useSearch ? 'modifiedOn' : '#score'
+    prefferedSorting = !useSearch ? prefferedSorting : '#score'
   }
 
   $: updateConfig(config, query.$search)

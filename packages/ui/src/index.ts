@@ -158,6 +158,8 @@ export { default as HotkeyGroup } from './components/HotkeyGroup.svelte'
 export { default as ModernWizardDialog } from './components/wizard/ModernWizardDialog.svelte'
 export { default as ModernWizardBar } from './components/wizard/ModernWizardBar.svelte'
 export { default as ModernTab } from './components/ModernTab.svelte'
+export { default as ModernCheckbox } from './components/ModernCheckbox.svelte'
+export { default as ModernRadioButton } from './components/ModernRadioButton.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconCircleAdd } from './components/icons/CircleAdd.svelte'

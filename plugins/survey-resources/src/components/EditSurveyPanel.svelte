@@ -19,9 +19,9 @@
   import { Panel } from '@hcengineering/panel'
   import { createQuery } from '@hcengineering/presentation'
   import { Survey } from '@hcengineering/survey'
-  import { Button, Icon, IconMoreH, Label, tooltip } from '@hcengineering/ui'
+  import { Button, Icon, IconMoreH, Label, tooltip, Breadcrumb } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { DocNavLink, showMenu } from '@hcengineering/view-resources'
+  import { showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import EditSurvey from './EditSurvey.svelte'
   import EditPoll from './EditPoll.svelte'
@@ -53,7 +53,7 @@
   <Panel
     isHeader={false}
     isSub={false}
-    isAside={true}
+    isAside={false}
     {embedded}
     {object}
     on:open
@@ -63,22 +63,20 @@
     withoutInput={readonly}
   >
     <svelte:fragment slot="title">
-      <DocNavLink noUnderline {object}>
-        <div class="title">{object.name}</div>
-      </DocNavLink>
+      <Breadcrumb icon={survey.icon.Survey} title={object.name} size={'large'} isCurrent />
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
       {#if !readonly}
         {#if preview}
           {#if canSubmit}
-            <span use:tooltip={{ label: survey.string.ValidateOk }}>
-              <Icon size="x-large" icon={survey.icon.ValidateOk} fill="var(--theme-won-color)" />
-            </span>
+            <div use:tooltip={{ label: survey.string.ValidateOk }}>
+              <Icon size="x-large" icon={survey.icon.ValidateOk} fill="var(--positive-button-default)" />
+            </div>
           {:else}
-            <span use:tooltip={{ label: survey.string.ValidateFail }}>
-              <Icon size="x-large" icon={survey.icon.ValidateFail} iconProps={{ opacity: 0.75 }} />
-            </span>
+            <div use:tooltip={{ label: survey.string.ValidateFail }}>
+              <Icon size="x-large" icon={survey.icon.ValidateFail} fill="var(--theme-trans-color)" />
+            </div>
           {/if}
         {/if}
         <Button
@@ -102,9 +100,9 @@
     <div class="flex-col flex-grow flex-no-shrink">
       {#if preview}
         {#if poll !== undefined}
-          <div class="antiSection-empty solid flex-row mt-3">
-            <Icon icon={survey.icon.Info} size="large" />
-            <span class="content-dark-color" style="margin-left:1em">
+          <div class="antiSection-empty solid mb-8">
+            <Icon icon={survey.icon.Info} size={'large'} />
+            <span class="content-dark-color text-balance" style="margin-left:1em">
               <Label label={survey.string.ValidateInfo} />
             </span>
           </div>

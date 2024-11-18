@@ -20,7 +20,10 @@ import {
   DOMAIN_TRANSIENT,
   IndexKind,
   type Ref,
-  type CollaborativeDoc
+  type CollaborativeDoc,
+  type Doc,
+  type Timestamp,
+  type CollectionSize
 } from '@hcengineering/core'
 import {
   type DevicesPreference,
@@ -37,7 +40,8 @@ import {
   type RoomInfo,
   type RoomType,
   type RoomLanguage,
-  type MeetingMinutes
+  type MeetingMinutes,
+  type MeetingStatus
 } from '@hcengineering/love'
 import {
   type Builder,
@@ -52,7 +56,9 @@ import {
   TypeCollaborativeDoc,
   TypeRef,
   TypeString,
-  UX
+  TypeTimestamp,
+  UX,
+  TypeAny
 } from '@hcengineering/model'
 import calendar, { TEvent } from '@hcengineering/model-calendar'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
@@ -66,6 +72,7 @@ import workbench, { WidgetType } from '@hcengineering/workbench'
 import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import attachment from '@hcengineering/attachment'
+import time, { type ToDo, type Todoable } from '@hcengineering/time'
 
 import love from './plugin'
 
@@ -107,6 +114,9 @@ export class TRoom extends TDoc implements Room {
 
   @Prop(PropCollection(love.class.MeetingMinutes), love.string.MeetingMinutes)
     meetings?: number
+
+  @Prop(PropCollection(chunter.class.ChatMessage), activity.string.Messages)
+    messages?: number
 }
 
 @Model(love.class.Office, love.class.Room)
@@ -184,8 +194,13 @@ export class TMeeting extends TEvent implements Meeting {
 }
 
 @Model(love.class.MeetingMinutes, core.class.Doc, DOMAIN_MEETING_MINUTES)
-@UX(love.string.MeetingMinutes, love.icon.Cam)
-export class TMeetingMinutes extends TAttachedDoc implements MeetingMinutes {
+@UX(love.string.MeetingMinutes, love.icon.Cam, undefined, 'createdOn', undefined, love.string.MeetingsMinutes)
+export class TMeetingMinutes extends TAttachedDoc implements MeetingMinutes, Todoable {
+  @Prop(TypeRef(core.class.Doc), love.string.Room, { editor: love.component.MeetingMinutesDocEditor })
+  @Index(IndexKind.Indexed)
+  @ReadOnly()
+  declare attachedTo: Ref<Doc>
+
   @Hidden()
     sid!: string
 
@@ -197,6 +212,12 @@ export class TMeetingMinutes extends TAttachedDoc implements MeetingMinutes {
   @Index(IndexKind.FullText)
     description!: CollaborativeDoc
 
+  @Prop(TypeAny(love.component.MeetingMinutesStatusPresenter, love.string.Status), love.string.Status, {
+    editor: love.component.MeetingMinutesStatusPresenter
+  })
+  @ReadOnly()
+    status!: MeetingStatus
+
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
@@ -205,6 +226,18 @@ export class TMeetingMinutes extends TAttachedDoc implements MeetingMinutes {
 
   @Prop(PropCollection(chunter.class.ChatMessage), activity.string.Messages)
     messages?: number
+
+  @Prop(TypeTimestamp(), love.string.MeetingStart, { editor: view.component.TimestampPresenter })
+  @ReadOnly()
+  @Index(IndexKind.IndexedDsc)
+  declare createdOn: Timestamp
+
+  @Prop(TypeTimestamp(), love.string.MeetingEnd)
+  @ReadOnly()
+    meetingEnd?: Timestamp
+
+  @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
+    todos?: CollectionSize<ToDo>
 }
 
 export default love
@@ -418,17 +451,17 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: love.class.Room,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput, props: { collection: 'messages' } } }
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: love.class.Office,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput, props: { collection: 'messages' } } }
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: love.class.MeetingMinutes,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput, props: { collection: 'messages' } } }
   })
 
   builder.mixin(love.class.MeetingMinutes, core.class.Class, activity.mixin.ActivityDoc, {})
@@ -437,6 +470,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(love.class.MeetingMinutes, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: love.component.MeetingMinutesPresenter
+  })
+
+  builder.mixin(love.class.Room, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: love.component.RoomPresenter
   })
 
   builder.mixin(love.class.MeetingMinutes, core.class.Class, view.mixin.CollectionEditor, {
@@ -467,10 +504,11 @@ export function createModel (builder: Builder): void {
       descriptor: view.viewlet.Table,
       config: [
         '',
+        { key: 'status', presenter: love.component.MeetingMinutesStatusPresenter, label: love.string.Status },
+        'createdOn',
+        'meetingEnd',
         { key: 'messages', displayProps: { key: 'messages', suffix: true } },
-        { key: 'transcription', displayProps: { key: 'transcription', suffix: true } },
-        'modifiedOn',
-        'modifiedBy'
+        { key: 'transcription', displayProps: { key: 'transcription', suffix: true } }
       ],
       configOptions: {
         hiddenKeys: ['description'],
@@ -479,6 +517,26 @@ export function createModel (builder: Builder): void {
       options: {}
     },
     love.viewlet.TableMeetingMinutes
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: love.class.MeetingMinutes,
+      descriptor: view.viewlet.Table,
+      config: [
+        '',
+        { key: 'status', presenter: love.component.MeetingMinutesStatusPresenter, label: love.string.Status },
+        'createdOn',
+        'meetingEnd'
+      ],
+      configOptions: {
+        sortable: true
+      },
+      variant: 'embedded'
+    },
+    love.viewlet.TableMeetingMinutesEmbedded
   )
 
   builder.createDoc(
@@ -573,5 +631,9 @@ export function createModel (builder: Builder): void {
   builder.mixin(love.class.Floor, core.class.Class, core.mixin.IndexConfiguration, {
     indexes: [],
     searchDisabled: true
+  })
+
+  builder.mixin(love.class.MeetingMinutes, core.class.Class, view.mixin.ObjectPanelFooter, {
+    editor: love.component.PanelControlBar
   })
 }

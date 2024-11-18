@@ -210,7 +210,7 @@ export type ActivityExtensionKind = 'input'
  */
 export interface ActivityExtension extends Doc {
   ofClass: Ref<Class<Doc>>
-  components: Record<ActivityExtensionKind, AnyComponent>
+  components: Record<ActivityExtensionKind, { component: AnyComponent, props?: Record<string, any> }>
 }
 
 /**

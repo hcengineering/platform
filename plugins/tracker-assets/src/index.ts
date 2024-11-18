@@ -33,7 +33,7 @@ loadMetadata(tracker.icon, {
   Magnifier: `${icons}#magnifier`,
   Home: `${icons}#home`,
   RedCircle: `${icons}#red-circle`,
-  Labels: `${icons}#priority-nopriority`, // TODO: add icon
+  Labels: `${icons}#labels`,
   DueDate: `${icons}#dueDate`, // TODO: add icon
   Parent: `${icons}#parent-issue`, // TODO: add icon
   Milestone: `${icons}#milestone`,
