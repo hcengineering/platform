@@ -5,20 +5,26 @@ import core, {
   getTypeOf,
   systemAccountEmail,
   type Account,
+  type BackupClient,
   type Branding,
   type BrandingMap,
   type BulkUpdateEvent,
   type Class,
+  type Client,
   type Doc,
+  type DocInfo,
+  type MeasureContext,
   type ModelDb,
   type Ref,
   type SessionData,
   type TxWorkspaceEvent,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
-import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { type Hash } from 'crypto'
+import platform, { PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
+import { createHash, type Hash } from 'crypto'
 import fs from 'fs'
+import { BackupClientOps } from './storage'
+import type { Pipeline } from './types'
 
 /**
  * Return some estimation for object size
@@ -212,4 +218,78 @@ export function loadBrandingMap (brandingPath?: string): BrandingMap {
   }
 
   return brandings
+}
+
+export function toDocInfo (d: Doc, bulkUpdate: Map<Ref<Doc>, string>, recheck?: boolean): DocInfo {
+  let digest: string | null = (d as any)['%hash%']
+  if ('%hash%' in d) {
+    delete d['%hash%']
+  }
+  const pos = (digest ?? '').indexOf('|')
+  const oldDigest = digest
+  if (digest == null || digest === '' || recheck === true) {
+    const size = estimateDocSize(d)
+
+    const hash = createHash('sha256')
+    updateHashForDoc(hash, d)
+    digest = hash.digest('base64')
+    const newDigest = `${digest}|${size.toString(16)}`
+
+    if (recheck !== true || oldDigest !== newDigest) {
+      bulkUpdate.set(d._id, `${digest}|${size.toString(16)}`)
+    }
+    return {
+      id: d._id,
+      hash: digest,
+      size
+    }
+  } else {
+    return {
+      id: d._id,
+      hash: pos >= 0 ? digest.slice(0, pos) : digest,
+      size: pos >= 0 ? parseInt(digest.slice(pos + 1), 16) : 0
+    }
+  }
+}
+
+export function wrapPipeline (
+  ctx: MeasureContext,
+  pipeline: Pipeline,
+  wsUrl: WorkspaceIdWithUrl
+): Client & BackupClient {
+  const contextData = new SessionDataImpl(
+    systemAccountEmail,
+    'pipeline',
+    true,
+    { targets: {}, txes: [] },
+    wsUrl,
+    null,
+    true,
+    new Map(),
+    new Map(),
+    pipeline.context.modelDb
+  )
+  ctx.contextData = contextData
+  if (pipeline.context.lowLevelStorage === undefined) {
+    throw new PlatformError(unknownError('Low level storage is not available'))
+  }
+  const backupOps = new BackupClientOps(pipeline.context.lowLevelStorage)
+
+  return {
+    findAll: (_class, query, options) => pipeline.findAll(ctx, _class, query, options),
+    findOne: async (_class, query, options) =>
+      (await pipeline.findAll(ctx, _class, query, { ...options, limit: 1 })).shift(),
+    clean: (domain, docs) => backupOps.clean(ctx, domain, docs),
+    close: () => pipeline.close(),
+    closeChunk: (idx) => backupOps.closeChunk(ctx, idx),
+    getHierarchy: () => pipeline.context.hierarchy,
+    getModel: () => pipeline.context.modelDb,
+    loadChunk: (domain, idx, recheck) => backupOps.loadChunk(ctx, domain, idx, recheck),
+    loadDocs: (domain, docs) => backupOps.loadDocs(ctx, domain, docs),
+    upload: (domain, docs) => backupOps.upload(ctx, domain, docs),
+    searchFulltext: async (query, options) => ({ docs: [], total: 0 }),
+    sendForceClose: async () => {},
+    tx: (tx) => pipeline.tx(ctx, [tx]),
+    notify: (...tx) => {}
+  }
 }

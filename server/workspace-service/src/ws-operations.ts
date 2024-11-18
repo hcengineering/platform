@@ -16,7 +16,7 @@ import core, {
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation, type ModelLogger } from '@hcengineering/model'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
-import { SessionDataImpl, type Pipeline, type StorageAdapter } from '@hcengineering/server-core'
+import { SessionDataImpl, wrapPipeline, type Pipeline, type StorageAdapter } from '@hcengineering/server-core'
 import {
   getServerPipeline,
   getTxAdapterFactory,
@@ -25,51 +25,6 @@ import {
 } from '@hcengineering/server-pipeline'
 import { generateToken } from '@hcengineering/server-token'
 import { initializeWorkspace, initModel, prepareTools, updateModel, upgradeModel } from '@hcengineering/server-tool'
-
-function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: WorkspaceIdWithUrl): Client {
-  const sctx = new SessionDataImpl(
-    systemAccountEmail,
-    'backup',
-    true,
-    { targets: {}, txes: [] },
-    wsUrl,
-    null,
-    true,
-    new Map(),
-    new Map(),
-    pipeline.context.modelDb
-  )
-
-  ctx.contextData = sctx
-
-  return {
-    findAll: async (_class, query, options) => {
-      return await pipeline.findAll(ctx, _class, query, options)
-    },
-    findOne: async (_class, query, options) => {
-      return (await pipeline.findAll(ctx, _class, query, { ...options, limit: 1 })).shift()
-    },
-    close: async () => {
-      await pipeline.close()
-    },
-    getHierarchy: () => {
-      return pipeline.context.hierarchy
-    },
-    getModel: () => {
-      return pipeline.context.modelDb
-    },
-    searchFulltext: async (query, options) => {
-      return {
-        docs: [],
-        total: 0
-      }
-    },
-    tx: async (tx) => {
-      return await pipeline.tx(ctx, [tx])
-    },
-    notify: (...tx) => {}
-  }
-}
 
 /**
  * @public
@@ -125,10 +80,6 @@ export async function createWorkspace (
     try {
       const txFactory = getTxAdapterFactory(ctx, dbUrl, wsUrl, null, {
         externalStorage: storageAdapter,
-        fullTextUrl: 'http://localhost:9200',
-        indexParallel: 0,
-        indexProcessing: 0,
-        rekoniUrl: '',
         usePassedCtx: true
       })
       const txAdapter = await txFactory(ctx, hierarchy, dbUrl, wsId, modelDb, storageAdapter)

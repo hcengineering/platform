@@ -68,10 +68,6 @@ export function getTxAdapterFactory (
   workspace: WorkspaceIdWithUrl,
   branding: Branding | null,
   opt: {
-    fullTextUrl: string
-    rekoniUrl: string
-    indexProcessing: number // 1000
-    indexParallel: number // 2
     disableTriggers?: boolean
     usePassedCtx?: boolean
 
@@ -199,19 +195,23 @@ export async function getServerPipeline (
   ctx: MeasureContext,
   model: Tx[],
   dbUrl: string,
-  wsUrl: WorkspaceIdWithUrl
+  wsUrl: WorkspaceIdWithUrl,
+  opt?: {
+    storageConfig: string
+    disableTriggers?: boolean
+  }
 ): Promise<{
     pipeline: Pipeline
     storageAdapter: StorageAdapter
   }> {
-  const storageConfig: StorageConfiguration = storageConfigFromEnv()
+  const storageConfig: StorageConfiguration = storageConfigFromEnv(opt?.storageConfig)
 
   const storageAdapter = buildStorageFromConfig(storageConfig)
 
   const pipelineFactory = createServerPipeline(ctx, dbUrl, model, {
     externalStorage: storageAdapter,
     usePassedCtx: true,
-    disableTriggers: false
+    disableTriggers: opt?.disableTriggers ?? false
   })
 
   try {

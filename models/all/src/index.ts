@@ -114,7 +114,7 @@ interface ConfigurablePlugin extends Omit<Data<PluginConfiguration>, 'pluginId' 
 type BuilderConfig = [(b: Builder) => void, Plugin] | [(b: Builder) => void, Plugin, ConfigurablePlugin | undefined]
 
 export function getModelVersion (): Data<Version> {
-  const rawVersion = (process.env.MODEL_VERSION ?? '0.6.0').trim().replace('v', '').split('.')
+  const rawVersion = (process.env.MODEL_VERSION ?? '0.6.0').replace('"', '').trim().replace('v', '').split('.')
   if (rawVersion.length === 3) {
     return {
       major: parseInt(rawVersion[0]),

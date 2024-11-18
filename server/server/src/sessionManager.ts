@@ -243,8 +243,10 @@ class TSessionManager implements SessionManager {
             }
           }
           for (const r of s[1].session.requests.values()) {
-            if (now - r.start > 30000) {
-              this.ctx.warn('request hang found, 30sec', {
+            const sec = Math.round((now - r.start) / 1000)
+            if (sec > 0 && sec % 30 === 0) {
+              this.ctx.warn('request hang found', {
+                sec,
                 wsId,
                 user: s[1].session.getUser(),
                 ...r.params

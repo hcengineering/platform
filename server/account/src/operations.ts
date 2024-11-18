@@ -42,7 +42,8 @@ import core, {
   versionToString,
   WorkspaceId,
   type BackupStatus,
-  type Branding
+  type Branding,
+  type WorkspaceMode
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
 import { type StorageAdapter } from '@hcengineering/server-core'
@@ -940,7 +941,8 @@ async function generateWorkspaceRecord (
   branding: Branding | null,
   workspaceName: string,
   fixedWorkspace?: string,
-  region?: string
+  region?: string,
+  initMode: WorkspaceMode = 'pending-creation'
 ): Promise<Workspace> {
   type WorkspaceData = Omit<Workspace, '_id' | 'endpoint'>
   const brandingKey = branding?.key ?? 'huly'
@@ -972,7 +974,7 @@ async function generateWorkspaceRecord (
       accounts: [],
       disabled: true,
       region: region ?? '',
-      mode: 'pending-creation',
+      mode: initMode,
       progress: 0,
       createdOn: Date.now(),
       lastVisit: Date.now(),
@@ -1010,7 +1012,7 @@ async function generateWorkspaceRecord (
         accounts: [],
         disabled: true,
         region: region ?? '',
-        mode: 'pending-creation',
+        mode: initMode,
         progress: 0,
         createdOn: Date.now(),
         lastVisit: Date.now(),
@@ -1051,12 +1053,13 @@ export async function createWorkspace (
   email: string,
   workspaceName: string,
   workspace?: string,
-  region?: string
+  region?: string,
+  initMode: WorkspaceMode = 'pending-creation'
 ): Promise<Workspace> {
   // We need to search for duplicate workspaceUrl
   // Safe generate workspace record.
   return await createQueue.exec(async () => {
-    return await generateWorkspaceRecord(db, email, branding, workspaceName, workspace, region)
+    return await generateWorkspaceRecord(db, email, branding, workspaceName, workspace, region, initMode)
   })
 }
 
@@ -1122,6 +1125,7 @@ export async function updateWorkspaceInfo (
   if (workspaceInfo === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceId }))
   }
+  progress = Math.round(progress)
 
   const update: Partial<WorkspaceInfo> = {}
   switch (event) {

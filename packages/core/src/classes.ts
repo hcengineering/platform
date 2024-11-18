@@ -648,6 +648,7 @@ export interface DomainIndexConfiguration extends Doc {
 }
 
 export type WorkspaceMode =
+  | 'manual-creation'
   | 'pending-creation'
   | 'creating'
   | 'upgrading'
