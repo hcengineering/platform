@@ -16,21 +16,19 @@
   import { createEventDispatcher, onMount } from 'svelte'
 
   import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import { type Class, type Ref } from '@hcengineering/core'
-  import { TestRun, TestCase, TestProject } from '@hcengineering/test-management'
+  import { TestRun, TestCase } from '@hcengineering/test-management'
   import { Panel } from '@hcengineering/panel'
   import { EditBox, ListView } from '@hcengineering/ui'
-  import {FoldersBrowser, SplitView} from '@hcengineering/view-resources'
+  import {SplitView} from '@hcengineering/view-resources'
 
   import TestCaseRefPresenter from '../test-case/TestCasePresenter.svelte'
   import {getTestCases} from '../../testRunUtils'
   import testManagement from '../../plugin'
-  import AddTestResult from './AddTestResult.svelte'
 
   export let _id: Ref<TestRun>
   export let _class: Ref<Class<TestRun>>
-  export let space: Ref<TestProject>
 
   let object: TestRun | undefined
   let testCases: TestCase[] | undefined
@@ -75,6 +73,7 @@
 </script>
 
 {#if object}
+  <ActionContext context={{ mode: 'editor' }} />
   <Panel
     {object}
     title={object.name}
@@ -87,21 +86,12 @@
   >
     <SplitView>
       <svelte:fragment slot="leftPanel">
-      <FoldersBrowser
-        _class={testManagement.class.TestSuite}
-        titleKey={'name'}
-        parentKey={'parent'}
-        noParentId={testManagement.ids.NoParent}
-        getFolderLink={testManagement.function.GetTestSuiteLink}
-      />
-      </svelte:fragment>
-      <svelte:fragment slot="rightPanel">
         {#if testCases !== undefined}
-        <ListView count={testCases.length}>
+        <ListView count={testCases.length} kind={'thin'}>
           <svelte:fragment slot="item" let:item>
             {@const doc = testCases[item]}
             <div
-              class="row withList w-full"
+              class="ap-menuItem withComp noMargin"
               on:click={() => {
                 //select(doc)
               }}
@@ -111,15 +101,35 @@
           </svelte:fragment>
         </ListView>
         {/if}
-    </svelte:fragment>
-    </SplitView>
-    <svelte:fragment slot="custom-attributes">
-      <div class="popupPanel-body__aside-grid">
-        <div class="divider" />
-        <AddTestResult
-          space={space}
+      </svelte:fragment>
+      <svelte:fragment slot="rightPanel">
+      <EditBox
+        bind:value={rawLabel}
+        placeholder={testManagement.string.NamePlaceholder}
+        kind="large-style"
+        on:blur={async () => {
+          const trimmedLabel = rawLabel?.trim()
+
+          if (trimmedLabel?.length === 0) {
+            rawLabel = oldLabel
+          } else if (trimmedLabel !== object?.name) {
+            await change('name', trimmedLabel ?? '')
+          }
+        }}
+      />
+
+      <div class="w-full mt-6">
+        <AttachmentStyleBoxCollabEditor
+          focusIndex={30}
+          {object}
+          key={{ key: 'description', attr: descriptionKey }}
+          bind:this={descriptionBox}
+          identifier={object?._id}
+          placeholder={testManagement.string.DescriptionPlaceholder}
+          boundary={content}
         />
       </div>
     </svelte:fragment>
+    </SplitView>
   </Panel>
 {/if}

@@ -99,6 +99,14 @@ export interface TestCase extends AttachedDoc<TestSuite, 'testCases', TestProjec
 }
 
 /** @public */
+export interface TestResult extends AttachedDoc<TestCase, 'results', TestProject> {
+  description: CollaborativeDoc
+  attachments?: CollectionSize<Attachment>
+  comments?: number
+  //status?: TestRunResult
+}
+
+/** @public */
 export interface TestRun extends Doc {
   name: string
   description: CollaborativeDoc

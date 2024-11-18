@@ -38,7 +38,8 @@ import {
   TestCaseStatus,
   TestRun,
   TestRunItem,
-  TestRunResult
+  TestRunResult,
+  TestResult
 } from './types'
 
 /** @public */
@@ -79,7 +80,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     StatusApproved: '' as Asset,
     StatusRejected: '' as Asset,
     Document: '' as Asset,
-    TestLibrary: '' as Asset
+    TestLibrary: '' as Asset,
+    TestResult: '' as Asset
   },
   class: {
     TestCase: '' as Ref<Class<TestCase>>,
@@ -90,7 +92,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     TypeTestCaseStatus: '' as Ref<Class<Type<TestCaseStatus>>>,
     TestRun: '' as Ref<Class<TestRun>>,
     TestRunItem: '' as Ref<Class<TestRunItem>>,
-    TypeTestRunResult: '' as Ref<Class<Type<TestRunResult>>>
+    TypeTestRunResult: '' as Ref<Class<Type<TestRunResult>>>,
+    TestResult: '' as Ref<Class<TestResult>>
   },
   descriptors: {
     ProjectType: '' as Ref<SpaceTypeDescriptor>
@@ -168,7 +171,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     SelectTestSuites: '' as IntlString,
     SelectTestCases: '' as IntlString,
     CreateTestRun: '' as IntlString,
-    TestLibrary: '' as IntlString
+    TestLibrary: '' as IntlString,
+    TestResult: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>

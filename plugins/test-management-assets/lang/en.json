@@ -61,6 +61,7 @@
     "TestRunNamePlaceholder": "Test run name",
     "SelectTestSuites": "Select test suites",
     "SelectTestCases": "Select test cases",
-    "TestLibrary": "Test library"
+    "TestLibrary": "Test library",
+    "TestResult": "Result"
   }
 }

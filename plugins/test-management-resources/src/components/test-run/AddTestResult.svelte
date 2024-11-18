@@ -16,14 +16,12 @@
   import { createEventDispatcher } from 'svelte'
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { TestCase, TestProject, TestSuite, TestCaseStatus } from '@hcengineering/test-management'
+  import { TestCase, TestProject, TestCaseStatus } from '@hcengineering/test-management'
   import core, { fillDefaults, generateId, makeCollaborativeDoc, Ref, TxOperations, Data } from '@hcengineering/core'
-  import { ObjectBox } from '@hcengineering/view-resources'
-  import { Card, SpaceSelector, getClient, updateMarkup } from '@hcengineering/presentation'
+  import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
-  import { Button, createFocusManager, EditBox, FocusHandler, IconAttachment, getLocation } from '@hcengineering/ui'
+  import { Button, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
 
-  import StatusEditor from './StatusEditor.svelte'
   import ProjectPresenter from '../project/ProjectPresenter.svelte'
   import testManagement from '../../plugin'
 
@@ -35,9 +33,7 @@
 
   export let space: Ref<TestProject>
 
-  export let testSuiteId: Ref<TestSuite> | undefined
 
-  testSuiteId = testSuiteId ?? (getLocation()?.query?.attachedTo as Ref<TestSuite>)
   const id: Ref<TestCase> = generateId()
 
   const object: Data<TestCase> = {
@@ -46,7 +42,7 @@
     status: TestCaseStatus.Draft,
     assignee: null,
     attachments: 0,
-    attachedTo: testSuiteId
+    //attachedTo: testSuiteId
   } as unknown as TestCase
 
   let _space = space
@@ -59,31 +55,6 @@
 
   fillDefaults(hierarchy, object, testManagement.class.TestCase)
 
-  async function createTestCase (): Promise<void> {
-    const op = client.apply()
-    await updateMarkup(object.description, { description })
-    await op.addCollection(
-      testManagement.class.TestCase,
-      _space,
-      testSuiteId ?? testManagement.ids.NoParent,
-      testManagement.class.TestSuite,
-      'testCases',
-      object,
-      id
-    )
-    await descriptionBox.createAttachments(id, op)
-
-    if (onCreate !== undefined) {
-      await onCreate?.(id, op)
-    }
-    await op.commit()
-    dispatch('close', id)
-  }
-
-  function handleTestSuiteChange (evt: CustomEvent<Ref<TestSuite>>): void {
-    object.attachedTo = evt.detail
-  }
-
   const manager = createFocusManager()
 
   let descriptionBox: AttachmentStyledBox
@@ -94,7 +65,7 @@
 
 <Card
   label={testManagement.string.CreateTestCase}
-  okAction={createTestCase}
+  okAction={() => {}}
   hideAttachments={attachments.size === 0}
   canSave={object.name.length > 0}
   on:close={() => {
@@ -111,23 +82,6 @@
       size={'small'}
       component={ProjectPresenter}
       defaultIcon={testManagement.icon.Home}
-    />
-    <ObjectBox
-      _class={testManagement.class.TestSuite}
-      value={testSuiteId}
-      docQuery={{
-        space: _space
-      }}
-      on:change={handleTestSuiteChange}
-      kind={'regular'}
-      size={'small'}
-      label={testManagement.string.NoTestSuite}
-      icon={testManagement.icon.TestSuite}
-      searchField={'title'}
-      allowDeselect={true}
-      showNavigate={false}
-      docProps={{ disabled: true, noUnderline: true }}
-      focusIndex={20000}
     />
   </svelte:fragment>
 
@@ -161,10 +115,6 @@
       }
     }}
   />
-
-  <svelte:fragment slot="pool">
-    <StatusEditor bind:value={object.status} {object} kind="regular" />
-  </svelte:fragment>
 
   <svelte:fragment slot="attachments">
     {#if attachments.size > 0}

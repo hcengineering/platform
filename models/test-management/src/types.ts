@@ -23,7 +23,8 @@ import type {
   TestProject,
   TestRun,
   TestRunResult,
-  TestRunItem
+  TestRunItem,
+  TestResult
 } from '@hcengineering/test-management'
 import { type Attachment } from '@hcengineering/attachment'
 import contact from '@hcengineering/contact'
@@ -186,6 +187,41 @@ export class TTestCase extends TAttachedDoc implements TestCase {
   @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number
 }
+
+/**
+ * @public
+ */
+ @Model(testManagement.class.TestResult, core.class.AttachedDoc, DOMAIN_TEST_MANAGEMENT)
+ @UX(testManagement.string.TestResult, testManagement.icon.TestResult, testManagement.string.TestResult)
+ export class TTestResult extends TAttachedDoc implements TestResult {
+   @Prop(TypeRef(testManagement.class.TestProject), core.string.Space)
+   @Index(IndexKind.Indexed)
+   @Hidden()
+   declare space: Ref<TestProject>
+ 
+   @Prop(TypeRef(testManagement.class.TestCase), core.string.AttachedTo)
+   @Index(IndexKind.Indexed)
+   declare attachedTo: Ref<TestCase>
+ 
+   @Prop(TypeRef(testManagement.class.TestCase), core.string.AttachedToClass)
+   @Index(IndexKind.Indexed)
+   @Hidden()
+   declare attachedToClass: Ref<Class<TestCase>>
+ 
+   @Prop(TypeString(), core.string.Collection)
+   @Hidden()
+   override collection: 'results' = 'results'
+ 
+   @Prop(TypeCollaborativeDoc(), testManagement.string.FullDescription)
+   @Index(IndexKind.FullText)
+     description!: CollaborativeDoc
+
+   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
+     attachments?: CollectionSize<Attachment>
+ 
+   @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
+     comments?: number
+ }
 
 @Model(testManagement.class.TestRun, core.class.Doc, DOMAIN_TEST_MANAGEMENT)
 @UX(testManagement.string.TestRun)
