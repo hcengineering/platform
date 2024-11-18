@@ -484,7 +484,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const key = domain === DOMAIN_SPACE ? '_id' : domain === DOMAIN_TX ? "data ->> 'objectSpace'" : 'space'
         const privateCheck = domain === DOMAIN_SPACE ? ' OR sec.private = false' : ''
         const q = `(sec.members @> '{"${acc._id}"}' OR sec."_class" = '${core.class.SystemSpace}'${privateCheck})`
-        return `INNER JOIN ${translateDomain(DOMAIN_SPACE)} AS sec ON sec._id = ${domain}.${key} AND sec."workspaceId" = '${this.workspaceId.name}' AND ${q}`
+        return `INNER JOIN ${translateDomain(DOMAIN_SPACE)} AS sec ON sec._id = ${domain}.${escapeBackticks(key)} AND sec."workspaceId" = '${this.workspaceId.name}' AND ${q}`
       }
     }
   }
@@ -1019,7 +1019,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             res.push(`${tkey} IS ${val === true ? 'NOT NULL' : 'NULL'}`)
             break
           case '$regex':
-            res.push(`${tkey} SIMILAR TO '${val}'`)
+            res.push(`${tkey} SIMILAR TO '${escapeBackticks(val)}'`)
             break
           case '$options':
             break
