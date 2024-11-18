@@ -13,7 +13,14 @@
 // limitations under the License.
 //
 
-import { AccountRole, DOMAIN_TX, makeCollaborativeDoc, TxOperations, type Ref, type Status } from '@hcengineering/core'
+import {
+  AccountRole,
+  DOMAIN_MODEL_TX,
+  makeCollaborativeDoc,
+  TxOperations,
+  type Ref,
+  type Status
+} from '@hcengineering/core'
 import { leadId, type Lead } from '@hcengineering/lead'
 import {
   tryMigrate,
@@ -26,7 +33,7 @@ import {
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 
 import contact, { DOMAIN_CONTACT } from '@hcengineering/model-contact'
-import task, { DOMAIN_TASK, createSequence, migrateDefaultStatusesBase } from '@hcengineering/model-task'
+import task, { createSequence, DOMAIN_TASK, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 
 import lead from './plugin'
 import { defaultLeadStatuses } from './spaceType'
@@ -110,7 +117,7 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
   const newTaskTypeMixin = lead.mixin.LeadTypeData
 
   await client.update(
-    DOMAIN_TX,
+    DOMAIN_MODEL_TX,
     {
       objectClass: core.class.Attribute,
       'attributes.attributeOf': oldSpaceTypeMixin

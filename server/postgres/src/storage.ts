@@ -22,6 +22,7 @@ import core, {
   type DocumentUpdate,
   type Domain,
   DOMAIN_MODEL,
+  DOMAIN_MODEL_TX,
   DOMAIN_SPACE,
   DOMAIN_TX,
   type FindOptions,
@@ -1573,7 +1574,7 @@ class PostgresAdapter extends PostgresAdapterBase {
 
 class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
   async init (domains?: string[], excludeDomains?: string[]): Promise<void> {
-    const resultDomains = domains ?? [DOMAIN_TX]
+    const resultDomains = domains ?? [DOMAIN_TX, DOMAIN_MODEL_TX]
     await createTables(this.client, resultDomains)
     this._helper.domains = new Set(resultDomains as Domain[])
   }
@@ -1583,7 +1584,21 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
       return []
     }
     try {
-      await this.insert(ctx, DOMAIN_TX, tx)
+      const modelTxes: Tx[] = []
+      const baseTxes: Tx[] = []
+      for (const _tx of tx) {
+        if (_tx.objectSpace === core.space.Model) {
+          modelTxes.push(_tx)
+        } else {
+          baseTxes.push(_tx)
+        }
+      }
+      if (modelTxes.length > 0) {
+        await this.insert(ctx, DOMAIN_MODEL_TX, modelTxes)
+      }
+      if (baseTxes.length > 0) {
+        await this.insert(ctx, DOMAIN_TX, baseTxes)
+      }
     } catch (err) {
       console.error(err)
     }
@@ -1592,9 +1607,9 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
 
   async getModel (ctx: MeasureContext): Promise<Tx[]> {
     const res = await this
-      .client`SELECT * FROM ${this.client(translateDomain(DOMAIN_TX))} WHERE "workspaceId" = ${this.workspaceId.name} AND "objectSpace" = ${core.space.Model} ORDER BY _id ASC, "modifiedOn" ASC`
+      .client`SELECT * FROM ${this.client(translateDomain(DOMAIN_MODEL_TX))} WHERE "workspaceId" = ${this.workspaceId.name} ORDER BY _id ASC, "modifiedOn" ASC`
 
-    const model = res.map((p) => parseDoc<Tx>(p as any, DOMAIN_TX))
+    const model = res.map((p) => parseDoc<Tx>(p as any, DOMAIN_MODEL_TX))
     // We need to put all core.account.System transactions first
     const systemTx: Tx[] = []
     const userTx: Tx[] = []

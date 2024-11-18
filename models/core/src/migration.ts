@@ -15,25 +15,26 @@
 
 import { saveCollaborativeDoc } from '@hcengineering/collaboration'
 import core, {
-  type Class,
+  collaborativeDocParse,
+  coreId,
+  DOMAIN_MODEL_TX,
   DOMAIN_SPACE,
   DOMAIN_STATUS,
   DOMAIN_TX,
-  MeasureMetricsContext,
-  RateLimiter,
-  type Ref,
-  type TxCUD,
-  collaborativeDocParse,
-  coreId,
   generateId,
   makeCollaborativeDoc,
+  MeasureMetricsContext,
+  RateLimiter,
   type AnyAttribute,
+  type Class,
   type Doc,
   type Domain,
   type MeasureContext,
+  type Ref,
   type Space,
   type Status,
-  type TxCreateDoc
+  type TxCreateDoc,
+  type TxCUD
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -304,6 +305,7 @@ export const coreOperation: MigrateOperation = {
             if (txes.length === 0) break
             for (const tx of txes) {
               processed++
+              const { _id, ...ops } = (tx as any).tx
               await client.update(
                 DOMAIN_TX,
                 { _id: tx._id },
@@ -311,7 +313,7 @@ export const coreOperation: MigrateOperation = {
                   $set: {
                     attachedTo: tx.objectId,
                     attachedToClass: tx.objectClass,
-                    ...(tx as any).tx
+                    ...ops
                   }
                 }
               )
@@ -320,6 +322,18 @@ export const coreOperation: MigrateOperation = {
               }
             }
           }
+        }
+      },
+      {
+        state: 'move-model-txes',
+        func: async (client) => {
+          await client.move(
+            DOMAIN_TX,
+            {
+              objectSpace: core.space.Model
+            },
+            DOMAIN_MODEL_TX
+          )
         }
       }
     ])

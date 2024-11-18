@@ -329,6 +329,11 @@ export const DOMAIN_MODEL = 'model' as Domain
 /**
  * @public
  */
+export const DOMAIN_MODEL_TX = 'model_tx' as Domain
+
+/**
+ * @public
+ */
 export const DOMAIN_SPACE = 'space' as Domain
 
 /**
