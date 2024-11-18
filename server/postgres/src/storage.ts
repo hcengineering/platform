@@ -476,10 +476,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
     if (sessionContext !== undefined && sessionContext.isTriggerCtx !== true) {
       if (sessionContext.admin !== true && sessionContext.account !== undefined) {
         const acc = sessionContext.account
-        if (isOwner(acc) || acc.role === AccountRole.DocGuest) {
+        if (acc.role === AccountRole.DocGuest) {
           return
         }
         if (query.space === acc._id) return
+        if (domain === DOMAIN_SPACE && isOwner(acc)) return
         const key = domain === DOMAIN_SPACE ? '_id' : domain === DOMAIN_TX ? "data ->> 'objectSpace'" : 'space'
         const privateCheck = domain === DOMAIN_SPACE ? ' OR sec.private = false' : ''
         const q = `(sec.members @> '{"${acc._id}"}' OR sec."_class" = '${core.class.SystemSpace}'${privateCheck})`
