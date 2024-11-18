@@ -18,7 +18,7 @@ import contact, { type Person, type PersonAccount } from '@hcengineering/contact
 import { type Class, type Doc, generateId, type Ref, type Space, type TxOperations } from '@hcengineering/core'
 import document, { type Document } from '@hcengineering/document'
 import { MarkupMarkType, type MarkupNode, MarkupNodeType, traverseNode, traverseNodeMarks } from '@hcengineering/text'
-import tracker, { type Issue } from '@hcengineering/tracker'
+import tracker, { type Issue, Project } from '@hcengineering/tracker'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
 import { contentType } from 'mime-types'
@@ -35,6 +35,7 @@ import {
   type ImportWorkspace,
   WorkspaceImporter
 } from '../importer/importer'
+import { type Logger } from '../importer/logger'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 import { type FileUploader } from '../importer/uploader'
 
@@ -59,14 +60,17 @@ interface UnifiedSpaceSettings {
   title: string
   private?: boolean
   autoJoin?: boolean
+  archived?: boolean
   owners?: string[]
   members?: string[]
   description?: string
+  emoji?: string
 }
 
 interface UnifiedProjectSettings extends UnifiedSpaceSettings {
   class: 'tracker:class:Project'
   identifier: string
+  id?: 'tracker:project:DefaultProject'
   projectType?: string
   defaultIssueStatus?: string
 }
@@ -97,6 +101,7 @@ interface UnifiedWorkspaceSettings {
 class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
   constructor (
     private readonly urlProvider: (id: string) => string,
+    private readonly logger: Logger,
     private readonly metadataByFilePath: Map<string, DocMetadata>,
     private readonly metadataById: Map<Ref<Doc>, DocMetadata>,
     private readonly attachMetadataByPath: Map<string, AttachmentMetadata>,
@@ -130,7 +135,7 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
     const attachmentMeta = this.attachMetadataByPath.get(fullPath)
 
     if (attachmentMeta === undefined) {
-      console.warn(`Attachment image not found for ${fullPath}`)
+      this.logger.error(`Attachment image not found for ${fullPath}`)
       return
     }
 
@@ -160,7 +165,7 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
           this.updateAttachmentMetadata(fullPath, attachmentMeta, id, spaceId, sourceMeta)
         }
       } else {
-        console.log('Unknown link type, leave it as is:', href)
+        this.logger.log('Unknown link type, leave it as is: ' + href)
       }
     })
   }
@@ -218,7 +223,7 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
   private getSourceMetadata (id: Ref<Doc>): DocMetadata | null {
     const sourceMeta = this.metadataById.get(id)
     if (sourceMeta == null) {
-      console.warn(`Source metadata not found for ${id}`)
+      this.logger.error(`Source metadata not found for ${id}`)
       return null
     }
     return sourceMeta
@@ -266,7 +271,8 @@ export class UnifiedFormatImporter {
 
   constructor (
     private readonly client: TxOperations,
-    private readonly fileUploader: FileUploader
+    private readonly fileUploader: FileUploader,
+    private readonly logger: Logger
   ) {}
 
   async importFolder (folderPath: string): Promise<void> {
@@ -275,21 +281,28 @@ export class UnifiedFormatImporter {
 
     const workspaceData = await this.processImportFolder(folderPath)
 
-    console.log('========================================')
-    console.log('IMPORT DATA STRUCTURE: ', JSON.stringify(workspaceData, null, 4))
-    console.log('========================================')
+    this.logger.log('========================================')
+    this.logger.log('IMPORT DATA STRUCTURE: ' + JSON.stringify(workspaceData))
+    this.logger.log('========================================')
 
-    console.log('Importing documents...')
+    this.logger.log('Importing documents...')
     const preprocessor = new HulyMarkdownPreprocessor(
       this.fileUploader.getFileUrl,
+      this.logger,
       this.metadataByFilePath,
       this.metadataById,
       this.attachMetadataByPath,
       this.personsByName
     )
-    await new WorkspaceImporter(this.client, this.fileUploader, workspaceData, preprocessor).performImport()
+    await new WorkspaceImporter(
+      this.client,
+      this.logger,
+      this.fileUploader,
+      workspaceData,
+      preprocessor
+    ).performImport()
 
-    console.log('Importing attachments...')
+    this.logger.log('Importing attachments...')
     const attachments: ImportAttachment[] = Array.from(this.attachMetadataByPath.values())
       .filter((attachment) => attachment.parentId !== undefined)
       .map((attachment) => {
@@ -305,10 +318,10 @@ export class UnifiedFormatImporter {
           spaceId: attachment.spaceId
         }
       })
-    await new WorkspaceImporter(this.client, this.fileUploader, { attachments }).performImport()
+    await new WorkspaceImporter(this.client, this.logger, this.fileUploader, { attachments }).performImport()
 
-    console.log('========================================')
-    console.log('IMPORT SUCCESS')
+    this.logger.log('========================================')
+    this.logger.log('IMPORT SUCCESS')
   }
 
   private async processImportFolder (folderPath: string): Promise<ImportWorkspace> {
@@ -336,11 +349,11 @@ export class UnifiedFormatImporter {
       const spacePath = path.join(folderPath, spaceName)
 
       try {
-        console.log(`Processing ${spaceName}...`)
+        this.logger.log(`Processing ${spaceName}...`)
         const spaceConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as UnifiedSpaceSettings
 
-        if (spaceConfig.class === undefined) {
-          console.warn(`Skipping ${spaceName}: not a space - no class specified`)
+        if (spaceConfig?.class === undefined) {
+          this.logger.error(`Skipping ${spaceName}: not a space - no class specified`)
           continue
         }
 
@@ -392,7 +405,7 @@ export class UnifiedFormatImporter {
       const issueHeader = (await this.readYamlHeader(issuePath)) as UnifiedIssueHeader
 
       if (issueHeader.class === undefined) {
-        console.warn(`Skipping ${issueFile}: not an issue`)
+        this.logger.error(`Skipping ${issueFile}: not an issue`)
         continue
       }
 
@@ -470,7 +483,7 @@ export class UnifiedFormatImporter {
       const docHeader = (await this.readYamlHeader(docPath)) as UnifiedDocumentHeader
 
       if (docHeader.class === undefined) {
-        console.warn(`Skipping ${docFile}: not a document`)
+        this.logger.error(`Skipping ${docFile}: not a document`)
         continue
       }
 
@@ -534,11 +547,14 @@ export class UnifiedFormatImporter {
   private async processProject (projectHeader: UnifiedProjectSettings): Promise<ImportProject> {
     return {
       class: tracker.class.Project,
+      id: projectHeader.id as Ref<Project>,
       title: projectHeader.title,
       identifier: projectHeader.identifier,
       private: projectHeader.private ?? false,
       autoJoin: projectHeader.autoJoin ?? true,
+      archived: projectHeader.archived ?? false,
       description: projectHeader.description,
+      emoji: projectHeader.emoji,
       defaultIssueStatus:
         projectHeader.defaultIssueStatus !== undefined ? { name: projectHeader.defaultIssueStatus } : undefined,
       owners:
@@ -555,7 +571,9 @@ export class UnifiedFormatImporter {
       title: spaceHeader.title,
       private: spaceHeader.private ?? false,
       autoJoin: spaceHeader.autoJoin ?? true,
+      archived: spaceHeader.archived ?? false,
       description: spaceHeader.description,
+      emoji: spaceHeader.emoji,
       owners: spaceHeader.owners !== undefined ? spaceHeader.owners.map((email) => this.findAccountByEmail(email)) : [],
       members:
         spaceHeader.members !== undefined ? spaceHeader.members.map((email) => this.findAccountByEmail(email)) : [],
@@ -564,7 +582,7 @@ export class UnifiedFormatImporter {
   }
 
   private async readYamlHeader (filePath: string): Promise<any> {
-    console.log('Read YAML header from: ', filePath)
+    this.logger.log('Read YAML header from: ' + filePath)
     const content = fs.readFileSync(filePath, 'utf8')
     const match = content.match(/^---\n([\s\S]*?)\n---/)
     if (match != null) {

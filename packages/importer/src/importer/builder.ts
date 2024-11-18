@@ -256,6 +256,18 @@ export class ImportWorkspaceBuilder {
       errors.push('defaultIssueStatus not found: ' + project.defaultIssueStatus.name)
     }
 
+    if (project.id !== undefined && project.id !== tracker.project.DefaultProject) {
+      errors.push('update operation is only allowed for tracker:project:DefaultProject')
+    }
+
+    if (project.archived !== undefined) {
+      errors.push(...this.validateType(project.archived, 'boolean', 'archived'))
+    }
+
+    if (project.emoji !== undefined) {
+      errors.push(...this.validateEmoji(project.emoji))
+    }
+
     errors.push(...this.validateProjectIdentifier(project.identifier))
     return errors
   }
@@ -303,9 +315,22 @@ export class ImportWorkspaceBuilder {
       errors.push(...this.validateType(teamspace.description, 'string', 'description'))
     }
 
+    if (teamspace.archived !== undefined) {
+      errors.push(...this.validateType(teamspace.archived, 'boolean', 'archived'))
+    }
+
+    if (teamspace.emoji !== undefined) {
+      errors.push(...this.validateType(teamspace.emoji, 'string', 'emoji'))
+    }
+
+    if (teamspace.emoji !== undefined) {
+      errors.push(...this.validateEmoji(teamspace.emoji))
+    }
+
     if (!this.validateStringDefined(teamspace.title)) {
       errors.push('title is required')
     }
+
     if (teamspace.class !== document.class.Teamspace) {
       errors.push('invalid class: ' + teamspace.class)
     }
@@ -444,6 +469,14 @@ export class ImportWorkspaceBuilder {
       })
 
     issue.subdocs = childIssues
+  }
+
+  private validateEmoji (emoji: string): string[] {
+    const errors: string[] = []
+    if (typeof emoji === 'string' && emoji.codePointAt(0) == null) {
+      errors.push('Invalid emoji: ' + emoji)
+    }
+    return errors
   }
 
   private validateType (value: unknown, type: 'string' | 'number' | 'boolean', fieldName: string): string[] {
