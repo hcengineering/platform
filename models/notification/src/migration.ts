@@ -429,6 +429,12 @@ export const notificationOperation: MigrateOperation = {
             objectClass: notification.class.BrowserNotification
           })
         }
+      },
+      {
+        state: 'migrate-dnc-space',
+        func: async (client) => {
+          await client.update(DOMAIN_DOC_NOTIFY, { space: core.space.Space }, { space: core.space.Workspace })
+        }
       }
     ])
   },
