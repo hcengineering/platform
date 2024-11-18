@@ -351,6 +351,7 @@ export function parseUpdate<T extends Doc> (
 }
 
 export function escapeBackticks (str: string): string {
+  if (typeof str !== 'string') return str
   return str.replaceAll("'", "''")
 }
 
