@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { type CollaborativeDoc, DOMAIN_TX, MeasureMetricsContext, SortingOrder } from '@hcengineering/core'
-import { type DocumentSnapshot, type Document, type Teamspace } from '@hcengineering/document'
+import { DOMAIN_MODEL_TX, MeasureMetricsContext, SortingOrder, type CollaborativeDoc } from '@hcengineering/core'
+import { type Document, type DocumentSnapshot, type Teamspace } from '@hcengineering/document'
 import {
-  tryMigrate,
   migrateSpaceRanks,
+  tryMigrate,
   type MigrateOperation,
   type MigrateUpdate,
   type MigrationClient,
@@ -75,7 +75,7 @@ async function migrateTeamspacesMixins (client: MigrationClient): Promise<void> 
   const newSpaceTypeMixin = document.mixin.DefaultTeamspaceTypeData
 
   await client.update(
-    DOMAIN_TX,
+    DOMAIN_MODEL_TX,
     {
       objectClass: core.class.Attribute,
       'attributes.attributeOf': oldSpaceTypeMixin
