@@ -13,15 +13,9 @@
 // limitations under the License.
 //
 
-import core, {
-  DOMAIN_MODEL_TX,
-  DOMAIN_TX,
-  type Class,
-  type Doc,
-  type DocumentQuery,
-  type Ref,
-  type Space
-} from '@hcengineering/core'
+import chunter from '@hcengineering/chunter'
+import contact, { type PersonSpace } from '@hcengineering/contact'
+import core, { DOMAIN_TX, type Class, type Doc, type DocumentQuery, type Ref, type Space } from '@hcengineering/core'
 import {
   migrateSpace,
   tryMigrate,
@@ -36,11 +30,9 @@ import notification, {
   type InboxNotification
 } from '@hcengineering/notification'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
-import contact, { type PersonSpace } from '@hcengineering/contact'
-import chunter from '@hcengineering/chunter'
 
-import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_USER_NOTIFY } from './index'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
+import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_USER_NOTIFY } from './index'
 
 export async function removeNotifications (
   client: MigrationClient,
