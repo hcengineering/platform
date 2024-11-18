@@ -291,37 +291,52 @@ export const coreOperation: MigrateOperation = {
         }
       },
       {
+        state: 'remove-github-patches',
+        func: async (client) => {
+          await client.update(
+            DOMAIN_TX,
+            {
+              objectClass: 'tracker:class:Issue',
+              collection: 'pullRequests',
+              'tx.attributes.patch': { $exists: true }
+            },
+            { $unset: { 'tx.attributes.patch': 1 } }
+          )
+        }
+      },
+      {
         state: 'remove-collection-txes',
         func: async (client) => {
           let processed = 0
+          const iterator = await client.traverse<TxCUD<Doc>>(DOMAIN_TX, {
+            _class: 'core:class:TxCollectionCUD' as Ref<Class<Doc>>
+          })
           while (true) {
-            const txes = await client.find<TxCUD<Doc>>(
-              DOMAIN_TX,
-              {
-                _class: 'core:class:TxCollectionCUD' as Ref<Class<Doc>>
-              },
-              { limit: 5000 }
-            )
-            if (txes.length === 0) break
-            for (const tx of txes) {
-              processed++
-              const { _id, ...ops } = (tx as any).tx
-              await client.update(
+            const txes = await iterator.next(1000)
+            if (txes === null || txes.length === 0) break
+            processed += txes.length
+            try {
+              await client.deleteMany(DOMAIN_TX, {
+                _id: { $in: txes.map((it) => it._id) }
+              })
+              await client.create(
                 DOMAIN_TX,
-                { _id: tx._id },
-                {
-                  $set: {
-                    attachedTo: tx.objectId,
-                    attachedToClass: tx.objectClass,
-                    ...ops
+                txes.map((tx) => {
+                  const { collection, objectId, objectClass } = tx
+                  return {
+                    collection,
+                    attachedTo: objectId,
+                    attachedToClass: objectClass,
+                    ...(tx as any).tx
                   }
-                }
+                })
               )
-              if (processed % 1000 === 0) {
-                console.log('processed', processed)
-              }
+            } catch (err: any) {
+              console.error(err)
             }
+            console.log('processed', processed)
           }
+          await iterator.close()
         }
       },
       {
