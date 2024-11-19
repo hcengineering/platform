@@ -1,0 +1,41 @@
+{
+  "string": {
+    "Create": "Vytvořit",
+    "Cancel": "Zrušit",
+    "Ok": "OK",
+    "Save": "Uložit",
+    "Saved": "Uloženo...",
+    "Download": "Stáhnout",
+    "Delete": "Smazat",
+    "Close": "Zavřít",
+    "NotSelected": "Nevybráno",
+    "Deselect": "Zrušit výběr",
+    "Archived": "(archivováno)",
+    "AddSocialLinks": "Přidat odkazy na sociální sítě",
+    "EditSocialLinks": "Upravit odkazy na sociální sítě",
+    "Change": "Změnit",
+    "Remove": "Odstranit",
+    "Search": "Hledat...",
+    "Spaces": "Prostory",
+    "NumberSpaces": "{count, plural, =0 {V} =1 {V 1 místě} other {V # místech}}",
+    "InThis": "V tomto {space}",
+    "NoMatchesInThis": "Žádné shody v tomto {space}",
+    "NoMatchesFound": "Nebyly nalezeny žádné shody",
+    "NotInThis": "Není v tomto {space}",
+    "Match": "Shoda",
+    "Add": "Přidat",
+    "Edit": "Upravit",
+    "DocumentPreview": "Náhled",
+    "MakePrivate": "Zneviditelnit",
+    "MakePrivateDescription": "Viditelné pouze pro členy",
+    "Created": "Vytvořeno",
+    "NoResults": "Žádné výsledky k zobrazení",
+    "Next": "Další",
+    "FailedToPreview": "Náhled se nezdařil",
+    "ContentType": "Typ obsahu",
+    "ContentTypeNotSupported": "Náhled není dostupný pro tento typ obsahu"
+  },
+  "status": {
+    "FileTooLarge": "Soubor je příliš velký"
+  }
+}
