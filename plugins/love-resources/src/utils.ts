@@ -1,6 +1,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import calendar, { type Event, getAllEvents } from '@hcengineering/calendar'
 import contact, { getName, type Person, type PersonAccount } from '@hcengineering/contact'
+import { personByIdStore } from '@hcengineering/contact-resources'
 import core, {
   AccountRole,
   concatLink,
@@ -645,7 +646,7 @@ async function openMeetingMinutes (room: Room): Promise<void> {
         attachedToClass: room._class,
         collection: 'meetings',
         space: core.space.Workspace,
-        title: `${room.name} ${date}`,
+        title: `${getRoomName(room, get(personByIdStore))} ${date}`,
         description: makeCollaborativeDoc(_id, 'description'),
         status: MeetingStatus.Active,
         modifiedBy: getCurrentAccount()._id,

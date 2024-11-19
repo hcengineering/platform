@@ -34,9 +34,11 @@ import love, {
   loveId,
   MeetingMinutes,
   MeetingStatus,
+  Office,
   ParticipantInfo,
   RequestStatus,
-  RoomAccess
+  RoomAccess,
+  RoomInfo
 } from '@hcengineering/love'
 import notification from '@hcengineering/notification'
 import { getMetadata, translate } from '@hcengineering/platform'
@@ -241,6 +243,15 @@ async function setDefaultRoomAccess (info: ParticipantInfo, control: TriggerCont
   return res
 }
 
+async function getRoomActivePersons (control: TriggerControl, roomInfo: RoomInfo): Promise<Ref<Person>[]> {
+  if (roomInfo.isOffice) {
+    const room = (await control.findAll(control.ctx, love.class.Office, { _id: roomInfo.room as Ref<Office> }))[0]
+
+    return roomInfo.persons.filter((p) => p !== room.person)
+  }
+  return roomInfo.persons
+}
+
 async function finishMeetingMinutes (
   info: ParticipantInfo,
   control: TriggerControl,
@@ -254,7 +265,7 @@ async function finishMeetingMinutes (
     return res
   }
 
-  const currentPersons = roomInfo.persons.filter((p) => p !== info.person)
+  const currentPersons = (await getRoomActivePersons(control, roomInfo)).filter((p) => p !== info.person)
 
   if (currentPersons.length === 0) {
     const meetingMinutes = await control.findAll(control.ctx, love.class.MeetingMinutes, {
