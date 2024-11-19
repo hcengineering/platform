@@ -16,9 +16,10 @@
   import { createEventDispatcher } from 'svelte'
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { TestCase, TestProject, TestCaseStatus } from '@hcengineering/test-management'
+  import { TestCase, TestProject, TestCaseStatus, TestResult } from '@hcengineering/test-management'
   import core, { fillDefaults, generateId, makeCollaborativeDoc, Ref, TxOperations, Data } from '@hcengineering/core'
   import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
+  import { Panel } from '@hcengineering/panel'
   import { EmptyMarkup } from '@hcengineering/text'
   import { Button, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
 
@@ -27,23 +28,15 @@
 
   export let onCreate: ((orgId: Ref<TestCase>, client: TxOperations) => Promise<void>) | undefined = undefined
 
-  export function canClose (): boolean {
-    return object.name === ''
-  }
-
   export let space: Ref<TestProject>
-
 
   const id: Ref<TestCase> = generateId()
 
-  const object: Data<TestCase> = {
-    name: '',
+  const object: Data<TestResult> = {
     description: makeCollaborativeDoc(id, 'description'),
-    status: TestCaseStatus.Draft,
-    assignee: null,
     attachments: 0,
     //attachedTo: testSuiteId
-  } as unknown as TestCase
+  } as unknown as TestResult
 
   let _space = space
 
@@ -63,15 +56,16 @@
 
 <FocusHandler {manager} />
 
-<Card
-  label={testManagement.string.CreateTestCase}
-  okAction={() => {}}
-  hideAttachments={attachments.size === 0}
-  canSave={object.name.length > 0}
+<Panel
+  isHeader={false}
+  isSub={false}
+  embedded={false}
+  {object}
+  on:open
   on:close={() => {
     dispatch('close')
   }}
-  on:changeContent
+  withoutInput={false}
 >
   <svelte:fragment slot="header">
     <SpaceSelector
@@ -140,4 +134,4 @@
       }}
     />
   </svelte:fragment>
-</Card>
+</Panel>

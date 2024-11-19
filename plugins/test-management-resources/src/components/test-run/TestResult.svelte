@@ -16,7 +16,7 @@
   import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import { type Class, type Ref } from '@hcengineering/core'
-  import type { TestCase, TestRun, TestRunResult } from '@hcengineering/test-management'
+  import type { TestCase, TestRun, TestRunStatus } from '@hcengineering/test-management'
   import { Panel } from '@hcengineering/panel'
   import { EditBox } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
@@ -25,9 +25,9 @@
   export let testCaseId: Ref<TestCase>
   export let testRunId: Ref<TestRun>
 
-  export let _class: Ref<Class<TestRunResult>>
+  export let _class: Ref<Class<TestRunStatus>>
 
-  let object: TestRunResult | undefined
+  let object: TestRunStatus | undefined
 
   const dispatch = createEventDispatcher()
   const client = getClient()

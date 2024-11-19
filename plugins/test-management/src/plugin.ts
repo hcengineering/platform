@@ -38,7 +38,7 @@ import {
   TestCaseStatus,
   TestRun,
   TestRunItem,
-  TestRunResult,
+  TestRunStatus,
   TestResult
 } from './types'
 
@@ -81,7 +81,11 @@ export const testManagementPlugin = plugin(testManagementId, {
     StatusRejected: '' as Asset,
     Document: '' as Asset,
     TestLibrary: '' as Asset,
-    TestResult: '' as Asset
+    TestResult: '' as Asset,
+    StatusNonTested: '' as Asset,
+    StatusBlocked: '' as Asset,
+    StatusPassed: '' as Asset,
+    StatusFailed: '' as Asset
   },
   class: {
     TestCase: '' as Ref<Class<TestCase>>,
@@ -92,7 +96,7 @@ export const testManagementPlugin = plugin(testManagementId, {
     TypeTestCaseStatus: '' as Ref<Class<Type<TestCaseStatus>>>,
     TestRun: '' as Ref<Class<TestRun>>,
     TestRunItem: '' as Ref<Class<TestRunItem>>,
-    TypeTestRunResult: '' as Ref<Class<Type<TestRunResult>>>,
+    TypeTestRunStatus: '' as Ref<Class<Type<TestRunStatus>>>,
     TestResult: '' as Ref<Class<TestResult>>
   },
   descriptors: {
@@ -165,14 +169,19 @@ export const testManagementPlugin = plugin(testManagementId, {
     NoTestCases: '' as IntlString,
     DueDate: '' as IntlString,
     TestRunItems: '' as IntlString,
-    TestRunResult: '' as IntlString,
+    TestRunStatus: '' as IntlString,
     TestRunItem: '' as IntlString,
     TestRunNamePlaceholder: '' as IntlString,
+    TestRunResult: '' as IntlString,
     SelectTestSuites: '' as IntlString,
     SelectTestCases: '' as IntlString,
     CreateTestRun: '' as IntlString,
     TestLibrary: '' as IntlString,
-    TestResult: '' as IntlString
+    TestResult: '' as IntlString,
+    StatusNonTested: '' as IntlString,
+    StatusBlocked: '' as IntlString,
+    StatusPassed: '' as IntlString,
+    StatusFailed: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>
@@ -187,7 +196,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestCaseStatusPresenter: '' as AnyComponent,
     TestSuites: '' as AnyComponent,
     CreateTestSuite: '' as AnyComponent,
-    TestRunFromSelection: '' as AnyComponent
+    TestRunFromSelection: '' as AnyComponent,
+    TestRunStatusPresenter: '' as AnyComponent
   },
   ids: {
     NoParent: '' as Ref<TestSuite>,
@@ -210,8 +220,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     TableTestCase: '' as Ref<Viewlet>,
     TableTestSuites: '' as Ref<Viewlet>,
     TableTestRun: '' as Ref<Viewlet>,
-    SuiteTestCases: '' as Ref<Viewlet>,
-    ListTestCase: '' as Ref<Viewlet>
+    ListTestCase: '' as Ref<Viewlet>,
+    TestRunList: '' as Ref<Viewlet>
   },
   testCaseTypeStatus: {
     Draft: '' as Ref<Status>,

@@ -20,13 +20,15 @@
   import { type Class, type Ref } from '@hcengineering/core'
   import { TestRun, TestCase, TestProject } from '@hcengineering/test-management'
   import { Panel } from '@hcengineering/panel'
-  import { EditBox, ListView } from '@hcengineering/ui'
+  import { ListView } from '@hcengineering/ui'
   import {FoldersBrowser, SplitView} from '@hcengineering/view-resources'
 
   import TestCaseRefPresenter from '../test-case/TestCasePresenter.svelte'
   import {getTestCases} from '../../testRunUtils'
   import testManagement from '../../plugin'
   import AddTestResult from './AddTestResult.svelte'
+  import TestRunliItemList from './TestRunItemList.svelte'
+  import EditTestCase from '../test-case/EditTestCase.svelte'
 
   export let _id: Ref<TestRun>
   export let _class: Ref<Class<TestRun>>
@@ -82,34 +84,17 @@
     isAside={true}
     isSub={false}
     adaptive={'default'}
+    contentClasses="h-full"
     on:open
     on:close={() => dispatch('close')}
   >
     <SplitView>
       <svelte:fragment slot="leftPanel">
-      <FoldersBrowser
-        _class={testManagement.class.TestSuite}
-        titleKey={'name'}
-        parentKey={'parent'}
-        noParentId={testManagement.ids.NoParent}
-        getFolderLink={testManagement.function.GetTestSuiteLink}
-      />
+        <TestRunliItemList/>
       </svelte:fragment>
       <svelte:fragment slot="rightPanel">
         {#if testCases !== undefined}
-        <ListView count={testCases.length}>
-          <svelte:fragment slot="item" let:item>
-            {@const doc = testCases[item]}
-            <div
-              class="row withList w-full"
-              on:click={() => {
-                //select(doc)
-              }}
-            >
-              <TestCaseRefPresenter disabled value={doc} />
-            </div>
-          </svelte:fragment>
-        </ListView>
+          <EditTestCase/>
         {/if}
     </svelte:fragment>
     </SplitView>

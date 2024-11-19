@@ -18,12 +18,12 @@
     Separator,
     deviceOptionsStore as deviceInfo,
     defineSeparators,
-    workbenchSeparators
+    splitViewSeparators
   } from '@hcengineering/ui'
 
-  export let viewName: string = 'splitView'
+  export let viewName: string = 'parentNavigator'
 
-  defineSeparators('viewName', workbenchSeparators)
+  defineSeparators('viewName', splitViewSeparators)
 </script>
 
 <div class="hulyComponent-content__container columns">

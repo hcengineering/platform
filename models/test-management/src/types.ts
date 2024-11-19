@@ -22,7 +22,7 @@ import type {
   TestCaseStatus,
   TestProject,
   TestRun,
-  TestRunResult,
+  TestRunStatus,
   TestRunItem,
   TestResult
 } from '@hcengineering/test-management'
@@ -244,13 +244,13 @@ export class TTestRun extends TDoc implements TestRun {
 }
 
 /** @public */
-export function TypeTestRunResult (): Type<TestRunResult> {
-  return { _class: testManagement.class.TypeTestRunResult, label: testManagement.string.TestRunResult }
+export function TypeTestRunStatus (): Type<TestRunStatus> {
+  return { _class: testManagement.class.TypeTestRunStatus, label: testManagement.string.TestRunStatus }
 }
 
-@Model(testManagement.class.TypeTestRunResult, core.class.Type, DOMAIN_TEST_MANAGEMENT)
-@UX(testManagement.string.TestRunResult)
-export class TTypeTestRunResult extends TType {}
+@Model(testManagement.class.TypeTestRunStatus, core.class.Type, DOMAIN_TEST_MANAGEMENT)
+@UX(testManagement.string.TestRunStatus)
+export class TTypeTestRunStatus extends TType {}
 
 @Model(testManagement.class.TestRunItem, core.class.AttachedDoc, DOMAIN_TEST_MANAGEMENT)
 @UX(testManagement.string.TestRunItem)
@@ -271,8 +271,14 @@ export class TTestRunItem extends TAttachedDoc implements TestRunItem {
   @Prop(TypeRef(testManagement.class.TestCase), testManagement.string.TestCase)
     testCase!: Ref<TestCase>
 
-  @Prop(TypeTestRunResult(), testManagement.string.TestRunResult)
-    result?: TestRunResult
+  @Prop(TypeRef(testManagement.class.TestSuite), testManagement.string.TestSuite)
+    testSuite?: Ref<TestSuite>
+
+  @Prop(TypeTestRunStatus(), testManagement.string.TestRunStatus)
+    status?: TestRunStatus
+
+  @Prop(TypeTestRunStatus(), testManagement.string.TestResult)
+    result?: TestResult
 
   @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number

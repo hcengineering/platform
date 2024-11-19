@@ -174,6 +174,13 @@ export const mainSeparators: DefSeparators = [
   { minSize: 25, size: 30, maxSize: 80, float: 'sidebar' }
 ]
 
+export const splitViewSeparators: DefSeparators = [
+  { minSize: 12.5, size: 17.5, maxSize: 40, float: 'navigator' },
+  { minSize: 10, size: 115, maxSize: 40, float: 'parentNavigator' },
+  null,
+  { minSize: 20, size: 30, maxSize: 50, float: 'aside' }
+]
+
 export const secondNavSeparators: DefSeparators = [{ minSize: 7, size: 7.5, maxSize: 15, float: 'navigator' }, null]
 
 export const separatorsStore = writable<string[]>([])

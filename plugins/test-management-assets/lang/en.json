@@ -62,6 +62,8 @@
     "SelectTestSuites": "Select test suites",
     "SelectTestCases": "Select test cases",
     "TestLibrary": "Test library",
-    "TestResult": "Result"
+    "TestResult": "Result",
+    "TestRunResult": "Result",
+    "TestRunStatus": "Status"
   }
 }

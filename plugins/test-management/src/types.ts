@@ -103,7 +103,7 @@ export interface TestResult extends AttachedDoc<TestCase, 'results', TestProject
   description: CollaborativeDoc
   attachments?: CollectionSize<Attachment>
   comments?: number
-  //status?: TestRunResult
+  //status?: TestRunStatus
 }
 
 /** @public */
@@ -115,15 +115,18 @@ export interface TestRun extends Doc {
 }
 
 /** @public */
-export enum TestRunResult {
-  Passed,
+export enum TestRunStatus {
+  NoTested,
   Blocked,
+  Passed,
   Failed
 }
 
 /** @public */
 export interface TestRunItem extends AttachedDoc {
   testCase: Ref<TestCase>
-  result?: TestRunResult
+  testSuite?: Ref<TestSuite>
+  status?: TestRunStatus
+  result?: TestResult
   comments?: number
 }

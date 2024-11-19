@@ -37,7 +37,7 @@ import {
   TTestCase,
   TDefaultProjectTypeData,
   TTestRun,
-  TTypeTestRunResult,
+  TTypeTestRunStatus,
   TTestRunItem
 } from './types'
 
@@ -136,7 +136,7 @@ export function createModel (builder: Builder): void {
     TDefaultProjectTypeData,
     TTestRun,
     TTestRunItem,
-    TTypeTestRunResult
+    TTypeTestRunStatus
   )
 
   builder.mixin(testManagement.class.TestProject, core.class.Class, activity.mixin.ActivityDoc, {})
@@ -384,21 +384,6 @@ function defineTestCase (builder: Builder): void {
     },
     testManagement.viewlet.ListTestCase
   )
-
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: testManagement.class.TestCase,
-      descriptor: view.viewlet.Table,
-      config: ['', 'assignee', 'modifiedOn'],
-      configOptions: {
-        sortable: true
-      },
-      variant: 'short'
-    },
-    testManagement.viewlet.SuiteTestCases
-  )
 }
 
 function defineTestRun (builder: Builder): void {
@@ -409,16 +394,16 @@ function defineTestRun (builder: Builder): void {
     components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
-  builder.mixin(testManagement.class.TestRun, core.class.Class, view.mixin.ObjectEditor, {
-    editor: testManagement.component.EditTestRun
-  })
-
   builder.mixin(testManagement.class.TestRun, core.class.Class, view.mixin.ObjectPanel, {
     component: testManagement.component.EditTestRun
   })
 
   builder.mixin(testManagement.class.TestRun, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: testManagement.component.TestRunPresenter
+  })
+
+  builder.mixin(testManagement.class.TestRun, core.class.Class, view.mixin.ObjectIcon, {
+    component: testManagement.component.TestRunStatusPresenter
   })
 
   builder.createDoc(
@@ -433,6 +418,52 @@ function defineTestRun (builder: Builder): void {
       }
     },
     testManagement.viewlet.TableTestRun
+  )
+
+  const viewOptions: ViewOptionsModel = {
+    groupBy: ['testSuite'],
+    orderBy: [
+      ['status', SortingOrder.Ascending],
+      ['modifiedOn', SortingOrder.Descending],
+      ['createdOn', SortingOrder.Descending]
+    ],
+    other: [
+      {
+        key: 'shouldShowAll',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'category',
+        action: view.function.ShowEmptyGroups,
+        label: view.string.ShowEmptyGroups
+      }
+    ]
+  }
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: testManagement.class.TestRunItem,
+      descriptor: view.viewlet.List,
+      configOptions: {
+        strict: true,
+        hiddenKeys: ['title', 'status', 'modifiedOn']
+      },
+      config: [
+        {
+          key: '$lookup.testCase',
+          presenter: testManagement.component.TestCasePresenter,
+          label: testManagement.string.TestCase,
+          sortingKey: '$lookup.testCase.name'
+        },
+        {
+          key: 'status',
+          props: { kind: 'list', size: 'small', shouldShowName: true }
+        },
+      ],
+      viewOptions
+    },
+    testManagement.viewlet.TestRunList
   )
 }
 

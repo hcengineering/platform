@@ -13,26 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref } from '@hcengineering/core'
+  import { Doc, DocumentQuery} from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { testManagementId, TestSuite } from '@hcengineering/test-management'
-  import { Button, Icon, IconAdd, Label, Loading, Scroller, showPopup, SectionEmpty } from '@hcengineering/ui'
+  import { Button, Icon, IconAdd, Label, Loading, Scroller, SectionEmpty } from '@hcengineering/ui'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { NavLink, Table, ViewletsSettingButton } from '@hcengineering/view-resources'
+  import { Table, ViewletsSettingButton } from '@hcengineering/view-resources'
   import testManagement from '../../plugin'
-  import CreateTestCase from '../test-case/CreateTestCase.svelte'
   import FileDuo from '../icons/FileDuo.svelte'
 
-  export let objectId: Ref<TestSuite>
-  let testCases: number
+  export let baseQuery: DocumentQuery<Doc> = {}
+  let testRunItems: number
 
   const query = createQuery()
-  $: query.query(testManagement.class.TestCase, { suite: objectId }, (res) => {
-    testCases = res.length
+  $: query.query(testManagement.class.TestRunItem, baseQuery, (res) => {
+    testRunItems = res.length
   })
 
-  const createTestCase = (ev: MouseEvent): void => {
-    showPopup(CreateTestCase, { testSuiteId: objectId }, ev.target as HTMLElement)
+  const createTestRunItem = (ev: MouseEvent): void => {
+    //showPopup(CreateTestRunItem, { testSuiteId: objectId }, ev.target as HTMLElement)
   }
 
   let viewlet: Viewlet | undefined
@@ -46,29 +44,27 @@
       <Icon icon={testManagement.icon.TestCase} size={'small'} />
     </div>
     <span class="antiSection-header__title">
-      <NavLink app={testManagementId} space={objectId}>
         <Label label={testManagement.string.TestCases} />
-      </NavLink>
     </span>
     <div class="flex-row-center gap-2 reverse">
       <ViewletsSettingButton
-        viewletQuery={{ _id: testManagement.viewlet.SuiteTestCases }}
+        viewletQuery={{ _id: testManagement.viewlet.TestRunList }}
         kind={'tertiary'}
         bind:viewlet
         bind:preference
         bind:loading
       />
-      <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createTestCase} />
+      <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createTestRunItem} />
     </div>
   </div>
-  {#if testCases > 0}
+  {#if testRunItems > 0}
     {#if viewlet !== undefined && !loading}
       <Scroller horizontal>
         <Table
-          _class={testManagement.class.TestCase}
+          _class={testManagement.class.TestRunItem}
           config={preference?.config ?? viewlet.config}
-          query={{ suite: objectId }}
-          loadingProps={{ length: testCases }}
+          query={baseQuery}
+          loadingProps={{ length: testRunItems }}
         />
       </Scroller>
     {:else}
@@ -78,9 +74,7 @@
     <SectionEmpty icon={FileDuo} label={testManagement.string.NoTestCases}>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <span class="over-underline content-color" on:click={createTestCase}>
-        <Label label={testManagement.string.CreateTestCase} />
-      </span>
+      <Label label={testManagement.string.NoTestCases} />
     </SectionEmpty>
   {/if}
 </div>

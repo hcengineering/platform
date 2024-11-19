@@ -14,7 +14,7 @@
 //
 import { type Asset, type IntlString } from '@hcengineering/platform'
 
-import testManagement, { TestCaseStatus } from '@hcengineering/test-management'
+import testManagement, { TestCaseStatus, TestRunStatus } from '@hcengineering/test-management'
 
 /** @public */
 export const defaultTestCaseStatuses = [
@@ -38,4 +38,32 @@ export const testCaseStatusAssets: Record<TestCaseStatus, { icon: Asset, label: 
   },
   [TestCaseStatus.Approved]: { icon: testManagement.icon.StatusApproved, label: testManagement.string.StatusApproved },
   [TestCaseStatus.Rejected]: { icon: testManagement.icon.StatusRejected, label: testManagement.string.StatusRejected }
+}
+
+/** @public */
+export const defaultTestRunStatuses = [
+  TestRunStatus.NoTested,
+  TestRunStatus.Blocked,
+  TestRunStatus.Passed,
+  TestRunStatus.Failed
+]
+
+/** @public */
+export const testRunStatusAssets: Record<TestRunStatus, { icon: Asset, label: IntlString }> = {
+  [TestRunStatus.NoTested]: { 
+    icon: testManagement.icon.StatusNonTested, 
+    label: testManagement.string.StatusNonTested 
+  },
+  [TestRunStatus.Blocked]: {
+    icon: testManagement.icon.StatusBlocked,
+    label: testManagement.string.StatusBlocked
+  },
+  [TestRunStatus.Passed]: {
+    icon: testManagement.icon.StatusPassed,
+    label: testManagement.string.StatusPassed
+  },
+  [TestRunStatus.Failed]: { 
+    icon: testManagement.icon.StatusFailed, 
+    label: testManagement.string.StatusFailed 
+  }
 }
