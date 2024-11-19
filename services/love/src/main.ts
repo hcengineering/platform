@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import { toWorkspaceString, WorkspaceId } from '@hcengineering/core'
+import { Ref, toWorkspaceString, WorkspaceId } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
 import { initStatisticsContext, StorageConfig, StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
-import { RoomMetadata, TranscriptionStatus } from '@hcengineering/love'
+import { RoomMetadata, TranscriptionStatus, MeetingMinutes } from '@hcengineering/love'
 import cors from 'cors'
 import express from 'express'
 import { IncomingHttpHeaders } from 'http'
@@ -70,6 +70,7 @@ export const main = async (): Promise<void> => {
     name: string
     workspace: string
     workspaceId: WorkspaceId
+    meetingMinutes?: Ref<MeetingMinutes>
   }
   >()
 
@@ -86,7 +87,7 @@ export const main = async (): Promise<void> => {
             const storedBlob = await storageAdapter.stat(ctx, data.workspaceId, filename)
             if (storedBlob !== undefined) {
               const client = await WorkspaceClient.create(data.workspace)
-              await client.saveFile(filename, data.name, storedBlob)
+              await client.saveFile(filename, data.name, storedBlob, data.meetingMinutes)
               await client.close()
             }
             dataByUUID.delete(res.filename)
@@ -128,13 +129,14 @@ export const main = async (): Promise<void> => {
 
     const roomName = req.body.roomName
     const room = req.body.room
+    const meetingMinutes = req.body.meetingMinutes
     const { workspace } = decodeToken(token)
 
     try {
       const dateStr = new Date().toISOString().replace('T', '_').slice(0, 19)
       const name = `${room}_${dateStr}.mp4`
       const id = await startRecord(storageConfig, egressClient, roomClient, roomName, workspace)
-      dataByUUID.set(id, { name, workspace: workspace.name, workspaceId: workspace })
+      dataByUUID.set(id, { name, workspace: workspace.name, workspaceId: workspace, meetingMinutes })
       res.send()
     } catch (e) {
       console.error(e)

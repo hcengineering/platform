@@ -869,7 +869,7 @@ export async function record (room: Room): Promise<void> {
           Authorization: 'Bearer ' + token,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ roomName, room: room.name })
+        body: JSON.stringify({ roomName, room: room.name, meetingMinutes: get(currentMeetingMinutes)?._id })
       })
     }
   } catch (err: any) {
