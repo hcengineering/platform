@@ -76,12 +76,22 @@ export class WorkspaceClient {
     await this.attachToMeetingMinutes({ ...data, name }, meetingMinutes)
   }
 
-  async attachToMeetingMinutes (data: Omit<Data<Attachment>, 'attachedToClass' | 'attachedTo' | 'collection'>, ref?: Ref<MeetingMinutes>): Promise<void> {
+  async attachToMeetingMinutes (
+    data: Omit<Data<Attachment>, 'attachedToClass' | 'attachedTo' | 'collection'>,
+    ref?: Ref<MeetingMinutes>
+  ): Promise<void> {
     if (ref === undefined) return
 
     const meeting = await this.client.findOne(love.class.MeetingMinutes, { _id: ref })
     if (meeting === undefined) return
 
-    await this.client.addCollection(attachment.class.Attachment, meeting.space, meeting._id, meeting._class, 'attachments', data)
+    await this.client.addCollection(
+      attachment.class.Attachment,
+      meeting.space,
+      meeting._id,
+      meeting._class,
+      'attachments',
+      data
+    )
   }
 }
