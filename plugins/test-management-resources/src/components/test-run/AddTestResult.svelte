@@ -16,21 +16,20 @@
   import { createEventDispatcher } from 'svelte'
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { TestCase, TestProject, TestCaseStatus, TestResult } from '@hcengineering/test-management'
+  import { TestCase, TestProject, TestResult } from '@hcengineering/test-management'
   import core, { fillDefaults, generateId, makeCollaborativeDoc, Ref, TxOperations, Data } from '@hcengineering/core'
   import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
   import { Panel } from '@hcengineering/panel'
   import { EmptyMarkup } from '@hcengineering/text'
   import { Button, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
 
-  import ProjectPresenter from '../project/ProjectPresenter.svelte'
   import testManagement from '../../plugin'
 
   export let onCreate: ((orgId: Ref<TestCase>, client: TxOperations) => Promise<void>) | undefined = undefined
 
   export let space: Ref<TestProject>
 
-  const id: Ref<TestCase> = generateId()
+  const id: Ref<TestResult> = generateId()
 
   const object: Data<TestResult> = {
     description: makeCollaborativeDoc(id, 'description'),
@@ -56,37 +55,7 @@
 
 <FocusHandler {manager} />
 
-<Panel
-  isHeader={false}
-  isSub={false}
-  embedded={false}
-  {object}
-  on:open
-  on:close={() => {
-    dispatch('close')
-  }}
-  withoutInput={false}
->
-  <svelte:fragment slot="header">
-    <SpaceSelector
-      _class={testManagement.class.TestProject}
-      label={testManagement.string.TestProject}
-      bind:space={_space}
-      kind={'regular'}
-      size={'small'}
-      component={ProjectPresenter}
-      defaultIcon={testManagement.icon.Home}
-    />
-  </svelte:fragment>
-
-  <div class="flex-row-center clear-mins mb-3">
-    <EditBox
-      bind:value={object.name}
-      placeholder={testManagement.string.TestNamePlaceholder}
-      kind={'large-style'}
-      autoFocus
-    />
-  </div>
+<div>
 
   <AttachmentStyledBox
     bind:this={descriptionBox}
@@ -110,28 +79,25 @@
     }}
   />
 
-  <svelte:fragment slot="attachments">
-    {#if attachments.size > 0}
-      {#each Array.from(attachments.values()) as attachment}
-        <AttachmentPresenter
-          value={attachment}
-          showPreview
-          removable
-          on:remove={(result) => {
-            if (result.detail !== undefined) descriptionBox.removeAttachmentById(result.detail._id)
-          }}
-        />
-      {/each}
-    {/if}
-  </svelte:fragment>
+  {#if attachments.size > 0}
+    {#each Array.from(attachments.values()) as attachment}
+      <AttachmentPresenter
+        value={attachment}
+        showPreview
+        removable
+        on:remove={(result) => {
+          if (result.detail !== undefined) descriptionBox.removeAttachmentById(result.detail._id)
+        }}
+      />
+    {/each}
+  {/if}
 
-  <svelte:fragment slot="footer">
-    <Button
-      icon={IconAttachment}
-      size="large"
-      on:click={() => {
-        descriptionBox.handleAttach()
-      }}
-    />
-  </svelte:fragment>
-</Panel>
+
+  <Button
+    icon={IconAttachment}
+    size="large"
+    on:click={() => {
+      descriptionBox.handleAttach()
+    }}
+  />
+</div>

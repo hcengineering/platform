@@ -17,6 +17,8 @@
 
 <script lang="ts">
   import { TestCase } from '@hcengineering/test-management'
+
+  import { currentTestCase } from './store/testRunStore'
   import TestCasePresenter from '../test-case/TestCasePresenter.svelte'
 
   export let value: TestCase | undefined
@@ -28,6 +30,7 @@
   function handleClick (e: MouseEvent): void {
     if (disabled) return
 
+    currentTestCase.set(value?._id)
     console.log('click', e)
     e.preventDefault()
     e.stopPropagation()

@@ -181,7 +181,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     StatusNonTested: '' as IntlString,
     StatusBlocked: '' as IntlString,
     StatusPassed: '' as IntlString,
-    StatusFailed: '' as IntlString
+    StatusFailed: '' as IntlString,
+    SelectTestCase: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>

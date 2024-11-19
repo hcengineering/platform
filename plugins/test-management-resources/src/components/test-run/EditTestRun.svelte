@@ -27,7 +27,9 @@
   import testManagement from '../../plugin'
   import AddTestResult from './AddTestResult.svelte'
   import TestRunItemList from './TestRunItemList.svelte'
-  import EditTestCase from '../test-case/EditTestCase.svelte'
+  import ViewContainer from './ViewContainer.svelte'
+  import TestCaseDetails from '../test-case/TestCaseDetails.svelte'
+
 
   export let _id: Ref<TestRun>
   export let _class: Ref<Class<TestRun>>
@@ -35,7 +37,6 @@
 
   let object: TestRun | undefined
   let testCases: TestCase[] | undefined
-  const currentTestcase: Ref<TestCase> = $currentTestCase
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -46,6 +47,14 @@
   let descriptionBox: AttachmentStyleBoxCollabEditor
 
   const query = createQuery()
+
+  let selectedTestCase: Ref<TestCase> | undefined = undefined
+
+  //$: selectedTestCase = $currentTestCase
+
+  currentTestCase.subscribe((testCase) => {
+    selectedTestCase = testCase
+  })
 
   $: _id !== undefined &&
     _class !== undefined &&
@@ -91,20 +100,28 @@
     <SplitView>
       <svelte:fragment slot="leftPanel">
         <div class="antiPanel-wrap__content">
-          <TestRunItemList />
+          <ViewContainer header={testManagement.string.SelectTestCase}>
+              <TestRunItemList />
+          </ViewContainer>
         </div>
       </svelte:fragment>
       <svelte:fragment slot="rightPanel">
-        {#if currentTestcase !== undefined}
-          <EditTestCase _id={currentTestcase} />
-        {/if}
+        <ViewContainer header={testManagement.string.TestDescription}>
+          {#if selectedTestCase !== undefined}
+            <TestCaseDetails 
+              _id={selectedTestCase} 
+              _class={testManagement.class.TestCase}
+            />
+          {/if}
+        </ViewContainer>
       </svelte:fragment>
     </SplitView>
-    <svelte:fragment slot="custom-attributes">
-      <div class="popupPanel-body__aside-grid">
-        <div class="divider" />
-        <AddTestResult {space} />
-      </div>
+    <svelte:fragment slot="aside">
+      <ViewContainer header={testManagement.string.TestResult}>
+        <div class="popupPanel-body__aside-grid">
+          <AddTestResult {space} />
+        </div>
+      </ViewContainer>
     </svelte:fragment>
   </Panel>
 {/if}

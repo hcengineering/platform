@@ -68,6 +68,7 @@
     "StatusNonTested": "Untested",
     "StatusBlocked": "Blocked",
     "StatusPassed": "Passed",
-    "StatusFailed": "Failed"
+    "StatusFailed": "Failed",
+    "SelectTestCase": "Select test case"
   }
 }

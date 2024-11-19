@@ -458,7 +458,8 @@ function defineTestRun (builder: Builder): void {
         },
         {
           key: 'status',
-          props: { kind: 'list', size: 'small', shouldShowName: false }
+          props: { kind: 'list', size: 'small', shouldShowName: false },
+          displayProps: { fixed: 'left' } 
         }
       ],
       viewOptions
