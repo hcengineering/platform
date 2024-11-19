@@ -89,6 +89,7 @@ async function createReception (client: MigrationUpgradeClient): Promise<void> {
       y: 0,
       language: 'en',
       startWithTranscription: false,
+      startWithRecording: false,
       description: makeCollaborativeDoc(love.ids.Reception, 'description')
     },
     love.ids.Reception
@@ -105,7 +106,7 @@ export const loveOperation: MigrateOperation = {
         }
       },
       {
-        state: 'setup-defaults-settings',
+        state: 'setup-defaults-settings-v2',
         func: async (client: MigrationClient) => {
           await client.update(
             DOMAIN_LOVE,
@@ -131,6 +132,21 @@ export const loveOperation: MigrateOperation = {
             DOMAIN_LOVE,
             { _class: love.class.Office, startWithTranscription: { $exists: false } },
             { startWithTranscription: false }
+          )
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Room, type: RoomType.Video, startWithRecording: { $exists: false } },
+            { startWithRecording: true }
+          )
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Room, startWithRecording: { $exists: false } },
+            { startWithRecording: false }
+          )
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Office, startWithRecording: { $exists: false } },
+            { startWithRecording: false }
           )
         }
       },

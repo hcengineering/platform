@@ -33,6 +33,7 @@ export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Of
       person: employees[index] ?? null,
       language: 'en',
       startWithTranscription: false,
+      startWithRecording: false,
       description: makeCollaborativeDoc(_id, 'description')
     }
     res.push(office)
@@ -51,6 +52,7 @@ export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Of
     y: 0,
     language: 'en',
     startWithTranscription: true,
+    startWithRecording: true,
     description: makeCollaborativeDoc(allHands, 'description')
   })
 
@@ -67,6 +69,7 @@ export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Of
     y: 4,
     language: 'en',
     startWithTranscription: true,
+    startWithRecording: true,
     description: makeCollaborativeDoc(meetingRoom1, 'description')
   })
   const meetingRoom2 = generateId<Room>()
@@ -82,6 +85,7 @@ export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Of
     y: 4,
     language: 'en',
     startWithTranscription: true,
+    startWithRecording: true,
     description: makeCollaborativeDoc(meetingRoom2, 'description')
   })
   const voiceRoom1 = generateId<Room>()
@@ -97,6 +101,7 @@ export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Of
     y: 8,
     language: 'en',
     startWithTranscription: false,
+    startWithRecording: false,
     description: makeCollaborativeDoc(voiceRoom1, 'description')
   })
   const voiceRoom2 = generateId<Room>()
@@ -112,6 +117,7 @@ export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Of
     y: 8,
     language: 'en',
     startWithTranscription: false,
+    startWithRecording: false,
     description: makeCollaborativeDoc(voiceRoom2, 'description')
   })
   return res

@@ -420,6 +420,10 @@ function initRoomMetadata (metadata: string | undefined): void {
   ) {
     void startTranscription(room)
   }
+
+  if (get(isRecordingAvailable) && data.recording == null && room?.startWithRecording === true) {
+    void record(room)
+  }
 }
 export async function connect (name: string, room: Room, _id: string): Promise<void> {
   const wsURL = getMetadata(love.metadata.WebSocketURL)

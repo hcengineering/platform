@@ -26,6 +26,10 @@
   async function toggleTranscribing (): Promise<void> {
     await client.diffUpdate(room, { startWithTranscription: !room.startWithTranscription })
   }
+
+  async function toggleRecording (): Promise<void> {
+    await client.diffUpdate(room, { startWithRecording: !room.startWithRecording })
+  }
 </script>
 
 <div class="antiGrid">
@@ -40,5 +44,11 @@
       <Label label={love.string.StartWithTranscription} />
     </div>
     <ModernToggle size="small" checked={room.startWithTranscription} on:change={toggleTranscribing} />
+  </div>
+  <div class="antiGrid-row">
+    <div class="antiGrid-row__header">
+      <Label label={love.string.StartWithRecording} />
+    </div>
+    <ModernToggle size="small" checked={room.startWithRecording} on:change={toggleRecording} />
   </div>
 </div>

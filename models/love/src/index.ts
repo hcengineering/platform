@@ -108,6 +108,7 @@ export class TRoom extends TDoc implements Room {
 
   language!: RoomLanguage
   startWithTranscription!: boolean
+  startWithRecording!: boolean
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number

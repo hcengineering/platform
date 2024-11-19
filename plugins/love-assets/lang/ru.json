@@ -77,6 +77,7 @@
     "MeetingEnd": "Конец встречи",
     "Status": "Статус",
     "Active": "Активно",
-    "Finished": "Завершено"
+    "Finished": "Завершено",
+    "StartWithRecording": "Начинать с записью"
   }
 }
