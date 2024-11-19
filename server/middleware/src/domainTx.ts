@@ -91,7 +91,7 @@ export class DomainTxMiddleware extends BaseMiddleware implements Middleware {
                 adapter.load(
                   ctx,
                   d,
-                  docs.map((it) => it._id)
+                  docs.map((it) => it.objectId)
                 ),
               { count: toDelete.length }
             )
