@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery} from '@hcengineering/core'
+  import { Doc, DocumentQuery } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Button, Icon, IconAdd, Label, Loading, Scroller, SectionEmpty } from '@hcengineering/ui'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
@@ -30,7 +30,7 @@
   })
 
   const createTestCase = (ev: MouseEvent): void => {
-    //showPopup(CreateTestCase, { testSuiteId: objectId }, ev.target as HTMLElement)
+    // showPopup(CreateTestCase, { testSuiteId: objectId }, ev.target as HTMLElement)
   }
 
   let viewlet: Viewlet | undefined
@@ -44,7 +44,7 @@
       <Icon icon={testManagement.icon.TestCase} size={'small'} />
     </div>
     <span class="antiSection-header__title">
-        <Label label={testManagement.string.TestCases} />
+      <Label label={testManagement.string.TestCases} />
     </span>
     <div class="flex-row-center gap-2 reverse">
       <ViewletsSettingButton

@@ -15,15 +15,15 @@
 
 import { testManagementId } from '@hcengineering/test-management'
 import testManganement from '@hcengineering/test-management-resources/src/plugin'
-import type { Doc, Ref } from '@hcengineering/core'
+import type { Ref } from '@hcengineering/core'
 import { mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import type { Action, ActionCategory, ViewAction } from '@hcengineering/view'
+import type { ActionCategory } from '@hcengineering/view'
 
 export default mergeIds(testManagementId, testManganement, {
   category: {
     TestSuite: '' as Ref<ActionCategory>,
-    TestCase: '' as Ref<ActionCategory>,
+    TestCase: '' as Ref<ActionCategory>
   },
   component: {
     CreateTestCase: '' as AnyComponent,
@@ -37,6 +37,6 @@ export default mergeIds(testManagementId, testManganement, {
     TestRunPresenter: '' as AnyComponent,
     EditTestRun: '' as AnyComponent,
     TestSuiteRefPresenter: '' as AnyComponent,
-    RunSelectedTestsButton: '' as AnyComponent,
+    RunSelectedTestsButton: '' as AnyComponent
   }
 })

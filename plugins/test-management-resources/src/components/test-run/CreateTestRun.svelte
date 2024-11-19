@@ -49,7 +49,7 @@
   async function onSave () {
     // TODO: Use one operation
     const testRun = await client.createDoc(testManagement.class.TestRun, _space, object)
-    const createPromises = testCases.map(testCase => {
+    const createPromises = testCases.map((testCase) => {
       const testRunData: Data<TestRunItem> = {
         attachedTo: testRun,
         attachedToClass: testManagement.class.TestRun,

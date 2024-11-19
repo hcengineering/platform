@@ -43,8 +43,8 @@ export async function showCreateProjectPopup (): Promise<void> {
 }
 
 export async function showCreateTestRunPopup (testCases: TestCase[]): Promise<void> {
-  const spaceProp = testCases?.length > 0 ? {space: testCases[0].space} : {}
-  showPopup(CreateTestRun, {testCases, ...spaceProp}, 'top')
+  const spaceProp = testCases?.length > 0 ? { space: testCases[0].space } : {}
+  showPopup(CreateTestRun, { testCases, ...spaceProp }, 'top')
 }
 
 export async function CreateChildTestSuiteAction (doc: TestSuite): Promise<void> {

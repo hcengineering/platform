@@ -27,6 +27,8 @@
     showPopup,
     Label
   } from '@hcengineering/ui'
+  import { currentTestCase } from './store/testRunStore'
+
   import { defaultTestRunStatuses, testRunStatusAssets } from '../../types'
   import testManagement from '../../plugin'
 
@@ -56,6 +58,7 @@
     if (disabled || newStatus == null || value === newStatus) {
       return
     }
+    currentTestCase.set(object?.testCase)
 
     value = newStatus
     dispatch('change', value)

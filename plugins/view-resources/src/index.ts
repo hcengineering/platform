@@ -169,6 +169,7 @@ export { default as StatusRefPresenter } from './components/status/StatusRefPres
 export { default as SelectionActionButton } from './components/SelectionActionButton.svelte'
 export { default as SplitView } from './components/SplitView.svelte'
 export { default as FoldersBrowser } from './components/FoldersBrowser.svelte'
+export { default as ListView } from './components/list/ListView.svelte'
 
 export * from './filter'
 export * from './middleware'

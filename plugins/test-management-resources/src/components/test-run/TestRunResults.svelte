@@ -21,10 +21,10 @@
   import { TestRun, TestCase } from '@hcengineering/test-management'
   import { Panel } from '@hcengineering/panel'
   import { EditBox, ListView } from '@hcengineering/ui'
-  import {SplitView} from '@hcengineering/view-resources'
+  import { SplitView } from '@hcengineering/view-resources'
 
   import TestCaseRefPresenter from '../test-case/TestCasePresenter.svelte'
-  import {getTestCases} from '../../testRunUtils'
+  import { getTestCases } from '../../testRunUtils'
   import testManagement from '../../plugin'
 
   export let _id: Ref<TestRun>
@@ -87,49 +87,49 @@
     <SplitView>
       <svelte:fragment slot="leftPanel">
         {#if testCases !== undefined}
-        <ListView count={testCases.length} kind={'thin'}>
-          <svelte:fragment slot="item" let:item>
-            {@const doc = testCases[item]}
-            <div
-              class="ap-menuItem withComp noMargin"
-              on:click={() => {
-                //select(doc)
-              }}
-            >
-              <TestCaseRefPresenter disabled value={doc} />
-            </div>
-          </svelte:fragment>
-        </ListView>
+          <ListView count={testCases.length} kind={'thin'}>
+            <svelte:fragment slot="item" let:item>
+              {@const doc = testCases[item]}
+              <div
+                class="ap-menuItem withComp noMargin"
+                on:click={() => {
+                  // select(doc)
+                }}
+              >
+                <TestCaseRefPresenter disabled value={doc} />
+              </div>
+            </svelte:fragment>
+          </ListView>
         {/if}
       </svelte:fragment>
       <svelte:fragment slot="rightPanel">
-      <EditBox
-        bind:value={rawLabel}
-        placeholder={testManagement.string.NamePlaceholder}
-        kind="large-style"
-        on:blur={async () => {
-          const trimmedLabel = rawLabel?.trim()
+        <EditBox
+          bind:value={rawLabel}
+          placeholder={testManagement.string.NamePlaceholder}
+          kind="large-style"
+          on:blur={async () => {
+            const trimmedLabel = rawLabel?.trim()
 
-          if (trimmedLabel?.length === 0) {
-            rawLabel = oldLabel
-          } else if (trimmedLabel !== object?.name) {
-            await change('name', trimmedLabel ?? '')
-          }
-        }}
-      />
-
-      <div class="w-full mt-6">
-        <AttachmentStyleBoxCollabEditor
-          focusIndex={30}
-          {object}
-          key={{ key: 'description', attr: descriptionKey }}
-          bind:this={descriptionBox}
-          identifier={object?._id}
-          placeholder={testManagement.string.DescriptionPlaceholder}
-          boundary={content}
+            if (trimmedLabel?.length === 0) {
+              rawLabel = oldLabel
+            } else if (trimmedLabel !== object?.name) {
+              await change('name', trimmedLabel ?? '')
+            }
+          }}
         />
-      </div>
-    </svelte:fragment>
+
+        <div class="w-full mt-6">
+          <AttachmentStyleBoxCollabEditor
+            focusIndex={30}
+            {object}
+            key={{ key: 'description', attr: descriptionKey }}
+            bind:this={descriptionBox}
+            identifier={object?._id}
+            placeholder={testManagement.string.DescriptionPlaceholder}
+            boundary={content}
+          />
+        </div>
+      </svelte:fragment>
     </SplitView>
   </Panel>
 {/if}

@@ -28,10 +28,4 @@
   $: selectionDocs = $selectionStore.docs
 </script>
 
-<ActionButton 
-  id={actionId} 
-  object={selectionDocs}
-  disabled={selectionDocs === undefined}
-/>
-
-
+<ActionButton id={actionId} object={selectionDocs} disabled={selectionDocs === undefined} />

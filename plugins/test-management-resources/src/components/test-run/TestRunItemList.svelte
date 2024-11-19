@@ -13,11 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery} from '@hcengineering/core'
+  import { Doc, DocumentQuery } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Button, Icon, IconAdd, Label, Loading, Scroller, SectionEmpty } from '@hcengineering/ui'
-  import { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { Table, ViewletsSettingButton } from '@hcengineering/view-resources'
+  import { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
+  import { ListView, ViewletsSettingButton, getViewOptions, viewOptionStore } from '@hcengineering/view-resources'
+
   import testManagement from '../../plugin'
   import FileDuo from '../icons/FileDuo.svelte'
 
@@ -30,12 +31,13 @@
   })
 
   const createTestRunItem = (ev: MouseEvent): void => {
-    //showPopup(CreateTestRunItem, { testSuiteId: objectId }, ev.target as HTMLElement)
+    // showPopup(CreateTestRunItem, { testSuiteId: objectId }, ev.target as HTMLElement)
   }
 
   let viewlet: Viewlet | undefined
   let preference: ViewletPreference | undefined
   let loading = true
+  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
 
 <div class="antiSection max-h-125 clear-mins">
@@ -44,7 +46,7 @@
       <Icon icon={testManagement.icon.TestCase} size={'small'} />
     </div>
     <span class="antiSection-header__title">
-        <Label label={testManagement.string.TestCases} />
+      <Label label={testManagement.string.TestCases} />
     </span>
     <div class="flex-row-center gap-2 reverse">
       <ViewletsSettingButton
@@ -60,11 +62,12 @@
   {#if testRunItems > 0}
     {#if viewlet !== undefined && !loading}
       <Scroller horizontal>
-        <Table
+        <ListView
           _class={testManagement.class.TestRunItem}
           config={preference?.config ?? viewlet.config}
           query={baseQuery}
-          loadingProps={{ length: testRunItems }}
+          {viewlet}
+          {viewOptions}
         />
       </Scroller>
     {:else}

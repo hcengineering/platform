@@ -64,6 +64,10 @@
     "TestLibrary": "Test library",
     "TestResult": "Result",
     "TestRunResult": "Result",
-    "TestRunStatus": "Status"
+    "TestRunStatus": "Status",
+    "StatusNonTested": "Untested",
+    "StatusBlocked": "Blocked",
+    "StatusPassed": "Passed",
+    "StatusFailed": "Failed"
   }
 }

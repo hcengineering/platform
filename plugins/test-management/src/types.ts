@@ -103,7 +103,7 @@ export interface TestResult extends AttachedDoc<TestCase, 'results', TestProject
   description: CollaborativeDoc
   attachments?: CollectionSize<Attachment>
   comments?: number
-  //status?: TestRunStatus
+  // status?: TestRunStatus
 }
 
 /** @public */

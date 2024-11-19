@@ -18,7 +18,7 @@
   import { type Ref } from '@hcengineering/core'
   import { TestRun, TestCase, TestProject } from '@hcengineering/test-management'
   import { Panel } from '@hcengineering/panel'
-  import {FoldersBrowser, SplitView} from '@hcengineering/view-resources'
+  import { FoldersBrowser, SplitView } from '@hcengineering/view-resources'
 
   import testManagement from '../../plugin'
   import TestCasesList from './TestCasesList.svelte'
@@ -47,21 +47,21 @@
   >
     <SplitView>
       <svelte:fragment slot="leftPanel">
-      <FoldersBrowser
-        _class={testManagement.class.TestSuite}
-        titleKey={'name'}
-        parentKey={'parent'}
-        noParentId={testManagement.ids.NoParent}
-        getFolderLink={testManagement.function.GetTestSuiteLink}
-        allObjectsIcon={testManagement.icon.TestSuite}
-        allObjectsLabel={testManagement.string.AllTestCases}
-      />
+        <FoldersBrowser
+          _class={testManagement.class.TestSuite}
+          titleKey={'name'}
+          parentKey={'parent'}
+          noParentId={testManagement.ids.NoParent}
+          getFolderLink={testManagement.function.GetTestSuiteLink}
+          allObjectsIcon={testManagement.icon.TestSuite}
+          allObjectsLabel={testManagement.string.AllTestCases}
+        />
       </svelte:fragment>
       <svelte:fragment slot="rightPanel">
         {#if testCases !== undefined}
-          <TestCasesList/>
+          <TestCasesList />
         {/if}
-    </svelte:fragment>
+      </svelte:fragment>
     </SplitView>
   </Panel>
 {/if}

@@ -122,9 +122,9 @@
     <Header adaptive={'disabled'}>
       <Breadcrumb icon={mainComponentIcon} label={mainComponentLabel} size={'large'} />
       <svelte:fragment slot="actions">
-      {#if mainHeaderComponent}
-          <Component is={mainHeaderComponent}/>
-      {/if}
+        {#if mainHeaderComponent}
+          <Component is={mainHeaderComponent} />
+        {/if}
       </svelte:fragment>
     </Header>
     <Component

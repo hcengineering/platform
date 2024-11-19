@@ -18,12 +18,11 @@
     Separator,
     deviceOptionsStore as deviceInfo,
     defineSeparators,
-    splitViewSeparators
+    splitViewSeparators,
+    workbenchSeparators
   } from '@hcengineering/ui'
 
-  export let viewName: string = 'parentNavigator'
-
-  defineSeparators('viewName', splitViewSeparators)
+  defineSeparators('splitView', workbenchSeparators)
 </script>
 
 <div class="hulyComponent-content__container columns">
@@ -33,9 +32,9 @@
         ? 'portrait'
         : 'landscape'} border-left"
     >
-      <slot name="leftPanel"/>
+      <slot name="leftPanel" />
       <Separator
-        name={viewName}
+        name={'splitView'}
         float={$deviceInfo.navigator.float ? 'navigator' : true}
         index={0}
         color={'transparent'}
@@ -43,7 +42,7 @@
     </div>
 
     <Separator
-      name={viewName}
+      name={'splitView'}
       float={$deviceInfo.navigator.float}
       index={0}
       color={'transparent'}
@@ -52,6 +51,6 @@
     />
   {/if}
   <div class="hulyComponent-content__column">
-    <slot name="rightPanel"/>
+    <slot name="rightPanel" />
   </div>
 </div>

@@ -20,14 +20,13 @@
   import { type Class, type Ref } from '@hcengineering/core'
   import { TestRun, TestCase, TestProject } from '@hcengineering/test-management'
   import { Panel } from '@hcengineering/panel'
-  import { ListView } from '@hcengineering/ui'
-  import {FoldersBrowser, SplitView} from '@hcengineering/view-resources'
+  import { SplitView } from '@hcengineering/view-resources'
 
-  import TestCaseRefPresenter from '../test-case/TestCasePresenter.svelte'
-  import {getTestCases} from '../../testRunUtils'
+  import { currentTestCase } from './store/testRunStore'
+  import { getTestCases } from '../../testRunUtils'
   import testManagement from '../../plugin'
   import AddTestResult from './AddTestResult.svelte'
-  import TestRunliItemList from './TestRunItemList.svelte'
+  import TestRunItemList from './TestRunItemList.svelte'
   import EditTestCase from '../test-case/EditTestCase.svelte'
 
   export let _id: Ref<TestRun>
@@ -36,6 +35,7 @@
 
   let object: TestRun | undefined
   let testCases: TestCase[] | undefined
+  const currentTestcase: Ref<TestCase> = $currentTestCase
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -90,20 +90,20 @@
   >
     <SplitView>
       <svelte:fragment slot="leftPanel">
-        <TestRunliItemList/>
+        <div class="antiPanel-wrap__content">
+          <TestRunItemList />
+        </div>
       </svelte:fragment>
       <svelte:fragment slot="rightPanel">
-        {#if testCases !== undefined}
-          <EditTestCase/>
+        {#if currentTestcase !== undefined}
+          <EditTestCase _id={currentTestcase} />
         {/if}
-    </svelte:fragment>
+      </svelte:fragment>
     </SplitView>
     <svelte:fragment slot="custom-attributes">
       <div class="popupPanel-body__aside-grid">
         <div class="divider" />
-        <AddTestResult
-          space={space}
-        />
+        <AddTestResult {space} />
       </div>
     </svelte:fragment>
   </Panel>

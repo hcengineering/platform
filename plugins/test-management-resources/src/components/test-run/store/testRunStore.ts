@@ -1,4 +1,4 @@
-<!--
+//
 // Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,12 +11,10 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
+//
 
-<script lang="ts">
-  import { SelectionActionButton } from '@hcengineering/view-resources'
+import type { TestCase } from '@hcengineering/test-management'
+import { type Ref } from '@hcengineering/core'
+import { type Writable, writable } from 'svelte/store'
 
-  import testManagement from '../../plugin'
-</script>
-
-<SelectionActionButton actionId={testManagement.action.RunSelectedTests} />
+export const currentTestCase: Writable<Ref<TestCase> | undefined> = writable(undefined)

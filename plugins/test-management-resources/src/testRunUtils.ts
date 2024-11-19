@@ -16,14 +16,12 @@ import { type Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import testManagement, { type TestRun, type TestCase } from '@hcengineering/test-management'
 
-export async function getTestCases (objectId: Ref<TestRun>): Promise<Array<TestCase>> {
+export async function getTestCases (objectId: Ref<TestRun>): Promise<TestCase[]> {
   if (objectId === undefined) {
     return []
   }
   const client = getClient()
-  const testRunItems = await client.findAll(testManagement.class.TestRunItem, {attachedTo: objectId})
-  const testCaseIds = testRunItems.map(testRun => testRun.testCase)
-  return client.findAll(testManagement.class.TestCase, {_id: { $in: testCaseIds}})
+  const testRunItems = await client.findAll(testManagement.class.TestRunItem, { attachedTo: objectId })
+  const testCaseIds = testRunItems.map((testRun) => testRun.testCase)
+  return await client.findAll(testManagement.class.TestCase, { _id: { $in: testCaseIds } })
 }
-
-

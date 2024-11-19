@@ -1,4 +1,5 @@
 <!--
+//
 // Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,12 +12,26 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 -->
 
 <script lang="ts">
-  import { SelectionActionButton } from '@hcengineering/view-resources'
+  import { TestCase } from '@hcengineering/test-management'
+  import TestCasePresenter from '../test-case/TestCasePresenter.svelte'
 
-  import testManagement from '../../plugin'
+  export let value: TestCase | undefined
+  export let inline: boolean = false
+  export let disabled: boolean = false
+  export let accent: boolean = false
+  export let noUnderline: boolean = false
+
+  function handleClick (e: MouseEvent): void {
+    if (disabled) return
+
+    console.log('click', e)
+    e.preventDefault()
+    e.stopPropagation()
+  }
 </script>
 
-<SelectionActionButton actionId={testManagement.action.RunSelectedTests} />
+<TestCasePresenter {value} {inline} {disabled} {accent} {noUnderline} onClick={handleClick} />

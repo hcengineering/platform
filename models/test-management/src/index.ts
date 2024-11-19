@@ -55,7 +55,7 @@ function defineApplication (builder: Builder): void {
       icon: testManagement.icon.TestManagementApplication,
       alias: testManagementId,
       hidden: false,
-      //locationResolver: testManagement.resolver.Location,
+      // locationResolver: testManagement.resolver.Location,
       navigatorModel: {
         spaces: [
           {
@@ -452,14 +452,14 @@ function defineTestRun (builder: Builder): void {
       config: [
         {
           key: '$lookup.testCase',
-          presenter: testManagement.component.TestCasePresenter,
+          presenter: testManagement.component.TestCaseNavPresenter,
           label: testManagement.string.TestCase,
           sortingKey: '$lookup.testCase.name'
         },
         {
           key: 'status',
-          props: { kind: 'list', size: 'small', shouldShowName: true }
-        },
+          props: { kind: 'list', size: 'small', shouldShowName: false }
+        }
       ],
       viewOptions
     },

@@ -34,8 +34,8 @@
 
   const object: Data<TestResult> = {
     description: makeCollaborativeDoc(id, 'description'),
-    attachments: 0,
-    //attachedTo: testSuiteId
+    attachments: 0
+    // attachedTo: testSuiteId
   } as unknown as TestResult
 
   let _space = space
