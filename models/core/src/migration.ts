@@ -327,7 +327,8 @@ export const coreOperation: MigrateOperation = {
                     collection,
                     attachedTo: objectId,
                     attachedToClass: objectClass,
-                    ...(tx as any).tx
+                    ...(tx as any).tx,
+                    objectSpace: (tx as any).tx.objectSpace ?? tx.objectClass
                   }
                 })
               )
