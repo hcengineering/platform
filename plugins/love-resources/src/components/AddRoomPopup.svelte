@@ -63,6 +63,7 @@
       access: val.access,
       language: 'en',
       startWithTranscription: val._class !== love.class.Office && val.type === RoomType.Video,
+      startWithRecording: val._class !== love.class.Office && val.type === RoomType.Video,
       description: makeCollaborativeDoc(_id, 'description')
     }
     if (val._class === love.class.Office) {

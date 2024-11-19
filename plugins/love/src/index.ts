@@ -102,6 +102,7 @@ export interface Room extends Doc {
   y: number
   language: RoomLanguage
   startWithTranscription: boolean
+  startWithRecording: boolean
   description: CollaborativeDoc
   attachments?: number
   meetings?: number
@@ -225,7 +226,8 @@ const love = plugin(loveId, {
     MeetingEnd: '' as IntlString,
     Status: '' as IntlString,
     Active: '' as IntlString,
-    Finished: '' as IntlString
+    Finished: '' as IntlString,
+    StartWithRecording: '' as IntlString
   },
   ids: {
     MainFloor: '' as Ref<Floor>,
