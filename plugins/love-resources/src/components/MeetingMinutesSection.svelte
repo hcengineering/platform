@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Class, Doc, Ref, Space } from '@hcengineering/core'
-  import { Label, Section } from '@hcengineering/ui'
+  import { Label, Section, Scroller } from '@hcengineering/ui'
   import { Table, ViewletsSettingButton } from '@hcengineering/view-resources'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
 
@@ -46,14 +46,16 @@
 
   <svelte:fragment slot="content">
     {#if meetings > 0 && viewlet}
-      <Table
-        _class={love.class.MeetingMinutes}
-        config={preference?.config ?? viewlet.config}
-        query={{ attachedTo: objectId }}
-        loadingProps={{ length: meetings }}
-        prefferedSorting="createdOn"
-        {readonly}
-      />
+      <Scroller horizontal>
+        <Table
+          _class={love.class.MeetingMinutes}
+          config={preference?.config ?? viewlet.config}
+          query={{ attachedTo: objectId }}
+          loadingProps={{ length: meetings }}
+          prefferedSorting="createdOn"
+          {readonly}
+        />
+      </Scroller>
     {:else}
       <div class="antiSection-empty solid flex-col mt-3">
         <span class="content-dark-color">
