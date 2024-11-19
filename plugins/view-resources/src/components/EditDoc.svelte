@@ -155,9 +155,24 @@
     return undefined
   }
 
+  function getPanelFooter (
+    _class: Ref<Class<Doc>>,
+    object?: Doc
+  ): { footer: AnyComponent, props?: Record<string, any> } | undefined {
+    if (object !== undefined) {
+      const footer = hierarchy.findClassOrMixinMixin(object, view.mixin.ObjectPanelFooter)
+      if (footer !== undefined) {
+        return { footer: footer.editor, props: footer.props }
+      }
+    }
+
+    return undefined
+  }
+
   let mainEditor: MixinEditor | undefined
 
   $: editorFooter = getEditorFooter(_class, object)
+  $: panelFooter = getPanelFooter(_class, object)
 
   const getEditorOrDefault = reduceCalls(async function (_class: Ref<Class<Doc>>, _id?: Ref<Doc>): Promise<void> {
     if (objectId === undefined) return
@@ -341,5 +356,11 @@
         <Component is={editorFooter.footer} props={{ object, _class, ...editorFooter.props, readonly }} />
       </div>
     {/if}
+
+    <svelte:fragment slot="panel-footer">
+      {#if panelFooter}
+        <Component is={panelFooter.footer} props={{ object, _class, ...panelFooter.props, readonly }} />
+      {/if}
+    </svelte:fragment>
   </Panel>
 {/if}

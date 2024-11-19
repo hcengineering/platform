@@ -88,6 +88,9 @@ export interface TxModelUpgrade extends Tx {}
 export interface TxCUD<T extends Doc> extends Tx {
   objectId: Ref<T>
   objectClass: Ref<Class<T>>
+  attachedTo?: Ref<Doc>
+  attachedToClass?: Ref<Class<Doc>>
+  collection?: string
 }
 
 /**
@@ -95,17 +98,6 @@ export interface TxCUD<T extends Doc> extends Tx {
  */
 export interface TxCreateDoc<T extends Doc> extends TxCUD<T> {
   attributes: Data<T>
-}
-
-/**
- *
- * Will perform create/update/delete of attached documents.
- *
- * @public
- */
-export interface TxCollectionCUD<T extends Doc, P extends AttachedDoc> extends TxCUD<T> {
-  collection: string
-  tx: TxCUD<P>
 }
 
 /**
@@ -327,9 +319,6 @@ export abstract class TxProcessor implements WithTx {
         case core.class.TxCreateDoc:
           result.push(await this.txCreateDoc(tx as TxCreateDoc<Doc>))
           break
-        case core.class.TxCollectionCUD:
-          result.push(await this.txCollectionCUD(tx as TxCollectionCUD<Doc, AttachedDoc>))
-          break
         case core.class.TxUpdateDoc:
           result.push(await this.txUpdateDoc(tx as TxUpdateDoc<Doc>))
           break
@@ -348,9 +337,19 @@ export abstract class TxProcessor implements WithTx {
   }
 
   static createDoc2Doc<T extends Doc>(tx: TxCreateDoc<T>, doClone = true): T {
+    const attached =
+      tx.attachedTo !== undefined
+        ? {
+            attachedTo: tx.attachedTo,
+            attachedToClass: tx.attachedToClass,
+            collection: tx.collection
+          }
+        : {}
+
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     return {
       ...(doClone ? clone(tx.attributes) : tx.attributes),
+      ...attached,
       _id: tx.objectId,
       _class: tx.objectClass,
       space: tx.objectSpace,
@@ -400,22 +399,10 @@ export abstract class TxProcessor implements WithTx {
 
   static buildDoc2Doc<D extends Doc>(txes: Tx[]): D | undefined {
     let doc: Doc
-    let createTx = txes.find((tx) => tx._class === core.class.TxCreateDoc)
-    if (createTx === undefined) {
-      const collectionTxes = txes.filter((tx) => tx._class === core.class.TxCollectionCUD) as Array<
-      TxCollectionCUD<Doc, AttachedDoc>
-      >
-      const collectionCreateTx = collectionTxes.find((p) => p.tx._class === core.class.TxCreateDoc)
-      if (collectionCreateTx === undefined) return
-      createTx = TxProcessor.extractTx(collectionCreateTx)
-    }
+    const createTx = txes.find((tx) => tx._class === core.class.TxCreateDoc)
     if (createTx === undefined) return
-    const objectId = (createTx as TxCreateDoc<D>).objectId
     doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
-    for (let tx of txes) {
-      if ((tx as TxCUD<D>).objectId !== objectId && tx._class === core.class.TxCollectionCUD) {
-        tx = TxProcessor.extractTx(tx)
-      }
+    for (const tx of txes) {
       if (tx._class === core.class.TxUpdateDoc) {
         doc = TxProcessor.updateDoc2Doc(doc, tx as TxUpdateDoc<Doc>)
       } else if (tx._class === core.class.TxMixin) {
@@ -431,25 +418,8 @@ export abstract class TxProcessor implements WithTx {
       _class === core.class.TxCreateDoc ||
       _class === core.class.TxUpdateDoc ||
       _class === core.class.TxRemoveDoc ||
-      _class === core.class.TxCollectionCUD ||
       _class === core.class.TxMixin
     )
-  }
-
-  static extractTx (tx: Tx): Tx {
-    if (tx._class === core.class.TxCollectionCUD) {
-      const ctx = tx as TxCollectionCUD<Doc, AttachedDoc>
-      if (ctx.tx._class === core.class.TxCreateDoc) {
-        const create = ctx.tx as TxCreateDoc<AttachedDoc>
-        create.attributes.attachedTo = ctx.objectId
-        create.attributes.attachedToClass = ctx.objectClass
-        create.attributes.collection = ctx.collection
-        return create
-      }
-      return ctx.tx
-    }
-
-    return tx
   }
 
   static txHasUpdate<T extends Doc>(tx: TxUpdateDoc<T>, attribute: string): boolean {
@@ -472,24 +442,6 @@ export abstract class TxProcessor implements WithTx {
   protected abstract txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult>
   protected abstract txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult>
   protected abstract txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult>
-
-  protected txCollectionCUD (tx: TxCollectionCUD<Doc, AttachedDoc>): Promise<TxResult> {
-    // We need update only create transactions to contain attached, attachedToClass.
-    if (tx.tx._class === core.class.TxCreateDoc) {
-      const createTx = tx.tx as TxCreateDoc<AttachedDoc>
-      const d: TxCreateDoc<AttachedDoc> = {
-        ...createTx,
-        attributes: {
-          ...createTx.attributes,
-          attachedTo: tx.objectId,
-          attachedToClass: tx.objectClass,
-          collection: tx.collection
-        }
-      }
-      return this.txCreateDoc(d)
-    }
-    return this.tx(tx.tx)
-  }
 }
 
 /**
@@ -534,18 +486,14 @@ export class TxFactory {
     tx: TxCUD<P>,
     modifiedOn?: Timestamp,
     modifiedBy?: Ref<Account>
-  ): TxCollectionCUD<T, P> {
+  ): TxCUD<P> {
     return {
-      _id: generateId(),
-      _class: core.class.TxCollectionCUD,
-      space: this.txSpace,
-      objectId,
-      objectClass: _class,
-      objectSpace: space,
-      modifiedOn: modifiedOn ?? Date.now(),
-      modifiedBy: modifiedBy ?? this.account,
+      ...tx,
       collection,
-      tx
+      attachedTo: objectId,
+      attachedToClass: _class,
+      modifiedOn: modifiedOn ?? Date.now(),
+      modifiedBy: modifiedBy ?? this.account
     }
   }
 

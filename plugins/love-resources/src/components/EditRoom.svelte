@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { EditBox, ModernButton, closePanel } from '@hcengineering/ui'
+  import { EditBox, ModernButton } from '@hcengineering/ui'
   import { Room, isOffice } from '@hcengineering/love'
   import { createEventDispatcher, onMount } from 'svelte'
   import { personByIdStore } from '@hcengineering/contact-resources'
@@ -22,7 +22,7 @@
 
   import love from '../plugin'
   import { getRoomName, tryConnect } from '../utils'
-  import { infos, invites, myInfo, myRequests, selectedRoomPlace } from '../stores'
+  import { infos, invites, myInfo, myRequests, selectedRoomPlace, myOffice, currentRoom } from '../stores'
 
   export let object: Room
   export let readonly: boolean = false
@@ -59,8 +59,6 @@
     )
     connecting = false
     selectedRoomPlace.set(undefined)
-    closePanel()
-    dispatch('close')
   }
 
   let connectLabel: IntlString = love.string.StartMeeting
@@ -83,7 +81,9 @@
         focusIndex={1}
       />
     </div>
-    <ModernButton label={connectLabel} size="large" kind={'primary'} on:click={connect} loading={connecting} />
+    {#if object._id !== $myOffice?._id && ($currentRoom?._id !== object._id || connecting)}
+      <ModernButton label={connectLabel} size="large" kind={'primary'} on:click={connect} loading={connecting} />
+    {/if}
   </div>
 </div>
 

@@ -13,7 +13,29 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@hcengineering/platform'
+import type { Client, Doc, Ref } from '@hcengineering/core'
+import { type Resource, mergeIds } from '@hcengineering/platform'
 import survey, { surveyId } from '@hcengineering/survey'
+import type { Location, ResolvedLocation } from '@hcengineering/ui'
+import type { Action, ActionCategory, ViewAction } from '@hcengineering/view'
 
-export default mergeIds(surveyId, survey, {})
+export default mergeIds(surveyId, survey, {
+  resolver: {
+    Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
+  },
+  function: {
+    GetPollLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
+    GetSurveyLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
+    PollTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
+    SurveyTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
+  },
+  actionImpl: {
+    DeletePoll: '' as ViewAction
+  },
+  action: {
+    DeletePoll: '' as Ref<Action<Doc, any>>
+  },
+  category: {
+    Survey: '' as Ref<ActionCategory>
+  }
+})

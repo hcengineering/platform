@@ -48,6 +48,8 @@
   export let disablePointerEventsOnScroll = false
   export let onScroll: ((params: ScrollParams) => void) | undefined = undefined
   export let onResize: (() => void) | undefined = undefined
+  export let containerName: string | undefined = undefined
+  export let containerType: 'size' | 'inline-size' | undefined = containerName !== undefined ? 'inline-size' : undefined
 
   export function scroll (top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
     if (divScroll) {
@@ -598,6 +600,8 @@
             : 'row'}
         style:height={contentDirection === 'vertical-reverse' ? 'max-content' : noStretch ? 'auto' : '100%'}
         style:align-items={align}
+        style:container-name={containerName}
+        style:container-type={containerType}
         class:disableEvents={isScrolling && disablePointerEventsOnScroll}
         use:resizeObserver={() => {
           checkAutoScroll()

@@ -143,10 +143,10 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     for (const dtx of derived) {
       if (TxProcessor.isExtendsCUD(dtx._class)) {
         classes.add((dtx as TxCUD<Doc>).objectClass)
-      }
-      const etx = TxProcessor.extractTx(dtx)
-      if (TxProcessor.isExtendsCUD(etx._class)) {
-        classes.add((etx as TxCUD<Doc>).objectClass)
+        const attachedToClass = (dtx as TxCUD<Doc>).attachedToClass
+        if (attachedToClass !== undefined) {
+          classes.add(attachedToClass)
+        }
       }
     }
     const bevent = createBroadcastEvent(Array.from(classes))

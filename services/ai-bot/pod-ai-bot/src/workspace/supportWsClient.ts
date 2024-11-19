@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { Class, Doc, Markup, Ref, Tx, TxOperations, TxProcessor, TxUpdateDoc } from '@hcengineering/core'
+import core, { Class, Doc, Markup, Ref, Tx, TxCUD, TxOperations, TxUpdateDoc } from '@hcengineering/core'
 import { WorkspaceClient } from './workspaceClient'
 import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-collector'
 import aiBot from '@hcengineering/ai-bot'
@@ -70,10 +70,9 @@ export class SupportWsClient extends WorkspaceClient {
   }
 
   private handleTx (client: TxOperations, ...txes: Tx[]): void {
-    void super.txHandler(client, txes)
+    void super.txHandler(client, txes as TxCUD<Doc>[])
     for (const tx of txes) {
-      const etx = TxProcessor.extractTx(tx)
-      switch (etx._class) {
+      switch (tx._class) {
         case core.class.TxUpdateDoc: {
           this.txUpdateDoc(client, tx as TxUpdateDoc<Doc>)
           break

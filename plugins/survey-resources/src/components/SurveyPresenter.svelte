@@ -15,13 +15,13 @@
 //
 -->
 <script lang="ts">
-  import { getEmbeddedLabel } from '@hcengineering/platform'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
   import { ObjectPresenterType } from '@hcengineering/view'
-  import { Icon, tooltip } from '@hcengineering/ui'
-  import survey, { Survey } from '@hcengineering/survey'
+  import { Icon, Label } from '@hcengineering/ui'
+  import survey, { Survey, Poll } from '@hcengineering/survey'
+  import { hasText } from '../utils'
 
-  export let value: Survey | undefined | null
+  export let value: Survey | Poll | undefined | null
   export let inline: boolean = false
   export let disabled: boolean = false
   export let accent: boolean = false
@@ -38,16 +38,26 @@
     <ObjectMention object={value} {disabled} {accent} {noUnderline} {colorInherit} onClick={onEdit} />
   {:else if type === 'link'}
     <DocNavLink object={value} onClick={onEdit} {disabled} {noUnderline} {colorInherit} {accent} noOverflow>
-      <div class="flex-presenter" style:max-width={maxWidth} use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
-        <div class="icon"><Icon icon={survey.icon.Survey} size={'small'} /></div>
+      <div class="flex-presenter" style:max-width={maxWidth}>
+        <div class="icon">
+          <Icon icon={value._class === survey.class.Survey ? survey.icon.Survey : survey.icon.Poll} size={'small'} />
+        </div>
         <span class="ap-label" class:overflow-label={overflowLabel} class:colorInherit class:fs-bold={accent}>
-          {value.name}
+          {#if hasText(value.name)}
+            {value.name}
+          {:else}
+            <Label label={survey.string.NoName} />
+          {/if}
         </span>
       </div>
     </DocNavLink>
   {:else if type === 'text'}
-    <span class:overflow-label={overflowLabel} use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
-      {value.name}
+    <span class:overflow-label={overflowLabel}>
+      {#if hasText(value.name)}
+        {value.name}
+      {:else}
+        <Label label={survey.string.NoName} />
+      {/if}
     </span>
   {/if}
 {/if}

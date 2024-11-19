@@ -13,8 +13,6 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@hcengineering/platform'
-import { surveyId } from '@hcengineering/survey'
 import survey from '@hcengineering/survey-resources/src/plugin'
 
-export default mergeIds(surveyId, survey, {})
+export default survey

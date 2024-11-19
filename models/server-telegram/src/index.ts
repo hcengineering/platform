@@ -45,9 +45,8 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTelegram.trigger.OnMessageCreate,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx.objectClass': telegram.class.Message,
-      'tx._class': core.class.TxCreateDoc
+      _class: core.class.TxCreateDoc,
+      objectClass: telegram.class.Message
     }
   })
 

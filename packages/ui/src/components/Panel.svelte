@@ -309,6 +309,11 @@
       </div>
     {/if}
   </div>
+  {#if $$slots['panel-footer']}
+    <div class="popupPanel-footer">
+      <slot name="panel-footer" />
+    </div>
+  {/if}
   <div class="popupPanel-pageHeader only-print" id="page-header">
     <slot name="page-header" />
   </div>

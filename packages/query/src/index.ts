@@ -15,7 +15,6 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  AttachedDoc,
   BulkUpdateEvent,
   Class,
   Client,
@@ -38,7 +37,6 @@ import core, {
   Space,
   Timestamp,
   Tx,
-  TxCollectionCUD,
   TxCreateDoc,
   TxMixin,
   TxProcessor,
@@ -672,41 +670,6 @@ export class LiveQuery implements WithTx, Client {
     return {}
   }
 
-  protected async txCollectionCUD (
-    tx: TxCollectionCUD<Doc, AttachedDoc>,
-    docCache: Map<string, Doc>
-  ): Promise<TxResult> {
-    for (const queries of this.queries) {
-      const isTx = this.client.getHierarchy().isDerived(queries[0], core.class.Tx)
-      for (const q of queries[1]) {
-        if (isTx) {
-          // handle add since Txes are immutable
-          await this.handleDocAdd(q, tx, true, docCache)
-          continue
-        }
-
-        if (tx.tx._class === core.class.TxCreateDoc) {
-          const createTx = tx.tx as TxCreateDoc<AttachedDoc>
-          const d: TxCreateDoc<AttachedDoc> = {
-            ...createTx,
-            attributes: {
-              ...createTx.attributes,
-              attachedTo: tx.objectId,
-              attachedToClass: tx.objectClass,
-              collection: tx.collection
-            }
-          }
-          await this.handleDocAdd(q, TxProcessor.createDoc2Doc(d), true, docCache)
-        } else if (tx.tx._class === core.class.TxUpdateDoc) {
-          await this.handleDocUpdate(q, tx.tx as unknown as TxUpdateDoc<Doc>, docCache)
-        } else if (tx.tx._class === core.class.TxRemoveDoc) {
-          await this.handleDocRemove(q, tx.tx as unknown as TxRemoveDoc<Doc>)
-        }
-      }
-    }
-    return {}
-  }
-
   async txUpdateDoc (tx: TxUpdateDoc<Doc>, docCache: Map<string, Doc>): Promise<TxResult> {
     for (const queries of this.queries) {
       const isTx = this.client.getHierarchy().isDerived(queries[0], core.class.Tx)
@@ -1278,8 +1241,6 @@ export class LiveQuery implements WithTx, Client {
     switch (tx._class) {
       case core.class.TxCreateDoc:
         return await this.txCreateDoc(tx as TxCreateDoc<Doc>, docCache)
-      case core.class.TxCollectionCUD:
-        return await this.txCollectionCUD(tx as TxCollectionCUD<Doc, AttachedDoc>, docCache)
       case core.class.TxUpdateDoc:
         return await this.txUpdateDoc(tx as TxUpdateDoc<Doc>, docCache)
       case core.class.TxRemoveDoc:

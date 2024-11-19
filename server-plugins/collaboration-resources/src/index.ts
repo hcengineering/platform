@@ -15,7 +15,7 @@
 
 import { removeCollaborativeDoc } from '@hcengineering/collaboration'
 import type { CollaborativeDoc, Doc, Tx, TxRemoveDoc } from '@hcengineering/core'
-import core, { TxProcessor } from '@hcengineering/core'
+import core from '@hcengineering/core'
 import { type TriggerControl } from '@hcengineering/server-core'
 
 /**
@@ -25,9 +25,7 @@ export async function OnDelete (
   txes: Tx[],
   { hierarchy, storageAdapter, workspace, removedMap, ctx }: TriggerControl
 ): Promise<Tx[]> {
-  const ltxes = txes
-    .map((it) => TxProcessor.extractTx(it))
-    .filter((it) => it._class === core.class.TxRemoveDoc) as TxRemoveDoc<Doc>[]
+  const ltxes = txes.filter((it) => it._class === core.class.TxRemoveDoc) as TxRemoveDoc<Doc>[]
   for (const rmTx of ltxes) {
     // Obtain document being deleted
     const doc = removedMap.get(rmTx.objectId)

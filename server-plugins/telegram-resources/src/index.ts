@@ -105,7 +105,7 @@ export function IsIncomingMessageTypeMatch (
   type: NotificationType,
   control: TriggerControl
 ): boolean {
-  const message = TxProcessor.createDoc2Doc(TxProcessor.extractTx(tx) as TxCreateDoc<TelegramMessage>)
+  const message = TxProcessor.createDoc2Doc(tx as TxCreateDoc<TelegramMessage>)
   return message.incoming && message.sendOn > (doc.createdOn ?? doc.modifiedOn)
 }
 

@@ -20,13 +20,10 @@ import task, { Task } from '@hcengineering/task'
 /**
  * @public
  */
-export async function OnStateUpdate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+export async function OnStateUpdate (txes: TxCUD<Doc>[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
-  for (const tx of txes) {
-    const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-    if (!control.hierarchy.isDerived(actualTx.objectClass, task.class.Task)) {
-      continue
-    }
+  for (const actualTx of txes) {
+    if (!control.hierarchy.isDerived(actualTx.objectClass, task.class.Task)) continue
     if (actualTx._class === core.class.TxCreateDoc) {
       const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<Task>)
       const status = control.modelDb.findAllSync(core.class.Status, { _id: doc.status })[0]

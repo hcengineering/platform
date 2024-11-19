@@ -119,7 +119,7 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
         this.pendingTxes.delete(t._id)
 
         // Only CUD tx can be pending now
-        const innerTx = TxProcessor.extractTx(t) as TxCUD<Doc>
+        const innerTx = t as TxCUD<Doc>
 
         if (innerTx._class === core.class.TxCreateDoc) {
           // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -206,7 +206,7 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
       return
     }
 
-    const innerTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
+    const innerTx = tx as TxCUD<Doc>
     // Can pre-build some configuration later from the model if this will be too slow.
     const instantTxes = this.getHierarchy().classHierarchyMixin(innerTx.objectClass, plugin.mixin.InstantTransactions)
     if (instantTxes?.txClasses.includes(innerTx._class) !== true) {
@@ -626,7 +626,7 @@ export async function getAttributeEditor (
 
 function filterKeys (hierarchy: Hierarchy, keys: KeyedAttribute[], ignoreKeys: string[]): KeyedAttribute[] {
   const docKeys: Set<string> = new Set<string>(hierarchy.getAllAttributes(core.class.AttachedDoc).keys())
-  keys = keys.filter((k) => !docKeys.has(k.key))
+  keys = keys.filter((k) => !docKeys.has(k.key) || k.attr.editor !== undefined)
   keys = keys.filter((k) => !ignoreKeys.includes(k.key))
   return keys
 }

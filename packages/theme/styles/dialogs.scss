@@ -50,6 +50,7 @@
     }
 
     &__title-wrap {
+      overflow-x: auto;
       display: flex;
       align-items: center;
       min-width: 0;
@@ -276,6 +277,12 @@
     width: 90vw;
     max-width: 90vw;
     max-height: 90vh;
+
+    @media screen and (max-width: 480px) {
+      width: 100%;
+      max-width: 100%;
+      max-height: 100%;
+    }
 
     .antiCard-header {
       padding: .75rem .75rem .375rem;

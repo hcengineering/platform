@@ -16,6 +16,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { EditBox } from '@hcengineering/ui'
   import { MeetingMinutes } from '@hcengineering/love'
+  import { createEventDispatcher, onMount } from 'svelte'
 
   import love from '../plugin'
 
@@ -23,10 +24,15 @@
   export let readonly: boolean = false
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   async function changeTitle (): Promise<void> {
-    await client.diffUpdate(object, { title: object.title })
+    await client.update(object, { title: object.title })
   }
+
+  onMount(() => {
+    dispatch('open', { ignoreKeys: ['title'] })
+  })
 </script>
 
 <div class="flex-row-stretch">

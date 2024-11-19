@@ -119,7 +119,7 @@ function defineApplication (builder: Builder): void {
           }
         ]
       },
-      navHeaderComponent: testManagement.component.NewTestCaseHeader
+      navHeaderComponent: testManagement.component.TestManagementSpaceHeader
     },
     testManagement.app.TestManagement
   )
@@ -143,7 +143,7 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: testManagement.class.TestProject,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   defineTestSuite(builder)
@@ -218,7 +218,7 @@ function defineTestSuite (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: testManagement.class.TestSuite,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.ObjectEditor, {
@@ -283,7 +283,7 @@ function defineTestCase (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: testManagement.class.TestCase,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ObjectEditor, {
@@ -388,7 +388,7 @@ function defineTestRun (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: testManagement.class.TestRun,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.mixin(testManagement.class.TestRun, core.class.Class, view.mixin.ObjectEditor, {

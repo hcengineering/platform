@@ -44,27 +44,24 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTime.trigger.OnToDoUpdate,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx.objectClass': time.class.ToDo,
-      'tx._class': core.class.TxUpdateDoc
+      _class: core.class.TxUpdateDoc,
+      objectClass: time.class.ToDo
     }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTime.trigger.OnToDoRemove,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx.objectClass': time.class.ToDo,
-      'tx._class': core.class.TxRemoveDoc
+      _class: core.class.TxRemoveDoc,
+      objectClass: time.class.ToDo
     }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTime.trigger.OnToDoCreate,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx.objectClass': time.class.ToDo,
-      'tx._class': core.class.TxCreateDoc
+      _class: core.class.TxCreateDoc,
+      objectClass: time.class.ToDo
     },
     isAsync: true
   })
@@ -72,18 +69,16 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTime.trigger.OnWorkSlotCreate,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx.objectClass': time.class.WorkSlot,
-      'tx._class': core.class.TxCreateDoc
+      _class: core.class.TxCreateDoc,
+      objectClass: time.class.WorkSlot
     }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTime.trigger.OnWorkSlotUpdate,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx.objectClass': time.class.WorkSlot,
-      'tx._class': core.class.TxUpdateDoc
+      _class: core.class.TxUpdateDoc,
+      objectClass: time.class.WorkSlot
     }
   })
 

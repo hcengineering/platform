@@ -51,8 +51,7 @@ export async function TagElementRemove (
  */
 export async function OnTagReference (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
-  for (const tx of txes) {
-    const actualTx = TxProcessor.extractTx(tx)
+  for (const actualTx of txes) {
     const isCreate = control.hierarchy.isDerived(actualTx._class, core.class.TxCreateDoc)
     const isRemove = control.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)
     if (!isCreate && !isRemove) {
@@ -63,11 +62,10 @@ export async function OnTagReference (txes: Tx[], control: TriggerControl): Prom
     }
     if (isCreate) {
       const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<TagReference>)
-      result.push(
-        control.txFactory.createTxUpdateDoc(tags.class.TagElement, core.space.Workspace, doc.tag, {
-          $inc: { refCount: 1 }
-        })
-      )
+      const res = control.txFactory.createTxUpdateDoc(tags.class.TagElement, core.space.Workspace, doc.tag, {
+        $inc: { refCount: 1 }
+      })
+      result.push(res)
     }
     if (isRemove) {
       const ctx = actualTx as TxRemoveDoc<TagReference>

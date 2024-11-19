@@ -15,7 +15,6 @@
 
 import core, {
   AccountRole,
-  type AttachedDoc,
   type Class,
   type Doc,
   type DocInfo,
@@ -23,6 +22,7 @@ import core, {
   type DocumentUpdate,
   type Domain,
   DOMAIN_MODEL,
+  DOMAIN_MODEL_TX,
   DOMAIN_SPACE,
   DOMAIN_TX,
   type FindOptions,
@@ -44,7 +44,6 @@ import core, {
   type StorageIterator,
   toFindResult,
   type Tx,
-  type TxCollectionCUD,
   type TxCreateDoc,
   type TxCUD,
   type TxMixin,
@@ -313,8 +312,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
             const prevAttachedTo = (doc as any).attachedTo
             TxProcessor.applyUpdate(doc, operations)
             const converted = convertDoc(domain, doc, this.workspaceId.name)
-            let paramsIndex = 3
             const params: any[] = [doc._id, this.workspaceId.name]
+            let paramsIndex = params.length + 1
             const updates: string[] = []
             const { extractedFields, remainingData } = parseUpdate(domain, operations)
             const newAttachedTo = (doc as any).attachedTo
@@ -356,7 +355,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     const translatedQuery = this.buildRawQuery(domain, query)
     const updates: string[] = []
     const params: any[] = []
-    let paramsIndex = 5
+    let paramsIndex = params.length + 1
     const { extractedFields, remainingData } = parseUpdate(domain, operations)
     const { space, attachedTo, ...ops } = operations as any
     for (const key in extractedFields) {
@@ -478,10 +477,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
     if (sessionContext !== undefined && sessionContext.isTriggerCtx !== true) {
       if (sessionContext.admin !== true && sessionContext.account !== undefined) {
         const acc = sessionContext.account
-        if (isOwner(acc) || acc.role === AccountRole.DocGuest) {
+        if (acc.role === AccountRole.DocGuest || acc._id === core.account.System) {
           return
         }
         if (query.space === acc._id) return
+        if (domain === DOMAIN_SPACE && isOwner(acc)) return
         const key = domain === DOMAIN_SPACE ? '_id' : domain === DOMAIN_TX ? "data ->> 'objectSpace'" : 'space'
         const privateCheck = domain === DOMAIN_SPACE ? ' OR sec.private = false' : ''
         const q = `(sec.members @> '{"${acc._id}"}' OR sec."_class" = '${core.class.SystemSpace}'${privateCheck})`
@@ -944,7 +944,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       } else {
         tKey += arr[i]
         if (i !== arr.length - 1) {
-          tKey += '.'
+          tKey += ','
         }
       }
       // Check if key is belong to mixin class, we need to add prefix.
@@ -1020,7 +1020,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             res.push(`${tkey} IS ${val === true ? 'NOT NULL' : 'NULL'}`)
             break
           case '$regex':
-            res.push(`${tkey} SIMILAR TO '${val}'`)
+            res.push(`${tkey} SIMILAR TO '${escapeBackticks(val)}'`)
             break
           case '$options':
             break
@@ -1035,7 +1035,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       return res.length === 0 ? undefined : res.join(' AND ')
     }
     return type === 'common'
-      ? `${tkey} = '${value}'`
+      ? `${tkey} = '${escapeBackticks(value)}'`
       : type === 'array'
         ? `${tkey} @> '${typeof value === 'string' ? '{"' + value + '"}' : value}'`
         : `${tkey} @> '${typeof value === 'string' ? '"' + value + '"' : value}'`
@@ -1380,8 +1380,6 @@ class PostgresAdapter extends PostgresAdapterBase {
     switch (tx._class) {
       case core.class.TxCreateDoc:
         return await this.txCreateDoc(ctx, tx as TxCreateDoc<Doc>)
-      case core.class.TxCollectionCUD:
-        return await this.txCollectionCUD(ctx, tx as TxCollectionCUD<Doc, AttachedDoc>)
       case core.class.TxUpdateDoc:
         return await this.txUpdateDoc(ctx, tx as TxUpdateDoc<Doc>)
       case core.class.TxRemoveDoc:
@@ -1395,28 +1393,6 @@ class PostgresAdapter extends PostgresAdapterBase {
         console.error('Unknown/Unsupported operation:', tx._class, tx)
         break
     }
-  }
-
-  protected async txCollectionCUD (
-    ctx: MeasureContext,
-    tx: TxCollectionCUD<Doc, AttachedDoc>
-  ): Promise<TxResult | undefined> {
-    // We need update only create transactions to contain attached, attachedToClass.
-    if (tx.tx._class === core.class.TxCreateDoc) {
-      const createTx = tx.tx as TxCreateDoc<AttachedDoc>
-      const d: TxCreateDoc<AttachedDoc> = {
-        ...createTx,
-        attributes: {
-          ...createTx.attributes,
-          attachedTo: tx.objectId,
-          attachedToClass: tx.objectClass,
-          collection: tx.collection
-        }
-      }
-      return await this.txCreateDoc(ctx, d)
-    }
-    // We could cast since we know collection cud is supported.
-    return await this.process(ctx, tx.tx as Tx)
   }
 
   private async txMixin (ctx: MeasureContext, tx: TxMixin<Doc, Doc>): Promise<TxResult> {
@@ -1521,7 +1497,7 @@ class PostgresAdapter extends PostgresAdapterBase {
     return ctx.with('update jsonb_set', {}, async (_ctx) => {
       const updates: string[] = ['"modifiedBy" = $1', '"modifiedOn" = $2']
       const params: any[] = [tx.modifiedBy, tx.modifiedOn, tx.objectId, this.workspaceId.name]
-      let paramsIndex = 5
+      let paramsIndex = params.length + 1
       const domain = this.hierarchy.getDomain(tx.objectClass)
       const { extractedFields, remainingData } = parseUpdate(domain, tx.operations)
       const { space, attachedTo, ...ops } = tx.operations as any
@@ -1599,7 +1575,7 @@ class PostgresAdapter extends PostgresAdapterBase {
 
 class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
   async init (domains?: string[], excludeDomains?: string[]): Promise<void> {
-    const resultDomains = domains ?? [DOMAIN_TX]
+    const resultDomains = domains ?? [DOMAIN_TX, DOMAIN_MODEL_TX]
     await createTables(this.client, resultDomains)
     this._helper.domains = new Set(resultDomains as Domain[])
   }
@@ -1609,7 +1585,21 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
       return []
     }
     try {
-      await this.insert(ctx, DOMAIN_TX, tx)
+      const modelTxes: Tx[] = []
+      const baseTxes: Tx[] = []
+      for (const _tx of tx) {
+        if (_tx.objectSpace === core.space.Model) {
+          modelTxes.push(_tx)
+        } else {
+          baseTxes.push(_tx)
+        }
+      }
+      if (modelTxes.length > 0) {
+        await this.insert(ctx, DOMAIN_MODEL_TX, modelTxes)
+      }
+      if (baseTxes.length > 0) {
+        await this.insert(ctx, DOMAIN_TX, baseTxes)
+      }
     } catch (err) {
       console.error(err)
     }
@@ -1618,9 +1608,9 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
 
   async getModel (ctx: MeasureContext): Promise<Tx[]> {
     const res = await this
-      .client`SELECT * FROM ${this.client(translateDomain(DOMAIN_TX))} WHERE "workspaceId" = ${this.workspaceId.name} AND "objectSpace" = ${core.space.Model} ORDER BY _id ASC, "modifiedOn" ASC`
+      .client`SELECT * FROM ${this.client(translateDomain(DOMAIN_MODEL_TX))} WHERE "workspaceId" = ${this.workspaceId.name} ORDER BY _id ASC, "modifiedOn" ASC`
 
-    const model = res.map((p) => parseDoc<Tx>(p as any, DOMAIN_TX))
+    const model = res.map((p) => parseDoc<Tx>(p as any, DOMAIN_MODEL_TX))
     // We need to put all core.account.System transactions first
     const systemTx: Tx[] = []
     const userTx: Tx[] = []

@@ -38,9 +38,7 @@ import view from '@hcengineering/view'
 export async function OnPublicLinkCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    const extractedTx = TxProcessor.extractTx(tx)
-
-    const createTx = extractedTx as TxCreateDoc<PublicLink>
+    const createTx = tx as TxCreateDoc<PublicLink>
 
     const link = TxProcessor.createDoc2Doc<PublicLink>(createTx)
 

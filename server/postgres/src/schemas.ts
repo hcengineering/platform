@@ -1,4 +1,4 @@
-import { DOMAIN_DOC_INDEX_STATE, DOMAIN_SPACE, DOMAIN_TX } from '@hcengineering/core'
+import { DOMAIN_DOC_INDEX_STATE, DOMAIN_MODEL_TX, DOMAIN_SPACE, DOMAIN_TX } from '@hcengineering/core'
 
 export type DataType = 'bigint' | 'bool' | 'text' | 'text[]'
 
@@ -86,7 +86,7 @@ const spaceSchema: Schema = {
 }
 
 const txSchema: Schema = {
-  ...baseSchema,
+  ...defaultSchema,
   objectSpace: {
     type: 'text',
     notNull: true,
@@ -223,6 +223,7 @@ export function translateDomain (domain: string): string {
 export const domainSchemas: Record<string, Schema> = {
   [DOMAIN_SPACE]: spaceSchema,
   [DOMAIN_TX]: txSchema,
+  [DOMAIN_MODEL_TX]: txSchema,
   [translateDomain('time')]: timeSchema,
   [translateDomain('calendar')]: calendarSchema,
   [translateDomain('event')]: eventSchema,

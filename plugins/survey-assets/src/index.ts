@@ -19,13 +19,17 @@ import survey, { surveyId } from '@hcengineering/survey'
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(survey.icon, {
   Application: `${icons}#application`,
-  Poll: `${icons}#page`,
+  Info: `${icons}#info`,
+  Poll: `${icons}#poll`,
   Question: `${icons}#question`,
   QuestionKindString: `${icons}#textline`,
   QuestionKindOption: `${icons}#radio`,
   QuestionKindOptions: `${icons}#checkbox`,
-  Survey: `${icons}#application`,
+  Survey: `${icons}#survey`,
+  Submit: `${icons}#submit`,
   QuestionIsMandatory: `${icons}#asterisk`,
-  QuestionHasCustomOption: `${icons}#star`
+  QuestionHasCustomOption: `${icons}#star`,
+  ValidateFail: `${icons}#validate-fail`,
+  ValidateOk: `${icons}#validate-ok`
 })
 addStringsLoader(surveyId, async (lang: string) => await import(`../lang/${lang}.json`))

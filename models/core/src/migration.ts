@@ -15,22 +15,26 @@
 
 import { saveCollaborativeDoc } from '@hcengineering/collaboration'
 import core, {
+  collaborativeDocParse,
+  coreId,
+  DOMAIN_MODEL_TX,
   DOMAIN_SPACE,
   DOMAIN_STATUS,
   DOMAIN_TX,
-  MeasureMetricsContext,
-  RateLimiter,
-  collaborativeDocParse,
-  coreId,
   generateId,
   makeCollaborativeDoc,
+  MeasureMetricsContext,
+  RateLimiter,
   type AnyAttribute,
+  type Class,
   type Doc,
   type Domain,
   type MeasureContext,
+  type Ref,
   type Space,
   type Status,
-  type TxCreateDoc
+  type TxCreateDoc,
+  type TxCUD
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -284,6 +288,67 @@ export const coreOperation: MigrateOperation = {
         func: async (client: MigrationClient): Promise<void> => {
           await client.update(DOMAIN_TX, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
           await client.update(DOMAIN_SPACE, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
+        }
+      },
+      {
+        state: 'remove-github-patches',
+        func: async (client) => {
+          await client.update(
+            DOMAIN_TX,
+            {
+              objectClass: 'tracker:class:Issue',
+              collection: 'pullRequests',
+              'tx.attributes.patch': { $exists: true }
+            },
+            { $unset: { 'tx.attributes.patch': 1 } }
+          )
+        }
+      },
+      {
+        state: 'remove-collection-txes',
+        func: async (client) => {
+          let processed = 0
+          const iterator = await client.traverse<TxCUD<Doc>>(DOMAIN_TX, {
+            _class: 'core:class:TxCollectionCUD' as Ref<Class<Doc>>
+          })
+          while (true) {
+            const txes = await iterator.next(1000)
+            if (txes === null || txes.length === 0) break
+            processed += txes.length
+            try {
+              await client.deleteMany(DOMAIN_TX, {
+                _id: { $in: txes.map((it) => it._id) }
+              })
+              await client.create(
+                DOMAIN_TX,
+                txes.map((tx) => {
+                  const { collection, objectId, objectClass } = tx
+                  return {
+                    collection,
+                    attachedTo: objectId,
+                    attachedToClass: objectClass,
+                    ...(tx as any).tx
+                  }
+                })
+              )
+            } catch (err: any) {
+              console.error(err)
+            }
+            console.log('processed', processed)
+          }
+          await iterator.close()
+        }
+      },
+      {
+        state: 'move-model-txes',
+        func: async (client) => {
+          await client.move(
+            DOMAIN_TX,
+            {
+              objectSpace: core.space.Model
+            },
+            DOMAIN_MODEL_TX
+          )
         }
       }
     ])

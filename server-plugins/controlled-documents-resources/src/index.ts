@@ -20,7 +20,6 @@ import core, {
   Ref,
   SortingOrder,
   Tx,
-  TxCollectionCUD,
   TxCreateDoc,
   TxFactory,
   TxUpdateDoc,
@@ -345,12 +344,17 @@ export async function OnDocPlannedEffectiveDateChanged (
 }
 
 export async function OnDocApprovalRequestApproved (
-  txes: TxCollectionCUD<ControlledDocument, DocumentApprovalRequest>[],
+  txes: TxUpdateDoc<DocumentApprovalRequest>[],
   control: TriggerControl
 ): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    const doc = (await control.findAll(control.ctx, tx.objectClass, { _id: tx.objectId })).shift()
+    if (tx.attachedTo === undefined || tx.attachedToClass === undefined) continue
+    const doc = (
+      await control.findAll<ControlledDocument>(control.ctx, tx.attachedToClass, {
+        _id: tx.attachedTo as Ref<ControlledDocument>
+      })
+    )[0]
     if (doc == null || doc.plannedEffectiveDate !== 0) {
       continue
     }

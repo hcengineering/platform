@@ -85,17 +85,17 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: inventory.class.Product,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: inventory.class.Category,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: inventory.class.Variant,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.mixin(inventory.class.Category, core.class.Class, view.mixin.ObjectPresenter, {
