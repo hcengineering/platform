@@ -450,3 +450,6 @@
 .select-text p > br.ProseMirror-trailingBreak::selection {
   background: transparent;
 }
+.select-text .text-editor-image-container {
+  user-select: all;
+}
