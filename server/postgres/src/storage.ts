@@ -1076,6 +1076,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
     if (projection === undefined) {
       res.push(`${baseDomain}.*`)
     } else {
+      if (projection._id === undefined) {
+        res.push(`${baseDomain}."_id" AS "_id"`)
+      }
+      if (projection._class === undefined) {
+        res.push(`${baseDomain}."_class" AS "_class"`)
+      }
       for (const key in projection) {
         if (isDataField(baseDomain, key)) {
           if (!dataAdded) {

@@ -63,14 +63,14 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   )
 
   readonly inboxNotificationsByContext = derived(
-    [this.contexts, this.inboxNotifications],
-    ([notifyContexts, inboxNotifications]) => {
-      if (inboxNotifications.length === 0 || notifyContexts.length === 0) {
+    [this.contextById, this.inboxNotifications],
+    ([contextById, inboxNotifications]) => {
+      if (inboxNotifications.length === 0 || contextById.size === 0) {
         return new Map<Ref<DocNotifyContext>, InboxNotification[]>()
       }
 
       return inboxNotifications.reduce((result, notification) => {
-        const notifyContext = notifyContexts.find(({ _id }) => _id === notification.docNotifyContext)
+        const notifyContext = contextById.get(notification.docNotifyContext)
 
         if (notifyContext === undefined) {
           return result
