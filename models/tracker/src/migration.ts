@@ -39,11 +39,16 @@ import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_TASK, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
 import task from '@hcengineering/task'
-import { type Issue, type IssueStatus, type Project, TimeReportDayType, trackerId } from '@hcengineering/tracker'
+import tracker, {
+  type Issue,
+  type IssueStatus,
+  type Project,
+  TimeReportDayType,
+  trackerId
+} from '@hcengineering/tracker'
 
 import contact from '@hcengineering/model-contact'
 import { classicIssueTaskStatuses } from '.'
-import tracker from './plugin'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(tracker.class.Project, {

@@ -15,6 +15,7 @@
 import contact, { type Person, type PersonAccount } from '@hcengineering/contact'
 import { type Ref, type Timestamp, type TxOperations } from '@hcengineering/core'
 import { MarkupNodeType, traverseNode, type MarkupNode } from '@hcengineering/text'
+import tracker from '@hcengineering/tracker'
 import csv from 'csvtojson'
 import { download } from '../importer/dowloader'
 import {
@@ -22,10 +23,10 @@ import {
   type ImportComment,
   type ImportIssue,
   type ImportProject,
-  type ImportProjectType,
-  type MarkdownPreprocessor
+  type ImportProjectType
 } from '../importer/importer'
 import { type FileUploader } from '../importer/uploader'
+import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 
 interface ClickupTask {
   'Task ID': string
@@ -61,77 +62,15 @@ interface ImportIssueEx extends ImportIssue {
   clickupProjectName?: string
 }
 
-class ClickupMarkdownPreprocessor implements MarkdownPreprocessor {
-  private readonly MENTION_REGEX = /@([\p{L}\p{M}]+ [\p{L}\p{M}]+)/gu
-  constructor (private readonly personsByName: Map<string, Ref<Person>>) {}
-
+class ClickupMarkdownPreprocessor extends BaseMarkdownPreprocessor {
   process (json: MarkupNode): MarkupNode {
     traverseNode(json, (node) => {
-      if (node.type === MarkupNodeType.paragraph && node.content !== undefined) {
-        const newContent: MarkupNode[] = []
-        for (const childNode of node.content) {
-          if (childNode.type === MarkupNodeType.text && childNode.text !== undefined) {
-            let match
-            let lastIndex = 0
-            let hasMentions = false
-
-            while ((match = this.MENTION_REGEX.exec(childNode.text)) !== null) {
-              hasMentions = true
-              if (match.index > lastIndex) {
-                newContent.push({
-                  type: MarkupNodeType.text,
-                  text: childNode.text.slice(lastIndex, match.index),
-                  marks: childNode.marks,
-                  attrs: childNode.attrs
-                })
-              }
-
-              const name = match[1]
-              const personRef = this.personsByName.get(name)
-              if (personRef !== undefined) {
-                newContent.push({
-                  type: MarkupNodeType.reference,
-                  attrs: {
-                    id: personRef,
-                    label: name,
-                    objectclass: contact.class.Person
-                  }
-                })
-              } else {
-                newContent.push({
-                  type: MarkupNodeType.text,
-                  text: match[0],
-                  marks: childNode.marks,
-                  attrs: childNode.attrs
-                })
-              }
-
-              lastIndex = this.MENTION_REGEX.lastIndex
-            }
-
-            if (hasMentions) {
-              if (lastIndex < childNode.text.length) {
-                newContent.push({
-                  type: MarkupNodeType.text,
-                  text: childNode.text.slice(lastIndex),
-                  marks: childNode.marks,
-                  attrs: childNode.attrs
-                })
-              }
-            } else {
-              newContent.push(childNode)
-            }
-          } else {
-            newContent.push(childNode)
-          }
-        }
-
-        node.content = newContent
+      if (node.type === MarkupNodeType.paragraph) {
+        this.processMentions(node)
         return false
       }
       return true
     })
-
     return json
   }
 }
@@ -206,8 +145,8 @@ class ClickupImporter {
     for (const projectName of projects) {
       const identifier = this.getProjectIdentifier(projectName)
       importProjectsByName.set(projectName, {
-        class: 'tracker.class.Project',
-        name: projectName,
+        class: tracker.class.Project,
+        title: projectName,
         identifier,
         private: false,
         autoJoin: false,
@@ -280,7 +219,7 @@ class ClickupImporter {
     }
 
     return {
-      class: 'tracker.class.Issue',
+      class: tracker.class.Issue,
       title: clickup['Task Name'],
       descrProvider: () => {
         return Promise.resolve(description)
