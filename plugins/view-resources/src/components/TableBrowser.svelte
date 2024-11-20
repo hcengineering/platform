@@ -52,16 +52,6 @@
   onMount(() => {
     ;(document.activeElement as HTMLElement)?.blur()
   })
-
-  // Search config
-  const _config = config
-
-  function updateConfig (config: Array<BuildModelKey | string>, search?: string): void {
-    const useSearch = search !== '' && search != null
-    prefferedSorting = !useSearch ? prefferedSorting : '#score'
-  }
-
-  $: updateConfig(config, query.$search)
 </script>
 
 <svelte:window />
@@ -76,7 +66,7 @@
   <Table
     bind:this={table}
     {_class}
-    config={_config}
+    {config}
     {options}
     {query}
     {totalQuery}
