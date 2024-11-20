@@ -566,6 +566,11 @@
       height: 3.5rem;
       min-height: 3.5rem;
     }
+    &__pad {
+      display: flex;
+      align-items: center;
+      padding: 0 0.5rem;
+    }
     &__icon {
       display: flex;
       justify-content: center;

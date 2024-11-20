@@ -57,7 +57,8 @@ import {
   Collection,
   ReadOnly,
   TypeDate,
-  Hidden
+  Hidden,
+  TypeNumber
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import core, { TAttachedDoc, TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
@@ -212,6 +213,9 @@ export class TTestResult extends TAttachedDoc implements TestResult {
   @Hidden()
   override collection: 'results' = 'results'
 
+  @Prop(TypeTestRunStatus(), testManagement.string.TestRunStatus)
+    status?: TestRunStatus
+
   @Prop(TypeCollaborativeDoc(), testManagement.string.FullDescription)
   @Index(IndexKind.FullText)
     description!: CollaborativeDoc
@@ -241,6 +245,18 @@ export class TTestRun extends TDoc implements TestRun {
     shortLabel: testManagement.string.TestRunItem
   })
     items?: CollectionSize<TestRunItem>
+
+  @Prop(TypeNumber(), testManagement.string.DonePercent)
+    completionPercent?: number
+
+  @Prop(TypeNumber(), testManagement.string.StatusPassed)
+    completed?: number
+
+  @Prop(TypeNumber(), testManagement.string.StatusFailed)
+    failed?: number
+
+  @Prop(TypeNumber(), testManagement.string.StatusNonTested)
+    untested?: number
 }
 
 /** @public */

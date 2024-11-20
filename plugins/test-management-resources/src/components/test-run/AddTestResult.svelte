@@ -18,12 +18,13 @@
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { TestCase, TestProject, TestResult } from '@hcengineering/test-management'
   import core, { fillDefaults, generateId, makeCollaborativeDoc, Ref, TxOperations, Data } from '@hcengineering/core'
-  import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
-  import { Panel } from '@hcengineering/panel'
+  import { Card, AttributeEditor, getClient } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
-  import { Button, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
+  import { Button, createFocusManager, Label, FocusHandler, IconAttachment } from '@hcengineering/ui'
+  import { selectedTestRun } from './store/testRunStore'
 
   import testManagement from '../../plugin'
+  import TestRunStatusEditor from './TestRunStatusEditor.svelte'
 
   export let onCreate: ((orgId: Ref<TestCase>, client: TxOperations) => Promise<void>) | undefined = undefined
 
@@ -33,11 +34,12 @@
 
   const object: Data<TestResult> = {
     description: makeCollaborativeDoc(id, 'description'),
-    attachments: 0
+    attachments: 0,
+    status: undefined
     // attachedTo: testSuiteId
   } as unknown as TestResult
 
-  let _space = space
+  const _space = space
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -55,8 +57,23 @@
 
 <FocusHandler {manager} />
 
-<div>
+<div class="resultPanel">
+  <div class="separator" />
+  <div class="editor">
+    <div class="popupPanel-body__aside-grid">
+      <span
+      class="labelOnPanel">
+        <Label label={testManagement.string.TestStatus}/>
+      </span>
+      <TestRunStatusEditor
+        value={$selectedTestRun?.status}
+        object={$selectedTestRun}
+      />
+    </div>
 
+  </div>
+  <div class="divider"/>
+  <div class="item">
   <AttachmentStyledBox
     bind:this={descriptionBox}
     objectId={id}
@@ -78,7 +95,9 @@
       }
     }}
   />
+</div>
 
+<div class="item">
   {#if attachments.size > 0}
     {#each Array.from(attachments.values()) as attachment}
       <AttachmentPresenter
@@ -91,8 +110,9 @@
       />
     {/each}
   {/if}
+</div>
 
-
+<div class="item">
   <Button
     icon={IconAttachment}
     size="large"
@@ -101,3 +121,51 @@
     }}
   />
 </div>
+  <div class="footer">
+    <Button
+      label={testManagement.string.Save}
+      kind={'primary'}
+      on:click={() => {
+        dispatch('close')
+      }}
+    />
+    <div class="mr-4" />
+    <Button
+      label={testManagement.string.SaveAndNext}
+      on:click={() => {
+        dispatch('close')
+      }}
+    />
+  </div>
+</div>
+
+<style lang="scss">
+  .resultPanel {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    .item {
+      justify-content: start;
+      padding: .75rem;
+    }
+    .editor {
+      padding: 0.75rem 0;
+      justify-content: start;
+      margin: -0.5rem;
+    }
+    .divider {
+      border-bottom: 1px solid var(--theme-divider-color);
+      width: 100%;
+    }
+
+    .footer {
+      border-top: 1px solid var(--theme-divider-color);
+      padding-top: .75rem;
+      margin-top: auto;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+    }
+  }
+</style>

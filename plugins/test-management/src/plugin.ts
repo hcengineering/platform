@@ -182,7 +182,10 @@ export const testManagementPlugin = plugin(testManagementId, {
     StatusBlocked: '' as IntlString,
     StatusPassed: '' as IntlString,
     StatusFailed: '' as IntlString,
-    SelectTestCase: '' as IntlString
+    SelectTestCase: '' as IntlString,
+    Save: '' as IntlString,
+    SaveAndNext: '' as IntlString,
+    DonePercent: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>
@@ -199,7 +202,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     CreateTestSuite: '' as AnyComponent,
     TestRunFromSelection: '' as AnyComponent,
     TestRunStatusPresenter: '' as AnyComponent,
-    TestCaseNavPresenter: '' as AnyComponent
+    TestCaseNavPresenter: '' as AnyComponent,
+    TestRunResult: '' as AnyComponent
   },
   ids: {
     NoParent: '' as Ref<TestSuite>,

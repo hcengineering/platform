@@ -15,12 +15,12 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
 
-  import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { type Class, type Ref } from '@hcengineering/core'
   import { TestRun, TestCase, TestProject } from '@hcengineering/test-management'
   import { Panel } from '@hcengineering/panel'
   import { SplitView } from '@hcengineering/view-resources'
+  import { Scroller } from '@hcengineering/ui'
 
   import { currentTestCase } from './store/testRunStore'
   import { getTestCases } from '../../testRunUtils'
@@ -29,7 +29,6 @@
   import TestRunItemList from './TestRunItemList.svelte'
   import ViewContainer from './ViewContainer.svelte'
   import TestCaseDetails from '../test-case/TestCaseDetails.svelte'
-
 
   export let _id: Ref<TestRun>
   export let _class: Ref<Class<TestRun>>
@@ -40,21 +39,10 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 
-  let oldLabel: string | undefined = ''
-  let rawLabel: string | undefined = ''
-  let descriptionBox: AttachmentStyleBoxCollabEditor
+  const oldLabel: string | undefined = ''
 
   const query = createQuery()
-
-  let selectedTestCase: Ref<TestCase> | undefined = undefined
-
-  //$: selectedTestCase = $currentTestCase
-
-  currentTestCase.subscribe((testCase) => {
-    selectedTestCase = testCase
-  })
 
   $: _id !== undefined &&
     _class !== undefined &&
@@ -72,15 +60,6 @@
       await client.update(object, { [field]: value })
     }
   }
-
-  let content: HTMLElement
-
-  $: if (oldLabel !== object?.name) {
-    oldLabel = object?.name
-    rawLabel = object?.name
-  }
-
-  $: descriptionKey = hierarchy.getAttribute(testManagement.class.TestCase, 'description')
 
   onMount(() => dispatch('open', { ignoreKeys: [] }))
 </script>
@@ -101,24 +80,23 @@
       <svelte:fragment slot="leftPanel">
         <div class="antiPanel-wrap__content">
           <ViewContainer header={testManagement.string.SelectTestCase}>
-              <TestRunItemList />
+            <TestRunItemList />
           </ViewContainer>
         </div>
       </svelte:fragment>
       <svelte:fragment slot="rightPanel">
         <ViewContainer header={testManagement.string.TestDescription}>
-          {#if selectedTestCase !== undefined}
-            <TestCaseDetails 
-              _id={selectedTestCase} 
-              _class={testManagement.class.TestCase}
-            />
-          {/if}
+          <Scroller padding={'1rem'}>
+            {#if $currentTestCase !== undefined}
+              <TestCaseDetails _id={$currentTestCase} _class={testManagement.class.TestCase} />
+            {/if}
+          </Scroller>
         </ViewContainer>
       </svelte:fragment>
     </SplitView>
     <svelte:fragment slot="aside">
       <ViewContainer header={testManagement.string.TestResult}>
-        <div class="popupPanel-body__aside-grid">
+        <div class="antiPanel-wrap__content">
           <AddTestResult {space} />
         </div>
       </ViewContainer>

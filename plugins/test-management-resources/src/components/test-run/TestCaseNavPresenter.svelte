@@ -18,7 +18,7 @@
 <script lang="ts">
   import { TestCase } from '@hcengineering/test-management'
 
-  import { currentTestCase } from './store/testRunStore'
+  import { currentTestCase, selectedTestRun } from './store/testRunStore'
   import TestCasePresenter from '../test-case/TestCasePresenter.svelte'
 
   export let value: TestCase | undefined

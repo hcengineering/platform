@@ -41,7 +41,7 @@
 </script>
 
 <div class="antiSection max-h-125 clear-mins">
-  <div class="antiSection-header">
+  <div class="antiSection-header__pad">
     <div class="antiSection-header__icon">
       <Icon icon={testManagement.icon.TestCase} size={'small'} />
     </div>

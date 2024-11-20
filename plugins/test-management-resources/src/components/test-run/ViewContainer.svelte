@@ -22,4 +22,4 @@
 <Header adaptive={'disabled'}>
   <Breadcrumb label={header} size={'large'} />
 </Header>
-<slot/>
+<slot />

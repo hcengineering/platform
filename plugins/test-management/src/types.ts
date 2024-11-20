@@ -100,10 +100,10 @@ export interface TestCase extends AttachedDoc<TestSuite, 'testCases', TestProjec
 
 /** @public */
 export interface TestResult extends AttachedDoc<TestCase, 'results', TestProject> {
+  status?: TestRunStatus
   description: CollaborativeDoc
   attachments?: CollectionSize<Attachment>
   comments?: number
-  // status?: TestRunStatus
 }
 
 /** @public */
@@ -112,6 +112,10 @@ export interface TestRun extends Doc {
   description: CollaborativeDoc
   dueDate?: Timestamp
   items?: CollectionSize<TestRunItem>
+  completionPercent?: number
+  completed?: number
+  failed?: number
+  untested?: number
 }
 
 /** @public */

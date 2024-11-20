@@ -38,7 +38,8 @@ import {
   TDefaultProjectTypeData,
   TTestRun,
   TTypeTestRunStatus,
-  TTestRunItem
+  TTestRunItem,
+  TTestResult
 } from './types'
 
 import testManagement from './plugin'
@@ -136,7 +137,8 @@ export function createModel (builder: Builder): void {
     TDefaultProjectTypeData,
     TTestRun,
     TTestRunItem,
-    TTypeTestRunStatus
+    TTypeTestRunStatus,
+    TTestResult
   )
 
   builder.mixin(testManagement.class.TestProject, core.class.Class, activity.mixin.ActivityDoc, {})
@@ -412,7 +414,18 @@ function defineTestRun (builder: Builder): void {
     {
       attachTo: testManagement.class.TestRun,
       descriptor: view.viewlet.Table,
-      config: [''],
+      config: [
+        '',
+        {
+          key: 'completionPercent',
+          label: testManagement.string.DonePercent
+        },
+        {
+          key: '',
+          presenter: testManagement.component.TestRunResult,
+          label: testManagement.string.TestResult
+        }
+      ],
       configOptions: {
         strict: true
       }
@@ -459,7 +472,7 @@ function defineTestRun (builder: Builder): void {
         {
           key: 'status',
           props: { kind: 'list', size: 'small', shouldShowName: false },
-          displayProps: { fixed: 'left' } 
+          displayProps: { fixed: 'left' }
         }
       ],
       viewOptions

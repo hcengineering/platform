@@ -38,30 +38,29 @@
       ;[object] = result
     })
 
-
   $: descriptionKey = hierarchy.getAttribute(testManagement.class.TestCase, 'description')
 
   onMount(() => dispatch('open', { ignoreKeys: [] }))
 </script>
 
 {#if object}
-<div class="w-full h-full">
-  <EditBox
-    value={object.name}
-    placeholder={testManagement.string.NamePlaceholder}
-    kind="large-style"
-    on:blur={async () => {}}
-  />
-
-  <div class="w-full mt-6">
-    <AttachmentStyleBoxCollabEditor
-      focusIndex={30}
-      {object}
-      key={{ key: 'description', attr: descriptionKey }}
-      identifier={object?._id}
-      placeholder={testManagement.string.DescriptionPlaceholder}
-      readonly
+  <div class="w-full h-full">
+    <EditBox
+      value={object.name}
+      placeholder={testManagement.string.NamePlaceholder}
+      kind="large-style"
+      on:blur={async () => {}}
     />
+
+    <div class="w-full mt-6">
+      <AttachmentStyleBoxCollabEditor
+        focusIndex={30}
+        {object}
+        key={{ key: 'description', attr: descriptionKey }}
+        identifier={object?._id}
+        placeholder={testManagement.string.DescriptionPlaceholder}
+        readonly
+      />
+    </div>
   </div>
-</div>
 {/if}
