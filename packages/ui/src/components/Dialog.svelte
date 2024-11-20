@@ -20,13 +20,14 @@
     Button,
     Label,
     IconClose,
-    IconScale,
-    IconScaleFull,
+    IconMaximize,
+    IconMinimize,
     resizeObserver,
     tooltip,
     deviceOptionsStore as deviceInfo,
     checkAdaptiveMatching
   } from '..'
+  import ui from '../plugin'
 
   export let label: IntlString | undefined = undefined
   export let isFullSize: boolean = false
@@ -69,11 +70,12 @@
       {#if isFullSize && !needFullSize}
         <Button
           focusIndex={100010}
-          icon={fullSize ? IconScale : IconScaleFull}
+          icon={fullSize ? IconMinimize : IconMaximize}
           kind={'ghost'}
           size={'medium'}
           selected={fullSize}
           id={'btnDialogFullScreen'}
+          showTooltip={{ label: fullSize ? ui.string.NormalSize : ui.string.FullSize }}
           on:click={() => (toggleFullSize = !toggleFullSize)}
         />
       {/if}

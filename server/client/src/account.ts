@@ -37,6 +37,8 @@ export interface LoginInfo {
   email: string
 }
 
+const connectionErrorCodes = ['ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND']
+
 export async function listAccountWorkspaces (token: string, region: string | null = null): Promise<BaseWorkspaceInfo[]> {
   const accountsUrl = getAccoutsUrlOrFail()
   const workspaces = await (
@@ -101,7 +103,7 @@ export async function getTransactorEndpoint (
         // Timeout happened
         throw err
       }
-      if (err?.cause?.code === 'ECONNRESET' || err?.cause?.code === 'ECONNREFUSED') {
+      if (connectionErrorCodes.includes(err?.cause?.code)) {
         await new Promise<void>((resolve) => setTimeout(resolve, 1000))
       } else {
         throw err
@@ -137,8 +139,7 @@ export function withRetryConnUntilTimeout<P extends any[], T> (
   timeoutMs: number = 5000
 ): (...params: P) => Promise<T> {
   const timeout = Date.now() + timeoutMs
-  const shouldFail = (err: any): boolean =>
-    (err?.cause?.code !== 'ECONNRESET' && err?.cause?.code !== 'ECONNREFUSED') || timeout < Date.now()
+  const shouldFail = (err: any): boolean => !connectionErrorCodes.includes(err?.cause?.code) || timeout < Date.now()
 
   return withRetry(f, shouldFail)
 }
@@ -147,7 +148,7 @@ export function withRetryConnUntilSuccess<P extends any[], T> (
   f: (...params: P) => Promise<T>
 ): (...params: P) => Promise<T> {
   const shouldFail = (err: any): boolean => {
-    const res = err?.cause?.code !== 'ECONNRESET' && err?.cause?.code !== 'ECONNREFUSED'
+    const res = !connectionErrorCodes.includes(err?.cause?.code)
 
     if (res) {
       console.error('Failing withRetryConnUntilSuccess with error cause:', err?.cause)

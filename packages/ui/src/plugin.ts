@@ -119,6 +119,7 @@ export const uis = plugin(uiId, {
     NextStep: '' as IntlString,
     TypeHere: '' as IntlString,
 
+    NormalSize: '' as IntlString,
     FullSize: '' as IntlString,
     UseMaxWidth: '' as IntlString,
     Sidebar: '' as IntlString,
