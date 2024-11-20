@@ -113,6 +113,7 @@ async function getFileRange (
           'Accept-Ranges': 'bytes',
           'Content-Length': end - start + 1,
           'Content-Type': stat.contentType,
+          'Content-Security-Policy': "default-src 'none';",
           Etag: stat.etag,
           'Last-Modified': new Date(stat.modifiedOn).toISOString()
         })
@@ -202,6 +203,7 @@ async function getFile (
         const dataStream = await ctx.with('readable', {}, (ctx) => client.get(ctx, workspace, stat._id))
         res.writeHead(200, {
           'Content-Type': stat.contentType,
+          'Content-Security-Policy': "default-src 'none';",
           Etag: stat.etag,
           'Last-Modified': new Date(stat.modifiedOn).toISOString(),
           'Cache-Control': cacheControlValue,
@@ -414,6 +416,7 @@ export function start (
             res.writeHead(200, {
               'accept-ranges': 'bytes',
               'content-length': blobInfo.size,
+              'content-security-policy': "default-src 'none';",
               Etag: blobInfo.etag,
               'Last-Modified': new Date(blobInfo.modifiedOn).toISOString()
             })
