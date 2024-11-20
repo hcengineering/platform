@@ -34,7 +34,6 @@
     { id: 'fr', label: ui.string.French, logo: '&#x1F1EB;&#x1F1F7;' },
     { id: 'it', label: ui.string.Italian, logo: '&#x1F1EE;&#x1F1F9;' },
     { id: 'cs', label: ui.string.Czech, logo: '&#x1F1E8;&#x1F1FF;' }
-
   ].filter((lang) => uiLangs.has(lang.id))
   if (langs.findIndex((l) => l.id === currentLanguage) < 0 && langs.length !== 0) {
     setLanguage(langs[0].id)
