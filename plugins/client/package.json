@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/communication": "^0.6.0",
     "@hcengineering/core": "^0.6.32"
   },
   "repository": "https://github.com/hcengineering/platform",

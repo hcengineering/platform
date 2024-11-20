@@ -47,6 +47,8 @@ import {
   type StatisticsElement
 } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
+import * as comm from '@hcengineering/communication'
+import { Pipeline as CommunicationPipeline } from '@hcengineering/server-communication'
 import { handleSend } from './utils'
 
 /**
@@ -72,6 +74,7 @@ export class ClientSession implements Session {
   constructor (
     protected readonly token: Token,
     protected readonly _pipeline: Pipeline,
+    protected readonly _communicationPipeline: CommunicationPipeline,
     readonly workspaceId: WorkspaceIdWithUrl,
     readonly branding: Branding | null,
     readonly allowUpload: boolean
@@ -199,6 +202,23 @@ export class ClientSession implements Session {
 
     // We need to broadcast all collected transactions
     await this._pipeline.handleBroadcast(ctx.ctx)
+  }
+
+  async createCommunication (ctx: ClientSessionCtx, object: comm.Obj): Promise<void> {
+    this.includeSessionContext(ctx.ctx)
+    await this._communicationPipeline.create(object)
+    await ctx.sendResponse({})
+  }
+
+  async findCommunication<T extends comm.Obj>(
+    ctx: ClientSessionCtx,
+    _class: comm.Ref<comm.Class<T>>,
+    query: comm.Query<T>,
+    options?: comm.Options<T>
+  ): Promise<void> {
+    this.includeSessionContext(ctx.ctx)
+    const result = await this._communicationPipeline.findAll(_class, query, options)
+    await ctx.sendResponse(result)
   }
 
   broadcast (ctx: MeasureContext, socket: ConnectionSocket, tx: Tx[]): void {

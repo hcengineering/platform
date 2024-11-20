@@ -36,6 +36,7 @@ import {
   themeStore
 } from '@hcengineering/ui'
 import { get, writable } from 'svelte/store'
+import { setCommunicationClient, type ConnectionClient as CommunicationClient } from '@hcengineering/communication'
 
 import plugin from './plugin'
 import { workspaceCreating } from './utils'
@@ -44,7 +45,7 @@ export const versionError = writable<string | undefined>(undefined)
 const versionStorageKey = 'last_server_version'
 
 let _token: string | undefined
-let _client: AccountClient | undefined
+let _client: (AccountClient & CommunicationClient) | undefined
 let _clientSet: boolean = false
 
 export async function disconnect (): Promise<void> {
@@ -323,6 +324,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     const client = _client
     await ctx.with('set-client', {}, async () => {
       await setClient(client)
+      setCommunicationClient(client)
     })
     return
   }
@@ -362,6 +364,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   _clientSet = true
   await ctx.with('set-client', {}, async () => {
     await setClient(newClient)
+    setCommunicationClient(newClient)
   })
   await ctx.with('broadcast-connected', {}, async () => {
     await broadcastEvent(plugin.event.NotifyConnection, getCurrentAccount())

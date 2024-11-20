@@ -14,6 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
+import * as comm from '@hcengineering/communication'
 import { BackupClient, DocChunk } from './backup'
 import { Account, Class, DOMAIN_MODEL, Doc, Domain, Ref, Timestamp } from './classes'
 import core from './component'
@@ -81,7 +82,7 @@ export enum ClientConnectEvent {
 /**
  * @public
  */
-export interface ClientConnection extends Storage, FulltextStorage, BackupClient {
+export interface ClientConnection extends Storage, FulltextStorage, BackupClient, comm.ConnectionClient {
   isConnected: () => boolean
 
   close: () => Promise<void>
@@ -92,7 +93,7 @@ export interface ClientConnection extends Storage, FulltextStorage, BackupClient
   getAccount: () => Promise<Account>
 }
 
-class ClientImpl implements AccountClient, BackupClient {
+class ClientImpl implements AccountClient, BackupClient, comm.ConnectionClient {
   notify?: (...tx: Tx[]) => void
   hierarchy!: Hierarchy
   model!: ModelDb
@@ -102,6 +103,18 @@ class ClientImpl implements AccountClient, BackupClient {
   setModel (hierarchy: Hierarchy, model: ModelDb): void {
     this.hierarchy = hierarchy
     this.model = model
+  }
+
+  async findCommunication<T extends comm.Obj>(
+    _class: comm.Ref<comm.Class<T>>,
+    query: comm.Query<T>,
+    options?: comm.Options<T>
+  ): Promise<T[]> {
+    return await this.conn.findCommunication(_class, query, options)
+  }
+
+  async createCommunication<T extends comm.Obj>(object: T): Promise<void> {
+    await this.conn.createCommunication(object)
   }
 
   getHierarchy (): Hierarchy {

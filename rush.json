@@ -2200,6 +2200,16 @@
       "packageName": "@hcengineering/survey-resources",
       "projectFolder": "plugins/survey-resources",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication",
+      "projectFolder": "packages/communication",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-communication",
+      "projectFolder": "server/communication",
+      "shouldPublish": false
     }
   ]
 }

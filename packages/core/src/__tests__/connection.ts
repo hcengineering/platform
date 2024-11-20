@@ -45,7 +45,8 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
   return {
     isConnected: () => true,
     findAll,
-
+    createCommunication: async () => {},
+    findCommunication: async () => [],
     searchFulltext: async (query: SearchQuery, options: SearchOptions): Promise<SearchResult> => {
       return { docs: [] }
     },

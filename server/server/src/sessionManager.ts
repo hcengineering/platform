@@ -47,7 +47,10 @@ import {
   type Workspace
 } from '@hcengineering/server-core'
 import { generateToken, type Token } from '@hcengineering/server-token'
-
+import {
+  Pipeline as CommunicationPipeline,
+  PipelineFactory as CommunicationPipelineFactory
+} from '@hcengineering/server-communication'
 import { sendResponse } from './utils'
 
 const ticksPerSecond = 20
@@ -107,6 +110,7 @@ class TSessionManager implements SessionManager {
     readonly sessionFactory: (
       token: Token,
       pipeline: Pipeline,
+      communicationPipeline: CommunicationPipeline,
       workspaceId: WorkspaceIdWithUrl,
       branding: Branding | null
     ) => Session,
@@ -281,8 +285,14 @@ class TSessionManager implements SessionManager {
     this.ticks++
   }
 
-  createSession (token: Token, pipeline: Pipeline, workspaceId: WorkspaceIdWithUrl, branding: Branding | null): Session {
-    return this.sessionFactory(token, pipeline, workspaceId, branding)
+  createSession (
+    token: Token,
+    pipeline: Pipeline,
+    communicationPipeline: CommunicationPipeline,
+    workspaceId: WorkspaceIdWithUrl,
+    branding: Branding | null
+  ): Session {
+    return this.sessionFactory(token, pipeline, communicationPipeline, workspaceId, branding)
   }
 
   async getWorkspaceInfo (ctx: MeasureContext, token: string): Promise<WorkspaceLoginInfo | undefined> {
@@ -322,6 +332,7 @@ class TSessionManager implements SessionManager {
     token: Token,
     rawToken: string,
     pipelineFactory: PipelineFactory,
+    communicationPipelineFactory: CommunicationPipelineFactory,
     sessionId: string | undefined
   ): Promise<
     | { session: Session, context: MeasureContext, workspaceId: string }
@@ -410,6 +421,7 @@ class TSessionManager implements SessionManager {
       workspace = this.createWorkspace(
         ctx.parent ?? ctx,
         pipelineFactory,
+        communicationPipelineFactory,
         token,
         workspaceInfo.workspaceUrl ?? workspaceInfo.workspaceId,
         workspaceName,
@@ -418,6 +430,7 @@ class TSessionManager implements SessionManager {
     }
 
     let pipeline: Pipeline
+    let communicationPipeline: CommunicationPipeline
     if (token.extra?.model === 'upgrade') {
       if (workspace.upgrade) {
         ctx.warn('reconnect workspace in upgrade', {
@@ -426,6 +439,11 @@ class TSessionManager implements SessionManager {
           wsUrl: workspaceInfo.workspaceUrl
         })
         pipeline = await ctx.with('💤 wait', { workspaceName }, () => (workspace as Workspace).pipeline)
+        communicationPipeline = await ctx.with(
+          '💤 wait',
+          { workspaceName },
+          () => (workspace as Workspace).communicationPipeline
+        )
       } else {
         ctx.warn('reconnect workspace in upgrade switch', {
           email: token.email,
@@ -433,17 +451,20 @@ class TSessionManager implements SessionManager {
           wsUrl: workspaceInfo.workspaceUrl
         })
         // We need to wait in case previous upgeade connection is already closing.
-        pipeline = await this.switchToUpgradeSession(
+        const res = await this.switchToUpgradeSession(
           token,
           sessionId,
           ctx.parent ?? ctx,
           wsString,
           workspace,
           pipelineFactory,
+          communicationPipelineFactory,
           ws,
           workspaceInfo.workspaceUrl ?? workspaceInfo.workspaceId,
           workspaceName
         )
+        pipeline = res.pipeline
+        communicationPipeline = res.communicationPipeline
       }
     } else {
       if (workspace.upgrade) {
@@ -456,11 +477,17 @@ class TSessionManager implements SessionManager {
         return { upgrade: true }
       }
       pipeline = await ctx.with('💤 wait', { workspaceName }, () => (workspace as Workspace).pipeline)
+      communicationPipeline = await ctx.with(
+        '💤 wait communication pipeline',
+        { workspaceName },
+        () => (workspace as Workspace).communicationPipeline
+      )
     }
 
     const session = this.createSession(
       token,
       pipeline,
+      communicationPipeline,
       {
         ...workspace.workspaceId,
         workspaceName: workspaceInfo.workspaceName ?? '',
@@ -520,10 +547,11 @@ class TSessionManager implements SessionManager {
     wsString: string,
     workspace: Workspace,
     pipelineFactory: PipelineFactory,
+    communicationPipelineFactory: CommunicationPipelineFactory,
     ws: ConnectionSocket,
     workspaceUrl: string,
     workspaceName: string
-  ): Promise<Pipeline> {
+  ): Promise<{ pipeline: Pipeline, communicationPipeline: CommunicationPipeline }> {
     if (LOGGING_ENABLED) {
       ctx.info('reloading workspace', { workspaceName, token: JSON.stringify(token) })
     }
@@ -551,7 +579,13 @@ class TSessionManager implements SessionManager {
       },
       workspace.branding
     )
-    return await workspace.pipeline
+
+    workspace.communicationPipeline = communicationPipelineFactory(token.workspace.name, async (obj) => {
+      this.broadcastAll(workspace, obj as any)
+    })
+    const p = await workspace.pipeline
+    const c = await workspace.communicationPipeline
+    return { pipeline: p, communicationPipeline: c }
   }
 
   broadcastAll (workspace: Workspace, tx: Tx[], target?: string | string[], exclude?: string[]): void {
@@ -630,6 +664,7 @@ class TSessionManager implements SessionManager {
   private createWorkspace (
     ctx: MeasureContext,
     pipelineFactory: PipelineFactory,
+    communicationPipelineFactory: CommunicationPipelineFactory,
     token: Token,
     workspaceUrl: string,
     workspaceName: string,
@@ -650,6 +685,9 @@ class TSessionManager implements SessionManager {
         },
         branding
       ),
+      communicationPipeline: communicationPipelineFactory(token.workspace.name, async (obj) => {
+        this.broadcastAll(workspace, obj as any)
+      }),
       sessions: new Map(),
       softShutdown: workspaceSoftShutdownTicks,
       upgrade,
@@ -1055,6 +1093,7 @@ export function createSessionManager (
   sessionFactory: (
     token: Token,
     pipeline: Pipeline,
+    communicationPipeline: CommunicationPipeline,
     workspaceId: WorkspaceIdWithUrl,
     branding: Branding | null
   ) => Session,
@@ -1079,9 +1118,11 @@ export function startSessionManager (
   opt: {
     port: number
     pipelineFactory: PipelineFactory
+    communicationPipelineFactory: CommunicationPipelineFactory
     sessionFactory: (
       token: Token,
       pipeline: Pipeline,
+      communicationPipeline: CommunicationPipeline,
       workspaceId: WorkspaceIdWithUrl,
       branding: Branding | null
     ) => Session
@@ -1115,6 +1156,7 @@ export function startSessionManager (
       },
       ctx,
       opt.pipelineFactory,
+      opt.communicationPipelineFactory,
       opt.port,
       opt.enableCompression ?? false,
       opt.accountsUrl,

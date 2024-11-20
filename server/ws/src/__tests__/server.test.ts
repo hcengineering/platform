@@ -60,6 +60,9 @@ describe('server', () => {
   }
 
   const cancelOp = startSessionManager(new MeasureMetricsContext('test', {}), {
+    communicationPipelineFactory: async () => {
+      return {} as any
+    },
     pipelineFactory: async () => {
       const { modelDb, hierarchy } = await getModelDb()
       return {
@@ -94,8 +97,8 @@ describe('server', () => {
         loadModel: async (ctx, lastModelTx, hash) => []
       }
     },
-    sessionFactory: (token, pipeline, workspaceId, branding) =>
-      new ClientSession(token, pipeline, workspaceId, branding, true),
+    sessionFactory: (token, pipeline, communicationPipeline, workspaceId, branding) =>
+      new ClientSession(token, pipeline, communicationPipeline, workspaceId, branding, true),
     port: 3335,
     brandingMap: {},
     serverFactory: startHttpServer,
@@ -162,6 +165,9 @@ describe('server', () => {
 
   it('reconnect', async () => {
     const cancelOp = startSessionManager(new MeasureMetricsContext('test', {}), {
+      communicationPipelineFactory: async () => {
+        return {} as any
+      },
       pipelineFactory: async () => {
         const { modelDb, hierarchy } = await getModelDb()
         return {
@@ -206,8 +212,8 @@ describe('server', () => {
           loadModel: async (ctx, lastModelTx, hash) => []
         }
       },
-      sessionFactory: (token, pipeline, workspaceId, branding) =>
-        new ClientSession(token, pipeline, workspaceId, branding, true),
+      sessionFactory: (token, pipeline, communicationPipeline, workspaceId, branding) =>
+        new ClientSession(token, pipeline, communicationPipeline as any, workspaceId, branding, true),
       port: 3336,
       brandingMap: {},
       serverFactory: startHttpServer,

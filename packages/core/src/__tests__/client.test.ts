@@ -106,7 +106,8 @@ describe('client', () => {
       return {
         isConnected: () => true,
         findAll,
-
+        createCommunication: async () => {},
+        findCommunication: async () => [],
         searchFulltext: async (query: SearchQuery, options: SearchOptions): Promise<SearchResult> => {
           return { docs: [] }
         },

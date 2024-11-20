@@ -27,12 +27,13 @@ import {
   setMetadataLocalStorage
 } from '@hcengineering/ui'
 import { writable, get } from 'svelte/store'
+import { setCommunicationClient, type ConnectionClient as CommunicationClient } from '@hcengineering/communication'
 
 export const versionError = writable<string | undefined>(undefined)
 const versionStorageKey = 'last_server_version'
 
 let _token: string | undefined
-let _client: AccountClient | undefined
+let _client: (AccountClient & CommunicationClient) | undefined
 let _clientSet: boolean = false
 
 export async function connect (title: string): Promise<Client | undefined> {
@@ -219,6 +220,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   document.title = [ws, title].filter((it) => it).join(' - ')
   _clientSet = true
   await setClient(_client)
+  setCommunicationClient(_client)
 
   return _client
 }

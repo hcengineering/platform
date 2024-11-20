@@ -15,6 +15,7 @@
 
 import type { AccountClient, ClientConnectEvent, MeasureContext, TxPersistenceStore } from '@hcengineering/core'
 import { type Plugin, type Resource, type Metadata, plugin } from '@hcengineering/platform'
+import { type ConnectionClient as CommunicationClient } from '@hcengineering/communication'
 /**
  * @public
  */
@@ -70,7 +71,11 @@ export interface ClientFactoryOptions {
 /**
  * @public
  */
-export type ClientFactory = (token: string, endpoint: string, opt?: ClientFactoryOptions) => Promise<AccountClient>
+export type ClientFactory = (
+  token: string,
+  endpoint: string,
+  opt?: ClientFactoryOptions
+) => Promise<AccountClient & CommunicationClient>
 
 // client - will filter out all server model elements
 // It will also filter out all UI Elements, like Actions, View declarations etc.

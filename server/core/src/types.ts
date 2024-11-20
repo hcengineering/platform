@@ -46,6 +46,10 @@ import type { LiveQuery } from '@hcengineering/query'
 import type { Request, Response } from '@hcengineering/rpc'
 import type { Token } from '@hcengineering/server-token'
 import { type Readable } from 'stream'
+import {
+  type Pipeline as CommunicationPipeline,
+  type PipelineFactory as CommunicationPipelineFactory
+} from '@hcengineering/server-communication'
 import type { DbAdapter, DomainHelper } from './adapter'
 import type { StatisticsElement } from './stats'
 import { type StorageAdapter } from './storage'
@@ -582,6 +586,7 @@ export interface Workspace {
   id: string
   token: string // Account workspace update token.
   pipeline: Promise<Pipeline>
+  communicationPipeline: Promise<CommunicationPipeline>
   tickHash: number
 
   tickHandlers: Map<string, TickHandler>
@@ -618,6 +623,7 @@ export interface SessionManager {
   createSession: (
     token: Token,
     pipeline: Pipeline,
+    communicationPipeline: CommunicationPipeline,
     workspaceId: WorkspaceIdWithUrl,
     branding: Branding | null
   ) => Session
@@ -628,6 +634,7 @@ export interface SessionManager {
     token: Token,
     rawToken: string,
     pipelineFactory: PipelineFactory,
+    communicationPipelineFactory: CommunicationPipelineFactory,
     sessionId: string | undefined
   ) => Promise<AddSessionResponse>
 
@@ -683,6 +690,7 @@ export type ServerFactory = (
   handleRequest: HandleRequestFunction,
   ctx: MeasureContext,
   pipelineFactory: PipelineFactory,
+  communicationPipelineFactory: CommunicationPipelineFactory,
   port: number,
   enableCompression: boolean,
   accountsUrl: string,

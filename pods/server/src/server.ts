@@ -31,6 +31,11 @@ import {
   type SessionManager,
   type StorageConfiguration
 } from '@hcengineering/server-core'
+import {
+  type Pipeline as CommunicationPipeline,
+  type PipelineFactory as CommunicationPipelineFactory,
+  createPipeline as createCommunicationPipeline
+} from '@hcengineering/server-communication'
 import { type Token } from '@hcengineering/server-token'
 
 import { createServerPipeline, registerServerPlugins, registerStringLoaders } from '@hcengineering/server-pipeline'
@@ -76,17 +81,29 @@ export function start (
     { ...opt, externalStorage, adapterSecurity: dbUrl.startsWith('postgresql') },
     {}
   )
+  const communicationPipelineFactory: CommunicationPipelineFactory = async (workspace, broadcast) => {
+    return await createCommunicationPipeline({ workspace, dbUrl }, broadcast)
+  }
   const sessionFactory = (
     token: Token,
     pipeline: Pipeline,
+    communicationPipeline: CommunicationPipeline,
     workspaceId: WorkspaceIdWithUrl,
     branding: Branding | null
   ): Session => {
-    return new ClientSession(token, pipeline, workspaceId, branding, token.extra?.mode === 'backup')
+    return new ClientSession(
+      token,
+      pipeline,
+      communicationPipeline,
+      workspaceId,
+      branding,
+      token.extra?.mode === 'backup'
+    )
   }
 
   const { shutdown: onClose, sessionManager } = startSessionManager(metrics, {
     pipelineFactory,
+    communicationPipelineFactory,
     sessionFactory,
     port: opt.port,
     brandingMap: opt.brandingMap,

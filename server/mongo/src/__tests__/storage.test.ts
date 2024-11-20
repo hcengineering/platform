@@ -110,6 +110,8 @@ describe('mongo operations', () => {
     client = await createClient(async (handler) => {
       const st: ClientConnection = {
         isConnected: () => true,
+        createCommunication: async () => {},
+        findCommunication: async () => [],
         findAll: async (_class, query, options) => await serverStorage.findAll(ctx, _class, query, options),
         tx: async (tx) => await serverStorage.tx(ctx, tx),
         searchFulltext: async () => ({ docs: [] }),

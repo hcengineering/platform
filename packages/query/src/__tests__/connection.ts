@@ -33,11 +33,13 @@ import type {
   SearchResult
 } from '@hcengineering/core'
 import core, { DOMAIN_TX, Hierarchy, ModelDb, TxDb } from '@hcengineering/core'
+import { ConnectionClient as CommunicationClient } from '@hcengineering/communication'
 import { genMinModel } from './minmodel'
 
 export async function connect (handler: (tx: Tx) => void): Promise<
 AccountClient &
 BackupClient &
+CommunicationClient &
 FulltextStorage & {
   isConnected: () => boolean
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
@@ -67,6 +69,8 @@ FulltextStorage & {
 
   return {
     isConnected: () => true,
+    findCommunication: async () => [],
+    createCommunication: async () => {},
     findAll,
     findOne: async (_class, query, options) => (await findAll(_class, query, { ...options, limit: 1 })).shift(),
     getHierarchy: () => hierarchy,

@@ -15,6 +15,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
+import * as comm from '@hcengineering/communication'
 import client, { ClientSocket, ClientSocketReadyState, type ClientFactoryOptions } from '@hcengineering/client'
 import core, {
   Account,
@@ -685,6 +686,43 @@ class Connection implements ClientConnection {
 
   sendForceClose (): Promise<void> {
     return this.sendRequest({ method: 'forceClose', params: [], allowReconnect: false })
+  }
+
+  createCommunication<T extends comm.Obj>(object: T): Promise<void> {
+    return this.sendRequest({
+      method: 'createCommunication',
+      params: [object],
+      retry: async () => {
+        return (await this.findCommunication(object._class, { _id: object._id as any }, { limit: 1 })).length === 0
+      }
+    })
+  }
+
+  async findCommunication<T extends comm.Obj>(
+    _class: string,
+    query: comm.Query<T>,
+    options?: comm.Options<T>
+  ): Promise<T[]> {
+    return await this.sendRequest({
+      method: 'findCommunication',
+      params: [_class, query, options],
+      measure: (time, result, serverTime, queue, toReceive) => {
+        if (typeof window !== 'undefined' && (time > 1000 || serverTime > 500)) {
+          console.error(
+            'measure slow findCommunication',
+            time,
+            serverTime,
+            toReceive,
+            queue,
+            _class,
+            query,
+            options,
+            result,
+            JSON.stringify(result).length
+          )
+        }
+      }
+    })
   }
 }
 

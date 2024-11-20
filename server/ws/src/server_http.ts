@@ -41,6 +41,7 @@ import express, { type Response as ExpressResponse } from 'express'
 import http, { type IncomingMessage } from 'http'
 import os from 'os'
 import { WebSocketServer, type RawData, type WebSocket } from 'ws'
+import { type PipelineFactory as CommunicationPipelineFactory } from '@hcengineering/server-communication'
 
 import 'bufferutil'
 import 'utf-8-validate'
@@ -57,6 +58,7 @@ export function startHttpServer (
   handleRequest: HandleRequestFunction,
   ctx: MeasureContext,
   pipelineFactory: PipelineFactory,
+  communicationPipelineFactory: CommunicationPipelineFactory,
   port: number,
   enableCompression: boolean,
   accountsUrl: string,
@@ -369,7 +371,7 @@ export function startHttpServer (
       connectionSocket: cs,
       payload: token,
       token: rawToken,
-      session: sessions.addSession(ctx, cs, token, rawToken, pipelineFactory, sessionId),
+      session: sessions.addSession(ctx, cs, token, rawToken, pipelineFactory, communicationPipelineFactory, sessionId),
       url: ''
     }
 
