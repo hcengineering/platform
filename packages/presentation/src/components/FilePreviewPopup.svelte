@@ -15,7 +15,7 @@
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Dialog, tooltip } from '@hcengineering/ui'
+  import { Button, Dialog, IconEdit, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
 
   import { BlobMetadata } from '../types'
@@ -36,6 +36,8 @@
   export let fullSize = false
   export let showIcon = true
 
+  $: canDraw = contentType?.startsWith('image/')
+
   const dispatch = createEventDispatcher()
 
   onMount(() => {
@@ -43,6 +45,11 @@
       dispatch('fullsize')
     }
   })
+
+  function toggleDrawing (): void {
+    const isDrawing = props.isDrawing === true
+    props = { ...props, isDrawing: !isDrawing }
+  }
 </script>
 
 <ActionContext context={{ mode: 'browser' }} />
@@ -65,6 +72,14 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
+    {#if canDraw}
+      <Button
+        icon={IconEdit}
+        kind="icon"
+        showTooltip={{ label: presentation.string.StartDrawing }}
+        on:click={toggleDrawing}
+      />
+    {/if}
     <DownloadFileButton {name} {file} />
     <ComponentExtensions
       extension={presentation.extension.FilePreviewPopupActions}
