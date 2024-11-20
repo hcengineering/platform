@@ -46,7 +46,7 @@
     "DueDatePopupOverdueTitle": "Termín byl: {value}",
     "DueDatePopupDescription": "{value, plural, =0 {Dnes} =1 {Zítra} other {zbývá # dní}}",
     "DueDatePopupOverdueDescription": "{value, plural, =1 {1 den po termínu} other {# dní po termínu}}",
-   "English": "English",
+    "English": "English",
     "Russian": "Русский",
     "Portuguese": "Português",
     "Spanish": "Español",

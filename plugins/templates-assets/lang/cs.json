@@ -1,0 +1,21 @@
+{
+  "string": {
+    "Cancel": "Zrušit",
+    "Templates": "Textové šablony",
+    "TemplatesHeader": "TEXTOVÉ ŠABLONY",
+    "CreateTemplate": "VYTVOŘIT ŠABLONU",
+    "SaveTemplate": "Uložit šablonu",
+    "EditTemplate": "Upravit šablonu",
+    "ViewTemplate": "Zobrazit šablonu",
+    "Suggested": "DOPORUČENO",
+    "SearchTemplate": "Hledat šablonu",
+    "TemplatePlaceholder": "Nová šablona",
+    "Title": "Název",
+    "Message": "Zpráva",
+    "Field": "Pole",
+    "TemplateCategory": "Skupina šablon",
+    "CreateTemplateCategory": "Vytvořit skupinu",
+    "Copy": "Kopírovat",
+    "Template": "Šablona"
+  }
+}
