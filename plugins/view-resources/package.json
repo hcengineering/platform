@@ -57,6 +57,7 @@
     "@hcengineering/text-editor-resources": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/query": "^0.6.12",
+    "@hcengineering/tracker": "^0.6.24",
     "fast-equals": "^5.0.1",
     "hls.js": "^1.5.15"
   }

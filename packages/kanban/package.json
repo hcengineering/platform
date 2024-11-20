@@ -45,6 +45,7 @@
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/notification": "^0.6.23",
-    "@hcengineering/rank": "^0.6.4"
+    "@hcengineering/rank": "^0.6.4",
+    "@hcengineering/tracker": "^0.6.24"
   }
 }

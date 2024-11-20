@@ -30,6 +30,7 @@
   import { slide } from 'svelte/transition'
   import { CardDragEvent, DocWithRank, Item } from '../types'
   import { createQuery } from '@hcengineering/presentation'
+  import { DocWithPriority, sortDocsByPriority } from '@hcengineering/tracker'
 
   export let stateObjects: Item[]
   export let isDragging: boolean
@@ -94,6 +95,13 @@
       { ...options, limit }
     )
   })
+
+  $: {
+    if (options?.sort?.priority !== undefined) {
+      // When there's sorting by priority, there's 'priority' property.
+      sortDocsByPriority(stateObjects as unknown as DocWithPriority[])
+    }
+  }
 </script>
 
 {#each stateObjects as objectRef, i (objectRef._id)}

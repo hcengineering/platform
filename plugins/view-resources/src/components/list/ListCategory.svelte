@@ -32,6 +32,7 @@
   import { DocWithRank, makeRank } from '@hcengineering/task'
   import { AnyComponent, AnySvelteComponent, ExpandCollapse, mouseAttractor } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
+  import { DocWithPriority, sortDocsByPriority } from '@hcengineering/tracker'
   import { createEventDispatcher } from 'svelte'
   import { fade } from 'svelte/transition'
   import { showMenu } from '../../actions'
@@ -175,6 +176,13 @@
   }
 
   $: limited = limitGroup(items, limit)
+
+  $: {
+    if (viewOptions.orderBy[0] === 'priority') {
+      // When there's sorting by priority, there's 'priority' property.      
+      sortDocsByPriority(limited as unknown as DocWithPriority[])
+    }
+  }
 
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
 

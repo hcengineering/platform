@@ -295,6 +295,10 @@ export interface IssueTemplate extends Doc, IssueTemplateData {
   relations?: RelatedDocument[]
 }
 
+export interface DocWithPriority extends Doc {
+  priority: IssuePriority
+}
+
 /**
  * @public
  *
@@ -547,4 +551,15 @@ export function createStatesData (data: TaskStatusFactory[]): Omit<Data<Status>,
     }
   }
   return states
+}
+
+/**
+ * Sorts documents by priority placing unspecified priority last.
+ */
+export function sortDocsByPriority (docs: DocWithPriority[]): void {
+  docs.sort((a, b) => {
+    const prioA = a.priority === IssuePriority.NoPriority ? Number.MAX_SAFE_INTEGER : a.priority
+    const prioB = b.priority === IssuePriority.NoPriority ? Number.MAX_SAFE_INTEGER : b.priority
+    return prioA - prioB
+  })
 }
