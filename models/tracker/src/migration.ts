@@ -39,7 +39,7 @@ import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_TASK, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
 import task from '@hcengineering/task'
-import pluginState, {
+import tracker, {
   type Issue,
   type IssueStatus,
   type Project,
@@ -49,7 +49,6 @@ import pluginState, {
 
 import contact from '@hcengineering/model-contact'
 import { classicIssueTaskStatuses } from '.'
-import tracker from './plugin'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(tracker.class.Project, {
@@ -118,7 +117,7 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
             defaultIssueStatus: state._id,
             defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
             defaultAssignee: undefined,
-            type: pluginState.ids.ClassingProjectType
+            type: tracker.ids.ClassingProjectType
           },
           tracker.project.DefaultProject
         )
@@ -174,7 +173,7 @@ async function migrateIdentifiers (client: MigrationClient): Promise<void> {
 }
 
 async function migrateDefaultStatuses (client: MigrationClient, logger: ModelLogger): Promise<void> {
-  const defaultTypeId = pluginState.ids.ClassingProjectType
+  const defaultTypeId = tracker.ids.ClassingProjectType
   const typeDescriptor = tracker.descriptors.ProjectType
   const baseClass = tracker.class.Project
   const defaultTaskTypeId = tracker.taskTypes.Issue
@@ -291,7 +290,7 @@ async function migrateStatusesToModel (client: MigrationClient): Promise<void> {
 }
 
 async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void> {
-  const oldSpaceTypeMixin = `${pluginState.ids.ClassingProjectType}:type:mixin`
+  const oldSpaceTypeMixin = `${tracker.ids.ClassingProjectType}:type:mixin`
   const newSpaceTypeMixin = tracker.mixin.ClassicProjectTypeData
   const oldTaskTypeMixin = `${tracker.taskTypes.Issue}:type:mixin`
   const newTaskTypeMixin = tracker.mixin.IssueTypeData
