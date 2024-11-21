@@ -50,7 +50,7 @@
     </span>
     <div class="flex-row-center gap-2 reverse">
       <ViewletsSettingButton
-        viewletQuery={{ _id: testManagement.viewlet.TestRunList }}
+        viewletQuery={{ _id: testManagement.viewlet.TestResultList }}
         kind={'tertiary'}
         bind:viewlet
         bind:preference
@@ -63,7 +63,7 @@
     {#if viewlet !== undefined && !loading}
       <Scroller horizontal>
         <ListView
-          _class={testManagement.class.TestRunItem}
+          _class={testManagement.class.TestResult}
           config={preference?.config ?? viewlet.config}
           query={baseQuery}
           {viewlet}

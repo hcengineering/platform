@@ -21,7 +21,7 @@ export async function getTestCases (objectId: Ref<TestRun>): Promise<TestCase[]>
     return []
   }
   const client = getClient()
-  const testRunItems = await client.findAll(testManagement.class.TestRunItem, { attachedTo: objectId })
-  const testCaseIds = testRunItems.map((testRun) => testRun.testCase)
+  const testResults = await client.findAll(testManagement.class.TestResult, { attachedTo: objectId })
+  const testCaseIds = testResults.map((testResult) => testResult.testCase)
   return await client.findAll(testManagement.class.TestCase, { _id: { $in: testCaseIds } })
 }

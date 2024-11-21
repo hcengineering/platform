@@ -23,7 +23,6 @@ import type {
   TestProject,
   TestRun,
   TestRunStatus,
-  TestRunItem,
   TestResult
 } from '@hcengineering/test-management'
 import { type Attachment } from '@hcengineering/attachment'
@@ -189,44 +188,6 @@ export class TTestCase extends TAttachedDoc implements TestCase {
     comments?: number
 }
 
-/**
- * @public
- */
-@Model(testManagement.class.TestResult, core.class.AttachedDoc, DOMAIN_TEST_MANAGEMENT)
-@UX(testManagement.string.TestResult, testManagement.icon.TestResult, testManagement.string.TestResult)
-export class TTestResult extends TAttachedDoc implements TestResult {
-  @Prop(TypeRef(testManagement.class.TestProject), core.string.Space)
-  @Index(IndexKind.Indexed)
-  @Hidden()
-  declare space: Ref<TestProject>
-
-  @Prop(TypeRef(testManagement.class.TestCase), core.string.AttachedTo)
-  @Index(IndexKind.Indexed)
-  declare attachedTo: Ref<TestCase>
-
-  @Prop(TypeRef(testManagement.class.TestCase), core.string.AttachedToClass)
-  @Index(IndexKind.Indexed)
-  @Hidden()
-  declare attachedToClass: Ref<Class<TestCase>>
-
-  @Prop(TypeString(), core.string.Collection)
-  @Hidden()
-  override collection: 'results' = 'results'
-
-  @Prop(TypeTestRunStatus(), testManagement.string.TestRunStatus)
-    status?: TestRunStatus
-
-  @Prop(TypeCollaborativeDoc(), testManagement.string.FullDescription)
-  @Index(IndexKind.FullText)
-    description!: CollaborativeDoc
-
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: CollectionSize<Attachment>
-
-  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
-    comments?: number
-}
-
 @Model(testManagement.class.TestRun, core.class.Doc, DOMAIN_TEST_MANAGEMENT)
 @UX(testManagement.string.TestRun)
 export class TTestRun extends TDoc implements TestRun {
@@ -241,10 +202,10 @@ export class TTestRun extends TDoc implements TestRun {
   @Prop(TypeDate(DateRangeMode.DATETIME), testManagement.string.DueDate)
     dueDate?: Timestamp
 
-  @Prop(Collection(testManagement.class.TestRunItem), testManagement.string.TestRunItems, {
-    shortLabel: testManagement.string.TestRunItem
+  @Prop(Collection(testManagement.class.TestResult), testManagement.string.TestResult, {
+    shortLabel: testManagement.string.TestResult
   })
-    items?: CollectionSize<TestRunItem>
+    results?: CollectionSize<TestResult>
 
   @Prop(TypeNumber(), testManagement.string.DonePercent)
     completionPercent?: number
@@ -268,9 +229,9 @@ export function TypeTestRunStatus (): Type<TestRunStatus> {
 @UX(testManagement.string.TestRunStatus)
 export class TTypeTestRunStatus extends TType {}
 
-@Model(testManagement.class.TestRunItem, core.class.AttachedDoc, DOMAIN_TEST_MANAGEMENT)
-@UX(testManagement.string.TestRunItem)
-export class TTestRunItem extends TAttachedDoc implements TestRunItem {
+@Model(testManagement.class.TestResult, core.class.AttachedDoc, DOMAIN_TEST_MANAGEMENT)
+@UX(testManagement.string.TestResult)
+export class TTestResult extends TAttachedDoc implements TestResult {
   @Prop(TypeRef(testManagement.class.TestRun), core.string.AttachedTo)
   @Index(IndexKind.Indexed)
   declare attachedTo: Ref<TestRun>
@@ -280,9 +241,18 @@ export class TTestRunItem extends TAttachedDoc implements TestRunItem {
   @Hidden()
   declare attachedToClass: Ref<Class<TestRun>>
 
+  @Prop(TypeRef(testManagement.class.TestProject), core.string.Space)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare space: Ref<TestProject>
+
   @Prop(TypeString(), core.string.Collection)
   @Hidden()
-  override collection: 'testCases' = 'testCases'
+  override collection: 'results' = 'results'
+
+  @Prop(TypeCollaborativeDoc(), testManagement.string.FullDescription)
+  @Index(IndexKind.FullText)
+    description!: CollaborativeDoc
 
   @Prop(TypeRef(testManagement.class.TestCase), testManagement.string.TestCase)
     testCase!: Ref<TestCase>
@@ -295,6 +265,9 @@ export class TTestRunItem extends TAttachedDoc implements TestRunItem {
 
   @Prop(TypeTestRunStatus(), testManagement.string.TestResult)
     result?: TestResult
+
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
+    attachments?: CollectionSize<Attachment>
 
   @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number

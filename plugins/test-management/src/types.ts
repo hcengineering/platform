@@ -99,19 +99,11 @@ export interface TestCase extends AttachedDoc<TestSuite, 'testCases', TestProjec
 }
 
 /** @public */
-export interface TestResult extends AttachedDoc<TestCase, 'results', TestProject> {
-  status?: TestRunStatus
-  description: CollaborativeDoc
-  attachments?: CollectionSize<Attachment>
-  comments?: number
-}
-
-/** @public */
 export interface TestRun extends Doc {
   name: string
   description: CollaborativeDoc
   dueDate?: Timestamp
-  items?: CollectionSize<TestRunItem>
+  results?: CollectionSize<TestResult>
   completionPercent?: number
   completed?: number
   failed?: number
@@ -127,10 +119,11 @@ export enum TestRunStatus {
 }
 
 /** @public */
-export interface TestRunItem extends AttachedDoc {
+export interface TestResult extends AttachedDoc<TestRun, 'results', TestProject> {
   testCase: Ref<TestCase>
   testSuite?: Ref<TestSuite>
   status?: TestRunStatus
-  result?: TestResult
+  description: CollaborativeDoc
+  attachments?: CollectionSize<Attachment>
   comments?: number
 }

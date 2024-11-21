@@ -72,6 +72,7 @@
     "SelectTestCase": "Select test case",
     "Save": "Save",
     "SaveAndNext": "Save and next",
-    "DonePercent": "% Done"
+    "DonePercent": "% Done",
+    "TestResults": "Results"
   }
 }

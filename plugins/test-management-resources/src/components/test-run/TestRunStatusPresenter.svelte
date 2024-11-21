@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { TestRunItem, TestRunStatus } from '@hcengineering/test-management'
+  import { TestResult, TestRunStatus } from '@hcengineering/test-management'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import StatusEditor from './TestRunStatusEditor.svelte'
 
   export let value: TestRunStatus
-  export let object: TestRunItem
+  export let object: TestResult
   export let onChange: ((value: TestRunStatus) => void) | undefined = undefined
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'

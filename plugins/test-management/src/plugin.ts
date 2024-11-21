@@ -37,7 +37,6 @@ import {
   TestCasePriority,
   TestCaseStatus,
   TestRun,
-  TestRunItem,
   TestRunStatus,
   TestResult
 } from './types'
@@ -95,7 +94,6 @@ export const testManagementPlugin = plugin(testManagementId, {
     TypeTestCasePriority: '' as Ref<Class<Type<TestCasePriority>>>,
     TypeTestCaseStatus: '' as Ref<Class<Type<TestCaseStatus>>>,
     TestRun: '' as Ref<Class<TestRun>>,
-    TestRunItem: '' as Ref<Class<TestRunItem>>,
     TypeTestRunStatus: '' as Ref<Class<Type<TestRunStatus>>>,
     TestResult: '' as Ref<Class<TestResult>>
   },
@@ -168,9 +166,7 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestRunName: '' as IntlString,
     NoTestCases: '' as IntlString,
     DueDate: '' as IntlString,
-    TestRunItems: '' as IntlString,
     TestRunStatus: '' as IntlString,
-    TestRunItem: '' as IntlString,
     TestRunNamePlaceholder: '' as IntlString,
     TestRunResult: '' as IntlString,
     SelectTestSuites: '' as IntlString,
@@ -228,7 +224,7 @@ export const testManagementPlugin = plugin(testManagementId, {
     TableTestSuites: '' as Ref<Viewlet>,
     TableTestRun: '' as Ref<Viewlet>,
     ListTestCase: '' as Ref<Viewlet>,
-    TestRunList: '' as Ref<Viewlet>
+    TestResultList: '' as Ref<Viewlet>
   },
   testCaseTypeStatus: {
     Draft: '' as Ref<Status>,

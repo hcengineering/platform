@@ -38,7 +38,6 @@ import {
   TDefaultProjectTypeData,
   TTestRun,
   TTypeTestRunStatus,
-  TTestRunItem,
   TTestResult
 } from './types'
 
@@ -109,7 +108,7 @@ function defineApplication (builder: Builder): void {
                 icon: testManagement.icon.TestRuns,
                 component: workbench.component.SpecialView,
                 componentProps: {
-                  _class: testManagement.class.TestRunItem,
+                  _class: testManagement.class.TestResult,
                   icon: testManagement.icon.TestRuns,
                   label: testManagement.string.TestRuns,
                   createLabel: testManagement.string.NewTestRun,
@@ -155,7 +154,6 @@ export function createModel (builder: Builder): void {
     TTestCase,
     TDefaultProjectTypeData,
     TTestRun,
-    TTestRunItem,
     TTypeTestRunStatus,
     TTestResult
   )
@@ -225,7 +223,7 @@ function defineSpaceType (builder: Builder): void {
     core.class.SpaceType,
     core.space.Model,
     {
-      name: 'Default project type',
+      name: 'Default Test Management',
       descriptor: testManagement.descriptors.ProjectType,
       roles: 0,
       targetClass: testManagement.mixin.DefaultProjectTypeData
@@ -475,7 +473,7 @@ function defineTestRun (builder: Builder): void {
     view.class.Viewlet,
     core.space.Model,
     {
-      attachTo: testManagement.class.TestRunItem,
+      attachTo: testManagement.class.TestResult,
       descriptor: view.viewlet.List,
       configOptions: {
         strict: true,
@@ -496,7 +494,7 @@ function defineTestRun (builder: Builder): void {
       ],
       viewOptions
     },
-    testManagement.viewlet.TestRunList
+    testManagement.viewlet.TestResultList
   )
 }
 

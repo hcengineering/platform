@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { Data } from '@hcengineering/core'
-  import { TestRunItem } from '@hcengineering/test-management'
+  import { TestResult } from '@hcengineering/test-management'
   import { getClient } from '@hcengineering/presentation'
   import {
     Button,
@@ -32,8 +32,8 @@
   import { defaultTestRunStatuses, testRunStatusAssets } from '../../types'
   import testManagement from '../../plugin'
 
-  export let value: TestRunItem['status'] | undefined
-  export let object: TestRunItem | Data<TestRunItem>
+  export let value: TestResult['status'] | undefined
+  export let object: TestResult | Data<TestResult>
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
   export let justify: 'left' | 'center' = 'left'
@@ -54,7 +54,7 @@
     )
   }
 
-  async function changeStatus (newStatus: TestRunItem['status'] | null | undefined) {
+  async function changeStatus (newStatus: TestResult['status'] | null | undefined) {
     if (disabled || newStatus == null || value === newStatus) {
       return
     }

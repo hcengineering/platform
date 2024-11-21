@@ -99,17 +99,46 @@
 </script>
 
 <Scroller padding={'1rem 0'}>
-  <TreeNode
-    _id={noParentId}
-    icon={allObjectsIcon}
-    label={allObjectsLabel}
-    selected={selected === noParentId}
-    type={'nested-selectable'}
-    empty={foldersState?.folders?.length === 0}
-    actions={() => getRootActions()}
-    {forciblyСollapsed}
-    on:click={handleAllItemsSelected}
-  >
+  {#if noParentId !== undefined}
+    <TreeNode
+      _id={noParentId}
+      icon={allObjectsIcon}
+      label={allObjectsLabel}
+      selected={selected === noParentId}
+      type={'nested-selectable'}
+      empty={foldersState?.folders?.length === 0}
+      actions={() => getRootActions()}
+      {forciblyСollapsed}
+      on:click={handleAllItemsSelected}
+    >
+      <FolderTreeLevel
+        folders={foldersState.folders}
+        descendants={foldersState.descendants}
+        folderById={foldersState.folderById}
+        {selected}
+        on:selected={(ev) => {
+          handleFolderSelected(ev.detail)
+        }}
+      />
+      <svelte:fragment slot="visible">
+        {#if (selected || forciblyСollapsed) && visibleItem !== undefined}
+          {@const folder = visibleItem}
+          <TreeItem
+            _id={folder._id}
+            folderIcon
+            iconProps={{ fill: 'var(--global-accent-IconColor)' }}
+            title={foldersManager.getTitle(folder)}
+            selected
+            isFold
+            empty
+            actions={async () => await getFolderActions(folder)}
+            shouldTooltip
+            forciblyСollapsed
+          />
+        {/if}
+      </svelte:fragment>
+    </TreeNode>
+  {:else}
     <FolderTreeLevel
       folders={foldersState.folders}
       descendants={foldersState.descendants}
@@ -119,22 +148,5 @@
         handleFolderSelected(ev.detail)
       }}
     />
-    <svelte:fragment slot="visible">
-      {#if (selected || forciblyСollapsed) && visibleItem !== undefined}
-        {@const folder = visibleItem}
-        <TreeItem
-          _id={folder._id}
-          folderIcon
-          iconProps={{ fill: 'var(--global-accent-IconColor)' }}
-          title={foldersManager.getTitle(folder)}
-          selected
-          isFold
-          empty
-          actions={async () => await getFolderActions(folder)}
-          shouldTooltip
-          forciblyСollapsed
-        />
-      {/if}
-    </svelte:fragment>
-  </TreeNode>
+  {/if}
 </Scroller>

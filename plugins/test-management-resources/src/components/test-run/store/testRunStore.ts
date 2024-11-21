@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import type { TestCase, TestRunItem } from '@hcengineering/test-management'
+import type { TestCase, TestResult } from '@hcengineering/test-management'
 import { type Ref } from '@hcengineering/core'
 import { type Writable, writable } from 'svelte/store'
 
 export const currentTestCase: Writable<Ref<TestCase> | undefined> = writable(undefined)
 
-export const selectedTestRun: Writable<TestRunItem | undefined> = writable(undefined)
+export const selectedTestRun: Writable<TestResult | undefined> = writable(undefined)

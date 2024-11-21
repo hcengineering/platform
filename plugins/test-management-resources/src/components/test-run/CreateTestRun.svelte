@@ -20,7 +20,7 @@
   import core, { Data, Ref, generateId, makeCollaborativeDoc } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
-  import { TestCase, TestRun, TestProject, TestRunItem } from '@hcengineering/test-management'
+  import { TestCase, TestRun, TestProject } from '@hcengineering/test-management'
   import { EditBox } from '@hcengineering/ui'
   import { EmptyMarkup } from '@hcengineering/text'
 
@@ -50,15 +50,15 @@
     // TODO: Use one operation
     const testRun = await client.createDoc(testManagement.class.TestRun, _space, object)
     const createPromises = testCases.map((testCase) => {
-      const testRunData: Data<TestRunItem> = {
+      const testRunData: Data<TestResult> = {
         attachedTo: testRun,
         attachedToClass: testManagement.class.TestRun,
         testCase: testCase._id,
         collection: 'testCases'
       }
-      const testRunId: Ref<TestRunItem> = generateId()
+      const testRunId: Ref<TestResult> = generateId()
       return client.addCollection(
-        testManagement.class.TestRunItem,
+        testManagement.class.TestResult,
         _space,
         testRun,
         testManagement.class.TestRun,
