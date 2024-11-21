@@ -15,7 +15,7 @@
 
 import activity from '@hcengineering/activity'
 import type { Attachment, AttachmentMetadata, Drawing, Photo, SavedAttachments } from '@hcengineering/attachment'
-import { IndexKind, type Blob, type Doc, type Domain, type Ref } from '@hcengineering/core'
+import { IndexKind, type Blob, type Class, type Doc, type Domain, type Ref } from '@hcengineering/core'
 import {
   Hidden,
   Index,
@@ -88,6 +88,11 @@ export class TDrawing extends TDoc implements Drawing {
   @Index(IndexKind.Indexed)
   @Hidden()
     parent!: Ref<Doc>
+
+  @Prop(TypeRef(core.class.Class), getEmbeddedLabel('Parent class'))
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    parentClass!: Ref<Class<Doc>>
 
   @Prop(TypeString(), getEmbeddedLabel('Content'))
     content?: string

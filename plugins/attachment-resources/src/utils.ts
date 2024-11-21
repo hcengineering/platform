@@ -15,7 +15,7 @@
 //
 
 import { type BlobMetadata, type Attachment, type Drawing } from '@hcengineering/attachment'
-import {
+import core, {
   type Blob,
   type Class,
   type TxOperations as Client,
@@ -166,6 +166,7 @@ export function showAttachmentPreviewPopup (value: WithLookup<Attachment>): Popu
       if (data.id === undefined) {
         await client.createDoc(attachment.class.Drawing, value.space, {
           parent: value.file,
+          parentClass: core.class.Blob,
           content: data.content
         })
       } else {

@@ -67,6 +67,7 @@ export interface SavedAttachments extends Preference {
  */
 export interface Drawing extends Doc {
   parent: Ref<Doc>
+  parentClass: Ref<Class<Doc>>
   content?: string
 }
 
