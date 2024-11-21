@@ -1,17 +1,17 @@
-export interface DrawingProps {
-  imageWidth?: number
-  imageHeight?: number
-  loadDrawing?: () => Promise<any>
-  saveDrawing?: (data: any) => Promise<void>
-
-  clearCanvas?: boolean
-  drawingTool?: DrawingTool
-  penColor?: string
-  onDirty?: () => void
+export interface DrawingData {
+  id?: string
+  content?: string
 }
 
-interface DrawingSource {
-  content?: string
+export interface DrawingProps {
+  readonly?: boolean
+  imageWidth?: number
+  imageHeight?: number
+  drawingData?: DrawingData
+  saveDrawing?: (data: any) => Promise<void>
+
+  drawingTool?: DrawingTool
+  penColor?: string
 }
 
 interface DrawCmd {
@@ -175,35 +175,17 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
   canvasCursor.style.pointerEvents = 'none'
   node.appendChild(canvasCursor)
 
+  let readonly = props.readonly ?? false
   let prevPos: Point = { x: 0, y: 0 }
 
-  let source: DrawingSource = {}
   const draw = new DrawState(ctx)
   draw.tool = props.drawingTool ?? 'pan'
   draw.penColor = props.penColor ?? 'blue'
   updateCanvasCursor()
 
   let commands: DrawCmd[] = []
-  if (props.loadDrawing === undefined) {
-    console.log('Load drawing method is not provided')
-  } else {
-    props
-      .loadDrawing()
-      .then((result) => {
-        source = result
-        if (source.content !== undefined) {
-          try {
-            commands = JSON.parse(source.content)
-            replayCommands()
-          } catch (error) {
-            console.error('Failed to parse drawing content', error)
-          }
-        }
-      })
-      .catch((error) => {
-        console.error('Failed to load drawing content', error)
-      })
-  }
+  let drawingData = props.drawingData
+  parseData()
 
   const resizeObserver = new ResizeObserver((entries) => {
     for (const entry of entries) {
@@ -218,6 +200,9 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
   resizeObserver.observe(canvas)
 
   canvas.onpointerdown = (e) => {
+    if (readonly) {
+      return
+    }
     if (e.button !== 0) {
       return
     }
@@ -236,6 +221,9 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
   }
 
   canvas.onpointermove = (e) => {
+    if (readonly) {
+      return
+    }
     e.preventDefault()
 
     const x = e.offsetX
@@ -258,28 +246,28 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
   }
 
   canvas.onpointerup = (e) => {
+    if (readonly) {
+      return
+    }
     e.preventDefault()
     canvas.releasePointerCapture(e.pointerId)
     if (draw.on) {
       if (draw.isDrawingTool()) {
         draw.drawLive(e.offsetX, e.offsetY, true)
         storeCommand()
-        if (props.onDirty !== undefined) {
-          props.onDirty()
-        }
       }
       draw.on = false
     }
   }
 
   canvas.onpointerenter = () => {
-    if (draw.isDrawingTool()) {
+    if (!readonly && draw.isDrawingTool()) {
       canvasCursor.style.visibility = 'visible'
     }
   }
 
   canvas.onpointerleave = () => {
-    if (draw.isDrawingTool()) {
+    if (!readonly && draw.isDrawingTool()) {
       canvasCursor.style.visibility = 'hidden'
     }
   }
@@ -298,7 +286,10 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
   }
 
   function updateCanvasCursor (): void {
-    if (draw.isDrawingTool()) {
+    if (readonly) {
+      canvasCursor.style.visibility = 'hidden'
+      canvas.style.cursor = 'default'
+    } else if (draw.isDrawingTool()) {
       canvas.style.cursor = 'none'
       const erasing = draw.tool === 'erase'
       const w = draw.cursorWidth()
@@ -309,8 +300,10 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
       canvasCursor.style.height = `${w}px`
     } else if (draw.tool === 'pan') {
       canvas.style.cursor = 'move'
+      canvasCursor.style.visibility = 'hidden'
     } else {
       canvas.style.cursor = 'default'
+      canvasCursor.style.visibility = 'hidden'
     }
   }
 
@@ -326,8 +319,35 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
     }
   }
 
+  function parseData (): void {
+    clearCanvas()
+    if (drawingData?.content !== undefined) {
+      try {
+        commands = JSON.parse(drawingData.content)
+        replayCommands()
+      } catch (error) {
+        commands = []
+        console.error('Failed to parse drawing content', error)
+      }
+    } else {
+      commands = []
+    }
+  }
+
   return {
     update (props: DrawingProps) {
+      if (drawingData !== props.drawingData) {
+        // Currently it expectes only empty data on update
+        // which means we pressed the "Clear canvas" button
+        // We don't support yes creation of multiple drawings
+        // so preserve the id to continue editing the previous drawing
+        const oldId = drawingData?.id
+        drawingData = props.drawingData
+        if (drawingData !== undefined) {
+          drawingData.id = oldId
+        }
+        parseData()
+      }
       if (draw.tool !== props.drawingTool) {
         draw.tool = props.drawingTool ?? 'pen'
         updateCanvasCursor()
@@ -336,18 +356,22 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
         draw.penColor = props.penColor ?? 'blue'
         updateCanvasCursor()
       }
-      if (props.clearCanvas === true) {
-        clearCanvas()
+      if (props.readonly !== readonly) {
+        readonly = props.readonly ?? false
+        updateCanvasCursor()
       }
     },
     destroy () {
       if (props.saveDrawing === undefined) {
         console.log('Save drawing method is not provided')
       } else {
-        source.content = JSON.stringify(commands)
-        props.saveDrawing(source).catch((error) => {
-          console.error('Failed to save drawing', error)
-        })
+        if (commands.length > 0 || drawingData?.id !== undefined) {
+          const data: DrawingData = drawingData ?? {}
+          data.content = JSON.stringify(commands)
+          props.saveDrawing(data).catch((error) => {
+            console.error('Failed to save drawing', error)
+          })
+        }
       }
     }
   }

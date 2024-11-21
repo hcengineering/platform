@@ -14,87 +14,98 @@
 -->
 <script lang="ts">
   import { Button, IconDelete, IconEdit, resizeObserver } from '@hcengineering/ui'
-  import { drawing, type DrawingTool } from '../drawing'
+  import { drawing, type DrawingData, type DrawingTool } from '../drawing'
   import IconEraser from './icons/Eraser.svelte'
 
-  export let isActive = false
-  export let props: Record<string, any>
+  export let active = false
+  export let readonly = false
+  export let imageWidth: number | undefined
+  export let imageHeight: number | undefined
+  export let drawingData: DrawingData
+  export let saveDrawing: (data: any) => Promise<void>
 
-  let clearCanvas = true
   let drawingTool: DrawingTool = 'pen'
   let penColor = 'blue'
   const penColors = ['red', 'green', 'blue', 'white', 'black']
 
-  let toolbar: Element
+  let board: HTMLDivElement
+  let toolbar: HTMLDivElement
   let toolbarInside = false
 
-  function boardResized (element: Element): void {
-    const board = element as HTMLDivElement
-    // TODO: There should be a generic solution
-    // this only estimates a free room above the picture in FilePreviewPopup
-    toolbarInside = board.offsetTop <= toolbar.clientHeight * 3
+  $: updateToolbarPosition(readonly, board, toolbar)
+
+  function updateToolbarPosition (readonly: boolean, board: HTMLDivElement, toolbar: HTMLDivElement): void {
+    if (!readonly && board !== undefined && toolbar !== undefined) {
+      // TODO: There should be a generic solution
+      // this only estimates a free room above the picture in FilePreviewPopup
+      toolbarInside = board.offsetTop <= toolbar.clientHeight * 3
+    }
   }
 </script>
 
-{#if isActive}
+{#if active}
   <div
     {...$$restProps}
     style:position="relative"
-    use:resizeObserver={boardResized}
+    bind:this={board}
+    use:resizeObserver={() => {
+      updateToolbarPosition(readonly, board, toolbar)
+    }}
     use:drawing={{
-      ...props,
-      clearCanvas,
+      readonly,
+      imageWidth,
+      imageHeight,
+      drawingData,
+      saveDrawing,
       drawingTool,
-      penColor,
-      onDirty: () => {
-        clearCanvas = false
-      }
+      penColor
     }}
   >
-    <div class="toolbar" class:inside={toolbarInside} bind:this={toolbar}>
-      <Button
-        icon={IconDelete}
-        kind="icon"
-        disabled={clearCanvas}
-        on:click={() => {
-          clearCanvas = true
-        }}
-      />
-      <div class="divider buttons-divider" />
-      <Button
-        icon={IconEdit}
-        kind="icon"
-        selected={drawingTool === 'pen'}
-        on:click={() => {
-          drawingTool = 'pen'
-        }}
-      />
-      <Button
-        icon={IconEraser}
-        kind="icon"
-        selected={drawingTool === 'erase'}
-        on:click={() => {
-          drawingTool = 'erase'
-        }}
-      />
-      <div class="divider buttons-divider" />
-      {#each penColors as color}
+    {#if !readonly}
+      <div class="toolbar" class:inside={toolbarInside} bind:this={toolbar}>
         <Button
+          icon={IconDelete}
           kind="icon"
-          selected={penColor === color}
           on:click={() => {
-            penColor = color
+            drawingData = {}
           }}
-        >
-          <div
-            slot="content"
-            class="colorIcon"
-            class:emphasized={color === 'white' || color === 'black'}
-            style:background={color}
-          />
-        </Button>
-      {/each}
-    </div>
+        />
+        <div class="divider buttons-divider" />
+        <Button
+          icon={IconEdit}
+          kind="icon"
+          selected={drawingTool === 'pen'}
+          on:click={() => {
+            drawingTool = 'pen'
+          }}
+        />
+        <Button
+          icon={IconEraser}
+          kind="icon"
+          selected={drawingTool === 'erase'}
+          on:click={() => {
+            drawingTool = 'erase'
+          }}
+        />
+        <div class="divider buttons-divider" />
+        {#each penColors as color}
+          <Button
+            kind="icon"
+            selected={penColor === color}
+            on:click={() => {
+              penColor = color
+            }}
+          >
+            <div
+              slot="content"
+              class="colorIcon"
+              class:emphasized={color === 'white' || color === 'black'}
+              style:background={color}
+            />
+          </Button>
+        {/each}
+      </div>
+    {/if}
     <slot />
   </div>
 {:else}

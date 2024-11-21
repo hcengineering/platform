@@ -36,17 +36,37 @@
   export let fullSize = false
   export let showIcon = true
 
+  let drawingLoading = false
+
   const dispatch = createEventDispatcher()
 
   onMount(() => {
     if (fullSize) {
       dispatch('fullsize')
     }
+    if (props.drawingAvailable === true) {
+      loadDrawings(props.loadDrawings)
+    }
   })
 
-  function toggleDrawing (): void {
-    const isDrawingActive = props.isDrawingActive === true
-    props = { ...props, isDrawingActive: !isDrawingActive }
+  function toggleDrawingEdit (): void {
+    const editable = props.drawingEditable === true
+    props = { ...props, drawingEditable: !editable }
+  }
+
+  function loadDrawings (load: () => Promise<any>): void {
+    if (load !== undefined) {
+      drawingLoading = true
+      load()
+        .then((result) => {
+          drawingLoading = false
+          props.drawingData = result
+        })
+        .catch((error) => {
+          drawingLoading = false
+          console.error('Failed to load drawings for file', file, error)
+        })
+    }
   }
 </script>
 
@@ -70,12 +90,13 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    {#if props.drawingEnabled === true}
+    {#if props.drawingAvailable === true}
       <Button
         icon={IconEdit}
         kind="icon"
+        disabled={drawingLoading}
         showTooltip={{ label: presentation.string.StartDrawing }}
-        on:click={toggleDrawing}
+        on:click={toggleDrawingEdit}
       />
     {/if}
     <DownloadFileButton {name} {file} />

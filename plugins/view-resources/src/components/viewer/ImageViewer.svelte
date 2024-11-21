@@ -21,7 +21,11 @@
   export let name: string
   export let metadata: BlobMetadata | undefined
   export let fit: boolean = false
-  export let props: Record<string, any>
+
+  export let drawingAvailable: boolean
+  export let drawingEditable: boolean
+  export let drawingData: any
+  export let saveDrawing: (data: any) => Promise<void>
 
   $: originalWidth = metadata?.originalWidth
   $: originalHeight = metadata?.originalHeight
@@ -43,8 +47,12 @@
     </div>
   {/if}
   <DrawingBoard
-    props={{ ...props, imageWidth, imageHeight }}
-    isActive={props.isDrawingActive === true && !loading}
+    {imageWidth}
+    {imageHeight}
+    {drawingData}
+    {saveDrawing}
+    active={drawingAvailable && !loading}
+    readonly={drawingAvailable && !drawingEditable}
     class="object-contain mx-auto"
     style={`max-width:${width};max-height:${height}`}
   >

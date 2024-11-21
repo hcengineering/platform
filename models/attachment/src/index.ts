@@ -82,6 +82,7 @@ export class TSavedAttachments extends TPreference implements SavedAttachments {
   declare attachedTo: Ref<Attachment>
 }
 
+@Model(attachment.class.Drawing, core.class.Doc, DOMAIN_ATTACHMENT)
 export class TDrawing extends TDoc implements Drawing {
   @Prop(TypeRef(core.class.Doc), getEmbeddedLabel('Parent'))
   @Index(IndexKind.Indexed)

@@ -27,6 +27,7 @@ import {
 } from '@hcengineering/core'
 import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
 import {
+  type DrawingData,
   type FileOrBlob,
   getClient,
   getFileMetadata,
@@ -148,26 +149,29 @@ export async function openFilePreviewInSidebar (
 export function showAttachmentPreviewPopup (value: WithLookup<Attachment>): PopupResult {
   const props: Record<string, any> = {}
 
-  if (value.type.startsWith('image/')) {
-    props.drawingEnabled = true
-    props.loadDrawing = async (): Promise<any> => {
+  if (value?.type?.startsWith('image/')) {
+    props.drawingAvailable = true
+    props.loadDrawings = async (): Promise<DrawingData | undefined> => {
       const client = getClient()
-      return await client.findOne(attachment.class.Drawing, { parent: value._id })
+      const drawing = await client.findOne(attachment.class.Drawing, { parent: value.file })
+      if (drawing !== undefined) {
+        return {
+          id: drawing._id,
+          content: drawing.content
+        }
+      }
     }
-    props.saveDrawing = async (data: any): Promise<void> => {
+    props.saveDrawing = async (data: DrawingData): Promise<void> => {
       const client = getClient()
-      const drawing = data as Drawing
-      if (drawing._id === undefined) {
-        const newId = await client.createDoc(attachment.class.Drawing, value.space, {
-          parent: value._id,
-          content: drawing.content
+      if (data.id === undefined) {
+        await client.createDoc(attachment.class.Drawing, value.space, {
+          parent: value.file,
+          content: data.content
         })
-        console.log('CREATED', newId)
       } else {
-        const updatedId = await client.updateDoc(attachment.class.Drawing, value.space, drawing._id, {
-          content: drawing.content
+        await client.updateDoc(attachment.class.Drawing, value.space, data.id as Ref<Drawing>, {
+          content: data.content
         })
-        console.log('UPDATED', updatedId)
       }
     }
   }
