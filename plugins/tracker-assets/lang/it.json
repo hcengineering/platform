@@ -263,7 +263,7 @@
     "IssueNotificationChangedProperty": "{senderName} ha modificato {property} in \"{newValue}\"",
     "IssueNotificationMessage": "{senderName}: {message}",
     "PreviousAssigned": "Assegnato in precedenza",
-    "IssueAssigneedToYou": "Assegnato a te",
+    "IssueAssignedToYou": "Assegnato a te",
     "RelatedIssueTargetDescription": "Obiettivo del progetto del problema correlato per Classe o Spazio",
     "MapRelatedIssues": "Configura i progetti predefiniti per issue correlate",
     "DefaultIssueStatus": "Stato predefinito della issue",

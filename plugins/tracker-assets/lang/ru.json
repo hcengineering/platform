@@ -280,7 +280,7 @@
     "IssueNotificationChangedProperty": "{senderName} изменил {property} на \"{newValue}\"",
     "IssueNotificationMessage": "{senderName}: {message}",
     "PreviousAssigned": "Ранее назначенные",
-    "IssueAssigneedToYou": "Назначено вам",
+    "IssueAssignedToYou": "Назначено вам",
     "RelatedIssueTargetDescription": "Настройка проекта по умолчанию для Класса или пространства",
     "MapRelatedIssues": "Настроить проекты по умолчанию для связанных задач",
     "DefaultIssueStatus": "Статус по умолчанию",

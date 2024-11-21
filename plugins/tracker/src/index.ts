@@ -512,7 +512,7 @@ const pluginState = plugin(trackerId, {
     IssueNotificationChanged: '' as IntlString,
     IssueNotificationChangedProperty: '' as IntlString,
     IssueNotificationMessage: '' as IntlString,
-    IssueAssigneedToYou: '' as IntlString,
+    IssueAssignedToYou: '' as IntlString,
     Project: '' as IntlString,
     RelatedIssues: '' as IntlString,
     Issue: '' as IntlString,

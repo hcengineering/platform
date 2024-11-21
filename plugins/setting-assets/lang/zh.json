@@ -119,6 +119,6 @@
     "DeleteSpaceTypeConfirm": "您确定要删除此空间类型吗？",
     "WorkspaceName": "工作区名称",
     "Workspace": "工作区",
-    "OwnerOrMainteinerRequired": "您需要成为工作空间所有者或维护者"
+    "OwnerOrMaintainerRequired": "您需要成为工作空间所有者或维护者"
   }
 }
