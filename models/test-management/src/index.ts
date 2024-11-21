@@ -109,11 +109,30 @@ function defineApplication (builder: Builder): void {
                 icon: testManagement.icon.TestRuns,
                 component: workbench.component.SpecialView,
                 componentProps: {
-                  _class: testManagement.class.TestRun,
+                  _class: testManagement.class.TestRunItem,
                   icon: testManagement.icon.TestRuns,
-                  title: testManagement.string.TestRuns,
+                  label: testManagement.string.TestRuns,
                   createLabel: testManagement.string.NewTestRun,
                   createComponent: testManagement.component.CreateTestRun
+                },
+                navigationModel: {
+                  navigationComponent: view.component.FoldersBrowser,
+                  navigationComponentLabel: testManagement.string.TestRun,
+                  navigationComponentIcon: testManagement.icon.TestRuns,
+                  mainComponentLabel: testManagement.string.TestResults,
+                  mainComponentIcon: testManagement.icon.TestRuns,
+                  createComponent: testManagement.component.CreateTestRun,
+                  navigationComponentProps: {
+                    _class: testManagement.class.TestRun,
+                    icon: testManagement.icon.TestRuns,
+                    title: testManagement.string.TestSuites,
+                    createLabel: testManagement.string.CreateTestRun,
+                    createComponent: testManagement.component.CreateTestRun,
+                    titleKey: 'name',
+                    getFolderLink: testManagement.function.GetTestRunLink,
+                    plainList: true
+                  },
+                  syncWithLocationQuery: true
                 }
               }
             ]

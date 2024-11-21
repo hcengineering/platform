@@ -20,9 +20,9 @@
   import { getResource, type Resource } from '@hcengineering/platform'
   import { IntlString, Asset } from '@hcengineering/platform'
 
-  import { FoldersManager, FoldersStore, FoldersState } from '../stores/folderStore'
+  import { FoldersStore, FoldersState, emptyFoldersState, getFoldersManager } from './store/folderStore'
   import FolderTreeLevel from './FolderTreeLevel.svelte'
-  import { TreeNode, TreeItem, getActions as getContributedActions } from '../index'
+  import { TreeNode, TreeItem, getActions as getContributedActions } from '../../index'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -32,14 +32,15 @@
   export let getFolderLink: Resource<(doc: Ref<Doc> | undefined) => Location>
   export let allObjectsIcon: Asset
   export let allObjectsLabel: IntlString
+  export let plainList: boolean = false
 
   export let forciblyСollapsed: boolean = false
 
   const client = getClient()
 
-  let foldersState: FoldersState = FoldersState.empty()
+  let foldersState: FoldersState = emptyFoldersState()
 
-  const foldersManager: FoldersManager = new FoldersManager(titleKey, parentKey, noParentId)
+  const foldersManager = getFoldersManager(titleKey, parentKey, noParentId, plainList)
 
   FoldersStore.subscribe((newState) => {
     foldersState = newState
@@ -65,10 +66,8 @@
   async function handleFolderSelected (_id: Ref<Doc>): Promise<void> {
     selected = _id
     visibleItem = selected !== undefined ? foldersState.folderById.get(selected) : undefined
-    if (getFolderLink) {
-      const getFolderLinkFunction = await getResource(getFolderLink)
-      navigate(getFolderLinkFunction(_id))
-    }
+    const getFolderLinkFunction = await getResource(getFolderLink)
+    navigate(getFolderLinkFunction(_id))
   }
 
   async function handleAllItemsSelected (): Promise<void> {
@@ -121,7 +120,7 @@
       }}
     />
     <svelte:fragment slot="visible">
-      {#if (selected || forciblyСollapsed) && visibleItem}
+      {#if (selected || forciblyСollapsed) && visibleItem !== undefined}
         {@const folder = visibleItem}
         <TreeItem
           _id={folder._id}

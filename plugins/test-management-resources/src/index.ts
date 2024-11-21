@@ -34,7 +34,7 @@ import TestCaseNavPresenter from './components/test-run/TestCaseNavPresenter.sve
 import TestRunResult from './components/test-run/TestRunResult.svelte'
 
 import { CreateChildTestSuiteAction, EditTestSuiteAction, RunSelectedTestsAction } from './utils'
-import { resolveLocation, getTestSuiteLink } from './navigation'
+import { resolveLocation, getAttachedObjectLink } from './navigation'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -58,7 +58,8 @@ export default async (): Promise<Resources> => ({
     TestRunResult
   },
   function: {
-    GetTestSuiteLink: getTestSuiteLink
+    GetTestSuiteLink: getAttachedObjectLink,
+    GetTestRunLink: getAttachedObjectLink
   },
   resolver: {
     Location: resolveLocation

@@ -61,66 +61,61 @@
   <div class="separator" />
   <div class="editor">
     <div class="popupPanel-body__aside-grid">
-      <span
-      class="labelOnPanel">
-        <Label label={testManagement.string.TestStatus}/>
+      <span class="labelOnPanel">
+        <Label label={testManagement.string.TestStatus} />
       </span>
-      <TestRunStatusEditor
-        value={$selectedTestRun?.status}
-        object={$selectedTestRun}
-      />
+      <TestRunStatusEditor value={$selectedTestRun?.status} object={$selectedTestRun} />
     </div>
-
   </div>
-  <div class="divider"/>
+  <div class="divider" />
   <div class="item">
-  <AttachmentStyledBox
-    bind:this={descriptionBox}
-    objectId={id}
-    _class={testManagement.class.TestCase}
-    space={_space}
-    alwaysEdit
-    showButtons={false}
-    bind:content={description}
-    placeholder={core.string.Description}
-    kind="indented"
-    isScrollable={false}
-    enableBackReferences={true}
-    enableAttachments={false}
-    on:attachments={(ev) => {
-      if (ev.detail.size > 0) attachments = ev.detail.values
-      else if (ev.detail.size === 0 && ev.detail.values != null) {
-        attachments.clear()
-        attachments = attachments
-      }
-    }}
-  />
-</div>
+    <AttachmentStyledBox
+      bind:this={descriptionBox}
+      objectId={id}
+      _class={testManagement.class.TestCase}
+      space={_space}
+      alwaysEdit
+      showButtons={false}
+      bind:content={description}
+      placeholder={core.string.Description}
+      kind="indented"
+      isScrollable={false}
+      enableBackReferences={true}
+      enableAttachments={false}
+      on:attachments={(ev) => {
+        if (ev.detail.size > 0) attachments = ev.detail.values
+        else if (ev.detail.size === 0 && ev.detail.values != null) {
+          attachments.clear()
+          attachments = attachments
+        }
+      }}
+    />
+  </div>
 
-<div class="item">
-  {#if attachments.size > 0}
-    {#each Array.from(attachments.values()) as attachment}
-      <AttachmentPresenter
-        value={attachment}
-        showPreview
-        removable
-        on:remove={(result) => {
-          if (result.detail !== undefined) descriptionBox.removeAttachmentById(result.detail._id)
-        }}
-      />
-    {/each}
-  {/if}
-</div>
+  <div class="item">
+    {#if attachments.size > 0}
+      {#each Array.from(attachments.values()) as attachment}
+        <AttachmentPresenter
+          value={attachment}
+          showPreview
+          removable
+          on:remove={(result) => {
+            if (result.detail !== undefined) descriptionBox.removeAttachmentById(result.detail._id)
+          }}
+        />
+      {/each}
+    {/if}
+  </div>
 
-<div class="item">
-  <Button
-    icon={IconAttachment}
-    size="large"
-    on:click={() => {
-      descriptionBox.handleAttach()
-    }}
-  />
-</div>
+  <div class="item">
+    <Button
+      icon={IconAttachment}
+      size="large"
+      on:click={() => {
+        descriptionBox.handleAttach()
+      }}
+    />
+  </div>
   <div class="footer">
     <Button
       label={testManagement.string.Save}
@@ -147,7 +142,7 @@
     flex-direction: column;
     .item {
       justify-content: start;
-      padding: .75rem;
+      padding: 0.75rem;
     }
     .editor {
       padding: 0.75rem 0;
@@ -161,7 +156,7 @@
 
     .footer {
       border-top: 1px solid var(--theme-divider-color);
-      padding-top: .75rem;
+      padding-top: 0.75rem;
       margin-top: auto;
       width: 100%;
       display: flex;

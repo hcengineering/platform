@@ -20,4 +20,3 @@ import { type Writable, writable } from 'svelte/store'
 export const currentTestCase: Writable<Ref<TestCase> | undefined> = writable(undefined)
 
 export const selectedTestRun: Writable<TestRunItem | undefined> = writable(undefined)
-

@@ -61,14 +61,9 @@ async function generateProjectLocation (
   }
 }
 
-export function getTestSuiteLink (testSuite: Ref<TestSuite>): Location {
+export function getAttachedObjectLink (parentDoc: Ref<Doc>): Location {
   const loc = getCurrentResolvedLocation()
-  loc.query =
-    testSuite === undefined
-      ? undefined
-      : {
-          [SUITE_KEY]: testSuite
-        }
+  loc.query = parentDoc === undefined ? undefined : { attachedTo: parentDoc }
 
   return loc
 }

@@ -185,7 +185,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     SelectTestCase: '' as IntlString,
     Save: '' as IntlString,
     SaveAndNext: '' as IntlString,
-    DonePercent: '' as IntlString
+    DonePercent: '' as IntlString,
+    TestResults: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>
@@ -239,7 +240,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestCase: '' as Ref<TestCase>
   },
   function: {
-    GetTestSuiteLink: '' as Resource<(doc: Ref<Doc>) => Location>
+    GetTestSuiteLink: '' as Resource<(doc: Ref<Doc>) => Location>,
+    GetTestRunLink: '' as Resource<(doc: Ref<Doc>) => Location>
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>

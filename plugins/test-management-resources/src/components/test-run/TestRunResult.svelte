@@ -15,7 +15,7 @@
 <script lang="ts">
   import { TestRun } from '@hcengineering/test-management'
   import { BreadcrumbsElement } from '@hcengineering/presentation'
-  import { ScrollerBar, getPlatformColorForTextDef, themeStore, getPlatformColor, getColorNumberByText } from '@hcengineering/ui'
+  import { ScrollerBar } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let gap: 'none' | 'small' | 'big' = 'none'
@@ -31,7 +31,7 @@
     label={'10'}
     noGap
     position={'start'}
-    color={"#D15045"}
+    color={'#D15045'}
     selected
     fontColor="white"
     title="Failed"
