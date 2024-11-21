@@ -18,6 +18,7 @@ import core, {
   createClient,
   Doc,
   generateId,
+  MeasureMetricsContext,
   Ref,
   SortingOrder,
   Space,
@@ -757,6 +758,10 @@ describe('query', () => {
       )
     })
 
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1)
+    })
+
     await factory.updateDoc(core.class.Space, core.space.Model, futureSpace, {
       name: '1'
     })
@@ -973,5 +978,45 @@ describe('query', () => {
     })
     projects = await liveQuery.queryFind(test.mixin.TestProjectMixin, {}, { projection: { _id: 1 } })
     expect(projects.length).toEqual(1)
+  })
+
+  jest.setTimeout(25000)
+  it('test clone ops', async () => {
+    const { liveQuery, factory } = await getClient()
+
+    const counter = 10000
+    const ctx = new MeasureMetricsContext('tool', {})
+    let data: Space[] = []
+    const pp = new Promise((resolve) => {
+      liveQuery.query<Space>(
+        test.class.TestProject,
+        { private: false },
+        (result) => {
+          data = result
+          if (data.length % 1000 === 0) {
+            console.info(data.length)
+          }
+          if (data.length === counter) {
+            resolve(null)
+          }
+        },
+        {}
+      )
+    })
+
+    for (let i = 0; i < counter; i++) {
+      await ctx.with('create-doc', {}, () =>
+        factory.createDoc(test.class.TestProject, core.space.Space, {
+          archived: false,
+          description: '',
+          members: [],
+          private: false,
+          prjName: 'test project',
+          name: 'qwe'
+        })
+      )
+    }
+    expect(data.length).toBe(counter)
+    await pp
   })
 })

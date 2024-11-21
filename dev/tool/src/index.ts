@@ -100,7 +100,7 @@ import { backupDownload } from '@hcengineering/server-backup/src/backup'
 import type { PipelineFactory, StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
-import { getMongoDBUrl } from './__start'
+import { getAccountDBUrl, getMongoDBUrl } from './__start'
 import {
   benchmark,
   benchmarkWorker,
@@ -429,8 +429,10 @@ export function devTool (
     .option('-f|--force [force]', 'Force update', true)
     .option('-i|--indexes [indexes]', 'Force indexes rebuild', false)
     .action(async (workspace, cmd: { force: boolean, indexes: boolean }) => {
-      const { dbUrl, version, txes, migrateOperations } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
+      const { version, txes, migrateOperations } = prepareTools()
+
+      const accountUrl = getAccountDBUrl()
+      await withDatabase(accountUrl, async (db) => {
         const info = await getWorkspaceById(db, workspace)
         if (info === null) {
           throw new Error(`workspace ${workspace} not found`)
@@ -468,16 +470,18 @@ export function devTool (
     .description('upgrade')
     .option('-l|--logs <logs>', 'Default logs folder', './logs')
     .option('-i|--ignore [ignore]', 'Ignore workspaces', '')
+    .option('-r|--region [region]', 'Region of workspaces', '')
     .option(
       '-c|--console',
       'Display all information into console(default will create logs folder with {workspace}.log files',
       false
     )
     .option('-f|--force [force]', 'Force update', false)
-    .action(async (cmd: { logs: string, force: boolean, console: boolean, ignore: string }) => {
-      const { dbUrl, version, txes, migrateOperations } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        const workspaces = (await listWorkspacesRaw(db)).filter((ws) => !cmd.ignore.includes(ws.workspace))
+    .action(async (cmd: { logs: string, force: boolean, console: boolean, ignore: string, region: string }) => {
+      const { version, txes, migrateOperations } = prepareTools()
+      const accountUrl = getAccountDBUrl()
+      await withDatabase(accountUrl, async (db) => {
+        const workspaces = (await listWorkspacesRaw(db, cmd.region)).filter((ws) => !cmd.ignore.includes(ws.workspace))
         workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
         const measureCtx = new MeasureMetricsContext('upgrade', {})
 
