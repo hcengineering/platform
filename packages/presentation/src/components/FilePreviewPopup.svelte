@@ -36,8 +36,6 @@
   export let fullSize = false
   export let showIcon = true
 
-  $: canDraw = contentType?.startsWith('image/')
-
   const dispatch = createEventDispatcher()
 
   onMount(() => {
@@ -47,8 +45,8 @@
   })
 
   function toggleDrawing (): void {
-    const isDrawing = props.isDrawing === true
-    props = { ...props, isDrawing: !isDrawing }
+    const isDrawingActive = props.isDrawingActive === true
+    props = { ...props, isDrawingActive: !isDrawingActive }
   }
 </script>
 
@@ -72,7 +70,7 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    {#if canDraw}
+    {#if props.drawingEnabled === true}
       <Button
         icon={IconEdit}
         kind="icon"

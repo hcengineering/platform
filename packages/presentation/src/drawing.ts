@@ -1,7 +1,8 @@
 export interface DrawingProps {
-  fileId: string
   imageWidth: number | undefined
   imageHeight: number | undefined
+  loadDrawing: () => string
+  saveDrawing: (content: string) => void
 
   clearCanvas: boolean
   drawingTool: DrawingTool
@@ -170,13 +171,28 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
   canvasCursor.style.pointerEvents = 'none'
   node.appendChild(canvasCursor)
 
-  const commands: DrawCmd[] = []
   let prevPos: Point = { x: 0, y: 0 }
 
   const draw = new DrawState(ctx)
   draw.tool = props.drawingTool
   draw.penColor = props.penColor
   updateCanvasCursor()
+
+  let commands: DrawCmd[] = []
+  if (props.loadDrawing === undefined) {
+    console.log('Load drawing method is not provided')
+  } else {
+    try {
+      const content = props.loadDrawing()
+      try {
+        commands = JSON.parse(content)
+      } catch {
+        console.error('Failed to parse drawing content')
+      }
+    } catch {
+      console.error('Failed to load drawing content')
+    }
+  }
 
   const resizeObserver = new ResizeObserver((entries) => {
     for (const entry of entries) {
@@ -305,7 +321,11 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
       }
     },
     destroy () {
-      console.log('TODO: SAVE_DRAWING')
+      if (props.saveDrawing === undefined) {
+        console.log('Save drawing method is not provided')
+      } else {
+        props.saveDrawing(JSON.stringify(commands))
+      }
     }
   }
 }

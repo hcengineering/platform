@@ -21,7 +21,9 @@
   export let name: string
   export let metadata: BlobMetadata | undefined
   export let fit: boolean = false
-  export let isDrawing: boolean = false
+  export let isDrawingActive: boolean = false
+  export let loadDrawing: () => string
+  export let saveDrawing: (content: string) => void
 
   $: originalWidth = metadata?.originalWidth
   $: originalHeight = metadata?.originalHeight
@@ -46,7 +48,9 @@
     fileId={value}
     {imageWidth}
     {imageHeight}
-    isActive={isDrawing && !loading}
+    {loadDrawing}
+    {saveDrawing}
+    isActive={isDrawingActive && !loading}
     class="object-contain mx-auto"
     style={`max-width:${width};max-height:${height}`}
   >

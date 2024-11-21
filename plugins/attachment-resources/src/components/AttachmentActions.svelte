@@ -16,21 +16,15 @@
   import { type Attachment } from '@hcengineering/attachment'
   import type { WithLookup } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
-  import presentation, {
-    FilePreviewPopup,
-    canPreviewFile,
-    getFileUrl,
-    getPreviewAlignment,
-    previewTypes
-  } from '@hcengineering/presentation'
-  import { IconMoreH, Menu, Action as UIAction, closeTooltip, showPopup, tooltip } from '@hcengineering/ui'
+  import presentation, { canPreviewFile, getFileUrl, previewTypes } from '@hcengineering/presentation'
+  import { IconMoreH, Menu, Action as UIAction, showPopup, tooltip } from '@hcengineering/ui'
   import view, { Action } from '@hcengineering/view'
   import workbench from '@hcengineering/workbench'
 
   import AttachmentAction from './AttachmentAction.svelte'
   import FileDownload from './icons/FileDownload.svelte'
   import attachmentPlugin from '../plugin'
-  import { openAttachmentInSidebar } from '../utils'
+  import { openAttachmentInSidebar, showAttachmentPreviewPopup } from '../utils'
 
   export let attachment: WithLookup<Attachment>
   export let isSaved = false
@@ -60,18 +54,7 @@
       window.open((e.target as HTMLAnchorElement).href, '_blank')
       return
     }
-    closeTooltip()
-
-    showPopup(
-      FilePreviewPopup,
-      {
-        file: attachment.file,
-        contentType: attachment.type,
-        name: attachment.name,
-        metadata: attachment.metadata
-      },
-      getPreviewAlignment(attachment.type ?? '')
-    )
+    showAttachmentPreviewPopup(attachment)
   }
 
   $: saveAttachmentAction = isSaved
@@ -92,7 +75,7 @@
     }
   }
 
-  const showMenu = (ev: Event) => {
+  const showMenu = (ev: Event): void => {
     const actions: UIAction[] = []
     if (canPreview) {
       actions.push(openAction)

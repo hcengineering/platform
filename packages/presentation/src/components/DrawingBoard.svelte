@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Blob, type Ref } from '@hcengineering/core'
   import { Button, IconDelete, IconEdit, resizeObserver } from '@hcengineering/ui'
   import { drawing, type DrawingTool } from '../drawing'
   import IconEraser from './icons/Eraser.svelte'
 
   export let isActive = false
-  export let fileId: Ref<Blob>
   export let imageWidth: number | undefined
   export let imageHeight: number | undefined
+  export let loadDrawing: () => string
+  export let saveDrawing: (content: string) => void
 
   let clearCanvas = true
   let drawingTool: DrawingTool = 'pen'
@@ -32,8 +32,9 @@
   let toolbarInside = false
 
   function boardResized (element: Element): void {
-    // TODO: There should be a generic solution, this only estimates free space in FilePreviewPopup
     const board = element as HTMLDivElement
+    // TODO: There should be a generic solution
+    // this only estimates a free room above the picture in FilePreviewPopup
     toolbarInside = board.offsetTop <= toolbar.clientHeight * 3
   }
 </script>
@@ -44,12 +45,13 @@
     style:position="relative"
     use:resizeObserver={boardResized}
     use:drawing={{
-      fileId,
       imageWidth,
       imageHeight,
       clearCanvas,
       drawingTool,
       penColor,
+      loadDrawing,
+      saveDrawing,
       onDirty: () => {
         clearCanvas = false
       }

@@ -22,10 +22,19 @@ import {
   type Data,
   type Doc,
   type Ref,
-  type Space
+  type Space,
+  type WithLookup
 } from '@hcengineering/core'
 import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-import { type FileOrBlob, getClient, getFileMetadata, uploadFile } from '@hcengineering/presentation'
+import {
+  type FileOrBlob,
+  getClient,
+  getFileMetadata,
+  getPreviewAlignment,
+  uploadFile,
+  FilePreviewPopup
+} from '@hcengineering/presentation'
+import { closeTooltip, showPopup, type PopupResult } from '@hcengineering/ui'
 import workbench, { type WidgetTab } from '@hcengineering/workbench'
 import view from '@hcengineering/view'
 
@@ -102,6 +111,7 @@ export function getType (type: string): 'image' | 'text' | 'json' | 'video' | 'a
 }
 
 export async function openAttachmentInSidebar (value: Attachment): Promise<void> {
+  closeTooltip()
   await openFilePreviewInSidebar(value.file, value.name, value.type, value.metadata)
 }
 
@@ -133,4 +143,32 @@ export async function openFilePreviewInSidebar (
     data: { file, name, contentType, metadata }
   }
   await createFn(widget, tab, true)
+}
+
+export function showAttachmentPreviewPopup (value: WithLookup<Attachment>): PopupResult {
+  const props: Record<string, any> = {}
+
+  if (value.type.startsWith('image/')) {
+    props.drawingEnabled = true
+    props.loadDrawing = () => {
+      console.log('TODO: LOAD_DRAWING', value._class, value._id)
+      return JSON.stringify([])
+    }
+    props.saveDrawing = (content: string) => {
+      console.log('TODO: SAVE_DRAWING', value._class, value._id, content)
+    }
+  }
+
+  closeTooltip()
+  return showPopup(
+    FilePreviewPopup,
+    {
+      file: value.file,
+      contentType: value.type,
+      name: value.name,
+      metadata: value.metadata,
+      props
+    },
+    getPreviewAlignment(value.type ?? '')
+  )
 }
