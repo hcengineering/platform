@@ -95,12 +95,14 @@
               ? viewOptions === undefined || viewOptions?.hideArchived === true
                 ? { archived: false }
                 : {}
-              : {}),
+              : {
+                  '$lookup.space.archived': false
+                }),
           ...(sortedValues !== undefined ? { [prefix + filter.key.key]: { $nin: sortedValues } } : {})
         },
         {
           sort: { modifiedOn: SortingOrder.Descending },
-          projection: { [prefix + filter.key.key]: 1, space: 1 },
+          projection: { [prefix + filter.key.key]: 1 },
           ...(limit !== undefined ? { limit } : {}),
           lookup: {
             space: core.class.Space
@@ -110,13 +112,8 @@
       if (limit !== undefined) {
         objectsPromise = p
       }
-      let res: WithLookup<Doc>[] = await p
+      const res: WithLookup<Doc>[] = await p
       // We need to filter archived in case it is required
-
-      const len = res.length
-      if (space === undefined || !isDerivedFromSpace) {
-        res = res.filter((it) => !(it.$lookup?.space?.archived ?? false))
-      }
 
       for (const object of res) {
         let asDoc = object
@@ -131,7 +128,7 @@
       for (const object of filter.value.map((p) => p[0])) {
         values.add(object)
       }
-      return len >= (limit ?? 0)
+      return res.length >= (limit ?? 0)
     }
     const hasMore = await doQuery(1000, undefined)
     values = values

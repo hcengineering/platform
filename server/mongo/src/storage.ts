@@ -643,9 +643,11 @@ abstract class MongoAdapterBase implements DbAdapter {
         const ckey = this.checkMixinKey<T>(key, clazz) as keyof T
         projection[ckey] = options.projection[key]
       }
-      // We also need to add lookup's
       for (const step of steps) {
-        ;(projection as any)[step.as] = 1
+        // We also need to add lookup if original field are in projection.
+        if ((projection as any)[step.from] === 1) {
+          ;(projection as any)[step.as] = 1
+        }
       }
       pipeline.push({ $project: projection })
     }

@@ -79,35 +79,44 @@
     }
     targets.clear()
 
-    let baseObjects: WithLookup<Doc>[] = await client.findAll(filter.key._class, space !== undefined ? { space } : {}, {
-      projection: { [filter.key.key]: 1, space: 1 },
-      lookup: {
-        space: core.class.Space
-      },
-      limit: 1000
-    })
+    const baseObjects: WithLookup<Doc>[] = await client.findAll(
+      filter.key._class,
+      space !== undefined
+        ? {
+            space
+          }
+        : { '$lookup.space.archived': false },
+      {
+        projection: { [filter.key.key]: 1 },
+        lookup: {
+          space: core.class.Space
+        },
+        limit: 1000
+      }
+    )
     if (baseObjects.length === 1000) {
-      // We have more soe let's fetch all
+      // We have more so let's fetch all
       const ninTarget = Array.from(new Set(baseObjects.map((it) => getObjectValue(filter.key.key, it) ?? undefined)))
       const extraObjects = await client.findAll(
         filter.key._class,
         {
-          ...(space !== undefined ? { space } : {}),
+          ...(space !== undefined
+            ? { space }
+            : {
+                '$lookup.space.archived': false
+              }),
           [filter.key.key]: {
             $nin: ninTarget
           }
         },
         {
-          projection: { [filter.key.key]: 1, space: 1 },
+          projection: { [filter.key.key]: 1 },
           lookup: {
             space: core.class.Space
           }
         }
       )
       baseObjects.push(...extraObjects)
-    }
-    if (space === undefined) {
-      baseObjects = baseObjects.filter((it) => !(it.$lookup?.space?.archived ?? false))
     }
 
     for (const object of baseObjects) {

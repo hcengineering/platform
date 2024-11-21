@@ -718,7 +718,6 @@ describe('query', () => {
     await secondPromise
   })
 
-  jest.setTimeout(5000000)
   it('lookup query update doc', async () => {
     const { liveQuery, factory } = await getClient()
     let attempt = 0
