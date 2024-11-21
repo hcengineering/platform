@@ -291,7 +291,7 @@
     </svelte:fragment>
 
     <svelte:fragment slot="attributes" let:direction={dir}>
-      {#if headerEditor !== undefined}
+      {#if headerEditor !== undefined && object._id === _id}
         <Component
           is={headerEditor}
           props={{
