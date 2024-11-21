@@ -259,7 +259,10 @@ async function finishMeetingMinutes (
 ): Promise<Tx[]> {
   const res: Tx[] = []
   const roomInfos = await control.queryFind(control.ctx, love.class.RoomInfo, {})
-  const roomInfo = roomInfos.find((ri) => ri.persons.includes(info.person))
+  const roomInfo =
+    tx._class === core.class.TxRemoveDoc
+      ? roomInfos.find((it) => it.room === info.room)
+      : roomInfos.find((ri) => ri.persons.includes(info.person))
 
   if (roomInfo === undefined) {
     return res

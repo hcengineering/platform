@@ -50,6 +50,7 @@
   export let onResize: (() => void) | undefined = undefined
   export let containerName: string | undefined = undefined
   export let containerType: 'size' | 'inline-size' | undefined = containerName !== undefined ? 'inline-size' : undefined
+  export let maxHeight: number | undefined = undefined
 
   export function scroll (top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
     if (divScroll) {
@@ -558,6 +559,7 @@
   style:--scroller-footer-height={`${(fade.multipler?.bottom ?? 0) * fz + (stickedScrollBars ? 0 : 2)}px`}
   style:--scroller-left-offset={`${(fade.multipler?.left ?? 0) * fz + 2}px`}
   style:--scroller-right-offset={`${(fade.multipler?.right ?? 0) * fz + (mask !== 'none' ? 12 : 2)}px`}
+  style:max-height={maxHeight !== undefined ? `${maxHeight}rem` : undefined}
 >
   <div bind:this={divHScroll} class="horizontalBox flex-col flex-shrink">
     <div

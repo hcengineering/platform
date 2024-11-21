@@ -183,7 +183,7 @@ export abstract class MemDb extends TxProcessor implements Storage {
       result = matchQuery(result, query, _class, this.hierarchy)
     }
 
-    if (options?.sort !== undefined) await resultSort(result, options?.sort, _class, this.hierarchy, this)
+    if (options?.sort !== undefined) resultSort(result, options?.sort, _class, this.hierarchy, this)
     const total = result.length
     result = result.slice(0, options?.limit)
     const tresult = this.hierarchy.clone(result) as WithLookup<T>[]

@@ -107,7 +107,7 @@
     </div>
   {/if}
   {#await _getWorkspaces() then}
-    <Scroller padding={'.125rem 0'}>
+    <Scroller padding={'.125rem 0'} maxHeight={35}>
       <div class="form">
         {#each workspaces
           .slice(0, 500)

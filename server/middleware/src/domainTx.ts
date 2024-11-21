@@ -83,15 +83,15 @@ export class DomainTxMiddleware extends BaseMiddleware implements Middleware {
         if (toDelete.length > 0) {
           const deleteByDomain = groupByArray(toDelete, (it) => this.context.hierarchy.getDomain(it.objectClass))
 
-          for (const [d, docs] of deleteByDomain.entries()) {
+          for (const [domain, domainTxes] of deleteByDomain.entries()) {
             const todel = await ctx.with(
               'adapter-load',
               {},
               () =>
                 adapter.load(
                   ctx,
-                  d,
-                  docs.map((it) => it._id)
+                  domain,
+                  domainTxes.map((it) => it.objectId)
                 ),
               { count: toDelete.length }
             )

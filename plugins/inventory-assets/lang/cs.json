@@ -1,0 +1,25 @@
+{
+  "status": {
+    "CategoryRequired": "Kategorie je povinná",
+    "NameRequired": "Název je povinný"
+  },
+  "string": {
+    "Categories": "Kategorie",
+    "Category": "Kategorie",
+    "CategoryCreateLabel": "Kategorie",
+    "CreateCategory": "Vytvořit kategorii",
+    "CreateSubcategory": "Vytvořit podkategorii",
+    "Inventory": "Sklad",
+    "ProductCreateLabel": "Produkt",
+    "CreateProduct": "Vytvořit produkt",
+    "Products": "Produkty",
+    "Product": "Produkt",
+    "Variant": "Varianta",
+    "SKU": "SKU",
+    "Variants": "Varianty",
+    "NoVariantsForProduct": "Tento produkt nemá žádné varianty.",
+    "CreateVariant": "Vytvořit variantu",
+    "ConfigLabel": "Sklad",
+    "ConfigDescription": "Rozšíření pro správu rozšíření"
+  }
+}

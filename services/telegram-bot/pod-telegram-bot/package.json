@@ -78,7 +78,7 @@
     "dotenv": "~16.0.0",
     "express": "^4.19.2",
     "htmlparser2": "^9.0.0",
-    "mongodb": "6.9.0-dev.20241016.sha.3d5bd513",
+    "mongodb": "^6.10.0",
     "otp-generator": "^4.0.1",
     "telegraf": "^4.16.3",
     "ws": "^8.18.0"

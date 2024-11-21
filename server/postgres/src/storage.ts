@@ -1002,11 +1002,17 @@ abstract class PostgresAdapterBase implements DbAdapter {
             res.push(`${tkey} <= '${val}'`)
             break
           case '$in':
-            res.push(
-              type !== 'common'
-                ? `${tkey} ?| array[${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'}]`
-                : `${tkey} IN (${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'})`
-            )
+            switch (type) {
+              case 'common':
+                res.push(`${tkey} IN (${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'})`)
+                break
+              case 'array':
+                res.push(`${tkey} && array[${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'}]`)
+                break
+              case 'dataArray':
+                res.push(`${tkey} ?| array[${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'}]`)
+                break
+            }
             break
           case '$nin':
             if (val.length > 0) {
@@ -1076,6 +1082,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
     if (projection === undefined) {
       res.push(`${baseDomain}.*`)
     } else {
+      if (projection._id === undefined) {
+        res.push(`${baseDomain}."_id" AS "_id"`)
+      }
+      if (projection._class === undefined) {
+        res.push(`${baseDomain}."_class" AS "_class"`)
+      }
       for (const key in projection) {
         if (isDataField(baseDomain, key)) {
           if (!dataAdded) {

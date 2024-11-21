@@ -1,0 +1,16 @@
+{
+  "string": {
+    "ConfirmationText": "Děkujeme za váš zájem o {name}. Pro dokončení procesu registrace prosím vložte následující odkaz do adresního řádku vašeho prohlížeče: {link}. S pozdravem, tým {name}.",
+    "ConfirmationHTML": "<p>Dobrý den,</p><p>Děkujeme za váš zájem o {name}. Pro dokončení procesu registrace klikněte prosím na <a href={link}>tento odkaz</a> nebo vložte následující odkaz do adresního řádku vašeho prohlížeče.</p><p>{link}</p><p>S pozdravem,</p><p>tým {name}.</p>",
+    "ConfirmationSubject": "Potvrďte svou e-mailovou adresu pro registraci do {name}",
+    "RecoveryText": "Obdrželi jsme žádost o obnovení hesla k vašemu účtu. Pro obnovení hesla prosím vložte následující odkaz do adresního řádku vašeho prohlížeče: {link}. Pokud jste žádost o obnovení hesla nepodali, ignorujte tento e-mail.",
+    "RecoveryHTML": "<p>Obdrželi jsme žádost o obnovení hesla k vašemu účtu. Pro obnovení hesla klikněte na níže uvedený odkaz: <a href={link}>Obnovit heslo</a></p><p>Pokud výše uvedený odkaz nefunguje, vložte následující odkaz do adresního řádku vašeho prohlížeče: {link}</p><p>Pokud jste žádost o obnovení hesla nepodali, ignorujte tento e-mail.</p>",
+    "RecoverySubject": "Obnovení hesla",
+    "InviteText": "Byli jste pozváni do {ws}. Pro připojení prosím vložte následující odkaz do adresního řádku vašeho prohlížeče: {link}. Odkaz je platný po dobu {expHours} hodin.",
+    "InviteHTML": "<p>Byli jste pozváni do {ws}. Pro připojení klikněte na níže uvedený odkaz: <a href={link}>Připojit se</a></p><p>Pokud výše uvedený odkaz nefunguje, vložte následující odkaz do adresního řádku vašeho prohlížeče: {link}</p><p>Odkaz je platný po dobu {expHours} hodin.</p>",
+    "InviteSubject": "Pozvánka do {ws}",
+    "OtpText": "Potvrďte svou e-mailovou adresu pro přístup do {app}!\n\nVáš potvrzovací kód je uveden níže - zadejte jej do okna, ve kterém jste zahájili přihlášení do {app}.\n\n{code}\n\nPokud jste tento e-mail nevyžádali, nemusíte si dělat starosti — můžete jej bezpečně ignorovat.",
+    "OtpHTML": "<h3>Potvrďte svou e-mailovou adresu pro přístup do {app}!</h3><p>Váš potvrzovací kód je uveden níže - zadejte jej do okna, ve kterém jste zahájili přihlášení do {app}.<p/><br/><b style=\"font-size:36px\">{code}</b><br/><br/><p>Pokud jste tento e-mail nevyžádali, nemusíte si dělat starosti — můžete jej bezpečně ignorovat.</p>",
+    "OtpSubject": "{app}: potvrzovací kód {code}"
+  }
+}

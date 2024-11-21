@@ -27,7 +27,7 @@ import core, {
   type WithLookup
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
-import { getClient } from '@hcengineering/presentation'
+import { addRefreshListener, getClient } from '@hcengineering/presentation'
 import { getEventPositionElement, showPopup } from '@hcengineering/ui'
 import {
   type Action,
@@ -54,6 +54,12 @@ export function getSelection (focus: FocusSelection, selection: SelectionStore):
   return docs
 }
 
+const allActions = new Map<ViewContextType, Action[]>()
+
+addRefreshListener(() => {
+  allActions.clear()
+})
+
 /**
  * @public
  *
@@ -68,9 +74,11 @@ export async function getActions (
   derived: Ref<Class<Doc>> = core.class.Doc,
   mode: ViewContextType = 'context'
 ): Promise<Action[]> {
-  const actions: Action[] = await client.findAll(view.class.Action, {
-    'context.mode': mode
-  })
+  let actions: Action[] | undefined = allActions.get(mode)
+  if (actions === undefined) {
+    actions = client.getModel().findAllSync(view.class.Action, { 'context.mode': mode })
+    allActions.set(mode, actions)
+  }
 
   const filteredActions = await filterAvailableActions(actions, client, doc, derived)
 

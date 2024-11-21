@@ -312,13 +312,10 @@ export const coreOperation: MigrateOperation = {
             _class: 'core:class:TxCollectionCUD' as Ref<Class<Doc>>
           })
           while (true) {
-            const txes = await iterator.next(1000)
+            const txes = await iterator.next(200)
             if (txes === null || txes.length === 0) break
             processed += txes.length
             try {
-              await client.deleteMany(DOMAIN_TX, {
-                _id: { $in: txes.map((it) => it._id) }
-              })
               await client.create(
                 DOMAIN_TX,
                 txes.map((tx) => {
@@ -327,10 +324,14 @@ export const coreOperation: MigrateOperation = {
                     collection,
                     attachedTo: objectId,
                     attachedToClass: objectClass,
-                    ...(tx as any).tx
+                    ...(tx as any).tx,
+                    objectSpace: (tx as any).tx.objectSpace ?? tx.objectClass
                   }
                 })
               )
+              await client.deleteMany(DOMAIN_TX, {
+                _id: { $in: txes.map((it) => it._id) }
+              })
             } catch (err: any) {
               console.error(err)
             }
