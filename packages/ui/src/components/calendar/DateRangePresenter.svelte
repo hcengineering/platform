@@ -478,9 +478,11 @@
         </div>
       {/if}
     {:else}
-      <div class="btn-icon {iconModifier}">
-        <Icon icon={iconModifier === 'overdue' && !shouldIgnoreOverdue ? DPCalendarOver : DPCalendar} size={'full'} />
-      </div>
+      {#if shouldShowAvatar}
+        <div class="btn-icon {iconModifier}">
+          <Icon icon={iconModifier === 'overdue' && !shouldIgnoreOverdue ? DPCalendarOver : DPCalendar} size={'full'} />
+        </div>
+      {/if}
       {#if value !== undefined && value !== null && value.toString() !== ''}
         {#if withDate}
           {new Date(value).getDate()}
@@ -524,7 +526,7 @@
     border-radius: 0.375rem;
     transition-property: border, background-color, color, box-shadow;
     transition-duration: 0.15s;
-    cursor: pointer;
+    cursor: default;
 
     &.noPadding {
       padding: 0;

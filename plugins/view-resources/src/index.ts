@@ -31,6 +31,7 @@ import CollaborativeHTMLEditor from './components/CollaborativeHTMLEditor.svelte
 import ColorsPopup from './components/ColorsPopup.svelte'
 import DateEditor from './components/DateEditor.svelte'
 import DatePresenter from './components/DatePresenter.svelte'
+import DateTimePresenter from './components/DateTimePresenter.svelte'
 import DocAttributeBar from './components/DocAttributeBar.svelte'
 import DocNavLink from './components/DocNavLink.svelte'
 import DocReferencePresenter from './components/DocReferencePresenter.svelte'
@@ -257,6 +258,7 @@ export default async (): Promise<Resources> => ({
     TimestampPresenter,
     DateEditor,
     DatePresenter,
+    DateTimePresenter,
     RolePresenter,
     ObjectPresenter,
     EditDoc,
