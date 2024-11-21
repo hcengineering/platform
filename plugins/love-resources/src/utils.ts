@@ -85,7 +85,7 @@ import { getObjectLinkFragment } from '@hcengineering/view-resources'
 
 import { sendMessage } from './broadcast'
 import love from './plugin'
-import { $myPreferences, currentRoom, currentMeetingMinutes, selectedRoomPlace } from './stores'
+import { $myPreferences, currentRoom, currentMeetingMinutes, selectedRoomPlace, myOffice } from './stores'
 import RoomSettingsPopup from './components/RoomSettingsPopup.svelte'
 
 export const selectedCamId = 'selectedDevice_cam'
@@ -427,18 +427,32 @@ function initRoomMetadata (metadata: string | undefined): void {
     void record(room)
   }
 }
-export async function connect (name: string, room: Room, _id: string): Promise<void> {
+
+async function withRetries (fn: () => Promise<void>, retries: number, delay: number): Promise<void> {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      await fn()
+      return
+    } catch (error) {
+      if (attempt >= retries) {
+        throw error
+      }
+      console.error(error)
+      console.log(`Attempt ${attempt} failed. Retrying in ${delay}ms...`)
+      await new Promise((resolve) => setTimeout(resolve, delay))
+    }
+  }
+}
+
+async function connect (name: string, room: Room, _id: string): Promise<void> {
   const wsURL = getMetadata(love.metadata.WebSocketURL)
   if (wsURL === undefined) {
     return
   }
-  try {
-    const token = await getToken(room.name, room._id, _id, name)
-    await lk.connect(wsURL, token)
-    sendMessage({ type: 'connect', value: true })
-  } catch (err) {
-    console.error(err)
-  }
+
+  const token = await getToken(room.name, room._id, _id, name)
+  await lk.connect(wsURL, token)
+  sendMessage({ type: 'connect', value: true })
 }
 
 export async function awaitConnect (): Promise<void> {
@@ -647,7 +661,11 @@ async function navigateToOfficeDoc (hierarchy: Hierarchy, object: Doc): Promise<
 async function openMeetingMinutes (room: Room): Promise<void> {
   const client = getClient()
   const sid = await lk.getSid()
-  const doc = await client.findOne(love.class.MeetingMinutes, { sid })
+  const doc = await client.findOne(love.class.MeetingMinutes, {
+    sid,
+    attachedTo: room._id,
+    status: MeetingStatus.Active
+  })
 
   if (doc === undefined) {
     const date = new Date()
@@ -696,9 +714,6 @@ async function openMeetingMinutes (room: Room): Promise<void> {
     if (loc.path[2] === loveId || room.type === RoomType.Video) {
       await navigateToOfficeDoc(client.getHierarchy(), doc)
     }
-    if (doc.status !== MeetingStatus.Active) {
-      void client.update(doc, { status: MeetingStatus.Active, meetingEnd: undefined })
-    }
   }
 }
 
@@ -711,9 +726,20 @@ export async function connectRoom (
 ): Promise<void> {
   await disconnect()
   await moveToRoom(x, y, currentInfo, currentPerson, room, getMetadata(presentation.metadata.SessionId) ?? null)
-  await connectLK(currentPerson, room)
   selectedRoomPlace.set(undefined)
-  await openMeetingMinutes(room)
+  try {
+    await withRetries(
+      async () => {
+        await connectLK(currentPerson, room)
+      },
+      3,
+      1000
+    )
+    await openMeetingMinutes(room)
+  } catch (err) {
+    console.error(err)
+    await leaveRoom(currentInfo, get(myOffice))
+  }
 }
 
 export const joinRequest: Ref<JoinRequest> | undefined = undefined
