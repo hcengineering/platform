@@ -280,7 +280,7 @@
     "IssueNotificationChangedProperty": "{senderName} changed {property} to \"{newValue}\"",
     "IssueNotificationMessage": "{senderName}: {message}",
     "PreviousAssigned": "Previously assigned",
-    "IssueAssigneedToYou": "Assigned to you",
+    "IssueAssignedToYou": "Assigned to you",
     "RelatedIssueTargetDescription": "Related issue project target for Class or Space",
     "MapRelatedIssues": "Configure related issue default projects",
     "DefaultIssueStatus": "Default issue status",

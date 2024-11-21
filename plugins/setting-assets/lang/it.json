@@ -119,6 +119,6 @@
     "DeleteSpaceTypeConfirm": "Sei sicuro di voler eliminare questo tipo di spazio?",
     "WorkspaceName": "Nome spazio di lavoro",
     "Workspace": "Spazio di lavoro",
-    "OwnerOrMainteinerRequired": "Devi essere un proprietario o un manutentore dello spazio di lavoro"
+    "OwnerOrMaintainerRequired": "Devi essere un proprietario o un manutentore dello spazio di lavoro"
   }
 }

@@ -120,7 +120,7 @@ export async function getIssueNotificationContent (
       updateTx.operations.assignee !== undefined &&
       isSamePerson(control, updateTx.operations.assignee, target)
     ) {
-      body = tracker.string.IssueAssigneedToYou
+      body = tracker.string.IssueAssignedToYou
     } else {
       const attributes = control.hierarchy.getAllAttributes(doc._class)
       for (const attrName in updateTx.operations) {

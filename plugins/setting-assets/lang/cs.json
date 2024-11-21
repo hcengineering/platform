@@ -119,6 +119,6 @@
     "DeleteSpaceTypeConfirm": "Opravdu chcete tento typ prostoru smazat?",
     "WorkspaceName": "Název pracovního prostoru",
     "Workspace": "Pracovní prostor",
-    "OwnerOrMainteinerRequired": "Musíte být vlastníkem nebo správcem pracovního prostoru"
+    "OwnerOrMaintainerRequired": "Musíte být vlastníkem nebo správcem pracovního prostoru"
   }
 }
