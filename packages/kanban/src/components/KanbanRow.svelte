@@ -84,21 +84,23 @@
         : state
   }
 
-  $: void limiter.add(async () => {
-    docQuery.query(
-      _class,
-      groupQuery,
-      (res) => {
-        limitedObjects = toIdMap(res)
-      },
-      { ...options, limit }
-    )
-  })
+  $: docQuery.query(
+    _class,
+    groupQuery,
+    (res) => {
+      limitedObjects = toIdMap(res)
+    },
+    { ...options, limit }
+  )
+
+  function getObject (_id: Ref<DocWithRank>, limitedObjects: IdMap<DocWithRank>): DocWithRank | undefined {
+    return limitedObjects.get(_id) ?? (_id === dragCard?._id ? dragCard : undefined)
+  }
 </script>
 
 {#each stateObjects as objectRef, i (objectRef._id)}
   {@const dragged = isDragging && objectRef._id === dragCard?._id}
-  {@const object = limitedObjects.get(objectRef._id) ?? (objectRef._id === dragCard?._id ? dragCard : undefined)}
+  {@const object = getObject(objectRef._id, limitedObjects)}
   {#if object !== undefined}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
