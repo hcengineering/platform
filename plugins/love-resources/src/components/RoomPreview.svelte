@@ -16,16 +16,15 @@
   import { Person, type PersonAccount } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, getCurrentAccount } from '@hcengineering/core'
-  import { isOffice, ParticipantInfo, Room, RoomAccess, RoomType } from '@hcengineering/love'
+  import { isOffice, ParticipantInfo, Room, RoomAccess, RoomType, MeetingStatus } from '@hcengineering/love'
   import { Icon, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { getClient } from '@hcengineering/presentation'
   import { openDoc } from '@hcengineering/view-resources'
-  import { get } from 'svelte/store'
 
   import love from '../plugin'
   import { myInfo, selectedRoomPlace, currentRoom, currentMeetingMinutes } from '../stores'
-  import { getRoomLabel, lk } from '../utils'
+  import { getRoomLabel, lk, isConnected } from '../utils'
   import PersonActionPopup from './PersonActionPopup.svelte'
   import RoomLanguage from './RoomLanguage.svelte'
 
@@ -67,14 +66,20 @@
   async function openRoom (x: number, y: number): Promise<void> {
     const client = getClient()
     const hierarchy = client.getHierarchy()
-    if ($currentRoom?._id === room._id) {
+    if ($isConnected && $currentRoom?._id === room._id) {
       const sid = await lk.getSid()
-      const meetingMinutes =
-        get(currentMeetingMinutes) ?? (await client.findOne(love.class.MeetingMinutes, { sid, attachedTo: room._id }))
-      if (meetingMinutes === undefined) {
+      let meeting = $currentMeetingMinutes
+      if (meeting?.sid !== sid || meeting?.attachedTo !== room._id || meeting?.status !== MeetingStatus.Active) {
+        meeting = await client.findOne(love.class.MeetingMinutes, {
+          sid,
+          attachedTo: room._id,
+          status: MeetingStatus.Active
+        })
+      }
+      if (meeting === undefined) {
         await openDoc(hierarchy, room)
       } else {
-        await openDoc(hierarchy, meetingMinutes)
+        await openDoc(hierarchy, meeting)
       }
     } else {
       selectedRoomPlace.set({ _id: room._id, x, y })
