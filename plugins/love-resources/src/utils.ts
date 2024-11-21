@@ -496,6 +496,20 @@ function closeMeetingMinutes (): void {
   currentMeetingMinutes.set(undefined)
 }
 
+function isRoomOpened (room: Room): boolean {
+  const loc = getCurrentLocation()
+
+  if (loc.path[2] === loveId) {
+    const panel = get(panelstore).panel
+    const { _id } = panel ?? {}
+
+    if (_id !== undefined && room._id !== undefined && _id === room._id) {
+      return true
+    }
+  }
+  return false
+}
+
 export async function setCam (value: boolean): Promise<void> {
   if (value && get(currentRoom)?.type !== RoomType.Video) return
   if ($isCurrentInstanceConnected) {
@@ -606,6 +620,10 @@ async function moveToRoom (
       sessionId
     })
   }
+
+  if (!isRoomOpened(room)) {
+    await navigateToOfficeDoc(client.getHierarchy(), room)
+  }
 }
 
 async function connectLK (currentPerson: Person, room: Room): Promise<void> {
@@ -616,9 +634,8 @@ async function connectLK (currentPerson: Person, room: Room): Promise<void> {
   ])
 }
 
-async function navigateToMeeting (hierarchy: Hierarchy, object: MeetingMinutes): Promise<void> {
-  closePanel(false)
-  const panelComponent = hierarchy.classHierarchyMixin((object as Doc)._class, view.mixin.ObjectPanel)
+async function navigateToOfficeDoc (hierarchy: Hierarchy, object: Doc): Promise<void> {
+  const panelComponent = hierarchy.classHierarchyMixin(object._class, view.mixin.ObjectPanel)
   const comp = panelComponent?.component ?? view.component.EditDoc
   const loc = await getObjectLinkFragment(hierarchy, object, {}, comp)
   loc.path[2] = loveId
@@ -671,13 +688,13 @@ async function openMeetingMinutes (room: Room): Promise<void> {
     currentMeetingMinutes.set(newDoc)
     const loc = getCurrentLocation()
     if (loc.path[2] === loveId || room.type === RoomType.Video) {
-      await navigateToMeeting(client.getHierarchy(), newDoc)
+      await navigateToOfficeDoc(client.getHierarchy(), newDoc)
     }
   } else {
     currentMeetingMinutes.set(doc)
     const loc = getCurrentLocation()
     if (loc.path[2] === loveId || room.type === RoomType.Video) {
-      await navigateToMeeting(client.getHierarchy(), doc)
+      await navigateToOfficeDoc(client.getHierarchy(), doc)
     }
     if (doc.status !== MeetingStatus.Active) {
       void client.update(doc, { status: MeetingStatus.Active, meetingEnd: undefined })

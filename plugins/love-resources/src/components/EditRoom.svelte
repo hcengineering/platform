@@ -21,7 +21,7 @@
   import { IntlString } from '@hcengineering/platform'
 
   import love from '../plugin'
-  import { getRoomName, tryConnect } from '../utils'
+  import { getRoomName, tryConnect, isConnected } from '../utils'
   import { infos, invites, myInfo, myRequests, selectedRoomPlace, myOffice, currentRoom } from '../stores'
 
   export let object: Room
@@ -61,7 +61,11 @@
     selectedRoomPlace.set(undefined)
   }
 
-  let connectLabel: IntlString = love.string.StartMeeting
+  $: connecting = connecting || ($currentRoom?._id === object._id && !$isConnected)
+
+  let connectLabel: IntlString = $infos.some(({ room }) => room === object._id)
+    ? love.string.JoinMeeting
+    : love.string.StartMeeting
 
   $: if ($infos.some(({ room }) => room === object._id) && !connecting) {
     connectLabel = love.string.JoinMeeting

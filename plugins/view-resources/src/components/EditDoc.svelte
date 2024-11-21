@@ -98,7 +98,9 @@
 
   $: if (_class !== oldClass) {
     oldClass = _class
+    realObjectClass = _class
     mainEditor = undefined
+    fieldEditors = []
   }
 
   let keys: KeyedAttribute[] = []
