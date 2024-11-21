@@ -25,7 +25,7 @@
 
   let method: LoginMethods = LoginMethods.Otp
 
-  function changeMethod (event: CustomEvent<LoginMethods>): void {
+  function changeMethod(event: CustomEvent<LoginMethods>): void {
     method = event.detail
   }
 

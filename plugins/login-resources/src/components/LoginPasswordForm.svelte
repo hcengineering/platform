@@ -17,11 +17,14 @@
 
   import { doLogin, doLoginNavigate } from '../utils'
   import Form from './Form.svelte'
+  import GoogleRecaptcha from './GoogleRecaptcha.svelte'
   import { recoveryAction } from '../actions'
   import login from '../plugin'
 
   export let navigateUrl: string | undefined = undefined
   export let signUpDisabled = false
+  let googleRecaptchaToken: string
+  const recaptchaAction  ='login-with-password'
 
   const fields = [
     { id: 'email', name: 'username', i18n: login.string.Email },
@@ -44,7 +47,12 @@
     i18n: login.string.LogIn,
     func: async () => {
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
-      const [loginStatus, result] = await doLogin(object.username, object.password)
+      const [loginStatus, result] = await doLogin({
+        email: object.username,
+        password: object.password,
+        googleRecaptchaToken,
+        googleRecaptchaAction: recaptchaAction
+      })
       status = loginStatus
       await doLoginNavigate(
         result,
@@ -68,3 +76,4 @@
   ignoreInitialValidation
   withProviders
 />
+<GoogleRecaptcha bind:googleRecaptchaToken recaptchaAction={recaptchaAction} />
