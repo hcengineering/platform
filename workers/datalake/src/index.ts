@@ -40,10 +40,14 @@ const withWorkspace: RequestHandler<WorkspaceRequest> = (request: WorkspaceReque
 }
 
 const withBlob: RequestHandler<BlobRequest> = (request: BlobRequest) => {
+  if (request.params.workspace === undefined || request.params.workspace === '') {
+    return error(400, 'Missing workspace')
+  }
   if (request.params.name === undefined || request.params.name === '') {
     return error(400, 'Missing blob name')
   }
-  request.workspace = decodeURIComponent(request.params.name)
+  request.workspace = decodeURIComponent(request.params.workspace)
+  request.name = decodeURIComponent(request.params.name)
 }
 
 router

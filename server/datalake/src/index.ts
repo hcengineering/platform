@@ -35,9 +35,11 @@ export interface DatalakeConfig extends StorageConfig {
  */
 export class DatalakeService implements StorageAdapter {
   static config = 'datalake'
-  client: Client
+  private readonly client: Client
+
   constructor (readonly opt: DatalakeConfig) {
-    this.client = new Client(opt.endpoint)
+    const endpoint = Number.isInteger(opt.port) ? `${opt.endpoint}:${opt.port}` : opt.endpoint
+    this.client = new Client(endpoint)
   }
 
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
@@ -97,8 +99,6 @@ export class DatalakeService implements StorageAdapter {
           modifiedOn: result.lastModified,
           version: null
         }
-      } else {
-        ctx.error('no object found', { objectName, workspaceId: workspaceId.name })
       }
     } catch (err) {
       ctx.error('failed to stat object', { error: err, objectName, workspaceId: workspaceId.name })
