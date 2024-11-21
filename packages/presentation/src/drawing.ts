@@ -1,13 +1,17 @@
 export interface DrawingProps {
-  imageWidth: number | undefined
-  imageHeight: number | undefined
-  loadDrawing: () => string
-  saveDrawing: (content: string) => void
+  imageWidth?: number
+  imageHeight?: number
+  loadDrawing?: () => Promise<any>
+  saveDrawing?: (data: any) => Promise<void>
 
-  clearCanvas: boolean
-  drawingTool: DrawingTool
-  penColor: string
-  onDirty: () => void
+  clearCanvas?: boolean
+  drawingTool?: DrawingTool
+  penColor?: string
+  onDirty?: () => void
+}
+
+interface DrawingSource {
+  content?: string
 }
 
 interface DrawCmd {
@@ -173,25 +177,32 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
 
   let prevPos: Point = { x: 0, y: 0 }
 
+  let source: DrawingSource = {}
   const draw = new DrawState(ctx)
-  draw.tool = props.drawingTool
-  draw.penColor = props.penColor
+  draw.tool = props.drawingTool ?? 'pan'
+  draw.penColor = props.penColor ?? 'blue'
   updateCanvasCursor()
 
   let commands: DrawCmd[] = []
   if (props.loadDrawing === undefined) {
     console.log('Load drawing method is not provided')
   } else {
-    try {
-      const content = props.loadDrawing()
-      try {
-        commands = JSON.parse(content)
-      } catch {
-        console.error('Failed to parse drawing content')
-      }
-    } catch {
-      console.error('Failed to load drawing content')
-    }
+    props
+      .loadDrawing()
+      .then((result) => {
+        source = result
+        if (source.content !== undefined) {
+          try {
+            commands = JSON.parse(source.content)
+            replayCommands()
+          } catch (error) {
+            console.error('Failed to parse drawing content', error)
+          }
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to load drawing content', error)
+      })
   }
 
   const resizeObserver = new ResizeObserver((entries) => {
@@ -253,7 +264,9 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
       if (draw.isDrawingTool()) {
         draw.drawLive(e.offsetX, e.offsetY, true)
         storeCommand()
-        props.onDirty()
+        if (props.onDirty !== undefined) {
+          props.onDirty()
+        }
       }
       draw.on = false
     }
@@ -306,17 +319,24 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
     draw.offset = { x: 0, y: 0 }
   }
 
+  function replayCommands (): void {
+    draw.ctx.reset()
+    for (const cmd of commands) {
+      draw.drawCommand(cmd)
+    }
+  }
+
   return {
     update (props: DrawingProps) {
       if (draw.tool !== props.drawingTool) {
-        draw.tool = props.drawingTool
+        draw.tool = props.drawingTool ?? 'pen'
         updateCanvasCursor()
       }
       if (draw.penColor !== props.penColor) {
-        draw.penColor = props.penColor
+        draw.penColor = props.penColor ?? 'blue'
         updateCanvasCursor()
       }
-      if (props.clearCanvas) {
+      if (props.clearCanvas === true) {
         clearCanvas()
       }
     },
@@ -324,7 +344,10 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
       if (props.saveDrawing === undefined) {
         console.log('Save drawing method is not provided')
       } else {
-        props.saveDrawing(JSON.stringify(commands))
+        source.content = JSON.stringify(commands)
+        props.saveDrawing(source).catch((error) => {
+          console.error('Failed to save drawing', error)
+        })
       }
     }
   }

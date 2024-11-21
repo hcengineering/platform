@@ -18,10 +18,7 @@
   import IconEraser from './icons/Eraser.svelte'
 
   export let isActive = false
-  export let imageWidth: number | undefined
-  export let imageHeight: number | undefined
-  export let loadDrawing: () => string
-  export let saveDrawing: (content: string) => void
+  export let props: Record<string, any>
 
   let clearCanvas = true
   let drawingTool: DrawingTool = 'pen'
@@ -45,13 +42,10 @@
     style:position="relative"
     use:resizeObserver={boardResized}
     use:drawing={{
-      imageWidth,
-      imageHeight,
+      ...props,
       clearCanvas,
       drawingTool,
       penColor,
-      loadDrawing,
-      saveDrawing,
       onDirty: () => {
         clearCanvas = false
       }

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { type BlobMetadata, type Attachment } from '@hcengineering/attachment'
+import { type BlobMetadata, type Attachment, type Drawing } from '@hcengineering/attachment'
 import {
   type Blob,
   type Class,
@@ -150,12 +150,25 @@ export function showAttachmentPreviewPopup (value: WithLookup<Attachment>): Popu
 
   if (value.type.startsWith('image/')) {
     props.drawingEnabled = true
-    props.loadDrawing = () => {
-      console.log('TODO: LOAD_DRAWING', value._class, value._id)
-      return JSON.stringify([])
+    props.loadDrawing = async (): Promise<any> => {
+      const client = getClient()
+      return await client.findOne(attachment.class.Drawing, { parent: value._id })
     }
-    props.saveDrawing = (content: string) => {
-      console.log('TODO: SAVE_DRAWING', value._class, value._id, content)
+    props.saveDrawing = async (data: any): Promise<void> => {
+      const client = getClient()
+      const drawing = data as Drawing
+      if (drawing._id === undefined) {
+        const newId = await client.createDoc(attachment.class.Drawing, value.space, {
+          parent: value._id,
+          content: drawing.content
+        })
+        console.log('CREATED', newId)
+      } else {
+        const updatedId = await client.updateDoc(attachment.class.Drawing, value.space, drawing._id, {
+          content: drawing.content
+        })
+        console.log('UPDATED', updatedId)
+      }
     }
   }
 
