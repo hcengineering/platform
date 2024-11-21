@@ -75,7 +75,7 @@
     "google-auth-library": "^8.0.2",
     "gaxios": "^5.0.1",
     "jwt-simple": "^0.5.6",
-    "mongodb": "6.9.0-dev.20241016.sha.3d5bd513",
+    "mongodb": "^6.10.0",
     "uuid": "^8.3.2"
   }
 }
