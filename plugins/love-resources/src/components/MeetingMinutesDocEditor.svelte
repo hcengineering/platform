@@ -33,7 +33,7 @@
 </script>
 
 {#if doc}
-  <span class="label flex-row-center flex-gap-4 ml-3 no-word-wrap">
+  <span class="label flex-row-center flex-gap-4 no-word-wrap">
     <ObjectPresenter
       objectId={doc._id}
       _class={doc._class}

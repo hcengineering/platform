@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,30 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DateRangePresenter } from '@hcengineering/ui'
   import { DateRangeMode } from '@hcengineering/core'
+
+  import DatePresenter from './DatePresenter.svelte'
 
   export let value: number | null | undefined
   export let onChange: ((value: number | null) => void) | undefined = undefined
   export let noShift: boolean = false
-  export let shouldShowAvatar: boolean = true
+  export let shouldShowAvatar: boolean = false
   export let accent: boolean = false
   export let inline: boolean = false
-  export let mode: DateRangeMode = DateRangeMode.DATE
   export let readonly: boolean = false
 </script>
 
-{#if onChange !== undefined && !readonly}
-  <DateRangePresenter
-    {value}
-    {noShift}
-    {mode}
-    editable
-    on:change={(e) => onChange?.(e.detail)}
-    {shouldShowAvatar}
-    {accent}
-    {inline}
-  />
-{:else}
-  <DateRangePresenter {value} {noShift} {mode} {shouldShowAvatar} {accent} {inline} />
-{/if}
+<DatePresenter
+  {value}
+  {onChange}
+  {noShift}
+  {shouldShowAvatar}
+  {accent}
+  {inline}
+  mode={DateRangeMode.DATETIME}
+  {readonly}
+/>
