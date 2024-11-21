@@ -35,7 +35,7 @@
   $: updateToolbarPosition(readonly, board, toolbar)
 
   function updateToolbarPosition (readonly: boolean, board: HTMLDivElement, toolbar: HTMLDivElement): void {
-    if (!readonly && board !== undefined && toolbar !== undefined) {
+    if (!readonly && board?.offsetTop !== undefined && toolbar?.clientHeight !== undefined) {
       // TODO: There should be a generic solution
       // this only estimates a free room above the picture in FilePreviewPopup
       toolbarInside = board.offsetTop <= toolbar.clientHeight * 3
