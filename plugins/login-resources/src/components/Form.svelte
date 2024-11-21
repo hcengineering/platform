@@ -21,11 +21,11 @@
 
   import { onMount } from 'svelte'
   import { BottomAction } from '..'
-  import login from '../plugin'
   import { makeSequential } from '../mutex'
+  import login from '../plugin'
+  import BottomActionComponent from './BottomAction.svelte'
   import Providers from './Providers.svelte'
   import Tabs from './Tabs.svelte'
-  import BottomActionComponent from './BottomAction.svelte'
 
   interface Field {
     id?: string
@@ -58,8 +58,6 @@
   export let withProviders: boolean = false
   export let subtitle: string | undefined = undefined
   export let signUpDisabled = false
-
-  $: $themeStore.language && validate($themeStore.language)
 
   const validate = makeSequential(async function validateAsync (language: string): Promise<boolean> {
     if (ignoreInitialValidation) return true
@@ -97,7 +95,10 @@
     status = OK
     return true
   })
-  validate($themeStore.language)
+
+  $: if ($themeStore.language !== undefined) {
+    void validate($themeStore.language)
+  }
 
   let inAction = false
 
@@ -106,7 +107,7 @@
       trim(field.name)
     }
     inAction = true
-    action.func().finally(() => {
+    void action.func().finally(() => {
       inAction = false
     })
   }
@@ -120,6 +121,7 @@
   $: loginState = caption === login.string.LogIn ? 'login' : caption === login.string.SignUp ? 'signup' : 'none'
 </script>
 
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <form
   class="container"
   style:padding={$deviceInfo.docWidth <= 480 ? '.25rem 1.25rem' : '4rem 5rem'}
@@ -129,8 +131,8 @@
       evt.preventDefault()
       evt.stopPropagation()
       if (!inAction) {
-        validate($themeStore.language).then((res) => {
-          if (res) {
+        void validate($themeStore.language).then((res) => {
+          if (res != null) {
             performAction(action)
           }
         })
@@ -146,11 +148,14 @@
         {subtitle}
       </div>
     {/if}
-    <div class="title"><Label label={caption} /></div>
+    <div class="flex-row-center">
+      <div class="title"><Label label={caption} /></div>
+      <slot name="region-selector" />
+    </div>
   {/if}
   <div class="form">
     {#each fields as field (field.name)}
-      <div class={field.short && !($deviceInfo.docWidth <= 600) ? 'form-col' : 'form-row'}>
+      <div class={field.short !== undefined && !($deviceInfo.docWidth <= 600) ? 'form-col' : 'form-row'}>
         <StylishEdit
           label={field.i18n}
           name={field.id}
@@ -183,7 +188,7 @@
         }}
       />
     </div>
-    {#if secondaryButtonLabel && secondaryButtonAction}
+    {#if secondaryButtonLabel !== undefined && secondaryButtonAction}
       <div class="form-row">
         <Button
           label={secondaryButtonLabel}
