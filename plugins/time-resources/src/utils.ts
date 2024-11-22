@@ -72,8 +72,7 @@ export function createTodoItemExtension (mode: TextEditorMode, ctx: any): AnyExt
       return SvelteNodeViewRenderer(ToDoItemNodeView, {
         contentAs: 'li',
         contentClass: 'todo-item',
-        componentProps: { objectId, objectClass, objectSpace },
-        ignoreMutation: () => true
+        componentProps: { objectId, objectClass, objectSpace }
       })
     }
   }).configure({
@@ -90,7 +89,7 @@ export function createTodoListExtension (mode: TextEditorMode, ctx: any): AnyExt
 
   return TodoListExtension.extend({
     addNodeView () {
-      return SvelteNodeViewRenderer(ToDoListNodeView, { ignoreMutation: () => true })
+      return SvelteNodeViewRenderer(ToDoListNodeView, {})
     }
   }).configure({
     HTMLAttributes: {
