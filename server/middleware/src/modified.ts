@@ -36,7 +36,7 @@ export class ModifiedMiddleware extends BaseMiddleware implements Middleware {
     for (const tx of txes) {
       if (tx.modifiedBy !== core.account.System && ctx.contextData.userEmail !== systemAccountEmail) {
         tx.modifiedOn = Date.now()
-        tx.createdOn = tx.createdOn ?? tx.modifiedOn
+        tx.createdOn = tx.modifiedOn
       }
     }
     return this.provideTx(ctx, txes)
