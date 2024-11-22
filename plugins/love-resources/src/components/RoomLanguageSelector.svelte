@@ -30,6 +30,7 @@
 
   let container: HTMLElement
   let selectedItem: RoomLanguage = room.language
+  $: selectedItem = room.language
 
   let items: DropdownIntlItem[] = []
   $: items = Object.entries(languagesDisplayData).map(([lang, data]) => ({

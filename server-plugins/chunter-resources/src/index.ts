@@ -321,13 +321,13 @@ export async function getChunterNotificationContent (
 
     body = chunter.string.MessageNotificationBody
 
-    if (control.hierarchy.isDerived(tx.objectClass, chunter.class.DirectMessage)) {
+    if (tx.attachedToClass != null && control.hierarchy.isDerived(tx.attachedToClass, chunter.class.DirectMessage)) {
       body = chunter.string.DirectNotificationBody
       title = chunter.string.DirectNotificationTitle
     }
   }
 
-  if (control.hierarchy.isDerived(tx.objectClass, chunter.class.ChatMessage)) {
+  if (tx.attachedToClass != null && control.hierarchy.isDerived(tx.attachedToClass, chunter.class.ChatMessage)) {
     intlParamsNotLocalized = {
       title: chunter.string.ThreadMessage
     }

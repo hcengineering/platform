@@ -267,6 +267,7 @@ export class WorkspaceMongoDbCollection extends MongoDbCollection<Workspace> imp
     // at the time of retrieval and not after some additional processing.
     const query: Filter<Workspace> = {
       $and: [
+        { mode: { $ne: 'manual-creation' } },
         operationQuery,
         attemptsQuery,
         region !== '' ? { region } : defaultRegionQuery,

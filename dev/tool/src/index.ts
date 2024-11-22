@@ -127,6 +127,7 @@ import { fixJsonMarkup, migrateMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount } from './renameAccount'
 import { moveFiles, showLostFiles } from './storage'
+import { getModelVersion } from '@hcengineering/model-all'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -217,7 +218,7 @@ export function devTool (
 
   program.command('version').action(() => {
     console.log(
-      `tools git_version: ${process.env.GIT_REVISION ?? ''} model_version: ${process.env.MODEL_VERSION ?? ''}`
+      `tools git_version: ${process.env.GIT_REVISION ?? ''} model_version: ${process.env.MODEL_VERSION ?? ''} ${JSON.stringify(getModelVersion())}`
     )
   })
 
@@ -363,34 +364,42 @@ export function devTool (
     .requiredOption('-w, --workspaceName <workspaceName>', 'Workspace name')
     .option('-e, --email <email>', 'Author email', 'platform@email.com')
     .option('-i, --init <ws>', 'Init from workspace')
+    .option('-r, --region <region>', 'Region')
     .option('-b, --branding <key>', 'Branding key')
-    .action(async (workspace, cmd: { email: string, workspaceName: string, init?: string, branding?: string }) => {
-      const { dbUrl, txes, version, migrateOperations } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        const measureCtx = new MeasureMetricsContext('create-workspace', {})
-        const brandingObj =
-          cmd.branding !== undefined || cmd.init !== undefined ? { key: cmd.branding, initWorkspace: cmd.init } : null
-        const wsInfo = await createWorkspaceRecord(measureCtx, db, brandingObj, cmd.email, cmd.workspaceName, workspace)
+    .action(
+      async (
+        workspace,
+        cmd: { email: string, workspaceName: string, init?: string, branding?: string, region?: string }
+      ) => {
+        const { dbUrl, txes, version, migrateOperations } = prepareTools()
+        await withDatabase(dbUrl, async (db) => {
+          const measureCtx = new MeasureMetricsContext('create-workspace', {})
+          const brandingObj =
+            cmd.branding !== undefined || cmd.init !== undefined ? { key: cmd.branding, initWorkspace: cmd.init } : null
+          const wsInfo = await createWorkspaceRecord(
+            measureCtx,
+            db,
+            brandingObj,
+            cmd.email,
+            cmd.workspaceName,
+            workspace,
+            cmd.region,
+            'manual-creation'
+          )
 
-        // update the record so it's not taken by one of the workers for the next 60 seconds
-        await updateWorkspace(db, wsInfo, {
-          mode: 'creating',
-          progress: 0,
-          lastProcessingTime: Date.now() + 1000 * 60
+          await createWorkspace(measureCtx, version, brandingObj, wsInfo, txes, migrateOperations, undefined, true)
+
+          await updateWorkspace(db, wsInfo, {
+            mode: 'active',
+            progress: 100,
+            disabled: false,
+            version
+          })
+
+          console.log('create-workspace done')
         })
-
-        await createWorkspace(measureCtx, version, brandingObj, wsInfo, txes, migrateOperations, undefined, true)
-
-        await updateWorkspace(db, wsInfo, {
-          mode: 'active',
-          progress: 100,
-          disabled: false,
-          version
-        })
-
-        console.log('create-workspace done')
-      })
-    })
+      }
+    )
 
   program
     .command('set-user-role <email> <workspace> <role>')

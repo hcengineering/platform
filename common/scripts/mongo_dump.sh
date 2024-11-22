@@ -3,6 +3,8 @@ MONGO_URL="mongodb://127.0.0.1:27017"
 DAYS=365
 dump='dump'
 
+trap "exit" INT
+
 mkdir -p ${dump}
 mkdir -p ${dump}/workspaces
 
@@ -14,15 +16,10 @@ mongosh ${MONGO_URL} --eval "$get_dbs" > ${dump}/databases.list
 mongodump --uri="${MONGO_URL}" --gzip --db account --archive="${dump}/account.gz"
 mongodump --uri="${MONGO_URL}" --gzip --db '%ai-bot' --archive="${dump}/ai-bot.gz"
 mongodump --uri="${MONGO_URL}" --gzip --db '%github' --archive="${dump}/github.gz"
-
-echo '#restore script' > ${dump}/restore.sh
-echo "MONGO_URL=\"${MONGO_URL}\"" >> ${dump}/restore.sh
-echo "do_drop=" >> ${dump}/restore.sh
-echo "#do_drop=--drop" >> ${dump}/restore.sh
-
-echo 'mongorestore --uri="${MONGO_URL}" --gzip ${do_drop} --nsFrom "account" --nsTo "account" --archive=./account.gz ' >> ${dump}/restore.sh
-echo 'mongorestore --uri="${MONGO_URL}" --gzip ${do_drop} --nsFrom "%ai-bot" --nsTo "%ai-bot" --archive=./ai-bot.gz ' >> ${dump}/restore.sh
-echo 'mongorestore --uri="${MONGO_URL}" --gzip ${do_drop} --nsFrom "%github" --nsTo "%github" --archive=./github.gz ' >> ${dump}/restore.sh
+mongodump --uri="${MONGO_URL}" --gzip --db 'calendar-service' --archive="${dump}/calendar-service.gz"
+mongodump --uri="${MONGO_URL}" --gzip --db 'analytics-collector' --archive="${dump}/analytics-collector.gz"
+mongodump --uri="${MONGO_URL}" --gzip --db 'gmail-service' --archive="${dump}/gmail-service.gz"
+mongodump --uri="${MONGO_URL}" --gzip --db 'telegram-service' --archive="${dump}/telegram-service.gz"
 
 while IFS= read -r line; do
     arr=($line)
@@ -35,6 +32,5 @@ while IFS= read -r line; do
     else
         mongodump --uri="$MONGO_URL" --gzip --db $db --archive=$aName
     fi
-    echo "mongorestore --uri=\"\${MONGO_URL}\" --gzip \${do_drop} --nsFrom \"${db}\" --nsTo \"${db}\" --archive=\"./workspaces/${db}-${lastVisit}.gz\"" >> ${dump}/restore.sh
 done < ${dump}/databases.list
 

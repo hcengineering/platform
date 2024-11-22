@@ -15,6 +15,7 @@
 
 import { type ClientSocketFactory } from '@hcengineering/client'
 import {
+  CollaborativeDoc,
   type AttachedData,
   type AttachedDoc,
   type Class,
@@ -34,7 +35,18 @@ import {
   type TxResult,
   type WithLookup
 } from '@hcengineering/core'
-import { type MarkupOperations } from './markup'
+import { type MarkupContent, type MarkupOperations } from './markup'
+
+type WithPropertyType<T, X, Y> = {
+  [P in keyof T]: T[P] extends X ? Y : T[P]
+}
+
+/** @public */
+export type WithMarkup<T> = WithPropertyType<
+WithPropertyType<T, CollaborativeDoc | undefined, MarkupContent | undefined>,
+CollaborativeDoc,
+MarkupContent
+>
 
 /**
  * Platform API client
@@ -77,7 +89,7 @@ export interface DocOperations {
   createDoc: <T extends Doc>(
     _class: Ref<Class<T>>,
     space: Ref<Space>,
-    attributes: Data<T>,
+    attributes: WithMarkup<Data<T>>,
     id?: Ref<T>
   ) => Promise<Ref<T>>
 
@@ -85,7 +97,7 @@ export interface DocOperations {
     _class: Ref<Class<T>>,
     space: Ref<Space>,
     objectId: Ref<T>,
-    operations: DocumentUpdate<T>,
+    operations: WithMarkup<DocumentUpdate<T>>,
     retrieve?: boolean
   ) => Promise<TxResult>
 
@@ -102,7 +114,7 @@ export interface CollectionOperations {
     attachedTo: Ref<T>,
     attachedToClass: Ref<Class<T>>,
     collection: Extract<keyof T, string> | string,
-    attributes: AttachedData<P>,
+    attributes: WithMarkup<AttachedData<P>>,
     id?: Ref<P>
   ) => Promise<Ref<P>>
 
@@ -113,7 +125,7 @@ export interface CollectionOperations {
     attachedTo: Ref<T>,
     attachedToClass: Ref<Class<T>>,
     collection: Extract<keyof T, string> | string,
-    operations: DocumentUpdate<P>,
+    operations: WithMarkup<DocumentUpdate<P>>,
     retrieve?: boolean
   ) => Promise<Ref<T>>
 
@@ -136,7 +148,7 @@ export interface MixinOperations {
     objectClass: Ref<Class<D>>,
     objectSpace: Ref<Space>,
     mixin: Ref<Mixin<M>>,
-    attributes: MixinData<D, M>
+    attributes: WithMarkup<MixinData<D, M>>
   ) => Promise<TxResult>
 
   updateMixin: <D extends Doc, M extends D>(
@@ -144,7 +156,7 @@ export interface MixinOperations {
     objectClass: Ref<Class<D>>,
     objectSpace: Ref<Space>,
     mixin: Ref<Mixin<M>>,
-    attributes: MixinUpdate<D, M>
+    attributes: WithMarkup<MixinUpdate<D, M>>
   ) => Promise<TxResult>
 }
 

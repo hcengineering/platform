@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { AttachedDoc, Blob, Class, Ref } from '@hcengineering/core'
+import type { AttachedDoc, Blob, Class, Doc, Ref } from '@hcengineering/core'
 import type { Asset, Plugin } from '@hcengineering/platform'
 import { IntlString, plugin, Resource } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
@@ -65,6 +65,15 @@ export interface SavedAttachments extends Preference {
 /**
  * @public
  */
+export interface Drawing extends Doc {
+  parent: Ref<Doc>
+  parentClass: Ref<Class<Doc>>
+  content?: string
+}
+
+/**
+ * @public
+ */
 export const attachmentId = 'attachment' as Plugin
 
 export default plugin(attachmentId, {
@@ -81,6 +90,7 @@ export default plugin(attachmentId, {
   },
   class: {
     Attachment: '' as Ref<Class<Attachment>>,
+    Drawing: '' as Ref<Class<Drawing>>,
     Photo: '' as Ref<Class<Photo>>,
     SavedAttachments: '' as Ref<Class<SavedAttachments>>
   },

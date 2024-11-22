@@ -238,13 +238,14 @@
   }
 
   const joinProps = (attribute: AttributeModel, object: Doc, readonly: boolean) => {
-    const readonlyParams = readonly
-      ? {
-          readonly: true,
-          editable: false,
-          disabled: true
-        }
-      : {}
+    const readonlyParams =
+      readonly || (attribute?.attribute?.readonly ?? false)
+        ? {
+            readonly: true,
+            editable: false,
+            disabled: true
+          }
+        : {}
     if (attribute.collectionAttr) {
       return { object, ...attribute.props, ...readonlyParams }
     }

@@ -85,7 +85,7 @@ export async function handleBlobHead (request: BlobRequest, env: Env, ctx: Execu
   const { bucket } = selectStorage(env, workspace)
 
   const blob = await db.getBlob(sql, { workspace, name })
-  if (blob === null) {
+  if (blob === null || blob.deleted) {
     return error(404)
   }
 

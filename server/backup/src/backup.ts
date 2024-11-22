@@ -23,6 +23,7 @@ import core, {
   DOMAIN_BLOB,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MODEL,
+  DOMAIN_MODEL_TX,
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
   MeasureContext,
@@ -789,6 +790,7 @@ export async function backup (
     const blobClient = new BlobClient(transactorUrl, token, workspaceId, { storageAdapter: options.storageAdapter })
 
     const domains = [
+      DOMAIN_MODEL_TX,
       ...connection
         .getHierarchy()
         .domains()
@@ -1751,6 +1753,22 @@ export async function restore (
           sendSize,
           workspace: workspaceId.name
         })
+        // Correct docs without space
+        for (const d of docs) {
+          if (d._class === core.class.DocIndexState) {
+            // We need to clean old stuff from restored document.
+            if ('stages' in d) {
+              delete (d as any).stages
+              delete (d as any).attributes
+              ;(d as any).needIndex = true
+              ;(d as any)['%hash%'] = ''
+            }
+          }
+          if (d.space == null) {
+            d.space = core.space.Workspace
+            ;(d as any)['%hash%'] = ''
+          }
+        }
         await connection.upload(c, docs)
         docs.length = 0
         sendSize = 0
@@ -1787,7 +1805,7 @@ export async function restore (
                   chunks.push(chunk)
                 })
                 stream.on('end', () => {
-                  const bf = Buffer.concat(chunks)
+                  const bf = Buffer.concat(chunks as any)
                   const d = blobs.get(name)
                   if (d === undefined) {
                     blobs.set(name, { doc: undefined, buffer: bf })

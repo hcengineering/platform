@@ -21,6 +21,24 @@ export type MarkupRef = CollaborativeDoc
 /** @public */
 export type MarkupFormat = 'markup' | 'html' | 'markdown'
 
+/** @public */
+export class MarkupContent {
+  constructor (
+    readonly content: string,
+    readonly kind: MarkupFormat
+  ) {}
+}
+
+/** @public */
+export function html (content: string): MarkupContent {
+  return new MarkupContent(content, 'html')
+}
+
+/** @public */
+export function markdown (content: string): MarkupContent {
+  return new MarkupContent(content, 'markdown')
+}
+
 /**
  * Provides operations for managing markup (rich-text) content.
  * @public */

@@ -22,19 +22,15 @@ import core, {
   ModelDb,
   SortingOrder,
   systemAccountEmail,
-  type BackupClient,
   type BackupStatus,
   type Branding,
-  type Client,
   type MeasureContext,
   type Tx,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
-import { PlatformError, unknownError } from '@hcengineering/platform'
 import { listAccountWorkspaces, updateBackupInfo } from '@hcengineering/server-client'
 import {
-  BackupClientOps,
-  SessionDataImpl,
+  wrapPipeline,
   type DbConfiguration,
   type Pipeline,
   type PipelineFactory,
@@ -227,7 +223,7 @@ class BackupWorker {
               if (pipeline === undefined) {
                 pipeline = await this.pipelineFactory(ctx, wsUrl, true, () => {}, null)
               }
-              return this.wrapPipeline(ctx, pipeline, wsUrl)
+              return wrapPipeline(ctx, pipeline, wsUrl)
             }
           })
         )
@@ -265,68 +261,6 @@ class BackupWorker {
       }
     }
     return { failedWorkspaces, processed, skipped: workspaces.length - processed }
-  }
-
-  wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: WorkspaceIdWithUrl): Client & BackupClient {
-    const contextData = new SessionDataImpl(
-      systemAccountEmail,
-      'backup',
-      true,
-      { targets: {}, txes: [] },
-      wsUrl,
-      null,
-      false,
-      new Map(),
-      new Map(),
-      pipeline.context.modelDb
-    )
-    ctx.contextData = contextData
-    if (pipeline.context.lowLevelStorage === undefined) {
-      throw new PlatformError(unknownError('Low level storage is not available'))
-    }
-    const backupOps = new BackupClientOps(pipeline.context.lowLevelStorage)
-
-    return {
-      findAll: async (_class, query, options) => {
-        return await pipeline.findAll(ctx, _class, query, options)
-      },
-      findOne: async (_class, query, options) => {
-        return (await pipeline.findAll(ctx, _class, query, { ...options, limit: 1 })).shift()
-      },
-      clean: async (domain, docs) => {
-        await backupOps.clean(ctx, domain, docs)
-      },
-      close: async () => {},
-      closeChunk: async (idx) => {
-        await backupOps.closeChunk(ctx, idx)
-      },
-      getHierarchy: () => {
-        return pipeline.context.hierarchy
-      },
-      getModel: () => {
-        return pipeline.context.modelDb
-      },
-      loadChunk: async (domain, idx, recheck) => {
-        return await backupOps.loadChunk(ctx, domain, idx, recheck)
-      },
-      loadDocs: async (domain, docs) => {
-        return await backupOps.loadDocs(ctx, domain, docs)
-      },
-      upload: async (domain, docs) => {
-        await backupOps.upload(ctx, domain, docs)
-      },
-      searchFulltext: async (query, options) => {
-        return {
-          docs: [],
-          total: 0
-        }
-      },
-      sendForceClose: async () => {},
-      tx: async (tx) => {
-        return {}
-      },
-      notify: (...tx) => {}
-    }
   }
 }
 

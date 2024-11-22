@@ -15,13 +15,13 @@
 <script lang="ts">
   import { closeWidget, minimizeSidebar, WidgetState } from '@hcengineering/workbench-resources'
   import { createQuery } from '@hcengineering/presentation'
-  import { MeetingMinutes, Room } from '@hcengineering/love'
+  import { MeetingMinutes, MeetingStatus, Room } from '@hcengineering/love'
   import { Loading } from '@hcengineering/ui'
 
   import love from '../../plugin'
   import VideoTab from './VideoTab.svelte'
   import { isCurrentInstanceConnected, lk } from '../../utils'
-  import { currentRoom, currentMeetingMinutes } from '../../stores'
+  import { currentMeetingMinutes, currentRoom } from '../../stores'
   import ChatTab from './ChatTab.svelte'
   import TranscriptionTab from './TranscriptionTab.svelte'
 
@@ -58,13 +58,17 @@
   }
 
   $: if (sid != null && room !== undefined) {
-    meetingQuery.query(love.class.MeetingMinutes, { sid, attachedTo: room._id }, async (res) => {
-      meetingMinutes = res[0]
-      if (meetingMinutes) {
-        currentMeetingMinutes.set(meetingMinutes)
+    meetingQuery.query(
+      love.class.MeetingMinutes,
+      { sid, attachedTo: room._id, status: MeetingStatus.Active },
+      async (res) => {
+        meetingMinutes = res[0]
+        if (meetingMinutes) {
+          currentMeetingMinutes.set(meetingMinutes)
+        }
+        isMeetingMinutesLoaded = true
       }
-      isMeetingMinutesLoaded = true
-    })
+    )
   } else {
     meetingQuery.unsubscribe()
     meetingMinutes = undefined
