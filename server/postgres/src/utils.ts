@@ -351,6 +351,7 @@ export function parseUpdate<T extends Doc> (
 }
 
 export function escapeBackticks (str: string): string {
+  if (typeof str !== 'string') return str
   return str.replaceAll("'", "''")
 }
 
@@ -411,8 +412,7 @@ export function parseDocWithProjection<T extends Doc> (
       } else {
         ;(rest as any)[key] = null
       }
-    }
-    if (schema[key] !== undefined && schema[key].type === 'bigint') {
+    } else if (schema[key] !== undefined && schema[key].type === 'bigint') {
       ;(rest as any)[key] = Number.parseInt((rest as any)[key])
     }
   }
@@ -443,8 +443,7 @@ export function parseDoc<T extends Doc> (doc: DBDoc, domain: string): T {
       } else {
         ;(rest as any)[key] = null
       }
-    }
-    if (schema[key] !== undefined && schema[key].type === 'bigint') {
+    } else if (schema[key] !== undefined && schema[key].type === 'bigint') {
       ;(rest as any)[key] = Number.parseInt((rest as any)[key])
     }
   }

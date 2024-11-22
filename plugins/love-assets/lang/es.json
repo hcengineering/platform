@@ -77,6 +77,7 @@
     "MeetingEnd": "Fin de la reunión",
     "Status": "Estado",
     "Active": "Activo",
-    "Finished": "Terminado"
+    "Finished": "Terminado",
+    "StartWithRecording": "Iniciar con grabación"
   }
 }

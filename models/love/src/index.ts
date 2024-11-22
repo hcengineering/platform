@@ -16,14 +16,15 @@
 import contact, { type Employee, type Person } from '@hcengineering/contact'
 import {
   AccountRole,
+  type CollaborativeDoc,
+  type CollectionSize,
+  DateRangeMode,
+  type Doc,
   type Domain,
   DOMAIN_TRANSIENT,
   IndexKind,
   type Ref,
-  type CollaborativeDoc,
-  type Doc,
-  type Timestamp,
-  type CollectionSize
+  type Timestamp
 } from '@hcengineering/core'
 import {
   type DevicesPreference,
@@ -32,16 +33,16 @@ import {
   type JoinRequest,
   loveId,
   type Meeting,
+  type MeetingMinutes,
+  type MeetingStatus,
   type Office,
   type ParticipantInfo,
   type RequestStatus,
   type Room,
   type RoomAccess,
   type RoomInfo,
-  type RoomType,
   type RoomLanguage,
-  type MeetingMinutes,
-  type MeetingStatus
+  type RoomType
 } from '@hcengineering/love'
 import {
   type Builder,
@@ -53,18 +54,18 @@ import {
   Model,
   Prop,
   ReadOnly,
+  TypeAny,
   TypeCollaborativeDoc,
+  TypeDate,
   TypeRef,
   TypeString,
-  TypeTimestamp,
-  UX,
-  TypeAny
+  UX
 } from '@hcengineering/model'
 import calendar, { TEvent } from '@hcengineering/model-calendar'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import presentation from '@hcengineering/model-presentation'
-import view, { createAction } from '@hcengineering/model-view'
+import view, { createAction, createAttributePresenter } from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
@@ -108,6 +109,7 @@ export class TRoom extends TDoc implements Room {
 
   language!: RoomLanguage
   startWithTranscription!: boolean
+  startWithRecording!: boolean
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
@@ -227,12 +229,12 @@ export class TMeetingMinutes extends TAttachedDoc implements MeetingMinutes, Tod
   @Prop(PropCollection(chunter.class.ChatMessage), activity.string.Messages)
     messages?: number
 
-  @Prop(TypeTimestamp(), love.string.MeetingStart, { editor: view.component.TimestampPresenter })
+  @Prop(TypeDate(DateRangeMode.DATETIME), love.string.MeetingStart, { editor: view.component.DateTimePresenter })
   @ReadOnly()
   @Index(IndexKind.IndexedDsc)
   declare createdOn: Timestamp
 
-  @Prop(TypeTimestamp(), love.string.MeetingEnd)
+  @Prop(TypeDate(DateRangeMode.DATETIME), love.string.MeetingEnd, { editor: view.component.DateTimePresenter })
   @ReadOnly()
     meetingEnd?: Timestamp
 
@@ -505,10 +507,10 @@ export function createModel (builder: Builder): void {
       config: [
         '',
         { key: 'status', presenter: love.component.MeetingMinutesStatusPresenter, label: love.string.Status },
-        'createdOn',
-        'meetingEnd',
         { key: 'messages', displayProps: { key: 'messages', suffix: true } },
-        { key: 'transcription', displayProps: { key: 'transcription', suffix: true } }
+        { key: 'transcription', displayProps: { key: 'transcription', suffix: true } },
+        'createdOn',
+        'meetingEnd'
       ],
       configOptions: {
         hiddenKeys: ['description'],
@@ -528,10 +530,13 @@ export function createModel (builder: Builder): void {
       config: [
         '',
         { key: 'status', presenter: love.component.MeetingMinutesStatusPresenter, label: love.string.Status },
+        { key: 'messages', displayProps: { key: 'messages', suffix: true } },
+        { key: 'transcription', displayProps: { key: 'transcription', suffix: true } },
         'createdOn',
         'meetingEnd'
       ],
       configOptions: {
+        hiddenKeys: ['description'],
         sortable: true
       },
       variant: 'embedded'
@@ -636,4 +641,19 @@ export function createModel (builder: Builder): void {
   builder.mixin(love.class.MeetingMinutes, core.class.Class, view.mixin.ObjectPanelFooter, {
     editor: love.component.PanelControlBar
   })
+
+  createAttributePresenter(
+    builder,
+    view.component.DateTimePresenter,
+    love.class.MeetingMinutes,
+    'createdOn',
+    'attribute'
+  )
+  createAttributePresenter(
+    builder,
+    view.component.DateTimePresenter,
+    love.class.MeetingMinutes,
+    'meetingEnd',
+    'attribute'
+  )
 }

@@ -102,13 +102,13 @@ services:
       - ELASTIC_URL=http://elastic:9200
       - GMAIL_URL=http://host.docker.internal:8088
       - CALENDAR_URL=http://host.docker.internal:8095
-      - REKONI_URL=http://rekoni:4005
+      - REKONI_URL=http://rekoni:4007
       - TELEGRAM_URL=http://host.docker.internal:8086
       - COLLABORATOR_URL=ws://host.docker.internal:3079
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - BRANDING_URL=http://host.docker.internal:8083/branding-test.json
-      - PRINT_URL=http://host.docker.internal:4005
-      - SIGN_URL=http://host.docker.internal:4006
+      - PRINT_URL=http://host.docker.internal:4003
+      - SIGN_URL=http://host.docker.internal:4008
   transactor:
     image: hardcoreeng/transactor
     extra_hosts:
@@ -128,11 +128,9 @@ services:
       - SERVER_PORT=3334
       - SERVER_SECRET=secret
       - DB_URL=mongodb://mongodb:27018
-      - MONGO_URL=mongodb://mongodb:27018
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - REKONI_URL=http://rekoni:4005
       - FRONT_URL=http://host.docker.internal:8083
       - UPLOAD_URL=http://host.docker.internal:8083/files
       - ACCOUNTS_URL=http://account:3003
@@ -160,13 +158,15 @@ services:
   rekoni:
     image: hardcoreeng/rekoni-service
     restart: on-failure
+    ports:
+      - 4007:4004
   print:
     image: hardcoreeng/print
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
     ports:
-      - 4005:4005
+      - 4003:4005
     environment:
       - SECRET=secret
       - MONGO_URL=${MONGO_URL}
@@ -182,7 +182,7 @@ services:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
     ports:
-      - 4006:4006
+      - 4008:4006
     volumes:
       - ../services/sign/pod-sign/debug/certificate.p12:/var/cfg/certificate.p12
       - ../services/sign/pod-sign/debug/branding.json:/var/cfg/branding.json

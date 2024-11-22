@@ -123,11 +123,11 @@ export const getRegions = (): RegionInfo[] => {
   if (process.env.REGION_INFO !== undefined) {
     return process.env.REGION_INFO.split(';')
       .map((it) => it.split('|'))
-      .map((it) => ({ region: it[0], name: it[1] }))
+      .map((it) => ({ region: it[0].trim(), name: it[1].trim() }))
   }
   return getEndpoints()
     .map(toTransactor)
-    .map((it) => ({ region: it.region, name: it.region }))
+    .map((it) => ({ region: it.region.trim(), name: '' }))
 }
 
 export const getEndpoint = (ctx: MeasureContext, workspaceInfo: WorkspaceInfo, kind: EndpointKind): string => {

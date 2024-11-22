@@ -868,8 +868,8 @@ export async function countWorkspacesInRegion (
 /**
  * @public
  */
-export async function listWorkspacesRaw (db: AccountDB): Promise<Workspace[]> {
-  return (await db.workspace.find({})).filter((it) => it.disabled !== true)
+export async function listWorkspacesRaw (db: AccountDB, region?: string): Promise<Workspace[]> {
+  return (await db.workspace.find(region !== undefined ? { region } : {})).filter((it) => it.disabled !== true)
 }
 
 /**

@@ -33,7 +33,8 @@
     "Next": "Successivo",
     "FailedToPreview": "Impossibile mostrare l'anteprima",
     "ContentType": "Tipo di contenuto",
-    "ContentTypeNotSupported": "Anteprima non disponibile per questo tipo di contenuto"
+    "ContentTypeNotSupported": "Anteprima non disponibile per questo tipo di contenuto",
+    "StartDrawing": "Scarabocchiare sopra"
   },
   "status": {
     "FileTooLarge": "File troppo grande"

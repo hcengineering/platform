@@ -1,9 +1,9 @@
 import {
   AccountRole,
-  DOMAIN_TX,
+  DOMAIN_MODEL_TX,
+  type Account,
   type Ref,
   type Space,
-  type Account,
   type TxCreateDoc,
   type TxUpdateDoc
 } from '@hcengineering/core'
@@ -30,13 +30,13 @@ export const guestOperation: MigrateOperation = {
             1: AccountRole.Maintainer,
             2: AccountRole.Owner
           }
-          const createTxes = await client.find<TxCreateDoc<Account>>(DOMAIN_TX, {
+          const createTxes = await client.find<TxCreateDoc<Account>>(DOMAIN_MODEL_TX, {
             _class: core.class.TxCreateDoc,
             'attributes.role': { $in: [0, 1, 2] }
           })
           for (const tx of createTxes) {
             await client.update(
-              DOMAIN_TX,
+              DOMAIN_MODEL_TX,
               {
                 _id: tx._id
               },
@@ -47,13 +47,13 @@ export const guestOperation: MigrateOperation = {
               }
             )
           }
-          const updateTxes = await client.find<TxUpdateDoc<Account>>(DOMAIN_TX, {
+          const updateTxes = await client.find<TxUpdateDoc<Account>>(DOMAIN_MODEL_TX, {
             _class: core.class.TxUpdateDoc,
             'operations.role': { $in: [0, 1, 2] }
           })
           for (const tx of updateTxes) {
             await client.update(
-              DOMAIN_TX,
+              DOMAIN_MODEL_TX,
               {
                 _id: tx._id
               },

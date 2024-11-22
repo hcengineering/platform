@@ -15,6 +15,7 @@
 
 import core, {
   DOMAIN_MODEL,
+  DOMAIN_MODEL_TX,
   DOMAIN_TX,
   SortingOrder,
   TxProcessor,
@@ -641,6 +642,12 @@ abstract class MongoAdapterBase implements DbAdapter {
       for (const key in options.projection) {
         const ckey = this.checkMixinKey<T>(key, clazz) as keyof T
         projection[ckey] = options.projection[key]
+      }
+      for (const step of steps) {
+        // We also need to add lookup if original field are in projection.
+        if ((projection as any)[step.from] === 1) {
+          ;(projection as any)[step.as] = 1
+        }
       }
       pipeline.push({ $project: projection })
     }
@@ -1546,6 +1553,7 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
 
   async init (): Promise<void> {
     await this._db.init(DOMAIN_TX)
+    await this._db.init(DOMAIN_MODEL_TX)
   }
 
   override async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
@@ -1554,34 +1562,74 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
     }
 
     const opName = tx.length === 1 ? 'tx-one' : 'tx'
-    await addOperation(
-      ctx,
-      opName,
-      {},
-      async (ctx) => {
-        await ctx.with(
-          'insertMany',
-          { domain: 'tx' },
-          async () => {
-            try {
-              await this.txCollection().insertMany(
-                tx.map((it) => translateDoc(it)),
-                {
-                  ordered: false
-                }
-              )
-            } catch (err: any) {
-              ctx.error('failed to write tx', { error: err, message: err.message })
-            }
-          },
+    const modelTxes: Tx[] = []
+    const baseTxes: Tx[] = []
+    for (const _tx of tx) {
+      if (_tx.objectSpace === core.space.Model) {
+        modelTxes.push(_tx)
+      } else {
+        baseTxes.push(_tx)
+      }
+    }
+    if (baseTxes.length > 0) {
+      await addOperation(
+        ctx,
+        opName,
+        {},
+        async (ctx) => {
+          await ctx.with(
+            'insertMany',
+            { domain: 'tx' },
+            async () => {
+              try {
+                await this.txCollection().insertMany(
+                  baseTxes.map((it) => translateDoc(it)),
+                  {
+                    ordered: false
+                  }
+                )
+              } catch (err: any) {
+                ctx.error('failed to write tx', { error: err, message: err.message })
+              }
+            },
 
-          {
-            count: tx.length
-          }
-        )
-      },
-      { domain: 'tx', count: tx.length }
-    )
+            {
+              count: baseTxes.length
+            }
+          )
+        },
+        { domain: 'tx', count: baseTxes.length }
+      )
+    }
+    if (modelTxes.length > 0) {
+      await addOperation(
+        ctx,
+        opName,
+        {},
+        async (ctx) => {
+          await ctx.with(
+            'insertMany',
+            { domain: DOMAIN_MODEL_TX },
+            async () => {
+              try {
+                await this.db.collection<Doc>(DOMAIN_MODEL_TX).insertMany(
+                  modelTxes.map((it) => translateDoc(it)),
+                  {
+                    ordered: false
+                  }
+                )
+              } catch (err: any) {
+                ctx.error('failed to write model tx', { error: err, message: err.message })
+              }
+            },
+            {
+              count: modelTxes.length
+            }
+          )
+        },
+        { domain: DOMAIN_MODEL_TX, count: modelTxes.length }
+      )
+    }
     ctx.withSync('handleEvent', {}, () => {
       this.handleEvent(DOMAIN_TX, 'add', tx.length)
     })
@@ -1598,8 +1646,8 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
 
   @withContext('get-model')
   async getModel (ctx: MeasureContext): Promise<Tx[]> {
-    const txCollection = this.db.collection<Tx>(DOMAIN_TX)
-    const cursor = txCollection.find({ objectSpace: core.space.Model }, { sort: { _id: 1, modifiedOn: 1 } })
+    const txCollection = this.db.collection<Tx>(DOMAIN_MODEL_TX)
+    const cursor = txCollection.find({}, { sort: { _id: 1, modifiedOn: 1 } })
     const model = await toArray<Tx>(cursor)
     // We need to put all core.account.System transactions first
     const systemTx: Tx[] = []

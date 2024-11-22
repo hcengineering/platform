@@ -85,7 +85,7 @@ export async function handleBlobHead (request: BlobRequest, env: Env, ctx: Execu
   const { bucket } = selectStorage(env, workspace)
 
   const blob = await db.getBlob(sql, { workspace, name })
-  if (blob === null) {
+  if (blob === null || blob.deleted) {
     return error(404)
   }
 
@@ -291,6 +291,7 @@ function r2MetadataHeaders (head: R2Object): Headers {
       'Accept-Ranges': 'bytes',
       'Content-Length': head.size.toString(),
       'Content-Type': head.httpMetadata.contentType ?? '',
+      'Content-Security-Policy': "default-src 'none';",
       'Cache-Control': head.httpMetadata.cacheControl ?? cacheControl,
       'Last-Modified': head.uploaded.toUTCString(),
       ETag: head.httpEtag
@@ -298,6 +299,7 @@ function r2MetadataHeaders (head: R2Object): Headers {
     : new Headers({
       'Accept-Ranges': 'bytes',
       'Content-Length': head.size.toString(),
+      'Content-Security-Policy': "default-src 'none';",
       'Cache-Control': cacheControl,
       'Last-Modified': head.uploaded.toUTCString(),
       ETag: head.httpEtag

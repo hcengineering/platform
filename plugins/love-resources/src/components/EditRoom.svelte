@@ -21,7 +21,7 @@
   import { IntlString } from '@hcengineering/platform'
 
   import love from '../plugin'
-  import { getRoomName, tryConnect } from '../utils'
+  import { getRoomName, tryConnect, isConnected } from '../utils'
   import { infos, invites, myInfo, myRequests, selectedRoomPlace, myOffice, currentRoom } from '../stores'
 
   export let object: Room
@@ -45,8 +45,10 @@
     dispatch('open', { ignoreKeys: ['name'] })
   })
 
+  let tryConnecting = false
+
   async function connect (): Promise<void> {
-    connecting = true
+    tryConnecting = true
     const place = $selectedRoomPlace
     await tryConnect(
       $personByIdStore,
@@ -57,16 +59,31 @@
       $invites,
       place?._id === object._id ? { x: place.x, y: place.y } : undefined
     )
-    connecting = false
+    tryConnecting = false
     selectedRoomPlace.set(undefined)
   }
 
-  let connectLabel: IntlString = love.string.StartMeeting
+  $: connecting = tryConnecting || ($currentRoom?._id === object._id && !$isConnected)
+
+  let connectLabel: IntlString = $infos.some(({ room }) => room === object._id)
+    ? love.string.JoinMeeting
+    : love.string.StartMeeting
 
   $: if ($infos.some(({ room }) => room === object._id) && !connecting) {
     connectLabel = love.string.JoinMeeting
   } else if (!connecting) {
     connectLabel = love.string.StartMeeting
+  }
+
+  function showConnectionButton (object: Room, isConnected: boolean, myOffice?: Room, currentRoom?: Room): boolean {
+    // Do not show connect button in my office
+    if (object._id === myOffice?._id) return false
+    // Show during connecting with spinner
+    if (connecting) return true
+    // Do not show connect button if we are already connected to the room
+    if (isConnected && currentRoom?._id === object._id) return false
+
+    return true
   }
 </script>
 
@@ -81,7 +98,7 @@
         focusIndex={1}
       />
     </div>
-    {#if object._id !== $myOffice?._id && ($currentRoom?._id !== object._id || connecting)}
+    {#if showConnectionButton(object, $isConnected, $myOffice, $currentRoom)}
       <ModernButton label={connectLabel} size="large" kind={'primary'} on:click={connect} loading={connecting} />
     {/if}
   </div>

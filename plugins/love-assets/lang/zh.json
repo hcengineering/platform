@@ -77,6 +77,7 @@
     "MeetingEnd": "会议结束",
     "Status": "状态",
     "Active": "活动",
-    "Finished": "已完成"
+    "Finished": "已完成",
+    "StartWithRecording": "开始录制"
   }
 }

@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import core, { DOMAIN_TX, type Ref, type TxCreateDoc } from '@hcengineering/core'
-import request, { requestId, type Request } from '@hcengineering/request'
+import contact, { type Person, type PersonAccount } from '@hcengineering/contact'
+import core, { DOMAIN_MODEL_TX, type Ref, type TxCreateDoc } from '@hcengineering/core'
 import {
-  type MigrateUpdate,
-  type MigrationDocumentQuery,
   tryMigrate,
   type MigrateOperation,
+  type MigrateUpdate,
   type MigrationClient,
+  type MigrationDocumentQuery,
   type MigrationUpgradeClient,
   type ModelLogger
 } from '@hcengineering/model'
-import contact, { type Person, type PersonAccount } from '@hcengineering/contact'
+import request, { requestId, type Request } from '@hcengineering/request'
 
 import { DOMAIN_REQUEST } from '.'
 
@@ -32,7 +32,7 @@ async function migrateRequestPersonAccounts (client: MigrationClient): Promise<v
   const requests = await client.find<Request>(DOMAIN_REQUEST, {
     _class: { $in: descendants }
   })
-  const personAccountsCreateTxes = await client.find(DOMAIN_TX, {
+  const personAccountsCreateTxes = await client.find(DOMAIN_MODEL_TX, {
     _class: core.class.TxCreateDoc,
     objectClass: contact.class.PersonAccount
   })

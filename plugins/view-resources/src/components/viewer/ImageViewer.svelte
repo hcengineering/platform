@@ -14,13 +14,18 @@
 -->
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
-  import { getBlobRef, imageSizeToRatio, type BlobMetadata } from '@hcengineering/presentation'
+  import { DrawingBoard, getBlobRef, imageSizeToRatio, type BlobMetadata } from '@hcengineering/presentation'
   import { Loading } from '@hcengineering/ui'
 
   export let value: Ref<Blob>
   export let name: string
   export let metadata: BlobMetadata | undefined
   export let fit: boolean = false
+
+  export let drawingAvailable: boolean
+  export let drawingEditable: boolean
+  export let drawingData: any
+  export let saveDrawing: (data: any) => Promise<void>
 
   $: originalWidth = metadata?.originalWidth
   $: originalHeight = metadata?.originalHeight
@@ -41,16 +46,27 @@
       <Loading />
     </div>
   {/if}
-  <img
-    on:load={() => {
-      loading = false
-    }}
+  <DrawingBoard
+    {imageWidth}
+    {imageHeight}
+    {drawingData}
+    {saveDrawing}
+    active={drawingAvailable && !loading}
+    readonly={drawingAvailable && !drawingEditable}
     class="object-contain mx-auto"
-    style:max-width={width}
-    style:max-height={height}
-    src={blobRef.src}
-    srcset={blobRef.srcset}
-    alt={name}
-    style:height={loading ? '0' : ''}
-  />
+    style={`max-width:${width};max-height:${height}`}
+  >
+    <img
+      on:load={() => {
+        loading = false
+      }}
+      class="object-contain mx-auto"
+      style:max-width={width}
+      style:max-height={height}
+      src={blobRef.src}
+      srcset={blobRef.srcset}
+      alt={name}
+      style:height={loading ? '0' : ''}
+    />
+  </DrawingBoard>
 {/await}

@@ -36,7 +36,8 @@ services:
      - "8089:8080"
    command: start-single-node --insecure
    volumes:
-     - cockroach_db:/cockroach/cockroach-data"    
+     - cockroach_db:/cockroach/cockroach-data
+   restart: unless-stopped
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000" --console-address ":9001"

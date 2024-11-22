@@ -22,6 +22,7 @@ import core, {
   type DocumentUpdate,
   type Domain,
   DOMAIN_MODEL,
+  DOMAIN_MODEL_TX,
   DOMAIN_SPACE,
   DOMAIN_TX,
   type FindOptions,
@@ -476,10 +477,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
     if (sessionContext !== undefined && sessionContext.isTriggerCtx !== true) {
       if (sessionContext.admin !== true && sessionContext.account !== undefined) {
         const acc = sessionContext.account
-        if (isOwner(acc) || acc.role === AccountRole.DocGuest) {
+        if (acc.role === AccountRole.DocGuest || acc._id === core.account.System) {
           return
         }
         if (query.space === acc._id) return
+        if (domain === DOMAIN_SPACE && isOwner(acc)) return
         const key = domain === DOMAIN_SPACE ? '_id' : domain === DOMAIN_TX ? "data ->> 'objectSpace'" : 'space'
         const privateCheck = domain === DOMAIN_SPACE ? ' OR sec.private = false' : ''
         const q = `(sec.members @> '{"${acc._id}"}' OR sec."_class" = '${core.class.SystemSpace}'${privateCheck})`
@@ -1000,11 +1002,17 @@ abstract class PostgresAdapterBase implements DbAdapter {
             res.push(`${tkey} <= '${val}'`)
             break
           case '$in':
-            res.push(
-              type !== 'common'
-                ? `${tkey} ?| array[${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'}]`
-                : `${tkey} IN (${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'})`
-            )
+            switch (type) {
+              case 'common':
+                res.push(`${tkey} IN (${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'})`)
+                break
+              case 'array':
+                res.push(`${tkey} && array[${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'}]`)
+                break
+              case 'dataArray':
+                res.push(`${tkey} ?| array[${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'}]`)
+                break
+            }
             break
           case '$nin':
             if (val.length > 0) {
@@ -1018,7 +1026,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             res.push(`${tkey} IS ${val === true ? 'NOT NULL' : 'NULL'}`)
             break
           case '$regex':
-            res.push(`${tkey} SIMILAR TO '${val}'`)
+            res.push(`${tkey} SIMILAR TO '${escapeBackticks(val)}'`)
             break
           case '$options':
             break
@@ -1033,7 +1041,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       return res.length === 0 ? undefined : res.join(' AND ')
     }
     return type === 'common'
-      ? `${tkey} = '${value}'`
+      ? `${tkey} = '${escapeBackticks(value)}'`
       : type === 'array'
         ? `${tkey} @> '${typeof value === 'string' ? '{"' + value + '"}' : value}'`
         : `${tkey} @> '${typeof value === 'string' ? '"' + value + '"' : value}'`
@@ -1074,6 +1082,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
     if (projection === undefined) {
       res.push(`${baseDomain}.*`)
     } else {
+      if (projection._id === undefined) {
+        res.push(`${baseDomain}."_id" AS "_id"`)
+      }
+      if (projection._class === undefined) {
+        res.push(`${baseDomain}."_class" AS "_class"`)
+      }
       for (const key in projection) {
         if (isDataField(baseDomain, key)) {
           if (!dataAdded) {
@@ -1573,7 +1587,7 @@ class PostgresAdapter extends PostgresAdapterBase {
 
 class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
   async init (domains?: string[], excludeDomains?: string[]): Promise<void> {
-    const resultDomains = domains ?? [DOMAIN_TX]
+    const resultDomains = domains ?? [DOMAIN_TX, DOMAIN_MODEL_TX]
     await createTables(this.client, resultDomains)
     this._helper.domains = new Set(resultDomains as Domain[])
   }
@@ -1583,7 +1597,21 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
       return []
     }
     try {
-      await this.insert(ctx, DOMAIN_TX, tx)
+      const modelTxes: Tx[] = []
+      const baseTxes: Tx[] = []
+      for (const _tx of tx) {
+        if (_tx.objectSpace === core.space.Model) {
+          modelTxes.push(_tx)
+        } else {
+          baseTxes.push(_tx)
+        }
+      }
+      if (modelTxes.length > 0) {
+        await this.insert(ctx, DOMAIN_MODEL_TX, modelTxes)
+      }
+      if (baseTxes.length > 0) {
+        await this.insert(ctx, DOMAIN_TX, baseTxes)
+      }
     } catch (err) {
       console.error(err)
     }
@@ -1592,9 +1620,9 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
 
   async getModel (ctx: MeasureContext): Promise<Tx[]> {
     const res = await this
-      .client`SELECT * FROM ${this.client(translateDomain(DOMAIN_TX))} WHERE "workspaceId" = ${this.workspaceId.name} AND "objectSpace" = ${core.space.Model} ORDER BY _id ASC, "modifiedOn" ASC`
+      .client`SELECT * FROM ${this.client(translateDomain(DOMAIN_MODEL_TX))} WHERE "workspaceId" = ${this.workspaceId.name} ORDER BY _id ASC, "modifiedOn" ASC`
 
-    const model = res.map((p) => parseDoc<Tx>(p as any, DOMAIN_TX))
+    const model = res.map((p) => parseDoc<Tx>(p as any, DOMAIN_MODEL_TX))
     // We need to put all core.account.System transactions first
     const systemTx: Tx[] = []
     const userTx: Tx[] = []

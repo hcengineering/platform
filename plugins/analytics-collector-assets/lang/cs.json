@@ -1,0 +1,22 @@
+{
+  "string": {
+      "OnboardingChannelDescription": "Uživatel: {user}; Pracovní prostor: {workspace}",
+      "Error": "Chyba: ",
+      "InProject": " v projektu ",
+      "NavigateToSpecial": "{app}: otevřít {special}",
+      "OpenSpecial": "otevřít {special} ",
+      "Set": "Nastavit ",
+      "To": " na ",
+      "Open": "otevřít ",
+      "Workbench": "Pracovní plocha: ",
+      "OnboardingChannel": "Kanál pro onboardování",
+      "OnboardingChannels": "Kanály pro onboardování",
+      "WorkspaceId": "ID pracovního prostoru",
+      "WorkspaceName": "Název pracovního prostoru",
+      "WorkspaceUrl": "URL pracovního prostoru",
+      "Email": "E-mail",
+      "UserName": "Uživatelské jméno",
+      "DisableAIReplies": "Zakázat odpovědi AI",
+      "ShowAIReplies": "Zobrazit odpovědi AI"
+  }
+}

@@ -15,7 +15,7 @@
 
 import { getCategories } from '@anticrm/skillset'
 import core, {
-  DOMAIN_TX,
+  DOMAIN_MODEL_TX,
   toIdMap,
   TxOperations,
   type Doc,
@@ -149,7 +149,7 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
   const newTaskTypeMixin = recruit.mixin.ApplicantTypeData
 
   await client.update(
-    DOMAIN_TX,
+    DOMAIN_MODEL_TX,
     {
       objectClass: core.class.Attribute,
       'attributes.attributeOf': oldSpaceTypeMixin

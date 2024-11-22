@@ -15,25 +15,26 @@
 
 import { saveCollaborativeDoc } from '@hcengineering/collaboration'
 import core, {
-  type Class,
+  collaborativeDocParse,
+  coreId,
+  DOMAIN_MODEL_TX,
   DOMAIN_SPACE,
   DOMAIN_STATUS,
   DOMAIN_TX,
-  MeasureMetricsContext,
-  RateLimiter,
-  type Ref,
-  type TxCUD,
-  collaborativeDocParse,
-  coreId,
   generateId,
   makeCollaborativeDoc,
+  MeasureMetricsContext,
+  RateLimiter,
   type AnyAttribute,
+  type Class,
   type Doc,
   type Domain,
   type MeasureContext,
+  type Ref,
   type Space,
   type Status,
-  type TxCreateDoc
+  type TxCreateDoc,
+  type TxCUD
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -290,36 +291,65 @@ export const coreOperation: MigrateOperation = {
         }
       },
       {
+        state: 'remove-github-patches',
+        func: async (client) => {
+          await client.update(
+            DOMAIN_TX,
+            {
+              objectClass: 'tracker:class:Issue',
+              collection: 'pullRequests',
+              'tx.attributes.patch': { $exists: true }
+            },
+            { $unset: { 'tx.attributes.patch': 1 } }
+          )
+        }
+      },
+      {
         state: 'remove-collection-txes',
         func: async (client) => {
           let processed = 0
+          const iterator = await client.traverse<TxCUD<Doc>>(DOMAIN_TX, {
+            _class: 'core:class:TxCollectionCUD' as Ref<Class<Doc>>
+          })
           while (true) {
-            const txes = await client.find<TxCUD<Doc>>(
-              DOMAIN_TX,
-              {
-                _class: 'core:class:TxCollectionCUD' as Ref<Class<Doc>>
-              },
-              { limit: 5000 }
-            )
-            if (txes.length === 0) break
-            for (const tx of txes) {
-              processed++
-              await client.update(
+            const txes = await iterator.next(200)
+            if (txes === null || txes.length === 0) break
+            processed += txes.length
+            try {
+              await client.create(
                 DOMAIN_TX,
-                { _id: tx._id },
-                {
-                  $set: {
-                    attachedTo: tx.objectId,
-                    attachedToClass: tx.objectClass,
-                    ...(tx as any).tx
+                txes.map((tx) => {
+                  const { collection, objectId, objectClass } = tx
+                  return {
+                    collection,
+                    attachedTo: objectId,
+                    attachedToClass: objectClass,
+                    ...(tx as any).tx,
+                    objectSpace: (tx as any).tx.objectSpace ?? tx.objectClass
                   }
-                }
+                })
               )
-              if (processed % 1000 === 0) {
-                console.log('processed', processed)
-              }
+              await client.deleteMany(DOMAIN_TX, {
+                _id: { $in: txes.map((it) => it._id) }
+              })
+            } catch (err: any) {
+              console.error(err)
             }
+            console.log('processed', processed)
           }
+          await iterator.close()
+        }
+      },
+      {
+        state: 'move-model-txes',
+        func: async (client) => {
+          await client.move(
+            DOMAIN_TX,
+            {
+              objectSpace: core.space.Model
+            },
+            DOMAIN_MODEL_TX
+          )
         }
       }
     ])

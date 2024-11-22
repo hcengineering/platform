@@ -15,6 +15,7 @@
 
 import activity, { type DocUpdateMessage } from '@hcengineering/activity'
 import {
+  DOMAIN_MODEL_TX,
   DOMAIN_STATUS,
   DOMAIN_TX,
   TxOperations,
@@ -94,7 +95,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
   // 3. More than one type (one system and one custom) - the tool is running after the WS upgrade.
   // Not supported for now. Alternatively - Proceed with (2) scenario for the custom one. Delete it in the end.
 
-  const defaultTypes = await client.find<TxCreateDoc<ProjectType>>(DOMAIN_TX, {
+  const defaultTypes = await client.find<TxCreateDoc<ProjectType>>(DOMAIN_MODEL_TX, {
     _class: core.class.TxCreateDoc,
     objectId: defaultTypeId,
     objectSpace: core.space.Model,
@@ -120,7 +121,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
       // and not modified by user
       if (defaultType.attributes.tasks.length === 1 && defaultType.attributes.tasks[0] === defaultTaskTypeId) {
         const defaultTaskType = (
-          await client.find<TxCreateDoc<TaskType>>(DOMAIN_TX, {
+          await client.find<TxCreateDoc<TaskType>>(DOMAIN_MODEL_TX, {
             _class: core.class.TxCreateDoc,
             objectId: defaultTaskTypeId,
             objectSpace: core.space.Model,
@@ -132,7 +133,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
           logger.log('Moving the existing default type created by ConfigUser to a system one', '')
           logger.log('Moving the existing default task type created by ConfigUser to a system one', '')
           await client.update(
-            DOMAIN_TX,
+            DOMAIN_MODEL_TX,
             { _id: defaultTaskType._id },
             {
               $set: {
@@ -142,7 +143,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
           )
 
           await client.update(
-            DOMAIN_TX,
+            DOMAIN_MODEL_TX,
             { _id: defaultType._id },
             {
               $set: {
@@ -172,7 +173,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
       logger.log('Moving the existing default type to a custom one', '')
       const newId = defaultType.objectId + '-custom'
       await client.update(
-        DOMAIN_TX,
+        DOMAIN_MODEL_TX,
         { _id: defaultType._id },
         {
           $set: {
@@ -182,7 +183,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
         }
       )
       await client.update(
-        DOMAIN_TX,
+        DOMAIN_MODEL_TX,
         {
           objectId: defaultType.objectId,
           objectSpace: core.space.Model
@@ -194,7 +195,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
         }
       )
       await client.update(
-        DOMAIN_TX,
+        DOMAIN_MODEL_TX,
         {
           objectId: { $in: defaultType.attributes.tasks },
           objectSpace: core.space.Model,
@@ -294,7 +295,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
   // 1. Update all update TXes with statuses
   // 2. Update all push TXes with statuses
 
-  const projectTypeStatusesCreates = await client.find<TxCreateDoc<ProjectType>>(DOMAIN_TX, {
+  const projectTypeStatusesCreates = await client.find<TxCreateDoc<ProjectType>>(DOMAIN_MODEL_TX, {
     _class: core.class.TxCreateDoc,
     objectClass: task.class.ProjectType,
     objectSpace: core.space.Model,
@@ -312,11 +313,11 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     }
 
     counter++
-    await client.update(DOMAIN_TX, { _id: ptsCreate._id }, { $set: { 'attributes.statuses': newUpdateStatuses } })
+    await client.update(DOMAIN_MODEL_TX, { _id: ptsCreate._id }, { $set: { 'attributes.statuses': newUpdateStatuses } })
   }
   logger.log('projectTypeStatusesCreates updated: ', counter)
 
-  const projectTypeStatusesUpdates = await client.find<TxUpdateDoc<ProjectType>>(DOMAIN_TX, {
+  const projectTypeStatusesUpdates = await client.find<TxUpdateDoc<ProjectType>>(DOMAIN_MODEL_TX, {
     _class: core.class.TxUpdateDoc,
     objectId: { $in: projectTypeStatusesCreates.map((sc) => sc.objectId) },
     objectClass: task.class.ProjectType,
@@ -334,11 +335,11 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     }
 
     counter++
-    await client.update(DOMAIN_TX, { _id: ptsUpdate._id }, { $set: { 'operations.statuses': newUpdateStatuses } })
+    await client.update(DOMAIN_MODEL_TX, { _id: ptsUpdate._id }, { $set: { 'operations.statuses': newUpdateStatuses } })
   }
   logger.log('projectTypeStatusesUpdates updated: ', counter)
 
-  const projectTypeStatusesPushes = await client.find<TxUpdateDoc<ProjectType>>(DOMAIN_TX, {
+  const projectTypeStatusesPushes = await client.find<TxUpdateDoc<ProjectType>>(DOMAIN_MODEL_TX, {
     _class: core.class.TxUpdateDoc,
     objectId: { $in: projectTypeStatusesCreates.map((sc) => sc.objectId) },
     objectClass: task.class.ProjectType,
@@ -362,7 +363,11 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     }
 
     counter++
-    await client.update(DOMAIN_TX, { _id: ptsUpdate._id }, { $set: { 'operations.$push.statuses': newPushStatus } })
+    await client.update(
+      DOMAIN_MODEL_TX,
+      { _id: ptsUpdate._id },
+      { $set: { 'operations.$push.statuses': newPushStatus } }
+    )
   }
   logger.log('projectTypeStatusesPushes updated: ', counter)
 
@@ -370,7 +375,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
   // 1. Update create TX
   // 2. Update all update TXes with statuses
 
-  const allTaskTypes = await client.find<TxCreateDoc<TaskType>>(DOMAIN_TX, {
+  const allTaskTypes = await client.find<TxCreateDoc<TaskType>>(DOMAIN_MODEL_TX, {
     _class: core.class.TxCreateDoc,
     objectClass: taskTypeClass,
     'attributes.ofClass': { $in: baseTaskClasses }
@@ -387,11 +392,15 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     }
 
     counter++
-    await client.update(DOMAIN_TX, { _id: taskType._id }, { $set: { 'attributes.statuses': newTaskTypeStatuses } })
+    await client.update(
+      DOMAIN_MODEL_TX,
+      { _id: taskType._id },
+      { $set: { 'attributes.statuses': newTaskTypeStatuses } }
+    )
   }
   logger.log('allTaskTypes updated: ', counter)
 
-  const allTaskTypeStatusesUpdates = await client.find<TxUpdateDoc<TaskType>>(DOMAIN_TX, {
+  const allTaskTypeStatusesUpdates = await client.find<TxUpdateDoc<TaskType>>(DOMAIN_MODEL_TX, {
     _class: core.class.TxUpdateDoc,
     objectClass: taskTypeClass,
     objectId: { $in: allTaskTypes.map((tt) => tt.objectId) },
@@ -413,7 +422,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
 
     counter++
     await client.update(
-      DOMAIN_TX,
+      DOMAIN_MODEL_TX,
       { _id: ttsUpdate._id },
       { $set: { 'operations.statuses': newTaskTypeUpdateStatuses } }
     )
@@ -545,6 +554,12 @@ export const taskOperation: MigrateOperation = {
               { objectId: { $in: missing }, objectSpace: 'task:space:Statuses' },
               { $set: { objectSpace: core.space.Model } }
             )
+            await client.update(
+              DOMAIN_MODEL_TX,
+              { objectId: { $in: missing }, objectSpace: 'task:space:Statuses' },
+              { $set: { objectSpace: core.space.Model } }
+            )
+            await client.move(DOMAIN_TX, { objectId: { $in: missing }, objectSpace: core.space.Model }, DOMAIN_MODEL_TX)
           }
         }
       },

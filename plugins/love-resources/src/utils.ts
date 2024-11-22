@@ -1,6 +1,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import calendar, { type Event, getAllEvents } from '@hcengineering/calendar'
 import contact, { getName, type Person, type PersonAccount } from '@hcengineering/contact'
+import { personByIdStore } from '@hcengineering/contact-resources'
 import core, {
   AccountRole,
   concatLink,
@@ -11,7 +12,9 @@ import core, {
   makeCollaborativeDoc,
   type Ref,
   type Space,
-  type TxOperations
+  type TxOperations,
+  type Hierarchy,
+  type Doc
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import {
@@ -78,11 +81,11 @@ import {
 import { type Widget, type WidgetTab } from '@hcengineering/workbench'
 import view from '@hcengineering/view'
 import chunter from '@hcengineering/chunter'
-import { openDoc } from '@hcengineering/view-resources'
+import { getObjectLinkFragment } from '@hcengineering/view-resources'
 
 import { sendMessage } from './broadcast'
 import love from './plugin'
-import { $myPreferences, currentRoom, currentMeetingMinutes, selectedRoomPlace } from './stores'
+import { $myPreferences, currentRoom, currentMeetingMinutes, selectedRoomPlace, myOffice } from './stores'
 import RoomSettingsPopup from './components/RoomSettingsPopup.svelte'
 
 export const selectedCamId = 'selectedDevice_cam'
@@ -419,19 +422,37 @@ function initRoomMetadata (metadata: string | undefined): void {
   ) {
     void startTranscription(room)
   }
+
+  if (get(isRecordingAvailable) && data.recording == null && room?.startWithRecording === true) {
+    void record(room)
+  }
 }
-export async function connect (name: string, room: Room, _id: string): Promise<void> {
+
+async function withRetries (fn: () => Promise<void>, retries: number, delay: number): Promise<void> {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      await fn()
+      return
+    } catch (error) {
+      if (attempt >= retries) {
+        throw error
+      }
+      console.error(error)
+      console.log(`Attempt ${attempt} failed. Retrying in ${delay}ms...`)
+      await new Promise((resolve) => setTimeout(resolve, delay))
+    }
+  }
+}
+
+async function connect (name: string, room: Room, _id: string): Promise<void> {
   const wsURL = getMetadata(love.metadata.WebSocketURL)
   if (wsURL === undefined) {
     return
   }
-  try {
-    const token = await getToken(room.name, room._id, _id, name)
-    await lk.connect(wsURL, token)
-    sendMessage({ type: 'connect', value: true })
-  } catch (err) {
-    console.error(err)
-  }
+
+  const token = await getToken(room.name, room._id, _id, name)
+  await lk.connect(wsURL, token)
+  sendMessage({ type: 'connect', value: true })
 }
 
 export async function awaitConnect (): Promise<void> {
@@ -487,6 +508,20 @@ function closeMeetingMinutes (): void {
     }
   }
   currentMeetingMinutes.set(undefined)
+}
+
+function isRoomOpened (room: Room): boolean {
+  const loc = getCurrentLocation()
+
+  if (loc.path[2] === loveId) {
+    const panel = get(panelstore).panel
+    const { _id } = panel ?? {}
+
+    if (_id !== undefined && room._id !== undefined && _id === room._id) {
+      return true
+    }
+  }
+  return false
 }
 
 export async function setCam (value: boolean): Promise<void> {
@@ -599,13 +634,9 @@ async function moveToRoom (
       sessionId
     })
   }
-  const loc = getCurrentLocation()
-  if (room.type === RoomType.Video && loc.path[2] !== loveId) {
-    loc.path[2] = loveId
-    loc.path.length = 3
-    loc.fragment = undefined
-    loc.query = undefined
-    navigate(loc)
+
+  if (!isRoomOpened(room)) {
+    await navigateToOfficeDoc(client.getHierarchy(), room)
   }
 }
 
@@ -617,63 +648,71 @@ async function connectLK (currentPerson: Person, room: Room): Promise<void> {
   ])
 }
 
+async function navigateToOfficeDoc (hierarchy: Hierarchy, object: Doc): Promise<void> {
+  const panelComponent = hierarchy.classHierarchyMixin(object._class, view.mixin.ObjectPanel)
+  const comp = panelComponent?.component ?? view.component.EditDoc
+  const loc = await getObjectLinkFragment(hierarchy, object, {}, comp)
+  loc.path[2] = loveId
+  loc.path.length = 3
+  loc.query = undefined
+  navigate(loc)
+}
+
 async function openMeetingMinutes (room: Room): Promise<void> {
   const client = getClient()
   const sid = await lk.getSid()
+  const doc = await client.findOne(love.class.MeetingMinutes, {
+    sid,
+    attachedTo: room._id,
+    status: MeetingStatus.Active
+  })
 
-  if (sid !== undefined) {
-    const doc = await client.findOne(love.class.MeetingMinutes, { sid })
-
-    if (doc === undefined) {
-      const date = new Date()
-        .toLocaleDateString('en-GB', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-          timeZone: 'UTC'
-        })
-        .replace(',', ' at')
-      const _id = generateId<MeetingMinutes>()
-      const newDoc: MeetingMinutes = {
-        _id,
-        _class: love.class.MeetingMinutes,
-        sid,
-        attachedTo: room._id,
-        attachedToClass: room._class,
-        collection: 'meetings',
-        space: core.space.Workspace,
-        title: `${room.name} ${date}`,
-        description: makeCollaborativeDoc(_id, 'description'),
-        status: MeetingStatus.Active,
-        modifiedBy: getCurrentAccount()._id,
-        modifiedOn: Date.now()
-      }
-      await client.addCollection(
-        love.class.MeetingMinutes,
-        core.space.Workspace,
-        room._id,
-        room._class,
-        'meetings',
-        { sid, title: newDoc.title, description: newDoc.description, status: newDoc.status },
-        _id
-      )
-      currentMeetingMinutes.set(newDoc)
-      const loc = getCurrentLocation()
-      if (loc.path[2] === loveId) {
-        await openDoc(client.getHierarchy(), newDoc)
-      }
-    } else {
-      currentMeetingMinutes.set(doc)
-      const loc = getCurrentLocation()
-      if (loc.path[2] === loveId) {
-        await openDoc(client.getHierarchy(), doc)
-      }
-      if (doc.status !== MeetingStatus.Active) {
-        void client.update(doc, { status: MeetingStatus.Active, meetingEnd: undefined })
-      }
+  if (doc === undefined) {
+    const date = new Date()
+      .toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'UTC'
+      })
+      .replace(',', ' at')
+    const _id = generateId<MeetingMinutes>()
+    const newDoc: MeetingMinutes = {
+      _id,
+      _class: love.class.MeetingMinutes,
+      sid,
+      attachedTo: room._id,
+      attachedToClass: room._class,
+      collection: 'meetings',
+      space: core.space.Workspace,
+      title: `${getRoomName(room, get(personByIdStore))} ${date}`,
+      description: makeCollaborativeDoc(_id, 'description'),
+      status: MeetingStatus.Active,
+      modifiedBy: getCurrentAccount()._id,
+      modifiedOn: Date.now()
+    }
+    await client.addCollection(
+      love.class.MeetingMinutes,
+      core.space.Workspace,
+      room._id,
+      room._class,
+      'meetings',
+      { sid, title: newDoc.title, description: newDoc.description, status: newDoc.status },
+      _id
+    )
+    currentMeetingMinutes.set(newDoc)
+    const loc = getCurrentLocation()
+    if (loc.path[2] === loveId || room.type === RoomType.Video) {
+      await navigateToOfficeDoc(client.getHierarchy(), newDoc)
+    }
+  } else {
+    currentMeetingMinutes.set(doc)
+    const loc = getCurrentLocation()
+    if (loc.path[2] === loveId || room.type === RoomType.Video) {
+      await navigateToOfficeDoc(client.getHierarchy(), doc)
     }
   }
 }
@@ -687,9 +726,20 @@ export async function connectRoom (
 ): Promise<void> {
   await disconnect()
   await moveToRoom(x, y, currentInfo, currentPerson, room, getMetadata(presentation.metadata.SessionId) ?? null)
-  await connectLK(currentPerson, room)
   selectedRoomPlace.set(undefined)
-  await openMeetingMinutes(room)
+  try {
+    await withRetries(
+      async () => {
+        await connectLK(currentPerson, room)
+      },
+      3,
+      1000
+    )
+    await openMeetingMinutes(room)
+  } catch (err) {
+    console.error(err)
+    await leaveRoom(currentInfo, get(myOffice))
+  }
 }
 
 export const joinRequest: Ref<JoinRequest> | undefined = undefined
@@ -868,7 +918,7 @@ export async function record (room: Room): Promise<void> {
           Authorization: 'Bearer ' + token,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ roomName, room: room.name })
+        body: JSON.stringify({ roomName, room: room.name, meetingMinutes: get(currentMeetingMinutes)?._id })
       })
     }
   } catch (err: any) {

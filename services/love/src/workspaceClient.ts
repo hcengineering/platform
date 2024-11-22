@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import core, { Client, Ref, TxOperations, type Blob } from '@hcengineering/core'
+import core, { Client, Ref, TxOperations, type Blob, Data } from '@hcengineering/core'
 import drive, { createFile } from '@hcengineering/drive'
-import love from '@hcengineering/love'
+import love, { MeetingMinutes } from '@hcengineering/love'
 import { generateToken } from '@hcengineering/server-token'
+import attachment, { Attachment } from '@hcengineering/attachment'
 import { getClient } from './client'
 import config from './config'
 
@@ -41,7 +42,7 @@ export class WorkspaceClient {
     return this.client
   }
 
-  async saveFile (uuid: string, name: string, blob: Blob): Promise<void> {
+  async saveFile (uuid: string, name: string, blob: Blob, meetingMinutes?: Ref<MeetingMinutes>): Promise<void> {
     const current = await this.client.findOne(drive.class.Drive, { _id: love.space.Drive })
     if (current === undefined) {
       await this.client.createDoc(
@@ -61,7 +62,6 @@ export class WorkspaceClient {
     }
     const data = {
       file: uuid as Ref<Blob>,
-      title: name,
       size: blob.size,
       type: blob.contentType,
       lastModified: blob.modifiedOn,
@@ -72,6 +72,26 @@ export class WorkspaceClient {
         originalWidth: 1280
       }
     }
-    await createFile(this.client, love.space.Drive, drive.ids.Root, data)
+    await createFile(this.client, love.space.Drive, drive.ids.Root, { ...data, title: name })
+    await this.attachToMeetingMinutes({ ...data, name }, meetingMinutes)
+  }
+
+  async attachToMeetingMinutes (
+    data: Omit<Data<Attachment>, 'attachedToClass' | 'attachedTo' | 'collection'>,
+    ref?: Ref<MeetingMinutes>
+  ): Promise<void> {
+    if (ref === undefined) return
+
+    const meeting = await this.client.findOne(love.class.MeetingMinutes, { _id: ref })
+    if (meeting === undefined) return
+
+    await this.client.addCollection(
+      attachment.class.Attachment,
+      meeting.space,
+      meeting._id,
+      meeting._class,
+      'attachments',
+      data
+    )
   }
 }

@@ -40,7 +40,7 @@
 </script>
 
 {#if data}
-  <span class="flex-row-center" class:ml-3={attributeKey !== undefined}>
+  <span class="flex-row-center">
     <StateTag type={data.type} label={data.label} />
   </span>
 {/if}

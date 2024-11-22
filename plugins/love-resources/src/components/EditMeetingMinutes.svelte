@@ -26,8 +26,16 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
 
+  let currentTitle = object.title
+  let newTitle = object.title
+
+  $: if (object.title !== currentTitle) {
+    newTitle = object.title
+    currentTitle = object.title
+  }
+
   async function changeTitle (): Promise<void> {
-    await client.update(object, { title: object.title })
+    await client.diffUpdate(object, { title: newTitle })
   }
 
   onMount(() => {
@@ -41,7 +49,7 @@
       <EditBox
         disabled={readonly}
         placeholder={love.string.MeetingMinutes}
-        bind:value={object.title}
+        bind:value={newTitle}
         on:change={changeTitle}
         focusIndex={1}
       />

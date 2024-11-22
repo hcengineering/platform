@@ -98,7 +98,9 @@
 
   $: if (_class !== oldClass) {
     oldClass = _class
+    realObjectClass = _class
     mainEditor = undefined
+    fieldEditors = []
   }
 
   let keys: KeyedAttribute[] = []
@@ -289,7 +291,7 @@
     </svelte:fragment>
 
     <svelte:fragment slot="attributes" let:direction={dir}>
-      {#if headerEditor !== undefined}
+      {#if headerEditor !== undefined && object._id === _id}
         <Component
           is={headerEditor}
           props={{

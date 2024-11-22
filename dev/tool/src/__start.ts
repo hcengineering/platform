@@ -92,4 +92,13 @@ export function getMongoDBUrl (): string {
   return url
 }
 
+export function getAccountDBUrl (): string {
+  const url = process.env.ACCOUNT_DB_URL
+  if (url === undefined) {
+    console.error('please provide mongo ACCOUNT_DB_URL')
+    process.exit(1)
+  }
+  return url
+}
+
 devTool(prepareTools)

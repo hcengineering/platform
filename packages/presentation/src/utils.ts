@@ -240,6 +240,14 @@ export function getClient (): TxOperations & Client & OptimisticTxes {
 
 let txQueue: Tx[] = []
 
+export type RefreshListener = () => void
+
+const refreshListeners = new Set<RefreshListener>()
+
+export function addRefreshListener (r: RefreshListener): void {
+  refreshListeners.add(r)
+}
+
 /**
  * @public
  */
@@ -291,6 +299,9 @@ export async function refreshClient (clean: boolean): Promise<void> {
     await liveQuery?.refreshConnect(clean)
     for (const q of globalQueries) {
       q.refreshClient()
+    }
+    for (const listener of refreshListeners.values()) {
+      listener()
     }
   }
 }

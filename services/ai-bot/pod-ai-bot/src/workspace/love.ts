@@ -16,6 +16,7 @@ import core, {
 import love, {
   getFreeRoomPlace,
   MeetingMinutes,
+  MeetingStatus,
   ParticipantInfo,
   Room,
   RoomLanguage,
@@ -216,7 +217,9 @@ export class LoveController {
     if (sid === '') return undefined
 
     const doc =
-      this.meetingMinutes.find((m) => m.sid === sid) ?? (await this.client.findOne(love.class.MeetingMinutes, { sid }))
+      this.meetingMinutes.find(
+        (m) => m.sid === sid && m.attachedTo === room._id && m.status === MeetingStatus.Active
+      ) ?? (await this.client.findOne(love.class.MeetingMinutes, { sid, room: room._id, status: MeetingStatus.Active }))
 
     if (doc === undefined) {
       return undefined
