@@ -411,7 +411,8 @@
         "MINIO_SECRET_KEY": "minioadmin",
         "PLATFORM_OPERATION_LOGGING": "true",
         "FRONT_URL": "http://localhost:8080",
-        "PORT": "3500"
+        "PORT": "3500",
+        "STATS_URL": "http://host.docker.internal:4900"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,

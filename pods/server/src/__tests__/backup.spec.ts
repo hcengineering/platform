@@ -15,6 +15,8 @@ const model = builder().getTxes()
 // const dbURL = 'postgresql://root@localhost:26257/defaultdb?sslmode=disable'
 const dbURL = 'postgresql://postgres:example@localhost:5432'
 const STORAGE_CONFIG = 'minio|localhost:9000?accessKey=minioadmin&secretKey=minioadmin&useSSL=false'
+
+// jest.setTimeout(4500000)
 describe.skip('test-backup-find', () => {
   it('check create/load/clean', async () => {
     const toolCtx = new MeasureMetricsContext('-', {})
@@ -59,13 +61,58 @@ describe.skip('test-backup-find', () => {
       await storageAdapter.close()
     }
   })
+  it('check traverse', async () => {
+    const toolCtx = new MeasureMetricsContext('-', {})
+    // We should setup a DB with docuemnts and try to backup them.
+    const wsUrl = { name: 'testdb-backup-test', workspaceName: 'test', workspaceUrl: 'test' }
+    const { pipeline, storageAdapter } = await getServerPipeline(toolCtx, model, dbURL, wsUrl, {
+      storageConfig: STORAGE_CONFIG,
+      disableTriggers: true
+    })
+    try {
+      const client = wrapPipeline(toolCtx, pipeline, wsUrl)
+      const lowLevel = pipeline.context.lowLevelStorage as LowLevelStorage
+
+      // We need to create a backup docs if they are missing.
+      await prepareTxes(lowLevel, toolCtx, 1500)
+
+      const iter = await lowLevel.traverse(DOMAIN_TX, {})
+
+      const allDocs: Doc[] = []
+
+      while (true) {
+        const docs = await iter.next(50)
+        if (docs == null || docs?.length === 0) {
+          break
+        }
+        await client.clean(
+          DOMAIN_TX,
+          docs.map((doc) => doc._id)
+        )
+        allDocs.push(...docs)
+      }
+      expect(allDocs.length).toBeGreaterThan(1449)
+
+      const findDocs = await client.findAll(core.class.Tx, {})
+      expect(findDocs.length).toBe(0)
+
+      //
+    } finally {
+      await pipeline.close()
+      await storageAdapter.close()
+    }
+  })
 })
-async function prepareTxes (lowLevel: LowLevelStorage, toolCtx: MeasureMetricsContext): Promise<void> {
+async function prepareTxes (
+  lowLevel: LowLevelStorage,
+  toolCtx: MeasureMetricsContext,
+  count: number = 500
+): Promise<void> {
   const docs = await lowLevel.rawFindAll(DOMAIN_TX, {})
-  if ((docs?.length ?? 0) < 500) {
+  if ((docs?.length ?? 0) < count) {
     // We need to fill some documents to be pressent
     const docs: TxCreateDoc<Doc>[] = []
-    for (let i = 0; i < 500; i++) {
+    for (let i = 0; i < count; i++) {
       docs.push({
         _class: core.class.TxCreateDoc,
         _id: generateId(),

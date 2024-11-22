@@ -27,7 +27,6 @@ import core, {
   DOMAIN_TX,
   type FindOptions,
   type FindResult,
-  generateId,
   groupByArray,
   type Hierarchy,
   isOperator,
@@ -64,7 +63,7 @@ import {
   type TxAdapter
 } from '@hcengineering/server-core'
 import type postgres from 'postgres'
-import { getDocFieldsByDomains, getSchema, translateDomain } from './schemas'
+import { getDocFieldsByDomains, getSchema, type Schema, translateDomain } from './schemas'
 import { type ValueType } from './types'
 import {
   convertDoc,
@@ -82,6 +81,31 @@ import {
   parseUpdate,
   type PostgresClientReference
 } from './utils'
+
+async function * createCursorGenerator (
+  client: postgres.ReservedSql,
+  sql: string,
+  schema: Schema,
+  bulkSize = 50
+): AsyncGenerator<Doc[]> {
+  const cursor = client.unsafe(sql).cursor(bulkSize)
+  try {
+    let docs: Doc[] = []
+    for await (const part of cursor) {
+      docs.push(...part.filter((it) => it != null).map((it) => parseDoc(it as any, schema)))
+      if (docs.length > 0) {
+        yield docs
+        docs = []
+      }
+    }
+    if (docs.length > 0) {
+      yield docs
+      docs = []
+    }
+  } catch (err: any) {
+    console.error('failed to recieve data', { err })
+  }
+}
 
 abstract class PostgresAdapterBase implements DbAdapter {
   protected readonly _helper: DBCollectionHelper
@@ -174,49 +198,31 @@ abstract class PostgresAdapterBase implements DbAdapter {
   ): Promise<Iterator<T>> {
     const schema = getSchema(_domain)
     const client = await this.client.reserve()
-    let closed = false
-    const cursorName = `cursor_${translateDomain(this.workspaceId.name)}_${translateDomain(_domain)}_${generateId()}`
 
-    const close = async (cursorName: string): Promise<void> => {
-      if (closed) return
-      try {
-        await client.unsafe(`CLOSE ${cursorName}`)
-        await client.unsafe('COMMIT;')
-      } finally {
-        client.release()
-        closed = true
-      }
+    const tdomain = translateDomain(_domain)
+
+    const sqlChunks: string[] = [`SELECT * FROM ${tdomain}`]
+    sqlChunks.push(`WHERE ${this.buildRawQuery(tdomain, query, options)}`)
+    if (options?.sort !== undefined) {
+      sqlChunks.push(this.buildRawOrder(tdomain, options.sort))
     }
-
-    const init = async (): Promise<void> => {
-      const domain = translateDomain(_domain)
-      const sqlChunks: string[] = [`CURSOR FOR SELECT * FROM ${domain}`]
-      sqlChunks.push(`WHERE ${this.buildRawQuery(domain, query, options)}`)
-      if (options?.sort !== undefined) {
-        sqlChunks.push(this.buildRawOrder(domain, options.sort))
-      }
-      if (options?.limit !== undefined) {
-        sqlChunks.push(`LIMIT ${options.limit}`)
-      }
-      const finalSql: string = sqlChunks.join(' ')
-      await client.unsafe('BEGIN;')
-      await client.unsafe(`DECLARE ${cursorName} ${finalSql}`)
+    if (options?.limit !== undefined) {
+      sqlChunks.push(`LIMIT ${options.limit}`)
     }
+    const finalSql: string = sqlChunks.join(' ')
 
-    const next = async (count: number): Promise<T[] | null> => {
-      const result = await client.unsafe(`FETCH ${count} FROM ${cursorName}`)
-      if (result.length === 0) {
-        await close(cursorName)
-        return null
-      }
-      return result.map((p) => parseDoc(p as any, schema))
-    }
-
-    await init()
+    const cursor: AsyncGenerator<Doc[]> = createCursorGenerator(client, finalSql, schema)
     return {
-      next,
+      next: async (count: number): Promise<T[] | null> => {
+        const result = await cursor.next()
+        if (result.done === true || result.value.length === 0) {
+          return null
+        }
+        return result.value as T[]
+      },
       close: async () => {
-        await close(cursorName)
+        await cursor.return([])
+        client.release()
       }
     }
   }
@@ -384,8 +390,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
           params
         )
       })
-    } catch (err) {
+    } catch (err: any) {
       console.error(err, { domain, params, updates })
+      throw err
     } finally {
       conn.release()
     }
@@ -1158,17 +1165,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
     const workspaceId = this.workspaceId
 
-    async function * createBulk (projection: string, query: string, limit = 50): AsyncGenerator<Doc[]> {
-      const cursor = client
-        .unsafe(`SELECT ${projection} FROM ${tdomain} WHERE "workspaceId" = '${workspaceId.name}' AND ${query}`)
-        .cursor(limit)
-      try {
-        for await (const part of cursor) {
-          yield part.filter((it) => it != null).map((it) => parseDoc(it as any, schema))
-        }
-      } catch (err: any) {
-        ctx.error('failed to recieve data', { err })
-      }
+    function createBulk (projection: string, query: string, limit = 50): AsyncGenerator<Doc[]> {
+      const sql = `SELECT ${projection} FROM ${tdomain} WHERE "workspaceId" = '${workspaceId.name}' AND ${query}`
+
+      return createCursorGenerator(client, sql, schema, limit)
     }
     let bulk: AsyncGenerator<Doc[]>
     let forcedRecheck = false
@@ -1191,7 +1191,6 @@ abstract class PostgresAdapterBase implements DbAdapter {
           initialized = true
           await flush(true) // We need to flush, so wrong id documents will be updated.
           bulk = createBulk('_id, "%hash%"', '"%hash%" IS NOT NULL AND "%hash%" <> \'\'')
-          // bulk = createBulk('_id, "%hash%, data', '"%hash%" IS NOT NULL AND "%hash%" <> \'\'')
         }
 
         let docs = await ctx.with('next', { mode }, () => bulk.next())
@@ -1235,6 +1234,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       },
       close: async () => {
         await ctx.with('flush', {}, () => flush(true))
+        await bulk.return([]) // We need to close generator, just in case
         client?.release()
         ctx.end()
       }
@@ -1246,11 +1246,14 @@ abstract class PostgresAdapterBase implements DbAdapter {
       if (docs.length === 0) {
         return []
       }
-      return await this.withConnection(ctx, async (connection) => {
+      const client = await this.client.reserve()
+      try {
         const res =
-          await connection`SELECT * FROM ${connection(translateDomain(domain))} WHERE _id = ANY(${docs}) AND "workspaceId" = ${this.workspaceId.name}`
+          await client`SELECT * FROM ${client(translateDomain(domain))} WHERE _id = ANY(${docs}) AND "workspaceId" = ${this.workspaceId.name}`
         return res.map((p) => parseDocWithProjection(p as any, domain))
-      })
+      } finally {
+        client.release()
+      }
     })
   }
 
@@ -1266,7 +1269,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
       }
       const insertStr = insertFields.join(', ')
       const onConflictStr = onConflict.join(', ')
-      await this.withConnection(ctx, async (connection) => {
+
+      const client = await this.client.reserve()
+      try {
         const domainFields = new Set(getDocFieldsByDomains(domain))
         const toUpload = [...docs]
         const tdomain = translateDomain(domain)
@@ -1299,7 +1304,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           }
 
           const vals = vars.join(',')
-          await this.retryTxn(connection, (client) =>
+          await this.retryTxn(client, (client) =>
             client.unsafe(
               `INSERT INTO ${tdomain} ("workspaceId", ${insertStr}) VALUES ${vals} 
               ON CONFLICT ("workspaceId", _id) DO UPDATE SET ${onConflictStr};`,
@@ -1307,7 +1312,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
             )
           )
         }
-      })
+      } catch (err: any) {
+        ctx.error('failed to upload', { err })
+        throw err
+      } finally {
+        client.release()
+      }
     })
   }
 

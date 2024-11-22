@@ -128,8 +128,9 @@ export async function updateIssueRelation (
 }
 
 export async function getIssueIdByIdentifier (identifier: string): Promise<Ref<Issue> | undefined> {
+  if (!isIssueId(identifier)) return
   const client = getClient()
-  const issue = await client.findOne(tracker.class.Issue, { identifier }, { projection: { _id: 1 } })
+  const issue = await client.findOne(tracker.class.Issue, { identifier })
 
   return issue?._id
 }

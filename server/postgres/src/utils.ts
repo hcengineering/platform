@@ -194,7 +194,7 @@ class PostgresClientReferenceImpl {
       void (async () => {
         this.onclose()
         const cl = await this.client
-        await cl.end()
+        await cl.end({ timeout: 1 })
       })()
     }
   }
