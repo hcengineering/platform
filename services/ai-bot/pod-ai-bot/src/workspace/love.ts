@@ -115,12 +115,8 @@ export class LoveController {
   }
 
   async connect (request: ConnectMeetingRequest): Promise<void> {
-    if (this.connectedRooms.has(request.roomId)) return
-
-    this.roomSidById.set(request.roomId, request.roomSid)
-    this.connectedRooms.add(request.roomId)
-
     const room = await this.getRoom(request.roomId)
+
     if (room === undefined) {
       this.ctx.error('Room not found', request)
       this.roomSidById.delete(request.roomId)
@@ -128,20 +124,21 @@ export class LoveController {
       return
     }
 
+    this.roomSidById.set(request.roomId, request.roomSid)
+    this.connectedRooms.add(request.roomId)
+
     this.ctx.info('Connecting', { room: room.name, roomId: room._id })
 
     if (request.transcription) {
-      const roomTokenName = getTokenRoomName(this.workspace, room.name, room._id)
-      const isTranscriptionStarted = await startTranscription(this.token, roomTokenName, room.name, request.language)
-
-      if (!isTranscriptionStarted) {
-        this.roomSidById.delete(request.roomId)
-        this.connectedRooms.delete(request.roomId)
-        return
-      }
+      await this.requestTranscription(room, request.language)
     }
 
     await this.createAiParticipant(room)
+  }
+
+  async requestTranscription (room: Room, language: RoomLanguage): Promise<void> {
+    const roomTokenName = getTokenRoomName(this.workspace, room.name, room._id)
+    await startTranscription(this.token, roomTokenName, room.name, language)
   }
 
   async disconnect (roomId: Ref<Room>): Promise<void> {
