@@ -33,7 +33,8 @@
     "Next": "Next",
     "FailedToPreview": "Failed to preview",
     "ContentType": "Content type",
-    "ContentTypeNotSupported": "Preview is not available for this content type"
+    "ContentTypeNotSupported": "Preview is not available for this content type",
+    "StartDrawing": "Scribble over"
   },
   "status": {
     "FileTooLarge": "File too large"

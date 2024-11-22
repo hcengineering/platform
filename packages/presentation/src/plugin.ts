@@ -121,7 +121,8 @@ export default plugin(presentationId, {
     Next: '' as IntlString,
     FailedToPreview: '' as IntlString,
     ContentType: '' as IntlString,
-    ContentTypeNotSupported: '' as IntlString
+    ContentTypeNotSupported: '' as IntlString,
+    StartDrawing: '' as IntlString
   },
   extension: {
     FilePreviewExtension: '' as ComponentExtensionId,
