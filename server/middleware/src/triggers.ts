@@ -225,8 +225,8 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     )
     ctx.contextData = asyncContextData
 
-    if (!((ctx as MeasureContext<SessionDataImpl>).contextData.isAsyncContext ?? false)) {
-      ctx.id = generateId()
+    if ((ctx as MeasureContext<SessionDataImpl>).contextData.isAsyncContext ?? false) {
+      ctx.id = 'async_tr' + generateId()
     }
     const aresult = await this.triggers.apply(
       ctx,
