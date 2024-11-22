@@ -17,11 +17,12 @@
   import { onDestroy, onMount } from 'svelte'
   import presentation from '@hcengineering/presentation'
   import { personByIdStore } from '@hcengineering/contact-resources'
+  import { RoomType } from '@hcengineering/love'
 
   import Hall from './Hall.svelte'
   import { getMetadata } from '@hcengineering/platform'
   import love from '../plugin'
-  import { tryConnect, isConnected, isCurrentInstanceConnected } from '../utils'
+  import { tryConnect, isConnected, isCurrentInstanceConnected, screenSharing } from '../utils'
   import { infos, invites, myInfo, myRequests, storePromise, currentRoom } from '../stores'
 
   const localNav: boolean = $deviceInfo.navigator.visible
@@ -48,7 +49,9 @@
     if (
       !$isConnected &&
       !$isCurrentInstanceConnected &&
-      $myInfo?.sessionId === getMetadata(presentation.metadata.SessionId)
+      (room.type === RoomType.Video || $screenSharing) &&
+      $myInfo?.sessionId &&
+      $myInfo.sessionId === getMetadata(presentation.metadata.SessionId)
     ) {
       const info = $infos.filter((p) => p.room === room._id)
       await tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites)
