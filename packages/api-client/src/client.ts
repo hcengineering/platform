@@ -34,15 +34,22 @@ import {
   AttachedData,
   Mixin,
   MixinUpdate,
-  MixinData
+  MixinData,
+  generateId
 } from '@hcengineering/core'
 import client, { clientId } from '@hcengineering/client'
 import { addLocation, getResource } from '@hcengineering/platform'
 
 import { login, selectWorkspace } from './account'
 import { type ServerConfig, loadServerConfig } from './config'
-import { type MarkupOperations, type MarkupFormat, type MarkupRef, createMarkupOperations } from './markup'
-import { type PlatformClient, type ConnectOptions } from './types'
+import {
+  type MarkupFormat,
+  type MarkupOperations,
+  type MarkupRef,
+  MarkupContent,
+  createMarkupOperations
+} from './markup'
+import { type PlatformClient, type ConnectOptions, WithMarkup } from './types'
 
 /**
  * Create platform client
@@ -121,30 +128,49 @@ class PlatformClientImpl implements PlatformClient {
     await this.connection.close()
   }
 
-  // TxOperations
+  private async processMarkup<T>(id: Ref<Doc>, data: WithMarkup<T>): Promise<T> {
+    const result: any = {}
+
+    for (const [key, value] of Object.entries(data)) {
+      if (value instanceof MarkupContent) {
+        result[key] = this.markup.uploadMarkup(id, key, value.content, value.kind)
+      } else {
+        result[key] = value
+      }
+    }
+
+    return result as T
+  }
+
+  // DocOperations
 
   async createDoc<T extends Doc>(
     _class: Ref<Class<T>>,
     space: Ref<Space>,
-    attributes: Data<T>,
+    attributes: WithMarkup<Data<T>>,
     id?: Ref<T>
   ): Promise<Ref<T>> {
-    return await this.client.createDoc(_class, space, attributes, id)
+    id ??= generateId()
+    const data = await this.processMarkup<Data<T>>(id, attributes)
+    return await this.client.createDoc(_class, space, data, id)
   }
 
   async updateDoc<T extends Doc>(
     _class: Ref<Class<T>>,
     space: Ref<Space>,
     objectId: Ref<T>,
-    operations: DocumentUpdate<T>,
+    operations: WithMarkup<DocumentUpdate<T>>,
     retrieve?: boolean
   ): Promise<TxResult> {
-    return await this.client.updateDoc(_class, space, objectId, operations, retrieve)
+    const update = await this.processMarkup<DocumentUpdate<T>>(objectId, operations)
+    return await this.client.updateDoc(_class, space, objectId, update, retrieve)
   }
 
   async removeDoc<T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, objectId: Ref<T>): Promise<TxResult> {
     return await this.client.removeDoc(_class, space, objectId)
   }
+
+  // CollectionOperations
 
   async addCollection<T extends Doc, P extends AttachedDoc>(
     _class: Ref<Class<P>>,
@@ -152,10 +178,12 @@ class PlatformClientImpl implements PlatformClient {
     attachedTo: Ref<T>,
     attachedToClass: Ref<Class<T>>,
     collection: Extract<keyof T, string> | string,
-    attributes: AttachedData<P>,
+    attributes: WithMarkup<AttachedData<P>>,
     id?: Ref<P>
   ): Promise<Ref<P>> {
-    return await this.client.addCollection(_class, space, attachedTo, attachedToClass, collection, attributes, id)
+    id ??= generateId()
+    const data = await this.processMarkup<AttachedData<P>>(id, attributes)
+    return await this.client.addCollection(_class, space, attachedTo, attachedToClass, collection, data, id)
   }
 
   async updateCollection<T extends Doc, P extends AttachedDoc>(
@@ -165,9 +193,10 @@ class PlatformClientImpl implements PlatformClient {
     attachedTo: Ref<T>,
     attachedToClass: Ref<Class<T>>,
     collection: Extract<keyof T, string> | string,
-    operations: DocumentUpdate<P>,
+    operations: WithMarkup<DocumentUpdate<P>>,
     retrieve?: boolean
   ): Promise<Ref<T>> {
+    const update = await this.processMarkup<DocumentUpdate<P>>(objectId, operations)
     return await this.client.updateCollection(
       _class,
       space,
@@ -175,7 +204,7 @@ class PlatformClientImpl implements PlatformClient {
       attachedTo,
       attachedToClass,
       collection,
-      operations,
+      update,
       retrieve
     )
   }
@@ -191,14 +220,17 @@ class PlatformClientImpl implements PlatformClient {
     return await this.client.removeCollection(_class, space, objectId, attachedTo, attachedToClass, collection)
   }
 
+  // MixinOperations
+
   async createMixin<D extends Doc, M extends D>(
     objectId: Ref<D>,
     objectClass: Ref<Class<D>>,
     objectSpace: Ref<Space>,
     mixin: Ref<Mixin<M>>,
-    attributes: MixinData<D, M>
+    attributes: WithMarkup<MixinData<D, M>>
   ): Promise<TxResult> {
-    return await this.client.createMixin(objectId, objectClass, objectSpace, mixin, attributes)
+    const data = await this.processMarkup<MixinData<D, M>>(objectId, attributes)
+    return await this.client.createMixin(objectId, objectClass, objectSpace, mixin, data)
   }
 
   async updateMixin<D extends Doc, M extends D>(
@@ -206,9 +238,10 @@ class PlatformClientImpl implements PlatformClient {
     objectClass: Ref<Class<D>>,
     objectSpace: Ref<Space>,
     mixin: Ref<Mixin<M>>,
-    attributes: MixinUpdate<D, M>
+    attributes: WithMarkup<MixinUpdate<D, M>>
   ): Promise<TxResult> {
-    return await this.client.updateMixin(objectId, objectClass, objectSpace, mixin, attributes)
+    const update = await this.processMarkup<MixinUpdate<D, M>>(objectId, attributes)
+    return await this.client.updateMixin(objectId, objectClass, objectSpace, mixin, update)
   }
 
   // Markup
