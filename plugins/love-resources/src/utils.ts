@@ -393,7 +393,7 @@ lk.on(RoomEvent.Connected, () => {
   sendMessage({ type: 'connect', value: true })
   isCurrentInstanceConnected.set(true)
   isRecording.set(lk.isRecording)
-  initRoomMetadata(lk.metadata)
+  void initRoomMetadata(lk.metadata)
   Analytics.handleEvent(LoveEvents.ConnectedToRoom)
 })
 lk.on(RoomEvent.Disconnected, () => {
@@ -403,7 +403,7 @@ lk.on(RoomEvent.Disconnected, () => {
   Analytics.handleEvent(LoveEvents.DisconnectedFromRoom)
 })
 
-function initRoomMetadata (metadata: string | undefined): void {
+async function initRoomMetadata (metadata: string | undefined): Promise<void> {
   let data: RoomMetadata
   try {
     data = metadata == null || metadata === '' ? {} : JSON.parse(metadata)
@@ -420,11 +420,11 @@ function initRoomMetadata (metadata: string | undefined): void {
     (data.transcription == null || data.transcription === TranscriptionStatus.Idle) &&
     room?.startWithTranscription === true
   ) {
-    void startTranscription(room)
+    await startTranscription(room)
   }
 
-  if (get(isRecordingAvailable) && data.recording == null && room?.startWithRecording === true) {
-    void record(room)
+  if (data.recording == null && room?.startWithRecording === true) {
+    await record(room)
   }
 }
 
