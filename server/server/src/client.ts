@@ -237,13 +237,14 @@ export class ClientSession implements Session {
     return this.ops
   }
 
-  async loadChunk (_ctx: ClientSessionCtx, domain: Domain, idx?: number, recheck?: boolean): Promise<void> {
+  async loadChunk (ctx: ClientSessionCtx, domain: Domain, idx?: number, recheck?: boolean): Promise<void> {
     this.lastRequest = Date.now()
     try {
-      const result = await this.getOps().loadChunk(_ctx.ctx, domain, idx, recheck)
-      await _ctx.sendResponse(result)
+      const result = await this.getOps().loadChunk(ctx.ctx, domain, idx, recheck)
+      await ctx.sendResponse(result)
     } catch (err: any) {
-      await _ctx.sendResponse({ error: err.message })
+      await ctx.sendError('Failed to upload', unknownError(err))
+      ctx.ctx.error('failed to loadChunk', { domain, err })
     }
   }
 
@@ -259,7 +260,8 @@ export class ClientSession implements Session {
       const result = await this.getOps().loadDocs(ctx.ctx, domain, docs)
       await ctx.sendResponse(result)
     } catch (err: any) {
-      await ctx.sendResponse({ error: err.message })
+      await ctx.sendError('Failed to loadDocs', unknownError(err))
+      ctx.ctx.error('failed to loadDocs', { domain, err })
     }
   }
 
@@ -271,7 +273,8 @@ export class ClientSession implements Session {
     try {
       await this.getOps().upload(ctx.ctx, domain, docs)
     } catch (err: any) {
-      await ctx.sendResponse({ error: err.message })
+      await ctx.sendError('Failed to upload', unknownError(err))
+      ctx.ctx.error('failed to loadDocs', { domain, err })
       return
     }
     await ctx.sendResponse({})
@@ -285,7 +288,8 @@ export class ClientSession implements Session {
     try {
       await this.getOps().clean(ctx.ctx, domain, docs)
     } catch (err: any) {
-      await ctx.sendResponse({ error: err.message })
+      await ctx.sendError('Failed to clean', unknownError(err))
+      ctx.ctx.error('failed to clean', { domain, err })
       return
     }
     await ctx.sendResponse({})

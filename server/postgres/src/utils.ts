@@ -195,7 +195,6 @@ class PostgresClientReferenceImpl {
         this.onclose()
         const cl = await this.client
         await cl.end()
-        console.log('Closed postgres connection')
       })()
     }
   }
@@ -261,7 +260,12 @@ export function getDBClient (connectionString: string, database?: string): Postg
   return new ClientRef(existing)
 }
 
-export function convertDoc<T extends Doc> (domain: string, doc: T, workspaceId: string): DBDoc {
+export function convertDoc<T extends Doc> (
+  domain: string,
+  doc: T,
+  workspaceId: string,
+  domainFields?: Set<string>
+): DBDoc {
   const extractedFields: Doc & Record<string, any> = {
     _id: doc._id,
     space: doc.space,
@@ -273,9 +277,15 @@ export function convertDoc<T extends Doc> (domain: string, doc: T, workspaceId: 
   }
   const remainingData: Partial<T> = {}
 
+  const extractedFieldsKeys = new Set(Object.keys(extractedFields))
+
+  domainFields = domainFields ?? new Set(getDocFieldsByDomains(domain))
+
   for (const key in doc) {
-    if (Object.keys(extractedFields).includes(key)) continue
-    if (getDocFieldsByDomains(domain).includes(key)) {
+    if (extractedFieldsKeys.has(key)) {
+      continue
+    }
+    if (domainFields.has(key)) {
       extractedFields[key] = doc[key]
     } else {
       remainingData[key] = doc[key]
@@ -432,8 +442,7 @@ export function parseDocWithProjection<T extends Doc> (
   return res
 }
 
-export function parseDoc<T extends Doc> (doc: DBDoc, domain: string): T {
-  const schema = getSchema(domain)
+export function parseDoc<T extends Doc> (doc: DBDoc, schema: Schema): T {
   const { workspaceId, data, ...rest } = doc
   for (const key in rest) {
     if ((rest as any)[key] === 'NULL' || (rest as any)[key] === null) {
