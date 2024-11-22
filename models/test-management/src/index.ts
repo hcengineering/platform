@@ -425,31 +425,6 @@ function defineTestRun (builder: Builder): void {
     component: testManagement.component.TestRunStatusPresenter
   })
 
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: testManagement.class.TestRun,
-      descriptor: view.viewlet.Table,
-      config: [
-        '',
-        {
-          key: 'completionPercent',
-          label: testManagement.string.DonePercent
-        },
-        {
-          key: '',
-          presenter: testManagement.component.TestRunResult,
-          label: testManagement.string.TestResult
-        }
-      ],
-      configOptions: {
-        strict: true
-      }
-    },
-    testManagement.viewlet.TableTestRun
-  )
-
   const viewOptions: ViewOptionsModel = {
     groupBy: ['testSuite'],
     orderBy: [
@@ -480,12 +455,7 @@ function defineTestRun (builder: Builder): void {
         hiddenKeys: ['title', 'status', 'modifiedOn']
       },
       config: [
-        {
-          key: '$lookup.testCase',
-          presenter: testManagement.component.TestCaseNavPresenter,
-          label: testManagement.string.TestCase,
-          sortingKey: '$lookup.testCase.name'
-        },
+        '',
         {
           key: 'status',
           props: { kind: 'list', size: 'small', shouldShowName: false },

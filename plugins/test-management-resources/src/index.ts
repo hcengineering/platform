@@ -30,8 +30,8 @@ import EditTestRun from './components/test-run/EditTestRun.svelte'
 import TestRunPresenter from './components/test-run/TestRunPresenter.svelte'
 import RunSelectedTestsButton from './components/test-case/RunSelectedTestsButton.svelte'
 import TestRunStatusPresenter from './components/test-run/TestRunStatusPresenter.svelte'
-import TestCaseNavPresenter from './components/test-run/TestCaseNavPresenter.svelte'
 import TestRunResult from './components/test-run/TestRunResult.svelte'
+import TestResultPresenter from './components/test-run/TestResultPresenter.svelte'
 
 import { CreateChildTestSuiteAction, EditTestSuiteAction, RunSelectedTestsAction } from './utils'
 import { resolveLocation, getAttachedObjectLink } from './navigation'
@@ -54,8 +54,8 @@ export default async (): Promise<Resources> => ({
     TestSuiteRefPresenter,
     RunSelectedTestsButton,
     TestRunStatusPresenter,
-    TestCaseNavPresenter,
-    TestRunResult
+    TestRunResult,
+    TestResultPresenter
   },
   function: {
     GetTestSuiteLink: getAttachedObjectLink,

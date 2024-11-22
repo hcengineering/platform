@@ -199,7 +199,6 @@ export const testManagementPlugin = plugin(testManagementId, {
     CreateTestSuite: '' as AnyComponent,
     TestRunFromSelection: '' as AnyComponent,
     TestRunStatusPresenter: '' as AnyComponent,
-    TestCaseNavPresenter: '' as AnyComponent,
     TestRunResult: '' as AnyComponent
   },
   ids: {
@@ -222,7 +221,6 @@ export const testManagementPlugin = plugin(testManagementId, {
   viewlet: {
     TableTestCase: '' as Ref<Viewlet>,
     TableTestSuites: '' as Ref<Viewlet>,
-    TableTestRun: '' as Ref<Viewlet>,
     ListTestCase: '' as Ref<Viewlet>,
     TestResultList: '' as Ref<Viewlet>
   },
