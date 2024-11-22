@@ -997,6 +997,8 @@ export class LiveQuery implements WithTx, Client {
 
     const result = q.result
 
+    this.refs.updateDocuments(q, result.getDocs())
+
     if (bulkUpdate) {
       this.queriesToUpdate.set(q.id, q)
     } else {
