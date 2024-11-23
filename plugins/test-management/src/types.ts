@@ -124,6 +124,7 @@ export interface TestResult extends AttachedDoc<TestRun, 'results', TestProject>
   testSuite?: Ref<TestSuite>
   status?: TestRunStatus
   description: CollaborativeDoc
+  assignee?: Ref<Employee>
   attachments?: CollectionSize<Attachment>
   comments?: number
 }

@@ -38,22 +38,22 @@
   {#if inline}
     <ObjectMention object={value} {disabled} {accent} {noUnderline} />
   {:else}
-  <DocNavLink object={value} {disabled} {accent} {noUnderline}>
-    <div class="flex-presenter" use:tooltip={{ label: testManagement.string.TestResult }}>
-      {#if shouldShowAvatar}
-        <div class="icon">
-          <Icon icon={testManagement.icon.TestResult} size="small" />
-        </div>
-      {/if}
-      <span
-        title={testCase?.name}
-        class="overflow-label label"
-        class:no-underline={noUnderline || disabled}
-        class:fs-bold={accent}
-      >
-        {testCase?.name}
-      </span>
-    </div>
-  </DocNavLink>
+    <DocNavLink object={value} {disabled} {accent} {noUnderline}>
+      <div class="flex-presenter" use:tooltip={{ label: testManagement.string.TestResult }}>
+        {#if shouldShowAvatar}
+          <div class="icon">
+            <Icon icon={testManagement.icon.TestResult} size="small" />
+          </div>
+        {/if}
+        <span
+          title={testCase?.name}
+          class="overflow-label label"
+          class:no-underline={noUnderline || disabled}
+          class:fs-bold={accent}
+        >
+          {testCase?.name}
+        </span>
+      </div>
+    </DocNavLink>
   {/if}
 {/if}

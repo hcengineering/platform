@@ -263,8 +263,8 @@ export class TTestResult extends TAttachedDoc implements TestResult {
   @Prop(TypeTestRunStatus(), testManagement.string.TestRunStatus)
     status?: TestRunStatus
 
-  @Prop(TypeTestRunStatus(), testManagement.string.TestResult)
-    result?: TestResult
+  @Prop(TypeRef(contact.mixin.Employee), testManagement.string.TestAssignee)
+    assignee?: Ref<Employee>
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: CollectionSize<Attachment>

@@ -16,7 +16,7 @@
 import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import core from '@hcengineering/model-core'
-import { SortingOrder } from '@hcengineering/core'
+import { SortingOrder, type FindOptions } from '@hcengineering/core'
 
 import { type Builder } from '@hcengineering/model'
 import view, { createAction } from '@hcengineering/model-view'
@@ -25,7 +25,7 @@ import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
 import { type ViewOptionsModel } from '@hcengineering/view'
 
-import { testManagementId } from '@hcengineering/test-management'
+import { testManagementId, type TestResult } from '@hcengineering/test-management'
 
 import {
   DOMAIN_TEST_MANAGEMENT,
@@ -343,6 +343,11 @@ function defineTestCase (builder: Builder): void {
     presenter: testManagement.component.TestSuiteRefPresenter
   })
 
+  builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['priority', 'status'],
+    ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn']
+  })
+
   builder.createDoc(
     view.class.Viewlet,
     core.space.Model,
@@ -425,6 +430,23 @@ function defineTestRun (builder: Builder): void {
     component: testManagement.component.TestRunStatusPresenter
   })
 
+  builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: testManagement.component.TestResultPresenter
+  })
+
+  builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ObjectEditor, {
+    editor: testManagement.component.EditTestResult
+  })
+
+  builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ObjectPanel, {
+    component: testManagement.component.EditTestResult
+  })
+
+  builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['assignee', 'status', 'testSuite'],
+    ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn']
+  })
+
   const viewOptions: ViewOptionsModel = {
     groupBy: ['testSuite'],
     orderBy: [
@@ -462,7 +484,13 @@ function defineTestRun (builder: Builder): void {
           displayProps: { fixed: 'left' }
         }
       ],
-      viewOptions
+      viewOptions,
+      /* eslint-disable @typescript-eslint/consistent-type-assertions */
+      options: {
+        lookup: {
+          testCase: testManagement.class.TestCase
+        }
+      } as FindOptions<TestResult>
     },
     testManagement.viewlet.TestResultList
   )

@@ -55,6 +55,9 @@
     query ?? {},
     (result) => {
       foldersManager.setFolders(result)
+      if (plainList && foldersState.folders?.length > 0) {
+        handleFolderSelected(foldersState.folders[0])
+      }
     },
     {
       sort: {
