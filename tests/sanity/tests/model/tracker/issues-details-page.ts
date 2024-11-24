@@ -6,11 +6,12 @@ import { convertEstimation } from '../../tracker/tracker.utils'
 export class IssuesDetailsPage extends CommonTrackerPage {
   readonly page: Page
 
-  constructor (page: Page) {
+  constructor(page: Page) {
     super(page)
     this.page = page
   }
 
+  // Locators
   readonly issueTitle = (): Locator => this.page.locator('div.hulyHeader-container div.title')
   readonly inputTitle = (): Locator => this.page.locator('div.popupPanel-body input[type="text"]')
   readonly inputDescription = (): Locator => this.page.locator('div.popupPanel-body div.textInput div.tiptap')
@@ -20,73 +21,45 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   readonly buttonAssignee = (): Locator => this.page.locator('(//span[text()="Assignee"]/../div/button)[2]')
   readonly textLabels = (): Locator => this.page.locator('div.step-container div.listitems-container')
   readonly buttonAddLabel = (): Locator => this.page.locator('button.tag-button')
-  readonly buttonComponent = (): Locator =>
-    this.page.locator('//span[text()="Component"]/following-sibling::div[1]/div/button')
-
-  readonly buttonMilestone = (): Locator =>
-    this.page.locator('//span[text()="Milestone"]/following-sibling::div[1]/div/button')
-
-  readonly textEstimation = (): Locator =>
-    this.page.locator('//span[text()="Estimation"]/following-sibling::div[1]/button/span')
-
+  readonly buttonComponent = (): Locator => this.page.locator('//span[text()="Component"]/following-sibling::div[1]/div/button')
+  readonly buttonMilestone = (): Locator => this.page.locator('//span[text()="Milestone"]/following-sibling::div[1]/div/button')
+  readonly textEstimation = (): Locator => this.page.locator('//span[text()="Estimation"]/following-sibling::div[1]/button/span')
   readonly buttonEstimation = (): Locator => this.page.locator('(//span[text()="Estimation"]/../div/button)[3]')
-  readonly buttonCreatedBy = (): Locator =>
-    this.page.locator('//span[text()="Created by"]/following-sibling::div[1]/button')
-
+  readonly buttonCreatedBy = (): Locator => this.page.locator('//span[text()="Created by"]/following-sibling::div[1]/button')
   readonly buttonCloseIssue = (): Locator => this.page.locator('#btnPClose')
   readonly textParentTitle = (): Locator => this.page.locator('span.issue-title')
   readonly buttonAddSubIssue = (): Locator => this.page.locator('#add-sub-issue')
-  readonly textRelated = (): Locator =>
-    this.page.locator('//span[text()="Related"]/following-sibling::div[1]/div//span')
-
-  readonly buttonCollaborators = (): Locator =>
-    this.page.locator('//span[text()="Collaborators"]/following-sibling::div[1]/button')
-
-  readonly buttonIssueOnSearchForIssueModal = (): Locator =>
-    this.page.locator('div.popup div.tabs > div.tab:last-child')
-
+  readonly textRelated = (): Locator => this.page.locator('//span[text()="Related"]/following-sibling::div[1]/div//span')
+  readonly buttonCollaborators = (): Locator => this.page.locator('//span[text()="Collaborators"]/following-sibling::div[1]/button')
+  readonly buttonIssueOnSearchForIssueModal = (): Locator => this.page.locator('div.popup div.tabs > div.tab:last-child')
   readonly inputSearchOnSearchForIssueModal = (): Locator => this.page.locator('div.popup input[type="text"]')
-  readonly textBlockedBy = (): Locator =>
-    this.page.locator('//span[text()="Blocked by"]/following-sibling::div[1]/div/div/button/span')
-
-  readonly textBlocks = (): Locator =>
-    this.page.locator('//span[text()="Blocks"]/following-sibling::div[1]/div/div/button/span')
-
-  readonly buttonRemoveBlockedBy = (): Locator =>
-    this.page.locator('//span[text()="Blocked by"]/following-sibling::div[1]/div/button')
-
-  readonly details = (): Locator =>
-    this.page.locator('//span[text()="Blocked by"]/following-sibling::div[1]/div/button')
-
+  readonly textBlockedBy = (): Locator => this.page.locator('//span[text()="Blocked by"]/following-sibling::div[1]/div/div/button/span')
+  readonly textBlocks = (): Locator => this.page.locator('//span[text()="Blocks"]/following-sibling::div[1]/div/div/button/span')
+  readonly buttonRemoveBlockedBy = (): Locator => this.page.locator('//span[text()="Blocked by"]/following-sibling::div[1]/div/button')
+  readonly details = (): Locator => this.page.locator('//span[text()="Blocked by"]/following-sibling::div[1]/div/button')
   readonly popup = (): Locator => this.page.locator('.selectPopup')
-  readonly popupListItems = (issueTitle: string): Locator =>
-    this.page.locator('div.popup div.list-item', { hasText: issueTitle })
-
-  readonly antiPopupSubMenueBtn = (actionFirst: string): Locator =>
-    this.page.locator('button.antiPopup-submenu', { hasText: actionFirst })
-
-  readonly stateHistoryDropdown = (nameDr: string): Locator => {
-    return this.popup().locator(this.page.getByRole('button', { name: nameDr }))
-  }
-
+  readonly popupListItems = (issueTitle: string): Locator => this.page.locator('div.popup div.list-item', { hasText: issueTitle })
+  readonly antiPopupSubMenueBtn = (actionFirst: string): Locator => this.page.locator('button.antiPopup-submenu', { hasText: actionFirst })
+  readonly stateHistoryDropdown = (nameDr: string): Locator => this.popup().locator(this.page.getByRole('button', { name: nameDr }))
   readonly rowDecriptionToDo = (hasText: string): Locator => this.page.locator('div.tiptap div.todo-item', { hasText })
   readonly assigneeToDo = (hasText: string): Locator => this.rowDecriptionToDo(hasText).locator('div.assignee')
   readonly checkboxToDo = (hasText: string): Locator => this.rowDecriptionToDo(hasText).locator('input.chBox')
   readonly slashActionItemsPopup = (): Locator => this.page.locator('.selectPopup')
 
-  async clickCloseIssueButton (): Promise<void> {
+  // Actions
+  async clickCloseIssueButton(): Promise<void> {
     await this.buttonCloseIssue().click()
   }
 
-  async clickButtonAddSubIssue (): Promise<void> {
+  async clickButtonAddSubIssue(): Promise<void> {
     await this.buttonAddSubIssue().click()
   }
 
-  async clickRemoveBlockedBy (): Promise<void> {
+  async clickRemoveBlockedBy(): Promise<void> {
     await this.buttonRemoveBlockedBy().click()
   }
 
-  async editIssue (data: Issue): Promise<void> {
+  async editIssue(data: Issue): Promise<void> {
     if (data.title != null) {
       await this.inputTitle().fill(data.title)
     }
@@ -126,7 +99,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     }
   }
 
-  async checkIssue (data: NewIssue): Promise<void> {
+  async checkIssue(data: NewIssue): Promise<void> {
     await expect(this.inputTitle()).toHaveValue(data.title)
     await expect(this.inputDescription()).toHaveText(data.description)
     if (data.status != null) {
@@ -164,24 +137,24 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     }
   }
 
-  async moreActionOnIssue (action: string): Promise<void> {
+  async moreActionOnIssue(action: string): Promise<void> {
     await this.buttonMoreActions().click()
     await this.selectFromDropdown(this.page, action)
   }
 
-  async waitDetailsOpened (issueTitle: string): Promise<void> {
+  async waitDetailsOpened(issueTitle: string): Promise<void> {
     await this.page.waitForSelector(`div[class*="main"] div:has-text("${issueTitle}")`)
   }
 
-  async openSubIssueByName (issueName: string): Promise<void> {
+  async openSubIssueByName(issueName: string): Promise<void> {
     await this.page.locator('div.listGrid a', { hasText: issueName }).click()
   }
 
-  async checkIssueContainsAttachment (fileName: string): Promise<void> {
+  async checkIssueContainsAttachment(fileName: string): Promise<void> {
     await this.page.locator('div.attachment-grid div.name', { hasText: fileName }).click()
   }
 
-  async checkCollaborators (names: Array<string>): Promise<void> {
+  async checkCollaborators(names: Array<string>): Promise<void> {
     await this.buttonCollaborators().click()
     for (const name of names) {
       await expect(this.stateHistoryDropdown(name)).toBeVisible()
@@ -189,54 +162,54 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     await this.inputTitle().click({ force: true })
   }
 
-  async checkCollaboratorsCount (count: string): Promise<void> {
+  async checkCollaboratorsCount(count: string): Promise<void> {
     await expect(this.buttonCollaborators()).toHaveText(count)
   }
 
-  async addToDescription (description: string): Promise<void> {
+  async addToDescription(description: string): Promise<void> {
     const existDescription = await this.inputDescription().textContent()
     await expect(this.inputDescription()).toHaveJSProperty('contentEditable', 'true')
     await this.inputDescription().fill(`${existDescription}\n${description}`)
   }
 
-  async openShowMoreLink (activityHeader: string, position: number = 0): Promise<void> {
+  async openShowMoreLink(activityHeader: string, position: number = 0): Promise<void> {
     await this.textActivity().filter({ hasText: activityHeader }).locator('xpath=..').locator('div.showMore').click()
   }
 
-  async checkComparingTextAdded (text: string): Promise<void> {
+  async checkComparingTextAdded(text: string): Promise<void> {
     await expect(this.page.locator('span.text-editor-highlighted-node-add', { hasText: text }).first()).toBeVisible()
   }
 
-  async fillSearchForIssueModal (issueTitle: string): Promise<void> {
+  async fillSearchForIssueModal(issueTitle: string): Promise<void> {
     await this.buttonIssueOnSearchForIssueModal().click()
     await this.inputSearchOnSearchForIssueModal().fill(issueTitle)
     await this.popupListItems(issueTitle).click()
   }
 
-  async moreActionOnIssueWithSecondLevel (actionFirst: string, actionSecond: string): Promise<void> {
+  async moreActionOnIssueWithSecondLevel(actionFirst: string, actionSecond: string): Promise<void> {
     await this.buttonMoreActions().click()
     await this.antiPopupSubMenueBtn(actionFirst).hover()
     await this.antiPopupSubMenueBtn(actionFirst).click()
     await this.selectFromDropdown(this.page, actionSecond)
   }
 
-  async checkIfTextBlockedByIsVisible (): Promise<void> {
+  async checkIfTextBlockedByIsVisible(): Promise<void> {
     await expect(this.textBlockedBy()).toBeVisible({ visible: false })
   }
 
-  async checkIfButtonCreatedByHaveRealName (modifierName: string): Promise<void> {
+  async checkIfButtonCreatedByHaveRealName(modifierName: string): Promise<void> {
     await expect(this.buttonCreatedBy()).toHaveText(modifierName)
   }
 
-  async checkIfButtonComponentHasTextDefaultComponent (defaultComponent: string): Promise<void> {
+  async checkIfButtonComponentHasTextDefaultComponent(defaultComponent: string): Promise<void> {
     await expect(this.buttonComponent()).toHaveText(defaultComponent)
   }
 
-  async checkIfButtonCbuttonCreatedByHaveTextCreatedBy (createdBy: string): Promise<void> {
+  async checkIfButtonCbuttonCreatedByHaveTextCreatedBy(createdBy: string): Promise<void> {
     await expect(this.buttonCreatedBy()).toHaveText(createdBy)
   }
 
-  async assignToDo (user: string, text: string): Promise<void> {
+  async assignToDo(user: string, text: string): Promise<void> {
     await this.rowDecriptionToDo(text).hover()
     await this.assigneeToDo(text).click()
     await this.selectListItem(user)
