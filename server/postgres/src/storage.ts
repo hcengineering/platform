@@ -803,11 +803,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
   private buildQuery<T extends Doc>(
     _class: Ref<Class<T>>,
     baseDomain: string,
-    query: DocumentQuery<T>,
+    _query: DocumentQuery<T>,
     joins: JoinProps[],
     options?: ServerFindOptions<T>
   ): string {
     const res: string[] = []
+    const query = { ..._query }
     res.push(`${baseDomain}."workspaceId" = '${this.workspaceId.name}'`)
     if (options?.skipClass !== true) {
       query._class = this.fillClass(_class, query) as any
