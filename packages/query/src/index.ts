@@ -47,6 +47,7 @@ import core, {
   WithTx,
   WorkspaceEvent,
   checkMixinKey,
+  clone,
   findProperty,
   generateId,
   getObjectValue,
@@ -352,12 +353,13 @@ export class LiveQuery implements WithTx, Client {
     callback: { callback: (result: FindResult<T>) => void, callbackId: string } | undefined,
     options?: FindOptions<T>
   ): Query {
+    const _query: DocumentQuery<T> = clone(query)
     const localResult = this.refs.findFromDocs(_class, query, options)
     const result = localResult != null ? Promise.resolve(localResult) : this.client.findAll(_class, query, options)
     const q: Query = {
       id: ++this.queryCounter,
       _class,
-      query,
+      query: _query,
       result: result.then((docs) => new ResultArray(docs, this.getHierarchy())),
       total: 0,
       options: options as FindOptions<Doc>,
