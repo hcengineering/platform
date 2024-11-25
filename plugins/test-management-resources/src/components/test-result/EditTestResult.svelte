@@ -13,13 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, onMount } from 'svelte'
+
   import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import { type Class, type Ref, WithLookup } from '@hcengineering/core'
   import { TestCase, TestResult } from '@hcengineering/test-management'
   import { Panel } from '@hcengineering/panel'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { Label, Scroller } from '@hcengineering/ui'
 
+  import RightHeader from './RightHeader.svelte'
   import TestCaseDetails from '../test-case/TestCaseDetails.svelte'
   import testManagement from '../../plugin'
 
@@ -82,7 +85,12 @@
     </div>
 
     <svelte:fragment slot="aside">
-      <TestCaseDetails _id={object.testCase} object={testCase} _class={testManagement.class.TestCase} />
+      <RightHeader>
+        <Label label={testManagement.string.TestCase} />
+      </RightHeader>
+      <Scroller padding={'1rem'}>
+        <TestCaseDetails _id={object.testCase} object={testCase} _class={testManagement.class.TestCase} />
+      </Scroller>
     </svelte:fragment>
   </Panel>
 {/if}

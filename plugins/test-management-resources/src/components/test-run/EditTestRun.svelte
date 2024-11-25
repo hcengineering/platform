@@ -13,34 +13,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
+  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
+  import { type Class, type Ref } from '@hcengineering/core'
+  import { TestRun } from '@hcengineering/test-management'
+  import { Panel } from '@hcengineering/panel'
+  import { EditBox } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
 
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { type Class, type Ref } from '@hcengineering/core'
-  import { TestRun, TestCase, TestProject } from '@hcengineering/test-management'
-  import { Panel } from '@hcengineering/panel'
-  import { SplitView } from '@hcengineering/view-resources'
-  import { Scroller } from '@hcengineering/ui'
-
-  import { currentTestCase } from './store/testRunStore'
-  import { getTestCases } from '../../testRunUtils'
+  import TestResultList from '../test-result/TestResultList.svelte'
   import testManagement from '../../plugin'
-  import AddTestResult from './AddTestResult.svelte'
-  import TestRunItemList from './TestRunItemList.svelte'
-  import ViewContainer from './ViewContainer.svelte'
-  import TestCaseDetails from '../test-case/TestCaseDetails.svelte'
 
   export let _id: Ref<TestRun>
   export let _class: Ref<Class<TestRun>>
-  export let space: Ref<TestProject>
 
   let object: TestRun | undefined
-  let testCases: TestCase[] | undefined
 
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const hierarchy = client.getHierarchy()
 
-  const oldLabel: string | undefined = ''
+  let oldLabel: string | undefined = ''
+  let rawLabel: string | undefined = ''
+  let descriptionBox: AttachmentStyleBoxCollabEditor
 
   const query = createQuery()
 
@@ -50,21 +45,26 @@
       ;[object] = result
     })
 
-  getTestCases(_id).then((result) => {
-    testCases = result
-    console.log('testCases', testCases)
-  })
-
   async function change<K extends keyof TestRun> (field: K, value: TestRun[K]) {
     if (object !== undefined) {
       await client.update(object, { [field]: value })
     }
   }
 
+  let content: HTMLElement
+
+  $: if (oldLabel !== object?.name) {
+    oldLabel = object?.name
+    rawLabel = object?.name
+  }
+
+  $: descriptionKey = hierarchy.getAttribute(testManagement.class.TestRun, 'description')
+
   onMount(() => dispatch('open', { ignoreKeys: [] }))
 </script>
 
 {#if object}
+  <ActionContext context={{ mode: 'editor' }} />
   <Panel
     {object}
     title={object.name}
@@ -72,34 +72,36 @@
     isAside={true}
     isSub={false}
     adaptive={'default'}
-    contentClasses="h-full"
     on:open
     on:close={() => dispatch('close')}
   >
-    <SplitView>
-      <svelte:fragment slot="leftPanel">
-        <div class="antiPanel-wrap__content">
-          <ViewContainer header={testManagement.string.SelectTestCase}>
-            <TestRunItemList />
-          </ViewContainer>
-        </div>
-      </svelte:fragment>
-      <svelte:fragment slot="rightPanel">
-        <ViewContainer header={testManagement.string.TestDescription}>
-          <Scroller padding={'1rem'}>
-            {#if $currentTestCase !== undefined}
-              <TestCaseDetails _id={$currentTestCase} _class={testManagement.class.TestCase} />
-            {/if}
-          </Scroller>
-        </ViewContainer>
-      </svelte:fragment>
-    </SplitView>
-    <svelte:fragment slot="aside">
-      <ViewContainer header={testManagement.string.TestResult}>
-        <div class="antiPanel-wrap__content">
-          <AddTestResult {space} />
-        </div>
-      </ViewContainer>
-    </svelte:fragment>
+    <EditBox
+      bind:value={rawLabel}
+      placeholder={testManagement.string.NamePlaceholder}
+      kind="large-style"
+      on:blur={async () => {
+        const trimmedLabel = rawLabel?.trim()
+
+        if (trimmedLabel?.length === 0) {
+          rawLabel = oldLabel
+        } else if (trimmedLabel !== object?.name) {
+          await change('name', trimmedLabel ?? '')
+        }
+      }}
+    />
+
+    <div class="w-full mt-6">
+      <AttachmentStyleBoxCollabEditor
+        focusIndex={30}
+        {object}
+        key={{ key: 'description', attr: descriptionKey }}
+        bind:this={descriptionBox}
+        identifier={object?._id}
+        placeholder={testManagement.string.DescriptionPlaceholder}
+        boundary={content}
+      />
+    </div>
+
+    <TestResultList baseQuery={{ attachedTo: _id }} />
   </Panel>
 {/if}

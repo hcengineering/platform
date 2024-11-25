@@ -199,7 +199,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     CreateTestSuite: '' as AnyComponent,
     TestRunFromSelection: '' as AnyComponent,
     TestRunStatusPresenter: '' as AnyComponent,
-    TestRunResult: '' as AnyComponent
+    TestRunResult: '' as AnyComponent,
+    TestResultHeader: '' as AnyComponent
   },
   ids: {
     NoParent: '' as Ref<TestSuite>,

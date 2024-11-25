@@ -269,13 +269,7 @@ function defineTestSuite (builder: Builder): void {
   // Actions
 
   builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [
-      view.action.Open,
-      view.action.OpenInNewTab,
-      print.action.Print,
-      tracker.action.EditRelatedTargets,
-      tracker.action.NewRelatedIssue
-    ]
+    actions: [print.action.Print, tracker.action.EditRelatedTargets]
   })
 
   createAction(
@@ -436,6 +430,10 @@ function defineTestRun (builder: Builder): void {
 
   builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ObjectEditor, {
     editor: testManagement.component.EditTestResult
+  })
+
+  builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ObjectEditorHeader, {
+    editor: testManagement.component.TestResultHeader
   })
 
   builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ObjectPanel, {

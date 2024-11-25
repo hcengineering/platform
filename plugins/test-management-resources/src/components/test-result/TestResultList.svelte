@@ -16,22 +16,22 @@
   import { Doc, DocumentQuery } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Button, Icon, IconAdd, Label, Loading, Scroller, SectionEmpty } from '@hcengineering/ui'
-  import { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
+  import { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { ListView, ViewletsSettingButton, getViewOptions, viewOptionStore } from '@hcengineering/view-resources'
 
   import testManagement from '../../plugin'
   import FileDuo from '../icons/FileDuo.svelte'
 
   export let baseQuery: DocumentQuery<Doc> = {}
-  let testRunItems: number
+  let testResultItems: number
 
   const query = createQuery()
-  $: query.query(testManagement.class.TestRunItem, baseQuery, (res) => {
-    testRunItems = res.length
+  $: query.query(testManagement.class.TestResult, baseQuery, (res) => {
+    testResultItems = res.length
   })
 
-  const createTestRunItem = (ev: MouseEvent): void => {
-    // showPopup(CreateTestRunItem, { testSuiteId: objectId }, ev.target as HTMLElement)
+  const createTestResult = (ev: MouseEvent): void => {
+    // showPopup(CreateTestResult, { testSuiteId: objectId }, ev.target as HTMLElement)
   }
 
   let viewlet: Viewlet | undefined
@@ -56,10 +56,10 @@
         bind:preference
         bind:loading
       />
-      <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createTestRunItem} />
+      <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createTestResult} />
     </div>
   </div>
-  {#if testRunItems > 0}
+  {#if testResultItems > 0}
     {#if viewlet !== undefined && !loading}
       <Scroller horizontal>
         <ListView
