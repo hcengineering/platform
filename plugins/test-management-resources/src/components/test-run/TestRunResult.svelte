@@ -13,24 +13,35 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { TestRun } from '@hcengineering/test-management'
   import { BreadcrumbsElement } from '@hcengineering/presentation'
   import { ScrollerBar } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
 
-  export let gap: 'none' | 'small' | 'big' = 'none'
-  export let value: TestRun | undefined
+  import {type TestRunStats} from '../../testRunUtils'
+
+  export let value: TestRunStats
 
   let divScroll: HTMLElement
 
-  const dispatch = createEventDispatcher()
 </script>
 
 <ScrollerBar gap="none" bind:scroller={divScroll}>
   <BreadcrumbsElement
-    label={'10'}
     noGap
+    label={'20'}
     position={'start'}
+    color={'#4CA6EE'}
+    fontColor="white"
+    title="Untested"
+    selected
+    on:click={(ev) => {
+      ev.stopPropagation()
+      // if (item._id !== state) selectItem(ev, item)
+    }}
+  />
+  <BreadcrumbsElement
+    label={value.failed.toString()}
+    noGap
+    position={'middle'}
     color={'#D15045'}
     selected
     fontColor="white"
@@ -42,20 +53,7 @@
   />
   <BreadcrumbsElement
     noGap
-    label={'20'}
-    position={'middle'}
-    color={'#4CA6EE'}
-    fontColor="white"
-    title="Untested"
-    selected
-    on:click={(ev) => {
-      ev.stopPropagation()
-      // if (item._id !== state) selectItem(ev, item)
-    }}
-  />
-  <BreadcrumbsElement
-    noGap
-    label={'30'}
+    label={value.completed.toString()}
     position={'end'}
     color={'#46A44F'}
     fontColor="white"

@@ -25,3 +25,22 @@ export async function getTestCases (objectId: Ref<TestRun>): Promise<TestCase[]>
   const testCaseIds = testResults.map((testResult) => testResult.testCase)
   return await client.findAll(testManagement.class.TestCase, { _id: { $in: testCaseIds } })
 }
+
+export interface TestRunStats {
+  readonly done: number
+  readonly untested: number
+  readonly blocked: number
+  readonly completed: number
+  readonly failed: number
+}
+
+export async function getTestRunStats (objectId: Ref<TestRun>): Promise<TestRunStats> {
+  return {
+    done: 50,
+    untested: 10,
+    blocked: 2,
+    completed: 13,
+    failed: 3
+  }
+}
+

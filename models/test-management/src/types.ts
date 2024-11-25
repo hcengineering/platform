@@ -206,18 +206,6 @@ export class TTestRun extends TDoc implements TestRun {
     shortLabel: testManagement.string.TestResult
   })
     results?: CollectionSize<TestResult>
-
-  @Prop(TypeNumber(), testManagement.string.DonePercent)
-    completionPercent?: number
-
-  @Prop(TypeNumber(), testManagement.string.StatusPassed)
-    completed?: number
-
-  @Prop(TypeNumber(), testManagement.string.StatusFailed)
-    failed?: number
-
-  @Prop(TypeNumber(), testManagement.string.StatusNonTested)
-    untested?: number
 }
 
 /** @public */

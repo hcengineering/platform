@@ -23,6 +23,7 @@
 
   import TestResultList from '../test-result/TestResultList.svelte'
   import testManagement from '../../plugin'
+  import TestRunAside from './TestRunAside.svelte'
 
   export let _id: Ref<TestRun>
   export let _class: Ref<Class<TestRun>>
@@ -103,5 +104,9 @@
     </div>
 
     <TestResultList baseQuery={{ attachedTo: _id }} />
+
+    <svelte:fragment slot="aside">
+      <TestRunAside {object}/>
+    </svelte:fragment>
   </Panel>
 {/if}

@@ -73,6 +73,8 @@
     "Save": "Save",
     "SaveAndNext": "Save and next",
     "DonePercent": "% Done",
-    "TestResults": "Results"
+    "TestResults": "Results",
+    "TestRunName": "Name",
+    "DueDate": "Due date"
   }
 }

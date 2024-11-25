@@ -104,10 +104,6 @@ export interface TestRun extends Doc {
   description: CollaborativeDoc
   dueDate?: Timestamp
   results?: CollectionSize<TestResult>
-  completionPercent?: number
-  completed?: number
-  failed?: number
-  untested?: number
 }
 
 /** @public */
