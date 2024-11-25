@@ -241,6 +241,10 @@ export function createModel (builder: Builder): void {
       { _class: 1 }
     ]
   })
+
+  builder.mixin(attachment.class.Drawing, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: attachment.component.DrawingPresenter
+  })
 }
 
 export default attachment

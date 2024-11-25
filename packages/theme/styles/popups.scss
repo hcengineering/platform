@@ -133,6 +133,10 @@
     box-shadow: none;
   }
 
+  &.auto {
+    max-width: unset;
+  }
+
   &.full-width {
     flex-grow: 1;
     background: none;

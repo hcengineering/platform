@@ -14,8 +14,9 @@
 -->
 <script lang="ts">
   import { getObjectValue, type Class, type Doc, type Ref } from '@hcengineering/core'
-  import type { IntlString } from '@hcengineering/platform'
+  import { getResource, type IntlString } from '@hcengineering/platform'
   import {
+    AnySvelteComponent,
     Button,
     EditWithIcon,
     FocusHandler,
@@ -31,6 +32,7 @@
     showPopup,
     tooltip
   } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { ObjectCreate } from '../types'
@@ -47,7 +49,7 @@
   export let placeholder: IntlString = presentation.string.Search
   export let selectedObjects: Ref<Doc>[] = []
   export let shadows: boolean = true
-  export let width: 'medium' | 'large' | 'full' = 'medium'
+  export let width: 'medium' | 'large' | 'full' | 'auto' = 'medium'
   export let size: 'small' | 'medium' | 'large' = 'large'
 
   export let noSearchField: boolean = false
@@ -59,7 +61,7 @@
   export let created: Doc[] = []
   export let embedded: boolean = false
   export let loading: boolean = false
-  export let type: 'text' | 'object' = 'text'
+  export let type: 'text' | 'object' | 'presenter' = 'text'
 
   let search: string = ''
 
@@ -70,6 +72,11 @@
   $: showCategories =
     created.length > 0 ||
     objects.map((it) => getObjectValue(groupBy, it)).filter((it, index, arr) => arr.indexOf(it) === index).length > 1
+
+  let presenter: AnySvelteComponent | undefined = undefined
+  $: if (type === 'presenter') {
+    findObjectPresenter(_class)
+  }
 
   const checkSelected = (item?: Doc): void => {
     if (item === undefined) {
@@ -154,6 +161,19 @@
     }
     return getObjectValue(groupBy, toAny(doc))
   }
+
+  function findObjectPresenter (_class: Ref<Class<Doc>>): void {
+    const presenterMixin = client.getHierarchy().classHierarchyMixin(_class, view.mixin.ObjectPresenter)
+    if (presenterMixin?.presenter !== undefined) {
+      getResource(presenterMixin.presenter)
+        .then((result) => {
+          presenter = result
+        })
+        .catch((err) => {
+          console.error('Failed to find presenter for class ' + _class, err)
+        })
+    }
+  }
 </script>
 
 <FocusHandler {manager} />
@@ -164,6 +184,7 @@
   class:full-width={width === 'full'}
   class:plainContainer={!shadows}
   class:width-40={width === 'large'}
+  class:auto={width === 'auto'}
   class:embedded
   on:keydown={onKeydown}
   use:resizeObserver={() => {
@@ -229,6 +250,10 @@
               <span class="label" class:disabled={readonly || isDeselectDisabled || loading}>
                 <slot name="item" item={obj} />
               </span>
+            {:else if type === 'presenter'}
+              {#if presenter !== undefined}
+                <svelte:component this={presenter} value={obj} />
+              {/if}
             {:else}
               <slot name="item" item={obj} />
             {/if}

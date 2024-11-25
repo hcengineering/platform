@@ -81,6 +81,7 @@ export default plugin(attachmentId, {
     Attachments: '' as AnyComponent,
     Photos: '' as AnyComponent,
     AttachmentsPresenter: '' as AnyComponent,
+    DrawingPresenter: '' as AnyComponent,
     FileBrowser: '' as AnyComponent,
     PDFViewer: '' as AnyComponent
   },

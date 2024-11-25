@@ -24,8 +24,8 @@
 
   export let drawingAvailable: boolean
   export let drawingEditable: boolean
-  export let drawingData: any
-  export let saveDrawing: (data: any) => Promise<void>
+  export let drawings: any
+  export let createDrawing: (data: any) => Promise<any>
 
   $: originalWidth = metadata?.originalWidth
   $: originalHeight = metadata?.originalHeight
@@ -49,8 +49,8 @@
   <DrawingBoard
     {imageWidth}
     {imageHeight}
-    {drawingData}
-    {saveDrawing}
+    {drawings}
+    {createDrawing}
     active={drawingAvailable && !loading}
     readonly={drawingAvailable && !drawingEditable}
     class="object-contain mx-auto"

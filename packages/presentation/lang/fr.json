@@ -34,7 +34,8 @@
     "FailedToPreview": "Échec de l'aperçu",
     "ContentType": "Type de contenu",
     "ContentTypeNotSupported": "L'aperçu n'est pas disponible pour ce type de contenu",
-    "StartDrawing": "Gribouiller dessus"
+    "StartDrawing": "Gribouiller dessus",
+    "DrawingHistory": "Histoire de gribouillage"
   },
   "status": {
     "FileTooLarge": "Fichier trop volumineux"
