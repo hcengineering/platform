@@ -312,6 +312,10 @@ function defineDocument (builder: Builder): void {
     component: document.component.DocumentIcon
   })
 
+  builder.mixin(document.class.Document, core.class.Class, view.mixin.AttributeEditor, {
+    inlineEditor: document.component.DocumentInlineEditor
+  })
+
   // Actions
 
   createAction(builder, {

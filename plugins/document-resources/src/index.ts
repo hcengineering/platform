@@ -32,6 +32,7 @@ import { openDoc } from '@hcengineering/view-resources'
 import CreateDocument from './components/CreateDocument.svelte'
 import DocumentIcon from './components/DocumentIcon.svelte'
 import DocumentItem from './components/DocumentItem.svelte'
+import DocumentInlineEditor from './components/DocumentInlineEditor.svelte'
 import DocumentPresenter from './components/DocumentPresenter.svelte'
 import DocumentSearchIcon from './components/DocumentSearchIcon.svelte'
 import DocumentToDoPresenter from './components/DocumentToDoPresenter.svelte'
@@ -167,6 +168,7 @@ export default async (): Promise<Resources> => ({
   component: {
     CreateDocument,
     CreateTeamspace,
+    DocumentInlineEditor,
     DocumentPresenter,
     Documents,
     EditDoc,
