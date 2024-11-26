@@ -386,7 +386,7 @@ function defineTestCase (builder: Builder): void {
         hiddenKeys: ['title']
       },
       config: [
-        { key: '', displayProps: { fixed: 'left', key: 'lead' } },
+        { key: '', displayProps: { fixed: 'left' } },
         {
           key: 'status',
           props: { kind: 'list', size: 'small', shouldShowName: false }
@@ -475,11 +475,15 @@ function defineTestRun (builder: Builder): void {
         hiddenKeys: ['title', 'status', 'modifiedOn']
       },
       config: [
-        '',
+        { key: '', displayProps: { fixed: 'left' } },
         {
           key: 'status',
-          props: { kind: 'list', size: 'small', shouldShowName: false },
-          displayProps: { fixed: 'left' }
+          props: { kind: 'list', size: 'small', shouldShowName: false }
+        },
+        {
+          key: 'assignee',
+          props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' },
+          displayProps: { key: 'assignee', fixed: 'right' }
         }
       ],
       viewOptions,
@@ -491,6 +495,20 @@ function defineTestRun (builder: Builder): void {
       } as FindOptions<TestResult>
     },
     testManagement.viewlet.TestResultList
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: testManagement.class.TestResult,
+      descriptor: view.viewlet.Table,
+      config: ['', 'testSuite', 'status', 'assignee'],
+      configOptions: {
+        strict: true
+      }
+    },
+    testManagement.viewlet.TableTestResult
   )
 }
 

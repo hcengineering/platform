@@ -27,12 +27,25 @@
 <ScrollerBar gap="none" bind:scroller={divScroll}>
   <BreadcrumbsElement
     noGap
-    label={'20'}
+    label={value.untested.toString()}
     position={'start'}
     color={'#4CA6EE'}
     fontColor="white"
     title="Untested"
     selected
+    on:click={(ev) => {
+      ev.stopPropagation()
+      // if (item._id !== state) selectItem(ev, item)
+    }}
+  />
+  <BreadcrumbsElement
+    label={value.blocked.toString()}
+    noGap
+    position={'middle'}
+    color={'#D27540'}
+    selected
+    fontColor="white"
+    title="Failed"
     on:click={(ev) => {
       ev.stopPropagation()
       // if (item._id !== state) selectItem(ev, item)

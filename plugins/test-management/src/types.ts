@@ -108,7 +108,7 @@ export interface TestRun extends Doc {
 
 /** @public */
 export enum TestRunStatus {
-  NoTested,
+  Untested,
   Blocked,
   Passed,
   Failed

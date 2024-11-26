@@ -14,7 +14,7 @@
 //
 import { type Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
-import testManagement, { type TestRun, type TestCase } from '@hcengineering/test-management'
+import testManagement, { type TestRun, type TestCase, TestRunStatus } from '@hcengineering/test-management'
 
 export async function getTestCases (objectId: Ref<TestRun>): Promise<TestCase[]> {
   if (objectId === undefined) {
@@ -34,13 +34,29 @@ export interface TestRunStats {
   readonly failed: number
 }
 
+async function getTestResultCount (objectId: Ref<TestRun>, status: TestRunStatus): Promise<number> {
+  const client = getClient()
+  const testResults = await client.findAll(testManagement.class.TestResult, { 
+    attachedTo: objectId,
+    status: status
+  }, {limit: 0, total: true })
+  return testResults.total > 0 ? testResults.total : 0
+}
+
 export async function getTestRunStats (objectId: Ref<TestRun>): Promise<TestRunStats> {
+  const untested = await getTestResultCount(objectId, TestRunStatus.Untested)
+  const blocked = await getTestResultCount(objectId, TestRunStatus.Blocked)
+  const completed = await getTestResultCount(objectId, TestRunStatus.Passed)
+  const failed = await getTestResultCount(objectId, TestRunStatus.Failed)
+  const total = untested + blocked + completed + failed
+
+  const done = total > 0 ? (total - untested) * 100 / total : 0
   return {
-    done: 50,
-    untested: 10,
-    blocked: 2,
-    completed: 13,
-    failed: 3
+    done,
+    untested,
+    blocked,
+    completed,
+    failed
   }
 }
 

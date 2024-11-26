@@ -20,7 +20,7 @@
   import core, { Data, Ref, generateId, makeCollaborativeDoc } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
-  import { TestCase, TestRun, TestProject, TestResult } from '@hcengineering/test-management'
+  import { TestCase, TestRun, TestProject, TestResult, TestRunStatus } from '@hcengineering/test-management'
   import { EditBox } from '@hcengineering/ui'
   import { EmptyMarkup } from '@hcengineering/text'
 
@@ -57,7 +57,8 @@
         testCase: testCase._id,
         testSuite: testCase.attachedTo,
         collection: 'results',
-        description: makeCollaborativeDoc(testResultId, 'description')
+        description: makeCollaborativeDoc(testResultId, 'description'),
+        status: TestRunStatus.Untested
       }
       return client.addCollection(
         testManagement.class.TestResult,

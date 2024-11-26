@@ -21,7 +21,7 @@
   import { EditBox } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
 
-  import TestResultList from '../test-result/TestResultList.svelte'
+  import SelectTestCasesButton from './SelectTestCasesButton.svelte'
   import testManagement from '../../plugin'
   import TestRunAside from './TestRunAside.svelte'
 
@@ -103,7 +103,7 @@
       />
     </div>
 
-    <TestResultList baseQuery={{ attachedTo: _id }} />
+    <SelectTestCasesButton/>
 
     <svelte:fragment slot="aside">
       <TestRunAside {object}/>

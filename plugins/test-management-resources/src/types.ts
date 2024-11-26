@@ -42,7 +42,7 @@ export const testCaseStatusAssets: Record<TestCaseStatus, { icon: Asset, label: 
 
 /** @public */
 export const defaultTestRunStatuses = [
-  TestRunStatus.NoTested,
+  TestRunStatus.Untested,
   TestRunStatus.Blocked,
   TestRunStatus.Passed,
   TestRunStatus.Failed
@@ -50,7 +50,7 @@ export const defaultTestRunStatuses = [
 
 /** @public */
 export const testRunStatusAssets: Record<TestRunStatus, { icon: Asset, label: IntlString }> = {
-  [TestRunStatus.NoTested]: {
+  [TestRunStatus.Untested]: {
     icon: testManagement.icon.StatusNonTested,
     label: testManagement.string.StatusNonTested
   },
