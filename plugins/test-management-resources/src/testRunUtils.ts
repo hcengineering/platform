@@ -36,10 +36,14 @@ export interface TestRunStats {
 
 async function getTestResultCount (objectId: Ref<TestRun>, status: TestRunStatus): Promise<number> {
   const client = getClient()
-  const testResults = await client.findAll(testManagement.class.TestResult, { 
-    attachedTo: objectId,
-    status: status
-  }, {limit: 0, total: true })
+  const testResults = await client.findAll(
+    testManagement.class.TestResult,
+    {
+      attachedTo: objectId,
+      status
+    },
+    { limit: 0, total: true }
+  )
   return testResults.total > 0 ? testResults.total : 0
 }
 
@@ -50,7 +54,7 @@ export async function getTestRunStats (objectId: Ref<TestRun>): Promise<TestRunS
   const failed = await getTestResultCount(objectId, TestRunStatus.Failed)
   const total = untested + blocked + completed + failed
 
-  const done = total > 0 ? (total - untested) * 100 / total : 0
+  const done = total > 0 ? ((total - untested) * 100) / total : 0
   return {
     done,
     untested,
@@ -59,4 +63,3 @@ export async function getTestRunStats (objectId: Ref<TestRun>): Promise<TestRunS
     failed
   }
 }
-

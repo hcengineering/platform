@@ -116,6 +116,7 @@ export enum TestRunStatus {
 
 /** @public */
 export interface TestResult extends AttachedDoc<TestRun, 'results', TestProject> {
+  name: string
   testCase: Ref<TestCase>
   testSuite?: Ref<TestSuite>
   status?: TestRunStatus

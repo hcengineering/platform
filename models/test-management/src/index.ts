@@ -506,7 +506,12 @@ function defineTestRun (builder: Builder): void {
       config: ['', 'testSuite', 'status', 'assignee'],
       configOptions: {
         strict: true
-      }
+      },
+      options: {
+        lookup: {
+          testCase: testManagement.class.TestCase
+        }
+      } as FindOptions<TestResult>
     },
     testManagement.viewlet.TableTestResult
   )

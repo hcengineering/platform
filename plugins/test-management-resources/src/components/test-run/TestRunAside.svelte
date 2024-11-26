@@ -17,7 +17,7 @@
   import type { TestRun } from '@hcengineering/test-management'
   import { Scroller } from '@hcengineering/ui'
   import { DocAttributeBar } from '@hcengineering/view-resources'
- 
+
   import TestRunStats from './TestRunStats.svelte'
 
   export let object: WithLookup<TestRun>
@@ -25,7 +25,7 @@
 </script>
 
 <Scroller>
-  <TestRunStats _id={object._id}/>
+  <TestRunStats _id={object._id} />
   <div class="space-divider" />
   <DocAttributeBar {object} {readonly} ignoreKeys={[]} />
   <div class="space-divider bottom" />

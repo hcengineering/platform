@@ -14,29 +14,25 @@
 -->
 
 <script lang="ts">
-import {
-  Button,
-  showPopup
-} from '@hcengineering/ui'
+  import { Button, showPopup } from '@hcengineering/ui'
 
-import SelectTestCases from './SelectTestCases.svelte'
+  import SelectTestCases from './SelectTestCases.svelte'
 
-let opened: boolean = false
-export let selected: ListItem | undefined = undefined
+  let opened: boolean = false
+  export let selected: ListItem | undefined = undefined
 
-const _click = (ev: MouseEvent): void => {
-  if (!opened) {
-    opened = true
-    showPopup(SelectTestCases, { title: label, items, icon, withSearch }, container, (result) => {
-      if (result) {
-        selected = result
-        dispatch('selected', result)
-      }
-      opened = false
-      mgr?.setFocusPos(focusIndex)
-    })
+  const _click = (ev: MouseEvent): void => {
+    if (!opened) {
+      opened = true
+      showPopup(SelectTestCases, { title: 'Select test cases' }, 'container', (result) => {
+        if (result) {
+          selected = result
+          dispatch('selected', result)
+        }
+        opened = false
+      })
+    }
   }
-}
 </script>
 
 <Button on:click={_click}>

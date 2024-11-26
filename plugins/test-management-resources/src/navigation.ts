@@ -79,6 +79,16 @@ export function getTestSuiteIdFromLocation (): Ref<TestSuite> {
   return (location?.query?.[SUITE_KEY] as Ref<TestSuite>) ?? testManagement.ids.NoParent
 }
 
+export function getTestRunsLink (parentDoc: Ref<Doc>): Location {
+  const loc = getCurrentResolvedLocation()
+  loc.path.length = 4
+  loc.path[3] = 'testRuns'
+  loc.fragment = undefined
+  loc.query = parentDoc === undefined ? undefined : { attachedTo: parentDoc }
+
+  return loc
+}
+
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
   if (loc.path[2] !== testManagementId) {
     return undefined

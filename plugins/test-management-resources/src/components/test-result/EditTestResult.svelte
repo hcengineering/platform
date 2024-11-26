@@ -23,6 +23,7 @@
   import { Label, Scroller } from '@hcengineering/ui'
 
   import RightHeader from './RightHeader.svelte'
+  import TestResultStatusEditor from './TestResultStatusEditor.svelte'
   import TestCaseDetails from '../test-case/TestCaseDetails.svelte'
   import testManagement from '../../plugin'
 
@@ -43,9 +44,18 @@
 
   $: _id !== undefined &&
     _class !== undefined &&
-    query.query(_class, { _id }, async (result) => {
-      ;[object] = result
-    })
+    query.query(
+      _class,
+      { _id },
+      async (result) => {
+        ;[object] = result
+      },
+      {
+        lookup: {
+          testCase: testManagement.class.TestCase
+        }
+      }
+    )
 
   async function change<K extends keyof TestResult> (field: K, value: TestResult[K]) {
     if (object !== undefined) {
@@ -64,7 +74,7 @@
   <ActionContext context={{ mode: 'editor' }} />
   <Panel
     {object}
-    title={testCase?.name}
+    title={testCase?.name ?? object?.name}
     isHeader={false}
     isAside={true}
     isSub={false}
@@ -72,6 +82,8 @@
     on:open
     on:close={() => dispatch('close')}
   >
+    <TestResultStatusEditor value={object.status} {object} />
+    <div class="space-divider" />
     <div class="w-full mt-6">
       <AttachmentStyleBoxCollabEditor
         focusIndex={30}

@@ -103,10 +103,10 @@
       />
     </div>
 
-    <SelectTestCasesButton/>
+    <SelectTestCasesButton />
 
     <svelte:fragment slot="aside">
-      <TestRunAside {object}/>
+      <TestRunAside {object} />
     </svelte:fragment>
   </Panel>
 {/if}

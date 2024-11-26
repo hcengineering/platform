@@ -16,6 +16,7 @@
 import { testManagementId, testManagementPlugin } from './plugin'
 
 export * from './types'
+export * from './analytics'
 export { testManagementId }
 
 export default testManagementPlugin

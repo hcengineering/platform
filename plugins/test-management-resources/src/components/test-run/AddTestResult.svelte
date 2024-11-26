@@ -24,7 +24,7 @@
   import { selectedTestRun } from './store/testRunStore'
 
   import testManagement from '../../plugin'
-  import TestRunStatusEditor from './TestRunStatusEditor.svelte'
+  import TestResultStatusEditor from '../test-result/TestResultStatusEditor.svelte'
 
   export let onCreate: ((orgId: Ref<TestCase>, client: TxOperations) => Promise<void>) | undefined = undefined
 
@@ -64,7 +64,7 @@
       <span class="labelOnPanel">
         <Label label={testManagement.string.TestStatus} />
       </span>
-      <TestRunStatusEditor value={$selectedTestRun?.status} object={$selectedTestRun} />
+      <TestResultStatusEditor value={$selectedTestRun?.status} object={$selectedTestRun} />
     </div>
   </div>
   <div class="divider" />

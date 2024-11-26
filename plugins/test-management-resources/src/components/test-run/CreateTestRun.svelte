@@ -20,9 +20,18 @@
   import core, { Data, Ref, generateId, makeCollaborativeDoc } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
-  import { TestCase, TestRun, TestProject, TestResult, TestRunStatus } from '@hcengineering/test-management'
-  import { EditBox } from '@hcengineering/ui'
+  import {
+    TestCase,
+    TestRun,
+    TestProject,
+    TestResult,
+    TestRunStatus,
+    TestManagementEvents
+  } from '@hcengineering/test-management'
+  import { EditBox, navigate } from '@hcengineering/ui'
   import { EmptyMarkup } from '@hcengineering/text'
+  import { Analytics } from '@hcengineering/analytics'
+  import { getTestRunsLink } from '../../navigation'
 
   import testManagement from '../../plugin'
   import ProjectPresenter from '../project/ProjectSpacePresenter.svelte'
@@ -46,31 +55,45 @@
   let descriptionBox: AttachmentStyledBox
   let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
 
-  async function onSave () {
-    // TODO: Use one operation
-    const testRun = await client.createDoc(testManagement.class.TestRun, _space, object)
-    const createPromises = testCases.map((testCase) => {
-      const testResultId: Ref<TestResult> = generateId()
-      const testResultData: Data<TestResult> = {
-        attachedTo: testRun,
-        attachedToClass: testManagement.class.TestRun,
-        testCase: testCase._id,
-        testSuite: testCase.attachedTo,
-        collection: 'results',
-        description: makeCollaborativeDoc(testResultId, 'description'),
-        status: TestRunStatus.Untested
+  async function onSave (): Promise<void> {
+    try {
+      const applyOp = client.apply()
+      await applyOp.createDoc(testManagement.class.TestRun, _space, object, id)
+      const testCasesArray = testCases instanceof Array ? testCases : [testCases]
+      const createPromises = testCasesArray.map((testCase) => {
+        const testResultId: Ref<TestResult> = generateId()
+        const testResultData: Data<TestResult> = {
+          attachedTo: id,
+          attachedToClass: testManagement.class.TestRun,
+          name: testCase.name,
+          testCase: testCase._id,
+          testSuite: testCase.attachedTo,
+          collection: 'results',
+          description: makeCollaborativeDoc(testResultId, 'description'),
+          status: TestRunStatus.Untested
+        }
+        return applyOp.addCollection(
+          testManagement.class.TestResult,
+          _space,
+          id,
+          testManagement.class.TestRun,
+          'results',
+          testResultData,
+          testResultId
+        )
+      })
+      await Promise.all(createPromises)
+      const opResult = await applyOp.commit()
+      if (!opResult.result) {
+        throw new Error('Failed to create test run')
+      } else {
+        Analytics.handleEvent(TestManagementEvents.TestRunCreated, { id })
+        navigate(getTestRunsLink(id))
       }
-      return client.addCollection(
-        testManagement.class.TestResult,
-        _space,
-        testRun,
-        testManagement.class.TestRun,
-        'results',
-        testResultData,
-        testResultId
-      )
-    })
-    await Promise.all(createPromises)
+    } catch (err: any) {
+      console.error(err)
+      Analytics.handleError(err)
+    }
   }
 </script>
 

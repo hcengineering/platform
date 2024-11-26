@@ -32,6 +32,7 @@
 
   let testCase: TestCase | undefined = undefined
   $: testCase = value?.$lookup?.testCase as TestCase | undefined
+  $: title = testCase?.name ?? value.name
 </script>
 
 {#if value}
@@ -45,13 +46,8 @@
             <Icon icon={testManagement.icon.TestResult} size="small" />
           </div>
         {/if}
-        <span
-          title={testCase?.name}
-          class="overflow-label label"
-          class:no-underline={noUnderline || disabled}
-          class:fs-bold={accent}
-        >
-          {testCase?.name}
+        <span {title} class="overflow-label label" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
+          {title}
         </span>
       </div>
     </DocNavLink>

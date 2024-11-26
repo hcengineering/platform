@@ -1,4 +1,4 @@
-<!--
+//
 // Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,18 +11,16 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
-<script lang="ts">
-  import { type Doc } from '@hcengineering/core'
-  import { DocsNavigator } from '@hcengineering/view-resources'
+//
 
-  import { TestResult } from '@hcengineering/test-management'
-  import TestResultPresenter from './TestResultPresenter.svelte'
-
-  export let object: TestResult
-</script>
-
-<div class="antiHSpacer x2" />
-<div class="fs-title flex-row-center">
-  <TestResultPresenter value={object} shouldShowAvatar={false} disabled noUnderline />
-</div>
+export enum TestManagementEvents {
+  TestCaseCreated = 'testManagement.TestCaseCreated',
+  TestCaseEdited = 'testManagement.TestCaseEdited',
+  TestCaseDeleted = 'testManagement.TestCaseDeleted',
+  TestSuiteCreated = 'testManagement.TestSuiteCreated',
+  TestSuiteEdited = 'testManagement.TestSuiteEdited',
+  TestSuiteDeleted = 'testManagement.TestSuiteDeleted',
+  TestRunCreated = 'testManagement.TestRunCreated',
+  TestRunEdited = 'testManagement.TestRunEdited',
+  TestRunDeleted = 'testManagement.TestRunDeleted'
+}

@@ -18,7 +18,7 @@
   import { Label, ProgressCircle, Loading } from '@hcengineering/ui'
 
   import TestRunResult from './TestRunResult.svelte'
-  import {type TestRunStats, getTestRunStats} from '../../testRunUtils'
+  import { type TestRunStats, getTestRunStats } from '../../testRunUtils'
   import testManagement from '../../plugin'
 
   export let _id: Ref<TestRun>
@@ -30,33 +30,26 @@
     stats = newStats
     isLoading = false
   })
-
-  
 </script>
 
-
 <div class="popupPanel-body__aside-grid">
-  <span
-    class="labelOnPanel"
-  ><Label label={testManagement.string.TestResults} />
-  </span>
+  <span class="labelOnPanel"><Label label={testManagement.string.TestResults} /> </span>
   {#if !isLoading}
-    <TestRunResult value={stats}/>
+    <TestRunResult value={stats} />
   {:else}
-    <Loading/>
+    <Loading />
   {/if}
-  <span
-    class="labelOnPanel">
+  <span class="labelOnPanel">
     <Label label={testManagement.string.DonePercent} />
   </span>
   {#if !isLoading}
-  <div class="flex-row-center content-color text-sm pointer-events-none">
-    <div class="mr-1">
-      <ProgressCircle value={stats?.done ?? 0}/>
+    <div class="flex-row-center content-color text-sm pointer-events-none">
+      <div class="mr-1">
+        <ProgressCircle value={stats?.done ?? 0} />
+      </div>
+      {stats.done ?? 0}
     </div>
-    {stats.done ?? 0}
-  </div>
   {:else}
-    <Loading/>
+    <Loading />
   {/if}
 </div>
