@@ -34,7 +34,8 @@
     "FailedToPreview": "Náhled se nezdařil",
     "ContentType": "Typ obsahu",
     "ContentTypeNotSupported": "Náhled není dostupný pro tento typ obsahu",
-    "StartDrawing": "Načmárejte"
+    "StartDrawing": "Načmárejte",
+    "DrawingHistory": "Čmárání historie"
   },
   "status": {
     "FileTooLarge": "Soubor je příliš velký"

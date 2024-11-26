@@ -14,19 +14,17 @@
 //
 
 export interface DrawingData {
-  id?: string
   content?: string
 }
 
 export interface DrawingProps {
-  readonly?: boolean
+  readonly: boolean
   imageWidth?: number
   imageHeight?: number
-  drawingData?: DrawingData
-  saveDrawing?: (data: any) => Promise<void>
-
+  drawingData: DrawingData
   drawingTool?: DrawingTool
   penColor?: string
+  changed?: (content: string) => void
 }
 
 interface DrawCmd {
@@ -198,7 +196,6 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
   draw.penColor = props.penColor ?? 'blue'
   updateCanvasCursor()
 
-  let modified = false
   let commands: DrawCmd[] = []
   let drawingData = props.drawingData
   parseData()
@@ -300,7 +297,7 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
         points: draw.points
       }
       commands.push(cmd)
-      modified = true
+      props.changed?.(JSON.stringify(commands))
     }
   }
 
@@ -340,7 +337,7 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
 
   function parseData (): void {
     clearCanvas()
-    if (drawingData?.content !== undefined) {
+    if (drawingData.content !== undefined && drawingData.content !== null) {
       try {
         commands = JSON.parse(drawingData.content)
         replayCommands()
@@ -356,42 +353,24 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
   return {
     update (props: DrawingProps) {
       if (drawingData !== props.drawingData) {
-        // Currently it expectes only the empty data on update
-        // which means we pressed the "Clear canvas" button
-        // We don't support yet creation of multiple drawings for the same image
-        // so preserve the id to continue editing the previous drawing
-        const oldId = drawingData?.id
         drawingData = props.drawingData
-        if (drawingData !== undefined) {
-          drawingData.id = oldId
-        }
-        modified = true
         parseData()
       }
+      let updateCursor = false
       if (draw.tool !== props.drawingTool) {
         draw.tool = props.drawingTool ?? 'pen'
-        updateCanvasCursor()
+        updateCursor = true
       }
       if (draw.penColor !== props.penColor) {
         draw.penColor = props.penColor ?? 'blue'
-        updateCanvasCursor()
+        updateCursor = true
       }
       if (props.readonly !== readonly) {
         readonly = props.readonly ?? false
-        updateCanvasCursor()
+        updateCursor = true
       }
-    },
-    destroy () {
-      if (props.saveDrawing === undefined) {
-        console.log('Save drawing method is not provided')
-      } else {
-        if (modified && (commands.length > 0 || drawingData?.id !== undefined)) {
-          const data: DrawingData = drawingData ?? {}
-          data.content = JSON.stringify(commands)
-          props.saveDrawing(data).catch((error) => {
-            console.error('Failed to save drawing', error)
-          })
-        }
+      if (updateCursor) {
+        updateCanvasCursor()
       }
     }
   }
