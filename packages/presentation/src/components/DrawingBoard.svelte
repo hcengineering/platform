@@ -14,25 +14,30 @@
 -->
 <script lang="ts">
   import { Button, IconDelete, IconEdit, resizeObserver } from '@hcengineering/ui'
+  import { onDestroy } from 'svelte'
   import { drawing, type DrawingData, type DrawingTool } from '../drawing'
   import IconEraser from './icons/Eraser.svelte'
 
   export let active = false
-  export let readonly = false
+  export let readonly = true
   export let imageWidth: number | undefined
   export let imageHeight: number | undefined
-  export let drawingData: DrawingData
-  export let saveDrawing: (data: any) => Promise<void>
+  export let drawings: DrawingData[]
+  export let createDrawing: (data: any) => Promise<void>
 
   let drawingTool: DrawingTool = 'pen'
   let penColor = 'blue'
   const penColors = ['red', 'green', 'blue', 'white', 'black']
-
+  let drawingData: DrawingData | undefined
   let board: HTMLDivElement
   let toolbar: HTMLDivElement
   let toolbarInside = false
+  let oldReadonly: boolean
+  let oldDrawings: DrawingData[]
+  let modified = false
 
   $: updateToolbarPosition(readonly, board, toolbar)
+  $: updateEditableState(drawings, readonly)
 
   function updateToolbarPosition (readonly: boolean, board: HTMLDivElement, toolbar: HTMLDivElement): void {
     if (!readonly && board?.offsetTop !== undefined && toolbar?.clientHeight !== undefined) {
@@ -41,9 +46,47 @@
       toolbarInside = board.offsetTop <= toolbar.clientHeight * 3
     }
   }
+
+  function updateEditableState (drawings: DrawingData[], readonly: boolean): void {
+    if (readonly !== oldReadonly || drawings !== oldDrawings) {
+      if (drawings !== undefined) {
+        if (readonly) {
+          if (modified && drawingData !== undefined) {
+            createDrawing(drawingData).catch((error) => {
+              console.error('Failed to save drawing', error)
+            })
+          }
+          drawingData = drawings[0]
+          modified = false
+        } else {
+          if (drawingData === undefined) {
+            drawingData = {}
+          } else {
+            // Edit current content as a new drawing
+            drawingData = {
+              content: drawingData.content
+            }
+          }
+          modified = false
+        }
+      } else {
+        drawingData = undefined
+      }
+      oldDrawings = drawings
+      oldReadonly = readonly
+    }
+  }
+
+  onDestroy(() => {
+    if (modified && drawingData !== undefined) {
+      createDrawing(drawingData).catch((error) => {
+        console.error('Failed to save drawing', error)
+      })
+    }
+  })
 </script>
 
-{#if active}
+{#if active && drawingData !== undefined}
   <div
     {...$$restProps}
     style:position="relative"
@@ -56,9 +99,14 @@
       imageWidth,
       imageHeight,
       drawingData,
-      saveDrawing,
       drawingTool,
-      penColor
+      penColor,
+      changed: (content) => {
+        modified = true
+        if (drawingData !== undefined) {
+          drawingData.content = content
+        }
+      }
     }}
   >
     {#if !readonly}
@@ -68,6 +116,7 @@
           kind="icon"
           on:click={() => {
             drawingData = {}
+            modified = true
           }}
         />
         <div class="divider buttons-divider" />

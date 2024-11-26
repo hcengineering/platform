@@ -42,6 +42,7 @@ import FileDownload from './components/icons/FileDownload.svelte'
 import IconUploadDuo from './components/icons/UploadDuo.svelte'
 import PreviewWidget from './components/PreviewWidget.svelte'
 import PreviewPopupActions from './components/PreviewPopupActions.svelte'
+import DrawingPresenter from './components/DrawingPresenter.svelte'
 
 export * from './types'
 
@@ -256,6 +257,7 @@ export default async (): Promise<Resources> => ({
     AttachmentPresenter,
     AttachmentGalleryPresenter,
     Attachments,
+    DrawingPresenter,
     FileBrowser,
     Photos,
     PDFViewer,

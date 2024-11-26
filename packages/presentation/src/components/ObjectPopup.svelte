@@ -43,7 +43,7 @@
   export let selectedObjects: Ref<Doc>[] = []
   export let ignoreObjects: Ref<Doc>[] = []
   export let shadows: boolean = true
-  export let width: 'medium' | 'large' | 'full' = 'medium'
+  export let width: 'medium' | 'large' | 'full' | 'auto' = 'medium'
   export let size: 'small' | 'medium' | 'large' = 'large'
 
   export let searchMode: 'field' | 'fulltext' | 'disabled' = 'field'
@@ -55,7 +55,7 @@
   export let disallowDeselect: Ref<Doc>[] | undefined = undefined
   export let embedded: boolean = false
   export let loading: boolean = false
-  export let type: 'text' | 'object' = 'text'
+  export let type: 'text' | 'object' | 'presenter' = 'text'
 
   export let filter: (it: Doc) => boolean = () => {
     return true

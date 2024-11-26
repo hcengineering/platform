@@ -16,6 +16,7 @@
 
 import { type BlobMetadata, type Attachment, type Drawing } from '@hcengineering/attachment'
 import core, {
+  SortingOrder,
   type Blob,
   type Class,
   type TxOperations as Client,
@@ -151,28 +152,42 @@ export function showAttachmentPreviewPopup (value: WithLookup<Attachment>): Popu
 
   if (value?.type?.startsWith('image/')) {
     props.drawingAvailable = true
-    props.loadDrawings = async (): Promise<DrawingData | undefined> => {
+    props.loadDrawings = async (): Promise<Drawing[] | undefined> => {
       const client = getClient()
-      const drawing = await client.findOne(attachment.class.Drawing, { parent: value.file })
-      if (drawing !== undefined) {
-        return {
-          id: drawing._id,
-          content: drawing.content
+      const drawings = await client.findAll(
+        attachment.class.Drawing,
+        {
+          parent: value.file,
+          space: value.space
+        },
+        {
+          sort: {
+            createdOn: SortingOrder.Descending
+          },
+          limit: 1
+        }
+      )
+      const result = []
+      if (drawings !== undefined) {
+        for (const drawing of drawings) {
+          result.push(drawing)
         }
       }
+      return result
     }
-    props.saveDrawing = async (data: DrawingData): Promise<void> => {
+    props.createDrawing = async (data: DrawingData): Promise<DrawingData> => {
       const client = getClient()
-      if (data.id === undefined) {
-        await client.createDoc(attachment.class.Drawing, value.space, {
-          parent: value.file,
-          parentClass: core.class.Blob,
-          content: data.content
-        })
+      const newId = await client.createDoc(attachment.class.Drawing, value.space, {
+        parent: value.file,
+        parentClass: core.class.Blob,
+        content: data.content
+      })
+      const newDrawing = await client.findOne(attachment.class.Drawing, { _id: newId })
+      if (newDrawing !== undefined) {
+        return newDrawing
       } else {
-        await client.updateDoc(attachment.class.Drawing, value.space, data.id as Ref<Drawing>, {
-          content: data.content
-        })
+        console.error('Unable to find just created drawing')
+        return data
       }
     }
   }
