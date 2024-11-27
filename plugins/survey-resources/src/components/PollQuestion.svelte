@@ -133,7 +133,6 @@
     }
     return []
   }
-  $: console.log('[!!!] question: ', question)
 </script>
 
 <div class="question-answer-container flex-col flex-gap-3">

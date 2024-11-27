@@ -91,6 +91,7 @@ export class CommonPage {
 
   submitButton = (): Locator => this.page.locator('div.date-popup-container button[type="submit"]')
   buttonBreadcrumb = (hasText?: string): Locator => this.page.locator('button.hulyBreadcrumb-container', { hasText })
+  appsMenuButton = (): Locator => this.page.locator('[id="app-workbench\\:string\\:ShowMenu"]')
 
   async selectMenuItem (page: Page, name: string, fullWordFilter: boolean = false): Promise<void> {
     if (name !== 'first') {

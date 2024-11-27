@@ -242,6 +242,8 @@ export { default as IconCheckmark } from './components/icons/Checkmark.svelte'
 export { default as IconToDetails } from './components/icons/ToDetails.svelte'
 export { default as IconHistory } from './components/icons/History.svelte'
 export { default as IconScribble } from './components/icons/Scribble.svelte'
+export { default as IconMenuOpen } from './components/icons/MenuOpen.svelte'
+export { default as IconMenuClose } from './components/icons/MenuClose.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'
 export { default as Panel } from './components/Panel.svelte'
@@ -317,7 +319,7 @@ export const deviceOptionsStore = writable<DeviceOptions>({
   isPortrait: false,
   isMobile: false,
   navigator: { visible: true, float: false, direction: 'vertical' },
-  aside: { visible: true },
+  aside: { visible: true, float: false },
   fontSize: 0,
   size: null,
   sizes: { xs: false, sm: false, md: false, lg: false, xl: false, xxl: false },

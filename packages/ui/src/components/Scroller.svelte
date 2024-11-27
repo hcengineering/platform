@@ -41,6 +41,7 @@
   export let shrink: boolean = false
   export let divScroll: HTMLElement | undefined | null = undefined
   export let divBox: HTMLElement | undefined | null = undefined
+  export let scrollSnap: boolean = false
   export let checkForHeaders: boolean = false
   export let stickedScrollBars: boolean = false
   export let thinScrollBars: boolean = false
@@ -571,6 +572,8 @@
       class="scroll relative flex-shrink flex-col"
       style:flex-direction={scrollDirection === 'vertical-reverse' ? 'column-reverse' : 'column'}
       class:disableOverscroll
+      class:scrollSnapX={scrollSnap && contentDirection === 'horizontal'}
+      class:scrollSnapY={scrollSnap && contentDirection === 'vertical'}
       style:overflow-x={horizontal ? 'auto' : 'hidden'}
       on:scroll={() => {
         if (onScroll) {
@@ -878,6 +881,16 @@
 
     &.disableOverscroll {
       overscroll-behavior: none;
+    }
+    &.scrollSnapY {
+      scroll-snap-type: y mandatory;
+    }
+    &.scrollSnapX {
+      scroll-snap-type: x mandatory;
+    }
+    &.scrollSnapX,
+    &.scrollSnapY {
+      scroll-padding-inline: var(--spacing-1);
     }
     &::-webkit-scrollbar:vertical {
       display: none;

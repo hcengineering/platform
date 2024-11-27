@@ -16,13 +16,11 @@
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import task, { Project } from '@hcengineering/task'
-  import { Label, Separator, Scroller, NavItem } from '@hcengineering/ui'
+  import { Label, Separator, Scroller, NavItem, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { ObjectPresenter, TreeNode } from '@hcengineering/view-resources'
   import { NavFooter, NavHeader } from '@hcengineering/workbench-resources'
   import time from '../../plugin'
 
-  export let navFloat: boolean = false
-  export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
   export let selected: Ref<Project> | undefined = (localStorage.getItem('team_last_mode') as Ref<Project>) ?? undefined
 
   let projects: Project[] = []
@@ -41,7 +39,10 @@
   $: selectedItem = projects.find((pr) => pr._id === selected)
 </script>
 
-<div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'} border-left">
+<div
+  class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal' ? 'portrait' : 'landscape'} border-left"
+  class:fly={$deviceInfo.navigator.float}
+>
   <div class="antiPanel-wrap__content hulyNavPanel-container">
     <NavHeader label={time.string.TeamPlanner} />
 
@@ -89,9 +90,9 @@
   </div>
   <Separator
     name={'time'}
-    float={navFloat ? 'navigator' : true}
-    index={0}
+    float={$deviceInfo.navigator.float ? 'navigator' : true}
+    index={1}
     disabledWhen={['panel-aside']}
-    color={'var(--theme-navpanel-border)'}
+    color={'var(--theme-divider-color)'}
   />
 </div>
