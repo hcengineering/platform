@@ -17,9 +17,10 @@
 
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import core, { Data, Ref, generateId, makeCollaborativeDoc } from '@hcengineering/core'
+  import core, { Data, Doc, DocumentQuery, Ref, generateId, makeCollaborativeDoc } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
+  import { ArrayEditor } from '@hcengineering/view-resources'
+  import { Card, SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
   import {
     TestCase,
     TestRun,
@@ -28,18 +29,31 @@
     TestRunStatus,
     TestManagementEvents
   } from '@hcengineering/test-management'
-  import { EditBox, navigate } from '@hcengineering/ui'
+  import { EditBox, Loading, navigate } from '@hcengineering/ui'
   import { EmptyMarkup } from '@hcengineering/text'
   import { Analytics } from '@hcengineering/analytics'
-  import { getTestRunsLink } from '../../navigation'
 
+  import { getTestRunsLink } from '../../navigation'
   import testManagement from '../../plugin'
   import ProjectPresenter from '../project/ProjectSpacePresenter.svelte'
+  import TestCaseSelector from '../test-case/TestCaseSelector.svelte'
 
-  export let space: Ref<TestProject>
+  export let space: Ref<TestProject> | undefined
+  export let query: DocumentQuery<TestCase> = {}
   export let testCases: TestCase[]
   const dispatch = createEventDispatcher()
   const client = getClient()
+
+  let isLoading = testCases === undefined
+
+  if (testCases === undefined) {
+    const client = createQuery()
+    const spaceQuery = space !== undefined ? { space } : {}
+    client.query(testManagement.class.TestCase, { ...spaceQuery, ...(query ?? {}) }, (result) => {
+      testCases = result
+      isLoading = false
+    })
+  }
 
   const id: Ref<TestRun> = generateId()
 
@@ -100,7 +114,7 @@
 <Card
   label={testManagement.string.CreateTestRun}
   okAction={onSave}
-  canSave={object.name !== ''}
+  canSave={object.name !== '' && !isLoading}
   okLabel={testManagement.string.CreateTestRun}
   gap={'gapV-4'}
   on:close={() => dispatch('close')}
@@ -144,4 +158,11 @@
       }
     }}
   />
+  <svelte:fragment slot="pool">
+    {#if isLoading}
+      <Loading />
+    {:else}
+      <TestCaseSelector objects={testCases} selectedObjects={testCases} />
+    {/if}
+  </svelte:fragment>
 </Card>

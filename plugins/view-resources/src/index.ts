@@ -193,6 +193,7 @@ export {
 } from './utils'
 export * from './viewOptions'
 export {
+  ArrayEditor,
   BooleanEditor,
   BooleanPresenter,
   ClassAttributeBar,

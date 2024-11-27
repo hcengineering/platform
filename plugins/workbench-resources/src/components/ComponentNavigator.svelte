@@ -123,7 +123,13 @@
       <Breadcrumb icon={mainComponentIcon} label={mainComponentLabel} size={'large'} />
       <svelte:fragment slot="actions">
         {#if mainHeaderComponent}
-          <Component is={mainHeaderComponent} />
+          <Component
+            is={mainHeaderComponent}
+            props={{
+              query: resultQuery,
+              space
+            }}
+          />
         {/if}
       </svelte:fragment>
     </Header>

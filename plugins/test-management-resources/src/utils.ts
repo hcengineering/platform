@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type Ref } from '@hcengineering/core'
+import type { Doc, DocumentQuery, Ref } from '@hcengineering/core'
 import { showPopup } from '@hcengineering/ui'
 import { type TestProject, type TestCase, type TestSuite } from '@hcengineering/test-management'
 
@@ -42,9 +42,12 @@ export async function showCreateProjectPopup (): Promise<void> {
   showPopup(CreateProject, {}, 'top')
 }
 
-export async function showCreateTestRunPopup (testCases: TestCase[]): Promise<void> {
-  const spaceProp = testCases?.length > 0 ? { space: testCases[0].space } : {}
-  showPopup(CreateTestRun, { testCases, ...spaceProp }, 'top')
+export async function showCreateTestRunPopup (options: {
+  testCases?: TestCase[]
+  query?: DocumentQuery<Doc>
+  space?: Ref<TestProject>
+}): Promise<void> {
+  showPopup(CreateTestRun, options, 'top')
 }
 
 export async function CreateChildTestSuiteAction (doc: TestSuite): Promise<void> {
@@ -56,5 +59,10 @@ export async function EditTestSuiteAction (doc: TestSuite): Promise<void> {
 }
 
 export async function RunSelectedTestsAction (testCases: TestCase[]): Promise<void> {
-  await showCreateTestRunPopup(testCases)
+  if (testCases?.length > 0) {
+    const space = testCases[0].space
+    await showCreateTestRunPopup({ testCases, space })
+  } else {
+    console.error('No test cases selected')
+  }
 }

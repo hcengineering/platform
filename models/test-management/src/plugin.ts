@@ -39,6 +39,7 @@ export default mergeIds(testManagementId, testManganement, {
     TestSuiteRefPresenter: '' as AnyComponent,
     RunSelectedTestsButton: '' as AnyComponent,
     TestResultPresenter: '' as AnyComponent,
-    EditTestResult: '' as AnyComponent
+    EditTestResult: '' as AnyComponent,
+    TestResultFooter: '' as AnyComponent
   }
 })

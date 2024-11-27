@@ -12,11 +12,58 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { SelectionActionButton } from '@hcengineering/view-resources'
+  import { Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
+  import { ButtonWithDropdown, IconDropdown, SelectPopupValueType } from '@hcengineering/ui'
 
   import testManagement from '../../plugin'
+  import { showCreateTestRunPopup } from '../../utils'
+  import type { TestProject } from '@hcengineering/test-management'
+
+  export let query: DocumentQuery<Doc> = {}
+  export let space: Ref<Space> | undefined = undefined
+
+  const project: Ref<TestProject> | undefined = space as any
+
+  const dropdownItems = [
+    {
+      id: testManagement.string.RunAllTestCases,
+      label: testManagement.string.RunAllTestCases,
+      icon: testManagement.icon.TestRuns
+    },
+    {
+      id: testManagement.string.RunFilteredTestCases,
+      label: testManagement.string.RunFilteredTestCases,
+      icon: testManagement.icon.TestRuns
+    }
+  ]
+
+  async function handleDropdownItemSelected (res?: SelectPopupValueType['id']): Promise<void> {
+    switch (res) {
+      case testManagement.string.RunAllTestCases: {
+        await showCreateTestRunPopup({ space: project })
+        return
+      }
+      case testManagement.string.RunFilteredTestCases: {
+        await showCreateTestRunPopup({ query, space: project })
+      }
+    }
+  }
+
+  const handleRunAllTestCases = async (): Promise<void> => {
+    await showCreateTestRunPopup({ space: project })
+  }
 </script>
 
-<SelectionActionButton actionId={testManagement.action.RunSelectedTests} />
+<ButtonWithDropdown
+  icon={testManagement.icon.TestRuns}
+  justify={'left'}
+  kind={'primary'}
+  label={testManagement.string.RunAllTestCases}
+  dropdownIcon={IconDropdown}
+  {dropdownItems}
+  on:click={handleRunAllTestCases}
+  on:dropdown-selected={(ev) => {
+    void handleDropdownItemSelected(ev.detail)
+  }}
+/>

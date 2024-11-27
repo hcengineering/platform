@@ -75,6 +75,9 @@
     "DonePercent": "% Done",
     "TestResults": "Results",
     "TestRunName": "Name",
-    "DueDate": "Due date"
+    "DueDate": "Due date",
+    "RunAllTestCases": "Run all test cases",
+    "RunSelectedTestCases": "Run selected test cases",
+    "RunFilteredTestCases": "Run test cases matching a filter"
   }
 }

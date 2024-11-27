@@ -440,6 +440,10 @@ function defineTestRun (builder: Builder): void {
     component: testManagement.component.EditTestResult
   })
 
+  builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ObjectPanelFooter, {
+    editor: testManagement.component.TestResultFooter
+  })
+
   builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ClassFilters, {
     filters: ['assignee', 'status', 'testSuite'],
     ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn']

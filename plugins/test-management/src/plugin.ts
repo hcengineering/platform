@@ -182,7 +182,10 @@ export const testManagementPlugin = plugin(testManagementId, {
     Save: '' as IntlString,
     SaveAndNext: '' as IntlString,
     DonePercent: '' as IntlString,
-    TestResults: '' as IntlString
+    TestResults: '' as IntlString,
+    RunAllTestCases: '' as IntlString,
+    RunSelectedTestCases: '' as IntlString,
+    RunFilteredTestCases: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>
