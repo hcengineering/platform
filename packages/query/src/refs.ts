@@ -1,5 +1,4 @@
 import {
-  clone,
   Hierarchy,
   matchQuery,
   toFindResult,
@@ -59,14 +58,17 @@ export class Refs {
     query: DocumentQuery<Doc>,
     options?: FindOptions<T>
   ): FindResult<T> | null {
-    const classKey = _class + ':' + JSON.stringify(options?.lookup ?? {})
     if (typeof query._id === 'string') {
-      // One document query
-      const doc = this.documentRefs.get(classKey)?.get(query._id)?.doc
-      if (doc !== undefined) {
-        const q = matchQuery([doc], query, _class, this.getHierarchy())
-        if (q.length > 0) {
-          return toFindResult(clone([doc]), 1)
+      const desc = this.getHierarchy().getDescendants(_class)
+      for (const des of desc) {
+        const classKey = des + ':' + JSON.stringify(options?.lookup ?? {})
+        // One document query
+        const doc = this.documentRefs.get(classKey)?.get(query._id)?.doc
+        if (doc !== undefined) {
+          const q = matchQuery([doc], query, _class, this.getHierarchy())
+          if (q.length > 0) {
+            return toFindResult(this.getHierarchy().clone([doc]), 1)
+          }
         }
       }
     }
@@ -76,13 +78,14 @@ export class Refs {
       options?.sort === undefined &&
       options?.projection === undefined
     ) {
+      const classKey = _class + ':' + JSON.stringify(options?.lookup ?? {})
       const docs = this.documentRefs.get(classKey)
       if (docs !== undefined) {
         const _docs = Array.from(docs.values()).map((it) => it.doc)
 
         const q = matchQuery(_docs, query, _class, this.getHierarchy())
         if (q.length > 0) {
-          return toFindResult(clone([q[0]]), 1)
+          return toFindResult(this.getHierarchy().clone([q[0]]), 1)
         }
       }
     }

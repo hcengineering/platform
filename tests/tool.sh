@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+export MODEL_VERSION=$(node ../common/scripts/show_version.js)
 export MINIO_ACCESS_KEY=minioadmin
 export MINIO_SECRET_KEY=minioadmin
 export MINIO_ENDPOINT=localhost:9002

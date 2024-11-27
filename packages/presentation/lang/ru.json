@@ -34,7 +34,8 @@
     "FailedToPreview": "Ошибка предпросмотра",
     "ContentType": "Тип контента",
     "ContentTypeNotSupported": "Предварительный просмотр недоступен для этого типа контента",
-    "StartDrawing": "Сделать набросок"
+    "StartDrawing": "Сделать набросок",
+    "DrawingHistory": "История набросков"
   },
   "status": {
     "FileTooLarge": "Файл слишком большой"

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Attachment } from '@hcengineering/attachment'
+import attachment, { type Attachment } from '@hcengineering/attachment'
 import type { Tx, TxRemoveDoc } from '@hcengineering/core'
 import type { TriggerControl } from '@hcengineering/server-core'
 
@@ -23,8 +23,9 @@ import type { TriggerControl } from '@hcengineering/server-core'
  */
 export async function OnAttachmentDelete (
   txes: Tx[],
-  { removedMap, ctx, storageAdapter, workspace }: TriggerControl
+  { removedMap, ctx, storageAdapter, workspace, findAll, txFactory }: TriggerControl
 ): Promise<Tx[]> {
+  const result: Tx[] = []
   const toDelete: string[] = []
   for (const tx of txes) {
     const rmTx = tx as TxRemoveDoc<Attachment>
@@ -36,12 +37,18 @@ export async function OnAttachmentDelete (
       continue
     }
     toDelete.push(attach.file)
+
+    const drawings = await findAll(ctx, attachment.class.Drawing, { parent: attach.file })
+    for (const drawing of drawings) {
+      const removeTx = txFactory.createTxRemoveDoc(drawing._class, drawing.space, drawing._id)
+      result.push(removeTx)
+    }
   }
   if (toDelete.length > 0) {
     await storageAdapter.remove(ctx, workspace, toDelete)
   }
 
-  return []
+  return result
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

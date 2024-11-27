@@ -34,7 +34,8 @@
     "FailedToPreview": "Falha ao pré-visualizar",
     "ContentType": "Tipo de conteúdo",
     "ContentTypeNotSupported": "A visualização não está disponível para este tipo de conteúdo",
-    "StartDrawing": "Scarabocchiare sopra"
+    "StartDrawing": "Scarabocchiare sopra",
+    "DrawingHistory": "História de rabiscos"
   },
   "status": {
     "FileTooLarge": "Ficheiro demasiado grande"

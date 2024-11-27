@@ -39,6 +39,7 @@
 
   const client = getClient()
   const limit = 300
+  const tooltipLimit = 512
 
   let isActionsOpened = false
   let person: WithLookup<Person> | undefined = undefined
@@ -82,6 +83,14 @@
     tooltipLabel = getEmbeddedLabel(person.name)
   } else {
     tooltipLabel = core.string.System
+  }
+
+  function getTooltipText (markup: string): string {
+    const text = markupToText(markup)
+    if (text.length > tooltipLimit) {
+      return text.substring(0, tooltipLimit) + '...'
+    }
+    return text
   }
 </script>
 
@@ -138,7 +147,7 @@
       <span
         class="textContent overflow-label font-normal"
         class:contentOnly={type === 'content-only'}
-        use:tooltip={{ label: text ? getEmbeddedLabel(markupToText(text)) : intlLabel }}
+        use:tooltip={{ label: text ? getEmbeddedLabel(getTooltipText(text)) : intlLabel }}
       >
         {#if intlLabel}
           <Label label={intlLabel} />

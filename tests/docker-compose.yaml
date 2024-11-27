@@ -12,9 +12,16 @@ services:
     image: postgres
     environment:
       - POSTGRES_PASSWORD=example
+      - PGUSER=postgres
     ports:
       - 5433:5432
     restart: unless-stopped
+    healthcheck:
+      #CHANGE 1: this command checks if the database is ready, right on the source db server
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000" --console-address ":9001"

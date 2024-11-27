@@ -35,9 +35,11 @@
       "args": ["src/__start.ts"],
       "env": {
         "FULLTEXT_URL": "http://localhost:4700",
-        "MONGO_URL": "mongodb://localhost:27017",
-        "DB_URL": "mongodb://localhost:27017",
+        // "MONGO_URL": "mongodb://localhost:27017",
+        // "DB_URL": "mongodb://localhost:27017",
         // "DB_URL": "postgresql://postgres:example@localhost:5432",
+        "DB_URL": "postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable",
+        "SERVER_PORT": "3332",
         "APM_SERVER_URL2": "http://localhost:8200",
         "METRICS_CONSOLE": "false",
         "METRICS_FILE": "${workspaceRoot}/metrics.txt", // Show metrics in console evert 30 seconds.,
@@ -253,7 +255,7 @@
       "name": "Debug backup tool",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "backup", "../temp/backup-test", "platform", "--force"],
+      "args": ["src/__start.ts", "backup-restore", "../../../hardware/dump/alex-staff-agency", "w-haiodo-alex-staff-c-673ee7ab-87df5406ea-2b8b4d", "--skip", "blob"],
       "env": {
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
@@ -287,6 +289,31 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         "TELEGRAM_DATABASE": "telegram-service",
         "ELASTIC_URL": "http://localhost:9200",
+        "REKONI_URL": "http://localhost:4004",
+        "MODEL_VERSION": "0.6.287"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/dev/tool"
+    },
+    {
+      "name": "Debug tool upgrade PG(tests)",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts", "upgrade", "--force"],
+      "env": {
+        "SERVER_SECRET": "secret",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "MINIO_ENDPOINT": "localhost:9002",
+        "TRANSACTOR_URL": "ws://localhost:3334",
+        "ACCOUNT_DB_URL": "postgresql://postgres:example@localhost:5433",
+        "DB_URL": "postgresql://postgres:example@localhost:5433",
+        "MONGO_URL": "mongodb://localhost:27018",
+        "ACCOUNTS_URL": "http://localhost:3003",
+        "TELEGRAM_DATABASE": "telegram-service",
+        "ELASTIC_URL": "http://localhost:9201",
         "REKONI_URL": "http://localhost:4004",
         "MODEL_VERSION": "0.6.287"
       },
@@ -384,7 +411,8 @@
         "MINIO_SECRET_KEY": "minioadmin",
         "PLATFORM_OPERATION_LOGGING": "true",
         "FRONT_URL": "http://localhost:8080",
-        "PORT": "3500"
+        "PORT": "3500",
+        "STATS_URL": "http://host.docker.internal:4900"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,

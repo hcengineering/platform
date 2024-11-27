@@ -398,6 +398,7 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
     // TODO: support returning pending deletion workspaces when we will actually want
     // to clear them with the worker.
 
+    whereChunks.push("mode <> 'manual-creation'")
     whereChunks.push('(attempts IS NULL OR attempts <= 3)')
     whereChunks.push(`("lastProcessingTime" IS NULL OR "lastProcessingTime" < $${values.length + 1})`)
     values.push(Date.now() - processingTimeoutMs)

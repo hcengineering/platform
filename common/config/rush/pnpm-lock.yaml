@@ -1075,7 +1075,7 @@ dependencies:
     version: file:projects/time-resources.tgz(@tiptap/core@2.6.6)(@tiptap/pm@2.6.6)(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
   '@rush-temp/tool':
     specifier: file:./projects/tool.tgz
-    version: file:projects/tool.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+    version: file:projects/tool.tgz
   '@rush-temp/tracker':
     specifier: file:./projects/tracker.tgz
     version: file:projects/tracker.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
@@ -1766,9 +1766,6 @@ dependencies:
   pdfjs-dist:
     specifier: 2.12.313
     version: 2.12.313
-  pg:
-    specifier: 8.12.0
-    version: 8.12.0
   png-chunks-extract:
     specifier: ^1.0.0
     version: 1.0.0
@@ -1782,8 +1779,8 @@ dependencies:
     specifier: ^7.0.2
     version: 7.3.4(postcss@8.4.35)(typescript@5.3.3)(webpack@5.90.3)
   postgres:
-    specifier: ^3.4.4
-    version: 3.4.4
+    specifier: ^3.4.5
+    version: 3.4.5
   posthog-js:
     specifier: ~1.122.0
     version: 1.122.0
@@ -16887,8 +16884,8 @@ packages:
     resolution: {integrity: sha512-i/hbxIE9803Alj/6ytL7UHQxRvZkI9O4Sy+J3HGc4F4oo/2eQAjTSNJ0bfxyse3bH0nuVesCk+3IRLaMtG3H6w==}
     dev: false
 
-  /postgres@3.4.4:
-    resolution: {integrity: sha512-IbyN+9KslkqcXa8AO9fxpk97PA4pzewvpi2B3Dwy9u4zpV32QicaEdgmF3eSQUzdRk7ttDHQejNgAEr4XoeH4A==}
+  /postgres@3.4.5:
+    resolution: {integrity: sha512-cDWgoah1Gez9rN3H4165peY9qfpEo+SA61oQv65O3cRUE1pOEoJWwddwcqKE8XZYjbblOJlYDlLV4h67HrEVDg==}
     engines: {node: '>=12'}
     dev: false
 
@@ -21012,7 +21009,7 @@ packages:
     dev: false
 
   file:projects/account.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-7ojvPVqMSMXTMLyJeAIRk/7DFH31sUkEO0taWQx2aMHp7D5pfaIhFwWUFEwIAiszGSxb45SHxQNJqeRZ/+IDdw==, tarball: file:projects/account.tgz}
+    resolution: {integrity: sha512-R9WSNuYeIemHJ7eAv7sCyf8IZHZott9CY1b/KJLAknaJfozXLQ6yOYszJjS/iWQRPl4TFFLgYsQaLWd1gDiqww==, tarball: file:projects/account.tgz}
     id: file:projects/account.tgz
     name: '@rush-temp/account'
     version: 0.0.0
@@ -21029,7 +21026,7 @@ packages:
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       mongodb: 6.10.0
       otp-generator: 4.0.1
-      postgres: 3.4.4
+      postgres: 3.4.5
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
@@ -22174,7 +22171,7 @@ packages:
     dev: false
 
   file:projects/cloud-datalake.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-KdKIEaVTjeWtCEUYfkvyrIYxglGcfM8iICOnTxRzPiVmOIP3kswu7PaUKeH/xeFZQcvRBvhtNI7XT0dBr5mODA==, tarball: file:projects/cloud-datalake.tgz}
+    resolution: {integrity: sha512-4xq66fA2IsBhSePKZhWWfD1oCMF7eavO8dkefUDupGqhNUr/gv+4zPrsvoJZ2x5ZozqNvBHzbDQQeIuxg1uxNQ==, tarball: file:projects/cloud-datalake.tgz}
     id: file:projects/cloud-datalake.tgz
     name: '@rush-temp/cloud-datalake'
     version: 0.0.0
@@ -22191,7 +22188,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       itty-router: 5.0.18
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      postgres: 3.4.4
+      postgres: 3.4.5
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.6.2)
       typescript: 5.6.2
@@ -27301,7 +27298,7 @@ packages:
     dev: false
 
   file:projects/postgres.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-/6jhoJPjD7X4j5u87Epy0kCDI5gedKzlzCM/anvCuB57Igtpi6Ji1cX6LrzyJ33gbswI8tlygVs4miiYWToa5g==, tarball: file:projects/postgres.tgz}
+    resolution: {integrity: sha512-L+wKYPpR4mHAuZkVGw2tuKwfngukoXRgeSCMf5TOn5bIFkwqV+HUpi0O4iDCIizyFvGftWdPQARYFRvRa0qlXg==, tarball: file:projects/postgres.tgz}
     id: file:projects/postgres.tgz
     name: '@rush-temp/postgres'
     version: 0.0.0
@@ -27318,7 +27315,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       pg: 8.12.0
-      postgres: 3.4.4
+      postgres: 3.4.5
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
@@ -27329,7 +27326,6 @@ packages:
       - babel-plugin-macros
       - esbuild
       - node-notifier
-      - pg-native
       - supports-color
       - ts-node
     dev: false
@@ -31936,9 +31932,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/tool.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-jFXGlkB1O4yIpKHye9XX55H4xZNemZfh3KaoCr5CKcaNIE5qZV8PGRihn2SuMNt5Y10PP2cUMXhJcBEO8tfNPQ==, tarball: file:projects/tool.tgz}
-    id: file:projects/tool.tgz
+  file:projects/tool.tgz:
+    resolution: {integrity: sha512-J1h1FNTEQWAGhkKNN3srbnXslsYEAoTnynbgY+6H1XzfABHP8gP0+g6aySbSfMn2HDM8TKfyPh/o9DGHs3tEfw==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
@@ -31947,11 +31942,11 @@ packages:
       '@types/mime-types': 2.1.4
       '@types/minio': 7.0.18
       '@types/node': 20.11.19
-      '@types/pg': 8.11.6
       '@types/request': 2.48.12
       '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      bufferutil: 4.0.8
       commander: 8.3.0
       cross-env: 7.0.3
       csv-parse: 5.1.0
@@ -31968,12 +31963,14 @@ packages:
       libphonenumber-js: 1.10.56
       mime-types: 2.1.35
       mongodb: 6.10.0
-      pg: 8.12.0
-      postgres: 3.4.4
+      msgpackr: 1.11.0
+      msgpackr-extract: 3.0.3
+      postgres: 3.4.5
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
       typescript: 5.3.3
+      utf-8-validate: 6.0.4
       ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     transitivePeerDependencies:
       - '@aws-sdk/credential-providers'
@@ -31984,7 +31981,6 @@ packages:
       - '@swc/wasm'
       - babel-jest
       - babel-plugin-macros
-      - bufferutil
       - gcp-metadata
       - kerberos
       - mongodb-client-encryption
@@ -31992,7 +31988,6 @@ packages:
       - snappy
       - socks
       - supports-color
-      - utf-8-validate
     dev: false
 
   file:projects/tracker-assets.tgz(esbuild@0.20.1)(ts-node@10.9.2):

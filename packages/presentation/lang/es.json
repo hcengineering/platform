@@ -34,7 +34,8 @@
     "FailedToPreview": "Error al previsualizar",
     "ContentType": "Tipo de contenido",
     "ContentTypeNotSupported": "La vista previa no está disponible para este tipo de contenido",
-    "StartDrawing": "Garabatear encima"
+    "StartDrawing": "Garabatear encima",
+    "DrawingHistory": "Historia de garabatos"
   },
   "status": {
     "FileTooLarge": "Archivo demasiado grande"
