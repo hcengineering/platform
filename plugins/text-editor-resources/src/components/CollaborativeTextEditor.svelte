@@ -30,6 +30,7 @@
   import {
     AnySvelteComponent,
     Button,
+    IconScribble,
     IconSize,
     Loading,
     PopupAlignment,
@@ -65,6 +66,7 @@
   import TextEditorToolbar from './TextEditorToolbar.svelte'
   import { noSelectionRender, renderCursor } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
+  import { DrawingBoardExtension } from './extension/drawingBoard'
   import { EmojiExtension } from './extension/emoji'
   import { FileUploadExtension } from './extension/fileUploadExt'
   import { ImageUploadExtension } from './extension/imageUploadExt'
@@ -265,7 +267,8 @@
             { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
             { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
             { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
-            { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList }
+            { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList },
+            { id: 'drawing-board', label: textEditor.string.DrawingBoard, icon: IconScribble as any }
           ],
           handleSelect: handleLeftMenuClick
         })
@@ -358,6 +361,9 @@
       case 'separator-line':
         editor.commands.setHorizontalRule()
         break
+      case 'drawing-board':
+        editor.commands.insertContentAt(pos, { type: 'drawingBoard', attrs: { id: generateId() } })
+        break
     }
   }
 
@@ -414,6 +420,7 @@
           }
         }),
         EmojiExtension,
+        DrawingBoardExtension,
         ...extensions
       ],
       parseOptions: {
