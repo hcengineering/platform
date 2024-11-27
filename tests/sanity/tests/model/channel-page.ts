@@ -302,7 +302,11 @@ export class ChannelPage extends CommonPage {
     await expect(this.buttonBreadcrumb(channel)).toBeVisible()
   }
 
-  async makeActionWithChannelInMenu (channelName: string, action: string, openNavigator: boolean = false): Promise<void> {
+  async makeActionWithChannelInMenu (
+    channelName: string,
+    action: string,
+    openNavigator: boolean = false
+  ): Promise<void> {
     if (openNavigator) await this.appsMenuButton().click()
     await this.channelContainers().filter({ hasText: channelName }).hover()
     await this.channelContainers().filter({ hasText: channelName }).locator('.hulyNavItem-actions').click()
