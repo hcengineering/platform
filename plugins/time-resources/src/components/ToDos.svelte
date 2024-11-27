@@ -29,6 +29,8 @@
     Header,
     ButtonIcon,
     Label,
+    IconMenuOpen,
+    IconMenuClose,
     deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import { getCurrentAccount, toIdMap, SortingOrder } from '@hcengineering/core'
@@ -39,8 +41,6 @@
   import { getNearest } from '../utils'
   import CreateToDo from './CreateToDo.svelte'
   import ToDoGroup from './ToDoGroup.svelte'
-  import MenuClose from './icons/MenuClose.svelte'
-  import MenuOpen from './icons/MenuOpen.svelte'
   import time from '../plugin'
 
   export let mode: ToDosMode
@@ -292,7 +292,7 @@
 <div class="toDos-container">
   <Header type={'type-panel'} hideSeparator adaptive={'disabled'}>
     <ButtonIcon
-      icon={$deviceInfo.navigator.visible ? MenuClose : MenuOpen}
+      icon={$deviceInfo.navigator.visible ? IconMenuClose : IconMenuOpen}
       kind={'tertiary'}
       size={'small'}
       pressed={!$deviceInfo.navigator.visible}

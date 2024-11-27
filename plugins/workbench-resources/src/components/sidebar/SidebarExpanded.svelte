@@ -22,7 +22,8 @@
     Location,
     Header,
     Breadcrumbs,
-    getCurrentLocation
+    getCurrentLocation,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
 
@@ -108,6 +109,7 @@
           hideDescription={true}
           adaptive="disabled"
           closeOnEscape={false}
+          topIndent={$deviceInfo.navigator.float && !$deviceInfo.aside.float}
           on:close={() => {
             if (widget !== undefined) {
               closeWidget(widget._id)

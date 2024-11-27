@@ -264,14 +264,6 @@
   `
 
   let frame: HTMLIFrameElement | undefined = undefined
-  const applyStyles = (): void => {
-    const head = frame?.contentDocument?.querySelector('head')
-
-    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-    if (css !== undefined && head !== undefined && head !== null) {
-      head.appendChild(document.createElement('style')).textContent = css
-    }
-  }
 
   // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
   $: if (css !== undefined && frame !== undefined && frame !== null) {

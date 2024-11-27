@@ -105,6 +105,7 @@
 
 <div
   class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal' ? 'portrait' : 'landscape'} border-left"
+  class:fly={$deviceInfo.navigator.float}
 >
   <div class="antiPanel-wrap__content hulyNavPanel-container">
     <div class="hulyNavPanel-header">
@@ -209,7 +210,7 @@
     float={$deviceInfo.navigator.float ? 'navigator' : true}
     index={0}
     disabledWhen={['panel-aside']}
-    color={'var(--theme-navpanel-border)'}
+    color={'var(--theme-divider-color)'}
   />
 </div>
 

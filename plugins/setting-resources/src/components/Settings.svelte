@@ -154,6 +154,7 @@
         ? 'portrait'
         : 'landscape'} border-left"
       class:border-right={category?.component === undefined}
+      class:fly={$deviceInfo.navigator.float}
     >
       <div class="antiPanel-wrap__content hulyNavPanel-container">
         <div class="hulyNavPanel-header">

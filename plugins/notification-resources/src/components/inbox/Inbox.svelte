@@ -405,6 +405,7 @@
       class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal'
         ? 'portrait'
         : 'landscape'} border-left"
+      class:fly={$deviceInfo.navigator.float}
     >
       <div class="antiPanel-wrap__content hulyNavPanel-container">
         <div class="hulyNavPanel-header withButton small">
