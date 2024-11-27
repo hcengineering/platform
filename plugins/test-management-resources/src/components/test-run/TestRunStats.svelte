@@ -34,7 +34,7 @@
 
 <div class="popupPanel-body__aside-grid">
   <span class="labelOnPanel"><Label label={testManagement.string.TestResults} /> </span>
-  {#if !isLoading}
+  {#if !isLoading && stats !== undefined}
     <TestRunResult value={stats} />
   {:else}
     <Loading />
@@ -47,7 +47,7 @@
       <div class="mr-1">
         <ProgressCircle value={stats?.done ?? 0} />
       </div>
-      {stats.done ?? 0}
+      {stats?.done ?? 0}
     </div>
   {:else}
     <Loading />

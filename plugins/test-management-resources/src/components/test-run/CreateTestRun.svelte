@@ -38,7 +38,7 @@
   import ProjectPresenter from '../project/ProjectSpacePresenter.svelte'
   import TestCaseSelector from '../test-case/TestCaseSelector.svelte'
 
-  export let space: Ref<TestProject> | undefined
+  export let space: Ref<TestProject>
   export let query: DocumentQuery<TestCase> = {}
   export let testCases: TestCase[]
   const dispatch = createEventDispatcher()

@@ -11,16 +11,15 @@
   export let value: Ref<Doc>[] = []
   export let type: ArrOf<RefTo<Doc>>
   export let onChange: (refs: Ref<Doc>[]) => void
-  export let _class: Ref<Class<Doc>>
 
-  $: _clazz = _class ?? (type.of as RefTo<Doc>).to
+  $: _clazz = (type.of as RefTo<Doc>).to
   const client = getClient()
   const hierarchy = client.getHierarchy()
   function openPopup (event: MouseEvent) {
     showPopup(
       ArrayEditorPopup,
       {
-        _class: _class ?? (type.of as RefTo<Doc>).to,
+        _class: (type.of as RefTo<Doc>).to,
         space: object.space,
         placeholder: label,
         selectedObjects: value

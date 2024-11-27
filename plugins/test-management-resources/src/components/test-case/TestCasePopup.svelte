@@ -31,7 +31,6 @@
 <DocPopup
   {_class}
   {objects}
-  searchField={'name'}
   multiSelect={true}
   {allowDeselect}
   {closeAfterSelect}

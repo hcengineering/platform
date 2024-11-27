@@ -32,7 +32,7 @@
 
   let testCase: TestCase | undefined = undefined
   $: testCase = value?.$lookup?.testCase as TestCase | undefined
-  $: title = testCase?.name ?? value.name
+  $: title = testCase?.name ?? value?.name
 </script>
 
 {#if value}

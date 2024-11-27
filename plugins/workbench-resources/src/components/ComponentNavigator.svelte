@@ -43,7 +43,7 @@
   export let createComponentProps: Record<string, any> = {}
   export let mainComponentLabel: IntlString
   export let mainComponentIcon: Asset | undefined = undefined
-  export let mainHeaderComponent: AnyComponent
+  export let mainHeaderComponent: AnyComponent | undefined = undefined
   export let query: DocumentQuery<Doc> = {}
   export let syncWithLocationQuery: boolean = true
   export let mainComponent: AnyComponent | AnySvelteComponent

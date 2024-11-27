@@ -21,7 +21,6 @@
   import { EditBox } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
 
-  import SelectTestCasesButton from './SelectTestCasesButton.svelte'
   import testManagement from '../../plugin'
   import TestRunAside from './TestRunAside.svelte'
 
@@ -102,8 +101,6 @@
         boundary={content}
       />
     </div>
-
-    <SelectTestCasesButton />
 
     <svelte:fragment slot="aside">
       <TestRunAside {object} />

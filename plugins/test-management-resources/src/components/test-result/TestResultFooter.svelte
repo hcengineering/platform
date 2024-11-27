@@ -24,7 +24,7 @@
     label={testManagement.string.Save}
     kind={'primary'}
     on:click={() => {
-      // download.click()
+      // TODO: Add next test result logic
     }}
     showTooltip={{ label: testManagement.string.Save }}
   />

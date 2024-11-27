@@ -22,9 +22,9 @@
   import type { TestProject } from '@hcengineering/test-management'
 
   export let query: DocumentQuery<Doc> = {}
-  export let space: Ref<Space> | undefined = undefined
+  export let space: Ref<Space>
 
-  const project: Ref<TestProject> | undefined = space as any
+  const project: Ref<TestProject> = space as any
 
   const commonDropdownItems = [
     {
@@ -41,15 +41,17 @@
 
   let dropdownItems: SelectPopupValueType[] = []
 
-  $: dropdownItems = $selectionStore?.docs?.length > 0
-    ? [
-        ...commonDropdownItems,
-        {
-          id: testManagement.string.RunSelectedTestCases,
-          label: testManagement.string.RunSelectedTestCases,
-          icon: testManagement.icon.Check
-        }]
-    : commonDropdownItems
+  $: dropdownItems =
+    $selectionStore?.docs?.length > 0
+      ? [
+          ...commonDropdownItems,
+          {
+            id: testManagement.string.RunSelectedTestCases,
+            label: testManagement.string.RunSelectedTestCases,
+            icon: testManagement.icon.Check
+          }
+        ]
+      : commonDropdownItems
 
   async function handleDropdownItemSelected (res?: SelectPopupValueType['id']): Promise<void> {
     switch (res) {

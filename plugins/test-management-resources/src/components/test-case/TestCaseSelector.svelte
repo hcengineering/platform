@@ -31,6 +31,7 @@
     showPopup
   } from '@hcengineering/ui'
   import view, { IconProps } from '@hcengineering/view'
+  import { TestCase } from '@hcengineering/test-management'
 
   import TestCasePopup from './TestCasePopup.svelte'
   import testManagement from '../../plugin'
@@ -38,7 +39,6 @@
   export let objects: TestCase[]
   export let selectedObjects: TestCase[]
   export let label: IntlString = testManagement.string.TestCases
-  export let value: Ref<Space> | undefined
   export let focusIndex = -1
   export let focus = false
   export let labelDirection: TooltipAlignment | undefined = undefined
@@ -48,8 +48,6 @@
   export let shape: ButtonShape = undefined
   export let width: string | undefined = undefined
   export let readonly = false
-  export let iconWithEmoji: AnySvelteComponent | Asset | ComponentType | undefined = view.ids.IconWithEmoji
-  export let defaultIcon: AnySvelteComponent | Asset | ComponentType = IconFolder
 
   let selected: (Space & IconProps) | undefined
 
@@ -76,7 +74,6 @@
   {kind}
   {justify}
   {width}
-  notSelected={value == null}
   showTooltip={{ label, direction: labelDirection }}
   on:click={showSpacesPopup}
 >

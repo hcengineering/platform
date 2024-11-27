@@ -45,7 +45,7 @@ export async function showCreateProjectPopup (): Promise<void> {
 export async function showCreateTestRunPopup (options: {
   testCases?: TestCase[]
   query?: DocumentQuery<Doc>
-  space?: Ref<TestProject>
+  space: Ref<TestProject>
 }): Promise<void> {
   showPopup(CreateTestRun, options, 'top')
 }
