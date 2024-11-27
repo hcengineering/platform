@@ -62,6 +62,22 @@
     "SelectTestSuites": "Выбрать наборы тестов",
     "SelectTestCases": "Выбрать тест-кейсы",
     "TestLibrary": "Библиотека тестов",
-    "TestResult": "Результат"
+    "TestResult": "Результат",
+    "TestRunResult": "Результат",
+    "TestRunStatus": "Статус",
+    "StatusNonTested": "Не протестировано",
+    "StatusBlocked": "Заблокировано",
+    "StatusPassed": "Пройдено",
+    "StatusFailed": "Не пройдено",
+    "SelectTestCase": "Выбрать тест-кейс",
+    "Save": "Сохранить",
+    "SaveAndNext": "Сохранить и перейти к следующему",
+    "DonePercent": "% Выполнено",
+    "TestResults": "Результаты",
+    "TestRunName": "Название",
+    "DueDate": "Выполнить до",
+    "RunAllTestCases": "Выполнить все тест-кейсы",
+    "RunSelectedTestCases": "Выполнить выбранные тест-кейсы",
+    "RunFilteredTestCases": "Выполнить тест-кейсы, соответствующие фильтру"
   }
 }

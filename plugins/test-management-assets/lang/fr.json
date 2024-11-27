@@ -62,6 +62,22 @@
     "SelectTestSuites": "Sélectionnez les suites de tests",
     "SelectTestCases": "Sélectionnez des cas de test",
     "TestLibrary": "Bibliothèque de tests",
-    "TestResult": "Résultat"
+    "TestResult": "Résultat",
+    "TestRunResult": "Résultat",
+    "TestRunStatus": "Statut",
+    "StatusNonTested": "Non testé",
+    "StatusBlocked": "Bloqué",
+    "StatusPassed": "Réussi",
+    "StatusFailed": "Échoué",
+    "SelectTestCase": "Sélectionnez le cas de test",
+    "Save": "Sauvegarder",
+    "SaveAndNext": "Sauvegarder et suivant",
+    "DonePercent": "% Fait",
+    "TestResults": "Résultats",
+    "TestRunName": "Nom",
+    "DueDate": "Date d'échéance",
+    "RunAllTestCases": "Exécuter tous les cas de test",
+    "RunSelectedTestCases": "Exécuter des scénarios de test sélectionnés",
+    "RunFilteredTestCases": "Exécuter des cas de test correspondant à un filtre"
   }
 }
