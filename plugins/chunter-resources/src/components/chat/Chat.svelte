@@ -170,6 +170,7 @@
       class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal'
         ? 'portrait'
         : 'landscape'} border-left"
+      class:fly={$deviceInfo.navigator.float}
     >
       <div class="antiPanel-wrap__content hulyNavPanel-container">
         <ChatNavigator {object} {currentSpecial} on:select={handleChannelSelected} />

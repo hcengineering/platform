@@ -548,7 +548,7 @@ test.describe('Channel tests', () => {
     })
 
     await test.step('Open general in sidebar too', async () => {
-      await channelPage.makeActionWithChannelInMenu('general', 'Open in sidebar')
+      await channelPage.makeActionWithChannelInMenu('general', 'Open in sidebar', true)
       await sidebarPage.checkIfSidebarHasVerticalTab(true, data.channelName)
       await sidebarPage.checkIfSidebarHasVerticalTab(true, 'general')
       await sidebarPage.checkIfChatSidebarTabIsOpen(true, 'general')
@@ -606,6 +606,7 @@ test.describe('Channel tests', () => {
     })
 
     await test.step('User go to another chat and Sidebar with tread disappears', async () => {
+      await channelPage.appsMenuButton().click()
       await channelPage.clickChannel('random')
       await sidebarPage.checkIfSidebarIsOpen(false)
     })

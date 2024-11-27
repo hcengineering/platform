@@ -109,5 +109,6 @@
   .content {
     max-width: 20rem;
     max-height: 20rem;
+    scroll-snap-align: start;
   }
 </style>

@@ -127,7 +127,7 @@ p:last-child { margin-block-end: 0; }
 .p-inline {
   overflow-wrap: break-word;
   word-wrap: break-word;
-  hyphens: auto;
+  // hyphens: auto;
   line-height: 150%;
 
   &.contrast { color: var(--global-primary-TextColor); }

@@ -388,8 +388,11 @@ function defineTestCase (builder: Builder): void {
         { key: '', displayProps: { fixed: 'left' } },
         {
           key: 'status',
-          props: { kind: 'list', size: 'small', shouldShowName: false }
+          props: { kind: 'list', size: 'small', shouldShowName: false },
+          displayProps: { key: 'status', fixed: 'left' }
         },
+        { key: '', displayProps: { fixed: 'left', key: 'lead' } },
+        { key: '', displayProps: { grow: true } },
         { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'right', dividerBefore: true } },
         {
           key: 'assignee',

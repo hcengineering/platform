@@ -56,6 +56,7 @@
     class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal'
       ? 'portrait'
       : 'landscape'} border-left will-change-opacity"
+    class:fly={$deviceInfo.navigator.float}
   >
     <div class="antiPanel-wrap__content hulyNavPanel-container">
       <div class="hulyNavPanel-header" class:withButton={editable}>

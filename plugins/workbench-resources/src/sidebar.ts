@@ -256,7 +256,9 @@ export function createWidgetTab (widget: Widget, tab: WidgetTab, newTab = false)
     variant: SidebarVariant.EXPANDED
   })
   const devInfo = get(deviceInfo)
-  if (devInfo.navigator.float && !devInfo.aside.visible) deviceInfo.set({ ...devInfo, aside: { visible: true } })
+  if (devInfo.aside.float && !devInfo.aside.visible) {
+    deviceInfo.set({ ...devInfo, aside: { visible: true, float: true } })
+  }
 }
 
 export function pinWidgetTab (widget: Widget, tabId: string): void {
@@ -337,7 +339,9 @@ export function minimizeSidebar (closedByUser = false): void {
 
   sidebarStore.set({ ...state, ...widgetsState, widget: undefined, variant: SidebarVariant.MINI })
   const devInfo = get(deviceInfo)
-  if (devInfo.navigator.float && devInfo.aside.visible) deviceInfo.set({ ...devInfo, aside: { visible: false } })
+  if (devInfo.navigator.float && devInfo.aside.visible) {
+    deviceInfo.set({ ...devInfo, aside: { visible: false, float: true } })
+  }
 }
 
 export function updateTabData (widget: Ref<Widget>, tabId: string, data: Record<string, any>): void {
