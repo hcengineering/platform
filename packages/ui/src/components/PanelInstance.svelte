@@ -14,13 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getResource } from '@hcengineering/platform'
+  import { getResourceC } from '@hcengineering/platform'
   import { afterUpdate, onMount } from 'svelte'
 
+  import { deviceOptionsStore as deviceInfo, resizeObserver } from '..'
   import { closePanel, PanelProps, panelstore } from '../panelup'
   import { fitPopupElement, popupstore } from '../popups'
-  import { deviceOptionsStore as deviceInfo, resizeObserver } from '..'
-  import type { AnySvelteComponent, PopupOptions, DeviceOptions } from '../types'
+  import type { AnySvelteComponent, DeviceOptions, PopupOptions } from '../types'
   import Spinner from './Spinner.svelte'
 
   export let contentPanel: HTMLElement | undefined
@@ -51,7 +51,7 @@
   let keepSize: boolean = false
 
   let props: PanelProps | undefined
-  function _close () {
+  function _close (): void {
     closePanel()
   }
 
@@ -59,7 +59,7 @@
     if ($panelstore.panel.component === undefined) {
       props = $panelstore.panel
     } else {
-      getResource($panelstore.panel.component).then((r) => {
+      getResourceC($panelstore.panel.component, (r) => {
         component = r
         props = $panelstore.panel
       })
@@ -69,14 +69,14 @@
     props = undefined
   }
 
-  function escapeClose () {
+  function escapeClose (): void {
     // Check if there is popup visible, then ignore
     if ($popupstore.length > 0) {
       return
     }
 
-    if (componentInstance?.canClose) {
-      if (!componentInstance.canClose()) {
+    if (componentInstance?.canClose !== undefined) {
+      if (!(componentInstance as { canClose: () => boolean }).canClose()) {
         return
       }
     }
@@ -84,20 +84,20 @@
   }
 
   const fitPopup = (props: PanelProps, contentPanel: HTMLElement): void => {
-    if (modalHTML) {
+    if (modalHTML != null) {
       const device: DeviceOptions = $deviceInfo
       options = fitPopupElement(modalHTML, device, props.element, contentPanel)
     }
   }
 
-  function handleKeydown (ev: KeyboardEvent) {
+  function handleKeydown (ev: KeyboardEvent): void {
     if (ev.key === 'Escape') {
       escapeClose()
     }
   }
 
   function _open (): void {
-    if (modalHTML && props) {
+    if (modalHTML != null && props != null) {
       if (props.element === 'content') {
         modalHTML.classList.add('bg')
       } else {
@@ -107,28 +107,28 @@
   }
 
   const _update = (): void => {
-    if (props && contentPanel) {
+    if (props != null && contentPanel != null) {
       fitPopup(props, contentPanel)
     }
   }
 
-  const checkResize = (el: Element) => {
-    if (props && contentPanel) fitPopup(props, contentPanel)
+  const checkResize = (): void => {
+    if (props != null && contentPanel != null) fitPopup(props, contentPanel)
   }
 
   onMount(() => {
-    if (props && contentPanel) fitPopup(props, contentPanel)
+    if (props != null && contentPanel != null) fitPopup(props, contentPanel)
   })
 
   afterUpdate(() => {
-    if (props && contentPanel) fitPopup(props, contentPanel)
+    if (props != null && contentPanel != null) fitPopup(props, contentPanel)
   })
 
   $: if (contentPanel !== oldPanel) {
     oldPanel = contentPanel
     keepSize = false
   }
-  $: if (props && contentPanel !== undefined) {
+  $: if (props != null && contentPanel !== undefined) {
     fitPopup(props, contentPanel)
     if (!keepSize && props?.element === 'content') {
       keepSize = true
@@ -138,26 +138,26 @@
   }
 
   export function fitPopupInstance (): void {
-    if (props && contentPanel) fitPopup(props, contentPanel)
+    if (props != null && contentPanel != null) fitPopup(props, contentPanel)
   }
 </script>
 
 <svelte:window
   on:resize={() => {
-    if (props && contentPanel) fitPopup(props, contentPanel)
+    if (props != null && contentPanel != null) fitPopup(props, contentPanel)
   }}
   on:keydown={(evt) => {
-    if (props) handleKeydown(evt)
+    if (props != null) handleKeydown(evt)
   }}
   on:beforeprint={() => {
-    if (props && contentPanel) fitPopup(props, contentPanel)
+    if (props != null && contentPanel != null) fitPopup(props, contentPanel)
   }}
   on:afterprint={() => {
-    if (props && contentPanel) fitPopup(props, contentPanel)
+    if (props != null && contentPanel != null) fitPopup(props, contentPanel)
   }}
 />
 {#if props}
-  {#if !component}
+  {#if !(component != null)}
     <Spinner />
   {:else}
     <slot name="panel-header" />
