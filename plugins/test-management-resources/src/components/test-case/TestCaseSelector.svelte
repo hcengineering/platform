@@ -54,13 +54,11 @@
   let selected: (Space & IconProps) | undefined
 
   const showSpacesPopup = (ev: MouseEvent) => {
-    if (readonly) {
-      return
-    }
     showPopup(
       TestCasePopup,
       {
-        objects
+        objects,
+        readonly
       },
       ev.target as HTMLElement,
       () => {}
@@ -72,7 +70,6 @@
   id="testcase.selector"
   {focus}
   {shape}
-  disabled={readonly}
   {focusIndex}
   icon={testManagement.icon.TestCase}
   {size}

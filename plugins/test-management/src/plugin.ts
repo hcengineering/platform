@@ -84,7 +84,9 @@ export const testManagementPlugin = plugin(testManagementId, {
     StatusNonTested: '' as Asset,
     StatusBlocked: '' as Asset,
     StatusPassed: '' as Asset,
-    StatusFailed: '' as Asset
+    StatusFailed: '' as Asset,
+    Filter: '' as Asset,
+    Check: '' as Asset
   },
   class: {
     TestCase: '' as Ref<Class<TestCase>>,

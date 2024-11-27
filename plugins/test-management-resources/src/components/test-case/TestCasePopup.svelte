@@ -24,6 +24,7 @@
   export let allowDeselect = false
   export let closeAfterSelect: boolean = false
   export let shadows = true
+  export let readonly = false
   export let width: 'medium' | 'large' | 'full' = 'medium'
 </script>
 
@@ -36,11 +37,12 @@
   {closeAfterSelect}
   {shadows}
   {width}
+  {readonly}
   on:update
   on:close
   groupBy={'attachedTo'}
 >
   <svelte:fragment slot="item" let:item={testCase}>
-    <TestCasePresenter value={testCase} />
+    <TestCasePresenter value={testCase} disabled={readonly} />
   </svelte:fragment>
 </DocPopup>

@@ -51,7 +51,6 @@
 
   getTestCases(_id).then((result) => {
     testCases = result
-    console.log('testCases', testCases)
   })
 
   async function change<K extends keyof TestRun> (field: K, value: TestRun[K]) {

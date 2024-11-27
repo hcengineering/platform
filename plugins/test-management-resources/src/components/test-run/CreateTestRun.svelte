@@ -162,7 +162,7 @@
     {#if isLoading}
       <Loading />
     {:else}
-      <TestCaseSelector objects={testCases} selectedObjects={testCases} />
+      <TestCaseSelector objects={testCases} selectedObjects={testCases} readonly={true} />
     {/if}
   </svelte:fragment>
 </Card>

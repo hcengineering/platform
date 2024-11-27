@@ -15,6 +15,7 @@
 <script lang="ts">
   import { Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
   import { ButtonWithDropdown, IconDropdown, SelectPopupValueType } from '@hcengineering/ui'
+  import { selectionStore } from '@hcengineering/view-resources'
 
   import testManagement from '../../plugin'
   import { showCreateTestRunPopup } from '../../utils'
@@ -25,7 +26,7 @@
 
   const project: Ref<TestProject> | undefined = space as any
 
-  const dropdownItems = [
+  const commonDropdownItems = [
     {
       id: testManagement.string.RunAllTestCases,
       label: testManagement.string.RunAllTestCases,
@@ -34,9 +35,21 @@
     {
       id: testManagement.string.RunFilteredTestCases,
       label: testManagement.string.RunFilteredTestCases,
-      icon: testManagement.icon.TestRuns
+      icon: testManagement.icon.Filter
     }
   ]
+
+  let dropdownItems: SelectPopupValueType[] = []
+
+  $: dropdownItems = $selectionStore?.docs?.length > 0
+    ? [
+        ...commonDropdownItems,
+        {
+          id: testManagement.string.RunSelectedTestCases,
+          label: testManagement.string.RunSelectedTestCases,
+          icon: testManagement.icon.Check
+        }]
+    : commonDropdownItems
 
   async function handleDropdownItemSelected (res?: SelectPopupValueType['id']): Promise<void> {
     switch (res) {
@@ -46,6 +59,10 @@
       }
       case testManagement.string.RunFilteredTestCases: {
         await showCreateTestRunPopup({ query, space: project })
+        return
+      }
+      case testManagement.string.RunSelectedTestCases: {
+        await showCreateTestRunPopup({ space: project, testCases: $selectionStore?.docs as any })
       }
     }
   }

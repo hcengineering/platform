@@ -55,7 +55,6 @@ function defineApplication (builder: Builder): void {
       icon: testManagement.icon.TestManagementApplication,
       alias: testManagementId,
       hidden: false,
-      // locationResolver: testManagement.resolver.Location,
       navigatorModel: {
         spaces: [
           {
@@ -119,7 +118,7 @@ function defineApplication (builder: Builder): void {
                   navigationComponentLabel: testManagement.string.TestRun,
                   navigationComponentIcon: testManagement.icon.TestRuns,
                   mainComponentLabel: testManagement.string.TestResults,
-                  mainComponentIcon: testManagement.icon.TestRuns,
+                  mainComponentIcon: testManagement.icon.TestResult,
                   createComponent: testManagement.component.CreateTestRun,
                   navigationComponentProps: {
                     _class: testManagement.class.TestRun,
