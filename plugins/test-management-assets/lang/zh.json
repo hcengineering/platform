@@ -61,6 +61,25 @@
     "TestRunNamePlaceholder": "測試運行名稱",
     "SelectTestSuites": "選擇測試套件",
     "SelectTestCases": "選擇測試用例",
-    "TestLibrary": "測試庫"
+    "TestLibrary": "測試庫",
+    "TestResult": "結果",
+    "TestRunResult": "結果",
+    "TestRunStatus": "狀態",
+    "StatusNonTested": "未測試",
+    "StatusBlocked": "被阻止",
+    "StatusPassed": "通過",
+    "StatusFailed": "失敗",
+    "SelectTestCase": "選擇測試用例",
+    "Save": "保存",
+    "SaveAndNext": "保存並繼續",
+    "DonePercent": "％完成",
+    "TestResults": "結果",
+    "TestRunName": "姓名",
+    "DueDate": "到期日",
+    "RunAllTestCases": "運行所有測試用例",
+    "RunSelectedTestCases": "運行選定的測試用例",
+    "RunFilteredTestCases": "運行與篩選器匹配的測試用例",
+    "TestCaseDescription": "測試用例描述",
+    "TestResultAttributes": "結果"
   }
 }

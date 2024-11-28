@@ -1,4 +1,5 @@
 <!--
+//
 // Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,18 +12,27 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 -->
+
 <script lang="ts">
-  import { TestRun } from '@hcengineering/test-management'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { tooltip } from '@hcengineering/ui'
+  import { TestCase, TestResult } from '@hcengineering/test-management'
+  import { WithLookup } from '@hcengineering/core'
+  import { Icon, tooltip } from '@hcengineering/ui'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
 
-  export let value: TestRun | undefined
+  import testManagement from '../../plugin'
+
+  export let value: WithLookup<TestResult> | undefined
   export let inline: boolean = false
   export let disabled: boolean = false
   export let accent: boolean = false
   export let noUnderline: boolean = false
+  export let shouldShowAvatar = true
+
+  let testCase: TestCase | undefined = undefined
+  $: testCase = value?.$lookup?.testCase as TestCase | undefined
+  $: title = testCase?.name ?? value?.name
 </script>
 
 {#if value}
@@ -30,9 +40,14 @@
     <ObjectMention object={value} {disabled} {accent} {noUnderline} />
   {:else}
     <DocNavLink object={value} {disabled} {accent} {noUnderline}>
-      <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
-        <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
-          {value.name}
+      <div class="flex-presenter" use:tooltip={{ label: testManagement.string.TestResult }}>
+        {#if shouldShowAvatar}
+          <div class="icon">
+            <Icon icon={testManagement.icon.TestResult} size="small" />
+          </div>
+        {/if}
+        <span {title} class="overflow-label label" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
+          {title}
         </span>
       </div>
     </DocNavLink>

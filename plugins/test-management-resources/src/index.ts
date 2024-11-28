@@ -28,9 +28,17 @@ import CreateTestRun from './components/test-run/CreateTestRun.svelte'
 import TestCaseStatusPresenter from './components/test-case/TestCaseStatusPresenter.svelte'
 import EditTestRun from './components/test-run/EditTestRun.svelte'
 import TestRunPresenter from './components/test-run/TestRunPresenter.svelte'
+import RunSelectedTestsButton from './components/test-case/RunSelectedTestsButton.svelte'
+import TestResultStatusPresenter from './components/test-result/TestResultStatusPresenter.svelte'
+import TestResultStatusEditor from './components/test-result/TestResultStatusEditor.svelte'
+import TestRunResult from './components/test-run/TestRunResult.svelte'
+import TestResultPresenter from './components/test-result/TestResultPresenter.svelte'
+import EditTestResult from './components/test-result/EditTestResult.svelte'
+import TestResultHeader from './components/test-result/TestResultHeader.svelte'
+import TestResultFooter from './components/test-result/TestResultFooter.svelte'
 
-import { CreateChildTestSuiteAction, EditTestSuiteAction } from './utils'
-import { resolveLocation, getTestSuiteLink } from './navigation'
+import { CreateChildTestSuiteAction, EditTestSuiteAction, RunSelectedTestsAction } from './utils'
+import { resolveLocation, getAttachedObjectLink } from './navigation'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -47,16 +55,26 @@ export default async (): Promise<Resources> => ({
     TestCaseStatusPresenter,
     EditTestRun,
     TestRunPresenter,
-    TestSuiteRefPresenter
+    TestSuiteRefPresenter,
+    RunSelectedTestsButton,
+    TestResultStatusPresenter,
+    TestResultStatusEditor,
+    TestRunResult,
+    TestResultPresenter,
+    EditTestResult,
+    TestResultHeader,
+    TestResultFooter
   },
   function: {
-    GetTestSuiteLink: getTestSuiteLink
+    GetTestSuiteLink: getAttachedObjectLink,
+    GetTestRunLink: getAttachedObjectLink
   },
   resolver: {
     Location: resolveLocation
   },
   actionImpl: {
     CreateChildTestSuite: CreateChildTestSuiteAction,
-    EditTestSuite: EditTestSuiteAction
+    EditTestSuite: EditTestSuiteAction,
+    RunSelectedTests: RunSelectedTestsAction
   }
 })

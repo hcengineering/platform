@@ -13,52 +13,45 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref } from '@hcengineering/core'
+  import { Doc, DocumentQuery } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { testManagementId, TestSuite } from '@hcengineering/test-management'
-  import { Button, Icon, IconAdd, Label, Loading, Scroller, showPopup, SectionEmpty } from '@hcengineering/ui'
+  import { Button, Icon, IconAdd, Label, Loading, Scroller, SectionEmpty } from '@hcengineering/ui'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { NavLink, Table, ViewletsSettingButton } from '@hcengineering/view-resources'
+  import { Table, ViewletsSettingButton } from '@hcengineering/view-resources'
   import testManagement from '../../plugin'
-  import CreateTestCase from '../test-case/CreateTestCase.svelte'
   import FileDuo from '../icons/FileDuo.svelte'
 
-  export let objectId: Ref<TestSuite>
+  export let baseQuery: DocumentQuery<Doc> = {}
   let testCases: number
 
   const query = createQuery()
-  $: query.query(testManagement.class.TestCase, { suite: objectId }, (res) => {
+  $: query.query(testManagement.class.TestCase, baseQuery, (res) => {
     testCases = res.length
   })
-
-  const createTestCase = (ev: MouseEvent): void => {
-    showPopup(CreateTestCase, { testSuiteId: objectId }, ev.target as HTMLElement)
-  }
 
   let viewlet: Viewlet | undefined
   let preference: ViewletPreference | undefined
   let loading = true
 </script>
 
+<!--TODO: Finish implementation-->
 <div class="antiSection max-h-125 clear-mins">
   <div class="antiSection-header">
     <div class="antiSection-header__icon">
       <Icon icon={testManagement.icon.TestCase} size={'small'} />
     </div>
     <span class="antiSection-header__title">
-      <NavLink app={testManagementId} space={objectId}>
-        <Label label={testManagement.string.TestCases} />
-      </NavLink>
+      <Label label={testManagement.string.TestCases} />
     </span>
     <div class="flex-row-center gap-2 reverse">
       <ViewletsSettingButton
-        viewletQuery={{ _id: testManagement.viewlet.SuiteTestCases }}
+        viewletQuery={{ _id: testManagement.viewlet.ListTestCase }}
         kind={'tertiary'}
         bind:viewlet
         bind:preference
         bind:loading
       />
-      <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createTestCase} />
+      <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={() => {}} />
     </div>
   </div>
   {#if testCases > 0}
@@ -67,7 +60,7 @@
         <Table
           _class={testManagement.class.TestCase}
           config={preference?.config ?? viewlet.config}
-          query={{ suite: objectId }}
+          query={baseQuery}
           loadingProps={{ length: testCases }}
         />
       </Scroller>
@@ -78,7 +71,7 @@
     <SectionEmpty icon={FileDuo} label={testManagement.string.NoTestCases}>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <span class="over-underline content-color" on:click={createTestCase}>
+      <span class="over-underline content-color">
         <Label label={testManagement.string.CreateTestCase} />
       </span>
     </SectionEmpty>

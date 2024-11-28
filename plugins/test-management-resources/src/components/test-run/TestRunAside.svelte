@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,12 +11,22 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { WithLookup } from '@hcengineering/core'
+  import type { TestRun } from '@hcengineering/test-management'
+  import { Scroller } from '@hcengineering/ui'
+  import { DocAttributeBar } from '@hcengineering/view-resources'
 
-import { testManagementId, testManagementPlugin } from './plugin'
+  import TestRunStats from './TestRunStats.svelte'
 
-export * from './types'
-export * from './analytics'
-export { testManagementId }
+  export let object: WithLookup<TestRun>
+  export let readonly: boolean = false
+</script>
 
-export default testManagementPlugin
+<Scroller>
+  <TestRunStats _id={object._id} />
+  <div class="space-divider" />
+  <DocAttributeBar {object} {readonly} ignoreKeys={['name']} />
+  <div class="space-divider bottom" />
+</Scroller>

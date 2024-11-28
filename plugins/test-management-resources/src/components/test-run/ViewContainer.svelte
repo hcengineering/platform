@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,12 +11,15 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { Breadcrumb, Header } from '@hcengineering/ui'
+  import { IntlString } from '@hcengineering/platform'
 
-import { testManagementId, testManagementPlugin } from './plugin'
+  export let header: IntlString
+</script>
 
-export * from './types'
-export * from './analytics'
-export { testManagementId }
-
-export default testManagementPlugin
+<Header adaptive={'disabled'}>
+  <Breadcrumb label={header} size={'large'} />
+</Header>
+<slot />

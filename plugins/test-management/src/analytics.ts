@@ -13,10 +13,14 @@
 // limitations under the License.
 //
 
-import { testManagementId, testManagementPlugin } from './plugin'
-
-export * from './types'
-export * from './analytics'
-export { testManagementId }
-
-export default testManagementPlugin
+export enum TestManagementEvents {
+  TestCaseCreated = 'testManagement.TestCaseCreated',
+  TestCaseEdited = 'testManagement.TestCaseEdited',
+  TestCaseDeleted = 'testManagement.TestCaseDeleted',
+  TestSuiteCreated = 'testManagement.TestSuiteCreated',
+  TestSuiteEdited = 'testManagement.TestSuiteEdited',
+  TestSuiteDeleted = 'testManagement.TestSuiteDeleted',
+  TestRunCreated = 'testManagement.TestRunCreated',
+  TestRunEdited = 'testManagement.TestRunEdited',
+  TestRunDeleted = 'testManagement.TestRunDeleted'
+}

@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { testManagementId, testManagementPlugin } from './plugin'
+import type { TestCase, TestResult } from '@hcengineering/test-management'
+import { type Ref } from '@hcengineering/core'
+import { type Writable, writable } from 'svelte/store'
 
-export * from './types'
-export * from './analytics'
-export { testManagementId }
+export const currentTestCase: Writable<Ref<TestCase> | undefined> = writable(undefined)
 
-export default testManagementPlugin
+export const selectedTestRun: Writable<TestResult | undefined> = writable(undefined)

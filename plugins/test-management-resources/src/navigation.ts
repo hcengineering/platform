@@ -61,14 +61,9 @@ async function generateProjectLocation (
   }
 }
 
-export function getTestSuiteLink (testSuite: Ref<TestSuite>): Location {
+export function getAttachedObjectLink (parentDoc: Ref<Doc>): Location {
   const loc = getCurrentResolvedLocation()
-  loc.query =
-    testSuite === undefined
-      ? undefined
-      : {
-          [SUITE_KEY]: testSuite
-        }
+  loc.query = parentDoc === undefined ? undefined : { attachedTo: parentDoc }
 
   return loc
 }
@@ -82,6 +77,16 @@ export function getTestSuiteIdFromFragment (fragment: string): Ref<TestSuite> | 
 export function getTestSuiteIdFromLocation (): Ref<TestSuite> {
   const location = getLocation()
   return (location?.query?.[SUITE_KEY] as Ref<TestSuite>) ?? testManagement.ids.NoParent
+}
+
+export function getTestRunsLink (parentDoc: Ref<Doc>): Location {
+  const loc = getCurrentResolvedLocation()
+  loc.path.length = 4
+  loc.path[3] = 'testRuns'
+  loc.fragment = undefined
+  loc.query = parentDoc === undefined ? undefined : { attachedTo: parentDoc }
+
+  return loc
 }
 
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {

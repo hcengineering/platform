@@ -103,20 +103,26 @@ export interface TestRun extends Doc {
   name: string
   description: CollaborativeDoc
   dueDate?: Timestamp
-  items?: CollectionSize<TestRunItem>
+  results?: CollectionSize<TestResult>
 }
 
 /** @public */
-export enum TestRunResult {
-  Passed,
+export enum TestRunStatus {
+  Untested,
   Blocked,
+  Passed,
   Failed
 }
 
+// TODO: Refactor to associations
 /** @public */
-export interface TestRunItem extends AttachedDoc {
-  testRun: Ref<TestRun>
+export interface TestResult extends AttachedDoc<TestRun, 'results', TestProject> {
+  name: string
   testCase: Ref<TestCase>
-  result?: TestRunResult
+  testSuite?: Ref<TestSuite>
+  status?: TestRunStatus
+  description: CollaborativeDoc
+  assignee?: Ref<Employee>
+  attachments?: CollectionSize<Attachment>
   comments?: number
 }

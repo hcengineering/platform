@@ -22,8 +22,8 @@ import type {
   TestCaseStatus,
   TestProject,
   TestRun,
-  TestRunResult,
-  TestRunItem
+  TestRunStatus,
+  TestResult
 } from '@hcengineering/test-management'
 import { type Attachment } from '@hcengineering/attachment'
 import contact from '@hcengineering/contact'
@@ -201,32 +201,65 @@ export class TTestRun extends TDoc implements TestRun {
   @Prop(TypeDate(DateRangeMode.DATETIME), testManagement.string.DueDate)
     dueDate?: Timestamp
 
-  @Prop(Collection(testManagement.class.TestRunItem), testManagement.string.TestRunItems, {
-    shortLabel: testManagement.string.TestRunItem
+  @Prop(Collection(testManagement.class.TestResult), testManagement.string.TestResult, {
+    shortLabel: testManagement.string.TestResult
   })
-    items?: CollectionSize<TestRunItem>
+    results?: CollectionSize<TestResult>
 }
 
 /** @public */
-export function TypeTestRunResult (): Type<TestRunResult> {
-  return { _class: testManagement.class.TypeTestRunResult, label: testManagement.string.TestRunResult }
+export function TypeTestRunStatus (): Type<TestRunStatus> {
+  return { _class: testManagement.class.TypeTestRunStatus, label: testManagement.string.TestRunStatus }
 }
 
-@Model(testManagement.class.TypeTestRunResult, core.class.Type, DOMAIN_TEST_MANAGEMENT)
-@UX(testManagement.string.TestRunResult)
-export class TTypeTestRunResult extends TType {}
+@Model(testManagement.class.TypeTestRunStatus, core.class.Type, DOMAIN_TEST_MANAGEMENT)
+@UX(testManagement.string.TestRunStatus)
+export class TTypeTestRunStatus extends TType {}
 
-@Model(testManagement.class.TestRunItem, core.class.AttachedDoc, DOMAIN_TEST_MANAGEMENT)
-@UX(testManagement.string.TestRunItem)
-export class TTestRunItem extends TAttachedDoc implements TestRunItem {
-  @Prop(TypeRef(testManagement.class.TestRun), testManagement.string.TestRun)
-    testRun!: Ref<TestRun>
+// TODO: Refactor to associations
+@Model(testManagement.class.TestResult, core.class.AttachedDoc, DOMAIN_TEST_MANAGEMENT)
+@UX(testManagement.string.TestResult)
+export class TTestResult extends TAttachedDoc implements TestResult {
+  @Prop(TypeRef(testManagement.class.TestRun), core.string.AttachedTo)
+  @Index(IndexKind.Indexed)
+  declare attachedTo: Ref<TestRun>
+
+  @Prop(TypeRef(testManagement.class.TestRun), core.string.AttachedToClass)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare attachedToClass: Ref<Class<TestRun>>
+
+  @Prop(TypeRef(testManagement.class.TestProject), core.string.Space)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare space: Ref<TestProject>
+
+  @Prop(TypeString(), core.string.Collection)
+  @Hidden()
+  override collection: 'results' = 'results'
+
+  @Prop(TypeString(), testManagement.string.TestRunName)
+  @Index(IndexKind.FullText)
+    name!: string
+
+  @Prop(TypeCollaborativeDoc(), testManagement.string.FullDescription)
+  @Index(IndexKind.FullText)
+    description!: CollaborativeDoc
 
   @Prop(TypeRef(testManagement.class.TestCase), testManagement.string.TestCase)
     testCase!: Ref<TestCase>
 
-  @Prop(TypeTestRunResult(), testManagement.string.TestRunResult)
-    result?: TestRunResult
+  @Prop(TypeRef(testManagement.class.TestSuite), testManagement.string.TestSuite)
+    testSuite?: Ref<TestSuite>
+
+  @Prop(TypeTestRunStatus(), testManagement.string.TestRunStatus)
+    status?: TestRunStatus
+
+  @Prop(TypeRef(contact.mixin.Employee), testManagement.string.TestAssignee)
+    assignee?: Ref<Employee>
+
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
+    attachments?: CollectionSize<Attachment>
 
   @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number

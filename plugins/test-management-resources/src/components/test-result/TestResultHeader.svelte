@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,12 +11,15 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { TestResult } from '@hcengineering/test-management'
+  import TestResultPresenter from './TestResultPresenter.svelte'
 
-import { testManagementId, testManagementPlugin } from './plugin'
+  export let object: TestResult
+</script>
 
-export * from './types'
-export * from './analytics'
-export { testManagementId }
-
-export default testManagementPlugin
+<div class="antiHSpacer x2" />
+<div class="fs-title flex-row-center">
+  <TestResultPresenter value={object} shouldShowAvatar={false} disabled noUnderline />
+</div>

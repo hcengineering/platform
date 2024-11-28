@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,12 +11,14 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
 
-import { testManagementId, testManagementPlugin } from './plugin'
+<div class="header flex-between min-h-8 pl-4 pr-4 font-medium text-md bottom-divider top-divider">
+  <slot />
+</div>
 
-export * from './types'
-export * from './analytics'
-export { testManagementId }
-
-export default testManagementPlugin
+<style lang="scss">
+  .header {
+    font-size: 0.875rem;
+  }
+</style>

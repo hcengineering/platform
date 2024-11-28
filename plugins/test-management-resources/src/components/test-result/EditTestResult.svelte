@@ -17,49 +17,52 @@
 
   import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
-  import { type Class, type Ref } from '@hcengineering/core'
-  import { TestCase } from '@hcengineering/test-management'
+  import { type Class, type Ref, Doc, Mixin, WithLookup } from '@hcengineering/core'
+  import { TestCase, TestResult } from '@hcengineering/test-management'
   import { Panel } from '@hcengineering/panel'
-  import { EditBox, Breadcrumb } from '@hcengineering/ui'
-  import { DocAttributeBar } from '@hcengineering/view-resources'
+  import { Label, Scroller } from '@hcengineering/ui'
+  import { DocAttributeBar, getDocMixins } from '@hcengineering/view-resources'
 
+  import RightHeader from './RightHeader.svelte'
+  import TestCaseDetails from '../test-case/TestCaseDetails.svelte'
   import testManagement from '../../plugin'
 
-  export let _id: Ref<TestCase>
-  export let _class: Ref<Class<TestCase>>
+  export let _id: Ref<TestResult>
+  export let _class: Ref<Class<TestResult>>
 
-  let object: TestCase | undefined
+  let object: WithLookup<TestResult> | undefined
+
+  const testCase = object?.$lookup?.testCase as TestCase | undefined
 
   const dispatch = createEventDispatcher()
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  let oldLabel: string | undefined = ''
-  let rawLabel: string | undefined = ''
+  let mixins: Mixin<Doc>[] = []
+  $: mixins = object ? getDocMixins(object, false) : []
+
   let descriptionBox: AttachmentStyleBoxCollabEditor
 
   const query = createQuery()
 
   $: _id !== undefined &&
     _class !== undefined &&
-    query.query(_class, { _id }, async (result) => {
-      ;[object] = result
-    })
-
-  async function change<K extends keyof TestCase> (field: K, value: TestCase[K]) {
-    if (object !== undefined) {
-      await client.update(object, { [field]: value })
-    }
-  }
+    query.query(
+      _class,
+      { _id },
+      async (result) => {
+        ;[object] = result
+      },
+      {
+        lookup: {
+          testCase: testManagement.class.TestCase
+        }
+      }
+    )
 
   let content: HTMLElement
 
-  $: if (oldLabel !== object?.name) {
-    oldLabel = object?.name
-    rawLabel = object?.name
-  }
-
-  $: descriptionKey = hierarchy.getAttribute(testManagement.class.TestCase, 'description')
+  $: descriptionKey = hierarchy.getAttribute(testManagement.class.TestResult, 'description')
 
   onMount(() => dispatch('open', { ignoreKeys: [] }))
 </script>
@@ -68,32 +71,15 @@
   <ActionContext context={{ mode: 'editor' }} />
   <Panel
     {object}
+    title={testCase?.name ?? object?.name}
     isHeader={false}
-    isAside={false}
+    isAside={true}
     isSub={false}
-    adaptive={'disabled'}
+    adaptive={'default'}
     on:open
     on:close={() => dispatch('close')}
   >
-    <svelte:fragment slot="title">
-      <Breadcrumb icon={testManagement.icon.TestCase} title={object.name} size={'large'} isCurrent />
-    </svelte:fragment>
-
-    <EditBox
-      bind:value={rawLabel}
-      placeholder={testManagement.string.NamePlaceholder}
-      kind="large-style"
-      on:blur={async () => {
-        const trimmedLabel = rawLabel?.trim()
-
-        if (trimmedLabel?.length === 0) {
-          rawLabel = oldLabel
-        } else if (trimmedLabel !== object?.name) {
-          await change('name', trimmedLabel ?? '')
-        }
-      }}
-    />
-
+    <div class="space-divider" />
     <div class="w-full mt-6">
       <AttachmentStyleBoxCollabEditor
         focusIndex={30}
@@ -107,7 +93,13 @@
     </div>
 
     <svelte:fragment slot="aside">
-      <DocAttributeBar {object} ignoreKeys={['name']} />
+      <DocAttributeBar {object} {mixins} ignoreKeys={['name']} />
+      <RightHeader>
+        <Label label={testManagement.string.TestCaseDescription} />
+      </RightHeader>
+      <Scroller padding={'0.5rem 2rem'}>
+        <TestCaseDetails _id={object.testCase} object={testCase} _class={testManagement.class.TestCase} />
+      </Scroller>
     </svelte:fragment>
   </Panel>
 {/if}

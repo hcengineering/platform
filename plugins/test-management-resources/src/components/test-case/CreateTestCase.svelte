@@ -24,7 +24,6 @@
   import { Button, createFocusManager, EditBox, FocusHandler, IconAttachment, getLocation } from '@hcengineering/ui'
 
   import StatusEditor from './StatusEditor.svelte'
-  import AssigneeEditor from './AssigneeEditor.svelte'
   import ProjectPresenter from '../project/ProjectPresenter.svelte'
   import testManagement from '../../plugin'
 
@@ -164,12 +163,6 @@
   />
 
   <svelte:fragment slot="pool">
-    <AssigneeEditor
-      object={{ ...object, space }}
-      kind={'regular'}
-      size={'large'}
-      on:change={({ detail }) => (object.assignee = detail)}
-    />
     <StatusEditor bind:value={object.status} {object} kind="regular" />
   </svelte:fragment>
 

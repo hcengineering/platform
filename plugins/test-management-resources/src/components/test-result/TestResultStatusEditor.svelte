@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { Data } from '@hcengineering/core'
-  import { TestCase } from '@hcengineering/test-management'
+  import { TestResult } from '@hcengineering/test-management'
   import { getClient } from '@hcengineering/presentation'
   import {
     Button,
@@ -27,11 +27,12 @@
     showPopup,
     Label
   } from '@hcengineering/ui'
-  import { defaultTestCaseStatuses, testCaseStatusAssets } from '../../types'
+
+  import { defaultTestRunStatuses, testRunStatusAssets } from '../../types'
   import testManagement from '../../plugin'
 
-  export let value: TestCase['status'] | undefined
-  export let object: TestCase | Data<TestCase>
+  export let value: TestResult['status'] | undefined
+  export let object: TestResult | Data<TestResult>
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
   export let justify: 'left' | 'center' = 'left'
@@ -43,10 +44,10 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  $: itemsInfo = defaultTestCaseStatuses.map((status) => ({
+  $: itemsInfo = defaultTestRunStatuses.map((status) => ({
     id: status,
     isSelected: value === status,
-    ...testCaseStatusAssets[status]
+    ...testRunStatusAssets[status]
   }))
 
   function handlePopupOpen (event: MouseEvent): void {
@@ -58,7 +59,7 @@
     )
   }
 
-  async function changeStatus (newStatus: TestCase['status'] | null | undefined): Promise<void> {
+  async function changeStatus (newStatus: TestResult['status'] | null | undefined): Promise<void> {
     if (disabled || newStatus == null || value === newStatus) {
       return
     }
@@ -66,13 +67,13 @@
     value = newStatus
     dispatch('change', value)
 
-    if ('_id' in object) {
+    if (object !== undefined && '_id' in object) {
       await client.update(object, { status: newStatus })
     }
   }
 
-  $: icon = value === undefined ? testManagement.icon.StatusDraft : testCaseStatusAssets[value].icon
-  $: label = value === undefined ? testManagement.string.StatusDraft : testCaseStatusAssets[value].label
+  $: icon = value === undefined ? testManagement.icon.StatusNonTested : testRunStatusAssets[value].icon
+  $: label = value === undefined ? testManagement.string.StatusNonTested : testRunStatusAssets[value].label
 </script>
 
 {#if kind === 'list'}

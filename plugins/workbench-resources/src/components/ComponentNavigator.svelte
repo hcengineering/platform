@@ -47,6 +47,7 @@
   export let createComponentProps: Record<string, any> = {}
   export let mainComponentLabel: IntlString
   export let mainComponentIcon: Asset | undefined = undefined
+  export let mainHeaderComponent: AnyComponent | undefined = undefined
   export let query: DocumentQuery<Doc> = {}
   export let syncWithLocationQuery: boolean = true
   export let mainComponent: AnyComponent | AnySvelteComponent
@@ -165,6 +166,17 @@
       </svelte:fragment>
 
       <Breadcrumb icon={mainComponentIcon} label={mainComponentLabel} size={'large'} isCurrent />
+      <svelte:fragment slot="actions">
+        {#if mainHeaderComponent}
+          <Component
+            is={mainHeaderComponent}
+            props={{
+              query: resultQuery,
+              space
+            }}
+          />
+        {/if}
+      </svelte:fragment>
     </Header>
     <Component
       is={mainComponent}

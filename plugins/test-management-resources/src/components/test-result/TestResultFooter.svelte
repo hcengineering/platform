@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,12 +11,21 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
 
-import { testManagementId, testManagementPlugin } from './plugin'
+<script lang="ts">
+  import { Button } from '@hcengineering/ui'
 
-export * from './types'
-export * from './analytics'
-export { testManagementId }
+  import testManagement from '../../plugin'
+</script>
 
-export default testManagementPlugin
+<div class="flex-grow flex-shrink">
+  <Button
+    label={testManagement.string.Save}
+    kind={'primary'}
+    on:click={() => {
+      // TODO: Add next test result logic
+    }}
+    showTooltip={{ label: testManagement.string.Save }}
+  />
+</div>

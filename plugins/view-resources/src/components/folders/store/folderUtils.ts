@@ -12,41 +12,40 @@
 // limitations under the License.
 
 import { type Doc, type Ref } from '@hcengineering/core'
-import { writable, type Writable } from 'svelte/store'
 
-export class FoldersState {
-  folders: Array<Ref<Doc>>
-  folderById: Map<Ref<Doc>, Doc>
-  descendants: Map<Ref<Doc>, Doc[]>
-
-  constructor (folders: Array<Ref<Doc>>, folderById: Map<Ref<Doc>, Doc>, descendants: Map<Ref<Doc>, Doc[]>) {
-    this.folders = folders
-    this.folderById = folderById
-    this.descendants = descendants
-  }
-
-  static empty (): FoldersState {
-    return new FoldersState([], new Map<Ref<Doc>, Doc>(), new Map<Ref<Doc>, Doc[]>())
-  }
+export interface FoldersState {
+  readonly folders: Array<Ref<Doc>>
+  readonly folderById: Map<Ref<Doc>, Doc>
+  readonly descendants: Map<Ref<Doc>, Doc[]>
 }
 
-export const FoldersStore: Writable<FoldersState> = writable(FoldersState.empty())
-
-export const SelectedFolderStore: Writable<Ref<Doc> | undefined> = writable(undefined)
-
-export function setSelectedFolder (_id: Ref<Doc> | undefined): void {
-  SelectedFolderStore.set(_id)
+export function emptyFoldersState (): FoldersState {
+  return {
+    folders: [],
+    folderById: new Map<Ref<Doc>, Doc>(),
+    descendants: new Map<Ref<Doc>, Doc[]>()
+  }
 }
 
 export class FoldersManager {
   titleKey: string
   parentKey: string
   noParentId: Ref<Doc>
+  plainList: boolean
+  updateStore: (state: FoldersState) => void
 
-  constructor (titleKey: string, parentKey: string, noParentId: Ref<Doc>) {
+  constructor (
+    titleKey: string,
+    parentKey: string,
+    noParentId: Ref<Doc>,
+    plainList: boolean,
+    updateStore: (state: FoldersState) => void
+  ) {
     this.titleKey = titleKey
     this.parentKey = parentKey
     this.noParentId = noParentId
+    this.plainList = plainList
+    this.updateStore = updateStore
   }
 
   public getTitle (doc: Doc): string {
@@ -64,16 +63,17 @@ export class FoldersManager {
   }
 
   public setFolders (result: Doc[]): void {
+    const newState: FoldersState = this.plainList ? this.getPlainList(result) : this.getNestedStructure(result)
+    this.updateStore(newState)
+  }
+
+  public getNestedStructure (result: Doc[]): FoldersState {
     let folders: Array<Ref<Doc>> = []
     const folderById: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
     const descendants: Map<Ref<Doc>, Doc[]> = new Map<Ref<Doc>, Doc[]>()
 
     for (const doc of result) {
-      const mappedDoc = {
-        title: this.getTitle(doc),
-        parent: this.getParent(doc),
-        ...doc
-      }
+      const mappedDoc = this.mapDoc(doc)
       const current = descendants.get(this.getParent(mappedDoc)) ?? []
       current.push(mappedDoc)
       descendants.set(this.getParent(mappedDoc), current)
@@ -81,6 +81,31 @@ export class FoldersManager {
     }
 
     folders = this.getDescendants(descendants, this.noParentId)
-    FoldersStore.set(new FoldersState(folders, folderById, descendants))
+    return { folders, folderById, descendants }
+  }
+
+  public getPlainList (result: Doc[]): FoldersState {
+    const folderById: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
+
+    for (const doc of result) {
+      const mappedDoc = this.mapDoc(doc)
+      folderById.set(mappedDoc._id, mappedDoc)
+    }
+    const folders: Array<Ref<Doc>> = result.map((doc) => doc._id)
+
+    return {
+      folders,
+      folderById,
+      descendants: new Map<Ref<Doc>, Doc[]>()
+    }
+  }
+
+  private mapDoc (doc: Doc): Doc {
+    const mappedDoc = {
+      title: this.getTitle(doc),
+      parent: this.getParent(doc),
+      ...doc
+    }
+    return mappedDoc
   }
 }

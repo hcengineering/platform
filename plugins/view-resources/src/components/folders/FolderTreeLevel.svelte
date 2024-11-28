@@ -19,7 +19,7 @@
   import { Action, IconEdit } from '@hcengineering/ui'
   import { getResource } from '@hcengineering/platform'
 
-  import { TreeItem, getActions as getContributedActions } from '../index'
+  import { TreeItem, getActions as getContributedActions } from '../../index'
 
   export let folders: Ref<Doc>[]
   export let folderById: Map<Ref<Doc>, Doc>

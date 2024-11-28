@@ -101,7 +101,7 @@ import ImageViewer from './components/viewer/ImageViewer.svelte'
 import VideoViewer from './components/viewer/VideoViewer.svelte'
 import PDFViewer from './components/viewer/PDFViewer.svelte'
 import TextViewer from './components/viewer/TextViewer.svelte'
-import FoldersBrowser from './components/FoldersBrowser.svelte'
+import FoldersBrowser from './components/folders/FoldersBrowser.svelte'
 
 import { blobImageMetadata, blobVideoMetadata } from './blob'
 
@@ -167,6 +167,8 @@ export { default as List } from './components/list/List.svelte'
 export { default as NavLink } from './components/navigator/NavLink.svelte'
 export { default as StatusPresenter } from './components/status/StatusPresenter.svelte'
 export { default as StatusRefPresenter } from './components/status/StatusRefPresenter.svelte'
+export { default as FoldersBrowser } from './components/folders/FoldersBrowser.svelte'
+export { default as ListView } from './components/list/ListView.svelte'
 
 export * from './filter'
 export * from './middleware'
@@ -189,6 +191,7 @@ export {
 } from './utils'
 export * from './viewOptions'
 export {
+  ArrayEditor,
   BooleanEditor,
   BooleanPresenter,
   ClassAttributeBar,
