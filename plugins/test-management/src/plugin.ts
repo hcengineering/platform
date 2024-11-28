@@ -187,7 +187,9 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestResults: '' as IntlString,
     RunAllTestCases: '' as IntlString,
     RunSelectedTestCases: '' as IntlString,
-    RunFilteredTestCases: '' as IntlString
+    RunFilteredTestCases: '' as IntlString,
+    TestCaseDescription: '' as IntlString,
+    TestResultAttributes: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>
@@ -203,7 +205,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestSuites: '' as AnyComponent,
     CreateTestSuite: '' as AnyComponent,
     TestRunFromSelection: '' as AnyComponent,
-    TestRunStatusPresenter: '' as AnyComponent,
+    TestResultStatusPresenter: '' as AnyComponent,
+    TestResultStatusEditor: '' as AnyComponent,
     TestRunResult: '' as AnyComponent,
     TestResultHeader: '' as AnyComponent
   },

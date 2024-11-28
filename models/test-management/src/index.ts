@@ -109,9 +109,7 @@ function defineApplication (builder: Builder): void {
                 componentProps: {
                   _class: testManagement.class.TestResult,
                   icon: testManagement.icon.TestRuns,
-                  label: testManagement.string.TestRuns,
-                  createLabel: testManagement.string.NewTestRun,
-                  createComponent: testManagement.component.CreateTestRun
+                  label: testManagement.string.TestRuns
                 },
                 navigationModel: {
                   navigationComponent: view.component.FoldersBrowser,
@@ -119,13 +117,10 @@ function defineApplication (builder: Builder): void {
                   navigationComponentIcon: testManagement.icon.TestRuns,
                   mainComponentLabel: testManagement.string.TestResults,
                   mainComponentIcon: testManagement.icon.TestResult,
-                  createComponent: testManagement.component.CreateTestRun,
                   navigationComponentProps: {
                     _class: testManagement.class.TestRun,
                     icon: testManagement.icon.TestRuns,
                     title: testManagement.string.TestSuites,
-                    createLabel: testManagement.string.CreateTestRun,
-                    createComponent: testManagement.component.CreateTestRun,
                     titleKey: 'name',
                     getFolderLink: testManagement.function.GetTestRunLink,
                     plainList: true
@@ -423,7 +418,7 @@ function defineTestRun (builder: Builder): void {
   })
 
   builder.mixin(testManagement.class.TestRun, core.class.Class, view.mixin.ObjectIcon, {
-    component: testManagement.component.TestRunStatusPresenter
+    component: testManagement.component.TestResultStatusPresenter
   })
 
   builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ObjectPresenter, {

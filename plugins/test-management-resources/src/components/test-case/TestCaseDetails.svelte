@@ -17,7 +17,6 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { type Class, type Ref } from '@hcengineering/core'
   import { TestCase } from '@hcengineering/test-management'
-  import { EditBox } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import testManagement from '../../plugin'
 
@@ -45,22 +44,13 @@
 
 {#if object}
   <div class="w-full h-full">
-    <EditBox
-      value={object.name}
-      placeholder={testManagement.string.NamePlaceholder}
-      kind="large-style"
-      on:blur={async () => {}}
+    <AttachmentStyleBoxCollabEditor
+      focusIndex={30}
+      {object}
+      key={{ key: 'description', attr: descriptionKey }}
+      identifier={object?._id}
+      placeholder={testManagement.string.DescriptionPlaceholder}
+      readonly
     />
-
-    <div class="w-full mt-6">
-      <AttachmentStyleBoxCollabEditor
-        focusIndex={30}
-        {object}
-        key={{ key: 'description', attr: descriptionKey }}
-        identifier={object?._id}
-        placeholder={testManagement.string.DescriptionPlaceholder}
-        readonly
-      />
-    </div>
   </div>
 {/if}

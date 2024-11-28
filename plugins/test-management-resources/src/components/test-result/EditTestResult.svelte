@@ -17,13 +17,13 @@
 
   import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
-  import { type Class, type Ref, WithLookup } from '@hcengineering/core'
+  import { type Class, type Ref, Doc, Mixin, WithLookup } from '@hcengineering/core'
   import { TestCase, TestResult } from '@hcengineering/test-management'
   import { Panel } from '@hcengineering/panel'
   import { Label, Scroller } from '@hcengineering/ui'
+  import { DocAttributeBar, getDocMixins } from '@hcengineering/view-resources'
 
   import RightHeader from './RightHeader.svelte'
-  import TestResultStatusEditor from './TestResultStatusEditor.svelte'
   import TestCaseDetails from '../test-case/TestCaseDetails.svelte'
   import testManagement from '../../plugin'
 
@@ -37,6 +37,9 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
   const hierarchy = client.getHierarchy()
+
+  let mixins: Mixin<Doc>[] = []
+  $: mixins = object ? getDocMixins(object, false) : []
 
   let descriptionBox: AttachmentStyleBoxCollabEditor
 
@@ -57,12 +60,6 @@
       }
     )
 
-  async function change<K extends keyof TestResult> (field: K, value: TestResult[K]) {
-    if (object !== undefined) {
-      await client.update(object, { [field]: value })
-    }
-  }
-
   let content: HTMLElement
 
   $: descriptionKey = hierarchy.getAttribute(testManagement.class.TestResult, 'description')
@@ -82,7 +79,6 @@
     on:open
     on:close={() => dispatch('close')}
   >
-    <TestResultStatusEditor value={object.status} {object} />
     <div class="space-divider" />
     <div class="w-full mt-6">
       <AttachmentStyleBoxCollabEditor
@@ -97,10 +93,11 @@
     </div>
 
     <svelte:fragment slot="aside">
+      <DocAttributeBar {object} {mixins} ignoreKeys={['name']} />
       <RightHeader>
-        <Label label={testManagement.string.TestCase} />
+        <Label label={testManagement.string.TestCaseDescription} />
       </RightHeader>
-      <Scroller padding={'1rem'}>
+      <Scroller padding={'0.5rem 2rem'}>
         <TestCaseDetails _id={object.testCase} object={testCase} _class={testManagement.class.TestCase} />
       </Scroller>
     </svelte:fragment>

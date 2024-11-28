@@ -27,6 +27,6 @@
 <Scroller>
   <TestRunStats _id={object._id} />
   <div class="space-divider" />
-  <DocAttributeBar {object} {readonly} ignoreKeys={[]} />
+  <DocAttributeBar {object} {readonly} ignoreKeys={['name']} />
   <div class="space-divider bottom" />
 </Scroller>

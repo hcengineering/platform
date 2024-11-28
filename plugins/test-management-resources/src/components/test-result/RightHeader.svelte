@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 
-<div class="header flex-between min-h-14 pl-4 pr-4 font-medium text-md bottom-divider">
+<div class="header flex-between min-h-8 pl-4 pr-4 font-medium text-md bottom-divider top-divider">
   <slot />
 </div>
 

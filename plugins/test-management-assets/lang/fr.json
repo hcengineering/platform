@@ -78,6 +78,8 @@
     "DueDate": "Date d'échéance",
     "RunAllTestCases": "Exécuter tous les cas de test",
     "RunSelectedTestCases": "Exécuter des scénarios de test sélectionnés",
-    "RunFilteredTestCases": "Exécuter des cas de test correspondant à un filtre"
+    "RunFilteredTestCases": "Exécuter des cas de test correspondant à un filtre",
+    "TestCaseDescription": "Description du cas de test",
+    "TestResultAttributes": "Résultat"
   }
 }

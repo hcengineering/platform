@@ -78,6 +78,8 @@
     "DueDate": "Termín",
     "RunAllTestCases": "Spustit všechny testovací případy",
     "RunSelectedTestCases": "Spustit vybrané testovací případy",
-    "RunFilteredTestCases": "Spustit testovací případy odpovídající filtru"
+    "RunFilteredTestCases": "Spustit testovací případy odpovídající filtru",
+    "TestCaseDescription": "Popis testovacího případu",
+    "TestResultAttributes": "Výsledek"
   }
 }

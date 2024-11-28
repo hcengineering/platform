@@ -15,7 +15,8 @@
 <script lang="ts">
   import { TestResult, TestRunStatus } from '@hcengineering/test-management'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
-  import StatusEditor from '../test-result/TestResultStatusEditor.svelte'
+
+  import StatusEditor from './TestResultStatusEditor.svelte'
 
   export let value: TestRunStatus
   export let object: TestResult

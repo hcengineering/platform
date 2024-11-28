@@ -13,13 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, onMount } from 'svelte'
+
   import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import { type Class, type Ref } from '@hcengineering/core'
   import { TestCase } from '@hcengineering/test-management'
   import { Panel } from '@hcengineering/panel'
   import { EditBox, Breadcrumb } from '@hcengineering/ui'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { DocAttributeBar } from '@hcengineering/view-resources'
+
   import testManagement from '../../plugin'
 
   export let _id: Ref<TestCase>
@@ -102,5 +105,9 @@
         boundary={content}
       />
     </div>
+
+    <svelte:fragment slot="aside">
+      <DocAttributeBar {object} ignoreKeys={['name']} />
+    </svelte:fragment>
   </Panel>
 {/if}

@@ -78,6 +78,8 @@
     "DueDate": "到期日",
     "RunAllTestCases": "運行所有測試用例",
     "RunSelectedTestCases": "運行選定的測試用例",
-    "RunFilteredTestCases": "運行與篩選器匹配的測試用例"
+    "RunFilteredTestCases": "運行與篩選器匹配的測試用例",
+    "TestCaseDescription": "測試用例描述",
+    "TestResultAttributes": "結果"
   }
 }

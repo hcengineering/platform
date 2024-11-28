@@ -78,6 +78,8 @@
     "DueDate": "Data di scadenza",
     "RunAllTestCases": "Esegui tutti i casi di test",
     "RunSelectedTestCases": "Esegui i casi di test selezionati",
-    "RunFilteredTestCases": "Esegui i casi di test che corrispondono a un filtro"
+    "RunFilteredTestCases": "Esegui i casi di test che corrispondono a un filtro",
+    "TestCaseDescription": "Descrizione del caso di test",
+    "TestResultAttributes": "Risultato"
   }
 }

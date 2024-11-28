@@ -78,6 +78,8 @@
     "DueDate": "Data de vencimento",
     "RunAllTestCases": "Executar todos os casos de teste",
     "RunSelectedTestCases": "Executar casos de teste selecionados",
-    "RunFilteredTestCases": "Executar casos de teste que correspondem a um filtro"
+    "RunFilteredTestCases": "Executar casos de teste que correspondem a um filtro",
+    "TestCaseDescription": "Descrição do caso de teste",
+    "TestResultAttributes": "Resultado"
   }
 }

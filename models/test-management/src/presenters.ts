@@ -55,6 +55,10 @@ export function definePresenters (builder: Builder): void {
   })
 
   builder.mixin(testManagement.class.TypeTestRunStatus, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: testManagement.component.TestRunStatusPresenter
+    presenter: testManagement.component.TestResultStatusPresenter
+  })
+
+  builder.mixin(testManagement.class.TypeTestRunStatus, core.class.Class, view.mixin.AttributeEditor, {
+    inlineEditor: testManagement.component.TestResultStatusEditor
   })
 }

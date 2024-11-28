@@ -78,6 +78,8 @@
     "DueDate": "Выполнить до",
     "RunAllTestCases": "Выполнить все тест-кейсы",
     "RunSelectedTestCases": "Выполнить выбранные тест-кейсы",
-    "RunFilteredTestCases": "Выполнить тест-кейсы, соответствующие фильтру"
+    "RunFilteredTestCases": "Выполнить тест-кейсы, соответствующие фильтру",
+    "TestCaseDescription": "Описание тест-кейса",
+    "TestResultAttributes": "Результат"
   }
 }

@@ -78,6 +78,8 @@
     "DueDate": "Due date",
     "RunAllTestCases": "Run all test cases",
     "RunSelectedTestCases": "Run selected test cases",
-    "RunFilteredTestCases": "Run test cases matching a filter"
+    "RunFilteredTestCases": "Run test cases matching a filter",
+    "TestCaseDescription": "Test case description",
+    "TestResultAttributes": "Result"
   }
 }
