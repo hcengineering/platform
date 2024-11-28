@@ -13,33 +13,39 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ActionContext, DrawingCmd, DrawingTool, drawing } from '@hcengineering/presentation'
+  import { DrawingBoardToolbar, DrawingCmd, DrawingTool, drawing } from '@hcengineering/presentation'
   import textEditor from '@hcengineering/text-editor'
-  import { Dialog } from '@hcengineering/ui'
+  import { Dialog, FocusHandler, createFocusManager } from '@hcengineering/ui'
   import { createEventDispatcher, onMount, onDestroy } from 'svelte'
-  import { Array as YArray, Doc as YDoc } from 'yjs'
+  import { Array as YArray, Map as YMap } from 'yjs'
 
-  export let id: string
-  export let ydoc: YDoc
+  export let savedCmds: YArray<DrawingCmd>
+  export let savedProps: YMap<any>
   export let fullSize = false
 
+  const manager = createFocusManager()
   const dispatch = createEventDispatcher()
 
-  const drawingTool: DrawingTool = 'pen'
-  const penColor = 'blue'
+  let tool: DrawingTool = 'pen'
+  let penColor = 'blue'
   let commandCount: number
-  let drawingCmds: DrawingCmd[] = []
-  let savedCmds: YArray<DrawingCmd>
+  let commands: DrawingCmd[] = []
+  let offset: { x: number, y: number }
+  let toolbar: HTMLDivElement
 
   function listenSavedCommands (): void {
     if (savedCmds.length === 0) {
-      drawingCmds = []
+      commands = []
     } else {
-      for (let i = drawingCmds.length; i < savedCmds.length; i++) {
-        drawingCmds.push(savedCmds.get(i))
+      for (let i = commands.length; i < savedCmds.length; i++) {
+        commands.push(savedCmds.get(i))
       }
     }
     commandCount = savedCmds.length
+  }
+
+  function listenSavedProps (): void {
+    offset = savedProps.get('offset')
   }
 
   onMount(() => {
@@ -47,22 +53,20 @@
       dispatch('fullsize')
     }
 
-    savedCmds = ydoc.getMap(`drawing-board-${id}`).get('commands') as YArray<DrawingCmd>
-    if (savedCmds !== undefined) {
-      drawingCmds = savedCmds.toArray()
-      savedCmds.observe(listenSavedCommands)
-    }
+    commands = savedCmds.toArray()
+    offset = savedProps.get('offset')
+    savedCmds.observe(listenSavedCommands)
+    savedProps.observe(listenSavedProps)
   })
 
   onDestroy(() => {
-    if (savedCmds !== undefined) {
-      savedCmds.unobserve(listenSavedCommands)
-    }
+    savedCmds.unobserve(listenSavedCommands)
+    savedProps.unobserve(listenSavedProps)
   })
 </script>
 
-{#if savedCmds !== undefined}
-  <ActionContext context={{ mode: 'browser' }} />
+{#if savedCmds !== undefined && savedProps !== undefined}
+  <FocusHandler {manager} />
   <Dialog
     isFullSize
     label={textEditor.string.DrawingBoard}
@@ -79,13 +83,33 @@
         readonly: false,
         autoSize: true,
         commandCount,
-        drawingCmds,
-        drawingTool,
+        commands,
+        offset,
+        tool,
         penColor,
         cmdAdded: (cmd) => {
           savedCmds.push([cmd])
+        },
+        panned: (offset) => {
+          savedProps.set('offset', offset)
         }
       }}
-    />
+    >
+      <!-- grab focus from the editor -->
+      <!-- svelte-ignore a11y-autofocus -->
+      <input style:opacity="0" autoFocus />
+
+      <DrawingBoardToolbar
+        placeInside={true}
+        showPanTool={true}
+        bind:toolbar
+        bind:tool
+        bind:penColor
+        on:clear={() => {
+          savedCmds.delete(0, savedCmds.length)
+          savedProps.set('offset', { x: 0, y: 0 })
+        }}
+      />
+    </div>
   </Dialog>
 {/if}

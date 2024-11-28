@@ -23,11 +23,13 @@ export interface DrawingProps {
   imageWidth?: number
   imageHeight?: number
   commandCount?: number
-  drawingCmds: DrawingCmd[]
-  drawingTool?: DrawingTool
+  commands: DrawingCmd[]
+  offset?: Point
+  tool?: DrawingTool
   penColor?: string
   defaultCursor?: string
   cmdAdded?: (cmd: DrawingCmd) => void
+  panned?: (offset: Point) => void
 }
 
 export interface DrawingCmd {
@@ -55,6 +57,7 @@ class DrawState {
   penWidth = 4
   eraserWidth = 30
   minLineLength = 6
+  center: Point = { x: 0, y: 0 }
   offset: Point = { x: 0, y: 0 }
   points: Point[] = []
   scale: Point = { x: 1, y: 1 }
@@ -74,18 +77,13 @@ class DrawState {
 
   addPoint = (mouseX: number, mouseY: number): void => {
     this.points.push({
-      x: mouseX * this.scale.x - this.offset.x,
-      y: mouseY * this.scale.y - this.offset.y
+      x: mouseX * this.scale.x - this.offset.x - this.center.x,
+      y: mouseY * this.scale.y - this.offset.y - this.center.y
     })
   }
 
   isDrawingTool = (): boolean => {
     return this.tool === 'pen' || this.tool === 'erase'
-  }
-
-  setOffset (offset: Point): void {
-    this.offset = offset
-    this.ctx.translate(offset.x, offset.y)
   }
 
   drawLive = (x: number, y: number, lastPoint = false): void => {
@@ -94,6 +92,8 @@ class DrawState {
         this.addPoint(x, y)
       }
       const erasing = this.tool === 'erase'
+      this.ctx.save()
+      this.ctx.translate(this.offset.x + this.center.x, this.offset.y + this.center.y)
       this.ctx.beginPath()
       this.ctx.lineCap = 'round'
       this.ctx.strokeStyle = this.penColor
@@ -105,10 +105,13 @@ class DrawState {
         this.drawSmoothSegment(this.points, this.points.length - 1, lastPoint)
         this.ctx.stroke()
       }
+      this.ctx.restore()
     })
   }
 
   drawCommand = (cmd: DrawingCmd): void => {
+    this.ctx.save()
+    this.ctx.translate(this.offset.x + this.center.x, this.offset.y + this.center.y)
     this.ctx.beginPath()
     this.ctx.lineCap = 'round'
     this.ctx.strokeStyle = cmd.penColor
@@ -122,6 +125,7 @@ class DrawState {
       }
       this.ctx.stroke()
     }
+    this.ctx.restore()
   }
 
   drawPoint = (p: Point, erasing: boolean): void => {
@@ -198,35 +202,29 @@ export function drawing (
   let prevPos: Point = { x: 0, y: 0 }
 
   const draw = new DrawState(ctx)
-  draw.tool = props.drawingTool ?? 'pan'
+  draw.tool = props.tool ?? 'pan'
   draw.penColor = props.penColor ?? 'blue'
   updateCanvasCursor()
 
-  let commands = props.drawingCmds
+  let commands = props.commands
   let commandCount = props.commandCount ?? 0
-  replayCommands()
+  replayCommands({
+    offset: {
+      x: props.offset?.x ?? 0,
+      y: props.offset?.y ?? 0
+    }
+  })
 
   const resizeObserver = new ResizeObserver((entries) => {
     for (const entry of entries) {
       if (entry.target === canvas) {
         if (props.autoSize === true) {
           draw.scale = { x: 1, y: 1 }
-          if (canvas.width === 0 || canvas.height === 0) {
-            canvas.width = Math.floor(entry.contentRect.width)
-            canvas.height = Math.floor(entry.contentRect.height)
-            draw.offset = { x: 0, y: 0 }
-            replayCommands()
-          } else {
-            const oldWidth = canvas.width
-            const oldHeight = canvas.height
-            const newWidth = Math.floor(entry.contentRect.width)
-            const newHeight = Math.floor(entry.contentRect.height)
-            canvas.width = newWidth
-            canvas.height = newHeight
-            draw.offset.x += (newWidth - oldWidth) / 2
-            draw.offset.y += (newHeight - oldHeight) / 2
-            replayCommands({ offset: draw.offset })
-          }
+          canvas.width = Math.floor(entry.contentRect.width)
+          canvas.height = Math.floor(entry.contentRect.height)
+          draw.center.x = canvas.width / 2
+          draw.center.y = canvas.height / 2
+          replayCommands({ offset: draw.offset })
         } else {
           draw.scale = {
             x: canvas.width / entry.contentRect.width,
@@ -281,9 +279,18 @@ export function drawing (
       }
     }
 
-    // TODO: if (draw.tool === 'pan')
-    // Currently we only show drawing over attached images
-    // Their sizes are fixed and no pan required
+    if (draw.on && draw.tool === 'pan') {
+      requestAnimationFrame(() => {
+        replayCommands({
+          offset: {
+            x: draw.offset.x + x - prevPos.x,
+            y: draw.offset.y + y - prevPos.y
+          }
+        })
+        prevPos = { x, y }
+        props.panned?.(draw.offset)
+      })
+    }
   }
 
   canvas.onpointerup = (e) => {
@@ -337,7 +344,9 @@ export function drawing (
       const w = draw.cursorWidth()
       canvasCursor.style.background = erasing ? 'none' : draw.penColor
       canvasCursor.style.border = erasing ? '1px solid #333' : 'none'
-      canvasCursor.style.boxShadow = erasing ? '0px 0px 0px 1px #eee inset' : 'none'
+      canvasCursor.style.boxShadow = erasing
+        ? '0px 0px 0px 1px #eee inset'
+        : '0px 0px .15rem 0px var(--theme-button-contrast-enabled)'
       canvasCursor.style.width = `${w}px`
       canvasCursor.style.height = `${w}px`
     } else if (draw.tool === 'pan') {
@@ -359,7 +368,7 @@ export function drawing (
       clearCanvas()
     }
     if (offset !== undefined) {
-      draw.setOffset(offset)
+      draw.offset = offset
     }
     for (let i = startIndex ?? 0; i < commands.length; i++) {
       draw.drawCommand(commands[i])
@@ -371,15 +380,23 @@ export function drawing (
     canvas,
 
     update (props: DrawingProps) {
-      if (commands !== props.drawingCmds) {
-        commands = props.drawingCmds
-        replayCommands()
+      let replay = false
+      let offset: Point | undefined
+      let startIndex: number | undefined
+      if (props.offset?.x !== draw.offset.x || props.offset?.y !== draw.offset.y) {
+        offset = props.offset
+        replay = true
+      }
+      if (commands !== props.commands) {
+        commands = props.commands
+        replay = true
       } else if (props.commandCount !== undefined && props.commandCount !== commandCount) {
-        replayCommands({ startIndex: commandCount })
+        startIndex = commandCount
+        replay = true
       }
       let updateCursor = false
-      if (draw.tool !== props.drawingTool) {
-        draw.tool = props.drawingTool ?? 'pen'
+      if (draw.tool !== props.tool) {
+        draw.tool = props.tool ?? 'pen'
         updateCursor = true
       }
       if (draw.penColor !== props.penColor) {
@@ -392,6 +409,9 @@ export function drawing (
       }
       if (updateCursor) {
         updateCanvasCursor()
+      }
+      if (replay) {
+        replayCommands({ offset, startIndex })
       }
     }
   }

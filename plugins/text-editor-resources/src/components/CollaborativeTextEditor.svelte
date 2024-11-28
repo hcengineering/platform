@@ -45,7 +45,7 @@
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
   import Placeholder from '@tiptap/extension-placeholder'
   import { createEventDispatcher, getContext, onDestroy, onMount } from 'svelte'
-  import { Array as YArray, Doc as YDoc } from 'yjs'
+  import { Array as YArray, Doc as YDoc, Map as YMap } from 'yjs'
 
   import { Completion } from '../Completion'
   import { deleteAttachment } from '../command/deleteAttachment'
@@ -375,7 +375,9 @@
   function makeNewDrawingBoard (pos: number): void {
     const id = generateId()
     ydoc.getArray('drawing-board-registry').push([id])
-    ydoc.getMap(`drawing-board-${id}`).set('commands', new YArray())
+    const drawing = ydoc.getMap(`drawing-board-${id}`)
+    drawing.set('commands', new YArray())
+    drawing.set('props', new YMap())
     editor.commands.insertContentAt(pos, { type: 'drawingBoard', attrs: { id } })
   }
 

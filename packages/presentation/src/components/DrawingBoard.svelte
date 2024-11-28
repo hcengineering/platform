@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, IconDelete, IconEdit, resizeObserver } from '@hcengineering/ui'
+  import { resizeObserver } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import { drawing, type DrawingCmd, type DrawingData, type DrawingTool } from '../drawing'
-  import IconEraser from './icons/Eraser.svelte'
+  import DrawingBoardToolbar from './DrawingBoardToolbar.svelte'
 
   export let active = false
   export let readonly = true
@@ -25,10 +25,9 @@
   export let drawings: DrawingData[]
   export let createDrawing: (data: any) => Promise<void>
 
-  let drawingTool: DrawingTool = 'pen'
+  let tool: DrawingTool = 'pen'
   let penColor = 'blue'
-  const penColors = ['red', 'green', 'blue', 'white', 'black']
-  let drawingCmds: DrawingCmd[] | undefined
+  let commands: DrawingCmd[] | undefined
   let board: HTMLDivElement
   let toolbar: HTMLDivElement
   let toolbarInside = false
@@ -55,16 +54,16 @@
           parseDrawing(drawings[0])
           modified = false
         } else {
-          if (drawingCmds === undefined) {
-            drawingCmds = []
+          if (commands === undefined) {
+            commands = []
           } else {
             // Edit current content as a new drawing
-            drawingCmds = [...drawingCmds]
+            commands = [...commands]
           }
           modified = false
         }
       } else {
-        drawingCmds = undefined
+        commands = undefined
       }
       oldDrawings = drawings
       oldReadonly = readonly
@@ -74,20 +73,20 @@
   function parseDrawing (data: DrawingData | undefined): void {
     if (data?.content !== undefined && data?.content !== null) {
       try {
-        drawingCmds = JSON.parse(data.content)
+        commands = JSON.parse(data.content)
       } catch (error) {
-        drawingCmds = []
+        commands = []
         console.error('Failed to parse drawing content', error)
       }
     } else {
-      drawingCmds = []
+      commands = []
     }
   }
 
   function saveDrawing (): void {
-    if (modified && drawingCmds !== undefined) {
+    if (modified && commands !== undefined) {
       const data: DrawingData = {
-        content: JSON.stringify(drawingCmds)
+        content: JSON.stringify(commands)
       }
       createDrawing(data).catch((error) => {
         console.error('Failed to save drawing', error)
@@ -100,7 +99,7 @@
   })
 </script>
 
-{#if active && drawingCmds !== undefined}
+{#if active && commands !== undefined}
   <div
     {...$$restProps}
     style:position="relative"
@@ -112,8 +111,8 @@
       readonly,
       imageWidth,
       imageHeight,
-      drawingCmds,
-      drawingTool,
+      commands,
+      tool,
       penColor,
       cmdAdded: () => {
         modified = true
@@ -121,87 +120,19 @@
     }}
   >
     {#if !readonly}
-      <div class="toolbar" class:inside={toolbarInside} bind:this={toolbar}>
-        <Button
-          icon={IconDelete}
-          kind="icon"
-          on:click={() => {
-            drawingCmds = []
-            modified = true
-          }}
-        />
-        <div class="divider buttons-divider" />
-        <Button
-          icon={IconEdit}
-          kind="icon"
-          selected={drawingTool === 'pen'}
-          on:click={() => {
-            drawingTool = 'pen'
-          }}
-        />
-        <Button
-          icon={IconEraser}
-          kind="icon"
-          selected={drawingTool === 'erase'}
-          on:click={() => {
-            drawingTool = 'erase'
-          }}
-        />
-        <div class="divider buttons-divider" />
-        {#each penColors as color}
-          <Button
-            kind="icon"
-            selected={penColor === color}
-            on:click={() => {
-              penColor = color
-            }}
-          >
-            <div
-              slot="content"
-              class="colorIcon"
-              class:emphasized={color === 'white' || color === 'black'}
-              style:background={color}
-            />
-          </Button>
-        {/each}
-      </div>
+      <DrawingBoardToolbar
+        placeInside={toolbarInside}
+        bind:toolbar
+        bind:tool
+        bind:penColor
+        on:clear={() => {
+          commands = []
+          modified = true
+        }}
+      />
     {/if}
     <slot />
   </div>
 {:else}
   <slot />
 {/if}
-
-<style lang="scss">
-  .toolbar {
-    position: absolute;
-    display: inline-flex;
-    align-items: center;
-    padding: 5px;
-    bottom: 100%;
-
-    &.inside {
-      left: 5px;
-      top: 5px;
-      bottom: unset;
-      background-color: var(--theme-navpanel-color);
-      border-radius: var(--small-BorderRadius);
-      z-index: 1;
-    }
-  }
-
-  .colorIcon {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    margin: -3px;
-
-    &.emphasized {
-      box-shadow: 0px 0px 3px 0px var(--theme-button-contrast-enabled);
-    }
-  }
-
-  .divider {
-    margin: 0 5px;
-  }
-</style>
