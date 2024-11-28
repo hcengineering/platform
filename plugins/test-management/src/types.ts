@@ -114,6 +114,7 @@ export enum TestRunStatus {
   Failed
 }
 
+// TODO: Refactor to associations
 /** @public */
 export interface TestResult extends AttachedDoc<TestRun, 'results', TestProject> {
   name: string

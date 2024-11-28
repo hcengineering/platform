@@ -11,7 +11,6 @@
   export let value: Ref<Doc>[] = []
   export let type: ArrOf<RefTo<Doc>>
   export let onChange: (refs: Ref<Doc>[]) => void
-
   $: _clazz = (type.of as RefTo<Doc>).to
   const client = getClient()
   const hierarchy = client.getHierarchy()

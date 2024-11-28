@@ -23,6 +23,7 @@
   let divScroll: HTMLElement
 </script>
 
+<!--TODO: Refactor and get rid of harcoded values-->
 <ScrollerBar gap="none" bind:scroller={divScroll}>
   <BreadcrumbsElement
     noGap
@@ -32,10 +33,6 @@
     fontColor="white"
     title="Untested"
     selected
-    on:click={(ev) => {
-      ev.stopPropagation()
-      // if (item._id !== state) selectItem(ev, item)
-    }}
   />
   <BreadcrumbsElement
     label={value.blocked.toString()}
@@ -45,10 +42,6 @@
     selected
     fontColor="white"
     title="Failed"
-    on:click={(ev) => {
-      ev.stopPropagation()
-      // if (item._id !== state) selectItem(ev, item)
-    }}
   />
   <BreadcrumbsElement
     label={value.failed.toString()}
@@ -58,10 +51,6 @@
     selected
     fontColor="white"
     title="Failed"
-    on:click={(ev) => {
-      ev.stopPropagation()
-      // if (item._id !== state) selectItem(ev, item)
-    }}
   />
   <BreadcrumbsElement
     noGap
@@ -71,9 +60,5 @@
     fontColor="white"
     title="Passed"
     selected
-    on:click={(ev) => {
-      ev.stopPropagation()
-      // if (item._id !== state) selectItem(ev, item)
-    }}
   />
 </ScrollerBar>

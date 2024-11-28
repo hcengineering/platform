@@ -29,15 +29,12 @@
     testCases = res.length
   })
 
-  const createTestCase = (ev: MouseEvent): void => {
-    // showPopup(CreateTestCase, { testSuiteId: objectId }, ev.target as HTMLElement)
-  }
-
   let viewlet: Viewlet | undefined
   let preference: ViewletPreference | undefined
   let loading = true
 </script>
 
+<!--TODO: Finish implementation-->
 <div class="antiSection max-h-125 clear-mins">
   <div class="antiSection-header">
     <div class="antiSection-header__icon">
@@ -54,7 +51,7 @@
         bind:preference
         bind:loading
       />
-      <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createTestCase} />
+      <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={() => {}} />
     </div>
   </div>
   {#if testCases > 0}
@@ -74,7 +71,7 @@
     <SectionEmpty icon={FileDuo} label={testManagement.string.NoTestCases}>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <span class="over-underline content-color" on:click={createTestCase}>
+      <span class="over-underline content-color">
         <Label label={testManagement.string.CreateTestCase} />
       </span>
     </SectionEmpty>

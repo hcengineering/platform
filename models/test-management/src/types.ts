@@ -216,6 +216,7 @@ export function TypeTestRunStatus (): Type<TestRunStatus> {
 @UX(testManagement.string.TestRunStatus)
 export class TTypeTestRunStatus extends TType {}
 
+// TODO: Refactor to associations
 @Model(testManagement.class.TestResult, core.class.AttachedDoc, DOMAIN_TEST_MANAGEMENT)
 @UX(testManagement.string.TestResult)
 export class TTestResult extends TAttachedDoc implements TestResult {
