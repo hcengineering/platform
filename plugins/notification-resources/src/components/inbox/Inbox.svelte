@@ -452,6 +452,7 @@
             ? urlObjectClass ?? selectedContext.objectClass
             : selectedContext.objectClass,
           autofocus: false,
+          embedded: true,
           context: selectedContext,
           activityMessage: selectedMessage,
           props: { context: selectedContext, autofocus: false }

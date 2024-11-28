@@ -51,7 +51,6 @@ import ProjectComponents from './components/components/ProjectComponents.svelte'
 import CreateIssue from './components/CreateIssue.svelte'
 import EditRelatedTargets from './components/EditRelatedTargets.svelte'
 import EditRelatedTargetsPopup from './components/EditRelatedTargetsPopup.svelte'
-import Inbox from './components/inbox/Inbox.svelte'
 import AssigneeEditor from './components/issues/AssigneeEditor.svelte'
 import DueDatePresenter from './components/issues/DueDatePresenter.svelte'
 import EditIssue from './components/issues/edit/EditIssue.svelte'
@@ -582,7 +581,6 @@ export default async (): Promise<Resources> => ({
   component: {
     NopeComponent,
     Issues,
-    Inbox,
     MyIssues,
     Components,
     IssuePresenter,

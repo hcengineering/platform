@@ -63,7 +63,7 @@
     locationToUrl,
     mainSeparators,
     navigate,
-    openPanel,
+    showPanel,
     PanelInstance,
     Popup,
     PopupAlignment,
@@ -401,7 +401,6 @@
         const prevTabLoc = prevTab ? getTabLocation(prevTab) : undefined
         if (prevTabLoc === undefined || prevTabLoc.path[2] !== loc.path[2]) {
           clear(1)
-          clear(2)
         }
       }
       prevTabIdStore.set($tabIdStore)
@@ -529,12 +528,13 @@
           provider,
           focus: doc
         })
-        openPanel(
+        showPanel(
           props[0] as AnyComponent,
           _id,
           _class,
           (props[3] ?? undefined) as PopupAlignment,
-          (props[4] ?? undefined) as AnyComponent
+          (props[4] ?? undefined) as AnyComponent,
+          false
         )
       } else {
         accessDeniedStore.set(true)
