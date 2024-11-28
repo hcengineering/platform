@@ -19,15 +19,18 @@ export interface DrawingData {
 
 export interface DrawingProps {
   readonly: boolean
+  autoSize?: boolean
   imageWidth?: number
   imageHeight?: number
-  drawingData: DrawingData
+  commandCount?: number
+  drawingCmds: DrawingCmd[]
   drawingTool?: DrawingTool
   penColor?: string
-  changed?: (content: string) => void
+  defaultCursor?: string
+  cmdAdded?: (cmd: DrawingCmd) => void
 }
 
-interface DrawCmd {
+export interface DrawingCmd {
   lineWidth: number
   erasing: boolean
   penColor: string
@@ -80,6 +83,11 @@ class DrawState {
     return this.tool === 'pen' || this.tool === 'erase'
   }
 
+  setOffset (offset: Point): void {
+    this.offset = offset
+    this.ctx.translate(offset.x, offset.y)
+  }
+
   drawLive = (x: number, y: number, lastPoint = false): void => {
     window.requestAnimationFrame(() => {
       if (!lastPoint || this.points.length > 1) {
@@ -100,7 +108,7 @@ class DrawState {
     })
   }
 
-  drawCommand = (cmd: DrawCmd): void => {
+  drawCommand = (cmd: DrawingCmd): void => {
     this.ctx.beginPath()
     this.ctx.lineCap = 'round'
     this.ctx.strokeStyle = cmd.penColor
@@ -152,15 +160,13 @@ class DrawState {
   }
 }
 
-export function drawing (node: HTMLElement, props: DrawingProps): any {
-  if (
-    props.imageWidth === undefined ||
-    props.imageHeight === undefined ||
-    node.clientWidth === undefined ||
-    node.clientHeight === undefined
-  ) {
+export function drawing (
+  node: HTMLElement,
+  props: DrawingProps
+): { canvas?: HTMLCanvasElement, update?: (props: DrawingProps) => void } {
+  if (props.autoSize !== true && (props.imageWidth === undefined || props.imageHeight === undefined)) {
     console.error('Failed to create drawing: image size is not specified')
-    return
+    return {}
   }
 
   const canvas = document.createElement('canvas')
@@ -169,15 +175,15 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
   canvas.style.top = '0'
   canvas.style.width = '100%'
   canvas.style.height = '100%'
-  canvas.width = props.imageWidth
-  canvas.height = props.imageHeight
+  canvas.width = props.imageWidth ?? 0
+  canvas.height = props.imageHeight ?? 0
   node.appendChild(canvas)
 
   const ctx = canvas.getContext('2d')
   if (ctx === null) {
     console.error('Failed to create drawing: unable to get 2d canvas context')
     node.removeChild(canvas)
-    return
+    return {}
   }
 
   const canvasCursor = document.createElement('div')
@@ -196,16 +202,36 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
   draw.penColor = props.penColor ?? 'blue'
   updateCanvasCursor()
 
-  let commands: DrawCmd[] = []
-  let drawingData = props.drawingData
-  parseData()
+  let commands = props.drawingCmds
+  let commandCount = props.commandCount ?? 0
+  replayCommands()
 
   const resizeObserver = new ResizeObserver((entries) => {
     for (const entry of entries) {
       if (entry.target === canvas) {
-        draw.scale = {
-          x: canvas.width / entry.contentRect.width,
-          y: canvas.height / entry.contentRect.height
+        if (props.autoSize === true) {
+          draw.scale = { x: 1, y: 1 }
+          if (canvas.width === 0 || canvas.height === 0) {
+            canvas.width = Math.floor(entry.contentRect.width)
+            canvas.height = Math.floor(entry.contentRect.height)
+            draw.offset = { x: 0, y: 0 }
+            replayCommands()
+          } else {
+            const oldWidth = canvas.width
+            const oldHeight = canvas.height
+            const newWidth = Math.floor(entry.contentRect.width)
+            const newHeight = Math.floor(entry.contentRect.height)
+            canvas.width = newWidth
+            canvas.height = newHeight
+            draw.offset.x += (newWidth - oldWidth) / 2
+            draw.offset.y += (newHeight - oldHeight) / 2
+            replayCommands({ offset: draw.offset })
+          }
+        } else {
+          draw.scale = {
+            x: canvas.width / entry.contentRect.width,
+            y: canvas.height / entry.contentRect.height
+          }
         }
       }
     }
@@ -290,21 +316,21 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
   function storeCommand (): void {
     if (draw.points.length > 1) {
       const erasing = draw.tool === 'erase'
-      const cmd: DrawCmd = {
+      const cmd: DrawingCmd = {
         lineWidth: (erasing ? draw.eraserWidth : draw.penWidth) * draw.lineScale(),
         erasing,
         penColor: draw.penColor,
         points: draw.points
       }
       commands.push(cmd)
-      props.changed?.(JSON.stringify(commands))
+      props.cmdAdded?.(cmd)
     }
   }
 
   function updateCanvasCursor (): void {
     if (readonly) {
       canvasCursor.style.visibility = 'hidden'
-      canvas.style.cursor = 'default'
+      canvas.style.cursor = props.defaultCursor ?? 'default'
     } else if (draw.isDrawingTool()) {
       canvas.style.cursor = 'none'
       const erasing = draw.tool === 'erase'
@@ -328,33 +354,28 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
     draw.offset = { x: 0, y: 0 }
   }
 
-  function replayCommands (): void {
-    draw.ctx.reset()
-    for (const cmd of commands) {
-      draw.drawCommand(cmd)
+  function replayCommands ({ offset, startIndex }: { offset?: Point, startIndex?: number } = {}): void {
+    if (startIndex === undefined || startIndex === 0) {
+      clearCanvas()
     }
-  }
-
-  function parseData (): void {
-    clearCanvas()
-    if (drawingData.content !== undefined && drawingData.content !== null) {
-      try {
-        commands = JSON.parse(drawingData.content)
-        replayCommands()
-      } catch (error) {
-        commands = []
-        console.error('Failed to parse drawing content', error)
-      }
-    } else {
-      commands = []
+    if (offset !== undefined) {
+      draw.setOffset(offset)
     }
+    for (let i = startIndex ?? 0; i < commands.length; i++) {
+      draw.drawCommand(commands[i])
+    }
+    commandCount = commands.length
   }
 
   return {
+    canvas,
+
     update (props: DrawingProps) {
-      if (drawingData !== props.drawingData) {
-        drawingData = props.drawingData
-        parseData()
+      if (commands !== props.drawingCmds) {
+        commands = props.drawingCmds
+        replayCommands()
+      } else if (props.commandCount !== undefined && props.commandCount !== commandCount) {
+        replayCommands({ startIndex: commandCount })
       }
       let updateCursor = false
       if (draw.tool !== props.drawingTool) {

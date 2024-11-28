@@ -13,13 +13,22 @@
 // limitations under the License.
 //
 
+import { type DrawingCmd, type DrawingProps, drawing } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
 import { mergeAttributes, Node } from '@tiptap/core'
-import { Plugin, PluginKey } from '@tiptap/pm/state'
+import type { Array as YArray, Doc as YDoc } from 'yjs'
 import DrawingBoardPopup from '../DrawingBoardPopup.svelte'
 
+const defaultHeight = 500
+
 export interface DrawingBoardOptions {
-  defaultHeight?: number
+  ydoc?: YDoc
+}
+
+declare module '@tiptap/core' {
+  interface Commands<ReturnType> {
+    insertDrawingBoard: (options?: { id: string, getContent: () => string }) => ReturnType
+  }
 }
 
 export const DrawingBoardExtension = Node.create<DrawingBoardOptions>({
@@ -33,7 +42,7 @@ export const DrawingBoardExtension = Node.create<DrawingBoardOptions>({
 
   addOptions () {
     return {
-      defaultHeight: 500
+      ydoc: undefined
     }
   },
 
@@ -44,63 +53,92 @@ export const DrawingBoardExtension = Node.create<DrawingBoardOptions>({
       },
       height: {
         renderHTML: (attrs) => ({ 'data-height': attrs.height })
+      },
+      getContent: {
+        default: undefined
       }
     }
   },
 
   addNodeView () {
     return ({ node }) => {
-      const content = document.createElement('div')
-      content.id = node.attrs.id
-      content.style.width = '100%'
-      content.style.cursor = 'pointer'
-      content.style.position = 'relative'
-      content.style.minHeight = `${node.attrs.height ?? this.options.defaultHeight}px`
-      content.style.border = '1px solid var(--theme-navpanel-border)'
-      content.style.borderRadius = 'var(--small-BorderRadius)'
-      content.style.backgroundColor = 'var(--theme-navpanel-color)'
-
-      const canvas = document.createElement('canvas')
-      canvas.style.position = 'absolute'
-      canvas.style.top = '0'
-      canvas.style.left = '0'
-      canvas.style.width = '100%'
-      canvas.style.height = '100%'
-      canvas.width = 500
-      canvas.height = 500
-
-      content.appendChild(canvas)
-
-      return {
-        dom: content,
-        contentDOM: canvas
+      const savedCmds = this.options.ydoc
+        ?.getMap(`drawing-board-${node.attrs.id}`)
+        .get('commands') as YArray<DrawingCmd>
+      if (savedCmds === undefined) {
+        return {}
       }
-    }
-  },
 
-  addProseMirrorPlugins () {
-    return [
-      new Plugin({
-        key: new PluginKey('drawing-board-handle-click'),
-        props: {
-          handleClick: (view, pos, event) => {
-            const node = view.state.doc.nodeAt(pos)
-            if (node?.type.name === this.name) {
-              openDrawingBoardPopup(node.attrs.id)
-            }
+      const normalBorder = '1px solid var(--theme-navpanel-border)'
+      const selectedBorder = '1px solid var(--theme-editbox-focus-border)'
+
+      const dom = document.createElement('div')
+      dom.id = node.attrs.id
+      dom.contentEditable = 'false'
+      dom.style.width = '100%'
+      dom.style.position = 'relative'
+      dom.style.minHeight = `${node.attrs.height ?? defaultHeight}px`
+      dom.style.border = normalBorder
+      dom.style.borderRadius = 'var(--small-BorderRadius)'
+      dom.style.backgroundColor = 'var(--theme-navpanel-color)'
+      dom.ondblclick = () => {
+        showPopup(
+          DrawingBoardPopup,
+          {
+            id: node.attrs.id,
+            ydoc: this.options.ydoc
+          },
+          'centered'
+        )
+      }
+
+      const drawingProps: DrawingProps = {
+        readonly: true,
+        autoSize: true,
+        drawingCmds: savedCmds.toArray(),
+        commandCount: savedCmds.length,
+        defaultCursor: 'pointer'
+      }
+
+      const { canvas, update: updateDrawing } = drawing(dom, drawingProps)
+      if (canvas === undefined || updateDrawing === undefined) {
+        return {}
+      }
+      dom.appendChild(canvas)
+
+      const listenSavedCommands = (): void => {
+        let update = false
+        if (savedCmds.length === 0) {
+          update = true
+          drawingProps.drawingCmds = []
+        } else if (savedCmds.length > drawingProps.drawingCmds.length) {
+          update = true
+          for (let i = drawingProps.drawingCmds.length; i < savedCmds.length; i++) {
+            drawingProps.drawingCmds.push(savedCmds.get(i))
           }
         }
-      })
-    ]
+        if (update) {
+          drawingProps.commandCount = savedCmds.length
+          updateDrawing(drawingProps)
+        }
+      }
+      savedCmds.observe(listenSavedCommands)
+
+      return {
+        dom,
+        selectNode: () => {
+          dom.style.border = selectedBorder
+        },
+        deselectNode: () => {
+          dom.style.border = normalBorder
+        },
+        setSelection: (anchor, head, root) => {
+          console.log('setSelection', anchor, head, root)
+        },
+        destroy: () => {
+          savedCmds.unobserve(listenSavedCommands)
+        }
+      }
+    }
   }
 })
-
-function openDrawingBoardPopup (id: string): void {
-  showPopup(
-    DrawingBoardPopup,
-    {
-      id
-    },
-    'centered'
-  )
-}

@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Button, IconDelete, IconEdit, resizeObserver } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
-  import { drawing, type DrawingData, type DrawingTool } from '../drawing'
+  import { drawing, type DrawingCmd, type DrawingData, type DrawingTool } from '../drawing'
   import IconEraser from './icons/Eraser.svelte'
 
   export let active = false
@@ -28,7 +28,7 @@
   let drawingTool: DrawingTool = 'pen'
   let penColor = 'blue'
   const penColors = ['red', 'green', 'blue', 'white', 'black']
-  let drawingData: DrawingData | undefined
+  let drawingCmds: DrawingCmd[] | undefined
   let board: HTMLDivElement
   let toolbar: HTMLDivElement
   let toolbarInside = false
@@ -51,42 +51,56 @@
     if (readonly !== oldReadonly || drawings !== oldDrawings) {
       if (drawings !== undefined) {
         if (readonly) {
-          if (modified && drawingData !== undefined) {
-            createDrawing(drawingData).catch((error) => {
-              console.error('Failed to save drawing', error)
-            })
-          }
-          drawingData = drawings[0]
+          saveDrawing()
+          parseDrawing(drawings[0])
           modified = false
         } else {
-          if (drawingData === undefined) {
-            drawingData = {}
+          if (drawingCmds === undefined) {
+            drawingCmds = []
           } else {
             // Edit current content as a new drawing
-            drawingData = {
-              content: drawingData.content
-            }
+            drawingCmds = [...drawingCmds]
           }
           modified = false
         }
       } else {
-        drawingData = undefined
+        drawingCmds = undefined
       }
       oldDrawings = drawings
       oldReadonly = readonly
     }
   }
 
-  onDestroy(() => {
-    if (modified && drawingData !== undefined) {
-      createDrawing(drawingData).catch((error) => {
+  function parseDrawing (data: DrawingData | undefined): void {
+    if (data?.content !== undefined && data?.content !== null) {
+      try {
+        drawingCmds = JSON.parse(data.content)
+      } catch (error) {
+        drawingCmds = []
+        console.error('Failed to parse drawing content', error)
+      }
+    } else {
+      drawingCmds = []
+    }
+  }
+
+  function saveDrawing (): void {
+    if (modified && drawingCmds !== undefined) {
+      const data: DrawingData = {
+        content: JSON.stringify(drawingCmds)
+      }
+      createDrawing(data).catch((error) => {
         console.error('Failed to save drawing', error)
       })
     }
+  }
+
+  onDestroy(() => {
+    saveDrawing()
   })
 </script>
 
-{#if active && drawingData !== undefined}
+{#if active && drawingCmds !== undefined}
   <div
     {...$$restProps}
     style:position="relative"
@@ -98,14 +112,11 @@
       readonly,
       imageWidth,
       imageHeight,
-      drawingData,
+      drawingCmds,
       drawingTool,
       penColor,
-      changed: (content) => {
+      cmdAdded: () => {
         modified = true
-        if (drawingData !== undefined) {
-          drawingData.content = content
-        }
       }
     }}
   >
@@ -115,7 +126,7 @@
           icon={IconDelete}
           kind="icon"
           on:click={() => {
-            drawingData = {}
+            drawingCmds = []
             modified = true
           }}
         />

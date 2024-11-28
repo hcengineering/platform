@@ -13,33 +13,79 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ActionContext } from '@hcengineering/presentation'
+  import { ActionContext, DrawingCmd, DrawingTool, drawing } from '@hcengineering/presentation'
   import textEditor from '@hcengineering/text-editor'
   import { Dialog } from '@hcengineering/ui'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher, onMount, onDestroy } from 'svelte'
+  import { Array as YArray, Doc as YDoc } from 'yjs'
 
   export let id: string
+  export let ydoc: YDoc
   export let fullSize = false
 
   const dispatch = createEventDispatcher()
+
+  const drawingTool: DrawingTool = 'pen'
+  const penColor = 'blue'
+  let commandCount: number
+  let drawingCmds: DrawingCmd[] = []
+  let savedCmds: YArray<DrawingCmd>
+
+  function listenSavedCommands (): void {
+    if (savedCmds.length === 0) {
+      drawingCmds = []
+    } else {
+      for (let i = drawingCmds.length; i < savedCmds.length; i++) {
+        drawingCmds.push(savedCmds.get(i))
+      }
+    }
+    commandCount = savedCmds.length
+  }
 
   onMount(() => {
     if (fullSize) {
       dispatch('fullsize')
     }
+
+    savedCmds = ydoc.getMap(`drawing-board-${id}`).get('commands') as YArray<DrawingCmd>
+    if (savedCmds !== undefined) {
+      drawingCmds = savedCmds.toArray()
+      savedCmds.observe(listenSavedCommands)
+    }
+  })
+
+  onDestroy(() => {
+    if (savedCmds !== undefined) {
+      savedCmds.unobserve(listenSavedCommands)
+    }
   })
 </script>
 
-<ActionContext context={{ mode: 'browser' }} />
-<Dialog
-  isFullSize
-  label={textEditor.string.DrawingBoard}
-  on:fullsize
-  on:close={() => {
-    dispatch('close')
-  }}
->
-  <div>
-    {id}
-  </div>
-</Dialog>
+{#if savedCmds !== undefined}
+  <ActionContext context={{ mode: 'browser' }} />
+  <Dialog
+    isFullSize
+    label={textEditor.string.DrawingBoard}
+    padding="0"
+    on:fullsize
+    on:close={() => {
+      dispatch('close')
+    }}
+  >
+    <div
+      style:position="relative"
+      style:flex-grow="1"
+      use:drawing={{
+        readonly: false,
+        autoSize: true,
+        commandCount,
+        drawingCmds,
+        drawingTool,
+        penColor,
+        cmdAdded: (cmd) => {
+          savedCmds.push([cmd])
+        }
+      }}
+    />
+  </Dialog>
+{/if}

@@ -45,7 +45,7 @@
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
   import Placeholder from '@tiptap/extension-placeholder'
   import { createEventDispatcher, getContext, onDestroy, onMount } from 'svelte'
-  import { Doc as YDoc } from 'yjs'
+  import { Array as YArray, Doc as YDoc } from 'yjs'
 
   import { Completion } from '../Completion'
   import { deleteAttachment } from '../command/deleteAttachment'
@@ -362,7 +362,7 @@
         editor.commands.setHorizontalRule()
         break
       case 'drawing-board':
-        editor.commands.insertContentAt(pos, { type: 'drawingBoard', attrs: { id: generateId() } })
+        makeNewDrawingBoard(pos)
         break
     }
   }
@@ -370,6 +370,13 @@
   const throttle = new ThrottledCaller(100)
   const updateLastUpdateTime = (): void => {
     remoteProvider.awareness?.setLocalStateField('lastUpdate', Date.now())
+  }
+
+  function makeNewDrawingBoard (pos: number): void {
+    const id = generateId()
+    ydoc.getArray('drawing-board-registry').push([id])
+    ydoc.getMap(`drawing-board-${id}`).set('commands', new YArray())
+    editor.commands.insertContentAt(pos, { type: 'drawingBoard', attrs: { id } })
   }
 
   onMount(async () => {
@@ -420,7 +427,7 @@
           }
         }),
         EmojiExtension,
-        DrawingBoardExtension,
+        DrawingBoardExtension.configure({ ydoc }),
         ...extensions
       ],
       parseOptions: {
