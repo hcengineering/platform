@@ -13,11 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, onMount } from 'svelte'
+
   import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { type Class, type Ref } from '@hcengineering/core'
   import { TestCase } from '@hcengineering/test-management'
-  import { createEventDispatcher, onMount } from 'svelte'
+
   import testManagement from '../../plugin'
 
   export let object: TestCase | undefined = undefined

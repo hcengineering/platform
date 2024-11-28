@@ -16,10 +16,10 @@
   import { Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
   import { ButtonWithDropdown, IconDropdown, SelectPopupValueType } from '@hcengineering/ui'
   import { selectionStore } from '@hcengineering/view-resources'
+  import type { TestProject } from '@hcengineering/test-management'
 
   import testManagement from '../../plugin'
   import { showCreateTestRunPopup } from '../../utils'
-  import type { TestProject } from '@hcengineering/test-management'
 
   export let query: DocumentQuery<Doc> = {}
   export let space: Ref<Space>

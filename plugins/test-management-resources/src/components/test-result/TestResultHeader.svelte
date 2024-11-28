@@ -13,9 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Doc } from '@hcengineering/core'
-  import { DocsNavigator } from '@hcengineering/view-resources'
-
   import { TestResult } from '@hcengineering/test-management'
   import TestResultPresenter from './TestResultPresenter.svelte'
 

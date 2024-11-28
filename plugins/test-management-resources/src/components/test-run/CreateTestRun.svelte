@@ -17,9 +17,8 @@
 
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import core, { Data, Doc, DocumentQuery, Ref, generateId, makeCollaborativeDoc } from '@hcengineering/core'
+  import core, { Data, DocumentQuery, Ref, generateId, makeCollaborativeDoc } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { ArrayEditor } from '@hcengineering/view-resources'
   import { Card, SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
   import {
     TestCase,
@@ -29,7 +28,7 @@
     TestRunStatus,
     TestManagementEvents
   } from '@hcengineering/test-management'
-  import { EditBox, Loading, navigate } from '@hcengineering/ui'
+  import { DatePresenter, EditBox, Loading, navigate } from '@hcengineering/ui'
   import { EmptyMarkup } from '@hcengineering/text'
   import { Analytics } from '@hcengineering/analytics'
 
@@ -59,7 +58,8 @@
 
   const object: Data<TestRun> = {
     name: '' as IntlString,
-    description: makeCollaborativeDoc(id, 'description')
+    description: makeCollaborativeDoc(id, 'description'),
+    dueDate: undefined
   }
 
   let _space = space
@@ -159,10 +159,22 @@
     }}
   />
   <svelte:fragment slot="pool">
-    {#if isLoading}
-      <Loading />
-    {:else}
-      <TestCaseSelector objects={testCases} selectedObjects={testCases} readonly={true} />
-    {/if}
+    <div id="duedate-editor">
+      <DatePresenter
+        focusIndex={10}
+        bind:value={object.dueDate}
+        labelNull={testManagement.string.DueDate}
+        kind={'regular'}
+        size={'large'}
+        editable
+      />
+    </div>
+    <div id="test-cases-selector">
+      {#if isLoading}
+        <Loading />
+      {:else}
+        <TestCaseSelector objects={testCases} selectedObjects={testCases} readonly={true} />
+      {/if}
+    </div>
   </svelte:fragment>
 </Card>

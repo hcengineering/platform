@@ -44,7 +44,13 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  function handlePopupOpen (event: MouseEvent) {
+  $: itemsInfo = defaultTestRunStatuses.map((status) => ({
+    id: status,
+    isSelected: value === status,
+    ...testRunStatusAssets[status]
+  }))
+
+  function handlePopupOpen (event: MouseEvent): void {
     showPopup(
       SelectPopup,
       { value: itemsInfo, placeholder: testManagement.string.SetStatus },
@@ -53,7 +59,7 @@
     )
   }
 
-  async function changeStatus (newStatus: TestResult['status'] | null | undefined) {
+  async function changeStatus (newStatus: TestResult['status'] | null | undefined): Promise<void> {
     if (disabled || newStatus == null || value === newStatus) {
       return
     }
@@ -65,12 +71,6 @@
       await client.update(object, { status: newStatus })
     }
   }
-
-  $: itemsInfo = defaultTestRunStatuses.map((status) => ({
-    id: status,
-    isSelected: value === status,
-    ...testRunStatusAssets[status]
-  }))
 
   $: icon = value === undefined ? testManagement.icon.StatusNonTested : testRunStatusAssets[value].icon
   $: label = value === undefined ? testManagement.string.StatusNonTested : testRunStatusAssets[value].label

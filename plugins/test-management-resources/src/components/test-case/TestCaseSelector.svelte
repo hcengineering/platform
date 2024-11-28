@@ -14,23 +14,8 @@
 -->
 
 <script lang="ts">
-  import { ComponentType } from 'svelte'
-
-  import { Ref, Space } from '@hcengineering/core'
-  import { Asset, IntlString } from '@hcengineering/platform'
-  import {
-    AnySvelteComponent,
-    Button,
-    ButtonKind,
-    ButtonShape,
-    ButtonSize,
-    IconFolder,
-    IconWithEmoji,
-    Label,
-    TooltipAlignment,
-    showPopup
-  } from '@hcengineering/ui'
-  import view, { IconProps } from '@hcengineering/view'
+  import { IntlString } from '@hcengineering/platform'
+  import { Button, ButtonKind, ButtonShape, ButtonSize, Label, TooltipAlignment, showPopup } from '@hcengineering/ui'
   import { TestCase } from '@hcengineering/test-management'
 
   import TestCasePopup from './TestCasePopup.svelte'
@@ -49,9 +34,7 @@
   export let width: string | undefined = undefined
   export let readonly = false
 
-  let selected: (Space & IconProps) | undefined
-
-  const showSpacesPopup = (ev: MouseEvent) => {
+  const showSpacesPopup = (ev: MouseEvent): void => {
     showPopup(
       TestCasePopup,
       {
