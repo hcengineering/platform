@@ -425,6 +425,13 @@ function defineTestRun (builder: Builder): void {
     presenter: testManagement.component.TestResultPresenter
   })
 
+  builder.mixin(testManagement.class.TestResult, core.class.Class, activity.mixin.ActivityDoc, {})
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: testManagement.class.TestResult,
+    components: { input: { component: chunter.component.ChatMessageInput } }
+  })
+
   builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ObjectEditor, {
     editor: testManagement.component.EditTestResult
   })
