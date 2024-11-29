@@ -1,3 +1,18 @@
+//
+// Copyright © 2024 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 import { ConnectMeetingRequest } from '@hcengineering/ai-bot'
 import chunter from '@hcengineering/chunter'
 import { Person } from '@hcengineering/contact'
@@ -27,7 +42,6 @@ import { jsonToMarkup, MarkupNodeType } from '@hcengineering/text'
 import config from '../config'
 
 export class LoveController {
-  private readonly roomSidById = new Map<Ref<Room>, string>()
   private readonly connectedRooms = new Set<Ref<Room>>()
 
   private participantsInfo: ParticipantInfo[] = []
@@ -44,7 +58,7 @@ export class LoveController {
     void this.initData()
     setInterval(() => {
       void this.checkConnection()
-    }, 5000)
+    }, 10 * 1000)
   }
 
   getIdentity (): { identity: Ref<Person>, name: string } {
@@ -119,12 +133,10 @@ export class LoveController {
 
     if (room === undefined) {
       this.ctx.error('Room not found', request)
-      this.roomSidById.delete(request.roomId)
       this.connectedRooms.delete(request.roomId)
       return
     }
 
-    this.roomSidById.set(request.roomId, request.roomSid)
     this.connectedRooms.add(request.roomId)
 
     this.ctx.info('Connecting', { room: room.name, roomId: room._id })
@@ -155,11 +167,10 @@ export class LoveController {
       await stopTranscription(this.token, getTokenRoomName(this.workspace, room.name, room._id), room.name)
     }
 
-    this.roomSidById.delete(roomId)
     this.connectedRooms.delete(roomId)
   }
 
-  async processTranscript (text: string, person: Ref<Person>, roomId: Ref<Room>, final: boolean): Promise<void> {
+  async processTranscript (text: string, person: Ref<Person>, roomId: Ref<Room>): Promise<void> {
     const room = await this.getRoom(roomId)
     const participant = await this.getRoomParticipant(roomId, person)
 
@@ -167,14 +178,8 @@ export class LoveController {
       return
     }
 
-    const sid = this.roomSidById.get(roomId)
-
-    if (sid === undefined) {
-      return
-    }
-
     const personAccount = this.client.getModel().getAccountByPersonId(participant.person)[0]
-    const doc = await this.getMeetingMinutes(room, sid)
+    const doc = await this.getMeetingMinutes(room)
 
     if (doc === undefined) return
     const op = this.client.apply(undefined, undefined, true)
@@ -210,13 +215,10 @@ export class LoveController {
     )
   }
 
-  async getMeetingMinutes (room: Room, sid: string): Promise<MeetingMinutes | undefined> {
-    if (sid === '') return undefined
-
+  async getMeetingMinutes (room: Room): Promise<MeetingMinutes | undefined> {
     const doc =
-      this.meetingMinutes.find(
-        (m) => m.sid === sid && m.attachedTo === room._id && m.status === MeetingStatus.Active
-      ) ?? (await this.client.findOne(love.class.MeetingMinutes, { sid, room: room._id, status: MeetingStatus.Active }))
+      this.meetingMinutes.find((m) => m.attachedTo === room._id && m.status === MeetingStatus.Active) ??
+      (await this.client.findOne(love.class.MeetingMinutes, { attachedTo: room._id, status: MeetingStatus.Active }))
 
     if (doc === undefined) {
       return undefined

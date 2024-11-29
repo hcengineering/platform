@@ -48,7 +48,6 @@ import {
   type Builder,
   Collection,
   Collection as PropCollection,
-  Hidden,
   Index,
   Mixin,
   Model,
@@ -202,9 +201,6 @@ export class TMeetingMinutes extends TAttachedDoc implements MeetingMinutes, Tod
   @Index(IndexKind.Indexed)
   @ReadOnly()
   declare attachedTo: Ref<Doc>
-
-  @Hidden()
-    sid!: string
 
   @Prop(TypeString(), view.string.Title)
   @Index(IndexKind.FullText)

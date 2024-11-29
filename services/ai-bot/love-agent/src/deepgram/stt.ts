@@ -24,7 +24,7 @@ import {
   SOCKET_STATES
 } from '@deepgram/sdk'
 
-import config from './config.js'
+import config from '../config.js'
 
 const KEEP_ALIVE_INTERVAL = 10 * 1000
 
@@ -165,9 +165,9 @@ export class STT {
         }
 
         if (data.speech_final === true) {
-          void this.sendToPlatform(transcript, sid, true)
+          void this.sendToPlatform(transcript, sid)
         } else if (data.is_final === true) {
-          void this.sendToPlatform(transcript, sid, false)
+          void this.sendToPlatform(transcript, sid)
         }
       })
 
@@ -199,12 +199,11 @@ export class STT {
     }
   }
 
-  async sendToPlatform (transcript: string, sid: string, isFinal = false): Promise<void> {
+  async sendToPlatform (transcript: string, sid: string): Promise<void> {
     const request = {
       transcript,
       participant: this.participantBySid.get(sid)?.identity,
-      roomName: this.name,
-      final: isFinal
+      roomName: this.name
     }
 
     try {

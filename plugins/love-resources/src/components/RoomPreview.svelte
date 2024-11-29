@@ -67,11 +67,9 @@
     const client = getClient()
     const hierarchy = client.getHierarchy()
     if ($isConnected && $currentRoom?._id === room._id) {
-      const sid = await lk.getSid()
       let meeting = $currentMeetingMinutes
-      if (meeting?.sid !== sid || meeting?.attachedTo !== room._id || meeting?.status !== MeetingStatus.Active) {
+      if (meeting?.attachedTo !== room._id || meeting?.status !== MeetingStatus.Active) {
         meeting = await client.findOne(love.class.MeetingMinutes, {
-          sid,
           attachedTo: room._id,
           status: MeetingStatus.Active
         })

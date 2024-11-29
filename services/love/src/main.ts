@@ -86,7 +86,7 @@ export const main = async (): Promise<void> => {
             const filename = stripPrefix(prefix, res.filename)
             const storedBlob = await storageAdapter.stat(ctx, data.workspaceId, filename)
             if (storedBlob !== undefined) {
-              const client = await WorkspaceClient.create(data.workspace)
+              const client = await WorkspaceClient.create(data.workspace, ctx)
               await client.saveFile(filename, data.name, storedBlob, data.meetingMinutes)
               await client.close()
             }
@@ -137,6 +137,7 @@ export const main = async (): Promise<void> => {
       const name = `${room}_${dateStr}.mp4`
       const id = await startRecord(storageConfig, egressClient, roomClient, roomName, workspace)
       dataByUUID.set(id, { name, workspace: workspace.name, workspaceId: workspace, meetingMinutes })
+      ctx.info('Start recording', { workspace: workspace.name, roomName, meetingMinutes })
       res.send()
     } catch (e) {
       console.error(e)

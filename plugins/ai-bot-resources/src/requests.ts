@@ -56,7 +56,6 @@ export async function translate (text: Markup, lang: string): Promise<TranslateR
 
 export async function connectMeeting (
   roomId: Ref<Room>,
-  sid: string,
   language: RoomLanguage,
   options: Partial<ConnectMeetingRequest>
 ): Promise<void> {
@@ -68,7 +67,7 @@ export async function connectMeeting (
   }
 
   try {
-    const req: ConnectMeetingRequest = { roomId, roomSid: sid, transcription: options.transcription ?? false, language }
+    const req: ConnectMeetingRequest = { roomId, transcription: options.transcription ?? false, language }
     await fetch(concatLink(url, 'love/connect'), {
       method: 'POST',
       headers: {

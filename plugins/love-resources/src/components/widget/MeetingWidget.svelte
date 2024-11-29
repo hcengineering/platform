@@ -20,7 +20,7 @@
 
   import love from '../../plugin'
   import VideoTab from './VideoTab.svelte'
-  import { isCurrentInstanceConnected, lk } from '../../utils'
+  import { isCurrentInstanceConnected } from '../../utils'
   import { currentMeetingMinutes, currentRoom } from '../../stores'
   import ChatTab from './ChatTab.svelte'
   import TranscriptionTab from './TranscriptionTab.svelte'
@@ -35,13 +35,8 @@
   let isMeetingMinutesLoaded = false
 
   let room: Room | undefined = undefined
-  let sid: string | undefined = undefined
 
   $: room = $currentRoom
-
-  void lk.getSid().then((res) => {
-    sid = res
-  })
 
   $: if (
     !$isCurrentInstanceConnected ||
@@ -52,15 +47,10 @@
     closeWidget(love.ids.MeetingWidget)
   }
 
-  $: if (meetingMinutes?.sid !== sid) {
-    meetingMinutes = undefined
-    isMeetingMinutesLoaded = false
-  }
-
-  $: if (sid != null && room !== undefined) {
+  $: if (room !== undefined) {
     meetingQuery.query(
       love.class.MeetingMinutes,
-      { sid, attachedTo: room._id, status: MeetingStatus.Active },
+      { attachedTo: room._id, status: MeetingStatus.Active },
       async (res) => {
         meetingMinutes = res[0]
         if (meetingMinutes) {
@@ -72,7 +62,7 @@
   } else {
     meetingQuery.unsubscribe()
     meetingMinutes = undefined
-    isMeetingMinutesLoaded = sid !== undefined
+    isMeetingMinutesLoaded = false
   }
 
   function handleClose (): void {

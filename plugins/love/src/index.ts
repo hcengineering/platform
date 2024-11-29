@@ -166,8 +166,6 @@ export enum MeetingStatus {
 }
 
 export interface MeetingMinutes extends AttachedDoc {
-  sid: string
-
   title: string
   description: MarkupBlobRef | null
 
