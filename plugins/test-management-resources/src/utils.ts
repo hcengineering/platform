@@ -58,7 +58,8 @@ export async function EditTestSuiteAction (doc: TestSuite): Promise<void> {
   await showEditTestSuitePopup(doc._id)
 }
 
-export async function RunSelectedTestsAction (testCases: TestCase[]): Promise<void> {
+export async function RunSelectedTestsAction (docs: TestCase[] | TestCase): Promise<void> {
+  const testCases = Array.isArray(docs) ? docs : [docs]
   if (testCases?.length > 0) {
     const space = testCases[0].space
     await showCreateTestRunPopup({ testCases, space })

@@ -73,9 +73,7 @@ function defineApplication (builder: Builder): void {
                 componentProps: {
                   _class: testManagement.class.TestCase,
                   icon: testManagement.icon.TestLibrary,
-                  label: testManagement.string.TestLibrary,
-                  createLabel: testManagement.string.CreateTestCase,
-                  createComponent: testManagement.component.CreateTestCase
+                  label: testManagement.string.TestLibrary
                 },
                 navigationModel: {
                   navigationComponent: view.component.FoldersBrowser,
@@ -84,7 +82,7 @@ function defineApplication (builder: Builder): void {
                   mainComponentLabel: testManagement.string.TestCases,
                   mainComponentIcon: testManagement.icon.TestCases,
                   createComponent: testManagement.component.CreateTestSuite,
-                  mainHeaderComponent: testManagement.component.RunSelectedTestsButton,
+                  mainHeaderComponent: testManagement.component.RunButton,
                   navigationComponentProps: {
                     _class: testManagement.class.TestSuite,
                     icon: testManagement.icon.TestSuites,
@@ -288,8 +286,8 @@ function defineTestSuite (builder: Builder): void {
     builder,
     {
       action: testManagement.actionImpl.RunSelectedTests,
-      label: testManagement.string.CreateTestRun,
-      icon: testManagement.icon.TestRuns,
+      label: testManagement.string.RunTestCases,
+      icon: testManagement.icon.Run,
       category: testManagement.category.TestCase,
       input: 'selection',
       target: testManagement.class.TestCase,
