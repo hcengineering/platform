@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { resizeObserver } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import { drawing, type DrawingCmd, type DrawingData, type DrawingTool } from '../drawing'
@@ -76,8 +77,9 @@
     if (data?.content !== undefined && data?.content !== null) {
       try {
         commands = JSON.parse(data.content)
-      } catch (error) {
+      } catch (error: any) {
         commands = []
+        Analytics.handleError(error)
         console.error('Failed to parse drawing content', error)
       }
     } else {
@@ -91,6 +93,7 @@
         content: JSON.stringify(commands)
       }
       createDrawing(data).catch((error) => {
+        Analytics.handleError(error)
         console.error('Failed to save drawing', error)
       })
     }
