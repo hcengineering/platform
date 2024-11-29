@@ -35,7 +35,10 @@
     "ContentType": "Tipo di contenuto",
     "ContentTypeNotSupported": "Anteprima non disponibile per questo tipo di contenuto",
     "StartDrawing": "Scarabocchiare sopra",
-    "DrawingHistory": "Scarabocchiare la storia"
+    "DrawingHistory": "Scarabocchiare la storia",
+    "ColorAdd": "Aggiungi preimpostazione colore",
+    "ColorRemove": "Rimuovi preimpostazione colore",
+    "ColorReset": "Ripristina i preset colore"
   },
   "status": {
     "FileTooLarge": "File troppo grande"

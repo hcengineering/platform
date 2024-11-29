@@ -27,6 +27,8 @@ export interface DrawingProps {
   offset?: Point
   tool?: DrawingTool
   penColor?: string
+  penWidth?: number
+  eraserWidth?: number
   defaultCursor?: string
   cmdAdded?: (cmd: DrawingCmd) => void
   panned?: (offset: Point) => void
@@ -133,7 +135,7 @@ class DrawState {
     if (!erasing) {
       // Single point looks too small compared to a line of the same width
       // So make it a bit biggers
-      r *= 1.5
+      r *= 1 / r + 1
     }
     this.ctx.lineWidth = 0
     this.ctx.fillStyle = this.ctx.strokeStyle
@@ -194,16 +196,21 @@ export function drawing (
   canvasCursor.style.visibility = 'hidden'
   canvasCursor.style.position = 'absolute'
   canvasCursor.style.borderRadius = '50%'
+  canvasCursor.style.border = 'none'
   canvasCursor.style.cursor = 'none'
   canvasCursor.style.pointerEvents = 'none'
+  canvasCursor.style.left = '50%'
+  canvasCursor.style.top = '50%'
   node.appendChild(canvasCursor)
 
   let readonly = props.readonly ?? false
   let prevPos: Point = { x: 0, y: 0 }
 
   const draw = new DrawState(ctx)
-  draw.tool = props.tool ?? 'pan'
-  draw.penColor = props.penColor ?? 'blue'
+  draw.tool = props.tool ?? draw.tool
+  draw.penColor = props.penColor ?? draw.penColor
+  draw.penWidth = props.penWidth ?? draw.penWidth
+  draw.eraserWidth = props.eraserWidth ?? draw.eraserWidth
   updateCanvasCursor()
 
   let commands = props.commands
@@ -321,7 +328,7 @@ export function drawing (
   }
 
   function storeCommand (): void {
-    if (draw.points.length > 1) {
+    if (draw.points.length > 0) {
       const erasing = draw.tool === 'erase'
       const cmd: DrawingCmd = {
         lineWidth: (erasing ? draw.eraserWidth : draw.penWidth) * draw.lineScale(),
@@ -343,10 +350,9 @@ export function drawing (
       const erasing = draw.tool === 'erase'
       const w = draw.cursorWidth()
       canvasCursor.style.background = erasing ? 'none' : draw.penColor
-      canvasCursor.style.border = erasing ? '1px solid #333' : 'none'
       canvasCursor.style.boxShadow = erasing
-        ? '0px 0px 0px 1px #eee inset'
-        : '0px 0px .15rem 0px var(--theme-button-contrast-enabled)'
+        ? '0px 0px 1px 1px white inset, 0px 0px 2px 1px black'
+        : '0px 0px 3px 0px var(--theme-button-contrast-enabled)'
       canvasCursor.style.width = `${w}px`
       canvasCursor.style.height = `${w}px`
     } else if (draw.tool === 'pan') {
@@ -401,6 +407,14 @@ export function drawing (
       }
       if (draw.penColor !== props.penColor) {
         draw.penColor = props.penColor ?? 'blue'
+        updateCursor = true
+      }
+      if (draw.penWidth !== props.penWidth) {
+        draw.penWidth = props.penWidth ?? 5
+        updateCursor = true
+      }
+      if (draw.eraserWidth !== props.eraserWidth) {
+        draw.eraserWidth = props.eraserWidth ?? 5
         updateCursor = true
       }
       if (props.readonly !== readonly) {

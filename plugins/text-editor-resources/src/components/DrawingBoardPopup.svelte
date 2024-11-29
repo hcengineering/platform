@@ -26,8 +26,10 @@
   const manager = createFocusManager()
   const dispatch = createEventDispatcher()
 
-  let tool: DrawingTool = 'pen'
-  let penColor = 'blue'
+  let tool: DrawingTool
+  let penColor: string
+  let penWidth: number
+  let eraserWidth: number
   let commandCount: number
   let commands: DrawingCmd[] = []
   let offset: { x: number, y: number }
@@ -87,6 +89,8 @@
         offset,
         tool,
         penColor,
+        penWidth,
+        eraserWidth,
         cmdAdded: (cmd) => {
           savedCmds.push([cmd])
         },
@@ -105,6 +109,8 @@
         bind:toolbar
         bind:tool
         bind:penColor
+        bind:penWidth
+        bind:eraserWidth
         on:clear={() => {
           savedCmds.delete(0, savedCmds.length)
           savedProps.set('offset', { x: 0, y: 0 })

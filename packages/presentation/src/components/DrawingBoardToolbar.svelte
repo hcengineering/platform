@@ -13,21 +13,134 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, IconDelete, IconEdit } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import {
+    Button,
+    IconAdd,
+    IconDelete,
+    IconEdit,
+    IconMoreH,
+    IconRedo,
+    SelectPopup,
+    SelectPopupValueType,
+    eventToHTMLElement,
+    showPopup
+  } from '@hcengineering/ui'
+  import { createEventDispatcher, onMount } from 'svelte'
   import IconEraser from './icons/Eraser.svelte'
   import IconMove from './icons/Move.svelte'
   import { DrawingTool } from '../drawing'
+  import presentation from '../plugin'
 
   const dispatch = createEventDispatcher()
+  const maxColors = 8
+  const minColors = 0
+  const defaultColor = '#0000ff'
+  const defaultColors = ['#ff0000', '#00ff00', '#0000ff', '#ffffff', '#000000']
+  const storageKey = {
+    color: 'drawingBoard.color',
+    colors: 'drawingBoard.colors',
+    penWidth: 'drawingBoard.penWidth',
+    eraserWidth: 'drawingBoard.eraserWidth'
+  }
 
   export let tool: DrawingTool = 'pen'
-  export let penColor = 'blue'
+  export let penColor: string
+  export let penWidth: number
+  export let eraserWidth: number
   export let placeInside = false
   export let showPanTool = false
   export let toolbar: HTMLDivElement | undefined
 
-  const penColors = ['red', 'green', 'blue', 'white', 'black']
+  let colorSelector: HTMLInputElement
+  let penColors: string[] = defaultColors
+
+  function showMenu (ev: MouseEvent): void {
+    const items: SelectPopupValueType[] = []
+    if (penColors.length < maxColors) {
+      items.push({
+        id: 'add-color',
+        label: presentation.string.ColorAdd,
+        icon: IconAdd
+      })
+    }
+    if (penColors.length > minColors) {
+      items.push({
+        id: 'remove-color',
+        label: presentation.string.ColorRemove,
+        icon: IconDelete
+      })
+    }
+    items.push({
+      id: 'reset-colors',
+      label: presentation.string.ColorReset,
+      icon: IconRedo
+    })
+    showPopup(SelectPopup, { value: items }, eventToHTMLElement(ev), (id) => {
+      switch (id) {
+        case 'add-color': {
+          if (colorSelector !== undefined) {
+            colorSelector.value = penColor
+            colorSelector.click()
+          }
+          break
+        }
+        case 'remove-color': {
+          penColors = penColors.filter((c: string) => c !== penColor)
+          localStorage.setItem(storageKey.colors, JSON.stringify(penColors))
+          selectColor(penColors[0])
+          break
+        }
+        case 'reset-colors': {
+          penColors = defaultColors
+          localStorage.removeItem(storageKey.colors)
+          selectColor(penColors[0])
+          break
+        }
+        case undefined: {
+          break
+        }
+        default: {
+          console.error('Unknown command id', id)
+        }
+      }
+    })
+  }
+
+  function addColorPreset (): void {
+    penColor = penColor.toLowerCase()
+    if (!penColors.includes(penColor)) {
+      penColors = [...penColors, penColor]
+      localStorage.setItem(storageKey.colors, JSON.stringify(penColors))
+    }
+  }
+
+  function selectColor (color: string): void {
+    penColor = color ?? defaultColor
+    localStorage.setItem(storageKey.color, penColor)
+  }
+
+  onMount(() => {
+    try {
+      const savedColors = localStorage.getItem(storageKey.colors)
+      penColors = savedColors !== null ? JSON.parse(savedColors.toLowerCase()) : defaultColors
+    } catch {
+      penColors = defaultColors
+    }
+    penColor = (localStorage.getItem(storageKey.color) ?? penColor ?? defaultColor).toLowerCase()
+    if (!penColors.includes(penColor)) {
+      penColor = penColors[0] ?? defaultColor
+    }
+    penWidth = parseInt(localStorage.getItem(storageKey.penWidth) ?? '4')
+    eraserWidth = parseInt(localStorage.getItem(storageKey.eraserWidth) ?? '30')
+  })
+
+  function updatePenWidth (): void {
+    localStorage.setItem(storageKey.penWidth, penWidth.toString())
+  }
+
+  function updateEraserWidth (): void {
+    localStorage.setItem(storageKey.eraserWidth, eraserWidth.toString())
+  }
 </script>
 
 <div class="toolbar" class:inside={placeInside} bind:this={toolbar}>
@@ -35,6 +148,7 @@
     icon={IconDelete}
     kind="icon"
     on:click={() => {
+      tool = 'pen'
       dispatch('clear')
     }}
   />
@@ -66,23 +180,34 @@
     />
   {/if}
   <div class="divider buttons-divider" />
+  {#if tool === 'pen'}
+    <input type="range" min={2} max={20} step={2} bind:value={penWidth} on:change={updatePenWidth} />
+  {:else}
+    <input type="range" min={10} max={100} step={10} bind:value={eraserWidth} on:change={updateEraserWidth} />
+  {/if}
+  <div class="divider buttons-divider" />
   {#each penColors as color}
     <Button
       kind="icon"
       selected={penColor === color}
       on:click={() => {
-        penColor = color
         tool = 'pen'
+        selectColor(color)
       }}
     >
-      <div
-        slot="content"
-        class="colorIcon"
-        class:emphasized={color === 'white' || color === 'black'}
-        style:background={color}
-      />
+      <div slot="content" class="colorIcon" style:background={color} />
     </Button>
   {/each}
+  <div>
+    <input
+      type="color"
+      class="colorSelector"
+      bind:this={colorSelector}
+      bind:value={penColor}
+      on:change={addColorPreset}
+    />
+    <Button kind="icon" icon={IconMoreH} on:click={showMenu} />
+  </div>
 </div>
 
 <style lang="scss">
@@ -110,13 +235,16 @@
     height: 0.75rem;
     border-radius: 50%;
     margin: -0.15rem;
-
-    &.emphasized {
-      box-shadow: 0px 0px 0.15rem 0px var(--theme-button-contrast-enabled);
-    }
+    box-shadow: 0px 0px 0.15rem 0px var(--theme-button-contrast-enabled);
   }
 
   .divider {
     margin: 0 0.25rem;
+  }
+
+  .colorSelector {
+    position: absolute;
+    width: 0;
+    opacity: 0;
   }
 </style>

@@ -25,8 +25,10 @@
   export let drawings: DrawingData[]
   export let createDrawing: (data: any) => Promise<void>
 
-  let tool: DrawingTool = 'pen'
-  let penColor = 'blue'
+  let tool: DrawingTool
+  let penColor: string
+  let penWidth: number
+  let eraserWidth: number
   let commands: DrawingCmd[] | undefined
   let board: HTMLDivElement
   let toolbar: HTMLDivElement
@@ -114,6 +116,8 @@
       commands,
       tool,
       penColor,
+      penWidth,
+      eraserWidth,
       cmdAdded: () => {
         modified = true
       }
@@ -125,6 +129,8 @@
         bind:toolbar
         bind:tool
         bind:penColor
+        bind:penWidth
+        bind:eraserWidth
         on:clear={() => {
           commands = []
           modified = true
