@@ -16,7 +16,7 @@
   import { Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
   import { Button } from '@hcengineering/ui'
   import { selectionStore } from '@hcengineering/view-resources'
-  import type { TestProject } from '@hcengineering/test-management'
+  import type { TestCase, TestProject } from '@hcengineering/test-management'
 
   import testManagement from '../../plugin'
   import { showCreateTestRunPopup } from '../../utils'
@@ -32,7 +32,7 @@
     await showCreateTestRunPopup({
       query,
       space: project,
-      testCases
+      testCases: testCases as TestCase[]
     })
   }
 </script>
