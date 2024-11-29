@@ -95,9 +95,9 @@
     {/if}
     <ModernButton
       icon={view.icon.Configure}
-      label={view.string.Show}
       {kind}
       size={'small'}
+      iconSize={'small'}
       {disabled}
       {pressed}
       tooltip={{ label: view.string.CustomizeView, direction: 'bottom' }}
