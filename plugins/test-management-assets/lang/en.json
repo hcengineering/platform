@@ -40,7 +40,6 @@
     "NamePlaceholder": "Suite name",
     "DescriptionPlaceholder": "Description (optional)",
     "TestRuns": "Test runs",
-    "NewTestRun": "New test run",
     "TestRun": "Test run",
     "TestNamePlaceholder": "Test case title",
     "ChooseIcon": "Choose icon",
@@ -76,9 +75,7 @@
     "TestResults": "Results",
     "TestRunName": "Name",
     "DueDate": "Due date",
-    "RunAllTestCases": "Run all test cases",
-    "RunSelectedTestCases": "Run selected test cases",
-    "RunFilteredTestCases": "Run test cases matching a filter",
+    "RunTestCases": "Run",
     "TestCaseDescription": "Test case description",
     "TestResultAttributes": "Result"
   }

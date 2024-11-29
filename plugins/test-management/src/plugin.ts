@@ -85,8 +85,7 @@ export const testManagementPlugin = plugin(testManagementId, {
     StatusBlocked: '' as Asset,
     StatusPassed: '' as Asset,
     StatusFailed: '' as Asset,
-    Filter: '' as Asset,
-    Check: '' as Asset
+    Run: '' as Asset
   },
   class: {
     TestCase: '' as Ref<Class<TestCase>>,
@@ -149,7 +148,6 @@ export const testManagementPlugin = plugin(testManagementId, {
     NamePlaceholder: '' as IntlString,
     DescriptionPlaceholder: '' as IntlString,
     TestRuns: '' as IntlString,
-    NewTestRun: '' as IntlString,
     TestRun: '' as IntlString,
     TestNamePlaceholder: '' as IntlString,
     ChooseIcon: '' as IntlString,
@@ -185,9 +183,7 @@ export const testManagementPlugin = plugin(testManagementId, {
     SaveAndNext: '' as IntlString,
     DonePercent: '' as IntlString,
     TestResults: '' as IntlString,
-    RunAllTestCases: '' as IntlString,
-    RunSelectedTestCases: '' as IntlString,
-    RunFilteredTestCases: '' as IntlString,
+    RunTestCases: '' as IntlString,
     TestCaseDescription: '' as IntlString,
     TestResultAttributes: '' as IntlString
   },

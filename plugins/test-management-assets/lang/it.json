@@ -40,7 +40,6 @@
     "NamePlaceholder": "Nome della suite",
     "DescriptionPlaceholder": "Descrizione (opzionale)",
     "TestRuns": "Esecuzioni di test",
-    "NewTestRun": "Nuova esecuzione di test",
     "TestRun": "Esecuzione di test",
     "TestNamePlaceholder": "Titolo del caso di test",
     "ChooseIcon": "Scegli icona",
@@ -76,9 +75,7 @@
     "TestResults": "Risultati",
     "TestRunName": "Nome",
     "DueDate": "Data di scadenza",
-    "RunAllTestCases": "Esegui tutti i casi di test",
-    "RunSelectedTestCases": "Esegui i casi di test selezionati",
-    "RunFilteredTestCases": "Esegui i casi di test che corrispondono a un filtro",
+    "RunTestCases": "Esegui",
     "TestCaseDescription": "Descrizione del caso di test",
     "TestResultAttributes": "Risultato"
   }

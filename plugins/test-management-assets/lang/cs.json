@@ -40,7 +40,6 @@
     "NamePlaceholder": "Název sady",
     "DescriptionPlaceholder": "Popis (volitelné)",
     "TestRuns": "Testovací běhy",
-    "NewTestRun": "Nový testovací běh",
     "TestRun": "Testovací běh",
     "TestNamePlaceholder": "Název testovacího případu",
     "ChooseIcon": "Vyberte ikonu",
@@ -76,9 +75,7 @@
     "TestResults": "Výsledky",
     "TestRunName": "Název",
     "DueDate": "Termín",
-    "RunAllTestCases": "Spustit všechny testovací případy",
-    "RunSelectedTestCases": "Spustit vybrané testovací případy",
-    "RunFilteredTestCases": "Spustit testovací případy odpovídající filtru",
+    "RunTestCases": "Spustit",
     "TestCaseDescription": "Popis testovacího případu",
     "TestResultAttributes": "Výsledek"
   }

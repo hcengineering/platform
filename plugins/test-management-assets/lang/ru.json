@@ -40,7 +40,6 @@
     "NamePlaceholder": "Имя тестового набора",
     "DescriptionPlaceholder": "Описание (опционально)",
     "TestRuns": "Выполнение тестов",
-    "NewTestRun": "Новый тест план",
     "TestRun": "Тест план",
     "TestNamePlaceholder": "Имя тест кейса",
     "ChooseIcon": "Выберите иконку",
@@ -76,9 +75,7 @@
     "TestResults": "Результаты",
     "TestRunName": "Название",
     "DueDate": "Выполнить до",
-    "RunAllTestCases": "Выполнить все тест-кейсы",
-    "RunSelectedTestCases": "Выполнить выбранные тест-кейсы",
-    "RunFilteredTestCases": "Выполнить тест-кейсы, соответствующие фильтру",
+    "RunTestCases": "Выполнить",
     "TestCaseDescription": "Описание тест-кейса",
     "TestResultAttributes": "Результат"
   }

@@ -40,7 +40,6 @@
     "NamePlaceholder": "套房名稱",
     "DescriptionPlaceholder": "說明（可選）",
     "TestRuns": "試運行",
-    "NewTestRun": "新試運行",
     "TestRun": "試運行",
     "TestNamePlaceholder": "測試用例標題",
     "ChooseIcon": "選擇圖示",
@@ -76,9 +75,7 @@
     "TestResults": "結果",
     "TestRunName": "姓名",
     "DueDate": "到期日",
-    "RunAllTestCases": "運行所有測試用例",
-    "RunSelectedTestCases": "運行選定的測試用例",
-    "RunFilteredTestCases": "運行與篩選器匹配的測試用例",
+    "RunTestCases": "运行",
     "TestCaseDescription": "測試用例描述",
     "TestResultAttributes": "結果"
   }
