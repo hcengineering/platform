@@ -822,12 +822,3 @@ export interface AttrPresenter extends Doc {
   objectClass: Ref<Class<Doc>>
   component: AnyComponent
 }
-
-/**
- * @public
- */
-export enum ComponentContext {
-  SELECTION = 'selection',
-  CURRENT_FILTER = 'currentFilter',
-  NONE = 'none'
-}

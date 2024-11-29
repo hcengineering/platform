@@ -28,6 +28,7 @@ import CreateTestRun from './components/test-run/CreateTestRun.svelte'
 import TestCaseStatusPresenter from './components/test-case/TestCaseStatusPresenter.svelte'
 import EditTestRun from './components/test-run/EditTestRun.svelte'
 import TestRunPresenter from './components/test-run/TestRunPresenter.svelte'
+import RunSelectedTestsButton from './components/test-case/RunSelectedTestsButton.svelte'
 import TestResultStatusPresenter from './components/test-result/TestResultStatusPresenter.svelte'
 import TestResultStatusEditor from './components/test-result/TestResultStatusEditor.svelte'
 import TestRunResult from './components/test-run/TestRunResult.svelte'
@@ -55,6 +56,7 @@ export default async (): Promise<Resources> => ({
     EditTestRun,
     TestRunPresenter,
     TestSuiteRefPresenter,
+    RunSelectedTestsButton,
     TestResultStatusPresenter,
     TestResultStatusEditor,
     TestRunResult,
