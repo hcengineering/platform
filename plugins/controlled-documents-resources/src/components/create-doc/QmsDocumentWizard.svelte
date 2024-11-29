@@ -18,13 +18,12 @@
   import {
     generateId,
     getCurrentAccount,
-    makeCollaborativeDoc,
     type AttachedData,
     type Class,
     type Data,
     type Ref
   } from '@hcengineering/core'
-  import { MessageBox, copyDocument, getClient } from '@hcengineering/presentation'
+  import { MessageBox, getClient } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
     addNotification,
@@ -43,10 +42,10 @@
     type DocumentTemplate,
     DocumentState,
     createChangeControl,
-    createControlledDocFromTemplate,
     DEFAULT_PERIODIC_REVIEW_INTERVAL
   } from '@hcengineering/controlled-documents'
 
+  import { createControlledDocFromTemplate } from '../../docutils'
   import documents from '../../plugin'
   import { getProjectDocumentLink } from '../../navigation'
   import InfoStep from './steps/InfoStep.svelte'
@@ -122,7 +121,7 @@
     state: DocumentState.Draft,
     snapshots: 0,
     changeControl: ccRecordId,
-    content: makeCollaborativeDoc(generateId()),
+    content: null,
 
     requests: 0,
     reviewers: [],
@@ -161,8 +160,7 @@
       _space,
       $locationStep.project,
       $locationStep.parent,
-      documents.class.ControlledDocument,
-      copyDocument
+      documents.class.ControlledDocument
     )
 
     if (!success) {

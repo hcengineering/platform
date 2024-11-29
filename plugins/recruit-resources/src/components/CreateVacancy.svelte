@@ -27,16 +27,16 @@
     fillDefaults,
     generateId,
     getCurrentAccount,
-    makeCollaborativeDoc
+    makeCollabId
   } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import {
     Card,
     InlineAttributeBar,
     MessageBox,
+    createMarkup,
     createQuery,
-    getClient,
-    updateMarkup
+    getClient
   } from '@hcengineering/presentation'
   import { RecruitEvents, Vacancy, Vacancy as VacancyClass } from '@hcengineering/recruit'
   import tags from '@hcengineering/tags'
@@ -58,6 +58,7 @@
   import VacancyIcon from './icons/Vacancy.svelte'
   import { Analytics } from '@hcengineering/analytics'
   import { getSequenceId } from '../utils'
+  import { isEmptyMarkup } from '@hcengineering/text'
 
   const dispatch = createEventDispatcher()
 
@@ -97,7 +98,7 @@
     attachments: 0,
     comments: 0,
     company: '' as Ref<Organization>,
-    fullDescription: makeCollaborativeDoc(objectId, 'fullDescription'),
+    fullDescription: null,
     location: '',
     type: typeId as Ref<ProjectType>
   }
@@ -185,7 +186,7 @@
     const identifier = `${project?.identifier}-${number}`
     const data: AttachedData<Issue> = {
       title: template.title + ` (${name})`,
-      description: makeCollaborativeDoc(resId, 'description'),
+      description: null,
       assignee: template.assignee,
       component: template.component,
       milestone: template.milestone,
@@ -207,7 +208,11 @@
       identifier
     }
 
-    await updateMarkup(data.description, { description: template.description })
+    if (!isEmptyMarkup(template.description)) {
+      const collabId = makeCollabId(tracker.class.Issue, resId, 'description')
+      data.description = await createMarkup(collabId, template.description)
+    }
+
     await client.addCollection(tracker.class.Issue, space, parent, tracker.class.Issue, 'subIssues', data, resId)
     if ((template.labels?.length ?? 0) > 0) {
       const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: template.labels } })
@@ -237,7 +242,7 @@
       ...vacancyData,
       name,
       description: template?.shortDescription ?? '',
-      fullDescription: makeCollaborativeDoc(objectId, 'fullDescription'),
+      fullDescription: null,
       private: false,
       archived: false,
       number: (incResult as any).object.sequence,
@@ -248,7 +253,10 @@
       type: typeId
     }
 
-    await updateMarkup(data.fullDescription, { fullDescription })
+    if (!isEmptyMarkup(fullDescription)) {
+      const collabId = makeCollabId(recruit.class.Vacancy, objectId, 'fullDescription')
+      data.fullDescription = await createMarkup(collabId, fullDescription)
+    }
 
     const ops = client.apply()
     const id = await ops.createDoc(recruit.class.Vacancy, core.space.Space, data, objectId)

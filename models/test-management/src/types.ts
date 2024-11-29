@@ -40,7 +40,7 @@ import {
   type Timestamp,
   type Type,
   type CollectionSize,
-  type CollaborativeDoc,
+  type MarkupBlobRef,
   type Class
 } from '@hcengineering/core'
 import {
@@ -163,7 +163,7 @@ export class TTestCase extends TAttachedDoc implements TestCase {
 
   @Prop(TypeCollaborativeDoc(), testManagement.string.FullDescription)
   @Index(IndexKind.FullText)
-    description!: CollaborativeDoc
+    description!: MarkupBlobRef | null
 
   @Prop(TypeTestCaseType(), testManagement.string.TestType)
   @ReadOnly()
@@ -196,7 +196,7 @@ export class TTestRun extends TDoc implements TestRun {
 
   @Prop(TypeCollaborativeDoc(), testManagement.string.FullDescription)
   @Index(IndexKind.FullText)
-    description!: CollaborativeDoc
+    description!: MarkupBlobRef | null
 
   @Prop(TypeDate(DateRangeMode.DATETIME), testManagement.string.DueDate)
     dueDate?: Timestamp
@@ -244,7 +244,7 @@ export class TTestResult extends TAttachedDoc implements TestResult {
 
   @Prop(TypeCollaborativeDoc(), testManagement.string.FullDescription)
   @Index(IndexKind.FullText)
-    description!: CollaborativeDoc
+    description!: MarkupBlobRef | null
 
   @Prop(TypeRef(testManagement.class.TestCase), testManagement.string.TestCase)
     testCase!: Ref<TestCase>

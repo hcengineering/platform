@@ -12,21 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { yDocToBuffer } from '@hcengineering/collaboration'
 import {
   type AttachedData,
   type Blob,
   type Data,
-  type Doc,
-  generateId,
-  makeCollaborativeDoc,
   type Ref,
-  type TxOperations
+  type TxOperations,
+  generateId,
+  makeCollabId
 } from '@hcengineering/core'
-import document, { type Document, getFirstRank, type Teamspace } from '@hcengineering/document'
+import document, { type Document, type Teamspace, getFirstRank } from '@hcengineering/document'
 import { makeRank } from '@hcengineering/rank'
 import {
-  jsonToYDocNoSchema,
+  jsonToMarkup,
   MarkupMarkType,
   type MarkupNode,
   MarkupNodeType,
@@ -325,8 +323,6 @@ async function createDBPageWithAttachments (
   documentMetaMap?: Map<string, DocumentMetadata>
 ): Promise<void> {
   const pageId = docMeta.id as Ref<Document>
-  const collabId = makeCollaborativeDoc(pageId, 'content')
-
   const parentId = parentMeta !== undefined ? (parentMeta.id as Ref<Document>) : document.ids.NoParent
 
   const lastRank = await getFirstRank(client, space, parentId)
@@ -334,7 +330,7 @@ async function createDBPageWithAttachments (
 
   const object: Data<Document> = {
     title: docMeta.name,
-    content: collabId,
+    content: null,
     parent: parentId,
     attachments: 0,
     embeddings: 0,
@@ -409,7 +405,7 @@ async function importAttachment (
   }
 
   const file = new File([data], docMeta.name)
-  await fileUploader.uploadFile(docMeta.id as Ref<Doc>, docMeta.id, file)
+  await fileUploader.uploadFile(docMeta.id, file)
 
   const attachedData: AttachedData<Attachment> = {
     file: docMeta.id as Ref<Blob>,
@@ -444,13 +440,12 @@ async function importPageDocument (
   if (documentMetaMap !== undefined) {
     preProcessMarkdown(json, documentMetaMap, fileUploader)
   }
-  const yDoc = jsonToYDocNoSchema(json, 'content')
-  const buffer = yDocToBuffer(yDoc)
+  const markup = jsonToMarkup(json)
+  const buffer = Buffer.from(markup)
 
   const id = docMeta.id as Ref<Document>
-  const collabId = makeCollaborativeDoc(id, 'description')
-
-  await fileUploader.uploadCollaborativeDoc(id, collabId, buffer)
+  const collabId = makeCollabId(document.class.Document, id, 'content')
+  const blobId = await fileUploader.uploadCollaborativeDoc(collabId, buffer)
 
   const parent = (parentMeta?.id as Ref<Document>) ?? document.ids.NoParent
 
@@ -459,7 +454,7 @@ async function importPageDocument (
 
   const attachedData: Data<Document> = {
     title: docMeta.name,
-    content: collabId,
+    content: blobId,
     parent,
     attachments: 0,
     embeddings: 0,

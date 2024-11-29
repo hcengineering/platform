@@ -1,11 +1,11 @@
-import { saveCollaborativeDoc } from '@hcengineering/collaboration'
+import { saveCollabJson } from '@hcengineering/collaboration'
 import core, {
   AttachedDoc,
   Class,
-  CollaborativeDoc,
   Data,
   Doc,
   generateId,
+  makeCollabId,
   MeasureContext,
   Mixin,
   Ref,
@@ -16,7 +16,7 @@ import core, {
 import { ModelLogger } from '@hcengineering/model'
 import { makeRank } from '@hcengineering/rank'
 import type { StorageAdapter } from '@hcengineering/server-core'
-import { jsonToYDocNoSchema, parseMessageMarkdown } from '@hcengineering/text'
+import { jsonToMarkup, parseMessageMarkdown } from '@hcengineering/text'
 import { v4 as uuid } from 'uuid'
 
 const fieldRegexp = /\${\S+?}/
@@ -199,7 +199,7 @@ export class WorkspaceInitializer {
     if (step.collabFields !== undefined) {
       for (const field of step.collabFields) {
         if ((data as any)[field] !== undefined) {
-          const res = await this.createCollab((data as any)[field], field, _id)
+          const res = await this.createCollab((data as any)[field], step._class, _id, field)
           ;(data as any)[field] = res
         }
       }
@@ -265,15 +265,18 @@ export class WorkspaceInitializer {
     return data
   }
 
-  private async createCollab (data: string, field: string, _id: Ref<Doc>): Promise<string> {
-    const id = `${_id}%${field}`
-    const collabId = `${id}:HEAD:0` as CollaborativeDoc
+  private async createCollab (
+    data: string,
+    objectClass: Ref<Class<Doc>>,
+    objectId: Ref<Doc>,
+    objectAttr: string
+  ): Promise<string> {
+    const doc = makeCollabId(objectClass, objectId, objectAttr)
 
     const json = parseMessageMarkdown(data ?? '', this.imageUrl)
-    const yDoc = jsonToYDocNoSchema(json, field)
+    const markup = jsonToMarkup(json)
 
-    await saveCollaborativeDoc(this.ctx, this.storageAdapter, this.wsUrl, collabId, yDoc)
-    return collabId
+    return await saveCollabJson(this.ctx, this.storageAdapter, this.wsUrl, doc, markup)
   }
 
   private async fillProps<T extends Doc, P extends Partial<T> | Props<T>>(

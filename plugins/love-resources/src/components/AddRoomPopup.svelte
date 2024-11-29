@@ -1,5 +1,5 @@
 <script lang="ts">
-  import core, { Class, Data, generateId, makeCollaborativeDoc, Ref } from '@hcengineering/core'
+  import core, { Class, Data, generateId, Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Button, DropdownIntlItem } from '@hcengineering/ui'
@@ -64,7 +64,7 @@
       language: 'en',
       startWithTranscription: val._class !== love.class.Office && val.type === RoomType.Video,
       startWithRecording: val._class !== love.class.Office && val.type === RoomType.Video,
-      description: makeCollaborativeDoc(_id, 'description')
+      description: null
     }
     if (val._class === love.class.Office) {
       ;(data as Data<Office>).person = null

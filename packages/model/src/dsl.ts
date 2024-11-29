@@ -20,7 +20,7 @@ import core, {
   Class,
   Classifier,
   ClassifierKind,
-  CollaborativeDoc,
+  MarkupBlobRef,
   Data,
   DateRangeMode,
   Doc,
@@ -500,15 +500,8 @@ export function ArrOf<T extends PropertyType | Ref<Doc>> (type: Type<T>): TypeAr
 /**
  * @public
  */
-export function TypeCollaborativeDoc (): Type<CollaborativeDoc> {
-  return { _class: core.class.TypeCollaborativeDoc, label: core.string.CollaborativeDoc }
-}
-
-/**
- * @public
- */
-export function TypeCollaborativeDocVersion (): Type<CollaborativeDoc> {
-  return { _class: core.class.TypeCollaborativeDocVersion, label: core.string.CollaborativeDocVersion }
+export function TypeCollaborativeDoc (): Type<MarkupBlobRef> {
+  return { _class: core.class.TypeCollaborativeDoc, label: core.string.MarkupBlobRef }
 }
 
 /**

@@ -13,19 +13,21 @@
 // limitations under the License.
 //
 
-import { saveCollaborativeDoc } from '@hcengineering/collaboration'
+import { saveCollabJson, saveCollabYdoc, yDocFromBuffer } from '@hcengineering/collaboration'
 import core, {
-  collaborativeDocParse,
   coreId,
   DOMAIN_MODEL_TX,
   DOMAIN_SPACE,
   DOMAIN_STATUS,
   DOMAIN_TX,
   generateId,
-  makeCollaborativeDoc,
+  makeDocCollabId,
+  makeCollabJsonId,
+  makeCollabYdocId,
   MeasureMetricsContext,
   RateLimiter,
   type AnyAttribute,
+  type Blob,
   type Class,
   type Doc,
   type Domain,
@@ -48,7 +50,6 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import { type StorageAdapter } from '@hcengineering/storage'
-import { markupToYDoc } from '@hcengineering/text'
 
 async function migrateStatusesToModel (client: MigrationClient): Promise<void> {
   // Move statuses to model:
@@ -176,7 +177,7 @@ async function migrateCollaborativeContentToStorage (client: MigrationClient): P
 
     const iterator = await client.traverse(domain, query)
     try {
-      console.log('processing', _class)
+      ctx.info('processing', { _class })
       await processMigrateContentFor(ctx, domain, attributes, client, storageAdapter, iterator)
     } finally {
       await iterator.close()
@@ -204,9 +205,6 @@ async function processMigrateContentFor (
       break
     }
 
-    const timestamp = Date.now()
-    const revisionId = `${timestamp}`
-
     const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
 
     for (const doc of docs) {
@@ -214,8 +212,6 @@ async function processMigrateContentFor (
         const update: MigrateUpdate<Doc> = {}
 
         for (const attribute of attributes) {
-          const collaborativeDoc = makeCollaborativeDoc(doc._id, attribute.name, revisionId)
-
           const value = hierarchy.isMixin(attribute.attributeOf)
             ? ((doc as any)[attribute.attributeOf]?.[attribute.name] as string)
             : ((doc as any)[attribute.name] as string)
@@ -224,22 +220,20 @@ async function processMigrateContentFor (
             ? `${attribute.attributeOf}.${attribute.name}`
             : attribute.name
 
+          const collabId = makeDocCollabId(doc, attribute.name)
+          const blobId = makeCollabJsonId(collabId)
+
           if (value != null && value.startsWith('{')) {
-            const { documentId } = collaborativeDocParse(collaborativeDoc)
-            const blob = await storageAdapter.stat(ctx, client.workspaceId, documentId)
-            // only for documents not in storage
-            if (blob === undefined) {
-              try {
-                const ydoc = markupToYDoc(value, attribute.name)
-                await saveCollaborativeDoc(ctx, storageAdapter, client.workspaceId, collaborativeDoc, ydoc)
-              } catch (err) {
-                console.error('failed to process document', doc._class, doc._id, err)
-              }
+            try {
+              const buffer = Buffer.from(value)
+              await storageAdapter.put(ctx, client.workspaceId, blobId, buffer, 'application/json', buffer.length)
+            } catch (err) {
+              ctx.error('failed to process document', { _class: doc._class, _id: doc._id, err })
             }
 
-            update[attributeName] = collaborativeDoc
+            update[attributeName] = blobId
           } else if (value == null || value === '') {
-            update[attributeName] = collaborativeDoc
+            update[attributeName] = null
           }
         }
 
@@ -256,8 +250,151 @@ async function processMigrateContentFor (
     }
 
     processed += docs.length
-    console.log('...processed', processed)
+    ctx.info('...processed', { count: processed })
   }
+}
+
+async function migrateCollaborativeDocsToJson (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('migrateCollaborativeDocsToJson', {})
+  const storageAdapter = client.storageAdapter
+
+  const hierarchy = client.hierarchy
+  const classes = hierarchy.getDescendants(core.class.Doc)
+  for (const _class of classes) {
+    const domain = hierarchy.findDomain(_class)
+    if (domain === undefined) continue
+
+    const allAttributes = hierarchy.getAllAttributes(_class)
+    const attributes = Array.from(allAttributes.values()).filter((attribute) => {
+      return hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)
+    })
+
+    if (attributes.length === 0) continue
+    if (hierarchy.isMixin(_class) && attributes.every((p) => p.attributeOf !== _class)) continue
+
+    const query = hierarchy.isMixin(_class) ? { [_class]: { $exists: true } } : { _class }
+
+    const iterator = await client.traverse(domain, query)
+    try {
+      ctx.info('processing', { _class })
+      await processMigrateJsonForDomain(ctx, domain, attributes, client, storageAdapter, iterator)
+    } finally {
+      await iterator.close()
+    }
+  }
+}
+
+async function processMigrateJsonForDomain (
+  ctx: MeasureContext,
+  domain: Domain,
+  attributes: AnyAttribute[],
+  client: MigrationClient,
+  storageAdapter: StorageAdapter,
+  iterator: MigrationIterator<Doc>
+): Promise<void> {
+  const rateLimiter = new RateLimiter(10)
+
+  let processed = 0
+
+  while (true) {
+    const docs = await iterator.next(100)
+    if (docs === null || docs.length === 0) {
+      break
+    }
+
+    const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+
+    for (const doc of docs) {
+      await rateLimiter.exec(async () => {
+        const update = await processMigrateJsonForDoc(ctx, doc, attributes, client, storageAdapter)
+        if (Object.keys(update).length > 0) {
+          operations.push({ filter: { _id: doc._id }, update })
+        }
+      })
+    }
+
+    await rateLimiter.waitProcessing()
+
+    if (operations.length > 0) {
+      await client.bulk(domain, operations)
+    }
+
+    processed += docs.length
+    ctx.info('...processed', { count: processed })
+  }
+}
+
+async function processMigrateJsonForDoc (
+  ctx: MeasureContext,
+  doc: Doc,
+  attributes: AnyAttribute[],
+  client: MigrationClient,
+  storageAdapter: StorageAdapter
+): Promise<MigrateUpdate<Doc>> {
+  const { hierarchy, workspaceId } = client
+
+  const update: MigrateUpdate<Doc> = {}
+
+  for (const attribute of attributes) {
+    const value = hierarchy.isMixin(attribute.attributeOf)
+      ? ((doc as any)[attribute.attributeOf]?.[attribute.name] as string)
+      : ((doc as any)[attribute.name] as string)
+
+    if (value == null || value === '') {
+      continue
+    }
+
+    const attributeName = hierarchy.isMixin(attribute.attributeOf)
+      ? `${attribute.attributeOf}.${attribute.name}`
+      : attribute.name
+
+    // Name of existing ydoc document
+    // original value here looks like '65b7f82f4d422b89d4cbdd6f:HEAD:0'
+    // where the first part is the blob id
+    const currentYdocId = value.split(':')[0] as Ref<Blob>
+    const collabId = makeDocCollabId(doc, attribute.name)
+
+    if (value.startsWith('{')) {
+      // For some reason we have documents that are already markups
+      const jsonId = await saveCollabJson(ctx, storageAdapter, workspaceId, collabId, value)
+      update[attributeName] = jsonId
+      continue
+    }
+
+    try {
+      const stat = await storageAdapter.stat(ctx, workspaceId, currentYdocId)
+      if (stat !== undefined) {
+        if (stat.contentType.includes('application/ydoc')) {
+          const buffer = await storageAdapter.read(ctx, workspaceId, currentYdocId)
+          const ydoc = yDocFromBuffer(Buffer.concat(buffer as any))
+
+          // If document id has changed, save it with new name to ensure we will be able to load it later
+          const ydocId = makeCollabYdocId(collabId)
+          if (ydocId !== currentYdocId) {
+            ctx.info('saving collaborative doc with new name', { collabId, ydocId, currentYdocId })
+            await saveCollabYdoc(ctx, storageAdapter, workspaceId, collabId, ydoc)
+            // do not bother with deletion so we can restore content is something goes wrong
+            // await storageAdapter.remove(ctx, client.workspaceId, [currentYdocId])
+          }
+
+          // Save document as JSON and save blob Id
+          const jsonId = await saveCollabJson(ctx, storageAdapter, workspaceId, collabId, ydoc)
+          update[attributeName] = jsonId
+        } else {
+          // it is not ydoc, do nothing
+          continue
+        }
+      } else {
+        // document is empty, unset
+        const unset = update.$unset ?? {}
+        update.$unset = { ...unset, [attribute.name]: 1 }
+      }
+    } catch (err) {
+      ctx.warn('failed to process collaborative doc', { workspaceId, collabId, currentYdocId, err })
+    }
+  }
+
+  return update
 }
 
 export const coreOperation: MigrateOperation = {
@@ -351,6 +488,10 @@ export const coreOperation: MigrateOperation = {
             DOMAIN_MODEL_TX
           )
         }
+      },
+      {
+        state: 'collaborative-docs-to-json',
+        func: migrateCollaborativeDocsToJson
       }
     ])
   },

@@ -128,12 +128,12 @@ class PlatformClientImpl implements PlatformClient {
     await this.connection.close()
   }
 
-  private async processMarkup<T>(id: Ref<Doc>, data: WithMarkup<T>): Promise<T> {
+  private async processMarkup<T>(_class: Ref<Class<Doc>>, id: Ref<Doc>, data: WithMarkup<T>): Promise<T> {
     const result: any = {}
 
     for (const [key, value] of Object.entries(data)) {
       if (value instanceof MarkupContent) {
-        result[key] = this.markup.uploadMarkup(id, key, value.content, value.kind)
+        result[key] = this.markup.uploadMarkup(_class, id, key, value.content, value.kind)
       } else {
         result[key] = value
       }
@@ -151,7 +151,7 @@ class PlatformClientImpl implements PlatformClient {
     id?: Ref<T>
   ): Promise<Ref<T>> {
     id ??= generateId()
-    const data = await this.processMarkup<Data<T>>(id, attributes)
+    const data = await this.processMarkup<Data<T>>(_class, id, attributes)
     return await this.client.createDoc(_class, space, data, id)
   }
 
@@ -162,7 +162,7 @@ class PlatformClientImpl implements PlatformClient {
     operations: WithMarkup<DocumentUpdate<T>>,
     retrieve?: boolean
   ): Promise<TxResult> {
-    const update = await this.processMarkup<DocumentUpdate<T>>(objectId, operations)
+    const update = await this.processMarkup<DocumentUpdate<T>>(_class, objectId, operations)
     return await this.client.updateDoc(_class, space, objectId, update, retrieve)
   }
 
@@ -182,7 +182,7 @@ class PlatformClientImpl implements PlatformClient {
     id?: Ref<P>
   ): Promise<Ref<P>> {
     id ??= generateId()
-    const data = await this.processMarkup<AttachedData<P>>(id, attributes)
+    const data = await this.processMarkup<AttachedData<P>>(_class, id, attributes)
     return await this.client.addCollection(_class, space, attachedTo, attachedToClass, collection, data, id)
   }
 
@@ -196,7 +196,7 @@ class PlatformClientImpl implements PlatformClient {
     operations: WithMarkup<DocumentUpdate<P>>,
     retrieve?: boolean
   ): Promise<Ref<T>> {
-    const update = await this.processMarkup<DocumentUpdate<P>>(objectId, operations)
+    const update = await this.processMarkup<DocumentUpdate<P>>(_class, objectId, operations)
     return await this.client.updateCollection(
       _class,
       space,
@@ -229,7 +229,7 @@ class PlatformClientImpl implements PlatformClient {
     mixin: Ref<Mixin<M>>,
     attributes: WithMarkup<MixinData<D, M>>
   ): Promise<TxResult> {
-    const data = await this.processMarkup<MixinData<D, M>>(objectId, attributes)
+    const data = await this.processMarkup<MixinData<D, M>>(objectClass, objectId, attributes)
     return await this.client.createMixin(objectId, objectClass, objectSpace, mixin, data)
   }
 
@@ -240,18 +240,30 @@ class PlatformClientImpl implements PlatformClient {
     mixin: Ref<Mixin<M>>,
     attributes: WithMarkup<MixinUpdate<D, M>>
   ): Promise<TxResult> {
-    const update = await this.processMarkup<MixinUpdate<D, M>>(objectId, attributes)
+    const update = await this.processMarkup<MixinUpdate<D, M>>(objectClass, objectId, attributes)
     return await this.client.updateMixin(objectId, objectClass, objectSpace, mixin, update)
   }
 
   // Markup
 
-  async fetchMarkup (objectId: Ref<Doc>, objectAttr: string, markup: MarkupRef, format: MarkupFormat): Promise<string> {
-    return await this.markup.fetchMarkup(objectId, objectAttr, markup, format)
+  async fetchMarkup (
+    objectClass: Ref<Class<Doc>>,
+    objectId: Ref<Doc>,
+    objectAttr: string,
+    markup: MarkupRef,
+    format: MarkupFormat
+  ): Promise<string> {
+    return await this.markup.fetchMarkup(objectClass, objectId, objectAttr, markup, format)
   }
 
-  async uploadMarkup (objectId: Ref<Doc>, objectAttr: string, markup: string, format: MarkupFormat): Promise<MarkupRef> {
-    return await this.markup.uploadMarkup(objectId, objectAttr, markup, format)
+  async uploadMarkup (
+    objectClass: Ref<Class<Doc>>,
+    objectId: Ref<Doc>,
+    objectAttr: string,
+    markup: string,
+    format: MarkupFormat
+  ): Promise<MarkupRef> {
+    return await this.markup.uploadMarkup(objectClass, objectId, objectAttr, markup, format)
   }
 
   // AsyncDisposable

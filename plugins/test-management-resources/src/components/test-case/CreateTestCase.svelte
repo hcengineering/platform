@@ -17,10 +17,10 @@
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { TestCase, TestProject, TestSuite, TestCaseStatus } from '@hcengineering/test-management'
-  import core, { fillDefaults, generateId, makeCollaborativeDoc, Ref, TxOperations, Data } from '@hcengineering/core'
+  import core, { fillDefaults, generateId, makeCollabId, Ref, TxOperations, Data } from '@hcengineering/core'
   import { ObjectBox } from '@hcengineering/view-resources'
-  import { Card, SpaceSelector, getClient, updateMarkup } from '@hcengineering/presentation'
-  import { EmptyMarkup } from '@hcengineering/text'
+  import { Card, SpaceSelector, createMarkup, getClient } from '@hcengineering/presentation'
+  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import { Button, createFocusManager, EditBox, FocusHandler, IconAttachment, getLocation } from '@hcengineering/ui'
 
   import StatusEditor from './StatusEditor.svelte'
@@ -42,7 +42,7 @@
 
   const object: Data<TestCase> = {
     name: '',
-    description: makeCollaborativeDoc(id, 'description'),
+    description: null,
     status: TestCaseStatus.Draft,
     assignee: null,
     attachments: 0,
@@ -61,7 +61,10 @@
 
   async function createTestCase (): Promise<void> {
     const op = client.apply()
-    await updateMarkup(object.description, { description })
+    if (!isEmptyMarkup(description)) {
+      const target = makeCollabId(testManagement.class.TestCase, id, 'description')
+      object.description = await createMarkup(target, description)
+    }
     await op.addCollection(
       testManagement.class.TestCase,
       _space,

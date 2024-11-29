@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Doc } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { KeyedAttribute, getAttribute, getClient } from '@hcengineering/presentation'
+  import { KeyedAttribute } from '@hcengineering/presentation'
   import { AnySvelteComponent, registerFocus } from '@hcengineering/ui'
   import textEditor, { CollaborationUser, RefAction } from '@hcengineering/text-editor'
 
@@ -46,8 +46,6 @@
   }
 
   let editor: CollaborativeTextEditor
-
-  $: collaborativeDoc = getAttribute(getClient(), object, key)
 
   // Focusable control with index
   let canBlur = true
@@ -88,31 +86,25 @@
   ]
 </script>
 
-{#if collaborativeDoc != null}
-  <CollaborativeTextEditor
-    bind:this={editor}
-    {collaborativeDoc}
-    objectId={object._id}
-    objectClass={key.attr.attributeOf}
-    objectSpace={object.space}
-    objectAttr={key.key}
-    {user}
-    {userComponent}
-    {refActions}
-    {extensions}
-    {attachFile}
-    {placeholder}
-    {boundary}
-    {readonly}
-    field={key.key}
-    canEmbedFiles={false}
-    withSideMenu={false}
-    kitOptions={{
-      note: false
-    }}
-    on:focus
-    on:blur
-    on:update
-    on:open-document
-  />
-{/if}
+<CollaborativeTextEditor
+  bind:this={editor}
+  {object}
+  attribute={key}
+  {user}
+  {userComponent}
+  {refActions}
+  {extensions}
+  {attachFile}
+  {placeholder}
+  {boundary}
+  {readonly}
+  canEmbedFiles={false}
+  withSideMenu={false}
+  kitOptions={{
+    note: false
+  }}
+  on:focus
+  on:blur
+  on:update
+  on:open-document
+/>

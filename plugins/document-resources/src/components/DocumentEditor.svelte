@@ -16,8 +16,9 @@
 -->
 <script lang="ts">
   import contact from '@hcengineering/contact'
-  import { Document } from '@hcengineering/document'
+  import document, { Document } from '@hcengineering/document'
   import { getResource } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
   import { CollaboratorEditor, HeadingsExtension, ImageUploadOptions } from '@hcengineering/text-editor-resources'
   import { AnySvelteComponent } from '@hcengineering/ui'
   import { getCollaborationUser } from '@hcengineering/view-resources'
@@ -31,6 +32,8 @@
   export let focusIndex = -1
   export let overflow: 'auto' | 'none' = 'none'
   export let editorAttributes: Record<string, string> = {}
+
+  const client = getClient()
 
   const user = getCollaborationUser()
   let userComponent: AnySvelteComponent | undefined
@@ -53,15 +56,16 @@
       }
     })
   ]
+
+  $: attribute = {
+    key: 'content',
+    attr: client.getHierarchy().getAttribute(document.class.Document, 'content')
+  }
 </script>
 
 <CollaboratorEditor
-  collaborativeDoc={object.content}
-  objectClass={object._class}
-  objectId={object._id}
-  objectSpace={object.space}
-  objectAttr="content"
-  field="content"
+  {object}
+  {attribute}
   {user}
   {userComponent}
   {focusIndex}

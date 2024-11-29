@@ -16,7 +16,7 @@
 import { getAccountDB, listWorkspacesRaw } from '@hcengineering/account'
 import calendar from '@hcengineering/calendar'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
-import { loadCollaborativeDoc, saveCollaborativeDoc, yDocToBuffer } from '@hcengineering/collaboration'
+import { loadCollabYdoc, saveCollabYdoc, yDocToBuffer } from '@hcengineering/collaboration'
 import contact from '@hcengineering/contact'
 import core, {
   type ArrOf,
@@ -56,6 +56,7 @@ import core, {
   generateId,
   getObjectValue,
   getWorkspaceId,
+  makeDocCollabId,
   systemAccountEmail,
   toIdMap,
   updateAttribute
@@ -1201,8 +1202,8 @@ async function updateId (
             const newMarkup = markup.replaceAll(doc._id, newId)
             await update(h, db, contentDoc, { [attrName]: newMarkup })
           } else if (attr.type._class === core.class.TypeCollaborativeDoc) {
-            const collaborativeDoc = (contentDoc as any)[attr.name] as CollaborativeDoc
-            await updateYDoc(ctx, collaborativeDoc, storage, workspaceId, contentDoc, newId, doc)
+            const collabId = makeDocCollabId(contentDoc, attr.name)
+            await updateYDoc(ctx, collabId, storage, workspaceId, contentDoc, newId, doc)
           }
         }
       }
@@ -1250,7 +1251,7 @@ async function updateYDoc (
   doc: RelatedDocument
 ): Promise<void> {
   try {
-    const ydoc = await loadCollaborativeDoc(ctx, storage, workspaceId, _id)
+    const ydoc = await loadCollabYdoc(ctx, storage, workspaceId, _id)
     if (ydoc === undefined) {
       ctx.error('document content not found', { document: contentDoc._id })
       return
@@ -1264,7 +1265,7 @@ async function updateYDoc (
     })
 
     if (updatedYDoc !== undefined) {
-      await saveCollaborativeDoc(ctx, storage, workspaceId, _id, updatedYDoc)
+      await saveCollabYdoc(ctx, storage, workspaceId, _id, updatedYDoc)
     }
   } catch {
     // do nothing, the collaborative doc does not sem to exist yet

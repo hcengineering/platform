@@ -16,9 +16,16 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { type Space, type Class, type CollaborativeDoc, type Doc, type Ref, generateId } from '@hcengineering/core'
+  import { type Doc, generateId, makeDocCollabId } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
-  import { getFileUrl, getImageSize, imageSizeToRatio } from '@hcengineering/presentation'
+  import {
+    getAttribute,
+    getClient,
+    getFileUrl,
+    getImageSize,
+    imageSizeToRatio,
+    KeyedAttribute
+  } from '@hcengineering/presentation'
   import { markupToJSON } from '@hcengineering/text'
   import {
     AnySvelteComponent,
@@ -66,14 +73,8 @@
   import { type FileAttachFunction } from './extension/types'
   import { completionConfig, inlineCommandsConfig } from './extensions'
 
-  export let collaborativeDoc: CollaborativeDoc
-  export let initialCollaborativeDoc: CollaborativeDoc | undefined = undefined
-  export let field: string
-
-  export let objectClass: Ref<Class<Doc>> | undefined = undefined
-  export let objectId: Ref<Doc> | undefined = undefined
-  export let objectSpace: Ref<Space> | undefined = undefined
-  export let objectAttr: string | undefined = undefined
+  export let object: Doc
+  export let attribute: KeyedAttribute
 
   export let user: CollaborationUser
   export let userComponent: AnySvelteComponent | undefined = undefined
@@ -100,22 +101,22 @@
   export let withInlineCommands = true
   export let kitOptions: Partial<EditorKitOptions> = {}
 
+  const client = getClient()
   const dispatch = createEventDispatcher()
+
+  const objectClass = object._class
+  const objectId = object._id
+  const objectSpace = object.space
+  const objectAttr = attribute.key
+  const field = attribute.key
+  const content = getAttribute(client, object, attribute)
+  const collaborativeDoc = makeDocCollabId(object, objectAttr)
 
   const ydoc = getContext<YDoc>(CollaborationIds.Doc) ?? new YDoc({ guid: generateId() })
   const contextProvider = getContext<Provider>(CollaborationIds.Provider)
 
   const localProvider = createLocalProvider(ydoc, collaborativeDoc)
-
-  const remoteProvider =
-    contextProvider ??
-    createRemoteProvider(ydoc, {
-      document: collaborativeDoc,
-      initialDocument: initialCollaborativeDoc,
-      objectClass,
-      objectId,
-      objectAttr
-    })
+  const remoteProvider = contextProvider ?? createRemoteProvider(ydoc, collaborativeDoc, content)
 
   let contentError = false
   let localSynced = false

@@ -514,10 +514,6 @@ export function createModel (builder: Builder): void {
     presenter: view.component.MarkupDiffPresenter
   })
 
-  builder.mixin(core.class.TypeCollaborativeDocVersion, core.class.Class, view.mixin.InlineAttributEditor, {
-    editor: view.component.CollaborativeDocEditor
-  })
-
   classPresenter(builder, core.class.TypeBoolean, view.component.BooleanPresenter, view.component.BooleanEditor)
   classPresenter(
     builder,

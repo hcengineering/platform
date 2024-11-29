@@ -274,16 +274,18 @@
   $: canShowSidebar = $editorMode !== 'comparing'
   $: sideBar = canShowSidebar ? $availableRightPanelTabs : []
 
-  $: collaborativeDoc = $controlledDocument?.content
-  $: initialCollaborativeDoc = $controlledDocumentTemplate?.content
-
   $: workspace = $resolvedLocationStore.path[1].toUpperCase()
 
   $: docReference = getDocReference($controlledDocument)
   $: templateReference = getDocReference($controlledDocumentTemplate)
+
+  $: attribute = {
+    key: 'content',
+    attr: client.getHierarchy().getAttribute(documents.class.ControlledDocument, 'content')
+  }
 </script>
 
-{#if $controlledDocument !== null && collaborativeDoc !== undefined}
+{#if $controlledDocument !== null && attribute !== undefined}
   <Panel
     bind:innerWidth
     isHeader={false}
@@ -430,13 +432,7 @@
 
     <svelte:component this={DocumentTemplateFooter} slot="page-footer" {templateReference} />
 
-    <Collaboration
-      {collaborativeDoc}
-      {initialCollaborativeDoc}
-      objectClass={$controlledDocument._class}
-      objectId={$controlledDocument._id}
-      objectAttr="content"
-    >
+    <Collaboration object={$controlledDocument} {attribute}>
       {#if $editorMode === 'comparing'}
         <DocumentDiffViewer />
       {:else}
