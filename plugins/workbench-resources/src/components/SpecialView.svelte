@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onDestroy } from 'svelte'
   import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString, Asset, getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
@@ -31,6 +30,7 @@
     Breadcrumb
   } from '@hcengineering/ui'
   import {
+    ComponentContext,
     ViewOptionModel,
     ViewOptions,
     ViewQueryOption,
@@ -42,6 +42,7 @@
   import { ParentsNavigationModel } from '@hcengineering/workbench'
 
   import ComponentNavigator from './ComponentNavigator.svelte'
+  import { getComponentContext } from './utils/contextProvider'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
@@ -56,6 +57,7 @@
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
   export let modes: IModeSelector<any> | undefined = undefined
   export let navigationModel: ParentsNavigationModel | undefined
+  export let createComponentContext: ComponentContext | undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -109,7 +111,8 @@
 
   function showCreateDialog (): void {
     if (createComponent === undefined) return
-    showPopup(createComponent, { ...createComponentProps, space }, 'top')
+    const context = getComponentContext(createComponentContext, resultQuery, space)
+    showPopup(createComponent, { ...context, ...createComponentProps, space }, 'top')
   }
 </script>
 

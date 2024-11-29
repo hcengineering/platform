@@ -43,7 +43,7 @@ export async function showCreateProjectPopup (): Promise<void> {
 }
 
 export async function showCreateTestRunPopup (options: {
-  testCases?: TestCase[]
+  selectedDocs?: TestCase[]
   query?: DocumentQuery<Doc>
   space: Ref<TestProject>
 }): Promise<void> {
@@ -58,10 +58,11 @@ export async function EditTestSuiteAction (doc: TestSuite): Promise<void> {
   await showEditTestSuitePopup(doc._id)
 }
 
-export async function RunSelectedTestsAction (testCases: TestCase[]): Promise<void> {
-  if (testCases?.length > 0) {
-    const space = testCases[0].space
-    await showCreateTestRunPopup({ testCases, space })
+export async function RunSelectedTestsAction (docs: TestCase[] | TestCase): Promise<void> {
+  const selectedDocs = Array.isArray(docs) ? docs : [docs]
+  if (selectedDocs?.length > 0) {
+    const space = selectedDocs[0].space
+    await showCreateTestRunPopup({ selectedDocs, space })
   } else {
     console.error('No test cases selected')
   }

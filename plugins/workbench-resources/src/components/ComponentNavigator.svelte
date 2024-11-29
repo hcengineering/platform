@@ -28,15 +28,16 @@
     Header,
     Separator,
     showPopup,
-    getLocation,
     resolvedLocationStore,
     deviceOptionsStore as deviceInfo,
     defineSeparators,
     twoPanelsSeparators,
     resizeObserver
   } from '@hcengineering/ui'
-  import { Doc, DocumentQuery, Ref, Space, mergeQueries } from '@hcengineering/core'
+  import { Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
   import { IntlString, Asset } from '@hcengineering/platform'
+
+  import { getResultQuery } from './utils/contextProvider'
 
   export let space: Ref<Space> | undefined = undefined
   export let navigationComponent: AnyComponent
@@ -56,17 +57,15 @@
   const FLOAT_LIMIT = 760
   let container: HTMLDivElement
 
-  let locationQuery: DocumentQuery<Doc> = {}
-  let resultQuery: DocumentQuery<Doc> = {}
   let spaceQuery: DocumentQuery<Doc> = {}
   $: spaceQuery = space !== undefined ? { space } : {}
-  $: resultQuery = mergeQueries(query, mergeQueries(spaceQuery, locationQuery)) ?? {}
+  let resultQuery: DocumentQuery<Doc> = {}
+  $: resultQuery = getResultQuery(query, space, syncWithLocationQuery) ?? {}
 
   if (syncWithLocationQuery) {
-    locationQuery = getLocation()?.query as any
     onDestroy(
-      resolvedLocationStore.subscribe((newLocation) => {
-        locationQuery = newLocation?.query ?? {}
+      resolvedLocationStore.subscribe(() => {
+        resultQuery = getResultQuery(query, space, syncWithLocationQuery)
       })
     )
   }

@@ -23,7 +23,7 @@ import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
-import { type ViewOptionsModel } from '@hcengineering/view'
+import { type ViewOptionsModel, ComponentContext } from '@hcengineering/view'
 
 import { testManagementId, type TestResult } from '@hcengineering/test-management'
 
@@ -74,8 +74,9 @@ function defineApplication (builder: Builder): void {
                   _class: testManagement.class.TestCase,
                   icon: testManagement.icon.TestLibrary,
                   label: testManagement.string.TestLibrary,
-                  createLabel: testManagement.string.CreateTestCase,
-                  createComponent: testManagement.component.CreateTestCase
+                  createLabel: testManagement.string.CreateTestRun,
+                  createComponent: testManagement.component.CreateTestRun,
+                  createComponentContext: ComponentContext.SELECTION
                 },
                 navigationModel: {
                   navigationComponent: view.component.FoldersBrowser,
@@ -84,7 +85,6 @@ function defineApplication (builder: Builder): void {
                   mainComponentLabel: testManagement.string.TestCases,
                   mainComponentIcon: testManagement.icon.TestCases,
                   createComponent: testManagement.component.CreateTestSuite,
-                  mainHeaderComponent: testManagement.component.RunSelectedTestsButton,
                   navigationComponentProps: {
                     _class: testManagement.class.TestSuite,
                     icon: testManagement.icon.TestSuites,

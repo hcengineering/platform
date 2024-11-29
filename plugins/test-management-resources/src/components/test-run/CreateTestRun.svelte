@@ -39,17 +39,17 @@
 
   export let space: Ref<TestProject>
   export let query: DocumentQuery<TestCase> = {}
-  export let testCases: TestCase[]
+  export let selectedDocs: TestCase[]
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  let isLoading = testCases === undefined
+  let isLoading = selectedDocs === undefined
 
-  if (testCases === undefined) {
+  if (selectedDocs === undefined) {
     const client = createQuery()
     const spaceQuery = space !== undefined ? { space } : {}
     client.query(testManagement.class.TestCase, { ...spaceQuery, ...(query ?? {}) }, (result) => {
-      testCases = result
+      selectedDocs = result
       isLoading = false
     })
   }
@@ -73,7 +73,7 @@
     try {
       const applyOp = client.apply()
       await applyOp.createDoc(testManagement.class.TestRun, _space, object, id)
-      const testCasesArray = testCases instanceof Array ? testCases : [testCases]
+      const testCasesArray = selectedDocs instanceof Array ? selectedDocs : [selectedDocs]
       const createPromises = testCasesArray.map(async (testCase) => {
         const descriptionRef = isEmptyMarkup(description)
           ? null
@@ -178,7 +178,7 @@
       {#if isLoading}
         <Loading />
       {:else}
-        <TestCaseSelector objects={testCases} selectedObjects={testCases} readonly={true} />
+        <TestCaseSelector objects={selectedDocs} selectedObjects={selectedDocs} readonly={true} />
       {/if}
     </div>
   </svelte:fragment>
