@@ -660,9 +660,7 @@ async function navigateToOfficeDoc (hierarchy: Hierarchy, object: Doc): Promise<
 
 async function openMeetingMinutes (room: Room): Promise<void> {
   const client = getClient()
-  const sid = await lk.getSid()
   const doc = await client.findOne(love.class.MeetingMinutes, {
-    sid,
     attachedTo: room._id,
     status: MeetingStatus.Active
   })
@@ -683,7 +681,6 @@ async function openMeetingMinutes (room: Room): Promise<void> {
     const newDoc: MeetingMinutes = {
       _id,
       _class: love.class.MeetingMinutes,
-      sid,
       attachedTo: room._id,
       attachedToClass: room._class,
       collection: 'meetings',
@@ -700,7 +697,7 @@ async function openMeetingMinutes (room: Room): Promise<void> {
       room._id,
       room._class,
       'meetings',
-      { sid, title: newDoc.title, description: newDoc.description, status: newDoc.status },
+      { title: newDoc.title, description: newDoc.description, status: newDoc.status },
       _id
     )
     currentMeetingMinutes.set(newDoc)
@@ -994,8 +991,7 @@ export async function startTranscription (room: Room): Promise<void> {
   const current = get(currentRoom)
   if (current === undefined || room._id !== current._id) return
 
-  const sid = await lk.getSid()
-  await connectMeeting(room._id, sid, room.language, { transcription: true })
+  await connectMeeting(room._id, room.language, { transcription: true })
 }
 
 export async function stopTranscription (room: Room): Promise<void> {

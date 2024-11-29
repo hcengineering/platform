@@ -203,9 +203,6 @@ export class TMeetingMinutes extends TAttachedDoc implements MeetingMinutes, Tod
   @ReadOnly()
   declare attachedTo: Ref<Doc>
 
-  @Hidden()
-    sid!: string
-
   @Prop(TypeString(), view.string.Title)
   @Index(IndexKind.FullText)
     title!: string
