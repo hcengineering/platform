@@ -24,7 +24,7 @@ import {
   SOCKET_STATES
 } from '@deepgram/sdk'
 
-import config from './config.js'
+import config from '../config.js'
 
 const KEEP_ALIVE_INTERVAL = 10 * 1000
 
