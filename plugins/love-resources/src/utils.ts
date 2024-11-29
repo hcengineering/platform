@@ -721,7 +721,7 @@ async function initMeetingMinutes (room: Room): Promise<void> {
   }
 }
 
-async function connectRoom (
+export async function connectRoom (
   x: number,
   y: number,
   currentInfo: ParticipantInfo | undefined,
