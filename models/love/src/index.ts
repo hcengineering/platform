@@ -48,7 +48,6 @@ import {
   type Builder,
   Collection,
   Collection as PropCollection,
-  Hidden,
   Index,
   Mixin,
   Model,

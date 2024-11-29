@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import core, { Client, Ref, TxOperations, type Blob, Data } from '@hcengineering/core'
+import core, { Client, Ref, TxOperations, type Blob, Data, MeasureContext } from '@hcengineering/core'
 import drive, { createFile } from '@hcengineering/drive'
 import love, { MeetingMinutes } from '@hcengineering/love'
 import { generateToken } from '@hcengineering/server-token'
@@ -23,10 +23,13 @@ import config from './config'
 export class WorkspaceClient {
   private client!: TxOperations
 
-  private constructor (private readonly workspace: string) {}
+  private constructor (
+    private readonly workspace: string,
+    private readonly ctx: MeasureContext
+  ) {}
 
-  static async create (workspace: string): Promise<WorkspaceClient> {
-    const instance = new WorkspaceClient(workspace)
+  static async create (workspace: string, ctx: MeasureContext): Promise<WorkspaceClient> {
+    const instance = new WorkspaceClient(workspace, ctx)
     await instance.initClient(workspace)
     return instance
   }
@@ -43,6 +46,7 @@ export class WorkspaceClient {
   }
 
   async saveFile (uuid: string, name: string, blob: Blob, meetingMinutes?: Ref<MeetingMinutes>): Promise<void> {
+    this.ctx.info('Save recording', { workspace: this.workspace, meetingMinutes })
     const current = await this.client.findOne(drive.class.Drive, { _id: love.space.Drive })
     if (current === undefined) {
       await this.client.createDoc(
@@ -83,7 +87,10 @@ export class WorkspaceClient {
     if (ref === undefined) return
 
     const meeting = await this.client.findOne(love.class.MeetingMinutes, { _id: ref })
-    if (meeting === undefined) return
+    if (meeting === undefined) {
+      this.ctx.error('Meeting not found', { _id: ref })
+      return
+    }
 
     await this.client.addCollection(
       attachment.class.Attachment,

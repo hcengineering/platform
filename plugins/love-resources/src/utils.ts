@@ -415,6 +415,13 @@ async function initRoomMetadata (metadata: string | undefined): Promise<void> {
   isTranscription.set(data.transcription === TranscriptionStatus.InProgress)
 
   const room = get(currentRoom)
+  const meetingMinutes = get(currentMeetingMinutes)
+  const isValidMeeting =
+    meetingMinutes != null && meetingMinutes.attachedTo === room?._id && meetingMinutes.status === MeetingStatus.Active
+
+  if (room != null && !isValidMeeting) {
+    await initMeetingMinutes(room)
+  }
 
   if (
     (data.transcription == null || data.transcription === TranscriptionStatus.Idle) &&
@@ -423,7 +430,7 @@ async function initRoomMetadata (metadata: string | undefined): Promise<void> {
     await startTranscription(room)
   }
 
-  if (data.recording == null && room?.startWithRecording === true) {
+  if (get(isRecordingAvailable) && data.recording == null && room?.startWithRecording === true) {
     await record(room)
   }
 }
@@ -658,7 +665,7 @@ async function navigateToOfficeDoc (hierarchy: Hierarchy, object: Doc): Promise<
   navigate(loc)
 }
 
-async function openMeetingMinutes (room: Room): Promise<void> {
+async function initMeetingMinutes (room: Room): Promise<void> {
   const client = getClient()
   const doc = await client.findOne(love.class.MeetingMinutes, {
     attachedTo: room._id,
@@ -714,7 +721,7 @@ async function openMeetingMinutes (room: Room): Promise<void> {
   }
 }
 
-export async function connectRoom (
+async function connectRoom (
   x: number,
   y: number,
   currentInfo: ParticipantInfo | undefined,
@@ -732,7 +739,7 @@ export async function connectRoom (
       3,
       1000
     )
-    await openMeetingMinutes(room)
+    await initMeetingMinutes(room)
   } catch (err) {
     console.error(err)
     await leaveRoom(currentInfo, get(myOffice))

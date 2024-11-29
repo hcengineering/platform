@@ -217,9 +217,8 @@ export class LoveController {
 
   async getMeetingMinutes (room: Room): Promise<MeetingMinutes | undefined> {
     const doc =
-      this.meetingMinutes.find(
-        (m) => m.attachedTo === room._id && m.status === MeetingStatus.Active
-      ) ?? (await this.client.findOne(love.class.MeetingMinutes, { room: room._id, status: MeetingStatus.Active }))
+      this.meetingMinutes.find((m) => m.attachedTo === room._id && m.status === MeetingStatus.Active) ??
+      (await this.client.findOne(love.class.MeetingMinutes, { room: room._id, status: MeetingStatus.Active }))
 
     if (doc === undefined) {
       return undefined
