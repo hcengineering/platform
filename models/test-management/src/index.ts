@@ -23,6 +23,7 @@ import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
+import contact from '@hcengineering/contact'
 import { type ViewOptionsModel } from '@hcengineering/view'
 
 import { testManagementId, type TestResult } from '@hcengineering/test-management'
@@ -160,6 +161,7 @@ export function createModel (builder: Builder): void {
   defineTestSuite(builder)
   defineTestCase(builder)
   defineTestRun(builder)
+  defineTestResult(builder)
 
   definePresenters(builder)
 
@@ -261,7 +263,7 @@ function defineTestSuite (builder: Builder): void {
   // Actions
 
   builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [print.action.Print, tracker.action.EditRelatedTargets]
+    actions: [print.action.Print, tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
   })
 
   createAction(
@@ -330,8 +332,11 @@ function defineTestCase (builder: Builder): void {
   })
 
   builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['priority', 'status'],
-    ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn']
+    filters: [
+      'priority',
+      'status'
+    ],
+    ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn', 'name']
   })
 
   builder.createDoc(
@@ -419,6 +424,12 @@ function defineTestRun (builder: Builder): void {
     component: testManagement.component.TestResultStatusPresenter
   })
 
+  builder.mixin(testManagement.class.TestRun, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [print.action.Print, tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
+  })
+}
+
+function defineTestResult (builder: Builder): void {
   builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: testManagement.component.TestResultPresenter
   })
@@ -448,7 +459,7 @@ function defineTestRun (builder: Builder): void {
 
   builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ClassFilters, {
     filters: ['assignee', 'status', 'testSuite'],
-    ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn']
+    ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn', 'name', 'attachedTo']
   })
 
   const viewOptions: ViewOptionsModel = {
@@ -520,6 +531,24 @@ function defineTestRun (builder: Builder): void {
       } as FindOptions<TestResult>
     },
     testManagement.viewlet.TableTestResult
+  )
+
+  createAction(
+    builder,
+    {
+      action: testManagement.actionImpl.AssignTests,
+      label: testManagement.string.AssignTests,
+      icon: contact.icon.Person,
+      category: testManagement.category.TestResult,
+      input: 'any',
+      target: testManagement.class.TestResult,
+      context: {
+        mode: ['context', 'browser'],
+        application: testManagement.app.TestManagement,
+        group: 'edit'
+      }
+    },
+    testManagement.action.AssignTests
   )
 }
 

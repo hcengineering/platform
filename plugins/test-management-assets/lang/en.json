@@ -77,6 +77,8 @@
     "DueDate": "Due date",
     "RunTestCases": "Run",
     "TestCaseDescription": "Test case description",
-    "TestResultAttributes": "Result"
+    "TestResultAttributes": "Result",
+    "GoToNextTest": "Next",
+    "GoToNextTestTooltip": "Go to next test"
   }
 }
