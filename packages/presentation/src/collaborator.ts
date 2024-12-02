@@ -14,13 +14,12 @@
 //
 
 import { type CollaboratorClient, getClient as getCollaborator } from '@hcengineering/collaborator-client'
-import { type CollaborativeDoc, type Markup, getWorkspaceId } from '@hcengineering/core'
+import { type Blob, type CollaborativeDoc, type Markup, type Ref, getWorkspaceId } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 
 import presentation from './plugin'
 
-/** @public */
-export function getCollaboratorClient (): CollaboratorClient {
+function getClient (): CollaboratorClient {
   const workspaceId = getWorkspaceId(getMetadata(presentation.metadata.WorkspaceId) ?? '')
   const token = getMetadata(presentation.metadata.Token) ?? ''
   const collaboratorURL = getMetadata(presentation.metadata.CollaboratorUrl) ?? ''
@@ -29,19 +28,25 @@ export function getCollaboratorClient (): CollaboratorClient {
 }
 
 /** @public */
-export async function getMarkup (collaborativeDoc: CollaborativeDoc): Promise<Record<string, Markup>> {
-  const client = getCollaboratorClient()
-  return await client.getContent(collaborativeDoc)
+export async function getMarkup (doc: CollaborativeDoc, source: Ref<Blob> | null | undefined): Promise<Markup> {
+  const client = getClient()
+  return await client.getMarkup(doc, source)
 }
 
 /** @public */
-export async function updateMarkup (collaborativeDoc: CollaborativeDoc, content: Record<string, Markup>): Promise<void> {
-  const client = getCollaboratorClient()
-  await client.updateContent(collaborativeDoc, content)
+export async function createMarkup (doc: CollaborativeDoc, markup: Markup): Promise<Ref<Blob>> {
+  const client = getClient()
+  return await client.createMarkup(doc, markup)
 }
 
 /** @public */
-export async function copyDocument (source: CollaborativeDoc, target: CollaborativeDoc): Promise<void> {
-  const client = getCollaboratorClient()
+export async function updateMarkup (doc: CollaborativeDoc, markup: Markup): Promise<void> {
+  const client = getClient()
+  await client.updateMarkup(doc, markup)
+}
+
+/** @public */
+export async function copyMarkup (source: CollaborativeDoc, target: CollaborativeDoc): Promise<void> {
+  const client = getClient()
   await client.copyContent(source, target)
 }

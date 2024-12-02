@@ -22,10 +22,12 @@ import {
   type MixinUpdate,
   type Hierarchy,
   type Class,
-  type MixinData
+  type MixinData,
+  makeCollabId,
+  makeDocCollabId
 } from '@hcengineering/core'
-import { translate } from '@hcengineering/platform'
-import { copyDocument } from '@hcengineering/presentation'
+import { setPlatformStatus, translate, unknownError } from '@hcengineering/platform'
+import { copyMarkup } from '@hcengineering/presentation'
 import { themeStore } from '@hcengineering/ui'
 import documents, {
   type ControlledDocument,
@@ -35,13 +37,40 @@ import documents, {
   type DocumentTraining,
   type ControlledDocumentSnapshot,
   type ChangeControl,
+  type ProjectDocument,
   type Project,
   DocumentState,
-  getCollaborativeDocForDocument,
-  createChangeControl
+  createChangeControl,
+  createControlledDocFromTemplate as controlledDocFromTemplate
 } from '@hcengineering/controlled-documents'
 import documentsRes from './plugin'
 import { getCurrentEmployee, getDocumentVersionString } from './utils'
+
+export async function createControlledDocFromTemplate (
+  client: TxOperations,
+  templateId: Ref<DocumentTemplate> | undefined,
+  documentId: Ref<ControlledDocument>,
+  spec: AttachedData<ControlledDocument>,
+  space: Ref<DocumentSpace>,
+  project: Ref<Project> | undefined,
+  parent: Ref<ProjectDocument> | undefined,
+  docClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument
+): Promise<{ seqNumber: number, success: boolean }> {
+  const result = await controlledDocFromTemplate(client, templateId, documentId, spec, space, project, parent, docClass)
+
+  if (result.success && templateId !== undefined) {
+    const source = makeCollabId(documents.mixin.DocumentTemplate, templateId, 'content')
+    const target = makeCollabId(docClass, documentId, 'content')
+    try {
+      await copyMarkup(source, target)
+    } catch (err) {
+      await setPlatformStatus(unknownError(err))
+      return { ...result, success: false }
+    }
+  }
+
+  return result
+}
 
 export async function createNewDraftForControlledDoc (
   client: TxOperations,
@@ -64,18 +93,6 @@ export async function createNewDraftForControlledDoc (
   }
 
   ops.notMatch(documents.class.Document, notMatchQuery)
-
-  const collaborativeDoc = getCollaborativeDocForDocument(
-    `DOC-${document.prefix}`,
-    document.seqNumber,
-    document.major,
-    document.minor,
-    true
-  )
-
-  if (document.content !== undefined) {
-    await copyDocument(document.content, collaborativeDoc)
-  }
 
   // Create new change control for new version
   const newCCId = generateId<ChangeControl>()
@@ -111,7 +128,7 @@ export async function createNewDraftForControlledDoc (
     labels: 0,
     state: DocumentState.Draft,
     plannedEffectiveDate: 0,
-    content: collaborativeDoc
+    content: document.content
   }
 
   const meta = await client.findOne(documents.class.ProjectMeta, {
@@ -170,16 +187,6 @@ export async function createNewDraftForControlledDoc (
 }
 
 export async function createDocumentSnapshotAndEdit (client: TxOperations, document: ControlledDocument): Promise<void> {
-  const collaborativeDoc = getCollaborativeDocForDocument(
-    `DOC-${document.prefix}`,
-    document.seqNumber,
-    document.major,
-    document.minor,
-    true
-  )
-
-  await copyDocument(document.content, collaborativeDoc)
-
   const language = get(themeStore).language
   const namePrefix = await translate(documents.string.DraftRevision, {}, language)
   const name = `${namePrefix} ${(document.snapshots ?? 0) + 1}`
@@ -197,7 +204,7 @@ export async function createDocumentSnapshotAndEdit (client: TxOperations, docum
       name,
       state: document.state,
       controlledState: document.controlledState,
-      content: collaborativeDoc
+      content: document.content
     },
     newSnapshotId
   )
@@ -205,6 +212,10 @@ export async function createDocumentSnapshotAndEdit (client: TxOperations, docum
   await op.commit()
 
   await client.update(document, { controlledState: undefined })
+
+  const source = makeDocCollabId(document, 'content')
+  const target = makeCollabId(documents.class.ControlledDocumentSnapshot, newSnapshotId, 'content')
+  await copyMarkup(source, target)
 }
 
 export function getDocumentTrainingClass (hierarchy: Hierarchy): Class<DocumentTraining> {

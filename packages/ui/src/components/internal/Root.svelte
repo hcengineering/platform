@@ -140,7 +140,7 @@
   updateDeviceSize()
 
   $: secondRow = checkAdaptiveMatching($deviceInfo.size, 'xs')
-  $: asideFloat = $deviceInfo.navigator.float
+  $: asideFloat = $deviceInfo.aside.float
   $: asideOpen = $deviceInfo.aside.visible
   $: appsMini =
     $deviceInfo.isMobile &&

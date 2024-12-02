@@ -22,6 +22,9 @@
     Breadcrumb,
     Component,
     IconAdd,
+    IconMenuOpen,
+    IconMenuClose,
+    ButtonIcon,
     Header,
     Separator,
     showPopup,
@@ -29,7 +32,8 @@
     resolvedLocationStore,
     deviceOptionsStore as deviceInfo,
     defineSeparators,
-    workbenchSeparators
+    twoPanelsSeparators,
+    resizeObserver
   } from '@hcengineering/ui'
   import { Doc, DocumentQuery, Ref, Space, mergeQueries } from '@hcengineering/core'
   import { IntlString, Asset } from '@hcengineering/platform'
@@ -43,10 +47,14 @@
   export let createComponentProps: Record<string, any> = {}
   export let mainComponentLabel: IntlString
   export let mainComponentIcon: Asset | undefined = undefined
+  export let mainHeaderComponent: AnyComponent | undefined = undefined
   export let query: DocumentQuery<Doc> = {}
   export let syncWithLocationQuery: boolean = true
   export let mainComponent: AnyComponent | AnySvelteComponent
   export let mainComponentProps = {}
+
+  const FLOAT_LIMIT = 760
+  let container: HTMLDivElement
 
   let locationQuery: DocumentQuery<Doc> = {}
   let resultQuery: DocumentQuery<Doc> = {}
@@ -67,24 +75,60 @@
     if (createComponent === undefined) return
     showPopup(createComponent, { ...createComponentProps, space }, 'top')
   }
-  defineSeparators('parentsNavigator', workbenchSeparators)
+
+  defineSeparators('parentsNavigator', twoPanelsSeparators)
+
+  const getVisibleNavigator = (): boolean => !(localStorage.getItem('componentNavigator') === 'hidden')
+  let visibleNavigator: boolean = getVisibleNavigator()
+  let floatNavigator: boolean = false
+
+  const toggleNavigator = (): void => {
+    visibleNavigator = !visibleNavigator
+    if (visibleNavigator) {
+      if (!floatNavigator && container.getBoundingClientRect().width < FLOAT_LIMIT) {
+        floatNavigator = true
+      }
+      localStorage.removeItem('componentNavigator')
+    } else localStorage.setItem('componentNavigator', 'hidden')
+  }
 </script>
 
-<div class="hulyComponent-content__container columns">
-  {#if $deviceInfo.navigator.visible}
+<div
+  bind:this={container}
+  class="hulyComponent-content__container columns relative"
+  use:resizeObserver={(element) => {
+    if (visibleNavigator && !floatNavigator && element.clientWidth < FLOAT_LIMIT) {
+      floatNavigator = true
+      visibleNavigator = false
+    } else if (floatNavigator && element.clientWidth >= FLOAT_LIMIT) {
+      floatNavigator = false
+      visibleNavigator = getVisibleNavigator()
+    }
+  }}
+>
+  {#if visibleNavigator}
+    {#if floatNavigator}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div class="cover" class:mobile={$deviceInfo.isMobile} on:click={toggleNavigator} />
+    {/if}
     <div
-      class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal'
-        ? 'portrait'
-        : 'landscape'} border-left"
+      class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal' ? 'portrait' : 'landscape'} second"
+      class:float={floatNavigator}
+      class:inner={!$deviceInfo.navigator.float}
+      class:fly={$deviceInfo.navigator.float}
     >
       <div class="hulyComponent-content__column">
         <Header adaptive={'disabled'}>
-          <Breadcrumb icon={navigationComponentIcon} label={navigationComponentLabel} size={'large'} />
+          <Breadcrumb icon={navigationComponentIcon} label={navigationComponentLabel} size={'large'} isCurrent />
           <svelte:fragment slot="actions">
             {#if createComponent}
               <Button
                 icon={IconAdd}
                 kind={'icon'}
+                showTooltip={navigationComponentProps?.createLabel !== undefined
+                  ? { label: navigationComponentProps.createLabel }
+                  : undefined}
                 on:click={() => {
                   showCreateDialog()
                 }}
@@ -102,24 +146,37 @@
       </div>
       <Separator
         name={'parentsNavigator'}
-        float={$deviceInfo.navigator.float ? 'navigator' : true}
+        float={floatNavigator ? 'navigator' : true}
         index={0}
-        color={'transparent'}
+        color={'var(--theme-divider-color)'}
       />
     </div>
-
-    <Separator
-      name={'parentsNavigator'}
-      float={$deviceInfo.navigator.float}
-      index={0}
-      color={'transparent'}
-      separatorSize={0}
-      short
-    />
+    <Separator name={'parentsNavigator'} float={floatNavigator} index={0} color={'var(--theme-divider-color)'} />
   {/if}
   <div class="hulyComponent-content__column">
     <Header adaptive={'disabled'}>
-      <Breadcrumb icon={mainComponentIcon} label={mainComponentLabel} size={'large'} />
+      <svelte:fragment slot="beforeTitle">
+        <ButtonIcon
+          icon={visibleNavigator ? IconMenuClose : IconMenuOpen}
+          kind={'tertiary'}
+          size={'small'}
+          pressed={!visibleNavigator}
+          on:click={toggleNavigator}
+        />
+      </svelte:fragment>
+
+      <Breadcrumb icon={mainComponentIcon} label={mainComponentLabel} size={'large'} isCurrent />
+      <svelte:fragment slot="actions">
+        {#if mainHeaderComponent}
+          <Component
+            is={mainHeaderComponent}
+            props={{
+              query: resultQuery,
+              space
+            }}
+          />
+        {/if}
+      </svelte:fragment>
     </Header>
     <Component
       is={mainComponent}
@@ -131,3 +188,19 @@
     />
   </div>
 </div>
+
+<style lang="scss">
+  .cover {
+    position: fixed;
+    display: block;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 10;
+
+    &.mobile {
+      background-color: var(--theme-overlay-color);
+    }
+  }
+</style>

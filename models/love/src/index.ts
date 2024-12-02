@@ -16,15 +16,15 @@
 import contact, { type Employee, type Person } from '@hcengineering/contact'
 import {
   AccountRole,
-  type CollaborativeDoc,
   type CollectionSize,
-  DateRangeMode,
   type Doc,
   type Domain,
-  DOMAIN_TRANSIENT,
-  IndexKind,
+  type MarkupBlobRef,
   type Ref,
-  type Timestamp
+  type Timestamp,
+  DOMAIN_TRANSIENT,
+  DateRangeMode,
+  IndexKind
 } from '@hcengineering/core'
 import {
   type DevicesPreference,
@@ -48,7 +48,6 @@ import {
   type Builder,
   Collection,
   Collection as PropCollection,
-  Hidden,
   Index,
   Mixin,
   Model,
@@ -91,7 +90,7 @@ export class TRoom extends TDoc implements Room {
 
   @Prop(TypeCollaborativeDoc(), core.string.Description)
   @Index(IndexKind.FullText)
-    description!: CollaborativeDoc
+    description!: MarkupBlobRef | null
 
   type!: RoomType
 
@@ -203,16 +202,13 @@ export class TMeetingMinutes extends TAttachedDoc implements MeetingMinutes, Tod
   @ReadOnly()
   declare attachedTo: Ref<Doc>
 
-  @Hidden()
-    sid!: string
-
   @Prop(TypeString(), view.string.Title)
   @Index(IndexKind.FullText)
     title!: string
 
   @Prop(TypeCollaborativeDoc(), core.string.Description)
   @Index(IndexKind.FullText)
-    description!: CollaborativeDoc
+    description!: MarkupBlobRef | null
 
   @Prop(TypeAny(love.component.MeetingMinutesStatusPresenter, love.string.Status), love.string.Status, {
     editor: love.component.MeetingMinutesStatusPresenter

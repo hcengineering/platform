@@ -17,7 +17,6 @@ import {
   ApplyTxMiddleware,
   BroadcastMiddleware,
   ConfigurationMiddleware,
-  ConnectionMgrMiddleware,
   ContextNameMiddleware,
   DBAdapterInitMiddleware,
   DBAdapterMiddleware,
@@ -114,7 +113,6 @@ export function createServerPipeline (
       SpacePermissionsMiddleware.create,
       ConfigurationMiddleware.create,
       ContextNameMiddleware.create,
-      ConnectionMgrMiddleware.create,
       MarkDerivedEntryMiddleware.create,
       ApplyTxMiddleware.create, // Extract apply
       TxMiddleware.create, // Store tx into transaction domain

@@ -17,7 +17,7 @@ import { cli, defineAgent, type JobContext, JobRequest, WorkerOptions } from '@l
 import { fileURLToPath } from 'node:url'
 import { RemoteParticipant, RemoteTrack, RemoteTrackPublication, RoomEvent, TrackKind } from '@livekit/rtc-node'
 
-import { STT } from './stt.js'
+import { STT } from './deepgram/stt.js'
 import { Metadata, TranscriptionStatus } from './type.js'
 import config from './config.js'
 

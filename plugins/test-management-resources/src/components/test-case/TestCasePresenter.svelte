@@ -26,13 +26,14 @@
   export let disabled: boolean = false
   export let accent: boolean = false
   export let noUnderline: boolean = false
+  export let onClick: ((event: MouseEvent) => void) | undefined = undefined
 </script>
 
 {#if value}
   {#if inline}
     <ObjectMention object={value} {disabled} {accent} {noUnderline} />
   {:else}
-    <DocNavLink object={value} {disabled} {accent} {noUnderline}>
+    <DocNavLink object={value} {disabled} {accent} {noUnderline} {onClick}>
       <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
         <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
           {value.name}

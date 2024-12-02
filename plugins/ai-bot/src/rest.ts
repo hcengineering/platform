@@ -61,7 +61,6 @@ export interface TranslateResponse {
 
 export interface ConnectMeetingRequest {
   roomId: Ref<Room>
-  roomSid: string
   language: RoomLanguage
   transcription: boolean
 }
@@ -74,7 +73,6 @@ export interface PostTranscriptRequest {
   transcript: string
   participant: Ref<Person>
   roomName: string
-  final: boolean
 }
 
 export interface IdentityResponse {

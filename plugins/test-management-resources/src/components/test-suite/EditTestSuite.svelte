@@ -18,10 +18,9 @@
   import { TestSuite } from '@hcengineering/test-management'
   import { StyledTextArea } from '@hcengineering/text-editor-resources'
   import { Panel } from '@hcengineering/panel'
-  import { EditBox } from '@hcengineering/ui'
+  import { EditBox, Breadcrumb } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
 
-  import TestCasesList from './TestCasesList.svelte'
   import testManagement from '../../plugin'
 
   export let _id: Ref<TestSuite>
@@ -61,14 +60,17 @@
   <ActionContext context={{ mode: 'editor' }} />
   <Panel
     {object}
-    title={object.name}
     isHeader={false}
-    isAside={true}
+    isAside={false}
     isSub={false}
-    adaptive={'default'}
+    adaptive={'disabled'}
     on:open
     on:close={() => dispatch('close')}
   >
+    <svelte:fragment slot="title">
+      <Breadcrumb icon={testManagement.icon.TestSuite} title={object.name} size={'large'} isCurrent />
+    </svelte:fragment>
+
     <EditBox
       bind:value={rawLabel}
       placeholder={testManagement.string.NamePlaceholder}
@@ -91,10 +93,6 @@
         kind={'emphasized'}
         showButtons={false}
       />
-    </div>
-
-    <div class="w-full mt-6">
-      <TestCasesList objectId={object._id} />
     </div>
   </Panel>
 {/if}

@@ -272,8 +272,9 @@ export function convertDoc<T extends Doc> (
     createdBy: doc.createdBy,
     modifiedBy: doc.modifiedBy,
     modifiedOn: doc.modifiedOn,
-    createdOn: doc.createdOn,
-    _class: doc._class
+    createdOn: doc.createdOn ?? doc.modifiedOn,
+    _class: doc._class,
+    '%hash%': (doc as any)['%hash%'] ?? null
   }
   const remainingData: Partial<T> = {}
 
@@ -326,8 +327,8 @@ export function inferType (val: any): string {
 }
 
 export function parseUpdate<T extends Doc> (
-  domain: string,
-  ops: DocumentUpdate<T> | MixinUpdate<Doc, T>
+  ops: DocumentUpdate<T> | MixinUpdate<Doc, T>,
+  fields: Set<string>
 ): {
     extractedFields: Partial<T>
     remainingData: Partial<T>
@@ -339,14 +340,14 @@ export function parseUpdate<T extends Doc> (
     const val = (ops as any)[key]
     if (key.startsWith('$')) {
       for (const k in val) {
-        if (getDocFieldsByDomains(domain).includes(k)) {
+        if (fields.has(k)) {
           ;(extractedFields as any)[k] = val[key]
         } else {
           ;(remainingData as any)[k] = val[key]
         }
       }
     } else {
-      if (getDocFieldsByDomains(domain).includes(key)) {
+      if (fields.has(key)) {
         ;(extractedFields as any)[key] = val
       } else {
         ;(remainingData as any)[key] = val

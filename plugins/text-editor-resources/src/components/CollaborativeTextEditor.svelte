@@ -16,13 +16,21 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { type Space, type Class, type CollaborativeDoc, type Doc, type Ref, generateId } from '@hcengineering/core'
+  import { type Doc, generateId, makeDocCollabId } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
-  import { getFileUrl, getImageSize, imageSizeToRatio } from '@hcengineering/presentation'
+  import {
+    getAttribute,
+    getClient,
+    getFileUrl,
+    getImageSize,
+    imageSizeToRatio,
+    KeyedAttribute
+  } from '@hcengineering/presentation'
   import { markupToJSON } from '@hcengineering/text'
   import {
     AnySvelteComponent,
     Button,
+    IconScribble,
     IconSize,
     Loading,
     PopupAlignment,
@@ -37,7 +45,7 @@
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
   import Placeholder from '@tiptap/extension-placeholder'
   import { createEventDispatcher, getContext, onDestroy, onMount } from 'svelte'
-  import { Doc as YDoc } from 'yjs'
+  import { Array as YArray, Doc as YDoc, Map as YMap } from 'yjs'
 
   import { Completion } from '../Completion'
   import { deleteAttachment } from '../command/deleteAttachment'
@@ -58,6 +66,7 @@
   import TextEditorToolbar from './TextEditorToolbar.svelte'
   import { noSelectionRender, renderCursor } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
+  import { DrawingBoardExtension } from './extension/drawingBoard'
   import { EmojiExtension } from './extension/emoji'
   import { FileUploadExtension } from './extension/fileUploadExt'
   import { ImageUploadExtension } from './extension/imageUploadExt'
@@ -66,14 +75,8 @@
   import { type FileAttachFunction } from './extension/types'
   import { completionConfig, inlineCommandsConfig } from './extensions'
 
-  export let collaborativeDoc: CollaborativeDoc
-  export let initialCollaborativeDoc: CollaborativeDoc | undefined = undefined
-  export let field: string
-
-  export let objectClass: Ref<Class<Doc>> | undefined = undefined
-  export let objectId: Ref<Doc> | undefined = undefined
-  export let objectSpace: Ref<Space> | undefined = undefined
-  export let objectAttr: string | undefined = undefined
+  export let object: Doc
+  export let attribute: KeyedAttribute
 
   export let user: CollaborationUser
   export let userComponent: AnySvelteComponent | undefined = undefined
@@ -100,22 +103,22 @@
   export let withInlineCommands = true
   export let kitOptions: Partial<EditorKitOptions> = {}
 
+  const client = getClient()
   const dispatch = createEventDispatcher()
+
+  const objectClass = object._class
+  const objectId = object._id
+  const objectSpace = object.space
+  const objectAttr = attribute.key
+  const field = attribute.key
+  const content = getAttribute(client, object, attribute)
+  const collaborativeDoc = makeDocCollabId(object, objectAttr)
 
   const ydoc = getContext<YDoc>(CollaborationIds.Doc) ?? new YDoc({ guid: generateId() })
   const contextProvider = getContext<Provider>(CollaborationIds.Provider)
 
   const localProvider = createLocalProvider(ydoc, collaborativeDoc)
-
-  const remoteProvider =
-    contextProvider ??
-    createRemoteProvider(ydoc, {
-      document: collaborativeDoc,
-      initialDocument: initialCollaborativeDoc,
-      objectClass,
-      objectId,
-      objectAttr
-    })
+  const remoteProvider = contextProvider ?? createRemoteProvider(ydoc, collaborativeDoc, content)
 
   let contentError = false
   let localSynced = false
@@ -264,7 +267,8 @@
             { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
             { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
             { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
-            { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList }
+            { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList },
+            { id: 'drawing-board', label: textEditor.string.DrawingBoard, icon: IconScribble as any }
           ],
           handleSelect: handleLeftMenuClick
         })
@@ -357,12 +361,25 @@
       case 'separator-line':
         editor.commands.setHorizontalRule()
         break
+      case 'drawing-board':
+        makeNewDrawingBoard(pos)
+        break
     }
   }
 
   const throttle = new ThrottledCaller(100)
   const updateLastUpdateTime = (): void => {
     remoteProvider.awareness?.setLocalStateField('lastUpdate', Date.now())
+  }
+
+  function makeNewDrawingBoard (pos: number): void {
+    const id = generateId()
+    ydoc.getArray('drawing-board-registry').push([id])
+    const drawing = ydoc.getMap(`drawing-board-${id}`)
+    drawing.set('commands', new YArray())
+    drawing.set('props', new YMap())
+    editor.commands.insertContentAt(pos, { type: 'drawingBoard', attrs: { id } })
+    editor.commands.showDrawingBoardPopup()
   }
 
   onMount(async () => {
@@ -413,6 +430,7 @@
           }
         }),
         EmojiExtension,
+        DrawingBoardExtension.configure({ ydoc }),
         ...extensions
       ],
       parseOptions: {

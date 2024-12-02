@@ -65,7 +65,7 @@
   id="sidebar"
   class="antiPanel-application vertical sidebar-container"
   class:mini
-  class:float={$deviceInfo.navigator.float}
+  class:float={$deviceInfo.aside.float}
 >
   {#if mini}
     <SidebarMini {widgets} {preferences} />

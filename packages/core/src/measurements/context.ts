@@ -114,7 +114,6 @@ export class MeasureMetricsContext implements MeasureContext {
       this.logParams
     )
     result.id = this.id
-    result.onEnd = this.onEnd.bind(this)
     result.contextData = this.contextData
     return result
   }
@@ -190,8 +189,6 @@ export class MeasureMetricsContext implements MeasureContext {
   end (): void {
     this.done()
   }
-
-  async onEnd (ctx: MeasureContext): Promise<void> {}
 }
 
 /**
@@ -220,7 +217,10 @@ export function registerOperationLog (ctx: MeasureContext): { opLogMetrics?: Met
   }
   const op: OperationLog = { start: Date.now(), ops: [], end: -1 }
   let opLogMetrics: Metrics | undefined
-  ctx.id = generateId()
+
+  if (ctx.id === undefined) {
+    ctx.id = 'op_' + generateId()
+  }
   if (ctx.metrics !== undefined) {
     if (ctx.metrics.opLog === undefined) {
       ctx.metrics.opLog = {}

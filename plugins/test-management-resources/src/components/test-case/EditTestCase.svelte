@@ -13,13 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, onMount } from 'svelte'
+
   import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import { type Class, type Ref } from '@hcengineering/core'
   import { TestCase } from '@hcengineering/test-management'
   import { Panel } from '@hcengineering/panel'
-  import { EditBox } from '@hcengineering/ui'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { EditBox, Breadcrumb } from '@hcengineering/ui'
+  import { DocAttributeBar } from '@hcengineering/view-resources'
+
   import testManagement from '../../plugin'
 
   export let _id: Ref<TestCase>
@@ -65,14 +68,17 @@
   <ActionContext context={{ mode: 'editor' }} />
   <Panel
     {object}
-    title={object.name}
     isHeader={false}
-    isAside={true}
+    isAside={false}
     isSub={false}
-    adaptive={'default'}
+    adaptive={'disabled'}
     on:open
     on:close={() => dispatch('close')}
   >
+    <svelte:fragment slot="title">
+      <Breadcrumb icon={testManagement.icon.TestCase} title={object.name} size={'large'} isCurrent />
+    </svelte:fragment>
+
     <EditBox
       bind:value={rawLabel}
       placeholder={testManagement.string.NamePlaceholder}
@@ -99,5 +105,9 @@
         boundary={content}
       />
     </div>
+
+    <svelte:fragment slot="aside">
+      <DocAttributeBar {object} ignoreKeys={['name']} />
+    </svelte:fragment>
   </Panel>
 {/if}

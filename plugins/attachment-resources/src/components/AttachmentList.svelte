@@ -27,7 +27,7 @@
 </script>
 
 {#if attachments.length}
-  <Scroller contentDirection={'horizontal'} horizontal gap={'gap-3'}>
+  <Scroller contentDirection={'horizontal'} horizontal gap={'gap-3'} scrollSnap>
     {#each attachments as attachment}
       <AttachmentPreview
         value={attachment}

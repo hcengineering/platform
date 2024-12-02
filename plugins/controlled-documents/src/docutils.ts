@@ -14,17 +14,7 @@
 //
 
 import { type Employee } from '@hcengineering/contact'
-import {
-  type AttachedData,
-  type Class,
-  type CollaborativeDoc,
-  type Doc,
-  type Ref,
-  type TxOperations,
-  Mixin,
-  generateId,
-  makeCollaborativeDoc
-} from '@hcengineering/core'
+import { type AttachedData, type Class, type Ref, type TxOperations, Blob, Mixin } from '@hcengineering/core'
 import {
   type Document,
   type DocumentTemplate,
@@ -40,7 +30,6 @@ import {
 
 import documents from './plugin'
 import { TEMPLATE_PREFIX } from './utils'
-import { setPlatformStatus, unknownError } from '@hcengineering/platform'
 
 async function getParentPath (client: TxOperations, parent: Ref<ProjectDocument>): Promise<Array<Ref<DocumentMeta>>> {
   const parentDocObj = await client.findOne(documents.class.ProjectDocument, {
@@ -72,8 +61,7 @@ export async function createControlledDocFromTemplate (
   space: Ref<DocumentSpace>,
   project: Ref<Project> | undefined,
   parent: Ref<ProjectDocument> | undefined,
-  docClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument,
-  copyContent: (source: CollaborativeDoc, target: CollaborativeDoc) => Promise<void> = async () => {}
+  docClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument
 ): Promise<{ seqNumber: number, success: boolean }> {
   if (templateId == null) {
     return { seqNumber: -1, success: false }
@@ -101,8 +89,6 @@ export async function createControlledDocFromTemplate (
   const seqNumber = template.sequence + 1
   const prefix = template.docPrefix
 
-  const _copyContent = (doc: CollaborativeDoc): Promise<void> => copyContent(template.content, doc)
-
   return await createControlledDoc(
     client,
     templateId,
@@ -114,7 +100,7 @@ export async function createControlledDocFromTemplate (
     seqNumber,
     path,
     docClass,
-    _copyContent
+    template.content
   )
 }
 
@@ -129,11 +115,9 @@ async function createControlledDoc (
   seqNumber: number,
   path: Ref<DocumentMeta>[] = [],
   docClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument,
-  copyContent: (doc: CollaborativeDoc) => Promise<void>
+  content: Ref<Blob> | null
 ): Promise<{ seqNumber: number, success: boolean }> {
   const projectId = project ?? documents.ids.NoProject
-
-  const collaborativeDoc = getCollaborativeDocForDocument(`DOC-${prefix}`, seqNumber, 0, 1)
 
   const ops = client.apply()
 
@@ -184,22 +168,12 @@ async function createControlledDoc (
       seqNumber,
       prefix,
       state: DocumentState.Draft,
-      content: collaborativeDoc
+      content
     },
     documentId
   )
 
   const success = await ops.commit()
-
-  if (success.result) {
-    try {
-      await copyContent(collaborativeDoc)
-    } catch (err) {
-      await setPlatformStatus(unknownError(err))
-      return { seqNumber, success: false }
-    }
-  }
-
   return { seqNumber, success: success.result }
 }
 
@@ -228,7 +202,6 @@ export async function createDocumentTemplate (
     true
   )
   const seqNumber = (incResult as any).object.sequence as number
-  const collaborativeDocId = getCollaborativeDocForDocument('TPL-DOC', seqNumber, 0, 1)
   const code = spec.code === '' ? `${TEMPLATE_PREFIX}-${seqNumber}` : spec.code
 
   let path: Array<Ref<DocumentMeta>> = []
@@ -292,7 +265,7 @@ export async function createDocumentTemplate (
       prefix: TEMPLATE_PREFIX,
       author,
       owner: author,
-      content: collaborativeDocId
+      content: null
     },
     templateId
   )
@@ -305,20 +278,4 @@ export async function createDocumentTemplate (
   const success = await ops.commit()
 
   return { seqNumber, success: success.result }
-}
-
-export function getCollaborativeDocForDocument (
-  prefix: string,
-  seqNumber: number,
-  major: number,
-  minor: number,
-  next: boolean = false
-): CollaborativeDoc {
-  if (prefix.endsWith('-')) {
-    prefix = prefix.substring(0, prefix.length - 1)
-  }
-
-  return makeCollaborativeDoc(
-    (`${prefix}-${seqNumber}-${major}.${minor}${next ? '.next' : ''}-` + generateId()) as Ref<Doc>
-  )
 }

@@ -40,7 +40,6 @@
     "NamePlaceholder": "套房名稱",
     "DescriptionPlaceholder": "說明（可選）",
     "TestRuns": "試運行",
-    "NewTestRun": "新試運行",
     "TestRun": "試運行",
     "TestNamePlaceholder": "測試用例標題",
     "ChooseIcon": "選擇圖示",
@@ -61,6 +60,23 @@
     "TestRunNamePlaceholder": "測試運行名稱",
     "SelectTestSuites": "選擇測試套件",
     "SelectTestCases": "選擇測試用例",
-    "TestLibrary": "測試庫"
+    "TestLibrary": "測試庫",
+    "TestResult": "結果",
+    "TestRunResult": "結果",
+    "TestRunStatus": "狀態",
+    "StatusNonTested": "未測試",
+    "StatusBlocked": "被阻止",
+    "StatusPassed": "通過",
+    "StatusFailed": "失敗",
+    "SelectTestCase": "選擇測試用例",
+    "Save": "保存",
+    "SaveAndNext": "保存並繼續",
+    "DonePercent": "％完成",
+    "TestResults": "結果",
+    "TestRunName": "姓名",
+    "DueDate": "到期日",
+    "RunTestCases": "运行",
+    "TestCaseDescription": "測試用例描述",
+    "TestResultAttributes": "結果"
   }
 }

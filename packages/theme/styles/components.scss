@@ -1493,6 +1493,10 @@
     min-width: 0;
     width: auto;
 
+    &.noGap {
+      flex: none;
+    }
+
     &__back {
       padding: 1px 0.5px;
       height: calc(1.5rem + 2px);

@@ -16,7 +16,7 @@
 import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import core from '@hcengineering/model-core'
-import { SortingOrder } from '@hcengineering/core'
+import { SortingOrder, type FindOptions } from '@hcengineering/core'
 
 import { type Builder } from '@hcengineering/model'
 import view, { createAction } from '@hcengineering/model-view'
@@ -25,7 +25,7 @@ import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
 import { type ViewOptionsModel } from '@hcengineering/view'
 
-import { testManagementId } from '@hcengineering/test-management'
+import { testManagementId, type TestResult } from '@hcengineering/test-management'
 
 import {
   DOMAIN_TEST_MANAGEMENT,
@@ -37,8 +37,8 @@ import {
   TTestCase,
   TDefaultProjectTypeData,
   TTestRun,
-  TTypeTestRunResult,
-  TTestRunItem
+  TTypeTestRunStatus,
+  TTestResult
 } from './types'
 
 import testManagement from './plugin'
@@ -55,7 +55,6 @@ function defineApplication (builder: Builder): void {
       icon: testManagement.icon.TestManagementApplication,
       alias: testManagementId,
       hidden: false,
-      locationResolver: testManagement.resolver.Location,
       navigatorModel: {
         spaces: [
           {
@@ -74,9 +73,7 @@ function defineApplication (builder: Builder): void {
                 componentProps: {
                   _class: testManagement.class.TestCase,
                   icon: testManagement.icon.TestLibrary,
-                  label: testManagement.string.TestLibrary,
-                  createLabel: testManagement.string.CreateTestCase,
-                  createComponent: testManagement.component.CreateTestCase
+                  label: testManagement.string.TestLibrary
                 },
                 navigationModel: {
                   navigationComponent: view.component.FoldersBrowser,
@@ -85,6 +82,7 @@ function defineApplication (builder: Builder): void {
                   mainComponentLabel: testManagement.string.TestCases,
                   mainComponentIcon: testManagement.icon.TestCases,
                   createComponent: testManagement.component.CreateTestSuite,
+                  mainHeaderComponent: testManagement.component.RunButton,
                   navigationComponentProps: {
                     _class: testManagement.class.TestSuite,
                     icon: testManagement.icon.TestSuites,
@@ -100,21 +98,34 @@ function defineApplication (builder: Builder): void {
                   },
                   syncWithLocationQuery: true
                 }
-              }
-              /* TODO: UBERF-8584
+              },
               {
-                id: opt.testRunsId,
+                id: 'testRuns',
                 label: testManagement.string.TestRuns,
                 icon: testManagement.icon.TestRuns,
                 component: workbench.component.SpecialView,
                 componentProps: {
-                  _class: testManagement.class.TestRun,
+                  _class: testManagement.class.TestResult,
                   icon: testManagement.icon.TestRuns,
-                  title: testManagement.string.TestRuns,
-                  createLabel: testManagement.string.NewTestRun,
-                  createComponent: testManagement.component.CreateTestRun
+                  label: testManagement.string.TestRuns
+                },
+                navigationModel: {
+                  navigationComponent: view.component.FoldersBrowser,
+                  navigationComponentLabel: testManagement.string.TestRun,
+                  navigationComponentIcon: testManagement.icon.TestRuns,
+                  mainComponentLabel: testManagement.string.TestResults,
+                  mainComponentIcon: testManagement.icon.TestResult,
+                  navigationComponentProps: {
+                    _class: testManagement.class.TestRun,
+                    icon: testManagement.icon.TestRuns,
+                    title: testManagement.string.TestSuites,
+                    titleKey: 'name',
+                    getFolderLink: testManagement.function.GetTestRunLink,
+                    plainList: true
+                  },
+                  syncWithLocationQuery: true
                 }
-              } */
+              }
             ]
           }
         ]
@@ -135,8 +146,8 @@ export function createModel (builder: Builder): void {
     TTestCase,
     TDefaultProjectTypeData,
     TTestRun,
-    TTestRunItem,
-    TTypeTestRunResult
+    TTypeTestRunStatus,
+    TTestResult
   )
 
   builder.mixin(testManagement.class.TestProject, core.class.Class, activity.mixin.ActivityDoc, {})
@@ -204,7 +215,7 @@ function defineSpaceType (builder: Builder): void {
     core.class.SpaceType,
     core.space.Model,
     {
-      name: 'Default project type',
+      name: 'Default Test Management',
       descriptor: testManagement.descriptors.ProjectType,
       roles: 0,
       targetClass: testManagement.mixin.DefaultProjectTypeData
@@ -250,13 +261,7 @@ function defineTestSuite (builder: Builder): void {
   // Actions
 
   builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [
-      view.action.Open,
-      view.action.OpenInNewTab,
-      print.action.Print,
-      tracker.action.EditRelatedTargets,
-      tracker.action.NewRelatedIssue
-    ]
+    actions: [print.action.Print, tracker.action.EditRelatedTargets]
   })
 
   createAction(
@@ -275,6 +280,24 @@ function defineTestSuite (builder: Builder): void {
       }
     },
     testManagement.action.CreateChildTestSuite
+  )
+
+  createAction(
+    builder,
+    {
+      action: testManagement.actionImpl.RunSelectedTests,
+      label: testManagement.string.RunTestCases,
+      icon: testManagement.icon.Run,
+      category: testManagement.category.TestCase,
+      input: 'selection',
+      target: testManagement.class.TestCase,
+      context: {
+        mode: ['context'],
+        application: testManagement.app.TestManagement,
+        group: 'create'
+      }
+    },
+    testManagement.action.RunSelectedTests
   )
 }
 
@@ -304,6 +327,11 @@ function defineTestCase (builder: Builder): void {
 
   builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.AttributePresenter, {
     presenter: testManagement.component.TestSuiteRefPresenter
+  })
+
+  builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['priority', 'status'],
+    ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn']
   })
 
   builder.createDoc(
@@ -350,11 +378,14 @@ function defineTestCase (builder: Builder): void {
         hiddenKeys: ['title']
       },
       config: [
-        { key: '', displayProps: { fixed: 'left', key: 'lead' } },
+        { key: '', displayProps: { fixed: 'left' } },
         {
           key: 'status',
-          props: { kind: 'list', size: 'small', shouldShowName: false }
+          props: { kind: 'list', size: 'small', shouldShowName: false },
+          displayProps: { key: 'status', fixed: 'left' }
         },
+        { key: '', displayProps: { fixed: 'left', key: 'lead' } },
+        { key: '', displayProps: { grow: true } },
         { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'right', dividerBefore: true } },
         {
           key: 'assignee',
@@ -366,21 +397,6 @@ function defineTestCase (builder: Builder): void {
     },
     testManagement.viewlet.ListTestCase
   )
-
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: testManagement.class.TestCase,
-      descriptor: view.viewlet.Table,
-      config: ['', 'assignee', 'modifiedOn'],
-      configOptions: {
-        sortable: true
-      },
-      variant: 'short'
-    },
-    testManagement.viewlet.SuiteTestCases
-  )
 }
 
 function defineTestRun (builder: Builder): void {
@@ -391,10 +407,6 @@ function defineTestRun (builder: Builder): void {
     components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
-  builder.mixin(testManagement.class.TestRun, core.class.Class, view.mixin.ObjectEditor, {
-    editor: testManagement.component.EditTestRun
-  })
-
   builder.mixin(testManagement.class.TestRun, core.class.Class, view.mixin.ObjectPanel, {
     component: testManagement.component.EditTestRun
   })
@@ -403,18 +415,111 @@ function defineTestRun (builder: Builder): void {
     presenter: testManagement.component.TestRunPresenter
   })
 
+  builder.mixin(testManagement.class.TestRun, core.class.Class, view.mixin.ObjectIcon, {
+    component: testManagement.component.TestResultStatusPresenter
+  })
+
+  builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: testManagement.component.TestResultPresenter
+  })
+
+  builder.mixin(testManagement.class.TestResult, core.class.Class, activity.mixin.ActivityDoc, {})
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: testManagement.class.TestResult,
+    components: { input: { component: chunter.component.ChatMessageInput } }
+  })
+
+  builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ObjectEditor, {
+    editor: testManagement.component.EditTestResult
+  })
+
+  builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ObjectEditorHeader, {
+    editor: testManagement.component.TestResultHeader
+  })
+
+  builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ObjectPanel, {
+    component: testManagement.component.EditTestResult
+  })
+
+  builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ObjectPanelFooter, {
+    editor: testManagement.component.TestResultFooter
+  })
+
+  builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['assignee', 'status', 'testSuite'],
+    ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn']
+  })
+
+  const viewOptions: ViewOptionsModel = {
+    groupBy: ['testSuite'],
+    orderBy: [
+      ['status', SortingOrder.Ascending],
+      ['modifiedOn', SortingOrder.Descending],
+      ['createdOn', SortingOrder.Descending]
+    ],
+    other: [
+      {
+        key: 'shouldShowAll',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'category',
+        action: view.function.ShowEmptyGroups,
+        label: view.string.ShowEmptyGroups
+      }
+    ]
+  }
+
   builder.createDoc(
     view.class.Viewlet,
     core.space.Model,
     {
-      attachTo: testManagement.class.TestRun,
+      attachTo: testManagement.class.TestResult,
+      descriptor: view.viewlet.List,
+      configOptions: {
+        strict: true,
+        hiddenKeys: ['title', 'status', 'modifiedOn']
+      },
+      config: [
+        { key: '', displayProps: { fixed: 'left' } },
+        {
+          key: 'status',
+          props: { kind: 'list', size: 'small', shouldShowName: false }
+        },
+        {
+          key: 'assignee',
+          props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' },
+          displayProps: { key: 'assignee', fixed: 'right' }
+        }
+      ],
+      viewOptions,
+      /* eslint-disable @typescript-eslint/consistent-type-assertions */
+      options: {
+        lookup: {
+          testCase: testManagement.class.TestCase
+        }
+      } as FindOptions<TestResult>
+    },
+    testManagement.viewlet.TestResultList
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: testManagement.class.TestResult,
       descriptor: view.viewlet.Table,
-      config: [''],
+      config: ['', 'testSuite', 'status', 'assignee'],
       configOptions: {
         strict: true
-      }
+      },
+      options: {
+        lookup: {
+          testCase: testManagement.class.TestCase
+        }
+      } as FindOptions<TestResult>
     },
-    testManagement.viewlet.TableTestRun
+    testManagement.viewlet.TableTestResult
   )
 }
 

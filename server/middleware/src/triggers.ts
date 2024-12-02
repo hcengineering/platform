@@ -33,7 +33,6 @@ import core, {
   type TxRemoveDoc,
   type TxUpdateDoc,
   addOperation,
-  generateId,
   toFindResult,
   withContext
 } from '@hcengineering/core'
@@ -170,15 +169,18 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       await this.processDerivedTxes(ctx, derived)
     }
 
-    const asyncProcess = this.processAsyncTriggers(ctx, triggerControl, findAll, txes, triggers)
-    // In case of async context, we execute both async and sync triggers as sync
+    const performSync = (ctx as MeasureContext<SessionDataImpl>).contextData.isAsyncContext ?? false
 
-    if ((ctx as MeasureContext<SessionDataImpl>).contextData.isAsyncContext ?? false) {
-      await asyncProcess
+    if (performSync) {
+      await this.processAsyncTriggers(ctx, triggerControl, findAll, txes, triggers)
     } else {
-      asyncProcess.catch((err) => {
-        ctx.error('error during processing async triggers', { err })
-      })
+      ctx.contextData.asyncRequests = [
+        ...(ctx.contextData.asyncRequests ?? []),
+        async () => {
+          // In case of async context, we execute both async and sync triggers as sync
+          await this.processAsyncTriggers(ctx, triggerControl, findAll, txes, triggers)
+        }
+      ]
     }
   }
 
@@ -224,10 +226,6 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       this.context.modelDb
     )
     ctx.contextData = asyncContextData
-
-    if ((ctx as MeasureContext<SessionDataImpl>).contextData.isAsyncContext ?? false) {
-      ctx.id = 'async_tr' + generateId()
-    }
     const aresult = await this.triggers.apply(
       ctx,
       txes,
@@ -246,9 +244,6 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
         // We need to send all to recipients
         await this.context.head?.handleBroadcast(ctx)
       })
-    }
-    if (ctx.onEnd !== undefined) {
-      await ctx.onEnd(ctx)
     }
   }
 

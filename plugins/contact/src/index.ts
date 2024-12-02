@@ -18,13 +18,13 @@ import {
   Account,
   AttachedDoc,
   Class,
-  CollaborativeDoc,
   Doc,
   Ref,
   Space,
   Timestamp,
   UXObject,
   type Blob,
+  type MarkupBlobRef,
   type Data,
   type WithLookup
 } from '@hcengineering/core'
@@ -137,7 +137,7 @@ export interface Member extends AttachedDoc {
  */
 export interface Organization extends Contact {
   members: number
-  description: CollaborativeDoc
+  description: MarkupBlobRef | null
 }
 
 /**

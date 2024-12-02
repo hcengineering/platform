@@ -59,6 +59,8 @@ export interface SessionData {
   branding: Branding | null
 
   fulltextUpdates?: Map<Ref<DocIndexState>, DocIndexState>
+
+  asyncRequests?: (() => Promise<void>)[]
 }
 
 /**

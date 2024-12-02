@@ -15,14 +15,13 @@ import documents, {
 import core, {
   AttachedData,
   BackupClient,
-  CollaborativeDoc,
   Client as CoreClient,
   Data,
   MeasureContext,
   Ref,
   TxOperations,
   generateId,
-  makeCollaborativeDoc,
+  makeDocCollabId,
   systemAccountEmail,
   type Blob
 } from '@hcengineering/core'
@@ -101,7 +100,7 @@ async function createDocument (
     abstract: '',
     effectiveDate: 0,
     reviewInterval: DEFAULT_PERIODIC_REVIEW_INTERVAL,
-    content: makeCollaborativeDoc(generateId()),
+    content: null,
     snapshots: 0,
     plannedEffectiveDate: 0
   }
@@ -115,11 +114,6 @@ async function createDocument (
 
   console.log('Creating controlled doc from template')
 
-  const copyContent = async (source: CollaborativeDoc, target: CollaborativeDoc): Promise<void> => {
-    // intentionally left empty
-    // even though the template has some content, it won't be used
-  }
-
   const { success } = await createControlledDocFromTemplate(
     txops,
     templateId,
@@ -128,8 +122,7 @@ async function createDocument (
     space,
     undefined,
     undefined,
-    documents.class.ControlledDocument,
-    copyContent
+    documents.class.ControlledDocument
   )
   if (!success) {
     throw new Error('Failed to create controlled document from template')
@@ -184,7 +177,7 @@ async function createTemplateIfNotExist (
     approvers: [],
     coAuthors: [],
     changeControl: ccRecordId,
-    content: makeCollaborativeDoc(generateId()),
+    content: null,
     snapshots: 0,
     plannedEffectiveDate: 0
   }
@@ -229,9 +222,7 @@ async function createSections (
 
   console.log('Creating document content')
 
-  const collabId = doc.content
-
-  console.log(`Collab doc ID: ${collabId}`)
+  const collabId = makeDocCollabId(doc, 'content')
 
   try {
     let content: string = ''
@@ -245,7 +236,7 @@ async function createSections (
       content += `<h1>${section.title}</h1>${section.content}`
     }
 
-    await collaborator.updateContent(collabId, { content })
+    await collaborator.updateMarkup(collabId, content)
   } finally {
     // do nothing
   }

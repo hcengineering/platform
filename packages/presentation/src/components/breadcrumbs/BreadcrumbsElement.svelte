@@ -19,6 +19,8 @@
   export let position: 'start' | 'middle' | 'end' | undefined = undefined
   export let selected = false
   export let color = 'var(--theme-bg-color)'
+  export let noGap = false
+  export let fontColor: string | undefined = undefined
 
   let clientWidth = 0
 
@@ -43,6 +45,7 @@
   <div
     class="asb-bar"
     class:selected
+    class:noGap
     class:cursor-pointer={!selected && !$$slots.default}
     class:cursor-default={selected || $$slots.default}
     {title}
@@ -91,7 +94,7 @@
       {/if}
     </svg>
     <div class="asb-label__container" class:selected class:disabled={!$$slots.default}>
-      <div class="overflow-label">
+      <div class="overflow-label" style={fontColor ? `color: ${fontColor};` : ''}>
         {#if $$slots.default}
           <slot />
         {:else}

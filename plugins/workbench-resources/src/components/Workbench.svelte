@@ -63,7 +63,7 @@
     locationToUrl,
     mainSeparators,
     navigate,
-    openPanel,
+    showPanel,
     PanelInstance,
     Popup,
     PopupAlignment,
@@ -77,7 +77,8 @@
     setResolvedLocation,
     showPopup,
     TooltipInstance,
-    workbenchSeparators
+    workbenchSeparators,
+    resizeObserver
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import {
@@ -400,7 +401,6 @@
         const prevTabLoc = prevTab ? getTabLocation(prevTab) : undefined
         if (prevTabLoc === undefined || prevTabLoc.path[2] !== loc.path[2]) {
           clear(1)
-          clear(2)
         }
       }
       prevTabIdStore.set($tabIdStore)
@@ -528,12 +528,13 @@
           provider,
           focus: doc
         })
-        openPanel(
+        showPanel(
           props[0] as AnyComponent,
           _id,
           _class,
           (props[3] ?? undefined) as PopupAlignment,
-          (props[4] ?? undefined) as AnyComponent
+          (props[4] ?? undefined) as AnyComponent,
+          false
         )
       } else {
         accessDeniedStore.set(true)
@@ -631,21 +632,31 @@
 
   let aside: HTMLElement
   let cover: HTMLElement
+  let workbenchWidth: number = $deviceInfo.docWidth
 
-  $deviceInfo.navigator.float = !($deviceInfo.docWidth < 1024)
-  $: if ($deviceInfo.docWidth <= 1024 && !$deviceInfo.navigator.float) {
-    $deviceInfo.navigator.visible = false
-    $deviceInfo.navigator.float = true
+  $deviceInfo.navigator.float = !(workbenchWidth < 1024)
+  const checkWorkbenchWidth = (): void => {
+    if (workbenchWidth <= 1024 && !$deviceInfo.navigator.float && $deviceInfo.navigator.visible) {
+      $deviceInfo.navigator.visible = false
+      $deviceInfo.navigator.float = true
+    } else if (workbenchWidth > 1024 && $deviceInfo.navigator.float) {
+      if (getMetadata(workbench.metadata.NavigationExpandedDefault) === undefined) {
+        $deviceInfo.navigator.float = false
+        $deviceInfo.navigator.visible = true
+      }
+    }
+  }
+  $: if ($deviceInfo.docWidth <= 1024 && !$deviceInfo.aside.float) {
     $deviceInfo.aside.visible = false
-  } else if ($deviceInfo.docWidth > 1024 && $deviceInfo.navigator.float) {
+    $deviceInfo.aside.float = true
+  } else if ($deviceInfo.docWidth > 1024 && $deviceInfo.aside.float) {
     if (getMetadata(workbench.metadata.NavigationExpandedDefault) === undefined) {
-      $deviceInfo.navigator.float = false
-      $deviceInfo.navigator.visible = true
+      $deviceInfo.aside.float = false
       $deviceInfo.aside.visible = true
     }
   }
   const checkOnHide = (): void => {
-    if ($deviceInfo.navigator.visible && $deviceInfo.docWidth <= 1024) $deviceInfo.navigator.visible = false
+    if ($deviceInfo.navigator.visible && workbenchWidth <= 1024) $deviceInfo.navigator.visible = false
   }
   let oldNavVisible: boolean = $deviceInfo.navigator.visible
   let oldASideVisible: boolean = $deviceInfo.aside.visible
@@ -889,7 +900,14 @@
         application: currentApplication?._id
       }}
     />
-    <div class="workbench-container inner" class:rounded={$sidebarStore.variant === SidebarVariant.EXPANDED}>
+    <div
+      class="workbench-container inner"
+      class:rounded={$sidebarStore.variant === SidebarVariant.EXPANDED}
+      use:resizeObserver={(element) => {
+        workbenchWidth = element.clientWidth
+        checkWorkbenchWidth()
+      }}
+    >
       {#if mainNavigator}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -900,6 +918,7 @@
           class="antiPanel-navigator no-print {$deviceInfo.navigator.direction === 'horizontal'
             ? 'portrait'
             : 'landscape'} border-left"
+          class:fly={$deviceInfo.navigator.float}
         >
           <div class="antiPanel-wrap__content hulyNavPanel-container">
             {#if currentApplication}
@@ -996,7 +1015,7 @@
         </div>
       {/if}
     </div>
-    {#if !$deviceInfo.navigator.float}
+    {#if !$deviceInfo.aside.float}
       {#if $sidebarStore.variant === SidebarVariant.EXPANDED}
         <Separator name={'main'} index={0} color={'transparent'} separatorSize={0} short />
       {/if}
@@ -1004,8 +1023,7 @@
     {/if}
   </div>
   <Dock />
-  <div bind:this={cover} class="cover" />
-  {#if $deviceInfo.navigator.float}
+  {#if $deviceInfo.aside.float}
     <div
       class="antiPanel-navigator right no-print {$deviceInfo.navigator.direction === 'horizontal'
         ? 'portrait'
@@ -1018,6 +1036,7 @@
       </div>
     </div>
   {/if}
+  <div bind:this={cover} class="cover" />
   <TooltipInstance />
   <PanelInstance bind:this={panelInstance} contentPanel={elementPanel}>
     <svelte:fragment slot="panel-header">

@@ -80,6 +80,8 @@
   }
 
   $: mobile = $deviceInfo.isMobile
+  $: needCompact =
+    model.filter((m) => m.displayProps?.optional || m.displayProps?.compression || m.displayProps?.suffix).length > 0
 
   onMount(() => {
     dispatch('on-mount')
@@ -191,7 +193,7 @@
       {/if}
     {/if}
   {/each}
-  {#if compactMode}
+  {#if compactMode && needCompact}
     <div class="panel-trigger" tabindex="-1">
       <IconCircles size={'small'} />
     </div>

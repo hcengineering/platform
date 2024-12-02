@@ -19,8 +19,7 @@ import {
   type QuerySelector,
   type Ref,
   SortingOrder,
-  type TxOperations,
-  makeCollaborativeDoc
+  type TxOperations
 } from '@hcengineering/core'
 import { type Document, type Teamspace, documentId, getFirstRank } from '@hcengineering/document'
 import { getMetadata, translate } from '@hcengineering/platform'
@@ -79,7 +78,7 @@ export async function createEmptyDocument (
 
   const object: Data<Document> = {
     title,
-    content: makeCollaborativeDoc(id, 'content'),
+    content: null,
     attachments: 0,
     embeddings: 0,
     labels: 0,

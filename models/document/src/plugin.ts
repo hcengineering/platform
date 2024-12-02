@@ -27,6 +27,7 @@ export default mergeIds(documentId, document, {
   component: {
     Documents: '' as AnyComponent,
     DocumentPresenter: '' as AnyComponent,
+    DocumentInlineEditor: '' as AnyComponent,
     NotificationDocumentPresenter: '' as AnyComponent,
     TeamspaceSpacePresenter: '' as AnyComponent,
     Move: '' as AnyComponent,

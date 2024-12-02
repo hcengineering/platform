@@ -39,7 +39,7 @@ import {
   IndexKind,
   type Blob,
   type Class,
-  type CollaborativeDoc,
+  type MarkupBlobRef,
   type Domain,
   type Ref,
   type Timestamp
@@ -175,7 +175,7 @@ export class TMember extends TAttachedDoc implements Member {
 export class TOrganization extends TContact implements Organization {
   @Prop(TypeCollaborativeDoc(), core.string.Description)
   @Index(IndexKind.FullText)
-    description!: CollaborativeDoc
+    description!: MarkupBlobRef | null
 
   @Prop(Collection(contact.class.Member), contact.string.Members)
     members!: number

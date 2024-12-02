@@ -40,7 +40,6 @@
     "NamePlaceholder": "Имя тестового набора",
     "DescriptionPlaceholder": "Описание (опционально)",
     "TestRuns": "Выполнение тестов",
-    "NewTestRun": "Новый тест план",
     "TestRun": "Тест план",
     "TestNamePlaceholder": "Имя тест кейса",
     "ChooseIcon": "Выберите иконку",
@@ -61,6 +60,23 @@
     "TestRunNamePlaceholder": "Название тест плана",
     "SelectTestSuites": "Выбрать наборы тестов",
     "SelectTestCases": "Выбрать тест-кейсы",
-    "TestLibrary": "Библиотека тестов"
+    "TestLibrary": "Библиотека тестов",
+    "TestResult": "Результат",
+    "TestRunResult": "Результат",
+    "TestRunStatus": "Статус",
+    "StatusNonTested": "Не протестировано",
+    "StatusBlocked": "Заблокировано",
+    "StatusPassed": "Пройдено",
+    "StatusFailed": "Не пройдено",
+    "SelectTestCase": "Выбрать тест-кейс",
+    "Save": "Сохранить",
+    "SaveAndNext": "Сохранить и перейти к следующему",
+    "DonePercent": "% Выполнено",
+    "TestResults": "Результаты",
+    "TestRunName": "Название",
+    "DueDate": "Выполнить до",
+    "RunTestCases": "Выполнить",
+    "TestCaseDescription": "Описание тест-кейса",
+    "TestResultAttributes": "Результат"
   }
 }

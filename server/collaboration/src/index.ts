@@ -13,9 +13,5 @@
 // limitations under the License.
 //
 
-export * from './history/branch'
-export * from './history/history'
-export * from './history/snapshot'
-export * from './utils/collaborative-doc'
-export * from './utils/storage'
-export * from './utils/ydoc'
+export * from './storage'
+export * from './ydoc'

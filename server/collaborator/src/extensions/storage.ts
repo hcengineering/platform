@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import { DocumentId } from '@hcengineering/collaborator-client'
 import { type Markup, MeasureContext } from '@hcengineering/core'
 import {
   Document,
@@ -130,7 +129,7 @@ export class StorageExtension implements Extension {
 
     try {
       return await ctx.with('load-document', {}, (ctx) => {
-        return adapter.loadDocument(ctx, documentName as DocumentId, context)
+        return adapter.loadDocument(ctx, documentName, context)
       })
     } catch (err) {
       ctx.error('failed to load document', { documentName, error: err })
@@ -146,7 +145,7 @@ export class StorageExtension implements Extension {
       const currMarkup = this.configuration.transformer.fromYdoc(document)
 
       await ctx.with('save-document', {}, (ctx) =>
-        adapter.saveDocument(ctx, documentName as DocumentId, document, context, {
+        adapter.saveDocument(ctx, documentName, document, context, {
           prev: prevMarkup,
           curr: currMarkup
         })

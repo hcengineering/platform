@@ -1,5 +1,5 @@
 //
-// Copyright © 2022, 2023 Hardcore Engineering Inc.
+// Copyright © 2022, 2023, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,7 +14,7 @@
 //
 
 import activity from '@hcengineering/activity'
-import type { Class, CollaborativeDoc, CollectionSize, Domain, Rank, Role, RolesAssignment } from '@hcengineering/core'
+import type { Class, CollectionSize, MarkupBlobRef, Domain, Rank, Role, RolesAssignment } from '@hcengineering/core'
 import { Account, AccountRole, IndexKind, Ref } from '@hcengineering/core'
 import {
   type Document,
@@ -32,8 +32,8 @@ import {
   Mixin,
   Model,
   Prop,
+  ReadOnly,
   TypeCollaborativeDoc,
-  TypeCollaborativeDocVersion,
   TypeNumber,
   TypeRef,
   TypeString,
@@ -77,7 +77,7 @@ export class TDocument extends TDoc implements Document, Todoable {
     title!: string
 
   @Prop(TypeCollaborativeDoc(), document.string.Document)
-    content!: CollaborativeDoc
+    content!: MarkupBlobRef | null
 
   @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
     parent!: Ref<Document>
@@ -137,8 +137,9 @@ export class TDocumentSnapshot extends TDoc implements DocumentSnapshot {
   @Index(IndexKind.FullText)
     title!: string
 
-  @Prop(TypeCollaborativeDocVersion(), document.string.Document)
-    content!: CollaborativeDoc
+  @Prop(TypeCollaborativeDoc(), document.string.Document)
+  @ReadOnly()
+    content!: MarkupBlobRef
 
   @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
     parent!: Ref<Document>
@@ -310,6 +311,10 @@ function defineDocument (builder: Builder): void {
 
   builder.mixin(document.class.Document, core.class.Class, view.mixin.ObjectIcon, {
     component: document.component.DocumentIcon
+  })
+
+  builder.mixin(document.class.Document, core.class.Class, view.mixin.AttributeEditor, {
+    inlineEditor: document.component.DocumentInlineEditor
   })
 
   // Actions

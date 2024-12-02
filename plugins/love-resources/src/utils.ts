@@ -9,7 +9,6 @@ import core, {
   generateId,
   getCurrentAccount,
   type IdMap,
-  makeCollaborativeDoc,
   type Ref,
   type Space,
   type TxOperations,
@@ -415,6 +414,13 @@ async function initRoomMetadata (metadata: string | undefined): Promise<void> {
   isTranscription.set(data.transcription === TranscriptionStatus.InProgress)
 
   const room = get(currentRoom)
+  const meetingMinutes = get(currentMeetingMinutes)
+  const isValidMeeting =
+    meetingMinutes != null && meetingMinutes.attachedTo === room?._id && meetingMinutes.status === MeetingStatus.Active
+
+  if (room != null && !isValidMeeting) {
+    await initMeetingMinutes(room)
+  }
 
   if (
     (data.transcription == null || data.transcription === TranscriptionStatus.Idle) &&
@@ -423,7 +429,7 @@ async function initRoomMetadata (metadata: string | undefined): Promise<void> {
     await startTranscription(room)
   }
 
-  if (data.recording == null && room?.startWithRecording === true) {
+  if (get(isRecordingAvailable) && data.recording == null && room?.startWithRecording === true) {
     await record(room)
   }
 }
@@ -658,11 +664,9 @@ async function navigateToOfficeDoc (hierarchy: Hierarchy, object: Doc): Promise<
   navigate(loc)
 }
 
-async function openMeetingMinutes (room: Room): Promise<void> {
+async function initMeetingMinutes (room: Room): Promise<void> {
   const client = getClient()
-  const sid = await lk.getSid()
   const doc = await client.findOne(love.class.MeetingMinutes, {
-    sid,
     attachedTo: room._id,
     status: MeetingStatus.Active
   })
@@ -683,13 +687,12 @@ async function openMeetingMinutes (room: Room): Promise<void> {
     const newDoc: MeetingMinutes = {
       _id,
       _class: love.class.MeetingMinutes,
-      sid,
       attachedTo: room._id,
       attachedToClass: room._class,
       collection: 'meetings',
       space: core.space.Workspace,
       title: `${getRoomName(room, get(personByIdStore))} ${date}`,
-      description: makeCollaborativeDoc(_id, 'description'),
+      description: null,
       status: MeetingStatus.Active,
       modifiedBy: getCurrentAccount()._id,
       modifiedOn: Date.now()
@@ -700,7 +703,7 @@ async function openMeetingMinutes (room: Room): Promise<void> {
       room._id,
       room._class,
       'meetings',
-      { sid, title: newDoc.title, description: newDoc.description, status: newDoc.status },
+      { title: newDoc.title, description: newDoc.description, status: newDoc.status },
       _id
     )
     currentMeetingMinutes.set(newDoc)
@@ -735,7 +738,7 @@ export async function connectRoom (
       3,
       1000
     )
-    await openMeetingMinutes(room)
+    await initMeetingMinutes(room)
   } catch (err) {
     console.error(err)
     await leaveRoom(currentInfo, get(myOffice))
@@ -994,8 +997,7 @@ export async function startTranscription (room: Room): Promise<void> {
   const current = get(currentRoom)
   if (current === undefined || room._id !== current._id) return
 
-  const sid = await lk.getSid()
-  await connectMeeting(room._id, sid, room.language, { transcription: true })
+  await connectMeeting(room._id, room.language, { transcription: true })
 }
 
 export async function stopTranscription (room: Room): Promise<void> {

@@ -18,8 +18,8 @@ import type { Channel, Organization, Person } from '@hcengineering/contact'
 import type {
   AttachedData,
   AttachedDoc,
-  CollaborativeDoc,
   Collection,
+  MarkupBlobRef,
   Markup,
   Ref,
   Status,
@@ -31,7 +31,7 @@ import type { Project, Task } from '@hcengineering/task'
 
 /** @public */
 export interface Vacancy extends Project {
-  fullDescription: CollaborativeDoc
+  fullDescription: MarkupBlobRef | null
   attachments?: number
   dueTo?: Timestamp
   location?: string

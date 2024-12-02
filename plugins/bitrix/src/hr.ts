@@ -8,8 +8,7 @@ import core, {
   SortingOrder,
   Status,
   TxOperations,
-  generateId,
-  makeCollaborativeDoc
+  generateId
 } from '@hcengineering/core'
 import recruit, { Applicant, Vacancy } from '@hcengineering/recruit'
 import task, { ProjectType, makeRank } from '@hcengineering/task'
@@ -41,7 +40,7 @@ export async function createVacancy (
     {
       name,
       description: type.shortDescription ?? '',
-      fullDescription: makeCollaborativeDoc(id, 'fullDescription'),
+      fullDescription: null,
       private: false,
       archived: false,
       company,

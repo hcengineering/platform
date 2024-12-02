@@ -13,8 +13,7 @@
 // limitations under the License.
 //
 
-import { type DocumentId, type PlatformDocumentId } from '@hcengineering/collaborator-client'
-import { WorkspaceId, generateId } from '@hcengineering/core'
+import { Blob, Ref, WorkspaceId, generateId } from '@hcengineering/core'
 import { decodeToken } from '@hcengineering/server-token'
 import { onAuthenticatePayload } from '@hocuspocus/server'
 import { ClientFactory, simpleClientFactory } from './platform'
@@ -24,8 +23,7 @@ export interface Context {
   workspaceId: WorkspaceId
   clientFactory: ClientFactory
 
-  initialContentId?: DocumentId
-  platformDocumentId?: PlatformDocumentId
+  content?: Ref<Blob>
 }
 
 interface WithContext {
@@ -42,14 +40,12 @@ export function buildContext (data: onAuthenticatePayload): Context {
   const connectionId = context.connectionId ?? generateId()
   const decodedToken = decodeToken(data.token)
 
-  const initialContentId = (data.requestParameters.get('initialContentId') as DocumentId) ?? undefined
-  const platformDocumentId = (data.requestParameters.get('platformDocumentId') as PlatformDocumentId) ?? undefined
+  const content = (data.requestParameters.get('content') as Ref<Blob>) ?? undefined
 
   return {
     connectionId,
     workspaceId: decodedToken.workspace,
     clientFactory: simpleClientFactory(decodedToken),
-    initialContentId,
-    platformDocumentId
+    content
   }
 }

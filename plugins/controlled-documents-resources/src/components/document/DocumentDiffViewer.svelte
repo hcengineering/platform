@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getContext, onDestroy } from 'svelte'
   import { getClient } from '@hcengineering/presentation'
-  import { type Doc } from '@hcengineering/core'
+  import { makeDocCollabId, type Doc } from '@hcengineering/core'
   import { CollaborationIds, type Ydoc } from '@hcengineering/text-editor'
   import {
     CollaborationDiffViewer,
@@ -89,9 +89,8 @@
     }
     loading = true
 
-    const data = createTiptapCollaborationData({
-      document: $compareTo.content
-    })
+    const compareToDoc = makeDocCollabId($compareTo, 'content')
+    const data = createTiptapCollaborationData(compareToDoc, $compareTo.content)
     comparedYdoc = data.ydoc
     comparedProvider = data.provider
     void comparedProvider.loaded.then(() => (loading = false))

@@ -43,7 +43,13 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  function handlePopupOpen (event: MouseEvent) {
+  $: itemsInfo = defaultTestCaseStatuses.map((status) => ({
+    id: status,
+    isSelected: value === status,
+    ...testCaseStatusAssets[status]
+  }))
+
+  function handlePopupOpen (event: MouseEvent): void {
     showPopup(
       SelectPopup,
       { value: itemsInfo, placeholder: testManagement.string.SetStatus },
@@ -52,7 +58,7 @@
     )
   }
 
-  async function changeStatus (newStatus: TestCase['status'] | null | undefined) {
+  async function changeStatus (newStatus: TestCase['status'] | null | undefined): Promise<void> {
     if (disabled || newStatus == null || value === newStatus) {
       return
     }
@@ -64,12 +70,6 @@
       await client.update(object, { status: newStatus })
     }
   }
-
-  $: itemsInfo = defaultTestCaseStatuses.map((status) => ({
-    id: status,
-    isSelected: value === status,
-    ...testCaseStatusAssets[status]
-  }))
 
   $: icon = value === undefined ? testManagement.icon.StatusDraft : testCaseStatusAssets[value].icon
   $: label = value === undefined ? testManagement.string.StatusDraft : testCaseStatusAssets[value].label

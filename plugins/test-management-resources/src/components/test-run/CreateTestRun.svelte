@@ -17,26 +17,49 @@
 
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { ObjectBox } from '@hcengineering/view-resources'
-  import core, { Data, Ref, generateId, makeCollaborativeDoc } from '@hcengineering/core'
+  import core, { Data, DocumentQuery, Ref, generateId, makeCollabId } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
-  import { TestRun, TestProject } from '@hcengineering/test-management'
-  import { EditBox } from '@hcengineering/ui'
-  import { EmptyMarkup } from '@hcengineering/text'
+  import { Card, SpaceSelector, createMarkup, createQuery, getClient } from '@hcengineering/presentation'
+  import {
+    TestCase,
+    TestRun,
+    TestProject,
+    TestResult,
+    TestRunStatus,
+    TestManagementEvents
+  } from '@hcengineering/test-management'
+  import { DatePresenter, EditBox, Loading, navigate } from '@hcengineering/ui'
+  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
+  import { Analytics } from '@hcengineering/analytics'
 
+  import { getTestRunsLink } from '../../navigation'
   import testManagement from '../../plugin'
   import ProjectPresenter from '../project/ProjectSpacePresenter.svelte'
+  import TestCaseSelector from '../test-case/TestCaseSelector.svelte'
 
   export let space: Ref<TestProject>
+  export let query: DocumentQuery<TestCase> = {}
+  export let testCases: TestCase[]
   const dispatch = createEventDispatcher()
   const client = getClient()
+
+  let isLoading = testCases === undefined
+
+  if (testCases === undefined) {
+    const client = createQuery()
+    const spaceQuery = space !== undefined ? { space } : {}
+    client.query(testManagement.class.TestCase, { ...spaceQuery, ...(query ?? {}) }, (result) => {
+      testCases = result
+      isLoading = false
+    })
+  }
 
   const id: Ref<TestRun> = generateId()
 
   const object: Data<TestRun> = {
     name: '' as IntlString,
-    description: makeCollaborativeDoc(id, 'description')
+    description: null,
+    dueDate: undefined
   }
 
   let _space = space
@@ -46,15 +69,57 @@
   let descriptionBox: AttachmentStyledBox
   let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
 
-  async function onSave () {
-    await client.createDoc(testManagement.class.TestRun, _space, object)
+  async function onSave (): Promise<void> {
+    try {
+      const applyOp = client.apply()
+      await applyOp.createDoc(testManagement.class.TestRun, _space, object, id)
+      const testCasesArray = testCases instanceof Array ? testCases : [testCases]
+      const createPromises = testCasesArray.map(async (testCase) => {
+        const descriptionRef = isEmptyMarkup(description)
+          ? null
+          : await createMarkup(makeCollabId(testManagement.class.TestRun, id, 'description'), description)
+
+        const testResultId: Ref<TestResult> = generateId()
+        const testResultData: Data<TestResult> = {
+          attachedTo: id,
+          attachedToClass: testManagement.class.TestRun,
+          name: testCase.name,
+          testCase: testCase._id,
+          testSuite: testCase.attachedTo,
+          collection: 'results',
+          description: descriptionRef,
+          status: TestRunStatus.Untested
+        }
+
+        return await applyOp.addCollection(
+          testManagement.class.TestResult,
+          _space,
+          id,
+          testManagement.class.TestRun,
+          'results',
+          testResultData,
+          testResultId
+        )
+      })
+      await Promise.all(createPromises)
+      const opResult = await applyOp.commit()
+      if (!opResult.result) {
+        throw new Error('Failed to create test run')
+      } else {
+        Analytics.handleEvent(TestManagementEvents.TestRunCreated, { id })
+        navigate(getTestRunsLink(space, id))
+      }
+    } catch (err: any) {
+      console.error(err)
+      Analytics.handleError(err)
+    }
   }
 </script>
 
 <Card
   label={testManagement.string.CreateTestRun}
   okAction={onSave}
-  canSave={object.name !== ''}
+  canSave={object.name !== '' && !isLoading}
   okLabel={testManagement.string.CreateTestRun}
   gap={'gapV-4'}
   on:close={() => dispatch('close')}
@@ -99,37 +164,22 @@
     }}
   />
   <svelte:fragment slot="pool">
-    <ObjectBox
-      _class={testManagement.class.TestSuite}
-      value={null}
-      docQuery={{
-        space: _space
-      }}
-      kind={'regular'}
-      size={'small'}
-      label={testManagement.string.SelectTestSuites}
-      icon={testManagement.icon.TestSuite}
-      searchField={'title'}
-      allowDeselect={true}
-      showNavigate={false}
-      docProps={{ disabled: true, noUnderline: true }}
-      focusIndex={20000}
-    />
-    <ObjectBox
-      _class={testManagement.class.TestCase}
-      value={null}
-      docQuery={{
-        space: _space
-      }}
-      kind={'regular'}
-      size={'small'}
-      label={testManagement.string.SelectTestCases}
-      icon={testManagement.icon.TestCase}
-      searchField={'title'}
-      allowDeselect={true}
-      showNavigate={false}
-      docProps={{ disabled: true, noUnderline: true }}
-      focusIndex={20000}
-    />
+    <div id="duedate-editor">
+      <DatePresenter
+        focusIndex={10}
+        bind:value={object.dueDate}
+        labelNull={testManagement.string.DueDate}
+        kind={'regular'}
+        size={'large'}
+        editable
+      />
+    </div>
+    <div id="test-cases-selector">
+      {#if isLoading}
+        <Loading />
+      {:else}
+        <TestCaseSelector objects={testCases} selectedObjects={testCases} readonly={true} />
+      {/if}
+    </div>
   </svelte:fragment>
 </Card>

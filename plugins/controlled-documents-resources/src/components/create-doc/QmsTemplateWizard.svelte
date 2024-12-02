@@ -32,8 +32,7 @@
     type Ref,
     type Mixin,
     generateId,
-    getCurrentAccount,
-    makeCollaborativeDoc
+    getCurrentAccount
   } from '@hcengineering/core'
   import { MessageBox, getClient } from '@hcengineering/presentation'
   import {
@@ -118,7 +117,7 @@
     state: DocumentState.Draft,
     snapshots: 0,
     changeControl: ccRecordId,
-    content: makeCollaborativeDoc(generateId()),
+    content: null,
 
     requests: 0,
     reviewers: [],

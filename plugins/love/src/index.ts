@@ -1,6 +1,6 @@
 import { Event } from '@hcengineering/calendar'
 import { Person } from '@hcengineering/contact'
-import { AttachedDoc, Class, CollaborativeDoc, Doc, Mixin, Ref, Timestamp } from '@hcengineering/core'
+import { AttachedDoc, Class, MarkupBlobRef, Doc, Mixin, Ref, Timestamp } from '@hcengineering/core'
 import { Drive } from '@hcengineering/drive'
 import { NotificationType } from '@hcengineering/notification'
 import { Asset, IntlString, Metadata, Plugin, plugin } from '@hcengineering/platform'
@@ -103,7 +103,7 @@ export interface Room extends Doc {
   language: RoomLanguage
   startWithTranscription: boolean
   startWithRecording: boolean
-  description: CollaborativeDoc
+  description: MarkupBlobRef | null
   attachments?: number
   meetings?: number
   messages?: number
@@ -166,10 +166,8 @@ export enum MeetingStatus {
 }
 
 export interface MeetingMinutes extends AttachedDoc {
-  sid: string
-
   title: string
-  description: CollaborativeDoc
+  description: MarkupBlobRef | null
 
   status: MeetingStatus
   meetingEnd?: Timestamp

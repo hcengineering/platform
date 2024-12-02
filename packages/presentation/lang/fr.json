@@ -35,7 +35,10 @@
     "ContentType": "Type de contenu",
     "ContentTypeNotSupported": "L'aperçu n'est pas disponible pour ce type de contenu",
     "StartDrawing": "Gribouiller dessus",
-    "DrawingHistory": "Histoire de gribouillage"
+    "DrawingHistory": "Histoire de gribouillage",
+    "ColorAdd": "Ajouter un préréglage de couleur",
+    "ColorRemove": "Supprimer le préréglage de couleur",
+    "ColorReset": "Réinitialiser les préréglages de couleur"
   },
   "status": {
     "FileTooLarge": "Fichier trop volumineux"

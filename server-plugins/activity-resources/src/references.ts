@@ -14,12 +14,12 @@
 //
 
 import activity, { ActivityMessage, ActivityReference, UserMentionInfo } from '@hcengineering/activity'
-import { loadCollaborativeDoc, yDocToBuffer } from '@hcengineering/collaboration'
+import { loadCollabJson } from '@hcengineering/collaboration'
 import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
+  Blob,
   Class,
-  CollaborativeDoc,
   Data,
   Doc,
   generateId,
@@ -416,21 +416,17 @@ async function getCreateReferencesTxes (
 
       refs.push(...attrReferences)
     } else if (attr.type._class === core.class.TypeCollaborativeDoc) {
-      const collaborativeDoc = (createdDoc as any)[attr.name] as CollaborativeDoc
-      try {
-        const ydoc = await loadCollaborativeDoc(ctx, storage, control.workspace, collaborativeDoc)
-        if (ydoc !== undefined) {
-          const attrReferences = getReferencesData(
-            srcDocId,
-            srcDocClass,
-            attachedDocId,
-            attachedDocClass,
-            yDocToBuffer(ydoc)
-          )
-          refs.push(...attrReferences)
+      const blobId = (createdDoc as any)[attr.name] as Ref<Blob>
+      if (blobId != null) {
+        try {
+          const markup = await loadCollabJson(ctx, storage, control.workspace, blobId)
+          if (markup !== undefined) {
+            const attrReferences = getReferencesData(srcDocId, srcDocClass, attachedDocId, attachedDocClass, markup)
+            refs.push(...attrReferences)
+          }
+        } catch {
+          // do nothing, the collaborative doc does not sem to exist yet
         }
-      } catch {
-        // do nothing, the collaborative doc does not sem to exist yet
       }
     }
   }
@@ -469,17 +465,13 @@ async function getUpdateReferencesTxes (
     } else if (attr.type._class === core.class.TypeCollaborativeDoc) {
       hasReferenceAttrs = true
       try {
-        const collaborativeDoc = (updatedDoc as any)[attr.name] as CollaborativeDoc
-        const ydoc = await loadCollaborativeDoc(ctx, storage, control.workspace, collaborativeDoc)
-        if (ydoc !== undefined) {
-          const attrReferences = getReferencesData(
-            srcDocId,
-            srcDocClass,
-            attachedDocId,
-            attachedDocClass,
-            yDocToBuffer(ydoc)
-          )
-          references.push(...attrReferences)
+        const blobId = (updatedDoc as any)[attr.name] as Ref<Blob>
+        if (blobId != null) {
+          const markup = await loadCollabJson(ctx, storage, control.workspace, blobId)
+          if (markup !== undefined) {
+            const attrReferences = getReferencesData(srcDocId, srcDocClass, attachedDocId, attachedDocClass, markup)
+            references.push(...attrReferences)
+          }
         }
       } catch {
         // do nothing, the collaborative doc does not sem to exist yet

@@ -144,9 +144,6 @@ class WorkspaceIndexer {
             await helper.checkDomain(ctx, DOMAIN_DOC_INDEX_STATE, 10000, dhelper)
           }
         }
-      },
-      async (ctx: MeasureContext) => {
-        await result.pipeline.context.adapterManager?.closeContext?.(ctx)
       }
     )
     await result.fulltext.startIndexing(() => {

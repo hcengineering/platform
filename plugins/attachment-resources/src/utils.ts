@@ -183,12 +183,10 @@ export function showAttachmentPreviewPopup (value: WithLookup<Attachment>): Popu
         content: data.content
       })
       const newDrawing = await client.findOne(attachment.class.Drawing, { _id: newId })
-      if (newDrawing !== undefined) {
-        return newDrawing
-      } else {
-        console.error('Unable to find just created drawing')
-        return data
+      if (newDrawing === undefined) {
+        throw new Error('Unable to find just created drawing')
       }
+      return newDrawing
     }
   }
 
