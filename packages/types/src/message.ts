@@ -1,10 +1,9 @@
+//TODO: Import from @platform
 export type CardID = string
 export type SocialID = string
-export type ThreadID = string
-
-export type ID = bigint
 export type RichText = string
 
+export type ID = bigint
 export type MessageID = ID & { message: true }
 
 interface Object {
@@ -17,18 +16,13 @@ export interface Message extends Object {
   content: RichText
   card: CardID
   version: number
-}
-
-export type RichMessage = Message & {
   reactions: Reaction[]
   attachments: Attachment[]
-  isPinned: boolean
-  thread?: ThreadID
 }
 
 export interface Reaction extends Object {
   message: MessageID
-  reaction: number // maybe string after emojis rework
+  reaction: number
 }
 
 export interface Attachment extends Object {

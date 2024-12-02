@@ -1,18 +1,14 @@
-import type { Message } from './message'
-
-type CardID = string
-type HulyID = string
+import type { Message, SocialID, CardID } from './message'
 
 export interface Notification {
   message: Message
-  user: HulyID
+  socialId: SocialID
   read: boolean
   archived: boolean
 }
 
 export interface NotificationContext {
   card: CardID
-  user: HulyID
   lastViewTimestamp: number
   lastUpdateTimestamp: number
 }
