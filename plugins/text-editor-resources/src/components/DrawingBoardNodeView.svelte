@@ -1,0 +1,131 @@
+<!--
+// Copyright © 2024 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import { Button, IconScribble } from '@hcengineering/ui'
+  import { Node } from '@tiptap/pm/model'
+  import { Editor } from '@tiptap/core'
+  import { Doc as YDoc } from 'yjs'
+  import { showBoardPopup, getSavedBoard } from './extension/drawingBoard'
+  import NodeViewWrapper from './node-view/NodeViewWrapper.svelte'
+  import DrawingBoardEditor from './DrawingBoardEditor.svelte'
+
+  export let ydoc: YDoc
+  export let node: Node
+  export let editor: Editor
+  export let selected: boolean
+  export let getPos: any
+
+  const savedBoard = getSavedBoard(ydoc, node.attrs.id)
+  const defaultHeight = 500
+  const maxHeight = 1000
+  const minHeight = 100
+
+  let resizer: HTMLElement
+  let startY: number
+  let resizedHeight: number | undefined
+
+  function onResizerPointerDown (e: PointerEvent): void {
+    e.preventDefault()
+    const height = node.attrs.height ?? defaultHeight
+    startY = e.clientY - height
+    resizedHeight = height
+    resizer.setPointerCapture(e.pointerId)
+    resizer.addEventListener('pointermove', onResizerPointerMove)
+    resizer.addEventListener('pointerup', onResizerPointerUp)
+  }
+
+  function onResizerPointerMove (e: PointerEvent): void {
+    e.preventDefault()
+    resizedHeight = Math.max(minHeight, e.clientY - startY)
+    resizedHeight = Math.min(maxHeight, resizedHeight)
+  }
+
+  function onResizerPointerUp (e: PointerEvent): void {
+    e.preventDefault()
+    resizer.releasePointerCapture(e.pointerId)
+    resizer.removeEventListener('pointermove', onResizerPointerMove)
+    resizer.removeEventListener('pointerup', onResizerPointerUp)
+    if (typeof getPos === 'function') {
+      const tr = editor.state.tr.setNodeMarkup(getPos(), undefined, { ...node.attrs, height: resizedHeight })
+      editor.view.dispatch(tr)
+    }
+    resizedHeight = undefined
+  }
+</script>
+
+{#if savedBoard?.commands !== undefined && savedBoard?.props !== undefined}
+  <NodeViewWrapper data-drag-handle data-type="drawingBoard" data-id={node.attrs.id}>
+    <DrawingBoardEditor
+      savedCmds={savedBoard.commands}
+      savedProps={savedBoard.props}
+      resizeable={true}
+      readonly={!selected}
+      {selected}
+      height={resizedHeight ?? node.attrs.height ?? defaultHeight}
+    >
+      <div class="openButtonContainer">
+        <Button
+          kind={selected ? 'primary' : 'ghost'}
+          icon={IconScribble}
+          on:click={() => {
+            showBoardPopup(savedBoard, editor)
+          }}
+        />
+      </div>
+      {#if selected}
+        <div class="resizer" bind:this={resizer} on:pointerdown={onResizerPointerDown}>
+          <svg height="4" viewBox="0 0 60 4" width="60" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="m60 2a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2z"
+            />
+          </svg>
+        </div>
+      {/if}
+    </DrawingBoardEditor>
+  </NodeViewWrapper>
+{/if}
+
+<style lang="scss">
+  .openButtonContainer {
+    z-index: 1;
+    position: absolute;
+    top: 0.3rem;
+    right: 0.3rem;
+  }
+
+  .resizer {
+    z-index: 1;
+    position: absolute;
+    bottom: 0;
+    left: calc(50% - 4rem);
+    width: 8rem;
+    height: 0.6rem;
+    cursor: row-resize;
+    color: var(--global-on-accent-TextColor);
+    background-color: var(--global-accent-IconColor);
+    border: 1px solid var(--theme-editbox-focus-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top-left-radius: var(--small-BorderRadius);
+    border-top-right-radius: var(--small-BorderRadius);
+    border-bottom: none;
+    opacity: 0.5;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+</style>

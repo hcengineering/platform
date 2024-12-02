@@ -35,6 +35,10 @@
 
   const dispatch = createEventDispatcher()
 
+  export function maximize (): void {
+    toggleFullSize = true
+  }
+
   let fullSize: boolean = false
   let toggleFullSize: boolean = fullSize
   $: needFullSize = checkAdaptiveMatching($deviceInfo.size, 'md')
