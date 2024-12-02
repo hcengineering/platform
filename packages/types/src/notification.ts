@@ -9,6 +9,6 @@ export interface Notification {
 
 export interface NotificationContext {
   card: CardID
-  lastViewTimestamp: number
-  lastUpdateTimestamp: number
+  lastView: Date
+  lastUpdate: Date
 }
