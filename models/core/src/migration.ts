@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { saveCollabJson, saveCollabYdoc, yDocFromBuffer } from '@hcengineering/collaboration'
+import { saveCollabJson } from '@hcengineering/collaboration'
 import core, {
   coreId,
   DOMAIN_MODEL_TX,
@@ -348,10 +348,6 @@ async function processMigrateJsonForDoc (
       ? `${attribute.attributeOf}.${attribute.name}`
       : attribute.name
 
-    // Name of existing ydoc document
-    // original value here looks like '65b7f82f4d422b89d4cbdd6f:HEAD:0'
-    // where the first part is the blob id
-    const currentYdocId = value.split(':')[0] as Ref<Blob>
     const collabId = makeDocCollabId(doc, attribute.name)
 
     if (value.startsWith('{')) {
@@ -361,34 +357,34 @@ async function processMigrateJsonForDoc (
       continue
     }
 
+    if (!value.includes(':')) {
+      // not a collaborative document, skip
+      continue
+    }
+
+    // Name of existing ydoc document
+    // original value here looks like '65b7f82f4d422b89d4cbdd6f:HEAD:0'
+    // where the first part is the blob id
+    const currentYdocId = value.split(':')[0] as Ref<Blob>
+
     try {
-      const stat = await storageAdapter.stat(ctx, workspaceId, currentYdocId)
-      if (stat !== undefined) {
-        if (stat.contentType.includes('application/ydoc')) {
-          const buffer = await storageAdapter.read(ctx, workspaceId, currentYdocId)
-          const ydoc = yDocFromBuffer(Buffer.concat(buffer as any))
-
-          // If document id has changed, save it with new name to ensure we will be able to load it later
-          const ydocId = makeCollabYdocId(collabId)
-          if (ydocId !== currentYdocId) {
-            ctx.info('saving collaborative doc with new name', { collabId, ydocId, currentYdocId })
-            await saveCollabYdoc(ctx, storageAdapter, workspaceId, collabId, ydoc)
-            // do not bother with deletion so we can restore content is something goes wrong
-            // await storageAdapter.remove(ctx, client.workspaceId, [currentYdocId])
-          }
-
-          // Save document as JSON and save blob Id
-          const jsonId = await saveCollabJson(ctx, storageAdapter, workspaceId, collabId, ydoc)
-          update[attributeName] = jsonId
-        } else {
-          // it is not ydoc, do nothing
-          continue
-        }
-      } else {
-        // document is empty, unset
-        const unset = update.$unset ?? {}
-        update.$unset = { ...unset, [attribute.name]: 1 }
+      // If document id has changed, save it with new name to ensure we will be able to load it later
+      const ydocId = makeCollabYdocId(collabId)
+      if (ydocId !== currentYdocId) {
+        ctx.info('saving collaborative doc with new name', { collabId, ydocId, currentYdocId })
+        const buffer = await storageAdapter.read(ctx, workspaceId, currentYdocId)
+        await storageAdapter.put(
+          ctx,
+          workspaceId,
+          ydocId,
+          Buffer.concat(buffer as any),
+          'application/ydoc',
+          buffer.length
+        )
       }
+
+      const unset = update.$unset ?? {}
+      update.$unset = { ...unset, [attribute.name]: 1 }
     } catch (err) {
       ctx.warn('failed to process collaborative doc', { workspaceId, collabId, currentYdocId, err })
     }
