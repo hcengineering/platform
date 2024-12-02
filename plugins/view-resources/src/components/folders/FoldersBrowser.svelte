@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Action, IconEdit, navigate, type Location, Scroller } from '@hcengineering/ui'
+  import { Action, IconEdit, navigate, type Location, Scroller, location, getLocation } from '@hcengineering/ui'
   import { getResource, type Resource } from '@hcengineering/platform'
   import { IntlString, Asset } from '@hcengineering/platform'
 
@@ -34,6 +34,10 @@
   export let allObjectsLabel: IntlString
   export let plainList: boolean = false
 
+  const getFolderId = (): Ref<Doc> => {
+    return (getLocation()?.query?.attachedTo as Ref<Doc>) ?? noParentId
+  }
+
   export let forciblyСollapsed: boolean = false
 
   const client = getClient()
@@ -46,17 +50,23 @@
     foldersState = newState
   })
 
-  let selected: Ref<Doc> = noParentId
-  let visibleItem: Doc | undefined
+  let selected: Ref<Doc> = getFolderId()
+  let visibleItem: Doc | undefined = foldersState.folderById.get(selected)
+  location.subscribe(() => {
+    selected = getFolderId()
+    visibleItem = foldersState.folderById.get(selected)
+  })
 
   const q = createQuery()
   q.query(
     _class,
     query ?? {},
-    (result) => {
+    async (result) => {
       foldersManager.setFolders(result)
       if (plainList && foldersState.folders?.length > 0) {
-        handleFolderSelected(foldersState.folders[0])
+        if (selected === undefined) {
+          await handleFolderSelected(foldersState.folders[0])
+        }
       }
     },
     {
@@ -67,17 +77,12 @@
   )
 
   async function handleFolderSelected (_id: Ref<Doc>): Promise<void> {
-    selected = _id
-    visibleItem = selected !== undefined ? foldersState.folderById.get(selected) : undefined
     const getFolderLinkFunction = await getResource(getFolderLink)
     navigate(getFolderLinkFunction(_id))
   }
 
   async function handleAllItemsSelected (): Promise<void> {
-    selected = noParentId
-    visibleItem = undefined
-    const getFolderLinkFunction = await getResource(getFolderLink)
-    navigate(getFolderLinkFunction(undefined))
+    await handleFolderSelected(noParentId)
   }
 
   async function getFolderActions (obj: Doc): Promise<Action[]> {
@@ -119,8 +124,8 @@
         descendants={foldersState.descendants}
         folderById={foldersState.folderById}
         {selected}
-        on:selected={(ev) => {
-          handleFolderSelected(ev.detail)
+        on:selected={async (ev) => {
+          await handleFolderSelected(ev.detail)
         }}
       />
       <svelte:fragment slot="visible">
@@ -147,8 +152,8 @@
       descendants={foldersState.descendants}
       folderById={foldersState.folderById}
       {selected}
-      on:selected={(ev) => {
-        handleFolderSelected(ev.detail)
+      on:selected={async (ev) => {
+        await handleFolderSelected(ev.detail)
       }}
     />
   {/if}

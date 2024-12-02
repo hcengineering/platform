@@ -19,15 +19,22 @@ export interface DrawingData {
 
 export interface DrawingProps {
   readonly: boolean
+  autoSize?: boolean
   imageWidth?: number
   imageHeight?: number
-  drawingData: DrawingData
-  drawingTool?: DrawingTool
+  commandCount?: number
+  commands: DrawingCmd[]
+  offset?: Point
+  tool?: DrawingTool
   penColor?: string
-  changed?: (content: string) => void
+  penWidth?: number
+  eraserWidth?: number
+  defaultCursor?: string
+  cmdAdded?: (cmd: DrawingCmd) => void
+  panned?: (offset: Point) => void
 }
 
-interface DrawCmd {
+export interface DrawingCmd {
   lineWidth: number
   erasing: boolean
   penColor: string
@@ -52,6 +59,7 @@ class DrawState {
   penWidth = 4
   eraserWidth = 30
   minLineLength = 6
+  center: Point = { x: 0, y: 0 }
   offset: Point = { x: 0, y: 0 }
   points: Point[] = []
   scale: Point = { x: 1, y: 1 }
@@ -71,8 +79,8 @@ class DrawState {
 
   addPoint = (mouseX: number, mouseY: number): void => {
     this.points.push({
-      x: mouseX * this.scale.x - this.offset.x,
-      y: mouseY * this.scale.y - this.offset.y
+      x: mouseX * this.scale.x - this.offset.x - this.center.x,
+      y: mouseY * this.scale.y - this.offset.y - this.center.y
     })
   }
 
@@ -86,6 +94,8 @@ class DrawState {
         this.addPoint(x, y)
       }
       const erasing = this.tool === 'erase'
+      this.ctx.save()
+      this.ctx.translate(this.offset.x + this.center.x, this.offset.y + this.center.y)
       this.ctx.beginPath()
       this.ctx.lineCap = 'round'
       this.ctx.strokeStyle = this.penColor
@@ -97,10 +107,13 @@ class DrawState {
         this.drawSmoothSegment(this.points, this.points.length - 1, lastPoint)
         this.ctx.stroke()
       }
+      this.ctx.restore()
     })
   }
 
-  drawCommand = (cmd: DrawCmd): void => {
+  drawCommand = (cmd: DrawingCmd): void => {
+    this.ctx.save()
+    this.ctx.translate(this.offset.x + this.center.x, this.offset.y + this.center.y)
     this.ctx.beginPath()
     this.ctx.lineCap = 'round'
     this.ctx.strokeStyle = cmd.penColor
@@ -114,6 +127,7 @@ class DrawState {
       }
       this.ctx.stroke()
     }
+    this.ctx.restore()
   }
 
   drawPoint = (p: Point, erasing: boolean): void => {
@@ -121,7 +135,7 @@ class DrawState {
     if (!erasing) {
       // Single point looks too small compared to a line of the same width
       // So make it a bit biggers
-      r *= 1.5
+      r *= 1 / r + 1
     }
     this.ctx.lineWidth = 0
     this.ctx.fillStyle = this.ctx.strokeStyle
@@ -152,15 +166,13 @@ class DrawState {
   }
 }
 
-export function drawing (node: HTMLElement, props: DrawingProps): any {
-  if (
-    props.imageWidth === undefined ||
-    props.imageHeight === undefined ||
-    node.clientWidth === undefined ||
-    node.clientHeight === undefined
-  ) {
+export function drawing (
+  node: HTMLElement,
+  props: DrawingProps
+): { canvas?: HTMLCanvasElement, update?: (props: DrawingProps) => void } {
+  if (props.autoSize !== true && (props.imageWidth === undefined || props.imageHeight === undefined)) {
     console.error('Failed to create drawing: image size is not specified')
-    return
+    return {}
   }
 
   const canvas = document.createElement('canvas')
@@ -169,43 +181,62 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
   canvas.style.top = '0'
   canvas.style.width = '100%'
   canvas.style.height = '100%'
-  canvas.width = props.imageWidth
-  canvas.height = props.imageHeight
+  canvas.width = props.imageWidth ?? 0
+  canvas.height = props.imageHeight ?? 0
   node.appendChild(canvas)
 
   const ctx = canvas.getContext('2d')
   if (ctx === null) {
     console.error('Failed to create drawing: unable to get 2d canvas context')
     node.removeChild(canvas)
-    return
+    return {}
   }
 
   const canvasCursor = document.createElement('div')
   canvasCursor.style.visibility = 'hidden'
   canvasCursor.style.position = 'absolute'
   canvasCursor.style.borderRadius = '50%'
+  canvasCursor.style.border = 'none'
   canvasCursor.style.cursor = 'none'
   canvasCursor.style.pointerEvents = 'none'
+  canvasCursor.style.left = '50%'
+  canvasCursor.style.top = '50%'
   node.appendChild(canvasCursor)
 
   let readonly = props.readonly ?? false
   let prevPos: Point = { x: 0, y: 0 }
 
   const draw = new DrawState(ctx)
-  draw.tool = props.drawingTool ?? 'pan'
-  draw.penColor = props.penColor ?? 'blue'
+  draw.tool = props.tool ?? draw.tool
+  draw.penColor = props.penColor ?? draw.penColor
+  draw.penWidth = props.penWidth ?? draw.penWidth
+  draw.eraserWidth = props.eraserWidth ?? draw.eraserWidth
   updateCanvasCursor()
 
-  let commands: DrawCmd[] = []
-  let drawingData = props.drawingData
-  parseData()
+  let commands = props.commands
+  let commandCount = props.commandCount ?? 0
+  replayCommands({
+    offset: {
+      x: props.offset?.x ?? 0,
+      y: props.offset?.y ?? 0
+    }
+  })
 
   const resizeObserver = new ResizeObserver((entries) => {
     for (const entry of entries) {
       if (entry.target === canvas) {
-        draw.scale = {
-          x: canvas.width / entry.contentRect.width,
-          y: canvas.height / entry.contentRect.height
+        if (props.autoSize === true) {
+          draw.scale = { x: 1, y: 1 }
+          canvas.width = Math.floor(entry.contentRect.width)
+          canvas.height = Math.floor(entry.contentRect.height)
+          draw.center.x = canvas.width / 2
+          draw.center.y = canvas.height / 2
+          replayCommands({ offset: draw.offset })
+        } else {
+          draw.scale = {
+            x: canvas.width / entry.contentRect.width,
+            y: canvas.height / entry.contentRect.height
+          }
         }
       }
     }
@@ -255,9 +286,18 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
       }
     }
 
-    // TODO: if (draw.tool === 'pan')
-    // Currently we only show drawing over attached images
-    // Their sizes are fixed and no pan required
+    if (draw.on && draw.tool === 'pan') {
+      requestAnimationFrame(() => {
+        replayCommands({
+          offset: {
+            x: draw.offset.x + x - prevPos.x,
+            y: draw.offset.y + y - prevPos.y
+          }
+        })
+        prevPos = { x, y }
+        props.panned?.(draw.offset)
+      })
+    }
   }
 
   canvas.onpointerup = (e) => {
@@ -288,30 +328,31 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
   }
 
   function storeCommand (): void {
-    if (draw.points.length > 1) {
+    if (draw.points.length > 0) {
       const erasing = draw.tool === 'erase'
-      const cmd: DrawCmd = {
+      const cmd: DrawingCmd = {
         lineWidth: (erasing ? draw.eraserWidth : draw.penWidth) * draw.lineScale(),
         erasing,
         penColor: draw.penColor,
         points: draw.points
       }
       commands.push(cmd)
-      props.changed?.(JSON.stringify(commands))
+      props.cmdAdded?.(cmd)
     }
   }
 
   function updateCanvasCursor (): void {
     if (readonly) {
       canvasCursor.style.visibility = 'hidden'
-      canvas.style.cursor = 'default'
+      canvas.style.cursor = props.defaultCursor ?? 'default'
     } else if (draw.isDrawingTool()) {
       canvas.style.cursor = 'none'
       const erasing = draw.tool === 'erase'
       const w = draw.cursorWidth()
       canvasCursor.style.background = erasing ? 'none' : draw.penColor
-      canvasCursor.style.border = erasing ? '1px solid #333' : 'none'
-      canvasCursor.style.boxShadow = erasing ? '0px 0px 0px 1px #eee inset' : 'none'
+      canvasCursor.style.boxShadow = erasing
+        ? '0px 0px 1px 1px white inset, 0px 0px 2px 1px black'
+        : '0px 0px 3px 0px var(--theme-button-contrast-enabled)'
       canvasCursor.style.width = `${w}px`
       canvasCursor.style.height = `${w}px`
     } else if (draw.tool === 'pan') {
@@ -328,41 +369,52 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
     draw.offset = { x: 0, y: 0 }
   }
 
-  function replayCommands (): void {
-    draw.ctx.reset()
-    for (const cmd of commands) {
-      draw.drawCommand(cmd)
+  function replayCommands ({ offset, startIndex }: { offset?: Point, startIndex?: number } = {}): void {
+    if (startIndex === undefined || startIndex === 0) {
+      clearCanvas()
     }
-  }
-
-  function parseData (): void {
-    clearCanvas()
-    if (drawingData.content !== undefined && drawingData.content !== null) {
-      try {
-        commands = JSON.parse(drawingData.content)
-        replayCommands()
-      } catch (error) {
-        commands = []
-        console.error('Failed to parse drawing content', error)
-      }
-    } else {
-      commands = []
+    if (offset !== undefined) {
+      draw.offset = offset
     }
+    for (let i = startIndex ?? 0; i < commands.length; i++) {
+      draw.drawCommand(commands[i])
+    }
+    commandCount = commands.length
   }
 
   return {
+    canvas,
+
     update (props: DrawingProps) {
-      if (drawingData !== props.drawingData) {
-        drawingData = props.drawingData
-        parseData()
+      let replay = false
+      let offset: Point | undefined
+      let startIndex: number | undefined
+      if (props.offset?.x !== draw.offset.x || props.offset?.y !== draw.offset.y) {
+        offset = props.offset
+        replay = true
+      }
+      if (commands !== props.commands) {
+        commands = props.commands
+        replay = true
+      } else if (props.commandCount !== undefined && props.commandCount !== commandCount) {
+        startIndex = commandCount
+        replay = true
       }
       let updateCursor = false
-      if (draw.tool !== props.drawingTool) {
-        draw.tool = props.drawingTool ?? 'pen'
+      if (draw.tool !== props.tool) {
+        draw.tool = props.tool ?? 'pen'
         updateCursor = true
       }
       if (draw.penColor !== props.penColor) {
         draw.penColor = props.penColor ?? 'blue'
+        updateCursor = true
+      }
+      if (draw.penWidth !== props.penWidth) {
+        draw.penWidth = props.penWidth ?? 5
+        updateCursor = true
+      }
+      if (draw.eraserWidth !== props.eraserWidth) {
+        draw.eraserWidth = props.eraserWidth ?? 5
         updateCursor = true
       }
       if (props.readonly !== readonly) {
@@ -371,6 +423,9 @@ export function drawing (node: HTMLElement, props: DrawingProps): any {
       }
       if (updateCursor) {
         updateCanvasCursor()
+      }
+      if (replay) {
+        replayCommands({ offset, startIndex })
       }
     }
   }

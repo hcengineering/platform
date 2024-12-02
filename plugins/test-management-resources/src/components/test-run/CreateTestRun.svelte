@@ -107,7 +107,7 @@
         throw new Error('Failed to create test run')
       } else {
         Analytics.handleEvent(TestManagementEvents.TestRunCreated, { id })
-        navigate(getTestRunsLink(id))
+        navigate(getTestRunsLink(space, id))
       }
     } catch (err: any) {
       console.error(err)
