@@ -112,7 +112,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     } else {
       showPopup(MessageBox, {
-        label: settings.string.OwnerOrMainteinerRequired
+        label: settings.string.OwnerOrMaintainerRequired
       })
     }
   })

@@ -280,7 +280,7 @@
     "IssueNotificationChangedProperty": "{senderName} 将 {property} 更改为 \"{newValue}\"",
     "IssueNotificationMessage": "{senderName}：{message}",
     "PreviousAssigned": "以前分配的",
-    "IssueAssigneedToYou": "分配给您",
+    "IssueAssignedToYou": "分配给您",
     "RelatedIssueTargetDescription": "相关问题项目目标用于类别或空间",
     "MapRelatedIssues": "配置相关问题默认项目",
     "DefaultIssueStatus": "默认问题状态",
