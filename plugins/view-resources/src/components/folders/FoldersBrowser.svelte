@@ -33,8 +33,9 @@
   export let allObjectsIcon: Asset
   export let allObjectsLabel: IntlString
   export let plainList: boolean = false
-  export let getFolderId = (): Ref<Doc> => {
-    return getLocation()?.query?.attachedTo ?? noParentId
+
+  const getFolderId = (): Ref<Doc> => {
+    return getLocation()?.query?.attachedTo as Ref<Doc> ?? noParentId
   }
 
   export let forciblyСollapsed: boolean = false
