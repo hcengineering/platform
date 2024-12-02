@@ -646,6 +646,7 @@
       }
     }
   }
+  checkWorkbenchWidth()
   $: if ($deviceInfo.docWidth <= 1024 && !$deviceInfo.aside.float) {
     $deviceInfo.aside.visible = false
     $deviceInfo.aside.float = true
@@ -822,6 +823,8 @@
             icon={notification.icon.Notifications}
             label={notification.string.Inbox}
             selected={currentAppAlias === notificationId || inboxPopup !== undefined}
+            navigator={(currentAppAlias === notificationId || inboxPopup !== undefined) &&
+              $deviceInfo.navigator.visible}
             on:click={(e) => {
               if (e.metaKey || e.ctrlKey) return
               if (currentAppAlias === notificationId && lastLoc !== undefined) {
@@ -1025,7 +1028,7 @@
   <Dock />
   {#if $deviceInfo.aside.float}
     <div
-      class="antiPanel-navigator right no-print {$deviceInfo.navigator.direction === 'horizontal'
+      class="antiPanel-navigator right fly no-print {$deviceInfo.navigator.direction === 'horizontal'
         ? 'portrait'
         : 'landscape'}"
       style:display={$deviceInfo.aside.visible ? 'flex' : 'none'}

@@ -31,7 +31,7 @@
 
   function handleSelectWidget (widget: Widget): void {
     if (selected === widget._id) {
-      if ($deviceInfo.navigator.float) $deviceInfo.aside.visible = false
+      if ($deviceInfo.aside.float) $deviceInfo.aside.visible = false
       else minimizeSidebar(true)
     } else {
       openWidget(widget, $sidebarStore.widgetsState.get(widget._id)?.data, { active: true, openedByUser: true })
