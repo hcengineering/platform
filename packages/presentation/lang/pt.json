@@ -35,7 +35,10 @@
     "ContentType": "Tipo de conteúdo",
     "ContentTypeNotSupported": "A visualização não está disponível para este tipo de conteúdo",
     "StartDrawing": "Scarabocchiare sopra",
-    "DrawingHistory": "História de rabiscos"
+    "DrawingHistory": "História de rabiscos",
+    "ColorAdd": "Adicionar predefinição de cor",
+    "ColorRemove": "Remover predefinição de cor",
+    "ColorReset": "Repor predefinições de cores"
   },
   "status": {
     "FileTooLarge": "Ficheiro demasiado grande"

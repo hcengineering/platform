@@ -35,7 +35,10 @@
     "ContentType": "Tipo de contenido",
     "ContentTypeNotSupported": "La vista previa no está disponible para este tipo de contenido",
     "StartDrawing": "Garabatear encima",
-    "DrawingHistory": "Historia de garabatos"
+    "DrawingHistory": "Historia de garabatos",
+    "ColorAdd": "Añadir ajuste preestablecido de color",
+    "ColorRemove": "Eliminar el ajuste preestablecido de color",
+    "ColorReset": "Restablecer ajustes preestablecidos de color"
   },
   "status": {
     "FileTooLarge": "Archivo demasiado grande"

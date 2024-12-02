@@ -49,6 +49,7 @@ export { default as LiteMessageViewer } from './components/LiteMessageViewer.sve
 export { default as DownloadFileButton } from './components/DownloadFileButton.svelte'
 export { default as FileTypeIcon } from './components/FileTypeIcon.svelte'
 export { default as DrawingBoard } from './components/DrawingBoard.svelte'
+export { default as DrawingBoardToolbar } from './components/DrawingBoardToolbar.svelte'
 export { default } from './plugin'
 export * from './types'
 export * from './utils'

@@ -30,6 +30,7 @@
   import {
     AnySvelteComponent,
     Button,
+    IconScribble,
     IconSize,
     Loading,
     PopupAlignment,
@@ -44,7 +45,7 @@
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
   import Placeholder from '@tiptap/extension-placeholder'
   import { createEventDispatcher, getContext, onDestroy, onMount } from 'svelte'
-  import { Doc as YDoc } from 'yjs'
+  import { Array as YArray, Doc as YDoc, Map as YMap } from 'yjs'
 
   import { Completion } from '../Completion'
   import { deleteAttachment } from '../command/deleteAttachment'
@@ -65,6 +66,7 @@
   import TextEditorToolbar from './TextEditorToolbar.svelte'
   import { noSelectionRender, renderCursor } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
+  import { DrawingBoardExtension } from './extension/drawingBoard'
   import { EmojiExtension } from './extension/emoji'
   import { FileUploadExtension } from './extension/fileUploadExt'
   import { ImageUploadExtension } from './extension/imageUploadExt'
@@ -265,7 +267,8 @@
             { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
             { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
             { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
-            { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList }
+            { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList },
+            { id: 'drawing-board', label: textEditor.string.DrawingBoard, icon: IconScribble as any }
           ],
           handleSelect: handleLeftMenuClick
         })
@@ -358,12 +361,25 @@
       case 'separator-line':
         editor.commands.setHorizontalRule()
         break
+      case 'drawing-board':
+        makeNewDrawingBoard(pos)
+        break
     }
   }
 
   const throttle = new ThrottledCaller(100)
   const updateLastUpdateTime = (): void => {
     remoteProvider.awareness?.setLocalStateField('lastUpdate', Date.now())
+  }
+
+  function makeNewDrawingBoard (pos: number): void {
+    const id = generateId()
+    ydoc.getArray('drawing-board-registry').push([id])
+    const drawing = ydoc.getMap(`drawing-board-${id}`)
+    drawing.set('commands', new YArray())
+    drawing.set('props', new YMap())
+    editor.commands.insertContentAt(pos, { type: 'drawingBoard', attrs: { id } })
+    editor.commands.showDrawingBoardPopup()
   }
 
   onMount(async () => {
@@ -414,6 +430,7 @@
           }
         }),
         EmojiExtension,
+        DrawingBoardExtension.configure({ ydoc }),
         ...extensions
       ],
       parseOptions: {

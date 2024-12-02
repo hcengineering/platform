@@ -35,7 +35,10 @@
     "ContentType": "内容类型",
     "ContentTypeNotSupported": "此內容類型無法預覽",
     "StartDrawing": "随意涂鸦",
-    "DrawingHistory": "涂鸦的历史"
+    "DrawingHistory": "涂鸦的历史",
+    "ColorAdd": "添加颜色预设",
+    "ColorRemove": "删除颜色预设",
+    "ColorReset": "重置颜色预设"
   },
   "status": {
     "FileTooLarge": "文件太大"

@@ -123,7 +123,10 @@ export default plugin(presentationId, {
     ContentType: '' as IntlString,
     ContentTypeNotSupported: '' as IntlString,
     StartDrawing: '' as IntlString,
-    DrawingHistory: '' as IntlString
+    DrawingHistory: '' as IntlString,
+    ColorAdd: '' as IntlString,
+    ColorRemove: '' as IntlString,
+    ColorReset: '' as IntlString
   },
   extension: {
     FilePreviewExtension: '' as ComponentExtensionId,

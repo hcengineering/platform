@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { SortingOrder, type Blob, type Ref } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Button, Dialog, IconHistory, IconScribble, showPopup, tooltip } from '@hcengineering/ui'
@@ -63,6 +64,7 @@
           })
           .catch((error) => {
             drawingLoading = false
+            Analytics.handleError(error)
             console.error('Failed to load drawings for file', file, error)
           })
       }
