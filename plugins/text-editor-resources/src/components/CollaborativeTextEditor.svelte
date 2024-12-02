@@ -250,37 +250,39 @@
         })
       )
     }
-    if (withSideMenu) {
-      optionalExtensions.push(
-        LeftMenuExtension.configure({
-          width: 20,
-          height: 20,
-          marginX: 8,
-          className: 'tiptap-left-menu',
-          icon: view.icon.Add,
-          iconProps: {
-            className: 'svg-tiny',
-            fill: 'currentColor'
-          },
-          items: [
-            ...(canEmbedImages ? [{ id: 'image', label: textEditor.string.Image, icon: view.icon.Image }] : []),
-            { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
-            { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
-            { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
-            { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList },
-            { id: 'drawing-board', label: textEditor.string.DrawingBoard, icon: IconScribble as any }
-          ],
-          handleSelect: handleLeftMenuClick
-        })
+  }
+
+  if (withSideMenu) {
+    optionalExtensions.push(
+      LeftMenuExtension.configure({
+        width: 20,
+        height: 20,
+        marginX: 8,
+        className: 'tiptap-left-menu',
+        icon: view.icon.Add,
+        iconProps: {
+          className: 'svg-tiny',
+          fill: 'currentColor'
+        },
+        items: [
+          ...(canEmbedImages ? [{ id: 'image', label: textEditor.string.Image, icon: view.icon.Image }] : []),
+          { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
+          { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
+          { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
+          { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList },
+          { id: 'drawing-board', label: textEditor.string.DrawingBoard, icon: IconScribble as any }
+        ],
+        handleSelect: handleLeftMenuClick
+      })
+    )
+  }
+
+  if (withInlineCommands) {
+    optionalExtensions.push(
+      InlineCommandsExtension.configure(
+        inlineCommandsConfig(handleLeftMenuClick, attachFile === undefined || !canEmbedImages ? ['image'] : [])
       )
-    }
-    if (withInlineCommands) {
-      optionalExtensions.push(
-        InlineCommandsExtension.configure(
-          inlineCommandsConfig(handleLeftMenuClick, attachFile === undefined || !canEmbedImages ? ['image'] : [])
-        )
-      )
-    }
+    )
   }
 
   let inputImage: HTMLInputElement

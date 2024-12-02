@@ -33,15 +33,13 @@
 
 <Section label={love.string.MeetingMinutes} icon={love.icon.Cam}>
   <svelte:fragment slot="header">
-    <div class="flex-row-center gap-2 reverse">
-      <ViewletsSettingButton
-        viewletQuery={{ _id: love.viewlet.TableMeetingMinutesEmbedded }}
-        kind={'tertiary'}
-        bind:viewlet
-        bind:loading
-        bind:preference
-      />
-    </div>
+    <ViewletsSettingButton
+      viewletQuery={{ _id: love.viewlet.TableMeetingMinutesEmbedded }}
+      kind={'tertiary'}
+      bind:viewlet
+      bind:loading
+      bind:preference
+    />
   </svelte:fragment>
 
   <svelte:fragment slot="content">
