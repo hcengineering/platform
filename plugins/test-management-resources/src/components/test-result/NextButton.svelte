@@ -13,30 +13,46 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onMount } from 'svelte'
-  import { Button, navigate } from '@hcengineering/ui'
-  import { initializeIterator, testResultIteratorProvider } from './store/testIteratorStore'
+  import { onMount, onDestroy } from 'svelte'
+  import { AnyComponent, Button, Loading, Location, navigate } from '@hcengineering/ui'
+  import { initializeIterator, testResultIteratorProvider, testIteratorStore } from './store/testIteratorStore'
   import testManagement, { TestResult } from '@hcengineering/test-management'
-  import { type DocumentQuery } from '@hcengineering/core'
+  import { Doc, type DocumentQuery, WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
   import view from '@hcengineering/view'
 
-  const query: DocumentQuery<TestResult> = { }
+  export let object: WithLookup<TestResult> | undefined
+  let isLoading = true
+  let hasNext = false
+  let navigateToNext = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
+  testIteratorStore.subscribe(() => {
+    hasNext = testResultIteratorProvider.getIterator()?.hasNext() ?? false
+  })
+
   onMount(async () => {
-    await initializeIterator(query)
+    const query: DocumentQuery<TestResult> = { attachedTo: object?.attachedTo } as any
+    await initializeIterator(query, object?._id)
+    hasNext = testResultIteratorProvider.getIterator()?.hasNext() ?? false
+    isLoading = false
+  })
+  onDestroy(() => {
+    if (navigateToNext) {
+      testResultIteratorProvider.reset()
+    }
   })
 
   async function goToNextItem (): Promise<void> {
+    navigateToNext = true
     const iterator = testResultIteratorProvider.getIterator()
     if (iterator !== undefined) {
-      const nextItem = iterator.getNextObject()
+      const nextItem = iterator.next()
       if (nextItem === undefined) {
-        console.log('No next item')
+        console.error('No next item')
         return
       }
       const link = await getLink(nextItem)
@@ -49,16 +65,20 @@
   }
 
   async function getLink (object: Doc): Promise<Location> {
-    const panelComponent = hierarchy.classHierarchyMixin(testManagement.class.TestResult, view.mixin.ObjectPanel)
-    const comp = panelComponent?.component ?? component
-    return await getObjectLinkFragment(hierarchy, object, {}, comp)
+    const { component } = hierarchy.classHierarchyMixin(testManagement.class.TestResult, view.mixin.ObjectPanel) as any
+    return await getObjectLinkFragment(hierarchy, object, {}, component)
   }
 </script>
 
-<Button
-  label={testManagement.string.GoToNextTest}
-  kind={'primary'}
-  icon={view.icon.ArrowRight}
-  on:click={goToNextItem}
-  showTooltip={{ label: testManagement.string.GoToNextTestTooltip }}
-/>
+{#if isLoading}
+  <Loading />
+{:else}
+  <Button
+    label={testManagement.string.GoToNextTest}
+    kind={'primary'}
+    icon={view.icon.ArrowRight}
+    disabled={!hasNext}
+    on:click={goToNextItem}
+    showTooltip={{ label: testManagement.string.GoToNextTestTooltip }}
+  />
+{/if}

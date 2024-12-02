@@ -94,7 +94,7 @@
     </div>
 
     <svelte:fragment slot="extra">
-      <NextButton/>
+      <NextButton {object} />
     </svelte:fragment>
 
     <svelte:fragment slot="aside">

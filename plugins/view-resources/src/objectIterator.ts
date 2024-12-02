@@ -47,30 +47,38 @@ export class ObjectIterator<T extends Doc> {
     this.storeAdapter.set(getDefaultIteratorState<T>(query))
   }
 
-  async loadObjects (): Promise<void> {
+  async loadObjects (currentObject: Ref<Doc> | undefined): Promise<void> {
     const client = getClient()
     const { query, limit } = this.storeAdapter.get()
     const testResults = await client.findAll(this.class, query, {
       limit,
       total: true
     })
-    this.storeAdapter.update(store => {
+    this.storeAdapter.update((store) => {
       store.currentObjects = [...store.currentObjects, ...testResults]
       store.limit = testResults.total
+      if (currentObject !== undefined) {
+        store.iteratorIndex = store.currentObjects.findIndex((obj) => obj._id === currentObject) ?? 0
+      }
       return store
     })
   }
 
-  getNextObject (): T | undefined {
+  next (): T | undefined {
     let nextObject
-    this.storeAdapter.update(store => {
+    this.storeAdapter.update((store) => {
       if (store.iteratorIndex < store.currentObjects.length) {
-        nextObject = store.currentObjects[store.iteratorIndex]
         store.iteratorIndex += 1
+        nextObject = store.currentObjects[store.iteratorIndex]
       }
       return store
     })
     return nextObject
+  }
+
+  hasNext (): boolean {
+    const { currentObjects, iteratorIndex } = this.storeAdapter.get()
+    return iteratorIndex < currentObjects.length - 1
   }
 }
 
@@ -79,10 +87,10 @@ export class ObjectIteratorProvider<T extends Doc> {
 
   constructor (private readonly storeAdapter: StoreAdapter<T>) {}
 
-  async initialize (_class: Ref<Class<T>>, query: DocumentQuery<T>): Promise<void> {
+  async initialize (_class: Ref<Class<T>>, query: DocumentQuery<T>, currentObject: Ref<Doc> | undefined): Promise<void> {
     if (this.objectIterator === undefined) {
       this.objectIterator = new ObjectIterator(_class, query, this.storeAdapter)
-      await this.objectIterator.loadObjects()
+      await this.objectIterator.loadObjects(currentObject)
     }
   }
 
@@ -96,7 +104,7 @@ export class ObjectIteratorProvider<T extends Doc> {
       console.error('ObjectIterator is not initialized')
       return undefined
     }
-    return this.objectIterator?.getNextObject()
+    return this.objectIterator?.next()
   }
 
   getIterator (): ObjectIterator<T> | undefined {

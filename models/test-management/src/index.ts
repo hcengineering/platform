@@ -332,10 +332,7 @@ function defineTestCase (builder: Builder): void {
   })
 
   builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ClassFilters, {
-    filters: [
-      'priority',
-      'status'
-    ],
+    filters: ['priority', 'status'],
     ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn', 'name']
   })
 
