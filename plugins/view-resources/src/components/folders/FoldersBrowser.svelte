@@ -35,7 +35,7 @@
   export let plainList: boolean = false
 
   const getFolderId = (): Ref<Doc> => {
-    return getLocation()?.query?.attachedTo as Ref<Doc> ?? noParentId
+    return (getLocation()?.query?.attachedTo as Ref<Doc>) ?? noParentId
   }
 
   export let forciblyСollapsed: boolean = false
