@@ -79,10 +79,12 @@ export function getTestSuiteIdFromLocation (): Ref<TestSuite> {
   return (location?.query?.[SUITE_KEY] as Ref<TestSuite>) ?? testManagement.ids.NoParent
 }
 
-export function getTestRunsLink (parentDoc: Ref<Doc>): Location {
+export function getTestRunsLink (space: Ref<TestProject>, parentDoc: Ref<Doc>): Location {
   const loc = getCurrentResolvedLocation()
-  loc.path.length = 4
-  loc.path[3] = 'testRuns'
+  loc.path.length = 5
+  loc.path[2] = testManagementId
+  loc.path[3] = space
+  loc.path[4] = 'testRuns'
   loc.fragment = undefined
   loc.query = parentDoc === undefined ? undefined : { attachedTo: parentDoc }
 
