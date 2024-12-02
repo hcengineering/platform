@@ -18,7 +18,7 @@
   import { initializeIterator, testResultIteratorProvider } from './store/testIteratorStore'
   import testManagement, { TestResult } from '@hcengineering/test-management'
   import { type DocumentQuery } from '@hcengineering/core'
-  import { NavLink, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
   import view from '@hcengineering/view'
 
@@ -27,8 +27,8 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  onMount(() => {
-    initializeIterator(query)
+  onMount(async () => {
+    await initializeIterator(query)
   })
 
   async function goToNextItem (): Promise<void> {
