@@ -8,13 +8,12 @@ export type MessageID = ID & { message: true }
 
 interface Object {
   creator: SocialID
-  created: number
+  created: Date
 }
 
 export interface Message extends Object {
   id: MessageID
   content: RichText
-  card: CardID
   version: number
   reactions: Reaction[]
   attachments: Attachment[]
