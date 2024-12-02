@@ -16,7 +16,6 @@
 export * from './applyTx'
 export * from './broadcast'
 export * from './configuration'
-export * from './connectionMgr'
 export * from './contextName'
 export * from './dbAdapter'
 export * from './dbAdapterHelper'

@@ -127,8 +127,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     readonly storageAdapter: StorageAdapter,
     readonly contentAdapter: ContentTextAdapter,
     readonly broadcastUpdate: (ctx: MeasureContext, classes: Ref<Class<Doc>>[]) => void,
-    readonly checkIndexes: () => Promise<void>,
-    readonly closeContext: (ctx: MeasureContext) => Promise<void>
+    readonly checkIndexes: () => Promise<void>
   ) {
     this.contexts = new Map(model.findAllSync(core.class.FullTextSearchContext, {}).map((it) => [it.toClass, it]))
   }
@@ -406,7 +405,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     await rateLimiter.exec(async () => {
       let st = Date.now()
 
-      ctx.id = generateId()
       let groupBy = await this.storage.groupBy(ctx, DOMAIN_DOC_INDEX_STATE, 'objectClass', { needIndex: true })
       const total = Array.from(groupBy.values()).reduce((a, b) => a + b, 0)
       while (true) {
@@ -524,7 +522,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           this.metrics.error('error during index', { error: err })
         }
       }
-      await this.closeContext(ctx)
     })
     return { classUpdate: Array.from(_classUpdate.values()), processed }
   }

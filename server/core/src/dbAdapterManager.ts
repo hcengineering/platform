@@ -42,14 +42,20 @@ export class DbAdapterManagerImpl implements DBAdapterManager {
     private readonly adapters: Map<string, DbAdapter>
   ) {}
 
-  async closeContext (ctx: MeasureContext): Promise<void> {
+  reserveContext (id: string): () => void {
+    const ops: (() => void)[] = []
     for (const adapter of this.adapters.values()) {
       try {
-        if (adapter.closeContext !== undefined) {
-          await adapter.closeContext(ctx)
+        if (adapter.reserveContext !== undefined) {
+          ops.push(adapter.reserveContext(id))
         }
       } catch (err: any) {
         Analytics.handleError(err)
+      }
+    }
+    return () => {
+      for (const op of ops) {
+        op()
       }
     }
   }

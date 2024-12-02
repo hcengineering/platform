@@ -15,6 +15,7 @@
 
 import core, {
   AccountRole,
+  generateId,
   TxFactory,
   TxProcessor,
   type Account,
@@ -29,6 +30,7 @@ import core, {
   type Ref,
   type SearchOptions,
   type SearchQuery,
+  type SessionData,
   type Timestamp,
   type Tx,
   type TxCUD,
@@ -48,6 +50,8 @@ import {
 } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 import { handleSend } from './utils'
+
+const useReserveContext = (process.env.USE_RESERVE_CTX ?? 'true') === 'true'
 
 /**
  * @public
@@ -192,13 +196,35 @@ export class ClientSession implements Session {
     this.current.tx++
     this.includeSessionContext(ctx.ctx)
 
-    const result = await this._pipeline.tx(ctx.ctx, [tx])
+    let cid = 'client_' + generateId()
+    ctx.ctx.id = cid
+    let onEnd = useReserveContext ? this._pipeline.context.adapterManager?.reserveContext?.(cid) : undefined
+    try {
+      const result = await this._pipeline.tx(ctx.ctx, [tx])
 
-    // Send result immideately
-    await ctx.sendResponse(result)
+      // Send result immideately
+      await ctx.sendResponse(result)
 
-    // We need to broadcast all collected transactions
-    await this._pipeline.handleBroadcast(ctx.ctx)
+      // We need to broadcast all collected transactions
+      await this._pipeline.handleBroadcast(ctx.ctx)
+    } finally {
+      onEnd?.()
+    }
+
+    // ok we could perform async requests if any
+    const asyncs = (ctx.ctx.contextData as SessionData).asyncRequests ?? []
+    if (asyncs.length > 0) {
+      cid = 'client_async_' + generateId()
+      ctx.ctx.id = cid
+      onEnd = useReserveContext ? this._pipeline.context.adapterManager?.reserveContext?.(cid) : undefined
+      try {
+        for (const r of (ctx.ctx.contextData as SessionData).asyncRequests ?? []) {
+          await r()
+        }
+      } finally {
+        onEnd?.()
+      }
+    }
   }
 
   broadcast (ctx: MeasureContext, socket: ConnectionSocket, tx: Tx[]): void {
