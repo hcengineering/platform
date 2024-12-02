@@ -77,6 +77,8 @@
     "DueDate": "Выполнить до",
     "RunTestCases": "Выполнить",
     "TestCaseDescription": "Описание тест-кейса",
-    "TestResultAttributes": "Результат"
+    "TestResultAttributes": "Результат",
+    "GoToNextTest": "Следующий",
+    "GoToNextTestTooltip": "Перейти к следующему тесту"
   }
 }
