@@ -1,0 +1,12 @@
+{
+  "name": "@communication/types",
+  "version": "0.1.0",
+  "module": "src/index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "^1.1.13"
+  },
+  "peerDependencies": {
+    "typescript": "^5.6.3"
+  }
+}
