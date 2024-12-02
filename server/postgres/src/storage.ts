@@ -1164,8 +1164,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
                   .map((v: any) => `'${v}'`)
                   .join(', ')}) AND ${tkey} IS NOT NULL)`
               )
-            }
-            if (val.length > 0) {
+            } else if (val.length > 0) {
               res.push(`${tkey} NOT IN (${val.map((v: any) => `'${v}'`).join(', ')})`)
             }
             break
