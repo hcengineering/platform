@@ -1137,7 +1137,16 @@ abstract class PostgresAdapterBase implements DbAdapter {
           case '$in':
             switch (type) {
               case 'common':
-                res.push(`${tkey} IN (${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'})`)
+                if (Array.isArray(val) && val.includes(null)) {
+                  res.push(
+                    `(${tkey} IN (${val
+                      .filter((it) => it != null)
+                      .map((v: any) => `'${v}'`)
+                      .join(', ')}) OR ${tkey} IS NULL)`
+                  )
+                } else {
+                  res.push(`${tkey} IN (${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'})`)
+                }
                 break
               case 'array':
                 res.push(`${tkey} && array[${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'}]`)
@@ -1148,6 +1157,14 @@ abstract class PostgresAdapterBase implements DbAdapter {
             }
             break
           case '$nin':
+            if (Array.isArray(val) && val.includes(null)) {
+              res.push(
+                `(${tkey} NOT IN (${val
+                  .filter((it) => it != null)
+                  .map((v: any) => `'${v}'`)
+                  .join(', ')}) AND ${tkey} IS NOT NULL)`
+              )
+            }
             if (val.length > 0) {
               res.push(`${tkey} NOT IN (${val.map((v: any) => `'${v}'`).join(', ')})`)
             }

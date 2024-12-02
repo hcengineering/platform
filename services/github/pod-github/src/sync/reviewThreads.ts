@@ -41,6 +41,7 @@ import { Analytics } from '@hcengineering/analytics'
 import { PullRequestReviewThreadEvent } from '@octokit/webhooks-types'
 import config from '../config'
 import { syncConfig } from './syncConfig'
+import { githubConfiguration } from './configuration'
 
 export type ReviewThreadData = Pick<
 GithubReviewThread,
@@ -362,7 +363,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
 
     if (Object.keys(platformUpdate).length > 0) {
       // Check and update  external
-      if (platformUpdate.isResolved !== undefined) {
+      if (platformUpdate.isResolved !== undefined && githubConfiguration.ResolveThreadSupported) {
         const okit = (await this.provider.getOctokit(account as Ref<PersonAccount>)) ?? container.container.octokit
         const q = `mutation updateReviewThread($threadID: ID!) {
           ${platformUpdate.isResolved ? 'resolveReviewThread' : 'unresolveReviewThread'} (
