@@ -53,14 +53,12 @@ export const testManagementPlugin = plugin(testManagementId, {
     DeleteTestCase: '' as Ref<Action<Doc, any>>,
     CreateChildTestSuite: '' as Ref<Action>,
     EditTestSuite: '' as Ref<Action>,
-    RunSelectedTests: '' as Ref<Action>,
-    AssignTests: '' as Ref<Action>
+    RunSelectedTests: '' as Ref<Action>
   },
   actionImpl: {
     CreateChildTestSuite: '' as ViewAction,
     EditTestSuite: '' as ViewAction,
-    RunSelectedTests: '' as ViewAction,
-    AssignTests: '' as ViewAction
+    RunSelectedTests: '' as ViewAction
   },
   icon: {
     TestManagement: '' as Asset,
@@ -188,7 +186,6 @@ export const testManagementPlugin = plugin(testManagementId, {
     RunTestCases: '' as IntlString,
     TestCaseDescription: '' as IntlString,
     TestResultAttributes: '' as IntlString,
-    AssignTests: '' as IntlString,
     GoToNextTest: '' as IntlString,
     GoToNextTestTooltip: '' as IntlString
   },

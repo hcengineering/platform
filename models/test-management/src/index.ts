@@ -23,7 +23,6 @@ import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
-import contact from '@hcengineering/contact'
 import { type ViewOptionsModel } from '@hcengineering/view'
 
 import { testManagementId, type TestResult } from '@hcengineering/test-management'
@@ -528,24 +527,6 @@ function defineTestResult (builder: Builder): void {
       } as FindOptions<TestResult>
     },
     testManagement.viewlet.TableTestResult
-  )
-
-  createAction(
-    builder,
-    {
-      action: testManagement.actionImpl.AssignTests,
-      label: testManagement.string.AssignTests,
-      icon: contact.icon.Person,
-      category: testManagement.category.TestResult,
-      input: 'any',
-      target: testManagement.class.TestResult,
-      context: {
-        mode: ['context', 'browser'],
-        application: testManagement.app.TestManagement,
-        group: 'edit'
-      }
-    },
-    testManagement.action.AssignTests
   )
 }
 

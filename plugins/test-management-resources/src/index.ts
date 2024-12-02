@@ -37,7 +37,7 @@ import EditTestResult from './components/test-result/EditTestResult.svelte'
 import TestResultHeader from './components/test-result/TestResultHeader.svelte'
 import TestResultFooter from './components/test-result/TestResultFooter.svelte'
 
-import { BulkAssigneeChange, CreateChildTestSuiteAction, EditTestSuiteAction, RunSelectedTestsAction } from './utils'
+import { CreateChildTestSuiteAction, EditTestSuiteAction, RunSelectedTestsAction } from './utils'
 import { resolveLocation, getAttachedObjectLink } from './navigation'
 
 export default async (): Promise<Resources> => ({
@@ -75,7 +75,6 @@ export default async (): Promise<Resources> => ({
   actionImpl: {
     CreateChildTestSuite: CreateChildTestSuiteAction,
     EditTestSuite: EditTestSuiteAction,
-    RunSelectedTests: RunSelectedTestsAction,
-    AssignTests: BulkAssigneeChange
+    RunSelectedTests: RunSelectedTestsAction
   }
 })

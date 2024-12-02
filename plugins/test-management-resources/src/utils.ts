@@ -15,7 +15,7 @@
 
 import type { Doc, DocumentQuery, Ref } from '@hcengineering/core'
 import { showPopup } from '@hcengineering/ui'
-import { type TestProject, type TestCase, type TestSuite, type TestResult } from '@hcengineering/test-management'
+import { type TestProject, type TestCase, type TestSuite } from '@hcengineering/test-management'
 
 import CreateTestSuiteComponent from './components/test-suite/CreateTestSuite.svelte'
 import EditTestSuiteComponent from './components/test-suite/EditTestSuite.svelte'
@@ -66,8 +66,4 @@ export async function RunSelectedTestsAction (docs: TestCase[] | TestCase): Prom
   } else {
     console.error('No test cases selected')
   }
-}
-
-export async function BulkAssigneeChange (testResults: TestResult[] | TestResult): Promise<void> {
-  // await showCreateTestRunPopup({ testResults })
 }

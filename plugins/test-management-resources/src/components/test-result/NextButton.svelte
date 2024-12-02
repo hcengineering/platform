@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte'
-  import { AnyComponent, Button, Loading, Location, navigate } from '@hcengineering/ui'
+  import { Button, Loading, Location, navigate } from '@hcengineering/ui'
   import { initializeIterator, testResultIteratorProvider, testIteratorStore } from './store/testIteratorStore'
   import testManagement, { TestResult } from '@hcengineering/test-management'
   import { Doc, type DocumentQuery, WithLookup } from '@hcengineering/core'
