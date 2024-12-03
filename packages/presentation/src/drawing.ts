@@ -295,7 +295,6 @@ export function drawing (
           }
         })
         prevPos = { x, y }
-        props.panned?.(draw.offset)
       })
     }
   }
@@ -310,6 +309,8 @@ export function drawing (
       if (draw.isDrawingTool()) {
         draw.drawLive(e.offsetX, e.offsetY, true)
         storeCommand()
+      } else if (draw.tool === 'pan') {
+        props.panned?.(draw.offset)
       }
       draw.on = false
     }
@@ -347,6 +348,7 @@ export function drawing (
       canvas.style.cursor = props.defaultCursor ?? 'default'
     } else if (draw.isDrawingTool()) {
       canvas.style.cursor = 'none'
+      canvasCursor.style.visibility = 'visible'
       const erasing = draw.tool === 'erase'
       const w = draw.cursorWidth()
       canvasCursor.style.background = erasing ? 'none' : draw.penColor
