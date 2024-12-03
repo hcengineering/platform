@@ -128,7 +128,7 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestCase: '' as IntlString,
     TestProject: '' as IntlString,
     TestManagementApplication: '' as IntlString,
-    AllTestCases: '' as IntlString,
+    AllTestSuites: '' as IntlString,
     AllProjects: '' as IntlString,
     Projects: '' as IntlString,
     CreateProject: '' as IntlString,

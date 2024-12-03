@@ -21,7 +21,7 @@
     "TestCase": "Test case",
     "TestProject": "Project",
     "TestManagementApplication": "Test Management",
-    "AllTestCases": "All test cases",
+    "AllTestSuites": "All test suites",
     "AllProjects": "All projects",
     "Projects": "Projects",
     "CreateProject": "Create project",
