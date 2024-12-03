@@ -335,20 +335,6 @@ function defineTestCase (builder: Builder): void {
     ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn', 'name']
   })
 
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: testManagement.class.TestCase,
-      descriptor: view.viewlet.Table,
-      config: ['', { key: 'attachedTo', label: testManagement.string.TestSuite }, 'status', 'assignee'],
-      configOptions: {
-        strict: true
-      }
-    },
-    testManagement.viewlet.TableTestCase
-  )
-
   const viewOptions: ViewOptionsModel = {
     groupBy: ['attachedTo'],
     orderBy: [
@@ -396,6 +382,20 @@ function defineTestCase (builder: Builder): void {
       viewOptions
     },
     testManagement.viewlet.ListTestCase
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: testManagement.class.TestCase,
+      descriptor: view.viewlet.Table,
+      config: ['', { key: 'attachedTo', label: testManagement.string.TestSuite }, 'status', 'assignee'],
+      configOptions: {
+        strict: true
+      }
+    },
+    testManagement.viewlet.TableTestCase
   )
 }
 
