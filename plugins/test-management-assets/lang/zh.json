@@ -21,7 +21,7 @@
     "TestCase": "測試用例",
     "TestProject": "專案",
     "TestManagementApplication": "測試管理",
-    "AllTestCases": "所有測試用例",
+    "AllTestSuites": "所有測試套件",
     "AllProjects": "所有項目",
     "Projects": "專案",
     "CreateProject": "創建專案",

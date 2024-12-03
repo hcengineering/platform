@@ -93,7 +93,7 @@ function defineApplication (builder: Builder): void {
                     parentKey: 'parent',
                     noParentId: testManagement.ids.NoParent,
                     getFolderLink: testManagement.function.GetTestSuiteLink,
-                    allObjectsLabel: testManagement.string.AllTestCases,
+                    allObjectsLabel: testManagement.string.AllTestSuites,
                     allObjectsIcon: testManagement.icon.TestSuites
                   },
                   syncWithLocationQuery: true
@@ -385,7 +385,6 @@ function defineTestCase (builder: Builder): void {
           props: { kind: 'list', size: 'small', shouldShowName: false },
           displayProps: { key: 'status', fixed: 'left' }
         },
-        { key: '', displayProps: { fixed: 'left', key: 'lead' } },
         { key: '', displayProps: { grow: true } },
         { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'right', dividerBefore: true } },
         {
@@ -493,6 +492,8 @@ function defineTestResult (builder: Builder): void {
           key: 'status',
           props: { kind: 'list', size: 'small', shouldShowName: false }
         },
+        { key: '', displayProps: { grow: true } },
+        { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'right', dividerBefore: true } },
         {
           key: 'assignee',
           props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' },
