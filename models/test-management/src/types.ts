@@ -250,12 +250,15 @@ export class TTestResult extends TAttachedDoc implements TestResult {
     testCase!: Ref<TestCase>
 
   @Prop(TypeRef(testManagement.class.TestSuite), testManagement.string.TestSuite)
+  @Index(IndexKind.Indexed)
     testSuite?: Ref<TestSuite>
 
   @Prop(TypeTestRunStatus(), testManagement.string.TestRunStatus)
+  @Index(IndexKind.Indexed)
     status?: TestRunStatus
 
   @Prop(TypeRef(contact.mixin.Employee), testManagement.string.TestAssignee)
+  @Index(IndexKind.Indexed)
     assignee?: Ref<Employee>
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })

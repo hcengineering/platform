@@ -160,6 +160,7 @@ export function createModel (builder: Builder): void {
   defineTestSuite(builder)
   defineTestCase(builder)
   defineTestRun(builder)
+  defineTestResult(builder)
 
   definePresenters(builder)
 
@@ -261,7 +262,7 @@ function defineTestSuite (builder: Builder): void {
   // Actions
 
   builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [print.action.Print, tracker.action.EditRelatedTargets]
+    actions: [print.action.Print, tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
   })
 
   createAction(
@@ -331,7 +332,7 @@ function defineTestCase (builder: Builder): void {
 
   builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ClassFilters, {
     filters: ['priority', 'status'],
-    ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn']
+    ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn', 'name']
   })
 
   builder.createDoc(
@@ -419,6 +420,12 @@ function defineTestRun (builder: Builder): void {
     component: testManagement.component.TestResultStatusPresenter
   })
 
+  builder.mixin(testManagement.class.TestRun, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [print.action.Print, tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
+  })
+}
+
+function defineTestResult (builder: Builder): void {
   builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: testManagement.component.TestResultPresenter
   })
@@ -448,7 +455,7 @@ function defineTestRun (builder: Builder): void {
 
   builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ClassFilters, {
     filters: ['assignee', 'status', 'testSuite'],
-    ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn']
+    ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn', 'name', 'attachedTo']
   })
 
   const viewOptions: ViewOptionsModel = {

@@ -23,7 +23,8 @@ import type { ActionCategory } from '@hcengineering/view'
 export default mergeIds(testManagementId, testManganement, {
   category: {
     TestSuite: '' as Ref<ActionCategory>,
-    TestCase: '' as Ref<ActionCategory>
+    TestCase: '' as Ref<ActionCategory>,
+    TestResult: '' as Ref<ActionCategory>
   },
   component: {
     CreateTestCase: '' as AnyComponent,

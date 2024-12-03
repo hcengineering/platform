@@ -77,6 +77,8 @@
     "DueDate": "到期日",
     "RunTestCases": "运行",
     "TestCaseDescription": "測試用例描述",
-    "TestResultAttributes": "結果"
+    "TestResultAttributes": "結果",
+    "GoToNextTest": "下一個",
+    "GoToNextTestTooltip": "轉到下一個測試"
   }
 }
