@@ -177,7 +177,6 @@ test.describe('Channel tests', () => {
     await channelPage.clickOnUser(data.lastName + ' ' + data.firstName)
     await channelPage.addMemberToChannel(newUser2.lastName + ' ' + newUser2.firstName)
     await channelPage.pressEscape()
-    await leftSideMenuPageSecond.clickChunter()
     await channelPageSecond.checkIfChannelDefaultExist(true, data.channelName)
     await channelPageSecond.clickChannelTab()
     await channelPageSecond.checkIfChannelTableExist(data.channelName, true)
@@ -369,7 +368,6 @@ test.describe('Channel tests', () => {
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     await leftSideMenuPageSecond.clickChunter()
 
-    await leftSideMenuPage.clickChunter()
     await channelPage.clickChannel('general')
     await channelPage.clickChannel(data.channelName)
     await channelPage.clickOnOpenChannelDetails()
@@ -406,14 +404,12 @@ test.describe('Channel tests', () => {
     })
 
     await test.step('Star channel', async () => {
-      await leftSideMenuPage.clickChunter()
       await channelPage.makeActionWithChannelInMenu(data.channelName, 'Star channel')
       await channelPage.checkChannelStarred(true, data.channelName)
       await channelPage.checkIfChannelDefaultExist(false, data.channelName)
     })
 
     await test.step('Unstar channel', async () => {
-      await leftSideMenuPage.clickChunter()
       await channelPage.makeActionWithChannelInMenu(data.channelName, 'Unstar channel')
       await channelPage.checkChannelStarred(false, data.channelName)
       await channelPage.checkIfChannelDefaultExist(true, data.channelName)
@@ -428,7 +424,6 @@ test.describe('Channel tests', () => {
       await chunterPage.createPrivateChannel(data.channelName, false)
       await channelPage.checkIfChannelDefaultExist(true, data.channelName)
 
-      await leftSideMenuPage.clickChunter()
       await channelPage.clickChooseChannel(data.channelName)
       await channelPage.sendMessage('Test message')
     })
@@ -460,8 +455,6 @@ test.describe('Channel tests', () => {
       await chunterPage.clickNewChannelHeader()
       await chunterPage.createPrivateChannel(data.channelName, false)
       await channelPage.checkIfChannelDefaultExist(true, data.channelName)
-
-      await leftSideMenuPage.clickChunter()
       await channelPage.clickChannelTab()
     })
 
@@ -485,8 +478,6 @@ test.describe('Channel tests', () => {
       await chunterPage.clickNewChannelHeader()
       await chunterPage.createPrivateChannel(data.channelName, false)
       await channelPage.checkIfChannelDefaultExist(true, data.channelName)
-
-      await leftSideMenuPage.clickChunter()
       await channelPage.clickChannelTab()
     })
 
@@ -512,8 +503,6 @@ test.describe('Channel tests', () => {
       await chunterPage.clickNewChannelHeader()
       await chunterPage.createPrivateChannel(data.channelName, false)
       await channelPage.checkIfChannelDefaultExist(true, data.channelName)
-
-      await leftSideMenuPage.clickChunter()
       await channelPage.clickChooseChannel(data.channelName)
       await channelPage.sendMessage('Test message')
     })
@@ -590,8 +579,6 @@ test.describe('Channel tests', () => {
       await chunterPage.clickNewChannelHeader()
       await chunterPage.createPrivateChannel(data.channelName, false)
       await channelPage.checkIfChannelDefaultExist(true, data.channelName)
-
-      await leftSideMenuPage.clickChunter()
       await channelPage.clickChooseChannel(data.channelName)
       await channelPage.sendMessage('Test message')
     })

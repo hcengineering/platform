@@ -11,7 +11,6 @@ import {
   navigate
 } from './tracker.utils'
 import { Issue, NewIssue } from '../model/tracker/types'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { CommonTrackerPage } from '../model/tracker/common-tracker-page'
 
@@ -20,13 +19,11 @@ test.use({
 })
 test.describe('Tracker sub-issues tests', () => {
   let issuesPage: IssuesPage
-  let leftSideMenuPage: LeftSideMenuPage
   let issuesDetailsPage: IssuesDetailsPage
   let commonTrackerPage: CommonTrackerPage
 
   test.beforeEach(async ({ page }) => {
     issuesPage = new IssuesPage(page)
-    leftSideMenuPage = new LeftSideMenuPage(page)
     issuesDetailsPage = new IssuesDetailsPage(page)
     commonTrackerPage = new CommonTrackerPage(page)
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
@@ -78,7 +75,6 @@ test.describe('Tracker sub-issues tests', () => {
       filePath: 'cat.jpeg'
     }
 
-    await leftSideMenuPage.clickTracker()
     await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(newIssue)
     await issuesPage.searchIssueByName(newIssue.title)
@@ -107,7 +103,6 @@ test.describe('Tracker sub-issues tests', () => {
       title: `Delete Sub-Issue with parameter-${generateId()}`,
       description: 'Delete Description Sub-Issue with parameter'
     }
-    await leftSideMenuPage.clickTracker()
     await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(deleteIssue)
     await issuesPage.searchIssueByName(deleteIssue.title)
@@ -141,7 +136,6 @@ test.describe('Tracker sub-issues tests', () => {
       description: 'Create sub-issue from template'
     }
     const templateName = 'New Issue'
-    await leftSideMenuPage.clickTracker()
     await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(parentIssue)
     await issuesPage.searchIssueByName(parentIssue.title)
@@ -171,7 +165,6 @@ test.describe('Tracker sub-issues tests', () => {
       description: 'New Description Sub-Issue with parameter'
     }
 
-    await leftSideMenuPage.clickTracker()
     await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(newIssue)
     await issuesPage.searchIssueByName(newIssue.title)

@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { Issue, NewIssue } from '../model/tracker/types'
@@ -13,20 +12,17 @@ test.use({
 })
 
 test.describe('Tracker issue tests', () => {
-  let leftSideMenuPage: LeftSideMenuPage
   let issuesDetailsPage: IssuesDetailsPage
   let issuesPage: IssuesPage
   let trackerNavigationMenuPage: TrackerNavigationMenuPage
   let issueCommentPopup: IssueCommentPopup
 
   test.beforeEach(async ({ page }) => {
-    leftSideMenuPage = new LeftSideMenuPage(page)
     issuesDetailsPage = new IssuesDetailsPage(page)
     issuesPage = new IssuesPage(page)
     trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     issueCommentPopup = new IssueCommentPopup(page)
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
-    await leftSideMenuPage.clickTracker()
   })
 
   test('Create an issue with all parameters and attachments', async ({ page }) => {

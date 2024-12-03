@@ -264,7 +264,7 @@
       </div>
 
       {#if withActions && !readonly}
-        <div class="actions" class:pending class:opened={isActionsOpened}>
+        <div class="actions" class:pending class:opened={isActionsOpened} class:isShort>
           <ActivityMessageActions
             message={isReactionMessage(message) ? parentMessage : message}
             {actions}
@@ -325,6 +325,9 @@
 
       &.opened:not(.pending) {
         visibility: visible;
+      }
+      &.isShort {
+        top: -1.875rem;
       }
     }
 

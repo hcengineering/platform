@@ -1,6 +1,5 @@
 import { test } from '@playwright/test'
 import { attachScreenshot, generateId, HomepageURI, PlatformSetting, PlatformURI } from '../utils'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { DocumentStatus, NewTemplate } from '../model/types'
 import { DocumentContentPage } from '../model/documents/document-content-page'
 import { NavigationMenuPage } from '../model/documents/navigation-menu-page'
@@ -34,9 +33,6 @@ test.describe('QMS. Templates tests', () => {
     }
 
     await test.step('1. Create a new template', async () => {
-      const leftSideMenuPage = new LeftSideMenuPage(page)
-      await leftSideMenuPage.buttonDocuments.click()
-
       const navigationMenuPage = new NavigationMenuPage(page)
       await navigationMenuPage.buttonTemplates.click()
 
@@ -77,9 +73,6 @@ test.describe('QMS. Templates tests', () => {
 
     const documentContentPage = new DocumentContentPage(page)
     await test.step('1. Create a new template', async () => {
-      const leftSideMenuPage = new LeftSideMenuPage(page)
-      await leftSideMenuPage.buttonDocuments.click()
-
       const navigationMenuPage = new NavigationMenuPage(page)
       await navigationMenuPage.buttonTemplates.click()
 

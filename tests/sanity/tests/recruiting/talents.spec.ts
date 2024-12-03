@@ -27,7 +27,6 @@ test.describe('candidate/talents tests', () => {
     const loc = 'Cupertino'
     const email = `ej-${generateId(4)}@test.com`
 
-    await talentsPage.clickRecruitApplication()
     await talentsPage.clickTalentsTab()
     await talentsPage.clickNewTalent()
     await talentsPage.enterFirstName(first)

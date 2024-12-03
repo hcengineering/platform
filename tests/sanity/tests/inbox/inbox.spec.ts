@@ -53,8 +53,6 @@ test.describe('Inbox tests', () => {
     const newIssue = createNewIssueData(data.firstName, data.lastName)
     await prepareNewIssueWithOpenStep(page, newIssue, false)
     await issuesDetailsPage.checkIssue(newIssue)
-    await leftSideMenuPage.clickTracker()
-
     await leftSideMenuPage.clickNotification()
     await inboxPage.checkIfTaskIsPresentInInbox(newIssue.title)
   })
@@ -63,7 +61,6 @@ test.describe('Inbox tests', () => {
     const newIssue = createNewIssueData(data.firstName, data.lastName)
     await prepareNewIssueWithOpenStep(page, newIssue, false)
     await issuesDetailsPage.checkIssue(newIssue)
-    await leftSideMenuPage.clickTracker()
 
     await leftSideMenuPage.clickNotification()
     await inboxPage.checkIfTaskIsPresentInInbox(newIssue.title)
@@ -106,7 +103,6 @@ test.describe('Inbox tests', () => {
       const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
       await prepareNewIssueWithOpenStep(page, newIssue, false)
       await issuesDetailsPage.checkIssue(newIssue)
-      await leftSideMenuPageSecond.clickTracker()
       await leftSideMenuPageSecond.clickNotification()
       await inboxPageSecond.checkIfTaskIsPresentInInbox(newIssue.title)
     } finally {
@@ -133,7 +129,6 @@ test.describe('Inbox tests', () => {
       const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
       await prepareNewIssueWithOpenStep(page, newIssue, false)
       await issuesDetailsPage.checkIssue(newIssue)
-      await leftSideMenuPageSecond.clickTracker()
       await leftSideMenuPageSecond.clickNotification()
       await inboxPageSecond.checkIfTaskIsPresentInInbox(newIssue.title)
       await inboxPageSecond.clickOnToDo(newIssue.title)

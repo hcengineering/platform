@@ -82,9 +82,9 @@
     border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
 
     &.mini:not(.float) {
-      width: 3.5rem !important;
-      min-width: 3.5rem !important;
-      max-width: 3.5rem !important;
+      width: calc(3.5rem + 1px) !important;
+      min-width: calc(3.5rem + 1px) !important;
+      max-width: calc(3.5rem + 1px) !important;
     }
     &.mini.float {
       justify-content: flex-end;

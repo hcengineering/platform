@@ -1,5 +1,4 @@
 import { test } from '@playwright/test'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
@@ -11,13 +10,11 @@ test.use({
 })
 
 test.describe('Attachments tests', () => {
-  let leftSideMenuPage: LeftSideMenuPage
   let trackerNavigationMenuPage: TrackerNavigationMenuPage
   let issuesPage: IssuesPage
   let issuesDetailsPage: IssuesDetailsPage
 
   test.beforeEach(async ({ page }) => {
-    leftSideMenuPage = new LeftSideMenuPage(page)
     trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     issuesPage = new IssuesPage(page)
     issuesDetailsPage = new IssuesDetailsPage(page)
@@ -30,7 +27,6 @@ test.describe('Attachments tests', () => {
       description: 'Create issue with several attachment tests description'
     }
 
-    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openIssuesForProject('Default')
     await issuesPage.clickModelSelectorAll()
     await issuesPage.clickButtonCreateNewIssue()
