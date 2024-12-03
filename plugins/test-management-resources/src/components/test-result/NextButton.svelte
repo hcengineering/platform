@@ -25,12 +25,11 @@
   export let object: WithLookup<TestResult> | undefined
   let isLoading = true
   let hasNext = false
-  let navigateToNext = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  testIteratorStore.subscribe(() => {
+  const unsubscribe = testIteratorStore.subscribe(() => {
     hasNext = testResultIteratorProvider.getIterator()?.hasNext() ?? false
   })
 
@@ -41,13 +40,11 @@
     isLoading = false
   })
   onDestroy(() => {
-    if (navigateToNext) {
-      testResultIteratorProvider.reset()
-    }
+    testResultIteratorProvider.reset()
+    unsubscribe()
   })
 
   async function goToNextItem (): Promise<void> {
-    navigateToNext = true
     const iterator = testResultIteratorProvider.getIterator()
     if (iterator !== undefined) {
       const nextItem = iterator.next()
