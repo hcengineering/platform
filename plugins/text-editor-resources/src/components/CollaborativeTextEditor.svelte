@@ -379,7 +379,6 @@
     drawing.set('commands', new YArray())
     drawing.set('props', new YMap())
     editor.commands.insertContentAt(pos, { type: 'drawingBoard', attrs: { id } })
-    editor.commands.showDrawingBoardPopup()
   }
 
   onMount(async () => {

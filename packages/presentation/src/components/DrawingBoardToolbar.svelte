@@ -80,7 +80,7 @@
         case 'add-color': {
           if (colorSelector !== undefined) {
             colorSelector.value = penColor
-            colorSelector.click()
+            colorSelector.showPicker()
           }
           break
         }

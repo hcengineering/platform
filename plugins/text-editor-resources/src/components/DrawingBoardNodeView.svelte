@@ -66,7 +66,7 @@
 </script>
 
 {#if savedBoard?.commands !== undefined && savedBoard?.props !== undefined}
-  <NodeViewWrapper data-drag-handle data-type="drawingBoard" data-id={node.attrs.id}>
+  <NodeViewWrapper data-drag-handle="" data-type="drawingBoard" data-id={node.attrs.id}>
     <DrawingBoardEditor
       savedCmds={savedBoard.commands}
       savedProps={savedBoard.props}
@@ -85,10 +85,17 @@
         />
       </div>
       {#if selected}
-        <div class="resizer" bind:this={resizer} on:pointerdown={onResizerPointerDown}>
-          <svg height="4" viewBox="0 0 60 4" width="60" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <div class="handle resizer" bind:this={resizer} on:pointerdown={onResizerPointerDown}>
+          <svg viewBox="0 0 60 4" height="4" width="60" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path
               d="m60 2a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2z"
+            />
+          </svg>
+        </div>
+        <div class="handle drag">
+          <svg viewBox="0 0 4 28" height="28" width="4" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="m2 28c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0-8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0-8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0-8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"
             />
           </svg>
         </div>
@@ -105,27 +112,41 @@
     right: 0.3rem;
   }
 
-  .resizer {
+  .handle {
     z-index: 1;
     position: absolute;
-    bottom: 0;
-    left: calc(50% - 4rem);
-    width: 8rem;
-    height: 0.6rem;
-    cursor: row-resize;
     color: var(--global-on-accent-TextColor);
     background-color: var(--global-accent-IconColor);
     border: 1px solid var(--theme-editbox-focus-border);
     display: flex;
     align-items: center;
     justify-content: center;
-    border-top-left-radius: var(--small-BorderRadius);
-    border-top-right-radius: var(--small-BorderRadius);
-    border-bottom: none;
     opacity: 0.5;
 
     &:hover {
       opacity: 1;
     }
+  }
+
+  .resizer {
+    bottom: 0;
+    left: calc(50% - 4rem);
+    width: 8rem;
+    height: 0.6rem;
+    cursor: row-resize;
+    border-top-left-radius: var(--small-BorderRadius);
+    border-top-right-radius: var(--small-BorderRadius);
+    border-bottom: none;
+  }
+
+  .drag {
+    left: -0.6rem;
+    top: calc(50% - 2rem);
+    width: 0.6rem;
+    height: 4rem;
+    cursor: move;
+    border-top-left-radius: var(--small-BorderRadius);
+    border-bottom-left-radius: var(--small-BorderRadius);
+    border-right: none;
   }
 </style>

@@ -67,8 +67,18 @@ export const DrawingBoardExtension = Node.create<DrawingBoardOptions>({
 
   group: 'block',
 
+  draggable: true,
+
   renderHTML ({ HTMLAttributes }) {
     return ['div', mergeAttributes({ 'data-type': this.name }, HTMLAttributes)]
+  },
+
+  parseHTML () {
+    return [
+      {
+        tag: 'div[data-type="drawingBoard"]'
+      }
+    ]
   },
 
   addOptions () {
@@ -80,10 +90,12 @@ export const DrawingBoardExtension = Node.create<DrawingBoardOptions>({
   addAttributes () {
     return {
       id: {
-        renderHTML: (attrs) => ({ 'data-id': attrs.id })
+        renderHTML: (attrs) => ({ 'data-id': attrs.id }),
+        parseHTML: (element) => element.getAttribute('data-id')
       },
       height: {
-        renderHTML: (attrs) => ({ 'data-height': attrs.height })
+        renderHTML: (attrs) => ({ 'data-height': attrs.height }),
+        parseHTML: (element) => parseInt(element.getAttribute('data-height') ?? '500')
       }
     }
   },
