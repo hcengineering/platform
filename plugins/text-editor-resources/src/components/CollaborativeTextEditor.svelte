@@ -16,7 +16,15 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { type Doc, generateId, makeDocCollabId } from '@hcengineering/core'
+  import {
+    type Blob,
+    Class,
+    type CollaborativeDoc,
+    type Doc,
+    type Ref,
+    generateId,
+    makeDocCollabId
+  } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import {
     getAttribute,
@@ -24,7 +32,8 @@
     getFileUrl,
     getImageSize,
     imageSizeToRatio,
-    KeyedAttribute
+    KeyedAttribute,
+    DrawingCmd
   } from '@hcengineering/presentation'
   import { markupToJSON } from '@hcengineering/text'
   import {
@@ -45,7 +54,7 @@
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
   import Placeholder from '@tiptap/extension-placeholder'
   import { createEventDispatcher, getContext, onDestroy, onMount } from 'svelte'
-  import { Array as YArray, Doc as YDoc, Map as YMap } from 'yjs'
+  import { Doc as YDoc } from 'yjs'
 
   import { Completion } from '../Completion'
   import { deleteAttachment } from '../command/deleteAttachment'
@@ -66,7 +75,7 @@
   import TextEditorToolbar from './TextEditorToolbar.svelte'
   import { noSelectionRender, renderCursor } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
-  import { DrawingBoardExtension } from './extension/drawingBoard'
+  import { DrawingBoardExtension, SavedBoard } from './extension/drawingBoard'
   import { EmojiExtension } from './extension/emoji'
   import { FileUploadExtension } from './extension/fileUploadExt'
   import { ImageUploadExtension } from './extension/imageUploadExt'
@@ -362,7 +371,7 @@
         editor.commands.setHorizontalRule()
         break
       case 'drawing-board':
-        makeNewDrawingBoard(pos)
+        editor.commands.insertContentAt(pos, { type: 'drawingBoard', attrs: { id: generateId() } })
         break
     }
   }
@@ -372,13 +381,39 @@
     remoteProvider.awareness?.setLocalStateField('lastUpdate', Date.now())
   }
 
-  function makeNewDrawingBoard (pos: number): void {
-    const id = generateId()
-    ydoc.getArray('drawing-board-registry').push([id])
-    const drawing = ydoc.getMap(`drawing-board-${id}`)
-    drawing.set('commands', new YArray())
-    drawing.set('props', new YMap())
-    editor.commands.insertContentAt(pos, { type: 'drawingBoard', attrs: { id } })
+  interface SavedBoardRaw {
+    ydoc: YDoc
+    localProvider: Provider
+    remoteProvider: Provider
+    localSynced: boolean
+    remoteSynced: boolean
+  }
+  const savedBoards: Record<string, SavedBoardRaw> = {}
+
+  function getSavedBoard (id: string): SavedBoard {
+    let board = savedBoards[id]
+    if (board === undefined) {
+      const ydoc = new YDoc({ guid: id })
+      // We don't have a real class for boards,
+      // but collaborator only needs a string id
+      // which is produced from such an id-object
+      const collabId: CollaborativeDoc = {
+        objectClass: 'DrawingBoard' as Ref<Class<Doc>>,
+        objectId: id as Ref<Doc>,
+        objectAttr: 'content'
+      }
+      const localProvider = createLocalProvider(ydoc, collabId)
+      const remoteProvider = createRemoteProvider(ydoc, collabId, id as Ref<Blob>)
+      savedBoards[id] = { ydoc, localProvider, remoteProvider, localSynced: false, remoteSynced: false }
+      void localProvider.loaded.then(() => (savedBoards[id].localSynced = true))
+      void remoteProvider.loaded.then(() => (savedBoards[id].remoteSynced = true))
+      board = savedBoards[id]
+    }
+    return {
+      props: board.ydoc.getMap('props'),
+      commands: board.ydoc.getArray<DrawingCmd>('commands'),
+      loading: !board.localSynced || !board.remoteSynced
+    }
   }
 
   onMount(async () => {
@@ -429,7 +464,7 @@
           }
         }),
         EmojiExtension,
-        DrawingBoardExtension.configure({ ydoc }),
+        DrawingBoardExtension.configure({ getSavedBoard }),
         ...extensions
       ],
       parseOptions: {

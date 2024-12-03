@@ -16,25 +16,27 @@
   import { Button, IconScribble } from '@hcengineering/ui'
   import { Node } from '@tiptap/pm/model'
   import { Editor } from '@tiptap/core'
-  import { Doc as YDoc } from 'yjs'
-  import { showBoardPopup, getSavedBoard } from './extension/drawingBoard'
+  import { onDestroy, onMount } from 'svelte'
+  import { showBoardPopup, SavedBoard } from './extension/drawingBoard'
   import NodeViewWrapper from './node-view/NodeViewWrapper.svelte'
   import DrawingBoardEditor from './DrawingBoardEditor.svelte'
 
-  export let ydoc: YDoc
+  export let getSavedBoard: (id: string) => SavedBoard
   export let node: Node
   export let editor: Editor
   export let selected: boolean
   export let getPos: any
 
-  const savedBoard = getSavedBoard(ydoc, node.attrs.id)
   const defaultHeight = 500
   const maxHeight = 1000
   const minHeight = 100
 
+  let savedBoard: SavedBoard
   let resizer: HTMLElement
   let startY: number
   let resizedHeight: number | undefined
+  let loading = true
+  let loadingTimer: any
 
   function onResizerPointerDown (e: PointerEvent): void {
     e.preventDefault()
@@ -63,6 +65,26 @@
     }
     resizedHeight = undefined
   }
+
+  onMount(() => {
+    let delay = 100
+    const getBoard = (): void => {
+      loadingTimer = undefined
+      savedBoard = getSavedBoard(node.attrs.id)
+      loading = savedBoard.loading
+      if (loading) {
+        loadingTimer = setTimeout(getBoard, delay)
+        delay *= 1.5
+      }
+    }
+    getBoard()
+  })
+
+  onDestroy(() => {
+    if (loadingTimer !== undefined) {
+      clearTimeout(loadingTimer)
+    }
+  })
 </script>
 
 {#if savedBoard?.commands !== undefined && savedBoard?.props !== undefined}
@@ -72,6 +94,7 @@
       savedProps={savedBoard.props}
       resizeable={true}
       readonly={!selected}
+      {loading}
       {selected}
       height={resizedHeight ?? node.attrs.height ?? defaultHeight}
     >
@@ -79,6 +102,7 @@
         <Button
           kind={selected ? 'primary' : 'ghost'}
           icon={IconScribble}
+          disabled={loading}
           on:click={() => {
             showBoardPopup(savedBoard, editor)
           }}

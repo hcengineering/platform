@@ -130,8 +130,8 @@
     if (!penColors.includes(penColor)) {
       penColor = penColors[0] ?? defaultColor
     }
-    penWidth = parseInt(localStorage.getItem(storageKey.penWidth) ?? '4')
-    eraserWidth = parseInt(localStorage.getItem(storageKey.eraserWidth) ?? '30')
+    penWidth = parseInt(localStorage.getItem(storageKey.penWidth) ?? '6')
+    eraserWidth = parseInt(localStorage.getItem(storageKey.eraserWidth) ?? '50')
   })
 
   function updatePenWidth (): void {
@@ -185,8 +185,8 @@
       class="widthSelector"
       type="range"
       min={2}
-      max={20}
-      step={2}
+      max={18}
+      step={4}
       bind:value={penWidth}
       on:change={updatePenWidth}
     />
@@ -194,9 +194,9 @@
     <input
       class="widthSelector"
       type="range"
-      min={10}
-      max={100}
-      step={10}
+      min={20}
+      max={110}
+      step={30}
       bind:value={eraserWidth}
       on:change={updateEraserWidth}
     />

@@ -17,25 +17,19 @@ import { type DrawingCmd } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
 import { type Editor, mergeAttributes, Node } from '@tiptap/core'
 import { NodeSelection } from '@tiptap/pm/state'
-import type { Array as YArray, Doc as YDoc, Map as YMap } from 'yjs'
+import type { Array as YArray, Map as YMap } from 'yjs'
 import DrawingBoardNodeView from '../DrawingBoardNodeView.svelte'
 import DrawingBoardPopup from '../DrawingBoardPopup.svelte'
 import { SvelteNodeViewRenderer } from '../node-view'
 
 export interface DrawingBoardOptions {
-  ydoc?: YDoc
+  getSavedBoard: (id: string) => SavedBoard
 }
 
 export interface SavedBoard {
   commands: YArray<DrawingCmd>
   props: YMap<any>
-}
-
-export function getSavedBoard (ydoc: YDoc | undefined, id: string): SavedBoard {
-  const board = ydoc?.getMap(`drawing-board-${id}`)
-  const commands = board?.get('commands') as YArray<DrawingCmd>
-  const props = board?.get('props') as YMap<any>
-  return { commands, props }
+  loading: boolean
 }
 
 export function showBoardPopup (board: SavedBoard, editor: Editor): void {
@@ -83,7 +77,7 @@ export const DrawingBoardExtension = Node.create<DrawingBoardOptions>({
 
   addOptions () {
     return {
-      ydoc: undefined
+      getSavedBoard: (id) => ({}) as any as SavedBoard
     }
   },
 
@@ -108,8 +102,10 @@ export const DrawingBoardExtension = Node.create<DrawingBoardOptions>({
             if (state.selection instanceof NodeSelection) {
               const node = state.selection.node
               if (node?.type.name === this.name) {
-                const board = getSavedBoard(this.options.ydoc, node.attrs.id)
-                showBoardPopup(board, this.editor)
+                const board = this.options.getSavedBoard(node.attrs.id)
+                if (!board.loading) {
+                  showBoardPopup(board, this.editor)
+                }
                 return true
               }
             }
@@ -128,7 +124,7 @@ export const DrawingBoardExtension = Node.create<DrawingBoardOptions>({
     return SvelteNodeViewRenderer(DrawingBoardNodeView, {
       contentAs: 'div',
       componentProps: {
-        ydoc: this.options.ydoc
+        getSavedBoard: this.options.getSavedBoard
       }
     })
   }

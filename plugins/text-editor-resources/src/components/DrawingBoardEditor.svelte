@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { DrawingBoardToolbar, DrawingCmd, DrawingTool, drawing } from '@hcengineering/presentation'
+  import { Loading } from '@hcengineering/ui'
   import { onMount, onDestroy } from 'svelte'
   import { Array as YArray, Map as YMap } from 'yjs'
 
@@ -24,6 +25,7 @@
   export let height: number | undefined = undefined
   export let readonly = false
   export let selected = false
+  export let loading = false
 
   let tool: DrawingTool
   let penColor: string
@@ -63,51 +65,63 @@
 </script>
 
 {#if savedCmds !== undefined && savedProps !== undefined}
-  <div
-    class="board"
-    class:selected
-    style:flex-grow={resizeable ? undefined : '1'}
-    style:height={resizeable ? `${height}px` : undefined}
-    use:drawing={{
-      readonly,
-      autoSize: true,
-      commandCount,
-      commands,
-      offset,
-      tool,
-      penColor,
-      penWidth,
-      eraserWidth,
-      cmdAdded: (cmd) => {
-        savedCmds.push([cmd])
-      },
-      panned: (offset) => {
-        savedProps.set('offset', offset)
-      }
-    }}
-  >
-    {#if grabFocus}
-      <!-- grab focus from the editor -->
-      <!-- svelte-ignore a11y-autofocus -->
-      <input style:opacity="0" autoFocus />
-    {/if}
-    {#if !readonly}
-      <DrawingBoardToolbar
-        placeInside={true}
-        showPanTool={true}
-        bind:toolbar
-        bind:tool
-        bind:penColor
-        bind:penWidth
-        bind:eraserWidth
-        on:clear={() => {
-          savedCmds.delete(0, savedCmds.length)
-          savedProps.set('offset', { x: 0, y: 0 })
-        }}
-      />
-    {/if}
-    <slot />
-  </div>
+  {#if loading}
+    <div
+      class="board"
+      class:selected
+      style:flex-grow={resizeable ? undefined : '1'}
+      style:height={resizeable ? `${height}px` : undefined}
+    >
+      <Loading />
+      <slot />
+    </div>
+  {:else}
+    <div
+      class="board"
+      class:selected
+      style:flex-grow={resizeable ? undefined : '1'}
+      style:height={resizeable ? `${height}px` : undefined}
+      use:drawing={{
+        readonly,
+        autoSize: true,
+        commandCount,
+        commands,
+        offset,
+        tool,
+        penColor,
+        penWidth,
+        eraserWidth,
+        cmdAdded: (cmd) => {
+          savedCmds.push([cmd])
+        },
+        panned: (offset) => {
+          savedProps.set('offset', offset)
+        }
+      }}
+    >
+      {#if grabFocus}
+        <!-- grab focus from the editor -->
+        <!-- svelte-ignore a11y-autofocus -->
+        <input style:opacity="0" autoFocus />
+      {/if}
+      {#if !readonly}
+        <DrawingBoardToolbar
+          placeInside={true}
+          showPanTool={true}
+          bind:toolbar
+          bind:tool
+          bind:penColor
+          bind:penWidth
+          bind:eraserWidth
+          on:clear={() => {
+            savedCmds.delete(0, savedCmds.length)
+            savedProps.set('offset', { x: 0, y: 0 })
+          }}
+        />
+      {/if}
+      <slot />
+    </div>
+  {/if}
 {/if}
 
 <style lang="scss">
