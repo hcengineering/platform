@@ -75,7 +75,13 @@
     connectLabel = love.string.StartMeeting
   }
 
-  function showConnectionButton (object: Room, isConnected: boolean, myOffice?: Room, currentRoom?: Room): boolean {
+  function showConnectionButton (
+    object: Room,
+    connecting: boolean,
+    isConnected: boolean,
+    myOffice?: Room,
+    currentRoom?: Room
+  ): boolean {
     // Do not show connect button in my office
     if (object._id === myOffice?._id) return false
     // Show during connecting with spinner
@@ -98,7 +104,7 @@
         focusIndex={1}
       />
     </div>
-    {#if showConnectionButton(object, $isConnected, $myOffice, $currentRoom)}
+    {#if showConnectionButton(object, connecting, $isConnected, $myOffice, $currentRoom)}
       <ModernButton label={connectLabel} size="large" kind={'primary'} on:click={connect} loading={connecting} />
     {/if}
   </div>
