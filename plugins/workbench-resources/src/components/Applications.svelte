@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { getCurrentAccount, type Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Scroller, resizeObserver } from '@hcengineering/ui'
+  import { Scroller, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { NavLink } from '@hcengineering/view-resources'
   import type { Application } from '@hcengineering/workbench'
   import workbench from '@hcengineering/workbench'
@@ -60,13 +60,33 @@
     >
       {#each topApps as app}
         <NavLink app={app.alias} shrink={0} disabled={app._id === active}>
-          <AppItem selected={app._id === active} icon={app.icon} label={app.label} />
+          <AppItem
+            selected={app._id === active}
+            icon={app.icon}
+            label={app.label}
+            navigator={app._id === active && $deviceInfo.navigator.visible}
+            on:click={() => {
+              if (app._id === active) {
+                $deviceInfo.navigator.visible = !$deviceInfo.navigator.visible
+              }
+            }}
+          />
         </NavLink>
       {/each}
       <div class="divider" />
       {#each bottomdApps as app}
         <NavLink app={app.alias} shrink={0} disabled={app._id === active}>
-          <AppItem selected={app._id === active} icon={app.icon} label={app.label} />
+          <AppItem
+            selected={app._id === active}
+            icon={app.icon}
+            label={app.label}
+            navigator={app._id === active && $deviceInfo.navigator.visible}
+            on:click={() => {
+              if (app._id === active) {
+                $deviceInfo.navigator.visible = !$deviceInfo.navigator.visible
+              }
+            }}
+          />
         </NavLink>
       {/each}
       <div class="apps-space-{direction}" />

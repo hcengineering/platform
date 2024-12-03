@@ -239,7 +239,13 @@
         />
       {/if}
       {#if canGoBack(joined, $location, $currentMeetingMinutes)}
-        <ModernButton icon={IconArrowLeft} label={ui.string.Back} kind={'secondary'} size={'large'} on:click={back} />
+        <ModernButton
+          icon={IconArrowLeft}
+          label={love.string.MeetingMinutes}
+          kind={'primary'}
+          size={'large'}
+          on:click={back}
+        />
       {/if}
     </div>
   {/if}

@@ -41,10 +41,11 @@
     editor.off('selectionUpdate', handleSelectionUpdate)
   })
 
+  $: todoable = objectId !== undefined && objectClass !== undefined
   $: todoId = node.attrs.todoid as Ref<ToDo>
   $: userId = node.attrs.userid as Ref<Person>
   $: checked = node.attrs.checked ?? false
-  $: readonly = !editor.isEditable || objectId === undefined
+  $: readonly = !editor.isEditable || (!todoable && todoId != null)
 
   let todo: ToDo | undefined = undefined
   $: query.query(
@@ -59,7 +60,7 @@
   )
 
   async function syncTodo (todo: ToDo | undefined): Promise<void> {
-    if (todo !== undefined) {
+    if (todo !== undefined && todo.attachedTo === objectId && todo.attachedToClass === objectClass) {
       const todoChecked = todo.doneOn != null
       if (todo._id !== todoId || todo.user !== userId || todoChecked !== checked) {
         updateAttributes({
@@ -212,16 +213,18 @@
     class:hovered
     class:focused
   >
-    <div class="flex-center assignee" contenteditable="false">
-      <EmployeePresenter
-        value={userId}
-        disabled={readonly}
-        avatarSize={'card'}
-        shouldShowName={false}
-        shouldShowPlaceholder
-        onEmployeeEdit={handleAssigneeEdit}
-      />
-    </div>
+    {#if todoable}
+      <div class="flex-center assignee" contenteditable="false">
+        <EmployeePresenter
+          value={userId}
+          disabled={readonly}
+          avatarSize={'card'}
+          shouldShowName={false}
+          shouldShowPlaceholder
+          onEmployeeEdit={handleAssigneeEdit}
+        />
+      </div>
+    {/if}
 
     <div class="flex-center todo-check" contenteditable="false">
       <CheckBox {readonly} {checked} on:value={markDone} kind={'positive'} size={'medium'} />

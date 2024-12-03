@@ -73,7 +73,6 @@ test.describe('Workspace tests', () => {
     await loginPage.clickSignUp()
     await signUpPage.signUp(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
-    await leftSideMenuPage.clickTracker()
 
     await trackerNavigationMenuPage.openIssuesForProject('Default')
     await issuesPage.clickModelSelectorAll()

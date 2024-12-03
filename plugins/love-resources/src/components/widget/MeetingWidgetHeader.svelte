@@ -17,7 +17,7 @@
     Breadcrumbs,
     Header,
     BreadcrumbItem,
-    IconMaximize,
+    IconScaleFull,
     ButtonIcon,
     showPopup,
     PopupResult
@@ -57,7 +57,7 @@
   <Breadcrumbs items={breadcrumbs} currentOnly />
   <svelte:fragment slot="actions">
     {#if ($currentRoom !== undefined && $screenSharing) || $currentRoom?.type === RoomType.Video}
-      <ButtonIcon icon={IconMaximize} kind="tertiary" size="small" noPrint on:click={maximize} />
+      <ButtonIcon icon={IconScaleFull} kind="tertiary" size="small" noPrint on:click={maximize} />
     {/if}
   </svelte:fragment>
 </Header>

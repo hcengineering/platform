@@ -23,12 +23,14 @@
   export let size: 'small' | 'medium' | 'large' = 'large'
   export let loading: boolean = false
   export let notify: boolean = false
+  export let navigator: boolean = false
 </script>
 
 <button
   class="app {size}"
   class:loading
   class:selected
+  class:navigator
   id={'app-' + label}
   disabled={loading}
   use:tooltip={{ label }}
@@ -98,6 +100,9 @@
       .icon-container {
         color: var(--theme-caption-color);
       }
+    }
+    &.navigator {
+      border-color: var(--theme-button-border);
     }
   }
 

@@ -1,6 +1,5 @@
 import { test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { Issue, NewIssue } from '../model/tracker/types'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { TemplatePage } from '../model/tracker/templates-page'
@@ -11,13 +10,11 @@ test.use({
 })
 
 test.describe('Tracker template tests', () => {
-  let leftSideMenuPage: LeftSideMenuPage
   let trackerNavigationMenuPage: TrackerNavigationMenuPage
   let templatePage: TemplatePage
   let templateDetailsPage: TemplateDetailsPage
 
   test.beforeEach(async ({ page }) => {
-    leftSideMenuPage = new LeftSideMenuPage(page)
     trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     templatePage = new TemplatePage(page)
     templateDetailsPage = new TemplateDetailsPage(page)
@@ -37,7 +34,6 @@ test.describe('Tracker template tests', () => {
       milestone: 'No Milestone'
     }
 
-    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openTemplateForProject('Default')
     await templatePage.createNewTemplate(newTemplate)
     await templatePage.openTemplate(newTemplate.title)
@@ -59,7 +55,6 @@ test.describe('Tracker template tests', () => {
       estimation: '8',
       duedate: 'today'
     }
-    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openTemplateForProject('Default')
     await templatePage.createNewTemplate(newTemplate)
     await templatePage.openTemplate(newTemplate.title)
@@ -90,7 +85,6 @@ test.describe('Tracker template tests', () => {
       title: `Template for delete-${generateId()}`,
       description: 'Created template for delete'
     }
-    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openTemplateForProject('Default')
     await templatePage.createNewTemplate(deleteTemplate)
     await templatePage.openTemplate(deleteTemplate.title)

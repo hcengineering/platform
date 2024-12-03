@@ -56,23 +56,24 @@ function isTodoableClass (objectClass: Ref<Class<Doc>>): boolean {
   }
 }
 
-function isTodoable (mode: TextEditorMode, objectClass?: Ref<Class<Doc>>): boolean {
-  return mode === 'full' && objectClass !== undefined && isTodoableClass(objectClass)
+function isTodoable (mode: TextEditorMode): boolean {
+  return mode === 'full'
 }
 
 export function createTodoItemExtension (mode: TextEditorMode, ctx: any): AnyExtension | undefined {
-  if (!isTodoable(mode, ctx.objectClass)) {
+  if (!isTodoable(mode)) {
     return
   }
 
   const { objectId, objectClass, objectSpace } = ctx
+  const componentProps = isTodoableClass(objectClass) ? { objectId, objectClass, objectSpace } : {}
 
   return TodoItemExtension.extend({
     addNodeView () {
       return SvelteNodeViewRenderer(ToDoItemNodeView, {
         contentAs: 'li',
         contentClass: 'todo-item',
-        componentProps: { objectId, objectClass, objectSpace }
+        componentProps
       })
     }
   }).configure({
@@ -83,7 +84,7 @@ export function createTodoItemExtension (mode: TextEditorMode, ctx: any): AnyExt
 }
 
 export function createTodoListExtension (mode: TextEditorMode, ctx: any): AnyExtension | undefined {
-  if (!isTodoable(mode, ctx.objectClass)) {
+  if (!isTodoable(mode)) {
     return
   }
 

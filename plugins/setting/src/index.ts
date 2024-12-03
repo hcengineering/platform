@@ -204,7 +204,7 @@ export default plugin(settingId, {
     Collections: '' as IntlString,
     SpaceTypes: '' as IntlString,
     Roles: '' as IntlString,
-    OwnerOrMainteinerRequired: '' as IntlString
+    OwnerOrMaintainerRequired: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,

@@ -24,6 +24,7 @@
   import { DocAttributeBar, getDocMixins } from '@hcengineering/view-resources'
 
   import RightHeader from './RightHeader.svelte'
+  import NextButton from './NextButton.svelte'
   import TestCaseDetails from '../test-case/TestCaseDetails.svelte'
   import testManagement from '../../plugin'
 
@@ -91,6 +92,10 @@
         boundary={content}
       />
     </div>
+
+    <svelte:fragment slot="extra">
+      <NextButton {object} />
+    </svelte:fragment>
 
     <svelte:fragment slot="aside">
       <DocAttributeBar {object} {mixins} ignoreKeys={['name']} />

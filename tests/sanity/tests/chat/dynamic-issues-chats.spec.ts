@@ -45,8 +45,6 @@ test.describe('Dynamic issues chats', () => {
   })
 
   test('User can create issue for himself and see linked chat', async ({ page, browser, request }) => {
-    await leftSideMenuPage.clickTracker()
-
     const newIssue: NewIssue = {
       title: `Issue to test dynamic chat-${generateId()}`,
       description: 'Created issue with all parameters and attachments description',
@@ -73,7 +71,6 @@ test.describe('Dynamic issues chats', () => {
 
     const channelPageSecond = new ChannelPage(page2)
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
-    await leftSideMenuPageSecond.clickChunter()
 
     const newIssue: NewIssue = {
       title: `Issue to test dynamic chat-${generateId()}`,

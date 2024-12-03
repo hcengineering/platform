@@ -77,6 +77,8 @@
     "DueDate": "Fecha de vencimiento",
     "RunTestCases": "Ejecutar",
     "TestCaseDescription": "Descripción del caso de prueba",
-    "TestResultAttributes": "Resultado"
+    "TestResultAttributes": "Resultado",
+    "GoToNextTest": "Siguiente",
+    "GoToNextTestTooltip": "Ir al siguiente test"
   }
 }

@@ -10,7 +10,6 @@ import {
 } from '../utils'
 import { allure } from 'allure-playwright'
 import { DocumentContentPage } from '../model/documents/document-content-page'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 
 import { faker } from '@faker-js/faker'
 import { createTemplateStep, prepareDocumentStep } from './common-documents-steps'
@@ -37,7 +36,6 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
     await allure.description('Requirement\nUsers need to create a new template')
     await allure.tms('TESTS-382', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-382')
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     const category = faker.word.words(2)
     const description = faker.lorem.sentence(1)
     const code = faker.word.words(2)
@@ -57,7 +55,6 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       approvers: ['Appleseed John']
     }
 
-    await leftSideMenuPage.clickButtonOnTheLeft('Documents')
     await test.step('2. Create a new category', async () => {
       const documentContentPage = new DocumentContentPage(page)
       await documentContentPage.selectControlDocumentSubcategory('Categories')
@@ -104,9 +101,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       title: `Complete document-${generateId()}`,
       description: `Complete document description-${generateId()}`
     }
-    const leftSideMenuPage = new LeftSideMenuPage(page)
 
-    await leftSideMenuPage.clickButtonOnTheLeft('Documents')
     await test.step('2. Add a member to space', async () => {
       const documentContentPage = new DocumentContentPage(page)
       await documentContentPage.addMemberToQualityDocument()
@@ -130,9 +125,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
     const title = faker.word.words(2)
     const description = faker.lorem.sentence(1)
     const code = faker.word.words(2)
-    const leftSideMenuPage = new LeftSideMenuPage(page)
 
-    await leftSideMenuPage.clickButtonOnTheLeft('Documents')
     const category = faker.word.words(2)
     const newTemplate: NewTemplate = {
       location: {
@@ -148,7 +141,6 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       approvers: ['Appleseed John']
     }
     const reviewer = 'Dirak Kainin'
-    await leftSideMenuPage.clickButtonOnTheLeft('Documents')
 
     await test.step('2. Create a new category', async () => {
       const documentContentPage = new DocumentContentPage(page)

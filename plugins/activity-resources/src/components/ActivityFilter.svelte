@@ -14,16 +14,16 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
   import { Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { ActionIcon, eventToHTMLElement, Icon, Label, showPopup } from '@hcengineering/ui'
-  import { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
+  import { Button, eventToHTMLElement, Icon, Label, showPopup } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
 
   import activity from '../plugin'
   import FilterPopup from './FilterPopup.svelte'
   import IconClose from './icons/Close.svelte'
-  import IconFilter from './icons/Filter.svelte'
   import { sortActivityMessages } from '../activityMessagesUtils'
 
   export let messages: ActivityMessage[]
@@ -146,4 +146,6 @@
   {/if}
 {/if}
 <div class="w-4 min-w-4 max-w-4" />
-<ActionIcon icon={IconFilter} size={'medium'} action={handleOptions} />
+<div class="buttons-group small-gap pr-2">
+  <Button icon={view.icon.Configure} size={'small'} kind={'ghost'} on:click={handleOptions} />
+</div>

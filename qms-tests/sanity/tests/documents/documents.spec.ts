@@ -18,7 +18,6 @@ import { prepareDocumentStep } from './common-documents-steps'
 import { DocumentApprovalsPage } from '../model/documents/document-approvals-page'
 import { DocumentReleasePage } from '../model/documents/document-release-page'
 import { DocumentReasonAndImpactPage } from '../model/documents/document-reason-impact-page'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { DocumentHistoryPage } from '../model/documents/document-history-page'
 import { faker } from '@faker-js/faker'
 
@@ -1063,9 +1062,6 @@ test.describe('QMS. Documents tests', () => {
     }
 
     await test.step('1. Open the document created sometime ago', async () => {
-      const leftSideMenuPage = new LeftSideMenuPage(page)
-      await leftSideMenuPage.buttonDocuments.click()
-
       const documentsPage = new DocumentsPage(page)
       await documentsPage.openDocument(existDocument.title)
     })

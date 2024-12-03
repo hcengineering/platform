@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI, setTestOptions } from '../utils'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { NewIssue } from '../model/tracker/types'
 import { prepareNewIssueWithOpenStep } from './common-steps'
@@ -22,8 +21,6 @@ test.describe('Tracker public link issues tests', () => {
         await page.goto(`${PlatformURI}/workbench/sanity-ws`)
         await setTestOptions(page)
 
-        const leftSideMenuPage = new LeftSideMenuPage(page)
-        await leftSideMenuPage.clickTracker()
         await prepareNewIssueWithOpenStep(page, publicLinkIssue)
 
         const issuesDetailsPage = new IssuesDetailsPage(page)
@@ -78,8 +75,6 @@ test.describe('Tracker public link issues tests', () => {
         await page.goto(`${PlatformURI}/workbench/sanity-ws`)
         await setTestOptions(page)
 
-        const leftSideMenuPage = new LeftSideMenuPage(page)
-        await leftSideMenuPage.clickTracker()
         await prepareNewIssueWithOpenStep(page, publicLinkIssue)
 
         const issuesDetailsPage = new IssuesDetailsPage(page)
