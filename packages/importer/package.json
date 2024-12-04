@@ -59,7 +59,8 @@
     "commander": "^8.1.0",
     "mime-types": "~2.1.34",
     "csvtojson": "^2.0.10",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "@hcengineering/controlled-documents": "^0.1.0"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

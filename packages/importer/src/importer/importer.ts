@@ -14,7 +14,7 @@
 //
 import attachment, { type Attachment } from '@hcengineering/attachment'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
-import { type Person } from '@hcengineering/contact'
+import { Employee, type Person } from '@hcengineering/contact'
 import core, {
   type Account,
   type AttachedData,
@@ -32,9 +32,10 @@ import core, {
   type Space,
   type Status,
   type Timestamp,
-  type TxOperations
+  type TxOperations,
+  CollectionSize
 } from '@hcengineering/core'
-import document, { type Document, getFirstRank, type Teamspace } from '@hcengineering/document'
+import document, { type Document, DocumentSnapshot, getFirstRank, type Teamspace } from '@hcengineering/document'
 import task, {
   createProjectType,
   makeRank,
@@ -55,6 +56,18 @@ import view from '@hcengineering/view'
 import { type MarkdownPreprocessor, NoopMarkdownPreprocessor } from './preprocessor'
 import { type FileUploader } from './uploader'
 import { Logger } from './logger'
+import documents, {
+  ControlledDocumentState,
+  DocumentRequest,
+  type ControlledDocument,
+  DocumentCategory,
+  type DocumentSpace,
+  DocumentState,
+  type DocumentTemplate,
+  createControlledDocFromTemplate,
+  createDocumentTemplate,
+  ChangeControl
+} from '@hcengineering/controlled-documents'
 
 export interface ImportWorkspace {
   projectTypes?: ImportProjectType[]
@@ -95,6 +108,7 @@ export interface ImportDoc {
   id?: Ref<Doc>
   class: Ref<Class<Doc<Space>>>
   title: string
+  prefix: string
   descrProvider: () => Promise<string>
   subdocs: ImportDoc[]
 }
@@ -146,6 +160,62 @@ export interface ImportAttachment {
   spaceId?: Ref<Space>
 }
 
+export interface ImportControlledDocumentSpace extends ImportSpace<ImportControlledDocument | ImportControlledDocumentTemplate> {
+  class: Ref<Class<DocumentSpace>>
+}
+
+export interface ImportControlledDocumentTemplate extends ImportDoc {
+  id?: Ref<DocumentTemplate>
+  class: Ref<Class<Document>>
+  docPrefix: string
+  code: string
+  seqNumber: number
+  major: number
+  minor: number
+  state: DocumentState
+  commentSequence: number
+  category?: Ref<DocumentCategory>
+  author?: Ref<Employee>
+  owner?: Ref<Employee>
+  abstract?: string
+  requests: CollectionSize<DocumentRequest>
+  reviewers: Ref<Employee>[]
+  approvers: Ref<Employee>[]
+  coAuthors: Ref<Employee>[]
+  changeControl: Ref<ChangeControl>
+  reviewInterval?: number
+  plannedEffectiveDate?: Timestamp
+  effectiveDate?: Timestamp
+  snapshots?: CollectionSize<DocumentSnapshot>
+  subdocs: Array<ImportControlledDocument | ImportControlledDocumentTemplate>
+}
+
+export interface ImportControlledDocument extends ImportDoc {
+  id?: Ref<ControlledDocument>
+  class: Ref<Class<ControlledDocument>>
+  template: Ref<DocumentTemplate>
+  code: string
+  seqNumber: number
+  major: number
+  minor: number
+  state: DocumentState
+  commentSequence: number
+  requests: CollectionSize<DocumentRequest>
+  reviewers: Ref<Employee>[]
+  approvers: Ref<Employee>[]
+  coAuthors: Ref<Employee>[]
+  changeControl: Ref<ChangeControl>
+  category?: Ref<DocumentCategory>
+  author?: Ref<Employee>
+  owner?: Ref<Employee>
+  abstract?: string
+  reviewInterval?: number
+  controlledState?: ControlledDocumentState
+  plannedEffectiveDate?: Timestamp
+  effectiveDate?: Timestamp
+  subdocs: Array<ImportControlledDocument | ImportControlledDocumentTemplate>
+}
+
 export class WorkspaceImporter {
   private readonly issueStatusByName = new Map<string, Ref<IssueStatus>>()
   private readonly projectTypeByName = new Map<string, Ref<ProjectType>>()
@@ -181,6 +251,8 @@ export class WorkspaceImporter {
         await this.importTeamspace(space as ImportTeamspace)
       } else if (space.class === tracker.class.Project) {
         await this.importProject(space as ImportProject)
+      } else if (space.class === documents.class.DocumentSpace) {
+        await this.importDocumentSpace(space as ImportControlledDocumentSpace)
       }
     }
   }
@@ -677,5 +749,169 @@ export class WorkspaceImporter {
       i++
     }
     return identifier
+  }
+
+  async importDocumentSpace (space: ImportControlledDocumentSpace): Promise<Ref<DocumentSpace>> {
+    this.logger.log('Creating document space: ' + space.title)
+    const spaceId = await this.createDocumentSpace(space)
+    this.logger.log('Document space created: ' + spaceId)
+
+    for (const doc of space.docs) {
+      if (this.isDocumentTemplate(doc)) {
+        await this.createTemplateWithSubdocs(doc as ImportControlledDocumentTemplate, spaceId)
+      } else {
+        await this.createControlledDocumentWithSubdocs(doc as ImportControlledDocument, spaceId)
+      }
+    }
+    return spaceId
+  }
+
+  private isDocumentTemplate (doc: ImportDoc): boolean {
+    return doc.class === documents.mixin.DocumentTemplate
+  }
+
+  async createDocumentSpace (space: ImportControlledDocumentSpace): Promise<Ref<DocumentSpace>> {
+    const spaceId = generateId<DocumentSpace>()
+    const codePoint = space.emoji?.codePointAt(0)
+    const data = {
+      type: documents.spaceType.DocumentSpaceType,
+      description: space.description ?? '',
+      title: space.title,
+      name: space.title,
+      private: space.private,
+      color: codePoint,
+      icon: codePoint === undefined ? undefined : view.ids.IconWithEmoji,
+      owners: space.owners ?? [],
+      members: space.members ?? [],
+      autoJoin: space.autoJoin,
+      archived: space.archived ?? false
+    }
+    await this.client.createDoc(documents.class.DocumentSpace, core.space.Space, data, spaceId)
+    return spaceId
+  }
+
+  async createTemplateWithSubdocs (
+    template: ImportControlledDocumentTemplate,
+    spaceId: Ref<DocumentSpace>
+  ): Promise<Ref<DocumentTemplate>> {
+    this.logger.log('Creating document template: ' + template.title)
+    const templateId = template.id ?? generateId<DocumentTemplate>()
+    const content = await template.descrProvider()
+
+    const collabId = makeCollabId(documents.class.Document, templateId, 'content')
+    const contentId = await this.createCollaborativeContent(templateId, collabId, content, spaceId)
+
+    await createDocumentTemplate(
+      this.client,
+      documents.class.Document,
+      spaceId,
+      documents.mixin.DocumentTemplate,
+      undefined,
+      undefined,
+      templateId as unknown as Ref<ControlledDocument>, // todo: suspisios place
+      template.docPrefix,
+      {
+        title: template.title,
+        content: contentId,
+        code: template.code,
+        seqNumber: template.seqNumber,
+        major: template.major,
+        minor: template.minor,
+        state: template.state,
+        commentSequence: template.commentSequence,
+        category: template.category,
+        author: template.author,
+        owner: template.owner,
+        abstract: template.abstract,
+        labels: 0,
+        snapshots: template.snapshots ?? 0,
+        requests: template.requests,
+        reviewers: template.reviewers,
+        approvers: template.approvers,
+        coAuthors: template.coAuthors,
+        changeControl: template.changeControl,
+        reviewInterval: template.reviewInterval,
+        plannedEffectiveDate: template.plannedEffectiveDate,
+        effectiveDate: template.effectiveDate
+      },
+      documents.category.DOC
+    )
+
+    for (const subdoc of template.subdocs) {
+      if (this.isDocumentTemplate(subdoc)) {
+        await this.createTemplateWithSubdocs(subdoc as ImportControlledDocumentTemplate, spaceId)
+      } else {
+        await this.createControlledDocumentWithSubdocs(subdoc as ImportControlledDocument, spaceId)
+      }
+    }
+
+    return templateId
+  }
+
+  async createControlledDocumentWithSubdocs (
+    doc: ImportControlledDocument,
+    spaceId: Ref<DocumentSpace>
+  ): Promise<Ref<ControlledDocument>> {
+    this.logger.log('Creating controlled document: ' + doc.title)
+    const docId = doc.id ?? generateId<ControlledDocument>()
+    const content = await doc.descrProvider()
+
+    // Create initial content reference
+    const collabId = makeCollabId(documents.class.ControlledDocument, docId, 'content')
+    const contentId = content !== undefined
+      ? await this.createCollaborativeContent(docId, collabId, content, spaceId)
+      : null
+
+    const { success } = await createControlledDocFromTemplate(
+      this.client,
+      doc.template,
+      docId,
+      {
+        // Base Document fields
+        title: doc.title,
+        content: contentId,
+        prefix: doc.prefix, // Add required prefix field
+        code: doc.code,
+        seqNumber: doc.seqNumber,
+        major: doc.major,
+        minor: doc.minor,
+        state: doc.state,
+        commentSequence: doc.commentSequence,
+        category: doc.category,
+        author: doc.author,
+        owner: doc.owner,
+        abstract: doc.abstract,
+
+        // ControlledDocument specific fields
+        requests: doc.requests,
+        reviewers: doc.reviewers,
+        approvers: doc.approvers,
+        coAuthors: doc.coAuthors,
+        reviewInterval: doc.reviewInterval,
+        controlledState: doc.controlledState,
+        plannedEffectiveDate: doc.plannedEffectiveDate,
+        effectiveDate: doc.effectiveDate,
+        changeControl: doc.changeControl
+      },
+      spaceId,
+      undefined, // project
+      undefined, // parent
+      documents.class.ControlledDocument
+    )
+
+    if (success === false) {
+      throw new Error('Failed to create controlled document')
+    }
+
+    // Process subdocs recursively
+    for (const subdoc of doc.subdocs) {
+      if (this.isDocumentTemplate(subdoc)) {
+        await this.createTemplateWithSubdocs(subdoc as ImportControlledDocumentTemplate, spaceId)
+      } else {
+        await this.createControlledDocumentWithSubdocs(subdoc as ImportControlledDocument, spaceId)
+      }
+    }
+
+    return docId
   }
 }
