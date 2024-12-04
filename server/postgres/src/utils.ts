@@ -36,7 +36,9 @@ import {
   getDocFieldsByDomains,
   getIndex,
   getSchema,
+  getSchemaAndFields,
   type Schema,
+  type SchemaAndFields,
   translateDomain
 } from './schemas'
 
@@ -264,7 +266,7 @@ export function convertDoc<T extends Doc> (
   domain: string,
   doc: T,
   workspaceId: string,
-  domainFields?: Set<string>
+  schemaAndFields?: SchemaAndFields
 ): DBDoc {
   const extractedFields: Doc & Record<string, any> = {
     _id: doc._id,
@@ -280,16 +282,40 @@ export function convertDoc<T extends Doc> (
 
   const extractedFieldsKeys = new Set(Object.keys(extractedFields))
 
-  domainFields = domainFields ?? new Set(getDocFieldsByDomains(domain))
+  schemaAndFields = schemaAndFields ?? getSchemaAndFields(domain)
 
   for (const key in doc) {
     if (extractedFieldsKeys.has(key)) {
       continue
     }
-    if (domainFields.has(key)) {
+    if (schemaAndFields.domainFields.has(key)) {
       extractedFields[key] = doc[key]
     } else {
       remainingData[key] = doc[key]
+    }
+  }
+
+  // Check if some fields are missing
+  for (const [key, _type] of Object.entries(schemaAndFields.schema)) {
+    if (!(key in doc)) {
+      // We missing required field, and we need to add a dummy value for it.
+      if (_type.notNull) {
+        // Null value is not allowed
+        switch (_type.type) {
+          case 'bigint':
+            extractedFields[key] = 0
+            break
+          case 'bool':
+            extractedFields[key] = false
+            break
+          case 'text':
+            extractedFields[key] = ''
+            break
+          case 'text[]':
+            extractedFields[key] = []
+            break
+        }
+      }
     }
   }
 
@@ -328,7 +354,7 @@ export function inferType (val: any): string {
 
 export function parseUpdate<T extends Doc> (
   ops: DocumentUpdate<T> | MixinUpdate<Doc, T>,
-  fields: Set<string>
+  schemaFields: SchemaAndFields
 ): {
     extractedFields: Partial<T>
     remainingData: Partial<T>
@@ -340,14 +366,14 @@ export function parseUpdate<T extends Doc> (
     const val = (ops as any)[key]
     if (key.startsWith('$')) {
       for (const k in val) {
-        if (fields.has(k)) {
+        if (schemaFields.domainFields.has(k)) {
           ;(extractedFields as any)[k] = val[key]
         } else {
           ;(remainingData as any)[k] = val[key]
         }
       }
     } else {
-      if (fields.has(key)) {
+      if (schemaFields.domainFields.has(key)) {
         ;(extractedFields as any)[key] = val
       } else {
         ;(remainingData as any)[key] = val

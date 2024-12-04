@@ -122,7 +122,11 @@ const close = (): void => {
 }
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.log('Unhandled Rejection at:', promise, 'reason:', reason)
+  metricsContext.error('Unhandled Rejection at:', { origin, promise })
+})
+
+global.process.on('uncaughtException', (error, origin) => {
+  metricsContext.error('Uncaught Exception at:', { origin, error })
 })
 
 process.on('SIGINT', close)

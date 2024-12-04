@@ -241,3 +241,27 @@ export function getDocFieldsByDomains (domain: string): string[] {
   const schema = domainSchemas[translateDomain(domain)] ?? defaultSchema
   return Object.keys(schema)
 }
+
+export interface SchemaAndFields {
+  schema: Schema
+
+  fields: string[]
+  domainFields: Set<string>
+}
+
+function createSchemaFields (schema: Schema): SchemaAndFields {
+  const fields = Object.keys(schema)
+  const domainFields = new Set(Object.keys(schema))
+  return { schema, fields, domainFields }
+}
+
+const defaultSchemaFields: SchemaAndFields = createSchemaFields(defaultSchema)
+
+const domainSchemaFields = new Map<string, SchemaAndFields>()
+for (const [domain, _schema] of Object.entries(domainSchemas)) {
+  domainSchemaFields.set(domain, createSchemaFields(_schema))
+}
+
+export function getSchemaAndFields (domain: string): SchemaAndFields {
+  return domainSchemaFields.get(translateDomain(domain)) ?? defaultSchemaFields
+}
