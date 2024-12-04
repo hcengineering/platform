@@ -15,16 +15,12 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
 
-  import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
-  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
-  import { type Class, type Ref, Doc, Mixin, WithLookup } from '@hcengineering/core'
+  import { ActionContext, createQuery } from '@hcengineering/presentation'
+  import { type Class, type Ref, WithLookup } from '@hcengineering/core'
   import { TestCase, TestResult } from '@hcengineering/test-management'
   import { Panel } from '@hcengineering/panel'
-  import { Label, Scroller } from '@hcengineering/ui'
-  import { DocAttributeBar, getDocMixins } from '@hcengineering/view-resources'
 
-  import RightHeader from './RightHeader.svelte'
-  import NextButton from './NextButton.svelte'
+  import TestResultAside from './TestResultAside.svelte'
   import TestCaseDetails from '../test-case/TestCaseDetails.svelte'
   import testManagement from '../../plugin'
 
@@ -36,13 +32,6 @@
   const testCase = object?.$lookup?.testCase as TestCase | undefined
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
-  let mixins: Mixin<Doc>[] = []
-  $: mixins = object ? getDocMixins(object, false) : []
-
-  let descriptionBox: AttachmentStyleBoxCollabEditor
 
   const query = createQuery()
 
@@ -61,10 +50,6 @@
       }
     )
 
-  let content: HTMLElement
-
-  $: descriptionKey = hierarchy.getAttribute(testManagement.class.TestResult, 'description')
-
   onMount(() => dispatch('open', { ignoreKeys: [] }))
 </script>
 
@@ -81,30 +66,10 @@
     on:close={() => dispatch('close')}
   >
     <div class="space-divider" />
-    <div class="w-full mt-6">
-      <AttachmentStyleBoxCollabEditor
-        focusIndex={30}
-        {object}
-        key={{ key: 'description', attr: descriptionKey }}
-        bind:this={descriptionBox}
-        identifier={object?._id}
-        placeholder={testManagement.string.DescriptionPlaceholder}
-        boundary={content}
-      />
-    </div>
-
-    <svelte:fragment slot="extra">
-      <NextButton {object} />
-    </svelte:fragment>
+    <TestCaseDetails _id={object.testCase} object={testCase} _class={testManagement.class.TestCase} />
 
     <svelte:fragment slot="aside">
-      <DocAttributeBar {object} {mixins} ignoreKeys={['name']} />
-      <RightHeader>
-        <Label label={testManagement.string.TestCaseDescription} />
-      </RightHeader>
-      <Scroller padding={'0.5rem 2rem'}>
-        <TestCaseDetails _id={object.testCase} object={testCase} _class={testManagement.class.TestCase} />
-      </Scroller>
+      <TestResultAside {object} />
     </svelte:fragment>
   </Panel>
 {/if}

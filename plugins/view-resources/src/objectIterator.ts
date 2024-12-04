@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import type { DocumentQuery, Doc, Ref, Class } from '@hcengineering/core'
+import type { DocumentQuery, Doc, Ref, Class, FindOptions } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 
 export interface IteratorState<T extends Doc> {
@@ -47,10 +47,11 @@ export class ObjectIterator<T extends Doc> {
     this.storeAdapter.set(getDefaultIteratorState<T>(query))
   }
 
-  async loadObjects (currentObject: Ref<Doc> | undefined): Promise<void> {
+  async loadObjects (currentObject: Ref<Doc> | undefined, options?: FindOptions<T> | undefined): Promise<void> {
     const client = getClient()
     const { query, limit } = this.storeAdapter.get()
     const testResults = await client.findAll(this.class, query, {
+      ...options,
       limit,
       total: true
     })
@@ -68,8 +69,8 @@ export class ObjectIterator<T extends Doc> {
     let nextObject
     this.storeAdapter.update((store) => {
       if (store.iteratorIndex < store.currentObjects.length) {
-        store.iteratorIndex += 1
         nextObject = store.currentObjects[store.iteratorIndex]
+        store.iteratorIndex += 1
       }
       return store
     })
@@ -78,7 +79,7 @@ export class ObjectIterator<T extends Doc> {
 
   hasNext (): boolean {
     const { currentObjects, iteratorIndex } = this.storeAdapter.get()
-    return iteratorIndex < currentObjects.length - 1
+    return iteratorIndex < currentObjects.length
   }
 }
 
@@ -87,10 +88,15 @@ export class ObjectIteratorProvider<T extends Doc> {
 
   constructor (private readonly storeAdapter: StoreAdapter<T>) {}
 
-  async initialize (_class: Ref<Class<T>>, query: DocumentQuery<T>, currentObject: Ref<Doc> | undefined): Promise<void> {
+  async initialize (
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    currentObject: Ref<Doc> | undefined,
+    options?: FindOptions<T> | undefined
+  ): Promise<void> {
     if (this.objectIterator === undefined) {
       this.objectIterator = new ObjectIterator(_class, query, this.storeAdapter)
-      await this.objectIterator.loadObjects(currentObject)
+      await this.objectIterator.loadObjects(currentObject, options)
     }
   }
 

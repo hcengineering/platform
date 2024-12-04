@@ -79,6 +79,8 @@
     "TestCaseDescription": "Popis testovacího případu",
     "TestResultAttributes": "Výsledek",
     "GoToNextTest": "Další",
-    "GoToNextTestTooltip": "Přejít na další test"
+    "GoToNextTestTooltip": "Přejít na další test",
+    "AllTests": "Všechny testy",
+    "MyTests": "Moje testy"
   }
 }

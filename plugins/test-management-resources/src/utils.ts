@@ -14,14 +14,17 @@
 //
 
 import type { Doc, DocumentQuery, Ref } from '@hcengineering/core'
-import { showPopup } from '@hcengineering/ui'
-import { type TestProject, type TestCase, type TestSuite } from '@hcengineering/test-management'
+import { showPopup, showPanel } from '@hcengineering/ui'
+import { type TestProject, type TestCase, type TestSuite, type TestResult } from '@hcengineering/test-management'
 
 import CreateTestSuiteComponent from './components/test-suite/CreateTestSuite.svelte'
 import EditTestSuiteComponent from './components/test-suite/EditTestSuite.svelte'
 import CreateTestCase from './components/test-case/CreateTestCase.svelte'
 import CreateProject from './components/project/CreateProject.svelte'
 import CreateTestRun from './components/test-run/CreateTestRun.svelte'
+import testManagement from '@hcengineering/test-management'
+import { getTestRunIdFromLocation } from './navigation'
+import { initializeIterator } from './components/test-result/store/testIteratorStore'
 
 export async function showCreateTestSuitePopup (
   space: Ref<TestProject> | undefined,
@@ -48,6 +51,20 @@ export async function showCreateTestRunPopup (options: {
   space: Ref<TestProject>
 }): Promise<void> {
   showPopup(CreateTestRun, options, 'top')
+}
+
+export async function showTestRunnerPanel (options: {
+  query?: DocumentQuery<TestResult>
+  space: Ref<TestProject>
+}): Promise<void> {
+  const { query, space } = options
+  await initializeIterator({ ...query, space }, undefined, {
+    lookup: {
+      testCase: testManagement.class.TestCase
+    }
+  })
+  const testRunId = getTestRunIdFromLocation()
+  showPanel(testManagement.component.TestRunner, testRunId, testManagement.class.TestRun, 'content')
 }
 
 export async function CreateChildTestSuiteAction (doc: TestSuite): Promise<void> {

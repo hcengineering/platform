@@ -79,6 +79,8 @@
     "TestCaseDescription": "Descrizione del caso di test",
     "TestResultAttributes": "Risultato",
     "GoToNextTest": "Successivo",
-    "GoToNextTestTooltip": "Vai al test successivo"
+    "GoToNextTestTooltip": "Vai al test successivo",
+    "AllTests": "Tutte le test",
+    "MyTests": "Le mie test"
   }
 }

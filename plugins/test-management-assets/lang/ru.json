@@ -79,6 +79,8 @@
     "TestCaseDescription": "Описание тест-кейса",
     "TestResultAttributes": "Результат",
     "GoToNextTest": "Следующий",
-    "GoToNextTestTooltip": "Перейти к следующему тесту"
+    "GoToNextTestTooltip": "Перейти к следующему тесту",
+    "AllTests": "Все тесты",
+    "MyTests": "Мои тесты"
   }
 }

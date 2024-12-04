@@ -13,17 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte'
-  import { Button, Loading, Location, navigate } from '@hcengineering/ui'
-  import { initializeIterator, testResultIteratorProvider, testIteratorStore } from './store/testIteratorStore'
-  import testManagement, { TestResult } from '@hcengineering/test-management'
-  import { Doc, type DocumentQuery, WithLookup } from '@hcengineering/core'
+  import { onDestroy } from 'svelte'
+  import { Button, Location, navigate } from '@hcengineering/ui'
+  import { testResultIteratorProvider, testIteratorStore } from './store/testIteratorStore'
+  import testManagement from '@hcengineering/test-management'
+  import { Doc } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
   import view from '@hcengineering/view'
 
-  export let object: WithLookup<TestResult> | undefined
-  let isLoading = true
   let hasNext = false
 
   const client = getClient()
@@ -33,14 +31,7 @@
     hasNext = testResultIteratorProvider.getIterator()?.hasNext() ?? false
   })
 
-  onMount(async () => {
-    const query: DocumentQuery<TestResult> = { attachedTo: object?.attachedTo } as any
-    await initializeIterator(query, object?._id)
-    hasNext = testResultIteratorProvider.getIterator()?.hasNext() ?? false
-    isLoading = false
-  })
   onDestroy(() => {
-    testResultIteratorProvider.reset()
     unsubscribe()
   })
 
@@ -67,15 +58,11 @@
   }
 </script>
 
-{#if isLoading}
-  <Loading />
-{:else}
-  <Button
-    label={testManagement.string.GoToNextTest}
-    kind={'primary'}
-    icon={view.icon.ArrowRight}
-    disabled={!hasNext}
-    on:click={goToNextItem}
-    showTooltip={{ label: testManagement.string.GoToNextTestTooltip }}
-  />
-{/if}
+<Button
+  label={testManagement.string.GoToNextTest}
+  kind={'primary'}
+  icon={view.icon.ArrowRight}
+  disabled={!hasNext}
+  on:click={goToNextItem}
+  showTooltip={{ label: testManagement.string.GoToNextTestTooltip }}
+/>

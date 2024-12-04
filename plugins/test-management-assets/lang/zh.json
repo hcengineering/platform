@@ -79,6 +79,8 @@
     "TestCaseDescription": "測試用例描述",
     "TestResultAttributes": "結果",
     "GoToNextTest": "下一個",
-    "GoToNextTestTooltip": "轉到下一個測試"
+    "GoToNextTestTooltip": "轉到下一個測試",
+    "AllTests": "所有測試",
+    "MyTests": "我的測試"
   }
 }

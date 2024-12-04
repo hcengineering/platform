@@ -21,7 +21,7 @@ import {
   getDefaultIteratorState
 } from '@hcengineering/view-resources'
 import testManagement, { type TestResult } from '@hcengineering/test-management'
-import type { DocumentQuery, Ref } from '@hcengineering/core'
+import type { DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
 
 export const testIteratorStore = writable<IteratorState<TestResult>>(getDefaultIteratorState<TestResult>({}))
 
@@ -41,9 +41,10 @@ export const testResultIteratorProvider = new ObjectIteratorProvider<TestResult>
 
 export async function initializeIterator (
   query: DocumentQuery<TestResult>,
-  currentObject: Ref<TestResult> | undefined
+  currentObject: Ref<TestResult> | undefined,
+  options?: FindOptions<TestResult> | undefined
 ): Promise<void> {
-  await testResultIteratorProvider.initialize(testManagement.class.TestResult, query, currentObject)
+  await testResultIteratorProvider.initialize(testManagement.class.TestResult, query, currentObject, options)
 }
 
 export function resetTestObjectIterator (): void {
