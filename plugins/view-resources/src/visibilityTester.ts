@@ -57,7 +57,7 @@ export async function canEditSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const space = doc as Space
 
-  if (space.owners?.includes(getCurrentAccount()._id) ?? false) {
+  if (space.owners?.includes(getCurrentAccount().uuid) ?? false) {
     return true
   }
 
@@ -83,7 +83,7 @@ export async function canArchiveSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const space = doc as Space
 
-  if (space.owners?.includes(getCurrentAccount()._id) ?? false) {
+  if (space.owners?.includes(getCurrentAccount().uuid) ?? false) {
     return true
   }
 
@@ -109,7 +109,7 @@ export async function canDeleteSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const space = doc as Space
 
-  if (space.owners?.includes(getCurrentAccount()._id) ?? false) {
+  if (space.owners?.includes(getCurrentAccount().uuid) ?? false) {
     return true
   }
 
@@ -131,7 +131,7 @@ export async function canJoinSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const space = doc as Space
 
-  return !space.members?.includes(getCurrentAccount()._id)
+  return !space.members?.includes(getCurrentAccount().uuid)
 }
 
 export async function canLeaveSpace (doc?: Doc | Doc[]): Promise<boolean> {
@@ -141,7 +141,7 @@ export async function canLeaveSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const space = doc as Space
 
-  return space.members?.includes(getCurrentAccount()._id)
+  return space.members?.includes(getCurrentAccount().uuid)
 }
 
 export function isClipboardAvailable (doc?: Doc | Doc[]): boolean {

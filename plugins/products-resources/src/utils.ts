@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { type Employee, type PersonAccount } from '@hcengineering/contact'
 import core, {
   type WithLookup,
   type Client,
@@ -25,15 +24,6 @@ import { getClient } from '@hcengineering/presentation'
 import { type KeyFilter } from '@hcengineering/view'
 import documents from '@hcengineering/controlled-documents'
 import products, { ProductVersionState, type Product, type ProductVersion } from '@hcengineering/products'
-
-export const getCurrentEmployee = (): Ref<Employee> | undefined => {
-  const currentAccount = getCurrentAccount()
-  const person = (currentAccount as PersonAccount)?.person
-  if (person === null || person === undefined) {
-    return undefined
-  }
-  return person as Ref<Employee>
-}
 
 export function getProductVersionVersion (doc: ProductVersion): string {
   const codename = doc.codename ?? ''
@@ -56,7 +46,7 @@ export async function canEditProduct (doc?: Product): Promise<boolean> {
     return false
   }
 
-  if (doc.owners?.includes(getCurrentAccount()._id) ?? false) {
+  if (doc.owners?.includes(getCurrentAccount().uuid) ?? false) {
     return true
   }
 

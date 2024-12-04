@@ -99,7 +99,7 @@
     _id: generateId(),
     collection: 'applications',
     modifiedOn: Date.now(),
-    modifiedBy: '' as Ref<Account>,
+    modifiedBy: '' as PersonId,
     startDate: null,
     dueDate: null,
     kind: '' as Ref<TaskType>,

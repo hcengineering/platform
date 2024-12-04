@@ -33,7 +33,7 @@
     _id: generateId(),
     collection: 'variants',
     modifiedOn: Date.now(),
-    modifiedBy: '' as Ref<Account>
+    modifiedBy: '' as PersonId
   }
 
   const dispatch = createEventDispatcher()

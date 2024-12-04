@@ -1,41 +1,41 @@
-import core, { type Blob, type MeasureContext, type WorkspaceId } from '@hcengineering/core'
+import core, { type Blob, type MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 import type { BlobStorageIterator, BucketInfo, StorageAdapter, UploadedObjectInfo } from '@hcengineering/storage'
 import { Readable } from 'stream'
 
 export class MemStorageAdapter implements StorageAdapter {
   files = new Map<string, Blob & { content: Buffer, workspace: string }>()
 
-  async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
+  async initialize (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {}
 
   async close (): Promise<void> {}
 
-  async exists (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<boolean> {
+  async exists (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<boolean> {
     return true
   }
 
-  async make (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
+  async make (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {}
 
-  async delete (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
+  async delete (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {}
 
   async listBuckets (ctx: MeasureContext): Promise<BucketInfo[]> {
     const workspaces = new Set(Array.from(this.files.values()).map((it) => it.workspace))
     return Array.from(workspaces).map((it) => ({
       name: it,
       delete: async () => {
-        await this.delete(ctx, { name: it })
+        await this.delete(ctx, it)
       },
-      list: () => this.listStream(ctx, { name: it })
+      list: () => this.listStream(ctx, it)
     }))
   }
 
-  async remove (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]): Promise<void> {
+  async remove (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectNames: string[]): Promise<void> {
     for (const k of objectNames) {
-      this.files.delete(workspaceId.name + '/' + k)
+      this.files.delete(workspaceId + '/' + k)
     }
   }
 
-  async listStream (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<BlobStorageIterator> {
-    const files = Array.from(this.files.values()).filter((it) => it.workspace === workspaceId.name)
+  async listStream (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<BlobStorageIterator> {
+    const files = Array.from(this.files.values()).filter((it) => it.workspace === workspaceId)
     return {
       next: async () => {
         return files.splice(0, 100)
@@ -44,14 +44,14 @@ export class MemStorageAdapter implements StorageAdapter {
     }
   }
 
-  async stat (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Blob | undefined> {
-    return this.files.get(workspaceId.name + '/' + objectName)
+  async stat (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectName: string): Promise<Blob | undefined> {
+    return this.files.get(workspaceId + '/' + objectName)
   }
 
-  async get (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Readable> {
+  async get (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectName: string): Promise<Readable> {
     const readable = new Readable()
     readable._read = () => {}
-    const content = this.files.get(workspaceId.name + '/' + objectName)?.content
+    const content = this.files.get(workspaceId + '/' + objectName)?.content
     readable.push(content)
     readable.push(null)
     return readable
@@ -59,7 +59,7 @@ export class MemStorageAdapter implements StorageAdapter {
 
   async put (
     ctx: MeasureContext,
-    workspaceId: WorkspaceId,
+    workspaceId: WorkspaceUuid,
     objectName: string,
     stream: string | Readable | Buffer,
     contentType: string,
@@ -97,17 +97,17 @@ export class MemStorageAdapter implements StorageAdapter {
       provider: '_test',
       space: '' as any,
       version: null,
-      workspace: workspaceId.name
+      workspace: workspaceId
     }
-    this.files.set(workspaceId.name + '/' + objectName, dta)
+    this.files.set(workspaceId + '/' + objectName, dta)
     return {
       etag: objectName,
       versionId: null
     }
   }
 
-  async read (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Buffer[]> {
-    const content = this.files.get(workspaceId.name + '/' + objectName)?.content
+  async read (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectName: string): Promise<Buffer[]> {
+    const content = this.files.get(workspaceId + '/' + objectName)?.content
     if (content === undefined) {
       throw new Error('NoSuchKey')
     }
@@ -116,7 +116,7 @@ export class MemStorageAdapter implements StorageAdapter {
 
   partial (
     ctx: MeasureContext,
-    workspaceId: WorkspaceId,
+    workspaceId: WorkspaceUuid,
     objectName: string,
     offset: number,
     length?: number | undefined
@@ -125,7 +125,7 @@ export class MemStorageAdapter implements StorageAdapter {
     throw new Error('NoSuchKey')
   }
 
-  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
+  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectName: string): Promise<string> {
     return '/files/' + objectName
   }
 }

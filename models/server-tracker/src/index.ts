@@ -66,13 +66,6 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTracker.trigger.OnWorkspaceOwnerAdded,
-    txMatch: {
-      objectClass: contact.class.PersonAccount
-    }
-  })
-
   builder.mixin(
     tracker.ids.AssigneeNotification,
     notification.class.NotificationType,

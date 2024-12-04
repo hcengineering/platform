@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
-  import { Account, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { PersonId, getCurrentAccount } from '@hcengineering/core'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { Integration } from '@hcengineering/setting'
   import { Grid, Label, Toggle } from '@hcengineering/ui'
@@ -26,7 +26,7 @@
 
   const client = getClient()
 
-  async function change (shared: Ref<Account>[]) {
+  async function change (shared: PersonId[]) {
     integration.shared = shared
     await client.update(integration, {
       shared
@@ -41,7 +41,7 @@
 
   const dispatch = createEventDispatcher()
 
-  const me = getCurrentAccount()._id
+  const me = getCurrentAccount().uuid
 </script>
 
 <Card

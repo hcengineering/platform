@@ -23,7 +23,7 @@
 
   export let integrationType: IntegrationType
   export let integration: Integration | undefined
-  const accountId = getCurrentAccount()._id
+  const accountId = getCurrentAccount().uuid
   const client = getClient()
 
   async function close (res: any): Promise<void> {

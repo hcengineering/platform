@@ -129,7 +129,7 @@
   async function getCurrent () {
     const cuurent = await client.findOne(setting.class.Integration, {
       type: telegram.integrationType.Telegram,
-      createdBy: getCurrentAccount()._id
+      createdBy: getCurrentAccount().uuid
     })
     if (cuurent !== undefined) {
       phone = cuurent.value

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import { AccountRole, Ref, getCurrentPersonIds, hasAccountRole } from '@hcengineering/core'
   import { type Drive, DriveEvents } from '@hcengineering/drive'
   import { createQuery } from '@hcengineering/presentation'
   import { Button, ButtonWithDropdown, IconAdd, IconDropdown, Loading, SelectPopupValueType } from '@hcengineering/ui'
@@ -26,7 +26,7 @@
   export let currentSpace: Ref<Drive> | undefined
   export let currentFragment: string | undefined
 
-  const me = getCurrentAccount()
+  const socialStrings = getCurrentPersonIds()
 
   const query = createQuery()
 
@@ -34,7 +34,7 @@
   let hasDrive = false
   query.query(
     drive.class.Drive,
-    { archived: false, members: me._id },
+    { archived: false, members: { $in: socialStrings } },
     (res) => {
       hasDrive = res.length > 0
       loading = false

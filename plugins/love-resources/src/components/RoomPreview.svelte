@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person, type PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee, Person } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
-  import { IdMap, getCurrentAccount } from '@hcengineering/core'
+  import { IdMap } from '@hcengineering/core'
   import { isOffice, ParticipantInfo, Room, RoomAccess, RoomType, MeetingStatus } from '@hcengineering/love'
   import { Icon, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -35,9 +35,9 @@
 
   const dispatch = createEventDispatcher()
 
-  const me = getCurrentAccount() as PersonAccount
-  const meName = $personByIdStore.get(me.person)?.name
-  const meAvatar = $personByIdStore.get(me.person)
+  const me = getCurrentEmployee()
+  const meName = $personByIdStore.get(me)?.name
+  const meAvatar = $personByIdStore.get(me)
 
   let hoveredRoomX: number | undefined = undefined
   let hoveredRoomY: number | undefined = undefined

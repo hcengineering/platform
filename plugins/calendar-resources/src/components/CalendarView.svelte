@@ -14,7 +14,8 @@
 -->
 <script lang="ts">
   import { Calendar, Event, generateEventId, getAllEvents } from '@hcengineering/calendar'
-  import { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { primarySocialIdByPersonRefStore, socialIdsByPersonRefStore } from '@hcengineering/contact-resources'
   import {
     Class,
     Doc,
@@ -56,7 +57,9 @@
   ]
   export let headerComponent: AnySvelteComponent | undefined = undefined
 
-  const me = getCurrentAccount() as PersonAccount
+  const me = getCurrentEmployee()
+  $: myPrimaryId = ($primarySocialIdByPersonRefStore.get(me) ?? '') as string
+  $: mySocialStrings = ($socialIdsByPersonRefStore.get(me) ?? []).map((si) => si.key)
 
   const mondayStart = true
   let mode: CalendarMode = allowedModes.includes(CalendarMode.Days) ? CalendarMode.Days : allowedModes[0]
@@ -118,7 +121,7 @@
 
   let calendars: Calendar[] = []
 
-  calendarsQuery.query(calendar.class.Calendar, { createdBy: me._id, hidden: false }, (res) => {
+  calendarsQuery.query(calendar.class.Calendar, { createdBy: { $in: mySocialStrings }, hidden: false }, (res) => {
     calendars = res
   })
 
@@ -245,7 +248,6 @@
         current.date = e.detail.date.getTime()
         current.dueDate = new Date(e.detail.date).setMinutes(new Date(e.detail.date).getMinutes() + 30)
       } else {
-        const me = getCurrentAccount() as PersonAccount
         const temp: Event = {
           _id: dragItemId,
           allDay: false,
@@ -257,9 +259,9 @@
           attachedToClass: dragItem._class,
           _class: dragEventClass,
           collection: 'events',
-          calendar: `${me._id}_calendar` as Ref<Calendar>,
-          modifiedBy: me._id,
-          participants: [me.person],
+          calendar: `${myPrimaryId}_calendar` as Ref<Calendar>,
+          modifiedBy: myPrimaryId,
+          participants: [me],
           modifiedOn: Date.now(),
           date: e.detail.date.getTime(),
           space: calendar.space.Calendar,

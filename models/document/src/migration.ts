@@ -212,7 +212,7 @@ async function renameFieldsRevert (client: MigrationClient): Promise<void> {
     try {
       const collabId = makeDocCollabId(document, 'content')
 
-      const ydoc = await loadCollabYdoc(ctx, storage, client.workspaceId, collabId)
+      const ydoc = await loadCollabYdoc(ctx, storage, client.wsIds.uuid, collabId)
       if (ydoc === undefined) {
         continue
       }
@@ -223,7 +223,7 @@ async function renameFieldsRevert (client: MigrationClient): Promise<void> {
 
       yDocCopyXmlField(ydoc, 'description', 'content')
 
-      await saveCollabYdoc(ctx, storage, client.workspaceId, collabId, ydoc)
+      await saveCollabYdoc(ctx, storage, client.wsIds.uuid, collabId, ydoc)
     } catch (err) {
       ctx.error('error document content migration', { error: err, document: document.title })
     }
@@ -260,7 +260,7 @@ async function restoreContentField (client: MigrationClient): Promise<void> {
     try {
       const collabId = makeDocCollabId(document, 'content')
 
-      const ydoc = await loadCollabYdoc(ctx, storage, client.workspaceId, collabId)
+      const ydoc = await loadCollabYdoc(ctx, storage, client.wsIds.uuid, collabId)
       if (ydoc === undefined) {
         ctx.error('document content not found', { document: document.title })
         continue
@@ -274,7 +274,7 @@ async function restoreContentField (client: MigrationClient): Promise<void> {
       if (ydoc.share.has('')) {
         yDocCopyXmlField(ydoc, '', 'content')
         if (ydoc.share.has('content')) {
-          await saveCollabYdoc(ctx, storage, client.workspaceId, collabId, ydoc)
+          await saveCollabYdoc(ctx, storage, client.wsIds.uuid, collabId, ydoc)
         } else {
           ctx.error('document content still not found', { document: document.title })
         }

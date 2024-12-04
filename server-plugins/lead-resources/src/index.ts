@@ -13,9 +13,8 @@
 // limitations under the License.
 //
 
-import { PersonAccount } from '@hcengineering/contact'
-import core, { AccountRole, concatLink, Doc, Ref, Tx, TxCreateDoc, TxUpdateDoc } from '@hcengineering/core'
-import lead, { Lead, leadId } from '@hcengineering/lead'
+import { concatLink, Doc } from '@hcengineering/core'
+import { Lead, leadId } from '@hcengineering/lead'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import view from '@hcengineering/view'
@@ -27,7 +26,7 @@ import { workbenchId } from '@hcengineering/workbench'
 export async function leadHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const lead = doc as Lead
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${leadId}/${lead.space}/#${view.component.EditDoc}|${lead._id}|${lead._class}|content`
+  const path = `${workbenchId}/${control.workspace.url}/${leadId}/${lead.space}/#${view.component.EditDoc}|${lead._id}|${lead._class}|content`
   const link = concatLink(front, path)
   return `<a href="${link}">${lead.title}</a>`
 }
@@ -40,56 +39,6 @@ export async function leadTextPresenter (doc: Doc): Promise<string> {
   return `LEAD-${lead.number}`
 }
 
-/**
- * @public
- */
-export async function OnWorkspaceOwnerAdded (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  const result: Tx[] = []
-  for (const tx of txes) {
-    let ownerId: Ref<PersonAccount> | undefined
-    if (control.hierarchy.isDerived(tx._class, core.class.TxCreateDoc)) {
-      const createTx = tx as TxCreateDoc<PersonAccount>
-
-      if (createTx.attributes.role === AccountRole.Owner) {
-        ownerId = createTx.objectId
-      }
-    } else if (control.hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
-      const updateTx = tx as TxUpdateDoc<PersonAccount>
-
-      if (updateTx.operations.role === AccountRole.Owner) {
-        ownerId = updateTx.objectId
-      }
-    }
-
-    if (ownerId === undefined) {
-      continue
-    }
-
-    const targetFunnel = (
-      await control.findAll(control.ctx, lead.class.Funnel, {
-        _id: lead.space.DefaultFunnel
-      })
-    )[0]
-
-    if (targetFunnel === undefined) {
-      continue
-    }
-
-    if (
-      targetFunnel.owners === undefined ||
-      targetFunnel.owners.length === 0 ||
-      targetFunnel.owners[0] === core.account.System
-    ) {
-      const updTx = control.txFactory.createTxUpdateDoc(lead.class.Funnel, targetFunnel.space, targetFunnel._id, {
-        owners: [ownerId]
-      })
-      result.push(updTx)
-    }
-  }
-
-  return result
-}
-
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   function: {
@@ -97,6 +46,5 @@ export default async () => ({
     LeadTextPresenter: leadTextPresenter
   },
   trigger: {
-    OnWorkspaceOwnerAdded
   }
 })

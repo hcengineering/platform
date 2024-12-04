@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AvatarType, Channel, combineName, ContactEvents, Person, PersonAccount } from '@hcengineering/contact'
+  import { AvatarType, Channel, combineName, ContactEvents, Person } from '@hcengineering/contact'
   import core, { AccountRole, AttachedData, Data, generateId, Ref } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
@@ -57,11 +57,12 @@
 
       const mail = email.trim()
 
-      await client.createDoc(contact.class.PersonAccount, core.space.Model, {
-        email: mail,
-        person: id,
-        role: AccountRole.Guest
-      })
+      // TODO: FIXME
+      // await client.createDoc(contact.class.PersonAccount, core.space.Model, {
+      //   email: mail,
+      //   person: id,
+      //   role: AccountRole.Guest
+      // })
 
       const sendInvite = await getResource(login.function.SendInvite)
       await sendInvite(email.trim(), id, AccountRole.Guest)
@@ -93,15 +94,16 @@
 
   let exists: PersonAccount | undefined
   const query = createQuery()
-  $: query.query(
-    contact.class.PersonAccount,
-    {
-      email: email.trim()
-    },
-    (p) => {
-      exists = p[0]
-    }
-  )
+  // TODO: FIXME
+  // $: query.query(
+  //   contact.class.PersonAccount,
+  //   {
+  //     email: email.trim()
+  //   },
+  //   (p) => {
+  //     exists = p[0]
+  //   }
+  // )
 
   const manager = createFocusManager()
 

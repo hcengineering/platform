@@ -21,7 +21,7 @@ function getDocumentId (doc: Document): string {
 export async function documentHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const document = doc as Document
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${documentId}/${getDocumentId(document)}`
+  const path = `${workbenchId}/${control.workspace.url}/${documentId}/${getDocumentId(document)}`
   const link = concatLink(front, path)
   return `<a href="${link}">${document.title}</a>`
 }

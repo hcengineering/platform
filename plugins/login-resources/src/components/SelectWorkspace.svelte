@@ -14,7 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { LoginInfo, Workspace } from '@hcengineering/login'
+  import { LoginInfo } from '@hcengineering/login'
+  import { WorkspaceInfoWithStatus } from '@hcengineering/core'
   import { OK, Severity, Status } from '@hcengineering/platform'
   import presentation, { NavLink, isAdminUser, reduceCalls } from '@hcengineering/presentation'
   import {
@@ -23,20 +24,19 @@
     Scroller,
     SearchEdit,
     deviceOptionsStore as deviceInfo,
-    setMetadataLocalStorage,
-    ticker
+    setMetadataLocalStorage
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
+
   import login from '../plugin'
   import { getAccount, getHref, getWorkspaces, goTo, navigateToWorkspace, selectWorkspace } from '../utils'
   import StatusControl from './StatusControl.svelte'
 
   export let navigateUrl: string | undefined = undefined
-  let workspaces: Workspace[] = []
 
+  let workspaces: WorkspaceInfoWithStatus[] = []
   let status = OK
-
-  let account: LoginInfo | undefined = undefined
+  let account: LoginInfo | null | undefined = undefined
 
   let flagToUpdateWorkspaces = false
 
@@ -44,7 +44,7 @@
     account = await getAccount()
   }
 
-  const updateWorkspaces = reduceCalls(async function updateWorkspaces (time: number): Promise<void> {
+  const updateWorkspaces = reduceCalls(async function updateWorkspaces (): Promise<void> {
     try {
       workspaces = await getWorkspaces()
     } catch (e) {
@@ -52,37 +52,37 @@
     }
   })
 
-  $: if (flagToUpdateWorkspaces) updateWorkspaces($ticker)
+  $: if (flagToUpdateWorkspaces) void updateWorkspaces()
 
   onMount(() => {
     void loadAccount()
   })
 
-  async function select (workspace: string): Promise<void> {
+  async function select (workspaceUrl: string): Promise<void> {
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-    const [loginStatus, result] = await selectWorkspace(workspace)
+    const [loginStatus, result] = await selectWorkspace(workspaceUrl)
     status = loginStatus
 
-    navigateToWorkspace(workspace, result, navigateUrl)
+    navigateToWorkspace(workspaceUrl, result, navigateUrl)
   }
 
   async function _getWorkspaces (): Promise<void> {
     try {
       const res = await getWorkspaces()
 
-      if (res.length === 0 && account?.confirmed === false) {
+      if (res.length === 0 && account?.token == null) {
         goTo('confirmationSend')
       }
 
       workspaces = res
-      await updateWorkspaces(0)
+      await updateWorkspaces()
       flagToUpdateWorkspaces = true
     } catch (err: any) {
       setMetadataLocalStorage(login.metadata.LastToken, null)
       setMetadataLocalStorage(presentation.metadata.Token, null)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-      setMetadataLocalStorage(login.metadata.LoginEmail, null)
+      setMetadataLocalStorage(login.metadata.LoginAccount, null)
       goTo('login')
       throw err
     }
@@ -92,10 +92,11 @@
   let search: string = ''
 </script>
 
+<!-- TODO: show some social login instead of account.account -->
 <form class="container" style:padding={$deviceInfo.docWidth <= 480 ? '1.25rem' : '5rem'}>
   <div class="grow-separator" />
   <div class="fs-title">
-    {account?.email}
+    {account?.account}
   </div>
   <div class="title"><Label label={login.string.SelectWorkspace} /></div>
   <div class="status">
@@ -110,15 +111,15 @@
     <Scroller padding={'.125rem 0'} maxHeight={35}>
       <div class="form">
         {#each workspaces
-          .slice(0, 500)
-          .filter((it) => search === '' || (it.workspaceName?.includes(search) ?? false) || it.workspace.includes(search)) as workspace}
-          {@const wsName = workspace.workspaceName ?? workspace.workspace}
+          .filter((it) => search === '' || (it.name?.includes(search) ?? false) || it.url.includes(search))
+          .slice(0, 500) as workspace}
+          {@const wsName = workspace.name ?? workspace.url}
           {@const lastUsageDays = Math.round((Date.now() - workspace.lastVisit) / (1000 * 3600 * 24))}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div
             class="workspace flex-center fs-title cursor-pointer focused-button bordered form-row"
-            on:click={() => select(workspace.workspace)}
+            on:click={() => select(workspace.url)}
           >
             <div class="flex flex-col flex-grow">
               <span class="label overflow-label flex-center">
@@ -127,12 +128,12 @@
                   - <Label label={presentation.string.Archived} />
                 {/if}
                 {#if workspace.mode === 'creating'}
-                  ({workspace.progress}%)
+                  ({workspace.processingProgress}%)
                 {/if}
               </span>
               {#if isAdmin}
                 <span class="text-xs flex-row-center flex-center">
-                  {workspace.workspace}
+                  {workspace.url}
                   {#if workspace.region !== undefined}
                     at ({workspace.region})
                   {/if}
@@ -153,7 +154,8 @@
             </div>
           </div>
         {/each}
-        {#if workspaces.length === 0 && account?.confirmed === true}
+
+        {#if workspaces.length === 0 && account?.token != null}
           <div class="form-row send">
             <Button
               label={login.string.CreateWorkspace}
@@ -188,7 +190,7 @@
             setMetadataLocalStorage(login.metadata.LastToken, null)
             setMetadataLocalStorage(presentation.metadata.Token, null)
             setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-            setMetadataLocalStorage(login.metadata.LoginEmail, null)
+            setMetadataLocalStorage(login.metadata.LoginAccount, null)
             goTo('login')
           }}
         >

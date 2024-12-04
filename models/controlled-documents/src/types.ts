@@ -50,15 +50,15 @@ import {
   type Class,
   type MarkupBlobRef,
   type Doc,
-  type Domain,
   type Ref,
   type Timestamp,
   type Type,
   type CollectionSize,
   type Role,
   type TypedSpace,
-  type Account,
-  type RolesAssignment
+  type PersonId,
+  type RolesAssignment,
+  type Domain
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -471,7 +471,7 @@ export class TDocumentApprovalRequest extends TDocumentRequest implements Docume
 @Mixin(documents.mixin.DocumentSpaceTypeData, documents.class.DocumentSpace)
 @UX(getEmbeddedLabel('Default Documents'), documents.icon.Document)
 export class TDocumentSpaceTypeData extends TDocumentSpace implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: PersonId[]
 }
 
 /**

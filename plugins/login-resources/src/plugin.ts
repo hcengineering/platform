@@ -58,7 +58,6 @@ export default mergeIds(loginId, login, {
     AlreadyJoined: '' as IntlString,
     ConfirmationSent: '' as IntlString,
     ConfirmationSent2: '' as IntlString,
-    Slogan: '' as IntlString,
     ContinueWith: '' as IntlString,
     HaventReceivedCode: '' as IntlString,
     ResendCode: '' as IntlString,

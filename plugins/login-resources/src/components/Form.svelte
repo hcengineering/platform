@@ -96,7 +96,7 @@
     return true
   })
 
-  $: if ($themeStore.language !== undefined) {
+  $: if ($themeStore.language != null && $themeStore.language !== '') {
     void validate($themeStore.language)
   }
 
@@ -111,7 +111,6 @@
       inAction = false
     })
   }
-  onMount(() => (ignoreInitialValidation = false))
 
   function trim (field: string): void {
     object[field] = (object[field] as string).trim()

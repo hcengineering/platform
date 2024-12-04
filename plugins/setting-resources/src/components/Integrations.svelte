@@ -20,7 +20,7 @@
   import { Header, Breadcrumb } from '@hcengineering/ui'
   import PluginCard from './PluginCard.svelte'
 
-  const accountId = getCurrentAccount()._id
+  const accountId = getCurrentAccount().uuid
   const typeQuery = createQuery()
   const integrationQuery = createQuery()
 

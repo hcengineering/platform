@@ -11,7 +11,7 @@ import core, {
   Ref,
   Space,
   TxOperations,
-  WorkspaceIdWithUrl
+  WorkspaceIds
 } from '@hcengineering/core'
 import { ModelLogger } from '@hcengineering/model'
 import { makeRank } from '@hcengineering/rank'
@@ -92,7 +92,7 @@ export class WorkspaceInitializer {
   constructor (
     private readonly ctx: MeasureContext,
     private readonly storageAdapter: StorageAdapter,
-    private readonly wsUrl: WorkspaceIdWithUrl,
+    private readonly wsIds: WorkspaceIds,
     private readonly client: TxOperations
   ) {}
 
@@ -141,7 +141,7 @@ export class WorkspaceInitializer {
       const id = uuid()
       const resp = await fetch(step.fromUrl)
       const buffer = Buffer.from(await resp.arrayBuffer())
-      await this.storageAdapter.put(this.ctx, this.wsUrl, id, buffer, step.contentType, buffer.length)
+      await this.storageAdapter.put(this.ctx, this.wsIds.uuid, id, buffer, step.contentType, buffer.length)
       if (step.resultVariable !== undefined) {
         vars[`\${${step.resultVariable}}`] = id
         vars[`\${${step.resultVariable}_size}`] = buffer.length
@@ -276,7 +276,7 @@ export class WorkspaceInitializer {
     const json = parseMessageMarkdown(data ?? '', this.imageUrl)
     const markup = jsonToMarkup(json)
 
-    return await saveCollabJson(this.ctx, this.storageAdapter, this.wsUrl, doc, markup)
+    return await saveCollabJson(this.ctx, this.storageAdapter, this.wsIds.uuid, doc, markup)
   }
 
   private async fillProps<T extends Doc, P extends Partial<T> | Props<T>>(

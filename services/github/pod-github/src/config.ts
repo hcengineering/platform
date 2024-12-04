@@ -2,8 +2,6 @@
 // Copyright © 2023 Hardcore Engineering Inc.
 //
 
-import { systemAccountEmail } from '@hcengineering/core'
-
 interface Config {
   AccountsURL: string
   ServiceID: string
@@ -82,7 +80,8 @@ const config: Config = (() => {
     AccountsURL: process.env[envMap.AccountsURL],
     ServerSecret: process.env[envMap.ServerSecret],
     ServiceID: process.env[envMap.ServiceID] ?? 'github-service',
-    SystemEmail: process.env[envMap.SystemEmail] ?? systemAccountEmail,
+    // TODO: FIXME
+    SystemEmail: '', //process.env[envMap.SystemEmail] ?? systemAccountEmail,
     AllowedWorkspaces: process.env[envMap.AllowedWorkspaces]?.split(',') ?? ['*'],
     FrontURL: process.env[envMap.FrontURL] ?? '',
 

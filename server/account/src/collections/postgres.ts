@@ -12,29 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import postgres from 'postgres'
-import { generateId, type Data, type Version } from '@hcengineering/core'
+import { Sql } from 'postgres'
+import { type Data, type Version, AccountRole } from '@hcengineering/core'
 
 import type {
   DbCollection,
   Query,
-  ObjectId,
   Operations,
   Workspace,
   WorkspaceDbCollection,
-  WorkspaceInfo,
   WorkspaceOperation,
   AccountDB,
   Account,
-  Invite,
-  OtpRecord,
-  UpgradeStatistic
+  OTP,
+  WorkspaceInvite,
+  AccountEvent,
+  SocialId,
+  Person,
+  WorkspaceData,
+  WorkspaceStatus,
+  WorkspaceStatusData,
+  WorkspaceInfoWithStatus,
+  Sort
 } from '../types'
 
 export class PostgresDbCollection<T extends Record<string, any>> implements DbCollection<T> {
   constructor (
     readonly name: string,
-    readonly client: postgres.Sql
+    readonly client: Sql
   ) {}
 
   protected buildSelectClause (): string {
@@ -100,7 +105,7 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
     return [`WHERE ${whereChunks.join(' AND ')}`, values]
   }
 
-  protected buildSortClause (sort: { [P in keyof T]?: 'ascending' | 'descending' }): string {
+  protected buildSortClause (sort: Sort<T>): string {
     const sortChunks: string[] = []
 
     for (const key of Object.keys(sort)) {
@@ -110,11 +115,11 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
     return `ORDER BY ${sortChunks.join(', ')}`
   }
 
-  protected convertToObj (row: any): T {
+  protected convertToObj (row: unknown): T {
     return row as T
   }
 
-  async find (query: Query<T>, sort?: { [P in keyof T]?: 'ascending' | 'descending' }, limit?: number): Promise<T[]> {
+  async find (query: Query<T>, sort?: Sort<T>, limit?: number): Promise<T[]> {
     const sqlChunks: string[] = [this.buildSelectClause()]
     const [whereClause, whereValues] = this.buildWhereClause(query)
 
@@ -140,21 +145,25 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
     return (await this.find(query, undefined, 1))[0] ?? null
   }
 
-  async insertOne<K extends keyof T>(data: Partial<T>, idKey?: K): Promise<any> {
-    const keys: string[] = idKey !== undefined ? [idKey as any] : []
-    keys.push(...Object.keys(data))
-
-    const id = generateId()
-    const values: any[] = idKey !== undefined ? [id] : []
-    values.push(...Object.values(data))
+  async insertOne<K extends keyof T | undefined>(
+    data: Partial<T>,
+    idKey?: K
+  ): Promise<K extends keyof T ? T[K] : undefined> {
+    const keys: string[] = Object.keys(data)
+    const values = Object.values(data)
 
     const sql = `INSERT INTO ${this.name} (${keys.map((k) => `"${k}"`).join(', ')}) VALUES (${keys.map((_, idx) => `$${idx + 1}`).join(', ')})`
 
+    let res: any | undefined
     await this.client.begin(async (client) => {
-      await client.unsafe(sql, values)
+      res = await client.unsafe(sql, values)
     })
 
-    return id
+    if (idKey === undefined) {
+      return undefined as any
+    }
+
+    return res[0][idKey]
   }
 
   protected buildUpdateClause (ops: Operations<T>, lastRefIdx: number = 0): [string, any[]] {
@@ -217,7 +226,7 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
 }
 
 export class AccountPostgresDbCollection extends PostgresDbCollection<Account> implements DbCollection<Account> {
-  constructor (readonly client: postgres.Sql) {
+  constructor (readonly client: Sql) {
     super('account', client)
   }
 
@@ -243,21 +252,25 @@ export class AccountPostgresDbCollection extends PostgresDbCollection<Account> i
       ) as workspaces FROM ${this.name}`
   }
 
-  async insertOne<K extends keyof Account>(data: Partial<Account>, idKey?: K): Promise<any> {
-    if (data.workspaces !== undefined) {
-      if (data.workspaces.length > 0) {
-        console.warn('Cannot assign workspaces directly')
-      }
+  async insertOne<K extends keyof Account | undefined>(
+    data: Partial<Account>,
+    idKey?: K
+  ): Promise<K extends keyof Account ? Account[K] : undefined> {
+    // TODO: remove if not needed in the end
+    // if (data.workspaces !== undefined) {
+    //   if (data.workspaces.length > 0) {
+    //     console.warn('Cannot assign workspaces directly')
+    //   }
 
-      delete data.workspaces
-    }
+    //   delete data.workspaces
+    // }
 
     return await super.insertOne(data, idKey)
   }
 }
 
 export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspace> implements WorkspaceDbCollection {
-  constructor (readonly client: postgres.Sql) {
+  constructor (readonly client: Sql) {
     super('workspace', client)
   }
 
@@ -297,72 +310,35 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
       ...data
     }
 
-    if (data.accounts !== undefined) {
-      if (data.accounts.length > 0) {
-        console.warn('Cannot assign workspaces directly')
-      }
+    // if (data.members !== undefined) {
+    //   if (data.members.length > 0) {
+    //     console.warn('Cannot assign members directly')
+    //   }
 
-      delete dbData.accounts
-    }
+    //   delete dbData.accounts
+    // }
 
-    const version = data.version
-    if (data.version !== undefined) {
-      delete dbData.version
-      dbData.versionMajor = version?.major ?? 0
-      dbData.versionMinor = version?.minor ?? 0
-      dbData.versionPatch = version?.patch ?? 0
-    }
+    // TODO: proper support for status
+    // const version = data.version
+    // if (data.version !== undefined) {
+    //   delete dbData.version
+    //   dbData.versionMajor = version?.major ?? 0
+    //   dbData.versionMinor = version?.minor ?? 0
+    //   dbData.versionPatch = version?.patch ?? 0
+    // }
 
     return dbData
   }
 
-  async insertOne<K extends keyof Workspace>(data: Partial<Workspace>, idKey?: K): Promise<any> {
+  async insertOne<K extends keyof Workspace | undefined>(
+    data: Partial<Workspace>,
+    idKey?: K
+  ): Promise<K extends keyof Workspace ? Workspace[K] : undefined> {
     return await super.insertOne(this.objectToDb(data), idKey)
   }
 
   async updateOne (query: Query<Workspace>, ops: Operations<Workspace>): Promise<void> {
     await super.updateOne(query, this.objectToDb(ops))
-  }
-
-  async countWorkspacesInRegion (region: string, upToVersion?: Data<Version>, visitedSince?: number): Promise<number> {
-    const sqlChunks: string[] = [`SELECT COUNT(_id) FROM ${this.name}`]
-    const whereChunks: string[] = []
-    const values: any[] = []
-    let nextValIdx = 1
-
-    whereChunks.push('(disabled = FALSE OR disabled IS NULL)')
-
-    if (upToVersion !== undefined) {
-      whereChunks.push(
-        '(("versionMajor" < $1) OR ("versionMajor" = $1 AND "versionMinor" < $2) OR ("versionMajor" = $1 AND "versionMinor" = $2 AND "versionPatch" < $3))'
-      )
-      values.push(...[upToVersion?.major, upToVersion?.minor, upToVersion?.patch])
-      nextValIdx = 4
-    }
-
-    if (region !== '') {
-      whereChunks.push(`region = $${nextValIdx}`)
-      values.push(region)
-      nextValIdx++
-    } else {
-      whereChunks.push("(region IS NULL OR region = '')")
-    }
-
-    if (visitedSince !== undefined) {
-      whereChunks.push(`"lastVisit" > $${nextValIdx}`)
-      values.push(visitedSince)
-    }
-
-    sqlChunks.push(`WHERE ${whereChunks.join(' AND ')}`)
-
-    let count = 0
-
-    await this.client.begin(async (client) => {
-      const res = await client.unsafe(sqlChunks.join(' '), values)
-      count = res[0].count
-    })
-
-    return count
   }
 
   async getPendingWorkspace (
@@ -371,15 +347,40 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
     operation: WorkspaceOperation,
     processingTimeoutMs: number,
     wsLivenessMs?: number
-  ): Promise<WorkspaceInfo | undefined> {
-    const sqlChunks: string[] = [`SELECT * FROM ${this.name}`]
+  ): Promise<WorkspaceInfoWithStatus | undefined> {
+    const sqlChunks: string[] = [`SELECT 
+          w.uuid,
+          w.name,
+          w.url,
+          w.branding,
+          w.location,
+          w.region,
+          w.created_by,
+          w.created_on,
+          w.billing_account, 
+          json_build_object(
+            'mode', s.mode,
+            'processing_progress', s.processing_progress,
+            'version_major', s.version_major,
+            'version_minor', s.version_minor,
+            'version_patch', s.version_patch,
+            'last_processing_time', s.last_processing_time,
+            'last_visit', s.last_visit,
+            'is_disabled', s.is_disabled,
+            'processing_attempts', s.processing_attempts,
+            'processing_message', s.processing_message,
+            'backup_info', s.backup_info
+          ) status
+           FROM workspace as w
+           INNER JOIN workspace_status as s ON s.workspace_uuid = w.uuid
+    `]
     const whereChunks: string[] = []
     const values: any[] = []
 
-    const pendingCreationSql = "mode IN ('pending-creation', 'creating')"
+    const pendingCreationSql = "s.mode IN ('pending-creation', 'creating')"
     const versionSql =
-      '("versionMajor" < $1) OR ("versionMajor" = $1 AND "versionMinor" < $2) OR ("versionMajor" = $1 AND "versionMinor" = $2 AND "versionPatch" < $3)'
-    const pendingUpgradeSql = `(((disabled = FALSE OR disabled IS NULL) AND (mode = 'active' OR mode IS NULL) AND ${versionSql} ${wsLivenessMs !== undefined ? 'AND "lastVisit" > $4' : ''}) OR ((disabled = FALSE OR disabled IS NULL) AND mode = 'upgrading'))`
+      '(s.version_major < $1) OR (s.version_major = $1 AND s.version_minor < $2) OR (s.version_major = $1 AND s.version_minor = $2 AND s.version_patch < $3)'
+    const pendingUpgradeSql = `(((s.is_disabled = FALSE OR s.is_disabled IS NULL) AND (s.mode = 'active' OR s.mode IS NULL) AND ${versionSql} ${wsLivenessMs !== undefined ? 'AND s.last_visit > $4' : ''}) OR ((s.is_disabled = FALSE OR s.is_disabled IS NULL) AND s.mode = 'upgrading'))`
     const operationSql =
       operation === 'create'
         ? pendingCreationSql
@@ -397,28 +398,26 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
 
     // TODO: support returning pending deletion workspaces when we will actually want
     // to clear them with the worker.
-
-    whereChunks.push("mode <> 'manual-creation'")
-    whereChunks.push('(attempts IS NULL OR attempts <= 3)')
-    whereChunks.push(`("lastProcessingTime" IS NULL OR "lastProcessingTime" < $${values.length + 1})`)
+    whereChunks.push("s.mode <> 'manual-creation'")
+    whereChunks.push('(s.attempts IS NULL OR s.attempts <= 3)')
+    whereChunks.push(`(s.last_processing_time IS NULL OR s.last_processing_time < $${values.length + 1})`)
     values.push(Date.now() - processingTimeoutMs)
 
     if (region !== '') {
       whereChunks.push(`region = $${values.length + 1}`)
       values.push(region)
     } else {
-      whereChunks.push("(region IS NULL OR region = '')")
+      whereChunks.push("(w.region IS NULL OR w.region = '')")
     }
 
     sqlChunks.push(`WHERE ${whereChunks.join(' AND ')}`)
-    sqlChunks.push('ORDER BY "lastVisit" DESC')
+    sqlChunks.push('ORDER BY s.last_visit DESC')
     sqlChunks.push('LIMIT 1')
     // Note: SKIP LOCKED is supported starting from Postgres 9.5 and CockroachDB v22.2.1
     sqlChunks.push('FOR UPDATE SKIP LOCKED')
 
     // We must have all the conditions in the DB query and we cannot filter anything in the code
     // because of possible concurrency between account services.
-
     let res: any | undefined
     await this.client.begin(async (client) => {
       res = await client.unsafe(sqlChunks.join(' '), values)
@@ -431,65 +430,31 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
       }
     })
 
-    return res[0] as WorkspaceInfo
-  }
-}
-
-export class InvitePostgresDbCollection extends PostgresDbCollection<Invite> implements DbCollection<Invite> {
-  constructor (readonly client: postgres.Sql) {
-    super('invite', client)
-  }
-
-  protected buildSelectClause (): string {
-    return `SELECT 
-      _id, 
-      json_build_object(
-          'name', "workspace"
-        ) workspace,
-      exp,
-      "emailMask",
-      "limit",
-      role,
-      "personId"
-    FROM ${this.name}`
-  }
-
-  objectToDb (data: Partial<Invite>): any {
-    const dbData: any = {
-      ...data
-    }
-
-    if (data.workspace !== undefined) {
-      dbData.workspace = data.workspace.name
-    }
-
-    return dbData
-  }
-
-  async insertOne<K extends keyof Invite>(data: Partial<Invite>, idKey?: K): Promise<any> {
-    return await super.insertOne(this.objectToDb(data), idKey)
-  }
-
-  async updateOne (query: Query<Invite>, ops: Operations<Invite>): Promise<void> {
-    await super.updateOne(query, this.objectToDb(ops))
+    return res[0] as WorkspaceInfoWithStatus
   }
 }
 
 export class PostgresAccountDB implements AccountDB {
-  readonly wsAssignmentName = 'workspace_assignment'
+  readonly wsMembersName = 'workspace_members'
 
-  workspace: WorkspacePostgresDbCollection
+  person: PostgresDbCollection<Person>
   account: PostgresDbCollection<Account>
-  otp: PostgresDbCollection<OtpRecord>
-  invite: PostgresDbCollection<Invite>
-  upgrade: PostgresDbCollection<UpgradeStatistic>
+  socialId: PostgresDbCollection<SocialId>
+  workspace: WorkspacePostgresDbCollection
+  workspaceStatus: PostgresDbCollection<WorkspaceStatus>
+  accountEvent: PostgresDbCollection<AccountEvent>
+  otp: PostgresDbCollection<OTP>
+  invite: PostgresDbCollection<WorkspaceInvite>
 
-  constructor (readonly client: postgres.Sql) {
-    this.workspace = new WorkspacePostgresDbCollection(client)
+  constructor (readonly client: Sql) {
+    this.person = new PostgresDbCollection<Person>('person', client)
     this.account = new AccountPostgresDbCollection(client)
-    this.otp = new PostgresDbCollection<OtpRecord>('otp', client)
-    this.invite = new InvitePostgresDbCollection(client)
-    this.upgrade = new PostgresDbCollection<UpgradeStatistic>('upgrade', client)
+    this.socialId = new PostgresDbCollection<SocialId>('social_id', client)
+    this.workspaceStatus = new PostgresDbCollection<WorkspaceStatus>('workspace_status', client)
+    this.workspace = new WorkspacePostgresDbCollection(client)
+    this.accountEvent = new PostgresDbCollection<AccountEvent>('account_event', client)
+    this.otp = new PostgresDbCollection<OTP>('otp', client)
+    this.invite = new PostgresDbCollection<WorkspaceInvite>('invite', client)
   }
 
   async init (): Promise<void> {
@@ -527,127 +492,222 @@ export class PostgresAccountDB implements AccountDB {
     )
   }
 
-  async assignWorkspace (accountId: ObjectId, workspaceId: ObjectId): Promise<void> {
+  async createWorkspace (data: WorkspaceData, status: WorkspaceStatusData): Promise<string> {
+    try {
+      await this.client.unsafe('BEGIN')
+      const workspace = await this.workspace.insertOne(data)
+      await this.workspaceStatus.insertOne({ ...status, workspaceUuid: workspace })
+      await this.client.unsafe('COMMIT')
+
+      return workspace
+    } catch (err: any) {
+      await this.client.unsafe('ROLLBACK')
+      throw err
+    }
+  }
+
+  async assignWorkspace (accountUuid: string, workspaceUuid: string, role: AccountRole): Promise<void> {
     await this.client.begin(async (client) => {
-      await client`INSERT INTO ${client(this.wsAssignmentName)} (workspace, account) VALUES (${workspaceId}, ${accountId})`
+      await client`INSERT INTO ${client(this.wsMembersName)} (workspace_uuid, account_uuid, role) VALUES (${workspaceUuid}, ${accountUuid}, ${role})`
     })
   }
 
-  async unassignWorkspace (accountId: ObjectId, workspaceId: ObjectId): Promise<void> {
+  async unassignWorkspace (accountUuid: string, workspaceUuid: string): Promise<void> {
     await this.client.begin(async (client) => {
-      await client`DELETE FROM ${client(this.wsAssignmentName)} WHERE workspace = ${workspaceId} AND account = ${accountId}`
+      await client`DELETE FROM ${client(this.wsMembersName)} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
     })
   }
 
-  getObjectId (id: string): ObjectId {
-    return id
+  async updateWorkspaceRole (accountUuid: string, workspaceUuid: string, role: AccountRole): Promise<void> {
+    await this.client.begin(async (client) => {
+      await client`UPDATE ${this.wsMembersName} SET role = ${role} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
+    })
+  }
+
+  async getWorkspaceRole (accountUuid: string, workspaceUuid: string): Promise<AccountRole | null> {
+    const res: any = await this.client`SELECT role FROM ${this.wsMembersName} WHERE workspace = ${workspaceUuid} AND account = ${accountUuid}`
+
+    return res[0]?.role ?? null
+  }
+
+  async getAccountWorkspaces (accountUuid: string): Promise<WorkspaceInfoWithStatus[]> {
+    const sql = `SELECT 
+          w.uuid,
+          w.name,
+          w.url,
+          w.branding,
+          w.location,
+          w.region,
+          w.created_by,
+          w.created_on,
+          w.billing_account, 
+          json_build_object(
+            'mode', s.mode,
+            'processing_progress', s.processing_progress,
+            'version_major', s.version_major,
+            'version_minor', s.version_minor,
+            'version_patch', s.version_patch,
+            'last_processing_time', s.last_processing_time,
+            'last_visit', s.last_visit,
+            'is_disabled', s.is_disabled,
+            'processing_attempts', s.processing_attempts,
+            'processing_message', s.processing_message,
+            'backup_info', s.backup_info
+          ) status 
+           FROM ${this.wsMembersName} as m 
+           INNER JOIN workspace as w
+           INNER JOIN workspace_status as s
+           WHERE m.workspace_uuid = w.uuid AND s.workspace_uuid = w.uuid AND m.account_uuid = $1
+           ORDER BY s.last_visit DESC
+    `
+
+    const res: any = await this.client.unsafe(sql, [accountUuid])
+
+    return res
+  }
+
+  async setPassword (accountUuid: string, hash: Buffer, salt: Buffer): Promise<void> {
+    await this.client.begin(async (client) => {
+      await client`UPSERT INTO account_passwords (account_uuid, hash, salt) VALUES (${accountUuid}, ${hash as unknown as Uint8Array}, ${salt as unknown as Uint8Array})`
+    })
   }
 
   protected getMigrations (): [string, string][] {
-    return [this.getV1Migration(), this.getV2Migration()]
+    return [this.getV1Migration()]
   }
 
   // NOTE: NEVER MODIFY EXISTING MIGRATIONS. IF YOU NEED TO ADJUST THE SCHEMA, ADD A NEW MIGRATION.
   private getV1Migration (): [string, string] {
     return [
-      'account_db_v1_init',
+      'account_db_v1_global_init',
       `
-      /* ======= ACCOUNT ======= */
-      CREATE TABLE IF NOT EXISTS account (
-        _id VARCHAR(255) NOT NULL,
-        email VARCHAR(255) NOT NULL,
-        hash BYTEA,
-        salt BYTEA NOT NULL,
-        first VARCHAR(255) NOT NULL,
-        last VARCHAR(255) NOT NULL,
-        admin BOOLEAN,
-        confirmed BOOLEAN,
-        "lastWorkspace" BIGINT,
-        "createdOn" BIGINT NOT NULL,
-        "lastVisit" BIGINT,
-        "githubId" VARCHAR(100),
-        "openId" VARCHAR(100),
-        PRIMARY KEY(_id)
+      CREATE SCHEMA IF NOT EXISTS global_account;
+
+      /* ======= T Y P E S ======= */
+      CREATE TYPE global_account.social_id_type AS ENUM ('email', 'github', 'google', 'phone', 'oidc', 'huly', 'telegram');
+      CREATE TYPE global_account.location AS ENUM ('kv', 'weur', 'eeur', 'wnam', 'enam', 'apac');
+      CREATE TYPE global_account.workspace_role AS ENUM ('OWNER', 'MAINTAINER', 'USER', 'GUEST', 'DOCGUEST');
+
+      /* ======= P E R S O N ======= */
+      CREATE TABLE IF NOT EXISTS global_account.person (
+          uuid UUID NOT NULL DEFAULT gen_random_uuid(),
+          first_name STRING NOT NULL,
+          last_name STRING NOT NULL,
+          country STRING,
+          city STRING,
+          CONSTRAINT person_pk PRIMARY KEY (uuid)
       );
 
-      CREATE INDEX IF NOT EXISTS account_email ON account ("email");
-
-      /* ======= WORKSPACE ======= */
-      CREATE TABLE IF NOT EXISTS workspace (
-        _id VARCHAR(255) NOT NULL,
-        workspace VARCHAR(255) NOT NULL,
-        disabled BOOLEAN,
-        "versionMajor" SMALLINT NOT NULL,
-        "versionMinor" SMALLINT NOT NULL,
-        "versionPatch" SMALLINT NOT NULL,
-        branding VARCHAR(255),
-        "workspaceUrl" VARCHAR(255),
-        "workspaceName" VARCHAR(255),
-        "createdOn" BIGINT NOT NULL,
-        "lastVisit" BIGINT,
-        "createdBy" VARCHAR(255),
-        mode VARCHAR(60),
-        progress SMALLINT,
-        endpoint VARCHAR(255),
-        region VARCHAR(100),
-        "lastProcessingTime" BIGINT,
-        attempts SMALLINT,
-        message VARCHAR(1000),
-        "backupInfo" JSONB,
-        PRIMARY KEY(_id)
+      /* ======= A C C O U N T ======= */
+      CREATE TABLE IF NOT EXISTS global_account.account (
+          uuid UUID NOT NULL,
+          timezone STRING,
+          locale STRING,
+          CONSTRAINT account_pk PRIMARY KEY (uuid),
+          CONSTRAINT account_person_fk FOREIGN KEY (uuid) REFERENCES global_account.person(uuid)
       );
 
-      CREATE INDEX IF NOT EXISTS workspace_workspace ON workspace ("workspace");
-
-      /* ======= OTP ======= */
-      CREATE TABLE IF NOT EXISTS otp (
-        account VARCHAR(255) NOT NULL REFERENCES account (_id),
-        otp VARCHAR(20) NOT NULL,
-        expires BIGINT NOT NULL,
-        "createdOn" BIGINT NOT NULL,
-        PRIMARY KEY(account, otp)
+      CREATE TABLE IF NOT EXISTS global_account.account_passwords (
+          account_uuid UUID NOT NULL,
+          hash BYTES NOT NULL,
+          salt BYTES NOT NULL,
+          CONSTRAINT account_auth_pk PRIMARY KEY (account_uuid),
+          CONSTRAINT account_passwords_account_fk FOREIGN KEY (account_uuid) REFERENCES global_account.account(uuid)
       );
 
-      /* ======= INVITE ======= */
-      CREATE TABLE IF NOT EXISTS invite (
-        _id VARCHAR(255) NOT NULL,
-        workspace VARCHAR(255) NOT NULL,
-        exp BIGINT NOT NULL,
-        "emailMask" VARCHAR(100),
-        "limit" SMALLINT,
-        role VARCHAR(40),
-        "personId" VARCHAR(255),
-        PRIMARY KEY(_id)
+      CREATE TABLE IF NOT EXISTS global_account.account_events (
+          account_uuid UUID NOT NULL,
+          event_type STRING NOT NULL,
+          time TIMESTAMP NOT NULL DEFAULT current_timestamp(),
+          data JSONB,
+          CONSTRAINT account_events_pk PRIMARY KEY (account_uuid, event_type, time),
+          CONSTRAINT account_events_account_fk FOREIGN KEY (account_uuid) REFERENCES global_account.account(uuid)
       );
 
-      /* ======= UPGRADE ======= */
-      CREATE TABLE IF NOT EXISTS upgrade (
-        region VARCHAR(100) NOT NULL,
-        version VARCHAR(100) NOT NULL,
-        "startTime" BIGINT NOT NULL,
-        total INTEGER NOT NULL,
-        "toProcess" INTEGER NOT NULL,
-        "lastUpdate" BIGINT,
-        PRIMARY KEY(region, version)
+      /* ======= S O C I A L   I D S ======= */
+      CREATE TABLE IF NOT EXISTS global_account.social_id (
+          id INT8 NOT NULL DEFAULT unique_rowid(),
+          type global_account.social_id_type NOT NULL,
+          value STRING NOT NULL,
+          key STRING AS (CONCAT(type, ':', value)) STORED,
+          person_uuid UUID NOT NULL,
+          created_on TIMESTAMP NOT NULL DEFAULT current_timestamp(),
+          verified_on TIMESTAMP,
+          CONSTRAINT social_id_pk PRIMARY KEY (id),
+          CONSTRAINT social_id_type_identifier_idx UNIQUE (type, identifier),
+          CONSTRAINT social_id_account_idx INDEX (person_uuid),
+          CONSTRAINT social_id_person_fk FOREIGN KEY (person_uuid) REFERENCES global_account.person(uuid),
       );
 
-      /* ======= SUPPLEMENTARY ======= */
-      CREATE TABLE IF NOT EXISTS ${this.wsAssignmentName} (
-        workspace VARCHAR(255) NOT NULL REFERENCES workspace (_id),
-        account VARCHAR(255) NOT NULL REFERENCES account (_id),
-        PRIMARY KEY(workspace, account)
+      /* ======= W O R K S P A C E ======= */
+      CREATE TABLE IF NOT EXISTS global_account.workspace (
+          uuid UUID NOT NULL DEFAULT gen_random_uuid(),
+          name STRING NOT NULL,
+          url STRING NOT NULL,
+          branding STRING,
+          location global_account.location,
+          region STRING,
+          created_by UUID NOT NULL, -- account uuid
+          created_on TIMESTAMP NOT NULL DEFAULT current_timestamp(),
+          billing_account UUID NOT NULL,
+          CONSTRAINT workspace_pk PRIMARY KEY (uuid),
+          CONSTRAINT workspace_url_unique UNIQUE (url),
+          CONSTRAINT workspace_created_by_fk FOREIGN KEY (created_by) REFERENCES global_account.account(uuid),
+          CONSTRAINT workspace_billing_account_fk FOREIGN KEY (billing_account) REFERENCES global_account.account(uuid)
       );
-    `
-    ]
-  }
 
-  private getV2Migration (): [string, string] {
-    return [
-      'account_db_v2_fix_workspace',
-      `
+      CREATE TABLE IF NOT EXISTS global_account.workspace_status (
+          workspace_uuid UUID NOT NULL,
+          mode STRING,
+          processing_progress INT2 DEFAULT 0,,
+          version_major INT2 NOT NULL DEFAULT 0,
+          version_minor INT2 NOT NULL DEFAULT 0,
+          version_patch INT4 NOT NULL DEFAULT 0,
+          last_processing_time TIMESTAMP DEFAULT 0,
+          last_visit TIMESTAMP,
+          is_disabled BOOL DEFAULT FALSE,
+          processing_attempts INT2 DEFAULT 0,
+          processing_message STRING,
+          backup_info JSONB,
+          CONSTRAINT workspace_status_pk PRIMARY KEY (workspace_uuid),
+          CONSTRAINT workspace_status_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES global_account.workspace(uuid)
+      );
 
-      /* ======= WORKSPACE ======= */
-      ALTER TABLE workspace ALTER COLUMN "versionPatch" type INT4;
+      CREATE TABLE IF NOT EXISTS global_account.workspace_members (
+          workspace_uuid UUID NOT NULL,
+          account_uuid UUID NOT NULL,
+          role global_account.workspace_role NOT NULL DEFAULT 'USER',
+          CONSTRAINT workspace_assignment_pk PRIMARY KEY (workspace_uuid, account_uuid),
+          CONSTRAINT members_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES global_account.workspace(uuid),
+          CONSTRAINT members_account_fk FOREIGN KEY (account_uuid) REFERENCES global_account.account(uuid)
+      );
+
+      /* ========================================================================================== */
+      /* MAIN SCHEMA ENDS HERE */
+      /* ===================== */
+
+      /* ======= O T P ======= */
+      CREATE TABLE IF NOT EXISTS global_account.otp (
+          social_id INT8 NOT NULL,
+          code STRING NOT NULL,
+          expires_on TIMESTAMP NOT NULL,
+          created_on TIMESTAMP NOT NULL DEFAULT current_timestamp(),
+          CONSTRAINT otp_pk PRIMARY KEY (social_id, otp),
+          CONSTRAINT otp_social_id_fk FOREIGN KEY (social_id) REFERENCES global_account.social_id(id)
+      );
+
+      /* ======= I N V I T E ======= */
+      CREATE TABLE IF NOT EXISTS global_account.invite (
+          id INT8 NOT NULL DEFAULT unique_rowid(),
+          workspace_uuid UUID NOT NULL,
+          expires_on TIMESTAMP NOT NULL,
+          email_pattern STRING,
+          remaining_uses INT2,
+          role global_account.workspace_role NOT NULL DEFAULT 'USER',
+          CONSTRAINT invite_pk PRIMARY KEY (id),
+          CONSTRAINT workspace_invite_idx INDEX (workspace_uuid),
+          CONSTRAINT invite_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES global_account.workspace(uuid)
+      );
     `
     ]
   }

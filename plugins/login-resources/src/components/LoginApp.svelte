@@ -40,17 +40,15 @@
   import SelectWorkspace from './SelectWorkspace.svelte'
   import SignupForm from './SignupForm.svelte'
   import LoginIcon from './icons/LoginIcon.svelte'
+  import { Pages, getAccount, pages } from '..'
+  import login from '../plugin'
 
   import loginBack from '../../img/login_back.png'
   import loginBack2x from '../../img/login_back_2x.png'
-
   import loginBackAvif from '../../img/login_back.avif'
   import loginBack2xAvif from '../../img/login_back_2x.avif'
-
-  import { Pages, getAccount, pages } from '..'
   import loginBackWebp from '../../img/login_back.webp'
   import loginBack2xWebp from '../../img/login_back_2x.webp'
-  import login from '../plugin'
 
   export let page: Pages = 'signup'
 
@@ -85,16 +83,16 @@
       // token handled by auth page
       return
     }
+
     if (getMetadata(presentation.metadata.Token) == null) {
       const lastToken = fetchMetadataLocalStorage(login.metadata.LastToken)
       if (lastToken != null) {
         try {
-          const info = await getAccount(false)
-          if (info !== undefined) {
-            setMetadata(presentation.metadata.Token, info.token)
-            setMetadataLocalStorage(login.metadata.LastToken, info.token)
-            setMetadataLocalStorage(login.metadata.LoginEndpoint, info.endpoint)
-            setMetadataLocalStorage(login.metadata.LoginEmail, info.email)
+          const loginInfo = await getAccount(false)
+          if (loginInfo != null) {
+            setMetadata(presentation.metadata.Token, loginInfo.token)
+            setMetadataLocalStorage(login.metadata.LastToken, loginInfo.token)
+            setMetadataLocalStorage(login.metadata.LoginAccount, loginInfo.account)
             updatePageLoc(getCurrentLocation())
           }
         } catch (err: any) {

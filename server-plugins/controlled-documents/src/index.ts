@@ -21,8 +21,7 @@ export default plugin(serverDocumentsId, {
     OnDocDeleted: '' as Resource<TriggerFunc>,
     OnDocPlannedEffectiveDateChanged: '' as Resource<TriggerFunc>,
     OnDocApprovalRequestApproved: '' as Resource<TriggerFunc>,
-    OnDocHasBecomeEffective: '' as Resource<TriggerFunc>,
-    OnWorkspaceOwnerAdded: '' as Resource<TriggerFunc>
+    OnDocHasBecomeEffective: '' as Resource<TriggerFunc>
   },
   function: {
     ControlledDocumentTextPresenter: '' as Resource<Presenter>

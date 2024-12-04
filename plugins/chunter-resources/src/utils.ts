@@ -21,19 +21,17 @@ import activity, {
 } from '@hcengineering/activity'
 import { isReactionMessage } from '@hcengineering/activity-resources'
 import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
-import contact, { getName, type Employee, type Person, type PersonAccount } from '@hcengineering/contact'
-import { PersonIcon, employeeByIdStore, personIdByAccountId } from '@hcengineering/contact-resources'
+import contact, { getName, getCurrentEmployee, type Employee, type Person, pickPrimarySocialId } from '@hcengineering/contact'
+import { PersonIcon, personByPersonIdStore, personRefByPersonIdStore, primarySocialIdByPersonRefStore, socialIdsByPersonIdStore } from '@hcengineering/contact-resources'
 import core, {
   getCurrentAccount,
-  type Account,
+  type PersonId,
   type Class,
   type Client,
   type Doc,
-  type IdMap,
   type Ref,
   type Space,
-  type Timestamp,
-  type WithLookup
+  type Timestamp
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import {
@@ -48,7 +46,6 @@ import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-res
 import { get, writable, type Unsubscriber } from 'svelte/store'
 import aiBot from '@hcengineering/ai-bot'
 import { translate as aiTranslate } from '@hcengineering/ai-bot-resources'
-import { deepEqual } from 'fast-equals'
 
 import ChannelIcon from './components/ChannelIcon.svelte'
 import DirectIcon from './components/DirectIcon.svelte'
@@ -61,55 +58,52 @@ export async function getDmName (client: Client, space?: Space): Promise<string>
     return ''
   }
 
-  const employeeAccounts: PersonAccount[] = await getDmAccounts(client, space)
-
-  return await buildDmName(client, employeeAccounts)
+  return await buildDmName(client, space.members)
 }
 
-export async function buildDmName (client: Client, employeeAccounts: PersonAccount[]): Promise<string> {
-  if (employeeAccounts.length === 0) {
+export async function buildDmName (client: Client, employees: PersonId[]): Promise<string> {
+  if (employees.length === 0) {
     return ''
   }
 
   let unsub: Unsubscriber | undefined
-  const promise = new Promise<IdMap<Employee>>((resolve) => {
-    unsub = employeeByIdStore.subscribe((p) => {
-      if (p.size !== 0) {
-        resolve(p)
-      }
+  const personByPersonIdPromise = new Promise<Map<PersonId, Person | undefined>>((resolve) => {
+    unsub = personByPersonIdStore.subscribe((p) => {
+      resolve(p)
     })
   })
 
-  const me = getCurrentAccount() as PersonAccount
-  const map = await promise
+  const meEmpl = getCurrentEmployee()
+  const personByPersonId = await personByPersonIdPromise
 
   unsub?.()
 
   const names: string[] = []
-  const processedPersons: Array<Ref<Person>> = []
+  const processedPersons: PersonId[] = []
 
   let myName = ''
 
-  for (const acc of employeeAccounts) {
-    if (processedPersons.includes(acc.person)) {
+  for (const emp of employees) {
+    if (processedPersons.includes(emp)) {
       continue
     }
 
-    const employee = map.get(acc.person as unknown as Ref<Employee>)
+    const employee = personByPersonId.get(emp)
 
     if (employee === undefined) {
       continue
     }
 
-    if (me.person === employee._id) {
+    if (meEmpl === emp) {
       myName = getName(client.getHierarchy(), employee)
-      processedPersons.push(acc.person)
+      processedPersons.push(emp)
       continue
     }
 
     names.push(getName(client.getHierarchy(), employee))
-    processedPersons.push(acc.person)
+    processedPersons.push(emp)
   }
+
   return names.length > 0 ? names.join(', ') : myName
 }
 
@@ -124,7 +118,7 @@ export async function canDeleteMessage (doc?: ChatMessage): Promise<boolean> {
 
   const me = getCurrentAccount()
 
-  return doc.createdBy === me._id
+  return doc.createdBy === me.uuid
 }
 
 export function canReplyToThread (doc?: ActivityMessage): boolean {
@@ -157,47 +151,28 @@ export async function canCopyMessageLink (doc?: ActivityMessage | ActivityMessag
   return true
 }
 
-async function getDmAccounts (client: Client, space?: Space): Promise<PersonAccount[]> {
+export async function getDmPersons (
+  client: Client,
+  space: Space
+): Promise<Person[]> {
   if (space === undefined) {
     return []
   }
 
-  return await client.findAll(contact.class.PersonAccount, {
-    _id: { $in: (space.members ?? []) as Array<Ref<PersonAccount>> }
+  const socialIds = await client.findAll(contact.class.SocialIdentity, {
+    key: { $in: space.members ?? [] }
   })
-}
+  const me = getCurrentEmployee()
 
-export async function getDmPersons (
-  client: Client,
-  space: Space,
-  personsMap: Map<Ref<WithLookup<Person>>, WithLookup<Person>>
-): Promise<Person[]> {
-  const personAccounts: PersonAccount[] = await getDmAccounts(client, space)
-  const me = getCurrentAccount() as PersonAccount
-  const persons: Person[] = []
+  const personRefs = socialIds.map((si) => si.attachedTo)
 
-  const personRefs = new Set(personAccounts.map(({ person }) => person))
-  let myPerson: Person | undefined
-
-  for (const personRef of personRefs) {
-    const person = personsMap.get(personRef) ?? (await client.findOne(contact.class.Person, { _id: personRef }))
-    if (person === undefined) {
-      continue
-    }
-
-    if (me.person === person._id) {
-      myPerson = person
-      continue
-    }
-
-    persons.push(person)
+  if (!personRefs.includes(me)) {
+    personRefs.push(me)
   }
 
-  if (persons.length > 0) {
-    return persons
-  }
-
-  return myPerson !== undefined ? [myPerson] : []
+  return await client.findAll(contact.class.Person, {
+    _id: { $in: personRefs }
+  })
 }
 
 export async function DirectTitleProvider (
@@ -334,7 +309,7 @@ export function filterChatMessages (
   return messages.filter((message) => filtersFns.some((filterFn) => filterFn(message, objectClass)))
 }
 
-export async function joinChannel (channel: Channel, value: Ref<Account> | Array<Ref<Account>>): Promise<void> {
+export async function joinChannel (channel: Channel, value: PersonId | PersonId[]): Promise<void> {
   const client = getClient()
 
   if (Array.isArray(value)) {
@@ -348,7 +323,7 @@ export async function joinChannel (channel: Channel, value: Ref<Account> | Array
 
 export async function leaveChannel (
   channel: Channel | undefined,
-  value: Ref<Account> | Array<Ref<Account>>
+  value: PersonId | PersonId[]
 ): Promise<void> {
   if (channel === undefined) return
 
@@ -493,7 +468,7 @@ export async function leaveChannelAction (
     return
   }
 
-  await leaveChannel(channel, getCurrentAccount()._id)
+  await leaveChannel(channel, getCurrentAccount().uuid)
   await client.remove(context)
   await resetChunterLocIfEqual(channel._id, channel._class, channel)
 }
@@ -509,7 +484,7 @@ export async function removeChannelAction (context?: DocNotifyContext, _?: Event
 
   if (hierarchy.isDerived(objectClass, chunter.class.Channel)) {
     const channel = await client.findOne(chunter.class.Channel, { _id: objectId as Ref<Channel>, space: objectSpace })
-    await leaveChannel(channel, getCurrentAccount()._id)
+    await leaveChannel(channel, getCurrentAccount().uuid)
     await client.remove(context)
   } else {
     const object = await client.findOne(objectClass, { _id: objectId, space: objectSpace })
@@ -574,37 +549,39 @@ export async function startConversationAction (docs?: Employee | Employee[]): Pr
   }
 }
 
-export async function createDirect (employeeIds: Array<Ref<Employee>>): Promise<Ref<DirectMessage>> {
+export async function createDirect (employeeIds: Array<Ref<Person>>): Promise<Ref<DirectMessage>> {
   const client = getClient()
-  const me = getCurrentAccount()
-
-  const employeeAccounts = await client.findAll(contact.class.PersonAccount, { person: { $in: employeeIds } })
-  const accIds = [me._id, ...employeeAccounts.filter(({ _id }) => _id !== me._id).map(({ _id }) => _id)].sort()
+  const me = getCurrentEmployee()
 
   const existingDms = await client.findAll(chunter.class.DirectMessage, {})
-  const newDirectPersons = Array.from(new Set([...employeeIds, me.person] as Array<Ref<Person>>)).sort()
+  const newDirectPersons = employeeIds.includes(me) ? employeeIds : [...employeeIds, me]
+  const newPersonsSet = new Set(newDirectPersons)
 
   let direct: DirectMessage | undefined
+  const personRefByPersonId = get(personRefByPersonIdStore)
+  const primarySocialIdByPersonRef = get(primarySocialIdByPersonRefStore)
+  const socialIdsByPersonId = get(socialIdsByPersonIdStore)
+  const myPersonIds = socialIdsByPersonId.get(me)?.map((si) => si.key) ?? []
 
-  for (const dm of existingDms) {
-    const existDirectPersons = Array.from(
-      new Set(dm.members.map((id) => get(personIdByAccountId).get(id as Ref<PersonAccount>)))
-    )
-      .filter((person): person is Ref<Person> => person !== undefined)
-      .sort()
-    if (deepEqual(existDirectPersons, newDirectPersons)) {
-      direct = dm
-      break
-    }
+  if (myPersonIds.length === 0) {
+    throw new Error('Social ids not found for current employee')
   }
 
-  const existingMembers = direct?.members
-  const missingAccounts = existingMembers !== undefined ? accIds.filter((id) => !existingMembers.includes(id)) : []
+  for (const dm of existingDms) {
+    const existPersonsSet = new Set(dm.members.map((personId) => personRefByPersonId.get(personId)).filter((p) => p !== undefined))
 
-  if (direct !== undefined && missingAccounts.length > 0) {
-    await client.updateDoc(chunter.class.DirectMessage, direct.space, direct._id, {
-      $push: { members: { $each: missingAccounts, $position: 0 } }
-    })
+    if (existPersonsSet.size !== newPersonsSet.size) {
+      continue
+    }
+
+    for (const person of existPersonsSet) {
+      if (!newPersonsSet.has(person as Ref<Person>)) {
+        continue
+      }
+    }
+
+    direct = dm
+    break
   }
 
   const dmId =
@@ -614,11 +591,19 @@ export async function createDirect (employeeIds: Array<Ref<Employee>>): Promise<
       description: '',
       private: true,
       archived: false,
-      members: accIds
+      members: newDirectPersons.map(((person) => {
+        const primaryId = primarySocialIdByPersonRef.get(person)
+
+        if (primaryId === undefined) {
+          throw new Error(`Primary social id not found for person ${person}`)
+        }
+
+        return primaryId
+      }))
     }))
 
   const context = await client.findOne(notification.class.DocNotifyContext, {
-    user: me._id,
+    user: { $in: myPersonIds },
     objectId: dmId,
     objectClass: chunter.class.DirectMessage
   })
@@ -633,12 +618,13 @@ export async function createDirect (employeeIds: Array<Ref<Employee>>): Promise<
 
   const space = await client.findOne(
     contact.class.PersonSpace,
-    { person: me.person as Ref<Person> },
+    { person: me },
     { projection: { _id: 1 } }
   )
   if (space == null) return dmId
+  const myPrimaryId = pickPrimarySocialId(myPersonIds)
   await client.createDoc(notification.class.DocNotifyContext, space._id, {
-    user: me._id,
+    user: myPrimaryId,
     objectId: dmId,
     objectClass: chunter.class.DirectMessage,
     objectSpace: core.space.Space,

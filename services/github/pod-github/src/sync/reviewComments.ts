@@ -1,9 +1,8 @@
 //
 // Copyright © 2023 Hardcore Engineering Inc.
 //
-import { PersonAccount } from '@hcengineering/contact'
 import core, {
-  Account,
+  PersonId,
   AttachedData,
   Doc,
   DocData,
@@ -70,13 +69,13 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     this.ctx.info('reviewComments:handleEvent', {
       action: event.action,
       login: event.sender.login,
-      workspace: this.provider.getWorkspaceId().name
+      workspace: this.provider.getWorkspaceId()
     })
     const { project, repository } = await this.provider.getProjectAndRepository(event.repository.node_id)
     if (project === undefined || repository === undefined) {
       this.ctx.info('No project for repository', {
         name: event.repository.name,
-        workspace: this.provider.getWorkspaceId().name
+        workspace: this.provider.getWorkspaceId()
       })
       return
     }
@@ -146,12 +145,12 @@ export class ReviewCommentSyncManager implements DocSyncManager {
 
   async deleteGithubDocument (
     container: ContainerFocus,
-    account: Ref<Account>,
+    account: PersonId,
     id: string,
     derivedClient: TxOperations,
     parent?: DocSyncInfo
   ): Promise<void> {
-    const okit = (await this.provider.getOctokit(account as Ref<PersonAccount>)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(account as PersonId)) ?? container.container.octokit
     const q = `mutation deleteReviewComment($reviewID: ID!) {
       deletePullRequestReviewComment(input: {
         id: $reviewID
@@ -382,7 +381,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     container: ContainerFocus,
     parent: DocSyncInfo,
     reviewComment: ReviewCommentExternalData,
-    account: Ref<Account>,
+    account: PersonId,
     derivedClient: TxOperations
   ): Promise<void> {
     const repository = await this.provider.getRepositoryById(info.repository)
@@ -416,7 +415,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     if (Object.keys(platformUpdate).length > 0) {
       if (platformUpdate.body !== undefined) {
         const body = await this.provider.getMarkup(container.container, platformUpdate.body)
-        const okit = (await this.provider.getOctokit(account as Ref<PersonAccount>)) ?? container.container.octokit
+        const okit = (await this.provider.getOctokit(account as PersonId)) ?? container.container.octokit
         const q = `mutation updateReviewComment($commentID: ID!, $body: String!) {
           updatePullRequestReviewComment(input: {
             threadId: $threadID
@@ -450,7 +449,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     messageData: ReviewCommentData,
     parent: DocSyncInfo,
     review: ReviewCommentExternalData,
-    account: Ref<Account>
+    account: PersonId
   ): Promise<void> {
     const _id: Ref<GithubReviewComment> = info._id as unknown as Ref<GithubReviewComment>
     const value: AttachedData<GithubReviewComment> = {
@@ -488,7 +487,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     }
     const existingReview = existing as GithubReviewComment
     const okit =
-      (await this.provider.getOctokit(existingReview.modifiedBy as Ref<PersonAccount>)) ?? container.container.octokit
+      (await this.provider.getOctokit(existingReview.modifiedBy as PersonId)) ?? container.container.octokit
 
     // No external version yet, create it.
     try {

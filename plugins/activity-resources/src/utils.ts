@@ -22,12 +22,13 @@ export async function updateDocReactions (reactions: Reaction[], object?: Doc, e
 
   const client = getClient()
   const currentAccount = getCurrentAccount()
-  const reaction = reactions.find((r) => r.emoji === emoji && r.createBy === currentAccount._id)
+  const socialStrings = currentAccount.socialIds.map(id => id.key)
+  const reaction = reactions.find((r) => r.emoji === emoji && socialStrings.includes(r.createBy))
 
   if (reaction == null) {
     await client.addCollection(activity.class.Reaction, object.space, object._id, object._class, 'reactions', {
       emoji,
-      createBy: currentAccount._id
+      createBy: currentAccount.primarySocialId
     })
   } else {
     await client.remove(reaction)

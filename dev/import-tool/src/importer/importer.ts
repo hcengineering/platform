@@ -16,7 +16,6 @@ import attachment, { type Attachment } from '@hcengineering/attachment'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import { type Person } from '@hcengineering/contact'
 import core, {
-  type Account,
   type AttachedData,
   type Class,
   type Blob as PlatformBlob,
@@ -32,7 +31,8 @@ import core, {
   type Space,
   type Status,
   type Timestamp,
-  type TxOperations
+  type TxOperations,
+  type PersonId
 } from '@hcengineering/core'
 import document, { type Document, getFirstRank, type Teamspace } from '@hcengineering/document'
 import task, {
@@ -83,8 +83,8 @@ export interface ImportSpace<T extends ImportDoc> {
   private: boolean
   autoJoin?: boolean
   description?: string
-  owners?: Ref<Account>[]
-  members?: Ref<Account>[]
+  owners?: PersonId[]
+  members?: PersonId[]
   docs: T[]
 }
 export interface ImportDoc {
@@ -127,7 +127,7 @@ export interface ImportIssue extends ImportDoc {
 
 export interface ImportComment {
   text: string
-  author?: Ref<Account>
+  author?: PersonId
   date?: Timestamp
   attachments?: ImportAttachment[]
 }

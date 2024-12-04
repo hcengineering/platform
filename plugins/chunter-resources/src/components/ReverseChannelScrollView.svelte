@@ -16,13 +16,12 @@
   import core, {
     Doc,
     generateId,
-    getCurrentAccount,
+    getCurrentPersonIds,
     Ref,
     Space,
     Timestamp,
     Tx,
-    TxCUD,
-    TxProcessor
+    TxCUD
   } from '@hcengineering/core'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { ModernButton, Scroller } from '@hcengineering/ui'
@@ -61,7 +60,7 @@
   const loadMoreThreshold = 200
   const newSeparatorOffset = 150
 
-  const me = getCurrentAccount()
+  const socialStrings = getCurrentPersonIds()
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const inboxClient = InboxNotificationsClientImpl.getClient()
@@ -242,7 +241,7 @@
     }
     const lastIndex = messages.findIndex(({ _id }) => _id === lastMsgBeforeFreeze)
     if (lastIndex === -1) return
-    const firstNewMessage = messages.find(({ createdBy }, index) => index > lastIndex && createdBy !== me._id)
+    const firstNewMessage = messages.find(({ createdBy }, index) => index > lastIndex && !socialStrings.includes(createdBy))
 
     if (firstNewMessage === undefined) {
       scrollToBottom()

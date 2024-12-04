@@ -3,9 +3,9 @@
 //
 
 import account, {
+  type AccountMethods,
   EndpointKind,
   accountId,
-  cleanExpiredOtp,
   getAccountDB,
   getAllTransactors,
   getMethods
@@ -124,15 +124,16 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     !hasSignUp
   )
 
-  void accountsDb.then((res) => {
-    const [db] = res
-    setInterval(
-      () => {
-        void cleanExpiredOtp(db)
-      },
-      3 * 60 * 1000
-    )
-  })
+  // TODO: FIXME
+  // void accountsDb.then((res) => {
+  //   const [db] = res
+  //   setInterval(
+  //     () => {
+  //       void cleanExpiredOtp(db)
+  //     },
+  //     3 * 60 * 1000
+  //   )
+  // })
 
   const extractToken = (header: IncomingHttpHeaders): string | undefined => {
     try {
@@ -210,7 +211,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     const token = extractToken(ctx.request.headers)
 
     const request = ctx.request.body as any
-    const method = methods[request.method]
+    const method = methods[request.method as AccountMethods]
     if (method === undefined) {
       const response = {
         id: request.id,
@@ -228,7 +229,19 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
       host = new URL(origin).host
     }
     const branding = host !== undefined ? brandings[host] : null
-    const result = await measureCtx.with(request.method, {}, (ctx) => method(ctx, db, branding, request, token))
+    const result = await measureCtx.with(request.method, {}, (mctx) => {
+      if (method === undefined) {
+        const response = {
+          id: request.id,
+          error: new Status(Severity.ERROR, platform.status.UnknownMethod, { method: request.method })
+        }
+
+        ctx.body = JSON.stringify(response)
+        return
+      }
+
+      return method(mctx, db, branding, request, token)
+    })
 
     ctx.body = result
   })

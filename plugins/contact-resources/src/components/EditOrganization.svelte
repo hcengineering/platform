@@ -35,7 +35,7 @@
     client.updateDoc(object._class, object.space, object._id, { name: object.name })
   }
 
-  const accountId = getCurrentAccount()._id
+  const accountId = getCurrentAccount().uuid
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
   const settingsQuery = createQuery()
   $: settingsQuery.query(setting.class.Integration, { createdBy: accountId, disabled: false }, (res) => {

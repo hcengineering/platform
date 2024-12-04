@@ -77,11 +77,12 @@
 
       const mail = email.trim()
 
-      await client.createDoc(contact.class.PersonAccount, core.space.Model, {
-        email: mail,
-        person: id,
-        role: AccountRole.User
-      })
+      // TODO: FIXME
+      // await client.createDoc(contact.class.PersonAccount, core.space.Model, {
+      //   email: mail,
+      //   person: id,
+      //   role: AccountRole.User
+      // })
 
       const sendInvite = await getResource(login.function.SendInvite)
       await sendInvite(email.trim(), id, AccountRole.User)
@@ -113,15 +114,16 @@
 
   let exists: PersonAccount | undefined
   const query = createQuery()
-  $: query.query(
-    contact.class.PersonAccount,
-    {
-      email: email.trim()
-    },
-    (p) => {
-      exists = p[0]
-    }
-  )
+  // TODO: FIXME
+  // $: query.query(
+  //   contact.class.PersonAccount,
+  //   {
+  //     email: email.trim()
+  //   },
+  //   (p) => {
+  //     exists = p[0]
+  //   }
+  // )
 
   const manager = createFocusManager()
 

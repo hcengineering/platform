@@ -17,13 +17,12 @@
   import { MultipleDraftController, getClient } from '@hcengineering/presentation'
   import { ButtonWithDropdown, IconAdd, IconDropdown, SelectPopupValueType, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { Project, TrackerEvents } from '@hcengineering/tracker'
+  import { TrackerEvents } from '@hcengineering/tracker'
   import { Analytics } from '@hcengineering/analytics'
 
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'
   import CreateIssue from './CreateIssue.svelte'
-  import { importTasks } from '..'
 
   export let currentSpace: Ref<Space> | undefined
 
@@ -55,10 +54,6 @@
         {
           id: tracker.string.NewIssue,
           label
-        },
-        {
-          id: tracker.string.Import,
-          label: tracker.string.Import
         }
       ]
     : [
@@ -86,32 +81,10 @@
     }
   }
 
-  async function fileSelected (): Promise<void> {
-    const list = inputFile.files
-    if (list === null || list.length === 0) return
-    for (let index = 0; index < list.length; index++) {
-      const file = list.item(index)
-      if (file !== null && currentSpace != null) {
-        await importTasks(file, currentSpace as Ref<Project>)
-      }
-    }
-    inputFile.value = ''
-  }
   client.findOne(view.class.Action, { _id: tracker.action.NewIssue }).then((p) => (keys = p?.keyBinding))
 </script>
 
 <div class="antiNav-subheader">
-  <input
-    bind:this={inputFile}
-    disabled={inputFile == null}
-    multiple
-    type="file"
-    name="file"
-    id="tasksInput"
-    accept="application/json"
-    style="display: none"
-    on:change={fileSelected}
-  />
   <ButtonWithDropdown
     icon={IconAdd}
     justify={'left'}

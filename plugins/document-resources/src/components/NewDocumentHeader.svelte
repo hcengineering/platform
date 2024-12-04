@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountRole, Ref, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import { AccountRole, Ref, Space, getCurrentPersonIds, hasAccountRole } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     Button,
@@ -39,13 +39,13 @@
   const client = getClient()
   const query = createQuery()
 
-  const me = getCurrentAccount()
+  const socialStrings = getCurrentPersonIds()
 
   let loading = true
   let hasTeamspace = false
   query.query(
     document.class.Teamspace,
-    { archived: false, members: me._id },
+    { archived: false, members: { $in: socialStrings } },
     (res) => {
       hasTeamspace = res.length > 0
       loading = false

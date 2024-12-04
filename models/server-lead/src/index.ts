@@ -42,11 +42,4 @@ export function createModel (builder: Builder): void {
       func: serverNotification.function.IsUserEmployeeInFieldValueTypeMatch
     }
   )
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverLead.trigger.OnWorkspaceOwnerAdded,
-    txMatch: {
-      objectClass: contact.class.PersonAccount
-    }
-  })
 }

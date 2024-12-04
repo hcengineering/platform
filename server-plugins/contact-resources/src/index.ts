@@ -20,33 +20,35 @@ import contact, {
   Employee,
   Organization,
   Person,
-  PersonAccount,
   PersonSpace,
   contactId,
   formatContactName,
   formatName,
   getFirstName,
   getLastName,
-  getName
+  getName,
+  pickPrimarySocialId,
+  includesAny
 } from '@hcengineering/contact'
 import core, {
-  Account,
+  PersonId,
   Doc,
   Hierarchy,
   Ref,
   SpaceType,
   Tx,
   TxCUD,
-  TxCreateDoc,
   TxMixin,
-  TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc,
   concatLink,
-  type Space
+  buildSocialIdString,
+  type Space,
+  SocialIdType
 } from '@hcengineering/core'
 import notification, { Collaborators } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
+import { getTriggerCurrentPerson } from '@hcengineering/server-contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { workbenchId } from '@hcengineering/workbench'
 
@@ -54,7 +56,7 @@ export async function OnSpaceTypeMembers (txes: Tx[], control: TriggerControl): 
   const result: Tx[] = []
   for (const tx of txes) {
     const ctx = tx as TxUpdateDoc<SpaceType>
-    const newMember = ctx.operations.$push?.members as Ref<Account>
+    const newMember = ctx.operations.$push?.members as PersonId
     if (newMember !== undefined) {
       const spaces = await control.findAll(control.ctx, core.class.Space, { type: ctx.objectId })
       for (const space of spaces) {
@@ -67,7 +69,7 @@ export async function OnSpaceTypeMembers (txes: Tx[], control: TriggerControl): 
         result.push(pushTx)
       }
     }
-    const oldMember = ctx.operations.$pull?.members as Ref<Account>
+    const oldMember = ctx.operations.$pull?.members as PersonId
     if (ctx.operations.$pull?.members !== undefined) {
       const spaces = await control.findAll(control.ctx, core.class.Space, { type: ctx.objectId })
       for (const space of spaces) {
@@ -88,55 +90,44 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
   const result: Tx[] = []
   for (const tx of _txes) {
     const mixinTx = tx as TxMixin<Person, Employee>
-    if (mixinTx.attributes.active !== true) {
-      continue
-    }
-    const acc = control.modelDb.getAccountByPersonId(mixinTx.objectId)
-    if (acc.length === 0) {
-      continue
-    }
+    if (mixinTx.attributes.active !== true) continue
+    const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, { attachedTo: mixinTx.objectId, attachedToClass: contact.class.Person })
+    const socialStrings = socialIds.map(buildSocialIdString)
+    const socialId = pickPrimarySocialId(socialStrings)
+
+    if (socialStrings.length === 0) continue
     const spaces = await control.findAll(control.ctx, core.class.Space, { autoJoin: true })
 
     const txes = await createPersonSpace(
-      acc.map((it) => it._id),
+      socialId,
       mixinTx.objectId,
       control
     )
     result.push(...txes)
 
     for (const space of spaces) {
-      const toAdd = acc.filter((it) => !space.members.includes(it._id))
-      if (toAdd.length === 0) continue
-      for (const a of toAdd) {
-        const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
-          $push: {
-            members: a._id
-          }
-        })
-        result.push(pushTx)
-      }
+      if (includesAny(space.members, socialStrings)) continue
+
+      const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+        $push: {
+          members: socialId
+        }
+      })
+      result.push(pushTx)
     }
   }
   return result
 }
 
+// TODO: we may need a trigger on first social id added to a person
+
 async function createPersonSpace (
-  account: Ref<Account>[],
+  socialId: PersonId,
   person: Ref<Person>,
   control: TriggerControl
 ): Promise<TxCUD<PersonSpace>[]> {
   const personSpace = (await control.findAll(control.ctx, contact.class.PersonSpace, { person }, { limit: 1 }))[0]
-  if (personSpace !== undefined) {
-    const toAdd = account.filter((it) => !personSpace.members.includes(it))
-    if (toAdd.length === 0) return []
-    return toAdd.map((it) =>
-      control.txFactory.createTxUpdateDoc(personSpace._class, personSpace.space, personSpace._id, {
-        $push: {
-          members: it
-        }
-      })
-    )
-  }
+  if (personSpace !== undefined) return []
 
   return [
     control.txFactory.createTxCreateDoc(contact.class.PersonSpace, core.space.Space, {
@@ -145,44 +136,9 @@ async function createPersonSpace (
       private: true,
       archived: false,
       person,
-      members: account
+      members: [socialId]
     })
   ]
-}
-
-export async function OnPersonAccountCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  const result: Tx[] = []
-  const spaces = await control.findAll(control.ctx, core.class.Space, { autoJoin: true })
-
-  for (const tx of txes) {
-    const acc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<PersonAccount>)
-    const person = (
-      await control.findAll(
-        control.ctx,
-        contact.mixin.Employee,
-        { _id: acc.person as Ref<Employee>, active: true },
-        { limit: 1 }
-      )
-    )[0]
-    if (person === undefined) {
-      continue
-    }
-
-    const txes = await createPersonSpace([acc._id], person._id, control)
-
-    result.push(...txes)
-
-    for (const space of spaces) {
-      if (space.members.includes(acc._id)) continue
-      const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
-        $push: {
-          members: acc._id
-        }
-      })
-      result.push(pushTx)
-    }
-  }
-  return result
 }
 
 /**
@@ -265,7 +221,7 @@ export async function OnChannelUpdate (txes: Tx[], control: TriggerControl): Pro
 export async function personHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const person = doc as Person
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${contactId}/${doc._id}`
+  const path = `${workbenchId}/${control.workspace.url}/${contactId}/${doc._id}`
   const link = concatLink(front, path)
   return `<a href="${link}">${getName(control.hierarchy, person, control.branding?.lastNameFirst)}</a>`
 }
@@ -284,7 +240,7 @@ export function personTextPresenter (doc: Doc, control: TriggerControl): string 
 export async function organizationHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const organization = doc as Organization
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${contactId}/${doc._id}`
+  const path = `${workbenchId}/${control.workspace.url}/${contactId}/${doc._id}`
   const link = concatLink(front, path)
   return `<a href="${link}">${organization.name}</a>`
 }
@@ -314,34 +270,29 @@ export function contactNameProvider (
 }
 
 export async function getCurrentEmployeeName (control: TriggerControl, context: Record<string, Doc>): Promise<string> {
-  const account = await control.modelDb.findOne(contact.class.PersonAccount, {
-    _id: control.txFactory.account as Ref<PersonAccount>
-  })
-  if (account === undefined) return ''
-  const employee = (await control.findAll(control.ctx, contact.class.Person, { _id: account.person }))[0]
-  return employee !== undefined ? formatName(employee.name, control.branding?.lastNameFirst) : ''
+  const person = await getTriggerCurrentPerson(control)
+
+  return person !== undefined ? formatName(person.name, control.branding?.lastNameFirst) : ''
 }
 
 export async function getCurrentEmployeeEmail (control: TriggerControl, context: Record<string, Doc>): Promise<string> {
-  const account = await control.modelDb.findOne(contact.class.PersonAccount, {
-    _id: control.txFactory.account as Ref<PersonAccount>
-  })
-  if (account === undefined) return ''
-  return account.email
+  const person = await getTriggerCurrentPerson(control)
+  if (person === undefined) return ''
+
+  const emailSocialId = (await control.findAll(control.ctx, contact.class.SocialIdentity, { attachedTo: person._id, attachedToClass: contact.class.Person, type: SocialIdType.EMAIL }))[0]
+  if (emailSocialId === undefined) return ''
+
+  return emailSocialId.value
 }
 
 export async function getCurrentEmployeePosition (
   control: TriggerControl,
   context: Record<string, Doc>
 ): Promise<string | undefined> {
-  const account = await control.modelDb.findOne(contact.class.PersonAccount, {
-    _id: control.txFactory.account as Ref<PersonAccount>
-  })
-  if (account === undefined) return ''
-  const employee = (await control.findAll(control.ctx, contact.class.Person, { _id: account.person }))[0]
-  if (employee !== undefined) {
-    return control.hierarchy.as(employee, contact.mixin.Employee)?.position ?? ''
-  }
+  const person = await getTriggerCurrentPerson(control)
+  if (person === undefined) return ''
+
+  return control.hierarchy.as(person, contact.mixin.Employee)?.position ?? ''
 }
 
 export async function getContactName (
@@ -387,7 +338,6 @@ export async function getContactFirstName (
 export default async () => ({
   trigger: {
     OnEmployeeCreate,
-    OnPersonAccountCreate,
     OnContactDelete,
     OnChannelUpdate,
     OnSpaceTypeMembers

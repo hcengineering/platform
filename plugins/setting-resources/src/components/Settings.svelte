@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
@@ -52,7 +51,7 @@
   let categoryId: string = ''
 
   let categories: SettingsCategory[] = []
-  const account = getCurrentAccount() as PersonAccount
+  const account = getCurrentAccount()
   let asideComponent: ComponentType | AnyComponent | null = null
   let asideProps: object | null = null
 
@@ -109,7 +108,7 @@
     setMetadata(presentation.metadata.Token, null)
     setMetadataLocalStorage(login.metadata.LastToken, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-    setMetadataLocalStorage(login.metadata.LoginEmail, null)
+    setMetadataLocalStorage(login.metadata.LoginAccount, null)
     void closeClient()
     Analytics.handleEvent(SettingsEvents.SignOut)
     navigate({ path: [loginId] })

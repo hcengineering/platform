@@ -15,11 +15,10 @@
 
 import {
   generateId,
-  toWorkspaceString,
   type Doc,
   type Domain,
   type FieldIndexConfig,
-  type WorkspaceId
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
@@ -155,8 +154,8 @@ export function getMongoClient (uri: string): MongoClientReference {
  *
  * Construct MongoDB table from workspace.
  */
-export function getWorkspaceMongoDB (client: MongoClient, workspaceId: WorkspaceId): Db {
-  return client.db(toWorkspaceString(workspaceId))
+export function getWorkspaceMongoDB (client: MongoClient, dbName: string): Db {
+  return client.db(dbName)
 }
 
 export class DBCollectionHelper implements DomainHelperOperations {

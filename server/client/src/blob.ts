@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { WorkspaceId, type MeasureContext } from '@hcengineering/core'
+import { WorkspaceUuid, type MeasureContext } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { Buffer } from 'node:buffer'
 
@@ -24,7 +24,7 @@ export class BlobClient {
   constructor (
     readonly transactorUrl: string,
     readonly token: string,
-    readonly workspace: WorkspaceId,
+    readonly workspace: WorkspaceUuid,
     readonly opt?: {
       storageAdapter?: StorageAdapter
     }
@@ -119,12 +119,12 @@ export class BlobClient {
             if (response.status === 403) {
               i = 5
               // No file, so make it empty
-              throw new Error(`Unauthorized ${this.transactorAPIUrl}/${this.workspace.name}/${name}`)
+              throw new Error(`Unauthorized ${this.transactorAPIUrl}/${this.workspace}/${name}`)
             }
             if (response.status === 404) {
               i = 5
               // No file, so make it empty
-              throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace.name}/${name}`)
+              throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace}/${name}`)
             }
             if (response.status === 416) {
               if (size === -1) {
@@ -133,7 +133,7 @@ export class BlobClient {
               }
 
               // No file, so make it empty
-              throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace.name}/${name}`)
+              throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace}/${name}`)
             }
             chunk = Buffer.from(await response.arrayBuffer())
 

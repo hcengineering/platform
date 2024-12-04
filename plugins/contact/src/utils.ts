@@ -13,12 +13,36 @@
 // limitations under the License.
 //
 
-import { AttachedData, Class, Client, Doc, FindResult, Hierarchy, Ref } from '@hcengineering/core'
+import { AttachedData, buildSocialIdString, Class, Client, Doc, FindResult, Hierarchy, PersonId, Ref } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { ColorDefinition } from '@hcengineering/ui'
 import { MD5 } from 'crypto-js'
-import { AvatarProvider, AvatarType, Channel, Contact, Person, contactPlugin } from '.'
+import contact, { AvatarProvider, AvatarType, Channel, Contact, Employee, Person } from '.'
 import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
+
+let currentEmployee: Ref<Employee>
+
+let resolveEmployee: (employee: Ref<Employee>) => void
+export const currentEmployeePromise = new Promise<Ref<Employee>>((resolve) => {
+  resolveEmployee = resolve
+})
+
+/**
+ * @public
+ * @returns
+ */
+export function getCurrentEmployee (): Ref<Employee> {
+  return currentEmployee
+}
+
+/**
+ * @public
+ * @param employee -
+ */
+export function setCurrentEmployee (employee: Ref<Employee>): void {
+  currentEmployee = employee
+  resolveEmployee(employee)
+}
 
 /**
  * @public
@@ -61,11 +85,11 @@ export function buildGravatarId (email: string): string {
 export function getAvatarProviderId (kind: AvatarType): Ref<AvatarProvider> | undefined {
   switch (kind) {
     case AvatarType.GRAVATAR:
-      return contactPlugin.avatarProvider.Gravatar
+      return contact.avatarProvider.Gravatar
     case AvatarType.COLOR:
-      return contactPlugin.avatarProvider.Color
+      return contact.avatarProvider.Color
   }
-  return contactPlugin.avatarProvider.Image
+  return contact.avatarProvider.Image
 }
 
 /**
@@ -108,20 +132,20 @@ export async function findContacts (
   // Same name persons
 
   const potentialChannels = await client.findAll(
-    contactPlugin.class.Channel,
+    contact.class.Channel,
     { value: { $in: values } },
     { limit: 1000 }
   )
   let potentialContactIds = Array.from(new Set(potentialChannels.map((it) => it.attachedTo as Ref<Contact>)).values())
 
   if (potentialContactIds.length === 0) {
-    if (client.getHierarchy().isDerived(_class, contactPlugin.class.Person)) {
+    if (client.getHierarchy().isDerived(_class, contact.class.Person)) {
       const firstName = getFirstName(name).split(' ').shift() ?? ''
       const lastName = getLastName(name)
       // try match using just first/last name
       potentialContactIds = (
         await client.findAll(
-          contactPlugin.class.Contact,
+          contact.class.Contact,
           { name: { $like: `${lastName}%${firstName}%` } },
           { limit: 100 }
         )
@@ -129,10 +153,10 @@ export async function findContacts (
       if (potentialContactIds.length === 0) {
         return { contacts: [], channels: [] }
       }
-    } else if (client.getHierarchy().isDerived(_class, contactPlugin.class.Organization)) {
+    } else if (client.getHierarchy().isDerived(_class, contact.class.Organization)) {
       // try match using just first/last name
       potentialContactIds = (
-        await client.findAll(contactPlugin.class.Contact, { name: { $like: `${name}` } }, { limit: 100 })
+        await client.findAll(contact.class.Contact, { name: { $like: `${name}` } }, { limit: 100 })
       ).map((it) => it._id)
       if (potentialContactIds.length === 0) {
         return { contacts: [], channels: [] }
@@ -141,12 +165,12 @@ export async function findContacts (
   }
 
   const potentialPersons: FindResult<Contact> = await client.findAll(
-    contactPlugin.class.Contact,
+    contact.class.Contact,
     { _id: { $in: potentialContactIds } },
     {
       lookup: {
         _id: {
-          channels: contactPlugin.class.Channel
+          channels: contact.class.Channel
         }
       }
     }
@@ -181,7 +205,7 @@ export async function findContacts (
  * @public
  */
 export async function findPerson (client: Client, name: string, channels: AttachedData<Channel>[]): Promise<Person[]> {
-  const result = await findContacts(client, contactPlugin.class.Person, name, channels)
+  const result = await findContacts(client, contact.class.Person, name, channels)
   return result.contacts as Person[]
 }
 
@@ -213,7 +237,7 @@ export function getLastName (name: string): string {
  */
 export function formatName (name: string, lastNameFirst?: string): string {
   const lastNameFirstCombined =
-    lastNameFirst !== undefined ? lastNameFirst === 'true' : getMetadata(contactPlugin.metadata.LastNameFirst) === true
+    lastNameFirst !== undefined ? lastNameFirst === 'true' : getMetadata(contact.metadata.LastNameFirst) === true
   return lastNameFirstCombined
     ? getLastName(name) + ' ' + getFirstName(name)
     : getFirstName(name) + ' ' + getLastName(name)
@@ -234,7 +258,7 @@ function isPerson (hierarchy: Hierarchy, value: Contact): value is Person {
 }
 
 function isPersonClass (hierarchy: Hierarchy, _class: Ref<Class<Doc>>): boolean {
-  return hierarchy.isDerived(_class, contactPlugin.class.Person)
+  return hierarchy.isDerived(_class, contact.class.Person)
 }
 
 /**
@@ -250,4 +274,94 @@ export function formatContactName (
     return formatName(name, lastNameFirst)
   }
   return name
+}
+
+export function pickPrimarySocialId (ids: PersonId[]): PersonId {
+  if (ids.length === 0) {
+    throw new Error('No social ids provided')
+  }
+
+  return ids[0]
+}
+
+export function includesAny (members: PersonId[], ids: PersonId[]): boolean {
+  return members.some((m) => ids.includes(m))
+}
+
+export async function getPersonBySocialId (client: Client, socialIdString: PersonId): Promise<Person | undefined> {
+  const socialId = await client.findOne(contact.class.SocialIdentity, { key: socialIdString })
+
+  return await client.findOne(contact.class.Person, { _id: socialId?.attachedTo, _class: socialId?.attachedToClass })
+}
+
+export async function getPersonRefBySocialId (client: Client, socialIdString: PersonId): Promise<Ref<Person> | undefined> {
+  const socialId = await client.findOne(contact.class.SocialIdentity, { key: socialIdString })
+
+  return socialId?.attachedTo
+}
+
+export async function getPersonRefsBySocialIds (client: Client): Promise<Record<PersonId, Ref<Person>>> {
+  const socialIds = await client.findAll(contact.class.SocialIdentity, {})
+  const result: Record<PersonId, Ref<Person>> = {}
+
+  for (const socialId of socialIds) {
+    result[socialId.key] = socialId.attachedTo
+  }
+
+  return result
+}
+
+export async function getPrimarySocialId (client: Client, person: Ref<Person>): Promise<PersonId | undefined> {
+  const socialIds = await client.findAll(contact.class.SocialIdentity, { attachedTo: person })
+
+  if (socialIds.length === 0) {
+    return
+  }
+
+  return pickPrimarySocialId(socialIds.map((it) => it.key))
+}
+
+export async function getAllSocialStringsByPersonId (client: Client, personId: PersonId): Promise<PersonId[]> {
+  const socialId = await client.findOne(contact.class.SocialIdentity, { key: personId, attachedToClass: contact.class.Person })
+
+  if (socialId === undefined) {
+    return []
+  }
+
+  const socialIds = await client.findAll(contact.class.SocialIdentity, { attachedTo: socialId.attachedTo })
+
+  return socialIds.map((it) => it.key)
+}
+
+export async function getAllSocialStringsByPersonRef (client: Client, person: Ref<Person>): Promise<PersonId[]> {
+  const socialIds = await client.findAll(contact.class.SocialIdentity, { attachedTo: person })
+
+  return socialIds.map((it) => it.key)
+}
+
+export async function getSocialStringsByEmployee (client: Client): Promise<Record<Ref<Person>, string[]>> {
+  const employees = await client.findAll(contact.mixin.Employee, { active: true })
+  const socialIds = await client.findAll(contact.class.SocialIdentity, {
+    attachedTo: { $in: employees.map((it) => it._id) },
+    attachedToClass: contact.class.Person
+  })
+  const socialStringsByPerson: Record<Ref<Person>, string[]> = {}
+
+  for (const socialId of socialIds) {
+    const socialStrings = socialStringsByPerson[socialId.attachedTo]
+    const socialString = buildSocialIdString(socialId)
+    if (socialStrings === undefined) {
+      socialStringsByPerson[socialId.attachedTo] = [socialString]
+    } else {
+      socialStrings.push(socialString)
+    }
+  }
+
+  return socialStringsByPerson
+}
+
+export async function getAllEmployeesPrimarySocialStrings (client: Client): Promise<PersonId[]> {
+  const socialStringsByPerson = getSocialStringsByEmployee(client)
+
+  return Object.values(socialStringsByPerson).map((it) => pickPrimarySocialId(it))
 }

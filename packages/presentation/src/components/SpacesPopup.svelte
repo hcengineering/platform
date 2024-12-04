@@ -45,7 +45,7 @@
         }
       : undefined
 
-  const me = getCurrentAccount()._id
+  const me = getCurrentAccount().uuid
 
   const query = createQuery()
   $: query.query(

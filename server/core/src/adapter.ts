@@ -28,7 +28,7 @@ import {
   type Ref,
   type Tx,
   type TxResult,
-  type WorkspaceId
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { type StorageAdapter } from './storage'
 import type { ServerFindOptions } from './types'
@@ -101,7 +101,7 @@ export type DbAdapterFactory = (
   ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   modelDb: ModelDb,
   storage: StorageAdapter
 ) => Promise<DbAdapter>

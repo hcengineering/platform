@@ -26,15 +26,16 @@ export class TPublicLink extends TDoc implements PublicLink {
 export function createModel (builder: Builder): void {
   builder.createModel(TPublicLink)
 
-  builder.createDoc(
-    core.class.Account,
-    core.space.Model,
-    {
-      email: guestAccountEmail,
-      role: AccountRole.DocGuest
-    },
-    guest.account.Guest
-  )
+  // TODO: FIXME
+  // builder.createDoc(
+  //   core.class.Account,
+  //   core.space.Model,
+  //   {
+  //     email: guestAccountEmail,
+  //     role: AccountRole.DocGuest
+  //   },
+  //   guest.account.Guest
+  // )
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: GUEST_DOMAIN,
     disabled: [

@@ -13,35 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, PersonAccount, combineName, getFirstName, getLastName } from '@hcengineering/contact'
-  import { ChannelsEditor, EditableAvatar, employeeByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { Ref, getCurrentAccount } from '@hcengineering/core'
+  import contact, { combineName, getFirstName, getLastName } from '@hcengineering/contact'
+  import { ChannelsEditor, EditableAvatar, personByIdStore, mySocialIdsStore} from '@hcengineering/contact-resources'
+  import { getCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
   import { AttributeEditor, MessageBox, getClient } from '@hcengineering/presentation'
   import { Breadcrumb, Button, EditBox, FocusHandler, Header, createFocusManager, showPopup } from '@hcengineering/ui'
-  import { onDestroy } from 'svelte'
   import setting from '../plugin'
 
   const client = getClient()
+  const me = getCurrentEmployee()
+
+  $: employee = $personByIdStore.get(me)
+  $: firstName = employee !== undefined ? getFirstName(employee.name) : ''
+  $: lastName = employee !== undefined ? getLastName(employee.name) : ''
+  $: email = $mySocialIdsStore.find((si) => si.type === SocialIdType.EMAIL)?.value ?? ''
 
   let avatarEditor: EditableAvatar
-
-  const account = getCurrentAccount() as PersonAccount
-  const employee = account !== undefined ? $personByIdStore.get(account.person) : undefined
-  let firstName = employee ? getFirstName(employee.name) : ''
-  let lastName = employee ? getLastName(employee.name) : ''
-
-  onDestroy(
-    personByIdStore.subscribe((p) => {
-      const emp = p.get(account.person as Ref<Employee>)
-      if (emp !== undefined) {
-        firstName = getFirstName(emp.name)
-        lastName = getLastName(emp.name)
-      }
-    })
-  )
-
   async function onAvatarDone (e: any): Promise<void> {
     if (employee === undefined) return
 
@@ -86,7 +75,7 @@
         <div class="mr-8">
           <EditableAvatar
             person={employee}
-            email={account.email}
+            {email}
             size={'x-large'}
             name={employee.name}
             bind:this={avatarEditor}

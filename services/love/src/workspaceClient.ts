@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import core, { Client, Ref, TxOperations, type Blob, Data, MeasureContext } from '@hcengineering/core'
+import core, { Client, Ref, TxOperations, WorkspaceUuid, type Blob, Data, MeasureContext } from '@hcengineering/core'
 import drive, { createFile } from '@hcengineering/drive'
 import love, { MeetingMinutes } from '@hcengineering/love'
 import { generateToken } from '@hcengineering/server-token'
 import attachment, { Attachment } from '@hcengineering/attachment'
+
 import { getClient } from './client'
 import config from './config'
 
@@ -38,8 +39,8 @@ export class WorkspaceClient {
     await this.client.close()
   }
 
-  private async initClient (workspace: string): Promise<Client> {
-    const token = generateToken(config.SystemEmail, { name: workspace })
+  private async initClient (workspace: WorkspaceUuid): Promise<Client> {
+    const token = generateToken(config.SystemEmail, workspace, { service: 'love' })
     const client = await getClient(token)
     this.client = new TxOperations(client, core.account.System)
     return this.client

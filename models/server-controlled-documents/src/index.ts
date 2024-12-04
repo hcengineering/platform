@@ -49,13 +49,6 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverDocuments.trigger.OnWorkspaceOwnerAdded,
-    txMatch: {
-      objectClass: contact.class.PersonAccount
-    }
-  })
-
   builder.mixin(documents.class.DocumentMeta, core.class.Class, serverCore.mixin.SearchPresenter, {
     iconConfig: {
       component: documents.component.DocumentIcon

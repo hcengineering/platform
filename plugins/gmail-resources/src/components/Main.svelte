@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
-  import { employeeByIdStore, personAccountByIdStore } from '@hcengineering/contact-resources'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
   import { getCurrentAccount, Ref } from '@hcengineering/core'
   import { Message, SharedMessage } from '@hcengineering/gmail'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
@@ -82,7 +82,7 @@
   }
 
   const settingsQuery = createQuery()
-  const me = getCurrentAccount()._id
+  const me = getCurrentAccount().uuid
 
   let templateProvider: TemplateDataProvider | undefined
 
@@ -102,12 +102,13 @@
     selectedIntegration = integrations.find((p) => p.createdBy === me) ?? integrations[0]
   })
 
-  $: gmailMessage &&
-    channel &&
-    object &&
-    convertMessage(object, channel, gmailMessage, allIntegrations, $personAccountByIdStore, $employeeByIdStore).then(
-      (p) => (currentMessage = p)
-    )
+  // TODO: FIXME
+  // $: gmailMessage &&
+  //   channel &&
+  //   object &&
+  //   convertMessage(object, channel, gmailMessage, allIntegrations, $personAccountByIdStore, $employeeByIdStore).then(
+  //     (p) => (currentMessage = p)
+  //   )
 </script>
 
 {#if channel && object}

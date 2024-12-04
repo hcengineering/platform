@@ -334,7 +334,7 @@ export async function configurePlatform() {
   setMetadata(rekoni.metadata.RekoniUrl, config.REKONI_URL)
 
   setMetadata(uiPlugin.metadata.DefaultApplication, login.component.LoginApp)
-  setMetadata(contactPlugin.metadata.LastNameFirst, myBranding.lastNameFirst === 'true' ?? false)
+  setMetadata(contactPlugin.metadata.LastNameFirst, myBranding.lastNameFirst === 'true')
   setMetadata(love.metadata.ServiceEnpdoint, config.LOVE_ENDPOINT)
   setMetadata(love.metadata.WebSocketURL, config.LIVEKIT_WS)
   setMetadata(print.metadata.PrintURL, config.PRINT_URL)

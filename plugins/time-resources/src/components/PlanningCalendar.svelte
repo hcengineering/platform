@@ -1,8 +1,8 @@
 <script lang="ts">
   import calendar, { Calendar, Event, generateEventId, getAllEvents } from '@hcengineering/calendar'
   import { DayCalendar, calendarByIdStore, hidePrivateEvents } from '@hcengineering/calendar-resources'
-  import { PersonAccount } from '@hcengineering/contact'
-  import { Ref, SortingOrder, Timestamp, getCurrentAccount } from '@hcengineering/core'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { Ref, SortingOrder, Timestamp, getCurrentAccount, getCurrentPersonIds } from '@hcengineering/core'
   import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import {
@@ -47,14 +47,15 @@
 
   const rem = (n: number): number => n * $deviceInfo.fontSize
 
-  const acc = getCurrentAccount()._id
+  const me = getCurrentAccount()
+  const socialStrings = getCurrentPersonIds()
 
   const calendarsQ = createQuery()
 
   let calendars: Calendar[] = []
   let todayDate = new Date()
 
-  $: calendarsQ.query(calendar.class.Calendar, { createdBy: acc, hidden: false }, (res) => {
+  $: calendarsQ.query(calendar.class.Calendar, { createdBy: { $in: socialStrings }, hidden: false }, (res) => {
     calendars = res
   })
 
@@ -113,8 +114,7 @@
         current.date = e.detail.date.getTime()
         current.dueDate = new Date(e.detail.date).setMinutes(new Date(e.detail.date).getMinutes() + 30)
       } else {
-        const me = getCurrentAccount() as PersonAccount
-        const _calendar = `${me._id}_calendar` as Ref<Calendar>
+        const _calendar = `${me.primarySocialId}_calendar` as Ref<Calendar>
         const ev: WorkSlot = {
           _id: dragItemId,
           allDay: false,
@@ -129,8 +129,8 @@
           visibility: 'public',
           calendar: _calendar,
           space: calendar.space.Calendar,
-          modifiedBy: me._id,
-          participants: [me.person],
+          modifiedBy: getCurrentAccount().primarySocialId,
+          participants: [getCurrentEmployee()],
           modifiedOn: Date.now(),
           date: e.detail.date.getTime(),
           dueDate: new Date(e.detail.date).setMinutes(new Date(e.detail.date).getMinutes() + 30)

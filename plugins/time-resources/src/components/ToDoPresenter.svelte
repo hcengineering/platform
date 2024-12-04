@@ -24,7 +24,7 @@
   export let withoutSpace: boolean = false
   export let showCheck = false
 
-  const me = getCurrentAccount()._id
+  const me = getCurrentAccount().uuid
   function isVisible (value: ToDo): boolean {
     if (value.createdBy === me) return true
     if (value.visibility === 'public') {

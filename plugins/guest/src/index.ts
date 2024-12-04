@@ -21,6 +21,7 @@ export interface Restrictions {
 }
 
 export const guestAccountEmail = '#guest@hc.engineering'
+export const guestAccount = '485fb04f-1f9c-45ee-bced-78a008a034e8'
 
 export const guestId = 'guest' as Plugin
 export default plugin(guestId, {

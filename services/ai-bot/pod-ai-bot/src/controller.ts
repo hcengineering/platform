@@ -14,7 +14,7 @@
 //
 
 import {
-  aiBotAccountEmail,
+  aiBotAccount,
   AIEventRequest,
   AIEventType,
   AIMessageEventRequest,
@@ -35,7 +35,7 @@ import { generateToken } from '@hcengineering/server-token'
 import OpenAI from 'openai'
 import { encodingForModel } from 'js-tiktoken'
 import { htmlToMarkup, markupToHTML } from '@hcengineering/text'
-import { Markup, MeasureContext, Ref, WorkspaceId } from '@hcengineering/core'
+import { Markup, MeasureContext, Ref, WorkspaceUuid } from '@hcengineering/core'
 import { Room } from '@hcengineering/love'
 
 import { WorkspaceClient } from './workspace/workspaceClient'
@@ -49,9 +49,9 @@ import { translateHtml } from './utils/openai'
 const CLOSE_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes
 
 export class AIControl {
-  private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
-  private readonly closeWorkspaceTimeouts: Map<string, NodeJS.Timeout> = new Map<string, NodeJS.Timeout>()
-  private readonly connectingWorkspaces: Set<string> = new Set<string>()
+  private readonly workspaces: Map<WorkspaceUuid, WorkspaceClient> = new Map<WorkspaceUuid, WorkspaceClient>()
+  private readonly closeWorkspaceTimeouts: Map<WorkspaceUuid, NodeJS.Timeout> = new Map<WorkspaceUuid, NodeJS.Timeout>()
+  private readonly connectingWorkspaces: Set<WorkspaceUuid> = new Set<WorkspaceUuid>()
 
   readonly aiClient?: OpenAI
   readonly encoding = encodingForModel(config.OpenAIModel)
@@ -115,14 +115,14 @@ export class AIControl {
     this.closeWorkspaceTimeouts.set(workspace, newTimeoutId)
   }
 
-  async createWorkspaceClient (workspace: string, info: WorkspaceInfoRecord): Promise<WorkspaceClient | undefined> {
+  async createWorkspaceClient (workspace: WorkspaceUuid, info: WorkspaceInfoRecord): Promise<WorkspaceClient | undefined> {
     const isAssigned = await tryAssignToWorkspace(workspace, this.ctx)
 
     if (!isAssigned) {
       return
     }
 
-    const token = generateToken(aiBotAccountEmail, { name: workspace })
+    const token = generateToken(aiBotAccount, workspace, { service: 'aibot' })
     const endpoint = await getTransactorEndpoint(token)
 
     this.ctx.info('Listen workspace: ', { workspace })
@@ -134,7 +134,7 @@ export class AIControl {
     return new WorkspaceClient(endpoint, token, workspace, this, this.ctx.newChild(workspace, {}), info)
   }
 
-  async initWorkspaceClient (workspace: string): Promise<void> {
+  async initWorkspaceClient (workspace: WorkspaceUuid): Promise<void> {
     if (workspace === config.SupportWorkspace) {
       return
     }
@@ -209,7 +209,7 @@ export class AIControl {
     }
   }
 
-  async getWorkspaceClient (workspace: string): Promise<WorkspaceClient | undefined> {
+  async getWorkspaceClient (workspace: WorkspaceUuid): Promise<WorkspaceClient | undefined> {
     await this.initWorkspaceClient(workspace)
 
     return this.workspaces.get(workspace)
@@ -218,7 +218,7 @@ export class AIControl {
   async openChatInSidebar (data: OpenChatInSidebarData): Promise<void> {
     const wsClient = await this.getWorkspaceClient(data.workspace)
     if (wsClient === undefined) return
-    await wsClient.openAIChatInSidebar(data.email)
+    await wsClient.openAIChatInSidebar(data.personId)
   }
 
   async processOnboardingEvent (event: OnboardingEventRequest): Promise<void> {
@@ -269,15 +269,15 @@ export class AIControl {
     await this.initWorkspaceClient(workspace)
   }
 
-  async loveConnect (workspace: WorkspaceId, request: ConnectMeetingRequest): Promise<void> {
-    const wsClient = await this.getWorkspaceClient(workspace.name)
+  async loveConnect (workspace: WorkspaceUuid, request: ConnectMeetingRequest): Promise<void> {
+    const wsClient = await this.getWorkspaceClient(workspace)
     if (wsClient === undefined) return
 
     await wsClient.loveConnect(request)
   }
 
-  async loveDisconnect (workspace: WorkspaceId, request: DisconnectMeetingRequest): Promise<void> {
-    const wsClient = await this.getWorkspaceClient(workspace.name)
+  async loveDisconnect (workspace: WorkspaceUuid, request: DisconnectMeetingRequest): Promise<void> {
+    const wsClient = await this.getWorkspaceClient(workspace)
     if (wsClient === undefined) return
 
     await wsClient.loveDisconnect(request)

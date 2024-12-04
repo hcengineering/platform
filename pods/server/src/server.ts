@@ -15,11 +15,12 @@
 //
 
 import {
+  type Account,
   type Branding,
   type BrandingMap,
   type MeasureContext,
   type Tx,
-  type WorkspaceIdWithUrl
+  type WorkspaceIds
 } from '@hcengineering/core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 
@@ -79,10 +80,11 @@ export function start (
   const sessionFactory = (
     token: Token,
     pipeline: Pipeline,
-    workspaceId: WorkspaceIdWithUrl,
+    account: Account,
+    workspaceId: WorkspaceIds,
     branding: Branding | null
   ): Session => {
-    return new ClientSession(token, pipeline, workspaceId, branding, token.extra?.mode === 'backup')
+    return new ClientSession(token, pipeline, account, workspaceId, branding, token.extra?.mode === 'backup')
   }
 
   const { shutdown: onClose, sessionManager } = startSessionManager(metrics, {

@@ -95,7 +95,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     this.contextsQuery.query(
       notification.class.DocNotifyContext,
       {
-        user: getCurrentAccount()._id
+        user: getCurrentAccount().uuid
       },
       (result: DocNotifyContext[]) => {
         this.contexts.set(result)
@@ -107,7 +107,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       notification.class.CommonInboxNotification,
       {
         archived: false,
-        user: getCurrentAccount()._id
+        user: getCurrentAccount().uuid
       },
       (result: InboxNotification[]) => {
         result.sort((a, b) => (b.createdOn ?? b.modifiedOn) - (a.createdOn ?? a.modifiedOn))
@@ -119,7 +119,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       notification.class.ActivityInboxNotification,
       {
         archived: false,
-        user: getCurrentAccount()._id
+        user: getCurrentAccount().uuid
       },
       (result: ActivityInboxNotification[]) => {
         this.activityInboxNotifications.set(result)
@@ -195,10 +195,10 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         collaboratorsMixin.space,
         notification.mixin.Collaborators,
         {
-          collaborators: [getCurrentAccount()._id]
+          collaborators: [getCurrentAccount().uuid]
         }
       )
-    } else if (!collaboratorsMixin.collaborators.includes(getCurrentAccount()._id)) {
+    } else if (!collaboratorsMixin.collaborators.includes(getCurrentAccount().uuid)) {
       await client.updateMixin(
         collaboratorsMixin._id,
         collaboratorsMixin._class,
@@ -206,7 +206,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         notification.mixin.Collaborators,
         {
           $push: {
-            collaborators: getCurrentAccount()._id
+            collaborators: getCurrentAccount().uuid
           }
         }
       )
@@ -245,7 +245,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       const inboxNotifications = await ops.findAll(
         notification.class.InboxNotification,
         {
-          user: getCurrentAccount()._id,
+          user: getCurrentAccount().uuid,
           archived: false
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
@@ -273,7 +273,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       const inboxNotifications = await ops.findAll(
         notification.class.InboxNotification,
         {
-          user: getCurrentAccount()._id,
+          user: getCurrentAccount().uuid,
           isViewed: false,
           archived: false
         },
@@ -298,7 +298,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       const inboxNotifications = await ops.findAll(
         notification.class.InboxNotification,
         {
-          user: getCurrentAccount()._id,
+          user: getCurrentAccount().uuid,
           isViewed: true,
           archived: false
         },

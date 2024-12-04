@@ -14,10 +14,9 @@
 -->
 <script lang="ts">
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { Employee, PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import {
     generateId,
-    getCurrentAccount,
     type AttachedData,
     type Class,
     type Data,
@@ -67,7 +66,7 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const currentUser = getCurrentAccount() as PersonAccount
+  const currentUser = getCurrentEmployee()
 
   const steps: IWizardStep<DocumentWizardStep>[] = [
     {
@@ -116,8 +115,8 @@
     commentSequence: 0,
     category: '' as Ref<DocumentCategory>,
     abstract: '',
-    author: currentUser.person as Ref<Employee>,
-    owner: currentUser.person as Ref<Employee>,
+    author: currentUser,
+    owner: currentUser,
     state: DocumentState.Draft,
     snapshots: 0,
     changeControl: ccRecordId,

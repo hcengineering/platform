@@ -13,25 +13,6 @@
 // limitations under the License.
 //
 
-import { WorkspaceInfo } from '@hcengineering/account'
-
-import config from './config'
-
-export async function getWorkspaceInfo (token: string): Promise<WorkspaceInfo | undefined> {
-  const accountsUrl = config.AccountsUrl
-  const workspaceInfo = await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'getWorkspaceInfo',
-        params: []
-      })
-    })
-  ).json()
-
-  return workspaceInfo.result as WorkspaceInfo
-}
+export * from './client'
+export * from './types'
+export * from './utils'

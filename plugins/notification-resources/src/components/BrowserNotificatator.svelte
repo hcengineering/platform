@@ -44,7 +44,7 @@
     query.query(
       notification.class.BrowserNotification,
       {
-        user: getCurrentAccount()._id
+        user: getCurrentAccount().uuid,
       },
       (res) => {
         if (res.length > 0) {

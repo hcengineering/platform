@@ -49,7 +49,7 @@
 
   async function leaveChannel (): Promise<void> {
     await client.update(channel, {
-      $pull: { members: getCurrentAccount()._id }
+      $pull: { members: getCurrentAccount().uuid }
     })
     dispatch('close')
   }

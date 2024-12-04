@@ -226,7 +226,7 @@ async function processMigrateContentFor (
           if (value != null && value.startsWith('{')) {
             try {
               const buffer = Buffer.from(value)
-              await storageAdapter.put(ctx, client.workspaceId, blobId, buffer, 'application/json', buffer.length)
+              await storageAdapter.put(ctx, client.wsIds.uuid, blobId, buffer, 'application/json', buffer.length)
             } catch (err) {
               ctx.error('failed to process document', { _class: doc._class, _id: doc._id, err })
             }
@@ -331,7 +331,7 @@ async function processMigrateJsonForDoc (
   client: MigrationClient,
   storageAdapter: StorageAdapter
 ): Promise<MigrateUpdate<Doc>> {
-  const { hierarchy, workspaceId } = client
+  const { hierarchy, wsIds } = client
 
   const update: MigrateUpdate<Doc> = {}
 
@@ -352,7 +352,7 @@ async function processMigrateJsonForDoc (
 
     if (value.startsWith('{')) {
       // For some reason we have documents that are already markups
-      const jsonId = await saveCollabJson(ctx, storageAdapter, workspaceId, collabId, value)
+      const jsonId = await saveCollabJson(ctx, storageAdapter, wsIds.uuid, collabId, value)
       update[attributeName] = jsonId
       continue
     }
@@ -372,10 +372,10 @@ async function processMigrateJsonForDoc (
       const ydocId = makeCollabYdocId(collabId)
       if (ydocId !== currentYdocId) {
         ctx.info('saving collaborative doc with new name', { collabId, ydocId, currentYdocId })
-        const buffer = await storageAdapter.read(ctx, workspaceId, currentYdocId)
+        const buffer = await storageAdapter.read(ctx, wsIds.uuid, currentYdocId)
         await storageAdapter.put(
           ctx,
-          workspaceId,
+          wsIds.uuid,
           ydocId,
           Buffer.concat(buffer as any),
           'application/ydoc',
@@ -386,7 +386,7 @@ async function processMigrateJsonForDoc (
       const unset = update.$unset ?? {}
       update.$unset = { ...unset, [attribute.name]: 1 }
     } catch (err) {
-      ctx.warn('failed to process collaborative doc', { workspaceId, collabId, currentYdocId, err })
+      ctx.warn('failed to process collaborative doc', { workspaceId: wsIds.uuid, collabId, currentYdocId, err })
     }
   }
 

@@ -53,6 +53,7 @@
   },
   "dependencies": {
     "@hcengineering/account": "^0.6.0",
+    "@hcengineering/account-client": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/analytics-collector": "^0.6.0",
     "@hcengineering/analytics-collector-assets": "^0.6.0",

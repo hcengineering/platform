@@ -1,18 +1,18 @@
 import core, {
-  getWorkspaceId,
   Hierarchy,
   ModelDb,
-  systemAccountEmail,
+  systemAccountUuid,
   TxOperations,
   versionToString,
-  type BaseWorkspaceInfo,
+  systemAccount,
   type Branding,
   type Client,
   type Data,
   type MeasureContext,
   type Tx,
   type Version,
-  type WorkspaceIdWithUrl
+  type WorkspaceIds,
+  type WorkspaceInfoWithStatus
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation, type ModelLogger } from '@hcengineering/model'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
@@ -33,7 +33,7 @@ export async function createWorkspace (
   ctx: MeasureContext,
   version: Data<Version>,
   branding: Branding | null,
-  workspaceInfo: BaseWorkspaceInfo,
+  workspaceInfo: WorkspaceInfoWithStatus,
   txes: Tx[],
   migrationOperation: [string, MigrateOperation][],
   handleWsEvent?: (
@@ -44,7 +44,7 @@ export async function createWorkspace (
   ) => Promise<void>,
   external: boolean = false
 ): Promise<void> {
-  const childLogger = ctx.newChild('createWorkspace', {}, { workspace: workspaceInfo.workspace })
+  const childLogger = ctx.newChild('createWorkspace', {}, { workspace: workspaceInfo.uuid })
   const ctxModellogger: ModelLogger = {
     log: (msg, data) => {
       childLogger.info(msg, data)
@@ -59,13 +59,13 @@ export async function createWorkspace (
   }, 5000)
 
   try {
-    const wsUrl: WorkspaceIdWithUrl = {
-      name: workspaceInfo.workspace,
-      workspaceName: workspaceInfo.workspaceName ?? '',
-      workspaceUrl: workspaceInfo.workspaceUrl ?? ''
+    const wsUrl: WorkspaceIds = {
+      uuid: workspaceInfo.uuid,
+      url: workspaceInfo.url,
+      dbName: (workspaceInfo as any).dbName
     }
 
-    const wsId = getWorkspaceId(workspaceInfo.workspace)
+    const wsId = workspaceInfo.uuid
 
     await handleWsEvent?.('create-started', version, 10)
 
@@ -139,7 +139,7 @@ export async function upgradeWorkspace (
   version: Data<Version>,
   txes: Tx[],
   migrationOperation: [string, MigrateOperation][],
-  ws: BaseWorkspaceInfo,
+  ws: WorkspaceInfoWithStatus,
   logger: ModelLogger = consoleModelLogger,
   handleWsEvent?: (
     event: 'upgrade-started' | 'progress' | 'upgrade-done' | 'ping',
@@ -159,18 +159,18 @@ export async function upgradeWorkspace (
   registerStringLoaders()
   try {
     ;({ pipeline, storageAdapter } = await getServerPipeline(ctx, txes, dbUrl, {
-      name: ws.workspace,
-      workspaceName: ws.workspaceName ?? '',
-      workspaceUrl: ws.workspaceUrl ?? ''
+      uuid: ws.uuid,
+      url: ws.url ?? '',
+      dbName: (ws as any).dbName
     }))
     if (pipeline === undefined || storageAdapter === undefined) {
       return
     }
 
-    const wsUrl: WorkspaceIdWithUrl = {
-      name: ws.workspace,
-      workspaceName: ws.workspaceName ?? '',
-      workspaceUrl: ws.workspaceUrl ?? ''
+    const wsUrl: WorkspaceIds = {
+      uuid: ws.uuid,
+      url: ws.url ?? '',
+      dbName: (ws as any).dbName
     }
 
     await upgradeWorkspaceWith(
@@ -202,7 +202,7 @@ export async function upgradeWorkspaceWith (
   version: Data<Version>,
   txes: Tx[],
   migrationOperation: [string, MigrateOperation][],
-  ws: BaseWorkspaceInfo,
+  ws: WorkspaceInfoWithStatus,
   pipeline: Pipeline,
   connection: Client,
   storageAdapter: StorageAdapter,
@@ -227,29 +227,29 @@ export async function upgradeWorkspaceWith (
     force: forceUpdate,
     currentVersion: ws?.version !== undefined ? versionToString(ws.version) : '',
     toVersion: versionStr,
-    workspace: ws.workspace
+    workspace: ws.uuid
   })
-  const wsId: WorkspaceIdWithUrl = {
-    name: ws.workspace,
-    workspaceName: ws.workspaceName ?? '',
-    workspaceUrl: ws.workspaceUrl ?? ''
+  const wsId: WorkspaceIds = {
+    uuid: ws.uuid,
+    url: ws.url ?? '',
+    dbName: (ws as any).dbName
   }
 
-  const token = generateToken(systemAccountEmail, wsId, { service: 'workspace' })
+  const token = generateToken(systemAccountUuid, wsId.uuid, { service: 'workspace' })
   let progress = 0
 
   const updateProgressHandle = setInterval(() => {
     void handleWsEvent?.('progress', version, progress)
   }, 5000)
 
-  const wsUrl: WorkspaceIdWithUrl = {
-    name: ws.workspace,
-    workspaceName: ws.workspaceName ?? '',
-    workspaceUrl: ws.workspaceUrl ?? ''
+  const wsUrl: WorkspaceIds = {
+    uuid: ws.uuid,
+    url: ws.url ?? '',
+    dbName: (ws as any).dbName
   }
   try {
     const contextData = new SessionDataImpl(
-      systemAccountEmail,
+      systemAccount,
       'backup',
       true,
       { targets: {}, txes: [] },

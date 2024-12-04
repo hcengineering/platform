@@ -14,8 +14,8 @@
 //
 
 import activity from '@hcengineering/activity'
-import type { Class, CollectionSize, MarkupBlobRef, Domain, Rank, Role, RolesAssignment } from '@hcengineering/core'
-import { Account, AccountRole, IndexKind, Ref } from '@hcengineering/core'
+import type { Class, CollectionSize, MarkupBlobRef, Domain, Rank, Ref, Role, RolesAssignment } from '@hcengineering/core'
+import { PersonId, AccountRole, IndexKind } from '@hcengineering/core'
 import {
   type Document,
   type DocumentEmbedding,
@@ -87,9 +87,9 @@ export class TDocument extends TDoc implements Document, Todoable {
   @Hidden()
   declare space: Ref<Teamspace>
 
-  @Prop(TypeRef(core.class.Account), document.string.LockedBy)
+  @Prop(TypeString(), document.string.LockedBy)
   @Hidden()
-    lockedBy?: Ref<Account>
+    lockedBy?: PersonId
 
   @Prop(Collection(document.class.DocumentEmbedding), document.string.Embeddings)
     embeddings?: number
@@ -158,7 +158,7 @@ export class TTeamspace extends TTypedSpace implements Teamspace {}
 @Mixin(document.mixin.DefaultTeamspaceTypeData, document.class.Teamspace)
 @UX(getEmbeddedLabel('Default teamspace type'), document.icon.Document)
 export class TDefaultTeamspaceTypeData extends TTeamspace implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: PersonId[]
 }
 
 function defineTeamspace (builder: Builder): void {

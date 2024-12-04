@@ -161,7 +161,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
 
     const blobId = await ctx.with('saveCollabJson', {}, (ctx) => {
       return withRetry(ctx, 5, () => {
-        return saveCollabJson(ctx, this.storage, { name: workspaceId }, documentId, markup.curr[objectAttr])
+        return saveCollabJson(ctx, this.storage, workspaceId, documentId, markup.curr[objectAttr])
       })
     })
 

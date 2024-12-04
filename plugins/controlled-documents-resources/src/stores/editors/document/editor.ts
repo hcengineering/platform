@@ -26,8 +26,8 @@ import {
   type ProjectDocument
 } from '@hcengineering/controlled-documents'
 import chunter from '@hcengineering/chunter'
-import { type Ref, getCurrentAccount } from '@hcengineering/core'
-import { type PersonAccount } from '@hcengineering/contact'
+import { type Ref } from '@hcengineering/core'
+import { getCurrentEmployee } from '@hcengineering/contact'
 import { type Training } from '@hcengineering/training'
 import { type IntlString } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
@@ -49,7 +49,7 @@ import {
   projectDocumentsUpdated,
   projectUpdated
 } from './actions'
-import { documentCompareFn, getCurrentEmployee } from '../../../utils'
+import { documentCompareFn } from '../../../utils'
 
 export const $controlledDocument = createStore<ControlledDocument | null>(null)
   .on(controlledDocumentUpdated, (_, payload) => payload)
@@ -185,7 +185,7 @@ export const $documentStateForCurrentUser = combine($controlledDocument, $review
       return ControlledDocumentState.InReview
     }
 
-    const currentPerson = (getCurrentAccount() as PersonAccount).person
+    const currentPerson = getCurrentEmployee()
     if (reviewRequest.approved?.includes(currentPerson)) {
       return ControlledDocumentState.Reviewed
     }
@@ -211,7 +211,7 @@ export const $documentState = $controlledDocument.map((doc) => {
 })
 
 export const $documentReviewIsActive = combine($reviewRequest, $documentStateForCurrentUser, (reviewReq, state) => {
-  const me = (getCurrentAccount() as PersonAccount).person
+  const me = getCurrentEmployee()
 
   if (reviewReq == null) {
     return false
@@ -227,7 +227,7 @@ export const $documentApprovalIsActive = combine(
   $approvalRequest,
   $documentStateForCurrentUser,
   (doc, approvalReq, state) => {
-    const me = (getCurrentAccount() as PersonAccount).person
+    const me = getCurrentEmployee()
 
     if (approvalReq == null) {
       return false

@@ -14,7 +14,7 @@
 //
 
 import aiBot, {
-  aiBotAccountEmail,
+  aiBotAccount,
   AIMessageEventRequest,
   AITransferEventRequest,
   ConnectMeetingRequest,
@@ -35,11 +35,10 @@ import contact, {
   getFirstName,
   getLastName,
   getName,
-  Person,
-  PersonAccount
+  Person
 } from '@hcengineering/contact'
 import core, {
-  Account,
+  PersonId,
   Blob,
   Class,
   Client,
@@ -53,7 +52,8 @@ import core, {
   Tx,
   TxCUD,
   TxOperations,
-  TxRemoveDoc
+  TxRemoveDoc,
+  WorkspaceUuid
 } from '@hcengineering/core'
 import { Room } from '@hcengineering/love'
 import { countTokens } from '@hcengineering/openai'
@@ -89,12 +89,11 @@ export class WorkspaceClient {
   channelByKey = new Map<string, Ref<OnboardingChannel>>()
   rate = new RateLimiter(1)
 
-  aiAccount: PersonAccount | undefined
   aiPerson: Person | undefined
 
   typingMap: Map<Ref<Doc>, TypingInfo> = new Map<Ref<Doc>, TypingInfo>()
   typingTimeoutsMap: Map<Ref<Doc>, NodeJS.Timeout> = new Map<Ref<Doc>, NodeJS.Timeout>()
-  directByEmail = new Map<string, Ref<DirectMessage>>()
+  directByPersonId = new Map<PersonId, Ref<DirectMessage>>()
 
   historyMap = new Map<Ref<Doc>, WithId<HistoryRecord>[]>()
 
@@ -105,12 +104,12 @@ export class WorkspaceClient {
   constructor (
     readonly transactorUrl: string,
     readonly token: string,
-    readonly workspace: string,
+    readonly workspace: WorkspaceUuid,
     readonly controller: AIControl,
     readonly ctx: MeasureContext,
     readonly info: WorkspaceInfoRecord | undefined
   ) {
-    this.blobClient = new BlobClient(transactorUrl, token, { name: this.workspace })
+    this.blobClient = new BlobClient(transactorUrl, token, this.workspace)
     this.opClient = this.initClient()
     void this.opClient.then((opClient) => {
       this.opClient = opClient
@@ -126,7 +125,7 @@ export class WorkspaceClient {
     await this.uploadAvatarFile(opClient)
 
     if (this.aiPerson !== undefined && config.LoveEndpoint !== '') {
-      const token = generateToken(aiBotAccountEmail, { name: this.workspace })
+      const token = generateToken(aiBotAccount, this.workspace)
       this.love = new LoveController(this.workspace, this.ctx.newChild('love', {}), token, opClient, this.aiPerson)
     }
 
@@ -168,7 +167,7 @@ export class WorkspaceClient {
   private async tryLogin (): Promise<void> {
     this.ctx.info('Logging in: ', { workspace: this.workspace })
 
-    const token = await login(aiBotAccountEmail, config.Password, this.workspace)
+    const token = await login(aiBotAccount, config.Password, this.workspace)
 
     clearTimeout(this.loginTimeout)
 
@@ -184,15 +183,10 @@ export class WorkspaceClient {
   }
 
   private async checkPersonData (client: TxOperations): Promise<void> {
-    this.aiAccount = await client.getModel().findOne(contact.class.PersonAccount, { email: aiBotAccountEmail })
-    if (this.aiAccount === undefined) {
-      this.ctx.error('Cannot find AI PersonAccount', { email: aiBotAccountEmail })
-      return
-    }
-    this.aiPerson = await client.findOne(contact.class.Person, { _id: this.aiAccount.person })
+    this.aiPerson = await client.findOne(contact.class.Person, { personUuid: aiBotAccount })
 
     if (this.aiPerson === undefined) {
-      this.ctx.error('Cannot find AI Person ', { _id: this.aiAccount.person })
+      this.ctx.error('Cannot find AI Person ', { personUuid: aiBotAccount })
       return
     }
 
@@ -389,7 +383,7 @@ export class WorkspaceClient {
 
   async summarizeHistory (
     toSummarize: WithId<HistoryRecord>[],
-    user: Ref<Account>,
+    user: PersonId,
     objectId: Ref<Doc>,
     objectClass: Ref<Class<Doc>>
   ): Promise<void> {
@@ -429,7 +423,7 @@ export class WorkspaceClient {
     message: string,
     role: 'user' | 'assistant',
     tokens: number,
-    user: Ref<Account>,
+    user: PersonId,
     objectId: Ref<Doc>,
     objectClass: Ref<Class<Doc>>
   ): Promise<void> {
@@ -535,44 +529,46 @@ export class WorkspaceClient {
   }
 
   async transferToSupport (event: AITransferEventRequest, channelRef?: Ref<OnboardingChannel>): Promise<void> {
-    const client = await this.opClient
-    const key = `${event.toEmail}-${event.fromWorkspace}`
-    const channel =
-      channelRef ??
-      this.channelByKey.get(key) ??
-      (
-        await getOrCreateOnboardingChannel(this.ctx, client, event.toEmail, {
-          workspaceId: event.fromWorkspace,
-          workspaceName: event.fromWorkspaceName,
-          workspaceUrl: event.fromWorkspaceUrl
-        })
-      )[0]
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // const client = await this.opClient
+    // const key = `${event.toEmail}-${event.fromWorkspace}`
+    // const channel =
+    //   channelRef ??
+    //   this.channelByKey.get(key) ??
+    //   (
+    //     await getOrCreateOnboardingChannel(this.ctx, client, event.toEmail, {
+    //       workspaceId: event.fromWorkspace,
+    //       workspaceName: event.fromWorkspaceName,
+    //       workspaceUrl: event.fromWorkspaceUrl
+    //     })
+    //   )[0]
 
-    if (channel === undefined) {
-      return
-    }
+    // if (channel === undefined) {
+    //   return
+    // }
 
-    this.channelByKey.set(key, channel)
+    // this.channelByKey.set(key, channel)
 
-    await this.createTransferMessage(
-      client,
-      event,
-      channel,
-      analyticsCollector.class.OnboardingChannel,
-      channel,
-      event.message
-    )
+    // await this.createTransferMessage(
+    //   client,
+    //   event,
+    //   channel,
+    //   analyticsCollector.class.OnboardingChannel,
+    //   channel,
+    //   event.message
+    // )
   }
 
   async transferToUserDirect (event: AITransferEventRequest): Promise<void> {
     const client = await this.opClient
-    const direct = this.directByEmail.get(event.toEmail) ?? (await getDirect(client, event.toEmail, this.aiAccount))
+    const direct = this.directByPersonId.get(event.toPersonId) ?? (await getDirect(client, event.toPersonId, this.aiPerson?._id))
 
     if (direct === undefined) {
       return
     }
 
-    this.directByEmail.set(event.toEmail, direct)
+    this.directByPersonId.set(event.toPersonId, direct)
 
     await this.createTransferMessage(client, event, direct, chunter.class.DirectMessage, direct, event.message)
   }
@@ -584,27 +580,29 @@ export class WorkspaceClient {
   }
 
   async transfer (event: AITransferEventRequest): Promise<void> {
-    if (event.toWorkspace === config.SupportWorkspace) {
-      const channel = this.getChannelRef(event.toEmail, event.fromWorkspace)
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // if (event.toWorkspace === config.SupportWorkspace) {
+    //   const channel = this.getChannelRef(event.toEmail, event.fromWorkspace)
 
-      if (channel !== undefined) {
-        await this.transferToSupport(event, channel)
-      } else {
-        // If we dont have OnboardingChannel we should call it sync to prevent multiple channel for the same user and workspace
-        await this.rate.add(async () => {
-          await this.transferToSupport(event)
-        })
-      }
-    } else {
-      if (this.directByEmail.has(event.toEmail)) {
-        await this.transferToUserDirect(event)
-      } else {
-        // If we dont have Direct with user we should call it sync to prevent multiple directs for the same user
-        await this.rate.add(async () => {
-          await this.transferToUserDirect(event)
-        })
-      }
-    }
+    //   if (channel !== undefined) {
+    //     await this.transferToSupport(event, channel)
+    //   } else {
+    //     // If we dont have OnboardingChannel we should call it sync to prevent multiple channel for the same user and workspace
+    //     await this.rate.add(async () => {
+    //       await this.transferToSupport(event)
+    //     })
+    //   }
+    // } else {
+    //   if (this.directByPersonId.has(event.toPersonId)) {
+    //     await this.transferToUserDirect(event)
+    //   } else {
+    //     // If we dont have Direct with user we should call it sync to prevent multiple directs for the same user
+    //     await this.rate.add(async () => {
+    //       await this.transferToUserDirect(event)
+    //     })
+    //   }
+    // }
   }
 
   async close (): Promise<void> {
@@ -643,15 +641,15 @@ export class WorkspaceClient {
     }
   }
 
-  async openAIChatInSidebar (email: string): Promise<void> {
+  async openAIChatInSidebar (personId: PersonId): Promise<void> {
     const client = await this.opClient
-    const direct = this.directByEmail.get(email) ?? (await getDirect(client, email, this.aiAccount))
+    const direct = this.directByPersonId.get(personId) ?? (await getDirect(client, personId, this.aiPerson?._id))
 
     if (direct === undefined || this.aiPerson === undefined) {
       return
     }
 
-    this.directByEmail.set(email, direct)
+    this.directByPersonId.set(personId, direct)
 
     const hierarchy = client.getHierarchy()
     const name = getName(hierarchy, this.aiPerson)

@@ -57,7 +57,7 @@ class SupportClientImpl implements SupportClient {
       query.query(
         support.class.SupportConversation,
         {
-          createdBy: this.config.account._id
+          createdBy: this.config.account.primarySocialId
         },
         (res) => {
           this.hasUnreadMessages = res.some((p) => p.hasUnreadMessages)

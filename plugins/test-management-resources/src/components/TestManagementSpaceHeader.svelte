@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import { AccountRole, Ref, getCurrentPersonIds, hasAccountRole } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Button, ButtonWithDropdown, IconAdd, IconDropdown, Loading, SelectPopupValueType } from '@hcengineering/ui'
   import { TestProject } from '@hcengineering/test-management'
@@ -24,7 +24,7 @@
 
   export let currentSpace: Ref<TestProject> | undefined
 
-  const me = getCurrentAccount()
+  const socialStrings = getCurrentPersonIds()
 
   const query = createQuery()
 
@@ -33,7 +33,7 @@
   if (!hasProject) {
     query.query(
       testManagement.class.TestProject,
-      { archived: false, members: me._id },
+      { archived: false, members: { $in: socialStrings } },
       (res) => {
         hasProject = res.length > 0
         loading = false

@@ -63,7 +63,7 @@ export function syncSidebarState (): void {
 function getSideBarLocalStorageKey (workspace: string): string | undefined {
   const me = getCurrentAccount()
   if (me == null || workspace === '') return undefined
-  return `workbench.${workspace}.${me.person}.sidebar.state.`
+  return `workbench.${workspace}.${me.uuid}.sidebar.state.`
 }
 
 function getSidebarStateFromLocalStorage (workspace: string): SidebarState {

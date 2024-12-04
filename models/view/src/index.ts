@@ -14,7 +14,7 @@
 //
 
 import {
-  type Account,
+  type PersonId,
   type Class,
   type Client,
   DOMAIN_MODEL,
@@ -116,7 +116,7 @@ export class TFilteredView extends TDoc implements FilteredView {
   viewOptions?: ViewOptions
   filterClass?: Ref<Class<Doc>>
   viewletId?: Ref<Viewlet> | null
-  users!: Ref<Account>[]
+  users!: PersonId[]
   attachedTo!: string
   sharable?: boolean
 }

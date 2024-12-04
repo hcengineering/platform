@@ -17,7 +17,7 @@
   import { Employee } from '@hcengineering/contact'
   import { AccountArrayEditor, AssigneeBox } from '@hcengineering/contact-resources'
   import core, {
-    Account,
+    PersonId,
     Data,
     DocumentUpdate,
     Ref,
@@ -69,10 +69,10 @@
   let color = project?.color ?? getColorNumberByText(name)
   let isColorSelected = false
   let defaultAssignee: Ref<Employee> | null | undefined = project?.defaultAssignee ?? null
-  let members: Ref<Account>[] =
-    project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
-  let owners: Ref<Account>[] =
-    project?.owners !== undefined ? hierarchy.clone(project.owners) : [getCurrentAccount()._id]
+  let members: PersonId[] =
+    project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount().uuid]
+  let owners: PersonId[] =
+    project?.owners !== undefined ? hierarchy.clone(project.owners) : [getCurrentAccount().uuid]
   let projectsIdentifiers = new Set<string>()
   let isSaving = false
   let defaultStatus: Ref<IssueStatus> | undefined = project?.defaultIssueStatus
@@ -309,14 +309,14 @@
     rolesQuery.unsubscribe()
   }
 
-  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
+  function handleOwnersChanged (newOwners: PersonId[]): void {
     owners = newOwners
 
     const newMembersSet = new Set([...members, ...newOwners])
     members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged (newMembers: Ref<Account>[]): void {
+  function handleMembersChanged (newMembers: PersonId[]): void {
     membersChanged = true
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
@@ -331,7 +331,7 @@
     members = newMembers
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: PersonId[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }

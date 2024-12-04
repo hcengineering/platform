@@ -47,7 +47,7 @@ export async function OnDelete (
     // Even though we are deleting it here, the document can be currently in use by someone else
     // and when editing session ends, the collborator service will recreate the document again
     if (toDelete.length > 0) {
-      await removeCollabYdoc(storageAdapter, workspace, toDelete, ctx)
+      await removeCollabYdoc(storageAdapter, workspace.uuid, toDelete, ctx)
     }
   }
   return []

@@ -1,4 +1,4 @@
-import { type AccountDB, joinWithProvider, LoginInfo, loginWithProvider } from '@hcengineering/account'
+import { type AccountDB, LoginInfo } from '@hcengineering/account'
 import { BrandingMap, concatLink, MeasureContext, getBranding } from '@hcengineering/core'
 import Router from 'koa-router'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
@@ -64,43 +64,45 @@ export function registerGoogle (
       })(ctx, next)
     },
     async (ctx, next) => {
-      measureCtx.info('Provider auth success', { type: 'google', user: ctx.state?.user })
-      const email = ctx.state.user.emails?.[0]?.value
-      const first = ctx.state.user.name.givenName
-      const last = ctx.state.user.name.familyName
-      measureCtx.info('Provider auth handler', { email, type: 'google' })
-      if (email !== undefined) {
-        try {
-          let loginInfo: LoginInfo | null
-          const state = safeParseAuthState(ctx.query?.state)
-          const branding = getBranding(brandings, state?.branding)
-          const db = await dbPromise
-          if (state.inviteId != null && state.inviteId !== '') {
-            loginInfo = await joinWithProvider(measureCtx, db, null, email, first, last, state.inviteId as any)
-          } else {
-            loginInfo = await loginWithProvider(measureCtx, db, null, email, first, last, undefined, signUpDisabled)
-          }
+      // TODO: FIXME
+      throw new Error('Not implemented')
+      // measureCtx.info('Provider auth success', { type: 'google', user: ctx.state?.user })
+      // const email = ctx.state.user.emails?.[0]?.value
+      // const first = ctx.state.user.name.givenName
+      // const last = ctx.state.user.name.familyName
+      // measureCtx.info('Provider auth handler', { email, type: 'google' })
+      // if (email !== undefined) {
+      //   try {
+      //     let loginInfo: LoginInfo | null
+      //     const state = safeParseAuthState(ctx.query?.state)
+      //     const branding = getBranding(brandings, state?.branding)
+      //     const db = await dbPromise
+      //     if (state.inviteId != null && state.inviteId !== '') {
+      //       loginInfo = await joinWithProvider(measureCtx, db, null, email, first, last, state.inviteId as any)
+      //     } else {
+      //       loginInfo = await loginWithProvider(measureCtx, db, null, email, first, last, undefined, signUpDisabled)
+      //     }
 
-          if (loginInfo === null) {
-            measureCtx.info('Failed to auth: no associated account found', {
-              email,
-              type: 'google',
-              user: ctx.state?.user
-            })
-            ctx.redirect(concatLink(branding?.front ?? frontUrl, '/login'))
-          } else {
-            const origin = concatLink(branding?.front ?? frontUrl, '/login/auth')
-            const query = encodeURIComponent(qs.stringify({ token: loginInfo.token }))
+      //     if (loginInfo === null) {
+      //       measureCtx.info('Failed to auth: no associated account found', {
+      //         email,
+      //         type: 'google',
+      //         user: ctx.state?.user
+      //       })
+      //       ctx.redirect(concatLink(branding?.front ?? frontUrl, '/login'))
+      //     } else {
+      //       const origin = concatLink(branding?.front ?? frontUrl, '/login/auth')
+      //       const query = encodeURIComponent(qs.stringify({ token: loginInfo.token }))
 
-            // Successful authentication, redirect to your application
-            measureCtx.info('Success auth, redirect', { email, type: 'google', target: origin })
-            ctx.redirect(`${origin}?${query}`)
-          }
-        } catch (err: any) {
-          measureCtx.error('failed to auth', { err, type: 'google', user: ctx.state?.user })
-        }
-      }
-      await next()
+      //       // Successful authentication, redirect to your application
+      //       measureCtx.info('Success auth, redirect', { email, type: 'google', target: origin })
+      //       ctx.redirect(`${origin}?${query}`)
+      //     }
+      //   } catch (err: any) {
+      //     measureCtx.error('failed to auth', { err, type: 'google', user: ctx.state?.user })
+      //   }
+      // }
+      // await next()
     }
   )
 

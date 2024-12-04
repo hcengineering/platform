@@ -42,7 +42,7 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const me = getCurrentAccount()._id
+  const me = getCurrentAccount().uuid
 
   const filteredViewsQuery = createQuery()
   let availableFilteredViews: FilteredView[] = []

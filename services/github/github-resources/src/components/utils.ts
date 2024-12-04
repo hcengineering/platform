@@ -13,7 +13,7 @@ import { get, writable } from 'svelte/store'
 import github from '../plugin'
 
 export async function onAuthorize (login?: string): Promise<void> {
-  const meId = getCurrentAccount()._id
+  const meId = getCurrentAccount().uuid
   const state = btoa(
     JSON.stringify({
       accountId: meId,

@@ -16,13 +16,14 @@
   import { createEventDispatcher } from 'svelte'
   import { ModernEditbox, ButtonMenu, Label, Modal, TextArea } from '@hcengineering/ui'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import core, { getCurrentAccount } from '@hcengineering/core'
-  import notification from '@hcengineering/notification'
-  import contact, { PersonAccount } from '@hcengineering/contact'
+  import core from '@hcengineering/core'
+  import contact, { getCurrentEmployee } from '@hcengineering/contact'
+
 
   import Lock from '../../icons/Lock.svelte'
   import chunter from '../../../plugin'
   import { openChannel } from '../../../navigation'
+  import { primarySocialIdByPersonRefStore } from '@hcengineering/contact-resources'
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -52,21 +53,26 @@
   $: canSave = !!channelName
 
   async function save (): Promise<void> {
-    const account = getCurrentAccount() as PersonAccount
+    const employee = getCurrentEmployee()
     const space = await client.findOne(
       contact.class.PersonSpace,
-      { person: account.person },
+      { person: employee },
       { projection: { _id: 1 } }
     )
     if (!space) return
+    const primaryPersonId = $primarySocialIdByPersonRefStore.get(employee)
+    if (primaryPersonId === undefined) {
+      console.error('Primary person id not found for current employee')
+      return
+    }
     const channelId = await client.createDoc(chunter.class.Channel, core.space.Space, {
       name: channelName,
       description: '',
       private: selectedVisibilityId === 'private',
       archived: false,
-      members: [account._id],
+      members: [primaryPersonId],
       topic: description,
-      owners: [account._id]
+      owners: [primaryPersonId]
     })
 
     openChannel(channelId, chunter.class.Channel)

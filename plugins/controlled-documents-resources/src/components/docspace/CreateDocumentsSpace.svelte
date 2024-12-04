@@ -17,7 +17,7 @@
   import { createEventDispatcher } from 'svelte'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
   import core, {
-    Account,
+    PersonId,
     Data,
     DocumentUpdate,
     RolesAssignment,
@@ -48,10 +48,10 @@
   let name: string = docSpace?.name ?? namePlaceholder
   let description: string = docSpace?.description ?? descriptionPlaceholder
   let isPrivate: boolean = docSpace?.private ?? true
-  let members: Ref<Account>[] =
-    docSpace?.members !== undefined ? hierarchy.clone(docSpace.members) : [getCurrentAccount()._id]
-  let owners: Ref<Account>[] =
-    docSpace?.owners !== undefined ? hierarchy.clone(docSpace.owners) : [getCurrentAccount()._id]
+  let members: PersonId[] =
+    docSpace?.members !== undefined ? hierarchy.clone(docSpace.members) : [getCurrentAccount().uuid]
+  let owners: PersonId[] =
+    docSpace?.owners !== undefined ? hierarchy.clone(docSpace.owners) : [getCurrentAccount().uuid]
   let rolesAssignment: RolesAssignment = {}
 
   $: isNew = docSpace === undefined
@@ -184,14 +184,14 @@
 
   $: roles = (spaceType?.$lookup?.roles ?? []) as Role[]
 
-  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
+  function handleOwnersChanged (newOwners: PersonId[]): void {
     owners = newOwners
 
     const newMembersSet = new Set([...members, ...newOwners])
     members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged (newMembers: Ref<Account>[]): void {
+  function handleMembersChanged (newMembers: PersonId[]): void {
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
     const removedMembersSet = new Set(members.filter((m) => !newMembersSet.has(m)))
@@ -205,7 +205,7 @@
     members = newMembers
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: PersonId[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }

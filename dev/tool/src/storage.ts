@@ -14,7 +14,7 @@
 //
 
 import { type Attachment } from '@hcengineering/attachment'
-import { type Blob, type MeasureContext, type Ref, type WorkspaceId, RateLimiter } from '@hcengineering/core'
+import { type Blob, type MeasureContext, type Ref, type WorkspaceUuid, RateLimiter } from '@hcengineering/core'
 import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import {
   type ListBlobResult,
@@ -32,7 +32,7 @@ export interface MoveFilesParams {
 
 export async function moveFiles (
   ctx: MeasureContext,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   exAdapter: StorageAdapterEx,
   params: MoveFilesParams
 ): Promise<void> {
@@ -57,7 +57,7 @@ export async function moveFiles (
 
 export async function showLostFiles (
   ctx: MeasureContext,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   db: Db,
   storageAdapter: StorageAdapter,
   { showAll }: { showAll: boolean }
@@ -85,7 +85,7 @@ async function processAdapter (
   exAdapter: StorageAdapterEx,
   source: StorageAdapter,
   target: StorageAdapter,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   params: MoveFilesParams
 ): Promise<void> {
   if (source === target) {
@@ -212,7 +212,7 @@ async function processFile (
   ctx: MeasureContext,
   source: Pick<StorageAdapter, 'get'>,
   target: Pick<StorageAdapter, 'put'>,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   blob: Blob
 ): Promise<UploadedObjectInfo> {
   const readable = await source.get(ctx, workspaceId, blob._id)

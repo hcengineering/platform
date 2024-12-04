@@ -152,7 +152,7 @@
     visible = hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
   }
 
-  const me = getCurrentAccount()._id
+  const me = getCurrentAccount().uuid
 
   function selectedFilterChanged (
     selectedFilter: FilteredView | undefined,

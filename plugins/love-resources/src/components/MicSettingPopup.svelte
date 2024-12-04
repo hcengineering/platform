@@ -45,7 +45,7 @@
     if (myPreferences !== undefined) {
       await client.update(myPreferences, { noiseCancellation: value })
     } else {
-      const space = getCurrentAccount()._id as string as Ref<Space>
+      const space = getCurrentAccount().uuid as string as Ref<Space>
       await client.createDoc(love.class.DevicesPreference, space, {
         attachedTo: space,
         noiseCancellation: value,

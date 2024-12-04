@@ -13,12 +13,10 @@
 // limitations under the License.
 //
 
-import core, {
-  AccountRole,
+import {
   generateId,
-  TxFactory,
+  Account,
   TxProcessor,
-  type Account,
   type Branding,
   type Class,
   type Doc,
@@ -34,7 +32,7 @@ import core, {
   type Timestamp,
   type Tx,
   type TxCUD,
-  type WorkspaceIdWithUrl
+  type WorkspaceIds
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import {
@@ -76,13 +74,14 @@ export class ClientSession implements Session {
   constructor (
     protected readonly token: Token,
     protected readonly _pipeline: Pipeline,
-    readonly workspaceId: WorkspaceIdWithUrl,
+    readonly account: Account,
+    readonly workspaceId: WorkspaceIds,
     readonly branding: Branding | null,
     readonly allowUpload: boolean
   ) {}
 
   getUser (): string {
-    return this.token.email
+    return this.token.account
   }
 
   isUpgradeClient (): boolean {
@@ -109,42 +108,9 @@ export class ClientSession implements Session {
     await ctx.sendResponse(result)
   }
 
-  async getAccount (ctx: ClientSessionCtx): Promise<void> {
-    const account = this._pipeline.context.modelDb.getAccountByEmail(this.token.email)
-    if (account === undefined && this.token.extra?.admin === 'true') {
-      await ctx.sendResponse(this.getSystemAccount())
-      return
-    }
-    await ctx.sendResponse(account)
-  }
-
-  private getSystemAccount (): Account {
-    // Generate account for admin user
-    const factory = new TxFactory(core.account.System)
-    const email = `system:${this.token.email}`
-    const createTx = factory.createTxCreateDoc(
-      core.class.Account,
-      core.space.Model,
-      {
-        role: AccountRole.Owner,
-        email
-      },
-      email as Ref<Account>
-    )
-    return TxProcessor.createDoc2Doc(createTx)
-  }
-
   includeSessionContext (ctx: MeasureContext): void {
-    let account: Account | undefined
-    if (this.token.extra?.admin === 'true') {
-      account = this._pipeline.context.modelDb.getAccountByEmail(this.token.email)
-      if (account === undefined) {
-        account = this.getSystemAccount()
-      }
-    }
-
     const contextData = new SessionDataImpl(
-      this.token.email,
+      this.account,
       this.sessionId,
       this.token.extra?.admin === 'true',
       {
@@ -156,8 +122,7 @@ export class ClientSession implements Session {
       false,
       new Map(),
       new Map(),
-      this._pipeline.context.modelDb,
-      account
+      this._pipeline.context.modelDb
     )
     ctx.contextData = contextData
   }

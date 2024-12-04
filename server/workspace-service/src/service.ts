@@ -13,23 +13,21 @@
 // limitations under the License.
 //
 import {
-  type BaseWorkspaceInfo,
+  type WorkspaceInfo,
   type BrandingMap,
   type Data,
   type MeasureContext,
   type Tx,
   type Version,
+  type WorkspaceInfoWithStatus,
   getBranding,
-  getWorkspaceId,
-  systemAccountEmail
+  systemAccountUuid
 } from '@hcengineering/core'
 import { type MigrateOperation, type ModelLogger } from '@hcengineering/model'
+import { getClient as getAccountClient } from '@hcengineering/account-client'
 import {
-  getPendingWorkspace,
-  updateWorkspaceInfo,
   withRetryConnUntilSuccess,
-  withRetryConnUntilTimeout,
-  workerHandshake
+  withRetryConnUntilTimeout
 } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { FileModelLogger } from '@hcengineering/server-tool'
@@ -38,7 +36,7 @@ import path from 'path'
 import { createWorkspace, upgradeWorkspace } from './ws-operations'
 
 export interface WorkspaceOptions {
-  errorHandler: (workspace: BaseWorkspaceInfo, error: any) => Promise<void>
+  errorHandler: (workspace: WorkspaceInfo, error: any) => Promise<void>
   force: boolean
   console: boolean
   logs: string
@@ -84,11 +82,11 @@ export class WorkspaceWorker {
       ctx.info("I'm busy", { version: this.version, region: this.region })
     }
     this.wakeup = this.defaultWakeup
-    const token = generateToken(systemAccountEmail, { name: '-' }, { service: 'workspace' })
+    const token = generateToken(systemAccountUuid, undefined, { service: 'workspace' })
 
     ctx.info('Sending a handshake to the account service...')
 
-    await withRetryConnUntilSuccess(workerHandshake)(token, this.region, this.version, this.operation)
+    await withRetryConnUntilSuccess(getAccountClient(token).workerHandshake)(this.region, this.version, this.operation)
 
     ctx.info('Successfully connected to the account service')
 
@@ -97,7 +95,7 @@ export class WorkspaceWorker {
 
       const workspace = await ctx.with('get-pending-workspace', {}, async (ctx) => {
         try {
-          return await getPendingWorkspace(token, this.region, this.version, this.operation)
+          return getAccountClient(token).getPendingWorkspace(this.region, this.version, this.operation)
         } catch (err) {
           ctx.error('Error getting pending workspace:', { err })
         }
@@ -108,8 +106,8 @@ export class WorkspaceWorker {
         void this.exec(async () => {
           await this.doWorkspaceOperation(
             ctx.newChild('workspaceOperation', {
-              workspace: workspace.workspace,
-              workspaceName: workspace.workspaceName
+              workspace: workspace.uuid,
+              workspaceName: workspace.name
             }),
             workspace,
             opt
@@ -132,7 +130,7 @@ export class WorkspaceWorker {
     })
   }
 
-  private async _createWorkspace (ctx: MeasureContext, ws: BaseWorkspaceInfo, opt: WorkspaceOptions): Promise<void> {
+  private async _createWorkspace (ctx: MeasureContext, ws: WorkspaceInfoWithStatus, opt: WorkspaceOptions): Promise<void> {
     const t = Date.now()
 
     const ctxModelLogger: ModelLogger = {
@@ -144,18 +142,18 @@ export class WorkspaceWorker {
       }
     }
 
-    const logger = opt.console ? ctxModelLogger : new FileModelLogger(path.join(opt.logs, `${ws.workspace}.log`))
+    const logger = opt.console ? ctxModelLogger : new FileModelLogger(path.join(opt.logs, `${ws.uuid}.log`))
 
     ctx.info('---CREATING----', {
-      workspace: ws.workspace,
+      workspace: ws.uuid,
       version: this.version,
       region: this.region
     })
 
     try {
       const branding = getBranding(this.brandings, ws.branding)
-      const wsId = getWorkspaceId(ws.workspace)
-      const token = generateToken(systemAccountEmail, wsId, { service: 'workspace' })
+      const wsId = ws.uuid
+      const token = generateToken(systemAccountUuid, wsId, { service: 'workspace' })
       const handleWsEventWithRetry = (
         event: 'ping' | 'create-started' | 'progress' | 'create-done',
         version: Data<Version>,
@@ -163,12 +161,12 @@ export class WorkspaceWorker {
         message?: string
       ): Promise<void> => {
         return withRetryConnUntilTimeout(
-          () => updateWorkspaceInfo(token, ws.workspace, event, version, progress, message),
+          () => getAccountClient(token).updateWorkspaceInfo(ws.uuid, event, version, progress, message),
           5000
         )()
       }
 
-      if (ws.mode !== 'creating' || (ws.progress ?? 0) < 30) {
+      if (ws.mode !== 'creating' || (ws.processingProgress ?? 0) < 30) {
         await createWorkspace(
           ctx,
           this.version,
@@ -182,11 +180,11 @@ export class WorkspaceWorker {
         // The previous attempth failed during init script and we cannot really retry it.
         // But it should not be a blocker though. We can just warn user about that if we want.
         // So we don't clear the previous error message if any
-        await handleWsEventWithRetry?.('create-done', this.version, ws.progress ?? 0)
+        await handleWsEventWithRetry?.('create-done', this.version, ws.processingProgress ?? 0)
       }
 
       ctx.info('---CREATE-DONE---------', {
-        workspace: ws.workspace,
+        workspace: ws.uuid,
         version: this.version,
         region: this.region,
         time: Date.now() - t
@@ -201,7 +199,7 @@ export class WorkspaceWorker {
       }
 
       ctx.error('---CREATE-FAILED---------', {
-        workspace: ws.workspace,
+        workspace: ws.uuid,
         version: this.version,
         region: this.region,
         time: Date.now() - t
@@ -213,8 +211,8 @@ export class WorkspaceWorker {
     }
   }
 
-  private async _upgradeWorkspace (ctx: MeasureContext, ws: BaseWorkspaceInfo, opt: WorkspaceOptions): Promise<void> {
-    if (ws.disabled === true || ws.mode === 'archived' || (opt.ignore ?? '').includes(ws.workspace)) {
+  private async _upgradeWorkspace (ctx: MeasureContext, ws: WorkspaceInfoWithStatus, opt: WorkspaceOptions): Promise<void> {
+    if (ws.isDisabled === true || ws.mode === 'archived' || (opt.ignore ?? '').includes(ws.uuid)) {
       return
     }
     const t = Date.now()
@@ -228,18 +226,18 @@ export class WorkspaceWorker {
       }
     }
 
-    const logger = opt.console ? ctxModelLogger : new FileModelLogger(path.join(opt.logs, `${ws.workspace}.log`))
+    const logger = opt.console ? ctxModelLogger : new FileModelLogger(path.join(opt.logs, `${ws.uuid}.log`))
 
     ctx.info('---UPGRADING----', {
-      workspace: ws.workspace,
+      workspace: ws.uuid,
       workspaceVersion: ws.version,
       requestedVersion: this.version,
       region: this.region
     })
 
     try {
-      const wsId = getWorkspaceId(ws.workspace)
-      const token = generateToken(systemAccountEmail, wsId, { service: 'workspace' })
+      const wsId = ws.uuid
+      const token = generateToken(systemAccountUuid, wsId, { service: 'workspace' })
       const handleWsEventWithRetry = (
         event: 'upgrade-started' | 'progress' | 'upgrade-done' | 'ping',
         version: Data<Version>,
@@ -247,7 +245,7 @@ export class WorkspaceWorker {
         message?: string
       ): Promise<void> => {
         return withRetryConnUntilTimeout(
-          () => updateWorkspaceInfo(token, ws.workspace, event, version, progress, message),
+          () => getAccountClient(token).updateWorkspaceInfo(ws.uuid, event, version, progress, message),
           5000
         )()
       }
@@ -263,7 +261,7 @@ export class WorkspaceWorker {
         opt.force
       )
       ctx.info('---UPGRADE-DONE---------', {
-        workspace: ws.workspace,
+        workspace: ws.uuid,
         oldWorkspaceVersion: ws.version,
         requestedVersion: this.version,
         region: this.region,
@@ -279,7 +277,7 @@ export class WorkspaceWorker {
       }
 
       ctx.error('---UPGRADE-FAILED---------', {
-        workspace: ws.workspace,
+        workspace: ws.uuid,
         oldWorkspaceVersion: ws.version,
         requestedVersion: this.version,
         region: this.region,
@@ -294,7 +292,7 @@ export class WorkspaceWorker {
 
   private async doWorkspaceOperation (
     ctx: MeasureContext,
-    workspace: BaseWorkspaceInfo,
+    workspace: WorkspaceInfoWithStatus,
     opt: WorkspaceOptions
   ): Promise<void> {
     switch (workspace.mode ?? 'active') {
@@ -315,7 +313,7 @@ export class WorkspaceWorker {
         // TODO: move from account
         break
       default:
-        ctx.error('Unknown workspace mode', { workspace: workspace.workspace, mode: workspace.mode })
+        ctx.error('Unknown workspace mode', { workspace: workspace.uuid, wsUrl: workspace.url, mode: workspace.mode })
     }
   }
 

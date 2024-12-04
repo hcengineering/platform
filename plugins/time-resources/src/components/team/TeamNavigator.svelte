@@ -30,7 +30,7 @@
     task.class.Project,
     {
       archived: false,
-      members: getCurrentAccount()._id
+      members: getCurrentAccount().uuid
     },
     (result) => {
       projects = result

@@ -14,7 +14,7 @@
 //
 
 import { ChannelItem } from '@hcengineering/contact'
-import type { Account, AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
+import type { PersonId, AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
 import { NotificationProvider, NotificationType } from '@hcengineering/notification'
 import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -48,7 +48,7 @@ export interface BaseMessage extends Doc {
 export interface NewMessage extends BaseMessage {
   status: 'new' | 'sent' | 'error'
   error?: string
-  from?: Ref<Account>
+  from?: PersonId
 }
 
 export * from './analytics'

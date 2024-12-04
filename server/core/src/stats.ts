@@ -1,5 +1,5 @@
 import type { MeasureContext, Metrics } from '@hcengineering/core'
-import { concatLink, MeasureMetricsContext, metricsToString, newMetrics, systemAccountEmail } from '@hcengineering/core'
+import { concatLink, MeasureMetricsContext, metricsToString, newMetrics, systemAccountUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { writeFile } from 'fs/promises'
 import os from 'os'
@@ -100,7 +100,6 @@ export function initStatisticsContext (
     }
     let oldMetricsValue = ''
     const serviceId = encodeURIComponent(os.hostname() + '-' + serviceName)
-
     const intTimer = setInterval(() => {
       try {
         if (metricsFile !== undefined || ops?.logConsole === true) {
@@ -118,7 +117,7 @@ export function initStatisticsContext (
           }
         }
         if (statsUrl !== undefined) {
-          const token = generateToken(systemAccountEmail, { name: '' }, { service: 'true' })
+          const token = generateToken(systemAccountUuid, undefined, { service: 'true' })
           const data: ServiceStatistics = {
             serviceName,
             cpu: getCPUInfo(),

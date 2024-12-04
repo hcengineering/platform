@@ -17,7 +17,7 @@
   import { createEventDispatcher } from 'svelte'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
   import core, {
-    Account,
+    PersonId,
     Data,
     DocumentUpdate,
     RolesAssignment,
@@ -46,9 +46,9 @@
   let description: string = drive?.description ?? ''
   let isPrivate: boolean = drive?.private ?? false
 
-  let members: Ref<Account>[] =
-    drive?.members !== undefined ? hierarchy.clone(drive.members) : [getCurrentAccount()._id]
-  let owners: Ref<Account>[] = drive?.owners !== undefined ? hierarchy.clone(drive.owners) : [getCurrentAccount()._id]
+  let members: PersonId[] =
+    drive?.members !== undefined ? hierarchy.clone(drive.members) : [getCurrentAccount().uuid]
+  let owners: PersonId[] = drive?.owners !== undefined ? hierarchy.clone(drive.owners) : [getCurrentAccount().uuid]
   let rolesAssignment: RolesAssignment = {}
 
   let typeId: Ref<SpaceType> | undefined = drive?.type ?? driveRes.spaceType.DefaultDrive
@@ -183,14 +183,14 @@
 
   $: roles = (spaceType?.$lookup?.roles ?? []) as Role[]
 
-  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
+  function handleOwnersChanged (newOwners: PersonId[]): void {
     owners = newOwners
 
     const newMembersSet = new Set([...members, ...newOwners])
     members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged (newMembers: Ref<Account>[]): void {
+  function handleMembersChanged (newMembers: PersonId[]): void {
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
     const removedMembersSet = new Set(members.filter((m) => !newMembersSet.has(m)))
@@ -204,7 +204,7 @@
     members = newMembers
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: PersonId[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }

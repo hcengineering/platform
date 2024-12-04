@@ -21,13 +21,13 @@ describe.skip('test-backup-find', () => {
   it('check create/load/clean', async () => {
     const toolCtx = new MeasureMetricsContext('-', {})
     // We should setup a DB with docuemnts and try to backup them.
-    const wsUrl = { name: 'testdb-backup-test', workspaceName: 'test', workspaceUrl: 'test' }
-    const { pipeline, storageAdapter } = await getServerPipeline(toolCtx, model, dbURL, wsUrl, {
+    const wsIds = { dbName: 'testdb-backup-test', uuid: 'test', url: 'test' }
+    const { pipeline, storageAdapter } = await getServerPipeline(toolCtx, model, dbURL, wsIds, {
       storageConfig: STORAGE_CONFIG,
       disableTriggers: true
     })
     try {
-      const client = wrapPipeline(toolCtx, pipeline, wsUrl)
+      const client = wrapPipeline(toolCtx, pipeline, wsIds)
       const lowLevel = pipeline.context.lowLevelStorage as LowLevelStorage
 
       // We need to create a backup docs if they are missing.
@@ -64,13 +64,13 @@ describe.skip('test-backup-find', () => {
   it('check traverse', async () => {
     const toolCtx = new MeasureMetricsContext('-', {})
     // We should setup a DB with docuemnts and try to backup them.
-    const wsUrl = { name: 'testdb-backup-test', workspaceName: 'test', workspaceUrl: 'test' }
-    const { pipeline, storageAdapter } = await getServerPipeline(toolCtx, model, dbURL, wsUrl, {
+    const wsIds = { dbName: 'testdb-backup-test', uuid: 'test', url: 'test' }
+    const { pipeline, storageAdapter } = await getServerPipeline(toolCtx, model, dbURL, wsIds, {
       storageConfig: STORAGE_CONFIG,
       disableTriggers: true
     })
     try {
-      const client = wrapPipeline(toolCtx, pipeline, wsUrl)
+      const client = wrapPipeline(toolCtx, pipeline, wsIds)
       const lowLevel = pipeline.context.lowLevelStorage as LowLevelStorage
 
       // We need to create a backup docs if they are missing.

@@ -20,11 +20,9 @@ import {
   type AvatarInfo,
   type Channel,
   type Contact,
-  type Person,
-  type PersonAccount
+  type Person
 } from '@hcengineering/contact'
 import {
-  DocManager,
   type Class,
   type Client,
   type Data,
@@ -98,9 +96,7 @@ import MembersPresenter from './components/MembersPresenter.svelte'
 import MergePersons from './components/MergePersons.svelte'
 import OrganizationEditor from './components/OrganizationEditor.svelte'
 import OrganizationPresenter from './components/OrganizationPresenter.svelte'
-import PersonAccountFilterValuePresenter from './components/PersonAccountFilterValuePresenter.svelte'
-import PersonAccountPresenter from './components/PersonAccountPresenter.svelte'
-import PersonAccountRefPresenter from './components/PersonAccountRefPresenter.svelte'
+import PersonFilterValuePresenter from './components/PersonFilterValuePresenter.svelte'
 import PersonEditor from './components/PersonEditor.svelte'
 import PersonIcon from './components/PersonIcon.svelte'
 import PersonPresenter from './components/PersonPresenter.svelte'
@@ -125,7 +121,7 @@ import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import IconMembers from './components/icons/Members.svelte'
 import ContactNamePresenter from './components/ContactNamePresenter.svelte'
 
-import { get, writable } from 'svelte/store'
+import { get } from 'svelte/store'
 import contact from './plugin'
 import {
   channelIdentifierProvider,
@@ -145,12 +141,14 @@ import {
   getCurrentEmployeePosition,
   getPersonTooltip,
   grouppingPersonManager,
+  permissionsStore,
   resolveLocation,
   resolveLocationData
 } from './utils'
 
 export * from './utils'
 export { employeeByIdStore, employeesStore } from './utils'
+export * from './assignee'
 export {
   AccountArrayEditor,
   AccountBox,
@@ -184,8 +182,6 @@ export {
   MembersBox,
   MembersPresenter,
   OrganizationPresenter,
-  PersonAccountPresenter,
-  PersonAccountRefPresenter,
   PersonIcon,
   PersonPresenter,
   PersonRefPresenter,
@@ -267,25 +263,21 @@ async function doContactQuery<T extends Contact> (
 }
 
 async function kickEmployee (doc: Person): Promise<void> {
-  const client = getClient()
+  showPopup(MessageBox, {
+    label: contact.string.KickEmployee,
+    message: contact.string.KickEmployeeDescr,
+    action: async () => {
+      const client = getClient()
 
-  const employee = client.getHierarchy().as(doc, contact.mixin.Employee)
-  const accounts = client.getModel().getAccountByPersonId(doc._id)
-  if (accounts.length === 0) {
-    await client.update(employee, { active: false })
-  } else {
-    showPopup(MessageBox, {
-      label: contact.string.KickEmployee,
-      message: contact.string.KickEmployeeDescr,
-      action: async () => {
-        const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
-        for (const i of accounts) {
-          await leaveWorkspace(i.email)
-        }
-      }
-    })
-  }
+      const employee = client.getHierarchy().as(doc, contact.mixin.Employee)
+      await client.update(employee, { active: false })
+
+      const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
+      await leaveWorkspace(doc.personUuid)
+    }
+  })
 }
+
 async function openChannelURL (doc: Channel): Promise<void> {
   const url = parseURL(doc.value)
   if (url.startsWith('http://') || url.startsWith('https://')) {
@@ -293,15 +285,15 @@ async function openChannelURL (doc: Channel): Promise<void> {
   }
 }
 
-function filterPerson (doc: PersonAccount, target: PersonAccount): boolean {
-  return doc.person === target.person && doc._id !== target._id
-}
+// function filterPerson (doc: PersonAccount, target: PersonAccount): boolean {
+//   return doc.person === target.person && doc._id !== target._id
+// }
 
-export const personStore = writable<DocManager<PersonAccount>>(new DocManager([]))
+// export const personStore = writable<DocManager<PersonAccount>>(new DocManager([]))
 
-function setStore (manager: DocManager<PersonAccount>): void {
-  personStore.set(manager)
-}
+// function setStore (manager: DocManager<PersonAccount>): void {
+//   personStore.set(manager)
+// }
 
 export interface PersonLabelTooltip {
   personLabel?: IntlString
@@ -351,7 +343,6 @@ export default async (): Promise<Resources> => ({
     SocialEditor,
     Contacts,
     ContactsTabs,
-    PersonAccountPresenter,
     EmployeePresenter,
     EmployeeRefPresenter,
     Members,
@@ -375,9 +366,8 @@ export default async (): Promise<Resources> => ({
     UserBoxItems,
     EmployeeFilter,
     EmployeeFilterValuePresenter,
-    PersonAccountFilterValuePresenter,
+    PersonFilterValuePresenter,
     DeleteConfirmationPopup,
-    PersonAccountRefPresenter,
     PersonIcon,
     EditOrganizationPanel,
     ChannelIcon,
@@ -442,9 +432,9 @@ export default async (): Promise<Resources> => ({
     ContactTitleProvider: contactTitleProvider,
     PersonTooltipProvider: getPersonTooltip,
     ChannelTitleProvider: channelTitleProvider,
-    ChannelIdentifierProvider: channelIdentifierProvider,
-    SetPersonStore: setStore,
-    PersonFilterFunction: filterPerson
+    ChannelIdentifierProvider: channelIdentifierProvider
+    // SetPersonStore: setStore,
+    // PersonFilterFunction: filterPerson
   },
   resolver: {
     Location: resolveLocation,
@@ -454,5 +444,8 @@ export default async (): Promise<Resources> => ({
     // eslint-disable-next-line @typescript-eslint/unbound-method
     CreatePersonAggregationManager: AggregationManager.create,
     GrouppingPersonManager: grouppingPersonManager
+  },
+  store: {
+    Permissions: permissionsStore
   }
 })

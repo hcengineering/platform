@@ -45,7 +45,7 @@
   const dispatch = createEventDispatcher()
   const notificationClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
-  const me = getCurrentAccount()._id
+  const me = getCurrentAccount().uuid
 
   let object: WithLookup<ProductVersion> | undefined
 

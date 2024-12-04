@@ -137,7 +137,7 @@
       collection: 'labels',
       space: core.space.Workspace,
       modifiedOn: 0,
-      modifiedBy: '' as Ref<Account>,
+      modifiedBy: '' as PersonId,
       title: tag.title,
       tag: tag._id,
       color: tag.color

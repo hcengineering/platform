@@ -14,7 +14,7 @@
 //
 
 import { type Attachment } from '@hcengineering/attachment'
-import contact, { type Person, type PersonAccount } from '@hcengineering/contact'
+import contact, { type Person } from '@hcengineering/contact'
 import { type Class, type Doc, generateId, type Ref, type Space, type TxOperations } from '@hcengineering/core'
 import document, { type Document } from '@hcengineering/document'
 import { MarkupMarkType, type MarkupNode, MarkupNodeType, traverseNode, traverseNodeMarks } from '@hcengineering/text'
@@ -262,7 +262,7 @@ export class UnifiedFormatImporter {
   private readonly attachMetadataByPath = new Map<string, AttachmentMetadata>()
 
   private personsByName = new Map<string, Ref<Person>>()
-  private accountsByEmail = new Map<string, Ref<PersonAccount>>()
+  // private accountsByEmail = new Map<string, Ref<PersonAccount>>()
 
   constructor (
     private readonly client: TxOperations,
@@ -449,12 +449,14 @@ export class UnifiedFormatImporter {
     return person
   }
 
-  private findAccountByEmail (email: string): Ref<PersonAccount> {
-    const account = this.accountsByEmail.get(email)
-    if (account === undefined) {
-      throw new Error(`Account not found: ${email}`)
-    }
-    return account
+  private findAccountByEmail (email: string): Ref<any> {
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // const account = this.accountsByEmail.get(email)
+    // if (account === undefined) {
+    //   throw new Error(`Account not found: ${email}`)
+    // }
+    // return account
   }
 
   private async processDocumentsRecursively (
@@ -594,11 +596,13 @@ export class UnifiedFormatImporter {
   }
 
   private async cacheAccountsByEmails (): Promise<void> {
-    const accounts = await this.client.findAll(contact.class.PersonAccount, {})
-    this.accountsByEmail = accounts.reduce((map, account) => {
-      map.set(account.email, account._id)
-      return map
-    }, new Map())
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // const accounts = await this.client.findAll(contact.class.PersonAccount, {})
+    // this.accountsByEmail = accounts.reduce((map, account) => {
+    //   map.set(account.email, account._id)
+    //   return map
+    // }, new Map())
   }
 
   private async processAttachments (folderPath: string): Promise<void> {

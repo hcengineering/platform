@@ -14,9 +14,8 @@
 // limitations under the License.
 //
 
-import type { Account, Class, Client, Doc, Ref, Space, TxOperations } from '@hcengineering/core'
+import type { Account, Class, Client, Doc, Ref, Space, TxOperations, WorkspaceInfoWithStatus } from '@hcengineering/core'
 import core, { hasAccountRole } from '@hcengineering/core'
-import type { Workspace } from '@hcengineering/login'
 import login, { loginId } from '@hcengineering/login'
 import { getResource, setMetadata } from '@hcengineering/platform'
 import { closeClient, getClient } from '@hcengineering/presentation'
@@ -156,12 +155,12 @@ export async function showApplication (app: Application): Promise<void> {
   }
 }
 
-export const workspacesStore = writable<Workspace[]>([])
+export const workspacesStore = writable<WorkspaceInfoWithStatus[]>([])
 export const locationWorkspaceStore = derived(location, (loc: Location) => loc.path[1])
 export const currentWorkspaceStore = derived(
   [workspacesStore, locationWorkspaceStore],
   ([$workspaces, $locationWorkspace]) => {
-    return $workspaces.find((it) => it.workspace === $locationWorkspace)
+    return $workspaces.find((it) => it.url === $locationWorkspace)
   }
 )
 
@@ -212,7 +211,7 @@ export function signOut (): void {
   setMetadata(presentation.metadata.Token, null)
   setMetadataLocalStorage(login.metadata.LastToken, null)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-  setMetadataLocalStorage(login.metadata.LoginEmail, null)
+  setMetadataLocalStorage(login.metadata.LoginAccount, null)
   void closeClient()
   navigate({ path: [loginId] })
 }

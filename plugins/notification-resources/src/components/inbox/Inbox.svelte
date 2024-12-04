@@ -15,7 +15,7 @@
 <script lang="ts">
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import chunter from '@hcengineering/chunter'
-  import { Class, Doc, getCurrentAccount, groupByArray, Ref, SortingOrder } from '@hcengineering/core'
+  import { Class, Doc, getCurrentPersonIds, groupByArray, Ref, SortingOrder } from '@hcengineering/core'
   import { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import {
@@ -50,7 +50,7 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const me = getCurrentAccount()
+  const socialStrings = getCurrentPersonIds()
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const notificationsByContextStore = inboxClient.inboxNotificationsByContext
@@ -95,7 +95,7 @@
   $: if (showArchive) {
     archivedActivityNotificationsQuery.query(
       notification.class.ActivityInboxNotification,
-      { archived: true, user: me._id },
+      { archived: true, user: { $in: socialStrings } },
       (res) => {
         archivedActivityNotifications = res
       },
@@ -112,7 +112,7 @@
 
     archivedOtherNotificationsQuery.query(
       notification.class.CommonInboxNotification,
-      { archived: true, user: me._id },
+      { archived: true, user: { $in: socialStrings } },
       (res) => {
         archivedOtherNotifications = res
       },

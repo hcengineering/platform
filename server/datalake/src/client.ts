@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type MeasureContext, type WorkspaceId, concatLink } from '@hcengineering/core'
+import { type MeasureContext, type WorkspaceUuid, concatLink } from '@hcengineering/core'
 import FormData from 'form-data'
 import fetch, { type RequestInit, type Response } from 'node-fetch'
 import { Readable } from 'stream'
@@ -53,12 +53,12 @@ type BlobUploadResult = BlobUploadSuccess | BlobUploadError
 export class Client {
   constructor (private readonly endpoint: string) {}
 
-  getObjectUrl (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): string {
-    const path = `/blob/${workspace.name}/${encodeURIComponent(objectName)}`
+  getObjectUrl (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): string {
+    const path = `/blob/${workspace}/${encodeURIComponent(objectName)}`
     return concatLink(this.endpoint, path)
   }
 
-  async getObject (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<Readable> {
+  async getObject (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<Readable> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
 
     let response
@@ -81,7 +81,7 @@ export class Client {
 
   async getPartialObject (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     offset: number,
     length?: number
@@ -111,7 +111,7 @@ export class Client {
 
   async statObject (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string
   ): Promise<StatObjectOutput | undefined> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
@@ -139,7 +139,7 @@ export class Client {
     }
   }
 
-  async deleteObject (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<void> {
+  async deleteObject (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<void> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
     try {
       await fetchSafe(ctx, url, { method: 'DELETE' })
@@ -153,7 +153,7 @@ export class Client {
 
   async putObject (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     stream: Readable | Buffer | string,
     metadata: ObjectMetadata,
@@ -188,12 +188,12 @@ export class Client {
 
   private async uploadWithFormData (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     stream: Readable | Buffer | string,
     metadata: ObjectMetadata
   ): Promise<void> {
-    const path = `/upload/form-data/${workspace.name}`
+    const path = `/upload/form-data/${workspace}`
     const url = concatLink(this.endpoint, path)
 
     const form = new FormData()
@@ -223,7 +223,7 @@ export class Client {
 
   private async uploadWithSignedURL (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     stream: Readable | Buffer | string,
     metadata: ObjectMetadata
@@ -249,7 +249,7 @@ export class Client {
     await this.signObjectComplete(ctx, workspace, objectName)
   }
 
-  private async signObjectSign (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<string> {
+  private async signObjectSign (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<string> {
     try {
       const url = this.getSignObjectUrl(workspace, objectName)
       const response = await fetchSafe(ctx, url, { method: 'POST' })
@@ -260,7 +260,7 @@ export class Client {
     }
   }
 
-  private async signObjectComplete (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<void> {
+  private async signObjectComplete (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<void> {
     try {
       const url = this.getSignObjectUrl(workspace, objectName)
       await fetchSafe(ctx, url, { method: 'PUT' })
@@ -270,7 +270,7 @@ export class Client {
     }
   }
 
-  private async signObjectDelete (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<void> {
+  private async signObjectDelete (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<void> {
     try {
       const url = this.getSignObjectUrl(workspace, objectName)
       await fetchSafe(ctx, url, { method: 'DELETE' })
@@ -280,8 +280,8 @@ export class Client {
     }
   }
 
-  private getSignObjectUrl (workspace: WorkspaceId, objectName: string): string {
-    const path = `/upload/signed-url/${workspace.name}/${encodeURIComponent(objectName)}`
+  private getSignObjectUrl (workspace: WorkspaceUuid, objectName: string): string {
+    const path = `/upload/signed-url/${workspace}/${encodeURIComponent(objectName)}`
     return concatLink(this.endpoint, path)
   }
 }

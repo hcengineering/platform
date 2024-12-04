@@ -16,7 +16,7 @@
 <script lang="ts">
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
   import core, {
-    Account,
+    PersonId,
     getCurrentAccount,
     Ref,
     Role,
@@ -49,9 +49,9 @@
   let rolesAssignment: RolesAssignment = {}
   let isPrivate: boolean = funnel?.private ?? false
 
-  let members: Ref<Account>[] =
-    funnel?.members !== undefined ? hierarchy.clone(funnel.members) : [getCurrentAccount()._id]
-  let owners: Ref<Account>[] = funnel?.owners !== undefined ? hierarchy.clone(funnel.owners) : [getCurrentAccount()._id]
+  let members: PersonId[] =
+    funnel?.members !== undefined ? hierarchy.clone(funnel.members) : [getCurrentAccount().uuid]
+  let owners: PersonId[] = funnel?.owners !== undefined ? hierarchy.clone(funnel.owners) : [getCurrentAccount().uuid]
 
   $: void loadSpaceType(typeId)
   async function loadSpaceType (id: typeof typeId): Promise<void> {
@@ -132,14 +132,14 @@
     }
   }
 
-  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
+  function handleOwnersChanged (newOwners: PersonId[]): void {
     owners = newOwners
 
     const newMembersSet = new Set([...members, ...newOwners])
     members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged (newMembers: Ref<Account>[]): void {
+  function handleMembersChanged (newMembers: PersonId[]): void {
     membersChanged = true
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
@@ -154,7 +154,7 @@
     members = newMembers
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: PersonId[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }

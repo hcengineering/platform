@@ -22,7 +22,7 @@
 
   export let attachments: WithLookup<Attachment>[]
   let selectedFileNumber: number | undefined
-  const myAccId = getCurrentAccount()._id
+  const myAccId = getCurrentAccount().uuid
   const client = getClient()
 
   const showFileMenu = async (ev: MouseEvent, object: Doc, fileNumber: number): Promise<void> => {

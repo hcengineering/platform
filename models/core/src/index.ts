@@ -14,7 +14,6 @@
 //
 
 import {
-  AccountRole,
   DOMAIN_BENCHMARK,
   DOMAIN_BLOB,
   DOMAIN_CONFIGURATION,
@@ -23,8 +22,7 @@ import {
   DOMAIN_SPACE,
   DOMAIN_STATUS,
   DOMAIN_TRANSIENT,
-  DOMAIN_TX,
-  systemAccountEmail
+  DOMAIN_TX
 } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import { TBenchmarkDoc } from './benchmark'
@@ -73,7 +71,6 @@ import {
 } from './core'
 import { definePermissions } from './permissions'
 import {
-  TAccount,
   TPermission,
   TRole,
   TSpace,
@@ -118,7 +115,6 @@ export function createModel (builder: Builder): void {
     TSpaceTypeDescriptor,
     TRole,
     TPermission,
-    TAccount,
     TAttribute,
     TType,
     TEnumOf,
@@ -158,16 +154,6 @@ export function createModel (builder: Builder): void {
     TDomainIndexConfiguration,
     TBenchmarkDoc,
     TTransientConfiguration
-  )
-
-  builder.createDoc(
-    core.class.Account,
-    core.space.Model,
-    {
-      email: systemAccountEmail,
-      role: AccountRole.Owner
-    },
-    core.account.System
   )
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {

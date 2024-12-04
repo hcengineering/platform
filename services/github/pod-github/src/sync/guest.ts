@@ -2,7 +2,7 @@
 // Copyright © 2023 Hardcore Engineering Inc.
 //
 
-import { Branding, TxOperations, WorkspaceIdWithUrl } from '@hcengineering/core'
+import { Branding, TxOperations, WorkspaceIds } from '@hcengineering/core'
 import { MarkupMarkType, MarkupNode, MarkupNodeType, traverseMarkupNode } from '@hcengineering/text'
 import { getPublicLink } from '@hcengineering/server-guest-resources'
 import { Task } from '@hcengineering/task'
@@ -48,7 +48,7 @@ export async function appendGuestLink (
   client: TxOperations,
   doc: Task,
   markdown: MarkupNode,
-  workspace: WorkspaceIdWithUrl,
+  workspace: WorkspaceIds,
   branding: Branding | null
 ): Promise<void> {
   const publicLink = await getPublicLink(doc, client, workspace, false, branding)

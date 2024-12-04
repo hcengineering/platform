@@ -30,7 +30,7 @@
   query.query(
     calendar.class.ExternalCalendar,
     {
-      createdBy: getCurrentAccount()._id,
+      createdBy: getCurrentAccount().uuid,
       externalUser: integration.value
     },
     (res) => {

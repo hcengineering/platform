@@ -11,7 +11,7 @@
   export let viewOptions: ViewOptions | undefined = undefined
   export let _class: Ref<Class<Doc>>
 
-  const me = getCurrentAccount()._id
+  const me = getCurrentAccount().uuid
   let sharable = true
 
   let filterName = ''

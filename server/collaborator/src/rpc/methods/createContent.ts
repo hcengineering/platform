@@ -41,7 +41,7 @@ export async function createContent (
 
   const result: Record<string, Ref<Blob>> = {}
   for (const [field, markup] of Object.entries(content)) {
-    const blob = await saveCollabJson(ctx, storageAdapter, { name: workspaceId }, documentId, markup)
+    const blob = await saveCollabJson(ctx, storageAdapter, workspaceId, documentId, markup)
     result[field] = blob
   }
 

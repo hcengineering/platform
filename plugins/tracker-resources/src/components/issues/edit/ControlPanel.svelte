@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
-  import { EmployeeBox, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { EmployeeBox } from '@hcengineering/contact-resources'
   import core, { Class, ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
   import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
 
@@ -35,6 +35,7 @@
   export let showAllMixins: boolean = false
   export let readonly = false
 
+  const me = getCurrentEmployee()
   const query = createQuery()
   let showIsBlocking = false
   let blockedBy: Doc[]
@@ -94,11 +95,6 @@
   }
 
   $: updateKeys(issue._class, ignoreKeys)
-
-  let account: PersonAccount | undefined
-
-  $: account = $personAccountByIdStore.get(issue.createdBy as Ref<PersonAccount>)
-  $: employee = account && $personByIdStore.get(account.person)
 </script>
 
 <div class="popupPanel-body__aside-grid">
@@ -162,7 +158,7 @@
     <Label label={core.string.CreatedBy} />
   </span>
   <EmployeeBox
-    value={employee?._id}
+    value={me}
     label={core.string.CreatedBy}
     kind={'link'}
     size={'medium'}

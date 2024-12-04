@@ -103,6 +103,10 @@
     "For": "Para",
     "SelectUsers": "Seleccionar usuarios",
     "AddGuest": "Añadir invitado",
-    "ViewProfile": "Ver perfil"
+    "ViewProfile": "Ver perfil",
+    "SocialId": "Identificación social",
+    "SocialIds": "Identificaciones sociales",
+    "Type": "Tipo",
+    "Confirmed": "Confirmado"
   }
 }

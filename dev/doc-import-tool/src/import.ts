@@ -22,7 +22,7 @@ import core, {
   TxOperations,
   generateId,
   makeDocCollabId,
-  systemAccountEmail,
+  systemAccountUuid,
   type Blob
 } from '@hcengineering/core'
 import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
@@ -40,9 +40,9 @@ export default async function importExtractedFile (
   extractedFile: ExtractedFile
 ): Promise<void> {
   const { workspaceId } = config
-  const token = generateToken(systemAccountEmail, workspaceId)
+  const token = generateToken(systemAccountUuid, workspaceId)
   const transactorUrl = await getTransactorEndpoint(token, 'external')
-  console.log(`Connecting to transactor: ${transactorUrl} (ws: '${workspaceId.name}')`)
+  console.log(`Connecting to transactor: ${transactorUrl} (ws: '${workspaceId}')`)
   const connection = (await createClient(transactorUrl, token)) as CoreClient & BackupClient
 
   try {

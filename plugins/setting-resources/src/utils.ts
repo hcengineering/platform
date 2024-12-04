@@ -1,4 +1,4 @@
-import contact, { type Employee, type PersonAccount, getFirstName, getLastName } from '@hcengineering/contact'
+import contact, { type Employee, getFirstName, getLastName } from '@hcengineering/contact'
 import { employeeByIdStore } from '@hcengineering/contact-resources'
 import { type Class, type Doc, type Hierarchy, type Ref } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
@@ -60,45 +60,51 @@ export async function getValue (provider: TemplateDataProvider): Promise<string 
 }
 
 export async function getOwnerFirstName (provider: TemplateDataProvider): Promise<string | undefined> {
-  const value = provider.get(setting.class.Integration)
-  if (value === undefined) return
-  const client = getClient()
-  const employeeAccount = await client.findOne(contact.class.PersonAccount, {
-    _id: value.modifiedBy as Ref<PersonAccount>
-  })
-  if (employeeAccount !== undefined) {
-    const employee = get(employeeByIdStore).get(employeeAccount.person as Ref<Employee>)
-    return employee != null ? getFirstName(employee.name) : undefined
-  }
+  // TODO: FIXME
+  throw new Error('Not implemented')
+  // const value = provider.get(setting.class.Integration)
+  // if (value === undefined) return
+  // const client = getClient()
+  // const employeeAccount = await client.findOne(contact.class.PersonAccount, {
+  //   _id: value.modifiedBy as PersonId
+  // })
+  // if (employeeAccount !== undefined) {
+  //   const employee = get(employeeByIdStore).get(employeeAccount.person as Ref<Employee>)
+  //   return employee != null ? getFirstName(employee.name) : undefined
+  // }
 }
 
 export async function getOwnerLastName (provider: TemplateDataProvider): Promise<string | undefined> {
-  const value = provider.get(setting.class.Integration)
-  if (value === undefined) return
-  const client = getClient()
-  const employeeAccount = await client.findOne(contact.class.PersonAccount, {
-    _id: value.modifiedBy as Ref<PersonAccount>
-  })
-  if (employeeAccount !== undefined) {
-    const employee = get(employeeByIdStore).get(employeeAccount.person as Ref<Employee>)
-    return employee != null ? getLastName(employee.name) : undefined
-  }
+  // TODO: FIXME
+  throw new Error('Not implemented')
+  // const value = provider.get(setting.class.Integration)
+  // if (value === undefined) return
+  // const client = getClient()
+  // const employeeAccount = await client.findOne(contact.class.PersonAccount, {
+  //   _id: value.modifiedBy as PersonId
+  // })
+  // if (employeeAccount !== undefined) {
+  //   const employee = get(employeeByIdStore).get(employeeAccount.person as Ref<Employee>)
+  //   return employee != null ? getLastName(employee.name) : undefined
+  // }
 }
 
 export async function getOwnerPosition (provider: TemplateDataProvider): Promise<string | undefined> {
-  const value = provider.get(setting.class.Integration)
-  if (value === undefined) return
-  const client = getClient()
-  const employeeAccount = await client.findOne(contact.class.PersonAccount, {
-    _id: value.modifiedBy as Ref<PersonAccount>
-  })
-  if (employeeAccount !== undefined) {
-    const employee = get(employeeByIdStore).get(employeeAccount.person as Ref<Employee>)
-    if (employee != null && client.getHierarchy().hasMixin(employee, contact.mixin.Employee)) {
-      return client.getHierarchy().as(employee, contact.mixin.Employee)?.position ?? undefined
-    }
-    return undefined
-  }
+  // TODO: FIXME
+  throw new Error('Not implemented')
+  // const value = provider.get(setting.class.Integration)
+  // if (value === undefined) return
+  // const client = getClient()
+  // const employeeAccount = await client.findOne(contact.class.PersonAccount, {
+  //   _id: value.modifiedBy as PersonId
+  // })
+  // if (employeeAccount !== undefined) {
+  //   const employee = get(employeeByIdStore).get(employeeAccount.person as Ref<Employee>)
+  //   if (employee != null && client.getHierarchy().hasMixin(employee, contact.mixin.Employee)) {
+  //     return client.getHierarchy().as(employee, contact.mixin.Employee)?.position ?? undefined
+  //   }
+  //   return undefined
+  // }
 }
 
 export async function rpcAccount (method: string, ...params: any[]): Promise<any> {

@@ -7,11 +7,11 @@ import {
   DOMAIN_TX,
   Hierarchy,
   ModelDb,
-  systemAccountEmail,
+  systemAccountUuid,
   type Branding,
   type MeasureContext,
   type Tx,
-  type WorkspaceIdWithUrl
+  type WorkspaceIds
 } from '@hcengineering/core'
 import {
   ApplyTxMiddleware,
@@ -64,7 +64,7 @@ import { generateToken } from '@hcengineering/server-token'
 export function getTxAdapterFactory (
   metrics: MeasureContext,
   dbUrl: string,
-  workspace: WorkspaceIdWithUrl,
+  workspace: WorkspaceIds,
   branding: Branding | null,
   opt: {
     disableTriggers?: boolean
@@ -118,7 +118,7 @@ export function createServerPipeline (
       TxMiddleware.create, // Store tx into transaction domain
       ...(opt.disableTriggers === true ? [] : [TriggersMiddleware.create]),
       ...(opt.fulltextUrl !== undefined
-        ? [FullTextMiddleware.create(opt.fulltextUrl, generateToken(systemAccountEmail, workspace))]
+        ? [FullTextMiddleware.create(opt.fulltextUrl, generateToken(systemAccountUuid, workspace.uuid))]
         : []),
       LowLevelMiddleware.create,
       QueryJoinMiddleware.create,
@@ -193,7 +193,7 @@ export async function getServerPipeline (
   ctx: MeasureContext,
   model: Tx[],
   dbUrl: string,
-  wsUrl: WorkspaceIdWithUrl,
+  wsIds: WorkspaceIds,
   opt?: {
     storageConfig: string
     disableTriggers?: boolean
@@ -214,7 +214,7 @@ export async function getServerPipeline (
 
   try {
     return {
-      pipeline: await pipelineFactory(ctx, wsUrl, true, () => {}, null),
+      pipeline: await pipelineFactory(ctx, wsIds, true, () => {}, null),
       storageAdapter
     }
   } catch (err: any) {

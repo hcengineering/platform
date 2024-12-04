@@ -199,7 +199,7 @@
   }
 
   const settingsQuery = createQuery()
-  const me = getCurrentAccount()._id
+  const me = getCurrentAccount().uuid
 
   let templateProvider: TemplateDataProvider | undefined
   let integrations: Integration[] = []

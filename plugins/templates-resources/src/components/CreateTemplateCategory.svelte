@@ -24,7 +24,7 @@
   let name: string = ''
   const description: string = ''
   let isPrivate: boolean = false
-  const me = getCurrentAccount()._id
+  const me = getCurrentAccount().uuid
 
   export function canClose (): boolean {
     return name === ''

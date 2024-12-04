@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person, PersonAccount, combineName, getFirstName, getLastName } from '@hcengineering/contact'
-  import { Ref, getCurrentAccount } from '@hcengineering/core'
+  import { Person, combineName, getCurrentEmployee, getFirstName, getLastName } from '@hcengineering/contact'
+  import { Ref } from '@hcengineering/core'
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
   import { EditBox, FocusHandler, Scroller, createFocusManager } from '@hcengineering/ui'
@@ -23,12 +23,14 @@
   import contact from '../plugin'
   import ChannelsEditor from './ChannelsEditor.svelte'
   import EditableAvatar from './EditableAvatar.svelte'
+  import { socialIdsByPersonRefStore } from '../utils'
 
   export let object: Person
   export let readonly: boolean = false
   const client = getClient()
 
-  const account = getCurrentAccount() as PersonAccount
+  const me = getCurrentEmployee()
+  $: mySocialStrings = ($socialIdsByPersonRefStore.get(me) ?? []).map((si) => si.key)
 
   let avatarEditor: EditableAvatar
 
@@ -58,7 +60,7 @@
 
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
   const settingsQuery = createQuery()
-  $: settingsQuery.query(setting.class.Integration, { createdBy: account._id, disabled: false }, (res) => {
+  $: settingsQuery.query(setting.class.Integration, { createdBy: { $in: mySocialStrings }, disabled: false }, (res) => {
     integrations = new Set(res.map((p) => p.type))
   })
 

@@ -41,7 +41,6 @@
     "AlreadyJoined": "已经加入了？",
     "ConfirmationSent": "已发送确认邮件到您的邮箱，包含一个确认地址的链接。",
     "ConfirmationSent2": "请点击链接完成注册。",
-    "Slogan": "一个独特的地方来管理你所有的工作\n欢迎来到平台",
     "ContinueWith": "继续使用 {provider}",
     "HaventReceivedCode": "没有收到验证码？",
     "ResendCode": "重新发送验证码",

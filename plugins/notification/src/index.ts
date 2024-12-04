@@ -15,7 +15,7 @@
 
 import { ActivityMessage } from '@hcengineering/activity'
 import {
-  Account,
+  PersonId,
   AnyAttribute,
   Class,
   Doc,
@@ -51,11 +51,11 @@ export const DOMAIN_USER_NOTIFY = 'notification-user' as Domain
  * @public
  */
 export interface BrowserNotification extends Doc {
-  user: Ref<Account>
+  user: PersonId
   title: string
   body: string
   onClickLocation?: Location
-  senderId?: Ref<Account>
+  senderId?: PersonId
   tag: Ref<Doc>
   messageId?: Ref<ActivityMessage>
   messageClass?: Ref<Class<ActivityMessage>>
@@ -78,7 +78,7 @@ export interface PushSubscriptionKeys {
 }
 
 export interface PushSubscription extends Doc {
-  user: Ref<Account>
+  user: PersonId
   endpoint: string
   keys: PushSubscriptionKeys
 }
@@ -191,7 +191,7 @@ export interface NotificationTypeSetting extends Preference {
  * @public
  */
 export interface ClassCollaborators extends Class<Doc> {
-  fields: string[] // Ref<Account> | Ref<Employee> | Ref<Account>[] | Ref<Employee>[]
+  fields: string[] // PersonId | Ref<Employee> | PersonId[] | Ref<Employee>[]
 }
 
 /**
@@ -205,7 +205,7 @@ export interface NotificationObjectPresenter extends Class<Doc> {
  * @public
  */
 export interface Collaborators extends Doc {
-  collaborators: Ref<Account>[]
+  collaborators: PersonId[]
 }
 
 /**
@@ -231,7 +231,7 @@ export interface NotificationContextPresenter extends Class<Doc> {
  * @public
  */
 export interface InboxNotification extends Doc<PersonSpace> {
-  user: Ref<Account>
+  user: PersonId
   isViewed: boolean
 
   docNotifyContext: Ref<DocNotifyContext>
@@ -278,7 +278,7 @@ export type DisplayInboxNotification = DisplayActivityInboxNotification | InboxN
  * @public
  */
 export interface DocNotifyContext extends Doc<PersonSpace> {
-  user: Ref<Account>
+  user: PersonId
   // Context
   objectId: Ref<Doc>
   objectClass: Ref<Class<Doc>>

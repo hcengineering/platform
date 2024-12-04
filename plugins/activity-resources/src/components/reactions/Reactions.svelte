@@ -15,9 +15,9 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { Reaction } from '@hcengineering/activity'
-  import { Account, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Doc, getCurrentAccount, PersonId } from '@hcengineering/core'
   import { EmojiPopup, IconAdd, showPopup, tooltip } from '@hcengineering/ui'
-  import { getClient } from '@hcengineering/presentation'
+  import { includesAny } from '@hcengineering/contact'
 
   import ReactionsTooltip from './ReactionsTooltip.svelte'
   import { updateDocReactions } from '../../utils'
@@ -29,7 +29,7 @@
   const dispatch = createEventDispatcher()
   const me = getCurrentAccount()
 
-  let reactionsAccounts = new Map<string, Ref<Account>[]>()
+  let reactionsAccounts = new Map<string, PersonId[]>()
 
   $: {
     reactionsAccounts.clear()
@@ -65,7 +65,7 @@
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="item border-radius-1"
-      class:highlight={accounts.includes(me._id)}
+      class:highlight={includesAny(accounts, me.socialIds.map((si) => si.key))}
       class:cursor-pointer={!readonly}
       use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: accounts } }}
       on:click={getClickHandler(emoji)}

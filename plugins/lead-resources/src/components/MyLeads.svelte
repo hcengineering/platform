@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import { AttachedDoc, Class, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import { Lead } from '@hcengineering/lead'
   import { IntlString, Asset } from '@hcengineering/platform'
@@ -36,6 +36,7 @@
     ViewletSelector,
     ViewletSettingButton
   } from '@hcengineering/view-resources'
+  import { socialIdsByPersonRefStore } from '@hcengineering/contact-resources'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
 
@@ -46,9 +47,10 @@
 
   let search = ''
   const dispatch = createEventDispatcher()
-  const currentUser = getCurrentAccount() as PersonAccount
-  const assigned = { assignee: currentUser.person }
-  const created = { createdBy: currentUser._id }
+  const me = getCurrentEmployee()
+  $: mySocialStrings = ($socialIdsByPersonRefStore.get(me) ?? []).map((si) => si.key)
+  const assigned = { assignee: me }
+  $: created = { createdBy: { $in: mySocialStrings } }
   let subscribed = { _id: { $in: [] as Ref<Lead>[] } }
   let mode: string | undefined = undefined
   let baseQuery: DocumentQuery<Lead> | undefined = undefined
@@ -68,7 +70,7 @@
   function getSubscribed () {
     subscribedQuery.query(
       _class,
-      { 'notification:mixin:Collaborators.collaborators': getCurrentAccount()._id },
+      { 'notification:mixin:Collaborators.collaborators': getCurrentAccount().uuid },
       (result) => {
         const newSub = result.map((p) => p._id as Ref<AttachedDoc> as Ref<Lead>)
         const curSub = subscribed._id.$in

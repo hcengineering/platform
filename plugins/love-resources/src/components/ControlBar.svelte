@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { Room, RoomType, isOffice, roomAccessIcon } from '@hcengineering/love'
   import { getResource } from '@hcengineering/platform'
@@ -131,7 +131,7 @@
     }
   }
 
-  const me = (getCurrentAccount() as PersonAccount).person
+  const me = getCurrentEmployee()
   const client = getClient()
 
   const camKeys = client.getModel().findAllSync(view.class.Action, { _id: love.action.ToggleVideo })?.[0]?.keyBinding

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { PersonAccount, formatName } from '@hcengineering/contact'
+  import contact, { formatName } from '@hcengineering/contact'
   import { EmployeePresenter, employeesStore } from '@hcengineering/contact-resources'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -30,19 +30,22 @@
     { id: AccountRole.Owner, label: setting.string.Owner }
   ]
 
-  let accounts: PersonAccount[] = []
-  let owners: PersonAccount[] = []
+  let accounts: any = []
+  let owners: any = []
   $: owners = accounts.filter((p) => p.role === AccountRole.Owner)
 
-  query.query(contact.class.PersonAccount, {}, (res) => {
-    owners = res.filter((p) => p.role === AccountRole.Owner)
-    accounts = res
-  })
+  // TODO: FIXME
+  // query.query(contact.class.PersonAccount, {}, (res) => {
+  //   owners = res.filter((p) => p.role === AccountRole.Owner)
+  //   accounts = res
+  // })
 
-  async function change (account: PersonAccount, value: AccountRole): Promise<void> {
-    await client.update(account, {
-      role: value
-    })
+  async function change (account: any, value: AccountRole): Promise<void> {
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // await client.update(account, {
+    //   role: value
+    // })
   }
   let search = ''
 

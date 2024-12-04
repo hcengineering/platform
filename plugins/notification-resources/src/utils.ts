@@ -233,7 +233,7 @@ export async function subscribeDoc (
   op: 'add' | 'remove',
   doc?: Doc
 ): Promise<void> {
-  const me = getCurrentAccount()._id
+  const me = getCurrentAccount().uuid
   const hierarchy = client.getHierarchy()
 
   if (hierarchy.classHierarchyMixin(docClass, notification.mixin.ClassCollaborators) === undefined) return
@@ -747,7 +747,7 @@ export async function subscribePush (): Promise<boolean> {
           applicationServerKey: publicKey
         })
         await client.createDoc(notification.class.PushSubscription, core.space.Workspace, {
-          user: getCurrentAccount()._id,
+          user: getCurrentAccount().uuid,
           endpoint: subscription.endpoint,
           keys: {
             p256dh: arrayBufferToBase64(subscription.getKey('p256dh')),
@@ -756,12 +756,12 @@ export async function subscribePush (): Promise<boolean> {
         })
       } else {
         const exists = await client.findOne(notification.class.PushSubscription, {
-          user: getCurrentAccount()._id,
+          user: getCurrentAccount().uuid,
           endpoint: current.endpoint
         })
         if (exists === undefined) {
           await client.createDoc(notification.class.PushSubscription, core.space.Workspace, {
-            user: getCurrentAccount()._id,
+            user: getCurrentAccount().uuid,
             endpoint: current.endpoint,
             keys: {
               p256dh: arrayBufferToBase64(current.getKey('p256dh')),

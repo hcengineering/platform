@@ -31,7 +31,7 @@ import core, {
   type Tx,
   type TxCreateDoc,
   type TxResult,
-  type WorkspaceId
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import type { DbAdapter } from '../adapter'
 import { DummyDbAdapter } from '../mem'
@@ -121,7 +121,7 @@ export async function createBenchmarkAdapter (
   ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   modelDb: ModelDb
 ): Promise<DbAdapter> {
   return new BenchmarkDbAdapter()

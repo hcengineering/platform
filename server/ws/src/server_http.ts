@@ -14,7 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { generateId, toWorkspaceString, type MeasureContext, type Tx } from '@hcengineering/core'
+import { generateId, type MeasureContext, type Tx } from '@hcengineering/core'
 import platform, { Severity, Status, UNAUTHORIZED, unknownStatus } from '@hcengineering/platform'
 import { RPCHandler, type Response } from '@hcengineering/rpc'
 import {
@@ -220,7 +220,7 @@ export function startHttpServer (
         ctx.error('/api/v1/blob put error', {
           message: 'invalid NaN file size',
           name,
-          workspace: payload.workspace.name
+          workspace: payload.workspace
         })
         res.writeHead(404, {})
         res.end()
@@ -229,7 +229,7 @@ export function startHttpServer (
       ctx
         .with(
           'storage upload',
-          { workspace: payload.workspace.name },
+          { workspace: payload.workspace },
           (ctx) => externalStorage.put(ctx, payload.workspace, name, req, contentType, size !== -1 ? size : undefined),
           { file: name, contentType }
         )
@@ -265,7 +265,7 @@ export function startHttpServer (
       const range = req.headers.range
       if (range !== undefined) {
         ctx
-          .with('file-range', { workspace: payload.workspace.name }, (ctx) =>
+          .with('file-range', { workspace: payload.workspace }, (ctx) =>
             getFileRange(ctx, range, externalStorage, payload.workspace, name, wrapRes(res))
           )
           .catch((err) => {
@@ -359,7 +359,7 @@ export function startHttpServer (
       remoteAddress: request.socket.remoteAddress ?? '',
       userAgent: request.headers['user-agent'] ?? '',
       language: request.headers['accept-language'] ?? '',
-      email: token.email,
+      account: token.account,
       mode: token.extra?.mode,
       model: token.extra?.model
     }
@@ -382,7 +382,7 @@ export function startHttpServer (
               {
                 id: -1,
                 error: new Status(Severity.ERROR, platform.status.WorkspaceArchived, {
-                  workspace: token.workspace.name
+                  workspaceUuid: token.workspace
                 }),
                 terminate: s.terminate
               },
@@ -447,7 +447,7 @@ export function startHttpServer (
         (s) => {
           if (!(s.session.workspaceClosed ?? false)) {
             // remove session after 1seconds, give a time to reconnect.
-            void sessions.close(ctx, cs, toWorkspaceString(token.workspace))
+            void sessions.close(ctx, cs, token.workspace)
           }
         },
         Buffer.from('')
@@ -531,7 +531,7 @@ function createWebsocketClientSocket (
     remoteAddress: string
     userAgent: string
     language: string
-    email: string
+    account: string
     mode: any
     model: any
   }

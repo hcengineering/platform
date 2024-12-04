@@ -46,7 +46,7 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const me = getCurrentAccount()._id
+  const me = getCurrentAccount().uuid
 
   let isThreadOpened = false
   let isAsideShown = false

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Calendar, generateEventId } from '@hcengineering/calendar'
-  import { Employee, PersonAccount } from '@hcengineering/contact'
+  import { Employee, getCurrentEmployee } from '@hcengineering/contact'
   import { UserBoxList } from '@hcengineering/contact-resources'
   import { Class, DateRangeMode, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
@@ -29,8 +29,8 @@
   let _title = title
 
   let value: number | null | undefined = null
-  const currentUser = getCurrentAccount() as PersonAccount
-  let participants: Ref<Employee>[] = [currentUser.person as Ref<Employee>]
+  const currentUser = getCurrentEmployee()
+  let participants: Ref<Employee>[] = [currentUser]
   const defaultDuration = 30 * 60 * 1000
 
   const dispatch = createEventDispatcher()
@@ -44,7 +44,7 @@
     let date: number | undefined
     if (value != null) date = value
     if (date === undefined) return
-    const _calendar = `${getCurrentAccount()._id}_calendar` as Ref<Calendar>
+    const _calendar = `${getCurrentAccount().uuid}_calendar` as Ref<Calendar>
     await client.addCollection(calendar.class.Event, calendar.space.Calendar, attachedTo, attachedToClass, 'events', {
       calendar: _calendar,
       eventId: generateEventId(),
