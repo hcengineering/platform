@@ -27,6 +27,9 @@ import { ImportWorkspaceBuilder } from '../importer/builder'
 import {
   type ImportAttachment,
   type ImportComment,
+  ImportControlledDocument,
+  ImportControlledDocumentSpace,
+  ImportControlledDocumentTemplate,
   type ImportDocument,
   type ImportIssue,
   type ImportProject,
@@ -38,6 +41,7 @@ import {
 import { type Logger } from '../importer/logger'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 import { type FileUploader } from '../importer/uploader'
+import documents, { DocumentState, DocumentCategory, ChangeControl, DocumentTemplate, ControlledDocument } from '@hcengineering/controlled-documents'
 
 interface UnifiedComment {
   author: string
@@ -56,7 +60,7 @@ interface UnifiedIssueHeader {
 }
 
 interface UnifiedSpaceSettings {
-  class: 'tracker:class:Project' | 'document:class:Teamspace'
+  class: 'tracker:class:Project' | 'document:class:Teamspace' | 'documents:class:DocumentSpace'
   title: string
   private?: boolean
   autoJoin?: boolean
@@ -96,6 +100,55 @@ interface UnifiedWorkspaceSettings {
       }>
     }>
   }>
+}
+
+interface UnifiedControlledDocumentHeader {
+  class: 'documents:class:ControlledDocument'
+  title: string
+  template: string
+  code: string
+  prefix: string
+  seqNumber: number
+  major: number
+  minor: number
+  state: 'Draft' | 'Released'
+  commentSequence: number
+  category: string
+  author?: string
+  owner?: string
+  abstract?: string
+  requests: number
+  reviewers: string[]
+  approvers: string[]
+  coAuthors: string[]
+  reviewInterval?: number
+  changeControl: string
+}
+
+interface UnifiedDocumentTemplateHeader {
+  class: 'documents:mixin:DocumentTemplate'
+  title: string
+  docPrefix: string
+  code: string
+  seqNumber: number
+  major: number
+  minor: number
+  state: 'Draft' | 'Released'
+  commentSequence: number
+  category: string
+  author?: string
+  owner?: string
+  abstract?: string
+  requests: number
+  reviewers: string[]
+  approvers: string[]
+  coAuthors: string[]
+  reviewInterval?: number
+  changeControl: string
+}
+
+interface UnifiedDocumentSpaceSettings extends UnifiedSpaceSettings {
+  class: 'documents:class:DocumentSpace'
 }
 
 class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
@@ -376,6 +429,15 @@ export class UnifiedFormatImporter {
             break
           }
 
+          case documents.class.DocumentSpace: {
+            const qmsSpace = await this.processControlledDocumentSpace(spaceConfig as UnifiedDocumentSpaceSettings)
+            builder.addControlledDocumentSpace(spacePath, qmsSpace)
+            if (fs.existsSync(spacePath) && fs.statSync(spacePath).isDirectory()) {
+              await this.processControlledDocumentsRecursively(builder, spacePath, spacePath)
+            }
+            break
+          }
+
           default: {
             throw new Error(`Unknown space class ${spaceConfig.class} in ${spaceName}`)
           }
@@ -519,6 +581,67 @@ export class UnifiedFormatImporter {
     }
   }
 
+  private async processControlledDocumentsRecursively (
+    builder: ImportWorkspaceBuilder,
+    spacePath: string,
+    currentPath: string,
+    parentDocPath?: string
+  ): Promise<void> {
+    const docFiles = fs.readdirSync(currentPath).filter((f) => f.endsWith('.md'))
+
+    for (const docFile of docFiles) {
+      const docPath = path.join(currentPath, docFile)
+      const docHeader = (await this.readYamlHeader(docPath)) as UnifiedControlledDocumentHeader | UnifiedDocumentTemplateHeader
+
+      if (docHeader.class === undefined) {
+        this.logger.error(`Skipping ${docFile}: not a document`)
+        continue
+      }
+
+      if (docHeader.class === documents.class.ControlledDocument) {
+        const docMeta: DocMetadata = {
+          id: generateId<ControlledDocument>(),
+          class: documents.class.ControlledDocument,
+          path: docPath,
+          refTitle: docHeader.title
+        }
+
+        this.metadataById.set(docMeta.id, docMeta)
+        this.metadataByFilePath.set(docPath, docMeta)
+
+        const doc = await this.processControlledDocument(docHeader as UnifiedControlledDocumentHeader, await this.readMarkdownContent(docPath))
+        builder.addControlledDocument(spacePath, docPath, doc, parentDocPath)
+
+        // Process subdocuments if they exist
+        const subDir = path.join(currentPath, docFile.replace('.md', ''))
+        if (fs.existsSync(subDir) && fs.statSync(subDir).isDirectory()) {
+          await this.processControlledDocumentsRecursively(builder, spacePath, subDir, docPath)
+        }
+      } else if (docHeader.class === documents.mixin.DocumentTemplate) {
+        const templateMeta: DocMetadata = {
+          id: generateId<DocumentTemplate>(),
+          class: documents.class.Document,
+          path: docPath,
+          refTitle: docHeader.title
+        }
+
+        this.metadataById.set(templateMeta.id, templateMeta)
+        this.metadataByFilePath.set(docPath, templateMeta)
+
+        const template = await this.processDocumentTemplate(docHeader as UnifiedDocumentTemplateHeader, await this.readMarkdownContent(docPath))
+        builder.addControlledDocumentTemplate(spacePath, docPath, template, parentDocPath)
+
+        // Process subtemplates if they exist
+        const subDir = path.join(currentPath, docFile.replace('.md', ''))
+        if (fs.existsSync(subDir) && fs.statSync(subDir).isDirectory()) {
+          await this.processControlledDocumentsRecursively(builder, spacePath, subDir, docPath)
+        }
+      } else {
+        throw new Error(`Unknown document class ${docHeader.class} in ${docFile}`)
+      }
+    }
+  }
+
   private processComments (comments: UnifiedComment[] = []): ImportComment[] {
     return comments.map((comment) => {
       return {
@@ -578,6 +701,81 @@ export class UnifiedFormatImporter {
       members:
         spaceHeader.members !== undefined ? spaceHeader.members.map((email) => this.findAccountByEmail(email)) : [],
       docs: []
+    }
+  }
+
+  private async processControlledDocumentSpace (spaceHeader: UnifiedDocumentSpaceSettings): Promise<ImportControlledDocumentSpace> {
+    return {
+      class: documents.class.DocumentSpace,
+      title: spaceHeader.title,
+      private: spaceHeader.private ?? false,
+      autoJoin: spaceHeader.autoJoin ?? true,
+      archived: spaceHeader.archived ?? false,
+      description: spaceHeader.description,
+      emoji: spaceHeader.emoji,
+      owners: spaceHeader.owners?.map(email => this.findAccountByEmail(email)) ?? [],
+      members: spaceHeader.members?.map(email => this.findAccountByEmail(email)) ?? [],
+      docs: []
+    }
+  }
+
+  private async processControlledDocument (
+    header: UnifiedControlledDocumentHeader,
+    content: string
+  ): Promise<ImportControlledDocument> {
+    return {
+      class: documents.class.ControlledDocument,
+      title: header.title,
+      template: header.template as Ref<DocumentTemplate>,
+      prefix: header.prefix,
+      code: header.code,
+      seqNumber: header.seqNumber,
+      major: header.major,
+      minor: header.minor,
+      state: header.state === 'Draft' ? DocumentState.Draft : DocumentState.Effective, // todo: RELEASED vs Effective?
+      commentSequence: header.commentSequence,
+      category: header.category as Ref<DocumentCategory>,
+      // author: header.author ? this.findAccountByEmail(header.author) : undefined,
+      // owner: header.owner ? this.findAccountByEmail(header.owner) : undefined,
+      abstract: header.abstract,
+      requests: header.requests,
+      reviewers: [], // header.reviewers.map(email => this.findAccountByEmail(email)),
+      approvers: [], // header.approvers.map(email => this.findAccountByEmail(email)),
+      coAuthors: [], // header.coAuthors.map(email => this.findAccountByEmail(email)),
+      reviewInterval: header.reviewInterval,
+      changeControl: header.changeControl as Ref<ChangeControl>,
+      descrProvider: async () => content,
+      subdocs: []
+    }
+  }
+
+  private async processDocumentTemplate (
+    header: UnifiedDocumentTemplateHeader,
+    content: string
+  ): Promise<ImportControlledDocumentTemplate> {
+    return {
+      class: documents.class.Document,
+      title: header.title,
+      docPrefix: header.docPrefix,
+      prefix: header.docPrefix,
+      code: header.code,
+      seqNumber: header.seqNumber,
+      major: header.major,
+      minor: header.minor,
+      state: header.state === 'Draft' ? DocumentState.Draft : DocumentState.Effective, // todo: RELEASED vs Effective? or Archived?
+      commentSequence: header.commentSequence,
+      category: header.category as Ref<DocumentCategory>,
+      // author: header.author ? this.findAccountByEmail(header.author) : undefined,
+      // owner: header.owner ? this.findAccountByEmail(header.owner) : undefined,
+      abstract: header.abstract,
+      requests: header.requests,
+      reviewers: [], // header.reviewers.map(email => this.findAccountByEmail(email)),
+      approvers: [], // header.approvers.map(email => this.findAccountByEmail(email)),
+      coAuthors: [], // header.coAuthors.map(email => this.findAccountByEmail(email)),
+      reviewInterval: header.reviewInterval,
+      changeControl: header.changeControl as Ref<ChangeControl>,
+      descrProvider: async () => content,
+      subdocs: []
     }
   }
 

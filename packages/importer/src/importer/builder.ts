@@ -16,6 +16,9 @@ import { type DocumentQuery, type Ref, type Status, type TxOperations } from '@h
 import document from '@hcengineering/document'
 import tracker, { IssuePriority, type IssueStatus } from '@hcengineering/tracker'
 import {
+  ImportControlledDocument,
+  ImportControlledDocumentSpace,
+  ImportControlledDocumentTemplate,
   type ImportDocument,
   type ImportIssue,
   type ImportProject,
@@ -23,6 +26,8 @@ import {
   type ImportTeamspace,
   type ImportWorkspace
 } from './importer'
+import documents, { DocumentState } from '@hcengineering/controlled-documents'
+import path from 'path'
 
 export interface ValidationError {
   path: string
@@ -48,6 +53,9 @@ export class ImportWorkspaceBuilder {
   private readonly errors = new Map<string, ValidationError>()
 
   private readonly issueStatusCache = new Map<string, Ref<IssueStatus>>()
+  private readonly documentSpaces = new Map<string, ImportControlledDocumentSpace>()
+  private readonly controlledDocsBySpace = new Map<string, Map<string, ImportControlledDocument>>()
+  private readonly templatesBySpace = new Map<string, Map<string, ImportControlledDocumentTemplate>>()
 
   constructor (
     private readonly client: TxOperations,
@@ -125,10 +133,85 @@ export class ImportWorkspaceBuilder {
     return this
   }
 
+  addControlledDocumentSpace (path: string, space: ImportControlledDocumentSpace): this {
+    this.validateAndAdd(
+      'documentSpace',
+      path,
+      space,
+      (s) => this.validateControlledDocumentSpace(s),
+      this.documentSpaces,
+      path
+    )
+    return this
+  }
+
+  addControlledDocument (
+    spacePath: string,
+    docPath: string,
+    doc: ImportControlledDocument,
+    parentDocPath?: string
+  ): this {
+    if (!this.controlledDocsBySpace.has(spacePath)) {
+      this.controlledDocsBySpace.set(spacePath, new Map())
+    }
+
+    const docs = this.controlledDocsBySpace.get(spacePath)
+    if (docs === undefined) {
+      throw new Error(`Document space ${spacePath} not found`)
+    }
+
+    this.validateAndAdd(
+      'controlledDocument',
+      docPath,
+      doc,
+      (d) => this.validateControlledDocument(d),
+      docs,
+      docPath
+    )
+
+    if (parentDocPath !== undefined) {
+      this.documentParents.set(docPath, parentDocPath)
+    }
+
+    return this
+  }
+
+  addControlledDocumentTemplate (
+    spacePath: string,
+    templatePath: string,
+    template: ImportControlledDocumentTemplate,
+    parentTemplatePath?: string
+  ): this {
+    if (!this.templatesBySpace.has(spacePath)) {
+      this.templatesBySpace.set(spacePath, new Map())
+    }
+
+    const templates = this.templatesBySpace.get(spacePath)
+    if (templates === undefined) {
+      throw new Error(`Document space ${spacePath} not found`)
+    }
+
+    this.validateAndAdd(
+      'documentTemplate',
+      templatePath,
+      template,
+      (t) => this.validateControlledDocumentTemplate(t),
+      templates,
+      templatePath
+    )
+
+    if (parentTemplatePath !== undefined) {
+      this.documentParents.set(templatePath, parentTemplatePath)
+    }
+
+    return this
+  }
+
   validate (): ValidationResult {
     // Perform cross-entity validation
     this.validateProjectReferences()
     this.validateSpaceDocuments()
+    this.validateDocumentSpaces()
 
     return {
       isValid: this.errors.size === 0,
@@ -175,7 +258,12 @@ export class ImportWorkspaceBuilder {
 
     return {
       projectTypes: Array.from(this.projectTypes.values()),
-      spaces: [...Array.from(this.projects.values()), ...Array.from(this.teamspaces.values())]
+      spaces: [
+        ...Array.from(this.projects.values()),
+        ...Array.from(this.teamspaces.values()),
+        ...Array.from(this.documentSpaces.values())
+      ],
+      attachments: []
     }
   }
 
@@ -528,5 +616,213 @@ export class ImportWorkspaceBuilder {
       }
     }
     return errors
+  }
+
+  private validateControlledDocumentSpace (space: ImportControlledDocumentSpace): string[] {
+    const errors: string[] = []
+
+    if (space.class !== documents.class.DocumentSpace) {
+      errors.push('Invalid space class: ' + space.class)
+    }
+
+    errors.push(...this.validateType(space.title, 'string', 'title'))
+
+    if (space.emoji !== undefined) {
+      errors.push(...this.validateEmoji(space.emoji))
+    }
+
+    if (space.owners !== undefined) {
+      errors.push(...this.validateArray(space.owners, 'string', 'owners'))
+    }
+
+    if (space.members !== undefined) {
+      errors.push(...this.validateArray(space.members, 'string', 'members'))
+    }
+
+    return errors
+  }
+
+  private validateControlledDocument (doc: ImportControlledDocument): string[] {
+    const errors: string[] = []
+
+    // Validate required fields presence and types
+    errors.push(...this.validateType(doc.title, 'string', 'title'))
+    errors.push(...this.validateType(doc.class, 'string', 'class'))
+    errors.push(...this.validateType(doc.template, 'string', 'template'))
+    errors.push(...this.validateType(doc.code, 'string', 'code'))
+    errors.push(...this.validateType(doc.prefix, 'string', 'prefix'))
+    errors.push(...this.validateType(doc.seqNumber, 'number', 'seqNumber'))
+    errors.push(...this.validateType(doc.major, 'number', 'major'))
+    errors.push(...this.validateType(doc.minor, 'number', 'minor'))
+    errors.push(...this.validateType(doc.state, 'string', 'state'))
+    errors.push(...this.validateType(doc.commentSequence, 'number', 'commentSequence'))
+    errors.push(...this.validateType(doc.changeControl, 'string', 'changeControl'))
+    errors.push(...this.validateType(doc.requests, 'number', 'requests'))
+
+    // Validate required string fields are defined
+    if (!this.validateStringDefined(doc.title)) errors.push('title is required')
+    if (!this.validateStringDefined(doc.template)) errors.push('template is required')
+    if (!this.validateStringDefined(doc.code)) errors.push('code is required')
+    if (!this.validateStringDefined(doc.prefix)) errors.push('prefix is required')
+    if (!this.validateStringDefined(doc.changeControl)) errors.push('changeControl is required')
+
+    // Validate numbers are positive
+    if (!this.validatePossitiveNumber(doc.seqNumber)) errors.push('invalid sequence number')
+    if (!this.validatePossitiveNumber(doc.major)) errors.push('invalid major version')
+    if (!this.validatePossitiveNumber(doc.minor)) errors.push('invalid minor version')
+    if (!this.validatePossitiveNumber(doc.commentSequence)) errors.push('invalid comment sequence')
+    if (!this.validatePossitiveNumber(doc.requests)) errors.push('invalid requests number')
+
+    // Validate arrays
+    errors.push(...this.validateArray(doc.reviewers, 'string', 'reviewers'))
+    errors.push(...this.validateArray(doc.approvers, 'string', 'approvers'))
+    errors.push(...this.validateArray(doc.coAuthors, 'string', 'coAuthors'))
+
+    // Validate optional fields if present
+    if (doc.author !== undefined) {
+      errors.push(...this.validateType(doc.author, 'string', 'author'))
+    }
+    if (doc.owner !== undefined) {
+      errors.push(...this.validateType(doc.owner, 'string', 'owner'))
+    }
+    if (doc.abstract !== undefined) {
+      errors.push(...this.validateType(doc.abstract, 'string', 'abstract'))
+    }
+    if (doc.reviewInterval !== undefined) {
+      errors.push(...this.validateType(doc.reviewInterval, 'number', 'reviewInterval'))
+      if (!this.validatePossitiveNumber(doc.reviewInterval)) {
+        errors.push('invalid review interval')
+      }
+    }
+
+    // Validate class
+    if (doc.class !== documents.class.ControlledDocument) {
+      errors.push('invalid class: ' + doc.class)
+    }
+
+    // Validate state values
+    if (doc.state !== DocumentState.Draft && doc.state !== DocumentState.Effective) { // RELEASED vs Effective?
+      errors.push('invalid state: ' + doc.state)
+    }
+
+    // Validate filename format
+    const filename = path.basename(doc.title)
+    if (!/^\d+/.test(filename)) {
+      errors.push('Filename must start with sequence number')
+    }
+
+    return errors
+  }
+
+  private validateControlledDocumentTemplate (template: ImportControlledDocumentTemplate): string[] {
+    const errors: string[] = []
+
+    // Validate required fields presence and types
+    errors.push(...this.validateType(template.title, 'string', 'title'))
+    errors.push(...this.validateType(template.class, 'string', 'class'))
+    errors.push(...this.validateType(template.docPrefix, 'string', 'docPrefix'))
+    errors.push(...this.validateType(template.code, 'string', 'code'))
+    errors.push(...this.validateType(template.seqNumber, 'number', 'seqNumber'))
+    errors.push(...this.validateType(template.major, 'number', 'major'))
+    errors.push(...this.validateType(template.minor, 'number', 'minor'))
+    errors.push(...this.validateType(template.state, 'string', 'state'))
+    errors.push(...this.validateType(template.commentSequence, 'number', 'commentSequence'))
+    errors.push(...this.validateType(template.changeControl, 'string', 'changeControl'))
+    errors.push(...this.validateType(template.requests, 'number', 'requests'))
+
+    // Validate required string fields are defined
+    if (!this.validateStringDefined(template.title)) errors.push('title is required')
+    if (!this.validateStringDefined(template.docPrefix)) errors.push('docPrefix is required')
+    if (!this.validateStringDefined(template.code)) errors.push('code is required')
+    if (!this.validateStringDefined(template.changeControl)) errors.push('changeControl is required')
+
+    // Validate numbers are positive
+    if (!this.validatePossitiveNumber(template.seqNumber)) errors.push('invalid sequence number')
+    if (!this.validatePossitiveNumber(template.major)) errors.push('invalid major version')
+    if (!this.validatePossitiveNumber(template.minor)) errors.push('invalid minor version')
+    if (!this.validatePossitiveNumber(template.commentSequence)) errors.push('invalid comment sequence')
+    if (!this.validatePossitiveNumber(template.requests)) errors.push('invalid requests number')
+
+    // Validate arrays
+    errors.push(...this.validateArray(template.reviewers, 'string', 'reviewers'))
+    errors.push(...this.validateArray(template.approvers, 'string', 'approvers'))
+    errors.push(...this.validateArray(template.coAuthors, 'string', 'coAuthors'))
+
+    // Validate optional fields if present
+    if (template.author !== undefined) {
+      errors.push(...this.validateType(template.author, 'string', 'author'))
+    }
+    if (template.owner !== undefined) {
+      errors.push(...this.validateType(template.owner, 'string', 'owner'))
+    }
+    if (template.abstract !== undefined) {
+      errors.push(...this.validateType(template.abstract, 'string', 'abstract'))
+    }
+    if (template.reviewInterval !== undefined) {
+      errors.push(...this.validateType(template.reviewInterval, 'number', 'reviewInterval'))
+      if (!this.validatePossitiveNumber(template.reviewInterval)) {
+        errors.push('invalid review interval')
+      }
+    }
+
+    // Validate class
+    if (template.class !== documents.class.Document) {
+      errors.push('invalid class: ' + template.class)
+    }
+
+    // Validate state values
+    if (template.state !== DocumentState.Draft && template.state !== DocumentState.Effective) { // RELEASED vs Effective?
+      errors.push('invalid state: ' + template.state)
+    }
+
+    return errors
+  }
+
+  private validateDocumentSpaces (): void {
+    // Validate document spaces
+    for (const [spacePath] of this.documentSpaces) {
+      // Validate controlled documents
+      const docs = this.controlledDocsBySpace.get(spacePath)
+      if (docs !== undefined) {
+        for (const [docPath, doc] of docs) {
+          // Check parent document exists
+          const parentPath = this.documentParents.get(docPath)
+          if (parentPath !== undefined && !docs.has(parentPath)) {
+            this.addError(docPath, `Parent document not found: ${parentPath}`)
+          }
+
+          // Check template exists
+          const templates = this.templatesBySpace.get(spacePath)
+          if (templates !== undefined && !templates.has(doc.template)) {
+            this.addError(docPath, `Template not found: ${doc.template}`)
+          }
+        }
+      }
+
+      // Validate templates
+      const templates = this.templatesBySpace.get(spacePath)
+      if (templates !== undefined) {
+        for (const [templatePath, _] of templates) {
+          // Check parent template exists
+          const parentPath = this.documentParents.get(templatePath)
+          if (parentPath !== undefined && !templates.has(parentPath)) {
+            this.addError(templatePath, `Parent template not found: ${parentPath}`)
+          }
+        }
+      }
+      // // Check owners exist
+      // for (const owner of space.owners) {
+      //   if (this.accountExists(owner) === false) {
+      //     this.addError(spacePath, `Owner not found: ${owner}`)
+      //   }
+      // }
+
+      // // Check members exist
+      // for (const member of space.members) {
+      //   if (this.accountExists(member) === false) {
+      //     this.addError(spacePath, `Member not found: ${member}`)
+      //   }
+      // }
+    }
   }
 }

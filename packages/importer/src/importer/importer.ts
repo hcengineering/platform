@@ -108,7 +108,6 @@ export interface ImportDoc {
   id?: Ref<Doc>
   class: Ref<Class<Doc<Space>>>
   title: string
-  prefix: string
   descrProvider: () => Promise<string>
   subdocs: ImportDoc[]
 }
@@ -174,6 +173,7 @@ export interface ImportControlledDocumentTemplate extends ImportDoc {
   minor: number
   state: DocumentState
   commentSequence: number
+  prefix: string
   category?: Ref<DocumentCategory>
   author?: Ref<Employee>
   owner?: Ref<Employee>
@@ -200,6 +200,7 @@ export interface ImportControlledDocument extends ImportDoc {
   minor: number
   state: DocumentState
   commentSequence: number
+  prefix: string
   requests: CollectionSize<DocumentRequest>
   reviewers: Ref<Employee>[]
   approvers: Ref<Employee>[]
@@ -899,7 +900,7 @@ export class WorkspaceImporter {
       documents.class.ControlledDocument
     )
 
-    if (success === false) {
+    if (!success) {
       throw new Error('Failed to create controlled document')
     }
 
