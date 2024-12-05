@@ -27,7 +27,8 @@ export default mergeIds(loveId, love, {
     WorkbenchExtension: '' as AnyComponent,
     Settings: '' as AnyComponent,
     LoveWidget: '' as AnyComponent,
-    MeetingWidget: '' as AnyComponent
+    MeetingWidget: '' as AnyComponent,
+    WidgetSwitcher: '' as AnyComponent
   },
   app: {
     Love: '' as Ref<Doc>

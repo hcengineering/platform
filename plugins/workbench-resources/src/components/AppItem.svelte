@@ -21,13 +21,14 @@
   export let icon: Asset | AnySvelteComponent
   export let selected: boolean = false
   export let size: 'small' | 'medium' | 'large' = 'large'
+  export let kind: 'default' | 'positive' | 'negative' = 'default'
   export let loading: boolean = false
   export let notify: boolean = false
   export let navigator: boolean = false
 </script>
 
 <button
-  class="app {size}"
+  class="app {size} {kind}"
   class:loading
   class:selected
   class:navigator
@@ -103,6 +104,36 @@
     }
     &.navigator {
       border-color: var(--theme-button-border);
+    }
+    &.positive {
+      background-color: var(--positive-button-default);
+      &:hover {
+        background-color: var(--positive-button-hovered);
+      }
+      &:active,
+      &.selected {
+        background-color: var(--positive-button-pressed);
+      }
+      &.selected:hover {
+        background-color: var(--positive-button-focused);
+      }
+    }
+    &.negative {
+      background-color: var(--negative-button-default);
+      &:hover {
+        background-color: var(--negative-button-hovered);
+      }
+      &:active,
+      &.selected {
+        background-color: var(--negative-button-pressed);
+      }
+      &.selected:hover {
+        background-color: var(--negative-button-focused);
+      }
+    }
+    &.positive .icon-container,
+    &.negative .icon-container {
+      color: var(--theme-caption-color);
     }
   }
 

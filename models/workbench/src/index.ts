@@ -81,6 +81,7 @@ export class TWidget extends TDoc implements Widget {
 
   component!: AnyComponent
   tabComponent?: AnyComponent
+  switcherComponent?: AnyComponent
   headerLabel?: IntlString
 
   closeIfNoTabs?: boolean

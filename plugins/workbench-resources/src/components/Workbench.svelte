@@ -636,10 +636,10 @@
 
   $deviceInfo.navigator.float = !(workbenchWidth < 1024)
   const checkWorkbenchWidth = (): void => {
-    if (workbenchWidth <= 1024 && !$deviceInfo.navigator.float && $deviceInfo.navigator.visible) {
+    if (workbenchWidth <= 720 && !$deviceInfo.navigator.float && $deviceInfo.navigator.visible) {
       $deviceInfo.navigator.visible = false
       $deviceInfo.navigator.float = true
-    } else if (workbenchWidth > 1024 && $deviceInfo.navigator.float) {
+    } else if (workbenchWidth > 720 && $deviceInfo.navigator.float) {
       if (getMetadata(workbench.metadata.NavigationExpandedDefault) === undefined) {
         $deviceInfo.navigator.float = false
         $deviceInfo.navigator.visible = true
