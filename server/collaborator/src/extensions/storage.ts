@@ -74,9 +74,17 @@ export class StorageExtension implements Extension {
     return await this.loadDocument(documentName, context)
   }
 
-  async afterLoadDocument ({ documentName, document }: withContext<afterLoadDocumentPayload>): Promise<any> {
-    // remember the markup for the document
-    this.markups.set(documentName, this.configuration.transformer.fromYdoc(document))
+  async afterLoadDocument ({ context, documentName, document }: withContext<afterLoadDocumentPayload>): Promise<any> {
+    const { ctx } = this.configuration
+    const { connectionId } = context
+
+    try {
+      // remember the markup for the document
+      this.markups.set(documentName, this.configuration.transformer.fromYdoc(document))
+    } catch {
+      ctx.warn('document is not of a markup type', { documentName, connectionId })
+      this.markups.set(documentName, {})
+    }
   }
 
   async onStoreDocument ({ context, documentName, document }: withContext<onStoreDocumentPayload>): Promise<void> {
@@ -141,17 +149,14 @@ export class StorageExtension implements Extension {
     const { ctx, adapter } = this.configuration
 
     try {
-      const prevMarkup = this.markups.get(documentName) ?? {}
-      const currMarkup = this.configuration.transformer.fromYdoc(document)
-
-      await ctx.with('save-document', {}, (ctx) =>
+      const currMarkup = await ctx.with('save-document', {}, (ctx) =>
         adapter.saveDocument(ctx, documentName, document, context, {
-          prev: prevMarkup,
-          curr: currMarkup
+          prev: () => this.markups.get(documentName) ?? {},
+          curr: () => this.configuration.transformer.fromYdoc(document)
         })
       )
 
-      this.markups.set(documentName, currMarkup)
+      this.markups.set(documentName, currMarkup ?? {})
     } catch (err) {
       ctx.error('failed to save document', { documentName, error: err })
       throw new Error('Failed to save document')

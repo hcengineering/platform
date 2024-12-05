@@ -84,11 +84,11 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     documentName: string,
     document: YDoc,
     context: Context,
-    markup: {
-      prev: Record<string, string>
-      curr: Record<string, string>
+    getMarkup: {
+      prev: () => Record<string, string>
+      curr: () => Record<string, string>
     }
-  ): Promise<void> {
+  ): Promise<Record<string, string> | undefined> {
     const { clientFactory } = context
     const { documentId } = decodeDocumentId(documentName)
 
@@ -110,8 +110,8 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       }
 
       ctx.info('save document content to platform', { documentName })
-      await ctx.with('save-to-platform', {}, (ctx) => {
-        return this.saveDocumentToPlatform(ctx, client, documentName, markup)
+      return await ctx.with('save-to-platform', {}, (ctx) => {
+        return this.saveDocumentToPlatform(ctx, client, documentName, getMarkup)
       })
     } finally {
       await client.close()
@@ -122,25 +122,30 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     ctx: MeasureContext,
     client: Omit<TxOperations, 'close'>,
     documentName: string,
-    markup: {
-      prev: Record<string, string>
-      curr: Record<string, string>
+    getMarkup: {
+      prev: () => Record<string, string>
+      curr: () => Record<string, string>
     }
-  ): Promise<void> {
+  ): Promise<Record<string, string> | undefined> {
     const { documentId, workspaceId } = decodeDocumentId(documentName)
     const { objectAttr, objectClass, objectId } = documentId
+
+    const attribute = client.getHierarchy().findAttribute(objectClass, objectAttr)
+    if (attribute === undefined) {
+      ctx.warn('attribute not found', { documentName, objectClass, objectAttr })
+      return
+    }
+
+    const markup = {
+      prev: getMarkup.prev(),
+      curr: getMarkup.curr()
+    }
 
     const currMarkup = markup.curr[objectAttr]
     const prevMarkup = markup.prev[objectAttr]
 
     if (areEqualMarkups(currMarkup, prevMarkup)) {
       ctx.info('markup not changed, skip platform update', { documentName })
-      return
-    }
-
-    const attribute = client.getHierarchy().findAttribute(objectClass, objectAttr)
-    if (attribute === undefined) {
-      ctx.warn('attribute not found', { documentName, objectClass, objectAttr })
       return
     }
 
@@ -191,6 +196,8 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
         data
       )
     })
+
+    return markup.curr
   }
 }
 
