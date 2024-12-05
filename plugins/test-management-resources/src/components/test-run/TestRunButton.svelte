@@ -16,6 +16,7 @@
   import { DocumentQuery, Ref, Space } from '@hcengineering/core'
   import { Button } from '@hcengineering/ui'
   import type { TestProject, TestResult } from '@hcengineering/test-management'
+  import { selectionStore } from '@hcengineering/view-resources'
 
   import testManagement from '../../plugin'
   import { showTestRunnerPanel } from '../../utils'
@@ -26,9 +27,11 @@
   const project: Ref<TestProject> = space as any
 
   const handleRun = async (): Promise<void> => {
+    const selectedDocs = $selectionStore?.docs ?? []
     await showTestRunnerPanel({
       query,
-      space: project
+      space: project,
+      selectedDocs: selectedDocs.length > 0 ? (selectedDocs as TestResult[]) : undefined
     })
   }
 </script>

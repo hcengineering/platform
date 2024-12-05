@@ -28,10 +28,16 @@ export interface StoreAdapter<T extends Doc> {
   get: () => IteratorState<T>
 }
 
-export function getDefaultIteratorState<T extends Doc> (query: DocumentQuery<T>): IteratorState<T> {
+export interface IteratorParams<T extends Doc> {
+  docs?: T[]
+  query?: DocumentQuery<T>
+  options?: FindOptions<T> | undefined
+}
+
+export function getDefaultIteratorState<T extends Doc> (params: IteratorParams<T>): IteratorState<T> {
   return {
-    query,
-    currentObjects: [],
+    query: params.query ?? {},
+    currentObjects: params.docs ?? [],
     iteratorIndex: 0,
     limit: 100
   }
@@ -41,13 +47,13 @@ export class ObjectIterator<T extends Doc> {
   private readonly storeAdapter: StoreAdapter<T>
   private readonly class: Ref<Class<T>>
 
-  constructor (_class: Ref<Class<T>>, query: DocumentQuery<T>, storeAdapter: StoreAdapter<T>) {
+  constructor (_class: Ref<Class<T>>, storeAdapter: StoreAdapter<T>, params: IteratorParams<T>) {
     this.class = _class
     this.storeAdapter = storeAdapter
-    this.storeAdapter.set(getDefaultIteratorState<T>(query))
+    this.storeAdapter.set(getDefaultIteratorState<T>(params))
   }
 
-  async loadObjects (currentObject: Ref<Doc> | undefined, options?: FindOptions<T> | undefined): Promise<void> {
+  async loadObjects (options?: FindOptions<T> | undefined): Promise<void> {
     const client = getClient()
     const { query, limit } = this.storeAdapter.get()
     const testResults = await client.findAll(this.class, query, {
@@ -58,9 +64,6 @@ export class ObjectIterator<T extends Doc> {
     this.storeAdapter.update((store) => {
       store.currentObjects = [...store.currentObjects, ...testResults]
       store.limit = testResults.total
-      if (currentObject !== undefined) {
-        store.iteratorIndex = store.currentObjects.findIndex((obj) => obj._id === currentObject) ?? 0
-      }
       return store
     })
   }
@@ -88,15 +91,12 @@ export class ObjectIteratorProvider<T extends Doc> {
 
   constructor (private readonly storeAdapter: StoreAdapter<T>) {}
 
-  async initialize (
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    currentObject: Ref<Doc> | undefined,
-    options?: FindOptions<T> | undefined
-  ): Promise<void> {
+  async initialize (_class: Ref<Class<T>>, params: IteratorParams<T>): Promise<void> {
     if (this.objectIterator === undefined) {
-      this.objectIterator = new ObjectIterator(_class, query, this.storeAdapter)
-      await this.objectIterator.loadObjects(currentObject, options)
+      this.objectIterator = new ObjectIterator(_class, this.storeAdapter, params)
+      if (params.docs === undefined || params.docs.length === 0) {
+        await this.objectIterator.loadObjects(params.options)
+      }
     }
   }
 
