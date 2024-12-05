@@ -28,6 +28,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import IconEraser from './icons/Eraser.svelte'
   import IconMove from './icons/Move.svelte'
+  import IconText from './icons/Text.svelte'
   import { DrawingTool } from '../drawing'
   import presentation from '../plugin'
 
@@ -40,13 +41,15 @@
     color: 'drawingBoard.color',
     colors: 'drawingBoard.colors',
     penWidth: 'drawingBoard.penWidth',
-    eraserWidth: 'drawingBoard.eraserWidth'
+    eraserWidth: 'drawingBoard.eraserWidth',
+    fontSize: 'drawingBoard.fontSize'
   }
 
   export let tool: DrawingTool = 'pen'
   export let penColor: string
   export let penWidth: number
   export let eraserWidth: number
+  export let fontSize: number
   export let placeInside = false
   export let showPanTool = false
   export let toolbar: HTMLDivElement | undefined
@@ -130,8 +133,9 @@
     if (!penColors.includes(penColor)) {
       penColor = penColors[0] ?? defaultColor
     }
-    penWidth = parseInt(localStorage.getItem(storageKey.penWidth) ?? '6')
+    penWidth = parseInt(localStorage.getItem(storageKey.penWidth) ?? '4')
     eraserWidth = parseInt(localStorage.getItem(storageKey.eraserWidth) ?? '50')
+    fontSize = parseInt(localStorage.getItem(storageKey.fontSize) ?? '20')
   })
 
   function updatePenWidth (): void {
@@ -140,6 +144,10 @@
 
   function updateEraserWidth (): void {
     localStorage.setItem(storageKey.eraserWidth, eraserWidth.toString())
+  }
+
+  function updateFontSize (): void {
+    localStorage.setItem(storageKey.fontSize, fontSize.toString())
   }
 </script>
 
@@ -179,18 +187,26 @@
       }}
     />
   {/if}
+  <Button
+    icon={IconText}
+    kind="icon"
+    selected={tool === 'text'}
+    on:click={() => {
+      tool = 'text'
+    }}
+  />
   <div class="divider buttons-divider" />
   {#if tool === 'pen'}
     <input
       class="widthSelector"
       type="range"
       min={2}
-      max={18}
-      step={4}
+      max={20}
+      step={2}
       bind:value={penWidth}
       on:change={updatePenWidth}
     />
-  {:else}
+  {:else if tool === 'erase'}
     <input
       class="widthSelector"
       type="range"
@@ -200,6 +216,16 @@
       bind:value={eraserWidth}
       on:change={updateEraserWidth}
     />
+  {:else if tool === 'text'}
+    <input
+      class="widthSelector"
+      type="range"
+      min={15}
+      max={35}
+      step={5}
+      bind:value={fontSize}
+      on:change={updateFontSize}
+    />
   {/if}
   <div class="divider buttons-divider" />
   {#each penColors as color}
@@ -207,7 +233,9 @@
       kind="icon"
       selected={penColor === color}
       on:click={() => {
-        tool = 'pen'
+        if (tool === 'erase') {
+          tool = 'pen'
+        }
         selectColor(color)
       }}
     >
