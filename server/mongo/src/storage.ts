@@ -237,6 +237,13 @@ abstract class MongoAdapterBase implements DbAdapter {
         cursor = cursor.sort(sort)
       }
     }
+    if (options?.projection !== undefined) {
+      const projection: Projection<T> = {}
+      for (const key in options.projection ?? []) {
+        projection[key] = options.projection[key]
+      }
+      cursor = cursor.project(projection)
+    }
     return await cursor.toArray()
   }
 
