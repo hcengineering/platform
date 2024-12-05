@@ -629,7 +629,7 @@
       "name": "Debug Huly import",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "import", "/home/anna/xored/huly/platform/dev/import-tool/docs/huly/example-workspace", "-u", "user1", "-pw", "1234", "-ws", "ws12"],
+      "args": ["src/__start.ts", "import", "/home/anna/huly/platform/dev/import-tool/docs/huly/example-workspace", "-u", "user1", "-pw", "1234", "-ws", "ws1"],
       "env": {
         "FRONT_URL": "http://localhost:8087"
       },
