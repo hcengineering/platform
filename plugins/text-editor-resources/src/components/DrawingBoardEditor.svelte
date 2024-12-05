@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DrawingBoardToolbar, DrawingCmd, DrawingTool, drawing } from '@hcengineering/presentation'
+  import { DrawingBoardToolbar, DrawingCmd, DrawingTool, DrawTextCmd, drawing } from '@hcengineering/presentation'
   import { Loading } from '@hcengineering/ui'
   import { onMount, onDestroy } from 'svelte'
   import { Array as YArray, Map as YMap } from 'yjs'
@@ -31,24 +31,40 @@
   let penColor: string
   let penWidth: number
   let eraserWidth: number
-  let commandCount: number
+  let fontSize: number
   let commands: DrawingCmd[] = []
   let offset: { x: number, y: number }
+  let changingCmdIndex: number | undefined
   let toolbar: HTMLDivElement
+  let oldSelected = false
+
+  $: onSelectedChanged(selected)
 
   function listenSavedCommands (): void {
-    if (savedCmds.length === 0) {
-      commands = []
-    } else {
-      for (let i = commands.length; i < savedCmds.length; i++) {
-        commands.push(savedCmds.get(i))
-      }
-    }
-    commandCount = savedCmds.length
+    commands = savedCmds.toArray()
   }
 
   function listenSavedProps (): void {
     offset = savedProps.get('offset')
+  }
+
+  function showCommandProps (index: number): void {
+    changingCmdIndex = index
+    const anyCmd = commands[index]
+    if (anyCmd?.type === 'text') {
+      const cmd = anyCmd as DrawTextCmd
+      penColor = cmd.color
+      fontSize = cmd.fontSize
+    }
+  }
+
+  function onSelectedChanged (selected: boolean): void {
+    if (oldSelected !== selected) {
+      if (oldSelected && !selected && changingCmdIndex !== undefined) {
+        changingCmdIndex = undefined
+      }
+      oldSelected = selected
+    }
   }
 
   onMount(() => {
@@ -84,15 +100,30 @@
       use:drawing={{
         readonly,
         autoSize: true,
-        commandCount,
         commands,
         offset,
         tool,
         penColor,
         penWidth,
         eraserWidth,
+        fontSize,
+        changingCmdIndex,
         cmdAdded: (cmd) => {
           savedCmds.push([cmd])
+          changingCmdIndex = undefined
+        },
+        cmdChanging: showCommandProps,
+        cmdChanged: (index, cmd) => {
+          savedCmds.delete(index)
+          savedCmds.insert(index, [cmd])
+          changingCmdIndex = undefined
+        },
+        cmdUnchanged: () => {
+          changingCmdIndex = undefined
+        },
+        cmdDeleted: (index) => {
+          savedCmds.delete(index)
+          changingCmdIndex = undefined
         },
         panned: (offset) => {
           savedProps.set('offset', offset)
@@ -113,6 +144,7 @@
           bind:penColor
           bind:penWidth
           bind:eraserWidth
+          bind:fontSize
           on:clear={() => {
             savedCmds.delete(0, savedCmds.length)
             savedProps.set('offset', { x: 0, y: 0 })
