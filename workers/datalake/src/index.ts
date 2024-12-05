@@ -19,8 +19,15 @@ import { type IRequestStrict, type RequestHandler, Router, error, html } from 'i
 import { handleBlobDelete, handleBlobGet, handleBlobHead, handleUploadFormData } from './blob'
 import { cors } from './cors'
 import { handleImageGet } from './image'
+import { handleS3Blob } from './s3'
 import { handleVideoMetaGet } from './video'
 import { handleSignAbort, handleSignComplete, handleSignCreate } from './sign'
+import {
+  handleMultipartUploadStart,
+  handleMultipartUploadPart,
+  handleMultipartUploadComplete,
+  handleMultipartUploadAbort
+} from './multipart'
 import { type BlobRequest, type WorkspaceRequest } from './types'
 
 const { preflight, corsify } = cors({
@@ -64,6 +71,13 @@ router
   .post('/upload/signed-url/:workspace/:name', withBlob, handleSignCreate)
   .put('/upload/signed-url/:workspace/:name', withBlob, handleSignComplete)
   .delete('/upload/signed-url/:workspace/:name', withBlob, handleSignAbort)
+  // Multipart
+  .post('/upload/multipart/:workspace/:name', withBlob, handleMultipartUploadStart)
+  .post('/upload/multipart/:workspace/:name/part', withBlob, handleMultipartUploadPart)
+  .post('/upload/multipart/:workspace/:name/complete', withBlob, handleMultipartUploadComplete)
+  .post('/upload/multipart/:workspace/:name/abort', withBlob, handleMultipartUploadAbort)
+  // S3
+  .post('/upload/s3/:workspace/:name', withBlob, handleS3Blob)
   .all('/', () =>
     html(
       `Huly&reg; Datalake&trade; <a href="https://huly.io">https://huly.io</a>
