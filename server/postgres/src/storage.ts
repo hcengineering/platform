@@ -85,6 +85,7 @@ import {
   isDataField,
   isOwner,
   type JoinProps,
+  NumericTypes,
   parseDoc,
   parseDocWithProjection,
   parseUpdate,
@@ -920,7 +921,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
         continue
       }
       if (typeof val === 'number') {
-        res.push(`${this.getKey(_class, baseDomain, key, joins)} ${val === 1 ? 'ASC' : 'DESC'}`)
+        const attr = this.hierarchy.findAttribute(_class, key)
+        if (attr !== undefined && NumericTypes.includes(attr.type._class)) {
+          res.push(`(${this.getKey(_class, baseDomain, key, joins)})::numeric ${val === 1 ? 'ASC' : 'DESC'}`)
+        } else {
+          res.push(`${this.getKey(_class, baseDomain, key, joins)} ${val === 1 ? 'ASC' : 'DESC'}`)
+        }
       } else {
         // todo handle custom sorting
       }
