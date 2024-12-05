@@ -118,14 +118,14 @@ export default async () => {
                   reject(new Error(`Connection timeout, and no connection established to ${endpoint}`))
                 }
               }, connectTimeout)
-              newOpt.onConnect = (event) => {
+              newOpt.onConnect = async (event, data) => {
                 // Any event is fine, it means server is alive.
                 clearTimeout(connectTO)
                 resolve()
               }
             })
           }
-          const clientConnection = connect(url, upgradeHandler, tokenPayload.workspace, tokenPayload.email, newOpt)
+          const clientConnection = connect(url, upgradeHandler, tokenPayload.workspace, tokenPayload.email, opt)
           if (connectPromise !== undefined) {
             await connectPromise
           }
