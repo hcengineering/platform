@@ -84,6 +84,14 @@ select:-webkit-autofill:focus {
   background: transparent;
 }
 
+// Fix for iOS (disable zooming on input fields)
+@media screen and (-webkit-min-device-pixel-ratio: 0) and (max-width: 480px) { 
+  select,
+  textarea,
+  input,
+  div.ref-container div.select-text > div[contenteditable="true"] { font-size: 16px; }
+}
+
 table, caption, tbody, tfoot, thead, tr, th, td {
   margin: 0;
   padding: 0;
