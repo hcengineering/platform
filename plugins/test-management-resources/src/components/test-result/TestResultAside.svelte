@@ -15,7 +15,6 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
 
-  import activity from '@hcengineering/activity'
   import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
   import { getClient } from '@hcengineering/presentation'
   import { Doc, Mixin, WithLookup } from '@hcengineering/core'
@@ -23,7 +22,8 @@
   import { DocAttributeBar, getDocMixins } from '@hcengineering/view-resources'
 
   import testManagement from '../../plugin'
-  import { Component } from '@hcengineering/ui'
+  import { Label } from '@hcengineering/ui'
+  import RightHeader from './RightHeader.svelte'
 
   export let object: WithLookup<TestResult> | undefined
 
@@ -45,8 +45,10 @@
 
 {#if object}
   <DocAttributeBar {object} {mixins} ignoreKeys={['name']} />
-  <div class="space-divider" />
-  <div class="w-full mt-6">
+  <RightHeader>
+    <Label label={testManagement.string.Comments}/>
+  </RightHeader>
+  <div class="w-full mt-6 px-4">
     <AttachmentStyleBoxCollabEditor
       focusIndex={30}
       {object}
@@ -57,15 +59,4 @@
       boundary={content}
     />
   </div>
-  <div class="space-divider" />
-  <Component
-    is={activity.component.Activity}
-    props={{
-      object,
-      showCommenInput: true,
-      shouldScroll: false,
-      focusIndex: 1000,
-      boundary: content
-    }}
-  />
 {/if}

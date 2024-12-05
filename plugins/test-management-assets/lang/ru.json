@@ -81,6 +81,7 @@
     "GoToNextTest": "Следующий",
     "GoToNextTestTooltip": "Перейти к следующему тесту",
     "AllTests": "Все тесты",
-    "MyTests": "Мои тесты"
+    "MyTests": "Мои тесты",
+    "Comments": "Комментарии"
   }
 }

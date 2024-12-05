@@ -189,7 +189,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     GoToNextTest: '' as IntlString,
     GoToNextTestTooltip: '' as IntlString,
     AllTests: '' as IntlString,
-    MyTests: '' as IntlString
+    MyTests: '' as IntlString,
+    Comments: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>

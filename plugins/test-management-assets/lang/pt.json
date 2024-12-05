@@ -81,6 +81,7 @@
     "GoToNextTest": "Próximo",
     "GoToNextTestTooltip": "Ir para o próximo teste",
     "AllTests": "Todos os testes",
-    "MyTests": "Meus testes"
+    "MyTests": "Meus testes",
+    "Comments": "Comentários"
   }
 }
