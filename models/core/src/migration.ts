@@ -424,20 +424,6 @@ export const coreOperation: MigrateOperation = {
         }
       },
       {
-        state: 'remove-github-patches',
-        func: async (client) => {
-          await client.update(
-            DOMAIN_TX,
-            {
-              objectClass: 'tracker:class:Issue',
-              collection: 'pullRequests',
-              'tx.attributes.patch': { $exists: true }
-            },
-            { $unset: { 'tx.attributes.patch': 1 } }
-          )
-        }
-      },
-      {
         state: 'remove-collection-txes',
         func: async (client) => {
           let processed = 0
