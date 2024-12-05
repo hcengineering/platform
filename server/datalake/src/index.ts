@@ -24,8 +24,13 @@ import {
   type UploadedObjectInfo
 } from '@hcengineering/server-core'
 import { type Readable } from 'stream'
-import { type ObjectMetadata, Client } from './client'
+import { type ObjectMetadata, DatalakeClient } from './client'
 
+export { DatalakeClient }
+
+/**
+ * @public
+ */
 export interface DatalakeConfig extends StorageConfig {
   kind: 'datalake'
 }
@@ -33,13 +38,20 @@ export interface DatalakeConfig extends StorageConfig {
 /**
  * @public
  */
+export function createDatalakeClient (opt: DatalakeConfig): DatalakeClient {
+  const endpoint = Number.isInteger(opt.port) ? `${opt.endpoint}:${opt.port}` : opt.endpoint
+  return new DatalakeClient(endpoint)
+}
+
+/**
+ * @public
+ */
 export class DatalakeService implements StorageAdapter {
   static config = 'datalake'
-  private readonly client: Client
+  private readonly client: DatalakeClient
 
   constructor (readonly opt: DatalakeConfig) {
-    const endpoint = Number.isInteger(opt.port) ? `${opt.endpoint}:${opt.port}` : opt.endpoint
-    this.client = new Client(endpoint)
+    this.client = createDatalakeClient(opt)
   }
 
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
