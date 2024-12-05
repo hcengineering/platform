@@ -38,9 +38,9 @@ loadMetadata(testManagement.icon, {
   StatusRejected: `${icons}#status-canceled`,
   TestLibrary: `${icons}#test-library`,
   TestResult: `${icons}#testResult`,
-  StatusNonTested: `${icons}#status-draft`,
-  StatusBlocked: `${icons}#status-review-comments`,
-  StatusPassed: `${icons}#status-approved`,
-  StatusFailed: `${icons}#status-canceled`,
+  StatusNonTested: `${icons}#status-untested`,
+  StatusBlocked: `${icons}#status-blocked`,
+  StatusPassed: `${icons}#status-passed`,
+  StatusFailed: `${icons}#status-failed`,
   Run: `${icons}#run`
 })

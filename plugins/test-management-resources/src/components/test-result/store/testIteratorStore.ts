@@ -17,11 +17,11 @@ import { writable, get } from 'svelte/store'
 import {
   type IteratorState,
   type StoreAdapter,
+  type IteratorParams,
   ObjectIteratorProvider,
   getDefaultIteratorState
 } from '@hcengineering/view-resources'
 import testManagement, { type TestResult } from '@hcengineering/test-management'
-import type { DocumentQuery, Ref } from '@hcengineering/core'
 
 export const testIteratorStore = writable<IteratorState<TestResult>>(getDefaultIteratorState<TestResult>({}))
 
@@ -39,11 +39,8 @@ const adapter: StoreAdapter<TestResult> = {
 
 export const testResultIteratorProvider = new ObjectIteratorProvider<TestResult>(adapter)
 
-export async function initializeIterator (
-  query: DocumentQuery<TestResult>,
-  currentObject: Ref<TestResult> | undefined
-): Promise<void> {
-  await testResultIteratorProvider.initialize(testManagement.class.TestResult, query, currentObject)
+export async function initializeIterator (options: IteratorParams<TestResult>): Promise<void> {
+  await testResultIteratorProvider.initialize(testManagement.class.TestResult, options)
 }
 
 export function resetTestObjectIterator (): void {

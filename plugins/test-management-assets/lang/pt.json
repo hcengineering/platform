@@ -79,6 +79,9 @@
     "TestCaseDescription": "Descrição do caso de teste",
     "TestResultAttributes": "Resultado",
     "GoToNextTest": "Próximo",
-    "GoToNextTestTooltip": "Ir para o próximo teste"
+    "GoToNextTestTooltip": "Ir para o próximo teste",
+    "AllTests": "Todos os testes",
+    "MyTests": "Meus testes",
+    "Comments": "Comentários"
   }
 }

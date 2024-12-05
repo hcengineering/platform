@@ -64,6 +64,13 @@ export async function retryTxn (
   })
 }
 
+export const NumericTypes = [
+  core.class.TypeNumber,
+  core.class.TypeTimestamp,
+  core.class.TypeDate,
+  core.class.Collection
+]
+
 export async function createTables (client: postgres.Sql, domains: string[]): Promise<void> {
   const filtered = domains.filter((d) => !loadedDomains.has(d))
   if (filtered.length === 0) {
