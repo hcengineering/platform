@@ -212,7 +212,7 @@ export async function connect (title: string): Promise<Client | undefined> {
           })
         },
         // We need to refresh all active live queries and clear old queries.
-        onConnect: (event: ClientConnectEvent, data: any) => {
+        onConnect: async (event: ClientConnectEvent, data: any): Promise<void> => {
           console.log('WorkbenchClient: onConnect', event)
           if (event === ClientConnectEvent.Maintenance) {
             if (data != null && data.total !== 0) {

@@ -18,7 +18,7 @@ import config from './config'
 export async function createPlatformClient (
   workspace: string,
   timeout: number,
-  reconnect?: (event: ClientConnectEvent) => void
+  reconnect?: (event: ClientConnectEvent, data: any) => Promise<void>
 ): Promise<Client> {
   setMetadata(client.metadata.ClientSocketFactory, (url) => {
     return new WebSocket(url, {
