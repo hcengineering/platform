@@ -159,6 +159,7 @@ export async function tryMigrate (client: MigrationClient, plugin: string, migra
   for (const migration of migrations) {
     if (states.has(migration.state)) continue
     try {
+      console.log('running migration', plugin, migration.state)
       await migration.func(client)
     } catch (err: any) {
       console.error(err)

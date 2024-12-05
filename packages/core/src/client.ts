@@ -178,8 +178,8 @@ class ClientImpl implements AccountClient, BackupClient {
     await this.conn.close()
   }
 
-  async loadChunk (domain: Domain, idx?: number, recheck?: boolean): Promise<DocChunk> {
-    return await this.conn.loadChunk(domain, idx, recheck)
+  async loadChunk (domain: Domain, idx?: number): Promise<DocChunk> {
+    return await this.conn.loadChunk(domain, idx)
   }
 
   async closeChunk (idx: number): Promise<void> {

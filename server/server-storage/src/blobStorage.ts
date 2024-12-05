@@ -94,7 +94,7 @@ class StorageBlobAdapter implements DbAdapter {
 
   async close (): Promise<void> {}
 
-  find (ctx: MeasureContext, domain: Domain, recheck?: boolean): StorageIterator {
+  find (ctx: MeasureContext, domain: Domain): StorageIterator {
     return this.client.find(ctx, this.workspaceId)
   }
 

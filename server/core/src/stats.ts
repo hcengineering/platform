@@ -101,6 +101,15 @@ export function initStatisticsContext (
     let oldMetricsValue = ''
     const serviceId = encodeURIComponent(os.hostname() + '-' + serviceName)
 
+    const handleError = (err: any): void => {
+      errorToSend++
+      if (errorToSend % 2 === 0) {
+        if (err.code !== 'UND_ERR_SOCKET') {
+          console.error(err)
+        }
+      }
+    }
+
     const intTimer = setInterval(() => {
       try {
         if (metricsFile !== undefined || ops?.logConsole === true) {
@@ -138,18 +147,10 @@ export function initStatisticsContext (
               },
               body: statData
             }
-          ).catch((err) => {
-            errorToSend++
-            if (errorToSend % 2 === 0) {
-              console.error(err)
-            }
-          })
+          ).catch(handleError)
         }
       } catch (err: any) {
-        errorToSend++
-        if (errorToSend % 20 === 0) {
-          console.error(err)
-        }
+        handleError(err)
       }
     }, METRICS_UPDATE_INTERVAL)
 

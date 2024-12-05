@@ -62,8 +62,6 @@ import core, {
   type WorkspaceId
 } from '@hcengineering/core'
 import {
-  estimateDocSize,
-  toDocInfo,
   type DbAdapter,
   type DbAdapterHandler,
   type DomainHelperOperations,
@@ -86,8 +84,8 @@ import {
 } from 'mongodb'
 import { DBCollectionHelper, getMongoClient, getWorkspaceMongoDB, type MongoClientReference } from './utils'
 
-function translateDoc (doc: Doc): Doc {
-  return { ...doc, '%hash%': null } as any
+function translateDoc (doc: Doc, hash: string): Doc {
+  return { ...doc, '%hash%': hash } as any
 }
 
 function isLookupQuery<T extends Doc> (query: DocumentQuery<T>): boolean {
@@ -253,14 +251,14 @@ abstract class MongoAdapterBase implements DbAdapter {
     operations: DocumentUpdate<T>
   ): Promise<void> {
     if (isOperator(operations)) {
-      await this.db.collection(domain).updateMany(this.translateRawQuery(query), { $set: { '%hash%': null } })
+      await this.db.collection(domain).updateMany(this.translateRawQuery(query), { $set: { '%hash%': this.curHash() } })
       await this.db
         .collection(domain)
         .updateMany(this.translateRawQuery(query), { ...operations } as unknown as UpdateFilter<Document>)
     } else {
       await this.db
         .collection(domain)
-        .updateMany(this.translateRawQuery(query), { $set: { ...operations, '%hash%': null } })
+        .updateMany(this.translateRawQuery(query), { $set: { ...operations, '%hash%': this.curHash() } })
     }
   }
 
@@ -1023,66 +1021,57 @@ abstract class MongoAdapterBase implements DbAdapter {
     return docs
   }
 
-  find (_ctx: MeasureContext, domain: Domain, recheck?: boolean): StorageIterator {
+  curHash (): string {
+    return Date.now().toString(16) // Current hash value
+  }
+
+  strimSize (str: string): string {
+    const pos = str.indexOf('|')
+    if (pos > 0) {
+      return str.substring(0, pos)
+    }
+    return str
+  }
+
+  find (_ctx: MeasureContext, domain: Domain): StorageIterator {
     const ctx = _ctx.newChild('find', { domain })
     const coll = this.db.collection<Doc>(domain)
-    let mode: 'hashed' | 'non-hashed' = 'hashed'
     let iterator: FindCursor<Doc>
-    const bulkUpdate = new Map<Ref<Doc>, string>()
-    const flush = async (flush = false): Promise<void> => {
-      if (bulkUpdate.size > 1000 || flush) {
-        if (bulkUpdate.size > 0) {
-          await ctx.with('bulk-write-find', {}, () =>
-            coll.bulkWrite(
-              Array.from(bulkUpdate.entries()).map((it) => ({
-                updateOne: {
-                  filter: { _id: it[0], '%hash%': null },
-                  update: { $set: { '%hash%': it[1] } }
-                }
-              })),
-              { ordered: false }
-            )
-          )
-        }
-        bulkUpdate.clear()
-      }
-    }
 
     return {
       next: async () => {
         if (iterator === undefined) {
+          await coll.updateMany({ '%hash%': { $in: [null, ''] } }, { $set: { '%hash%': this.curHash() } })
+
           iterator = coll.find(
-            recheck === true ? {} : { '%hash%': { $nin: ['', null] } },
-            recheck === true
-              ? {}
-              : {
-                  projection: {
-                    '%hash%': 1,
-                    _id: 1
-                  }
-                }
+            {},
+            {
+              projection: {
+                '%hash%': 1,
+                _id: 1
+              }
+            }
           )
         }
-        let d = await ctx.with('next', { mode }, () => iterator.next())
-        if (d == null && mode === 'hashed' && recheck !== true) {
-          mode = 'non-hashed'
-          await iterator.close()
-          await flush(true) // We need to flush, so wrong id documents will be updated.
-          iterator = coll.find({ '%hash%': { $in: ['', null] } })
-          d = await ctx.with('next', { mode }, () => iterator.next())
-        }
+        const d = await ctx.with('next', {}, () => iterator.next())
         const result: DocInfo[] = []
         if (d != null) {
-          result.push(toDocInfo(d, bulkUpdate, recheck))
+          result.push({
+            id: d._id,
+            hash: this.strimSize((d as any)['%hash%'])
+          })
         }
         if (iterator.bufferedCount() > 0) {
-          result.push(...iterator.readBufferedDocuments().map((it) => toDocInfo(it, bulkUpdate, recheck)))
+          result.push(
+            ...iterator.readBufferedDocuments().map((it) => ({
+              id: it._id,
+              hash: this.strimSize((it as any)['%hash%'])
+            }))
+          )
         }
-        await ctx.with('flush', {}, () => flush())
         return result
       },
       close: async () => {
-        await ctx.with('flush', {}, () => flush(true))
         await ctx.with('close', {}, () => iterator.close())
         ctx.end()
       }
@@ -1104,7 +1093,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     return ctx.with('upload', { domain }, (ctx) => {
       const coll = this.collection(domain)
 
-      return uploadDocuments(ctx, docs, coll)
+      return uploadDocuments(ctx, docs, coll, this.curHash())
     })
   }
 
@@ -1137,7 +1126,7 @@ abstract class MongoAdapterBase implements DbAdapter {
                     updateOne: {
                       filter: { _id: it[0] },
                       update: {
-                        $set: { ...set, '%hash%': null },
+                        $set: { ...set, '%hash%': this.curHash() },
                         ...($unset !== undefined ? { $unset } : {})
                       }
                     }
@@ -1419,7 +1408,7 @@ class MongoAdapter extends MongoAdapterBase {
 
   protected txCreateDoc (bulk: OperationBulk, tx: TxCreateDoc<Doc>): void {
     const doc = TxProcessor.createDoc2Doc(tx)
-    bulk.add.push(translateDoc(doc))
+    bulk.add.push(translateDoc(doc, this.curHash()))
   }
 
   protected txUpdateDoc (bulk: OperationBulk, tx: TxUpdateDoc<Doc>): void {
@@ -1439,7 +1428,7 @@ class MongoAdapter extends MongoAdapterBase {
               update: {
                 $set: {
                   ...Object.fromEntries(Object.entries(desc.$update).map((it) => [arr + '.$.' + it[0], it[1]])),
-                  '%hash%': null
+                  '%hash%': this.curHash()
                 }
               }
             }
@@ -1451,7 +1440,7 @@ class MongoAdapter extends MongoAdapterBase {
                 $set: {
                   modifiedBy: tx.modifiedBy,
                   modifiedOn: tx.modifiedOn,
-                  '%hash%': null
+                  '%hash%': this.curHash()
                 }
               }
             }
@@ -1470,7 +1459,7 @@ class MongoAdapter extends MongoAdapterBase {
                 $set: {
                   modifiedBy: tx.modifiedBy,
                   modifiedOn: tx.modifiedOn,
-                  '%hash%': null
+                  '%hash%': this.curHash()
                 }
               } as unknown as UpdateFilter<Document>,
               { returnDocument: 'after', includeResultMetadata: true }
@@ -1488,7 +1477,7 @@ class MongoAdapter extends MongoAdapterBase {
                 $set: {
                   modifiedBy: tx.modifiedBy,
                   modifiedOn: tx.modifiedOn,
-                  '%hash%': null
+                  '%hash%': this.curHash()
                 }
               }
             }
@@ -1506,7 +1495,7 @@ class MongoAdapter extends MongoAdapterBase {
         ...tx.operations,
         modifiedBy: tx.modifiedBy,
         modifiedOn: tx.modifiedOn,
-        '%hash%': null
+        '%hash%': this.curHash()
       })) {
         ;(upd as any)[k] = v
       }
@@ -1552,8 +1541,9 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
             { domain: 'tx' },
             async () => {
               try {
+                const hash = this.curHash()
                 await this.txCollection().insertMany(
-                  baseTxes.map((it) => translateDoc(it)),
+                  baseTxes.map((it) => translateDoc(it, hash)),
                   {
                     ordered: false
                   }
@@ -1582,8 +1572,9 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
             { domain: DOMAIN_MODEL_TX },
             async () => {
               try {
+                const hash = this.curHash()
                 await this.db.collection<Doc>(DOMAIN_MODEL_TX).insertMany(
-                  modelTxes.map((it) => translateDoc(it)),
+                  modelTxes.map((it) => translateDoc(it, hash)),
                   {
                     ordered: false
                   }
@@ -1637,22 +1628,23 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   }
 }
 
-export async function uploadDocuments (ctx: MeasureContext, docs: Doc[], coll: Collection<Document>): Promise<void> {
+export async function uploadDocuments (
+  ctx: MeasureContext,
+  docs: Doc[],
+  coll: Collection<Document>,
+  curHash: string
+): Promise<void> {
   const ops = Array.from(docs)
 
   while (ops.length > 0) {
     const part = ops.splice(0, 500)
     await coll.bulkWrite(
       part.map((it) => {
-        const digest: string | null = (it as any)['%hash%']
-        if ('%hash%' in it) {
-          delete it['%hash%']
-        }
-        const size = digest != null ? estimateDocSize(it) : 0
+        const digest: string = (it as any)['%hash%'] ?? curHash
         return {
           replaceOne: {
             filter: { _id: it._id },
-            replacement: { ...it, '%hash%': digest == null ? null : `${digest}|${size.toString(16)}` },
+            replacement: { ...it, '%hash%': digest },
             upsert: true
           }
         }

@@ -263,10 +263,10 @@ export class ClientSession implements Session {
     return this.ops
   }
 
-  async loadChunk (ctx: ClientSessionCtx, domain: Domain, idx?: number, recheck?: boolean): Promise<void> {
+  async loadChunk (ctx: ClientSessionCtx, domain: Domain, idx?: number): Promise<void> {
     this.lastRequest = Date.now()
     try {
-      const result = await this.getOps().loadChunk(ctx.ctx, domain, idx, recheck)
+      const result = await this.getOps().loadChunk(ctx.ctx, domain, idx)
       await ctx.sendResponse(result)
     } catch (err: any) {
       await ctx.sendError('Failed to upload', unknownError(err))
@@ -326,7 +326,7 @@ export class ClientSession implements Session {
  * @public
  */
 export interface BackupSession extends Session {
-  loadChunk: (ctx: ClientSessionCtx, domain: Domain, idx?: number, recheck?: boolean) => Promise<void>
+  loadChunk: (ctx: ClientSessionCtx, domain: Domain, idx?: number) => Promise<void>
   closeChunk: (ctx: ClientSessionCtx, idx: number) => Promise<void>
   loadDocs: (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
 }

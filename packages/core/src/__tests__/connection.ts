@@ -60,7 +60,7 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
     },
     close: async () => {},
 
-    loadChunk: async (domain: Domain, idx?: number, recheck?: boolean) => ({
+    loadChunk: async (domain: Domain, idx?: number) => ({
       idx: -1,
       index: -1,
       docs: [],
