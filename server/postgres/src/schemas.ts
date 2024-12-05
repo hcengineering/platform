@@ -214,6 +214,7 @@ const eventSchema: Schema = {
 
 export function addSchema (domain: string, schema: Schema): void {
   domainSchemas[translateDomain(domain)] = schema
+  domainSchemaFields.set(domain, createSchemaFields(schema))
 }
 
 export function translateDomain (domain: string): string {
