@@ -13,109 +13,36 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DrawingBoardToolbar, DrawingCmd, DrawingTool, drawing } from '@hcengineering/presentation'
+  import { DrawingCmd } from '@hcengineering/presentation'
   import textEditor from '@hcengineering/text-editor'
   import { Dialog, FocusHandler, createFocusManager } from '@hcengineering/ui'
-  import { createEventDispatcher, onMount, onDestroy } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import { Array as YArray, Map as YMap } from 'yjs'
+  import DrawingBoardEditor from './DrawingBoardEditor.svelte'
 
   export let savedCmds: YArray<DrawingCmd>
   export let savedProps: YMap<any>
-  export let fullSize = false
 
   const manager = createFocusManager()
   const dispatch = createEventDispatcher()
 
-  let tool: DrawingTool
-  let penColor: string
-  let penWidth: number
-  let eraserWidth: number
-  let commandCount: number
-  let commands: DrawingCmd[] = []
-  let offset: { x: number, y: number }
-  let toolbar: HTMLDivElement
-
-  function listenSavedCommands (): void {
-    if (savedCmds.length === 0) {
-      commands = []
-    } else {
-      for (let i = commands.length; i < savedCmds.length; i++) {
-        commands.push(savedCmds.get(i))
-      }
-    }
-    commandCount = savedCmds.length
+  let dialog: Dialog
+  $: if (dialog !== undefined) {
+    dialog.maximize()
   }
-
-  function listenSavedProps (): void {
-    offset = savedProps.get('offset')
-  }
-
-  onMount(() => {
-    if (fullSize) {
-      dispatch('fullsize')
-    }
-
-    commands = savedCmds.toArray()
-    offset = savedProps.get('offset')
-    savedCmds.observe(listenSavedCommands)
-    savedProps.observe(listenSavedProps)
-  })
-
-  onDestroy(() => {
-    savedCmds.unobserve(listenSavedCommands)
-    savedProps.unobserve(listenSavedProps)
-  })
 </script>
 
 {#if savedCmds !== undefined && savedProps !== undefined}
   <FocusHandler {manager} />
   <Dialog
-    isFullSize
     label={textEditor.string.DrawingBoard}
     padding="0"
+    bind:this={dialog}
     on:fullsize
     on:close={() => {
       dispatch('close')
     }}
   >
-    <div
-      style:position="relative"
-      style:flex-grow="1"
-      use:drawing={{
-        readonly: false,
-        autoSize: true,
-        commandCount,
-        commands,
-        offset,
-        tool,
-        penColor,
-        penWidth,
-        eraserWidth,
-        cmdAdded: (cmd) => {
-          savedCmds.push([cmd])
-        },
-        panned: (offset) => {
-          savedProps.set('offset', offset)
-        }
-      }}
-    >
-      <!-- grab focus from the editor -->
-      <!-- svelte-ignore a11y-autofocus -->
-      <input style:opacity="0" autoFocus />
-
-      <DrawingBoardToolbar
-        placeInside={true}
-        showPanTool={true}
-        bind:toolbar
-        bind:tool
-        bind:penColor
-        bind:penWidth
-        bind:eraserWidth
-        on:clear={() => {
-          savedCmds.delete(0, savedCmds.length)
-          savedProps.set('offset', { x: 0, y: 0 })
-        }}
-      />
-    </div>
+    <DrawingBoardEditor {savedCmds} {savedProps} grabFocus />
   </Dialog>
 {/if}

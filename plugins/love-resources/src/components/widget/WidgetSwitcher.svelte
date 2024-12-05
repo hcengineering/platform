@@ -13,30 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Widget } from '@hcengineering/workbench'
-  import { Label, Component } from '@hcengineering/ui'
+  import type { Asset, IntlString } from '@hcengineering/platform'
+  import type { AnySvelteComponent } from '@hcengineering/ui'
+  import { AppItem } from '@hcengineering/workbench-resources'
+  import { isConnected, screenSharing } from '../../utils'
 
-  import AppItem from '../../AppItem.svelte'
-
-  export let widget: Widget
-  export let withLabel = false
-  export let highlighted = false
+  export let label: IntlString
+  export let icon: Asset | AnySvelteComponent
+  export let selected: boolean = false
+  export let size: 'small' | 'medium' | 'large' = 'small'
 </script>
 
-<div class="root">
-  <Component
-    is={widget.switcherComponent ?? AppItem}
-    props={{ label: widget.label, icon: widget.icon, selected: highlighted, size: 'small' }}
-    on:click
-  />
-  {#if withLabel}
-    <Label label={widget.label} />
-  {/if}
-</div>
-
-<style lang="scss">
-  .root {
-    display: flex;
-    align-items: center;
-  }
-</style>
+<AppItem
+  {label}
+  {icon}
+  {selected}
+  {size}
+  kind={$screenSharing && !selected ? 'negative' : $isConnected && !selected ? 'positive' : 'default'}
+  on:click
+/>

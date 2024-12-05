@@ -21,7 +21,7 @@
     "TestCase": "Testovací případ",
     "TestProject": "Projekt",
     "TestManagementApplication": "Správa testů",
-    "AllTestCases": "Všechny testovací případy",
+    "AllTestSuites": "Všechny testovací sady",
     "AllProjects": "Všechny projekty",
     "Projects": "Projekty",
     "CreateProject": "Vytvořit projekt",

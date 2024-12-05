@@ -93,7 +93,7 @@ function defineApplication (builder: Builder): void {
                     parentKey: 'parent',
                     noParentId: testManagement.ids.NoParent,
                     getFolderLink: testManagement.function.GetTestSuiteLink,
-                    allObjectsLabel: testManagement.string.AllTestCases,
+                    allObjectsLabel: testManagement.string.AllTestSuites,
                     allObjectsIcon: testManagement.icon.TestSuites
                   },
                   syncWithLocationQuery: true
@@ -335,20 +335,6 @@ function defineTestCase (builder: Builder): void {
     ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn', 'name']
   })
 
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: testManagement.class.TestCase,
-      descriptor: view.viewlet.Table,
-      config: ['', { key: 'attachedTo', label: testManagement.string.TestSuite }, 'status', 'assignee'],
-      configOptions: {
-        strict: true
-      }
-    },
-    testManagement.viewlet.TableTestCase
-  )
-
   const viewOptions: ViewOptionsModel = {
     groupBy: ['attachedTo'],
     orderBy: [
@@ -385,7 +371,6 @@ function defineTestCase (builder: Builder): void {
           props: { kind: 'list', size: 'small', shouldShowName: false },
           displayProps: { key: 'status', fixed: 'left' }
         },
-        { key: '', displayProps: { fixed: 'left', key: 'lead' } },
         { key: '', displayProps: { grow: true } },
         { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'right', dividerBefore: true } },
         {
@@ -397,6 +382,20 @@ function defineTestCase (builder: Builder): void {
       viewOptions
     },
     testManagement.viewlet.ListTestCase
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: testManagement.class.TestCase,
+      descriptor: view.viewlet.Table,
+      config: ['', { key: 'attachedTo', label: testManagement.string.TestSuite }, 'status', 'assignee'],
+      configOptions: {
+        strict: true
+      }
+    },
+    testManagement.viewlet.TableTestCase
   )
 }
 
@@ -493,6 +492,8 @@ function defineTestResult (builder: Builder): void {
           key: 'status',
           props: { kind: 'list', size: 'small', shouldShowName: false }
         },
+        { key: '', displayProps: { grow: true } },
+        { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'right', dividerBefore: true } },
         {
           key: 'assignee',
           props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' },

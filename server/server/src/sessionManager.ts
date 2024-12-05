@@ -17,6 +17,7 @@ import { Analytics } from '@hcengineering/analytics'
 import core, {
   TxFactory,
   WorkspaceEvent,
+  cutObjectArray,
   generateId,
   isWorkspaceCreating,
   systemAccountEmail,
@@ -249,7 +250,7 @@ class TSessionManager implements SessionManager {
                 sec,
                 wsId,
                 user: s[1].session.getUser(),
-                ...r.params
+                ...cutObjectArray(r.params)
               })
             }
           }

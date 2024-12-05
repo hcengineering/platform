@@ -11,6 +11,7 @@ import Settings from './components/Settings.svelte'
 import WorkbenchExtension from './components/WorkbenchExtension.svelte'
 import LoveWidget from './components/LoveWidget.svelte'
 import MeetingWidget from './components/widget/MeetingWidget.svelte'
+import WidgetSwitcher from './components/widget/WidgetSwitcher.svelte'
 import MeetingMinutesPresenter from './components/MeetingMinutesPresenter.svelte'
 import MeetingMinutesSection from './components/MeetingMinutesSection.svelte'
 import EditMeetingMinutes from './components/EditMeetingMinutes.svelte'
@@ -47,6 +48,7 @@ export default async (): Promise<Resources> => ({
     EditMeetingData,
     LoveWidget,
     MeetingWidget,
+    WidgetSwitcher,
     MeetingMinutesPresenter,
     MeetingMinutesSection,
     EditMeetingMinutes,
