@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
+  import { DocumentQuery, Ref, Space } from '@hcengineering/core'
   import { Button } from '@hcengineering/ui'
-  import type { TestProject } from '@hcengineering/test-management'
+  import type { TestProject, TestResult } from '@hcengineering/test-management'
 
   import testManagement from '../../plugin'
   import { showTestRunnerPanel } from '../../utils'
 
-  export let query: DocumentQuery<Doc> = {}
+  export let query: DocumentQuery<TestResult> = {}
   export let space: Ref<Space>
 
   const project: Ref<TestProject> = space as any

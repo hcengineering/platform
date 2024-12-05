@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import { IntlString } from '@hcengineering/platform'
-  import testManagement from '@hcengineering/test-management'
-  import { Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
+  import testManagement, { type TestResult } from '@hcengineering/test-management'
+  import { DocumentQuery, Ref, Space } from '@hcengineering/core'
 
   import TestResultModeSelector from './TestResultModeSelector.svelte'
   import TestRunButton from './TestRunButton.svelte'
 
-  export let query: DocumentQuery<Doc> = {}
+  export let query: DocumentQuery<TestResult> = {}
   export let space: Ref<Space>
 
   const modes: [string, IntlString, object][] = [

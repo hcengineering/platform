@@ -62,6 +62,7 @@
     isAside={true}
     isSub={false}
     adaptive={'default'}
+    withoutActivity={true}
     on:open
     on:close={() => dispatch('close')}
   >

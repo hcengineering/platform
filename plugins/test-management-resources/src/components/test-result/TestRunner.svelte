@@ -76,7 +76,7 @@
     <TestCaseDetails _id={object.testCase} object={testCase} _class={testManagement.class.TestCase} />
 
     <svelte:fragment slot="aside">
-      <TestResultAside {object} />
+      <TestResultAside {object} withoutActivity={true} />
     </svelte:fragment>
   </Panel>
 {/if}
