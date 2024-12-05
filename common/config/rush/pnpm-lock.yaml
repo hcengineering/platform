@@ -298,7 +298,7 @@ dependencies:
     version: file:projects/import-tool.tgz
   '@rush-temp/importer':
     specifier: file:./projects/importer.tgz
-    version: file:projects/importer.tgz
+    version: file:projects/importer.tgz(esbuild@0.20.1)(ts-node@10.9.2)
   '@rush-temp/inventory':
     specifier: file:./projects/inventory.tgz
     version: file:projects/inventory.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
@@ -1643,6 +1643,9 @@ dependencies:
   htmlparser2:
     specifier: ^9.0.0
     version: 9.1.0
+  image-size:
+    specifier: ^1.1.1
+    version: 1.1.1
   intl-messageformat:
     specifier: ^9.7.1
     version: 9.13.0
@@ -5243,6 +5246,10 @@ packages:
 
   /@remirror/core-constants@2.0.2:
     resolution: {integrity: sha512-dyHY+sMF0ihPus3O27ODd4+agdHMEmuRdyiZJ2CCWjPV5UFmn17ZbElvk6WOGVE4rdCJKZQCrPV2BcikOMLUGQ==}
+    dev: false
+
+  /@sec-ant/readable-stream@0.4.1:
+    resolution: {integrity: sha512-831qok9r2t8AlxLko40y2ebgSDhenenCatLVeW/uBtnHPyhHOvG0C7TvfgecV+wHzIm5KUICgzmVpWS+IMEAeg==}
     dev: false
 
   /@selderee/plugin-htmlparser2@0.11.0:
@@ -12479,6 +12486,16 @@ packages:
       token-types: 4.2.1
     dev: false
 
+  /file-type@19.6.0:
+    resolution: {integrity: sha512-VZR5I7k5wkD0HgFnMsq5hOsSc710MJMu5Nc5QYsbe38NN5iPV/XTObYLc/cpttRTf6lX538+5uO1ZQRhYibiZQ==}
+    engines: {node: '>=18'}
+    dependencies:
+      get-stream: 9.0.1
+      strtok3: 9.1.1
+      token-types: 6.0.0
+      uint8array-extras: 1.4.0
+    dev: false
+
   /filelist@1.0.4:
     resolution: {integrity: sha512-w1cEuf3S+DrLCQL7ET6kz+gmlJdbq9J7yXCSjK/OZCPA+qEN1WyF4ZAf0YYJa4/shHJra2t/d/r8SV4Ji+x+8Q==}
     dependencies:
@@ -12898,6 +12915,14 @@ packages:
   /get-stream@6.0.1:
     resolution: {integrity: sha512-ts6Wi+2j3jQjqi70w5AlN8DFnkSwC+MqmxEzdEALB2qXZYV3X/b1CTfgPLGJNMeAWxdPfU8FO1ms3NUfaHCPYg==}
     engines: {node: '>=10'}
+    dev: false
+
+  /get-stream@9.0.1:
+    resolution: {integrity: sha512-kVCxPF3vQM/N0B1PmoqVUqgHP+EeVjmZSQn+1oCRPxd2P21P2F19lIgbR3HBosbB1PUhOAoctJnfEn2GbN2eZA==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@sec-ant/readable-stream': 0.4.1
+      is-stream: 4.0.1
     dev: false
 
   /get-symbol-description@1.0.2:
@@ -13657,6 +13682,14 @@ packages:
       '@types/node': 16.9.1
     dev: false
 
+  /image-size@1.1.1:
+    resolution: {integrity: sha512-541xKlUw6jr/6gGuk92F+mYM5zaFAc5ahphvkqvNe2bQ6gVBkd6bfrmVJ2t4KDAfikAYZyIqTnktX3i6/aQDrQ==}
+    engines: {node: '>=16.x'}
+    hasBin: true
+    dependencies:
+      queue: 6.0.2
+    dev: false
+
   /immediate@3.0.6:
     resolution: {integrity: sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==}
     dev: false
@@ -14071,6 +14104,11 @@ packages:
   /is-stream@2.0.1:
     resolution: {integrity: sha512-hFoiJiTl63nn+kstHGBtewWSKnQLpyb155KHheA1l39uvtO9nWIop1p3udqPcUd/xbF1VLMO4n7OI6p7RbngDg==}
     engines: {node: '>=8'}
+    dev: false
+
+  /is-stream@4.0.1:
+    resolution: {integrity: sha512-Dnz92NInDqYckGEUJv689RbRiTSEHCQ7wOVeALbkOz999YpqT46yMRIGtSNl2iCL1waAZSx40+h59NV/EwzV/A==}
+    engines: {node: '>=18'}
     dev: false
 
   /is-string@1.0.7:
@@ -17238,6 +17276,11 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
+  /peek-readable@5.3.1:
+    resolution: {integrity: sha512-GVlENSDW6KHaXcd9zkZltB7tCLosKB/4Hg0fqBJkAoBgYG2Tn1xtMgXtSUuMU9AK/gCm/tTdT8mgAeF4YNeeqw==}
+    engines: {node: '>=14.16'}
+    dev: false
+
   /pend@1.2.0:
     resolution: {integrity: sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==}
     dev: false
@@ -18107,6 +18150,12 @@ packages:
   /queue-tick@1.0.1:
     resolution: {integrity: sha512-kJt5qhMxoszgU/62PLP1CJytzd2NKetjSRnyuj31fDd3Rlcz3fzlFdFLD1SItunPwyqEOkca6GbV612BWfaBag==}
     requiresBuild: true
+    dev: false
+
+  /queue@6.0.2:
+    resolution: {integrity: sha512-iHZWu+q3IdFZFX36ro/lKBkSvfkztY5Y7HMiPlOUjhupPcG2JMfst2KKEpu5XndviX/3UhFbRngUPNKtgvtZiA==}
+    dependencies:
+      inherits: 2.0.4
     dev: false
 
   /quick-format-unescaped@4.0.4:
@@ -19543,6 +19592,14 @@ packages:
       peek-readable: 4.1.0
     dev: false
 
+  /strtok3@9.1.1:
+    resolution: {integrity: sha512-FhwotcEqjr241ZbjFzjlIYg6c5/L/s4yBGWSMvJ9UoExiSqL+FnFA/CaeZx17WGaZMS/4SOZp8wH18jSS4R4lw==}
+    engines: {node: '>=16'}
+    dependencies:
+      '@tokenizer/token': 0.3.0
+      peek-readable: 5.3.1
+    dev: false
+
   /style-loader@3.3.4(webpack@5.97.1):
     resolution: {integrity: sha512-0WqXzrsMTyb8yjZJHDqwmnwRJvhALK9LfRtRc6B4UTWe8AijYLZYZ9thuJTZc2VfQWINADW/j+LiJnfy2RoC1w==}
     engines: {node: '>= 12.13.0'}
@@ -20095,6 +20152,14 @@ packages:
       ieee754: 1.2.1
     dev: false
 
+  /token-types@6.0.0:
+    resolution: {integrity: sha512-lbDrTLVsHhOMljPscd0yitpozq7Ga2M5Cvez5AjGg8GASBjtt6iERCAJ93yommPmz62fb45oFIXHEZ3u9bfJEA==}
+    engines: {node: '>=14.16'}
+    dependencies:
+      '@tokenizer/token': 0.3.0
+      ieee754: 1.2.1
+    dev: false
+
   /toposort@2.0.2:
     resolution: {integrity: sha512-0a5EOkAUp8D4moMi2W8ZF8jcga7BgZd91O/yabJCFY8az+XSzeGyTKs0Aoo897iV1Nj6guFq8orWDS96z91oGg==}
     dev: false
@@ -20620,6 +20685,11 @@ packages:
 
   /uid2@0.0.4:
     resolution: {integrity: sha512-IevTus0SbGwQzYh3+fRsAMTVVPOoIVufzacXcHPmdlle1jUpq7BRL+mw3dgeLanvGZdwwbWhRV6XrcFNdBmjWA==}
+    dev: false
+
+  /uint8array-extras@1.4.0:
+    resolution: {integrity: sha512-ZPtzy0hu4cZjv3z5NW9gfKnNLjoz4y6uv4HlelAjDK7sY/xOkKZv9xK/WQpcsBB3jEybChz9DPC2U/+cusjJVQ==}
+    engines: {node: '>=18'}
     dev: false
 
   /unbox-primitive@1.0.2:
@@ -21810,7 +21880,7 @@ packages:
     dev: false
 
   file:projects/account-service.tgz:
-    resolution: {integrity: sha512-Cyt9smf3yBf80n9zd8D77piZd9wnJIYLjzSJzSfcZLA+w4WPacwDMZEU9hN3Pf9aAIpeaaVpuZqXSvnOoBvv4A==, tarball: file:projects/account-service.tgz}
+    resolution: {integrity: sha512-Kxz4jt8+j+W4r7hgcpPq5D1wVL5G4AmpEWF6yxyUTR6+vxQERCTILfJo6wRbecPBvEPcFvA7Snogo8exY2YJQg==, tarball: file:projects/account-service.tgz}
     name: '@rush-temp/account-service'
     version: 0.0.0
     dependencies:
@@ -24721,7 +24791,7 @@ packages:
     dev: false
 
   file:projects/import-tool.tgz:
-    resolution: {integrity: sha512-+aINV0yg8OL4e+HL4NEtM879eZSQEDyUwuIKcRl2jtzlaGqoUnAoBx56ds3ynehouocaZxhUz+FuRsNA8j6YdQ==, tarball: file:projects/import-tool.tgz}
+    resolution: {integrity: sha512-Pkbjr/0XN1X7G8Gi6vwh0DjhRr8f0un2HSW2ef6ZMsIv2MyH8BgE2erUpXmzHETxSKsyJllAm6T1DmfSa26XIg==, tarball: file:projects/import-tool.tgz}
     name: '@rush-temp/import-tool'
     version: 0.0.0
     dependencies:
@@ -24768,8 +24838,9 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/importer.tgz:
-    resolution: {integrity: sha512-NPWdDMTZZVuM4tlCiUWR3m8XTpr0zD9iNzJBgZZ76JoXwu8Tvimw0CVVCQl2twn7UayHyBLgiJ1Gy5nZHbk2+w==, tarball: file:projects/importer.tgz}
+  file:projects/importer.tgz(esbuild@0.20.1)(ts-node@10.9.2):
+    resolution: {integrity: sha512-H8zT+HFFD2VV3Fo3ALiiDtd0VtXQZpWEfm10a5udm4D07Gv4DgxJOLl8uF4wNId//6UNKOp6/z517p8D/8velg==, tarball: file:projects/importer.tgz}
+    id: file:projects/importer.tgz
     name: '@rush-temp/importer'
     version: 0.0.0
     dependencies:
@@ -24781,31 +24852,29 @@ packages:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.6.2)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
       commander: 8.3.0
-      cross-env: 7.0.3
       csvtojson: 2.0.10
-      esbuild: 0.20.1
       eslint: 8.56.0
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.6.2)
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      file-type: 19.6.0
+      image-size: 1.1.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       js-yaml: 4.1.0
       mime-types: 2.1.35
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.6.2)
-      ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.6.2)
       typescript: 5.6.2
-      yjs: 13.6.19
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
-      - '@swc/core'
-      - '@swc/wasm'
       - babel-jest
       - babel-plugin-macros
+      - esbuild
       - node-notifier
       - supports-color
+      - ts-node
     dev: false
 
   file:projects/inventory-assets.tgz(esbuild@0.20.1)(ts-node@10.9.2):
@@ -31209,7 +31278,7 @@ packages:
     dev: false
 
   file:projects/server-tool.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-KrWvamRcvwO2YhpEiGjKBl2gVkkEkeF40fR5siXFNaDzrjNkdyPdAqSM//pGlaBSlzXA3PBG6Z8G8IfwgVEvXg==, tarball: file:projects/server-tool.tgz}
+    resolution: {integrity: sha512-FwqM3BepKqMKvnizEtaWgyv6YTuhwVDaJ4yPF+DEDLqHmxdeGC5u2Akj+sIdP0qtmSRQy9ts5NMwJw2SVNIetQ==, tarball: file:projects/server-tool.tgz}
     id: file:projects/server-tool.tgz
     name: '@rush-temp/server-tool'
     version: 0.0.0

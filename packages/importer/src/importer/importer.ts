@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import attachment, { type Attachment } from '@hcengineering/attachment'
+import attachment, { Drawing, type Attachment } from '@hcengineering/attachment'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import { type Person } from '@hcengineering/contact'
 import core, {
@@ -144,6 +144,17 @@ export interface ImportAttachment {
   parentId?: Ref<Doc>
   parentClass?: Ref<Class<Doc<Space>>>
   spaceId?: Ref<Space>
+  metadata?: ImportImageMetadata
+  drawings?: ImportDrawing[]
+}
+
+export interface ImportImageMetadata {
+  originalWidth: number
+  originalHeight: number
+}
+
+export interface ImportDrawing {
+  contentProvider: () => Promise<string>
 }
 
 export class WorkspaceImporter {
@@ -296,7 +307,7 @@ export class WorkspaceImporter {
     const lastRank = await getFirstRank(this.client, teamspaceId, parentId)
     const rank = makeRank(lastRank, undefined)
 
-    const attachedData: Data<Document> = {
+    const data: Data<Document> = {
       title: doc.title,
       content: contentId,
       parent: parentId,
@@ -308,7 +319,7 @@ export class WorkspaceImporter {
       rank
     }
 
-    await this.client.createDoc(document.class.Document, teamspaceId, attachedData, id)
+    await this.client.createDoc(document.class.Document, teamspaceId, data, id)
     return id
   }
 
@@ -600,10 +611,23 @@ export class WorkspaceImporter {
       return
     }
 
-    const file = new File([blob], attachment.title)
+    const file = new File([blob], attachment.title, { type: blob.type })
 
     try {
-      await this.createAttachment(attachment.id ?? generateId<Attachment>(), file, spaceId, parentId, parentClass)
+      const blobId = await this.createAttachment(
+        attachment.id ?? generateId<Attachment>(),
+        spaceId,
+        parentId,
+        parentClass,
+        file,
+        attachment.metadata
+      )
+
+      if (attachment.drawings !== undefined) {
+        for (const drawing of attachment.drawings) {
+          await this.createDrawing(blobId, drawing, spaceId)
+        }
+      }
     } catch {
       this.logger.error('Failed to upload attachment file: ', attachment.title)
     }
@@ -611,12 +635,12 @@ export class WorkspaceImporter {
 
   private async createAttachment (
     id: Ref<Attachment>,
-    file: File,
     spaceId: Ref<Space>,
     parentId: Ref<Doc>,
-    parentClass: Ref<Class<Doc<Space>>>
-  ): Promise<Ref<Attachment>> {
-    const attachmentId = generateId<Attachment>()
+    parentClass: Ref<Class<Doc<Space>>>,
+    file: File,
+    metadata?: ImportImageMetadata
+  ): Promise<Ref<PlatformBlob>> {
     const uploadResult = await this.fileUploader.uploadFile(id, file)
     if (!uploadResult.success) {
       throw new Error('Failed to upload attachment file: ' + file.name)
@@ -632,11 +656,27 @@ export class WorkspaceImporter {
         lastModified: Date.now(),
         name: file.name,
         size: file.size,
-        type: file.type
+        type: file.type,
+        metadata
       },
       id
     )
-    return attachmentId
+    return uploadResult.id
+  }
+
+  private async createDrawing (
+    blobId: Ref<PlatformBlob>,
+    drawing: ImportDrawing,
+    spaceId: Ref<Space>
+  ): Promise<Ref<Drawing>> {
+    const id = generateId<Drawing>()
+    const data: Data<Drawing> = {
+      parent: blobId,
+      parentClass: core.class.Blob,
+      content: await drawing.contentProvider()
+    }
+    await this.client.createDoc(attachment.class.Drawing, spaceId, data, id)
+    return id
   }
 
   // Collaborative content handling
