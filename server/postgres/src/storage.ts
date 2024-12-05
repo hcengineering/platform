@@ -393,7 +393,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
   async rawFindAll<T extends Doc>(_domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
     const domain = translateDomain(_domain)
-    const select = `SELECT * FROM ${domain}`
+    const select = `SELECT ${this.getProjection(domain, options?.projection, [])} FROM ${domain}`
     const sqlChunks: string[] = []
     sqlChunks.push(`WHERE ${this.buildRawQuery(domain, query, options)}`)
     if (options?.sort !== undefined) {
@@ -564,7 +564,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             toClass: undefined
           })
         }
-        const select = `SELECT ${this.getProjection(_class, domain, options?.projection, joins)} FROM ${domain}`
+        const select = `SELECT ${this.getProjection(domain, options?.projection, joins)} FROM ${domain}`
         const secJoin = this.addSecurity(query, domain, ctx.contextData)
         if (secJoin !== undefined) {
           sqlChunks.push(secJoin)
@@ -1232,7 +1232,6 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   private getProjection<T extends Doc>(
-    _class: Ref<Class<T>>,
     baseDomain: string,
     projection: Projection<T> | undefined,
     joins: JoinProps[]
