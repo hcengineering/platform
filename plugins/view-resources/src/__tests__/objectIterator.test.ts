@@ -49,7 +49,7 @@ describe('ObjectIterator', () => {
     const _class: Ref<Class<Doc>> = { id: 'class1' } as any
 
     // eslint-disable-next-line no-new
-    new ObjectIterator(_class, query, storeAdapter)
+    new ObjectIterator(_class, storeAdapter, { query })
     expect(storeAdapter.set).toHaveBeenCalledWith({
       query,
       currentObjects: [],
@@ -64,7 +64,7 @@ describe('ObjectIterator', () => {
     const query: DocumentQuery<Doc> = { key: 'value' }
     const _class: Ref<Class<Doc>> = { id: 'class1' } as any
 
-    const iterator = new ObjectIterator(_class, query, storeAdapter)
+    const iterator = new ObjectIterator(_class, storeAdapter, { query })
     await iterator.loadObjects(undefined)
 
     expect(findAll).toHaveBeenCalledWith(_class, query, {
@@ -81,7 +81,7 @@ describe('ObjectIterator', () => {
     mockObjects = [{ id: '1' }, { id: '2' }, { id: '3' }] as any
     const query: DocumentQuery<Doc> = { key: 'value' }
     const _class: Ref<Class<Doc>> = { id: 'class1' } as any
-    const iterator = new ObjectIterator(_class, query, storeAdapter)
+    const iterator = new ObjectIterator(_class, storeAdapter, { query })
     await iterator.loadObjects(undefined)
     let nextObject = iterator.next()
 
@@ -102,7 +102,7 @@ describe('ObjectIterator', () => {
     mockObjects = [] as any
     const query: DocumentQuery<Doc> = { key: 'value' }
     const _class: Ref<Class<Doc>> = { id: 'class1' } as any
-    const iterator = new ObjectIterator(_class, query, storeAdapter)
+    const iterator = new ObjectIterator(_class, storeAdapter, { query })
     await iterator.loadObjects(undefined)
     const nextObject = iterator.next()
 
@@ -114,10 +114,10 @@ describe('ObjectIterator', () => {
     const _class: Ref<Class<Doc>> = { id: 'class1' } as any
     const provider = new ObjectIteratorProvider(storeAdapter)
 
-    await provider.initialize(_class, query, undefined)
+    await provider.initialize(_class, { query })
     const firstIterator = provider.getIterator()
 
-    await provider.initialize(_class, query, undefined)
+    await provider.initialize(_class, { query })
     const secondIterator = provider.getIterator()
 
     expect(firstIterator).toBe(secondIterator)
@@ -129,7 +129,7 @@ describe('ObjectIterator', () => {
     const _class: Ref<Class<Doc>> = { id: 'class1' } as any
     const provider = new ObjectIteratorProvider(storeAdapter)
 
-    await provider.initialize(_class, query, undefined)
+    await provider.initialize(_class, { query })
     provider.reset()
 
     expect(storeAdapter.set).toHaveBeenCalledWith({

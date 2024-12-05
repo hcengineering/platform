@@ -187,7 +187,10 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestCaseDescription: '' as IntlString,
     TestResultAttributes: '' as IntlString,
     GoToNextTest: '' as IntlString,
-    GoToNextTestTooltip: '' as IntlString
+    GoToNextTestTooltip: '' as IntlString,
+    AllTests: '' as IntlString,
+    MyTests: '' as IntlString,
+    Comments: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>
@@ -206,11 +209,17 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestResultStatusPresenter: '' as AnyComponent,
     TestResultStatusEditor: '' as AnyComponent,
     TestRunResult: '' as AnyComponent,
-    TestResultHeader: '' as AnyComponent
+    TestResultHeader: '' as AnyComponent,
+    TestRunner: '' as AnyComponent
   },
   ids: {
     NoParent: '' as Ref<TestSuite>,
-    TestCaseUpdatedActivityViewlet: '' as Ref<TestCase>
+    TestCaseUpdatedActivityViewlet: '' as Ref<TestCase>,
+    NoTestRun: '' as Ref<TestRun>
+  },
+  mode: {
+    AllTests: '' as IntlString,
+    MyTests: '' as IntlString
   },
   spaceType: {
     TestCaseType: '' as Ref<SpaceType>,

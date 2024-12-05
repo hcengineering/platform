@@ -115,6 +115,7 @@ function defineApplication (builder: Builder): void {
                   navigationComponentIcon: testManagement.icon.TestRuns,
                   mainComponentLabel: testManagement.string.TestResults,
                   mainComponentIcon: testManagement.icon.TestResult,
+                  mainHeaderComponent: testManagement.component.TestRunHeader,
                   navigationComponentProps: {
                     _class: testManagement.class.TestRun,
                     icon: testManagement.icon.TestRuns,

@@ -13,15 +13,19 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import type { Doc, DocumentQuery, Ref } from '@hcengineering/core'
-import { showPopup } from '@hcengineering/ui'
-import { type TestProject, type TestCase, type TestSuite } from '@hcengineering/test-management'
+import { showPopup, showPanel } from '@hcengineering/ui'
+import { type TestProject, type TestCase, type TestSuite, type TestResult } from '@hcengineering/test-management'
+import testManagement from '@hcengineering/test-management'
 
 import CreateTestSuiteComponent from './components/test-suite/CreateTestSuite.svelte'
 import EditTestSuiteComponent from './components/test-suite/EditTestSuite.svelte'
 import CreateTestCase from './components/test-case/CreateTestCase.svelte'
 import CreateProject from './components/project/CreateProject.svelte'
 import CreateTestRun from './components/test-run/CreateTestRun.svelte'
+import { getTestRunIdFromLocation } from './navigation'
+import { initializeIterator } from './components/test-result/store/testIteratorStore'
 
 export async function showCreateTestSuitePopup (
   space: Ref<TestProject> | undefined,
@@ -48,6 +52,30 @@ export async function showCreateTestRunPopup (options: {
   space: Ref<TestProject>
 }): Promise<void> {
   showPopup(CreateTestRun, options, 'top')
+}
+
+export async function showTestRunnerPanel (options: {
+  query?: DocumentQuery<TestResult>
+  space: Ref<TestProject>
+  selectedDocs?: TestResult[]
+}): Promise<void> {
+  try {
+    const { query, space, selectedDocs } = options
+    await initializeIterator({
+      query: { ...query, space },
+      options: {
+        lookup: {
+          testCase: testManagement.class.TestCase
+        }
+      },
+      docs: selectedDocs
+    })
+    const testRunId = getTestRunIdFromLocation()
+    showPanel(testManagement.component.TestRunner, testRunId, testManagement.class.TestRun, 'content')
+  } catch (err: any) {
+    Analytics.handleError(err)
+    console.error('Failed to initialize test runner', err)
+  }
 }
 
 export async function CreateChildTestSuiteAction (doc: TestSuite): Promise<void> {
