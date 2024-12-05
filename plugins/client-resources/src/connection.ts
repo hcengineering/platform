@@ -101,6 +101,8 @@ class Connection implements ClientConnection {
 
   private helloRecieved: boolean = false
 
+  onConnect?: (event: ClientConnectEvent, data: any) => Promise<void>
+
   rpcHandler = new RPCHandler()
 
   constructor (
@@ -129,6 +131,8 @@ class Connection implements ClientConnection {
     } else {
       this.sessionId = generateId()
     }
+
+    this.onConnect = opt?.onConnect
 
     this.scheduleOpen(this.ctx, false)
   }
@@ -261,7 +265,7 @@ class Connection implements ClientConnection {
     if (resp.id === -1) {
       this.delay = 0
       if (resp.result?.state === 'upgrading') {
-        void this.opt?.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
+        void this.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
         this.upgrading = true
         this.delay = 3
         return
@@ -302,7 +306,7 @@ class Connection implements ClientConnection {
           v.reconnect?.()
         }
 
-        void this.opt?.onConnect?.(
+        void this.onConnect?.(
           (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected,
           this.sessionId
         )
