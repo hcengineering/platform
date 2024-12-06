@@ -83,6 +83,7 @@
   import { LeftMenuExtension } from './extension/leftMenu'
   import { type FileAttachFunction } from './extension/types'
   import { completionConfig, inlineCommandsConfig } from './extensions'
+  import { MermaidExtension, mermaidOptions } from './extension/mermaid'
 
   export let object: Doc
   export let attribute: KeyedAttribute
@@ -279,7 +280,8 @@
           { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
           { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
           { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList },
-          { id: 'drawing-board', label: textEditor.string.DrawingBoard, icon: IconScribble as any }
+          { id: 'drawing-board', label: textEditor.string.DrawingBoard, icon: IconScribble as any },
+          { id: 'mermaid', label: textEditor.string.MermaidDiargram, icon: view.icon.Model }
         ],
         handleSelect: handleLeftMenuClick
       })
@@ -375,6 +377,9 @@
       case 'drawing-board':
         editor.commands.insertContentAt(pos, { type: 'drawingBoard', attrs: { id: generateId() } })
         break
+      case 'mermaid':
+        editor.commands.insertContentAt(pos, { type: 'mermaid' })
+        break
     }
   }
 
@@ -466,6 +471,7 @@
           }
         }),
         EmojiExtension,
+        MermaidExtension.configure({ ...mermaidOptions, ydoc, ydocContentField: field }),
         DrawingBoardExtension.configure({ getSavedBoard }),
         ...extensions
       ],
