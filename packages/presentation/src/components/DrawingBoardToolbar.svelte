@@ -155,6 +155,7 @@
   <Button
     icon={IconDelete}
     kind="icon"
+    noFocus
     on:click={() => {
       tool = 'pen'
       dispatch('clear')
@@ -164,6 +165,7 @@
   <Button
     icon={IconEdit}
     kind="icon"
+    noFocus
     selected={tool === 'pen'}
     on:click={() => {
       tool = 'pen'
@@ -172,6 +174,7 @@
   <Button
     icon={IconEraser}
     kind="icon"
+    noFocus
     selected={tool === 'erase'}
     on:click={() => {
       tool = 'erase'
@@ -181,6 +184,7 @@
     <Button
       icon={IconMove}
       kind="icon"
+      noFocus
       selected={tool === 'pan'}
       on:click={() => {
         tool = 'pan'
@@ -190,6 +194,7 @@
   <Button
     icon={IconText}
     kind="icon"
+    noFocus
     selected={tool === 'text'}
     on:click={() => {
       tool = 'text'
@@ -231,6 +236,7 @@
   {#each penColors as color}
     <Button
       kind="icon"
+      noFocus
       selected={penColor === color}
       on:click={() => {
         if (tool === 'erase') {
@@ -250,7 +256,7 @@
       bind:value={penColor}
       on:change={addColorPreset}
     />
-    <Button kind="icon" icon={IconMoreH} on:click={showMenu} />
+    <Button kind="icon" icon={IconMoreH} noFocus on:click={showMenu} />
   </div>
 </div>
 
@@ -270,7 +276,7 @@
       border-radius: var(--small-BorderRadius);
       border: 1px solid var(--theme-popup-divider);
       box-shadow: 0.05rem 0.05rem 0.25rem rgba(0, 0, 0, 0.2);
-      z-index: 1;
+      z-index: 10;
     }
   }
 

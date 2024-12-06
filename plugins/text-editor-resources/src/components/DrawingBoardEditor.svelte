@@ -33,7 +33,7 @@
   let eraserWidth: number
   let fontSize: number
   let commands: DrawingCmd[] = []
-  let offset: { x: number, y: number }
+  let offset: { x: number, y: number } = { x: 0, y: 0 }
   let changingCmdIndex: number | undefined
   let toolbar: HTMLDivElement
   let oldSelected = false
@@ -45,7 +45,9 @@
   }
 
   function listenSavedProps (): void {
-    offset = savedProps.get('offset')
+    // We have only local offset for now
+    // A global offset should be implemented as a "Follow" feature
+    // offset = savedProps.get('offset')
   }
 
   function showCommandProps (index: number): void {
@@ -69,7 +71,7 @@
 
   onMount(() => {
     commands = savedCmds.toArray()
-    offset = savedProps.get('offset')
+    // offset = savedProps.get('offset')
     savedCmds.observe(listenSavedCommands)
     savedProps.observe(listenSavedProps)
   })
@@ -125,8 +127,9 @@
           savedCmds.delete(index)
           changingCmdIndex = undefined
         },
-        panned: (offset) => {
-          savedProps.set('offset', offset)
+        panned: (newOffset) => {
+          offset = newOffset
+          // savedProps.set('offset', offset)
         }
       }}
     >
@@ -147,7 +150,8 @@
           bind:fontSize
           on:clear={() => {
             savedCmds.delete(0, savedCmds.length)
-            savedProps.set('offset', { x: 0, y: 0 })
+            offset = { x: 0, y: 0 }
+            // savedProps.set('offset', { x: 0, y: 0 })
           }}
         />
       {/if}
