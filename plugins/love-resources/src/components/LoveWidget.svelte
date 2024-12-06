@@ -13,74 +13,78 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Floor, Room } from '@hcengineering/love'
-  import { Ref } from '@hcengineering/core'
-  import ui, { IconChevronLeft, ModernButton, Scroller } from '@hcengineering/ui'
+  import { AccountRole, getCurrentAccount, hasAccountRole, Ref } from '@hcengineering/core'
+  import love, { Floor, Room } from '@hcengineering/love'
+  import { Breadcrumbs, ButtonIcon, eventToHTMLElement, Header, IconAdd, Scroller, showPopup } from '@hcengineering/ui'
+  import { floors, rooms, selectedFloor } from '../stores'
   import FloorPreview from './FloorPreview.svelte'
-  import { floors, rooms } from '../stores'
-  import IconLayers from './icons/Layers.svelte'
-  import love from '../plugin'
+  import EditFloorPopup from './EditFloorPopup.svelte'
 
-  let selectedFloor: Floor | undefined
-  let floorsSelector: boolean = false
+  let configure: boolean
 
-  $: if (selectedFloor === undefined && $floors.length > 0) {
-    selectedFloor = $floors[0]
+  const me = getCurrentAccount()
+  let floor: Floor | undefined
+
+  $: if (floor === undefined && $floors.length > 0) {
+    floor = $floors[0]
   }
 
   function getRooms (rooms: Room[], floor: Ref<Floor>): Room[] {
     return rooms.filter((p) => p.floor === floor)
   }
 
-  function changeMode (): void {
-    floorsSelector = !floorsSelector
+  function addFloor (e: MouseEvent): void {
+    showPopup(EditFloorPopup, {}, eventToHTMLElement(e))
   }
 
-  function selectFloor (_id: Ref<Floor>): void {
-    selectedFloor = $floors.find((p) => p._id === _id)
-    floorsSelector = false
-  }
+  let editable: boolean = false
+  $: editable = hasAccountRole(me, AccountRole.Maintainer)
 </script>
 
+<Header
+  allowFullsize={false}
+  type="type-aside"
+  hideBefore={true}
+  hideActions={false}
+  hideDescription={true}
+  adaptive="disabled"
+  closeOnEscape={false}
+  on:close
+>
+  <Breadcrumbs items={[{ label: love.string.Office }]} currentOnly />
+  <svelte:fragment slot="extra">
+    {#if editable}
+      <ButtonIcon icon={IconAdd} kind={'primary'} size={'small'} on:click={addFloor} />
+    {/if}
+  </svelte:fragment>
+</Header>
 <div class="hulyModal-container noTopIndent type-aside">
   <div class="hulyModal-content">
     <Scroller>
-      {#if floorsSelector}
-        {#each $floors as _floor}
-          <FloorPreview
-            showRoomName
-            floor={_floor}
-            rooms={getRooms($rooms, _floor._id)}
-            selected={selectedFloor?._id === _floor._id}
-            kind={'no-border'}
-            background={'var(--theme-panel-color)'}
-            on:select={() => {
-              selectFloor(_floor._id)
-            }}
-          />
-        {/each}
-      {:else if selectedFloor}
+      {#each $floors as _floor}
         <FloorPreview
-          floor={selectedFloor}
           showRoomName
-          rooms={getRooms($rooms, selectedFloor._id)}
-          selected
-          isOpen
-          disabled
-          cropped
-          kind={'no-border'}
-          background={'var(--theme-panel-color)'}
+          floor={_floor}
+          configurable
+          configure={configure && floor?._id === _floor._id}
+          rooms={getRooms($rooms, _floor._id)}
+          selected={floor?._id === _floor._id}
+          background={'var(--theme-navpanel-color)'}
+          on:configure={() => {
+            if (floor?._id === _floor._id) {
+              configure = !configure
+            } else {
+              selectedFloor.set(_floor?._id)
+              floor = _floor
+              configure = true
+            }
+          }}
+          on:select={() => {
+            selectedFloor.set(_floor?._id)
+            floor = _floor
+          }}
         />
-      {/if}
+      {/each}
     </Scroller>
   </div>
-  {#if floorsSelector || $floors.length > 1}
-    <div class="hulyModal-footer">
-      <ModernButton
-        on:click={changeMode}
-        icon={floorsSelector ? IconChevronLeft : IconLayers}
-        label={floorsSelector ? ui.string.Back : love.string.ChangeFloor}
-      />
-    </div>
-  {/if}
 </div>
