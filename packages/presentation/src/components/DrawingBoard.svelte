@@ -16,7 +16,7 @@
   import { Analytics } from '@hcengineering/analytics'
   import { resizeObserver } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
-  import { drawing, type DrawingCmd, type DrawingData, type DrawingTool } from '../drawing'
+  import { drawing, type DrawingCmd, type DrawingData, type DrawingTool, type DrawTextCmd } from '../drawing'
   import DrawingBoardToolbar from './DrawingBoardToolbar.svelte'
 
   export let active = false
@@ -30,6 +30,7 @@
   let penColor: string
   let penWidth: number
   let eraserWidth: number
+  let fontSize: number
   let commands: DrawingCmd[] | undefined
   let board: HTMLDivElement
   let toolbar: HTMLDivElement
@@ -37,6 +38,7 @@
   let oldReadonly: boolean
   let oldDrawings: DrawingData[]
   let modified = false
+  let changingCmdIndex: number | undefined
 
   $: updateToolbarPosition(readonly, board, toolbar)
   $: updateEditableState(drawings, readonly)
@@ -68,6 +70,7 @@
       } else {
         commands = undefined
       }
+      changingCmdIndex = undefined
       oldDrawings = drawings
       oldReadonly = readonly
     }
@@ -99,6 +102,40 @@
     }
   }
 
+  function addCommand (cmd: DrawingCmd): void {
+    if (commands !== undefined) {
+      commands = [...commands, cmd]
+      changingCmdIndex = undefined
+      modified = true
+    }
+  }
+
+  function showCommandProps (index: number): void {
+    changingCmdIndex = index
+    const anyCmd = commands?.[index]
+    if (anyCmd?.type === 'text') {
+      const cmd = anyCmd as DrawTextCmd
+      penColor = cmd.color
+      fontSize = cmd.fontSize
+    }
+  }
+
+  function changeCommand (index: number, cmd: DrawingCmd): void {
+    if (commands !== undefined) {
+      commands = commands.map((c, i) => (i === index ? cmd : c))
+      changingCmdIndex = undefined
+      modified = true
+    }
+  }
+
+  function deleteCommand (index: number): void {
+    if (commands !== undefined) {
+      commands = commands.filter((_, i) => i !== index)
+      changingCmdIndex = undefined
+      modified = true
+    }
+  }
+
   onDestroy(() => {
     saveDrawing()
   })
@@ -121,9 +158,15 @@
       penColor,
       penWidth,
       eraserWidth,
-      cmdAdded: () => {
-        modified = true
-      }
+      fontSize,
+      changingCmdIndex,
+      cmdAdded: addCommand,
+      cmdChanging: showCommandProps,
+      cmdChanged: changeCommand,
+      cmdUnchanged: () => {
+        changingCmdIndex = undefined
+      },
+      cmdDeleted: deleteCommand
     }}
   >
     {#if !readonly}
@@ -134,6 +177,7 @@
         bind:penColor
         bind:penWidth
         bind:eraserWidth
+        bind:fontSize
         on:clear={() => {
           commands = []
           modified = true
