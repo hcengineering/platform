@@ -304,9 +304,9 @@ export function convertDoc<T extends Doc> (
 
   // Check if some fields are missing
   for (const [key, _type] of Object.entries(schemaAndFields.schema)) {
-    if (!(key in doc)) {
-      // We missing required field, and we need to add a dummy value for it.
-      if (_type.notNull) {
+    if (_type.notNull) {
+      if (!(key in doc) || (doc as any)[key] == null) {
+        // We missing required field, and we need to add a dummy value for it.
         // Null value is not allowed
         switch (_type.type) {
           case 'bigint':

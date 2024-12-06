@@ -12,7 +12,6 @@ import core, {
   type Class,
   type Client,
   type Doc,
-  type DocInfo,
   type MeasureContext,
   type ModelDb,
   type Ref,
@@ -21,7 +20,7 @@ import core, {
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
-import { createHash, type Hash } from 'crypto'
+import { type Hash } from 'crypto'
 import fs from 'fs'
 import { BackupClientOps } from './storage'
 import type { Pipeline } from './types'
@@ -86,7 +85,7 @@ export function estimateDocSize (_obj: any): number {
   return result
 }
 /**
- * Return some estimation for object size
+ * Calculate hash for object
  */
 export function updateHashForDoc (hash: Hash, _obj: any): void {
   const toProcess = [_obj]
@@ -98,7 +97,9 @@ export function updateHashForDoc (hash: Hash, _obj: any): void {
     if (typeof obj === 'function') {
       continue
     }
-    for (const key in obj) {
+    const keys = Object.keys(obj).sort()
+    // We need sorted list of keys to make it consistent
+    for (const key of keys) {
       // include prototype properties
       const value = obj[key]
       const type = getTypeOf(value)
@@ -220,38 +221,6 @@ export function loadBrandingMap (brandingPath?: string): BrandingMap {
   return brandings
 }
 
-export function toDocInfo (d: Doc, bulkUpdate: Map<Ref<Doc>, string>, recheck?: boolean): DocInfo {
-  let digest: string | null = (d as any)['%hash%']
-  if ('%hash%' in d) {
-    delete d['%hash%']
-  }
-  const pos = (digest ?? '').indexOf('|')
-  const oldDigest = digest
-  if (digest == null || digest === '' || recheck === true) {
-    const size = estimateDocSize(d)
-
-    const hash = createHash('sha256')
-    updateHashForDoc(hash, d)
-    digest = hash.digest('base64')
-    const newDigest = `${digest}|${size.toString(16)}`
-
-    if (recheck !== true || oldDigest !== newDigest) {
-      bulkUpdate.set(d._id, `${digest}|${size.toString(16)}`)
-    }
-    return {
-      id: d._id,
-      hash: digest,
-      size
-    }
-  } else {
-    return {
-      id: d._id,
-      hash: pos >= 0 ? digest.slice(0, pos) : digest,
-      size: pos >= 0 ? parseInt(digest.slice(pos + 1), 16) : 0
-    }
-  }
-}
-
 export function wrapPipeline (
   ctx: MeasureContext,
   pipeline: Pipeline,
@@ -284,7 +253,7 @@ export function wrapPipeline (
     closeChunk: (idx) => backupOps.closeChunk(ctx, idx),
     getHierarchy: () => pipeline.context.hierarchy,
     getModel: () => pipeline.context.modelDb,
-    loadChunk: (domain, idx, recheck) => backupOps.loadChunk(ctx, domain, idx, recheck),
+    loadChunk: (domain, idx) => backupOps.loadChunk(ctx, domain, idx),
     loadDocs: (domain, docs) => backupOps.loadDocs(ctx, domain, docs),
     upload: (domain, docs) => backupOps.upload(ctx, domain, docs),
     searchFulltext: async (query, options) => ({ docs: [], total: 0 }),
