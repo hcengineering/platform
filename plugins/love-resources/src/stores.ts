@@ -34,6 +34,7 @@ export const currentRoom = derived([rooms, myInfo], ([rooms, myInfo]) => {
   return myInfo !== undefined ? rooms.find((p) => p._id === myInfo.room) : undefined
 })
 export const floors = writable<Floor[]>([])
+export const selectedFloor = writable<Ref<Floor> | undefined>(undefined)
 export const activeFloor = derived([rooms, myInfo, myOffice], ([rooms, myInfo, myOffice]) => {
   let res: Ref<Floor> | undefined
   if (myInfo !== undefined) {
