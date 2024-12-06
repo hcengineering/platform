@@ -85,6 +85,6 @@
     "y-indexeddb": "^9.0.12",
     "lowlight": "^3.1.0",
     "mermaid": "~11.4.1",
-    "@hcengineering/theme": "~0.6.5"
+    "@hcengineering/theme": "^0.6.5"
   }
 }
