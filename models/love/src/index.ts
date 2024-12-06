@@ -275,8 +275,7 @@ export function createModel (builder: Builder): void {
       label: love.string.Office,
       type: WidgetType.Fixed,
       icon: love.icon.Love,
-      component: love.component.LoveWidget,
-      headerLabel: love.string.Office
+      component: love.component.LoveWidget
     },
     love.ids.LoveWidget
   )
