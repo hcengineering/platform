@@ -8,7 +8,7 @@
     "build:watch": "tsc",
     "_phase:package": "rushx package",
     "_phase:validate": "compile validate",
-    "package": "rushx bump && cross-env MODEL_VERSION=$(node ../common/scripts/show_version.js) VERSION=$(node ../common/scripts/show_tag.js) NODE_ENV=production webpack --stats-error-details && echo 'done'",
+    "package": "rushx bump && cross-env MODEL_VERSION=$(node ../common/scripts/show_version.js) VERSION=$(node ../common/scripts/show_tag.js) NODE_ENV=production NODE_OPTIONS='--max-old-space-size=4094' webpack --stats-error-details && echo 'done'",
     "webpack": "cross-env MODEL_VERSION=$(node ../common/scripts/show_version.js) VERSION=$(node ../common/scripts/show_tag.js) NODE_ENV=development webpack --stats-error-details --progress -w",
     "devp": "cross-env MODEL_VERSION=$(node ../common/scripts/show_version.js) VERSION=$(node ../common/scripts/show_tag.js) NODE_ENV=production CLIENT_TYPE=dev webpack --progress -w",
     "dev": "cross-env MODEL_VERSION=$(node ../common/scripts/show_version.js) VERSION=$(node ../common/scripts/show_tag.js) NODE_ENV=development webpack --progress -w",
