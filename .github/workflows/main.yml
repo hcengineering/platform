@@ -241,7 +241,7 @@ jobs:
           ./profile-start.sh
       - name: Run UI tests
         run: |
-          cd ./tests/sanity
+          cd ./tests/sanity          
           node ../../common/scripts/install-run-rushx.js uitest
       - name: Download profile
         run: |
@@ -410,7 +410,7 @@ jobs:
           DOCKER_CLI_HINTS: false
       - name: Configure /etc/hosts
         run: |
-          sudo echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
+            sudo echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
       - name: Prepare server
         run: |
           cd ./qms-tests
@@ -523,9 +523,9 @@ jobs:
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
       - name: Docker build love-agent
         run: |
-          cd ./services/ai-bot/love-agent
-          pnpm install && pnpm build
-          pnpm docker:build -v
+            cd ./services/ai-bot/love-agent
+            pnpm install && pnpm build
+            pnpm docker:build -v
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
@@ -553,7 +553,7 @@ jobs:
     # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
     if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
     needs: build
-    runs-on: macos-latest-xl
+    runs-on: macos-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
