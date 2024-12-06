@@ -16,7 +16,7 @@
   import type { Asset, IntlString } from '@hcengineering/platform'
   import type { AnySvelteComponent } from '@hcengineering/ui'
   import { AppItem } from '@hcengineering/workbench-resources'
-  import { isConnected, screenSharing } from '../../utils'
+  import { isConnected, isSharingEnabled, isCameraEnabled, isMicEnabled } from '../../utils'
 
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent
@@ -29,6 +29,14 @@
   {icon}
   {selected}
   {size}
-  kind={$screenSharing && !selected ? 'negative' : $isConnected && !selected ? 'positive' : 'default'}
+  kind={$isSharingEnabled
+    ? 'negative'
+    : $isConnected && $isCameraEnabled
+      ? 'positive'
+      : $isConnected && $isMicEnabled
+        ? 'warning'
+        : $isConnected && !($isCameraEnabled && $isMicEnabled)
+          ? 'accented'
+          : 'default'}
   on:click
 />
