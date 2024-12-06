@@ -28,6 +28,7 @@ import { mergeAttributes } from '@tiptap/core'
 
 export interface MermaidOptions extends CodeBlockLowlightOptions {
   ydoc?: YDoc
+  ydocContentField?: string
 }
 
 export const mermaidOptions: CodeBlockLowlightOptions = {
@@ -116,7 +117,7 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
   addNodeView () {
     return ({ getPos, editor, node, decorations }) => {
       const containerNode = document.createElement('pre')
-      containerNode.className = 'proseMemraidDiagram'
+      containerNode.className = 'proseMermaidDiagram'
 
       const headerNode = containerNode.appendChild(document.createElement('header'))
       headerNode.contentEditable = 'false'
@@ -426,7 +427,7 @@ function buildState (options: MermaidOptions, prev: MermaidPluginState, doc: Pro
     // Ideally, one would hope that decorations would be recovered through the use of
     // transaction mapping, but with Yjs this is not possible in many cases.
     // So there's a need for dirty hacks to keep the state of the node intact. (See below).
-    const yjsdoc = options.ydoc?.getXmlFragment('content')
+    const yjsdoc = options.ydoc?.getXmlFragment(options.ydocContentField ?? 'content')
     const yid = yjsdoc !== undefined
       ? yRelativePositionToString(createRelativePositionFromTypeIndex(yjsdoc, index))
       : undefined

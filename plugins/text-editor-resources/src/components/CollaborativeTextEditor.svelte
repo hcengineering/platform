@@ -437,7 +437,7 @@
           }
         }),
         EmojiExtension,
-        MermaidExtension.configure({ ...mermaidOptions, ydoc }),
+        MermaidExtension.configure({ ...mermaidOptions, ydoc, ydocContentField: field }),
         DrawingBoardExtension.configure({ ydoc }),
         ...extensions
       ],
