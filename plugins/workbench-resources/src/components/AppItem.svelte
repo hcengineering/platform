@@ -119,7 +119,7 @@
     }
     &.accented,
     &.accented.selected {
-      background-color: var(--global-disabled-PriorityColor);
+      background-color: var(--button-secondary-active-BackgroundColor);
     }
     &.positive .icon-container,
     &.negative .icon-container,
