@@ -26,12 +26,12 @@ import { type MigrateOperation } from '@hcengineering/model'
 import { setMetadata } from '@hcengineering/platform'
 import serverClientPlugin from '@hcengineering/server-client'
 import serverNotification from '@hcengineering/server-notification'
+import { createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
-import { WorkspaceWorker } from './service'
+import { WorkspaceWorker, type WorkspaceOperation } from './service'
 
 export * from './ws-operations'
-
 /**
  * @public
  */
@@ -44,11 +44,32 @@ export function serveWorkspaceAccount (
   onClose?: () => void
 ): void {
   const region = process.env.REGION ?? ''
-  const wsOperation = process.env.WS_OPERATION ?? 'all'
-  if (wsOperation !== 'all' && wsOperation !== 'create' && wsOperation !== 'upgrade') {
-    console.log(`Invalid operation provided: ${wsOperation}. Must be one of 'all', 'create', 'upgrade'`)
+  const wsOperation: WorkspaceOperation = (process.env.WS_OPERATION as WorkspaceOperation) ?? 'all'
+  if (wsOperation !== 'all' && wsOperation !== 'create' && wsOperation !== 'upgrade' && wsOperation !== 'all+backup') {
+    console.log(
+      `Invalid operation provided: ${wsOperation as string}. 
+      Must be one of 'all', 'create', 'upgrade', 'all+backup'`
+    )
     process.exit(1)
   }
+
+  if (wsOperation === 'all+backup' && process.env.BACKUP_STORAGE === undefined) {
+    console.log('BACKUP_STORAGE is required for all operation')
+    process.exit(1)
+  }
+
+  if (wsOperation === 'all+backup' && process.env.BACKUP_BUCKET === undefined) {
+    console.log('BACKUP_BUCKET is required for all operation')
+    process.exit(1)
+  }
+
+  const backup =
+    wsOperation === 'all+backup'
+      ? {
+          backupStorage: createStorageFromConfig(storageConfigFromEnv(process.env.BACKUP_STORAGE ?? '').storages[0]),
+          bucketName: process.env.BACKUP_BUCKET ?? 'backup'
+        }
+      : undefined
 
   console.log(
     'Starting workspace service in region:',
@@ -110,7 +131,8 @@ export function serveWorkspaceAccount (
       force: false,
       console: false,
       logs: 'upgrade-logs',
-      waitTimeout
+      waitTimeout,
+      backup
     },
     () => canceled
   )

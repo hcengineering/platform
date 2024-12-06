@@ -14,13 +14,14 @@
 //
 
 import {
+  AccountRole,
+  BackupStatus,
+  Doc,
+  Ref,
   type BaseWorkspaceInfo,
   type Data,
   type Version,
-  BackupStatus,
-  AccountRole,
-  Ref,
-  Doc
+  type WorkspaceUpdateEvent
 } from '@hcengineering/core'
 import { getMetadata, PlatformError, unknownError } from '@hcengineering/platform'
 
@@ -164,7 +165,7 @@ export async function getPendingWorkspace (
   token: string,
   region: string,
   version: Data<Version>,
-  operation: 'create' | 'upgrade' | 'all'
+  operation: 'create' | 'upgrade' | 'all' | 'all+backup'
 ): Promise<BaseWorkspaceInfo | undefined> {
   const accountsUrl = getAccoutsUrlOrFail()
   const workspaces = await (
@@ -186,7 +187,7 @@ export async function getPendingWorkspace (
 export async function updateWorkspaceInfo (
   token: string,
   workspaceId: string,
-  event: 'ping' | 'create-started' | 'upgrade-started' | 'progress' | 'create-done' | 'upgrade-done',
+  event: WorkspaceUpdateEvent,
   version: Data<Version>,
   progress: number,
   message?: string
@@ -210,7 +211,7 @@ export async function workerHandshake (
   token: string,
   region: string,
   version: Data<Version>,
-  operation: 'create' | 'upgrade' | 'all'
+  operation: 'create' | 'upgrade' | 'all' | 'all+backup'
 ): Promise<void> {
   const accountsUrl = getAccoutsUrlOrFail()
   await fetch(accountsUrl, {

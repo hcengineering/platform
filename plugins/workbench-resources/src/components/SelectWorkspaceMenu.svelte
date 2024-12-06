@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import contact from '@hcengineering/contact'
+  import { isArchivingMode } from '@hcengineering/core'
   import login, { Workspace } from '@hcengineering/login'
   import { getMetadata, getResource } from '@hcengineering/platform'
   import presentation, { decodeTokenPayload, isAdminUser } from '@hcengineering/presentation'
@@ -179,7 +180,7 @@
               <div class="flex-col flex-grow">
                 <span class="label overflow-label flex flex-grow flex-between">
                   {wsName}
-                  {#if ws.mode === 'archived'}
+                  {#if isArchivingMode(ws.mode)}
                     - <Label label={presentation.string.Archived} />
                   {/if}
                   {#if ws.region != null && ws.region !== ''}

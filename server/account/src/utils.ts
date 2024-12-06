@@ -119,15 +119,29 @@ const getEndpoints = (): string[] => {
   return endpoints
 }
 
+// Info is static, so no need to calculate it every time.
+let regionInfo: RegionInfo[] = []
+
 export const getRegions = (): RegionInfo[] => {
-  if (process.env.REGION_INFO !== undefined) {
-    return process.env.REGION_INFO.split(';')
-      .map((it) => it.split('|'))
-      .map((it) => ({ region: it[0].trim(), name: it[1].trim() }))
+  if (regionInfo.length === 0) {
+    const endpoints = getEndpoints()
+      .map(toTransactor)
+      .map((it) => ({ region: it.region.trim(), name: '' }))
+    if (process.env.REGION_INFO !== undefined) {
+      regionInfo = process.env.REGION_INFO.split(';')
+        .map((it) => it.split('|'))
+        .map((it) => ({ region: it[0].trim(), name: it[1].trim() }))
+      // We need to add all endpoints if they are not in info.
+      for (const endpoint of endpoints) {
+        if (regionInfo.find((it) => it.region === endpoint.region) === undefined) {
+          regionInfo.push(endpoint)
+        }
+      }
+    } else {
+      regionInfo = endpoints
+    }
   }
-  return getEndpoints()
-    .map(toTransactor)
-    .map((it) => ({ region: it.region.trim(), name: '' }))
+  return regionInfo
 }
 
 export const getEndpoint = (ctx: MeasureContext, workspaceInfo: WorkspaceInfo, kind: EndpointKind): string => {

@@ -53,7 +53,7 @@ async function doBackup (dirName: string, token: string, endpoint: string, works
       isCanceled: (): boolean => {
         return runningBackup == null
       },
-      progress: (value: number): void => {
+      progress: async (value: number): Promise<void> => {
         notify('backup', value)
       },
       getConnection: async () => client

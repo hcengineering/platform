@@ -56,7 +56,6 @@ export interface Workspace extends BaseWorkspaceInfo {
   _id: ObjectId
   accounts: ObjectId[]
 
-  region?: string // Transactor group name
   lastProcessingTime?: number
   attempts?: number
   message?: string
@@ -131,12 +130,7 @@ export type AccountInfo = Omit<Account, 'hash' | 'salt'>
 /**
  * @public
  */
-export type WorkspaceEvent = 'ping' | 'create-started' | 'upgrade-started' | 'progress' | 'create-done' | 'upgrade-done'
-
-/**
- * @public
- */
-export type WorkspaceOperation = 'create' | 'upgrade' | 'all'
+export type WorkspaceOperation = 'create' | 'upgrade' | 'all' | 'all+backup'
 
 /**
  * @public
