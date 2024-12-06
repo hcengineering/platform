@@ -2,6 +2,124 @@
 
 Changelog.
 
+## [unreleased]
+
+* 🐛 BUG FIXES: · Better error handling in json migration ([#7279](https://github.com/hcengineering/platform/issues/7279)) 
+
+## [0.6.372] - 2024-12-06
+
+* 🐛 BUG FIXES: · Datalake migration cosmetic fixes ([#7281](https://github.com/hcengineering/platform/issues/7281)) 
+* UBERF-8614: · Mermaidjs integration ([#7272](https://github.com/hcengineering/platform/issues/7272)) 
+
+## [0.6.371] - 2024-12-06
+
+* UBERF-8619: · Rework backup %hash% usage ([#7273](https://github.com/hcengineering/platform/issues/7273)) 
+* UBERF-8627: · Enable test management ([#7274](https://github.com/hcengineering/platform/issues/7274)) 
+* UBERF-8628: · Disable run button if there is nothing to run ([#7277](https://github.com/hcengineering/platform/issues/7277)) 
+
+## [0.6.368] - 2024-12-05
+
+* UBERF-8620: · Fix OOM in fulltext service ([#7263](https://github.com/hcengineering/platform/issues/7263)) 
+* TOOL: · Copy files from R2 to datalake ([#7262](https://github.com/hcengineering/platform/issues/7262)) 
+
+## [0.6.367] - 2024-12-05
+
+* UBERF-8618: · Redesign test runner ([#7259](https://github.com/hcengineering/platform/issues/7259)) 
+
+## [0.6.366] - 2024-12-05
+
+* UBERF-8613: · Rename all test cases and fix list viewlet ([#7255](https://github.com/hcengineering/platform/issues/7255)) 
+* UBERF-8615: · Backup/restore fixes ([#7258](https://github.com/hcengineering/platform/issues/7258)) 
+
+## [0.6.365] - 2024-12-03
+
+* 🐛 BUG FIXES: · Optimize json content migration ([#7252](https://github.com/hcengineering/platform/issues/7252)) · Make todos and commands working in meeting minutes ([#7244](https://github.com/hcengineering/platform/issues/7244)) 
+
+## [0.6.364] - 2024-12-02
+
+* 🐛 BUG FIXES: · Add document inline editor ([#7233](https://github.com/hcengineering/platform/issues/7233)) 
+* UBERF-8584: · Add test runs ([#7235](https://github.com/hcengineering/platform/issues/7235)) 
+* UBERF-8607: · Fix inbox embedding ([#7236](https://github.com/hcengineering/platform/issues/7236)) 
+* UBERF-8608: · Rework connection management ([#7248](https://github.com/hcengineering/platform/issues/7248)) 
+
+## [0.6.363] - 2024-11-26
+
+* 🐛 BUG FIXES: · Limit tooltip size in inbox ([#7228](https://github.com/hcengineering/platform/issues/7228)) 
+* UBERF-8603: · Fix memory leak ([#7229](https://github.com/hcengineering/platform/issues/7229)) 
+
+## [0.6.361] - 2024-11-22
+
+* 🐛 BUG FIXES: · Datalake issues ([#7217](https://github.com/hcengineering/platform/issues/7217)) · Better handle markup in api client ([#7180](https://github.com/hcengineering/platform/issues/7180)) 
+* UBERF-8595: · Fix backup/restore performance ([#7188](https://github.com/hcengineering/platform/issues/7188)) 
+
+## [0.6.360] - 2024-11-21
+
+* 🐛 BUG FIXES: · Configure csp ([#7206](https://github.com/hcengineering/platform/issues/7206)) 
+* UBERF-8592: · Fix live query performance ([#7189](https://github.com/hcengineering/platform/issues/7189)) 
+* UBERF-8597: · Fix workspace handshake ([#7199](https://github.com/hcengineering/platform/issues/7199)) 
+
+## [0.6.359] - 2024-11-19
+
+* 🐛 BUG FIXES: · Save documents maxWidth to local storage ([#7184](https://github.com/hcengineering/platform/issues/7184)) 
+* UBERF-8587: · Fix github auth and delete issues ([#7174](https://github.com/hcengineering/platform/issues/7174)) 
+
+## [0.6.358] - 2024-11-13
+
+* QFIX: · Fix separator and folder scroll in test management ([#7165](https://github.com/hcengineering/platform/issues/7165)) 
+
+## [0.6.357] - 2024-11-13
+
+* UBERF-8520: · Test management ([#7154](https://github.com/hcengineering/platform/issues/7154)) 
+* UBERF-8582: · Fix triggers ([#7155](https://github.com/hcengineering/platform/issues/7155)) 
+
+## [0.6.356] - 2024-11-12
+
+* UBERF-8433: · Support for archived workspaces ([#6937](https://github.com/hcengineering/platform/issues/6937)) 
+
+## [0.6.355] - 2024-11-11
+
+* UBERF-8552: · Extract indexer into separate service ([#7120](https://github.com/hcengineering/platform/issues/7120)) 
+
+## [0.6.354] - 2024-11-11
+
+* UBERF-8580: · Labels for Tracker ([#7141](https://github.com/hcengineering/platform/issues/7141)) 
+
+## [0.6.353] - 2024-11-11
+
+* 🐛 BUG FIXES: · More explicit api client interface ([#7138](https://github.com/hcengineering/platform/issues/7138)) 
+
+## [0.6.352] - 2024-11-08
+
+* UBERF-8578: · Fix extra stat call for storage adapter ([#7132](https://github.com/hcengineering/platform/issues/7132)) 
+
+## [0.6.351] - 2024-11-08
+
+* 🐛 BUG FIXES: · Specify files in package.json ([#7131](https://github.com/hcengineering/platform/issues/7131)) 
+
+## [0.6.350] - 2024-11-07
+
+* 🐛 BUG FIXES: · Adjust bump script ([#7121](https://github.com/hcengineering/platform/issues/7121)) 
+* UBERF-8577: · Fix desktop lang ([#7126](https://github.com/hcengineering/platform/issues/7126)) 
+
+## [0.6.348] - 2024-11-05
+
+* UBERF-8569: · Backup service regions support ([#7090](https://github.com/hcengineering/platform/issues/7090)) 
+
+## [0.6.347] - 2024-11-02
+
+* 🐛 BUG FIXES: · Get rid of @html usages ([#7072](https://github.com/hcengineering/platform/issues/7072)) 
+* UBERF-8563: · Fix due date selection ([#7073](https://github.com/hcengineering/platform/issues/7073)) 
+
+## [0.6.345] - 2024-10-29
+
+* UBERF-8547: · Inbox cleanup  and other ([#7058](https://github.com/hcengineering/platform/issues/7058)) 
+* UBERF-8553: · Stats as separate service ([#7054](https://github.com/hcengineering/platform/issues/7054)) 
+
+## [0.6.344] - 2024-10-28
+
+* 🐛 BUG FIXES: · Get rid of sentry error and extra logging ([#7050](https://github.com/hcengineering/platform/issues/7050)) · Sort model ([#7053](https://github.com/hcengineering/platform/issues/7053)) 
+* UBERF-8544: · Improve memdb account handling ([#7047](https://github.com/hcengineering/platform/issues/7047)) 
+
 ## [0.6.343] - 2024-10-26
 
 * UBERF-8488: · Fix github re-auth ([#7041](https://github.com/hcengineering/platform/issues/7041)) 
