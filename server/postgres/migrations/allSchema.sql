@@ -31,7 +31,7 @@ BEGIN
             EXECUTE format('
                 ALTER TABLE %I ADD COLUMN "%%hash%%" text;', tbl_name);
             EXECUTE format('
-                UPDATE %I SET "%%hash%%" = data->>''%%data%%'';', tbl_name);
+                UPDATE %I SET "%%hash%%" = data->>''%%hash%%'';', tbl_name);
         END IF;
     END LOOP;
 END $$;

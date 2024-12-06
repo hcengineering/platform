@@ -22,26 +22,43 @@ export interface DrawingProps {
   autoSize?: boolean
   imageWidth?: number
   imageHeight?: number
-  commandCount?: number
   commands: DrawingCmd[]
   offset?: Point
   tool?: DrawingTool
   penColor?: string
   penWidth?: number
   eraserWidth?: number
+  fontSize?: number
   defaultCursor?: string
+  changingCmdIndex?: number
   cmdAdded?: (cmd: DrawingCmd) => void
+  cmdChanging?: (index: number) => void
+  cmdUnchanged?: (index: number) => void
+  cmdChanged?: (index: number, cmd: DrawingCmd) => void
+  cmdDeleted?: (index: number) => void
   panned?: (offset: Point) => void
 }
 
 export interface DrawingCmd {
+  type: 'line' | 'text'
+}
+
+export interface DrawTextCmd extends DrawingCmd {
+  text: string
+  pos: Point
+  fontSize: number
+  fontFace: string
+  color: string
+}
+
+export interface DrawLineCmd extends DrawingCmd {
   lineWidth: number
   erasing: boolean
   penColor: string
   points: Point[]
 }
 
-export type DrawingTool = 'pen' | 'erase' | 'pan'
+export type DrawingTool = 'pen' | 'erase' | 'pan' | 'text'
 
 interface Point {
   x: number
@@ -52,6 +69,12 @@ function avgPoint (p1: Point, p2: Point): Point {
   return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 }
 }
 
+const maxTextLength = 500
+
+const crossSvg = `<svg height="8" width="8" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+  <path d="m1.29 2.71 5.3 5.29-5.3 5.29c-.92.92.49 2.34 1.41 1.41l5.3-5.29 5.29 5.3c.92.92 2.34-.49 1.41-1.41l-5.29-5.3 5.3-5.29c.92-.93-.49-2.34-1.42-1.42l-5.29 5.3-5.29-5.3c-.93-.92-2.34.49-1.42 1.42z"/>
+</svg>`
+
 class DrawState {
   on = false
   tool: DrawingTool = 'pen'
@@ -59,6 +82,8 @@ class DrawState {
   penWidth = 4
   eraserWidth = 30
   minLineLength = 6
+  fontSize = 20
+  fontFace = '"IBM Plex Sans"'
   center: Point = { x: 0, y: 0 }
   offset: Point = { x: 0, y: 0 }
   points: Point[] = []
@@ -78,14 +103,29 @@ class DrawState {
   }
 
   addPoint = (mouseX: number, mouseY: number): void => {
-    this.points.push({
-      x: mouseX * this.scale.x - this.offset.x - this.center.x,
-      y: mouseY * this.scale.y - this.offset.y - this.center.y
-    })
+    this.points.push(this.mouseToCanvasPoint({ x: mouseX, y: mouseY }))
+  }
+
+  mouseToCanvasPoint = (mouse: Point): Point => {
+    return {
+      x: mouse.x * this.scale.x - this.offset.x - this.center.x,
+      y: mouse.y * this.scale.y - this.offset.y - this.center.y
+    }
+  }
+
+  canvasToMousePoint = (canvas: Point): Point => {
+    return {
+      x: canvas.x / this.scale.x + this.offset.x + this.center.x,
+      y: canvas.y / this.scale.y + this.offset.y + this.center.y
+    }
   }
 
   isDrawingTool = (): boolean => {
     return this.tool === 'pen' || this.tool === 'erase'
+  }
+
+  translateCtx = (): void => {
+    this.ctx.translate(this.offset.x + this.center.x, this.offset.y + this.center.y)
   }
 
   drawLive = (x: number, y: number, lastPoint = false): void => {
@@ -95,11 +135,11 @@ class DrawState {
       }
       const erasing = this.tool === 'erase'
       this.ctx.save()
-      this.ctx.translate(this.offset.x + this.center.x, this.offset.y + this.center.y)
+      this.translateCtx()
       this.ctx.beginPath()
       this.ctx.lineCap = 'round'
       this.ctx.strokeStyle = this.penColor
-      this.ctx.lineWidth = (erasing ? this.eraserWidth : this.penWidth) * this.lineScale()
+      this.ctx.lineWidth = erasing ? this.eraserWidth : this.penWidth
       this.ctx.globalCompositeOperation = erasing ? 'destination-out' : 'source-over'
       if (this.points.length === 1) {
         this.drawPoint(this.points[0], erasing)
@@ -112,8 +152,16 @@ class DrawState {
   }
 
   drawCommand = (cmd: DrawingCmd): void => {
+    if (cmd.type === 'text') {
+      this.drawTextCommand(cmd as DrawTextCmd)
+    } else {
+      this.drawLineCommand(cmd as DrawLineCmd)
+    }
+  }
+
+  drawLineCommand = (cmd: DrawLineCmd): void => {
     this.ctx.save()
-    this.ctx.translate(this.offset.x + this.center.x, this.offset.y + this.center.y)
+    this.translateCtx()
     this.ctx.beginPath()
     this.ctx.lineCap = 'round'
     this.ctx.strokeStyle = cmd.penColor
@@ -128,6 +176,39 @@ class DrawState {
       this.ctx.stroke()
     }
     this.ctx.restore()
+  }
+
+  drawTextCommand = (cmd: DrawTextCmd): void => {
+    const p = { ...cmd.pos }
+    this.ctx.save()
+    this.translateCtx()
+    this.ctx.font = `${cmd.fontSize}px ${cmd.fontFace}`
+    this.ctx.fillStyle = cmd.color
+    this.ctx.textBaseline = 'top'
+    const lines = cmd.text.split('\n').map((l) => l.trim())
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]
+      this.ctx.fillText(line, p.x, p.y)
+      p.y += cmd.fontSize
+    }
+    this.ctx.restore()
+  }
+
+  isPointInText = (p: Point, cmd: DrawTextCmd): boolean => {
+    this.ctx.font = `${cmd.fontSize}px ${cmd.fontFace}`
+    const lines = cmd.text.split('\n').map((l) => l.trim())
+    for (let i = 0; i < lines.length; i++) {
+      if (p.y < cmd.pos.y + i * cmd.fontSize || p.y > cmd.pos.y + (i + 1) * cmd.fontSize) {
+        continue
+      }
+      const line = lines[i]
+      const metrics = this.ctx.measureText(line)
+      if (p.x < cmd.pos.x || p.x > cmd.pos.x + metrics.width) {
+        continue
+      }
+      return true
+    }
+    return false
   }
 
   drawPoint = (p: Point, erasing: boolean): void => {
@@ -211,16 +292,20 @@ export function drawing (
   draw.penColor = props.penColor ?? draw.penColor
   draw.penWidth = props.penWidth ?? draw.penWidth
   draw.eraserWidth = props.eraserWidth ?? draw.eraserWidth
+  draw.fontSize = props.fontSize ?? draw.fontSize
+  draw.offset = props.offset ?? draw.offset
   updateCanvasCursor()
 
+  interface LiveTextBox {
+    pos: Point
+    box: HTMLDivElement
+    editor: HTMLDivElement
+    cmdIndex: number
+  }
+  let liveTextBox: LiveTextBox | undefined
+
   let commands = props.commands
-  let commandCount = props.commandCount ?? 0
-  replayCommands({
-    offset: {
-      x: props.offset?.x ?? 0,
-      y: props.offset?.y ?? 0
-    }
-  })
+  replayCommands()
 
   const resizeObserver = new ResizeObserver((entries) => {
     for (const entry of entries) {
@@ -231,7 +316,7 @@ export function drawing (
           canvas.height = Math.floor(entry.contentRect.height)
           draw.center.x = canvas.width / 2
           draw.center.y = canvas.height / 2
-          replayCommands({ offset: draw.offset })
+          replayCommands()
         } else {
           draw.scale = {
             x: canvas.width / entry.contentRect.width,
@@ -288,14 +373,15 @@ export function drawing (
 
     if (draw.on && draw.tool === 'pan') {
       requestAnimationFrame(() => {
-        replayCommands({
-          offset: {
-            x: draw.offset.x + x - prevPos.x,
-            y: draw.offset.y + y - prevPos.y
-          }
-        })
+        draw.offset.x += x - prevPos.x
+        draw.offset.y += y - prevPos.y
+        replayCommands()
         prevPos = { x, y }
       })
+    }
+
+    if (draw.on && draw.tool === 'text') {
+      prevPos = { x, y }
     }
   }
 
@@ -308,9 +394,16 @@ export function drawing (
     if (draw.on) {
       if (draw.isDrawingTool()) {
         draw.drawLive(e.offsetX, e.offsetY, true)
-        storeCommand()
+        storeLineCommand()
       } else if (draw.tool === 'pan') {
         props.panned?.(draw.offset)
+      } else if (draw.tool === 'text') {
+        if (liveTextBox !== undefined) {
+          storeTextCommand()
+        } else {
+          const cmdIndex = findTextCommand(prevPos)
+          props.cmdChanging?.(cmdIndex)
+        }
       }
       draw.on = false
     }
@@ -328,16 +421,280 @@ export function drawing (
     }
   }
 
-  function storeCommand (): void {
+  function findTextCommand (mousePos: Point): number {
+    const pos = draw.mouseToCanvasPoint(mousePos)
+    for (let i = commands.length - 1; i >= 0; i--) {
+      const anyCmd = commands[i]
+      if (anyCmd.type === 'text') {
+        const cmd = anyCmd as DrawTextCmd
+        if (draw.isPointInText(pos, cmd)) {
+          return i
+        }
+      }
+    }
+    return -1
+  }
+
+  function makeLiveTextBox (cmdIndex: number): void {
+    let pos = prevPos
+    let existingCmd: DrawTextCmd | undefined
+    if (cmdIndex >= 0 && commands[cmdIndex]?.type === 'text') {
+      existingCmd = commands[cmdIndex] as DrawTextCmd
+      pos = draw.canvasToMousePoint(existingCmd.pos)
+    }
+
+    const padding = 6
+    const handleSize = 14
+
+    const box = document.createElement('div')
+    box.style.zIndex = '1'
+    box.style.position = 'absolute'
+    box.style.left = `calc(${pos.x}px - ${padding}px)`
+    box.style.top = `calc(${pos.y}px - ${padding}px)`
+    box.style.border = '1px solid var(--theme-editbox-focus-border)'
+    box.style.borderRadius = 'var(--small-BorderRadius)'
+    box.style.padding = `${padding}px`
+    box.style.background = 'var(--theme-popup-header)'
+    box.addEventListener('mousedown', (e) => {
+      e.stopPropagation()
+    })
+    box.addEventListener('click', (e) => {
+      e.stopPropagation()
+      editor.focus()
+    })
+
+    const editor = document.createElement('div')
+    editor.style.cursor = 'text'
+    editor.style.padding = '0'
+    editor.contentEditable = 'true'
+    editor.style.outline = 'none'
+    editor.style.minWidth = '2rem'
+    editor.style.whiteSpace = 'nowrap'
+    if (existingCmd !== undefined) {
+      editor.innerText = existingCmd.text
+    }
+    editor.addEventListener('input', (e) => {
+      if (editor.innerText.length > maxTextLength) {
+        e.preventDefault()
+        editor.innerText = editor.innerText.substring(0, maxTextLength)
+        moveCaretToEnd()
+      }
+    })
+    editor.addEventListener('paste', (e) => {
+      e.preventDefault()
+      const selection = window.getSelection()
+      const text = (e.clipboardData?.getData('text/plain') ?? '').trim()
+      if (text.length === 0 || selection === null || selection.rangeCount === 0) {
+        return
+      }
+      let selectedLen = 0
+      const range = selection.getRangeAt(0)
+      if (editor.contains(range.commonAncestorContainer)) {
+        selectedLen = range.endOffset - range.startOffset
+      }
+      const availableLen = maxTextLength - (selectedLen > 0 ? selectedLen : editor.innerText.length)
+      if (availableLen > 0) {
+        const lines = text.slice(0, availableLen).split('\n')
+        const pastedNode = document.createDocumentFragment()
+        for (let i = 0; i < lines.length; i++) {
+          pastedNode.appendChild(document.createTextNode(lines[i]))
+          if (i < lines.length - 1) {
+            pastedNode.appendChild(document.createElement('br'))
+          }
+        }
+        range.deleteContents()
+        range.insertNode(pastedNode)
+        // move caret to the end of pasted node
+        range.collapse(false)
+        selection.addRange(range)
+      }
+    })
+    editor.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        if (liveTextBox !== undefined) {
+          const cmdIndex = liveTextBox.cmdIndex
+          if (cmdIndex >= 0) {
+            // reset changingCmdIndex in clients
+            setTimeout(() => {
+              props.cmdUnchanged?.(cmdIndex)
+            }, 0)
+          }
+        }
+        closeLiveTextBox()
+        replayCommands()
+      } else if (e.key === 'Enter' && e.ctrlKey) {
+        e.preventDefault()
+        storeTextCommand()
+      }
+    })
+    box.appendChild(editor)
+
+    const moveCaretToEnd = (): void => {
+      const selection = window.getSelection()
+      const range = document.createRange()
+      range.setStartAfter(editor.lastChild ?? editor)
+      range.collapse(true)
+      selection?.removeAllRanges()
+      selection?.addRange(range)
+    }
+
+    const selectAll = (): void => {
+      const selection = window.getSelection()
+      const range = document.createRange()
+      range.selectNodeContents(editor)
+      selection?.removeAllRanges()
+      selection?.addRange(range)
+    }
+
+    const makeHandle = (): HTMLDivElement => {
+      const handle = document.createElement('div')
+      handle.style.position = 'absolute'
+      handle.style.top = `-${handleSize / 2}px`
+      handle.style.width = `${handleSize}px`
+      handle.style.height = `${handleSize}px`
+      handle.style.color = 'var(--global-on-accent-TextColor)'
+      handle.style.background = 'var(--global-accent-IconColor)'
+      handle.style.borderRadius = '50%'
+      handle.style.display = 'flex'
+      handle.style.alignItems = 'center'
+      handle.style.justifyContent = 'center'
+      return handle
+    }
+
+    const dragHandle = makeHandle()
+    dragHandle.style.left = `-${handleSize / 2}px`
+    dragHandle.style.cursor = 'grab'
+    dragHandle.addEventListener('pointerdown', (e) => {
+      e.preventDefault()
+      dragHandle.style.cursor = 'grabbing'
+      dragHandle.setPointerCapture(e.pointerId)
+      const x = e.clientX
+      const y = e.clientY
+      const dragStart = { x, y }
+      const pointerMove = (e: PointerEvent): void => {
+        e.preventDefault()
+        const x = e.clientX
+        const y = e.clientY
+        const dx = x - dragStart.x
+        const dy = y - dragStart.y
+        dragStart.x = x
+        dragStart.y = y
+        let newX = box.offsetLeft + dx
+        let newY = box.offsetTop + dy
+        // For screenshots the canvas always has the same size as the underlying image
+        // and we should not be able to drag the text box outside of the screenshot
+        if (props.autoSize !== true) {
+          newX = Math.max(0, newX)
+          newY = Math.max(0, newY)
+          if (newX + box.offsetWidth > node.clientWidth) {
+            newX = node.clientWidth - box.offsetWidth
+          }
+          if (newY + box.offsetHeight > node.clientHeight) {
+            newY = node.clientHeight - box.offsetHeight
+          }
+        }
+        box.style.left = `${newX}px`
+        box.style.top = `${newY}px`
+        if (liveTextBox !== undefined) {
+          liveTextBox.pos.x = newX + padding
+          liveTextBox.pos.y = newY + padding
+        }
+      }
+      const pointerUp = (e: PointerEvent): void => {
+        setTimeout(() => {
+          editor.focus()
+        }, 100)
+        e.preventDefault()
+        dragHandle.style.cursor = 'grab'
+        dragHandle.releasePointerCapture(e.pointerId)
+        dragHandle.removeEventListener('pointermove', pointerMove)
+        dragHandle.removeEventListener('pointerup', pointerUp)
+      }
+      dragHandle.addEventListener('pointermove', pointerMove)
+      dragHandle.addEventListener('pointerup', pointerUp)
+    })
+    box.appendChild(dragHandle)
+
+    const deleteButton = makeHandle()
+    deleteButton.style.right = `-${handleSize / 2}px`
+    deleteButton.style.cursor = 'pointer'
+    deleteButton.innerHTML = crossSvg
+    deleteButton.addEventListener('click', () => {
+      node.removeChild(box)
+      if (liveTextBox?.cmdIndex !== undefined) {
+        props.cmdDeleted?.(liveTextBox.cmdIndex)
+      }
+      liveTextBox = undefined
+    })
+    box.appendChild(deleteButton)
+
+    node.appendChild(box)
+    liveTextBox = { box, editor, pos, cmdIndex }
+    updateLiveTextBox()
+    setTimeout(() => {
+      editor.focus()
+    }, 100)
+    selectAll()
+  }
+
+  function updateLiveTextBox (): void {
+    if (liveTextBox !== undefined) {
+      liveTextBox.editor.style.color = draw.penColor
+      liveTextBox.editor.style.lineHeight = `${draw.fontSize / draw.lineScale()}px`
+      liveTextBox.editor.style.fontSize = `${draw.fontSize / draw.lineScale()}px`
+      liveTextBox.editor.style.fontFamily = draw.fontFace
+    }
+  }
+
+  function closeLiveTextBox (): void {
+    if (liveTextBox !== undefined) {
+      node.removeChild(liveTextBox.box)
+      liveTextBox = undefined
+    }
+  }
+
+  function storeTextCommand (defer = false): void {
+    if (liveTextBox !== undefined) {
+      const text = (liveTextBox.editor.innerText ?? '').trim()
+      if (text !== '') {
+        const cmd: DrawTextCmd = {
+          type: 'text',
+          text,
+          pos: draw.mouseToCanvasPoint(liveTextBox.pos),
+          fontSize: draw.fontSize,
+          fontFace: draw.fontFace,
+          color: draw.penColor
+        }
+        const cmdIndex = liveTextBox.cmdIndex
+        const notify = (): void => {
+          if (cmdIndex >= 0) {
+            props.cmdChanged?.(cmdIndex, cmd)
+          } else {
+            props.cmdAdded?.(cmd)
+          }
+        }
+        if (defer) {
+          setTimeout(notify, 0)
+        } else {
+          notify()
+        }
+      } else {
+        props.cmdUnchanged?.(liveTextBox.cmdIndex)
+      }
+    }
+  }
+
+  function storeLineCommand (): void {
     if (draw.points.length > 0) {
       const erasing = draw.tool === 'erase'
-      const cmd: DrawingCmd = {
-        lineWidth: (erasing ? draw.eraserWidth : draw.penWidth) * draw.lineScale(),
+      const cmd: DrawLineCmd = {
+        type: 'line',
+        lineWidth: erasing ? draw.eraserWidth : draw.penWidth,
         erasing,
         penColor: draw.penColor,
         points: draw.points
       }
-      commands.push(cmd)
       props.cmdAdded?.(cmd)
     }
   }
@@ -360,28 +717,23 @@ export function drawing (
     } else if (draw.tool === 'pan') {
       canvas.style.cursor = 'move'
       canvasCursor.style.visibility = 'hidden'
+    } else if (draw.tool === 'text') {
+      canvas.style.cursor = 'text'
+      canvasCursor.style.visibility = 'hidden'
     } else {
       canvas.style.cursor = 'default'
       canvasCursor.style.visibility = 'hidden'
     }
   }
 
-  function clearCanvas (): void {
+  function replayCommands (): void {
     draw.ctx.reset()
-    draw.offset = { x: 0, y: 0 }
-  }
-
-  function replayCommands ({ offset, startIndex }: { offset?: Point, startIndex?: number } = {}): void {
-    if (startIndex === undefined || startIndex === 0) {
-      clearCanvas()
-    }
-    if (offset !== undefined) {
-      draw.offset = offset
-    }
-    for (let i = startIndex ?? 0; i < commands.length; i++) {
+    for (let i = 0; i < commands.length; i++) {
+      if (liveTextBox?.cmdIndex === i) {
+        continue
+      }
       draw.drawCommand(commands[i])
     }
-    commandCount = commands.length
   }
 
   return {
@@ -389,45 +741,65 @@ export function drawing (
 
     update (props: DrawingProps) {
       let replay = false
-      let offset: Point | undefined
-      let startIndex: number | undefined
-      if (props.offset?.x !== draw.offset.x || props.offset?.y !== draw.offset.y) {
-        offset = props.offset
+      if (props.offset !== undefined && (props.offset.x !== draw.offset.x || props.offset.y !== draw.offset.y)) {
+        draw.offset = props.offset
         replay = true
       }
       if (commands !== props.commands) {
         commands = props.commands
         replay = true
-      } else if (props.commandCount !== undefined && props.commandCount !== commandCount) {
-        startIndex = commandCount
-        replay = true
       }
       let updateCursor = false
+      let updateTextBox = false
       if (draw.tool !== props.tool) {
         draw.tool = props.tool ?? 'pen'
         updateCursor = true
       }
       if (draw.penColor !== props.penColor) {
         draw.penColor = props.penColor ?? 'blue'
+        updateTextBox = true
         updateCursor = true
       }
       if (draw.penWidth !== props.penWidth) {
-        draw.penWidth = props.penWidth ?? 5
+        draw.penWidth = props.penWidth ?? draw.penWidth
         updateCursor = true
       }
       if (draw.eraserWidth !== props.eraserWidth) {
-        draw.eraserWidth = props.eraserWidth ?? 5
+        draw.eraserWidth = props.eraserWidth ?? draw.eraserWidth
         updateCursor = true
+      }
+      if (draw.fontSize !== props.fontSize) {
+        draw.fontSize = props.fontSize ?? draw.fontSize
+        updateTextBox = true
       }
       if (props.readonly !== readonly) {
         readonly = props.readonly ?? false
         updateCursor = true
       }
+      if (props.changingCmdIndex === undefined) {
+        if (liveTextBox !== undefined) {
+          storeTextCommand(true)
+          closeLiveTextBox()
+          replay = true
+        }
+      } else {
+        if (liveTextBox === undefined) {
+          makeLiveTextBox(props.changingCmdIndex)
+          replay = true
+        } else if (liveTextBox.cmdIndex !== props.changingCmdIndex) {
+          storeTextCommand(true)
+          closeLiveTextBox()
+          replay = true
+        }
+      }
       if (updateCursor) {
         updateCanvasCursor()
       }
+      if (updateTextBox) {
+        updateLiveTextBox()
+      }
       if (replay) {
-        replayCommands({ offset, startIndex })
+        replayCommands()
       }
     }
   }

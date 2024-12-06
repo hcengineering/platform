@@ -65,7 +65,8 @@ class BackupWorker {
       externalStorage: StorageAdapter
     ) => DbConfiguration,
     readonly region: string,
-    readonly recheck: boolean = false
+    readonly freshWorkspace: boolean = false,
+    readonly clean: boolean = false
   ) {}
 
   canceled = false
@@ -186,7 +187,8 @@ class BackupWorker {
           backup(ctx, '', getWorkspaceId(ws.workspace), storage, {
             skipDomains: [],
             force: true,
-            recheck: this.recheck,
+            freshBackup: this.freshWorkspace,
+            clean: this.clean,
             timeout: this.config.Timeout * 1000,
             connectTimeout: 5 * 60 * 1000, // 5 minutes to,
             blobDownloadLimit: this.downloadLimit,
@@ -303,7 +305,8 @@ export async function doBackupWorkspace (
     externalStorage: StorageAdapter
   ) => DbConfiguration,
   region: string,
-  recheck: boolean,
+  freshWorkspace: boolean,
+  clean: boolean,
   downloadLimit: number
 ): Promise<boolean> {
   const backupWorker = new BackupWorker(
@@ -313,7 +316,8 @@ export async function doBackupWorkspace (
     workspaceStorageAdapter,
     getConfig,
     region,
-    recheck
+    freshWorkspace,
+    clean
   )
   backupWorker.downloadLimit = downloadLimit
   const { processed } = await backupWorker.doBackup(ctx, [workspace], Number.MAX_VALUE)

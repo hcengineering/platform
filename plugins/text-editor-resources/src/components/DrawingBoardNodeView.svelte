@@ -103,6 +103,7 @@
           kind={selected ? 'primary' : 'ghost'}
           icon={IconScribble}
           disabled={loading}
+          noFocus
           on:click={() => {
             showBoardPopup(savedBoard, editor)
           }}

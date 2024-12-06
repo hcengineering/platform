@@ -22208,7 +22208,7 @@ packages:
     dev: false
 
   file:projects/collaboration.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-krhgq1XiDnWKIP/HUM8VQgEzXdxLNfDf68lZgDl/Yl2tEFUu8yLYpzd1qWVMkl8N0dXyGts+DEFC7Ntns48lgA==, tarball: file:projects/collaboration.tgz}
+    resolution: {integrity: sha512-aJ4uMSpM7IB3wgrjVKYm4jR3IeBYSaFvYZZFjxkriMD1fAxvjr/WpKUWxQy0q2x3gZb4SoGLoiX2d2qj2/hdhA==, tarball: file:projects/collaboration.tgz}
     id: file:projects/collaboration.tgz
     name: '@rush-temp/collaboration'
     version: 0.0.0
@@ -24713,7 +24713,7 @@ packages:
     dev: false
 
   file:projects/model-document.tgz:
-    resolution: {integrity: sha512-tSr57oIXY1fECAB/axaDBJLSh/RVC4BXacjVHQ4wx3y+buoNngZoX9kpJsbNxEjCpW8yyhWwO1+sseyBi9RJdg==, tarball: file:projects/model-document.tgz}
+    resolution: {integrity: sha512-5JcKBBX19mvQXZAg2p1z/qMSYqiR7py8mtNiHLaWKQpjHhMynutkkwGsnGq36Hb3Af8VtQiVxBZEq4rtcoph1Q==, tarball: file:projects/model-document.tgz}
     name: '@rush-temp/model-document'
     version: 0.0.0
     dependencies:
@@ -28589,7 +28589,7 @@ packages:
     dev: false
 
   file:projects/server-backup.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-e0MNgA1LeSOikxK3b6X/HMuzpyQ4MjAoJtHi84X28nxD+49sEy1NctCTptyqz2qWWicAZAghKV46Qi9N9+RnEw==, tarball: file:projects/server-backup.tgz}
+    resolution: {integrity: sha512-uuTU9Pa0R+AlAtxZo0mStW6hAnk/Ca3B++AoFAE5WDapBBxT0mVNEoDcAd0ATDKea0fo8mbRB4blnuoQa06NbA==, tarball: file:projects/server-backup.tgz}
     id: file:projects/server-backup.tgz
     name: '@rush-temp/server-backup'
     version: 0.0.0
@@ -28604,6 +28604,7 @@ packages:
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      fast-equals: 5.0.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)

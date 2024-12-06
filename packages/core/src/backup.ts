@@ -17,7 +17,7 @@ export interface DocChunk {
  * @public
  */
 export interface BackupClient {
-  loadChunk: (domain: Domain, idx?: number, recheck?: boolean) => Promise<DocChunk>
+  loadChunk: (domain: Domain, idx?: number) => Promise<DocChunk>
   closeChunk: (idx: number) => Promise<void>
 
   loadDocs: (domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>

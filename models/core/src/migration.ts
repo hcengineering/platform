@@ -21,9 +21,9 @@ import core, {
   DOMAIN_STATUS,
   DOMAIN_TX,
   generateId,
-  makeDocCollabId,
   makeCollabJsonId,
   makeCollabYdocId,
+  makeDocCollabId,
   MeasureMetricsContext,
   RateLimiter,
   type AnyAttribute,
@@ -208,7 +208,7 @@ async function processMigrateContentFor (
     const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
 
     for (const doc of docs) {
-      await rateLimiter.exec(async () => {
+      await rateLimiter.add(async () => {
         const update: MigrateUpdate<Doc> = {}
 
         for (const attribute of attributes) {
@@ -305,7 +305,7 @@ async function processMigrateJsonForDomain (
     const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
 
     for (const doc of docs) {
-      await rateLimiter.exec(async () => {
+      await rateLimiter.add(async () => {
         const update = await processMigrateJsonForDoc(ctx, doc, attributes, client, storageAdapter)
         if (Object.keys(update).length > 0) {
           operations.push({ filter: { _id: doc._id }, update })
@@ -385,8 +385,8 @@ async function processMigrateJsonForDoc (
 
       const unset = update.$unset ?? {}
       update.$unset = { ...unset, [attribute.name]: 1 }
-    } catch (err) {
-      ctx.warn('failed to process collaborative doc', { workspaceId, collabId, currentYdocId, err })
+    } catch (err: any) {
+      ctx.warn('failed to process collaborative doc', { workspaceId, collabId, currentYdocId, err: err.message })
     }
   }
 
@@ -427,36 +427,43 @@ export const coreOperation: MigrateOperation = {
         state: 'remove-collection-txes',
         func: async (client) => {
           let processed = 0
+          let last = 0
           const iterator = await client.traverse<TxCUD<Doc>>(DOMAIN_TX, {
             _class: 'core:class:TxCollectionCUD' as Ref<Class<Doc>>
           })
-          while (true) {
-            const txes = await iterator.next(200)
-            if (txes === null || txes.length === 0) break
-            processed += txes.length
-            try {
-              await client.create(
-                DOMAIN_TX,
-                txes.map((tx) => {
-                  const { collection, objectId, objectClass } = tx
-                  return {
-                    collection,
-                    attachedTo: objectId,
-                    attachedToClass: objectClass,
-                    ...(tx as any).tx,
-                    objectSpace: (tx as any).tx.objectSpace ?? tx.objectClass
-                  }
+          try {
+            while (true) {
+              const txes = await iterator.next(1000)
+              if (txes === null || txes.length === 0) break
+              processed += txes.length
+              try {
+                await client.create(
+                  DOMAIN_TX,
+                  txes.map((tx) => {
+                    const { collection, objectId, objectClass } = tx
+                    return {
+                      collection,
+                      attachedTo: objectId,
+                      attachedToClass: objectClass,
+                      ...(tx as any).tx,
+                      objectSpace: (tx as any).tx.objectSpace ?? tx.objectClass
+                    }
+                  })
+                )
+                await client.deleteMany(DOMAIN_TX, {
+                  _id: { $in: txes.map((it) => it._id) }
                 })
-              )
-              await client.deleteMany(DOMAIN_TX, {
-                _id: { $in: txes.map((it) => it._id) }
-              })
-            } catch (err: any) {
-              console.error(err)
+              } catch (err: any) {
+                console.error(err)
+              }
+              if (last !== Math.round(processed / 1000)) {
+                last = Math.round(processed / 1000)
+                console.log('processed', processed)
+              }
             }
-            console.log('processed', processed)
+          } finally {
+            await iterator.close()
           }
-          await iterator.close()
         }
       },
       {

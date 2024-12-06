@@ -91,7 +91,8 @@ export async function backupWorkspace (
     externalStorage: StorageAdapter
   ) => DbConfiguration,
   region: string,
-  recheck: boolean = false,
+  freshBackup: boolean = false,
+  clean: boolean = false,
   downloadLimit: number,
 
   onFinish?: (backupStorage: StorageAdapter, workspaceStorage: StorageAdapter) => Promise<void>
@@ -126,7 +127,8 @@ export async function backupWorkspace (
         return getConfig(ctx, mainDbUrl, workspace, branding, externalStorage)
       },
       region,
-      recheck,
+      freshBackup,
+      clean,
       downloadLimit
     )
     if (result && onFinish !== undefined) {

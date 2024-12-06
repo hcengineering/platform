@@ -32,6 +32,7 @@ import core, {
   Ref,
   SortingOrder,
   systemAccountEmail,
+  toIdMap,
   TxProcessor,
   WorkspaceId,
   type BackupStatus,
@@ -41,9 +42,10 @@ import core, {
   type TxCUD
 } from '@hcengineering/core'
 import { BlobClient, createClient } from '@hcengineering/server-client'
-import { type StorageAdapter } from '@hcengineering/server-core'
+import { estimateDocSize, type StorageAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
+import { deepEqual } from 'fast-equals'
 import { createReadStream, createWriteStream, existsSync, mkdirSync, statSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { basename, dirname } from 'node:path'
@@ -58,7 +60,6 @@ export * from './storage'
 
 const dataBlobSize = 50 * 1024 * 1024
 const dataUploadSize = 2 * 1024 * 1024
-const retrieveChunkSize = 2 * 1024 * 1024
 
 const defaultLevel = 9
 
@@ -134,7 +135,7 @@ async function loadDigest (
   date?: number
 ): Promise<Map<Ref<Doc>, string>> {
   ctx = ctx.newChild('load digest', { domain, count: snapshots.length })
-  ctx.info('load-digest', { domain, count: snapshots.length })
+  ctx.info('loading-digest', { domain, snapshots: snapshots.length })
   const result = new Map<Ref<Doc>, string>()
   for (const s of snapshots) {
     const d = s.domains[domain]
@@ -186,6 +187,7 @@ async function loadDigest (
     }
   }
   ctx.end()
+  ctx.info('load-digest', { domain, snapshots: snapshots.length, documents: result.size })
   return result
 }
 async function verifyDigest (
@@ -477,9 +479,8 @@ export async function cloneWorkspace (
                 idx = it.idx
 
                 let needRetrieve: Ref<Doc>[] = []
-                let needRetrieveSize = 0
 
-                for (const { id, hash, size } of it.docs) {
+                for (const { id, hash } of it.docs) {
                   processed++
                   if (Date.now() - st > 2500) {
                     ctx.info('processed', { processed, time: Date.now() - st, workspace: targetWorkspaceId.name })
@@ -488,11 +489,9 @@ export async function cloneWorkspace (
 
                   changes.added.set(id as Ref<Doc>, hash)
                   needRetrieve.push(id as Ref<Doc>)
-                  needRetrieveSize += size
 
-                  if (needRetrieveSize > retrieveChunkSize) {
+                  if (needRetrieve.length > 200) {
                     needRetrieveChunks.push(needRetrieve)
-                    needRetrieveSize = 0
                     needRetrieve = []
                   }
                 }
@@ -532,7 +531,7 @@ export async function cloneWorkspace (
                 for (const d of docs) {
                   if (d._class === core.class.Blob) {
                     const blob = d as Blob
-                    await executor.exec(async () => {
+                    await executor.add(async () => {
                       try {
                         ctx.info('clone blob', { name: blob._id, contentType: blob.contentType })
                         const readable = await storageAdapter.get(ctx, sourceWorkspaceId, blob._id)
@@ -662,7 +661,8 @@ export async function backup (
     include?: Set<string>
     skipDomains: string[]
     force: boolean
-    recheck: boolean
+    freshBackup: boolean // If passed as true, will download all documents except blobs as new backup
+    clean: boolean // If set will perform a clena of old backup files
     timeout: number
     connectTimeout: number
     skipBlobContentTypes: string[]
@@ -676,7 +676,8 @@ export async function backup (
     token?: string
   } = {
     force: false,
-    recheck: false,
+    freshBackup: false,
+    clean: false,
     timeout: 0,
     skipDomains: [],
     connectTimeout: 30000,
@@ -693,7 +694,7 @@ export async function backup (
   ctx = ctx.newChild('backup', {
     workspaceId: workspaceId.name,
     force: options.force,
-    recheck: options.recheck,
+    recheck: options.freshBackup,
     timeout: options.timeout
   })
 
@@ -741,7 +742,7 @@ export async function backup (
 
     let lastTxChecked = false
     // Skip backup if there is no transaction changes.
-    if (options.getLastTx !== undefined) {
+    if (options.getLastTx !== undefined && !options.freshBackup) {
       lastTx = await options.getLastTx()
       if (lastTx !== undefined) {
         if (lastTx._id === backupInfo.lastTxId && !options.force) {
@@ -771,7 +772,7 @@ export async function backup (
             options.connectTimeout
           )) as CoreClient & BackupClient)
 
-    if (!lastTxChecked) {
+    if (!lastTxChecked && !options.freshBackup) {
       lastTx = await connection.findOne(
         core.class.Tx,
         { objectSpace: { $ne: core.space.Model } },
@@ -888,19 +889,13 @@ export async function backup (
       }
       while (true) {
         try {
-          const currentChunk = await ctx.with('loadChunk', {}, () => connection.loadChunk(domain, idx, options.recheck))
+          const currentChunk = await ctx.with('loadChunk', {}, () => connection.loadChunk(domain, idx))
           idx = currentChunk.idx
           ops++
 
           let needRetrieve: Ref<Doc>[] = []
-          let currentNeedRetrieveSize = 0
 
-          for (const { id, hash, size } of currentChunk.docs) {
-            if (domain === DOMAIN_BLOB) {
-              result.blobsSize += size
-            } else {
-              result.dataSize += size
-            }
+          for (const { id, hash } of currentChunk.docs) {
             processed++
             if (Date.now() - st > 2500) {
               ctx.info('processed', {
@@ -911,19 +906,18 @@ export async function backup (
               })
               st = Date.now()
             }
-            const _hash = doTrimHash(hash) as string
-            const kHash = doTrimHash(digest.get(id as Ref<Doc>) ?? oldHash.get(id as Ref<Doc>))
-            if (kHash !== undefined) {
+            const serverDocHash = doTrimHash(hash) as string
+            const currentHash = doTrimHash(digest.get(id as Ref<Doc>) ?? oldHash.get(id as Ref<Doc>))
+            if (currentHash !== undefined) {
               if (digest.delete(id as Ref<Doc>)) {
-                oldHash.set(id as Ref<Doc>, kHash)
+                oldHash.set(id as Ref<Doc>, currentHash)
               }
-              if (kHash !== _hash) {
+              if (currentHash !== serverDocHash || (options.freshBackup && domain !== DOMAIN_BLOB)) {
                 if (changes.updated.has(id as Ref<Doc>)) {
                   removeFromNeedRetrieve(needRetrieve, id as Ref<Doc>)
                 }
-                changes.updated.set(id as Ref<Doc>, _hash)
+                changes.updated.set(id as Ref<Doc>, serverDocHash)
                 needRetrieve.push(id as Ref<Doc>)
-                currentNeedRetrieveSize += size
                 changed++
               } else if (changes.updated.has(id as Ref<Doc>)) {
                 // We have same
@@ -936,22 +930,19 @@ export async function backup (
                 // We need to clean old need retrieve in case of duplicates.
                 removeFromNeedRetrieve(needRetrieve, id)
               }
-              changes.added.set(id as Ref<Doc>, _hash)
+              changes.added.set(id as Ref<Doc>, serverDocHash)
               needRetrieve.push(id as Ref<Doc>)
               changed++
-              currentNeedRetrieveSize += size
             }
 
-            if (currentNeedRetrieveSize > retrieveChunkSize) {
-              if (needRetrieve.length > 0) {
-                needRetrieveChunks.push(needRetrieve)
-              }
-              currentNeedRetrieveSize = 0
+            if (needRetrieve.length > 200) {
+              needRetrieveChunks.push(needRetrieve)
               needRetrieve = []
             }
           }
           if (needRetrieve.length > 0) {
             needRetrieveChunks.push(needRetrieve)
+            needRetrieve = []
           }
           if (currentChunk.finished) {
             ctx.info('processed-end', {
@@ -1036,6 +1027,8 @@ export async function backup (
         global.gc?.()
       } catch (err) {}
 
+      let lastSize = 0
+
       while (needRetrieveChunks.length > 0) {
         if (canceled()) {
           return
@@ -1048,11 +1041,13 @@ export async function backup (
         ctx.info('Retrieve chunk', {
           needRetrieve: needRetrieveChunks.reduce((v, docs) => v + docs.length, 0),
           toLoad: needRetrieve.length,
-          workspace: workspaceId.name
+          workspace: workspaceId.name,
+          lastSize: Math.round((lastSize * 100) / (1024 * 1024)) / 100
         })
         let docs: Doc[] = []
         try {
           docs = await ctx.with('load-docs', {}, async (ctx) => await connection.loadDocs(domain, needRetrieve))
+          lastSize = docs.reduce((p, it) => p + estimateDocSize(it), 0)
           if (docs.length !== needRetrieve.length) {
             const nr = new Set(docs.map((it) => it._id))
             ctx.error('failed to retrieve all documents', { missing: needRetrieve.filter((it) => !nr.has(it)) })
@@ -1144,6 +1139,12 @@ export async function backup (
           const d = docs.shift()
           if (d === undefined) {
             break
+          }
+
+          if (domain === DOMAIN_BLOB) {
+            result.blobsSize += (d as Blob).size
+          } else {
+            result.dataSize += JSON.stringify(d).length
           }
 
           function processChanges (d: Doc, error: boolean = false): void {
@@ -1318,6 +1319,41 @@ export async function backup (
       sizeInfo = JSON.parse(gunzipSync(await storage.loadFile(sizeFile)).toString())
     }
     let processed = 0
+
+    if (!canceled()) {
+      backupInfo.lastTxId = lastTx?._id ?? '0' // We could store last tx, since full backup is complete
+      await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
+
+      if (options.freshBackup && options.clean) {
+        // Preparing a list of files to clean
+
+        ctx.info('Cleaning old backup files...')
+        for (const sn of backupInfo.snapshots.slice(0, backupInfo.snapshots.length - 1)) {
+          const filesToDelete: string[] = []
+          for (const [domain, dsn] of [...Object.entries(sn.domains)]) {
+            if (domain === DOMAIN_BLOB) {
+              continue
+            }
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete (sn.domains as any)[domain]
+
+            filesToDelete.push(...(dsn.snapshots ?? []))
+            filesToDelete.push(...(dsn.storage ?? []))
+            if (dsn.snapshot !== undefined) {
+              filesToDelete.push(dsn.snapshot)
+            }
+          }
+          for (const file of filesToDelete) {
+            ctx.info('Removing file...', { file })
+            await storage.delete(file)
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete sizeInfo[file]
+          }
+        }
+        ctx.info('Cleaning complete...')
+        await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
+      }
+    }
 
     const addFileSize = async (file: string | undefined | null): Promise<void> => {
       if (file != null) {
@@ -1588,6 +1624,8 @@ export async function backupFind (storage: BackupStorage, id: Ref<Doc>, domain?:
 /**
  * @public
  * Restore state of DB to specified point.
+ *
+ * Recheck mean we download and compare every document on our side and if found difference upload changed version to server.
  */
 export async function restore (
   ctx: MeasureContext,
@@ -1689,7 +1727,7 @@ export async function restore (
     try {
       while (true) {
         const st = Date.now()
-        const it = await connection.loadChunk(c, idx, opt.recheck)
+        const it = await connection.loadChunk(c, idx)
         chunks++
 
         idx = it.idx
@@ -1723,11 +1761,13 @@ export async function restore (
 
     // Let's find difference
     const docsToAdd = new Map(
-      Array.from(changeset.entries()).filter(
-        ([it]) =>
-          !serverChangeset.has(it) ||
-          (serverChangeset.has(it) && doTrimHash(serverChangeset.get(it)) !== doTrimHash(changeset.get(it)))
-      )
+      opt.recheck === true // If recheck we check all documents.
+        ? Array.from(changeset.entries())
+        : Array.from(changeset.entries()).filter(
+          ([it]) =>
+            !serverChangeset.has(it) ||
+              (serverChangeset.has(it) && doTrimHash(serverChangeset.get(it)) !== doTrimHash(changeset.get(it)))
+        )
     )
     const docsToRemove = Array.from(serverChangeset.keys()).filter((it) => !changeset.has(it))
 
@@ -1738,15 +1778,12 @@ export async function restore (
     async function sendChunk (doc: Doc | undefined, len: number): Promise<void> {
       if (doc !== undefined) {
         docsToAdd.delete(doc._id)
-        if (opt.recheck === true) {
-          // We need to clear %hash% in case our is wrong.
-          delete (doc as any)['%hash%']
-        }
         docs.push(doc)
       }
       sendSize = sendSize + len
 
       if (sendSize > dataUploadSize || (doc === undefined && docs.length > 0)) {
+        let docsToSend = docs
         totalSend += docs.length
         ctx.info('upload-' + c, {
           docs: docs.length,
@@ -1757,32 +1794,42 @@ export async function restore (
         })
         // Correct docs without space
         for (const d of docs) {
-          if (d._class === core.class.DocIndexState) {
-            // We need to clean old stuff from restored document.
-            if ('stages' in d) {
-              delete (d as any).stages
-              delete (d as any).attributes
-              ;(d as any).needIndex = true
-              ;(d as any)['%hash%'] = ''
-            }
-          }
           if (d.space == null) {
             d.space = core.space.Workspace
-            ;(d as any)['%hash%'] = ''
           }
 
           if (TxProcessor.isExtendsCUD(d._class)) {
             const tx = d as TxCUD<Doc>
             if (tx.objectSpace == null) {
               tx.objectSpace = core.space.Workspace
-              ;(tx as any)['%hash%'] = ''
             }
           }
         }
-        try {
-          await connection.upload(c, docs)
-        } catch (err: any) {
-          ctx.error('error during upload', { err, docs: JSON.stringify(docs) })
+
+        if (opt.recheck === true) {
+          // We need to download all documents and compare them.
+          const serverDocs = toIdMap(
+            await connection.loadDocs(
+              c,
+              docs.map((it) => it._id)
+            )
+          )
+          docsToSend = docs.filter((doc) => {
+            const serverDoc = serverDocs.get(doc._id)
+            if (serverDoc !== undefined) {
+              const { '%hash%': _h1, ...dData } = doc as any
+              const { '%hash%': _h2, ...sData } = serverDoc as any
+
+              return !deepEqual(dData, sData)
+            }
+            return true
+          })
+        } else {
+          try {
+            await connection.upload(c, docsToSend)
+          } catch (err: any) {
+            ctx.error('error during upload', { err, docs: JSON.stringify(docs) })
+          }
         }
         docs.length = 0
         sendSize = 0
@@ -1964,7 +2011,7 @@ export async function restore (
       if (opt.skip?.has(c) === true) {
         continue
       }
-      await limiter.exec(async () => {
+      await limiter.add(async () => {
         ctx.info('processing domain', { domain: c, workspaceId: workspaceId.name })
         let retry = 5
         let delay = 1
