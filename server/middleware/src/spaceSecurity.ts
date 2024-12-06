@@ -118,30 +118,33 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
     if (this.wasInit === false) {
       this.wasInit = (async () => {
-        const spaces: SpaceWithMembers[] =
-          (await this.next?.findAll(
-            ctx,
-            core.class.Space,
-            {},
-            {
-              projection: {
-                private: 1,
-                _class: 1,
-                _id: 1,
-                members: 1
+        await ctx.with('init-space-security', {}, async (ctx) => {
+          ctx.contextData = undefined
+          const spaces: SpaceWithMembers[] =
+            (await this.next?.findAll(
+              ctx,
+              core.class.Space,
+              {},
+              {
+                projection: {
+                  private: 1,
+                  _class: 1,
+                  _id: 1,
+                  members: 1
+                }
               }
+            )) ?? []
+          this.spacesMap.clear()
+          this.publicSpaces.clear()
+          this.systemSpaces.clear()
+          for (const space of spaces) {
+            if (space._class === core.class.SystemSpace) {
+              this.systemSpaces.add(space._id)
+            } else {
+              this.addSpace(space)
             }
-          )) ?? []
-        this.spacesMap.clear()
-        this.publicSpaces.clear()
-        this.systemSpaces.clear()
-        for (const space of spaces) {
-          if (space._class === core.class.SystemSpace) {
-            this.systemSpaces.add(space._id)
-          } else {
-            this.addSpace(space)
           }
-        }
+        })
       })()
     }
     if (this.wasInit instanceof Promise) {
@@ -559,7 +562,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       if (options?.lookup !== undefined) {
         for (const object of findResult) {
           if (object.$lookup !== undefined) {
-            await this.filterLookup(ctx, object.$lookup)
+            this.filterLookup(ctx, object.$lookup)
           }
         }
       }
@@ -600,25 +603,23 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return result
   }
 
-  async isUnavailable (ctx: MeasureContext<SessionData>, space: Ref<Space>): Promise<boolean> {
+  filterLookup<T extends Doc>(ctx: MeasureContext, lookup: LookupData<T>): void {
+    if (Object.keys(lookup).length === 0) return
     const account = ctx.contextData.account
-    if (isSystem(account, ctx)) return false
-    return !this.getAllAllowedSpaces(account, true).includes(space)
-  }
-
-  async filterLookup<T extends Doc>(ctx: MeasureContext, lookup: LookupData<T>): Promise<void> {
+    if (isSystem(account, ctx)) return
+    const allowedSpaces = this.getAllAllowedSpaces(account, true)
     for (const key in lookup) {
       const val = lookup[key]
       if (Array.isArray(val)) {
         const arr: AttachedDoc[] = []
         for (const value of val) {
-          if (!(await this.isUnavailable(ctx, value.space))) {
+          if (allowedSpaces.includes(value.space)) {
             arr.push(value)
           }
         }
         lookup[key] = arr as any
       } else if (val !== undefined) {
-        if (await this.isUnavailable(ctx, val.space)) {
+        if (!allowedSpaces.includes(val.space)) {
           lookup[key] = undefined
         }
       }
