@@ -21,7 +21,7 @@
   export let icon: Asset | AnySvelteComponent
   export let selected: boolean = false
   export let size: 'small' | 'medium' | 'large' = 'large'
-  export let kind: 'default' | 'positive' | 'negative' = 'default'
+  export let kind: 'default' | 'positive' | 'negative' | 'warning' | 'accented' = 'default'
   export let loading: boolean = false
   export let notify: boolean = false
   export let navigator: boolean = false
@@ -105,35 +105,27 @@
     &.navigator {
       border-color: var(--theme-button-border);
     }
-    &.positive {
-      background-color: var(--positive-button-default);
-      &:hover {
-        background-color: var(--positive-button-hovered);
-      }
-      &:active,
-      &.selected {
-        background-color: var(--positive-button-pressed);
-      }
-      &.selected:hover {
-        background-color: var(--positive-button-focused);
-      }
+    &.positive,
+    &.positive.selected {
+      background-color: var(--global-online-color);
     }
-    &.negative {
-      background-color: var(--negative-button-default);
-      &:hover {
-        background-color: var(--negative-button-hovered);
-      }
-      &:active,
-      &.selected {
-        background-color: var(--negative-button-pressed);
-      }
-      &.selected:hover {
-        background-color: var(--negative-button-focused);
-      }
+    &.negative,
+    &.negative.selected {
+      background-color: var(--button-negative-BackgroundColor);
+    }
+    &.warning,
+    &.warning.selected {
+      background-color: var(--theme-warning-color);
+    }
+    &.accented,
+    &.accented.selected {
+      background-color: var(--global-disabled-PriorityColor);
     }
     &.positive .icon-container,
-    &.negative .icon-container {
-      color: var(--theme-caption-color);
+    &.negative .icon-container,
+    &.warning .icon-container,
+    &.accented .icon-container {
+      color: var(--primary-button-color);
     }
   }
 
