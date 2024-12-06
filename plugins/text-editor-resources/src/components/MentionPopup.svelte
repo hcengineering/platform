@@ -40,7 +40,7 @@
   let scrollContainer: HTMLElement
   let selection = 0
 
-  async function getIdentifier (item: SearchResultDoc): Promise<string> {
+  async function getIdentifier (item: SearchResultDoc): Promise<string | undefined> {
     const identifierProvider = hierarchy.classHierarchyMixin(item.doc._class, view.mixin.ObjectIdentifier)
     if (identifierProvider === undefined) {
       return item.shortTitle ?? item.title
