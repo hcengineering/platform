@@ -1208,11 +1208,12 @@ export function devTool (
         throw new Error('Datalake storage config is required')
       }
 
+      toolCtx.info('using datalake', { datalake: datalakeConfig })
       const datalake = createDatalakeClient(datalakeConfig as DatalakeConfig)
 
       let workspaces: Workspace[] = []
-      const { dbUrl } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
+      const accountUrl = getAccountDBUrl()
+      await withDatabase(accountUrl, async (db) => {
         workspaces = await listWorkspacesPure(db)
         workspaces = workspaces
           .filter((p) => p.mode !== 'archived')

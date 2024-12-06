@@ -282,10 +282,19 @@ export async function copyToDatalake (
   let time = Date.now()
   let processedCnt = 0
   let skippedCnt = 0
+  let failedCnt = 0
 
   function printStats (): void {
     const duration = Date.now() - time
-    console.log('...processed', processedCnt, 'skipped', skippedCnt, Math.round(duration / 1000) + 's')
+    console.log(
+      '...processed',
+      processedCnt,
+      'skipped',
+      skippedCnt,
+      'failed',
+      failedCnt,
+      Math.round(duration / 1000) + 's'
+    )
 
     time = Date.now()
   }
@@ -319,6 +328,7 @@ export async function copyToDatalake (
             )
           } catch (err) {
             console.error('failed to process blob', objectName, err)
+            failedCnt++
           }
         })
       }
