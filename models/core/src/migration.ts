@@ -352,7 +352,9 @@ async function processMigrateJsonForDoc (
 
     if (value.startsWith('{')) {
       // For some reason we have documents that are already markups
-      const jsonId = await saveCollabJson(ctx, storageAdapter, workspaceId, collabId, value)
+      const jsonId = await retry(5, async () => {
+        return await saveCollabJson(ctx, storageAdapter, workspaceId, collabId, value)
+      })
       update[attributeName] = jsonId
       continue
     }
@@ -371,23 +373,28 @@ async function processMigrateJsonForDoc (
       // If document id has changed, save it with new name to ensure we will be able to load it later
       const ydocId = makeCollabYdocId(collabId)
       if (ydocId !== currentYdocId) {
-        ctx.info('saving collaborative doc with new name', { collabId, ydocId, currentYdocId })
-        const buffer = await storageAdapter.read(ctx, workspaceId, currentYdocId)
-        await storageAdapter.put(
-          ctx,
-          workspaceId,
-          ydocId,
-          Buffer.concat(buffer as any),
-          'application/ydoc',
-          buffer.length
-        )
+        await retry(5, async () => {
+          const stat = await storageAdapter.stat(ctx, workspaceId, currentYdocId)
+          if (stat !== undefined) {
+            const buffer = await storageAdapter.read(ctx, workspaceId, currentYdocId)
+            await storageAdapter.put(
+              ctx,
+              workspaceId,
+              ydocId,
+              Buffer.concat(buffer as any),
+              'application/ydoc',
+              buffer.length
+            )
+          }
+        })
       }
-
-      const unset = update.$unset ?? {}
-      update.$unset = { ...unset, [attribute.name]: 1 }
-    } catch (err: any) {
-      ctx.warn('failed to process collaborative doc', { workspaceId, collabId, currentYdocId, err: err.message })
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err)
+      ctx.warn('failed to process collaborative doc', { workspaceId, collabId, currentYdocId, error })
     }
+
+    const unset = update.$unset ?? {}
+    update.$unset = { ...unset, [attribute.name]: 1 }
   }
 
   return update
@@ -509,4 +516,20 @@ export const coreOperation: MigrateOperation = {
       }
     ])
   }
+}
+
+async function retry<T> (retries: number, op: () => Promise<T>): Promise<T> {
+  let error: any
+  while (retries > 0) {
+    retries--
+    try {
+      return await op()
+    } catch (err: any) {
+      error = err
+      if (retries !== 0) {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      }
+    }
+  }
+  throw error
 }
