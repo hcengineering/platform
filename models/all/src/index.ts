@@ -416,8 +416,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       {
         label: testManagement.string.ConfigLabel,
         description: testManagement.string.ConfigDescription,
-        enabled: false,
-        beta: false,
+        enabled: true,
+        beta: true,
         classFilter: defaultFilter
       }
     ],
