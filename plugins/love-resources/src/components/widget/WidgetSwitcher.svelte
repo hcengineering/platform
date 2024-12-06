@@ -16,17 +16,30 @@
   import type { Asset, IntlString } from '@hcengineering/platform'
   import type { AnySvelteComponent } from '@hcengineering/ui'
   import { AppItem } from '@hcengineering/workbench-resources'
+  import { RoomType } from '@hcengineering/love'
+  import { currentRoom } from '../../stores'
   import { isConnected, isSharingEnabled, isCameraEnabled, isMicEnabled } from '../../utils'
+  import love from '../../plugin'
 
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent
   export let selected: boolean = false
   export let size: 'small' | 'medium' | 'large' = 'small'
+
+  $: allowCam = $currentRoom?.type === RoomType.Video
 </script>
 
 <AppItem
   {label}
-  {icon}
+  icon={$isSharingEnabled
+    ? love.icon.SharingDisabled
+    : $isConnected && allowCam && !$isCameraEnabled && !$isMicEnabled
+      ? love.icon.CamDisabled
+      : $isConnected && !allowCam && !$isMicEnabled
+        ? love.icon.MicDisabled
+        : !allowCam || (!$isCameraEnabled && $isMicEnabled)
+            ? love.icon.Mic
+            : icon}
   {selected}
   {size}
   kind={$isSharingEnabled
