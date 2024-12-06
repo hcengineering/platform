@@ -518,10 +518,7 @@ export const coreOperation: MigrateOperation = {
   }
 }
 
-async function retry<T> (
-  retries: number,
-  op: () => Promise<T>
-): Promise<T> {
+async function retry<T> (retries: number, op: () => Promise<T>): Promise<T> {
   let error: any
   while (retries > 0) {
     retries--
