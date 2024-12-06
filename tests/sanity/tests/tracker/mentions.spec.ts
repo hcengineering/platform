@@ -1,6 +1,5 @@
 import { test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
@@ -12,13 +11,11 @@ test.use({
 })
 
 test.describe('Mentions issue tests', () => {
-  let leftSideMenuPage: LeftSideMenuPage
   let issuesPage: IssuesPage
   let issuesDetailsPage: IssuesDetailsPage
   let employeeDetailsPage: EmployeeDetailsPage
 
   test.beforeEach(async ({ page }) => {
-    leftSideMenuPage = new LeftSideMenuPage(page)
     issuesPage = new IssuesPage(page)
     issuesDetailsPage = new IssuesDetailsPage(page)
     employeeDetailsPage = new EmployeeDetailsPage(page)
@@ -31,8 +28,6 @@ test.describe('Mentions issue tests', () => {
       title: `Issue user mentioned as Collaborators-${generateId()}`,
       description: 'Issue user mentioned as Collaborators description'
     }
-
-    await leftSideMenuPage.clickTracker()
 
     await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(mentionIssue)
@@ -50,8 +45,6 @@ test.describe('Mentions issue tests', () => {
       title: `When Change assigner user should be added as Collaborators-${generateId()}`,
       description: 'When Change assigner user should be added as Collaborators description'
     }
-
-    await leftSideMenuPage.clickTracker()
 
     await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(mentionIssue)
@@ -74,7 +67,6 @@ test.describe('Mentions issue tests', () => {
       title: `Check that the backlink shown in the Contact activity-${generateId()}`,
       description: 'Check that the backlink shown in the Contact activity description'
     }
-    await leftSideMenuPage.clickTracker()
     await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(backlinkIssue)
     await issuesPage.searchIssueByName(backlinkIssue.title)
@@ -105,7 +97,6 @@ test.describe('Mentions issue tests', () => {
       description: 'Description',
       projectName: 'Second Project'
     }
-    await leftSideMenuPage.clickTracker()
     await issuesPage.createNewIssue(backlinkIssueDefault)
     await issuesPage.createNewIssue(backlinkIssueSecond)
     const issuesNavigationPage = new TrackerNavigationMenuPage(page)

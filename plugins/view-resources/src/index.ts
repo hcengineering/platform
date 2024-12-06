@@ -175,6 +175,7 @@ export * from './middleware'
 export * from './selection'
 export * from './status'
 export * from './utils'
+export * from './objectIterator'
 export {
   buildModel,
   getActiveViewletId,

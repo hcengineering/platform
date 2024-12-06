@@ -38,7 +38,7 @@ test.describe('Vacancy tests', () => {
     }
 
     const vacancyId = 'My vacancy ' + generateId(4)
-    await vacanciesPage.createVacancy(vacancyId)
+    await vacanciesPage.createVacancy(vacancyId, true)
     await vacanciesPage.modifyVacancy(vacancyId)
     await vacanciesPage.createApplicationVacencies('Alex')
   })

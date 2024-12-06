@@ -258,8 +258,8 @@ async function uploadFileWithSignedUrl (file: File, uuid: string, uploadUrl: str
       method: 'PUT',
       headers: {
         'Content-Type': file.type,
-        'Content-Length': file.size.toString(),
-        'x-amz-meta-last-modified': file.lastModified.toString()
+        'Content-Length': file.size.toString()
+        // 'x-amz-meta-last-modified': file.lastModified.toString()
       }
     })
 

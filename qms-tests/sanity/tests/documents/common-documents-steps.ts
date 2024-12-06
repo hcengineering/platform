@@ -1,5 +1,4 @@
 import { Page, test } from '@playwright/test'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { DocumentsPage } from '../model/documents/documents-page'
 import { NewCategory, NewDocument } from '../model/types'
 import { NavigationMenuPage } from '../model/documents/navigation-menu-page'
@@ -14,9 +13,6 @@ export async function prepareDocumentStep (
   spaceName?: string
 ): Promise<void> {
   await test.step(`${stepNumber}. Create a new document`, async () => {
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonDocuments.click()
-
     const documentsPage = new DocumentsPage(page)
     await documentsPage.buttonCreateDocument.click()
 
@@ -40,9 +36,6 @@ export async function createTemplateStep (
 
 export async function prepareCategoryStep (page: Page, newCategory: NewCategory): Promise<void> {
   await test.step('1. Create a new category', async () => {
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonDocuments.click()
-
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonCategories.click()
 

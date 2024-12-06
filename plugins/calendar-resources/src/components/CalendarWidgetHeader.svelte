@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Breadcrumbs, Header, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import { Breadcrumbs, Header } from '@hcengineering/ui'
   import { IntlString } from '@hcengineering/platform'
 
   import { CalendarMode } from '../index'
@@ -43,7 +43,6 @@
   adaptive="autoExtra"
   doubleRowWidth={350}
   closeOnEscape={false}
-  topIndent={$deviceInfo.navigator.float && !$deviceInfo.aside.float}
   on:close
 >
   <div class="title">

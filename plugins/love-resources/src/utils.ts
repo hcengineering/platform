@@ -374,16 +374,12 @@ lk.on(RoomEvent.RecordingStatusChanged, (evt) => {
   isRecording.set(evt)
 })
 lk.on(RoomEvent.RoomMetadataChanged, (metadata) => {
-  try {
-    const data = JSON.parse(metadata) as RoomMetadata
-    if (data.recording !== undefined) {
-      isRecording.set(data.recording)
-    }
-    if (data.transcription !== undefined) {
-      isTranscription.set(data.transcription === TranscriptionStatus.InProgress)
-    }
-  } catch (err: any) {
-    Analytics.handleError(err)
+  const data = parseMetadata(metadata)
+  if (data.recording !== undefined) {
+    isRecording.set(data.recording)
+  }
+  if (data.transcription !== undefined) {
+    isTranscription.set(data.transcription === TranscriptionStatus.InProgress)
   }
 })
 
@@ -392,7 +388,7 @@ lk.on(RoomEvent.Connected, () => {
   sendMessage({ type: 'connect', value: true })
   isCurrentInstanceConnected.set(true)
   isRecording.set(lk.isRecording)
-  void initRoomMetadata(lk.metadata)
+  void initRoom()
   Analytics.handleEvent(LoveEvents.ConnectedToRoom)
 })
 lk.on(RoomEvent.Disconnected, () => {
@@ -402,25 +398,19 @@ lk.on(RoomEvent.Disconnected, () => {
   Analytics.handleEvent(LoveEvents.DisconnectedFromRoom)
 })
 
-async function initRoomMetadata (metadata: string | undefined): Promise<void> {
-  let data: RoomMetadata
-  try {
-    data = metadata == null || metadata === '' ? {} : JSON.parse(metadata)
-  } catch (err: any) {
-    data = {}
-    Analytics.handleError(err)
-  }
-
-  isTranscription.set(data.transcription === TranscriptionStatus.InProgress)
-
+async function initRoom (): Promise<void> {
   const room = get(currentRoom)
-  const meetingMinutes = get(currentMeetingMinutes)
-  const isValidMeeting =
-    meetingMinutes != null && meetingMinutes.attachedTo === room?._id && meetingMinutes.status === MeetingStatus.Active
-
-  if (room != null && !isValidMeeting) {
+  if (room !== undefined) {
     await initMeetingMinutes(room)
   }
+  await initRoomMetadata(lk.metadata)
+}
+
+async function initRoomMetadata (metadata: string | undefined): Promise<void> {
+  const room = get(currentRoom)
+  const data: RoomMetadata = parseMetadata(metadata)
+
+  isTranscription.set(data.transcription === TranscriptionStatus.InProgress)
 
   if (
     (data.transcription == null || data.transcription === TranscriptionStatus.Idle) &&
@@ -431,6 +421,15 @@ async function initRoomMetadata (metadata: string | undefined): Promise<void> {
 
   if (get(isRecordingAvailable) && data.recording == null && room?.startWithRecording === true) {
     await record(room)
+  }
+}
+
+function parseMetadata (metadata: string | undefined): RoomMetadata {
+  try {
+    return metadata == null || metadata === '' ? {} : JSON.parse(metadata)
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return {}
   }
 }
 
@@ -738,7 +737,6 @@ export async function connectRoom (
       3,
       1000
     )
-    await initMeetingMinutes(room)
   } catch (err) {
     console.error(err)
     await leaveRoom(currentInfo, get(myOffice))

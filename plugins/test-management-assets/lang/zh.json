@@ -21,7 +21,7 @@
     "TestCase": "測試用例",
     "TestProject": "專案",
     "TestManagementApplication": "測試管理",
-    "AllTestCases": "所有測試用例",
+    "AllTestSuites": "所有測試套件",
     "AllProjects": "所有項目",
     "Projects": "專案",
     "CreateProject": "創建專案",
@@ -77,6 +77,11 @@
     "DueDate": "到期日",
     "RunTestCases": "运行",
     "TestCaseDescription": "測試用例描述",
-    "TestResultAttributes": "結果"
+    "TestResultAttributes": "結果",
+    "GoToNextTest": "下一個",
+    "GoToNextTestTooltip": "轉到下一個測試",
+    "AllTests": "所有測試",
+    "MyTests": "我的測試",
+    "Comments": "評論"
   }
 }

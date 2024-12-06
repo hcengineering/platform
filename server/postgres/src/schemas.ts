@@ -214,6 +214,7 @@ const eventSchema: Schema = {
 
 export function addSchema (domain: string, schema: Schema): void {
   domainSchemas[translateDomain(domain)] = schema
+  domainSchemaFields.set(domain, createSchemaFields(schema))
 }
 
 export function translateDomain (domain: string): string {
@@ -240,4 +241,28 @@ export function getSchema (domain: string): Schema {
 export function getDocFieldsByDomains (domain: string): string[] {
   const schema = domainSchemas[translateDomain(domain)] ?? defaultSchema
   return Object.keys(schema)
+}
+
+export interface SchemaAndFields {
+  schema: Schema
+
+  fields: string[]
+  domainFields: Set<string>
+}
+
+function createSchemaFields (schema: Schema): SchemaAndFields {
+  const fields = Object.keys(schema)
+  const domainFields = new Set(Object.keys(schema))
+  return { schema, fields, domainFields }
+}
+
+const defaultSchemaFields: SchemaAndFields = createSchemaFields(defaultSchema)
+
+const domainSchemaFields = new Map<string, SchemaAndFields>()
+for (const [domain, _schema] of Object.entries(domainSchemas)) {
+  domainSchemaFields.set(domain, createSchemaFields(_schema))
+}
+
+export function getSchemaAndFields (domain: string): SchemaAndFields {
+  return domainSchemaFields.get(translateDomain(domain)) ?? defaultSchemaFields
 }

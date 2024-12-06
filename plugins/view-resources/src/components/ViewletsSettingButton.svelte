@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { DocumentQuery, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { ModernButton, showPopup, closeTooltip } from '@hcengineering/ui'
+  import { ButtonIcon, showPopup, closeTooltip } from '@hcengineering/ui'
   import { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
@@ -93,7 +93,7 @@
     {#if viewOptions}
       <ViewOptionsButton {viewlet} {kind} {viewOptions} {disabled} />
     {/if}
-    <ModernButton
+    <ButtonIcon
       icon={view.icon.Configure}
       {kind}
       size={'small'}

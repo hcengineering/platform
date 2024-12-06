@@ -118,8 +118,10 @@ import { changeConfiguration } from './configuration'
 import { moveAccountDbFromMongoToPG, moveFromMongoToPG, moveWorkspaceFromMongoToPG } from './db'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount } from './renameAccount'
-import { moveFiles, showLostFiles } from './storage'
+import { copyToDatalake, moveFiles, showLostFiles } from './storage'
 import { getModelVersion } from '@hcengineering/model-all'
+import { type DatalakeConfig, DatalakeService, createDatalakeClient } from '@hcengineering/datalake'
+import { S3Service, type S3Config } from '@hcengineering/s3'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -1182,6 +1184,54 @@ export function devTool (
         toolCtx.error('failed to size backup', { err })
       }
       await storageAdapter.close()
+    })
+
+  program
+    .command('copy-s3-datalake')
+    .description('migrate files from s3 to datalake')
+    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+    .option('-c, --concurrency <concurrency>', 'Number of files being processed concurrently', '10')
+    .action(async (cmd: { workspace: string, concurrency: string }) => {
+      const params = {
+        concurrency: parseInt(cmd.concurrency)
+      }
+
+      const storageConfig = storageConfigFromEnv(process.env.STORAGE)
+
+      const storages = storageConfig.storages.filter((p) => p.kind === S3Service.config) as S3Config[]
+      if (storages.length === 0) {
+        throw new Error('S3 storage config is required')
+      }
+
+      const datalakeConfig = storageConfig.storages.find((p) => p.kind === DatalakeService.config)
+      if (datalakeConfig === undefined) {
+        throw new Error('Datalake storage config is required')
+      }
+
+      const datalake = createDatalakeClient(datalakeConfig as DatalakeConfig)
+
+      let workspaces: Workspace[] = []
+      const { dbUrl } = prepareTools()
+      await withDatabase(dbUrl, async (db) => {
+        workspaces = await listWorkspacesPure(db)
+        workspaces = workspaces
+          .filter((p) => p.mode !== 'archived')
+          .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
+          .sort((a, b) => b.lastVisit - a.lastVisit)
+      })
+
+      const count = workspaces.length
+      let index = 0
+      for (const workspace of workspaces) {
+        index++
+        toolCtx.info('processing workspace', { workspace: workspace.workspace, index, count })
+        const workspaceId = getWorkspaceId(workspace.workspace)
+
+        for (const config of storages) {
+          const storage = new S3Service(config)
+          await copyToDatalake(toolCtx, workspaceId, config, storage, datalake, params)
+        }
+      }
     })
 
   program

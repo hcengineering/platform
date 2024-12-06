@@ -236,8 +236,6 @@ test.describe('Tracker filters tests', () => {
   })
 
   test('Status filter', async () => {
-    await leftSideMenuPage.clickTracker()
-
     await issuesPage.linkSidebarAll().click()
     await issuesPage.clickModelSelectorAll()
 
@@ -400,7 +398,6 @@ test.describe('Tracker filters tests', () => {
       createLabel: true
     }
 
-    await leftSideMenuPage.clickTracker()
     await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(labelIssue)
 

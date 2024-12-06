@@ -80,7 +80,7 @@
         case 'add-color': {
           if (colorSelector !== undefined) {
             colorSelector.value = penColor
-            colorSelector.click()
+            colorSelector.showPicker()
           }
           break
         }
@@ -130,8 +130,8 @@
     if (!penColors.includes(penColor)) {
       penColor = penColors[0] ?? defaultColor
     }
-    penWidth = parseInt(localStorage.getItem(storageKey.penWidth) ?? '4')
-    eraserWidth = parseInt(localStorage.getItem(storageKey.eraserWidth) ?? '30')
+    penWidth = parseInt(localStorage.getItem(storageKey.penWidth) ?? '6')
+    eraserWidth = parseInt(localStorage.getItem(storageKey.eraserWidth) ?? '50')
   })
 
   function updatePenWidth (): void {
@@ -181,9 +181,25 @@
   {/if}
   <div class="divider buttons-divider" />
   {#if tool === 'pen'}
-    <input type="range" min={2} max={20} step={2} bind:value={penWidth} on:change={updatePenWidth} />
+    <input
+      class="widthSelector"
+      type="range"
+      min={2}
+      max={18}
+      step={4}
+      bind:value={penWidth}
+      on:change={updatePenWidth}
+    />
   {:else}
-    <input type="range" min={10} max={100} step={10} bind:value={eraserWidth} on:change={updateEraserWidth} />
+    <input
+      class="widthSelector"
+      type="range"
+      min={20}
+      max={110}
+      step={30}
+      bind:value={eraserWidth}
+      on:change={updateEraserWidth}
+    />
   {/if}
   <div class="divider buttons-divider" />
   {#each penColors as color}
@@ -246,5 +262,9 @@
     position: absolute;
     width: 0;
     opacity: 0;
+  }
+
+  .widthSelector {
+    width: 80px;
   }
 </style>

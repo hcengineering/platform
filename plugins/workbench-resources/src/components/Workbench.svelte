@@ -125,6 +125,8 @@
   } from '../workbench'
   import { get } from 'svelte/store'
 
+  const HIDE_NAVIGATOR = 720
+  const HIDE_ASIDE = 1024
   let contentPanel: HTMLElement
 
   const { setTheme } = getContext<{ setTheme: (theme: string) => void }>('theme')
@@ -164,7 +166,7 @@
   async function toggleNav (): Promise<void> {
     $deviceInfo.navigator.visible = !$deviceInfo.navigator.visible
     closeTooltip()
-    if (currentApplication && navigatorModel && navigator) {
+    if (currentApplication && navigatorModel) {
       await tick()
       panelInstance.fitPopupInstance()
       popupInstance.fitPopupInstance()
@@ -634,29 +636,30 @@
   let cover: HTMLElement
   let workbenchWidth: number = $deviceInfo.docWidth
 
-  $deviceInfo.navigator.float = !(workbenchWidth < 1024)
+  $deviceInfo.navigator.float = workbenchWidth <= HIDE_NAVIGATOR
   const checkWorkbenchWidth = (): void => {
-    if (workbenchWidth <= 1024 && !$deviceInfo.navigator.float && $deviceInfo.navigator.visible) {
+    if (workbenchWidth <= HIDE_NAVIGATOR && !$deviceInfo.navigator.float && $deviceInfo.navigator.visible) {
       $deviceInfo.navigator.visible = false
       $deviceInfo.navigator.float = true
-    } else if (workbenchWidth > 1024 && $deviceInfo.navigator.float) {
+    } else if (workbenchWidth > HIDE_NAVIGATOR && $deviceInfo.navigator.float) {
       if (getMetadata(workbench.metadata.NavigationExpandedDefault) === undefined) {
         $deviceInfo.navigator.float = false
         $deviceInfo.navigator.visible = true
       }
     }
   }
-  $: if ($deviceInfo.docWidth <= 1024 && !$deviceInfo.aside.float) {
+  checkWorkbenchWidth()
+  $: if ($deviceInfo.docWidth <= HIDE_ASIDE && !$deviceInfo.aside.float) {
     $deviceInfo.aside.visible = false
     $deviceInfo.aside.float = true
-  } else if ($deviceInfo.docWidth > 1024 && $deviceInfo.aside.float) {
+  } else if ($deviceInfo.docWidth > HIDE_ASIDE && $deviceInfo.aside.float) {
     if (getMetadata(workbench.metadata.NavigationExpandedDefault) === undefined) {
       $deviceInfo.aside.float = false
       $deviceInfo.aside.visible = true
     }
   }
   const checkOnHide = (): void => {
-    if ($deviceInfo.navigator.visible && workbenchWidth <= 1024) $deviceInfo.navigator.visible = false
+    if ($deviceInfo.navigator.visible && $deviceInfo.navigator.float) $deviceInfo.navigator.visible = false
   }
   let oldNavVisible: boolean = $deviceInfo.navigator.visible
   let oldASideVisible: boolean = $deviceInfo.aside.visible
@@ -741,7 +744,7 @@
   defineSeparators('workbench', workbenchSeparators)
   defineSeparators('main', mainSeparators)
 
-  $: mainNavigator = currentApplication && navigatorModel && navigator && $deviceInfo.navigator.visible
+  $: mainNavigator = currentApplication && navigatorModel && $deviceInfo.navigator.visible
   $: elementPanel = $deviceInfo.replacedPanel ?? contentPanel
 
   $: deactivated =
@@ -817,14 +820,22 @@
           />
         </div>
         <!-- <ActivityStatus status="active" /> -->
-        <NavLink app={notificationId} shrink={0}>
+        <NavLink
+          app={notificationId}
+          shrink={0}
+          disabled={!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === notificationId}
+        >
           <AppItem
             icon={notification.icon.Notifications}
             label={notification.string.Inbox}
             selected={currentAppAlias === notificationId || inboxPopup !== undefined}
+            navigator={(currentAppAlias === notificationId || inboxPopup !== undefined) &&
+              $deviceInfo.navigator.visible}
             on:click={(e) => {
               if (e.metaKey || e.ctrlKey) return
-              if (currentAppAlias === notificationId && lastLoc !== undefined) {
+              if (!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === notificationId) {
+                toggleNav()
+              } else if (currentAppAlias === notificationId && lastLoc !== undefined) {
                 e.preventDefault()
                 e.stopPropagation()
                 navigate(lastLoc)
@@ -908,12 +919,12 @@
         checkWorkbenchWidth()
       }}
     >
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      {#if $deviceInfo.navigator.float && $deviceInfo.navigator.visible}
+        <div class="cover shown" on:click={() => ($deviceInfo.navigator.visible = false)} />
+      {/if}
       {#if mainNavigator}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        {#if $deviceInfo.navigator.float}
-          <div class="cover shown" on:click={() => ($deviceInfo.navigator.visible = false)} />
-        {/if}
         <div
           class="antiPanel-navigator no-print {$deviceInfo.navigator.direction === 'horizontal'
             ? 'portrait'
@@ -1025,7 +1036,7 @@
   <Dock />
   {#if $deviceInfo.aside.float}
     <div
-      class="antiPanel-navigator right no-print {$deviceInfo.navigator.direction === 'horizontal'
+      class="antiPanel-navigator right fly no-print {$deviceInfo.navigator.direction === 'horizontal'
         ? 'portrait'
         : 'landscape'}"
       style:display={$deviceInfo.aside.visible ? 'flex' : 'none'}

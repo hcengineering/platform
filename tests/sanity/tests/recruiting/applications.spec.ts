@@ -5,7 +5,6 @@ import { ApplicationsPage } from '../model/recruiting/applications-page'
 import { ApplicationsDetailsPage } from '../model/recruiting/applications-details-page'
 import { VacancyDetailsPage } from '../model/recruiting/vacancy-details-page'
 import { VacanciesPage } from '../model/recruiting/vacancies-page'
-import { RecruitingPage } from '../model/recruiting/recruiting-page'
 import { TalentsPage } from '../model/recruiting/talents-page'
 
 test.use({
@@ -13,7 +12,6 @@ test.use({
 })
 
 test.describe('Application tests', () => {
-  let recrutingPage: RecruitingPage
   let vacanciesPage: VacanciesPage
   let vacancyDetailsPage: VacancyDetailsPage
   let navigationMenuPage: NavigationMenuPage
@@ -22,7 +20,6 @@ test.describe('Application tests', () => {
   let applicationsPage: ApplicationsPage
 
   test.beforeEach(async ({ page }) => {
-    recrutingPage = new RecruitingPage(page)
     vacanciesPage = new VacanciesPage(page)
     vacancyDetailsPage = new VacancyDetailsPage(page)
     navigationMenuPage = new NavigationMenuPage(page)
@@ -35,7 +32,6 @@ test.describe('Application tests', () => {
 
   test('create application', async ({ page }) => {
     const vacancyId = 'My vacancy ' + generateId(4)
-    await recrutingPage.clickRecruitApplication()
     await page.waitForLoadState('load')
     await vacanciesPage.clickOnVacancy()
     await vacanciesPage.clickOnVacancyButton()

@@ -93,7 +93,7 @@ function defineApplication (builder: Builder): void {
                     parentKey: 'parent',
                     noParentId: testManagement.ids.NoParent,
                     getFolderLink: testManagement.function.GetTestSuiteLink,
-                    allObjectsLabel: testManagement.string.AllTestCases,
+                    allObjectsLabel: testManagement.string.AllTestSuites,
                     allObjectsIcon: testManagement.icon.TestSuites
                   },
                   syncWithLocationQuery: true
@@ -115,6 +115,7 @@ function defineApplication (builder: Builder): void {
                   navigationComponentIcon: testManagement.icon.TestRuns,
                   mainComponentLabel: testManagement.string.TestResults,
                   mainComponentIcon: testManagement.icon.TestResult,
+                  mainHeaderComponent: testManagement.component.TestRunHeader,
                   navigationComponentProps: {
                     _class: testManagement.class.TestRun,
                     icon: testManagement.icon.TestRuns,
@@ -160,6 +161,7 @@ export function createModel (builder: Builder): void {
   defineTestSuite(builder)
   defineTestCase(builder)
   defineTestRun(builder)
+  defineTestResult(builder)
 
   definePresenters(builder)
 
@@ -261,7 +263,7 @@ function defineTestSuite (builder: Builder): void {
   // Actions
 
   builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [print.action.Print, tracker.action.EditRelatedTargets]
+    actions: [print.action.Print, tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
   })
 
   createAction(
@@ -331,22 +333,8 @@ function defineTestCase (builder: Builder): void {
 
   builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ClassFilters, {
     filters: ['priority', 'status'],
-    ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn']
+    ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn', 'name']
   })
-
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: testManagement.class.TestCase,
-      descriptor: view.viewlet.Table,
-      config: ['', { key: 'attachedTo', label: testManagement.string.TestSuite }, 'status', 'assignee'],
-      configOptions: {
-        strict: true
-      }
-    },
-    testManagement.viewlet.TableTestCase
-  )
 
   const viewOptions: ViewOptionsModel = {
     groupBy: ['attachedTo'],
@@ -384,7 +372,6 @@ function defineTestCase (builder: Builder): void {
           props: { kind: 'list', size: 'small', shouldShowName: false },
           displayProps: { key: 'status', fixed: 'left' }
         },
-        { key: '', displayProps: { fixed: 'left', key: 'lead' } },
         { key: '', displayProps: { grow: true } },
         { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'right', dividerBefore: true } },
         {
@@ -396,6 +383,20 @@ function defineTestCase (builder: Builder): void {
       viewOptions
     },
     testManagement.viewlet.ListTestCase
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: testManagement.class.TestCase,
+      descriptor: view.viewlet.Table,
+      config: ['', { key: 'attachedTo', label: testManagement.string.TestSuite }, 'status', 'assignee'],
+      configOptions: {
+        strict: true
+      }
+    },
+    testManagement.viewlet.TableTestCase
   )
 }
 
@@ -419,6 +420,12 @@ function defineTestRun (builder: Builder): void {
     component: testManagement.component.TestResultStatusPresenter
   })
 
+  builder.mixin(testManagement.class.TestRun, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [print.action.Print, tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
+  })
+}
+
+function defineTestResult (builder: Builder): void {
   builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: testManagement.component.TestResultPresenter
   })
@@ -448,7 +455,7 @@ function defineTestRun (builder: Builder): void {
 
   builder.mixin(testManagement.class.TestResult, core.class.Class, view.mixin.ClassFilters, {
     filters: ['assignee', 'status', 'testSuite'],
-    ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn']
+    ignoreKeys: ['createdBy', 'modifiedBy', 'createdOn', 'modifiedOn', 'name', 'attachedTo']
   })
 
   const viewOptions: ViewOptionsModel = {
@@ -486,6 +493,8 @@ function defineTestRun (builder: Builder): void {
           key: 'status',
           props: { kind: 'list', size: 'small', shouldShowName: false }
         },
+        { key: '', displayProps: { grow: true } },
+        { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'right', dividerBefore: true } },
         {
           key: 'assignee',
           props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' },

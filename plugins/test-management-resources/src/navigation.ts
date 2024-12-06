@@ -11,15 +11,21 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import testManagement, { testManagementId, type TestSuite, type TestProject } from '@hcengineering/test-management'
-import { type Doc, type Ref } from '@hcengineering/core'
+import testManagement, {
+  testManagementId,
+  type TestSuite,
+  type TestProject,
+  type TestRun
+} from '@hcengineering/test-management'
+import { type Doc, type Ref, getCurrentAccount } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import {
   getCurrentResolvedLocation,
   getLocation,
   getPanelURI,
   type Location,
-  type ResolvedLocation
+  type ResolvedLocation,
+  navigate
 } from '@hcengineering/ui'
 import view, { type ObjectPanel } from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
@@ -63,7 +69,7 @@ async function generateProjectLocation (
 
 export function getAttachedObjectLink (parentDoc: Ref<Doc>): Location {
   const loc = getCurrentResolvedLocation()
-  loc.query = parentDoc === undefined ? undefined : { attachedTo: parentDoc }
+  loc.query = parentDoc === undefined ? undefined : { ...loc.query, attachedTo: parentDoc }
 
   return loc
 }
@@ -79,6 +85,11 @@ export function getTestSuiteIdFromLocation (): Ref<TestSuite> {
   return (location?.query?.[SUITE_KEY] as Ref<TestSuite>) ?? testManagement.ids.NoParent
 }
 
+export function getTestRunIdFromLocation (): Ref<TestRun> {
+  const location = getLocation()
+  return (location?.query?.[SUITE_KEY] as Ref<TestRun>) ?? testManagement.ids.NoTestRun
+}
+
 export function getTestRunsLink (space: Ref<TestProject>, parentDoc: Ref<Doc>): Location {
   const loc = getCurrentResolvedLocation()
   loc.path.length = 5
@@ -89,6 +100,29 @@ export function getTestRunsLink (space: Ref<TestProject>, parentDoc: Ref<Doc>): 
   loc.query = parentDoc === undefined ? undefined : { attachedTo: parentDoc }
 
   return loc
+}
+
+export function onModeChanged (newMode: string): void {
+  const loc = getCurrentResolvedLocation()
+  const { assignee, ...baseQuery } = loc.query ?? {}
+  const currentUser = getCurrentAccount()?.person
+  if (currentUser === undefined) {
+    console.error('Current user is not defined')
+    return
+  }
+  switch (newMode) {
+    case testManagement.mode.AllTests:
+      loc.query = baseQuery
+      break
+    case testManagement.mode.MyTests:
+      loc.query = { ...baseQuery, assignee: currentUser }
+  }
+  navigate(loc)
+}
+
+export function getCurrentMode (loc: Location): string {
+  const { assignee } = loc.query ?? {}
+  return assignee === getCurrentAccount()?.person ? testManagement.mode.MyTests : testManagement.mode.AllTests
 }
 
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {

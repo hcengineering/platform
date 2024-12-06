@@ -85,7 +85,7 @@ export interface ClientConnection extends Storage, FulltextStorage, BackupClient
   isConnected: () => boolean
 
   close: () => Promise<void>
-  onConnect?: (event: ClientConnectEvent) => Promise<void>
+  onConnect?: (event: ClientConnectEvent, data: any) => Promise<void>
 
   // If hash is passed, will return LoadModelResponse
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
@@ -264,11 +264,11 @@ export async function createClient (
   txHandler(...txBuffer)
   txBuffer = undefined
 
-  const oldOnConnect: ((event: ClientConnectEvent) => Promise<void>) | undefined = conn.onConnect
-  conn.onConnect = async (event) => {
+  const oldOnConnect: ((event: ClientConnectEvent, data: any) => Promise<void>) | undefined = conn.onConnect
+  conn.onConnect = async (event, data) => {
     console.log('Client: onConnect', event)
     if (event === ClientConnectEvent.Maintenance) {
-      await oldOnConnect?.(ClientConnectEvent.Maintenance)
+      await oldOnConnect?.(ClientConnectEvent.Maintenance, data)
       return
     }
     // Find all new transactions and apply
@@ -282,7 +282,7 @@ export async function createClient (
       model = new ModelDb(hierarchy)
 
       await ctx.with('build-model', {}, (ctx) => buildModel(ctx, loadModelResponse, modelFilter, hierarchy, model))
-      await oldOnConnect?.(ClientConnectEvent.Upgraded)
+      await oldOnConnect?.(ClientConnectEvent.Upgraded, data)
 
       // No need to fetch more stuff since upgrade was happened.
       return
@@ -290,7 +290,7 @@ export async function createClient (
 
     if (event === ClientConnectEvent.Connected) {
       // No need to do anything here since we connected.
-      await oldOnConnect?.(event)
+      await oldOnConnect?.(event, data)
       return
     }
 
@@ -318,10 +318,10 @@ export async function createClient (
     if (atxes.length < transactionThreshold && !needFullRefresh) {
       console.log('applying input transactions', atxes.length)
       txHandler(...atxes)
-      await oldOnConnect?.(ClientConnectEvent.Reconnected)
+      await oldOnConnect?.(ClientConnectEvent.Reconnected, data)
     } else {
       // We need to trigger full refresh on queries, etc.
-      await oldOnConnect?.(ClientConnectEvent.Refresh)
+      await oldOnConnect?.(ClientConnectEvent.Refresh, data)
     }
   }
 

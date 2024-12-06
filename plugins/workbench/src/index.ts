@@ -76,6 +76,7 @@ export interface Widget extends Doc {
 
   component: AnyComponent
   tabComponent?: AnyComponent
+  switcherComponent?: AnyComponent
   headerLabel?: IntlString
 
   closeIfNoTabs?: boolean

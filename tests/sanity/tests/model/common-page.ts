@@ -91,7 +91,12 @@ export class CommonPage {
 
   submitButton = (): Locator => this.page.locator('div.date-popup-container button[type="submit"]')
   buttonBreadcrumb = (hasText?: string): Locator => this.page.locator('button.hulyBreadcrumb-container', { hasText })
-  appsMenuButton = (): Locator => this.page.locator('[id="app-workbench\\:string\\:ShowMenu"]')
+  appsShowMenuButton = (): Locator => this.page.locator('[id="app-workbench\\:string\\:ShowMenu"]')
+
+  async openNavigator (): Promise<void> {
+    const needOpenNavigator = await this.appsShowMenuButton().isVisible()
+    if (needOpenNavigator) await this.appsShowMenuButton().click()
+  }
 
   async selectMenuItem (page: Page, name: string, fullWordFilter: boolean = false): Promise<void> {
     if (name !== 'first') {

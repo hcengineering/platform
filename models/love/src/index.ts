@@ -288,7 +288,8 @@ export function createModel (builder: Builder): void {
       label: love.string.Meeting,
       type: WidgetType.Flexible,
       icon: love.icon.Cam,
-      component: love.component.MeetingWidget
+      component: love.component.MeetingWidget,
+      switcherComponent: love.component.WidgetSwitcher
     },
     love.ids.MeetingWidget
   )

@@ -21,14 +21,17 @@
   export let icon: Asset | AnySvelteComponent
   export let selected: boolean = false
   export let size: 'small' | 'medium' | 'large' = 'large'
+  export let kind: 'default' | 'positive' | 'negative' | 'warning' | 'accented' = 'default'
   export let loading: boolean = false
   export let notify: boolean = false
+  export let navigator: boolean = false
 </script>
 
 <button
-  class="app {size}"
+  class="app {size} {kind}"
   class:loading
   class:selected
+  class:navigator
   id={'app-' + label}
   disabled={loading}
   use:tooltip={{ label }}
@@ -98,6 +101,31 @@
       .icon-container {
         color: var(--theme-caption-color);
       }
+    }
+    &.navigator {
+      border-color: var(--theme-button-border);
+    }
+    &.positive,
+    &.positive.selected {
+      background-color: var(--global-online-color);
+    }
+    &.negative,
+    &.negative.selected {
+      background-color: var(--button-negative-BackgroundColor);
+    }
+    &.warning,
+    &.warning.selected {
+      background-color: var(--theme-warning-color);
+    }
+    &.accented,
+    &.accented.selected {
+      background-color: var(--global-disabled-PriorityColor);
+    }
+    &.positive .icon-container,
+    &.negative .icon-container,
+    &.warning .icon-container,
+    &.accented .icon-container {
+      color: var(--primary-button-color);
     }
   }
 

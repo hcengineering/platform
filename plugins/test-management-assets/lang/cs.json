@@ -21,7 +21,7 @@
     "TestCase": "Testovací případ",
     "TestProject": "Projekt",
     "TestManagementApplication": "Správa testů",
-    "AllTestCases": "Všechny testovací případy",
+    "AllTestSuites": "Všechny testovací sady",
     "AllProjects": "Všechny projekty",
     "Projects": "Projekty",
     "CreateProject": "Vytvořit projekt",
@@ -77,6 +77,11 @@
     "DueDate": "Termín",
     "RunTestCases": "Spustit",
     "TestCaseDescription": "Popis testovacího případu",
-    "TestResultAttributes": "Výsledek"
+    "TestResultAttributes": "Výsledek",
+    "GoToNextTest": "Další",
+    "GoToNextTestTooltip": "Přejít na další test",
+    "AllTests": "Všechny testy",
+    "MyTests": "Moje testy",
+    "Comments": "Komentáře"
   }
 }

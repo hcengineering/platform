@@ -32,11 +32,13 @@ import core, {
   Ref,
   SortingOrder,
   systemAccountEmail,
+  TxProcessor,
   WorkspaceId,
   type BackupStatus,
   type Blob,
   type DocIndexState,
-  type Tx
+  type Tx,
+  type TxCUD
 } from '@hcengineering/core'
 import { BlobClient, createClient } from '@hcengineering/server-client'
 import { type StorageAdapter } from '@hcengineering/server-core'
@@ -1768,8 +1770,20 @@ export async function restore (
             d.space = core.space.Workspace
             ;(d as any)['%hash%'] = ''
           }
+
+          if (TxProcessor.isExtendsCUD(d._class)) {
+            const tx = d as TxCUD<Doc>
+            if (tx.objectSpace == null) {
+              tx.objectSpace = core.space.Workspace
+              ;(tx as any)['%hash%'] = ''
+            }
+          }
         }
-        await connection.upload(c, docs)
+        try {
+          await connection.upload(c, docs)
+        } catch (err: any) {
+          ctx.error('error during upload', { err, docs: JSON.stringify(docs) })
+        }
         docs.length = 0
         sendSize = 0
       }

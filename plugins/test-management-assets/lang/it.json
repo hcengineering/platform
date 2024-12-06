@@ -21,7 +21,7 @@
     "TestCase": "Caso di test",
     "TestProject": "Progetto",
     "TestManagementApplication": "Gestione Test",
-    "AllTestCases": "Tutti i casi di test",
+    "AllTestSuites": "Tutti i set di test",
     "AllProjects": "Tutti i progetti",
     "Projects": "Progetti",
     "CreateProject": "Crea progetto",
@@ -77,6 +77,11 @@
     "DueDate": "Data di scadenza",
     "RunTestCases": "Esegui",
     "TestCaseDescription": "Descrizione del caso di test",
-    "TestResultAttributes": "Risultato"
+    "TestResultAttributes": "Risultato",
+    "GoToNextTest": "Successivo",
+    "GoToNextTestTooltip": "Vai al test successivo",
+    "AllTests": "Tutte le test",
+    "MyTests": "Le mie test",
+    "Comments": "Commenti"
   }
 }

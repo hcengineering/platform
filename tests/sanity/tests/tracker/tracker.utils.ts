@@ -35,7 +35,6 @@ export const DEFAULT_STATUSES_ID = new Map([
 
 export async function navigate (page: Page): Promise<void> {
   await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
-  await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
 }
 
 export async function setViewGroup (page: Page, groupName: string): Promise<void> {
