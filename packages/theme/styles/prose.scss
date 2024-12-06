@@ -41,7 +41,7 @@ table.proseTable {
     box-sizing: border-box;
     position: relative;
 
-    > * {
+    >* {
       margin-bottom: 0;
     }
   }
@@ -72,15 +72,19 @@ table.proseTable {
         left: var(--table-selection-border-indent);
         right: var(--table-selection-border-indent);
       }
+
       &__border-top::before {
         border-top-width: var(--table-selection-border-width);
       }
+
       &__border-bottom::before {
         border-bottom-width: var(--table-selection-border-width);
       }
+
       &__border-left::before {
         border-left-width: var(--table-selection-border-width);
       }
+
       &__border-right::before {
         border-right-width: var(--table-selection-border-width);
       }
@@ -276,7 +280,9 @@ table.proseTable {
         }
       }
 
-      &:hover + .table-insert-marker { opacity: 1; }
+      &:hover+.table-insert-marker {
+        opacity: 1;
+      }
     }
 
     .table-insert-marker {
@@ -381,19 +387,94 @@ pre.proseCodeBlock {
 }
 
 // Fixes for MessageViewer
-pre.proseCodeBlock > pre.proseCode {
+pre.proseCodeBlock>pre.proseCode {
   padding: 0;
   background-color: transparent;
   border: none;
   border-radius: 0;
 }
 
-.proseHeading { line-height: 110%; }
+.proseHeading {
+  line-height: 110%;
+}
 
 // Fixes for cursors
 .ProseMirror {
-  h1, h2, h3, p, pre, code { cursor: text; }
-  p div { cursor: auto; }
+
+  h1,
+  h2,
+  h3,
+  p,
+  pre,
+  code {
+    cursor: text;
+  }
+
+  p div {
+    cursor: auto;
+  }
+}
+
+.proseMemraidDiagram {
+  --border-color: transparent;
+
+  cursor: auto;
+
+  position: relative;
+  border: 1px solid var(--border-color);
+  border-radius: .25rem;
+
+
+  &:not(.selected) header {
+    visibility: hidden;
+  }
+
+  &:not(.folded) {
+    --border-color: var(--theme-button-border);
+
+    header {
+      visibility: visible;
+    }
+  }
+
+  &.selected {
+    --border-color: var(--theme-editbox-focus-border)
+  }
+
+  header {
+    user-select: none;
+    position: absolute;
+    right: 0.5rem;
+    top: 0.5rem;
+
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  >code {
+    display: block;
+    padding: 0.75rem;
+    user-select: text;
+    font-family: var(--mono-font);
+    color: var(--theme-content-color);
+
+    min-height: 3rem;
+
+    background: var(--theme-button-default);
+
+    font-size: 0.875rem;
+    line-height: 1.5em;
+  }
+
+  .mermaidPreviewContainer {
+    padding: 0.5rem;
+    cursor: default;
+  }
+
+  &:not(.folded) .mermaidPreviewContainer {
+    border-top: 1px solid var(--border-color);
+    min-height: 6rem;
+  }
 }
 
 .theme-dark {
