@@ -23,7 +23,7 @@ import CreateTestSuiteComponent from './components/test-suite/CreateTestSuite.sv
 import EditTestSuiteComponent from './components/test-suite/EditTestSuite.svelte'
 import CreateTestCase from './components/test-case/CreateTestCase.svelte'
 import CreateProject from './components/project/CreateProject.svelte'
-import CreateTestRun from './components/test-run/CreateTestRun.svelte'
+import SelectTestCases from './components/test-case/SelectTestCasesModal.svelte'
 import { getTestRunIdFromLocation } from './navigation'
 import { initializeIterator } from './components/test-result/store/testIteratorStore'
 
@@ -51,7 +51,15 @@ export async function showCreateTestRunPopup (options: {
   query?: DocumentQuery<Doc>
   space: Ref<TestProject>
 }): Promise<void> {
-  showPopup(CreateTestRun, options, 'top')
+  showPanel(testManagement.component.NewTestRunPanel, 'new-test-run', testManagement.class.TestRun, 'content', undefined, false)
+}
+
+export async function showSelectTestCasesPopup (options: {
+  testCases?: TestCase[]
+  query?: DocumentQuery<Doc>
+  space: Ref<TestProject>
+}): Promise<void> {
+  showPopup(SelectTestCases, {}, 'top')
 }
 
 export async function showTestRunnerPanel (options: {
@@ -71,7 +79,7 @@ export async function showTestRunnerPanel (options: {
       docs: selectedDocs
     })
     const testRunId = getTestRunIdFromLocation()
-    showPanel(testManagement.component.TestRunner, testRunId, testManagement.class.TestRun, 'content')
+    showPanel(testManagement.component.TestRunner, testRunId, testManagement.class.TestRun, 'content', undefined, false)
   } catch (err: any) {
     Analytics.handleError(err)
     console.error('Failed to initialize test runner', err)

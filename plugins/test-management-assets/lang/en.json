@@ -82,6 +82,7 @@
     "GoToNextTestTooltip": "Go to next test",
     "AllTests": "All tests",
     "MyTests": "My tests",
-    "Comments": "Comments"
+    "Comments": "Comments",
+    "Cancel": "Cancel"
   }
 }

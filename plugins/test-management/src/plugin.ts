@@ -190,7 +190,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     GoToNextTestTooltip: '' as IntlString,
     AllTests: '' as IntlString,
     MyTests: '' as IntlString,
-    Comments: '' as IntlString
+    Comments: '' as IntlString,
+    Cancel: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>
@@ -210,7 +211,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestResultStatusEditor: '' as AnyComponent,
     TestRunResult: '' as AnyComponent,
     TestResultHeader: '' as AnyComponent,
-    TestRunner: '' as AnyComponent
+    TestRunner: '' as AnyComponent,
+    NewTestRunPanel: '' as AnyComponent
   },
   ids: {
     NoParent: '' as Ref<TestSuite>,

@@ -26,8 +26,9 @@
   export let width: string | undefined = '100%'
   export let shouldShowAvatar: boolean = true
   export let accent: boolean = false
+  export let readonly: boolean = false
 
-  $: disabled = onChange === undefined
+  $: disabled = onChange === undefined || readonly
 </script>
 
 <StatusEditor

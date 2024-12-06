@@ -18,8 +18,8 @@
   import { Button, ButtonKind, ButtonShape, ButtonSize, Label, TooltipAlignment, showPopup } from '@hcengineering/ui'
   import { TestCase } from '@hcengineering/test-management'
 
-  import TestCasePopup from './TestCasePopup.svelte'
   import testManagement from '../../plugin'
+  import { showSelectTestCasesPopup } from '../../utils'
 
   export let objects: TestCase[]
   export let selectedObjects: TestCase[]
@@ -34,16 +34,10 @@
   export let width: string | undefined = undefined
   export let readonly = false
 
-  const showSpacesPopup = (ev: MouseEvent): void => {
-    showPopup(
-      TestCasePopup,
-      {
-        objects,
-        readonly
-      },
-      ev.target as HTMLElement,
-      () => {}
-    )
+  const showSelectDialog = async (): Promise<void> => {
+    if (!readonly) {
+      await showSelectTestCasesPopup()
+    }
   }
 </script>
 
@@ -58,7 +52,7 @@
   {justify}
   {width}
   showTooltip={{ label, direction: labelDirection }}
-  on:click={showSpacesPopup}
+  on:click={showSelectDialog}
 >
   <span slot="content" class="overflow-label disabled text">
     {selectedObjects?.length ?? 0}

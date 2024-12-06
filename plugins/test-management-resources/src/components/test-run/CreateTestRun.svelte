@@ -13,114 +13,44 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-
-  import { Attachment } from '@hcengineering/attachment'
-  import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import core, { Data, DocumentQuery, Ref, generateId, makeCollabId } from '@hcengineering/core'
+  import { Data, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { Card, SpaceSelector, createMarkup, createQuery, getClient } from '@hcengineering/presentation'
-  import {
-    TestCase,
-    TestRun,
-    TestProject,
-    TestResult,
-    TestRunStatus,
-    TestManagementEvents
-  } from '@hcengineering/test-management'
-  import { DatePresenter, EditBox, Loading, navigate } from '@hcengineering/ui'
-  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
-  import { Analytics } from '@hcengineering/analytics'
-
-  import { getTestRunsLink } from '../../navigation'
+  import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
+  import { StyledTextArea } from '@hcengineering/text-editor-resources'
+  import { TestSuite, TestProject } from '@hcengineering/test-management'
+  import { EditBox } from '@hcengineering/ui'
+  import { ObjectBox } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
   import testManagement from '../../plugin'
   import ProjectPresenter from '../project/ProjectSpacePresenter.svelte'
-  import TestCaseSelector from '../test-case/TestCaseSelector.svelte'
 
   export let space: Ref<TestProject>
-  export let query: DocumentQuery<TestCase> = {}
-  export let testCases: TestCase[]
+  export let parentId: Ref<TestSuite> = testManagement.ids.NoParent
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  let isLoading = testCases === undefined
-
-  if (testCases === undefined) {
-    const client = createQuery()
-    const spaceQuery = space !== undefined ? { space } : {}
-    client.query(testManagement.class.TestCase, { ...spaceQuery, ...(query ?? {}) }, (result) => {
-      testCases = result
-      isLoading = false
-    })
-  }
-
-  const id: Ref<TestRun> = generateId()
-
-  const object: Data<TestRun> = {
+  const object: Data<TestSuite> = {
     name: '' as IntlString,
-    description: null,
-    dueDate: undefined
+    description: '',
+    parent: parentId
   }
 
   let _space = space
 
-  let description = EmptyMarkup
+  function handleTestSuiteChange (evt: CustomEvent<Ref<TestSuite>>): void {
+    object.parent = evt.detail
+  }
 
-  let descriptionBox: AttachmentStyledBox
-  let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
-
-  async function onSave (): Promise<void> {
-    try {
-      const applyOp = client.apply()
-      await applyOp.createDoc(testManagement.class.TestRun, _space, object, id)
-      const testCasesArray = testCases instanceof Array ? testCases : [testCases]
-      const createPromises = testCasesArray.map(async (testCase) => {
-        const descriptionRef = isEmptyMarkup(description)
-          ? null
-          : await createMarkup(makeCollabId(testManagement.class.TestRun, id, 'description'), description)
-
-        const testResultId: Ref<TestResult> = generateId()
-        const testResultData: Data<TestResult> = {
-          attachedTo: id,
-          attachedToClass: testManagement.class.TestRun,
-          name: testCase.name,
-          testCase: testCase._id,
-          testSuite: testCase.attachedTo,
-          collection: 'results',
-          description: descriptionRef,
-          status: TestRunStatus.Untested
-        }
-
-        return await applyOp.addCollection(
-          testManagement.class.TestResult,
-          _space,
-          id,
-          testManagement.class.TestRun,
-          'results',
-          testResultData,
-          testResultId
-        )
-      })
-      await Promise.all(createPromises)
-      const opResult = await applyOp.commit()
-      if (!opResult.result) {
-        throw new Error('Failed to create test run')
-      } else {
-        Analytics.handleEvent(TestManagementEvents.TestRunCreated, { id })
-        navigate(getTestRunsLink(space, id))
-      }
-    } catch (err: any) {
-      console.error(err)
-      Analytics.handleError(err)
-    }
+  async function onSave () {
+    await client.createDoc(testManagement.class.TestSuite, _space, object)
   }
 </script>
 
 <Card
-  label={testManagement.string.CreateTestRun}
+  label={testManagement.string.CreateTestSuite}
   okAction={onSave}
-  canSave={object.name !== '' && !isLoading}
-  okLabel={testManagement.string.CreateTestRun}
+  canSave={object.name !== ''}
+  okLabel={testManagement.string.CreateTestSuite}
   gap={'gapV-4'}
   on:close={() => dispatch('close')}
   on:changeContent
@@ -131,55 +61,38 @@
       label={testManagement.string.TestProject}
       bind:space={_space}
       kind={'regular'}
-      size={'large'}
+      size={'small'}
       component={ProjectPresenter}
       defaultIcon={testManagement.icon.Home}
+    />
+    <ObjectBox
+      _class={testManagement.class.TestSuite}
+      value={parentId}
+      docQuery={{
+        space: _space
+      }}
+      on:change={handleTestSuiteChange}
+      kind={'regular'}
+      size={'small'}
+      label={testManagement.string.NoTestSuite}
+      icon={testManagement.icon.TestSuite}
+      searchField={'title'}
+      allowDeselect={true}
+      showNavigate={false}
+      docProps={{ disabled: true, noUnderline: true }}
+      focusIndex={20000}
     />
   </svelte:fragment>
   <EditBox
     bind:value={object.name}
-    placeholder={testManagement.string.TestRunNamePlaceholder}
+    placeholder={testManagement.string.NamePlaceholder}
     kind={'large-style'}
     autoFocus
   />
-  <AttachmentStyledBox
-    bind:this={descriptionBox}
-    objectId={id}
-    _class={testManagement.class.TestRun}
-    space={_space}
-    alwaysEdit
+  <StyledTextArea
+    bind:content={object.description}
+    placeholder={testManagement.string.DescriptionPlaceholder}
+    kind={'emphasized'}
     showButtons={false}
-    bind:content={description}
-    placeholder={core.string.Description}
-    kind="indented"
-    isScrollable={false}
-    enableBackReferences={true}
-    enableAttachments={false}
-    on:attachments={(ev) => {
-      if (ev.detail.size > 0) attachments = ev.detail.values
-      else if (ev.detail.size === 0 && ev.detail.values != null) {
-        attachments.clear()
-        attachments = attachments
-      }
-    }}
   />
-  <svelte:fragment slot="pool">
-    <div id="duedate-editor">
-      <DatePresenter
-        focusIndex={10}
-        bind:value={object.dueDate}
-        labelNull={testManagement.string.DueDate}
-        kind={'regular'}
-        size={'large'}
-        editable
-      />
-    </div>
-    <div id="test-cases-selector">
-      {#if isLoading}
-        <Loading />
-      {:else}
-        <TestCaseSelector objects={testCases} selectedObjects={testCases} readonly={true} />
-      {/if}
-    </div>
-  </svelte:fragment>
 </Card>
