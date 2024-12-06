@@ -94,7 +94,8 @@ export default plugin(textEditorId, {
     Image: '' as IntlString,
     SeparatorLine: '' as IntlString,
     TodoList: '' as IntlString,
-    DrawingBoard: '' as IntlString
+    DrawingBoard: '' as IntlString,
+    MermaidDiargram: '' as IntlString
   },
   icon: {
     Header1: '' as Asset,
