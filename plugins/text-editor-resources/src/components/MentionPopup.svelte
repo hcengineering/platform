@@ -15,11 +15,22 @@
 -->
 <script lang="ts">
   import { SearchResultDoc } from '@hcengineering/core'
-  import presentation, { SearchResult, reduceCalls, searchFor, type SearchItem } from '@hcengineering/presentation'
+  import { getResource } from '@hcengineering/platform'
+  import presentation, {
+    SearchResult,
+    getClient,
+    reduceCalls,
+    searchFor,
+    type SearchItem
+  } from '@hcengineering/presentation'
   import { Label, ListView, resizeObserver } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
 
   export let query: string = ''
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   let items: SearchItem[] = []
 
@@ -29,10 +40,21 @@
   let scrollContainer: HTMLElement
   let selection = 0
 
-  function dispatchItem (item: SearchResultDoc): void {
+  async function getIdentifier (item: SearchResultDoc): Promise<string | undefined> {
+    const identifierProvider = hierarchy.classHierarchyMixin(item.doc._class, view.mixin.ObjectIdentifier)
+    if (identifierProvider === undefined) {
+      return item.shortTitle ?? item.title
+    }
+
+    const resource = await getResource(identifierProvider.provider)
+    return await resource(client, item.id)
+  }
+
+  async function handleSelectItem (item: SearchResultDoc): Promise<void> {
+    const identifier = await getIdentifier(item)
     dispatch('close', {
       id: item.id,
-      label: item.shortTitle ?? item.title,
+      label: identifier,
       objectclass: item.doc._class
     })
   }
@@ -58,7 +80,7 @@
       key.stopPropagation()
       if (selection < items.length) {
         const searchItem = items[selection]
-        dispatchItem(searchItem.item)
+        void handleSelectItem(searchItem.item)
         return true
       } else {
         return false
@@ -102,7 +124,7 @@
               <div
                 class="ap-menuItem withComp h-8"
                 on:click={() => {
-                  dispatchItem(doc)
+                  void handleSelectItem(doc)
                 }}
               >
                 <SearchResult value={doc} />
