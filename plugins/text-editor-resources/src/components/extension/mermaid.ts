@@ -55,8 +55,12 @@ interface NodeDecorationState {
   selected: boolean
 }
 
-function getTxMeta (tx?: Transaction): TxMetaContainer | undefined { return tx?.getMeta('mermaid-meta-tx') }
-function setTxMeta (tx: Transaction, meta: TxMetaContainer): Transaction { return tx.setMeta(mermaidMetaTxField, meta).setMeta('addToHistory', false) }
+function getTxMeta (tx?: Transaction): TxMetaContainer | undefined {
+  return tx?.getMeta('mermaid-meta-tx')
+}
+function setTxMeta (tx: Transaction, meta: TxMetaContainer): Transaction {
+  return tx.setMeta(mermaidMetaTxField, meta).setMeta('addToHistory', false)
+}
 
 interface NodePatchSpec {
   pos: number
@@ -97,18 +101,20 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
       [
         'code',
         {
-          class: node.attrs.language !== undefined
-            ? this.options.languageClassPrefix + node.attrs.language
-            : null
+          class: node.attrs.language !== undefined ? this.options.languageClassPrefix + node.attrs.language : null
         },
         0
       ]
     ]
   },
 
-  addCommands () { return {} },
+  addCommands () {
+    return {}
+  },
 
-  addInputRules () { return [] },
+  addInputRules () {
+    return []
+  },
 
   addProseMirrorPlugins () {
     return [...(this.parent?.() ?? []), MermaidDecorator(this.options)]
@@ -176,10 +182,14 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
         editor.view.dispatch(tr)
       }
 
-      toggleButtonNode.onmousedown = e => { toggleFoldState(!nodeState.folded, e) }
-      previewNode.ondblclick = e => { toggleFoldState(!nodeState.folded, e) }
+      toggleButtonNode.onmousedown = (e) => {
+        toggleFoldState(!nodeState.folded, e)
+      }
+      previewNode.ondblclick = (e) => {
+        toggleFoldState(!nodeState.folded, e)
+      }
 
-      previewNode.onclick = e => {
+      previewNode.onclick = (e) => {
         if (typeof getPos !== 'function') return
         const pos = getPos()
         const selection = NodeSelection.create(editor.view.state.doc, pos)
@@ -188,14 +198,12 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
       }
 
       const syncState = (decorations: readonly Decoration[]): void => {
-        nodeState = decorations.find(d => d.spec.type === MermaidExtension.name)?.spec ?? nodeState
+        nodeState = decorations.find((d) => d.spec.type === MermaidExtension.name)?.spec ?? nodeState
 
         const isEmpty = nodeState.textContent.trim().length === 0
         const diagram = nodeState.diagramBuilder?.(editor.view) ?? null
         const error = diagram?.error ?? null
-        const diagramNode = error === null
-          ? (diagram?.domFragments[0] ?? null)
-          : null
+        const diagramNode = error === null ? diagram?.domFragments[0] ?? null : null
 
         const allowFold = !isEmpty && error === null
 
@@ -223,9 +231,11 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
         }
 
         if (!isEmpty && error !== null) {
-          languageLabelNode.className = 'antiButton negative medium sh-no-shape bs-none gap-medium iconR pointer-events-none'
+          languageLabelNode.className =
+            'antiButton negative medium sh-no-shape bs-none gap-medium iconR pointer-events-none'
         } else {
-          languageLabelNode.className = 'antiButton link-bordered medium sh-no-shape bs-none gap-medium iconR pointer-events-none'
+          languageLabelNode.className =
+            'antiButton link-bordered medium sh-no-shape bs-none gap-medium iconR pointer-events-none'
         }
 
         while (previewNode.firstChild !== null && previewNode.firstChild !== diagramNode) {
@@ -265,8 +275,12 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
         dom: containerNode,
         contentDOM: contentNode,
 
-        selectNode: () => { toggleSelection(true) },
-        deselectNode: () => { toggleSelection(false) },
+        selectNode: () => {
+          toggleSelection(true)
+        },
+        deselectNode: () => {
+          toggleSelection(false)
+        },
 
         stopEvent: (event) => {
           if (event instanceof DragEvent && !nodeState.folded) {
@@ -346,7 +360,12 @@ async function renderMermaidDiagram (code: string, theme: MermaidConfig['theme']
   return result
 }
 
-function buildState (options: MermaidOptions, prev: MermaidPluginState, doc: ProseMirrorNode, tr?: Transaction): MermaidPluginState {
+function buildState (
+  options: MermaidOptions,
+  prev: MermaidPluginState,
+  doc: ProseMirrorNode,
+  tr?: Transaction
+): MermaidPluginState {
   const renderCache = new Map(prev.renderCache)
   const nodeidCache = new Map<string | number, MermaidRenderResult>()
   const decorationCache = new Map<string | number, NodeDecorationState>()
@@ -364,7 +383,7 @@ function buildState (options: MermaidOptions, prev: MermaidPluginState, doc: Pro
   const buildOrReuseFragment = (renderState: MermaidRenderResult | null): HTMLElement | null => {
     if (renderState?.svg === undefined) return null
 
-    const reuse = renderState.domFragments.find(f => !usedFragments.has(f))
+    const reuse = renderState.domFragments.find((f) => !usedFragments.has(f))
     if (reuse !== undefined) {
       usedFragments.add(reuse)
       return reuse
@@ -380,13 +399,16 @@ function buildState (options: MermaidOptions, prev: MermaidPluginState, doc: Pro
     return container
   }
 
-  const buildDiagram = (node: ProseMirrorNode, nodeid: string | number, view: EditorView, theme: MermaidConfig['theme']): MermaidRenderResult => {
+  const buildDiagram = (
+    node: ProseMirrorNode,
+    nodeid: string | number,
+    view: EditorView,
+    theme: MermaidConfig['theme']
+  ): MermaidRenderResult => {
     const textContent = node.textContent
     const nodeRenderState = renderCache.get(textContent)
-    const nodeTargetRenderState =
-      nodeRenderState ??
-      prev.nodeidCache.get(nodeid) ??
-      { input: textContent, theme, domFragments: [] }
+    const nodeTargetRenderState = nodeRenderState ??
+      prev.nodeidCache.get(nodeid) ?? { input: textContent, theme, domFragments: [] }
 
     unusedRenderCache.delete(textContent)
 
@@ -397,13 +419,16 @@ function buildState (options: MermaidOptions, prev: MermaidPluginState, doc: Pro
       pendingFragments.add(textContent)
 
       prev.throttle.call(nodeid, () => {
-        renderMermaidDiagram(textContent, theme).then(renderResult => {
-          view.dispatch(setTxMeta(view.state.tr, { renderResult }))
-          pendingFragments.delete(textContent)
-        }, (reject) => {
-          console.log(reject)
-          pendingFragments.delete(textContent)
-        })
+        renderMermaidDiagram(textContent, theme).then(
+          (renderResult) => {
+            view.dispatch(setTxMeta(view.state.tr, { renderResult }))
+            pendingFragments.delete(textContent)
+          },
+          (reject) => {
+            console.log(reject)
+            pendingFragments.delete(textContent)
+          }
+        )
       })
     }
 
@@ -411,9 +436,7 @@ function buildState (options: MermaidOptions, prev: MermaidPluginState, doc: Pro
   }
 
   const decorations: Decoration[] = []
-  const lastDecorationSet = tr !== undefined
-    ? prev.decorationSet.map(tr.mapping, tr.doc)
-    : prev.decorationSet
+  const lastDecorationSet = tr !== undefined ? prev.decorationSet.map(tr.mapping, tr.doc) : prev.decorationSet
 
   const nodeStatePatch = getTxMeta(tr)?.nodePatch
 
@@ -428,14 +451,13 @@ function buildState (options: MermaidOptions, prev: MermaidPluginState, doc: Pro
     // transaction mapping, but with Yjs this is not possible in many cases.
     // So there's a need for dirty hacks to keep the state of the node intact. (See below).
     const yjsdoc = options.ydoc?.getXmlFragment(options.ydocContentField ?? 'content')
-    const yid = yjsdoc !== undefined
-      ? yRelativePositionToString(createRelativePositionFromTypeIndex(yjsdoc, index))
-      : undefined
+    const yid =
+      yjsdoc !== undefined ? yRelativePositionToString(createRelativePositionFromTypeIndex(yjsdoc, index)) : undefined
     const nodeid = yid ?? index
     const oldCache = prev.decorationCache
-    const oldState = lastDecorationSet
-      .find(pos, pos + node.nodeSize)
-      .find(d => d.spec.type === MermaidExtension.name)?.spec as NodeDecorationState ??
+    const oldState =
+      (lastDecorationSet.find(pos, pos + node.nodeSize).find((d) => d.spec.type === MermaidExtension.name)
+        ?.spec as NodeDecorationState) ??
       (yid !== undefined ? oldCache.get(nodeid) : undefined) ??
       (oldCache.get(mIndex)?.textContent === node.textContent ? oldCache.get(mIndex) : undefined)
 
@@ -487,14 +509,18 @@ export function MermaidDecorator (options: MermaidOptions): Plugin {
     },
     state: {
       init (config, state) {
-        return buildState(options, {
-          decorationSet: DecorationSet.create(state.doc, []),
-          decorationCache: new Map(),
-          nodeidCache: new Map(),
-          renderCache: new Map(),
-          throttle: new ThrottledCaller(150),
-          pendingFragments: new Set()
-        }, state.doc)
+        return buildState(
+          options,
+          {
+            decorationSet: DecorationSet.create(state.doc, []),
+            decorationCache: new Map(),
+            nodeidCache: new Map(),
+            renderCache: new Map(),
+            throttle: new ThrottledCaller(150),
+            pendingFragments: new Set()
+          },
+          state.doc
+        )
       },
       apply (tr, prev, oldState, newState) {
         if (tr.docChanged || isChangeEditable(tr) || getTxMeta(tr) !== undefined) {
@@ -522,7 +548,9 @@ class ThrottledCaller<T> {
   timers = new Map<T, number>()
   delay: number
 
-  lookup (key: T): number { return this.timers.get(key) ?? 0 }
+  lookup (key: T): number {
+    return this.timers.get(key) ?? 0
+  }
 
   update (key: T, increment: number = 0): number {
     const ticks = this.lookup(key) + increment
@@ -560,7 +588,7 @@ function mermaidHLJS (hljs: any): any {
     case_insensitive: false,
     contains: [
       // Comments
-      hljs.COMMENT('%%', '%%', { }),
+      hljs.COMMENT('%%', '%%', {}),
 
       // Style definitions
       {
@@ -573,17 +601,14 @@ function mermaidHLJS (hljs: any): any {
           {
             className: 'property',
             begin: /\b\w[\w-]*(?=[ \t]*:)/
-
           },
           {
             className: 'operator',
             begin: /:/
-
           },
           {
             className: 'punctuation',
             begin: /,/
-
           }
         ]
       },
@@ -591,7 +616,8 @@ function mermaidHLJS (hljs: any): any {
       // Inter-arrow labels
       {
         className: 'operator',
-        begin: /([^<>ox.=-])(?:-[-.]|==)(?![<>ox.=-])[ \t]*(?:"[^"\r\n]*"|[^\s".=-](?:[^\r\n.=-]*[^\s.=-])?)[ \t]*(?:\.+->?|--+[->]|==+[=>])(?![<>ox.=-])/,
+        begin:
+          /([^<>ox.=-])(?:-[-.]|==)(?![<>ox.=-])[ \t]*(?:"[^"\r\n]*"|[^\s".=-](?:[^\r\n.=-]*[^\s.=-])?)[ \t]*(?:\.+->?|--+[->]|==+[=>])(?![<>ox.=-])/,
         contains: [
           {
             className: 'operator',
@@ -613,10 +639,12 @@ function mermaidHLJS (hljs: any): any {
         className: 'operator',
         variants: [
           { begin: /(?<=^|[^{}|o.-])[|}][|o](?:--|\.\.)[|o][|{](?![{}|o.-])/ },
-          { begin: /(?<=^|[^<>ox.=-])(?:[<ox](?:==+|--+|-\.*-)[>ox]?|(?:==+|--+|-\.*-)[>ox]|===+|---+|-\.+-)(?![<>ox.=-])/ },
+          {
+            begin:
+              /(?<=^|[^<>ox.=-])(?:[<ox](?:==+|--+|-\.*-)[>ox]?|(?:==+|--+|-\.*-)[>ox]|===+|---+|-\.+-)(?![<>ox.=-])/
+          },
           { begin: /(?<=^|[^<>()x-])(?:--?(?:>>|[x>)])(?![<>()x])|(?:<<|[x<(])--?(?!-))/ },
           { begin: /(?<=^|[^<>|*o.-])(?:[*o]--|--[*o]|<\|?(?:--|\.\.)|(?:--|\.\.)\|?>|--|\.\.)(?![<>|*o.-])/ }
-
         ]
       },
 
@@ -649,10 +677,12 @@ function mermaidHLJS (hljs: any): any {
         className: 'keyword',
         variants: [
           {
-            begin: /(^[ \t]*)(?:action|callback|class|classDef|classDiagram|click|direction|erDiagram|flowchart|gantt|gitGraph|graph|journey|link|linkStyle|pie|requirementDiagram|sequenceDiagram|stateDiagram|stateDiagram-v2|style|subgraph)(?![\w$-])/m
+            begin:
+              /(^[ \t]*)(?:action|callback|class|classDef|classDiagram|click|direction|erDiagram|flowchart|gantt|gitGraph|graph|journey|link|linkStyle|pie|requirementDiagram|sequenceDiagram|stateDiagram|stateDiagram-v2|style|subgraph)(?![\w$-])/m
           },
           {
-            begin: /(^[ \t]*)(?:activate|alt|and|as|autonumber|deactivate|else|end(?:[ \t]+note)?|loop|opt|par|participant|rect|state|note[ \t]+(?:over|(?:left|right)[ \t]+of))(?![\w$-])/im
+            begin:
+              /(^[ \t]*)(?:activate|alt|and|as|autonumber|deactivate|else|end(?:[ \t]+note)?|loop|opt|par|participant|rect|state|note[ \t]+(?:over|(?:left|right)[ \t]+of))(?![\w$-])/im
           }
         ]
       },
