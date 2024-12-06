@@ -1,6 +1,6 @@
 {
   "string": {
-    "MessageID": "MessageID",
+    "MessageID": "ID сообщения",
     "IntegrationLabel": "Gmail",
     "IntegrationDescription": "Используйте интеграцию с Gmail",
     "SharedMessages": "общие письма",
