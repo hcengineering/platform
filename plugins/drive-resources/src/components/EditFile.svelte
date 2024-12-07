@@ -42,7 +42,13 @@
 </script>
 
 {#if object !== undefined && version !== undefined && blob !== undefined && contentType !== undefined}
-  <FilePreview file={blob} {contentType} name={version.title} metadata={version.metadata} fit={contentType !== 'application/pdf'} />
+  <FilePreview
+    file={blob}
+    {contentType}
+    name={version.title}
+    metadata={version.metadata}
+    fit={contentType !== 'application/pdf'}
+  />
 
   {#if object.versions > 1}
     <div class="w-full mt-6">
