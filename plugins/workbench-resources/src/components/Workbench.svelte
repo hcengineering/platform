@@ -160,11 +160,26 @@
 
   const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
-  $deviceInfo.navigator.visible = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
-  $deviceInfo.aside.visible = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
+  const defaultNavigator = !(getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true)
+  const savedNavigator = localStorage.getItem('hiddenNavigator')
+  const savedAside = localStorage.getItem('hiddenAside')
+  let hiddenNavigator: boolean = savedNavigator !== null ? savedNavigator === 'true' : defaultNavigator
+  let hiddenAside: boolean = savedAside !== null ? savedAside === 'true' : defaultNavigator
+  $deviceInfo.navigator.visible = !hiddenNavigator
+  $deviceInfo.aside.visible = !hiddenAside
+  sidebarStore.subscribe((sidebar) => {
+    if (!$deviceInfo.aside.float) {
+      hiddenAside = sidebar.variant === SidebarVariant.MINI
+      localStorage.setItem('hiddenAside', `${hiddenAside}`)
+    }
+  })
 
   async function toggleNav (): Promise<void> {
     $deviceInfo.navigator.visible = !$deviceInfo.navigator.visible
+    if (!$deviceInfo.navigator.float) {
+      hiddenNavigator = !$deviceInfo.navigator.visible
+      localStorage.setItem('hiddenNavigator', `${hiddenNavigator}`)
+    }
     closeTooltip()
     if (currentApplication && navigatorModel) {
       await tick()
@@ -638,14 +653,12 @@
 
   $deviceInfo.navigator.float = workbenchWidth <= HIDE_NAVIGATOR
   const checkWorkbenchWidth = (): void => {
-    if (workbenchWidth <= HIDE_NAVIGATOR && !$deviceInfo.navigator.float && $deviceInfo.navigator.visible) {
+    if (workbenchWidth <= HIDE_NAVIGATOR && !$deviceInfo.navigator.float) {
       $deviceInfo.navigator.visible = false
       $deviceInfo.navigator.float = true
     } else if (workbenchWidth > HIDE_NAVIGATOR && $deviceInfo.navigator.float) {
-      if (getMetadata(workbench.metadata.NavigationExpandedDefault) === undefined) {
-        $deviceInfo.navigator.float = false
-        $deviceInfo.navigator.visible = true
-      }
+      $deviceInfo.navigator.float = false
+      $deviceInfo.navigator.visible = !hiddenNavigator
     }
   }
   checkWorkbenchWidth()
@@ -653,10 +666,8 @@
     $deviceInfo.aside.visible = false
     $deviceInfo.aside.float = true
   } else if ($deviceInfo.docWidth > HIDE_ASIDE && $deviceInfo.aside.float) {
-    if (getMetadata(workbench.metadata.NavigationExpandedDefault) === undefined) {
-      $deviceInfo.aside.float = false
-      $deviceInfo.aside.visible = true
-    }
+    $deviceInfo.aside.float = false
+    $deviceInfo.aside.visible = !hiddenAside
   }
   const checkOnHide = (): void => {
     if ($deviceInfo.navigator.visible && $deviceInfo.navigator.float) $deviceInfo.navigator.visible = false
@@ -847,7 +858,12 @@
             notify={hasInboxNotifications}
           />
         </NavLink>
-        <Applications {apps} active={currentApplication?._id} direction={$deviceInfo.navigator.direction} />
+        <Applications
+          {apps}
+          active={currentApplication?._id}
+          direction={$deviceInfo.navigator.direction}
+          on:toggleNav={toggleNav}
+        />
       </div>
       <div
         class="info-box {$deviceInfo.navigator.direction}"
