@@ -42,7 +42,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header allowFullsize adaptive={'disabled'}>
+  <Header adaptive={'disabled'}>
     <Breadcrumb title={selectedFloor?.name ?? ''} size={'large'} isCurrent />
     <svelte:fragment slot="beforeTitle">
       <ViewletSelector bind:viewlet bind:preference bind:loading viewletQuery={{ attachTo: lovePlg.class.Floor }} />
