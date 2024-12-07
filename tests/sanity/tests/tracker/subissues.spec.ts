@@ -12,7 +12,6 @@ import {
 } from './tracker.utils'
 import { Issue, NewIssue } from '../model/tracker/types'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
-import { CommonTrackerPage } from '../model/tracker/common-tracker-page'
 
 test.use({
   storageState: PlatformSetting
@@ -20,17 +19,14 @@ test.use({
 test.describe('Tracker sub-issues tests', () => {
   let issuesPage: IssuesPage
   let issuesDetailsPage: IssuesDetailsPage
-  let commonTrackerPage: CommonTrackerPage
 
   test.beforeEach(async ({ page }) => {
     issuesPage = new IssuesPage(page)
     issuesDetailsPage = new IssuesDetailsPage(page)
-    commonTrackerPage = new CommonTrackerPage(page)
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
   test('create sub-issue', async ({ page }) => {
-    await commonTrackerPage.clickOnApplicationButton()
     const props = {
       name: `issue-${generateId(5)}`,
       description: 'description',
