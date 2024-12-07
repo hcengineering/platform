@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import core, { getCurrentAccount, type Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Scroller, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
@@ -26,6 +27,8 @@
   export let active: Ref<Application> | undefined
   export let apps: Application[] = []
   export let direction: 'vertical' | 'horizontal' = 'vertical'
+
+  const dispatch = createEventDispatcher()
 
   let loaded: boolean = false
   let hiddenAppsIds: Array<Ref<Application>> = []
@@ -66,9 +69,7 @@
             label={app.label}
             navigator={app._id === active && $deviceInfo.navigator.visible}
             on:click={() => {
-              if (app._id === active) {
-                $deviceInfo.navigator.visible = !$deviceInfo.navigator.visible
-              }
+              if (app._id === active) dispatch('toggleNav')
             }}
           />
         </NavLink>
@@ -82,9 +83,7 @@
             label={app.label}
             navigator={app._id === active && $deviceInfo.navigator.visible}
             on:click={() => {
-              if (app._id === active) {
-                $deviceInfo.navigator.visible = !$deviceInfo.navigator.visible
-              }
+              if (app._id === active) dispatch('toggleNav')
             }}
           />
         </NavLink>

@@ -11,7 +11,7 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 RUN apt-get update && \
   apt-get install -y gnupg wget dumb-init && \
   apt-get install -y fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 && \
-  apt-get install -y chromium --no-install-recommends && \
+  apt-get install -y chromium-common/stable chromium/stable  --no-install-recommends && \
   apt-get clean
 
 WORKDIR /usr/src/app
