@@ -28,6 +28,7 @@
     "Vacation": "Vacanza",
     "Sick": "Malattia",
     "PTO": "PTO",
+    "PTOs": "PTOs",
     "Remote": "Remoto",
     "Overtime": "Straordinario",
     "PTO2": "PTO/2",
@@ -47,6 +48,7 @@
     "PublicHoliday": "Festività",
     "Title": "Titolo",
     "Description": "Descrizione",
+    "PublicHolidays": "Public holidays",
     "MarkAsPublicHoliday": "Contrassegna come festività",
     "EditPublicHoliday": "Modifica festività",
     "Managers": "Manager",
@@ -57,6 +59,11 @@
     "RequestUpdated": "Richiesta aggiornata",
     "RequestRemoved": "Richiesta rimossa",
     "ConfigLabel": "Risorse umane",
-    "ConfigDescription": "Estensione per gestire la struttura organizzativa e il calendario lavorativo dei dipendenti"
+    "ConfigDescription": "Estensione per gestire la struttura organizzativa e il calendario lavorativo dei dipendenti",
+    "WorkingDays": "Working days",
+    "ReportedDays": "Reported days",
+    "Tasks": "Tasks",
+    "TPD": "TPD",
+    "EXTRa": "EXTRa"
   }
 }

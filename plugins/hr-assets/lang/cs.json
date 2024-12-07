@@ -28,6 +28,7 @@
     "Vacation": "Dovolená",
     "Sick": "Nemoc",
     "PTO": "PTO",
+    "PTOs": "PTOs",
     "Remote": "Vzdáleně",
     "Overtime": "Přesčas",
     "PTO2": "PTO/2",
@@ -47,6 +48,7 @@
     "PublicHoliday": "Státní svátek",
     "Title": "Název",
     "Description": "Popis",
+    "PublicHolidays": "Public holidays",
     "MarkAsPublicHoliday": "Označit jako státní svátek",
     "EditPublicHoliday": "Upravit státní svátek",
     "Managers": "Manažeři",
@@ -57,6 +59,11 @@
     "RequestUpdated": "Žádost aktualizována",
     "RequestRemoved": "Žádost odstraněna",
     "ConfigLabel": "Lidské zdroje",
-    "ConfigDescription": "Rozšíření pro správu organizační struktury a pracovního kalendáře zaměstnanců"
+    "ConfigDescription": "Rozšíření pro správu organizační struktury a pracovního kalendáře zaměstnanců",
+    "WorkingDays": "Working days",
+    "ReportedDays": "Reported days",
+    "Tasks": "Tasks",
+    "TPD": "TPD",
+    "EXTRa": "EXTRa"
   }
 }
