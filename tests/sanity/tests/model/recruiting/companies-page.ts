@@ -22,7 +22,11 @@ export class CompaniesPage extends CommonRecruitingPage {
   readonly inputCreateOrganizationModalCreate = (): Locator =>
     this.page.locator('form[id="contact:string:CreateOrganization"] button[type="submit"]')
 
-  readonly companyByName = (companyName: string): Locator => this.page.locator('tr a', { hasText: companyName })
+  readonly companyPanel = (): Locator =>
+    this.page.locator('xpath=//div[@data-id="contentPanel" and .//button[.//text()="Company"]]')
+
+  readonly companyByName = (companyName: string): Locator =>
+    this.companyPanel().locator('tr a', { hasText: companyName })
 
   async createNewCompany (data: NewCompany): Promise<void> {
     await expect(this.pageHeader()).toBeVisible()
@@ -43,7 +47,15 @@ export class CompaniesPage extends CommonRecruitingPage {
     await this.companyByName(companyName).click()
   }
 
+  async checkCompanyRowCount (companyName: string, count: number = 0): Promise<void> {
+    await expect(this.companyByName(companyName)).toHaveCount(count)
+  }
+
   async checkCompanyNotExist (companyName: string): Promise<void> {
-    await expect(this.companyByName(companyName)).toHaveCount(0)
+    await this.checkCompanyRowCount(companyName)
+  }
+
+  async checkCompanyExist (companyName: string): Promise<void> {
+    await this.checkCompanyRowCount(companyName, 1)
   }
 }
