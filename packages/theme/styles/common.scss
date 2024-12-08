@@ -130,7 +130,6 @@
 .antiPanel-navigator,
 .antiPanel-component {
   display: flex;
-  height: 100%;
   min-height: 0;
   
   &.header { background-color: var(--theme-comp-header-color); }

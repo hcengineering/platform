@@ -86,10 +86,10 @@
 
 {#if $deviceInfo.navigator.visible}
   <ToDosNavigator bind:mode bind:tag bind:currentDate />
-  <Separator name={'time'} float={$deviceInfo.navigator.float} index={0} color={'var(--theme-divider-color)'} />
+  <Separator name={'time'} float={$deviceInfo.navigator.float} index={0} separatorSize={0} />
 {/if}
 <div
-  class="flex-col w-full clear-mins mobile-wrapper"
+  class="antiPanel-PlanView flex-col clear-mins"
   class:left-divider={!$deviceInfo.navigator.visible}
   bind:this={mainPanel}
 >
@@ -105,3 +105,16 @@
     on:dragDrop={drop}
   />
 {/if}
+
+<style lang="scss">
+  .antiPanel-PlanView {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    background-color: var(--theme-workbench-color);
+    margin: var(--spacing-2) 0 var(--spacing-2) var(--spacing-2);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: var(--small-focus-BorderRadius);
+    min-width: 320px;
+  }
+</style>
