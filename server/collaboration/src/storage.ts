@@ -45,8 +45,7 @@ export async function loadCollabYdoc (
   }
 
   if (!blob.contentType.includes('application/ydoc')) {
-    ctx.error('invalid content type', { contentType: blob.contentType })
-    return undefined
+    ctx.warn('invalid content type', { contentType: blob.contentType })
   }
 
   // no need to apply gc because we load existing document
