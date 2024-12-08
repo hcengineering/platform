@@ -8,7 +8,7 @@ trap "exit" INT
 mkdir -p ${dump}
 mkdir -p ${dump}/workspaces
 
-get_dbs="db.getSiblingDB('account').getCollection('workspace').find({lastVisit: {\$gt: Date.now() - ($DAYS * 24 * 60 * 60 * 1000)}}).forEach(it=>console.log(it.workspace, it.lastVisit))"
+get_dbs="db.getSiblingDB('account').getCollection('workspace').find({ disabled: {\$ne:true}, mode: 'active', lastVisit: {\$gt: Date.now() - ($DAYS * 24 * 60 * 60 * 1000)}}).forEach(it=>console.log(it.workspace, it.lastVisit))"
 
 mongosh --version
 mongosh ${MONGO_URL} --eval "$get_dbs" > ${dump}/databases.list
