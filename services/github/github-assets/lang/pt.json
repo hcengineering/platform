@@ -72,6 +72,8 @@
     "AuthenticatedWithGithubRequired": "Por favor, autorize a aplicação do Github a agir em seu nome para realizar ações",
     "Processing": "Processando autenticação/instalação",
     "AutoClose": "Processamento concluído, a guia será fechada automaticamente em {time} segundos.",
+    "RequestFailed": "Solicitação falhou. Por favor, feche a aba e tente novamente.",
+    "CloseTab": "Fechar aba",
     "PleaseRetry": "Por favor, tente novamente a autenticação",
     "Updated": "Atualizado",
     "LinkToProject": "Conectar ao {title}",
