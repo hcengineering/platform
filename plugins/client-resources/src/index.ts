@@ -121,11 +121,12 @@ export default async () => {
               newOpt.onConnect = async (event, data) => {
                 // Any event is fine, it means server is alive.
                 clearTimeout(connectTO)
+                await opt?.onConnect?.(event, data)
                 resolve()
               }
             })
           }
-          const clientConnection = connect(url, upgradeHandler, tokenPayload.workspace, tokenPayload.email, opt)
+          const clientConnection = connect(url, upgradeHandler, tokenPayload.workspace, tokenPayload.email, newOpt)
           if (connectPromise !== undefined) {
             await connectPromise
           }
