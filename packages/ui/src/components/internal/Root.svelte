@@ -280,6 +280,8 @@
       font-size: 0.75rem;
       line-height: 150%;
       background-color: var(--theme-statusbar-color);
+      margin: var(--spacing-2) var(--spacing-2) 0 var(--spacing-2);
+      border-radius: var(--medium-focus-BorderRadius);
       // border-bottom: 1px solid var(--theme-navpanel-divider);
 
       .history-box {
