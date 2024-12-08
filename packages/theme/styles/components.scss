@@ -23,9 +23,11 @@
   min-width: 0;
   border: 1px solid var(--theme-divider-color); // var(--global-surface-02-BorderColor);
   border-radius: var(--small-focus-BorderRadius);
+  padding: var(--spacing-2);
 
   &:not(.modal) {
     background-color: var(--theme-panel-color); // var(--global-surface-02-BackgroundColor);
+    margin: var(--spacing-2);
   }
   &.modal {
     overflow: hidden;

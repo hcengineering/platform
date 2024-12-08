@@ -142,7 +142,12 @@
 .antiPanel-navigator {
   position: relative;
   
-  &:not(.second) { background-color: var(--theme-navpanel-color); }
+  &:not(.second) { 
+    background-color: var(--theme-workbench-color); 
+    margin: var(--spacing-2) 0 var(--spacing-2) var(--spacing-2);  // Changed from all sides to top, bottom, left only
+    border: 1px solid var(--theme-divider-color);
+    border-radius: var(--small-focus-BorderRadius);
+  }
   &:not(.right) {
     min-width: 12.5rem;
     max-width: 22.5rem;

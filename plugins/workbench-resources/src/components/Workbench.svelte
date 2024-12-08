@@ -941,6 +941,14 @@
         <div class="cover shown" on:click={() => ($deviceInfo.navigator.visible = false)} />
       {/if}
       {#if mainNavigator}
+        <Separator
+          name={'workbench'}
+          float={$deviceInfo.navigator.float}
+          index={0}
+          color={'transparent'}
+          separatorSize={0}
+          short
+        />
         <div
           class="antiPanel-navigator no-print {$deviceInfo.navigator.direction === 'horizontal'
             ? 'portrait'
@@ -1114,6 +1122,7 @@
     .antiPanel-application:not(.horizontal) {
       border-radius: var(--medium-BorderRadius) 0 0 var(--medium-BorderRadius);
       border-right: none;
+      background-color: var(--theme-panel-color);
     }
   }
 
