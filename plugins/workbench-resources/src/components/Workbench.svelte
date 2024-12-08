@@ -1100,8 +1100,6 @@
     margin: var(--spacing-1);
 
     &.inner {
-      background-color: var(--theme-navpanel-color);
-
       &.rounded {
         border-radius: var(--medium-BorderRadius);
       }
