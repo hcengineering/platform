@@ -15,8 +15,7 @@
 
 import { AwsClient } from 'aws4fetch'
 import { error, json } from 'itty-router'
-import postgres from 'postgres'
-import * as db from './db'
+import db, { withPostgres } from './db'
 import { saveBlob } from './blob'
 import { type BlobRequest } from './types'
 
@@ -38,34 +37,35 @@ function getS3Client (payload: S3UploadPayload): AwsClient {
 
 export async function handleS3Blob (request: BlobRequest, env: Env, ctx: ExecutionContext): Promise<Response> {
   const { workspace, name } = request
-  const sql = postgres(env.HYPERDRIVE.connectionString)
 
   const payload = await request.json<S3UploadPayload>()
 
   const client = getS3Client(payload)
 
-  // Ensure the blob does not exist
-  const blob = await db.getBlob(sql, { workspace, name })
-  if (blob !== null) {
-    return new Response(null, { status: 200 })
-  }
+  return await withPostgres(env, ctx, async (sql) => {
+    // Ensure the blob does not exist
+    const blob = await db.getBlob(sql, { workspace, name })
+    if (blob !== null) {
+      return new Response(null, { status: 200 })
+    }
 
-  const object = await client.fetch(payload.url)
-  if (!object.ok || object.status !== 200) {
-    return error(object.status)
-  }
+    const object = await client.fetch(payload.url)
+    if (!object.ok || object.status !== 200) {
+      return error(object.status)
+    }
 
-  if (object.body === null) {
-    return error(400)
-  }
+    if (object.body === null) {
+      return error(400)
+    }
 
-  const contentType = object.headers.get('content-type') ?? 'application/octet-stream'
-  const contentLengthHeader = object.headers.get('content-length') ?? '0'
-  const lastModifiedHeader = object.headers.get('last-modified')
+    const contentType = object.headers.get('content-type') ?? 'application/octet-stream'
+    const contentLengthHeader = object.headers.get('content-length') ?? '0'
+    const lastModifiedHeader = object.headers.get('last-modified')
 
-  const contentLength = Number.parseInt(contentLengthHeader)
-  const lastModified = lastModifiedHeader !== null ? new Date(lastModifiedHeader).getTime() : Date.now()
+    const contentLength = Number.parseInt(contentLengthHeader)
+    const lastModified = lastModifiedHeader !== null ? new Date(lastModifiedHeader).getTime() : Date.now()
 
-  const result = await saveBlob(env, sql, object.body, contentLength, contentType, workspace, name, lastModified)
-  return json(result)
+    const result = await saveBlob(env, sql, object.body, contentLength, contentType, workspace, name, lastModified)
+    return json(result)
+  })
 }
