@@ -329,7 +329,8 @@ async function renderMermaidDiagram (code: string, theme: MermaidConfig['theme']
     securityLevel: 'loose',
     fontFamily: 'var(--font-family)',
     logLevel: 5,
-    theme
+    theme,
+    suppressErrorRendering: true
   })
 
   const id = `mermaid-diagram-${Math.random().toString(36).substring(2, 9)}`
