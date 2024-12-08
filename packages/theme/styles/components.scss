@@ -20,18 +20,17 @@
   flex-grow: 1;
   min-height: 0;
   min-width: 0;
-  margin: var(--spacing-2);
   border: 1px solid var(--theme-divider-color); // var(--global-surface-02-BorderColor);
   border-radius: var(--small-focus-BorderRadius);
   padding: var(--spacing-2);
 
   &:not(.modal) {
     background-color: var(--theme-panel-color); // var(--global-surface-02-BackgroundColor);
-    margin: var(--spacing-2);
   }
   &.modal {
     overflow: hidden;
     background-color: var(--theme-comp-header-color); // var(--global-surface-02-BackgroundColor);
+    margin-left: var(--spacing-2);
   }
   &.beforeAside {
     border-right: none;

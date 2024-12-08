@@ -1096,23 +1096,20 @@
     min-width: 0;
     min-height: 0;
     width: 100%;
-    height: 100%;
-    background-color: var(--theme-panel-color);
     touch-action: none;
+    margin: var(--spacing-1);
 
     &.inner {
       background-color: var(--theme-navpanel-color);
 
       &.rounded {
-        border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
+        border-radius: var(--medium-BorderRadius);
       }
     }
     &:not(.inner)::after {
       position: absolute;
       content: '';
       inset: 0;
-      border: 1px solid var(--theme-divider-color);
-      border-radius: var(--medium-BorderRadius);
       pointer-events: none;
     }
     .antiPanel-application.horizontal {

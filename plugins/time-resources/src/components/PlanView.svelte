@@ -112,7 +112,6 @@
     flex-direction: column;
     flex-grow: 1;
     background-color: var(--theme-workbench-color);
-    margin: var(--spacing-2) 0 var(--spacing-2) var(--spacing-2);
     border: 1px solid var(--theme-divider-color);
     border-radius: var(--small-focus-BorderRadius);
     min-width: 320px;

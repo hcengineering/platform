@@ -113,8 +113,9 @@
     flex-direction: column;
     min-width: var(--app-panel-width);
     width: var(--app-panel-width);
-    height: 100%;
-    border-right: 1px solid var(--theme-navpanel-divider);
+    margin: var(--spacing-1);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: var(--medium-BorderRadius) !important;
   }
   &.horizonatl {
     min-height: var(--app-panel-width);
@@ -143,7 +144,7 @@
   
   &:not(.second) { 
     background-color: var(--theme-workbench-color); 
-    margin: var(--spacing-2) 0 var(--spacing-2) var(--spacing-2);  // Changed from all sides to top, bottom, left only
+    margin-right: var(--spacing-2);
     border: 1px solid var(--theme-divider-color);
     border-radius: var(--small-focus-BorderRadius);
   }

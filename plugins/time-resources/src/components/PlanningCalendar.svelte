@@ -175,7 +175,7 @@
 </script>
 
 <div
-  class="hulyComponent modal"
+  class="hulyComponent modal margin-left-2"
   bind:this={element}
   use:resizeObserver={(element) => {
     showLabel = showLabel ? element.clientWidth > rem(3.5) + 399 : element.clientWidth > rem(3.5) + 400
