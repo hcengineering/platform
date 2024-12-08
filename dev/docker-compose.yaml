@@ -125,6 +125,7 @@ services:
       - stats
     volumes:
       - ./branding.json:/var/cfg/branding.json
+      - ${WS_INIT_SCRIPTS}:/init-scripts
     environment:
       # - WS_OPERATION=create
       - SERVER_SECRET=secret
@@ -138,7 +139,7 @@ services:
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
       # - PARALLEL=2
-      - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
+      - INIT_REPO_DIR=/init-scripts
       - INIT_WORKSPACE=test
     restart: unless-stopped
   workspacepg:
@@ -151,6 +152,7 @@ services:
       - stats
     volumes:
       - ./branding.json:/var/cfg/branding.json
+      - ${WS_INIT_SCRIPTS}:/init-scripts
     environment:
       # - WS_OPERATION=create
       - SERVER_SECRET=secret
@@ -164,8 +166,8 @@ services:
       - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
+      - INIT_REPO_DIR=/init-scripts
       # - PARALLEL=2
-      - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
       # - INIT_WORKSPACE=onboarding
     restart: unless-stopped    
   workspace_cockroach:
@@ -178,6 +180,7 @@ services:
       - stats
     volumes:
       - ./branding.json:/var/cfg/branding.json
+      - ${WS_INIT_SCRIPTS}:/init-scripts
     environment:
       # - WS_OPERATION=create
       - SERVER_SECRET=secret
@@ -190,8 +193,8 @@ services:
       - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
+      - INIT_REPO_DIR=/init-scripts
       # - PARALLEL=2
-      - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
       # - INIT_WORKSPACE=onboarding
     restart: unless-stopped        
   collaborator:
