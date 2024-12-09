@@ -66,6 +66,8 @@ export default mergeIds(githubId, github, {
 
     Processing: '' as IntlString,
     AutoClose: '' as IntlString,
+    RequestFailed: '' as IntlString,
+    CloseTab: '' as IntlString,
     PleaseRetry: '' as IntlString,
     Updated: '' as IntlString,
     LinkToProject: '' as IntlString,
