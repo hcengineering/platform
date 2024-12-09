@@ -63,6 +63,7 @@
 
       {#each createMessages as valueMessage, index}
         <DocUpdateMessageObjectValue
+          attachedTo={valueMessage.attachedTo}
           objectClass={valueMessage.objectClass}
           objectId={valueMessage.objectId}
           action={valueMessage.action}
@@ -74,6 +75,7 @@
       {/each}
       {#each removeMessages as valueMessage, index}
         <DocUpdateMessageObjectValue
+          attachedTo={valueMessage.attachedTo}
           objectClass={valueMessage.objectClass}
           objectId={valueMessage.objectId}
           action={valueMessage.action}
@@ -87,6 +89,7 @@
       {@const len = valueMessages.length}
       {#each valueMessages as valueMessage, index}
         <DocUpdateMessageObjectValue
+          attachedTo={valueMessage.attachedTo}
           objectClass={valueMessage.objectClass}
           objectId={valueMessage.objectId}
           action={valueMessage.action}
