@@ -21,7 +21,6 @@ import core, {
   Doc,
   DocumentQuery,
   Domain,
-  FindOptions,
   FindResult,
   LookupData,
   MeasureContext,
@@ -47,7 +46,13 @@ import core, {
   type SessionData
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
+import {
+  BaseMiddleware,
+  Middleware,
+  ServerFindOptions,
+  TxMiddlewareResult,
+  type PipelineContext
+} from '@hcengineering/server-core'
 import { isOwner, isSystem } from './utils'
 type SpaceWithMembers = Pick<Space, '_id' | 'members' | 'private' | '_class'>
 
@@ -416,6 +421,11 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       }
     }
 
+    ctx.contextData.broadcast.targets.spaceSec = (tx) => {
+      const space = this.spacesMap.get(tx.objectSpace)
+      return space !== undefined ? this.getTargets(space?.members) : undefined
+    }
+
     await this.next?.handleBroadcast(ctx)
   }
 
@@ -497,7 +507,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     ctx: MeasureContext<SessionData>,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T>
+    options?: ServerFindOptions<T>
   ): Promise<FindResult<T>> {
     await this.init(ctx)
 
@@ -509,12 +519,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
     let clientFilterSpaces: Set<Ref<Space>> | undefined
 
-    if (
-      !this.skipFindCheck &&
-      !isSystem(account, ctx) &&
-      account.role !== AccountRole.DocGuest &&
-      domain !== DOMAIN_MODEL
-    ) {
+    if (!isSystem(account, ctx) && account.role !== AccountRole.DocGuest && domain !== DOMAIN_MODEL) {
       if (!isOwner(account, ctx) || !isSpace) {
         if (query[field] !== undefined) {
           const res = await this.mergeQuery(ctx, account, query[field], domain, isSpace)
@@ -536,6 +541,11 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
             delete (newQuery as any)[field]
           } else if (spaces.result.length === 1) {
             ;(newQuery as any)[field] = spaces.result[0]
+            if (options !== undefined) {
+              options.allowedSpaces = spaces.result
+            } else {
+              options = { allowedSpaces: spaces.result }
+            }
           } else {
             // Check if spaces > 85% of all domain spaces, in this case return all and filter on client.
             if (spaces.result.length / spaces.domainSpaces.size > 0.85 && options?.limit === undefined) {
@@ -543,17 +553,22 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
               delete newQuery.space
             } else {
               ;(newQuery as any)[field] = { $in: spaces.result }
+              if (options !== undefined) {
+                options.allowedSpaces = spaces.result
+              } else {
+                options = { allowedSpaces: spaces.result }
+              }
             }
           }
         }
       }
     }
 
-    let findResult = await this.provideFindAll(ctx, _class, newQuery, options)
+    let findResult = await this.provideFindAll(ctx, _class, !this.skipFindCheck ? newQuery : query, options)
     if (clientFilterSpaces !== undefined) {
       const cfs = clientFilterSpaces
       findResult = toFindResult(
-        findResult.filter((it) => cfs.has(it.space)),
+        findResult.filter((it) => cfs.has((it as any)[field])),
         findResult.total,
         findResult.lookupMap
       )
