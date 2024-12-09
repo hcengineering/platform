@@ -87,7 +87,7 @@ export async function OnChange (txes: Tx[], control: TriggerControl): Promise<Tx
         needIndex: true,
         modifiedBy: tx.modifiedBy,
         modifiedOn: tx.modifiedOn,
-        space: cud.space,
+        space: cud.objectSpace,
         removed: cud._class === core.class.TxRemoveDoc
       })
     }
