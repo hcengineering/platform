@@ -17,19 +17,18 @@
 
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { ActionContext, getClient } from '@hcengineering/presentation'
-  import core, { Data, DocumentQuery, Ref, generateId, makeCollabId } from '@hcengineering/core'
+  import core, { Data, Ref, generateId, makeCollabId } from '@hcengineering/core'
   import { TestProject, TestRun, TestCase } from '@hcengineering/test-management'
   import { Panel } from '@hcengineering/panel'
-  import { Button, EditBox } from '@hcengineering/ui'
+  import { Button, EditBox, Label } from '@hcengineering/ui'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
 
+  import RightHeader from '../test-result/RightHeader.svelte'
+  import TestCaseList from '../test-case/TestCaseList.svelte'
   import testManagement from '../../plugin'
   import TestCaseSelector from '../test-case/TestCaseSelector.svelte'
-  import TestRunAside from './TestRunAside.svelte'
-  import { showSelectTestCasesPopup } from '../../utils'
 
   export let space: Ref<TestProject>
-  export let query: DocumentQuery<TestCase> = {}
   export let testCases: TestCase[]
 
   const id: Ref<TestRun> = generateId()
@@ -141,7 +140,27 @@
     />
 
     <div id="test-cases-selector">
-      <TestCaseSelector objects={testCases} selectedObjects={testCases} />
+      <TestCaseSelector bind:objects={testCases}/>
     </div>
+
+    <Button
+      label={testManagement.string.Save}
+      size="medium" kind={'primary'}
+      disabled={object?.name.trim().length === 0 || testCases?.length === 0}
+      on:click={onSave}
+    />
+
+    <svelte:fragment slot="aside">
+      <RightHeader>
+        <Label label={testManagement.string.Comments} />
+      </RightHeader>
+      <TestCaseList
+        objects={testCases}
+        noSearchField={true}
+        width={'full'}
+        readonly={true}
+      />
+    </svelte:fragment>
+
   </Panel>
 {/if}

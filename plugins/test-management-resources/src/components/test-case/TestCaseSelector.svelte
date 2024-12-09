@@ -22,7 +22,6 @@
   import { showSelectTestCasesPopup } from '../../utils'
 
   export let objects: TestCase[]
-  export let selectedObjects: TestCase[]
   export let label: IntlString = testManagement.string.TestCases
   export let focusIndex = -1
   export let focus = false
@@ -34,9 +33,13 @@
   export let width: string | undefined = undefined
   export let readonly = false
 
+  const onSave = (testCases: TestCase[]): void => {
+    objects = testCases
+  }
+
   const showSelectDialog = async (): Promise<void> => {
     if (!readonly) {
-      await showSelectTestCasesPopup()
+      await showSelectTestCasesPopup({ onSave })
     }
   }
 </script>
@@ -55,7 +58,7 @@
   on:click={showSelectDialog}
 >
   <span slot="content" class="overflow-label disabled text">
-    {selectedObjects?.length ?? 0}
+    {objects?.length ?? 0}
     <Label {label} />
   </span>
 </Button>

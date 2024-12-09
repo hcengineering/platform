@@ -24,7 +24,6 @@ import TestSuiteRefPresenter from './components/test-suite/TestSuiteRefPresenter
 import EditTestCase from './components/test-case/EditTestCase.svelte'
 import TestCasePresenter from './components/test-case/TestCasePresenter.svelte'
 import CreateTestCase from './components/test-case/CreateTestCase.svelte'
-import CreateTestRun from './components/test-run/CreateTestRun.svelte'
 import TestCaseStatusPresenter from './components/test-case/TestCaseStatusPresenter.svelte'
 import EditTestRun from './components/test-run/EditTestRun.svelte'
 import TestRunPresenter from './components/test-run/TestRunPresenter.svelte'
@@ -53,7 +52,6 @@ export default async (): Promise<Resources> => ({
     TestSuitePresenter,
     EditTestCase,
     TestCasePresenter,
-    CreateTestRun,
     CreateTestCase,
     TestCaseStatusPresenter,
     EditTestRun,

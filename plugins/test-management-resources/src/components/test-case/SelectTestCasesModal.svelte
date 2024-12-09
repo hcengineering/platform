@@ -19,30 +19,25 @@
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { Data, DocumentQuery, Ref, generateId, makeCollabId } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createMarkup, createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     TestCase,
-    TestRun,
-    TestProject,
-    TestResult,
-    TestRunStatus,
-    TestManagementEvents
+    TestProject
   } from '@hcengineering/test-management'
-  import { Button, Dialog, navigate } from '@hcengineering/ui'
-  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
-  import { Analytics } from '@hcengineering/analytics'
+  import { Button, Dialog } from '@hcengineering/ui'
   import { ComponentNavigator } from '@hcengineering/workbench-resources'
   import view from '@hcengineering/view'
+  import { selectionStore } from '@hcengineering/view-resources'
 
-  import { getTestRunsLink } from '../../navigation'
   import testManagement from '../../plugin'
   import TestCasesList from './TestCasesList.svelte'
 
   export let space: Ref<TestProject>
   export let query: DocumentQuery<TestCase> = {}
   export let testCases: TestCase[]
+  export let onSave: (testCases: TestCase[]) => void
+
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   let isLoading = testCases === undefined
 
@@ -55,65 +50,12 @@
     })
   }
 
-  const id: Ref<TestRun> = generateId()
-
-  const object: Data<TestRun> = {
-    name: '' as IntlString,
-    description: null,
-    dueDate: undefined
-  }
-
-  let _space = space
-
-  let description = EmptyMarkup
-
-  let descriptionBox: AttachmentStyledBox
-  let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
-
-  async function onSave (): Promise<void> {
-    try {
-      const applyOp = client.apply()
-      await applyOp.createDoc(testManagement.class.TestRun, _space, object, id)
-      const testCasesArray = testCases instanceof Array ? testCases : [testCases]
-      const createPromises = testCasesArray.map(async (testCase) => {
-        const descriptionRef = isEmptyMarkup(description)
-          ? null
-          : await createMarkup(makeCollabId(testManagement.class.TestRun, id, 'description'), description)
-
-        const testResultId: Ref<TestResult> = generateId()
-        const testResultData: Data<TestResult> = {
-          attachedTo: id,
-          attachedToClass: testManagement.class.TestRun,
-          name: testCase.name,
-          testCase: testCase._id,
-          testSuite: testCase.attachedTo,
-          collection: 'results',
-          description: descriptionRef,
-          status: TestRunStatus.Untested
-        }
-
-        return await applyOp.addCollection(
-          testManagement.class.TestResult,
-          _space,
-          id,
-          testManagement.class.TestRun,
-          'results',
-          testResultData,
-          testResultId
-        )
-      })
-      await Promise.all(createPromises)
-      const opResult = await applyOp.commit()
-      if (!opResult.result) {
-        throw new Error('Failed to create test run')
-      } else {
-        Analytics.handleEvent(TestManagementEvents.TestRunCreated, { id })
-        navigate(getTestRunsLink(space, id))
-      }
-    } catch (err: any) {
-      console.error(err)
-      Analytics.handleError(err)
+  async function handleSave (): Promise<void> {
+    if (onSave !== undefined) {
+      const testCases: TestCase[] = $selectionStore?.docs ?? []
+      onSave(testCases)
     }
+    handleClose()
   }
 
   function handleClose (): void {
@@ -160,6 +102,7 @@
         <Button
           kind={'primary'}
           label={testManagement.string.Save}
+          on:click={handleSave}
         />
       </div>
     </div>

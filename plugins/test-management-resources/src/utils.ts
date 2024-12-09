@@ -58,8 +58,10 @@ export async function showSelectTestCasesPopup (options: {
   testCases?: TestCase[]
   query?: DocumentQuery<Doc>
   space: Ref<TestProject>
+  onSave: (testCases: TestCase[]) => void
 }): Promise<void> {
-  showPopup(SelectTestCases, {}, 'top')
+  const { onSave } = options
+  showPopup(SelectTestCases, { onSave }, 'top')
 }
 
 export async function showTestRunnerPanel (options: {
