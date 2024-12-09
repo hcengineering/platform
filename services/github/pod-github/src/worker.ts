@@ -416,7 +416,7 @@ export class GithubWorker implements IntegrationManager {
   private async findPerson (userInfo: UserInfo, userName: string): Promise<Ref<Person>> {
     let person: Ref<Person> | undefined
     // try to find by account.
-    if (userInfo.email != null) {
+    if (userInfo.email != null && userInfo.email.trim().length > 0) {
       const personAccount = await this.liveQuery.findOne(contact.class.PersonAccount, { email: userInfo.email })
       person = personAccount?.person
     }

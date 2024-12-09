@@ -34,7 +34,8 @@
       "request": "launch",
       "args": ["src/__start.ts"],
       "env": {
-        "FULLTEXT_URL": "http://localhost:4700",
+        // "FULLTEXT_URL": "http://localhost:4700",
+        "FULLTEXT_URL": "http://host.docker.internal:4702",
         // "MONGO_URL": "mongodb://localhost:27017",
         // "DB_URL": "mongodb://localhost:27017",
         // "DB_URL": "postgresql://postgres:example@localhost:5432",
@@ -58,7 +59,7 @@
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
         "AI_BOT_URL": "http://localhost:4010",
-        "STATS_URL": "http://host.docker.internal:4900",
+        "STATS_URL": "http://host.docker.internal:4900"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
@@ -74,11 +75,12 @@
       "request": "launch",
       "args": ["src/index.ts"],
       "env": {
-        "PORT": "4700",// For mongo
-        // "PORT": "4701", // for pg
+        // "PORT": "4700",// For mongo
+        "PORT": "4702", // for cockroach
         "FULLTEXT_DB_URL": "http://localhost:9200",
-        "DB_URL": "mongodb://localhost:27017",
+        // "DB_URL": "mongodb://localhost:27017",
         // "DB_URL": "postgresql://postgres:example@localhost:5432",
+        "DB_URL": "postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable",
         "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
         "SERVER_SECRET": "secret",
         "REKONI_URL": "http://localhost:4004",
