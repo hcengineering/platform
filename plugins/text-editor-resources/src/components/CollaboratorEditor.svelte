@@ -103,6 +103,7 @@
     on:update
     on:open-document
     on:blur
+    on:loaded
     on:focus={handleFocus}
   />
 </div>
