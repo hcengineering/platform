@@ -571,7 +571,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
     const byClass = groupByArray<WithLookup<DocIndexState>, Ref<Class<Doc>>>(result, (it) => it.objectClass)
 
-    const docUpdates = new Map<Ref<Doc>, DocumentUpdate<DocIndexState>>()
+    const docUpdates = new Map<Ref<Doc>, Partial<DocIndexState>>()
 
     const pushQueue = new RateLimiter(5)
 

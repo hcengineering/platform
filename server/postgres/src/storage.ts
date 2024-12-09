@@ -481,7 +481,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             params.push(converted.data)
           }
           await client.unsafe(
-            `UPDATE ${translateDomain(domain)} SET ${updates.join(', ')} WHERE _id = $1 AND "workspaceId" = $2`,
+            `UPDATE ${translateDomain(domain)} SET ${updates.join(', ')} WHERE "workspaceId" = $2 AND _id = $1`,
             params
           )
         }
@@ -1347,7 +1347,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
       return await this.mgr.read('', async (client) => {
         const res =
-          await client`SELECT * FROM ${client(translateDomain(domain))} WHERE _id = ANY(${docs}) AND "workspaceId" = ${this.workspaceId.name}`
+          await client`SELECT * FROM ${client(translateDomain(domain))} WHERE  "workspaceId" = ${this.workspaceId.name} AND _id = ANY(${docs})`
         return res.map((p) => parseDocWithProjection(p as any, domain))
       })
     })
@@ -1421,7 +1421,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         return this.mgr.write(
           ctx.id,
           (client) =>
-            client`DELETE FROM ${client(tdomain)} WHERE _id = ANY(${part}) AND "workspaceId" = ${this.workspaceId.name}`
+            client`DELETE FROM ${client(tdomain)} WHERE "workspaceId" = ${this.workspaceId.name} AND _id = ANY(${part})`
         )
       })
     }
@@ -1449,46 +1449,16 @@ abstract class PostgresAdapterBase implements DbAdapter {
     })
   }
 
-  update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
-    const ids = Array.from(operations.keys())
-    return this.mgr.write(ctx.id, async (client) => {
-      try {
-        const res: DBDoc[] =
-          await client`SELECT * FROM ${client(translateDomain(domain))} WHERE _id = ANY(${ids}) AND "workspaceId" = ${this.workspaceId.name} FOR UPDATE`
-        const schema = getSchema(domain)
-        const docs = res.map((p) => parseDoc(p, schema))
-        const map = new Map(docs.map((d) => [d._id, d]))
-        const schemaFields = getSchemaAndFields(domain)
-        for (const [_id, ops] of operations) {
-          const doc = map.get(_id)
-          if (doc === undefined) continue
-          const op = { ...ops }
-          if ((op as any)['%hash%'] == null) {
-            ;(op as any)['%hash%'] = this.curHash()
-          }
-          TxProcessor.applyUpdate(doc, op)
-          const converted = convertDoc(domain, doc, this.workspaceId.name, schemaFields)
-
-          const columns: string[] = []
-          const { extractedFields, remainingData } = parseUpdate(op, schemaFields)
-          for (const key in extractedFields) {
-            columns.push(key)
-          }
-          if (Object.keys(remainingData).length > 0) {
-            columns.push('data')
-          }
-          columns.push('modifiedBy')
-          columns.push('modifiedOn')
-          await client`UPDATE ${client(translateDomain(domain))} SET ${client(
-            converted,
-            columns
-          )} WHERE _id = ${doc._id} AND "workspaceId" = ${this.workspaceId.name}`
-        }
-      } catch (err) {
-        ctx.error('Error while updating', { domain, operations, err })
-        throw err
+  async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, Partial<Doc>>): Promise<void> {
+    const ids = [...operations.entries()]
+    const groups = groupByArray(ids, (it) => JSON.stringify(it[1]))
+    for (const [, values] of groups.entries()) {
+      const ids = values.map((it) => it[0])
+      while (ids.length > 0) {
+        const part = ids.splice(0, 200)
+        await this.rawUpdate(domain, { _id: { $in: part } }, values[0][1])
       }
-    })
+    }
   }
 
   @withContext('insert')
@@ -1581,7 +1551,7 @@ class PostgresAdapter extends PostgresAdapterBase {
         columns.add('modifiedOn')
         columns.add('data')
         columns.add('%hash%')
-        await client`UPDATE ${client(translateDomain(domain))} SET ${client(converted, Array.from(columns))} WHERE _id = ${tx.objectId} AND "workspaceId" = ${this.workspaceId.name}`
+        await client`UPDATE ${client(translateDomain(domain))} SET ${client(converted, Array.from(columns))} WHERE "workspaceId" = ${this.workspaceId.name} AND _id = ${tx.objectId}`
       })
     })
     return {}
@@ -1683,7 +1653,7 @@ class PostgresAdapter extends PostgresAdapterBase {
             if (!columns.includes('%hash%')) {
               columns.push('%hash%')
             }
-            await client`UPDATE ${client(translateDomain(domain))} SET ${client(converted, columns)} WHERE _id = ${tx.objectId} AND "workspaceId" = ${this.workspaceId.name}`
+            await client`UPDATE ${client(translateDomain(domain))} SET ${client(converted, columns)} WHERE "workspaceId" = ${this.workspaceId.name} AND _id = ${tx.objectId}`
           })
           if (tx.retrieve === true && doc !== undefined) {
             return { object: doc }
@@ -1802,7 +1772,7 @@ class PostgresAdapter extends PostgresAdapterBase {
     const domain = this.hierarchy.getDomain(_class)
     return ctx.with('find-doc', { _class }, async () => {
       const res =
-        await client`SELECT * FROM ${client(translateDomain(domain))} WHERE _id = ${_id} AND "workspaceId" = ${this.workspaceId.name} ${
+        await client`SELECT * FROM ${client(translateDomain(domain))} WHERE "workspaceId" = ${this.workspaceId.name} AND _id = ${_id} ${
           forUpdate ? client` FOR UPDATE` : client``
         }`
       const dbDoc = res[0] as any
