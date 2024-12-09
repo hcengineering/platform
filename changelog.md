@@ -2,7 +2,16 @@
 
 Changelog.
 
-## [unreleased]
+## [0.6.377] - 2024-12-08
+
+* 🐛 BUG FIXES: · Fallback to defaultIcon when value is undefined ([#7294](https://github.com/hcengineering/platform/issues/7294)) · Do not fail on wrong content type in collaborator ([#7296](https://github.com/hcengineering/platform/issues/7296)) 
+* 🎨 STYLING: · *(drive)* Fix pdf appears small  ([#7291](https://github.com/hcengineering/platform/issues/7291)) 
+
+## [0.6.375] - 2024-12-07
+
+* UBERF-8612: · Fix modifiedOn for apply tx ([#7292](https://github.com/hcengineering/platform/issues/7292)) 
+
+## [0.6.373] - 2024-12-06
 
 * 🐛 BUG FIXES: · Better error handling in json migration ([#7279](https://github.com/hcengineering/platform/issues/7279)) 
 
