@@ -130,7 +130,15 @@ export const completionConfig: Partial<CompletionOptions> = {
   }
 }
 
-const inlineCommandsIds = ['image', 'table', 'code-block', 'separator-line', 'todo-list'] as const
+const inlineCommandsIds = [
+  'image',
+  'table',
+  'code-block',
+  'separator-line',
+  'todo-list',
+  'drawing-board',
+  'mermaid'
+] as const
 export type InlineCommandId = (typeof inlineCommandsIds)[number]
 
 /**
