@@ -18,10 +18,14 @@
   import { languagesDisplayData } from '../types'
 
   export let room: Room
+  export let withLabel = false
 
   $: lang = room.language
 </script>
 
 <span title={languagesDisplayData[lang].label ?? languagesDisplayData.en.label}>
   {languagesDisplayData[lang].emoji ?? languagesDisplayData.en.emoji}
+  {#if withLabel}
+    <span class="ml-1">{languagesDisplayData[lang].label ?? languagesDisplayData.en.label}</span>
+  {/if}
 </span>

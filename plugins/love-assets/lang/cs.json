@@ -78,6 +78,7 @@
     "Status": "Stav",
     "Active": "Aktivní",
     "Finished": "Dokončeno",
-    "StartWithRecording": "Začít s nahráváním"
+    "StartWithRecording": "Začít s nahráváním",
+    "Language": "Jazyk"
   }
 }

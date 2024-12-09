@@ -28,7 +28,8 @@ export default mergeIds(loveId, love, {
     Settings: '' as AnyComponent,
     LoveWidget: '' as AnyComponent,
     MeetingWidget: '' as AnyComponent,
-    WidgetSwitcher: '' as AnyComponent
+    WidgetSwitcher: '' as AnyComponent,
+    RoomLanguageEditor: '' as AnyComponent
   },
   app: {
     Love: '' as Ref<Doc>
