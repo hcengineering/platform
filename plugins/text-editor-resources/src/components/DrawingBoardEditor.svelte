@@ -124,7 +124,9 @@
           changingCmdIndex = undefined
         },
         cmdDeleted: (index) => {
-          savedCmds.delete(index)
+          if (index >= 0 && index < savedCmds.length) {
+            savedCmds.delete(index)
+          }
           changingCmdIndex = undefined
         },
         panned: (newOffset) => {

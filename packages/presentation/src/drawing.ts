@@ -400,6 +400,7 @@ export function drawing (
       } else if (draw.tool === 'text') {
         if (liveTextBox !== undefined) {
           storeTextCommand()
+          closeLiveTextBox()
         } else {
           const cmdIndex = findTextCommand(prevPos)
           props.cmdChanging?.(cmdIndex)
@@ -526,6 +527,7 @@ export function drawing (
       } else if (e.key === 'Enter' && e.ctrlKey) {
         e.preventDefault()
         storeTextCommand()
+        closeLiveTextBox()
       }
     })
     box.appendChild(editor)
