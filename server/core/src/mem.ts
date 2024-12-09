@@ -15,6 +15,7 @@
 
 import core, {
   type Class,
+  type Data,
   type Doc,
   type DocumentQuery,
   type DocumentUpdate,
@@ -101,7 +102,11 @@ export class DummyDbAdapter implements DbAdapter {
 
   async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
 
-  async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {}
+  async update<T extends Doc>(
+    ctx: MeasureContext,
+    domain: Domain,
+    operations: Map<Ref<Doc>, Partial<Data<T>>>
+  ): Promise<void> {}
 
   async groupBy<T, P extends Doc>(
     ctx: MeasureContext,

@@ -1097,7 +1097,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     })
   }
 
-  update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
+  update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, Partial<Doc>>): Promise<void> {
     return ctx.with('update', { domain }, async () => {
       const coll = this.collection(domain)
 
