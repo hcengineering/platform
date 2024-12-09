@@ -423,7 +423,10 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
     ctx.contextData.broadcast.targets.spaceSec = (tx) => {
       const space = this.spacesMap.get(tx.objectSpace)
-      return space !== undefined ? this.getTargets(space?.members) : undefined
+      if (space === undefined) return undefined
+      if (this.systemSpaces.has(space._id) || this.mainSpaces.includes(space._id)) return undefined
+
+      return space.members.length === 0 ? undefined : this.getTargets(space?.members)
     }
 
     await this.next?.handleBroadcast(ctx)
