@@ -78,6 +78,7 @@
     "Status": "状态",
     "Active": "活动",
     "Finished": "已完成",
-    "StartWithRecording": "开始录制"
+    "StartWithRecording": "开始录制",
+    "Language": "语言"
   }
 }
