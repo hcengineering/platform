@@ -14,14 +14,15 @@
 //
 
 import { error, json } from 'itty-router'
-import postgres from 'postgres'
-import * as db from './db'
+import { type Sql } from 'postgres'
+import db, { withPostgres } from './db'
 import { cacheControl, hashLimit } from './const'
 import { toUUID } from './encodings'
 import { getSha256 } from './hash'
 import { selectStorage } from './storage'
 import { type BlobRequest, type WorkspaceRequest, type UUID } from './types'
 import { copyVideo, deleteVideo } from './video'
+import { measure, LoggedCache } from './measure'
 
 interface BlobMetadata {
   lastModified: number
@@ -38,18 +39,20 @@ export function getBlobURL (request: Request, workspace: string, name: string): 
 export async function handleBlobGet (request: BlobRequest, env: Env, ctx: ExecutionContext): Promise<Response> {
   const { workspace, name } = request
 
-  const sql = postgres(env.HYPERDRIVE.connectionString)
-  const { bucket } = selectStorage(env, workspace)
-
-  const blob = await db.getBlob(sql, { workspace, name })
-  if (blob === null || blob.deleted) {
-    return error(404)
-  }
-
-  const cache = caches.default
+  const cache = new LoggedCache(caches.default)
   const cached = await cache.match(request)
   if (cached !== undefined) {
+    console.log({ message: 'cache hit' })
     return cached
+  }
+
+  const { bucket } = selectStorage(env, workspace)
+
+  const blob = await withPostgres(env, ctx, (sql) => {
+    return db.getBlob(sql, { workspace, name })
+  })
+  if (blob === null || blob.deleted) {
+    return error(404)
   }
 
   const range = request.headers.has('Range') ? request.headers : undefined
@@ -67,6 +70,7 @@ export async function handleBlobGet (request: BlobRequest, env: Env, ctx: Execut
   const status = length !== undefined && length < object.size ? 206 : 200
 
   const response = new Response(object?.body, { headers, status })
+
   if (response.status === 200) {
     ctx.waitUntil(cache.put(request, response.clone()))
   }
@@ -77,10 +81,11 @@ export async function handleBlobGet (request: BlobRequest, env: Env, ctx: Execut
 export async function handleBlobHead (request: BlobRequest, env: Env, ctx: ExecutionContext): Promise<Response> {
   const { workspace, name } = request
 
-  const sql = postgres(env.HYPERDRIVE.connectionString)
   const { bucket } = selectStorage(env, workspace)
 
-  const blob = await db.getBlob(sql, { workspace, name })
+  const blob = await withPostgres(env, ctx, (sql) => {
+    return db.getBlob(sql, { workspace, name })
+  })
   if (blob === null || blob.deleted) {
     return error(404)
   }
@@ -97,10 +102,10 @@ export async function handleBlobHead (request: BlobRequest, env: Env, ctx: Execu
 export async function handleBlobDelete (request: BlobRequest, env: Env, ctx: ExecutionContext): Promise<Response> {
   const { workspace, name } = request
 
-  const sql = postgres(env.HYPERDRIVE.connectionString)
-
   try {
-    await Promise.all([db.deleteBlob(sql, { workspace, name }), deleteVideo(env, workspace, name)])
+    await withPostgres(env, ctx, (sql) => {
+      return Promise.all([db.deleteBlob(sql, { workspace, name }), deleteVideo(env, workspace, name)])
+    })
 
     return new Response(null, { status: 204 })
   } catch (err: any) {
@@ -110,7 +115,11 @@ export async function handleBlobDelete (request: BlobRequest, env: Env, ctx: Exe
   }
 }
 
-export async function handleUploadFormData (request: WorkspaceRequest, env: Env): Promise<Response> {
+export async function handleUploadFormData (
+  request: WorkspaceRequest,
+  env: Env,
+  ctx: ExecutionContext
+): Promise<Response> {
   const contentType = request.headers.get('Content-Type')
   if (contentType === null || !contentType.includes('multipart/form-data')) {
     console.error({ error: 'expected multipart/form-data' })
@@ -119,11 +128,9 @@ export async function handleUploadFormData (request: WorkspaceRequest, env: Env)
 
   const { workspace } = request
 
-  const sql = postgres(env.HYPERDRIVE.connectionString)
-
   let formData: FormData
   try {
-    formData = await request.formData()
+    formData = await measure('fetch formdata', () => request.formData())
   } catch (err: any) {
     const message = err instanceof Error ? err.message : String(err)
     console.error({ error: 'failed to parse form data', message })
@@ -139,7 +146,9 @@ export async function handleUploadFormData (request: WorkspaceRequest, env: Env)
     files.map(async ([file, key]) => {
       const { name, type, lastModified } = file
       try {
-        const metadata = await saveBlob(env, sql, file.stream(), file.size, type, workspace, name, lastModified)
+        const metadata = await withPostgres(env, ctx, (sql) => {
+          return saveBlob(env, sql, file.stream(), file.size, type, workspace, name, lastModified)
+        })
 
         // TODO this probably should happen via queue, let it be here for now
         if (type.startsWith('video/')) {
@@ -161,7 +170,7 @@ export async function handleUploadFormData (request: WorkspaceRequest, env: Env)
 
 export async function saveBlob (
   env: Env,
-  sql: postgres.Sql,
+  sql: Sql,
   stream: ReadableStream,
   size: number,
   type: string,
@@ -179,6 +188,7 @@ export async function saveBlob (
 
     const hash = await getSha256(hashStream)
     const data = await db.getData(sql, { hash, location })
+
     if (data !== null) {
       // Lucky boy, nothing to upload, use existing blob
       await db.createBlob(sql, { workspace, name, hash, location })
@@ -212,8 +222,13 @@ export async function saveBlob (
   }
 }
 
-export async function handleBlobUploaded (env: Env, workspace: string, name: string, filename: UUID): Promise<void> {
-  const sql = postgres(env.HYPERDRIVE.connectionString)
+export async function handleBlobUploaded (
+  env: Env,
+  ctx: ExecutionContext,
+  workspace: string,
+  name: string,
+  filename: UUID
+): Promise<void> {
   const { location, bucket } = selectStorage(env, workspace)
 
   const object = await bucket.head(filename)
@@ -223,16 +238,20 @@ export async function handleBlobUploaded (env: Env, workspace: string, name: str
 
   const hash = object.checksums.md5 !== undefined ? digestToUUID(object.checksums.md5) : (crypto.randomUUID() as UUID)
 
-  const data = await db.getData(sql, { hash, location })
-  if (data !== null) {
-    await Promise.all([bucket.delete(filename), db.createBlob(sql, { workspace, name, hash, location })])
-  } else {
-    const size = object.size
-    const type = object.httpMetadata.contentType ?? 'application/octet-stream'
+  await withPostgres(env, ctx, async (sql) => {
+    const data = await db.getData(sql, { hash, location })
+    if (data !== null) {
+      await Promise.all([bucket.delete(filename), db.createBlob(sql, { workspace, name, hash, location })])
+    } else {
+      const size = object.size
+      const type = object.httpMetadata?.contentType ?? 'application/octet-stream'
 
-    await db.createData(sql, { hash, location, filename, type, size })
-    await db.createBlob(sql, { workspace, name, hash, location })
-  }
+      await sql.begin((sql) => [
+        db.createData(sql, { hash, location, filename, type, size }),
+        db.createBlob(sql, { workspace, name, hash, location })
+      ])
+    }
+  })
 }
 
 async function uploadLargeFile (

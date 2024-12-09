@@ -18,6 +18,7 @@ import { type IRequestStrict, type RequestHandler, Router, error, html } from 'i
 
 import { handleBlobDelete, handleBlobGet, handleBlobHead, handleUploadFormData } from './blob'
 import { cors } from './cors'
+import { LoggedKVNamespace, LoggedR2Bucket, requestTimeAfter, requestTimeBefore } from './measure'
 import { handleImageGet } from './image'
 import { handleS3Blob } from './s3'
 import { handleVideoMetaGet } from './video'
@@ -35,8 +36,8 @@ const { preflight, corsify } = cors({
 })
 
 const router = Router<IRequestStrict, [Env, ExecutionContext], Response>({
-  before: [preflight],
-  finally: [corsify]
+  before: [preflight, requestTimeBefore],
+  finally: [corsify, requestTimeAfter]
 })
 
 const withWorkspace: RequestHandler<WorkspaceRequest> = (request: WorkspaceRequest) => {
@@ -87,6 +88,19 @@ router
   .all('*', () => error(404))
 
 export default class DatalakeWorker extends WorkerEntrypoint<Env> {
+  constructor (ctx: ExecutionContext, env: Env) {
+    env = {
+      ...env,
+      datalake_blobs: new LoggedKVNamespace(env.datalake_blobs),
+      DATALAKE_APAC: new LoggedR2Bucket(env.DATALAKE_APAC),
+      DATALAKE_EEUR: new LoggedR2Bucket(env.DATALAKE_EEUR),
+      DATALAKE_WEUR: new LoggedR2Bucket(env.DATALAKE_WEUR),
+      DATALAKE_ENAM: new LoggedR2Bucket(env.DATALAKE_ENAM),
+      DATALAKE_WNAM: new LoggedR2Bucket(env.DATALAKE_WNAM)
+    }
+    super(ctx, env)
+  }
+
   async fetch (request: Request): Promise<Response> {
     return await router.fetch(request, this.env, this.ctx).catch(error)
   }
