@@ -24,8 +24,13 @@ import {
   type UploadedObjectInfo
 } from '@hcengineering/server-core'
 import { type Readable } from 'stream'
-import { type ObjectMetadata, Client } from './client'
+import { type ObjectMetadata, DatalakeClient } from './client'
 
+export { DatalakeClient }
+
+/**
+ * @public
+ */
 export interface DatalakeConfig extends StorageConfig {
   kind: 'datalake'
 }
@@ -33,11 +38,20 @@ export interface DatalakeConfig extends StorageConfig {
 /**
  * @public
  */
+export function createDatalakeClient (opt: DatalakeConfig): DatalakeClient {
+  const endpoint = Number.isInteger(opt.port) ? `${opt.endpoint}:${opt.port}` : opt.endpoint
+  return new DatalakeClient(endpoint)
+}
+
+/**
+ * @public
+ */
 export class DatalakeService implements StorageAdapter {
   static config = 'datalake'
-  client: Client
+  private readonly client: DatalakeClient
+
   constructor (readonly opt: DatalakeConfig) {
-    this.client = new Client(opt.endpoint)
+    this.client = createDatalakeClient(opt)
   }
 
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
@@ -97,8 +111,6 @@ export class DatalakeService implements StorageAdapter {
           modifiedOn: result.lastModified,
           version: null
         }
-      } else {
-        ctx.error('no object found', { objectName, workspaceId: workspaceId.name })
       }
     } catch (err) {
       ctx.error('failed to stat object', { error: err, objectName, workspaceId: workspaceId.name })
@@ -126,11 +138,9 @@ export class DatalakeService implements StorageAdapter {
       size
     }
 
-    await ctx.with('put', {}, async (ctx) => {
-      await withRetry(ctx, 5, async () => {
-        await this.client.putObject(ctx, workspaceId, objectName, stream, metadata, size)
-      })
-    })
+    await ctx.with('put', {}, (ctx) =>
+      withRetry(ctx, 5, () => this.client.putObject(ctx, workspaceId, objectName, stream, metadata, size))
+    )
 
     return {
       etag: '',

@@ -35,9 +35,7 @@ export interface Workspace {
   progress?: number
 
   lastVisit: number
-
   backupInfo?: BackupStatus
-
   region?: string
 }
 

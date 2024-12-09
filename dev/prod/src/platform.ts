@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import platform, { Plugin, addLocation, addStringsLoader, platformId } from '@hcengineering/platform'
+import platform, { type Plugin, addLocation, addStringsLoader, platformId } from '@hcengineering/platform'
 
 import { activityId } from '@hcengineering/activity'
 import { attachmentId } from '@hcengineering/attachment'
@@ -60,6 +60,8 @@ import textEditor, { textEditorId } from '@hcengineering/text-editor'
 import analyticsCollector, {analyticsCollectorId} from '@hcengineering/analytics-collector'
 import { uploaderId } from '@hcengineering/uploader'
 import aiBot, { aiBotId } from '@hcengineering/ai-bot'
+import { testManagementId } from '@hcengineering/test-management'
+import { surveyId } from '@hcengineering/survey'
 
 import { bitrixId } from '@hcengineering/bitrix'
 
@@ -103,6 +105,8 @@ import '@hcengineering/controlled-documents-assets'
 import '@hcengineering/analytics-collector-assets'
 import '@hcengineering/text-editor-assets'
 import '@hcengineering/uploader-assets'
+import '@hcengineering/test-management-assets'
+import '@hcengineering/survey-assets'
 
 import github, { githubId } from '@hcengineering/github'
 import '@hcengineering/github-assets'
@@ -156,6 +160,7 @@ export interface Config {
   FRONT_URL?: string
   PREVIEW_CONFIG?: string
   UPLOAD_CONFIG?: string
+  STATS_URL?: string
 }
 
 export interface Branding {
@@ -230,6 +235,8 @@ function configureI18n(): void {
    addStringsLoader(loveId, async (lang: string) => await import(`@hcengineering/love-assets/lang/${lang}.json`))
    addStringsLoader(printId, async (lang: string) => await import(`@hcengineering/print-assets/lang/${lang}.json`))
    addStringsLoader(analyticsCollectorId, async (lang: string) => await import(`@hcengineering/analytics-collector-assets/lang/${lang}.json`))
+   addStringsLoader(testManagementId, async (lang: string) => await import(`@hcengineering/test-management-assets/lang/${lang}.json`))
+   addStringsLoader(surveyId, async (lang: string) => await import(`@hcengineering/survey-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform() {
@@ -300,6 +307,7 @@ export async function configurePlatform() {
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
   setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG, config.UPLOAD_URL))
+  setMetadata(presentation.metadata.StatsUrl, config.STATS_URL)
 
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR)
 
@@ -397,6 +405,8 @@ export async function configurePlatform() {
   addLocation(printId, () => import(/* webpackChunkName: "print" */ '@hcengineering/print-resources'))
   addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
   addLocation(uploaderId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/uploader-resources'))
+  addLocation(testManagementId, () => import(/* webpackChunkName: "test-management" */ '@hcengineering/test-management-resources'))
+  addLocation(surveyId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/survey-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

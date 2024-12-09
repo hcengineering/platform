@@ -17,7 +17,7 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "mkdir -p bundle && esbuild src/index.ts --bundle  --platform=node > bundle/bundle.js",
+    "bundle": "node ../../../common/scripts/esbuild.js",
     "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/analytics-collector",
     "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/analytics-collector staging",
     "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/analytics-collector",
@@ -102,7 +102,7 @@
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
     "express": "^4.19.2",
-    "mongodb": "6.9.0-dev.20241016.sha.3d5bd513",
+    "mongodb": "^6.10.0",
     "puppeteer": "^22.6.1"
   }
 }

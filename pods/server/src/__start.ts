@@ -11,7 +11,16 @@ import notification from '@hcengineering/notification'
 import { setMetadata } from '@hcengineering/platform'
 import { serverConfigFromEnv } from '@hcengineering/server'
 import serverAiBot from '@hcengineering/server-ai-bot'
-import serverCore, { type StorageConfiguration, loadBrandingMap } from '@hcengineering/server-core'
+import serverCore, {
+  type ConnectionSocket,
+  type Session,
+  type StorageConfiguration,
+  type UserStatistics,
+  type Workspace,
+  type WorkspaceStatistics,
+  initStatisticsContext,
+  loadBrandingMap
+} from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
 import { storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverTelegram from '@hcengineering/server-telegram'
@@ -20,14 +29,19 @@ import { startHttpServer } from '@hcengineering/server-ws'
 import { join } from 'path'
 import { start } from '.'
 import { profileStart, profileStop } from './inspector'
-import { getMetricsContext } from './metrics'
 
 configureAnalytics(process.env.SENTRY_DSN, {})
 Analytics.setTag('application', 'transactor')
 
+let getUsers: () => WorkspaceStatistics[] = () => {
+  return []
+}
 // Force create server metrics context with proper logging
-getMetricsContext(
-  () =>
+const metricsContext = initStatisticsContext('transactor', {
+  getUsers: (): WorkspaceStatistics[] => {
+    return getUsers()
+  },
+  factory: () =>
     new MeasureMetricsContext(
       'server',
       {},
@@ -38,7 +52,7 @@ getMetricsContext(
         enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
       })
     )
-)
+})
 
 setOperationLogProfiling(process.env.OPERATION_PROFILING === 'true')
 
@@ -54,19 +68,16 @@ setMetadata(serverNotification.metadata.SesUrl, config.sesUrl ?? '')
 setMetadata(notification.metadata.PushPublicKey, config.pushPublicKey)
 setMetadata(serverNotification.metadata.PushPrivateKey, config.pushPrivateKey)
 setMetadata(serverNotification.metadata.PushSubject, config.pushSubject)
-setMetadata(serverCore.metadata.ElasticIndexName, config.elasticIndexName)
 setMetadata(serverCore.metadata.ElasticIndexVersion, 'v1')
 setMetadata(serverTelegram.metadata.BotUrl, process.env.TELEGRAM_BOT_URL)
 setMetadata(serverAiBot.metadata.SupportWorkspaceId, process.env.SUPPORT_WORKSPACE)
+setMetadata(serverAiBot.metadata.EndpointURL, process.env.AI_BOT_URL)
 
-const shutdown = start(config.dbUrl, {
-  fullTextUrl: config.elasticUrl,
+const { shutdown, sessionManager } = start(metricsContext, config.dbUrl, {
+  fulltextUrl: config.fulltextUrl,
   storageConfig,
-  rekoniUrl: config.rekoniUrl,
   port: config.serverPort,
   serverFactory: startHttpServer,
-  indexParallel: 2,
-  indexProcessing: 500,
   brandingMap: loadBrandingMap(config.brandingPath),
   accountsUrl: config.accountsUrl,
   enableCompression: config.enableCompression,
@@ -77,6 +88,31 @@ const shutdown = start(config.dbUrl, {
   mongoUrl: config.mongoUrl
 })
 
+const entryToUserStats = (session: Session, socket: ConnectionSocket): UserStatistics => {
+  return {
+    current: session.current,
+    mins5: session.mins5,
+    userId: session.getUser(),
+    sessionId: socket.id,
+    total: session.total,
+    data: socket.data
+  }
+}
+
+const workspaceToWorkspaceStats = (ws: Workspace): WorkspaceStatistics => {
+  return {
+    clientsTotal: new Set(Array.from(ws.sessions.values()).map((it) => it.session.getUser())).size,
+    sessionsTotal: ws.sessions.size,
+    workspaceName: ws.workspaceName,
+    wsId: ws.workspaceId.name,
+    sessions: Array.from(ws.sessions.values()).map((it) => entryToUserStats(it.session, it.socket))
+  }
+}
+
+getUsers = () => {
+  return Array.from(sessionManager.workspaces.values()).map((it) => workspaceToWorkspaceStats(it))
+}
+
 const close = (): void => {
   console.trace('Exiting from server')
   console.log('Shutdown request accepted')
@@ -86,7 +122,11 @@ const close = (): void => {
 }
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.log('Unhandled Rejection at:', promise, 'reason:', reason)
+  metricsContext.error('Unhandled Rejection at:', { origin, promise })
+})
+
+global.process.on('uncaughtException', (error, origin) => {
+  metricsContext.error('Uncaught Exception at:', { origin, error })
 })
 
 process.on('SIGINT', close)

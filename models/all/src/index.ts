@@ -95,10 +95,17 @@ import documents, { documentsId, createModel as documentsModel } from '@hcengine
 import products, { productsId, createModel as productsModel } from '@hcengineering/model-products'
 import { serverProductsId, createModel as serverProductsModel } from '@hcengineering/model-server-products'
 import { serverTrainingId, createModel as serverTrainingModel } from '@hcengineering/model-server-training'
+import testManagement, {
+  testManagementId,
+  createModel as testManagementModel
+} from '@hcengineering/model-test-management'
+
 import {
   serverDocumentsId,
   createModel as serverDocumentsModel
 } from '@hcengineering/model-server-controlled-documents'
+import { serverFulltextId, createModel as serverFulltextModel } from '@hcengineering/model-server-fulltext'
+import { surveyId, createModel as surveyModel } from '@hcengineering/model-survey'
 
 import { type Plugin } from '@hcengineering/platform'
 
@@ -107,7 +114,7 @@ interface ConfigurablePlugin extends Omit<Data<PluginConfiguration>, 'pluginId' 
 type BuilderConfig = [(b: Builder) => void, Plugin] | [(b: Builder) => void, Plugin, ConfigurablePlugin | undefined]
 
 export function getModelVersion (): Data<Version> {
-  const rawVersion = (process.env.MODEL_VERSION ?? '0.6.0').trim().replace('v', '').split('.')
+  const rawVersion = (process.env.MODEL_VERSION ?? '0.6.0').replace('"', '').trim().replace('v', '').split('.')
   if (rawVersion.length === 3) {
     return {
       major: parseInt(rawVersion[0]),
@@ -403,6 +410,18 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         classFilter: defaultFilter
       }
     ],
+    [
+      testManagementModel,
+      testManagementId,
+      {
+        label: testManagement.string.ConfigLabel,
+        description: testManagement.string.ConfigDescription,
+        enabled: true,
+        beta: true,
+        classFilter: defaultFilter
+      }
+    ],
+    [surveyModel, surveyId],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
@@ -434,7 +453,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverProductsModel, serverProductsId],
     [serverTrainingModel, serverTrainingId],
     [serverDocumentsModel, serverDocumentsId],
-    [serverAiBotModel, serverAiBotId]
+    [serverAiBotModel, serverAiBotId],
+    [serverFulltextModel, serverFulltextId]
   ]
 
   for (const [b, id, config] of builders) {

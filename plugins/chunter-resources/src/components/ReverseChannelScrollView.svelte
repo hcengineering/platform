@@ -21,7 +21,7 @@
     Space,
     Timestamp,
     Tx,
-    TxCollectionCUD,
+    TxCUD,
     TxProcessor
   } from '@hcengineering/core'
   import activity, { ActivityMessage } from '@hcengineering/activity'
@@ -52,6 +52,10 @@
   export let fullHeight = true
   export let freeze = false
   export let loadMoreAllowed = true
+  export let autofocus = true
+  export let withInput: boolean = true
+  export let readonly: boolean = false
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const minMsgHeightRem = 2
   const loadMoreThreshold = 200
@@ -110,7 +114,9 @@
   $: notifyContext = $contextByDocStore.get(doc._id)
   $: isThread = hierarchy.isDerived(doc._class, activity.class.ActivityMessage)
   $: isChunterSpace = hierarchy.isDerived(doc._class, chunter.class.ChunterSpace)
-  $: readonly = hierarchy.isDerived(channel._class, core.class.Space) ? (channel as Space).archived : false
+  $: readonly = hierarchy.isDerived(channel._class, core.class.Space)
+    ? readonly || (channel as Space).archived
+    : readonly
 
   $: separatorIndex =
     $newTimestampStore !== undefined
@@ -400,9 +406,7 @@
       scrollToBottom()
     }
 
-    const op = client.apply(undefined, 'chunter.scrollDown')
-    await inboxClient.readDoc(op, doc._id)
-    await op.commit()
+    await inboxClient.readDoc(doc._id)
   }
 
   let forceRead = false
@@ -419,9 +423,7 @@
 
     if (unViewed.length === 0) {
       forceRead = true
-      const op = client.apply(undefined, 'chunter.forceReadContext', true)
-      await inboxClient.readDoc(op, object._id)
-      await op.commit()
+      await inboxClient.readDoc(object._id)
     }
   }
 
@@ -544,11 +546,9 @@
   }
 
   const newMessageTxListener = (tx: Tx): void => {
-    if (tx._class !== core.class.TxCollectionCUD) return
-    const ctx = tx as TxCollectionCUD<Doc, ActivityMessage>
-    if (ctx.objectId !== doc._id) return
-    const etx = TxProcessor.extractTx(tx)
-    if (etx._class !== core.class.TxCreateDoc) return
+    const ctx = tx as TxCUD<ActivityMessage>
+    if (ctx.attachedTo !== doc._id) return
+    if (ctx._class !== core.class.TxCreateDoc) return
     if (shouldScrollToNew) {
       void wait().then(scrollToNewMessages)
     }
@@ -575,6 +575,8 @@
     window.removeEventListener('blur', handleWindowBlur)
     removeTxListener(newMessageTxListener)
   })
+
+  $: showBlankView = !$isLoadingStore && messages.length === 0 && !isThread
 </script>
 
 <div class="flex-col relative" class:h-full={fullHeight}>
@@ -587,15 +589,16 @@
     bind:scroller
     bind:scrollDiv
     bind:contentDiv
+    bottomStart={!showBlankView}
     loadingOverlay={$isLoadingStore || !isScrollInitialized}
     onScroll={handleScroll}
     onResize={handleResize}
   >
-    {#if !$isLoadingStore && messages.length === 0 && !isThread && !readonly}
+    {#if showBlankView}
       <BlankView
         icon={chunter.icon.Thread}
         header={chunter.string.NoMessagesInChannel}
-        label={chunter.string.SendMessagesInChannel}
+        label={readonly ? undefined : chunter.string.SendMessagesInChannel}
       />
     {/if}
 
@@ -631,6 +634,7 @@
         isHighlighted={isSelected}
         shouldScroll={false}
         {readonly}
+        {onReply}
       />
     {/each}
 
@@ -641,8 +645,8 @@
     {#if loadMoreAllowed && $canLoadNextForwardStore}
       <HistoryLoading isLoading={$isLoadingMoreStore} />
     {/if}
-    {#if !fixedInput}
-      <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} />
+    {#if !fixedInput && withInput && !readonly}
+      <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} {autofocus} />
     {/if}
   </BaseChatScroller>
   {#if !isThread && isLatestMessageButtonVisible}
@@ -658,8 +662,12 @@
   {/if}
 </div>
 
-{#if fixedInput}
-  <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} />
+{#if fixedInput && withInput && !readonly}
+  <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} {autofocus} />
+{/if}
+
+{#if readonly}
+  <div class="h-6" />
 {/if}
 
 <style lang="scss">

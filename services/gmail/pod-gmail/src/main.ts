@@ -14,10 +14,9 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
-import { type StorageConfiguration } from '@hcengineering/server-core'
+import { initStatisticsContext, type StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
 import { type IncomingHttpHeaders } from 'http'
@@ -37,7 +36,7 @@ const extractToken = (header: IncomingHttpHeaders): any => {
 }
 
 export const main = async (): Promise<void> => {
-  const ctx = new MeasureMetricsContext('gmail', {}, {}, newMetrics())
+  const ctx = initStatisticsContext('gmail', {})
 
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)

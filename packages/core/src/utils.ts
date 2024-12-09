@@ -26,7 +26,6 @@ import {
   Collection,
   Doc,
   DocData,
-  DocIndexState,
   DOMAIN_BLOB,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MODEL,
@@ -41,6 +40,7 @@ import {
   Space,
   TypedSpace,
   WorkspaceMode,
+  type Domain,
   type PluginConfiguration
 } from './classes'
 import core from './component'
@@ -165,72 +165,11 @@ export function isWorkspaceCreating (mode?: WorkspaceMode): boolean {
   return ['pending-creation', 'creating'].includes(mode)
 }
 
-const attributesPrefix = 'attributes.'
-
 /**
  * @public
  */
-export interface IndexKeyOptions {
-  _class?: Ref<Class<Obj>>
-  docId?: Ref<DocIndexState>
-  extra?: string[]
-  digest?: boolean
-}
-/**
- * @public
- */
-
-export function docUpdKey (name: string, opt?: IndexKeyOptions): string {
-  return attributesPrefix + docKey(name, opt)
-}
-/**
- * @public
- */
-export function docKey (name: string, opt?: IndexKeyOptions): string {
-  const extra = opt?.extra !== undefined && opt?.extra?.length > 0 ? `#${opt.extra?.join('#') ?? ''}` : ''
-  const digestName = opt?.digest === true ? name + '^digest' : name
-  return opt?._class === undefined ? digestName : `${opt?._class}%${digestName}${extra}`
-}
-
-/**
- * @public
- */
-export function extractDocKey (key: string): {
-  _class?: Ref<Class<Doc>>
-  attr: string
-  docId?: Ref<DocIndexState>
-  extra: string[]
-  digest: boolean
-} {
-  let k = key
-  if (k.startsWith(attributesPrefix)) {
-    k = k.slice(attributesPrefix.length)
-  }
-  let docId: Ref<DocIndexState> | undefined
-  let _class: Ref<Class<Doc>> | undefined
-  let attr = ''
-  const docSepPos = k.indexOf('|')
-  if (docSepPos !== -1) {
-    docId = k.substring(0, docSepPos).replace('_', '.') as Ref<DocIndexState>
-    k = k.substring(docSepPos + 1)
-  }
-  const clPos = k.indexOf('%')
-  if (clPos !== -1) {
-    _class = k.substring(0, clPos) as Ref<Class<Doc>>
-    attr = k.substring(clPos + 1)
-  } else {
-    attr = k
-  }
-  const extra = attr.split('#')
-  attr = extra.splice(0, 1)[0]
-  const digestPos = attr.indexOf('^digest')
-  let digest = false
-  if (digestPos !== -1) {
-    attr = attr.substring(0, digestPos)
-    digest = true
-  }
-
-  return { docId, attr, _class, extra, digest }
+export function docKey (name: string, _class?: Ref<Class<Doc>>): string {
+  return _class === undefined || _class !== core.class.Doc ? name : `${_class}%${name}`
 }
 
 /**
@@ -744,7 +683,9 @@ export function isClassIndexable (
     domain === DOMAIN_TX ||
     domain === DOMAIN_MODEL ||
     domain === DOMAIN_BLOB ||
+    domain === ('preference' as Domain) ||
     domain === DOMAIN_TRANSIENT ||
+    domain === ('settings' as Domain) ||
     domain === DOMAIN_BENCHMARK
   ) {
     hierarchy.setClassifierProp(c, 'class_indexed', false)

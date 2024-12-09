@@ -56,17 +56,17 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: recruit.class.Vacancy,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: recruit.class.Applicant,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: recruit.class.Review,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, workbench.mixin.SpaceView, {
@@ -1467,26 +1467,6 @@ export function createModel (builder: Builder): void {
     forceIndex: true,
     childProcessingAllowed: true,
     propagate: []
-  })
-
-  createAction(builder, {
-    label: recruit.string.MatchVacancy,
-    icon: recruit.icon.Vacancy,
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: recruit.component.MatchVacancy,
-      element: 'top',
-      fillProps: {
-        _objects: 'objects'
-      }
-    },
-    input: 'any',
-    category: recruit.category.Recruit,
-    target: recruit.mixin.Candidate,
-    context: {
-      mode: ['context', 'browser'],
-      group: 'create'
-    }
   })
 
   builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.ObjectEditorFooter, {

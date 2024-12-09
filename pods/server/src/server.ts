@@ -14,16 +14,25 @@
 // limitations under the License.
 //
 
-import { type Branding, type BrandingMap, type Tx, type WorkspaceIdWithUrl } from '@hcengineering/core'
+import {
+  type Branding,
+  type BrandingMap,
+  type MeasureContext,
+  type Tx,
+  type WorkspaceIdWithUrl
+} from '@hcengineering/core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
-import { getMetricsContext } from './metrics'
 
 import { ClientSession, startSessionManager } from '@hcengineering/server'
-import { type Pipeline, type ServerFactory, type Session, type StorageConfiguration } from '@hcengineering/server-core'
+import {
+  type Pipeline,
+  type ServerFactory,
+  type Session,
+  type SessionManager,
+  type StorageConfiguration
+} from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
-import { serverAiBotId } from '@hcengineering/server-ai-bot'
-import { createAIBotAdapter } from '@hcengineering/server-ai-bot-resources'
 import { createServerPipeline, registerServerPlugins, registerStringLoaders } from '@hcengineering/server-pipeline'
 
 import { readFileSync } from 'node:fs'
@@ -35,17 +44,14 @@ registerStringLoaders()
  * @public
  */
 export function start (
+  metrics: MeasureContext,
   dbUrl: string,
   opt: {
-    fullTextUrl: string
+    fulltextUrl: string
     storageConfig: StorageConfiguration
-    rekoniUrl: string
     port: number
     brandingMap: BrandingMap
     serverFactory: ServerFactory
-
-    indexProcessing: number // 1000
-    indexParallel: number // 2
 
     enableCompression?: boolean
 
@@ -58,9 +64,7 @@ export function start (
 
     mongoUrl?: string
   }
-): () => Promise<void> {
-  const metrics = getMetricsContext()
-
+): { shutdown: () => Promise<void>, sessionManager: SessionManager } {
   registerServerPlugins()
 
   const externalStorage = buildStorageFromConfig(opt.storageConfig)
@@ -70,17 +74,7 @@ export function start (
     dbUrl,
     model,
     { ...opt, externalStorage, adapterSecurity: dbUrl.startsWith('postgresql') },
-    opt.mongoUrl !== undefined
-      ? {
-          serviceAdapters: {
-            [serverAiBotId]: {
-              factory: createAIBotAdapter,
-              db: '%ai-bot',
-              url: opt.mongoUrl
-            }
-          }
-        }
-      : {}
+    {}
   )
   const sessionFactory = (
     token: Token,
@@ -91,7 +85,7 @@ export function start (
     return new ClientSession(token, pipeline, workspaceId, branding, token.extra?.mode === 'backup')
   }
 
-  const onClose = startSessionManager(getMetricsContext(), {
+  const { shutdown: onClose, sessionManager } = startSessionManager(metrics, {
     pipelineFactory,
     sessionFactory,
     port: opt.port,
@@ -102,8 +96,11 @@ export function start (
     externalStorage,
     profiling: opt.profiling
   })
-  return async () => {
-    await externalStorage.close()
-    await onClose()
+  return {
+    shutdown: async () => {
+      await externalStorage.close()
+      await onClose()
+    },
+    sessionManager
   }
 }

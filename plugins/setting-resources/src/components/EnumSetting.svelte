@@ -27,7 +27,7 @@
     Scroller,
     Separator,
     defineSeparators,
-    settingsSeparators,
+    twoPanelsSeparators,
     showPopup
   } from '@hcengineering/ui'
   import { showMenu } from '@hcengineering/view-resources'
@@ -51,11 +51,11 @@
     showPopup(setting.component.EditEnum, { title: setting.string.CreateEnum }, 'top')
   }
 
-  defineSeparators('workspaceSettings', settingsSeparators)
+  defineSeparators('workspaceSettings', twoPanelsSeparators)
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header adaptive={'disabled'}>
     <Breadcrumb icon={setting.icon.Enums} label={setting.string.Enums} size={'large'} isCurrent />
     <svelte:fragment slot="actions">
       <ModernButton

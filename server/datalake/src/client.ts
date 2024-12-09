@@ -15,8 +15,10 @@
 
 import { type MeasureContext, type WorkspaceId, concatLink } from '@hcengineering/core'
 import FormData from 'form-data'
-import fetch, { type RequestInit, type Response } from 'node-fetch'
+import fetch, { type RequestInfo, type RequestInit, type Response } from 'node-fetch'
 import { Readable } from 'stream'
+
+import { DatalakeError, NetworkError, NotFoundError } from './error'
 
 /** @public */
 export interface ObjectMetadata {
@@ -47,8 +49,18 @@ interface BlobUploadSuccess {
 
 type BlobUploadResult = BlobUploadSuccess | BlobUploadError
 
+interface MultipartUpload {
+  key: string
+  uploadId: string
+}
+
+interface MultipartUploadPart {
+  partNumber: number
+  etag: string
+}
+
 /** @public */
-export class Client {
+export class DatalakeClient {
   constructor (private readonly endpoint: string) {}
 
   getObjectUrl (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): string {
@@ -62,14 +74,16 @@ export class Client {
     let response
     try {
       response = await fetchSafe(ctx, url)
-    } catch (err) {
-      console.error('failed to get object', { workspace, objectName, err })
+    } catch (err: any) {
+      if (err.name !== 'NotFoundError') {
+        console.error('failed to get object', { workspace, objectName, err })
+      }
       throw err
     }
 
     if (response.body == null) {
       ctx.error('bad datalake response', { objectName })
-      throw new Error('Missing response body')
+      throw new DatalakeError('Missing response body')
     }
 
     return Readable.from(response.body)
@@ -90,14 +104,16 @@ export class Client {
     let response
     try {
       response = await fetchSafe(ctx, url, { headers })
-    } catch (err) {
-      console.error('failed to get partial object', { workspace, objectName, err })
+    } catch (err: any) {
+      if (err.name !== 'NotFoundError') {
+        console.error('failed to get partial object', { workspace, objectName, err })
+      }
       throw err
     }
 
     if (response.body == null) {
       ctx.error('bad datalake response', { objectName })
-      throw new Error('Missing response body')
+      throw new DatalakeError('Missing response body')
     }
 
     return Readable.from(response.body)
@@ -113,7 +129,10 @@ export class Client {
     let response: Response
     try {
       response = await fetchSafe(ctx, url, { method: 'HEAD' })
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === 'NotFoundError') {
+        return
+      }
       console.error('failed to stat object', { workspace, objectName, err })
       throw err
     }
@@ -134,9 +153,11 @@ export class Client {
     const url = this.getObjectUrl(ctx, workspace, objectName)
     try {
       await fetchSafe(ctx, url, { method: 'DELETE' })
-    } catch (err) {
-      console.error('failed to delete object', { workspace, objectName, err })
-      throw err
+    } catch (err: any) {
+      if (err.name !== 'NotFoundError') {
+        console.error('failed to delete object', { workspace, objectName, err })
+        throw err
+      }
     }
   }
 
@@ -161,13 +182,13 @@ export class Client {
 
     try {
       if (size === undefined || size < 64 * 1024 * 1024) {
-        await ctx.with('direct-upload', {}, async (ctx) => {
-          await this.uploadWithFormData(ctx, workspace, objectName, stream, metadata)
-        })
+        await ctx.with('direct-upload', {}, (ctx) =>
+          this.uploadWithFormData(ctx, workspace, objectName, stream, metadata)
+        )
       } else {
-        await ctx.with('signed-url-upload', {}, async (ctx) => {
-          await this.uploadWithSignedURL(ctx, workspace, objectName, stream, metadata)
-        })
+        await ctx.with('signed-url-upload', {}, (ctx) =>
+          this.uploadWithSignedURL(ctx, workspace, objectName, stream, metadata)
+        )
       }
     } catch (err) {
       console.error('failed to put object', { workspace, objectName, err })
@@ -175,7 +196,7 @@ export class Client {
     }
   }
 
-  private async uploadWithFormData (
+  async uploadWithFormData (
     ctx: MeasureContext,
     workspace: WorkspaceId,
     objectName: string,
@@ -187,7 +208,7 @@ export class Client {
 
     const form = new FormData()
     const options: FormData.AppendOptions = {
-      filename: encodeURIComponent(objectName),
+      filename: objectName,
       contentType: metadata.type,
       knownLength: metadata.size,
       header: {
@@ -200,17 +221,45 @@ export class Client {
 
     const result = (await response.json()) as BlobUploadResult[]
     if (result.length !== 1) {
-      throw new Error('Bad datalake response: ' + result.toString())
+      throw new DatalakeError('Bad datalake response: ' + result.toString())
     }
 
     const uploadResult = result[0]
 
     if ('error' in uploadResult) {
-      throw new Error('Upload failed: ' + uploadResult.error)
+      throw new DatalakeError('Upload failed: ' + uploadResult.error)
     }
   }
 
-  private async uploadWithSignedURL (
+  async uploadMultipart (
+    ctx: MeasureContext,
+    workspace: WorkspaceId,
+    objectName: string,
+    stream: Readable | Buffer | string,
+    metadata: ObjectMetadata
+  ): Promise<void> {
+    const chunkSize = 10 * 1024 * 1024
+
+    const multipart = await this.multipartUploadStart(ctx, workspace, objectName, metadata)
+
+    try {
+      const parts: MultipartUploadPart[] = []
+
+      let partNumber = 1
+      for await (const chunk of getChunks(stream, chunkSize)) {
+        const part = await this.multipartUploadPart(ctx, workspace, objectName, multipart, partNumber, chunk)
+        parts.push(part)
+        partNumber++
+      }
+
+      await this.multipartUploadComplete(ctx, workspace, objectName, multipart, parts)
+    } catch (err: any) {
+      await this.multipartUploadAbort(ctx, workspace, objectName, multipart)
+      throw err
+    }
+  }
+
+  async uploadWithSignedURL (
     ctx: MeasureContext,
     workspace: WorkspaceId,
     objectName: string,
@@ -225,18 +274,42 @@ export class Client {
         method: 'PUT',
         headers: {
           'Content-Type': metadata.type,
-          'Content-Length': metadata.size?.toString() ?? '0',
-          'x-amz-meta-last-modified': metadata.lastModified.toString()
+          'Content-Length': metadata.size?.toString() ?? '0'
+          // 'x-amz-meta-last-modified': metadata.lastModified.toString()
         }
       })
     } catch (err) {
       ctx.error('failed to upload via signed url', { workspace, objectName, err })
       await this.signObjectDelete(ctx, workspace, objectName)
-      throw new Error('Failed to upload via signed URL')
+      throw new DatalakeError('Failed to upload via signed URL')
     }
 
     await this.signObjectComplete(ctx, workspace, objectName)
   }
+
+  async uploadFromS3 (
+    ctx: MeasureContext,
+    workspace: WorkspaceId,
+    objectName: string,
+    params: {
+      url: string
+      accessKeyId: string
+      secretAccessKey: string
+    }
+  ): Promise<void> {
+    const path = `/upload/s3/${workspace.name}/${encodeURIComponent(objectName)}`
+    const url = concatLink(this.endpoint, path)
+
+    await fetchSafe(ctx, url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(params)
+    })
+  }
+
+  // Signed URL
 
   private async signObjectSign (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<string> {
     try {
@@ -245,7 +318,7 @@ export class Client {
       return await response.text()
     } catch (err: any) {
       ctx.error('failed to sign object', { workspace, objectName, err })
-      throw new Error('Failed to sign URL')
+      throw new DatalakeError('Failed to sign URL')
     }
   }
 
@@ -255,7 +328,7 @@ export class Client {
       await fetchSafe(ctx, url, { method: 'PUT' })
     } catch (err: any) {
       ctx.error('failed to complete signed url upload', { workspace, objectName, err })
-      throw new Error('Failed to complete signed URL upload')
+      throw new DatalakeError('Failed to complete signed URL upload')
     }
   }
 
@@ -265,7 +338,7 @@ export class Client {
       await fetchSafe(ctx, url, { method: 'DELETE' })
     } catch (err: any) {
       ctx.error('failed to abort signed url upload', { workspace, objectName, err })
-      throw new Error('Failed to abort signed URL upload')
+      throw new DatalakeError('Failed to abort signed URL upload')
     }
   }
 
@@ -273,20 +346,138 @@ export class Client {
     const path = `/upload/signed-url/${workspace.name}/${encodeURIComponent(objectName)}`
     return concatLink(this.endpoint, path)
   }
+
+  // Multipart
+
+  private async multipartUploadStart (
+    ctx: MeasureContext,
+    workspace: WorkspaceId,
+    objectName: string,
+    metadata: ObjectMetadata
+  ): Promise<MultipartUpload> {
+    const path = `/upload/multipart/${workspace.name}/${encodeURIComponent(objectName)}`
+    const url = concatLink(this.endpoint, path)
+
+    try {
+      const headers = {
+        'Content-Type': metadata.type,
+        'Content-Length': metadata.size?.toString() ?? '0',
+        'Last-Modified': new Date(metadata.lastModified).toUTCString()
+      }
+      const response = await fetchSafe(ctx, url, { method: 'POST', headers })
+      return (await response.json()) as MultipartUpload
+    } catch (err: any) {
+      ctx.error('failed to start multipart upload', { workspace, objectName, err })
+      throw new DatalakeError('Failed to start multipart upload')
+    }
+  }
+
+  private async multipartUploadPart (
+    ctx: MeasureContext,
+    workspace: WorkspaceId,
+    objectName: string,
+    multipart: MultipartUpload,
+    partNumber: number,
+    body: Readable | Buffer | string
+  ): Promise<MultipartUploadPart> {
+    const path = `/upload/multipart/${workspace.name}/${encodeURIComponent(objectName)}/part`
+    const url = new URL(concatLink(this.endpoint, path))
+    url.searchParams.append('key', multipart.key)
+    url.searchParams.append('uploadId', multipart.uploadId)
+    url.searchParams.append('partNumber', partNumber.toString())
+
+    try {
+      const response = await fetchSafe(ctx, url, { method: 'POST', body })
+      return (await response.json()) as MultipartUploadPart
+    } catch (err: any) {
+      ctx.error('failed to abort multipart upload', { workspace, objectName, err })
+      throw new DatalakeError('Failed to abort multipart upload')
+    }
+  }
+
+  private async multipartUploadComplete (
+    ctx: MeasureContext,
+    workspace: WorkspaceId,
+    objectName: string,
+    multipart: MultipartUpload,
+    parts: MultipartUploadPart[]
+  ): Promise<void> {
+    const path = `/upload/multipart/${workspace.name}/${encodeURIComponent(objectName)}/complete`
+    const url = new URL(concatLink(this.endpoint, path))
+    url.searchParams.append('key', multipart.key)
+    url.searchParams.append('uploadId', multipart.uploadId)
+
+    try {
+      await fetchSafe(ctx, url, { method: 'POST', body: JSON.stringify({ parts }) })
+    } catch (err: any) {
+      ctx.error('failed to complete multipart upload', { workspace, objectName, err })
+      throw new DatalakeError('Failed to complete multipart upload')
+    }
+  }
+
+  private async multipartUploadAbort (
+    ctx: MeasureContext,
+    workspace: WorkspaceId,
+    objectName: string,
+    multipart: MultipartUpload
+  ): Promise<void> {
+    const path = `/upload/multipart/${workspace.name}/${encodeURIComponent(objectName)}/abort`
+    const url = new URL(concatLink(this.endpoint, path))
+    url.searchParams.append('key', multipart.key)
+    url.searchParams.append('uploadId', multipart.uploadId)
+
+    try {
+      await fetchSafe(ctx, url, { method: 'POST' })
+    } catch (err: any) {
+      ctx.error('failed to abort multipart upload', { workspace, objectName, err })
+      throw new DatalakeError('Failed to abort multipart upload')
+    }
+  }
 }
 
-async function fetchSafe (ctx: MeasureContext, url: string, init?: RequestInit): Promise<Response> {
+async function * getChunks (data: Buffer | string | Readable, chunkSize: number): AsyncGenerator<Buffer> {
+  if (Buffer.isBuffer(data)) {
+    let offset = 0
+    while (offset < data.length) {
+      yield data.subarray(offset, offset + chunkSize)
+      offset += chunkSize
+    }
+  } else if (typeof data === 'string') {
+    const buffer = Buffer.from(data)
+    yield * getChunks(buffer, chunkSize)
+  } else if (data instanceof Readable) {
+    let buffer = Buffer.alloc(0)
+
+    for await (const chunk of data) {
+      buffer = Buffer.concat([buffer, chunk])
+
+      while (buffer.length >= chunkSize) {
+        yield buffer.subarray(0, chunkSize)
+        buffer = buffer.subarray(chunkSize)
+      }
+    }
+    if (buffer.length > 0) {
+      yield buffer
+    }
+  }
+}
+
+async function fetchSafe (ctx: MeasureContext, url: RequestInfo, init?: RequestInit): Promise<Response> {
   let response
   try {
     response = await fetch(url, init)
   } catch (err: any) {
     ctx.error('network error', { err })
-    throw new Error(`Network error ${err}`)
+    throw new NetworkError(`Network error ${err}`)
   }
 
   if (!response.ok) {
     const text = await response.text()
-    throw new Error(response.status === 404 ? 'Not Found' : 'HTTP error ' + response.status + ': ' + text)
+    if (response.status === 404) {
+      throw new NotFoundError(text)
+    } else {
+      throw new DatalakeError(text)
+    }
   }
 
   return response

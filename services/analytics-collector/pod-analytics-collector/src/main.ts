@@ -26,17 +26,21 @@ import { createServer, listen } from './server'
 import { Collector } from './collector'
 import { registerLoaders } from './loaders'
 import { closeDB, getDB } from './storage'
+import { initStatisticsContext } from '@hcengineering/server-core'
 
-const ctx = new MeasureMetricsContext(
-  'analytics-collector-service',
-  {},
-  {},
-  newMetrics(),
-  new SplitLogger('analytics-collector-service', {
-    root: join(process.cwd(), 'logs'),
-    enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
-  })
-)
+const ctx = initStatisticsContext('analytics-collector', {
+  factory: () =>
+    new MeasureMetricsContext(
+      'analytics-collector-service',
+      {},
+      {},
+      newMetrics(),
+      new SplitLogger('analytics-collector-service', {
+        root: join(process.cwd(), 'logs'),
+        enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+      })
+    )
+})
 
 configureAnalytics(config.SentryDSN, config)
 Analytics.setTag('application', 'analytics-collector-service')

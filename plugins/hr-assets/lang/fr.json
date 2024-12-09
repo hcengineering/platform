@@ -28,6 +28,7 @@
     "Vacation": "Vacances",
     "Sick": "Malade",
     "PTO": "Congé payé",
+    "PTOs": "PTOs",
     "Remote": "Télétravail",
     "Overtime": "Heures supplémentaires",
     "PTO2": "Congé payé/2",
@@ -47,6 +48,7 @@
     "PublicHoliday": "Jour férié",
     "Title": "Titre",
     "Description": "Description",
+    "PublicHolidays": "Public holidays",
     "MarkAsPublicHoliday": "Marquer comme jour férié",
     "EditPublicHoliday": "Modifier le jour férié",
     "Managers": "Managers",
@@ -57,6 +59,11 @@
     "RequestUpdated": "Demande mise à jour",
     "RequestRemoved": "Demande supprimée",
     "ConfigLabel": "Ressources humaines",
-    "ConfigDescription": "Extension pour gérer la structure de l'organisation et le calendrier de travail des employés"
+    "ConfigDescription": "Extension pour gérer la structure de l'organisation et le calendrier de travail des employés",
+    "WorkingDays": "Working days",
+    "ReportedDays": "Reported days",
+    "Tasks": "Tasks",
+    "TPD": "TPD",
+    "EXTRa": "EXTRa"
   }
 }

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DateRangeMode } from '@hcengineering/core'
+  import { DateRangeMode, convertToDay } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
   import {
@@ -56,10 +56,10 @@
   const saveDate = (withTime: boolean = false): void => {
     if (currentDate) {
       if (!withTime) {
-        currentDate.setHours(0)
-        currentDate.setMinutes(0)
+        currentDate = convertToDay(currentDate)
+      } else {
+        currentDate.setSeconds(0, 0)
       }
-      currentDate.setSeconds(0, 0)
       viewDate = currentDate = currentDate
       dispatch('update', currentDate)
     }

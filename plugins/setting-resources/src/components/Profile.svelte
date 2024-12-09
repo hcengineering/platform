@@ -77,7 +77,7 @@
 <FocusHandler {manager} />
 
 <div class="hulyComponent">
-  <Header>
+  <Header adaptive={'disabled'}>
     <Breadcrumb icon={setting.icon.AccountSettings} label={setting.string.AccountSettings} size={'large'} isCurrent />
   </Header>
   <div class="ac-body p-10">

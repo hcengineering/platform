@@ -26,7 +26,9 @@
     getEventPositionElement,
     showPopup,
     IconSettings,
-    ModernButton
+    ModernButton,
+    resizeObserver,
+    deviceWidths
   } from '@hcengineering/ui'
   import { ObjectPresenter } from '@hcengineering/view-resources'
   import settings from '../plugin'
@@ -144,7 +146,13 @@
     </div>
   {/if}
 {/if}
-<div class="hulyTableAttr-container">
+<div
+  class="hulyTableAttr-container"
+  use:resizeObserver={(el) => {
+    if (el.clientWidth < deviceWidths[0] && !el.classList.contains('short')) el.classList.add('short')
+    else if (el.clientWidth >= deviceWidths[0] && el.classList.contains('short')) el.classList.remove('short')
+  }}
+>
   <div class="hulyTableAttr-header font-medium-12" class:withButton={showHierarchy}>
     {#if showHierarchy}
       <ModernButton icon={IconSettings} kind={'secondary'} size={'small'} {disabled} hasMenu>

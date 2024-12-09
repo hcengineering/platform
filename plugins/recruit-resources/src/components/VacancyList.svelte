@@ -72,11 +72,13 @@
     </Scroller>
   {:else}
     <SectionEmpty icon={FileDuo} label={recruit.string.NoVacancies}>
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <span class="over-underline content-color" on:click={createApp}>
-        <Label label={recruit.string.CreateVacancy} />
-      </span>
+      {#if !readonly}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <span class="over-underline content-color" on:click={createApp}>
+          <Label label={recruit.string.CreateVacancy} />
+        </span>
+      {/if}
     </SectionEmpty>
   {/if}
 </div>

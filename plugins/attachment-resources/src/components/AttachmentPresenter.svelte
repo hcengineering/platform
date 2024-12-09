@@ -18,17 +18,16 @@
   import core, { type WithLookup } from '@hcengineering/core'
   import presentation, {
     canPreviewFile,
-    FilePreviewPopup,
     getBlobRef,
     getFileUrl,
     previewTypes,
     sizeToWidth
   } from '@hcengineering/presentation'
-  import { Label, closeTooltip, showPopup } from '@hcengineering/ui'
+  import { Label } from '@hcengineering/ui'
   import { permissionsStore } from '@hcengineering/view-resources'
   import filesize from 'filesize'
   import { createEventDispatcher } from 'svelte'
-  import { getType, openAttachmentInSidebar } from '../utils'
+  import { getType, openAttachmentInSidebar, showAttachmentPreviewPopup } from '../utils'
 
   import AttachmentName from './AttachmentName.svelte'
 
@@ -78,18 +77,8 @@
       window.open((e.target as HTMLAnchorElement).href, '_blank')
       return
     }
-    closeTooltip()
     if (value.type.startsWith('image/') || value.type.startsWith('video/') || value.type.startsWith('audio/')) {
-      showPopup(
-        FilePreviewPopup,
-        {
-          file: value.file,
-          contentType: value.type,
-          name: value.name,
-          metadata: value.metadata
-        },
-        'centered'
-      )
+      showAttachmentPreviewPopup(value)
     } else {
       await openAttachmentInSidebar(value)
     }

@@ -15,14 +15,12 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import { FilePreviewPopup } from '@hcengineering/presentation'
-  import { closeTooltip, showPopup } from '@hcengineering/ui'
   import { ListSelectionProvider } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { WithLookup } from '@hcengineering/core'
 
   import { AttachmentImageSize } from '../types'
-  import { getType } from '../utils'
+  import { getType, showAttachmentPreviewPopup } from '../utils'
   import AttachmentActions from './AttachmentActions.svelte'
   import AttachmentImagePreview from './AttachmentImagePreview.svelte'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
@@ -47,13 +45,8 @@
   <div
     class="content flex-center buttonContainer cursor-pointer"
     on:click={() => {
-      closeTooltip()
       if (listProvider !== undefined) listProvider.updateFocus(value)
-      const popupInfo = showPopup(
-        FilePreviewPopup,
-        { file: value.file, name: value.name, contentType: value.type, metadata: value.metadata },
-        value.type.startsWith('image/') ? 'centered' : 'float'
-      )
+      const popupInfo = showAttachmentPreviewPopup(value)
       dispatch('open', popupInfo.id)
     }}
   >
@@ -116,5 +109,6 @@
   .content {
     max-width: 20rem;
     max-height: 20rem;
+    scroll-snap-align: start;
   }
 </style>

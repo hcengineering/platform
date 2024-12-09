@@ -40,7 +40,7 @@ import { type Asset, type IntlString, getMetadata, getResource, translate } from
 import { parseLinkId } from '@hcengineering/view-resources'
 import notification, { notificationId } from '@hcengineering/notification'
 
-import { workspaceStore } from './utils'
+import { locationWorkspaceStore } from './utils'
 import workbench from './plugin'
 
 export const tabIdStore = writable<Ref<WorkbenchTab> | undefined>()
@@ -56,7 +56,7 @@ tabIdStore.subscribe((value) => {
   prevTabId = value
 })
 
-workspaceStore.subscribe((workspace) => {
+locationWorkspaceStore.subscribe((workspace) => {
   tabIdStore.set(getTabFromLocalStorage(workspace ?? ''))
 })
 
@@ -64,7 +64,7 @@ tabIdStore.subscribe(saveTabToLocalStorage)
 
 const syncTabLoc = reduceCalls(async (): Promise<void> => {
   const loc = getCurrentLocation()
-  const workspace = get(workspaceStore)
+  const workspace = get(locationWorkspaceStore)
   if (workspace == null || workspace === '') return
   const tab = get(currentTabStore)
   if (tab == null) return
@@ -121,7 +121,9 @@ const syncTabLoc = reduceCalls(async (): Promise<void> => {
     //   return
     // }
 
-    await getClient().diffUpdate(tab, { location: url, name })
+    const op = getClient().apply(undefined, undefined, true)
+    await op.diffUpdate(tab, { location: url, name })
+    await op.commit()
   }
 })
 
@@ -130,7 +132,7 @@ locationStore.subscribe((l: Location) => {
 })
 
 export function syncWorkbenchTab (): void {
-  const workspace = get(workspaceStore)
+  const workspace = get(locationWorkspaceStore)
   tabIdStore.set(getTabFromLocalStorage(workspace ?? ''))
 }
 
@@ -151,7 +153,7 @@ function getTabFromLocalStorage (workspace: string): Ref<WorkbenchTab> | undefin
 }
 
 function saveTabToLocalStorage (_id: Ref<WorkbenchTab> | undefined): void {
-  const workspace = get(workspaceStore)
+  const workspace = get(locationWorkspaceStore)
   if (workspace == null || workspace === '') return
 
   const localStorageKey = getTabIdLocalStorageKey(workspace)

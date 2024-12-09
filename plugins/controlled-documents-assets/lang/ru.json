@@ -99,7 +99,7 @@
     "DocumentCodePlaceholder": "ДОК-1",
     "DocumentPrefixPlaceholder": "ДОК",
     "DocumentPrefix": "Префикс документов",
-    "DocumentTemplateCreateLabel": "Шалблон",
+    "DocumentTemplateCreateLabel": "Шаблон",
     "DocumentCategoryCreateLabel": "Категория",
     "CreateDocumentCategory": "Создать категорию документа",
     "DocumentCategoryAlreadyExists": "Категория \"{title}\" уже существует. ",
@@ -128,7 +128,7 @@
     "ModificationDate": "Модифицированно",
     "Modified": "Модифицированно",
     "Owner": "Владелец",
-    "AssignedTo": "Назначано на",
+    "AssignedTo": "Назначено на",
     "Unassigned": "Не назначено",
     "Untitled": "Без названия",
     "Copy": "копия",
@@ -153,7 +153,7 @@
     "Parent": "Родитель",
     "Template": "Шаблон",
     "GeneralInfo": "Общая информация",
-    "InProgress": "В прогресссе",
+    "InProgress": "Выполняется",
 
     "EditDescription": "Редактировать описание",
     "EditGuidance": "Редактировать руководство",
@@ -230,7 +230,7 @@
 
     "EffectiveDocumentLifecycle": "Жизненный цикл эффективного документа",
 
-    "ReasonAndImpact": "Причина & Воздействие",
+    "ReasonAndImpact": "Причина и Воздействие",
     "ImpactAnalysis": "Анализ воздействия",
     "ImpactedDocuments": "Подверженные документы",
 
@@ -293,7 +293,7 @@
     "DeleteDocumentCategoryPermission": "Удалять категорию",
     "DeleteDocumentCategoryDescription": "Предоставляет пользователям разрешение удалять категорию",
     "ConfigLabel": "Управляемые Документы",
-    "ConfigDescription": "Расширение для управления управялемыми документами"
+    "ConfigDescription": "Расширение для управления управляемыми документами"
   },
   "controlledDocStates": {
     "Empty": "",

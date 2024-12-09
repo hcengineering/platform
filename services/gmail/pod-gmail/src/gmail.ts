@@ -22,8 +22,8 @@ import core, {
   MeasureContext,
   Ref,
   Timestamp,
-  TxCollectionCUD,
   TxCreateDoc,
+  TxCUD,
   TxFactory,
   TxOperations,
   TxProcessor,
@@ -601,8 +601,8 @@ export class GmailClient {
       if (tx !== undefined) {
         const resultMessage =
           current != null
-            ? TxProcessor.updateDoc2Doc(current, tx.tx as TxUpdateDoc<Message>)
-            : TxProcessor.createDoc2Doc(tx.tx as TxCreateDoc<Message>)
+            ? TxProcessor.updateDoc2Doc(current, tx as TxUpdateDoc<Message>)
+            : TxProcessor.createDoc2Doc(tx as TxCreateDoc<Message>)
         await this.client.tx(tx)
         if (attachments.length > 0) {
           const currentAttachemtns: Attachment[] =
@@ -704,15 +704,21 @@ export class GmailClient {
     message: AttachedData<Message> & { modifiedOn: Timestamp },
     factory: TxFactory,
     channel: Channel
-  ): TxCollectionCUD<Channel, Message> {
+  ): TxCUD<Message> {
     const tx = factory.createTxCollectionCUD<Channel, Message>(
       channel._class,
       channel._id,
       channel.space,
       'items',
-      factory.createTxCreateDoc<Message>(gmail.class.Message, core.space.Workspace, message as unknown as Data<Message>)
+      factory.createTxCreateDoc<Message>(
+        gmail.class.Message,
+        core.space.Workspace,
+        message as unknown as Data<Message>,
+        undefined,
+        message.modifiedOn
+      ),
+      message.modifiedOn
     )
-    tx.tx.modifiedOn = message.modifiedOn
     return tx
   }
 
@@ -721,7 +727,7 @@ export class GmailClient {
     current: Message,
     factory: TxFactory,
     channel: Channel
-  ): TxCollectionCUD<Channel, Message> | undefined {
+  ): TxCUD<Message> | undefined {
     const operations = diffAttributes(current, message)
     if (Object.keys(operations).length === 0) return undefined
     const tx = factory.createTxCollectionCUD<Channel, Message>(

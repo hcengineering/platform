@@ -26,6 +26,7 @@
   import SectionEmpty from './SectionEmpty.svelte'
 
   export let objectId: Ref<Vacancy>
+  export let readonly = false
   let applications: number
 
   const query = createQuery()
@@ -60,7 +61,9 @@
         bind:preference
         bind:loading
       />
-      <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createApp} />
+      {#if !readonly}
+        <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createApp} />
+      {/if}
     </div>
   </div>
   {#if applications > 0}
@@ -71,6 +74,7 @@
           config={preference?.config ?? viewlet.config}
           query={{ space: objectId }}
           loadingProps={{ length: applications }}
+          {readonly}
         />
       </Scroller>
     {:else}
@@ -80,9 +84,11 @@
     <SectionEmpty icon={FileDuo} label={recruit.string.NoApplicationsForVacancy}>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <span class="over-underline content-color" on:click={createApp}>
-        <Label label={recruit.string.CreateAnApplication} />
-      </span>
+      {#if !readonly}
+        <span class="over-underline content-color" on:click={createApp}>
+          <Label label={recruit.string.CreateAnApplication} />
+        </span>
+      {/if}
     </SectionEmpty>
   {/if}
 </div>

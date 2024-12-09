@@ -14,18 +14,29 @@
 // limitations under the License.
 //
 
-import { type BlobMetadata, type Attachment } from '@hcengineering/attachment'
-import {
+import { type BlobMetadata, type Attachment, type Drawing } from '@hcengineering/attachment'
+import core, {
+  SortingOrder,
   type Blob,
   type Class,
   type TxOperations as Client,
   type Data,
   type Doc,
   type Ref,
-  type Space
+  type Space,
+  type WithLookup
 } from '@hcengineering/core'
 import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-import { type FileOrBlob, getClient, getFileMetadata, uploadFile } from '@hcengineering/presentation'
+import {
+  type DrawingData,
+  type FileOrBlob,
+  getClient,
+  getFileMetadata,
+  getPreviewAlignment,
+  uploadFile,
+  FilePreviewPopup
+} from '@hcengineering/presentation'
+import { closeTooltip, showPopup, type PopupResult } from '@hcengineering/ui'
 import workbench, { type WidgetTab } from '@hcengineering/workbench'
 import view from '@hcengineering/view'
 
@@ -102,6 +113,7 @@ export function getType (type: string): 'image' | 'text' | 'json' | 'video' | 'a
 }
 
 export async function openAttachmentInSidebar (value: Attachment): Promise<void> {
+  closeTooltip()
   await openFilePreviewInSidebar(value.file, value.name, value.type, value.metadata)
 }
 
@@ -130,8 +142,64 @@ export async function openFilePreviewInSidebar (
     id: file,
     icon,
     name,
-    widget: attachment.ids.PreviewWidget,
     data: { file, name, contentType, metadata }
   }
   await createFn(widget, tab, true)
+}
+
+export function showAttachmentPreviewPopup (value: WithLookup<Attachment>): PopupResult {
+  const props: Record<string, any> = {}
+
+  if (value?.type?.startsWith('image/')) {
+    props.drawingAvailable = true
+    props.loadDrawings = async (): Promise<Drawing[] | undefined> => {
+      const client = getClient()
+      const drawings = await client.findAll(
+        attachment.class.Drawing,
+        {
+          parent: value.file,
+          space: value.space
+        },
+        {
+          sort: {
+            createdOn: SortingOrder.Descending
+          },
+          limit: 1
+        }
+      )
+      const result = []
+      if (drawings !== undefined) {
+        for (const drawing of drawings) {
+          result.push(drawing)
+        }
+      }
+      return result
+    }
+    props.createDrawing = async (data: DrawingData): Promise<DrawingData> => {
+      const client = getClient()
+      const newId = await client.createDoc(attachment.class.Drawing, value.space, {
+        parent: value.file,
+        parentClass: core.class.Blob,
+        content: data.content
+      })
+      const newDrawing = await client.findOne(attachment.class.Drawing, { _id: newId })
+      if (newDrawing === undefined) {
+        throw new Error('Unable to find just created drawing')
+      }
+      return newDrawing
+    }
+  }
+
+  closeTooltip()
+  return showPopup(
+    FilePreviewPopup,
+    {
+      file: value.file,
+      contentType: value.type,
+      name: value.name,
+      metadata: value.metadata,
+      props
+    },
+    getPreviewAlignment(value.type ?? '')
+  )
 }

@@ -42,6 +42,9 @@
     "@hcengineering/text": "^0.6.5",
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/query": "^0.6.12",
+    "@hcengineering/contact": "^0.6.24",
+    "@hcengineering/attachment": "^0.6.14",
+    "@hcengineering/drive": "^0.6.0",
     "fast-equals": "^5.0.1",
     "@hcengineering/storage": "^0.6.0"
   }

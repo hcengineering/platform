@@ -14,8 +14,17 @@
 //
 
 import { type Attachment } from '@hcengineering/attachment'
-import { type Blob, type MeasureContext, type Ref, type WorkspaceId, RateLimiter } from '@hcengineering/core'
+import {
+  type Blob,
+  type MeasureContext,
+  type Ref,
+  type WorkspaceId,
+  concatLink,
+  RateLimiter
+} from '@hcengineering/core'
+import { type DatalakeClient } from '@hcengineering/datalake'
 import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
+import { type S3Config, type S3Service } from '@hcengineering/s3'
 import {
   type ListBlobResult,
   type StorageAdapter,
@@ -248,4 +257,138 @@ async function retryOnFailure<T> (
     }
   }
   throw lastError
+}
+
+export interface CopyDatalakeParams {
+  concurrency: number
+}
+
+export async function copyToDatalake (
+  ctx: MeasureContext,
+  workspaceId: WorkspaceId,
+  config: S3Config,
+  adapter: S3Service,
+  datalake: DatalakeClient,
+  params: CopyDatalakeParams
+): Promise<void> {
+  console.log('copying from', config.name, 'concurrency:', params.concurrency)
+
+  const exists = await adapter.exists(ctx, workspaceId)
+  if (!exists) {
+    console.log('no files to copy')
+    return
+  }
+
+  let time = Date.now()
+  let processedCnt = 0
+  let skippedCnt = 0
+  let failedCnt = 0
+
+  function printStats (): void {
+    const duration = Date.now() - time
+    console.log(
+      '...processed',
+      processedCnt,
+      'skipped',
+      skippedCnt,
+      'failed',
+      failedCnt,
+      Math.round(duration / 1000) + 's'
+    )
+
+    time = Date.now()
+  }
+
+  const rateLimiter = new RateLimiter(params.concurrency)
+
+  const iterator = await adapter.listStream(ctx, workspaceId)
+
+  try {
+    while (true) {
+      const batch = await iterator.next()
+      if (batch.length === 0) break
+
+      for (const blob of batch) {
+        const objectName = blob._id
+        if (objectName.includes('%preview%') || objectName.includes('%size%') || objectName.endsWith('#history')) {
+          skippedCnt++
+          continue
+        }
+
+        await rateLimiter.add(async () => {
+          try {
+            await retryOnFailure(
+              ctx,
+              5,
+              async () => {
+                await copyBlobToDatalake(ctx, workspaceId, blob, config, adapter, datalake)
+                processedCnt += 1
+              },
+              50
+            )
+          } catch (err) {
+            console.error('failed to process blob', objectName, err)
+            failedCnt++
+          }
+        })
+      }
+      await rateLimiter.waitProcessing()
+      printStats()
+    }
+
+    await rateLimiter.waitProcessing()
+    printStats()
+  } finally {
+    await iterator.close()
+  }
+}
+
+export async function copyBlobToDatalake (
+  ctx: MeasureContext,
+  workspaceId: WorkspaceId,
+  blob: ListBlobResult,
+  config: S3Config,
+  adapter: S3Service,
+  datalake: DatalakeClient
+): Promise<void> {
+  const objectName = blob._id
+  const stat = await datalake.statObject(ctx, workspaceId, objectName)
+  if (stat !== undefined) {
+    return
+  }
+
+  if (blob.size < 1024 * 1024 * 64) {
+    // Handle small file
+    const { endpoint, accessKey: accessKeyId, secretKey: secretAccessKey, region } = config
+
+    const bucketId = adapter.getBucketId(workspaceId)
+    const objectId = adapter.getDocumentKey(workspaceId, encodeURIComponent(objectName))
+    const url = concatLink(endpoint, `${bucketId}/${objectId}`)
+
+    const params = { url, accessKeyId, secretAccessKey, region }
+    await datalake.uploadFromS3(ctx, workspaceId, objectName, params)
+  } else {
+    // Handle huge file
+    const stat = await adapter.stat(ctx, workspaceId, objectName)
+    if (stat !== undefined) {
+      const metadata = {
+        lastModified: stat.modifiedOn,
+        name: objectName,
+        type: stat.contentType,
+        size: stat.size
+      }
+      const readable = await adapter.get(ctx, workspaceId, objectName)
+      try {
+        readable.on('end', () => {
+          readable.destroy()
+        })
+        console.log('uploading huge blob', objectName, Math.round(stat.size / 1024 / 1024), 'MB')
+        const stream = readable.pipe(new PassThrough())
+        await datalake.uploadMultipart(ctx, workspaceId, objectName, stream, metadata)
+        console.log('done', objectName)
+      } finally {
+        readable.destroy()
+      }
+    }
+  }
 }

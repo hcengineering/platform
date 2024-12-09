@@ -23,9 +23,10 @@
     NavItem,
     getCurrentResolvedLocation,
     navigate,
-    resolvedLocationStore
+    resolvedLocationStore,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
-  import { onDestroy } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import { clearSettingsStore } from '../store'
 
   export let kind: 'navigation' | 'content' | undefined
@@ -65,6 +66,11 @@
       })(loc)
     })
   )
+  onMount(() => {
+    setTimeout(() => {
+      if (kind === 'content' && category === undefined) $deviceInfo.navigator.visible = true
+    }, 500)
+  })
 
   function selectCategory (id: string): void {
     clearSettingsStore()
@@ -94,7 +100,7 @@
       <Component is={category.extraComponents?.navigation} props={{ kind: 'navigation', categoryName: categoryId }} />
     {/if}
   {/each}
-{:else if kind === 'content' && !category}
+{:else if kind === 'content' && category === undefined}
   <div class="hulyComponent" />
 {:else if category}
   <Component is={category.component} props={{ kind: 'content' }} on:change />

@@ -42,7 +42,8 @@ import core, {
   versionToString,
   WorkspaceId,
   type BackupStatus,
-  type Branding
+  type Branding,
+  type WorkspaceMode
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
 import { type StorageAdapter } from '@hcengineering/server-core'
@@ -465,6 +466,18 @@ export async function selectWorkspace (
   }
 
   if (workspaceInfo !== null) {
+    if (workspaceInfo.mode === 'archived') {
+      const result: WorkspaceLoginInfo = {
+        endpoint: '',
+        email,
+        token: '',
+        workspace: workspaceUrl,
+        workspaceId: workspaceInfo.workspace,
+        mode: workspaceInfo.mode,
+        progress: workspaceInfo.progress
+      }
+      return result
+    }
     if (workspaceInfo.disabled === true && workspaceInfo.mode === 'active') {
       ctx.error('workspace disabled', { workspaceUrl, email })
       throw new PlatformError(
@@ -816,11 +829,14 @@ export async function listWorkspaces (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  token: string
+  token: string,
+  region?: string | null
 ): Promise<WorkspaceInfo[]> {
   decodeToken(ctx, token) // Just verify token is valid
 
-  return (await db.workspace.find({})).filter((it) => it.disabled !== true).map(trimWorkspaceInfo)
+  return (await db.workspace.find(region != null ? { region } : {}))
+    .filter((it) => it.disabled !== true)
+    .map(trimWorkspaceInfo)
 }
 
 /**
@@ -853,8 +869,8 @@ export async function countWorkspacesInRegion (
 /**
  * @public
  */
-export async function listWorkspacesRaw (db: AccountDB): Promise<Workspace[]> {
-  return (await db.workspace.find({})).filter((it) => it.disabled !== true)
+export async function listWorkspacesRaw (db: AccountDB, region?: string): Promise<Workspace[]> {
+  return (await db.workspace.find(region !== undefined ? { region } : {})).filter((it) => it.disabled !== true)
 }
 
 /**
@@ -925,7 +941,8 @@ async function generateWorkspaceRecord (
   branding: Branding | null,
   workspaceName: string,
   fixedWorkspace?: string,
-  region?: string
+  region?: string,
+  initMode: WorkspaceMode = 'pending-creation'
 ): Promise<Workspace> {
   type WorkspaceData = Omit<Workspace, '_id' | 'endpoint'>
   const brandingKey = branding?.key ?? 'huly'
@@ -957,7 +974,7 @@ async function generateWorkspaceRecord (
       accounts: [],
       disabled: true,
       region: region ?? '',
-      mode: 'pending-creation',
+      mode: initMode,
       progress: 0,
       createdOn: Date.now(),
       lastVisit: Date.now(),
@@ -995,7 +1012,7 @@ async function generateWorkspaceRecord (
         accounts: [],
         disabled: true,
         region: region ?? '',
-        mode: 'pending-creation',
+        mode: initMode,
         progress: 0,
         createdOn: Date.now(),
         lastVisit: Date.now(),
@@ -1036,12 +1053,13 @@ export async function createWorkspace (
   email: string,
   workspaceName: string,
   workspace?: string,
-  region?: string
+  region?: string,
+  initMode: WorkspaceMode = 'pending-creation'
 ): Promise<Workspace> {
   // We need to search for duplicate workspaceUrl
   // Safe generate workspace record.
   return await createQueue.exec(async () => {
-    return await generateWorkspaceRecord(db, email, branding, workspaceName, workspace, region)
+    return await generateWorkspaceRecord(db, email, branding, workspaceName, workspace, region, initMode)
   })
 }
 
@@ -1072,10 +1090,8 @@ export async function workerHandshake (
     return
   }
 
-  const workspacesCnt = await ctx.with(
-    'count-workspaces-in-region',
-    {},
-    async (ctx) => await countWorkspacesInRegion(db, region, version, Date.now() - 24 * 60 * 60 * 1000)
+  const workspacesCnt = await ctx.with('count-workspaces-in-region', {}, (ctx) =>
+    countWorkspacesInRegion(db, region, version, Date.now() - 24 * 60 * 60 * 1000)
   )
 
   await db.upgrade.insertOne({
@@ -1109,6 +1125,7 @@ export async function updateWorkspaceInfo (
   if (workspaceInfo === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceId }))
   }
+  progress = Math.round(progress)
 
   const update: Partial<WorkspaceInfo> = {}
   switch (event) {
@@ -1194,6 +1211,28 @@ export async function updateBackupInfo (
     {
       backupInfo,
       lastProcessingTime: Date.now()
+    }
+  )
+}
+
+/**
+ * @public
+ */
+export async function updateArchiveInfo (
+  ctx: MeasureContext,
+  db: AccountDB,
+  workspace: string,
+  value: boolean
+): Promise<void> {
+  const workspaceInfo = await getWorkspaceById(db, workspace)
+  if (workspaceInfo === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace }))
+  }
+
+  await db.workspace.updateOne(
+    { _id: workspaceInfo._id },
+    {
+      mode: 'archived'
     }
   )
 }
@@ -1448,7 +1487,7 @@ export async function getWorkspaceInfo (
     workspace: workspace.name
   }
   if (email !== systemAccountEmail && !guest) {
-    account = await ctx.with('get-account', {}, async () => await getAccount(db, email))
+    account = await ctx.with('get-account', {}, () => getAccount(db, email))
     if (account === null) {
       ctx.error('no account', { email, token })
       throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -1482,10 +1521,8 @@ export async function getWorkspaceInfo (
     ctx.error('no workspace', { workspace: workspace.name, email })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
-  if (_updateLastVisit && (isAccount(account) || email === systemAccountEmail)) {
-    void ctx.with('update-last-visit', {}, async () => {
-      await updateLastVisit(db, ws, account as Account)
-    })
+  if (ws.mode !== 'archived' && _updateLastVisit && (isAccount(account) || email === systemAccountEmail)) {
+    void ctx.with('update-last-visit', {}, () => updateLastVisit(db, ws, account as Account))
   }
 
   const clientWs: ClientWSInfoWithUpgrade = mapToClientWorkspace(ws)

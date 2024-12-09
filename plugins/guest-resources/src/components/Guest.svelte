@@ -33,7 +33,7 @@
     getCurrentLocation,
     getLocation,
     navigate,
-    openPanel,
+    showPanel,
     defineSeparators,
     setResolvedLocation,
     deviceOptionsStore as deviceInfo
@@ -207,12 +207,13 @@
           provider,
           focus: doc
         })
-        openPanel(
+        showPanel(
           props[0] as AnyComponent,
           _id,
           _class,
           (props[3] ?? undefined) as PopupAlignment,
-          (props[4] ?? undefined) as AnyComponent
+          (props[4] ?? undefined) as AnyComponent,
+          false
         )
       } else {
         closePanel(false)

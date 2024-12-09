@@ -16,13 +16,30 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { type Space, type Class, type CollaborativeDoc, type Doc, type Ref, generateId } from '@hcengineering/core'
+  import {
+    type Blob,
+    Class,
+    type CollaborativeDoc,
+    type Doc,
+    type Ref,
+    generateId,
+    makeDocCollabId
+  } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
-  import { getFileUrl, getImageSize, imageSizeToRatio } from '@hcengineering/presentation'
+  import {
+    getAttribute,
+    getClient,
+    getFileUrl,
+    getImageSize,
+    imageSizeToRatio,
+    KeyedAttribute,
+    DrawingCmd
+  } from '@hcengineering/presentation'
   import { markupToJSON } from '@hcengineering/text'
   import {
     AnySvelteComponent,
     Button,
+    IconScribble,
     IconSize,
     Loading,
     PopupAlignment,
@@ -58,6 +75,7 @@
   import TextEditorToolbar from './TextEditorToolbar.svelte'
   import { noSelectionRender, renderCursor } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
+  import { DrawingBoardExtension, SavedBoard } from './extension/drawingBoard'
   import { EmojiExtension } from './extension/emoji'
   import { FileUploadExtension } from './extension/fileUploadExt'
   import { ImageUploadExtension } from './extension/imageUploadExt'
@@ -65,15 +83,10 @@
   import { LeftMenuExtension } from './extension/leftMenu'
   import { type FileAttachFunction } from './extension/types'
   import { completionConfig, inlineCommandsConfig } from './extensions'
+  import { MermaidExtension, mermaidOptions } from './extension/mermaid'
 
-  export let collaborativeDoc: CollaborativeDoc
-  export let initialCollaborativeDoc: CollaborativeDoc | undefined = undefined
-  export let field: string
-
-  export let objectClass: Ref<Class<Doc>> | undefined = undefined
-  export let objectId: Ref<Doc> | undefined = undefined
-  export let objectSpace: Ref<Space> | undefined = undefined
-  export let objectAttr: string | undefined = undefined
+  export let object: Doc
+  export let attribute: KeyedAttribute
 
   export let user: CollaborationUser
   export let userComponent: AnySvelteComponent | undefined = undefined
@@ -100,22 +113,22 @@
   export let withInlineCommands = true
   export let kitOptions: Partial<EditorKitOptions> = {}
 
+  const client = getClient()
   const dispatch = createEventDispatcher()
+
+  const objectClass = object._class
+  const objectId = object._id
+  const objectSpace = object.space
+  const objectAttr = attribute.key
+  const field = attribute.key
+  const content = getAttribute(client, object, attribute)
+  const collaborativeDoc = makeDocCollabId(object, objectAttr)
 
   const ydoc = getContext<YDoc>(CollaborationIds.Doc) ?? new YDoc({ guid: generateId() })
   const contextProvider = getContext<Provider>(CollaborationIds.Provider)
 
   const localProvider = createLocalProvider(ydoc, collaborativeDoc)
-
-  const remoteProvider =
-    contextProvider ??
-    createRemoteProvider(ydoc, {
-      document: collaborativeDoc,
-      initialDocument: initialCollaborativeDoc,
-      objectClass,
-      objectId,
-      objectAttr
-    })
+  const remoteProvider = contextProvider ?? createRemoteProvider(ydoc, collaborativeDoc, content)
 
   let contentError = false
   let localSynced = false
@@ -247,36 +260,40 @@
         })
       )
     }
-    if (withSideMenu) {
-      optionalExtensions.push(
-        LeftMenuExtension.configure({
-          width: 20,
-          height: 20,
-          marginX: 8,
-          className: 'tiptap-left-menu',
-          icon: view.icon.Add,
-          iconProps: {
-            className: 'svg-tiny',
-            fill: 'currentColor'
-          },
-          items: [
-            ...(canEmbedImages ? [{ id: 'image', label: textEditor.string.Image, icon: view.icon.Image }] : []),
-            { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
-            { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
-            { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
-            { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList }
-          ],
-          handleSelect: handleLeftMenuClick
-        })
+  }
+
+  if (withSideMenu) {
+    optionalExtensions.push(
+      LeftMenuExtension.configure({
+        width: 20,
+        height: 20,
+        marginX: 8,
+        className: 'tiptap-left-menu',
+        icon: view.icon.Add,
+        iconProps: {
+          className: 'svg-tiny',
+          fill: 'currentColor'
+        },
+        items: [
+          ...(canEmbedImages ? [{ id: 'image', label: textEditor.string.Image, icon: view.icon.Image }] : []),
+          { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
+          { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
+          { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
+          { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList },
+          { id: 'drawing-board', label: textEditor.string.DrawingBoard, icon: IconScribble as any },
+          { id: 'mermaid', label: textEditor.string.MermaidDiargram, icon: view.icon.Model }
+        ],
+        handleSelect: handleLeftMenuClick
+      })
+    )
+  }
+
+  if (withInlineCommands) {
+    optionalExtensions.push(
+      InlineCommandsExtension.configure(
+        inlineCommandsConfig(handleLeftMenuClick, attachFile === undefined || !canEmbedImages ? ['image'] : [])
       )
-    }
-    if (withInlineCommands) {
-      optionalExtensions.push(
-        InlineCommandsExtension.configure(
-          inlineCommandsConfig(handleLeftMenuClick, attachFile === undefined || !canEmbedImages ? ['image'] : [])
-        )
-      )
-    }
+    )
   }
 
   let inputImage: HTMLInputElement
@@ -357,12 +374,53 @@
       case 'separator-line':
         editor.commands.setHorizontalRule()
         break
+      case 'drawing-board':
+        editor.commands.insertContentAt(pos, { type: 'drawingBoard', attrs: { id: generateId() } })
+        break
+      case 'mermaid':
+        editor.commands.insertContentAt(pos, { type: 'mermaid' })
+        break
     }
   }
 
   const throttle = new ThrottledCaller(100)
   const updateLastUpdateTime = (): void => {
     remoteProvider.awareness?.setLocalStateField('lastUpdate', Date.now())
+  }
+
+  interface SavedBoardRaw {
+    ydoc: YDoc
+    localProvider: Provider
+    remoteProvider: Provider
+    localSynced: boolean
+    remoteSynced: boolean
+  }
+  const savedBoards: Record<string, SavedBoardRaw> = {}
+
+  function getSavedBoard (id: string): SavedBoard {
+    let board = savedBoards[id]
+    if (board === undefined) {
+      const ydoc = new YDoc({ guid: id })
+      // We don't have a real class for boards,
+      // but collaborator only needs a string id
+      // which is produced from such an id-object
+      const collabId: CollaborativeDoc = {
+        objectClass: 'DrawingBoard' as Ref<Class<Doc>>,
+        objectId: id as Ref<Doc>,
+        objectAttr: 'content'
+      }
+      const localProvider = createLocalProvider(ydoc, collabId)
+      const remoteProvider = createRemoteProvider(ydoc, collabId, id as Ref<Blob>)
+      savedBoards[id] = { ydoc, localProvider, remoteProvider, localSynced: false, remoteSynced: false }
+      void localProvider.loaded.then(() => (savedBoards[id].localSynced = true))
+      void remoteProvider.loaded.then(() => (savedBoards[id].remoteSynced = true))
+      board = savedBoards[id]
+    }
+    return {
+      props: board.ydoc.getMap('props'),
+      commands: board.ydoc.getArray<DrawingCmd>('commands'),
+      loading: !board.localSynced || !board.remoteSynced
+    }
   }
 
   onMount(async () => {
@@ -413,6 +471,8 @@
           }
         }),
         EmojiExtension,
+        MermaidExtension.configure({ ...mermaidOptions, ydoc, ydocContentField: field }),
+        DrawingBoardExtension.configure({ getSavedBoard }),
         ...extensions
       ],
       parseOptions: {

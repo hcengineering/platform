@@ -17,7 +17,8 @@ import type { Employee, Organization } from '@hcengineering/contact'
 import {
   Account,
   IndexKind,
-  type CollaborativeDoc,
+  type Collection,
+  type MarkupBlobRef,
   type Domain,
   type Markup,
   type Ref,
@@ -27,7 +28,7 @@ import {
   type Timestamp
 } from '@hcengineering/core'
 import {
-  Collection,
+  Collection as TypeCollection,
   Hidden,
   Index,
   Mixin,
@@ -59,6 +60,7 @@ import type {
   Vacancy,
   VacancyList
 } from '@hcengineering/recruit'
+import survey, { type Poll } from '@hcengineering/survey'
 import recruit from './plugin'
 
 @Model(recruit.class.Vacancy, task.class.Project)
@@ -66,9 +68,11 @@ import recruit from './plugin'
 export class TVacancy extends TProject implements Vacancy {
   @Prop(TypeCollaborativeDoc(), recruit.string.FullDescription)
   @Index(IndexKind.FullText)
-    fullDescription!: CollaborativeDoc
+    fullDescription!: MarkupBlobRef | null
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
+  @Prop(TypeCollection(attachment.class.Attachment), attachment.string.Attachments, {
+    shortLabel: attachment.string.Files
+  })
     attachments?: number
 
   @Prop(TypeDate(), recruit.string.Due, recruit.icon.Calendar)
@@ -81,13 +85,16 @@ export class TVacancy extends TProject implements Vacancy {
   @Prop(TypeRef(contact.class.Organization), recruit.string.Company, { icon: contact.icon.Company })
     company?: Ref<Organization>
 
-  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
+  @Prop(TypeCollection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number
 
   @Prop(TypeString(), recruit.string.Vacancy)
   @Index(IndexKind.FullText)
   @Hidden()
     number!: number
+
+  @Prop(TypeCollection(survey.class.Poll), survey.string.Polls)
+    polls?: Collection<Poll>
 }
 
 @Mixin(recruit.mixin.Candidate, contact.class.Person)
@@ -97,7 +104,7 @@ export class TCandidate extends TPerson implements Candidate {
   @Index(IndexKind.FullText)
     title?: string
 
-  @Prop(Collection(recruit.class.Applicant), recruit.string.Applications, {
+  @Prop(TypeCollection(recruit.class.Applicant), recruit.string.Applications, {
     shortLabel: recruit.string.ApplicationsShort
   })
     applications?: number
@@ -112,26 +119,29 @@ export class TCandidate extends TPerson implements Candidate {
   @Index(IndexKind.FullText)
     source?: string
 
-  @Prop(Collection(tags.class.TagReference, recruit.string.SkillLabel), recruit.string.SkillsLabel, {
+  @Prop(TypeCollection(tags.class.TagReference, recruit.string.SkillLabel), recruit.string.SkillsLabel, {
     icon: recruit.icon.Skills,
     schema: '3'
   })
     skills?: number
 
-  @Prop(Collection(recruit.class.Review, recruit.string.Review), recruit.string.Reviews)
+  @Prop(TypeCollection(recruit.class.Review, recruit.string.Review), recruit.string.Reviews)
     reviews?: number
 
   @Prop(
-    Collection(recruit.class.ApplicantMatch, getEmbeddedLabel('Vacancy match')),
+    TypeCollection(recruit.class.ApplicantMatch, getEmbeddedLabel('Vacancy match')),
     getEmbeddedLabel('Vacancy Matches')
   )
     vacancyMatch?: number
+
+  @Prop(TypeCollection(survey.class.Poll), survey.string.Polls)
+    polls?: Collection<Poll>
 }
 
 @Mixin(recruit.mixin.VacancyList, contact.class.Organization)
 @UX(recruit.string.VacancyList, recruit.icon.RecruitApplication, 'CM', 'name')
 export class TVacancyList extends TOrganization implements VacancyList {
-  @Prop(Collection(recruit.class.Vacancy), recruit.string.Vacancies)
+  @Prop(TypeCollection(recruit.class.Vacancy), recruit.string.Vacancies)
     vacancies!: number
 }
 
@@ -159,6 +169,9 @@ export class TApplicant extends TTask implements Applicant {
   @Prop(TypeRef(core.class.Status), task.string.TaskState, { _id: recruit.attribute.State })
   @Index(IndexKind.Indexed)
   declare status: Ref<Status>
+
+  @Prop(TypeCollection(survey.class.Poll), survey.string.Polls)
+    polls?: Collection<Poll>
 }
 
 @Model(recruit.class.ApplicantMatch, core.class.AttachedDoc, DOMAIN_TASK)
@@ -206,7 +219,7 @@ export class TReview extends TEvent implements Review {
   @Prop(TypeRef(contact.class.Organization), recruit.string.Company, { icon: contact.icon.Company })
     company?: Ref<Organization>
 
-  @Prop(Collection(recruit.class.Opinion), recruit.string.Opinions)
+  @Prop(TypeCollection(recruit.class.Opinion), recruit.string.Opinions)
     opinions?: number
 }
 
@@ -220,10 +233,12 @@ export class TOpinion extends TAttachedDoc implements Opinion {
   @Prop(TypeRef(recruit.class.Review), recruit.string.Review)
   declare attachedTo: Ref<Review>
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
+  @Prop(TypeCollection(attachment.class.Attachment), attachment.string.Attachments, {
+    shortLabel: attachment.string.Files
+  })
     attachments?: number
 
-  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
+  @Prop(TypeCollection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number
 
   @Prop(TypeMarkup(), recruit.string.Description)

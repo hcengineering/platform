@@ -83,23 +83,28 @@ export async function ReminderTextPresenter (doc: Doc, control: TriggerControl):
 /**
  * @public
  */
-export async function OnPersonAccountCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<PersonAccount>
-  const user = TxProcessor.createDoc2Doc(ctx)
+export async function OnPersonAccountCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const ctx = tx as TxCreateDoc<PersonAccount>
+    const user = TxProcessor.createDoc2Doc(ctx)
 
-  const res: TxCreateDoc<Calendar> = control.txFactory.createTxCreateDoc(
-    calendar.class.Calendar,
-    calendar.space.Calendar,
-    {
-      name: user.email,
-      hidden: false,
-      visibility: 'public'
-    },
-    `${user._id}_calendar` as Ref<Calendar>,
-    undefined,
-    user._id
-  )
-  return [res]
+    result.push(
+      control.txFactory.createTxCreateDoc(
+        calendar.class.Calendar,
+        calendar.space.Calendar,
+        {
+          name: user.email,
+          hidden: false,
+          visibility: 'public'
+        },
+        `${user._id}_calendar` as Ref<Calendar>,
+        undefined,
+        user._id
+      )
+    )
+  }
+  return result
 }
 
 function getCalendar (calendars: Calendar[], person: Ref<PersonAccount>): Ref<Calendar> | undefined {
@@ -118,17 +123,20 @@ function getEventPerson (current: Event, calendars: Calendar[], control: Trigger
   return acc.person
 }
 
-async function OnEvent (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const ctx = TxProcessor.extractTx(tx) as TxCUD<Event>
-  if (ctx._class === core.class.TxCreateDoc) {
-    return await onEventCreate(ctx as TxCreateDoc<Event>, control)
-  } else if (ctx._class === core.class.TxUpdateDoc) {
-    return await onEventUpdate(ctx as TxUpdateDoc<Event>, control)
-  } else if (ctx._class === core.class.TxRemoveDoc) {
-    return await onRemoveEvent(ctx as TxRemoveDoc<Event>, control)
+async function OnEvent (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const ctx = tx as TxCUD<Event>
+    if (ctx._class === core.class.TxCreateDoc) {
+      result.push(...(await onEventCreate(ctx as TxCreateDoc<Event>, control)))
+    } else if (ctx._class === core.class.TxUpdateDoc) {
+      result.push(...(await onEventUpdate(ctx as TxUpdateDoc<Event>, control)))
+    } else if (ctx._class === core.class.TxRemoveDoc) {
+      result.push(...(await onRemoveEvent(ctx as TxRemoveDoc<Event>, control)))
+    }
   }
 
-  return []
+  return result
 }
 
 async function onEventUpdate (ctx: TxUpdateDoc<Event>, control: TriggerControl): Promise<Tx[]> {

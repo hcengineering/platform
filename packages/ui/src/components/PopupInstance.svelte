@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { deviceOptionsStore as deviceInfo, resizeObserver, testing } from '..'
+  import { deviceOptionsStore as deviceInfo, resizeObserver, testing, checkAdaptiveMatching } from '..'
   import { CompAndProps, fitPopupElement, pin } from '../popups'
   import type { AnySvelteComponent, DeviceOptions, PopupAlignment, PopupOptions, PopupPositionElement } from '../types'
 
@@ -75,6 +75,13 @@
   }
 
   $: document.body.style.cursor = drag ? 'all-scroll' : 'default'
+  $: docSize = checkAdaptiveMatching($deviceInfo.size, 'md')
+  $: isFullMobile =
+    $deviceInfo.isMobile &&
+    $deviceInfo.isPortrait &&
+    ['right', 'top', 'float', 'full', 'content', 'middle', 'centered', 'center', 'full-centered'].some(
+      (el) => element === el
+    )
 
   function _update (result: any): void {
     if (onUpdate !== undefined) onUpdate(result)
@@ -99,7 +106,7 @@
     contentPanel: HTMLElement | undefined
   ): void => {
     const device: DeviceOptions = $deviceInfo
-    if ((fullSize || docSize) && (element === 'float' || element === 'centered')) {
+    if (((fullSize || docSize) && (element === 'float' || element === 'centered')) || isFullMobile) {
       options = fitPopupElement(modalHTML, device, 'full', contentPanel, clientWidth, clientHeight)
       options.props.maxHeight = '100vh'
       if (!modalHTML.classList.contains('fullsize')) modalHTML.classList.add('fullsize')
@@ -247,9 +254,6 @@
     }
   }
 
-  $: if ($deviceInfo.docWidth <= 900 && !docSize) docSize = true
-  $: if ($deviceInfo.docWidth > 900 && docSize) docSize = false
-
   onMount(() => {
     windowSize.width = $deviceInfo.docWidth
     windowSize.height = $deviceInfo.docHeight
@@ -310,8 +314,9 @@
     on:close={(ev) => {
       _close(ev?.detail)
     }}
-    on:fullsize={() => {
-      fullSize = !fullSize
+    on:fullsize={(ev) => {
+      if (ev.detail === undefined) return
+      fullSize = ev.detail
       fitPopup(modalHTML, element, contentPanel)
     }}
     on:dock={() => {

@@ -273,27 +273,27 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: chunter.class.Channel,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: chunter.class.DirectMessage,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: activity.class.DocUpdateMessage,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: chunter.class.ChatMessage,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: activity.class.ActivityReference,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   // Indexing
@@ -314,6 +314,16 @@ export function createModel (builder: Builder): void {
 
   defineActions(builder)
   defineNotifications(builder)
+
+  builder.mixin(chunter.class.InlineButton, core.class.Class, core.mixin.IndexConfiguration, {
+    indexes: [],
+    searchDisabled: true
+  })
+
+  builder.mixin(chunter.class.ChatSyncInfo, core.class.Class, core.mixin.IndexConfiguration, {
+    indexes: [],
+    searchDisabled: true
+  })
 }
 
 export default chunter

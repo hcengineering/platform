@@ -61,7 +61,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header adaptive={'disabled'}>
     <Breadcrumb icon={love.icon.Love} label={love.string.Settings} size={'large'} isCurrent />
   </Header>
   <div class="flex-row-stretch flex-grow p-10">

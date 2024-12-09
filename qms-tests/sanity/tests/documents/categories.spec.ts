@@ -5,7 +5,6 @@ import { allure } from 'allure-playwright'
 import { CategoriesPage } from '../model/documents/categories-page'
 import { CategoryDetailsPage } from '../model/documents/category-details-page'
 import { prepareCategoryStep } from './common-documents-steps'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { NavigationMenuPage } from '../model/documents/navigation-menu-page'
 import { TemplatesPage } from '../model/documents/templates-page'
 import { DocumentContentPage } from '../model/documents/document-content-page'
@@ -130,9 +129,6 @@ test.describe('QMS. Categories tests', () => {
     await prepareCategoryStep(page, canNotDeleteCategory)
 
     await test.step('2. Create new templates to the category', async () => {
-      const leftSideMenuPage = new LeftSideMenuPage(page)
-      await leftSideMenuPage.buttonDocuments.click()
-
       const navigationMenuPage = new NavigationMenuPage(page)
       await navigationMenuPage.buttonTemplates.click()
 

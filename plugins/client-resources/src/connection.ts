@@ -42,7 +42,13 @@ import core, {
   toFindResult,
   type MeasureContext
 } from '@hcengineering/core'
-import { PlatformError, UNAUTHORIZED, broadcastEvent, getMetadata, unknownError } from '@hcengineering/platform'
+import platform, {
+  PlatformError,
+  UNAUTHORIZED,
+  broadcastEvent,
+  getMetadata,
+  unknownError
+} from '@hcengineering/platform'
 
 import { HelloRequest, HelloResponse, RPCHandler, ReqId, type Response } from '@hcengineering/rpc'
 
@@ -95,6 +101,8 @@ class Connection implements ClientConnection {
 
   private helloRecieved: boolean = false
 
+  onConnect?: (event: ClientConnectEvent, data: any) => Promise<void>
+
   rpcHandler = new RPCHandler()
 
   constructor (
@@ -123,6 +131,8 @@ class Connection implements ClientConnection {
     } else {
       this.sessionId = generateId()
     }
+
+    this.onConnect = opt?.onConnect
 
     this.scheduleOpen(this.ctx, false)
   }
@@ -241,7 +251,12 @@ class Connection implements ClientConnection {
         Analytics.handleError(new PlatformError(resp.error))
         this.closed = true
         this.websocket?.close()
-        this.opt?.onUnauthorized?.()
+        if (resp.error?.code === UNAUTHORIZED.code) {
+          this.opt?.onUnauthorized?.()
+        }
+        if (resp.error?.code === platform.status.WorkspaceArchived) {
+          this.opt?.onArchived?.()
+        }
       }
       console.error(resp.error)
       return
@@ -250,7 +265,7 @@ class Connection implements ClientConnection {
     if (resp.id === -1) {
       this.delay = 0
       if (resp.result?.state === 'upgrading') {
-        void this.opt?.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
+        void this.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
         this.upgrading = true
         this.delay = 3
         return
@@ -291,7 +306,7 @@ class Connection implements ClientConnection {
           v.reconnect?.()
         }
 
-        void this.opt?.onConnect?.(
+        void this.onConnect?.(
           (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected,
           this.sessionId
         )
@@ -407,6 +422,7 @@ class Connection implements ClientConnection {
     this.binaryMode = false
     // Use defined factory or browser default one.
     const clientSocketFactory =
+      this.opt?.socketFactory ??
       getMetadata(client.metadata.ClientSocketFactory) ??
       ((url: string) => {
         const s = new WebSocket(url)
@@ -468,8 +484,9 @@ class Connection implements ClientConnection {
       if (this.websocket !== wsocket) {
         return
       }
-      const useBinary = getMetadata(client.metadata.UseBinaryProtocol) ?? true
-      const useCompression = getMetadata(client.metadata.UseProtocolCompression) ?? false
+      const useBinary = this.opt?.useBinaryProtocol ?? getMetadata(client.metadata.UseBinaryProtocol) ?? true
+      const useCompression =
+        this.opt?.useProtocolCompression ?? getMetadata(client.metadata.UseProtocolCompression) ?? false
       this.helloRecieved = false
       const helloRequest: HelloRequest = {
         method: 'hello',
@@ -646,8 +663,8 @@ class Connection implements ClientConnection {
     })
   }
 
-  loadChunk (domain: Domain, idx?: number, recheck?: boolean): Promise<DocChunk> {
-    return this.sendRequest({ method: 'loadChunk', params: [domain, idx, recheck] })
+  loadChunk (domain: Domain, idx?: number): Promise<DocChunk> {
+    return this.sendRequest({ method: 'loadChunk', params: [domain, idx] })
   }
 
   closeChunk (idx: number): Promise<void> {

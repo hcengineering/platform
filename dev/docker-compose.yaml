@@ -29,6 +29,15 @@ services:
     ports:
       - 5432:5432
     restart: unless-stopped
+  cockroach:
+   image: cockroachdb/cockroach:latest-v24.2
+   ports:
+     - "26257:26257"
+     - "8089:8080"
+   command: start-single-node --insecure
+   volumes:
+     - cockroach_db:/cockroach/cockroach-data
+   restart: unless-stopped
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000" --console-address ":9001"
@@ -66,6 +75,7 @@ services:
     links:
       - mongodb
       - minio
+      - stats
     ports:
       - 3000:3000
     volumes:
@@ -73,11 +83,12 @@ services:
     environment:
       - ACCOUNT_PORT=3000
       - SERVER_SECRET=secret
+      - STATS_URL=http://host.docker.internal:4900
       # - DB_URL=postgresql://postgres:example@postgres:5432
       - DB_URL=${MONGO_URL}
       # - DB_NS=account-2
-      - REGION_INFO=|Mongo;pg|Postgres
-      - TRANSACTOR_URL=ws://host.docker.internal:3333,ws://host.docker.internal:3331;;pg
+      - REGION_INFO=|Mongo;pg|Postgres;cockroach|CockroachDB
+      - TRANSACTOR_URL=ws://host.docker.internal:3333,ws://host.docker.internal:3331;;pg,ws://host.docker.internal:3332;;cockroach,
       - SES_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://host.docker.internal:8087
@@ -91,6 +102,16 @@ services:
       # - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
       # - INIT_WORKSPACE=onboarding      
     restart: unless-stopped
+  stats:
+    image: hardcoreeng/stats
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - 4900:4900
+    environment:
+      - PORT=4900
+      - SERVER_SECRET=secret
+    restart: unless-stopped
   workspace:
     image: hardcoreeng/workspace
     extra_hosts:
@@ -101,16 +122,17 @@ services:
     links:
       - mongodb
       - minio
+      - stats
     volumes:
       - ./branding.json:/var/cfg/branding.json
     environment:
       # - WS_OPERATION=create
       - SERVER_SECRET=secret
       - DB_URL=${MONGO_URL}
+      - STATS_URL=http://host.docker.internal:4900
       # - DB_URL=postgresql://postgres:example@postgres:5432
       - SES_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - FRONT_URL=http://host.docker.internal:8087
       - RESERVED_DB_NAMES=telegram,gmail,github
       - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://host.docker.internal:3000
@@ -126,12 +148,14 @@ services:
     links:
       - postgres
       - minio
+      - stats
     volumes:
       - ./branding.json:/var/cfg/branding.json
     environment:
       # - WS_OPERATION=create
       - SERVER_SECRET=secret
       - DB_URL=postgresql://postgres:example@postgres:5432
+      - STATS_URL=http://host.docker.internal:4900
       - SES_URL=
       - REGION=pg
       - STORAGE_CONFIG=${STORAGE_CONFIG}
@@ -144,6 +168,32 @@ services:
       - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
       # - INIT_WORKSPACE=onboarding
     restart: unless-stopped    
+  workspace_cockroach:
+    image: hardcoreeng/workspace
+    extra_hosts:
+      - "host.docker.internal:host-gateway"    
+    links:
+      - cockroach
+      - minio
+      - stats
+    volumes:
+      - ./branding.json:/var/cfg/branding.json
+    environment:
+      # - WS_OPERATION=create
+      - SERVER_SECRET=secret
+      - DB_URL=postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable
+      - STATS_URL=http://host.docker.internal:4900
+      - SES_URL=
+      - REGION=cockroach
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - RESERVED_DB_NAMES=telegram,gmail,github
+      - MODEL_ENABLED=*
+      - ACCOUNTS_URL=http://host.docker.internal:3000
+      - BRANDING_PATH=/var/cfg/branding.json
+      # - PARALLEL=2
+      - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
+      # - INIT_WORKSPACE=onboarding
+    restart: unless-stopped        
   collaborator:
     image: hardcoreeng/collaborator
     extra_hosts:
@@ -152,6 +202,7 @@ services:
       - mongodb
       - minio
       - transactor
+      - stats
     ports:
       - 3078:3078
     environment:
@@ -159,6 +210,7 @@ services:
       - SECRET=secret
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - STATS_URL=http://host.docker.internal:4900
     restart: unless-stopped
   front:
     image: hardcoreeng/front
@@ -170,6 +222,7 @@ services:
       - elastic
       - transactor
       - collaborator
+      - stats
     ports:
       - 8087:8080
       - 8088:8080
@@ -177,6 +230,7 @@ services:
       - SERVER_PORT=8080
       - SERVER_SECRET=secret
       - ACCOUNTS_URL=http://host.docker.internal:3000
+      - STATS_URL=http://host.docker.internal:4900
       - UPLOAD_URL=/files
       - ELASTIC_URL=http://host.docker.internal:9200
       - GMAIL_URL=http://host.docker.internal:8088
@@ -200,10 +254,9 @@ services:
       - "host.docker.internal:host-gateway"
     links:
       - mongodb
-      - elastic
       - minio
-      - rekoni
       - account
+      - stats
       # - apm-server
     ports:
       - 3333:3333
@@ -216,23 +269,23 @@ services:
       - SERVER_PORT=3333
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
-      - ELASTIC_URL=http://host.docker.internal:9200
+      - STATS_URL=http://host.docker.internal:4900
+      - FULLTEXT_URL=http://host.docker.internal:4700
       # - DB_URL=postgresql://postgres:example@postgres:5432
       - DB_URL=${MONGO_URL}
       - MONGO_URL=${MONGO_URL}
       - 'MONGO_OPTIONS={"appName": "transactor", "maxPoolSize": 10}'
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
-      - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - REKONI_URL=http://host.docker.internal:4004
+      - STORAGE_CONFIG=${STORAGE_CONFIG}      
       - FRONT_URL=http://host.docker.internal:8087
       # - APM_SERVER_URL=http://apm-server:8200
       - SES_URL=''
       - ACCOUNTS_URL=http://host.docker.internal:3000
-      - LAST_NAME_FIRST=true
-      - ELASTIC_INDEX_NAME=local_storage_index
+      - LAST_NAME_FIRST=true      
       - BRANDING_PATH=/var/cfg/branding.json
       - SUPPORT_WORKSPACE=support
+      - AI_BOT_URL=http://host.docker.internal:4010
     restart: unless-stopped
   transactor_pg:
     image: hardcoreeng/transactor
@@ -240,10 +293,9 @@ services:
       - "host.docker.internal:host-gateway"
     links:
       - postgres
-      - elastic
       - minio
-      - rekoni
       - account
+      - stats
       # - apm-server
     ports:
       - 3331:3331
@@ -252,24 +304,55 @@ services:
     environment:
       # - SERVER_PROVIDER=uweb
       # - UWS_HTTP_MAX_HEADERS_SIZE="32768"
-      - UV_THREADPOOL_SIZE=10    
+      # - UV_THREADPOOL_SIZE=10    
       - SERVER_PORT=3331
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
-      - ELASTIC_URL=http://host.docker.internal:9200
+      - FULLTEXT_URL=http://host.docker.internal:4701
+      - STATS_URL=http://host.docker.internal:4900
       - DB_URL=postgresql://postgres:example@postgres:5432
-      - MONGO_URL=${MONGO_URL}
-      - 'MONGO_OPTIONS={"appName": "transactor-pg", "maxPoolSize": 1}'
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - REKONI_URL=http://host.docker.internal:4004
       - FRONT_URL=http://host.docker.internal:8087
       # - APM_SERVER_URL=http://apm-server:8200
       - SES_URL=''
       - ACCOUNTS_URL=http://host.docker.internal:3000
-      - LAST_NAME_FIRST=true
-      - ELASTIC_INDEX_NAME=local_storage_index
+      - LAST_NAME_FIRST=true      
+      - BRANDING_PATH=/var/cfg/branding.json      
+    restart: unless-stopped
+  transactor_cockroach:
+    image: hardcoreeng/transactor
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    links:
+      - cockroach
+      - minio
+      - account
+      - stats
+      # - apm-server
+    ports:
+      - 3332:3332
+    volumes:
+      - ./branding.json:/var/cfg/branding.json      
+    environment:
+      # - SERVER_PROVIDER=uweb
+      # - UWS_HTTP_MAX_HEADERS_SIZE="32768"
+      # - UV_THREADPOOL_SIZE=10
+      - SERVER_PORT=3332
+      - SERVER_SECRET=secret
+      - ENABLE_COMPRESSION=true
+      - FULLTEXT_URL=http://host.docker.internal:4702
+      - STATS_URL=http://host.docker.internal:4900
+      - DB_URL=postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable
+      - METRICS_CONSOLE=false
+      - METRICS_FILE=metrics.txt
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - FRONT_URL=http://host.docker.internal:8087
+      # - APM_SERVER_URL=http://apm-server:8200
+      - SES_URL=''
+      - ACCOUNTS_URL=http://host.docker.internal:3000
+      - LAST_NAME_FIRST=true      
       - BRANDING_PATH=/var/cfg/branding.json      
     restart: unless-stopped    
   rekoni:
@@ -277,10 +360,65 @@ services:
     restart: unless-stopped
     ports:
       - 4004:4004
-    deploy:
-      resources:
-        limits:
-          memory: 1024M
+  fulltext:
+    image: hardcoreeng/fulltext
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    links:
+      - elastic
+      - mongodb
+    ports:
+      - 4700:4700
+    environment:
+      - SERVER_SECRET=secret
+      - DB_URL=${MONGO_URL}
+      - FULLTEXT_DB_URL=http://host.docker.internal:9200
+      - ELASTIC_INDEX_NAME=local_storage_index
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - STATS_URL=http://host.docker.internal:4900
+      - REKONI_URL=http://host.docker.internal:4004
+      - ACCOUNTS_URL=http://host.docker.internal:3000
+  fulltext_pg:
+    image: hardcoreeng/fulltext
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    links:
+      - elastic
+      - postgres    
+    ports:
+      - 4701:4701
+    environment:
+      - PORT=4701
+      - SERVER_SECRET=secret
+      - DB_URL=postgresql://postgres:example@postgres:5432
+      - FULLTEXT_DB_URL=http://host.docker.internal:9200
+      - ELASTIC_INDEX_NAME=local_storage_index
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - STATS_URL=http://host.docker.internal:4900
+      - REKONI_URL=http://host.docker.internal:4004
+      - ACCOUNTS_URL=http://host.docker.internal:3000
+  fulltext_cockroach:
+    image: hardcoreeng/fulltext
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    links:
+      - elastic
+      - cockroach    
+    ports:
+      - 4702:4702
+    environment:
+      - PORT=4702
+      - SERVER_SECRET=secret
+      - DB_URL=postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable
+      - FULLTEXT_DB_URL=http://host.docker.internal:9200
+      - ELASTIC_INDEX_NAME=local_storage_index
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - STATS_URL=http://host.docker.internal:4900
+      - REKONI_URL=http://host.docker.internal:4004
+      - ACCOUNTS_URL=http://host.docker.internal:3000      
   print:
     image: hardcoreeng/print
     extra_hosts:
@@ -291,10 +429,7 @@ services:
     environment:
       - SECRET=secret
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-    deploy:
-      resources:
-        limits:
-          memory: 300M
+      - STATS_URL=http://host.docker.internal:4900
   sign:
     image: hardcoreeng/sign
     extra_hosts:
@@ -314,10 +449,7 @@ services:
       - CERTIFICATE_PATH=/var/cfg/certificate.p12
       - SERVICE_ID=sign-service      
       - BRANDING_PATH=/var/cfg/branding.json
-    deploy:
-      resources:
-        limits:
-          memory: 300M
+      - STATS_URL=http://host.docker.internal:4900
   analytics:
     image: hardcoreeng/analytics-collector
     extra_hosts:
@@ -333,10 +465,7 @@ services:
       - SERVICE_ID=analytics-collector-service
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - SUPPORT_WORKSPACE=support
-    deploy:
-      resources:
-        limits:
-          memory: 300M
+      - STATS_URL=http://host.docker.internal:4900
   aiBot:
     image: hardcoreeng/ai-bot
     ports:
@@ -354,10 +483,9 @@ services:
       - PASSWORD=password
       - AVATAR_PATH=./avatar.png
       - AVATAR_CONTENT_TYPE=.png
-    deploy:
-      resources:
-        limits:
-          memory: 300M
+      - STATS_URL=http://host.docker.internal:4900
+#      - LOVE_ENDPOINT=http://host.docker.internal:8096
+#      - OPENAI_API_KEY=token
 #  telegram-bot:
 #    image: hardcoreeng/telegram-bot
 #   extra_hosts:
@@ -372,12 +500,10 @@ services:
 #      - DOMAIN=domain
 #      - ACCOUNTS_URL=http://host.docker.internal:3000
 #      - SERVICE_ID=telegram-bot-service
-#    deploy:
-#      resources:
-#        limits:
-#          memory: 300M
+#      - STATS_URL=http://host.docker.internal:4900
 volumes:
   db:
   dbpg:
   files:
   elastic:
+  cockroach_db:

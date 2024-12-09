@@ -119,7 +119,7 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
         this.pendingTxes.delete(t._id)
 
         // Only CUD tx can be pending now
-        const innerTx = TxProcessor.extractTx(t) as TxCUD<Doc>
+        const innerTx = t as TxCUD<Doc>
 
         if (innerTx._class === core.class.TxCreateDoc) {
           // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -206,7 +206,7 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
       return
     }
 
-    const innerTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
+    const innerTx = tx as TxCUD<Doc>
     // Can pre-build some configuration later from the model if this will be too slow.
     const instantTxes = this.getHierarchy().classHierarchyMixin(innerTx.objectClass, plugin.mixin.InstantTransactions)
     if (instantTxes?.txClasses.includes(innerTx._class) !== true) {
@@ -239,6 +239,14 @@ export function getClient (): TxOperations & Client & OptimisticTxes {
 }
 
 let txQueue: Tx[] = []
+
+export type RefreshListener = () => void
+
+const refreshListeners = new Set<RefreshListener>()
+
+export function addRefreshListener (r: RefreshListener): void {
+  refreshListeners.add(r)
+}
 
 /**
  * @public
@@ -291,6 +299,9 @@ export async function refreshClient (clean: boolean): Promise<void> {
     await liveQuery?.refreshConnect(clean)
     for (const q of globalQueries) {
       q.refreshClient()
+    }
+    for (const listener of refreshListeners.values()) {
+      listener()
     }
   }
 }
@@ -626,7 +637,7 @@ export async function getAttributeEditor (
 
 function filterKeys (hierarchy: Hierarchy, keys: KeyedAttribute[], ignoreKeys: string[]): KeyedAttribute[] {
   const docKeys: Set<string> = new Set<string>(hierarchy.getAllAttributes(core.class.AttachedDoc).keys())
-  keys = keys.filter((k) => !docKeys.has(k.key))
+  keys = keys.filter((k) => !docKeys.has(k.key) || k.attr.editor !== undefined)
   keys = keys.filter((k) => !ignoreKeys.includes(k.key))
   return keys
 }
@@ -652,6 +663,20 @@ export function getFiltredKeys (
  */
 export function isCollectionAttr (hierarchy: Hierarchy, key: KeyedAttribute): boolean {
   return hierarchy.isDerived(key.attr.type._class, core.class.Collection)
+}
+
+/**
+ * @public
+ */
+export function isMarkupAttr (hierarchy: Hierarchy, key: KeyedAttribute): boolean {
+  return hierarchy.isDerived(key.attr.type._class, core.class.TypeMarkup)
+}
+
+/**
+ * @public
+ */
+export function isCollabAttr (hierarchy: Hierarchy, key: KeyedAttribute): boolean {
+  return hierarchy.isDerived(key.attr.type._class, core.class.TypeCollaborativeDoc)
 }
 
 /**

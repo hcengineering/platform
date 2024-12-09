@@ -23,7 +23,11 @@ export { serverTagsId } from '@hcengineering/server-tags'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTags.trigger.onTagReference
+    trigger: serverTags.trigger.onTagReference,
+    txMatch: {
+      _class: { $in: [core.class.TxCreateDoc, core.class.TxRemoveDoc] },
+      objectClass: tags.class.TagReference
+    }
   })
 
   builder.mixin<Class<Doc>, ObjectDDParticipant>(

@@ -4,7 +4,7 @@ import { DocumentsPage } from '../model/documents/documents-page'
 import { NewDocument } from '../model/documents/types'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { PublicLinkPopup } from '../model/tracker/public-link-popup'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
+import { generateId, PlatformSetting, PlatformURI, setTestOptions } from '../utils'
 
 test.describe('Documents link tests', () => {
   test('Document public link revoke', async ({ browser }) => {
@@ -17,6 +17,7 @@ test.describe('Documents link tests', () => {
     const page = await newContext.newPage()
 
     await page.goto(`${PlatformURI}/workbench/sanity-ws`)
+    await setTestOptions(page)
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickDocuments()

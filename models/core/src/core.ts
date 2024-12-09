@@ -28,7 +28,7 @@ import {
   type Card,
   type Class,
   type ClassifierKind,
-  type CollaborativeDoc,
+  type MarkupBlobRef,
   type Collection,
   type Configuration,
   type ConfigurationElement,
@@ -66,7 +66,6 @@ import {
   TypeCollaborativeDoc,
   TypeFileSize,
   TypeIntlString,
-  TypeRecord,
   TypeRef,
   TypeString,
   TypeTimestamp,
@@ -122,7 +121,7 @@ export class TCard extends TDoc implements Card {
     title!: string
 
   @Prop(TypeCollaborativeDoc(), core.string.Description)
-    description!: CollaborativeDoc | null
+    description!: MarkupBlobRef | null
 
   @Prop(TypeString(), core.string.Id)
     identifier?: string | undefined
@@ -330,19 +329,6 @@ export class TDocIndexState extends TDoc implements DocIndexState {
   @Hidden()
     objectClass!: Ref<Class<Doc>>
 
-  @Prop(TypeRef(core.class.Doc), core.string.AttachedTo)
-  @Index(IndexKind.Indexed)
-  @Hidden()
-    attachedTo?: Ref<Doc>
-
-  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
-  @Index(IndexKind.Indexed)
-  @Hidden()
-    attachedToClass?: Ref<Class<Doc>>
-
-  // Indexable attributes of document.
-  attributes!: Record<string, any>
-
   @Prop(TypeBoolean(), getEmbeddedLabel('Removed'))
   @Hidden()
     removed!: boolean
@@ -350,16 +336,6 @@ export class TDocIndexState extends TDoc implements DocIndexState {
   @Prop(TypeBoolean(), getEmbeddedLabel('NeedIndexing'))
   @Hidden()
     needIndex!: boolean
-
-  // States for different stages
-  @Prop(TypeRecord(), getEmbeddedLabel('Stages'))
-  // @Index(IndexKind.Indexed)
-  @Hidden()
-    stages!: Record<string, boolean>
-
-  @Prop(TypeString(), getEmbeddedLabel('Generation'))
-  @Hidden()
-    generationId?: string
 }
 
 @Model(core.class.FullTextSearchContext, core.class.Doc, DOMAIN_MODEL)
@@ -396,10 +372,6 @@ export class TDomainIndexConfiguration extends TDoc implements DomainIndexConfig
 @UX(core.string.CollaborativeDoc)
 @Model(core.class.TypeCollaborativeDoc, core.class.Type)
 export class TTypeCollaborativeDoc extends TType {}
-
-@UX(core.string.CollaborativeDocVersion)
-@Model(core.class.TypeCollaborativeDocVersion, core.class.Type)
-export class TTypeCollaborativeDocVersion extends TType {}
 
 @UX(core.string.Rank)
 @Model(core.class.TypeRank, core.class.Type)

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import calendar from '@hcengineering/calendar'
+  import calendar, { Calendar } from '@hcengineering/calendar'
   import type { Contact, PersonAccount, Organization, Person } from '@hcengineering/contact'
   import contact from '@hcengineering/contact'
   import core, {
@@ -41,7 +41,6 @@
   import recruit from '../../plugin'
   import IconCompany from '../icons/Company.svelte'
   import { Analytics } from '@hcengineering/analytics'
-  import { getCandidateIdentifier } from '../../utils'
 
   // export let space: Ref<Project>
   export let candidate: Ref<Person>
@@ -86,7 +85,8 @@
     title,
     participants: [currentUser.person],
     eventId: '',
-    dueDate: 0
+    dueDate: 0,
+    calendar: '' as Ref<Calendar>
   }
 
   const dispatch = createEventDispatcher()
@@ -139,7 +139,7 @@
         access: 'reader',
         allDay: false,
         eventId: '',
-        calendar: undefined
+        calendar: '' as Ref<Calendar>
       }
     )
 

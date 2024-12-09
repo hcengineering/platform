@@ -42,7 +42,8 @@ async function doBackup (dirName: string, token: string, endpoint: string, works
     ctx.info('do backup', { workspace, endpoint })
     await backup(ctx, endpoint, wsid, storage, {
       force: true,
-      recheck: false,
+      freshBackup: false,
+      clean: false,
       skipDomains: [],
       timeout: 0,
       connectTimeout: 60 * 1000,

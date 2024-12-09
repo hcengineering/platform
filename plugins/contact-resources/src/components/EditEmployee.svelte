@@ -148,7 +148,6 @@
       <div class="location">
         <AttributeEditor maxWidth="20rem" _class={contact.class.Person} {editable} {object} key="city" focusIndex={3} />
       </div>
-
       <div class="separator" />
       <Scroller contentDirection={'horizontal'} padding={'.125rem .125rem .5rem'} stickedScrollBars thinScrollBars>
         {#if channels === undefined}

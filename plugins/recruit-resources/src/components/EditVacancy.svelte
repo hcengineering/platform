@@ -21,6 +21,7 @@
   import { getResource } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { Vacancy } from '@hcengineering/recruit'
+  import survey from '@hcengineering/survey'
   import tracker from '@hcengineering/tracker'
   import { Button, Component, EditBox, IconMixin, IconMoreH, Label } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -31,6 +32,7 @@
 
   export let _id: Ref<Vacancy>
   export let embedded: boolean = false
+  export let readonly = false
 
   let object: Required<Vacancy>
   let rawName: string = ''
@@ -44,7 +46,7 @@
   const inboxClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
   onDestroy(async () => {
-    void inboxClient.then((client) => client.readDoc(getClient(), _id))
+    void inboxClient.then((client) => client.readDoc(_id))
   })
 
   const client = getClient()
@@ -57,7 +59,7 @@
       const prev = lastId
       lastId = _id
       if (prev !== undefined) {
-        void inboxClient.then((client) => client.readDoc(getClient(), prev))
+        void inboxClient.then((client) => client.readDoc(prev))
       }
       query.query(recruit.class.Vacancy, { _id }, (result) => {
         object = result[0] as Required<Vacancy>
@@ -140,6 +142,7 @@
         <DocAttributeBar
           {object}
           {mixins}
+          {readonly}
           ignoreKeys={['name', 'fullDescription', 'private', 'archived', 'type', 'owners']}
         />
       {/if}
@@ -151,6 +154,7 @@
       kind={'large-style'}
       focusable
       autoFocus={!embedded}
+      disabled={readonly}
       on:blur={save}
     />
 
@@ -160,14 +164,16 @@
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="utils">
-      <Button
-        icon={IconMoreH}
-        iconProps={{ size: 'medium' }}
-        kind={'icon'}
-        on:click={(e) => {
-          showMenu(e, { object, excludedActions: [view.action.Open] })
-        }}
-      />
+      {#if !readonly}
+        <Button
+          icon={IconMoreH}
+          iconProps={{ size: 'medium' }}
+          kind={'icon'}
+          on:click={(e) => {
+            showMenu(e, { object, excludedActions: [view.action.Open] })
+          }}
+        />
+      {/if}
       <Button
         icon={IconMixin}
         kind={'icon'}
@@ -187,6 +193,7 @@
         key={{ key: 'fullDescription', attr: descriptionKey }}
         bind:this={descriptionBox}
         placeholder={recruit.string.FullDescription}
+        {readonly}
         on:saved={(evt) => {
           saved = evt.detail
         }}
@@ -194,7 +201,10 @@
     </div>
 
     <div class="w-full mt-6">
-      <VacancyApplications objectId={object._id} />
+      <VacancyApplications objectId={object._id} {readonly} />
+    </div>
+    <div class="w-full mt-6">
+      <Component is={survey.component.PollCollection} props={{ object, label: survey.string.Polls }} />
     </div>
     <div class="w-full mt-6">
       <Component is={tracker.component.RelatedIssuesSection} props={{ object, label: tracker.string.RelatedIssues }} />

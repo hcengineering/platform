@@ -28,7 +28,7 @@ export function getNearest (events: WorkSlot[]): WorkSlot | undefined {
 export const timeSeparators: DefSeparators = [
   { minSize: 18, size: 18, maxSize: 22.5, float: 'navigator' },
   null,
-  { minSize: 20, size: 41.25, maxSize: 90 }
+  { minSize: 25, size: 41.25, maxSize: 90 }
 ]
 
 /**
@@ -56,24 +56,24 @@ function isTodoableClass (objectClass: Ref<Class<Doc>>): boolean {
   }
 }
 
-function isTodoable (mode: TextEditorMode, objectClass?: Ref<Class<Doc>>): boolean {
-  return mode === 'full' && objectClass !== undefined && isTodoableClass(objectClass)
+function isTodoable (mode: TextEditorMode): boolean {
+  return mode === 'full'
 }
 
 export function createTodoItemExtension (mode: TextEditorMode, ctx: any): AnyExtension | undefined {
-  if (!isTodoable(mode, ctx.objectClass)) {
+  if (!isTodoable(mode)) {
     return
   }
 
   const { objectId, objectClass, objectSpace } = ctx
+  const componentProps = isTodoableClass(objectClass) ? { objectId, objectClass, objectSpace } : {}
 
   return TodoItemExtension.extend({
     addNodeView () {
       return SvelteNodeViewRenderer(ToDoItemNodeView, {
         contentAs: 'li',
         contentClass: 'todo-item',
-        componentProps: { objectId, objectClass, objectSpace },
-        ignoreMutation: () => true
+        componentProps
       })
     }
   }).configure({
@@ -84,13 +84,13 @@ export function createTodoItemExtension (mode: TextEditorMode, ctx: any): AnyExt
 }
 
 export function createTodoListExtension (mode: TextEditorMode, ctx: any): AnyExtension | undefined {
-  if (!isTodoable(mode, ctx.objectClass)) {
+  if (!isTodoable(mode)) {
     return
   }
 
   return TodoListExtension.extend({
     addNodeView () {
-      return SvelteNodeViewRenderer(ToDoListNodeView, { ignoreMutation: () => true })
+      return SvelteNodeViewRenderer(ToDoListNodeView, {})
     }
   }).configure({
     HTMLAttributes: {

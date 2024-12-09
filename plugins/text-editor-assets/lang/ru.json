@@ -39,7 +39,6 @@
     "FullDescription": "Детальное описание",
     "NoFullDescription": "Нет детального описания",
     "EnableDiffMode": "Режим сравнения",
-
     "AddColumnBefore": "Добавить до",
     "AddColumnAfter": "Добавить после",
     "DeleteColumn": "Удалить",
@@ -48,7 +47,6 @@
     "DeleteRow": "Удалить",
     "DeleteTable": "Удалить",
     "Duplicate": "Дублировать",
-
     "CategoryRow": "Строки",
     "CategoryColumn": "Колонки",
     "Table": "Таблица",
@@ -59,6 +57,8 @@
     "Unset": "Убрать",
     "Image": "Изображение",
     "SeparatorLine": "Разделительная линия",
-    "TodoList": "Действие"
+    "TodoList": "Действие",
+    "DrawingBoard": "Доска",
+    "MermaidDiargram": "Диаграмма"
   }
 }

@@ -82,7 +82,7 @@ FulltextStorage & {
       return {}
     },
     close: async () => {},
-    loadChunk: async (domain: Domain, idx?: number, recheck?: boolean) => ({
+    loadChunk: async (domain: Domain, idx?: number) => ({
       idx: -1,
       index: -1,
       docs: [],

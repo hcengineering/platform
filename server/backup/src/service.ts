@@ -22,19 +22,15 @@ import core, {
   ModelDb,
   SortingOrder,
   systemAccountEmail,
-  type BackupClient,
   type BackupStatus,
   type Branding,
-  type Client,
   type MeasureContext,
   type Tx,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
-import { PlatformError, unknownError } from '@hcengineering/platform'
 import { listAccountWorkspaces, updateBackupInfo } from '@hcengineering/server-client'
 import {
-  BackupClientOps,
-  SessionDataImpl,
+  wrapPipeline,
   type DbConfiguration,
   type Pipeline,
   type PipelineFactory,
@@ -56,6 +52,7 @@ export interface BackupConfig {
 }
 
 class BackupWorker {
+  downloadLimit: number = 100
   constructor (
     readonly storageAdapter: StorageAdapter,
     readonly config: BackupConfig,
@@ -66,7 +63,10 @@ class BackupWorker {
       workspace: WorkspaceIdWithUrl,
       branding: Branding | null,
       externalStorage: StorageAdapter
-    ) => DbConfiguration
+    ) => DbConfiguration,
+    readonly region: string,
+    readonly freshWorkspace: boolean = false,
+    readonly clean: boolean = false
   ) {}
 
   canceled = false
@@ -113,7 +113,8 @@ class BackupWorker {
     const workspacesIgnore = new Set(this.config.SkipWorkspaces.split(';'))
     ctx.info('skipped workspaces', { workspacesIgnore })
     let skipped = 0
-    const workspaces = (await listAccountWorkspaces(this.config.Token)).filter((it) => {
+    const allWorkspaces = await listAccountWorkspaces(this.config.Token, this.region)
+    const workspaces = allWorkspaces.filter((it) => {
       const lastBackup = it.backupInfo?.lastBackup ?? 0
       if ((Date.now() - lastBackup) / 1000 < this.config.Interval) {
         // No backup required, interval not elapsed
@@ -186,10 +187,11 @@ class BackupWorker {
           backup(ctx, '', getWorkspaceId(ws.workspace), storage, {
             skipDomains: [],
             force: true,
-            recheck: false,
+            freshBackup: this.freshWorkspace,
+            clean: this.clean,
             timeout: this.config.Timeout * 1000,
             connectTimeout: 5 * 60 * 1000, // 5 minutes to,
-            blobDownloadLimit: 100,
+            blobDownloadLimit: this.downloadLimit,
             skipBlobContentTypes: [],
             storageAdapter: this.workspaceStorageAdapter,
             getLastTx: async (): Promise<Tx | undefined> => {
@@ -223,7 +225,7 @@ class BackupWorker {
               if (pipeline === undefined) {
                 pipeline = await this.pipelineFactory(ctx, wsUrl, true, () => {}, null)
               }
-              return this.wrapPipeline(ctx, pipeline, wsUrl)
+              return wrapPipeline(ctx, pipeline, wsUrl)
             }
           })
         )
@@ -262,68 +264,6 @@ class BackupWorker {
     }
     return { failedWorkspaces, processed, skipped: workspaces.length - processed }
   }
-
-  wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: WorkspaceIdWithUrl): Client & BackupClient {
-    const contextData = new SessionDataImpl(
-      systemAccountEmail,
-      'backup',
-      true,
-      { targets: {}, txes: [] },
-      wsUrl,
-      null,
-      false,
-      new Map(),
-      new Map(),
-      pipeline.context.modelDb
-    )
-    ctx.contextData = contextData
-    if (pipeline.context.lowLevelStorage === undefined) {
-      throw new PlatformError(unknownError('Low level storage is not available'))
-    }
-    const backupOps = new BackupClientOps(pipeline.context.lowLevelStorage)
-
-    return {
-      findAll: async (_class, query, options) => {
-        return await pipeline.findAll(ctx, _class, query, options)
-      },
-      findOne: async (_class, query, options) => {
-        return (await pipeline.findAll(ctx, _class, query, { ...options, limit: 1 })).shift()
-      },
-      clean: async (domain, docs) => {
-        await backupOps.clean(ctx, domain, docs)
-      },
-      close: async () => {},
-      closeChunk: async (idx) => {
-        await backupOps.closeChunk(ctx, idx)
-      },
-      getHierarchy: () => {
-        return pipeline.context.hierarchy
-      },
-      getModel: () => {
-        return pipeline.context.modelDb
-      },
-      loadChunk: async (domain, idx, recheck) => {
-        return await backupOps.loadChunk(ctx, domain, idx, recheck)
-      },
-      loadDocs: async (domain, docs) => {
-        return await backupOps.loadDocs(ctx, domain, docs)
-      },
-      upload: async (domain, docs) => {
-        await backupOps.upload(ctx, domain, docs)
-      },
-      searchFulltext: async (query, options) => {
-        return {
-          docs: [],
-          total: 0
-        }
-      },
-      sendForceClose: async () => {},
-      tx: async (tx) => {
-        return {}
-      },
-      notify: (...tx) => {}
-    }
-  }
 }
 
 export function backupService (
@@ -337,9 +277,11 @@ export function backupService (
     workspace: WorkspaceIdWithUrl,
     branding: Branding | null,
     externalStorage: StorageAdapter
-  ) => DbConfiguration
+  ) => DbConfiguration,
+  region: string,
+  recheck?: boolean
 ): () => void {
-  const backupWorker = new BackupWorker(storage, config, pipelineFactory, workspaceStorageAdapter, getConfig)
+  const backupWorker = new BackupWorker(storage, config, pipelineFactory, workspaceStorageAdapter, getConfig, region)
 
   const shutdown = (): void => {
     void backupWorker.close()
@@ -347,4 +289,38 @@ export function backupService (
 
   void backupWorker.schedule(ctx)
   return shutdown
+}
+
+export async function doBackupWorkspace (
+  ctx: MeasureContext,
+  workspace: BaseWorkspaceInfo,
+  storage: StorageAdapter,
+  config: BackupConfig,
+  pipelineFactory: PipelineFactory,
+  workspaceStorageAdapter: StorageAdapter,
+  getConfig: (
+    ctx: MeasureContext,
+    workspace: WorkspaceIdWithUrl,
+    branding: Branding | null,
+    externalStorage: StorageAdapter
+  ) => DbConfiguration,
+  region: string,
+  freshWorkspace: boolean,
+  clean: boolean,
+  downloadLimit: number
+): Promise<boolean> {
+  const backupWorker = new BackupWorker(
+    storage,
+    config,
+    pipelineFactory,
+    workspaceStorageAdapter,
+    getConfig,
+    region,
+    freshWorkspace,
+    clean
+  )
+  backupWorker.downloadLimit = downloadLimit
+  const { processed } = await backupWorker.doBackup(ctx, [workspace], Number.MAX_VALUE)
+  await backupWorker.close()
+  return processed === 1
 }

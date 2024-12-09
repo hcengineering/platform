@@ -73,7 +73,7 @@
       const prev = lastId
       lastId = _id
       if (prev !== undefined) {
-        void inboxClient.then((client) => client.readDoc(getClient(), prev))
+        void inboxClient.then((client) => client.readDoc(prev))
       }
       query.query(contact.class.Organization, { _id }, (result) => {
         object = result[0]
@@ -82,7 +82,7 @@
   }
 
   onDestroy(async () => {
-    void inboxClient.then((client) => client.readDoc(getClient(), _id))
+    void inboxClient.then((client) => client.readDoc(_id))
   })
 </script>
 
@@ -97,6 +97,7 @@
     on:close={() => {
       dispatch('close')
     }}
+    withoutInput={readonly}
   >
     <svelte:fragment slot="title">
       <DocNavLink noUnderline {object}>
@@ -106,7 +107,7 @@
 
     <svelte:fragment slot="attributes" let:direction={dir}>
       {#if dir === 'column'}
-        <DocAttributeBar {object} {mixins} {ignoreKeys} />
+        <DocAttributeBar {object} {mixins} {ignoreKeys} {readonly} />
       {/if}
     </svelte:fragment>
 
@@ -117,14 +118,16 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
-      <Button
-        icon={IconMoreH}
-        iconProps={{ size: 'medium' }}
-        kind={'icon'}
-        on:click={(e) => {
-          showMenu(e, { object, excludedActions: [view.action.Open] })
-        }}
-      />
+      {#if !readonly}
+        <Button
+          icon={IconMoreH}
+          iconProps={{ size: 'medium' }}
+          kind={'icon'}
+          on:click={(e) => {
+            showMenu(e, { object, excludedActions: [view.action.Open] })
+          }}
+        />
+      {/if}
       <Button
         icon={IconMixin}
         kind={'icon'}
@@ -137,7 +140,7 @@
     </svelte:fragment>
 
     <div class="flex-col flex-grow flex-no-shrink step-tb-6">
-      <EditOrganization {object} />
+      <EditOrganization {object} {readonly} />
       <div class="flex-col flex-grow w-full mt-6 relative">
         <AttachmentStyleBoxCollabEditor
           focusIndex={30}
@@ -145,6 +148,7 @@
           key={{ key: 'description', attr: descriptionKey }}
           placeholder={core.string.Description}
           enableAttachments={false}
+          {readonly}
           on:saved={(evt) => {
             saved = evt.detail
           }}

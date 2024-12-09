@@ -42,7 +42,6 @@ import CreateVacancy from './components/CreateVacancy.svelte'
 import EditApplication from './components/EditApplication.svelte'
 import EditVacancy from './components/EditVacancy.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
-import MatchVacancy from './components/MatchVacancy.svelte'
 import NewCandidateHeader from './components/NewCandidateHeader.svelte'
 import NotificationApplicantPresenter from './components/NotificationApplicantPresenter.svelte'
 import Organizations from './components/Organizations.svelte'
@@ -65,6 +64,7 @@ import Opinions from './components/review/Opinions.svelte'
 import OpinionsPresenter from './components/review/OpinionsPresenter.svelte'
 import ReviewPresenter from './components/review/ReviewPresenter.svelte'
 import Reviews from './components/review/Reviews.svelte'
+import ApplicantNamePresenter from './components/ApplicantNamePresenter.svelte'
 import recruit from './plugin'
 import {
   getAppIdentifier,
@@ -386,9 +386,9 @@ export default async (): Promise<Resources> => ({
     VacancyList,
     VacancyTemplateEditor,
 
-    MatchVacancy,
     NotificationApplicantPresenter,
-    VacancyEditor
+    VacancyEditor,
+    ApplicantNamePresenter
   },
   completion: {
     ApplicationQuery: async (

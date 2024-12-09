@@ -14,7 +14,6 @@ import core, {
   Account,
   AttachedDoc,
   Class,
-  CollaborativeDoc,
   Doc,
   DocumentUpdate,
   Markup,
@@ -22,7 +21,8 @@ import core, {
   Ref,
   Space,
   Status,
-  TxOperations
+  TxOperations,
+  makeDocCollabId
 } from '@hcengineering/core'
 import github, {
   DocSyncInfo,
@@ -74,8 +74,8 @@ import {
 /**
  * @public
  */
-export type WithMarkup<T> = {
-  [P in keyof T]: T[P] extends CollaborativeDoc ? Markup : T[P]
+export type WithMarkup<T extends Issue> = Omit<T, 'description'> & {
+  description: Markup
 }
 
 /**
@@ -259,7 +259,7 @@ export abstract class IssueSyncManagerBase {
             }
 
             let needProjectRefresh = false
-            const update: DocumentUpdate<Issue> & Record<string, any> = {}
+            const update: DocumentUpdate<WithMarkup<Issue>> & Record<string, any> = {}
 
             let structure = integration.projectStructure.get(target.target._id)
 
@@ -372,7 +372,8 @@ export abstract class IssueSyncManagerBase {
           !areEqualMarkups(update.description, syncData.current?.description ?? '')
         ) {
           try {
-            await this.collaborator.updateContent(doc.description, { description: update.description })
+            const collabId = makeDocCollabId(doc, 'description')
+            await this.collaborator.updateMarkup(collabId, update.description)
           } catch (err: any) {
             Analytics.handleError(err)
             this.ctx.error(err)
@@ -734,8 +735,8 @@ export abstract class IssueSyncManagerBase {
       await this.ctx.withLog(
         'create mixin issue',
         {},
-        async () =>
-          await this.client.createMixin<Issue, Issue>(
+        () =>
+          this.client.createMixin<Issue, Issue>(
             existing._id as Ref<GithubIssueP>,
             existing._class,
             existing.space,
@@ -772,7 +773,7 @@ export abstract class IssueSyncManagerBase {
     }
 
     if (update.description !== undefined) {
-      if (areEqualMarkups(update.description, existingIssue.description)) {
+      if (update.description === existingIssue.description) {
         delete update.description
       }
     }
@@ -924,8 +925,10 @@ export abstract class IssueSyncManagerBase {
         workspace: this.provider.getWorkspaceId().name
       })
       try {
-        issueData.description = update.description
-        await this.collaborator.updateContent(existingIssue.description, { description: update.description })
+        const description = update.description as Markup
+        issueData.description = description
+        const collabId = makeDocCollabId(existingIssue, 'description')
+        await this.collaborator.updateMarkup(collabId, description)
       } catch (err: any) {
         Analytics.handleError(err)
         this.ctx.error('error during description update', err)
@@ -1259,7 +1262,8 @@ export abstract class IssueSyncManagerBase {
         if (!cnt) {
           Analytics.handleError(err)
           this.ctx.error('Error', { err })
-          await derivedClient.update(info, { error: errorToObj(err) })
+          await derivedClient.update(info, { error: errorToObj(err), needSync: githubSyncVersion })
+          return false
         }
       }
     }

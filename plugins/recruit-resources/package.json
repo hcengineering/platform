@@ -54,6 +54,8 @@
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/recruit": "^0.6.29",
     "@hcengineering/rekoni": "^0.6.0",
+    "@hcengineering/survey": "^0.6.0",
+    "@hcengineering/survey-resources": "^0.6.0",
     "@hcengineering/tags": "^0.6.16",
     "@hcengineering/tags-resources": "^0.6.0",
     "@hcengineering/task": "^0.6.20",
@@ -65,6 +67,6 @@
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/workbench": "^0.6.16",
-    "svelte": "^4.2.12"
+    "svelte": "^4.2.19"
   }
 }

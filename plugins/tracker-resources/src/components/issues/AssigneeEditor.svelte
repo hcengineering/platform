@@ -92,7 +92,7 @@
         func: async () => {
           const r: Ref<Person>[] = []
           for (const d of cdocs) {
-            r.push(...(await getPreviousAssignees(d._id)))
+            r.push(...(await getPreviousAssignees(d._id as Ref<Issue>)))
           }
           return r
         }

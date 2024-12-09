@@ -14,12 +14,10 @@ export const serverProductsId = 'server-products' as Plugin
 
 export function createModel (builder: Builder): void {
   builder.mixin(products.class.Product, core.class.Class, serverCore.mixin.SearchPresenter, {
-    searchConfig: {
-      iconConfig: {
-        component: products.component.ProductSearchIcon,
-        props: ['icon', 'color']
-      },
-      title: 'name'
-    }
+    iconConfig: {
+      component: products.component.ProductSearchIcon,
+      fields: [['icon'], ['color']]
+    },
+    title: [['name']]
   })
 }

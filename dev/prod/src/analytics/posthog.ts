@@ -1,4 +1,4 @@
-import { AnalyticProvider } from "@hcengineering/analytics"
+import { type AnalyticProvider } from "@hcengineering/analytics"
 import posthog from 'posthog-js'
 
 export class PosthogAnalyticProvider implements AnalyticProvider {

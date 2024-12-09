@@ -74,14 +74,14 @@
     unsubscribe()
   })
 
-  function handleMenu (event: MouseEvent): void {
+  function handleMenu (event: CustomEvent<MouseEvent>): void {
     if (actions.length === 0) {
       return
     }
     event.preventDefault()
     event.stopPropagation()
 
-    showPopup(Menu, { actions }, event.target as HTMLElement)
+    showPopup(Menu, { actions }, event.detail.target as HTMLElement)
   }
 </script>
 

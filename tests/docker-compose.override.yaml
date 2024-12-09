@@ -8,3 +8,6 @@ services:
   workspace:
     environment:
       - DB_URL=postgresql://postgres:example@postgres:5432
+  fulltext:
+    environment:
+      - DB_URL=postgresql://postgres:example@postgres:5432      

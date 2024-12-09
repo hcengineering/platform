@@ -1,14 +1,5 @@
 <script lang="ts">
-  import core, {
-    IdMap,
-    Ref,
-    Timestamp,
-    Tx,
-    TxCollectionCUD,
-    TxCreateDoc,
-    TxUpdateDoc,
-    WithLookup
-  } from '@hcengineering/core'
+  import core, { IdMap, Ref, Timestamp, Tx, TxCreateDoc, TxUpdateDoc, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
   import { Label, Row, ticker } from '@hcengineering/ui'
@@ -31,7 +22,7 @@
 
   $: query.query(
     core.class.Tx,
-    { 'tx.objectId': issue._id },
+    { objectId: issue._id },
     (res) => {
       txes = res
     },
@@ -44,10 +35,7 @@
 
     let current: Ref<IssueStatus> | undefined
     let last: Timestamp = Date.now()
-    for (let it of txes) {
-      if (it._class === core.class.TxCollectionCUD) {
-        it = (it as TxCollectionCUD<Issue, Issue>).tx
-      }
+    for (const it of txes) {
       let newStatus: Ref<IssueStatus> | undefined
       if (it._class === core.class.TxCreateDoc) {
         const op = it as TxCreateDoc<Issue>

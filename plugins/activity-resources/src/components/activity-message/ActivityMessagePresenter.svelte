@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DisplayActivityMessage, ActivityMessageViewType } from '@hcengineering/activity'
+  import { DisplayActivityMessage, ActivityMessageViewType, ActivityMessage } from '@hcengineering/activity'
   import view from '@hcengineering/view'
   import { getClient } from '@hcengineering/presentation'
   import { Action, Component } from '@hcengineering/ui'
@@ -41,6 +41,7 @@
   export let compact = false
   export let readonly = false
   export let onClick: (() => void) | undefined = undefined
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -74,7 +75,8 @@
       type,
       compact,
       readonly,
-      onClick
+      onClick,
+      onReply
     }}
   />
 {/if}

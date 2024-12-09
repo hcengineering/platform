@@ -13,12 +13,13 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext, WorkspaceId, newMetrics, toWorkspaceString } from '@hcengineering/core'
+import { Ref, toWorkspaceString, WorkspaceId } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
-import { StorageConfig, StorageConfiguration } from '@hcengineering/server-core'
+import { initStatisticsContext, StorageConfig, StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
+import { RoomMetadata, TranscriptionStatus, MeetingMinutes } from '@hcengineering/love'
 import cors from 'cors'
 import express from 'express'
 import { IncomingHttpHeaders } from 'http'
@@ -49,7 +50,9 @@ export const main = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
 
   const storageConfigs: StorageConfiguration = storageConfigFromEnv()
-  const ctx = new MeasureMetricsContext('love', {}, {}, newMetrics())
+
+  const ctx = initStatisticsContext('love', {})
+
   const storageConfig = storageConfigs.storages.findLast((p) => p.name === config.StorageProviderName)
   const storageAdapter = buildStorageFromConfig(storageConfigs)
   const app = express()
@@ -67,6 +70,7 @@ export const main = async (): Promise<void> => {
     name: string
     workspace: string
     workspaceId: WorkspaceId
+    meetingMinutes?: Ref<MeetingMinutes>
   }
   >()
 
@@ -82,8 +86,8 @@ export const main = async (): Promise<void> => {
             const filename = stripPrefix(prefix, res.filename)
             const storedBlob = await storageAdapter.stat(ctx, data.workspaceId, filename)
             if (storedBlob !== undefined) {
-              const client = await WorkspaceClient.create(data.workspace)
-              await client.saveFile(filename, data.name, storedBlob)
+              const client = await WorkspaceClient.create(data.workspace, ctx)
+              await client.saveFile(filename, data.name, storedBlob, data.meetingMinutes)
               await client.close()
             }
             dataByUUID.delete(res.filename)
@@ -125,13 +129,15 @@ export const main = async (): Promise<void> => {
 
     const roomName = req.body.roomName
     const room = req.body.room
+    const meetingMinutes = req.body.meetingMinutes
     const { workspace } = decodeToken(token)
 
     try {
       const dateStr = new Date().toISOString().replace('T', '_').slice(0, 19)
       const name = `${room}_${dateStr}.mp4`
       const id = await startRecord(storageConfig, egressClient, roomClient, roomName, workspace)
-      dataByUUID.set(id, { name, workspace: workspace.name, workspaceId: workspace })
+      dataByUUID.set(id, { name, workspace: workspace.name, workspaceId: workspace, meetingMinutes })
+      ctx.info('Start recording', { workspace: workspace.name, roomName, meetingMinutes })
       res.send()
     } catch (e) {
       console.error(e)
@@ -149,9 +155,65 @@ export const main = async (): Promise<void> => {
     }
     // just check token
     decodeToken(token)
-    await roomClient.updateRoomMetadata(req.body.roomName, JSON.stringify({ recording: false }))
+    await updateMetadata(roomClient, req.body.roomName, { recording: false })
     void stopEgress(egressClient, req.body.roomName)
     res.send()
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.post('/transcription', async (req, res) => {
+    const token = extractToken(req.headers)
+
+    if (token === undefined) {
+      res.status(401).send()
+      return
+    }
+    // just check token
+    decodeToken(token)
+
+    const roomName = req.body.roomName
+    const language = req.body.language
+    const transcription = req.body.transcription as TranscriptionStatus
+
+    if (roomName == null) {
+      res.status(400).send()
+      return
+    }
+
+    const metadata = language != null ? { transcription, language } : { transcription }
+    try {
+      await updateMetadata(roomClient, roomName, metadata)
+      res.status(200).send()
+    } catch (e) {
+      console.error(e)
+      res.status(500).send()
+    }
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.post('/language', async (req, res) => {
+    const token = extractToken(req.headers)
+
+    if (token === undefined) {
+      res.status(401).send()
+      return
+    }
+    // just check token
+    decodeToken(token)
+
+    const roomName = req.body.roomName
+    const language = req.body.language
+    if (roomName == null || language == null) {
+      res.status(400).send()
+      return
+    }
+    try {
+      await updateMetadata(roomClient, roomName, { language })
+      res.send()
+    } catch (e) {
+      console.error(e)
+      res.status(500).send()
+    }
   })
 
   const server = app.listen(port, () => {
@@ -250,7 +312,28 @@ const startRecord = async (
       })
     }
   })
-  await roomClient.updateRoomMetadata(roomName, JSON.stringify({ recording: true }))
+  await updateMetadata(roomClient, roomName, { recording: true })
   await egressClient.startRoomCompositeEgress(roomName, { file: output }, { layout: 'grid' })
   return filepath
+}
+
+function parseMetadata (metadata?: string | null): RoomMetadata {
+  if (metadata === '' || metadata == null) return {}
+
+  try {
+    return JSON.parse(metadata) as RoomMetadata
+  } catch (e) {
+    return {}
+  }
+}
+
+async function updateMetadata (
+  roomClient: RoomServiceClient,
+  roomName: string,
+  metadata: Partial<RoomMetadata>
+): Promise<void> {
+  const room = (await roomClient.listRooms([roomName]))[0]
+  const currentMetadata = parseMetadata(room?.metadata)
+
+  await roomClient.updateRoomMetadata(roomName, JSON.stringify({ ...currentMetadata, ...metadata }))
 }

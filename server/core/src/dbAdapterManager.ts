@@ -42,14 +42,20 @@ export class DbAdapterManagerImpl implements DBAdapterManager {
     private readonly adapters: Map<string, DbAdapter>
   ) {}
 
-  async closeContext (ctx: MeasureContext): Promise<void> {
+  reserveContext (id: string): () => void {
+    const ops: (() => void)[] = []
     for (const adapter of this.adapters.values()) {
       try {
-        if (adapter.closeContext !== undefined) {
-          await adapter.closeContext(ctx)
+        if (adapter.reserveContext !== undefined) {
+          ops.push(adapter.reserveContext(id))
         }
       } catch (err: any) {
         Analytics.handleError(err)
+      }
+    }
+    return () => {
+      for (const op of ops) {
+        op()
       }
     }
   }
@@ -99,8 +105,8 @@ export class DbAdapterManagerImpl implements DBAdapterManager {
     }
   }
 
-  async initAdapters (ctx: MeasureContext): Promise<void> {
-    await ctx.with('init-adapters', {}, async (ctx) => {
+  initAdapters (ctx: MeasureContext): Promise<void> {
+    return ctx.with('init-adapters', {}, async (ctx) => {
       for (const [key, adapter] of this.adapters) {
         // already initialized
         if (key !== this.conf.domains[DOMAIN_TX] && adapter.init !== undefined) {
@@ -167,6 +173,23 @@ export class DbAdapterManagerImpl implements DBAdapterManager {
         Analytics.handleError(err)
       }
     }
+  }
+
+  getAdapterName (domain: Domain): string {
+    const adapterName = this.conf.domains[domain]
+    return adapterName ?? this.conf.defaultAdapter
+  }
+
+  getAdapterByName (name: string): DbAdapter {
+    if (name === this.conf.defaultAdapter) {
+      return this.defaultAdapter
+    }
+    const adapter = this.adapters.get(name) ?? this.defaultAdapter
+    if (adapter === undefined) {
+      throw new Error('adapter not provided: ' + name)
+    }
+
+    return adapter
   }
 
   public getAdapter (domain: Domain, requireExists: boolean): DbAdapter {

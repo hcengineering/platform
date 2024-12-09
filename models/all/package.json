@@ -16,7 +16,7 @@
     "_phase:validate": "compile validate",
     "show-model": "node ./bundle/bundle.js",
     "_phase:bundle": "rushx bundle",
-    "bundle": "mkdir -p bundle && esbuild src/show.ts --bundle --keep-names --platform=node --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --define:process.env.VERSION=$(node ../../common/scripts/show_tag.js) --define:process.env.GIT_REVISION=$(../../common/scripts/git_version.sh) --outfile=bundle/bundle.js --log-level=error && node ./bundle/bundle.js > ./bundle/model.json"
+    "bundle": "node ../../common/scripts/esbuild.js --keep-names=true --bundle=true --entry=src/show.ts --define=MODEL_VERSION --define=VERSION --define=GIT_REVISION && node ./bundle/bundle.js > ./bundle/model.json"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",
@@ -109,6 +109,9 @@
     "@hcengineering/model-server-controlled-documents": "^0.1.0",
     "@hcengineering/model-analytics-collector": "^0.6.0",
     "@hcengineering/model-server-ai-bot": "^0.6.0",
-    "@hcengineering/model-ai-bot": "^0.6.0"
+    "@hcengineering/model-ai-bot": "^0.6.0",
+    "@hcengineering/model-server-fulltext": "^0.6.0",
+    "@hcengineering/model-test-management": "^0.6.0",
+    "@hcengineering/model-survey": "^0.6.0"
   }
 }

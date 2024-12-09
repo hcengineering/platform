@@ -35,6 +35,9 @@ const doValidate = !prod || (process.env.DO_VALIDATE === 'true')
 
 const useCache = process.env.USE_CACHE === 'true'
 
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+
+
 /**
  * @type {Configuration}
  */
@@ -118,26 +121,14 @@ module.exports = [
       new EsbuildPlugin({ target: 'es2021' })
     ],
     splitChunks: {
-      cacheGroups: {
-        vendor: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendors',
-          chunks: 'all'
-        }
-      }
+      chunks: 'all'
     }
   } : {
     minimize: false,
     mangleExports: false,
     usedExports: false,
     splitChunks: {
-      cacheGroups: {
-        vendor: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendors',
-          chunks: 'all'
-        }
-      }
+      chunks: 'all'
     }
   },
   module: {
@@ -275,9 +266,13 @@ module.exports = [
   },
   mode,
   plugins: [
+    new BundleAnalyzerPlugin({
+      analyzerMode: 'static',
+      openAnalyzer: false,
+    }),
     new HtmlWebpackPlugin({
       meta: {
-        viewport: 'width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=1'
+        viewport: 'width=device-width, initial-scale=1.0'
       }
     }),
     ...(prod ? [new CompressionPlugin()] : []),
@@ -330,6 +325,7 @@ module.exports = [
       disableDotRule: true
     },
     host: '0.0.0.0',
+    allowedHosts: 'all',
     hot: true,
     client: {
       logging: "info",

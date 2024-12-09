@@ -86,6 +86,7 @@ export class WorkspaceClient {
     if (current !== undefined) return current
     const newClient = await CalendarClient.create(this.credentials, user, this.mongo, this.client, this)
     this.clients.set(user.email, newClient)
+    console.log('create new client', user.email, this.workspace)
     return newClient
   }
 
@@ -151,6 +152,9 @@ export class WorkspaceClient {
 
   private getCalendarClientByCalendar (id: Ref<ExternalCalendar>): CalendarClient | undefined {
     const calendar = this.calendars.byId.get(id)
+    if (calendar === undefined) {
+      console.log("couldn't find calendar by id", id)
+    }
     return calendar != null ? this.clients.get(calendar.externalUser) : undefined
   }
 
@@ -216,30 +220,32 @@ export class WorkspaceClient {
     this.txHandlers.push(async (...tx: Tx[]) => {
       await this.txEventHandler(...tx)
     })
+    console.log('receive new events', this.workspace, newEvents.length)
     for (const newEvent of newEvents) {
       const client = this.getCalendarClientByCalendar(newEvent.calendar as Ref<ExternalCalendar>)
       if (client === undefined) {
+        console.log('Client not found', newEvent.calendar, this.workspace)
         return
       }
       await client.syncMyEvent(newEvent)
       await this.updateSyncTime()
     }
+    console.log('all messages synced', this.workspace)
   }
 
   private async txEventHandler (...txes: Tx[]): Promise<void> {
     for (const tx of txes) {
-      const actualTx = TxProcessor.extractTx(tx)
-      switch (actualTx._class) {
+      switch (tx._class) {
         case core.class.TxCreateDoc: {
-          await this.txCreateEvent(actualTx as TxCreateDoc<Doc>)
+          await this.txCreateEvent(tx as TxCreateDoc<Doc>)
           return
         }
         case core.class.TxUpdateDoc: {
-          await this.txUpdateEvent(actualTx as TxUpdateDoc<Event>)
+          await this.txUpdateEvent(tx as TxUpdateDoc<Event>)
           return
         }
         case core.class.TxRemoveDoc: {
-          await this.txRemoveEvent(actualTx as TxRemoveDoc<Doc>)
+          await this.txRemoveEvent(tx as TxRemoveDoc<Doc>)
         }
       }
     }
@@ -269,10 +275,10 @@ export class WorkspaceClient {
       return
     }
     try {
-      const txes = await this.client.findAll(core.class.TxCollectionCUD, {
-        'tx.objectId': tx.objectId
+      const txes = await this.client.findAll(core.class.TxCUD, {
+        objectId: tx.objectId
       })
-      const extracted = txes.map((tx) => TxProcessor.extractTx(tx)).filter((p) => p._id !== tx._id)
+      const extracted = txes.filter((p) => p._id !== tx._id)
       const ev = TxProcessor.buildDoc2Doc<Event>(extracted)
       if (ev !== undefined) {
         const oldClient = this.getCalendarClientByCalendar(ev.calendar as Ref<ExternalCalendar>)
@@ -325,10 +331,10 @@ export class WorkspaceClient {
   private async txRemoveEvent (tx: TxRemoveDoc<Doc>): Promise<void> {
     const hierarhy = this.client.getHierarchy()
     if (hierarhy.isDerived(tx.objectClass, calendar.class.Event)) {
-      const txes = await this.client.findAll(core.class.TxCollectionCUD, {
-        'tx.objectId': tx.objectId
+      const txes = await this.client.findAll(core.class.TxCUD, {
+        objectId: tx.objectId
       })
-      const ev = TxProcessor.buildDoc2Doc<Event>(txes.map((tx) => TxProcessor.extractTx(tx)))
+      const ev = TxProcessor.buildDoc2Doc<Event>(txes)
       if (ev === undefined) return
       if (ev.access !== 'owner' && ev.access !== 'writer') return
       const client = this.getCalendarClientByCalendar(ev?.calendar as Ref<ExternalCalendar>)
@@ -368,8 +374,7 @@ export class WorkspaceClient {
     return this.calendarsByEmail.get(email) ?? []
   }
 
-  private async txCalendarHandler (tx: Tx): Promise<void> {
-    const actualTx = TxProcessor.extractTx(tx)
+  private async txCalendarHandler (actualTx: Tx): Promise<void> {
     if (actualTx._class === core.class.TxCreateDoc) {
       if ((actualTx as TxCreateDoc<Doc>).objectClass === calendar.class.ExternalCalendar) {
         const calendar = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<ExternalCalendar>)
@@ -428,8 +433,7 @@ export class WorkspaceClient {
     })
   }
 
-  private async txChannelHandler (tx: Tx): Promise<void> {
-    const actualTx = TxProcessor.extractTx(tx)
+  private async txChannelHandler (actualTx: Tx): Promise<void> {
     if (actualTx._class === core.class.TxCreateDoc) {
       if ((actualTx as TxCreateDoc<Doc>).objectClass === contact.class.Channel) {
         const channel = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<Channel>)
@@ -536,8 +540,7 @@ export class WorkspaceClient {
     this.integrations.byId.delete(integration._id)
   }
 
-  private async txIntegrationHandler (tx: Tx): Promise<void> {
-    const actualTx = TxProcessor.extractTx(tx)
+  private async txIntegrationHandler (actualTx: Tx): Promise<void> {
     if (actualTx._class === core.class.TxCreateDoc) {
       if ((actualTx as TxCreateDoc<Doc>).objectClass === setting.class.Integration) {
         const integration = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<Integration>)

@@ -19,7 +19,7 @@ import {
   DOMAIN_MODEL,
   DateRangeMode,
   IndexKind,
-  type CollaborativeDoc,
+  type MarkupBlobRef,
   type Domain,
   type Markup,
   type Ref,
@@ -185,7 +185,7 @@ export class TIssue extends TTask implements Issue {
 
   @Prop(TypeCollaborativeDoc(), tracker.string.Description)
   @Index(IndexKind.FullText)
-    description!: CollaborativeDoc
+    description!: MarkupBlobRef | null
 
   @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.Status, {
     _id: tracker.attribute.IssueStatus,

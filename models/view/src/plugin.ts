@@ -64,6 +64,7 @@ export default mergeIds(viewId, view, {
     TimestampPresenter: '' as AnyComponent,
     DateEditor: '' as AnyComponent,
     DatePresenter: '' as AnyComponent,
+    DateTimePresenter: '' as AnyComponent,
     TableBrowser: '' as AnyComponent,
     RolePresenter: '' as AnyComponent,
     YoutubePresenter: '' as AnyComponent,
@@ -78,7 +79,6 @@ export default mergeIds(viewId, view, {
     MarkupEditor: '' as AnyComponent,
     MarkupEditorPopup: '' as AnyComponent,
     ListView: '' as AnyComponent,
-    IndexedDocumentPreview: '' as AnyComponent,
     SpaceRefPresenter: '' as AnyComponent,
     EnumPresenter: '' as AnyComponent,
     StatusPresenter: '' as AnyComponent,
@@ -89,7 +89,8 @@ export default mergeIds(viewId, view, {
     ImageViewer: '' as AnyComponent,
     VideoViewer: '' as AnyComponent,
     PDFViewer: '' as AnyComponent,
-    TextViewer: '' as AnyComponent
+    TextViewer: '' as AnyComponent,
+    FoldersBrowser: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,
@@ -110,7 +111,8 @@ export default mergeIds(viewId, view, {
     General: '' as IntlString,
     Navigation: '' as IntlString,
     Editor: '' as IntlString,
-    MarkdownFormatting: '' as IntlString
+    MarkdownFormatting: '' as IntlString,
+    HideArchived: '' as IntlString
   },
   function: {
     FilterArrayAllResult: '' as FilterFunction,

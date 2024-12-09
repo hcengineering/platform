@@ -311,12 +311,12 @@ export class WorkspaceClient {
       return false
     }
 
-    if (record.notificationId !== undefined) {
-      return await this.replyToNotification(account, record, text, files)
+    if (record.messageId != null) {
+      return await this.replyToMessage(account, record, text, files)
     }
 
-    if (record.messageId !== undefined) {
-      return await this.replyToMessage(account, record, text, files)
+    if (record.notificationId != null) {
+      return await this.replyToNotification(account, record, text, files)
     }
 
     return false

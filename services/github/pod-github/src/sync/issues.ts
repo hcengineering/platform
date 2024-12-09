@@ -19,7 +19,9 @@ import core, {
   TxOperations,
   cutObjectArray,
   generateId,
-  makeCollaborativeDoc
+  makeDocCollabId,
+  makeCollabJsonId,
+  makeCollabId
 } from '@hcengineering/core'
 import github, {
   DocSyncInfo,
@@ -239,7 +241,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       case 'assigned':
       case 'unassigned': {
         const assignees = await this.getAssigneesI(event.issue)
-        const update: DocumentUpdate<Issue> = {
+        const update: IssueUpdate = {
           assignee: assignees?.[0]?.person ?? null
         }
         await this.handleUpdate(externalData as IssueExternalData, derivedClient, update, account, prj, false)
@@ -255,7 +257,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         }
         const type = await this.provider.getTaskTypeOf(prj.type, tracker.class.Issue)
         const statuses = await this.provider.getStatuses(type?._id)
-        const update: DocumentUpdate<Issue> = {
+        const update: IssueUpdate = {
           status: (
             await guessStatus(
               {
@@ -380,8 +382,8 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       }
 
       const description = await this.ctx.withLog('query collaborative description', {}, async () => {
-        const content = await this.collaborator.getContent((existing as Issue).description)
-        return content.description ?? ''
+        const collabId = makeDocCollabId(existing, 'description')
+        return await this.collaborator.getMarkup(collabId, (existing as Issue).description)
       })
 
       this.ctx.info('create github issue', {
@@ -545,11 +547,8 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           url: issueExternal.url,
           workspace: this.provider.getWorkspaceId().name
         })
-        target.prjData = await this.ctx.withLog(
-          'add issue to project v2',
-          {},
-          async () =>
-            await this.addIssueToProject(container, okit, issueExternal, target.target.projectNodeId as string)
+        target.prjData = await this.ctx.withLog('add issue to project v2', {}, () =>
+          this.addIssueToProject(container, okit, issueExternal, target.target.projectNodeId as string)
         )
         if (target.prjData !== undefined) {
           issueExternal.projectItems.nodes.push(target.prjData)
@@ -627,8 +626,8 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           'query collaborative description',
           {},
           async () => {
-            const content = await this.collaborator.getContent((existing as Issue).description)
-            return content.description ?? ''
+            const collabId = makeDocCollabId(existing, 'description')
+            return await this.collaborator.getMarkup(collabId, (existing as Issue).description)
           },
           { url: issueExternal.url }
         )
@@ -911,9 +910,12 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
 
     const { description, ...update } = issueData
 
+    const collabId = makeCollabId(tracker.class.Issue, issueId, 'description')
+    const contentId = makeCollabJsonId(collabId)
+
     const value: AttachedData<Issue> = {
       ...update,
-      description: makeCollaborativeDoc(issueId, 'description'),
+      description: contentId,
       kind: taskType,
       component: null,
       milestone: null,
@@ -933,7 +935,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       identifier: `${prj.identifier}-${number}`
     }
 
-    await this.collaborator.updateContent(value.description, { description })
+    await this.collaborator.updateMarkup(collabId, description)
 
     await this.client.addCollection(
       tracker.class.Issue,
@@ -998,8 +1000,8 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           const response: any = await this.ctx.with(
             'graphql.listIssue',
             { prj: prj.name, repo: repo.name },
-            async () =>
-              await integration.octokit.graphql(
+            () =>
+              integration.octokit.graphql(
                 `query listIssues {
                     nodes(ids: [${idsp}] ) {
                       ... on Issue {

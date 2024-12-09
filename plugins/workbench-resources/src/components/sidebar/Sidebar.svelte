@@ -17,6 +17,7 @@
   import { WidgetPreference, SidebarEvent, TxSidebarEvent, OpenSidebarWidgetParams } from '@hcengineering/workbench'
   import { Tx } from '@hcengineering/core'
   import { onMount } from 'svelte'
+  import { panelstore, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   import workbench from '../../plugin'
   import { createWidgetTab, openWidget, sidebarStore, SidebarVariant } from '../../sidebar'
@@ -33,7 +34,8 @@
     preferences = res
   })
 
-  $: size = $sidebarStore.variant === SidebarVariant.MINI ? 'mini' : undefined
+  $: mini = $sidebarStore.variant === SidebarVariant.MINI
+  $: if ((!mini || mini) && $panelstore.panel?.refit !== undefined) $panelstore.panel.refit()
 
   function txListener (tx: Tx): void {
     if (tx._class === workbench.class.TxSidebarEvent) {
@@ -59,8 +61,13 @@
   })
 </script>
 
-<div class="antiPanel-component antiComponent root size-{size}" id="sidebar">
-  {#if $sidebarStore.variant === SidebarVariant.MINI}
+<div
+  id="sidebar"
+  class="antiPanel-application vertical sidebar-container"
+  class:mini
+  class:float={$deviceInfo.aside.float}
+>
+  {#if mini}
     <SidebarMini {widgets} {preferences} />
   {:else if $sidebarStore.variant === SidebarVariant.EXPANDED}
     <SidebarExpanded {widgets} {preferences} />
@@ -68,14 +75,29 @@
 </div>
 
 <style lang="scss">
-  .root {
-    position: relative;
-    background-color: var(--theme-panel-color);
+  .sidebar-container {
+    overflow: hidden;
+    flex-direction: row;
+    min-width: 25rem;
+    border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
 
-    &.size-mini {
-      width: 3.5rem !important;
-      min-width: 3.5rem !important;
-      max-width: 3.5rem !important;
+    &.mini:not(.float) {
+      width: calc(3.5rem + 1px) !important;
+      min-width: calc(3.5rem + 1px) !important;
+      max-width: calc(3.5rem + 1px) !important;
+    }
+    &.mini.float {
+      justify-content: flex-end;
+    }
+    &.float > :global(.sidebar-content) {
+      border-top: none;
+    }
+  }
+  @media (max-width: 1024px) {
+    .sidebar-container {
+      width: 100%;
+      border: 1px solid var(--theme-navpanel-divider);
+      border-radius: var(--medium-BorderRadius);
     }
   }
 </style>

@@ -31,6 +31,7 @@ import CollaborativeHTMLEditor from './components/CollaborativeHTMLEditor.svelte
 import ColorsPopup from './components/ColorsPopup.svelte'
 import DateEditor from './components/DateEditor.svelte'
 import DatePresenter from './components/DatePresenter.svelte'
+import DateTimePresenter from './components/DateTimePresenter.svelte'
 import DocAttributeBar from './components/DocAttributeBar.svelte'
 import DocNavLink from './components/DocNavLink.svelte'
 import DocReferencePresenter from './components/DocReferencePresenter.svelte'
@@ -100,6 +101,7 @@ import ImageViewer from './components/viewer/ImageViewer.svelte'
 import VideoViewer from './components/viewer/VideoViewer.svelte'
 import PDFViewer from './components/viewer/PDFViewer.svelte'
 import TextViewer from './components/viewer/TextViewer.svelte'
+import FoldersBrowser from './components/folders/FoldersBrowser.svelte'
 
 import { blobImageMetadata, blobVideoMetadata } from './blob'
 
@@ -126,7 +128,6 @@ import {
   valueNinResult
 } from './filter'
 
-import { IndexedDocumentPreview } from '@hcengineering/presentation'
 import { AggregationMiddleware, AnalyticsMiddleware } from './middleware'
 import { showEmptyGroups } from './viewOptions'
 import {
@@ -162,17 +163,19 @@ export { default as ViewletSelector } from './components/ViewletSelector.svelte'
 export { default as ViewletsSettingButton } from './components/ViewletsSettingButton.svelte'
 export { default as FilterButton } from './components/filter/FilterButton.svelte'
 export { default as FilterRemovedNotification } from './components/filter/FilterRemovedNotification.svelte'
-export { default as SourcePresenter } from './components/inference/SourcePresenter.svelte'
 export { default as List } from './components/list/List.svelte'
 export { default as NavLink } from './components/navigator/NavLink.svelte'
 export { default as StatusPresenter } from './components/status/StatusPresenter.svelte'
 export { default as StatusRefPresenter } from './components/status/StatusRefPresenter.svelte'
+export { default as FoldersBrowser } from './components/folders/FoldersBrowser.svelte'
+export { default as ListView } from './components/list/ListView.svelte'
 
 export * from './filter'
 export * from './middleware'
 export * from './selection'
 export * from './status'
 export * from './utils'
+export * from './objectIterator'
 export {
   buildModel,
   getActiveViewletId,
@@ -189,6 +192,7 @@ export {
 } from './utils'
 export * from './viewOptions'
 export {
+  ArrayEditor,
   BooleanEditor,
   BooleanPresenter,
   ClassAttributeBar,
@@ -258,6 +262,7 @@ export default async (): Promise<Resources> => ({
     TimestampPresenter,
     DateEditor,
     DatePresenter,
+    DateTimePresenter,
     RolePresenter,
     ObjectPresenter,
     EditDoc,
@@ -281,7 +286,6 @@ export default async (): Promise<Resources> => ({
     ListView,
     GrowPresenter,
     DividerPresenter,
-    IndexedDocumentPreview,
     SpaceRefPresenter,
     SpaceTypeSelector,
     EnumArrayEditor,
@@ -298,7 +302,8 @@ export default async (): Promise<Resources> => ({
     ImageViewer,
     VideoViewer,
     PDFViewer,
-    TextViewer
+    TextViewer,
+    FoldersBrowser
   },
   popup: {
     PositionElementAlignment

@@ -32,6 +32,7 @@ import { openDoc } from '@hcengineering/view-resources'
 import CreateDocument from './components/CreateDocument.svelte'
 import DocumentIcon from './components/DocumentIcon.svelte'
 import DocumentItem from './components/DocumentItem.svelte'
+import DocumentInlineEditor from './components/DocumentInlineEditor.svelte'
 import DocumentPresenter from './components/DocumentPresenter.svelte'
 import DocumentSearchIcon from './components/DocumentSearchIcon.svelte'
 import DocumentToDoPresenter from './components/DocumentToDoPresenter.svelte'
@@ -159,10 +160,15 @@ export async function canUnlockDocument (doc: Document | Document[]): Promise<bo
   return arr.some((p) => p.lockedBy != null)
 }
 
+export function hideArchivedTeamspaces (value: boolean, query: DocumentQuery<Teamspace>): DocumentQuery<Teamspace> {
+  return value ? { ...query, archived: false } : query
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     CreateDocument,
     CreateTeamspace,
+    DocumentInlineEditor,
     DocumentPresenter,
     Documents,
     EditDoc,
@@ -196,7 +202,8 @@ export default async (): Promise<Resources> => ({
     CanLockDocument: canLockDocument,
     CanUnlockDocument: canUnlockDocument,
     GetDocumentLinkId: getDocumentLinkId,
-    ParseDocumentId: parseDocumentId
+    ParseDocumentId: parseDocumentId,
+    HideArchivedTeamspaces: hideArchivedTeamspaces
   },
   resolver: {
     Location: resolveLocation

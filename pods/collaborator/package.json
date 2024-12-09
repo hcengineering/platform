@@ -13,7 +13,7 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "mkdir -p bundle && esbuild src/__start.ts --bundle --platform=node --keep-names --external:*.node --external:bufferutil --external:snappy --outfile=bundle/bundle.js --log-level=error --sourcemap=external",
+    "bundle": "node ../../common/scripts/esbuild.js --entry=src/__start.ts --keep-names=true --sourcemap=external --external=*.node --external=snappy --external=bufferutil",
     "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/collaborator",
     "docker:tbuild": "docker build -t hardcoreeng/collaborator . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/collaborator",
     "docker:abuild": "docker build -t hardcoreeng/collaborator . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/collaborator",
@@ -51,6 +51,7 @@
     "@hcengineering/collaborator": "^0.6.0",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/analytics-service": "^0.6.0"
+    "@hcengineering/analytics-service": "^0.6.0",
+    "@hcengineering/server-core": "^0.6.1"
   }
 }

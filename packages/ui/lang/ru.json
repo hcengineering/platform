@@ -52,6 +52,8 @@
     "Portuguese": "Português",
     "Chinese": "中文",
     "French": "Français",
+    "Italian": "Italiano",
+    "Czech": "Čeština",
     "MinutesBefore": "{minutes, plural, =1 {за минуту} one {за # минуту} few {за # минуты} other {за # минут}}",
     "HoursBefore": "{hours, plural, =1 {за час} one {за # час} few {за # часа} other {за # часов}}",
     "DaysBefore": "{days, plural, =1 {за день} one {за # день} few {за # дня} other {за # дней}}",
@@ -91,8 +93,10 @@
     "Submit": "Отправить",
     "NextStep": "Следующий шаг",
     "TypeHere": "Вводите здесь...",
+    "NormalSize": "Обычный размер",
     "FullSize": "Полный размер",
     "UseMaxWidth": "Максимальная ширина",
-    "Sidebar": "Боковая панель"
+    "Sidebar": "Боковая панель",
+    "Language": "Язык"
   }
 }

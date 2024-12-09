@@ -77,7 +77,7 @@ function defineMessageActions (builder: Builder): void {
         group: 'edit'
       }
     },
-    chunter.action.ReplyToThreadAction
+    activity.action.Reply
   )
 
   createAction(

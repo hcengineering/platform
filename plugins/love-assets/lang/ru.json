@@ -60,6 +60,24 @@
     "ExitingFullscreenMode": "Выход из полноэкранного режима",
     "Select": "Выбрать",
     "ChooseShare": "Выберите, чем вы хотите поделиться",
-    "CreateMeeting": "Создать встречу"
+    "CreateMeeting": "Создать встречу",
+    "MoreOptions": "Дополнительные опции",
+    "StartTranscription": "Начать транскрипцию",
+    "StopTranscription": "Остановить транскрипцию",
+    "Meeting": "Встреча",
+    "Transcription": "Транскрипция",
+    "StartWithTranscription": "Начинать с транскрипцией",
+    "MeetingMinutes": "Протокол встречи",
+    "MeetingsMinutes": "Протоколы встреч",
+    "StartMeeting": "Начать встречу",
+    "Video": "Видео",
+    "NoMeetingMinutes": "Нет результатов встреч",
+    "JoinMeeting": "Присоединиться к встрече",
+    "MeetingStart": "Начало встречи",
+    "MeetingEnd": "Конец встречи",
+    "Status": "Статус",
+    "Active": "Активно",
+    "Finished": "Завершено",
+    "StartWithRecording": "Начинать с записью"
   }
 }

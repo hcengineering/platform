@@ -54,8 +54,9 @@ export class QueryJoiner {
     }
     if (q.result instanceof Promise) {
       q.result = await q.result
-      q.callbacks--
     }
+    q.callbacks--
+
     this.removeFromQueue(q)
 
     return q.result as FindResult<T>

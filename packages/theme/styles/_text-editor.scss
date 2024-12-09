@@ -445,3 +445,11 @@
     background: var(--text-editor-highlighted-node-delete-background-color);
   }
 }
+
+// Hiding the selection of an empty line
+.select-text p > br.ProseMirror-trailingBreak::selection {
+  background: transparent;
+}
+.select-text .text-editor-image-container {
+  user-select: all;
+}

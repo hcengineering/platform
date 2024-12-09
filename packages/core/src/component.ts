@@ -23,6 +23,7 @@ import type {
   Blob,
   Card,
   Class,
+  MarkupBlobRef,
   Collection,
   Configuration,
   ConfigurationElement,
@@ -54,13 +55,11 @@ import type {
   TypedSpace,
   UserStatus
 } from './classes'
-import { CollaborativeDoc } from './collaboration'
 import { Status, StatusCategory } from './status'
 import type {
   Tx,
   TxApplyIf,
   TxCUD,
-  TxCollectionCUD,
   TxCreateDoc,
   TxMixin,
   TxModelUpgrade,
@@ -97,7 +96,6 @@ export default plugin(coreId, {
     TxApplyIf: '' as Ref<Class<TxApplyIf>>,
     TxCUD: '' as Ref<Class<TxCUD<Doc>>>,
     TxCreateDoc: '' as Ref<Class<TxCreateDoc<Doc>>>,
-    TxCollectionCUD: '' as Ref<Class<TxCollectionCUD<Doc, AttachedDoc>>>,
     TxMixin: '' as Ref<Class<TxMixin<Doc, Doc>>>,
     TxUpdateDoc: '' as Ref<Class<TxUpdateDoc<Doc>>>,
     TxRemoveDoc: '' as Ref<Class<TxRemoveDoc<Doc>>>,
@@ -122,8 +120,7 @@ export default plugin(coreId, {
     TypeBoolean: '' as Ref<Class<Type<boolean>>>,
     TypeTimestamp: '' as Ref<Class<Type<Timestamp>>>,
     TypeDate: '' as Ref<Class<Type<Timestamp | Date>>>,
-    TypeCollaborativeDoc: '' as Ref<Class<Type<CollaborativeDoc>>>,
-    TypeCollaborativeDocVersion: '' as Ref<Class<Type<CollaborativeDoc>>>,
+    TypeCollaborativeDoc: '' as Ref<Class<Type<MarkupBlobRef>>>,
     RefTo: '' as Ref<Class<RefTo<Doc>>>,
     ArrOf: '' as Ref<Class<ArrOf<Doc>>>,
     Enum: '' as Ref<Class<Enum>>,
@@ -187,9 +184,8 @@ export default plugin(coreId, {
     String: '' as IntlString,
     Record: '' as IntlString,
     Markup: '' as IntlString,
-    Collaborative: '' as IntlString,
     CollaborativeDoc: '' as IntlString,
-    CollaborativeDocVersion: '' as IntlString,
+    MarkupBlobRef: '' as IntlString,
     Number: '' as IntlString,
     Boolean: '' as IntlString,
     Timestamp: '' as IntlString,

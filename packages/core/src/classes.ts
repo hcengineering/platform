@@ -15,7 +15,6 @@
 //
 
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
-import { CollaborativeDoc } from './collaboration'
 import type { DocumentQuery } from './storage'
 
 /**
@@ -57,6 +56,13 @@ export type Rank = string
 
 /**
  * @public
+ *
+ * Reference to blob containing snapshot of collaborative doc.
+ */
+export type MarkupBlobRef = Ref<Blob>
+
+/**
+ * @public
  */
 export interface Obj {
   _class: Ref<Class<this>>
@@ -76,7 +82,7 @@ export interface Doc<S extends Space = Space> extends Obj {
 
 export interface Card extends Doc {
   title: string
-  description?: CollaborativeDoc | null
+  description?: MarkupBlobRef | null
   identifier?: string
   parent?: Ref<Card> | null
 }
@@ -329,6 +335,11 @@ export const DOMAIN_MODEL = 'model' as Domain
 /**
  * @public
  */
+export const DOMAIN_MODEL_TX = 'model_tx' as Domain
+
+/**
+ * @public
+ */
 export const DOMAIN_SPACE = 'space' as Domain
 
 /**
@@ -360,16 +371,6 @@ export interface TransientConfiguration extends Class<Doc> {
  */
 export const DOMAIN_BLOB = 'blob' as Domain
 
-/**
- * Special domain to access s3 blob data.
- * @public
- */
-export const DOMAIN_FULLTEXT_BLOB = 'fulltext-blob' as Domain
-
-/**
- * Special domain to access s3 blob data.
- * @public
- */
 export const DOMAIN_DOC_INDEX_STATE = 'doc-index-state' as Domain
 
 // S P A C E
@@ -526,25 +527,8 @@ export function versionToString (version: Version | Data<Version>): string {
  */
 export interface DocIndexState extends Doc {
   objectClass: Ref<Class<Doc>>
-
-  attachedTo?: Ref<Doc>
-  attachedToClass?: Ref<Class<Doc>>
-
-  generationId?: string
-
-  // States for stages
-  stages: Record<string, boolean>
-
   needIndex: boolean
-
   removed: boolean
-
-  // Indexable attributes, including child ones.
-  attributes: Record<string, any>
-  mixins?: Ref<Class<Doc>>[]
-  // Full Summary
-  fullSummary?: string | null
-  shortSummary?: string | null
 }
 
 /**
@@ -593,9 +577,6 @@ export interface FullTextSearchContext extends Doc {
   propagate?: Ref<Class<Doc>>[]
   // If defined, will propagate all document from child's based on class
   propagateClasses?: Ref<Class<Doc>>[]
-
-  // Do we need to propagate child value to parent one. Default(true)
-  parentPropagate?: boolean
 
   childProcessingAllowed?: boolean
 }
@@ -672,7 +653,15 @@ export interface DomainIndexConfiguration extends Doc {
   skip?: string[]
 }
 
-export type WorkspaceMode = 'pending-creation' | 'creating' | 'upgrading' | 'pending-deletion' | 'deleting' | 'active'
+export type WorkspaceMode =
+  | 'manual-creation'
+  | 'pending-creation'
+  | 'creating'
+  | 'upgrading'
+  | 'pending-deletion'
+  | 'deleting'
+  | 'active'
+  | 'archived'
 
 export interface BackupStatus {
   dataSize: number
@@ -694,9 +683,7 @@ export interface BaseWorkspaceInfo {
   workspaceName?: string // An displayed workspace name
   createdOn: number
   lastVisit: number
-
   createdBy: string
-
   mode: WorkspaceMode
   progress?: number // Some progress
 

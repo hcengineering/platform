@@ -43,8 +43,8 @@ export class LowLevelMiddleware extends BaseMiddleware implements Middleware {
     }
     const adapterManager = context.adapterManager
     context.lowLevelStorage = {
-      find (ctx: MeasureContext, domain: Domain, recheck?: boolean): StorageIterator {
-        return adapterManager.getAdapter(domain, false).find(ctx, domain, recheck)
+      find (ctx: MeasureContext, domain: Domain): StorageIterator {
+        return adapterManager.getAdapter(domain, false).find(ctx, domain)
       },
 
       load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
@@ -55,11 +55,16 @@ export class LowLevelMiddleware extends BaseMiddleware implements Middleware {
         return adapterManager.getAdapter(domain, true).upload(ctx, domain, docs)
       },
 
-      async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-        await adapterManager.getAdapter(domain, true).clean(ctx, domain, docs)
+      clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+        return adapterManager.getAdapter(domain, true).clean(ctx, domain, docs)
       },
-      groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
-        return adapterManager.getAdapter(domain, false).groupBy(ctx, domain, field)
+      groupBy<T, P extends Doc>(
+        ctx: MeasureContext,
+        domain: Domain,
+        field: string,
+        query?: DocumentQuery<P>
+      ): Promise<Map<T, number>> {
+        return adapterManager.getAdapter(domain, false).groupBy(ctx, domain, field, query)
       },
       rawFindAll<T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
         return adapterManager.getAdapter(domain, false).rawFindAll(domain, query, options)

@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+import chunter from '@hcengineering/chunter'
+import contact, { type PersonSpace } from '@hcengineering/contact'
 import core, { DOMAIN_TX, type Class, type Doc, type DocumentQuery, type Ref, type Space } from '@hcengineering/core'
 import {
   migrateSpace,
@@ -23,17 +25,14 @@ import {
 } from '@hcengineering/model'
 import notification, {
   notificationId,
-  NotificationStatus,
   type BrowserNotification,
   type DocNotifyContext,
   type InboxNotification
 } from '@hcengineering/notification'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
-import contact, { type PersonSpace } from '@hcengineering/contact'
-import chunter from '@hcengineering/chunter'
 
-import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_USER_NOTIFY } from './index'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
+import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_USER_NOTIFY } from './index'
 
 export async function removeNotifications (
   client: MigrationClient,
@@ -401,7 +400,7 @@ export const notificationOperation: MigrateOperation = {
         }
       },
       {
-        state: 'remove-update-txes-docnotify-ctx',
+        state: 'remove-update-txes-docnotify-ctx-v2',
         func: async (client) => {
           await client.deleteMany(DOMAIN_TX, {
             _class: core.class.TxUpdateDoc,
@@ -410,14 +409,34 @@ export const notificationOperation: MigrateOperation = {
               $exists: true
             }
           })
+          await client.deleteMany(DOMAIN_TX, {
+            _class: core.class.TxUpdateDoc,
+            objectClass: notification.class.DocNotifyContext,
+            'operations.lastUpdateTimestamp': {
+              $exists: true
+            }
+          })
+        }
+      },
+      {
+        state: 'remove-browser-notification-v2',
+        func: async (client) => {
+          await client.deleteMany<BrowserNotification>(DOMAIN_USER_NOTIFY, {
+            _class: notification.class.BrowserNotification
+          })
+
+          await client.deleteMany(DOMAIN_TX, {
+            objectClass: notification.class.BrowserNotification
+          })
+        }
+      },
+      {
+        state: 'migrate-dnc-space',
+        func: async (client) => {
+          await client.update(DOMAIN_DOC_NOTIFY, { space: core.space.Space }, { space: core.space.Workspace })
         }
       }
     ])
-
-    await client.deleteMany<BrowserNotification>(DOMAIN_USER_NOTIFY, {
-      _class: notification.class.BrowserNotification,
-      status: NotificationStatus.Notified
-    })
   },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

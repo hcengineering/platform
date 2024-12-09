@@ -17,7 +17,7 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "mkdir -p bundle && esbuild src/index.ts --bundle  --platform=node > bundle/bundle.js",
+    "bundle": "node ../../../common/scripts/esbuild.js",
     "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/calendar",
     "docker:tbuild": "docker build -t hardcoreeng/calendar . --platform=linux/amd64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/calendar",
     "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/calendar staging",
@@ -73,7 +73,7 @@
     "googleapis": "^122.0.0",
     "google-auth-library": "^8.0.2",
     "jwt-simple": "^0.5.6",
-    "mongodb": "6.9.0-dev.20241016.sha.3d5bd513",
+    "mongodb": "^6.10.0",
     "ws": "^8.18.0"
   }
 }

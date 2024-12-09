@@ -31,7 +31,6 @@ export default mergeIds(telegramId, telegram, {
     Incoming: '' as IntlString,
     Messages: '' as IntlString,
     Telegram: '' as IntlString,
-    TelegramIntegrationDesc: '' as IntlString,
     Status: '' as IntlString,
     ConfigLabel: '' as IntlString,
     ConfigDescription: '' as IntlString,
@@ -53,6 +52,7 @@ export default mergeIds(telegramId, telegram, {
     TelegramMessageCreated: '' as AnyComponent
   },
   component: {
-    NotificationProviderPresenter: '' as AnyComponent
+    NotificationProviderPresenter: '' as AnyComponent,
+    TelegramIntegrationDescription: '' as AnyComponent
   }
 })

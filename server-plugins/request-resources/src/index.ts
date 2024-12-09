@@ -13,61 +13,53 @@
 // limitations under the License.
 //
 
+import { DocUpdateMessage } from '@hcengineering/activity'
+import { PersonAccount } from '@hcengineering/contact'
 import core, {
   Doc,
+  Ref,
   Tx,
   TxCUD,
-  TxCollectionCUD,
   TxCreateDoc,
-  TxUpdateDoc,
   TxProcessor,
-  Ref,
+  TxUpdateDoc,
   type MeasureContext
 } from '@hcengineering/core'
-import request, { Request, RequestStatus } from '@hcengineering/request'
-import { getResource, translate } from '@hcengineering/platform'
-import type { TriggerControl } from '@hcengineering/server-core'
-import { pushDocUpdateMessages } from '@hcengineering/server-activity-resources'
-import { DocUpdateMessage } from '@hcengineering/activity'
 import notification from '@hcengineering/notification'
+import { getResource, translate } from '@hcengineering/platform'
+import request, { Request, RequestStatus } from '@hcengineering/request'
+import { pushDocUpdateMessages } from '@hcengineering/server-activity-resources'
+import type { TriggerControl } from '@hcengineering/server-core'
 import {
-  getNotificationTxes,
   getCollaborators,
+  getNotificationProviderControl,
+  getNotificationTxes,
   getTextPresenter,
   getUsersInfo,
-  toReceiverInfo,
-  getNotificationProviderControl
+  toReceiverInfo
 } from '@hcengineering/server-notification-resources'
-import { PersonAccount } from '@hcengineering/contact'
 
 /**
  * @public
  */
-export async function OnRequest (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  if (tx._class !== core.class.TxCollectionCUD) {
-    return []
-  }
-
+export async function OnRequest (txes: TxCUD<Doc>[], control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
-  const ptx = tx as TxCollectionCUD<Doc, Request>
-
-  if (!hierarchy.isDerived(ptx.tx.objectClass, request.class.Request)) {
-    return []
-  }
+  const ltxes = txes.filter((it) => hierarchy.isDerived(it.objectClass, request.class.Request))
 
   let res: Tx[] = []
 
-  res = res.concat(await getRequestNotificationTx(control.ctx, ptx, control))
+  for (const ptx of ltxes) {
+    res = res.concat(await getRequestNotificationTx(control.ctx, ptx as TxCUD<Request>, control))
 
-  if (ptx.tx._class === core.class.TxUpdateDoc) {
-    res = res.concat(await OnRequestUpdate(ptx, control))
+    if (ptx._class === core.class.TxUpdateDoc) {
+      res = res.concat(await OnRequestUpdate(ptx as TxUpdateDoc<Request>, control))
+    }
   }
 
   return res
 }
 
-async function OnRequestUpdate (tx: TxCollectionCUD<Doc, Request>, control: TriggerControl): Promise<Tx[]> {
-  const ctx = tx.tx as TxUpdateDoc<Request>
+async function OnRequestUpdate (ctx: TxUpdateDoc<Request>, control: TriggerControl): Promise<Tx[]> {
   const applyTxes: Tx[] = []
 
   if (ctx.operations.$push?.approved !== undefined) {
@@ -79,9 +71,9 @@ async function OnRequestUpdate (tx: TxCollectionCUD<Doc, Request>, control: Trig
       })
       collectionTx.space = core.space.Tx
       const resTx = control.txFactory.createTxCollectionCUD(
-        tx.objectClass,
-        tx.objectId,
-        tx.objectSpace,
+        ctx.attachedToClass ?? ctx.objectClass,
+        ctx.attachedTo ?? ctx.objectId,
+        ctx.objectSpace,
         'requests',
         collectionTx
       )
@@ -92,9 +84,9 @@ async function OnRequestUpdate (tx: TxCollectionCUD<Doc, Request>, control: Trig
     }
 
     const approvedDateTx = control.txFactory.createTxCollectionCUD(
-      tx.objectClass,
-      tx.objectId,
-      tx.objectSpace,
+      ctx.attachedToClass ?? ctx.objectClass,
+      ctx.attachedTo ?? ctx.objectId,
+      ctx.objectSpace,
       'requests',
       control.txFactory.createTxUpdateDoc(ctx.objectClass, ctx.objectSpace, ctx.objectId, {
         $push: { approvedDates: Date.now() }
@@ -134,14 +126,15 @@ async function getRequest (tx: TxCUD<Request>, control: TriggerControl): Promise
 // We need request-specific logic to attach a activity message on request create/update to parent, but use request collaborators for notifications
 async function getRequestNotificationTx (
   ctx: MeasureContext,
-  tx: TxCollectionCUD<Doc, Request>,
+  tx: TxCUD<Request>,
   control: TriggerControl
 ): Promise<Tx[]> {
-  const request = await getRequest(tx.tx, control)
+  if (tx.attachedToClass === undefined || tx.attachedTo === undefined) return []
+  const request = await getRequest(tx, control)
 
   if (request === undefined) return []
 
-  const doc = (await control.findAll(control.ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+  const doc = (await control.findAll(control.ctx, tx.attachedToClass, { _id: tx.attachedTo }, { limit: 1 }))[0]
 
   if (doc === undefined) return []
 
@@ -153,9 +146,9 @@ async function getRequestNotificationTx (
   res.push(...messagesTxes)
 
   const messages = messagesTxes.map((messageTx) =>
-    TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>)
+    TxProcessor.createDoc2Doc(messageTx as TxCreateDoc<DocUpdateMessage>)
   )
-  const collaborators = await getCollaborators(control.ctx, request, control, tx.tx, res)
+  const collaborators = await getCollaborators(control.ctx, request, control, tx, res)
 
   if (collaborators.length === 0) return res
 
@@ -168,9 +161,10 @@ async function getRequestNotificationTx (
   }
 
   const notificationControl = await getNotificationProviderControl(ctx, control)
-  const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
-    user: { $in: collaborators }
-  })
+  const collaboratorsSet = new Set(collaborators)
+  const subscriptions = (await control.queryFind(control.ctx, notification.class.PushSubscription, {})).filter((it) =>
+    collaboratorsSet.has(it.user)
+  )
   for (const target of collaborators) {
     const targetInfo = toReceiverInfo(control.hierarchy, usersInfo.get(target))
     if (targetInfo === undefined) continue
@@ -179,7 +173,6 @@ async function getRequestNotificationTx (
       ctx,
       control,
       request,
-      tx.tx,
       tx,
       targetInfo,
       senderInfo,

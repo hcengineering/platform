@@ -1,0 +1,18 @@
+{
+  "string": {
+    "BitrixTokenUrl": "URL del token di Bitrix24",
+    "Bitrix": "",
+    "BitrixDesc": "Integrazione con Bitrix24",
+    "Settings": "Configura",
+    "NotAllowed": "Non consentito senza diritti amministrativi",
+    "BitrixEntityType": "Mappatura entità",
+    "FieldMapping": "Mappatura campi",
+    "AddField": "Aggiungi mappatura",
+    "Attribute": "Attributo",
+    "MapField": "Mappa...",
+    "BitrixImport": "Sincronizza con Bitrix",
+    "AddMapping": "Aggiungi mappatura entità",
+    "ConfigLabel": "Bitrix24",
+    "ConfigDescription": "Estensione per integrazione con Bitrix24"
+  }
+}

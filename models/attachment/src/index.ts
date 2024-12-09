@@ -14,9 +14,10 @@
 //
 
 import activity from '@hcengineering/activity'
-import type { Attachment, AttachmentMetadata, Photo, SavedAttachments } from '@hcengineering/attachment'
-import { IndexKind, type Blob, type Domain, type Ref } from '@hcengineering/core'
+import type { Attachment, AttachmentMetadata, Drawing, Photo, SavedAttachments } from '@hcengineering/attachment'
+import { IndexKind, type Blob, type Class, type Doc, type Domain, type Ref } from '@hcengineering/core'
 import {
+  Hidden,
   Index,
   Model,
   Prop,
@@ -28,10 +29,11 @@ import {
   UX,
   type Builder
 } from '@hcengineering/model'
-import core, { TAttachedDoc } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction } from '@hcengineering/model-view'
 import workbench, { WidgetType } from '@hcengineering/workbench'
+import { getEmbeddedLabel } from '@hcengineering/platform'
 import presentation from '@hcengineering/model-presentation'
 
 import attachment from './plugin'
@@ -80,8 +82,24 @@ export class TSavedAttachments extends TPreference implements SavedAttachments {
   declare attachedTo: Ref<Attachment>
 }
 
+@Model(attachment.class.Drawing, core.class.Doc, DOMAIN_ATTACHMENT)
+export class TDrawing extends TDoc implements Drawing {
+  @Prop(TypeRef(core.class.Doc), getEmbeddedLabel('Parent'))
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    parent!: Ref<Doc>
+
+  @Prop(TypeRef(core.class.Class), getEmbeddedLabel('Parent class'))
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    parentClass!: Ref<Class<Doc>>
+
+  @Prop(TypeString(), getEmbeddedLabel('Content'))
+    content?: string
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TAttachment, TPhoto, TSavedAttachments)
+  builder.createModel(TAttachment, TDrawing, TPhoto, TSavedAttachments)
 
   builder.mixin(attachment.class.Attachment, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: attachment.component.AttachmentPresenter
@@ -222,6 +240,10 @@ export function createModel (builder: Builder): void {
       { state: 1 },
       { _class: 1 }
     ]
+  })
+
+  builder.mixin(attachment.class.Drawing, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: attachment.component.DrawingPresenter
   })
 }
 

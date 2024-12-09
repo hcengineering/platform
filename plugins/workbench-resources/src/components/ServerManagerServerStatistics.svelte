@@ -1,21 +1,17 @@
 <script lang="ts">
-  import { Metrics } from '@hcengineering/core'
-  import login from '@hcengineering/login'
+  import { FixedColumn } from '@hcengineering/view-resources'
   import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
-  import presentation from '@hcengineering/presentation'
-  import { Button, IconArrowRight, fetchMetadataLocalStorage, ticker } from '@hcengineering/ui'
-  import MetricsInfo from './statistics/MetricsInfo.svelte'
+  import presentation, { type OverviewStatistics } from '@hcengineering/presentation'
+  import { Button, DropdownLabels, Expandable, IconArrowRight, ticker } from '@hcengineering/ui'
+  import MetricsStats from './MetricsStats.svelte'
+  import type { MetricsData } from '@hcengineering/core'
 
-  const _endpoint: string = fetchMetadataLocalStorage(login.metadata.LoginEndpoint) ?? ''
   const token: string = getMetadata(presentation.metadata.Token) ?? ''
 
-  let endpoint = _endpoint.replace(/^ws/g, 'http')
-  if (endpoint.endsWith('/')) {
-    endpoint = endpoint.substring(0, endpoint.length - 1)
-  }
+  const endpoint = getMetadata(presentation.metadata.StatsUrl)
 
   async function fetchStats (time: number): Promise<void> {
-    await fetch(endpoint + `/api/v1/statistics?token=${token}`, {})
+    await fetch(endpoint + `/api/v1/overview?token=${token}`, {})
       .then(async (json) => {
         data = await json.json()
         admin = data?.admin ?? false
@@ -24,57 +20,26 @@
         console.error(err)
       })
   }
-  let data: any
+  let data: OverviewStatistics | undefined
 
   let admin = false
   $: void fetchStats($ticker)
-  $: metricsData = data?.metrics as Metrics | undefined
 
-  interface StatisticsElement {
-    find: number
-    tx: number
-  }
-
-  $: activeSessions =
-    (data?.statistics?.activeSessions as Record<
-    string,
-    {
-      sessions: Array<{
-        userId: string
-        data?: Record<string, any>
-        total: StatisticsElement
-        mins5: StatisticsElement
-        current: StatisticsElement
-      }>
-      name: string
-      wsId: string
-      sessionsTotal: number
-      upgrading: boolean
-      closing: boolean
-    }
-    >) ?? {}
-
-  $: totalStats = Array.from(Object.entries(activeSessions).values()).reduce(
-    (cur, it) => {
-      const totalFind = it[1].sessions.reduce((it, itm) => itm.current.find + it, 0)
-      const totalTx = it[1].sessions.reduce((it, itm) => itm.current.tx + it, 0)
-      return {
-        find: cur.find + totalFind,
-        tx: cur.tx + totalTx
-      }
-    },
-    { find: 0, tx: 0 }
-  )
+  export let sortingOrder: 'avg' | 'ops' | 'total' = 'ops'
+  const sortOrder = [
+    { id: 'avg', label: 'Average' },
+    { id: 'ops', label: 'Operations' },
+    { id: 'total', label: 'Total' }
+  ]
 </script>
 
 {#if data}
   <div class="flex-col p-4">
     <span>
-      Mem: {data.statistics.memoryUsed} / {data.statistics.memoryTotal} CPU: {data.statistics.cpuUsage}
+      Connections: {data.connectionsTotal}
+      Users: {data.usersTotal}
     </span>
-    <span>
-      TotalFind: {totalStats.find} / Total Tx: {totalStats.tx}
-    </span>
+    <span> </span>
   </div>
 {/if}
 
@@ -96,11 +61,38 @@
     </div>
   </div>
 {/if}
-<div class="flex-column p-3 h-full" style:overflow="auto">
-  {#if metricsData !== undefined}
-    <MetricsInfo metrics={metricsData} />
-  {/if}
-</div>
+{#if data}
+  <div class="p-1 flex flex-grow flex-reverse">
+    <DropdownLabels bind:selected={sortingOrder} items={sortOrder}></DropdownLabels>
+  </div>
+  <div class="flex-column p-3 h-full" style:overflow="auto">
+    {#each Object.entries(data.data).sort((a, b) => a[1].serviceName.localeCompare(b[1].serviceName)) as kv}
+      <Expandable bordered expandable showChevron>
+        <svelte:fragment slot="title">
+          <div class="ml-2">
+            {kv[1].serviceName} - {kv[0]}
+          </div>
+        </svelte:fragment>
+        <svelte:fragment slot="tools">
+          <div class="flex flex-between flex-grow">
+            <FixedColumn key="mem-usage">
+              {kv[1].memory.memoryUsed}/{kv[1].memory.memoryTotal} Mb
+            </FixedColumn>
+            <FixedColumn key="mem-rss">
+              {kv[1].memory.memoryRSS} Mb
+            </FixedColumn>
+            <FixedColumn key="cpu-usage">
+              <div class="ml-2">
+                {kv[1].cpu.usage}%
+              </div>
+            </FixedColumn>
+          </div>
+        </svelte:fragment>
+        <MetricsStats serviceName={kv[0]} sortOrder={sortingOrder} />
+      </Expandable>
+    {/each}
+  </div>
+{/if}
 
 <style lang="scss">
   .greyed {

@@ -13,8 +13,7 @@
 // limitations under the License.
 //
 
-import { DocumentId } from '@hcengineering/collaborator-client'
-import { MeasureContext } from '@hcengineering/core'
+import { type Markup, MeasureContext } from '@hcengineering/core'
 import {
   Document,
   Extension,
@@ -37,19 +36,35 @@ export interface StorageConfiguration {
   transformer: Transformer
 }
 
+type DocumentName = string
+
+type ConnectionId = string
+
+interface DocumentUpdates {
+  context: Context
+  collaborators: Set<ConnectionId>
+}
+
 export class StorageExtension implements Extension {
   private readonly configuration: StorageConfiguration
-  private readonly collaborators = new Map<string, Set<string>>()
-  private readonly markups = new Map<string, Record<string, string>>()
+  private readonly updates = new Map<DocumentName, DocumentUpdates>()
+  private readonly markups = new Map<DocumentName, Record<Markup, Markup>>()
 
   constructor (configuration: StorageConfiguration) {
     this.configuration = configuration
   }
 
   async onChange ({ context, documentName }: withContext<onChangePayload>): Promise<any> {
-    const collaborators = this.collaborators.get(documentName) ?? new Set()
-    collaborators.add(context.connectionId)
-    this.collaborators.set(documentName, collaborators)
+    const { connectionId } = context
+
+    const updates = this.updates.get(documentName)
+    if (updates === undefined) {
+      const collaborators = new Set([connectionId])
+      this.updates.set(documentName, { context, collaborators })
+    } else {
+      updates.context = context
+      updates.collaborators.add(connectionId)
+    }
   }
 
   async onLoadDocument ({ context, documentName }: withContext<onLoadDocumentPayload>): Promise<any> {
@@ -60,8 +75,16 @@ export class StorageExtension implements Extension {
   }
 
   async afterLoadDocument ({ context, documentName, document }: withContext<afterLoadDocumentPayload>): Promise<any> {
-    // remember the markup for the document
-    this.markups.set(documentName, this.configuration.transformer.fromYdoc(document))
+    const { ctx } = this.configuration
+    const { connectionId } = context
+
+    try {
+      // remember the markup for the document
+      this.markups.set(documentName, this.configuration.transformer.fromYdoc(document))
+    } catch {
+      ctx.warn('document is not of a markup type', { documentName, connectionId })
+      this.markups.set(documentName, {})
+    }
   }
 
   async onStoreDocument ({ context, documentName, document }: withContext<onStoreDocumentPayload>): Promise<void> {
@@ -70,14 +93,14 @@ export class StorageExtension implements Extension {
 
     ctx.info('store document', { documentName, connectionId })
 
-    const collaborators = this.collaborators.get(documentName)
-    if (collaborators === undefined || collaborators.size === 0) {
+    const updates = this.updates.get(documentName)
+    if (updates === undefined || updates.collaborators.size === 0) {
       ctx.info('no changes for document', { documentName, connectionId })
       return
     }
 
-    this.collaborators.delete(documentName)
-    await this.storeDocument(documentName, document, context)
+    this.updates.delete(documentName)
+    await this.storeDocument(documentName, document, updates.context)
   }
 
   async onConnect ({ context, documentName, instance }: withContext<onConnectPayload>): Promise<any> {
@@ -93,19 +116,19 @@ export class StorageExtension implements Extension {
     const params = { documentName, connectionId, connections: document.getConnectionsCount() }
     ctx.info('disconnect from document', params)
 
-    const collaborators = this.collaborators.get(documentName)
-    if (collaborators === undefined || !collaborators.has(connectionId)) {
+    const updates = this.updates.get(documentName)
+    if (updates === undefined || updates.collaborators.size === 0) {
       ctx.info('no changes for document', { documentName, connectionId })
       return
     }
 
-    this.collaborators.delete(documentName)
+    this.updates.delete(documentName)
     await this.storeDocument(documentName, document, context)
   }
 
   async afterUnloadDocument ({ documentName }: afterUnloadDocumentPayload): Promise<any> {
     this.configuration.ctx.info('unload document', { documentName })
-    this.collaborators.delete(documentName)
+    this.updates.delete(documentName)
     this.markups.delete(documentName)
   }
 
@@ -113,8 +136,8 @@ export class StorageExtension implements Extension {
     const { ctx, adapter } = this.configuration
 
     try {
-      return await ctx.with('load-document', {}, async (ctx) => {
-        return await adapter.loadDocument(ctx, documentName as DocumentId, context)
+      return await ctx.with('load-document', {}, (ctx) => {
+        return adapter.loadDocument(ctx, documentName, context)
       })
     } catch (err) {
       ctx.error('failed to load document', { documentName, error: err })
@@ -126,17 +149,14 @@ export class StorageExtension implements Extension {
     const { ctx, adapter } = this.configuration
 
     try {
-      const prevMarkup = this.markups.get(documentName) ?? {}
-      const currMarkup = this.configuration.transformer.fromYdoc(document)
-
-      await ctx.with('save-document', {}, async (ctx) => {
-        await adapter.saveDocument(ctx, documentName as DocumentId, document, context, {
-          prev: prevMarkup,
-          curr: currMarkup
+      const currMarkup = await ctx.with('save-document', {}, (ctx) =>
+        adapter.saveDocument(ctx, documentName, document, context, {
+          prev: () => this.markups.get(documentName) ?? {},
+          curr: () => this.configuration.transformer.fromYdoc(document)
         })
-      })
+      )
 
-      this.markups.set(documentName, currMarkup)
+      this.markups.set(documentName, currMarkup ?? {})
     } catch (err) {
       ctx.error('failed to save document', { documentName, error: err })
       throw new Error('Failed to save document')

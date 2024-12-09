@@ -1,12 +1,12 @@
 import { Event } from '@hcengineering/calendar'
 import { Person } from '@hcengineering/contact'
-import { Class, Doc, Mixin, Ref } from '@hcengineering/core'
+import { AttachedDoc, Class, MarkupBlobRef, Doc, Mixin, Ref, Timestamp } from '@hcengineering/core'
 import { Drive } from '@hcengineering/drive'
 import { NotificationType } from '@hcengineering/notification'
 import { Asset, IntlString, Metadata, Plugin, plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
 import { AnyComponent } from '@hcengineering/ui/src/types'
-import { Action } from '@hcengineering/view'
+import { Action, Viewlet, ViewletDescriptor } from '@hcengineering/view'
 import { Widget } from '@hcengineering/workbench'
 
 export const loveId = 'love' as Plugin
@@ -31,6 +31,66 @@ export interface Floor extends Doc {
   name: string
 }
 
+export enum TranscriptionStatus {
+  Idle = 'idle',
+  InProgress = 'inProgress',
+  Completed = 'completed'
+}
+
+export type RoomLanguage =
+  | 'bg'
+  | 'ca'
+  | 'zh'
+  | 'zh-TW'
+  | 'zh-HK'
+  | 'cs'
+  | 'da'
+  | 'nl'
+  | 'en'
+  | 'en-US'
+  | 'en-AU'
+  | 'en-GB'
+  | 'en-NZ'
+  | 'en-IN'
+  | 'et'
+  | 'fi'
+  | 'nl-BE'
+  | 'fr'
+  | 'fr-CA'
+  | 'de'
+  | 'de-CH'
+  | 'el'
+  | 'hi'
+  | 'hu'
+  | 'id'
+  | 'it'
+  | 'ja'
+  | 'ko'
+  | 'lv'
+  | 'lt'
+  | 'ms'
+  | 'no'
+  | 'pl'
+  | 'pt'
+  | 'pt-BR'
+  | 'pt-PT'
+  | 'ro'
+  | 'ru'
+  | 'sk'
+  | 'es'
+  | 'es-419'
+  | 'sv'
+  | 'th'
+  | 'tr'
+  | 'uk'
+  | 'vi'
+
+export interface RoomMetadata {
+  recording?: boolean
+  transcription?: TranscriptionStatus
+  language?: RoomLanguage
+}
+
 export interface Room extends Doc {
   name: string
   type: RoomType
@@ -40,6 +100,13 @@ export interface Room extends Doc {
   height: number
   x: number
   y: number
+  language: RoomLanguage
+  startWithTranscription: boolean
+  startWithRecording: boolean
+  description: MarkupBlobRef | null
+  attachments?: number
+  meetings?: number
+  messages?: number
 }
 
 export interface Office extends Room {
@@ -93,6 +160,23 @@ export interface DevicesPreference extends Preference {
   camEnabled: boolean
 }
 
+export enum MeetingStatus {
+  Active,
+  Finished
+}
+
+export interface MeetingMinutes extends AttachedDoc {
+  title: string
+  description: MarkupBlobRef | null
+
+  status: MeetingStatus
+  meetingEnd?: Timestamp
+
+  transcription?: number
+  messages?: number
+  attachments?: number
+}
+
 export * from './utils'
 
 const love = plugin(loveId, {
@@ -104,7 +188,8 @@ const love = plugin(loveId, {
     JoinRequest: '' as Ref<Class<JoinRequest>>,
     DevicesPreference: '' as Ref<Class<DevicesPreference>>,
     RoomInfo: '' as Ref<Class<RoomInfo>>,
-    Invite: '' as Ref<Class<Invite>>
+    Invite: '' as Ref<Class<Invite>>,
+    MeetingMinutes: '' as Ref<Class<MeetingMinutes>>
   },
   mixin: {
     Meeting: '' as Ref<Mixin<Meeting>>
@@ -123,7 +208,24 @@ const love = plugin(loveId, {
     RoomType: '' as IntlString,
     Knock: '' as IntlString,
     Open: '' as IntlString,
-    DND: '' as IntlString
+    DND: '' as IntlString,
+    StartTranscription: '' as IntlString,
+    StopTranscription: '' as IntlString,
+    Meeting: '' as IntlString,
+    Transcription: '' as IntlString,
+    StartWithTranscription: '' as IntlString,
+    MeetingMinutes: '' as IntlString,
+    MeetingsMinutes: '' as IntlString,
+    StartMeeting: '' as IntlString,
+    Video: '' as IntlString,
+    NoMeetingMinutes: '' as IntlString,
+    JoinMeeting: '' as IntlString,
+    MeetingStart: '' as IntlString,
+    MeetingEnd: '' as IntlString,
+    Status: '' as IntlString,
+    Active: '' as IntlString,
+    Finished: '' as IntlString,
+    StartWithRecording: '' as IntlString
   },
   ids: {
     MainFloor: '' as Ref<Floor>,
@@ -131,7 +233,7 @@ const love = plugin(loveId, {
     InviteNotification: '' as Ref<NotificationType>,
     KnockNotification: '' as Ref<NotificationType>,
     LoveWidget: '' as Ref<Widget>,
-    VideoWidget: '' as Ref<Widget>
+    MeetingWidget: '' as Ref<Widget>
   },
   icon: {
     Love: '' as Asset,
@@ -166,6 +268,14 @@ const love = plugin(loveId, {
   },
   component: {
     SelectScreenSourcePopup: '' as AnyComponent
+  },
+  viewlet: {
+    TableMeetingMinutes: '' as Ref<Viewlet>,
+    TableMeetingMinutesEmbedded: '' as Ref<Viewlet>,
+    MeetingMinutesDescriptor: '' as Ref<ViewletDescriptor>,
+    FloorDescriptor: '' as Ref<ViewletDescriptor>,
+    Floor: '' as Ref<Viewlet>,
+    FloorMeetingMinutes: '' as Ref<Viewlet>
   }
 })
 

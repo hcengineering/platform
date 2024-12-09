@@ -67,6 +67,7 @@ import {
   type ListItemPresenter,
   type ObjectEditor,
   type ObjectEditorFooter,
+  type ObjectPanelFooter,
   type ObjectEditorHeader,
   type ObjectFactory,
   type ObjectPanel,
@@ -213,6 +214,11 @@ export class TObjectEditorHeader extends TClass implements ObjectEditorHeader {
 
 @Mixin(view.mixin.ObjectEditorFooter, core.class.Class)
 export class TObjectEditorFooter extends TClass implements ObjectEditorFooter {
+  editor!: AnyComponent
+}
+
+@Mixin(view.mixin.ObjectPanelFooter, core.class.Class)
+export class TObjectPanelFooter extends TClass implements ObjectPanelFooter {
   editor!: AnyComponent
 }
 
@@ -445,6 +451,7 @@ export function createModel (builder: Builder): void {
     TObjectTitle,
     TObjectEditorHeader,
     TObjectEditorFooter,
+    TObjectPanelFooter,
     TSpaceHeader,
     TSpaceName,
     TSpacePresenter,
@@ -505,10 +512,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(core.class.TypeCollaborativeDoc, core.class.Class, view.mixin.ActivityAttributePresenter, {
     presenter: view.component.MarkupDiffPresenter
-  })
-
-  builder.mixin(core.class.TypeCollaborativeDocVersion, core.class.Class, view.mixin.InlineAttributEditor, {
-    editor: view.component.CollaborativeDocEditor
   })
 
   classPresenter(builder, core.class.TypeBoolean, view.component.BooleanPresenter, view.component.BooleanEditor)
@@ -1208,6 +1211,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(core.class.Space, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Open, view.action.OpenInNewTab, view.action.Delete]
+  })
+  builder.mixin(view.class.FilteredView, core.class.Class, core.mixin.IndexConfiguration, {
+    indexes: [],
+    searchDisabled: true
   })
 }
 

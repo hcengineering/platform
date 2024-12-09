@@ -15,7 +15,7 @@ export class ChunterPage {
   readonly inputDescription = (): Locator => this.page.getByPlaceholder('Description (optional)')
   readonly checkboxMakePublic = (): Locator => this.page.getByRole('button', { name: 'Public' })
   readonly checkboxMakePrivate = (): Locator => this.page.getByRole('button', { name: 'Private' })
-  readonly buttonCreateChannel = (): Locator => this.page.getByRole('button', { name: 'Create' })
+  readonly buttonCreateChannel = (): Locator => this.page.getByRole('button', { name: 'Create', exact: true })
   readonly buttonOpenChannel = (): Locator => this.page.locator('div.antiNav-element__dropbox span.an-element__label')
   readonly inputNewDirectChatEmployee = (): Locator => this.page.locator('.popup input[placeholder="Search..."]')
   readonly rowEmployeeInNewDirectChatModal = (): Locator => this.page.locator('.popup .users button.row')

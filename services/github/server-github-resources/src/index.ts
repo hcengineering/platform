@@ -5,7 +5,6 @@
 import chunter from '@hcengineering/chunter'
 import contact, { PersonAccount } from '@hcengineering/contact'
 import core, {
-  AttachedDoc,
   Doc,
   DocumentUpdate,
   Hierarchy,
@@ -14,7 +13,6 @@ import core, {
   Storage,
   Tx,
   TxCUD,
-  TxCollectionCUD,
   TxProcessor,
   TxUpdateDoc,
   systemAccountEmail,
@@ -29,52 +27,57 @@ import tracker from '@hcengineering/tracker'
 /**
  * @public
  */
-export async function OnProjectChanges (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const ltx = TxProcessor.extractTx(tx)
+export async function OnProjectChanges (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  const cache = new Map<string, any>()
 
-  if (ltx._class === core.class.TxMixin && (ltx as TxMixin<Doc, Doc>).mixin === github.mixin.GithubIssue) {
-    const mix = ltx as TxMixin<Doc, Doc>
-    // Do not spend time to wait for trigger processing
-    await updateDocSyncInfo(control, tx, mix.objectSpace, mix)
-    return []
-  }
-
-  if (control.hierarchy.isDerived(ltx._class, core.class.TxCUD)) {
-    const cud = ltx as TxCUD<Doc>
-
-    let space: Ref<Space> = cud.objectSpace
-
-    if (cud._class === core.class.TxUpdateDoc) {
-      const upd = cud as TxUpdateDoc<Doc>
-      if (upd.operations.space != null) {
-        space = upd.operations.space
-      }
-    }
-
-    if (isDocSyncUpdateRequired(control.hierarchy, cud)) {
+  const toApply: Tx[] = []
+  for (const ltx of txes) {
+    if (ltx._class === core.class.TxMixin && (ltx as TxMixin<Doc, Doc>).mixin === github.mixin.GithubIssue) {
+      const mix = ltx as TxMixin<Doc, Doc>
       // Do not spend time to wait for trigger processing
-      await updateDocSyncInfo(control, tx, space, cud)
+      await updateDocSyncInfo(control, ltx, mix.objectSpace, mix, cache, toApply)
+      continue
     }
-    if (control.hierarchy.isDerived(cud.objectClass, time.class.ToDo)) {
-      if (tx._class === core.class.TxCollectionCUD) {
-        const coll = tx as TxCollectionCUD<Doc, AttachedDoc>
-        if (control.hierarchy.isDerived(coll.objectClass, github.class.GithubPullRequest)) {
-          // Ok we got todo change for pull request, let's mark it for sync.
-          return [
-            control.txFactory.createTxUpdateDoc<DocSyncInfo>(
-              github.class.DocSyncInfo,
-              coll.objectSpace,
-              coll.objectId as Ref<DocSyncInfo>,
-              {
-                needSync: ''
-              }
+
+    if (TxProcessor.isExtendsCUD(ltx._class)) {
+      const cud = ltx as TxCUD<Doc>
+
+      let space: Ref<Space> = cud.objectSpace
+
+      if (cud._class === core.class.TxUpdateDoc) {
+        const upd = cud as TxUpdateDoc<Doc>
+        if (upd.operations.space != null) {
+          space = upd.operations.space
+        }
+      }
+
+      if (isDocSyncUpdateRequired(control.hierarchy, cud)) {
+        await updateDocSyncInfo(control, ltx, space, cud, cache, toApply)
+      }
+      if (control.hierarchy.isDerived(cud.objectClass, time.class.ToDo)) {
+        if (cud.attachedToClass !== undefined && cud.attachedTo !== undefined) {
+          if (control.hierarchy.isDerived(cud.attachedToClass, github.class.GithubPullRequest)) {
+            // Ok we got todo change for pull request, let's mark it for sync.
+            result.push(
+              control.txFactory.createTxUpdateDoc<DocSyncInfo>(
+                github.class.DocSyncInfo,
+                ltx.objectSpace,
+                cud.attachedTo as Ref<DocSyncInfo>,
+                {
+                  needSync: ''
+                }
+              )
             )
-          ]
+          }
         }
       }
     }
   }
-  return []
+  if (toApply.length > 0) {
+    await control.apply(control.ctx, toApply)
+  }
+  return result
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -108,14 +111,16 @@ async function updateDocSyncInfo (
     _class: Ref<Class<Tx>>
     objectId: Ref<Doc>
     objectClass: Ref<Class<Doc>>
-  }
+  },
+  cache: Map<string, any>,
+  toApply: Tx[]
 ): Promise<void> {
   const checkTx = (tx: Tx): boolean =>
     control.hierarchy.isDerived(tx._class, core.class.TxCUD) &&
     (tx as TxCUD<Doc>).objectClass === github.class.DocSyncInfo &&
     (tx as TxCUD<Doc>).objectId === cud.objectId
 
-  const txes = [...control.txes, ...control.ctx.contextData.broadcast.txes]
+  const txes = [...control.txes, ...control.ctx.contextData.broadcast.txes, ...toApply]
   // Check already captured Txes
   for (const i of txes) {
     if (checkTx(i)) {
@@ -131,20 +136,29 @@ async function updateDocSyncInfo (
   if (account === undefined) {
     return
   }
+  const projects =
+    (cache.get('projects') as GithubProject[]) ??
+    (await control.queryFind(control.ctx, github.mixin.GithubProject, {}, { projection: { _id: 1 } }))
+  cache.set('projects', projects)
 
-  const projects = await control.queryFind(control.ctx, github.mixin.GithubProject, {}, { projection: { _id: 1 } })
   if (projects.some((it) => it._id === (space as Ref<GithubProject>))) {
-    const [sdoc] = await control.findAll(control.ctx, github.class.DocSyncInfo, {
-      _id: cud.objectId as Ref<DocSyncInfo>
-    })
+    const sdoc =
+      (cache.get(cud.objectId) as DocSyncInfo) ??
+      (
+        await control.findAll(control.ctx, github.class.DocSyncInfo, {
+          _id: cud.objectId as Ref<DocSyncInfo>
+        })
+      ).shift()
+
     // We need to check if sync doc is already exists.
     if (sdoc === undefined) {
       // Created by non github integration
       // We need to create the doc sync info
-      await createSyncDoc(control, cud, tx, space)
+      createSyncDoc(control, cud, tx, space, toApply)
     } else {
+      cache.set(cud.objectId, sdoc)
       // We need to create the doc sync info
-      await updateSyncDoc(control, cud, space, sdoc)
+      updateSyncDoc(control, cud, space, sdoc, toApply)
     }
   }
 }
@@ -160,7 +174,7 @@ function isDocSyncUpdateRequired (h: Hierarchy, coll: TxCUD<Doc>): boolean {
   )
 }
 
-async function updateSyncDoc (
+function updateSyncDoc (
   control: TriggerControl,
   cud: {
     _class: Ref<Class<Tx>>
@@ -168,8 +182,9 @@ async function updateSyncDoc (
     objectClass: Ref<Class<Doc>>
   },
   space: Ref<Space>,
-  info: DocSyncInfo
-): Promise<void> {
+  info: DocSyncInfo,
+  toApply: Tx[]
+): void {
   const data: DocumentUpdate<DocSyncInfo> =
     cud._class === core.class.TxRemoveDoc
       ? {
@@ -183,14 +198,14 @@ async function updateSyncDoc (
     data.externalVersion = '#' // We need to put this one to handle new documents.)
     data.space = space
   }
-  await control.apply(control.ctx, [
+  toApply.push(
     control.txFactory.createTxUpdateDoc<DocSyncInfo>(
       github.class.DocSyncInfo,
       info.space,
       cud.objectId as Ref<DocSyncInfo>,
       data
     )
-  ])
+  )
 
   control.ctx.contextData.broadcast.targets.github = (it) => {
     if (control.hierarchy.isDerived(it._class, core.class.TxCUD)) {
@@ -201,7 +216,7 @@ async function updateSyncDoc (
   }
 }
 
-async function createSyncDoc (
+function createSyncDoc (
   control: TriggerControl,
   cud: {
     _class: Ref<Class<Tx>>
@@ -209,8 +224,9 @@ async function createSyncDoc (
     objectClass: Ref<Class<Doc>>
   },
   tx: Tx,
-  space: Ref<Space>
-): Promise<void> {
+  space: Ref<Space>,
+  toApply: Tx[]
+): void {
   const data: DocumentUpdate<DocSyncInfo> = {
     url: '',
     githubNumber: 0,
@@ -220,20 +236,19 @@ async function createSyncDoc (
     needSync: '',
     derivedVersion: ''
   }
-  if (tx._class === core.class.TxCollectionCUD) {
-    const coll = tx as TxCollectionCUD<Doc, AttachedDoc>
+  if ((tx as TxCUD<Doc>).attachedTo !== undefined) {
     // Collection CUD, we could assign attachedTo
-    data.attachedTo = coll.objectId
+    data.attachedTo = (tx as TxCUD<Doc>).attachedTo
   }
 
-  await control.apply(control.ctx, [
+  toApply.push(
     control.txFactory.createTxCreateDoc<DocSyncInfo>(
       github.class.DocSyncInfo,
       space,
       data,
       cud.objectId as Ref<DocSyncInfo>
     )
-  ])
+  )
   control.ctx.contextData.broadcast.targets.github = (it) => {
     if (control.hierarchy.isDerived(it._class, core.class.TxCUD)) {
       if ((it as TxCUD<Doc>).objectClass === github.class.DocSyncInfo) {

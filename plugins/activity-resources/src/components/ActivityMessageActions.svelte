@@ -30,6 +30,7 @@
   export let withActionMenu = true
   export let onOpen: () => void
   export let onClose: () => void
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const client = getClient()
 
@@ -76,22 +77,33 @@
       .filter((action) => action.inline)
       .filter((action) => !excludedAction.includes(action._id))
   }
+
+  async function handleAction (action: ViewAction, ev?: Event): Promise<void> {
+    if (message === undefined) return
+
+    if (onReply !== undefined && action._id === activity.action.Reply) {
+      onReply(message)
+      handleActionMenuClosed()
+      return
+    }
+    const fn = await getResource(action.action)
+
+    await fn(message, ev, { onOpen, onClose })
+  }
 </script>
 
 {#if message}
   <div class="activityMessage-actionPopup">
     {#each inlineActions as inline}
       {#if inline.icon}
-        {#await getResource(inline.action) then action}
-          <ActivityMessageAction
-            label={inline.label}
-            size={inline.actionProps?.size ?? 'small'}
-            icon={inline.icon}
-            iconProps={inline.actionProps?.iconProps}
-            dataId={inline._id}
-            action={(ev) => action(message, ev, { onOpen, onClose })}
-          />
-        {/await}
+        <ActivityMessageAction
+          label={inline.label}
+          size={inline.actionProps?.size ?? 'small'}
+          icon={inline.icon}
+          iconProps={inline.actionProps?.iconProps}
+          dataId={inline._id}
+          action={(ev) => handleAction(inline, ev)}
+        />
       {/if}
     {/each}
 

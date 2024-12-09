@@ -10,6 +10,8 @@ import {
   type Vacancy,
   type VacancyList
 } from '@hcengineering/recruit'
+import { type Poll } from '@hcengineering/survey'
+import { generatePollLocation } from '@hcengineering/survey-resources'
 import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
@@ -32,6 +34,10 @@ function isShortId (shortLink: string): boolean {
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
   if (loc.path[2] !== recruitId) {
     return undefined
+  }
+
+  if (loc.path[3] === 'poll') {
+    return await generatePollLocation(loc, loc.path[4] as Ref<Poll>)
   }
 
   const shortLink = loc.path[3]

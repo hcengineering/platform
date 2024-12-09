@@ -13,9 +13,20 @@
 // limitations under the License.
 //
 
-import { type CollaborativeDoc, DOMAIN_TX, MeasureMetricsContext, SortingOrder } from '@hcengineering/core'
+import {
+  type Class,
+  type CollaborativeDoc,
+  type Doc,
+  type Ref,
+  DOMAIN_TX,
+  DOMAIN_MODEL_TX,
+  MeasureMetricsContext,
+  SortingOrder,
+  makeDocCollabId
+} from '@hcengineering/core'
 import { type DocumentSnapshot, type Document, type Teamspace } from '@hcengineering/document'
 import {
+  migrateSpaceRanks,
   tryMigrate,
   type MigrateOperation,
   type MigrateUpdate,
@@ -23,11 +34,13 @@ import {
   type MigrationDocumentQuery,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
+import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
+import { DOMAIN_NOTIFICATION } from '@hcengineering/notification'
 import { type Asset } from '@hcengineering/platform'
 import { makeRank } from '@hcengineering/rank'
 
-import { loadCollaborativeDoc, saveCollaborativeDoc, yDocCopyXmlField } from '@hcengineering/collaboration'
+import { loadCollabYdoc, saveCollabYdoc, yDocCopyXmlField } from '@hcengineering/collaboration'
 import document, { documentId, DOMAIN_DOCUMENT } from './index'
 
 async function migrateDocumentIcons (client: MigrationClient): Promise<void> {
@@ -74,7 +87,7 @@ async function migrateTeamspacesMixins (client: MigrationClient): Promise<void> 
   const newSpaceTypeMixin = document.mixin.DefaultTeamspaceTypeData
 
   await client.update(
-    DOMAIN_TX,
+    DOMAIN_MODEL_TX,
     {
       objectClass: core.class.Attribute,
       'attributes.attributeOf': oldSpaceTypeMixin
@@ -196,23 +209,23 @@ async function renameFieldsRevert (client: MigrationClient): Promise<void> {
       }
     )
 
-    if (document.description.includes('%description:')) {
-      try {
-        const ydoc = await loadCollaborativeDoc(ctx, storage, client.workspaceId, document.description)
-        if (ydoc === undefined) {
-          continue
-        }
+    try {
+      const collabId = makeDocCollabId(document, 'content')
 
-        if (!ydoc.share.has('description') || ydoc.share.has('content')) {
-          continue
-        }
-
-        yDocCopyXmlField(ydoc, 'description', 'content')
-
-        await saveCollaborativeDoc(ctx, storage, client.workspaceId, document.description, ydoc)
-      } catch (err) {
-        ctx.error('error document content migration', { error: err, document: document.title })
+      const ydoc = await loadCollabYdoc(ctx, storage, client.workspaceId, collabId)
+      if (ydoc === undefined) {
+        continue
       }
+
+      if (!ydoc.share.has('description') || ydoc.share.has('content')) {
+        continue
+      }
+
+      yDocCopyXmlField(ydoc, 'description', 'content')
+
+      await saveCollabYdoc(ctx, storage, client.workspaceId, collabId, ydoc)
+    } catch (err) {
+      ctx.error('error document content migration', { error: err, document: document.title })
     }
   }
 
@@ -245,7 +258,9 @@ async function restoreContentField (client: MigrationClient): Promise<void> {
 
   for (const document of documents) {
     try {
-      const ydoc = await loadCollaborativeDoc(ctx, storage, client.workspaceId, document.content)
+      const collabId = makeDocCollabId(document, 'content')
+
+      const ydoc = await loadCollabYdoc(ctx, storage, client.workspaceId, collabId)
       if (ydoc === undefined) {
         ctx.error('document content not found', { document: document.title })
         continue
@@ -259,7 +274,7 @@ async function restoreContentField (client: MigrationClient): Promise<void> {
       if (ydoc.share.has('')) {
         yDocCopyXmlField(ydoc, '', 'content')
         if (ydoc.share.has('content')) {
-          await saveCollaborativeDoc(ctx, storage, client.workspaceId, document.content, ydoc)
+          await saveCollabYdoc(ctx, storage, client.workspaceId, collabId, ydoc)
         } else {
           ctx.error('document content still not found', { document: document.title })
         }
@@ -270,6 +285,33 @@ async function restoreContentField (client: MigrationClient): Promise<void> {
   }
 }
 
+async function migrateRanks (client: MigrationClient): Promise<void> {
+  const classes = client.hierarchy.getDescendants(document.class.Teamspace)
+  for (const _class of classes) {
+    const spaces = await client.find<Teamspace>(DOMAIN_SPACE, { _class })
+    for (const space of spaces) {
+      await migrateSpaceRanks(client, DOMAIN_DOCUMENT, space)
+    }
+  }
+}
+
+async function removeOldClasses (client: MigrationClient): Promise<void> {
+  const classes = [
+    'document:class:DocumentContent',
+    'document:class:DocumentSnapshot',
+    'document:class:DocumentVersion',
+    'document:class:DocumentRequest'
+  ] as Ref<Class<Doc>>[]
+
+  for (const _class of classes) {
+    await client.deleteMany(DOMAIN_DOCUMENT, { _class })
+    await client.deleteMany(DOMAIN_ACTIVITY, { attachedToClass: _class })
+    await client.deleteMany(DOMAIN_ACTIVITY, { objectClass: _class })
+    await client.deleteMany(DOMAIN_NOTIFICATION, { attachedToClass: _class })
+    await client.deleteMany(DOMAIN_TX, { objectClass: _class })
+    await client.deleteMany(DOMAIN_TX, { 'tx.objectClass': _class })
+  }
+}
 export const documentOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, documentId, [
@@ -306,6 +348,14 @@ export const documentOperation: MigrateOperation = {
       {
         state: 'restoreContentField',
         func: restoreContentField
+      },
+      {
+        state: 'migrateRanks',
+        func: migrateRanks
+      },
+      {
+        state: 'removeOldClasses',
+        func: removeOldClasses
       }
     ])
   },

@@ -104,7 +104,7 @@ export async function recreateElastic (mongoUrl: string, workspaceId: WorkspaceI
     const db = getWorkspaceMongoDB(_client, workspaceId)
     await db
       .collection(DOMAIN_DOC_INDEX_STATE)
-      .updateMany({ _class: core.class.DocIndexState }, { $set: { stages: {}, needIndex: true } })
+      .updateMany({ _class: core.class.DocIndexState }, { $set: { needIndex: true } })
   } finally {
     client.close()
   }

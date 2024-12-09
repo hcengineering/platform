@@ -49,7 +49,7 @@ export class ChannelPage extends CommonPage {
     this.page.locator('.activityMessage-actionPopup > button[data-id$="PinMessageAction"]').last()
 
   readonly replyButton = (): Locator =>
-    this.page.locator('.activityMessage-actionPopup > button[data-id$="ReplyToThreadAction"]').last()
+    this.page.locator('.activityMessage-actionPopup > button[data-id="activity:action:Reply"]').last()
 
   readonly openMoreButton = (): Locator =>
     this.page.locator('.activityMessage-actionPopup > button[data-id="btnMoreActions"]').last()
@@ -303,6 +303,7 @@ export class ChannelPage extends CommonPage {
   }
 
   async makeActionWithChannelInMenu (channelName: string, action: string): Promise<void> {
+    await this.openNavigator()
     await this.channelContainers().filter({ hasText: channelName }).hover()
     await this.channelContainers().filter({ hasText: channelName }).locator('.hulyNavItem-actions').click()
     await this.selectFromDropdown(this.page, action)

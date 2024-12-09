@@ -70,6 +70,9 @@
   $: locked = doc?.lockedBy != null
   $: readonly = $restrictionStore.readonly || locked
 
+  let useMaxWidth = getUseMaxWidth()
+  $: saveUseMaxWidth(useMaxWidth)
+
   export function canClose (): boolean {
     return false
   }
@@ -92,12 +95,12 @@
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
-      void notificationClient.then((client) => client.readDoc(getClient(), prev))
+      void notificationClient.then((client) => client.readDoc(prev))
     }
   }
 
   onDestroy(async () => {
-    void notificationClient.then((client) => client.readDoc(getClient(), _id))
+    void notificationClient.then((client) => client.readDoc(_id))
   })
 
   const starredQuery = createQuery()
@@ -179,6 +182,15 @@
     }
   }
 
+  function getUseMaxWidth (): boolean {
+    const useMaxWidth = localStorage.getItem('document.useMaxWidth')
+    return useMaxWidth === 'true'
+  }
+
+  function saveUseMaxWidth (useMaxWidth: boolean): void {
+    localStorage.setItem('document.useMaxWidth', useMaxWidth.toString())
+  }
+
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'name'] })
   })
@@ -245,7 +257,7 @@
     isHeader={false}
     isCustomAttr={false}
     isSub={false}
-    useMaxWidth={false}
+    bind:useMaxWidth
     printHeader={false}
     {embedded}
     adaptive={'default'}

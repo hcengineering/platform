@@ -51,7 +51,6 @@ import ProjectComponents from './components/components/ProjectComponents.svelte'
 import CreateIssue from './components/CreateIssue.svelte'
 import EditRelatedTargets from './components/EditRelatedTargets.svelte'
 import EditRelatedTargetsPopup from './components/EditRelatedTargetsPopup.svelte'
-import Inbox from './components/inbox/Inbox.svelte'
 import AssigneeEditor from './components/issues/AssigneeEditor.svelte'
 import DueDatePresenter from './components/issues/DueDatePresenter.svelte'
 import EditIssue from './components/issues/edit/EditIssue.svelte'
@@ -89,6 +88,7 @@ import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
 import SettingsRelatedTargets from './components/SettingsRelatedTargets.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
+import LabelsView from './components/LabelsView.svelte'
 import {
   getIssueIdByIdentifier,
   getIssueTitle,
@@ -581,7 +581,6 @@ export default async (): Promise<Resources> => ({
   component: {
     NopeComponent,
     Issues,
-    Inbox,
     MyIssues,
     Components,
     IssuePresenter,
@@ -660,7 +659,8 @@ export default async (): Promise<Resources> => ({
     IssueSearchIcon,
     MembersArrayEditor,
     IssueExtra,
-    IssueStatusPresenter
+    IssueStatusPresenter,
+    LabelsView
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>

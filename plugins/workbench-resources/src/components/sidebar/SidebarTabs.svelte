@@ -89,9 +89,8 @@
     width: 30px;
     min-width: 30px;
     max-width: 30px;
-    flex: 1;
+    height: 100%;
     border-right: 1px solid var(--theme-divider-color);
-    border-top: 1px solid var(--theme-divider-color);
     gap: 0.25rem;
     align-items: center;
     padding: 0.25rem 0;

@@ -63,14 +63,14 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   )
 
   readonly inboxNotificationsByContext = derived(
-    [this.contexts, this.inboxNotifications],
-    ([notifyContexts, inboxNotifications]) => {
-      if (inboxNotifications.length === 0 || notifyContexts.length === 0) {
+    [this.contextById, this.inboxNotifications],
+    ([contextById, inboxNotifications]) => {
+      if (inboxNotifications.length === 0 || contextById.size === 0) {
         return new Map<Ref<DocNotifyContext>, InboxNotification[]>()
       }
 
       return inboxNotifications.reduce((result, notification) => {
-        const notifyContext = notifyContexts.find(({ _id }) => _id === notification.docNotifyContext)
+        const notifyContext = contextById.get(notification.docNotifyContext)
 
         if (notifyContext === undefined) {
           return result
@@ -148,13 +148,15 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     return InboxNotificationsClientImpl._instance
   }
 
-  async readDoc (client: TxOperations, _id: Ref<Doc>): Promise<void> {
+  async readDoc (_id: Ref<Doc>): Promise<void> {
     const docNotifyContext = this._contextByDoc.get(_id)
 
     if (docNotifyContext === undefined) {
       return
     }
 
+    const client = getClient()
+    const op = client.apply(undefined, 'readDoc', true)
     const inboxNotifications = await client.findAll(
       notification.class.InboxNotification,
       { docNotifyContext: docNotifyContext._id, isViewed: false },
@@ -162,19 +164,21 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     )
 
     for (const notification of inboxNotifications) {
-      await client.updateDoc(notification._class, notification.space, notification._id, { isViewed: true })
+      await op.updateDoc(notification._class, notification.space, notification._id, { isViewed: true })
     }
-    await client.update(docNotifyContext, { lastViewedTimestamp: Date.now() })
+    await op.update(docNotifyContext, { lastViewedTimestamp: Date.now() })
+    await op.commit()
   }
 
-  async forceReadDoc (client: TxOperations, _id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
+  async forceReadDoc (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
     const context = this._contextByDoc.get(_id)
 
     if (context !== undefined) {
-      await this.readDoc(client, _id)
+      await this.readDoc(_id)
       return
     }
 
+    const client = getClient()
     const doc = await client.findOne(_class, { _id })
 
     if (doc === undefined) {
@@ -230,7 +234,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   async archiveNotifications (client: TxOperations, ids: Array<Ref<InboxNotification>>): Promise<void> {
     const inboxNotifications = (get(this.inboxNotifications) ?? []).filter(({ _id }) => ids.includes(_id))
     for (const notification of inboxNotifications) {
-      await client.update(notification, { archived: true })
+      await client.update(notification, { archived: true, isViewed: true })
     }
   }
 
@@ -248,7 +252,10 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       )
       const contexts = get(this.contexts) ?? []
       for (const notification of inboxNotifications) {
-        await ops.updateDoc(notification._class, notification.space, notification._id, { archived: true })
+        await ops.updateDoc(notification._class, notification.space, notification._id, {
+          archived: true,
+          isViewed: true
+        })
       }
 
       for (const context of contexts) {

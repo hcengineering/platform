@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Asset } from '@hcengineering/platform'
+import type { Asset, Resource } from '@hcengineering/platform'
 
 import type { KeysByType } from 'simplytyped'
 import type { AttachedDoc, Class, Doc, Ref, Space } from './classes'
@@ -221,16 +221,23 @@ export interface SearchOptions {
   limit?: number
 }
 
+export interface SearchComponentWithProps {
+  component?: Resource<any>
+  props?: Record<string, string>
+}
+
 /**
  * @public
  */
 export interface SearchResultDoc {
   id: Ref<Doc>
+
   icon?: Asset
-  iconComponent?: string
-  iconProps?: Record<string, string>
+  iconComponent?: SearchComponentWithProps
   shortTitle?: string
+  shortTitleComponent?: SearchComponentWithProps
   title?: string
+  titleComponent?: SearchComponentWithProps
   score?: number
   doc: Pick<Doc, '_id' | '_class'>
 }

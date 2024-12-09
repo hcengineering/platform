@@ -16,13 +16,17 @@
   import { Person, type PersonAccount } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, getCurrentAccount } from '@hcengineering/core'
-  import { ParticipantInfo, Room, RoomAccess, RoomType } from '@hcengineering/love'
+  import { isOffice, ParticipantInfo, Room, RoomAccess, RoomType, MeetingStatus } from '@hcengineering/love'
   import { Icon, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { getClient } from '@hcengineering/presentation'
+  import { openDoc } from '@hcengineering/view-resources'
+
   import love from '../plugin'
-  import { invites, myInfo, myRequests } from '../stores'
-  import { getRoomLabel, tryConnect } from '../utils'
+  import { myInfo, selectedRoomPlace, currentRoom, currentMeetingMinutes } from '../stores'
+  import { getRoomLabel, lk, isConnected } from '../utils'
   import PersonActionPopup from './PersonActionPopup.svelte'
+  import RoomLanguage from './RoomLanguage.svelte'
 
   export let room: Room
   export let info: ParticipantInfo[]
@@ -35,7 +39,6 @@
   const meName = $personByIdStore.get(me.person)?.name
   const meAvatar = $personByIdStore.get(me.person)
 
-  let container: HTMLDivElement
   let hoveredRoomX: number | undefined = undefined
   let hoveredRoomY: number | undefined = undefined
 
@@ -60,12 +63,36 @@
     hovered = false
   }
 
-  function clickHandler (e: MouseEvent, x: number, y: number, person: Person | undefined): void {
+  async function openRoom (x: number, y: number): Promise<void> {
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
+    if ($isConnected && $currentRoom?._id === room._id) {
+      let meeting = $currentMeetingMinutes
+      if (meeting?.attachedTo !== room._id || meeting?.status !== MeetingStatus.Active) {
+        meeting = await client.findOne(love.class.MeetingMinutes, {
+          attachedTo: room._id,
+          status: MeetingStatus.Active
+        })
+      }
+      if (meeting === undefined) {
+        await openDoc(hierarchy, room)
+      } else {
+        await openDoc(hierarchy, meeting)
+      }
+    } else {
+      selectedRoomPlace.set({ _id: room._id, x, y })
+      await openDoc(hierarchy, room)
+    }
+  }
+
+  async function placeClickHandler (e: MouseEvent, x: number, y: number, person: Person | undefined): Promise<void> {
+    e.stopPropagation()
+    e.preventDefault()
     if (person !== undefined) {
       if (room._id === $myInfo?.room || $myInfo === undefined) return
       showPopup(PersonActionPopup, { room, person: person._id }, eventToHTMLElement(e))
     } else {
-      tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites, { x, y })
+      await openRoom(x, y)
     }
   }
 
@@ -106,12 +133,15 @@
     }
     return init
   }
+
+  async function handleClick (): Promise<void> {
+    await openRoom(0, 0)
+  }
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <div
-  bind:this={container}
   class="floorGrid-room"
   class:preview
   class:hovered
@@ -127,6 +157,7 @@
   on:mouseover|stopPropagation
   on:mouseenter|stopPropagation={mouseEnter}
   on:mouseleave|stopPropagation={mouseLeave}
+  on:click|stopPropagation={handleClick}
 >
   {#each new Array(room.height) as _, y}
     {#each new Array(room.width + extraRow) as _, x}
@@ -148,13 +179,13 @@
           hoveredRoomY = undefined
         }}
         on:click={(e) => {
-          clickHandler(e, x, y, person)
+          placeClickHandler(e, x, y, person)
         }}
       >
         {#if personInfo}
-          <Avatar name={person?.name ?? personInfo.name} {person} size={'full'} />
+          <Avatar name={person?.name ?? personInfo.name} {person} size={'full'} showStatus={false} />
         {:else if hoveredRoomX === x && hoveredRoomY === y}
-          <Avatar name={meName} person={meAvatar} size={'full'} />
+          <Avatar name={meName} person={meAvatar} size={'full'} showStatus={false} />
         {/if}
       </div>
     {/each}
@@ -165,6 +196,9 @@
       <span class="overflow-label text-md flex-grow">
         <Label label={getRoomLabel(room, $personByIdStore)} />
       </span>
+      {#if !isOffice(room)}
+        <RoomLanguage {room} />
+      {/if}
       {#if room.access === RoomAccess.DND || room.type === RoomType.Video}
         <div class="flex-row-center flex-no-shrink h-full flex-gap-2">
           {#if room.access === RoomAccess.DND}

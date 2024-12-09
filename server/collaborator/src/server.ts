@@ -136,23 +136,23 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
   })
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.post('/rpc', async (req, res) => {
+  app.post('/rpc/:id', async (req, res) => {
     const authHeader = req.headers.authorization
     if (authHeader === undefined) {
       res.status(403).send({ error: 'Unauthorized' })
       return
     }
 
-    const request = req.body as RpcRequest
-
-    const documentId = request.documentId
+    const documentId = req.params.id
     if (documentId === undefined || documentId === '') {
       const response: RpcErrorResponse = {
-        error: 'Missing documentId'
+        error: 'Missing document id'
       }
       res.status(400).send(response)
       return
     }
+
+    const request = req.body as RpcRequest
 
     const method = methods[request.method]
     if (method === undefined) {
@@ -169,8 +169,8 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
     rpcCtx.info('rpc', { method: request.method, connectionId: context.connectionId, mode: token.extra?.mode ?? '' })
     await rpcCtx.with('/rpc', { method: request.method }, async (ctx) => {
       try {
-        const response: RpcResponse = await rpcCtx.with(request.method, {}, async (ctx) => {
-          return await method(ctx, context, documentId, request.payload, { hocuspocus, storageAdapter, transformer })
+        const response: RpcResponse = await rpcCtx.with(request.method, {}, (ctx) => {
+          return method(ctx, context, documentId, request.payload, { hocuspocus, storageAdapter, transformer })
         })
         res.status(200).send(response)
       } catch (err: any) {

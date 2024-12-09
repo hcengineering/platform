@@ -73,6 +73,8 @@ export const uis = plugin(uiId, {
     Portuguese: '' as IntlString,
     Chinese: '' as IntlString,
     French: '' as IntlString,
+    Italian: '' as IntlString,
+    Czech: '' as IntlString,
     MinutesBefore: '' as IntlString,
     HoursBefore: '' as IntlString,
     DaysBefore: '' as IntlString,
@@ -118,9 +120,11 @@ export const uis = plugin(uiId, {
     NextStep: '' as IntlString,
     TypeHere: '' as IntlString,
 
+    NormalSize: '' as IntlString,
     FullSize: '' as IntlString,
     UseMaxWidth: '' as IntlString,
-    Sidebar: '' as IntlString
+    Sidebar: '' as IntlString,
+    Language: '' as IntlString
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>,

@@ -16,7 +16,7 @@
 import activity from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
 import { AccountRole, DOMAIN_MODEL, type Account, type Blob, type Domain, type Ref } from '@hcengineering/core'
-import { Mixin, Model, type Builder, UX } from '@hcengineering/model'
+import { Mixin, Model, UX, type Builder } from '@hcengineering/model'
 import core, { TClass, TConfiguration, TDoc } from '@hcengineering/model-core'
 import view, { createAction } from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'
@@ -28,17 +28,17 @@ import {
   type Integration,
   type IntegrationType,
   type InviteSettings,
-  type WorkspaceSetting,
   type SettingsCategory,
-  type UserMixin,
+  type SpaceTypeCreator,
   type SpaceTypeEditor,
   type SpaceTypeEditorSection,
-  type SpaceTypeCreator
+  type UserMixin,
+  type WorkspaceSetting
 } from '@hcengineering/setting'
 import templates from '@hcengineering/templates'
 import setting from './plugin'
 
-import workbench from '@hcengineering/model-workbench'
+import workbench, { WidgetType } from '@hcengineering/model-workbench'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 export { settingId } from '@hcengineering/setting'
@@ -131,6 +131,18 @@ export function createModel (builder: Builder): void {
     TWorkspaceSetting,
     TSpaceTypeEditor,
     TSpaceTypeCreator
+  )
+
+  builder.createDoc(
+    workbench.class.Widget,
+    core.space.Model,
+    {
+      label: setting.string.Settings,
+      type: WidgetType.Flexible,
+      icon: setting.icon.Setting,
+      component: setting.component.SettingsWidget
+    },
+    setting.ids.SettingsWidget
   )
 
   builder.mixin(setting.class.Integration, core.class.Class, notification.mixin.ClassCollaborators, {

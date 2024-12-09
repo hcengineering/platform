@@ -5,20 +5,25 @@ import core, {
   getTypeOf,
   systemAccountEmail,
   type Account,
+  type BackupClient,
   type Branding,
   type BrandingMap,
   type BulkUpdateEvent,
   type Class,
+  type Client,
   type Doc,
+  type MeasureContext,
   type ModelDb,
   type Ref,
   type SessionData,
   type TxWorkspaceEvent,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
-import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
+import platform, { PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
 import { type Hash } from 'crypto'
 import fs from 'fs'
+import { BackupClientOps } from './storage'
+import type { Pipeline } from './types'
 
 /**
  * Return some estimation for object size
@@ -80,7 +85,7 @@ export function estimateDocSize (_obj: any): number {
   return result
 }
 /**
- * Return some estimation for object size
+ * Calculate hash for object
  */
 export function updateHashForDoc (hash: Hash, _obj: any): void {
   const toProcess = [_obj]
@@ -92,7 +97,9 @@ export function updateHashForDoc (hash: Hash, _obj: any): void {
     if (typeof obj === 'function') {
       continue
     }
-    for (const key in obj) {
+    const keys = Object.keys(obj).sort()
+    // We need sorted list of keys to make it consistent
+    for (const key of keys) {
       // include prototype properties
       const value = obj[key]
       const type = getTypeOf(value)
@@ -212,4 +219,46 @@ export function loadBrandingMap (brandingPath?: string): BrandingMap {
   }
 
   return brandings
+}
+
+export function wrapPipeline (
+  ctx: MeasureContext,
+  pipeline: Pipeline,
+  wsUrl: WorkspaceIdWithUrl
+): Client & BackupClient {
+  const contextData = new SessionDataImpl(
+    systemAccountEmail,
+    'pipeline',
+    true,
+    { targets: {}, txes: [] },
+    wsUrl,
+    null,
+    true,
+    new Map(),
+    new Map(),
+    pipeline.context.modelDb
+  )
+  ctx.contextData = contextData
+  if (pipeline.context.lowLevelStorage === undefined) {
+    throw new PlatformError(unknownError('Low level storage is not available'))
+  }
+  const backupOps = new BackupClientOps(pipeline.context.lowLevelStorage)
+
+  return {
+    findAll: (_class, query, options) => pipeline.findAll(ctx, _class, query, options),
+    findOne: async (_class, query, options) =>
+      (await pipeline.findAll(ctx, _class, query, { ...options, limit: 1 })).shift(),
+    clean: (domain, docs) => backupOps.clean(ctx, domain, docs),
+    close: () => pipeline.close(),
+    closeChunk: (idx) => backupOps.closeChunk(ctx, idx),
+    getHierarchy: () => pipeline.context.hierarchy,
+    getModel: () => pipeline.context.modelDb,
+    loadChunk: (domain, idx) => backupOps.loadChunk(ctx, domain, idx),
+    loadDocs: (domain, docs) => backupOps.loadDocs(ctx, domain, docs),
+    upload: (domain, docs) => backupOps.upload(ctx, domain, docs),
+    searchFulltext: async (query, options) => ({ docs: [], total: 0 }),
+    sendForceClose: async () => {},
+    tx: (tx) => pipeline.tx(ctx, [tx]),
+    notify: (...tx) => {}
+  }
 }

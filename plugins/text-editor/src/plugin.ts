@@ -93,7 +93,9 @@ export default plugin(textEditorId, {
     Unset: '' as IntlString,
     Image: '' as IntlString,
     SeparatorLine: '' as IntlString,
-    TodoList: '' as IntlString
+    TodoList: '' as IntlString,
+    DrawingBoard: '' as IntlString,
+    MermaidDiargram: '' as IntlString
   },
   icon: {
     Header1: '' as Asset,

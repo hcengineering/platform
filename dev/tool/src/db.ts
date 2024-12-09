@@ -20,17 +20,18 @@ import {
 import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import {
   convertDoc,
-  createTable,
+  createTables,
   getDBClient,
   getDocFieldsByDomains,
   retryTxn,
   translateDomain
 } from '@hcengineering/postgres'
+import { type DBDoc } from '@hcengineering/postgres/types/utils'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
 import { type MongoClient } from 'mongodb'
-import { type Pool } from 'pg'
+import type postgres from 'postgres'
 
 export async function moveFromMongoToPG (
   accountDb: AccountDB,
@@ -64,75 +65,81 @@ export async function moveFromMongoToPG (
 async function moveWorkspace (
   accountDb: AccountDB,
   mongo: MongoClient,
-  pgClient: Pool,
+  pgClient: postgres.Sql,
   ws: Workspace,
-  region: string
+  region: string,
+  include?: Set<string>,
+  force = false
 ): Promise<void> {
   try {
+    console.log('move workspace', ws.workspaceName ?? ws.workspace)
     const wsId = getWorkspaceId(ws.workspace)
     const mongoDB = getWorkspaceMongoDB(mongo, wsId)
     const collections = await mongoDB.collections()
-    await createTable(
-      pgClient,
-      collections.map((c) => c.collectionName)
-    )
+    let tables = collections.map((c) => c.collectionName)
+    if (include !== undefined) {
+      tables = tables.filter((t) => include.has(t))
+    }
+
+    await createTables(pgClient, tables)
     const token = generateToken(systemAccountEmail, wsId)
     const endpoint = await getTransactorEndpoint(token, 'external')
     const connection = (await connect(endpoint, wsId, undefined, {
       model: 'upgrade'
     })) as unknown as Client & BackupClient
     for (const collection of collections) {
-      const cursor = collection.find()
       const domain = translateDomain(collection.collectionName)
-      const current = await pgClient.query(`SELECT _id FROM ${domain} WHERE "workspaceId" = $1`, [ws.workspace])
-      const currentIds = new Set(current.rows.map((r) => r._id))
+      if (include !== undefined && !include.has(domain)) {
+        continue
+      }
+      const cursor = collection.find()
+      const current = await pgClient`SELECT _id FROM ${pgClient(domain)} WHERE "workspaceId" = ${ws.workspace}`
+      const currentIds = new Set(current.map((r) => r._id))
       console.log('move domain', domain)
       const docs: Doc[] = []
       const fields = getDocFieldsByDomains(domain)
       const filedsWithData = [...fields, 'data']
-      const insertFields: string[] = []
+      const insertFields: string[] = ['workspaceId']
       for (const field of filedsWithData) {
-        insertFields.push(`"${field}"`)
+        insertFields.push(field)
       }
-      const insertStr = insertFields.join(', ')
       while (true) {
-        while (docs.length < 50000) {
+        const toRemove: string[] = []
+        while (docs.length < 5000) {
           const doc = (await cursor.next()) as Doc | null
           if (doc === null) break
-          if (currentIds.has(doc._id)) continue
+          if (currentIds.has(doc._id)) {
+            if (force) {
+              toRemove.push(doc._id)
+            } else {
+              continue
+            }
+          }
           docs.push(doc)
+        }
+        while (toRemove.length > 0) {
+          const part = toRemove.splice(0, 100)
+          await retryTxn(pgClient, async (client) => {
+            await client.unsafe(
+              `DELETE FROM ${translateDomain(domain)} WHERE "workspaceId" = '${ws.workspace}' AND _id IN (${part.map((c) => `'${c}'`).join(', ')})`
+            )
+          })
         }
         if (docs.length === 0) break
         while (docs.length > 0) {
-          const part = docs.splice(0, 500)
-          const values: any[] = []
-          const vars: string[] = []
-          let index = 1
+          const part = docs.splice(0, 100)
+          const values: DBDoc[] = []
           for (let i = 0; i < part.length; i++) {
             const doc = part[i]
-            const variables: string[] = []
             const d = convertDoc(domain, doc, ws.workspace)
-            values.push(d.workspaceId)
-            variables.push(`$${index++}`)
-            for (const field of fields) {
-              values.push(d[field])
-              variables.push(`$${index++}`)
-            }
-            values.push(d.data)
-            variables.push(`$${index++}`)
-            vars.push(`(${variables.join(', ')})`)
+            values.push(d)
           }
-          const vals = vars.join(',')
           try {
             await retryTxn(pgClient, async (client) => {
-              await client.query(
-                `INSERT INTO ${translateDomain(domain)} ("workspaceId", ${insertStr}) VALUES ${vals}`,
-                values
-              )
+              await client`INSERT INTO ${client(translateDomain(domain))} ${client(values, insertFields)}`
             })
           } catch (err) {
-            console.log('error when move doc to', domain, err)
-            continue
+            console.log('Error when insert', domain, err)
           }
         }
       }
@@ -151,7 +158,9 @@ export async function moveWorkspaceFromMongoToPG (
   mongoUrl: string,
   dbUrl: string | undefined,
   ws: Workspace,
-  region: string
+  region: string,
+  include?: Set<string>,
+  force?: boolean
 ): Promise<void> {
   if (dbUrl === undefined) {
     throw new Error('dbUrl is required')
@@ -161,7 +170,7 @@ export async function moveWorkspaceFromMongoToPG (
   const pg = getDBClient(dbUrl)
   const pgClient = await pg.getClient()
 
-  await moveWorkspace(accountDb, mongo, pgClient, ws, region)
+  await moveWorkspace(accountDb, mongo, pgClient, ws, region, include, force)
   pg.close()
   client.close()
 }

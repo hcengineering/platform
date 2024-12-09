@@ -39,7 +39,6 @@
     "FullDescription": "Full description",
     "NoFullDescription": "There are no detailed description",
     "EnableDiffMode": "Diff mode",
-
     "AddColumnBefore": "Add before",
     "AddColumnAfter": "Add after",
     "DeleteColumn": "Delete",
@@ -48,7 +47,6 @@
     "DeleteRow": "Delete",
     "DeleteTable": "Delete",
     "Duplicate": "Duplicate",
-
     "CategoryRow": "Rows",
     "CategoryColumn": "Columns",
     "Table": "Table",
@@ -59,6 +57,8 @@
     "Unset": "Unset",
     "Image": "Image",
     "SeparatorLine": "Separator line",
-    "TodoList": "Action item"
+    "TodoList": "Action item",
+    "DrawingBoard": "Drawing board",
+    "MermaidDiargram": "Diagram"
   }
 }

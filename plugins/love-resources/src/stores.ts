@@ -1,4 +1,4 @@
-import { type Person, type PersonAccount } from '@hcengineering/contact'
+import { type PersonAccount } from '@hcengineering/contact'
 import { getCurrentAccount, type Ref } from '@hcengineering/core'
 import {
   RequestStatus,
@@ -8,10 +8,14 @@ import {
   type JoinRequest,
   type Office,
   type ParticipantInfo,
-  type Room
+  type Room,
+  type MeetingMinutes
 } from '@hcengineering/love'
 import { createQuery, getClient } from '@hcengineering/presentation'
-import { derived, writable } from 'svelte/store'
+import { derived, get, writable } from 'svelte/store'
+import { personIdByAccountId } from '@hcengineering/contact-resources'
+import aiBot from '@hcengineering/ai-bot'
+
 import love from './plugin'
 
 export const rooms = writable<Room[]>([])
@@ -30,6 +34,7 @@ export const currentRoom = derived([rooms, myInfo], ([rooms, myInfo]) => {
   return myInfo !== undefined ? rooms.find((p) => p._id === myInfo.room) : undefined
 })
 export const floors = writable<Floor[]>([])
+export const selectedFloor = writable<Ref<Floor> | undefined>(undefined)
 export const activeFloor = derived([rooms, myInfo, myOffice], ([rooms, myInfo, myOffice]) => {
   let res: Ref<Floor> | undefined
   if (myInfo !== undefined) {
@@ -56,10 +61,18 @@ export const activeInvites = derived(invites, (val) => {
 export const myPreferences = writable<DevicesPreference | undefined>()
 export let $myPreferences: DevicesPreference | undefined
 
+export const currentMeetingMinutes = writable<MeetingMinutes | undefined>(undefined)
+export const selectedRoomPlace = writable<{ _id: Ref<Room>, x: number, y: number } | undefined>(undefined)
+
 function filterParticipantInfo (value: ParticipantInfo[]): ParticipantInfo[] {
-  const map = new Map<Ref<Person>, ParticipantInfo>()
+  const map = new Map<string, ParticipantInfo>()
+  const aiPersonId = get(personIdByAccountId).get(aiBot.account.AIBot as Ref<PersonAccount>)
   for (const val of value) {
-    map.set(val.person, val)
+    if (aiPersonId !== undefined && val.person === aiPersonId) {
+      map.set(val._id, val)
+    } else {
+      map.set(val.person, val)
+    }
   }
   return Array.from(map.values())
 }

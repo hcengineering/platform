@@ -69,8 +69,7 @@ export interface DbAdapter extends LowLevelStorage {
 
   helper?: () => DomainHelperOperations
 
-  closeContext?: (ctx: MeasureContext) => Promise<void>
-
+  reserveContext?: (id: string) => () => void
   close: () => Promise<void>
   findAll: <T extends Doc>(
     ctx: MeasureContext,

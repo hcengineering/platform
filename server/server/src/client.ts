@@ -15,6 +15,7 @@
 
 import core, {
   AccountRole,
+  generateId,
   TxFactory,
   TxProcessor,
   type Account,
@@ -29,6 +30,7 @@ import core, {
   type Ref,
   type SearchOptions,
   type SearchQuery,
+  type SessionData,
   type Timestamp,
   type Tx,
   type TxCUD,
@@ -48,6 +50,8 @@ import {
 } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 import { handleSend } from './utils'
+
+const useReserveContext = (process.env.USE_RESERVE_CTX ?? 'true') === 'true'
 
 /**
  * @public
@@ -192,13 +196,35 @@ export class ClientSession implements Session {
     this.current.tx++
     this.includeSessionContext(ctx.ctx)
 
-    const result = await this._pipeline.tx(ctx.ctx, [tx])
+    let cid = 'client_' + generateId()
+    ctx.ctx.id = cid
+    let onEnd = useReserveContext ? this._pipeline.context.adapterManager?.reserveContext?.(cid) : undefined
+    try {
+      const result = await this._pipeline.tx(ctx.ctx, [tx])
 
-    // Send result immideately
-    await ctx.sendResponse(result)
+      // Send result immideately
+      await ctx.sendResponse(result)
 
-    // We need to broadcast all collected transactions
-    await this._pipeline.handleBroadcast(ctx.ctx)
+      // We need to broadcast all collected transactions
+      await this._pipeline.handleBroadcast(ctx.ctx)
+    } finally {
+      onEnd?.()
+    }
+
+    // ok we could perform async requests if any
+    const asyncs = (ctx.ctx.contextData as SessionData).asyncRequests ?? []
+    if (asyncs.length > 0) {
+      cid = 'client_async_' + generateId()
+      ctx.ctx.id = cid
+      onEnd = useReserveContext ? this._pipeline.context.adapterManager?.reserveContext?.(cid) : undefined
+      try {
+        for (const r of (ctx.ctx.contextData as SessionData).asyncRequests ?? []) {
+          await r()
+        }
+      } finally {
+        onEnd?.()
+      }
+    }
   }
 
   broadcast (ctx: MeasureContext, socket: ConnectionSocket, tx: Tx[]): void {
@@ -207,10 +233,10 @@ export class ClientSession implements Session {
       for (const dtx of tx) {
         if (TxProcessor.isExtendsCUD(dtx._class)) {
           classes.add((dtx as TxCUD<Doc>).objectClass)
-        }
-        const etx = TxProcessor.extractTx(dtx)
-        if (TxProcessor.isExtendsCUD(etx._class)) {
-          classes.add((etx as TxCUD<Doc>).objectClass)
+          const attachedToClass = (dtx as TxCUD<Doc>).attachedToClass
+          if (attachedToClass !== undefined) {
+            classes.add(attachedToClass)
+          }
         }
       }
       const bevent = createBroadcastEvent(Array.from(classes))
@@ -237,13 +263,14 @@ export class ClientSession implements Session {
     return this.ops
   }
 
-  async loadChunk (_ctx: ClientSessionCtx, domain: Domain, idx?: number, recheck?: boolean): Promise<void> {
+  async loadChunk (ctx: ClientSessionCtx, domain: Domain, idx?: number): Promise<void> {
     this.lastRequest = Date.now()
     try {
-      const result = await this.getOps().loadChunk(_ctx.ctx, domain, idx, recheck)
-      await _ctx.sendResponse(result)
+      const result = await this.getOps().loadChunk(ctx.ctx, domain, idx)
+      await ctx.sendResponse(result)
     } catch (err: any) {
-      await _ctx.sendResponse({ error: err.message })
+      await ctx.sendError('Failed to upload', unknownError(err))
+      ctx.ctx.error('failed to loadChunk', { domain, err })
     }
   }
 
@@ -259,7 +286,8 @@ export class ClientSession implements Session {
       const result = await this.getOps().loadDocs(ctx.ctx, domain, docs)
       await ctx.sendResponse(result)
     } catch (err: any) {
-      await ctx.sendResponse({ error: err.message })
+      await ctx.sendError('Failed to loadDocs', unknownError(err))
+      ctx.ctx.error('failed to loadDocs', { domain, err })
     }
   }
 
@@ -271,7 +299,8 @@ export class ClientSession implements Session {
     try {
       await this.getOps().upload(ctx.ctx, domain, docs)
     } catch (err: any) {
-      await ctx.sendResponse({ error: err.message })
+      await ctx.sendError('Failed to upload', unknownError(err))
+      ctx.ctx.error('failed to loadDocs', { domain, err })
       return
     }
     await ctx.sendResponse({})
@@ -285,7 +314,8 @@ export class ClientSession implements Session {
     try {
       await this.getOps().clean(ctx.ctx, domain, docs)
     } catch (err: any) {
-      await ctx.sendResponse({ error: err.message })
+      await ctx.sendError('Failed to clean', unknownError(err))
+      ctx.ctx.error('failed to clean', { domain, err })
       return
     }
     await ctx.sendResponse({})
@@ -296,7 +326,7 @@ export class ClientSession implements Session {
  * @public
  */
 export interface BackupSession extends Session {
-  loadChunk: (ctx: ClientSessionCtx, domain: Domain, idx?: number, recheck?: boolean) => Promise<void>
+  loadChunk: (ctx: ClientSessionCtx, domain: Domain, idx?: number) => Promise<void>
   closeChunk: (ctx: ClientSessionCtx, idx: number) => Promise<void>
   loadDocs: (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
 }

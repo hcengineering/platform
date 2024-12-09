@@ -38,6 +38,6 @@
   "dependencies": {
     "aws4fetch": "^1.0.20",
     "itty-router": "^5.0.18",
-    "postgres": "^3.4.4"
+    "postgres": "^3.4.5"
   }
 }

@@ -17,11 +17,9 @@
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, Ref, toIdMap } from '@hcengineering/core'
   import {
-    Floor,
     Invite,
     isOffice,
     JoinRequest,
-    loveId,
     Office,
     ParticipantInfo,
     RequestStatus,
@@ -29,7 +27,7 @@
     RoomType
   } from '@hcengineering/love'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     closePopup,
     eventToHTMLElement,
@@ -39,84 +37,29 @@
     showPopup,
     tooltip
   } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
   import { onDestroy } from 'svelte'
   import workbench from '@hcengineering/workbench'
-  import {
-    closeWidget,
-    minimizeSidebar,
-    openWidget,
-    sidebarStore,
-    SidebarVariant
-  } from '@hcengineering/workbench-resources'
+  import { closeWidget, closeWidgetTab, sidebarStore } from '@hcengineering/workbench-resources'
 
   import love from '../plugin'
+  import { activeInvites, currentRoom, infos, myInfo, myInvites, myOffice, myRequests, rooms } from '../stores'
   import {
-    activeFloor,
-    activeInvites,
-    currentRoom,
-    floors,
-    infos,
-    myInfo,
-    myInvites,
-    myOffice,
-    myRequests,
-    rooms
-  } from '../stores'
-  import {
+    createMeetingVideoWidgetTab,
+    createMeetingWidget,
     disconnect,
     getRoomName,
-    isCameraEnabled,
-    isConnected,
     isCurrentInstanceConnected,
-    isMicEnabled,
-    isSharingEnabled,
     leaveRoom,
-    screenSharing,
-    setCam,
-    setMic,
-    setShare
+    screenSharing
   } from '../utils'
   import ActiveInvitesPopup from './ActiveInvitesPopup.svelte'
-  import CamSettingPopup from './CamSettingPopup.svelte'
-  import FloorPopup from './FloorPopup.svelte'
   import InvitePopup from './InvitePopup.svelte'
-  import MicSettingPopup from './MicSettingPopup.svelte'
   import PersonActionPopup from './PersonActionPopup.svelte'
   import RequestPopup from './RequestPopup.svelte'
   import RequestingPopup from './RequestingPopup.svelte'
   import RoomPopup from './RoomPopup.svelte'
 
-  let allowCam: boolean = false
-  let allowLeave: boolean = false
-
-  $: allowCam = $currentRoom?.type === RoomType.Video
-  $: allowLeave = $myInfo !== undefined && $myInfo.room !== ($myOffice?._id ?? love.ids.Reception)
-
-  async function changeMute (): Promise<void> {
-    if (!$isConnected || $currentRoom?.type === RoomType.Reception) return
-    await setMic(!$isMicEnabled)
-  }
-
-  async function changeCam (): Promise<void> {
-    if (!$isConnected || !allowCam) return
-    await setCam(!$isCameraEnabled)
-  }
-
-  async function changeShare (): Promise<void> {
-    if (!$isConnected) return
-    await setShare(!$isSharingEnabled)
-  }
-
-  async function leave (): Promise<void> {
-    showPopup(MessageBox, {
-      label: love.string.LeaveRoom,
-      message: love.string.LeaveRoomConfirmation,
-      action: async () => {
-        await leaveRoom($myInfo, $myOffice)
-      }
-    })
-  }
+  const client = getClient()
 
   interface ActiveRoom extends Room {
     participants: ParticipantInfo[]
@@ -142,17 +85,7 @@
     return arr
   }
 
-  let selectedFloor: Floor | undefined = $floors.find((f) => f._id === $activeFloor)
-  $: selectedFloor = $floors.find((f) => f._id === $activeFloor)
-
   $: activeRooms = getActiveRooms($rooms, $infos)
-
-  function selectFloor (): void {
-    showPopup(FloorPopup, { selectedFloor }, myOfficeElement, (res) => {
-      if (res === undefined) return
-      selectedFloor = $floors.find((p) => p._id === res)
-    })
-  }
 
   const query = createQuery()
   let requests: JoinRequest[] = []
@@ -279,68 +212,38 @@
 
   $: checkActiveInvites($activeInvites)
 
-  function micSettings (e: MouseEvent): void {
-    e.preventDefault()
-    showPopup(MicSettingPopup, {}, eventToHTMLElement(e))
-  }
-
-  function camSettings (e: MouseEvent): void {
-    e.preventDefault()
-    showPopup(CamSettingPopup, {}, eventToHTMLElement(e))
-  }
-
-  $: isVideoWidgetOpened = $sidebarStore.widgetsState.has(love.ids.VideoWidget)
-
-  $: if (
-    isVideoWidgetOpened &&
-    $sidebarStore.widget === undefined &&
-    $location.path[2] !== loveId &&
-    $sidebarStore.widgetsState.get(love.ids.VideoWidget)?.closedByUser !== true
-  ) {
-    sidebarStore.update((s) => ({ ...s, widget: love.ids.VideoWidget, variant: SidebarVariant.EXPANDED }))
-  }
-
   function checkActiveVideo (loc: Location, video: boolean, room: Ref<Room> | undefined): void {
-    const widgetState = $sidebarStore.widgetsState.get(love.ids.VideoWidget)
-    const isOpened = widgetState !== undefined
+    const meetingWidgetState = $sidebarStore.widgetsState.get(love.ids.MeetingWidget)
+    const isMeetingWidgetCreated = meetingWidgetState !== undefined
 
     if (room === undefined) {
-      if (isOpened) {
-        closeWidget(love.ids.VideoWidget)
+      if (isMeetingWidgetCreated) {
+        closeWidget(love.ids.MeetingWidget)
       }
       return
     }
 
-    if (video) {
-      if (!isOpened) {
-        const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: love.ids.VideoWidget })[0]
-        if (widget === undefined) return
-        openWidget(
-          widget,
-          {
-            room
-          },
-          { active: loc.path[2] !== loveId, openedByUser: false }
-        )
-      }
+    if ($isCurrentInstanceConnected) {
+      const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: love.ids.MeetingWidget })[0]
+      if (widget === undefined) return
 
-      if (
-        loc.path[2] === loveId &&
-        $sidebarStore.widget === love.ids.VideoWidget &&
-        widgetState?.openedByUser !== true
-      ) {
-        minimizeSidebar()
+      if (!isMeetingWidgetCreated) {
+        createMeetingWidget(widget, room, video)
+      } else if (video && !meetingWidgetState.tabs.some(({ id }) => id === 'video')) {
+        createMeetingVideoWidgetTab(widget)
+      } else if (!video && meetingWidgetState.tabs.some(({ id }) => id === 'video')) {
+        void closeWidgetTab(widget, 'video')
       }
     } else {
-      if (isOpened) {
-        closeWidget(love.ids.VideoWidget)
+      if (isMeetingWidgetCreated) {
+        closeWidget(love.ids.MeetingWidget)
       }
     }
   }
 
   $: checkActiveVideo(
     $location,
-    $isCurrentInstanceConnected && ($currentRoom?.type === RoomType.Video || ($screenSharing && !isSharingEnabled)),
+    $isCurrentInstanceConnected && ($currentRoom?.type === RoomType.Video || $screenSharing),
     $currentRoom?._id
   )
 
@@ -351,13 +254,8 @@
     closePopup(inviteCategory)
     closePopup(joinRequestCategory)
     closePopup(myJoinRequestCategory)
-    closeWidget(love.ids.VideoWidget)
+    closeWidget(love.ids.MeetingWidget)
   })
-
-  const client = getClient()
-
-  const camKeys = client.getModel().findAllSync(view.class.Action, { _id: love.action.ToggleVideo })?.[0]?.keyBinding
-  const micKeys = client.getModel().findAllSync(view.class.Action, { _id: love.action.ToggleMic })?.[0]?.keyBinding
 
   function participantClickHandler (e: MouseEvent, participant: ParticipantInfo): void {
     if ($myInfo !== undefined) {
@@ -385,56 +283,6 @@
 </script>
 
 <div class="flex-row-center flex-gap-2">
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <!--  <div class="container main flex-row-center flex-gap-2" bind:this={myOfficeElement} on:click={selectFloor}>-->
-  <!--    {#if selectedFloor}-->
-  <!--      <Label label={love.string.Floor} />-->
-  <!--      <span class="label overflow-label">-->
-  <!--        {selectedFloor?.name}-->
-  <!--      </span>-->
-  <!--    {/if}-->
-  <!--    <ActionIcon-->
-  <!--      icon={!$isConnected ? love.icon.Mic : $isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}-->
-  <!--      label={$isMicEnabled ? love.string.Mute : love.string.UnMute}-->
-  <!--      size={'small'}-->
-  <!--      action={changeMute}-->
-  <!--      on:contextmenu={micSettings}-->
-  <!--      disabled={!$isConnected}-->
-  <!--      keys={micKeys}-->
-  <!--    />-->
-  <!--    <ActionIcon-->
-  <!--      icon={!$isConnected || !allowCam-->
-  <!--        ? love.icon.Cam-->
-  <!--        : $isCameraEnabled-->
-  <!--          ? love.icon.CamEnabled-->
-  <!--          : love.icon.CamDisabled}-->
-  <!--      label={$isCameraEnabled ? love.string.StopVideo : love.string.StartVideo}-->
-  <!--      size={'small'}-->
-  <!--      action={changeCam}-->
-  <!--      on:contextmenu={camSettings}-->
-  <!--      disabled={!$isConnected || !allowCam}-->
-  <!--      keys={camKeys}-->
-  <!--    />-->
-  <!--    {#if $isConnected}-->
-  <!--      <ActionIcon-->
-  <!--        icon={$isSharingEnabled ? love.icon.SharingEnabled : love.icon.SharingDisabled}-->
-  <!--        label={$isSharingEnabled ? love.string.StopShare : love.string.Share}-->
-  <!--        disabled={$screenSharing && !$isSharingEnabled}-->
-  <!--        size={'small'}-->
-  <!--        action={changeShare}-->
-  <!--      />-->
-  <!--    {/if}-->
-  <!--    {#if allowLeave}-->
-  <!--      <ActionIcon-->
-  <!--        icon={love.icon.LeaveRoom}-->
-  <!--        iconProps={{ color: '#FF6711' }}-->
-  <!--        label={love.string.LeaveRoom}-->
-  <!--        size={'small'}-->
-  <!--        action={leave}-->
-  <!--      />-->
-  <!--    {/if}-->
-  <!--  </div>-->
   {#if activeRooms.length > 0}
     <!--    <div class="divider" />-->
     {#each activeRooms as active}

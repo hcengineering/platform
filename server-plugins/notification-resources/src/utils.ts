@@ -31,11 +31,8 @@ import core, {
   Space,
   toIdMap,
   Tx,
-  TxCreateDoc,
   TxCUD,
   TxMixin,
-  TxProcessor,
-  TxRemoveDoc,
   TxUpdateDoc,
   type IdMap,
   type MeasureContext,
@@ -187,7 +184,6 @@ export function isAllowed (
 export async function isShouldNotifyTx (
   control: TriggerControl,
   tx: TxCUD<Doc>,
-  originTx: TxCUD<Doc>,
   object: Doc,
   user: PersonAccount[],
   isOwn: boolean,
@@ -195,7 +191,7 @@ export async function isShouldNotifyTx (
   notificationControl: NotificationProviderControl,
   docUpdateMessage?: DocUpdateMessage
 ): Promise<NotifyResult> {
-  const types = getMatchedTypes(control, tx, originTx, isOwn, isSpace, docUpdateMessage?.attributeUpdates?.attrKey)
+  const types = getMatchedTypes(control, tx, isOwn, isSpace, docUpdateMessage?.attributeUpdates?.attrKey)
   const modifiedAccount = getPersonAccountById(tx.modifiedBy, control)
   const result = new Map<Ref<NotificationProvider>, BaseNotificationType[]>()
   let providers: NotificationProvider[] = control.modelDb.findAllSync(notification.class.NotificationProvider, {})
@@ -243,7 +239,6 @@ export async function isShouldNotifyTx (
 function getMatchedTypes (
   control: TriggerControl,
   tx: TxCUD<Doc>,
-  originTx: TxCUD<Doc>,
   isOwn: boolean,
   isSpace: boolean,
   field?: string
@@ -253,7 +248,7 @@ function getMatchedTypes (
     .filter((p) => (isSpace ? p.spaceSubscribe === true : p.spaceSubscribe !== true))
   const filtered: NotificationType[] = []
   for (const type of allTypes) {
-    if (isTypeMatched(control, type, tx, originTx, isOwn)) {
+    if (isTypeMatched(control, type, tx, isOwn)) {
       filtered.push(type)
     }
   }
@@ -261,20 +256,14 @@ function getMatchedTypes (
   return filtered
 }
 
-function isTypeMatched (
-  control: TriggerControl,
-  type: NotificationType,
-  tx: TxCUD<Doc>,
-  originTx: TxCUD<Doc>,
-  isOwn: boolean
-): boolean {
+function isTypeMatched (control: TriggerControl, type: NotificationType, tx: TxCUD<Doc>, isOwn: boolean): boolean {
   const h = control.hierarchy
   const targetClass = h.getBaseClass(type.objectClass)
   if (type.onlyOwn === true && !isOwn) return false
   if (!type.txClasses.includes(tx._class)) return false
   if (!control.hierarchy.isDerived(h.getBaseClass(tx.objectClass), targetClass)) return false
-  if (originTx._class === core.class.TxCollectionCUD && type.attachedToClass !== undefined) {
-    if (!control.hierarchy.isDerived(h.getBaseClass(originTx.objectClass), h.getBaseClass(type.attachedToClass))) {
+  if (tx.attachedToClass !== undefined && type.attachedToClass !== undefined) {
+    if (!control.hierarchy.isDerived(h.getBaseClass(tx.attachedToClass), h.getBaseClass(type.attachedToClass))) {
       return false
     }
   }
@@ -336,7 +325,7 @@ export function getTextPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy)
 }
 
 async function getSenderName (control: TriggerControl, sender: SenderInfo): Promise<string> {
-  if (sender._id === core.account.System) {
+  if (sender._id === core.account.System || sender._id === core.account.ConfigUser) {
     return await translate(core.string.System, {})
   }
 
@@ -370,12 +359,10 @@ async function getFallbackNotificationFullfillment (
     intlParams.title = await textPresenterFunc(object, control)
   }
 
-  const tx = TxProcessor.extractTx(originTx)
-
   intlParams.senderName = await getSenderName(control, sender)
 
-  if (tx._class === core.class.TxUpdateDoc) {
-    const updateTx = tx as TxUpdateDoc<Doc>
+  if (originTx._class === core.class.TxUpdateDoc) {
+    const updateTx = originTx as TxUpdateDoc<Doc>
     const attributes = control.hierarchy.getAllAttributes(object._class)
     for (const attrName in updateTx.operations) {
       if (!Object.prototype.hasOwnProperty.call(updateTx.operations, attrName)) {
@@ -394,18 +381,16 @@ async function getFallbackNotificationFullfillment (
       }
       break
     }
-  } else if (originTx._class === core.class.TxCollectionCUD && tx._class === core.class.TxCreateDoc) {
-    const createTx = tx as TxCreateDoc<Doc>
-    const clazz = control.hierarchy.getClass(createTx.objectClass)
+  } else if (originTx.attachedToClass !== undefined && originTx._class === core.class.TxCreateDoc) {
+    const clazz = control.hierarchy.getClass(originTx.objectClass)
     const label = clazz.pluralLabel ?? clazz.label
 
     if (label !== undefined) {
       intlParamsNotLocalized.collection = clazz.pluralLabel ?? clazz.label
       body = notification.string.CommonNotificationCollectionAdded
     }
-  } else if (originTx._class === core.class.TxCollectionCUD && tx._class === core.class.TxRemoveDoc) {
-    const createTx = tx as TxRemoveDoc<Doc>
-    const clazz = control.hierarchy.getClass(createTx.objectClass)
+  } else if (originTx.attachedToClass !== undefined && originTx._class === core.class.TxRemoveDoc) {
+    const clazz = control.hierarchy.getClass(originTx.objectClass)
     const label = clazz.pluralLabel ?? clazz.label
 
     if (label !== undefined) {
@@ -437,8 +422,7 @@ export async function getNotificationContent (
 
   let data: Markup | undefined
 
-  const actualTx = TxProcessor.extractTx(originTx) as TxCUD<Doc>
-  const notificationPresenter = getNotificationPresenter(actualTx.objectClass, control.hierarchy)
+  const notificationPresenter = getNotificationPresenter(originTx.objectClass, control.hierarchy)
 
   if (notificationPresenter !== undefined) {
     const getFuillfillmentParams = await getResource(notificationPresenter.presenter)

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { QueryResultRow, type Pool } from 'pg'
+import postgres from 'postgres'
 import { generateId, type Data, type Version } from '@hcengineering/core'
 
 import type {
@@ -34,7 +34,7 @@ import type {
 export class PostgresDbCollection<T extends Record<string, any>> implements DbCollection<T> {
   constructor (
     readonly name: string,
-    readonly client: Pool
+    readonly client: postgres.Sql
   ) {}
 
   protected buildSelectClause (): string {
@@ -110,7 +110,7 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
     return `ORDER BY ${sortChunks.join(', ')}`
   }
 
-  protected convertToObj (row: QueryResultRow): T {
+  protected convertToObj (row: any): T {
     return row as T
   }
 
@@ -131,9 +131,9 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
     }
 
     const finalSql: string = sqlChunks.join(' ')
-    const result = await this.client.query(finalSql, whereValues)
+    const result = await this.client.unsafe(finalSql, whereValues)
 
-    return result.rows.map((row) => this.convertToObj(row))
+    return result.map((row) => this.convertToObj(row))
   }
 
   async findOne (query: Query<T>): Promise<T | null> {
@@ -150,7 +150,9 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
 
     const sql = `INSERT INTO ${this.name} (${keys.map((k) => `"${k}"`).join(', ')}) VALUES (${keys.map((_, idx) => `$${idx + 1}`).join(', ')})`
 
-    await this.client.query(sql, values)
+    await this.client.begin(async (client) => {
+      await client.unsafe(sql, values)
+    })
 
     return id
   }
@@ -194,7 +196,9 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
     }
 
     const finalSql = sqlChunks.join(' ')
-    await this.client.query(finalSql, [...updateValues, ...whereValues])
+    await this.client.begin(async (client) => {
+      await client.unsafe(finalSql, [...updateValues, ...whereValues])
+    })
   }
 
   async deleteMany (query: Query<T>): Promise<void> {
@@ -206,12 +210,14 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
     }
 
     const finalSql = sqlChunks.join(' ')
-    await this.client.query(finalSql, whereValues)
+    await this.client.begin(async (client) => {
+      await client.unsafe(finalSql, whereValues)
+    })
   }
 }
 
 export class AccountPostgresDbCollection extends PostgresDbCollection<Account> implements DbCollection<Account> {
-  constructor (readonly client: Pool) {
+  constructor (readonly client: postgres.Sql) {
     super('account', client)
   }
 
@@ -251,7 +257,7 @@ export class AccountPostgresDbCollection extends PostgresDbCollection<Account> i
 }
 
 export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspace> implements WorkspaceDbCollection {
-  constructor (readonly client: Pool) {
+  constructor (readonly client: postgres.Sql) {
     super('workspace', client)
   }
 
@@ -349,9 +355,14 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
 
     sqlChunks.push(`WHERE ${whereChunks.join(' AND ')}`)
 
-    const res = await this.client.query(sqlChunks.join(' '), values)
+    let count = 0
 
-    return res.rows[0].count
+    await this.client.begin(async (client) => {
+      const res = await client.unsafe(sqlChunks.join(' '), values)
+      count = res[0].count
+    })
+
+    return count
   }
 
   async getPendingWorkspace (
@@ -387,6 +398,7 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
     // TODO: support returning pending deletion workspaces when we will actually want
     // to clear them with the worker.
 
+    whereChunks.push("mode <> 'manual-creation'")
     whereChunks.push('(attempts IS NULL OR attempts <= 3)')
     whereChunks.push(`("lastProcessingTime" IS NULL OR "lastProcessingTime" < $${values.length + 1})`)
     values.push(Date.now() - processingTimeoutMs)
@@ -406,24 +418,25 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
 
     // We must have all the conditions in the DB query and we cannot filter anything in the code
     // because of possible concurrency between account services.
-    await this.client.query('BEGIN')
-    const res = await this.client.query(sqlChunks.join(' '), values)
 
-    if ((res.rowCount ?? 0) > 0) {
-      await this.client.query(
-        `UPDATE ${this.name} SET attempts = attempts + 1, "lastProcessingTime" = $1 WHERE _id = $2`,
-        [Date.now(), res.rows[0]._id]
-      )
-    }
+    let res: any | undefined
+    await this.client.begin(async (client) => {
+      res = await client.unsafe(sqlChunks.join(' '), values)
 
-    await this.client.query('COMMIT')
+      if ((res.length ?? 0) > 0) {
+        await client.unsafe(
+          `UPDATE ${this.name} SET attempts = attempts + 1, "lastProcessingTime" = $1 WHERE _id = $2`,
+          [Date.now(), res[0]._id]
+        )
+      }
+    })
 
-    return res.rows[0] as WorkspaceInfo
+    return res[0] as WorkspaceInfo
   }
 }
 
 export class InvitePostgresDbCollection extends PostgresDbCollection<Invite> implements DbCollection<Invite> {
-  constructor (readonly client: Pool) {
+  constructor (readonly client: postgres.Sql) {
     super('invite', client)
   }
 
@@ -471,7 +484,7 @@ export class PostgresAccountDB implements AccountDB {
   invite: PostgresDbCollection<Invite>
   upgrade: PostgresDbCollection<UpgradeStatistic>
 
-  constructor (readonly client: Pool) {
+  constructor (readonly client: postgres.Sql) {
     this.workspace = new WorkspacePostgresDbCollection(client)
     this.account = new AccountPostgresDbCollection(client)
     this.otp = new PostgresDbCollection<OtpRecord>('otp', client)
@@ -489,21 +502,21 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   async migrate (name: string, ddl: string): Promise<void> {
-    const res = await this.client.query(
-      'INSERT INTO _account_applied_migrations (identifier, ddl) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-      [name, ddl]
-    )
+    await this.client.begin(async (client) => {
+      const res =
+        await client`INSERT INTO _account_applied_migrations (identifier, ddl) VALUES (${name}, ${ddl}) ON CONFLICT DO NOTHING`
 
-    if (res.rowCount === 1) {
-      console.log(`Applying migration: ${name}`)
-      await this.client.query(ddl)
-    } else {
-      console.log(`Migration ${name} already applied`)
-    }
+      if (res.count === 1) {
+        console.log(`Applying migration: ${name}`)
+        await client.unsafe(ddl)
+      } else {
+        console.log(`Migration ${name} already applied`)
+      }
+    })
   }
 
   async _init (): Promise<void> {
-    await this.client.query(
+    await this.client.unsafe(
       `
         CREATE TABLE IF NOT EXISTS _account_applied_migrations (
             identifier VARCHAR(255) NOT NULL PRIMARY KEY
@@ -515,15 +528,15 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   async assignWorkspace (accountId: ObjectId, workspaceId: ObjectId): Promise<void> {
-    const sql = `INSERT INTO ${this.wsAssignmentName} (workspace, account) VALUES ($1, $2)`
-
-    await this.client.query(sql, [workspaceId, accountId])
+    await this.client.begin(async (client) => {
+      await client`INSERT INTO ${client(this.wsAssignmentName)} (workspace, account) VALUES (${workspaceId}, ${accountId})`
+    })
   }
 
   async unassignWorkspace (accountId: ObjectId, workspaceId: ObjectId): Promise<void> {
-    const sql = `DELETE FROM ${this.wsAssignmentName} WHERE workspace = $1 AND account = $2`
-
-    await this.client.query(sql, [workspaceId, accountId])
+    await this.client.begin(async (client) => {
+      await client`DELETE FROM ${client(this.wsAssignmentName)} WHERE workspace = ${workspaceId} AND account = ${accountId}`
+    })
   }
 
   getObjectId (id: string): ObjectId {

@@ -2,50 +2,51 @@
 // Copyright @ 2022-2023 Hardcore Engineering Inc.
 //
 
+import attachment, { type Attachment } from '@hcengineering/attachment'
 import {
-  type Data,
-  type Ref,
-  TxOperations,
-  generateId,
-  DOMAIN_TX,
-  makeCollaborativeDoc,
-  MeasureMetricsContext,
+  YXmlElement,
+  YXmlText,
+  YAbstractType,
+  yXmlElementClone,
+  loadCollabYdoc,
+  saveCollabYdoc
+} from '@hcengineering/collaboration'
+import {
+  type ChangeControl,
+  type ControlledDocument,
+  createChangeControl,
+  createDocumentTemplate,
+  type DocumentCategory,
+  documentsId,
+  DocumentState
+} from '@hcengineering/controlled-documents'
+import {
   type Class,
+  type Data,
   type Doc,
-  SortingOrder
+  DOMAIN_TX,
+  generateId,
+  makeDocCollabId,
+  MeasureMetricsContext,
+  type Ref,
+  SortingOrder,
+  toIdMap,
+  TxOperations
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
   createOrUpdate,
-  type MigrateUpdate,
-  type MigrationDocumentQuery,
-  tryMigrate,
-  tryUpgrade,
   type MigrateOperation,
+  type MigrateUpdate,
   type MigrationClient,
-  type MigrationUpgradeClient
+  type MigrationDocumentQuery,
+  type MigrationUpgradeClient,
+  tryMigrate,
+  tryUpgrade
 } from '@hcengineering/model'
+import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import core from '@hcengineering/model-core'
 import tags from '@hcengineering/tags'
-import {
-  type ChangeControl,
-  type DocumentCategory,
-  DocumentState,
-  documentsId,
-  createDocumentTemplate,
-  type ControlledDocument,
-  createChangeControl
-} from '@hcengineering/controlled-documents'
-import {
-  loadCollaborativeDoc,
-  saveCollaborativeDoc,
-  YXmlElement,
-  YXmlText,
-  YAbstractType,
-  clone
-} from '@hcengineering/collaboration'
-import attachment, { type Attachment } from '@hcengineering/attachment'
-import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 
 import documents, { DOMAIN_DOCUMENTS } from './index'
 
@@ -143,7 +144,7 @@ async function createProductChangeControlTemplate (tx: TxOperations): Promise<vo
         minor: 1,
         state: DocumentState.Effective,
         commentSequence: 0,
-        content: makeCollaborativeDoc(generateId())
+        content: null
       },
       ccCategory
     )
@@ -210,6 +211,7 @@ async function createDocumentCategories (tx: TxOperations): Promise<void> {
     { code: 'CM', title: 'Client Management' }
   ]
 
+  const catsCache = toIdMap(await tx.findAll(documents.class.DocumentCategory, {}))
   const ops = tx.apply()
   for (const c of categories) {
     await createOrUpdate(
@@ -217,7 +219,8 @@ async function createDocumentCategories (tx: TxOperations): Promise<void> {
       documents.class.DocumentCategory,
       documents.space.QualityDocuments,
       { ...c, attachments: 0 },
-      ((documents.category.DOC as string) + ' - ' + c.code) as Ref<DocumentCategory>
+      ((documents.category.DOC as string) + ' - ' + c.code) as Ref<DocumentCategory>,
+      catsCache
     )
   }
   await ops.commit()
@@ -292,9 +295,10 @@ async function migrateDocSections (client: MigrationClient): Promise<void> {
 
     // Migrate sections headers + content
     try {
-      const ydoc = await loadCollaborativeDoc(ctx, storage, client.workspaceId, document.content)
+      const collabId = makeDocCollabId(document, 'content')
+      const ydoc = await loadCollabYdoc(ctx, storage, client.workspaceId, collabId)
       if (ydoc === undefined) {
-        ctx.error('collaborative document content not found', { document: document.title })
+        // no content, ignore
         continue
       }
 
@@ -328,13 +332,17 @@ async function migrateDocSections (client: MigrationClient): Promise<void> {
             ...(sectionContent
               .toArray()
               .map((item) =>
-                item instanceof YAbstractType ? (item instanceof YXmlElement ? clone(item) : item.clone()) : item
+                item instanceof YAbstractType
+                  ? item instanceof YXmlElement
+                    ? yXmlElementClone(item)
+                    : item.clone()
+                  : item
               ) as any)
           ])
         }
       })
 
-      await saveCollaborativeDoc(ctx, storage, client.workspaceId, document.content, ydoc)
+      await saveCollabYdoc(ctx, storage, client.workspaceId, collabId, ydoc)
     } catch (err) {
       ctx.error('error collaborative document content migration', { error: err, document: document.title })
     }

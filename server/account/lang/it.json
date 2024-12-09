@@ -1,0 +1,16 @@
+{
+  "string": {
+    "ConfirmationText": "Grazie per il tuo interesse in {name}. Per completare il processo di registrazione, ti preghiamo di incollare il seguente link nella barra degli indirizzi del tuo browser: {link}. Cordiali saluti, il team di {name}.",
+    "ConfirmationHTML": "<p>Ciao,</p><p>Grazie per il tuo interesse in {name}. Per completare il processo di registrazione, ti preghiamo di cliccare <a href={link}>su questo link</a> o di incollare il seguente link nella barra degli indirizzi del tuo browser.</p><p>{link}</p><p>Cordiali saluti,</p><p>il team di {name}.</p>",
+    "ConfirmationSubject": "Conferma il tuo indirizzo email per registrarti a {name}",
+    "RecoveryText": "Abbiamo ricevuto una richiesta per reimpostare la password del tuo account. Per reimpostare la tua password, ti preghiamo di incollare il seguente link nella barra degli indirizzi del tuo browser: {link}. Se non hai richiesto un ripristino della password, ignora questa email.",
+    "RecoveryHTML": "<p>Abbiamo ricevuto una richiesta per reimpostare la password del tuo account. Per reimpostare la tua password, ti preghiamo di cliccare sul link qui sotto: <a href={link}>Reimposta la password</a></p><p>Se il link per reimpostare la password sopra non funziona, incolla il seguente link nella barra degli indirizzi del tuo browser: {link}</p><p>Se non hai richiesto un ripristino della password, ignora questa email.</p>",
+    "RecoverySubject": "Recupero password",
+    "InviteText": "Sei stato invitato a {ws}. Per unirti, ti preghiamo di incollare il seguente link nella barra degli indirizzi del tuo browser: {link}. Il link è valido per {expHours} ore.",
+    "InviteHTML": "<p>Sei stato invitato a {ws}. Per unirti, ti preghiamo di cliccare sul link qui sotto: <a href={link}>Unisciti</a></p><p>Se il link di invito sopra non funziona, incolla il seguente link nella barra degli indirizzi del tuo browser: {link}</p><p>Il link è valido per {expHours} ore.</p>",
+    "InviteSubject": "Invito a {ws}",
+    "OtpText": "Conferma il tuo indirizzo email per accedere a {app}!\n\nIl tuo codice di conferma è qui sotto - inseriscilo nella finestra dove hai iniziato a effettuare il login per {app}.\n\n{code}\n\nSe non hai richiesto questa email, non c'è nulla di cui preoccuparsi: puoi ignorarla in tutta sicurezza.",
+    "OtpHTML": "<h3>Conferma il tuo indirizzo email per accedere a {app}!</h3><p>Il tuo codice di conferma è qui sotto - inseriscilo nella finestra dove hai iniziato a effettuare il login per {app}.</p><br/><b style=\"font-size:36px\">{code}</b><br/><br/><p>Se non hai richiesto questa email, non c'è nulla di cui preoccuparsi: puoi ignorarla in tutta sicurezza.</p>",
+    "OtpSubject": "Codice di conferma {app}: {code}"
+  }
+}

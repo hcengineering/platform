@@ -107,7 +107,7 @@
     </div>
   {/if}
   {#await _getWorkspaces() then}
-    <Scroller padding={'.125rem 0'}>
+    <Scroller padding={'.125rem 0'} maxHeight={35}>
       <div class="form">
         {#each workspaces
           .slice(0, 500)
@@ -123,6 +123,9 @@
             <div class="flex flex-col flex-grow">
               <span class="label overflow-label flex-center">
                 {wsName}
+                {#if workspace.mode === 'archived'}
+                  - <Label label={presentation.string.Archived} />
+                {/if}
                 {#if workspace.mode === 'creating'}
                   ({workspace.progress}%)
                 {/if}

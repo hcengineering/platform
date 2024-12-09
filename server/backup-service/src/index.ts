@@ -13,14 +13,20 @@
 // limitations under the License.
 //
 
-import { MeasureContext, systemAccountEmail, type Branding, type WorkspaceIdWithUrl } from '@hcengineering/core'
+import {
+  MeasureContext,
+  systemAccountEmail,
+  type BaseWorkspaceInfo,
+  type Branding,
+  type WorkspaceIdWithUrl
+} from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
-import { backupService } from '@hcengineering/server-backup'
+import { backupService, doBackupWorkspace } from '@hcengineering/server-backup'
 import serverClientPlugin from '@hcengineering/server-client'
 import { type DbConfiguration, type PipelineFactory, type StorageAdapter } from '@hcengineering/server-core'
 import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { generateToken } from '@hcengineering/server-token'
-import config from './config'
+import { config as _config } from './config'
 
 export function startBackup (
   ctx: MeasureContext,
@@ -33,6 +39,7 @@ export function startBackup (
     externalStorage: StorageAdapter
   ) => DbConfiguration
 ): void {
+  const config = _config()
   setMetadata(serverToken.metadata.Secret, config.Secret)
   setMetadata(serverClientPlugin.metadata.Endpoint, config.AccountsURL)
   setMetadata(serverClientPlugin.metadata.UserAgent, config.ServiceID)
@@ -58,7 +65,8 @@ export function startBackup (
     workspaceStorageAdapter,
     (ctx, workspace, branding, externalStorage) => {
       return getConfig(ctx, mainDbUrl, workspace, branding, externalStorage)
-    }
+    },
+    config.Region
   )
 
   process.on('SIGINT', shutdown)
@@ -69,4 +77,66 @@ export function startBackup (
   process.on('unhandledRejection', (e) => {
     ctx.error('unhandledRejection', { err: e })
   })
+}
+
+export async function backupWorkspace (
+  ctx: MeasureContext,
+  workspace: BaseWorkspaceInfo,
+  pipelineFactoryFactory: (mongoUrl: string, storage: StorageAdapter) => PipelineFactory,
+  getConfig: (
+    ctx: MeasureContext,
+    dbUrls: string,
+    workspace: WorkspaceIdWithUrl,
+    branding: Branding | null,
+    externalStorage: StorageAdapter
+  ) => DbConfiguration,
+  region: string,
+  freshBackup: boolean = false,
+  clean: boolean = false,
+  downloadLimit: number,
+
+  onFinish?: (backupStorage: StorageAdapter, workspaceStorage: StorageAdapter) => Promise<void>
+): Promise<boolean> {
+  const config = _config()
+  setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverClientPlugin.metadata.Endpoint, config.AccountsURL)
+  setMetadata(serverClientPlugin.metadata.UserAgent, config.ServiceID)
+
+  const mainDbUrl = config.DbURL
+
+  const backupStorageConfig = storageConfigFromEnv(config.Storage)
+  const workspaceStorageConfig = storageConfigFromEnv(config.WorkspaceStorage)
+
+  const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+  const workspaceStorageAdapter = buildStorageFromConfig(workspaceStorageConfig)
+
+  const pipelineFactory = pipelineFactoryFactory(mainDbUrl, workspaceStorageAdapter)
+
+  // A token to access account service
+  const token = generateToken(systemAccountEmail, { name: 'backup' })
+
+  try {
+    const result = await doBackupWorkspace(
+      ctx,
+      workspace,
+      storageAdapter,
+      { ...config, Token: token },
+      pipelineFactory,
+      workspaceStorageAdapter,
+      (ctx, workspace, branding, externalStorage) => {
+        return getConfig(ctx, mainDbUrl, workspace, branding, externalStorage)
+      },
+      region,
+      freshBackup,
+      clean,
+      downloadLimit
+    )
+    if (result && onFinish !== undefined) {
+      await onFinish(storageAdapter, workspaceStorageAdapter)
+    }
+    return result
+  } finally {
+    await storageAdapter.close()
+    await workspaceStorageAdapter.close()
+  }
 }

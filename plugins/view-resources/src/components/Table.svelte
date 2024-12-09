@@ -203,6 +203,7 @@
   }
 
   $: checkedSet = new Set<Ref<Doc>>(checked.map((it) => it._id))
+  $: allItemsSelected = objects?.length === checkedSet.size && objects?.length > 0
 
   export function check (docs: Doc[], value: boolean) {
     if (!enableChecking) return
@@ -237,13 +238,14 @@
   }
 
   const joinProps = (attribute: AttributeModel, object: Doc, readonly: boolean) => {
-    const readonlyParams = readonly
-      ? {
-          readonly: true,
-          editable: false,
-          disabled: true
-        }
-      : {}
+    const readonlyParams =
+      readonly || (attribute?.attribute?.readonly ?? false)
+        ? {
+            readonly: true,
+            editable: false,
+            disabled: true
+          }
+        : {}
     if (attribute.collectionAttr) {
       return { object, ...attribute.props, ...readonlyParams }
     }
@@ -333,8 +335,8 @@
               {#if enableChecking && objects?.length > 0}
                 <div class="antiTable-cells__checkCell" class:checkall={checkedSet.size > 0}>
                   <CheckBox
-                    symbol={'minus'}
-                    checked={objects?.length === checkedSet.size && objects?.length > 0}
+                    symbol={allItemsSelected ? 'check' : 'minus'}
+                    checked={checkedSet.size > 0}
                     on:value={(event) => {
                       check(objects, event.detail)
                     }}

@@ -13,16 +13,8 @@
 // limitations under the License.
 //
 
-import { ServiceAdapter } from '@hcengineering/server-core'
-import { WorkspaceId } from '@hcengineering/core'
-
-export interface AIBotServiceAdapter extends ServiceAdapter {
-  processWorkspace: (workspace: WorkspaceId) => Promise<void>
-}
-
 export interface WorkspaceInfoRecord {
   workspace: string
-  active: boolean
   avatarPath?: string
   avatarLastModified?: number
 }

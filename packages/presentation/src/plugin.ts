@@ -121,7 +121,12 @@ export default plugin(presentationId, {
     Next: '' as IntlString,
     FailedToPreview: '' as IntlString,
     ContentType: '' as IntlString,
-    ContentTypeNotSupported: '' as IntlString
+    ContentTypeNotSupported: '' as IntlString,
+    StartDrawing: '' as IntlString,
+    DrawingHistory: '' as IntlString,
+    ColorAdd: '' as IntlString,
+    ColorRemove: '' as IntlString,
+    ColorReset: '' as IntlString
   },
   extension: {
     FilePreviewExtension: '' as ComponentExtensionId,
@@ -142,7 +147,8 @@ export default plugin(presentationId, {
     UploadConfig: '' as Metadata<UploadConfig>,
     PreviewConfig: '' as Metadata<PreviewConfig | undefined>,
     ClientHook: '' as Metadata<ClientHook>,
-    SessionId: '' as Metadata<string>
+    SessionId: '' as Metadata<string>,
+    StatsUrl: '' as Metadata<string>
   },
   status: {
     FileTooLarge: '' as StatusCode

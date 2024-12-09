@@ -92,32 +92,37 @@ class PipelineImpl implements Pipeline {
     return current
   }
 
-  async findAll<T extends Doc>(
+  findAll<T extends Doc>(
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    return this.head !== undefined ? await this.head.findAll(ctx, _class, query, options) : toFindResult([])
+    return this.head !== undefined ? this.head.findAll(ctx, _class, query, options) : Promise.resolve(toFindResult([]))
   }
 
-  async loadModel (ctx: MeasureContext, lastModelTx: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
-    return this.head !== undefined ? await this.head.loadModel(ctx, lastModelTx, hash) : []
+  loadModel (ctx: MeasureContext, lastModelTx: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
+    return this.head !== undefined ? this.head.loadModel(ctx, lastModelTx, hash) : Promise.resolve([])
   }
 
-  async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
-    return this.head !== undefined ? await this.head.groupBy(ctx, domain, field) : new Set()
+  groupBy<T, P extends Doc>(
+    ctx: MeasureContext,
+    domain: Domain,
+    field: string,
+    query?: DocumentQuery<P>
+  ): Promise<Map<T, number>> {
+    return this.head !== undefined ? this.head.groupBy(ctx, domain, field, query) : Promise.resolve(new Map())
   }
 
-  async searchFulltext (ctx: MeasureContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
-    return this.head !== undefined ? await this.head.searchFulltext(ctx, query, options) : { docs: [] }
+  searchFulltext (ctx: MeasureContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    return this.head !== undefined ? this.head.searchFulltext(ctx, query, options) : Promise.resolve({ docs: [] })
   }
 
-  async tx (ctx: MeasureContext, tx: Tx[]): Promise<TxResult> {
+  tx (ctx: MeasureContext, tx: Tx[]): Promise<TxResult> {
     if (this.head !== undefined) {
-      return await this.head.tx(ctx, tx)
+      return this.head.tx(ctx, tx)
     }
-    return {}
+    return Promise.resolve({})
   }
 
   handleBroadcast (ctx: MeasureContext<SessionData>): Promise<void> {

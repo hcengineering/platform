@@ -13,15 +13,16 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import { BackupClient, DocChunk } from './backup'
-import { Account, AttachedDoc, Class, DOMAIN_MODEL, Doc, Domain, Ref, Timestamp } from './classes'
+import { Account, Class, DOMAIN_MODEL, Doc, Domain, Ref, Timestamp } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { MeasureContext, MeasureMetricsContext } from './measurements'
 import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, FulltextStorage, Storage, TxResult, WithLookup } from './storage'
 import { SearchOptions, SearchQuery, SearchResult, SortingOrder } from './storage'
-import { Tx, TxCUD, TxCollectionCUD } from './tx'
+import { Tx, TxCUD } from './tx'
 import { toFindResult } from './utils'
 
 const transactionThreshold = 500
@@ -84,7 +85,7 @@ export interface ClientConnection extends Storage, FulltextStorage, BackupClient
   isConnected: () => boolean
 
   close: () => Promise<void>
-  onConnect?: (event: ClientConnectEvent) => Promise<void>
+  onConnect?: (event: ClientConnectEvent, data: any) => Promise<void>
 
   // If hash is passed, will return LoadModelResponse
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
@@ -177,8 +178,8 @@ class ClientImpl implements AccountClient, BackupClient {
     await this.conn.close()
   }
 
-  async loadChunk (domain: Domain, idx?: number, recheck?: boolean): Promise<DocChunk> {
-    return await this.conn.loadChunk(domain, idx, recheck)
+  async loadChunk (domain: Domain, idx?: number): Promise<DocChunk> {
+    return await this.conn.loadChunk(domain, idx)
   }
 
   async closeChunk (idx: number): Promise<void> {
@@ -249,12 +250,10 @@ export async function createClient (
     }
     lastTx = tx.reduce((cur, it) => (it.modifiedOn > cur ? it.modifiedOn : cur), 0)
   }
-  const conn = await ctx.with('connect', {}, async () => await connect(txHandler))
+  const conn = await ctx.with('connect', {}, () => connect(txHandler))
 
-  await ctx.with(
-    'load-model',
-    { reload: false },
-    async (ctx) => await loadModel(ctx, conn, modelFilter, hierarchy, model, false, txPersistence)
+  await ctx.with('load-model', { reload: false }, (ctx) =>
+    loadModel(ctx, conn, modelFilter, hierarchy, model, false, txPersistence)
   )
 
   txBuffer = txBuffer.filter((tx) => tx.space !== core.space.Model)
@@ -265,18 +264,16 @@ export async function createClient (
   txHandler(...txBuffer)
   txBuffer = undefined
 
-  const oldOnConnect: ((event: ClientConnectEvent) => Promise<void>) | undefined = conn.onConnect
-  conn.onConnect = async (event) => {
+  const oldOnConnect: ((event: ClientConnectEvent, data: any) => Promise<void>) | undefined = conn.onConnect
+  conn.onConnect = async (event, data) => {
     console.log('Client: onConnect', event)
     if (event === ClientConnectEvent.Maintenance) {
-      await oldOnConnect?.(ClientConnectEvent.Maintenance)
+      await oldOnConnect?.(ClientConnectEvent.Maintenance, data)
       return
     }
     // Find all new transactions and apply
-    const loadModelResponse = await ctx.with(
-      'connect',
-      { reload: true },
-      async (ctx) => await loadModel(ctx, conn, modelFilter, hierarchy, model, true, txPersistence)
+    const loadModelResponse = await ctx.with('connect', { reload: true }, (ctx) =>
+      loadModel(ctx, conn, modelFilter, hierarchy, model, true, txPersistence)
     )
 
     if (event === ClientConnectEvent.Reconnected && loadModelResponse.full) {
@@ -284,10 +281,8 @@ export async function createClient (
       hierarchy = new Hierarchy()
       model = new ModelDb(hierarchy)
 
-      await ctx.with('build-model', {}, async (ctx) => {
-        await buildModel(ctx, loadModelResponse, modelFilter, hierarchy, model)
-      })
-      await oldOnConnect?.(ClientConnectEvent.Upgraded)
+      await ctx.with('build-model', {}, (ctx) => buildModel(ctx, loadModelResponse, modelFilter, hierarchy, model))
+      await oldOnConnect?.(ClientConnectEvent.Upgraded, data)
 
       // No need to fetch more stuff since upgrade was happened.
       return
@@ -295,29 +290,25 @@ export async function createClient (
 
     if (event === ClientConnectEvent.Connected) {
       // No need to do anything here since we connected.
-      await oldOnConnect?.(event)
+      await oldOnConnect?.(event, data)
       return
     }
 
     // We need to look for last {transactionThreshold} transactions and if it is more since lastTx one we receive, we need to perform full refresh.
-    const atxes = await ctx.with(
-      'find-atx',
-      {},
-      async () =>
-        await conn.findAll(
-          core.class.Tx,
-          { modifiedOn: { $gt: lastTx }, objectSpace: { $ne: core.space.Model } },
-          { sort: { modifiedOn: SortingOrder.Ascending, _id: SortingOrder.Ascending }, limit: transactionThreshold }
-        )
+    const atxes = await ctx.with('find-atx', {}, () =>
+      conn.findAll(
+        core.class.Tx,
+        { modifiedOn: { $gt: lastTx }, objectSpace: { $ne: core.space.Model } },
+        { sort: { modifiedOn: SortingOrder.Ascending, _id: SortingOrder.Ascending }, limit: transactionThreshold }
+      )
     )
 
     let needFullRefresh = false
     // if we have attachment document create/delete we need to full refresh, since some derived data could be missing
     for (const tx of atxes) {
       if (
-        tx._class === core.class.TxCollectionCUD &&
-        ((tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxCreateDoc ||
-          (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxRemoveDoc)
+        (tx as TxCUD<Doc>).attachedTo !== undefined &&
+        (tx._class === core.class.TxCreateDoc || tx._class === core.class.TxRemoveDoc)
       ) {
         needFullRefresh = true
         break
@@ -327,10 +318,10 @@ export async function createClient (
     if (atxes.length < transactionThreshold && !needFullRefresh) {
       console.log('applying input transactions', atxes.length)
       txHandler(...atxes)
-      await oldOnConnect?.(ClientConnectEvent.Reconnected)
+      await oldOnConnect?.(ClientConnectEvent.Reconnected, data)
     } else {
       // We need to trigger full refresh on queries, etc.
-      await oldOnConnect?.(ClientConnectEvent.Refresh)
+      await oldOnConnect?.(ClientConnectEvent.Refresh, data)
     }
   }
 
@@ -364,12 +355,16 @@ async function tryLoadModel (
   }
 
   // Save concatenated
-  void (await ctx.with('persistence-store', {}, (ctx) =>
-    persistence?.store({
-      ...result,
-      transactions: !result.full ? current.transactions.concat(result.transactions) : result.transactions
+  void ctx
+    .with('persistence-store', {}, (ctx) =>
+      persistence?.store({
+        ...result,
+        transactions: !result.full ? current.transactions.concat(result.transactions) : result.transactions
+      })
+    )
+    .catch((err) => {
+      Analytics.handleError(err)
     })
-  ))
 
   if (!result.full && !reload) {
     result.transactions = current.transactions.concat(result.transactions)
@@ -432,7 +427,7 @@ async function buildModel (
 
   const atxes = modelResponse.transactions
 
-  await ctx.with('split txes', {}, async () => {
+  ctx.withSync('split txes', {}, () => {
     atxes.forEach((tx) =>
       ((tx.modifiedBy === core.account.ConfigUser || tx.modifiedBy === core.account.System) && !isPersonAccount(tx)
         ? systemTx
@@ -441,12 +436,14 @@ async function buildModel (
     )
   })
 
+  userTx.sort(compareTxes)
+
   let txes = systemTx.concat(userTx)
   if (modelFilter !== undefined) {
     txes = await modelFilter(txes)
   }
 
-  await ctx.with('build hierarchy', {}, async () => {
+  ctx.withSync('build hierarchy', {}, () => {
     for (const tx of txes) {
       try {
         hierarchy.tx(tx)
@@ -459,7 +456,7 @@ async function buildModel (
       }
     }
   })
-  await ctx.with('build model', {}, async (ctx) => {
+  ctx.withSync('build model', {}, (ctx) => {
     model.addTxes(ctx, txes, false)
   })
 }
@@ -472,4 +469,9 @@ function getLastTxTime (txes: Tx[]): number {
     }
   }
   return lastTxTime
+}
+
+function compareTxes (a: Tx, b: Tx): number {
+  const result = a._id.localeCompare(b._id)
+  return result !== 0 ? result : a.modifiedOn - b.modifiedOn
 }

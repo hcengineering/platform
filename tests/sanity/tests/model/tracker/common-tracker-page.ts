@@ -115,7 +115,6 @@ export class CommonTrackerPage extends CalendarPage {
   }
 
   async navigateToComponents (PlatformURI: string): Promise<void> {
-    await this.trackerApplicationButton().click()
     await this.componentsLink().first().click()
     await expect(this.page).toHaveURL(
       `${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/components`

@@ -38,13 +38,14 @@
 
   $: src = convertedFile === undefined ? '' : getFileUrl(convertedFile as Ref<Blob>, name)
 
-  const colors = $themeStore.dark
+  $: colors = $themeStore.dark
     ? `
     --theme-text-primary-color: rgba(255, 255, 255, .8);
     --theme-link-color: #377AE6;
     --button-border-hover: #45484e;
     --text-editor-table-header-color: rgba(255, 255, 255, 0.06);
     --scrollbar-bar-color: #35354a;
+    --scrollbar-bar-hover: #8a8aa5;
   `
     : `
     --theme-text-primary-color: rgba(0, 0, 0, .8);
@@ -52,7 +53,9 @@
     --button-border-hover: #c9cbcd;
     --text-editor-table-header-color: rgba(0, 0, 0, 0.06);
     --scrollbar-bar-color: #e0e0e0;
+    --scrollbar-bar-hover: #90959d;
   `
+  let oldColors = colors
 
   $: css = `
     * {
@@ -68,10 +71,9 @@
       --timing-main: cubic-bezier(0.25, 0.46, 0.45, 0.94);
       --timing-rotate: cubic-bezier(.28,1.92,.39,.56);
       --timing-clock: cubic-bezier(.35,2.1,.79,.71);
-      
-      &::after,
-      &::before { box-sizing: border-box; }
     }
+    *::after,
+    *::before { box-sizing: border-box; }
 
     body {
       ${colors}
@@ -88,6 +90,10 @@
 
       margin: 0 auto;
       max-width: 1200px;
+
+      @media not print {
+        padding: .75rem 1.5rem;
+      }
     }
 
     @media only screen and (max-width: 600px) {
@@ -237,20 +243,17 @@
       }
     }
 
-    &::-webkit-scrollbar-thumb {
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar:horizontal { height: 6px; }
+    ::-webkit-scrollbar-track { margin: 6px; }
+    ::-webkit-scrollbar-thumb {
       background-color: var(--scrollbar-bar-color);
+      border-radius: .25rem;
     }
-
-    &::-webkit-scrollbar-thumb:hover {
-      background-color: var(--scrollbar-bar-hover);
-    }
-
-    &::-webkit-scrollbar-corner {
+    ::-webkit-scrollbar-thumb:hover { background-color: var(--scrollbar-bar-hover); }
+    ::-webkit-scrollbar-corner {
       background-color: var(--scrollbar-bar-color);
-    }
-
-    &::-webkit-scrollbar-track {
-      margin: 0;
+      border-radius: .25rem;
     }
 
     cmark {
@@ -261,6 +264,7 @@
   `
 
   let frame: HTMLIFrameElement | undefined = undefined
+
   // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
   $: if (css !== undefined && frame !== undefined && frame !== null) {
     frame.onload = () => {
@@ -269,7 +273,16 @@
       // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
       if (css !== undefined && head !== undefined && head !== null) {
         head.appendChild(document.createElement('style')).textContent = css
+        oldColors = colors
       }
+    }
+  }
+  $: if (oldColors !== colors && css !== undefined && frame != null) {
+    const style = frame?.contentDocument?.querySelector('head style')
+
+    if (style != null) {
+      style.textContent = css
+      oldColors = colors
     }
   }
 </script>

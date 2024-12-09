@@ -35,6 +35,7 @@
     "OpenInSidebar": "Ouvrir dans la barre latérale",
     "OpenInSidebarNewTab": "Ouvrir dans un nouvel onglet de la barre latérale",
     "ConfigureWidgets": "Configurer les widgets",
-    "Tab": "Onglet"
+    "Tab": "Onglet",
+    "WorkspaceIsArchived": "L'espace de travail est archivé en raison de son inactivité, veuillez nous contacter pour le restaurer..."
   }
 }

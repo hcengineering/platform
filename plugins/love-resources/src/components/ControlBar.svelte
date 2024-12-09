@@ -15,30 +15,36 @@
 <script lang="ts">
   import { PersonAccount } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import login from '@hcengineering/login'
-  import love, { Room, RoomType, isOffice, roomAccessIcon } from '@hcengineering/love'
+  import { Room, RoomType, isOffice, roomAccessIcon } from '@hcengineering/love'
   import { getResource } from '@hcengineering/platform'
-  import { copyTextToClipboard, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import {
     IconUpOutline,
     ModernButton,
     PopupInstance,
     SplitButton,
     eventToHTMLElement,
-    getCurrentLocation,
     showPopup,
     type AnySvelteComponent,
-    type CompAndProps
+    type CompAndProps,
+    IconMoreV,
+    ButtonMenu,
+    DropdownIntlItem,
+    IconMaximize
   } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
-  import plugin from '../plugin'
+  import view, { Action } from '@hcengineering/view'
+  import { getActions } from '@hcengineering/view-resources'
+
+  import love from '../plugin'
   import { currentRoom, myInfo, myOffice } from '../stores'
   import {
+    isTranscriptionAllowed,
     isCameraEnabled,
     isConnected,
     isFullScreen,
     isMicEnabled,
     isRecording,
+    isTranscription,
     isRecordingAvailable,
     isSharingEnabled,
     leaveRoom,
@@ -46,22 +52,30 @@
     screenSharing,
     setCam,
     setMic,
-    setShare
+    setShare,
+    stopTranscription,
+    startTranscription
   } from '../utils'
   import CamSettingPopup from './CamSettingPopup.svelte'
   import MicSettingPopup from './MicSettingPopup.svelte'
   import RoomAccessPopup from './RoomAccessPopup.svelte'
+  import RoomLanguageSelector from './RoomLanguageSelector.svelte'
+  import ControlBarContainer from './ControlBarContainer.svelte'
+  import RoomModal from './RoomModal.svelte'
 
   export let room: Room
+  export let canMaximize: boolean = true
   export let fullScreen: boolean = false
+  export let onFullScreen: (() => void) | undefined = undefined
 
   let allowCam: boolean = false
   const allowShare: boolean = true
   let allowLeave: boolean = false
   let popup: CompAndProps | undefined = undefined
+  let noLabel: boolean = false
 
   $: allowCam = $currentRoom?.type === RoomType.Video
-  $: allowLeave = $myInfo?.room !== ($myOffice?._id ?? plugin.ids.Reception)
+  $: allowLeave = $myInfo?.room !== ($myOffice?._id ?? love.ids.Reception)
 
   async function changeMute (): Promise<void> {
     await setMic(!$isMicEnabled)
@@ -117,100 +131,126 @@
     }
   }
 
-  async function getLink (): Promise<string> {
-    const roomInfo = await client.findOne(love.class.RoomInfo, { room: room._id })
-    if (roomInfo !== undefined) {
-      const navigateUrl = getCurrentLocation()
-      navigateUrl.query = {
-        sessionId: roomInfo._id
-      }
-
-      const func = await getResource(login.function.GetInviteLink)
-      return await func(24, '', -1, AccountRole.Guest, encodeURIComponent(JSON.stringify(navigateUrl)))
-    }
-    return ''
-  }
-
-  async function copyGuestLink (): Promise<void> {
-    await copyTextToClipboard(getLink())
-    linkCopied = true
-    clearTimeout(linkTimeout)
-    linkTimeout = setTimeout(() => {
-      linkCopied = false
-    }, 3000)
-  }
-
-  let linkCopied: boolean = false
-  let linkTimeout: any | undefined = undefined
-
   const me = (getCurrentAccount() as PersonAccount).person
-
   const client = getClient()
 
-  const camKeys = client.getModel().findAllSync(view.class.Action, { _id: plugin.action.ToggleVideo })?.[0]?.keyBinding
-  const micKeys = client.getModel().findAllSync(view.class.Action, { _id: plugin.action.ToggleMic })?.[0]?.keyBinding
+  const camKeys = client.getModel().findAllSync(view.class.Action, { _id: love.action.ToggleVideo })?.[0]?.keyBinding
+  const micKeys = client.getModel().findAllSync(view.class.Action, { _id: love.action.ToggleMic })?.[0]?.keyBinding
+
+  let actions: Action[] = []
+  let moreItems: DropdownIntlItem[] = []
+
+  $: void getActions(client, room, love.class.Room).then((res) => {
+    actions = res
+  })
+
+  $: moreItems = actions.map((action) => ({
+    id: action._id,
+    label: action.label,
+    icon: action.icon
+  }))
+
+  async function handleMenuOption (e: CustomEvent<DropdownIntlItem['id']>): Promise<void> {
+    const action = actions.find((action) => action._id === e.detail)
+    if (action !== undefined) {
+      await handleAction(action)
+    }
+  }
+
+  async function handleAction (action: Action): Promise<void> {
+    const fn = await getResource(action.action)
+    await fn(room)
+  }
+  $: withVideo = $screenSharing || room.type === RoomType.Video
+
+  function maximize (): void {
+    showPopup(RoomModal, { room }, 'full-centered')
+  }
 </script>
 
-<div class="bar w-full flex-center flex-gap-2 flex-no-shrink">
-  {#if room._id !== plugin.ids.Reception}
-    <ModernButton
-      icon={roomAccessIcon[room.access]}
-      tooltip={{ label: plugin.string.ChangeAccess }}
-      kind={'secondary'}
-      size={'large'}
-      disabled={isOffice(room) && room.person !== me}
-      on:click={setAccess}
-    />
-  {/if}
-  {#if $isConnected}
-    <SplitButton
-      size={'large'}
-      icon={$isMicEnabled ? plugin.icon.MicEnabled : plugin.icon.MicDisabled}
-      showTooltip={{ label: $isMicEnabled ? plugin.string.Mute : plugin.string.UnMute, keys: micKeys }}
-      action={changeMute}
-      secondIcon={IconUpOutline}
-      secondAction={micSettings}
-      separate
-    />
-    {#if allowCam}
+<ControlBarContainer bind:noLabel>
+  <svelte:fragment slot="right">
+    {#if $isConnected && isTranscriptionAllowed() && $isTranscription}
+      <RoomLanguageSelector {room} kind="icon" />
+    {/if}
+  </svelte:fragment>
+  <svelte:fragment slot="center">
+    {#if room._id !== love.ids.Reception}
+      <ModernButton
+        icon={roomAccessIcon[room.access]}
+        tooltip={{ label: love.string.ChangeAccess }}
+        kind={'secondary'}
+        size={'large'}
+        disabled={isOffice(room) && room.person !== me}
+        on:click={setAccess}
+      />
+    {/if}
+    {#if $isConnected}
       <SplitButton
         size={'large'}
-        icon={$isCameraEnabled ? plugin.icon.CamEnabled : plugin.icon.CamDisabled}
-        showTooltip={{ label: $isCameraEnabled ? plugin.string.StopVideo : plugin.string.StartVideo, keys: camKeys }}
-        disabled={!$isConnected}
-        action={changeCam}
+        icon={$isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
+        showTooltip={{ label: $isMicEnabled ? love.string.Mute : love.string.UnMute, keys: micKeys }}
+        action={changeMute}
         secondIcon={IconUpOutline}
-        secondAction={camSettings}
+        secondAction={micSettings}
         separate
       />
+      {#if allowCam}
+        <SplitButton
+          size={'large'}
+          icon={$isCameraEnabled ? love.icon.CamEnabled : love.icon.CamDisabled}
+          showTooltip={{ label: $isCameraEnabled ? love.string.StopVideo : love.string.StartVideo, keys: camKeys }}
+          disabled={!$isConnected}
+          action={changeCam}
+          secondIcon={IconUpOutline}
+          secondAction={camSettings}
+          separate
+        />
+      {/if}
+      {#if allowShare}
+        <ModernButton
+          icon={$isSharingEnabled ? love.icon.SharingEnabled : love.icon.SharingDisabled}
+          tooltip={{ label: $isSharingEnabled ? love.string.StopShare : love.string.Share }}
+          disabled={($screenSharing && !$isSharingEnabled) || !$isConnected}
+          kind={'secondary'}
+          size={'large'}
+          on:click={changeShare}
+        />
+      {/if}
+      {#if hasAccountRole(getCurrentAccount(), AccountRole.User) && $isRecordingAvailable}
+        <ModernButton
+          icon={$isRecording ? love.icon.StopRecord : love.icon.Record}
+          tooltip={{ label: $isRecording ? love.string.StopRecord : love.string.Record }}
+          disabled={!$isConnected}
+          kind={'secondary'}
+          size={'large'}
+          on:click={() => record(room)}
+        />
+      {/if}
+      {#if hasAccountRole(getCurrentAccount(), AccountRole.User) && isTranscriptionAllowed() && $isConnected}
+        <ModernButton
+          icon={view.icon.Feather}
+          iconProps={$isTranscription ? { fill: 'var(--button-negative-BackgroundColor)' } : {}}
+          tooltip={{ label: $isTranscription ? love.string.StopTranscription : love.string.StartTranscription }}
+          kind="secondary"
+          size="large"
+          on:click={() => {
+            if ($isTranscription) {
+              void stopTranscription(room)
+            } else {
+              void startTranscription(room)
+            }
+          }}
+        />
+      {/if}
     {/if}
-    {#if allowShare}
-      <ModernButton
-        icon={$isSharingEnabled ? plugin.icon.SharingEnabled : plugin.icon.SharingDisabled}
-        tooltip={{ label: $isSharingEnabled ? plugin.string.StopShare : plugin.string.Share }}
-        disabled={($screenSharing && !$isSharingEnabled) || !$isConnected}
-        kind={'secondary'}
-        size={'large'}
-        on:click={changeShare}
-      />
-    {/if}
-    {#if hasAccountRole(getCurrentAccount(), AccountRole.User) && $isRecordingAvailable}
-      <ModernButton
-        icon={$isRecording ? plugin.icon.StopRecord : plugin.icon.Record}
-        tooltip={{ label: $isRecording ? plugin.string.StopRecord : plugin.string.Record }}
-        disabled={!$isConnected}
-        kind={'secondary'}
-        size={'large'}
-        on:click={() => record(room)}
-      />
-    {/if}
-  {/if}
-  <div class="bar__left-panel flex-gap-2 flex-center">
-    {#if $isConnected}
+  </svelte:fragment>
+  <svelte:fragment slot="left">
+    {#if $isConnected && withVideo && onFullScreen}
       <ModernButton
         icon={$isFullScreen ? love.icon.ExitFullScreen : love.icon.FullScreen}
         tooltip={{
-          label: $isFullScreen ? plugin.string.ExitingFullscreenMode : plugin.string.FullscreenMode,
+          label: $isFullScreen ? love.string.ExitingFullscreenMode : love.string.FullscreenMode,
           direction: 'top'
         }}
         kind={'secondary'}
@@ -220,55 +260,58 @@
         }}
       />
     {/if}
-    {#if hasAccountRole(getCurrentAccount(), AccountRole.User) && $isConnected}
+
+    {#if ($screenSharing || room.type === RoomType.Video) && $isConnected && canMaximize}
       <ModernButton
-        icon={view.icon.Copy}
-        tooltip={{ label: !linkCopied ? plugin.string.CopyGuestLink : view.string.Copied, direction: 'top' }}
+        icon={IconMaximize}
+        tooltip={{
+          label: love.string.FullscreenMode,
+          direction: 'top'
+        }}
         kind={'secondary'}
+        iconSize="medium"
         size={'large'}
-        on:click={copyGuestLink}
+        on:click={maximize}
+      />
+    {/if}
+    {#if $isConnected && moreItems.length > 0}
+      <ButtonMenu
+        items={moreItems}
+        icon={IconMoreV}
+        tooltip={{ label: love.string.MoreOptions, direction: 'top' }}
+        kind="secondary"
+        size="large"
+        noSelection
+        on:selected={handleMenuOption}
       />
     {/if}
     {#if allowLeave}
       <ModernButton
-        icon={plugin.icon.LeaveRoom}
-        label={plugin.string.LeaveRoom}
-        tooltip={{ label: plugin.string.LeaveRoom, direction: 'top' }}
+        icon={love.icon.LeaveRoom}
+        label={noLabel ? undefined : love.string.LeaveRoom}
+        tooltip={{ label: love.string.LeaveRoom, direction: 'top' }}
         kind={'negative'}
         size={'large'}
         on:click={leave}
       />
     {/if}
-  </div>
-  {#if popup && fullScreen}
-    <PopupInstance
-      is={popup.is}
-      props={popup.props}
-      element={popup.element}
-      onClose={popup.onClose}
-      onUpdate={popup.onUpdate}
-      zIndex={1}
-      top={true}
-      close={popup.close}
-      overlay={popup.options.overlay}
-      contentPanel={undefined}
-      {popup}
-    />
-  {/if}
-</div>
+  </svelte:fragment>
 
-<style lang="scss">
-  .bar {
-    position: relative;
-    padding: 1rem;
-    border-top: 1px solid var(--theme-divider-color);
-
-    &__left-panel {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      right: 1rem;
-      height: 100%;
-    }
-  }
-</style>
+  <svelte:fragment slot="extra">
+    {#if popup && fullScreen}
+      <PopupInstance
+        is={popup.is}
+        props={popup.props}
+        element={popup.element}
+        onClose={popup.onClose}
+        onUpdate={popup.onUpdate}
+        zIndex={1}
+        top={true}
+        close={popup.close}
+        overlay={popup.options.overlay}
+        contentPanel={undefined}
+        {popup}
+      />
+    {/if}
+  </svelte:fragment>
+</ControlBarContainer>

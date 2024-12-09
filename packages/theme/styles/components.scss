@@ -23,9 +23,6 @@
   min-width: 0;
   border: 1px solid var(--theme-divider-color); // var(--global-surface-02-BorderColor);
   border-radius: var(--small-focus-BorderRadius);
-  border-bottom-right-radius: 0;
-  border-top-right-radius: 0;
-  border-right: 0;
 
   &:not(.modal) {
     background-color: var(--theme-panel-color); // var(--global-surface-02-BackgroundColor);
@@ -65,6 +62,7 @@
     gap: var(--spacing-4);
   }
   &__container {
+    justify-content: stretch;
     height: 100%;
   }
   &__container:not(.columns),
@@ -464,9 +462,9 @@
 }
 .hulyModal-container {
   height: 100%;
-  border-top: 1px solid transparent;
   visibility: visible;
-
+  
+  &:not(.noTopIndent) { border-top: 1px solid transparent; }
   &.hidden {
     visibility: hidden;
   }
@@ -544,6 +542,11 @@
 
     .hulyModal-footer {
       padding: var(--spacing-1_5);
+    }
+    @media screen and (max-width: 480px) {
+      width: 100vw;
+      height: var(--app-height);
+      min-width: 20rem;
     }
   }
   &.type-aside,
@@ -1489,6 +1492,10 @@
     display: flex;
     min-width: 0;
     width: auto;
+
+    &.noGap {
+      flex: none;
+    }
 
     &__back {
       padding: 1px 0.5px;

@@ -96,6 +96,8 @@ export class GithubWorker implements IntegrationManager {
 
   triggerRequests: number = 0
 
+  authRequestSend = new Set<Ref<Account>>()
+
   triggerSync: () => void = () => {
     this.triggerRequests++
   }
@@ -546,7 +548,7 @@ export class GithubWorker implements IntegrationManager {
     let record = await this.platform.getAccountByRef(this.workspace.name, account)
 
     // const accountRef = this.accounts.find((it) => it._id === account)
-    const accountRef = await this.liveQuery.findOne(contact.class.PersonAccount, { _id: account })
+    const [accountRef] = await this.liveQuery.queryFind(contact.class.PersonAccount, { _id: account })
     if (record === undefined) {
       if (accountRef !== undefined) {
         const accounts = this._client.getModel().getAccountByPersonId(accountRef.person)
@@ -570,11 +572,22 @@ export class GithubWorker implements IntegrationManager {
     }
 
     // We need to inform user, he need to authorize this account with github.
-    if (accountRef !== undefined) {
+    if (accountRef !== undefined && !this.authRequestSend.has(accountRef._id)) {
+      this.authRequestSend.add(accountRef._id)
       const person = await this.liveQuery.findOne(contact.class.Person, { _id: accountRef.person })
       if (person !== undefined) {
         const personSpace = await this.liveQuery.findOne(contact.class.PersonSpace, { person: person._id })
         if (personSpace !== undefined) {
+          // We need to remove if user has authentication in workspace but doesn't have a record.
+
+          const accounts = this._client.getModel().getAccountByPersonId(accountRef.person)
+          const authentications = await this.liveQuery.findAll(github.class.GithubAuthentication, {
+            createdBy: { $in: accounts.map((it) => it._id) }
+          })
+          for (const auth of authentications) {
+            await this._client.remove(auth)
+          }
+
           await createNotification(this._client, person, {
             user: account,
             space: personSpace._id,
@@ -997,14 +1010,11 @@ export class GithubWorker implements IntegrationManager {
   async applyMigrations (): Promise<void> {
     const key = 'lowerCaseDuplicates'
     // We need to apply migrations if required.
-    const migration = await this.client.findOne<MigrationState>(core.class.MigrationState, {
-      plugin: githubId,
-      state: key
-    })
+    const migrations = await this.client.findAll<MigrationState>(core.class.MigrationState, {})
 
     const derivedClient = new TxOperations(this.client, core.account.System, true)
 
-    if (migration === undefined) {
+    if (migrations.find((it) => it.plugin === githubId && it.state === key) === undefined) {
       let modifiedOn = 0
       const limit = 1000
       while (true) {
@@ -1070,6 +1080,21 @@ export class GithubWorker implements IntegrationManager {
         state: key
       })
     }
+
+    const wrongAuthentications = 'migrate-wrong-authentications'
+
+    if (migrations.find((it) => it.plugin === githubId && it.state === wrongAuthentications) === undefined) {
+      const auths = await this.client.findAll(github.class.GithubAuthentication, {})
+      for (const auth of auths) {
+        if (auth.createdBy !== auth.modifiedBy) {
+          await this._client.remove(auth)
+        }
+      }
+      await derivedClient.createDoc(core.class.MigrationState, core.space.Configuration, {
+        plugin: githubId,
+        state: wrongAuthentications
+      })
+    }
   }
 
   async syncAndWait (): Promise<void> {
@@ -1125,8 +1150,8 @@ export class GithubWorker implements IntegrationManager {
     const docs = await this.ctx.with(
       'find-doc-sync-info',
       {},
-      async (ctx) =>
-        await this._client.findAll<DocSyncInfo>(
+      (ctx) =>
+        this._client.findAll<DocSyncInfo>(
           github.class.DocSyncInfo,
           {
             needSync: { $ne: githubSyncVersion },
@@ -1328,15 +1353,15 @@ export class GithubWorker implements IntegrationManager {
         if (info.deleted === true) {
           if (await mapper.handleDelete(existing, info, derivedClient, true)) {
             await derivedClient.remove(info)
-            continue
           }
+          continue
         }
 
         const docUpdate = await this.ctx.withLog(
           'sync doc',
           {},
-          async (ctx) => await mapper.sync(existing, info, parent, derivedClient),
-          { url: info.url.toLowerCase() }
+          (ctx) => mapper.sync(existing, info, parent, derivedClient),
+          { url: info.url.toLowerCase(), workspace: this.workspace.name }
         )
         if (docUpdate !== undefined) {
           await derivedClient.update(info, docUpdate)
@@ -1397,10 +1422,6 @@ export class GithubWorker implements IntegrationManager {
           }, 50) // Small timeout to aggregate few bulk changes.
         }
       }
-      // Wait up for every 60 seconds to refresh, just in case.
-      setTimeout(() => {
-        resolve()
-      }, 60 * 1000)
     })
   }
 
@@ -1539,7 +1560,7 @@ export class GithubWorker implements IntegrationManager {
     ctx.info('Connecting to', { workspace: workspace.workspaceUrl, workspaceId: workspace.workspaceName })
     let client: Client | undefined
     try {
-      client = await createPlatformClient(workspace.name, 30000, (event: ClientConnectEvent) => {
+      client = await createPlatformClient(workspace.name, 30000, async (event: ClientConnectEvent) => {
         reconnect(workspace.name, event)
       })
 

@@ -86,20 +86,22 @@
 
 {#if $deviceInfo.navigator.visible}
   <ToDosNavigator bind:mode bind:tag bind:currentDate />
-  <Separator
-    name={'time'}
-    float={$deviceInfo.navigator.float}
-    index={0}
-    disabledWhen={['panel-aside']}
-    color={'var(--theme-divider-color)'}
-  />
+  <Separator name={'time'} float={$deviceInfo.navigator.float} index={0} color={'var(--theme-divider-color)'} />
 {/if}
-<div class="flex-col w-full clear-mins" class:left-divider={!$deviceInfo.navigator.visible} bind:this={mainPanel}>
+<div
+  class="flex-col w-full clear-mins mobile-wrapper"
+  class:left-divider={!$deviceInfo.navigator.visible}
+  bind:this={mainPanel}
+>
   <ToDos {mode} {tag} bind:currentDate />
 </div>
 {#if visibleCalendar}
   <Separator name={'time'} index={1} color={'transparent'} separatorSize={0} short />
-  <div class="flex-col clear-mins" bind:this={replacedPanel}>
-    <PlanningCalendar {dragItem} bind:currentDate displayedDaysCount={5} on:dragDrop={drop} />
-  </div>
+  <PlanningCalendar
+    {dragItem}
+    bind:element={replacedPanel}
+    bind:currentDate
+    displayedDaysCount={5}
+    on:dragDrop={drop}
+  />
 {/if}

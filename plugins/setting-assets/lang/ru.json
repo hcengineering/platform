@@ -68,7 +68,7 @@
     "Select": "Выбрать",
     "AddOwner": "Добавить владельца",
     "User": "Пользователь",
-    "Maintainer": "Maintainer",
+    "Maintainer": "Сопровождающий",
     "Owner": "Владелец",
     "OwnerFirstName": "Имя владельца",
     "OwnerLastName": "Фамилия владельца",
@@ -120,6 +120,6 @@
     "DeleteSpaceTypeConfirm": "Вы действительно хотите удалить этот тип пространства?",
     "WorkspaceName": "Название рабочего пространства",
     "Workspace": "Рабочее пространство",
-    "OwnerOrMainteinerRequired": "Вы должны иметь роль Владельца/Сопровождаюего"
+    "OwnerOrMaintainerRequired": "Вы должны иметь роль Владельца/Сопровождаемого"
   }
 }

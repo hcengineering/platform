@@ -16,8 +16,8 @@
   import { createQuery } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
   import { ToDo, WorkSlot } from '@hcengineering/time'
-  import time from '../plugin'
   import ToDoPresenter from './ToDoPresenter.svelte'
+  import calendar from '@hcengineering/calendar'
 
   export let event: WorkSlot
   export let oneRow: boolean = false
@@ -26,13 +26,15 @@
   let todo: ToDo
 
   const query = createQuery()
-  $: query.query(event.attachedToClass, { _id: event.attachedTo }, (res) => {
-    todo = res[0]
-  })
+  $: !hideDetails
+    ? query.query(event.attachedToClass, { _id: event.attachedTo }, (res) => {
+      todo = res[0]
+    })
+    : query.unsubscribe()
 </script>
 
 {#if hideDetails}
-  <Label label={time.string.WorkSlot} />
+  <Label label={calendar.string.Busy} />
 {:else if todo}
   <ToDoPresenter value={todo} withoutSpace={oneRow} />
 {/if}

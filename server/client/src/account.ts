@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 
-import { type BaseWorkspaceInfo, type Data, type Version, BackupStatus } from '@hcengineering/core'
+import {
+  type BaseWorkspaceInfo,
+  type Data,
+  type Version,
+  BackupStatus,
+  AccountRole,
+  Ref,
+  Doc
+} from '@hcengineering/core'
 import { getMetadata, PlatformError, unknownError } from '@hcengineering/platform'
 
 import plugin from './plugin'
@@ -29,7 +37,9 @@ export interface LoginInfo {
   email: string
 }
 
-export async function listAccountWorkspaces (token: string): Promise<BaseWorkspaceInfo[]> {
+const connectionErrorCodes = ['ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND']
+
+export async function listAccountWorkspaces (token: string, region: string | null = null): Promise<BaseWorkspaceInfo[]> {
   const accountsUrl = getAccoutsUrlOrFail()
   const workspaces = await (
     await fetch(accountsUrl, {
@@ -39,7 +49,7 @@ export async function listAccountWorkspaces (token: string): Promise<BaseWorkspa
       },
       body: JSON.stringify({
         method: 'listWorkspaces',
-        params: [token]
+        params: [token, region]
       })
     })
   ).json()
@@ -93,7 +103,7 @@ export async function getTransactorEndpoint (
         // Timeout happened
         throw err
       }
-      if (err?.cause?.code === 'ECONNRESET' || err?.cause?.code === 'ECONNREFUSED') {
+      if (connectionErrorCodes.includes(err?.cause?.code)) {
         await new Promise<void>((resolve) => setTimeout(resolve, 1000))
       } else {
         throw err
@@ -129,8 +139,7 @@ export function withRetryConnUntilTimeout<P extends any[], T> (
   timeoutMs: number = 5000
 ): (...params: P) => Promise<T> {
   const timeout = Date.now() + timeoutMs
-  const shouldFail = (err: any): boolean =>
-    (err?.cause?.code !== 'ECONNRESET' && err?.cause?.code !== 'ECONNREFUSED') || timeout < Date.now()
+  const shouldFail = (err: any): boolean => !connectionErrorCodes.includes(err?.cause?.code) || timeout < Date.now()
 
   return withRetry(f, shouldFail)
 }
@@ -139,7 +148,7 @@ export function withRetryConnUntilSuccess<P extends any[], T> (
   f: (...params: P) => Promise<T>
 ): (...params: P) => Promise<T> {
   const shouldFail = (err: any): boolean => {
-    const res = err?.cause?.code !== 'ECONNRESET' && err?.cause?.code !== 'ECONNREFUSED'
+    const res = !connectionErrorCodes.includes(err?.cause?.code)
 
     if (res) {
       console.error('Failing withRetryConnUntilSuccess with error cause:', err?.cause)
@@ -295,4 +304,53 @@ function getAccoutsUrlOrFail (): string {
     throw new PlatformError(unknownError('No account endpoint specified'))
   }
   return accountsUrl
+}
+
+export async function assignWorkspace (
+  token: string,
+  email: string,
+  workspace: string,
+  role: AccountRole = AccountRole.User,
+  personId?: Ref<Doc>,
+  shouldReplaceAccount = false,
+  personAccountId?: Ref<Doc>
+): Promise<WorkspaceLoginInfo> {
+  const accountsUrl = getAccoutsUrlOrFail()
+  const res = await (
+    await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        method: 'assignWorkspace',
+        params: [token, email, workspace, role, personId, shouldReplaceAccount, undefined, personAccountId]
+      })
+    })
+  ).json()
+
+  return res.result as WorkspaceLoginInfo
+}
+
+export async function createAccount (
+  email: string,
+  password: string,
+  firstName: string,
+  lastName: string
+): Promise<WorkspaceLoginInfo> {
+  const accountsUrl = getAccoutsUrlOrFail()
+  const workspace = await (
+    await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        method: 'createAccount',
+        params: [email, password, firstName, lastName]
+      })
+    })
+  ).json()
+
+  return workspace.result as WorkspaceLoginInfo
 }

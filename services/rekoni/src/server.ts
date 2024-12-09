@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { initStatisticsContext } from '@hcengineering/server-core'
 import bodyParser from 'body-parser'
 import cors from 'cors'
 import express from 'express'
@@ -42,7 +42,7 @@ const extractToken = (header: IncomingHttpHeaders): any => {
 export const startServer = async (): Promise<void> => {
   const app = express()
 
-  const ctx = new MeasureMetricsContext('rekini', {}, {}, newMetrics())
+  const ctx = initStatisticsContext('rekoni', {})
 
   class MyStream {
     write (text: string): void {
@@ -123,7 +123,7 @@ export const startServer = async (): Promise<void> => {
         temp.push(d)
       })
       bodyStream.on('end', function () {
-        resolve(Buffer.concat(temp))
+        resolve(Buffer.concat(temp as any))
       })
     })
 

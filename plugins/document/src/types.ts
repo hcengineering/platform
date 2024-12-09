@@ -14,7 +14,7 @@
 //
 
 import { Attachment } from '@hcengineering/attachment'
-import { Account, Class, CollaborativeDoc, Doc, Rank, Ref, TypedSpace } from '@hcengineering/core'
+import { Account, Class, MarkupBlobRef, Doc, Rank, Ref, TypedSpace } from '@hcengineering/core'
 import { Preference } from '@hcengineering/preference'
 import { IconProps } from '@hcengineering/view'
 
@@ -24,7 +24,7 @@ export interface Teamspace extends TypedSpace, IconProps {}
 /** @public */
 export interface Document extends Doc, IconProps {
   title: string
-  content: CollaborativeDoc
+  content: MarkupBlobRef | null
   parent: Ref<Document>
   space: Ref<Teamspace>
 
@@ -43,7 +43,7 @@ export interface Document extends Doc, IconProps {
 /** @public */
 export interface DocumentSnapshot extends Doc {
   title: string
-  content: CollaborativeDoc
+  content: MarkupBlobRef
   parent: Ref<Document>
 }
 

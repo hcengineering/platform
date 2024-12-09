@@ -141,9 +141,7 @@ export class PlatformWorker {
     for (const [workspace, users] of workspaces) {
       const worker = this.clients.get(workspace)
       if (worker !== undefined) {
-        await this.ctx.with('syncUsers', {}, async (ctx) => {
-          await worker.syncUserData(ctx, users)
-        })
+        await this.ctx.with('syncUsers', {}, (ctx) => worker.syncUserData(ctx, users))
       }
     }
     this.periodicSyncPromise = undefined
@@ -750,8 +748,12 @@ export class PlatformWorker {
           errors++
           return
         }
+        if (workspaceInfo?.mode === 'archived') {
+          this.ctx.warn('Workspace is archived.', { workspace })
+          return
+        }
         if (workspaceInfo?.disabled === true) {
-          this.ctx.error('Workspace is disabled workspaceId', { workspace })
+          this.ctx.warn('Workspace is disabled', { workspace })
           return
         }
         try {

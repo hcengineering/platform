@@ -104,8 +104,8 @@ export function updateMeasure (
       param.value += value ?? ed - st
       param.operations++
     }
-
-    param.topResult = getUpdatedTopResult(param.topResult, ed - st, fParams)
+    // Do not update top results for params.
+    // param.topResult = getUpdatedTopResult(param.topResult, ed - st, fParams)
   }
   // Update leaf data
   if (override === true) {

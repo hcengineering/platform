@@ -54,7 +54,6 @@
     "express-static-gzip": "^2.1.7",
     "uuid": "^8.3.2",
     "cors": "^2.8.5",
-    "@hcengineering/elastic": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/storage": "^0.6.0",
     "@hcengineering/server-storage": "^0.6.0",

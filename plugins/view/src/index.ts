@@ -91,6 +91,7 @@ const view = plugin(viewId, {
     ObjectPresenter: '' as Ref<Mixin<ObjectPresenter>>,
     ObjectEditorHeader: '' as Ref<Mixin<ObjectEditorHeader>>,
     ObjectEditorFooter: '' as Ref<Mixin<ObjectEditorFooter>>,
+    ObjectPanelFooter: '' as Ref<Mixin<ObjectEditorFooter>>,
     ObjectValidator: '' as Ref<Mixin<ObjectValidator>>,
     ObjectFactory: '' as Ref<Mixin<ObjectFactory>>,
     ObjectTitle: '' as Ref<Mixin<ObjectTitle>>,
@@ -211,7 +212,8 @@ const view = plugin(viewId, {
     Join: '' as IntlString,
     Leave: '' as IntlString,
     Copied: '' as IntlString,
-    And: '' as IntlString
+    And: '' as IntlString,
+    Title: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
@@ -258,7 +260,8 @@ const view = plugin(viewId, {
     Video: '' as Asset,
     Audio: '' as Asset,
     File: '' as Asset,
-    PinTack: '' as Asset
+    PinTack: '' as Asset,
+    Feather: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,

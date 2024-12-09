@@ -122,7 +122,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
     if (options?.lookup !== undefined) {
       for (const object of findResult) {
         if (object.$lookup !== undefined) {
-          await this.filterLookup(ctx, object.$lookup)
+          this.filterLookup(ctx, object.$lookup)
         }
       }
     }
@@ -136,7 +136,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
     return doc.createdBy === account || account === core.account.System
   }
 
-  async filterLookup<T extends Doc>(ctx: MeasureContext, lookup: LookupData<T>): Promise<void> {
+  filterLookup<T extends Doc>(ctx: MeasureContext, lookup: LookupData<T>): void {
     for (const key in lookup) {
       const val = lookup[key]
       if (Array.isArray(val)) {

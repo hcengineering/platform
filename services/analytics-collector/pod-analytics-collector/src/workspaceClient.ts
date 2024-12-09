@@ -34,7 +34,7 @@ export class WorkspaceClient {
   }
 
   protected async initClient (): Promise<TxOperations> {
-    const token = generateToken(systemAccountEmail, this.workspace)
+    const token = generateToken(systemAccountEmail, this.workspace, { client: 'analytics' })
     this.client = await connectPlatform(token)
 
     return new TxOperations(this.client, core.account.System)

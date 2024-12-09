@@ -81,8 +81,8 @@ class StorageBlobAdapter implements DbAdapter {
     return toFindResult([])
   }
 
-  async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
-    return new Set()
+  async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Map<T, number>> {
+    return new Map()
   }
 
   async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
@@ -94,7 +94,7 @@ class StorageBlobAdapter implements DbAdapter {
 
   async close (): Promise<void> {}
 
-  find (ctx: MeasureContext, domain: Domain, recheck?: boolean): StorageIterator {
+  find (ctx: MeasureContext, domain: Domain): StorageIterator {
     return this.client.find(ctx, this.workspaceId)
   }
 
@@ -135,6 +135,8 @@ export async function createStorageDataAdapter (
     throw new Error('minio storage adapter require minio')
   }
   // We need to create bucket if it doesn't exist
-  await storage.make(ctx, workspaceId)
+  if (!(await storage.exists(ctx, workspaceId))) {
+    await storage.make(ctx, workspaceId)
+  }
   return new StorageBlobAdapter(workspaceId, storage as StorageAdapterEx, ctx)
 }

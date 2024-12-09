@@ -15,9 +15,12 @@ export class CompanyDetailsPage extends CommonRecruitingPage {
   readonly buttonLocation = (): Locator =>
     this.page.locator('//span[text()="Location"]/following-sibling::div[1]/button/span')
 
-  readonly addMemberButton = (): Locator => this.page.locator('[id="contact\\:string\\:AddMember"]')
+  readonly addMemberButton = (): Locator =>
+    this.page.locator('div.antiSection[id="members"]').locator('[id="contact\\:string\\:AddMember"]')
+
   readonly selectMember = (memberName: string): Locator => this.page.getByRole('button', { name: memberName })
-  readonly member = (memberName: string): Locator => this.page.getByRole('link', { name: memberName })
+  readonly member = (memberName: string): Locator =>
+    this.page.locator('div.antiSection[id="members"]').getByRole('link', { name: memberName })
 
   async checkCompany (data: NewCompany): Promise<void> {
     await expect(this.inputName()).toHaveValue(data.name)

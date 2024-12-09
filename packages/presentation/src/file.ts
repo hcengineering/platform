@@ -173,17 +173,18 @@ export function getFileUrl (file: string, filename?: string): string {
 /**
  * @public
  */
-export async function uploadFile (file: File): Promise<Ref<PlatformBlob>> {
-  const id = generateFileId()
-  const params = getFileUploadParams(id, file)
+export async function uploadFile (file: File, uuid?: Ref<PlatformBlob>): Promise<Ref<PlatformBlob>> {
+  uuid ??= generateFileId() as Ref<PlatformBlob>
+
+  const params = getFileUploadParams(uuid, file)
 
   if (params.method === 'signed-url') {
-    await uploadFileWithSignedUrl(file, id, params.url)
+    await uploadFileWithSignedUrl(file, uuid, params.url)
   } else {
-    await uploadFileWithFormData(file, id, params.url)
+    await uploadFileWithFormData(file, uuid, params.url)
   }
 
-  return id as Ref<PlatformBlob>
+  return uuid
 }
 
 /**
@@ -257,8 +258,8 @@ async function uploadFileWithSignedUrl (file: File, uuid: string, uploadUrl: str
       method: 'PUT',
       headers: {
         'Content-Type': file.type,
-        'Content-Length': file.size.toString(),
-        'x-amz-meta-last-modified': file.lastModified.toString()
+        'Content-Length': file.size.toString()
+        // 'x-amz-meta-last-modified': file.lastModified.toString()
       }
     })
 

@@ -60,6 +60,24 @@
     "ExitingFullscreenMode": "退出全屏模式",
     "Select": "选择",
     "ChooseShare": "选择共享内容",
-    "CreateMeeting": "创建会议"
+    "CreateMeeting": "创建会议",
+    "MoreOptions": "更多选项",
+    "StartTranscription": "开始转录",
+    "StopTranscription": "停止转录",
+    "Meeting": "会议",
+    "Transcription": "转录",
+    "StartWithTranscription": "开始转录",
+    "MeetingMinutes": "会议记录",
+    "MeetingsMinutes": "会议记录",
+    "StartMeeting": "开始会议",
+    "Video": "视频",
+    "NoMeetingMinutes": "无会议记录",
+    "JoinMeeting": "加入会议",
+    "MeetingStart": "会议开始",
+    "MeetingEnd": "会议结束",
+    "Status": "状态",
+    "Active": "活动",
+    "Finished": "已完成",
+    "StartWithRecording": "开始录制"
   }
 }

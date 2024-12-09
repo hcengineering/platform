@@ -158,6 +158,8 @@ export { default as HotkeyGroup } from './components/HotkeyGroup.svelte'
 export { default as ModernWizardDialog } from './components/wizard/ModernWizardDialog.svelte'
 export { default as ModernWizardBar } from './components/wizard/ModernWizardBar.svelte'
 export { default as ModernTab } from './components/ModernTab.svelte'
+export { default as ModernCheckbox } from './components/ModernCheckbox.svelte'
+export { default as ModernRadioButton } from './components/ModernRadioButton.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconCircleAdd } from './components/icons/CircleAdd.svelte'
@@ -237,6 +239,11 @@ export { default as IconKeyShift } from './components/icons/KeyShift.svelte'
 export { default as IconFolderCollapsed } from './components/icons/FolderCollapsed.svelte'
 export { default as IconFolderExpanded } from './components/icons/FolderExpanded.svelte'
 export { default as IconCheckmark } from './components/icons/Checkmark.svelte'
+export { default as IconToDetails } from './components/icons/ToDetails.svelte'
+export { default as IconHistory } from './components/icons/History.svelte'
+export { default as IconScribble } from './components/icons/Scribble.svelte'
+export { default as IconMenuOpen } from './components/icons/MenuOpen.svelte'
+export { default as IconMenuClose } from './components/icons/MenuClose.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'
 export { default as Panel } from './components/Panel.svelte'
@@ -271,6 +278,7 @@ export { default as TimeZonesPopup } from './components/TimeZonesPopup.svelte'
 export { default as CodeForm } from './components/CodeForm.svelte'
 export { default as CodeInput } from './components/CodeInput.svelte'
 export { default as TimeLeft } from './components/TimeLeft.svelte'
+export { default as SectionEmpty } from './components/SectionEmpty.svelte'
 
 export { default as Dock } from './components/Dock.svelte'
 
@@ -311,6 +319,7 @@ export const deviceOptionsStore = writable<DeviceOptions>({
   isPortrait: false,
   isMobile: false,
   navigator: { visible: true, float: false, direction: 'vertical' },
+  aside: { visible: true, float: false },
   fontSize: 0,
   size: null,
   sizes: { xs: false, sm: false, md: false, lg: false, xl: false, xxl: false },

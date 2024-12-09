@@ -268,7 +268,21 @@ function defineDrive (builder: Builder): void {
       configOptions: {
         hiddenKeys: ['name', 'description']
       },
-      config: ['', 'members', 'owners', 'private', 'archived']
+      config: ['', 'members', 'owners', 'private', 'archived'],
+      viewOptions: {
+        groupBy: [],
+        orderBy: [],
+        other: [
+          {
+            key: 'hideArchived',
+            type: 'toggle',
+            defaultValue: true,
+            actionTarget: 'query',
+            action: drive.function.HideArchivedDrives,
+            label: view.string.HideArchived
+          }
+        ]
+      }
     },
     drive.viewlet.DriveTable
   )
@@ -581,7 +595,7 @@ function defineFile (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: drive.class.File,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   // Search

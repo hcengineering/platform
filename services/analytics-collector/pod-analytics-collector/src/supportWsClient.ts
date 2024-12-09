@@ -65,8 +65,7 @@ export class SupportWsClient extends WorkspaceClient {
 
   private handleTx (client: TxOperations, ...txes: Tx[]): void {
     for (const tx of txes) {
-      const etx = TxProcessor.extractTx(tx)
-      switch (etx._class) {
+      switch (tx._class) {
         case core.class.TxUpdateDoc: {
           this.txUpdateDoc(client, tx as TxUpdateDoc<Doc>)
           break

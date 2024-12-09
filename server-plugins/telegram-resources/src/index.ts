@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
+import chunter, { ChatMessage } from '@hcengineering/chunter'
 import contact, { Channel, ChannelProvider, Contact, Employee, formatName, PersonAccount } from '@hcengineering/contact'
 import {
   Account,
@@ -29,27 +31,25 @@ import {
   TxCreateDoc,
   TxProcessor
 } from '@hcengineering/core'
-import { TriggerControl } from '@hcengineering/server-core'
 import notification, {
   BaseNotificationType,
   InboxNotification,
   MentionInboxNotification,
   NotificationType
 } from '@hcengineering/notification'
-import telegram, { TelegramMessage, TelegramNotificationRequest } from '@hcengineering/telegram'
-import setting, { Integration } from '@hcengineering/setting'
-import { NotificationProviderFunc, ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
 import { getMetadata, getResource, translate } from '@hcengineering/platform'
-import serverTelegram from '@hcengineering/server-telegram'
+import { TriggerControl } from '@hcengineering/server-core'
+import { NotificationProviderFunc, ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
 import {
-  getTranslatedNotificationContent,
+  getNotificationLink,
   getTextPresenter,
-  getNotificationLink
+  getTranslatedNotificationContent
 } from '@hcengineering/server-notification-resources'
+import serverTelegram from '@hcengineering/server-telegram'
 import { generateToken } from '@hcengineering/server-token'
-import chunter, { ChatMessage } from '@hcengineering/chunter'
+import setting, { Integration } from '@hcengineering/setting'
+import telegram, { TelegramMessage, TelegramNotificationRequest } from '@hcengineering/telegram'
 import { markupToHTML } from '@hcengineering/text'
-import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
 
 /**
  * @public
@@ -75,23 +75,24 @@ export async function FindMessages (
 /**
  * @public
  */
-export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const res: Tx[] = []
-
-  const message = TxProcessor.createDoc2Doc<TelegramMessage>(tx as TxCreateDoc<TelegramMessage>)
-  const channel = (
-    await control.findAll(control.ctx, contact.class.Channel, { _id: message.attachedTo }, { limit: 1 })
-  )[0]
-  if (channel !== undefined) {
-    if (channel.lastMessage === undefined || channel.lastMessage < message.sendOn) {
-      const tx = control.txFactory.createTxUpdateDoc(channel._class, channel.space, channel._id, {
-        lastMessage: message.sendOn
-      })
-      res.push(tx)
+export async function OnMessageCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const message = TxProcessor.createDoc2Doc<TelegramMessage>(tx as TxCreateDoc<TelegramMessage>)
+    const channel = (
+      await control.findAll(control.ctx, contact.class.Channel, { _id: message.attachedTo }, { limit: 1 })
+    )[0]
+    if (channel !== undefined) {
+      if (channel.lastMessage === undefined || channel.lastMessage < message.sendOn) {
+        const tx = control.txFactory.createTxUpdateDoc(channel._class, channel.space, channel._id, {
+          lastMessage: message.sendOn
+        })
+        result.push(tx)
+      }
     }
   }
 
-  return res
+  return result
 }
 
 /**
@@ -104,7 +105,7 @@ export function IsIncomingMessageTypeMatch (
   type: NotificationType,
   control: TriggerControl
 ): boolean {
-  const message = TxProcessor.createDoc2Doc(TxProcessor.extractTx(tx) as TxCreateDoc<TelegramMessage>)
+  const message = TxProcessor.createDoc2Doc(tx as TxCreateDoc<TelegramMessage>)
   return message.incoming && message.sendOn > (doc.createdOn ?? doc.modifiedOn)
 }
 
@@ -245,6 +246,7 @@ function hasAttachments (doc: ActivityMessage | undefined, hierarchy: Hierarchy)
   return false
 }
 
+const telegramNotificationKey = 'telegram.notification.reported'
 const SendTelegramNotifications: NotificationProviderFunc = async (
   control: TriggerControl,
   types: BaseNotificationType[],
@@ -261,7 +263,11 @@ const SendTelegramNotifications: NotificationProviderFunc = async (
   const botUrl = getMetadata(serverTelegram.metadata.BotUrl)
 
   if (botUrl === undefined || botUrl === '') {
-    control.ctx.error('Please provide telegram bot service url to enable telegram notifications.')
+    const reported = control.cache.get(telegramNotificationKey)
+    if (reported === undefined) {
+      control.ctx.error('Please provide telegram bot service url to enable telegram notifications.')
+      control.cache.set(telegramNotificationKey, true)
+    }
     return []
   }
 

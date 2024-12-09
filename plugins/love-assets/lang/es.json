@@ -60,6 +60,24 @@
     "ExitingFullscreenMode": "Salir del modo de pantalla completa",
     "Select": "Seleccionar",
     "ChooseShare": "Elija qué compartir",
-    "CreateMeeting": "Crear reunión"
+    "CreateMeeting": "Crear reunión",
+    "MoreOptions": "Más opciones",
+    "StartTranscription": "Iniciar transcripción",
+    "StopTranscription": "Detener transcripción",
+    "Meeting": "Reunión",
+    "Transcription": "Transcripción",
+    "StartWithTranscription": "Iniciar con transcripción",
+    "MeetingMinutes": "Minutos de la reunión",
+    "MeetingsMinutes": "Minutos de las reuniones",
+    "StartMeeting": "Iniciar reunión",
+    "Video": "Video",
+    "NoMeetingMinutes": "Sin minutos de reunión",
+    "JoinMeeting": "Unirse a la reunión",
+    "MeetingStart": "Inicio de la reunión",
+    "MeetingEnd": "Fin de la reunión",
+    "Status": "Estado",
+    "Active": "Activo",
+    "Finished": "Terminado",
+    "StartWithRecording": "Iniciar con grabación"
   }
 }

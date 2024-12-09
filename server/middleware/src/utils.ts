@@ -13,7 +13,17 @@
 // limitations under the License.
 //
 
-import core, { Account, AccountRole, type MeasureContext, type SessionData } from '@hcengineering/core'
+import core, {
+  Account,
+  AccountRole,
+  TxProcessor,
+  type Doc,
+  type Hierarchy,
+  type MeasureContext,
+  type SessionData,
+  type Tx,
+  type TxCUD
+} from '@hcengineering/core'
 
 export function isOwner (account: Account, ctx: MeasureContext<SessionData>): boolean {
   return account.role === AccountRole.Owner || account._id === core.account.System || ctx.contextData.admin === true
@@ -21,4 +31,25 @@ export function isOwner (account: Account, ctx: MeasureContext<SessionData>): bo
 
 export function isSystem (account: Account, ctx: MeasureContext<SessionData>): boolean {
   return account._id === core.account.System || ctx.contextData.admin === true
+}
+
+export function filterBroadcastOnly (tx: Tx[], hierarchy: Hierarchy): Tx[] {
+  const ftx = tx.filter((it) => {
+    if (TxProcessor.isExtendsCUD(it._class)) {
+      const cud = it as TxCUD<Doc>
+      const bonly = hierarchy.getClassifierProp(cud.objectClass, 'broadcastOnly')
+      if (bonly === true) {
+        return false
+      }
+      const objClass = hierarchy.getClass(cud.objectClass)
+      const mix = hierarchy.hasMixin(objClass, core.mixin.TransientConfiguration)
+      if (mix && hierarchy.as(objClass, core.mixin.TransientConfiguration).broadcastOnly) {
+        hierarchy.setClassifierProp(cud.objectClass, 'broadcastOnly', true)
+        // We do not need to store a broadcast only transactions into model.
+        return false
+      }
+    }
+    return true
+  })
+  return ftx
 }

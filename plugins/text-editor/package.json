@@ -22,7 +22,6 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "svelte-loader": "^3.2.0",
     "sass": "^1.53.0",
     "@hcengineering/platform-rig": "^0.6.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",

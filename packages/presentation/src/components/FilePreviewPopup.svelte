@@ -13,9 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Blob, type Ref } from '@hcengineering/core'
+  import { Analytics } from '@hcengineering/analytics'
+  import { SortingOrder, type Blob, type Ref } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Dialog, tooltip } from '@hcengineering/ui'
+  import { Button, Dialog, IconHistory, IconScribble, showPopup, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
 
   import { BlobMetadata } from '../types'
@@ -23,6 +24,7 @@
   import ActionContext from './ActionContext.svelte'
   import FilePreview from './FilePreview.svelte'
   import DownloadFileButton from './DownloadFileButton.svelte'
+  import ObjectPopup from './ObjectPopup.svelte'
   import { ComponentExtensions } from '../index'
   import presentation from '../plugin'
   import FileTypeIcon from './FileTypeIcon.svelte'
@@ -31,10 +33,19 @@
   export let name: string
   export let contentType: string
   export let metadata: BlobMetadata | undefined
-  export let props: Record<string, any> = {}
+  export let props: Record<string, any> & {
+    drawings?: any[]
+    drawingAvailable?: boolean
+    drawingEditable?: boolean
+    loadDrawings?: () => Promise<any>
+    createDrawing?: (data: any) => Promise<any>
+  } = {}
 
   export let fullSize = false
   export let showIcon = true
+
+  let drawingLoading = false
+  let createDrawing: (data: any) => Promise<any>
 
   const dispatch = createEventDispatcher()
 
@@ -42,7 +53,70 @@
     if (fullSize) {
       dispatch('fullsize')
     }
+    if (props.drawingAvailable === true) {
+      if (props.loadDrawings !== undefined) {
+        drawingLoading = true
+        props
+          .loadDrawings()
+          .then((result) => {
+            drawingLoading = false
+            props.drawings = result
+          })
+          .catch((error) => {
+            drawingLoading = false
+            Analytics.handleError(error)
+            console.error('Failed to load drawings for file', file, error)
+          })
+      }
+      if (props.createDrawing !== undefined) {
+        createDrawing = props.createDrawing
+        props.createDrawing = async (data: any): Promise<any> => {
+          const newDrawing = await createDrawing(data)
+          if (props.drawings !== undefined) {
+            props.drawings = [newDrawing, ...props.drawings]
+          } else {
+            props.drawings = [newDrawing]
+          }
+          return newDrawing
+        }
+      }
+    }
   })
+
+  function toggleDrawingEdit (): void {
+    props.drawingEditable = !(props.drawingEditable === true)
+  }
+
+  function selectCurrentDrawing (ev: MouseEvent): void {
+    if (props.drawings === undefined || props.drawings.length === 0) {
+      // no current means no history
+      return
+    }
+    showPopup(
+      ObjectPopup,
+      {
+        _class: props.drawings[0]._class,
+        selected: props.drawings[0]._id,
+        docQuery: {
+          parent: props.drawings[0].parent
+        },
+        options: {
+          sort: {
+            createdOn: SortingOrder.Descending
+          }
+        },
+        searchMode: 'disabled',
+        type: 'presenter',
+        width: 'auto'
+      },
+      ev.target as HTMLElement,
+      async (result) => {
+        if (result !== undefined) {
+          props.drawings = [result]
+        }
+      }
+    )
+  }
 </script>
 
 <ActionContext context={{ mode: 'browser' }} />
@@ -65,6 +139,26 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
+    {#if props.drawingAvailable === true}
+      {#if props.drawings !== undefined && props.drawings.length > 0}
+        <Button
+          icon={IconHistory}
+          kind="icon"
+          disabled={drawingLoading || props.drawingEditable === true}
+          showTooltip={{ label: presentation.string.DrawingHistory }}
+          on:click={selectCurrentDrawing}
+        />
+      {/if}
+      <Button
+        icon={IconScribble}
+        kind="icon"
+        disabled={drawingLoading}
+        selected={props.drawingEditable === true}
+        showTooltip={{ label: presentation.string.StartDrawing }}
+        on:click={toggleDrawingEdit}
+      />
+      <div class="buttons-divider" />
+    {/if}
     <DownloadFileButton {name} {file} />
     <ComponentExtensions
       extension={presentation.extension.FilePreviewPopupActions}

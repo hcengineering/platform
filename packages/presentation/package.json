@@ -50,7 +50,7 @@
     "@hcengineering/text": "^0.6.5",
     "@hcengineering/diffview": "^0.6.0",
     "@hcengineering/uploader": "^0.6.0",
-    "svelte": "^4.2.12",
+    "svelte": "^4.2.19",
     "@hcengineering/client": "^0.6.18",
     "@hcengineering/collaborator-client": "^0.6.4",
     "fast-equals": "^5.0.1",

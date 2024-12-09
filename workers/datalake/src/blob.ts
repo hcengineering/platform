@@ -16,16 +16,12 @@
 import { error, json } from 'itty-router'
 import postgres from 'postgres'
 import * as db from './db'
+import { cacheControl, hashLimit } from './const'
 import { toUUID } from './encodings'
+import { getSha256 } from './hash'
 import { selectStorage } from './storage'
-import { type UUID } from './types'
+import { type BlobRequest, type WorkspaceRequest, type UUID } from './types'
 import { copyVideo, deleteVideo } from './video'
-
-const expires = 86400
-const cacheControl = `public,max-age=${expires}`
-
-// 1MB hash limit
-const HASH_LIMIT = 1 * 1024 * 1024
 
 interface BlobMetadata {
   lastModified: number
@@ -39,13 +35,9 @@ export function getBlobURL (request: Request, workspace: string, name: string): 
   return new URL(path, request.url).toString()
 }
 
-export async function handleBlobGet (
-  request: Request,
-  env: Env,
-  ctx: ExecutionContext,
-  workspace: string,
-  name: string
-): Promise<Response> {
+export async function handleBlobGet (request: BlobRequest, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const { workspace, name } = request
+
   const sql = postgres(env.HYPERDRIVE.connectionString)
   const { bucket } = selectStorage(env, workspace)
 
@@ -82,18 +74,14 @@ export async function handleBlobGet (
   return response
 }
 
-export async function handleBlobHead (
-  request: Request,
-  env: Env,
-  ctx: ExecutionContext,
-  workspace: string,
-  name: string
-): Promise<Response> {
+export async function handleBlobHead (request: BlobRequest, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const { workspace, name } = request
+
   const sql = postgres(env.HYPERDRIVE.connectionString)
   const { bucket } = selectStorage(env, workspace)
 
   const blob = await db.getBlob(sql, { workspace, name })
-  if (blob === null) {
+  if (blob === null || blob.deleted) {
     return error(404)
   }
 
@@ -106,7 +94,9 @@ export async function handleBlobHead (
   return new Response(null, { headers, status: 200 })
 }
 
-export async function deleteBlob (env: Env, workspace: string, name: string): Promise<Response> {
+export async function handleBlobDelete (request: BlobRequest, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const { workspace, name } = request
+
   const sql = postgres(env.HYPERDRIVE.connectionString)
 
   try {
@@ -120,12 +110,14 @@ export async function deleteBlob (env: Env, workspace: string, name: string): Pr
   }
 }
 
-export async function postBlobFormData (request: Request, env: Env, workspace: string): Promise<Response> {
+export async function handleUploadFormData (request: WorkspaceRequest, env: Env): Promise<Response> {
   const contentType = request.headers.get('Content-Type')
   if (contentType === null || !contentType.includes('multipart/form-data')) {
     console.error({ error: 'expected multipart/form-data' })
     return error(400, 'expected multipart/form-data')
   }
+
+  const { workspace } = request
 
   const sql = postgres(env.HYPERDRIVE.connectionString)
 
@@ -147,7 +139,7 @@ export async function postBlobFormData (request: Request, env: Env, workspace: s
     files.map(async ([file, key]) => {
       const { name, type, lastModified } = file
       try {
-        const metadata = await saveBlob(env, sql, file, type, workspace, name, lastModified)
+        const metadata = await saveBlob(env, sql, file.stream(), file.size, type, workspace, name, lastModified)
 
         // TODO this probably should happen via queue, let it be here for now
         if (type.startsWith('video/')) {
@@ -167,10 +159,11 @@ export async function postBlobFormData (request: Request, env: Env, workspace: s
   return json(result)
 }
 
-async function saveBlob (
+export async function saveBlob (
   env: Env,
   sql: postgres.Sql,
-  file: File,
+  stream: ReadableStream,
+  size: number,
   type: string,
   workspace: string,
   name: string,
@@ -178,18 +171,19 @@ async function saveBlob (
 ): Promise<BlobMetadata> {
   const { location, bucket } = selectStorage(env, workspace)
 
-  const size = file.size
-  const httpMetadata = { contentType: type, cacheControl }
+  const httpMetadata = { contentType: type, cacheControl, lastModified }
   const filename = getUniqueFilename()
 
-  if (file.size <= HASH_LIMIT) {
-    const hash = await getSha256(file)
+  if (size <= hashLimit) {
+    const [hashStream, uploadStream] = stream.tee()
+
+    const hash = await getSha256(hashStream)
     const data = await db.getData(sql, { hash, location })
     if (data !== null) {
       // Lucky boy, nothing to upload, use existing blob
       await db.createBlob(sql, { workspace, name, hash, location })
     } else {
-      await bucket.put(filename, file, { httpMetadata })
+      await bucket.put(filename, uploadStream, { httpMetadata })
       await sql.begin((sql) => [
         db.createData(sql, { hash, location, filename, type, size }),
         db.createBlob(sql, { workspace, name, hash, location })
@@ -200,7 +194,7 @@ async function saveBlob (
   } else {
     // For large files we cannot calculate checksum beforehead
     // upload file with unique filename and then obtain checksum
-    const { hash } = await uploadLargeFile(bucket, file, filename, { httpMetadata })
+    const { hash } = await uploadLargeFile(bucket, stream, filename, { httpMetadata })
     const data = await db.getData(sql, { hash, location })
     if (data !== null) {
       // We found an existing blob with the same hash
@@ -243,14 +237,13 @@ export async function handleBlobUploaded (env: Env, workspace: string, name: str
 
 async function uploadLargeFile (
   bucket: R2Bucket,
-  file: File,
+  stream: ReadableStream,
   filename: string,
   options: R2PutOptions
 ): Promise<{ hash: UUID }> {
   const digestStream = new crypto.DigestStream('SHA-256')
 
-  const fileStream = file.stream()
-  const [digestFS, uploadFS] = fileStream.tee()
+  const [digestFS, uploadFS] = stream.tee()
 
   const digestPromise = digestFS.pipeTo(digestStream)
   const uploadPromise = bucket.put(filename, uploadFS, options)
@@ -264,14 +257,6 @@ async function uploadLargeFile (
 
 function getUniqueFilename (): UUID {
   return crypto.randomUUID() as UUID
-}
-
-async function getSha256 (file: File): Promise<UUID> {
-  const digestStream = new crypto.DigestStream('SHA-256')
-  await file.stream().pipeTo(digestStream)
-  const digest = await digestStream.digest
-
-  return digestToUUID(digest)
 }
 
 function digestToUUID (digest: ArrayBuffer): UUID {
@@ -295,6 +280,7 @@ function r2MetadataHeaders (head: R2Object): Headers {
       'Accept-Ranges': 'bytes',
       'Content-Length': head.size.toString(),
       'Content-Type': head.httpMetadata.contentType ?? '',
+      'Content-Security-Policy': "default-src 'none';",
       'Cache-Control': head.httpMetadata.cacheControl ?? cacheControl,
       'Last-Modified': head.uploaded.toUTCString(),
       ETag: head.httpEtag
@@ -302,6 +288,7 @@ function r2MetadataHeaders (head: R2Object): Headers {
     : new Headers({
       'Accept-Ranges': 'bytes',
       'Content-Length': head.size.toString(),
+      'Content-Security-Policy': "default-src 'none';",
       'Cache-Control': cacheControl,
       'Last-Modified': head.uploaded.toUTCString(),
       ETag: head.httpEtag

@@ -33,7 +33,6 @@ import core, {
   WorkspaceId,
   WorkspaceIdWithUrl,
   type Client,
-  type Doc,
   type Ref,
   type WithLookup
 } from '@hcengineering/core'
@@ -112,15 +111,16 @@ export async function initModel (
 
   try {
     logger.log('creating database...', workspaceId)
-    await adapter.upload(ctx, DOMAIN_TX, [
-      {
-        _class: core.class.Tx,
-        _id: 'first-tx' as Ref<Doc>,
-        modifiedBy: core.account.System,
-        modifiedOn: Date.now(),
-        space: core.space.DerivedTx
-      }
-    ])
+    const firstTx: Tx = {
+      _class: core.class.Tx,
+      _id: 'first-tx' as Ref<Tx>,
+      modifiedBy: core.account.System,
+      modifiedOn: Date.now(),
+      space: core.space.DerivedTx,
+      objectSpace: core.space.DerivedTx
+    }
+
+    await adapter.upload(ctx, DOMAIN_TX, [firstTx])
 
     await progress(30)
 
@@ -264,9 +264,7 @@ export async function upgradeModel (
 
       const t = Date.now()
       try {
-        await ctx.with(op[0], {}, async (ctx) => {
-          await preMigrate(preMigrateClient, logger)
-        })
+        await ctx.with(op[0], {}, (ctx) => preMigrate(preMigrateClient, logger))
       } catch (err: any) {
         logger.error(`error during pre-migrate: ${op[0]} ${err.message}`, err)
         throw err
@@ -309,9 +307,7 @@ export async function upgradeModel (
     for (const op of migrateOperations) {
       try {
         const t = Date.now()
-        await ctx.with(op[0], {}, async () => {
-          await op[1].migrate(migrateClient, logger)
-        })
+        await ctx.with(op[0], {}, () => op[1].migrate(migrateClient, logger))
         const tdelta = Date.now() - t
         if (tdelta > 0) {
           logger.log('migrate:', { workspaceId: workspaceId.name, operation: op[0], time: Date.now() - t })

@@ -106,7 +106,7 @@ export default async () => {
           const tokenPayload: { workspace: string, email: string } = decodeTokenPayload(token)
 
           const newOpt = { ...opt }
-          const connectTimeout = getMetadata(clientPlugin.metadata.ConnectionTimeout)
+          const connectTimeout = opt?.connectionTimeout ?? getMetadata(clientPlugin.metadata.ConnectionTimeout)
           let connectPromise: Promise<void> | undefined
           if ((connectTimeout ?? 0) > 0) {
             connectPromise = new Promise<void>((resolve, reject) => {
@@ -118,9 +118,10 @@ export default async () => {
                   reject(new Error(`Connection timeout, and no connection established to ${endpoint}`))
                 }
               }, connectTimeout)
-              newOpt.onConnect = (event) => {
+              newOpt.onConnect = async (event, data) => {
                 // Any event is fine, it means server is alive.
                 clearTimeout(connectTO)
+                await opt?.onConnect?.(event, data)
                 resolve()
               }
             })

@@ -52,6 +52,8 @@
     "Spanish": "Español",
     "Chinese": "中文",
     "French": "Français",
+    "Italian": "Italiano",
+    "Czech": "Čeština",
     "MinutesBefore": "{minutes, plural, =1 {a minute before} other {# minutes before}}",
     "HoursBefore": "{hours, plural, =1 {an hour before} other {# hours before}}",
     "DaysBefore": "{days, plural, =1 {a day before} other {# days before}}",
@@ -91,8 +93,10 @@
     "Submit": "Submit",
     "NextStep": "Next step",
     "TypeHere": "Type here...",
+    "NormalSize": "Normal size",
     "FullSize": "Full size",
     "UseMaxWidth": "Max width",
-    "Sidebar": "Sidebar"
+    "Sidebar": "Sidebar",
+    "Language": "Language"
   }
 }

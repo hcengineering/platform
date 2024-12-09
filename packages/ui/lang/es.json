@@ -52,6 +52,8 @@
     "Spanish": "Español",
     "Chinese": "中文",
     "French": "Français",
+    "Italian": "Italiano",
+    "Czech": "Čeština",
     "MinutesBefore": "{minutes, plural, =1 {un minuto antes} other {# minutos antes}}",
     "HoursBefore": "{hours, plural, =1 {una hora antes} other {# horas antes}}",
     "DaysBefore": "{days, plural, =1 {un día antes} other {# días antes}}",
@@ -91,8 +93,10 @@
     "Submit": "Enviar",
     "NextStep": "Siguiente paso",
     "TypeHere": "Escribe aquí...",
+    "NormalSize": "Tamaño normal",
     "FullSize": "Tamaño completo",
     "UseMaxWidth": "Ancho máximo",
-    "Sidebar": "Barra lateral"
+    "Sidebar": "Barra lateral",
+    "Language": "Idioma"
   }
 }

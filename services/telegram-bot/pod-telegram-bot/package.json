@@ -17,7 +17,7 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "mkdir -p bundle && esbuild src/index.ts --bundle  --platform=node > bundle/bundle.js",
+    "bundle": "node ../../../common/scripts/esbuild.js",
     "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/telegram-bot",
     "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/telegram-bot staging",
     "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/telegram-bot",
@@ -78,7 +78,7 @@
     "dotenv": "~16.0.0",
     "express": "^4.19.2",
     "htmlparser2": "^9.0.0",
-    "mongodb": "6.9.0-dev.20241016.sha.3d5bd513",
+    "mongodb": "^6.10.0",
     "otp-generator": "^4.0.1",
     "telegraf": "^4.16.3",
     "ws": "^8.18.0"

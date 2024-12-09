@@ -16,6 +16,7 @@
 import view from '@hcengineering/view'
 import { type Editor, type Range } from '@tiptap/core'
 import textEditor from '@hcengineering/text-editor'
+import { IconScribble } from '@hcengineering/ui'
 
 import { type CompletionOptions } from '../Completion'
 import MentionList from './MentionList.svelte'
@@ -147,7 +148,9 @@ export function inlineCommandsConfig (
           { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
           { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
           { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
-          { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList }
+          { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList },
+          { id: 'drawing-board', label: textEditor.string.DrawingBoard, icon: IconScribble as any },
+          { id: 'mermaid', label: textEditor.string.MermaidDiargram, icon: view.icon.Model }
         ].filter(({ id }) => !excludedCommands.includes(id as InlineCommandId))
       },
       command: ({ editor, range, props }: { editor: Editor, range: Range, props: any }) => {
