@@ -364,7 +364,8 @@ export class LiveQuery implements WithTx, Client {
       total: 0,
       options: options as FindOptions<Doc>,
       callbacks: new Map(),
-      refresh: reduceCalls(() => this.doRefresh(q))
+      refresh: reduceCalls(() => this.doRefresh(q)),
+      refreshId: 0
     }
     if (callback !== undefined) {
       q.callbacks.set(callback.callbackId, callback.callback as unknown as Callback)
@@ -787,8 +788,9 @@ export class LiveQuery implements WithTx, Client {
   }
 
   private async doRefresh (q: Query): Promise<void> {
+    const qid = ++q.refreshId
     const res = await this.client.findAll(q._class, q.query, q.options)
-    if (!deepEqual(res, q.result) || (res.total !== q.total && q.options?.total === true)) {
+    if (q.refreshId === qid && (!deepEqual(res, q.result) || (res.total !== q.total && q.options?.total === true))) {
       q.result = new ResultArray(res, this.getHierarchy())
       q.total = res.total
       await this.callback(q)

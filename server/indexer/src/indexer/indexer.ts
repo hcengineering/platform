@@ -402,7 +402,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   ): Promise<{ classUpdate: Ref<Class<Doc>>[], processed: number }> {
     const _classUpdate = new Set<Ref<Class<Doc>>>()
     let processed = 0
-    await rateLimiter.add(async () => {
+    await rateLimiter.exec(async () => {
       let st = Date.now()
 
       let groupBy = await this.storage.groupBy(ctx, DOMAIN_DOC_INDEX_STATE, 'objectClass', { needIndex: true })
