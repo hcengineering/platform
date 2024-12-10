@@ -78,6 +78,7 @@
     "Status": "Status",
     "Active": "Active",
     "Finished": "Finished",
-    "StartWithRecording": "Start with recording"
+    "StartWithRecording": "Start with recording",
+    "Language": "Language"
   }
 }

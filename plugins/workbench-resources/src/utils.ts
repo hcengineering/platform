@@ -192,8 +192,7 @@ export async function buildNavModel (
       const newSpaces = (nm.spaces ?? []).filter((it) => !spaces.some((sp) => sp.id === it.id))
       newNavModel = {
         spaces: [...spaces, ...newSpaces],
-        specials: [...(newNavModel?.specials ?? []), ...(nm.specials ?? [])],
-        aside: newNavModel?.aside ?? nm?.aside
+        specials: [...(newNavModel?.specials ?? []), ...(nm.specials ?? [])]
       }
     }
   }

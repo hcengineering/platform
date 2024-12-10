@@ -752,9 +752,18 @@ export function categorizeFields (
 
 export function makeViewletKey (loc?: Location): string {
   loc = loc != null ? { path: loc.path } : getCurrentResolvedLocation()
-  loc.fragment = undefined
   loc.query = undefined
 
+  if (loc.fragment != null && loc.fragment !== '') {
+    const props = decodeURIComponent(loc.fragment).split('|')
+    if (props.length >= 3) {
+      const [panel, , _class] = props
+
+      return 'viewlet' + '#' + encodeURIComponent([panel, _class].join('|'))
+    }
+  }
+
+  loc.fragment = undefined
   return 'viewlet' + locationToUrl(loc)
 }
 

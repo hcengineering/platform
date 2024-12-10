@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedDoc, Doc } from '@hcengineering/core'
+  import { AttachedDoc, Doc, Ref, Class } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { isAttachedDoc } from '../utils'
   import DocsNavigator from './DocsNavigator.svelte'
@@ -26,19 +26,31 @@
     return 'parent' in doc && doc.parent != null
   }
 
-  async function getParents (doc: Doc | AttachedDoc): Promise<readonly Doc[]> {
-    if (!isAttachedDoc(doc) && !hasParent(doc)) {
+  function getParentId (doc: Doc | AttachedDoc): Ref<Doc> {
+    return isAttachedDoc(doc) ? doc.attachedTo : (doc as any).parent
+  }
+
+  function getParentClass (doc: Doc | AttachedDoc): Ref<Class<Doc>> {
+    return isAttachedDoc(doc) ? doc.attachedToClass : doc._class
+  }
+
+  function withParent (doc: Doc | AttachedDoc): boolean {
+    return isAttachedDoc(doc) || hasParent(doc)
+  }
+
+  async function getParents (_id: Ref<Doc>, _class: Ref<Class<Doc>>, showParents: boolean): Promise<readonly Doc[]> {
+    if (!showParents) {
       return []
     }
 
     const parents: Doc[] = []
 
-    let currentDoc: Doc | undefined = doc
+    let currentDoc: Doc | undefined = element
 
-    while (currentDoc && (isAttachedDoc(currentDoc) || hasParent(currentDoc))) {
-      const parent: Doc | undefined = isAttachedDoc(currentDoc)
-        ? await client.findOne(currentDoc.attachedToClass, { _id: currentDoc.attachedTo })
-        : await client.findOne(currentDoc._class, { _id: (currentDoc as any).parent })
+    while (currentDoc && withParent(currentDoc)) {
+      const _id = getParentId(currentDoc)
+      const _class = getParentClass(currentDoc)
+      const parent: Doc | undefined = await client.findOne(_class, { _id })
 
       if (parent) {
         currentDoc = parent
@@ -50,8 +62,15 @@
 
     return parents.reverse()
   }
+
+  let parents: readonly Doc[] = []
+
+  $: parentId = getParentId(element)
+  $: parentClass = getParentClass(element)
+  $: showParents = withParent(element)
+  $: getParents(parentId, parentClass, showParents).then((res) => {
+    parents = res
+  })
 </script>
 
-{#await getParents(element) then parents}
-  <DocsNavigator elements={parents} />
-{/await}
+<DocsNavigator elements={parents} />

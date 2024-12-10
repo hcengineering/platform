@@ -148,7 +148,7 @@
       object = detail.object
     }
 
-    openChannel(selectedData.id, selectedData._class)
+    openChannel(selectedData.id, selectedData._class, undefined, true)
   }
 
   defineSeparators('chat', [

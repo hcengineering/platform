@@ -26,6 +26,7 @@
     isAttachedDoc
   } from '@hcengineering/view-resources'
 
+  export let attachedTo: DisplayDocUpdateMessage['attachedTo']
   export let objectClass: DisplayDocUpdateMessage['objectClass']
   export let objectId: DisplayDocUpdateMessage['objectId']
   export let action: DisplayDocUpdateMessage['action']
@@ -51,8 +52,8 @@
     return await getDocLinkTitle(client, object._id, object._class, object)
   }
 
-  async function loadObject (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
-    const isRemoved = await checkIsObjectRemoved(client, _id, _class)
+  async function loadObject (_id: Ref<Doc>, _class: Ref<Class<Doc>>, attachedTo: Ref<Doc>): Promise<void> {
+    const isRemoved = attachedTo === _id ? false : await checkIsObjectRemoved(client, _id, _class)
 
     if (isRemoved) {
       object = await buildRemovedDoc(client, _id, _class)
@@ -64,7 +65,7 @@
     }
   }
 
-  $: void loadObject(objectId, objectClass)
+  $: void loadObject(objectId, objectClass, attachedTo)
 
   function getPanelComponent (object: Doc, objectPanel?: ObjectPanel): AnyComponent {
     if (objectPanel !== undefined) {

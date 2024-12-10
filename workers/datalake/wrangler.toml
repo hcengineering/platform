@@ -1,7 +1,7 @@
 #:schema node_modules/wrangler/config-schema.json
 name = "datalake-worker"
 main = "src/index.ts"
-compatibility_date = "2024-07-01"
+compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 keep_vars = true
 

@@ -96,7 +96,7 @@ export async function handleSignComplete (request: BlobRequest, env: Env, ctx: E
   }
 
   try {
-    await handleBlobUploaded(env, workspace, name, uuid)
+    await handleBlobUploaded(env, ctx, workspace, name, uuid)
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error({ error: message, workspace, name, uuid })
