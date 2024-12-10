@@ -17,7 +17,6 @@ import { registerProviders } from '@hcengineering/auth-providers'
 import { metricsAggregate, type BrandingMap, type MeasureContext } from '@hcengineering/core'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
-import toolPlugin from '@hcengineering/server-tool'
 import cors from '@koa/cors'
 import { type IncomingHttpHeaders } from 'http'
 import Koa from 'koa'
@@ -86,11 +85,6 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   setMetadata(account.metadata.WsLivenessDays, wsLivenessDays)
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
-
-  const initScriptUrl = process.env.INIT_SCRIPT_URL
-  if (initScriptUrl !== undefined) {
-    setMetadata(toolPlugin.metadata.InitScriptURL, initScriptUrl)
-  }
 
   const hasSignUp = process.env.DISABLE_SIGNUP !== 'true'
   const methods = getMethods(hasSignUp)

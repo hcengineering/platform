@@ -25,9 +25,9 @@ import {
   type ImportProject,
   type ImportProjectType
 } from '../importer/importer'
-import { type FileUploader } from '../importer/uploader'
+import { type Logger } from '../importer/logger'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
-
+import { type FileUploader } from '../importer/uploader'
 interface ClickupTask {
   'Task ID': string
   'Task Name': string
@@ -86,7 +86,8 @@ class ClickupImporter {
 
   constructor (
     private readonly client: TxOperations,
-    private readonly fileUploader: FileUploader
+    private readonly fileUploader: FileUploader,
+    private readonly logger: Logger
   ) {}
 
   async importClickUpTasks (file: string): Promise<void> {
@@ -102,13 +103,13 @@ class ClickupImporter {
       spaces
     }
 
-    console.log('========================================')
-    console.log('IMPORT DATA STRUCTURE: ', JSON.stringify(importData, null, 4))
-    console.log('========================================')
+    this.logger.log('========================================')
+    this.logger.log('IMPORT DATA STRUCTURE: ', JSON.stringify(importData, null, 4))
+    this.logger.log('========================================')
     const postprocessor = new ClickupMarkdownPreprocessor(this.personsByName)
-    await new WorkspaceImporter(this.client, this.fileUploader, importData, postprocessor).performImport()
-    console.log('========================================')
-    console.log('IMPORT SUCCESS ')
+    await new WorkspaceImporter(this.client, this.logger, this.fileUploader, importData, postprocessor).performImport()
+    this.logger.log('========================================')
+    this.logger.log('IMPORT SUCCESS ')
   }
 
   private async processTasksCsv (file: string, process: (json: ClickupTask) => Promise<void> | void): Promise<void> {
@@ -136,8 +137,8 @@ class ClickupImporter {
       statuses.add(clickupTask.Status)
     })
 
-    console.log(projects)
-    console.log(statuses)
+    this.logger.log('Projects: ' + JSON.stringify(projects))
+    this.logger.log('Statuses: ' + JSON.stringify(statuses))
 
     const importProjectType = this.createClickupProjectType(Array.from(statuses))
 

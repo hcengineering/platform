@@ -20,11 +20,29 @@ import serverClientPlugin, {
   selectWorkspace
 } from '@hcengineering/server-client'
 import { program } from 'commander'
-import { importNotion } from './notion/notion'
 import { setMetadata } from '@hcengineering/platform'
-import { FrontFileUploader, type FileUploader } from './importer/uploader'
-import { ClickupImporter } from './clickup/clickup'
-import { UnifiedFormatImporter } from './huly/unified'
+import {
+  UnifiedFormatImporter,
+  ClickupImporter,
+  importNotion,
+  FrontFileUploader,
+  type FileUploader,
+  type Logger
+} from '@hcengineering/importer'
+
+class ConsoleLogger implements Logger {
+  log (msg: string, data?: any): void {
+    console.log(msg, data)
+  }
+
+  warn (msg: string, data?: any): void {
+    console.warn(msg, data)
+  }
+
+  error (msg: string, data?: any): void {
+    console.error(msg, data)
+  }
+}
 
 /**
  * @public
@@ -127,7 +145,7 @@ export function importTool (): void {
     .action(async (file: string, cmd) => {
       const { workspace, user, password } = cmd
       await authorize(user, password, workspace, async (client, uploader) => {
-        const importer = new ClickupImporter(client, uploader)
+        const importer = new ClickupImporter(client, uploader, new ConsoleLogger())
         await importer.importClickUpTasks(file)
       })
     })
@@ -142,7 +160,7 @@ export function importTool (): void {
     .action(async (dir: string, cmd) => {
       const { workspace, user, password } = cmd
       await authorize(user, password, workspace, async (client, uploader) => {
-        const importer = new UnifiedFormatImporter(client, uploader)
+        const importer = new UnifiedFormatImporter(client, uploader, new ConsoleLogger())
         await importer.importFolder(dir)
       })
     })
