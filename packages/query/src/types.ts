@@ -12,6 +12,6 @@ export interface Query {
   options?: FindOptions<Doc>
   total: number
   callbacks: Map<string, Callback>
-
   refresh: () => Promise<void>
+  refreshId: number
 }
