@@ -376,15 +376,9 @@ async function processMigrateJsonForDoc (
         await retry(5, async () => {
           const stat = await storageAdapter.stat(ctx, workspaceId, currentYdocId)
           if (stat !== undefined) {
-            const buffer = await storageAdapter.read(ctx, workspaceId, currentYdocId)
-            await storageAdapter.put(
-              ctx,
-              workspaceId,
-              ydocId,
-              Buffer.concat(buffer as any),
-              'application/ydoc',
-              buffer.length
-            )
+            const data = await storageAdapter.read(ctx, workspaceId, currentYdocId)
+            const buffer = Buffer.concat(data as any)
+            await storageAdapter.put(ctx, workspaceId, ydocId, buffer, 'application/ydoc', buffer.length)
           }
         })
       }

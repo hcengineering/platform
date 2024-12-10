@@ -197,15 +197,9 @@ export async function restoreControlledDocContentForDoc (
         return false
       }
 
-      const buffer = await storageAdapter.read(ctx, workspaceId, currentYdocId)
-      await storageAdapter.put(
-        ctx,
-        workspaceId,
-        ydocId,
-        Buffer.concat(buffer as any),
-        'application/ydoc',
-        buffer.length
-      )
+      const data = await storageAdapter.read(ctx, workspaceId, currentYdocId)
+      const buffer = Buffer.concat(data as any)
+      await storageAdapter.put(ctx, workspaceId, ydocId, buffer, 'application/ydoc', buffer.length)
     } catch (err: any) {
       console.error('failed to restore content for', doc._class, doc._id, err)
       return false
