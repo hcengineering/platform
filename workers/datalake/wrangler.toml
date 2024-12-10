@@ -95,7 +95,7 @@ r2_buckets = [
 ]
 
 hyperdrive = [
-  { binding = "HYPERDRIVE", id = "055e968f3067414eaa30467d8a9c5021" }
+  { binding = "HYPERDRIVE", id = "055e968f3067414eaa30467d8a9c5021", localConnectionString = "postgresql://root:roach@localhost:26257/datalake" }
 ]
 
 [env.dev.vars]
