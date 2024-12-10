@@ -16,7 +16,14 @@
   import { Analytics } from '@hcengineering/analytics'
   import { resizeObserver } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
-  import { drawing, type DrawingCmd, type DrawingData, type DrawingTool, type DrawTextCmd } from '../drawing'
+  import {
+    drawing,
+    makeCommandId,
+    type DrawingCmd,
+    type DrawingData,
+    type DrawingTool,
+    type DrawTextCmd
+  } from '../drawing'
   import DrawingBoardToolbar from './DrawingBoardToolbar.svelte'
 
   export let active = false
@@ -38,7 +45,7 @@
   let oldReadonly: boolean
   let oldDrawings: DrawingData[]
   let modified = false
-  let changingCmdIndex: number | undefined
+  let changingCmdId: string | undefined
 
   $: updateToolbarPosition(readonly, board, toolbar)
   $: updateEditableState(drawings, readonly)
@@ -63,14 +70,14 @@
             commands = []
           } else {
             // Edit current content as a new drawing
-            commands = [...commands]
+            commands = commands.map((cmd) => ({ ...cmd, id: cmd.id ?? makeCommandId() }))
           }
           modified = false
         }
       } else {
         commands = undefined
       }
-      changingCmdIndex = undefined
+      changingCmdId = undefined
       oldDrawings = drawings
       oldReadonly = readonly
     }
@@ -105,33 +112,37 @@
   function addCommand (cmd: DrawingCmd): void {
     if (commands !== undefined) {
       commands = [...commands, cmd]
-      changingCmdIndex = undefined
+      changingCmdId = undefined
       modified = true
     }
   }
 
-  function showCommandProps (index: number): void {
-    changingCmdIndex = index
-    const anyCmd = commands?.[index]
-    if (anyCmd?.type === 'text') {
-      const cmd = anyCmd as DrawTextCmd
-      penColor = cmd.color
-      fontSize = cmd.fontSize
+  function showCommandProps (id: string): void {
+    changingCmdId = id
+    for (const cmd of commands ?? []) {
+      if (cmd.id === id) {
+        if (cmd.type === 'text') {
+          const textCmd = cmd as DrawTextCmd
+          penColor = textCmd.color
+          fontSize = textCmd.fontSize
+        }
+        break
+      }
     }
   }
 
-  function changeCommand (index: number, cmd: DrawingCmd): void {
+  function changeCommand (cmd: DrawingCmd): void {
     if (commands !== undefined) {
-      commands = commands.map((c, i) => (i === index ? cmd : c))
-      changingCmdIndex = undefined
+      commands = commands.map((c) => (c.id === cmd.id ? cmd : c))
+      changingCmdId = undefined
       modified = true
     }
   }
 
-  function deleteCommand (index: number): void {
+  function deleteCommand (id: string): void {
     if (commands !== undefined) {
-      commands = commands.filter((_, i) => i !== index)
-      changingCmdIndex = undefined
+      commands = commands.filter((c) => c.id !== id)
+      changingCmdId = undefined
       modified = true
     }
   }
@@ -159,12 +170,12 @@
       penWidth,
       eraserWidth,
       fontSize,
-      changingCmdIndex,
+      changingCmdId,
       cmdAdded: addCommand,
       cmdChanging: showCommandProps,
       cmdChanged: changeCommand,
       cmdUnchanged: () => {
-        changingCmdIndex = undefined
+        changingCmdId = undefined
       },
       cmdDeleted: deleteCommand
     }}

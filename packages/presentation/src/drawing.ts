@@ -30,16 +30,17 @@ export interface DrawingProps {
   eraserWidth?: number
   fontSize?: number
   defaultCursor?: string
-  changingCmdIndex?: number
+  changingCmdId?: string
   cmdAdded?: (cmd: DrawingCmd) => void
-  cmdChanging?: (index: number) => void
-  cmdUnchanged?: (index: number) => void
-  cmdChanged?: (index: number, cmd: DrawingCmd) => void
-  cmdDeleted?: (index: number) => void
+  cmdChanging?: (id: string) => void
+  cmdUnchanged?: (id: string) => void
+  cmdChanged?: (cmd: DrawingCmd) => void
+  cmdDeleted?: (id: string) => void
   panned?: (offset: Point) => void
 }
 
 export interface DrawingCmd {
+  id: string
   type: 'line' | 'text'
 }
 
@@ -70,6 +71,10 @@ function avgPoint (p1: Point, p2: Point): Point {
 }
 
 const maxTextLength = 500
+
+export const makeCommandId = (): string => {
+  return crypto.randomUUID().toString()
+}
 
 const crossSvg = `<svg height="8" width="8" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
   <path d="m1.29 2.71 5.3 5.29-5.3 5.29c-.92.92.49 2.34 1.41 1.41l5.3-5.29 5.29 5.3c.92.92 2.34-.49 1.41-1.41l-5.29-5.3 5.3-5.29c.92-.93-.49-2.34-1.42-1.42l-5.29 5.3-5.29-5.3c-.93-.92-2.34.49-1.42 1.42z"/>
@@ -302,7 +307,7 @@ export function drawing (
     pos: Point
     box: HTMLDivElement
     editor: HTMLDivElement
-    cmdIndex: number
+    cmdId: string
   }
   let liveTextBox: LiveTextBox | undefined
 
@@ -477,34 +482,37 @@ export function drawing (
           storeTextCommand()
           closeLiveTextBox()
         } else {
-          const cmdIndex = findTextCommand(prevPos)
-          props.cmdChanging?.(cmdIndex)
+          const cmd = findTextCommand(prevPos)
+          props.cmdChanging?.(cmd?.id ?? '')
         }
       }
       draw.on = false
     }
   }
 
-  function findTextCommand (mousePos: Point): number {
+  function findTextCommand (mousePos: Point): DrawTextCmd | undefined {
     const pos = draw.mouseToCanvasPoint(mousePos)
     for (let i = commands.length - 1; i >= 0; i--) {
       const anyCmd = commands[i]
       if (anyCmd.type === 'text') {
         const cmd = anyCmd as DrawTextCmd
         if (draw.isPointInText(pos, cmd)) {
-          return i
+          return cmd
         }
       }
     }
-    return -1
+    return undefined
   }
 
-  function makeLiveTextBox (cmdIndex: number): void {
+  function makeLiveTextBox (cmdId: string): void {
     let pos = prevPos
     let existingCmd: DrawTextCmd | undefined
-    if (cmdIndex >= 0 && commands[cmdIndex]?.type === 'text') {
-      existingCmd = commands[cmdIndex] as DrawTextCmd
-      pos = draw.canvasToMousePoint(existingCmd.pos)
+    for (const cmd of commands) {
+      if (cmd.id === cmdId && cmd.type === 'text') {
+        existingCmd = cmd as DrawTextCmd
+        pos = draw.canvasToMousePoint(existingCmd.pos)
+        break
+      }
     }
 
     const padding = 6
@@ -578,13 +586,11 @@ export function drawing (
       if (e.key === 'Escape') {
         e.preventDefault()
         if (liveTextBox !== undefined) {
-          const cmdIndex = liveTextBox.cmdIndex
-          if (cmdIndex >= 0) {
-            // reset changingCmdIndex in clients
-            setTimeout(() => {
-              props.cmdUnchanged?.(cmdIndex)
-            }, 0)
-          }
+          const cmdId = liveTextBox.cmdId
+          // reset changingCmdId in clients
+          setTimeout(() => {
+            props.cmdUnchanged?.(cmdId)
+          }, 0)
         }
         closeLiveTextBox()
         replayCommands()
@@ -715,15 +721,15 @@ export function drawing (
     deleteButton.innerHTML = crossSvg
     deleteButton.addEventListener('click', () => {
       node.removeChild(box)
-      if (liveTextBox?.cmdIndex !== undefined) {
-        props.cmdDeleted?.(liveTextBox.cmdIndex)
+      if (liveTextBox?.cmdId !== undefined) {
+        props.cmdDeleted?.(liveTextBox.cmdId)
       }
       liveTextBox = undefined
     })
     box.appendChild(deleteButton)
 
     node.appendChild(box)
-    liveTextBox = { box, editor, pos, cmdIndex }
+    liveTextBox = { box, editor, pos, cmdId }
     updateLiveTextBox()
     setTimeout(() => {
       editor.focus()
@@ -751,7 +757,9 @@ export function drawing (
     if (liveTextBox !== undefined) {
       const text = (liveTextBox.editor.innerText ?? '').trim()
       if (text !== '') {
+        const cmdId = liveTextBox.cmdId
         const cmd: DrawTextCmd = {
+          id: cmdId === '' ? makeCommandId() : cmdId,
           type: 'text',
           text,
           pos: draw.mouseToCanvasPoint(liveTextBox.pos),
@@ -759,10 +767,9 @@ export function drawing (
           fontFace: draw.fontFace,
           color: draw.penColor
         }
-        const cmdIndex = liveTextBox.cmdIndex
         const notify = (): void => {
-          if (cmdIndex >= 0) {
-            props.cmdChanged?.(cmdIndex, cmd)
+          if (cmdId !== '') {
+            props.cmdChanged?.(cmd)
           } else {
             props.cmdAdded?.(cmd)
           }
@@ -773,7 +780,7 @@ export function drawing (
           notify()
         }
       } else {
-        props.cmdUnchanged?.(liveTextBox.cmdIndex)
+        props.cmdUnchanged?.(liveTextBox.cmdId)
       }
     }
   }
@@ -782,6 +789,7 @@ export function drawing (
     if (draw.points.length > 0) {
       const erasing = draw.tool === 'erase'
       const cmd: DrawLineCmd = {
+        id: makeCommandId(),
         type: 'line',
         lineWidth: erasing ? draw.eraserWidth : draw.penWidth,
         erasing,
@@ -825,11 +833,11 @@ export function drawing (
 
   function replayCommands (): void {
     draw.ctx.reset()
-    for (let i = 0; i < commands.length; i++) {
-      if (liveTextBox?.cmdIndex === i) {
+    for (const cmd of commands) {
+      if (cmd.id !== undefined && liveTextBox?.cmdId === cmd.id) {
         continue
       }
-      draw.drawCommand(commands[i])
+      draw.drawCommand(cmd)
     }
   }
 
@@ -874,7 +882,7 @@ export function drawing (
         updateCanvasTouchAction()
         updateCursor = true
       }
-      if (props.changingCmdIndex === undefined) {
+      if (props.changingCmdId === undefined) {
         if (liveTextBox !== undefined) {
           storeTextCommand(true)
           closeLiveTextBox()
@@ -882,9 +890,9 @@ export function drawing (
         }
       } else {
         if (liveTextBox === undefined) {
-          makeLiveTextBox(props.changingCmdIndex)
+          makeLiveTextBox(props.changingCmdId)
           replay = true
-        } else if (liveTextBox.cmdIndex !== props.changingCmdIndex) {
+        } else if (liveTextBox.cmdId !== props.changingCmdId) {
           storeTextCommand(true)
           closeLiveTextBox()
           replay = true
