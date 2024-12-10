@@ -218,12 +218,6 @@ export const activityOperation: MigrateOperation = {
         func: migrateActivityMarkup
       },
       {
-        state: 'fix-rename-backups',
-        func: async (client: MigrationClient): Promise<void> => {
-          await client.update(DOMAIN_ACTIVITY, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
-        }
-      },
-      {
         state: 'move-reactions',
         func: async (client: MigrationClient): Promise<void> => {
           await client.move(DOMAIN_ACTIVITY, { _class: activity.class.Reaction }, DOMAIN_REACTION)

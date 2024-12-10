@@ -336,12 +336,6 @@ export const documentOperation: MigrateOperation = {
         func: renameFields
       },
       {
-        state: 'fix-rename-backups',
-        func: async (client: MigrationClient): Promise<void> => {
-          await client.update(DOMAIN_DOCUMENT, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
-        }
-      },
-      {
         state: 'renameFieldsRevert',
         func: renameFieldsRevert
       },
