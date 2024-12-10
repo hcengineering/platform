@@ -152,6 +152,11 @@ const docIndexStateSchema: Schema = {
     type: 'bool',
     notNull: true,
     index: true
+  },
+  objecgClass: {
+    type: 'text',
+    notNull: true,
+    index: false
   }
 }
 
@@ -212,6 +217,40 @@ const eventSchema: Schema = {
   }
 }
 
+const docSyncInfo: Schema = {
+  ...baseSchema,
+  needSync: {
+    type: 'text',
+    notNull: false,
+    index: false
+  },
+  externalVersion: {
+    type: 'text',
+    notNull: false,
+    index: false
+  },
+  repository: {
+    type: 'text',
+    notNull: false,
+    index: false
+  },
+  url: {
+    type: 'text',
+    notNull: false,
+    index: false
+  },
+  objectClass: {
+    type: 'text',
+    notNull: false,
+    index: false
+  },
+  deleted: {
+    type: 'bool',
+    notNull: false,
+    index: false
+  }
+}
+
 export function addSchema (domain: string, schema: Schema): void {
   domainSchemas[translateDomain(domain)] = schema
   domainSchemaFields.set(domain, createSchemaFields(schema))
@@ -231,7 +270,8 @@ export const domainSchemas: Record<string, Schema> = {
   [translateDomain(DOMAIN_DOC_INDEX_STATE)]: docIndexStateSchema,
   notification: notificationSchema,
   [translateDomain('notification-dnc')]: dncSchema,
-  [translateDomain('notification-user')]: userNotificationSchema
+  [translateDomain('notification-user')]: userNotificationSchema,
+  github: docSyncInfo
 }
 
 export function getSchema (domain: string): Schema {

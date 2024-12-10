@@ -570,12 +570,6 @@ export const taskOperation: MigrateOperation = {
         }
       },
       {
-        state: 'fix-rename-backups',
-        func: async (client: MigrationClient): Promise<void> => {
-          await client.update(DOMAIN_TASK, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
-        }
-      },
-      {
         state: 'migrateRanks',
         func: migrateRanks
       }

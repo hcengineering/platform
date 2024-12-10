@@ -1025,7 +1025,10 @@ abstract class MongoAdapterBase implements DbAdapter {
     return Date.now().toString(16) // Current hash value
   }
 
-  strimSize (str: string): string {
+  strimSize (str?: string): string {
+    if (str == null) {
+      return ''
+    }
     const pos = str.indexOf('|')
     if (pos > 0) {
       return str.substring(0, pos)
@@ -1041,8 +1044,6 @@ abstract class MongoAdapterBase implements DbAdapter {
     return {
       next: async () => {
         if (iterator === undefined) {
-          await coll.updateMany({ '%hash%': { $in: [null, ''] } }, { $set: { '%hash%': this.curHash() } })
-
           iterator = coll.find(
             {},
             {

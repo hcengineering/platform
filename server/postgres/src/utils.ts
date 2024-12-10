@@ -283,7 +283,7 @@ export function convertDoc<T extends Doc> (
     modifiedOn: doc.modifiedOn,
     createdOn: doc.createdOn ?? doc.modifiedOn,
     _class: doc._class,
-    '%hash%': (doc as any)['%hash%'] ?? null
+    '%hash%': (doc as any)['%hash%'] ?? Date.now().toString(16)
   }
   const remainingData: Partial<T> = {}
 

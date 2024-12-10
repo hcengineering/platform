@@ -362,12 +362,6 @@ export const chunterOperation: MigrateOperation = {
             'attributeUpdates.attrKey': 'members'
           })
         }
-      },
-      {
-        state: 'fix-rename-backups',
-        func: async (client: MigrationClient): Promise<void> => {
-          await client.update(DOMAIN_CHUNTER, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
-        }
       }
     ])
   },
