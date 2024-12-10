@@ -251,6 +251,15 @@ const docSyncInfo: Schema = {
   }
 }
 
+const githubLogin: Schema = {
+  ...baseSchema,
+  login: {
+    type: 'text',
+    notNull: true,
+    index: true
+  }
+}
+
 export function addSchema (domain: string, schema: Schema): void {
   domainSchemas[translateDomain(domain)] = schema
   domainSchemaFields.set(domain, createSchemaFields(schema))
@@ -271,7 +280,8 @@ export const domainSchemas: Record<string, Schema> = {
   notification: notificationSchema,
   [translateDomain('notification-dnc')]: dncSchema,
   [translateDomain('notification-user')]: userNotificationSchema,
-  github: docSyncInfo
+  [translateDomain('github_sync')]: docSyncInfo,
+  [translateDomain('github_user')]: githubLogin
 }
 
 export function getSchema (domain: string): Schema {
