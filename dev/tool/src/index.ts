@@ -1251,6 +1251,8 @@ export function devTool (
         dryRun: cmd.dryrun
       }
 
+      const { dbUrl, version } = prepareTools()
+
       let workspaces: Workspace[] = []
       const accountUrl = getAccountDBUrl()
       await withDatabase(accountUrl, async (db) => {
@@ -1261,7 +1263,6 @@ export function devTool (
           .sort((a, b) => b.lastVisit - a.lastVisit)
       })
 
-      const { dbUrl } = prepareTools()
       await withStorage(async (storageAdapter) => {
         await withDatabase(dbUrl, async (db) => {
           const mongodbUri = getMongoDBUrl()
@@ -1273,7 +1274,13 @@ export function devTool (
             let index = 0
             for (const workspace of workspaces) {
               index++
+
               toolCtx.info('processing workspace', { workspace: workspace.workspace, index, count })
+              if (workspace.version === undefined || !deepEqual(workspace.version, version)) {
+                console.log(`upgrade to ${versionToString(version)} is required`)
+                continue
+              }
+
               const workspaceId = getWorkspaceId(workspace.workspace)
               const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
 
