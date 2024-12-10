@@ -1152,7 +1152,9 @@ function isPersonAccount (tx: TxCUD<Doc>): boolean {
 }
 
 async function update<T extends Doc> (h: Hierarchy, db: Db, doc: T, update: DocumentUpdate<T>): Promise<void> {
-  await db.collection(h.getDomain(doc._class)).updateOne({ _id: doc._id }, { $set: { ...update, '%hash%': null } })
+  await db
+    .collection(h.getDomain(doc._class))
+    .updateOne({ _id: doc._id }, { $set: { ...update, '%hash%': Date.now().toString(16) } })
 }
 
 async function updateId (
@@ -1173,12 +1175,14 @@ async function updateId (
     const newId = generateId()
 
     // update txes
-    await db.collection(DOMAIN_TX).updateMany({ objectId: doc._id }, { $set: { objectId: newId, '%hash%': null } })
+    await db
+      .collection(DOMAIN_TX)
+      .updateMany({ objectId: doc._id }, { $set: { objectId: newId, '%hash%': Date.now().toString(16) } })
 
     // update nested txes
     await db
       .collection(DOMAIN_TX)
-      .updateMany({ 'tx.objectId': doc._id }, { $set: { 'tx.objectId': newId, '%hash%': null } })
+      .updateMany({ 'tx.objectId': doc._id }, { $set: { 'tx.objectId': newId, '%hash%': Date.now().toString(16) } })
 
     // we have generated ids for calendar, let's update in
     if (h.isDerived(doc._class, core.class.Account)) {
@@ -1232,7 +1236,7 @@ async function updateId (
       await db.collection(domain).insertOne({
         ...raw,
         _id: newId as any,
-        '%hash%': null
+        '%hash%': Date.now().toString(16)
       })
       await db.collection(domain).deleteOne({ _id: doc._id })
     }

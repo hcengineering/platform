@@ -106,7 +106,13 @@ export class RPCHandler {
         const decoder = new TextDecoder()
         _data = decoder.decode(_data)
       }
-      return JSON.parse(_data.toString(), receiver)
+      try {
+        return JSON.parse(_data.toString(), receiver)
+      } catch (err: any) {
+        if (((err.message as string) ?? '').includes('Unexpected token')) {
+          return this.packr.unpack(new Uint8Array(data))
+        }
+      }
     }
     return this.packr.unpack(new Uint8Array(data))
   }

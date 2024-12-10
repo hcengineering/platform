@@ -86,12 +86,6 @@ export const viewOperation: MigrateOperation = {
       {
         state: 'remove-done-state-filter',
         func: removeDoneStateFilter
-      },
-      {
-        state: 'fix-rename-backups',
-        func: async (client: MigrationClient): Promise<void> => {
-          await client.update(DOMAIN_VIEW, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
-        }
       }
     ])
   },

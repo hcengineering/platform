@@ -13,7 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DrawingBoardToolbar, DrawingCmd, DrawingTool, DrawTextCmd, drawing } from '@hcengineering/presentation'
+  import {
+    DrawingBoardToolbar,
+    DrawingCmd,
+    DrawingTool,
+    DrawTextCmd,
+    drawing,
+    makeCommandId
+  } from '@hcengineering/presentation'
   import { Loading } from '@hcengineering/ui'
   import { onMount, onDestroy } from 'svelte'
   import { Array as YArray, Map as YMap } from 'yjs'
@@ -34,11 +41,14 @@
   let fontSize: number
   let commands: DrawingCmd[] = []
   let offset: { x: number, y: number } = { x: 0, y: 0 }
-  let changingCmdIndex: number | undefined
+  let changingCmdId: string | undefined
+  let cmdEditor: HTMLDivElement | undefined
   let toolbar: HTMLDivElement
   let oldSelected = false
+  let oldReadonly = false
 
   $: onSelectedChanged(selected)
+  $: onReadonlyChanged(readonly)
 
   function listenSavedCommands (): void {
     commands = savedCmds.toArray()
@@ -50,22 +60,76 @@
     // offset = savedProps.get('offset')
   }
 
-  function showCommandProps (index: number): void {
-    changingCmdIndex = index
-    const anyCmd = commands[index]
-    if (anyCmd?.type === 'text') {
-      const cmd = anyCmd as DrawTextCmd
-      penColor = cmd.color
-      fontSize = cmd.fontSize
+  function showCommandProps (id: string): void {
+    changingCmdId = id
+    for (const cmd of commands) {
+      if (cmd.id === id) {
+        if (cmd.type === 'text') {
+          const textCmd = cmd as DrawTextCmd
+          penColor = textCmd.color
+          fontSize = textCmd.fontSize
+        }
+        break
+      }
     }
+  }
+
+  function changeCommand (cmd: DrawingCmd): void {
+    let index = -1
+    for (let i = 0; i < savedCmds.length; i++) {
+      if (savedCmds.get(i).id === cmd.id) {
+        savedCmds.delete(i)
+        index = i
+        break
+      }
+    }
+    if (index >= 0) {
+      savedCmds.insert(index, [cmd])
+    } else {
+      savedCmds.push([cmd])
+    }
+    changingCmdId = undefined
+    cmdEditor = undefined
+  }
+
+  function deleteCommand (id: string): void {
+    for (let i = 0; i < savedCmds.length; i++) {
+      if (savedCmds.get(i).id === id) {
+        savedCmds.delete(i)
+        break
+      }
+    }
+    changingCmdId = undefined
+    cmdEditor = undefined
   }
 
   function onSelectedChanged (selected: boolean): void {
     if (oldSelected !== selected) {
-      if (oldSelected && !selected && changingCmdIndex !== undefined) {
-        changingCmdIndex = undefined
+      if (oldSelected && !selected && changingCmdId !== undefined) {
+        changingCmdId = undefined
+        cmdEditor = undefined
       }
       oldSelected = selected
+    }
+  }
+
+  function onReadonlyChanged (readonly: boolean): void {
+    if (oldReadonly !== readonly) {
+      if (!readonly) {
+        let allHaveIds = true
+        for (let i = 0; i < savedCmds.length; i++) {
+          if (savedCmds.get(i).id === undefined) {
+            allHaveIds = false
+            break
+          }
+        }
+        if (!allHaveIds) {
+          const cmds = savedCmds.toArray()
+          savedCmds.delete(0, savedCmds.length)
+          savedCmds.push(cmds.map((cmd) => ({ ...cmd, id: cmd.id ?? makeCommandId() })))
+        }
+      }
+      oldReadonly = readonly
     }
   }
 
@@ -109,27 +173,23 @@
         penWidth,
         eraserWidth,
         fontSize,
-        changingCmdIndex,
+        changingCmdId,
         cmdAdded: (cmd) => {
           savedCmds.push([cmd])
-          changingCmdIndex = undefined
+          changingCmdId = undefined
         },
         cmdChanging: showCommandProps,
-        cmdChanged: (index, cmd) => {
-          savedCmds.delete(index)
-          savedCmds.insert(index, [cmd])
-          changingCmdIndex = undefined
-        },
+        cmdChanged: changeCommand,
         cmdUnchanged: () => {
-          changingCmdIndex = undefined
+          changingCmdId = undefined
         },
-        cmdDeleted: (index) => {
-          savedCmds.delete(index)
-          changingCmdIndex = undefined
-        },
+        cmdDeleted: deleteCommand,
         panned: (newOffset) => {
           offset = newOffset
           // savedProps.set('offset', offset)
+        },
+        editorCreated: (editor) => {
+          cmdEditor = editor
         }
       }}
     >
@@ -142,6 +202,7 @@
         <DrawingBoardToolbar
           placeInside={true}
           showPanTool={true}
+          {cmdEditor}
           bind:toolbar
           bind:tool
           bind:penColor

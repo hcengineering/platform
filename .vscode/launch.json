@@ -85,7 +85,6 @@
         "SERVER_SECRET": "secret",
         "REKONI_URL": "http://localhost:4004",
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
-        "REGION":"pg",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "STATS_URL":"http://host.docker.internal:4900",
         "ACCOUNTS_URL": "http://localhost:3000",

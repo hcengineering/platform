@@ -1276,7 +1276,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
     return []
   }
 
-  strimSize (str: string): string {
+  strimSize (str?: string): string {
+    if (str == null) {
+      return ''
+    }
     const pos = str.indexOf('|')
     if (pos > 0) {
       return str.substring(0, pos)
@@ -1308,12 +1311,6 @@ abstract class PostgresAdapterBase implements DbAdapter {
           if (client === undefined) {
             client = await this.client.reserve()
           }
-
-          // We need update hash to be set properly
-          await client.unsafe(
-            `UPDATE ${tdomain} SET "%hash%" = '${this.curHash()}' WHERE "workspaceId" = '${this.workspaceId.name}' AND "%hash%" IS NULL OR "%hash%" = ''`
-          )
-
           initialized = true
           bulk = createBulk('_id, "%hash%"')
         }
