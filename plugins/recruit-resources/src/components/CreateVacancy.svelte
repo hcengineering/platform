@@ -103,7 +103,7 @@
     type: typeId as Ref<ProjectType>
   }
   export function canClose (): boolean {
-    return name === '' && typeId !== undefined
+    return name.trim() === '' && typeId !== undefined
   }
 
   const client = getClient()
@@ -185,7 +185,7 @@
     const resId: Ref<Issue> = generateId()
     const identifier = `${project?.identifier}-${number}`
     const data: AttachedData<Issue> = {
-      title: template.title + ` (${name})`,
+      title: template.title + ` (${name.trim()})`,
       description: null,
       assignee: template.assignee,
       component: template.component,
@@ -240,7 +240,7 @@
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
     const data: Data<Vacancy> = {
       ...vacancyData,
-      name,
+      name: name.trim(),
       description: template?.shortDescription ?? '',
       fullDescription: null,
       private: false,
@@ -336,7 +336,7 @@
 <Card
   label={recruit.string.CreateVacancy}
   okAction={createVacancy}
-  canSave={!!name}
+  canSave={name.trim() !== ''}
   gap={'gapV-4'}
   on:close={() => {
     dispatch('close')
