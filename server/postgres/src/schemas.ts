@@ -153,7 +153,7 @@ const docIndexStateSchema: Schema = {
     notNull: true,
     index: true
   },
-  objecgClass: {
+  objectClass: {
     type: 'text',
     notNull: true,
     index: false
