@@ -114,10 +114,7 @@ export async function restoreControlledDocContentMongo (
 ): Promise<void> {
   const iterator = db.collection<Doc>(DOMAIN_DOCUMENTS).find({
     _class: {
-      $in: [
-        documents.class.ControlledDocument,
-        documents.class.ControlledDocumentSnapshot
-      ]
+      $in: [documents.class.ControlledDocument, documents.class.ControlledDocumentSnapshot]
     }
   })
 
@@ -133,7 +130,15 @@ export async function restoreControlledDocContentMongo (
       const doc = await iterator.next()
       if (doc === null) break
 
-      const restored = await restoreControlledDocContentForDoc(ctx, db, workspaceId, storageAdapter, params, doc, 'content')
+      const restored = await restoreControlledDocContentForDoc(
+        ctx,
+        db,
+        workspaceId,
+        storageAdapter,
+        params,
+        doc,
+        'content'
+      )
       if (restored) {
         restoredCnt++
       }
