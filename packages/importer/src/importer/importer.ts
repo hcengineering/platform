@@ -371,6 +371,7 @@ export class WorkspaceImporter {
     if (oldProject === undefined) {
       throw new Error('Project not found: ' + projectId)
     }
+    const maxIssueNumber = this.getMaxImportIssueNumber(project)
     const codePoint = project.emoji?.codePointAt(0)
     const projectData = {
       name: project.title,
@@ -384,7 +385,7 @@ export class WorkspaceImporter {
         project.identifier !== undefined
           ? await this.uniqueProjectIdentifier(project.identifier)
           : oldProject.identifier,
-      sequence: oldProject.sequence,
+      sequence: Math.max(oldProject.sequence, maxIssueNumber),
       color: codePoint ?? oldProject.color,
       icon: codePoint === undefined ? undefined : view.ids.IconWithEmoji,
       defaultIssueStatus:
@@ -426,7 +427,7 @@ export class WorkspaceImporter {
       archived: false,
       autoJoin: project.autoJoin,
       identifier,
-      sequence: 0,
+      sequence: this.getMaxImportIssueNumber(project),
       color: codePoint,
       icon: codePoint != null ? view.ids.IconWithEmoji : undefined,
       defaultIssueStatus: defaultIssueStatus ?? tracker.status.Backlog,
@@ -439,6 +440,13 @@ export class WorkspaceImporter {
     await this.client.createMixin(projectId, tracker.class.Project, core.space.Space, mixinId, {})
 
     return projectId
+  }
+
+  private getMaxImportIssueNumber (project: ImportProject): number {
+    const maxIssueNumber = Math.max(
+      ...project.docs.map(doc => doc.number ?? 0)
+    )
+    return maxIssueNumber
   }
 
   async createIssue (
