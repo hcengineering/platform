@@ -294,7 +294,9 @@ export function drawing (
   draw.eraserWidth = props.eraserWidth ?? draw.eraserWidth
   draw.fontSize = props.fontSize ?? draw.fontSize
   draw.offset = props.offset ?? draw.offset
+
   updateCanvasCursor()
+  updateCanvasTouchAction()
 
   interface LiveTextBox {
     pos: Point
@@ -328,6 +330,61 @@ export function drawing (
   })
   resizeObserver.observe(canvas)
 
+  let touchId: number | undefined
+
+  function findTouch (touches: TouchList, id: number | undefined = touchId): Touch | undefined {
+    for (let i = 0; i < touches.length; i++) {
+      const touch = touches[i]
+      if (touch.identifier === id) {
+        return touch
+      }
+    }
+  }
+
+  function touchToNodePoint (touch: Touch, node: HTMLElement): Point {
+    const rect = node.getBoundingClientRect()
+    return {
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top
+    }
+  }
+
+  function pointerToNodePoint (e: PointerEvent): Point {
+    return { x: e.offsetX, y: e.offsetY }
+  }
+
+  canvas.ontouchstart = (e) => {
+    if (readonly) {
+      return
+    }
+    const touch = e.changedTouches[0]
+    touchId = touch.identifier
+    drawStart(touchToNodePoint(touch, canvas))
+  }
+
+  canvas.ontouchmove = (e) => {
+    if (readonly) {
+      return
+    }
+    const touch = findTouch(e.changedTouches)
+    if (touch !== undefined) {
+      drawContinue(touchToNodePoint(touch, canvas))
+    }
+  }
+
+  canvas.ontouchend = (e) => {
+    if (readonly) {
+      return
+    }
+    const touch = findTouch(e.changedTouches)
+    if (touch !== undefined) {
+      drawEnd(touchToNodePoint(touch, canvas))
+    }
+    touchId = undefined
+  }
+
+  canvas.ontouchcancel = canvas.ontouchend
+
   canvas.onpointerdown = (e) => {
     if (readonly) {
       return
@@ -337,16 +394,7 @@ export function drawing (
     }
     e.preventDefault()
     canvas.setPointerCapture(e.pointerId)
-
-    const x = e.offsetX
-    const y = e.offsetY
-
-    draw.on = true
-    draw.points = []
-    prevPos = { x, y }
-    if (draw.isDrawingTool()) {
-      draw.addPoint(x, y)
-    }
+    drawStart(pointerToNodePoint(e))
   }
 
   canvas.onpointermove = (e) => {
@@ -354,35 +402,7 @@ export function drawing (
       return
     }
     e.preventDefault()
-
-    const x = e.offsetX
-    const y = e.offsetY
-
-    if (draw.isDrawingTool()) {
-      const w = draw.cursorWidth()
-      canvasCursor.style.left = `${x - w / 2}px`
-      canvasCursor.style.top = `${y - w / 2}px`
-      if (draw.on) {
-        if (Math.hypot(prevPos.x - x, prevPos.y - y) < draw.minLineLength) {
-          return
-        }
-        draw.drawLive(x, y)
-        prevPos = { x, y }
-      }
-    }
-
-    if (draw.on && draw.tool === 'pan') {
-      requestAnimationFrame(() => {
-        draw.offset.x += x - prevPos.x
-        draw.offset.y += y - prevPos.y
-        replayCommands()
-        prevPos = { x, y }
-      })
-    }
-
-    if (draw.on && draw.tool === 'text') {
-      prevPos = { x, y }
-    }
+    drawContinue(pointerToNodePoint(e))
   }
 
   canvas.onpointerup = (e) => {
@@ -391,9 +411,64 @@ export function drawing (
     }
     e.preventDefault()
     canvas.releasePointerCapture(e.pointerId)
+    drawEnd(pointerToNodePoint(e))
+  }
+
+  canvas.onpointercancel = canvas.onpointerup
+
+  canvas.onpointerenter = () => {
+    if (!readonly && draw.isDrawingTool()) {
+      canvasCursor.style.visibility = 'visible'
+    }
+  }
+
+  canvas.onpointerleave = () => {
+    if (!readonly && draw.isDrawingTool()) {
+      canvasCursor.style.visibility = 'hidden'
+    }
+  }
+
+  function drawStart (p: Point): void {
+    draw.on = true
+    draw.points = []
+    prevPos = p
+    if (draw.isDrawingTool()) {
+      draw.addPoint(p.x, p.y)
+    }
+  }
+
+  function drawContinue (p: Point): void {
+    if (draw.isDrawingTool()) {
+      const w = draw.cursorWidth()
+      canvasCursor.style.left = `${p.x - w / 2}px`
+      canvasCursor.style.top = `${p.y - w / 2}px`
+      if (draw.on) {
+        if (Math.hypot(prevPos.x - p.x, prevPos.y - p.y) < draw.minLineLength) {
+          return
+        }
+        draw.drawLive(p.x, p.y)
+        prevPos = p
+      }
+    }
+
+    if (draw.on && draw.tool === 'pan') {
+      requestAnimationFrame(() => {
+        draw.offset.x += p.x - prevPos.x
+        draw.offset.y += p.y - prevPos.y
+        replayCommands()
+        prevPos = p
+      })
+    }
+
+    if (draw.on && draw.tool === 'text') {
+      prevPos = p
+    }
+  }
+
+  function drawEnd (p: Point): void {
     if (draw.on) {
       if (draw.isDrawingTool()) {
-        draw.drawLive(e.offsetX, e.offsetY, true)
+        draw.drawLive(p.x, p.y, true)
         storeLineCommand()
       } else if (draw.tool === 'pan') {
         props.panned?.(draw.offset)
@@ -407,18 +482,6 @@ export function drawing (
         }
       }
       draw.on = false
-    }
-  }
-
-  canvas.onpointerenter = () => {
-    if (!readonly && draw.isDrawingTool()) {
-      canvasCursor.style.visibility = 'visible'
-    }
-  }
-
-  canvas.onpointerleave = () => {
-    if (!readonly && draw.isDrawingTool()) {
-      canvasCursor.style.visibility = 'hidden'
     }
   }
 
@@ -456,6 +519,7 @@ export function drawing (
     box.style.borderRadius = 'var(--small-BorderRadius)'
     box.style.padding = `${padding}px`
     box.style.background = 'var(--theme-popup-header)'
+    box.style.touchAction = 'none'
     box.addEventListener('mousedown', (e) => {
       e.stopPropagation()
     })
@@ -564,44 +628,43 @@ export function drawing (
       return handle
     }
 
+    const moveTextBox = (dx: number, dy: number): void => {
+      let newX = box.offsetLeft + dx
+      let newY = box.offsetTop + dy
+      // For screenshots the canvas always has the same size as the underlying image
+      // and we should not be able to drag the text box outside of the screenshot
+      if (props.autoSize !== true) {
+        newX = Math.max(0, newX)
+        newY = Math.max(0, newY)
+        if (newX + box.offsetWidth > node.clientWidth) {
+          newX = node.clientWidth - box.offsetWidth
+        }
+        if (newY + box.offsetHeight > node.clientHeight) {
+          newY = node.clientHeight - box.offsetHeight
+        }
+      }
+      box.style.left = `${newX}px`
+      box.style.top = `${newY}px`
+      if (liveTextBox !== undefined) {
+        liveTextBox.pos.x = newX + padding
+        liveTextBox.pos.y = newY + padding
+      }
+    }
+
     const dragHandle = makeHandle()
     dragHandle.style.left = `-${handleSize / 2}px`
     dragHandle.style.cursor = 'grab'
+    dragHandle.style.touchAction = 'none'
     dragHandle.addEventListener('pointerdown', (e) => {
       e.preventDefault()
       dragHandle.style.cursor = 'grabbing'
       dragHandle.setPointerCapture(e.pointerId)
-      const x = e.clientX
-      const y = e.clientY
-      const dragStart = { x, y }
+      let prevPos = { x: e.clientX, y: e.clientY }
       const pointerMove = (e: PointerEvent): void => {
         e.preventDefault()
-        const x = e.clientX
-        const y = e.clientY
-        const dx = x - dragStart.x
-        const dy = y - dragStart.y
-        dragStart.x = x
-        dragStart.y = y
-        let newX = box.offsetLeft + dx
-        let newY = box.offsetTop + dy
-        // For screenshots the canvas always has the same size as the underlying image
-        // and we should not be able to drag the text box outside of the screenshot
-        if (props.autoSize !== true) {
-          newX = Math.max(0, newX)
-          newY = Math.max(0, newY)
-          if (newX + box.offsetWidth > node.clientWidth) {
-            newX = node.clientWidth - box.offsetWidth
-          }
-          if (newY + box.offsetHeight > node.clientHeight) {
-            newY = node.clientHeight - box.offsetHeight
-          }
-        }
-        box.style.left = `${newX}px`
-        box.style.top = `${newY}px`
-        if (liveTextBox !== undefined) {
-          liveTextBox.pos.x = newX + padding
-          liveTextBox.pos.y = newY + padding
-        }
+        const p = { x: e.clientX, y: e.clientY }
+        moveTextBox(p.x - prevPos.x, p.y - prevPos.y)
+        prevPos = p
       }
       const pointerUp = (e: PointerEvent): void => {
         setTimeout(() => {
@@ -612,9 +675,37 @@ export function drawing (
         dragHandle.releasePointerCapture(e.pointerId)
         dragHandle.removeEventListener('pointermove', pointerMove)
         dragHandle.removeEventListener('pointerup', pointerUp)
+        dragHandle.removeEventListener('pointercancel', pointerUp)
       }
       dragHandle.addEventListener('pointermove', pointerMove)
       dragHandle.addEventListener('pointerup', pointerUp)
+      dragHandle.addEventListener('pointercancel', pointerUp)
+    })
+    dragHandle.addEventListener('touchstart', (e) => {
+      dragHandle.style.cursor = 'grabbing'
+      const touch = e.changedTouches[0]
+      const touchId = touch.identifier
+      let prevPos = touchToNodePoint(touch, dragHandle)
+      const touchMove = (e: TouchEvent): void => {
+        const touch = findTouch(e.changedTouches, touchId)
+        if (touch !== undefined) {
+          const p = touchToNodePoint(touch, dragHandle)
+          moveTextBox(p.x - prevPos.x, p.y - prevPos.y)
+          prevPos = p
+        }
+      }
+      const touchEnd = (e: TouchEvent): void => {
+        setTimeout(() => {
+          editor.focus()
+        }, 100)
+        dragHandle.style.cursor = 'grab'
+        dragHandle.removeEventListener('touchmove', touchMove)
+        dragHandle.removeEventListener('touchend', touchEnd)
+        dragHandle.removeEventListener('touchcancel', touchEnd)
+      }
+      dragHandle.addEventListener('touchmove', touchMove)
+      dragHandle.addEventListener('touchend', touchEnd)
+      dragHandle.addEventListener('touchcancel', touchEnd)
     })
     box.appendChild(dragHandle)
 
@@ -728,6 +819,10 @@ export function drawing (
     }
   }
 
+  function updateCanvasTouchAction (): void {
+    canvas.style.touchAction = readonly ? 'unset' : 'none'
+  }
+
   function replayCommands (): void {
     draw.ctx.reset()
     for (let i = 0; i < commands.length; i++) {
@@ -776,6 +871,7 @@ export function drawing (
       }
       if (props.readonly !== readonly) {
         readonly = props.readonly ?? false
+        updateCanvasTouchAction()
         updateCursor = true
       }
       if (props.changingCmdIndex === undefined) {

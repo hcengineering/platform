@@ -35,23 +35,43 @@
   let resizer: HTMLElement
   let startY: number
   let resizedHeight: number | undefined
+  let resizerTouchId: number | undefined
   let loading = true
   let loadingTimer: any
 
+  function resizeStart (y: number): void {
+    const height = node.attrs.height ?? defaultHeight
+    startY = y - height
+    resizedHeight = height
+  }
+
+  function resizeContinue (y: number): void {
+    resizedHeight = Math.max(minHeight, y - startY)
+    resizedHeight = Math.min(maxHeight, resizedHeight)
+  }
+
+  function resizeFinish (): void {
+    if (resizedHeight !== undefined) {
+      if (typeof getPos === 'function') {
+        const tr = editor.state.tr.setNodeMarkup(getPos(), undefined, { ...node.attrs, height: resizedHeight })
+        editor.view.dispatch(tr)
+      }
+      resizedHeight = undefined
+    }
+  }
+
   function onResizerPointerDown (e: PointerEvent): void {
     e.preventDefault()
-    const height = node.attrs.height ?? defaultHeight
-    startY = e.clientY - height
-    resizedHeight = height
     resizer.setPointerCapture(e.pointerId)
     resizer.addEventListener('pointermove', onResizerPointerMove)
     resizer.addEventListener('pointerup', onResizerPointerUp)
+    resizer.addEventListener('pointercancel', onResizerPointerUp)
+    resizeStart(e.clientY)
   }
 
   function onResizerPointerMove (e: PointerEvent): void {
     e.preventDefault()
-    resizedHeight = Math.max(minHeight, e.clientY - startY)
-    resizedHeight = Math.min(maxHeight, resizedHeight)
+    resizeContinue(e.clientY)
   }
 
   function onResizerPointerUp (e: PointerEvent): void {
@@ -59,11 +79,35 @@
     resizer.releasePointerCapture(e.pointerId)
     resizer.removeEventListener('pointermove', onResizerPointerMove)
     resizer.removeEventListener('pointerup', onResizerPointerUp)
-    if (typeof getPos === 'function') {
-      const tr = editor.state.tr.setNodeMarkup(getPos(), undefined, { ...node.attrs, height: resizedHeight })
-      editor.view.dispatch(tr)
+    resizer.removeEventListener('pointercancel', onResizerPointerUp)
+    resizeFinish()
+  }
+
+  function onResizerTouchStart (e: TouchEvent): void {
+    const touch = e.changedTouches[0]
+    resizerTouchId = touch.identifier
+    resizer.addEventListener('touchmove', onResizerTouchMove)
+    resizer.addEventListener('touchend', onResizerTouchEnd)
+    resizer.addEventListener('touchcancel', onResizerTouchEnd)
+    resizeStart(touch.clientY)
+  }
+
+  function onResizerTouchMove (e: TouchEvent): void {
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const touch = e.changedTouches[i]
+      if (touch.identifier === resizerTouchId) {
+        resizeContinue(touch.clientY)
+        return
+      }
     }
-    resizedHeight = undefined
+  }
+
+  function onResizerTouchEnd (): void {
+    resizer.removeEventListener('touchmove', onResizerTouchMove)
+    resizer.removeEventListener('touchend', onResizerTouchEnd)
+    resizer.removeEventListener('touchcancel', onResizerTouchEnd)
+    resizerTouchId = undefined
+    resizeFinish()
   }
 
   onMount(() => {
@@ -110,7 +154,12 @@
         />
       </div>
       {#if selected}
-        <div class="handle resizer" bind:this={resizer} on:pointerdown={onResizerPointerDown}>
+        <div
+          class="handle resizer"
+          bind:this={resizer}
+          on:pointerdown={onResizerPointerDown}
+          on:touchstart={onResizerTouchStart}
+        >
           <svg viewBox="0 0 60 4" height="4" width="60" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path
               d="m60 2a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2zm-8 0a2 2 0 0 1 -2 2 2 2 0 0 1 -2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2z"
@@ -147,6 +196,7 @@
     align-items: center;
     justify-content: center;
     opacity: 0.5;
+    touch-action: none;
 
     &:hover {
       opacity: 1;
