@@ -25,12 +25,6 @@ export const attachmentOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, attachmentId, [
       {
-        state: 'fix-rename-backups',
-        func: async (client: MigrationClient): Promise<void> => {
-          await client.update(DOMAIN_ATTACHMENT, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
-        }
-      },
-      {
         state: 'fix-attachedTo',
         func: async (client: MigrationClient): Promise<void> => {
           await client.update(
