@@ -13,42 +13,47 @@
 // limitations under the License.
 //
 
-import { type IRequest, type ResponseHandler, type RequestHandler } from 'itty-router'
+export interface MetricsData {
+  name: string
+  time: number
+}
 
-export async function measure<T> (label: string, fn: () => Promise<T>): Promise<T> {
-  const start = performance.now()
-  try {
-    return await fn()
-  } finally {
-    const duration = performance.now() - start
-    console.log({ stage: label, duration })
+export class MetricsContext {
+  metrics: Array<MetricsData> = []
+
+  async with<T>(name: string, fn: () => Promise<T>): Promise<T> {
+    const start = performance.now()
+    try {
+      return await fn()
+    } finally {
+      const time = performance.now() - start
+      this.metrics.push({ name, time })
+    }
   }
-}
 
-export function measureSync<T> (label: string, fn: () => T): T {
-  const start = performance.now()
-  try {
-    return fn()
-  } finally {
-    const duration = performance.now() - start
-    console.log({ stage: label, duration })
+  withSync<T>(name: string, fn: () => T): T {
+    const start = performance.now()
+    try {
+      return fn()
+    } finally {
+      const time = performance.now() - start
+      this.metrics.push({ name, time })
+    }
   }
-}
 
-export const requestTimeBefore: RequestHandler<IRequest> = async (request: IRequest) => {
-  request.startTime = performance.now()
-}
-
-export const requestTimeAfter: ResponseHandler<Response> = async (response: Response, request: IRequest) => {
-  const duration = performance.now() - request.startTime
-  console.log({ stage: 'total', duration })
+  toString (): string {
+    return this.metrics.map((p) => `${p.name}=${p.time}`).join(' ')
+  }
 }
 
 export class LoggedR2Bucket implements R2Bucket {
-  constructor (private readonly bucket: R2Bucket) {}
+  constructor (
+    private readonly bucket: R2Bucket,
+    private readonly ctx: MetricsContext
+  ) {}
 
   async head (key: string): Promise<R2Object | null> {
-    return await measure('r2.head', () => this.bucket.head(key))
+    return await this.ctx.with('r2.head', () => this.bucket.head(key))
   }
 
   async get (
@@ -57,7 +62,7 @@ export class LoggedR2Bucket implements R2Bucket {
       onlyIf?: R2Conditional | Headers
     }
   ): Promise<R2ObjectBody | null> {
-    return await measure('r2.get', () => this.bucket.get(key, options))
+    return await this.ctx.with('r2.get', () => this.bucket.get(key, options))
   }
 
   async put (
@@ -67,28 +72,31 @@ export class LoggedR2Bucket implements R2Bucket {
       onlyIf?: R2Conditional | Headers
     }
   ): Promise<R2Object> {
-    return await measure('r2.put', () => this.bucket.put(key, value, options))
+    return await this.ctx.with('r2.put', () => this.bucket.put(key, value, options))
   }
 
   async createMultipartUpload (key: string, options?: R2MultipartOptions): Promise<R2MultipartUpload> {
-    return await measure('r2.createMultipartUpload', () => this.bucket.createMultipartUpload(key, options))
+    return await this.ctx.with('r2.createMultipartUpload', () => this.bucket.createMultipartUpload(key, options))
   }
 
   resumeMultipartUpload (key: string, uploadId: string): R2MultipartUpload {
-    return measureSync('r2.resumeMultipartUpload', () => this.bucket.resumeMultipartUpload(key, uploadId))
+    return this.ctx.withSync('r2.resumeMultipartUpload', () => this.bucket.resumeMultipartUpload(key, uploadId))
   }
 
   async delete (keys: string | string[]): Promise<void> {
-    await measure('r2.delete', () => this.bucket.delete(keys))
+    await this.ctx.with('r2.delete', () => this.bucket.delete(keys))
   }
 
   async list (options?: R2ListOptions): Promise<R2Objects> {
-    return await measure('r2.list', () => this.bucket.list(options))
+    return await this.ctx.with('r2.list', () => this.bucket.list(options))
   }
 }
 
 export class LoggedKVNamespace implements KVNamespace {
-  constructor (private readonly kv: KVNamespace) {}
+  constructor (
+    private readonly kv: KVNamespace,
+    private readonly ctx: MetricsContext
+  ) {}
 
   get (key: string, options?: Partial<KVNamespaceGetOptions<undefined>>): Promise<string | null>
   get (key: string, type: 'text'): Promise<string | null>
@@ -100,7 +108,7 @@ export class LoggedKVNamespace implements KVNamespace {
   get (key: string, options?: KVNamespaceGetOptions<'arrayBuffer'>): Promise<ArrayBuffer | null>
   get (key: string, options?: KVNamespaceGetOptions<'stream'>): Promise<ReadableStream | null>
   async get (key: string, options?: any): Promise<any> {
-    return await measure('kv.get', () => this.kv.get(key, options))
+    return await this.ctx.with('kv.get', () => this.kv.get(key, options))
   }
 
   getWithMetadata<Metadata = unknown>(
@@ -140,11 +148,11 @@ export class LoggedKVNamespace implements KVNamespace {
     options?: KVNamespaceGetOptions<'stream'>
   ): Promise<KVNamespaceGetWithMetadataResult<ReadableStream, Metadata>>
   async getWithMetadata (key: string, options?: any): Promise<any> {
-    return await measure('kv.getWithMetadata', () => this.kv.getWithMetadata(key, options))
+    return await this.ctx.with('kv.getWithMetadata', () => this.kv.getWithMetadata(key, options))
   }
 
   async list<Metadata = unknown>(options?: KVNamespaceListOptions): Promise<KVNamespaceListResult<Metadata, string>> {
-    return await measure('kv.list', () => this.kv.list(options))
+    return await this.ctx.with('kv.list', () => this.kv.list(options))
   }
 
   async put (
@@ -152,26 +160,29 @@ export class LoggedKVNamespace implements KVNamespace {
     value: string | ArrayBuffer | ArrayBufferView | ReadableStream,
     options?: KVNamespacePutOptions
   ): Promise<void> {
-    await measure('kv.put', () => this.kv.put(key, value))
+    await this.ctx.with('kv.put', () => this.kv.put(key, value))
   }
 
   async delete (key: string): Promise<void> {
-    await measure('kv.delete', () => this.kv.delete(key))
+    await this.ctx.with('kv.delete', () => this.kv.delete(key))
   }
 }
 
 export class LoggedCache implements Cache {
-  constructor (private readonly cache: Cache) {}
+  constructor (
+    private readonly cache: Cache,
+    private readonly ctx: MetricsContext
+  ) {}
 
   async match (request: RequestInfo, options?: CacheQueryOptions): Promise<Response | undefined> {
-    return await measure('cache.match', () => this.cache.match(request, options))
+    return await this.ctx.with('cache.match', () => this.cache.match(request, options))
   }
 
   async delete (request: RequestInfo, options?: CacheQueryOptions): Promise<boolean> {
-    return await measure('cache.delete', () => this.cache.delete(request, options))
+    return await this.ctx.with('cache.delete', () => this.cache.delete(request, options))
   }
 
   async put (request: RequestInfo, response: Response): Promise<void> {
-    await measure('cache.put', () => this.cache.put(request, response))
+    await this.ctx.with('cache.put', () => this.cache.put(request, response))
   }
 }
