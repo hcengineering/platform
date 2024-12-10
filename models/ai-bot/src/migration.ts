@@ -30,12 +30,14 @@ import {
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import aiBot, { aiBotAccountEmail, aiBotId } from '@hcengineering/ai-bot'
+import aiBot, { aiBotId } from '@hcengineering/ai-bot'
 
 const DOMAIN_ACTIVITY = 'activity' as Domain
 
 async function migrateAiExtraAccounts (client: MigrationClient): Promise<void> {
-  const currentAccount = (await client.model.findAll(contact.class.PersonAccount, { email: aiBotAccountEmail }))[0]
+  const currentAccount = (
+    await client.model.findAll(contact.class.PersonAccount, { _id: aiBot.account.AIBot as Ref<PersonAccount> })
+  )[0]
   if (currentAccount === undefined) return
 
   const txes = await client.find<TxCUD<PersonAccount>>(DOMAIN_MODEL_TX, {
@@ -75,7 +77,7 @@ export const aiBotOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, aiBotId, [
       {
-        state: 'remove-ai-bot-extra-accounts-v1',
+        state: 'remove-ai-bot-extra-accounts-v100',
         func: migrateAiExtraAccounts
       }
     ])
