@@ -83,7 +83,7 @@
       group: 'edit',
       action: async () => {
         const id = await getObjectLinkId(linkProviders, object._id, object._class, object)
-        openChannel(id, object._class)
+        openChannel(id, object._class, undefined, true)
       }
     })
 
