@@ -126,3 +126,15 @@ export interface TestResult extends AttachedDoc<TestRun, 'results', TestProject>
   attachments?: CollectionSize<Attachment>
   comments?: number
 }
+
+/** @public */
+export interface TestPlan extends Doc {
+  name: string
+  description: MarkupBlobRef | null
+  items?: CollectionSize<TestPlanItem>
+}
+
+/** @public */
+export interface TestPlanItem extends AttachedDoc<TestPlan, 'items', TestProject> {
+  testCase: Ref<TestCase>
+}

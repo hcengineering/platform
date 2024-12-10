@@ -25,7 +25,7 @@ import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
 import { type ViewOptionsModel } from '@hcengineering/view'
 
-import { testManagementId, type TestResult } from '@hcengineering/test-management'
+import { testManagementId, type TestPlanItem, type TestResult } from '@hcengineering/test-management'
 
 import {
   DOMAIN_TEST_MANAGEMENT,
@@ -38,7 +38,9 @@ import {
   TDefaultProjectTypeData,
   TTestRun,
   TTypeTestRunStatus,
-  TTestResult
+  TTestResult,
+  TTestPlan,
+  TTestPlanItem
 } from './types'
 
 import testManagement from './plugin'
@@ -100,6 +102,34 @@ function defineApplication (builder: Builder): void {
                 }
               },
               {
+                id: 'testPlans',
+                label: testManagement.string.TestPlans,
+                icon: testManagement.icon.TestPlans,
+                component: workbench.component.SpecialView,
+                componentProps: {
+                  _class: testManagement.class.TestPlanItem,
+                  icon: testManagement.icon.TestPlans,
+                  label: testManagement.string.TestPlans
+                },
+                navigationModel: {
+                  navigationComponent: view.component.FoldersBrowser,
+                  navigationComponentLabel: testManagement.string.TestPlan,
+                  navigationComponentIcon: testManagement.icon.TestPlans,
+                  mainComponentLabel: testManagement.string.TestCase,
+                  mainComponentIcon: testManagement.icon.TestCase,
+                  mainHeaderComponent: testManagement.component.CreateTestPlan,
+                  navigationComponentProps: {
+                    _class: testManagement.class.TestPlan,
+                    icon: testManagement.icon.TestPlans,
+                    title: testManagement.string.TestPlans,
+                    titleKey: 'name',
+                    getFolderLink: testManagement.function.GetTestPlanLink,
+                    plainList: true
+                  },
+                  syncWithLocationQuery: true
+                }
+              },
+              {
                 id: 'testRuns',
                 label: testManagement.string.TestRuns,
                 icon: testManagement.icon.TestRuns,
@@ -148,7 +178,9 @@ export function createModel (builder: Builder): void {
     TDefaultProjectTypeData,
     TTestRun,
     TTypeTestRunStatus,
-    TTestResult
+    TTestResult,
+    TTestPlan,
+    TTestPlanItem
   )
 
   builder.mixin(testManagement.class.TestProject, core.class.Class, activity.mixin.ActivityDoc, {})
@@ -162,6 +194,7 @@ export function createModel (builder: Builder): void {
   defineTestCase(builder)
   defineTestRun(builder)
   defineTestResult(builder)
+  defineTestPlan(builder)
 
   definePresenters(builder)
 
@@ -530,6 +563,70 @@ function defineTestResult (builder: Builder): void {
     },
     testManagement.viewlet.TableTestResult
   )
+
+  const testPlanViewOptions: ViewOptionsModel = {
+    groupBy: [],
+    orderBy: [],
+    other: [
+      {
+        key: 'shouldShowAll',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'category',
+        action: view.function.ShowEmptyGroups,
+        label: view.string.ShowEmptyGroups
+      }
+    ]
+  }
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: testManagement.class.TestPlanItem,
+      descriptor: view.viewlet.List,
+      configOptions: {
+        strict: true
+      },
+      config: [
+        { key: '$lookup.testCase', displayProps: { fixed: 'left' }, presenter: testManagement.component.TestCasePresenter },
+        {
+          key: '$lookup.testCase.assignee',
+          props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' },
+          displayProps: { key: 'assignee', fixed: 'right' }
+        }
+      ],
+      viewOptions: testPlanViewOptions,
+      /* eslint-disable @typescript-eslint/consistent-type-assertions */
+      options: {
+        lookup: {
+          testCase: testManagement.class.TestCase
+        }
+      } as FindOptions<TestPlanItem>
+    },
+    testManagement.viewlet.TestPlanItemsList
+  )
+}
+
+function defineTestPlan (builder: Builder): void {
+  builder.mixin(testManagement.class.TestPlan, core.class.Class, activity.mixin.ActivityDoc, {})
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: testManagement.class.TestPlan,
+    components: { input: { component: chunter.component.ChatMessageInput } }
+  })
+
+  builder.mixin(testManagement.class.TestPlan, core.class.Class, view.mixin.ObjectPanel, {
+    component: view.component.EditDoc
+  })
+
+  builder.mixin(testManagement.class.TestPlan, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: testManagement.component.TestPlanPresenter
+  })
+
+  builder.mixin(testManagement.class.TestPlan, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [print.action.Print, tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
+  })
 }
 
 export { testManagementOperation } from './migration'

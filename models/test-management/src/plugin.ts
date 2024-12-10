@@ -34,7 +34,6 @@ export default mergeIds(testManagementId, testManganement, {
     TestSuitePresenter: '' as AnyComponent,
     EditTestSuite: '' as AnyComponent,
     EditTestCase: '' as AnyComponent,
-    CreateTestRun: '' as AnyComponent,
     TestRunPresenter: '' as AnyComponent,
     EditTestRun: '' as AnyComponent,
     TestSuiteRefPresenter: '' as AnyComponent,
@@ -42,6 +41,8 @@ export default mergeIds(testManagementId, testManganement, {
     TestResultPresenter: '' as AnyComponent,
     EditTestResult: '' as AnyComponent,
     TestResultFooter: '' as AnyComponent,
-    TestRunHeader: '' as AnyComponent
+    TestRunHeader: '' as AnyComponent,
+    TestPlanPresenter: '' as AnyComponent,
+    CreateTestPlan: '' as AnyComponent
   }
 })

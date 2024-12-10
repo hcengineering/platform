@@ -121,7 +121,7 @@
       bind:this={descriptionBox}
       objectId={id}
       _class={testManagement.class.TestRun}
-      space={space}
+      {space}
       alwaysEdit
       showButtons={false}
       bind:content={description}
@@ -140,12 +140,13 @@
     />
 
     <div id="test-cases-selector">
-      <TestCaseSelector bind:objects={testCases}/>
+      <TestCaseSelector bind:objects={testCases} />
     </div>
 
     <Button
       label={testManagement.string.Save}
-      size="medium" kind={'primary'}
+      size="medium"
+      kind={'primary'}
       disabled={object?.name.trim().length === 0 || testCases?.length === 0}
       on:click={onSave}
     />
@@ -154,13 +155,7 @@
       <RightHeader>
         <Label label={testManagement.string.Comments} />
       </RightHeader>
-      <TestCaseList
-        objects={testCases}
-        noSearchField={true}
-        width={'full'}
-        readonly={true}
-      />
+      <TestCaseList objects={testCases} noSearchField={true} width={'full'} readonly={true} />
     </svelte:fragment>
-
   </Panel>
 {/if}

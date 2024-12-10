@@ -83,6 +83,9 @@
     "AllTests": "All tests",
     "MyTests": "My tests",
     "Comments": "Comments",
-    "Cancel": "Cancel"
+    "Cancel": "Cancel",
+    "Name": "Name",
+    "TestPlans": "Test plans",
+    "TestPlan": "Test plan"
   }
 }

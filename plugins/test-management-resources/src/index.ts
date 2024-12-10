@@ -38,6 +38,7 @@ import TestResultFooter from './components/test-result/TestResultFooter.svelte'
 import TestRunHeader from './components/test-run/TestRunHeader.svelte'
 import TestRunner from './components/test-result/TestRunner.svelte'
 import NewTestRunPanel from './components/test-run/NewTestRunPanel.svelte'
+import CreateTestPlan from './components/test-plan/CreateTestPlan.svelte'
 
 import { CreateChildTestSuiteAction, EditTestSuiteAction, RunSelectedTestsAction } from './utils'
 import { resolveLocation, getAttachedObjectLink } from './navigation'
@@ -67,11 +68,13 @@ export default async (): Promise<Resources> => ({
     TestResultFooter,
     TestRunHeader,
     TestRunner,
-    NewTestRunPanel
+    NewTestRunPanel,
+    CreateTestPlan
   },
   function: {
     GetTestSuiteLink: getAttachedObjectLink,
-    GetTestRunLink: getAttachedObjectLink
+    GetTestRunLink: getAttachedObjectLink,
+    GetTestPlanLink: getAttachedObjectLink
   },
   resolver: {
     Location: resolveLocation

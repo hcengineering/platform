@@ -23,7 +23,9 @@ import type {
   TestProject,
   TestRun,
   TestRunStatus,
-  TestResult
+  TestResult,
+  TestPlan,
+  TestPlanItem
 } from '@hcengineering/test-management'
 import { type Attachment } from '@hcengineering/attachment'
 import contact from '@hcengineering/contact'
@@ -266,4 +268,46 @@ export class TTestResult extends TAttachedDoc implements TestResult {
 
   @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number
+}
+
+@Model(testManagement.class.TestPlan, core.class.Doc, DOMAIN_TEST_MANAGEMENT)
+@UX(testManagement.string.TestPlan)
+export class TTestPlan extends TDoc implements TestPlan {
+  @Prop(TypeString(), testManagement.string.Name)
+  @Index(IndexKind.FullText)
+    name!: string
+
+  @Prop(TypeCollaborativeDoc(), testManagement.string.FullDescription)
+  @Index(IndexKind.FullText)
+    description!: MarkupBlobRef | null
+
+  @Prop(Collection(testManagement.class.TestPlanItem), testManagement.string.TestCase, {
+    shortLabel: testManagement.string.TestCase
+  })
+    results?: CollectionSize<TestPlanItem>
+}
+
+@Model(testManagement.class.TestPlanItem, core.class.AttachedDoc, DOMAIN_TEST_MANAGEMENT)
+@UX(testManagement.string.TestCase)
+export class TTestPlanItem extends TAttachedDoc implements TestPlanItem {
+  @Prop(TypeRef(testManagement.class.TestPlan), core.string.AttachedTo)
+  @Index(IndexKind.Indexed)
+  declare attachedTo: Ref<TestPlan>
+
+  @Prop(TypeRef(testManagement.class.TestPlan), core.string.AttachedToClass)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare attachedToClass: Ref<Class<TestPlan>>
+
+  @Prop(TypeRef(testManagement.class.TestProject), core.string.Space)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare space: Ref<TestProject>
+
+  @Prop(TypeString(), core.string.Collection)
+  @Hidden()
+  override collection: 'items' = 'items'
+
+  @Prop(TypeRef(testManagement.class.TestCase), testManagement.string.TestCase)
+    testCase!: Ref<TestCase>
 }

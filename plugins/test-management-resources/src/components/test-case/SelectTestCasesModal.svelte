@@ -20,10 +20,7 @@
   import { Data, DocumentQuery, Ref, generateId, makeCollabId } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import {
-    TestCase,
-    TestProject
-  } from '@hcengineering/test-management'
+  import { TestCase, TestProject } from '@hcengineering/test-management'
   import { Button, Dialog } from '@hcengineering/ui'
   import { ComponentNavigator } from '@hcengineering/workbench-resources'
   import view from '@hcengineering/view'
@@ -63,11 +60,7 @@
   }
 </script>
 
-<Dialog
-  isFullSize
-  on:fullsize
-  on:close={handleClose}
->
+<Dialog isFullSize on:fullsize on:close={handleClose}>
   <svelte:fragment slot="title">
     {'Select test cases'}
   </svelte:fragment>
@@ -94,16 +87,8 @@
   <svelte:fragment slot="footerRight">
     <div class="p-2">
       <div class="buttons-group">
-        <Button
-          kind={'secondary'}
-          label={testManagement.string.Cancel}
-          on:click={handleClose}
-        />
-        <Button
-          kind={'primary'}
-          label={testManagement.string.Save}
-          on:click={handleSave}
-        />
+        <Button kind={'secondary'} label={testManagement.string.Cancel} on:click={handleClose} />
+        <Button kind={'primary'} label={testManagement.string.Save} on:click={handleSave} />
       </div>
     </div>
   </svelte:fragment>

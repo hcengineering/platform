@@ -38,7 +38,9 @@ import {
   TestCaseStatus,
   TestRun,
   TestRunStatus,
-  TestResult
+  TestResult,
+  TestPlan,
+  TestPlanItem
 } from './types'
 
 /** @public */
@@ -85,7 +87,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     StatusBlocked: '' as Asset,
     StatusPassed: '' as Asset,
     StatusFailed: '' as Asset,
-    Run: '' as Asset
+    Run: '' as Asset,
+    TestPlans: '' as Asset
   },
   class: {
     TestCase: '' as Ref<Class<TestCase>>,
@@ -96,7 +99,9 @@ export const testManagementPlugin = plugin(testManagementId, {
     TypeTestCaseStatus: '' as Ref<Class<Type<TestCaseStatus>>>,
     TestRun: '' as Ref<Class<TestRun>>,
     TypeTestRunStatus: '' as Ref<Class<Type<TestRunStatus>>>,
-    TestResult: '' as Ref<Class<TestResult>>
+    TestResult: '' as Ref<Class<TestResult>>,
+    TestPlan: '' as Ref<Class<TestPlan>>,
+    TestPlanItem: '' as Ref<Class<TestPlanItem>>
   },
   descriptors: {
     ProjectType: '' as Ref<SpaceTypeDescriptor>
@@ -191,7 +196,10 @@ export const testManagementPlugin = plugin(testManagementId, {
     AllTests: '' as IntlString,
     MyTests: '' as IntlString,
     Comments: '' as IntlString,
-    Cancel: '' as IntlString
+    Cancel: '' as IntlString,
+    TestPlans: '' as IntlString,
+    TestPlan: '' as IntlString,
+    Name: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>
@@ -241,7 +249,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     TableTestSuites: '' as Ref<Viewlet>,
     ListTestCase: '' as Ref<Viewlet>,
     TestResultList: '' as Ref<Viewlet>,
-    TableTestResult: '' as Ref<Viewlet>
+    TableTestResult: '' as Ref<Viewlet>,
+    TestPlanItemsList: '' as Ref<Viewlet>
   },
   testCaseTypeStatus: {
     Draft: '' as Ref<Status>,
@@ -254,7 +263,8 @@ export const testManagementPlugin = plugin(testManagementId, {
   },
   function: {
     GetTestSuiteLink: '' as Resource<(doc: Ref<Doc>) => Location>,
-    GetTestRunLink: '' as Resource<(doc: Ref<Doc>) => Location>
+    GetTestRunLink: '' as Resource<(doc: Ref<Doc>) => Location>,
+    GetTestPlanLink: '' as Resource<(doc: Ref<Doc>) => Location>
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>

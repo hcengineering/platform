@@ -51,7 +51,14 @@ export async function showCreateTestRunPopup (options: {
   query?: DocumentQuery<Doc>
   space: Ref<TestProject>
 }): Promise<void> {
-  showPanel(testManagement.component.NewTestRunPanel, 'new-test-run', testManagement.class.TestRun, 'content', undefined, false)
+  showPanel(
+    testManagement.component.NewTestRunPanel,
+    'new-test-run',
+    testManagement.class.TestRun,
+    'content',
+    undefined,
+    false
+  )
 }
 
 export async function showSelectTestCasesPopup (options: {
