@@ -42,6 +42,7 @@
   let commands: DrawingCmd[] = []
   let offset: { x: number, y: number } = { x: 0, y: 0 }
   let changingCmdId: string | undefined
+  let cmdEditor: HTMLDivElement | undefined
   let toolbar: HTMLDivElement
   let oldSelected = false
   let oldReadonly = false
@@ -88,6 +89,7 @@
       savedCmds.push([cmd])
     }
     changingCmdId = undefined
+    cmdEditor = undefined
   }
 
   function deleteCommand (id: string): void {
@@ -98,12 +100,14 @@
       }
     }
     changingCmdId = undefined
+    cmdEditor = undefined
   }
 
   function onSelectedChanged (selected: boolean): void {
     if (oldSelected !== selected) {
       if (oldSelected && !selected && changingCmdId !== undefined) {
         changingCmdId = undefined
+        cmdEditor = undefined
       }
       oldSelected = selected
     }
@@ -183,6 +187,9 @@
         panned: (newOffset) => {
           offset = newOffset
           // savedProps.set('offset', offset)
+        },
+        editorCreated: (editor) => {
+          cmdEditor = editor
         }
       }}
     >
@@ -195,6 +202,7 @@
         <DrawingBoardToolbar
           placeInside={true}
           showPanTool={true}
+          {cmdEditor}
           bind:toolbar
           bind:tool
           bind:penColor

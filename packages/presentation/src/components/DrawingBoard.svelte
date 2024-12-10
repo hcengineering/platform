@@ -46,6 +46,7 @@
   let oldDrawings: DrawingData[]
   let modified = false
   let changingCmdId: string | undefined
+  let cmdEditor: HTMLDivElement | undefined
 
   $: updateToolbarPosition(readonly, board, toolbar)
   $: updateEditableState(drawings, readonly)
@@ -78,6 +79,7 @@
         commands = undefined
       }
       changingCmdId = undefined
+      cmdEditor = undefined
       oldDrawings = drawings
       oldReadonly = readonly
     }
@@ -113,6 +115,7 @@
     if (commands !== undefined) {
       commands = [...commands, cmd]
       changingCmdId = undefined
+      cmdEditor = undefined
       modified = true
     }
   }
@@ -135,6 +138,7 @@
     if (commands !== undefined) {
       commands = commands.map((c) => (c.id === cmd.id ? cmd : c))
       changingCmdId = undefined
+      cmdEditor = undefined
       modified = true
     }
   }
@@ -143,6 +147,7 @@
     if (commands !== undefined) {
       commands = commands.filter((c) => c.id !== id)
       changingCmdId = undefined
+      cmdEditor = undefined
       modified = true
     }
   }
@@ -177,12 +182,16 @@
       cmdUnchanged: () => {
         changingCmdId = undefined
       },
-      cmdDeleted: deleteCommand
+      cmdDeleted: deleteCommand,
+      editorCreated: (editor) => {
+        cmdEditor = editor
+      }
     }}
   >
     {#if !readonly}
       <DrawingBoardToolbar
         placeInside={toolbarInside}
+        {cmdEditor}
         bind:toolbar
         bind:tool
         bind:penColor

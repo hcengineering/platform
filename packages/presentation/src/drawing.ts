@@ -36,6 +36,7 @@ export interface DrawingProps {
   cmdUnchanged?: (id: string) => void
   cmdChanged?: (cmd: DrawingCmd) => void
   cmdDeleted?: (id: string) => void
+  editorCreated?: (editor: HTMLDivElement) => void
   panned?: (offset: Point) => void
 }
 
@@ -735,6 +736,7 @@ export function drawing (
       editor.focus()
     }, 100)
     selectAll()
+    props.editorCreated?.(editor)
   }
 
   function updateLiveTextBox (): void {
