@@ -75,6 +75,7 @@
     "@hcengineering/model-all": "^0.6.0",
     "@hcengineering/model-attachment": "^0.6.0",
     "@hcengineering/model-contact": "^0.6.1",
+    "@hcengineering/model-document": "^0.6.0",
     "@hcengineering/model-recruit": "^0.6.0",
     "@hcengineering/model-telegram": "^0.6.0",
     "@hcengineering/model-tracker": "^0.6.0",
