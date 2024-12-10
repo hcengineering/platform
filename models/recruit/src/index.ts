@@ -355,7 +355,7 @@ export function createModel (builder: Builder): void {
         }
       ],
       configOptions: {
-        hiddenKeys: ['name', 'space', 'modifiedOn'],
+        hiddenKeys: ['name', 'space', 'modifiedOn', 'company'],
         sortable: true
       },
       viewOptions: {

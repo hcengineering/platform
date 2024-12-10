@@ -208,7 +208,15 @@
       <VacancyApplications objectId={object._id} {readonly} />
     </div>
     <div class="w-full mt-6">
-      <Component is={survey.component.PollCollection} props={{ object, label: survey.string.Polls }} />
+      <Component
+        is={survey.component.PollCollection}
+        props={{
+          objectId: object._id,
+          _class: object._class,
+          space: object.space,
+          polls: object.polls
+        }}
+      />
     </div>
     <div class="w-full mt-6">
       <Component is={tracker.component.RelatedIssuesSection} props={{ object, label: tracker.string.RelatedIssues }} />
