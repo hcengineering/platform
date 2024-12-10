@@ -32,7 +32,7 @@ import github from './plugin'
 import { DOMAIN_TIME } from '@hcengineering/model-time'
 import { DOMAIN_TRACKER } from '@hcengineering/model-tracker'
 import time from '@hcengineering/time'
-import { DOMAIN_GITHUB } from '.'
+import { DOMAIN_GITHUB, DOMAIN_GITHUB_SYNC, DOMAIN_GITHUB_USER } from '.'
 
 export async function guessStatus (status: Status, statuses: Status[]): Promise<Status> {
   const active = (): Status => statuses.find((it) => it.category === task.statusCategory.Active) as Status
@@ -327,6 +327,13 @@ export const githubOperationPreTime: MigrateOperation = {
         state: 'remove-doc-sync-info-txes',
         func: async (client) => {
           await client.deleteMany(DOMAIN_TX, { objectClass: github.class.DocSyncInfo })
+        }
+      },
+      {
+        state: 'migrate-github-sync-domain',
+        func: async (client) => {
+          await client.move(DOMAIN_GITHUB, { _class: github.class.DocSyncInfo }, DOMAIN_GITHUB_SYNC)
+          await client.move(DOMAIN_GITHUB, { _class: github.class.GithubUserInfo }, DOMAIN_GITHUB_USER)
         }
       }
     ])
