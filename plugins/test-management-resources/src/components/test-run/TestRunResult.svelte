@@ -13,52 +13,36 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { BreadcrumbsElement } from '@hcengineering/presentation'
-  import { ScrollerBar } from '@hcengineering/ui'
+  import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+
+  import { MultiProgress } from '@hcengineering/ui'
 
   import { type TestRunStats } from '../../testRunUtils'
 
   export let value: TestRunStats
 
-  let divScroll: HTMLElement
+  $: items = [
+    {
+      value: value.untested,
+      color: PaletteColorIndexes.Cloud
+    },
+    {
+      value: value.blocked,
+      color: PaletteColorIndexes.Orange
+    },
+    {
+      value: value.failed,
+      color: PaletteColorIndexes.Firework
+    },
+    {
+      value: value.completed,
+      color: PaletteColorIndexes.Grass
+    }
+  ]
+  $: max = items.reduce((acc, it) => acc + it.value, 0)
+
 </script>
 
-<!--TODO: Refactor and get rid of harcoded values-->
-<ScrollerBar gap="none" bind:scroller={divScroll}>
-  <BreadcrumbsElement
-    noGap
-    label={value.untested.toString()}
-    position={'start'}
-    color={'#4CA6EE'}
-    fontColor="white"
-    title="Untested"
-    selected
-  />
-  <BreadcrumbsElement
-    label={value.blocked.toString()}
-    noGap
-    position={'middle'}
-    color={'#D27540'}
-    selected
-    fontColor="white"
-    title="Failed"
-  />
-  <BreadcrumbsElement
-    label={value.failed.toString()}
-    noGap
-    position={'middle'}
-    color={'#D15045'}
-    selected
-    fontColor="white"
-    title="Failed"
-  />
-  <BreadcrumbsElement
-    noGap
-    label={value.completed.toString()}
-    position={'end'}
-    color={'#46A44F'}
-    fontColor="white"
-    title="Passed"
-    selected
-  />
-</ScrollerBar>
+<div class="w-full">
+  <MultiProgress {max} values={items} />
+</div>

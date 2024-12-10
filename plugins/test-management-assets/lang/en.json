@@ -86,6 +86,7 @@
     "Cancel": "Cancel",
     "Name": "Name",
     "TestPlans": "Test plans",
-    "TestPlan": "Test plan"
+    "TestPlan": "Test plan",
+    "CreateTestPlan": "New test plan"
   }
 }

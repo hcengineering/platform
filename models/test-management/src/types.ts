@@ -310,4 +310,8 @@ export class TTestPlanItem extends TAttachedDoc implements TestPlanItem {
 
   @Prop(TypeRef(testManagement.class.TestCase), testManagement.string.TestCase)
     testCase!: Ref<TestCase>
+
+  @Prop(TypeRef(testManagement.class.TestSuite), testManagement.string.TestSuite)
+  @Index(IndexKind.Indexed)
+    testSuite?: Ref<TestSuite>
 }

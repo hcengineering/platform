@@ -22,10 +22,10 @@
   import { Panel } from '@hcengineering/panel'
   import { Button, EditBox, Label } from '@hcengineering/ui'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
+  import testManagement from '@hcengineering/test-management'
 
   import RightHeader from '../test-result/RightHeader.svelte'
   import TestCaseList from '../test-case/TestCaseList.svelte'
-  import testManagement from '../../plugin'
   import TestCaseSelector from '../test-case/TestCaseSelector.svelte'
 
   export let space: Ref<TestProject>
@@ -101,7 +101,7 @@
   <ActionContext context={{ mode: 'editor' }} />
   <Panel
     {object}
-    title={testManagement.string.TestRun}
+    title={testManagement.string.CreateTestRun}
     isHeader={false}
     isAside={true}
     isSub={false}

@@ -137,4 +137,6 @@ export interface TestPlan extends Doc {
 /** @public */
 export interface TestPlanItem extends AttachedDoc<TestPlan, 'items', TestProject> {
   testCase: Ref<TestCase>
+  testSuite?: Ref<TestSuite>
+  assignee?: Ref<Employee>
 }
