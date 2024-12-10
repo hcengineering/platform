@@ -14,11 +14,17 @@
 //
 
 import { getBlobURL } from './blob'
+import { type MetricsContext } from './metrics'
 import { type BlobRequest } from './types'
 
 const prefferedImageFormats = ['webp', 'avif', 'jpeg', 'png']
 
-export async function handleImageGet (request: BlobRequest): Promise<Response> {
+export async function handleImageGet (
+  request: BlobRequest,
+  env: Env,
+  ctx: ExecutionContext,
+  metrics: MetricsContext
+): Promise<Response> {
   const {
     workspace,
     name,
@@ -48,5 +54,5 @@ export async function handleImageGet (request: BlobRequest): Promise<Response> {
 
   const blobURL = getBlobURL(request, workspace, name)
   const imageRequest = new Request(blobURL, { headers: { Accept } })
-  return await fetch(imageRequest, { cf: { image, cacheTtl: 3600 } })
+  return await metrics.with('image.transform', () => fetch(imageRequest, { cf: { image, cacheTtl: 3600 } }))
 }

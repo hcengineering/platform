@@ -15,8 +15,9 @@
 
 import { AwsClient } from 'aws4fetch'
 import { error, json } from 'itty-router'
-import db, { withPostgres } from './db'
+import { withPostgres } from './db'
 import { saveBlob } from './blob'
+import { type MetricsContext } from './metrics'
 import { type BlobRequest } from './types'
 
 export interface S3UploadPayload {
@@ -35,16 +36,21 @@ function getS3Client (payload: S3UploadPayload): AwsClient {
   })
 }
 
-export async function handleS3Blob (request: BlobRequest, env: Env, ctx: ExecutionContext): Promise<Response> {
+export async function handleS3Blob (
+  request: BlobRequest,
+  env: Env,
+  ctx: ExecutionContext,
+  metrics: MetricsContext
+): Promise<Response> {
   const { workspace, name } = request
 
   const payload = await request.json<S3UploadPayload>()
 
   const client = getS3Client(payload)
 
-  return await withPostgres(env, ctx, async (sql) => {
+  return await withPostgres(env, ctx, metrics, async (db) => {
     // Ensure the blob does not exist
-    const blob = await db.getBlob(sql, { workspace, name })
+    const blob = await db.getBlob({ workspace, name })
     if (blob !== null) {
       return new Response(null, { status: 200 })
     }
@@ -65,7 +71,7 @@ export async function handleS3Blob (request: BlobRequest, env: Env, ctx: Executi
     const contentLength = Number.parseInt(contentLengthHeader)
     const lastModified = lastModifiedHeader !== null ? new Date(lastModifiedHeader).getTime() : Date.now()
 
-    const result = await saveBlob(env, sql, object.body, contentLength, contentType, workspace, name, lastModified)
+    const result = await saveBlob(env, db, object.body, contentLength, contentType, workspace, name, lastModified)
     return json(result)
   })
 }
