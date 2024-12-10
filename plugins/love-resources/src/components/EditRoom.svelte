@@ -15,13 +15,13 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
   import { EditBox, ModernButton } from '@hcengineering/ui'
-  import { Room, isOffice } from '@hcengineering/love'
+  import { Room, isOffice, type ParticipantInfo } from '@hcengineering/love'
   import { createEventDispatcher, onMount } from 'svelte'
   import { personByIdStore } from '@hcengineering/contact-resources'
   import { IntlString } from '@hcengineering/platform'
 
   import love from '../plugin'
-  import { getRoomName, tryConnect, isConnected } from '../utils'
+  import { getRoomName, tryConnect, isConnected, leaveRoom } from '../utils'
   import { infos, invites, myInfo, myRequests, selectedRoomPlace, myOffice, currentRoom } from '../stores'
 
   export let object: Room
@@ -79,11 +79,22 @@
     object: Room,
     connecting: boolean,
     isConnected: boolean,
+    info: ParticipantInfo[],
     myOffice?: Room,
     currentRoom?: Room
   ): boolean {
-    // Do not show connect button in my office
-    if (object._id === myOffice?._id) return false
+    if (isOffice(object)) {
+      // Do not show connect button in own office
+      if (object._id === myOffice?._id) return false
+      // Do not show connect for empty office
+      if (object.person === null) return false
+
+      const owner = object.person
+      const ownerInfo = info.find((p) => p.person === owner)
+      // Do not show connect if owner is not in the office
+      if (ownerInfo?.room !== object._id) return false
+    }
+
     // Show during connecting with spinner
     if (connecting) return true
     // Do not show connect button if we are already connected to the room
@@ -104,7 +115,7 @@
         focusIndex={1}
       />
     </div>
-    {#if showConnectionButton(object, connecting, $isConnected, $myOffice, $currentRoom)}
+    {#if showConnectionButton(object, connecting, $isConnected, $infos, $myOffice, $currentRoom)}
       <ModernButton label={connectLabel} size="large" kind={'primary'} on:click={connect} loading={connecting} />
     {/if}
   </div>
