@@ -53,6 +53,7 @@
   export let placeInside = false
   export let showPanTool = false
   export let toolbar: HTMLDivElement | undefined
+  export let cmdEditor: HTMLDivElement | undefined
 
   let colorSelector: HTMLInputElement
   let penColors: string[] = defaultColors
@@ -91,12 +92,14 @@
           penColors = penColors.filter((c: string) => c !== penColor)
           localStorage.setItem(storageKey.colors, JSON.stringify(penColors))
           selectColor(penColors[0])
+          focusEditor()
           break
         }
         case 'reset-colors': {
           penColors = defaultColors
           localStorage.removeItem(storageKey.colors)
           selectColor(penColors[0])
+          focusEditor()
           break
         }
         case undefined: {
@@ -115,6 +118,7 @@
       penColors = [...penColors, penColor]
       localStorage.setItem(storageKey.colors, JSON.stringify(penColors))
     }
+    focusEditor()
   }
 
   function selectColor (color: string): void {
@@ -148,6 +152,15 @@
 
   function updateFontSize (): void {
     localStorage.setItem(storageKey.fontSize, fontSize.toString())
+    focusEditor()
+  }
+
+  function focusEditor (): void {
+    setTimeout(() => {
+      if (cmdEditor !== undefined) {
+        cmdEditor.focus()
+      }
+    }, 100)
   }
 </script>
 
@@ -243,6 +256,7 @@
           tool = 'pen'
         }
         selectColor(color)
+        focusEditor()
       }}
     >
       <div slot="content" class="colorIcon" style:background={color} />
