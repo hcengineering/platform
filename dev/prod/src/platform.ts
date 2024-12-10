@@ -156,6 +156,7 @@ export interface Config {
   TELEGRAM_BOT_URL?: string
   AI_URL?:string
   DISABLE_SIGNUP?: string
+  DEFAULT_LOGIN_METHOD?: 'otp'|'password'
   // Could be defined for dev environment
   FRONT_URL?: string
   PREVIEW_CONFIG?: string
@@ -300,6 +301,7 @@ export async function configurePlatform() {
 
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(login.metadata.DisableSignUp, config.DISABLE_SIGNUP === 'true')
+  setMetadata(login.metadata.DefaultLoginMethod, config.DEFAULT_LOGIN_METHOD)
   setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
