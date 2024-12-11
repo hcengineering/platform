@@ -27,6 +27,7 @@ import core, {
   IndexingUpdateEvent,
   Lookup,
   LookupData,
+  Mixin,
   ModelDb,
   Ref,
   ReverseLookups,
@@ -150,6 +151,7 @@ export class LiveQuery implements WithTx, Client {
   }
 
   private match (q: Query, doc: Doc, skipLookup = false): boolean {
+    doc = this.asMixin(doc, q._class)
     if (!this.getHierarchy().isDerived(doc._class, q._class)) {
       // Check if it is not a mixin and not match class
       const mixinClass = Hierarchy.mixinClass(doc)
@@ -518,20 +520,30 @@ export class LiveQuery implements WithTx, Client {
     return current
   }
 
+  private asMixin (doc: Doc, mixin: Ref<Mixin<Doc>>): Doc {
+    if (this.getHierarchy().isMixin(mixin)) {
+      return this.getHierarchy().as(doc, mixin)
+    }
+    return doc
+  }
+
   private async getCurrentDoc (
     q: Query,
     _id: Ref<Doc>,
     space: Ref<Space>,
     docCache: Map<string, Doc>
   ): Promise<boolean> {
-    const current = await this.getDocFromCache(docCache, _id, q._class, space, q)
+    let current = await this.getDocFromCache(docCache, _id, q._class, space, q)
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
 
     const pos = q.result.findDoc(_id)
+    if (current !== undefined) {
+      current = this.asMixin(current, q._class)
+    }
     if (current !== undefined && this.match(q, current)) {
-      q.result.updateDoc(current)
+      q.result.updateDoc(current, false)
       this.refs.updateDocuments(q, [current])
     } else {
       if (q.options?.limit === q.result.length) {
@@ -597,7 +609,7 @@ export class LiveQuery implements WithTx, Client {
         if (q.result instanceof Promise) {
           q.result = await q.result
         }
-        const updatedDoc = q.result.findDoc(tx.objectId)
+        let updatedDoc = q.result.findDoc(tx.objectId)
         if (updatedDoc !== undefined) {
           // If query contains search we must check use fulltext
           if (q.query.$search != null && q.query.$search.length > 0) {
@@ -608,6 +620,7 @@ export class LiveQuery implements WithTx, Client {
           } else {
             if (updatedDoc.modifiedOn < tx.modifiedOn) {
               await this.__updateMixinDoc(q, updatedDoc, tx)
+              updatedDoc = this.asMixin(updatedDoc, q._class)
               const updateRefresh = this.checkUpdatedDocMatch(q, q.result, updatedDoc)
               if (updateRefresh) {
                 continue
