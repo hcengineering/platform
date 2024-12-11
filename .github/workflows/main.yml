@@ -505,10 +505,14 @@ jobs:
           repository: hcengineering/init
           ref: unified-init-scripts # todo: change to main once https://github.com/hcengineering/init/pull/6 is merged
           path: pods/workspace/init
+          sparse-checkout: |
+            /*
+            !.git
+            !.github
 
       - name: Check file structure
         run: |
-          ls -la pods/
+          ls -la pods/workspace/init
 
       - uses: actions/setup-node@v4
         with:
