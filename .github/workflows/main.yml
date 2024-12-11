@@ -507,7 +507,7 @@ jobs:
 
       - name: Check file structure
         run: |
-          ls -la pods/workspace/init
+          ls -la pods/
 
       # - uses: actions/setup-node@v4
       #   with:
