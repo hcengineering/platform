@@ -504,7 +504,7 @@ jobs:
         run: |
           wget https://github.com/hcengineering/init/archive/refs/heads/${{env.INIT_SCRIPTS_BRANCH}}.zip
           unzip ${{env.INIT_SCRIPTS_BRANCH}}.zip -d pods/workspace
-          mv pods/workspace/${{env.INIT_SCRIPTS_BRANCH}} pods/workspace/init
+          mv pods/workspace/init-${{env.INIT_SCRIPTS_BRANCH}} pods/workspace/init
           rm -rf ${{env.INIT_SCRIPTS_BRANCH}}.zip
 
       - name: Check file structure
