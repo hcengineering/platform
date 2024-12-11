@@ -21,6 +21,7 @@ import analyticsCollector from '@hcengineering/analytics-collector'
 import aiBot from './plugin'
 
 export { aiBotId } from '@hcengineering/ai-bot'
+export { aiBotOperation } from './migration'
 export default aiBot
 
 export const DOMAIN_AI_BOT = 'ai_bot' as Domain
