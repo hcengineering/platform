@@ -44,9 +44,13 @@ export async function handleBlobGet (
   const { workspace, name } = request
 
   const cache = new LoggedCache(caches.default, metrics)
-  const cached = await cache.match(request)
-  if (cached !== undefined) {
-    return cached
+
+  const cacheControl = request.headers.get('Cache-Control') ?? ''
+  if (!cacheControl.includes('no-cache')) {
+    const cached = await cache.match(request)
+    if (cached !== undefined) {
+      return cached
+    }
   }
 
   const { bucket } = selectStorage(env, workspace)
@@ -75,8 +79,10 @@ export async function handleBlobGet (
   const response = new Response(object?.body, { headers, status })
 
   if (response.status === 200) {
-    const clone = metrics.withSync('response.clone', () => response.clone())
-    ctx.waitUntil(cache.put(request, clone))
+    if (!cacheControl.includes('no-store')) {
+      const clone = metrics.withSync('response.clone', () => response.clone())
+      ctx.waitUntil(cache.put(request, clone))
+    }
   }
 
   return response

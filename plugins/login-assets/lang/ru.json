@@ -19,6 +19,7 @@
     "DoNotHaveAnAccount": "Нет учетной записи?",
     "PasswordRepeat": "Повторите пароль",
     "HaveAccount": "Уже есть учетная запись?",
+    "LoadingAccount": "Загрузка...",
     "SelectWorkspace": "Выбрать рабочее пространство",
     "Copy": "Копировать",
     "Copied": "Скопировано",

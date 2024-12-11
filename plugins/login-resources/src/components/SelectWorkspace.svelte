@@ -20,6 +20,7 @@
   import {
     Button,
     Label,
+    Spinner,
     Scroller,
     SearchEdit,
     deviceOptionsStore as deviceInfo,
@@ -95,7 +96,11 @@
 <form class="container" style:padding={$deviceInfo.docWidth <= 480 ? '1.25rem' : '5rem'}>
   <div class="grow-separator" />
   <div class="fs-title">
-    {account?.email}
+    {#if account?.email}
+      {account.email}
+    {:else}
+      <Label label={login.string.LoadingAccount} />
+    {/if}
   </div>
   <div class="title"><Label label={login.string.SelectWorkspace} /></div>
   <div class="status">
@@ -106,7 +111,11 @@
       <SearchEdit bind:value={search} width={'100%'} />
     </div>
   {/if}
-  {#await _getWorkspaces() then}
+  {#await _getWorkspaces()}
+    <div class="workspace-loader">
+      <Spinner />
+    </div>
+  {:then}
     <Scroller padding={'.125rem 0'} maxHeight={35}>
       <div class="form">
         {#each workspaces
@@ -206,6 +215,13 @@
     justify-content: space-between;
     flex-grow: 1;
     overflow: hidden;
+
+    .workspace-loader {
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
     .title {
       font-weight: 600;
