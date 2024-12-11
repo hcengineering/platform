@@ -24,6 +24,7 @@ import core, {
   TxApplyIf,
   TxCUD,
   TxOperations,
+  TxProcessor,
   TxWorkspaceEvent,
   WithLookup,
   WorkspaceEvent,
@@ -824,10 +825,14 @@ export class GithubWorker implements IntegrationManager {
           // Handle tx
           const h = this._client.getHierarchy()
           for (const t of tx) {
-            if (h.isDerived(t._class, core.class.TxCUD)) {
+            if (TxProcessor.isExtendsCUD(t._class)) {
               const cud = t as TxCUD<Doc>
               if (cud.objectClass === github.class.DocSyncInfo) {
                 this.triggerSync()
+                break
+              }
+              if (cud.objectClass === contact.class.Person || cud.objectClass === contact.class.Channel) {
+                this.accountMap.clear()
                 break
               }
             }
