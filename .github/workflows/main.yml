@@ -494,6 +494,10 @@ jobs:
           fetch-depth: 0
           filter: tree:0
 
+      - name: Where we now
+        run: |
+          pwd
+
       - name: Checkout init repository
         uses: actions/checkout@v4
         with:
@@ -505,62 +509,62 @@ jobs:
         run: |
           ls -la pods/workspace/init
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-      - uses: pnpm/action-setup@v4
-        with:
-          version: latest
-      - name: Cache node modules
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-platform
-        with:
-          path: |
-            common/temp
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+      # - uses: actions/setup-node@v4
+      #   with:
+      #     node-version-file: '.nvmrc'
+      # - uses: pnpm/action-setup@v4
+      #   with:
+      #     version: latest
+      # - name: Cache node modules
+      #   uses: actions/cache@v4
+      #   env:
+      #     cache-name: cache-node-platform
+      #   with:
+      #     path: |
+      #       common/temp
+      #     key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
-      - name: Installing...
-        run: node common/scripts/install-run-rush.js install
+      # - name: Installing...
+      #   run: node common/scripts/install-run-rush.js install
 
-      - name: Model version from git tags
-        run: node common/scripts/install-run-rush.js model-version
+      # - name: Model version from git tags
+      #   run: node common/scripts/install-run-rush.js model-version
 
-      - name: Docker build
-        run: node common/scripts/install-run-rush.js docker:build -v
-        env:
-          DOCKER_CLI_HINTS: false
-          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
-      - name: Docker build love-agent
-        run: |
-            cd ./services/ai-bot/love-agent
-            pnpm install && pnpm build
-            pnpm docker:build -v
-        env:
-          DOCKER_CLI_HINTS: false
-          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
-      - name: Login to Docker Hub
-        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
-        uses: docker/login-action@v3
-        with:
-          username: hardcoreeng
-          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-      # - name: Docker push staging
-      #   if: ${{ github.ref == 'refs/heads/main' }}
-      #   run: node common/scripts/install-run-rush.js docker:staging -v
-      - name: Docker push tag
-        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
-        run: |
-          echo Pushing release of tag ${{ github.ref }}
-          node common/scripts/install-run-rush.js docker:push -v
-      - name: Docker push love-agent
-        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
-        run: |
-          echo Pushing love-agent release of tag ${{ github.ref }}
-          cd ./services/ai-bot/love-agent
-          pnpm docker:push
+      # - name: Docker build
+      #   run: node common/scripts/install-run-rush.js docker:build -v
+      #   env:
+      #     DOCKER_CLI_HINTS: false
+      #     DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
+      # - name: Docker build love-agent
+      #   run: |
+      #       cd ./services/ai-bot/love-agent
+      #       pnpm install && pnpm build
+      #       pnpm docker:build -v
+      #   env:
+      #     DOCKER_CLI_HINTS: false
+      #     DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
+      # - name: Login to Docker Hub
+      #   if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: hardcoreeng
+      #     password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      # # - name: Docker push staging
+      # #   if: ${{ github.ref == 'refs/heads/main' }}
+      # #   run: node common/scripts/install-run-rush.js docker:staging -v
+      # - name: Docker push tag
+      #   if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+      #   run: |
+      #     echo Pushing release of tag ${{ github.ref }}
+      #     node common/scripts/install-run-rush.js docker:push -v
+      # - name: Docker push love-agent
+      #   if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+      #   run: |
+      #     echo Pushing love-agent release of tag ${{ github.ref }}
+      #     cd ./services/ai-bot/love-agent
+      #     pnpm docker:push
   # dist-build:
   #   # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
   #   if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
