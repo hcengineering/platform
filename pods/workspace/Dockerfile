@@ -11,13 +11,14 @@ RUN apt-get clean
 ENV LD_PRELOAD=libjemalloc.so.2
 ENV MALLOC_CONF=dirty_decay_ms:1000,narenas:2,background_thread:true
 
-# Workaround to copy optional init directory
-# RUN mkdir -p ./init-scripts
-COPY bundle/bundle.js init ./init-scripts/
-RUN ls -la
-RUN ls -la init-scripts
-RUN mv init-scripts/bundle.js ./
-
+COPY bundle/bundle.js ./
 COPY bundle/bundle.js.map ./
 
+COPY ini[t]/ ./init-scripts/
+
+# Workaround to copy optional init directory
+# COPY bundle/bundle.js.map init ./init-scripts/
+# RUN mv init-scripts/bundle.js.map ./
+
 CMD [ "node", "bundle.js" ]
+
