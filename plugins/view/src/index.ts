@@ -166,7 +166,8 @@ const view = plugin(viewId, {
     IconWithEmoji: '' as AnyComponent,
     AttachedDocPanel: '' as AnyComponent,
     ObjectMention: '' as AnyComponent,
-    SearchSelector: '' as AnyComponent
+    SearchSelector: '' as AnyComponent,
+    FoldersBrowser: '' as AnyComponent
   },
   ids: {
     IconWithEmoji: '' as Asset

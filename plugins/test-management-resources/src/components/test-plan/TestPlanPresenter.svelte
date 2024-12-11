@@ -1,5 +1,4 @@
 <!--
-//
 // Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -12,28 +11,25 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 -->
-
 <script lang="ts">
-  import { TestCase } from '@hcengineering/test-management'
+  import { TestPlan } from '@hcengineering/test-management'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { tooltip } from '@hcengineering/ui'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
 
-  export let value: TestCase | undefined
+  export let value: TestPlan | undefined
   export let inline: boolean = false
   export let disabled: boolean = false
   export let accent: boolean = false
   export let noUnderline: boolean = false
-  export let onClick: ((event: MouseEvent) => void) | undefined = undefined
 </script>
 
 {#if value}
   {#if inline}
-    <ObjectMention title={value?.name} object={value} {disabled} {accent} {noUnderline} />
+    <ObjectMention object={value} {disabled} {accent} {noUnderline} />
   {:else}
-    <DocNavLink object={value} {disabled} {accent} {noUnderline} {onClick}>
+    <DocNavLink object={value} {disabled} {accent} {noUnderline}>
       <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
         <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
           {value.name}

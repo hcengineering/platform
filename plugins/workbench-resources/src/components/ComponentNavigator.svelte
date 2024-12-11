@@ -52,6 +52,7 @@
   export let syncWithLocationQuery: boolean = true
   export let mainComponent: AnyComponent | AnySvelteComponent
   export let mainComponentProps = {}
+  export let showNavigator: boolean = false
 
   const FLOAT_LIMIT = 760
   let container: HTMLDivElement
@@ -85,11 +86,15 @@
   const toggleNavigator = (): void => {
     visibleNavigator = !visibleNavigator
     if (visibleNavigator) {
-      if (!floatNavigator && container.getBoundingClientRect().width < FLOAT_LIMIT) {
+      if (!floatNavigator && container !== undefined && container.getBoundingClientRect().width < FLOAT_LIMIT) {
         floatNavigator = true
       }
       localStorage.removeItem('componentNavigator')
     } else localStorage.setItem('componentNavigator', 'hidden')
+  }
+
+  if (showNavigator && !visibleNavigator) {
+    toggleNavigator()
   }
 </script>
 

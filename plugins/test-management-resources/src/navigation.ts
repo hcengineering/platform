@@ -90,6 +90,11 @@ export function getTestRunIdFromLocation (): Ref<TestRun> {
   return (location?.query?.[SUITE_KEY] as Ref<TestRun>) ?? testManagement.ids.NoTestRun
 }
 
+export function getProjectFromLocation (): Ref<TestProject> {
+  const loc = getLocation()
+  return loc.path[3] as Ref<TestProject>
+}
+
 export function getTestRunsLink (space: Ref<TestProject>, parentDoc: Ref<Doc>): Location {
   const loc = getCurrentResolvedLocation()
   loc.path.length = 5

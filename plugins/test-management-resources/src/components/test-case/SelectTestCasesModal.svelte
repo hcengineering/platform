@@ -1,0 +1,95 @@
+<!--
+// Copyright © 2024 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+
+  import { Attachment } from '@hcengineering/attachment'
+  import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
+  import { Data, DocumentQuery, Ref, generateId, makeCollabId } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { TestCase, TestProject } from '@hcengineering/test-management'
+  import { Button, Dialog } from '@hcengineering/ui'
+  import { ComponentNavigator } from '@hcengineering/workbench-resources'
+  import view from '@hcengineering/view'
+  import { selectionStore } from '@hcengineering/view-resources'
+
+  import testManagement from '../../plugin'
+  import TestCasesList from './TestCasesList.svelte'
+
+  export let space: Ref<TestProject>
+  export let query: DocumentQuery<TestCase> = {}
+  export let testCases: TestCase[]
+  export let onSave: (testCases: TestCase[]) => void
+
+  const dispatch = createEventDispatcher()
+
+  let isLoading = testCases === undefined
+
+  if (testCases === undefined) {
+    const client = createQuery()
+    const spaceQuery = space !== undefined ? { space } : {}
+    client.query(testManagement.class.TestCase, { ...spaceQuery, ...(query ?? {}) }, (result) => {
+      testCases = result
+      isLoading = false
+    })
+  }
+
+  async function handleSave (): Promise<void> {
+    if (onSave !== undefined) {
+      const testCases: TestCase[] = $selectionStore?.docs ?? []
+      onSave(testCases)
+    }
+    handleClose()
+  }
+
+  function handleClose (): void {
+    dispatch('close')
+  }
+</script>
+
+<Dialog isFullSize on:fullsize on:close={handleClose}>
+  <svelte:fragment slot="title">
+    {'Select test cases'}
+  </svelte:fragment>
+  <ComponentNavigator
+    navigationComponent={view.component.FoldersBrowser}
+    navigationComponentLabel={testManagement.string.TestSuites}
+    navigationComponentIcon={testManagement.icon.TestSuites}
+    mainComponentLabel={testManagement.string.TestCases}
+    mainComponentIcon={testManagement.icon.TestCases}
+    mainComponent={TestCasesList}
+    showNavigator={true}
+    navigationComponentProps={{
+      _class: testManagement.class.TestSuite,
+      icon: testManagement.icon.TestSuites,
+      title: testManagement.string.TestSuites,
+      titleKey: 'name',
+      parentKey: 'parent',
+      noParentId: testManagement.ids.NoParent,
+      getFolderLink: testManagement.function.GetTestSuiteLink,
+      allObjectsLabel: testManagement.string.AllTestSuites,
+      allObjectsIcon: testManagement.icon.TestSuites
+    }}
+  />
+  <svelte:fragment slot="footerRight">
+    <div class="p-2">
+      <div class="buttons-group">
+        <Button kind={'secondary'} label={testManagement.string.Cancel} on:click={handleClose} />
+        <Button kind={'primary'} label={testManagement.string.Save} on:click={handleSave} />
+      </div>
+    </div>
+  </svelte:fragment>
+</Dialog>

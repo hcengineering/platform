@@ -354,6 +354,7 @@
     flex-grow: 1;
     min-width: 0;
     min-height: 0;
+    overflow: hidden;
 
     &.rounded { border-radius: 0 0 .5rem .5rem; }
     &:has(audio) {

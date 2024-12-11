@@ -34,6 +34,7 @@
   export let tableId: string | undefined = undefined
   export let fade: FadeOptions = tableSP
   export let prefferedSorting: string = 'modifiedOn'
+  export let readonly = false
 
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
@@ -80,6 +81,7 @@
     {prefferedSorting}
     {tableId}
     selection={listProvider.current($focusStore)}
+    {readonly}
     on:row-focus={(evt) => {
       listProvider.updateFocus(evt.detail)
     }}
