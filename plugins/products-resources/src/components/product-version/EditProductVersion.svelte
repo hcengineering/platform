@@ -18,6 +18,8 @@
 <script lang="ts">
   import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
   import core, { Class, Doc, Ref, WithLookup, getCurrentAccount } from '@hcengineering/core'
+  import { includesAny } from '@hcengineering/contact'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
@@ -25,9 +27,7 @@
   import { Button, IconMixin, IconMoreH } from '@hcengineering/ui'
   import {
     DocAttributeBar,
-    checkMyPermission,
     getDocMixins,
-    permissionsStore,
     showMenu
   } from '@hcengineering/view-resources'
   import type { ProductVersion } from '@hcengineering/products'
@@ -44,8 +44,6 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
   const notificationClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
-
-  const me = getCurrentAccount()._id
 
   let object: WithLookup<ProductVersion> | undefined
 
@@ -90,7 +88,7 @@
   $: canEdit =
     !readonly &&
     object?.$lookup?.space !== undefined &&
-    ((object?.$lookup?.space.owners?.includes(me) ?? false) ||
+    (includesAny(object?.$lookup?.space.owners ?? [], getCurrentAccount().socialIds) ||
       checkMyPermission(core.permission.UpdateSpace, object.space, $permissionsStore) ||
       checkMyPermission(core.permission.UpdateObject, core.space.Space, $permissionsStore))
 

@@ -15,19 +15,19 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  BaseWorkspaceInfo,
+  WorkspaceInfo,
   DOMAIN_TX,
-  getWorkspaceId,
   Hierarchy,
   isActiveMode,
   ModelDb,
   SortingOrder,
-  systemAccountEmail,
+  systemAccountUuid,
   type BackupStatus,
   type Branding,
   type MeasureContext,
   type Tx,
-  type WorkspaceIdWithUrl
+  type WorkspaceIds,
+  type WorkspaceInfoWithStatus
 } from '@hcengineering/core'
 import { listAccountWorkspaces, updateBackupInfo } from '@hcengineering/server-client'
 import {
@@ -61,7 +61,7 @@ class BackupWorker {
     readonly workspaceStorageAdapter: StorageAdapter,
     readonly getConfig: (
       ctx: MeasureContext,
-      workspace: WorkspaceIdWithUrl,
+      workspace: WorkspaceIds,
       branding: Branding | null,
       externalStorage: StorageAdapter
     ) => DbConfiguration,
@@ -78,7 +78,7 @@ class BackupWorker {
 
   printStats (
     ctx: MeasureContext,
-    stats: { failedWorkspaces: BaseWorkspaceInfo[], processed: number, skipped: number }
+    stats: { failedWorkspaces: WorkspaceInfo[], processed: number, skipped: number }
   ): void {
     ctx.warn(
       `****************************************
@@ -111,7 +111,7 @@ class BackupWorker {
   async backup (
     ctx: MeasureContext,
     recheckTimeout: number
-  ): Promise<{ failedWorkspaces: BaseWorkspaceInfo[], processed: number, skipped: number }> {
+  ): Promise<{ failedWorkspaces: WorkspaceInfo[], processed: number, skipped: number }> {
     const workspacesIgnore = new Set(this.config.SkipWorkspaces.split(';'))
     ctx.info('skipped workspaces', { workspacesIgnore })
     let skipped = 0
@@ -141,7 +141,7 @@ class BackupWorker {
         skipped++
         return false
       }
-      return !workspacesIgnore.has(it.workspace)
+      return !workspacesIgnore.has(it.uuid)
     })
     workspaces.sort((a, b) => {
       return (b.backupInfo?.backupSize ?? 0) - (a.backupInfo?.backupSize ?? 0)
@@ -150,7 +150,7 @@ class BackupWorker {
     ctx.info('Preparing for BACKUP', {
       total: workspaces.length,
       skipped,
-      workspaces: workspaces.map((it) => it.workspace)
+      workspaces: workspaces.map((it) => it.uuid)
     })
 
     return await this.doBackup(ctx, workspaces, recheckTimeout)
@@ -158,13 +158,13 @@ class BackupWorker {
 
   async doBackup (
     rootCtx: MeasureContext,
-    workspaces: BaseWorkspaceInfo[],
+    workspaces: WorkspaceInfoWithStatus[],
     recheckTimeout: number,
     notify?: (progress: number) => Promise<void>
-  ): Promise<{ failedWorkspaces: BaseWorkspaceInfo[], processed: number, skipped: number }> {
+  ): Promise<{ failedWorkspaces: WorkspaceInfoWithStatus[], processed: number, skipped: number }> {
     let index = 0
 
-    const failedWorkspaces: BaseWorkspaceInfo[] = []
+    const failedWorkspaces: WorkspaceInfo[] = []
     let processed = 0
     const startTime = Date.now()
     for (const ws of workspaces) {
@@ -174,27 +174,27 @@ class BackupWorker {
       index++
       const st = Date.now()
       rootCtx.warn('\n\nBACKUP WORKSPACE ', {
-        workspace: ws.workspace,
+        workspace: ws.uuid,
         index,
         total: workspaces.length
       })
-      const ctx = rootCtx.newChild(ws.workspace, { workspace: ws.workspace })
+      const ctx = rootCtx.newChild(ws.uuid, { workspace: ws.uuid })
       let pipeline: Pipeline | undefined
       try {
         const storage = await createStorageBackupStorage(
           ctx,
           this.storageAdapter,
-          getWorkspaceId(this.config.BucketName),
-          ws.workspace
+          this.config.BucketName,
+          ws.uuid
         )
-        const wsUrl: WorkspaceIdWithUrl = {
-          name: ws.workspace,
+        const wsIds: WorkspaceIds = {
           uuid: ws.uuid,
-          workspaceName: ws.workspaceName ?? '',
-          workspaceUrl: ws.workspaceUrl ?? ''
+          dataId: ws.dataId,
+          url: ws.url
         }
-        const result = await ctx.with('backup', { workspace: ws.workspace }, (ctx) =>
-          backup(ctx, '', getWorkspaceId(ws.workspace), storage, {
+
+        const result = await ctx.with('backup', { workspace: ws.uuid }, (ctx) =>
+          backup(ctx, '', ws.uuid, storage, {
             skipDomains: this.skipDomains,
             force: true,
             freshBackup: this.freshWorkspace,
@@ -205,7 +205,7 @@ class BackupWorker {
             skipBlobContentTypes: [],
             storageAdapter: this.workspaceStorageAdapter,
             getLastTx: async (): Promise<Tx | undefined> => {
-              const config = this.getConfig(ctx, wsUrl, null, this.workspaceStorageAdapter)
+              const config = this.getConfig(ctx, wsIds, null, this.workspaceStorageAdapter)
               const adapterConf = config.adapters[config.domains[DOMAIN_TX]]
               const hierarchy = new Hierarchy()
               const modelDb = new ModelDb(hierarchy)
@@ -213,7 +213,7 @@ class BackupWorker {
                 ctx,
                 hierarchy,
                 adapterConf.url,
-                wsUrl,
+                ws.uuid,
                 modelDb,
                 this.workspaceStorageAdapter
               )
@@ -233,9 +233,9 @@ class BackupWorker {
             },
             getConnection: async () => {
               if (pipeline === undefined) {
-                pipeline = await this.pipelineFactory(ctx, wsUrl, true, () => {}, null)
+                pipeline = await this.pipelineFactory(ctx, wsIds, true, () => {}, null)
               }
-              return wrapPipeline(ctx, pipeline, wsUrl)
+              return wrapPipeline(ctx, pipeline, wsIds)
             },
             progress: (progress) => {
               return notify?.(progress) ?? Promise.resolve()
@@ -252,9 +252,9 @@ class BackupWorker {
             blobsSize: Math.round((result.blobsSize * 100) / (1024 * 1024)) / 100
           }
           rootCtx.warn('BACKUP STATS', {
-            workspace: ws.workspace,
-            workspaceUrl: ws.workspaceUrl,
-            workspaceName: ws.workspaceName,
+            workspace: ws.uuid,
+            workspaceUrl: ws.url,
+            workspaceName: ws.name,
             index,
             ...backupInfo,
             time: Math.round((Date.now() - st) / 1000),
@@ -263,11 +263,11 @@ class BackupWorker {
           // We need to report update for stats to account service
           processed += 1
 
-          const token = generateToken(systemAccountEmail, { name: ws.workspace }, { service: 'backup' })
+          const token = generateToken(systemAccountUuid, ws.uuid, { service: 'backup' })
           await updateBackupInfo(token, backupInfo)
         }
       } catch (err: any) {
-        rootCtx.error('\n\nFAILED to BACKUP', { workspace: ws.workspace, err })
+        rootCtx.error('\n\nFAILED to BACKUP', { workspace: ws.uuid, err })
         failedWorkspaces.push(ws)
       } finally {
         if (pipeline !== undefined) {
@@ -287,7 +287,7 @@ export function backupService (
   workspaceStorageAdapter: StorageAdapter,
   getConfig: (
     ctx: MeasureContext,
-    workspace: WorkspaceIdWithUrl,
+    workspace: WorkspaceIds,
     branding: Branding | null,
     externalStorage: StorageAdapter
   ) => DbConfiguration,
@@ -306,14 +306,14 @@ export function backupService (
 
 export async function doBackupWorkspace (
   ctx: MeasureContext,
-  workspace: BaseWorkspaceInfo,
+  workspace: WorkspaceInfoWithStatus,
   storage: StorageAdapter,
   config: BackupConfig,
   pipelineFactory: PipelineFactory,
   workspaceStorageAdapter: StorageAdapter,
   getConfig: (
     ctx: MeasureContext,
-    workspace: WorkspaceIdWithUrl,
+    workspace: WorkspaceIds,
     branding: Branding | null,
     externalStorage: StorageAdapter
   ) => DbConfiguration,

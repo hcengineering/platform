@@ -44,10 +44,9 @@
 
       status = loginStatus
 
-      if (result !== undefined) {
+      if (result != null) {
         setMetadata(presentation.metadata.Token, result.token)
-        setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
-        setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+        setMetadataLocalStorage(login.metadata.LoginAccount, result.account)
         goTo('selectWorkspace')
       }
     }

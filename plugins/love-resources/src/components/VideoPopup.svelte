@@ -30,9 +30,8 @@
   import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte'
   import { Ref } from '@hcengineering/core'
   import { MessageBox } from '@hcengineering/presentation'
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import aiBot from '@hcengineering/ai-bot'
-  import { personIdByAccountId } from '@hcengineering/contact-resources'
+  import { aiBotEmailSocialId } from '@hcengineering/ai-bot'
+  import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
 
   import love from '../plugin'
   import { currentRoom, infos, myInfo, myOffice } from '../stores'
@@ -64,8 +63,7 @@
     isAgent: boolean
   }
 
-  let aiPersonId: Ref<Person> | undefined = undefined
-  $: aiPersonId = $personIdByAccountId.get(aiBot.account.AIBot as Ref<PersonAccount>)
+  $: aiPersonId = $personRefByPersonIdStore.get(aiBotEmailSocialId)
 
   const dispatch = createEventDispatcher()
 

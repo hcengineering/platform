@@ -1,6 +1,6 @@
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  Account,
+  PersonId,
   AnyAttribute,
   AttachedDoc,
   Class,
@@ -297,7 +297,7 @@ export async function deleteObjects (
   ctx: MeasureContext,
   client: TxOperations,
   objects: Doc[],
-  account: Ref<Account>
+  account: PersonId
 ): Promise<void> {
   const ops = client.apply()
   for (const object of objects) {

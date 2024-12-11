@@ -18,11 +18,11 @@ export const serverDocumentsId = 'server-documents' as Plugin
  */
 export default plugin(serverDocumentsId, {
   trigger: {
+    OnSocialIdentityCreate: '' as Resource<TriggerFunc>,
     OnDocDeleted: '' as Resource<TriggerFunc>,
     OnDocPlannedEffectiveDateChanged: '' as Resource<TriggerFunc>,
     OnDocApprovalRequestApproved: '' as Resource<TriggerFunc>,
-    OnDocHasBecomeEffective: '' as Resource<TriggerFunc>,
-    OnWorkspaceOwnerAdded: '' as Resource<TriggerFunc>
+    OnDocHasBecomeEffective: '' as Resource<TriggerFunc>
   },
   function: {
     ControlledDocumentTextPresenter: '' as Resource<Presenter>

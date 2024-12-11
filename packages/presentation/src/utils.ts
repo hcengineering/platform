@@ -21,6 +21,7 @@ import core, {
   TxProcessor,
   getCurrentAccount,
   reduceCalls,
+  type WorkspaceUuid,
   type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
@@ -101,7 +102,7 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
     client: Client,
     private readonly liveQuery: Client
   ) {
-    super(client, getCurrentAccount()._id)
+    super(client, getCurrentAccount().primarySocialId)
   }
 
   protected pendingTxes = new Set<Ref<Tx>>()
@@ -692,7 +693,9 @@ export function decodeTokenPayload (token: string): any {
 }
 
 export function isAdminUser (): boolean {
-  return decodeTokenPayload(getMetadata(plugin.metadata.Token) ?? '').admin === 'true'
+  // TODO: fixme
+  return false
+  // return decodeTokenPayload(getMetadata(plugin.metadata.Token) ?? '').admin === 'true'
 }
 
 export function isSpace (space: Doc): space is Space {
@@ -703,7 +706,7 @@ export function isSpaceClass (_class: Ref<Class<Doc>>): boolean {
   return getClient().getHierarchy().isDerived(_class, core.class.Space)
 }
 
-export function setPresentationCookie (token: string, workspaceId: string): void {
+export function setPresentationCookie (token: string, workspaceUuid: WorkspaceUuid): void {
   function setToken (path: string): void {
     document.cookie =
       encodeURIComponent(plugin.metadata.Token.replaceAll(':', '-')) +
@@ -711,7 +714,7 @@ export function setPresentationCookie (token: string, workspaceId: string): void
       encodeURIComponent(token) +
       `; path=${path}`
   }
-  setToken('/files/' + workspaceId)
+  setToken('/files/' + workspaceUuid)
 }
 
 export const upgradeDownloadProgress = writable(-1)

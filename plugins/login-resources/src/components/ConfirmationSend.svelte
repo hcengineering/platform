@@ -19,15 +19,15 @@
   import { afterConfirm, getAccount } from '../utils'
 
   const CHECK_INTERVAL = 1000
+  let checkHandle: number | undefined
 
   async function checkAccountStatus (): Promise<void> {
-    const account = await getAccount()
-    if (account?.confirmed === true) {
+    const loginInfo = await getAccount()
+
+    if (loginInfo?.token != null) {
       await afterConfirm()
     }
   }
-
-  let weAreHere = false
 
   async function check (): Promise<void> {
     try {
@@ -35,16 +35,18 @@
     } catch (e) {
       // we should be able to continue from this state
     }
-    if (weAreHere) {
-      setTimeout(check, CHECK_INTERVAL)
-    }
+
+    checkHandle = setTimeout(check, CHECK_INTERVAL)
   }
 
   onMount(() => {
-    weAreHere = true
     void check()
+
     return () => {
-      weAreHere = false
+      if (checkHandle != null) {
+        clearTimeout(checkHandle)
+        checkHandle = undefined
+      }
     }
   })
 </script>

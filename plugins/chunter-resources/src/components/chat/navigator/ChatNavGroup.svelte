@@ -194,6 +194,8 @@
     }
   )
 
+  $: console.log(objectsByClass)
+
   function getSectionActions (section: Section, contexts: DocNotifyContext[]): Action[] {
     if (model.getActionsFn === undefined) {
       return []

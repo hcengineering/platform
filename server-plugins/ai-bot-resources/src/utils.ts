@@ -16,7 +16,7 @@
 import { getMetadata } from '@hcengineering/platform'
 import serverAIBot from '@hcengineering/server-ai-bot'
 import { AIEventRequest } from '@hcengineering/ai-bot'
-import { concatLink, MeasureContext, systemAccountEmail, WorkspaceId } from '@hcengineering/core'
+import { concatLink, MeasureContext, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 
 export function getSupportWorkspaceId (): string | undefined {
@@ -31,7 +31,7 @@ export function getSupportWorkspaceId (): string | undefined {
 
 export async function sendAIEvents (
   events: AIEventRequest[],
-  workspace: WorkspaceId,
+  workspace: WorkspaceUuid,
   ctx: MeasureContext
 ): Promise<void> {
   const url = getMetadata(serverAIBot.metadata.EndpointURL) ?? ''
@@ -44,7 +44,7 @@ export async function sendAIEvents (
     await fetch(concatLink(url, '/events'), {
       method: 'POST',
       headers: {
-        Authorization: 'Bearer ' + generateToken(systemAccountEmail, workspace),
+        Authorization: 'Bearer ' + generateToken(systemAccountUuid, workspace, { service: 'aibot' }),
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(events)
@@ -54,7 +54,7 @@ export async function sendAIEvents (
   }
 }
 
-export async function createAccountRequest (workspace: WorkspaceId, ctx: MeasureContext): Promise<void> {
+export async function createAccountRequest (workspace: WorkspaceUuid, ctx: MeasureContext): Promise<void> {
   const url = getMetadata(serverAIBot.metadata.EndpointURL) ?? ''
 
   if (url === '') {
@@ -66,7 +66,7 @@ export async function createAccountRequest (workspace: WorkspaceId, ctx: Measure
     await fetch(concatLink(url, '/connect'), {
       method: 'POST',
       headers: {
-        Authorization: 'Bearer ' + generateToken(systemAccountEmail, workspace),
+        Authorization: 'Bearer ' + generateToken(systemAccountUuid, workspace, { service: 'aibot' }),
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({})

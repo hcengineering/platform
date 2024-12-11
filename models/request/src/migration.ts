@@ -12,87 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import contact, { type Person, type PersonAccount } from '@hcengineering/contact'
-import core, { DOMAIN_MODEL_TX, type Ref, type TxCreateDoc } from '@hcengineering/core'
+import { requestId } from '@hcengineering/request'
 import {
   tryMigrate,
   type MigrateOperation,
-  type MigrateUpdate,
   type MigrationClient,
-  type MigrationDocumentQuery,
   type MigrationUpgradeClient,
   type ModelLogger
 } from '@hcengineering/model'
-import request, { requestId, type Request } from '@hcengineering/request'
-
-import { DOMAIN_REQUEST } from '.'
-
-async function migrateRequestPersonAccounts (client: MigrationClient): Promise<void> {
-  const descendants = client.hierarchy.getDescendants(request.class.Request)
-  const requests = await client.find<Request>(DOMAIN_REQUEST, {
-    _class: { $in: descendants }
-  })
-  const personAccountsCreateTxes = await client.find(DOMAIN_MODEL_TX, {
-    _class: core.class.TxCreateDoc,
-    objectClass: contact.class.PersonAccount
-  })
-  const personAccountToPersonMap = personAccountsCreateTxes.reduce<Record<Ref<PersonAccount>, Ref<Person>>>(
-    (map, tx) => {
-      const ctx = tx as TxCreateDoc<PersonAccount>
-
-      map[ctx.objectId] = ctx.attributes.person
-
-      return map
-    },
-    {}
-  )
-  const operations: { filter: MigrationDocumentQuery<Request>, update: MigrateUpdate<Request> }[] = []
-  for (const request of requests) {
-    const newRequestedPersons = request.requested
-      .map((paId) => personAccountToPersonMap[paId as unknown as Ref<PersonAccount>])
-      .filter((p) => p != null)
-    const newApprovedPersons = request.approved
-      .map((paId) => personAccountToPersonMap[paId as unknown as Ref<PersonAccount>])
-      .filter((p) => p != null)
-    const newRejectedPerson =
-      request.rejected != null ? personAccountToPersonMap[request.rejected as unknown as Ref<PersonAccount>] : undefined
-
-    if (newRequestedPersons.length > 0) {
-      operations.push({
-        filter: {
-          _id: request._id
-        },
-        update: {
-          requested: newRequestedPersons,
-          approved: newApprovedPersons
-        }
-      })
-    }
-
-    if (newRejectedPerson !== undefined) {
-      operations.push({
-        filter: {
-          _id: request._id
-        },
-        update: {
-          rejected: newRejectedPerson
-        }
-      })
-    }
-  }
-
-  if (operations.length > 0) {
-    await client.bulk(DOMAIN_REQUEST, operations)
-  }
-}
 
 export const requestOperation: MigrateOperation = {
   async migrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
     await tryMigrate(client, requestId, [
-      {
-        state: 'migrateRequestPersonAccounts',
-        func: migrateRequestPersonAccounts
-      }
+
     ])
   },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}

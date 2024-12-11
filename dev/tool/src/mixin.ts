@@ -25,7 +25,7 @@ import core, {
   type Obj,
   type Ref,
   SortingOrder,
-  type WorkspaceId
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import { connect } from '@hcengineering/server-tool'
@@ -44,7 +44,7 @@ interface ObjectPropertyInfo {
 }
 
 export async function showMixinForeignAttributes (
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   transactorUrl: string,
   cmd: { detail: boolean, mixin: string, property: string }
 ): Promise<void> {
@@ -81,7 +81,7 @@ export async function showMixinForeignAttributes (
 
 export async function fixMixinForeignAttributes (
   mongoUrl: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   transactorUrl: string,
   cmd: { mixin: string, property: string }
 ): Promise<void> {

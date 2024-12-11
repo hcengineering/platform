@@ -1,6 +1,6 @@
-import { Person, PersonAccount } from '@hcengineering/contact'
+import { Person } from '@hcengineering/contact'
 import {
-  Account,
+  PersonId,
   Branding,
   Class,
   Data,
@@ -11,7 +11,7 @@ import {
   Status,
   TxOperations,
   WithLookup,
-  WorkspaceIdWithUrl,
+  WorkspaceUuid,
   type Blob
 } from '@hcengineering/core'
 import { LiveQuery } from '@hcengineering/query'
@@ -83,9 +83,10 @@ export interface ContainerFocus {
 export interface IntegrationManager {
   liveQuery: LiveQuery
   getContainer: (space: Ref<Space>) => Promise<ContainerFocus | undefined>
-  getAccount: (user?: UserInfo | null) => Promise<PersonAccount | undefined>
-  getAccountU: (user: User) => Promise<PersonAccount | undefined>
-  getOctokit: (account: Ref<PersonAccount>) => Promise<Octokit | undefined>
+  // TODO: FIXME
+  getAccount: (user?: UserInfo | null) => Promise<any | undefined>
+  getAccountU: (user: User) => Promise<any | undefined>
+  getOctokit: (account: PersonId) => Promise<Octokit | undefined>
   getMarkup: (
     container: IntegrationContainer,
     text?: string | null,
@@ -112,7 +113,8 @@ export interface IntegrationManager {
   ) => Promise<void>
 
   doSyncFor: (docs: DocSyncInfo[], project: GithubProject) => Promise<void>
-  getWorkspaceId: () => WorkspaceIdWithUrl
+  getWorkspaceId: () => WorkspaceUuid
+  getWorkspaceUrl: () => string
   getBranding: () => Branding | null
 
   getProjectAndRepository: (
@@ -124,7 +126,7 @@ export interface IntegrationManager {
     body: string
   ) => Promise<{ markdownCompatible: boolean, markdown: string }>
 
-  isPlatformUser: (account: Ref<PersonAccount>) => Promise<boolean>
+  isPlatformUser: (account: PersonId) => Promise<boolean>
 
   getProjectRepositories: (space: Ref<Space>) => Promise<GithubIntegrationRepository[]>
 
@@ -190,7 +192,7 @@ export interface DocSyncManager {
 export interface GithubIntegrationRecord {
   installationId: number
   workspace: string
-  accountId: Ref<Account>
+  accountId: PersonId
 }
 
 /**
@@ -208,5 +210,5 @@ export interface GithubUserRecord {
   scope?: string
   error?: string | null
 
-  accounts: Record<string, Ref<Account>>
+  accounts: Record<string, PersonId>
 }

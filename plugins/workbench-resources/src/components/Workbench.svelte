@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import contact, { PersonAccount } from '@hcengineering/contact'
+  import contact, { getCurrentEmployee } from '@hcengineering/contact'
   import { personByIdStore } from '@hcengineering/contact-resources'
   import core, {
     AccountRole,
@@ -144,6 +144,10 @@
   let createItemDialog: AnyComponent | undefined
   let createItemLabel: IntlString | undefined
 
+  const account = getCurrentAccount()
+  const me = getCurrentEmployee()
+  $: person = $personByIdStore.get(me)
+
   migrateViewOpttions()
 
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
@@ -193,7 +197,7 @@
   const query = createQuery()
   $: query.query(
     workbench.class.WorkbenchTab,
-    { attachedTo: account._id },
+    { attachedTo: me },
     (res) => {
       tabs = res
       tabsStore.set(tabs)
@@ -243,7 +247,7 @@
         } else {
           console.log('Creating new tab on init')
           const _id = await client.createDoc(workbench.class.WorkbenchTab, core.space.Workspace, {
-            attachedTo: account._id,
+            attachedTo: me,
             location: url,
             isPinned: false
           })
@@ -264,10 +268,6 @@
     syncSidebarState()
     syncWorkbenchTab()
   })
-
-  const account = getCurrentAccount() as PersonAccount
-
-  $: person = $personByIdStore.get(account.person)
 
   const workspaceId = $location.path[1]
   const inboxClient = InboxNotificationsClientImpl.createClient()
@@ -308,18 +308,18 @@
   let windowWorkspaceName = ''
 
   async function updateWindowTitle (loc: Location): Promise<void> {
-    let ws = loc.path[1]
-    const wsName = $workspacesStore.find((it) => it.workspace === ws)
-    if (wsName !== undefined) {
-      ws = wsName?.workspaceName ?? wsName.workspace
-      windowWorkspaceName = ws
+    let wsUrl = loc.path[1]
+    const ws = $workspacesStore.find((it) => it.url === wsUrl)
+    if (ws !== undefined) {
+      wsUrl = ws?.name ?? ws.url
+      windowWorkspaceName = wsUrl
     }
     const docTitle = await getWindowTitle(loc)
     if (docTitle !== undefined && docTitle !== '') {
-      document.title = ws == null ? docTitle : `${docTitle} - ${ws}`
+      document.title = wsUrl == null ? docTitle : `${docTitle} - ${wsUrl}`
     } else {
       const title = getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform'
-      document.title = ws == null ? title : `${ws} - ${title}`
+      document.title = wsUrl == null ? title : `${wsUrl} - ${title}`
     }
     void broadcastEvent(workbench.event.NotifyTitle, document.title)
   }
@@ -896,7 +896,7 @@
           >
             <Component
               is={contact.component.Avatar}
-              props={{ person, name: person?.name, size: 'small', account: account._id, showStatus: true }}
+              props={{ person, name: person?.name, size: 'small', showStatus: true }}
             />
           </div>
         </div>

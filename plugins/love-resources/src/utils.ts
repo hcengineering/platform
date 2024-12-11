@@ -1,6 +1,6 @@
 import { Analytics } from '@hcengineering/analytics'
 import calendar, { type Event, getAllEvents } from '@hcengineering/calendar'
-import contact, { getName, type Person, type PersonAccount } from '@hcengineering/contact'
+import contact, { getCurrentEmployee, getName, type Person } from '@hcengineering/contact'
 import { personByIdStore } from '@hcengineering/contact-resources'
 import core, {
   AccountRole,
@@ -115,7 +115,7 @@ function getTokenRoomName (roomName: string, roomId: Ref<Room>): string {
   const loc = getCurrentLocation()
   const currentWorkspace = get(currentWorkspaceStore)
 
-  return `${currentWorkspace?.workspaceId ?? loc.path[1]}_${roomName}_${roomId}`
+  return `${currentWorkspace?.url ?? loc.path[1]}_${roomName}_${roomId}`
 }
 
 export const lk: LKRoom = new LKRoom({
@@ -313,7 +313,7 @@ export async function updateBlurRadius (value: number): Promise<void> {
   if ($myPreferences !== undefined) {
     await client.update($myPreferences, { blurRadius: value })
   } else {
-    const space = getCurrentAccount()._id as string as Ref<Space>
+    const space = getCurrentEmployee() as string as Ref<Space>
     await client.createDoc(love.class.DevicesPreference, space, {
       attachedTo: space,
       noiseCancellation: true,
@@ -689,7 +689,7 @@ async function initMeetingMinutes (room: Room): Promise<void> {
       title: `${getRoomName(room, get(personByIdStore))} ${date}`,
       description: null,
       status: MeetingStatus.Active,
-      modifiedBy: getCurrentAccount()._id,
+      modifiedBy: getCurrentAccount().primarySocialId,
       modifiedOn: Date.now()
     }
     await client.addCollection(
@@ -795,8 +795,8 @@ export async function tryConnect (
   currentInvites: Invite[],
   place?: { x: number, y: number }
 ): Promise<void> {
-  const me = getCurrentAccount() as PersonAccount
-  const currentPerson = personByIdStore.get(me.person)
+  const me = getCurrentEmployee()
+  const currentPerson = personByIdStore.get(me)
   if (currentPerson === undefined) return
   const client = getClient()
 
@@ -812,7 +812,7 @@ export async function tryConnect (
     place = undefined
   }
   if (place === undefined) {
-    place = getFreeRoomPlace(room, info, me.person)
+    place = getFreeRoomPlace(room, info, me)
   }
   const x: number = place.x
   const y: number = place.y
@@ -843,7 +843,7 @@ export async function tryConnect (
       room: room._id,
       status: RequestStatus.Pending
     })
-    requestsQuery.query(love.class.JoinRequest, { person: me.person, _id }, (res) => {
+    requestsQuery.query(love.class.JoinRequest, { person: me, _id }, (res) => {
       const req = res[0]
       if (req === undefined) return
       if (req.status === RequestStatus.Pending) return
@@ -861,12 +861,12 @@ export async function tryConnect (
 export async function invite (person: Ref<Person>, room: Ref<Room> | undefined): Promise<void> {
   if (room === undefined || room === love.ids.Reception) return
   const client = getClient()
-  const me = getCurrentAccount()
+  const me = getCurrentEmployee()
   await client.createDoc(love.class.Invite, core.space.Workspace, {
     target: person,
     room,
     status: RequestStatus.Pending,
-    from: (me as PersonAccount).person
+    from: me
   })
 }
 

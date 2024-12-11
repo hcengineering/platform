@@ -23,7 +23,7 @@ async function doTest (): Promise<void> {
 
   const genWorkspaceId1 = generateId()
 
-  const ws1 = { name: genWorkspaceId1 }
+  const ws1 = genWorkspaceId1
   await storageService.make(toolCtx, ws1)
   /// /////// Uploads
   let st1 = Date.now()

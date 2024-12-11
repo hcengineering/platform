@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import core, { MeasureContext, Tx, systemAccountEmail, type SessionData, type TxApplyIf } from '@hcengineering/core'
+import core, { MeasureContext, Tx, systemAccountUuid, type SessionData, type TxApplyIf } from '@hcengineering/core'
 import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
 
 /**
@@ -35,7 +34,7 @@ export class ModifiedMiddleware extends BaseMiddleware implements Middleware {
   tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
     const now = Date.now()
     function updateTx (tx: Tx): void {
-      if (tx.modifiedBy !== core.account.System && ctx.contextData.userEmail !== systemAccountEmail) {
+      if (tx.modifiedBy !== core.account.System && ctx.contextData.account.uuid !== systemAccountUuid) {
         tx.modifiedOn = now
         tx.createdOn = tx.modifiedOn
       }

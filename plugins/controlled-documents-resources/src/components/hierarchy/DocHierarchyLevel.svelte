@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { type Ref, type Doc, SortingOrder, getCurrentAccount, WithLookup } from '@hcengineering/core'
+  import { type Ref, type Doc, SortingOrder, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import type { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import { type Action } from '@hcengineering/ui'
   import documents, {
     type ControlledDocument,
@@ -37,8 +37,7 @@
   export let collapsedPrefix: string = ''
 
   const dispatch = createEventDispatcher()
-  const currentUser = getCurrentAccount() as PersonAccount
-  const currentPerson = currentUser.person
+  const currentPerson = getCurrentEmployee()
 
   const docsQuery = createQuery()
   let docs: WithLookup<ProjectDocument>[] = []

@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
-  import { Class, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { Class, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Request, RequestStatus } from '@hcengineering/request'
   import { Label, Scroller, deviceOptionsStore as deviceInfo, AnyComponent, Component } from '@hcengineering/ui'
   import request from '../plugin'
 
   let requests: Request[] = []
-  const me = getCurrentAccount()._id as Ref<PersonAccount>
+  const me = getCurrentEmployee()
   const query = createQuery()
   query.query(
     request.class.Request,
@@ -29,10 +29,11 @@
       requested: me,
       status: RequestStatus.Active
     },
-    (res) =>
-      (requests = res.filter(
+    (res) => {
+      requests = res.filter(
         (p) => p.requested.filter((a) => a === me).length > p.approved.filter((a) => a === me).length
-      ))
+      )
+    }
   )
 
   const client = getClient()

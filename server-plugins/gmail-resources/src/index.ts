@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import contact, { Channel, formatName } from '@hcengineering/contact'
+import contact, { Channel, formatName, Person } from '@hcengineering/contact'
 import {
-  Account,
+  PersonId,
   Class,
   concatLink,
   Doc,
@@ -94,7 +94,8 @@ export async function OnMessageCreate (txes: Tx[], control: TriggerControl): Pro
 export function IsIncomingMessageTypeMatch (
   tx: Tx,
   doc: Doc,
-  user: Ref<Account>,
+  person: Person,
+  user: PersonId,
   type: NotificationType,
   control: TriggerControl
 ): boolean {
@@ -141,19 +142,21 @@ async function notifyByEmail (
   data: InboxNotification,
   message?: ActivityMessage
 ): Promise<void> {
-  const account = receiver.account
+  // TODO: FIXME
+  throw new Error('Not implemented')
+  // const account = receiver.account
 
-  if (account === undefined) {
-    return
-  }
+  // if (account === undefined) {
+  //   return
+  // }
 
-  const senderPerson = sender.person
-  const senderName = senderPerson !== undefined ? formatName(senderPerson.name, control.branding?.lastNameFirst) : ''
+  // const senderPerson = sender.person
+  // const senderName = senderPerson !== undefined ? formatName(senderPerson.name, control.branding?.lastNameFirst) : ''
 
-  const content = await getContentByTemplate(doc, senderName, type, control, '', data, message)
-  if (content !== undefined) {
-    await sendEmailNotification(control.ctx, content.text, content.html, content.subject, account.email)
-  }
+  // const content = await getContentByTemplate(doc, senderName, type, control, '', data, message)
+  // if (content !== undefined) {
+  //   await sendEmailNotification(control.ctx, content.text, content.html, content.subject, account.email)
+  // }
 }
 
 const SendEmailNotifications: NotificationProviderFunc = async (
@@ -165,19 +168,21 @@ const SendEmailNotifications: NotificationProviderFunc = async (
   sender: SenderInfo,
   message?: ActivityMessage
 ): Promise<Tx[]> => {
-  if (types.length === 0) {
-    return []
-  }
+  // TODO: FIXME
+  throw new Error('Not implemented')
+  // if (types.length === 0) {
+  //   return []
+  // }
 
-  if (!receiver.person.active) {
-    return []
-  }
+  // if (!receiver.person.active) {
+  //   return []
+  // }
 
-  for (const type of types) {
-    await notifyByEmail(control, type._id, object, sender, receiver, data, message)
-  }
+  // for (const type of types) {
+  //   await notifyByEmail(control, type._id, object, sender, receiver, data, message)
+  // }
 
-  return []
+  // return []
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

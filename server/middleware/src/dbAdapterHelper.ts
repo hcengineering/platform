@@ -27,7 +27,7 @@ export class DBAdapterInitMiddleware extends BaseMiddleware implements Middlewar
     next?: Middleware
   ): Promise<Middleware | undefined> {
     await context.adapterManager?.initAdapters?.(ctx)
-    const domainHelper = new DomainIndexHelperImpl(ctx, context.hierarchy, context.modelDb, context.workspace)
+    const domainHelper = new DomainIndexHelperImpl(ctx, context.hierarchy, context.modelDb, context.workspace.uuid)
     await context.adapterManager?.registerHelper?.(domainHelper)
     return undefined
   }

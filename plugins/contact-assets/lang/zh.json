@@ -103,6 +103,10 @@
     "For": "为",
     "SelectUsers": "选择用户",
     "AddGuest": "添加访客",
-    "ViewProfile": "查看资料"
+    "ViewProfile": "查看资料",
+    "SocialId": "社交 ID",
+    "SocialIds": "社交 ID",
+    "Type": "类型",
+    "Confirmed": "已确认"
   }
 }

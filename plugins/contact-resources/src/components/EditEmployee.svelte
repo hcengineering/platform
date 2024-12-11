@@ -16,14 +16,13 @@
 <script lang="ts">
   import {
     Channel,
-    Employee,
     Person,
-    PersonAccount,
     combineName,
+    getCurrentEmployee,
     getFirstName,
     getLastName
   } from '@hcengineering/contact'
-  import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import { AccountRole, Ref, SocialIdType, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
   import { EditBox, FocusHandler, Scroller, createFocusManager } from '@hcengineering/ui'
@@ -40,13 +39,13 @@
   export let channels: Channel[] | undefined = undefined
 
   const client = getClient()
-
-  const account = getCurrentAccount() as PersonAccount
+  const myAccount = getCurrentAccount()
+  const me = getCurrentEmployee()
 
   let avatarEditor: EditableAvatar
 
-  $: owner = account.person === object._id
-  $: editable = !readonly && (hasAccountRole(account, AccountRole.Maintainer) || owner)
+  $: owner = me === object._id
+  $: editable = !readonly && (hasAccountRole(myAccount, AccountRole.Maintainer) || owner)
   let firstName = getFirstName(object.name)
   let lastName = getLastName(object.name)
 
@@ -54,8 +53,8 @@
 
   let email: string | undefined
   $: if (editable) {
-    client.findOne(contact.class.PersonAccount, { person: (object as Employee)._id }).then((acc) => {
-      email = acc?.email
+    void client.findOne(contact.class.SocialIdentity, { attachedTo: object._id, attachedClass: object._class, type: SocialIdType.EMAIL }).then((si) => {
+      email = si?.value
     })
   }
 
@@ -80,7 +79,7 @@
 
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
   const settingsQuery = createQuery()
-  $: settingsQuery.query(setting.class.Integration, { createdBy: account._id, disabled: false }, (res) => {
+  $: settingsQuery.query(setting.class.Integration, { createdBy: myAccount._id, disabled: false }, (res) => {
     integrations = new Set(res.map((p) => p.type))
   })
 

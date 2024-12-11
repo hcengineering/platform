@@ -12,14 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import {
-  MeasureContext,
-  systemAccountEmail,
-  type BaseWorkspaceInfo,
-  type Branding,
-  type WorkspaceIdWithUrl
-} from '@hcengineering/core'
+import { MeasureContext, systemAccountUuid, type WorkspaceInfo, type Branding, type WorkspaceIds, WorkspaceInfoWithStatus } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { backupService, doBackupWorkspace } from '@hcengineering/server-backup'
 import serverClientPlugin from '@hcengineering/server-client'
@@ -34,7 +27,7 @@ export function startBackup (
   getConfig: (
     ctx: MeasureContext,
     dbUrl: string,
-    workspace: WorkspaceIdWithUrl,
+    workspace: WorkspaceIds,
     branding: Branding | null,
     externalStorage: StorageAdapter
   ) => DbConfiguration
@@ -55,7 +48,7 @@ export function startBackup (
   const pipelineFactory = pipelineFactoryFactory(mainDbUrl, workspaceStorageAdapter)
 
   // A token to access account service
-  const token = generateToken(systemAccountEmail, { name: 'backup' })
+  const token = generateToken(systemAccountUuid, undefined, { service: 'backup' })
 
   const shutdown = backupService(
     ctx,
@@ -81,12 +74,12 @@ export function startBackup (
 
 export async function backupWorkspace (
   ctx: MeasureContext,
-  workspace: BaseWorkspaceInfo,
+  workspace: WorkspaceInfoWithStatus,
   pipelineFactoryFactory: (mongoUrl: string, storage: StorageAdapter) => PipelineFactory,
   getConfig: (
     ctx: MeasureContext,
     dbUrls: string,
-    workspace: WorkspaceIdWithUrl,
+    workspace: WorkspaceIds,
     branding: Branding | null,
     externalStorage: StorageAdapter
   ) => DbConfiguration,
@@ -113,7 +106,7 @@ export async function backupWorkspace (
   const pipelineFactory = pipelineFactoryFactory(mainDbUrl, workspaceStorageAdapter)
 
   // A token to access account service
-  const token = generateToken(systemAccountEmail, { name: 'backup' })
+  const token = generateToken(systemAccountUuid, undefined, { name: 'backup', service: 'backup' })
 
   try {
     const result = await doBackupWorkspace(

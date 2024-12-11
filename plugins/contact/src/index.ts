@@ -15,14 +15,17 @@
 //
 
 import {
-  Account,
   AttachedDoc,
   Class,
+  Collection,
   Doc,
+  PersonId,
   Ref,
+  SocialKey,
   Space,
   Timestamp,
   UXObject,
+  type BasePerson,
   type Blob,
   type MarkupBlobRef,
   type Data,
@@ -33,6 +36,8 @@ import { IntlString, plugin } from '@hcengineering/platform'
 import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
 import type { AnyComponent, ColorDefinition, ResolvedLocation, Location, ComponentExtensionId } from '@hcengineering/ui'
 import { Action, FilterMode, Viewlet } from '@hcengineering/view'
+import type { Readable } from 'svelte/store'
+import { PermissionsStore } from './types'
 
 /**
  * @public
@@ -49,6 +54,14 @@ export interface ChannelProvider extends Doc, UXObject {
 
   // Integration type
   integrationType?: Ref<Doc>
+}
+
+export interface SocialIdentity extends SocialKey, AttachedDoc {
+  attachedTo: Ref<Person>
+  attachedToClass: Ref<Class<Person>>
+
+  key: PersonId
+  confirmed: boolean
 }
 
 /**
@@ -108,6 +121,7 @@ export interface AvatarInfo extends Doc {
     url?: string
   }
 }
+
 /**
  * @public
  */
@@ -116,14 +130,15 @@ export interface Contact extends Doc, AvatarInfo {
   attachments?: number
   comments?: number
   channels?: number
-  city: string
+  city?: string
 }
 
 /**
  * @public
  */
-export interface Person extends Contact {
+export interface Person extends Contact, BasePerson {
   birthday?: Timestamp | null
+  socialIds?: Collection<SocialIdentity>
 }
 
 /**
@@ -162,13 +177,6 @@ export interface Employee extends Person {
 /**
  * @public
  */
-export interface PersonAccount extends Account {
-  person: Ref<Person>
-}
-
-/**
- * @public
- */
 export interface ContactsTab extends Doc {
   label: IntlString
   component: AnyComponent
@@ -196,10 +204,10 @@ export const contactPlugin = plugin(contactId, {
     Person: '' as Ref<Class<Person>>,
     Member: '' as Ref<Class<Member>>,
     Organization: '' as Ref<Class<Organization>>,
-    PersonAccount: '' as Ref<Class<PersonAccount>>,
     Status: '' as Ref<Class<Status>>,
     ContactsTab: '' as Ref<Class<ContactsTab>>,
-    PersonSpace: '' as Ref<Class<PersonSpace>>
+    PersonSpace: '' as Ref<Class<PersonSpace>>,
+    SocialIdentity: '' as Ref<Class<SocialIdentity>>
   },
   mixin: {
     Employee: '' as Ref<Class<Employee>>
@@ -303,7 +311,11 @@ export const contactPlugin = plugin(contactId, {
     Contacts: '' as IntlString,
     Employees: '' as IntlString,
     Persons: '' as IntlString,
-    ViewProfile: '' as IntlString
+    ViewProfile: '' as IntlString,
+    SocialId: '' as IntlString,
+    SocialIds: '' as IntlString,
+    Type: '' as IntlString,
+    Confirmed: '' as IntlString
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,
@@ -337,6 +349,9 @@ export const contactPlugin = plugin(contactId, {
   },
   extension: {
     EmployeePopupActions: '' as ComponentExtensionId
+  },
+  store: {
+    Permissions: '' as Resource<Readable<PermissionsStore>>
   }
 })
 

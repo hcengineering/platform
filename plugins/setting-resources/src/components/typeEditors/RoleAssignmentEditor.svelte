@@ -14,14 +14,14 @@
 -->
 <script lang="ts">
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
-  import { Account, Ref, TypedSpace } from '@hcengineering/core'
+  import { PersonId, TypedSpace } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
 
   export let object: TypedSpace | undefined
   export let label: IntlString
-  export let value: Ref<Account>[]
-  export let onChange: ((refs: Ref<Account>[]) => void) | undefined
+  export let value: PersonId[]
+  export let onChange: ((refs: PersonId[]) => void) | undefined
   export let readonly = false
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'

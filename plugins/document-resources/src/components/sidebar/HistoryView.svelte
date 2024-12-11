@@ -15,16 +15,13 @@
 //
 -->
 <script lang="ts">
-  import { Employee, PersonAccount } from '@hcengineering/contact'
-  import { EmployeePresenter, employeeByIdStore, personAccountByIdStore } from '@hcengineering/contact-resources'
-  import { Ref } from '@hcengineering/core'
+  import { EmployeePresenter, personByPersonIdStore } from '@hcengineering/contact-resources'
   import { DocumentSnapshot } from '@hcengineering/document'
   import { TimeSince } from '@hcengineering/ui'
 
   export let value: DocumentSnapshot
 
-  $: account = $personAccountByIdStore.get(value.createdBy as Ref<PersonAccount>)
-  $: employee = account !== undefined ? $employeeByIdStore.get(account.person as Ref<Employee>) : undefined
+  $: employee = $personByPersonIdStore.get(value.createdBy)
 </script>
 
 <div class="container flex-col flex-gap-2 flex-no-shrink">

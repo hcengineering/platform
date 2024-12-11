@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type MeasureContext, type WorkspaceId, concatLink } from '@hcengineering/core'
+import { type MeasureContext, type WorkspaceUuid, concatLink } from '@hcengineering/core'
 import FormData from 'form-data'
 import fetch, { type RequestInfo, type RequestInit, type Response } from 'node-fetch'
 import { Readable } from 'stream'
@@ -77,18 +77,18 @@ interface MultipartUploadPart {
 export class DatalakeClient {
   constructor (private readonly endpoint: string) {}
 
-  getObjectUrl (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): string {
-    const path = `/blob/${workspace.name}/${encodeURIComponent(objectName)}`
+  getObjectUrl (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): string {
+    const path = `/blob/${workspace}/${encodeURIComponent(objectName)}`
     return concatLink(this.endpoint, path)
   }
 
   async listObjects (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     cursor: string | undefined
   ): Promise<ListObjectOutput> {
     const limit = 100
-    const path = `/blob/${workspace.name}`
+    const path = `/blob/${workspace}`
     const url = new URL(concatLink(this.endpoint, path))
     url.searchParams.append('limit', String(limit))
     if (cursor !== undefined) {
@@ -99,7 +99,7 @@ export class DatalakeClient {
     return (await response.json()) as ListObjectOutput
   }
 
-  async getObject (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<Readable> {
+  async getObject (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<Readable> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
 
     let response
@@ -122,7 +122,7 @@ export class DatalakeClient {
 
   async getPartialObject (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     offset: number,
     length?: number
@@ -152,7 +152,7 @@ export class DatalakeClient {
 
   async statObject (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string
   ): Promise<StatObjectOutput | undefined> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
@@ -180,7 +180,7 @@ export class DatalakeClient {
     }
   }
 
-  async deleteObject (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<void> {
+  async deleteObject (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<void> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
     try {
       await fetchSafe(ctx, url, { method: 'DELETE' })
@@ -194,7 +194,7 @@ export class DatalakeClient {
 
   async putObject (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     stream: Readable | Buffer | string,
     params: UploadObjectParams
@@ -229,12 +229,12 @@ export class DatalakeClient {
 
   async uploadWithFormData (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     stream: Readable | Buffer | string,
     params: UploadObjectParams
   ): Promise<ObjectMetadata> {
-    const path = `/upload/form-data/${workspace.name}`
+    const path = `/upload/form-data/${workspace}`
     const url = concatLink(this.endpoint, path)
 
     const form = new FormData()
@@ -266,7 +266,7 @@ export class DatalakeClient {
 
   async uploadMultipart (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     stream: Readable | Buffer | string,
     params: UploadObjectParams
@@ -294,7 +294,7 @@ export class DatalakeClient {
 
   async uploadWithSignedURL (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     stream: Readable | Buffer | string,
     params: UploadObjectParams
@@ -322,7 +322,7 @@ export class DatalakeClient {
 
   async uploadFromS3 (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     params: {
       url: string
@@ -330,7 +330,7 @@ export class DatalakeClient {
       secretAccessKey: string
     }
   ): Promise<void> {
-    const path = `/upload/s3/${workspace.name}/${encodeURIComponent(objectName)}`
+    const path = `/upload/s3/${workspace}/${encodeURIComponent(objectName)}`
     const url = concatLink(this.endpoint, path)
 
     await fetchSafe(ctx, url, {
@@ -344,7 +344,7 @@ export class DatalakeClient {
 
   // Signed URL
 
-  private async signObjectSign (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<string> {
+  private async signObjectSign (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<string> {
     try {
       const url = this.getSignObjectUrl(workspace, objectName)
       const response = await fetchSafe(ctx, url, { method: 'POST' })
@@ -357,7 +357,7 @@ export class DatalakeClient {
 
   private async signObjectComplete (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string
   ): Promise<ObjectMetadata> {
     try {
@@ -370,7 +370,7 @@ export class DatalakeClient {
     }
   }
 
-  private async signObjectDelete (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<void> {
+  private async signObjectDelete (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<void> {
     try {
       const url = this.getSignObjectUrl(workspace, objectName)
       await fetchSafe(ctx, url, { method: 'DELETE' })
@@ -380,8 +380,8 @@ export class DatalakeClient {
     }
   }
 
-  private getSignObjectUrl (workspace: WorkspaceId, objectName: string): string {
-    const path = `/upload/signed-url/${workspace.name}/${encodeURIComponent(objectName)}`
+  private getSignObjectUrl (workspace: WorkspaceUuid, objectName: string): string {
+    const path = `/upload/signed-url/${workspace}/${encodeURIComponent(objectName)}`
     return concatLink(this.endpoint, path)
   }
 
@@ -389,11 +389,11 @@ export class DatalakeClient {
 
   private async multipartUploadStart (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     params: UploadObjectParams
   ): Promise<MultipartUpload> {
-    const path = `/upload/multipart/${workspace.name}/${encodeURIComponent(objectName)}`
+    const path = `/upload/multipart/${workspace}/${encodeURIComponent(objectName)}`
     const url = concatLink(this.endpoint, path)
 
     try {
@@ -412,13 +412,13 @@ export class DatalakeClient {
 
   private async multipartUploadPart (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     multipart: MultipartUpload,
     partNumber: number,
     body: Readable | Buffer | string
   ): Promise<MultipartUploadPart> {
-    const path = `/upload/multipart/${workspace.name}/${encodeURIComponent(objectName)}/part`
+    const path = `/upload/multipart/${workspace}/${encodeURIComponent(objectName)}/part`
     const url = new URL(concatLink(this.endpoint, path))
     url.searchParams.append('key', multipart.key)
     url.searchParams.append('uploadId', multipart.uploadId)
@@ -435,12 +435,12 @@ export class DatalakeClient {
 
   private async multipartUploadComplete (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     multipart: MultipartUpload,
     parts: MultipartUploadPart[]
   ): Promise<ObjectMetadata> {
-    const path = `/upload/multipart/${workspace.name}/${encodeURIComponent(objectName)}/complete`
+    const path = `/upload/multipart/${workspace}/${encodeURIComponent(objectName)}/complete`
     const url = new URL(concatLink(this.endpoint, path))
     url.searchParams.append('key', multipart.key)
     url.searchParams.append('uploadId', multipart.uploadId)
@@ -456,11 +456,11 @@ export class DatalakeClient {
 
   private async multipartUploadAbort (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     objectName: string,
     multipart: MultipartUpload
   ): Promise<void> {
-    const path = `/upload/multipart/${workspace.name}/${encodeURIComponent(objectName)}/abort`
+    const path = `/upload/multipart/${workspace}/${encodeURIComponent(objectName)}/abort`
     const url = new URL(concatLink(this.endpoint, path))
     url.searchParams.append('key', multipart.key)
     url.searchParams.append('uploadId', multipart.uploadId)

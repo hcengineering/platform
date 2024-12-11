@@ -23,7 +23,6 @@
 
   export let integrationType: IntegrationType
   export let integration: Integration | undefined
-  const accountId = getCurrentAccount()._id
   const client = getClient()
 
   async function close (res: any): Promise<void> {
@@ -38,7 +37,7 @@
   async function reconnect (res: any): Promise<void> {
     if (res?.value) {
       const current = await client.findOne(setting.class.Integration, {
-        createdBy: accountId,
+        createdBy: { $in: getCurrentAccount().socialIds },
         type: integrationType._id
       })
       if (current === undefined) return

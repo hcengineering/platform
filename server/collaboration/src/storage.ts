@@ -17,7 +17,7 @@ import {
   type Blob,
   type CollaborativeDoc,
   type Ref,
-  type WorkspaceId,
+  type WorkspaceUuid,
   Markup,
   MarkupBlobRef,
   MeasureContext,
@@ -35,7 +35,7 @@ import { yDocFromBuffer, yDocToBuffer } from './ydoc'
 export async function loadCollabYdoc (
   ctx: MeasureContext,
   storageAdapter: StorageAdapter,
-  workspace: WorkspaceId,
+  workspace: WorkspaceUuid,
   doc: CollaborativeDoc | MarkupBlobRef
 ): Promise<YDoc | undefined> {
   const blobId = typeof doc === 'string' ? doc : makeCollabYdocId(doc)
@@ -61,7 +61,7 @@ export async function loadCollabYdoc (
 export async function saveCollabYdoc (
   ctx: MeasureContext,
   storageAdapter: StorageAdapter,
-  workspace: WorkspaceId,
+  workspace: WorkspaceUuid,
   doc: CollaborativeDoc | MarkupBlobRef,
   ydoc: YDoc
 ): Promise<Ref<Blob>> {
@@ -76,7 +76,7 @@ export async function saveCollabYdoc (
 /** @public */
 export async function removeCollabYdoc (
   storageAdapter: StorageAdapter,
-  workspace: WorkspaceId,
+  workspace: WorkspaceUuid,
   collaborativeDocs: CollaborativeDoc[],
   ctx: MeasureContext
 ): Promise<void> {
@@ -92,7 +92,7 @@ export async function removeCollabYdoc (
 export async function loadCollabJson (
   ctx: MeasureContext,
   storageAdapter: StorageAdapter,
-  workspace: WorkspaceId,
+  workspace: WorkspaceUuid,
   blobId: Ref<Blob>
 ): Promise<Markup | undefined> {
   const blob = await storageAdapter.stat(ctx, workspace, blobId)
@@ -113,7 +113,7 @@ export async function loadCollabJson (
 export async function saveCollabJson (
   ctx: MeasureContext,
   storageAdapter: StorageAdapter,
-  workspace: WorkspaceId,
+  workspace: WorkspaceUuid,
   doc: CollaborativeDoc,
   content: Markup | YDoc
 ): Promise<Ref<Blob>> {

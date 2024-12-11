@@ -30,6 +30,7 @@
   import { Channel, ObjectChatPanel } from '@hcengineering/chunter'
   import view from '@hcengineering/view'
   import { messageInFocus } from '@hcengineering/activity-resources'
+  import { includesAny } from '@hcengineering/contact'
 
   import ChannelComponent from './Channel.svelte'
   import ChannelHeader from './ChannelHeader.svelte'
@@ -46,7 +47,7 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const me = getCurrentAccount()._id
+  const acc = getCurrentAccount()
 
   let isThreadOpened = false
   let isAsideShown = false
@@ -69,14 +70,14 @@
     if (hierarchy.isDerived(object._class, core.class.Space)) {
       const space = object as Space
 
-      return !space.members.includes(me)
+      return !includesAny(space.members, acc.socialIds)
     }
 
     return false
   }
 
   async function join (): Promise<void> {
-    await client.update(object as Space, { $push: { members: me } })
+    await client.update(object as Space, { $push: { members: acc.primarySocialId } })
   }
 
   defineSeparators('aside', panelSeparators)

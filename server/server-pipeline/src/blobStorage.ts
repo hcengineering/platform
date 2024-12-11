@@ -31,7 +31,7 @@ import {
   toFindResult,
   type Tx,
   type TxResult,
-  type WorkspaceId,
+  type WorkspaceUuid,
   type Blob
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
@@ -44,7 +44,7 @@ import {
 
 class StorageBlobAdapter implements DbAdapter {
   constructor (
-    readonly workspaceId: WorkspaceId,
+    readonly workspaceId: WorkspaceUuid,
     readonly client: StorageAdapterEx, // Should not be closed
     readonly ctx: MeasureContext
   ) {}
@@ -132,7 +132,7 @@ export async function createStorageDataAdapter (
   ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   modelDb: ModelDb,
   storage?: StorageAdapter
 ): Promise<DbAdapter> {

@@ -20,7 +20,7 @@ import {
   DOMAIN_MIGRATION,
   DOMAIN_MODEL,
   IndexKind,
-  type Account,
+  type PersonId,
   type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
@@ -100,13 +100,13 @@ export class TDoc extends TObj implements Doc {
   @Index(IndexKind.Indexed)
     modifiedOn!: Timestamp
 
-  @Prop(TypeRef(core.class.Account), core.string.ModifiedBy)
+  @Prop(TypeString(), core.string.ModifiedBy)
   @Index(IndexKind.Indexed)
-    modifiedBy!: Ref<Account>
+    modifiedBy!: PersonId
 
-  @Prop(TypeRef(core.class.Account), core.string.CreatedBy)
+  @Prop(TypeString(), core.string.CreatedBy)
   @Index(IndexKind.Indexed)
-    createdBy!: Ref<Account>
+    createdBy!: PersonId
 
   @Prop(TypeTimestamp(), core.string.CreatedDate)
   @ReadOnly()

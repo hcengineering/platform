@@ -13,12 +13,10 @@
 // limitations under the License.
 //
 
-import core, {
-  AccountRole,
+import {
   generateId,
-  TxFactory,
+  Account,
   TxProcessor,
-  type Account,
   type Branding,
   type Class,
   type Doc,
@@ -34,7 +32,8 @@ import core, {
   type Timestamp,
   type Tx,
   type TxCUD,
-  type WorkspaceIdWithUrl
+  type WorkspaceIds,
+  PersonId
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import {
@@ -76,13 +75,18 @@ export class ClientSession implements Session {
   constructor (
     protected readonly token: Token,
     protected readonly _pipeline: Pipeline,
-    readonly workspaceId: WorkspaceIdWithUrl,
+    readonly account: Account,
+    readonly workspaceId: WorkspaceIds,
     readonly branding: Branding | null,
     readonly allowUpload: boolean
   ) {}
 
   getUser (): string {
-    return this.token.email
+    return this.token.account
+  }
+
+  getUserSocialIds (): PersonId[] {
+    return this.account.socialIds
   }
 
   isUpgradeClient (): boolean {
@@ -104,47 +108,14 @@ export class ClientSession implements Session {
   }
 
   async loadModel (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string): Promise<void> {
-    this.includeSessionContext(ctx.ctx)
+    this.includeSessionContext(ctx)
     const result = await ctx.ctx.with('load-model', {}, () => this._pipeline.loadModel(ctx.ctx, lastModelTx, hash))
     await ctx.sendResponse(result)
   }
 
-  async getAccount (ctx: ClientSessionCtx): Promise<void> {
-    const account = this._pipeline.context.modelDb.getAccountByEmail(this.token.email)
-    if (account === undefined && this.token.extra?.admin === 'true') {
-      await ctx.sendResponse(this.getSystemAccount())
-      return
-    }
-    await ctx.sendResponse(account)
-  }
-
-  private getSystemAccount (): Account {
-    // Generate account for admin user
-    const factory = new TxFactory(core.account.System)
-    const email = `system:${this.token.email}`
-    const createTx = factory.createTxCreateDoc(
-      core.class.Account,
-      core.space.Model,
-      {
-        role: AccountRole.Owner,
-        email
-      },
-      email as Ref<Account>
-    )
-    return TxProcessor.createDoc2Doc(createTx)
-  }
-
-  includeSessionContext (ctx: MeasureContext): void {
-    let account: Account | undefined
-    if (this.token.extra?.admin === 'true') {
-      account = this._pipeline.context.modelDb.getAccountByEmail(this.token.email)
-      if (account === undefined) {
-        account = this.getSystemAccount()
-      }
-    }
-
+  includeSessionContext (ctx: ClientSessionCtx): void {
     const contextData = new SessionDataImpl(
-      this.token.email,
+      this.account,
       this.sessionId,
       this.token.extra?.admin === 'true',
       {
@@ -157,13 +128,13 @@ export class ClientSession implements Session {
       new Map(),
       new Map(),
       this._pipeline.context.modelDb,
-      account
+      ctx.socialStringsToUsers
     )
-    ctx.contextData = contextData
+    ctx.ctx.contextData = contextData
   }
 
   findAllRaw<T extends Doc>(
-    ctx: MeasureContext,
+    ctx: ClientSessionCtx,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
@@ -172,7 +143,7 @@ export class ClientSession implements Session {
     this.total.find++
     this.current.find++
     this.includeSessionContext(ctx)
-    return this._pipeline.findAll(ctx, _class, query, options)
+    return this._pipeline.findAll(ctx.ctx, _class, query, options)
   }
 
   async findAll<T extends Doc>(
@@ -181,12 +152,12 @@ export class ClientSession implements Session {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<void> {
-    await ctx.sendResponse(await this.findAllRaw(ctx.ctx, _class, query, options))
+    await ctx.sendResponse(await this.findAllRaw(ctx, _class, query, options))
   }
 
   async searchFulltext (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions): Promise<void> {
     this.lastRequest = Date.now()
-    this.includeSessionContext(ctx.ctx)
+    this.includeSessionContext(ctx)
     await ctx.sendResponse(await this._pipeline.searchFulltext(ctx.ctx, query, options))
   }
 
@@ -194,7 +165,7 @@ export class ClientSession implements Session {
     this.lastRequest = Date.now()
     this.total.tx++
     this.current.tx++
-    this.includeSessionContext(ctx.ctx)
+    this.includeSessionContext(ctx)
 
     let cid = 'client_' + generateId()
     ctx.ctx.id = cid

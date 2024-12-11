@@ -15,9 +15,9 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import chunter, { TypingInfo } from '@hcengineering/chunter'
-  import { getName, Person } from '@hcengineering/contact'
+  import { getName, Person, getCurrentEmployee } from '@hcengineering/contact'
   import { personByIdStore } from '@hcengineering/contact-resources'
-  import { getCurrentAccount, IdMap } from '@hcengineering/core'
+  import { IdMap } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
 
@@ -25,7 +25,7 @@
 
   const typingDelay = 2000
   const maxTypingPersons = 3
-  const me = getCurrentAccount()
+  const me = getCurrentEmployee()
   const hierarchy = getClient().getHierarchy()
 
   let typingPersonsLabel: string = ''
@@ -38,7 +38,7 @@
     const now = Date.now()
     const personIds = new Set(
       typingInfo
-        .filter((info) => info.person !== me.person && now - info.lastTyping < typingDelay)
+        .filter((info) => info.person !== me && now - info.lastTyping < typingDelay)
         .map((info) => info.person)
     )
     const names = Array.from(personIds)

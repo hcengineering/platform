@@ -29,7 +29,7 @@ import github from './plugin'
 import {
   DateRangeMode,
   IndexKind,
-  type Account,
+  type PersonId,
   type Class,
   type Data,
   type Doc,
@@ -41,7 +41,7 @@ import {
 } from '@hcengineering/core'
 
 import { type Person } from '@hcengineering/contact'
-import contact, { TContact } from '@hcengineering/model-contact'
+import contact, { TPerson } from '@hcengineering/model-contact'
 import presentation from '@hcengineering/model-presentation'
 import tracker, { TComponent, TIssue, TMilestone, TProject, issuesOptions } from '@hcengineering/model-tracker'
 import view, { classPresenter } from '@hcengineering/model-view'
@@ -412,7 +412,7 @@ export class TGithubTodo extends TToDO implements GithubTodo {
 
 @Mixin(github.mixin.GithubUser, contact.class.Contact)
 @UX(github.string.GithubUser, github.icon.Github)
-export class TGithubUser extends TContact implements GithubUser {
+export class TGithubUser extends TPerson implements GithubUser {
   @Prop(TypeHyperlink(), getEmbeddedLabel('Github URL'))
   @Index(IndexKind.FullText)
   @ReadOnly()
@@ -552,7 +552,7 @@ export class TGithubReviewThread extends TActivityMessage implements GithubRevie
   originalStartLine!: number | null
   path!: string
   startDiffSide!: 'LEFT' | 'RIGHT' | null
-  resolvedBy!: Ref<Account> | null
+  resolvedBy!: PersonId | null
   threadId!: string
 }
 

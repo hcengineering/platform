@@ -516,6 +516,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/account-client",
+      "projectFolder": "packages/account-client",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/prod",
       "projectFolder": "dev/prod",
       "shouldPublish": false

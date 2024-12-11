@@ -21,7 +21,7 @@ import core, {
   type DocChunk,
   type Domain,
   generateId,
-  getWorkspaceId,
+ 
   Hierarchy,
   MeasureMetricsContext,
   ModelDb,
@@ -86,7 +86,7 @@ describe('mongo operations', () => {
       new MeasureMetricsContext('', {}),
       hierarchy,
       mongodbUri,
-      getWorkspaceId(dbId),
+      dbId,
       model
     )
 
@@ -94,7 +94,7 @@ describe('mongo operations', () => {
       new MeasureMetricsContext('', {}),
       hierarchy,
       mongodbUri,
-      getWorkspaceId(dbId),
+      dbId,
       model
     )
 
@@ -120,7 +120,6 @@ describe('mongo operations', () => {
         upload: async (domain: Domain, docs: Doc[]) => {},
         clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
         loadModel: async () => txes,
-        getAccount: async () => ({}) as any,
         sendForceClose: async () => {}
       }
       return st

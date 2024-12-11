@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Employee, PersonAccount, getName } from '@hcengineering/contact'
-  import { Avatar, employeeByIdStore, personAccountByIdStore } from '@hcengineering/contact-resources'
-  import { Account, IdMap, Ref } from '@hcengineering/core'
+  import { Employee, getName, Person } from '@hcengineering/contact'
+  import { Avatar, personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { PersonId, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import task, { Project } from '@hcengineering/task'
   import { Button, Scroller } from '@hcengineering/ui'
@@ -20,31 +20,16 @@
 
   let employees: Employee[] = []
 
-  function getEmployee (
-    _id: Ref<Account>,
-    personAccountByIdStore: IdMap<PersonAccount>,
-    employeeByIdStore: IdMap<Employee>
-  ): Employee | undefined {
-    const employee = personAccountByIdStore.get(_id as Ref<PersonAccount>)
-    return employee ? employeeByIdStore.get(employee.person as Ref<Employee>) : undefined
-  }
-
   function getEmployees (
     space: Project | undefined,
-    personAccountByIdStore: IdMap<PersonAccount>,
-    employeeByIdStore: IdMap<Employee>
+    personByPersonId: Map<PersonId, Person>
   ): void {
-    employees = []
     if (space === undefined) return
-    for (const member of space.members) {
-      const emp = getEmployee(member, personAccountByIdStore, employeeByIdStore)
-      if (emp) employees.push(emp)
-    }
-    employees.sort((a, b) => getName(client.getHierarchy(), a).localeCompare(getName(client.getHierarchy(), b)))
-    employees = employees
+    const spaceEmployees = new Set(space.members.map((pid) => personByPersonId.get(pid)).filter((p) => p !== undefined))
+    employees = Array.from(spaceEmployees).sort((a, b) => getName(client.getHierarchy(), a).localeCompare(getName(client.getHierarchy(), b))) as Employee[]
   }
 
-  $: getEmployees(space, $personAccountByIdStore, $employeeByIdStore)
+  $: getEmployees(space, $personByPersonIdStore)
 </script>
 
 {#if space}

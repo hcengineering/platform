@@ -13,13 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
   import { Class, Doc, DocumentQuery, getCurrentAccount, Ref, Status } from '@hcengineering/core'
   import { IntlString, Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tags, { TagCategory, TagElement } from '@hcengineering/tags'
   import { selectedTagElements } from '@hcengineering/tags-resources'
   import { Task } from '@hcengineering/task'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { mySocialStringsStore } from '@hcengineering/contact-resources'
   import {
     Component,
     IModeSelector,
@@ -49,9 +50,9 @@
 
   let search = ''
   const dispatch = createEventDispatcher()
-  const currentUser = getCurrentAccount() as PersonAccount
-  const assigned = { assignee: currentUser.person }
-  const created = { createdBy: currentUser._id }
+  const me = getCurrentEmployee()
+  const assigned = { assignee: me }
+  $: created = { createdBy: { $in: $mySocialStringsStore } }
   let subscribed = { _id: { $in: [] as Ref<Task>[] } }
   let mode: string | undefined = undefined
   let baseQuery: DocumentQuery<Task> | undefined = undefined
@@ -108,7 +109,7 @@
   function getSubscribed () {
     subscribedQuery.query(
       _class,
-      { 'notification:mixin:Collaborators.collaborators': getCurrentAccount()._id },
+      { 'notification:mixin:Collaborators.collaborators': { $in: getCurrentAccount().socialIds } },
       (result) => {
         const newSub = result.map((p) => p._id as Ref<Doc> as Ref<Task>)
         const curSub = subscribed._id.$in

@@ -17,14 +17,14 @@
   import { Analytics } from '@hcengineering/analytics'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import chunter, { ChatMessage, ChunterEvents, ThreadMessage, TypingInfo } from '@hcengineering/chunter'
-  import { Class, Doc, generateId, Ref, type CommitResult, getCurrentAccount } from '@hcengineering/core'
+  import { Class, Doc, generateId, Ref, type CommitResult } from '@hcengineering/core'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import { createEventDispatcher } from 'svelte'
   import { getObjectId } from '@hcengineering/view-resources'
   import { ThrottledCaller } from '@hcengineering/ui'
   import { getSpace } from '@hcengineering/activity-resources'
-  import { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
 
   import { getChannelSpace } from '../../utils'
   import ChannelTypingInfo from '../ChannelTypingInfo.svelte'
@@ -106,25 +106,25 @@
     }
   }
 
-  const me = getCurrentAccount() as PersonAccount
+  const me = getCurrentEmployee()
   const throttle = new ThrottledCaller(500)
 
   async function deleteTypingInfo (): Promise<void> {
     if (!withTypingInfo) return
-    const myTypingInfo = typingInfo.find((info) => info.person === me.person)
+    const myTypingInfo = typingInfo.find((info) => info.person === me)
     if (myTypingInfo === undefined) return
     await client.remove(myTypingInfo)
   }
 
   async function updateTypingInfo (): Promise<void> {
     if (!withTypingInfo) return
-    const myTypingInfo = typingInfo.find((info) => info.person === me.person)
+    const myTypingInfo = typingInfo.find((info) => info.person === me)
 
     if (myTypingInfo === undefined) {
       await client.createDoc(chunter.class.TypingInfo, getSpace(object), {
         objectId: object._id,
         objectClass: object._class,
-        person: me.person,
+        person: me,
         lastTyping: Date.now()
       })
     } else {

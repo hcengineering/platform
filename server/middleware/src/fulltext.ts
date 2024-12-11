@@ -64,7 +64,7 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
     super(context, next)
     const fulltextEndpoints = fulltextUrl.split(';').map((it) => it.trim())
 
-    const hash = this.hashWorkspace(context.workspace.name)
+    const hash = this.hashWorkspace(context.workspace.uuid)
     this.fulltextEndpoint = fulltextEndpoints[Math.abs(hash % fulltextEndpoints.length)]
   }
 
@@ -146,7 +146,7 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
           },
           body: JSON.stringify({
             token: this.token,
-            workspace: this.context.workspace,
+            workspace: this.context.workspace.uuid,
             _classes,
             query,
             fullTextLimit
@@ -368,7 +368,7 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              workspace: this.context.workspace,
+              workspace: this.context.workspace.uuid,
               token: this.token,
               query,
               options

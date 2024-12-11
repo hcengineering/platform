@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import type { Account, Doc, DocIndexState, Domain, Ref } from './classes'
+import type { Account, Doc, DocIndexState, Domain, PersonId, Ref } from './classes'
 import { MeasureContext } from './measurements'
 import { DocumentQuery, FindOptions } from './storage'
 import type { DocumentUpdate, Tx } from './tx'
-import type { WorkspaceIdWithUrl } from './utils'
+import { WorkspaceIds } from './utils'
 
 /**
  * @public
@@ -43,20 +43,13 @@ export interface SessionData {
   }
   contextCache: Map<string, any>
   removedMap: Map<Ref<Doc>, Doc>
-
-  userEmail: string
+  account: Account
   sessionId: string
   admin?: boolean
-
   isTriggerCtx?: boolean
-
-  account: Account
-
-  getAccount: (account: Ref<Account>) => Account | undefined
-
-  workspace: WorkspaceIdWithUrl
+  workspace: WorkspaceIds
   branding: Branding | null
-
+  socialStringsToUsers: Map<PersonId, string>
   fulltextUpdates?: Map<Ref<DocIndexState>, DocIndexState>
 
   asyncRequests?: (() => Promise<void>)[]

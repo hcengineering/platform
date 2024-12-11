@@ -24,7 +24,7 @@ import core, {
   TxProcessor,
   getCurrentAccount,
   getObjectValue,
-  type Account,
+  type PersonId,
   type AggregateValue,
   type AnyAttribute,
   type AttachedDoc,
@@ -39,7 +39,6 @@ import core, {
   type Lookup,
   type Mixin,
   type Obj,
-  type Permission,
   type Ref,
   type RefTo,
   type ReverseLookup,
@@ -97,7 +96,7 @@ import view, {
   type ViewletDescriptor
 } from '@hcengineering/view'
 
-import contact, { getName, type Contact, type PersonAccount } from '@hcengineering/contact'
+import contact, { getCurrentEmployee, getAllSocialStringsByPersonRef, getName, type Contact } from '@hcengineering/contact'
 import { get, writable } from 'svelte/store'
 import plugin from './plugin'
 import { noCategory } from './viewOptions'
@@ -528,8 +527,8 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
 
 export async function deleteObject (client: TxOperations, object: Doc): Promise<void> {
   const currentAcc = getCurrentAccount()
-  const accounts = await getCurrentPersonAccounts()
-  if (currentAcc.role !== AccountRole.Owner && !accounts.has(object.createdBy)) return
+  const socialStrings = new Set(await getAllSocialStringsByPersonRef(client, getCurrentEmployee()))
+  if (currentAcc.role !== AccountRole.Owner && !socialStrings.has(object.createdBy as PersonId)) return
   if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
     const adoc = object as AttachedDoc
     await client
@@ -544,22 +543,11 @@ export async function deleteObject (client: TxOperations, object: Doc): Promise<
   }
 }
 
-export async function getCurrentPersonAccounts (): Promise<Set<Ref<Account> | undefined>> {
-  return new Set(
-    (
-      await getClient().findAll(contact.class.PersonAccount, { person: (getCurrentAccount() as PersonAccount).person })
-    ).map((it) => it._id)
-  )
-}
-
 export async function deleteObjects (client: TxOperations, objects: Doc[], skipCheck: boolean = false): Promise<void> {
   let realObjects: Doc[] = []
   if (!skipCheck) {
     const currentAcc = getCurrentAccount()
-
-    // We need to find all person current accounts
-    const allPersonAccounts = await getCurrentPersonAccounts()
-
+    const socialStrings = new Set(await getAllSocialStringsByPersonRef(client, getCurrentEmployee()))
     const byClass = new Map<Ref<Class<Doc>>, Doc[]>()
     for (const d of objects) {
       byClass.set(d._class, [...(byClass.get(d._class) ?? []), d])
@@ -567,7 +555,7 @@ export async function deleteObjects (client: TxOperations, objects: Doc[], skipC
     const adminUser = isAdminUser()
     for (const [cl, docs] of byClass.entries()) {
       const realDocs = await client.findAll(cl, { _id: { $in: docs.map((it: Doc) => it._id) } })
-      const notAllowed = realDocs.filter((p) => !allPersonAccounts.has(p.createdBy))
+      const notAllowed = realDocs.filter((p) => !socialStrings.has(p.createdBy as PersonId))
 
       if (notAllowed.length > 0) {
         console.error('You are not allowed to delete this object', notAllowed)
@@ -575,7 +563,7 @@ export async function deleteObjects (client: TxOperations, objects: Doc[], skipC
       if (currentAcc.role === AccountRole.Owner || adminUser) {
         realObjects.push(...realDocs)
       } else {
-        realObjects.push(...realDocs.filter((p) => allPersonAccounts.has(p.createdBy)))
+        realObjects.push(...realDocs.filter((p) => socialStrings.has(p.createdBy as PersonId)))
       }
     }
   } else {
@@ -1478,25 +1466,7 @@ async function getAttrEditor (key: KeyedAttribute, hierarchy: Hierarchy): Promis
   }
 }
 
-type PermissionsBySpace = Record<Ref<Space>, Set<Ref<Permission>>>
-type AccountsByPermission = Record<Ref<Space>, Record<Ref<Permission>, Set<Ref<Account>>>>
-export interface PermissionsStore {
-  ps: PermissionsBySpace
-  ap: AccountsByPermission
-  whitelist: Set<Ref<Space>>
-}
-
-export function checkMyPermission (_id: Ref<Permission>, space: Ref<TypedSpace>, store: PermissionsStore): boolean {
-  return (store.whitelist.has(space) || store.ps[space]?.has(_id)) ?? false
-}
-
 export const accessDeniedStore = writable<boolean>(false)
-
-export const permissionsStore = writable<PermissionsStore>({
-  ps: {},
-  ap: {},
-  whitelist: new Set()
-})
 
 const spaceSpaceQuery = createQuery(true)
 
@@ -1506,89 +1476,13 @@ spaceSpaceQuery.query(core.class.TypedSpace, { _id: core.space.Space }, (res) =>
   spaceSpace.set(res[0])
 })
 
-const spaceTypesQuery = createQuery(true)
-const permissionsQuery = createQuery(true)
-type TargetClassesProjection = Record<Ref<Class<Space>>, number>
-
-spaceTypesQuery.query(core.class.SpaceType, {}, (types) => {
-  const targetClasses = types.reduce<TargetClassesProjection>((acc, st) => {
-    acc[st.targetClass] = 1
-    return acc
-  }, {})
-
-  permissionsQuery.query(
-    core.class.Space,
-    {},
-    (res) => {
-      const whitelistedSpaces = new Set<Ref<Space>>()
-      const permissionsBySpace: PermissionsBySpace = {}
-      const accountsByPermission: AccountsByPermission = {}
-      const client = getClient()
-      const hierarchy = client.getHierarchy()
-      const me = getCurrentAccount()
-
-      for (const s of res) {
-        if (hierarchy.isDerived(s._class, core.class.TypedSpace)) {
-          const type = client.getModel().findAllSync(core.class.SpaceType, { _id: (s as TypedSpace).type })[0]
-          const mixin = type?.targetClass
-
-          if (mixin === undefined) {
-            permissionsBySpace[s._id] = new Set()
-            accountsByPermission[s._id] = {}
-            continue
-          }
-
-          const asMixin = hierarchy.as(s, mixin)
-          const roles = client.getModel().findAllSync(core.class.Role, { attachedTo: type._id })
-          const myRoles = roles.filter((r) => ((asMixin as any)[r._id] ?? []).includes(me._id))
-          permissionsBySpace[s._id] = new Set(myRoles.flatMap((r) => r.permissions))
-
-          accountsByPermission[s._id] = {}
-
-          for (const role of roles) {
-            const assignment: Array<Ref<Account>> = (asMixin as any)[role._id] ?? []
-
-            if (assignment.length === 0) {
-              continue
-            }
-
-            for (const permissionId of role.permissions) {
-              if (accountsByPermission[s._id][permissionId] === undefined) {
-                accountsByPermission[s._id][permissionId] = new Set()
-              }
-
-              assignment.forEach((acc) => accountsByPermission[s._id][permissionId].add(acc))
-            }
-          }
-        } else {
-          whitelistedSpaces.add(s._id)
-        }
-      }
-
-      permissionsStore.set({
-        ps: permissionsBySpace,
-        ap: accountsByPermission,
-        whitelist: whitelistedSpaces
-      })
-    },
-    {
-      projection: {
-        _id: 1,
-        type: 1,
-        ...targetClasses
-      } as any
-    }
-  )
-})
-
 export function getCollaborationUser (): CollaborationUser {
-  const me = getCurrentAccount() as PersonAccount
-  const color = getColorNumberByText(me.email)
+  const me = getCurrentAccount()
+  const color = getColorNumberByText(me.primarySocialId)
 
   return {
-    id: me._id,
-    name: me.email,
-    email: me.email,
+    id: me.primarySocialId,
+    name: me.primarySocialId,
     color
   }
 }

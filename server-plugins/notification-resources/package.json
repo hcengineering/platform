@@ -51,6 +51,7 @@
     "@hcengineering/text": "^0.6.5",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/server-view": "^0.6.0",
+    "@hcengineering/server-contact": "^0.6.1",
     "web-push": "~3.6.7"
   }
 }

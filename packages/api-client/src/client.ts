@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 import {
-  type Account,
   type Class,
   type Client,
   type Data,
@@ -35,12 +33,14 @@ import {
   Mixin,
   MixinUpdate,
   MixinData,
-  generateId
+  generateId,
+  PersonId,
+  buildSocialIdString
 } from '@hcengineering/core'
 import client, { clientId } from '@hcengineering/client'
 import { addLocation, getResource } from '@hcengineering/platform'
+import { getClient as getAccountClient } from '@hcengineering/account-client'
 
-import { login, selectWorkspace } from './account'
 import { type ServerConfig, loadServerConfig } from './config'
 import {
   type MarkupFormat,
@@ -58,13 +58,20 @@ export async function connect (url: string, options: ConnectOptions): Promise<Pl
   const config = await loadServerConfig(url)
 
   const { endpoint, token } = await getWorkspaceToken(url, options, config)
-  return await createClient(url, endpoint, token, config, options)
+  const socialStrings = (await getAccountClient(config.ACCOUNTS_URL, token).getSocialIds()).map((si) => buildSocialIdString(si))
+
+  if (socialStrings.length === 0) {
+    throw new Error('No social ids found for the logged in user')
+  }
+
+  return await createClient(url, endpoint, token, socialStrings[0], config, options)
 }
 
 async function createClient (
   url: string,
   endpoint: string,
   token: string,
+  user: PersonId,
   config: ServerConfig,
   options: ConnectOptions
 ): Promise<PlatformClient> {
@@ -77,9 +84,8 @@ async function createClient (
     socketFactory,
     connectionTimeout
   })
-  const account = await connection.getAccount()
 
-  return new PlatformClientImpl(url, workspace, token, config, connection, account)
+  return new PlatformClientImpl(url, workspace, token, config, connection, user)
 }
 
 class PlatformClientImpl implements PlatformClient {
@@ -92,9 +98,9 @@ class PlatformClientImpl implements PlatformClient {
     private readonly token: string,
     private readonly config: ServerConfig,
     private readonly connection: Client,
-    private readonly account: Account
+    private readonly user: PersonId
   ) {
-    this.client = new TxOperations(connection, account._id)
+    this.client = new TxOperations(connection, user)
     this.markup = createMarkupOperations(url, workspace, token, config)
   }
 
@@ -280,20 +286,21 @@ async function getWorkspaceToken (
 ): Promise<{ endpoint: string, token: string }> {
   config ??= await loadServerConfig(url)
 
-  let token: string
+  let token: string | undefined
 
   if ('token' in options) {
     token = options.token
   } else {
-    const { email, password, workspace } = options
-    token = await login(config.ACCOUNTS_URL, email, password, workspace)
+    const { email, password } = options
+    const loginInfo = await getAccountClient(config.ACCOUNTS_URL).login(email, password)
+    token = loginInfo.token
   }
 
   if (token === undefined) {
     throw new Error('Login failed')
   }
 
-  const ws = await selectWorkspace(config.ACCOUNTS_URL, token, options.workspace)
+  const ws = await getAccountClient(config.ACCOUNTS_URL, token).selectWorkspace(options.workspace)
   if (ws === undefined) {
     throw new Error('Workspace not found')
   }

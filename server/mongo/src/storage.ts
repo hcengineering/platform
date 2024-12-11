@@ -59,7 +59,7 @@ import core, {
   type TxResult,
   type TxUpdateDoc,
   type WithLookup,
-  type WorkspaceId
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import {
   type DbAdapter,
@@ -1615,7 +1615,7 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
     const systemTx: Tx[] = []
     const userTx: Tx[] = []
 
-    // Ignore Employee accounts.
+    // Ignore old Employee accounts.
     function isPersonAccount (tx: Tx): boolean {
       return (
         (tx._class === core.class.TxCreateDoc ||
@@ -1751,7 +1751,7 @@ export async function createMongoAdapter (
   ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   modelDb: ModelDb,
   storage?: StorageAdapter,
   options?: DbAdapterOptions
@@ -1769,7 +1769,7 @@ export async function createMongoTxAdapter (
   ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   modelDb: ModelDb
 ): Promise<TxAdapter> {
   const client = getMongoClient(url)

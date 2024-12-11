@@ -4,7 +4,7 @@
 //
 -->
 <script lang="ts">
-  import { Account, Ref } from '@hcengineering/core'
+  import { PersonId } from '@hcengineering/core'
   import ui, { Label, Location, Spinner, Button, location } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import github from '../plugin'
@@ -57,7 +57,7 @@
       op,
       workspace,
       token
-    }: { accountId: Ref<Account>, workspace: string, op: string, token: string } = rawState
+    }: { accountId: PersonId, workspace: string, op: string, token: string } = rawState
 
     if (op === 'installation') {
       if (installationId == null || setupAction === null) {

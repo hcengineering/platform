@@ -34,7 +34,7 @@ import core, {
   type TxCUD,
   TxProcessor,
   type TxResult,
-  type WorkspaceId
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { type DbAdapter, type DbAdapterHandler, type DomainHelperOperations } from './adapter'
 
@@ -179,7 +179,7 @@ export async function createInMemoryAdapter (
   ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceId
+  workspaceId: WorkspaceUuid
 ): Promise<DbAdapter> {
   return new InMemoryAdapter(hierarchy)
 }

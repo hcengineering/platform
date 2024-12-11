@@ -17,6 +17,7 @@
 import core, {
   getCurrentAccount,
   toIdMap,
+  type PersonId,
   type Attribute,
   type Class,
   type Doc,
@@ -41,7 +42,7 @@ import { getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
 import { type ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, groupBy, statusStore } from '@hcengineering/view-resources'
 import { get, writable } from 'svelte/store'
-import { type Employee, type PersonAccount } from '@hcengineering/contact'
+import { type Employee } from '@hcengineering/contact'
 import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 
@@ -76,7 +77,6 @@ import ProjectTypeTasksTypeSectionEditor from './components/projectTypes/Project
 import ProjectTypeAutomationsSectionEditor from './components/projectTypes/ProjectTypeAutomationsSectionEditor.svelte'
 import ProjectTypeCollectionsSectionEditor from './components/projectTypes/ProjectTypeCollectionsSectionEditor.svelte'
 import TaskTypeEditor from './components/taskTypes/TaskTypeEditor.svelte'
-import { employeeByIdStore, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
 
 export { default as AssigneePresenter } from './components/AssigneePresenter.svelte'
 export { default as TypeSelector } from './components/TypeSelector.svelte'
@@ -92,73 +92,75 @@ async function editStatuses (object: Project, ev: Event): Promise<void> {
 }
 
 async function exportTasks (docs: Task | Task[]): Promise<void> {
-  const client = getClient()
-  const ddocs = Array.isArray(docs) ? docs : [docs]
-  const docsStatuses = ddocs.map((doc) => doc.status)
-  const statuses = await client.findAll(core.class.Status, { _id: { $in: docsStatuses } })
-  const personAccountById = get(personAccountByIdStore)
-  const personById = get(personByIdStore)
-  const employeeById = get(employeeByIdStore)
-  const statusMap = toIdMap(statuses)
-  const activityMessages = await client.findAll(activity.class.ActivityMessage, {
-    _class: chunter.class.ChatMessage,
-    attachedToClass: { $in: ddocs.map((d) => d._class) },
-    attachedTo: { $in: ddocs.map((d) => d._id) }
-  })
-  const activityByDoc = groupBy(activityMessages, 'attachedTo')
+  // TODO: FIXME OR DELETE???
+  throw new Error('Not implemented')
+  // const client = getClient()
+  // const ddocs = Array.isArray(docs) ? docs : [docs]
+  // const docsStatuses = ddocs.map((doc) => doc.status)
+  // const statuses = await client.findAll(core.class.Status, { _id: { $in: docsStatuses } })
+  // const personAccountById = get(personAccountByIdStore)
+  // const personById = get(personByIdStore)
+  // const employeeById = get(employeeByIdStore)
+  // const statusMap = toIdMap(statuses)
+  // const activityMessages = await client.findAll(activity.class.ActivityMessage, {
+  //   _class: chunter.class.ChatMessage,
+  //   attachedToClass: { $in: ddocs.map((d) => d._class) },
+  //   attachedTo: { $in: ddocs.map((d) => d._id) }
+  // })
+  // const activityByDoc = groupBy(activityMessages, 'attachedTo')
 
-  const toExport = ddocs.map((d) => {
-    const statusName = statusMap.get(d.status)?.name ?? d.status
-    const createdByAccount = personAccountById.get(d.createdBy as Ref<PersonAccount>)?.person
-    const modeifedByAccount = personAccountById.get(d.modifiedBy as Ref<PersonAccount>)?.person
-    const createdBy = personById.get(createdByAccount as Ref<Employee>)?.name ?? d.createdBy
-    const modifiedBy = personById.get(modeifedByAccount as Ref<Employee>)?.name ?? d.modifiedBy
-    const assignee = employeeById.get(d.assignee as Ref<Employee>)?.name ?? d.assignee
-    const collaborators = ((d as any)['notification:mixin:Collaborators']?.collaborators ?? []).map(
-      (id: Ref<PersonAccount>) => {
-        const personAccount = personAccountById.get(id)?.person
-        return personAccount !== undefined ? personById.get(personAccount)?.name ?? id : id
-      }
-    )
-    const activityForDoc = (activityByDoc[d._id] ?? []).map((act) => {
-      const activityCreatedByAccount = personAccountById.get(act.createdBy as Ref<PersonAccount>)?.person
-      const activityModifiedByAccount = personAccountById.get(act.modifiedBy as Ref<PersonAccount>)?.person
-      const activitycreatedBy =
-        employeeById.get((activityCreatedByAccount as any as Ref<Employee>) ?? ('' as Ref<Employee>))?.name ??
-        act.createdBy
-      const activitymodifiedBy =
-        employeeById.get((activityModifiedByAccount as any as Ref<Employee>) ?? ('' as Ref<Employee>))?.name ??
-        act.modifiedBy
-      return {
-        ...act,
-        createdBy: activitycreatedBy,
-        modifiedBy: activitymodifiedBy
-      }
-    })
-    return {
-      ...d,
-      status: statusName,
-      createdBy,
-      modifiedBy,
-      assignee,
-      'notification:mixin:Collaborators': {
-        collaborators
-      },
-      activity: activityForDoc
-    }
-  })
-  const filename = 'tasks' + new Date().toLocaleDateString() + '.json'
-  const link = document.createElement('a')
-  link.style.display = 'none'
-  link.setAttribute('target', '_blank')
-  link.setAttribute(
-    'href',
-    'data:application/json;charset=utf-8,%EF%BB%BF' + encodeURIComponent(JSON.stringify(toExport))
-  )
-  link.setAttribute('download', filename)
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
+  // const toExport = ddocs.map((d) => {
+  //   const statusName = statusMap.get(d.status)?.name ?? d.status
+  //   const createdByAccount = personAccountById.get(d.createdBy as PersonId)?.person
+  //   const modeifedByAccount = personAccountById.get(d.modifiedBy as PersonId)?.person
+  //   const createdBy = personById.get(createdByAccount as Ref<Employee>)?.name ?? d.createdBy
+  //   const modifiedBy = personById.get(modeifedByAccount as Ref<Employee>)?.name ?? d.modifiedBy
+  //   const assignee = employeeById.get(d.assignee as Ref<Employee>)?.name ?? d.assignee
+  //   const collaborators = ((d as any)['notification:mixin:Collaborators']?.collaborators ?? []).map(
+  //     (id: PersonId) => {
+  //       const personAccount = personAccountById.get(id)?.person
+  //       return personAccount !== undefined ? personById.get(personAccount)?.name ?? id : id
+  //     }
+  //   )
+  //   const activityForDoc = (activityByDoc[d._id] ?? []).map((act) => {
+  //     const activityCreatedByAccount = personAccountById.get(act.createdBy as PersonId)?.person
+  //     const activityModifiedByAccount = personAccountById.get(act.modifiedBy as PersonId)?.person
+  //     const activitycreatedBy =
+  //       employeeById.get((activityCreatedByAccount as any as Ref<Employee>) ?? ('' as Ref<Employee>))?.name ??
+  //       act.createdBy
+  //     const activitymodifiedBy =
+  //       employeeById.get((activityModifiedByAccount as any as Ref<Employee>) ?? ('' as Ref<Employee>))?.name ??
+  //       act.modifiedBy
+  //     return {
+  //       ...act,
+  //       createdBy: activitycreatedBy,
+  //       modifiedBy: activitymodifiedBy
+  //     }
+  //   })
+  //   return {
+  //     ...d,
+  //     status: statusName,
+  //     createdBy,
+  //     modifiedBy,
+  //     assignee,
+  //     'notification:mixin:Collaborators': {
+  //       collaborators
+  //     },
+  //     activity: activityForDoc
+  //   }
+  // })
+  // const filename = 'tasks' + new Date().toLocaleDateString() + '.json'
+  // const link = document.createElement('a')
+  // link.style.display = 'none'
+  // link.setAttribute('target', '_blank')
+  // link.setAttribute(
+  //   'href',
+  //   'data:application/json;charset=utf-8,%EF%BB%BF' + encodeURIComponent(JSON.stringify(toExport))
+  // )
+  // link.setAttribute('download', filename)
+  // document.body.appendChild(link)
+  // link.click()
+  // document.body.removeChild(link)
 }
 
 async function selectStatus (
@@ -379,7 +381,7 @@ function fillStores (): void {
     })
 
     const projectQuery = createQuery(true)
-    projectQuery.query(task.class.Project, { members: getCurrentAccount()._id }, (res) => {
+    projectQuery.query(task.class.Project, { members: { $in: getCurrentAccount().socialIds } }, (res) => {
       typesOfJoinedProjectsStore.set(res.map((r) => r.type).filter((it, idx, arr) => arr.indexOf(it) === idx))
       joinedProjectsStore.set(res)
     })

@@ -1,4 +1,4 @@
-import { type MeasureContext, type WorkspaceId } from '@hcengineering/core'
+import { type MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 import { type ContentTextAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 
@@ -7,7 +7,7 @@ import { generateToken } from '@hcengineering/server-token'
  */
 export async function createRekoniAdapter (url: string): Promise<ContentTextAdapter> {
   return {
-    content: async (ctx: MeasureContext, workspace: WorkspaceId, name: string, type: string, doc): Promise<string> => {
+    content: async (ctx: MeasureContext, workspace: WorkspaceUuid, name: string, type: string, doc): Promise<string> => {
       const token = generateToken('anticrm-hcenginnering', workspace)
       try {
         // Node doesn't support Readable with fetch.

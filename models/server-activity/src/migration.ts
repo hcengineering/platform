@@ -54,7 +54,7 @@ function getActivityControl (client: MigrationClient): ActivityControl {
     findAll: async (ctx, _class, query, options) =>
       toFindResult(await client.find(client.hierarchy.getDomain(_class), query, options)),
     storageAdapter: client.storageAdapter,
-    workspace: client.workspaceId
+    workspace: client.wsIds
   }
 }
 

@@ -15,34 +15,33 @@
 
 <script lang="ts">
   import { Icon, IconAdd, IconDelete, Label } from '@hcengineering/ui'
-  import { personAccountByIdStore, PersonAccountRefPresenter } from '@hcengineering/contact-resources'
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import { Ref } from '@hcengineering/core'
+  import { personRefByPersonIdStore, PersonRefPresenter } from '@hcengineering/contact-resources'
+  import { Person } from '@hcengineering/contact'
+  import { type PersonId, type Ref } from '@hcengineering/core'
   import activity, { DocAttributeUpdates } from '@hcengineering/activity'
   import notification from '@hcengineering/notification'
 
   export let value: DocAttributeUpdates
 
-  $: removed = getAccountRefs(value.removed)
-  $: added = getAccountRefs(value.added.length > 0 ? value.added : value.set)
+  $: removed = getPersonRefs(value.removed, $personRefByPersonIdStore)
+  $: added = getPersonRefs(value.added.length > 0 ? value.added : value.set, $personRefByPersonIdStore)
 
-  function getAccountRefs (values: DocAttributeUpdates['removed' | 'added' | 'set']): Ref<PersonAccount>[] {
-    const persons = new Set<Ref<Person>>()
-
-    return values.filter((value) => {
-      const account = $personAccountByIdStore.get(value as Ref<PersonAccount>)
-
-      if (account === undefined) {
-        return false
+  function getPersonRefs (values: DocAttributeUpdates['removed' | 'added' | 'set'], personRefByPersonId: Map<PersonId, Ref<Person>>): Ref<Person>[] {
+    const persons = new Set(values.map((value) => {
+      if (typeof value !== 'string') {
+        return undefined
       }
 
-      if (persons.has(account.person)) {
-        return false
+      const person = personRefByPersonId.get(value)
+
+      if (person === undefined) {
+        return undefined
       }
 
-      persons.add(account.person)
-      return true
-    }) as Ref<PersonAccount>[]
+      return person
+    }).filter((person) => person !== undefined))
+
+    return Array.from(persons)
   }
 
   $: hasDifferentChanges = added.length > 0 && removed.length > 0
@@ -66,7 +65,7 @@
         <IconAdd size={'x-small'} fill={'var(--theme-trans-color)'} />
       {/if}
       {#each added as add}
-        <PersonAccountRefPresenter value={add} avatarSize="card" compact />
+        <PersonRefPresenter value={add} avatarSize="card" compact />
       {/each}
     </span>
   {/if}
@@ -77,7 +76,7 @@
         <IconDelete size={'x-small'} fill={'var(--theme-trans-color)'} />
       {/if}
       {#each removed as remove}
-        <PersonAccountRefPresenter value={remove} avatarSize="card" compact />
+        <PersonRefPresenter value={remove} avatarSize="card" compact />
       {/each}
     </span>
   {/if}

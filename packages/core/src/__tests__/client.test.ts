@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 import { IntlString, Plugin } from '@hcengineering/platform'
-import type { Account, Class, Data, Doc, Domain, PluginConfiguration, Ref, Timestamp } from '../classes'
+import type { Class, Data, Doc, Domain, PluginConfiguration, Ref, Timestamp } from '../classes'
 import { ClassifierKind, DOMAIN_MODEL, Space } from '../classes'
 import { ClientConnection, createClient } from '../client'
 import { clone } from '../clone'
@@ -132,7 +132,6 @@ describe('client', () => {
         upload: async (domain: Domain, docs: Doc[]) => {},
         clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
         loadModel: async (last: Timestamp) => clone(txes),
-        getAccount: async () => null as unknown as Account,
         sendForceClose: async () => {}
       }
     }

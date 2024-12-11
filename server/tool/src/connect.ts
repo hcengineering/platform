@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Client, systemAccountEmail, Tx, WorkspaceId } from '@hcengineering/core'
+import { Client, systemAccountUuid, Tx, WorkspaceUuid } from '@hcengineering/core'
 import { createClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 
@@ -25,12 +25,12 @@ import { generateToken } from '@hcengineering/server-token'
  */
 export async function connect (
   transactorUrl: string,
-  workspace: WorkspaceId,
-  email?: string,
+  workspace: WorkspaceUuid,
+  account?: string,
   extra?: Record<string, string>,
   model?: Tx[],
   connectTimeout: number = 0
 ): Promise<Client> {
-  const token = generateToken(email ?? systemAccountEmail, workspace, extra)
+  const token = generateToken(account ?? systemAccountUuid, workspace, extra)
   return await createClient(transactorUrl, token, model, connectTimeout)
 }

@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import { Ref, toWorkspaceString, WorkspaceId } from '@hcengineering/core'
+import { Ref, WorkspaceUuid } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
 import { initStatisticsContext, StorageConfig, StorageConfiguration } from '@hcengineering/server-core'
@@ -68,8 +67,7 @@ export const main = async (): Promise<void> => {
   string,
   {
     name: string
-    workspace: string
-    workspaceId: WorkspaceId
+    workspace: WorkspaceUuid
     meetingMinutes?: Ref<MeetingMinutes>
   }
   >()
@@ -82,9 +80,9 @@ export const main = async (): Promise<void> => {
         for (const res of event.egressInfo.fileResults) {
           const data = dataByUUID.get(res.filename)
           if (data !== undefined) {
-            const prefix = rootPrefix(storageConfig, data.workspaceId)
+            const prefix = rootPrefix(storageConfig, data.workspace)
             const filename = stripPrefix(prefix, res.filename)
-            const storedBlob = await storageAdapter.stat(ctx, data.workspaceId, filename)
+            const storedBlob = await storageAdapter.stat(ctx, data.workspace, filename)
             if (storedBlob !== undefined) {
               const client = await WorkspaceClient.create(data.workspace, ctx)
               await client.saveFile(filename, data.name, storedBlob, data.meetingMinutes)
@@ -136,8 +134,8 @@ export const main = async (): Promise<void> => {
       const dateStr = new Date().toISOString().replace('T', '_').slice(0, 19)
       const name = `${room}_${dateStr}.mp4`
       const id = await startRecord(storageConfig, egressClient, roomClient, roomName, workspace)
-      dataByUUID.set(id, { name, workspace: workspace.name, workspaceId: workspace, meetingMinutes })
-      ctx.info('Start recording', { workspace: workspace.name, roomName, meetingMinutes })
+      dataByUUID.set(id, { name, workspace, meetingMinutes })
+      ctx.info('Start recording', { workspace, roomName, meetingMinutes })
       res.send()
     } catch (e) {
       console.error(e)
@@ -257,15 +255,15 @@ const checkRecordAvailable = async (storageConfig: StorageConfig | undefined): P
   return storageConfig !== undefined
 }
 
-function getBucket (storageConfig: any, workspaceId: WorkspaceId): string {
-  return storageConfig.rootBucket ?? (storageConfig.bucketPrefix ?? '') + toWorkspaceString(workspaceId)
+function getBucket (storageConfig: any, workspaceId: WorkspaceUuid): string {
+  return storageConfig.rootBucket ?? (storageConfig.bucketPrefix ?? '') + workspaceId
 }
 
-function getBucketFolder (workspaceId: WorkspaceId): string {
-  return toWorkspaceString(workspaceId)
+function getBucketFolder (workspaceId: WorkspaceUuid): string {
+  return workspaceId
 }
 
-function getDocumentKey (storageConfig: any, workspace: WorkspaceId, name: string): string {
+function getDocumentKey (storageConfig: any, workspace: WorkspaceUuid, name: string): string {
   return storageConfig.rootBucket === undefined ? name : `${getBucketFolder(workspace)}/${name}`
 }
 
@@ -276,7 +274,7 @@ function stripPrefix (prefix: string | undefined, key: string): string {
   return key
 }
 
-function rootPrefix (storageConfig: any, workspaceId: WorkspaceId): string | undefined {
+function rootPrefix (storageConfig: any, workspaceId: WorkspaceUuid): string | undefined {
   return storageConfig.rootBucket !== undefined ? getBucketFolder(workspaceId) + '/' : undefined
 }
 
@@ -285,7 +283,7 @@ const startRecord = async (
   egressClient: EgressClient,
   roomClient: RoomServiceClient,
   roomName: string,
-  workspaceId: WorkspaceId
+  workspaceId: WorkspaceUuid
 ): Promise<string> => {
   if (storageConfig === undefined) {
     console.error('please provide s3 storage configuration')

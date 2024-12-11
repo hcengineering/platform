@@ -15,7 +15,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { MeasureContext, Blob as PlatformBlob, WorkspaceId, metricsAggregate, type Ref } from '@hcengineering/core'
+import { MeasureContext, Blob as PlatformBlob, WorkspaceUuid, metricsAggregate, type Ref } from '@hcengineering/core'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { StorageAdapter } from '@hcengineering/storage'
 import bp from 'body-parser'
@@ -41,14 +41,14 @@ const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-ag
 async function storageUpload (
   ctx: MeasureContext,
   storageAdapter: StorageAdapter,
-  workspace: WorkspaceId,
+  workspace: WorkspaceUuid,
   file: UploadedFile
 ): Promise<string> {
   const uuid = file.name
   const data = file.tempFilePath !== undefined ? fs.createReadStream(file.tempFilePath) : file.data
   const resp = await ctx.with(
     'storage upload',
-    { workspace: workspace.name },
+    { workspace },
     (ctx) => storageAdapter.put(ctx, workspace, uuid, data, file.mimetype, file.size),
     { file: file.name, contentType: file.mimetype }
   )
@@ -80,7 +80,7 @@ async function getFileRange (
   stat: PlatformBlob,
   range: string,
   client: StorageAdapter,
-  workspace: WorkspaceId,
+  workspace: WorkspaceUuid,
   res: Response
 ): Promise<void> {
   const uuid = stat._id
@@ -127,7 +127,7 @@ async function getFileRange (
             resolve()
           })
           dataStream.on('error', (err) => {
-            ctx.error('error receive stream', { workspace: workspace.name, uuid, error: err })
+            ctx.error('error receive stream', { workspace, uuid, error: err })
             Analytics.handleError(err)
 
             res.end()
@@ -142,7 +142,7 @@ async function getFileRange (
           err?.message === 'No such key' ||
           err?.Code === 'NoSuchKey'
         ) {
-          ctx.info('No such key', { workspace: workspace.name, uuid })
+          ctx.info('No such key', { workspace, uuid })
           res.status(404).send()
           return
         } else {
@@ -160,7 +160,7 @@ async function getFile (
   ctx: MeasureContext,
   stat: PlatformBlob,
   client: StorageAdapter,
-  workspace: WorkspaceId,
+  workspace: WorkspaceUuid,
   req: Request,
   res: Response
 ): Promise<void> {
@@ -227,7 +227,7 @@ async function getFile (
           })
         })
       } catch (err: any) {
-        ctx.error('get-file-error', { workspace: workspace.name, err })
+        ctx.error('get-file-error', { workspace, err })
         Analytics.handleError(err)
         res.status(500).send()
       }
@@ -401,12 +401,12 @@ export function start (
             return
           }
 
-          let blobInfo = await ctx.with('stat', { workspace: payload.workspace.name }, (ctx) =>
+          let blobInfo = await ctx.with('stat', { workspace: payload.workspace }, (ctx) =>
             config.storageAdapter.stat(ctx, payload.workspace, uuid)
           )
 
           if (blobInfo === undefined) {
-            ctx.error('No such key', { file: uuid, workspace: payload.workspace.name })
+            ctx.error('No such key', { file: uuid, workspace: payload.workspace })
             res.status(404).send()
             return
           }
@@ -440,13 +440,13 @@ export function start (
 
           const range = req.headers.range
           if (range !== undefined) {
-            await ctx.with('file-range', { workspace: payload.workspace.name }, (ctx) =>
+            await ctx.with('file-range', { workspace: payload.workspace }, (ctx) =>
               getFileRange(ctx, blobInfo as PlatformBlob, range, config.storageAdapter, payload.workspace, res)
             )
           } else {
             await ctx.with(
               'file',
-              { workspace: payload.workspace.name },
+              { workspace: payload.workspace },
               (ctx) => getFile(ctx, blobInfo as PlatformBlob, config.storageAdapter, payload.workspace, req, res),
               { uuid }
             )
@@ -609,7 +609,7 @@ export function start (
               data.push(chunk)
             })
             .on('end', function () {
-              const buffer = Buffer.concat(data)
+              const buffer = Buffer.concat(data as unknown as Uint8Array[])
               config.storageAdapter
                 .put(ctx, payload.workspace, id, buffer, contentType, buffer.length)
                 .then(async () => {
@@ -687,7 +687,7 @@ export function start (
             data.push(chunk)
           })
           .on('end', function () {
-            const buffer = Buffer.concat(data)
+            const buffer = Buffer.concat(data as unknown as Uint8Array[])
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             config.storageAdapter
               .put(ctx, payload.workspace, id, buffer, contentType ?? 'application/octet-stream', buffer.length)

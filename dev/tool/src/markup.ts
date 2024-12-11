@@ -21,7 +21,7 @@ import core, {
   type Ref,
   type TxCreateDoc,
   type TxUpdateDoc,
-  type WorkspaceId,
+  type WorkspaceUuid,
   DOMAIN_TX,
   SortingOrder,
   makeCollabYdocId,
@@ -41,7 +41,7 @@ export interface RestoreWikiContentParams {
 export async function restoreWikiContentMongo (
   ctx: MeasureContext,
   db: Db,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   storageAdapter: StorageAdapter,
   params: RestoreWikiContentParams
 ): Promise<void> {
