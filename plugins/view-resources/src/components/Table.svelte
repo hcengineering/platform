@@ -69,7 +69,7 @@
   export let readonly = false
   export let showFooter = false
   export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
-  export let viewOptions: ViewOptions | undefined
+  export let viewOptions: ViewOptions | undefined = undefined
 
   export let totalQuery: DocumentQuery<Doc> | undefined = undefined
 
