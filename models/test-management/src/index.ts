@@ -109,9 +109,7 @@ function defineApplication (builder: Builder): void {
                 componentProps: {
                   _class: testManagement.class.TestPlanItem,
                   icon: testManagement.icon.TestPlans,
-                  label: testManagement.string.TestPlans,
-                  createLabel: testManagement.string.CreateTestPlan,
-                  createComponent: testManagement.component.CreateTestPlan
+                  label: testManagement.string.TestPlans
                 },
                 navigationModel: {
                   navigationComponent: view.component.FoldersBrowser,
@@ -119,6 +117,7 @@ function defineApplication (builder: Builder): void {
                   navigationComponentIcon: testManagement.icon.TestPlans,
                   mainComponentLabel: testManagement.string.TestCase,
                   mainComponentIcon: testManagement.icon.TestCase,
+                  mainHeaderComponent: testManagement.component.CreateTestPlanButton,
                   navigationComponentProps: {
                     _class: testManagement.class.TestPlan,
                     icon: testManagement.icon.TestPlans,

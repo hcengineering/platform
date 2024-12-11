@@ -15,28 +15,29 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
 
+  import { Analytics } from '@hcengineering/analytics'
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { ActionContext, getClient } from '@hcengineering/presentation'
-  import core, { Data, Ref, generateId, makeCollabId } from '@hcengineering/core'
-  import { TestProject, TestPlan, TestCase, TestPlanItem } from '@hcengineering/test-management'
+  import core, { Data, Ref, generateId } from '@hcengineering/core'
+  import testManagement, { TestProject, TestPlan, TestCase, TestPlanItem, TestManagementEvents } from '@hcengineering/test-management'
   import { Panel } from '@hcengineering/panel'
-  import { Button, EditBox, Label } from '@hcengineering/ui'
-  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
-  import testManagement from '@hcengineering/test-management'
+  import { ModernButton, EditBox, Label } from '@hcengineering/ui'
+  import { EmptyMarkup } from '@hcengineering/text'
+  import { IntlString } from '@hcengineering/platform'
+  import { Attachment } from '@hcengineering/attachment'
 
-  import RightHeader from '../test-result/RightHeader.svelte'
-  import TestCaseList from '../test-case/TestCaseList.svelte'
+  import NewTestPlanAside from './NewTestPlanAside.svelte'
   import TestCaseSelector from '../test-case/TestCaseSelector.svelte'
+  import { getProjectFromLocation } from '../../navigation'
 
-  export let space: Ref<TestProject>
-  export let testCases: TestCase[]
+  export let space: Ref<TestProject> = getProjectFromLocation()
+  export let testCases: TestCase[] = []
 
   const id: Ref<TestPlan> = generateId()
 
   const object: Data<TestPlan> = {
     name: '' as IntlString,
-    description: null,
-    dueDate: undefined
+    description: null
   }
 
   const dispatch = createEventDispatcher()
@@ -50,21 +51,16 @@
     try {
       const applyOp = client.apply()
       await applyOp.createDoc(testManagement.class.TestPlan, space, object, id)
+      await descriptionBox.createAttachments(id, applyOp)
       const testCasesArray = testCases instanceof Array ? testCases : [testCases]
       const createPromises = testCasesArray.map(async (testCase) => {
-        const descriptionRef = isEmptyMarkup(description)
-          ? null
-          : await createMarkup(makeCollabId(testManagement.class.TestRun, id, 'description'), description)
-
         const testPlanItemId: Ref<TestPlanItem> = generateId()
         const testPlanItemData: Data<TestPlanItem> = {
           attachedTo: id,
           attachedToClass: testManagement.class.TestRun,
           testCase: testCase._id,
           testSuite: testCase.attachedTo,
-          collection: 'items',
-          description: descriptionRef,
-          status: TestRunStatus.Untested
+          collection: 'items'
         }
 
         return await applyOp.addCollection(
@@ -72,7 +68,7 @@
           space,
           id,
           testManagement.class.TestRun,
-          'results',
+          'items',
           testPlanItemData,
           testPlanItemId
         )
@@ -80,18 +76,16 @@
       await Promise.all(createPromises)
       const opResult = await applyOp.commit()
       if (!opResult.result) {
-        throw new Error('Failed to create test run')
+        throw new Error('Failed to create test plan')
       } else {
-        Analytics.handleEvent(TestManagementEvents.TestRunCreated, { id })
-        navigate(getTestRunsLink(space, id))
+        Analytics.handleEvent(TestManagementEvents.TestPlanCreated, { id })
+        dispatch('close')
       }
     } catch (err: any) {
       console.error(err)
       Analytics.handleError(err)
     }
   }
-
-  let content: HTMLElement
 
   onMount(() => dispatch('open', { ignoreKeys: [] }))
 </script>
@@ -100,7 +94,6 @@
   <ActionContext context={{ mode: 'editor' }} />
   <Panel
     {object}
-    title={testManagement.string.CreateTestRun}
     isHeader={false}
     isAside={true}
     isSub={false}
@@ -109,6 +102,9 @@
     on:open
     on:close={() => dispatch('close')}
   >
+    <svelte:fragment slot="title">
+      <Label label={testManagement.string.CreateTestRun} />
+    </svelte:fragment>
     <EditBox
       bind:value={object.name}
       placeholder={testManagement.string.TestRunNamePlaceholder}
@@ -138,23 +134,21 @@
       }}
     />
 
-    <div id="test-cases-selector">
-      <TestCaseSelector bind:objects={testCases} />
+    <div class="space-divider"/>
+    <div class="flex flex-between">
+      <div id="test-cases-selector">
+        <TestCaseSelector bind:objects={testCases} />
+      </div>
+      <ModernButton
+        label={testManagement.string.Save}
+        size="medium"
+        kind={'primary'}
+        disabled={object?.name.trim().length === 0 || testCases?.length === 0}
+        on:click={onSave}
+      />
     </div>
-
-    <Button
-      label={testManagement.string.Save}
-      size="medium"
-      kind={'primary'}
-      disabled={object?.name.trim().length === 0 || testCases?.length === 0}
-      on:click={onSave}
-    />
-
     <svelte:fragment slot="aside">
-      <RightHeader>
-        <Label label={testManagement.string.Comments} />
-      </RightHeader>
-      <TestCaseList objects={testCases} noSearchField={true} width={'full'} readonly={true} />
+      <NewTestPlanAside/>
     </svelte:fragment>
   </Panel>
 {/if}

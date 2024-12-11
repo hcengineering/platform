@@ -22,7 +22,7 @@
   import { showSelectTestCasesPopup } from '../../utils'
 
   export let objects: TestCase[]
-  export let label: IntlString = testManagement.string.TestCases
+  export let label: IntlString = testManagement.string.SelectedTestCases
   export let focusIndex = -1
   export let focus = false
   export let labelDirection: TooltipAlignment | undefined = undefined

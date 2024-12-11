@@ -200,7 +200,9 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestPlans: '' as IntlString,
     TestPlan: '' as IntlString,
     Name: '' as IntlString,
-    CreateTestPlan: '' as IntlString
+    CreateTestPlan: '' as IntlString,
+    SelectedTestCases: '' as IntlString,
+    DefaultAssignee: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>
@@ -221,7 +223,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestRunResult: '' as AnyComponent,
     TestResultHeader: '' as AnyComponent,
     TestRunner: '' as AnyComponent,
-    NewTestRunPanel: '' as AnyComponent
+    NewTestRunPanel: '' as AnyComponent,
+    NewTestPlanPanel: '' as AnyComponent
   },
   ids: {
     NoParent: '' as Ref<TestSuite>,

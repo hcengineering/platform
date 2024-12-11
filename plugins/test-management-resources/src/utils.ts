@@ -61,6 +61,21 @@ export async function showCreateTestRunPopup (options: {
   )
 }
 
+export async function showCreateTestPlanPopup (options: {
+  testCases?: TestCase[]
+  query?: DocumentQuery<Doc>
+  space: Ref<TestProject>
+}): Promise<void> {
+  showPanel(
+    testManagement.component.NewTestPlanPanel,
+    'new-test-plan',
+    testManagement.class.TestPlan,
+    'content',
+    undefined,
+    false
+  )
+}
+
 export async function showSelectTestCasesPopup (options: {
   testCases?: TestCase[]
   query?: DocumentQuery<Doc>
