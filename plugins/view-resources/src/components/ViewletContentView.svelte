@@ -22,12 +22,18 @@
   const preferenceQuery = createQuery()
   const objectConfigurations = createQuery()
   let preference: ViewletPreference[] = []
-  let loading = true
+
+  let configurationsLoading = true
+  let preferencesLoading = true
+  $: loading = configurationsLoading || preferencesLoading
 
   let configurationRaw: Viewlet[] = []
   let configurations: Record<Ref<Class<Doc>>, Viewlet['config']> = {}
 
-  $: viewlet &&
+  function fetchConfigurations (viewlet: Viewlet): void {
+    configurationsLoading = true
+    configurations = {}
+
     objectConfigurations.query(
       view.class.Viewlet,
       {
@@ -37,11 +43,13 @@
       },
       (res) => {
         configurationRaw = res
-        loading = false
+        configurationsLoading = false
       }
     )
+  }
 
-  $: viewlet &&
+  function fetchPreferences (viewlet: Viewlet): void {
+    preferencesLoading = true
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
@@ -50,9 +58,10 @@
       },
       (res) => {
         preference = res
-        loading = false
+        preferencesLoading = false
       }
     )
+  }
 
   function updateConfiguration (configurationRaw: Viewlet[], preference: ViewletPreference[]): void {
     const newConfigurations: Record<Ref<Class<Doc>>, Viewlet['config']> = {}
@@ -73,6 +82,9 @@
 
     configurations = newConfigurations
   }
+
+  $: fetchConfigurations(viewlet)
+  $: fetchPreferences(viewlet)
 
   $: updateConfiguration(configurationRaw, preference)
 
