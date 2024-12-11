@@ -502,7 +502,8 @@ jobs:
       - name: Checkout init repository
         run: |
           wget https://github.com/hcengineering/init/archive/refs/heads/unified-init-scripts.zip
-          unzip -j unified-init-scripts.zip "init-unified-init-scripts/*" -d pods/workspace/init
+          unzip unified-init-scripts.zip "init-unified-init-scripts/*" -d pods/workspace
+          mv pods/workspace/init-unified-init-scripts pods/workspace/init
           rm -rf unified-init-scripts.zip
 
       - name: Check file structure
