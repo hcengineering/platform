@@ -122,7 +122,7 @@ import { copyToDatalake, moveFiles, showLostFiles } from './storage'
 import { getModelVersion } from '@hcengineering/model-all'
 import { type DatalakeConfig, DatalakeService, createDatalakeClient } from '@hcengineering/datalake'
 import { S3Service, type S3Config } from '@hcengineering/s3'
-import { restoreWikiContentMongo } from './markup'
+import { restoreControlledDocContentMongo, restoreWikiContentMongo } from './markup'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -1263,6 +1263,8 @@ export function devTool (
           .sort((a, b) => b.lastVisit - a.lastVisit)
       })
 
+      console.log('found workspaces', workspaces.length)
+
       await withStorage(async (storageAdapter) => {
         await withDatabase(dbUrl, async (db) => {
           const mongodbUri = getMongoDBUrl()
@@ -1285,6 +1287,62 @@ export function devTool (
               const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
 
               await restoreWikiContentMongo(toolCtx, wsDb, workspaceId, storageAdapter, params)
+            }
+          } finally {
+            client.close()
+          }
+        })
+      })
+    })
+
+  program
+    .command('restore-controlled-content-mongo')
+    .description('restore controlled document contents')
+    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+    .option('-d, --dryrun', 'Dry run', false)
+    .option('-f, --force', 'Force update', false)
+    .action(async (cmd: { workspace: string, dryrun: boolean, force: boolean }) => {
+      const params = {
+        dryRun: cmd.dryrun
+      }
+
+      const { dbUrl, version } = prepareTools()
+
+      let workspaces: Workspace[] = []
+      const accountUrl = getAccountDBUrl()
+      await withDatabase(accountUrl, async (db) => {
+        workspaces = await listWorkspacesPure(db)
+        workspaces = workspaces
+          .filter((p) => p.mode !== 'archived')
+          .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
+          .sort((a, b) => b.lastVisit - a.lastVisit)
+      })
+
+      console.log('found workspaces', workspaces.length)
+
+      await withStorage(async (storageAdapter) => {
+        await withDatabase(dbUrl, async (db) => {
+          const mongodbUri = getMongoDBUrl()
+          const client = getMongoClient(mongodbUri)
+          const _client = await client.getClient()
+
+          try {
+            const count = workspaces.length
+            let index = 0
+            for (const workspace of workspaces) {
+              index++
+
+              toolCtx.info('processing workspace', { workspace: workspace.workspace, index, count })
+
+              if (!cmd.force && (workspace.version === undefined || !deepEqual(workspace.version, version))) {
+                console.log(`upgrade to ${versionToString(version)} is required`)
+                continue
+              }
+
+              const workspaceId = getWorkspaceId(workspace.workspace)
+              const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
+
+              await restoreControlledDocContentMongo(toolCtx, wsDb, workspaceId, storageAdapter, params)
             }
           } finally {
             client.close()
