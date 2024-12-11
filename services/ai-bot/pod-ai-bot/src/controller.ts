@@ -51,7 +51,7 @@ const CLOSE_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes
 export class AIControl {
   private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
   private readonly closeWorkspaceTimeouts: Map<string, NodeJS.Timeout> = new Map<string, NodeJS.Timeout>()
-  private readonly connectingWorkspaces: Set<string> = new Set<string>()
+  private readonly connectingWorkspaces = new Map<string, Promise<void>>()
 
   readonly aiClient?: OpenAI
   readonly encoding = encodingForModel(config.OpenAIModel)
@@ -69,7 +69,6 @@ export class AIControl {
           baseURL: config.OpenAIBaseUrl === '' ? undefined : config.OpenAIBaseUrl
         })
         : undefined
-
     void this.connectSupportWorkspace()
   }
 
@@ -78,11 +77,9 @@ export class AIControl {
   }
 
   async connectSupportWorkspace (): Promise<void> {
-    if (this.supportClient === undefined && !this.connectingWorkspaces.has(config.SupportWorkspace)) {
-      this.connectingWorkspaces.add(config.SupportWorkspace)
+    if (this.supportClient === undefined) {
       const record = await this.getWorkspaceRecord(config.SupportWorkspace)
       this.supportClient = (await this.createWorkspaceClient(config.SupportWorkspace, record)) as SupportWsClient
-      this.connectingWorkspaces.delete(config.SupportWorkspace)
     }
   }
 
@@ -138,27 +135,36 @@ export class AIControl {
     if (workspace === config.SupportWorkspace) {
       return
     }
-    this.connectingWorkspaces.add(workspace)
 
-    if (!this.workspaces.has(workspace)) {
-      const record = await this.getWorkspaceRecord(workspace)
-      const client = await this.createWorkspaceClient(workspace, record)
-      if (client === undefined) {
+    if (this.connectingWorkspaces.has(workspace)) {
+      return await this.connectingWorkspaces.get(workspace)
+    }
+
+    const initPromise = (async () => {
+      try {
+        if (!this.workspaces.has(workspace)) {
+          const record = await this.getWorkspaceRecord(workspace)
+          const client = await this.createWorkspaceClient(workspace, record)
+          if (client === undefined) {
+            return
+          }
+          this.workspaces.set(workspace, client)
+        }
+
+        const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
+        if (timeoutId !== undefined) {
+          clearTimeout(timeoutId)
+        }
+
+        this.updateClearInterval(workspace)
+      } finally {
         this.connectingWorkspaces.delete(workspace)
-        return
       }
+    })()
 
-      this.workspaces.set(workspace, client)
-    }
+    this.connectingWorkspaces.set(workspace, initPromise)
 
-    const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
-
-    if (timeoutId !== undefined) {
-      clearTimeout(timeoutId)
-    }
-
-    this.updateClearInterval(workspace)
-    this.connectingWorkspaces.delete(workspace)
+    await initPromise
   }
 
   allowAiReplies (workspace: string, email: string): boolean {
