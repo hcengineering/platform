@@ -474,8 +474,8 @@ jobs:
   #         name: docker-logs-qms
   #         path: ./qms-tests/sanity/logs
   docker-build:
-    # needs: [build, test, svelte-check, uitest]
     runs-on: ubuntu-latest
+    # needs: [build, test, svelte-check, uitest]
     timeout-minutes: 60
     steps:
       - name: Set up QEMU
@@ -494,13 +494,16 @@ jobs:
           fetch-depth: 0
           filter: tree:0
 
-      # Use actions/checkout to clone another repository
       - name: Checkout init repository
         uses: actions/checkout@v4
         with:
           repository: hcengineering/init
           ref: unified-init-scripts # todo: change to main once https://github.com/hcengineering/init/pull/6 is merged
           path: pods/workspace/init
+
+      - name: Check file structure
+        run: |
+          ls -la pods/workspace/init
 
       - uses: actions/setup-node@v4
         with:
