@@ -16,9 +16,5 @@ COPY bundle/bundle.js.map ./
 
 COPY ini[t]/ ./init-scripts/
 
-# Workaround to copy optional init directory
-# COPY bundle/bundle.js.map init ./init-scripts/
-# RUN mv init-scripts/bundle.js.map ./
-
 CMD [ "node", "bundle.js" ]
 
