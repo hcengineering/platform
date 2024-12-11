@@ -12,6 +12,7 @@ interface Env {
   STREAMS_ACCOUNT_ID: string;
   STREAMS_AUTH_KEY: string;
   R2_ACCOUNT_ID: string;
+  DB_URL: string;
   DATALAKE_APAC_ACCESS_KEY: string;
   DATALAKE_APAC_SECRET_KEY: string;
   DATALAKE_APAC_BUCKET_NAME: string;
