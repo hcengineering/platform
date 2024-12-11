@@ -497,6 +497,7 @@ jobs:
       - name: Where we now
         run: |
           pwd
+          ls -la
 
       - name: Checkout init repository
         uses: actions/checkout@v4
