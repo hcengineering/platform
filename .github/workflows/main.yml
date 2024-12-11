@@ -42,6 +42,7 @@ env:
     tools
   PublishTempFolder: publish_artifacts
   MODEL_VERSION_MODE: ${{ startsWith(github.ref, 'refs/tags/s') && 'tagTime' || 'file' }}
+  INIT_SCRIPTS_BRANCH: 'unified-init-scripts'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -501,10 +502,10 @@ jobs:
 
       - name: Checkout init repository
         run: |
-          wget https://github.com/hcengineering/init/archive/refs/heads/unified-init-scripts.zip
-          unzip unified-init-scripts.zip "init-unified-init-scripts/*" -d pods/workspace
-          mv pods/workspace/init-unified-init-scripts pods/workspace/init
-          rm -rf unified-init-scripts.zip
+          wget https://github.com/hcengineering/init/archive/refs/heads/${{env.INIT_SCRIPTS_BRANCH}}.zip
+          unzip ${{env.INIT_SCRIPTS_BRANCH}} "${{env.INIT_SCRIPTS_BRANCH}}/*" -d pods/workspace
+          mv pods/workspace/${{env.INIT_SCRIPTS_BRANCH}} pods/workspace/init
+          rm -rf ${{env.INIT_SCRIPTS_BRANCH}}.zip
 
       - name: Check file structure
         run: |
