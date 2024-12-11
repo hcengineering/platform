@@ -495,21 +495,12 @@ jobs:
           fetch-depth: 0
           filter: tree:0
 
-      - name: Where we now
-        run: |
-          pwd
-          ls -la
-
       - name: Checkout init repository
         run: |
           wget https://github.com/hcengineering/init/archive/refs/heads/${{env.INIT_SCRIPTS_BRANCH}}.zip
           unzip ${{env.INIT_SCRIPTS_BRANCH}}.zip -d pods/workspace
           mv pods/workspace/init-${{env.INIT_SCRIPTS_BRANCH}} pods/workspace/init
           rm -rf ${{env.INIT_SCRIPTS_BRANCH}}.zip
-
-      - name: Check file structure
-        run: |
-          ls -la pods/workspace/init
 
       # - uses: actions/setup-node@v4
       #   with:
