@@ -503,7 +503,7 @@ jobs:
       - name: Checkout init repository
         run: |
           wget https://github.com/hcengineering/init/archive/refs/heads/${{env.INIT_SCRIPTS_BRANCH}}.zip
-          unzip ${{env.INIT_SCRIPTS_BRANCH}} "${{env.INIT_SCRIPTS_BRANCH}}/*" -d pods/workspace
+          unzip ${{env.INIT_SCRIPTS_BRANCH}} -d pods/workspace
           mv pods/workspace/${{env.INIT_SCRIPTS_BRANCH}} pods/workspace/init
           rm -rf ${{env.INIT_SCRIPTS_BRANCH}}.zip
 
