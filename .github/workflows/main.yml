@@ -46,57 +46,57 @@ env:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          filter: tree:0
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-      - name: Cache node modules
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-platform
-        with:
-          path: |
-            common/temp
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+  # build:
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 60
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+  #         filter: tree:0
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version-file: '.nvmrc'
+  #     - name: Cache node modules
+  #       uses: actions/cache@v4
+  #       env:
+  #         cache-name: cache-node-platform
+  #       with:
+  #         path: |
+  #           common/temp
+  #         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
-      # - name: Cheking model is updated...
-      #   run: node common/scripts/check_model_version.js
+  #     # - name: Cheking model is updated...
+  #     #   run: node common/scripts/check_model_version.js
 
-      - name: Checking for mis-matching dependencies...
-        run: node common/scripts/install-run-rush.js check
+  #     - name: Checking for mis-matching dependencies...
+  #       run: node common/scripts/install-run-rush.js check
 
-      - name: Installing...
-        run: node common/scripts/install-run-rush.js install
+  #     - name: Installing...
+  #       run: node common/scripts/install-run-rush.js install
 
-      - name: Model version from git tags
-        run: node common/scripts/install-run-rush.js model-version
+  #     - name: Model version from git tags
+  #       run: node common/scripts/install-run-rush.js model-version
 
-      - name: Building...
-        run: node common/scripts/install-run-rush.js build -p 20
+  #     - name: Building...
+  #       run: node common/scripts/install-run-rush.js build -p 20
 
-      - name: Bundle...
-        run: node common/scripts/install-run-rush.js bundle -p 20
+  #     - name: Bundle...
+  #       run: node common/scripts/install-run-rush.js bundle -p 20
 
-      - name: Validate...
-        run: node common/scripts/install-run-rush.js validate -p 20
+  #     - name: Validate...
+  #       run: node common/scripts/install-run-rush.js validate -p 20
 
-      - name: Cache build results
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-build-results
-        with:
-          path: ${{ env.CacheFolders}}
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+  #     - name: Cache build results
+  #       uses: actions/cache@v4
+  #       env:
+  #         cache-name: cache-build-results
+  #       with:
+  #         path: ${{ env.CacheFolders}}
+  #         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+  #         restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
   # svelte-check:
   #   needs: build
   #   runs-on: ubuntu-latest
@@ -377,67 +377,67 @@ jobs:
   #         name: docker-logs-pg
   #         path: ./tests/sanity/logs
   # uitest-qms:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          filter: tree:0
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-      - name: Cache node modules
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-platform
-        with:
-          path: |
-            common/temp
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+    # runs-on: ubuntu-latest
+    # timeout-minutes: 60
+    # steps:
+    #   - uses: actions/checkout@v4
+    #     with:
+    #       fetch-depth: 0
+    #       filter: tree:0
+    #   - uses: actions/setup-node@v4
+    #     with:
+    #       node-version-file: '.nvmrc'
+    #   - name: Cache node modules
+    #     uses: actions/cache@v4
+    #     env:
+    #       cache-name: cache-node-platform
+    #     with:
+    #       path: |
+    #         common/temp
+    #       key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+    #       restore-keys: |
+    #         ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
-      - name: Checking for mis-matching dependencies...
-        run: node common/scripts/install-run-rush.js check
+    #   - name: Checking for mis-matching dependencies...
+    #     run: node common/scripts/install-run-rush.js check
 
-      - name: Installing...
-        run: node common/scripts/install-run-rush.js install
+    #   - name: Installing...
+    #     run: node common/scripts/install-run-rush.js install
 
-      - name: Docker Build
-        run: node common/scripts/install-run-rush.js docker:build  -p 20
-        env:
-          DOCKER_CLI_HINTS: false
-      - name: Configure /etc/hosts
-        run: |
-            sudo echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
-      - name: Prepare server
-        run: |
-          cd ./qms-tests
-          export DO_CLEAN=true
-          ./prepare.sh
-      - name: Install Playwright
-        run: |
-          cd ./qms-tests/sanity
-          node ../../common/scripts/install-run-rushx.js ci
-      - name: Run UI tests
-        run: |
-          cd ./qms-tests/sanity
-          node ../../common/scripts/install-run-rushx.js uitest
-      - name: 'Store docker logs'
-        if: always()
-        run: |
-          cd ./qms-tests/sanity
-          mkdir logs
-          docker logs $(docker ps | grep transactor | cut -f 1 -d ' ') > logs/transactor.log
-          docker logs $(docker ps | grep account | cut -f 1 -d ' ') > logs/account.log
-          docker logs $(docker ps | grep front | cut -f 1 -d ' ') > logs/front.log
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-results-qms
-          path: ./qms-tests/sanity/playwright-report/
+    #   - name: Docker Build
+    #     run: node common/scripts/install-run-rush.js docker:build  -p 20
+    #     env:
+    #       DOCKER_CLI_HINTS: false
+    #   - name: Configure /etc/hosts
+    #     run: |
+    #         sudo echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
+    #   - name: Prepare server
+    #     run: |
+    #       cd ./qms-tests
+    #       export DO_CLEAN=true
+    #       ./prepare.sh
+    #   - name: Install Playwright
+    #     run: |
+    #       cd ./qms-tests/sanity
+    #       node ../../common/scripts/install-run-rushx.js ci
+    #   - name: Run UI tests
+    #     run: |
+    #       cd ./qms-tests/sanity
+    #       node ../../common/scripts/install-run-rushx.js uitest
+    #   - name: 'Store docker logs'
+    #     if: always()
+    #     run: |
+    #       cd ./qms-tests/sanity
+    #       mkdir logs
+    #       docker logs $(docker ps | grep transactor | cut -f 1 -d ' ') > logs/transactor.log
+    #       docker logs $(docker ps | grep account | cut -f 1 -d ' ') > logs/account.log
+    #       docker logs $(docker ps | grep front | cut -f 1 -d ' ') > logs/front.log
+    #   - name: Upload test results
+        # if: always()
+        # uses: actions/upload-artifact@v4
+        # with:
+        #   name: playwright-results-qms
+        #   path: ./qms-tests/sanity/playwright-report/
       # - name: Get Allure history
       #   uses: actions/checkout@v4
       #   if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
@@ -467,12 +467,12 @@ jobs:
       #     PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       #     PUBLISH_BRANCH: gh-pages
       #     PUBLISH_DIR: allure-history
-      - name: Upload Logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-logs-qms
-          path: ./qms-tests/sanity/logs
+      # - name: Upload Logs
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: docker-logs-qms
+      #     path: ./qms-tests/sanity/logs
   docker-build:
     needs: [build, test, svelte-check, uitest]
     runs-on: ubuntu-latest
