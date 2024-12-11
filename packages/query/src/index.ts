@@ -151,7 +151,13 @@ export class LiveQuery implements WithTx, Client {
   }
 
   private match (q: Query, doc: Doc, skipLookup = false): boolean {
-    doc = this.asMixin(doc, q._class)
+    if (this.getHierarchy().isMixin(q._class)) {
+      if (this.getHierarchy().hasMixin(doc, q._class)) {
+        doc = this.getHierarchy().as(doc, q._class)
+      } else {
+        return false
+      }
+    }
     if (!this.getHierarchy().isDerived(doc._class, q._class)) {
       // Check if it is not a mixin and not match class
       const mixinClass = Hierarchy.mixinClass(doc)
