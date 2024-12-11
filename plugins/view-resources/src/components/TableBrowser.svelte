@@ -34,8 +34,8 @@
   export let tableId: string | undefined = undefined
   export let fade: FadeOptions = tableSP
   export let prefferedSorting: string = 'modifiedOn'
-  export let viewOptions: ViewOptions
-  export let viewlet: Viewlet
+  export let viewOptions: ViewOptions | undefined = undefined
+  export let viewlet: Viewlet | undefined = undefined
 
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
@@ -82,7 +82,7 @@
     {prefferedSorting}
     {tableId}
     {viewOptions}
-    viewOptionsConfig={viewlet.viewOptions?.other}
+    viewOptionsConfig={viewlet?.viewOptions?.other}
     selection={listProvider.current($focusStore)}
     on:row-focus={(evt) => {
       listProvider.updateFocus(evt.detail)

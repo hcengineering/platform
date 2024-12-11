@@ -69,7 +69,7 @@
   export let readonly = false
   export let showFooter = false
   export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
-  export let viewOptions: ViewOptions
+  export let viewOptions: ViewOptions | undefined
 
   export let totalQuery: DocumentQuery<Doc> | undefined = undefined
 
@@ -131,9 +131,11 @@
   async function getResultQuery (
     query: DocumentQuery<Doc>,
     viewOptions: ViewOptionModel[] | undefined,
-    viewOptionsStore: ViewOptions
+    viewOptionsStore: ViewOptions | undefined
   ): Promise<DocumentQuery<Doc>> {
-    if (viewOptions === undefined) return query
+    if (viewOptions === undefined || viewOptionsStore === undefined) {
+      return query
+    }
     let result: DocumentQuery<Doc> = hierarchy.clone(query)
     for (const viewOption of viewOptions) {
       if (viewOption.actionTarget !== 'query') continue
