@@ -9,15 +9,11 @@ import {
 } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { RPCHandler } from '@hcengineering/rpc'
-import {
-  ClientSession,
-  createSessionManager,
-  doSessionOp,
-  type WebsocketData
-} from '@hcengineering/server'
+import { ClientSession, createSessionManager, doSessionOp, type WebsocketData } from '@hcengineering/server'
 import serverClient from '@hcengineering/server-client'
 import {
-  loadBrandingMap, Pipeline,
+  loadBrandingMap,
+  Pipeline,
   type ConnectionSocket,
   type PipelineFactory,
   type SessionManager
@@ -62,8 +58,7 @@ export class Transactor extends DurableObject<Env> {
     console.log('Connecting DB to', env.HYPERDRIVE.connectionString)
 
     this.pipelineFactory = async (ctx, ws, upgrade, broadcast, branding) => {
-      return await createaPipeline(this.measureCtx, env.HYPERDRIVE.connectionString
-        , model, branding, ws, broadcast)
+      return await createaPipeline(this.measureCtx, env.HYPERDRIVE.connectionString, model, branding, ws, broadcast)
     }
 
     void this.ctx.blockConcurrencyWhile(async () => {
