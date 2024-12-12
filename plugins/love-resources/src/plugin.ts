@@ -94,6 +94,7 @@ export default mergeIds(loveId, love, {
     KnockAction: '' as IntlString,
     Select: '' as IntlString,
     ChooseShare: '' as IntlString,
-    MoreOptions: '' as IntlString
+    MoreOptions: '' as IntlString,
+    Language: '' as IntlString
   }
 })

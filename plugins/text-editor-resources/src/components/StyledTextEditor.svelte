@@ -17,10 +17,9 @@
   import { IntlString } from '@hcengineering/platform'
   import { EmptyMarkup } from '@hcengineering/text'
   import { Button, type ButtonSize, Scroller } from '@hcengineering/ui'
-  import { AnyExtension, mergeAttributes } from '@tiptap/core'
+  import { AnyExtension, mergeAttributes, type Editor } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
   import textEditor, { RefAction, TextEditorHandler, TextFormatCategory } from '@hcengineering/text-editor'
-
   import { defaultRefActions, getModelRefActions } from './editor/actions'
   import TextEditor from './TextEditor.svelte'
 
@@ -62,6 +61,9 @@
   }
   export function insertText (text: string): void {
     editor?.insertText(text)
+  }
+  export function getEditor (): Editor | undefined {
+    return editor?.getEditor()
   }
 
   $: varsStyle =

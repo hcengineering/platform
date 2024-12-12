@@ -24,9 +24,11 @@
     Ref,
     SortingOrder,
     TxOperations,
-    getObjectValue
+    getObjectValue,
+    mergeQueries
   } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
+  import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient, reduceCalls, updateAttribute } from '@hcengineering/presentation'
   import ui, {
     Button,
@@ -39,7 +41,14 @@
     mouseAttractor,
     resizeObserver
   } from '@hcengineering/ui'
-  import { AttributeModel, BuildModelKey, BuildModelOptions } from '@hcengineering/view'
+  import {
+    AttributeModel,
+    BuildModelKey,
+    BuildModelOptions,
+    ViewOptionModel,
+    ViewOptions,
+    ViewQueryOption
+  } from '@hcengineering/view'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
   import { showMenu } from '../actions'
@@ -59,6 +68,8 @@
   export let tableId: string | undefined = undefined
   export let readonly = false
   export let showFooter = false
+  export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
+  export let viewOptions: ViewOptions | undefined = undefined
 
   export let totalQuery: DocumentQuery<Doc> | undefined = undefined
 
@@ -117,6 +128,29 @@
       : { ...(options?.sort ?? {}), [sortKey]: sortOrder }
   }
 
+  async function getResultQuery (
+    query: DocumentQuery<Doc>,
+    viewOptions: ViewOptionModel[] | undefined,
+    viewOptionsStore: ViewOptions | undefined
+  ): Promise<DocumentQuery<Doc>> {
+    if (viewOptions === undefined || viewOptionsStore === undefined) {
+      return query
+    }
+    let result: DocumentQuery<Doc> = hierarchy.clone(query)
+    for (const viewOption of viewOptions) {
+      if (viewOption.actionTarget !== 'query') continue
+      const queryOption = viewOption as ViewQueryOption
+      const f = await getResource(queryOption.action)
+      const resultP = f(viewOptionsStore[queryOption.key] ?? queryOption.defaultValue, result)
+      if (resultP instanceof Promise) {
+        result = await resultP
+      } else {
+        result = resultP
+      }
+    }
+    return result
+  }
+
   const update = reduceCalls(async function (
     _class: Ref<Class<Doc>>,
     query: DocumentQuery<Doc>,
@@ -126,9 +160,11 @@
     limit: number,
     options?: FindOptions<Doc>
   ) {
+    const p = await getResultQuery(query, viewOptionsConfig, viewOptions)
+    const resultQuery = mergeQueries(p, query)
     loading += q.query(
       _class,
-      query,
+      resultQuery,
       (result) => {
         if (sortingFunction !== undefined) {
           const sf = sortingFunction

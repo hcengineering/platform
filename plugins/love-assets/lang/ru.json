@@ -78,6 +78,7 @@
     "Status": "Статус",
     "Active": "Активно",
     "Finished": "Завершено",
-    "StartWithRecording": "Начинать с записью"
+    "StartWithRecording": "Начинать с записью",
+    "Language": "Язык"
   }
 }

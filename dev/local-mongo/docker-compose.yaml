@@ -87,7 +87,6 @@ services:
       - 'MONGO_OPTIONS={"appName":"front","maxPoolSize":1}'
       - ACCOUNTS_URL=http://localhost:3000
       - UPLOAD_URL=/files      
-      - ELASTIC_URL=http://elastic:9200
       - GMAIL_URL=http://localhost:8088
       - CALENDAR_URL=http://localhost:8095
       - TELEGRAM_URL=http://localhost:8086
@@ -121,7 +120,6 @@ services:
       - SERVER_PORT=3333
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
-      - ELASTIC_URL=http://elastic:9200
       - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
       - 'MONGO_OPTIONS={"appName": "transactor", "maxPoolSize": 10}'
       - METRICS_CONSOLE=false

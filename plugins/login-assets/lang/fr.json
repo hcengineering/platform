@@ -19,6 +19,7 @@
     "DoNotHaveAnAccount": "Vous n'avez pas de compte ?",
     "PasswordRepeat": "Répétez le mot de passe",
     "HaveAccount": "Vous avez déjà un compte ?",
+    "LoadingAccount": "Chargement...",
     "SelectWorkspace": "Sélectionner un espace de travail",
     "Copy": "Copier",
     "Copied": "Copié",

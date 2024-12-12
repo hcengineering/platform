@@ -29,7 +29,7 @@
   {#if inline}
     <ObjectMention object={floor} />
   {:else}
-    <div class="flex-presenter overflow-label sm-tool-icon">
+    <div class="flex-presenter overflow-label sm-tool-icon ml-3">
       {floor.name}
     </div>
   {/if}

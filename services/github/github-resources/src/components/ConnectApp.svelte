@@ -5,7 +5,7 @@
 -->
 <script lang="ts">
   import { Account, Ref } from '@hcengineering/core'
-  import ui, { Label, Location, Spinner, location } from '@hcengineering/ui'
+  import ui, { Label, Location, Spinner, Button, location } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import github from '../plugin'
   import { sendGHServiceRequest } from './utils'
@@ -111,6 +111,17 @@
       </div>
     {:then}
       <Label label={github.string.AutoClose} params={{ time: autoClose }} />
+    {:catch}
+      <div class="flex flex-col flex-center flex-gap-4">
+        <Label label={github.string.RequestFailed} />
+        <Button
+          label={github.string.CloseTab}
+          kind="primary"
+          on:click={() => {
+            window.close()
+          }}
+        />
+      </div>
     {/await}
   </div>
 {/if}

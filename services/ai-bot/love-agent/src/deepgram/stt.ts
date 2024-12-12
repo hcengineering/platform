@@ -55,6 +55,8 @@ export class STT {
   private readonly dgConnectionBySid = new Map<string, ListenLiveClient>()
   private readonly intervalBySid = new Map<string, NodeJS.Timeout>()
 
+  private transcriptionCount = 0
+
   constructor (readonly name: string) {
     this.deepgram = createClient(config.DeepgramApiKey)
   }
@@ -70,6 +72,7 @@ export class STT {
 
   start (): void {
     if (this.isInProgress) return
+    console.log('Starting transcription', this.name)
     this.isInProgress = true
 
     for (const sid of this.trackBySid.keys()) {
@@ -79,6 +82,7 @@ export class STT {
 
   stop (): void {
     if (!this.isInProgress) return
+    console.log('Stopping transcription', this.name)
     this.isInProgress = false
     for (const sid of this.trackBySid.keys()) {
       this.stopDeepgram(sid)
@@ -146,6 +150,7 @@ export class STT {
       sample_rate: stream.sampleRate,
       language: this.language ?? 'en'
     })
+    console.log('Starting deepgram for track', this.name, sid)
 
     const interval = setInterval(() => {
       dgConnection.keepAlive()
@@ -204,6 +209,12 @@ export class STT {
       transcript,
       participant: this.participantBySid.get(sid)?.identity,
       roomName: this.name
+    }
+
+    this.transcriptionCount++
+
+    if (this.transcriptionCount === 1 || this.transcriptionCount % 50 === 0) {
+      console.log('Sending transcript', this.name, this.transcriptionCount)
     }
 
     try {

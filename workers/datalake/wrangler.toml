@@ -1,7 +1,7 @@
 #:schema node_modules/wrangler/config-schema.json
 name = "datalake-worker"
 main = "src/index.ts"
-compatibility_date = "2024-07-01"
+compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 keep_vars = true
 
@@ -95,7 +95,7 @@ r2_buckets = [
 ]
 
 hyperdrive = [
-  { binding = "HYPERDRIVE", id = "055e968f3067414eaa30467d8a9c5021" }
+  { binding = "HYPERDRIVE", id = "055e968f3067414eaa30467d8a9c5021", localConnectionString = "postgresql://root:roach@localhost:26257/datalake" }
 ]
 
 [env.dev.vars]

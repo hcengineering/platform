@@ -49,17 +49,20 @@ export class QueryJoiner {
   ): Promise<FindResult<T>> {
     // Will find a query or add + 1 to callbacks
     const q = this.findQuery(_class, query, options) ?? this.createQuery(_class, query, options)
-    if (q.result === undefined) {
-      q.result = this._findAll(ctx, _class, query, options)
-    }
-    if (q.result instanceof Promise) {
-      q.result = await q.result
-    }
-    q.callbacks--
+    try {
+      if (q.result === undefined) {
+        q.result = this._findAll(ctx, _class, query, options)
+      }
+      if (q.result instanceof Promise) {
+        q.result = await q.result
+      }
 
-    this.removeFromQueue(q)
+      return q.result as FindResult<T>
+    } finally {
+      q.callbacks--
 
-    return q.result as FindResult<T>
+      this.removeFromQueue(q)
+    }
   }
 
   private findQuery<T extends Doc>(

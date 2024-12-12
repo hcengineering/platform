@@ -6,7 +6,6 @@ Front service is suited to deliver application bundles and resource assets, it a
 
 * SERVER_PORT: Specifies the port number on which the server will listen.
 * MONGO_URL: Specifies the URL of the MongoDB database.
-* ELASTIC_URL: Specifies the URL of the Elasticsearch service.
 * ACCOUNTS_URL: Specifies the URL of the accounts service.
 * UPLOAD_URL: Specifies the URL for uploading files.
 * GMAIL_URL: Specifies the URL of the Gmail service.

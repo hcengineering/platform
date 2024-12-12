@@ -47,7 +47,7 @@
     const client = getClient()
     const pollId = await client.addCollection(survey.class.Poll, space, objectId, _class, 'polls', makePollData(source))
 
-    const poll = await client.findOne(survey.class.Survey, { _id: pollId })
+    const poll = await client.findOne(survey.class.Poll, { _id: pollId })
     if (poll === undefined) {
       console.error(`Could not find just created poll ${pollId}.`)
       return

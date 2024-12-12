@@ -8,7 +8,6 @@ export TRANSACTOR_URL=ws://localhost:3334
 export MONGO_URL=mongodb://localhost:27018
 export ACCOUNT_DB_URL=mongodb://localhost:27018
 export DB_URL=mongodb://localhost:27018
-export ELASTIC_URL=http://localhost:9201
 export SERVER_SECRET=secret
 export STORAGE_CONFIG="minio|localhost:9002?accessKey=minioadmin&secretKey=minioadmin"
 

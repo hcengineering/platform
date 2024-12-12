@@ -65,6 +65,10 @@ export function clone (obj: any, as?: (doc: any, m: any) => any, needAs?: (value
         }
       }
     }
+    if (typeOf === 'Object') {
+      const m = needAs?.(obj)
+      return m !== undefined && as !== undefined ? as(result, m) : result
+    }
     return result
   } else {
     return obj

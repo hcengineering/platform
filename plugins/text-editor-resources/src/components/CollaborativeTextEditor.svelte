@@ -140,6 +140,10 @@
   void localProvider.loaded.then(() => (localSynced = true))
   void remoteProvider.loaded.then(() => (remoteSynced = true))
 
+  void Promise.all([localProvider.loaded, remoteProvider.loaded]).then(() => {
+    dispatch('loaded')
+  })
+
   let editor: Editor
   let element: HTMLElement
   let textToolbarElement: HTMLElement
