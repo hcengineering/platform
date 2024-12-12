@@ -99,6 +99,14 @@ export interface TxAdapter extends DbAdapter {
 }
 
 /**
+ * Adpater to delete a selected workspace and all its data.
+ * @public
+ */
+export interface WorkspaceDestroyAdapter {
+  deleteWorkspace: (ctx: MeasureContext, workspace: WorkspaceId) => Promise<void>
+}
+
+/**
  * @public
  */
 export type DbAdapterFactory = (

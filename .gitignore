@@ -104,3 +104,4 @@ tests/profiles
 **/bundle/model.json
 .wrangler
 dump
+**/logs/**

@@ -14,7 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { generateId, toWorkspaceString, type MeasureContext, type Tx } from '@hcengineering/core'
+import { generateId, systemAccountEmail, toWorkspaceString, type MeasureContext, type Tx } from '@hcengineering/core'
 import platform, { Severity, Status, UNAUTHORIZED, unknownStatus } from '@hcengineering/platform'
 import { RPCHandler, type Response } from '@hcengineering/rpc'
 import {
@@ -127,7 +127,7 @@ export function startHttpServer (
     try {
       const token = req.query.token as string
       const payload = decodeToken(token)
-      if (payload.extra?.admin !== 'true') {
+      if (payload.extra?.admin !== 'true' && payload.email !== systemAccountEmail) {
         console.warn('Non admin attempt to maintenance action', { payload })
         res.writeHead(404, {})
         res.end()
