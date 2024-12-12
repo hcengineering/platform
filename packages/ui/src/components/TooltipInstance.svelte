@@ -264,6 +264,11 @@
   onDestroy(() => {
     hideTooltip()
   })
+
+  const isValidUrl = (url: string): boolean => {
+    const urlPattern = /(?:https?):\/\/(\w+:?\w*)?(\S+)(:\d+)?(\/|\/([\w#!:.?+=&%!\-\\/]))?/
+    return urlPattern.test(url)
+  }
 </script>
 
 {#if $tooltip.kind === 'popup'}
@@ -370,7 +375,9 @@
     style:transform={options.transform}
     style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
   >
-    <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
+    <span class:label-wrap={isValidUrl($tooltip.label)}>
+      <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
+    </span>
     {#if $tooltip.keys !== undefined}
       <div class="keys">
         {#each $tooltip.keys as key, i}
@@ -564,6 +571,11 @@
       background-color: var(--theme-popup-divider);
       clip-path: url('#nub-border');
       z-index: 2;
+    }
+
+    .label-wrap {
+      width: 100%;
+      word-wrap: break-word;
     }
   }
   .no-arrow {
