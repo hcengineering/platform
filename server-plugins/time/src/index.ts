@@ -49,7 +49,9 @@ export default plugin(serverTimeId, {
   },
   function: {
     IssueToDoFactory: '' as Resource<(tx: Tx, control: TriggerControl) => Promise<Tx[]>>,
-    IssueToDoDone: '' as Resource<(control: TriggerControl, workslots: WorkSlot[], todo: ToDo, isDerived: boolean) => Promise<Tx[]>>
+    IssueToDoDone: '' as Resource<
+    (control: TriggerControl, workslots: WorkSlot[], todo: ToDo, isDerived: boolean) => Promise<Tx[]>
+    >
   },
   trigger: {
     OnTask: '' as Resource<TriggerFunc>,

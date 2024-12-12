@@ -459,7 +459,12 @@ export async function IssueToDoFactory (actualTx: TxCUD<Issue>, control: Trigger
 /**
  * @public
  */
-export async function IssueToDoDone (control: TriggerControl, workslots: WorkSlot[], todo: ToDo, isDerived: boolean): Promise<Tx[]> {
+export async function IssueToDoDone (
+  control: TriggerControl,
+  workslots: WorkSlot[],
+  todo: ToDo,
+  isDerived: boolean
+): Promise<Tx[]> {
   const res: Tx[] = []
   let total = 0
   for (const workslot of workslots) {
