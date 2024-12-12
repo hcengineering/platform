@@ -24,10 +24,10 @@ import {
   type ImportProject,
   type ImportProjectType,
   type ImportTeamspace,
-  type ImportWorkspace
+  type ImportWorkspace,
+  type ImportControlledDoc
 } from './importer'
 import documents, { DocumentState } from '@hcengineering/controlled-documents'
-import path from 'path'
 
 export interface ValidationError {
   path: string
@@ -44,18 +44,20 @@ const PROJECT_IDENTIFIER_REGEX = /^[a-zA-Z_][a-zA-Z0-9_]*$/
 
 export class ImportWorkspaceBuilder {
   private readonly projects = new Map<string, ImportProject>()
-  private readonly teamspaces = new Map<string, ImportTeamspace>()
-  private readonly projectTypes = new Map<string, ImportProjectType>()
   private readonly issuesByProject = new Map<string, Map<string, ImportIssue>>()
   private readonly issueParents = new Map<string, string>()
+
+  private readonly teamspaces = new Map<string, ImportTeamspace>()
   private readonly documentsByTeamspace = new Map<string, Map<string, ImportDocument>>()
   private readonly documentParents = new Map<string, string>()
-  private readonly errors = new Map<string, ValidationError>()
 
+  private readonly qmsSpaces = new Map<string, ImportControlledDocumentSpace>()
+  private readonly qmsDocsBySpace = new Map<string, Map<string, ImportControlledDoc>>()
+  private readonly qmsDocsParents = new Map<string, string>()
+
+  private readonly projectTypes = new Map<string, ImportProjectType>()
   private readonly issueStatusCache = new Map<string, Ref<IssueStatus>>()
-  private readonly documentSpaces = new Map<string, ImportControlledDocumentSpace>()
-  private readonly controlledDocsBySpace = new Map<string, Map<string, ImportControlledDocument>>()
-  private readonly templatesBySpace = new Map<string, Map<string, ImportControlledDocumentTemplate>>()
+  private readonly errors = new Map<string, ValidationError>()
 
   constructor (
     private readonly client: TxOperations,
@@ -139,7 +141,7 @@ export class ImportWorkspaceBuilder {
       path,
       space,
       (s) => this.validateControlledDocumentSpace(s),
-      this.documentSpaces,
+      this.qmsSpaces,
       path
     )
     return this
@@ -151,11 +153,11 @@ export class ImportWorkspaceBuilder {
     doc: ImportControlledDocument,
     parentDocPath?: string
   ): this {
-    if (!this.controlledDocsBySpace.has(spacePath)) {
-      this.controlledDocsBySpace.set(spacePath, new Map())
+    if (!this.qmsDocsBySpace.has(spacePath)) {
+      this.qmsDocsBySpace.set(spacePath, new Map())
     }
 
-    const docs = this.controlledDocsBySpace.get(spacePath)
+    const docs = this.qmsDocsBySpace.get(spacePath)
     if (docs === undefined) {
       throw new Error(`Document space ${spacePath} not found`)
     }
@@ -164,13 +166,13 @@ export class ImportWorkspaceBuilder {
       'controlledDocument',
       docPath,
       doc,
-      (d) => this.validateControlledDocument(d),
+      (d) => this.validateControlledDocument(d as ImportControlledDocument),
       docs,
       docPath
     )
 
     if (parentDocPath !== undefined) {
-      this.documentParents.set(docPath, parentDocPath)
+      this.qmsDocsParents.set(docPath, parentDocPath)
     }
 
     return this
@@ -182,11 +184,11 @@ export class ImportWorkspaceBuilder {
     template: ImportControlledDocumentTemplate,
     parentTemplatePath?: string
   ): this {
-    if (!this.templatesBySpace.has(spacePath)) {
-      this.templatesBySpace.set(spacePath, new Map())
+    if (!this.qmsDocsBySpace.has(spacePath)) {
+      this.qmsDocsBySpace.set(spacePath, new Map())
     }
 
-    const templates = this.templatesBySpace.get(spacePath)
+    const templates = this.qmsDocsBySpace.get(spacePath)
     if (templates === undefined) {
       throw new Error(`Document space ${spacePath} not found`)
     }
@@ -195,13 +197,13 @@ export class ImportWorkspaceBuilder {
       'documentTemplate',
       templatePath,
       template,
-      (t) => this.validateControlledDocumentTemplate(t),
+      (t) => this.validateControlledDocumentTemplate(t as ImportControlledDocumentTemplate),
       templates,
       templatePath
     )
 
     if (parentTemplatePath !== undefined) {
-      this.documentParents.set(templatePath, parentTemplatePath)
+      this.qmsDocsParents.set(templatePath, parentTemplatePath)
     }
 
     return this
@@ -211,7 +213,7 @@ export class ImportWorkspaceBuilder {
     // Perform cross-entity validation
     this.validateProjectReferences()
     this.validateSpaceDocuments()
-    this.validateDocumentSpaces()
+    this.validateControlledDocumentSpaces()
 
     return {
       isValid: this.errors.size === 0,
@@ -256,12 +258,27 @@ export class ImportWorkspaceBuilder {
       }
     }
 
+    for (const [spacePath, qmsDocs] of this.qmsDocsBySpace) {
+      const space = this.qmsSpaces.get(spacePath)
+      if (space !== undefined) {
+        const rootDocPaths = Array.from(qmsDocs.keys()).filter(
+          (docPath) => !this.qmsDocsParents.has(docPath)
+        )
+
+        for (const rootPath of rootDocPaths) {
+          this.buildControlledDocumentHierarchy(rootPath, qmsDocs)
+        }
+
+        space.docs = rootDocPaths.map((path) => qmsDocs.get(path)).filter(Boolean) as ImportControlledDocument[]
+      }
+    }
+
     return {
       projectTypes: Array.from(this.projectTypes.values()),
       spaces: [
         ...Array.from(this.projects.values()),
         ...Array.from(this.teamspaces.values()),
-        ...Array.from(this.documentSpaces.values())
+        ...Array.from(this.qmsSpaces.values())
       ],
       attachments: []
     }
@@ -559,6 +576,20 @@ export class ImportWorkspaceBuilder {
     issue.subdocs = childIssues
   }
 
+  private buildControlledDocumentHierarchy (docPath: string, allDocs: Map<string, ImportControlledDoc>): void {
+    const doc = allDocs.get(docPath)
+    if (doc === undefined) return
+
+    const childDocs = Array.from(allDocs.entries())
+      .filter(([childPath]) => this.qmsDocsParents.get(childPath) === docPath)
+      .map(([childPath, childDoc]) => {
+        this.buildControlledDocumentHierarchy(childPath, allDocs)
+        return childDoc
+      })
+
+    doc.subdocs = childDocs
+  }
+
   private validateEmoji (emoji: string): string[] {
     const errors: string[] = []
     if (typeof emoji === 'string' && emoji.codePointAt(0) == null) {
@@ -621,7 +652,7 @@ export class ImportWorkspaceBuilder {
   private validateControlledDocumentSpace (space: ImportControlledDocumentSpace): string[] {
     const errors: string[] = []
 
-    if (space.class !== documents.class.DocumentSpace) {
+    if (space.class !== documents.class.OrgSpace) {
       errors.push('Invalid space class: ' + space.class)
     }
 
@@ -705,12 +736,6 @@ export class ImportWorkspaceBuilder {
       errors.push('invalid state: ' + doc.state)
     }
 
-    // Validate filename format
-    const filename = path.basename(doc.title)
-    if (!/^\d+/.test(filename)) {
-      errors.push('Filename must start with sequence number')
-    }
-
     return errors
   }
 
@@ -766,7 +791,7 @@ export class ImportWorkspaceBuilder {
     }
 
     // Validate class
-    if (template.class !== documents.class.Document) {
+    if (template.class !== documents.mixin.DocumentTemplate) {
       errors.push('invalid class: ' + template.class)
     }
 
@@ -778,13 +803,14 @@ export class ImportWorkspaceBuilder {
     return errors
   }
 
-  private validateDocumentSpaces (): void {
+  private validateControlledDocumentSpaces (): void {
     // Validate document spaces
-    for (const [spacePath] of this.documentSpaces) {
+    for (const [spacePath] of this.qmsSpaces) {
       // Validate controlled documents
-      const docs = this.controlledDocsBySpace.get(spacePath)
+      const docs = this.qmsDocsBySpace.get(spacePath)
       if (docs !== undefined) {
-        for (const [docPath, doc] of docs) {
+        // for (const [docPath, doc] of docs) {
+        for (const docPath of docs.keys()) {
           // Check parent document exists
           const parentPath = this.documentParents.get(docPath)
           if (parentPath !== undefined && !docs.has(parentPath)) {
@@ -792,24 +818,13 @@ export class ImportWorkspaceBuilder {
           }
 
           // Check template exists
-          const templates = this.templatesBySpace.get(spacePath)
-          if (templates !== undefined && !templates.has(doc.template)) {
-            this.addError(docPath, `Template not found: ${doc.template}`)
-          }
+          // const templates = this.templatesBySpace.get(spacePath)
+          // if (templates !== undefined && !templates.has(doc.template)) {
+          //   this.addError(docPath, `Template not found: ${doc.template}`)
+          // }
         }
       }
 
-      // Validate templates
-      const templates = this.templatesBySpace.get(spacePath)
-      if (templates !== undefined) {
-        for (const [templatePath, _] of templates) {
-          // Check parent template exists
-          const parentPath = this.documentParents.get(templatePath)
-          if (parentPath !== undefined && !templates.has(parentPath)) {
-            this.addError(templatePath, `Parent template not found: ${parentPath}`)
-          }
-        }
-      }
       // // Check owners exist
       // for (const owner of space.owners) {
       //   if (this.accountExists(owner) === false) {

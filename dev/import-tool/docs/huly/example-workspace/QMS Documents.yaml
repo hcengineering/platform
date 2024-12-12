@@ -1,10 +1,12 @@
-class: documents:class:DocumentSpace
+class: documents:class:OrgSpace
 title: QMS Documents
 emoji: 📋
 private: false
 autoJoin: true
 owners:
   - john.doe@example.com
+  - user3
 members:
   - joe.shmoe@example.com
+  - user3
 description: Quality Management System Documentation

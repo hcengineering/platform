@@ -14,7 +14,7 @@
 //
 import attachment, { type Attachment } from '@hcengineering/attachment'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
-import { Employee, type Person } from '@hcengineering/contact'
+import { Employee, PersonAccount, type Person } from '@hcengineering/contact'
 import core, {
   type Account,
   type AttachedData,
@@ -159,7 +159,8 @@ export interface ImportAttachment {
   spaceId?: Ref<Space>
 }
 
-export interface ImportControlledDocumentSpace extends ImportSpace<ImportControlledDocument | ImportControlledDocumentTemplate> {
+export type ImportControlledDoc = ImportControlledDocument | ImportControlledDocumentTemplate
+export interface ImportControlledDocumentSpace extends ImportSpace<ImportControlledDoc> {
   class: Ref<Class<DocumentSpace>>
 }
 
@@ -187,7 +188,7 @@ export interface ImportControlledDocumentTemplate extends ImportDoc {
   plannedEffectiveDate?: Timestamp
   effectiveDate?: Timestamp
   snapshots?: CollectionSize<DocumentSnapshot>
-  subdocs: Array<ImportControlledDocument | ImportControlledDocumentTemplate>
+  subdocs: Array<ImportControlledDoc>
 }
 
 export interface ImportControlledDocument extends ImportDoc {
@@ -214,7 +215,7 @@ export interface ImportControlledDocument extends ImportDoc {
   controlledState?: ControlledDocumentState
   plannedEffectiveDate?: Timestamp
   effectiveDate?: Timestamp
-  subdocs: Array<ImportControlledDocument | ImportControlledDocumentTemplate>
+  subdocs: Array<ImportControlledDoc>
 }
 
 export class WorkspaceImporter {
@@ -252,8 +253,8 @@ export class WorkspaceImporter {
         await this.importTeamspace(space as ImportTeamspace)
       } else if (space.class === tracker.class.Project) {
         await this.importProject(space as ImportProject)
-      } else if (space.class === documents.class.DocumentSpace) {
-        await this.importDocumentSpace(space as ImportControlledDocumentSpace)
+      } else if (space.class === documents.class.OrgSpace) {
+        await this.importQmsOrgSpace(space as ImportControlledDocumentSpace)
       }
     }
   }
@@ -752,9 +753,9 @@ export class WorkspaceImporter {
     return identifier
   }
 
-  async importDocumentSpace (space: ImportControlledDocumentSpace): Promise<Ref<DocumentSpace>> {
+  async importQmsOrgSpace (space: ImportControlledDocumentSpace): Promise<Ref<DocumentSpace>> {
     this.logger.log('Creating document space: ' + space.title)
-    const spaceId = await this.createDocumentSpace(space)
+    const spaceId = await this.createQmsOrgSpace(space)
     this.logger.log('Document space created: ' + spaceId)
 
     for (const doc of space.docs) {
@@ -771,7 +772,7 @@ export class WorkspaceImporter {
     return doc.class === documents.mixin.DocumentTemplate
   }
 
-  async createDocumentSpace (space: ImportControlledDocumentSpace): Promise<Ref<DocumentSpace>> {
+  async createQmsOrgSpace (space: ImportControlledDocumentSpace): Promise<Ref<DocumentSpace>> {
     const spaceId = generateId<DocumentSpace>()
     const codePoint = space.emoji?.codePointAt(0)
     const data = {
@@ -787,7 +788,7 @@ export class WorkspaceImporter {
       autoJoin: space.autoJoin,
       archived: space.archived ?? false
     }
-    await this.client.createDoc(documents.class.DocumentSpace, core.space.Space, data, spaceId)
+    await this.client.createDoc(documents.class.OrgSpace, core.space.Space, data, spaceId)
     return spaceId
   }
 
@@ -849,21 +850,21 @@ export class WorkspaceImporter {
     return templateId
   }
 
+  // 675056f4a4edcf2cbb75904f-content-1733318388297
+  // TPL-DOC-1-0.1-67482c0a10d8fd0257bfb95a:HEAD:0
+
   async createControlledDocumentWithSubdocs (
     doc: ImportControlledDocument,
     spaceId: Ref<DocumentSpace>
   ): Promise<Ref<ControlledDocument>> {
     this.logger.log('Creating controlled document: ' + doc.title)
     const docId = doc.id ?? generateId<ControlledDocument>()
+
     const content = await doc.descrProvider()
-
-    // Create initial content reference
     const collabId = makeCollabId(documents.class.ControlledDocument, docId, 'content')
-    const contentId = content !== undefined
-      ? await this.createCollaborativeContent(docId, collabId, content, spaceId)
-      : null
+    const contentId = await this.createCollaborativeContent(docId, collabId, content, spaceId)
 
-    const { success } = await createControlledDocFromTemplate(
+    const result = await createControlledDocFromTemplate(
       this.client,
       doc.template,
       docId,
@@ -900,7 +901,7 @@ export class WorkspaceImporter {
       documents.class.ControlledDocument
     )
 
-    if (!success) {
+    if (!result.success) {
       throw new Error('Failed to create controlled document')
     }
 

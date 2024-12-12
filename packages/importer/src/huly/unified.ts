@@ -14,7 +14,7 @@
 //
 
 import { type Attachment } from '@hcengineering/attachment'
-import contact, { type Person, type PersonAccount } from '@hcengineering/contact'
+import contact, { Employee, type Person, type PersonAccount } from '@hcengineering/contact'
 import { type Class, type Doc, generateId, type Ref, type Space, type TxOperations } from '@hcengineering/core'
 import document, { type Document } from '@hcengineering/document'
 import { MarkupMarkType, type MarkupNode, MarkupNodeType, traverseNode, traverseNodeMarks } from '@hcengineering/text'
@@ -60,7 +60,7 @@ interface UnifiedIssueHeader {
 }
 
 interface UnifiedSpaceSettings {
-  class: 'tracker:class:Project' | 'document:class:Teamspace' | 'documents:class:DocumentSpace'
+  class: 'tracker:class:Project' | 'document:class:Teamspace' | 'documents:class:OrgSpace'
   title: string
   private?: boolean
   autoJoin?: boolean
@@ -114,8 +114,8 @@ interface UnifiedControlledDocumentHeader {
   state: 'Draft' | 'Released'
   commentSequence: number
   category: string
-  author?: string
-  owner?: string
+  author: string
+  owner: string
   abstract?: string
   requests: number
   reviewers: string[]
@@ -136,8 +136,8 @@ interface UnifiedDocumentTemplateHeader {
   state: 'Draft' | 'Released'
   commentSequence: number
   category: string
-  author?: string
-  owner?: string
+  author: string
+  owner: string
   abstract?: string
   requests: number
   reviewers: string[]
@@ -148,7 +148,7 @@ interface UnifiedDocumentTemplateHeader {
 }
 
 interface UnifiedDocumentSpaceSettings extends UnifiedSpaceSettings {
-  class: 'documents:class:DocumentSpace'
+  class: 'documents:class:OrgSpace'
 }
 
 class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
@@ -321,6 +321,7 @@ export class UnifiedFormatImporter {
 
   private personsByName = new Map<string, Ref<Person>>()
   private accountsByEmail = new Map<string, Ref<PersonAccount>>()
+  private employeesByName = new Map<string, Ref<Employee>>()
 
   constructor (
     private readonly client: TxOperations,
@@ -328,10 +329,14 @@ export class UnifiedFormatImporter {
     private readonly logger: Logger
   ) {}
 
-  async importFolder (folderPath: string): Promise<void> {
+  private async initCaches (): Promise<void> {
     await this.cachePersonsByNames()
     await this.cacheAccountsByEmails()
+    await this.cacheEmployeesByName()
+  }
 
+  async importFolder (folderPath: string): Promise<void> {
+    await this.initCaches()
     const workspaceData = await this.processImportFolder(folderPath)
 
     this.logger.log('========================================')
@@ -429,7 +434,7 @@ export class UnifiedFormatImporter {
             break
           }
 
-          case documents.class.DocumentSpace: {
+          case documents.class.OrgSpace: {
             const qmsSpace = await this.processControlledDocumentSpace(spaceConfig as UnifiedDocumentSpaceSettings)
             builder.addControlledDocumentSpace(spacePath, qmsSpace)
             if (fs.existsSync(spacePath) && fs.statSync(spacePath).isDirectory()) {
@@ -532,6 +537,14 @@ export class UnifiedFormatImporter {
     return account
   }
 
+  private findEmployeeByName (name: string): Ref<Employee> {
+    const employee = this.employeesByName.get(name)
+    if (employee === undefined) {
+      throw new Error(`Employee not found: ${name}`)
+    }
+    return employee
+  }
+
   private async processDocumentsRecursively (
     builder: ImportWorkspaceBuilder,
     teamspacePath: string,
@@ -609,7 +622,7 @@ export class UnifiedFormatImporter {
         this.metadataById.set(docMeta.id, docMeta)
         this.metadataByFilePath.set(docPath, docMeta)
 
-        const doc = await this.processControlledDocument(docHeader as UnifiedControlledDocumentHeader, await this.readMarkdownContent(docPath))
+        const doc = await this.processControlledDocument(docHeader as UnifiedControlledDocumentHeader, docPath)
         builder.addControlledDocument(spacePath, docPath, doc, parentDocPath)
 
         // Process subdocuments if they exist
@@ -628,7 +641,7 @@ export class UnifiedFormatImporter {
         this.metadataById.set(templateMeta.id, templateMeta)
         this.metadataByFilePath.set(docPath, templateMeta)
 
-        const template = await this.processDocumentTemplate(docHeader as UnifiedDocumentTemplateHeader, await this.readMarkdownContent(docPath))
+        const template = await this.processDocumentTemplate(docHeader as UnifiedDocumentTemplateHeader, docPath)
         builder.addControlledDocumentTemplate(spacePath, docPath, template, parentDocPath)
 
         // Process subtemplates if they exist
@@ -706,13 +719,13 @@ export class UnifiedFormatImporter {
 
   private async processControlledDocumentSpace (spaceHeader: UnifiedDocumentSpaceSettings): Promise<ImportControlledDocumentSpace> {
     return {
-      class: documents.class.DocumentSpace,
+      class: documents.class.OrgSpace,
       title: spaceHeader.title,
       private: spaceHeader.private ?? false,
       autoJoin: spaceHeader.autoJoin ?? true,
       archived: spaceHeader.archived ?? false,
       description: spaceHeader.description,
-      emoji: spaceHeader.emoji,
+      // emoji: spaceHeader.emoji, // todo: confirm and remove emoji
       owners: spaceHeader.owners?.map(email => this.findAccountByEmail(email)) ?? [],
       members: spaceHeader.members?.map(email => this.findAccountByEmail(email)) ?? [],
       docs: []
@@ -721,12 +734,25 @@ export class UnifiedFormatImporter {
 
   private async processControlledDocument (
     header: UnifiedControlledDocumentHeader,
-    content: string
+    docPath: string
   ): Promise<ImportControlledDocument> {
+    // Validate filename format
+    const filename = path.basename(docPath)
+    if (!/^\d+/.test(filename)) {
+      throw new Error(`Filename must start with sequence number: ${filename}`)
+    }
+
+    const author = this.findEmployeeByName(header.author)
+    const owner = this.findEmployeeByName(header.owner)
+    if (author === undefined || owner === undefined) {
+      throw new Error(`Author or owner not found: ${header.author} or ${header.owner}`)
+    }
+
     return {
       class: documents.class.ControlledDocument,
       title: header.title,
-      template: header.template as Ref<DocumentTemplate>,
+      // template: header.template as Ref<DocumentTemplate>,
+      template: documents.template.ProductChangeControl,
       prefix: header.prefix,
       code: header.code,
       seqNumber: header.seqNumber,
@@ -735,26 +761,32 @@ export class UnifiedFormatImporter {
       state: header.state === 'Draft' ? DocumentState.Draft : DocumentState.Effective, // todo: RELEASED vs Effective?
       commentSequence: header.commentSequence,
       category: header.category as Ref<DocumentCategory>,
-      // author: header.author ? this.findAccountByEmail(header.author) : undefined,
-      // owner: header.owner ? this.findAccountByEmail(header.owner) : undefined,
+      author,
+      owner,
       abstract: header.abstract,
       requests: header.requests,
-      reviewers: [], // header.reviewers.map(email => this.findAccountByEmail(email)),
-      approvers: [], // header.approvers.map(email => this.findAccountByEmail(email)),
-      coAuthors: [], // header.coAuthors.map(email => this.findAccountByEmail(email)),
+      reviewers: header.reviewers.map(email => this.findEmployeeByName(email)),
+      approvers: header.approvers.map(email => this.findEmployeeByName(email)),
+      coAuthors: header.coAuthors.map(email => this.findEmployeeByName(email)),
       reviewInterval: header.reviewInterval,
       changeControl: header.changeControl as Ref<ChangeControl>,
-      descrProvider: async () => content,
+      descrProvider: async () => await this.readMarkdownContent(docPath),
       subdocs: []
     }
   }
 
   private async processDocumentTemplate (
     header: UnifiedDocumentTemplateHeader,
-    content: string
+    docPath: string
   ): Promise<ImportControlledDocumentTemplate> {
+    const author = this.findEmployeeByName(header.author)
+    const owner = this.findEmployeeByName(header.owner)
+    if (author === undefined || owner === undefined) {
+      throw new Error(`Author or owner not found: ${header.author} or ${header.owner}`)
+    }
+
     return {
-      class: documents.class.Document,
+      class: documents.mixin.DocumentTemplate,
       title: header.title,
       docPrefix: header.docPrefix,
       prefix: header.docPrefix,
@@ -765,16 +797,16 @@ export class UnifiedFormatImporter {
       state: header.state === 'Draft' ? DocumentState.Draft : DocumentState.Effective, // todo: RELEASED vs Effective? or Archived?
       commentSequence: header.commentSequence,
       category: header.category as Ref<DocumentCategory>,
-      // author: header.author ? this.findAccountByEmail(header.author) : undefined,
-      // owner: header.owner ? this.findAccountByEmail(header.owner) : undefined,
+      author,
+      owner,
       abstract: header.abstract,
       requests: header.requests,
-      reviewers: [], // header.reviewers.map(email => this.findAccountByEmail(email)),
-      approvers: [], // header.approvers.map(email => this.findAccountByEmail(email)),
-      coAuthors: [], // header.coAuthors.map(email => this.findAccountByEmail(email)),
+      reviewers: header.reviewers.map(email => this.findEmployeeByName(email)),
+      approvers: header.approvers.map(email => this.findEmployeeByName(email)),
+      coAuthors: header.coAuthors.map(email => this.findEmployeeByName(email)),
       reviewInterval: header.reviewInterval,
       changeControl: header.changeControl as Ref<ChangeControl>,
-      descrProvider: async () => content,
+      descrProvider: async () => await this.readMarkdownContent(docPath),
       subdocs: []
     }
   }
@@ -815,6 +847,20 @@ export class UnifiedFormatImporter {
       map.set(account.email, account._id)
       return map
     }, new Map())
+  }
+
+  private async cacheEmployeesByName (): Promise<void> {
+    this.employeesByName = (await this.client.findAll(contact.mixin.Employee, {}))
+      .map((employee) => {
+        return {
+          _id: employee._id,
+          name: employee.name.split(',').reverse().join(' ')
+        }
+      })
+      .reduce((refByName, employee) => {
+        refByName.set(employee.name, employee._id)
+        return refByName
+      }, new Map())
   }
 
   private async processAttachments (folderPath: string): Promise<void> {

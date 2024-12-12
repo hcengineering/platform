@@ -9,13 +9,16 @@ minor: 0
 state: Draft
 commentSequence: 0
 category: DOC
-author: john.doe@example.com
-owner: john.doe@example.com
+author: User 3
+owner: User 3
 abstract: Template for Standard Operating Procedures
 requests: 0
-reviewers: []
-approvers: []
-coAuthors: []
+reviewers:
+  - User 3
+approvers:
+  - User 3
+coAuthors:
+  - User 3
 reviewInterval: 6
 changeControl: cc-123
 ---
