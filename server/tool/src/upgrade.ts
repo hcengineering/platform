@@ -70,11 +70,16 @@ export class MigrateClientImpl implements MigrationClient {
     }
   }
 
-  async move<T extends Doc>(sourceDomain: Domain, query: DocumentQuery<T>, targetDomain: Domain): Promise<void> {
+  async move<T extends Doc>(
+    sourceDomain: Domain,
+    query: DocumentQuery<T>,
+    targetDomain: Domain,
+    size = 500
+  ): Promise<void> {
     const ctx = new MeasureMetricsContext('move', {})
     this.logger.log('move', { sourceDomain, query })
     while (true) {
-      const source = await this.lowLevel.rawFindAll(sourceDomain, query, { limit: 500 })
+      const source = await this.lowLevel.rawFindAll(sourceDomain, query, { limit: size })
       if (source.length === 0) break
       await this.lowLevel.upload(ctx, targetDomain, source)
       await this.lowLevel.clean(

@@ -13,11 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Calendar } from '@hcengineering/calendar'
   import { getCurrentAccount } from '@hcengineering/core'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { Integration } from '@hcengineering/setting'
-  import { Grid, Label, Toggle } from '@hcengineering/ui'
+  import { Grid, Label, Toggle, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
 
@@ -60,17 +61,15 @@
 >
   <div style="width: 25rem;">
     <Grid rowGap={1}>
-      <div>
+      <span>
         <Label label={calendar.string.Calendar} />
-      </div>
-      <div>
+      </span>
+      <span>
         <Label label={calendar.string.Sync} />
-      </div>
+      </span>
       {#each calendars as calendar}
-        <div>{calendar.name}</div>
-        <div>
-          <Toggle on={!calendar.hidden} on:change={(res) => update(calendar, res.detail)} />
-        </div>
+        <div use:tooltip={{ label: getEmbeddedLabel(calendar.name) }} class="lines-limit-2">{calendar.name}</div>
+        <Toggle on={!calendar.hidden} on:change={(res) => update(calendar, res.detail)} />
       {/each}
     </Grid>
   </div>

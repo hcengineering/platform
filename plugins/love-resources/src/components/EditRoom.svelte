@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@hcengineering/presentation'
   import { EditBox, ModernButton } from '@hcengineering/ui'
   import { Room, isOffice, type ParticipantInfo } from '@hcengineering/love'
   import { createEventDispatcher, onMount } from 'svelte'
@@ -21,25 +20,15 @@
   import { IntlString } from '@hcengineering/platform'
 
   import love from '../plugin'
-  import { getRoomName, tryConnect, isConnected, leaveRoom } from '../utils'
+  import { getRoomName, tryConnect, isConnected } from '../utils'
   import { infos, invites, myInfo, myRequests, selectedRoomPlace, myOffice, currentRoom } from '../stores'
 
   export let object: Room
-  export let readonly: boolean = false
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
 
-  let newName = getRoomName(object, $personByIdStore)
+  $: roomName = getRoomName(object, $personByIdStore)
   let connecting = false
-
-  async function changeName (): Promise<void> {
-    if (isOffice(object)) {
-      return
-    }
-
-    await client.diffUpdate(object, { name: newName })
-  }
 
   onMount(() => {
     dispatch('open', { ignoreKeys: ['name'] })
@@ -107,13 +96,7 @@
 <div class="flex-row-stretch">
   <div class="row flex-grow">
     <div class="name">
-      <EditBox
-        disabled={readonly || isOffice(object)}
-        placeholder={love.string.Room}
-        on:change={changeName}
-        bind:value={newName}
-        focusIndex={1}
-      />
+      <EditBox disabled={true} placeholder={love.string.Room} bind:value={roomName} focusIndex={1} />
     </div>
     {#if showConnectionButton(object, connecting, $isConnected, $infos, $myOffice, $currentRoom)}
       <ModernButton label={connectLabel} size="large" kind={'primary'} on:click={connect} loading={connecting} />

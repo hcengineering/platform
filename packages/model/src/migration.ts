@@ -99,7 +99,12 @@ export interface MigrationClient {
   ) => Promise<void>
 
   // Move documents per domain
-  move: <T extends Doc>(sourceDomain: Domain, query: DocumentQuery<T>, targetDomain: Domain) => Promise<void>
+  move: <T extends Doc>(
+    sourceDomain: Domain,
+    query: DocumentQuery<T>,
+    targetDomain: Domain,
+    size?: number
+  ) => Promise<void>
 
   create: <T extends Doc>(domain: Domain, doc: T | T[]) => Promise<void>
   delete: <T extends Doc>(domain: Domain, _id: Ref<T>) => Promise<void>

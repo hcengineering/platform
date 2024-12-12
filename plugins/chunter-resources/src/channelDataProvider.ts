@@ -216,7 +216,8 @@ export class ChannelDataProvider implements IChannelDataProvider {
   }
 
   async updateNewTimestamp (context?: DocNotifyContext): Promise<void> {
-    this.context = context ?? this.context
+    if (context === undefined) return
+    this.context = context
     const firstNewMsgIndex = await this.getFirstNewMsgIndex()
     const metadata = get(this.metadataStore)
     this.newTimestampStore.set(firstNewMsgIndex !== undefined ? metadata[firstNewMsgIndex]?.createdOn : undefined)

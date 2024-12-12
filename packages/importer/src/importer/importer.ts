@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import attachment, { type Attachment } from '@hcengineering/attachment'
+import attachment, { Drawing, type Attachment } from '@hcengineering/attachment'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import { type Person } from '@hcengineering/contact'
 import core, {
@@ -51,8 +51,10 @@ import tracker, {
   type Project,
   TimeReportDayType
 } from '@hcengineering/tracker'
+import view from '@hcengineering/view'
 import { type MarkdownPreprocessor, NoopMarkdownPreprocessor } from './preprocessor'
 import { type FileUploader } from './uploader'
+import { Logger } from './logger'
 
 export interface ImportWorkspace {
   projectTypes?: ImportProjectType[]
@@ -82,7 +84,9 @@ export interface ImportSpace<T extends ImportDoc> {
   title: string
   private: boolean
   autoJoin?: boolean
+  archived?: boolean
   description?: string
+  emoji?: string
   owners?: Ref<Account>[]
   members?: Ref<Account>[]
   docs: T[]
@@ -107,6 +111,7 @@ export interface ImportDocument extends ImportDoc {
 
 export interface ImportProject extends ImportSpace<ImportIssue> {
   class: Ref<Class<Project>>
+  id?: Ref<Project>
   identifier: string
   projectType?: ImportProjectType
   defaultIssueStatus?: ImportStatus
@@ -139,6 +144,17 @@ export interface ImportAttachment {
   parentId?: Ref<Doc>
   parentClass?: Ref<Class<Doc<Space>>>
   spaceId?: Ref<Space>
+  metadata?: ImportImageMetadata
+  drawings?: ImportDrawing[]
+}
+
+export interface ImportImageMetadata {
+  originalWidth: number
+  originalHeight: number
+}
+
+export interface ImportDrawing {
+  contentProvider: () => Promise<string>
 }
 
 export class WorkspaceImporter {
@@ -147,6 +163,7 @@ export class WorkspaceImporter {
 
   constructor (
     private readonly client: TxOperations,
+    private readonly logger: Logger,
     private readonly fileUploader: FileUploader,
     private readonly workspaceData: ImportWorkspace,
     private readonly preprocessor: MarkdownPreprocessor = new NoopMarkdownPreprocessor()
@@ -234,9 +251,9 @@ export class WorkspaceImporter {
   }
 
   async importTeamspace (space: ImportTeamspace): Promise<Ref<Teamspace>> {
-    console.log('Creating teamspace: ', space.title)
+    this.logger.log('Creating teamspace: ' + space.title)
     const teamspaceId = await this.createTeamspace(space)
-    console.log('Teamspace created: ', teamspaceId)
+    this.logger.log('Teamspace created: ' + teamspaceId)
     for (const doc of space.docs) {
       await this.createDocumentWithSubdocs(doc, document.ids.NoParent, teamspaceId)
     }
@@ -248,9 +265,9 @@ export class WorkspaceImporter {
     parentId: Ref<Document>,
     teamspaceId: Ref<Teamspace>
   ): Promise<Ref<Document>> {
-    console.log('Creating document: ', doc.title)
+    this.logger.log('Creating document: ' + doc.title)
     const documentId = await this.createDocument(doc, parentId, teamspaceId)
-    console.log('Document created: ', documentId)
+    this.logger.log('Document created: ' + documentId)
     for (const child of doc.subdocs) {
       await this.createDocumentWithSubdocs(child, documentId, teamspaceId)
     }
@@ -259,16 +276,19 @@ export class WorkspaceImporter {
 
   async createTeamspace (space: ImportTeamspace): Promise<Ref<Teamspace>> {
     const teamspaceId = generateId<Teamspace>()
+    const codePoint = space.emoji?.codePointAt(0)
     const data = {
       type: document.spaceType.DefaultTeamspaceType,
       description: space.description ?? '',
       title: space.title,
       name: space.title,
       private: space.private,
+      color: codePoint,
+      icon: codePoint === undefined ? undefined : view.ids.IconWithEmoji,
       owners: space.owners ?? [],
       members: space.members ?? [],
       autoJoin: space.autoJoin,
-      archived: false
+      archived: space.archived ?? false
     }
     await this.client.createDoc(document.class.Teamspace, core.space.Space, data, teamspaceId)
     return teamspaceId
@@ -287,7 +307,7 @@ export class WorkspaceImporter {
     const lastRank = await getFirstRank(this.client, teamspaceId, parentId)
     const rank = makeRank(lastRank, undefined)
 
-    const attachedData: Data<Document> = {
+    const data: Data<Document> = {
       title: doc.title,
       content: contentId,
       parent: parentId,
@@ -299,14 +319,22 @@ export class WorkspaceImporter {
       rank
     }
 
-    await this.client.createDoc(document.class.Document, teamspaceId, attachedData, id)
+    await this.client.createDoc(document.class.Document, teamspaceId, data, id)
     return id
   }
 
   async importProject (project: ImportProject): Promise<Ref<Project>> {
-    console.log('Creating project: ', project.title)
-    const projectId = await this.createProject(project)
-    console.log('Project created: ' + projectId)
+    let projectId: Ref<Project>
+    if (project.id === tracker.project.DefaultProject) {
+      this.logger.log('Setting up default project: ' + project.title)
+      projectId = tracker.project.DefaultProject
+      await this.updateProject(projectId, project)
+      this.logger.log('Default project updated: ' + projectId)
+    } else {
+      this.logger.log('Creating project: ', project.title)
+      projectId = await this.createProject(project)
+      this.logger.log('Project created: ' + projectId)
+    }
 
     const projectDoc = await this.client.findOne(tracker.class.Project, { _id: projectId })
     if (projectDoc === undefined) {
@@ -314,7 +342,7 @@ export class WorkspaceImporter {
     }
 
     for (const issue of project.docs) {
-      await this.createIssueWithSubissues(issue, tracker.ids.NoParent, projectDoc, [])
+      await this.createIssueWithSubissues(issue, tracker.ids.NoParent, projectDoc, projectId, [])
     }
     return projectId
   }
@@ -323,29 +351,67 @@ export class WorkspaceImporter {
     issue: ImportIssue,
     parentId: Ref<Issue>,
     project: Project,
+    spaceId: Ref<Project>,
     parentsInfo: IssueParentInfo[]
   ): Promise<{ id: Ref<Issue>, identifier: string }> {
-    console.log('Creating issue: ', issue.title)
-    const issueResult = await this.createIssue(issue, project, parentId, parentsInfo)
-    console.log('Issue created: ', issueResult)
+    this.logger.log('Creating issue: ' + issue.title)
+    const issueResult = await this.createIssue(issue, project, parentId, spaceId, parentsInfo)
+    this.logger.log('Issue created: ' + JSON.stringify(issueResult))
 
     if (issue.subdocs.length > 0) {
       const parentsInfoEx = [
         {
           parentId: issueResult.id,
           parentTitle: issue.title,
-          space: project._id,
+          space: spaceId,
           identifier: issueResult.identifier
         },
         ...parentsInfo
       ]
 
       for (const child of issue.subdocs) {
-        await this.createIssueWithSubissues(child as ImportIssue, issueResult.id, project, parentsInfoEx)
+        await this.createIssueWithSubissues(child as ImportIssue, issueResult.id, project, spaceId, parentsInfoEx)
       }
     }
 
     return issueResult
+  }
+
+  async updateProject (projectId: Ref<Project>, project: ImportProject): Promise<Ref<Project>> {
+    const oldProject = await this.client.findOne(tracker.class.Project, { _id: projectId })
+    if (oldProject === undefined) {
+      throw new Error('Project not found: ' + projectId)
+    }
+    const maxIssueNumber = this.getMaxImportIssueNumber(project)
+    const codePoint = project.emoji?.codePointAt(0)
+    const projectData = {
+      name: project.title,
+      private: project.private,
+      description: project.description ?? oldProject.description,
+      members: project.members ?? oldProject.members,
+      owners: project.owners ?? oldProject.owners,
+      archived: project.archived ?? oldProject.archived,
+      autoJoin: project.autoJoin ?? oldProject.autoJoin,
+      identifier:
+        project.identifier !== undefined
+          ? await this.uniqueProjectIdentifier(project.identifier)
+          : oldProject.identifier,
+      sequence: Math.max(oldProject.sequence, maxIssueNumber),
+      color: codePoint ?? oldProject.color,
+      icon: codePoint === undefined ? undefined : view.ids.IconWithEmoji,
+      defaultIssueStatus:
+        project.defaultIssueStatus !== undefined
+          ? this.issueStatusByName.get(project.defaultIssueStatus.name)
+          : oldProject.defaultIssueStatus,
+      defaultTimeReportDay: oldProject.defaultTimeReportDay,
+      type:
+        project.projectType !== undefined
+          ? this.projectTypeByName.get(project.projectType.name) ?? tracker.ids.ClassingProjectType
+          : oldProject.type
+    }
+
+    await this.client.updateDoc(tracker.class.Project, core.space.Space, projectId, projectData)
+    return projectId
   }
 
   async createProject (project: ImportProject): Promise<Ref<Project>> {
@@ -362,6 +428,7 @@ export class WorkspaceImporter {
         : tracker.status.Backlog
 
     const identifier = await this.uniqueProjectIdentifier(project.identifier)
+    const codePoint = project.emoji?.codePointAt(0)
     const projectData = {
       name: project.title,
       description: project.description ?? '',
@@ -371,7 +438,9 @@ export class WorkspaceImporter {
       archived: false,
       autoJoin: project.autoJoin,
       identifier,
-      sequence: 0,
+      sequence: this.getMaxImportIssueNumber(project),
+      color: codePoint,
+      icon: codePoint != null ? view.ids.IconWithEmoji : undefined,
       defaultIssueStatus: defaultIssueStatus ?? tracker.status.Backlog,
       defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
       type: projectType as Ref<ProjectType>
@@ -384,24 +453,30 @@ export class WorkspaceImporter {
     return projectId
   }
 
+  private getMaxImportIssueNumber (project: ImportProject): number {
+    const maxIssueNumber = Math.max(...project.docs.map((doc) => doc.number ?? 0))
+    return maxIssueNumber
+  }
+
   async createIssue (
     issue: ImportIssue,
     project: Project,
     parentId: Ref<Issue>,
+    spaceId: Ref<Project>,
     parentsInfo: IssueParentInfo[]
   ): Promise<{ id: Ref<Issue>, identifier: string }> {
     const issueId = issue.id ?? generateId<Issue>()
     const content = await issue.descrProvider()
     const collabId = makeCollabId(tracker.class.Issue, issueId, 'description')
-    const contentId = await this.createCollaborativeContent(issueId, collabId, content, project._id)
+    const contentId = await this.createCollaborativeContent(issueId, collabId, content, spaceId)
 
     const { number, identifier } =
       issue.number !== undefined
         ? { number: issue.number, identifier: `${project.identifier}-${issue.number}` }
-        : await this.getNextIssueIdentifier(project)
+        : await this.getNextIssueIdentifier(project, spaceId)
 
     const kind = await this.getIssueKind(project)
-    const rank = await this.getIssueRank(project)
+    const rank = await this.getIssueRank(project, spaceId)
     const status = await this.findIssueStatusByName(issue.status.name)
     const priority =
       issue.priority !== undefined
@@ -436,7 +511,7 @@ export class WorkspaceImporter {
 
     await this.client.addCollection(
       tracker.class.Issue,
-      project._id,
+      spaceId,
       parentId,
       tracker.class.Issue,
       'subIssues',
@@ -445,16 +520,19 @@ export class WorkspaceImporter {
     )
 
     if (issue.comments !== undefined) {
-      await this.importComments(issueId, issue.comments, project._id)
+      await this.importComments(issueId, issue.comments, spaceId)
     }
     return { id: issueId, identifier }
   }
 
-  private async getNextIssueIdentifier (project: Project): Promise<{ number: number, identifier: string }> {
+  private async getNextIssueIdentifier (
+    project: Project,
+    spaceId: Ref<Project>
+  ): Promise<{ number: number, identifier: string }> {
     const incResult = await this.client.updateDoc(
       tracker.class.Project,
       core.space.Space,
-      project._id,
+      spaceId,
       { $inc: { sequence: 1 } },
       true
     )
@@ -467,15 +545,15 @@ export class WorkspaceImporter {
     const taskKind = project?.type !== undefined ? { parent: project.type } : {}
     const kind = await this.client.findOne(task.class.TaskType, taskKind)
     if (kind === undefined) {
-      throw new Error(`Task type not found for project: ${project._id}`)
+      throw new Error(`Task type not found for project: ${project.name}`)
     }
     return kind
   }
 
-  private async getIssueRank (project: Project): Promise<string> {
+  private async getIssueRank (project: Project, spaceId: Ref<Project>): Promise<string> {
     const lastIssue = await this.client.findOne<Issue>(
       tracker.class.Issue,
-      { space: project._id },
+      { space: spaceId },
       { sort: { rank: SortingOrder.Descending } }
     )
     return makeRank(lastIssue?.rank, undefined)
@@ -529,28 +607,44 @@ export class WorkspaceImporter {
   ): Promise<void> {
     const blob = await attachment.blobProvider()
     if (blob === null) {
-      console.warn('Failed to read attachment file: ', attachment.title)
+      this.logger.error('Failed to read attachment file: ' + attachment.title)
       return
     }
 
-    const file = new File([blob], attachment.title)
+    const file = new File([blob], attachment.title, { type: blob.type })
 
     try {
-      await this.createAttachment(attachment.id ?? generateId<Attachment>(), file, spaceId, parentId, parentClass)
+      const blobId = await this.createAttachment(
+        attachment.id ?? generateId<Attachment>(),
+        spaceId,
+        parentId,
+        parentClass,
+        file,
+        attachment.metadata
+      )
+
+      if (attachment.drawings !== undefined) {
+        for (const drawing of attachment.drawings) {
+          await this.createDrawing(blobId, drawing, spaceId)
+        }
+      }
     } catch {
-      console.warn('Failed to upload attachment file: ', attachment.title)
+      this.logger.error('Failed to upload attachment file: ', attachment.title)
     }
   }
 
   private async createAttachment (
     id: Ref<Attachment>,
-    file: File,
     spaceId: Ref<Space>,
     parentId: Ref<Doc>,
-    parentClass: Ref<Class<Doc<Space>>>
-  ): Promise<Ref<Attachment>> {
-    const attachmentId = generateId<Attachment>()
-    const blobId = await this.fileUploader.uploadFile(id, file)
+    parentClass: Ref<Class<Doc<Space>>>,
+    file: File,
+    metadata?: ImportImageMetadata
+  ): Promise<Ref<PlatformBlob>> {
+    const uploadResult = await this.fileUploader.uploadFile(id, file)
+    if (!uploadResult.success) {
+      throw new Error('Failed to upload attachment file: ' + file.name)
+    }
     await this.client.addCollection(
       attachment.class.Attachment,
       spaceId,
@@ -558,15 +652,31 @@ export class WorkspaceImporter {
       parentClass,
       'attachments',
       {
-        file: blobId,
+        file: uploadResult.id,
         lastModified: Date.now(),
         name: file.name,
         size: file.size,
-        type: file.type
+        type: file.type,
+        metadata
       },
       id
     )
-    return attachmentId
+    return uploadResult.id
+  }
+
+  private async createDrawing (
+    blobId: Ref<PlatformBlob>,
+    drawing: ImportDrawing,
+    spaceId: Ref<Space>
+  ): Promise<Ref<Drawing>> {
+    const id = generateId<Drawing>()
+    const data: Data<Drawing> = {
+      parent: blobId,
+      parentClass: core.class.Blob,
+      content: await drawing.contentProvider()
+    }
+    await this.client.createDoc(attachment.class.Drawing, spaceId, data, id)
+    return id
   }
 
   // Collaborative content handling
@@ -580,9 +690,12 @@ export class WorkspaceImporter {
     const processedJson = this.preprocessor.process(json, id, spaceId)
 
     const markup = jsonToMarkup(processedJson)
-    const buffer = Buffer.from(markup)
 
-    return await this.fileUploader.uploadCollaborativeDoc(collabId, buffer)
+    const result = await this.fileUploader.uploadCollaborativeDoc(collabId, markup)
+    if (result.success) {
+      return result.id
+    }
+    throw new Error('Failed to upload collaborative document: ' + id)
   }
 
   async findIssueStatusByName (name: string): Promise<Ref<IssueStatus>> {
