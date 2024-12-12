@@ -18,7 +18,7 @@
   import { Analytics } from '@hcengineering/analytics'
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { ActionContext, createMarkup, getClient } from '@hcengineering/presentation'
-  import core, { Data, Ref, generateId, makeCollabId } from '@hcengineering/core'
+  import core, { Data, Ref, getCurrentAccount, generateId, makeCollabId } from '@hcengineering/core'
   import testManagement, {
     TestProject,
     TestRun,
@@ -27,24 +27,35 @@
     TestRunStatus,
     TestManagementEvents
   } from '@hcengineering/test-management'
-  import { Button, EditBox, Label, Panel, navigate } from '@hcengineering/ui'
+  import { Panel } from '@hcengineering/panel'
+  import { EditBox, ModernButton, Label, navigate } from '@hcengineering/ui'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import { IntlString } from '@hcengineering/platform'
   import { Attachment } from '@hcengineering/attachment'
+  import { PersonAccount } from '@hcengineering/contact'
 
-  import RightHeader from '../test-result/RightHeader.svelte'
+  import NewTestRunAside from './NewTestRunAside.svelte'
   import TestCaseSelector from '../test-case/TestCaseSelector.svelte'
-  import { getTestRunsLink } from '../../navigation'
+  import { getTestRunsLink, getProjectFromLocation } from '../../navigation'
 
-  export let space: Ref<TestProject>
-  export let testCases: TestCase[]
+  export let space: Ref<TestProject> = getProjectFromLocation()
+  export let testCases: TestCase[] = []
 
   const id: Ref<TestRun> = generateId()
+  const me = getCurrentAccount() as PersonAccount
 
   const object: Data<TestRun> = {
     name: '' as IntlString,
     description: null,
     dueDate: undefined
+  }
+  const newDoc: TestRun = {
+    ...object,
+    _id: id,
+    space,
+    modifiedOn: 0,
+    modifiedBy: me._id,
+    _class: testManagement.class.TestPlan
   }
 
   const dispatch = createEventDispatcher()
@@ -91,6 +102,7 @@
         throw new Error('Failed to create test run')
       } else {
         Analytics.handleEvent(TestManagementEvents.TestRunCreated, { id })
+        dispatch('close')
         navigate(getTestRunsLink(space, id))
       }
     } catch (err: any) {
@@ -105,7 +117,16 @@
 
 {#if object}
   <ActionContext context={{ mode: 'editor' }} />
-  <Panel isHeader={false} isAside={true} adaptive={'default'} on:open on:close={() => dispatch('close')}>
+  <Panel
+    object={newDoc}
+    isHeader={false}
+    isAside={true}
+    isSub={false}
+    adaptive={'default'}
+    withoutActivity={true}
+    on:open
+    on:close={() => dispatch('close')}
+  >
     <svelte:fragment slot="title">
       <Label label={testManagement.string.CreateTestRun} />
     </svelte:fragment>
@@ -138,22 +159,22 @@
       }}
     />
 
-    <div id="test-cases-selector">
-      <TestCaseSelector bind:objects={testCases} />
+    <div class="space-divider" />
+    <div class="flex flex-between">
+      <div id="test-cases-selector">
+        <TestCaseSelector bind:objects={testCases} />
+      </div>
+      <ModernButton
+        label={testManagement.string.Save}
+        size="medium"
+        kind={'primary'}
+        disabled={object?.name.trim().length === 0 || testCases?.length === 0}
+        on:click={onSave}
+      />
     </div>
 
-    <Button
-      label={testManagement.string.Save}
-      size="medium"
-      kind={'primary'}
-      disabled={object?.name.trim().length === 0 || testCases?.length === 0}
-      on:click={onSave}
-    />
-
     <svelte:fragment slot="aside">
-      <RightHeader>
-        <Label label={testManagement.string.Comments} />
-      </RightHeader>
+      <NewTestRunAside bind:dueDate={object.dueDate} />
     </svelte:fragment>
   </Panel>
 {/if}

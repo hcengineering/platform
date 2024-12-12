@@ -46,7 +46,7 @@ export async function showCreateProjectPopup (): Promise<void> {
   showPopup(CreateProject, {}, 'top')
 }
 
-export async function showCreateTestRunPopup (options: {
+export async function showCreateTestRunPanel (options: {
   testCases?: TestCase[]
   query?: DocumentQuery<Doc>
   space: Ref<TestProject>
@@ -61,7 +61,7 @@ export async function showCreateTestRunPopup (options: {
   )
 }
 
-export async function showCreateTestPlanPopup (options: {
+export async function showCreateTestPlanPanel (options: {
   testCases?: TestCase[]
   query?: DocumentQuery<Doc>
   space: Ref<TestProject>
@@ -121,7 +121,7 @@ export async function RunSelectedTestsAction (docs: TestCase[] | TestCase): Prom
   const testCases = Array.isArray(docs) ? docs : [docs]
   if (testCases?.length > 0) {
     const space = testCases[0].space
-    await showCreateTestRunPopup({ testCases, space })
+    await showCreateTestRunPanel({ testCases, space })
   } else {
     console.error('No test cases selected')
   }

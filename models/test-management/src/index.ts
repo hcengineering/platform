@@ -137,7 +137,8 @@ function defineApplication (builder: Builder): void {
                 componentProps: {
                   _class: testManagement.class.TestResult,
                   icon: testManagement.icon.TestRuns,
-                  label: testManagement.string.TestRuns
+                  label: testManagement.string.TestRuns,
+                  createButton: testManagement.component.CreateTestRunButton
                 },
                 navigationModel: {
                   navigationComponent: view.component.FoldersBrowser,

@@ -19,7 +19,7 @@
   import type { TestCase, TestProject } from '@hcengineering/test-management'
 
   import testManagement from '../../plugin'
-  import { showCreateTestPlanPopup } from '../../utils'
+  import { showCreateTestPlanPanel } from '../../utils'
 
   export let query: DocumentQuery<Doc> = {}
   export let space: Ref<Space>
@@ -29,7 +29,7 @@
   const handleRun = async (): Promise<void> => {
     const selectedDocs = $selectionStore?.docs ?? []
     const testCases = selectedDocs.length > 0 ? selectedDocs : undefined
-    await showCreateTestPlanPopup({
+    await showCreateTestPlanPanel({
       query,
       space: project,
       testCases: testCases as TestCase[]

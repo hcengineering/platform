@@ -13,34 +13,28 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
-  import { Button } from '@hcengineering/ui'
-  import { selectionStore } from '@hcengineering/view-resources'
-  import type { TestCase, TestProject } from '@hcengineering/test-management'
+  import { Ref, Space } from '@hcengineering/core'
+  import { Button, IconAdd } from '@hcengineering/ui'
+  import type { TestProject } from '@hcengineering/test-management'
 
   import testManagement from '../../plugin'
   import { showCreateTestRunPanel } from '../../utils'
 
-  export let query: DocumentQuery<Doc> = {}
   export let space: Ref<Space>
 
   const project: Ref<TestProject> = space as any
 
   const handleRun = async (): Promise<void> => {
-    const selectedDocs = $selectionStore?.docs ?? []
-    const testCases = selectedDocs.length > 0 ? selectedDocs : undefined
     await showCreateTestRunPanel({
-      query,
-      space: project,
-      testCases: testCases as TestCase[]
+      space: project
     })
   }
 </script>
 
 <Button
-  icon={testManagement.icon.Run}
+  icon={IconAdd}
   justify={'left'}
   kind={'primary'}
-  label={testManagement.string.RunTestCases}
+  label={testManagement.string.CreateTestRun}
   on:click={handleRun}
 />

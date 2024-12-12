@@ -82,6 +82,14 @@
     "GoToNextTestTooltip": "Přejít na další test",
     "AllTests": "Všechny testy",
     "MyTests": "Moje testy",
-    "Comments": "Komentáře"
+    "Comments": "Komentáře",
+    "Cancel": "Zrušit",
+    "Name": "Název",
+    "TestPlans": "Plány testování",
+    "TestPlan": "Plán testování",
+    "CreateTestPlan": "Vytvořit plán testování",
+    "SelectedTestCases": "vybrané testy",
+    "DefaultAssignee": "Výchozí přiřazovatel",
+    "TestPlanTitle": "Název plánu testování"
   }
 }

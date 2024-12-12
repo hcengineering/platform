@@ -82,6 +82,14 @@
     "GoToNextTestTooltip": "轉到下一個測試",
     "AllTests": "所有測試",
     "MyTests": "我的測試",
-    "Comments": "評論"
+    "Comments": "評論",
+    "Cancel": "取消",
+    "Name": "名稱",
+    "TestPlans": "測試計劃",
+    "TestPlan": "測試計劃",
+    "CreateTestPlan": "建立測試計劃",
+    "SelectedTestCases": "選定的測試用例",
+    "DefaultAssignee": "預設指派人",
+    "TestPlanTitle": "測試計劃標題"
   }
 }

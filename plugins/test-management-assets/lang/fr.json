@@ -82,6 +82,14 @@
     "GoToNextTestTooltip": "Aller au test suivant",
     "AllTests": "Tous les tests",
     "MyTests": "Mes tests",
-    "Comments": "Commentaires"
+    "Comments": "Commentaires",
+    "Cancel": "Annuler",
+    "Name": "Nom",
+    "TestPlans": "Test plans",
+    "TestPlan": "Test plan",
+    "CreateTestPlan": "Créer un test plan",
+    "SelectedTestCases": "sélectionnez les cas de test",
+    "DefaultAssignee": "Assigné par défaut",
+    "TestPlanTitle": "Titre"
   }
 }

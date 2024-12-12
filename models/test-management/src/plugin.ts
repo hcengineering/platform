@@ -44,6 +44,7 @@ export default mergeIds(testManagementId, testManganement, {
     TestRunHeader: '' as AnyComponent,
     TestPlanPresenter: '' as AnyComponent,
     CreateTestPlanButton: '' as AnyComponent,
-    TestPlanItemPresenter: '' as AnyComponent
+    TestPlanItemPresenter: '' as AnyComponent,
+    CreateTestRunButton: '' as AnyComponent
   }
 })

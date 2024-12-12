@@ -82,6 +82,14 @@
     "GoToNextTestTooltip": "Перейти к следующему тесту",
     "AllTests": "Все тесты",
     "MyTests": "Мои тесты",
-    "Comments": "Комментарии"
+    "Comments": "Комментарии",
+    "Cancel": "Отмена",
+    "Name": "Название",
+    "TestPlans": "Планы тестирования",
+    "TestPlan": "План тестирования",
+    "CreateTestPlan": "Создать план тестирования",
+    "SelectedTestCases": "выбранные тест-кейсы",
+    "DefaultAssignee": "Исполнитель по умолчанию",
+    "TestPlanTitle": "Название плана тестирования"
   }
 }
