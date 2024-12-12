@@ -35,7 +35,7 @@ describe.skip('test-backup-find', () => {
 
       const docs: Doc[] = []
       while (true) {
-        const chunk = await client.loadChunk(DOMAIN_TX, 0, true)
+        const chunk = await client.loadChunk(DOMAIN_TX, 0)
         const part = await client.loadDocs(
           DOMAIN_TX,
           chunk.docs.map((doc) => doc.id as Ref<Doc>)

@@ -28,6 +28,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import IconEraser from './icons/Eraser.svelte'
   import IconMove from './icons/Move.svelte'
+  import IconText from './icons/Text.svelte'
   import { DrawingTool } from '../drawing'
   import presentation from '../plugin'
 
@@ -40,16 +41,19 @@
     color: 'drawingBoard.color',
     colors: 'drawingBoard.colors',
     penWidth: 'drawingBoard.penWidth',
-    eraserWidth: 'drawingBoard.eraserWidth'
+    eraserWidth: 'drawingBoard.eraserWidth',
+    fontSize: 'drawingBoard.fontSize'
   }
 
   export let tool: DrawingTool = 'pen'
   export let penColor: string
   export let penWidth: number
   export let eraserWidth: number
+  export let fontSize: number
   export let placeInside = false
   export let showPanTool = false
   export let toolbar: HTMLDivElement | undefined
+  export let cmdEditor: HTMLDivElement | undefined
 
   let colorSelector: HTMLInputElement
   let penColors: string[] = defaultColors
@@ -88,12 +92,14 @@
           penColors = penColors.filter((c: string) => c !== penColor)
           localStorage.setItem(storageKey.colors, JSON.stringify(penColors))
           selectColor(penColors[0])
+          focusEditor()
           break
         }
         case 'reset-colors': {
           penColors = defaultColors
           localStorage.removeItem(storageKey.colors)
           selectColor(penColors[0])
+          focusEditor()
           break
         }
         case undefined: {
@@ -112,6 +118,7 @@
       penColors = [...penColors, penColor]
       localStorage.setItem(storageKey.colors, JSON.stringify(penColors))
     }
+    focusEditor()
   }
 
   function selectColor (color: string): void {
@@ -130,8 +137,9 @@
     if (!penColors.includes(penColor)) {
       penColor = penColors[0] ?? defaultColor
     }
-    penWidth = parseInt(localStorage.getItem(storageKey.penWidth) ?? '6')
+    penWidth = parseInt(localStorage.getItem(storageKey.penWidth) ?? '4')
     eraserWidth = parseInt(localStorage.getItem(storageKey.eraserWidth) ?? '50')
+    fontSize = parseInt(localStorage.getItem(storageKey.fontSize) ?? '20')
   })
 
   function updatePenWidth (): void {
@@ -141,12 +149,26 @@
   function updateEraserWidth (): void {
     localStorage.setItem(storageKey.eraserWidth, eraserWidth.toString())
   }
+
+  function updateFontSize (): void {
+    localStorage.setItem(storageKey.fontSize, fontSize.toString())
+    focusEditor()
+  }
+
+  function focusEditor (): void {
+    setTimeout(() => {
+      if (cmdEditor !== undefined) {
+        cmdEditor.focus()
+      }
+    }, 100)
+  }
 </script>
 
 <div class="toolbar" class:inside={placeInside} bind:this={toolbar}>
   <Button
     icon={IconDelete}
     kind="icon"
+    noFocus
     on:click={() => {
       tool = 'pen'
       dispatch('clear')
@@ -156,6 +178,7 @@
   <Button
     icon={IconEdit}
     kind="icon"
+    noFocus
     selected={tool === 'pen'}
     on:click={() => {
       tool = 'pen'
@@ -164,6 +187,7 @@
   <Button
     icon={IconEraser}
     kind="icon"
+    noFocus
     selected={tool === 'erase'}
     on:click={() => {
       tool = 'erase'
@@ -173,24 +197,34 @@
     <Button
       icon={IconMove}
       kind="icon"
+      noFocus
       selected={tool === 'pan'}
       on:click={() => {
         tool = 'pan'
       }}
     />
   {/if}
+  <Button
+    icon={IconText}
+    kind="icon"
+    noFocus
+    selected={tool === 'text'}
+    on:click={() => {
+      tool = 'text'
+    }}
+  />
   <div class="divider buttons-divider" />
   {#if tool === 'pen'}
     <input
       class="widthSelector"
       type="range"
       min={2}
-      max={18}
-      step={4}
+      max={20}
+      step={2}
       bind:value={penWidth}
       on:change={updatePenWidth}
     />
-  {:else}
+  {:else if tool === 'erase'}
     <input
       class="widthSelector"
       type="range"
@@ -200,15 +234,29 @@
       bind:value={eraserWidth}
       on:change={updateEraserWidth}
     />
+  {:else if tool === 'text'}
+    <input
+      class="widthSelector"
+      type="range"
+      min={15}
+      max={35}
+      step={5}
+      bind:value={fontSize}
+      on:change={updateFontSize}
+    />
   {/if}
   <div class="divider buttons-divider" />
   {#each penColors as color}
     <Button
       kind="icon"
+      noFocus
       selected={penColor === color}
       on:click={() => {
-        tool = 'pen'
+        if (tool === 'erase') {
+          tool = 'pen'
+        }
         selectColor(color)
+        focusEditor()
       }}
     >
       <div slot="content" class="colorIcon" style:background={color} />
@@ -222,7 +270,7 @@
       bind:value={penColor}
       on:change={addColorPreset}
     />
-    <Button kind="icon" icon={IconMoreH} on:click={showMenu} />
+    <Button kind="icon" icon={IconMoreH} noFocus on:click={showMenu} />
   </div>
 </div>
 
@@ -242,7 +290,7 @@
       border-radius: var(--small-BorderRadius);
       border: 1px solid var(--theme-popup-divider);
       box-shadow: 0.05rem 0.05rem 0.25rem rgba(0, 0, 0, 0.2);
-      z-index: 1;
+      z-index: 10;
     }
   }
 

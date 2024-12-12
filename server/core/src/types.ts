@@ -62,6 +62,9 @@ export interface ServerFindOptions<T extends Doc> extends FindOptions<T> {
     domain: Domain
   }
 
+  // using for join query security
+  allowedSpaces?: Ref<Space>[]
+
   // Optional measure context, for server side operations
   ctx?: MeasureContext
 }

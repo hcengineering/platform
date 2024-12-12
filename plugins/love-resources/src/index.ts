@@ -23,6 +23,7 @@ import PanelControlBar from './components/PanelControlBar.svelte'
 import RoomPresenter from './components/RoomPresenter.svelte'
 import MeetingMinutesDocEditor from './components/MeetingMinutesDocEditor.svelte'
 import MeetingMinutesStatusPresenter from './components/MeetingMinutesStatusPresenter.svelte'
+import RoomLanguageEditor from './components/RoomLanguageEditor.svelte'
 
 import {
   copyGuestLink,
@@ -59,7 +60,8 @@ export default async (): Promise<Resources> => ({
     PanelControlBar,
     RoomPresenter,
     MeetingMinutesDocEditor,
-    MeetingMinutesStatusPresenter
+    MeetingMinutesStatusPresenter,
+    RoomLanguageEditor
   },
   function: {
     CreateMeeting: createMeeting,

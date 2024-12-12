@@ -99,7 +99,12 @@ export interface MigrationClient {
   ) => Promise<void>
 
   // Move documents per domain
-  move: <T extends Doc>(sourceDomain: Domain, query: DocumentQuery<T>, targetDomain: Domain) => Promise<void>
+  move: <T extends Doc>(
+    sourceDomain: Domain,
+    query: DocumentQuery<T>,
+    targetDomain: Domain,
+    size?: number
+  ) => Promise<void>
 
   create: <T extends Doc>(domain: Domain, doc: T | T[]) => Promise<void>
   delete: <T extends Doc>(domain: Domain, _id: Ref<T>) => Promise<void>
@@ -159,6 +164,7 @@ export async function tryMigrate (client: MigrationClient, plugin: string, migra
   for (const migration of migrations) {
     if (states.has(migration.state)) continue
     try {
+      console.log('running migration', plugin, migration.state)
       await migration.func(client)
     } catch (err: any) {
       console.error(err)

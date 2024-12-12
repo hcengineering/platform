@@ -34,7 +34,8 @@
       "request": "launch",
       "args": ["src/__start.ts"],
       "env": {
-        "FULLTEXT_URL": "http://localhost:4700",
+        // "FULLTEXT_URL": "http://localhost:4700",
+        "FULLTEXT_URL": "http://host.docker.internal:4702",
         // "MONGO_URL": "mongodb://localhost:27017",
         // "DB_URL": "mongodb://localhost:27017",
         // "DB_URL": "postgresql://postgres:example@localhost:5432",
@@ -58,7 +59,7 @@
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
         "AI_BOT_URL": "http://localhost:4010",
-        "STATS_URL": "http://host.docker.internal:4900",
+        "STATS_URL": "http://host.docker.internal:4900"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
@@ -74,16 +75,16 @@
       "request": "launch",
       "args": ["src/index.ts"],
       "env": {
-        "PORT": "4700",// For mongo
-        // "PORT": "4701", // for pg
+        // "PORT": "4700",// For mongo
+        "PORT": "4702", // for cockroach
         "FULLTEXT_DB_URL": "http://localhost:9200",
-        "DB_URL": "mongodb://localhost:27017",
+        // "DB_URL": "mongodb://localhost:27017",
         // "DB_URL": "postgresql://postgres:example@localhost:5432",
+        "DB_URL": "postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable",
         "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
         "SERVER_SECRET": "secret",
         "REKONI_URL": "http://localhost:4004",
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
-        "REGION":"pg",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "STATS_URL":"http://host.docker.internal:4900",
         "ACCOUNTS_URL": "http://localhost:3000",
@@ -180,7 +181,6 @@
       "request": "launch",
       "args": ["src/__start.ts"],
       "env": {
-        "ELASTIC_URL": "http://localhost:9200",
         "MONGO_URL": "mongodb://localhost:27017",
         "METRICS_CONSOLE": "false",
         "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
@@ -263,8 +263,7 @@
         "SERVER_SECRET": "secret",
         "MONGO_URL": "mongodb://localhost:27017",
         "ACCOUNTS_URL": "http://localhost:3000",
-        "TELEGRAM_DATABASE": "telegram-service",
-        "ELASTIC_URL": "http://localhost:9200"
+        "TELEGRAM_DATABASE": "telegram-service"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
@@ -289,7 +288,6 @@
         "DB_URL": "mongodb://localhost:27017",
         "ACCOUNTS_URL": "http://localhost:3000",
         "TELEGRAM_DATABASE": "telegram-service",
-        "ELASTIC_URL": "http://localhost:9200",
         "REKONI_URL": "http://localhost:4004",
         "MODEL_VERSION": "0.6.287"
       },
@@ -300,22 +298,23 @@
       "cwd": "${workspaceRoot}/dev/tool"
     },
     {
-      "name": "Debug tool upgrade PG(tests)",
+      "name": "Debug tool upgrade PG(Cockroach)",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "upgrade", "--force"],
+      "args": ["src/__start.ts", "upgrade-workspace", "w-haiodo-alex-staff-c-673ee7ab-87df5406ea-2b8b4d" ],
       "env": {
         "SERVER_SECRET": "secret",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
-        "MINIO_ENDPOINT": "localhost:9002",
-        "TRANSACTOR_URL": "ws://localhost:3334",
-        "ACCOUNT_DB_URL": "postgresql://postgres:example@localhost:5433",
-        "DB_URL": "postgresql://postgres:example@localhost:5433",
-        "MONGO_URL": "mongodb://localhost:27018",
-        "ACCOUNTS_URL": "http://localhost:3003",
+        "MINIO_ENDPOINT": "localhost:9000",
+        "TRANSACTOR_URL": "ws://localhost:3332",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "ACCOUNT_DB_URL": "mongodb://localhost:27017",
+        // "ACCOUNT_DB_URL": "postgresql://postgres:example@localhost:5433",
+        // "DB_URL": "postgresql://postgres:example@localhost:5433",
+        "DB_URL": "postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable",
+        "MONGO_URL": "mongodb://localhost:27017",
         "TELEGRAM_DATABASE": "telegram-service",
-        "ELASTIC_URL": "http://localhost:9201",
         "REKONI_URL": "http://localhost:4004",
         "MODEL_VERSION": "0.6.287"
       },
@@ -339,7 +338,6 @@
         "DB_URL": "postgresql://postgres:example@localhost:5432",
         "ACCOUNTS_URL": "http://localhost:3000",
         "TELEGRAM_DATABASE": "telegram-service",
-        "ELASTIC_URL": "http://localhost:9200",
         "REKONI_URL": "http://localhost:4004"
       },
       "runtimeVersion": "20",
@@ -626,7 +624,7 @@
       "name": "Debug Huly import",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "import", "/home/anna/xored/huly/platform/dev/import-tool/src/huly/example-workspace", "-u", "user1", "-pw", "1234", "-ws", "ws12"],
+      "args": ["src/__start.ts", "import", "/home/anna/huly/platform/dev/import-tool/docs/huly/example-workspace", "-u", "user1", "-pw", "1234", "-ws", "ws1"],
       "env": {
         "FRONT_URL": "http://localhost:8087"
       },

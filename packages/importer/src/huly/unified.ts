@@ -18,8 +18,9 @@ import contact, { type Person, type PersonAccount } from '@hcengineering/contact
 import { type Class, type Doc, generateId, type Ref, type Space, type TxOperations } from '@hcengineering/core'
 import document, { type Document } from '@hcengineering/document'
 import { MarkupMarkType, type MarkupNode, MarkupNodeType, traverseNode, traverseNodeMarks } from '@hcengineering/text'
-import tracker, { type Issue } from '@hcengineering/tracker'
+import tracker, { type Issue, Project } from '@hcengineering/tracker'
 import * as fs from 'fs'
+import sizeOf from 'image-size'
 import * as yaml from 'js-yaml'
 import { contentType } from 'mime-types'
 import * as path from 'path'
@@ -28,6 +29,7 @@ import {
   type ImportAttachment,
   type ImportComment,
   type ImportDocument,
+  ImportDrawing,
   type ImportIssue,
   type ImportProject,
   type ImportProjectType,
@@ -35,12 +37,14 @@ import {
   type ImportWorkspace,
   WorkspaceImporter
 } from '../importer/importer'
+import { type Logger } from '../importer/logger'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 import { type FileUploader } from '../importer/uploader'
 
 interface UnifiedComment {
   author: string
   text: string
+  attachments?: string[]
 }
 
 interface UnifiedIssueHeader {
@@ -59,14 +63,17 @@ interface UnifiedSpaceSettings {
   title: string
   private?: boolean
   autoJoin?: boolean
+  archived?: boolean
   owners?: string[]
   members?: string[]
   description?: string
+  emoji?: string
 }
 
 interface UnifiedProjectSettings extends UnifiedSpaceSettings {
   class: 'tracker:class:Project'
   identifier: string
+  id?: 'tracker:project:DefaultProject'
   projectType?: string
   defaultIssueStatus?: string
 }
@@ -97,6 +104,7 @@ interface UnifiedWorkspaceSettings {
 class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
   constructor (
     private readonly urlProvider: (id: string) => string,
+    private readonly logger: Logger,
     private readonly metadataByFilePath: Map<string, DocMetadata>,
     private readonly metadataById: Map<Ref<Doc>, DocMetadata>,
     private readonly attachMetadataByPath: Map<string, AttachmentMetadata>,
@@ -130,7 +138,7 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
     const attachmentMeta = this.attachMetadataByPath.get(fullPath)
 
     if (attachmentMeta === undefined) {
-      console.warn(`Attachment image not found for ${fullPath}`)
+      this.logger.error(`Attachment image not found for ${fullPath}`)
       return
     }
 
@@ -160,7 +168,7 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
           this.updateAttachmentMetadata(fullPath, attachmentMeta, id, spaceId, sourceMeta)
         }
       } else {
-        console.log('Unknown link type, leave it as is:', href)
+        this.logger.log('Unknown link type, leave it as is: ' + href)
       }
     })
   }
@@ -218,7 +226,7 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
   private getSourceMetadata (id: Ref<Doc>): DocMetadata | null {
     const sourceMeta = this.metadataById.get(id)
     if (sourceMeta == null) {
-      console.warn(`Source metadata not found for ${id}`)
+      this.logger.error(`Source metadata not found for ${id}`)
       return null
     }
     return sourceMeta
@@ -259,56 +267,118 @@ interface AttachmentMetadata {
 export class UnifiedFormatImporter {
   private readonly metadataById = new Map<Ref<Doc>, DocMetadata>()
   private readonly metadataByFilePath = new Map<string, DocMetadata>()
-  private readonly attachMetadataByPath = new Map<string, AttachmentMetadata>()
+  private readonly fileMetadataByPath = new Map<string, AttachmentMetadata>()
 
   private personsByName = new Map<string, Ref<Person>>()
   private accountsByEmail = new Map<string, Ref<PersonAccount>>()
 
   constructor (
     private readonly client: TxOperations,
-    private readonly fileUploader: FileUploader
+    private readonly fileUploader: FileUploader,
+    private readonly logger: Logger
   ) {}
 
   async importFolder (folderPath: string): Promise<void> {
     await this.cachePersonsByNames()
     await this.cacheAccountsByEmails()
 
+    await this.collectFileMetadata(folderPath)
+
     const workspaceData = await this.processImportFolder(folderPath)
 
-    console.log('========================================')
-    console.log('IMPORT DATA STRUCTURE: ', JSON.stringify(workspaceData, null, 4))
-    console.log('========================================')
+    this.logger.log('========================================')
+    this.logger.log('IMPORT DATA STRUCTURE: ' + JSON.stringify(workspaceData))
+    this.logger.log('========================================')
 
-    console.log('Importing documents...')
+    this.logger.log('Importing documents...')
     const preprocessor = new HulyMarkdownPreprocessor(
       this.fileUploader.getFileUrl,
+      this.logger,
       this.metadataByFilePath,
       this.metadataById,
-      this.attachMetadataByPath,
+      this.fileMetadataByPath,
       this.personsByName
     )
-    await new WorkspaceImporter(this.client, this.fileUploader, workspaceData, preprocessor).performImport()
+    await new WorkspaceImporter(
+      this.client,
+      this.logger,
+      this.fileUploader,
+      workspaceData,
+      preprocessor
+    ).performImport()
 
-    console.log('Importing attachments...')
-    const attachments: ImportAttachment[] = Array.from(this.attachMetadataByPath.values())
-      .filter((attachment) => attachment.parentId !== undefined)
-      .map((attachment) => {
-        return {
-          id: attachment.id,
-          title: path.basename(attachment.path),
-          blobProvider: async () => {
-            const data = fs.readFileSync(attachment.path)
-            return new Blob([data])
-          },
-          parentId: attachment.parentId,
-          parentClass: attachment.parentClass,
-          spaceId: attachment.spaceId
+    this.logger.log('Importing attachments...')
+
+    const attachments: ImportAttachment[] = await Promise.all(
+      Array.from(this.fileMetadataByPath.values())
+        .filter((attachMeta) => attachMeta.parentId !== undefined)
+        .map(async (attachMeta: AttachmentMetadata) => await this.processAttachment(attachMeta))
+    )
+    await new WorkspaceImporter(this.client, this.logger, this.fileUploader, { attachments }).performImport()
+
+    this.logger.log('========================================')
+    this.logger.log('IMPORT SUCCESS')
+  }
+
+  private async processAttachment (attachMeta: AttachmentMetadata): Promise<ImportAttachment> {
+    const fileType = contentType(attachMeta.name)
+
+    const attachment: ImportAttachment = {
+      id: attachMeta.id,
+      title: path.basename(attachMeta.path),
+      blobProvider: async () => {
+        const data = fs.readFileSync(attachMeta.path)
+        const props = fileType !== false ? { type: fileType } : undefined
+        return new Blob([data], props)
+      },
+      parentId: attachMeta.parentId,
+      parentClass: attachMeta.parentClass,
+      spaceId: attachMeta.spaceId
+    }
+
+    if (fileType !== false && fileType?.startsWith('image/')) {
+      try {
+        const imageDimensions = sizeOf(attachMeta.path)
+        attachment.metadata = {
+          originalWidth: imageDimensions.width ?? 0,
+          originalHeight: imageDimensions.height ?? 0
         }
-      })
-    await new WorkspaceImporter(this.client, this.fileUploader, { attachments }).performImport()
+      } catch (error) {
+        this.logger.error(`Failed to get image dimensions: ${attachMeta.path}`, error)
+      }
 
-    console.log('========================================')
-    console.log('IMPORT SUCCESS')
+      const pathDetails = path.parse(attachMeta.path)
+      const childrenDir = path.join(pathDetails.dir, pathDetails.name.replace(pathDetails.ext, ''))
+      if (fs.existsSync(childrenDir) && fs.statSync(childrenDir).isDirectory()) {
+        attachment.drawings = await this.processDrawings(childrenDir)
+      }
+    }
+
+    return attachment
+  }
+
+  private async processDrawings (folderPath: string): Promise<ImportDrawing[]> {
+    this.logger.log(`Processing drawings in ${folderPath}...`)
+    const entries = fs.readdirSync(folderPath, { withFileTypes: true })
+    const drawings: ImportDrawing[] = []
+    for (const entry of entries) {
+      const fullPath = path.join(folderPath, entry.name)
+      if (entry.isFile() && entry.name.endsWith('.json')) {
+        const content = fs.readFileSync(fullPath, 'utf8')
+        const json = JSON.parse(content)
+        if (json.class !== 'drawing:class:Drawing') {
+          this.logger.log(`Skipping ${fullPath}: not a drawing`)
+          continue
+        }
+
+        drawings.push({
+          contentProvider: async () => {
+            return JSON.stringify(json.content)
+          }
+        })
+      }
+    }
+    return drawings
   }
 
   private async processImportFolder (folderPath: string): Promise<ImportWorkspace> {
@@ -336,11 +406,11 @@ export class UnifiedFormatImporter {
       const spacePath = path.join(folderPath, spaceName)
 
       try {
-        console.log(`Processing ${spaceName}...`)
+        this.logger.log(`Processing ${spaceName}...`)
         const spaceConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as UnifiedSpaceSettings
 
-        if (spaceConfig.class === undefined) {
-          console.warn(`Skipping ${spaceName}: not a space - no class specified`)
+        if (spaceConfig?.class === undefined) {
+          this.logger.error(`Skipping ${spaceName}: not a space - no class specified`)
           continue
         }
 
@@ -373,8 +443,6 @@ export class UnifiedFormatImporter {
       }
     }
 
-    await this.processAttachments(folderPath)
-
     return builder.build()
   }
 
@@ -392,7 +460,7 @@ export class UnifiedFormatImporter {
       const issueHeader = (await this.readYamlHeader(issuePath)) as UnifiedIssueHeader
 
       if (issueHeader.class === undefined) {
-        console.warn(`Skipping ${issueFile}: not an issue`)
+        this.logger.error(`Skipping ${issueFile}: not an issue`)
         continue
       }
 
@@ -420,7 +488,7 @@ export class UnifiedFormatImporter {
           priority: issueHeader.priority,
           estimation: issueHeader.estimation,
           remainingTime: issueHeader.remainingTime,
-          comments: this.processComments(issueHeader.comments),
+          comments: await this.processComments(currentPath, issueHeader.comments),
           subdocs: [], // Will be added via builder
           assignee: this.findPersonByName(issueHeader.assignee)
         }
@@ -470,7 +538,7 @@ export class UnifiedFormatImporter {
       const docHeader = (await this.readYamlHeader(docPath)) as UnifiedDocumentHeader
 
       if (docHeader.class === undefined) {
-        console.warn(`Skipping ${docFile}: not a document`)
+        this.logger.error(`Skipping ${docFile}: not a document`)
         continue
       }
 
@@ -506,13 +574,27 @@ export class UnifiedFormatImporter {
     }
   }
 
-  private processComments (comments: UnifiedComment[] = []): ImportComment[] {
-    return comments.map((comment) => {
-      return {
-        text: comment.text,
-        author: this.findAccountByEmail(comment.author)
-      }
-    })
+  private processComments (currentPath: string, comments: UnifiedComment[] = []): Promise<ImportComment[]> {
+    return Promise.all(
+      comments.map(async (comment) => {
+        const attachments: ImportAttachment[] = []
+        if (comment.attachments !== undefined) {
+          for (const attachmentPath of comment.attachments) {
+            const fullPath = path.resolve(currentPath, attachmentPath)
+            const attachmentMeta = this.fileMetadataByPath.get(fullPath)
+            if (attachmentMeta !== undefined) {
+              const importAttachment = await this.processAttachment(attachmentMeta)
+              attachments.push(importAttachment)
+            }
+          }
+        }
+        return {
+          text: comment.text,
+          author: this.findAccountByEmail(comment.author),
+          attachments
+        }
+      })
+    )
   }
 
   private processProjectTypes (wsHeader: UnifiedWorkspaceSettings): ImportProjectType[] {
@@ -534,11 +616,14 @@ export class UnifiedFormatImporter {
   private async processProject (projectHeader: UnifiedProjectSettings): Promise<ImportProject> {
     return {
       class: tracker.class.Project,
+      id: projectHeader.id as Ref<Project>,
       title: projectHeader.title,
       identifier: projectHeader.identifier,
       private: projectHeader.private ?? false,
       autoJoin: projectHeader.autoJoin ?? true,
+      archived: projectHeader.archived ?? false,
       description: projectHeader.description,
+      emoji: projectHeader.emoji,
       defaultIssueStatus:
         projectHeader.defaultIssueStatus !== undefined ? { name: projectHeader.defaultIssueStatus } : undefined,
       owners:
@@ -555,7 +640,9 @@ export class UnifiedFormatImporter {
       title: spaceHeader.title,
       private: spaceHeader.private ?? false,
       autoJoin: spaceHeader.autoJoin ?? true,
+      archived: spaceHeader.archived ?? false,
       description: spaceHeader.description,
+      emoji: spaceHeader.emoji,
       owners: spaceHeader.owners !== undefined ? spaceHeader.owners.map((email) => this.findAccountByEmail(email)) : [],
       members:
         spaceHeader.members !== undefined ? spaceHeader.members.map((email) => this.findAccountByEmail(email)) : [],
@@ -564,7 +651,7 @@ export class UnifiedFormatImporter {
   }
 
   private async readYamlHeader (filePath: string): Promise<any> {
-    console.log('Read YAML header from: ', filePath)
+    this.logger.log('Read YAML header from: ' + filePath)
     const content = fs.readFileSync(filePath, 'utf8')
     const match = content.match(/^---\n([\s\S]*?)\n---/)
     if (match != null) {
@@ -601,7 +688,7 @@ export class UnifiedFormatImporter {
     }, new Map())
   }
 
-  private async processAttachments (folderPath: string): Promise<void> {
+  private async collectFileMetadata (folderPath: string): Promise<void> {
     const processDir = async (dir: string): Promise<void> => {
       const entries = fs.readdirSync(dir, { withFileTypes: true })
 
@@ -611,11 +698,8 @@ export class UnifiedFormatImporter {
         if (entry.isDirectory()) {
           await processDir(fullPath)
         } else if (entry.isFile()) {
-          // Skip files that are already processed as documents or issues
-          if (!this.metadataByFilePath.has(fullPath)) {
-            const attachmentId = generateId<Attachment>()
-            this.attachMetadataByPath.set(fullPath, { id: attachmentId, name: entry.name, path: fullPath })
-          }
+          const attachmentId = generateId<Attachment>()
+          this.fileMetadataByPath.set(fullPath, { id: attachmentId, name: entry.name, path: fullPath })
         }
       }
     }

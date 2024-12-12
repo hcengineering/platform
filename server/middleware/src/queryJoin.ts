@@ -22,7 +22,7 @@ import {
   type MeasureContext,
   Ref
 } from '@hcengineering/core'
-import { BaseMiddleware, Middleware, type PipelineContext } from '@hcengineering/server-core'
+import { BaseMiddleware, Middleware, ServerFindOptions, type PipelineContext } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 
 interface Query {
@@ -45,21 +45,24 @@ export class QueryJoiner {
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T>
+    options?: ServerFindOptions<T>
   ): Promise<FindResult<T>> {
     // Will find a query or add + 1 to callbacks
     const q = this.findQuery(_class, query, options) ?? this.createQuery(_class, query, options)
-    if (q.result === undefined) {
-      q.result = this._findAll(ctx, _class, query, options)
-    }
-    if (q.result instanceof Promise) {
-      q.result = await q.result
-    }
-    q.callbacks--
+    try {
+      if (q.result === undefined) {
+        q.result = this._findAll(ctx, _class, query, options)
+      }
+      if (q.result instanceof Promise) {
+        q.result = await q.result
+      }
 
-    this.removeFromQueue(q)
+      return q.result as FindResult<T>
+    } finally {
+      q.callbacks--
 
-    return q.result as FindResult<T>
+      this.removeFromQueue(q)
+    }
   }
 
   private findQuery<T extends Doc>(
@@ -131,7 +134,7 @@ export class QueryJoinMiddleware extends BaseMiddleware implements Middleware {
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T>
+    options?: ServerFindOptions<T>
   ): Promise<FindResult<T>> {
     // Will find a query or add + 1 to callbacks
     return this.joiner.findAll(ctx, _class, query, options)

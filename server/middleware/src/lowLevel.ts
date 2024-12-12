@@ -43,8 +43,8 @@ export class LowLevelMiddleware extends BaseMiddleware implements Middleware {
     }
     const adapterManager = context.adapterManager
     context.lowLevelStorage = {
-      find (ctx: MeasureContext, domain: Domain, recheck?: boolean): StorageIterator {
-        return adapterManager.getAdapter(domain, false).find(ctx, domain, recheck)
+      find (ctx: MeasureContext, domain: Domain): StorageIterator {
+        return adapterManager.getAdapter(domain, false).find(ctx, domain)
       },
 
       load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {

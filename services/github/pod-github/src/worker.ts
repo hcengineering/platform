@@ -24,6 +24,7 @@ import core, {
   TxApplyIf,
   TxCUD,
   TxOperations,
+  TxProcessor,
   TxWorkspaceEvent,
   WithLookup,
   WorkspaceEvent,
@@ -416,7 +417,7 @@ export class GithubWorker implements IntegrationManager {
   private async findPerson (userInfo: UserInfo, userName: string): Promise<Ref<Person>> {
     let person: Ref<Person> | undefined
     // try to find by account.
-    if (userInfo.email != null) {
+    if (userInfo.email != null && userInfo.email.trim().length > 0) {
       const personAccount = await this.liveQuery.findOne(contact.class.PersonAccount, { email: userInfo.email })
       person = personAccount?.person
     }
@@ -824,10 +825,14 @@ export class GithubWorker implements IntegrationManager {
           // Handle tx
           const h = this._client.getHierarchy()
           for (const t of tx) {
-            if (h.isDerived(t._class, core.class.TxCUD)) {
+            if (TxProcessor.isExtendsCUD(t._class)) {
               const cud = t as TxCUD<Doc>
               if (cud.objectClass === github.class.DocSyncInfo) {
                 this.triggerSync()
+                break
+              }
+              if (cud.objectClass === contact.class.Person || cud.objectClass === contact.class.Channel) {
+                this.accountMap.clear()
                 break
               }
             }

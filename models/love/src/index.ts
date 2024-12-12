@@ -58,7 +58,8 @@ import {
   TypeDate,
   TypeRef,
   TypeString,
-  UX
+  UX,
+  TypeBoolean
 } from '@hcengineering/model'
 import calendar, { TEvent } from '@hcengineering/model-calendar'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
@@ -106,9 +107,14 @@ export class TRoom extends TDoc implements Room {
   x!: number
   y!: number
 
-  language!: RoomLanguage
-  startWithTranscription!: boolean
-  startWithRecording!: boolean
+  @Prop(TypeString(), love.string.Language, { editor: love.component.RoomLanguageEditor })
+    language!: RoomLanguage
+
+  @Prop(TypeBoolean(), love.string.StartWithTranscription)
+    startWithTranscription!: boolean
+
+  @Prop(TypeBoolean(), love.string.StartWithRecording)
+    startWithRecording!: boolean
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
@@ -275,8 +281,7 @@ export function createModel (builder: Builder): void {
       label: love.string.Office,
       type: WidgetType.Fixed,
       icon: love.icon.Love,
-      component: love.component.LoveWidget,
-      headerLabel: love.string.Office
+      component: love.component.LoveWidget
     },
     love.ids.LoveWidget
   )

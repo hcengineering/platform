@@ -394,12 +394,6 @@ export const notificationOperation: MigrateOperation = {
         }
       },
       {
-        state: 'fix-rename-backups',
-        func: async (client: MigrationClient): Promise<void> => {
-          await client.update(DOMAIN_DOC_NOTIFY, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
-        }
-      },
-      {
         state: 'remove-update-txes-docnotify-ctx-v2',
         func: async (client) => {
           await client.deleteMany(DOMAIN_TX, {

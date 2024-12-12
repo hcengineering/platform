@@ -83,6 +83,8 @@
     "slugify": "^1.6.6",
     "lib0": "^0.2.88",
     "y-indexeddb": "^9.0.12",
-    "lowlight": "^3.1.0"
+    "lowlight": "^3.1.0",
+    "mermaid": "~11.4.1",
+    "@hcengineering/theme": "^0.6.5"
   }
 }

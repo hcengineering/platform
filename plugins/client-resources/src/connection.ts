@@ -663,8 +663,8 @@ class Connection implements ClientConnection {
     })
   }
 
-  loadChunk (domain: Domain, idx?: number, recheck?: boolean): Promise<DocChunk> {
-    return this.sendRequest({ method: 'loadChunk', params: [domain, idx, recheck] })
+  loadChunk (domain: Domain, idx?: number): Promise<DocChunk> {
+    return this.sendRequest({ method: 'loadChunk', params: [domain, idx] })
   }
 
   closeChunk (idx: number): Promise<void> {

@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import type postgres from 'postgres'
+import postgres from 'postgres'
+import { type MetricsContext } from './metrics'
 import { type Location, type UUID } from './types'
 
 export interface BlobDataId {
@@ -42,63 +43,126 @@ export interface BlobRecordWithFilename extends BlobRecord {
   filename: string
 }
 
-export async function getData (sql: postgres.Sql, dataId: BlobDataId): Promise<BlobDataRecord | null> {
-  const { hash, location } = dataId
+export async function withPostgres<T> (
+  env: Env,
+  ctx: ExecutionContext,
+  metrics: MetricsContext,
+  fn: (db: BlobDB) => Promise<T>
+): Promise<T> {
+  const sql = metrics.withSync('db.connect', () => {
+    return postgres(env.HYPERDRIVE.connectionString, {
+      connection: {
+        application_name: 'datalake'
+      },
+      fetch_types: false
+    })
+  })
 
-  const rows = await sql<BlobDataRecord[]>`
-    SELECT hash, location, filename, size, type
-    FROM blob.data
-    WHERE hash = ${hash} AND location = ${location}
-  `
+  const db = new LoggedDB(new PostgresDB(sql), metrics)
 
-  if (rows.length > 0) {
-    return rows[0]
+  try {
+    return await fn(db)
+  } finally {
+    metrics.withSync('db.disconnect', () => {
+      ctx.waitUntil(sql.end({ timeout: 0 }))
+    })
+  }
+}
+
+export interface BlobDB {
+  getData: (dataId: BlobDataId) => Promise<BlobDataRecord | null>
+  createData: (data: BlobDataRecord) => Promise<void>
+  getBlob: (blobId: BlobId) => Promise<BlobRecordWithFilename | null>
+  createBlob: (blob: Omit<BlobRecord, 'filename' | 'deleted'>) => Promise<void>
+  deleteBlob: (blob: BlobId) => Promise<void>
+}
+
+export class PostgresDB implements BlobDB {
+  constructor (private readonly sql: postgres.Sql) {}
+
+  async getData (dataId: BlobDataId): Promise<BlobDataRecord | null> {
+    const { hash, location } = dataId
+    const rows = await this.sql<BlobDataRecord[]>`
+      SELECT hash, location, filename, size, type
+      FROM blob.data
+      WHERE hash = ${hash} AND location = ${location}
+    `
+    return rows.length > 0 ? rows[0] : null
   }
 
-  return null
-}
+  async createData (data: BlobDataRecord): Promise<void> {
+    const { hash, location, filename, size, type } = data
 
-export async function createData (sql: postgres.Sql, data: BlobDataRecord): Promise<void> {
-  const { hash, location, filename, size, type } = data
-
-  await sql`
-    UPSERT INTO blob.data (hash, location, filename, size, type)
-    VALUES (${hash}, ${location}, ${filename}, ${size}, ${type})
-  `
-}
-
-export async function getBlob (sql: postgres.Sql, blobId: BlobId): Promise<BlobRecordWithFilename | null> {
-  const { workspace, name } = blobId
-
-  const rows = await sql<BlobRecordWithFilename[]>`
-    SELECT b.workspace, b.name, b.hash, b.location, b.deleted, d.filename
-    FROM blob.blob AS b
-    JOIN blob.data AS d ON b.hash = d.hash AND b.location = d.location
-    WHERE b.workspace = ${workspace} AND b.name = ${name}
-  `
-
-  if (rows.length > 0) {
-    return rows[0]
+    await this.sql`
+      UPSERT INTO blob.data (hash, location, filename, size, type)
+      VALUES (${hash}, ${location}, ${filename}, ${size}, ${type})
+    `
   }
 
-  return null
+  async getBlob (blobId: BlobId): Promise<BlobRecordWithFilename | null> {
+    const { workspace, name } = blobId
+
+    try {
+      const rows = await this.sql<BlobRecordWithFilename[]>`
+        SELECT b.workspace, b.name, b.hash, b.location, b.deleted, d.filename
+        FROM blob.blob AS b
+        JOIN blob.data AS d ON b.hash = d.hash AND b.location = d.location
+        WHERE b.workspace = ${workspace} AND b.name = ${name}
+      `
+
+      if (rows.length > 0) {
+        return rows[0]
+      }
+    } catch (err) {
+      console.error(err)
+    }
+
+    return null
+  }
+
+  async createBlob (blob: Omit<BlobRecord, 'filename' | 'deleted'>): Promise<void> {
+    const { workspace, name, hash, location } = blob
+
+    await this.sql`
+      UPSERT INTO blob.blob (workspace, name, hash, location, deleted)
+      VALUES (${workspace}, ${name}, ${hash}, ${location}, false)
+    `
+  }
+
+  async deleteBlob (blob: BlobId): Promise<void> {
+    const { workspace, name } = blob
+
+    await this.sql`
+      UPDATE blob.blob
+      SET deleted = true
+      WHERE workspace = ${workspace} AND name = ${name}
+    `
+  }
 }
 
-export async function createBlob (sql: postgres.Sql, blob: Omit<BlobRecord, 'filename' | 'deleted'>): Promise<void> {
-  const { workspace, name, hash, location } = blob
+export class LoggedDB implements BlobDB {
+  constructor (
+    private readonly db: BlobDB,
+    private readonly ctx: MetricsContext
+  ) {}
 
-  await sql`
-    UPSERT INTO blob.blob (workspace, name, hash, location, deleted)
-    VALUES (${workspace}, ${name}, ${hash}, ${location}, false)
-  `
-}
+  async getData (dataId: BlobDataId): Promise<BlobDataRecord | null> {
+    return await this.ctx.with('db.getData', () => this.db.getData(dataId))
+  }
 
-export async function deleteBlob (sql: postgres.Sql, blob: BlobId): Promise<void> {
-  const { workspace, name } = blob
+  async createData (data: BlobDataRecord): Promise<void> {
+    await this.ctx.with('db.createData', () => this.db.createData(data))
+  }
 
-  await sql`
-    UPDATE blob.blob
-    SET deleted = true
-    WHERE workspace = ${workspace} AND name = ${name}
-  `
+  async getBlob (blobId: BlobId): Promise<BlobRecordWithFilename | null> {
+    return await this.ctx.with('db.getBlob', () => this.db.getBlob(blobId))
+  }
+
+  async createBlob (blob: Omit<BlobRecord, 'filename' | 'deleted'>): Promise<void> {
+    await this.ctx.with('db.createBlob', () => this.db.createBlob(blob))
+  }
+
+  async deleteBlob (blob: BlobId): Promise<void> {
+    await this.ctx.with('db.deleteBlob', () => this.db.deleteBlob(blob))
+  }
 }

@@ -60,7 +60,7 @@ import serverClientPlugin, {
 } from '@hcengineering/server-client'
 import { createBackupPipeline, getConfig } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
+import { FileModelLogger } from '@hcengineering/server-tool'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 import path from 'path'
 
@@ -122,6 +122,7 @@ import { copyToDatalake, moveFiles, showLostFiles } from './storage'
 import { getModelVersion } from '@hcengineering/model-all'
 import { type DatalakeConfig, DatalakeService, createDatalakeClient } from '@hcengineering/datalake'
 import { S3Service, type S3Config } from '@hcengineering/s3'
+import { restoreControlledDocContentMongo, restoreWikiContentMongo } from './markup'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -164,20 +165,6 @@ export function devTool (
   const transactorUrl = process.env.TRANSACTOR_URL
   if (transactorUrl === undefined) {
     console.error('please provide transactor url.')
-  }
-
-  function getElasticUrl (): string {
-    const elasticUrl = process.env.ELASTIC_URL
-    if (elasticUrl === undefined) {
-      console.error('please provide elastic url')
-      process.exit(1)
-    }
-    return elasticUrl
-  }
-
-  const initScriptUrl = process.env.INIT_SCRIPT_URL
-  if (initScriptUrl !== undefined) {
-    setMetadata(toolPlugin.metadata.InitScriptURL, initScriptUrl)
   }
 
   setMetadata(accountPlugin.metadata.Transactors, transactorUrl)
@@ -639,6 +626,7 @@ export function devTool (
                     },
                     cmd.region,
                     true,
+                    true,
                     5000, // 5 gigabytes per blob
                     async (storage, workspaceStorage) => {
                       if (cmd.remove) {
@@ -710,7 +698,8 @@ export function devTool (
                   })
                 },
                 cmd.region,
-                true,
+                false,
+                false,
                 100
               )
             ) {
@@ -930,7 +919,8 @@ export function devTool (
     )
     .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 15mb)', '15')
     .option('-f, --force', 'Force backup', false)
-    .option('-c, --recheck', 'Force hash recheck on server', false)
+    .option('-f, --fresh', 'Force fresh backup', false)
+    .option('-c, --clean', 'Force clean of old backup files, only with fresh backup option', false)
     .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
     .action(
       async (
@@ -939,7 +929,8 @@ export function devTool (
         cmd: {
           skip: string
           force: boolean
-          recheck: boolean
+          fresh: boolean
+          clean: boolean
           timeout: string
           include: string
           blobLimit: string
@@ -951,7 +942,8 @@ export function devTool (
         const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
         await backup(toolCtx, endpoint, wsid, storage, {
           force: cmd.force,
-          recheck: cmd.recheck,
+          freshBackup: cmd.fresh,
+          clean: cmd.clean,
           include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
           skipDomains: (cmd.skip ?? '').split(';').map((it) => it.trim()),
           timeout: 0,
@@ -1208,11 +1200,12 @@ export function devTool (
         throw new Error('Datalake storage config is required')
       }
 
+      toolCtx.info('using datalake', { datalake: datalakeConfig })
       const datalake = createDatalakeClient(datalakeConfig as DatalakeConfig)
 
       let workspaces: Workspace[] = []
-      const { dbUrl } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
+      const accountUrl = getAccountDBUrl()
+      await withDatabase(accountUrl, async (db) => {
         workspaces = await listWorkspacesPure(db)
         workspaces = workspaces
           .filter((p) => p.mode !== 'archived')
@@ -1232,6 +1225,116 @@ export function devTool (
           await copyToDatalake(toolCtx, workspaceId, config, storage, datalake, params)
         }
       }
+    })
+
+  program
+    .command('restore-wiki-content-mongo')
+    .description('restore wiki document contents')
+    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+    .option('-d, --dryrun', 'Dry run', false)
+    .action(async (cmd: { workspace: string, dryrun: boolean }) => {
+      const params = {
+        dryRun: cmd.dryrun
+      }
+
+      const { dbUrl, version } = prepareTools()
+
+      let workspaces: Workspace[] = []
+      const accountUrl = getAccountDBUrl()
+      await withDatabase(accountUrl, async (db) => {
+        workspaces = await listWorkspacesPure(db)
+        workspaces = workspaces
+          .filter((p) => p.mode !== 'archived')
+          .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
+          .sort((a, b) => b.lastVisit - a.lastVisit)
+      })
+
+      console.log('found workspaces', workspaces.length)
+
+      await withStorage(async (storageAdapter) => {
+        await withDatabase(dbUrl, async (db) => {
+          const mongodbUri = getMongoDBUrl()
+          const client = getMongoClient(mongodbUri)
+          const _client = await client.getClient()
+
+          try {
+            const count = workspaces.length
+            let index = 0
+            for (const workspace of workspaces) {
+              index++
+
+              toolCtx.info('processing workspace', { workspace: workspace.workspace, index, count })
+              if (workspace.version === undefined || !deepEqual(workspace.version, version)) {
+                console.log(`upgrade to ${versionToString(version)} is required`)
+                continue
+              }
+
+              const workspaceId = getWorkspaceId(workspace.workspace)
+              const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
+
+              await restoreWikiContentMongo(toolCtx, wsDb, workspaceId, storageAdapter, params)
+            }
+          } finally {
+            client.close()
+          }
+        })
+      })
+    })
+
+  program
+    .command('restore-controlled-content-mongo')
+    .description('restore controlled document contents')
+    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+    .option('-d, --dryrun', 'Dry run', false)
+    .option('-f, --force', 'Force update', false)
+    .action(async (cmd: { workspace: string, dryrun: boolean, force: boolean }) => {
+      const params = {
+        dryRun: cmd.dryrun
+      }
+
+      const { dbUrl, version } = prepareTools()
+
+      let workspaces: Workspace[] = []
+      const accountUrl = getAccountDBUrl()
+      await withDatabase(accountUrl, async (db) => {
+        workspaces = await listWorkspacesPure(db)
+        workspaces = workspaces
+          .filter((p) => p.mode !== 'archived')
+          .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
+          .sort((a, b) => b.lastVisit - a.lastVisit)
+      })
+
+      console.log('found workspaces', workspaces.length)
+
+      await withStorage(async (storageAdapter) => {
+        await withDatabase(dbUrl, async (db) => {
+          const mongodbUri = getMongoDBUrl()
+          const client = getMongoClient(mongodbUri)
+          const _client = await client.getClient()
+
+          try {
+            const count = workspaces.length
+            let index = 0
+            for (const workspace of workspaces) {
+              index++
+
+              toolCtx.info('processing workspace', { workspace: workspace.workspace, index, count })
+
+              if (!cmd.force && (workspace.version === undefined || !deepEqual(workspace.version, version))) {
+                console.log(`upgrade to ${versionToString(version)} is required`)
+                continue
+              }
+
+              const workspaceId = getWorkspaceId(workspace.workspace)
+              const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
+
+              await restoreControlledDocContentMongo(toolCtx, wsDb, workspaceId, storageAdapter, params)
+            }
+          } finally {
+            client.close()
+          }
+        })
+      })
     })
 
   program
@@ -1326,7 +1429,7 @@ export function devTool (
         await withDatabase(dbUrl, async (db) => {
           const wsid = getWorkspaceId(workspace)
           const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-          await cleanWorkspace(toolCtx, dbUrl, wsid, adapter, getElasticUrl(), endpoint, cmd)
+          await cleanWorkspace(toolCtx, dbUrl, wsid, adapter, endpoint, cmd)
         })
       })
     })

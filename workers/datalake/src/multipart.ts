@@ -14,10 +14,10 @@
 //
 
 import { error, json } from 'itty-router'
-import postgres from 'postgres'
-import * as db from './db'
+import { withPostgres } from './db'
 import { cacheControl } from './const'
 import { toUUID } from './encodings'
+import { type MetricsContext } from './metrics'
 import { selectStorage } from './storage'
 import { type BlobRequest, type UUID } from './types'
 
@@ -83,10 +83,9 @@ export async function handleMultipartUploadPart (
 export async function handleMultipartUploadComplete (
   request: BlobRequest,
   env: Env,
-  ctx: ExecutionContext
+  ctx: ExecutionContext,
+  metrics: MetricsContext
 ): Promise<Response> {
-  const sql = postgres(env.HYPERDRIVE.connectionString)
-
   const { workspace, name } = request
 
   const multipartKey = request.query?.key
@@ -108,17 +107,17 @@ export async function handleMultipartUploadComplete (
   const size = object.size ?? 0
   const filename = multipartKey as UUID
 
-  const data = await db.getData(sql, { hash, location })
-  if (data !== null) {
-    // blob already exists
-    await Promise.all([bucket.delete(filename), db.createBlob(sql, { workspace, name, hash, location })])
-  } else {
-    // Otherwise register a new hash and blob
-    await sql.begin((sql) => [
-      db.createData(sql, { hash, location, filename, type, size }),
-      db.createBlob(sql, { workspace, name, hash, location })
-    ])
-  }
+  await withPostgres(env, ctx, metrics, async (db) => {
+    const data = await db.getData({ hash, location })
+    if (data !== null) {
+      // blob already exists
+      await Promise.all([bucket.delete(filename), db.createBlob({ workspace, name, hash, location })])
+    } else {
+      // Otherwise register a new hash and blob
+      await db.createData({ hash, location, filename, type, size })
+      await db.createBlob({ workspace, name, hash, location })
+    }
+  })
 
   return new Response(null, { status: 204 })
 }

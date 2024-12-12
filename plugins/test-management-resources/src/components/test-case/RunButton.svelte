@@ -13,16 +13,30 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
+  import { Doc, DocumentQuery, Ref, Space, mergeQueries } from '@hcengineering/core'
   import { Button } from '@hcengineering/ui'
   import { selectionStore } from '@hcengineering/view-resources'
   import type { TestCase, TestProject } from '@hcengineering/test-management'
+  import { createQuery } from '@hcengineering/presentation'
 
   import testManagement from '../../plugin'
   import { showCreateTestRunPanel } from '../../utils'
 
   export let query: DocumentQuery<Doc> = {}
   export let space: Ref<Space>
+
+  const docQuery = createQuery()
+  let haveTestCases = false
+
+  $: resultQuery = mergeQueries(query, { space })
+  $: docQuery.query(
+    testManagement.class.TestCase,
+    resultQuery,
+    (res) => {
+      haveTestCases = res.length > 0
+    },
+    { limit: 1 }
+  )
 
   const project: Ref<TestProject> = space as any
 
@@ -42,5 +56,6 @@
   justify={'left'}
   kind={'primary'}
   label={testManagement.string.RunTestCases}
+  disabled={!haveTestCases}
   on:click={handleRun}
 />

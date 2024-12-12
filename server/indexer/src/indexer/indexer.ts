@@ -571,7 +571,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
     const byClass = groupByArray<WithLookup<DocIndexState>, Ref<Class<Doc>>>(result, (it) => it.objectClass)
 
-    const docUpdates = new Map<Ref<Doc>, DocumentUpdate<DocIndexState>>()
+    const docUpdates = new Map<Ref<Doc>, Partial<DocIndexState>>()
 
     const pushQueue = new RateLimiter(5)
 
@@ -581,7 +581,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       if (docs.length === 0) {
         return
       }
-      await pushQueue.exec(async () => {
+      await pushQueue.add(async () => {
         try {
           try {
             await ctx.with('push-elastic', {}, () => this.fulltextAdapter.updateMany(ctx, this.workspace, docs))
@@ -646,7 +646,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         const docState = valueIds.get(doc._id as Ref<DocIndexState>) as WithLookup<DocIndexState>
         const indexedDoc = createIndexedDoc(doc, this.hierarchy.findAllMixins(doc), doc.space)
 
-        await rateLimit.exec(async () => {
+        await rateLimit.add(async () => {
           await ctx.with('process-document', { _class: doc._class }, async (ctx) => {
             try {
               // Copy content attributes as well.

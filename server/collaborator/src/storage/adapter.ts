@@ -24,9 +24,9 @@ export interface CollabStorageAdapter {
     documentId: string,
     document: YDoc,
     context: Context,
-    markup: {
-      prev: Record<string, string>
-      curr: Record<string, string>
+    getMarkup: {
+      prev: () => Record<string, string>
+      curr: () => Record<string, string>
     }
-  ) => Promise<void>
+  ) => Promise<Record<string, string> | undefined>
 }

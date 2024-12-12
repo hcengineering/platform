@@ -132,12 +132,6 @@ export const driveOperation: MigrateOperation = {
       {
         state: 'renameFields',
         func: renameFields
-      },
-      {
-        state: 'fix-rename-backups',
-        func: async (client: MigrationClient): Promise<void> => {
-          await client.update(DOMAIN_DRIVE, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
-        }
       }
     ])
   },

@@ -28,6 +28,7 @@
     "Vacation": "Vacation",
     "Sick": "Sick",
     "PTO": "PTO",
+    "PTOs": "PTOs",
     "Remote": "Remote",
     "Overtime": "Overtime",
     "PTO2": "PTO/2",
@@ -47,6 +48,7 @@
     "PublicHoliday": "Public holiday",
     "Title": "Title",
     "Description": "Description",
+    "PublicHolidays": "Public holidays",
     "MarkAsPublicHoliday": "Mark as public holiday",
     "EditPublicHoliday": "Edit public holiday",
     "Managers": "Managers",
@@ -57,6 +59,11 @@
     "RequestUpdated": "Request updated",
     "RequestRemoved": "Request removed",
     "ConfigLabel": "Human resources",
-    "ConfigDescription": "Extension to manage organization structure and employee work calendar"
+    "ConfigDescription": "Extension to manage organization structure and employee work calendar",
+    "WorkingDays": "Working days",
+    "ReportedDays": "Reported days",
+    "Tasks": "Tasks",
+    "TPD": "TPD",
+    "EXTRa": "EXTRa"
   }
 }

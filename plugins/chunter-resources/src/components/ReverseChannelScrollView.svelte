@@ -13,17 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, {
-    Doc,
-    generateId,
-    getCurrentAccount,
-    Ref,
-    Space,
-    Timestamp,
-    Tx,
-    TxCUD,
-    TxProcessor
-  } from '@hcengineering/core'
+  import core, { Doc, generateId, getCurrentAccount, Ref, Space, Timestamp, Tx, TxCUD } from '@hcengineering/core'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { ModernButton, Scroller } from '@hcengineering/ui'
   import { addTxListener, getClient, removeTxListener } from '@hcengineering/presentation'
@@ -236,7 +226,7 @@
 
   function scrollToStartOfNew (): void {
     if (scrollDiv == null || lastMsgBeforeFreeze === undefined) return
-    if (needUpdateTimestamp) {
+    if (needUpdateTimestamp || $newTimestampStore === undefined) {
       void provider.updateNewTimestamp(notifyContext)
       needUpdateTimestamp = false
     }
@@ -346,7 +336,7 @@
 
   function read (): void {
     if (isFreeze() || notifyContext === undefined || !isScrollInitialized) return
-    readViewportMessages(messages, notifyContext, scrollDiv, contentDiv)
+    readViewportMessages(messages, notifyContext._id, scrollDiv, contentDiv)
   }
 
   function updateScrollData (): void {

@@ -25,7 +25,6 @@ import type { WorkspaceIdWithUrl } from './utils'
 export interface DocInfo {
   id: string
   hash: string
-  size: number // Aprox size
 }
 /**
  * @public
@@ -68,8 +67,7 @@ export interface SessionData {
  */
 export interface LowLevelStorage {
   // Low level streaming API to retrieve information
-  // If recheck is passed, all %hash% for documents, will be re-calculated.
-  find: (ctx: MeasureContext, domain: Domain, recheck?: boolean) => StorageIterator
+  find: (ctx: MeasureContext, domain: Domain) => StorageIterator
 
   // Load passed documents from domain
   load: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>

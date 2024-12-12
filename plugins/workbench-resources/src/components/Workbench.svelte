@@ -136,7 +136,6 @@
   let currentSpecial: string | undefined
   let currentQuery: Record<string, string | null> | undefined
   let specialComponent: SpecialNavModel | undefined
-  let asideId: string | undefined
   let currentFragment: string | undefined = ''
 
   let currentApplication: Application | undefined
@@ -160,11 +159,26 @@
 
   const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
-  $deviceInfo.navigator.visible = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
-  $deviceInfo.aside.visible = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
+  const defaultNavigator = !(getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true)
+  const savedNavigator = localStorage.getItem('hiddenNavigator')
+  const savedAside = localStorage.getItem('hiddenAside')
+  let hiddenNavigator: boolean = savedNavigator !== null ? savedNavigator === 'true' : defaultNavigator
+  let hiddenAside: boolean = savedAside !== null ? savedAside === 'true' : defaultNavigator
+  $deviceInfo.navigator.visible = !hiddenNavigator
+  $deviceInfo.aside.visible = !hiddenAside
+  sidebarStore.subscribe((sidebar) => {
+    if (!$deviceInfo.aside.float) {
+      hiddenAside = sidebar.variant === SidebarVariant.MINI
+      localStorage.setItem('hiddenAside', `${hiddenAside}`)
+    }
+  })
 
   async function toggleNav (): Promise<void> {
     $deviceInfo.navigator.visible = !$deviceInfo.navigator.visible
+    if (!$deviceInfo.navigator.float) {
+      hiddenNavigator = !$deviceInfo.navigator.visible
+      localStorage.setItem('hiddenNavigator', `${hiddenNavigator}`)
+    }
     closeTooltip()
     if (currentApplication && navigatorModel) {
       await tick()
@@ -359,8 +373,6 @@
             loc.path[4] = currentSpecial
           } else if (loc.path[3] === resolved.defaultLocation.path[3]) {
             loc.path[4] = resolved.defaultLocation.path[4]
-          } else {
-            loc.path[4] = asideId as string
           }
         } else {
           loc.path.length = 4
@@ -497,10 +509,6 @@
       }
     }
 
-    if (special !== currentSpecial && (navigatorModel?.aside || currentApplication?.aside)) {
-      asideId = special
-    }
-
     if (app !== undefined) {
       localStorage.setItem(`${locationStorageKeyId}_${app}`, originalLoc)
     }
@@ -574,19 +582,10 @@
         specialComponent = undefined
       // eslint-disable-next-line no-fallthrough
       case 3:
-        asideId = undefined
         if (currentSpace !== undefined) {
           specialComponent = undefined
         }
     }
-  }
-
-  function closeAside (): void {
-    const loc = getLocation()
-    loc.path.length = 4
-    asideId = undefined
-    checkOnHide()
-    navigate(loc)
   }
 
   async function updateSpace (spaceId?: Ref<Space>): Promise<void> {
@@ -605,14 +604,11 @@
 
   function setSpaceSpecial (spaceSpecial: string | undefined): void {
     if (currentSpecial !== undefined && spaceSpecial === currentSpecial) return
-    if (asideId !== undefined && spaceSpecial === asideId) return
     clear(3)
     if (spaceSpecial === undefined) return
     specialComponent = getSpecialComponent(spaceSpecial)
     if (specialComponent !== undefined) {
       currentSpecial = spaceSpecial
-    } else if (navigatorModel?.aside !== undefined || currentApplication?.aside !== undefined) {
-      asideId = spaceSpecial
     }
   }
 
@@ -632,20 +628,17 @@
     }
   }
 
-  let aside: HTMLElement
   let cover: HTMLElement
   let workbenchWidth: number = $deviceInfo.docWidth
 
   $deviceInfo.navigator.float = workbenchWidth <= HIDE_NAVIGATOR
   const checkWorkbenchWidth = (): void => {
-    if (workbenchWidth <= HIDE_NAVIGATOR && !$deviceInfo.navigator.float && $deviceInfo.navigator.visible) {
+    if (workbenchWidth <= HIDE_NAVIGATOR && !$deviceInfo.navigator.float) {
       $deviceInfo.navigator.visible = false
       $deviceInfo.navigator.float = true
     } else if (workbenchWidth > HIDE_NAVIGATOR && $deviceInfo.navigator.float) {
-      if (getMetadata(workbench.metadata.NavigationExpandedDefault) === undefined) {
-        $deviceInfo.navigator.float = false
-        $deviceInfo.navigator.visible = true
-      }
+      $deviceInfo.navigator.float = false
+      $deviceInfo.navigator.visible = !hiddenNavigator
     }
   }
   checkWorkbenchWidth()
@@ -653,10 +646,8 @@
     $deviceInfo.aside.visible = false
     $deviceInfo.aside.float = true
   } else if ($deviceInfo.docWidth > HIDE_ASIDE && $deviceInfo.aside.float) {
-    if (getMetadata(workbench.metadata.NavigationExpandedDefault) === undefined) {
-      $deviceInfo.aside.float = false
-      $deviceInfo.aside.visible = true
-    }
+    $deviceInfo.aside.float = false
+    $deviceInfo.aside.visible = !hiddenAside
   }
   const checkOnHide = (): void => {
     if ($deviceInfo.navigator.visible && $deviceInfo.navigator.float) $deviceInfo.navigator.visible = false
@@ -751,14 +742,6 @@
     person && client.getHierarchy().hasMixin(person, contact.mixin.Employee)
       ? !client.getHierarchy().as(person, contact.mixin.Employee).active
       : false
-
-  let asideComponent: AnyComponent | undefined
-
-  $: if (asideId !== undefined && navigatorModel !== undefined) {
-    asideComponent = navigatorModel?.aside ?? currentApplication?.aside
-  } else {
-    asideComponent = undefined
-  }
 </script>
 
 {#if person && deactivated && !isAdminUser()}
@@ -847,7 +830,12 @@
             notify={hasInboxNotifications}
           />
         </NavLink>
-        <Applications {apps} active={currentApplication?._id} direction={$deviceInfo.navigator.direction} />
+        <Applications
+          {apps}
+          active={currentApplication?._id}
+          direction={$deviceInfo.navigator.direction}
+          on:toggleNav={toggleNav}
+        />
       </div>
       <div
         class="info-box {$deviceInfo.navigator.direction}"
@@ -985,11 +973,8 @@
           <Component
             is={currentApplication.component}
             props={{
-              currentSpace,
-              asideId,
-              asideComponent: currentApplication?.aside
+              currentSpace
             }}
-            on:close={closeAside}
           />
         {:else if specialComponent}
           <Component
@@ -1019,12 +1004,6 @@
           <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
         {/if}
       </div>
-      {#if asideComponent !== undefined}
-        <Separator name={'workbench'} index={1} color={'transparent'} separatorSize={0} short />
-        <div class="antiPanel-component antiComponent aside" bind:this={aside}>
-          <Component is={asideComponent} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
-        </div>
-      {/if}
     </div>
     {#if !$deviceInfo.aside.float}
       {#if $sidebarStore.variant === SidebarVariant.EXPANDED}

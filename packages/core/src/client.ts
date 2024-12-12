@@ -178,8 +178,8 @@ class ClientImpl implements AccountClient, BackupClient {
     await this.conn.close()
   }
 
-  async loadChunk (domain: Domain, idx?: number, recheck?: boolean): Promise<DocChunk> {
-    return await this.conn.loadChunk(domain, idx, recheck)
+  async loadChunk (domain: Domain, idx?: number): Promise<DocChunk> {
+    return await this.conn.loadChunk(domain, idx)
   }
 
   async closeChunk (idx: number): Promise<void> {
@@ -236,7 +236,7 @@ export async function createClient (
   let hierarchy = new Hierarchy()
   let model = new ModelDb(hierarchy)
 
-  let lastTx: number
+  let lastTx: number = 0
 
   function txHandler (...tx: Tx[]): void {
     if (tx == null || tx.length === 0) {
@@ -295,6 +295,10 @@ export async function createClient (
     }
 
     // We need to look for last {transactionThreshold} transactions and if it is more since lastTx one we receive, we need to perform full refresh.
+    if (lastTx === 0) {
+      await oldOnConnect?.(ClientConnectEvent.Refresh, data)
+      return
+    }
     const atxes = await ctx.with('find-atx', {}, () =>
       conn.findAll(
         core.class.Tx,

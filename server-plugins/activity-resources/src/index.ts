@@ -316,6 +316,7 @@ export async function generateDocUpdateMessages (
         )
       }
     }
+    return res
   }
 
   switch (tx._class) {

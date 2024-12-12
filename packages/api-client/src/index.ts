@@ -14,5 +14,6 @@
 //
 
 export * from './client'
+export * from './markup/types'
 export * from './socket'
 export * from './types'

@@ -77,5 +77,6 @@
   onExtensions={handleExtensions}
   on:update
   on:open-document
+  on:loaded
   bind:this={collabEditor}
 />
