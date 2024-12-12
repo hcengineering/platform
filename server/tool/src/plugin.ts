@@ -11,7 +11,7 @@ export const toolId = 'tool' as Plugin
 const toolPlugin = plugin(toolId, {
   metadata: {
     InitWorkspace: '' as Metadata<string>,
-    InitScriptURL: '' as Metadata<string>
+    InitRepoDir: '' as Metadata<string>
   }
 })
 

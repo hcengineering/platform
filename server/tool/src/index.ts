@@ -192,14 +192,20 @@ export async function initializeWorkspace (
   progress: (value: number) => Promise<void>
 ): Promise<void> {
   const initWS = branding?.initWorkspace ?? getMetadata(toolPlugin.metadata.InitWorkspace)
-  const scriptUrl = getMetadata(toolPlugin.metadata.InitScriptURL)
-  ctx.info('Init script details', { scriptUrl, initWS })
-  if (initWS === undefined || scriptUrl === undefined) return
+  const initRepoDir = getMetadata(toolPlugin.metadata.InitRepoDir)
+  ctx.info('Init script details', { initWS, initRepoDir })
+  if (initWS === undefined || initRepoDir === undefined) return
+
+  const initScriptFile = path.resolve(initRepoDir, 'script.yaml')
+  if (!fs.existsSync(initScriptFile)) {
+    ctx.warn('Init script file not found in init directory', { initScriptFile })
+    return
+  }
+
   try {
-    // `https://raw.githubusercontent.com/hcengineering/init/main/script.yaml`
-    const req = await fetch(scriptUrl)
-    const text = await req.text()
+    const text = fs.readFileSync(initScriptFile, 'utf8')
     const scripts = yaml.load(text) as any as InitScript[]
+
     let script: InitScript | undefined
     if (initWS !== undefined) {
       script = scripts.find((it) => it.name === initWS)
@@ -211,7 +217,7 @@ export async function initializeWorkspace (
       return
     }
 
-    const initializer = new WorkspaceInitializer(ctx, storageAdapter, wsUrl, client)
+    const initializer = new WorkspaceInitializer(ctx, storageAdapter, wsUrl, client, initRepoDir)
     await initializer.processScript(script, logger, progress)
   } catch (err: any) {
     ctx.error('Failed to initialize workspace', { error: err })
