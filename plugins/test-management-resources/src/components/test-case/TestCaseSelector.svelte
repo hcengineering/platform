@@ -58,7 +58,6 @@
   on:click={showSelectDialog}
 >
   <span slot="content" class="overflow-label disabled text">
-    {objects?.length ?? 0}
-    <Label {label} />
+    <Label {label} params={{ count: objects?.length ?? 0 }} />
   </span>
 </Button>

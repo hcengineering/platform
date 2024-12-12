@@ -88,8 +88,9 @@
     "TestPlans": "測試計劃",
     "TestPlan": "測試計劃",
     "CreateTestPlan": "建立測試計劃",
-    "SelectedTestCases": "選定的測試用例",
-    "DefaultAssignee": "預設指派人",
-    "TestPlanTitle": "測試計劃標題"
+    "SelectedTestCases": "{count, plural, =0 {未選擇測試用例} one {選擇了#個測試用例} few {選擇了#個測試用例} other {選擇了#個測試用例}}",
+    "DefaultAssignee": "默认指派人",
+    "TestPlanTitle": "測試計劃標題",
+    "SelectTestCases": "選擇測試用例"
   }
 }

@@ -88,8 +88,9 @@
     "TestPlans": "Piani di test",
     "TestPlan": "Piano di test",
     "CreateTestPlan": "Crea piano di test",
-    "SelectedTestCases": "casi di test selezionati",
+    "SelectedTestCases": "{count, plural, =0 {Casi di test non selezionati} one {# caso di test selezionato} few {# casi di test selezionati} other {# casi di test selezionati}}",
     "DefaultAssignee": "Assegnatario predefinito",
-    "TestPlanTitle": "Titolo"
+    "TestPlanTitle": "Titolo",
+    "SelectTestCases": "Seleziona casi di test"
   }
 }

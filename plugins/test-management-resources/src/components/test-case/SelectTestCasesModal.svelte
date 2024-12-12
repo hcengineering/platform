@@ -18,7 +18,7 @@
   import { DocumentQuery, Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { TestCase, TestProject } from '@hcengineering/test-management'
-  import { Button, Dialog } from '@hcengineering/ui'
+  import { Button, Dialog, Label } from '@hcengineering/ui'
   import { ComponentNavigator } from '@hcengineering/workbench-resources'
   import view from '@hcengineering/view'
   import { selectionStore } from '@hcengineering/view-resources'
@@ -59,7 +59,7 @@
 
 <Dialog isFullSize on:fullsize on:close={handleClose}>
   <svelte:fragment slot="title">
-    {'Select test cases'}
+    <Label label={testManagement.string.SelectTestCases} />
   </svelte:fragment>
   <ComponentNavigator
     navigationComponent={view.component.FoldersBrowser}

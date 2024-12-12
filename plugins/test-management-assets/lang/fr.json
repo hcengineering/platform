@@ -88,8 +88,9 @@
     "TestPlans": "Test plans",
     "TestPlan": "Test plan",
     "CreateTestPlan": "Créer un test plan",
-    "SelectedTestCases": "sélectionnez les cas de test",
+    "SelectedTestCases": "{count, plural, =0 {Cas de test non sélectionnés} one {# cas de test sélectionné} few {# cas de test sélectionnés} other {# cas de test sélectionnés}}",
     "DefaultAssignee": "Assigné par défaut",
-    "TestPlanTitle": "Titre"
+    "TestPlanTitle": "Titre",
+    "SelectTestCases": "Sélectionnez les cas de test"
   }
 }
