@@ -79,13 +79,11 @@ function applyMetadata (data: string | undefined, stt: STT): void {
   }
 
   if (metadata.transcription === TranscriptionStatus.InProgress) {
-    console.log('Starting transcription', stt.name)
     stt.start()
   } else if (
     metadata.transcription === TranscriptionStatus.Completed ||
     metadata.transcription === TranscriptionStatus.Idle
   ) {
-    console.log('Stopping transcription', stt.name)
     stt.stop()
   }
 }
@@ -115,6 +113,7 @@ export default defineAgent({
       RoomEvent.TrackSubscribed,
       (track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant) => {
         if (publication.kind === TrackKind.KIND_AUDIO) {
+          console.log('Subscribing to track', participant.name, publication.sid)
           stt.subscribe(track, publication, participant)
         }
       }
@@ -124,6 +123,7 @@ export default defineAgent({
       RoomEvent.TrackUnsubscribed,
       (track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant) => {
         if (publication.kind === TrackKind.KIND_AUDIO) {
+          console.log('Unsubscribing from track', participant.name, publication.sid)
           stt.unsubscribe(track, publication, participant)
         }
       }
