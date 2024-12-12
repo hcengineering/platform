@@ -419,7 +419,7 @@ async function initRoomMetadata (metadata: string | undefined): Promise<void> {
     await startTranscription(room)
   }
 
-  if (get(isRecordingAvailable) && data.recording == null && room?.startWithRecording === true) {
+  if (get(isRecordingAvailable) && data.recording == null && room?.startWithRecording === true && !get(isRecording)) {
     await record(room)
   }
 }
@@ -675,11 +675,7 @@ async function initMeetingMinutes (room: Room): Promise<void> {
       .toLocaleDateString('en-GB', {
         day: 'numeric',
         month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-        timeZone: 'UTC'
+        year: 'numeric'
       })
       .replace(',', ' at')
     const _id = generateId<MeetingMinutes>()
