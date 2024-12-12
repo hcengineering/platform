@@ -100,7 +100,7 @@ export async function createControlledDocFromTemplate (
     seqNumber,
     path,
     docClass,
-    template.content
+    spec.content ?? template.content
   )
 }
 
@@ -265,7 +265,7 @@ export async function createDocumentTemplate (
       prefix: TEMPLATE_PREFIX,
       author,
       owner: author,
-      content: null
+      content: spec.content ?? null
     },
     templateId
   )

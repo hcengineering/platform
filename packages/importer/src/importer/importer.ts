@@ -14,7 +14,7 @@
 //
 import attachment, { type Attachment } from '@hcengineering/attachment'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
-import { Employee, PersonAccount, type Person } from '@hcengineering/contact'
+import { Employee, type Person } from '@hcengineering/contact'
 import core, {
   type Account,
   type AttachedData,
@@ -901,7 +901,7 @@ export class WorkspaceImporter {
       documents.class.ControlledDocument
     )
 
-    if (!result.success) {
+    if (result.success !== true) {
       throw new Error('Failed to create controlled document')
     }
 
