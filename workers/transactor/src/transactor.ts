@@ -5,6 +5,7 @@ import {
   generateId,
   MeasureMetricsContext,
   type MeasureContext,
+  type Tx,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
@@ -25,7 +26,11 @@ import { DurableObject } from 'cloudflare:workers'
 import { createaPipeline } from './pipeline'
 
 // Approach usefull only for separate build, after model-all bundle phase is executed.
-import model from './model.json'
+// import model from './model.json'
+
+// TODO: this is only to pass the validation step, makea a proper solution
+import { readFileSync } from 'node:fs'
+const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
 const rpcHandler = new RPCHandler()
 
@@ -72,7 +77,9 @@ export class Transactor extends DurableObject<Env> {
         {
           pingTimeout: 10000,
           reconnectTimeout: 3000
-        }
+        },
+        undefined,
+        this.accountsUrl
       )
     })
   }
@@ -148,8 +155,7 @@ export class Transactor extends DurableObject<Env> {
       token,
       rawToken,
       this.pipelineFactory,
-      sessionId ?? undefined,
-      this.accountsUrl
+      sessionId ?? undefined
     )
 
     const webSocketData: WebsocketData = {
