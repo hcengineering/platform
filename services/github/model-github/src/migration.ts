@@ -332,7 +332,7 @@ export const githubOperationPreTime: MigrateOperation = {
       {
         state: 'migrate-github-sync-domain',
         func: async (client) => {
-          await client.move(DOMAIN_GITHUB, { _class: github.class.DocSyncInfo }, DOMAIN_GITHUB_SYNC)
+          await client.move(DOMAIN_GITHUB, { _class: github.class.DocSyncInfo }, DOMAIN_GITHUB_SYNC, 100)
           await client.move(DOMAIN_GITHUB, { _class: github.class.GithubUserInfo }, DOMAIN_GITHUB_USER)
         }
       }
