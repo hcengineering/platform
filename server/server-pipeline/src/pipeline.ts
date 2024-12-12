@@ -170,7 +170,7 @@ export function createBackupPipeline (
     const middlewares: MiddlewareCreator[] = [
       LowLevelMiddleware.create,
       ContextNameMiddleware.create,
-      ConnectionMgrMiddleware.create,
+      // ConnectionMgrMiddleware.create,
       DomainFindMiddleware.create,
       DBAdapterInitMiddleware.create,
       ModelMiddleware.create(systemTx),
