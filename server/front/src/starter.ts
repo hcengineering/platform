@@ -24,12 +24,6 @@ import { start } from '.'
 export function startFront (ctx: MeasureContext, extraConfig?: Record<string, string | undefined>): void {
   const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? '8080')
 
-  const elasticUrl = process.env.ELASTIC_URL
-  if (elasticUrl === undefined) {
-    console.error('please provide elastic url')
-    process.exit(1)
-  }
-
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
   const storageAdapter = buildStorageFromConfig(storageConfig)
 
@@ -120,7 +114,6 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
   const disableSignUp = process.env.DISABLE_SIGNUP
 
   const config = {
-    elasticUrl,
     storageAdapter,
     accountsUrl,
     uploadUrl,
