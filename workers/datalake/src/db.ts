@@ -50,7 +50,7 @@ export async function withPostgres<T> (
   fn: (db: BlobDB) => Promise<T>
 ): Promise<T> {
   const sql = metrics.withSync('db.connect', () => {
-    return postgres(env.DB_URL, {
+    return postgres(env.HYPERDRIVE.connectionString, {
       connection: {
         application_name: 'datalake'
       },
