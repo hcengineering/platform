@@ -4,14 +4,22 @@
   "private": true,
   "template": "cloud",
   "scripts": {
-    "_phase:bundle": "rushx get-model",
-    "get-model": "mkdir -p bundle && esbuild src/get-model.ts --bundle --keep-names --platform=node --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --define:process.env.VERSION=$(node ../../common/scripts/show_tag.js) --define:process.env.GIT_REVISION=$(../../common/scripts/git_version.sh) --outfile=bundle/bundle.js --log-level=error && node ./bundle/bundle.js > ./src/model.json",
     "deploy": "wrangler deploy",
     "dev": "wrangler dev --port 3335",
     "dev-local": "wrangler dev --port 3335 --local-upstream --host localhost",
     "start": "wrangler dev --port 3335",
     "cf-typegen": "wrangler types",
-    "bundle": "rushx get-model && wrangler deploy --dry-run --outdir dist"
+    "get-model": "mkdir -p bundle && esbuild src/get-model.ts --bundle --keep-names --platform=node --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --define:process.env.VERSION=$(node ../../common/scripts/show_tag.js) --define:process.env.GIT_REVISION=$(../../common/scripts/git_version.sh) --outfile=bundle/bundle.js --log-level=error && node ./bundle/bundle.js > ./src/model.json",
+    "bundle": "rushx get-model && wrangler deploy --dry-run --outdir dist",
+    "build": "compile",
+    "build:watch": "compile",
+    "test": "jest --passWithNoTests --silent --forceExit",
+    "format": "format src",
+    "_phase:bundle": "rushx get-model",
+    "_phase:build": "compile transpile src",
+    "_phase:test": "jest --passWithNoTests --silent --forceExit",
+    "_phase:format": "format src",
+    "_phase:validate": "compile validate"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241022.0",
