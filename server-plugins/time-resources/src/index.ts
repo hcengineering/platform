@@ -405,7 +405,7 @@ export async function OnToDoUpdate (txes: Tx[], control: TriggerControl): Promis
       )
       if (funcs !== undefined) {
         const func = await getResource(funcs.onDone)
-        const todoRes = await func(control, resEvents, todo)
+        const todoRes = await func(control, resEvents, todo, tx.space === core.space.DerivedTx)
         await control.apply(control.ctx, todoRes)
       }
       continue
@@ -459,7 +459,12 @@ export async function IssueToDoFactory (actualTx: TxCUD<Issue>, control: Trigger
 /**
  * @public
  */
-export async function IssueToDoDone (control: TriggerControl, workslots: WorkSlot[], todo: ToDo): Promise<Tx[]> {
+export async function IssueToDoDone (
+  control: TriggerControl,
+  workslots: WorkSlot[],
+  todo: ToDo,
+  isDerived: boolean
+): Promise<Tx[]> {
   const res: Tx[] = []
   let total = 0
   for (const workslot of workslots) {
@@ -470,45 +475,47 @@ export async function IssueToDoDone (control: TriggerControl, workslots: WorkSlo
     await control.findAll<Issue>(control.ctx, todo.attachedToClass, { _id: todo.attachedTo as Ref<Issue> })
   )[0]
   if (issue !== undefined) {
-    const project = (await control.findAll(control.ctx, task.class.Project, { _id: issue.space }))[0]
-    if (project !== undefined) {
-      const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
-      if (type?.classic) {
-        const taskType = (await control.modelDb.findAll(task.class.TaskType, { _id: issue.kind }))[0]
-        if (taskType !== undefined) {
-          const index = taskType.statuses.findIndex((p) => p === issue.status)
+    if (!isDerived) {
+      const project = (await control.findAll(control.ctx, task.class.Project, { _id: issue.space }))[0]
+      if (project !== undefined) {
+        const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
+        if (type?.classic) {
+          const taskType = (await control.modelDb.findAll(task.class.TaskType, { _id: issue.kind }))[0]
+          if (taskType !== undefined) {
+            const index = taskType.statuses.findIndex((p) => p === issue.status)
 
-          const helpers = await control.modelDb.findAll<TodoAutomationHelper>(time.class.TodoAutomationHelper, {})
-          const testers = await Promise.all(helpers.map((it) => getResource(it.onDoneTester)))
-          let allowed = true
-          for (const tester of testers) {
-            if (!(await tester(control, todo))) {
-              allowed = false
-              break
+            const helpers = await control.modelDb.findAll<TodoAutomationHelper>(time.class.TodoAutomationHelper, {})
+            const testers = await Promise.all(helpers.map((it) => getResource(it.onDoneTester)))
+            let allowed = true
+            for (const tester of testers) {
+              if (!(await tester(control, todo))) {
+                allowed = false
+                break
+              }
             }
-          }
-          if (index !== -1 && allowed) {
-            const nextStatus = taskType.statuses[index + 1]
-            if (nextStatus !== undefined) {
-              const currentStatus = taskType.statuses[index]
-              const current = (await control.modelDb.findAll(core.class.Status, { _id: currentStatus }))[0]
-              const next = (await control.modelDb.findAll(core.class.Status, { _id: nextStatus }))[0]
-              if (
-                current.category !== task.statusCategory.Lost &&
-                next.category !== task.statusCategory.Lost &&
-                current.category !== task.statusCategory.Won
-              ) {
-                const innerTx = factory.createTxUpdateDoc(issue._class, issue.space, issue._id, {
-                  status: nextStatus
-                })
-                const outerTx = factory.createTxCollectionCUD(
-                  issue.attachedToClass,
-                  issue.attachedTo,
-                  issue.space,
-                  issue.collection,
-                  innerTx
-                )
-                res.push(outerTx)
+            if (index !== -1 && allowed) {
+              const nextStatus = taskType.statuses[index + 1]
+              if (nextStatus !== undefined) {
+                const currentStatus = taskType.statuses[index]
+                const current = (await control.modelDb.findAll(core.class.Status, { _id: currentStatus }))[0]
+                const next = (await control.modelDb.findAll(core.class.Status, { _id: nextStatus }))[0]
+                if (
+                  current.category !== task.statusCategory.Lost &&
+                  next.category !== task.statusCategory.Lost &&
+                  current.category !== task.statusCategory.Won
+                ) {
+                  const innerTx = factory.createTxUpdateDoc(issue._class, issue.space, issue._id, {
+                    status: nextStatus
+                  })
+                  const outerTx = factory.createTxCollectionCUD(
+                    issue.attachedToClass,
+                    issue.attachedTo,
+                    issue.space,
+                    issue.collection,
+                    innerTx
+                  )
+                  res.push(outerTx)
+                }
               }
             }
           }

@@ -50,7 +50,7 @@ export async function OnStateUpdate (txes: TxCUD<Doc>[], control: TriggerControl
       }
     }
   }
-  return []
+  return result
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

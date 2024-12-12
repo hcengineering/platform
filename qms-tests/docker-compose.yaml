@@ -99,7 +99,6 @@ services:
       - ACCOUNTS_URL=http://host.docker.internal:3003
       - MONGO_URL=mongodb://mongodb:27018
       - UPLOAD_URL=/files
-      - ELASTIC_URL=http://elastic:9200
       - GMAIL_URL=http://host.docker.internal:8088
       - CALENDAR_URL=http://host.docker.internal:8095
       - REKONI_URL=http://rekoni:4007

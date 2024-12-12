@@ -17,7 +17,7 @@ import {
   type ViewQueryOption,
   type Viewlet
 } from '@hcengineering/view'
-import { getCategories, getCategorySpaces } from '@hcengineering/view-resources'
+import { getCategories, getCategorySpaces, concatCategories } from '@hcengineering/view-resources'
 
 /**
  * @public
@@ -55,7 +55,7 @@ export async function updateTaskKanbanCategories (
         viewlet.descriptor
       )
       if (res !== undefined) {
-        categories = res
+        categories = concatCategories(res, categories)
         break
       }
     }
@@ -78,7 +78,7 @@ export async function getTaskKanbanResultQuery (
     if (viewOption.actionTarget !== 'query') continue
     const queryOption = viewOption as ViewQueryOption
     const f = await getResource(queryOption.action)
-    result = f(viewOptionsStore[queryOption.key] ?? queryOption.defaultValue, query)
+    result = f(viewOptionsStore[queryOption.key] ?? queryOption.defaultValue, result)
   }
   return result
 }
