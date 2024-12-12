@@ -82,11 +82,12 @@ export function serveWorkspaceAccount (
   if (initWS !== undefined) {
     setMetadata(toolPlugin.metadata.InitWorkspace, initWS)
   }
-
-  const initRepoDir = process.env.INIT_REPO_DIR ?? './init-scripts'
-  setMetadata(toolPlugin.metadata.InitRepoDir, initRepoDir)
-
+  const initScriptUrl = process.env.INIT_SCRIPT_URL
+  if (initScriptUrl !== undefined) {
+    setMetadata(toolPlugin.metadata.InitScriptURL, initScriptUrl)
+  }
   setMetadata(serverClientPlugin.metadata.UserAgent, 'WorkspaceService')
+
   setMetadata(serverNotification.metadata.InboxOnlyNotifications, true)
 
   let canceled = false

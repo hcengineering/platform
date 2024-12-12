@@ -441,13 +441,11 @@ async function importPageDocument (
     preProcessMarkdown(json, documentMetaMap, fileUploader)
   }
   const markup = jsonToMarkup(json)
+  const buffer = Buffer.from(markup)
 
   const id = docMeta.id as Ref<Document>
   const collabId = makeCollabId(document.class.Document, id, 'content')
-  const uploadResult = await fileUploader.uploadCollaborativeDoc(collabId, markup)
-  if (!uploadResult.success) {
-    throw new Error('Failed to upload collaborative document: ' + docMeta.id)
-  }
+  const blobId = await fileUploader.uploadCollaborativeDoc(collabId, buffer)
 
   const parent = (parentMeta?.id as Ref<Document>) ?? document.ids.NoParent
 
@@ -456,7 +454,7 @@ async function importPageDocument (
 
   const attachedData: Data<Document> = {
     title: docMeta.name,
-    content: uploadResult.id,
+    content: blobId,
     parent,
     attachments: 0,
     embeddings: 0,

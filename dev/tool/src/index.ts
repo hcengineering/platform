@@ -60,7 +60,7 @@ import serverClientPlugin, {
 } from '@hcengineering/server-client'
 import { createBackupPipeline, getConfig } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import { FileModelLogger } from '@hcengineering/server-tool'
+import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 import path from 'path'
 
@@ -165,6 +165,11 @@ export function devTool (
   const transactorUrl = process.env.TRANSACTOR_URL
   if (transactorUrl === undefined) {
     console.error('please provide transactor url.')
+  }
+
+  const initScriptUrl = process.env.INIT_SCRIPT_URL
+  if (initScriptUrl !== undefined) {
+    setMetadata(toolPlugin.metadata.InitScriptURL, initScriptUrl)
   }
 
   setMetadata(accountPlugin.metadata.Transactors, transactorUrl)

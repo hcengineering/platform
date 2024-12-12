@@ -1,7 +1,6 @@
 class: tracker:class:Project
 title: Project Alpha
 identifier: ALPHA
-emoji: 🦄
 private: false
 autoJoin: true
 owners:

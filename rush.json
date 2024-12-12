@@ -456,11 +456,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/importer",
-      "projectFolder": "packages/importer",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/collaboration",
       "projectFolder": "server/collaboration",
       "shouldPublish": false
