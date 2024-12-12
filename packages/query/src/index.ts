@@ -681,7 +681,6 @@ export class LiveQuery implements WithTx, Client {
     }
     const updatedDoc = q.result.findDoc(tx.objectId)
     if (updatedDoc !== undefined) {
-      debugger
       // If query contains search we must check use fulltext
       if (q.query.$search != null && q.query.$search.length > 0) {
         const searchRefresh = await this.checkSearch(q, tx.objectId)
