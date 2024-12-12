@@ -9,16 +9,16 @@ minor: 0
 state: Draft
 commentSequence: 0
 category: DOC
-author: User 3
-owner: User 3
+author: John Appleseed
+owner: John Appleseed
 abstract: Template for Standard Operating Procedures
 requests: 0
 reviewers:
-  - User 3
+  - John Appleseed
 approvers:
-  - User 3
+  - John Appleseed
 coAuthors:
-  - User 3
+  - John Appleseed
 reviewInterval: 6
 changeControl: cc-123
 ---

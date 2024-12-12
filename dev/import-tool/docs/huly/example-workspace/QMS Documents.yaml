@@ -4,9 +4,9 @@ emoji: 📋
 private: false
 autoJoin: true
 owners:
+  - user1
   - john.doe@example.com
-  - user3
 members:
   - joe.shmoe@example.com
-  - user3
+  - user1
 description: Quality Management System Documentation
