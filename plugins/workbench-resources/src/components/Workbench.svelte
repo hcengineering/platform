@@ -661,6 +661,10 @@
         else $deviceInfo.aside.visible = false
       }
     }
+    if ($deviceInfo.aside.float && $deviceInfo.aside.visible && $sidebarStore.variant === SidebarVariant.MINI) {
+      $sidebarStore.variant = SidebarVariant.EXPANDED
+      $sidebarStore.widget = Array.from($sidebarStore.widgetsState.keys())[0]
+    }
     oldNavVisible = $deviceInfo.navigator.visible
     oldASideVisible = $deviceInfo.aside.visible
   }
