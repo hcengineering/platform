@@ -89,6 +89,7 @@
     "TestPlan": "Test plan",
     "CreateTestPlan": "New test plan",
     "SelectedTestCases": "test cases selected",
-    "DefaultAssignee": "Default assignee"
+    "DefaultAssignee": "Default assignee",
+    "TestPlanTitle": "Test plan title"
   }
 }

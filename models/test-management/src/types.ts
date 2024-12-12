@@ -314,4 +314,8 @@ export class TTestPlanItem extends TAttachedDoc implements TestPlanItem {
   @Prop(TypeRef(testManagement.class.TestSuite), testManagement.string.TestSuite)
   @Index(IndexKind.Indexed)
     testSuite?: Ref<TestSuite>
+
+  @Prop(TypeRef(contact.mixin.Employee), testManagement.string.TestAssignee)
+  @Index(IndexKind.Indexed)
+    assignee?: Ref<Employee>
 }

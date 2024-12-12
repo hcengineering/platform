@@ -62,7 +62,6 @@
           query={baseQuery}
           loadingProps={{ length: testCases }}
           enableChecking={true}
-          relations={true}
           readonly={true}
         />
       </Scroller>

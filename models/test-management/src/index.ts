@@ -109,7 +109,8 @@ function defineApplication (builder: Builder): void {
                 componentProps: {
                   _class: testManagement.class.TestPlanItem,
                   icon: testManagement.icon.TestPlans,
-                  label: testManagement.string.TestPlans
+                  label: testManagement.string.TestPlans,
+                  createButton: testManagement.component.CreateTestPlanButton
                 },
                 navigationModel: {
                   navigationComponent: view.component.FoldersBrowser,
@@ -117,7 +118,6 @@ function defineApplication (builder: Builder): void {
                   navigationComponentIcon: testManagement.icon.TestPlans,
                   mainComponentLabel: testManagement.string.TestCase,
                   mainComponentIcon: testManagement.icon.TestCase,
-                  mainHeaderComponent: testManagement.component.CreateTestPlanButton,
                   navigationComponentProps: {
                     _class: testManagement.class.TestPlan,
                     icon: testManagement.icon.TestPlans,
@@ -565,8 +565,8 @@ function defineTestResult (builder: Builder): void {
   )
 
   const testPlanViewOptions: ViewOptionsModel = {
-    groupBy: [],
-    orderBy: [],
+    groupBy: ['testSuite'],
+    orderBy: [['assignee', SortingOrder.Ascending]],
     other: [
       {
         key: 'shouldShowAll',
@@ -589,10 +589,15 @@ function defineTestResult (builder: Builder): void {
         strict: true
       },
       config: [
-        { key: '$lookup.testCase', displayProps: { fixed: 'left' }, presenter: testManagement.component.TestCasePresenter },
         {
-          key: '$lookup.testCase.assignee',
-          props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' },
+          key: '$lookup.testCase',
+          displayProps: { fixed: 'left' },
+          presenter: testManagement.component.TestCasePresenter
+        },
+        { key: '', displayProps: { grow: true } },
+        {
+          key: 'assignee',
+          props: { kind: 'list', shouldShowName: true, avatarSize: 'x-small', label: testManagement.string.Unassigned },
           displayProps: { key: 'assignee', fixed: 'right' }
         }
       ],
@@ -626,6 +631,20 @@ function defineTestPlan (builder: Builder): void {
 
   builder.mixin(testManagement.class.TestPlan, core.class.Class, view.mixin.IgnoreActions, {
     actions: [print.action.Print, tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
+  })
+
+  builder.mixin(testManagement.class.TestPlanItem, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [
+      view.action.Open,
+      view.action.OpenInNewTab,
+      print.action.Print,
+      tracker.action.EditRelatedTargets,
+      tracker.action.NewRelatedIssue
+    ]
+  })
+
+  builder.mixin(testManagement.class.TestPlanItem, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: testManagement.component.TestPlanItemPresenter
   })
 }
 

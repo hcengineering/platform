@@ -18,13 +18,20 @@
   import { Analytics } from '@hcengineering/analytics'
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { ActionContext, getClient } from '@hcengineering/presentation'
-  import core, { Data, Ref, generateId } from '@hcengineering/core'
-  import testManagement, { TestProject, TestPlan, TestCase, TestPlanItem, TestManagementEvents } from '@hcengineering/test-management'
+  import core, { Data, Ref, generateId, getCurrentAccount } from '@hcengineering/core'
+  import testManagement, {
+    TestProject,
+    TestPlan,
+    TestCase,
+    TestPlanItem,
+    TestManagementEvents
+  } from '@hcengineering/test-management'
   import { Panel } from '@hcengineering/panel'
   import { ModernButton, EditBox, Label } from '@hcengineering/ui'
   import { EmptyMarkup } from '@hcengineering/text'
   import { IntlString } from '@hcengineering/platform'
   import { Attachment } from '@hcengineering/attachment'
+  import { Employee, PersonAccount } from '@hcengineering/contact'
 
   import NewTestPlanAside from './NewTestPlanAside.svelte'
   import TestCaseSelector from '../test-case/TestCaseSelector.svelte'
@@ -34,11 +41,21 @@
   export let testCases: TestCase[] = []
 
   const id: Ref<TestPlan> = generateId()
+  const me = getCurrentAccount() as PersonAccount
 
   const object: Data<TestPlan> = {
     name: '' as IntlString,
     description: null
   }
+  const newDoc: TestPlan = {
+    ...object,
+    _id: id,
+    space,
+    modifiedOn: 0,
+    modifiedBy: me._id,
+    _class: testManagement.class.TestPlan
+  }
+  let defaultAssignee: Ref<Employee> | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -57,9 +74,10 @@
         const testPlanItemId: Ref<TestPlanItem> = generateId()
         const testPlanItemData: Data<TestPlanItem> = {
           attachedTo: id,
-          attachedToClass: testManagement.class.TestRun,
+          attachedToClass: testManagement.class.TestPlan,
           testCase: testCase._id,
           testSuite: testCase.attachedTo,
+          assignee: defaultAssignee,
           collection: 'items'
         }
 
@@ -67,7 +85,7 @@
           testManagement.class.TestPlanItem,
           space,
           id,
-          testManagement.class.TestRun,
+          testManagement.class.TestPlan,
           'items',
           testPlanItemData,
           testPlanItemId
@@ -93,7 +111,7 @@
 {#if object}
   <ActionContext context={{ mode: 'editor' }} />
   <Panel
-    {object}
+    object={newDoc}
     isHeader={false}
     isAside={true}
     isSub={false}
@@ -103,11 +121,11 @@
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="title">
-      <Label label={testManagement.string.CreateTestRun} />
+      <Label label={testManagement.string.CreateTestPlan} />
     </svelte:fragment>
     <EditBox
       bind:value={object.name}
-      placeholder={testManagement.string.TestRunNamePlaceholder}
+      placeholder={testManagement.string.TestPlanTitle}
       kind={'large-style'}
       autoFocus
     />
@@ -115,7 +133,7 @@
     <AttachmentStyledBox
       bind:this={descriptionBox}
       objectId={id}
-      _class={testManagement.class.TestRun}
+      _class={testManagement.class.TestPlan}
       {space}
       alwaysEdit
       showButtons={false}
@@ -134,7 +152,7 @@
       }}
     />
 
-    <div class="space-divider"/>
+    <div class="space-divider" />
     <div class="flex flex-between">
       <div id="test-cases-selector">
         <TestCaseSelector bind:objects={testCases} />
@@ -148,7 +166,7 @@
       />
     </div>
     <svelte:fragment slot="aside">
-      <NewTestPlanAside/>
+      <NewTestPlanAside bind:defaultAssignee />
     </svelte:fragment>
   </Panel>
 {/if}

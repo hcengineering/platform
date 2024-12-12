@@ -15,11 +15,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import { Attachment } from '@hcengineering/attachment'
-  import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { Data, DocumentQuery, Ref, generateId, makeCollabId } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { DocumentQuery, Ref } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
   import { TestCase, TestProject } from '@hcengineering/test-management'
   import { Button, Dialog } from '@hcengineering/ui'
   import { ComponentNavigator } from '@hcengineering/workbench-resources'
@@ -49,7 +46,7 @@
 
   async function handleSave (): Promise<void> {
     if (onSave !== undefined) {
-      const testCases: TestCase[] = $selectionStore?.docs ?? []
+      const testCases: TestCase[] = ($selectionStore?.docs ?? []) as TestCase[]
       onSave(testCases)
     }
     handleClose()

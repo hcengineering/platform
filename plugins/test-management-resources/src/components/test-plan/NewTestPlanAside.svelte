@@ -15,13 +15,12 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { Label, tooltip } from '@hcengineering/ui'
-  import { Person } from '@hcengineering/contact'
+  import { Employee } from '@hcengineering/contact'
   import { EmployeeBox } from '@hcengineering/contact-resources'
 
   import testManagement from '@hcengineering/test-management'
 
-  export let defaultAssignee: Ref<Person> | undefined = undefined
-
+  export let defaultAssignee: Ref<Employee> | undefined = undefined
 </script>
 
 <div class="space-divider" />
@@ -37,7 +36,7 @@
   </span>
   <div class="flex flex-grow min-w-0">
     <EmployeeBox
-      value={defaultAssignee}
+      bind:value={defaultAssignee}
       label={testManagement.string.Unassigned}
       kind={'link'}
       size={'medium'}

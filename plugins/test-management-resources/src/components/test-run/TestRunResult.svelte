@@ -40,7 +40,6 @@
     }
   ]
   $: max = items.reduce((acc, it) => acc + it.value, 0)
-
 </script>
 
 <div class="w-full">

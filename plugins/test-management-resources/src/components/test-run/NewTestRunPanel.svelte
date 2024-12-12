@@ -15,18 +15,26 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
 
+  import { Analytics } from '@hcengineering/analytics'
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { ActionContext, getClient } from '@hcengineering/presentation'
+  import { ActionContext, createMarkup, getClient } from '@hcengineering/presentation'
   import core, { Data, Ref, generateId, makeCollabId } from '@hcengineering/core'
-  import { TestProject, TestRun, TestCase } from '@hcengineering/test-management'
-  import { Panel } from '@hcengineering/panel'
-  import { Button, EditBox, Label } from '@hcengineering/ui'
+  import testManagement, {
+    TestProject,
+    TestRun,
+    TestCase,
+    TestResult,
+    TestRunStatus,
+    TestManagementEvents
+  } from '@hcengineering/test-management'
+  import { Button, EditBox, Label, Panel, navigate } from '@hcengineering/ui'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
-  import testManagement from '@hcengineering/test-management'
+  import { IntlString } from '@hcengineering/platform'
+  import { Attachment } from '@hcengineering/attachment'
 
   import RightHeader from '../test-result/RightHeader.svelte'
-  import TestCaseList from '../test-case/TestCaseList.svelte'
   import TestCaseSelector from '../test-case/TestCaseSelector.svelte'
+  import { getTestRunsLink } from '../../navigation'
 
   export let space: Ref<TestProject>
   export let testCases: TestCase[]
@@ -43,13 +51,12 @@
   const client = getClient()
 
   let description = EmptyMarkup
-  let descriptionBox: AttachmentStyledBox
   let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
 
   async function onSave (): Promise<void> {
     try {
       const applyOp = client.apply()
-      await applyOp.createDoc(testManagement.class.TestRun, _space, object, id)
+      await applyOp.createDoc(testManagement.class.TestRun, space, object, id)
       const testCasesArray = testCases instanceof Array ? testCases : [testCases]
       const createPromises = testCasesArray.map(async (testCase) => {
         const descriptionRef = isEmptyMarkup(description)
@@ -70,7 +77,7 @@
 
         return await applyOp.addCollection(
           testManagement.class.TestResult,
-          _space,
+          space,
           id,
           testManagement.class.TestRun,
           'results',
@@ -92,24 +99,16 @@
     }
   }
 
-  let content: HTMLElement
-
+  let descriptionBox: AttachmentStyledBox
   onMount(() => dispatch('open', { ignoreKeys: [] }))
 </script>
 
 {#if object}
   <ActionContext context={{ mode: 'editor' }} />
-  <Panel
-    {object}
-    title={testManagement.string.CreateTestRun}
-    isHeader={false}
-    isAside={true}
-    isSub={false}
-    adaptive={'default'}
-    withoutActivity={true}
-    on:open
-    on:close={() => dispatch('close')}
-  >
+  <Panel isHeader={false} isAside={true} adaptive={'default'} on:open on:close={() => dispatch('close')}>
+    <svelte:fragment slot="title">
+      <Label label={testManagement.string.CreateTestRun} />
+    </svelte:fragment>
     <EditBox
       bind:value={object.name}
       placeholder={testManagement.string.TestRunNamePlaceholder}
@@ -155,7 +154,6 @@
       <RightHeader>
         <Label label={testManagement.string.Comments} />
       </RightHeader>
-      <TestCaseList objects={testCases} noSearchField={true} width={'full'} readonly={true} />
     </svelte:fragment>
   </Panel>
 {/if}
