@@ -531,6 +531,7 @@
   .keys {
     margin-left: 0.5rem;
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     gap: 0.125rem;
   }
@@ -568,10 +569,9 @@
       z-index: 2;
     }
 
-    span.label {
+    &:not(:has(.key, .keys)) span.label {
       width: 100%;
       word-wrap: break-word;
-      hyphens: auto;
     }
   }
   .no-arrow {
