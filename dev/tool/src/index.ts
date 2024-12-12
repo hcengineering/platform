@@ -167,15 +167,6 @@ export function devTool (
     console.error('please provide transactor url.')
   }
 
-  function getElasticUrl (): string {
-    const elasticUrl = process.env.ELASTIC_URL
-    if (elasticUrl === undefined) {
-      console.error('please provide elastic url')
-      process.exit(1)
-    }
-    return elasticUrl
-  }
-
   const initScriptUrl = process.env.INIT_SCRIPT_URL
   if (initScriptUrl !== undefined) {
     setMetadata(toolPlugin.metadata.InitScriptURL, initScriptUrl)
@@ -1443,7 +1434,7 @@ export function devTool (
         await withDatabase(dbUrl, async (db) => {
           const wsid = getWorkspaceId(workspace)
           const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-          await cleanWorkspace(toolCtx, dbUrl, wsid, adapter, getElasticUrl(), endpoint, cmd)
+          await cleanWorkspace(toolCtx, dbUrl, wsid, adapter, endpoint, cmd)
         })
       })
     })

@@ -232,7 +232,6 @@ services:
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - STATS_URL=http://host.docker.internal:4900
       - UPLOAD_URL=/files
-      - ELASTIC_URL=http://host.docker.internal:9200
       - GMAIL_URL=http://host.docker.internal:8088
       - CALENDAR_URL=http://host.docker.internal:8095
       - TELEGRAM_URL=http://host.docker.internal:8086
