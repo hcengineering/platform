@@ -5,6 +5,7 @@ import {
   generateId,
   MeasureMetricsContext,
   type MeasureContext,
+  type Tx,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
