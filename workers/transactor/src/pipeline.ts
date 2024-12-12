@@ -2,7 +2,7 @@
 import {
   DOMAIN_BENCHMARK,
   DOMAIN_BLOB,
-  DOMAIN_FULLTEXT_BLOB,
+  // DOMAIN_FULLTEXT_BLOB,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
@@ -17,7 +17,7 @@ import {
   ApplyTxMiddleware,
   BroadcastMiddleware,
   ConfigurationMiddleware,
-  ConnectionMgrMiddleware,
+  // ConnectionMgrMiddleware,
   ContextNameMiddleware,
   DBAdapterInitMiddleware,
   DBAdapterMiddleware,
@@ -64,7 +64,7 @@ export async function createaPipeline (
       [DOMAIN_TX]: 'Tx',
       [DOMAIN_TRANSIENT]: 'InMemory',
       [DOMAIN_BLOB]: 'StorageData',
-      [DOMAIN_FULLTEXT_BLOB]: 'FullTextBlob',
+      // [DOMAIN_FULLTEXT_BLOB]: 'FullTextBlob',
       [DOMAIN_MODEL]: 'Null',
       [DOMAIN_BENCHMARK]: 'Benchmark'
     },
@@ -102,9 +102,9 @@ export async function createaPipeline (
         url: ''
       }
     },
-    serviceAdapters: {},
-    contentAdapters: {},
-    defaultContentAdapter: ''
+    serviceAdapters: {}
+    // contentAdapters: {},
+    // defaultContentAdapter: ''
   }
 
   const middlewares: MiddlewareCreator[] = [
@@ -116,7 +116,7 @@ export async function createaPipeline (
     SpacePermissionsMiddleware.create,
     ConfigurationMiddleware.create,
     ContextNameMiddleware.create,
-    ConnectionMgrMiddleware.create,
+    // ConnectionMgrMiddleware.create,
     MarkDerivedEntryMiddleware.create,
     ApplyTxMiddleware.create, // Extract apply
     TxMiddleware.create, // Store tx into transaction domain
