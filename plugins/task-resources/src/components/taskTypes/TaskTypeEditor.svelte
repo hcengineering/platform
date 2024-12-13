@@ -74,9 +74,9 @@
         tasksCounter = res.total
       },
       {
+        total: true,
+        limit: 1,
         projection: {
-          total: true,
-          limit: 1,
           _id: 1
         }
       }
