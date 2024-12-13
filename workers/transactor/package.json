@@ -23,8 +23,8 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241022.0",
-    "@hcengineering/platform-rig": "^0.6.0",
     "@hcengineering/model-all": "^0.6.0",
+    "@hcengineering/platform-rig": "^0.6.0",
     "@types/jest": "^29.5.5",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
@@ -49,7 +49,9 @@
     "@hcengineering/server": "^0.6.4",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-client": "^0.6.0",
+    "@hcengineering/server-pipeline": "^0.6.0",
     "@hcengineering/server-token": "^0.6.11",
+    "@hcengineering/storage": "^0.6.0",
     "itty-router": "^5.0.18"
   }
 }

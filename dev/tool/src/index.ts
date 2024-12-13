@@ -92,9 +92,9 @@ import contact from '@hcengineering/model-contact'
 import { getMongoClient, getWorkspaceMongoDB, shutdown } from '@hcengineering/mongo'
 import { backupDownload } from '@hcengineering/server-backup/src/backup'
 
-import { createDatalakeClient, DatalakeService, type DatalakeConfig } from '@hcengineering/datalake'
+import { CONFIG_KIND as DATALAKE_CONFIG_KIND, type DatalakeConfig, createDatalakeClient } from '@hcengineering/datalake'
 import { getModelVersion } from '@hcengineering/model-all'
-import { S3Service, type S3Config } from '@hcengineering/s3'
+import { CONFIG_KIND as S3_CONFIG_KIND, S3Service, type S3Config } from '@hcengineering/s3'
 import type { PipelineFactory, StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
@@ -1170,12 +1170,12 @@ export function devTool (
 
       const storageConfig = storageConfigFromEnv(process.env.STORAGE)
 
-      const storages = storageConfig.storages.filter((p) => p.kind === S3Service.config) as S3Config[]
+      const storages = storageConfig.storages.filter((p) => p.kind === S3_CONFIG_KIND) as S3Config[]
       if (storages.length === 0) {
         throw new Error('S3 storage config is required')
       }
 
-      const datalakeConfig = storageConfig.storages.find((p) => p.kind === DatalakeService.config)
+      const datalakeConfig = storageConfig.storages.find((p) => p.kind === DATALAKE_CONFIG_KIND)
       if (datalakeConfig === undefined) {
         throw new Error('Datalake storage config is required')
       }

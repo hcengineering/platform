@@ -17,5 +17,6 @@
   "BRANDING_URL": "/branding.json",
   "VERSION": null,
   "MODEL_VERSION": null,
+  "USE_BINARY_PROTOCOL": false,
   "TRANSACTOR_OVERRIDE": "ws://host.docker.internal:3335"
 }
