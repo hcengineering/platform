@@ -1652,6 +1652,7 @@ export async function restore (
     storageAdapter?: StorageAdapter
     token?: string
     progress?: (progress: number) => Promise<void>
+    cleanIndexState?: boolean
   }
 ): Promise<boolean> {
   const infoFile = 'backup.json.gz'
@@ -1843,6 +1844,11 @@ export async function restore (
             const tx = d as TxCUD<Doc>
             if (tx.objectSpace == null) {
               tx.objectSpace = core.space.Workspace
+            }
+          }
+          if (opt.cleanIndexState === true) {
+            if (d._class === core.class.DocIndexState) {
+              ;(d as DocIndexState).needIndex = true
             }
           }
         }
