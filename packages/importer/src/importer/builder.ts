@@ -692,6 +692,8 @@ export class ImportWorkspaceBuilder {
 
     // Validate numbers are positive
     if (!this.validatePossitiveNumber(doc.seqNumber)) errors.push('invalid sequence number')
+    if (!this.validatePossitiveNumber(doc.major)) errors.push('invalid value for field "major"')
+    if (!this.validatePossitiveNumber(doc.minor)) errors.push('invalid value for field "minor"')
 
     // Validate arrays
     errors.push(...this.validateArray(doc.reviewers, 'string', 'reviewers'))
@@ -708,12 +710,6 @@ export class ImportWorkspaceBuilder {
     if (doc.abstract !== undefined) {
       errors.push(...this.validateType(doc.abstract, 'string', 'abstract'))
     }
-    if (doc.reviewInterval !== undefined) {
-      errors.push(...this.validateType(doc.reviewInterval, 'number', 'reviewInterval'))
-      if (!this.validatePossitiveNumber(doc.reviewInterval)) {
-        errors.push('invalid review interval')
-      }
-    }
 
     // Validate class
     if (doc.class !== documents.class.ControlledDocument) {
@@ -724,6 +720,8 @@ export class ImportWorkspaceBuilder {
     if (doc.state !== DocumentState.Draft) {
       errors.push('invalid state: ' + doc.state)
     }
+
+    // todo: validate seqNumber is not duplicated (unique prefix? code?)
 
     return errors
   }
@@ -737,8 +735,6 @@ export class ImportWorkspaceBuilder {
     errors.push(...this.validateType(template.docPrefix, 'string', 'docPrefix'))
     errors.push(...this.validateType(template.code, 'string', 'code'))
     errors.push(...this.validateType(template.seqNumber, 'number', 'seqNumber'))
-    errors.push(...this.validateType(template.major, 'number', 'major'))
-    errors.push(...this.validateType(template.minor, 'number', 'minor'))
     errors.push(...this.validateType(template.state, 'string', 'state'))
     errors.push(...this.validateType(template.changeControl, 'string', 'changeControl'))
 
@@ -750,6 +746,8 @@ export class ImportWorkspaceBuilder {
 
     // Validate numbers are positive
     if (!this.validatePossitiveNumber(template.seqNumber)) errors.push('invalid sequence number')
+    if (!this.validatePossitiveNumber(template.major)) errors.push('invalid value for field "major"')
+    if (!this.validatePossitiveNumber(template.minor)) errors.push('invalid value for field "minor"')
 
     // Validate arrays
     errors.push(...this.validateArray(template.reviewers, 'string', 'reviewers'))
@@ -766,12 +764,6 @@ export class ImportWorkspaceBuilder {
     if (template.abstract !== undefined) {
       errors.push(...this.validateType(template.abstract, 'string', 'abstract'))
     }
-    if (template.reviewInterval !== undefined) {
-      errors.push(...this.validateType(template.reviewInterval, 'number', 'reviewInterval'))
-      if (!this.validatePossitiveNumber(template.reviewInterval)) {
-        errors.push('invalid review interval')
-      }
-    }
 
     // Validate class
     if (template.class !== documents.mixin.DocumentTemplate) {
@@ -783,6 +775,7 @@ export class ImportWorkspaceBuilder {
       errors.push('invalid state: ' + template.state)
     }
 
+    // todo: validate seqNumber no duplicated
     return errors
   }
 

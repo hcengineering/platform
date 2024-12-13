@@ -15,11 +15,20 @@
 import attachment, { type Attachment } from '@hcengineering/attachment'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import { Employee, type Person } from '@hcengineering/contact'
+import documents, {
+  ChangeControl,
+  type ControlledDocument,
+  createControlledDocFromTemplate,
+  createDocumentTemplate,
+  DocumentCategory,
+  type DocumentSpace,
+  DocumentState,
+  type DocumentTemplate
+} from '@hcengineering/controlled-documents'
 import core, {
   type Account,
   type AttachedData,
   type Class,
-  type Blob as PlatformBlob,
   type CollaborativeDoc,
   type Data,
   type Doc,
@@ -27,15 +36,15 @@ import core, {
   generateId,
   makeCollabId,
   type Mixin,
+  type Blob as PlatformBlob,
   type Ref,
   SortingOrder,
   type Space,
   type Status,
   type Timestamp,
-  type TxOperations,
-  CollectionSize
+  type TxOperations
 } from '@hcengineering/core'
-import document, { type Document, DocumentSnapshot, getFirstRank, type Teamspace } from '@hcengineering/document'
+import document, { getFirstRank, type Document, type Teamspace } from '@hcengineering/document'
 import task, {
   createProjectType,
   makeRank,
@@ -53,20 +62,9 @@ import tracker, {
   TimeReportDayType
 } from '@hcengineering/tracker'
 import view from '@hcengineering/view'
+import { Logger } from './logger'
 import { type MarkdownPreprocessor, NoopMarkdownPreprocessor } from './preprocessor'
 import { type FileUploader } from './uploader'
-import { Logger } from './logger'
-import documents, {
-  ControlledDocumentState,
-  type ControlledDocument,
-  DocumentCategory,
-  type DocumentSpace,
-  DocumentState,
-  type DocumentTemplate,
-  createControlledDocFromTemplate,
-  createDocumentTemplate,
-  ChangeControl
-} from '@hcengineering/controlled-documents'
 
 export interface ImportWorkspace {
   projectTypes?: ImportProjectType[]
@@ -181,10 +179,6 @@ export interface ImportControlledDocumentTemplate extends ImportDoc {
   approvers: Ref<Employee>[]
   coAuthors: Ref<Employee>[]
   changeControl: Ref<ChangeControl>
-  reviewInterval?: number
-  plannedEffectiveDate?: Timestamp
-  effectiveDate?: Timestamp
-  snapshots?: CollectionSize<DocumentSnapshot>
   subdocs: Array<ImportControlledDoc>
 }
 
@@ -205,10 +199,6 @@ export interface ImportControlledDocument extends ImportDoc {
   author?: Ref<Employee>
   owner?: Ref<Employee>
   abstract?: string
-  reviewInterval?: number
-  controlledState?: ControlledDocumentState
-  plannedEffectiveDate?: Timestamp
-  effectiveDate?: Timestamp
   subdocs: Array<ImportControlledDoc>
 }
 
@@ -820,15 +810,11 @@ export class WorkspaceImporter {
         owner: template.owner,
         abstract: template.abstract,
         labels: 0,
-        snapshots: template.snapshots ?? 0,
         requests: 0,
         reviewers: template.reviewers,
         approvers: template.approvers,
         coAuthors: template.coAuthors,
-        changeControl: template.changeControl,
-        reviewInterval: template.reviewInterval,
-        plannedEffectiveDate: template.plannedEffectiveDate,
-        effectiveDate: template.effectiveDate
+        changeControl: template.changeControl
       },
       documents.category.DOC
     )
@@ -843,9 +829,6 @@ export class WorkspaceImporter {
 
     return templateId
   }
-
-  // 675056f4a4edcf2cbb75904f-content-1733318388297
-  // TPL-DOC-1-0.1-67482c0a10d8fd0257bfb95a:HEAD:0
 
   async createControlledDocumentWithSubdocs (
     doc: ImportControlledDocument,
@@ -863,7 +846,6 @@ export class WorkspaceImporter {
       doc.template,
       docId,
       {
-        // Base Document fields
         title: doc.title,
         content: contentId,
         prefix: '',
@@ -877,16 +859,10 @@ export class WorkspaceImporter {
         author: doc.author,
         owner: doc.owner,
         abstract: doc.abstract,
-
-        // ControlledDocument specific fields
         requests: 0,
         reviewers: doc.reviewers,
         approvers: doc.approvers,
         coAuthors: doc.coAuthors,
-        reviewInterval: doc.reviewInterval,
-        controlledState: doc.controlledState,
-        plannedEffectiveDate: doc.plannedEffectiveDate,
-        effectiveDate: doc.effectiveDate,
         changeControl: doc.changeControl
       },
       spaceId,

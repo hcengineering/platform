@@ -105,9 +105,7 @@ interface UnifiedWorkspaceSettings {
 interface UnifiedControlledDocumentHeader {
   class: 'documents:class:ControlledDocument'
   title: string
-  template: string
   code: string
-  seqNumber: number
   category: string
   author: string
   owner: string
@@ -115,16 +113,14 @@ interface UnifiedControlledDocumentHeader {
   reviewers: string[]
   approvers: string[]
   coAuthors: string[]
-  reviewInterval?: number
-  changeControl: string
+  changeControl: string // todo: wtf
+  template: string
 }
 
 interface UnifiedDocumentTemplateHeader {
   class: 'documents:mixin:DocumentTemplate'
   title: string
-  docPrefix: string
   code: string
-  seqNumber: number
   category: string
   author: string
   owner: string
@@ -132,8 +128,8 @@ interface UnifiedDocumentTemplateHeader {
   reviewers: string[]
   approvers: string[]
   coAuthors: string[]
-  reviewInterval?: number
   changeControl: string
+  docPrefix: string
 }
 
 interface UnifiedDocumentSpaceSettings extends UnifiedSpaceSettings {
@@ -725,11 +721,8 @@ export class UnifiedFormatImporter {
     header: UnifiedControlledDocumentHeader,
     docPath: string
   ): Promise<ImportControlledDocument> {
-    // Validate filename format
-    const filename = path.basename(docPath)
-    if (!/^\d+/.test(filename)) {
-      throw new Error(`Filename must start with sequence number: ${filename}`)
-    }
+    const numberMatch = path.basename(docPath).match(/^(\d+)\./)
+    const seqNumber = numberMatch?.[1]
 
     const author = this.findEmployeeByName(header.author)
     const owner = this.findEmployeeByName(header.owner)
@@ -743,7 +736,7 @@ export class UnifiedFormatImporter {
       // template: header.template as Ref<DocumentTemplate>,
       template: documents.template.ProductChangeControl,
       code: header.code,
-      seqNumber: header.seqNumber,
+      seqNumber: parseInt(seqNumber ?? 'NaN'),
       major: 0,
       minor: 1,
       state: DocumentState.Draft,
@@ -754,7 +747,6 @@ export class UnifiedFormatImporter {
       reviewers: header.reviewers.map(email => this.findEmployeeByName(email)),
       approvers: header.approvers.map(email => this.findEmployeeByName(email)),
       coAuthors: header.coAuthors.map(email => this.findEmployeeByName(email)),
-      reviewInterval: header.reviewInterval,
       changeControl: header.changeControl as Ref<ChangeControl>,
       descrProvider: async () => await this.readMarkdownContent(docPath),
       subdocs: []
@@ -771,13 +763,16 @@ export class UnifiedFormatImporter {
       throw new Error(`Author or owner not found: ${header.author} or ${header.owner}`)
     }
 
+    const numberMatch = path.basename(docPath).match(/^(\d+)\./)
+    const seqNumber = numberMatch?.[1]
+
     return {
       class: documents.mixin.DocumentTemplate,
       title: header.title,
       docPrefix: header.docPrefix,
-      prefix: header.docPrefix,
+      prefix: header.docPrefix, // todo: different prefix for template
       code: header.code,
-      seqNumber: header.seqNumber,
+      seqNumber: parseInt(seqNumber ?? 'NaN'),
       major: 0,
       minor: 1,
       state: DocumentState.Draft,
@@ -788,7 +783,6 @@ export class UnifiedFormatImporter {
       reviewers: header.reviewers.map(email => this.findEmployeeByName(email)),
       approvers: header.approvers.map(email => this.findEmployeeByName(email)),
       coAuthors: header.coAuthors.map(email => this.findEmployeeByName(email)),
-      reviewInterval: header.reviewInterval,
       changeControl: header.changeControl as Ref<ChangeControl>,
       descrProvider: async () => await this.readMarkdownContent(docPath),
       subdocs: []
