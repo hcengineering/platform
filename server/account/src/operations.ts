@@ -1665,7 +1665,7 @@ export async function getAllWorkspaces (
   }
 
   return (await db.workspace.find({})).map((it) => {
-    it.accounts = it.accounts.map((it) => it.toString())
+    it.accounts = (it.accounts ?? []).map((it) => it.toString())
     return it
   })
 }
