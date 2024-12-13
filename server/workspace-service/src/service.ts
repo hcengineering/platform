@@ -530,13 +530,8 @@ export class WorkspaceWorker {
         opt.backup.bucketName,
         pipelineFactory,
         workspaceStorageAdapter,
-        (ctx, workspace, branding, externalStorage) => {
-          return getConfig(ctx, dbUrl, ctx, {
-            externalStorage,
-            disableTriggers: true
-          })
-        },
         ['blob'],
+        true,
         (_p: number) => {
           if (progress !== Math.round(_p)) {
             progress = Math.round(_p)

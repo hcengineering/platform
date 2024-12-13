@@ -867,6 +867,10 @@ export async function listWorkspaces (
 ): Promise<WorkspaceInfo[]> {
   decodeToken(ctx, token) // Just verify token is valid
 
+  if (region === '') {
+    region = null
+  }
+
   return (await db.workspace.find(region != null ? { region } : {}))
     .filter((it) => it.disabled !== true)
     .map(trimWorkspaceInfo)
@@ -903,6 +907,9 @@ export async function countWorkspacesInRegion (
  * @public
  */
 export async function listWorkspacesRaw (db: AccountDB, region?: string): Promise<Workspace[]> {
+  if (region === '') {
+    region = undefined
+  }
   return (await db.workspace.find(region !== undefined ? { region } : {})).filter((it) => it.disabled !== true)
 }
 

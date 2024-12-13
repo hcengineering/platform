@@ -347,13 +347,8 @@ export async function doRestoreWorkspace (
   bucketName: string,
   pipelineFactory: PipelineFactory,
   workspaceStorageAdapter: StorageAdapter,
-  getConfig: (
-    ctx: MeasureContext,
-    workspace: WorkspaceIdWithUrl,
-    branding: Branding | null,
-    externalStorage: StorageAdapter
-  ) => DbConfiguration,
   skipDomains: string[],
+  cleanIndexState: boolean,
   notify?: (progress: number) => Promise<void>
 ): Promise<boolean> {
   rootCtx.warn('\nRESTORE WORKSPACE ', {
@@ -374,6 +369,7 @@ export async function doRestoreWorkspace (
         skip: new Set(skipDomains),
         recheck: true,
         storageAdapter: workspaceStorageAdapter,
+        cleanIndexState,
         getConnection: async () => {
           if (pipeline === undefined) {
             pipeline = await pipelineFactory(ctx, wsUrl, true, () => {}, null)
