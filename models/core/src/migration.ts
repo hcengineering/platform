@@ -15,6 +15,7 @@
 
 import { saveCollabJson } from '@hcengineering/collaboration'
 import core, {
+  buildSocialIdString,
   coreId,
   DOMAIN_MODEL_TX,
   DOMAIN_SPACE,
@@ -26,6 +27,8 @@ import core, {
   makeDocCollabId,
   MeasureMetricsContext,
   RateLimiter,
+  SocialIdType,
+  type PersonId,
   type AnyAttribute,
   type Blob,
   type Class,
@@ -36,7 +39,12 @@ import core, {
   type Space,
   type Status,
   type TxCreateDoc,
-  type TxCUD
+  type TxCUD,
+  type SpaceType,
+  type TxUpdateDoc,
+  type Role,
+  toIdMap,
+  type TypedSpace
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -284,6 +292,178 @@ async function migrateCollaborativeDocsToJson (client: MigrationClient): Promise
   }
 }
 
+export function getSocialIdByOldAccount (client: MigrationClient): Record<string, PersonId> {
+  const systemAccounts = [core.account.System, core.account.ConfigUser]
+  const accounts: any = client.model.findAllSync('core:class:Account' as Ref<Class<Doc>>, {})
+  const socialIdByAccount: Record<string, PersonId> = {}
+  for (const account of accounts) {
+    if (account.email === undefined) {
+      continue
+    }
+
+    if (systemAccounts.includes(account._id)) {
+      socialIdByAccount[account._id] = account._id
+    } else {
+      const socialId = buildSocialIdString({ type: SocialIdType.EMAIL, value: account.email })
+
+      socialIdByAccount[account._id] = socialId
+    }
+  }
+
+  return socialIdByAccount
+}
+
+async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('core migrateAccountsToSocialIds', {})
+  const hierarchy = client.hierarchy
+  const socialIdByAccount = getSocialIdByOldAccount(client)
+
+  // migrate createdBy and modifiedBy
+  for (const domain of client.hierarchy.domains()) {
+    ctx.info('processing domain ', { domain })
+    let processed = 0
+    const iterator = await client.traverse(domain, {})
+
+    try {
+      while (true) {
+        const docs = await iterator.next(200)
+        if (docs === null || docs.length === 0) {
+          break
+        }
+
+        const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+
+        for (const doc of docs) {
+          const oldCreatedBy = doc.createdBy ?? doc.modifiedBy
+          const newCreatedBy = socialIdByAccount[doc.createdBy ?? doc.modifiedBy] ?? oldCreatedBy
+          const newModifiedBy = socialIdByAccount[doc.modifiedBy] ?? doc.modifiedBy
+
+          operations.push({
+            filter: { _id: doc._id },
+            update: {
+              createdBy: newCreatedBy,
+              modifiedBy: newModifiedBy
+            }
+          })
+        }
+
+        if (operations.length > 0) {
+          await client.bulk(domain, operations)
+        }
+
+        processed += docs.length
+        ctx.info('...processed', { count: processed })
+      }
+
+      ctx.info('finished processing domain ', { domain, processed })
+    } finally {
+      await iterator.close()
+    }
+  }
+
+  const spaceTypes = client.model.findAllSync(core.class.SpaceType, {})
+  const spaceTypesById = toIdMap(spaceTypes)
+  const roles = client.model.findAllSync(core.class.Role, {})
+  const rolesBySpaceType = new Map<Ref<SpaceType>, Role[]>()
+  for (const role of roles) {
+    const spaceType = role.attachedTo
+    if (spaceType === undefined) continue
+    if (rolesBySpaceType.has(spaceType)) {
+      rolesBySpaceType.get(spaceType)?.push(role)
+    } else {
+      rolesBySpaceType.set(spaceType, [role])
+    }
+  }
+
+  ctx.info('processing spaces members, owners and roles assignment', { })
+  let processedSpaces = 0
+  const spacesIterator = await client.traverse(DOMAIN_SPACE, {})
+
+  try {
+    while (true) {
+      const spaces = await spacesIterator.next(200)
+      if (spaces === null || spaces.length === 0) {
+        break
+      }
+
+      const operations: { filter: MigrationDocumentQuery<Space>, update: MigrateUpdate<Space> }[] = []
+
+      for (const s of spaces) {
+        if (!hierarchy.isDerived(s._class, core.class.Space)) continue
+        const space = s as Space
+
+        const newMembers = space.members.map((m) => socialIdByAccount[m] ?? m)
+        const newOwners = space.owners?.map((m) => socialIdByAccount[m] ?? m)
+        const update: MigrateUpdate<Space> = {
+          members: newMembers,
+          owners: newOwners
+        }
+
+        const type = spaceTypesById.get((space as TypedSpace).type)
+
+        if (type !== undefined) {
+          const mixin = hierarchy.as(space, type.targetClass)
+          if (mixin !== undefined) {
+            const roles = rolesBySpaceType.get(type._id)
+
+            for (const role of roles ?? []) {
+              const oldAssignees: string[] | undefined = (mixin as any)[role._id]
+              if (oldAssignees !== undefined && oldAssignees.length > 0) {
+                const newAssignees = oldAssignees.map((a) => socialIdByAccount[a])
+
+                update[`${type.targetClass}.${role._id}`] = newAssignees
+              }
+            }
+          }
+        }
+
+        operations.push({
+          filter: { _id: space._id },
+          update
+        })
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_SPACE, operations)
+      }
+
+      processedSpaces += spaces.length
+      ctx.info('...spaces processed', { count: processedSpaces })
+    }
+
+    ctx.info('finished processing spaces members, owners and roles assignment', { processedSpaces })
+  } finally {
+    await spacesIterator.close()
+  }
+
+  ctx.info('processing space types members', { })
+  let updatedSpaceTypes = 0
+  for (const spaceType of spaceTypes) {
+    if (spaceType.members === undefined || spaceType.members.length === 0) continue
+
+    const newMembers = spaceType.members.map((m) => socialIdByAccount[m] ?? m)
+    const tx: TxUpdateDoc<SpaceType> = {
+      _id: generateId(),
+      _class: core.class.TxUpdateDoc,
+      space: core.space.Tx,
+      objectId: spaceType._id,
+      objectClass: spaceType._class,
+      objectSpace: spaceType.space,
+      operations: {
+        members: newMembers
+      },
+      modifiedOn: Date.now(),
+      createdBy: core.account.ConfigUser,
+      createdOn: Date.now(),
+      modifiedBy: core.account.ConfigUser
+    }
+
+    await client.create(DOMAIN_MODEL_TX, tx)
+    updatedSpaceTypes++
+  }
+  ctx.info('finished processing space types members', { totalSpaceTypes: spaceTypes.length, updatedSpaceTypes })
+}
+
 async function processMigrateJsonForDomain (
   ctx: MeasureContext,
   domain: Domain,
@@ -485,6 +665,10 @@ export const coreOperation: MigrateOperation = {
       {
         state: 'collaborative-docs-to-json',
         func: migrateCollaborativeDocsToJson
+      },
+      {
+        state: 'accounts-to-social-ids',
+        func: migrateAccountsToSocialIds
       }
     ])
   },

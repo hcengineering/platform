@@ -33,7 +33,7 @@ export interface OnboardingChannel extends Channel {
   workspaceId: string
   workspaceName: string
   workspaceUrl: string
-  personId: string
+  socialString: string
   userName: string
   disableAIReplies: boolean
   showAIReplies: boolean

@@ -86,7 +86,7 @@ import { TTx, TTxApplyIf, TTxCreateDoc, TTxCUD, TTxMixin, TTxRemoveDoc, TTxUpdat
 
 export { coreId, DOMAIN_SPACE } from '@hcengineering/core'
 export * from './core'
-export { coreOperation } from './migration'
+export { coreOperation, getSocialIdByOldAccount } from './migration'
 export * from './security'
 export * from './status'
 export * from './tx'

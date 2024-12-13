@@ -190,7 +190,7 @@ export interface RestoreControlledDocContentParams {
 export async function restoreControlledDocContentMongo (
   ctx: MeasureContext,
   db: Db,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   storageAdapter: StorageAdapter,
   params: RestoreWikiContentParams
 ): Promise<void> {
@@ -239,7 +239,7 @@ export async function restoreControlledDocContentMongo (
 export async function restoreControlledDocContentForDoc (
   ctx: MeasureContext,
   db: Db,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   storageAdapter: StorageAdapter,
   params: RestoreWikiContentParams,
   doc: Doc,

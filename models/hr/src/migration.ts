@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type Space, TxOperations, type Ref } from '@hcengineering/core'
+import { type Space, TxOperations, type Ref, type Class, type Doc } from '@hcengineering/core'
 import { type Department } from '@hcengineering/hr'
 import {
   migrateSpace,
@@ -24,6 +24,7 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
+
 import hr, { DOMAIN_HR, hrId } from './index'
 
 async function createDepartment (tx: TxOperations): Promise<void> {
@@ -77,6 +78,19 @@ async function migrateDepartments (client: MigrationClient): Promise<void> {
   )
 }
 
+async function migrateDepartmentMembersToEmployee (client: MigrationClient): Promise<void> {
+  const departments = await client.find<Department>(DOMAIN_HR, { _class: hr.class.Department })
+
+  for (const department of departments) {
+    const accounts = department.members
+    if (accounts === undefined || accounts.length === 0) continue
+
+    const personAccounts: any[] = client.model.findAllSync('contact:class:PersonAccount' as Ref<Class<Doc>>, { _id: { $in: accounts } })
+
+    await client.update(DOMAIN_HR, { _id: department._id }, { members: personAccounts.map((pAcc) => pAcc.person) })
+  }
+}
+
 export const hrOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, hrId, [
@@ -89,6 +103,10 @@ export const hrOperation: MigrateOperation = {
         func: async (client: MigrationClient) => {
           await migrateSpace(client, 'hr:space:HR' as Ref<Space>, core.space.Workspace, [DOMAIN_HR])
         }
+      },
+      {
+        state: 'migrateDepartmentMembersToEmployee',
+        func: migrateDepartmentMembersToEmployee
       }
     ])
   },

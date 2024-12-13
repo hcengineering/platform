@@ -27,11 +27,11 @@ interface WorkspaceInfo {
 export async function getOrCreateOnboardingChannel (
   ctx: MeasureContext,
   client: TxOperations,
-  personId: string,
+  socialString: string,
   workspace: WorkspaceInfo,
   person?: Person
 ): Promise<[Ref<OnboardingChannel> | undefined, boolean]> {
-  const personIds = await getAllSocialStringsByPersonId(client, personId)
+  const personIds = await getAllSocialStringsByPersonId(client, socialString)
   const channel = await client.findOne(analyticsCollector.class.OnboardingChannel, {
     workspaceId: workspace.workspaceId,
     personId: { $in: personIds }
@@ -41,12 +41,12 @@ export async function getOrCreateOnboardingChannel (
     return [channel._id, false]
   }
 
-  ctx.info('Creating user onboarding channel', { personId, workspace })
+  ctx.info('Creating user onboarding channel', { personId: socialString, workspace })
 
   const _id = await client.createDoc(analyticsCollector.class.OnboardingChannel, core.space.Space, {
-    name: getOnboardingChannelName(workspace.workspaceUrl, personId),
+    name: getOnboardingChannelName(workspace.workspaceUrl, socialString),
     topic: await translate(analyticsCollector.string.OnboardingChannelDescription, {
-      user: person?.name ?? personId,
+      user: person?.name ?? socialString,
       workspace: workspace.workspaceName
     }),
     description: '',
@@ -54,11 +54,11 @@ export async function getOrCreateOnboardingChannel (
     members: [],
     autoJoin: false,
     archived: false,
-    personId,
+    socialString,
     workspaceId: workspace.workspaceId,
     workspaceUrl: workspace.workspaceUrl,
     workspaceName: workspace.workspaceName,
-    userName: person?.name ?? personId,
+    userName: person?.name ?? socialString,
     disableAIReplies: false,
     showAIReplies: true
   })

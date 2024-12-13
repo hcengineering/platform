@@ -1,12 +1,16 @@
 //
 
-import { AvatarType, type Contact } from '@hcengineering/contact'
+import { AvatarType, type SocialIdentity, type Contact } from '@hcengineering/contact'
 import {
+  buildSocialIdString,
   type Class,
   type Doc,
   type Domain,
   DOMAIN_TX,
+  generateId,
+  MeasureMetricsContext,
   type Ref,
+  SocialIdType,
   type Space
 } from '@hcengineering/core'
 import {
@@ -24,7 +28,7 @@ import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import core from '@hcengineering/model-core'
 import { DOMAIN_VIEW } from '@hcengineering/model-view'
 
-import contact, { contactId, DOMAIN_CONTACT } from './index'
+import contact, { contactId, DOMAIN_CHANNEL, DOMAIN_CONTACT } from './index'
 
 const colorPrefix = 'color://'
 const gravatarPrefix = 'gravatar://'
@@ -77,6 +81,41 @@ async function migrateAvatars (client: MigrationClient): Promise<void> {
     { _class: { $in: classes }, avatarKind: { $exists: false } },
     { avatarKind: AvatarType.IMAGE }
   )
+}
+
+async function createSocialIdentities (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('createSocialIdentities', {})
+  ctx.info('processing person accounts ', { })
+
+  const personAccounts: any[] = client.model.findAllSync('contact:class:PersonAccount' as Ref<Class<Doc>>, {})
+
+  for (const pAcc of personAccounts) {
+    if (pAcc.email === undefined || pAcc.email === '') continue
+    const socialIdKey = {
+      type: SocialIdType.EMAIL,
+      value: pAcc.email
+    }
+
+    const socialId: SocialIdentity = {
+      _id: generateId(),
+      _class: contact.class.SocialIdentity,
+      space: contact.space.Contacts,
+      ...socialIdKey,
+      key: buildSocialIdString(socialIdKey),
+      confirmed: false,
+
+      attachedTo: pAcc.person,
+      attachedToClass: contact.class.Person,
+      collection: 'socialIds',
+
+      modifiedOn: Date.now(),
+      createdBy: core.account.ConfigUser,
+      createdOn: Date.now(),
+      modifiedBy: core.account.ConfigUser
+    }
+
+    await client.create(DOMAIN_CHANNEL, socialId)
+  }
 }
 
 export const contactOperation: MigrateOperation = {
@@ -219,6 +258,10 @@ export const contactOperation: MigrateOperation = {
             { $rename: { avatarKind: 'avatarType' } }
           )
         }
+      },
+      {
+        state: 'create-social-identities',
+        func: createSocialIdentities
       }
     ])
   },

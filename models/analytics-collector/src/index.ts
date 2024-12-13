@@ -42,7 +42,7 @@ export class TOnboardingChannel extends TChannel implements OnboardingChannel {
 
   @Prop(TypeString(), analyticsCollector.string.SocialId)
   @ReadOnly()
-    personId!: string
+    socialString!: string
 
   @Prop(TypeString(), analyticsCollector.string.WorkspaceName)
   @ReadOnly()

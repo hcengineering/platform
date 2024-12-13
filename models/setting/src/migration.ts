@@ -13,16 +13,65 @@
 // limitations under the License.
 //
 
-import core, { type Ref, type Space } from '@hcengineering/core'
+import core, { MeasureMetricsContext, type Ref, type Space } from '@hcengineering/core'
 import {
   migrateSpace,
+  type MigrateUpdate,
+  type MigrationDocumentQuery,
   tryMigrate,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import { settingId } from '@hcengineering/setting'
+import setting, { type Integration, settingId } from '@hcengineering/setting'
+import { getSocialIdByOldAccount } from '@hcengineering/model-core'
+
 import { DOMAIN_SETTING } from '.'
+
+async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('setting migrateAccountsToSocialIds', {})
+  const socialIdByAccount = getSocialIdByOldAccount(client)
+
+  ctx.info('processing setting integration shared ', { })
+  const iterator = await client.traverse(DOMAIN_SETTING, { _class: setting.class.Integration })
+
+  try {
+    let processed = 0
+    while (true) {
+      const docs = await iterator.next(200)
+      if (docs === null || docs.length === 0) {
+        break
+      }
+
+      const operations: { filter: MigrationDocumentQuery<Integration>, update: MigrateUpdate<Integration> }[] = []
+
+      for (const doc of docs) {
+        const integration = doc as Integration
+
+        if (integration.shared === undefined || integration.shared.length === 0) continue
+
+        const newShared = integration.shared.map((s) => socialIdByAccount[s] ?? s)
+
+        operations.push({
+          filter: { _id: integration._id },
+          update: {
+            shared: newShared
+          }
+        })
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_SETTING, operations)
+      }
+
+      processed += docs.length
+      ctx.info('...processed', { count: processed })
+    }
+  } finally {
+    await iterator.close()
+  }
+  ctx.info('finished processing setting integration shared ', { })
+}
 
 export const settingOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
@@ -32,6 +81,10 @@ export const settingOperation: MigrateOperation = {
         func: async (client: MigrationClient) => {
           await migrateSpace(client, 'setting:space:Setting' as Ref<Space>, core.space.Workspace, [DOMAIN_SETTING])
         }
+      },
+      {
+        state: 'accounts-to-social-ids',
+        func: migrateAccountsToSocialIds
       }
     ])
   },
