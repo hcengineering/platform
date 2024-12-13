@@ -31,7 +31,7 @@ import CreateProject from './components/project/CreateProject.svelte'
 import SelectTestCases from './components/test-case/SelectTestCasesModal.svelte'
 import { getTestRunIdFromLocation } from './navigation'
 import { initializeIterator } from './components/test-result/store/testIteratorStore'
-import { setSelected } from './components/test-run/store/TestRunStore'
+import { setSelected } from './components/test-run/store/testRunStore'
 
 export async function showCreateTestSuitePopup (
   space: Ref<TestProject> | undefined,

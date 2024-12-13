@@ -36,7 +36,7 @@
   import { Attachment } from '@hcengineering/attachment'
   import { PersonAccount } from '@hcengineering/contact'
 
-  import { selectedTestCases, selectedTestPlan, resetStore } from './store/TestRunStore'
+  import { selectedTestCases, selectedTestPlan, resetStore } from './store/testRunStore'
   import NewTestRunAside from './NewTestRunAside.svelte'
   import TestCaseSelector from '../test-case/TestCaseSelector.svelte'
   import { getTestRunsLink, getProjectFromLocation } from '../../navigation'
