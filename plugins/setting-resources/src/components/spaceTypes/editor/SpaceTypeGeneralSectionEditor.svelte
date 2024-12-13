@@ -47,7 +47,7 @@
       core.class.TypedSpace,
       { type: type._id },
       (res) => {
-        spacesCount = res.length
+        spacesCount = res.total
         loading = false
       },
       {

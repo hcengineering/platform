@@ -34,7 +34,7 @@
     recruit.class.Applicant,
     { space: objectId },
     (res) => {
-      applications = res.length
+      applications = res.total
     },
     { total: true, limit: 1 }
   )
