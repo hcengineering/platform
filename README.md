@@ -2,7 +2,7 @@
 
 [![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/huly_io?style=for-the-badge)](https://x.com/huly_io)
 ![GitHub License](https://img.shields.io/github/license/hcengineering/platform?style=for-the-badge)
-[![Gurubase](https://img.shields.io/badge/Gurubase-Ask%20Huly%20Guru-006BFF)](https://gurubase.io/g/huly)
+[![Gurubase](https://img.shields.io/badge/Gurubase-Ask%20Huly%20Guru-006BFF)](https://gurubase.io/g/huly?style=for-the-badge)
 
 ⭐️ Your star shines on us. Star us on GitHub!
 
