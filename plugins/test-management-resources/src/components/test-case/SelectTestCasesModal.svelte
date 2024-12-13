@@ -77,12 +77,12 @@
       titleKey: 'name',
       parentKey: 'parent',
       noParentId: testManagement.ids.NoParent,
-      getFolderLink: testManagement.function.GetTestSuiteLink,
       allObjectsLabel: testManagement.string.AllTestSuites,
       allObjectsIcon: testManagement.icon.TestSuites,
       space
     }}
     mainComponentProps={{ space }}
+    syncWithLocationQuery={false}
     {space}
   />
   <svelte:fragment slot="footerRight">
