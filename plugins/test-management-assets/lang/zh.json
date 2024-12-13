@@ -91,6 +91,6 @@
     "SelectedTestCases": "{count, plural, =0 {未選擇測試用例} one {選擇了#個測試用例} few {選擇了#個測試用例} other {選擇了#個測試用例}}",
     "DefaultAssignee": "默认指派人",
     "TestPlanTitle": "測試計劃標題",
-    "SelectTestCases": "選擇測試用例"
+    "RunAssistant": "執行輔助程式"
   }
 }

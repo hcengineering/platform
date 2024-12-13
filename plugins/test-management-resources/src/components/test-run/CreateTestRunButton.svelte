@@ -19,8 +19,7 @@
   import { showCreateTestRunPanel } from '../../utils'
 
   const handleRun = async (): Promise<void> => {
-    await showCreateTestRunPanel({
-    })
+    await showCreateTestRunPanel({})
   }
 </script>
 

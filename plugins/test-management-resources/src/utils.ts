@@ -68,11 +68,7 @@ export async function showCreateTestRunPanel (options: {
   )
 }
 
-export async function showCreateTestPlanPanel (options: {
-  testCases?: TestCase[]
-  query?: DocumentQuery<Doc>
-  space: Ref<TestProject>
-}): Promise<void> {
+export async function showCreateTestPlanPanel (): Promise<void> {
   showPanel(
     testManagement.component.NewTestPlanPanel,
     testManagement.ids.NewTestPlan,

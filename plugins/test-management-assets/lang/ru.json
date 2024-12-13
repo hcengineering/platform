@@ -91,6 +91,6 @@
     "SelectedTestCases": "{count, plural, =0 {Тест-кейсы не выбраны} one {# тест-кейс выбран} few {# тест-кейса выбраны} other {# тест-кейсов выбрано}}",
     "DefaultAssignee": "Исполнитель по умолчанию",
     "TestPlanTitle": "Название плана тестирования",
-    "SelectTestCases": "Выбрать тест-кейсы"
+    "RunAssistant": "Помощник запуска"
   }
 }

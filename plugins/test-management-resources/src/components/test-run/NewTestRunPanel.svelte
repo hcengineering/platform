@@ -17,15 +17,17 @@
 
   import { Analytics } from '@hcengineering/analytics'
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { ActionContext, createMarkup, getClient } from '@hcengineering/presentation'
-  import core, { Data, Ref, getCurrentAccount, generateId, makeCollabId } from '@hcengineering/core'
+  import { ActionContext, createMarkup, createQuery, getClient } from '@hcengineering/presentation'
+  import core, { Data, Ref, getCurrentAccount, generateId, makeCollabId, WithLookup } from '@hcengineering/core'
   import testManagement, {
     TestProject,
     TestRun,
     TestCase,
     TestResult,
     TestRunStatus,
-    TestManagementEvents
+    TestManagementEvents,
+    TestPlan,
+    TestPlanItem
   } from '@hcengineering/test-management'
   import { Panel } from '@hcengineering/panel'
   import { EditBox, ModernButton, Label, navigate } from '@hcengineering/ui'
@@ -34,13 +36,40 @@
   import { Attachment } from '@hcengineering/attachment'
   import { PersonAccount } from '@hcengineering/contact'
 
-  import { selectedTestCases, resetStore } from './store/TestRunStore'
+  import { selectedTestCases, selectedTestPlan, resetStore } from './store/TestRunStore'
   import NewTestRunAside from './NewTestRunAside.svelte'
   import TestCaseSelector from '../test-case/TestCaseSelector.svelte'
   import { getTestRunsLink, getProjectFromLocation } from '../../navigation'
 
-  export let space: Ref<TestProject> = getProjectFromLocation()
-  export let testCases: TestCase[] = $selectedTestCases ?? []
+  const space: Ref<TestProject> = getProjectFromLocation()
+  let testCases: TestCase[] = $selectedTestCases ?? []
+  const testPlan: Ref<TestPlan> | undefined = $selectedTestPlan
+  let testPlanItems: WithLookup<TestPlanItem>[] | undefined = undefined
+
+  if (testPlan !== undefined) {
+    const docQuery = createQuery()
+    docQuery.query(
+      testManagement.class.TestPlanItem,
+      { attachedTo: testPlan },
+      (res: WithLookup<TestPlanItem>[]) => {
+        testPlanItems = res
+        testCases = testPlanItems
+          .filter((item) => item?.$lookup?.testCase !== undefined)
+          .map((item): TestCase => {
+            const testCase = item?.$lookup?.testCase as TestCase
+            if (item.assignee !== undefined) {
+              testCase.assignee = item.assignee
+            }
+            return testCase
+          })
+      },
+      {
+        lookup: {
+          testCase: testManagement.class.TestCase
+        }
+      }
+    )
+  }
 
   const id: Ref<TestRun> = generateId()
   const me = getCurrentAccount() as PersonAccount

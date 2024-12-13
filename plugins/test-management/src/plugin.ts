@@ -203,7 +203,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     CreateTestPlan: '' as IntlString,
     SelectedTestCases: '' as IntlString,
     DefaultAssignee: '' as IntlString,
-    TestPlanTitle: '' as IntlString
+    TestPlanTitle: '' as IntlString,
+    RunAssistant: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>

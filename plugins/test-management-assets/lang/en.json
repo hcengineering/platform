@@ -91,6 +91,6 @@
     "SelectedTestCases": "{count, plural, =0 {Test cases not selected} one {# test case selected} few {# test cases selected} other {# test cases selected}}",
     "DefaultAssignee": "Default assignee",
     "TestPlanTitle": "Test plan title",
-    "SelectTestCases": "Select test cases"
+    "RunAssistant": "Run assistant"
   }
 }

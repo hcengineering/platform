@@ -91,6 +91,6 @@
     "SelectedTestCases": "{count, plural, =0 {Casos de teste não selecionados} one {# caso de teste selecionado} few {# casos de teste selecionados} other {# casos de teste selecionados}}",
     "DefaultAssignee": "Responsável padrão",
     "TestPlanTitle": "Título",
-    "SelectTestCases": "Selecionar casos de teste"
+    "RunAssistant": "Executar assistente"
   }
 }

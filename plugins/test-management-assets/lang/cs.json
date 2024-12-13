@@ -91,6 +91,6 @@
     "SelectedTestCases": "{count, plural, =0 {Testovací případy nevybrány} one {# testovací případ vybrán} few {# testovací případy vybrány} other {# testovacích případů vybráno}}",
     "DefaultAssignee": "Výchozí přiřazovatel",
     "TestPlanTitle": "Název plánu testování",
-    "SelectTestCases": "Vyberte testovací případy"
+    "RunAssistant": "Spustit asistenta"
   }
 }
