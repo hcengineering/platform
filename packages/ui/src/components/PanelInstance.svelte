@@ -86,7 +86,24 @@
   const fitPopup = (props: PanelProps, contentPanel: HTMLElement): void => {
     if (modalHTML != null) {
       const device: DeviceOptions = $deviceInfo
-      options = fitPopupElement(modalHTML, device, props.element, contentPanel)
+      options =
+        device.isMobile && device.docWidth <= 480
+          ? {
+              props: {
+                top: 'var(--status-bar-height)',
+                bottom: '4.25rem',
+                left: '0',
+                right: '0',
+                width: '100%',
+                height: 'calc(100dvh - var(--status-bar-height) - 4.25rem)',
+                maxWidth: '100%',
+                maxHeight: '100%',
+                minWidth: '0'
+              },
+              showOverlay: true,
+              direction: 'bottom'
+            }
+          : fitPopupElement(modalHTML, device, props.element, contentPanel)
     }
   }
 
