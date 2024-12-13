@@ -721,7 +721,7 @@ export class ImportWorkspaceBuilder {
     }
 
     // Validate state values
-    if (doc.state !== DocumentState.Draft && doc.state !== DocumentState.Effective) { // RELEASED vs Effective?
+    if (doc.state !== DocumentState.Draft) {
       errors.push('invalid state: ' + doc.state)
     }
 
@@ -740,9 +740,7 @@ export class ImportWorkspaceBuilder {
     errors.push(...this.validateType(template.major, 'number', 'major'))
     errors.push(...this.validateType(template.minor, 'number', 'minor'))
     errors.push(...this.validateType(template.state, 'string', 'state'))
-    errors.push(...this.validateType(template.commentSequence, 'number', 'commentSequence'))
     errors.push(...this.validateType(template.changeControl, 'string', 'changeControl'))
-    errors.push(...this.validateType(template.requests, 'number', 'requests'))
 
     // Validate required string fields are defined
     if (!this.validateStringDefined(template.title)) errors.push('title is required')
@@ -752,10 +750,6 @@ export class ImportWorkspaceBuilder {
 
     // Validate numbers are positive
     if (!this.validatePossitiveNumber(template.seqNumber)) errors.push('invalid sequence number')
-    if (!this.validatePossitiveNumber(template.major)) errors.push('invalid major version')
-    if (!this.validatePossitiveNumber(template.minor)) errors.push('invalid minor version')
-    if (!this.validatePossitiveNumber(template.commentSequence)) errors.push('invalid comment sequence')
-    if (!this.validatePossitiveNumber(template.requests)) errors.push('invalid requests number')
 
     // Validate arrays
     errors.push(...this.validateArray(template.reviewers, 'string', 'reviewers'))

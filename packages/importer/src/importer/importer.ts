@@ -58,7 +58,6 @@ import { type FileUploader } from './uploader'
 import { Logger } from './logger'
 import documents, {
   ControlledDocumentState,
-  DocumentRequest,
   type ControlledDocument,
   DocumentCategory,
   type DocumentSpace,
@@ -173,13 +172,11 @@ export interface ImportControlledDocumentTemplate extends ImportDoc {
   major: number
   minor: number
   state: DocumentState
-  commentSequence: number
   prefix: string
   category?: Ref<DocumentCategory>
   author?: Ref<Employee>
   owner?: Ref<Employee>
   abstract?: string
-  requests: CollectionSize<DocumentRequest>
   reviewers: Ref<Employee>[]
   approvers: Ref<Employee>[]
   coAuthors: Ref<Employee>[]
@@ -200,9 +197,6 @@ export interface ImportControlledDocument extends ImportDoc {
   major: number
   minor: number
   state: DocumentState
-  commentSequence: number
-  prefix: string
-  requests: CollectionSize<DocumentRequest>
   reviewers: Ref<Employee>[]
   approvers: Ref<Employee>[]
   coAuthors: Ref<Employee>[]
@@ -820,14 +814,14 @@ export class WorkspaceImporter {
         major: template.major,
         minor: template.minor,
         state: template.state,
-        commentSequence: template.commentSequence,
+        commentSequence: 0,
         category: template.category,
         author: template.author,
         owner: template.owner,
         abstract: template.abstract,
         labels: 0,
         snapshots: template.snapshots ?? 0,
-        requests: template.requests,
+        requests: 0,
         reviewers: template.reviewers,
         approvers: template.approvers,
         coAuthors: template.coAuthors,
@@ -878,14 +872,14 @@ export class WorkspaceImporter {
         major: doc.major,
         minor: doc.minor,
         state: doc.state,
-        commentSequence: doc.commentSequence,
+        commentSequence: 0,
         category: doc.category,
         author: doc.author,
         owner: doc.owner,
         abstract: doc.abstract,
 
         // ControlledDocument specific fields
-        requests: doc.requests,
+        requests: 0,
         reviewers: doc.reviewers,
         approvers: doc.approvers,
         coAuthors: doc.coAuthors,
@@ -901,7 +895,7 @@ export class WorkspaceImporter {
       documents.class.ControlledDocument
     )
 
-    if (result.success !== true) {
+    if (!result.success) {
       throw new Error('Failed to create controlled document')
     }
 

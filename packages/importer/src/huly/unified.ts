@@ -108,15 +108,10 @@ interface UnifiedControlledDocumentHeader {
   template: string
   code: string
   seqNumber: number
-  major: number
-  minor: number
-  state: 'Draft' | 'Released'
-  commentSequence: number
   category: string
   author: string
   owner: string
   abstract?: string
-  requests: number
   reviewers: string[]
   approvers: string[]
   coAuthors: string[]
@@ -130,15 +125,10 @@ interface UnifiedDocumentTemplateHeader {
   docPrefix: string
   code: string
   seqNumber: number
-  major: number
-  minor: number
-  state: 'Draft' | 'Released'
-  commentSequence: number
   category: string
   author: string
   owner: string
   abstract?: string
-  requests: number
   reviewers: string[]
   approvers: string[]
   coAuthors: string[]
@@ -754,15 +744,13 @@ export class UnifiedFormatImporter {
       template: documents.template.ProductChangeControl,
       code: header.code,
       seqNumber: header.seqNumber,
-      major: header.major,
-      minor: header.minor,
-      state: header.state === 'Draft' ? DocumentState.Draft : DocumentState.Effective, // todo: RELEASED vs Effective?
-      commentSequence: header.commentSequence,
+      major: 0,
+      minor: 1,
+      state: DocumentState.Draft,
       category: header.category as Ref<DocumentCategory>,
       author,
       owner,
       abstract: header.abstract,
-      requests: header.requests,
       reviewers: header.reviewers.map(email => this.findEmployeeByName(email)),
       approvers: header.approvers.map(email => this.findEmployeeByName(email)),
       coAuthors: header.coAuthors.map(email => this.findEmployeeByName(email)),
@@ -790,15 +778,13 @@ export class UnifiedFormatImporter {
       prefix: header.docPrefix,
       code: header.code,
       seqNumber: header.seqNumber,
-      major: header.major,
-      minor: header.minor,
-      state: header.state === 'Draft' ? DocumentState.Draft : DocumentState.Effective, // todo: RELEASED vs Effective? or Archived?
-      commentSequence: header.commentSequence,
+      major: 0,
+      minor: 1,
+      state: DocumentState.Draft,
       category: header.category as Ref<DocumentCategory>,
       author,
       owner,
       abstract: header.abstract,
-      requests: header.requests,
       reviewers: header.reviewers.map(email => this.findEmployeeByName(email)),
       approvers: header.approvers.map(email => this.findEmployeeByName(email)),
       coAuthors: header.coAuthors.map(email => this.findEmployeeByName(email)),
