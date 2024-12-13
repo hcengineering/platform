@@ -14,7 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import type { Doc, DocumentQuery, Ref } from '@hcengineering/core'
+import type { DocumentQuery, Ref } from '@hcengineering/core'
 import { showPopup, showPanel } from '@hcengineering/ui'
 import testManagement, {
   type TestProject,
