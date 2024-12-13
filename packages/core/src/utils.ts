@@ -125,6 +125,7 @@ export function toFindResult<T extends Doc> (docs: T[], total?: number, lookupMa
  */
 export interface WorkspaceId {
   name: string
+  uuid?: string
 }
 
 /**

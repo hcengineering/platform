@@ -1,5 +1,4 @@
 import core, {
-  getWorkspaceId,
   Hierarchy,
   ModelDb,
   systemAccountEmail,
@@ -67,11 +66,15 @@ export async function createWorkspace (
   try {
     const wsUrl: WorkspaceIdWithUrl = {
       name: workspaceInfo.workspace,
+      uuid: workspaceInfo.uuid,
       workspaceName: workspaceInfo.workspaceName ?? '',
       workspaceUrl: workspaceInfo.workspaceUrl ?? ''
     }
 
-    const wsId = getWorkspaceId(workspaceInfo.workspace)
+    const wsId = {
+      name: workspaceInfo.workspace,
+      uuid: workspaceInfo.uuid
+    }
 
     await handleWsEvent?.('create-started', version, 10)
 
@@ -190,6 +193,7 @@ export async function upgradeWorkspace (
       dbUrl,
       {
         name: ws.workspace,
+        uuid: ws.uuid,
         workspaceName: ws.workspaceName ?? '',
         workspaceUrl: ws.workspaceUrl ?? ''
       },
