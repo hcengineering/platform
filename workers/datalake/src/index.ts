@@ -60,7 +60,9 @@ const withBlob: RequestHandler<BlobRequest> = (request: BlobRequest) => {
 
 router
   .get('/blob/:workspace/:name', withBlob, handleBlobGet)
+  .get('/blob/:workspace/:name/:filename', withBlob, handleBlobGet)
   .head('/blob/:workspace/:name', withBlob, handleBlobHead)
+  .head('/blob/:workspace/:name/:filename', withBlob, handleBlobHead)
   .delete('/blob/:workspace/:name', withBlob, handleBlobDelete)
   // Image
   .get('/image/:transform/:workspace/:name', withBlob, handleImageGet)
