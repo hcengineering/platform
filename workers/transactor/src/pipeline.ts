@@ -25,6 +25,7 @@ import {
   DomainTxMiddleware,
   LiveQueryMiddleware,
   LookupMiddleware,
+  LowLevelMiddleware,
   MarkDerivedEntryMiddleware,
   ModelMiddleware,
   ModifiedMiddleware,
@@ -49,6 +50,7 @@ import {
   type MiddlewareCreator,
   type PipelineContext
 } from '@hcengineering/server-core'
+import { createDummyStorageAdapter } from '@hcengineering/storage'
 
 export async function createaPipeline (
   ctx: MeasureContext,
@@ -123,6 +125,7 @@ export async function createaPipeline (
     TriggersMiddleware.create,
     // TODO: Add Full text state update middleware
     // FullTextMiddleware.create(conf, false), // TODO: Fix Fulltext search
+    LowLevelMiddleware.create,
     QueryJoinMiddleware.create,
     LiveQueryMiddleware.create,
     DomainFindMiddleware.create,
@@ -139,7 +142,8 @@ export async function createaPipeline (
     workspace,
     branding,
     modelDb,
-    hierarchy
+    hierarchy,
+    storageAdapter: createDummyStorageAdapter()
   }
   return await createPipeline(ctx, middlewares, context)
 }

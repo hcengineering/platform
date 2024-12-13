@@ -5,7 +5,6 @@ import {
   generateId,
   MeasureMetricsContext,
   type MeasureContext,
-  type Tx,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
@@ -20,7 +19,7 @@ import {
   type PipelineFactory,
   type SessionManager
 } from '@hcengineering/server-core'
-// import { registerStringLoaders } from '@hcengineering/server-pipeline'
+import { registerServerPlugins } from '@hcengineering/server-pipeline'
 import serverPlugin, { decodeToken, type Token } from '@hcengineering/server-token'
 import { DurableObject } from 'cloudflare:workers'
 
