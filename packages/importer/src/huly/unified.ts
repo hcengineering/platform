@@ -107,7 +107,6 @@ interface UnifiedControlledDocumentHeader {
   title: string
   template: string
   code: string
-  prefix: string
   seqNumber: number
   major: number
   minor: number
@@ -753,7 +752,6 @@ export class UnifiedFormatImporter {
       title: header.title,
       // template: header.template as Ref<DocumentTemplate>,
       template: documents.template.ProductChangeControl,
-      prefix: header.prefix,
       code: header.code,
       seqNumber: header.seqNumber,
       major: header.major,

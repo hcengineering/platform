@@ -681,28 +681,17 @@ export class ImportWorkspaceBuilder {
     errors.push(...this.validateType(doc.class, 'string', 'class'))
     errors.push(...this.validateType(doc.template, 'string', 'template'))
     errors.push(...this.validateType(doc.code, 'string', 'code'))
-    errors.push(...this.validateType(doc.prefix, 'string', 'prefix'))
-    errors.push(...this.validateType(doc.seqNumber, 'number', 'seqNumber'))
-    errors.push(...this.validateType(doc.major, 'number', 'major'))
-    errors.push(...this.validateType(doc.minor, 'number', 'minor'))
     errors.push(...this.validateType(doc.state, 'string', 'state'))
-    errors.push(...this.validateType(doc.commentSequence, 'number', 'commentSequence'))
     errors.push(...this.validateType(doc.changeControl, 'string', 'changeControl'))
-    errors.push(...this.validateType(doc.requests, 'number', 'requests'))
 
     // Validate required string fields are defined
     if (!this.validateStringDefined(doc.title)) errors.push('title is required')
     if (!this.validateStringDefined(doc.template)) errors.push('template is required')
     if (!this.validateStringDefined(doc.code)) errors.push('code is required')
-    if (!this.validateStringDefined(doc.prefix)) errors.push('prefix is required')
     if (!this.validateStringDefined(doc.changeControl)) errors.push('changeControl is required')
 
     // Validate numbers are positive
     if (!this.validatePossitiveNumber(doc.seqNumber)) errors.push('invalid sequence number')
-    if (!this.validatePossitiveNumber(doc.major)) errors.push('invalid major version')
-    if (!this.validatePossitiveNumber(doc.minor)) errors.push('invalid minor version')
-    if (!this.validatePossitiveNumber(doc.commentSequence)) errors.push('invalid comment sequence')
-    if (!this.validatePossitiveNumber(doc.requests)) errors.push('invalid requests number')
 
     // Validate arrays
     errors.push(...this.validateArray(doc.reviewers, 'string', 'reviewers'))

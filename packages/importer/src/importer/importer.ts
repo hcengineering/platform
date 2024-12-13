@@ -872,7 +872,7 @@ export class WorkspaceImporter {
         // Base Document fields
         title: doc.title,
         content: contentId,
-        prefix: doc.prefix, // Add required prefix field
+        prefix: '',
         code: doc.code,
         seqNumber: doc.seqNumber,
         major: doc.major,
