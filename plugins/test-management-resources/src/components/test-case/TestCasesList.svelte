@@ -26,7 +26,7 @@
 
   const query = createQuery()
   $: query.query(testManagement.class.TestCase, baseQuery, (res) => {
-    testCases = res.length
+    testCases = res.total
   })
 
   let viewlet: Viewlet | undefined
