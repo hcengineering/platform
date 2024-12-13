@@ -120,8 +120,8 @@ import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount } from './renameAccount'
 import { copyToDatalake, moveFiles, showLostFiles } from './storage'
 import { getModelVersion } from '@hcengineering/model-all'
-import { type DatalakeConfig, DatalakeService, createDatalakeClient } from '@hcengineering/datalake'
-import { S3Service, type S3Config } from '@hcengineering/s3'
+import { CONFIG_KIND as DATALAKE_CONFIG_KIND, type DatalakeConfig, createDatalakeClient } from '@hcengineering/datalake'
+import { CONFIG_KIND as S3_CONFIG_KIND, S3Service, type S3Config } from '@hcengineering/s3'
 import { restoreControlledDocContentMongo, restoreWikiContentMongo } from './markup'
 
 const colorConstants = {
@@ -1195,12 +1195,12 @@ export function devTool (
 
       const storageConfig = storageConfigFromEnv(process.env.STORAGE)
 
-      const storages = storageConfig.storages.filter((p) => p.kind === S3Service.config) as S3Config[]
+      const storages = storageConfig.storages.filter((p) => p.kind === S3_CONFIG_KIND) as S3Config[]
       if (storages.length === 0) {
         throw new Error('S3 storage config is required')
       }
 
-      const datalakeConfig = storageConfig.storages.find((p) => p.kind === DatalakeService.config)
+      const datalakeConfig = storageConfig.storages.find((p) => p.kind === DATALAKE_CONFIG_KIND)
       if (datalakeConfig === undefined) {
         throw new Error('Datalake storage config is required')
       }

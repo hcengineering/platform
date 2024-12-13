@@ -60,11 +60,12 @@ export interface S3Config extends StorageConfig {
   expireTime?: string
 }
 
+export const CONFIG_KIND = 's3'
+
 /**
  * @public
  */
 export class S3Service implements StorageAdapter {
-  static config = 's3'
   expireTime: number
   client: S3
   constructor (readonly opt: S3Config) {

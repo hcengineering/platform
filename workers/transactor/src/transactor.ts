@@ -5,7 +5,6 @@ import {
   generateId,
   MeasureMetricsContext,
   type MeasureContext,
-  type Tx,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
@@ -19,18 +18,14 @@ import {
   type PipelineFactory,
   type SessionManager
 } from '@hcengineering/server-core'
-// import { registerStringLoaders } from '@hcengineering/server-pipeline'
+import { registerServerPlugins } from '@hcengineering/server-pipeline'
 import serverPlugin, { decodeToken, type Token } from '@hcengineering/server-token'
 import { DurableObject } from 'cloudflare:workers'
 
 import { createaPipeline } from './pipeline'
 
 // Approach usefull only for separate build, after model-all bundle phase is executed.
-// import model from './model.json'
-
-// TODO: this is only to pass the validation step, makea a proper solution
-import { readFileSync } from 'node:fs'
-const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
+import model from './model.json'
 
 const rpcHandler = new RPCHandler()
 
@@ -38,7 +33,7 @@ export const PREFERRED_SAVE_SIZE = 500
 export const PREFERRED_SAVE_INTERVAL = 30 * 1000
 
 export class Transactor extends DurableObject<Env> {
-  private readonly workspace: string
+  private workspace: string = ''
 
   private sessionManager!: SessionManager
 
@@ -53,10 +48,11 @@ export class Transactor extends DurableObject<Env> {
   constructor (ctx: DurableObjectState, env: Env) {
     super(ctx, env)
 
+    registerServerPlugins()
+
     this.accountsUrl = env.ACCOUNTS_URL
 
-    this.workspace = this.ctx.id.toString()
-    this.measureCtx = new MeasureMetricsContext('transactor-' + this.workspace, {})
+    this.measureCtx = new MeasureMetricsContext('transactor-' + this.ctx.id.toString(), {})
 
     setMetadata(serverPlugin.metadata.Secret, env.SERVER_SECRET)
 
@@ -93,6 +89,11 @@ export class Transactor extends DurableObject<Env> {
     try {
       const payload = decodeToken(token ?? '')
       const sessionId = url.searchParams.get('sessionId')
+
+      // By design, all fetches to this durable object will be for the same workspace
+      if (this.workspace === '') {
+        this.workspace = payload.workspace.name
+      }
 
       if (!(await this.handleSession(server, request, payload, token, sessionId))) {
         return new Response(null, { status: 404 })

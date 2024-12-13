@@ -43,11 +43,12 @@ export function createDatalakeClient (opt: DatalakeConfig): DatalakeClient {
   return new DatalakeClient(endpoint)
 }
 
+export const CONFIG_KIND = 'datalake'
+
 /**
  * @public
  */
 export class DatalakeService implements StorageAdapter {
-  static config = 'datalake'
   private readonly client: DatalakeClient
 
   constructor (readonly opt: DatalakeConfig) {
