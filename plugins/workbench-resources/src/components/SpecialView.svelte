@@ -51,6 +51,7 @@
   export let createLabel: IntlString | undefined
   export let createComponent: AnyComponent | undefined
   export let createComponentProps: Record<string, any> = {}
+  export let createButton: AnyComponent | undefined
   export let isCreationDisabled = false
   export let descriptors: Array<Ref<ViewletDescriptor>> | undefined = undefined
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
@@ -115,7 +116,7 @@
 
 <Header
   adaptive={modes !== undefined ? 'doubleRow' : filterVisible ? 'freezeActions' : 'disabled'}
-  hideActions={!(createLabel && createComponent)}
+  hideActions={!(createLabel && createComponent) && createButton === undefined}
   hideExtra={modes === undefined}
   freezeBefore
 >
@@ -149,6 +150,14 @@
         event={createEvent}
         on:click={() => {
           showCreateDialog()
+        }}
+      />
+    {:else if createButton !== undefined}
+      <Component
+        is={createButton}
+        props={{
+          ...createComponentProps,
+          space
         }}
       />
     {/if}

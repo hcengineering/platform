@@ -198,6 +198,7 @@ export interface ParentsNavigationModel {
   syncWithLocationQuery?: boolean
   createComponent?: AnyComponent
   createComponentProps?: Record<string, any>
+  createButton?: AnyComponent
 }
 
 /**

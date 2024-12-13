@@ -13,36 +13,28 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery, Ref, Space, mergeQueries } from '@hcengineering/core'
-  import { Button } from '@hcengineering/ui'
-  import { selectionStore } from '@hcengineering/view-resources'
-  import type { TestCase } from '@hcengineering/test-management'
-  import { createQuery } from '@hcengineering/presentation'
+  import { onDestroy } from 'svelte'
+  import { Ref } from '@hcengineering/core'
+  import { Button, location } from '@hcengineering/ui'
+  import type { TestPlan } from '@hcengineering/test-management'
+  import testManagement from '@hcengineering/test-management'
 
-  import testManagement from '../../plugin'
   import { showCreateTestRunPanel } from '../../utils'
+  import { getTestPlanIdFromLocation } from '../../navigation'
 
-  export let query: DocumentQuery<Doc> = {}
-  export let space: Ref<Space>
+  let testPlanId: Ref<TestPlan> = getTestPlanIdFromLocation()
 
-  const docQuery = createQuery()
-  let haveTestCases = false
+  const unsubscribe = location.subscribe(() => {
+    testPlanId = getTestPlanIdFromLocation()
+  })
 
-  $: resultQuery = mergeQueries(query, { space })
-  $: docQuery.query(
-    testManagement.class.TestCase,
-    resultQuery,
-    (res) => {
-      haveTestCases = res.length > 0
-    },
-    { limit: 1 }
-  )
+  onDestroy(() => {
+    unsubscribe()
+  })
 
   const handleRun = async (): Promise<void> => {
-    const selectedDocs = $selectionStore?.docs ?? []
-    const testCases = selectedDocs.length > 0 ? selectedDocs : undefined
     await showCreateTestRunPanel({
-      testCases: testCases as TestCase[]
+      testPlanId
     })
   }
 </script>
@@ -52,6 +44,6 @@
   justify={'left'}
   kind={'primary'}
   label={testManagement.string.RunTestCases}
-  disabled={!haveTestCases}
+  disabled={testPlanId === testManagement.ids.NoTestPlan}
   on:click={handleRun}
 />

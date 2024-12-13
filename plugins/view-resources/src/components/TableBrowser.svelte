@@ -36,6 +36,7 @@
   export let prefferedSorting: string = 'modifiedOn'
   export let viewOptions: ViewOptions | undefined = undefined
   export let viewlet: Viewlet | undefined = undefined
+  export let readonly = false
 
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
@@ -84,6 +85,7 @@
     {viewOptions}
     viewOptionsConfig={viewlet?.viewOptions?.other}
     selection={listProvider.current($focusStore)}
+    {readonly}
     on:row-focus={(evt) => {
       listProvider.updateFocus(evt.detail)
     }}

@@ -82,6 +82,15 @@
     "GoToNextTestTooltip": "Go to next test",
     "AllTests": "All tests",
     "MyTests": "My tests",
-    "Comments": "Comments"
+    "Comments": "Comments",
+    "Cancel": "Cancel",
+    "Name": "Name",
+    "TestPlans": "Test plans",
+    "TestPlan": "Test plan",
+    "CreateTestPlan": "New test plan",
+    "SelectedTestCases": "{count, plural, =0 {Test cases not selected} one {# test case selected} few {# test cases selected} other {# test cases selected}}",
+    "DefaultAssignee": "Default assignee",
+    "TestPlanTitle": "Test plan title",
+    "RunAssistant": "Run assistant"
   }
 }
