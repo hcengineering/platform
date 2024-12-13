@@ -426,13 +426,25 @@ export async function selectWorkspace (
   branding: Branding | null,
   token: string,
   workspaceUrl: string,
-  kind: 'external' | 'internal',
-  allowAdmin: boolean = true
+  kind: 'external' | 'internal' | 'byregion',
+  allowAdmin: boolean = true,
+  externalRegions: string[] = []
 ): Promise<WorkspaceLoginInfo> {
   const decodedToken = decodeToken(ctx, token)
   const email = cleanEmail(decodedToken.email)
 
-  const endpointKind = kind === 'external' ? EndpointKind.External : EndpointKind.Internal
+  const getKind = (region: string | undefined): EndpointKind => {
+    switch (kind) {
+      case 'external':
+        return EndpointKind.External
+      case 'internal':
+        return EndpointKind.Internal
+      case 'byregion':
+        return externalRegions.includes(region ?? '') ? EndpointKind.External : EndpointKind.Internal
+      default:
+        return EndpointKind.External
+    }
+  }
 
   if (email === guestAccountEmail && decodedToken.extra?.guest === 'true') {
     const workspaceInfo = await getWorkspaceByUrl(db, workspaceUrl)
@@ -441,9 +453,10 @@ export async function selectWorkspace (
         new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceUrl })
       )
     }
+
     // Guest mode select workspace
     return {
-      endpoint: getEndpoint(ctx, workspaceInfo, kind === 'external' ? EndpointKind.External : EndpointKind.Internal),
+      endpoint: getEndpoint(ctx, workspaceInfo, getKind(workspaceInfo.region)),
       email,
       token,
       workspace: workspaceUrl,
@@ -475,7 +488,7 @@ export async function selectWorkspace (
 
   if ((accountInfo?.admin === true || email === systemAccountEmail) && allowAdmin) {
     return {
-      endpoint: getEndpoint(ctx, workspaceInfo, endpointKind),
+      endpoint: getEndpoint(ctx, workspaceInfo, getKind(workspaceInfo.region)),
       email,
       token: generateToken(email, getWorkspaceId(workspaceInfo.workspace), getExtra(accountInfo)),
       workspace: workspaceUrl,
@@ -509,7 +522,7 @@ export async function selectWorkspace (
     for (const w of workspaces) {
       if (areDbIdsEqual(w, workspaceInfo._id)) {
         const result = {
-          endpoint: getEndpoint(ctx, workspaceInfo, endpointKind),
+          endpoint: getEndpoint(ctx, workspaceInfo, getKind(workspaceInfo.region)),
           email,
           token: generateToken(email, getWorkspaceId(workspaceInfo.workspace), getExtra(accountInfo)),
           workspace: workspaceUrl,
