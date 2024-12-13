@@ -217,6 +217,16 @@ export class WorkspaceMongoDbCollection extends MongoDbCollection<Workspace> imp
   ): Promise<WorkspaceInfo | undefined> {
     const pendingCreationQuery: Filter<Workspace>['$or'] = [{ mode: { $in: ['pending-creation', 'creating'] } }]
 
+    const migrationQuery: Filter<Workspace>['$or'] = [
+      { mode: { $in: ['migration-backup', 'migration-pending-backup', 'migration-clean', 'migration-pending-clean'] } }
+    ]
+
+    const archivingQuery: Filter<Workspace>['$or'] = [
+      { mode: { $in: ['archiving-pending-backup', 'archiving-backup', 'archiving-pending-clean', 'archiving-clean'] } }
+    ]
+
+    const restoreQuery: Filter<Workspace>['$or'] = [{ mode: { $in: ['pending-restore', 'restoring'] } }]
+
     const versionQuery = {
       $or: [
         { 'version.major': { $lt: version.major } },
@@ -252,13 +262,23 @@ export class WorkspaceMongoDbCollection extends MongoDbCollection<Workspace> imp
     // to clear them with the worker.
 
     const defaultRegionQuery = { $or: [{ region: { $exists: false } }, { region: '' }] }
-    const operationQuery = {
-      $or:
-        operation === 'create'
-          ? pendingCreationQuery
-          : operation === 'upgrade'
-            ? pendingUpgradeQuery
-            : [...pendingCreationQuery, ...pendingUpgradeQuery]
+    let operationQuery: Filter<Workspace> = {}
+
+    switch (operation) {
+      case 'create':
+        operationQuery = { $or: pendingCreationQuery }
+        break
+      case 'upgrade':
+        operationQuery = { $or: pendingUpgradeQuery }
+        break
+      case 'all':
+        operationQuery = { $or: [...pendingCreationQuery, ...pendingUpgradeQuery] }
+        break
+      case 'all+backup':
+        operationQuery = {
+          $or: [...pendingCreationQuery, ...pendingUpgradeQuery, ...migrationQuery, ...archivingQuery, ...restoreQuery]
+        }
+        break
     }
     const attemptsQuery = { $or: [{ attempts: { $exists: false } }, { attempts: { $lte: 3 } }] }
 

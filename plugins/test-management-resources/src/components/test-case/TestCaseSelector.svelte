@@ -15,35 +15,33 @@
 
 <script lang="ts">
   import { IntlString } from '@hcengineering/platform'
-  import { Button, ButtonKind, ButtonShape, ButtonSize, Label, TooltipAlignment, showPopup } from '@hcengineering/ui'
-  import { TestCase } from '@hcengineering/test-management'
+  import { Button, ButtonKind, ButtonShape, ButtonSize, Label } from '@hcengineering/ui'
+  import { TestCase, TestProject } from '@hcengineering/test-management'
 
-  import TestCasePopup from './TestCasePopup.svelte'
   import testManagement from '../../plugin'
+  import { showSelectTestCasesPopup } from '../../utils'
+  import { Ref } from '@hcengineering/core'
 
   export let objects: TestCase[]
-  export let selectedObjects: TestCase[]
-  export let label: IntlString = testManagement.string.TestCases
+  export let label: IntlString = testManagement.string.SelectedTestCases
   export let focusIndex = -1
   export let focus = false
-  export let labelDirection: TooltipAlignment | undefined = undefined
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'large'
   export let justify: 'left' | 'center' = 'center'
   export let shape: ButtonShape = undefined
   export let width: string | undefined = undefined
   export let readonly = false
+  export let space: Ref<TestProject> | undefined = undefined
 
-  const showSpacesPopup = (ev: MouseEvent): void => {
-    showPopup(
-      TestCasePopup,
-      {
-        objects,
-        readonly
-      },
-      ev.target as HTMLElement,
-      () => {}
-    )
+  const onSave = (testCases: TestCase[]): void => {
+    objects = testCases
+  }
+
+  const showSelectDialog = async (): Promise<void> => {
+    if (!readonly) {
+      await showSelectTestCasesPopup({ onSave, space })
+    }
   }
 </script>
 
@@ -57,11 +55,9 @@
   {kind}
   {justify}
   {width}
-  showTooltip={{ label, direction: labelDirection }}
-  on:click={showSpacesPopup}
+  on:click={showSelectDialog}
 >
   <span slot="content" class="overflow-label disabled text">
-    {selectedObjects?.length ?? 0}
-    <Label {label} />
+    <Label {label} params={{ count: objects?.length ?? 0 }} />
   </span>
 </Button>

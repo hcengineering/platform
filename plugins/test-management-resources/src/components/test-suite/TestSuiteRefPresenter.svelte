@@ -24,6 +24,8 @@
   export let _class: Ref<Class<TestSuite>> = testManagement.class.TestSuite
   export let inline: boolean = false
   export let accent: boolean = false
+  export let noUnderline: boolean = false
+  export let disabled: boolean = false
 
   let project: TestSuite | undefined
 
@@ -35,5 +37,5 @@
 </script>
 
 {#if value}
-  <TestSuitePresenter value={project} {inline} {accent} />
+  <TestSuitePresenter value={project} {inline} {accent} {noUnderline} {disabled} />
 {/if}

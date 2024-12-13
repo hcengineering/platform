@@ -24,7 +24,6 @@ import TestSuiteRefPresenter from './components/test-suite/TestSuiteRefPresenter
 import EditTestCase from './components/test-case/EditTestCase.svelte'
 import TestCasePresenter from './components/test-case/TestCasePresenter.svelte'
 import CreateTestCase from './components/test-case/CreateTestCase.svelte'
-import CreateTestRun from './components/test-run/CreateTestRun.svelte'
 import TestCaseStatusPresenter from './components/test-case/TestCaseStatusPresenter.svelte'
 import EditTestRun from './components/test-run/EditTestRun.svelte'
 import TestRunPresenter from './components/test-run/TestRunPresenter.svelte'
@@ -38,6 +37,13 @@ import TestResultHeader from './components/test-result/TestResultHeader.svelte'
 import TestResultFooter from './components/test-result/TestResultFooter.svelte'
 import TestRunHeader from './components/test-run/TestRunHeader.svelte'
 import TestRunner from './components/test-result/TestRunner.svelte'
+import NewTestRunPanel from './components/test-run/NewTestRunPanel.svelte'
+import CreateTestPlanButton from './components/test-plan/CreateTestPlanButton.svelte'
+import NewTestPlanPanel from './components/test-plan/NewTestPlanPanel.svelte'
+import TestPlanPresenter from './components/test-plan/TestPlanPresenter.svelte'
+import TestPlanItemPresenter from './components/test-plan/TestPlanItemPresenter.svelte'
+import CreateTestRunButton from './components/test-run/CreateTestRunButton.svelte'
+import RunTestPlanButton from './components/test-plan/RunTestPlanButton.svelte'
 
 import { CreateChildTestSuiteAction, EditTestSuiteAction, RunSelectedTestsAction } from './utils'
 import { resolveLocation, getAttachedObjectLink } from './navigation'
@@ -52,7 +58,6 @@ export default async (): Promise<Resources> => ({
     TestSuitePresenter,
     EditTestCase,
     TestCasePresenter,
-    CreateTestRun,
     CreateTestCase,
     TestCaseStatusPresenter,
     EditTestRun,
@@ -67,11 +72,19 @@ export default async (): Promise<Resources> => ({
     TestResultHeader,
     TestResultFooter,
     TestRunHeader,
-    TestRunner
+    TestRunner,
+    NewTestRunPanel,
+    NewTestPlanPanel,
+    CreateTestPlanButton,
+    TestPlanPresenter,
+    TestPlanItemPresenter,
+    CreateTestRunButton,
+    RunTestPlanButton
   },
   function: {
     GetTestSuiteLink: getAttachedObjectLink,
-    GetTestRunLink: getAttachedObjectLink
+    GetTestRunLink: getAttachedObjectLink,
+    GetTestPlanLink: getAttachedObjectLink
   },
   resolver: {
     Location: resolveLocation

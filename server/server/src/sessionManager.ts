@@ -19,6 +19,9 @@ import core, {
   WorkspaceEvent,
   cutObjectArray,
   generateId,
+  isArchivingMode,
+  isMigrationMode,
+  isRestoringMode,
   isWorkspaceCreating,
   systemAccountEmail,
   toWorkspaceString,
@@ -346,9 +349,17 @@ class TSessionManager implements SessionManager {
       return { upgrade: true }
     }
 
-    if (workspaceInfo.mode === 'archived') {
+    if (isArchivingMode(workspaceInfo.mode)) {
       // No access to disabled workspaces for regular users
       return { error: new Error('Workspace is archived'), terminate: true, archived: true }
+    }
+    if (isMigrationMode(workspaceInfo.mode)) {
+      // No access to disabled workspaces for regular users
+      return { error: new Error('Workspace is in region migration'), terminate: true, archived: false }
+    }
+    if (isRestoringMode(workspaceInfo.mode)) {
+      // No access to disabled workspaces for regular users
+      return { error: new Error('Workspace is in backup restore'), terminate: true, archived: false }
     }
 
     if (workspaceInfo.disabled === true && token.email !== systemAccountEmail && token.extra?.admin !== 'true') {

@@ -31,6 +31,8 @@ import core, {
   Data,
   generateId,
   getWorkspaceId,
+  isArchivingMode,
+  isMigrationMode,
   isWorkspaceCreating,
   MeasureContext,
   RateLimiter,
@@ -42,17 +44,26 @@ import core, {
   versionToString,
   WorkspaceId,
   type BackupStatus,
+  type BaseWorkspaceInfo,
   type Branding,
-  type WorkspaceMode
+  type WorkspaceMode,
+  type WorkspaceUpdateEvent
 } from '@hcengineering/core'
-import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
+import platform, {
+  getMetadata,
+  PlatformError,
+  Severity,
+  Status,
+  translate,
+  unknownError
+} from '@hcengineering/platform'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import { decodeToken as decodeTokenRaw, generateToken, type Token } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
 import { randomBytes } from 'crypto'
-import { type MongoClient } from 'mongodb'
 import otpGenerator from 'otp-generator'
 
+import { getWorkspaceDestroyAdapter } from '@hcengineering/server-pipeline'
 import { accountPlugin } from './plugin'
 import type {
   Account,
@@ -67,7 +78,6 @@ import type {
   RegionInfo,
   UpgradeStatistic,
   Workspace,
-  WorkspaceEvent,
   WorkspaceInfo,
   WorkspaceLoginInfo,
   WorkspaceOperation
@@ -130,6 +140,16 @@ export async function getWorkspaceByUrl (db: AccountDB, workspaceUrl: string): P
  */
 export async function getWorkspaceById (db: AccountDB, workspace: string): Promise<Workspace | null> {
   return await db.workspace.findOne({ workspace })
+}
+
+/**
+ * @public
+ * @param db -
+ * @param workspace -
+ * @returns
+ */
+export async function getWorkspacesById (db: AccountDB, workspace: string | string[]): Promise<Workspace[]> {
+  return await db.workspace.find(Array.isArray(workspace) ? { workspace: { $in: workspace } } : { workspace })
 }
 
 async function getAccountInfo (
@@ -406,13 +426,25 @@ export async function selectWorkspace (
   branding: Branding | null,
   token: string,
   workspaceUrl: string,
-  kind: 'external' | 'internal',
-  allowAdmin: boolean = true
+  kind: 'external' | 'internal' | 'byregion',
+  allowAdmin: boolean = true,
+  externalRegions: string[] = []
 ): Promise<WorkspaceLoginInfo> {
   const decodedToken = decodeToken(ctx, token)
   const email = cleanEmail(decodedToken.email)
 
-  const endpointKind = kind === 'external' ? EndpointKind.External : EndpointKind.Internal
+  const getKind = (region: string | undefined): EndpointKind => {
+    switch (kind) {
+      case 'external':
+        return EndpointKind.External
+      case 'internal':
+        return EndpointKind.Internal
+      case 'byregion':
+        return externalRegions.includes(region ?? '') ? EndpointKind.External : EndpointKind.Internal
+      default:
+        return EndpointKind.External
+    }
+  }
 
   if (email === guestAccountEmail && decodedToken.extra?.guest === 'true') {
     const workspaceInfo = await getWorkspaceByUrl(db, workspaceUrl)
@@ -421,9 +453,10 @@ export async function selectWorkspace (
         new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceUrl })
       )
     }
+
     // Guest mode select workspace
     return {
-      endpoint: getEndpoint(ctx, workspaceInfo, kind === 'external' ? EndpointKind.External : EndpointKind.Internal),
+      endpoint: getEndpoint(ctx, workspaceInfo, getKind(workspaceInfo.region)),
       email,
       token,
       workspace: workspaceUrl,
@@ -455,7 +488,7 @@ export async function selectWorkspace (
 
   if ((accountInfo?.admin === true || email === systemAccountEmail) && allowAdmin) {
     return {
-      endpoint: getEndpoint(ctx, workspaceInfo, endpointKind),
+      endpoint: getEndpoint(ctx, workspaceInfo, getKind(workspaceInfo.region)),
       email,
       token: generateToken(email, getWorkspaceId(workspaceInfo.workspace), getExtra(accountInfo)),
       workspace: workspaceUrl,
@@ -466,7 +499,7 @@ export async function selectWorkspace (
   }
 
   if (workspaceInfo !== null) {
-    if (workspaceInfo.mode === 'archived') {
+    if (isArchivingMode(workspaceInfo.mode) || isMigrationMode(workspaceInfo.mode)) {
       const result: WorkspaceLoginInfo = {
         endpoint: '',
         email,
@@ -489,7 +522,7 @@ export async function selectWorkspace (
     for (const w of workspaces) {
       if (areDbIdsEqual(w, workspaceInfo._id)) {
         const result = {
-          endpoint: getEndpoint(ctx, workspaceInfo, endpointKind),
+          endpoint: getEndpoint(ctx, workspaceInfo, getKind(workspaceInfo.region)),
           email,
           token: generateToken(email, getWorkspaceId(workspaceInfo.workspace), getExtra(accountInfo)),
           workspace: workspaceUrl,
@@ -1112,13 +1145,13 @@ export async function updateWorkspaceInfo (
   branding: Branding | null,
   token: string,
   workspaceId: string,
-  event: WorkspaceEvent,
+  event: WorkspaceUpdateEvent,
   version: Data<Version>, // A worker version
   progress: number,
   message?: string
 ): Promise<void> {
   const decodedToken = decodeToken(ctx, token)
-  if (decodedToken.extra?.service !== 'workspace') {
+  if (decodedToken.extra?.service !== 'workspace' && decodedToken.email !== systemAccountEmail) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
   const workspaceInfo = await getWorkspaceById(db, workspaceId)
@@ -1127,7 +1160,9 @@ export async function updateWorkspaceInfo (
   }
   progress = Math.round(progress)
 
-  const update: Partial<WorkspaceInfo> = {}
+  const update: Partial<WorkspaceInfo> = {
+    lastProcessingTime: Date.now()
+  }
   switch (event) {
     case 'create-started':
       update.mode = 'creating'
@@ -1167,6 +1202,56 @@ export async function updateWorkspaceInfo (
     case 'progress':
       update.progress = progress
       break
+
+    case 'migrate-backup-started':
+      update.mode = 'migration-backup'
+      update.progress = progress
+      break
+    case 'migrate-backup-done':
+      update.mode = 'migration-pending-clean'
+      update.progress = progress
+      update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
+      break
+    case 'migrate-clean-started':
+      update.mode = 'migration-clean'
+      update.attempts = 0
+      update.progress = progress
+      break
+    case 'migrate-clean-done':
+      update.region = workspaceInfo.targetRegion ?? ''
+      update.mode = 'pending-restore'
+      update.progress = progress
+      update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
+      break
+    case 'restore-started':
+      update.mode = 'restoring'
+      update.attempts = 0
+      update.progress = progress
+      break
+    case 'restore-done':
+      update.mode = 'active'
+      update.progress = 100
+      break
+
+    case 'archiving-backup-started':
+      update.mode = 'archiving-backup'
+      update.attempts = 0
+      update.progress = progress
+      break
+    case 'archiving-backup-done':
+      update.mode = 'archiving-pending-clean'
+      update.progress = progress
+      update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
+      break
+    case 'archiving-clean-started':
+      update.mode = 'archiving-clean'
+      update.attempts = 0
+      update.progress = progress
+      break
+    case 'archiving-clean-done':
+      update.mode = 'archived'
+      update.progress = 100
+      break
     case 'ping':
     default:
       break
@@ -1179,10 +1264,102 @@ export async function updateWorkspaceInfo (
   await db.workspace.updateOne(
     { _id: workspaceInfo._id },
     {
-      ...update,
-      lastProcessingTime: Date.now()
+      ...update
     }
   )
+}
+
+/**
+ * @public
+ */
+export async function performWorkspaceOperation (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  workspaceId: string | string[],
+  event: 'archive' | 'migrate-to' | 'unarchive',
+  ...params: any
+): Promise<boolean> {
+  const decodedToken = decodeToken(ctx, token)
+
+  const account = await getAccount(db, decodedToken.email)
+  if (account === null) {
+    ctx.error('account not found', { email: decodedToken.email })
+    return false
+  }
+
+  if (account.admin !== true) {
+    return false
+  }
+  const workspaceInfos = await getWorkspacesById(db, workspaceId)
+  if (workspaceInfos.length === 0) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceId }))
+  }
+
+  let ops = 0
+  for (const workspaceInfo of workspaceInfos) {
+    const update: Partial<WorkspaceInfo> = {}
+    switch (event) {
+      case 'archive':
+        if (workspaceInfo.mode !== 'active') {
+          throw new PlatformError(unknownError('Archive allowed only for active workspaces'))
+        }
+
+        update.mode = 'archiving-pending-backup'
+        update.attempts = 0
+        update.progress = 0
+        update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
+        break
+      case 'unarchive':
+        if (event === 'unarchive') {
+          if (workspaceInfo.mode !== 'archived') {
+            throw new PlatformError(unknownError('Unarchive allowed only for archived workspaces'))
+          }
+        }
+
+        update.mode = 'pending-restore'
+        update.attempts = 0
+        update.progress = 0
+        update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
+        break
+      case 'migrate-to': {
+        if (workspaceInfo.mode !== 'active') {
+          return false
+        }
+        if (params.length !== 1 && params[0] == null) {
+          throw new PlatformError(unknownError('Invalid region passed to migrate operation'))
+        }
+        const regions = getRegions()
+        if (regions.find((it) => it.region === params[0]) === undefined) {
+          throw new PlatformError(unknownError('Invalid region passed to migrate operation'))
+        }
+        if ((workspaceInfo.region ?? '') === params[0]) {
+          throw new PlatformError(unknownError('Invalid region passed to migrate operation'))
+        }
+
+        update.mode = 'migration-pending-backup'
+        update.targetRegion = params[0]
+        update.attempts = 0
+        update.progress = 0
+        update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
+        break
+      }
+      default:
+        break
+    }
+
+    if (Object.keys(update).length !== 0) {
+      await db.workspace.updateOne(
+        { _id: workspaceInfo._id },
+        {
+          ...update
+        }
+      )
+      ops++
+    }
+  }
+  return ops > 0
 }
 
 /**
@@ -1294,6 +1471,8 @@ async function postUpgradeUserWorkspace (
   )
 }
 
+const processingTimeoutMs = 30 * 1000
+
 /**
  * Retrieves one workspace for which there are things to process.
  *
@@ -1316,7 +1495,6 @@ export async function getPendingWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
   // Move to config?
-  const processingTimeoutMs = 30 * 1000
   const wsLivenessDays = getMetadata(accountPlugin.metadata.WsLivenessDays)
   const wsLivenessMs = wsLivenessDays !== undefined ? wsLivenessDays * 24 * 60 * 60 * 1000 : undefined
 
@@ -1448,17 +1626,48 @@ export async function getUserWorkspaces (
     return []
   }
 
-  if (account.admin !== true && account.workspaces.length === 0) {
+  if (account.workspaces.length === 0) {
     return []
   }
 
   return (
-    await db.workspace.find(account.admin === true ? {} : { _id: { $in: account.workspaces } }, {
-      lastVisit: 'descending'
-    })
+    await db.workspace.find(
+      { _id: { $in: account.workspaces } },
+      {
+        lastVisit: 'descending'
+      }
+    )
   )
     .filter((it) => it.disabled !== true || isWorkspaceCreating(it.mode))
     .map(mapToClientWorkspace)
+}
+
+/**
+ * Admin only operation to list workspaced based on last visit, for admin purposes.
+ *
+ * @public
+ */
+export async function getAllWorkspaces (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<BaseWorkspaceInfo[]> {
+  const { email } = decodeToken(ctx, token)
+  const account = await getAccount(db, email)
+  if (account === null) {
+    ctx.error('account not found', { email })
+    return []
+  }
+
+  if (account.admin !== true) {
+    return []
+  }
+
+  return (await db.workspace.find({})).map((it) => {
+    it.accounts = it.accounts.map((it) => it.toString())
+    return it
+  })
 }
 
 export type ClientWSInfoWithUpgrade = ClientWorkspaceInfo & {
@@ -2097,14 +2306,16 @@ export async function dropWorkspace (
 export async function dropWorkspaceFull (
   ctx: MeasureContext,
   db: AccountDB,
-  client: MongoClient,
+  dbUrl: string,
   branding: Branding | null,
   workspaceId: string,
   storageAdapter?: StorageAdapter
 ): Promise<void> {
   const ws = await dropWorkspace(ctx, db, branding, workspaceId)
-  const workspaceDb = client.db(ws.workspace)
-  await workspaceDb.dropDatabase()
+
+  const adapter = getWorkspaceDestroyAdapter(dbUrl)
+  await adapter.deleteWorkspace(ctx, { name: ws.workspace })
+
   const wspace = getWorkspaceId(workspaceId)
   const hasBucket = await storageAdapter?.exists(ctx, wspace)
   if (storageAdapter !== undefined && hasBucket === true) {
@@ -2562,6 +2773,8 @@ export function getMethods (hasSignUp: boolean = true): Record<string, AccountMe
     selectWorkspace: wrap(selectWorkspace),
     getRegionInfo: wrap(getRegionInfo),
     getUserWorkspaces: wrap(getUserWorkspaces),
+    performWorkspaceOperation: wrap(performWorkspaceOperation),
+    getAllWorkspaces: wrap(getAllWorkspaces),
     getInviteLink: wrap(getInviteLink),
     getAccountInfo: wrap(getAccountInfo),
     getWorkspaceInfo: wrap(getWorkspaceInfo),

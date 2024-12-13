@@ -10,6 +10,7 @@ import core, {
   Client,
   ClientConnectEvent,
   DocumentUpdate,
+  isActiveMode,
   MeasureContext,
   RateLimiter,
   Ref,
@@ -748,8 +749,8 @@ export class PlatformWorker {
           errors++
           return
         }
-        if (workspaceInfo?.mode === 'archived') {
-          this.ctx.warn('Workspace is archived.', { workspace })
+        if (!isActiveMode(workspaceInfo?.mode)) {
+          this.ctx.warn('Workspace is in maitenance, skipping for now.', { workspace })
           return
         }
         if (workspaceInfo?.disabled === true) {

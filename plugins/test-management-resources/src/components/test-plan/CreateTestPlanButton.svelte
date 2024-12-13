@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,17 +11,22 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { Button, IconAdd } from '@hcengineering/ui'
 
-export enum TestManagementEvents {
-  TestCaseCreated = 'testManagement.TestCaseCreated',
-  TestCaseEdited = 'testManagement.TestCaseEdited',
-  TestCaseDeleted = 'testManagement.TestCaseDeleted',
-  TestSuiteCreated = 'testManagement.TestSuiteCreated',
-  TestSuiteEdited = 'testManagement.TestSuiteEdited',
-  TestSuiteDeleted = 'testManagement.TestSuiteDeleted',
-  TestRunCreated = 'testManagement.TestRunCreated',
-  TestRunEdited = 'testManagement.TestRunEdited',
-  TestRunDeleted = 'testManagement.TestRunDeleted',
-  TestPlanCreated = 'testManagement.TestPlanCreated'
-}
+  import testManagement from '../../plugin'
+  import { showCreateTestPlanPanel } from '../../utils'
+
+  const handleRun = async (): Promise<void> => {
+    await showCreateTestPlanPanel()
+  }
+</script>
+
+<Button
+  icon={IconAdd}
+  justify={'left'}
+  kind={'primary'}
+  label={testManagement.string.CreateTestPlan}
+  on:click={handleRun}
+/>
