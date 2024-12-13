@@ -76,7 +76,6 @@
   function onSelected (e: CustomEvent<any>): void {
     if (syncWithLocationQuery) return
     parentQuery = { [parentKey]: e.detail }
-    console.log('it works', resultQuery)
   }
 
   function showCreateDialog (): void {

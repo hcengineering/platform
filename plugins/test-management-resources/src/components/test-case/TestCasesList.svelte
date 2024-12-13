@@ -25,9 +25,14 @@
   let testCases: number
 
   const docQuery = createQuery()
-  $: docQuery.query(testManagement.class.TestCase, query, (res) => {
-    testCases = res.length
-  })
+  $: docQuery.query(
+    testManagement.class.TestCase,
+    query,
+    (res) => {
+      testCases = res.length
+    },
+    { total: true, limit: 1 }
+  )
 
   let viewlet: Viewlet | undefined
   let preference: ViewletPreference | undefined
