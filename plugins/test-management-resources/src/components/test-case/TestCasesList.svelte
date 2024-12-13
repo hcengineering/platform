@@ -21,13 +21,18 @@
 
   import testManagement from '../../plugin'
 
-  export let baseQuery: DocumentQuery<Doc> = {}
+  export let query: DocumentQuery<Doc> = {}
   let testCases: number
 
-  const query = createQuery()
-  $: query.query(testManagement.class.TestCase, baseQuery, (res) => {
-    testCases = res.length
-  })
+  const docQuery = createQuery()
+  $: docQuery.query(
+    testManagement.class.TestCase,
+    query,
+    (res) => {
+      testCases = res.length
+    },
+    { total: true, limit: 1 }
+  )
 
   let viewlet: Viewlet | undefined
   let preference: ViewletPreference | undefined
@@ -59,7 +64,7 @@
         <TableBrowser
           _class={testManagement.class.TestCase}
           config={preference?.config ?? viewlet.config}
-          query={baseQuery}
+          {query}
           loadingProps={{ length: testCases }}
           enableChecking={true}
           readonly={true}
