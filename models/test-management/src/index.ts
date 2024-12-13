@@ -612,6 +612,25 @@ function defineTestResult (builder: Builder): void {
     },
     testManagement.viewlet.TestPlanItemsList
   )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: testManagement.class.TestPlanItem,
+      descriptor: view.viewlet.Table,
+      config: ['$lookup.testCase', 'assignee'],
+      configOptions: {
+        strict: true
+      },
+      options: {
+        lookup: {
+          testCase: testManagement.class.TestCase
+        }
+      } as FindOptions<TestResult>
+    },
+    testManagement.viewlet.TableTestPlanItems
+  )
 }
 
 function defineTestPlan (builder: Builder): void {

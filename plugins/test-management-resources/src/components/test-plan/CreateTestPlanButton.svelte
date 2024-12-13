@@ -13,27 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
   import { Button, IconAdd } from '@hcengineering/ui'
-  import { selectionStore } from '@hcengineering/view-resources'
-  import type { TestCase, TestProject } from '@hcengineering/test-management'
 
   import testManagement from '../../plugin'
   import { showCreateTestPlanPanel } from '../../utils'
 
-  export let query: DocumentQuery<Doc> = {}
-  export let space: Ref<Space>
-
-  const project: Ref<TestProject> = space as any
-
   const handleRun = async (): Promise<void> => {
-    const selectedDocs = $selectionStore?.docs ?? []
-    const testCases = selectedDocs.length > 0 ? selectedDocs : undefined
-    await showCreateTestPlanPanel({
-      query,
-      space: project,
-      testCases: testCases as TestCase[]
-    })
+    await showCreateTestPlanPanel()
   }
 </script>
 

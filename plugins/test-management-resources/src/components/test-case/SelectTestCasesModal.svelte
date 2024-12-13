@@ -23,10 +23,11 @@
   import view from '@hcengineering/view'
   import { selectionStore } from '@hcengineering/view-resources'
 
-  import testManagement from '../../plugin'
   import TestCasesList from './TestCasesList.svelte'
+  import testManagement from '../../plugin'
+  import { getProjectFromLocation } from '../../navigation'
 
-  export let space: Ref<TestProject>
+  export let space: Ref<TestProject> = getProjectFromLocation()
   export let query: DocumentQuery<TestCase> = {}
   export let testCases: TestCase[]
   export let onSave: (testCases: TestCase[]) => void
@@ -78,8 +79,11 @@
       noParentId: testManagement.ids.NoParent,
       getFolderLink: testManagement.function.GetTestSuiteLink,
       allObjectsLabel: testManagement.string.AllTestSuites,
-      allObjectsIcon: testManagement.icon.TestSuites
+      allObjectsIcon: testManagement.icon.TestSuites,
+      space
     }}
+    mainComponentProps={{ space }}
+    {space}
   />
   <svelte:fragment slot="footerRight">
     <div class="p-2">

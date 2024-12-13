@@ -230,7 +230,10 @@ export const testManagementPlugin = plugin(testManagementId, {
   ids: {
     NoParent: '' as Ref<TestSuite>,
     TestCaseUpdatedActivityViewlet: '' as Ref<TestCase>,
-    NoTestRun: '' as Ref<TestRun>
+    NoTestRun: '' as Ref<TestRun>,
+    NewTestRun: '' as Ref<TestRun>,
+    NoTestPlan: '' as Ref<TestPlan>,
+    NewTestPlan: '' as Ref<TestPlan>
   },
   mode: {
     AllTests: '' as IntlString,
@@ -255,7 +258,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     ListTestCase: '' as Ref<Viewlet>,
     TestResultList: '' as Ref<Viewlet>,
     TableTestResult: '' as Ref<Viewlet>,
-    TestPlanItemsList: '' as Ref<Viewlet>
+    TestPlanItemsList: '' as Ref<Viewlet>,
+    TableTestPlanItems: '' as Ref<Viewlet>
   },
   testCaseTypeStatus: {
     Draft: '' as Ref<Status>,

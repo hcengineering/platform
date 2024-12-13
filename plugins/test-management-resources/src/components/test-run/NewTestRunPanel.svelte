@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher, onMount, onDestroy } from 'svelte'
 
   import { Analytics } from '@hcengineering/analytics'
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
@@ -34,12 +34,13 @@
   import { Attachment } from '@hcengineering/attachment'
   import { PersonAccount } from '@hcengineering/contact'
 
+  import { selectedTestCases, resetStore } from './store/TestRunStore'
   import NewTestRunAside from './NewTestRunAside.svelte'
   import TestCaseSelector from '../test-case/TestCaseSelector.svelte'
   import { getTestRunsLink, getProjectFromLocation } from '../../navigation'
 
   export let space: Ref<TestProject> = getProjectFromLocation()
-  export let testCases: TestCase[] = []
+  export let testCases: TestCase[] = $selectedTestCases ?? []
 
   const id: Ref<TestRun> = generateId()
   const me = getCurrentAccount() as PersonAccount
@@ -113,6 +114,7 @@
 
   let descriptionBox: AttachmentStyledBox
   onMount(() => dispatch('open', { ignoreKeys: [] }))
+  onDestroy(resetStore)
 </script>
 
 {#if object}

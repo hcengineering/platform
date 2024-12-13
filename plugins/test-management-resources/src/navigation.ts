@@ -15,7 +15,8 @@ import testManagement, {
   testManagementId,
   type TestSuite,
   type TestProject,
-  type TestRun
+  type TestRun,
+  type TestPlan
 } from '@hcengineering/test-management'
 import { type Doc, type Ref, getCurrentAccount } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
@@ -30,7 +31,7 @@ import {
 import view, { type ObjectPanel } from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
 
-const SUITE_KEY = 'attachedTo'
+const PARENT_KEY = 'attachedTo'
 
 export function getPanelFragment<T extends Doc> (object: Pick<T, '_class' | '_id'>): string {
   const hierarchy = getClient().getHierarchy()
@@ -82,12 +83,17 @@ export function getTestSuiteIdFromFragment (fragment: string): Ref<TestSuite> | 
 
 export function getTestSuiteIdFromLocation (): Ref<TestSuite> {
   const location = getLocation()
-  return (location?.query?.[SUITE_KEY] as Ref<TestSuite>) ?? testManagement.ids.NoParent
+  return (location?.query?.[PARENT_KEY] as Ref<TestSuite>) ?? testManagement.ids.NoParent
 }
 
 export function getTestRunIdFromLocation (): Ref<TestRun> {
   const location = getLocation()
-  return (location?.query?.[SUITE_KEY] as Ref<TestRun>) ?? testManagement.ids.NoTestRun
+  return (location?.query?.[PARENT_KEY] as Ref<TestRun>) ?? testManagement.ids.NoTestRun
+}
+
+export function getTestPlanIdFromLocation (): Ref<TestPlan> {
+  const location = getLocation()
+  return (location?.query?.[PARENT_KEY] as Ref<TestPlan>) ?? testManagement.ids.NoTestPlan
 }
 
 export function getProjectFromLocation (): Ref<TestProject> {

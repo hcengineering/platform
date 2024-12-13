@@ -16,8 +16,13 @@
 import { Analytics } from '@hcengineering/analytics'
 import type { Doc, DocumentQuery, Ref } from '@hcengineering/core'
 import { showPopup, showPanel } from '@hcengineering/ui'
-import { type TestProject, type TestCase, type TestSuite, type TestResult } from '@hcengineering/test-management'
-import testManagement from '@hcengineering/test-management'
+import testManagement, {
+  type TestProject,
+  type TestCase,
+  type TestSuite,
+  type TestResult,
+  type TestPlan
+} from '@hcengineering/test-management'
 
 import CreateTestSuiteComponent from './components/test-suite/CreateTestSuite.svelte'
 import EditTestSuiteComponent from './components/test-suite/EditTestSuite.svelte'
@@ -26,6 +31,7 @@ import CreateProject from './components/project/CreateProject.svelte'
 import SelectTestCases from './components/test-case/SelectTestCasesModal.svelte'
 import { getTestRunIdFromLocation } from './navigation'
 import { initializeIterator } from './components/test-result/store/testIteratorStore'
+import { setSelected } from './components/test-run/store/TestRunStore'
 
 export async function showCreateTestSuitePopup (
   space: Ref<TestProject> | undefined,
@@ -48,12 +54,13 @@ export async function showCreateProjectPopup (): Promise<void> {
 
 export async function showCreateTestRunPanel (options: {
   testCases?: TestCase[]
-  query?: DocumentQuery<Doc>
-  space: Ref<TestProject>
+  testPlanId?: Ref<TestPlan>
 }): Promise<void> {
+  const { testCases, testPlanId } = options
+  setSelected(testPlanId, testCases)
   showPanel(
     testManagement.component.NewTestRunPanel,
-    'new-test-run',
+    testManagement.ids.NewTestRun,
     testManagement.class.TestRun,
     'content',
     undefined,
@@ -68,7 +75,7 @@ export async function showCreateTestPlanPanel (options: {
 }): Promise<void> {
   showPanel(
     testManagement.component.NewTestPlanPanel,
-    'new-test-plan',
+    testManagement.ids.NewTestPlan,
     testManagement.class.TestPlan,
     'content',
     undefined,
@@ -120,8 +127,7 @@ export async function EditTestSuiteAction (doc: TestSuite): Promise<void> {
 export async function RunSelectedTestsAction (docs: TestCase[] | TestCase): Promise<void> {
   const testCases = Array.isArray(docs) ? docs : [docs]
   if (testCases?.length > 0) {
-    const space = testCases[0].space
-    await showCreateTestRunPanel({ testCases, space })
+    await showCreateTestRunPanel({ testCases })
   } else {
     console.error('No test cases selected')
   }

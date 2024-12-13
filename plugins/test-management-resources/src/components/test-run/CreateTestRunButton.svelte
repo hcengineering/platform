@@ -13,20 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Space } from '@hcengineering/core'
   import { Button, IconAdd } from '@hcengineering/ui'
-  import type { TestProject } from '@hcengineering/test-management'
 
   import testManagement from '../../plugin'
   import { showCreateTestRunPanel } from '../../utils'
 
-  export let space: Ref<Space>
-
-  const project: Ref<TestProject> = space as any
-
   const handleRun = async (): Promise<void> => {
     await showCreateTestRunPanel({
-      space: project
     })
   }
 </script>

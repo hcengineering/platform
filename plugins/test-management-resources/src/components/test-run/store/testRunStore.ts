@@ -1,4 +1,3 @@
-//
 // Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,12 +10,20 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
-import type { TestCase, TestResult } from '@hcengineering/test-management'
-import { type Ref } from '@hcengineering/core'
-import { type Writable, writable } from 'svelte/store'
+import type { Ref } from '@hcengineering/core'
+import type { TestCase, TestPlan } from '@hcengineering/test-management'
+import { writable } from 'svelte/store'
 
-export const currentTestCase: Writable<Ref<TestCase> | undefined> = writable(undefined)
+export const selectedTestCases = writable<TestCase[] | undefined>(undefined)
+export const selectedTestPlan = writable<Ref<TestPlan> | undefined>(undefined)
 
-export const selectedTestRun: Writable<TestResult | undefined> = writable(undefined)
+export const resetStore = (): void => {
+  selectedTestCases.set(undefined)
+  selectedTestPlan.set(undefined)
+}
+
+export const setSelected = (testPlan: Ref<TestPlan> | undefined, testCases: TestCase[] | undefined): void => {
+  selectedTestPlan.set(testPlan)
+  selectedTestCases.set(testCases)
+}
