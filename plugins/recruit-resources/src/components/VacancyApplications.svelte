@@ -30,9 +30,14 @@
   let applications: number
 
   const query = createQuery()
-  $: query.query(recruit.class.Applicant, { space: objectId }, (res) => {
-    applications = res.length
-  })
+  $: query.query(
+    recruit.class.Applicant,
+    { space: objectId },
+    (res) => {
+      applications = res.length
+    },
+    { total: true, limit: 1 }
+  )
 
   const createApp = (ev: MouseEvent): void => {
     showPopup(CreateApplication, { space: objectId, preserveVacancy: true }, ev.target as HTMLElement)

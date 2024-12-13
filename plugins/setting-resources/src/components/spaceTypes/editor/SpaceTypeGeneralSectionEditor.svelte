@@ -51,6 +51,8 @@
         loading = false
       },
       {
+        total: true,
+        limit: 1,
         projection: { _id: 1 }
       }
     )

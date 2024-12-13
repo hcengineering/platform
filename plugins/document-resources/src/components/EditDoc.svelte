@@ -106,9 +106,14 @@
 
   const starredQuery = createQuery()
   let isStarred = false
-  $: starredQuery.query(document.class.SavedDocument, { attachedTo: _id }, (res) => {
-    isStarred = res.length !== 0
-  })
+  $: starredQuery.query(
+    document.class.SavedDocument,
+    { attachedTo: _id },
+    (res) => {
+      isStarred = res.length !== 0
+    },
+    { total: true, limit: 1 }
+  )
 
   async function createEmbedding (file: File): Promise<{ file: Ref<Blob>, type: string } | undefined> {
     if (doc === undefined) {
