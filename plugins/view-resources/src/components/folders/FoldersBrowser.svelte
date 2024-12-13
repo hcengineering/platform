@@ -14,6 +14,8 @@
 -->
 
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+
   import { Class, Doc, DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Action, IconEdit, navigate, type Location, Scroller, location, getLocation } from '@hcengineering/ui'
@@ -29,10 +31,12 @@
   export let titleKey: string = 'title'
   export let parentKey: string = 'parent'
   export let noParentId: Ref<Doc>
-  export let getFolderLink: Resource<(doc: Ref<Doc> | undefined) => Location>
+  export let getFolderLink: Resource<(doc: Ref<Doc> | undefined) => Location> | undefined
   export let allObjectsIcon: Asset
   export let allObjectsLabel: IntlString
   export let plainList: boolean = false
+
+  const dispatch = createEventDispatcher()
 
   const getFolderId = (): Ref<Doc> => {
     return (getLocation()?.query?.attachedTo as Ref<Doc>) ?? noParentId
@@ -77,8 +81,13 @@
   )
 
   async function handleFolderSelected (_id: Ref<Doc>): Promise<void> {
-    const getFolderLinkFunction = await getResource(getFolderLink)
-    navigate(getFolderLinkFunction(_id))
+    if (getFolderLink !== undefined) {
+      const getFolderLinkFunction = await getResource(getFolderLink)
+      navigate(getFolderLinkFunction(_id))
+    } else {
+      selected = _id
+    }
+    dispatch('select', _id)
   }
 
   async function handleAllItemsSelected (): Promise<void> {

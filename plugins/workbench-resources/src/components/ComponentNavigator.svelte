@@ -53,23 +53,29 @@
   export let mainComponent: AnyComponent | AnySvelteComponent
   export let mainComponentProps = {}
   export let showNavigator: boolean = false
+  export let parentKey: string = 'attachedTo'
 
   const FLOAT_LIMIT = 760
   let container: HTMLDivElement
 
-  let locationQuery: DocumentQuery<Doc> = {}
+  let parentQuery: DocumentQuery<Doc> = {}
   let resultQuery: DocumentQuery<Doc> = {}
   let spaceQuery: DocumentQuery<Doc> = {}
   $: spaceQuery = space !== undefined ? { space } : {}
-  $: resultQuery = mergeQueries(query, mergeQueries(spaceQuery, locationQuery)) ?? {}
+  $: resultQuery = mergeQueries(query, mergeQueries(spaceQuery, parentQuery)) ?? {}
 
   if (syncWithLocationQuery) {
-    locationQuery = getLocation()?.query as any
+    parentQuery = getLocation()?.query as any
     onDestroy(
       resolvedLocationStore.subscribe((newLocation) => {
-        locationQuery = newLocation?.query ?? {}
+        parentQuery = newLocation?.query ?? {}
       })
     )
+  }
+
+  function onSelected (e: CustomEvent<any>): void {
+    if (syncWithLocationQuery) return
+    parentQuery = { [parentKey]: e.detail }
   }
 
   function showCreateDialog (): void {
@@ -147,6 +153,7 @@
             ...navigationComponentProps,
             query: spaceQuery
           }}
+          on:select={onSelected}
         />
       </div>
       <Separator

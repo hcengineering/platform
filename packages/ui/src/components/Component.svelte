@@ -104,6 +104,7 @@
           on:valid
           on:validate
           on:submit
+          on:select
         >
           <slot />
         </svelte:component>
@@ -123,6 +124,7 @@
           on:valid
           on:validate
           on:submit
+          on:select
         />
       {/if}
     </ErrorBoundary>
