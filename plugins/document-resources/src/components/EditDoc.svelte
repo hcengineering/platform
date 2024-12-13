@@ -112,7 +112,7 @@
     (res) => {
       isStarred = res.length !== 0
     },
-    { total: true, limit: 1 }
+    { limit: 1 }
   )
 
   async function createEmbedding (file: File): Promise<{ file: Ref<Blob>, type: string } | undefined> {
