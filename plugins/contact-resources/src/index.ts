@@ -266,6 +266,23 @@ async function doContactQuery<T extends Contact> (
   return (await client.findAll(_class, q, { limit: 200 })).map(toObjectSearchResult)
 }
 
+async function extendInvite (doc: Person): Promise<void> {
+  const client = getClient()
+
+  const accounts = client.getModel().getAccountByPersonId(doc._id)
+
+  showPopup(MessageBox, {
+    label: contact.string.ExtendInvite,
+    message: contact.string.ExtendInviteDescr,
+    action: async () => {
+      const _extendInvite = await getResource(login.function.ExtentInvite)
+      for (const i of accounts) {
+        await _extendInvite(i.email)
+      }
+    }
+  })
+}
+
 async function kickEmployee (doc: Person): Promise<void> {
   const client = getClient()
 
@@ -326,7 +343,8 @@ function getPersonColor (person: Data<WithLookup<AvatarInfo>>, name: string): Co
 export default async (): Promise<Resources> => ({
   actionImpl: {
     KickEmployee: kickEmployee,
-    OpenChannel: openChannelURL
+    OpenChannel: openChannelURL,
+    ExtendInvite: extendInvite
   },
   activity: {
     NameChangedActivityMessage
