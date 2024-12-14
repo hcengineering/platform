@@ -63,6 +63,8 @@
     "AddMember": "Přidat člena",
     "KickEmployee": "Odstranit zaměstnance",
     "KickEmployeeDescr": "Opravdu chcete odstranit zaměstnance z pracovního prostoru? Tuto akci nelze vrátit zpět.",
+    "ExtendInvite": "Prodloužit pozvánku",
+    "ExtendInviteDescr": "Opravdu chcete prodloužit pozvánku do tohoto pracovního prostoru?",
     "Email": "E-mail",
     "CreateEmployee": "Zaměstnanec",
     "Inactive": "Neaktivní",

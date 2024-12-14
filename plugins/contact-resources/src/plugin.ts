@@ -59,6 +59,8 @@ export default mergeIds(contactId, contact, {
     AddMember: '' as IntlString,
     KickEmployee: '' as IntlString,
     KickEmployeeDescr: '' as IntlString,
+    ExtendInvite: '' as IntlString,
+    ExtendInviteDescr: '' as IntlString,
     Email: '' as IntlString,
     CreateEmployee: '' as IntlString,
     Inactive: '' as IntlString,

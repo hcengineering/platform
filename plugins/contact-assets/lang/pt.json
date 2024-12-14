@@ -63,6 +63,8 @@
     "AddMember": "Adicionar membro",
     "KickEmployee": "Expulsar funcionário",
     "KickEmployeeDescr": "Tem certeza de que deseja expulsar o funcionário da área de trabalho? Esta ação não pode ser desfeita",
+    "ExtendInvite": "Estender convite",
+    "ExtendInviteDescr": "Tem certeza de que deseja estender o convite para este espaço de trabalho?",
     "Email": "E-mail",
     "CreateEmployee": "Criar funcionário",
     "Inactive": "Inativo",
