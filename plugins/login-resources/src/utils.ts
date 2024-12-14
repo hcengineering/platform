@@ -933,6 +933,32 @@ export async function sendInvite (email: string, personId?: Ref<Doc>, role?: Acc
   })
 }
 
+export async function extendInvite (email: string): Promise<void> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const token = getMetadata(presentation.metadata.Token) as string
+
+  const params = [email]
+
+  const request = {
+    method: 'extendInvite',
+    params
+  }
+
+  await fetch(accountsUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(request)
+  })
+}
+
 export async function requestPassword (email: string): Promise<Status> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
