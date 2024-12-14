@@ -136,6 +136,11 @@ export async function filterChannelNinResult (filter: Filter, onUpdate: () => vo
   return { $nin: result }
 }
 
+export async function canExtendInvitation (rest: Person): Promise<boolean> {
+  // TODO: find a way to conditionally extent invitation
+  return true
+}
+
 export async function getRefs (
   filter: Filter,
   onUpdate: () => void,

@@ -932,7 +932,8 @@ export function createModel (builder: Builder): void {
         mode: ['context'],
         group: 'remove'
       },
-      secured: true
+      secured: true,
+      visibilityTester: contact.function.CanExtendInvitation
     },
     contact.action.ExtendInvite
   )

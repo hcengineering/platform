@@ -22,7 +22,8 @@ import {
   type CreateAggregationManagerFunc,
   type GrouppingManagerResource,
   type FilterFunction,
-  type SortFunc
+  type SortFunc,
+  type ViewActionAvailabilityFunction
 } from '@hcengineering/view'
 
 export default mergeIds(contactId, contact, {
@@ -92,7 +93,8 @@ export default mergeIds(contactId, contact, {
     FilterChannelNinResult: '' as FilterFunction,
     FilterChannelHasMessagesResult: '' as FilterFunction,
     FilterChannelHasNewMessagesResult: '' as FilterFunction,
-    PersonTooltipProvider: '' as Resource<(client: Client, doc?: Doc | null) => Promise<LabelAndProps | undefined>>
+    PersonTooltipProvider: '' as Resource<(client: Client, doc?: Doc | null) => Promise<LabelAndProps | undefined>>,
+    CanExtendInvitation: '' as Resource<ViewActionAvailabilityFunction>
   },
   aggregation: {
     CreatePersonAggregationManager: '' as CreateAggregationManagerFunc,

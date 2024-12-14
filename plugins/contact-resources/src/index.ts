@@ -146,7 +146,8 @@ import {
   getPersonTooltip,
   grouppingPersonManager,
   resolveLocation,
-  resolveLocationData
+  resolveLocationData,
+  canExtendInvitation
 } from './utils'
 
 export * from './utils'
@@ -462,7 +463,8 @@ export default async (): Promise<Resources> => ({
     ChannelTitleProvider: channelTitleProvider,
     ChannelIdentifierProvider: channelIdentifierProvider,
     SetPersonStore: setStore,
-    PersonFilterFunction: filterPerson
+    PersonFilterFunction: filterPerson,
+    CanExtendInvitation: canExtendInvitation
   },
   resolver: {
     Location: resolveLocation,
