@@ -39,7 +39,7 @@
             group: 'inline-comment',
             inline: true,
             action: async () => {
-              handleResolveThread()
+              handleResolveThread?.()
             }
           }
         ]
