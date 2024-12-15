@@ -82,6 +82,15 @@
     "GoToNextTestTooltip": "Vai al test successivo",
     "AllTests": "Tutte le test",
     "MyTests": "Le mie test",
-    "Comments": "Commenti"
+    "Comments": "Commenti",
+    "Cancel": "Annulla",
+    "Name": "Nome",
+    "TestPlans": "Piani di test",
+    "TestPlan": "Piano di test",
+    "CreateTestPlan": "Crea piano di test",
+    "SelectedTestCases": "{count, plural, =0 {Casi di test non selezionati} one {# caso di test selezionato} few {# casi di test selezionati} other {# casi di test selezionati}}",
+    "DefaultAssignee": "Assegnatario predefinito",
+    "TestPlanTitle": "Titolo",
+    "RunAssistant": "Eseguire l'assistente"
   }
 }

@@ -429,13 +429,16 @@ export function recheckNotifications (context: DocNotifyContext): void {
 
 export async function readChannelMessages (
   messages: DisplayActivityMessage[],
-  context: DocNotifyContext | undefined
+  contextId: Ref<DocNotifyContext>
 ): Promise<void> {
-  if (messages.length === 0 || context === undefined) {
+  if (messages.length === 0) {
     return
   }
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
+  const context = get(inboxClient.contextById).get(contextId)
+  if (context === undefined) return
+
   const op = getClient().apply(undefined, 'readViewportMessages', true)
 
   try {
@@ -464,7 +467,6 @@ export async function readChannelMessages (
     const prevTimestamp = Math.max(storedTimestampUpdates ?? 0, context.lastViewedTimestamp ?? 0)
 
     if (prevTimestamp < newTimestamp) {
-      context.lastViewedTimestamp = newTimestamp
       contextsTimestampStore.update((store) => {
         store.set(context._id, newTimestamp)
         return store

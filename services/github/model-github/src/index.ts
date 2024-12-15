@@ -95,9 +95,11 @@ export { githubId } from '@hcengineering/github'
 export { githubOperation, githubOperationPreTime } from './migration'
 export { default } from './plugin'
 export const DOMAIN_GITHUB = 'github' as Domain
+export const DOMAIN_GITHUB_SYNC = 'github_sync' as Domain
+export const DOMAIN_GITHUB_USER = 'github_user' as Domain
 export const DOMAIN_GITHUB_COMMENTS = 'github_comments' as Domain
 
-@Model(github.class.DocSyncInfo, core.class.Doc, DOMAIN_GITHUB)
+@Model(github.class.DocSyncInfo, core.class.Doc, DOMAIN_GITHUB_SYNC)
 export class TDocSyncInfo extends TDoc implements DocSyncInfo {
   // _id === objectId
   @Prop(TypeNumber(), getEmbeddedLabel('Github number'))
@@ -152,7 +154,7 @@ export class TDocSyncInfo extends TDoc implements DocSyncInfo {
     deleted!: boolean
 }
 
-@Model(github.class.GithubUserInfo, core.class.Doc, DOMAIN_GITHUB)
+@Model(github.class.GithubUserInfo, core.class.Doc, DOMAIN_GITHUB_USER)
 export class TGithubUserInfo extends TDoc implements GithubUserInfo {
   @Prop(TypeString(), getEmbeddedLabel('ID'))
   @ReadOnly()

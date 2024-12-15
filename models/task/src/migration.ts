@@ -570,14 +570,39 @@ export const taskOperation: MigrateOperation = {
         }
       },
       {
-        state: 'fix-rename-backups',
-        func: async (client: MigrationClient): Promise<void> => {
-          await client.update(DOMAIN_TASK, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
-        }
-      },
-      {
         state: 'migrateRanks',
         func: migrateRanks
+      },
+      {
+        state: 'migrate_wrong_isdone',
+        func: async (client: MigrationClient) => {
+          const statuses = client.model.findAllSync(core.class.Status, {
+            category: { $in: [task.statusCategory.Won, task.statusCategory.Lost] }
+          })
+
+          await client.update<Task>(
+            DOMAIN_TASK,
+            {
+              _class: { $in: client.hierarchy.getDescendants(task.class.Task) },
+              status: { $in: statuses.map((it) => it._id) },
+              isDone: false
+            },
+            {
+              isDone: true
+            }
+          )
+          await client.update<Task>(
+            DOMAIN_TASK,
+            {
+              _class: { $in: client.hierarchy.getDescendants(task.class.Task) },
+              status: { $nin: statuses.map((it) => it._id) },
+              isDone: true
+            },
+            {
+              isDone: false
+            }
+          )
+        }
       }
     ])
   },

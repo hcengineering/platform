@@ -82,6 +82,15 @@
     "GoToNextTestTooltip": "Перейти к следующему тесту",
     "AllTests": "Все тесты",
     "MyTests": "Мои тесты",
-    "Comments": "Комментарии"
+    "Comments": "Комментарии",
+    "Cancel": "Отмена",
+    "Name": "Название",
+    "TestPlans": "Планы тестирования",
+    "TestPlan": "План тестирования",
+    "CreateTestPlan": "Создать план тестирования",
+    "SelectedTestCases": "{count, plural, =0 {Тест-кейсы не выбраны} one {# тест-кейс выбран} few {# тест-кейса выбраны} other {# тест-кейсов выбрано}}",
+    "DefaultAssignee": "Исполнитель по умолчанию",
+    "TestPlanTitle": "Название плана тестирования",
+    "RunAssistant": "Помощник запуска"
   }
 }

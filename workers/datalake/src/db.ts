@@ -14,7 +14,7 @@
 //
 
 import postgres from 'postgres'
-import { measure, measureSync } from './measure'
+import { type MetricsContext } from './metrics'
 import { type Location, type UUID } from './types'
 
 export interface BlobDataId {
@@ -46,78 +46,93 @@ export interface BlobRecordWithFilename extends BlobRecord {
 export async function withPostgres<T> (
   env: Env,
   ctx: ExecutionContext,
-  fn: (sql: postgres.Sql) => Promise<T>
+  metrics: MetricsContext,
+  fn: (db: BlobDB) => Promise<T>
 ): Promise<T> {
-  const sql = measureSync('db.connect', () => {
-    return postgres(env.HYPERDRIVE.connectionString)
+  const sql = metrics.withSync('db.connect', () => {
+    return postgres(env.HYPERDRIVE.connectionString, {
+      connection: {
+        application_name: 'datalake'
+      },
+      fetch_types: false
+    })
   })
+
+  const db = new LoggedDB(new PostgresDB(sql), metrics)
+
   try {
-    return await fn(sql)
+    return await fn(db)
   } finally {
-    measureSync('db.close', () => {
+    metrics.withSync('db.disconnect', () => {
       ctx.waitUntil(sql.end({ timeout: 0 }))
     })
   }
 }
 
 export interface BlobDB {
-  getData: (sql: postgres.Sql, dataId: BlobDataId) => Promise<BlobDataRecord | null>
-  createData: (sql: postgres.Sql, data: BlobDataRecord) => Promise<void>
-  getBlob: (sql: postgres.Sql, blobId: BlobId) => Promise<BlobRecordWithFilename | null>
-  createBlob: (sql: postgres.Sql, blob: Omit<BlobRecord, 'filename' | 'deleted'>) => Promise<void>
-  deleteBlob: (sql: postgres.Sql, blob: BlobId) => Promise<void>
+  getData: (dataId: BlobDataId) => Promise<BlobDataRecord | null>
+  createData: (data: BlobDataRecord) => Promise<void>
+  getBlob: (blobId: BlobId) => Promise<BlobRecordWithFilename | null>
+  createBlob: (blob: Omit<BlobRecord, 'filename' | 'deleted'>) => Promise<void>
+  deleteBlob: (blob: BlobId) => Promise<void>
 }
 
-const db: BlobDB = {
-  async getData (sql: postgres.Sql, dataId: BlobDataId): Promise<BlobDataRecord | null> {
+export class PostgresDB implements BlobDB {
+  constructor (private readonly sql: postgres.Sql) {}
+
+  async getData (dataId: BlobDataId): Promise<BlobDataRecord | null> {
     const { hash, location } = dataId
-    const rows = await sql<BlobDataRecord[]>`
+    const rows = await this.sql<BlobDataRecord[]>`
       SELECT hash, location, filename, size, type
       FROM blob.data
       WHERE hash = ${hash} AND location = ${location}
     `
     return rows.length > 0 ? rows[0] : null
-  },
+  }
 
-  async createData (sql: postgres.Sql, data: BlobDataRecord): Promise<void> {
+  async createData (data: BlobDataRecord): Promise<void> {
     const { hash, location, filename, size, type } = data
 
-    await sql`
+    await this.sql`
       UPSERT INTO blob.data (hash, location, filename, size, type)
       VALUES (${hash}, ${location}, ${filename}, ${size}, ${type})
     `
-  },
+  }
 
-  async getBlob (sql: postgres.Sql, blobId: BlobId): Promise<BlobRecordWithFilename | null> {
+  async getBlob (blobId: BlobId): Promise<BlobRecordWithFilename | null> {
     const { workspace, name } = blobId
 
-    const rows = await sql<BlobRecordWithFilename[]>`
-      SELECT b.workspace, b.name, b.hash, b.location, b.deleted, d.filename
-      FROM blob.blob AS b
-      JOIN blob.data AS d ON b.hash = d.hash AND b.location = d.location
-      WHERE b.workspace = ${workspace} AND b.name = ${name}
-    `
+    try {
+      const rows = await this.sql<BlobRecordWithFilename[]>`
+        SELECT b.workspace, b.name, b.hash, b.location, b.deleted, d.filename
+        FROM blob.blob AS b
+        JOIN blob.data AS d ON b.hash = d.hash AND b.location = d.location
+        WHERE b.workspace = ${workspace} AND b.name = ${name}
+      `
 
-    if (rows.length > 0) {
-      return rows[0]
+      if (rows.length > 0) {
+        return rows[0]
+      }
+    } catch (err) {
+      console.error(err)
     }
 
     return null
-  },
+  }
 
-  async createBlob (sql: postgres.Sql, blob: Omit<BlobRecord, 'filename' | 'deleted'>): Promise<void> {
+  async createBlob (blob: Omit<BlobRecord, 'filename' | 'deleted'>): Promise<void> {
     const { workspace, name, hash, location } = blob
 
-    await sql`
+    await this.sql`
       UPSERT INTO blob.blob (workspace, name, hash, location, deleted)
       VALUES (${workspace}, ${name}, ${hash}, ${location}, false)
     `
-  },
+  }
 
-  async deleteBlob (sql: postgres.Sql, blob: BlobId): Promise<void> {
+  async deleteBlob (blob: BlobId): Promise<void> {
     const { workspace, name } = blob
 
-    await sql`
+    await this.sql`
       UPDATE blob.blob
       SET deleted = true
       WHERE workspace = ${workspace} AND name = ${name}
@@ -125,12 +140,29 @@ const db: BlobDB = {
   }
 }
 
-export const measuredDb: BlobDB = {
-  getData: (sql, dataId) => measure('db.getData', () => db.getData(sql, dataId)),
-  createData: (sql, data) => measure('db.createData', () => db.createData(sql, data)),
-  getBlob: (sql, blobId) => measure('db.getBlob', () => db.getBlob(sql, blobId)),
-  createBlob: (sql, blob) => measure('db.createBlob', () => db.createBlob(sql, blob)),
-  deleteBlob: (sql, blob) => measure('db.deleteBlob', () => db.deleteBlob(sql, blob))
-}
+export class LoggedDB implements BlobDB {
+  constructor (
+    private readonly db: BlobDB,
+    private readonly ctx: MetricsContext
+  ) {}
 
-export default measuredDb
+  async getData (dataId: BlobDataId): Promise<BlobDataRecord | null> {
+    return await this.ctx.with('db.getData', () => this.db.getData(dataId))
+  }
+
+  async createData (data: BlobDataRecord): Promise<void> {
+    await this.ctx.with('db.createData', () => this.db.createData(data))
+  }
+
+  async getBlob (blobId: BlobId): Promise<BlobRecordWithFilename | null> {
+    return await this.ctx.with('db.getBlob', () => this.db.getBlob(blobId))
+  }
+
+  async createBlob (blob: Omit<BlobRecord, 'filename' | 'deleted'>): Promise<void> {
+    await this.ctx.with('db.createBlob', () => this.db.createBlob(blob))
+  }
+
+  async deleteBlob (blob: BlobId): Promise<void> {
+    await this.ctx.with('db.deleteBlob', () => this.db.deleteBlob(blob))
+  }
+}

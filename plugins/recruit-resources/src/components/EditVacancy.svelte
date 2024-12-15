@@ -101,9 +101,13 @@
 
     const updates: Partial<Data<Vacancy>> = {}
     const trimmedName = rawName.trim()
+    const trimmedNameOld = object.name?.trim()
 
-    if (trimmedName.length > 0 && trimmedName !== object.name?.trim()) {
+    if (trimmedName.length > 0 && (trimmedName !== trimmedNameOld || trimmedNameOld !== object.name)) {
       updates.name = trimmedName
+      rawName = trimmedName
+    } else {
+      rawName = object.name
     }
 
     if (rawDesc !== object.description) {
@@ -204,7 +208,15 @@
       <VacancyApplications objectId={object._id} {readonly} />
     </div>
     <div class="w-full mt-6">
-      <Component is={survey.component.PollCollection} props={{ object, label: survey.string.Polls }} />
+      <Component
+        is={survey.component.PollCollection}
+        props={{
+          objectId: object._id,
+          _class: object._class,
+          space: object.space,
+          polls: object.polls
+        }}
+      />
     </div>
     <div class="w-full mt-6">
       <Component is={tracker.component.RelatedIssuesSection} props={{ object, label: tracker.string.RelatedIssues }} />

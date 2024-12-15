@@ -33,6 +33,7 @@ import core, {
   SortingOrder,
   systemAccountEmail,
   toIdMap,
+  toWorkspaceString,
   TxProcessor,
   WorkspaceId,
   type BackupStatus,
@@ -41,7 +42,7 @@ import core, {
   type Tx,
   type TxCUD
 } from '@hcengineering/core'
-import { BlobClient, createClient } from '@hcengineering/server-client'
+import { BlobClient, createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { estimateDocSize, type StorageAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
@@ -672,7 +673,7 @@ export async function backup (
     storageAdapter?: StorageAdapter
     // Return true in case
     isCanceled?: () => boolean
-    progress?: (progress: number) => void
+    progress?: (progress: number) => Promise<void>
     token?: string
   } = {
     force: false,
@@ -765,12 +766,7 @@ export async function backup (
     connection =
       options.getConnection !== undefined
         ? await options.getConnection()
-        : ((await createClient(
-            transactorUrl,
-            options.token ?? token,
-            undefined,
-            options.connectTimeout
-          )) as CoreClient & BackupClient)
+        : ((await createClient(transactorUrl, token, undefined, options.connectTimeout)) as CoreClient & BackupClient)
 
     if (!lastTxChecked && !options.freshBackup) {
       lastTx = await connection.findOne(
@@ -975,7 +971,7 @@ export async function backup (
     async function processDomain (
       ctx: MeasureContext,
       domain: Domain,
-      progress: (value: number) => void
+      progress: (value: number) => Promise<void>
     ): Promise<void> {
       const changes: Snapshot = {
         added: new Map(),
@@ -1007,13 +1003,18 @@ export async function backup (
       let _packClose = async (): Promise<void> => {}
       let addedDocuments = (): number => 0
 
-      progress(0)
+      if (progress !== undefined) {
+        await progress(0)
+      }
       let { changed, needRetrieveChunks } = await ctx.with('load-chunks', { domain }, (ctx) =>
         loadChangesFromServer(ctx, domain, digest, changes)
       )
       processedChanges.removed = Array.from(digest.keys())
       digest.clear()
-      progress(10)
+
+      if (progress !== undefined) {
+        await progress(10)
+      }
 
       if (needRetrieveChunks.length > 0) {
         ctx.info('dumping domain...', { workspace: workspaceId.name, domain })
@@ -1149,7 +1150,6 @@ export async function backup (
 
           function processChanges (d: Doc, error: boolean = false): void {
             processed++
-            progress(10 + (processed / totalChunks) * 90)
             // Move processed document to processedChanges
             if (changes.added.has(d._id)) {
               if (!error) {
@@ -1175,6 +1175,9 @@ export async function backup (
                 limit: options.blobDownloadLimit
               })
               processChanges(d, true)
+              if (progress !== undefined) {
+                await progress(10 + (processed / totalChunks) * 90)
+              }
               continue
             }
 
@@ -1188,6 +1191,9 @@ export async function backup (
                 size: blob.size / (1024 * 1024)
               })
               processChanges(d, true)
+              if (progress !== undefined) {
+                await progress(10 + (processed / totalChunks) * 90)
+              }
               continue
             }
 
@@ -1298,12 +1304,15 @@ export async function backup (
         current: Math.round(process.memoryUsage().heapUsed / (1024 * 1024))
       })
       await ctx.with('process-domain', { domain }, async (ctx) => {
-        await processDomain(ctx, domain, (value) => {
-          options.progress?.(Math.round(((domainProgress + value / 100) / domains.length) * 100))
-        })
+        await processDomain(
+          ctx,
+          domain,
+          (value) =>
+            options.progress?.(Math.round(((domainProgress + value / 100) / domains.length) * 100)) ?? Promise.resolve()
+        )
       })
       domainProgress++
-      options.progress?.(Math.round((domainProgress / domains.length) * 10000) / 100)
+      await options.progress?.(Math.round((domainProgress / domains.length) * 10000) / 100)
     }
     if (!canceled()) {
       backupInfo.lastTxId = lastTx?._id ?? '0' // We could store last tx, since full backup is complete
@@ -1639,8 +1648,13 @@ export async function restore (
     recheck?: boolean
     include?: Set<string>
     skip?: Set<string>
+    getConnection?: () => Promise<CoreClient & BackupClient>
+    storageAdapter?: StorageAdapter
+    token?: string
+    progress?: (progress: number) => Promise<void>
+    cleanIndexState?: boolean
   }
-): Promise<void> {
+): Promise<boolean> {
   const infoFile = 'backup.json.gz'
 
   if (!(await storage.exists(infoFile))) {
@@ -1670,14 +1684,34 @@ export async function restore (
 
   ctx.info('connecting:', { transactorUrl, workspace: workspaceId.name })
 
-  const token = generateToken(systemAccountEmail, workspaceId, {
-    mode: 'backup',
-    model: 'upgrade'
-  })
+  const token =
+    opt.token ??
+    generateToken(systemAccountEmail, workspaceId, {
+      mode: 'backup',
+      model: 'upgrade'
+    })
 
-  const connection = (await createClient(transactorUrl, token)) as CoreClient & BackupClient
+  const connection =
+    opt.getConnection !== undefined
+      ? await opt.getConnection()
+      : ((await createClient(transactorUrl, token)) as CoreClient & BackupClient)
 
-  const blobClient = new BlobClient(transactorUrl, token, workspaceId)
+  if (opt.getConnection === undefined) {
+    try {
+      let serverEndpoint = await getTransactorEndpoint(token, 'external')
+      serverEndpoint = serverEndpoint.replaceAll('wss://', 'https://').replace('ws://', 'http://')
+      await fetch(
+        serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close&wsId=${toWorkspaceString(workspaceId)}`,
+        {
+          method: 'PUT'
+        }
+      )
+    } catch (err: any) {
+      // Ignore
+    }
+  }
+
+  const blobClient = new BlobClient(transactorUrl, token, workspaceId, { storageAdapter: opt.storageAdapter })
   console.log('connected')
 
   // We need to find empty domains and clean them.
@@ -1691,6 +1725,8 @@ export async function restore (
 
   let uploadedMb = 0
   let uploaded = 0
+
+  let domainProgress = 0
 
   const printUploaded = (msg: string, size: number): void => {
     if (size == null) {
@@ -1726,6 +1762,9 @@ export async function restore (
     let chunks = 0
     try {
       while (true) {
+        if (opt.progress !== undefined) {
+          await opt.progress?.(domainProgress)
+        }
         const st = Date.now()
         const it = await connection.loadChunk(c, idx)
         chunks++
@@ -1776,6 +1815,9 @@ export async function restore (
     let sendSize = 0
     let totalSend = 0
     async function sendChunk (doc: Doc | undefined, len: number): Promise<void> {
+      if (opt.progress !== undefined) {
+        await opt.progress?.(domainProgress)
+      }
       if (doc !== undefined) {
         docsToAdd.delete(doc._id)
         docs.push(doc)
@@ -1804,6 +1846,11 @@ export async function restore (
               tx.objectSpace = core.space.Workspace
             }
           }
+          if (opt.cleanIndexState === true) {
+            if (d._class === core.class.DocIndexState) {
+              ;(d as DocIndexState).needIndex = true
+            }
+          }
         }
 
         if (opt.recheck === true) {
@@ -1824,13 +1871,13 @@ export async function restore (
             }
             return true
           })
-        } else {
-          try {
-            await connection.upload(c, docsToSend)
-          } catch (err: any) {
-            ctx.error('error during upload', { err, docs: JSON.stringify(docs) })
-          }
         }
+        try {
+          await connection.upload(c, docsToSend)
+        } catch (err: any) {
+          ctx.error('error during upload', { err, docs: JSON.stringify(docs) })
+        }
+
         docs.length = 0
         sendSize = 0
       }
@@ -2004,7 +2051,11 @@ export async function restore (
   const limiter = new RateLimiter(opt.parallel ?? 1)
 
   try {
+    let i = 0
     for (const c of domains) {
+      if (opt.progress !== undefined) {
+        await opt.progress?.(domainProgress)
+      }
       if (opt.include !== undefined && !opt.include.has(c)) {
         continue
       }
@@ -2032,13 +2083,21 @@ export async function restore (
             }
           }
         }
+        domainProgress = Math.round(i / domains.size) * 100
+        i++
       })
     }
     await limiter.waitProcessing()
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return false
   } finally {
-    await connection.sendForceClose()
-    await connection.close()
+    if (opt.getConnection === undefined && connection !== undefined) {
+      await connection.sendForceClose()
+      await connection.close()
+    }
   }
+  return true
 }
 
 /**

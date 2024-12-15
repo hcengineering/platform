@@ -129,7 +129,8 @@ export async function backupWorkspace (
       region,
       freshBackup,
       clean,
-      downloadLimit
+      downloadLimit,
+      []
     )
     if (result && onFinish !== undefined) {
       await onFinish(storageAdapter, workspaceStorageAdapter)

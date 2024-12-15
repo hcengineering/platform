@@ -20,6 +20,7 @@
   import {
     Button,
     Label,
+    Spinner,
     Scroller,
     SearchEdit,
     deviceOptionsStore as deviceInfo,
@@ -30,6 +31,7 @@
   import login from '../plugin'
   import { getAccount, getHref, getWorkspaces, goTo, navigateToWorkspace, selectWorkspace } from '../utils'
   import StatusControl from './StatusControl.svelte'
+  import { isArchivingMode } from '@hcengineering/core'
 
   export let navigateUrl: string | undefined = undefined
   let workspaces: Workspace[] = []
@@ -44,7 +46,8 @@
     account = await getAccount()
   }
 
-  const updateWorkspaces = reduceCalls(async function updateWorkspaces (time: number): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const updateWorkspaces = reduceCalls(async function updateWorkspaces (_time: number): Promise<void> {
     try {
       workspaces = await getWorkspaces()
     } catch (e) {
@@ -52,7 +55,9 @@
     }
   })
 
-  $: if (flagToUpdateWorkspaces) updateWorkspaces($ticker)
+  $: if (flagToUpdateWorkspaces) {
+    void updateWorkspaces($ticker)
+  }
 
   onMount(() => {
     void loadAccount()
@@ -95,7 +100,11 @@
 <form class="container" style:padding={$deviceInfo.docWidth <= 480 ? '1.25rem' : '5rem'}>
   <div class="grow-separator" />
   <div class="fs-title">
-    {account?.email}
+    {#if account?.email}
+      {account.email}
+    {:else}
+      <Label label={login.string.LoadingAccount} />
+    {/if}
   </div>
   <div class="title"><Label label={login.string.SelectWorkspace} /></div>
   <div class="status">
@@ -106,7 +115,11 @@
       <SearchEdit bind:value={search} width={'100%'} />
     </div>
   {/if}
-  {#await _getWorkspaces() then}
+  {#await _getWorkspaces()}
+    <div class="workspace-loader">
+      <Spinner />
+    </div>
+  {:then}
     <Scroller padding={'.125rem 0'} maxHeight={35}>
       <div class="form">
         {#each workspaces
@@ -123,10 +136,10 @@
             <div class="flex flex-col flex-grow">
               <span class="label overflow-label flex-center">
                 {wsName}
-                {#if workspace.mode === 'archived'}
+                {#if isArchivingMode(workspace.mode)}
                   - <Label label={presentation.string.Archived} />
                 {/if}
-                {#if workspace.mode === 'creating'}
+                {#if workspace.mode !== 'active'}
                   ({workspace.progress}%)
                 {/if}
               </span>
@@ -169,7 +182,7 @@
     </Scroller>
     <div class="grow-separator" />
     <div class="footer">
-      {#if workspaces.length}
+      {#if workspaces.length > 0}
         <div>
           <span><Label label={login.string.WantAnotherWorkspace} /></span>
           <NavLink
@@ -206,6 +219,13 @@
     justify-content: space-between;
     flex-grow: 1;
     overflow: hidden;
+
+    .workspace-loader {
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
     .title {
       font-weight: 600;

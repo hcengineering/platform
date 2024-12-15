@@ -16,11 +16,11 @@
   import { Doc, DocumentQuery, Ref, Space, mergeQueries } from '@hcengineering/core'
   import { Button } from '@hcengineering/ui'
   import { selectionStore } from '@hcengineering/view-resources'
-  import type { TestCase, TestProject } from '@hcengineering/test-management'
+  import type { TestCase } from '@hcengineering/test-management'
   import { createQuery } from '@hcengineering/presentation'
 
   import testManagement from '../../plugin'
-  import { showCreateTestRunPopup } from '../../utils'
+  import { showCreateTestRunPanel } from '../../utils'
 
   export let query: DocumentQuery<Doc> = {}
   export let space: Ref<Space>
@@ -38,14 +38,10 @@
     { limit: 1 }
   )
 
-  const project: Ref<TestProject> = space as any
-
   const handleRun = async (): Promise<void> => {
     const selectedDocs = $selectionStore?.docs ?? []
     const testCases = selectedDocs.length > 0 ? selectedDocs : undefined
-    await showCreateTestRunPopup({
-      query,
-      space: project,
+    await showCreateTestRunPanel({
       testCases: testCases as TestCase[]
     })
   }

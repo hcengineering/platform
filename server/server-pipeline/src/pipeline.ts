@@ -37,8 +37,8 @@ import {
   TriggersMiddleware,
   TxMiddleware
 } from '@hcengineering/middleware'
-import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
-import { createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
+import { createMongoAdapter, createMongoDestroyAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
+import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
 import {
   createBenchmarkAdapter,
   createInMemoryAdapter,
@@ -52,7 +52,8 @@ import {
   type PipelineContext,
   type PipelineFactory,
   type StorageAdapter,
-  type StorageConfiguration
+  type StorageConfiguration,
+  type WorkspaceDestroyAdapter
 } from '@hcengineering/server-core'
 import { buildStorageFromConfig, createStorageDataAdapter, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { generateToken } from '@hcengineering/server-token'
@@ -223,6 +224,10 @@ export async function getServerPipeline (
   }
 }
 
+export function getWorkspaceDestroyAdapter (dbUrl: string): WorkspaceDestroyAdapter {
+  return dbUrl.startsWith('mongodb') ? createMongoDestroyAdapter(dbUrl) : createPostgreeDestroyAdapter(dbUrl)
+}
+
 export function getConfig (
   metrics: MeasureContext,
   dbUrl: string,
@@ -250,11 +255,11 @@ export function getConfig (
     defaultAdapter: extensions?.defaultAdapter ?? 'Main',
     adapters: {
       Tx: {
-        factory: dbUrl.startsWith('postgresql') ? createPostgresTxAdapter : createMongoTxAdapter,
+        factory: dbUrl.startsWith('mongodb') ? createMongoTxAdapter : createPostgresTxAdapter,
         url: dbUrl
       },
       Main: {
-        factory: dbUrl.startsWith('postgresql') ? createPostgresAdapter : createMongoAdapter,
+        factory: dbUrl.startsWith('mongodb') ? createMongoAdapter : createPostgresAdapter,
         url: dbUrl
       },
       Null: {

@@ -50,7 +50,6 @@ export interface Application extends Doc {
 
   // Also attached ApplicationNavModel will be joined after this one main.
   navigatorModel?: NavigatorModel
-  aside?: AnyComponent
 
   locationResolver?: Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
   locationDataResolver?: Resource<(loc: Location) => Promise<LocationData>>
@@ -130,7 +129,6 @@ export interface ApplicationNavModel extends Doc {
 
   spaces?: SpacesNavModel[]
   specials?: SpecialNavModel[]
-  aside?: AnyComponent
 }
 
 /**
@@ -163,7 +161,6 @@ export interface SpacesNavModel {
 export interface NavigatorModel {
   spaces: SpacesNavModel[]
   specials?: SpecialNavModel[]
-  aside?: AnyComponent
 }
 
 /**
@@ -201,6 +198,7 @@ export interface ParentsNavigationModel {
   syncWithLocationQuery?: boolean
   createComponent?: AnyComponent
   createComponentProps?: Record<string, any>
+  createButton?: AnyComponent
 }
 
 /**

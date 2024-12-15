@@ -376,15 +376,9 @@ async function processMigrateJsonForDoc (
         await retry(5, async () => {
           const stat = await storageAdapter.stat(ctx, workspaceId, currentYdocId)
           if (stat !== undefined) {
-            const buffer = await storageAdapter.read(ctx, workspaceId, currentYdocId)
-            await storageAdapter.put(
-              ctx,
-              workspaceId,
-              ydocId,
-              Buffer.concat(buffer as any),
-              'application/ydoc',
-              buffer.length
-            )
+            const data = await storageAdapter.read(ctx, workspaceId, currentYdocId)
+            const buffer = Buffer.concat(data as any)
+            await storageAdapter.put(ctx, workspaceId, ydocId, buffer, 'application/ydoc', buffer.length)
           }
         })
       }
@@ -424,10 +418,12 @@ export const coreOperation: MigrateOperation = {
         func: migrateCollaborativeContentToStorage
       },
       {
-        state: 'fix-rename-backups',
+        state: 'fix-backups-hash-timestamp',
         func: async (client: MigrationClient): Promise<void> => {
-          await client.update(DOMAIN_TX, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
-          await client.update(DOMAIN_SPACE, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
+          const now = Date.now().toString(16)
+          for (const d of client.hierarchy.domains()) {
+            await client.update(d, { '%hash%': { $in: [null, ''] } }, { $set: { '%hash%': now } })
+          }
         }
       },
       {

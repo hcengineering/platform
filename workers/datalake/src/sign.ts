@@ -17,8 +17,9 @@ import { AwsClient } from 'aws4fetch'
 import { error } from 'itty-router'
 
 import { handleBlobUploaded } from './blob'
+import { type MetricsContext } from './metrics'
+import { type Storage, selectStorage } from './storage'
 import { type BlobRequest, type UUID } from './types'
-import { selectStorage, type Storage } from './storage'
 
 const S3_SIGNED_LINK_TTL = 3600
 
@@ -39,7 +40,12 @@ function getS3Client (storage: Storage): AwsClient {
   })
 }
 
-export async function handleSignCreate (request: BlobRequest, env: Env, ctx: ExecutionContext): Promise<Response> {
+export async function handleSignCreate (
+  request: BlobRequest,
+  env: Env,
+  ctx: ExecutionContext,
+  metrics: MetricsContext
+): Promise<Response> {
   const { workspace, name } = request
   const storage = selectStorage(env, workspace)
   const accountId = env.R2_ACCOUNT_ID
@@ -57,7 +63,9 @@ export async function handleSignCreate (request: BlobRequest, env: Env, ctx: Exe
   try {
     const client = getS3Client(storage)
 
-    signed = await client.sign(new Request(url, { method: 'PUT' }), { aws: { signQuery: true } })
+    signed = await metrics.with('s3.sign', () => {
+      return client.sign(new Request(url, { method: 'PUT' }), { aws: { signQuery: true } })
+    })
   } catch (err: any) {
     console.error({ error: 'failed to generate signed url', message: `${err}` })
     return error(500, 'failed to generate signed url')
@@ -73,7 +81,12 @@ export async function handleSignCreate (request: BlobRequest, env: Env, ctx: Exe
   return new Response(signed.url, { status: 200, headers })
 }
 
-export async function handleSignComplete (request: BlobRequest, env: Env, ctx: ExecutionContext): Promise<Response> {
+export async function handleSignComplete (
+  request: BlobRequest,
+  env: Env,
+  ctx: ExecutionContext,
+  metrics: MetricsContext
+): Promise<Response> {
   const { workspace, name } = request
 
   const { bucket } = selectStorage(env, workspace)
@@ -96,7 +109,7 @@ export async function handleSignComplete (request: BlobRequest, env: Env, ctx: E
   }
 
   try {
-    await handleBlobUploaded(env, ctx, workspace, name, uuid)
+    await handleBlobUploaded(env, ctx, metrics, workspace, name, uuid)
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error({ error: message, workspace, name, uuid })

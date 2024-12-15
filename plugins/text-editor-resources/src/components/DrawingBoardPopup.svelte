@@ -23,7 +23,6 @@
   export let savedCmds: YArray<DrawingCmd>
   export let savedProps: YMap<any>
 
-  const manager = createFocusManager()
   const dispatch = createEventDispatcher()
 
   let dialog: Dialog
@@ -33,7 +32,6 @@
 </script>
 
 {#if savedCmds !== undefined && savedProps !== undefined}
-  <FocusHandler {manager} />
   <Dialog
     label={textEditor.string.DrawingBoard}
     padding="0"

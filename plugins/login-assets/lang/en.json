@@ -19,6 +19,7 @@
     "DoNotHaveAnAccount": "Do not have an account?",
     "PasswordRepeat": "Repeat password",
     "HaveAccount": "Already have an account?",
+    "LoadingAccount": "Loading...",
     "SelectWorkspace": "Select workspace",
     "Copy": "Copy",
     "Copied": "Copied",

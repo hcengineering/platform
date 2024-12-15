@@ -22,5 +22,6 @@ export enum TestManagementEvents {
   TestSuiteDeleted = 'testManagement.TestSuiteDeleted',
   TestRunCreated = 'testManagement.TestRunCreated',
   TestRunEdited = 'testManagement.TestRunEdited',
-  TestRunDeleted = 'testManagement.TestRunDeleted'
+  TestRunDeleted = 'testManagement.TestRunDeleted',
+  TestPlanCreated = 'testManagement.TestPlanCreated'
 }

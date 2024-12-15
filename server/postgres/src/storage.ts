@@ -576,20 +576,23 @@ abstract class PostgresAdapterBase implements DbAdapter {
           }
           sqlChunks.push(`WHERE ${this.buildQuery(_class, domain, query, joins, options)}`)
 
+          const totalSqlChunks = [...sqlChunks]
+
+          if (options?.sort !== undefined) {
+            sqlChunks.push(this.buildOrder(_class, domain, options.sort, joins))
+          }
+          if (options?.limit !== undefined) {
+            sqlChunks.push(`LIMIT ${options.limit}`)
+          }
+
           return (await this.mgr.read(ctx.id, async (connection) => {
             let total = options?.total === true ? 0 : -1
             if (options?.total === true) {
               const totalReq = `SELECT COUNT(${domain}._id) as count FROM ${domain}`
-              const totalSql = [totalReq, ...sqlChunks].join(' ')
+              const totalSql = [totalReq, ...totalSqlChunks].join(' ')
               const totalResult = await connection.unsafe(totalSql)
               const parsed = Number.parseInt(totalResult[0].count)
               total = Number.isNaN(parsed) ? 0 : parsed
-            }
-            if (options?.sort !== undefined) {
-              sqlChunks.push(this.buildOrder(_class, domain, options.sort, joins))
-            }
-            if (options?.limit !== undefined) {
-              sqlChunks.push(`LIMIT ${options.limit}`)
             }
 
             const finalSql: string = [select, ...sqlChunks].join(' ')
@@ -1276,7 +1279,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
     return []
   }
 
-  strimSize (str: string): string {
+  strimSize (str?: string): string {
+    if (str == null) {
+      return ''
+    }
     const pos = str.indexOf('|')
     if (pos > 0) {
       return str.substring(0, pos)
@@ -1308,12 +1314,6 @@ abstract class PostgresAdapterBase implements DbAdapter {
           if (client === undefined) {
             client = await this.client.reserve()
           }
-
-          // We need update hash to be set properly
-          await client.unsafe(
-            `UPDATE ${tdomain} SET "%hash%" = '${this.curHash()}' WHERE "workspaceId" = '${this.workspaceId.name}' AND "%hash%" IS NULL OR "%hash%" = ''`
-          )
-
           initialized = true
           bulk = createBulk('_id, "%hash%"')
         }

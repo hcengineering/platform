@@ -21,7 +21,6 @@ import core, {
   Doc,
   DocumentQuery,
   Domain,
-  FindOptions,
   FindResult,
   LookupData,
   MeasureContext,
@@ -41,13 +40,20 @@ import core, {
   TxUpdateDoc,
   TxWorkspaceEvent,
   WorkspaceEvent,
+  clone,
   generateId,
   systemAccountEmail,
   toFindResult,
   type SessionData
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
+import {
+  BaseMiddleware,
+  Middleware,
+  ServerFindOptions,
+  TxMiddlewareResult,
+  type PipelineContext
+} from '@hcengineering/server-core'
 import { isOwner, isSystem } from './utils'
 type SpaceWithMembers = Pick<Space, '_id' | 'members' | 'private' | '_class'>
 
@@ -64,14 +70,14 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
   wasInit: Promise<void> | boolean = false
 
-  private readonly mainSpaces = [
+  private readonly mainSpaces = new Set([
     core.space.Configuration,
     core.space.DerivedTx,
     core.space.Model,
     core.space.Space,
     core.space.Workspace,
     core.space.Tx
-  ]
+  ])
 
   private constructor (
     private readonly skipFindCheck: boolean,
@@ -416,6 +422,14 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       }
     }
 
+    ctx.contextData.broadcast.targets.spaceSec = (tx) => {
+      const space = this.spacesMap.get(tx.objectSpace)
+      if (space === undefined) return undefined
+      if (this.systemSpaces.has(space._id) || this.mainSpaces.has(space._id)) return undefined
+
+      return space.members.length === 0 ? undefined : this.getTargets(space?.members)
+    }
+
     await this.next?.handleBroadcast(ctx)
   }
 
@@ -442,12 +456,12 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     ctx: MeasureContext,
     domain: Domain,
     spaces: Ref<Space>[]
-  ): Promise<{ result: Ref<Space>[], allDomainSpaces: boolean, domainSpaces: Set<Ref<Space>> }> {
+  ): Promise<{ result: Set<Ref<Space>>, allDomainSpaces: boolean, domainSpaces: Set<Ref<Space>> }> {
     const domainSpaces = await this.getDomainSpaces(ctx, domain)
-    const result = spaces.filter((p) => domainSpaces.has(p))
+    const result = new Set(spaces.filter((p) => domainSpaces.has(p)))
     return {
-      result: spaces.filter((p) => domainSpaces.has(p)),
-      allDomainSpaces: result.length === domainSpaces.size,
+      result,
+      allDomainSpaces: result.size === domainSpaces.size,
       domainSpaces
     }
   }
@@ -464,14 +478,14 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       if (spaces.allDomainSpaces) {
         return undefined
       }
-      return { $in: spaces.result }
+      return { $in: Array.from(spaces.result) }
     }
     if (typeof query === 'string') {
-      if (!spaces.result.includes(query)) {
+      if (!spaces.result.has(query)) {
         return { $in: [] }
       }
     } else if (query.$in != null) {
-      query.$in = query.$in.filter((p) => spaces.result.includes(p))
+      query.$in = query.$in.filter((p) => spaces.result.has(p))
       if (query.$in.length === spaces.domainSpaces.size) {
         // all domain spaces
         delete query.$in
@@ -480,7 +494,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       if (spaces.allDomainSpaces) {
         delete query.$in
       } else {
-        query.$in = spaces.result
+        query.$in = Array.from(spaces.result)
       }
     }
     if (Object.keys(query).length === 0) {
@@ -497,35 +511,30 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     ctx: MeasureContext<SessionData>,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T>
+    options?: ServerFindOptions<T>
   ): Promise<FindResult<T>> {
     await this.init(ctx)
 
     const domain = this.context.hierarchy.getDomain(_class)
-    const newQuery = { ...query }
+    const newQuery = clone(query)
     const account = ctx.contextData.account
     const isSpace = this.context.hierarchy.isDerived(_class, core.class.Space)
     const field = this.getKey(domain)
 
     let clientFilterSpaces: Set<Ref<Space>> | undefined
 
-    if (
-      !this.skipFindCheck &&
-      !isSystem(account, ctx) &&
-      account.role !== AccountRole.DocGuest &&
-      domain !== DOMAIN_MODEL
-    ) {
+    if (!isSystem(account, ctx) && account.role !== AccountRole.DocGuest && domain !== DOMAIN_MODEL) {
       if (!isOwner(account, ctx) || !isSpace) {
         if (query[field] !== undefined) {
           const res = await this.mergeQuery(ctx, account, query[field], domain, isSpace)
           if (res === undefined) {
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-            delete (newQuery as any)[field]
+            delete newQuery[field]
           } else {
-            ;(newQuery as any)[field] = res
+            newQuery[field] = res
             if (typeof res === 'object') {
               if (Array.isArray(res.$in) && res.$in.length === 1 && Object.keys(res).length === 1) {
-                ;(newQuery as any)[field] = res.$in[0]
+                newQuery[field] = res.$in[0]
               }
             }
           }
@@ -533,27 +542,37 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
           const spaces = await this.filterByDomain(ctx, domain, this.getAllAllowedSpaces(account, !isSpace))
           if (spaces.allDomainSpaces) {
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-            delete (newQuery as any)[field]
-          } else if (spaces.result.length === 1) {
-            ;(newQuery as any)[field] = spaces.result[0]
+            delete newQuery[field]
+          } else if (spaces.result.size === 1) {
+            newQuery[field] = Array.from(spaces.result)[0]
+            if (options !== undefined) {
+              options.allowedSpaces = Array.from(spaces.result)
+            } else {
+              options = { allowedSpaces: Array.from(spaces.result) }
+            }
           } else {
             // Check if spaces > 85% of all domain spaces, in this case return all and filter on client.
-            if (spaces.result.length / spaces.domainSpaces.size > 0.85 && options?.limit === undefined) {
-              clientFilterSpaces = new Set(spaces.result)
+            if (spaces.result.size / spaces.domainSpaces.size > 0.85 && options?.limit === undefined) {
+              clientFilterSpaces = spaces.result
               delete newQuery.space
             } else {
-              ;(newQuery as any)[field] = { $in: spaces.result }
+              newQuery[field] = { $in: Array.from(spaces.result) }
+              if (options !== undefined) {
+                options.allowedSpaces = Array.from(spaces.result)
+              } else {
+                options = { allowedSpaces: Array.from(spaces.result) }
+              }
             }
           }
         }
       }
     }
 
-    let findResult = await this.provideFindAll(ctx, _class, newQuery, options)
+    let findResult = await this.provideFindAll(ctx, _class, !this.skipFindCheck ? newQuery : query, options)
     if (clientFilterSpaces !== undefined) {
       const cfs = clientFilterSpaces
       findResult = toFindResult(
-        findResult.filter((it) => cfs.has(it.space)),
+        findResult.filter((it) => cfs.has((it as any)[field])),
         findResult.total,
         findResult.lookupMap
       )
@@ -607,19 +626,19 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     if (Object.keys(lookup).length === 0) return
     const account = ctx.contextData.account
     if (isSystem(account, ctx)) return
-    const allowedSpaces = this.getAllAllowedSpaces(account, true)
+    const allowedSpaces = new Set(this.getAllAllowedSpaces(account, true))
     for (const key in lookup) {
       const val = lookup[key]
       if (Array.isArray(val)) {
         const arr: AttachedDoc[] = []
         for (const value of val) {
-          if (allowedSpaces.includes(value.space)) {
+          if (allowedSpaces.has(value.space)) {
             arr.push(value)
           }
         }
         lookup[key] = arr as any
       } else if (val !== undefined) {
-        if (!allowedSpaces.includes(val.space)) {
+        if (!allowedSpaces.has(val.space)) {
           lookup[key] = undefined
         }
       }

@@ -126,7 +126,6 @@ services:
     volumes:
       - ./branding-test.json:/var/cfg/branding.json
     environment:
-      - SERVER_PROVIDER=${SERVER_PROVIDER}
       - SERVER_PORT=3334
       - SERVER_SECRET=secret      
       - DB_URL=mongodb://mongodb:27018

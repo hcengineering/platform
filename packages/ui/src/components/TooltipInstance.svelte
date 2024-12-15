@@ -383,7 +383,9 @@
     style:visibility={options.visibility}
     style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
   >
-    <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
+    <span class="label">
+      <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
+    </span>
     {#if $tooltip.keys !== undefined}
       <div class="keys">
         {#each $tooltip.keys as key, i}
@@ -542,6 +544,7 @@
   .keys {
     margin-left: 0.5rem;
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     gap: 0.125rem;
   }
@@ -577,6 +580,11 @@
       background-color: var(--theme-popup-divider);
       clip-path: url('#nub-border');
       z-index: 2;
+    }
+
+    &:not(:has(.key, .keys)) span.label {
+      width: 100%;
+      word-wrap: break-word;
     }
   }
   .no-arrow {
