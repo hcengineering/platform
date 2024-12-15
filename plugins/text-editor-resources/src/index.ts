@@ -20,6 +20,7 @@ import { isEditable, isHeadingVisible } from './kits/editor-kit'
 import { openTableOptions, isEditableTableActive } from './components/extension/table/table'
 import { openImage, downloadImage, expandImage, moreImageActions } from './components/extension/imageExt'
 import { configureNote, isEditableNote } from './components/extension/note'
+import { createInlineComment, shouldShowCreateInlineCommentAction } from './components/extension/inlineComment'
 
 export * from '@hcengineering/presentation/src/types'
 export type { EditorKitOptions } from './kits/editor-kit'
@@ -88,6 +89,9 @@ export default async (): Promise<Resources> => ({
     IsEditableTableActive: isEditableTableActive,
     IsEditableNote: isEditableNote,
     IsEditable: isEditable,
-    IsHeadingVisible: isHeadingVisible
+    IsHeadingVisible: isHeadingVisible,
+
+    CreateInlineComment: createInlineComment,
+    ShouldShowCreateInlineCommentAction: shouldShowCreateInlineCommentAction
   }
 })

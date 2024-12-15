@@ -45,6 +45,7 @@
   export let attachFile: FileAttachFunction | undefined = undefined
   export let canShowPopups = true
   export let kitOptions: Partial<EditorKitOptions> = {}
+  export let requestSideSpace: ((width: number) => void) | undefined = undefined
 
   let element: HTMLElement
 
@@ -99,6 +100,7 @@
     {canShowPopups}
     {editorAttributes}
     {kitOptions}
+    {requestSideSpace}
     on:editor
     on:update
     on:open-document

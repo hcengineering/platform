@@ -397,6 +397,12 @@
         width: calc(100% - 7.5rem);
         max-width: 54rem;
 
+        &.side-content-space {
+          --side-content-space: 21rem;
+          max-width: calc(54rem + var(--side-content-space));
+          padding-right: var(--side-content-space);
+        }
+
         &.max {
           max-width: 100%;
         }

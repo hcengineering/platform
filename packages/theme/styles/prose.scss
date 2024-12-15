@@ -477,6 +477,19 @@ pre.proseCodeBlock>pre.proseCode {
   }
 }
 
+.proseInlineCommentHighlight {
+  background: rgba(255, 203, 0, .12);
+  border-bottom: 2px solid rgba(255, 203, 0, .35);
+  padding-bottom: 2px;
+  transition: background 0.2s ease, border 0.2s ease;
+  
+  &.active {
+    transition-delay: 150ms;
+    background: rgba(255, 203, 0, .24);
+    border-bottom: 2px solid rgb(255, 203, 0);
+  }
+}
+
 .theme-dark {
   @import './github-dark.scss';
 }

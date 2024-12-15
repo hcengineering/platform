@@ -84,6 +84,7 @@
   import { type FileAttachFunction } from './extension/types'
   import { completionConfig, inlineCommandsConfig } from './extensions'
   import { MermaidExtension, mermaidOptions } from './extension/mermaid'
+  import { InlineCommentExtension } from './extension/inlineComment'
 
   export let object: Doc
   export let attribute: KeyedAttribute
@@ -112,6 +113,7 @@
   export let withSideMenu = true
   export let withInlineCommands = true
   export let kitOptions: Partial<EditorKitOptions> = {}
+  export let requestSideSpace: ((width: number) => void) | undefined = undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -148,6 +150,7 @@
   let element: HTMLElement
   let textToolbarElement: HTMLElement
   let imageToolbarElement: HTMLElement
+  let editorPopupContainer: HTMLElement
 
   let placeHolderStr: string = ''
 
@@ -476,6 +479,7 @@
         }),
         EmojiExtension,
         MermaidExtension.configure({ ...mermaidOptions, ydoc, ydocContentField: field }),
+        InlineCommentExtension.configure({ ydoc, boundary, popupContainer: editorPopupContainer, requestSideSpace }),
         DrawingBoardExtension.configure({ getSavedBoard }),
         ...extensions
       ],
@@ -534,6 +538,7 @@
   style="display: none"
   on:change={fileSelected}
 />
+<div class="editorPopupContainer" bind:this={editorPopupContainer}></div>
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div

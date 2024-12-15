@@ -329,7 +329,16 @@ module.exports = [
     hot: true,
     client: {
       logging: "info",
-      overlay: true,
+      overlay: {
+        errors: true,
+        warnings: false,
+        runtimeErrors: (error) => {
+          if (error.message.includes("ResizeObserver")) {
+            return false;
+          }
+          return true;
+        },
+      },
       progress: false,
     },
     proxy: (devServer && !devProduction && !devProductionHuly && !devProductionBold) ? {
