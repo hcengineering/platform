@@ -17,7 +17,7 @@ import document from '@hcengineering/document'
 import tracker, { IssuePriority, type IssueStatus } from '@hcengineering/tracker'
 import {
   ImportControlledDocument,
-  ImportControlledDocumentSpace,
+  ImportOrgSpace,
   ImportControlledDocumentTemplate,
   type ImportDocument,
   type ImportIssue,
@@ -51,7 +51,7 @@ export class ImportWorkspaceBuilder {
   private readonly documentsByTeamspace = new Map<string, Map<string, ImportDocument>>()
   private readonly documentParents = new Map<string, string>()
 
-  private readonly qmsSpaces = new Map<string, ImportControlledDocumentSpace>()
+  private readonly qmsSpaces = new Map<string, ImportOrgSpace>()
   private readonly qmsDocsBySpace = new Map<string, Map<string, ImportControlledDoc>>()
   private readonly qmsDocsParents = new Map<string, string>()
 
@@ -135,12 +135,12 @@ export class ImportWorkspaceBuilder {
     return this
   }
 
-  addControlledDocumentSpace (path: string, space: ImportControlledDocumentSpace): this {
+  addOrgSpace (path: string, space: ImportOrgSpace): this {
     this.validateAndAdd(
       'documentSpace',
       path,
       space,
-      (s) => this.validateControlledDocumentSpace(s),
+      (s) => this.validateOrgSpace(s),
       this.qmsSpaces,
       path
     )
@@ -649,7 +649,7 @@ export class ImportWorkspaceBuilder {
     return errors
   }
 
-  private validateControlledDocumentSpace (space: ImportControlledDocumentSpace): string[] {
+  private validateOrgSpace (space: ImportOrgSpace): string[] {
     const errors: string[] = []
 
     if (space.class !== documents.class.OrgSpace) {

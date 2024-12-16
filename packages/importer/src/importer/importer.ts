@@ -23,7 +23,8 @@ import documents, {
   DocumentCategory,
   type DocumentSpace,
   DocumentState,
-  type DocumentTemplate
+  type DocumentTemplate,
+  OrgSpace
 } from '@hcengineering/controlled-documents'
 import core, {
   type Account,
@@ -157,8 +158,11 @@ export interface ImportAttachment {
 }
 
 export type ImportControlledDoc = ImportControlledDocument | ImportControlledDocumentTemplate
-export interface ImportControlledDocumentSpace extends ImportSpace<ImportControlledDoc> {
+export interface ImportOrgSpace extends ImportSpace<ImportControlledDoc> {
   class: Ref<Class<DocumentSpace>>
+  qualified?: Ref<Account>
+  manager?: Ref<Account>
+  qara?: Ref<Account>
 }
 
 export interface ImportControlledDocumentTemplate extends ImportDoc {
@@ -238,7 +242,7 @@ export class WorkspaceImporter {
       } else if (space.class === tracker.class.Project) {
         await this.importProject(space as ImportProject)
       } else if (space.class === documents.class.OrgSpace) {
-        await this.importQmsOrgSpace(space as ImportControlledDocumentSpace)
+        await this.importOrgSpace(space as ImportOrgSpace)
       }
     }
   }
@@ -737,9 +741,9 @@ export class WorkspaceImporter {
     return identifier
   }
 
-  async importQmsOrgSpace (space: ImportControlledDocumentSpace): Promise<Ref<DocumentSpace>> {
+  async importOrgSpace (space: ImportOrgSpace): Promise<Ref<DocumentSpace>> {
     this.logger.log('Creating document space: ' + space.title)
-    const spaceId = await this.createQmsOrgSpace(space)
+    const spaceId = await this.createOrgSpace(space)
     this.logger.log('Document space created: ' + spaceId)
 
     for (const doc of space.docs) {
@@ -756,23 +760,32 @@ export class WorkspaceImporter {
     return doc.class === documents.mixin.DocumentTemplate
   }
 
-  async createQmsOrgSpace (space: ImportControlledDocumentSpace): Promise<Ref<DocumentSpace>> {
+  async createOrgSpace (space: ImportOrgSpace): Promise<Ref<DocumentSpace>> {
     const spaceId = generateId<DocumentSpace>()
-    const codePoint = space.emoji?.codePointAt(0)
-    const data = {
+    const data: Data<OrgSpace> = {
       type: documents.spaceType.DocumentSpaceType,
       description: space.description ?? '',
-      title: space.title,
       name: space.title,
       private: space.private,
-      color: codePoint,
-      icon: codePoint === undefined ? undefined : view.ids.IconWithEmoji,
       owners: space.owners ?? [],
       members: space.members ?? [],
-      autoJoin: space.autoJoin,
       archived: space.archived ?? false
     }
     await this.client.createDoc(documents.class.OrgSpace, core.space.Space, data, spaceId)
+
+    if (space.qualified !== undefined || space.manager !== undefined || space.qara !== undefined) { // todo: check if only one of them is defined
+      await this.client.createMixin(
+        spaceId,
+        documents.class.OrgSpace,
+        core.space.Space,
+        documents.mixin.DocumentSpaceTypeData,
+        {
+          [documents.role.QualifiedUser]: [space.qualified],
+          [documents.role.Manager]: [space.manager],
+          [documents.role.QARA]: [space.qara]
+        }
+      )
+    }
     return spaceId
   }
 

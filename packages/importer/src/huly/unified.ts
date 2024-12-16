@@ -28,7 +28,6 @@ import {
   type ImportAttachment,
   type ImportComment,
   ImportControlledDocument,
-  ImportControlledDocumentSpace,
   ImportControlledDocumentTemplate,
   type ImportDocument,
   type ImportIssue,
@@ -36,7 +35,8 @@ import {
   type ImportProjectType,
   type ImportTeamspace,
   type ImportWorkspace,
-  WorkspaceImporter
+  WorkspaceImporter,
+  ImportOrgSpace
 } from '../importer/importer'
 import { type Logger } from '../importer/logger'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
@@ -132,8 +132,11 @@ interface UnifiedDocumentTemplateHeader {
   docPrefix: string
 }
 
-interface UnifiedDocumentSpaceSettings extends UnifiedSpaceSettings {
+interface UnifiedOrgSpaceSettings extends UnifiedSpaceSettings {
   class: 'documents:class:OrgSpace'
+  qualified?: string
+  manager?: string
+  qara?: string
 }
 
 class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
@@ -420,8 +423,8 @@ export class UnifiedFormatImporter {
           }
 
           case documents.class.OrgSpace: {
-            const qmsSpace = await this.processControlledDocumentSpace(spaceConfig as UnifiedDocumentSpaceSettings)
-            builder.addControlledDocumentSpace(spacePath, qmsSpace)
+            const orgSpace = await this.processOrgSpace(spaceConfig as UnifiedOrgSpaceSettings)
+            builder.addOrgSpace(spacePath, orgSpace)
             if (fs.existsSync(spacePath) && fs.statSync(spacePath).isDirectory()) {
               await this.processControlledDocumentsRecursively(builder, spacePath, spacePath)
             }
@@ -702,17 +705,18 @@ export class UnifiedFormatImporter {
     }
   }
 
-  private async processControlledDocumentSpace (spaceHeader: UnifiedDocumentSpaceSettings): Promise<ImportControlledDocumentSpace> {
+  private async processOrgSpace (spaceHeader: UnifiedOrgSpaceSettings): Promise<ImportOrgSpace> {
     return {
       class: documents.class.OrgSpace,
       title: spaceHeader.title,
       private: spaceHeader.private ?? false,
-      autoJoin: spaceHeader.autoJoin ?? true,
       archived: spaceHeader.archived ?? false,
       description: spaceHeader.description,
-      // emoji: spaceHeader.emoji, // todo: confirm and remove emoji
       owners: spaceHeader.owners?.map(email => this.findAccountByEmail(email)) ?? [],
       members: spaceHeader.members?.map(email => this.findAccountByEmail(email)) ?? [],
+      qualified: spaceHeader.qualified !== undefined ? this.findAccountByEmail(spaceHeader.qualified) : undefined,
+      manager: spaceHeader.manager !== undefined ? this.findAccountByEmail(spaceHeader.manager) : undefined,
+      qara: spaceHeader.qara !== undefined ? this.findAccountByEmail(spaceHeader.qara) : undefined,
       docs: []
     }
   }

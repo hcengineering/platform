@@ -15,7 +15,7 @@
 
 import { documentsId } from '@hcengineering/controlled-documents'
 import documents from '@hcengineering/controlled-documents-resources/src/plugin'
-import type { Client, Doc, Ref, Role } from '@hcengineering/core'
+import type { Client, Doc, Ref } from '@hcengineering/core'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
 import { mergeIds, type Resource } from '@hcengineering/platform'
 import { type TagCategory } from '@hcengineering/tags'
@@ -70,11 +70,6 @@ export default mergeIds(documentsId, documents, {
     ListDocument: '' as Ref<Doc>,
     TableDocumentTemplate: '' as Ref<Doc>,
     TableDocumentDomain: '' as Ref<Doc>
-  },
-  role: {
-    QARA: '' as Ref<Role>,
-    Manager: '' as Ref<Role>,
-    QualifiedUser: '' as Ref<Role>
   },
   notification: {
     DocumentsNotificationGroup: '' as Ref<NotificationGroup>,
