@@ -655,13 +655,70 @@ export interface DomainIndexConfiguration extends Doc {
 
 export type WorkspaceMode =
   | 'manual-creation'
-  | 'pending-creation'
-  | 'creating'
-  | 'upgrading'
-  | 'pending-deletion'
-  | 'deleting'
+  | 'pending-creation' // -> 'creating'
+  | 'creating' // -> 'active
+  | 'upgrading' // -> 'active'
+  | 'pending-deletion' // -> 'deleting'
+  | 'deleting' // -> "deleted"
   | 'active'
+  | 'archiving-pending-backup' // -> 'cleaning'
+  | 'archiving-backup' // -> 'archiving-pending-clean'
+  | 'archiving-pending-clean' // -> 'archiving-clean'
+  | 'archiving-clean' // -> 'archived'
   | 'archived'
+  | 'migration-pending-backup' // -> 'migration-backup'
+  | 'migration-backup' // -> 'migration-pending-cleanup'
+  | 'migration-pending-clean' // -> 'migration-pending-cleaning'
+  | 'migration-clean' // -> 'pending-restoring'
+  | 'pending-restore' // -> 'restoring'
+  | 'restoring' // -> 'active'
+
+export function isActiveMode (mode?: WorkspaceMode): boolean {
+  return mode === 'active'
+}
+export function isDeletingMode (mode: WorkspaceMode): boolean {
+  return mode === 'pending-deletion' || mode === 'deleting'
+}
+export function isArchivingMode (mode?: WorkspaceMode): boolean {
+  return (
+    mode === 'archiving-pending-backup' ||
+    mode === 'archiving-backup' ||
+    mode === 'archiving-pending-clean' ||
+    mode === 'archiving-clean' ||
+    mode === 'archived'
+  )
+}
+
+export function isMigrationMode (mode?: WorkspaceMode): boolean {
+  return (
+    mode === 'migration-pending-backup' ||
+    mode === 'migration-backup' ||
+    mode === 'migration-pending-clean' ||
+    mode === 'migration-clean'
+  )
+}
+export function isRestoringMode (mode?: WorkspaceMode): boolean {
+  return mode === 'restoring' || mode === 'pending-restore'
+}
+
+export type WorkspaceUpdateEvent =
+  | 'ping'
+  | 'create-started'
+  | 'create-done'
+  | 'upgrade-started'
+  | 'upgrade-done'
+  | 'restore-started'
+  | 'restore-done'
+  | 'progress'
+  | 'migrate-backup-started' // -> state = 'migration-backup'
+  | 'migrate-backup-done' // -> state = 'migration-pending-cleaning'
+  | 'migrate-clean-started' // -> state = 'migration-cleaning'
+  | 'migrate-clean-done' // -> state = 'pending-restoring'
+  | 'archiving-backup-started' // -> state = 'archiving'
+  | 'archiving-backup-done' // -> state = 'archiving-pending-cleaning'
+  | 'archiving-clean-started'
+  | 'archiving-clean-done'
+  | 'archiving-done'
 
 export interface BackupStatus {
   dataSize: number
@@ -688,6 +745,9 @@ export interface BaseWorkspaceInfo {
   progress?: number // Some progress
 
   endpoint: string
+
+  region?: string // Transactor group name
+  targetRegion?: string // Transactor region to move to
 
   backupInfo?: BackupStatus
 }

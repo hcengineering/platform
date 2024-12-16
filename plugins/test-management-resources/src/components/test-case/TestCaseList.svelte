@@ -16,15 +16,13 @@
   import type { Class, Ref } from '@hcengineering/core'
   import { DocPopup } from '@hcengineering/presentation'
   import { TestCase } from '@hcengineering/test-management'
-
   import TestCasePresenter from './TestCasePresenter.svelte'
-
   export let _class: Ref<Class<TestCase>>
   export let objects: TestCase[] = []
   export let allowDeselect = false
   export let closeAfterSelect: boolean = false
   export let shadows = true
-  export let readonly = false
+  export let readonly = true
   export let width: 'medium' | 'large' | 'full' = 'medium'
 </script>
 
@@ -37,11 +35,11 @@
   {shadows}
   {width}
   {readonly}
+  noSearchField={true}
   on:update
   on:close
-  groupBy={'attachedTo'}
 >
   <svelte:fragment slot="item" let:item={testCase}>
-    <TestCasePresenter value={testCase} disabled={readonly} />
+    <TestCasePresenter value={testCase} />
   </svelte:fragment>
 </DocPopup>

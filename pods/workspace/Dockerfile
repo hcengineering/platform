@@ -14,4 +14,7 @@ ENV MALLOC_CONF=dirty_decay_ms:1000,narenas:2,background_thread:true
 COPY bundle/bundle.js ./
 COPY bundle/bundle.js.map ./
 
+COPY ini[t]/ ./init-scripts/
+
 CMD [ "node", "bundle.js" ]
+

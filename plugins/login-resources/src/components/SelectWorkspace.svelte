@@ -31,6 +31,7 @@
   import login from '../plugin'
   import { getAccount, getHref, getWorkspaces, goTo, navigateToWorkspace, selectWorkspace } from '../utils'
   import StatusControl from './StatusControl.svelte'
+  import { isArchivingMode } from '@hcengineering/core'
 
   export let navigateUrl: string | undefined = undefined
   let workspaces: Workspace[] = []
@@ -45,7 +46,8 @@
     account = await getAccount()
   }
 
-  const updateWorkspaces = reduceCalls(async function updateWorkspaces (time: number): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const updateWorkspaces = reduceCalls(async function updateWorkspaces (_time: number): Promise<void> {
     try {
       workspaces = await getWorkspaces()
     } catch (e) {
@@ -53,7 +55,9 @@
     }
   })
 
-  $: if (flagToUpdateWorkspaces) updateWorkspaces($ticker)
+  $: if (flagToUpdateWorkspaces) {
+    void updateWorkspaces($ticker)
+  }
 
   onMount(() => {
     void loadAccount()
@@ -132,10 +136,10 @@
             <div class="flex flex-col flex-grow">
               <span class="label overflow-label flex-center">
                 {wsName}
-                {#if workspace.mode === 'archived'}
+                {#if isArchivingMode(workspace.mode)}
                   - <Label label={presentation.string.Archived} />
                 {/if}
-                {#if workspace.mode === 'creating'}
+                {#if workspace.mode !== 'active'}
                   ({workspace.progress}%)
                 {/if}
               </span>
@@ -178,7 +182,7 @@
     </Scroller>
     <div class="grow-separator" />
     <div class="footer">
-      {#if workspaces.length}
+      {#if workspaces.length > 0}
         <div>
           <span><Label label={login.string.WantAnotherWorkspace} /></span>
           <NavLink

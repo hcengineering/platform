@@ -15,19 +15,24 @@
 <script lang="ts">
   import { Doc, DocumentQuery } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Button, Icon, IconAdd, Label, Loading, Scroller, SectionEmpty } from '@hcengineering/ui'
+  import { Icon, Label, Loading, Scroller } from '@hcengineering/ui'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { Table, ViewletsSettingButton } from '@hcengineering/view-resources'
-  import testManagement from '../../plugin'
-  import FileDuo from '../icons/FileDuo.svelte'
+  import { TableBrowser, ViewletsSettingButton } from '@hcengineering/view-resources'
 
-  export let baseQuery: DocumentQuery<Doc> = {}
+  import testManagement from '../../plugin'
+
+  export let query: DocumentQuery<Doc> = {}
   let testCases: number
 
-  const query = createQuery()
-  $: query.query(testManagement.class.TestCase, baseQuery, (res) => {
-    testCases = res.length
-  })
+  const docQuery = createQuery()
+  $: docQuery.query(
+    testManagement.class.TestCase,
+    query,
+    (res) => {
+      testCases = res.length
+    },
+    { total: true, limit: 1 }
+  )
 
   let viewlet: Viewlet | undefined
   let preference: ViewletPreference | undefined
@@ -45,35 +50,28 @@
     </span>
     <div class="flex-row-center gap-2 reverse">
       <ViewletsSettingButton
-        viewletQuery={{ _id: testManagement.viewlet.ListTestCase }}
+        viewletQuery={{ _id: testManagement.viewlet.TableTestCase }}
         kind={'tertiary'}
         bind:viewlet
         bind:preference
         bind:loading
       />
-      <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={() => {}} />
     </div>
   </div>
   {#if testCases > 0}
     {#if viewlet !== undefined && !loading}
       <Scroller horizontal>
-        <Table
+        <TableBrowser
           _class={testManagement.class.TestCase}
           config={preference?.config ?? viewlet.config}
-          query={baseQuery}
+          {query}
           loadingProps={{ length: testCases }}
+          enableChecking={true}
+          readonly={true}
         />
       </Scroller>
     {:else}
       <Loading />
     {/if}
-  {:else}
-    <SectionEmpty icon={FileDuo} label={testManagement.string.NoTestCases}>
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <span class="over-underline content-color">
-        <Label label={testManagement.string.CreateTestCase} />
-      </span>
-    </SectionEmpty>
   {/if}
 </div>

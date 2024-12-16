@@ -13,18 +13,26 @@
 // limitations under the License.
 //
 import {
-  type Ref,
-  type Blob as PlatformBlob,
   type CollaborativeDoc,
   concatLink,
-  makeCollabJsonId
+  makeCollabJsonId,
+  Markup,
+  type Blob as PlatformBlob,
+  type Ref
 } from '@hcengineering/core'
+import { FileUploader, UploadResult } from './uploader'
 
-export interface FileUploader {
-  uploadFile: (name: string, file: Blob) => Promise<Ref<PlatformBlob>>
-  uploadCollaborativeDoc: (collabId: CollaborativeDoc, data: Buffer) => Promise<Ref<PlatformBlob>>
-  getFileUrl: (id: string) => string
+interface FileUploadError {
+  key: string
+  error: string
 }
+
+interface FileUploadSuccess {
+  key: string
+  id: string
+}
+
+type FileUploadResult = FileUploadSuccess | FileUploadError
 
 export class FrontFileUploader implements FileUploader {
   constructor (
@@ -35,11 +43,11 @@ export class FrontFileUploader implements FileUploader {
     this.getFileUrl = this.getFileUrl.bind(this)
   }
 
-  public async uploadFile (name: string, file: Blob): Promise<Ref<PlatformBlob>> {
+  public async uploadFile (name: string, blob: Blob): Promise<UploadResult> {
     const form = new FormData()
-    form.append('file', file, name)
+    form.append('file', blob, name)
 
-    const res = await fetch(concatLink(this.frontUrl, '/files'), {
+    const response = await fetch(concatLink(this.frontUrl, '/files'), {
       method: 'POST',
       headers: {
         Authorization: 'Bearer ' + this.token
@@ -47,20 +55,36 @@ export class FrontFileUploader implements FileUploader {
       body: form
     })
 
-    if (res.ok && res.status === 200) {
-      return name as Ref<PlatformBlob>
+    if (response.status !== 200) {
+      return { success: false, error: response.statusText }
     }
 
-    throw new Error('Failed to upload file')
+    const responseText = await response.text()
+    if (responseText === undefined) {
+      return { success: false, error: response.statusText }
+    }
+
+    const uploadResult = JSON.parse(responseText) as FileUploadResult[]
+    if (!Array.isArray(uploadResult) || uploadResult.length === 0) {
+      return { success: false, error: response.statusText }
+    }
+
+    const result = uploadResult[0]
+    if ('error' in result) {
+      return { success: false, error: result.error }
+    }
+
+    return { success: true, id: result.id as Ref<PlatformBlob> }
   }
 
   public getFileUrl (id: string): string {
     return concatLink(this.frontUrl, `/files/${this.workspaceId}/${id}?file=${id}&workspace=${this.workspaceId}`)
   }
 
-  public async uploadCollaborativeDoc (collabId: CollaborativeDoc, data: Buffer): Promise<Ref<PlatformBlob>> {
+  public async uploadCollaborativeDoc (collabId: CollaborativeDoc, content: Markup): Promise<UploadResult> {
+    const buffer = Buffer.from(content)
     const blobId = makeCollabJsonId(collabId)
-    const blob = new Blob([data], { type: 'application/json' })
+    const blob = new Blob([buffer], { type: 'application/json' })
     return await this.uploadFile(blobId, blob)
   }
 }

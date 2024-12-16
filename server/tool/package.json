@@ -46,6 +46,7 @@
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/client-resources": "^0.6.27",
     "@hcengineering/client": "^0.6.18",
+    "@hcengineering/importer": "^0.6.1",
     "@hcengineering/model": "^0.6.11",
     "@hcengineering/rank": "^0.6.4",
     "uuid": "^8.3.2",

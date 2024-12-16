@@ -42,5 +42,6 @@ loadMetadata(testManagement.icon, {
   StatusBlocked: `${icons}#status-blocked`,
   StatusPassed: `${icons}#status-passed`,
   StatusFailed: `${icons}#status-failed`,
-  Run: `${icons}#run`
+  Run: `${icons}#run`,
+  TestPlans: `${icons}#testPlan`
 })

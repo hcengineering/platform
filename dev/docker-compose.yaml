@@ -3,7 +3,7 @@ services:
     image: 'mongo:7-jammy'
     container_name: mongodb
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     healthcheck:
       test: echo "try { db.currentOp().ok } catch (err) { }" | mongosh --port 27017 --quiet
       interval: 5s
@@ -30,14 +30,14 @@ services:
       - 5432:5432
     restart: unless-stopped
   cockroach:
-   image: cockroachdb/cockroach:latest-v24.2
-   ports:
-     - "26257:26257"
-     - "8089:8080"
-   command: start-single-node --insecure
-   volumes:
-     - cockroach_db:/cockroach/cockroach-data
-   restart: unless-stopped
+    image: cockroachdb/cockroach:latest-v24.2
+    ports:
+      - '26257:26257'
+      - '8089:8080'
+    command: start-single-node --insecure
+    volumes:
+      - cockroach_db:/cockroach/cockroach-data
+    restart: unless-stopped
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000" --console-address ":9001"
@@ -62,7 +62,7 @@ services:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
       - http.cors.enabled=true
-      - http.cors.allow-origin=http://localhost:8082      
+      - http.cors.allow-origin=http://localhost:8082
     healthcheck:
       interval: 20s
       retries: 10
@@ -71,7 +71,7 @@ services:
   account:
     image: hardcoreeng/account
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     links:
       - mongodb
       - minio
@@ -87,7 +87,9 @@ services:
       # - DB_URL=postgresql://postgres:example@postgres:5432
       - DB_URL=${MONGO_URL}
       # - DB_NS=account-2
+      # Pass only one region to disallow selection for new workspaces.Ø
       - REGION_INFO=|Mongo;pg|Postgres;cockroach|CockroachDB
+      # - REGION_INFO=cockroach|CockroachDB
       - TRANSACTOR_URL=ws://host.docker.internal:3333,ws://host.docker.internal:3331;;pg,ws://host.docker.internal:3332;;cockroach,
       - SES_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
@@ -100,12 +102,12 @@ services:
       - BRANDING_PATH=/var/cfg/branding.json
       # - DISABLE_SIGNUP=true
       # - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
-      # - INIT_WORKSPACE=onboarding      
+      # - INIT_WORKSPACE=onboarding
     restart: unless-stopped
   stats:
     image: hardcoreeng/stats
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     ports:
       - 4900:4900
     environment:
@@ -115,10 +117,7 @@ services:
   workspace:
     image: hardcoreeng/workspace
     extra_hosts:
-      - "host.docker.internal:host-gateway"    
-    # deploy:
-    #   mode: replicated
-    #   replicas: 3
+      - 'host.docker.internal:host-gateway'
     links:
       - mongodb
       - minio
@@ -126,11 +125,10 @@ services:
     volumes:
       - ./branding.json:/var/cfg/branding.json
     environment:
-      # - WS_OPERATION=create
+      - WS_OPERATION=all+backup
       - SERVER_SECRET=secret
       - DB_URL=${MONGO_URL}
       - STATS_URL=http://host.docker.internal:4900
-      # - DB_URL=postgresql://postgres:example@postgres:5432
       - SES_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - RESERVED_DB_NAMES=telegram,gmail,github
@@ -138,13 +136,14 @@ services:
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
       # - PARALLEL=2
-      - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
       - INIT_WORKSPACE=test
+      - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
+      - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
     restart: unless-stopped
   workspacepg:
     image: hardcoreeng/workspace
     extra_hosts:
-      - "host.docker.internal:host-gateway"    
+      - 'host.docker.internal:host-gateway'
     links:
       - postgres
       - minio
@@ -152,7 +151,7 @@ services:
     volumes:
       - ./branding.json:/var/cfg/branding.json
     environment:
-      # - WS_OPERATION=create
+      - WS_OPERATION=all+backup
       - SERVER_SECRET=secret
       - DB_URL=postgresql://postgres:example@postgres:5432
       - STATS_URL=http://host.docker.internal:4900
@@ -165,13 +164,14 @@ services:
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
       # - PARALLEL=2
-      - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
       # - INIT_WORKSPACE=onboarding
-    restart: unless-stopped    
+      - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
+      - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
+    restart: unless-stopped
   workspace_cockroach:
     image: hardcoreeng/workspace
     extra_hosts:
-      - "host.docker.internal:host-gateway"    
+      - 'host.docker.internal:host-gateway'
     links:
       - cockroach
       - minio
@@ -179,7 +179,7 @@ services:
     volumes:
       - ./branding.json:/var/cfg/branding.json
     environment:
-      # - WS_OPERATION=create
+      - WS_OPERATION=all+backup
       - SERVER_SECRET=secret
       - DB_URL=postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable
       - STATS_URL=http://host.docker.internal:4900
@@ -191,13 +191,14 @@ services:
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
       # - PARALLEL=2
-      - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
       # - INIT_WORKSPACE=onboarding
-    restart: unless-stopped        
+      - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
+      - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
+    restart: unless-stopped
   collaborator:
     image: hardcoreeng/collaborator
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     links:
       - mongodb
       - minio
@@ -215,7 +216,7 @@ services:
   front:
     image: hardcoreeng/front
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     links:
       - mongodb
       - minio
@@ -250,7 +251,7 @@ services:
   transactor:
     image: hardcoreeng/transactor
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     links:
       - mongodb
       - minio
@@ -260,11 +261,11 @@ services:
     ports:
       - 3333:3333
     volumes:
-      - ./branding.json:/var/cfg/branding.json      
+      - ./branding.json:/var/cfg/branding.json
     environment:
       # - SERVER_PROVIDER=uweb
       # - UWS_HTTP_MAX_HEADERS_SIZE="32768"
-      - UV_THREADPOOL_SIZE=10    
+      - UV_THREADPOOL_SIZE=10
       - SERVER_PORT=3333
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
@@ -276,12 +277,12 @@ services:
       - 'MONGO_OPTIONS={"appName": "transactor", "maxPoolSize": 10}'
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
-      - STORAGE_CONFIG=${STORAGE_CONFIG}      
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://host.docker.internal:8087
       # - APM_SERVER_URL=http://apm-server:8200
       - SES_URL=''
       - ACCOUNTS_URL=http://host.docker.internal:3000
-      - LAST_NAME_FIRST=true      
+      - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
       - SUPPORT_WORKSPACE=support
       - AI_BOT_URL=http://host.docker.internal:4010
@@ -289,7 +290,7 @@ services:
   transactor_pg:
     image: hardcoreeng/transactor
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     links:
       - postgres
       - minio
@@ -299,11 +300,11 @@ services:
     ports:
       - 3331:3331
     volumes:
-      - ./branding.json:/var/cfg/branding.json      
+      - ./branding.json:/var/cfg/branding.json
     environment:
       # - SERVER_PROVIDER=uweb
       # - UWS_HTTP_MAX_HEADERS_SIZE="32768"
-      # - UV_THREADPOOL_SIZE=10    
+      # - UV_THREADPOOL_SIZE=10
       - SERVER_PORT=3331
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
@@ -317,13 +318,13 @@ services:
       # - APM_SERVER_URL=http://apm-server:8200
       - SES_URL=''
       - ACCOUNTS_URL=http://host.docker.internal:3000
-      - LAST_NAME_FIRST=true      
-      - BRANDING_PATH=/var/cfg/branding.json      
+      - LAST_NAME_FIRST=true
+      - BRANDING_PATH=/var/cfg/branding.json
     restart: unless-stopped
   transactor_cockroach:
     image: hardcoreeng/transactor
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     links:
       - cockroach
       - minio
@@ -333,7 +334,7 @@ services:
     ports:
       - 3332:3332
     volumes:
-      - ./branding.json:/var/cfg/branding.json      
+      - ./branding.json:/var/cfg/branding.json
     environment:
       # - SERVER_PROVIDER=uweb
       # - UWS_HTTP_MAX_HEADERS_SIZE="32768"
@@ -351,9 +352,9 @@ services:
       # - APM_SERVER_URL=http://apm-server:8200
       - SES_URL=''
       - ACCOUNTS_URL=http://host.docker.internal:3000
-      - LAST_NAME_FIRST=true      
-      - BRANDING_PATH=/var/cfg/branding.json      
-    restart: unless-stopped    
+      - LAST_NAME_FIRST=true
+      - BRANDING_PATH=/var/cfg/branding.json
+    restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
     restart: unless-stopped
@@ -362,7 +363,7 @@ services:
   fulltext:
     image: hardcoreeng/fulltext
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     restart: unless-stopped
     links:
       - elastic
@@ -381,11 +382,11 @@ services:
   fulltext_pg:
     image: hardcoreeng/fulltext
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     restart: unless-stopped
     links:
       - elastic
-      - postgres    
+      - postgres
     ports:
       - 4701:4701
     environment:
@@ -401,11 +402,11 @@ services:
   fulltext_cockroach:
     image: hardcoreeng/fulltext
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     restart: unless-stopped
     links:
       - elastic
-      - cockroach    
+      - cockroach
     ports:
       - 4702:4702
     environment:
@@ -417,11 +418,11 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - STATS_URL=http://host.docker.internal:4900
       - REKONI_URL=http://host.docker.internal:4004
-      - ACCOUNTS_URL=http://host.docker.internal:3000      
+      - ACCOUNTS_URL=http://host.docker.internal:3000
   print:
     image: hardcoreeng/print
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     restart: unless-stopped
     ports:
       - 4005:4005
@@ -432,7 +433,7 @@ services:
   sign:
     image: hardcoreeng/sign
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     restart: unless-stopped
     ports:
       - 4006:4006
@@ -446,13 +447,13 @@ services:
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - MINIO_SECRET_KEY=minioadmin
       - CERTIFICATE_PATH=/var/cfg/certificate.p12
-      - SERVICE_ID=sign-service      
+      - SERVICE_ID=sign-service
       - BRANDING_PATH=/var/cfg/branding.json
       - STATS_URL=http://host.docker.internal:4900
   analytics:
     image: hardcoreeng/analytics-collector
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     restart: unless-stopped
     ports:
       - 4017:4017
@@ -470,7 +471,7 @@ services:
     ports:
       - 4010:4010
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     restart: unless-stopped
     environment:
       - SERVER_SECRET=secret

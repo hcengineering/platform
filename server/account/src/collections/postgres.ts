@@ -377,15 +377,31 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
     const values: any[] = []
 
     const pendingCreationSql = "mode IN ('pending-creation', 'creating')"
+    const migrationSql =
+      "mode IN ('migration-backup', 'migration-pending-backup', 'migration-clean', 'migration-pending-clean')"
+
+    const restoringSql = "mode IN ('pending-restore', 'restoring')"
+
+    const archivingSql = "'archiving-pending-backup', 'archiving-backup', 'archiving-pending-clean', 'archiving-clean')"
     const versionSql =
       '("versionMajor" < $1) OR ("versionMajor" = $1 AND "versionMinor" < $2) OR ("versionMajor" = $1 AND "versionMinor" = $2 AND "versionPatch" < $3)'
     const pendingUpgradeSql = `(((disabled = FALSE OR disabled IS NULL) AND (mode = 'active' OR mode IS NULL) AND ${versionSql} ${wsLivenessMs !== undefined ? 'AND "lastVisit" > $4' : ''}) OR ((disabled = FALSE OR disabled IS NULL) AND mode = 'upgrading'))`
-    const operationSql =
-      operation === 'create'
-        ? pendingCreationSql
-        : operation === 'upgrade'
-          ? pendingUpgradeSql
-          : `(${pendingCreationSql} OR ${pendingUpgradeSql})`
+    let operationSql: string = ''
+    switch (operation) {
+      case 'create':
+        operationSql = pendingCreationSql
+        break
+      case 'upgrade':
+        operationSql = pendingUpgradeSql
+        break
+      case 'all':
+        operationSql = `(${pendingCreationSql} OR ${pendingUpgradeSql})`
+        break
+      case 'all+backup':
+        operationSql = `(${pendingCreationSql} OR ${pendingUpgradeSql} OR ${migrationSql} OR ${archivingSql} OR ${restoringSql})`
+        break
+    }
+
     if (operation === 'upgrade' || operation === 'all') {
       values.push(version.major, version.minor, version.patch)
 

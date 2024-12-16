@@ -14,13 +14,14 @@
 //
 
 import {
+  AccountRole,
+  BackupStatus,
+  Doc,
+  Ref,
   type BaseWorkspaceInfo,
   type Data,
   type Version,
-  BackupStatus,
-  AccountRole,
-  Ref,
-  Doc
+  type WorkspaceUpdateEvent
 } from '@hcengineering/core'
 import { getMetadata, PlatformError, unknownError } from '@hcengineering/platform'
 
@@ -75,9 +76,20 @@ export async function updateBackupInfo (token: string, info: BackupStatus): Prom
   return (workspaces.result as BaseWorkspaceInfo[]) ?? []
 }
 
+const externalRegions = process.env.EXTERNAL_REGIONS?.split(';') ?? []
+
+/**
+ * Retrieves the transactor endpoint for a given token and kind.
+ *
+ * @param token - The authorization token.
+ * @param kind - The type of endpoint to retrieve. Can be 'internal', 'external', or 'byregion'. Defaults to 'byregion'.
+ * @param timeout - The timeout duration in milliseconds. Defaults to -1 (no timeout).
+ * @returns A promise that resolves to the transactor endpoint URL as a string.
+ * @throws Will throw an error if the request fails or if the timeout is reached.
+ */
 export async function getTransactorEndpoint (
   token: string,
-  kind: 'internal' | 'external' = 'internal',
+  kind: 'internal' | 'external' | 'byregion' = 'byregion',
   timeout: number = -1
 ): Promise<string> {
   const accountsUrl = getAccoutsUrlOrFail()
@@ -93,7 +105,7 @@ export async function getTransactorEndpoint (
           },
           body: JSON.stringify({
             method: 'selectWorkspace',
-            params: ['', kind]
+            params: ['', kind, true, externalRegions]
           })
         })
       ).json()
@@ -164,7 +176,7 @@ export async function getPendingWorkspace (
   token: string,
   region: string,
   version: Data<Version>,
-  operation: 'create' | 'upgrade' | 'all'
+  operation: 'create' | 'upgrade' | 'all' | 'all+backup'
 ): Promise<BaseWorkspaceInfo | undefined> {
   const accountsUrl = getAccoutsUrlOrFail()
   const workspaces = await (
@@ -186,7 +198,7 @@ export async function getPendingWorkspace (
 export async function updateWorkspaceInfo (
   token: string,
   workspaceId: string,
-  event: 'ping' | 'create-started' | 'upgrade-started' | 'progress' | 'create-done' | 'upgrade-done',
+  event: WorkspaceUpdateEvent,
   version: Data<Version>,
   progress: number,
   message?: string
@@ -210,7 +222,7 @@ export async function workerHandshake (
   token: string,
   region: string,
   version: Data<Version>,
-  operation: 'create' | 'upgrade' | 'all'
+  operation: 'create' | 'upgrade' | 'all' | 'all+backup'
 ): Promise<void> {
   const accountsUrl = getAccoutsUrlOrFail()
   await fetch(accountsUrl, {

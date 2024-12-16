@@ -31,7 +31,7 @@
 
 {#if value}
   {#if inline}
-    <ObjectMention object={value} {disabled} {accent} {noUnderline} />
+    <ObjectMention title={value?.name} object={value} {disabled} {accent} {noUnderline} />
   {:else}
     <DocNavLink object={value} {disabled} {accent} {noUnderline} {onClick}>
       <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
