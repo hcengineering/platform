@@ -114,6 +114,7 @@
   export let withInlineCommands = true
   export let kitOptions: Partial<EditorKitOptions> = {}
   export let requestSideSpace: ((width: number) => void) | undefined = undefined
+  export let enableInlineComments: boolean = true
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -433,6 +434,12 @@
   onMount(async () => {
     await ph
 
+    if (enableInlineComments) {
+      optionalExtensions.push(
+        InlineCommentExtension.configure({ ydoc, boundary, popupContainer: editorPopupContainer, requestSideSpace })
+      )
+    }
+
     editor = new Editor({
       enableContentCheck: true,
       element,
@@ -479,7 +486,6 @@
         }),
         EmojiExtension,
         MermaidExtension.configure({ ...mermaidOptions, ydoc, ydocContentField: field }),
-        InlineCommentExtension.configure({ ydoc, boundary, popupContainer: editorPopupContainer, requestSideSpace }),
         DrawingBoardExtension.configure({ getSavedBoard }),
         ...extensions
       ],

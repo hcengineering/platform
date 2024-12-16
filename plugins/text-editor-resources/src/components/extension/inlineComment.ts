@@ -33,9 +33,8 @@ import tippy, { type Instance } from 'tippy.js'
 import 'tippy.js/animations/shift-toward.css'
 import { type Doc as YDoc, type Map as YMap } from 'yjs'
 import core from '@hcengineering/core'
-import { type ActionContext, getClient } from '@hcengineering/presentation'
+import { type ActionContext } from '@hcengineering/presentation'
 import chunter from '@hcengineering/chunter'
-import documents from '@hcengineering/controlled-documents'
 
 interface InlineCommentExtensionOptions {
   boundary?: HTMLElement
@@ -990,17 +989,7 @@ export async function shouldShowCreateInlineCommentAction (editor: Editor, ctx: 
   }
 
   const extension = editor.extensionManager.extensions.find((e) => e.name === extensionName)
-  if (extension === null) return false
-
-  const { objectId, objectClass } = ctx
-  if (objectId === undefined || objectClass === undefined) {
-    return false
-  }
-
-  const client = getClient()
-  if (client.getHierarchy().isDerived(objectClass, documents.class.ControlledDocument)) {
-    return false
-  }
+  if (extension === undefined) return false
 
   return true
 }
