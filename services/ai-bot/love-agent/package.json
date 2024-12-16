@@ -19,6 +19,11 @@
     "lint:fix": "eslint --fix src/**/*.ts",
     "format": "prettier --write src/**/*.ts && pnpm lint:fix"
   },
+  "pnpm": {
+    "overrides": {
+      "livekit-server-sdk": "2.8.1"
+    }
+  },
   "devDependencies": {
     "@types/node": "~20.11.16",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
@@ -35,8 +40,9 @@
   },
   "dependencies": {
     "@deepgram/sdk": "^3.9.0",
-    "@livekit/agents": "^0.4.6",
+    "@livekit/agents": "^0.5.1",
     "@livekit/rtc-node": "^0.12.1",
+    "@livekit/agents-plugin-openai": "^0.7.1",
     "dotenv": "^16.4.5"
   }
 }
