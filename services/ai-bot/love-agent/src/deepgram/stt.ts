@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AudioStream, RemoteParticipant, RemoteTrack, RemoteTrackPublication } from '@livekit/rtc-node'
+import { AudioStream, RemoteParticipant, RemoteTrack, RemoteTrackPublication, Room } from '@livekit/rtc-node'
 import {
   createClient,
   DeepgramClient,
@@ -24,6 +24,7 @@ import {
   SOCKET_STATES
 } from '@deepgram/sdk'
 
+import { Stt } from '../type'
 import config from '../config.js'
 
 const KEEP_ALIVE_INTERVAL = 10 * 1000
@@ -41,7 +42,7 @@ const dgSchema: LiveSchema = {
   language: 'en'
 }
 
-export class STT {
+export class STT implements Stt {
   private readonly deepgram: DeepgramClient
 
   private isInProgress = false
@@ -49,7 +50,6 @@ export class STT {
 
   private readonly trackBySid = new Map<string, RemoteTrack>()
   private readonly streamBySid = new Map<string, AudioStream>()
-  private readonly mutedTracks = new Set<string>()
   private readonly participantBySid = new Map<string, RemoteParticipant>()
 
   private readonly dgConnectionBySid = new Map<string, ListenLiveClient>()
@@ -57,7 +57,7 @@ export class STT {
 
   private transcriptionCount = 0
 
-  constructor (readonly name: string) {
+  constructor (readonly room: Room) {
     this.deepgram = createClient(config.DeepgramApiKey)
   }
 
@@ -72,7 +72,7 @@ export class STT {
 
   start (): void {
     if (this.isInProgress) return
-    console.log('Starting transcription', this.name)
+    console.log('Starting transcription', this.room.name)
     this.isInProgress = true
 
     for (const sid of this.trackBySid.keys()) {
@@ -82,28 +82,17 @@ export class STT {
 
   stop (): void {
     if (!this.isInProgress) return
-    console.log('Stopping transcription', this.name)
+    console.log('Stopping transcription', this.room.name)
     this.isInProgress = false
     for (const sid of this.trackBySid.keys()) {
       this.stopDeepgram(sid)
     }
   }
 
-  mute (sid: string): void {
-    this.mutedTracks.add(sid)
-  }
-
-  unmute (sid: string): void {
-    this.mutedTracks.delete(sid)
-  }
-
   subscribe (track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant): void {
     if (this.trackBySid.has(publication.sid)) return
     this.trackBySid.set(publication.sid, track)
     this.participantBySid.set(publication.sid, participant)
-    if (track.muted) {
-      this.mutedTracks.add(publication.sid)
-    }
     if (this.isInProgress) {
       this.processTrack(publication.sid)
     }
@@ -112,7 +101,6 @@ export class STT {
   unsubscribe (_: RemoteTrack | undefined, publication: RemoteTrackPublication, participant: RemoteParticipant): void {
     this.trackBySid.delete(publication.sid)
     this.participantBySid.delete(participant.sid)
-    this.mutedTracks.delete(publication.sid)
     this.stopDeepgram(publication.sid)
   }
 
@@ -150,7 +138,7 @@ export class STT {
       sample_rate: stream.sampleRate,
       language: this.language ?? 'en'
     })
-    console.log('Starting deepgram for track', this.name, sid)
+    console.log('Starting deepgram for track', this.room.name, sid)
 
     const interval = setInterval(() => {
       dgConnection.keepAlive()
@@ -192,7 +180,6 @@ export class STT {
   async streamToDeepgram (sid: string, stream: AudioStream): Promise<void> {
     for await (const frame of stream) {
       if (!this.isInProgress) continue
-      if (this.mutedTracks.has(sid)) continue
       const dgConnection = this.dgConnectionBySid.get(sid)
       if (dgConnection === undefined) {
         stream.close()
@@ -208,13 +195,13 @@ export class STT {
     const request = {
       transcript,
       participant: this.participantBySid.get(sid)?.identity,
-      roomName: this.name
+      roomName: this.room.name
     }
 
     this.transcriptionCount++
 
     if (this.transcriptionCount === 1 || this.transcriptionCount % 50 === 0) {
-      console.log('Sending transcript', this.name, this.transcriptionCount)
+      console.log('Sending transcript', this.room.name, this.transcriptionCount)
     }
 
     try {
