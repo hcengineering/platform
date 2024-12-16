@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, MarkupBlobRef, Doc, Ref } from './classes'
+import type { Blob, Class, Doc, MarkupBlobRef, Ref } from './classes'
 
 /** @public */
 export interface CollaborativeDoc {
@@ -40,9 +40,9 @@ export function makeDocCollabId<T extends Doc, U extends keyof T> (
 }
 
 /** @public */
-export function makeCollabYdocId (doc: CollaborativeDoc): MarkupBlobRef {
+export function makeCollabYdocId (doc: CollaborativeDoc): Ref<Blob> {
   const { objectId, objectAttr } = doc
-  return `${objectId}%${objectAttr}` as MarkupBlobRef
+  return `${objectId}%${objectAttr}` as Ref<Blob>
 }
 
 /** @public */
