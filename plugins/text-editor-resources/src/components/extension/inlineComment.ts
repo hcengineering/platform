@@ -33,6 +33,7 @@ import tippy, { type Instance } from 'tippy.js'
 import 'tippy.js/animations/shift-toward.css'
 import { type Doc as YDoc, type Map as YMap } from 'yjs'
 import core from '@hcengineering/core'
+import { type ActionContext, getClient } from '@hcengineering/presentation'
 
 interface InlineCommentExtensionOptions {
   boundary?: HTMLElement
@@ -108,6 +109,8 @@ interface ThreadPresenterProps {
   handleSubmit?: (text: string, _id?: string) => void
   handleResolveThread?: (() => void) | undefined
 }
+
+const extensionName = 'inline-comment'
 
 export const InlineCommentExtension = Mark.create<InlineCommentExtensionOptions>({
   name: 'inline-comment',
@@ -979,6 +982,23 @@ function isSelectionContainedByRange (selection: Selection, from: number, to: nu
   return selection.from >= from && selection.to <= to
 }
 
-export async function shouldShowCreateInlineCommentAction (editor: Editor): Promise<boolean> {
+export async function shouldShowCreateInlineCommentAction (editor: Editor, ctx: ActionContext): Promise<boolean> {
+  if (!editor.isEditable) {
+    return false
+  }
+
+  const extension = editor.extensionManager.extensions.find((e) => e.name === extensionName)
+  if (extension === null) return false
+
+  const { objectId, objectClass } = ctx
+  if (objectId === undefined || objectClass === undefined) {
+    return false
+  }
+
+  const client = getClient()
+  if (client.getHierarchy().isDerived(objectClass, 'documents:class:ControlledDocument' as any)) {
+    return false
+  }
+
   return true
 }
