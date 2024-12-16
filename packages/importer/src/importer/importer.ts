@@ -39,6 +39,7 @@ import core, {
   type Mixin,
   type Blob as PlatformBlob,
   type Ref,
+  RolesAssignment,
   SortingOrder,
   type Space,
   type Status,
@@ -773,17 +774,23 @@ export class WorkspaceImporter {
     }
     await this.client.createDoc(documents.class.OrgSpace, core.space.Space, data, spaceId)
 
-    if (space.qualified !== undefined || space.manager !== undefined || space.qara !== undefined) { // todo: check if only one of them is defined
+    const rolesAssignment: RolesAssignment = {}
+    if (space.qualified !== undefined) {
+      rolesAssignment[documents.role.QualifiedUser] = [space.qualified]
+    }
+    if (space.manager !== undefined) {
+      rolesAssignment[documents.role.Manager] = [space.manager]
+    }
+    if (space.qara !== undefined) {
+      rolesAssignment[documents.role.QARA] = [space.qara]
+    }
+    if (Object.keys(rolesAssignment).length > 0) {
       await this.client.createMixin(
         spaceId,
         documents.class.OrgSpace,
         core.space.Space,
         documents.mixin.DocumentSpaceTypeData,
-        {
-          [documents.role.QualifiedUser]: [space.qualified],
-          [documents.role.Manager]: [space.manager],
-          [documents.role.QARA]: [space.qara]
-        }
+        rolesAssignment
       )
     }
     return spaceId
