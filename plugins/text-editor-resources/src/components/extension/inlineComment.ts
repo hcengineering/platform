@@ -26,7 +26,7 @@ import {
 } from '@tiptap/pm/state'
 import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view'
 import { SvelteRenderer } from '../node-view'
-import type { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
+import type { AnySvelteComponent } from '@hcengineering/ui'
 import { Fragment, Slice, type Node } from '@tiptap/pm/model'
 import { type Account, type Markup, type Ref, type Timestamp, getCurrentAccount, generateId } from '@hcengineering/core'
 import tippy, { type Instance } from 'tippy.js'
@@ -34,6 +34,8 @@ import 'tippy.js/animations/shift-toward.css'
 import { type Doc as YDoc, type Map as YMap } from 'yjs'
 import core from '@hcengineering/core'
 import { type ActionContext, getClient } from '@hcengineering/presentation'
+import chunter from '@hcengineering/chunter'
+import documents from '@hcengineering/controlled-documents'
 
 interface InlineCommentExtensionOptions {
   boundary?: HTMLElement
@@ -225,10 +227,10 @@ function initCommentDecoratorView (options: InlineCommentExtensionOptions, view:
   const fetchComponent = async (): Promise<void> => {
     // In the current package structure, it is practically impossible to import anything from here
     // without introducing cyclic dependencies, since text-editor-resources is in the dependency
-    // hierarchy of almost all other packages.
+    // hierarchy of almost all other packages. So any complex Svelte components have to be moved to other packages.
     // In the future, it might be worth considering putting text editor plugins in the text-editor-plugins
     // package so that one can create dependencies on packages such as activity and chunter.
-    const component = await getResource('chunter:component:InlineCommentThread' as AnyComponent)
+    const component = await getResource(chunter.component.InlineCommentThread)
     view.dispatch(setMeta(view.state.tr, { component }))
   }
 
@@ -996,7 +998,7 @@ export async function shouldShowCreateInlineCommentAction (editor: Editor, ctx: 
   }
 
   const client = getClient()
-  if (client.getHierarchy().isDerived(objectClass, 'documents:class:ControlledDocument' as any)) {
+  if (client.getHierarchy().isDerived(objectClass, documents.class.ControlledDocument)) {
     return false
   }
 
