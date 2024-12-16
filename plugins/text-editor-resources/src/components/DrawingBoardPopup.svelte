@@ -22,6 +22,7 @@
 
   export let savedCmds: YArray<DrawingCmd>
   export let savedProps: YMap<any>
+  export let readonly = false
 
   const dispatch = createEventDispatcher()
 
@@ -41,6 +42,6 @@
       dispatch('close')
     }}
   >
-    <DrawingBoardEditor {savedCmds} {savedProps} grabFocus />
+    <DrawingBoardEditor {savedCmds} {savedProps} {readonly} grabFocus />
   </Dialog>
 {/if}
