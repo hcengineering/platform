@@ -25,7 +25,14 @@ export interface ObjectMetadata {
   lastModified: number
   name: string
   type: string
+  etag: string
   size?: number
+}
+
+/** @public */
+export interface ListObjectOutput {
+  cursor: string | undefined
+  blobs: Omit<ObjectMetadata, 'lastModified'>[]
 }
 
 /** @public */
@@ -33,6 +40,13 @@ export interface StatObjectOutput {
   lastModified: number
   type: string
   etag?: string
+  size?: number
+}
+
+/** @public */
+export interface UploadObjectParams {
+  lastModified: number
+  type: string
   size?: number
 }
 
@@ -66,6 +80,23 @@ export class DatalakeClient {
   getObjectUrl (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): string {
     const path = `/blob/${workspace.name}/${encodeURIComponent(objectName)}`
     return concatLink(this.endpoint, path)
+  }
+
+  async listObjects (
+    ctx: MeasureContext,
+    workspace: WorkspaceId,
+    cursor: string | undefined
+  ): Promise<ListObjectOutput> {
+    const limit = 100
+    const path = `/blob/${workspace.name}`
+    const url = new URL(concatLink(this.endpoint, path))
+    url.searchParams.append('limit', String(limit))
+    if (cursor !== undefined) {
+      url.searchParams.append('cursor', cursor)
+    }
+
+    const response = await fetchSafe(ctx, url)
+    return (await response.json()) as ListObjectOutput
   }
 
   async getObject (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<Readable> {
@@ -166,9 +197,9 @@ export class DatalakeClient {
     workspace: WorkspaceId,
     objectName: string,
     stream: Readable | Buffer | string,
-    metadata: ObjectMetadata,
-    size?: number
-  ): Promise<void> {
+    params: UploadObjectParams
+  ): Promise<ObjectMetadata> {
+    let size = params.size
     if (size === undefined) {
       if (Buffer.isBuffer(stream)) {
         size = stream.length
@@ -182,12 +213,12 @@ export class DatalakeClient {
 
     try {
       if (size === undefined || size < 64 * 1024 * 1024) {
-        await ctx.with('direct-upload', {}, (ctx) =>
-          this.uploadWithFormData(ctx, workspace, objectName, stream, metadata)
+        return await ctx.with('direct-upload', {}, (ctx) =>
+          this.uploadWithFormData(ctx, workspace, objectName, stream, { ...params, size })
         )
       } else {
-        await ctx.with('signed-url-upload', {}, (ctx) =>
-          this.uploadWithSignedURL(ctx, workspace, objectName, stream, metadata)
+        return await ctx.with('signed-url-upload', {}, (ctx) =>
+          this.uploadWithSignedURL(ctx, workspace, objectName, stream, { ...params, size })
         )
       }
     } catch (err) {
@@ -201,18 +232,18 @@ export class DatalakeClient {
     workspace: WorkspaceId,
     objectName: string,
     stream: Readable | Buffer | string,
-    metadata: ObjectMetadata
-  ): Promise<void> {
+    params: UploadObjectParams
+  ): Promise<ObjectMetadata> {
     const path = `/upload/form-data/${workspace.name}`
     const url = concatLink(this.endpoint, path)
 
     const form = new FormData()
     const options: FormData.AppendOptions = {
       filename: objectName,
-      contentType: metadata.type,
-      knownLength: metadata.size,
+      contentType: params.type,
+      knownLength: params.size,
       header: {
-        'Last-Modified': metadata.lastModified
+        'Last-Modified': params.lastModified
       }
     }
     form.append('file', stream, options)
@@ -229,6 +260,8 @@ export class DatalakeClient {
     if ('error' in uploadResult) {
       throw new DatalakeError('Upload failed: ' + uploadResult.error)
     }
+
+    return uploadResult.metadata
   }
 
   async uploadMultipart (
@@ -236,11 +269,11 @@ export class DatalakeClient {
     workspace: WorkspaceId,
     objectName: string,
     stream: Readable | Buffer | string,
-    metadata: ObjectMetadata
-  ): Promise<void> {
+    params: UploadObjectParams
+  ): Promise<ObjectMetadata> {
     const chunkSize = 10 * 1024 * 1024
 
-    const multipart = await this.multipartUploadStart(ctx, workspace, objectName, metadata)
+    const multipart = await this.multipartUploadStart(ctx, workspace, objectName, params)
 
     try {
       const parts: MultipartUploadPart[] = []
@@ -252,7 +285,7 @@ export class DatalakeClient {
         partNumber++
       }
 
-      await this.multipartUploadComplete(ctx, workspace, objectName, multipart, parts)
+      return await this.multipartUploadComplete(ctx, workspace, objectName, multipart, parts)
     } catch (err: any) {
       await this.multipartUploadAbort(ctx, workspace, objectName, multipart)
       throw err
@@ -264,8 +297,8 @@ export class DatalakeClient {
     workspace: WorkspaceId,
     objectName: string,
     stream: Readable | Buffer | string,
-    metadata: ObjectMetadata
-  ): Promise<void> {
+    params: UploadObjectParams
+  ): Promise<ObjectMetadata> {
     const url = await this.signObjectSign(ctx, workspace, objectName)
 
     try {
@@ -273,8 +306,8 @@ export class DatalakeClient {
         body: stream,
         method: 'PUT',
         headers: {
-          'Content-Type': metadata.type,
-          'Content-Length': metadata.size?.toString() ?? '0'
+          'Content-Type': params.type,
+          'Content-Length': params.size?.toString() ?? '0'
           // 'x-amz-meta-last-modified': metadata.lastModified.toString()
         }
       })
@@ -284,7 +317,7 @@ export class DatalakeClient {
       throw new DatalakeError('Failed to upload via signed URL')
     }
 
-    await this.signObjectComplete(ctx, workspace, objectName)
+    return await this.signObjectComplete(ctx, workspace, objectName)
   }
 
   async uploadFromS3 (
@@ -322,10 +355,15 @@ export class DatalakeClient {
     }
   }
 
-  private async signObjectComplete (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<void> {
+  private async signObjectComplete (
+    ctx: MeasureContext,
+    workspace: WorkspaceId,
+    objectName: string
+  ): Promise<ObjectMetadata> {
     try {
       const url = this.getSignObjectUrl(workspace, objectName)
-      await fetchSafe(ctx, url, { method: 'PUT' })
+      const res = await fetchSafe(ctx, url, { method: 'PUT' })
+      return (await res.json()) as ObjectMetadata
     } catch (err: any) {
       ctx.error('failed to complete signed url upload', { workspace, objectName, err })
       throw new DatalakeError('Failed to complete signed URL upload')
@@ -353,16 +391,16 @@ export class DatalakeClient {
     ctx: MeasureContext,
     workspace: WorkspaceId,
     objectName: string,
-    metadata: ObjectMetadata
+    params: UploadObjectParams
   ): Promise<MultipartUpload> {
     const path = `/upload/multipart/${workspace.name}/${encodeURIComponent(objectName)}`
     const url = concatLink(this.endpoint, path)
 
     try {
       const headers = {
-        'Content-Type': metadata.type,
-        'Content-Length': metadata.size?.toString() ?? '0',
-        'Last-Modified': new Date(metadata.lastModified).toUTCString()
+        'Content-Type': params.type,
+        'Content-Length': params.size?.toString() ?? '0',
+        'Last-Modified': new Date(params.lastModified).toUTCString()
       }
       const response = await fetchSafe(ctx, url, { method: 'POST', headers })
       return (await response.json()) as MultipartUpload
@@ -401,14 +439,15 @@ export class DatalakeClient {
     objectName: string,
     multipart: MultipartUpload,
     parts: MultipartUploadPart[]
-  ): Promise<void> {
+  ): Promise<ObjectMetadata> {
     const path = `/upload/multipart/${workspace.name}/${encodeURIComponent(objectName)}/complete`
     const url = new URL(concatLink(this.endpoint, path))
     url.searchParams.append('key', multipart.key)
     url.searchParams.append('uploadId', multipart.uploadId)
 
     try {
-      await fetchSafe(ctx, url, { method: 'POST', body: JSON.stringify({ parts }) })
+      const res = await fetchSafe(ctx, url, { method: 'POST', body: JSON.stringify({ parts }) })
+      return (await res.json()) as ObjectMetadata
     } catch (err: any) {
       ctx.error('failed to complete multipart upload', { workspace, objectName, err })
       throw new DatalakeError('Failed to complete multipart upload')

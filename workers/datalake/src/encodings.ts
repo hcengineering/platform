@@ -27,8 +27,6 @@ export const toHex = (buffer: Uint8Array): string => {
     .join('')
 }
 
-export const etag = (id: string): string => `"${id}"`
-
 export function formatHexAsUUID (hexString: string): UUID {
   if (hexString.length !== 32) {
     throw new Error('Hex string must be exactly 32 characters long.')

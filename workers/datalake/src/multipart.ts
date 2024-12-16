@@ -14,6 +14,7 @@
 //
 
 import { error, json } from 'itty-router'
+import { type BlobMetadata } from './blob'
 import { withPostgres } from './db'
 import { cacheControl } from './const'
 import { toUUID } from './encodings'
@@ -119,7 +120,15 @@ export async function handleMultipartUploadComplete (
     }
   })
 
-  return new Response(null, { status: 204 })
+  const metadata: BlobMetadata = {
+    type,
+    size,
+    name,
+    etag: hash,
+    lastModified: object.uploaded.getTime()
+  }
+
+  return json(metadata)
 }
 
 export async function handleMultipartUploadAbort (

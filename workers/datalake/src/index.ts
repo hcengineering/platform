@@ -16,7 +16,7 @@
 import { WorkerEntrypoint } from 'cloudflare:workers'
 import { type IRequest, type IRequestStrict, type RequestHandler, Router, error, html } from 'itty-router'
 
-import { handleBlobDelete, handleBlobGet, handleBlobHead, handleUploadFormData } from './blob'
+import { handleBlobDelete, handleBlobGet, handleBlobHead, handleBlobList, handleUploadFormData } from './blob'
 import { cors } from './cors'
 import { LoggedKVNamespace, LoggedR2Bucket, MetricsContext } from './metrics'
 import { handleImageGet } from './image'
@@ -59,6 +59,7 @@ const withBlob: RequestHandler<BlobRequest> = (request: BlobRequest) => {
 }
 
 router
+  .get('/blob/:workspace', withWorkspace, handleBlobList)
   .get('/blob/:workspace/:name', withBlob, handleBlobGet)
   .get('/blob/:workspace/:name/:filename', withBlob, handleBlobGet)
   .head('/blob/:workspace/:name', withBlob, handleBlobHead)
