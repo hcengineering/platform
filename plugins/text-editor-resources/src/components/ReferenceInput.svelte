@@ -214,8 +214,8 @@
         {/if}
       </div>
 
-      <div class="buttons-group {shrinkButtons ? 'xxsmall-gap' : 'xsmall-gap'}">
-        {#if showCancel}
+      {#if showCancel && showSend}
+        <div class="buttons-group {shrinkButtons ? 'xxsmall-gap' : 'xsmall-gap'}">
           <Button
             {loading}
             icon={IconClose}
@@ -227,8 +227,6 @@
             }}
             on:click={onCancel}
           />
-        {/if}
-        {#if showSend}
           <Button
             {loading}
             disabled={!canSubmit}
@@ -241,8 +239,22 @@
             }}
             on:click={submit}
           />
-        {/if}
-      </div>
+        </div>
+      {/if}
+      {#if showSend && !showCancel}
+        <Button
+          {loading}
+          disabled={!canSubmit}
+          icon={iconSend ?? Send}
+          iconProps={{ size: buttonSize }}
+          kind={kindSend}
+          size={buttonSize}
+          showTooltip={{
+            label: labelSend ?? textEditor.string.Send
+          }}
+          on:click={submit}
+        />
+      {/if}
     </div>
   {/if}
 </div>
