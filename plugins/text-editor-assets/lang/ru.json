@@ -59,6 +59,9 @@
     "SeparatorLine": "Разделительная линия",
     "TodoList": "Действие",
     "DrawingBoard": "Доска",
-    "MermaidDiargram": "Диаграмма"
+    "MermaidDiargram": "Диаграмма",
+    "Comment": "Комментарий",
+    "AddComment": "Добавить комментарий",
+    "AddCommentPlaceholder": "Добавьте комментарий..."
   }
 }

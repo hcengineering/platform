@@ -34,6 +34,9 @@ export default mergeIds(textEditorId, textEditor, {
     IsEditableTableActive: '' as Resource<TextActionVisibleFunction>,
     IsEditableNote: '' as Resource<TextActionVisibleFunction>,
     IsEditable: '' as Resource<TextActionVisibleFunction>,
-    IsHeadingVisible: '' as Resource<TextActionVisibleFunction>
+    IsHeadingVisible: '' as Resource<TextActionVisibleFunction>,
+
+    CreateInlineComment: '' as Resource<TextActionFunction>,
+    ShouldShowCreateInlineCommentAction: '' as Resource<TextActionVisibleFunction>
   }
 })

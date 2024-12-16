@@ -361,4 +361,16 @@ export function createModel (builder: Builder): void {
     category: 110,
     index: 5
   })
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    action: textEditor.function.CreateInlineComment,
+    icon: textEditor.icon.Comment,
+    visibilityTester: textEditor.function.ShouldShowCreateInlineCommentAction,
+    isActive: {
+      name: 'inlineComment'
+    },
+    label: textEditor.string.Comment,
+    category: 110,
+    index: 10
+  })
 }

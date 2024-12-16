@@ -34,8 +34,14 @@
 
   const client = getClient()
 
+  let providedMenuActions: Action[] = []
+  let providedInlineActions: Action[] = []
+
   let inlineActions: ViewAction[] = []
   let isActionMenuOpened = false
+
+  $: providedMenuActions = actions.filter((a) => !a.inline)
+  $: providedInlineActions = actions.filter((a) => a.inline)
 
   $: void updateInlineActions(message, excludedActions)
 
@@ -58,7 +64,7 @@
       Menu,
       {
         object: message,
-        actions,
+        actions: providedMenuActions,
         baseMenuClass: activity.class.ActivityMessage,
         excludedActions: inlineActions.map(({ _id }) => _id).concat(excludedActions)
       },
@@ -94,6 +100,17 @@
 
 {#if message}
   <div class="activityMessage-actionPopup">
+    {#each providedInlineActions as inline}
+      {#if inline.icon}
+        <ActivityMessageAction
+          label={inline.label}
+          size={'small'}
+          icon={inline.icon}
+          action={(ev) => inline.action({}, ev)}
+        />
+      {/if}
+    {/each}
+
     {#each inlineActions as inline}
       {#if inline.icon}
         <ActivityMessageAction

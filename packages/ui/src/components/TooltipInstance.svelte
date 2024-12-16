@@ -97,11 +97,18 @@
       if (clWidth === undefined) {
         clWidth = tooltipHTML.clientWidth
       }
+
+      let isElementInvalidTarget = false
+
       if ($tooltip.element) {
         rect = $tooltip.element.getBoundingClientRect()
         rectAnchor = $tooltip.anchor
           ? $tooltip.anchor.getBoundingClientRect()
           : $tooltip.element.getBoundingClientRect()
+
+        if (rect.x === 0 && rect.y === 0 && rect.width === 0 && rect.height === 0) {
+          isElementInvalidTarget = true
+        }
 
         if ($tooltip.component) {
           clearStyles()
@@ -175,8 +182,13 @@
         options.transform = 'translate(-50%, -50%)'
         options.classList = 'no-arrow'
       }
-      options.visibility = 'visible'
-      shown = true
+      if (isElementInvalidTarget) {
+        options.visibility = 'hidden'
+        shown = false
+      } else {
+        options.visibility = 'visible'
+        shown = true
+      }
     } else if (tooltipHTML) {
       shown = false
       options.visibility = 'hidden'
@@ -368,6 +380,7 @@
     style:height={options.height}
     style:max-width={options.maxWidth}
     style:transform={options.transform}
+    style:visibility={options.visibility}
     style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
   >
     <span class="label">

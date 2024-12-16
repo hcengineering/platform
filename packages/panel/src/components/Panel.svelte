@@ -46,6 +46,7 @@
   export let allowClose: boolean = true
   export let embedded: boolean = false
   export let useMaxWidth: boolean | undefined = undefined
+  export let sideContentSpace: number = 0
   export let isFullSize: boolean = false
   export let contentClasses: string | undefined = undefined
   export let content: HTMLElement | undefined | null = undefined
@@ -246,6 +247,8 @@
       bind:this={content}
       class={contentClasses ?? 'popupPanel-body__main-content py-8 clear-mins'}
       class:max={useMaxWidth}
+      class:side-content-space={sideContentSpace > 0}
+      style:--side-content-space={`${sideContentSpace}px`}
     >
       <slot />
       {#if !withoutActivity}
@@ -275,6 +278,8 @@
       <div
         class={contentClasses ?? 'popupPanel-body__main-content py-8'}
         class:max={useMaxWidth}
+        class:side-content-space={sideContentSpace > 0}
+        style:--side-content-space={`${sideContentSpace}px`}
         use:resizeObserver={(element) => {
           activityRef?.onContainerResized?.(element)
         }}

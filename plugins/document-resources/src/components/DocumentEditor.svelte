@@ -32,6 +32,7 @@
   export let focusIndex = -1
   export let overflow: 'auto' | 'none' = 'none'
   export let editorAttributes: Record<string, string> = {}
+  export let requestSideSpace: ((width: number) => void) | undefined = undefined
 
   const client = getClient()
 
@@ -74,6 +75,7 @@
   {boundary}
   {overflow}
   {editorAttributes}
+  {requestSideSpace}
   onExtensions={handleExtensions}
   on:update
   on:open-document

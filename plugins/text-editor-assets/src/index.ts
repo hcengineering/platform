@@ -39,5 +39,6 @@ loadMetadata(textEditor.icon, {
   Expand: `${icons}#expand`,
   ScaleOut: `${icons}#scaleOut`,
   Download: `${icons}#download`,
-  Note: `${icons}#note`
+  Note: `${icons}#note`,
+  Comment: `${icons}#comment`
 })

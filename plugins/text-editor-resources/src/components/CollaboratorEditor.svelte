@@ -45,6 +45,8 @@
   export let attachFile: FileAttachFunction | undefined = undefined
   export let canShowPopups = true
   export let kitOptions: Partial<EditorKitOptions> = {}
+  export let requestSideSpace: ((width: number) => void) | undefined = undefined
+  export let enableInlineComments: boolean = true
 
   let element: HTMLElement
 
@@ -99,6 +101,8 @@
     {canShowPopups}
     {editorAttributes}
     {kitOptions}
+    {requestSideSpace}
+    {enableInlineComments}
     on:editor
     on:update
     on:open-document

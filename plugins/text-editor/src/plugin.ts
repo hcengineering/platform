@@ -57,6 +57,9 @@ export default plugin(textEditorId, {
     CodeBlock: '' as IntlString,
     Note: '' as IntlString,
     ConfigureNote: '' as IntlString,
+    Comment: '' as IntlString,
+    AddComment: '' as IntlString,
+    AddCommentPlaceholder: '' as IntlString,
     Set: '' as IntlString,
     Update: '' as IntlString,
     Remove: '' as IntlString,
@@ -119,6 +122,7 @@ export default plugin(textEditorId, {
     Expand: '' as Asset,
     ScaleOut: '' as Asset,
     Download: '' as Asset,
-    Note: '' as Asset
+    Note: '' as Asset,
+    Comment: '' as Asset
   }
 })

@@ -59,6 +59,9 @@
     "SeparatorLine": "Separator line",
     "TodoList": "Action item",
     "DrawingBoard": "Drawing board",
-    "MermaidDiargram": "Diagram"
+    "MermaidDiargram": "Diagram",
+    "Comment": "Comment",
+    "AddComment": "Add a comment",
+    "AddCommentPlaceholder": "Add a comment..."
   }
 }
