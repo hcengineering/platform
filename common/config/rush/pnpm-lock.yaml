@@ -1515,8 +1515,8 @@ dependencies:
     specifier: ~22.8.7
     version: 22.8.8
   electron:
-    specifier: ^33.3.0
-    version: 33.3.0
+    specifier: ^33.2.0
+    version: 33.2.0
   electron-builder:
     specifier: ^25.1.8
     version: 25.1.8
@@ -11150,8 +11150,8 @@ packages:
     resolution: {integrity: sha512-hWFbUk9u3fQHcKzTAcjZAN7XH9bL9oH9g20RRDU/DVDNqdMI03GzlBZfR/R8R1krYu9AT4biLqSCAxnt9LMAfA==}
     dev: false
 
-  /electron@33.3.0:
-    resolution: {integrity: sha512-316ZlFUHJmzGrhRj87tVStxyYvknDqVR9eYSsGKAHY7auhVWFLIcPPGxcnbD/H1mez8CpDjXvEjcz76zpWxsXw==}
+  /electron@33.2.0:
+    resolution: {integrity: sha512-PVw1ICAQDPsnnsmpNFX/b1i/49h67pbSPxuIENd9K9WpGO1tsRaQt+K2bmXqTuoMJsbzIc75Ce8zqtuwBPqawA==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
     requiresBuild: true
@@ -23026,7 +23026,7 @@ packages:
     dev: false
 
   file:projects/chunter-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-OcfEBxXYgDjaFHEU6I4+D75C88vCt5FwZzX0Ic9vxaFK2ukxWDcOflRaKVbL/CZAC7V4cyUxqdWgY8iTEZg8wg==, tarball: file:projects/chunter-resources.tgz}
+    resolution: {integrity: sha512-yjFks6novOHe2i9lKTi27FM5/AchzWFrTqCnp701jfGRYrSreAO+t2ebIlA/o0IGxKxHv4ZHG4fF6FIPitwwGw==, tarball: file:projects/chunter-resources.tgz}
     id: file:projects/chunter-resources.tgz
     name: '@rush-temp/chunter-resources'
     version: 0.0.0
@@ -23697,7 +23697,7 @@ packages:
     dev: false
 
   file:projects/desktop-1.tgz(webpack@5.97.1):
-    resolution: {integrity: sha512-JNWlSwhVC9iFMp9JD5gg98hOEQDkmM22a3Yvv1coMSuh3eKgu0D43VOecW6s5IS4BNfiF5I87OLnTXBnmV0lOw==, tarball: file:projects/desktop-1.tgz}
+    resolution: {integrity: sha512-L25PjJOQ5AD4hPjxYiPkPyWDVa1jCpQysNfBCQpLULbG8kr+38/RxQiIX5RLcX4ST56vjPCGyc6tJmvpzsx/TQ==, tarball: file:projects/desktop-1.tgz}
     id: file:projects/desktop-1.tgz
     name: '@rush-temp/desktop-1'
     version: 0.0.0
@@ -23707,7 +23707,7 @@ packages:
       '@vercel/webpack-asset-relocator-loader': 1.7.4
       cross-env: 7.0.3
       dotenv: 16.0.3
-      electron: 33.3.0
+      electron: 33.2.0
       electron-builder: 25.1.8
       electron-squirrel-startup: 1.0.1
       node-loader: 2.0.0(webpack@5.97.1)
@@ -23824,7 +23824,7 @@ packages:
     dev: false
 
   file:projects/desktop.tgz(bufferutil@4.0.8)(sass@1.71.1)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-A11ToahoSZULhHUbTgjKyyMHDZ68BplLHTrHKKiOkZBooPhGcJZJsOLIMKNjJ5+rT+aQDeiSMFMl+2cfaeuh0A==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-3HT9v/saToZJncSPNw7ymRl1h4tZMlxkLbxe6Qp59lGBpkw3AtKAvYPpGRMh/meLhEl4vAlk/k8TO6mGUivu5w==, tarball: file:projects/desktop.tgz}
     id: file:projects/desktop.tgz
     name: '@rush-temp/desktop'
     version: 0.0.0
@@ -23843,7 +23843,7 @@ packages:
       css-loader: 5.2.7(webpack@5.97.1)
       dotenv: 16.0.3
       dotenv-webpack: 8.0.1(webpack@5.97.1)
-      electron: 33.3.0
+      electron: 33.2.0
       electron-context-menu: 4.0.4
       electron-log: 5.1.7
       electron-squirrel-startup: 1.0.1
@@ -24993,7 +24993,7 @@ packages:
     dev: false
 
   file:projects/importer.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-2BSUFKldNxsA3oJ/xjVKMJc975re0WnY1T24b0yscLWNGfMchaPaHNLBMIpd3d4rXywTX0qqBNPt+aWkp2XVBA==, tarball: file:projects/importer.tgz}
+    resolution: {integrity: sha512-H8zT+HFFD2VV3Fo3ALiiDtd0VtXQZpWEfm10a5udm4D07Gv4DgxJOLl8uF4wNId//6UNKOp6/z517p8D/8velg==, tarball: file:projects/importer.tgz}
     id: file:projects/importer.tgz
     name: '@rush-temp/importer'
     version: 0.0.0
@@ -25598,7 +25598,7 @@ packages:
     dev: false
 
   file:projects/model-ai-bot.tgz:
-    resolution: {integrity: sha512-MQPMbs5C4CPAuJVX/nYo0oz08O5/Nya+aKOC/cpnx9PrUO6jQjde0uaIHxE4Z7++Ks6caZWC7+o6XPScw0T9aQ==, tarball: file:projects/model-ai-bot.tgz}
+    resolution: {integrity: sha512-tdvrfRa0PZZCWrUq5QqiZi4Bex97OgR7tMHVLMUJhhg7lJOnR9nyjFKn+X0lEI79pi0sllds53Ksdmi5Kd+OlQ==, tarball: file:projects/model-ai-bot.tgz}
     name: '@rush-temp/model-ai-bot'
     version: 0.0.0
     dependencies:
@@ -25774,7 +25774,7 @@ packages:
     dev: false
 
   file:projects/model-controlled-documents.tgz:
-    resolution: {integrity: sha512-Hc5CRZaXVkm8Y9BgSX4ylxlwV2K0xM5jkq1fS+TIGLYQCQqt4Xy18S49ntjcErzLfcs8H6dXbvJmvWp3ZGyLfg==, tarball: file:projects/model-controlled-documents.tgz}
+    resolution: {integrity: sha512-mBRvO5kEuPrWKHjTZdQFnzV5CyVAysglTX/XFVp7Hlx8lEbRcWI91ZnU/BhOn2vTw7B3ZFCiVRDd8lgh8fAJJA==, tarball: file:projects/model-controlled-documents.tgz}
     name: '@rush-temp/model-controlled-documents'
     version: 0.0.0
     dependencies:
@@ -32747,7 +32747,7 @@ packages:
     dev: false
 
   file:projects/text-editor-resources.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(highlight.js@11.8.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-F0E6R31dkSA4Oa+lx7pYoKeHmMI1N0wMDKomkWOhwtChvWo3EZRj9xySEthXFV8au0htnsi+rKeywFOCcGdmGg==, tarball: file:projects/text-editor-resources.tgz}
+    resolution: {integrity: sha512-hCYKIJCnXXMyGcVD33T1AMClfJ3pB7F0pDPTw8ti2g1ldib78IOMw334ZX4N2LhzVxtBe3AGbz0dpp6CHTQFXg==, tarball: file:projects/text-editor-resources.tgz}
     id: file:projects/text-editor-resources.tgz
     name: '@rush-temp/text-editor-resources'
     version: 0.0.0
@@ -33094,7 +33094,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-zkSB9q8nmOq4m/hf5dMfcseJjWHYhOExf+qcO3+81JqRLl5vVnZagl0kPGJn/0xkj36e9HiRqyqqesJS0hLDWg==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-Q9D6X3yoZKH9FEIgdPR5/IfPzNThrK1NtFoSkf9o6dpOl/dm4EfipGA9guOKztQxdVCg9pwHyjl9r6X/dLaMww==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
