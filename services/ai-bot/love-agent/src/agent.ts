@@ -17,9 +17,9 @@ import { cli, defineAgent, type JobContext, JobRequest, WorkerOptions } from '@l
 import { fileURLToPath } from 'node:url'
 import { RemoteParticipant, RemoteTrack, RemoteTrackPublication, RoomEvent, TrackKind } from '@livekit/rtc-node'
 
-import { STT } from './deepgram/stt.js'
-import { Metadata, TranscriptionStatus } from './type.js'
+import { Metadata, TranscriptionStatus, Stt } from './type.js'
 import config from './config.js'
+import { getStt } from './utils.js'
 
 function parseMetadata (metadata: string): Metadata {
   try {
@@ -70,7 +70,7 @@ const requestFunc = async (req: JobRequest): Promise<void> => {
   await req.accept(identity.name, identity.identity)
 }
 
-function applyMetadata (data: string | undefined, stt: STT): void {
+function applyMetadata (data: string | undefined, stt: Stt): void {
   if (data == null || data === '') return
   const metadata = parseMetadata(data)
 
@@ -101,7 +101,13 @@ export default defineAgent({
       return
     }
 
-    const stt = new STT(roomName)
+    const stt = getStt(ctx.room)
+
+    if (stt === undefined) {
+      console.error('Transcription provider is not configured')
+      ctx.shutdown()
+      return
+    }
 
     applyMetadata(ctx.room.metadata, stt)
 
@@ -128,18 +134,6 @@ export default defineAgent({
         }
       }
     )
-
-    ctx.room.on(RoomEvent.TrackMuted, (publication) => {
-      if (publication.kind === TrackKind.KIND_AUDIO) {
-        stt.mute(publication.sid)
-      }
-    })
-
-    ctx.room.on(RoomEvent.TrackUnmuted, (publication) => {
-      if (publication.kind === TrackKind.KIND_AUDIO) {
-        stt.unmute(publication.sid)
-      }
-    })
 
     ctx.addShutdownCallback(async () => {
       stt.close()

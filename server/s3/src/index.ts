@@ -307,7 +307,9 @@ export class S3Service implements StorageAdapter {
         version: result.VersionId ?? null
       }
     } catch (err: any) {
-      ctx.warn('no object found', { error: err, objectName, workspaceId: workspaceId.name })
+      if (err?.$metadata?.httpStatusCode !== 404) {
+        ctx.warn('no object found', { error: err, objectName, workspaceId: workspaceId.name })
+      }
     }
   }
 
