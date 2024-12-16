@@ -1,5 +1,3 @@
-import { Hierarchy } from './hierarchy'
-
 const se = typeof Symbol !== 'undefined'
 const ste = se && typeof Symbol.toStringTag !== 'undefined'
 
@@ -56,7 +54,7 @@ export function clone (obj: any, as?: (doc: any, m: any) => any, needAs?: (value
       if (type === 'Array') {
         result[key] = clone(value, as, needAs)
       } else if (type === 'Object') {
-        const valClone = clone(Hierarchy.toDoc(value), as, needAs)
+        const valClone = clone(value, as, needAs)
         result[key] = valClone
       } else if (type === 'Date') {
         result[key] = new Date(value.getTime())
