@@ -53,7 +53,7 @@
   export let mainComponent: AnyComponent | AnySvelteComponent
   export let mainComponentProps = {}
   export let showNavigator: boolean = false
-  export let parentKey: string = 'attachedTo'
+  export let parentKey: string = navigationComponentProps?.parentKey ?? 'attachedTo'
 
   const FLOAT_LIMIT = 760
   let container: HTMLDivElement

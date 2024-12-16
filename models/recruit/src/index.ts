@@ -171,7 +171,25 @@ export function createModel (builder: Builder): void {
                 recruit.viewlet.ApplicantDashboard
               ]
             },
-            position: 'vacancy'
+            position: 'vacancy',
+            navigationModel: {
+              navigationComponent: view.component.FoldersBrowser,
+              navigationComponentLabel: recruit.string.Vacancies,
+              navigationComponentIcon: recruit.icon.Vacancy,
+              mainComponentLabel: recruit.string.Applications,
+              mainComponentIcon: recruit.icon.Application,
+              navigationComponentProps: {
+                _class: recruit.class.Vacancy,
+                icon: recruit.icon.Vacancy,
+                title: recruit.string.Vacancies,
+                createLabel: recruit.string.CreateVacancy,
+                createComponent: recruit.component.CreateVacancy,
+                titleKey: 'name',
+                parentKey: 'space',
+                plainList: true
+              },
+              syncWithLocationQuery: false
+            }
           },
           {
             id: talentsId,
