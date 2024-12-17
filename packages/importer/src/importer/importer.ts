@@ -167,7 +167,7 @@ export interface ImportOrgSpace extends ImportSpace<ImportControlledDoc> {
 }
 
 export interface ImportControlledDocumentTemplate extends ImportDoc {
-  id: Ref<DocumentTemplate>
+  id?: Ref<DocumentTemplate>
   class: Ref<Class<Document>>
   docPrefix: string
   code: string
@@ -188,7 +188,7 @@ export interface ImportControlledDocumentTemplate extends ImportDoc {
 }
 
 export interface ImportControlledDocument extends ImportDoc {
-  id: Ref<ControlledDocument>
+  id?: Ref<ControlledDocument>
   class: Ref<Class<ControlledDocument>>
   template: Ref<DocumentTemplate>
   code: string
@@ -747,60 +747,13 @@ export class WorkspaceImporter {
     const spaceId = await this.createOrgSpace(space)
     this.logger.log('Document space created: ' + spaceId)
 
-    // Create maps to store child documents/templates by parent ID
-    const documentMap = new Map<Ref<ControlledDocument>, ImportControlledDocument[]>()
-    const templateMap = new Map<Ref<DocumentTemplate>, ImportControlledDocumentTemplate[]>()
-
-    // Build document/template hierarchies
     for (const doc of space.docs) {
-      this.partitionTemplatesFromDocuments(doc, documentMap, templateMap)
-    }
-
-    for (const templates of templateMap.values()) {
-      for (const template of templates) {
-        await this.createControlledDocumentTemplate(template, spaceId)
+      if (this.isDocumentTemplate(doc)) {
+        await this.createTemplateWithSubdocs(doc as ImportControlledDocumentTemplate, spaceId)
+      } else {
+        await this.createControlledDocumentWithSubdocs(doc as ImportControlledDocument, spaceId)
       }
     }
-
-    for (const documents of documentMap.values()) {
-      for (const document of documents) {
-        await this.createControlledDocument(document, spaceId)
-      }
-    }
-
-    // Update templates parents
-    const templateBuilder = this.client.apply(core.account.System)
-    for (const [parentId, templateDocs] of templateMap.entries()) {
-      for (const template of templateDocs) {
-        await templateBuilder.updateMixin(
-          template.id,
-          documents.mixin.DocumentTemplate,
-          spaceId,
-          documents.mixin.DocumentTemplate,
-          {
-            attachedTo: parentId
-          }
-        )
-      }
-    }
-    await templateBuilder.commit()
-
-    // Update controlled documents parents
-    const documentBuilder = this.client.apply(core.account.System)
-    for (const [parentId, controlledDocs] of documentMap.entries()) {
-      for (const doc of controlledDocs) {
-        await documentBuilder.updateDoc(
-          documents.class.ControlledDocument,
-          spaceId,
-          doc.id,
-          {
-            attachedTo: parentId
-          }
-        )
-      }
-    }
-    await documentBuilder.commit()
-
     return spaceId
   }
 
@@ -865,7 +818,7 @@ export class WorkspaceImporter {
     return spaceId
   }
 
-  async createControlledDocumentTemplate (
+  async createTemplateWithSubdocs (
     template: ImportControlledDocumentTemplate,
     spaceId: Ref<DocumentSpace>
   ): Promise<Ref<DocumentTemplate>> {
@@ -908,10 +861,18 @@ export class WorkspaceImporter {
       documents.category.DOC
     )
 
+    for (const subdoc of template.subdocs) {
+      if (this.isDocumentTemplate(subdoc)) {
+        await this.createTemplateWithSubdocs(subdoc as ImportControlledDocumentTemplate, spaceId)
+      } else {
+        await this.createControlledDocumentWithSubdocs(subdoc as ImportControlledDocument, spaceId)
+      }
+    }
+
     return templateId
   }
 
-  async createControlledDocument (
+  async createControlledDocumentWithSubdocs (
     doc: ImportControlledDocument,
     spaceId: Ref<DocumentSpace>
   ): Promise<Ref<ControlledDocument>> {
@@ -954,6 +915,15 @@ export class WorkspaceImporter {
 
     if (!result.success) {
       throw new Error('Failed to create controlled document')
+    }
+
+    // Process subdocs recursively
+    for (const subdoc of doc.subdocs) {
+      if (this.isDocumentTemplate(subdoc)) {
+        await this.createTemplateWithSubdocs(subdoc as ImportControlledDocumentTemplate, spaceId)
+      } else {
+        await this.createControlledDocumentWithSubdocs(subdoc as ImportControlledDocument, spaceId)
+      }
     }
 
     return docId
