@@ -352,7 +352,11 @@ export class RateLimiter {
   }
 
   async waitProcessing (): Promise<void> {
-    await Promise.all(this.processingQueue.values())
+    while (this.processingQueue.size > 0) {
+      await new Promise<void>((resolve) => {
+        this.notify.push(resolve)
+      })
+    }
   }
 }
 
