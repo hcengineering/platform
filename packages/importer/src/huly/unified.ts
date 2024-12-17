@@ -756,7 +756,7 @@ export class UnifiedFormatImporter {
     }
 
     return {
-      id,
+      id: id as Ref<ControlledDocument>,
       class: documents.class.ControlledDocument,
       title: header.title,
       template: template?.id as Ref<DocumentTemplate>,
@@ -793,7 +793,7 @@ export class UnifiedFormatImporter {
     const seqNumber = numberMatch?.[1]
 
     return {
-      id,
+      id: id as Ref<DocumentTemplate>,
       class: documents.mixin.DocumentTemplate,
       title: header.title,
       docPrefix: header.docPrefix,

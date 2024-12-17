@@ -1,12 +1,10 @@
 class: documents:class:OrgSpace
-title: QMS eee
+title: QMS hierarchy
 description: Quality Management System Documentation
 private: false
 owners:
   - user1
-  - john.doe@example.com
 members:
-  - joe.shmoe@example.com
   - user1
 qualified: user1
 manager: user1
