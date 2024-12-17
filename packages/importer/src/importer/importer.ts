@@ -789,16 +789,31 @@ export class WorkspaceImporter {
         )
         console.log(result)
       } else {
-        const result = await this.client.addCollection(
+        const templateId = (doc as ImportControlledDocument).template
+
+        const templateDoc = docs.get(templateId)
+        if (templateDoc === undefined) {
+          throw new Error('Template document not found: ' + templateId)
+        }
+
+        const template = templateDoc as unknown as ImportControlledDocumentTemplate
+
+        const ops = this.client.apply()
+        await ops.updateMixin(templateId, documents.class.Document, spaceId, documents.mixin.DocumentTemplate, {
+          $inc: { sequence: 1 }
+        })
+
+        const result = await ops.addCollection(
           documents.class.ControlledDocument,
           spaceId,
           metaId,
           documents.class.DocumentMeta,
           'documents',
-          {
+          { // todo: update from docutils same as for templates
             title: doc.title,
             content: contentId,
-            prefix: '',
+            template: templateId,
+            prefix: template.docPrefix,
             code: doc.code,
             seqNumber: doc.seqNumber,
             major: doc.major,
@@ -817,6 +832,7 @@ export class WorkspaceImporter {
           },
           doc.id as Ref<ControlledDocument>
         )
+        await ops.commit()
         console.log(result)
       }
     }
