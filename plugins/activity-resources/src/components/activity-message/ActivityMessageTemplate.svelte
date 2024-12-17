@@ -149,7 +149,7 @@
     if (readonly) return
     const showCustomPopup = !isTextClicked(event.target as HTMLElement, event.clientX, event.clientY)
     if (showCustomPopup) {
-      const overrides = onReply ? new Map([[activity.action.Reply, onReply]]) : []
+      const overrides = onReply ? new Map([[activity.action.Reply, onReply]]) : new Map()
       showMenu(
         event,
         { object: message, baseMenuClass: activity.class.ActivityMessage, excludedActions, overrides },
