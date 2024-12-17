@@ -396,4 +396,34 @@ test.describe('Planning ToDo tests', () => {
       await sidebarPage.checkIfPlanerSidebarTabIsOpen(true)
     })
   })
+
+  test('Moving ToDo in scheduler panel', async ({ page }) => {
+    const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
+    await planningNavigationMenuPage.clickOnButtonToDoAll()
+    const toDoName = `ToDo to moving in scheduler panel ${generateId()}`
+    const planningPage = new PlanningPage(page)
+    const unplannedCategory = 'Unplanned'
+    const defaultSubCategory = 'Without project'
+    await test.step(`New ToDo in "${unplannedCategory}" category  "${defaultSubCategory}" subcategory`, async () => {
+      await planningPage.createNewToDoFromInput(toDoName)
+      await planningNavigationMenuPage.checkToDoCategory(toDoName, unplannedCategory, defaultSubCategory)
+    })
+    const projectName = 'Second Project'
+    await test.step(`ToDo joined to project change "${projectName}" subcategory`, async () => {
+      await planningPage.openToDoByName(toDoName)
+      await planningPage.addEventToSpace(projectName)
+      await planningNavigationMenuPage.checkToDoCategory(toDoName, unplannedCategory, projectName)
+    })
+    const scheduledCategory = 'Scheduled'
+    await test.step(`Scheduled ToDo to "${scheduledCategory}" category`, async () => {
+      await planningPage.openToDoByName(toDoName)
+      await planningPage.clickButtonCreateAddSlot()
+      await planningNavigationMenuPage.checkToDoCategory(toDoName, scheduledCategory, projectName)
+    })
+    const completedCategory = 'Done'
+    await test.step(`completed ToDo move to "${completedCategory}" category`, async () => {
+      await planningPage.markDoneInToDos(toDoName)
+      await planningNavigationMenuPage.checkToDoCategory(toDoName, completedCategory, projectName)
+    })
+  })
 })
