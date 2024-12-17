@@ -2,8 +2,14 @@
 
 import {
   Branding,
+  Class,
+  Doc,
+  DocumentQuery,
+  FindOptions,
   generateId,
   MeasureMetricsContext,
+  Ref,
+  Tx,
   type MeasureContext,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
@@ -283,5 +289,96 @@ export class Transactor extends DurableObject<Env> {
     if (session !== undefined) {
       await this.sessionManager.close(this.measureCtx, session.connectionSocket as ConnectionSocket, this.workspace)
     }
+  }
+
+  private createDummyClientSocket (): ConnectionSocket {
+    const cs: ConnectionSocket = {
+      id: generateId(),
+      isClosed: false,
+      close: () => {
+        cs.isClosed = true
+      },
+      checkState: () => {
+        return !cs.isClosed
+      },
+      readRequest: (buffer: Buffer, binary: boolean) => {
+        return {} as any
+      },
+      data: () => {
+        return {}
+      },
+      send: (ctx: MeasureContext, msg, binary, compression) => {}
+    }
+    return cs
+  }
+
+  private async makeRpcSession (rawToken: string, cs: ConnectionSocket): Promise<Session> {
+    const token = decodeToken(rawToken ?? '')
+    const session = await this.sessionManager.addSession(
+      this.measureCtx,
+      cs,
+      token,
+      rawToken,
+      this.pipelineFactory,
+      generateId()
+    )
+    if ('error' in session) {
+      throw session.error
+    }
+    if ('upgrade' in session) {
+      throw new Error('Workspace is upgrading')
+    }
+    if (!('session' in session) || session.session === undefined) {
+      throw new Error('No session')
+    }
+    // By design, all fetches to this durable object will be for the same workspace
+    if (this.workspace === '') {
+      this.workspace = token.workspace.name
+    }
+    return session.session
+  }
+
+  async rpcFindAll (
+    rawToken: string,
+    _class: Ref<Class<Doc>>,
+    query?: DocumentQuery<Doc>,
+    options?: FindOptions<Doc>
+  ): Promise<any> {
+    let result
+    const cs = this.createDummyClientSocket()
+    try {
+      const session = await this.makeRpcSession(rawToken, cs)
+      result = await session.findAllRaw(this.measureCtx, _class, query ?? {}, options ?? {})
+    } catch (error: any) {
+      result = { error: `${error}` }
+    } finally {
+      await this.sessionManager.close(this.measureCtx, cs, this.workspace)
+    }
+    return result
+  }
+
+  async rpcTx (rawToken: string, tx: Tx): Promise<any> {
+    let result
+    const cs = this.createDummyClientSocket()
+    try {
+      const session = await this.makeRpcSession(rawToken, cs)
+      const sessionCtx: ClientSessionCtx = {
+        ctx: this.measureCtx,
+        sendResponse: async (msg) => {
+          result = msg
+        },
+        // TODO: Inedeed, the pipeline doesn't return errors,
+        // it just logs them to console and return an empty result
+        sendError: async (msg, error) => {
+          result = { error: `${msg}`, status: `${error}` }
+        }
+      }
+      await session.tx(sessionCtx, tx)
+    } catch (error: any) {
+      result = { error: `${error}` }
+    } finally {
+      await this.sessionManager.close(this.measureCtx, cs, this.workspace)
+    }
+    return result
   }
 }

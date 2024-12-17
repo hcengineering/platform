@@ -1,9 +1,10 @@
 // Copyright © 2024 Huly Labs.
 
+import { WorkerEntrypoint } from 'cloudflare:workers'
 import { Router, error, html } from 'itty-router'
-
 import { decodeToken } from '@hcengineering/server-token'
 import type { Transactor } from './transactor'
+import { Class, Doc, DocumentQuery, FindOptions, Ref, Tx } from '@hcengineering/core'
 
 export { Transactor } from './transactor'
 
@@ -48,3 +49,26 @@ export default {
     return await router.fetch(request).catch(error)
   }
 } satisfies ExportedHandler<Env>
+
+export class TransactorRPC extends WorkerEntrypoint<Env> {
+  async rpcFindAll (
+    token: string,
+    _class: Ref<Class<Doc>>,
+    query?: DocumentQuery<Doc>,
+    options?: FindOptions<Doc>
+  ): Promise<any> {
+    const decodedToken = decodeToken(token, true, this.env.SERVER_SECRET)
+    const id = this.env.TRANSACTOR.idFromName(decodedToken.workspace.name)
+    const stub = this.env.TRANSACTOR.get(id)
+    const result = await (stub as any).rpcFindAll(token, _class, query, options)
+    return result
+  }
+
+  async rpcTx (token: string, tx: Tx): Promise<any> {
+    const decodedToken = decodeToken(token, true, this.env.SERVER_SECRET)
+    const id = this.env.TRANSACTOR.idFromName(decodedToken.workspace.name)
+    const stub = this.env.TRANSACTOR.get(id)
+    const result: any = await (stub as any).rpcTx(token, tx)
+    return result
+  }
+}
