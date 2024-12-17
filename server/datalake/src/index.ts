@@ -18,13 +18,14 @@ import core, { type Blob, type MeasureContext, type Ref, type WorkspaceId, withC
 import {
   type BlobStorageIterator,
   type BucketInfo,
+  type ListBlobResult,
   type StorageAdapter,
   type StorageConfig,
   type StorageConfiguration,
   type UploadedObjectInfo
 } from '@hcengineering/server-core'
 import { type Readable } from 'stream'
-import { type ObjectMetadata, DatalakeClient } from './client'
+import { type UploadObjectParams, DatalakeClient } from './client'
 
 export { DatalakeClient }
 
@@ -88,8 +89,36 @@ export class DatalakeService implements StorageAdapter {
 
   @withContext('listStream')
   async listStream (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<BlobStorageIterator> {
+    let hasMore = true
+    const buffer: ListBlobResult[] = []
+    let cursor: string | undefined
+
     return {
-      next: async () => [],
+      next: async () => {
+        try {
+          while (hasMore && buffer.length < 50) {
+            const res = await this.client.listObjects(ctx, workspaceId, cursor)
+            hasMore = res.cursor !== undefined
+            cursor = res.cursor
+
+            for (const blob of res.blobs) {
+              buffer.push({
+                _id: blob.name as Ref<Blob>,
+                _class: core.class.Blob,
+                etag: blob.etag,
+                size: blob.size ?? 0,
+                provider: this.opt.name,
+                space: core.space.Configuration,
+                modifiedBy: core.account.ConfigUser,
+                modifiedOn: 0
+              })
+            }
+          }
+        } catch (err: any) {
+          ctx.error('Failed to get list', { error: err, workspaceId: workspaceId.name })
+        }
+        return buffer.splice(0, 50)
+      },
       close: async () => {}
     }
   }
@@ -131,19 +160,18 @@ export class DatalakeService implements StorageAdapter {
     contentType: string,
     size?: number
   ): Promise<UploadedObjectInfo> {
-    const metadata: ObjectMetadata = {
+    const params: UploadObjectParams = {
       lastModified: Date.now(),
-      name: objectName,
       type: contentType,
       size
     }
 
-    await ctx.with('put', {}, (ctx) =>
-      withRetry(ctx, 5, () => this.client.putObject(ctx, workspaceId, objectName, stream, metadata, size))
+    const { etag } = await ctx.with('put', {}, (ctx) =>
+      withRetry(ctx, 5, () => this.client.putObject(ctx, workspaceId, objectName, stream, params))
     )
 
     return {
-      etag: '',
+      etag,
       versionId: ''
     }
   }
