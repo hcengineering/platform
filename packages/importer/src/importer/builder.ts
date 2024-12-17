@@ -27,7 +27,7 @@ import {
   type ImportWorkspace,
   type ImportControlledDoc
 } from './importer'
-import documents, { DocumentState } from '@hcengineering/controlled-documents'
+import documents, { DocumentState, DocumentTemplate } from '@hcengineering/controlled-documents'
 
 export interface ValidationError {
   path: string
@@ -52,6 +52,7 @@ export class ImportWorkspaceBuilder {
   private readonly documentParents = new Map<string, string>()
 
   private readonly qmsSpaces = new Map<string, ImportOrgSpace>()
+  private readonly qmsTemplates = new Map<Ref<DocumentTemplate>, string>()
   private readonly qmsDocsBySpace = new Map<string, Map<string, ImportControlledDoc>>()
   private readonly qmsDocsParents = new Map<string, string>()
 
@@ -206,14 +207,17 @@ export class ImportWorkspaceBuilder {
       this.qmsDocsParents.set(templatePath, parentTemplatePath)
     }
 
+    if (template.id !== undefined) {
+      this.qmsTemplates.set(template.id, templatePath)
+    }
+
     return this
   }
 
   validate (): ValidationResult {
     // Perform cross-entity validation
-    this.validateProjectReferences()
-    this.validateSpaceDocuments()
-    this.validateControlledDocumentSpaces()
+    this.validateSpacesReferences()
+    this.validateDocumentsReferences()
 
     return {
       isValid: this.errors.size === 0,
@@ -520,7 +524,7 @@ export class ImportWorkspaceBuilder {
     return errors
   }
 
-  private validateProjectReferences (): void {
+  private validateSpacesReferences (): void {
     // Validate project type references
     for (const project of this.projects.values()) {
       if (project.projectType !== undefined && !this.projectTypes.has(project.projectType.name)) {
@@ -529,7 +533,7 @@ export class ImportWorkspaceBuilder {
     }
   }
 
-  private validateSpaceDocuments (): void {
+  private validateDocumentsReferences (): void {
     // Validate that issues belong to projects and documents to teamspaces
     for (const projectPath of this.issuesByProject.keys()) {
       if (!this.projects.has(projectPath)) {
@@ -540,6 +544,23 @@ export class ImportWorkspaceBuilder {
     for (const [teamspacePath] of this.documentsByTeamspace) {
       if (!this.teamspaces.has(teamspacePath)) {
         this.addError(teamspacePath, 'Documents reference non-existent teamspace')
+      }
+    }
+
+    for (const [orgSpacePath, docs] of this.qmsDocsBySpace) {
+      if (!this.qmsSpaces.has(orgSpacePath)) {
+        this.addError(orgSpacePath, 'Controlled document reference non-existent orgSpace')
+      }
+      for (const [docPath, doc] of docs) {
+        if (doc.class === documents.class.ControlledDocument) {
+          const templateRef = (doc as ImportControlledDocument).template
+          const templatePath = this.qmsTemplates.get(templateRef)
+          if (templatePath === undefined) {
+            this.addError(docPath, 'Controlled document reference non-existent template')
+          } else if (!docs.has(templatePath)) {
+            this.addError(docPath, 'Controlled document reference not in space')
+          }
+        }
       }
     }
   }

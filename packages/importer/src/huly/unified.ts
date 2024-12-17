@@ -105,8 +105,8 @@ interface UnifiedWorkspaceSettings {
 interface UnifiedControlledDocumentHeader {
   class: 'documents:class:ControlledDocument'
   title: string
-  code: string
-  category: string
+  code: string // TODO: what is this? code vs prefix?
+  category: string // TODO: what is this? Refernce?
   author: string
   owner: string
   abstract?: string
@@ -610,29 +610,28 @@ export class UnifiedFormatImporter {
         this.metadataById.set(docMeta.id, docMeta)
         this.metadataByFilePath.set(docPath, docMeta)
 
-        const doc = await this.processControlledDocument(docHeader as UnifiedControlledDocumentHeader, docPath)
+        const doc = await this.processControlledDocument(docHeader as UnifiedControlledDocumentHeader, docPath, docMeta.id as Ref<ControlledDocument>)
         builder.addControlledDocument(spacePath, docPath, doc, parentDocPath)
 
-        // Process subdocuments if they exist
         const subDir = path.join(currentPath, docFile.replace('.md', ''))
         if (fs.existsSync(subDir) && fs.statSync(subDir).isDirectory()) {
           await this.processControlledDocumentsRecursively(builder, spacePath, subDir, docPath)
         }
       } else if (docHeader.class === documents.mixin.DocumentTemplate) {
-        const templateMeta: DocMetadata = {
-          id: generateId<DocumentTemplate>(),
-          class: documents.class.Document,
-          path: docPath,
-          refTitle: docHeader.title
+        if (!this.metadataByFilePath.has(docPath)) {
+          const meta: DocMetadata = {
+            id: generateId<DocumentTemplate>(),
+            class: documents.mixin.DocumentTemplate,
+            path: docPath,
+            refTitle: docHeader.title
+          }
+          this.metadataById.set(meta.id, meta)
+          this.metadataByFilePath.set(docPath, meta)
         }
-
-        this.metadataById.set(templateMeta.id, templateMeta)
-        this.metadataByFilePath.set(docPath, templateMeta)
-
-        const template = await this.processDocumentTemplate(docHeader as UnifiedDocumentTemplateHeader, docPath)
+        const templateMeta = this.metadataByFilePath.get(docPath)
+        const template = await this.processControlledDocumentTemplate(docHeader as UnifiedDocumentTemplateHeader, docPath, templateMeta?.id as Ref<DocumentTemplate>)
         builder.addControlledDocumentTemplate(spacePath, docPath, template, parentDocPath)
 
-        // Process subtemplates if they exist
         const subDir = path.join(currentPath, docFile.replace('.md', ''))
         if (fs.existsSync(subDir) && fs.statSync(subDir).isDirectory()) {
           await this.processControlledDocumentsRecursively(builder, spacePath, subDir, docPath)
@@ -723,7 +722,8 @@ export class UnifiedFormatImporter {
 
   private async processControlledDocument (
     header: UnifiedControlledDocumentHeader,
-    docPath: string
+    docPath: string,
+    id?: Ref<ControlledDocument>
   ): Promise<ImportControlledDocument> {
     const numberMatch = path.basename(docPath).match(/^(\d+)\./)
     const seqNumber = numberMatch?.[1]
@@ -734,11 +734,32 @@ export class UnifiedFormatImporter {
       throw new Error(`Author or owner not found: ${header.author} or ${header.owner}`)
     }
 
+    const templatePath = path.resolve(path.dirname(docPath), header.template)
+    if (!fs.existsSync(templatePath)) {
+      throw new Error(`Template file not found: ${templatePath}`)
+    }
+
+    if (!this.metadataByFilePath.has(templatePath)) {
+      const templateMeta = {
+        id: generateId<DocumentTemplate>(),
+        class: documents.mixin.DocumentTemplate,
+        path: templatePath,
+        refTitle: path.basename(templatePath)
+      }
+      this.metadataByFilePath.set(templatePath, templateMeta)
+      this.metadataById.set(templateMeta.id, templateMeta)
+    }
+
+    const template = this.metadataByFilePath.get(templatePath)
+    if (template?.class !== documents.mixin.DocumentTemplate) {
+      throw new Error(`Template is not a controlled document template: ${template?.class}`)
+    }
+
     return {
+      id,
       class: documents.class.ControlledDocument,
       title: header.title,
-      // template: header.template as Ref<DocumentTemplate>,
-      template: documents.template.ProductChangeControl,
+      template: template?.id as Ref<DocumentTemplate>,
       code: header.code,
       seqNumber: parseInt(seqNumber ?? 'NaN'),
       major: 0,
@@ -757,9 +778,10 @@ export class UnifiedFormatImporter {
     }
   }
 
-  private async processDocumentTemplate (
+  private async processControlledDocumentTemplate (
     header: UnifiedDocumentTemplateHeader,
-    docPath: string
+    docPath: string,
+    id?: Ref<DocumentTemplate>
   ): Promise<ImportControlledDocumentTemplate> {
     const author = this.findEmployeeByName(header.author)
     const owner = this.findEmployeeByName(header.owner)
@@ -771,6 +793,7 @@ export class UnifiedFormatImporter {
     const seqNumber = numberMatch?.[1]
 
     return {
+      id,
       class: documents.mixin.DocumentTemplate,
       title: header.title,
       docPrefix: header.docPrefix,
