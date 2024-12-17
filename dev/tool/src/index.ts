@@ -947,25 +947,46 @@ export function devTool (
     .option('-c, --recheck', 'Force hash recheck on server', false)
     .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
+    .option('--use-storage <useStorage>', 'Use workspace storage adapter from env variable', '')
+    .option(
+      '--history-file <historyFile>',
+      'Store blob send info into file. Will skip already send documents.',
+      undefined
+    )
     .description('dump workspace transactions and minio resources')
     .action(
       async (
         dirName: string,
         workspace: string,
         date,
-        cmd: { merge: boolean, parallel: string, recheck: boolean, include: string, skip: string }
+        cmd: {
+          merge: boolean
+          parallel: string
+          recheck: boolean
+          include: string
+          skip: string
+          useStorage: string
+          historyFile: string
+        }
       ) => {
         const storage = await createFileBackupStorage(dirName)
         const wsid = getWorkspaceId(workspace)
         const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+        const storageConfig = cmd.useStorage !== '' ? storageConfigFromEnv(process.env[cmd.useStorage]) : undefined
+
+        const workspaceStorage: StorageAdapter | undefined =
+          storageConfig !== undefined ? buildStorageFromConfig(storageConfig) : undefined
         await restore(toolCtx, endpoint, wsid, storage, {
           date: parseInt(date ?? '-1'),
           merge: cmd.merge,
           parallel: parseInt(cmd.parallel ?? '1'),
           recheck: cmd.recheck,
           include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';')),
-          skip: new Set(cmd.skip.split(';'))
+          skip: new Set(cmd.skip.split(';')),
+          storageAdapter: workspaceStorage,
+          historyFile: cmd.historyFile
         })
+        await workspaceStorage?.close()
       }
     )
 
