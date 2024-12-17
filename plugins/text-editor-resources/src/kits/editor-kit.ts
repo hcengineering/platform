@@ -35,6 +35,8 @@ import { ParagraphExtension } from '../components/extension/paragraph'
 import { SubmitExtension, type SubmitOptions } from '../components/extension/submit'
 import { Table, TableCell, TableRow } from '../components/extension/table'
 import { DefaultKit, type DefaultKitOptions } from './default-kit'
+import { MermaidExtension, type MermaidOptions, mermaidOptions } from '../components/extension/mermaid'
+import { DrawingBoardExtension, type DrawingBoardOptions } from '../components/extension/drawingBoard'
 
 export interface EditorKitOptions extends DefaultKitOptions {
   history?: false
@@ -49,6 +51,8 @@ export interface EditorKitOptions extends DefaultKitOptions {
     }
   })
   | false
+  drawingBoard?: DrawingBoardOptions | false
+  mermaid?: MermaidOptions | false
   mode?: 'full' | 'compact'
   note?: NoteOptions | false
   submit?: SubmitOptions | false
@@ -246,6 +250,14 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                 }
 
                 staticKitExtensions.push([800, ImageExtension.configure(imageOptions)])
+              }
+
+              if (this.options.drawingBoard !== false) {
+                staticKitExtensions.push([840, DrawingBoardExtension.configure(this.options.drawingBoard)])
+              }
+
+              if (this.options.mermaid !== false) {
+                staticKitExtensions.push([850, MermaidExtension.configure(this.options.mermaid ?? mermaidOptions)])
               }
 
               if (this.options.toolbar !== false) {
