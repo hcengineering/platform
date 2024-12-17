@@ -48,7 +48,7 @@ import core, {
   type Timestamp,
   type TxOperations
 } from '@hcengineering/core'
-import document, { documentId, getFirstRank, type Document, type Teamspace } from '@hcengineering/document'
+import document, { getFirstRank, type Document, type Teamspace } from '@hcengineering/document'
 import task, {
   createProjectType,
   makeRank,
@@ -69,7 +69,7 @@ import view from '@hcengineering/view'
 import { Logger } from './logger'
 import { type MarkdownPreprocessor, NoopMarkdownPreprocessor } from './preprocessor'
 import { type FileUploader } from './uploader'
-import { th } from 'date-fns/locale'
+import { te } from 'date-fns/locale'
 
 export interface ImportWorkspace {
   projectTypes?: ImportProjectType[]
@@ -170,7 +170,7 @@ export interface ImportOrgSpace extends ImportSpace<ImportControlledDoc> {
 }
 
 export interface ImportControlledDocumentTemplate extends ImportDoc {
-  id: Ref<DocumentTemplate>
+  id: Ref<DocumentTemplate> // todo: change to Ref<ControlledDocument> ?
   class: Ref<Class<Document>>
   docPrefix: string
   code: string
@@ -750,27 +750,40 @@ export class WorkspaceImporter {
     const spaceId = await this.createOrgSpace(space)
     this.logger.log('Document space created: ' + spaceId)
 
-    const docs = new Map<Ref<ControlledDocument | DocumentTemplate>, Ref<DocumentMeta>>()
+    // Partition templates and documents
+    const templateMap = new Map<Ref<DocumentTemplate | ControlledDocument>, ImportControlledDocumentTemplate[]>()
+    const documentMap = new Map<Ref<ControlledDocument | DocumentTemplate>, ImportControlledDocument[]>()
     for (const doc of space.docs) {
-      if (this.isDocumentTemplate(doc)) {
-        const result = await this.createTemplateWithSubdocs(doc as ImportControlledDocumentTemplate, spaceId)
-        docs.set(result.templateId, result.metaId)
-      } else {
-        const result = await this.createControlledDocumentWithSubdocs(doc as ImportControlledDocument, spaceId)
-        docs.set(result.docId, result.metaId)
+      this.partitionTemplatesFromDocuments(doc, documentMap, templateMap)
+    }
+
+    // Create hierarchy meta
+    const documentMetaIds = new Map<Ref<ControlledDocument | DocumentTemplate>, Ref<DocumentMeta>>()
+    for (const [parentId, templates] of templateMap.entries()) {
+      for (const template of templates) {
+        const result = await this.createTemplateWithSubdocs(template, spaceId)
+        documentMetaIds.set(result.templateId, result.metaId)
       }
     }
 
-    for (const doc of space.docs) {
-      const metaId = docs.get(doc.id)
-      if (metaId === undefined) {
-        throw new Error('Document meta not found: ' + doc.id)
+    for (const [parentId, documents] of documentMap.entries()) {
+      for (const document of documents) {
+        const result = await this.createControlledDocumentWithSubdocs(document, spaceId)
+        documentMetaIds.set(result.docId, result.metaId)
       }
-      const content = await doc.descrProvider()
+    }
 
-      const collabId = makeCollabId(documents.class.Document, doc.id, 'content')
-      const contentId = await this.createCollaborativeContent(doc.id, collabId, content, spaceId)
-      if (this.isDocumentTemplate(doc)) {
+    // Create attachments for documents as templates
+    for (const templates of templateMap.values()) {
+      for (const template of templates) {
+        const metaId = documentMetaIds.get(template.id)
+        if (metaId === undefined) {
+          throw new Error('Document meta not found: ' + template.id)
+        }
+        const content = await template.descrProvider()
+
+        const collabId = makeCollabId(documents.class.Document, template.id, 'content')
+        const contentId = await this.createCollaborativeContent(template.id, collabId, content, spaceId)
         const result = await this.client.addCollection(
           documents.class.ControlledDocument, // todo: fix
           spaceId,
@@ -778,20 +791,32 @@ export class WorkspaceImporter {
           documents.class.DocumentMeta,
           'documents',
           {
-            ...doc,
+            ...template,
             prefix: TEMPLATE_PREFIX,
             content: contentId,
             commentSequence: 0,
             requests: 0,
             labels: 0
           },
-          doc.id as Ref<ControlledDocument>
+          template.id as unknown as Ref<ControlledDocument> // todo: make sure it's not used anywhere as mixin id
         )
         console.log(result)
-      } else {
-        const templateId = (doc as ImportControlledDocument).template
+      }
+    }
 
-        const templateDoc = docs.get(templateId)
+    for (const onlyDocuments of documentMap.values()) {
+      for (const document of onlyDocuments) {
+        const metaId = documentMetaIds.get(document.id)
+        if (metaId === undefined) {
+          throw new Error('Document meta not found: ' + document.id)
+        }
+        const content = await document.descrProvider()
+
+        const collabId = makeCollabId(documents.class.Document, document.id, 'content')
+        const contentId = await this.createCollaborativeContent(document.id, collabId, content, spaceId)
+        const templateId = document.template
+
+        const templateDoc = documentMetaIds.get(templateId)
         if (templateDoc === undefined) {
           throw new Error('Template document not found: ' + templateId)
         }
@@ -810,27 +835,27 @@ export class WorkspaceImporter {
           documents.class.DocumentMeta,
           'documents',
           { // todo: update from docutils same as for templates
-            title: doc.title,
+            title: document.title,
             content: contentId,
             template: templateId,
             prefix: template.docPrefix,
-            code: doc.code,
-            seqNumber: doc.seqNumber,
-            major: doc.major,
-            minor: doc.minor,
-            state: doc.state,
+            code: document.code,
+            seqNumber: document.seqNumber,
+            major: document.major,
+            minor: document.minor,
+            state: document.state,
             commentSequence: 0,
-            category: doc.category,
-            author: doc.author,
-            owner: doc.owner,
-            abstract: doc.abstract,
+            category: document.category,
+            author: document.author,
+            owner: document.owner,
+            abstract: document.abstract,
             requests: 0,
-            reviewers: doc.reviewers,
-            approvers: doc.approvers,
-            coAuthors: doc.coAuthors,
-            changeControl: doc.changeControl
+            reviewers: document.reviewers,
+            approvers: document.approvers,
+            coAuthors: document.coAuthors,
+            changeControl: document.changeControl
           },
-          doc.id as Ref<ControlledDocument>
+          document.id
         )
         await ops.commit()
         console.log(result)
@@ -838,6 +863,26 @@ export class WorkspaceImporter {
     }
 
     return spaceId
+  }
+
+  private partitionTemplatesFromDocuments (
+    doc: ImportControlledDoc,
+    documentMap: Map<Ref<ControlledDocument | DocumentTemplate>, ImportControlledDocument[]>,
+    templateMap: Map<Ref<DocumentTemplate | ControlledDocument>, ImportControlledDocumentTemplate[]>,
+    parentId?: Ref<ControlledDocument | DocumentTemplate>
+  ): void {
+    if (this.isDocumentTemplate(doc)) {
+      const templates = templateMap.get(parentId as Ref<DocumentTemplate | ControlledDocument>) ?? []
+      templates.push(doc as ImportControlledDocumentTemplate)
+      templateMap.set(parentId as Ref<DocumentTemplate | ControlledDocument>, templates)
+    } else {
+      const documents = documentMap.get(parentId as Ref<ControlledDocument | DocumentTemplate>) ?? []
+      documents.push(doc as ImportControlledDocument)
+      documentMap.set(parentId as Ref<ControlledDocument | DocumentTemplate>, documents)
+    }
+    for (const subdoc of doc.subdocs) {
+      this.partitionTemplatesFromDocuments(subdoc, documentMap, templateMap, doc.id)
+    }
   }
 
   private isDocumentTemplate (doc: ImportDoc): boolean {
@@ -926,13 +971,13 @@ export class WorkspaceImporter {
       throw new Error('Failed to create document template: ' + template.title)
     }
 
-    for (const subdoc of template.subdocs) {
-      if (this.isDocumentTemplate(subdoc)) {
-        await this.createTemplateWithSubdocs(subdoc as ImportControlledDocumentTemplate, spaceId)
-      } else {
-        await this.createControlledDocumentWithSubdocs(subdoc as ImportControlledDocument, spaceId)
-      }
-    }
+    // for (const subdoc of template.subdocs) {
+    //   if (this.isDocumentTemplate(subdoc)) {
+    //     await this.createTemplateWithSubdocs(subdoc as ImportControlledDocumentTemplate, spaceId)
+    //   } else {
+    //     await this.createControlledDocumentWithSubdocs(subdoc as ImportControlledDocument, spaceId)
+    //   }
+    // }
 
     return { templateId, metaId: result.metaId }
   }
@@ -983,13 +1028,13 @@ export class WorkspaceImporter {
     }
 
     // Process subdocs recursively
-    for (const subdoc of doc.subdocs) {
-      if (this.isDocumentTemplate(subdoc)) {
-        await this.createTemplateWithSubdocs(subdoc as ImportControlledDocumentTemplate, spaceId)
-      } else {
-        await this.createControlledDocumentWithSubdocs(subdoc as ImportControlledDocument, spaceId)
-      }
-    }
+    // for (const subdoc of doc.subdocs) {
+    //   if (this.isDocumentTemplate(subdoc)) {
+    //     await this.createTemplateWithSubdocs(subdoc as ImportControlledDocumentTemplate, spaceId)
+    //   } else {
+    //     await this.createControlledDocumentWithSubdocs(subdoc as ImportControlledDocument, spaceId)
+    //   }
+    // }
 
     return { docId, metaId: result.metaId }
   }
