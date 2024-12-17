@@ -174,6 +174,7 @@
                   }
                 }
               : false,
+            drawingBoard: false,
             submit: supportSubmit ? { submit } : false,
             toolbar: {
               element: textToolbarElement,

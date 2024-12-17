@@ -75,7 +75,7 @@
   import TextEditorToolbar from './TextEditorToolbar.svelte'
   import { noSelectionRender, renderCursor } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
-  import { DrawingBoardExtension, SavedBoard } from './extension/drawingBoard'
+  import { SavedBoard } from './extension/drawingBoard'
   import { EmojiExtension } from './extension/emoji'
   import { FileUploadExtension } from './extension/fileUploadExt'
   import { ImageUploadExtension } from './extension/imageUploadExt'
@@ -83,7 +83,7 @@
   import { LeftMenuExtension } from './extension/leftMenu'
   import { type FileAttachFunction } from './extension/types'
   import { completionConfig, inlineCommandsConfig } from './extensions'
-  import { MermaidExtension, mermaidOptions } from './extension/mermaid'
+  import { mermaidOptions } from './extension/mermaid'
   import { InlineCommentExtension } from './extension/inlineComment'
 
   export let object: Doc
@@ -464,6 +464,14 @@
               isHidden: () => !showToolbar
             }
           },
+          mermaid: {
+            ...mermaidOptions,
+            ydoc,
+            ydocContentField: field
+          },
+          drawingBoard: {
+            getSavedBoard
+          },
           ...kitOptions
         }),
         ...optionalExtensions,
@@ -485,8 +493,6 @@
           }
         }),
         EmojiExtension,
-        MermaidExtension.configure({ ...mermaidOptions, ydoc, ydocContentField: field }),
-        DrawingBoardExtension.configure({ getSavedBoard }),
         ...extensions
       ],
       parseOptions: {

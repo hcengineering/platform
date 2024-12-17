@@ -31,7 +31,6 @@
   import { InlineCommandsExtension } from './extension/inlineCommands'
   import { type FileAttachFunction } from './extension/types'
   import { completionConfig, InlineCommandId, inlineCommandsConfig } from './extensions'
-  import { MermaidExtension, mermaidOptions } from './extension/mermaid'
 
   export let label: IntlString | undefined = undefined
   export let content: Markup
@@ -193,7 +192,6 @@
     }
     extensions.push(
       imageUploadPlugin,
-      MermaidExtension.configure(mermaidOptions),
       FocusExtension.configure({ onCanBlur: (value: boolean) => (canBlur = value), onFocus: handleFocus })
     )
     if (enableEmojiReplace) {
