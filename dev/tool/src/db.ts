@@ -277,14 +277,20 @@ export async function moveAccountDbFromMongoToPG (
   ctx.info('Assignments made', { count: assignmentsToInsert.length })
 }
 
-export async function generateUuidMissingWorkspaces (ctx: MeasureMetricsContext, db: AccountDB): Promise<void> {
+export async function generateUuidMissingWorkspaces (
+  ctx: MeasureMetricsContext,
+  db: AccountDB,
+  dryRun = false
+): Promise<void> {
   const workspaces = await listWorkspacesPure(db)
   let updated = 0
   for (const ws of workspaces) {
     if (ws.uuid !== undefined) continue
 
     const uuid = new UUID().toJSON()
-    await db.workspace.updateOne({ _id: ws._id }, { uuid })
+    if (!dryRun) {
+      await db.workspace.updateOne({ _id: ws._id }, { uuid })
+    }
     updated++
   }
   ctx.info('Assigned uuids to workspaces', { updated, total: workspaces.length })
@@ -293,41 +299,64 @@ export async function generateUuidMissingWorkspaces (ctx: MeasureMetricsContext,
 export async function updateDataWorkspaceIdToUuid (
   ctx: MeasureMetricsContext,
   accountDb: AccountDB,
-  dbUrl: string | undefined
+  dbUrl: string | undefined,
+  dryRun = false
 ): Promise<void> {
   if (dbUrl === undefined) {
     throw new Error('dbUrl is required')
   }
 
   const pg = getDBClient(dbUrl)
-  const pgClient = await pg.getClient()
+  try {
+    const pgClient = await pg.getClient()
 
-  // Generate uuids for all workspaces or verify they exist
-  await generateUuidMissingWorkspaces(ctx, accountDb)
+    // Generate uuids for all workspaces or verify they exist
+    await generateUuidMissingWorkspaces(ctx, accountDb, dryRun)
 
-  const workspaces = await listWorkspacesPure(accountDb)
-  const domains: string[] = [] // TODO: get all the domains
-
-  for (const ws of workspaces) {
-    const uuid = ws.uuid
-    if (uuid === undefined) {
-      ctx.error('Workspace uuid is required but not defined', { workspace: ws.workspace })
+    const workspaces = await listWorkspacesPure(accountDb)
+    const noUuidWss = workspaces.filter((ws) => ws.uuid === undefined)
+    if (noUuidWss.length > 0) {
+      ctx.error('Workspace uuid is required but not defined', { workspaces: noUuidWss.map((it) => it.workspace) })
       throw new Error('workspace uuid is required but not defined')
     }
 
-    ctx.info('Updating workspace id to uuid for ws data ', { workspace: ws.workspace, uuid })
+    const res = await pgClient`select t.table_name from information_schema.columns as c 
+      join information_schema.tables as t on 
+        c.table_catalog = t.table_catalog and
+        c.table_schema  = t.table_schema and 
+        c.table_name    = t.table_name
+      where t.table_type = 'BASE TABLE' and t.table_schema = 'public' and c.column_name = 'workspaceId' and c.data_type <> 'uuid'`
+    const tables: string[] = res.map((r) => r.table_name)
 
-    for (const domain of domains) {
-      await retryTxn(pgClient, async (client) => {
-        await client`UPDATE ${translateDomain(domain)} SET "workspaceId" = '${uuid}' WHERE "workspaceId" = '${ws.workspace}'`
-      })
+    ctx.info('Tables to be updated: ', { tables })
+
+    for (const table of tables) {
+      ctx.info('Altering table workspaceId type to uuid', { table })
+
+      if (!dryRun) {
+        await retryTxn(pgClient, async (client) => {
+          await client`ALTER TABLE ${client(table)} RENAME COLUMN "workspaceId" TO "workspaceIdOld"`
+          await client`ALTER TABLE ${client(table)} ADD COLUMN "workspaceId" UUID`
+
+          for (const ws of workspaces) {
+            const uuid = ws.uuid
+            if (uuid === undefined) {
+              ctx.error('Workspace uuid is required but not defined', { workspace: ws.workspace })
+              throw new Error('workspace uuid is required but not defined')
+            }
+
+            await client`UPDATE ${client(table)} SET "workspaceId" = ${uuid} WHERE "workspaceIdOld" = ${ws.workspace}`
+          }
+
+          await client`ALTER TABLE ${client(table)} ALTER COLUMN "workspaceId" SET NOT NULL`
+          await client`ALTER TABLE ${client(table)} DROP CONSTRAINT "task_pkey"`
+          await client`ALTER TABLE ${client(table)} ADD CONSTRAINT "task_pkey" PRIMARY KEY ("workspaceId", _id)`
+        })
+      }
     }
-  }
 
-  for (const domain of domains) {
-    await retryTxn(pgClient, async (client) => {
-      await client`ALTER TABLE ${translateDomain(domain)} ALTER COLUMN "workspaceId" TYPE UUID`
-    })
+    ctx.info('Done updating workspaceId to uuid')
+  } finally {
+    pg.close()
   }
-  ctx.info('Done updating workspaceId to uuid')
 }

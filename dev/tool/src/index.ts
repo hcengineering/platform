@@ -2002,21 +2002,23 @@ export function devTool (
   program
     .command('generate-uuid-workspaces')
     .description('generate uuids for all workspaces which are missing it')
-    .action(async () => {
+    .option('-d, --dryrun', 'Dry run', false)
+    .action(async (cmd: { dryrun: boolean }) => {
       await withAccountDatabase(async (db) => {
         console.log('generate uuids for all workspaces which are missing it')
-        await generateUuidMissingWorkspaces(toolCtx, db)
+        await generateUuidMissingWorkspaces(toolCtx, db, cmd.dryrun)
       })
     })
 
   program
     .command('update-data-wsid-to-uuid')
     .description('updates workspaceId in pg/cr to uuid')
-    .action(async () => {
+    .option('-d, --dryrun', 'Dry run', false)
+    .action(async (cmd: { dryrun: boolean }) => {
       await withAccountDatabase(async (db) => {
         console.log('updates workspaceId in pg/cr to uuid')
         const { dbUrl } = prepareTools()
-        await updateDataWorkspaceIdToUuid(toolCtx, db, dbUrl)
+        await updateDataWorkspaceIdToUuid(toolCtx, db, dbUrl, cmd.dryrun)
       })
     })
 
