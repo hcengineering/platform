@@ -340,6 +340,7 @@ export class Transactor extends DurableObject<Env> {
 
   async rpcFindAll (
     rawToken: string,
+    workspaceId: string,
     _class: Ref<Class<Doc>>,
     query?: DocumentQuery<Doc>,
     options?: FindOptions<Doc>
@@ -357,7 +358,7 @@ export class Transactor extends DurableObject<Env> {
     return result
   }
 
-  async rpcTx (rawToken: string, tx: Tx): Promise<any> {
+  async rpcTx (rawToken: string, workspaceId: string, tx: Tx): Promise<any> {
     let result
     const cs = this.createDummyClientSocket()
     try {
