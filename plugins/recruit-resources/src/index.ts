@@ -65,6 +65,9 @@ import OpinionsPresenter from './components/review/OpinionsPresenter.svelte'
 import ReviewPresenter from './components/review/ReviewPresenter.svelte'
 import Reviews from './components/review/Reviews.svelte'
 import ApplicantNamePresenter from './components/ApplicantNamePresenter.svelte'
+import OrganizationSpacePresenter from './components/OrganizationSpacePresenter.svelte'
+import OrganizationPanel from './components/OrganizationPanel.svelte'
+import CreateOrganization from './components/CreateOrganization.svelte'
 import recruit from './plugin'
 import {
   getAppIdentifier,
@@ -79,7 +82,8 @@ import {
   getVacTitle,
   objectLinkProvider,
   parseLinkId,
-  resolveLocation
+  resolveLocation,
+  getApplicantsLink
 } from './utils'
 
 import { get } from 'svelte/store'
@@ -370,6 +374,9 @@ export default async (): Promise<Resources> => ({
     VacancyItemPresenter,
     VacancyCountPresenter,
     VacancyModifiedPresenter,
+    OrganizationSpacePresenter,
+    CreateOrganization,
+    OrganizationPanel,
 
     CreateReview,
     ReviewPresenter,
@@ -417,7 +424,8 @@ export default async (): Promise<Resources> => ({
     HideDoneState: hideDoneState,
     HideArchivedVacancies: hideArchivedVacancies,
     ApplicantHasEmail: applicantHasEmail,
-    ParseLinkId: parseLinkId
+    ParseLinkId: parseLinkId,
+    GetApplicantsLink: getApplicantsLink
   },
   resolver: {
     Location: resolveLocation

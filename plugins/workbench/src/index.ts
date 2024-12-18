@@ -148,6 +148,7 @@ export interface SpacesNavModel {
   addSpaceLabel?: IntlString
   createComponent?: AnyComponent
   icon?: Asset
+  spacePresenter?: AnyComponent
 
   // Child special items.
   specials?: SpecialNavModel[]

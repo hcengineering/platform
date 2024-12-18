@@ -26,6 +26,7 @@
     IconMenuClose,
     ButtonIcon,
     Header,
+    SearchInput,
     Separator,
     showPopup,
     getLocation,
@@ -53,29 +54,35 @@
   export let mainComponent: AnyComponent | AnySvelteComponent
   export let mainComponentProps = {}
   export let showNavigator: boolean = false
-  export let parentKey: string = navigationComponentProps?.parentKey ?? 'attachedTo'
+  export let parentKey: string = navigationComponentProps?.parentKey
+  export let isNestedNavigator: boolean = false
 
   const FLOAT_LIMIT = 760
   let container: HTMLDivElement
 
+  let search = ''
+
   let parentQuery: DocumentQuery<Doc> = {}
   let resultQuery: DocumentQuery<Doc> = {}
   let spaceQuery: DocumentQuery<Doc> = {}
+  let searchQuery: DocumentQuery<Doc> = {}
   $: spaceQuery = space !== undefined ? { space } : {}
+  $: searchQuery = search === '' ? {} : { $search: search }
   $: resultQuery = mergeQueries(query, mergeQueries(spaceQuery, parentQuery)) ?? {}
+  $: navigatorQuery = mergeQueries(spaceQuery, searchQuery)
 
-  if (syncWithLocationQuery) {
+  if (syncWithLocationQuery || isNestedNavigator) {
     parentQuery = getLocation()?.query as any
     onDestroy(
       resolvedLocationStore.subscribe((newLocation) => {
-        parentQuery = newLocation?.query ?? {}
+        parentQuery = { ...parentQuery, ...(newLocation?.query ?? {}) }
       })
     )
   }
 
   function onSelected (e: CustomEvent<any>): void {
     if (syncWithLocationQuery) return
-    parentQuery = { [parentKey]: e.detail }
+    parentQuery = { ...parentQuery, [parentKey]: e.detail }
   }
 
   function showCreateDialog (): void {
@@ -132,6 +139,9 @@
       <div class="hulyComponent-content__column">
         <Header adaptive={'disabled'}>
           <Breadcrumb icon={navigationComponentIcon} label={navigationComponentLabel} size={'large'} isCurrent />
+          <svelte:fragment slot="search">
+            <SearchInput bind:value={search} collapsed />
+          </svelte:fragment>
           <svelte:fragment slot="actions">
             {#if createComponent}
               <Button
@@ -151,7 +161,8 @@
           is={navigationComponent}
           props={{
             ...navigationComponentProps,
-            query: spaceQuery
+            syncWithLocationQuery,
+            query: navigatorQuery
           }}
           on:select={onSelected}
         />

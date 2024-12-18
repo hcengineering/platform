@@ -17,7 +17,7 @@ import { type Client, type Doc, type Ref } from '@hcengineering/core'
 import type { IntlString, Resource, StatusCode } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation'
-import recruit, { recruitId } from '@hcengineering/recruit'
+import recruit, { recruitId, type VacancyList } from '@hcengineering/recruit'
 import { type TagCategory } from '@hcengineering/tags'
 import { type AnyComponent } from '@hcengineering/ui'
 import { type FilterFunction, type FilterMode, type Viewlet } from '@hcengineering/view'
@@ -145,7 +145,8 @@ export default mergeIds(recruitId, recruit, {
     OpinionsPresenter: '' as AnyComponent,
     VacancyModifiedPresenter: '' as AnyComponent,
     CreateVacancy: '' as AnyComponent,
-    CreateCandidate: '' as AnyComponent
+    CreateCandidate: '' as AnyComponent,
+    OrganizationPanel: '' as AnyComponent
   },
   function: {
     IdProvider: '' as Resource<(doc: Doc) => Promise<string>>,
@@ -157,11 +158,15 @@ export default mergeIds(recruitId, recruit, {
     RevTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     HasActiveApplicant: '' as FilterFunction,
     HasNoActiveApplicant: '' as FilterFunction,
-    NoneApplications: '' as FilterFunction
+    NoneApplications: '' as FilterFunction,
+    GetApplicantsLink: '' as Resource<(doc: Ref<Doc>) => Location>
   },
   filter: {
     HasActive: '' as Ref<FilterMode>,
     NoActive: '' as Ref<FilterMode>,
     None: '' as Ref<FilterMode>
+  },
+  ids: {
+    AllCompanies: '' as Ref<VacancyList>
   }
 })

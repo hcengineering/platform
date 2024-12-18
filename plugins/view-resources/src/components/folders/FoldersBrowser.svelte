@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
 
   import { Class, Doc, DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -22,9 +22,10 @@
   import { getResource, type Resource } from '@hcengineering/platform'
   import { IntlString, Asset } from '@hcengineering/platform'
 
-  import { FoldersStore, FoldersState, emptyFoldersState, getFoldersManager } from './store/folderStore'
+  import { FoldersStore, FoldersState, emptyFoldersState, getFoldersManager, resetState } from './store/folderStore'
   import FolderTreeLevel from './FolderTreeLevel.svelte'
   import { TreeNode, TreeItem, getActions as getContributedActions } from '../../index'
+  import { Unsubscriber } from 'svelte/motion'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -35,11 +36,14 @@
   export let allObjectsIcon: Asset
   export let allObjectsLabel: IntlString
   export let plainList: boolean = false
+  export let storeId: string = 'default'
+  export let filterKey: string = 'attachedTo'
+  export let syncWithLocationQuery: boolean = false
 
   const dispatch = createEventDispatcher()
 
   const getFolderId = (): Ref<Doc> => {
-    return (getLocation()?.query?.attachedTo as Ref<Doc>) ?? noParentId
+    return (getLocation()?.query?.[filterKey] as Ref<Doc>) ?? noParentId
   }
 
   export let forciblyСollapsed: boolean = false
@@ -48,21 +52,33 @@
 
   let foldersState: FoldersState = emptyFoldersState()
 
-  const foldersManager = getFoldersManager(titleKey, parentKey, noParentId, plainList)
+  const foldersManager = getFoldersManager(storeId, titleKey, parentKey, noParentId, plainList)
 
-  FoldersStore.subscribe((newState) => {
-    foldersState = newState
+  const unsubscribe = FoldersStore.subscribe((store) => {
+    foldersState = store.get(storeId) ?? emptyFoldersState()
   })
 
   let selected: Ref<Doc> = getFolderId()
   let visibleItem: Doc | undefined = foldersState.folderById.get(selected)
-  location.subscribe(() => {
-    selected = getFolderId()
-    visibleItem = foldersState.folderById.get(selected)
+
+  let unsubscribeLoc: Unsubscriber | undefined = undefined
+  if (syncWithLocationQuery) {
+    unsubscribeLoc = location.subscribe(() => {
+      selected = getFolderId()
+      visibleItem = foldersState.folderById.get(selected)
+    })
+  }
+
+  onDestroy(() => {
+    resetState(storeId)
+    unsubscribe()
+    if (unsubscribeLoc !== undefined) {
+      unsubscribeLoc()
+    }
   })
 
   const q = createQuery()
-  q.query(
+  $: q.query(
     _class,
     query ?? {},
     async (result) => {

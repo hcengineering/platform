@@ -21,6 +21,7 @@
   import {
     Action,
     AnyComponent,
+    Component,
     IconAdd,
     IconSearch,
     getCurrentResolvedLocation,
@@ -146,42 +147,63 @@
     !empty
 </script>
 
-<TreeNode
-  _id={'tree-' + model.id}
-  label={model.label}
-  actions={async () => getParentActions()}
-  highlighted={visible}
-  isFold={!empty}
-  {empty}
-  {visible}
->
-  {#each filteredSpaces as space, i (space._id)}
-    {#if separate && model.specials && i !== 0}<TreeSeparator line />{/if}
-    <SpacesNavItem
-      {model}
-      {space}
-      {currentSpace}
-      {currentSpecial}
-      {currentFragment}
-      {deselect}
-      isChanged={isChanged(space, $notifyContextByDocStore, $inboxNotificationsByContextStore)}
-      spaceActions={[starSpace]}
-    />
-  {/each}
-
-  <svelte:fragment slot="visible">
-    {#if visibleSpace}
+{#if model?.spacePresenter === undefined}
+  <TreeNode
+    _id={'tree-' + model.id}
+    label={model.label}
+    actions={async () => getParentActions()}
+    highlighted={visible}
+    isFold={!empty}
+    {empty}
+    {visible}
+  >
+    {#each filteredSpaces as space, i (space._id)}
+      {#if separate && model.specials && i !== 0}<TreeSeparator line />{/if}
       <SpacesNavItem
         {model}
-        space={visibleSpace}
+        {space}
         {currentSpace}
         {currentSpecial}
         {currentFragment}
         {deselect}
-        isChanged={isChanged(visibleSpace, $notifyContextByDocStore, $inboxNotificationsByContextStore)}
+        isChanged={isChanged(space, $notifyContextByDocStore, $inboxNotificationsByContextStore)}
         spaceActions={[starSpace]}
-        forciblyСollapsed
       />
-    {/if}
-  </svelte:fragment>
-</TreeNode>
+    {/each}
+
+    <svelte:fragment slot="visible">
+      {#if visibleSpace}
+        <SpacesNavItem
+          {model}
+          space={visibleSpace}
+          {currentSpace}
+          {currentSpecial}
+          {currentFragment}
+          {deselect}
+          isChanged={isChanged(visibleSpace, $notifyContextByDocStore, $inboxNotificationsByContextStore)}
+          spaceActions={[starSpace]}
+          forciblyСollapsed
+        />
+      {/if}
+    </svelte:fragment>
+  </TreeNode>
+{:else}
+  <TreeNode
+    _id={'tree-' + model.id}
+    label={model.label}
+    actions={async () => getParentActions()}
+    highlighted={visible}
+    isFold={false}
+    {visible}
+  >
+    <Component
+      is={model?.spacePresenter}
+      props={{
+        model,
+        currentSpace,
+        currentSpecial,
+        currentFragment
+      }}
+    />
+  </TreeNode>
+{/if}

@@ -133,7 +133,19 @@ export function createModel (builder: Builder): void {
       alias: recruitId,
       hidden: false,
       navigatorModel: {
-        spaces: [],
+        spaces: [
+          {
+            id: organizationsId,
+            label: recruit.string.Company,
+            spaceClass: recruit.mixin.VacancyList,
+            addSpaceLabel: recruit.string.CompanyCreateLabel,
+            createComponent: recruit.component.CreateOrganization,
+            icon: contact.icon.Company,
+            // intentionally left empty in order to make space presenter working
+            specials: [],
+            spacePresenter: recruit.component.OrganizationSpacePresenter
+          }
+        ],
         specials: [
           {
             id: vacanciesId,
@@ -145,13 +157,6 @@ export function createModel (builder: Builder): void {
             componentProps: {
               archived: false
             }
-          },
-          {
-            id: organizationsId,
-            component: recruit.component.Organizations,
-            icon: contact.icon.Company,
-            label: recruit.string.Organizations,
-            position: 'vacancy'
           },
           {
             id: candidatesId,
@@ -188,7 +193,8 @@ export function createModel (builder: Builder): void {
                 parentKey: 'space',
                 plainList: true
               },
-              syncWithLocationQuery: false
+              syncWithLocationQuery: false,
+              isNestedNavigator: true
             }
           },
           {
@@ -383,39 +389,6 @@ export function createModel (builder: Builder): void {
       }
     },
     recruit.viewlet.TableVacancy
-  )
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: recruit.mixin.VacancyList,
-      descriptor: view.viewlet.Table,
-      config: [
-        {
-          key: '',
-          label: recruit.string.Organizations
-        },
-        {
-          key: '@vacancies',
-          label: recruit.string.Vacancies
-        },
-        {
-          key: '@applications',
-          label: recruit.string.Applications
-        },
-        'comments',
-        '$lookup.channels',
-        {
-          key: '@applications.modifiedOn',
-          label: core.string.ModifiedDate
-        }
-      ],
-      configOptions: {
-        hiddenKeys: ['name', 'space', 'modifiedOn'],
-        sortable: true
-      }
-    },
-    recruit.viewlet.TableVacancyList
   )
 
   builder.createDoc(
@@ -712,61 +685,6 @@ export function createModel (builder: Builder): void {
     view.class.Viewlet,
     core.space.Model,
     {
-      attachTo: recruit.mixin.VacancyList,
-      descriptor: view.viewlet.List,
-      config: [
-        { key: '', displayProps: { fixed: 'left', key: 'app' } },
-        {
-          key: '@vacancies',
-          label: recruit.string.Vacancies,
-          props: { kind: 'list', size: 'small', shouldShowName: false }
-        },
-        {
-          key: '@applications',
-          label: recruit.string.Applications,
-          props: { kind: 'list', size: 'small', shouldShowName: false }
-        },
-        'comments',
-        {
-          key: '$lookup.channels',
-          label: contact.string.ContactInfo,
-          sortingKey: ['$lookup.channels.lastMessage', '$lookup.attachedTo.channels'],
-          props: {
-            length: 'full',
-            size: 'small',
-            kind: 'list'
-          },
-          displayProps: { compression: true }
-        },
-        { key: '', displayProps: { grow: true } },
-        {
-          key: '@applications.modifiedOn',
-          label: core.string.ModifiedDate,
-          displayProps: { key: 'modified', fixed: 'right', dividerBefore: true }
-        }
-      ],
-      configOptions: {
-        strict: true,
-        sortable: true,
-        hiddenKeys: ['name', 'space', 'modifiedOn']
-      },
-      viewOptions: {
-        groupBy: ['createdBy', 'modifiedBy'],
-        orderBy: [
-          ['modifiedOn', SortingOrder.Descending],
-          ['createdOn', SortingOrder.Descending],
-          ['rank', SortingOrder.Ascending]
-        ],
-        other: [showColorsViewOption]
-      }
-    },
-    recruit.viewlet.ListCompanies
-  )
-
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
       attachTo: recruit.class.Vacancy,
       descriptor: view.viewlet.List,
       config: [
@@ -871,6 +789,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ObjectEditor, {
     editor: recruit.component.EditVacancy
+  })
+
+  builder.mixin(recruit.mixin.VacancyList, core.class.Class, view.mixin.SpacePresenter, {
+    presenter: recruit.component.OrganizationSpacePresenter
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectPresenter, {
@@ -1125,6 +1047,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(recruit.mixin.VacancyList, core.class.Class, view.mixin.ClassFilters, {
     filters: []
+  })
+
+  builder.mixin(recruit.mixin.VacancyList, core.class.Class, view.mixin.ObjectPanel, {
+    component: recruit.component.OrganizationPanel
   })
 
   createReviewModel(builder)

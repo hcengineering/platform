@@ -112,6 +112,8 @@ export default mergeIds(recruitId, recruit, {
     SkillsView: '' as AnyComponent,
     Vacancies: '' as AnyComponent,
     Organizations: '' as AnyComponent,
+    OrganizationSpacePresenter: '' as AnyComponent,
+    CreateOrganization: '' as AnyComponent,
 
     CreateReview: '' as AnyComponent,
     Reviews: '' as AnyComponent,
