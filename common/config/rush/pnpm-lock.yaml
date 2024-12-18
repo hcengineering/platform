@@ -58,7 +58,7 @@ dependencies:
     version: 7.5.1
   '@playwright/test':
     specifier: ^1.48.2
-    version: 1.48.2
+    version: 1.49.1
   '@rush-temp/account':
     specifier: file:./projects/account.tgz
     version: file:projects/account.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
@@ -163,7 +163,7 @@ dependencies:
     version: file:projects/cloud-datalake.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4)
   '@rush-temp/cloud-transactor':
     specifier: file:./projects/cloud-transactor.tgz
-    version: file:projects/cloud-transactor.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(ts-node@10.9.2)(utf-8-validate@6.0.4)
+    version: file:projects/cloud-transactor.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4)
   '@rush-temp/collaboration':
     specifier: file:./projects/collaboration.tgz
     version: file:projects/collaboration.tgz(esbuild@0.20.1)(ts-node@10.9.2)
@@ -1258,7 +1258,7 @@ dependencies:
     version: 4.2.2
   '@types/csvtojson':
     specifier: ^2.0.0
-    version: 2.0.0
+    version: 2.0.3
   '@types/diff':
     specifier: ~5.0.2
     version: 5.0.9
@@ -1414,10 +1414,10 @@ dependencies:
     version: 1.7.4
   allure-js-commons:
     specifier: ^3.0.6
-    version: 3.0.6(allure-playwright@3.0.6)
+    version: 3.0.7(allure-playwright@3.0.7)
   allure-playwright:
     specifier: ^3.0.6
-    version: 3.0.6(@playwright/test@1.48.2)
+    version: 3.0.7(@playwright/test@1.49.1)
   autolinker:
     specifier: 4.0.0
     version: 4.0.0
@@ -1444,7 +1444,7 @@ dependencies:
     version: 4.23.3
   bson:
     specifier: ^6.10.0
-    version: 6.10.0
+    version: 6.10.1
   bufferutil:
     specifier: ^4.0.8
     version: 4.0.8
@@ -1515,8 +1515,8 @@ dependencies:
     specifier: ~22.8.7
     version: 22.8.8
   electron:
-    specifier: ^33.2.0
-    version: 33.2.0
+    specifier: ^33.3.0
+    version: 33.3.0
   electron-builder:
     specifier: ^25.1.8
     version: 25.1.8
@@ -1729,7 +1729,7 @@ dependencies:
     version: 8.0.0
   mongodb:
     specifier: ^6.10.0
-    version: 6.10.0
+    version: 6.12.0
   morgan:
     specifier: ^1.10.0
     version: 1.10.0
@@ -1972,7 +1972,7 @@ packages:
   /@antfu/install-pkg@0.4.1:
     resolution: {integrity: sha512-T7yB5QNG29afhWVkVq7XeIMBa5U/vs9mX69YqayXypPRmYzUmzwnYltplHmPtZ4HPCn+sQKeXW8I47wCbuBOjw==}
     dependencies:
-      package-manager-detector: 0.2.6
+      package-manager-detector: 0.2.7
       tinyexec: 0.3.1
     dev: false
 
@@ -3190,7 +3190,7 @@ packages:
     resolution: {integrity: sha512-Qkzpg2s9GnVV2I2BjRksUi43U5e6+zaQMcjoJy0C+C5oxaKl+fmckGDQFtRpZpZV0NQekuZZ+tGz7EA9TVnQtQ==}
     engines: {node: '>=12'}
     dependencies:
-      debug: 4.3.5
+      debug: 4.4.0
       env-paths: 2.2.1
       fs-extra: 8.1.0
       got: 11.8.6
@@ -4079,13 +4079,14 @@ packages:
     resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
     dev: false
 
-  /@iconify/utils@2.1.33:
-    resolution: {integrity: sha512-jP9h6v/g0BIZx0p7XGJJVtkVnydtbgTgt9mVNcGDYwaa7UhdHdI9dvoq+gKj9sijMSJKxUPEG2JyjsgXjxL7Kw==}
+  /@iconify/utils@2.2.1:
+    resolution: {integrity: sha512-0/7J7hk4PqXmxo5PDBDxmnecw5PxklZJfNjIVG9FM0mEfVrvfudS22rYWsqVk6gR3UJ/mSYS90X4R3znXnqfNA==}
     dependencies:
       '@antfu/install-pkg': 0.4.1
       '@antfu/utils': 0.7.10
       '@iconify/types': 2.0.0
-      debug: 4.3.7
+      debug: 4.4.0
+      globals: 15.13.0
       kolorist: 1.8.0
       local-pkg: 0.5.1
       mlly: 1.7.3
@@ -4852,6 +4853,12 @@ packages:
       sparse-bitfield: 3.0.3
     dev: false
 
+  /@mongodb-js/saslprep@1.1.9:
+    resolution: {integrity: sha512-tVkljjeEaAhCqTzajSdgbQ6gE6f3oneVwa3iXR6csiEwXXOFsiC6Uh9iAjAhXPtqa/XMDHWjjeNH/77m/Yq2dw==}
+    dependencies:
+      sparse-bitfield: 3.0.3
+    dev: false
+
   /@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.3:
     resolution: {integrity: sha512-QZHtlVgbAdy2zAqNA9Gu1UpIuI8Xvsd1v8ic6B2pZmeFnFcMWiPLfWXh7TVw4eGEZ/C9TH281KwhVoeQUKbyjw==}
     cpu: [arm64]
@@ -5217,12 +5224,12 @@ packages:
     dev: false
     optional: true
 
-  /@playwright/test@1.48.2:
-    resolution: {integrity: sha512-54w1xCWfXuax7dz4W2M9uw0gDyh+ti/0K/MxcCUxChFh37kkdxPdfZDw5QBbuPUJHr1CiHJ1hXgSs+GgeQc5Zw==}
+  /@playwright/test@1.49.1:
+    resolution: {integrity: sha512-Ky+BVzPz8pL6PQxHqNRW1k3mIyv933LML7HktS8uik0bUXNCdPhoS/kLihiO1tMf/egaJb4IutXd7UywvXEW+g==}
     engines: {node: '>=18'}
     hasBin: true
     dependencies:
-      playwright: 1.48.2
+      playwright: 1.49.1
     dev: false
 
   /@polka/url@1.0.0-next.24:
@@ -5252,10 +5259,6 @@ packages:
 
   /@remirror/core-constants@2.0.2:
     resolution: {integrity: sha512-dyHY+sMF0ihPus3O27ODd4+agdHMEmuRdyiZJ2CCWjPV5UFmn17ZbElvk6WOGVE4rdCJKZQCrPV2BcikOMLUGQ==}
-    dev: false
-
-  /@sec-ant/readable-stream@0.4.1:
-    resolution: {integrity: sha512-831qok9r2t8AlxLko40y2ebgSDhenenCatLVeW/uBtnHPyhHOvG0C7TvfgecV+wHzIm5KUICgzmVpWS+IMEAeg==}
     dev: false
 
   /@selderee/plugin-htmlparser2@0.11.0:
@@ -6484,8 +6487,8 @@ packages:
     resolution: {integrity: sha512-sDOLlVbHhXpAUAL0YHDUUwDZf3iN4Bwi4W6a0W0b+QcAezUbRtH4FVb+9J4h+XFPW7l/gQ9F8qC7P+Ec4k8QVQ==}
     dev: false
 
-  /@types/csvtojson@2.0.0:
-    resolution: {integrity: sha512-F7jFwbbA/V2OKM1VhZccjC+/eeZISvWyqGmhFS9A44jQp3RimDleNYngG+DvCgHjM2EjHwgQe0qqpgDhTqsa7Q==}
+  /@types/csvtojson@2.0.3:
+    resolution: {integrity: sha512-qutD4v9ydwjTp2XLK4w7FO9SK5QFpbGkCmGRu7+oJPrguUqT82X7ufxmsmx1TpkMdxhftGKdHmPr4DFkx1b0yA==}
     deprecated: This is a stub types definition. csvtojson provides its own type definitions, so you do not need this installed.
     dependencies:
       csvtojson: 2.0.10
@@ -6519,7 +6522,7 @@ packages:
     resolution: {integrity: sha512-BjzLgXGnCWjUSYGfH1cpdo41/hgdWETu4YxpezoztawmqsvCeep+8QGfiY6YbDvfgHz/DkjeIkkZVJavB4a3rg==}
     dependencies:
       '@types/d3-array': 3.2.1
-      '@types/geojson': 7946.0.14
+      '@types/geojson': 7946.0.15
     dev: false
 
   /@types/d3-delaunay@6.0.4:
@@ -6561,7 +6564,7 @@ packages:
   /@types/d3-geo@3.1.0:
     resolution: {integrity: sha512-856sckF0oP/diXtS4jNsiQw/UuK5fQG8l/a9VVLeSouf1/PPbBE1i1W852zVwKwYCBkFJJB7nCFTbk6UMEXBOQ==}
     dependencies:
-      '@types/geojson': 7946.0.14
+      '@types/geojson': 7946.0.15
     dev: false
 
   /@types/d3-hierarchy@3.1.7:
@@ -6763,8 +6766,8 @@ packages:
       '@types/node': 20.11.19
     dev: false
 
-  /@types/geojson@7946.0.14:
-    resolution: {integrity: sha512-WCfD5Ht3ZesJUsONdhvm84dmzWOiOzOAqOncN0++w0lBw1o8OuDNJF2McvvCef/yBqb/HYRahp1BYtODFQ8bRg==}
+  /@types/geojson@7946.0.15:
+    resolution: {integrity: sha512-9oSxFzDCT2Rj6DfcHF8G++jxBKS7mBqXl5xrRW+Kbvjry6Uduya2iiwqHPhVXpasAVMBYKkEPGgKhd3+/HZ6xA==}
     dev: false
 
   /@types/graceful-fs@4.1.9:
@@ -8171,25 +8174,25 @@ packages:
       require-from-string: 2.0.2
     dev: false
 
-  /allure-js-commons@3.0.6(allure-playwright@3.0.6):
-    resolution: {integrity: sha512-q3r3Cj3sG6hR7jH8SGkfNleLJK+yFAGwzyFDGzIfu+WLZ4yeFcBZHkWuq7QreRpxvsZWNby/38jhrj5yYFwQ2g==}
+  /allure-js-commons@3.0.7(allure-playwright@3.0.7):
+    resolution: {integrity: sha512-keHlPAtmzdtEK8FT5W0mOMYh9ZrdlhbrDyaaAKMNHipF/EsFak18XdbLiAKhnHbHiicE+n3BrmBU4rfQEoFHzA==}
     peerDependencies:
-      allure-playwright: 3.0.6
+      allure-playwright: 3.0.7
     peerDependenciesMeta:
       allure-playwright:
         optional: true
     dependencies:
-      allure-playwright: 3.0.6(@playwright/test@1.48.2)
+      allure-playwright: 3.0.7(@playwright/test@1.49.1)
       md5: 2.3.0
     dev: false
 
-  /allure-playwright@3.0.6(@playwright/test@1.48.2):
-    resolution: {integrity: sha512-CYhIopRjtb1LoTHD0WhH1njd6cEz0J9B+YSSAzLmI/6FP1RPZJFqAyPg/RY8c2BObxM+98T9yZzwSdZ4l3YxjQ==}
+  /allure-playwright@3.0.7(@playwright/test@1.49.1):
+    resolution: {integrity: sha512-kFiPBCeAGOMcJmbFOw1ANjcfH+NuXMm5NIx8QEqb1XTqzMBTOA6xeci7DVgPlrKqJtgYm3AQ4YdxzBnJZzGrog==}
     peerDependencies:
       '@playwright/test': '>=1.36.0'
     dependencies:
-      '@playwright/test': 1.48.2
-      allure-js-commons: 3.0.6(allure-playwright@3.0.6)
+      '@playwright/test': 1.49.1
+      allure-js-commons: 3.0.7(allure-playwright@3.0.7)
     dev: false
 
   /ansi-escapes@4.3.2:
@@ -8768,6 +8771,13 @@ packages:
     dev: false
     optional: true
 
+  /base32-encode@2.0.0:
+    resolution: {integrity: sha512-mlmkfc2WqdDtMl/id4qm3A7RjW6jxcbAoMjdRmsPiwQP0ufD4oXItYMnPgVHe80lnAIy+1xwzhHE1s4FoIceSw==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+    dependencies:
+      to-data-view: 2.0.0
+    dev: false
+
   /base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
     dev: false
@@ -8944,15 +8954,15 @@ packages:
       update-browserslist-db: 1.1.0(browserslist@4.23.3)
     dev: false
 
-  /browserslist@4.24.2:
-    resolution: {integrity: sha512-ZIc+Q62revdMcqC6aChtW4jz3My3klmCO1fEmINZY/8J3EpBg5/A/D0AKmBveUh6pgoeycoMkVMko84tuYS+Gg==}
+  /browserslist@4.24.3:
+    resolution: {integrity: sha512-1CPmv8iobE2fyRMV97dAcMVegvvWKxmq94hkLiAkUGwKVTyDLw33K+ZxiFrREKmmps4rIw6grcCFCnTMSZ/YiA==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001687
-      electron-to-chromium: 1.5.71
-      node-releases: 2.0.18
-      update-browserslist-db: 1.1.1(browserslist@4.24.2)
+      caniuse-lite: 1.0.30001689
+      electron-to-chromium: 1.5.74
+      node-releases: 2.0.19
+      update-browserslist-db: 1.1.1(browserslist@4.24.3)
     dev: false
 
   /bs-logger@0.2.6:
@@ -8968,8 +8978,8 @@ packages:
       node-int64: 0.4.0
     dev: false
 
-  /bson@6.10.0:
-    resolution: {integrity: sha512-ROchNosXMJD2cbQGm84KoP7vOGPO6/bOAW0veMMbzhXLqoZptcaYRVLitwvuhwhjjpU1qP4YZRWLhgETdgqUQw==}
+  /bson@6.10.1:
+    resolution: {integrity: sha512-P92xmHDQjSKPLHqFxefqMxASNq/aWJMEZugpCjf+AF/pgcUpMMQCg7t7+ewko0/u8AapvF3luf/FoehddEK+sA==}
     engines: {node: '>=16.20.1'}
     dev: false
 
@@ -9243,8 +9253,8 @@ packages:
     resolution: {integrity: sha512-9Cf+Xv1jJNe1xPZLGuUXLNkE1BoDkqRqYyFJ9TDYSqhduqA4hu4oR9HluGoWYQC/aj8WHjsGVV+bwkh0+tegRg==}
     dev: false
 
-  /caniuse-lite@1.0.30001687:
-    resolution: {integrity: sha512-0S/FDhf4ZiqrTUiQ39dKeUjYRjkv7lOZU1Dgif2rIqrTzX/1wV2hfKu9TOm1IHkdSijfLswxTFzl/cvir+SLSQ==}
+  /caniuse-lite@1.0.30001689:
+    resolution: {integrity: sha512-CmeR2VBycfa+5/jOfnp/NpWPGd06nf1XYiefUvhXFfZE4GkRc9jv+eGPS4nT558WS/8lYCzV8SlANCIPvbWP1g==}
     dev: false
 
   /capnp-ts@0.7.0:
@@ -10396,6 +10406,10 @@ packages:
       '@babel/runtime': 7.23.9
     dev: false
 
+  /date-fns@4.1.0:
+    resolution: {integrity: sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg==}
+    dev: false
+
   /dayjs@1.11.13:
     resolution: {integrity: sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg==}
     dev: false
@@ -10447,8 +10461,8 @@ packages:
       ms: 2.1.2
     dev: false
 
-  /debug@4.3.7:
-    resolution: {integrity: sha512-Er2nc/H7RrMXZBFCEim6TCmMk02Z8vLC2Rbi1KEBggpo0fS6l0S1nnapwmIi3yW/+GOJap1Krg4w0Hg80oCqgQ==}
+  /debug@4.4.0:
+    resolution: {integrity: sha512-6WTZ/IxCY/T6BALoZHaE4ctp9xm+Z5kY/pzYaCHRFeyVhojxlrm+46y68HA6hr0TcwEssoxNiDEUJQjfPZ/RYA==}
     engines: {node: '>=6.0'}
     peerDependencies:
       supports-color: '*'
@@ -10848,8 +10862,8 @@ packages:
     resolution: {integrity: sha512-cTOAhc36AalkjtBpfG6O8JimdTMWNXjiePT2xQH/ppBGi/4uIpmj8eKyIkMJErXWARyINV/sB38yf8JCLF5pbQ==}
     dev: false
 
-  /dompurify@3.2.2:
-    resolution: {integrity: sha512-YMM+erhdZ2nkZ4fTNRTSI94mb7VG7uVF5vj5Zde7tImgnhZE3R6YW/IACGIHb2ux+QkEXMhe591N+5jWOmL4Zw==}
+  /dompurify@3.2.3:
+    resolution: {integrity: sha512-U1U5Hzc2MO0oW3DF+G9qYN0aT7atAou4AgI0XjWz061nyBPbdxkfdhfy5uMgGn6+oLFCfn44ZGbdDqCzVmlOWA==}
     optionalDependencies:
       '@types/trusted-types': 2.0.7
     dev: false
@@ -11114,8 +11128,8 @@ packages:
     resolution: {integrity: sha512-R1CccCDYqndR25CaXFd6hp/u9RaaMcftMkphmvuepXr5b1vfLkRml6aWVeBhXJ7rbevHkKEMJtz8XqPf7ffmew==}
     dev: false
 
-  /electron-to-chromium@1.5.71:
-    resolution: {integrity: sha512-dB68l59BI75W1BUGVTAEJy45CEVuEGy9qPVVQ8pnHyHMn36PLPPoE1mjLH+lo9rKulO3HC2OhbACI/8tCqJBcA==}
+  /electron-to-chromium@1.5.74:
+    resolution: {integrity: sha512-ck3//9RC+6oss/1Bh9tiAVFy5vfSKbRHAFh7Z3/eTRkEqJeWgymloShB17Vg3Z4nmDNp35vAd1BZ6CMW4Wt6Iw==}
     dev: false
 
   /electron-updater@6.3.4:
@@ -11137,8 +11151,8 @@ packages:
     resolution: {integrity: sha512-hWFbUk9u3fQHcKzTAcjZAN7XH9bL9oH9g20RRDU/DVDNqdMI03GzlBZfR/R8R1krYu9AT4biLqSCAxnt9LMAfA==}
     dev: false
 
-  /electron@33.2.0:
-    resolution: {integrity: sha512-PVw1ICAQDPsnnsmpNFX/b1i/49h67pbSPxuIENd9K9WpGO1tsRaQt+K2bmXqTuoMJsbzIc75Ce8zqtuwBPqawA==}
+  /electron@33.3.0:
+    resolution: {integrity: sha512-316ZlFUHJmzGrhRj87tVStxyYvknDqVR9eYSsGKAHY7auhVWFLIcPPGxcnbD/H1mez8CpDjXvEjcz76zpWxsXw==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
     requiresBuild: true
@@ -12311,7 +12325,7 @@ packages:
     engines: {node: '>= 10.17.0'}
     hasBin: true
     dependencies:
-      debug: 4.3.5
+      debug: 4.4.0
       get-stream: 5.2.0
       yauzl: 2.10.0
     optionalDependencies:
@@ -12490,16 +12504,6 @@ packages:
       readable-web-to-node-stream: 3.0.2
       strtok3: 6.3.0
       token-types: 4.2.1
-    dev: false
-
-  /file-type@19.6.0:
-    resolution: {integrity: sha512-VZR5I7k5wkD0HgFnMsq5hOsSc710MJMu5Nc5QYsbe38NN5iPV/XTObYLc/cpttRTf6lX538+5uO1ZQRhYibiZQ==}
-    engines: {node: '>=18'}
-    dependencies:
-      get-stream: 9.0.1
-      strtok3: 9.1.1
-      token-types: 6.0.0
-      uint8array-extras: 1.4.0
     dev: false
 
   /filelist@1.0.4:
@@ -12923,14 +12927,6 @@ packages:
     engines: {node: '>=10'}
     dev: false
 
-  /get-stream@9.0.1:
-    resolution: {integrity: sha512-kVCxPF3vQM/N0B1PmoqVUqgHP+EeVjmZSQn+1oCRPxd2P21P2F19lIgbR3HBosbB1PUhOAoctJnfEn2GbN2eZA==}
-    engines: {node: '>=18'}
-    dependencies:
-      '@sec-ant/readable-stream': 0.4.1
-      is-stream: 4.0.1
-    dev: false
-
   /get-symbol-description@1.0.2:
     resolution: {integrity: sha512-g0QYk1dZBxGwk+Ngc+ltRH2IBp2f7zBkBMBJZCDerh6EhlhSR6+9irMCuT/09zD6qkarHUSn529sK/yL4S27mg==}
     engines: {node: '>= 0.4'}
@@ -13053,6 +13049,11 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       type-fest: 0.20.2
+    dev: false
+
+  /globals@15.13.0:
+    resolution: {integrity: sha512-49TewVEz0UxZjr1WYYsWpPrhyC/B/pA8Bq0fUmet2n+eR7yn0IvNzNaoBwnK6mdkzcN+se7Ez9zUgULTz2QH4g==}
+    engines: {node: '>=18'}
     dev: false
 
   /globalthis@1.0.3:
@@ -14112,11 +14113,6 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
-  /is-stream@4.0.1:
-    resolution: {integrity: sha512-Dnz92NInDqYckGEUJv689RbRiTSEHCQ7wOVeALbkOz999YpqT46yMRIGtSNl2iCL1waAZSx40+h59NV/EwzV/A==}
-    engines: {node: '>=18'}
-    dev: false
-
   /is-string@1.0.7:
     resolution: {integrity: sha512-tE2UXzivje6ofPW7l23cjDOMa09gb7xlAqG6jG5ej6uPV32TlWP3NKPigtaGeHNu9fohccRYvIiZMfOOnOYUtg==}
     engines: {node: '>= 0.4'}
@@ -14298,6 +14294,10 @@ packages:
 
   /itty-router@5.0.18:
     resolution: {integrity: sha512-mK3ReOt4ARAGy0V0J7uHmArG2USN2x0zprZ+u+YgmeRjXTDbaowDy3kPcsmQY6tH+uHhDgpWit9Vqmv/4rTXwA==}
+    dev: false
+
+  /itty-time@1.0.6:
+    resolution: {integrity: sha512-+P8IZaLLBtFv8hCkIjcymZOp4UJ+xW6bSlQsXGqrkmJh7vSiMFSlNne0mCYagEE0N7HDNR5jJBRxwN0oYv61Rw==}
     dev: false
 
   /jackspeak@3.4.3:
@@ -14980,6 +14980,10 @@ packages:
       setimmediate: 1.0.5
     dev: false
 
+  /just-clone@6.2.0:
+    resolution: {integrity: sha512-1IynUYEc/HAwxhi3WDpIpxJbZpMCvvrrmZVqvj9EhpvbH8lls7HhdhiByjL7DkAaWlLIzpC0Xc/VPvy/UxLNjA==}
+    dev: false
+
   /jwa@1.4.1:
     resolution: {integrity: sha512-qiLX/xhEEFKUAJ6FiBMbes3w9ATzyk5W7Hvzpa/SLYdxNtng+gcurvrI7TbACjIXlsJyr05/S1oUhZrc63evQA==}
     dependencies:
@@ -15015,8 +15019,8 @@ packages:
     engines: {node: '>= 0.4.0'}
     dev: false
 
-  /katex@0.16.11:
-    resolution: {integrity: sha512-RQrI8rlHY92OLf3rho/Ts8i/XvjgguEjOkO1BEXcU3N8BqPpSzBNwV/G0Ukr+P/l3ivvJUE/Fa/CwbS6HesGNQ==}
+  /katex@0.16.15:
+    resolution: {integrity: sha512-yE9YJIEAk2aZ+FL/G8r+UGw0CTUzEA8ZFy6E+8tc3spHUKq3qBnzCkI1CQwGoI9atJhVyFPEypQsTY7mJ1Pi9w==}
     hasBin: true
     dependencies:
       commander: 8.3.0
@@ -15877,7 +15881,7 @@ packages:
     resolution: {integrity: sha512-Mb01JT/x6CKDWaxigwfZYuYmDZ6xtrNwNlidKZwkSrDaY9n90tdrJTV5Umk+wP1fZscGptmKFXHsXMDEVZ+Q6A==}
     dependencies:
       '@braintree/sanitize-url': 7.1.0
-      '@iconify/utils': 2.1.33
+      '@iconify/utils': 2.2.1
       '@mermaid-js/parser': 0.3.0
       '@types/d3': 7.4.3
       cytoscape: 3.30.4
@@ -15887,8 +15891,8 @@ packages:
       d3-sankey: 0.12.3
       dagre-d3-es: 7.0.11
       dayjs: 1.11.13
-      dompurify: 3.2.2
-      katex: 0.16.11
+      dompurify: 3.2.3
+      katex: 0.16.15
       khroma: 2.1.0
       lodash-es: 4.17.21
       marked: 13.0.3
@@ -15997,7 +16001,7 @@ packages:
     hasBin: true
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
-      acorn: 8.14.0
+      acorn: 8.11.3
       acorn-walk: 8.3.2
       capnp-ts: 0.7.0
       exit-hook: 2.2.1
@@ -16190,12 +16194,12 @@ packages:
       whatwg-url: 13.0.0
     dev: false
 
-  /mongodb@6.10.0:
-    resolution: {integrity: sha512-gP9vduuYWb9ZkDM546M+MP2qKVk5ZG2wPF63OvSRuUbqCR+11ZCAE1mOfllhlAG0wcoJY5yDL/rV3OmYEwXIzg==}
+  /mongodb@6.12.0:
+    resolution: {integrity: sha512-RM7AHlvYfS7jv7+BXund/kR64DryVI+cHbVAy9P61fnb1RcWZqOW1/Wj2YhqMCx+MuYhqTRGv7AwHBzmsCKBfA==}
     engines: {node: '>=16.20.1'}
     peerDependencies:
       '@aws-sdk/credential-providers': ^3.188.0
-      '@mongodb-js/zstd': ^1.1.0
+      '@mongodb-js/zstd': ^1.1.0 || ^2.0.0
       gcp-metadata: ^5.2.0
       kerberos: ^2.0.1
       mongodb-client-encryption: '>=6.0.0 <7'
@@ -16217,8 +16221,8 @@ packages:
       socks:
         optional: true
     dependencies:
-      '@mongodb-js/saslprep': 1.1.7
-      bson: 6.10.0
+      '@mongodb-js/saslprep': 1.1.9
+      bson: 6.10.1
       mongodb-connection-string-url: 3.0.0
     dev: false
 
@@ -16251,6 +16255,70 @@ packages:
     dependencies:
       '@mongodb-js/saslprep': 1.1.4
       bson: 6.3.0
+      mongodb-connection-string-url: 3.0.0
+    dev: false
+
+  /mongodb@6.8.0:
+    resolution: {integrity: sha512-HGQ9NWDle5WvwMnrvUxsFYPd3JEbqD3RgABHBQRuoCEND0qzhsd0iH5ypHsf1eJ+sXmvmyKpP+FLOKY8Il7jMw==}
+    engines: {node: '>=16.20.1'}
+    peerDependencies:
+      '@aws-sdk/credential-providers': ^3.188.0
+      '@mongodb-js/zstd': ^1.1.0
+      gcp-metadata: ^5.2.0
+      kerberos: ^2.0.1
+      mongodb-client-encryption: '>=6.0.0 <7'
+      snappy: ^7.2.2
+      socks: ^2.7.1
+    peerDependenciesMeta:
+      '@aws-sdk/credential-providers':
+        optional: true
+      '@mongodb-js/zstd':
+        optional: true
+      gcp-metadata:
+        optional: true
+      kerberos:
+        optional: true
+      mongodb-client-encryption:
+        optional: true
+      snappy:
+        optional: true
+      socks:
+        optional: true
+    dependencies:
+      '@mongodb-js/saslprep': 1.1.7
+      bson: 6.8.0
+      mongodb-connection-string-url: 3.0.0
+    dev: false
+
+  /mongodb@6.9.0-dev.20241016.sha.3d5bd513:
+    resolution: {integrity: sha512-O1rrjh8BZuPXJOwistKE1OqA9Ou34P7+xO22uL26H7SOYSetezSKBt+IJeXTc5gelHPM25GI6Y3ydLG3ERfpLw==}
+    engines: {node: '>=16.20.1'}
+    peerDependencies:
+      '@aws-sdk/credential-providers': ^3.188.0
+      '@mongodb-js/zstd': ^1.1.0
+      gcp-metadata: ^5.2.0
+      kerberos: ^2.0.1
+      mongodb-client-encryption: '>=6.0.0 <7'
+      snappy: ^7.2.2
+      socks: ^2.7.1
+    peerDependenciesMeta:
+      '@aws-sdk/credential-providers':
+        optional: true
+      '@mongodb-js/zstd':
+        optional: true
+      gcp-metadata:
+        optional: true
+      kerberos:
+        optional: true
+      mongodb-client-encryption:
+        optional: true
+      snappy:
+        optional: true
+      socks:
+        optional: true
+    dependencies:
+      '@mongodb-js/saslprep': 1.1.7
+      bson: 6.8.0
       mongodb-connection-string-url: 3.0.0
     dev: false
 
@@ -16512,6 +16580,10 @@ packages:
 
   /node-releases@2.0.18:
     resolution: {integrity: sha512-d9VeXT4SJ7ZeOqGX6R5EM022wpL+eWPooLI+5UpWn2jCT1aosUQEhQP214x33Wkwx3JQMvIm+tIoVOdodFS40g==}
+    dev: false
+
+  /node-releases@2.0.19:
+    resolution: {integrity: sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw==}
     dev: false
 
   /nopt@1.0.10:
@@ -17041,8 +17113,8 @@ packages:
     resolution: {integrity: sha512-dATvCeZN/8wQsGywez1mzHtTlP22H8OEfPrVMLNr4/eGa+ijtLn/6M5f0dY8UKNrC2O9UCU6SSoG3qRKnt7STw==}
     dev: false
 
-  /package-manager-detector@0.2.6:
-    resolution: {integrity: sha512-9vPH3qooBlYRJdmdYP00nvjZOulm40r5dhtal8st18ctf+6S1k7pi5yIHLvI4w5D70x0Y+xdVD9qITH0QO/A8A==}
+  /package-manager-detector@0.2.7:
+    resolution: {integrity: sha512-g4+387DXDKlZzHkP+9FLt8yKj8+/3tOkPv7DVTJGGRm00RkEWgqbFstX1mXJ4M0VDYhUqsTOiISqNOJnhAu3PQ==}
     dev: false
 
   /pako@1.0.11:
@@ -17282,11 +17354,6 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
-  /peek-readable@5.3.1:
-    resolution: {integrity: sha512-GVlENSDW6KHaXcd9zkZltB7tCLosKB/4Hg0fqBJkAoBgYG2Tn1xtMgXtSUuMU9AK/gCm/tTdT8mgAeF4YNeeqw==}
-    engines: {node: '>=14.16'}
-    dev: false
-
   /pend@1.2.0:
     resolution: {integrity: sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==}
     dev: false
@@ -17482,18 +17549,18 @@ packages:
       find-up: 3.0.0
     dev: false
 
-  /playwright-core@1.48.2:
-    resolution: {integrity: sha512-sjjw+qrLFlriJo64du+EK0kJgZzoQPsabGF4lBvsid+3CNIZIYLgnMj9V6JY5VhM2Peh20DJWIVpVljLLnlawA==}
+  /playwright-core@1.49.1:
+    resolution: {integrity: sha512-BzmpVcs4kE2CH15rWfzpjzVGhWERJfmnXmniSyKeRZUs9Ws65m+RGIi7mjJK/euCegfn3i7jvqWeWyHe9y3Vgg==}
     engines: {node: '>=18'}
     hasBin: true
     dev: false
 
-  /playwright@1.48.2:
-    resolution: {integrity: sha512-NjYvYgp4BPmiwfe31j4gHLa3J7bD2WiBz8Lk2RoSsmX38SVIARZ18VYjxLjAcDsAhA+F4iSEXTSGgjua0rrlgQ==}
+  /playwright@1.49.1:
+    resolution: {integrity: sha512-VYL8zLoNTBxVOrJBbDuRgDWa3i+mfQgDTrL8Ah9QXZ7ax4Dsj0MSq5bYgytRnDVVe+njoKnfsYkH3HzqVj5UZA==}
     engines: {node: '>=18'}
     hasBin: true
     dependencies:
-      playwright-core: 1.48.2
+      playwright-core: 1.49.1
     optionalDependencies:
       fsevents: 2.3.2
     dev: false
@@ -17763,6 +17830,16 @@ packages:
     dependencies:
       prettier: 3.2.5
       svelte: 4.2.11
+    dev: false
+
+  /prettier-plugin-svelte@3.2.2(prettier@3.2.5)(svelte@4.2.12):
+    resolution: {integrity: sha512-ZzzE/wMuf48/1+Lf2Ffko0uDa6pyCfgHV6+uAhtg2U0AAXGrhCSW88vEJNAkAxW5qyrFY1y1zZ4J8TgHrjW++Q==}
+    peerDependencies:
+      prettier: ^3.0.0
+      svelte: ^3.2.0 || ^4.0.0-next.0 || ^5.0.0-next.0
+    dependencies:
+      prettier: 3.2.5
+      svelte: 4.2.12
     dev: false
 
   /prettier-plugin-svelte@3.2.2(prettier@3.2.5)(svelte@4.2.19):
@@ -19598,14 +19675,6 @@ packages:
       peek-readable: 4.1.0
     dev: false
 
-  /strtok3@9.1.1:
-    resolution: {integrity: sha512-FhwotcEqjr241ZbjFzjlIYg6c5/L/s4yBGWSMvJ9UoExiSqL+FnFA/CaeZx17WGaZMS/4SOZp8wH18jSS4R4lw==}
-    engines: {node: '>=16'}
-    dependencies:
-      '@tokenizer/token': 0.3.0
-      peek-readable: 5.3.1
-    dev: false
-
   /style-loader@3.3.4(webpack@5.97.1):
     resolution: {integrity: sha512-0WqXzrsMTyb8yjZJHDqwmnwRJvhALK9LfRtRc6B4UTWe8AijYLZYZ9thuJTZc2VfQWINADW/j+LiJnfy2RoC1w==}
     engines: {node: '>= 12.13.0'}
@@ -19623,7 +19692,7 @@ packages:
     resolution: {integrity: sha512-MvjXzkz/BOfyVDkG0oFOtBxHX2u3gKbMHIF/dXblZsgD3BWOFLmHovIpZY7BykJdAjcqRCBi1WYBNdEC9yI7vg==}
     engines: {node: '>= 8.0'}
     dependencies:
-      debug: 4.3.5
+      debug: 4.4.0
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -19843,6 +19912,26 @@ packages:
 
   /svelte@4.2.11:
     resolution: {integrity: sha512-YIQk3J4X89wOLhjsqIW8tqY3JHPuBdtdOIkASP2PZeAMcSW9RsIjQzMesCrxOF3gdWYC0mKknlKF7OqmLM+Zqg==}
+    engines: {node: '>=16'}
+    dependencies:
+      '@ampproject/remapping': 2.2.1
+      '@jridgewell/sourcemap-codec': 1.4.15
+      '@jridgewell/trace-mapping': 0.3.22
+      '@types/estree': 1.0.5
+      acorn: 8.11.3
+      aria-query: 5.3.0
+      axobject-query: 4.0.0
+      code-red: 1.0.4
+      css-tree: 2.3.1
+      estree-walker: 3.0.3
+      is-reference: 3.0.2
+      locate-character: 3.0.0
+      magic-string: 0.30.7
+      periscopic: 3.1.0
+    dev: false
+
+  /svelte@4.2.12:
+    resolution: {integrity: sha512-d8+wsh5TfPwqVzbm4/HCXC783/KPHV60NvwitJnyTA5lWn1elhXMNWhXGCJ7PwPa8qFUnyJNIyuIRt2mT0WMug==}
     engines: {node: '>=16'}
     dependencies:
       '@ampproject/remapping': 2.2.1
@@ -20122,6 +20211,11 @@ packages:
     resolution: {integrity: sha512-3f0uOEAQwIqGuWW2MVzYg8fV/QNnc/IpuJNG837rLuczAaLVHslWHZQj4IGiEl5Hs3kkbhwL9Ab7Hrsmuj+Smw==}
     dev: false
 
+  /to-data-view@2.0.0:
+    resolution: {integrity: sha512-RGEM5KqlPHr+WVTPmGNAXNeFEmsBnlkxXaIfEpUYV0AST2Z5W1EGq9L/MENFrMMmL2WQr1wjkmZy/M92eKhjYA==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+    dev: false
+
   /to-fast-properties@2.0.0:
     resolution: {integrity: sha512-/OaKK0xYrs3DmxRYqL/yDc+FxFUVYhDlXMhRmv3z915w2HF1tnN1omB354j8VUGO/hbRzyD6Y3sA7v7GS/ceog==}
     engines: {node: '>=4'}
@@ -20153,14 +20247,6 @@ packages:
   /token-types@4.2.1:
     resolution: {integrity: sha512-6udB24Q737UD/SDsKAHI9FCRP7Bqc9D/MQUV02ORQg5iskjtLJlZJNdN4kKtcdtwCeWIwIHDGaUsTsCCAa8sFQ==}
     engines: {node: '>=10'}
-    dependencies:
-      '@tokenizer/token': 0.3.0
-      ieee754: 1.2.1
-    dev: false
-
-  /token-types@6.0.0:
-    resolution: {integrity: sha512-lbDrTLVsHhOMljPscd0yitpozq7Ga2M5Cvez5AjGg8GASBjtt6iERCAJ93yommPmz62fb45oFIXHEZ3u9bfJEA==}
-    engines: {node: '>=14.16'}
     dependencies:
       '@tokenizer/token': 0.3.0
       ieee754: 1.2.1
@@ -20693,11 +20779,6 @@ packages:
     resolution: {integrity: sha512-IevTus0SbGwQzYh3+fRsAMTVVPOoIVufzacXcHPmdlle1jUpq7BRL+mw3dgeLanvGZdwwbWhRV6XrcFNdBmjWA==}
     dev: false
 
-  /uint8array-extras@1.4.0:
-    resolution: {integrity: sha512-ZPtzy0hu4cZjv3z5NW9gfKnNLjoz4y6uv4HlelAjDK7sY/xOkKZv9xK/WQpcsBB3jEybChz9DPC2U/+cusjJVQ==}
-    engines: {node: '>=18'}
-    dev: false
-
   /unbox-primitive@1.0.2:
     resolution: {integrity: sha512-61pPlCD9h51VoreyJ0BReideM3MDKMKnh6+V9L08331ipq6Q8OFXZYiqP6n/tbHx4s5I9uRhcye6BrbkizkBDw==}
     dependencies:
@@ -20813,13 +20894,13 @@ packages:
       picocolors: 1.0.1
     dev: false
 
-  /update-browserslist-db@1.1.1(browserslist@4.24.2):
+  /update-browserslist-db@1.1.1(browserslist@4.24.3):
     resolution: {integrity: sha512-R8UzCaa9Az+38REPiJ1tXlImTJXlVfgHZsglwBD/k6nj76ctsH1E3q4doGrukiLQd3sGQYu56r5+lo5r94l29A==}
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
     dependencies:
-      browserslist: 4.24.2
+      browserslist: 4.24.3
       escalade: 3.2.0
       picocolors: 1.1.1
     dev: false
@@ -21095,7 +21176,7 @@ packages:
     hasBin: true
     dependencies:
       '@discoveryjs/json-ext': 0.5.7
-      acorn: 8.14.0
+      acorn: 8.11.3
       acorn-walk: 8.3.2
       commander: 7.2.0
       debounce: 1.2.1
@@ -21103,7 +21184,7 @@ packages:
       gzip-size: 6.0.0
       html-escaper: 2.0.2
       opener: 1.5.2
-      picocolors: 1.1.1
+      picocolors: 1.0.1
       sirv: 2.0.4
       ws: 7.5.9(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     transitivePeerDependencies:
@@ -21249,7 +21330,7 @@ packages:
       '@webassemblyjs/wasm-edit': 1.14.1
       '@webassemblyjs/wasm-parser': 1.14.1
       acorn: 8.14.0
-      browserslist: 4.24.2
+      browserslist: 4.24.3
       chrome-trace-event: 1.0.3
       enhanced-resolve: 5.17.1
       es-module-lexer: 1.4.1
@@ -21472,8 +21553,8 @@ packages:
       winston-transport: 4.7.1
     dev: false
 
-  /workerd@1.20240925.0:
-    resolution: {integrity: sha512-/Jj6+yLwfieZGEt3Kx4+5MoufuC3g/8iFaIh4MPBNGJOGYmdSKXvgCqz09m2+tVCYnysRfbq2zcbVxJRBfOCqQ==}
+  /workerd@1.20241022.0:
+    resolution: {integrity: sha512-jyGXsgO9DRcJyx6Ovv7gUyDPc3UYC2i/E0p9GFUg6GUzpldw4Y93y9kOmdfsOnKZ3+lY53veSiUniiBPE6Q2NQ==}
     engines: {node: '>=16'}
     hasBin: true
     requiresBuild: true
@@ -21914,7 +21995,7 @@ packages:
       koa-bodyparser: 4.4.1
       koa-morgan: 1.0.1
       koa-router: 12.0.1
-      mongodb: 6.10.0
+      mongodb: 6.12.0
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
@@ -21944,7 +22025,10 @@ packages:
     version: 0.0.0
     dependencies:
       '@types/jest': 29.5.12
+      '@types/node-fetch': 2.6.11
       '@types/otp-generator': 4.0.2
+      '@types/pg': 8.11.6
+      '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
       eslint: 8.56.0
@@ -21953,8 +22037,10 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      mongodb: 6.10.0
+      mongodb: 6.12.0
+      node-fetch: 2.7.0
       otp-generator: 4.0.1
+      pg: 8.12.0
       postgres: 3.4.5
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
@@ -22070,6 +22156,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -22309,6 +22396,7 @@ packages:
     name: '@rush-temp/analytics'
     version: 0.0.0
     dependencies:
+      '@sentry/node': 7.118.0
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
@@ -22319,9 +22407,12 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       simplytyped: 3.3.0(typescript@5.3.3)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
+      winston: 3.13.1
+      winston-daily-rotate-file: 5.0.0(winston@3.13.1)
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -22356,7 +22447,6 @@ packages:
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.6.2)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.6.2)
       typescript: 5.6.2
-      ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     optionalDependencies:
       ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     transitivePeerDependencies:
@@ -22466,6 +22556,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -22491,6 +22582,7 @@ packages:
       '@types/koa-passport': 6.0.3
       '@types/koa-router': 7.4.8
       '@types/koa-session': 6.4.5
+      '@types/node-fetch': 2.6.11
       '@types/passport-github2': 1.2.9
       '@types/passport-google-oauth20': 2.0.14
       '@types/querystringify': 2.0.2
@@ -22507,12 +22599,13 @@ packages:
       koa-passport: 6.0.0
       koa-router: 12.0.1
       koa-session: 6.4.0
-      mongodb: 6.10.0
+      mongodb: 6.12.0
       openid-client: 5.7.0
       passport-custom: 1.1.1
       passport-github2: 0.1.12
       passport-google-oauth20: 2.0.0
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       querystringify: 2.2.0
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
@@ -22665,6 +22758,7 @@ packages:
       fast-equals: 5.0.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       qs: 6.11.2
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
@@ -22772,6 +22866,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -22881,6 +22976,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -22927,7 +23023,7 @@ packages:
     dev: false
 
   file:projects/chunter-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-yjFks6novOHe2i9lKTi27FM5/AchzWFrTqCnp701jfGRYrSreAO+t2ebIlA/o0IGxKxHv4ZHG4fF6FIPitwwGw==, tarball: file:projects/chunter-resources.tgz}
+    resolution: {integrity: sha512-OcfEBxXYgDjaFHEU6I4+D75C88vCt5FwZzX0Ic9vxaFK2ukxWDcOflRaKVbL/CZAC7V4cyUxqdWgY8iTEZg8wg==, tarball: file:projects/chunter-resources.tgz}
     id: file:projects/chunter-resources.tgz
     name: '@rush-temp/chunter-resources'
     version: 0.0.0
@@ -22943,6 +23039,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2)
       fast-equals: 5.0.1
+      html-to-text: 9.0.5
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
@@ -22990,6 +23087,7 @@ packages:
       fast-equals: 5.0.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -23020,6 +23118,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -23050,6 +23149,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -23100,7 +23200,7 @@ packages:
     dev: false
 
   file:projects/cloud-datalake.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-4xq66fA2IsBhSePKZhWWfD1oCMF7eavO8dkefUDupGqhNUr/gv+4zPrsvoJZ2x5ZozqNvBHzbDQQeIuxg1uxNQ==, tarball: file:projects/cloud-datalake.tgz}
+    resolution: {integrity: sha512-rdi3jttvr+BUDECOtAnGsqAj4wi/F0boH0v7Dbeia5nyOjy7/HJiTNpLOuioMwb2KqzF2TdqA19ozbS9Yptsog==, tarball: file:projects/cloud-datalake.tgz}
     id: file:projects/cloud-datalake.tgz
     name: '@rush-temp/cloud-datalake'
     version: 0.0.0
@@ -23110,6 +23210,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.6.2)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
       aws4fetch: 1.0.20
+      base32-encode: 2.0.0
       eslint: 8.56.0
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.6.2)
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
@@ -23136,8 +23237,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  file:projects/cloud-transactor.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-xhR2rJ3iXSlWkTOpEBnKketx8s2i/QnHrYrDN39yWCRmi6Ll31gzDoW4xEyN3Joyck4w/SGZjHPva1pan/ncjA==, tarball: file:projects/cloud-transactor.tgz}
+  file:projects/cloud-transactor.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4):
+    resolution: {integrity: sha512-XKudIcBgpDvwrKkyqSuEbz6AjA0r/eW3y1GjmVnA5yPGAwiqmgnbM33Xz5H/itEvwM3IS6VnAb5dnXH12VZKpA==, tarball: file:projects/cloud-transactor.tgz}
     id: file:projects/cloud-transactor.tgz
     name: '@rush-temp/cloud-transactor'
     version: 0.0.0
@@ -23146,7 +23247,6 @@ packages:
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.6.2)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
-      esbuild: 0.20.1
       eslint: 8.56.0
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.6.2)
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
@@ -23165,6 +23265,7 @@ packages:
       - babel-jest
       - babel-plugin-macros
       - bufferutil
+      - esbuild
       - node-notifier
       - supports-color
       - ts-node
@@ -23266,7 +23367,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.19.2
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      mongodb: 6.10.0
+      mongodb: 6.12.0
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
@@ -23393,6 +23494,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -23537,7 +23639,9 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       fast-equals: 5.0.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      just-clone: 6.2.0
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       simplytyped: 3.3.0(typescript@5.3.3)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
@@ -23590,7 +23694,7 @@ packages:
     dev: false
 
   file:projects/desktop-1.tgz(webpack@5.97.1):
-    resolution: {integrity: sha512-L25PjJOQ5AD4hPjxYiPkPyWDVa1jCpQysNfBCQpLULbG8kr+38/RxQiIX5RLcX4ST56vjPCGyc6tJmvpzsx/TQ==, tarball: file:projects/desktop-1.tgz}
+    resolution: {integrity: sha512-JNWlSwhVC9iFMp9JD5gg98hOEQDkmM22a3Yvv1coMSuh3eKgu0D43VOecW6s5IS4BNfiF5I87OLnTXBnmV0lOw==, tarball: file:projects/desktop-1.tgz}
     id: file:projects/desktop-1.tgz
     name: '@rush-temp/desktop-1'
     version: 0.0.0
@@ -23600,7 +23704,7 @@ packages:
       '@vercel/webpack-asset-relocator-loader': 1.7.4
       cross-env: 7.0.3
       dotenv: 16.0.3
-      electron: 33.2.0
+      electron: 33.3.0
       electron-builder: 25.1.8
       electron-squirrel-startup: 1.0.1
       node-loader: 2.0.0(webpack@5.97.1)
@@ -23717,7 +23821,7 @@ packages:
     dev: false
 
   file:projects/desktop.tgz(bufferutil@4.0.8)(sass@1.71.1)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-3HT9v/saToZJncSPNw7ymRl1h4tZMlxkLbxe6Qp59lGBpkw3AtKAvYPpGRMh/meLhEl4vAlk/k8TO6mGUivu5w==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-A11ToahoSZULhHUbTgjKyyMHDZ68BplLHTrHKKiOkZBooPhGcJZJsOLIMKNjJ5+rT+aQDeiSMFMl+2cfaeuh0A==, tarball: file:projects/desktop.tgz}
     id: file:projects/desktop.tgz
     name: '@rush-temp/desktop'
     version: 0.0.0
@@ -23736,7 +23840,7 @@ packages:
       css-loader: 5.2.7(webpack@5.97.1)
       dotenv: 16.0.3
       dotenv-webpack: 8.0.1(webpack@5.97.1)
-      electron: 33.2.0
+      electron: 33.3.0
       electron-context-menu: 4.0.4
       electron-log: 5.1.7
       electron-squirrel-startup: 1.0.1
@@ -23860,6 +23964,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -23921,6 +24026,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2)
       fast-equals: 5.0.1
+      highlight.js: 11.8.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
@@ -24077,6 +24183,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -24214,6 +24321,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
       typescript: 5.3.3
@@ -24482,6 +24590,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -24589,6 +24698,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -24742,6 +24852,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -24819,6 +24930,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -24838,11 +24950,9 @@ packages:
     name: '@rush-temp/import-tool'
     version: 0.0.0
     dependencies:
-      '@types/csvtojson': 2.0.0
       '@types/domhandler': 2.4.5
       '@types/htmlparser2': 3.10.7
       '@types/jest': 29.5.12
-      '@types/js-yaml': 4.0.9
       '@types/mime-types': 2.1.4
       '@types/minio': 7.0.18
       '@types/node': 20.11.19
@@ -24850,7 +24960,6 @@ packages:
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
       commander: 8.3.0
       cross-env: 7.0.3
-      csvtojson: 2.0.10
       docx4js: 3.2.20
       domhandler: 5.0.3
       domutils: 3.1.0
@@ -24862,7 +24971,6 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       htmlparser2: 9.1.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      js-yaml: 4.1.0
       mammoth: 1.8.0
       mime-types: 2.1.35
       prettier: 3.2.5
@@ -24882,12 +24990,12 @@ packages:
     dev: false
 
   file:projects/importer.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-H8zT+HFFD2VV3Fo3ALiiDtd0VtXQZpWEfm10a5udm4D07Gv4DgxJOLl8uF4wNId//6UNKOp6/z517p8D/8velg==, tarball: file:projects/importer.tgz}
+    resolution: {integrity: sha512-2BSUFKldNxsA3oJ/xjVKMJc975re0WnY1T24b0yscLWNGfMchaPaHNLBMIpd3d4rXywTX0qqBNPt+aWkp2XVBA==, tarball: file:projects/importer.tgz}
     id: file:projects/importer.tgz
     name: '@rush-temp/importer'
     version: 0.0.0
     dependencies:
-      '@types/csvtojson': 2.0.0
+      '@types/csvtojson': 2.0.3
       '@types/jest': 29.5.12
       '@types/js-yaml': 4.0.9
       '@types/mime-types': 2.1.4
@@ -24901,7 +25009,6 @@ packages:
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      file-type: 19.6.0
       image-size: 1.1.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       js-yaml: 4.1.0
@@ -25012,6 +25119,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -25165,6 +25273,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -25274,6 +25383,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -25417,6 +25527,7 @@ packages:
       fast-equals: 5.0.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -25484,7 +25595,7 @@ packages:
     dev: false
 
   file:projects/model-ai-bot.tgz:
-    resolution: {integrity: sha512-tdvrfRa0PZZCWrUq5QqiZi4Bex97OgR7tMHVLMUJhhg7lJOnR9nyjFKn+X0lEI79pi0sllds53Ksdmi5Kd+OlQ==, tarball: file:projects/model-ai-bot.tgz}
+    resolution: {integrity: sha512-MQPMbs5C4CPAuJVX/nYo0oz08O5/Nya+aKOC/cpnx9PrUO6jQjde0uaIHxE4Z7++Ks6caZWC7+o6XPScw0T9aQ==, tarball: file:projects/model-ai-bot.tgz}
     name: '@rush-temp/model-ai-bot'
     version: 0.0.0
     dependencies:
@@ -25660,7 +25771,7 @@ packages:
     dev: false
 
   file:projects/model-controlled-documents.tgz:
-    resolution: {integrity: sha512-mBRvO5kEuPrWKHjTZdQFnzV5CyVAysglTX/XFVp7Hlx8lEbRcWI91ZnU/BhOn2vTw7B3ZFCiVRDd8lgh8fAJJA==, tarball: file:projects/model-controlled-documents.tgz}
+    resolution: {integrity: sha512-Hc5CRZaXVkm8Y9BgSX4ylxlwV2K0xM5jkq1fS+TIGLYQCQqt4Xy18S49ntjcErzLfcs8H6dXbvJmvWp3ZGyLfg==, tarball: file:projects/model-controlled-documents.tgz}
     name: '@rush-temp/model-controlled-documents'
     version: 0.0.0
     dependencies:
@@ -26946,6 +27057,7 @@ packages:
       fast-equals: 5.0.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       toposort: 2.0.2
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
@@ -26971,14 +27083,14 @@ packages:
       '@types/node': 20.11.19
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      bson: 6.10.0
+      bson: 6.10.1
       eslint: 8.56.0
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      mongodb: 6.10.0
+      mongodb: 6.12.0
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
@@ -27093,6 +27205,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       sass: 1.71.1
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
@@ -27337,6 +27450,7 @@ packages:
       intl-messageformat: 9.13.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -27376,7 +27490,7 @@ packages:
       koa: 2.15.3
       koa-bodyparser: 4.4.1
       koa-router: 12.0.1
-      mongodb: 6.10.0
+      mongodb: 6.12.0
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
@@ -27429,7 +27543,7 @@ packages:
       form-data: 4.0.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       js-tiktoken: 1.0.14
-      mongodb: 6.10.0
+      mongodb: 6.12.0
       node-fetch: 2.7.0
       openai: 4.56.0(zod@3.23.8)
       prettier: 3.2.5
@@ -27484,7 +27598,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.19.2
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      mongodb: 6.10.0
+      mongodb: 6.12.0
       prettier: 3.2.5
       puppeteer: 22.14.0(bufferutil@4.0.8)(typescript@5.3.3)(utf-8-validate@6.0.4)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
@@ -27577,7 +27691,7 @@ packages:
       googleapis: 122.0.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       jwt-simple: 0.5.6
-      mongodb: 6.10.0
+      mongodb: 6.12.0
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       ts-node-dev: 2.0.0(@types/node@20.11.19)(typescript@5.3.3)
@@ -27786,7 +27900,7 @@ packages:
       graphql-binding: 2.5.2
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       markdown-it: 14.0.0
-      mongodb: 6.10.0
+      mongodb: 6.12.0
       octokit: 3.2.1
       prettier: 3.2.5
       smee-client: 1.2.5
@@ -27847,7 +27961,7 @@ packages:
       googleapis: 122.0.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       jwt-simple: 0.5.6
-      mongodb: 6.10.0
+      mongodb: 6.12.0
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       ts-node-dev: 2.0.0(@types/node@20.11.19)(typescript@5.3.3)
@@ -28075,7 +28189,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.19.2
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      mongodb: 6.10.0
+      mongodb: 6.12.0
       node-forge: 1.3.1
       pdf-lib: 1.17.1
       prettier: 3.2.5
@@ -28169,7 +28283,7 @@ packages:
       express: 4.19.2
       htmlparser2: 9.1.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      mongodb: 6.10.0
+      mongodb: 6.12.0
       node-fetch: 2.7.0
       otp-generator: 4.0.1
       prettier: 3.2.5
@@ -28216,7 +28330,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
       big-integer: 1.6.52
-      bson: 6.10.0
+      bson: 6.10.1
       cors: 2.8.5
       dotenv: 16.0.3
       esbuild: 0.20.1
@@ -28230,7 +28344,7 @@ packages:
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       jwt-simple: 0.5.6
       mime: 3.0.0
-      mongodb: 6.10.0
+      mongodb: 6.12.0
       prettier: 3.2.5
       telegram: 2.22.2
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
@@ -28277,7 +28391,7 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      mongodb: 6.10.0
+      mongodb: 6.12.0
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
@@ -28380,6 +28494,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -28412,6 +28527,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2)
       fast-equals: 5.0.1
+      hls.js: 1.5.15
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       png-chunks-extract: 1.0.0
       prettier: 3.2.5
@@ -28774,13 +28890,13 @@ packages:
     version: 0.0.0
     dependencies:
       '@faker-js/faker': 8.4.1
-      '@playwright/test': 1.48.2
+      '@playwright/test': 1.49.1
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      allure-js-commons: 3.0.6(allure-playwright@3.0.6)
-      allure-playwright: 3.0.6(@playwright/test@1.48.2)
+      allure-js-commons: 3.0.7(allure-playwright@3.0.7)
+      allure-playwright: 3.0.7(@playwright/test@1.49.1)
       cross-env: 7.0.3
       dotenv: 16.0.3
       eslint: 8.56.0
@@ -28811,6 +28927,7 @@ packages:
       fast-equals: 5.0.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       simplytyped: 3.3.0(typescript@5.3.3)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
@@ -28950,6 +29067,7 @@ packages:
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       lexorank: 1.0.5
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -29056,6 +29174,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -29151,6 +29270,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -29257,6 +29377,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -29364,6 +29485,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -29424,6 +29546,7 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
@@ -29546,6 +29669,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -29641,6 +29765,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -29702,6 +29827,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -29798,6 +29924,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -29859,6 +29986,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -30281,6 +30409,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -30342,6 +30471,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -30403,6 +30533,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -30496,6 +30627,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -30557,6 +30689,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -30683,6 +30816,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
       web-push: 3.6.7
@@ -30810,6 +30944,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -30871,6 +31006,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -30932,6 +31068,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -31029,6 +31166,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -31090,6 +31228,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -31150,7 +31289,9 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      mongodb: 6.8.0
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -31243,6 +31384,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -31340,7 +31482,7 @@ packages:
       fast-equals: 5.0.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       js-yaml: 4.1.0
-      mongodb: 6.10.0
+      mongodb: 6.12.0
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
@@ -31380,6 +31522,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -31503,6 +31646,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -31715,6 +31859,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -31885,6 +32030,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -32096,6 +32242,8 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      svelte: 4.2.11
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -32202,6 +32350,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -32308,6 +32457,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -32414,6 +32564,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -32541,13 +32692,13 @@ packages:
     version: 0.0.0
     dependencies:
       '@faker-js/faker': 8.4.1
-      '@playwright/test': 1.48.2
+      '@playwright/test': 1.49.1
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      allure-js-commons: 3.0.6(allure-playwright@3.0.6)
-      allure-playwright: 3.0.6(@playwright/test@1.48.2)
+      allure-js-commons: 3.0.7(allure-playwright@3.0.7)
+      allure-playwright: 3.0.7(@playwright/test@1.49.1)
       cross-env: 7.0.3
       dotenv: 16.0.3
       eslint: 8.56.0
@@ -32593,7 +32744,7 @@ packages:
     dev: false
 
   file:projects/text-editor-resources.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(highlight.js@11.8.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-hCYKIJCnXXMyGcVD33T1AMClfJ3pB7F0pDPTw8ti2g1ldib78IOMw334ZX4N2LhzVxtBe3AGbz0dpp6CHTQFXg==, tarball: file:projects/text-editor-resources.tgz}
+    resolution: {integrity: sha512-F0E6R31dkSA4Oa+lx7pYoKeHmMI1N0wMDKomkWOhwtChvWo3EZRj9xySEthXFV8au0htnsi+rKeywFOCcGdmGg==, tarball: file:projects/text-editor-resources.tgz}
     id: file:projects/text-editor-resources.tgz
     name: '@rush-temp/text-editor-resources'
     version: 0.0.0
@@ -32924,6 +33075,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -32939,7 +33091,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-Q9D6X3yoZKH9FEIgdPR5/IfPzNThrK1NtFoSkf9o6dpOl/dm4EfipGA9guOKztQxdVCg9pwHyjl9r6X/dLaMww==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-zkSB9q8nmOq4m/hf5dMfcseJjWHYhOExf+qcO3+81JqRLl5vVnZagl0kPGJn/0xkj36e9HiRqyqqesJS0hLDWg==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
@@ -32968,7 +33120,7 @@ packages:
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       libphonenumber-js: 1.10.56
       mime-types: 2.1.35
-      mongodb: 6.10.0
+      mongodb: 6.12.0
       msgpackr: 1.11.0
       msgpackr-extract: 3.0.3
       postgres: 3.4.5
@@ -33090,6 +33242,7 @@ packages:
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       lexorank: 1.0.5
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -33234,6 +33387,7 @@ packages:
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2)
       fast-equals: 5.0.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      just-clone: 6.2.0
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
       sass: 1.71.1
@@ -33356,6 +33510,14 @@ packages:
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      '@uppy/core': 3.13.1
+      '@uppy/dashboard': 3.9.1(@uppy/core@3.13.1)
+      '@uppy/drag-drop': 3.1.1(@uppy/core@3.13.1)
+      '@uppy/progress-bar': 3.1.1(@uppy/core@3.13.1)
+      '@uppy/screen-capture': 3.2.0(@uppy/core@3.13.1)
+      '@uppy/status-bar': 3.3.3(@uppy/core@3.13.1)
+      '@uppy/webcam': 3.4.2(@uppy/core@3.13.1)
+      '@uppy/xhr-upload': 3.6.8(@uppy/core@3.13.1)
       eslint: 8.56.0
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
@@ -33363,6 +33525,8 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
+      svelte: 4.2.12
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -33471,6 +33635,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -33578,6 +33743,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -33593,7 +33759,7 @@ packages:
     dev: false
 
   file:projects/workspace-service.tgz:
-    resolution: {integrity: sha512-Zatq+n1b+cqzu59FxdcoDfKlrno6G7c5JWS75k5d8DvdxNdX+yECbZ/nn8Es0EuUbTxvtMJIzKzQhXnaOxKyXA==, tarball: file:projects/workspace-service.tgz}
+    resolution: {integrity: sha512-7P19Ne6kBgSWVRGT7HdgeWYJRR9HzkvyZXajJtEoHG+1OmWJPjBWV1w92EPQ3j1VDh90GFQK8ru89Kof58Oxag==, tarball: file:projects/workspace-service.tgz}
     name: '@rush-temp/workspace-service'
     version: 0.0.0
     dependencies:

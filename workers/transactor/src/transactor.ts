@@ -9,22 +9,26 @@ import {
 } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { RPCHandler } from '@hcengineering/rpc'
-import { ClientSession, createSessionManager, doSessionOp, type WebsocketData } from '@hcengineering/server'
+import {
+  ClientSession,
+  createSessionManager,
+  doSessionOp,
+  type WebsocketData
+} from '@hcengineering/server'
 import serverClient from '@hcengineering/server-client'
 import {
-  loadBrandingMap,
-  Pipeline,
+  createDummyStorageAdapter,
+  loadBrandingMap, Pipeline,
   type ConnectionSocket,
   type PipelineFactory,
   type SessionManager
 } from '@hcengineering/server-core'
-import { registerServerPlugins } from '@hcengineering/server-pipeline'
+// import { registerStringLoaders } from '@hcengineering/server-pipeline'
 import serverPlugin, { decodeToken, type Token } from '@hcengineering/server-token'
 import { DurableObject } from 'cloudflare:workers'
 
-import { createaPipeline } from './pipeline'
-
 // Approach usefull only for separate build, after model-all bundle phase is executed.
+import { createServerPipeline, registerServerPlugins } from '@hcengineering/server-pipeline'
 import model from './model.json'
 
 const rpcHandler = new RPCHandler()
@@ -49,17 +53,29 @@ export class Transactor extends DurableObject<Env> {
     super(ctx, env)
 
     registerServerPlugins()
-
     this.accountsUrl = env.ACCOUNTS_URL
 
-    this.measureCtx = new MeasureMetricsContext('transactor-' + this.ctx.id.toString(), {})
+    this.workspace = this.ctx.id.toString()
+    this.measureCtx = new MeasureMetricsContext('transactor-' + this.workspace, {})
 
     setMetadata(serverPlugin.metadata.Secret, env.SERVER_SECRET)
 
     console.log('Connecting DB to', env.HYPERDRIVE.connectionString)
 
+    // TODO:
+    const storage = createDummyStorageAdapter()
+
     this.pipelineFactory = async (ctx, ws, upgrade, broadcast, branding) => {
-      return await createaPipeline(this.measureCtx, env.HYPERDRIVE.connectionString, model, branding, ws, broadcast)
+      const pipeline = createServerPipeline(
+        this.measureCtx,
+        env.HYPERDRIVE.connectionString,
+        model, {
+          externalStorage: storage,
+          adapterSecurity: false,
+          disableTriggers: false,
+          fulltextUrl: undefined // TODO: Pass fulltext service URI.
+        })
+      return await pipeline(ctx, ws, upgrade, broadcast, branding)
     }
 
     void this.ctx.blockConcurrencyWhile(async () => {
