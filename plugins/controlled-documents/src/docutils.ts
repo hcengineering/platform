@@ -25,8 +25,7 @@ import {
   type Project,
   // DocumentState,
   // HierarchyDocument,
-  ProjectDocument,
-  ProjectMeta
+  ProjectDocument
 } from './types'
 
 import documents from './plugin'
@@ -63,9 +62,9 @@ export async function createControlledDocFromTemplate (
   project: Ref<Project> | undefined,
   parent: Ref<ProjectDocument> | undefined,
   docClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument
-): Promise<{ seqNumber: number, success: boolean, metaId: Ref<DocumentMeta>, projectMetaId: Ref<ProjectMeta> | undefined }> {
+): Promise<{ seqNumber: number, success: boolean, metaId: Ref<DocumentMeta> }> {
   if (templateId == null) {
-    return { seqNumber: -1, success: false, metaId: documents.ids.NoParent, projectMetaId: undefined }
+    return { seqNumber: -1, success: false, metaId: documents.ids.NoParent }
   }
 
   const template = await client.findOne(documents.mixin.DocumentTemplate, {
@@ -73,7 +72,7 @@ export async function createControlledDocFromTemplate (
   })
 
   if (template === undefined) {
-    return { seqNumber: -1, success: false, metaId: documents.ids.NoParent, projectMetaId: undefined }
+    return { seqNumber: -1, success: false, metaId: documents.ids.NoParent }
   }
 
   let path: Array<Ref<DocumentMeta>> = []
@@ -117,7 +116,7 @@ async function createControlledDoc (
   path: Ref<DocumentMeta>[] = [],
   docClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument,
   content: Ref<Blob> | null
-): Promise<{ seqNumber: number, success: boolean, metaId: Ref<DocumentMeta>, projectMetaId: Ref<ProjectMeta> }> {
+): Promise<{ seqNumber: number, success: boolean, metaId: Ref<DocumentMeta> }> {
   const projectId = project ?? documents.ids.NoProject
 
   const ops = client.apply()
@@ -144,18 +143,18 @@ async function createControlledDoc (
     documents: 0
   })
 
-  // await client.addCollection(
-  //   documents.class.ProjectDocument,
-  //   space,
-  //   projectMetaId,
-  //   documents.class.ProjectMeta,
-  //   'documents',
-  //   {
-  //     project: projectId,
-  //     initial: projectId,
-  //     document: documentId
-  //   }
-  // )
+  await client.addCollection(
+    documents.class.ProjectDocument,
+    space,
+    projectMetaId,
+    documents.class.ProjectMeta,
+    'documents',
+    {
+      project: projectId,
+      initial: projectId,
+      document: documentId
+    }
+  )
 
   // await ops.addCollection(
   //   docClass,
@@ -175,7 +174,7 @@ async function createControlledDoc (
   // )
 
   const success = await ops.commit()
-  return { seqNumber, success: success.result, metaId, projectMetaId }
+  return { seqNumber, success: success.result, metaId }
 }
 
 export async function createDocumentTemplate (
@@ -190,7 +189,7 @@ export async function createDocumentTemplate (
   spec: Omit<AttachedData<ControlledDocument>, 'prefix'>,
   category: Ref<DocumentCategory>,
   author?: Ref<Employee>
-): Promise<{ seqNumber: number, success: boolean, metaId: Ref<DocumentMeta>, projectMetaId: Ref<ProjectMeta> }> {
+): Promise<{ seqNumber: number, success: boolean, metaId: Ref<DocumentMeta> }> {
   const projectId = project ?? documents.ids.NoProject
 
   const incResult = await client.updateDoc(
@@ -239,18 +238,18 @@ export async function createDocumentTemplate (
     documents: 0
   })
 
-  // await client.addCollection(
-  //   documents.class.ProjectDocument,
-  //   space,
-  //   projectMetaId,
-  //   documents.class.ProjectMeta,
-  //   'documents',
-  //   {
-  //     project: projectId,
-  //     initial: projectId,
-  //     document: templateId
-  //   }
-  // )
+  await client.addCollection(
+    documents.class.ProjectDocument,
+    space,
+    projectMetaId,
+    documents.class.ProjectMeta,
+    'documents',
+    {
+      project: projectId,
+      initial: projectId,
+      document: templateId
+    }
+  )
 
   // await ops.addCollection<DocumentMeta, HierarchyDocument>(
   //   _class,
@@ -278,5 +277,5 @@ export async function createDocumentTemplate (
 
   const success = await ops.commit()
 
-  return { seqNumber, success: success.result, metaId, projectMetaId }
+  return { seqNumber, success: success.result, metaId }
 }
