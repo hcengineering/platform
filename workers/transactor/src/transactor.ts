@@ -9,12 +9,7 @@ import {
 } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { RPCHandler } from '@hcengineering/rpc'
-import {
-  ClientSession,
-  createSessionManager,
-  doSessionOp,
-  type WebsocketData
-} from '@hcengineering/server'
+import { ClientSession, createSessionManager, doSessionOp, type WebsocketData } from '@hcengineering/server'
 import serverClient from '@hcengineering/server-client'
 import {
   createDummyStorageAdapter,
@@ -71,9 +66,6 @@ export class Transactor extends DurableObject<Env> {
     setMetadata(serverPlugin.metadata.Secret, env.SERVER_SECRET ?? 'secret')
 
     console.log('Connecting DB to', env.DB_URL !== '' ? 'Direct ' : 'Hyperdrive')
-
-    // TODO:
-    const storage = createDummyStorageAdapter()
 
     // TODO:
     const storage = createDummyStorageAdapter()

@@ -163,7 +163,7 @@ dependencies:
     version: file:projects/cloud-datalake.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4)
   '@rush-temp/cloud-transactor':
     specifier: file:./projects/cloud-transactor.tgz
-    version: file:projects/cloud-transactor.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4)
+    version: file:projects/cloud-transactor.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(ts-node@10.9.2)(utf-8-validate@6.0.4)
   '@rush-temp/collaboration':
     specifier: file:./projects/collaboration.tgz
     version: file:projects/collaboration.tgz(esbuild@0.20.1)(ts-node@10.9.2)
@@ -16000,7 +16000,7 @@ packages:
     hasBin: true
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
-      acorn: 8.11.3
+      acorn: 8.14.0
       acorn-walk: 8.3.2
       capnp-ts: 0.7.0
       exit-hook: 2.2.1
@@ -23250,6 +23250,7 @@ packages:
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.6.2)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      esbuild: 0.20.1
       eslint: 8.56.0
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.6.2)
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
@@ -23268,7 +23269,6 @@ packages:
       - babel-jest
       - babel-plugin-macros
       - bufferutil
-      - esbuild
       - node-notifier
       - supports-color
       - ts-node
