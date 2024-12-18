@@ -9,7 +9,12 @@ import {
 } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { RPCHandler } from '@hcengineering/rpc'
-import { ClientSession, createSessionManager, doSessionOp, type WebsocketData } from '@hcengineering/server'
+import {
+  ClientSession,
+  createSessionManager,
+  doSessionOp,
+  type WebsocketData
+} from '@hcengineering/server'
 import serverClient from '@hcengineering/server-client'
 import {
   createDummyStorageAdapter,
@@ -19,7 +24,7 @@ import {
   type PipelineFactory,
   type SessionManager
 } from '@hcengineering/server-core'
-import { registerServerPlugins } from '@hcengineering/server-pipeline'
+// import { registerStringLoaders } from '@hcengineering/server-pipeline'
 import serverPlugin, { decodeToken, type Token } from '@hcengineering/server-token'
 import { DurableObject } from 'cloudflare:workers'
 
@@ -66,6 +71,9 @@ export class Transactor extends DurableObject<Env> {
     setMetadata(serverPlugin.metadata.Secret, env.SERVER_SECRET ?? 'secret')
 
     console.log('Connecting DB to', env.DB_URL !== '' ? 'Direct ' : 'Hyperdrive')
+
+    // TODO:
+    const storage = createDummyStorageAdapter()
 
     // TODO:
     const storage = createDummyStorageAdapter()
