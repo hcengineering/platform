@@ -19,6 +19,7 @@ import core, {
   concatLink,
   Doc,
   Ref,
+  Timestamp,
   Tx,
   TxCreateDoc,
   TxCUD,
@@ -37,6 +38,7 @@ import love, {
   Office,
   ParticipantInfo,
   RequestStatus,
+  Room,
   RoomAccess,
   RoomInfo
 } from '@hcengineering/love'
@@ -243,47 +245,20 @@ async function setDefaultRoomAccess (info: ParticipantInfo, control: TriggerCont
   return res
 }
 
-async function getRoomActivePersons (control: TriggerControl, roomInfo: RoomInfo): Promise<Ref<Person>[]> {
-  if (roomInfo.isOffice) {
-    const room = (await control.findAll(control.ctx, love.class.Office, { _id: roomInfo.room as Ref<Office> }))[0]
-
-    return roomInfo.persons.filter((p) => p !== room.person)
-  }
-  return roomInfo.persons
-}
-
-async function finishMeetingMinutes (
-  info: ParticipantInfo,
-  control: TriggerControl,
-  tx: TxCUD<ParticipantInfo>
-): Promise<Tx[]> {
+async function finishRoomMeetings (room: Ref<Room>, meetingEnd: Timestamp, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
-  const roomInfos = await control.queryFind(control.ctx, love.class.RoomInfo, {})
-  const roomInfo =
-    tx._class === core.class.TxRemoveDoc
-      ? roomInfos.find((it) => it.room === info.room)
-      : roomInfos.find((ri) => ri.persons.includes(info.person))
+  const meetingMinutes = await control.findAll(control.ctx, love.class.MeetingMinutes, {
+    attachedTo: room,
+    status: MeetingStatus.Active
+  })
 
-  if (roomInfo === undefined) {
-    return res
-  }
-
-  const currentPersons = (await getRoomActivePersons(control, roomInfo)).filter((p) => p !== info.person)
-
-  if (currentPersons.length === 0) {
-    const meetingMinutes = await control.findAll(control.ctx, love.class.MeetingMinutes, {
-      attachedTo: roomInfo.room,
-      status: MeetingStatus.Active
-    })
-
-    for (const meeting of meetingMinutes) {
-      res.push(
-        control.txFactory.createTxUpdateDoc(meeting._class, meeting.space, meeting._id, {
-          status: MeetingStatus.Finished,
-          meetingEnd: tx.modifiedOn
-        })
-      )
-    }
+  for (const meeting of meetingMinutes) {
+    res.push(
+      control.txFactory.createTxUpdateDoc(meeting._class, meeting.space, meeting._id, {
+        status: MeetingStatus.Finished,
+        meetingEnd
+      })
+    )
   }
 
   return res
@@ -303,7 +278,6 @@ export async function OnParticipantInfo (txes: Tx[], control: TriggerControl): P
         continue
       }
       result.push(...(await setDefaultRoomAccess(removedInfo, control)))
-      result.push(...(await finishMeetingMinutes(removedInfo, control, actualTx)))
       continue
     }
     if (actualTx._class === core.class.TxUpdateDoc) {
@@ -319,7 +293,6 @@ export async function OnParticipantInfo (txes: Tx[], control: TriggerControl): P
       }
       result.push(...(await rejectJoinRequests(info, control)))
       result.push(...(await setDefaultRoomAccess(info, control)))
-      result.push(...(await finishMeetingMinutes(info, control, actualTx)))
       result.push(...(await roomJoinHandler(info, control)))
     }
   }
@@ -444,6 +417,47 @@ export async function meetingMinutesTextPresenter (doc: Doc): Promise<string> {
   return meetingMinutes.title
 }
 
+async function isRoomEmpty (
+  room: Ref<Room>,
+  isOffice: boolean,
+  persons: Ref<Person>[],
+  control: TriggerControl
+): Promise<boolean> {
+  if (persons.length === 0) return true
+  if (isOffice && persons.length === 1) {
+    const office = (await control.findAll(control.ctx, love.class.Office, { _id: room as Ref<Office> }))[0]
+    if (office === undefined) return true
+    return office.person != null && office.person === persons[0]
+  }
+
+  return false
+}
+
+async function OnRoomInfo (txes: TxCUD<RoomInfo>[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    if (tx._class === core.class.TxRemoveDoc) {
+      const roomInfo = control.removedMap.get(tx.objectId) as RoomInfo
+      if (roomInfo === undefined) continue
+      if (roomInfo.room === love.ids.Reception) continue
+      result.push(...(await finishRoomMeetings(roomInfo.room, tx.modifiedOn, control)))
+      continue
+    }
+    if (tx._class === core.class.TxUpdateDoc) {
+      const newPersons = (tx as TxUpdateDoc<RoomInfo>).operations.persons
+      if (newPersons === undefined) continue
+      const roomInfos = await control.queryFind(control.ctx, love.class.RoomInfo, {})
+      const roomInfo = roomInfos.find((r) => r._id === tx.objectId)
+      if (roomInfo === undefined) continue
+      if (roomInfo.room === love.ids.Reception) continue
+      if (await isRoomEmpty(roomInfo.room, roomInfo.isOffice, newPersons, control)) {
+        result.push(...(await finishRoomMeetings(roomInfo.room, tx.modifiedOn, control)))
+      }
+    }
+  }
+  return result
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   function: {
@@ -454,6 +468,7 @@ export default async () => ({
     OnEmployee,
     OnUserStatus,
     OnParticipantInfo,
+    OnRoomInfo,
     OnKnock,
     OnInvite
   }
