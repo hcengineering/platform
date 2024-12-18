@@ -62,9 +62,9 @@ export async function createControlledDocFromTemplate (
   project: Ref<Project> | undefined,
   parent: Ref<ProjectDocument> | undefined,
   docClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument
-): Promise<{ seqNumber: number, success: boolean, metaId: Ref<DocumentMeta> }> {
+): Promise<{ seqNumber: number, success: boolean, metaId: Ref<DocumentMeta>, projectDocumentId: Ref<ProjectDocument> | undefined }> {
   if (templateId == null) {
-    return { seqNumber: -1, success: false, metaId: documents.ids.NoParent }
+    return { seqNumber: -1, success: false, metaId: documents.ids.NoParent, projectDocumentId: undefined }
   }
 
   const template = await client.findOne(documents.mixin.DocumentTemplate, {
@@ -72,7 +72,7 @@ export async function createControlledDocFromTemplate (
   })
 
   if (template === undefined) {
-    return { seqNumber: -1, success: false, metaId: documents.ids.NoParent }
+    return { seqNumber: -1, success: false, metaId: documents.ids.NoParent, projectDocumentId: undefined }
   }
 
   let path: Array<Ref<DocumentMeta>> = []
@@ -116,7 +116,7 @@ async function createControlledDoc (
   path: Ref<DocumentMeta>[] = [],
   docClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument,
   content: Ref<Blob> | null
-): Promise<{ seqNumber: number, success: boolean, metaId: Ref<DocumentMeta> }> {
+): Promise<{ seqNumber: number, success: boolean, metaId: Ref<DocumentMeta>, projectDocumentId: Ref<ProjectDocument> }> {
   const projectId = project ?? documents.ids.NoProject
 
   const ops = client.apply()
@@ -143,7 +143,7 @@ async function createControlledDoc (
     documents: 0
   })
 
-  await client.addCollection(
+  const projectDocumentId = await client.addCollection(
     documents.class.ProjectDocument,
     space,
     projectMetaId,
@@ -174,7 +174,7 @@ async function createControlledDoc (
   // )
 
   const success = await ops.commit()
-  return { seqNumber, success: success.result, metaId }
+  return { seqNumber, success: success.result, metaId, projectDocumentId }
 }
 
 export async function createDocumentTemplate (
@@ -189,7 +189,7 @@ export async function createDocumentTemplate (
   spec: Omit<AttachedData<ControlledDocument>, 'prefix'>,
   category: Ref<DocumentCategory>,
   author?: Ref<Employee>
-): Promise<{ seqNumber: number, success: boolean, metaId: Ref<DocumentMeta> }> {
+): Promise<{ seqNumber: number, success: boolean, metaId: Ref<DocumentMeta>, projectDocumentId: Ref<ProjectDocument> }> {
   const projectId = project ?? documents.ids.NoProject
 
   const incResult = await client.updateDoc(
@@ -238,7 +238,7 @@ export async function createDocumentTemplate (
     documents: 0
   })
 
-  await client.addCollection(
+  const projectDocumentId = await client.addCollection(
     documents.class.ProjectDocument,
     space,
     projectMetaId,
@@ -277,5 +277,5 @@ export async function createDocumentTemplate (
 
   const success = await ops.commit()
 
-  return { seqNumber, success: success.result, metaId }
+  return { seqNumber, success: success.result, metaId, projectDocumentId }
 }

@@ -26,6 +26,7 @@ import documents, {
   DocumentState,
   type DocumentTemplate,
   OrgSpace,
+  ProjectDocument,
   TEMPLATE_PREFIX
 } from '@hcengineering/controlled-documents'
 import core, {
@@ -759,16 +760,12 @@ export class WorkspaceImporter {
 
     // Create hierarchy meta
     const documentMetaIds = new Map<Ref<ControlledDocument | DocumentTemplate>, Ref<DocumentMeta>>()
-    for (const [parentId, templates] of templateMap.entries()) {
-      for (const template of templates) {
-        const result = await this.createTemplateWithSubdocs(template, spaceId)
+    for (const doc of space.docs) {
+      if (this.isDocumentTemplate(doc)) {
+        const result = await this.createTemplateWithSubdocs(doc as ImportControlledDocumentTemplate, documentMetaIds, spaceId)
         documentMetaIds.set(result.templateId, result.metaId)
-      }
-    }
-
-    for (const [parentId, documents] of documentMap.entries()) {
-      for (const document of documents) {
-        const result = await this.createControlledDocumentWithSubdocs(document, spaceId)
+      } else {
+        const result = await this.createControlledDocumentWithSubdocs(doc as ImportControlledDocument, documentMetaIds, spaceId)
         documentMetaIds.set(result.docId, result.metaId)
       }
     }
@@ -926,7 +923,9 @@ export class WorkspaceImporter {
 
   async createTemplateWithSubdocs (
     template: ImportControlledDocumentTemplate,
-    spaceId: Ref<DocumentSpace>
+    documentMetaIds: Map<Ref<ControlledDocument | DocumentTemplate>, Ref<DocumentMeta>>,
+    spaceId: Ref<DocumentSpace>,
+    parentProjectDocumentId?: Ref<ProjectDocument>
   ): Promise<{ templateId: Ref<DocumentTemplate>, metaId: Ref<DocumentMeta> }> {
     this.logger.log('Creating document template: ' + template.title)
     const templateId = template.id ?? generateId<DocumentTemplate>()
@@ -941,7 +940,7 @@ export class WorkspaceImporter {
       spaceId,
       documents.mixin.DocumentTemplate,
       undefined,
-      undefined,
+      parentProjectDocumentId,
       templateId as unknown as Ref<ControlledDocument>, // todo: suspisios place
       template.docPrefix,
       {
@@ -971,20 +970,24 @@ export class WorkspaceImporter {
       throw new Error('Failed to create document template: ' + template.title)
     }
 
-    // for (const subdoc of template.subdocs) {
-    //   if (this.isDocumentTemplate(subdoc)) {
-    //     await this.createTemplateWithSubdocs(subdoc as ImportControlledDocumentTemplate, spaceId)
-    //   } else {
-    //     await this.createControlledDocumentWithSubdocs(subdoc as ImportControlledDocument, spaceId)
-    //   }
-    // }
+    for (const subdoc of template.subdocs) {
+      if (this.isDocumentTemplate(subdoc)) {
+        const subdocResult = await this.createTemplateWithSubdocs(subdoc as ImportControlledDocumentTemplate, documentMetaIds, spaceId, result.projectDocumentId)
+        documentMetaIds.set(subdoc.id, subdocResult.metaId)
+      } else {
+        const subdocResult = await this.createControlledDocumentWithSubdocs(subdoc as ImportControlledDocument, documentMetaIds, spaceId, result.projectDocumentId)
+        documentMetaIds.set(subdoc.id, subdocResult.metaId)
+      }
+    }
 
     return { templateId, metaId: result.metaId }
   }
 
   async createControlledDocumentWithSubdocs (
     doc: ImportControlledDocument,
-    spaceId: Ref<DocumentSpace>
+    documentMetaIds: Map<Ref<ControlledDocument | DocumentTemplate>, Ref<DocumentMeta>>,
+    spaceId: Ref<DocumentSpace>,
+    parentProjectDocumentId?: Ref<ProjectDocument>
   ): Promise<{ docId: Ref<ControlledDocument>, metaId: Ref<DocumentMeta> }> {
     this.logger.log('Creating controlled document: ' + doc.title)
     const docId = doc.id ?? generateId<ControlledDocument>()
@@ -1019,7 +1022,7 @@ export class WorkspaceImporter {
       },
       spaceId,
       undefined, // project
-      undefined, // parent
+      parentProjectDocumentId, // parent
       documents.class.ControlledDocument
     )
 
@@ -1028,13 +1031,15 @@ export class WorkspaceImporter {
     }
 
     // Process subdocs recursively
-    // for (const subdoc of doc.subdocs) {
-    //   if (this.isDocumentTemplate(subdoc)) {
-    //     await this.createTemplateWithSubdocs(subdoc as ImportControlledDocumentTemplate, spaceId)
-    //   } else {
-    //     await this.createControlledDocumentWithSubdocs(subdoc as ImportControlledDocument, spaceId)
-    //   }
-    // }
+    for (const subdoc of doc.subdocs) {
+      if (this.isDocumentTemplate(subdoc)) {
+        const subdocResult = await this.createTemplateWithSubdocs(subdoc as ImportControlledDocumentTemplate, documentMetaIds, spaceId, result.projectDocumentId)
+        documentMetaIds.set(subdoc.id, subdocResult.metaId)
+      } else {
+        const subdocResult = await this.createControlledDocumentWithSubdocs(subdoc as ImportControlledDocument, documentMetaIds, spaceId, result.projectDocumentId)
+        documentMetaIds.set(subdoc.id, subdocResult.metaId)
+      }
+    }
 
     return { docId, metaId: result.metaId }
   }
