@@ -330,14 +330,16 @@ export async function updateDataWorkspaceIdToUuid (
 
     ctx.info('Tables to be updated: ', { tables })
 
-    for (const table of tables) {
+    for (const table of tables.filter((t) => t === 'notification')) {
       ctx.info('Altering table workspaceId type to uuid', { table })
 
       if (!dryRun) {
         await retryTxn(pgClient, async (client) => {
           await client`ALTER TABLE ${client(table)} RENAME COLUMN "workspaceId" TO "workspaceIdOld"`
           await client`ALTER TABLE ${client(table)} ADD COLUMN "workspaceId" UUID`
+        })
 
+        await retryTxn(pgClient, async (client) => {
           for (const ws of workspaces) {
             const uuid = ws.uuid
             if (uuid === undefined) {
@@ -347,10 +349,15 @@ export async function updateDataWorkspaceIdToUuid (
 
             await client`UPDATE ${client(table)} SET "workspaceId" = ${uuid} WHERE "workspaceIdOld" = ${ws.workspace}`
           }
+        })
 
+        await retryTxn(pgClient, async (client) => {
           await client`ALTER TABLE ${client(table)} ALTER COLUMN "workspaceId" SET NOT NULL`
-          await client`ALTER TABLE ${client(table)} DROP CONSTRAINT "task_pkey"`
-          await client`ALTER TABLE ${client(table)} ADD CONSTRAINT "task_pkey" PRIMARY KEY ("workspaceId", _id)`
+        })
+
+        await retryTxn(pgClient, async (client) => {
+          await client`ALTER TABLE ${client(table)} DROP CONSTRAINT ${client(`${table}_pkey`)}`
+          await client`ALTER TABLE ${client(table)} ADD CONSTRAINT ${client(`${table}_pkey`)} PRIMARY KEY ("workspaceId", _id)`
         })
       }
     }
