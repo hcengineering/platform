@@ -26,6 +26,7 @@ import documents, {
   DocumentState,
   type DocumentTemplate,
   OrgSpace,
+  ProjectMeta,
   TEMPLATE_PREFIX
 } from '@hcengineering/controlled-documents'
 import core, {
@@ -759,10 +760,12 @@ export class WorkspaceImporter {
 
     // Create hierarchy meta
     const documentMetaIds = new Map<Ref<ControlledDocument | DocumentTemplate>, Ref<DocumentMeta>>()
+    const projectMetaIds = new Map<Ref<ControlledDocument | DocumentTemplate>, Ref<ProjectMeta>>()
     for (const [parentId, templates] of templateMap.entries()) {
       for (const template of templates) {
         const result = await this.createTemplateWithSubdocs(template, spaceId)
         documentMetaIds.set(result.templateId, result.metaId)
+        projectMetaIds.set(result.templateId, result.projectMetaId)
       }
     }
 
@@ -770,6 +773,9 @@ export class WorkspaceImporter {
       for (const document of documents) {
         const result = await this.createControlledDocumentWithSubdocs(document, spaceId)
         documentMetaIds.set(result.docId, result.metaId)
+        if (result.projectMetaId !== undefined) {
+          projectMetaIds.set(result.docId, result.projectMetaId)
+        }
       }
     }
 
@@ -799,6 +805,23 @@ export class WorkspaceImporter {
             labels: 0
           },
           template.id as unknown as Ref<ControlledDocument> // todo: make sure it's not used anywhere as mixin id
+        )
+
+        const projectMetaId = projectMetaIds.get(template.id)
+        if (projectMetaId === undefined) {
+          throw new Error('Project meta not found: ' + template.id)
+        }
+        await this.client.addCollection(
+          documents.class.ProjectDocument,
+          spaceId,
+          projectMetaId,
+          documents.class.ProjectMeta,
+          'documents',
+          {
+            project: documents.ids.NoProject,
+            initial: documents.ids.NoProject,
+            document: template.id as unknown as Ref<ControlledDocument>
+          }
         )
         console.log(result)
       }
@@ -856,6 +879,23 @@ export class WorkspaceImporter {
             changeControl: document.changeControl
           },
           document.id
+        )
+
+        const projectMetaId = projectMetaIds.get(document.id)
+        if (projectMetaId === undefined) {
+          throw new Error('Project meta not found: ' + document.id)
+        }
+        await ops.addCollection(
+          documents.class.ProjectDocument,
+          spaceId,
+          projectMetaId,
+          documents.class.ProjectMeta,
+          'documents',
+          {
+            project: documents.ids.NoProject,
+            initial: documents.ids.NoProject,
+            document: document.id
+          }
         )
         await ops.commit()
         console.log(result)
@@ -927,7 +967,7 @@ export class WorkspaceImporter {
   async createTemplateWithSubdocs (
     template: ImportControlledDocumentTemplate,
     spaceId: Ref<DocumentSpace>
-  ): Promise<{ templateId: Ref<DocumentTemplate>, metaId: Ref<DocumentMeta> }> {
+  ): Promise<{ templateId: Ref<DocumentTemplate>, metaId: Ref<DocumentMeta>, projectMetaId: Ref<ProjectMeta> }> {
     this.logger.log('Creating document template: ' + template.title)
     const templateId = template.id ?? generateId<DocumentTemplate>()
     const content = await template.descrProvider()
@@ -979,13 +1019,13 @@ export class WorkspaceImporter {
     //   }
     // }
 
-    return { templateId, metaId: result.metaId }
+    return { templateId, metaId: result.metaId, projectMetaId: result.projectMetaId }
   }
 
   async createControlledDocumentWithSubdocs (
     doc: ImportControlledDocument,
     spaceId: Ref<DocumentSpace>
-  ): Promise<{ docId: Ref<ControlledDocument>, metaId: Ref<DocumentMeta> }> {
+  ): Promise<{ docId: Ref<ControlledDocument>, metaId: Ref<DocumentMeta>, projectMetaId: Ref<ProjectMeta> | undefined }> {
     this.logger.log('Creating controlled document: ' + doc.title)
     const docId = doc.id ?? generateId<ControlledDocument>()
 
@@ -1036,6 +1076,6 @@ export class WorkspaceImporter {
     //   }
     // }
 
-    return { docId, metaId: result.metaId }
+    return { docId, metaId: result.metaId, projectMetaId: result.projectMetaId }
   }
 }
