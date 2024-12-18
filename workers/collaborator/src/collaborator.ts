@@ -15,13 +15,11 @@
 
 import { DurableObject } from 'cloudflare:workers'
 import { type RouterType, type IRequest, Router, error } from 'itty-router'
-import * as encoding from 'lib0/encoding'
 import { applyUpdate, encodeStateAsUpdate } from 'yjs'
 
 import { Document } from './document'
 import { type Env } from './env'
 import { ConsoleLogger, type MetricsContext, withMetrics } from './metrics'
-import * as protocol from './protocol'
 import type {
   AwarenessUpdate,
   RpcCreateContentRequest,
@@ -31,7 +29,6 @@ import type {
 } from './types'
 import { decodeDocumentId, extractStrParam, jsonBlobId, ydocBlobId } from './utils'
 import { jsonToYDoc, yDocToJSON } from './ydoc'
-import { ConnectionManager } from './connection'
 
 export const PREFERRED_SAVE_SIZE = 500
 export const PREFERRED_SAVE_INTERVAL = 30 * 1000
@@ -47,7 +44,6 @@ export const PREFERRED_SAVE_INTERVAL = 30 * 1000
  */
 export class Collaborator extends DurableObject<Env> {
   private readonly logger = new ConsoleLogger()
-  private readonly connections: ConnectionManager
   private readonly router: RouterType
   private readonly doc: Document
   private readonly updates: Uint8Array[]
@@ -58,7 +54,6 @@ export class Collaborator extends DurableObject<Env> {
   constructor (ctx: DurableObjectState, env: Env) {
     super(ctx, env)
 
-    this.connections = new ConnectionManager(this.ctx)
     this.doc = new Document()
     this.updates = []
 
@@ -89,7 +84,7 @@ export class Collaborator extends DurableObject<Env> {
     }
 
     const { 0: client, 1: server } = new WebSocketPair()
-    this.connections.accept(server)
+    this.ctx.acceptWebSocket(server)
 
     await ctx.with('session', async (ctx) => {
       await this.handleSession(ctx, server, documentId, source)
@@ -175,15 +170,7 @@ export class Collaborator extends DurableObject<Env> {
       return
     }
 
-    try {
-      const encoder = protocol.handleMessage(this.doc, new Uint8Array(message), ws)
-      if (encoding.length(encoder) > 1) {
-        ws.send(encoding.toUint8Array(encoder))
-      }
-    } catch (err) {
-      const error = err instanceof Error ? err.message : String(err)
-      this.logger.error('WebSocket message error', { error })
-    }
+    this.doc.handleMessage(new Uint8Array(message), ws)
   }
 
   async webSocketClose (ws: WebSocket, code: number, reason: string, wasClean: boolean): Promise<void> {
@@ -224,7 +211,7 @@ export class Collaborator extends DurableObject<Env> {
         })
 
         ctx.withSync('restoreConnections', () => {
-          const connections = this.connections.getConnections()
+          const connections = this.ctx.getWebSockets()
           connections.forEach((ws: WebSocket) => {
             this.doc.addConnection(ws)
           })
@@ -258,27 +245,9 @@ export class Collaborator extends DurableObject<Env> {
     })
 
     this.doc.addConnection(ws)
-
-    ctx.withSync('forceSync', () => {
-      const encoder = protocol.forceSyncMessage(this.doc)
-      ws.send(encoding.toUint8Array(encoder))
-    })
-
-    ctx.withSync('awareness', () => {
-      const clients = Array.from(this.doc.awareness.states.keys())
-      if (clients.length > 0) {
-        const encoder = protocol.awarenessMessage(this.doc, clients)
-        ws.send(encoding.toUint8Array(encoder))
-      }
-    })
   }
 
   async handleAwarenessUpdate ({ added, updated, removed }: AwarenessUpdate, origin: any): Promise<void> {
-    // broadcast awareness state
-    const clients = [...added, ...updated, ...removed]
-    const encoder = protocol.awarenessMessage(this.doc, clients)
-    await this.broadcastMessage(encoding.toUint8Array(encoder))
-
     // persist awareness state
     const state = this.doc.awareness.getLocalState()
     await this.ctx.storage.put('awareness', state)
@@ -293,35 +262,10 @@ export class Collaborator extends DurableObject<Env> {
     if (this.updates.length > PREFERRED_SAVE_SIZE) {
       void this.writeDocument()
     }
-
-    // broadcast update
-    const encoder = protocol.updateMessage(update, origin)
-    await this.broadcastMessage(encoding.toUint8Array(encoder), origin)
-  }
-
-  async broadcastMessage (message: Uint8Array, origin?: any): Promise<void> {
-    const connections = this.connections.getConnections()
-    const wss = connections
-      .filter((ws) => ws !== origin)
-      .filter((ws) => ws.readyState === WebSocket.OPEN)
-    const promises = wss.map(async (ws) => {
-      await this.sendMessage(ws, message)
-    })
-    await Promise.all(promises)
-  }
-
-  async sendMessage (ws: WebSocket, message: Uint8Array): Promise<void> {
-    try {
-      ws.send(message)
-    } catch (err) {
-      const error = err instanceof Error ? err.message : String(err)
-      this.logger.error('failed to send message', { error })
-      await this.handleClose(ws, 1011, 'error')
-    }
   }
 
   async handleClose (ws: WebSocket, code: number, reason?: string): Promise<void> {
-    const clients = this.connections.count()
+    const clients = this.ctx.getWebSockets().length
 
     try {
       ws.close(code, reason)

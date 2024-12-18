@@ -15,52 +15,123 @@
 
 import { Doc as YDoc } from 'yjs'
 import { Awareness, removeAwarenessStates } from 'y-protocols/awareness'
-import { type AwarenessUpdate } from './types'
 
-interface SessionState {
-  clients: Set<number>
-}
+import * as encoding from 'lib0/encoding'
+import * as protocol from './protocol'
+import { type AwarenessUpdate } from './types'
 
 export class Document extends YDoc {
   awareness: Awareness
-  sessions: Map<WebSocket, SessionState>
+  connections: Map<WebSocket, Set<number>>
 
   constructor () {
     super({ gc: false })
 
-    this.sessions = new Map()
+    this.connections = new Map()
 
     this.awareness = new Awareness(this)
     this.awareness.setLocalState(null)
 
+    this.on('update', this.handleUpdate.bind(this))
     this.awareness.on('update', this.handleAwarenessUpdate.bind(this))
   }
 
   addConnection (ws: WebSocket): void {
-    const state = ws.deserializeAttachment() ?? { clients: new Set() }
-    this.sessions.set(ws, state)
+    const state = ws.deserializeAttachment() ?? new Set()
+    this.connections.set(ws, state)
+
+    const awareness = this.awareness
+
+    // Force sync document state
+    const encoder = protocol.forceSyncMessage(this)
+    ws.send(encoding.toUint8Array(encoder))
+
+    // Force sync awareness state
+    if (awareness.states.size > 0) {
+      const clients = Array.from(awareness.states.keys())
+      if (clients.length > 0) {
+        const encoder = protocol.awarenessMessage(this, clients)
+        ws.send(encoding.toUint8Array(encoder))
+      }
+    }
   }
 
   removeConnection (ws: WebSocket): void {
-    const state = this.sessions.get(ws)
-    if (state !== undefined && state.clients.size > 0) {
-      removeAwarenessStates(this.awareness, Array.from(state.clients), null)
-    }
-
-    this.sessions.delete(ws)
+    closeConnection(this, ws)
   }
 
-  private handleAwarenessUpdate ({ added, removed }: AwarenessUpdate, origin: any): void {
+  handleMessage (message: Uint8Array, origin: WebSocket): void {
+    try {
+      const encoder = protocol.handleMessage(this, new Uint8Array(message), origin)
+      if (encoding.length(encoder) > 1) {
+        origin.send(encoding.toUint8Array(encoder))
+      }
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err)
+      console.error('WebSocket message error', { error })
+    }
+  }
+
+  private handleUpdate (update: Uint8Array, origin: any): void {
+    const encoder = protocol.updateMessage(update, origin)
+    broadcast(this, encoding.toUint8Array(encoder), [origin])
+  }
+
+  private handleAwarenessUpdate ({ added, updated, removed }: AwarenessUpdate, origin: any): void {
+    const changed = [...added, ...updated, ...removed]
+    const encoder = protocol.awarenessMessage(this, changed)
+    broadcast(this, encoding.toUint8Array(encoder))
+
     if (origin == null || !(origin instanceof WebSocket)) return
 
     if (added.length > 0 || removed.length > 0) {
-      const state = this.sessions.get(origin)
-      if (state !== undefined) {
-        added.forEach((client) => state.clients.add(client))
-        removed.forEach((client) => state.clients.delete(client))
+      const connIDs = this.connections.get(origin)
+      if (connIDs !== undefined) {
+        added.forEach((client) => connIDs.add(client))
+        removed.forEach((client) => connIDs.delete(client))
 
-        origin.serializeAttachment(state)
+        origin.serializeAttachment(connIDs)
       }
     }
+  }
+}
+
+function closeConnection (doc: Document, ws: WebSocket): void {
+  if (doc.connections.has(ws)) {
+    const connIDs = doc.connections.get(ws)
+    doc.connections.delete(ws)
+
+    if (connIDs !== undefined && connIDs.size > 0) {
+      removeAwarenessStates(doc.awareness, Array.from(connIDs), null)
+    }
+  }
+
+  try {
+    ws.close()
+  } catch (err) {
+    const error = err instanceof Error ? err.message : String(err)
+    console.error('failed to close WebSocket', { error })
+  }
+}
+
+function broadcast (doc: Document, message: Uint8Array, exclude: any[] = []): void {
+  doc.connections.forEach((_, ws) => {
+    if (!exclude.includes(ws)) {
+      send(doc, ws, message)
+    }
+  })
+}
+
+function send (doc: Document, ws: WebSocket, message: Uint8Array): void {
+  if (ws.readyState !== undefined && ws.readyState !== WebSocket.CONNECTING && ws.readyState !== WebSocket.OPEN) {
+    closeConnection(doc, ws)
+  }
+
+  try {
+    ws.send(message)
+  } catch (err) {
+    const error = err instanceof Error ? err.message : String(err)
+    console.error('failed to send message', { error })
+    closeConnection(doc, ws)
   }
 }
