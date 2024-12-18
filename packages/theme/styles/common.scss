@@ -113,8 +113,9 @@
     flex-direction: column;
     min-width: var(--app-panel-width);
     width: var(--app-panel-width);
-    height: 100%;
-    border-right: 1px solid var(--theme-navpanel-divider);
+    margin: var(--spacing-1);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: var(--medium-BorderRadius) !important;
   }
   &.horizonatl {
     min-height: var(--app-panel-width);
@@ -130,7 +131,6 @@
 .antiPanel-navigator,
 .antiPanel-component {
   display: flex;
-  height: 100%;
   min-height: 0;
   
   &.header { background-color: var(--theme-comp-header-color); }
@@ -142,7 +142,12 @@
 .antiPanel-navigator {
   position: relative;
   
-  &:not(.second) { background-color: var(--theme-navpanel-color); }
+  &:not(.second) { 
+    background-color: var(--theme-workbench-color); 
+    margin-right: var(--spacing-2);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: var(--small-focus-BorderRadius);
+  }
   &:not(.right) {
     min-width: 12.5rem;
     max-width: 22.5rem;
