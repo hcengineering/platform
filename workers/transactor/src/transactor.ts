@@ -9,16 +9,12 @@ import {
 } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { RPCHandler } from '@hcengineering/rpc'
-import {
-  ClientSession,
-  createSessionManager,
-  doSessionOp,
-  type WebsocketData
-} from '@hcengineering/server'
+import { ClientSession, createSessionManager, doSessionOp, type WebsocketData } from '@hcengineering/server'
 import serverClient from '@hcengineering/server-client'
 import {
   createDummyStorageAdapter,
-  loadBrandingMap, Pipeline,
+  loadBrandingMap,
+  Pipeline,
   type ConnectionSocket,
   type PipelineFactory,
   type SessionManager
@@ -28,15 +24,21 @@ import serverPlugin, { decodeToken, type Token } from '@hcengineering/server-tok
 import { DurableObject } from 'cloudflare:workers'
 
 // Approach usefull only for separate build, after model-all bundle phase is executed.
-import { createServerPipeline, registerServerPlugins } from '@hcengineering/server-pipeline'
+import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
+import {
+  createServerPipeline,
+  registerAdapterFactry,
+  registerDestroyFactry,
+  registerServerPlugins,
+  registerTxAdapterFactry
+} from '@hcengineering/server-pipeline'
 import model from './model.json'
-
-const rpcHandler = new RPCHandler()
 
 export const PREFERRED_SAVE_SIZE = 500
 export const PREFERRED_SAVE_INTERVAL = 30 * 1000
 
 export class Transactor extends DurableObject<Env> {
+  rpcHandler = new RPCHandler()
   private workspace: string = ''
 
   private sessionManager!: SessionManager
@@ -52,15 +54,18 @@ export class Transactor extends DurableObject<Env> {
   constructor (ctx: DurableObjectState, env: Env) {
     super(ctx, env)
 
-    registerServerPlugins()
-    this.accountsUrl = env.ACCOUNTS_URL
+    registerTxAdapterFactry('postgresql', createPostgresTxAdapter, true)
+    registerAdapterFactry('postgresql', createPostgresAdapter, true)
+    registerDestroyFactry('postgresql', createPostgreeDestroyAdapter, true)
 
-    this.workspace = this.ctx.id.toString()
+    registerServerPlugins()
+    this.accountsUrl = env.ACCOUNTS_URL ?? 'http://127.0.0.1:3000'
+
     this.measureCtx = new MeasureMetricsContext('transactor-' + this.workspace, {})
 
-    setMetadata(serverPlugin.metadata.Secret, env.SERVER_SECRET)
+    setMetadata(serverPlugin.metadata.Secret, env.SERVER_SECRET ?? 'secret')
 
-    console.log('Connecting DB to', env.HYPERDRIVE.connectionString)
+    console.log('Connecting DB to', env.DB_URL !== '' ? 'Direct ' : 'Hyperdrive')
 
     // TODO:
     const storage = createDummyStorageAdapter()
@@ -68,13 +73,15 @@ export class Transactor extends DurableObject<Env> {
     this.pipelineFactory = async (ctx, ws, upgrade, broadcast, branding) => {
       const pipeline = createServerPipeline(
         this.measureCtx,
-        env.HYPERDRIVE.connectionString,
-        model, {
+        env.DB_URL !== '' ? env.DB_URL : env.HYPERDRIVE.connectionString,
+        model,
+        {
           externalStorage: storage,
           adapterSecurity: false,
           disableTriggers: false,
           fulltextUrl: undefined // TODO: Pass fulltext service URI.
-        })
+        }
+      )
       return await pipeline(ctx, ws, upgrade, broadcast, branding)
     }
 
@@ -232,11 +239,11 @@ export class Transactor extends DurableObject<Env> {
         return true
       },
       readRequest: (buffer: Buffer, binary: boolean) => {
-        return rpcHandler.readRequest(buffer, binary)
+        return this.rpcHandler.readRequest(buffer, binary)
       },
       data: () => data,
       send: (ctx: MeasureContext, msg, binary, compression) => {
-        const smsg = rpcHandler.serialize(msg, binary)
+        const smsg = this.rpcHandler.serialize(msg, binary)
 
         ctx.measure('send-data', smsg.length)
         if (ws.readyState !== WebSocket.OPEN || cs.isClosed) {

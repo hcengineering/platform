@@ -8,6 +8,7 @@
     "dev": "wrangler dev --port 3335",
     "dev-local": "wrangler dev --port 3335 --local-upstream --host localhost",
     "start": "wrangler dev --port 3335",
+    "logs": "npx wrangler tail --format pretty", 
     "cf-typegen": "wrangler types",
     "get-model": "mkdir -p bundle && esbuild src/get-model.ts --bundle --keep-names --platform=node --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --define:process.env.VERSION=$(node ../../common/scripts/show_tag.js) --define:process.env.GIT_REVISION=$(../../common/scripts/git_version.sh) --outfile=bundle/bundle.js --log-level=error && node ./bundle/bundle.js > ./src/model.json",
     "bundle": "rushx get-model && wrangler deploy --dry-run --outdir dist",
@@ -37,7 +38,8 @@
     "prettier": "^3.1.0",
     "ts-jest": "^29.1.1",
     "typescript": "^5.3.3",
-    "wrangler": "^3.83.0"
+    "wrangler": "^3.97.0",
+    "esbuild": "^0.20.0"
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.32",

@@ -63,7 +63,6 @@ import { connect } from '@hcengineering/server-tool'
 import { randomBytes } from 'crypto'
 import otpGenerator from 'otp-generator'
 
-import { getWorkspaceDestroyAdapter } from '@hcengineering/server-pipeline'
 import { accountPlugin } from './plugin'
 import type {
   Account,
@@ -93,6 +92,7 @@ import {
   toAccountInfo,
   verifyPassword
 } from './utils'
+import { getWorkspaceDestroyAdapter } from '@hcengineering/server-pipeline'
 
 /**
  * @public

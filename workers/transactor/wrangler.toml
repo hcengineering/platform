@@ -5,6 +5,9 @@ compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat_v2"]
 keep_vars = true
 
+[observability.logs]
+enabled = true
+
 # Automatically place your workloads in an optimal location to minimize latency.
 # If you are running back-end logic in a Worker, running it closer to your back-end infrastructure
 # rather than the end user may result in better performance.
@@ -18,8 +21,8 @@ keep_vars = true
 # Note: Use secrets to store sensitive data.
 # - https://developers.cloudflare.com/workers/configuration/secrets/
 [vars]
-ACCOUNTS_URL = "http://127.0.0.1:3000"
-SERVER_SECRET = "secret"
+# ACCOUNTS_URL = "http://127.0.0.1:3000"
+# SERVER_SECRET = "secret"
 
 # Bind the Workers AI model catalog. Run machine learning models, powered by serverless GPUs, on Cloudflare’s global network
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#workers-ai
@@ -66,8 +69,8 @@ new_classes = ["Transactor"]
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#hyperdrive
 [[hyperdrive]]
 binding = "HYPERDRIVE"
-id = "055e968f3067414eaa30467d8a9c5021"
-localConnectionString = "postgresql://user:password@host.docker.internal:26257/defaultdb?sslmode=disable"
+id = "1f713bb2ec1b464cb663983feca4c89e"
+localConnectionString = "postgresql://postgree:example@host.docker.internal:26257/defaultdb?sslmode=disable"
 
 # Bind a KV Namespace. Use KV as persistent storage for small key-value pairs.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#kv-namespaces

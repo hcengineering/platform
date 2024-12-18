@@ -14,28 +14,33 @@
 //
 
 import {
-  Class,
-  Doc,
-  DocumentQuery,
-  DocumentUpdate,
-  Domain,
-  FindOptions,
-  FindResult,
-  Hierarchy,
-  IndexingConfiguration,
-  Iterator,
-  MeasureContext,
-  ModelDb,
-  Ref,
-  StorageIterator,
+  type Class,
+  type Doc,
+  type DocumentQuery,
+  type DocumentUpdate,
+  type Domain,
+  type FindOptions,
+  type FindResult,
+  type Hierarchy,
+  type IndexingConfiguration,
+  type Iterator,
+  type MeasureContext,
+  type ModelDb,
+  type Ref,
+  type StorageIterator,
   toFindResult,
-  Tx,
-  TxResult,
-  WorkspaceId,
+  type Tx,
+  type TxResult,
+  type WorkspaceId,
   type Blob
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
-import { DbAdapter, DbAdapterHandler, StorageAdapter, type StorageAdapterEx } from '@hcengineering/server-core'
+import {
+  type DbAdapter,
+  type DbAdapterHandler,
+  type StorageAdapter,
+  type StorageAdapterEx
+} from '@hcengineering/server-core'
 
 class StorageBlobAdapter implements DbAdapter {
   constructor (

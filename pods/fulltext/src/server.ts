@@ -30,7 +30,9 @@ import {
   LowLevelMiddleware,
   ModelMiddleware
 } from '@hcengineering/middleware'
+import { createMongoAdapter, createMongoDestroyAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
 import { PlatformError, setMetadata, unknownError } from '@hcengineering/platform'
+import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
 import serverClientPlugin, { getTransactorEndpoint, getWorkspaceInfo } from '@hcengineering/server-client'
 import serverCore, {
   createContentAdapter,
@@ -43,7 +45,14 @@ import serverCore, {
   type StorageAdapter
 } from '@hcengineering/server-core'
 import { FullTextIndexPipeline, searchFulltext, type FulltextDBConfiguration } from '@hcengineering/server-indexer'
-import { getConfig, registerServerPlugins, registerStringLoaders } from '@hcengineering/server-pipeline'
+import {
+  getConfig,
+  registerAdapterFactry,
+  registerDestroyFactry,
+  registerServerPlugins,
+  registerStringLoaders,
+  registerTxAdapterFactry
+} from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken, type Token } from '@hcengineering/server-token'
 import cors from '@koa/cors'
 import Koa from 'koa'
@@ -197,6 +206,14 @@ export async function startIndexer (
   setMetadata(serverToken.metadata.Secret, opt.serverSecret)
   setMetadata(serverCore.metadata.ElasticIndexName, opt.elasticIndexName)
   setMetadata(serverClientPlugin.metadata.Endpoint, opt.accountsUrl)
+
+  registerTxAdapterFactry('mongodb', createMongoTxAdapter)
+  registerAdapterFactry('mongodb', createMongoAdapter)
+  registerDestroyFactry('mongodb', createMongoDestroyAdapter)
+
+  registerTxAdapterFactry('postgresql', createPostgresTxAdapter, true)
+  registerAdapterFactry('postgresql', createPostgresAdapter, true)
+  registerDestroyFactry('postgresql', createPostgreeDestroyAdapter, true)
 
   registerServerPlugins()
   registerStringLoaders()
