@@ -48,7 +48,7 @@
   style:max-width={orientation === 'horizontal' ? maxSize : 'auto'}
   style:max-height={orientation === 'vertical' ? maxSize : 'auto'}
   class:active={highlighted}
-  use:tooltip={{ label: label ? getEmbeddedLabel(label) : labelIntl }}
+  use:tooltip={{ label: label ? getEmbeddedLabel(label) : labelIntl, direction: 'bottom' }}
   on:click
   on:contextmenu={handleContextMenu}
 >
