@@ -35,6 +35,7 @@ import love, {
   loveId,
   MeetingMinutes,
   MeetingStatus,
+  Office,
   ParticipantInfo,
   RequestStatus,
   Room,
@@ -416,12 +417,29 @@ export async function meetingMinutesTextPresenter (doc: Doc): Promise<string> {
   return meetingMinutes.title
 }
 
-export async function OnRoomInfo (txes: TxCUD<RoomInfo>[], control: TriggerControl): Promise<Tx[]> {
+async function isRoomEmpty (
+  room: Ref<Room>,
+  isOffice: boolean,
+  persons: Ref<Person>[],
+  control: TriggerControl
+): Promise<boolean> {
+  if (persons.length === 0) return true
+  if (isOffice && persons.length === 1) {
+    const office = (await control.findAll(control.ctx, love.class.Office, { _id: room as Ref<Office> }))[0]
+    if (office === undefined) return true
+    return office.person != null && office.person === persons[0]
+  }
+
+  return false
+}
+
+async function OnRoomInfo (txes: TxCUD<RoomInfo>[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
     if (tx._class === core.class.TxRemoveDoc) {
       const roomInfo = control.removedMap.get(tx.objectId) as RoomInfo
       if (roomInfo === undefined) continue
+      if (roomInfo.room === love.ids.Reception) continue
       result.push(...(await finishRoomMeetings(roomInfo.room, tx.modifiedOn, control)))
       continue
     }
@@ -431,7 +449,8 @@ export async function OnRoomInfo (txes: TxCUD<RoomInfo>[], control: TriggerContr
       const roomInfos = await control.queryFind(control.ctx, love.class.RoomInfo, {})
       const roomInfo = roomInfos.find((r) => r._id === tx.objectId)
       if (roomInfo === undefined) continue
-      if (newPersons.length === 0 || (roomInfo.isOffice && newPersons.length === 1)) {
+      if (roomInfo.room === love.ids.Reception) continue
+      if (await isRoomEmpty(roomInfo.room, roomInfo.isOffice, newPersons, control)) {
         result.push(...(await finishRoomMeetings(roomInfo.room, tx.modifiedOn, control)))
       }
     }
