@@ -330,7 +330,7 @@ export async function updateDataWorkspaceIdToUuid (
 
     ctx.info('Tables to be updated: ', { tables })
 
-    for (const table of tables.filter((t) => t === 'notification')) {
+    for (const table of tables) {
       ctx.info('Altering table workspaceId type to uuid', { table })
 
       if (!dryRun) {
