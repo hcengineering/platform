@@ -60,11 +60,11 @@ class TransactorRpcTarget extends RpcTarget {
   }
 
   async findAll (_class: Ref<Class<Doc>>, query?: DocumentQuery<Doc>, options?: FindOptions<Doc>): Promise<any> {
-    return (this.transactor as any).rpcFindAll(this.token, this.workspaceId, _class, query, options)
+    return (this.transactor as any).findAll(this.token, this.workspaceId, _class, query, options)
   }
 
   async tx (tx: Tx): Promise<any> {
-    return (this.transactor as any).rpcTx(this.token, this.workspaceId, tx)
+    return (this.transactor as any).tx(this.token, this.workspaceId, tx)
   }
 }
 

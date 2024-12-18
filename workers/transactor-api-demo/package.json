@@ -1,0 +1,44 @@
+{
+  "name": "@hcengineering/cloud-transactor-api-demo",
+  "version": "0.6.0",
+  "main": "lib/index.js",
+  "types": "types/index.d.ts",
+  "template": "@hcengineering/cloud-package",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --port 4050",
+    "dev-local": "wrangler dev --port 4050 --local --upstream-protocol=http",
+    "start": "wrangler dev --port 4050",
+    "cf-typegen": "wrangler types",
+    "build": "compile",
+    "build:watch": "compile",
+    "test": "jest --passWithNoTests --silent --forceExit",
+    "format": "format src",
+    "_phase:build": "compile transpile src",
+    "_phase:test": "jest --passWithNoTests --silent --forceExit",
+    "_phase:format": "format src",
+    "_phase:validate": "compile validate"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241022.0",
+    "@hcengineering/platform-rig": "^0.6.0",
+    "@types/jest": "^29.5.5",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "@typescript-eslint/parser": "^6.11.0",
+    "eslint-config-standard-with-typescript": "^40.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-n": "^15.4.0",
+    "eslint": "^8.54.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.1.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.3",
+    "wrangler": "^3.97.0"
+  },
+  "dependencies": {
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/cloud-transactor-api": "^0.6.0",
+    "itty-router": "^5.0.18"
+  }
+}
