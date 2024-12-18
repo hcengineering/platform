@@ -134,8 +134,13 @@ export class Collaborator extends DurableObject<Env> {
     this.doc.transact(() => {
       Object.entries(request.payload.content).forEach(([field, value]) => {
         if (value !== undefined && value !== null && value !== '') {
-          const json = JSON.parse(String(value))
-          jsonToYDoc(json, this.doc, field)
+          try {
+            const json = JSON.parse(String(value))
+            jsonToYDoc(json, this.doc, field)
+          } catch (err) {
+            const error = err instanceof Error ? err.message : String(err)
+            ctx.error('Failed to process JSON', { error })
+          }
         }
       })
     })
@@ -154,8 +159,13 @@ export class Collaborator extends DurableObject<Env> {
   handleRpcUpdateContent (ctx: MetricsContext, id: string, request: RpcUpdateContentRequest): Response {
     this.doc.transact(() => {
       Object.entries(request.payload.content).forEach(([field, value]) => {
-        const json = JSON.parse(String(value))
-        jsonToYDoc(json, this.doc, field)
+        try {
+          const json = JSON.parse(String(value))
+          jsonToYDoc(json, this.doc, field)
+        } catch (err) {
+          const error = err instanceof Error ? err.message : String(err)
+          ctx.error('Failed to process JSON', { error })
+        }
       })
     })
 

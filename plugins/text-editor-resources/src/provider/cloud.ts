@@ -30,8 +30,8 @@ export interface DatalakeCollabProviderParameters {
 export class CloudCollabProvider extends WebsocketProvider implements Provider {
   readonly loaded: Promise<void>
 
-  constructor ({ document, url, name, source }: DatalakeCollabProviderParameters) {
-    const params = source != null ? { source } : undefined
+  constructor ({ document, url, name, source, token }: DatalakeCollabProviderParameters) {
+    const params = { token, source: source ?? '' }
 
     super(url, encodeURIComponent(name), document, { params })
 

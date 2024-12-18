@@ -13,16 +13,33 @@
 // limitations under the License.
 //
 
-import { type IRequestStrict, Router, cors, error, html } from 'itty-router'
+import { type IRequest, type IRequestStrict, type RequestHandler, Router, cors, error, html } from 'itty-router'
 import { type Env } from './env'
 
 export { Collaborator } from './collaborator'
 
 const { preflight, corsify } = cors({ maxAge: 86400 })
 
+const withToken: RequestHandler<IRequest> = (request: IRequest) => {
+  let token = request.query.token
+
+  if (token === undefined || token === '') {
+    const authorization = request.headers.get('Authorization')
+    if (authorization != null && authorization.startsWith('Bearer ')) {
+      token = authorization.substring(7)
+    }
+  }
+
+  if (token === undefined || token === '') {
+    return error(401, 'Unauthorized')
+  }
+
+  request.token = token
+}
+
 const router = Router<IRequestStrict, [Env]>()
   .options('*', preflight)
-  .get('/:id', async (request, env) => {
+  .get('/:id', withToken, async (request, env) => {
     const { headers } = request
     const documentId = decodeURIComponent(request.params.id)
 
@@ -33,15 +50,15 @@ const router = Router<IRequestStrict, [Env]>()
     const id = env.COLLABORATOR.idFromName(documentId)
     const stub = env.COLLABORATOR.get(id)
 
-    return await stub.fetch(request)
+    return stub.fetch(request)
   })
-  .post('/rpc/:id', async (request, env) => {
+  .post('/rpc/:id', withToken, async (request, env) => {
     const documentId = decodeURIComponent(request.params.id)
 
     const id = env.COLLABORATOR.idFromName(documentId)
     const stub = env.COLLABORATOR.get(id)
 
-    return await stub.fetch(request)
+    return stub.fetch(request)
   })
   .all('/', () =>
     html(
