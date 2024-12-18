@@ -5,6 +5,9 @@ compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 keep_vars = true
 
+[vars]
+ACCOUNTS_URL = "http://127.0.0.1:3000"
+
 [[services]]
 binding = "TRANSACTOR_SERVICE"
 service = "cloud-transactor"

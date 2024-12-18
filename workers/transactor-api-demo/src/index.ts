@@ -22,19 +22,57 @@ import {
   unpackModel
 } from '@hcengineering/cloud-transactor-api'
 
-// const token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjb25maXJtZWQiOnRydWUsImVtYWlsIjoibm9uZUBub25lLnJ1Iiwid29ya3NwYWNlIjoidy1ub25lLXdzMS02NzViMjcyOC0zY2UzMmM0MWE4LWU1NzZkOSJ9.iafNSNaH5XC1jRUcOZT6fkRY8wrdgjwbmUNPZKKXBhg'
-const token =
-  'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjb25maXJtZWQiOnRydWUsImVtYWlsIjoibm9uZUBub25lLm5vIiwid29ya3NwYWNlIjoidy1ub25lLXdzMi02NzYxOTIzNS03NDgyMzQ5NDc3LTY1MGRmMCJ9.n16Y8EizmBk9MvvouIb5dOtQCqQfuswpJfuDIEJhwLs'
-const workspaceId = 'demo'
+async function login (accountsUrl: string, user: string, password: string, workspace: string): Promise<string> {
+  const response = await fetch(accountsUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      method: 'login',
+      params: [user, password, workspace]
+    })
+  })
+
+  const result: any = await response.json()
+  return result.result?.token
+}
+
+async function selectWorkspace (accountsUrl: string, token: string, workspace: string): Promise<any> {
+  const response = await fetch(accountsUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token
+    },
+    body: JSON.stringify({
+      method: 'selectWorkspace',
+      params: [workspace, 'external']
+    })
+  })
+  const result: any = await response.json()
+  return result.result
+}
 
 export default {
   async fetch (request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const transactorService = env.TRANSACTOR_SERVICE as any as TransactorService
+
+    async function getToken (params: Record<string, string>): Promise<string> {
+      const email = params.email
+      const password = params.password
+      const workspace = params.workspace
+      const token = await login(env.ACCOUNTS_URL, email, password, workspace)
+      const info = await selectWorkspace(env.ACCOUNTS_URL, token, workspace)
+      return info.token
+    }
+
     const router = Router()
     router
 
-      .get('/demo-find-raw', async () => {
-        const client = await transactorService.openRpc(token, workspaceId)
+      .get('/demo-find-raw/:email/:password/:workspace', async ({ params }) => {
+        console.log('REQ', params)
+        const client = await transactorService.openRpc(await getToken(params), params.workspace)
         try {
           const result = await client.findAll('contact:class:Person' as Ref<Class<Doc>>)
           return new Response(JSON.stringify(result))
@@ -48,9 +86,9 @@ export default {
         }
       })
 
-      .get('/demo-find-rpc', async () => {
+      .get('/demo-find-rpc/:email/:password/:workspace', async ({ params }) => {
         const ctx = new MeasureMetricsContext('demo', {})
-        const client = new TransactorRpcClient(ctx, token, workspaceId, transactorService)
+        const client = new TransactorRpcClient(ctx, await getToken(params), params.workspace, transactorService)
         try {
           const result = await client.findAll('contact:class:Person' as Ref<Class<Doc>>)
           return new Response(JSON.stringify(result))
@@ -64,9 +102,9 @@ export default {
         }
       })
 
-      .get('/demo-find-http', async () => {
+      .get('/demo-find-http/:email/:password/:workspace', async ({ params }) => {
         const ctx = new MeasureMetricsContext('demo', {})
-        const client = new TransactorHttpClient(ctx, token, workspaceId, 'todo')
+        const client = new TransactorHttpClient(ctx, await getToken(params), params.workspace, 'todo-transactor-url')
         try {
           const result = await client.findAll('contact:class:Person' as Ref<Class<Doc>>)
           return new Response(JSON.stringify(result))
@@ -80,8 +118,8 @@ export default {
         }
       })
 
-      .get('/demo-get-model-raw', async () => {
-        const client = await transactorService.openRpc(token, workspaceId)
+      .get('/demo-get-model-raw/:email/:password/:workspace', async ({ params }) => {
+        const client = await transactorService.openRpc(await getToken(params), params.workspace)
         try {
           const result = await client.getModel()
           const model = await unpackModel(result)
@@ -96,9 +134,9 @@ export default {
         }
       })
 
-      .get('/demo-get-model-rpc', async () => {
+      .get('/demo-get-model-rpc/:email/:password/:workspace', async ({ params }) => {
         const ctx = new MeasureMetricsContext('demo', {})
-        const client = new TransactorRpcClient(ctx, token, workspaceId, transactorService)
+        const client = new TransactorRpcClient(ctx, await getToken(params), params.workspace, transactorService)
         try {
           const result = await client.getModel()
           return new Response(JSON.stringify(result))
