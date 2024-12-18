@@ -54,7 +54,7 @@ export class Collaborator extends DurableObject<Env> {
   constructor (ctx: DurableObjectState, env: Env) {
     super(ctx, env)
 
-    this.doc = new Document()
+    this.doc = new Document(this.logger)
     this.updates = []
 
     this.router = Router()
@@ -120,11 +120,9 @@ export class Collaborator extends DurableObject<Env> {
   handleRpcGetContent (ctx: MetricsContext, id: string, request: RpcGetContentRequest): Response {
     const content: Record<string, string> = {}
 
-    ctx.withSync('ydoc.read', () => {
-      for (const field of this.doc.share.keys()) {
-        content[field] = JSON.stringify(yDocToJSON(this.doc, field))
-      }
-    })
+    for (const field of this.doc.share.keys()) {
+      content[field] = JSON.stringify(yDocToJSON(this.doc, field))
+    }
 
     return Response.json({ content }, { status: 200 })
   }
@@ -133,11 +131,12 @@ export class Collaborator extends DurableObject<Env> {
     const documentId = decodeDocumentId(id)
     const content: Record<string, string> = {}
 
-    ctx.withSync('ydoc.write', () => {
-      this.doc.transact(() => {
-        Object.entries(request.payload.content).forEach(([field, value]) => {
-          jsonToYDoc(JSON.parse(value), this.doc, field)
-        })
+    this.doc.transact(() => {
+      Object.entries(request.payload.content).forEach(([field, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          const json = JSON.parse(String(value))
+          jsonToYDoc(json, this.doc, field)
+        }
       })
     })
 
@@ -153,11 +152,10 @@ export class Collaborator extends DurableObject<Env> {
   }
 
   handleRpcUpdateContent (ctx: MetricsContext, id: string, request: RpcUpdateContentRequest): Response {
-    ctx.withSync('ydoc.write', () => {
-      this.doc.transact(() => {
-        Object.entries(request.payload.content).forEach(([field, value]) => {
-          jsonToYDoc(JSON.parse(value), this.doc, field)
-        })
+    this.doc.transact(() => {
+      Object.entries(request.payload.content).forEach(([field, value]) => {
+        const json = JSON.parse(String(value))
+        jsonToYDoc(json, this.doc, field)
       })
     })
 
@@ -210,19 +208,15 @@ export class Collaborator extends DurableObject<Env> {
           await this.readDocument(ctx)
         })
 
-        ctx.withSync('restoreConnections', () => {
-          const connections = this.ctx.getWebSockets()
-          connections.forEach((ws: WebSocket) => {
-            this.doc.addConnection(ws)
-          })
+        const connections = this.ctx.getWebSockets()
+        connections.forEach((ws: WebSocket) => {
+          this.doc.addConnection(ws)
         })
 
-        ctx.withSync('restoreListeners', () => {
-          // enable update listeners only after the document is restored
-          // eslint-disable-next-line @typescript-eslint/no-misused-promises
-          this.doc.on('update', this.handleDocUpdate.bind(this))
-          this.doc.awareness.on('update', this.handleAwarenessUpdate.bind(this))
-        })
+        // enable update listeners only after the document is restored
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        this.doc.on('update', this.handleDocUpdate.bind(this))
+        this.doc.awareness.on('update', this.handleAwarenessUpdate.bind(this))
       })
 
       this.hydrated = true
@@ -300,12 +294,12 @@ export class Collaborator extends DurableObject<Env> {
           return this.env.DATALAKE.getBlob(workspaceId, blobId)
         })
 
-        ctx.withSync('applyUpdate', () => {
+        if (buffer !== undefined) {
           applyUpdate(this.doc, new Uint8Array(buffer))
-        })
 
-        loaded = true
-        ctx.log('loaded from datalake', { workspaceId, documentId, blobId })
+          loaded = true
+          ctx.log('loaded from datalake', { workspaceId, documentId, blobId })
+        }
       })
     } catch (err) {
       // the blob might be missing, ignore errors
@@ -322,11 +316,13 @@ export class Collaborator extends DurableObject<Env> {
             return this.env.DATALAKE.getBlob(workspaceId, source)
           })
 
-          ctx.withSync('jsonToYDoc', () => {
-            jsonToYDoc(JSON.parse(String(buffer)), this.doc, documentId.objectAttr)
-          })
+          if (buffer !== undefined) {
+            const json = JSON.parse(String(buffer))
+            jsonToYDoc(json, this.doc, documentId.objectAttr)
 
-          ctx.log('loaded from datalake', { workspaceId, documentId, blobId })
+            loaded = true
+            ctx.log('loaded from datalake', { workspaceId, documentId, blobId })
+          }
         })
       } catch (err) {
         // the blob might be missing, ignore errors
@@ -381,7 +377,7 @@ export class Collaborator extends DurableObject<Env> {
         const workspaceId = documentId.workspaceId
 
         // save ydoc content
-        const update = ctx.withSync('ydoc.encodeStateAsUpdate', () => encodeStateAsUpdate(this.doc))
+        const update = encodeStateAsUpdate(this.doc)
         await ctx.with('datalake.putBlob', async () => {
           const blobId = ydocBlobId(documentId)
           await this.env.DATALAKE.putBlob(workspaceId, blobId, new Uint8Array(update), 'application/ydoc')

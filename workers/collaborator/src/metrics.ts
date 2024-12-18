@@ -107,24 +107,6 @@ export class MetricsContext {
     }
   }
 
-  withSync<T>(op: string, fn: (ctx: MetricsContext) => T): T {
-    const ctx = new MetricsContext(this.logger)
-    const start = performance.now()
-
-    let error: string | undefined
-
-    try {
-      return fn(ctx)
-    } catch (err: any) {
-      error = err instanceof Error ? err.message : String(err)
-      throw err
-    } finally {
-      const time = performance.now() - start
-      const children = ctx.metrics
-      this.metrics.push(error !== undefined ? { op, time, error, children } : { op, time, children })
-    }
-  }
-
   toString (): string {
     return this.metrics.map((p) => `${p.op}=${p.time}`).join(' ')
   }

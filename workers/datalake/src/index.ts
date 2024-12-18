@@ -116,9 +116,13 @@ export default class DatalakeWorker extends WorkerEntrypoint<Env> {
     }
   }
 
-  async getBlob (workspace: string, name: string): Promise<ArrayBuffer> {
+  async getBlob (workspace: string, name: string): Promise<ArrayBuffer | undefined> {
     const request = new Request(`https://datalake/blob/${workspace}/${encodeURIComponent(name)}`)
     const response = await this.fetch(request)
+
+    if (response.status === 404) {
+      return undefined
+    }
 
     if (!response.ok) {
       console.error({ error: 'datalake error: ' + response.statusText, workspace, name })

@@ -15,16 +15,16 @@
 
 import { Doc as YDoc } from 'yjs'
 import { Awareness, removeAwarenessStates } from 'y-protocols/awareness'
-
 import * as encoding from 'lib0/encoding'
 import * as protocol from './protocol'
+import { type Logger } from './metrics'
 import { type AwarenessUpdate } from './types'
 
 export class Document extends YDoc {
   awareness: Awareness
   connections: Map<WebSocket, Set<number>>
 
-  constructor () {
+  constructor (readonly logger: Logger) {
     super({ gc: false })
 
     this.connections = new Map()
@@ -68,7 +68,7 @@ export class Document extends YDoc {
       }
     } catch (err) {
       const error = err instanceof Error ? err.message : String(err)
-      console.error('WebSocket message error', { error })
+      this.logger.error('WebSocket message error', { error })
     }
   }
 
@@ -110,7 +110,7 @@ function closeConnection (doc: Document, ws: WebSocket): void {
     ws.close()
   } catch (err) {
     const error = err instanceof Error ? err.message : String(err)
-    console.error('failed to close WebSocket', { error })
+    doc.logger.error('failed to close WebSocket', { error })
   }
 }
 
@@ -131,7 +131,7 @@ function send (doc: Document, ws: WebSocket, message: Uint8Array): void {
     ws.send(message)
   } catch (err) {
     const error = err instanceof Error ? err.message : String(err)
-    console.error('failed to send message', { error })
+    doc.logger.error('failed to send message', { error })
     closeConnection(doc, ws)
   }
 }
