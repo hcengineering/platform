@@ -18,9 +18,11 @@ import { RPCHandler } from '@hcengineering/rpc'
 import { ClientSession, createSessionManager, doSessionOp, type WebsocketData } from '@hcengineering/server'
 import serverClient from '@hcengineering/server-client'
 import {
+  ClientSessionCtx,
   createDummyStorageAdapter,
   loadBrandingMap,
   Pipeline,
+  Session,
   type ConnectionSocket,
   type PipelineFactory,
   type SessionManager
@@ -71,7 +73,7 @@ export class Transactor extends DurableObject<Env> {
 
     setMetadata(serverPlugin.metadata.Secret, env.SERVER_SECRET ?? 'secret')
 
-    console.log('Connecting DB to', env.DB_URL !== '' ? 'Direct ' : 'Hyperdrive')
+    console.log('Connecting DB to', env.DB_URL !== '' && env.DB_URL !== undefined ? 'Direct ' : 'Hyperdrive')
 
     // TODO:
     const storage = createDummyStorageAdapter()
@@ -79,7 +81,7 @@ export class Transactor extends DurableObject<Env> {
     this.pipelineFactory = async (ctx, ws, upgrade, broadcast, branding) => {
       const pipeline = createServerPipeline(
         this.measureCtx,
-        env.DB_URL !== '' ? env.DB_URL : env.HYPERDRIVE.connectionString,
+        env.DB_URL !== '' && env.DB_URL !== undefined ? env.DB_URL : env.HYPERDRIVE.connectionString,
         model,
         {
           externalStorage: storage,
