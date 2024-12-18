@@ -70,8 +70,7 @@ new_classes = ["Transactor"]
 [[hyperdrive]]
 binding = "HYPERDRIVE"
 id = "1f713bb2ec1b464cb663983feca4c89e"
-#localConnectionString = "postgresql://postgree:example@host.docker.internal:26257/defaultdb?sslmode=disable"
-localConnectionString = "postgres://postgres:example@host.docker.internal/postgres?sslmode=disable"
+localConnectionString = "postgresql://postgree:example@host.docker.internal:26257/defaultdb?sslmode=disable"
 
 # Bind a KV Namespace. Use KV as persistent storage for small key-value pairs.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#kv-namespaces
