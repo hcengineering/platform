@@ -23279,6 +23279,7 @@ packages:
     dependencies:
       '@cloudflare/workers-types': 4.20241022.0
       '@types/jest': 29.5.12
+      '@types/node': 20.11.19
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.6.2)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
       aws4fetch: 1.0.20
@@ -23298,7 +23299,6 @@ packages:
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
-      - '@types/node'
       - babel-jest
       - babel-plugin-macros
       - bufferutil

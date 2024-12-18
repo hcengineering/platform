@@ -66,6 +66,10 @@ class TransactorRpcTarget extends RpcTarget {
   async tx (tx: Tx): Promise<any> {
     return (this.transactor as any).tx(this.token, this.workspaceId, tx)
   }
+
+  async getModel (): Promise<any> {
+    return (this.transactor as any).getModel()
+  }
 }
 
 export class TransactorRpc extends WorkerEntrypoint<Env> {

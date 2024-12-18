@@ -14,26 +14,18 @@
 //
 
 import { Router, error } from 'itty-router'
-import type { Class, Doc, Ref } from '@hcengineering/core'
-import { type TransactorApi, type TransactorService, TransactorHttpClient, TransactorRpcClient } from '@hcengineering/cloud-transactor-api'
+import { MeasureMetricsContext, type Class, type Doc, type Ref } from '@hcengineering/core'
+import {
+  type TransactorService,
+  TransactorHttpClient,
+  TransactorRpcClient,
+  unpackModel
+} from '@hcengineering/cloud-transactor-api'
 
-//const token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjb25maXJtZWQiOnRydWUsImVtYWlsIjoibm9uZUBub25lLnJ1Iiwid29ya3NwYWNlIjoidy1ub25lLXdzMS02NzViMjcyOC0zY2UzMmM0MWE4LWU1NzZkOSJ9.iafNSNaH5XC1jRUcOZT6fkRY8wrdgjwbmUNPZKKXBhg'
-const token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjb25maXJtZWQiOnRydWUsImVtYWlsIjoibm9uZUBub25lLm5vIiwid29ya3NwYWNlIjoidy1ub25lLXdzMi02NzYxOTIzNS03NDgyMzQ5NDc3LTY1MGRmMCJ9.n16Y8EizmBk9MvvouIb5dOtQCqQfuswpJfuDIEJhwLs'
+// const token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjb25maXJtZWQiOnRydWUsImVtYWlsIjoibm9uZUBub25lLnJ1Iiwid29ya3NwYWNlIjoidy1ub25lLXdzMS02NzViMjcyOC0zY2UzMmM0MWE4LWU1NzZkOSJ9.iafNSNaH5XC1jRUcOZT6fkRY8wrdgjwbmUNPZKKXBhg'
+const token =
+  'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjb25maXJtZWQiOnRydWUsImVtYWlsIjoibm9uZUBub25lLm5vIiwid29ya3NwYWNlIjoidy1ub25lLXdzMi02NzYxOTIzNS03NDgyMzQ5NDc3LTY1MGRmMCJ9.n16Y8EizmBk9MvvouIb5dOtQCqQfuswpJfuDIEJhwLs'
 const workspaceId = 'demo'
-
-async function demoFindAll (client: TransactorApi): Promise<Response> {
-  try {
-    const result = await client.findAll('contact:class:Person' as Ref<Class<Doc>>)
-    return new Response(JSON.stringify(result))
-  } catch (error) {
-    console.error({ error })
-    throw error
-  } finally {
-    if (Symbol.dispose in client) {
-      (client as any)[Symbol.dispose]()
-    }
-  }
-}
 
 export default {
   async fetch (request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -43,17 +35,81 @@ export default {
 
       .get('/demo-find-raw', async () => {
         const client = await transactorService.openRpc(token, workspaceId)
-        return await demoFindAll(client)
+        try {
+          const result = await client.findAll('contact:class:Person' as Ref<Class<Doc>>)
+          return new Response(JSON.stringify(result))
+        } catch (error) {
+          console.error({ error })
+          throw error
+        } finally {
+          if (Symbol.dispose in client) {
+            ;(client as any)[Symbol.dispose]()
+          }
+        }
       })
 
       .get('/demo-find-rpc', async () => {
-        const client = new TransactorRpcClient(token, workspaceId, transactorService)
-        return await demoFindAll(client)
+        const ctx = new MeasureMetricsContext('demo', {})
+        const client = new TransactorRpcClient(ctx, token, workspaceId, transactorService)
+        try {
+          const result = await client.findAll('contact:class:Person' as Ref<Class<Doc>>)
+          return new Response(JSON.stringify(result))
+        } catch (error) {
+          console.error({ error })
+          throw error
+        } finally {
+          if (Symbol.dispose in client) {
+            ;(client as any)[Symbol.dispose]()
+          }
+        }
       })
 
       .get('/demo-find-http', async () => {
-        const client = new TransactorHttpClient(token, workspaceId, 'todo')
-        return await demoFindAll(client)
+        const ctx = new MeasureMetricsContext('demo', {})
+        const client = new TransactorHttpClient(ctx, token, workspaceId, 'todo')
+        try {
+          const result = await client.findAll('contact:class:Person' as Ref<Class<Doc>>)
+          return new Response(JSON.stringify(result))
+        } catch (error) {
+          console.error({ error })
+          throw error
+        } finally {
+          if (Symbol.dispose in client) {
+            ;(client as any)[Symbol.dispose]()
+          }
+        }
+      })
+
+      .get('/demo-get-model-raw', async () => {
+        const client = await transactorService.openRpc(token, workspaceId)
+        try {
+          const result = await client.getModel()
+          const model = await unpackModel(result)
+          return new Response(JSON.stringify(model))
+        } catch (error) {
+          console.error({ error })
+          throw error
+        } finally {
+          if (Symbol.dispose in client) {
+            ;(client as any)[Symbol.dispose]()
+          }
+        }
+      })
+
+      .get('/demo-get-model-rpc', async () => {
+        const ctx = new MeasureMetricsContext('demo', {})
+        const client = new TransactorRpcClient(ctx, token, workspaceId, transactorService)
+        try {
+          const result = await client.getModel()
+          return new Response(JSON.stringify(result))
+        } catch (error) {
+          console.error({ error })
+          throw error
+        } finally {
+          if (Symbol.dispose in client) {
+            ;(client as any)[Symbol.dispose]()
+          }
+        }
       })
 
       .all('*', () => error(404))

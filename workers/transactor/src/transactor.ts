@@ -30,6 +30,8 @@ import {
 // import { registerStringLoaders } from '@hcengineering/server-pipeline'
 import serverPlugin, { decodeToken, type Token } from '@hcengineering/server-token'
 import { DurableObject } from 'cloudflare:workers'
+import { gzip } from 'zlib'
+import { promisify } from 'util'
 
 // Approach usefull only for separate build, after model-all bundle phase is executed.
 import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
@@ -383,5 +385,13 @@ export class Transactor extends DurableObject<Env> {
       await this.sessionManager.close(this.measureCtx, cs, this.workspace)
     }
     return result
+  }
+
+  async getModel (): Promise<any> {
+    const encoder = new TextEncoder()
+    const buffer = encoder.encode(JSON.stringify(model))
+    const gzipAsync = promisify(gzip)
+    const compressed = await gzipAsync(buffer)
+    return compressed
   }
 }
