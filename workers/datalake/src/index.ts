@@ -14,7 +14,7 @@
 //
 
 import { WorkerEntrypoint } from 'cloudflare:workers'
-import { type IRequest, type IRequestStrict, type RequestHandler, Router, error, html } from 'itty-router'
+import { type IRequestStrict, type RequestHandler, Router, error, html } from 'itty-router'
 
 import { handleBlobDelete, handleBlobGet, handleBlobHead, handleBlobList, handleUploadFormData } from './blob'
 import { cors } from './cors'
@@ -91,7 +91,7 @@ router
   .all('*', () => error(404))
 
 export default class DatalakeWorker extends WorkerEntrypoint<Env> {
-  async fetch (request: IRequest): Promise<Response> {
+  async fetch (request: Request): Promise<Response> {
     const start = performance.now()
     const context = new MetricsContext()
 
@@ -117,8 +117,8 @@ export default class DatalakeWorker extends WorkerEntrypoint<Env> {
   }
 
   async getBlob (workspace: string, name: string): Promise<ArrayBuffer> {
-    const request = new Request(`https://datalake/blob/${workspace}/${name}`)
-    const response = await router.fetch(request)
+    const request = new Request(`https://datalake/blob/${workspace}/${encodeURIComponent(name)}`)
+    const response = await this.fetch(request)
 
     if (!response.ok) {
       console.error({ error: 'datalake error: ' + response.statusText, workspace, name })
@@ -129,13 +129,13 @@ export default class DatalakeWorker extends WorkerEntrypoint<Env> {
   }
 
   async putBlob (workspace: string, name: string, data: ArrayBuffer | Blob | string, type: string): Promise<void> {
-    const request = new Request(`https://datalake/upload/form-data/${workspace}`)
-
     const body = new FormData()
     const blob = new Blob([data], { type })
     body.set('file', blob, name)
 
-    const response = await router.fetch(request, { method: 'POST', body })
+    const request = new Request(`https://datalake/upload/form-data/${workspace}`, { method: 'POST', body })
+
+    const response = await this.fetch(request)
 
     if (!response.ok) {
       console.error({ error: 'datalake error: ' + response.statusText, workspace, name })

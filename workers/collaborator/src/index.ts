@@ -13,25 +13,19 @@
 // limitations under the License.
 //
 
-import { type IRequestStrict, type RequestHandler, Router, cors, error, html } from 'itty-router'
+import { type IRequestStrict, Router, cors, error, html } from 'itty-router'
 import { type Env } from './env'
-import { type DocumentRequest } from './types'
 
 export { Collaborator } from './collaborator'
 
 const { preflight, corsify } = cors({ maxAge: 86400 })
 
-const withDocumentId: RequestHandler<DocumentRequest> = (request) => {
-  if (request.params.id === undefined || request.params.id === '') {
-    return error(400, 'Missing document id')
-  }
-  request.documentId = decodeURIComponent(request.params.id)
-}
-
 const router = Router<IRequestStrict, [Env]>()
   .options('*', preflight)
-  .get('/:id', withDocumentId, (request, env) => {
-    const { documentId, headers } = request
+  .get('/:id', async (request, env) => {
+    const { headers } = request
+    const documentId = decodeURIComponent(request.params.id)
+
     if (headers.get('Upgrade') !== 'websocket') {
       return new Response('Expected header Upgrade: websocket', { status: 426 })
     }
@@ -39,15 +33,15 @@ const router = Router<IRequestStrict, [Env]>()
     const id = env.COLLABORATOR.idFromName(documentId)
     const stub = env.COLLABORATOR.get(id)
 
-    return stub.fetch(request)
+    return await stub.fetch(request)
   })
-  .post('/rpc/:id', withDocumentId, async (request, env) => {
-    const { documentId } = request
+  .post('/rpc/:id', async (request, env) => {
+    const documentId = decodeURIComponent(request.params.id)
 
     const id = env.COLLABORATOR.idFromName(documentId)
     const stub = env.COLLABORATOR.get(id)
 
-    return stub.fetch(request)
+    return await stub.fetch(request)
   })
   .all('/', () =>
     html(

@@ -13,12 +13,6 @@
 // limitations under the License.
 //
 
-import { type IRequestStrict } from 'itty-router'
-
-export type DocumentRequest = {
-  documentId: string
-} & IRequestStrict
-
 // https://github.com/yjs/y-protocols/blob/master/awareness.js#L134
 export interface AwarenessUpdate {
   added: Array<number>
@@ -26,15 +20,29 @@ export interface AwarenessUpdate {
   removed: Array<number>
 }
 
-export type RpcRequest = RpcGetContentRequest | RpcUpdateContentRequest
+export type RpcRequest = RpcGetContentRequest | RpcCreateContentRequest | RpcUpdateContentRequest
 
 export interface RpcGetContentRequest {
   method: 'getContent'
+  payload: RpcGetContentPayload
+}
+
+export interface RpcCreateContentRequest {
+  method: 'createContent'
+  payload: RpcCreateContentPayload
 }
 
 export interface RpcUpdateContentRequest {
   method: 'updateContent'
   payload: RpcUpdateContentPayload
+}
+
+export interface RpcGetContentPayload {
+  source?: string
+}
+
+export interface RpcCreateContentPayload {
+  content: Record<string, string>
 }
 
 export interface RpcUpdateContentPayload {

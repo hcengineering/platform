@@ -24,14 +24,14 @@ export interface DatalakeCollabProviderParameters {
   token: string
 
   document: YDoc
-  content: Ref<Blob> | null
+  source: Ref<Blob> | null
 }
 
 export class CloudCollabProvider extends WebsocketProvider implements Provider {
   readonly loaded: Promise<void>
 
-  constructor ({ document, url, name, content }: DatalakeCollabProviderParameters) {
-    const params = content != null ? { content } : undefined
+  constructor ({ document, url, name, source }: DatalakeCollabProviderParameters) {
+    const params = source != null ? { source } : undefined
 
     super(url, encodeURIComponent(name), document, { params })
 

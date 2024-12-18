@@ -1,7 +1,7 @@
 #:schema node_modules/wrangler/config-schema.json
 name = "collaborator-worker"
 main = "src/index.ts"
-compatibility_date = "2024-07-01"
+compatibility_date = "2024-11-11"
 compatibility_flags = ["nodejs_compat"]
 keep_vars = true
 
@@ -17,6 +17,10 @@ class_name = "Collaborator"
 tag = "v1"
 new_classes = ["Collaborator"]
 
+[observability]
+enabled = true
+head_sampling_rate = 1
+
 [env.staging]
 name = "collaborator-worker-staging"
 
@@ -24,9 +28,33 @@ services = [
   { binding = "DATALAKE", service = "datalake-worker-staging" }
 ]
 
+[[env.staging.durable_objects.bindings]]
+name = "COLLABORATOR"
+class_name = "Collaborator"
+
+[[env.staging.migrations]]
+tag = "v1"
+new_classes = ["Collaborator"]
+
+[env.staging.observability]
+enabled = true
+head_sampling_rate = 1
+
 [env.dev]
 name = "collaborator-worker-dev"
 
 services = [
   { binding = "DATALAKE", service = "datalake-worker-dev" }
 ]
+
+[[env.dev.durable_objects.bindings]]
+name = "COLLABORATOR"
+class_name = "Collaborator"
+
+[[env.dev.migrations]]
+tag = "v1"
+new_classes = ["Collaborator"]
+
+[env.dev.observability]
+enabled = true
+head_sampling_rate = 1

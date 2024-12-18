@@ -239,7 +239,8 @@ services:
       - CALENDAR_URL=http://host.docker.internal:8095
       - TELEGRAM_URL=http://host.docker.internal:8086
       - REKONI_URL=http://host.docker.internal:4004
-      - COLLABORATOR_URL=ws://host.docker.internal:3078
+      - COLLABORATOR=cloud
+      - COLLABORATOR_URL=wss://cl.huly.net
       - STORAGE_CONFIG=datalake|https://huly.net
       - GITHUB_URL=http://host.docker.internal:3500
       - PRINT_URL=http://host.docker.internal:4005

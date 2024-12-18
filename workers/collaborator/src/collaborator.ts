@@ -14,22 +14,24 @@
 //
 
 import { DurableObject } from 'cloudflare:workers'
-import { type RouterType, Router, error } from 'itty-router'
+import { type RouterType, type IRequest, Router, error } from 'itty-router'
 import * as encoding from 'lib0/encoding'
 import { applyUpdate, encodeStateAsUpdate } from 'yjs'
 
 import { Document } from './document'
 import { type Env } from './env'
+import { ConsoleLogger, type MetricsContext, withMetrics } from './metrics'
 import * as protocol from './protocol'
 import type {
   AwarenessUpdate,
-  DocumentRequest,
+  RpcCreateContentRequest,
   RpcGetContentRequest,
   RpcRequest,
   RpcUpdateContentRequest
 } from './types'
+import { decodeDocumentId, extractStrParam, jsonBlobId, ydocBlobId } from './utils'
 import { jsonToYDoc, yDocToJSON } from './ydoc'
-import { parseDocumentName } from './utils'
+import { ConnectionManager } from './connection'
 
 export const PREFERRED_SAVE_SIZE = 500
 export const PREFERRED_SAVE_INTERVAL = 30 * 1000
@@ -44,71 +46,132 @@ export const PREFERRED_SAVE_INTERVAL = 30 * 1000
  * - updates: Uint8Array[]: list of pending updates to be saved
  */
 export class Collaborator extends DurableObject<Env> {
+  private readonly logger = new ConsoleLogger()
+  private readonly connections: ConnectionManager
   private readonly router: RouterType
   private readonly doc: Document
-  private updates: Uint8Array[]
+  private readonly updates: Uint8Array[]
   private documentId: string = ''
+  private source: string = ''
   private hydrated: boolean = false
 
   constructor (ctx: DurableObjectState, env: Env) {
     super(ctx, env)
 
-    this.router = Router()
-      .get<DocumentRequest>('/:id', async ({ documentId, headers }) => {
-      if (headers.get('Upgrade') !== 'websocket') {
-        return new Response('Expected header Upgrade: websocket', { status: 426 })
-      }
-
-      const { 0: client, 1: server } = new WebSocketPair()
-      this.ctx.acceptWebSocket(server)
-      await this.handleSession(server, documentId)
-
-      return new Response(null, { status: 101, webSocket: client })
-    })
-      .post<DocumentRequest>('/rpc/:id', async (request) => {
-      const rpc = await request.json<RpcRequest>()
-      switch (rpc.method) {
-        case 'getContent':
-          return this.handleRpcGetContent(rpc)
-        case 'updateContent':
-          return this.handleRpcUpdateContent(rpc)
-        default:
-          return Response.json({ error: 'Bad request' }, { status: 400 })
-      }
-    })
-      .all('*', () => error(404))
-
+    this.connections = new ConnectionManager(this.ctx)
     this.doc = new Document()
     this.updates = []
 
-    void this.hydrate()
-  }
-
-  handleRpcGetContent (request: RpcGetContentRequest): Response {
-    const content: Record<string, string> = {}
-    for (const field of this.doc.share.keys()) {
-      content[field] = JSON.stringify(yDocToJSON(this.doc, field))
-    }
-    return Response.json({ content }, { status: 200 })
-  }
-
-  handleRpcUpdateContent (request: RpcUpdateContentRequest): Response {
-    this.doc.transact(() => {
-      Object.entries(request.payload.content).forEach(([field, value]) => {
-        jsonToYDoc(JSON.parse(value), this.doc, field)
+    this.router = Router()
+      .get('/:id', async (request) => {
+        return await withMetrics('connnect', (ctx) => {
+          return this.handleConnect(ctx, request)
+        })
       })
-    })
-
-    return Response.json({}, { status: 200 })
+      .post('/rpc/:id', async (request, env) => {
+        return await withMetrics('rpc', (ctx) => {
+          return this.handleRpc(ctx, request)
+        })
+      })
   }
 
   async fetch (request: Request): Promise<Response> {
     return await this.router.fetch(request).catch(error)
   }
 
+  async handleConnect (ctx: MetricsContext, request: IRequest): Promise<Response> {
+    const documentId = decodeURIComponent(request.params.id)
+    const source = decodeURIComponent(extractStrParam(request.query.source) ?? '')
+    const headers = request.headers
+
+    if (headers.get('Upgrade') !== 'websocket') {
+      return new Response('Expected header Upgrade: websocket', { status: 426 })
+    }
+
+    const { 0: client, 1: server } = new WebSocketPair()
+    this.connections.accept(server)
+
+    await ctx.with('session', async (ctx) => {
+      await this.handleSession(ctx, server, documentId, source)
+    })
+
+    return new Response(null, { status: 101, webSocket: client })
+  }
+
+  async handleRpc (ctx: MetricsContext, request: IRequest): Promise<Response> {
+    const documentId = decodeURIComponent(request.params.id)
+    const rpc = await request.json<RpcRequest>()
+
+    return await ctx.with(rpc.method, async (ctx) => {
+      try {
+        switch (rpc.method) {
+          case 'getContent':
+            return this.handleRpcGetContent(ctx, documentId, rpc)
+          case 'createContent':
+            return await this.handleRpcCreateContent(ctx, documentId, rpc)
+          case 'updateContent':
+            return this.handleRpcUpdateContent(ctx, documentId, rpc)
+          default:
+            return Response.json({ error: 'Bad request' }, { status: 400 })
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err)
+        ctx.error('failed to perform rpc request', { error: message })
+        return error(500)
+      }
+    })
+  }
+
+  handleRpcGetContent (ctx: MetricsContext, id: string, request: RpcGetContentRequest): Response {
+    const content: Record<string, string> = {}
+
+    ctx.withSync('ydoc.read', () => {
+      for (const field of this.doc.share.keys()) {
+        content[field] = JSON.stringify(yDocToJSON(this.doc, field))
+      }
+    })
+
+    return Response.json({ content }, { status: 200 })
+  }
+
+  async handleRpcCreateContent (ctx: MetricsContext, id: string, request: RpcCreateContentRequest): Promise<Response> {
+    const documentId = decodeDocumentId(id)
+    const content: Record<string, string> = {}
+
+    ctx.withSync('ydoc.write', () => {
+      this.doc.transact(() => {
+        Object.entries(request.payload.content).forEach(([field, value]) => {
+          jsonToYDoc(JSON.parse(value), this.doc, field)
+        })
+      })
+    })
+
+    for (const [field, value] of Object.entries(request.payload.content)) {
+      const blobId = jsonBlobId(documentId)
+      await ctx.with('datalake.putBlob', async () => {
+        await this.env.DATALAKE.putBlob(documentId.workspaceId, blobId, value, 'application/json')
+      })
+      content[field] = blobId
+    }
+
+    return Response.json({ content }, { status: 200 })
+  }
+
+  handleRpcUpdateContent (ctx: MetricsContext, id: string, request: RpcUpdateContentRequest): Response {
+    ctx.withSync('ydoc.write', () => {
+      this.doc.transact(() => {
+        Object.entries(request.payload.content).forEach(([field, value]) => {
+          jsonToYDoc(JSON.parse(value), this.doc, field)
+        })
+      })
+    })
+
+    return Response.json({}, { status: 200 })
+  }
+
   async webSocketMessage (ws: WebSocket, message: ArrayBuffer | string): Promise<void> {
     if (typeof message === 'string') {
-      console.warn('Unexpected message type:', message)
+      this.logger.warn('unexpected message type', { message })
       return
     }
 
@@ -117,18 +180,19 @@ export class Collaborator extends DurableObject<Env> {
       if (encoding.length(encoder) > 1) {
         ws.send(encoding.toUint8Array(encoder))
       }
-    } catch (error) {
-      console.error('WebSocket message error:', error)
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err)
+      this.logger.error('WebSocket message error', { error })
     }
   }
 
   async webSocketClose (ws: WebSocket, code: number, reason: string, wasClean: boolean): Promise<void> {
-    console.log('WebSocket closed:', code, reason, wasClean)
+    this.logger.log('WebSocket closed', { code, reason, wasClean })
     await this.handleClose(ws, 1000)
   }
 
   async webSocketError (ws: WebSocket, error: unknown): Promise<void> {
-    console.error('WebSocket error:', error)
+    this.logger.error('WebSocket error', { error })
     await this.handleClose(ws, 1011, 'error')
   }
 
@@ -144,6 +208,7 @@ export class Collaborator extends DurableObject<Env> {
 
     await this.ctx.blockConcurrencyWhile(async () => {
       const documentId = (await this.ctx.storage.get<string>('documentId')) ?? ''
+      const source = (await this.ctx.storage.get<string>('source')) ?? ''
 
       if (documentId === '') {
         // name is not set, hydrate later
@@ -151,41 +216,61 @@ export class Collaborator extends DurableObject<Env> {
       }
 
       this.documentId = documentId
+      this.source = source
 
-      // restore document state
-      await this.readDocument()
+      await withMetrics('hydrate', async (ctx) => {
+        await ctx.with('readDocument', async (ctx) => {
+          await this.readDocument(ctx)
+        })
 
-      this.ctx.getWebSockets().forEach((ws: WebSocket) => {
-        this.doc.addConnection(ws)
+        ctx.withSync('restoreConnections', () => {
+          const connections = this.connections.getConnections()
+          connections.forEach((ws: WebSocket) => {
+            this.doc.addConnection(ws)
+          })
+        })
+
+        ctx.withSync('restoreListeners', () => {
+          // enable update listeners only after the document is restored
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          this.doc.on('update', this.handleDocUpdate.bind(this))
+          this.doc.awareness.on('update', this.handleAwarenessUpdate.bind(this))
+        })
       })
-
-      // enable update listeners only after the document is restored
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      this.doc.on('update', this.handleDocUpdate.bind(this))
-      this.doc.awareness.on('update', this.handleAwarenessUpdate.bind(this))
 
       this.hydrated = true
     })
   }
 
-  async handleSession (ws: WebSocket, documentId: string): Promise<void> {
-    if (this.documentId === '') {
+  async handleSession (ctx: MetricsContext, ws: WebSocket, documentId: string, source: string): Promise<void> {
+    if (this.documentId !== documentId) {
       this.documentId = documentId
       await this.ctx.storage.put('documentId', documentId)
     }
 
-    await this.hydrate()
+    if (this.source !== source) {
+      this.source = source
+      await this.ctx.storage.put('source', source)
+    }
+
+    await ctx.with('hydrate', async () => {
+      await this.hydrate()
+    })
 
     this.doc.addConnection(ws)
 
-    const encoder = protocol.forceSyncMessage(this.doc)
-    ws.send(encoding.toUint8Array(encoder))
-
-    const clients = Array.from(this.doc.awareness.states.keys())
-    if (clients.length > 0) {
-      const encoder = protocol.awarenessMessage(this.doc, clients)
+    ctx.withSync('forceSync', () => {
+      const encoder = protocol.forceSyncMessage(this.doc)
       ws.send(encoding.toUint8Array(encoder))
-    }
+    })
+
+    ctx.withSync('awareness', () => {
+      const clients = Array.from(this.doc.awareness.states.keys())
+      if (clients.length > 0) {
+        const encoder = protocol.awarenessMessage(this.doc, clients)
+        ws.send(encoding.toUint8Array(encoder))
+      }
+    })
   }
 
   async handleAwarenessUpdate ({ added, updated, removed }: AwarenessUpdate, origin: any): Promise<void> {
@@ -215,8 +300,8 @@ export class Collaborator extends DurableObject<Env> {
   }
 
   async broadcastMessage (message: Uint8Array, origin?: any): Promise<void> {
-    const wss = this.ctx
-      .getWebSockets()
+    const connections = this.connections.getConnections()
+    const wss = connections
       .filter((ws) => ws !== origin)
       .filter((ws) => ws.readyState === WebSocket.OPEN)
     const promises = wss.map(async (ws) => {
@@ -228,19 +313,21 @@ export class Collaborator extends DurableObject<Env> {
   async sendMessage (ws: WebSocket, message: Uint8Array): Promise<void> {
     try {
       ws.send(message)
-    } catch (error) {
-      console.error('Failed to send message:', error)
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err)
+      this.logger.error('failed to send message', { error })
       await this.handleClose(ws, 1011, 'error')
     }
   }
 
   async handleClose (ws: WebSocket, code: number, reason?: string): Promise<void> {
-    const clients = this.ctx.getWebSockets().length
+    const clients = this.connections.count()
 
     try {
       ws.close(code, reason)
     } catch (err) {
-      console.error('Failed to close WebSocket:', err)
+      const error = err instanceof Error ? err.message : String(err)
+      this.logger.error('failed to close WebSocket', { error })
     }
 
     this.doc.removeConnection(ws)
@@ -251,85 +338,127 @@ export class Collaborator extends DurableObject<Env> {
     }
   }
 
-  async readDocument (): Promise<void> {
-    console.log('reading document from storage')
-
+  async readDocument (ctx: MetricsContext): Promise<void> {
     // restore document state from storage or datalake
-    const { workspaceId, documentId } = parseDocumentName(this.documentId)
+    const source = this.source
+    const documentId = decodeDocumentId(this.documentId)
+    const workspaceId = documentId.workspaceId
 
-    // find the blob id containing last version
-    const versions = await this.ctx.storage.list<string>({ prefix: 'version-', reverse: true, limit: 1 })
-    const blobId = versions.values().next().value ?? documentId
+    const blobId = ydocBlobId(documentId)
+
+    let loaded = false
 
     try {
-      console.log('loading from datalake', workspaceId, documentId, blobId)
-      const buffer = await this.env.DATALAKE.getBlob(workspaceId, blobId)
-      applyUpdate(this.doc, new Uint8Array(buffer))
+      ctx.log('loading from datalake', { workspaceId, documentId, blobId })
 
-      console.log('loaded from datalake', workspaceId, documentId, blobId)
+      await ctx.with('fromYdoc', async (ctx) => {
+        const buffer = await ctx.with('datalake.getBlob', () => {
+          return this.env.DATALAKE.getBlob(workspaceId, blobId)
+        })
+
+        ctx.withSync('applyUpdate', () => {
+          applyUpdate(this.doc, new Uint8Array(buffer))
+        })
+
+        loaded = true
+        ctx.log('loaded from datalake', { workspaceId, documentId, blobId })
+      })
     } catch (err) {
-      console.error('loading from datalake error', workspaceId, documentId, blobId, err)
       // the blob might be missing, ignore errors
+      const error = err instanceof Error ? err.message : String(err)
+      ctx.error('loading from datalake error', { workspaceId, documentId, blobId, error })
+    }
+
+    if (!loaded && source !== '') {
+      try {
+        ctx.log('loading from datalake', { workspaceId, documentId, source })
+
+        await ctx.with('fromJson', async (ctx) => {
+          const buffer = await ctx.with('datalake.getBlob', () => {
+            return this.env.DATALAKE.getBlob(workspaceId, source)
+          })
+
+          ctx.withSync('jsonToYDoc', () => {
+            jsonToYDoc(JSON.parse(String(buffer)), this.doc, documentId.objectAttr)
+          })
+
+          ctx.log('loaded from datalake', { workspaceId, documentId, blobId })
+        })
+      } catch (err) {
+        // the blob might be missing, ignore errors
+        const error = err instanceof Error ? err.message : String(err)
+        ctx.error('loading from datalake error', { workspaceId, documentId, source, error })
+      }
     }
 
     // restore cached updates
-    const updates = await this.ctx.storage.get<Array<Uint8Array>>('updates')
-    if (updates !== undefined && updates.length > 0) {
-      console.log('- restore updates', updates.length)
-      this.doc.transact(() => {
-        updates.forEach((update) => {
-          applyUpdate(this.doc, update)
-          this.updates.push(update)
-        })
-      })
-    }
+    await ctx.with('restore updates', async () => {
+      try {
+        const updates = await this.ctx.storage.get<Array<Uint8Array>>('updates')
+        if (updates !== undefined && updates.length > 0) {
+          this.doc.transact(() => {
+            updates.forEach((update) => {
+              applyUpdate(this.doc, update)
+              this.updates.push(update)
+            })
+          })
+        }
+      } catch (err) {
+        const error = err instanceof Error ? err.message : String(err)
+        ctx.error('failed to restore updates', { workspaceId, documentId, error })
+      }
+    })
 
     // restore awareness state
-    const awareness = await this.ctx.storage.get<Record<string, unknown>>('awareness')
-    if (awareness !== undefined) {
-      console.log('- restore awareness', awareness)
-      this.doc.awareness.setLocalState(awareness)
-    }
+    await ctx.with('restore awareness', async () => {
+      try {
+        const awareness = await this.ctx.storage.get<Record<string, unknown>>('awareness')
+        if (awareness !== undefined) {
+          this.doc.awareness.setLocalState(awareness)
+        }
+      } catch (err) {
+        const error = err instanceof Error ? err.message : String(err)
+        ctx.error('failed to restore awareness', { workspaceId, documentId, error })
+      }
+    })
   }
 
   async writeDocument (): Promise<void> {
     await this.ctx.storage.deleteAlarm()
 
-    console.log('saving document to storage')
-
-    const updates = this.updates
-    this.updates = []
-
+    const updates = this.updates.splice(0)
     if (updates.length === 0) {
-      console.log('no document updates to save')
       return
     }
 
-    try {
-      const { workspaceId, documentId } = parseDocumentName(this.documentId)
-      const versionId = nextVersionId()
-      const blobId = datalakeBlobId(documentId, versionId)
+    await withMetrics('write document', async (ctx) => {
+      try {
+        const documentId = decodeDocumentId(this.documentId)
+        const workspaceId = documentId.workspaceId
 
-      const update = encodeStateAsUpdate(this.doc)
-      await this.env.DATALAKE.putBlob(workspaceId, blobId, new Uint8Array(update), 'application/ydoc')
+        // save ydoc content
+        const update = ctx.withSync('ydoc.encodeStateAsUpdate', () => encodeStateAsUpdate(this.doc))
+        await ctx.with('datalake.putBlob', async () => {
+          const blobId = ydocBlobId(documentId)
+          await this.env.DATALAKE.putBlob(workspaceId, blobId, new Uint8Array(update), 'application/ydoc')
+          ctx.log('saved ydoc content to datalake', { documentId, blobId })
+        })
 
-      void this.ctx.storage.put('updates', [])
-      void this.ctx.storage.put('version-' + versionId, blobId)
-      void this.ctx.storage.put('versionId', versionId)
+        void this.ctx.storage.put('updates', [])
 
-      console.log('saved document', documentId, versionId, blobId)
-    } catch (error) {
-      // save failed, restore updates
-      console.error('Failed to save document:', error)
-      this.updates.push(...updates)
-    }
+        // save json snapshot
+        const blobId = jsonBlobId(documentId)
+        const markup = JSON.stringify(yDocToJSON(this.doc, documentId.objectAttr))
+        await ctx.with('datalake.putBlob', async () => {
+          await this.env.DATALAKE.putBlob(workspaceId, blobId, markup, 'application/json')
+          ctx.log('saved json content to datalake', { documentId, blobId })
+        })
+      } catch (err) {
+        // save failed, restore updates
+        const error = err instanceof Error ? err.message : String(err)
+        ctx.error('failed to save document', { documentId: this.documentId, error })
+        this.updates.unshift(...updates)
+      }
+    })
   }
-}
-
-function nextVersionId (): number {
-  return Date.now()
-}
-
-function datalakeBlobId (documentId: string, version: number): string {
-  return `${documentId}-${version}`
 }

@@ -13,18 +13,31 @@
 // limitations under the License.
 //
 
-/**
- * For the sake of consistency and backwards compatibility, document name has the same format
- * as in Huly collaborator: "workspaceId://documentId:HEAD".
- */
-export function parseDocumentName (name: string): { workspaceId: string, documentId: string, versionId: string } {
-  const parts = name.split('://')
-  if (parts.length !== 2) {
+export interface DocumentId {
+  workspaceId: string
+  objectClass: string
+  objectId: string
+  objectAttr: string
+}
+
+export function decodeDocumentId (name: string): DocumentId {
+  const [workspaceId, objectClass, objectId, objectAttr] = name.split('|')
+  if (workspaceId == null || objectClass == null || objectId == null || objectAttr == null) {
     throw new Error('Malformed document id')
   }
+  return { workspaceId, objectClass, objectId, objectAttr }
+}
 
-  const workspaceId = parts[0]
-  const [documentId, versionId] = parts[1].split(':', 2)
+export function ydocBlobId ({ objectId, objectAttr }: DocumentId): string {
+  // generate ydoc blob id compatible with platform collaborator
+  return `${objectId}%${objectAttr}`
+}
 
-  return { workspaceId, documentId, versionId }
+export function jsonBlobId ({ objectId, objectAttr }: DocumentId): string {
+  // generate ydoc json id compatible with platform collaborator
+  return [objectId, objectAttr, Date.now()].join('-')
+}
+
+export function extractStrParam (value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value
 }

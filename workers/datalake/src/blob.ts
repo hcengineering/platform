@@ -195,7 +195,7 @@ export async function handleUploadFormData (
       const { name, type, lastModified } = file
       try {
         const metadata = await withPostgres(env, ctx, metrics, (db) => {
-          return saveBlob(env, db, file.stream(), file.size, type, workspace, name, lastModified)
+          return saveBlob(env, db, file.stream(), workspace, name, { type, size: file.size, lastModified })
         })
 
         // TODO this probably should happen via queue, let it be here for now
@@ -220,14 +220,13 @@ export async function saveBlob (
   env: Env,
   db: BlobDB,
   stream: ReadableStream,
-  size: number,
-  type: string,
   workspace: string,
   name: string,
-  lastModified: number
+  metadata: Omit<BlobMetadata, 'etag' | 'name'>
 ): Promise<BlobMetadata> {
   const { location, bucket } = selectStorage(env, workspace)
 
+  const { size, type, lastModified } = metadata
   const httpMetadata = { contentType: type, cacheControl, lastModified }
   const filename = getUniqueFilename()
 
