@@ -21,7 +21,7 @@
     "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/github",
     "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/github staging",
     "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/github",
-    "docker:tbuild": "rush bundle --to @hcengineering/pod-github && docker build -t hardcoreeng/github . --platform=linux/amd64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/github",
+    "docker:tbuild": "pnpm bundle --filter @hcengineering/pod-github && docker build -t hardcoreeng/github . --platform=linux/amd64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/github",
     "run-local": "ruh.sh",
     "format": "format src",
     "_phase:build": "compile transpile src",

@@ -6,12 +6,10 @@
   "types": "types/index.d.ts",
   "#overrideKeys": ["main", "types", "svelte"],
   "scripts": {
-    "_phase:build": "compile transpile src",
-    "_phase:validate": "compile validate",
-    "_phase:format": "format src",
-    "build": "compile",
-    "build:watch": "compile",      
-    "format": "format src"
+    "build": "compile transpile src",
+    "validate": "compile validate",
+    "format": "format src",
+    "build:watch": "compile"
   },
   "peerDependencies": {
   },
@@ -20,7 +18,6 @@
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-n": "^15.4.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint": "^8.54.0",
     "prettier": "^3.1.0",

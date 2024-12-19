@@ -6,12 +6,10 @@
     "main"
   ],
   "scripts": {
-    "_phase:build": "compile ui",
-    "_phase:validate": "compile validate",
-    "_phase:format": "format src",
     "build": "compile ui",
-    "build:watch": "compile ui",
-    "format": "format src"
+    "validate": "compile validate",
+    "format": "format src",
+    "build:watch": "compile ui"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",

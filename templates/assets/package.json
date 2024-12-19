@@ -4,17 +4,14 @@
   "main": "src/index.ts",
   "#overrideKeys": ["main"],
   "scripts": {
-    "_phase:build": "compile transpile src",
-    "_phase:validate": "compile validate",
-    "_phase:test": "jest --passWithNoTests --silent",
-    "_phase:format": "format src",
-    "build": "compile",
+    "build": "compile transpile src",
+    "validate": "compile validate",
+    "test": "jest --passWithNoTests --silent",
+    "format": "format src",
     "build:watch": "compile",
-    "build:docs": "",
-    "test": "jest --passWithNoTests --silent",        
-    "format": "format src"
+    "build:docs": ""
   },
-  "devDependencies": {    
+  "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",

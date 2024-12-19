@@ -9,9 +9,7 @@
     "build": "compile ui",
     "format": "format src",
     "build:watch": "compile ui",
-    "_phase:build": "compile ui",
-    "_phase:format": "format src",
-    "_phase:validate": "compile validate"
+    "validate": "compile validate"
   },
   "devDependencies": {
     "svelte-loader": "^3.2.0",

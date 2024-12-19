@@ -5,8 +5,7 @@
   "author": "Hardcore Engineering <hey@huly.io>",
   "template": "@hcengineering/default-package",
   "scripts": {
-    "_phase:package": "rushx package",
-    "package": "rushx bump && rm -rf ./dist && cp -r ../desktop/dist . && cp ../desktop/.env ./dist && echo 'done'",
+    "package": "pnpm bump && rm -rf ./dist && cp -r ../desktop/dist . && cp ../desktop/.env ./dist && echo 'done'",
     "dist": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false NODE_ENV=production VERSION=$(node ../common/scripts/show_tag.js) MODEL_VERSION=$(node ../common/scripts/show_version.js) electron-builder build -p onTag",
     "dist-local": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false NODE_ENV=production VERSION=$(node ../common/scripts/show_tag.js) MODEL_VERSION=$(node ../common/scripts/show_version.js) electron-builder build",
     "dist-signed": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=true NODE_ENV=production VERSION=$(node ../common/scripts/show_tag.js) MODEL_VERSION=$(node ../common/scripts/show_version.js) electron-builder build -c.afterSign=scripts/notarize.js -p onTag",

@@ -21,7 +21,7 @@
     "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/ai-bot",
     "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/ai-bot staging",
     "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/ai-bot",
-    "docker:tbuild": "rush bundle --to @hcengineering/pod-ai-bot && docker build -t hardcoreeng/ai-bot . --platform=linux/amd64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/ai-bot",
+    "docker:tbuild": "pnpm bundle --filter @hcengineering/pod-ai-bot && docker build -t hardcoreeng/ai-bot . --platform=linux/amd64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/ai-bot",
     "run-local": "cross-env APP_ID=$(cat ../../../../uberflow_private/appid) PRIVATE_KEY=\"$(cat ../../../../uberflow_private/private-key.pem)\" CLIENT_ID=$(cat ../../../../uberflow_private/client-id) CLIENT_SECRET=$(cat ../../../../uberflow_private/client-secret) SERVER_SECRET=secret ACCOUNTS_URL=http://localhost:3000/ COLLABORATOR_URL=http://localhost:3078 MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost ts-node src/index.ts",
     "format": "format src",
     "_phase:build": "compile transpile src",

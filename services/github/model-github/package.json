@@ -7,12 +7,10 @@
   "author": "Hardcore Engineering Inc.",
   "template": "@hcengineering/model-package",
   "scripts": {
-    "build": "compile",
+    "build": "compile transpile src",
     "build:watch": "compile",
     "format": "format src",
-    "_phase:build": "compile transpile src",
-    "_phase:format": "format src",
-    "_phase:validate": "compile validate"
+    "validate": "compile validate"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",

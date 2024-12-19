@@ -10,10 +10,7 @@
     "build:docs": "api-extractor run --local",
     "format": "format src",
     "svelte-check": "do-svelte-check",
-    "_phase:svelte-check": "do-svelte-check",
-    "_phase:build": "compile ui",
-    "_phase:format": "format src",
-    "_phase:validate": "compile validate"
+    "validate": "compile validate"
   },
   "devDependencies": {
     "svelte-loader": "^3.2.0",
@@ -22,7 +19,7 @@
     "svelte-check": "^3.6.9",
     "@hcengineering/platform-rig": "^0.6.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
-    "@typescript-eslint/parser": "^6.11.0",
+    "@typescript-eslint/parser": "^6.11.0"
     "eslint-config-standard-with-typescript": "^40.0.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-n": "^15.4.0",

@@ -6,14 +6,11 @@
   "types": "types/index.d.ts",
   "#overrideKeys": ["main", "types", "svelte"],
   "scripts": {
-    "_phase:build": "compile transpile src",
-    "_phase:validate": "compile validate",
-    "_phase:test": "jest --passWithNoTests --silent --forceExit",
-    "_phase:format": "format src",
-    "build": "compile",
+    "build": "compile transpile src",
+    "validate": "compile validate",
     "test": "jest --passWithNoTests --silent --forceExit",
-    "build:watch": "compile",
-    "format": "format src"
+    "format": "format src",
+    "build:watch": "compile"
   },
   "peerDependencies": {
     "@hcengineering/platform-rig": "*"

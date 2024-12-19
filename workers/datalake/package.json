@@ -13,10 +13,7 @@
     "build:watch": "compile",
     "test": "jest --passWithNoTests --silent --forceExit",
     "format": "format src",
-    "_phase:build": "compile transpile src",
-    "_phase:test": "jest --passWithNoTests --silent --forceExit",
-    "_phase:format": "format src",
-    "_phase:validate": "compile validate"
+    "validate": "compile validate"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",

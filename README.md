@@ -66,19 +66,21 @@ sh ./scripts/fast-start.sh
 
 ## Installation
 
-You need Microsoft's [rush](https://rushjs.io) to install application.
+You need [pnpm](https://pnpm.io) and [Turbo](https://turbo.build) to install and build the application.
 
-1. Install Rush globally using the command:
+1. Install pnpm globally using the command:
    ```bash
-   npm install -g @microsoft/rush
+   npm install -g pnpm
+   ```
 2. Navigate to the repository root and run the following commands:
    ```bash
-   rush install
-   rush build
+   pnpm install
+   pnpm build
+   ```
 Alternatively, you can just execute:
 
 ```bash
-sh ./scripts/presetup-rush.sh
+sh ./scripts/presetup.sh
 ```
 
 ## Build and run
@@ -89,14 +91,14 @@ Support is available for both amd64 and arm64 containers on Linux and macOS.
 
 ```bash
 cd ./dev/
-rush build    # Will build all the required packages. 
-# rush rebuild  # could be used to omit build cache.
-rush bundle   # Will prepare bundles.
-rush package  # Will build all webpack packages.
-rush validate # Will validate all sources with typescript and generate d.ts files required for ts-node execution.
-rush svelte-check # Optional. svelte files validation using svelte-check.
-rush docker:build   # Will build Docker containers for all applications in the local Docker environment.
-rush docker:up # Will set up all the containers
+pnpm build    # Will build all the required packages.
+# pnpm rebuild  # could be used to omit build cache.
+pnpm bundle   # Will prepare bundles.
+pnpm package  # Will build all webpack packages.
+pnpm validate # Will validate all sources with typescript and generate d.ts files required for ts-node execution.
+pnpm svelte-check # Optional. svelte files validation using svelte-check.
+pnpm docker:build   # Will build Docker containers for all applications in the local Docker environment.
+pnpm docker:up # Will set up all the containers
 ```
 
 Be aware `rush docker:build` will automatically execute all required phases like build, bundle, package.
@@ -145,8 +147,8 @@ Development mode allows for live reloading and a smoother development process.
 
 ```bash
 cd dev/prod
-rush validate
-rushx dev-server
+pnpm validate
+pnpm dev-server
 ```
 
 Then go to http://localhost:8080
@@ -164,8 +166,8 @@ Workspace: ws1
 If the project's structure is updated, it may be necessary to relink and rebuild the projects.
 
 ```bash
-rush update
-rush build
+pnpm install
+pnpm build
 ```
 
 It may also be necessary to upgrade the running database.
@@ -186,7 +188,7 @@ rm -rf common/temp/build-cache
 
 ## Build & Watch
 
-For development purpose `rush build:watch` action could be used.
+For development purpose `pnpm build:watch` action could be used.
 
 It includes build and validate phases in watch mode.
 
@@ -195,22 +197,22 @@ It includes build and validate phases in watch mode.
 ### Unit tests
 
 ```bash
-rush test # To execute all tests
+pnpm test # To execute all tests
 
-rushx test # For individual test execution inside a package directory
+pnpm test --filter=<package-name> # For individual test execution inside a package directory
 ```
 
 ### UI tests
 
 ```bash
 cd ./tests
-rush build
-rush bundle
-rush docker:build
+pnpm build
+pnpm bundle
+pnpm docker:build
 ## creates test Docker containers and sets up test database
 ./prepare.sh
 ## runs UI tests
-rushx uitest
+pnpm uitest
 ```
 
 To execute tests in the development environment, please follow these steps:
