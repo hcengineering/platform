@@ -52,6 +52,7 @@ import {
   createWriteStream,
   existsSync,
   mkdirSync,
+  mkdtempSync,
   readFileSync,
   statSync,
   writeFileSync
@@ -729,6 +730,8 @@ export async function backup (
   let connection!: CoreClient & BackupClient
   let printEnd = true
 
+  const tmpRoot = mkdtempSync('huly')
+
   try {
     let backupInfo: BackupInfo = {
       workspace: workspaceId.name,
@@ -741,7 +744,7 @@ export async function backup (
     const infoFile = 'backup.json.gz'
 
     if (await storage.exists(infoFile)) {
-      backupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+      backupInfo = JSON.parse(gunzipSync((await storage.loadFile(infoFile)) as any).toString())
     }
     backupInfo.version = '0.6.2'
 
@@ -1106,7 +1109,7 @@ export async function backup (
             const storageFile = join(backupIndex, `${domain}-data-${snapshot.date}-${stIndex}.tar.gz`)
             ctx.info('storing from domain', { domain, storageFile, workspace: workspaceId.name })
             domainInfo.storage = [...(domainInfo.storage ?? []), storageFile]
-            const tmpFile = basename(storageFile) + '.tmp'
+            const tmpFile = join(tmpRoot, basename(storageFile) + '.tmp')
             const tempFile = createWriteStream(tmpFile)
             // const dataStream = await storage.write(storageFile)
 
@@ -1333,7 +1336,7 @@ export async function backup (
     let sizeInfo: Record<string, number> = {}
 
     if (await storage.exists(sizeFile)) {
-      sizeInfo = JSON.parse(gunzipSync(await storage.loadFile(sizeFile)).toString())
+      sizeInfo = JSON.parse(gunzipSync((await storage.loadFile(sizeFile)) as any).toString())
     }
     let processed = 0
 
@@ -1408,6 +1411,7 @@ export async function backup (
     ctx.error('backup error', { err, workspace: workspaceId.name })
     return result
   } finally {
+    await rm(tmpRoot, { recursive: true })
     if (printEnd) {
       ctx.info('end backup', { workspace: workspaceId.name, totalTime: Date.now() - st })
     }

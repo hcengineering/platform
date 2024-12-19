@@ -1057,7 +1057,7 @@ dependencies:
     version: file:projects/tests-sanity.tgz
   '@rush-temp/text':
     specifier: file:./projects/text.tgz
-    version: file:projects/text.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4)(y-protocols@1.0.6)
+    version: file:projects/text.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4)
   '@rush-temp/text-editor':
     specifier: file:./projects/text-editor.tgz
     version: file:projects/text-editor.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
@@ -1067,6 +1067,9 @@ dependencies:
   '@rush-temp/text-editor-resources':
     specifier: file:./projects/text-editor-resources.tgz
     version: file:projects/text-editor-resources.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(highlight.js@11.8.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)(utf-8-validate@6.0.4)
+  '@rush-temp/text-ydoc':
+    specifier: file:./projects/text-ydoc.tgz
+    version: file:projects/text-ydoc.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4)(y-protocols@1.0.6)
   '@rush-temp/theme':
     specifier: file:./projects/theme.tgz
     version: file:projects/theme.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -23276,7 +23279,7 @@ packages:
     dev: false
 
   file:projects/collaboration.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-aJ4uMSpM7IB3wgrjVKYm4jR3IeBYSaFvYZZFjxkriMD1fAxvjr/WpKUWxQy0q2x3gZb4SoGLoiX2d2qj2/hdhA==, tarball: file:projects/collaboration.tgz}
+    resolution: {integrity: sha512-B70DJafULFsOhFaCV+w3xbc389eny17N1XFVHtIrO0/lulB3Rdrts/2AjDFasTxF6DrRrN0g8WSKbS3ZiGBn+w==, tarball: file:projects/collaboration.tgz}
     id: file:projects/collaboration.tgz
     name: '@rush-temp/collaboration'
     version: 0.0.0
@@ -23341,7 +23344,7 @@ packages:
     dev: false
 
   file:projects/collaborator.tgz(@tiptap/pm@2.6.6)(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6):
-    resolution: {integrity: sha512-rOYtzJUY5RFs6cOkn2LNEgL5qqf7QdYUeJamlAnB+u2nIJKUf6Db+wJckK+0fCnujFGWAaDyqSidEIMnPkmvAg==, tarball: file:projects/collaborator.tgz}
+    resolution: {integrity: sha512-IfReKxVgch+Vfy/kKHkRRNE0N7svP5c5NCHBhC+DiXMjVXNhkMvUYyhGv1RUTmJUzUWvHo3K75m/23c9yAuylw==, tarball: file:projects/collaborator.tgz}
     id: file:projects/collaborator.tgz
     name: '@rush-temp/collaborator'
     version: 0.0.0
@@ -29473,7 +29476,7 @@ packages:
     dev: false
 
   file:projects/server-activity-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-MK/u1/C+WybVSjINrL8/N5ogkV/W/yrR0wU+1Dn7RQHjTjcv1wckawhhkpyWvV/GOHmJ/9sk52DRNN0aT38Iig==, tarball: file:projects/server-activity-resources.tgz}
+    resolution: {integrity: sha512-+UU7f65uCYtxuk56pj1bJ2ZaE6YHxVubtTfbsrLa8ZAGUOvWjrxY37B8j8GfcgGioL6PESsB12uEZIvghnNNaQ==, tarball: file:projects/server-activity-resources.tgz}
     id: file:projects/server-activity-resources.tgz
     name: '@rush-temp/server-activity-resources'
     version: 0.0.0
@@ -29815,7 +29818,7 @@ packages:
     dev: false
 
   file:projects/server-chunter-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-G0zXtnTJR8PNNv3VVnuOStJs8fXpPFJDsxtRQ2EwwG3YocszzYRXyer8zgC15pS8wMUee0qVPcnz6lRUW7YNPQ==, tarball: file:projects/server-chunter-resources.tgz}
+    resolution: {integrity: sha512-Kpp8RTEJ+z5d8Rq7HbOhui8ZyV8OvKEXVkAXT80Ju/qhVnZ5Mnw/jk33dgwur1NPVjCWOK2SPECHf+eqzwXpBg==, tarball: file:projects/server-chunter-resources.tgz}
     id: file:projects/server-chunter-resources.tgz
     name: '@rush-temp/server-chunter-resources'
     version: 0.0.0
@@ -29912,7 +29915,7 @@ packages:
     dev: false
 
   file:projects/server-collaboration-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-CpLsMZJoj1GsG2/RgbvlCzlIIOe0q1bht2uXzJQ5B6vJQvsHJ3nEt1xxe4GNb6HEPwgvty8LmC1pf7FjLE05RQ==, tarball: file:projects/server-collaboration-resources.tgz}
+    resolution: {integrity: sha512-z+hQWA3nzogICLGtbTeKk2up7a3hAj4cRwJOc4IrNZiXBWHWEJM9iPp0Mf99qud3YmkHMdOWV0CEFPXMCBGYLQ==, tarball: file:projects/server-collaboration-resources.tgz}
     id: file:projects/server-collaboration-resources.tgz
     name: '@rush-temp/server-collaboration-resources'
     version: 0.0.0
@@ -30098,7 +30101,7 @@ packages:
     dev: false
 
   file:projects/server-core.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-NJlQNbZS7co2qKOPf/GLPbc0VgghD4JenfX92uaXNCPM50WDKcnnxrgelP7LJmkK01ZU7oZKd6WfoCMWr06u5w==, tarball: file:projects/server-core.tgz}
+    resolution: {integrity: sha512-efEJe6H7TcdTsX7qOhOhM2p9bjx9Mh3FHsb/0um4pSdK83jZwAXLtjX592UBr6WbOz0saPEOftlkthzQQzKd0A==, tarball: file:projects/server-core.tgz}
     id: file:projects/server-core.tgz
     name: '@rush-temp/server-core'
     version: 0.0.0
@@ -30867,7 +30870,7 @@ packages:
     dev: false
 
   file:projects/server-pipeline.tgz:
-    resolution: {integrity: sha512-RoaltZjKRFs7Db3hC8MclyWwIBSHD1lnIK88Cy/tRSj2F3eYUMq3NJCeg3FWz9kPVvCL+F5noOIAmOTaVvwbGQ==, tarball: file:projects/server-pipeline.tgz}
+    resolution: {integrity: sha512-Ku/Tzho2UClqB6pAmRTCNrl2Sr/vgT5EP2jVlrTdQrHeA+DRFuipXTSaov8ILtV8K2DMwyKuUWhirRS42d9RCQ==, tarball: file:projects/server-pipeline.tgz}
     name: '@rush-temp/server-pipeline'
     version: 0.0.0
     dependencies:
@@ -32836,7 +32839,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-FOR0ZEJqGjY5MZ/pk2VdcXhtEmyOJhqfi9DEGiGKAqdqnBO05WZTba6BHmacrRI1u50jMRM7RKRRI2Fnv72skA==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-ZGE7p4Fr6/FjCfTJbDxCrBW/ZWTCTHxJECiSDxz3dZ3rom7Bx0c90k14lhUE2gMTyZitfzUEBlCp3suQsN16Fg==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -32870,8 +32873,52 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/text.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4)(y-protocols@1.0.6):
-    resolution: {integrity: sha512-krv6M+6hKhpAuRanIAZPdRq+Cxxn7sIxmq443+UrSNHL2zp1gxWbivmsG89t+n8B19PRbUNhmhRk77Uc78gmxg==, tarball: file:projects/text.tgz}
+  file:projects/text-ydoc.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4)(y-protocols@1.0.6):
+    resolution: {integrity: sha512-aDhGcvxtmn53efGxEksX6CTMQWjDpmO/x0bkO4k3OA+GUHHNrlGQAkyun0lGP+iDcfb/rHVKR8odJVrUnMx1DA==, tarball: file:projects/text-ydoc.tgz}
+    id: file:projects/text-ydoc.tgz
+    name: '@rush-temp/text-ydoc'
+    version: 0.0.0
+    dependencies:
+      '@tiptap/core': 2.6.6(@tiptap/pm@2.6.6)
+      '@tiptap/pm': 2.6.6
+      '@types/jest': 29.5.12
+      '@types/markdown-it': 13.0.8
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      fast-equals: 5.0.1
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      jest-environment-jsdom: 29.7.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      prettier: 3.2.5
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.6.2)
+      typescript: 5.6.2
+      y-prosemirror: 1.2.12(y-protocols@1.0.6)(yjs@13.6.19)
+      yjs: 13.6.19
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - bufferutil
+      - canvas
+      - esbuild
+      - node-notifier
+      - prosemirror-model
+      - prosemirror-state
+      - prosemirror-view
+      - supports-color
+      - ts-node
+      - utf-8-validate
+      - y-protocols
+    dev: false
+
+  file:projects/text.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4):
+    resolution: {integrity: sha512-1V1MwGEZv1UxhJ4js4mIMG6U87MbA6jlzPZyE6EmtNpYbQ12DfVTp2XpiK3JlZKs95itkJcFCSTQIMsYSrw4yw==, tarball: file:projects/text.tgz}
     id: file:projects/text.tgz
     name: '@rush-temp/text'
     version: 0.0.0
@@ -32914,8 +32961,6 @@ packages:
       prosemirror-codemark: 0.4.2
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
-      y-prosemirror: 1.2.12(y-protocols@1.0.6)(yjs@13.6.19)
-      yjs: 13.6.19
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -32933,7 +32978,6 @@ packages:
       - supports-color
       - ts-node
       - utf-8-validate
-      - y-protocols
     dev: false
 
   file:projects/theme.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
@@ -33094,7 +33138,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-zkSB9q8nmOq4m/hf5dMfcseJjWHYhOExf+qcO3+81JqRLl5vVnZagl0kPGJn/0xkj36e9HiRqyqqesJS0hLDWg==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-dTUYN+mKApDwcRRCIBOVFxHmmZGkGJ8UjtEmvyMb/HgcsWUXDuzygkJlGqYTa0LirObNqRqH6J3AbUCeiokdmg==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:

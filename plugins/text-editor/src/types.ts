@@ -1,7 +1,6 @@
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import { type Class, type Space, type Account, type Doc, type Markup, type Ref } from '@hcengineering/core'
 import type { AnySvelteComponent } from '@hcengineering/ui/src/types'
-import { type RelativePosition } from 'yjs'
 import { type AnyExtension, type Content, type Editor, type SingleCommands } from '@tiptap/core'
 import { type ParseOptions } from '@tiptap/pm/model'
 
@@ -131,8 +130,8 @@ export interface CollaborationUser {
 export interface AwarenessState {
   user: CollaborationUser
   cursor?: {
-    anchor: RelativePosition
-    head: RelativePosition
+    anchor: any
+    head: any
   } | null
   lastUpdate?: number
 }

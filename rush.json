@@ -481,6 +481,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/text-ydoc",
+      "projectFolder": "packages/text-ydoc",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/ui",
       "projectFolder": "packages/ui",
       "shouldPublish": true
