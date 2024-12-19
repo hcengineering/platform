@@ -14,8 +14,9 @@
 //
 
 import {
+  type Account,
+  type AccountClient,
   type Class,
-  type Client,
   type Doc,
   type DocumentQuery,
   type FindOptions,
@@ -31,13 +32,13 @@ import {
   type WithLookup
 } from '@hcengineering/core'
 import { type ConnectOptions } from './types'
-import { getWorkspaceToken } from './account'
+import { getWorkspaceLogin } from './account'
 
 export async function createHttpClient (
   configUrl: string,
   options: ConnectOptions,
   httpApiWorkerUrl: string
-): Promise<Client> {
+): Promise<AccountClient> {
   let token = options.workspaceToken
   if (token === undefined) {
     if (options.authOptions === undefined) {
@@ -46,7 +47,7 @@ export async function createHttpClient (
     if (configUrl === '' && options.serverConfig === undefined) {
       throw new Error('Either configUrl or serverConfig must be provided')
     }
-    const ws = await getWorkspaceToken(configUrl, options.authOptions, options.serverConfig)
+    const ws = await getWorkspaceLogin(configUrl, options.authOptions, options.serverConfig)
     token = ws.token
   }
   const client = new TransactorHttpClient(token, options.workspaceId ?? '', httpApiWorkerUrl)
@@ -56,7 +57,7 @@ export async function createHttpClient (
   return client
 }
 
-class TransactorHttpClient implements Client {
+class TransactorHttpClient implements AccountClient {
   private model: ModelDb | undefined
   private hierarchy: Hierarchy | undefined
 
@@ -95,8 +96,7 @@ class TransactorHttpClient implements Client {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<WithLookup<T> | undefined> {
-    // TODO
-    throw new Error('Not implemented')
+    return (await this.findAll(_class, query, options)).shift()
   }
 
   async close (): Promise<void> {
@@ -118,6 +118,11 @@ class TransactorHttpClient implements Client {
   }
 
   async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    // TODO
+    throw new Error('Not implemented')
+  }
+
+  async getAccount (): Promise<Account> {
     // TODO
     throw new Error('Not implemented')
   }

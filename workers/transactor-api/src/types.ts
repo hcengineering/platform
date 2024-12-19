@@ -22,7 +22,7 @@ export interface ConnectOptions {
 
   loadModel?: boolean
 
-  authOptions?: AuthOptions
+  authOptions: AuthOptions
 
   serverConfig?: ServerConfig
 }

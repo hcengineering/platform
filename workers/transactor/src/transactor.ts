@@ -394,4 +394,27 @@ export class Transactor extends DurableObject<Env> {
     const compressed = await gzipAsync(buffer)
     return compressed
   }
+
+  async getAccount (rawToken: string, workspaceId: string, tx: Tx): Promise<any> {
+    let result
+    const cs = this.createDummyClientSocket()
+    try {
+      const session = await this.makeRpcSession(rawToken, cs)
+      const sessionCtx: ClientSessionCtx = {
+        ctx: this.measureCtx,
+        sendResponse: async (msg) => {
+          result = msg
+        },
+        sendError: async (msg, error) => {
+          result = { error: `${msg}`, status: `${error}` }
+        }
+      }
+      await (session as any).getAccount(sessionCtx)
+    } catch (error: any) {
+      result = { error: `${error}` }
+    } finally {
+      await this.sessionManager.close(this.measureCtx, cs, this.workspace)
+    }
+    return result
+  }
 }

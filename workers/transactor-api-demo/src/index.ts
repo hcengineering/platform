@@ -14,15 +14,18 @@
 //
 
 import { Router, error } from 'itty-router'
-import contact from '@hcengineering/contact'
 import {
   type ConnectOptions,
   type TransactorService,
   createHttpClient,
   createRpcClient,
-  getWorkspaceToken,
+  getWorkspaceLogin,
   unpackModel
 } from '@hcengineering/cloud-transactor-api'
+import contact, { AvatarType, type Person } from '@hcengineering/contact'
+import core, { generateId, type Ref, type TxCreateDoc, TxOperations } from '@hcengineering/core'
+
+const httpWorkerUrl = 'to-do'
 
 export default {
   async fetch (request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -32,7 +35,7 @@ export default {
       const email = params.email
       const password = params.password
       const workspace = params.workspace
-      const info = await getWorkspaceToken(env.ACCOUNTS_URL, { email, password, workspace })
+      const info = await getWorkspaceLogin('', { email, password, workspace }, { ACCOUNTS_URL: env.ACCOUNTS_URL })
       return info.token
     }
 
@@ -120,6 +123,97 @@ export default {
         const client = await createRpcClient('', getConnectOpts({ ...params, loadModel: true }), transactorService)
         try {
           const result = client.getModel()
+          return new Response(JSON.stringify(result))
+        } catch (error) {
+          console.error({ error })
+          throw error
+        } finally {
+          if (Symbol.dispose in client) {
+            ;(client as any)[Symbol.dispose]()
+          }
+        }
+      })
+
+      .get('/demo-get-model-http/:email/:password/:workspace', async ({ params }) => {
+        const client = await createHttpClient('', getConnectOpts({ ...params, loadModel: true }), httpWorkerUrl)
+        try {
+          const result = client.getModel()
+          return new Response(JSON.stringify(result))
+        } catch (error) {
+          console.error({ error })
+          throw error
+        } finally {
+          if (Symbol.dispose in client) {
+            ;(client as any)[Symbol.dispose]()
+          }
+        }
+      })
+
+      .get('/demo-tx-raw/:email/:password/:workspace', async ({ params }) => {
+        const client = await transactorService.openRpc(await getToken(params), params.workspace)
+        try {
+          const account = await client.getAccount()
+          const id = generateId()
+          console.log('NEW_ID', id)
+          const tx: TxCreateDoc<Person> = {
+            _id: id as Ref<TxCreateDoc<Person>>,
+            _class: core.class.TxCreateDoc,
+            space: core.space.Tx,
+            objectId: id as Ref<Person>,
+            objectClass: contact.class.Person,
+            objectSpace: account.space,
+            modifiedOn: Date.now(),
+            modifiedBy: account._id,
+            createdBy: account._id,
+            attributes: {
+              name: 'Person ' + id,
+              city: 'Unknown',
+              avatarType: AvatarType.COLOR
+            }
+          }
+          const result = await client.tx(tx)
+          return new Response(JSON.stringify(result))
+        } catch (error) {
+          console.error({ error })
+          throw error
+        } finally {
+          if (Symbol.dispose in client) {
+            ;(client as any)[Symbol.dispose]()
+          }
+        }
+      })
+
+      .get('/demo-tx-rpc/:email/:password/:workspace', async ({ params }) => {
+        const client = await createRpcClient('', getConnectOpts({ ...params, loadModel: true }), transactorService)
+        try {
+          const account = await client.getAccount()
+          const txops = new TxOperations(client, account._id)
+          const result = await txops.createDoc(contact.class.Person, account.space, {
+            name: 'Person ' + generateId(),
+            city: 'Unknown',
+            avatarType: AvatarType.COLOR
+          })
+          return new Response(JSON.stringify(result))
+        } catch (error) {
+          console.error({ error })
+          throw error
+        } finally {
+          if (Symbol.dispose in client) {
+            ;(client as any)[Symbol.dispose]()
+          }
+        }
+      })
+
+      .get('/demo-tx-http/:email/:password/:workspace', async ({ params }) => {
+        const client = await createHttpClient('', getConnectOpts({ ...params, loadModel: true }), httpWorkerUrl)
+        try {
+          const account = await client.getAccount()
+          const txops = new TxOperations(client, account._id)
+          const result = await txops.createDoc(contact.class.Person, account.space, {
+            name: 'Person ' + generateId(),
+            city: 'Unknown',
+            avatarType: AvatarType.COLOR
+          })
           return new Response(JSON.stringify(result))
         } catch (error) {
           console.error({ error })

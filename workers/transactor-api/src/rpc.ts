@@ -14,8 +14,9 @@
 //
 
 import {
+  type Account,
+  type AccountClient,
   type Class,
-  type Client,
   type Doc,
   type DocumentQuery,
   type FindOptions,
@@ -33,7 +34,7 @@ import {
 } from '@hcengineering/core'
 import { createDummyMeasureContext, unpackModel } from './utils'
 import { type ConnectOptions } from './types'
-import { getWorkspaceToken } from './account'
+import { getWorkspaceLogin } from './account'
 
 export interface TransactorService {
   openRpc: (token: string, workspaceId: string) => Promise<TransactorRawApi>
@@ -41,13 +42,14 @@ export interface TransactorService {
 
 export interface TransactorRawApi extends Storage {
   getModel: () => Promise<Buffer>
+  getAccount: () => Promise<Account>
 }
 
 export async function createRpcClient (
   configUrl: string,
   options: ConnectOptions,
   transactorService: TransactorService
-): Promise<Client> {
+): Promise<AccountClient> {
   let token = options.workspaceToken
   if (token === undefined) {
     if (options.authOptions === undefined) {
@@ -56,7 +58,7 @@ export async function createRpcClient (
     if (configUrl === '' && options.serverConfig === undefined) {
       throw new Error('Either configUrl or serverConfig must be provided')
     }
-    const ws = await getWorkspaceToken(configUrl, options.authOptions, options.serverConfig)
+    const ws = await getWorkspaceLogin(configUrl, options.authOptions, options.serverConfig)
     token = ws.token
   }
   const client = new TransactorRpcClient(token, options.workspaceId ?? '', transactorService)
@@ -66,11 +68,12 @@ export async function createRpcClient (
   return client
 }
 
-class TransactorRpcClient implements Client {
+class TransactorRpcClient implements AccountClient {
   private disposed = false
   private model: ModelDb | undefined
   private hierarchy: Hierarchy | undefined
   private transactorRpcStub: TransactorRawApi | undefined
+  private account: Account | undefined
 
   constructor (
     private readonly token: string,
@@ -123,8 +126,7 @@ class TransactorRpcClient implements Client {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<WithLookup<T> | undefined> {
-    // TODO
-    return undefined
+    return (await this.findAll(_class, query, options)).shift()
   }
 
   async close (): Promise<void> {
@@ -152,6 +154,14 @@ class TransactorRpcClient implements Client {
       total: 0
     }
     return result
+  }
+
+  async getAccount (): Promise<Account> {
+    if (this.account === undefined) {
+      const stub = await this.transactorStub()
+      this.account = await stub.getAccount()
+    }
+    return this.account
   }
 
   private dispose (): void {

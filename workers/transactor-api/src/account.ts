@@ -76,12 +76,12 @@ async function loadServerConfig (url: string): Promise<ServerConfig> {
   throw new Error('Failed to fetch config')
 }
 
-export async function getWorkspaceToken (
+export async function getWorkspaceLogin (
   configUrl: string,
   options: AuthOptions,
-  config?: ServerConfig
-): Promise<{ endpoint: string, token: string }> {
-  config ??= await loadServerConfig(configUrl)
+  serverConfig?: ServerConfig
+): Promise<WorkspaceLoginInfo> {
+  serverConfig ??= await loadServerConfig(configUrl)
 
   let token: string
 
@@ -89,19 +89,19 @@ export async function getWorkspaceToken (
     token = options.token
   } else {
     const { email, password, workspace } = options
-    token = await login(config.ACCOUNTS_URL, email, password, workspace)
+    token = await login(serverConfig.ACCOUNTS_URL, email, password, workspace)
   }
 
   if (token === undefined) {
     throw new Error('Login failed')
   }
 
-  const ws = await selectWorkspace(config.ACCOUNTS_URL, token, options.workspace)
+  const ws = await selectWorkspace(serverConfig.ACCOUNTS_URL, token, options.workspace)
   if (ws === undefined) {
     throw new Error('Workspace not found')
   }
 
-  return { endpoint: ws.endpoint, token: ws.token }
+  return ws
 }
 
 async function login (accountsUrl: string, user: string, password: string, workspace: string): Promise<string> {

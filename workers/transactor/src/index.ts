@@ -70,6 +70,10 @@ class TransactorRpcTarget extends RpcTarget {
   async getModel (): Promise<any> {
     return (this.transactor as any).getModel()
   }
+
+  async getAccount (): Promise<any> {
+    return (this.transactor as any).getAccount(this.token, this.workspaceId)
+  }
 }
 
 export class TransactorRpc extends WorkerEntrypoint<Env> {
