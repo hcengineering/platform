@@ -14,8 +14,7 @@
 //
 
 import type { CollaborativeDoc, Doc, Tx, TxRemoveDoc } from '@hcengineering/core'
-import core, { makeCollabId } from '@hcengineering/core'
-import { removeCollabYdoc } from '@hcengineering/collaboration'
+import core, { makeCollabId, makeCollabYdocId } from '@hcengineering/core'
 import { type TriggerControl } from '@hcengineering/server-core'
 
 /**
@@ -47,7 +46,12 @@ export async function OnDelete (
     // Even though we are deleting it here, the document can be currently in use by someone else
     // and when editing session ends, the collborator service will recreate the document again
     if (toDelete.length > 0) {
-      await removeCollabYdoc(storageAdapter, workspace, toDelete, ctx)
+      const toRemove: string[] = toDelete.map(makeCollabYdocId)
+      if (toRemove.length > 0) {
+        await ctx.with('remove', {}, async () => {
+          await storageAdapter.remove(ctx, workspace, toRemove)
+        })
+      }
     }
   }
   return []

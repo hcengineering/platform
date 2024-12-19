@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2022, 2023, 2024 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,9 +13,4 @@
 // limitations under the License.
 //
 
-import { textEditorId } from './plugin'
-
-export { default } from './plugin'
-export * from '@hcengineering/presentation/src/types'
-export * from './types'
-export { textEditorId }
+export * from './ydoc'

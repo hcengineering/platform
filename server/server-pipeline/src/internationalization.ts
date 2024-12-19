@@ -2,7 +2,6 @@ import { coreId } from '@hcengineering/core'
 import { addStringsLoader, platformId } from '@hcengineering/platform'
 import { activityId } from '@hcengineering/activity'
 import { attachmentId } from '@hcengineering/attachment'
-import { bitrixId } from '@hcengineering/bitrix'
 import { boardId } from '@hcengineering/board'
 import { calendarId } from '@hcengineering/calendar'
 import { chunterId } from '@hcengineering/chunter'
@@ -40,7 +39,6 @@ import loginEng from '@hcengineering/login-assets/lang/en.json'
 import platformEng from '@hcengineering/platform/lang/en.json'
 import activityEn from '@hcengineering/activity-assets/lang/en.json'
 import attachmentEn from '@hcengineering/attachment-assets/lang/en.json'
-import bitrixEn from '@hcengineering/bitrix-assets/lang/en.json'
 import boardEn from '@hcengineering/board-assets/lang/en.json'
 import calendarEn from '@hcengineering/calendar-assets/lang/en.json'
 import chunterEn from '@hcengineering/chunter-assets/lang/en.json'
@@ -102,7 +100,6 @@ export function registerStringLoaders (): void {
   addStringsLoader(preferenceId, async (lang: string) => preferenceEn)
   addStringsLoader(hrId, async (lang: string) => hrEn)
   addStringsLoader(documentId, async (lang: string) => documentEn)
-  addStringsLoader(bitrixId, async (lang: string) => bitrixEn)
   addStringsLoader(requestId, async (lang: string) => requestEn)
   addStringsLoader(loveId, async (lang: string) => loveEn)
   addStringsLoader(driveId, async (lang: string) => driveEn)

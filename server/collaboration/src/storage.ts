@@ -26,7 +26,7 @@ import {
   makeCollabYdocId
 } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
-import { yDocToMarkup } from '@hcengineering/text'
+import { yDocToMarkup } from '@hcengineering/text-ydoc'
 import { Doc as YDoc } from 'yjs'
 
 import { yDocFromBuffer, yDocToBuffer } from './ydoc'

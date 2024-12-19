@@ -150,6 +150,7 @@
     "@hcengineering/tags": "^0.6.16",
     "@hcengineering/task": "^0.6.20",
     "@hcengineering/text": "^0.6.5",
+    "@hcengineering/text-ydoc": "^0.6.0",
     "@hcengineering/telegram": "^0.6.21",
     "@hcengineering/tracker": "^0.6.24",
     "@hcengineering/collaboration": "^0.6.0",

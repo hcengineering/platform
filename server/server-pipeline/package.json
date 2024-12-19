@@ -119,7 +119,6 @@
     "@hcengineering/tracker-assets": "^0.6.0",
     "@hcengineering/board-assets": "^0.6.19",
     "@hcengineering/hr-assets": "^0.6.19",
-    "@hcengineering/bitrix-assets": "^0.6.0",
     "@hcengineering/request-assets": "^0.6.0",
     "@hcengineering/document-assets": "^0.6.0",
     "@hcengineering/controlled-documents-assets": "^0.1.0",
@@ -151,7 +150,6 @@
     "@hcengineering/tracker": "^0.6.24",
     "@hcengineering/board": "^0.6.19",
     "@hcengineering/hr": "^0.6.19",
-    "@hcengineering/bitrix": "^0.6.52",
     "@hcengineering/request": "^0.6.14",
     "@hcengineering/support": "^0.6.5",
     "@hcengineering/document": "^0.6.0",
@@ -171,7 +169,6 @@
     "@hcengineering/server-fulltext": "^0.6.0",
     "@hcengineering/server-fulltext-resources": "^0.6.0",
     "@hcengineering/survey": "^0.6.0",
-    "@hcengineering/survey-assets": "^0.6.0",
-    "@hcengineering/survey-resources": "^0.6.0"
+    "@hcengineering/survey-assets": "^0.6.0"
   }
 }

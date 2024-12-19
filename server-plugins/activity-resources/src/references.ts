@@ -14,7 +14,6 @@
 //
 
 import activity, { ActivityMessage, ActivityReference, UserMentionInfo } from '@hcengineering/activity'
-import { loadCollabJson } from '@hcengineering/collaboration'
 import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
@@ -51,26 +50,13 @@ import {
   toReceiverInfo,
   type NotificationProviderControl
 } from '@hcengineering/server-notification-resources'
-import {
-  areEqualJson,
-  extractReferences,
-  markupToPmNode,
-  pmNodeToMarkup,
-  yDocContentToNodes
-} from '@hcengineering/text'
+import { areEqualJson, extractReferences, markupToPmNode, pmNodeToMarkup } from '@hcengineering/text'
 
-export function isDocMentioned (doc: Ref<Doc>, content: string | Buffer): boolean {
+export function isDocMentioned (doc: Ref<Doc>, content: string): boolean {
   const references = []
 
-  if (content instanceof Buffer) {
-    const nodes = yDocContentToNodes(content)
-    for (const node of nodes) {
-      references.push(...extractReferences(node))
-    }
-  } else {
-    const doc = markupToPmNode(content)
-    references.push(...extractReferences(doc))
-  }
+  const node = markupToPmNode(content)
+  references.push(...extractReferences(node))
 
   for (const ref of references) {
     if (ref.objectId === doc) {
@@ -411,7 +397,7 @@ async function getCreateReferencesTxes (
 
   for (const attr of attributes.values()) {
     if (isMarkupType(attr.type._class)) {
-      const content = (createdDoc as any)[attr.name]?.toString() ?? ''
+      const content: string = (createdDoc as any)[attr.name]?.toString() ?? ''
       const attrReferences = getReferencesData(srcDocId, srcDocClass, attachedDocId, attachedDocClass, content)
 
       refs.push(...attrReferences)
@@ -419,11 +405,10 @@ async function getCreateReferencesTxes (
       const blobId = (createdDoc as any)[attr.name] as Ref<Blob>
       if (blobId != null) {
         try {
-          const markup = await loadCollabJson(ctx, storage, control.workspace, blobId)
-          if (markup !== undefined) {
-            const attrReferences = getReferencesData(srcDocId, srcDocClass, attachedDocId, attachedDocClass, markup)
-            refs.push(...attrReferences)
-          }
+          const buffer = await storage.read(ctx, control.workspace, blobId)
+          const markup = Buffer.concat(buffer as any).toString()
+          const attrReferences = getReferencesData(srcDocId, srcDocClass, attachedDocId, attachedDocClass, markup)
+          refs.push(...attrReferences)
         } catch {
           // do nothing, the collaborative doc does not sem to exist yet
         }
@@ -459,7 +444,7 @@ async function getUpdateReferencesTxes (
   for (const attr of attributes.values()) {
     if (isMarkupType(attr.type._class)) {
       hasReferenceAttrs = true
-      const content = (updatedDoc as any)[attr.name]?.toString() ?? ''
+      const content: string = (updatedDoc as any)[attr.name]?.toString() ?? ''
       const attrReferences = getReferencesData(srcDocId, srcDocClass, attachedDocId, attachedDocClass, content)
       references.push(...attrReferences)
     } else if (attr.type._class === core.class.TypeCollaborativeDoc) {
@@ -467,11 +452,10 @@ async function getUpdateReferencesTxes (
       try {
         const blobId = (updatedDoc as any)[attr.name] as Ref<Blob>
         if (blobId != null) {
-          const markup = await loadCollabJson(ctx, storage, control.workspace, blobId)
-          if (markup !== undefined) {
-            const attrReferences = getReferencesData(srcDocId, srcDocClass, attachedDocId, attachedDocClass, markup)
-            references.push(...attrReferences)
-          }
+          const buffer = await storage.read(ctx, control.workspace, blobId)
+          const markup = Buffer.concat(buffer as any).toString()
+          const attrReferences = getReferencesData(srcDocId, srcDocClass, attachedDocId, attachedDocClass, markup)
+          references.push(...attrReferences)
         }
       } catch {
         // do nothing, the collaborative doc does not sem to exist yet
@@ -507,20 +491,13 @@ export function getReferencesData (
   srcDocClass: Ref<Class<Doc>>,
   attachedDocId: Ref<Doc> | undefined,
   attachedDocClass: Ref<Class<Doc>> | undefined,
-  content: string | Buffer
+  content: string
 ): Array<Data<ActivityReference>> {
   const result: Array<Data<ActivityReference>> = []
   const references = []
 
-  if (content instanceof Buffer) {
-    const nodes = yDocContentToNodes(content)
-    for (const node of nodes) {
-      references.push(...extractReferences(node))
-    }
-  } else {
-    const doc = markupToPmNode(content)
-    references.push(...extractReferences(doc))
-  }
+  const doc = markupToPmNode(content)
+  references.push(...extractReferences(doc))
 
   for (const ref of references) {
     if (ref.objectId !== attachedDocId && ref.objectId !== srcDocId) {
