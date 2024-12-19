@@ -23,6 +23,7 @@ import core, {
   Doc,
   generateId,
   Hierarchy,
+  Markup,
   Ref,
   Space,
   Tx,
@@ -50,12 +51,12 @@ import {
   toReceiverInfo,
   type NotificationProviderControl
 } from '@hcengineering/server-notification-resources'
-import { areEqualJson, extractReferences, markupToPmNode, pmNodeToMarkup } from '@hcengineering/text'
+import { areEqualJson, extractReferences, jsonToMarkup, markupToJSON } from '@hcengineering/text'
 
 export function isDocMentioned (doc: Ref<Doc>, content: string): boolean {
   const references = []
 
-  const node = markupToPmNode(content)
+  const node = markupToJSON(content)
   references.push(...extractReferences(node))
 
   for (const ref of references) {
@@ -491,13 +492,13 @@ export function getReferencesData (
   srcDocClass: Ref<Class<Doc>>,
   attachedDocId: Ref<Doc> | undefined,
   attachedDocClass: Ref<Class<Doc>> | undefined,
-  content: string
+  content: Markup
 ): Array<Data<ActivityReference>> {
   const result: Array<Data<ActivityReference>> = []
   const references = []
 
-  const doc = markupToPmNode(content)
-  references.push(...extractReferences(doc))
+  const node = markupToJSON(content)
+  references.push(...extractReferences(node))
 
   for (const ref of references) {
     if (ref.objectId !== attachedDocId && ref.objectId !== srcDocId) {
@@ -507,7 +508,7 @@ export function getReferencesData (
         collection: 'references',
         srcDocId,
         srcDocClass,
-        message: ref.parentNode !== null ? pmNodeToMarkup(ref.parentNode) : '',
+        message: ref.parentNode !== null ? jsonToMarkup(ref.parentNode) : '',
         attachedDocId,
         attachedDocClass
       })

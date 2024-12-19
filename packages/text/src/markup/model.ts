@@ -84,6 +84,7 @@ export interface LinkMark extends MarkupMark {
 }
 
 /** @public */
-export interface ReferenceMark extends MarkupMark {
+export interface ReferenceMarkupNode extends MarkupNode {
+  type: MarkupNodeType.reference
   attrs: { id: string, label: string, objectclass: string }
 }

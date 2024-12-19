@@ -14,14 +14,6 @@
 //
 
 import { Node } from '@tiptap/core'
-import { Node as ProseMirrorNode } from '@tiptap/pm/model'
-
-/**
- * @public
- */
-export interface Comment {
-  parentNode: ProseMirrorNode | null
-}
 
 /**
  * @public
