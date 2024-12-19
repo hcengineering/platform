@@ -197,6 +197,7 @@ export interface ParentsNavigationModel {
   mainComponentIcon?: Asset
   navigationComponentProps?: Record<string, any>
   syncWithLocationQuery?: boolean
+  mergeWithLocationQuery?: boolean
   createComponent?: AnyComponent
   createComponentProps?: Record<string, any>
   createButton?: AnyComponent

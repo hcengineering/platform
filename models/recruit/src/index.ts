@@ -194,7 +194,7 @@ export function createModel (builder: Builder): void {
                 plainList: true
               },
               syncWithLocationQuery: false,
-              isNestedNavigator: true
+              mergeWithLocationQuery: true
             }
           },
           {

@@ -55,7 +55,7 @@
   export let mainComponentProps = {}
   export let showNavigator: boolean = false
   export let parentKey: string = navigationComponentProps?.parentKey
-  export let isNestedNavigator: boolean = false
+  export let mergeWithLocationQuery: boolean = false
 
   const FLOAT_LIMIT = 760
   let container: HTMLDivElement
@@ -71,7 +71,7 @@
   $: resultQuery = mergeQueries(query, mergeQueries(spaceQuery, parentQuery)) ?? {}
   $: navigatorQuery = mergeQueries(spaceQuery, searchQuery)
 
-  if (syncWithLocationQuery || isNestedNavigator) {
+  if (syncWithLocationQuery || mergeWithLocationQuery) {
     parentQuery = getLocation()?.query as any
     onDestroy(
       resolvedLocationStore.subscribe((newLocation) => {
