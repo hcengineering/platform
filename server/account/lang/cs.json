@@ -12,8 +12,8 @@
     "OtpText": "Potvrďte svou e-mailovou adresu pro přístup do {app}!\n\nVáš potvrzovací kód je uveden níže - zadejte jej do okna, ve kterém jste zahájili přihlášení do {app}.\n\n{code}\n\nPokud jste tento e-mail nevyžádali, nemusíte si dělat starosti — můžete jej bezpečně ignorovat.",
     "OtpHTML": "<h3>Potvrďte svou e-mailovou adresu pro přístup do {app}!</h3><p>Váš potvrzovací kód je uveden níže - zadejte jej do okna, ve kterém jste zahájili přihlášení do {app}.<p/><br/><b style=\"font-size:36px\">{code}</b><br/><br/><p>Pokud jste tento e-mail nevyžádali, nemusíte si dělat starosti — můžete jej bezpečně ignorovat.</p>",
     "OtpSubject": "{app}: potvrzovací kód {code}",
-    "ResentInviteText": "Byli jste znovu pozváni do {ws}. Použijte prosím následující odkaz pro připojení: {link}. Odkaz pro opětovné pozvání je platný po dobu {expHours} hodin.",
-    "ResentInviteHTML": "<p>Byli jste znovu pozváni do {ws}. Pro připojení klikněte na následující odkaz: <a href={link}>Připojit se</a></p><p>Pokud výše uvedený odkaz nefunguje, vložte následující odkaz do adresního řádku prohlížeče: {link}</p><p>Odkaz pro opětovné pozvání je platný po dobu {expHours} hodin.</p>",
-    "ResentInviteSubject": "Opětovné pozvání do {ws}"
+    "ResendInviteText": "Byli jste znovu pozváni do {ws}. Použijte prosím následující odkaz pro připojení: {link}. Odkaz pro opětovné pozvání je platný po dobu {expHours} hodin.",
+    "ResendInviteHTML": "<p>Byli jste znovu pozváni do {ws}. Pro připojení klikněte na následující odkaz: <a href={link}>Připojit se</a></p><p>Pokud výše uvedený odkaz nefunguje, vložte následující odkaz do adresního řádku prohlížeče: {link}</p><p>Odkaz pro opětovné pozvání je platný po dobu {expHours} hodin.</p>",
+    "ResendInviteSubject": "Opětovné pozvání do {ws}"
   }
 }

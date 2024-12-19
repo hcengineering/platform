@@ -28,9 +28,9 @@ export const accountPlugin = plugin(accountId, {
     InviteText: '' as IntlString,
     InviteHTML: '' as IntlString,
     InviteSubject: '' as IntlString,
-    ResentInviteText: '' as IntlString,
-    ResentInviteHTML: '' as IntlString,
-    ResentInviteSubject: '' as IntlString,
+    ResendInviteText: '' as IntlString,
+    ResendInviteHTML: '' as IntlString,
+    ResendInviteSubject: '' as IntlString,
     OtpText: '' as IntlString,
     OtpHTML: '' as IntlString,
     OtpSubject: '' as IntlString

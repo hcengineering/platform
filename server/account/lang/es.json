@@ -12,8 +12,8 @@
     "OtpText": "¡Confirma tu dirección de correo electrónico para acceder a {app}!\n\nTu código de confirmación está a continuación: ingrésalo en la ventana donde iniciaste sesión en {app}.\n\n{code}\n\nSi no solicitaste este correo electrónico, no hay de qué preocuparse; puedes ignorarlo con seguridad.",
     "OtpHTML": "<h3>¡Confirma tu dirección de correo electrónico para acceder a {app}!</h3><p>Tu código de confirmación está a continuación: ingrésalo en la ventana donde iniciaste sesión en {app}.<p/><br/><b style=\"font-size:36px\">{code}</b><br/><br/><p>Si no solicitaste este correo electrónico, no hay de qué preocuparse; puedes ignorarlo con seguridad.</p>",
     "OtpSubject": "Código de confirmación de {app}: {code}",
-    "ResentInviteText": "Has sido reinvitado a {ws}. Por favor, utiliza el siguiente enlace para unirte: {link}. El enlace de reinvitación es válido por {expHours} horas.",
-    "ResentInviteHTML": "<p>Has sido reinvitado a {ws}. Para unirte, haz clic en el enlace de abajo: <a href={link}>Unirse</a></p><p>Si el enlace de invitación anterior no funciona, pega el siguiente enlace en la barra de direcciones de tu navegador: {link}</p><p>El enlace de reinvitación es válido por {expHours} horas.</p>",
-    "ResentInviteSubject": "Reinvitación a {ws}"
+    "ResendInviteText": "Has sido reinvitado a {ws}. Por favor, utiliza el siguiente enlace para unirte: {link}. El enlace de reinvitación es válido por {expHours} horas.",
+    "ResendInviteHTML": "<p>Has sido reinvitado a {ws}. Para unirte, haz clic en el enlace de abajo: <a href={link}>Unirse</a></p><p>Si el enlace de invitación anterior no funciona, pega el siguiente enlace en la barra de direcciones de tu navegador: {link}</p><p>El enlace de reinvitación es válido por {expHours} horas.</p>",
+    "ResendInviteSubject": "Reinvitación a {ws}"
   }
 }

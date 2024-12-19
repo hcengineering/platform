@@ -2508,7 +2508,7 @@ export async function sendInvite (
  *
  * @public
  */
-export async function resentInvite (
+export async function resendInvite (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2553,9 +2553,9 @@ export async function resentInvite (
   const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
   const ws = wsPromise.workspaceName ?? wsPromise.workspace
   const lang = branding?.language
-  const text = await translate(accountPlugin.string.ResentInviteText, { link, ws, expHours }, lang)
-  const html = await translate(accountPlugin.string.ResentInviteHTML, { link, ws, expHours }, lang)
-  const subject = await translate(accountPlugin.string.ResentInviteSubject, { ws }, lang)
+  const text = await translate(accountPlugin.string.ResendInviteText, { link, ws, expHours }, lang)
+  const html = await translate(accountPlugin.string.ResendInviteHTML, { link, ws, expHours }, lang)
+  const subject = await translate(accountPlugin.string.ResendInviteSubject, { ws }, lang)
 
   const to = emailMask
   await fetch(concatLink(sesURL, '/send'), {
@@ -2570,7 +2570,7 @@ export async function resentInvite (
       to
     })
   })
-  ctx.info('Invite extended and email sent', { email: emailMask, workspace: wsPromise.workspace, link })
+  ctx.info('Invite resend and email sent', { email: emailMask, workspace: wsPromise.workspace, link })
 }
 
 async function deactivatePersonAccount (
@@ -2905,7 +2905,7 @@ export function getMethods (hasSignUp: boolean = true): Record<string, AccountMe
     requestPassword: wrap(requestPassword),
     restorePassword: wrap(restorePassword),
     sendInvite: wrap(sendInvite),
-    resentInvite: wrap(resentInvite),
+    resendInvite: wrap(resendInvite),
     confirm: wrap(confirm),
     getAccountInfoByToken: wrap(getAccountInfoByToken),
     createMissingEmployee: wrap(createMissingEmployee),

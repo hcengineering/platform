@@ -920,8 +920,8 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: contact.actionImpl.ResentInvite,
-      label: contact.string.ResentInvite,
+      action: contact.actionImpl.ResendInvite,
+      label: contact.string.ResendInvite,
       query: {},
       category: contact.category.Contact,
       target: contact.mixin.Employee,
@@ -931,9 +931,9 @@ export function createModel (builder: Builder): void {
         group: 'remove'
       },
       secured: true,
-      visibilityTester: contact.function.CanExtendInvitation
+      visibilityTester: contact.function.CanResendInvitation
     },
-    contact.action.ResentInvite
+    contact.action.ResendInvite
   )
 
   createAction(

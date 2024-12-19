@@ -60,8 +60,8 @@ export default mergeIds(contactId, contact, {
     AddMember: '' as IntlString,
     KickEmployee: '' as IntlString,
     KickEmployeeDescr: '' as IntlString,
-    ResentInvite: '' as IntlString,
-    ResentInviteDescr: '' as IntlString,
+    ResendInvite: '' as IntlString,
+    ResendInviteDescr: '' as IntlString,
     Email: '' as IntlString,
     CreateEmployee: '' as IntlString,
     Inactive: '' as IntlString,
@@ -94,7 +94,7 @@ export default mergeIds(contactId, contact, {
     FilterChannelHasMessagesResult: '' as FilterFunction,
     FilterChannelHasNewMessagesResult: '' as FilterFunction,
     PersonTooltipProvider: '' as Resource<(client: Client, doc?: Doc | null) => Promise<LabelAndProps | undefined>>,
-    CanExtendInvitation: '' as Resource<ViewActionAvailabilityFunction>
+    CanResendInvitation: '' as Resource<ViewActionAvailabilityFunction>
   },
   aggregation: {
     CreatePersonAggregationManager: '' as CreateAggregationManagerFunc,

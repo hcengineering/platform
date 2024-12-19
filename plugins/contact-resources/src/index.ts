@@ -126,7 +126,7 @@ import IconMembers from './components/icons/Members.svelte'
 import ContactNamePresenter from './components/ContactNamePresenter.svelte'
 
 import { get, writable } from 'svelte/store'
-import { canExtendInvitation } from './visibilityTester'
+import { canResendInvitation } from './visibilityTester'
 import contact from './plugin'
 import {
   channelIdentifierProvider,
@@ -268,18 +268,18 @@ async function doContactQuery<T extends Contact> (
   return (await client.findAll(_class, q, { limit: 200 })).map(toObjectSearchResult)
 }
 
-async function resentInvite (doc: Person): Promise<void> {
+async function resendInvite (doc: Person): Promise<void> {
   const client = getClient()
 
   const accounts = client.getModel().getAccountByPersonId(doc._id)
 
   showPopup(MessageBox, {
-    label: contact.string.ResentInvite,
-    message: contact.string.ResentInviteDescr,
+    label: contact.string.ResendInvite,
+    message: contact.string.ResendInviteDescr,
     action: async () => {
-      const _resentInvite = await getResource(login.function.ResentInvite)
+      const _resendInvite = await getResource(login.function.ResendInvite)
       for (const i of accounts) {
-        await _resentInvite(i.email)
+        await _resendInvite(i.email)
       }
     }
   })
@@ -346,7 +346,7 @@ export default async (): Promise<Resources> => ({
   actionImpl: {
     KickEmployee: kickEmployee,
     OpenChannel: openChannelURL,
-    ResentInvite: resentInvite
+    ResendInvite: resendInvite
   },
   activity: {
     NameChangedActivityMessage
@@ -465,7 +465,7 @@ export default async (): Promise<Resources> => ({
     ChannelIdentifierProvider: channelIdentifierProvider,
     SetPersonStore: setStore,
     PersonFilterFunction: filterPerson,
-    CanExtendInvitation: canExtendInvitation
+    CanResendInvitation: canResendInvitation
   },
   resolver: {
     Location: resolveLocation,

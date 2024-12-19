@@ -18,6 +18,6 @@ import {
   type Employee
 } from '@hcengineering/contact'
 
-export async function canExtendInvitation (employee: Employee): Promise<boolean> {
+export async function canResendInvitation (employee: Employee): Promise<boolean> {
   return !employee.active
 }
