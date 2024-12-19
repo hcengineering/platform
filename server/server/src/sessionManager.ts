@@ -415,7 +415,7 @@ class TSessionManager implements SessionManager {
         : null) ?? null
 
     if (workspace === undefined) {
-      ctx.warn('open workspace', {
+      ctx.info('open workspace', {
         email: token.email,
         workspace: workspaceInfo.workspaceId,
         wsUrl: workspaceInfo.workspaceUrl,
@@ -469,7 +469,14 @@ class TSessionManager implements SessionManager {
         })
         return { upgrade: true }
       }
-      pipeline = await ctx.with('💤 wait', { workspaceName }, () => (workspace as Workspace).pipeline)
+      try {
+        pipeline = await ctx.with('💤 wait', { workspaceName }, () => (workspace as Workspace).pipeline)
+      } catch (err: any) {
+        // Failed to create pipeline, etc
+        Analytics.handleError(err)
+        this.workspaces.delete(wsString)
+        throw err
+      }
     }
 
     const session = this.createSession(
@@ -794,7 +801,7 @@ class TSessionManager implements SessionManager {
     ignoreSocket?: ConnectionSocket
   ): Promise<void> {
     if (LOGGING_ENABLED) {
-      this.ctx.warn('closing workspace', {
+      this.ctx.info('closing workspace', {
         workspace: workspace.id,
         wsName: workspace.workspaceName,
         code,

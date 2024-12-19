@@ -22,10 +22,12 @@ const { Configuration } = require('webpack')
 
 const mode = process.env.NODE_ENV || 'development'
 const prod = mode === 'production'
-const devServer = (process.env.CLIENT_TYPE ?? '') === 'dev-server'
-const devProduction = (process.env.CLIENT_TYPE ?? '') === 'dev-production'
-const devProductionHuly = (process.env.CLIENT_TYPE ?? '') === 'dev-huly'
-const devProductionBold = (process.env.CLIENT_TYPE ?? '') === 'dev-bold'
+const clientType = process.env.CLIENT_TYPE ?? ''
+const devServer = clientType === 'dev-server'
+const devServerWorker = clientType === 'dev-worker'
+const devProduction = clientType === 'dev-production'
+const devProductionHuly = clientType === 'dev-huly'
+const devProductionBold = clientType === 'dev-bold'
 const dev =
   (process.env.CLIENT_TYPE ?? '') === 'dev' || devServer || devProduction || devProductionHuly || devProductionBold
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
@@ -37,6 +39,117 @@ const doValidate = !prod || process.env.DO_VALIDATE === 'true'
 const useCache = process.env.USE_CACHE === 'true'
 
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+
+const devProxy = {
+  '/account': {
+    target: 'http://localhost:3000',
+    changeOrigin: true,
+    pathRewrite: { '^/account': '' },
+    logLevel: 'debug'
+  },
+  '/files': {
+    target: 'http://localhost:8087',
+    changeOrigin: true,
+    logLevel: 'debug'
+  },
+  '/api/v1': {
+    target: 'http://localhost:8087',
+    changeOrigin: true,
+    logLevel: 'debug'
+  },
+  '/import': {
+    target: 'http://localhost:8087',
+    changeOrigin: true,
+    logLevel: 'debug'
+  },
+  '/rekoni/recognize': {
+    target: 'http://localhost:4004',
+    changeOrigin: true,
+    pathRewrite: { '^/rekoni/recognize': '/recognize' },
+    logLevel: 'debug'
+  }
+}
+
+const devHulyProxy = {
+  '/account': {
+    target: 'https://account.huly.app/',
+    changeOrigin: true,
+    pathRewrite: { '^/account': '' },
+    logLevel: 'debug'
+  },
+  '/api/v1': {
+    target: 'http://huly.app',
+    changeOrigin: true,
+    logLevel: 'debug'
+  },
+  '/files': {
+    target: 'https://huly.app/files',
+    changeOrigin: true,
+    pathRewrite: { '^/files': '' },
+    logLevel: 'debug'
+  },
+  '/rekoni/recognize': {
+    target: 'https://rekoni.huly.app',
+    changeOrigin: true,
+    pathRewrite: { '^/rekoni/recognize': '/recognize' },
+    logLevel: 'debug'
+  }
+}
+
+const devBoldProxy = {
+  '/account': {
+    target: 'https://account.bold.ru/',
+    changeOrigin: true,
+    pathRewrite: { '^/account': '' },
+    logLevel: 'debug'
+  },
+  '/files': {
+    target: 'https://app.bold.ru/files',
+    changeOrigin: true,
+    pathRewrite: { '^/files': '' },
+    logLevel: 'debug'
+  },
+  '/api/v1': {
+    target: 'http://app.bold.ru',
+    changeOrigin: true,
+    logLevel: 'debug'
+  },
+  '/rekoni/recognize': {
+    target: 'https://rekoni.bold.ru',
+    changeOrigin: true,
+    pathRewrite: { '^/rekoni/recognize': '/recognize' },
+    logLevel: 'debug'
+  }
+}
+
+const devFrontProxy = {
+  '/account': {
+    target: 'https://account.hc.engineering/',
+    changeOrigin: true,
+    pathRewrite: { '^/account': '' },
+    logLevel: 'debug'
+  },
+  '/files': {
+    target: 'https://front.hc.engineering/files',
+    changeOrigin: true,
+    pathRewrite: { '^/files': '' },
+    logLevel: 'debug'
+  },
+  '/rekoni/recognize': {
+    target: 'https://rekoni.hc.enigneering',
+    changeOrigin: true,
+    pathRewrite: { '^/rekoni/recognize': '/recognize' },
+    logLevel: 'debug'
+  }
+}
+
+const proxy = {
+  'dev-worker': devProxy,
+  'dev-server': devProxy,
+  'dev-production': devFrontProxy,
+  'dev-bold': devBoldProxy,
+  'dev-huly': devHulyProxy
+}
 
 /**
  * @type {Configuration}
@@ -343,109 +456,7 @@ module.exports = [
         },
         progress: false
       },
-      proxy:
-        devServer && !devProduction && !devProductionHuly && !devProductionBold
-          ? {
-              '/account': {
-                target: 'http://localhost:3000',
-                changeOrigin: true,
-                pathRewrite: { '^/account': '' },
-                logLevel: 'debug'
-              },
-              '/files': {
-                target: 'http://localhost:8087',
-                changeOrigin: true,
-                logLevel: 'debug'
-              },
-              '/api/v1': {
-                target: 'http://localhost:8087',
-                changeOrigin: true,
-                logLevel: 'debug'
-              },
-              '/import': {
-                target: 'http://localhost:8087',
-                changeOrigin: true,
-                logLevel: 'debug'
-              },
-              '/rekoni/recognize': {
-                target: 'http://localhost:4004',
-                changeOrigin: true,
-                pathRewrite: { '^/rekoni/recognize': '/recognize' },
-                logLevel: 'debug'
-              }
-            }
-          : !devProductionHuly && !devProductionBold
-          ? {
-              '/account': {
-                target: 'https://account.hc.engineering/',
-                changeOrigin: true,
-                pathRewrite: { '^/account': '' },
-                logLevel: 'debug'
-              },
-              '/files': {
-                target: 'https://front.hc.engineering/files',
-                changeOrigin: true,
-                pathRewrite: { '^/files': '' },
-                logLevel: 'debug'
-              },
-              '/rekoni/recognize': {
-                target: 'https://rekoni.hc.enigneering',
-                changeOrigin: true,
-                pathRewrite: { '^/rekoni/recognize': '/recognize' },
-                logLevel: 'debug'
-              }
-            }
-          : !devProductionBold
-          ? {
-              '/account': {
-                target: 'https://account.huly.app/',
-                changeOrigin: true,
-                pathRewrite: { '^/account': '' },
-                logLevel: 'debug'
-              },
-              '/api/v1': {
-                target: 'http://huly.app',
-                changeOrigin: true,
-                logLevel: 'debug'
-              },
-              '/files': {
-                target: 'https://huly.app/files',
-                changeOrigin: true,
-                pathRewrite: { '^/files': '' },
-                logLevel: 'debug'
-              },
-              '/rekoni/recognize': {
-                target: 'https://rekoni.huly.app',
-                changeOrigin: true,
-                pathRewrite: { '^/rekoni/recognize': '/recognize' },
-                logLevel: 'debug'
-              }
-            }
-          : {
-              '/account': {
-                target: 'https://account.bold.ru/',
-                changeOrigin: true,
-                pathRewrite: { '^/account': '' },
-                logLevel: 'debug'
-              },
-              '/files': {
-                target: 'https://app.bold.ru/files',
-                changeOrigin: true,
-                pathRewrite: { '^/files': '' },
-                logLevel: 'debug'
-              },
-              '/api/v1': {
-                target: 'http://app.bold.ru',
-                changeOrigin: true,
-                logLevel: 'debug'
-              },
-              '/rekoni/recognize': {
-                target: 'https://rekoni.bold.ru',
-                changeOrigin: true,
-                pathRewrite: { '^/rekoni/recognize': '/recognize' },
-                logLevel: 'debug'
-              }
-            }
+      proxy: proxy[clientType]
     }
   }
 ]

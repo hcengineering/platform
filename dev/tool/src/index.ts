@@ -58,7 +58,14 @@ import serverClientPlugin, {
   listAccountWorkspaces,
   updateBackupInfo
 } from '@hcengineering/server-client'
-import { createBackupPipeline, getConfig, getWorkspaceDestroyAdapter } from '@hcengineering/server-pipeline'
+import {
+  createBackupPipeline,
+  getConfig,
+  getWorkspaceDestroyAdapter,
+  registerAdapterFactry,
+  registerDestroyFactry,
+  registerTxAdapterFactry
+} from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import { FileModelLogger } from '@hcengineering/server-tool'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
@@ -89,12 +96,19 @@ import core, {
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import contact from '@hcengineering/model-contact'
-import { getMongoClient, getWorkspaceMongoDB, shutdown } from '@hcengineering/mongo'
+import {
+  createMongoAdapter,
+  createMongoDestroyAdapter,
+  createMongoTxAdapter,
+  getMongoClient,
+  getWorkspaceMongoDB,
+  shutdown
+} from '@hcengineering/mongo'
 import { backupDownload } from '@hcengineering/server-backup/src/backup'
 
-import { createDatalakeClient, DatalakeService, type DatalakeConfig } from '@hcengineering/datalake'
+import { createDatalakeClient, CONFIG_KIND as DATALAKE_CONFIG_KIND, type DatalakeConfig } from '@hcengineering/datalake'
 import { getModelVersion } from '@hcengineering/model-all'
-import { S3Service, type S3Config } from '@hcengineering/s3'
+import { CONFIG_KIND as S3_CONFIG_KIND, S3Service, type S3Config } from '@hcengineering/s3'
 import type { PipelineFactory, StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
@@ -125,6 +139,7 @@ import { restoreControlledDocContentMongo, restoreWikiContentMongo } from './mar
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount } from './renameAccount'
 import { copyToDatalake, moveFiles, showLostFiles } from './storage'
+import { createPostgresTxAdapter, createPostgresAdapter, createPostgreeDestroyAdapter } from '@hcengineering/postgres'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -151,6 +166,14 @@ export function devTool (
   extendProgram?: (prog: Command) => void
 ): void {
   const toolCtx = new MeasureMetricsContext('tool', {})
+
+  registerTxAdapterFactry('mongodb', createMongoTxAdapter)
+  registerAdapterFactry('mongodb', createMongoAdapter)
+  registerDestroyFactry('mongodb', createMongoDestroyAdapter)
+
+  registerTxAdapterFactry('postgresql', createPostgresTxAdapter, true)
+  registerAdapterFactry('postgresql', createPostgresAdapter, true)
+  registerDestroyFactry('postgresql', createPostgreeDestroyAdapter, true)
 
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {
@@ -1170,12 +1193,12 @@ export function devTool (
 
       const storageConfig = storageConfigFromEnv(process.env.STORAGE)
 
-      const storages = storageConfig.storages.filter((p) => p.kind === S3Service.config) as S3Config[]
+      const storages = storageConfig.storages.filter((p) => p.kind === S3_CONFIG_KIND) as S3Config[]
       if (storages.length === 0) {
         throw new Error('S3 storage config is required')
       }
 
-      const datalakeConfig = storageConfig.storages.find((p) => p.kind === DatalakeService.config)
+      const datalakeConfig = storageConfig.storages.find((p) => p.kind === DATALAKE_CONFIG_KIND)
       if (datalakeConfig === undefined) {
         throw new Error('Datalake storage config is required')
       }

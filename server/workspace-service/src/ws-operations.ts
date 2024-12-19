@@ -15,14 +15,20 @@ import core, {
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation, type ModelLogger } from '@hcengineering/model'
+import { createMongoTxAdapter, createMongoAdapter, createMongoDestroyAdapter } from '@hcengineering/mongo'
+import { createPostgresTxAdapter, createPostgresAdapter, createPostgreeDestroyAdapter } from '@hcengineering/postgres'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { SessionDataImpl, wrapPipeline, type Pipeline, type StorageAdapter } from '@hcengineering/server-core'
 import {
   getServerPipeline,
   getTxAdapterFactory,
+  registerAdapterFactry,
+  registerDestroyFactry,
   registerServerPlugins,
-  registerStringLoaders
+  registerStringLoaders,
+  registerTxAdapterFactry
 } from '@hcengineering/server-pipeline'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { generateToken } from '@hcengineering/server-token'
 import { initializeWorkspace, initModel, prepareTools, updateModel, upgradeModel } from '@hcengineering/server-tool'
 
@@ -72,10 +78,21 @@ export async function createWorkspace (
     const { dbUrl } = prepareTools([])
     const hierarchy = new Hierarchy()
     const modelDb = new ModelDb(hierarchy)
+
+    registerTxAdapterFactry('mongodb', createMongoTxAdapter)
+    registerAdapterFactry('mongodb', createMongoAdapter)
+    registerDestroyFactry('mongodb', createMongoDestroyAdapter)
+
+    registerTxAdapterFactry('postgresql', createPostgresTxAdapter, true)
+    registerAdapterFactry('postgresql', createPostgresAdapter, true)
+    registerDestroyFactry('postgresql', createPostgreeDestroyAdapter, true)
     registerServerPlugins()
     registerStringLoaders()
 
-    const { pipeline, storageAdapter } = await getServerPipeline(ctx, txes, dbUrl, wsUrl)
+    const storageConfig = storageConfigFromEnv()
+    const storageAdapter = buildStorageFromConfig(storageConfig)
+
+    const pipeline = await getServerPipeline(ctx, txes, dbUrl, wsUrl, storageAdapter)
 
     try {
       const txFactory = getTxAdapterFactory(ctx, dbUrl, wsUrl, null, {
@@ -153,16 +170,31 @@ export async function upgradeWorkspace (
 ): Promise<void> {
   const { dbUrl } = prepareTools([])
   let pipeline: Pipeline | undefined
-  let storageAdapter: StorageAdapter | undefined
+  registerTxAdapterFactry('mongodb', createMongoTxAdapter)
+  registerAdapterFactry('mongodb', createMongoAdapter)
+  registerDestroyFactry('mongodb', createMongoDestroyAdapter)
+
+  registerTxAdapterFactry('postgresql', createPostgresTxAdapter, true)
+  registerAdapterFactry('postgresql', createPostgresAdapter, true)
+  registerDestroyFactry('postgresql', createPostgreeDestroyAdapter, true)
 
   registerServerPlugins()
   registerStringLoaders()
+
+  const storageConfig = storageConfigFromEnv()
+  const storageAdapter = buildStorageFromConfig(storageConfig)
   try {
-    ;({ pipeline, storageAdapter } = await getServerPipeline(ctx, txes, dbUrl, {
-      name: ws.workspace,
-      workspaceName: ws.workspaceName ?? '',
-      workspaceUrl: ws.workspaceUrl ?? ''
-    }))
+    pipeline = await getServerPipeline(
+      ctx,
+      txes,
+      dbUrl,
+      {
+        name: ws.workspace,
+        workspaceName: ws.workspaceName ?? '',
+        workspaceUrl: ws.workspaceUrl ?? ''
+      },
+      storageAdapter
+    )
     if (pipeline === undefined || storageAdapter === undefined) {
       return
     }

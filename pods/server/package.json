@@ -75,6 +75,7 @@
     "ws": "^8.18.0",
     "bufferutil": "^4.0.8",
     "msgpackr": "^1.11.0",
-    "msgpackr-extract": "^3.0.3"
+    "msgpackr-extract": "^3.0.3",
+    "@hcengineering/postgres": "^0.6.0"
   }
 }

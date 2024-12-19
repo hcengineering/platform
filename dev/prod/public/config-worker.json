@@ -1,0 +1,53 @@
+{
+  "ACCOUNTS_URL": "https://account.hc.engineering/",
+
+  "AI_URL": "https://ai.hc.engineering",
+  
+  "ANALYTICS_COLLECTOR_URL": "https://collector.hc.engineering",
+  
+  "BRANDING_URL": "https://front.hc.engineering/stage-branding_v2.json",
+  
+  "CALENDAR_URL": "https://calendar.hc.engineering/",
+  
+  "COLLABORATOR_URL": "wss://collaborator.hc.engineering",
+  
+  "DESKTOP_UPDATES_CHANNEL": "front",
+  
+  "FILES_URL": "https://dl.hc.engineering/blob/:workspace/:blobId",
+  
+  "GITHUB_APP": "huly-github-staging",
+  
+  "GITHUB_CLIENTID": "Iv1.cd9d3f7987474b5e" ,
+  
+  "GITHUB_URL": "https://github.hc.engineering",
+  
+  "GMAIL_URL": "https://gmail.hc.engineering/" ,
+  
+  "INTERCOM_API_URL": "",
+  
+  "INTERCOM_APP_ID": "",
+    
+  "LOVE_ENDPOINT": "https://love.hc.engineering/",
+  
+  "MODEL_VERSION": "",
+  
+  "PREVIEW_CONFIG": "https://dl.hc.engineering/image/fit=scale-down,width=:size/:workspace/:blobId",
+  
+  "PRINT_URL": "https://print.hc.engineering",
+    
+  "REKONI_URL": "https://rekoni.hc.engineering",
+  
+  "SIGN_URL": "https://sign.hc.engineering",
+  
+  "STATS_URL": "https://stats.hc.engineering",
+  
+  "TELEGRAM_BOT_URL": "https://telegram-bot.hc.engineering",
+  
+  "TELEGRAM_URL": "https://telegram.hc.engineering",
+  
+  "UPLOAD_CONFIG": "",
+  
+  "UPLOAD_URL": "https://dl.hc.engineering/upload/form-data/:workspace",  
+  "USE_BINARY_PROTOCOL": false,
+  "TRANSACTOR_OVERRIDE": "wss://cloud-transactor.andrey-47f.workers.dev"
+}

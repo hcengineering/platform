@@ -37,8 +37,6 @@ import {
   TriggersMiddleware,
   TxMiddleware
 } from '@hcengineering/middleware'
-import { createMongoAdapter, createMongoDestroyAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
-import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
 import {
   createBenchmarkAdapter,
   createInMemoryAdapter,
@@ -52,12 +50,10 @@ import {
   type PipelineContext,
   type PipelineFactory,
   type StorageAdapter,
-  type StorageConfiguration,
   type WorkspaceDestroyAdapter
 } from '@hcengineering/server-core'
-import { buildStorageFromConfig, createStorageDataAdapter, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { generateToken } from '@hcengineering/server-token'
-
+import { createStorageDataAdapter } from './blobStorage'
 /**
  * @public
  */
@@ -171,6 +167,7 @@ export function createBackupPipeline (
     const middlewares: MiddlewareCreator[] = [
       LowLevelMiddleware.create,
       ContextNameMiddleware.create,
+      // ConnectionMgrMiddleware.create,
       DomainFindMiddleware.create,
       DBAdapterInitMiddleware.create,
       ModelMiddleware.create(systemTx),
@@ -195,37 +192,74 @@ export async function getServerPipeline (
   model: Tx[],
   dbUrl: string,
   wsUrl: WorkspaceIdWithUrl,
+  storageAdapter: StorageAdapter,
   opt?: {
-    storageConfig: string
     disableTriggers?: boolean
   }
-): Promise<{
-    pipeline: Pipeline
-    storageAdapter: StorageAdapter
-  }> {
-  const storageConfig: StorageConfiguration = storageConfigFromEnv(opt?.storageConfig)
-
-  const storageAdapter = buildStorageFromConfig(storageConfig)
-
+): Promise<Pipeline> {
   const pipelineFactory = createServerPipeline(ctx, dbUrl, model, {
     externalStorage: storageAdapter,
     usePassedCtx: true,
     disableTriggers: opt?.disableTriggers ?? false
   })
 
-  try {
-    return {
-      pipeline: await pipelineFactory(ctx, wsUrl, true, () => {}, null),
-      storageAdapter
-    }
-  } catch (err: any) {
-    await storageAdapter.close()
-    throw err
+  return await pipelineFactory(ctx, wsUrl, true, () => {}, null)
+}
+
+const txAdapterFactories: Record<string, DbAdapterFactory> = {}
+const adapterFactories: Record<string, DbAdapterFactory> = {}
+const destroyFactories: Record<string, (url: string) => WorkspaceDestroyAdapter> = {}
+
+export function registerTxAdapterFactry (name: string, factory: DbAdapterFactory, useAsDefault: boolean = true): void {
+  txAdapterFactories[name] = factory
+  if (useAsDefault) {
+    txAdapterFactories[''] = factory
   }
 }
 
+export function registerAdapterFactry (name: string, factory: DbAdapterFactory, useAsDefault: boolean = true): void {
+  adapterFactories[name] = factory
+  if (useAsDefault) {
+    adapterFactories[''] = factory
+  }
+}
+
+export function registerDestroyFactry (
+  name: string,
+  factory: (url: string) => WorkspaceDestroyAdapter,
+  useAsDefault: boolean = true
+): void {
+  destroyFactories[name] = factory
+  if (useAsDefault) {
+    destroyFactories[''] = factory
+  }
+}
+
+function matchTxAdapterFactory (dbUrl: string): DbAdapterFactory {
+  for (const [k, v] of Object.entries(txAdapterFactories)) {
+    if (dbUrl.startsWith(k)) {
+      return v
+    }
+  }
+  return txAdapterFactories['']
+}
+
+function matchAdapterFactory (dbUrl: string): DbAdapterFactory {
+  for (const [k, v] of Object.entries(adapterFactories)) {
+    if (dbUrl.startsWith(k)) {
+      return v
+    }
+  }
+  return adapterFactories['']
+}
+
 export function getWorkspaceDestroyAdapter (dbUrl: string): WorkspaceDestroyAdapter {
-  return dbUrl.startsWith('mongodb') ? createMongoDestroyAdapter(dbUrl) : createPostgreeDestroyAdapter(dbUrl)
+  for (const [k, v] of Object.entries(destroyFactories)) {
+    if (dbUrl.startsWith(k)) {
+      return v(dbUrl)
+    }
+  }
+  return destroyFactories[''](dbUrl)
 }
 
 export function getConfig (
@@ -255,11 +289,11 @@ export function getConfig (
     defaultAdapter: extensions?.defaultAdapter ?? 'Main',
     adapters: {
       Tx: {
-        factory: dbUrl.startsWith('mongodb') ? createMongoTxAdapter : createPostgresTxAdapter,
+        factory: matchTxAdapterFactory(dbUrl),
         url: dbUrl
       },
       Main: {
-        factory: dbUrl.startsWith('mongodb') ? createMongoAdapter : createPostgresAdapter,
+        factory: matchAdapterFactory(dbUrl),
         url: dbUrl
       },
       Null: {

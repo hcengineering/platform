@@ -1,6 +1,6 @@
-import { DatalakeService, type DatalakeConfig } from '@hcengineering/datalake'
-import { MinioConfig, MinioService, addMinioFallback } from '@hcengineering/minio'
-import { S3Service, type S3Config } from '@hcengineering/s3'
+import { CONFIG_KIND as DATALAKE_CONFIG_KIND, DatalakeService, type DatalakeConfig } from '@hcengineering/datalake'
+import { CONFIG_KIND as MINIO_CONFIG_KIND, MinioConfig, MinioService, addMinioFallback } from '@hcengineering/minio'
+import { CONFIG_KIND as S3_CONFIG_KIND, S3Service, type S3Config } from '@hcengineering/s3'
 import { StorageAdapter, StorageConfiguration, type StorageConfig } from '@hcengineering/server-core'
 import { FallbackStorageAdapter, buildStorage } from './fallback'
 
@@ -77,19 +77,19 @@ export function parseStorageEnv (storageEnv: string, storageConfig: StorageConfi
 
 export function createStorageFromConfig (config: StorageConfig): StorageAdapter {
   const kind = config.kind
-  if (kind === MinioService.config) {
+  if (kind === MINIO_CONFIG_KIND) {
     const c = config as MinioConfig
     if (c.endpoint == null || c.accessKey == null || c.secretKey == null) {
       throw new Error('One of endpoint/accessKey/secretKey values are not specified')
     }
     return new MinioService(c)
-  } else if (kind === S3Service.config) {
+  } else if (kind === S3_CONFIG_KIND) {
     const c = config as S3Config
     if (c.endpoint == null || c.accessKey == null || c.secretKey == null) {
       throw new Error('One of endpoint/accessKey/secretKey values are not specified')
     }
     return new S3Service(c)
-  } else if (kind === DatalakeService.config) {
+  } else if (kind === DATALAKE_CONFIG_KIND) {
     const c = config as DatalakeConfig
     if (c.endpoint == null) {
       throw new Error('Endpoint value is not specified')
