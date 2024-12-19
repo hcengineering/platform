@@ -9,7 +9,9 @@
     "build": "compile transpile src",
     "validate": "compile validate",
     "format": "format src",
-    "build:watch": "compile"
+    "build:watch": "compile",
+    "bundle": "esbuild src/index.ts --bundle --platform=node --outfile=dist/bundle.js",
+    "package": "tar -czf dist.tgz dist/"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "workspace:*",
