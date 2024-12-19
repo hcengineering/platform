@@ -11,6 +11,9 @@
     "InviteSubject": "Pozvánka do {ws}",
     "OtpText": "Potvrďte svou e-mailovou adresu pro přístup do {app}!\n\nVáš potvrzovací kód je uveden níže - zadejte jej do okna, ve kterém jste zahájili přihlášení do {app}.\n\n{code}\n\nPokud jste tento e-mail nevyžádali, nemusíte si dělat starosti — můžete jej bezpečně ignorovat.",
     "OtpHTML": "<h3>Potvrďte svou e-mailovou adresu pro přístup do {app}!</h3><p>Váš potvrzovací kód je uveden níže - zadejte jej do okna, ve kterém jste zahájili přihlášení do {app}.<p/><br/><b style=\"font-size:36px\">{code}</b><br/><br/><p>Pokud jste tento e-mail nevyžádali, nemusíte si dělat starosti — můžete jej bezpečně ignorovat.</p>",
-    "OtpSubject": "{app}: potvrzovací kód {code}"
+    "OtpSubject": "{app}: potvrzovací kód {code}",
+    "ExtendInviteText": "Platnost pozvánky do {ws} byla prodloužena. Prosím, použijte následující odkaz pro připojení: {link}. Prodloužený odkaz je platný {expHours} hodin.",
+    "ExtendInviteHTML": "<p>Platnost pozvánky do {ws} byla prodloužena. Pro připojení klikněte na následující odkaz: <a href={link}>Připojit se</a></p><p>Pokud výše uvedený odkaz nefunguje, zkopírujte tento odkaz a vložte jej do adresního řádku prohlížeče: {link}</p><p>Prodloužený odkaz je platný {expHours} hodin.</p>",
+    "ExtendInviteSubject": "Prodloužená pozvánka do {ws}"
   }
 }

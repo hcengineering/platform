@@ -18,6 +18,7 @@
     "WorkspaceRateLimit": "服务器繁忙，请稍后再试",
     "AccountAlreadyConfirmed": "账户已确认",
     "WorkspaceAlreadyExists": "工作区已存在",
-    "InvalidOtp": "无效的代码"
+    "InvalidOtp": "无效的代码",
+    "InviteNotFound": "未找到 id 为 {email} 的邀请。"
   }
 }

@@ -18,6 +18,7 @@
     "WorkspaceRateLimit": "Server je zaneprázdněný. Prosím, chvíli počkejte a zkuste to znovu",
     "AccountAlreadyConfirmed": "Účet již byl potvrzen",
     "WorkspaceAlreadyExists": "Pracovní prostor již existuje",
-    "InvalidOtp": "Neplatný kód"
+    "InvalidOtp": "Neplatný kód",
+    "InviteNotFound": "Pozvánka s email:{email} nebyla nalezena."
   }
 }

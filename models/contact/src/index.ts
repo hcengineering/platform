@@ -920,6 +920,27 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
+      action: contact.actionImpl.ExtendInvite,
+      label: contact.string.ExtendInvite,
+      query: {
+        active: true
+      },
+      category: contact.category.Contact,
+      target: contact.mixin.Employee,
+      input: 'focus',
+      context: {
+        mode: ['context'],
+        group: 'remove'
+      },
+      secured: true,
+      visibilityTester: contact.function.CanExtendInvitation
+    },
+    contact.action.ExtendInvite
+  )
+
+  createAction(
+    builder,
+    {
       action: contact.actionImpl.OpenChannel,
       category: contact.category.Channel,
       label: contact.string.Channel,

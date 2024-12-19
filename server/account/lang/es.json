@@ -11,6 +11,9 @@
     "InviteSubject": "Invitación a {ws}",
     "OtpText": "¡Confirma tu dirección de correo electrónico para acceder a {app}!\n\nTu código de confirmación está a continuación: ingrésalo en la ventana donde iniciaste sesión en {app}.\n\n{code}\n\nSi no solicitaste este correo electrónico, no hay de qué preocuparse; puedes ignorarlo con seguridad.",
     "OtpHTML": "<h3>¡Confirma tu dirección de correo electrónico para acceder a {app}!</h3><p>Tu código de confirmación está a continuación: ingrésalo en la ventana donde iniciaste sesión en {app}.<p/><br/><b style=\"font-size:36px\">{code}</b><br/><br/><p>Si no solicitaste este correo electrónico, no hay de qué preocuparse; puedes ignorarlo con seguridad.</p>",
-    "OtpSubject": "Código de confirmación de {app}: {code}"
+    "OtpSubject": "Código de confirmación de {app}: {code}",
+    "ExtendInviteText": "La invitación a {ws} ha sido extendida. Por favor, utiliza el siguiente enlace para unirte: {link}. El enlace extendido es válido por {expHours} horas.",
+    "ExtendInviteHTML": "<p>La invitación a {ws} ha sido extendida. Para unirte, haz clic en el siguiente enlace: <a href={link}>Unirse</a></p><p>Si el enlace anterior no funciona, copia y pega el siguiente enlace en la barra de direcciones de tu navegador: {link}</p><p>El enlace extendido es válido por {expHours} horas.</p>",
+    "ExtendInviteSubject": "Invitación extendida a {ws}"
   }
 }

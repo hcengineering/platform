@@ -11,6 +11,9 @@
     "InviteSubject": "Invitation to {ws}",
     "OtpText": "Confirm your email address to access {app}!\n\nYour confirmation code is below - enter it in the window where you've started signing in for {app}.\n\n{code}\n\nIf you didn’t request this email, there’s nothing to worry about — you can safely ignore it.",
     "OtpHTML": "<h3>Confirm your email address to access {app}!</h3><p>Your confirmation code is below - enter it in the window where you've started signing in for {app}.<p/><br/><b style=\"font-size:36px\">{code}</b><br/><br/><p>If you didn’t request this email, there’s nothing to worry about — you can safely ignore it.</p>",
-    "OtpSubject": "{app} confirmation code: {code}"
+    "OtpSubject": "{app} confirmation code: {code}",
+    "ExtendInviteText": "The invitation to {ws} has been extended. Please use the following link to join: {link}. The extended link is valid for {expHours} hours.",
+    "ExtendInviteHTML": "<p>The invitation to {ws} has been extended. To join, click the link below: <a href={link}>Join</a></p><p>If the invite link above does not work, paste the following link into your browser's URL bar: {link}</p><p>The extended link is valid for {expHours} hours.</p>",
+    "ExtendInviteSubject": "Extended Invitation to {ws}"
   }
 }

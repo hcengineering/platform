@@ -63,6 +63,8 @@
     "AddMember": "添加成员",
     "KickEmployee": "踢出员工",
     "KickEmployeeDescr": "你确定要将员工踢出工作区吗？此操作无法撤销",
+    "ExtendInvite": "延长邀请",
+    "ExtendInviteDescr": "您确定要延长此工作空间的邀请吗？",
     "Email": "电子邮件",
     "CreateEmployee": "员工",
     "Inactive": "非活动",
