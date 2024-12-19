@@ -101,7 +101,7 @@ pnpm docker:build   # Will build Docker containers for all applications in the l
 pnpm docker:up # Will set up all the containers
 ```
 
-Be aware `rush docker:build` will automatically execute all required phases like build, bundle, package.
+Be aware `pnpm docker:build` will automatically execute all required phases like build, bundle, package.
 
 Alternatively, you can just execute:
 
@@ -174,16 +174,16 @@ It may also be necessary to upgrade the running database.
 
 ```bash
 cd ./dev/tool
-rushx upgrade -f
+pnpm upgrade -f
 ```
 
 ## Troubleshooting
 
-If a build fails, but the code is correct, try to delete the [build cache](https://rushjs.io/pages/maintainer/build_cache/) and retry.
+If a build fails, but the code is correct, try to delete the Turbo build cache and retry.
 
 ```bash
 # from the project root
-rm -rf common/temp/build-cache
+rm -rf node_modules/.cache/turbo
 ```
 
 ## Build & Watch
@@ -223,12 +223,6 @@ cd ./tests
 cd ./sanity
 rushx dev-uitest # To execute all tests against the development environment.
 rushx dev-debug -g 'pattern' # To execute tests in debug mode with only the matching test pattern.
-```
-
-## Package publishing
-
-```bash
-node ./common/scripts/bump.js -p projectName
 ```
 
 ## Additional testing
