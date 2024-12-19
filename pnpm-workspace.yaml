@@ -1,0 +1,13 @@
+packages:
+  - "packages/*"
+  - "models/*"
+  - "plugins/*"
+  - "server/*"
+  - "server-plugins/*"
+  - "services/**/model-*"
+  - "services/**/pod-*"
+  - "workers/*"
+  - "dev/*"
+  - "desktop"
+  - "desktop-package"
+  - "templates/*"
