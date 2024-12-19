@@ -14,9 +14,7 @@
 // limitations under the License.
 //
 
-import {
-  type Employee
-} from '@hcengineering/contact'
+import { type Employee } from '@hcengineering/contact'
 
 export async function canResendInvitation (employee: Employee): Promise<boolean> {
   return !employee.active

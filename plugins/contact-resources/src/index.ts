@@ -148,7 +148,6 @@ import {
   grouppingPersonManager,
   resolveLocation,
   resolveLocationData
-
 } from './utils'
 
 export * from './utils'
