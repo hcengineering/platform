@@ -31,6 +31,8 @@ This project offers a convenient method to host Huly using `docker`, designed fo
   - [Table of Content](#table-of-content)
   - [Pre-requisites](#pre-requisites)
   - [Verification](#verification)
+  - [Fast start](#fast-start)
+  - [Automated Development Setup](#automated-development-setup)
   - [Installation](#installation)
   - [Build and run](#build-and-run)
   - [Run in development mode](#run-in-development-mode)
@@ -63,6 +65,30 @@ To verify the installation, perform the following checks in your terminal:
 ```bash
 sh ./scripts/fast-start.sh
 ```
+
+## Automated Development Setup
+
+For a streamlined development environment setup, we provide automated deployment scripts:
+
+```bash
+# Full automated setup
+./scripts/deployment/deploy.sh all my_workspace
+
+# Or individual steps
+./scripts/deployment/deploy.sh clean          # Run system cleanup
+./scripts/deployment/deploy.sh check         # Check dependencies
+./scripts/deployment/deploy.sh prepare       # Prepare branch
+./scripts/deployment/deploy.sh workspace my_workspace  # Create workspace
+```
+
+The automated setup handles:
+- System cleanup and preparation
+- Dependency installation and verification
+- Branch setup
+- Workspace creation
+- Cross-platform support (Linux and macOS)
+
+For detailed setup instructions, see our [Local Development Setup Guide](docs/getting-started/deployment/local-setup.md).
 
 ## Installation
 
