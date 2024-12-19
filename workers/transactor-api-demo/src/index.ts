@@ -14,45 +14,14 @@
 //
 
 import { Router, error } from 'itty-router'
-import { type Class, type Doc, type Ref } from '@hcengineering/core'
+import contact from '@hcengineering/contact'
 import {
   type TransactorService,
   createHttpClient,
   createRpcClient,
+  getWorkspaceToken,
   unpackModel
 } from '@hcengineering/cloud-transactor-api'
-
-async function login (accountsUrl: string, user: string, password: string, workspace: string): Promise<string> {
-  const response = await fetch(accountsUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      method: 'login',
-      params: [user, password, workspace]
-    })
-  })
-
-  const result: any = await response.json()
-  return result.result?.token
-}
-
-async function selectWorkspace (accountsUrl: string, token: string, workspace: string): Promise<any> {
-  const response = await fetch(accountsUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token
-    },
-    body: JSON.stringify({
-      method: 'selectWorkspace',
-      params: [workspace, 'external']
-    })
-  })
-  const result: any = await response.json()
-  return result.result
-}
 
 export default {
   async fetch (request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -62,8 +31,7 @@ export default {
       const email = params.email
       const password = params.password
       const workspace = params.workspace
-      const token = await login(env.ACCOUNTS_URL, email, password, workspace)
-      const info = await selectWorkspace(env.ACCOUNTS_URL, token, workspace)
+      const info = await getWorkspaceToken(env.ACCOUNTS_URL, { email, password, workspace })
       return info.token
     }
 
@@ -74,7 +42,7 @@ export default {
         console.log('REQ', params)
         const client = await transactorService.openRpc(await getToken(params), params.workspace)
         try {
-          const result = await client.findAll('contact:class:Person' as Ref<Class<Doc>>)
+          const result = await client.findAll(contact.class.Person, {})
           return new Response(JSON.stringify(result))
         } catch (error) {
           console.error({ error })
@@ -89,7 +57,7 @@ export default {
       .get('/demo-find-rpc/:email/:password/:workspace', async ({ params }) => {
         const client = await createRpcClient(await getToken(params), params.workspace, transactorService)
         try {
-          const result = await client.findAll('contact:class:Person' as Ref<Class<Doc>>)
+          const result = await client.findAll(contact.class.Person, {})
           return new Response(JSON.stringify(result))
         } catch (error) {
           console.error({ error })
@@ -104,7 +72,7 @@ export default {
       .get('/demo-find-http/:email/:password/:workspace', async ({ params }) => {
         const client = await createHttpClient(await getToken(params), params.workspace, 'todo-worker-url')
         try {
-          const result = await client.findAll('contact:class:Person' as Ref<Class<Doc>>)
+          const result = await client.findAll(contact.class.Person, {})
           return new Response(JSON.stringify(result))
         } catch (error) {
           console.error({ error })
@@ -133,9 +101,9 @@ export default {
       })
 
       .get('/demo-get-model-rpc/:email/:password/:workspace', async ({ params }) => {
-        const client = await createRpcClient(await getToken(params), params.workspace, transactorService)
+        const client = await createRpcClient(await getToken(params), params.workspace, transactorService, true)
         try {
-          const result = await client.getModel()
+          const result = client.getModel()
           return new Response(JSON.stringify(result))
         } catch (error) {
           console.error({ error })

@@ -15,34 +15,50 @@
 
 import {
   type Class,
+  type Client,
   type Doc,
   type DocumentQuery,
   type FindOptions,
   type FindResult,
-  Hierarchy,
-  ModelDb,
   type Ref,
+  type SearchOptions,
+  type SearchQuery,
+  type SearchResult,
+  type Storage,
   type Tx,
-  type TxResult
+  type TxResult,
+  type WithLookup,
+  Hierarchy,
+  ModelDb
 } from '@hcengineering/core'
-import type { TransactorClient, TransactorRawApi } from './types'
 import { createDummyMeasureContext, unpackModel } from './utils'
 
 export interface TransactorService {
   openRpc: (rawToken: string, workspaceId: string) => Promise<TransactorRawApi>
 }
 
+export interface TransactorRawApi extends Storage {
+  getModel: () => Promise<Buffer>
+}
+
 export async function createRpcClient (
   token: string,
   workspaceId: string,
-  transactorService: TransactorService
-): Promise<TransactorClient> {
-  return new TransactorRpcClient(token, workspaceId, transactorService)
+  transactorService: TransactorService,
+  loadModel?: boolean
+): Promise<Client> {
+  const client = new TransactorRpcClient(token, workspaceId, transactorService)
+  if (loadModel === true) {
+    await client.loadModel()
+  }
+  return client
 }
 
-class TransactorRpcClient implements TransactorClient {
-  private transactorRpcStub: TransactorRawApi | undefined
+class TransactorRpcClient implements Client {
+  private disposed = false
   private model: ModelDb | undefined
+  private hierarchy: Hierarchy | undefined
+  private transactorRpcStub: TransactorRawApi | undefined
 
   constructor (
     private readonly token: string,
@@ -57,11 +73,57 @@ class TransactorRpcClient implements TransactorClient {
     return this.transactorRpcStub
   }
 
-  async findAll (
-    _class: Ref<Class<Doc>>,
-    query?: DocumentQuery<Doc>,
-    options?: FindOptions<Doc>
-  ): Promise<FindResult<Doc>> {
+  async loadModel (): Promise<void> {
+    const stub = await this.transactorStub()
+    const compressed = await stub.getModel()
+    const txes = await unpackModel(compressed)
+    const hierarchy = new Hierarchy()
+    for (const tx of txes) {
+      hierarchy.tx(tx)
+    }
+    const model = new ModelDb(hierarchy)
+    const ctx = createDummyMeasureContext()
+    model.addTxes(ctx, txes, false)
+    this.model = model
+    this.hierarchy = hierarchy
+  }
+
+  notify (...tx: Tx[]): void {
+    // does nothing
+  }
+
+  getHierarchy (): Hierarchy {
+    if (this.hierarchy === undefined) {
+      throw new Error('Hierarchy is not loaded, please use loadModel=true when initializing client')
+    }
+    return this.hierarchy
+  }
+
+  getModel (): ModelDb {
+    if (this.model === undefined) {
+      throw new Error('Model is not loaded, please use loadModel=true when initializing client')
+    }
+    return this.model
+  }
+
+  async findOne<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<WithLookup<T> | undefined> {
+    // TODO
+    return undefined
+  }
+
+  async close (): Promise<void> {
+    this.dispose()
+  }
+
+  async findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
     const stub = await this.transactorStub()
     return await stub.findAll(_class, query, options)
   }
@@ -71,25 +133,23 @@ class TransactorRpcClient implements TransactorClient {
     return await stub.tx(tx)
   }
 
-  async getModel (): Promise<ModelDb> {
-    if (this.model === undefined) {
-      const stub = await this.transactorStub()
-      const compressed = await stub.getModel()
-      const txes = await unpackModel(compressed)
-      const hierarchy = new Hierarchy()
-      for (const tx of txes) {
-        hierarchy.tx(tx)
-      }
-      this.model = new ModelDb(hierarchy)
-      const ctx = createDummyMeasureContext()
-      this.model.addTxes(ctx, txes, false)
+  async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    // TODO
+    const result: SearchResult = {
+      docs: [],
+      total: 0
     }
-    return this.model
+    return result
+  }
+
+  private dispose (): void {
+    if (!this.disposed && this.transactorRpcStub !== undefined && Symbol.dispose in this.transactorRpcStub) {
+      this.disposed = true
+      ;(this.transactorRpcStub as any)[Symbol.dispose]()
+    }
   }
 
   [Symbol.dispose] (): void {
-    if (this.transactorRpcStub !== undefined && Symbol.dispose in this.transactorRpcStub) {
-      ;(this.transactorRpcStub as any)[Symbol.dispose]()
-    }
+    this.dispose()
   }
 }

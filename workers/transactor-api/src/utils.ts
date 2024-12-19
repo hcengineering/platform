@@ -51,13 +51,13 @@ export function createDummyMeasureContext (): MeasureContext {
     newChild: (name, params, fullParams, logger) => {
       return ctx
     },
-    with<T>(name: any, params: any, op: any, fullParams: any) {
+    with: <T>(name: any, params: any, op: any, fullParams: any) => {
       return Promise.resolve() as Promise<T>
     },
     withSync: (name, params, op, fullParams) => {
       return op(ctx)
     },
-    withLog<T>(name: any, params: any, op: any, fullParams: any) {
+    withLog: <T>(name: any, params: any, op: any, fullParams: any) => {
       return Promise.resolve() as Promise<T>
     },
     logger: createConsoleLogger(),

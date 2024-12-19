@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
+    "@hcengineering/contact": "^0.6.24",
     "@hcengineering/cloud-transactor-api": "^0.6.0",
     "itty-router": "^5.0.18"
   }
