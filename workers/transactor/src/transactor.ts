@@ -2,8 +2,14 @@
 
 import {
   Branding,
+  Class,
+  Doc,
+  DocumentQuery,
+  FindOptions,
   generateId,
   MeasureMetricsContext,
+  Ref,
+  Tx,
   type MeasureContext,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
@@ -12,9 +18,11 @@ import { RPCHandler } from '@hcengineering/rpc'
 import { ClientSession, createSessionManager, doSessionOp, type WebsocketData } from '@hcengineering/server'
 import serverClient from '@hcengineering/server-client'
 import {
+  ClientSessionCtx,
   createDummyStorageAdapter,
   loadBrandingMap,
   Pipeline,
+  Session,
   type ConnectionSocket,
   type PipelineFactory,
   type SessionManager
@@ -22,6 +30,8 @@ import {
 // import { registerStringLoaders } from '@hcengineering/server-pipeline'
 import serverPlugin, { decodeToken, type Token } from '@hcengineering/server-token'
 import { DurableObject } from 'cloudflare:workers'
+import { gzip } from 'zlib'
+import { promisify } from 'util'
 
 // Approach usefull only for separate build, after model-all bundle phase is executed.
 import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
@@ -65,7 +75,7 @@ export class Transactor extends DurableObject<Env> {
 
     setMetadata(serverPlugin.metadata.Secret, env.SERVER_SECRET ?? 'secret')
 
-    console.log('Connecting DB to', env.DB_URL !== '' ? 'Direct ' : 'Hyperdrive')
+    console.log('Connecting DB to', env.DB_URL !== '' && env.DB_URL !== undefined ? 'Direct ' : 'Hyperdrive')
 
     // TODO:
     const storage = createDummyStorageAdapter()
@@ -73,7 +83,7 @@ export class Transactor extends DurableObject<Env> {
     this.pipelineFactory = async (ctx, ws, upgrade, broadcast, branding) => {
       const pipeline = createServerPipeline(
         this.measureCtx,
-        env.DB_URL !== '' ? env.DB_URL : env.HYPERDRIVE.connectionString,
+        env.DB_URL !== '' && env.DB_URL !== undefined ? env.DB_URL : env.HYPERDRIVE.connectionString,
         model,
         {
           externalStorage: storage,
@@ -283,5 +293,128 @@ export class Transactor extends DurableObject<Env> {
     if (session !== undefined) {
       await this.sessionManager.close(this.measureCtx, session.connectionSocket as ConnectionSocket, this.workspace)
     }
+  }
+
+  private createDummyClientSocket (): ConnectionSocket {
+    const cs: ConnectionSocket = {
+      id: generateId(),
+      isClosed: false,
+      close: () => {
+        cs.isClosed = true
+      },
+      checkState: () => {
+        return !cs.isClosed
+      },
+      readRequest: (buffer: Buffer, binary: boolean) => {
+        return {} as any
+      },
+      data: () => {
+        return {}
+      },
+      send: (ctx: MeasureContext, msg, binary, compression) => {}
+    }
+    return cs
+  }
+
+  private async makeRpcSession (rawToken: string, cs: ConnectionSocket): Promise<Session> {
+    const token = decodeToken(rawToken ?? '')
+    const session = await this.sessionManager.addSession(
+      this.measureCtx,
+      cs,
+      token,
+      rawToken,
+      this.pipelineFactory,
+      generateId()
+    )
+    if ('error' in session) {
+      throw session.error
+    }
+    if ('upgrade' in session) {
+      throw new Error('Workspace is upgrading')
+    }
+    if (!('session' in session) || session.session === undefined) {
+      throw new Error('No session')
+    }
+    // By design, all fetches to this durable object will be for the same workspace
+    if (this.workspace === '') {
+      this.workspace = token.workspace.name
+    }
+    return session.session
+  }
+
+  async findAll (
+    rawToken: string,
+    workspaceId: string,
+    _class: Ref<Class<Doc>>,
+    query?: DocumentQuery<Doc>,
+    options?: FindOptions<Doc>
+  ): Promise<any> {
+    let result
+    const cs = this.createDummyClientSocket()
+    try {
+      const session = await this.makeRpcSession(rawToken, cs)
+      result = await session.findAllRaw(this.measureCtx, _class, query ?? {}, options ?? {})
+    } catch (error: any) {
+      result = { error: `${error}` }
+    } finally {
+      await this.sessionManager.close(this.measureCtx, cs, this.workspace)
+    }
+    return result
+  }
+
+  async tx (rawToken: string, workspaceId: string, tx: Tx): Promise<any> {
+    let result
+    const cs = this.createDummyClientSocket()
+    try {
+      const session = await this.makeRpcSession(rawToken, cs)
+      const sessionCtx: ClientSessionCtx = {
+        ctx: this.measureCtx,
+        sendResponse: async (msg) => {
+          result = msg
+        },
+        // TODO: Inedeed, the pipeline doesn't return errors,
+        // it just logs them to console and return an empty result
+        sendError: async (msg, error) => {
+          result = { error: `${msg}`, status: `${error}` }
+        }
+      }
+      await session.tx(sessionCtx, tx)
+    } catch (error: any) {
+      result = { error: `${error}` }
+    } finally {
+      await this.sessionManager.close(this.measureCtx, cs, this.workspace)
+    }
+    return result
+  }
+
+  async getModel (): Promise<any> {
+    const encoder = new TextEncoder()
+    const buffer = encoder.encode(JSON.stringify(model))
+    const gzipAsync = promisify(gzip)
+    const compressed = await gzipAsync(buffer)
+    return compressed
+  }
+
+  async getAccount (rawToken: string, workspaceId: string, tx: Tx): Promise<any> {
+    let result
+    const cs = this.createDummyClientSocket()
+    try {
+      const session = await this.makeRpcSession(rawToken, cs)
+      const sessionCtx: ClientSessionCtx = {
+        ctx: this.measureCtx,
+        sendResponse: async (msg) => {
+          result = msg
+        },
+        sendError: async (msg, error) => {
+          result = { error: `${msg}`, status: `${error}` }
+        }
+      }
+      await (session as any).getAccount(sessionCtx)
+    } catch (error: any) {
+      result = { error: `${error}` }
+    } finally {
+      await this.sessionManager.close(this.measureCtx, cs, this.workspace)
+    }
+    return result
   }
 }

@@ -1,9 +1,10 @@
 // Copyright © 2024 Huly Labs.
 
+import { RpcTarget, WorkerEntrypoint } from 'cloudflare:workers'
 import { Router, error, html } from 'itty-router'
-
 import { decodeToken } from '@hcengineering/server-token'
 import type { Transactor } from './transactor'
+import { Class, Doc, DocumentQuery, FindOptions, Ref, Tx } from '@hcengineering/core'
 
 export { Transactor } from './transactor'
 
@@ -48,3 +49,38 @@ export default {
     return await router.fetch(request).catch(error)
   }
 } satisfies ExportedHandler<Env>
+
+class TransactorRpcTarget extends RpcTarget {
+  constructor (
+    private readonly token: string,
+    private readonly workspaceId: string,
+    private readonly transactor: DurableObjectStub<Transactor>
+  ) {
+    super()
+  }
+
+  async findAll (_class: Ref<Class<Doc>>, query?: DocumentQuery<Doc>, options?: FindOptions<Doc>): Promise<any> {
+    return (this.transactor as any).findAll(this.token, this.workspaceId, _class, query, options)
+  }
+
+  async tx (tx: Tx): Promise<any> {
+    return (this.transactor as any).tx(this.token, this.workspaceId, tx)
+  }
+
+  async getModel (): Promise<any> {
+    return (this.transactor as any).getModel()
+  }
+
+  async getAccount (): Promise<any> {
+    return (this.transactor as any).getAccount(this.token, this.workspaceId)
+  }
+}
+
+export class TransactorRpc extends WorkerEntrypoint<Env> {
+  async openRpc (token: string, workspaceId: string): Promise<TransactorRpcTarget> {
+    const decodedToken = decodeToken(token, true, this.env.SERVER_SECRET)
+    const id = this.env.TRANSACTOR.idFromName(decodedToken.workspace.name)
+    const stub = this.env.TRANSACTOR.get(id)
+    return new TransactorRpcTarget(token, workspaceId, stub)
+  }
+}
