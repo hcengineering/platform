@@ -6,6 +6,8 @@
   "scripts": {
     "_phase:package": "rushx package",
     "_phase:validate": "compile validate",
+    "build": "compile",
+    "validate": "compile validate",
     "package": "rm -rf ./dist && cross-env NODE_ENV=production webpack --stats-error-details && echo 'done'",
     "analyze": "rm -rf ./dist && cross-env NODE_ENV=production webpack --profile --json > stats.json",
     "show": "webpack-bundle-analyzer stats.json dist",
