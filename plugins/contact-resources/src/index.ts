@@ -126,6 +126,7 @@ import IconMembers from './components/icons/Members.svelte'
 import ContactNamePresenter from './components/ContactNamePresenter.svelte'
 
 import { get, writable } from 'svelte/store'
+import { canExtendInvitation } from './visibilityTester'
 import contact from './plugin'
 import {
   channelIdentifierProvider,
@@ -146,8 +147,8 @@ import {
   getPersonTooltip,
   grouppingPersonManager,
   resolveLocation,
-  resolveLocationData,
-  canExtendInvitation
+  resolveLocationData
+
 } from './utils'
 
 export * from './utils'

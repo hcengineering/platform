@@ -922,9 +922,7 @@ export function createModel (builder: Builder): void {
     {
       action: contact.actionImpl.ExtendInvite,
       label: contact.string.ExtendInvite,
-      query: {
-        active: true
-      },
+      query: {},
       category: contact.category.Contact,
       target: contact.mixin.Employee,
       input: 'focus',
