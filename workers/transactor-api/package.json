@@ -3,7 +3,6 @@
   "version": "0.6.0",
   "main": "lib/index.js",
   "types": "types/index.d.ts",
-  "template": "@hcengineering/cloud-package",
   "scripts": {
     "build": "compile",
     "build:watch": "compile",

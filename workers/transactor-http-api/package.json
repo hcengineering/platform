@@ -3,7 +3,6 @@
   "version": "0.6.0",
   "main": "lib/index.js",
   "types": "types/index.d.ts",
-  "template": "@hcengineering/cloud-package",
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev --port 4040",
