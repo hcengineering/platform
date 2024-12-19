@@ -1,11 +1,5 @@
 packages:
   - 'packages/platform-rig'
-  - 'packages/core'
-  - 'packages/model'
-  - 'packages/platform'
-  - 'packages/theme'
-  - 'packages/ui'
-  - 'dev/prod'
-  - 'dev/tool'
   - 'templates/model'
   - 'templates/package'
+  - 'templates/node'
