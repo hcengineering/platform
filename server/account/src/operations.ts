@@ -2466,42 +2466,41 @@ export async function sendInvite (
   // const account = await getAccount(db, email)
   // if (account !== null) return
 
-  // const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  // if (sesURL === undefined || sesURL === '') {
-  //   throw new Error('Please provide email service url')
-  // }
-  // const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
-  // if (front === undefined || front === '') {
-  //   throw new Error('Please provide front url')
-  // }
+  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+  if (sesURL === undefined || sesURL === '') {
+    throw new Error('Please provide email service url')
+  }
+  const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
+  if (front === undefined || front === '') {
+    throw new Error('Please provide front url')
+  }
 
   const expHours = 48
   const exp = expHours * 60 * 60 * 1000
 
   const inviteId = await getInviteLink(ctx, db, branding, token, exp, email, 1)
-  console.log(inviteId)
-  // const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
+  const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
 
-  // const ws = workspace.workspaceName ?? workspace.workspace
-  // const lang = branding?.language
-  // const text = await translate(accountPlugin.string.InviteText, { link, ws, expHours }, lang)
-  // const html = await translate(accountPlugin.string.InviteHTML, { link, ws, expHours }, lang)
-  // const subject = await translate(accountPlugin.string.InviteSubject, { ws }, lang)
+  const ws = workspace.workspaceName ?? workspace.workspace
+  const lang = branding?.language
+  const text = await translate(accountPlugin.string.InviteText, { link, ws, expHours }, lang)
+  const html = await translate(accountPlugin.string.InviteHTML, { link, ws, expHours }, lang)
+  const subject = await translate(accountPlugin.string.InviteSubject, { ws }, lang)
 
-  // const to = email
-  // await fetch(concatLink(sesURL, '/send'), {
-  //   method: 'post',
-  //   headers: {
-  //     'Content-Type': 'application/json'
-  //   },
-  //   body: JSON.stringify({
-  //     text,
-  //     html,
-  //     subject,
-  //     to
-  //   })
-  // })
-  // ctx.info('Invite sent', { email, workspace, link })
+  const to = email
+  await fetch(concatLink(sesURL, '/send'), {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      text,
+      html,
+      subject,
+      to
+    })
+  })
+  ctx.info('Invite sent', { email, workspace, link })
 }
 
 /**
@@ -2542,8 +2541,7 @@ export async function resendInvite (
 
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   if (sesURL === undefined || sesURL === '') {
-    console.info('Please provide email service url to enable email invites.')
-    return
+    throw new Error('Please provide email service url')
   }
   const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
   if (front === undefined || front === '') {
