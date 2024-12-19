@@ -37,7 +37,7 @@
     "build:watch": "compile"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:*",
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
     "@types/html-to-text": "^8.1.1",

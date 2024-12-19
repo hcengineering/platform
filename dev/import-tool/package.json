@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "cross-env": "~7.0.3",
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:*",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint": "^8.54.0",
     "ts-node": "^10.8.0",

@@ -19,7 +19,7 @@
     "bundle": "node ../../common/scripts/esbuild.js --keep-names=true --bundle=true --entry=src/show.ts --define=MODEL_VERSION --define=VERSION --define=GIT_REVISION && node ./bundle/bundle.js > ./bundle/model.json"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:*",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",

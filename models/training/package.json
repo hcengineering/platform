@@ -35,7 +35,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:*",
     "@hcengineering/model-questions": "^0.1.0",
     "@hcengineering/questions": "^0.1.0",
     "@hcengineering/training": "^0.1.0",

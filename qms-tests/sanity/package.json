@@ -30,7 +30,7 @@
     "allure:generate": "allure generate allure-results -o allure-report --clean"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:*",
     "@types/jest": "^29.5.5",
     "@types/node": "~20.11.16",
     "@typescript-eslint/eslint-plugin": "^6.11.0",

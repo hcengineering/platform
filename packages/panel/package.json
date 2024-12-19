@@ -20,7 +20,7 @@
     "sass": "^1.53.0",
     "svelte-preprocess": "^5.1.3",
     "svelte-check": "^3.6.9",
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:*",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",

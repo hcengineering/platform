@@ -14,7 +14,7 @@
     "bump": "bump-package-version"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:*",
     "@hcengineering/desktop": "^0.6.0",
     "@vercel/webpack-asset-relocator-loader": "^1.7.3",
     "node-loader": "~2.0.0",

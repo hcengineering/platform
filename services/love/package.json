@@ -30,7 +30,7 @@
     "@types/node": "~20.11.16",
     "@types/ws": "^8.5.11",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:*",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
