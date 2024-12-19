@@ -13,7 +13,30 @@
 // limitations under the License.
 //
 
-export * from './rpc'
-export * from './http'
-export * from './types'
-export * from './utils'
+import type {
+  Class,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  ModelDb,
+  Ref,
+  Tx,
+  TxResult
+} from '@hcengineering/core'
+
+export interface TransactorRawApi {
+  findAll: (_class: Ref<Class<Doc>>, query?: DocumentQuery<Doc>, options?: FindOptions<Doc>) => Promise<FindResult<Doc>>
+
+  tx: (tx: Tx) => Promise<TxResult>
+
+  getModel: () => Promise<Buffer>
+}
+
+export interface TransactorClient {
+  findAll: (_class: Ref<Class<Doc>>, query?: DocumentQuery<Doc>, options?: FindOptions<Doc>) => Promise<FindResult<Doc>>
+
+  tx: (tx: Tx) => Promise<TxResult>
+
+  getModel: () => Promise<ModelDb>
+}

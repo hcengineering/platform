@@ -14,11 +14,11 @@
 //
 
 import { Router, error } from 'itty-router'
-import { MeasureMetricsContext, type Class, type Doc, type Ref } from '@hcengineering/core'
+import { type Class, type Doc, type Ref } from '@hcengineering/core'
 import {
   type TransactorService,
-  TransactorHttpClient,
-  TransactorRpcClient,
+  createHttpClient,
+  createRpcClient,
   unpackModel
 } from '@hcengineering/cloud-transactor-api'
 
@@ -87,8 +87,7 @@ export default {
       })
 
       .get('/demo-find-rpc/:email/:password/:workspace', async ({ params }) => {
-        const ctx = new MeasureMetricsContext('demo', {})
-        const client = new TransactorRpcClient(ctx, await getToken(params), params.workspace, transactorService)
+        const client = await createRpcClient(await getToken(params), params.workspace, transactorService)
         try {
           const result = await client.findAll('contact:class:Person' as Ref<Class<Doc>>)
           return new Response(JSON.stringify(result))
@@ -103,8 +102,7 @@ export default {
       })
 
       .get('/demo-find-http/:email/:password/:workspace', async ({ params }) => {
-        const ctx = new MeasureMetricsContext('demo', {})
-        const client = new TransactorHttpClient(ctx, await getToken(params), params.workspace, 'todo-transactor-url')
+        const client = await createHttpClient(await getToken(params), params.workspace, 'todo-worker-url')
         try {
           const result = await client.findAll('contact:class:Person' as Ref<Class<Doc>>)
           return new Response(JSON.stringify(result))
@@ -135,8 +133,7 @@ export default {
       })
 
       .get('/demo-get-model-rpc/:email/:password/:workspace', async ({ params }) => {
-        const ctx = new MeasureMetricsContext('demo', {})
-        const client = new TransactorRpcClient(ctx, await getToken(params), params.workspace, transactorService)
+        const client = await createRpcClient(await getToken(params), params.workspace, transactorService)
         try {
           const result = await client.getModel()
           return new Response(JSON.stringify(result))
