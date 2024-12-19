@@ -1,0 +1,32 @@
+{
+  "name": "@hcengineering/model-package",
+  "version": "0.6.0",
+  "main": "lib/index.js",
+  "svelte": "src/index.ts",
+  "types": "types/index.d.ts",
+  "#overrideKeys": ["main", "types", "svelte"],
+  "scripts": {
+    "build": "compile transpile src",
+    "validate": "compile validate",
+    "format": "format src",
+    "build:watch": "compile"
+  },
+  "peerDependencies": {
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "@typescript-eslint/parser": "^6.11.0",
+    "eslint-config-standard-with-typescript": "^40.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.0",
+    "typescript":"^5.3.3"
+  },
+  "#replaces": [
+    ".eslintrc.js",
+    "tsconfig.json",
+    "config/rig.json"
+  ],
+  "#clean": ["@types/heft-jest", "@rushstack/heft"]
+}
