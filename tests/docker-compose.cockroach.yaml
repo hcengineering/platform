@@ -1,0 +1,8 @@
+services:
+  cockroach:
+    extends:
+      file: ../dev/docker-compose.cockroach.yaml
+      service: cockroach
+    ports:
+      - '26258:26257'
+      - '8090:8080'

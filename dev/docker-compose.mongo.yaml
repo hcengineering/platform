@@ -1,0 +1,23 @@
+services:
+  mongodb:
+    image: 'mongo:7-jammy'
+    container_name: mongodb
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    healthcheck:
+      test: echo "try { db.currentOp().ok } catch (err) { }" | mongosh --port 27017 --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - db:/data/db
+    ports:
+      - 27017:27017
+    restart: unless-stopped
+volumes:
+  db:

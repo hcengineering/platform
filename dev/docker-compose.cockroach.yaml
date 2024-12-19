@@ -1,0 +1,12 @@
+services:
+  cockroach:
+    image: cockroachdb/cockroach:latest-v24.2
+    ports:
+      - '26257:26257'
+      - '8089:8080'
+    command: start-single-node --insecure
+    volumes:
+      - cockroach_db:/cockroach/cockroach-data
+    restart: unless-stopped
+volumes:
+  cockroach_db:

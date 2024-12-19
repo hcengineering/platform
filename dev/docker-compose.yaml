@@ -1,29 +1,13 @@
 services:
   mongodb:
-    image: 'mongo:7-jammy'
-    container_name: mongodb
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
-    healthcheck:
-      test: echo "try { db.currentOp().ok } catch (err) { }" | mongosh --port 27017 --quiet
-      interval: 5s
-      timeout: 30s
-      start_period: 0s
-      start_interval: 1s
-      retries: 30
-    environment:
-      - PUID=1000
-      - PGID=1000
-    volumes:
-      - db:/data/db
-    ports:
-      - 27017:27017
-    restart: unless-stopped
+    extends:
+      file: docker-compose.mongo.yaml
+      service: mongodb
   postgres:
     image: postgres
     container_name: postgres
     extra_hosts:
-      - "host.docker.internal:host-gateway"    
+      - "host.docker.internal:host-gateway"
     environment:
       - POSTGRES_PASSWORD=example
     volumes:
@@ -32,14 +16,9 @@ services:
       - 5432:5432
     restart: unless-stopped
   cockroach:
-    image: cockroachdb/cockroach:latest-v24.2
-    ports:
-      - '26257:26257'
-      - '8089:8080'
-    command: start-single-node --insecure
-    volumes:
-      - cockroach_db:/cockroach/cockroach-data
-    restart: unless-stopped
+    extends:
+      file: docker-compose.cockroach.yaml
+      service: cockroach
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000" --console-address ":9001"

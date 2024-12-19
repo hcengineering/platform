@@ -38,6 +38,8 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-core": "^0.6.1",
     "mongodb": "^6.10.0",
-    "bson": "^6.10.0"
+    "bson": "^6.10.0",
+    "pg": "^8.11.3",
+    "@types/pg": "^8.11.0"
   }
 }
