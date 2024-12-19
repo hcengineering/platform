@@ -90,6 +90,21 @@ The automated setup handles:
 
 For detailed setup instructions, see our [Local Development Setup Guide](docs/getting-started/deployment/local-setup.md).
 
+## Database Configuration
+
+By default, both MongoDB and CockroachDB are started. You can control which databases to start using the `HULY_DB_TYPE` environment variable:
+
+```bash
+# Start both databases (default)
+HULY_DB_TYPE=all ./scripts/select-db.sh up -d
+
+# Start only MongoDB
+HULY_DB_TYPE=mongo ./scripts/select-db.sh up -d
+
+# Start only CockroachDB
+HULY_DB_TYPE=cockroach ./scripts/select-db.sh up -d
+```
+
 ## Installation
 
 You need Microsoft's [rush](https://rushjs.io) to install application.

@@ -1,0 +1,8 @@
+services:
+  mongodb:
+    extends:
+      file: ../dev/docker-compose.mongo.yaml
+      service: mongodb
+    command: mongod --port 27018
+    ports:
+      - 27018:27018

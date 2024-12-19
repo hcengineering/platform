@@ -27,17 +27,21 @@ clean_system_cache() {
     local os=$(detect_os)
     case "$os" in
         macos)
-            log_info "Cleaning macOS system cache..."
-            sudo rm -rf ~/Library/Caches/*
-            sudo rm -rf ~/Library/Logs/*
+            log_info "Cleaning development-specific caches..."
+            rm -rf ~/Library/Caches/npm
+            rm -rf ~/Library/Caches/typescript
+            rm -rf ~/Library/Caches/yarn
+            rm -rf ~/Library/Caches/pnpm
             ;;
         linux)
-            log_info "Cleaning Linux system cache..."
-            sudo rm -rf /var/cache/*
-            sudo rm -rf /var/log/*
+            log_info "Cleaning development-specific caches..."
+            rm -rf ~/.cache/npm
+            rm -rf ~/.cache/typescript
+            rm -rf ~/.cache/yarn
+            rm -rf ~/.cache/pnpm
             ;;
         *)
-            log_warning "Unknown OS type, skipping system cache cleanup"
+            log_warning "Unknown OS type, skipping cache cleanup"
             ;;
     esac
 }
@@ -52,10 +56,12 @@ if command -v npm &> /dev/null; then
     npm cache clean --force
 fi
 
-# Clean Docker
+# Clean Docker - use safer approach
 if command -v docker &> /dev/null; then
-    log_info "Cleaning Docker..."
-    docker system prune -a --volumes -f
+    log_info "Cleaning unused Docker resources..."
+    # Only remove unused containers and images
+    docker container prune -f
+    docker image prune -f
 fi
 
 # Clean system cache

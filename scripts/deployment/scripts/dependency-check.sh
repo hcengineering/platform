@@ -49,48 +49,7 @@ install_node() {
     log_info "pnpm version: $(pnpm --version)"
 }
 
-install_mongodb() {
-    log_info "Checking MongoDB..."
-    local os=$(detect_os)
-    case "$os" in
-        macos)
-            if ! command -v mongod &> /dev/null; then
-                log_info "Installing MongoDB..."
-                brew tap mongodb/brew
-                brew install mongodb-community
-            fi
-            brew services restart mongodb-community
-            ;;
-        linux)
-            if ! command -v mongod &> /dev/null; then
-                log_info "Installing MongoDB..."
-                wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
-                echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
-                sudo apt-get update
-                sudo apt-get install -y mongodb-org
-            fi
-            sudo systemctl restart mongod
-            ;;
-        *)
-            log_error "Unsupported operating system for MongoDB installation"
-            exit 1
-            ;;
-    esac
 
-    # Wait for MongoDB to start
-    log_info "Waiting for MongoDB to start..."
-    for i in {1..30}; do
-        if mongosh --eval "db.runCommand({ ping: 1 })" --quiet &>/dev/null; then
-            log_info "MongoDB is running"
-            break
-        fi
-        sleep 1
-        if [ $i -eq 30 ]; then
-            log_error "MongoDB failed to start"
-            exit 1
-        fi
-    done
-}
 
 check_docker() {
     log_info "Checking Docker..."
@@ -141,7 +100,6 @@ log_info "Starting dependency check..."
 check_network
 install_package_manager
 install_node
-install_mongodb
 check_docker
 
 log_info "All dependencies checked and installed successfully"
@@ -152,7 +110,6 @@ Installed versions:
 Node.js: $(node --version)
 npm: $(npm --version)
 pnpm: $(pnpm --version)
-MongoDB: $(mongod --version | grep 'db version' | cut -d ' ' -f 3)
 Docker: $(docker --version | cut -d ' ' -f 3)
 
 NOTE: You may need to restart your terminal for PATH updates to take effect.

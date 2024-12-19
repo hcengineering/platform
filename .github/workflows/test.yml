@@ -1,0 +1,44 @@
+name: Database Configuration Tests
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        db-type: [mongo, cockroach, all]
+        node-version: [18.x]
+
+    env:
+      HULY_DB_TYPE: ${{ matrix.db-type }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd tests
+          npm install
+
+      - name: Run tests
+        run: |
+          cd tests
+          npm test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.db-type }}
+          path: tests/junit.xml
