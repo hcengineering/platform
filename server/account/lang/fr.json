@@ -12,8 +12,8 @@
     "OtpText": "Confirmez votre adresse e-mail pour accéder à {app}!\n\nVotre code de confirmation est ci-dessous - entrez-le dans la fenêtre où vous avez commencé à vous connecter pour {app}.\n\n{code}\n\nSi vous n'avez pas demandé cet e-mail, ne vous inquiétez pas - vous pouvez l'ignorer en toute sécurité.",
     "OtpHTML": "<h3>Confirmez votre adresse e-mail pour accéder à {app}!</h3><p>Votre code de confirmation est ci-dessous - entrez-le dans la fenêtre où vous avez commencé à vous connecter pour {app}.<p/><br/><b style=\"font-size:36px\">{code}</b><br/><br/><p>Si vous n'avez pas demandé cet e-mail, ne vous inquiétez pas - vous pouvez l'ignorer en toute sécurité.</p>",
     "OtpSubject": "Code de confirmation {app} : {code}",
-    "ExtendInviteText": "L'invitation à {ws} a été prolongée. Veuillez utiliser le lien suivant pour rejoindre : {link}. Le lien prolongé est valide pendant {expHours} heures.",
-    "ExtendInviteHTML": "<p>L'invitation à {ws} a été prolongée. Pour rejoindre, cliquez sur le lien ci-dessous : <a href={link}>Rejoindre</a></p><p>Si le lien ci-dessus ne fonctionne pas, copiez et collez le lien suivant dans la barre d'adresse de votre navigateur : {link}</p><p>Le lien prolongé est valide pendant {expHours} heures.</p>",
-    "ExtendInviteSubject": "Invitation prolongée à {ws}"
+    "ResentInviteText": "Vous avez été réinvité à {ws}. Veuillez utiliser le lien suivant pour rejoindre : {link}. Le lien de réinvitation est valide pendant {expHours} heures.",
+    "ResentInviteHTML": "<p>Vous avez été réinvité à {ws}. Pour rejoindre, cliquez sur le lien ci-dessous : <a href={link}>Rejoindre</a></p><p>Si le lien d'invitation ci-dessus ne fonctionne pas, collez le lien suivant dans la barre d'URL de votre navigateur : {link}</p><p>Le lien de réinvitation est valide pendant {expHours} heures.</p>",
+    "ResentInviteSubject": "Réinvitation à {ws}"
   }
 }
