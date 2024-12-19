@@ -933,7 +933,7 @@ export async function sendInvite (email: string, personId?: Ref<Doc>, role?: Acc
   })
 }
 
-export async function extendInvite (email: string): Promise<void> {
+export async function resentInvite (email: string): Promise<void> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -945,7 +945,7 @@ export async function extendInvite (email: string): Promise<void> {
   const params = [email]
 
   const request = {
-    method: 'extendInvite',
+    method: 'resentInvite',
     params
   }
 

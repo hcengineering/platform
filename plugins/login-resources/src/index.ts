@@ -23,7 +23,7 @@ import {
   leaveWorkspace,
   selectWorkspace,
   sendInvite,
-  extendInvite,
+  resentInvite,
   fetchWorkspace,
   createMissingEmployee,
   getInviteLink
@@ -48,7 +48,7 @@ export default async () => ({
     CreateEmployee: createMissingEmployee,
     GetWorkspaces: getWorkspaces,
     SendInvite: sendInvite,
-    ExtentInvite: extendInvite,
+    ResentInvite: resentInvite,
     GetInviteLink: getInviteLink
   }
 })

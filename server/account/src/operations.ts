@@ -1607,6 +1607,46 @@ export async function getInviteLink (
   return result
 }
 
+/**
+ * @public
+ * @description This function gets or create an invitation. The second return parameter
+ * can be used to check if invite is created
+ */
+async function getOrCreateInvite (
+  db: AccountDB,
+  workspace: WorkspaceId,
+  emailMask: string,
+  personId?: Ref<Person>
+): Promise<[ObjectId, boolean]> {
+  let invite = await db.invite.findOne({ emailMask })
+
+  if (invite !== null) {
+    return [invite, false]
+  }
+
+  if (invite === null) {
+    const expHours = 48
+    const newExp = Date.now() + expHours * 60 * 60 * 1000
+
+    const data = {
+      workspace,
+      exp: newExp,
+      emailMask,
+      limit: 1,
+      role: AccountRole.User,
+      personId
+    }
+
+    invite = await db.invite.insertOne(data, '_id')
+  }
+
+  if (invite === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InviteNotFound, { email: emailMask }))
+  }
+
+  return [invite, true]
+}
+
 function mapToClientWorkspace (ws: Workspace): ClientWorkspaceInfo {
   const { _id, accounts, ...data } = ws
   return { ...data, workspace: ws.workspaceUrl ?? ws.workspace, workspaceId: ws.workspace }
@@ -2426,79 +2466,79 @@ export async function sendInvite (
   // const account = await getAccount(db, email)
   // if (account !== null) return
 
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  if (sesURL === undefined || sesURL === '') {
-    throw new Error('Please provide email service url')
-  }
-  const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
-  if (front === undefined || front === '') {
-    throw new Error('Please provide front url')
-  }
+  // const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+  // if (sesURL === undefined || sesURL === '') {
+  //   throw new Error('Please provide email service url')
+  // }
+  // const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
+  // if (front === undefined || front === '') {
+  //   throw new Error('Please provide front url')
+  // }
 
   const expHours = 48
   const exp = expHours * 60 * 60 * 1000
 
   const inviteId = await getInviteLink(ctx, db, branding, token, exp, email, 1)
-  const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
+  console.log(inviteId)
+  // const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
 
-  const ws = workspace.workspaceName ?? workspace.workspace
-  const lang = branding?.language
-  const text = await translate(accountPlugin.string.InviteText, { link, ws, expHours }, lang)
-  const html = await translate(accountPlugin.string.InviteHTML, { link, ws, expHours }, lang)
-  const subject = await translate(accountPlugin.string.InviteSubject, { ws }, lang)
+  // const ws = workspace.workspaceName ?? workspace.workspace
+  // const lang = branding?.language
+  // const text = await translate(accountPlugin.string.InviteText, { link, ws, expHours }, lang)
+  // const html = await translate(accountPlugin.string.InviteHTML, { link, ws, expHours }, lang)
+  // const subject = await translate(accountPlugin.string.InviteSubject, { ws }, lang)
 
-  const to = email
-  await fetch(concatLink(sesURL, '/send'), {
-    method: 'post',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      text,
-      html,
-      subject,
-      to
-    })
-  })
-  ctx.info('Invite sent', { email, workspace, link })
+  // const to = email
+  // await fetch(concatLink(sesURL, '/send'), {
+  //   method: 'post',
+  //   headers: {
+  //     'Content-Type': 'application/json'
+  //   },
+  //   body: JSON.stringify({
+  //     text,
+  //     html,
+  //     subject,
+  //     to
+  //   })
+  // })
+  // ctx.info('Invite sent', { email, workspace, link })
 }
 
 /**
  *
  * @public
  */
-export async function extendInvite (
+export async function resentInvite (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  email: string
+  emailMask: string,
+  personId?: Ref<Person>
 ): Promise<void> {
-  const tokenData = decodeToken(ctx, token)
-  const currentAccount = await getAccount(db, tokenData.email)
+  const { workspace, email } = decodeToken(ctx, token)
+  const currentAccount = await getAccount(db, email)
   if (currentAccount === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: tokenData.email }))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
 
-  const workspace = await getWorkspaceById(db, tokenData.workspace.name)
-  if (workspace === null) {
+  const wsPromise = await getWorkspaceById(db, workspace.name)
+  if (wsPromise === null) {
     throw new PlatformError(
-      new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: tokenData.workspace.name })
+      new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspace.name })
     )
   }
 
-  const invite = await db.invite.findOne({ emailMask: email })
-  if (invite === null) {
-    ctx.error('Invite not found', { email })
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.InviteNotFound, { email }))
-  }
+  const [invite, created] = await getOrCreateInvite(db, workspace, emailMask, personId)
 
   const inviteId = invite._id
-
   const expHours = 48
-  const newExp = Date.now() + expHours * 60 * 60 * 1000
 
-  await db.invite.updateOne({ _id: db.getObjectId(inviteId) }, { exp: newExp })
+  if (!created) {
+    const newExp = Date.now() + expHours * 60 * 60 * 1000
+
+    await db.invite.updateOne({ _id: db.getObjectId(inviteId) }, { exp: newExp })
+  }
 
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   if (sesURL === undefined || sesURL === '') {
@@ -2511,13 +2551,13 @@ export async function extendInvite (
   }
 
   const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
-  const ws = workspace.workspaceName ?? workspace.workspace
+  const ws = wsPromise.workspaceName ?? wsPromise.workspace
   const lang = branding?.language
-  const text = await translate(accountPlugin.string.ExtendInviteText, { link, ws, expHours }, lang)
-  const html = await translate(accountPlugin.string.ExtendInviteHTML, { link, ws, expHours }, lang)
-  const subject = await translate(accountPlugin.string.ExtendInviteSubjects, { ws }, lang)
+  const text = await translate(accountPlugin.string.ResentInviteText, { link, ws, expHours }, lang)
+  const html = await translate(accountPlugin.string.ResentInviteHTML, { link, ws, expHours }, lang)
+  const subject = await translate(accountPlugin.string.ResentInviteSubject, { ws }, lang)
 
-  const to = email
+  const to = emailMask
   await fetch(concatLink(sesURL, '/send'), {
     method: 'post',
     headers: {
@@ -2530,7 +2570,7 @@ export async function extendInvite (
       to
     })
   })
-  ctx.info('Invite extended and email sent', { email, workspace: workspace.workspace, link })
+  ctx.info('Invite extended and email sent', { email: emailMask, workspace: wsPromise.workspace, link })
 }
 
 async function deactivatePersonAccount (
@@ -2865,7 +2905,7 @@ export function getMethods (hasSignUp: boolean = true): Record<string, AccountMe
     requestPassword: wrap(requestPassword),
     restorePassword: wrap(restorePassword),
     sendInvite: wrap(sendInvite),
-    extendInvite: wrap(extendInvite),
+    resentInvite: wrap(resentInvite),
     confirm: wrap(confirm),
     getAccountInfoByToken: wrap(getAccountInfoByToken),
     createMissingEmployee: wrap(createMissingEmployee),

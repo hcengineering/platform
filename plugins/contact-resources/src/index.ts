@@ -268,18 +268,18 @@ async function doContactQuery<T extends Contact> (
   return (await client.findAll(_class, q, { limit: 200 })).map(toObjectSearchResult)
 }
 
-async function extendInvite (doc: Person): Promise<void> {
+async function resentInvite (doc: Person): Promise<void> {
   const client = getClient()
 
   const accounts = client.getModel().getAccountByPersonId(doc._id)
 
   showPopup(MessageBox, {
-    label: contact.string.ExtendInvite,
-    message: contact.string.ExtendInviteDescr,
+    label: contact.string.ResentInvite,
+    message: contact.string.ResentInviteDescr,
     action: async () => {
-      const _extendInvite = await getResource(login.function.ExtentInvite)
+      const _resentInvite = await getResource(login.function.ResentInvite)
       for (const i of accounts) {
-        await _extendInvite(i.email)
+        await _resentInvite(i.email)
       }
     }
   })
@@ -346,7 +346,7 @@ export default async (): Promise<Resources> => ({
   actionImpl: {
     KickEmployee: kickEmployee,
     OpenChannel: openChannelURL,
-    ExtendInvite: extendInvite
+    ResentInvite: resentInvite
   },
   activity: {
     NameChangedActivityMessage

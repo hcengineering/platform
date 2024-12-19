@@ -120,7 +120,7 @@ export default mergeIds(contactId, contact, {
   },
   action: {
     KickEmployee: '' as Ref<Action>,
-    ExtendInvite: '' as Ref<Action>,
+    ResentInvite: '' as Ref<Action>,
     DeleteEmployee: '' as Ref<Action>,
     MergePersons: '' as Ref<Action<Doc, any>>,
     OpenChannel: '' as Ref<Action>,
@@ -129,7 +129,7 @@ export default mergeIds(contactId, contact, {
   actionImpl: {
     KickEmployee: '' as ViewAction,
     OpenChannel: '' as ViewAction,
-    ExtendInvite: '' as ViewAction
+    ResentInvite: '' as ViewAction
   },
   function: {
     GetCurrentEmployeeName: '' as Resource<TemplateFieldFunc>,
