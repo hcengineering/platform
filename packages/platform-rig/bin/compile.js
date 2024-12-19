@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const { join, dirname, basename } = require("path")
 const { readFileSync, existsSync, mkdirSync, createWriteStream, readdirSync, lstatSync, rmSync } = require('fs')
 const { spawn } = require('child_process')
