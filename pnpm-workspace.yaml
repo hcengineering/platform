@@ -1,0 +1,8 @@
+packages:
+  - 'packages/*'
+  - 'plugins/*'
+  - 'models/*'
+  - 'server/*'
+  - 'dev/*'
+  - 'pods/*'
+  - 'server-plugins/*'

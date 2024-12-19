@@ -1,0 +1,16 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "validate": "turbo run validate",
+    "bundle": "turbo run bundle",
+    "package": "turbo run package",
+    "format": "turbo run format",
+    "docker:build": "turbo run docker:build",
+    "docker:up": "cd ./dev && docker compose up -d --force-recreate"
+  },
+  "dependencies": {
+    "turbo": "^2.3.3"
+  }
+}
