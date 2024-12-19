@@ -382,7 +382,7 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
 
     const restoringSql = "mode IN ('pending-restore', 'restoring')"
 
-    const archivingSql = "'archiving-pending-backup', 'archiving-backup', 'archiving-pending-clean', 'archiving-clean')"
+    const archivingSql = "mode IN ('archiving-pending-backup', 'archiving-backup', 'archiving-pending-clean', 'archiving-clean')"
     const versionSql =
       '("versionMajor" < $1) OR ("versionMajor" = $1 AND "versionMinor" < $2) OR ("versionMajor" = $1 AND "versionMinor" = $2 AND "versionPatch" < $3)'
     const pendingUpgradeSql = `(((disabled = FALSE OR disabled IS NULL) AND (mode = 'active' OR mode IS NULL) AND ${versionSql} ${wsLivenessMs !== undefined ? 'AND "lastVisit" > $4' : ''}) OR ((disabled = FALSE OR disabled IS NULL) AND mode = 'upgrading'))`
