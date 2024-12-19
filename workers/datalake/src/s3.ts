@@ -64,14 +64,14 @@ export async function handleS3Blob (
       return error(400)
     }
 
-    const contentType = object.headers.get('content-type') ?? 'application/octet-stream'
+    const type = object.headers.get('content-type') ?? 'application/octet-stream'
     const contentLengthHeader = object.headers.get('content-length') ?? '0'
     const lastModifiedHeader = object.headers.get('last-modified')
 
-    const contentLength = Number.parseInt(contentLengthHeader)
+    const size = Number.parseInt(contentLengthHeader)
     const lastModified = lastModifiedHeader !== null ? new Date(lastModifiedHeader).getTime() : Date.now()
 
-    const result = await saveBlob(env, db, object.body, contentLength, contentType, workspace, name, lastModified)
-    return json(result)
+    const metadata = await saveBlob(env, db, object.body, workspace, name, { lastModified, size, type })
+    return json(metadata)
   })
 }
