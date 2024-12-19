@@ -1,5 +1,6 @@
 {
   "private": true,
+  "packageManager": "pnpm@9.14.2",
   "scripts": {
     "build": "turbo run build",
     "test": "turbo run test",
