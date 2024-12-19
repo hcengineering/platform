@@ -71,9 +71,11 @@
       task.class.Task,
       { kind: taskType._id },
       (res) => {
-        tasksCounter = res.length
+        tasksCounter = res.total
       },
       {
+        total: true,
+        limit: 1,
         projection: {
           _id: 1
         }

@@ -29,7 +29,7 @@
     testManagement.class.TestCase,
     query,
     (res) => {
-      testCases = res.length
+      testCases = res.total
     },
     { total: true, limit: 1 }
   )
