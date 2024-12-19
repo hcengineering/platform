@@ -1,5 +1,3 @@
 packages:
   - 'packages/platform-rig'
   - 'templates/model'
-  - 'templates/package'
-  - 'templates/node'
