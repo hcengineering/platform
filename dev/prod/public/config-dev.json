@@ -1,9 +1,6 @@
 {
   "ACCOUNTS_URL":"https://account.hc.engineering",
-  "UPLOAD_URL":"http://localhost:8787/upload/form-data/:workspace",
-  "UPLOAD_CONFIG":"signed-url|100|http://localhost:8787/upload/signed-url/:workspace/:blobId",
-  "FILES_URL":"http://localhost:8787/blob/:workspace/:blobId",
-  "PREVIEW_CONFIG":"http://localhost:8787/image/fit=scale-down,width=:size/:workspace/:blobId",
+  "UPLOAD_URL":"/files",
   "MODEL_VERSION": null,
   "TELEGRAM_URL": "https://telegram.hc.engineering",
   "GMAIL_URL": "https://gmail.hc.engineering",

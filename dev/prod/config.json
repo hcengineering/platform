@@ -1,10 +1,7 @@
 {
   "ACCOUNTS_URL":"http://localhost:3000",
   "COLLABORATOR_URL": "ws://localhost:3078",
-  "UPLOAD_URL":"http://localhost:8787/upload/form-data/:workspace",
-  "UPLOAD_CONFIG":"signed-url|100|http://localhost:8787/upload/signed-url/:workspace/:blobId",
-  "FILES_URL":"http://localhost:8787/blob/:workspace/:blobId",
-  "PREVIEW_CONFIG":"http://localhost:8787/image/fit=scale-down,width=:size/:workspace/:blobId",
+  "UPLOAD_URL":"/files",
   "REKONI_URL": "http://localhost:4004",
   "PRINT_URL": "http://localhost:4005",
   "SIGN_URL": "http://localhost:4006",
