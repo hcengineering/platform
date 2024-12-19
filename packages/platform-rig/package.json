@@ -7,13 +7,13 @@
   },
   "devDependencies": {
     "eslint-config-standard-with-typescript": "^40.0.0",
-    "svelte-eslint-parser": "^0.33.1",
+    "svelte-eslint-parser": "^0.33.1"
+  },
+  "dependencies": {
+    "typescript": "^5.3.3",
     "esbuild": "^0.20.0",
     "esbuild-svelte": "^0.8.0",
     "esbuild-plugin-copy": "~2.1.1"
-  },
-  "dependencies": {
-    "typescript": "^5.3.3"
   },
   "bin": {
     "format": "./bin/format.js",
