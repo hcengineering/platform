@@ -16,6 +16,7 @@
 import { Router, error } from 'itty-router'
 import contact from '@hcengineering/contact'
 import {
+  type ConnectOptions,
   type TransactorService,
   createHttpClient,
   createRpcClient,
@@ -33,6 +34,21 @@ export default {
       const workspace = params.workspace
       const info = await getWorkspaceToken(env.ACCOUNTS_URL, { email, password, workspace })
       return info.token
+    }
+
+    function getConnectOpts (params: Record<string, any>): ConnectOptions {
+      return {
+        authOptions: {
+          email: params.email,
+          password: params.password,
+          workspace: params.workspace
+        },
+        serverConfig: {
+          ACCOUNTS_URL: env.ACCOUNTS_URL
+        },
+        workspaceId: params.workspace,
+        loadModel: params.loadModel === true
+      }
     }
 
     const router = Router()
@@ -55,7 +71,7 @@ export default {
       })
 
       .get('/demo-find-rpc/:email/:password/:workspace', async ({ params }) => {
-        const client = await createRpcClient(await getToken(params), params.workspace, transactorService)
+        const client = await createRpcClient('', getConnectOpts(params), transactorService)
         try {
           const result = await client.findAll(contact.class.Person, {})
           return new Response(JSON.stringify(result))
@@ -70,7 +86,7 @@ export default {
       })
 
       .get('/demo-find-http/:email/:password/:workspace', async ({ params }) => {
-        const client = await createHttpClient(await getToken(params), params.workspace, 'todo-worker-url')
+        const client = await createHttpClient('', getConnectOpts(params), 'todo-worker-url')
         try {
           const result = await client.findAll(contact.class.Person, {})
           return new Response(JSON.stringify(result))
@@ -101,7 +117,7 @@ export default {
       })
 
       .get('/demo-get-model-rpc/:email/:password/:workspace', async ({ params }) => {
-        const client = await createRpcClient(await getToken(params), params.workspace, transactorService, true)
+        const client = await createRpcClient('', getConnectOpts({ ...params, loadModel: true }), transactorService)
         try {
           const result = client.getModel()
           return new Response(JSON.stringify(result))

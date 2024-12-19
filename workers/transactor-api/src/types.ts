@@ -13,8 +13,16 @@
 // limitations under the License.
 //
 
-export * from './http'
-export * from './account'
-export * from './rpc'
-export * from './types'
-export * from './utils'
+import { type AuthOptions, type ServerConfig } from './account'
+
+export interface ConnectOptions {
+  workspaceToken?: string
+
+  workspaceId?: string
+
+  loadModel?: boolean
+
+  authOptions?: AuthOptions
+
+  serverConfig?: ServerConfig
+}

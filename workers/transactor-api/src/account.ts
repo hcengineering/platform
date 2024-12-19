@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+import { concatLink } from '@hcengineering/core'
+
 /**
  * Configuration options for password-based authentication
  * @public
@@ -61,24 +63,40 @@ export interface WorkspaceLoginInfo extends LoginInfo {
   workspaceId: string
 }
 
+export interface ServerConfig {
+  ACCOUNTS_URL: string
+}
+
+async function loadServerConfig (url: string): Promise<ServerConfig> {
+  const configUrl = concatLink(url, '/config.json')
+  const res = await fetch(configUrl)
+  if (res.ok) {
+    return (await res.json()) as ServerConfig
+  }
+  throw new Error('Failed to fetch config')
+}
+
 export async function getWorkspaceToken (
-  accountsUrl: string,
-  options: AuthOptions
+  configUrl: string,
+  options: AuthOptions,
+  config?: ServerConfig
 ): Promise<{ endpoint: string, token: string }> {
+  config ??= await loadServerConfig(configUrl)
+
   let token: string
 
   if ('token' in options) {
     token = options.token
   } else {
     const { email, password, workspace } = options
-    token = await login(accountsUrl, email, password, workspace)
+    token = await login(config.ACCOUNTS_URL, email, password, workspace)
   }
 
   if (token === undefined) {
     throw new Error('Login failed')
   }
 
-  const ws = await selectWorkspace(accountsUrl, token, options.workspace)
+  const ws = await selectWorkspace(config.ACCOUNTS_URL, token, options.workspace)
   if (ws === undefined) {
     throw new Error('Workspace not found')
   }
@@ -86,7 +104,7 @@ export async function getWorkspaceToken (
   return { endpoint: ws.endpoint, token: ws.token }
 }
 
-export async function login (accountsUrl: string, user: string, password: string, workspace: string): Promise<string> {
+async function login (accountsUrl: string, user: string, password: string, workspace: string): Promise<string> {
   const response = await fetch(accountsUrl, {
     method: 'POST',
     headers: {
@@ -102,11 +120,7 @@ export async function login (accountsUrl: string, user: string, password: string
   return result.result?.token
 }
 
-export async function selectWorkspace (
-  accountsUrl: string,
-  token: string,
-  workspace: string
-): Promise<WorkspaceLoginInfo> {
+async function selectWorkspace (accountsUrl: string, token: string, workspace: string): Promise<WorkspaceLoginInfo> {
   const response = await fetch(accountsUrl, {
     method: 'POST',
     headers: {

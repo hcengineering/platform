@@ -32,9 +32,11 @@ import {
   ModelDb
 } from '@hcengineering/core'
 import { createDummyMeasureContext, unpackModel } from './utils'
+import { type ConnectOptions } from './types'
+import { getWorkspaceToken } from './account'
 
 export interface TransactorService {
-  openRpc: (rawToken: string, workspaceId: string) => Promise<TransactorRawApi>
+  openRpc: (token: string, workspaceId: string) => Promise<TransactorRawApi>
 }
 
 export interface TransactorRawApi extends Storage {
@@ -42,13 +44,23 @@ export interface TransactorRawApi extends Storage {
 }
 
 export async function createRpcClient (
-  token: string,
-  workspaceId: string,
-  transactorService: TransactorService,
-  loadModel?: boolean
+  configUrl: string,
+  options: ConnectOptions,
+  transactorService: TransactorService
 ): Promise<Client> {
-  const client = new TransactorRpcClient(token, workspaceId, transactorService)
-  if (loadModel === true) {
+  let token = options.workspaceToken
+  if (token === undefined) {
+    if (options.authOptions === undefined) {
+      throw new Error('Either workspaceToken or authOptions must be provided')
+    }
+    if (configUrl === '' && options.serverConfig === undefined) {
+      throw new Error('Either configUrl or serverConfig must be provided')
+    }
+    const ws = await getWorkspaceToken(configUrl, options.authOptions, options.serverConfig)
+    token = ws.token
+  }
+  const client = new TransactorRpcClient(token, options.workspaceId ?? '', transactorService)
+  if (options.loadModel === true) {
     await client.loadModel()
   }
   return client

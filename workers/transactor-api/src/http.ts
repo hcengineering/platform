@@ -30,15 +30,27 @@ import {
   type SearchResult,
   type WithLookup
 } from '@hcengineering/core'
+import { type ConnectOptions } from './types'
+import { getWorkspaceToken } from './account'
 
 export async function createHttpClient (
-  token: string,
-  workspaceId: string,
-  httpApiWorkerUrl: string,
-  loadModel?: boolean
+  configUrl: string,
+  options: ConnectOptions,
+  httpApiWorkerUrl: string
 ): Promise<Client> {
-  const client = new TransactorHttpClient(token, workspaceId, httpApiWorkerUrl)
-  if (loadModel === true) {
+  let token = options.workspaceToken
+  if (token === undefined) {
+    if (options.authOptions === undefined) {
+      throw new Error('Either workspaceToken or authOptions must be provided')
+    }
+    if (configUrl === '' && options.serverConfig === undefined) {
+      throw new Error('Either configUrl or serverConfig must be provided')
+    }
+    const ws = await getWorkspaceToken(configUrl, options.authOptions, options.serverConfig)
+    token = ws.token
+  }
+  const client = new TransactorHttpClient(token, options.workspaceId ?? '', httpApiWorkerUrl)
+  if (options.loadModel ?? false) {
     await client.loadModel()
   }
   return client
