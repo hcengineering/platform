@@ -91,6 +91,7 @@ export default plugin(textEditorId, {
     CategoryColumn: '' as IntlString,
     Table: '' as IntlString,
     TableOptions: '' as IntlString,
+    SelectTable: '' as IntlString,
     Width: '' as IntlString,
     Height: '' as IntlString,
     Unset: '' as IntlString,
@@ -123,6 +124,7 @@ export default plugin(textEditorId, {
     ScaleOut: '' as Asset,
     Download: '' as Asset,
     Note: '' as Asset,
-    Comment: '' as Asset
+    Comment: '' as Asset,
+    SelectTable: '' as Asset
   }
 })

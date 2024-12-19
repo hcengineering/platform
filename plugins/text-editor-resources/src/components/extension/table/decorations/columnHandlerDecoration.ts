@@ -138,7 +138,7 @@ const handleMouseDown = (
       const dropMarkerLeftPx =
         dropIndex <= col ? columns[dropIndex].leftPx : columns[dropIndex].leftPx + columns[dropIndex].widthPx
 
-      updateColDropMarker(dropMarker, dropMarkerLeftPx - dropMarkerWidthPx / 2, dropMarkerWidthPx)
+      updateColDropMarker(dropMarker, dropMarkerLeftPx - Math.floor(dropMarkerWidthPx / 2) - 1, dropMarkerWidthPx)
       updateColDragMarker(dragMarker, dragMarkerLeftPx, dragMarkerWidthPx)
     }
   }
