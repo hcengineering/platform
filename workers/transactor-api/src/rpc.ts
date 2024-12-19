@@ -29,10 +29,10 @@ import {
   type Tx,
   type TxResult,
   type WithLookup,
-  Hierarchy,
-  ModelDb
+  type Hierarchy,
+  type ModelDb
 } from '@hcengineering/core'
-import { createDummyMeasureContext, unpackModel } from './utils'
+import { decodeModel } from './utils'
 import { type ConnectOptions } from './types'
 import { getWorkspaceLogin } from './account'
 
@@ -46,19 +46,18 @@ export interface TransactorRawApi extends Storage {
 }
 
 export async function createRpcClient (
-  configUrl: string,
-  options: ConnectOptions,
-  transactorService: TransactorService
+  transactorService: TransactorService,
+  options: ConnectOptions
 ): Promise<AccountClient> {
   let token = options.workspaceToken
   if (token === undefined) {
     if (options.authOptions === undefined) {
       throw new Error('Either workspaceToken or authOptions must be provided')
     }
-    if (configUrl === '' && options.serverConfig === undefined) {
+    if (options.configUrl === '' && options.serverConfig === undefined) {
       throw new Error('Either configUrl or serverConfig must be provided')
     }
-    const ws = await getWorkspaceLogin(configUrl, options.authOptions, options.serverConfig)
+    const ws = await getWorkspaceLogin(options.configUrl ?? '', options.authOptions, options.serverConfig)
     token = ws.token
   }
   const client = new TransactorRpcClient(token, options.workspaceId ?? '', transactorService)
@@ -91,14 +90,7 @@ class TransactorRpcClient implements AccountClient {
   async loadModel (): Promise<void> {
     const stub = await this.transactorStub()
     const compressed = await stub.getModel()
-    const txes = await unpackModel(compressed)
-    const hierarchy = new Hierarchy()
-    for (const tx of txes) {
-      hierarchy.tx(tx)
-    }
-    const model = new ModelDb(hierarchy)
-    const ctx = createDummyMeasureContext()
-    model.addTxes(ctx, txes, false)
+    const { model, hierarchy } = await decodeModel(compressed)
     this.model = model
     this.hierarchy = hierarchy
   }

@@ -24,5 +24,7 @@ export interface ConnectOptions {
 
   authOptions: AuthOptions
 
+  configUrl?: string
+
   serverConfig?: ServerConfig
 }

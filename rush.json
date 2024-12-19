@@ -2220,6 +2220,11 @@
       "packageName": "@hcengineering/cloud-transactor-api-demo",
       "projectFolder": "workers/transactor-api-demo",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/cloud-transactor-http-api",
+      "projectFolder": "workers/transactor-http-api",
+      "shouldPublish": false
     }
   ]
 }

@@ -33,21 +33,18 @@ import {
 } from '@hcengineering/core'
 import { type ConnectOptions } from './types'
 import { getWorkspaceLogin } from './account'
+import { decodeModel } from './utils'
 
-export async function createHttpClient (
-  configUrl: string,
-  options: ConnectOptions,
-  httpApiWorkerUrl: string
-): Promise<AccountClient> {
+export async function createHttpClient (httpApiWorkerUrl: string, options: ConnectOptions): Promise<AccountClient> {
   let token = options.workspaceToken
   if (token === undefined) {
     if (options.authOptions === undefined) {
       throw new Error('Either workspaceToken or authOptions must be provided')
     }
-    if (configUrl === '' && options.serverConfig === undefined) {
+    if (options.configUrl === '' && options.serverConfig === undefined) {
       throw new Error('Either configUrl or serverConfig must be provided')
     }
-    const ws = await getWorkspaceLogin(configUrl, options.authOptions, options.serverConfig)
+    const ws = await getWorkspaceLogin(options.configUrl ?? '', options.authOptions, options.serverConfig)
     token = ws.token
   }
   const client = new TransactorHttpClient(token, options.workspaceId ?? '', httpApiWorkerUrl)
@@ -67,10 +64,22 @@ class TransactorHttpClient implements AccountClient {
     private readonly httpApiWorkerUrl: string
   ) {}
 
+  private url (method: string): string {
+    return `${this.httpApiWorkerUrl}/${method}/${encodeURIComponent(this.workspaceId)}`
+  }
+
   async loadModel (): Promise<void> {
-    // TODO
-    this.model = undefined
-    this.hierarchy = undefined
+    const response = await fetch(this.url('model'), {
+      method: 'GET',
+      headers: {
+        Accept: 'application/octet-stream',
+        Authorization: 'Bearer ' + this.token
+      }
+    })
+    const compressed = await (response as any).bytes()
+    const { model, hierarchy } = await decodeModel(compressed)
+    this.model = model
+    this.hierarchy = hierarchy
   }
 
   notify (...tx: Tx[]): void {
@@ -108,22 +117,48 @@ class TransactorHttpClient implements AccountClient {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    // TODO
-    throw new Error('Not implemented')
+    const response = await fetch(this.url('find-all'), {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + this.token
+      },
+      body: JSON.stringify({ _class, query, options })
+    })
+    return await response.json()
   }
 
   async tx (tx: Tx): Promise<TxResult> {
-    // TODO
-    throw new Error('Not implemented')
+    const response = await fetch(this.url('tx'), {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + this.token
+      },
+      body: JSON.stringify(tx)
+    })
+    return await response.json()
   }
 
   async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     // TODO
-    throw new Error('Not implemented')
+    const result: SearchResult = {
+      docs: [],
+      total: 0
+    }
+    return result
   }
 
   async getAccount (): Promise<Account> {
-    // TODO
-    throw new Error('Not implemented')
+    const response = await fetch(this.url('account'), {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        Authorization: 'Bearer ' + this.token
+      }
+    })
+    return await response.json()
   }
 }

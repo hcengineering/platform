@@ -15,15 +15,34 @@
 
 import { gunzip } from 'zlib'
 import { promisify } from 'util'
-import type { MeasureContext, MeasureLogger, ParamsType, Tx } from '@hcengineering/core'
+import {
+  Hierarchy,
+  ModelDb,
+  type MeasureContext,
+  type MeasureLogger,
+  type ParamsType,
+  type Tx
+} from '@hcengineering/core'
 
-export async function unpackModel (compressed: Buffer): Promise<Tx[]> {
+export async function unpackModel (compressed: Buffer | Uint8Array): Promise<Tx[]> {
   const ungzipAsync = promisify(gunzip)
   const buffer = await ungzipAsync(new Uint8Array(compressed))
   const decoder = new TextDecoder()
   const jsonString = decoder.decode(buffer)
   const model = JSON.parse(jsonString) as Tx[]
   return model
+}
+
+export async function decodeModel (compressed: Buffer | Uint8Array): Promise<{ model: ModelDb, hierarchy: Hierarchy }> {
+  const txes = await unpackModel(compressed)
+  const hierarchy = new Hierarchy()
+  for (const tx of txes) {
+    hierarchy.tx(tx)
+  }
+  const model = new ModelDb(hierarchy)
+  const ctx = createDummyMeasureContext()
+  model.addTxes(ctx, txes, false)
+  return { model, hierarchy }
 }
 
 function createConsoleLogger (): MeasureLogger {
@@ -44,7 +63,7 @@ function createConsoleLogger (): MeasureLogger {
   }
 }
 
-export function createDummyMeasureContext (): MeasureContext {
+function createDummyMeasureContext (): MeasureContext {
   const ctx: MeasureContext = {
     id: '',
     contextData: {},
