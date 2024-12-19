@@ -3,6 +3,7 @@
   "version": "0.6.0",
   "main": "lib/index.js",
   "types": "types/index.d.ts",
+  "template": "cloud",
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev --port 4040",
