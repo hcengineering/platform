@@ -316,17 +316,22 @@ class ConnectionMgr {
 abstract class PostgresAdapterBase implements DbAdapter {
   protected readonly _helper: DBCollectionHelper
   protected readonly tableFields = new Map<string, string[]>()
+  protected readonly workspaceId: WorkspaceId
 
   mgr: ConnectionMgr
 
   constructor (
     protected readonly client: postgres.Sql,
     protected readonly refClient: PostgresClientReference,
-    protected readonly workspaceId: WorkspaceId,
+    protected readonly enrichedWorkspaceId: WorkspaceId,
     protected readonly hierarchy: Hierarchy,
     protected readonly modelDb: ModelDb,
     readonly mgrId: string
   ) {
+    // Swich to use uuid already before new accounts and workspaces
+    this.workspaceId = {
+      name: enrichedWorkspaceId.uuid ?? enrichedWorkspaceId.name
+    }
     this._helper = new DBCollectionHelper(this.client, this.workspaceId)
     this.mgr = new ConnectionMgr(client, mgrId)
   }
