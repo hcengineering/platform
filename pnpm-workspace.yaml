@@ -6,3 +6,7 @@ packages:
   - 'dev/*'
   - 'pods/*'
   - 'server-plugins/*'
+  - 'services/**/*'
+  - 'workers/*'
+  - 'templates/*'
+  - 'desktop*'

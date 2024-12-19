@@ -16,7 +16,7 @@
     "validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:*",
     "@cloudflare/workers-types": "^4.20240729.0",
     "typescript": "^5.3.3",
     "wrangler": "^3.80.1",
