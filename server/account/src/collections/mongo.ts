@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { ObjectId as MongoObjectId } from 'mongodb'
+import { ObjectId as MongoObjectId, UUID } from 'mongodb'
 import type { Collection, CreateIndexesOptions, Db, Filter, OptionalUnlessRequiredId, Sort } from 'mongodb'
 import type { Data, Version } from '@hcengineering/core'
 
@@ -176,6 +176,14 @@ export class AccountMongoDbCollection extends MongoDbCollection<Account> impleme
 export class WorkspaceMongoDbCollection extends MongoDbCollection<Workspace> implements WorkspaceDbCollection {
   constructor (db: Db) {
     super('workspace', db)
+  }
+
+  async insertOne<K extends keyof Workspace>(data: Partial<Workspace>, idKey?: K): Promise<any> {
+    if (data.uuid === undefined) {
+      data.uuid = new UUID().toJSON()
+    }
+
+    return await super.insertOne(data, idKey)
   }
 
   async countWorkspacesInRegion (region: string, upToVersion?: Data<Version>, visitedSince?: number): Promise<number> {

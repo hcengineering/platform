@@ -134,7 +134,13 @@ import {
   restoreRecruitingTaskTypes
 } from './clean'
 import { changeConfiguration } from './configuration'
-import { moveAccountDbFromMongoToPG, moveFromMongoToPG, moveWorkspaceFromMongoToPG } from './db'
+import {
+  generateUuidMissingWorkspaces,
+  updateDataWorkspaceIdToUuid,
+  moveAccountDbFromMongoToPG,
+  moveFromMongoToPG,
+  moveWorkspaceFromMongoToPG
+} from './db'
 import { restoreControlledDocContentMongo, restoreWikiContentMongo } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount } from './renameAccount'
@@ -1990,6 +1996,29 @@ export function devTool (
         })
 
         console.log('Attempts counter for workspace', workspace, 'has been reset')
+      })
+    })
+
+  program
+    .command('generate-uuid-workspaces')
+    .description('generate uuids for all workspaces which are missing it')
+    .option('-d, --dryrun', 'Dry run', false)
+    .action(async (cmd: { dryrun: boolean }) => {
+      await withAccountDatabase(async (db) => {
+        console.log('generate uuids for all workspaces which are missing it')
+        await generateUuidMissingWorkspaces(toolCtx, db, cmd.dryrun)
+      })
+    })
+
+  program
+    .command('update-data-wsid-to-uuid')
+    .description('updates workspaceId in pg/cr to uuid')
+    .option('-d, --dryrun', 'Dry run', false)
+    .action(async (cmd: { dryrun: boolean }) => {
+      await withAccountDatabase(async (db) => {
+        console.log('updates workspaceId in pg/cr to uuid')
+        const { dbUrl } = prepareTools()
+        await updateDataWorkspaceIdToUuid(toolCtx, db, dbUrl, cmd.dryrun)
       })
     })
 

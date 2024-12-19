@@ -264,6 +264,7 @@ export async function startIndexer (
         opt.model,
         {
           ...workspace,
+          uuid: workspaceInfo.uuid,
           workspaceName: workspaceInfo.workspaceName ?? workspaceInfo.workspace,
           workspaceUrl: workspaceInfo.workspaceUrl ?? workspaceInfo.workspace
         },

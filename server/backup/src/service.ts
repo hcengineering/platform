@@ -189,6 +189,7 @@ class BackupWorker {
         )
         const wsUrl: WorkspaceIdWithUrl = {
           name: ws.workspace,
+          uuid: ws.uuid,
           workspaceName: ws.workspaceName ?? '',
           workspaceUrl: ws.workspaceUrl ?? ''
         }
@@ -360,6 +361,7 @@ export async function doRestoreWorkspace (
     const storage = await createStorageBackupStorage(ctx, backupAdapter, getWorkspaceId(bucketName), ws.workspace)
     const wsUrl: WorkspaceIdWithUrl = {
       name: ws.workspace,
+      uuid: ws.uuid,
       workspaceName: ws.workspaceName ?? '',
       workspaceUrl: ws.workspaceUrl ?? ''
     }

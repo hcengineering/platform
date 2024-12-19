@@ -142,7 +142,7 @@ async function createTable (client: postgres.Sql, domain: string): Promise<void>
   }
   const colums = fields.join(', ')
   const res = await client.unsafe(`CREATE TABLE IF NOT EXISTS ${domain} (
-      "workspaceId" text NOT NULL,
+      "workspaceId" uuid NOT NULL,
       ${colums}, 
       data JSONB NOT NULL,
       PRIMARY KEY("workspaceId", _id)
@@ -404,10 +404,16 @@ export function isOwner (account: Account): boolean {
 }
 
 export class DBCollectionHelper implements DomainHelperOperations {
+  protected readonly workspaceId: WorkspaceId
+
   constructor (
     protected readonly client: postgres.Sql,
-    protected readonly workspaceId: WorkspaceId
-  ) {}
+    protected readonly enrichedWorkspaceId: WorkspaceId
+  ) {
+    this.workspaceId = {
+      name: enrichedWorkspaceId.uuid ?? enrichedWorkspaceId.name
+    }
+  }
 
   async dropIndex (domain: Domain, name: string): Promise<void> {}
 
