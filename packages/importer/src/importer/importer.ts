@@ -759,16 +759,13 @@ export class WorkspaceImporter {
     const spaceId = await this.createOrgSpace(space)
     this.logger.log('Document space created: ' + spaceId)
 
-    // All the operations to be applied at once
-    const ops = this.client.apply()
-
     // Create hierarchy meta
     const documentMetaIds = new Map<Ref<ControlledDocument>, ControlledDocMetadata>()
     for (const doc of space.docs) {
       if (this.isDocumentTemplate(doc)) {
-        await this.createDocTemplateMetaHierarhy(ops, doc as ImportControlledDocumentTemplate, documentMetaIds, spaceId)
+        await this.createDocTemplateMetaHierarhy(doc as ImportControlledDocumentTemplate, documentMetaIds, spaceId)
       } else {
-        await this.createControlledDocMetaHierarhy(ops, doc as ImportControlledDocument, documentMetaIds, spaceId)
+        await this.createControlledDocMetaHierarhy(doc as ImportControlledDocument, documentMetaIds, spaceId)
       }
     }
 
@@ -932,7 +929,6 @@ export class WorkspaceImporter {
   }
 
   async createDocTemplateMetaHierarhy (
-    ops: ApplyOperations,
     template: ImportControlledDocumentTemplate,
     documentMetaIds: Map<Ref<ControlledDocument>, ControlledDocMetadata>,
     spaceId: Ref<DocumentSpace>,
@@ -980,9 +976,9 @@ export class WorkspaceImporter {
 
     for (const subdoc of template.subdocs) {
       if (this.isDocumentTemplate(subdoc)) {
-        await this.createDocTemplateMetaHierarhy(ops, subdoc as ImportControlledDocumentTemplate, documentMetaIds, spaceId, result.projectDocumentId)
+        await this.createDocTemplateMetaHierarhy(subdoc as ImportControlledDocumentTemplate, documentMetaIds, spaceId, result.projectDocumentId)
       } else {
-        await this.createControlledDocMetaHierarhy(ops, subdoc as ImportControlledDocument, documentMetaIds, spaceId, result.projectDocumentId)
+        await this.createControlledDocMetaHierarhy(subdoc as ImportControlledDocument, documentMetaIds, spaceId, result.projectDocumentId)
       }
     }
 
@@ -990,7 +986,6 @@ export class WorkspaceImporter {
   }
 
   async createControlledDocMetaHierarhy (
-    ops: ApplyOperations,
     doc: ImportControlledDocument,
     documentMetaIds: Map<Ref<ControlledDocument>, ControlledDocMetadata>,
     spaceId: Ref<DocumentSpace>,
@@ -999,10 +994,10 @@ export class WorkspaceImporter {
     this.logger.log('Creating controlled document: ' + doc.title)
     const documentId = doc.id ?? generateId<ControlledDocument>()
 
-    const { seqNumber, prefix, category } = await useDocumentTemplate(ops, doc.template as unknown as Ref<DocumentTemplate>)
+    const { seqNumber, prefix, category } = await useDocumentTemplate(this.client, doc.template as unknown as Ref<DocumentTemplate>)
 
     const result = await createControlledDocMetadata(
-      ops,
+      this.client,
       documents.template.ProductChangeControl, // todo: make it dynamic - wtf, commit missed?
       documentId,
       {
@@ -1034,9 +1029,9 @@ export class WorkspaceImporter {
     // Process subdocs recursively
     for (const subdoc of doc.subdocs) {
       if (this.isDocumentTemplate(subdoc)) {
-        await this.createDocTemplateMetaHierarhy(ops, subdoc as ImportControlledDocumentTemplate, documentMetaIds, spaceId, result.projectDocumentId)
+        await this.createDocTemplateMetaHierarhy(subdoc as ImportControlledDocumentTemplate, documentMetaIds, spaceId, result.projectDocumentId)
       } else {
-        await this.createControlledDocMetaHierarhy(ops, subdoc as ImportControlledDocument, documentMetaIds, spaceId, result.projectDocumentId)
+        await this.createControlledDocMetaHierarhy(subdoc as ImportControlledDocument, documentMetaIds, spaceId, result.projectDocumentId)
       }
     }
 
