@@ -58,6 +58,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.9
       - name: Cache node modules
         uses: actions/cache@v4
         env:
@@ -69,26 +72,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
-      # - name: Cheking model is updated...
-      #   run: node common/scripts/check_model_version.js
-
-      - name: Checking for mis-matching dependencies...
-        run: node common/scripts/install-run-rush.js check
-
-      - name: Installing...
-        run: node common/scripts/install-run-rush.js install
+      - name: Installing dependencies
+        run: pnpm install
 
       - name: Model version from git tags
-        run: node common/scripts/install-run-rush.js model-version
+        run: pnpm -r run model-version
 
-      - name: Building...
-        run: node common/scripts/install-run-rush.js build -p 20
+      - name: Building
+        run: pnpm -r run _phase:build -p 20
 
-      - name: Bundle...
-        run: node common/scripts/install-run-rush.js bundle -p 20
+      - name: Bundle
+        run: pnpm -r run _phase:bundle -p 20
 
-      - name: Validate...
-        run: node common/scripts/install-run-rush.js validate -p 20
+      - name: Validate
+        run: pnpm -r run _phase:validate -p 20
 
       - name: Cache build results
         uses: actions/cache@v4
@@ -122,7 +119,7 @@ jobs:
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
       - name: Checking svelte sources...
-        run: node common/scripts/install-run-rush.js svelte-check
+        run: pnpm -r run _phase:svelte-check
   formatting:
     needs: build
     runs-on: ubuntu-latest
@@ -144,7 +141,7 @@ jobs:
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
       - name: Apply templates...
-        run: node common/scripts/install-run-rush.js apply-templates
+        run: pnpm -r run apply-templates
 
       - name: Check templates
         run: |
@@ -155,7 +152,7 @@ jobs:
           [ -z "$(git diff --name-only '*.js' '*.ts' '*.svelte' '*.json' '*.yaml' | cat)" ]
           echo '================================================================'
       - name: Formatting...
-        run: node common/scripts/install-run-rush.js fast-format
+        run: pnpm -r run fast-format
       - name: Check files formatting
         run: |
           echo '================================================================'
@@ -190,7 +187,7 @@ jobs:
           cd ./tests
           ./prepare-tests.sh
       - name: Testing...
-        run: node common/scripts/install-run-rush.js test
+        run: pnpm -r run _phase:test
         env:
           DB_URL: 'postgresql://postgres:example@localhost:5433'
           ELASTIC_URL: 'http://localhost:9201'
@@ -218,13 +215,13 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Checking for mis-matching dependencies...
-        run: node common/scripts/install-run-rush.js check
+        run: pnpm -r run check
 
       - name: Installing...
-        run: node common/scripts/install-run-rush.js install
+        run: pnpm install
 
       - name: Docker Build
-        run: node common/scripts/install-run-rush.js docker:build  -p 20
+        run: pnpm -r run _phase:docker-build -p 20
         env:
           DOCKER_CLI_HINTS: false
       - name: Prepare server
@@ -235,15 +232,15 @@ jobs:
       - name: Install Playwright
         run: |
           cd ./tests/sanity
-          node ../../common/scripts/install-run-rushx.js ci
+          pnpm -r run ci
       - name: Start profiling
         run: |
           cd ./tests
           ./profile-start.sh
       - name: Run UI tests
         run: |
-          cd ./tests/sanity          
-          node ../../common/scripts/install-run-rushx.js uitest
+          cd ./tests/sanity
+          pnpm -r run uitest
       - name: Download profile
         run: |
           cd ./tests
@@ -335,13 +332,13 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Checking for mis-matching dependencies...
-        run: node common/scripts/install-run-rush.js check
+        run: pnpm -r run check
 
       - name: Installing...
-        run: node common/scripts/install-run-rush.js install
+        run: pnpm install
 
       - name: Docker Build
-        run: node common/scripts/install-run-rush.js docker:build  -p 20
+        run: pnpm -r run _phase:docker-build -p 20
         env:
           DOCKER_CLI_HINTS: false
       - name: Prepare server
@@ -352,11 +349,11 @@ jobs:
       - name: Install Playwright
         run: |
           cd ./tests/sanity
-          node ../../common/scripts/install-run-rushx.js ci
+          pnpm -r run ci
       - name: Run UI tests
         run: |
           cd ./tests/sanity
-          node ../../common/scripts/install-run-rushx.js uitest
+          pnpm -r run uitest
       - name: 'Store docker logs'
         if: always()
         run: |
@@ -400,13 +397,13 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Checking for mis-matching dependencies...
-        run: node common/scripts/install-run-rush.js check
+        run: pnpm -r run check
 
       - name: Installing...
-        run: node common/scripts/install-run-rush.js install
+        run: pnpm install
 
       - name: Docker Build
-        run: node common/scripts/install-run-rush.js docker:build  -p 20
+        run: pnpm -r run _phase:docker-build -p 20
         env:
           DOCKER_CLI_HINTS: false
       - name: Configure /etc/hosts
@@ -420,11 +417,11 @@ jobs:
       - name: Install Playwright
         run: |
           cd ./qms-tests/sanity
-          node ../../common/scripts/install-run-rushx.js ci
+          pnpm -r run ci
       - name: Run UI tests
         run: |
           cd ./qms-tests/sanity
-          node ../../common/scripts/install-run-rushx.js uitest
+          pnpm -r run uitest
       - name: 'Store docker logs'
         if: always()
         run: |
@@ -520,13 +517,13 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Installing...
-        run: node common/scripts/install-run-rush.js install
+        run: pnpm install
 
       - name: Model version from git tags
-        run: node common/scripts/install-run-rush.js model-version
+        run: pnpm -r run model-version
 
       - name: Docker build
-        run: node common/scripts/install-run-rush.js docker:build -v
+        run: pnpm -r run _phase:docker-build -v
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
@@ -546,12 +543,12 @@ jobs:
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
       # - name: Docker push staging
       #   if: ${{ github.ref == 'refs/heads/main' }}
-      #   run: node common/scripts/install-run-rush.js docker:staging -v
+      #   run: pnpm -r run _phase:docker-staging -v
       - name: Docker push tag
         if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         run: |
           echo Pushing release of tag ${{ github.ref }}
-          node common/scripts/install-run-rush.js docker:push -v
+          pnpm -r run _phase:docker:push -v
       - name: Docker push love-agent
         if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         run: |
@@ -587,11 +584,11 @@ jobs:
             ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Installing...
-        run: node common/scripts/install-run-rush.js install --purge
+        run: pnpm install --purge
       - name: Model version from git tags
-        run: node common/scripts/install-run-rush.js model-version
+        run: pnpm -r run model-version
       - name: Package
-        run: node common/scripts/install-run-rush.js package --to desktop  -p 20 -v
+        run: pnpm -r run _phase:package --to desktop  -p 20 -v
       - name: Package JSON
         run: |
           cd desktop-package
@@ -625,8 +622,8 @@ jobs:
           TEAM_ID: ${{ secrets.TEAM_ID }}
         run: |
           cd desktop-package
-          node ../common/scripts/install-run-rushx.js dist --linux --windows --x64
-          node ../common/scripts/install-run-rushx.js dist-signed --macos --x64 --arm64
+          pnpm -r run dist --linux --windows --x64
+          pnpm -r run dist-signed --macos --x64 --arm64
           ./scripts/copy-publish-artifacts.sh ${{ env.PublishTempFolder}}
       - name: Publish distribution assets
         uses: ryand56/r2-upload-action@latest
