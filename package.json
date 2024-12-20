@@ -1,0 +1,20 @@
+{
+  "name": "@hcengineering/root",
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r run _phase:build",
+    "build:watch": "pnpm -r run _phase:build --parallel",
+    "validate": "pnpm -r run _phase:validate",
+    "test": "pnpm -r run _phase:test",
+    "format": "pnpm -r run _phase:format",
+    "svelte-check": "pnpm -r run _phase:svelte-check",
+    "bundle": "pnpm -r run _phase:bundle",
+    "package": "pnpm -r run _phase:package",
+    "docker:build": "pnpm -r run _phase:docker-build",
+    "docker:staging": "pnpm -r run _phase:docker-staging"
+  },
+  "engines": {
+    "node": ">=12.13.0 <13.0.0 || >=14.15.0 <15.0.0 || >=16.0.0",
+    "pnpm": "8.15.9"
+  }
+}
