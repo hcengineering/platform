@@ -77,6 +77,9 @@ export type ClientFactory = (token: string, endpoint: string, opt?: ClientFactor
 // ui - will filter out all server element's and all UI disabled elements.
 export type FilterMode = 'none' | 'client' | 'ui'
 
+export const pingConst = 'ping'
+export const pongConst = 'pong!'
+
 export default plugin(clientId, {
   metadata: {
     ClientSocketFactory: '' as Metadata<ClientSocketFactory>,

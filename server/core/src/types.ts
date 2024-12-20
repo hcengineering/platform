@@ -497,6 +497,7 @@ export interface SessionRequest {
 export interface ClientSessionCtx {
   ctx: MeasureContext
   sendResponse: (msg: any) => Promise<void>
+  sendPong: () => void
   sendError: (msg: any, error: any) => Promise<void>
 }
 
@@ -553,6 +554,8 @@ export interface ConnectionSocket {
   isClosed: boolean
   close: () => void
   send: (ctx: MeasureContext, msg: Response<any>, binary: boolean, compression: boolean) => void
+
+  sendPong: () => void
   data: () => Record<string, any>
 
   readRequest: (buffer: Buffer, binary: boolean) => Request<any>
@@ -664,7 +667,7 @@ export interface SessionManager {
     ws: ConnectionSocket,
     request: Request<any>,
     workspace: string // wsId, toWorkspaceString()
-  ) => void
+  ) => Promise<void>
 }
 
 /**
@@ -692,3 +695,6 @@ export type ServerFactory = (
   accountsUrl: string,
   externalStorage: StorageAdapter
 ) => () => Promise<void>
+
+export const pingConst = 'ping'
+export const pongConst = 'pong!'

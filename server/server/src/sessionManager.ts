@@ -15,8 +15,6 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  TxFactory,
-  WorkspaceEvent,
   cutObjectArray,
   generateId,
   isArchivingMode,
@@ -25,8 +23,10 @@ import core, {
   isWorkspaceCreating,
   systemAccountEmail,
   toWorkspaceString,
+  TxFactory,
   versionToString,
   withContext,
+  WorkspaceEvent,
   type BaseWorkspaceInfo,
   type Branding,
   type BrandingMap,
@@ -40,6 +40,7 @@ import { unknownError, type Status } from '@hcengineering/platform'
 import { type HelloRequest, type HelloResponse, type Request, type Response } from '@hcengineering/rpc'
 import {
   LOGGING_ENABLED,
+  pingConst,
   Pipeline,
   PipelineFactory,
   ServerFactory,
@@ -240,7 +241,7 @@ class TSessionManager implements SessionManager {
             if (s[1].socket.checkState()) {
               s[1].socket.send(
                 workspace.context,
-                { result: 'ping' },
+                { result: pingConst },
                 s[1].session.binaryMode,
                 s[1].session.useCompression
               )
@@ -724,7 +725,8 @@ class TSessionManager implements SessionManager {
         ctx,
         sendError: async (msg, error: Status) => {
           // Assume no error send
-        }
+        },
+        sendPong: () => {}
       }
 
       const status = (await session.findAllRaw(ctx, core.class.UserStatus, { user: user._id }, { limit: 1 }))[0]
@@ -933,7 +935,7 @@ class TSessionManager implements SessionManager {
     ws: ConnectionSocket,
     request: Request<any>,
     workspace: string // wsId, toWorkspaceString()
-  ): void {
+  ): Promise<void> {
     const backupMode = service.getMode() === 'backup'
 
     const userCtx = requestCtx.newChild(
@@ -949,7 +951,7 @@ class TSessionManager implements SessionManager {
     const reqId = generateId()
 
     const st = Date.now()
-    void userCtx
+    return userCtx
       .with(`🧭 ${backupMode ? 'handleBackup' : 'handleRequest'}`, {}, async (ctx) => {
         if (request.time != null) {
           const delta = Date.now() - request.time
@@ -1023,6 +1025,9 @@ class TSessionManager implements SessionManager {
               queue: service.requests.size
             })
             userCtx.end()
+          },
+          sendPong: () => {
+            ws.sendPong()
           },
           ctx,
           sendError: async (msg, error: Status) => {
@@ -1137,7 +1142,7 @@ export function startSessionManager (
     shutdown: opt.serverFactory(
       sessions,
       (rctx, service, ws, msg, workspace) => {
-        sessions.handleRequest(rctx, service, ws, msg, workspace)
+        void sessions.handleRequest(rctx, service, ws, msg, workspace)
       },
       ctx,
       opt.pipelineFactory,

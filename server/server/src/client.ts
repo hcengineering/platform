@@ -39,8 +39,8 @@ import core, {
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import {
   BackupClientOps,
-  SessionDataImpl,
   createBroadcastEvent,
+  SessionDataImpl,
   type ClientSessionCtx,
   type ConnectionSocket,
   type Pipeline,
@@ -98,9 +98,8 @@ export class ClientSession implements Session {
   }
 
   async ping (ctx: ClientSessionCtx): Promise<void> {
-    // console.log('ping')
     this.lastRequest = Date.now()
-    await ctx.sendResponse('pong!')
+    ctx.sendPong()
   }
 
   async loadModel (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string): Promise<void> {
