@@ -1346,7 +1346,7 @@ export function devTool (
   // .description('restore workspace transactions and minio resources from previous dump.')
   // .action(async (workspace: string, cmd) => {
   //   const { dbUrl, txes } = prepareTools()
-  //   await diffWorkspace(dbUrl, getWorkspaceId(workspace), txes)
+  //   await diffWorkspace(dbUrl, workspace, txes)
   // })
 
   // program

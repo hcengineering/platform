@@ -774,7 +774,7 @@ export class PlatformWorker {
             workerCtx,
             this.installations,
             {
-              dbName: (workspaceInfo as any).dbName,
+              dataId: workspaceInfo.dataId,
               url: workspaceInfo.url,
               uuid: workspaceInfo.uuid
             },

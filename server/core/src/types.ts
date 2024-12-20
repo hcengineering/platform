@@ -602,8 +602,7 @@ export interface Workspace {
   workspaceName: string
   workspaceUuid: WorkspaceUuid
   workspaceUrl: string
-  // TODO: make it optional after fixing all type errors
-  workspaceDataId: string
+  workspaceDataId?: string
   branding: Branding | null
 }
 

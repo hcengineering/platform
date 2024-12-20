@@ -79,7 +79,7 @@ class TransactorRpcTarget extends RpcTarget {
 export class TransactorRpc extends WorkerEntrypoint<Env> {
   async openRpc (token: string, workspaceId: string): Promise<TransactorRpcTarget> {
     const decodedToken = decodeToken(token, true, this.env.SERVER_SECRET)
-    const id = this.env.TRANSACTOR.idFromName(decodedToken.workspace.name)
+    const id = this.env.TRANSACTOR.idFromName(decodedToken.workspace)
     const stub = this.env.TRANSACTOR.get(id)
     return new TransactorRpcTarget(token, workspaceId, stub)
   }

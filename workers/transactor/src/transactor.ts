@@ -338,7 +338,7 @@ export class Transactor extends DurableObject<Env> {
     }
     // By design, all fetches to this durable object will be for the same workspace
     if (this.workspace === '') {
-      this.workspace = token.workspace.name
+      this.workspace = token.workspace
     }
     return session.session
   }
@@ -354,7 +354,19 @@ export class Transactor extends DurableObject<Env> {
     const cs = this.createDummyClientSocket()
     try {
       const session = await this.makeRpcSession(rawToken, cs)
-      result = await session.findAllRaw(this.measureCtx, _class, query ?? {}, options ?? {})
+      const sessionCtx: ClientSessionCtx = {
+        ctx: this.measureCtx,
+        socialStringsToUsers: new Map(), // TODO: Implement
+        sendResponse: async (msg) => {
+          result = msg
+        },
+        // TODO: Inedeed, the pipeline doesn't return errors,
+        // it just logs them to console and return an empty result
+        sendError: async (msg, error) => {
+          result = { error: `${msg}`, status: `${error}` }
+        }
+      }
+      result = await session.findAllRaw(sessionCtx, _class, query ?? {}, options ?? {})
     } catch (error: any) {
       result = { error: `${error}` }
     } finally {
@@ -370,6 +382,7 @@ export class Transactor extends DurableObject<Env> {
       const session = await this.makeRpcSession(rawToken, cs)
       const sessionCtx: ClientSessionCtx = {
         ctx: this.measureCtx,
+        socialStringsToUsers: new Map(), // TODO: Implement
         sendResponse: async (msg) => {
           result = msg
         },
@@ -403,6 +416,7 @@ export class Transactor extends DurableObject<Env> {
       const session = await this.makeRpcSession(rawToken, cs)
       const sessionCtx: ClientSessionCtx = {
         ctx: this.measureCtx,
+        socialStringsToUsers: new Map(), // TODO: Implement
         sendResponse: async (msg) => {
           result = msg
         },

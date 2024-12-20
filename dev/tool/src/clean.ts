@@ -1056,7 +1056,7 @@ export async function removeDuplicateIds (
   //   const initWS = workspaces.filter((p) => initWorkspaces.includes(p.uuid))
   //   const ids = new Map<string, RelatedDocument[]>()
   //   for (const workspace of initWS) {
-  //     const db = getWorkspaceMongoDB(_client, (workspace as any).dbName)
+  //     const db = getWorkspaceMongoDB(_client, workspace.dataId)
 
   //     const txex = await db.collection(DOMAIN_TX).find<TxCUD<Doc>>({}).toArray()
   //     const txesArr = []
@@ -1106,10 +1106,10 @@ export async function removeDuplicateIds (
 
   //     ctx.info(`Processing workspace ${workspace.name ?? workspace.url ?? workspace.uuid}`)
   //     const workspaceId = workspace.uuid
-  //     const db = getWorkspaceMongoDB(_client, (workspace as any).dbName)
+  //     const db = getWorkspaceMongoDB(_client, workspace.dataId)
   //     const plugins = [workspace.uuid]
-  //     if ((workspace as any).dbName != null) {
-  //       plugins.push((workspace as any).dbName)
+  //     if (workspace.dataId != null) {
+  //       plugins.push(workspace.dataId)
   //     }
 
   //     const check = await db.collection(DOMAIN_MIGRATION).findOne({ state, plugin: { $in: plugins } })

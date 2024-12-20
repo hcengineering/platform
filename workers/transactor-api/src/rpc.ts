@@ -15,7 +15,7 @@
 
 import {
   type Account,
-  type AccountClient,
+  type Client,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -48,7 +48,7 @@ export interface TransactorRawApi extends Storage {
 export async function createRpcClient (
   transactorService: TransactorService,
   options: ConnectOptions
-): Promise<AccountClient> {
+): Promise<Client> {
   let token = options.workspaceToken
   if (token === undefined) {
     if (options.authOptions === undefined) {
@@ -67,7 +67,7 @@ export async function createRpcClient (
   return client
 }
 
-class TransactorRpcClient implements AccountClient {
+class TransactorRpcClient implements Client {
   private disposed = false
   private model: ModelDb | undefined
   private hierarchy: Hierarchy | undefined

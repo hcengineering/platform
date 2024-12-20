@@ -24,7 +24,7 @@ import {
   unpackModel
 } from '@hcengineering/cloud-transactor-api'
 import contact, { AvatarType, type Person } from '@hcengineering/contact'
-import core, { generateId, type AccountClient, type Ref, type TxCreateDoc, TxOperations } from '@hcengineering/core'
+import core, { buildSocialIdString, type Client, generateId, type Ref, SocialIdType, type TxCreateDoc, TxOperations } from '@hcengineering/core'
 
 async function callClient<T> (client: T, method: () => Promise<any>): Promise<Response> {
   try {
@@ -66,11 +66,11 @@ export default {
       return await transactorService.openRpc(info.token, params.workspace)
     }
 
-    async function rpcClient (params: Record<string, any>): Promise<AccountClient> {
+    async function rpcClient (params: Record<string, any>): Promise<Client> {
       return await createRpcClient(transactorService, getConnectOpts(params))
     }
 
-    async function httpClient (params: Record<string, any>): Promise<AccountClient> {
+    async function httpClient (params: Record<string, any>): Promise<Client> {
       return await createHttpClient(env.HTTP_API_URL, getConnectOpts(params))
     }
 
@@ -114,8 +114,8 @@ export default {
       })
       .get('/demo-tx-raw/:email/:password/:workspace', async ({ params }) => {
         const client = await rawClient(params)
+        const socialString = buildSocialIdString({ type: SocialIdType.EMAIL, value: params.email })
         return await callClient(client, async () => {
-          const account = await client.getAccount()
           const id = generateId()
           const tx: TxCreateDoc<Person> = {
             _id: id as Ref<TxCreateDoc<Person>>,
@@ -123,10 +123,10 @@ export default {
             space: core.space.Tx,
             objectId: id as Ref<Person>,
             objectClass: contact.class.Person,
-            objectSpace: account.space,
+            objectSpace: contact.space.Contacts,
             modifiedOn: Date.now(),
-            modifiedBy: account._id,
-            createdBy: account._id,
+            modifiedBy: socialString,
+            createdBy: socialString,
             attributes: {
               name: 'Person ' + id,
               city: 'Unknown',
@@ -139,9 +139,9 @@ export default {
       .get('/demo-tx-rpc/:email/:password/:workspace', async ({ params }) => {
         const client = await rpcClient({ ...params, loadModel: true })
         return await callClient(client, async () => {
-          const account = await client.getAccount()
-          const txops = new TxOperations(client, account._id)
-          return await txops.createDoc(contact.class.Person, account.space, {
+          const socialString = buildSocialIdString({ type: SocialIdType.EMAIL, value: params.email })
+          const txops = new TxOperations(client, socialString)
+          return await txops.createDoc(contact.class.Person, contact.space.Contacts, {
             name: 'Person ' + generateId(),
             city: 'Unknown',
             avatarType: AvatarType.COLOR
@@ -151,9 +151,9 @@ export default {
       .get('/demo-tx-http/:email/:password/:workspace', async ({ params }) => {
         const client = await httpClient({ ...params, loadModel: true })
         return await callClient(client, async () => {
-          const account = await client.getAccount()
-          const txops = new TxOperations(client, account._id)
-          return await txops.createDoc(contact.class.Person, account.space, {
+          const socialString = buildSocialIdString({ type: SocialIdType.EMAIL, value: params.email })
+          const txops = new TxOperations(client, socialString)
+          return await txops.createDoc(contact.class.Person, contact.space.Contacts, {
             name: 'Person ' + generateId(),
             city: 'Unknown',
             avatarType: AvatarType.COLOR

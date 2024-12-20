@@ -15,7 +15,7 @@
 
 import {
   type Account,
-  type AccountClient,
+  type Client,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -35,7 +35,7 @@ import { type ConnectOptions } from './types'
 import { getWorkspaceLogin } from './account'
 import { decodeModel } from './utils'
 
-export async function createHttpClient (httpApiWorkerUrl: string, options: ConnectOptions): Promise<AccountClient> {
+export async function createHttpClient (httpApiWorkerUrl: string, options: ConnectOptions): Promise<Client> {
   let token = options.workspaceToken
   if (token === undefined) {
     if (options.authOptions === undefined) {
@@ -54,7 +54,7 @@ export async function createHttpClient (httpApiWorkerUrl: string, options: Conne
   return client
 }
 
-class TransactorHttpClient implements AccountClient {
+class TransactorHttpClient implements Client {
   private model: ModelDb | undefined
   private hierarchy: Hierarchy | undefined
 

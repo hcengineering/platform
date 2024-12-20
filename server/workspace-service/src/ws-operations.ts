@@ -202,7 +202,7 @@ export async function upgradeWorkspace (
     const wsUrl: WorkspaceIds = {
       uuid: ws.uuid,
       url: ws.url ?? '',
-      dbName: (ws as any).dbName
+      dataId: ws.dataId
     }
 
     await upgradeWorkspaceWith(
@@ -261,31 +261,26 @@ export async function upgradeWorkspaceWith (
     toVersion: versionStr,
     workspace: ws.uuid
   })
-  const wsId: WorkspaceIds = {
+  const wsIds: WorkspaceIds = {
     uuid: ws.uuid,
     url: ws.url ?? '',
-    dbName: (ws as any).dbName
+    dataId: ws.dataId
   }
 
-  const token = generateToken(systemAccountUuid, wsId.uuid, { service: 'workspace' })
+  const token = generateToken(systemAccountUuid, wsIds.uuid, { service: 'workspace' })
   let progress = 0
 
   const updateProgressHandle = setInterval(() => {
     void handleWsEvent?.('progress', version, progress)
   }, 5000)
 
-  const wsUrl: WorkspaceIds = {
-    uuid: ws.uuid,
-    url: ws.url ?? '',
-    dbName: (ws as any).dbName
-  }
   try {
     const contextData = new SessionDataImpl(
       systemAccount,
       'backup',
       true,
       { targets: {}, txes: [] },
-      wsUrl,
+      wsIds,
       null,
       true,
       new Map(),
@@ -299,7 +294,7 @@ export async function upgradeWorkspaceWith (
     await upgradeModel(
       ctx,
       await getTransactorEndpoint(token, external ? 'external' : 'internal'),
-      wsId,
+      wsIds,
       txes,
       pipeline,
       connection,
