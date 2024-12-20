@@ -200,40 +200,51 @@ export class MinioService implements StorageAdapter {
         try {
           if (stream === undefined && !done) {
             const rprefix = rootPrefix ?? ''
-            stream = this.client.listObjects(this.getBucketId(workspaceId), rprefix, true)
-            stream.on('end', () => {
-              stream?.destroy()
-              done = true
-              stream = undefined
-              hasMore = false
-              onNext()
-            })
-            stream.on('error', (err) => {
-              stream?.destroy()
-              stream = undefined
-              error = err
-              hasMore = false
-              onNext()
-            })
-            stream.on('data', (data) => {
-              if (data.name !== undefined) {
-                const _id = this.stripPrefix(rootPrefix, data.name)
-                buffer.push({
-                  _id: _id as Ref<Blob>,
-                  _class: core.class.Blob,
-                  etag: data.etag,
-                  size: data.size,
-                  provider: this.opt.name,
-                  space: core.space.Configuration,
-                  modifiedBy: core.account.ConfigUser,
-                  modifiedOn: data.lastModified.getTime()
-                })
-              }
-              onNext()
-              if (buffer.length > 100) {
-                stream?.pause()
-              }
-            })
+            const newStream = this.client.listObjects(this.getBucketId(workspaceId), rprefix, true)
+            stream = newStream as BucketStream<BucketItem>
+
+            // Set up event handlers only if stream is defined
+            if (stream) {
+              stream.on('end', () => {
+                if (stream) {
+                  stream.destroy()
+                  stream = undefined
+                }
+                done = true
+                hasMore = false
+                onNext()
+              })
+
+              stream.on('error', (err) => {
+                if (stream) {
+                  stream.destroy()
+                  stream = undefined
+                }
+                error = err
+                hasMore = false
+                onNext()
+              })
+
+              stream.on('data', (data) => {
+                if (data.name !== undefined) {
+                  const _id = this.stripPrefix(rootPrefix, data.name)
+                  buffer.push({
+                    _id: _id as Ref<Blob>,
+                    _class: core.class.Blob,
+                    etag: data.etag,
+                    size: data.size,
+                    provider: this.opt.name,
+                    space: core.space.Configuration,
+                    modifiedBy: core.account.ConfigUser,
+                    modifiedOn: data.lastModified.getTime()
+                  })
+                }
+                onNext()
+                if (buffer.length > 100 && stream) {
+                  stream.pause()
+                }
+              })
+            }
           }
         } catch (err: any) {
           const msg = (err?.message as string) ?? ''

@@ -49,7 +49,7 @@ describe('postgres operations', () => {
   let model: ModelDb
   let client: Client
   let operations: TxOperations
-  let serverStorage: DbAdapter
+  let serverStorage: DbAdapter | undefined
 
   afterAll(async () => {
     clientRef.close()
@@ -75,7 +75,9 @@ describe('postgres operations', () => {
     } catch (err) {
       console.log(err)
     }
-    await serverStorage?.close()
+    if (serverStorage !== undefined) {
+      await serverStorage.close()
+    }
   })
 
   async function initDb (): Promise<void> {
@@ -109,7 +111,7 @@ describe('postgres operations', () => {
     await txStorage.close()
 
     const ctx = new MeasureMetricsContext('client', {})
-    const serverStorage = await createPostgresAdapter(
+    serverStorage = await createPostgresAdapter(
       ctx,
       hierarchy,
       dbUri,
@@ -121,10 +123,15 @@ describe('postgres operations', () => {
     )
     await serverStorage.init?.()
     client = await createClient(async (handler) => {
+      if (serverStorage === undefined) {
+        throw new Error('Server storage not initialized')
+      }
+      // Create a scoped reference that TypeScript can verify is defined
+      const storage = serverStorage
       const st: ClientConnection = {
         isConnected: () => true,
-        findAll: async (_class, query, options) => await serverStorage.findAll(ctx, _class, query, options),
-        tx: async (tx) => await serverStorage.tx(ctx, tx),
+        findAll: async (_class, query, options) => await storage.findAll(ctx, _class, query, options),
+        tx: async (tx) => await storage.tx(ctx, tx),
         searchFulltext: async () => ({ docs: [] }),
         close: async () => {},
         loadChunk: async (domain): Promise<DocChunk> => await Promise.reject(new Error('unsupported')),

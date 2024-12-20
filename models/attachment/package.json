@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "workspace:^0.6.0",
+    "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint": "^8.54.0",
@@ -35,12 +36,12 @@
     "@hcengineering/model": "workspace:^0.6.11",
     "@hcengineering/model-core": "workspace:^0.6.0",
     "@hcengineering/model-preference": "workspace:^0.6.0",
+    "@hcengineering/model-presentation": "workspace:^0.6.0",
+    "@hcengineering/model-uploader": "workspace:^0.6.0",
     "@hcengineering/model-view": "workspace:^0.6.0",
     "@hcengineering/platform": "workspace:^0.6.11",
     "@hcengineering/ui": "workspace:^0.6.15",
     "@hcengineering/view": "workspace:^0.6.13",
-    "@hcengineering/model-presentation": "workspace:^0.6.0",
-    "@hcengineering/model-uploader": "workspace:^0.6.0",
     "@hcengineering/workbench": "workspace:^0.6.16"
   }
 }

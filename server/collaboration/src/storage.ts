@@ -53,8 +53,16 @@ export async function loadCollabYdoc (
   // it is either already gc-ed, or gc not needed and it is disabled
   const ydoc = new YDoc({ guid: generateId(), gc: false })
 
-  const buffer = await storageAdapter.read(ctx, workspace, blobId)
-  return yDocFromBuffer(Buffer.concat(buffer as any), ydoc)
+  const bufferArray: Buffer[] = await storageAdapter.read(ctx, workspace, blobId)
+  // Use Buffer's subarray method to maintain type compatibility
+  const totalLength = bufferArray.reduce((acc, buffer) => acc + buffer.length, 0)
+  const result = new Uint8Array(totalLength)
+  let offset = 0
+  for (const buffer of bufferArray) {
+    result.set(buffer.subarray(), offset)
+    offset += buffer.length
+  }
+  return yDocFromBuffer(result, ydoc)
 }
 
 /** @public */
@@ -68,6 +76,7 @@ export async function saveCollabYdoc (
   const blobId = typeof doc === 'string' ? doc : makeCollabYdocId(doc)
 
   const buffer = yDocToBuffer(ydoc)
+  // Buffer is already in correct type for storage adapter
   await storageAdapter.put(ctx, workspace, blobId, buffer, 'application/ydoc', buffer.length)
 
   return blobId
@@ -105,8 +114,16 @@ export async function loadCollabJson (
     return undefined
   }
 
-  const buffer = await storageAdapter.read(ctx, workspace, blobId)
-  return Buffer.concat(buffer as any).toString()
+  const bufferArray: Buffer[] = await storageAdapter.read(ctx, workspace, blobId)
+  // Use Buffer's subarray method to maintain type compatibility
+  const totalLength = bufferArray.reduce((acc, buffer) => acc + buffer.length, 0)
+  const result = new Uint8Array(totalLength)
+  let offset = 0
+  for (const buffer of bufferArray) {
+    result.set(buffer.subarray(), offset)
+    offset += buffer.length
+  }
+  return new TextDecoder().decode(result)
 }
 
 /** @public */

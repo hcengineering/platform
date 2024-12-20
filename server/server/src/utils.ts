@@ -42,7 +42,7 @@ export function doSessionOp (
 ): void {
   if (data.session instanceof Promise) {
     // We need to copy since we will out of protected buffer area
-    const msgCopy = Buffer.copyBytesFrom(msg)
+    const msgCopy = Buffer.from(msg.toString('binary'), 'binary')
     void data.session.then((_session) => {
       data.session = _session
       if ('session' in _session) {

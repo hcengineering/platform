@@ -83,7 +83,7 @@ class Connection implements ClientConnection {
   binaryMode = false
   private readonly requests = new Map<ReqId, RequestPromise>()
   private lastId = 0
-  private interval: number | undefined
+  private interval: NodeJS.Timeout | undefined
   private dialTimer: any | undefined
 
   private sockets = 0

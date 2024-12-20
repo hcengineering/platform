@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "workspace:^0.6.0",
+    "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint": "^8.54.0",
@@ -29,8 +30,8 @@
   },
   "dependencies": {
     "@hcengineering/activity": "workspace:^0.6.0",
-    "@hcengineering/core": "workspace:^0.6.32",
     "@hcengineering/contact": "workspace:^0.6.24",
+    "@hcengineering/core": "workspace:^0.6.32",
     "@hcengineering/model": "workspace:^0.6.11",
     "@hcengineering/model-chunter": "workspace:^0.6.0",
     "@hcengineering/model-core": "workspace:^0.6.0",

@@ -22,7 +22,7 @@ import { createLowlight } from 'lowlight'
 import { isChangeEditable } from './editable'
 import type { MermaidConfig } from 'mermaid'
 import { getCurrentTheme, isThemeDark, themeStore } from '@hcengineering/theme'
-
+import { type NodeViewRenderer, type NodeViewRendererProps, type Editor } from '@tiptap/core'
 import { createRelativePositionFromTypeIndex, type RelativePosition, type Doc as YDoc } from 'yjs'
 import { mergeAttributes } from '@tiptap/core'
 
@@ -121,7 +121,7 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
   },
 
   addNodeView () {
-    return ({ getPos, editor, node, decorations }) => {
+    return ({ getPos, editor, node, decorations }: NodeViewRendererProps) => {
       const containerNode = document.createElement('pre')
       containerNode.className = 'proseMermaidDiagram'
 
@@ -282,12 +282,14 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
           toggleSelection(false)
         },
 
-        stopEvent: (event) => {
+        stopEvent: (event: Event) => {
           if (event instanceof DragEvent && !nodeState.folded) {
             event.preventDefault()
+            return true
           }
+          return false
         },
-        update: (node, decorations) => {
+        update: (node: ProseMirrorNode, decorations: readonly Decoration[]) => {
           if (node.type.name !== MermaidExtension.name) return false
           syncState(decorations)
           return true

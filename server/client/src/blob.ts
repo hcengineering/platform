@@ -88,21 +88,36 @@ export class BlobClient {
       for (; i < 5; i++) {
         try {
           const st = Date.now()
-          let chunk: Buffer
+          let chunk: Uint8Array
 
           if (this.opt?.storageAdapter !== undefined) {
-            const chunks: Buffer[] = []
+            const chunks: Uint8Array[] = []
             const readable = await this.opt.storageAdapter.partial(ctx, this.workspace, name, written, chunkSize)
             await new Promise<void>((resolve) => {
-              readable.on('data', (data: Buffer | Uint8Array) => {
-                chunks.push(Buffer.isBuffer(data) ? data : Buffer.from(data))
+              readable.on('data', (data) => {
+                if (data instanceof Uint8Array) {
+                  chunks.push(data)
+                } else if (Buffer.isBuffer(data)) {
+                  // Convert Buffer to Uint8Array while preserving the underlying ArrayBuffer
+                  chunks.push(new Uint8Array(data.buffer, data.byteOffset, data.length))
+                } else {
+                  // Handle any other type of data by creating a new Uint8Array
+                  chunks.push(new Uint8Array(Buffer.from(data)))
+                }
               })
               readable.on('end', () => {
                 readable.destroy()
                 resolve()
               })
             })
-            chunk = Buffer.from(Buffer.concat(chunks))
+            // Combine all chunks into a single Uint8Array
+            const totalLength = chunks.reduce((acc, val) => acc + val.length, 0)
+            chunk = new Uint8Array(totalLength)
+            let offset = 0
+            for (const arr of chunks) {
+              chunk.set(arr, offset)
+              offset += arr.length
+            }
           } else {
             const header: Record<string, string> = {
               Authorization: 'Bearer ' + this.token
@@ -135,7 +150,8 @@ export class BlobClient {
               // No file, so make it empty
               throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace.name}/${name}`)
             }
-            chunk = Buffer.from(await response.arrayBuffer())
+            // Convert ArrayBuffer directly to Uint8Array
+            chunk = new Uint8Array(await response.arrayBuffer())
 
             if (header.Range == null) {
               size = chunk.length
@@ -153,7 +169,8 @@ export class BlobClient {
           }
 
           await new Promise<void>((resolve, reject) => {
-            writable.write(chunk, (err) => {
+            // Convert Uint8Array to Buffer for stream writing
+            writable.write(Buffer.from(chunk), (err) => {
               if (err != null) {
                 reject(err)
               }

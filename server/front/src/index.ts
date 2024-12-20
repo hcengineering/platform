@@ -605,12 +605,12 @@ export function start (
           const contentType = response.headers['content-type'] ?? 'application/octet-stream'
           const data: Buffer[] = []
           response
-            .on('data', function (chunk) {
+            .on('data', function (chunk: Buffer) {
               data.push(chunk)
             })
             .on('end', function () {
               const buffer = Buffer.concat(data)
-              config.storageAdapter
+              void config.storageAdapter
                 .put(ctx, payload.workspace, id, buffer, contentType, buffer.length)
                 .then(async () => {
                   res.status(200).send({
@@ -683,13 +683,13 @@ export function start (
         const contentType = response.headers['content-type']
         const data: Buffer[] = []
         response
-          .on('data', function (chunk) {
+          .on('data', function (chunk: Buffer) {
             data.push(chunk)
           })
           .on('end', function () {
             const buffer = Buffer.concat(data)
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
-            config.storageAdapter
+            void config.storageAdapter
               .put(ctx, payload.workspace, id, buffer, contentType ?? 'application/octet-stream', buffer.length)
               .then(async () => {
                 res.status(200).send({
@@ -699,9 +699,11 @@ export function start (
                 })
               })
               .catch((err: any) => {
-                Analytics.handleError(err)
-                ctx.error('error', { err })
-                res.status(500).send(err)
+                if (err !== null) {
+                  Analytics.handleError(err)
+                  ctx.error('error', { err })
+                  res.status(500).send(err)
+                }
               })
           })
           .on('error', function (err) {

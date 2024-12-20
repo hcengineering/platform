@@ -291,21 +291,21 @@ class TSessionManager implements SessionManager {
     return this.sessionFactory(token, pipeline, workspaceId, branding)
   }
 
-  async getWorkspaceInfo (ctx: MeasureContext, token: string): Promise<WorkspaceLoginInfo | undefined> {
+  async getWorkspaceInfo (ctx: MeasureContext, token: string | Token): Promise<WorkspaceLoginInfo | undefined> {
     try {
+      // For string tokens, use directly. For Token objects, use the string value
+      const tokenStr = typeof token === 'string' ? token : token
+      const workspaceId = typeof token === 'string' ? token : token.workspace
+
       const userInfo = await (
-        await fetch(this.accountsUrl, {
-          method: 'POST',
+        await fetch(`${this.accountsUrl}/workspace/${workspaceId}`, {
+          method: 'GET',
           headers: {
-            Authorization: 'Bearer ' + token,
+            Authorization: `Bearer ${tokenStr}`,
             'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            method: 'getWorkspaceInfo',
-            params: [true]
-          })
+          }
         })
-      ).json()
+      ).json() as { error?: any, result?: WorkspaceLoginInfo }
 
       if (userInfo.error !== undefined) {
         throw new Error(JSON.stringify(userInfo.error))

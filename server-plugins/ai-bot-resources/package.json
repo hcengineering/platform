@@ -23,6 +23,7 @@
   "devDependencies": {
     "@hcengineering/platform-rig": "workspace:^0.6.0",
     "@types/jest": "^29.5.5",
+    "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint": "^8.54.0",
@@ -47,8 +48,8 @@
     "@hcengineering/server-activity-resources": "workspace:^0.6.0",
     "@hcengineering/server-ai-bot": "workspace:^0.6.0",
     "@hcengineering/server-core": "workspace:^0.6.1",
-    "@hcengineering/server-token": "workspace:^0.6.11",
     "@hcengineering/server-templates": "workspace:^0.6.0",
+    "@hcengineering/server-token": "workspace:^0.6.11",
     "@hcengineering/templates": "workspace:^0.6.11"
   }
 }

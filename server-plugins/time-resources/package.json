@@ -23,18 +23,19 @@
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "workspace:^0.6.0",
+    "@types/jest": "^29.5.5",
+    "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-promise": "^6.1.1",
-    "eslint-plugin-n": "^15.4.0",
-    "eslint": "^8.54.0",
     "@typescript-eslint/parser": "^6.11.0",
+    "eslint": "^8.54.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
-    "prettier": "^3.1.0",
-    "typescript": "^5.3.3",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.4.0",
+    "eslint-plugin-promise": "^6.1.1",
     "jest": "^29.7.0",
+    "prettier": "^3.1.0",
     "ts-jest": "^29.1.1",
-    "@types/jest": "^29.5.5"
+    "typescript": "^5.3.3"
   },
   "dependencies": {
     "@hcengineering/contact": "workspace:^0.6.24",
@@ -44,10 +45,10 @@
     "@hcengineering/server-core": "workspace:^0.6.1",
     "@hcengineering/server-notification": "workspace:^0.6.1",
     "@hcengineering/server-notification-resources": "workspace:^0.6.0",
-    "@hcengineering/task": "workspace:^0.6.20",
-    "@hcengineering/tracker": "workspace:^0.6.24",
     "@hcengineering/server-time": "workspace:^0.6.0",
+    "@hcengineering/task": "workspace:^0.6.20",
     "@hcengineering/text": "workspace:^0.6.5",
-    "@hcengineering/time": "workspace:^0.6.0"
+    "@hcengineering/time": "workspace:^0.6.0",
+    "@hcengineering/tracker": "workspace:^0.6.24"
   }
 }

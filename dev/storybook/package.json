@@ -22,6 +22,7 @@
     "@storybook/svelte": "^7.0.6",
     "@storybook/svelte-webpack5": "^7.0.6",
     "@storybook/testing-library": "^0.0.14-next.2",
+    "@types/node": "^22.10.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "resolve-url-loader": "^5.0.0",

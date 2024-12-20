@@ -35,8 +35,8 @@ export class CloudCollabProvider extends WebsocketProvider implements Provider {
 
     super(url, encodeURIComponent(name), document, { params })
 
-    this.loaded = new Promise((resolve) => {
-      this.on('synced', resolve)
+    this.loaded = new Promise<void>((resolve) => {
+      this.on('sync', (_state: boolean) => { resolve() })
     })
   }
 

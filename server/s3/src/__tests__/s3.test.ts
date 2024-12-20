@@ -62,9 +62,15 @@ describe('s3 operations', () => {
     const w1Objects2 = await objectsToArray(toolCtx, minioService, ws1)
     expect(w1Objects2.map((it) => it._id)).toEqual(['obj1.txt', 'obj2.txt'])
 
-    const data = Buffer.concat(await minioService.read(toolCtx, ws1, 'obj1.txt'))
+    const chunks = await minioService.read(toolCtx, ws1, 'obj1.txt')
+    const data = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0))
+    let offset = 0
+    for (const chunk of chunks) {
+      data.set(chunk.subarray(), offset)
+      offset += chunk.length
+    }
 
-    expect('obj1').toEqual(data.toString())
+    expect('obj1').toEqual(new TextDecoder().decode(data))
 
     existingTestBuckets = await minioService.listBuckets(toolCtx)
     expect(existingTestBuckets.length).toEqual(2)

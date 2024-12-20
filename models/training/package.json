@@ -21,25 +21,21 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.5",
+    "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
+    "eslint": "^8.54.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-n": "^15.4.0",
     "eslint-plugin-promise": "^6.1.1",
-    "eslint": "^8.54.0",
-    "prettier": "^3.1.0",
     "jest": "^29.7.0",
+    "prettier": "^3.1.0",
     "ts-jest": "^29.1.1",
-    "@types/jest": "^29.5.5",
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.6.0",
-    "@hcengineering/model-questions": "workspace:^0.1.0",
-    "@hcengineering/questions": "workspace:^0.1.0",
-    "@hcengineering/training": "workspace:^0.1.0",
-    "@hcengineering/training-resources": "workspace:^0.1.0",
     "@hcengineering/activity": "workspace:^0.6.0",
     "@hcengineering/attachment": "workspace:^0.6.14",
     "@hcengineering/contact": "workspace:^0.6.24",
@@ -49,15 +45,20 @@
     "@hcengineering/model-contact": "workspace:^0.6.1",
     "@hcengineering/model-core": "workspace:^0.6.0",
     "@hcengineering/model-notification": "workspace:^0.6.0",
+    "@hcengineering/model-print": "workspace:^0.6.0",
+    "@hcengineering/model-questions": "workspace:^0.1.0",
     "@hcengineering/model-tracker": "workspace:^0.6.0",
     "@hcengineering/model-view": "workspace:^0.6.0",
     "@hcengineering/model-workbench": "workspace:^0.6.1",
     "@hcengineering/notification": "workspace:^0.6.23",
     "@hcengineering/platform": "workspace:^0.6.11",
+    "@hcengineering/platform-rig": "workspace:^0.6.0",
+    "@hcengineering/questions": "workspace:^0.1.0",
     "@hcengineering/setting": "workspace:^0.6.17",
+    "@hcengineering/training": "workspace:^0.1.0",
+    "@hcengineering/training-resources": "workspace:^0.1.0",
     "@hcengineering/ui": "workspace:^0.6.15",
     "@hcengineering/view": "workspace:^0.6.13",
-    "@hcengineering/workbench": "workspace:^0.6.16",
-    "@hcengineering/model-print": "workspace:^0.6.0"
+    "@hcengineering/workbench": "workspace:^0.6.16"
   }
 }

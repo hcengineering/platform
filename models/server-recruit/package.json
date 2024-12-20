@@ -17,27 +17,28 @@
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "workspace:^0.6.0",
+    "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-promise": "^6.1.1",
-    "eslint-plugin-n": "^15.4.0",
-    "eslint": "^8.54.0",
     "@typescript-eslint/parser": "^6.11.0",
+    "eslint": "^8.54.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.4.0",
+    "eslint-plugin-promise": "^6.1.1",
     "prettier": "^3.1.0",
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@hcengineering/contact": "workspace:^0.6.24",
     "@hcengineering/core": "workspace:^0.6.32",
     "@hcengineering/model": "workspace:^0.6.11",
-    "@hcengineering/platform": "workspace:^0.6.11",
-    "@hcengineering/server-recruit": "workspace:^0.6.0",
-    "@hcengineering/server-contact": "workspace:^0.6.1",
-    "@hcengineering/contact": "workspace:^0.6.24",
-    "@hcengineering/server-core": "workspace:^0.6.1",
     "@hcengineering/model-recruit": "workspace:^0.6.0",
     "@hcengineering/notification": "workspace:^0.6.23",
+    "@hcengineering/platform": "workspace:^0.6.11",
+    "@hcengineering/server-contact": "workspace:^0.6.1",
+    "@hcengineering/server-core": "workspace:^0.6.1",
     "@hcengineering/server-notification": "workspace:^0.6.1",
+    "@hcengineering/server-recruit": "workspace:^0.6.0",
     "@hcengineering/server-view": "workspace:^0.6.0"
   }
 }

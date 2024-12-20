@@ -25,11 +25,10 @@ import {
 export { XmlElement as YXmlElement, XmlText as YXmlText, AbstractType as YAbstractType } from 'yjs'
 
 /** @public */
-export function yDocFromBuffer (buffer: Buffer, ydoc?: YDoc): YDoc {
+export function yDocFromBuffer (buffer: Uint8Array, ydoc?: YDoc): YDoc {
   ydoc ??= new YDoc({ guid: generateId(), gc: false })
   try {
-    const uint8arr = new Uint8Array(buffer)
-    applyUpdate(ydoc, uint8arr)
+    applyUpdate(ydoc, buffer)
     return ydoc
   } catch (err) {
     throw new Error('Failed to apply ydoc update', { cause: err })
@@ -39,7 +38,7 @@ export function yDocFromBuffer (buffer: Buffer, ydoc?: YDoc): YDoc {
 /** @public */
 export function yDocToBuffer (ydoc: YDoc): Buffer {
   const update = encodeStateAsUpdate(ydoc)
-  return Buffer.from(update.buffer)
+  return Buffer.from(update)
 }
 
 /** @public */
