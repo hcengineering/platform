@@ -23517,7 +23517,7 @@ importers:
         specifier: ^29.5.5
         version: 29.5.14
       '@types/node':
-        specifier: ~20.11.16
+        specifier: ~20.11.30
         version: 20.11.30
       '@types/uuid':
         specifier: ^8.3.1
