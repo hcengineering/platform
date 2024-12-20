@@ -18,7 +18,7 @@ import platform, {
   Severity,
   Status
 } from '@hcengineering/platform'
-import type { LoginInfo, OtpInfo, WorkspaceLoginInfo, RegionInfo } from './types'
+import type { LoginInfo, OtpInfo, WorkspaceLoginInfo, RegionInfo, WorkspaceOperation } from './types'
 
 /** @public */
 export interface AccountClient {
@@ -57,9 +57,11 @@ export interface AccountClient {
   findPerson: (socialString: string) => Promise<PersonUuid | undefined>
 
   // Service methods
-  workerHandshake: (region: string, version: Data<Version>, operation: 'create' | 'upgrade' | 'all') => Promise<void>
-  getPendingWorkspace: (region: string, version: Data<Version>, operation: 'create' | 'upgrade' | 'all') => Promise<WorkspaceInfoWithStatus | null>
+  workerHandshake: (region: string, version: Data<Version>, operation: WorkspaceOperation) => Promise<void>
+  getPendingWorkspace: (region: string, version: Data<Version>, operation: WorkspaceOperation) => Promise<WorkspaceInfoWithStatus | null>
   updateWorkspaceInfo: (wsUuid: string, event: string, version: Data<Version>, progress: number, message?: string) => Promise<void>
+  listWorkspaces: (region?: string | null, includeDisabled?: boolean) => Promise<WorkspaceInfoWithStatus[]>
+  performWorkspaceOperation: (workspaceId: string | string[], event: 'archive' | 'migrate-to' | 'unarchive', ...params: any) => Promise<boolean>
 }
 
 /** @public */
@@ -348,7 +350,7 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async workerHandshake (region: string, version: Data<Version>, operation: 'create' | 'upgrade' | 'all'): Promise<void> {
+  async workerHandshake (region: string, version: Data<Version>, operation: WorkspaceOperation): Promise<void> {
     const request = {
       method: 'workerHandshake' as const,
       params: [region, version, operation]
@@ -357,7 +359,7 @@ class AccountClientImpl implements AccountClient {
     await this.rpc(request)
   }
 
-  async getPendingWorkspace (region: string, version: Data<Version>, operation: 'create' | 'upgrade' | 'all'): Promise<WorkspaceInfoWithStatus | null> {
+  async getPendingWorkspace (region: string, version: Data<Version>, operation: WorkspaceOperation): Promise<WorkspaceInfoWithStatus | null> {
     const request = {
       method: 'getPendingWorkspace' as const,
       params: [region, version, operation]
@@ -420,6 +422,24 @@ class AccountClientImpl implements AccountClient {
     const request = {
       method: 'findPerson' as const,
       params: [socialString]
+    }
+
+    return await this.rpc(request)
+  }
+
+  async listWorkspaces (region?: string | null, includeDisabled?: boolean): Promise<WorkspaceInfoWithStatus[]> {
+    const request = {
+      method: 'listWorkspaces' as const,
+      params: []
+    }
+
+    return (await this.rpc<any[]>(request)).map((ws) => this.flattenStatus(ws))
+  }
+
+  async performWorkspaceOperation (workspaceId: string | string[], event: 'archive' | 'migrate-to' | 'unarchive', ...params: any): Promise<boolean> {
+    const request = {
+      method: 'performWorkspaceOperation' as const,
+      params: [workspaceId, event, ...params]
     }
 
     return await this.rpc(request)

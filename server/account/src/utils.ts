@@ -46,7 +46,8 @@ import {
   type SocialId,
   type Workspace,
   LoginInfo,
-  WorkspaceLoginInfo
+  WorkspaceLoginInfo,
+  WorkspaceStatus
 } from './types'
 import { Analytics } from '@hcengineering/analytics'
 import { decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
@@ -792,6 +793,20 @@ export async function getWorkspaceInfoWithStatusById (db: AccountDB, uuid: strin
     ...ws,
     status
   }
+}
+
+export async function getWorkspacesInfoWithStatusByIds (db: AccountDB, uuids: string[]): Promise<WorkspaceInfoWithStatus[]> {
+  const statuses = await db.workspaceStatus.find({ workspaceUuid: { $in: uuids } })
+  const statusesMap = statuses.reduce<Record<string, WorkspaceStatus>>((sm, s) => {
+    sm[s.workspaceUuid] = s
+    return sm
+  }, {})
+  const workspaces = await db.workspace.find({ uuid: { $in: uuids } })
+
+  return workspaces.map((it) => ({
+    ...it,
+    status: statusesMap[it.uuid]
+  }))
 }
 
 export async function getWorkspaceByUrl (db: AccountDB, url: string): Promise<Workspace | null> {

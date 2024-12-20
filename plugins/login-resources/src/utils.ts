@@ -29,7 +29,7 @@ import {
   unknownError,
   unknownStatus
 } from '@hcengineering/platform'
-import presentation, { isAdminUser } from '@hcengineering/presentation'
+import presentation from '@hcengineering/presentation'
 import {
   fetchMetadataLocalStorage,
   getCurrentLocation,
@@ -212,13 +212,8 @@ export async function performWorkspaceOperation (
   operation: 'archive' | 'migrate-to' | 'unarchive',
   ...params: any[]
 ): Promise<boolean> {
-  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
-  if (accountsUrl === undefined) {
-    throw new Error('accounts url not specified')
-  }
-  if (!isAdminUser()) {
-    throw new PlatformError(unknownError('Non admin user'))
-  }
+  // TODO: this method requires a special admin token
+  // consider how to obtain it
   const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
     const loc = getCurrentLocation()
@@ -227,33 +222,23 @@ export async function performWorkspaceOperation (
     navigate(loc)
     return true
   }
-  const request = {
-    method: 'performWorkspaceOperation',
-    params: [workspace, operation, ...params] as any[]
-  }
+
   try {
-    const response = await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(request)
-    })
-    const result = await response.json()
-    if (result.error != null) {
-      throw new PlatformError(result.error)
-    }
-    return (result.result as boolean) ?? false
+    return (await getAccountClient(token).performWorkspaceOperation(workspace, operation, ...params)) ?? false
   } catch (err: any) {
-    return false
+    if (err instanceof PlatformError) {
+      await handleStatusError('Perform workspace operation error', err.status)
+      throw err
+    } else {
+      Analytics.handleError(err)
+      return false
+    }
   }
 }
-export async function getAllWorkspaces (): Promise<BaseWorkspaceInfo[]> {
-  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
-  if (accountsUrl === undefined) {
-    throw new Error('accounts url not specified')
-  }
+
+export async function getAllWorkspaces (): Promise<WorkspaceInfoWithStatus[]> {
+  // TODO: this method requires a special admin token
+  // consider how to obtain it
   const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
     const loc = getCurrentLocation()
@@ -262,36 +247,30 @@ export async function getAllWorkspaces (): Promise<BaseWorkspaceInfo[]> {
     navigate(loc)
     return []
   }
-  const request = {
-    method: 'getAllWorkspaces',
-    params: [] as any[]
-  }
+
+  let workspaces: WorkspaceInfoWithStatus[]
+
   try {
-    const response = await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(request)
-    })
-    const result = await response.json()
-    if (result.error != null) {
-      throw new PlatformError(result.error)
-    }
-    const workspaces: BaseWorkspaceInfo[] = result.result
-    workspaces.sort((a, b) => {
-      const adays = getLastVisitDays(a)
-      const bdays = getLastVisitDays(b)
-      if (adays === bdays) {
-        return getWorkspaceSize(b) - getWorkspaceSize(a)
-      }
-      return b.lastVisit - a.lastVisit
-    })
-    return workspaces
+    workspaces = await getAccountClient(token).listWorkspaces(null, true)
   } catch (err: any) {
-    return []
+    if (err instanceof PlatformError) {
+      await handleStatusError('Get workspaces error', err.status)
+    } else {
+      Analytics.handleError(err)
+    }
+    workspaces = []
   }
+
+  workspaces.sort((a, b) => {
+    const adays = getLastVisitDays(a)
+    const bdays = getLastVisitDays(b)
+    if (adays === bdays) {
+      return getWorkspaceSize(b) - getWorkspaceSize(a)
+    }
+    return b.lastVisit - a.lastVisit
+  })
+
+  return workspaces
 }
 
 export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo | null> {

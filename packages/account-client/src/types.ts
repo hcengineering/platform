@@ -25,3 +25,5 @@ export interface RegionInfo {
   region: string
   name: string
 }
+
+export type WorkspaceOperation = 'create' | 'upgrade' | 'all' | 'all+backup'

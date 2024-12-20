@@ -1,6 +1,7 @@
 // Copyright © 2024 Huly Labs.
 
 import {
+  type Account,
   Branding,
   Class,
   Doc,
@@ -10,8 +11,8 @@ import {
   MeasureMetricsContext,
   Ref,
   Tx,
-  type MeasureContext,
-  type WorkspaceIdWithUrl
+  type WorkspaceIds,
+  type MeasureContext
 } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { RPCHandler } from '@hcengineering/rpc'
@@ -100,8 +101,8 @@ export class Transactor extends DurableObject<Env> {
 
       this.sessionManager = createSessionManager(
         this.measureCtx,
-        (token: Token, pipeline: Pipeline, workspaceId: WorkspaceIdWithUrl, branding: Branding | null) =>
-          new ClientSession(token, pipeline, workspaceId, branding, false),
+        (token: Token, pipeline: Pipeline, account: Account, workspaceIds: WorkspaceIds, branding: Branding | null) =>
+          new ClientSession(token, pipeline, account, workspaceIds, branding, false),
         loadBrandingMap(), // TODO: Support branding map
         {
           pingTimeout: 10000,
@@ -125,7 +126,7 @@ export class Transactor extends DurableObject<Env> {
 
       // By design, all fetches to this durable object will be for the same workspace
       if (this.workspace === '') {
-        this.workspace = payload.workspace.name
+        this.workspace = payload.workspace
       }
 
       if (!(await this.handleSession(server, request, payload, token, sessionId))) {
@@ -177,7 +178,7 @@ export class Transactor extends DurableObject<Env> {
       remoteAddress: request.headers.get('CF-Connecting-IP') ?? '',
       userAgent: request.headers.get('user-agent') ?? '',
       language: request.headers.get('accept-language') ?? '',
-      email: token.email,
+      account: token.account,
       mode: token.extra?.mode,
       model: token.extra?.model
     }
@@ -229,7 +230,7 @@ export class Transactor extends DurableObject<Env> {
       remoteAddress: string
       userAgent: string
       language: string
-      email: string
+      account: string
       mode: any
       model: any
     }

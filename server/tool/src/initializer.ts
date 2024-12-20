@@ -99,7 +99,7 @@ export class WorkspaceInitializer {
   constructor (
     private readonly ctx: MeasureContext,
     private readonly storageAdapter: StorageAdapter,
-    private readonly wsUrl: WorkspaceIds,
+    private readonly wsIds: WorkspaceIds,
     private readonly client: TxOperations,
     private readonly initRepoDir: string
   ) {}
@@ -164,7 +164,7 @@ export class WorkspaceInitializer {
 
   private async processImport (step: ImportStep, vars: Record<string, any>, logger: ModelLogger): Promise<void> {
     try {
-      const uploader = new StorageFileUploader(this.ctx, this.storageAdapter, this.wsUrl)
+      const uploader = new StorageFileUploader(this.ctx, this.storageAdapter, this.wsIds)
       const initPath = path.resolve(this.initRepoDir, step.path)
       const importer = new UnifiedFormatImporter(this.client, uploader, logger)
       await importer.importFolder(initPath)

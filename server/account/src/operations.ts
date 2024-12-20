@@ -23,11 +23,10 @@ import {
   Version,
   SocialIdType,
   type BackupStatus,
-  type BaseWorkspaceInfo,
   type Branding,
   PersonUuid
 } from '@hcengineering/core'
-import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
+import platform, { getMetadata, PlatformError, Severity, Status, translate, unknownError } from '@hcengineering/platform'
 import { decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 
 import { accountPlugin } from './plugin'
@@ -45,7 +44,8 @@ import type {
   WorkspaceInfoWithStatus,
   WorkspaceStatus,
   SocialId,
-  WorkspaceMemberInfo
+  WorkspaceMemberInfo,
+  Workspace
 } from './types'
 import {
   cleanEmail,
@@ -73,8 +73,12 @@ import {
   getWorkspaceInfoWithStatusById,
   signUpByEmail,
   selectWorkspace,
-  doJoinByInvite
+  doJoinByInvite,
+  getWorkspacesInfoWithStatusByIds
 } from './utils'
+
+// Move to config?
+const processingTimeoutMs = 30 * 1000
 
 /* =================================== */
 /* ============OPERATIONS============= */
@@ -797,11 +801,12 @@ export async function listWorkspaces (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  region?: string | null
+  region?: string | null,
+  includeDisabled: boolean = false
 ): Promise<WorkspaceInfoWithStatus[]> {
   const { extra } = decodeTokenVerbose(ctx, token)
 
-  if (!['tool', 'backup'].includes(extra?.service)) {
+  if (!['tool', 'backup', 'admin'].includes(extra?.service)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
@@ -811,12 +816,103 @@ export async function listWorkspaces (
     return sm
   }, {})
 
-  return (await db.workspace.find(region != null ? { region } : {}))
-    .filter((it) => !statusesMap[it.uuid].isDisabled)
+  let workspaces = await db.workspace.find(region != null ? { region } : {})
+
+  if (!includeDisabled) {
+    workspaces = workspaces.filter((it) => !statusesMap[it.uuid].isDisabled)
+  }
+
+  return workspaces
     .map((it) => ({
       ...it,
       status: statusesMap[it.uuid]
     }))
+}
+
+export async function performWorkspaceOperation (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  workspaceId: string | string[],
+  event: 'archive' | 'migrate-to' | 'unarchive',
+  ...params: any
+): Promise<boolean> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+
+  if (extra?.service !== 'admin') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const workspaceUuids = Array.isArray(workspaceId) ? workspaceId : [workspaceId]
+
+  const workspaces = await getWorkspacesInfoWithStatusByIds(db, workspaceUuids)
+  if (workspaces.length === 0) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { }))
+  }
+
+  let ops = 0
+  for (const workspace of workspaces) {
+    const update: Partial<WorkspaceStatus> = {}
+    switch (event) {
+      case 'archive':
+        if (workspace.status.mode !== 'active') {
+          throw new PlatformError(unknownError('Archiving allowed only for active workspaces'))
+        }
+
+        update.mode = 'archiving-pending-backup'
+        update.processingAttempts = 0
+        update.processingProgress = 0
+        update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
+        break
+      case 'unarchive':
+        if (event === 'unarchive') {
+          if (workspace.status.mode !== 'archived') {
+            throw new PlatformError(unknownError('Unarchive allowed only for archived workspaces'))
+          }
+        }
+
+        update.mode = 'pending-restore'
+        update.processingAttempts = 0
+        update.processingProgress = 0
+        update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
+        break
+      case 'migrate-to': {
+        if (workspace.status.mode !== 'active') {
+          return false
+        }
+        if (params.length !== 1 && params[0] == null) {
+          throw new PlatformError(unknownError('Invalid region passed to migrate operation'))
+        }
+        const regions = getRegions()
+        if (regions.find((it) => it.region === params[0]) === undefined) {
+          throw new PlatformError(unknownError('Invalid region passed to migrate operation'))
+        }
+        if ((workspace.region ?? '') === params[0]) {
+          throw new PlatformError(unknownError('Invalid region passed to migrate operation'))
+        }
+
+        update.mode = 'migration-pending-backup'
+        // NOTE: will only work for Mongo accounts
+        ;(update as any).targetRegion = params[0]
+        update.processingAttempts = 0
+        update.processingProgress = 0
+        update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
+        break
+      }
+      default:
+        break
+    }
+
+    if (Object.keys(update).length !== 0) {
+      await db.workspaceStatus.updateOne(
+        { workspaceUuid: workspace.uuid },
+        update
+      )
+      ops++
+    }
+  }
+  return ops > 0
 }
 
 /**
@@ -1034,8 +1130,6 @@ export async function getPendingWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
-  // Move to config?
-  const processingTimeoutMs = 30 * 1000
   const wsLivenessDays = getMetadata(accountPlugin.metadata.WsLivenessDays)
   const wsLivenessMs = wsLivenessDays !== undefined ? wsLivenessDays * 24 * 60 * 60 * 1000 : undefined
 
@@ -1081,6 +1175,7 @@ export async function updateWorkspaceInfo (
   progress = Math.round(progress)
 
   const update: Partial<WorkspaceStatus> = {}
+  const wsUpdate: Partial<Workspace> = {}
   switch (event) {
     case 'create-started':
       update.mode = 'creating'
@@ -1116,6 +1211,54 @@ export async function updateWorkspaceInfo (
     case 'progress':
       update.processingProgress = progress
       break
+    case 'migrate-backup-started':
+      update.mode = 'migration-backup'
+      update.processingProgress = progress
+      break
+    case 'migrate-backup-done':
+      update.mode = 'migration-pending-clean'
+      update.processingProgress = progress
+      update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
+      break
+    case 'migrate-clean-started':
+      update.mode = 'migration-clean'
+      update.processingAttempts = 0
+      update.processingProgress = progress
+      break
+    case 'migrate-clean-done':
+      wsUpdate.region = (workspace as any).targetRegion ?? ''
+      update.mode = 'pending-restore'
+      update.processingProgress = progress
+      update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
+      break
+    case 'restore-started':
+      update.mode = 'restoring'
+      update.processingAttempts = 0
+      update.processingProgress = progress
+      break
+    case 'restore-done':
+      update.mode = 'active'
+      update.processingProgress = 100
+      break
+    case 'archiving-backup-started':
+      update.mode = 'archiving-backup'
+      update.processingAttempts = 0
+      update.processingProgress = progress
+      break
+    case 'archiving-backup-done':
+      update.mode = 'archiving-pending-clean'
+      update.processingProgress = progress
+      update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
+      break
+    case 'archiving-clean-started':
+      update.mode = 'archiving-clean'
+      update.processingAttempts = 0
+      update.processingProgress = progress
+      break
+    case 'archiving-clean-done':
+      update.mode = 'archived'
+      update.processingProgress = 100
+      break
     case 'ping':
     default:
       break
@@ -1132,6 +1275,13 @@ export async function updateWorkspaceInfo (
       lastProcessingTime: Date.now()
     }
   )
+
+  if (Object.keys(wsUpdate).length !== 0) {
+    await db.workspace.updateOne(
+      { uuid: workspace.uuid },
+      wsUpdate
+    )
+  }
 }
 
 export async function workerHandshake (
@@ -1152,8 +1302,6 @@ export async function workerHandshake (
   // Nothing else to do now but keeping to have track of workers in logs
 }
 
-// TODO: check what's in backup token
-// should put workspace in token
 export async function updateBackupInfo (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1175,7 +1323,7 @@ export async function updateBackupInfo (
     { workspaceUuid: workspace },
     {
       backupInfo,
-      lastProcessingTime: Date.now() // Is it needed for backup? Supposed to be only for workspace service.
+      lastProcessingTime: Date.now()
     }
   )
 }
@@ -1216,7 +1364,7 @@ export async function assignWorkspace (
   }
 }
 
-export type AccountMethods = 'login' | 'loginOtp' | 'signUp' | 'signUpOTP' | 'validateOtp' | 'createWorkspace' | 'createInviteLink' | 'sendInvite' | 'selectWorkspace' | 'join' | 'checkJoin' | 'signUpJoin' | 'confirm' | 'changePassword' | 'requestPassword' | 'restorePassword' | 'leaveWorkspace' | 'changeUsername' | 'updateWorkspaceName' | 'deleteWorkspace' | 'getRegionInfo' | 'getUserWorkspaces' | 'getWorkspaceInfo' | 'listWorkspaces' | 'getLoginInfoByToken' | 'getSocialIds' | 'getPendingWorkspace' | 'updateWorkspaceInfo' | 'workerHandshake' | 'updateBackupInfo' | 'assignWorkspace' | 'getPerson' | 'getWorkspaceMembers' | 'updateWorkspaceRole' | 'findPerson'
+export type AccountMethods = 'login' | 'loginOtp' | 'signUp' | 'signUpOTP' | 'validateOtp' | 'createWorkspace' | 'createInviteLink' | 'sendInvite' | 'selectWorkspace' | 'join' | 'checkJoin' | 'signUpJoin' | 'confirm' | 'changePassword' | 'requestPassword' | 'restorePassword' | 'leaveWorkspace' | 'changeUsername' | 'updateWorkspaceName' | 'deleteWorkspace' | 'getRegionInfo' | 'getUserWorkspaces' | 'getWorkspaceInfo' | 'listWorkspaces' | 'getLoginInfoByToken' | 'getSocialIds' | 'getPendingWorkspace' | 'updateWorkspaceInfo' | 'workerHandshake' | 'updateBackupInfo' | 'assignWorkspace' | 'getPerson' | 'getWorkspaceMembers' | 'updateWorkspaceRole' | 'findPerson' | 'performWorkspaceOperation'
 
 /**
  * @public
@@ -1262,7 +1410,8 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     workerHandshake: wrap(workerHandshake),
     updateBackupInfo: wrap(updateBackupInfo),
     assignWorkspace: wrap(assignWorkspace),
-    listWorkspaces: wrap(listWorkspaces)
+    listWorkspaces: wrap(listWorkspaces),
+    performWorkspaceOperation: wrap(performWorkspaceOperation)
   }
 }
 

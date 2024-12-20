@@ -774,16 +774,7 @@ export interface WorkspaceInfoWithStatus extends WorkspaceInfo {
   version?: Data<Version>
   lastVisit: number
   mode: WorkspaceMode
-
-  // progress?: number // Some progress
-
-  // endpoint: string
-
-  // region?: string // Transactor group name
-  // targetRegion?: string // Transactor region to move to
-
   processingProgress?: number
-
   backupInfo?: BackupStatus
 }
 

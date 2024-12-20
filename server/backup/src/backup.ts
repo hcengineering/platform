@@ -32,7 +32,6 @@ import core, {
   Ref,
   SortingOrder,
   toIdMap,
-  toWorkspaceString,
   TxProcessor,
   systemAccountUuid,
   WorkspaceUuid,
@@ -1721,7 +1720,7 @@ export async function restore (
       let serverEndpoint = await getTransactorEndpoint(token, 'external')
       serverEndpoint = serverEndpoint.replaceAll('wss://', 'https://').replace('ws://', 'http://')
       await fetch(
-        serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close&wsId=${toWorkspaceString(workspaceId)}`,
+        serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close&wsId=${workspaceId}`,
         {
           method: 'PUT'
         }
@@ -1936,7 +1935,7 @@ export async function restore (
                   }
                 }
               } catch (err: any) {
-                ctx.warn('failed to upload blob', { _id: blob._id, err, workspace: workspaceId.name })
+                ctx.warn('failed to upload blob', { _id: blob._id, err, workspace: workspaceId })
               }
             }
             docsToAdd.delete(blob._id)
@@ -1950,7 +1949,7 @@ export async function restore (
                 totalSend,
                 from: docsToAdd.size + totalSend,
                 sendSize,
-                workspace: workspaceId.name
+                workspace: workspaceId
               })
             }
           })

@@ -44,7 +44,7 @@ import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/ser
 import { createWorkspace, upgradeWorkspace } from './ws-operations'
 
 export interface WorkspaceOptions {
-  errorHandler: (workspace: WorkspaceInfo, error: any) => Promise<void>
+  errorHandler: (workspace: WorkspaceInfoWithStatus, error: any) => Promise<void>
   force: boolean
   console: boolean
   logs: string
@@ -230,11 +230,11 @@ export class WorkspaceWorker {
 
   private async _upgradeWorkspace (ctx: MeasureContext, ws: WorkspaceInfoWithStatus, opt: WorkspaceOptions): Promise<void> {
     if (
-      ws.disabled === true ||
+      ws.isDisabled === true ||
       isArchivingMode(ws.mode) ||
       isMigrationMode(ws.mode) ||
       isRestoringMode(ws.mode) ||
-      (opt.ignore ?? '').includes(ws.workspace)
+      (opt.ignore ?? '').includes(ws.uuid)
     ) {
       return
     }
@@ -259,8 +259,7 @@ export class WorkspaceWorker {
     })
 
     try {
-      const wsId = ws.uuid
-      const token = generateToken(systemAccountUuid, wsId, { service: 'workspace' })
+      const token = generateToken(systemAccountUuid, ws.uuid, { service: 'workspace' })
       const handleWsEventWithRetry = (
         event: 'upgrade-started' | 'progress' | 'upgrade-done' | 'ping',
         version: Data<Version>,
@@ -313,10 +312,10 @@ export class WorkspaceWorker {
     }
   }
 
-  async doCleanup (ctx: MeasureContext, workspace: BaseWorkspaceInfo): Promise<void> {
+  async doCleanup (ctx: MeasureContext, workspace: WorkspaceInfoWithStatus): Promise<void> {
     const { dbUrl } = prepareTools([])
     const adapter = getWorkspaceDestroyAdapter(dbUrl)
-    await adapter.deleteWorkspace(ctx, { name: workspace.workspace })
+    await adapter.deleteWorkspace(ctx, workspace.uuid)
   }
 
   private async doWorkspaceOperation (
@@ -324,11 +323,11 @@ export class WorkspaceWorker {
     workspace: WorkspaceInfoWithStatus,
     opt: WorkspaceOptions
   ): Promise<void> {
-    const token = generateToken(systemAccountEmail, { name: workspace.workspace }, { service: 'workspace' })
+    const token = generateToken(systemAccountUuid, workspace.uuid, { service: 'workspace' })
 
     const sendEvent = (event: WorkspaceUpdateEvent, progress: number): Promise<void> =>
       withRetryConnUntilSuccess(() =>
-        updateWorkspaceInfo(token, workspace.workspace, event, this.version, progress, `${event} done`)
+        getAccountClient(this.accountsUrl, token).updateWorkspaceInfo(workspace.uuid, event, this.version, progress, `${event} done`)
       )()
 
     switch (workspace.mode ?? 'active') {
@@ -404,7 +403,7 @@ export class WorkspaceWorker {
 
   private async doBackup (
     ctx: MeasureContext,
-    workspace: BaseWorkspaceInfo,
+    workspace: WorkspaceInfoWithStatus,
     opt: WorkspaceOptions,
     archive: boolean
   ): Promise<boolean> {
@@ -422,7 +421,7 @@ export class WorkspaceWorker {
     })
 
     // A token to access account service
-    const token = generateToken(systemAccountEmail, { name: 'workspace' })
+    const token = generateToken(systemAccountUuid, undefined, { service: 'workspace' })
 
     const handleWsEventWithRetry = (
       event: 'ping' | 'progress',
@@ -431,7 +430,7 @@ export class WorkspaceWorker {
       message?: string
     ): Promise<void> => {
       return withRetryConnUntilTimeout(
-        () => updateWorkspaceInfo(token, workspace.workspace, event, version, progress, message),
+        () => getAccountClient(this.accountsUrl, token).updateWorkspaceInfo(workspace.uuid, event, version, progress, message),
         5000
       )()
     }
@@ -487,7 +486,7 @@ export class WorkspaceWorker {
     return false
   }
 
-  private async doRestore (ctx: MeasureContext, workspace: BaseWorkspaceInfo, opt: WorkspaceOptions): Promise<boolean> {
+  private async doRestore (ctx: MeasureContext, workspace: WorkspaceInfoWithStatus, opt: WorkspaceOptions): Promise<boolean> {
     if (opt.backup === undefined) {
       return false
     }
@@ -502,7 +501,7 @@ export class WorkspaceWorker {
     })
 
     // A token to access account service
-    const token = generateToken(systemAccountEmail, { name: 'workspace' })
+    const token = generateToken(systemAccountUuid, undefined, { service: 'workspace' })
 
     const handleWsEventWithRetry = (
       event: 'ping' | 'progress',
@@ -511,7 +510,7 @@ export class WorkspaceWorker {
       message?: string
     ): Promise<void> => {
       return withRetryConnUntilTimeout(
-        () => updateWorkspaceInfo(token, workspace.workspace, event, version, progress, message),
+        () => getAccountClient(this.accountsUrl, token).updateWorkspaceInfo(workspace.uuid, event, version, progress, message),
         5000
       )()
     }
@@ -524,7 +523,10 @@ export class WorkspaceWorker {
     try {
       const result: boolean = await doRestoreWorkspace(
         ctx,
-        workspace,
+        {
+          uuid: workspace.uuid,
+          url: workspace.url
+        },
         opt.backup.backupStorage,
         opt.backup.bucketName,
         pipelineFactory,

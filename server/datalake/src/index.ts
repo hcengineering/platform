@@ -116,7 +116,7 @@ export class DatalakeService implements StorageAdapter {
             }
           }
         } catch (err: any) {
-          ctx.error('Failed to get list', { error: err, workspaceId: workspaceId.name })
+          ctx.error('Failed to get list', { error: err, workspaceId })
         }
         return buffer.splice(0, 50)
       },

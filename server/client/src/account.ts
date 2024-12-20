@@ -57,9 +57,9 @@ export async function listAccountWorkspaces (token: string, region: string | nul
   return workspaces.result ?? []
 }
 
-export async function updateBackupInfo (token: string, info: BackupStatus): Promise<WorkspaceInfo[]> {
+export async function updateBackupInfo (token: string, info: BackupStatus): Promise<void> {
   const accountsUrl = getAccoutsUrlOrFail()
-  const workspaces = await (
+  await (
     await fetch(accountsUrl, {
       method: 'POST',
       headers: {
@@ -71,8 +71,6 @@ export async function updateBackupInfo (token: string, info: BackupStatus): Prom
       })
     })
   ).json()
-
-  return (workspaces.result as WorkspaceInfo[]) ?? []
 }
 
 const externalRegions = process.env.EXTERNAL_REGIONS?.split(';') ?? []
@@ -176,7 +174,7 @@ export async function getPendingWorkspace (
   region: string,
   version: Data<Version>,
   operation: 'create' | 'upgrade' | 'all' | 'all+backup'
-): Promise<WorkspaceInfo | undefined> {
+): Promise<WorkspaceInfoWithStatus | undefined> {
   const accountsUrl = getAccoutsUrlOrFail()
   const workspaces = await (
     await fetch(accountsUrl, {
@@ -191,7 +189,7 @@ export async function getPendingWorkspace (
     })
   ).json()
 
-  return workspaces.result as WorkspaceInfo
+  return workspaces.result as WorkspaceInfoWithStatus
 }
 
 export async function updateWorkspaceInfo (
@@ -316,7 +314,7 @@ export async function login (user: string, password: string, workspace: string):
   return result.result
 }
 
-export async function getUserWorkspaces (token: string): Promise<WorkspaceInfo[]> {
+export async function getUserWorkspaces (token: string): Promise<WorkspaceInfoWithStatus[]> {
   const accountsUrl = getAccoutsUrlOrFail()
   const response = await fetch(accountsUrl, {
     method: 'POST',
@@ -330,7 +328,7 @@ export async function getUserWorkspaces (token: string): Promise<WorkspaceInfo[]
     })
   })
   const result = await response.json()
-  return (result.result as WorkspaceInfo[]) ?? []
+  return (result.result as WorkspaceInfoWithStatus[]) ?? []
 }
 
 export async function selectWorkspace (token: string, workspace: string): Promise<WorkspaceLoginInfo> {
@@ -348,24 +346,6 @@ export async function selectWorkspace (token: string, workspace: string): Promis
   })
   const result = await response.json()
   return result.result as WorkspaceLoginInfo
-}
-
-export async function getSocialIds (token: string): Promise<SocialId[]> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  const response = await fetch(accountsUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token
-    },
-    body: JSON.stringify({
-      method: 'getSocialIds',
-      params: []
-    })
-  })
-
-  const result = await response.json()
-  return result.result as SocialId[]
 }
 
 function getAccoutsUrlOrFail (): string {

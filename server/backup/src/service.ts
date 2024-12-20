@@ -164,7 +164,7 @@ class BackupWorker {
   ): Promise<{ failedWorkspaces: WorkspaceInfoWithStatus[], processed: number, skipped: number }> {
     let index = 0
 
-    const failedWorkspaces: WorkspaceInfo[] = []
+    const failedWorkspaces: WorkspaceInfoWithStatus[] = []
     let processed = 0
     const startTime = Date.now()
     for (const ws of workspaces) {
@@ -343,7 +343,7 @@ export async function doBackupWorkspace (
 
 export async function doRestoreWorkspace (
   rootCtx: MeasureContext,
-  ws: BaseWorkspaceInfo,
+  wsIds: WorkspaceIds,
   backupAdapter: StorageAdapter,
   bucketName: string,
   pipelineFactory: PipelineFactory,
@@ -353,20 +353,14 @@ export async function doRestoreWorkspace (
   notify?: (progress: number) => Promise<void>
 ): Promise<boolean> {
   rootCtx.warn('\nRESTORE WORKSPACE ', {
-    workspace: ws.workspace
+    workspace: wsIds.uuid
   })
-  const ctx = rootCtx.newChild(ws.workspace, { workspace: ws.workspace })
+  const ctx = rootCtx.newChild(wsIds.uuid, { workspace: wsIds.uuid })
   let pipeline: Pipeline | undefined
   try {
-    const storage = await createStorageBackupStorage(ctx, backupAdapter, getWorkspaceId(bucketName), ws.workspace)
-    const wsUrl: WorkspaceIdWithUrl = {
-      name: ws.workspace,
-      uuid: ws.uuid,
-      workspaceName: ws.workspaceName ?? '',
-      workspaceUrl: ws.workspaceUrl ?? ''
-    }
-    const result: boolean = await ctx.with('restore', { workspace: ws.workspace }, (ctx) =>
-      restore(ctx, '', getWorkspaceId(ws.workspace), storage, {
+    const storage = await createStorageBackupStorage(ctx, backupAdapter, bucketName, wsIds.uuid)
+    const result: boolean = await ctx.with('restore', { workspace: wsIds.uuid }, (ctx) =>
+      restore(ctx, '', wsIds.uuid, storage, {
         date: -1,
         skip: new Set(skipDomains),
         recheck: true,
@@ -374,9 +368,9 @@ export async function doRestoreWorkspace (
         cleanIndexState,
         getConnection: async () => {
           if (pipeline === undefined) {
-            pipeline = await pipelineFactory(ctx, wsUrl, true, () => {}, null)
+            pipeline = await pipelineFactory(ctx, wsIds, true, () => {}, null)
           }
-          return wrapPipeline(ctx, pipeline, wsUrl)
+          return wrapPipeline(ctx, pipeline, wsIds)
         },
         progress: (progress) => {
           return notify?.(progress) ?? Promise.resolve()
@@ -385,7 +379,7 @@ export async function doRestoreWorkspace (
     )
     return result
   } catch (err: any) {
-    rootCtx.error('\n\nFAILED to RESTORE', { workspace: ws.workspace, err })
+    rootCtx.error('\n\nFAILED to RESTORE', { workspace: wsIds.uuid, err })
     return false
   } finally {
     if (pipeline !== undefined) {

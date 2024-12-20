@@ -28,7 +28,7 @@ import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view'
 import { SvelteRenderer } from '../node-view'
 import type { AnySvelteComponent } from '@hcengineering/ui'
 import { Fragment, Slice, type Node } from '@tiptap/pm/model'
-import { type Account, type Markup, type Ref, type Timestamp, getCurrentAccount, generateId } from '@hcengineering/core'
+import { type Markup, type Timestamp, getCurrentAccount, generateId, type PersonId } from '@hcengineering/core'
 import tippy, { type Instance } from 'tippy.js'
 import 'tippy.js/animations/shift-toward.css'
 import { type Doc as YDoc, type Map as YMap } from 'yjs'
@@ -89,7 +89,7 @@ interface InlineComment {
   message: Markup
 
   createdOn: Timestamp
-  createdBy: Ref<Account>
+  createdBy: PersonId
 
   editedOn?: Timestamp
 }
@@ -802,7 +802,7 @@ function updateThreadComment (
           _id: generateId(),
           _class: core.class.Obj,
           thread: patch.thread,
-          createdBy: account._id,
+          createdBy: account.primarySocialId,
           createdOn: Date.now(),
           message: patch.message
         }

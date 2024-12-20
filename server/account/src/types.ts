@@ -201,7 +201,17 @@ export type AccountMethodHandler = (
   token?: string
 ) => Promise<any>
 
-export type WorkspaceEvent = 'ping' | 'create-started' | 'upgrade-started' | 'progress' | 'create-done' | 'upgrade-done'
+export type WorkspaceEvent = 'ping' | 'create-started' | 'upgrade-started' | 'progress' | 'create-done' | 'upgrade-done' | 'migrate-backup-started' // -> state = 'migration-backup'
+| 'restore-started'
+| 'restore-done'
+| 'migrate-backup-done' // -> state = 'migration-pending-cleaning'
+| 'migrate-clean-started' // -> state = 'migration-cleaning'
+| 'migrate-clean-done' // -> state = 'pending-restoring'
+| 'archiving-backup-started' // -> state = 'archiving'
+| 'archiving-backup-done' // -> state = 'archiving-pending-cleaning'
+| 'archiving-clean-started'
+| 'archiving-clean-done'
+| 'archiving-done'
 export type WorkspaceOperation = 'create' | 'upgrade' | 'all' | 'all+backup'
 export interface LoginInfo {
   account: string

@@ -111,7 +111,7 @@ export async function restoreWikiContentMongo (
 export async function findWikiDocYdocName (
   ctx: MeasureContext,
   db: Db,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   doc: Ref<Document>
 ): Promise<Ref<Blob> | undefined> {
   const updateContentTx = await db.collection<TxUpdateDoc<Document & { content: string }>>(DOMAIN_TX).findOne(

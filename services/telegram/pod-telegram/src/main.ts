@@ -1,7 +1,7 @@
 import { IncomingHttpHeaders } from 'http'
 import { SocialIdType } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
-import serverClient, { getSocialIds } from '@hcengineering/server-client'
+import serverClient from '@hcengineering/server-client'
 import { initStatisticsContext, type StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { decodeToken, type Token } from '@hcengineering/server-token'

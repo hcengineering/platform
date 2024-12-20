@@ -33,7 +33,7 @@ export function createPostgreeDestroyAdapter (url: string): WorkspaceDestroyAdap
           for (const [domain] of Object.entries(domainSchemas)) {
             await ctx.with('delete-workspace-domain', {}, async () => {
               await retryTxn(connection, async (client) => {
-                await client`delete from ${connection(domain)} where "workspaceId" = '${connection(workspace.uuid ?? workspace.name)}'`
+                await client`delete from ${connection(domain)} where "workspaceId" = '${connection(workspace)}'`
               })
             })
           }

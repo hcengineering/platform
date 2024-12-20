@@ -68,7 +68,6 @@ import { diffWorkspace, recreateElastic, updateField } from './workspace'
 import core, {
   AccountRole,
   generateId,
-  getWorkspaceId,
   isActiveMode,
   isArchivingMode,
   MeasureMetricsContext,

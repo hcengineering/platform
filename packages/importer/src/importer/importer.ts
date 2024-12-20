@@ -87,8 +87,8 @@ export interface ImportSpace<T extends ImportDoc> {
   archived?: boolean
   description?: string
   emoji?: string
-  owners?: Ref<PersonId>[]
-  members?: Ref<PersonId>[]
+  owners?: PersonId[]
+  members?: PersonId[]
   docs: T[]
 }
 export interface ImportDoc {

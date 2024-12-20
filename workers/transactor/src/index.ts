@@ -27,10 +27,10 @@ export default {
           return new Response('Expected header Upgrade: websocket', { status: 426 })
         }
         try {
-          const decodedToken = decodeToken(params.token, true, env.SERVER_SECRET)
-          console.log('connecting', decodedToken.email)
+          const { account, workspace } = decodeToken(params.token, true, env.SERVER_SECRET)
+          console.log('connecting', account)
 
-          const id = env.TRANSACTOR.idFromName(decodedToken.workspace.name)
+          const id = env.TRANSACTOR.idFromName(workspace)
           const stub = env.TRANSACTOR.get(id)
 
           return stub.fetch(request)
