@@ -23,7 +23,7 @@ export const dropMarkerId = 'table-drop-marker'
 export const colDragMarkerId = 'table-col-drag-marker'
 export const rowDragMarkerId = 'table-row-drag-marker'
 
-export const dropMarkerWidthPx = 2
+export const dropMarkerWidthPx = 1
 
 export const tableDragMarkerDecoration = (state: EditorState, table: TableNodeLocation): Decoration[] => {
   const dropMarker = document.createElement('div')
@@ -33,14 +33,16 @@ export const tableDragMarkerDecoration = (state: EditorState, table: TableNodeLo
   const colDragMarker = document.createElement('div')
   colDragMarker.id = colDragMarkerId
   colDragMarker.classList.add('table-col-drag-marker')
-  colDragMarker.innerHTML = handleSvg
   colDragMarker.style.display = 'none'
+  const colDragMarkerBtn = colDragMarker.appendChild(document.createElement('button'))
+  colDragMarkerBtn.innerHTML = handleSvg
 
   const rowDragMarker = document.createElement('div')
   rowDragMarker.id = rowDragMarkerId
   rowDragMarker.classList.add('table-row-drag-marker')
-  rowDragMarker.innerHTML = handleSvg
   rowDragMarker.style.display = 'none'
+  const rowDragMarkerBtn = rowDragMarker.appendChild(document.createElement('button'))
+  rowDragMarkerBtn.innerHTML = handleSvg
 
   return [
     Decoration.widget(table.start, dropMarker),

@@ -40,5 +40,6 @@ loadMetadata(textEditor.icon, {
   ScaleOut: `${icons}#scaleOut`,
   Download: `${icons}#download`,
   Note: `${icons}#note`,
-  Comment: `${icons}#comment`
+  Comment: `${icons}#comment`,
+  SelectTable: `${icons}#move`
 })

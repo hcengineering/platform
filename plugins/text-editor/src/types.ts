@@ -108,6 +108,7 @@ export interface ActionContext {
   objectId?: Ref<Doc>
   objectClass?: Ref<Class<Doc>>
   objectSpace?: Ref<Space>
+  tag?: string
 }
 
 /**
