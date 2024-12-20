@@ -701,18 +701,16 @@ export class ImportWorkspaceBuilder {
     errors.push(...this.validateType(doc.title, 'string', 'title'))
     errors.push(...this.validateType(doc.class, 'string', 'class'))
     errors.push(...this.validateType(doc.template, 'string', 'template'))
-    errors.push(...this.validateType(doc.code, 'string', 'code'))
     errors.push(...this.validateType(doc.state, 'string', 'state'))
-    errors.push(...this.validateType(doc.changeControl, 'string', 'changeControl'))
+    if (doc.code !== undefined) {
+      errors.push(...this.validateType(doc.code, 'string', 'code'))
+    }
 
     // Validate required string fields are defined
     if (!this.validateStringDefined(doc.title)) errors.push('title is required')
     if (!this.validateStringDefined(doc.template)) errors.push('template is required')
-    if (!this.validateStringDefined(doc.code)) errors.push('code is required')
-    if (!this.validateStringDefined(doc.changeControl)) errors.push('changeControl is required')
 
     // Validate numbers are positive
-    if (!this.validatePossitiveNumber(doc.seqNumber)) errors.push('invalid sequence number')
     if (!this.validatePossitiveNumber(doc.major)) errors.push('invalid value for field "major"')
     if (!this.validatePossitiveNumber(doc.minor)) errors.push('invalid value for field "minor"')
 
@@ -754,19 +752,16 @@ export class ImportWorkspaceBuilder {
     errors.push(...this.validateType(template.title, 'string', 'title'))
     errors.push(...this.validateType(template.class, 'string', 'class'))
     errors.push(...this.validateType(template.docPrefix, 'string', 'docPrefix'))
-    errors.push(...this.validateType(template.code, 'string', 'code'))
-    errors.push(...this.validateType(template.seqNumber, 'number', 'seqNumber'))
     errors.push(...this.validateType(template.state, 'string', 'state'))
-    errors.push(...this.validateType(template.changeControl, 'string', 'changeControl'))
+    if (template.code !== undefined) {
+      errors.push(...this.validateType(template.code, 'string', 'code'))
+    }
 
     // Validate required string fields are defined
     if (!this.validateStringDefined(template.title)) errors.push('title is required')
     if (!this.validateStringDefined(template.docPrefix)) errors.push('docPrefix is required')
-    if (!this.validateStringDefined(template.code)) errors.push('code is required')
-    if (!this.validateStringDefined(template.changeControl)) errors.push('changeControl is required')
 
     // Validate numbers are positive
-    if (!this.validatePossitiveNumber(template.seqNumber)) errors.push('invalid sequence number')
     if (!this.validatePossitiveNumber(template.major)) errors.push('invalid value for field "major"')
     if (!this.validatePossitiveNumber(template.minor)) errors.push('invalid value for field "minor"')
 
@@ -792,7 +787,7 @@ export class ImportWorkspaceBuilder {
     }
 
     // Validate state values
-    if (template.state !== DocumentState.Draft && template.state !== DocumentState.Effective) { // RELEASED vs Effective?
+    if (template.state !== DocumentState.Draft) {
       errors.push('invalid state: ' + template.state)
     }
 

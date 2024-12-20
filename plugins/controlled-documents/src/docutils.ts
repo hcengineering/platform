@@ -72,12 +72,13 @@ export async function createControlledDocFromTemplate (
     client,
     templateId,
     documentId,
-    { ...spec, category },
     space,
     project,
     parent,
     prefix,
-    seqNumber
+    seqNumber,
+    spec.code,
+    spec.title
   )
 
   if (!success) {
@@ -92,11 +93,12 @@ export async function createControlledDocFromTemplate (
     'documents',
     {
       ...spec,
+      category,
       template: templateId,
       seqNumber,
       prefix,
       state: DocumentState.Draft,
-      content: spec.content ?? content
+      content
     },
     documentId
   )
@@ -107,13 +109,13 @@ export async function createControlledDocFromTemplate (
 export async function useDocumentTemplate (
   client: TxOperations,
   templateId: Ref<DocumentTemplate>
-): Promise<{ seqNumber: number, prefix: string, content: Ref<Blob> | null, category?: Ref<DocumentCategory> }> {
+): Promise<{ seqNumber: number, prefix: string, content: Ref<Blob> | null, category: Ref<DocumentCategory> }> {
   const template = await client.findOne(documents.mixin.DocumentTemplate, {
     _id: templateId
   })
 
   if (template === undefined) {
-    return { seqNumber: -1, prefix: '', content: null }
+    return { seqNumber: -1, prefix: '', content: null, category: '' as Ref<DocumentCategory> }
   }
 
   await client.updateMixin(templateId, documents.class.Document, template.space, documents.mixin.DocumentTemplate, {
@@ -124,19 +126,20 @@ export async function useDocumentTemplate (
   const seqNumber = template.sequence + 1
   const prefix = template.docPrefix
 
-  return { seqNumber, prefix, content: template.content, category: template.category }
+  return { seqNumber, prefix, content: template.content, category: template.category as Ref<DocumentCategory> }
 }
 
 export async function createControlledDocMetadata (
   client: TxOperations,
   templateId: Ref<DocumentTemplate>,
   documentId: Ref<ControlledDocument>,
-  spec: Omit<AttachedData<ControlledDocument>, 'content'>,
   space: Ref<DocumentSpace>,
   project: Ref<Project> | undefined,
   parent: Ref<ProjectDocument> | undefined,
   prefix: string,
-  seqNumber: number
+  seqNumber: number,
+  specCode: string,
+  specTitle: string
 ): Promise<{ success: boolean, seqNumber: number, documentMetaId: Ref<DocumentMeta>, projectDocumentId: Ref<ProjectDocument> }> {
   const projectId = project ?? documents.ids.NoProject
 
@@ -148,12 +151,12 @@ export async function createControlledDocMetadata (
   })
 
   ops.notMatch(documents.class.Document, {
-    code: spec.code
+    code: specCode
   })
 
   const documentMetaId = await ops.createDoc(documents.class.DocumentMeta, space, {
     documents: 0,
-    title: `${prefix}-${seqNumber} ${spec.title}`
+    title: `${prefix}-${seqNumber} ${specTitle}`
   })
 
   let path: Array<Ref<DocumentMeta>> = []
@@ -200,7 +203,18 @@ export async function createDocumentTemplate (
   category: Ref<DocumentCategory>,
   author?: Ref<Employee>
 ): Promise<{ seqNumber: number, success: boolean }> {
-  const { success, seqNumber, code, documentMetaId } = await createDocumentTemplateMetadata(client, _class, space, _mixin, project, parent, templateId, prefix, spec)
+  const { success, seqNumber, code, documentMetaId } = await createDocumentTemplateMetadata(
+    client,
+    _class,
+    space,
+    _mixin,
+    project,
+    parent,
+    templateId,
+    prefix,
+    spec.code ?? '',
+    spec.title
+  )
 
   if (!success) {
     return { seqNumber: -1, success: false }
@@ -237,7 +251,8 @@ export async function createDocumentTemplateMetadata (
   parent: Ref<ProjectDocument> | undefined,
   templateId: Ref<ControlledDocument>,
   prefix: string,
-  spec: Omit<AttachedData<ControlledDocument>, 'prefix' | 'content'>
+  specCode: string,
+  specTitle: string
 ): Promise<{ success: boolean, seqNumber: number, code: string, documentMetaId: Ref<DocumentMeta>, projectDocumentId: Ref<ProjectDocument> }> {
   const projectId = project ?? documents.ids.NoProject
 
@@ -251,7 +266,7 @@ export async function createDocumentTemplateMetadata (
     true
   )
   const seqNumber = (incResult as any).object.sequence as number
-  const code = spec.code === '' ? `${TEMPLATE_PREFIX}-${seqNumber}` : spec.code
+  const code = specCode === '' ? `${TEMPLATE_PREFIX}-${seqNumber}` : specCode
 
   let path: Array<Ref<DocumentMeta>> = []
 
@@ -276,7 +291,7 @@ export async function createDocumentTemplateMetadata (
 
   const documentMetaId = await ops.createDoc(documents.class.DocumentMeta, space, {
     documents: 0,
-    title: `${TEMPLATE_PREFIX}-${seqNumber} ${spec.title}`
+    title: `${TEMPLATE_PREFIX}-${seqNumber} ${specTitle}`
   })
 
   const projectMetaId = await ops.createDoc(documents.class.ProjectMeta, space, {

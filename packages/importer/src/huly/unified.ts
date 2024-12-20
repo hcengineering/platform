@@ -41,7 +41,7 @@ import {
 import { type Logger } from '../importer/logger'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 import { type FileUploader } from '../importer/uploader'
-import documents, { DocumentState, DocumentCategory, ChangeControl, DocumentTemplate, ControlledDocument } from '@hcengineering/controlled-documents'
+import documents, { DocumentState, DocumentCategory, DocumentTemplate, ControlledDocument } from '@hcengineering/controlled-documents'
 
 interface UnifiedComment {
   author: string
@@ -105,31 +105,26 @@ interface UnifiedWorkspaceSettings {
 interface UnifiedControlledDocumentHeader {
   class: 'documents:class:ControlledDocument'
   title: string
-  code: string // TODO: what is this? code vs prefix?
-  category: string // TODO: what is this? Refernce?
+  template: string
   author: string
   owner: string
   abstract?: string
-  reviewers: string[]
-  approvers: string[]
-  coAuthors: string[]
-  changeControl: string // todo: wtf
-  template: string
+  reviewers?: string[]
+  approvers?: string[]
+  coAuthors?: string[]
 }
 
 interface UnifiedDocumentTemplateHeader {
   class: 'documents:mixin:DocumentTemplate'
   title: string
-  code: string
   category: string
+  docPrefix: string
   author: string
   owner: string
   abstract?: string
-  reviewers: string[]
-  approvers: string[]
-  coAuthors: string[]
-  changeControl: string
-  docPrefix: string
+  reviewers?: string[]
+  approvers?: string[]
+  coAuthors?: string[]
 }
 
 interface UnifiedOrgSpaceSettings extends UnifiedSpaceSettings {
@@ -725,8 +720,7 @@ export class UnifiedFormatImporter {
     docPath: string,
     id?: Ref<ControlledDocument>
   ): Promise<ImportControlledDocument> {
-    const numberMatch = path.basename(docPath).match(/^(\d+)\./)
-    const seqNumber = numberMatch?.[1]
+    const codeMatch = path.basename(docPath).match(/^\[([^\]]+)\]/)
 
     const author = this.findEmployeeByName(header.author)
     const owner = this.findEmployeeByName(header.owner)
@@ -760,19 +754,16 @@ export class UnifiedFormatImporter {
       class: documents.class.ControlledDocument,
       title: header.title,
       template: template?.id as Ref<ControlledDocument>, // todo: test (it was Ref<DocumentTemplate>)
-      code: header.code,
-      seqNumber: parseInt(seqNumber ?? 'NaN'),
+      code: codeMatch?.[1],
       major: 0,
       minor: 1,
       state: DocumentState.Draft,
-      category: header.category as Ref<DocumentCategory>,
       author,
       owner,
       abstract: header.abstract,
-      reviewers: header.reviewers.map(email => this.findEmployeeByName(email)),
-      approvers: header.approvers.map(email => this.findEmployeeByName(email)),
-      coAuthors: header.coAuthors.map(email => this.findEmployeeByName(email)),
-      changeControl: header.changeControl as Ref<ChangeControl>,
+      reviewers: header.reviewers?.map(email => this.findEmployeeByName(email)) ?? [],
+      approvers: header.approvers?.map(email => this.findEmployeeByName(email)) ?? [],
+      coAuthors: header.coAuthors?.map(email => this.findEmployeeByName(email)) ?? [],
       descrProvider: async () => await this.readMarkdownContent(docPath),
       subdocs: []
     }
@@ -789,17 +780,13 @@ export class UnifiedFormatImporter {
       throw new Error(`Author or owner not found: ${header.author} or ${header.owner}`)
     }
 
-    const numberMatch = path.basename(docPath).match(/^(\d+)\./)
-    const seqNumber = numberMatch?.[1]
-
+    const codeMatch = path.basename(docPath).match(/^\[([^\]]+)\]/)
     return {
       id: id as Ref<ControlledDocument>,
       class: documents.mixin.DocumentTemplate,
       title: header.title,
       docPrefix: header.docPrefix,
-      prefix: header.docPrefix, // todo: different prefix for template
-      code: header.code,
-      seqNumber: parseInt(seqNumber ?? 'NaN'),
+      code: codeMatch?.[1],
       major: 0,
       minor: 1,
       state: DocumentState.Draft,
@@ -807,10 +794,9 @@ export class UnifiedFormatImporter {
       author,
       owner,
       abstract: header.abstract,
-      reviewers: header.reviewers.map(email => this.findEmployeeByName(email)),
-      approvers: header.approvers.map(email => this.findEmployeeByName(email)),
-      coAuthors: header.coAuthors.map(email => this.findEmployeeByName(email)),
-      changeControl: header.changeControl as Ref<ChangeControl>,
+      reviewers: header.reviewers?.map(email => this.findEmployeeByName(email)) ?? [],
+      approvers: header.approvers?.map(email => this.findEmployeeByName(email)) ?? [],
+      coAuthors: header.coAuthors?.map(email => this.findEmployeeByName(email)) ?? [],
       descrProvider: async () => await this.readMarkdownContent(docPath),
       subdocs: []
     }
