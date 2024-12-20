@@ -24,9 +24,12 @@ fi
 ./tool.sh create-account user1 -f John -l Appleseed -p 1234
 ./tool.sh create-account user2 -f Kainin -l Dirak -p 1234
 ./tool.sh create-account super -f Super -l User -p 1234
-./tool.sh set-user-admin super true
+# TODO: FIXME
+# ./tool.sh set-user-admin super true 
+
 # Make user the workspace maintainer
-./tool.sh confirm-email user1
-./tool.sh confirm-email user2
+# confirmed by default now
+# ./tool.sh confirm-email user1
+# ./tool.sh confirm-email user2
 
 ./restore-workspace.sh

@@ -940,8 +940,9 @@ export async function getLoginInfoByToken (
   }
 
   const isDocGuest = accountUuid === GUEST_ACCOUNT && extra?.guest === 'true'
+  const isSystem = accountUuid === systemAccountUuid
 
-  if (!isDocGuest) {
+  if (!isDocGuest && !isSystem) {
     // Any confirmed social ID will do
     const socialId = await db.socialId.findOne({ personId: accountUuid, verifiedOn: { $gt: 0 } })
 
@@ -974,7 +975,7 @@ export async function getLoginInfoByToken (
       }
     }
 
-    const role = await db.getWorkspaceRole(accountUuid, workspace.uuid)
+    const role = isSystem ? AccountRole.Owner : await db.getWorkspaceRole(accountUuid, workspace.uuid)
 
     if (role == null) {
       // User might have been removed from the workspace
@@ -1164,7 +1165,7 @@ export async function updateWorkspaceInfo (
   message?: string
 ): Promise<void> {
   const { extra } = decodeTokenVerbose(ctx, token)
-  if (extra?.service !== 'workspace') {
+  if (!['workspace', 'tool'].includes(extra?.service)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 

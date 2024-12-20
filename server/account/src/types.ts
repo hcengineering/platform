@@ -22,7 +22,8 @@ import {
   Version,
   SocialIdType,
   WorkspaceMode,
-  WorkspaceMemberInfo
+  WorkspaceMemberInfo,
+  BackupStatus
 } from '@hcengineering/core'
 
 export { AccountRole, type Person, type WorkspaceMemberInfo } from '@hcengineering/core'
@@ -70,7 +71,7 @@ export interface Member {
 
 export interface WorkspaceStatus {
   workspaceUuid: string
-  mode?: WorkspaceMode
+  mode: WorkspaceMode
   processingProgress?: number
   versionMajor: number
   versionMinor: number
@@ -80,7 +81,7 @@ export interface WorkspaceStatus {
   isDisabled: boolean
   processingAttempts?: number
   processingMessage?: string
-  backupInfo?: Record<string, any>
+  backupInfo?: BackupStatus
 }
 
 export interface Workspace {

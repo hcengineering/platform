@@ -13,16 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 import accountPlugin, {
   assignWorkspace,
   confirmEmail,
-  createWorkspace as createWorkspaceRecord,
   getAccount,
-  getAccountDB,
   getWorkspaceById,
-  getWorkspaceInfoWithStatusById,
   updateArchiveInfo,
+  signUpByEmail,
+  createWorkspaceRecord,
+  updateWorkspaceInfo,
+  getAccountDB,
+  getWorkspaceInfoWithStatusById,
+  flattenStatus,
+  type WorkspaceInfoWithStatus,
   type AccountDB,
   type Workspace
 } from '@hcengineering/account'
@@ -221,19 +224,20 @@ export function devTool (
     )
   })
 
-  // // create-account john.appleseed@gmail.com --password 123 --workspace workspace --fullname "John Appleseed"
-  // program
-  // .command('create-account <email>')
-  // .description('create user and corresponding account in master database')
-  // .requiredOption('-p, --password <password>', 'user password')
-  // .requiredOption('-f, --first <first>', 'first name')
-  // .requiredOption('-l, --last <last>', 'last name')
-  // .action(async (email: string, cmd) => {
-  //   await withAccountDatabase(async (db) => {
-  //     console.log(`creating account ${cmd.first as string} ${cmd.last as string} (${email})...`)
-  //     await createAcc(toolCtx, db, null, email, cmd.password, cmd.first, cmd.last, true)
-  //   })
-  // })
+  // create-account john.appleseed@gmail.com --password 123 --workspace workspace --fullname "John Appleseed"
+  program
+    .command('create-account <email>')
+    .description('create user and corresponding account in master database')
+    .requiredOption('-p, --password <password>', 'user password')
+    .requiredOption('-f, --first <first>', 'first name')
+    .requiredOption('-l, --last <last>', 'last name')
+    .option('-n, --notconfirmed', 'creates not confirmed account', false)
+    .action(async (email: string, cmd: { password: string, first: string, last: string, notconfirmed: boolean }) => {
+      await withAccountDatabase(async (db) => {
+        console.log(`creating account ${cmd.first} ${cmd.last} (${email})...`)
+        await signUpByEmail(toolCtx, db, null, email, cmd.password, cmd.first, cmd.last, !cmd.notconfirmed)
+      })
+    })
 
   // program
   // .command('reset-account <email>')
@@ -350,48 +354,47 @@ export function devTool (
   //   })
   // })
 
-  // program
-  // .command('create-workspace <name>')
-  // .description('create workspace')
-  // .requiredOption('-w, --workspaceName <workspaceName>', 'Workspace name')
-  // .option('-e, --email <email>', 'Author email', 'platform@email.com')
-  // .option('-i, --init <ws>', 'Init from workspace')
-  // .option('-r, --region <region>', 'Region')
-  // .option('-b, --branding <key>', 'Branding key')
-  // .action(
-  //   async (
-  //     workspace,
-  //     cmd: { email: string, workspaceName: string, init?: string, branding?: string, region?: string }
-  //   ) => {
-  //     const { txes, version, migrateOperations } = prepareTools()
-  //     await withAccountDatabase(async (db) => {
-  //       const measureCtx = new MeasureMetricsContext('create-workspace', {})
-  //       const brandingObj =
-  //         cmd.branding !== undefined || cmd.init !== undefined ? { key: cmd.branding, initWorkspace: cmd.init } : null
-  //       const wsInfo = await createWorkspaceRecord(
-  //         measureCtx,
-  //         db,
-  //         brandingObj,
-  //         cmd.email,
-  //         cmd.workspaceName,
-  //         workspace,
-  //         cmd.region,
-  //         'manual-creation'
-  //       )
+  program
+    .command('create-workspace <name>')
+    .description('create workspace')
+    .option('-a, --account <account>', 'Owner account uuid', '1749089e-22e6-48de-af4e-165e18fbd2f9')
+    .option('-i, --init <ws>', 'Init from workspace')
+    .option('-r, --region <region>', 'Region')
+    .option('-b, --branding <key>', 'Branding key')
+    .action(
+      async (
+        name,
+        cmd: { account: string, init?: string, branding?: string, region?: string }
+      ) => {
+        const { txes, version, migrateOperations } = prepareTools()
+        await withAccountDatabase(async (db) => {
+          const measureCtx = new MeasureMetricsContext('create-workspace', {})
+          const brandingObj =
+            cmd.branding !== undefined || cmd.init !== undefined ? { key: cmd.branding, initWorkspace: cmd.init } : null
+          const res = await createWorkspaceRecord(
+            measureCtx,
+            db,
+            brandingObj,
+            name,
+            cmd.account,
+            cmd.region,
+            'manual-creation'
+          )
+          const wsInfo = await getWorkspaceInfoWithStatusById(db, res.workspaceUuid)
 
-  //       await createWorkspace(measureCtx, version, brandingObj, wsInfo, txes, migrateOperations, undefined, true)
+          if (wsInfo == null) {
+            throw new Error(`Created workspace record ${res.workspaceUuid} not found`)
+          }
+          const coreWsInfo = flattenStatus(wsInfo)
 
-  //       await updateWorkspace(db, wsInfo, {
-  //         mode: 'active',
-  //         progress: 100,
-  //         disabled: false,
-  //         version
-  //       })
+          await createWorkspace(measureCtx, version, brandingObj, coreWsInfo, txes, migrateOperations, undefined, true)
+          const token = generateToken(systemAccountUuid, undefined, { service: 'tool' })
+          await updateWorkspaceInfo(measureCtx, db, brandingObj, token, res.workspaceUuid, 'create-done', version, 100)
 
-  //       console.log('create-workspace done')
-  //     })
-  //   }
-  // )
+          console.log('create-workspace done')
+        })
+      }
+    )
 
   // program
   // .command('set-user-role <email> <workspace> <role>')
@@ -955,55 +958,54 @@ export function devTool (
   //   await checkBackupIntegrity(toolCtx, storage)
   // })
 
-  // program
-  // .command('backup-restore <dirName> <workspace> [date]')
-  // .option('-m, --merge', 'Enable merge of remote and backup content.', false)
-  // .option('-p, --parallel <parallel>', 'Enable merge of remote and backup content.', '1')
-  // .option('-c, --recheck', 'Force hash recheck on server', false)
-  // .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
-  // .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
-  // .option('--use-storage <useStorage>', 'Use workspace storage adapter from env variable', '')
-  // .option(
-  //   '--history-file <historyFile>',
-  //   'Store blob send info into file. Will skip already send documents.',
-  //   undefined
-  // )
-  // .description('dump workspace transactions and minio resources')
-  // .action(
-  //   async (
-  //     dirName: string,
-  //     workspace: string,
-  //     date,
-  //     cmd: {
-  //       merge: boolean
-  //       parallel: string
-  //       recheck: boolean
-  //       include: string
-  //       skip: string
-  //       useStorage: string
-  //       historyFile: string
-  //     }
-  //   ) => {
-  //     const storage = await createFileBackupStorage(dirName)
-  //     const wsid = getWorkspaceId(workspace)
-  //     const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-  //     const storageConfig = cmd.useStorage !== '' ? storageConfigFromEnv(process.env[cmd.useStorage]) : undefined
+  program
+    .command('backup-restore <dirName> <workspace> [date]')
+    .option('-m, --merge', 'Enable merge of remote and backup content.', false)
+    .option('-p, --parallel <parallel>', 'Enable merge of remote and backup content.', '1')
+    .option('-c, --recheck', 'Force hash recheck on server', false)
+    .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
+    .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
+    .option('--use-storage <useStorage>', 'Use workspace storage adapter from env variable', '')
+    .option(
+      '--history-file <historyFile>',
+      'Store blob send info into file. Will skip already send documents.',
+      undefined
+    )
+    .description('dump workspace transactions and minio resources')
+    .action(
+      async (
+        dirName: string,
+        workspace: string,
+        date,
+        cmd: {
+          merge: boolean
+          parallel: string
+          recheck: boolean
+          include: string
+          skip: string
+          useStorage: string
+          historyFile: string
+        }
+      ) => {
+        const storage = await createFileBackupStorage(dirName)
+        const endpoint = await getTransactorEndpoint(generateToken(systemAccountUuid, workspace, { service: 'tool' }), 'external')
+        const storageConfig = cmd.useStorage !== '' ? storageConfigFromEnv(process.env[cmd.useStorage]) : undefined
 
-  //     const workspaceStorage: StorageAdapter | undefined =
-  //       storageConfig !== undefined ? buildStorageFromConfig(storageConfig) : undefined
-  //     await restore(toolCtx, endpoint, wsid, storage, {
-  //       date: parseInt(date ?? '-1'),
-  //       merge: cmd.merge,
-  //       parallel: parseInt(cmd.parallel ?? '1'),
-  //       recheck: cmd.recheck,
-  //       include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';')),
-  //       skip: new Set(cmd.skip.split(';')),
-  //       storageAdapter: workspaceStorage,
-  //       historyFile: cmd.historyFile
-  //     })
-  //     await workspaceStorage?.close()
-  //   }
-  // )
+        const workspaceStorage: StorageAdapter | undefined =
+          storageConfig !== undefined ? buildStorageFromConfig(storageConfig) : undefined
+        await restore(toolCtx, endpoint, workspace, storage, {
+          date: parseInt(date ?? '-1'),
+          merge: cmd.merge,
+          parallel: parseInt(cmd.parallel ?? '1'),
+          recheck: cmd.recheck,
+          include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';')),
+          skip: new Set(cmd.skip.split(';')),
+          storageAdapter: workspaceStorage,
+          historyFile: cmd.historyFile
+        })
+        await workspaceStorage?.close()
+      }
+    )
 
   // program
   // .command('backup-list <dirName>')

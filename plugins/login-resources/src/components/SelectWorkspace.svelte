@@ -15,10 +15,11 @@
 -->
 <script lang="ts">
   import { LoginInfo } from '@hcengineering/login'
-  import { WorkspaceInfoWithStatus } from '@hcengineering/core'
+  import { WorkspaceInfoWithStatus, isArchivingMode } from '@hcengineering/core'
   import { OK, Severity, Status } from '@hcengineering/platform'
   import presentation, { NavLink, isAdminUser, reduceCalls } from '@hcengineering/presentation'
   import {
+    ticker,
     Button,
     Label,
     Spinner,
@@ -32,7 +33,6 @@
   import login from '../plugin'
   import { getAccount, getHref, getWorkspaces, goTo, navigateToWorkspace, selectWorkspace } from '../utils'
   import StatusControl from './StatusControl.svelte'
-  import { isArchivingMode } from '@hcengineering/core'
 
   export let navigateUrl: string | undefined = undefined
 

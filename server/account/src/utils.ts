@@ -24,7 +24,8 @@ import {
   WorkspaceUuid,
   WorkspaceMode,
   SocialKey,
-  systemAccountUuid
+  systemAccountUuid,
+  type WorkspaceInfoWithStatus as WorkspaceInfoWithStatusCore
 } from '@hcengineering/core'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
@@ -597,18 +598,18 @@ export async function createWorkspaceRecord (
   branding: Branding | null,
   workspaceName: string,
   account: string,
-  region?: string,
+  region: string = '',
   initMode: WorkspaceMode = 'pending-creation'
 ): Promise<CreateWorkspaceRecordResult> {
   const brandingKey = branding?.key ?? 'huly'
-  const regionInfo = getRegions().find((it) => it.region === (region ?? ''))
+  const regionInfo = getRegions().find((it) => it.region === region)
 
   if (regionInfo === undefined) {
     ctx.error('Region not found', { region })
 
     throw new PlatformError(
       new Status(Severity.ERROR, platform.status.InternalServerError, {
-        region: region ?? ''
+        region
       })
     )
   }
@@ -992,4 +993,16 @@ export async function joinWithProvider (
   }
 
   return await doJoinByInvite(ctx, db, branding, generateToken(loginInfo.account, workspaceUuid), loginInfo.account, workspace, invite)
+}
+
+export function flattenStatus (ws: WorkspaceInfoWithStatus): WorkspaceInfoWithStatusCore {
+  if (ws === undefined) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { }))
+  }
+
+  const status = ws.status
+  const result: WorkspaceInfoWithStatusCore = { ...ws, ...status, createdOn: ws.createdOn as number }
+  delete (result as any).status
+
+  return result
 }

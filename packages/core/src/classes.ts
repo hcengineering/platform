@@ -772,7 +772,7 @@ export interface BackupStatus {
 export interface WorkspaceInfoWithStatus extends WorkspaceInfo {
   isDisabled?: boolean
   version?: Data<Version>
-  lastVisit: number
+  lastVisit?: number
   mode: WorkspaceMode
   processingProgress?: number
   backupInfo?: BackupStatus

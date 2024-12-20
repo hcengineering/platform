@@ -315,6 +315,15 @@ class TSessionManager implements SessionManager {
         }
       }
 
+      if (loginInfo.account === systemAccountUuid) {
+        return {
+          uuid: loginInfo.account,
+          role: loginInfo.role,
+          primarySocialId: core.account.System,
+          socialIds: []
+        }
+      }
+
       const socialIds = await accountClient.getSocialIds()
 
       return {

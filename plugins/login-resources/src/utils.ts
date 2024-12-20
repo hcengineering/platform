@@ -166,7 +166,7 @@ export async function createWorkspace (
 }
 
 function getLastVisitDays (it: Pick<WorkspaceInfoWithStatus, 'lastVisit'>): number {
-  return Math.floor((Date.now() - it.lastVisit) / (1000 * 3600 * 24))
+  return Math.floor((Date.now() - (it.lastVisit ?? 0)) / (1000 * 3600 * 24))
 }
 
 function getWorkspaceSize (it: Pick<WorkspaceInfoWithStatus, 'backupInfo'>): number {
@@ -201,7 +201,7 @@ export async function getWorkspaces (): Promise<WorkspaceInfoWithStatus[]> {
     if (adays === bdays) {
       return getWorkspaceSize(b) - getWorkspaceSize(a)
     }
-    return b.lastVisit - a.lastVisit
+    return adays - bdays
   })
 
   return workspaces
@@ -267,7 +267,7 @@ export async function getAllWorkspaces (): Promise<WorkspaceInfoWithStatus[]> {
     if (adays === bdays) {
       return getWorkspaceSize(b) - getWorkspaceSize(a)
     }
-    return b.lastVisit - a.lastVisit
+    return adays - bdays
   })
 
   return workspaces
