@@ -32,7 +32,6 @@ import documents, {
 } from '@hcengineering/controlled-documents'
 import core, {
   type Account,
-  ApplyOperations,
   type AttachedData,
   type Class,
   type CollaborativeDoc,
@@ -770,100 +769,34 @@ export class WorkspaceImporter {
     }
 
     // Partition templates and documents
-    const templateMap = new Map<Ref<ControlledDocument>, ImportControlledDocumentTemplate[]>()
-    const documentMap = new Map<Ref<ControlledDocument>, ImportControlledDocument[]>()
+    const templateMap = new Map<Ref<ControlledDocument>, ImportControlledDocumentTemplate>()
+    const documentMap = new Map<Ref<ControlledDocument>, ImportControlledDocument>()
     for (const doc of space.docs) {
       this.partitionTemplatesFromDocuments(doc, documentMap, templateMap)
     }
 
     // Create attached docs for templates
-    for (const templates of templateMap.values()) {
-      for (const template of templates) {
-        const metaId = documentMetaIds.get(template.id)
-        if (metaId === undefined) {
-          throw new Error('Document meta not found: ' + template.id)
-        }
-        const content = await template.descrProvider()
-
-        const collabId = makeCollabId(documents.class.Document, template.id, 'content')
-        const contentId = await this.createCollaborativeContent(template.id, collabId, content, spaceId)
-        const result = await this.client.addCollection(
-          documents.class.ControlledDocument, // todo: fix
-          spaceId,
-          metaId.documentMetaId,
-          documents.class.DocumentMeta,
-          'documents',
-          {
-            ...template,
-            prefix: TEMPLATE_PREFIX,
-            content: contentId,
-            commentSequence: 0,
-            requests: 0,
-            labels: 0
-          },
-          template.id as unknown as Ref<ControlledDocument> // todo: make sure it's not used anywhere as mixin id
-        )
-        console.log(result)
+    for (const template of templateMap.values()) {
+      const meta = documentMetaIds.get(template.id)
+      if (meta === undefined) {
+        throw new Error('Document meta not found: ' + template.id)
       }
+      await this.createDocTemplateAttachedDoc(meta, template, spaceId)
     }
 
     // Create attached docs for documents
-    for (const onlyDocuments of documentMap.values()) {
-      for (const document of onlyDocuments) {
-        const metaId = documentMetaIds.get(document.id)
-        if (metaId === undefined) {
-          throw new Error('Document meta not found: ' + document.id)
-        }
-        const content = await document.descrProvider()
-
-        const collabId = makeCollabId(documents.class.Document, document.id, 'content')
-        const contentId = await this.createCollaborativeContent(document.id, collabId, content, spaceId)
-        const templateId = document.template
-
-        const templateDoc = documentMetaIds.get(templateId)
-        if (templateDoc === undefined) {
-          throw new Error('Template document not found: ' + templateId)
-        }
-
-        const template = templateDoc as unknown as ImportControlledDocumentTemplate
-
-        const ops = this.client.apply()
-        await ops.updateMixin(templateId, documents.class.Document, spaceId, documents.mixin.DocumentTemplate, {
-          $inc: { sequence: 1 }
-        })
-
-        const result = await ops.addCollection(
-          documents.class.ControlledDocument,
-          spaceId,
-          metaId.documentMetaId,
-          documents.class.DocumentMeta,
-          'documents',
-          { // todo: update from docutils same as for templates
-            title: document.title,
-            content: contentId,
-            template: templateId as unknown as Ref<DocumentTemplate>, // todo: test (it was Ref<DocumentTemplate>)
-            prefix: template.docPrefix,
-            code: document.code,
-            seqNumber: document.seqNumber,
-            major: document.major,
-            minor: document.minor,
-            state: document.state,
-            commentSequence: 0,
-            category: document.category,
-            author: document.author,
-            owner: document.owner,
-            abstract: document.abstract,
-            requests: 0,
-            reviewers: document.reviewers,
-            approvers: document.approvers,
-            coAuthors: document.coAuthors,
-            changeControl: document.changeControl
-          },
-          document.id
-        )
-        await ops.commit()
-        console.log(result)
+    for (const document of documentMap.values()) {
+      const documentMeta = documentMetaIds.get(document.id)
+      if (documentMeta === undefined) {
+        throw new Error('Document meta not found: ' + document.id)
       }
+
+      const template = templateMap.get(document.template)
+      if (template === undefined) {
+        throw new Error('Template not found: ' + document.template)
+      }
+
+      await this.createControlledDocAttachedDoc(documentMeta, document, template, spaceId)
     }
 
     return spaceId
@@ -871,21 +804,17 @@ export class WorkspaceImporter {
 
   private partitionTemplatesFromDocuments (
     doc: ImportControlledDoc,
-    documentMap: Map<Ref<ControlledDocument>, ImportControlledDocument[]>,
-    templateMap: Map<Ref<ControlledDocument>, ImportControlledDocumentTemplate[]>,
-    parentId?: Ref<ControlledDocument>
+    documentMap: Map<Ref<ControlledDocument>, ImportControlledDocument>,
+    templateMap: Map<Ref<ControlledDocument>, ImportControlledDocumentTemplate>
   ): void {
     if (this.isDocumentTemplate(doc)) {
-      const templates = templateMap.get(parentId as Ref<ControlledDocument>) ?? []
-      templates.push(doc as ImportControlledDocumentTemplate)
-      templateMap.set(parentId as Ref<ControlledDocument>, templates)
+      templateMap.set(doc.id, doc as ImportControlledDocumentTemplate)
     } else {
-      const documents = documentMap.get(parentId as Ref<ControlledDocument>) ?? []
-      documents.push(doc as ImportControlledDocument)
-      documentMap.set(parentId as Ref<ControlledDocument>, documents)
+      documentMap.set(doc.id, doc as ImportControlledDocument)
     }
+
     for (const subdoc of doc.subdocs) {
-      this.partitionTemplatesFromDocuments(subdoc, documentMap, templateMap, doc.id)
+      this.partitionTemplatesFromDocuments(subdoc, documentMap, templateMap)
     }
   }
 
@@ -893,7 +822,7 @@ export class WorkspaceImporter {
     return doc.class === documents.mixin.DocumentTemplate
   }
 
-  async createOrgSpace (space: ImportOrgSpace): Promise<Ref<DocumentSpace>> {
+  private async createOrgSpace (space: ImportOrgSpace): Promise<Ref<DocumentSpace>> {
     const spaceId = generateId<DocumentSpace>()
     const data: Data<OrgSpace> = {
       type: documents.spaceType.DocumentSpaceType,
@@ -928,7 +857,7 @@ export class WorkspaceImporter {
     return spaceId
   }
 
-  async createDocTemplateMetaHierarhy (
+  private async createDocTemplateMetaHierarhy (
     template: ImportControlledDocumentTemplate,
     documentMetaIds: Map<Ref<ControlledDocument>, ControlledDocMetadata>,
     spaceId: Ref<DocumentSpace>,
@@ -985,7 +914,35 @@ export class WorkspaceImporter {
     return templateId
   }
 
-  async createControlledDocMetaHierarhy (
+  private async createDocTemplateAttachedDoc (meta: ControlledDocMetadata, template: ImportControlledDocumentTemplate, spaceId: Ref<DocumentSpace>): Promise<Ref<ControlledDocument>> {
+    const content = await template.descrProvider()
+
+    this.logger.log('Creating document template attached doc: ' + template.title)
+
+    const collabId = makeCollabId(documents.class.Document, template.id, 'content')
+    const contentId = await this.createCollaborativeContent(template.id, collabId, content, spaceId)
+    const result = await this.client.addCollection(
+      documents.class.ControlledDocument, // todo: fix
+      spaceId,
+      meta.documentMetaId,
+      documents.class.DocumentMeta,
+      'documents',
+      {
+        ...template,
+        prefix: TEMPLATE_PREFIX,
+        content: contentId,
+        commentSequence: 0,
+        requests: 0,
+        labels: 0
+      },
+      template.id as unknown as Ref<ControlledDocument> // todo: make sure it's not used anywhere as mixin id
+    )
+
+    this.logger.log('Document template attached doc created: ' + result)
+    return result
+  }
+
+  private async createControlledDocMetaHierarhy (
     doc: ImportControlledDocument,
     documentMetaIds: Map<Ref<ControlledDocument>, ControlledDocMetadata>,
     spaceId: Ref<DocumentSpace>,
@@ -1042,5 +999,54 @@ export class WorkspaceImporter {
     })
 
     return documentId
+  }
+
+  private async createControlledDocAttachedDoc (meta: ControlledDocMetadata, document: ImportControlledDocument,
+    template: ImportControlledDocumentTemplate, spaceId: Ref<DocumentSpace>): Promise<Ref<ControlledDocument>> {
+    this.logger.log('Creating controlled document attached doc: ' + document.title)
+
+    const content = await document.descrProvider()
+    const collabId = makeCollabId(documents.class.Document, document.id, 'content')
+    const contentId = await this.createCollaborativeContent(document.id, collabId, content, spaceId)
+    const templateId = document.template
+
+    const ops = this.client.apply()
+    await ops.updateMixin(templateId, documents.class.Document, spaceId, documents.mixin.DocumentTemplate, {
+      $inc: { sequence: 1 }
+    })
+
+    const result = await ops.addCollection(
+      documents.class.ControlledDocument,
+      spaceId,
+      meta.documentMetaId,
+      documents.class.DocumentMeta,
+      'documents',
+      {
+        title: document.title,
+        content: contentId,
+        template: templateId as unknown as Ref<DocumentTemplate>, // todo: test (it was Ref<DocumentTemplate>)
+        prefix: template.docPrefix,
+        code: document.code,
+        seqNumber: document.seqNumber,
+        major: document.major,
+        minor: document.minor,
+        state: document.state,
+        commentSequence: 0,
+        category: document.category,
+        author: document.author,
+        owner: document.owner,
+        abstract: document.abstract,
+        requests: 0,
+        reviewers: document.reviewers,
+        approvers: document.approvers,
+        coAuthors: document.coAuthors,
+        changeControl: document.changeControl
+      },
+      document.id
+    )
+    await ops.commit()
+    this.logger.log('Controlled document attached doc created: ' + result)
+
+    return result
   }
 }
