@@ -126,6 +126,7 @@ import IconMembers from './components/icons/Members.svelte'
 import ContactNamePresenter from './components/ContactNamePresenter.svelte'
 
 import { get, writable } from 'svelte/store'
+import { canResendInvitation } from './visibilityTester'
 import contact from './plugin'
 import {
   channelIdentifierProvider,
@@ -266,6 +267,23 @@ async function doContactQuery<T extends Contact> (
   return (await client.findAll(_class, q, { limit: 200 })).map(toObjectSearchResult)
 }
 
+async function resendInvite (doc: Person): Promise<void> {
+  const client = getClient()
+
+  const accounts = client.getModel().getAccountByPersonId(doc._id)
+
+  showPopup(MessageBox, {
+    label: contact.string.ResendInvite,
+    message: contact.string.ResendInviteDescr,
+    action: async () => {
+      const _resendInvite = await getResource(login.function.ResendInvite)
+      for (const i of accounts) {
+        await _resendInvite(i.email)
+      }
+    }
+  })
+}
+
 async function kickEmployee (doc: Person): Promise<void> {
   const client = getClient()
 
@@ -326,7 +344,8 @@ function getPersonColor (person: Data<WithLookup<AvatarInfo>>, name: string): Co
 export default async (): Promise<Resources> => ({
   actionImpl: {
     KickEmployee: kickEmployee,
-    OpenChannel: openChannelURL
+    OpenChannel: openChannelURL,
+    ResendInvite: resendInvite
   },
   activity: {
     NameChangedActivityMessage
@@ -444,7 +463,8 @@ export default async (): Promise<Resources> => ({
     ChannelTitleProvider: channelTitleProvider,
     ChannelIdentifierProvider: channelIdentifierProvider,
     SetPersonStore: setStore,
-    PersonFilterFunction: filterPerson
+    PersonFilterFunction: filterPerson,
+    CanResendInvitation: canResendInvitation
   },
   resolver: {
     Location: resolveLocation,

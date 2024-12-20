@@ -18,6 +18,7 @@
     "WorkspaceRateLimit": "Le serveur est occupé, veuillez patienter un moment et réessayer",
     "AccountAlreadyConfirmed": "Compte déjà confirmé",
     "WorkspaceAlreadyExists": "L'espace de travail existe déjà",
-    "InvalidOtp": "Code invalide"
+    "InvalidOtp": "Code invalide",
+    "InviteNotFound": "Invitation avec l'email:{email} introuvable."
   }
 }
