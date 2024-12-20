@@ -95,8 +95,6 @@
     "@hcengineering/model-server-guest": "workspace:^0.6.0",
     "@hcengineering/model-document": "workspace:^0.6.0",
     "@hcengineering/model-server-document": "workspace:^0.6.0",
-    "@hcengineering/model-github": "workspace:^0.6.0",
-    "@hcengineering/server-github-model": "workspace:^0.6.0",
     "@hcengineering/model-love": "workspace:^0.6.0",
     "@hcengineering/model-server-love": "workspace:^0.6.0",
     "@hcengineering/model-print": "workspace:^0.6.0",
