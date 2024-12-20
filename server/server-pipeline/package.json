@@ -67,8 +67,6 @@
     "@hcengineering/server-tags-resources": "workspace:^0.6.0",
     "@hcengineering/server-calendar": "workspace:^0.6.0",
     "@hcengineering/server-calendar-resources": "workspace:^0.6.0",
-    "@hcengineering/server-github": "workspace:^0.6.0",
-    "@hcengineering/server-github-resources": "workspace:^0.6.0",
     "@hcengineering/server-gmail": "workspace:^0.6.0",
     "@hcengineering/server-gmail-resources": "workspace:^0.6.0",
     "@hcengineering/server-preference": "workspace:^0.6.0",
@@ -160,8 +158,6 @@
     "@hcengineering/controlled-documents": "workspace:^0.1.0",
     "@hcengineering/products": "workspace:^0.1.0",
     "@hcengineering/training": "workspace:^0.1.0",
-    "@hcengineering/github": "workspace:^0.6.0",
-    "@hcengineering/github-assets": "workspace:^0.6.0",
     "@hcengineering/server-ai-bot": "workspace:^0.6.0",
     "@hcengineering/server-ai-bot-resources": "workspace:^0.6.0",
     "@hcengineering/time": "workspace:^0.6.0",
@@ -171,4 +167,3 @@
     "@hcengineering/survey": "workspace:^0.6.0",
     "@hcengineering/survey-assets": "workspace:^0.6.0"
   }
-}
