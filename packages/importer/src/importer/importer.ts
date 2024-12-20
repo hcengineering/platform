@@ -70,7 +70,6 @@ import view from '@hcengineering/view'
 import { Logger } from './logger'
 import { type MarkdownPreprocessor, NoopMarkdownPreprocessor } from './preprocessor'
 import { type FileUploader } from './uploader'
-import { te } from 'date-fns/locale'
 
 export interface ImportWorkspace {
   projectTypes?: ImportProjectType[]
@@ -751,13 +750,6 @@ export class WorkspaceImporter {
     const spaceId = await this.createOrgSpace(space)
     this.logger.log('Document space created: ' + spaceId)
 
-    // Partition templates and documents
-    const templateMap = new Map<Ref<DocumentTemplate | ControlledDocument>, ImportControlledDocumentTemplate[]>()
-    const documentMap = new Map<Ref<ControlledDocument | DocumentTemplate>, ImportControlledDocument[]>()
-    for (const doc of space.docs) {
-      this.partitionTemplatesFromDocuments(doc, documentMap, templateMap)
-    }
-
     // Create hierarchy meta
     const documentMetaIds = new Map<Ref<ControlledDocument | DocumentTemplate>, Ref<DocumentMeta>>()
     for (const doc of space.docs) {
@@ -770,7 +762,14 @@ export class WorkspaceImporter {
       }
     }
 
-    // Create attachments for documents as templates
+    // Partition templates and documents
+    const templateMap = new Map<Ref<DocumentTemplate | ControlledDocument>, ImportControlledDocumentTemplate[]>()
+    const documentMap = new Map<Ref<ControlledDocument | DocumentTemplate>, ImportControlledDocument[]>()
+    for (const doc of space.docs) {
+      this.partitionTemplatesFromDocuments(doc, documentMap, templateMap)
+    }
+
+    // Create attached docs for templates
     for (const templates of templateMap.values()) {
       for (const template of templates) {
         const metaId = documentMetaIds.get(template.id)
@@ -801,6 +800,7 @@ export class WorkspaceImporter {
       }
     }
 
+    // Create attached docs for documents
     for (const onlyDocuments of documentMap.values()) {
       for (const document of onlyDocuments) {
         const metaId = documentMetaIds.get(document.id)
