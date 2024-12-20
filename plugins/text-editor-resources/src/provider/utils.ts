@@ -48,7 +48,7 @@ export function createRemoteProvider (ydoc: Ydoc, doc: CollaborativeDoc, content
       url: collaboratorUrl,
       name: documentId,
       document: ydoc,
-      content,
+      source: content,
       token
     })
     : new HocuspocusCollabProvider({
