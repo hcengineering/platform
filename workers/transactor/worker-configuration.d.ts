@@ -9,5 +9,7 @@ interface Env {
 
   ACCOUNTS_URL: string
 
-  DB_URL: string
+  DB_URL: string | undefined
+
+  STATS_URL: string | undefined
 }

@@ -49,7 +49,7 @@ describe('postgres operations', () => {
   let model: ModelDb
   let client: Client
   let operations: TxOperations
-  let serverStorage: DbAdapter
+  let serverStorage: DbAdapter | undefined
 
   afterAll(async () => {
     clientRef.close()
@@ -119,7 +119,7 @@ describe('postgres operations', () => {
       },
       model
     )
-    await serverStorage.init?.()
+    await serverStorage.init?.(ctx)
     client = await createClient(async (handler) => {
       const st: ClientConnection = {
         isConnected: () => true,

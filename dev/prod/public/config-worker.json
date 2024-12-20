@@ -47,7 +47,6 @@
   
   "UPLOAD_CONFIG": "",
   
-  "UPLOAD_URL": "https://dl.hc.engineering/upload/form-data/:workspace",  
-  "USE_BINARY_PROTOCOL": false,
+  "UPLOAD_URL": "https://dl.hc.engineering/upload/form-data/:workspace",
   "TRANSACTOR_OVERRIDE": "wss://cloud-transactor.andrey-47f.workers.dev"
 }

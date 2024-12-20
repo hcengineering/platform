@@ -1746,8 +1746,8 @@ dependencies:
     specifier: ^1.10.0
     version: 1.10.0
   msgpackr:
-    specifier: ^1.11.0
-    version: 1.11.0
+    specifier: ^1.11.2
+    version: 1.11.2
   msgpackr-extract:
     specifier: ^3.0.3
     version: 3.0.3
@@ -16385,8 +16385,8 @@ packages:
       '@msgpackr-extract/msgpackr-extract-win32-x64': 3.0.3
     dev: false
 
-  /msgpackr@1.11.0:
-    resolution: {integrity: sha512-I8qXuuALqJe5laEBYoFykChhSXLikZmUhccjGsPuSJ/7uPip2TJ7lwdIQwWSAi0jGZDXv4WOP8Qg65QZRuXxXw==}
+  /msgpackr@1.11.2:
+    resolution: {integrity: sha512-F9UngXRlPyWCDEASDpTf6c9uNhGPTqnTeLVt7bN+bU1eajoR/8V9ys2BRaV5C/e5ihE6sJ9uPIKaYt6bFuO32g==}
     optionalDependencies:
       msgpackr-extract: 3.0.3
     dev: false
@@ -23319,7 +23319,7 @@ packages:
     dev: false
 
   file:projects/cloud-transactor-http-api.tgz(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-LSWaK4sfpV46uBRWBY4cdxkGVyNFJeXrrzzUjrpLXSeJbfdLMxFyU8OYaEw8dKIkOAz+10O6t3ueX5t720utWQ==, tarball: file:projects/cloud-transactor-http-api.tgz}
+    resolution: {integrity: sha512-4vV2jdYPYycGKl0jomdYmnEvZgancPc2pdhJ6khPP3qR4FZFhHx5lF/uLuREoZ3d7GuQqNs4J+fKL/+iriCkaA==, tarball: file:projects/cloud-transactor-http-api.tgz}
     id: file:projects/cloud-transactor-http-api.tgz
     name: '@rush-temp/cloud-transactor-http-api'
     version: 0.0.0
@@ -28196,7 +28196,7 @@ packages:
     dev: false
 
   file:projects/pod-server.tgz(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-SBX/FJrlhICgnc9p2QmRZAOu0HaFRLgGQ9guLb/N+wQtppZ07B5jaelGU4EDgpNVNLDXhapz7S4F/Cm03KGh0A==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-Zjyw7kkb9SeNLLZkKRewqsMrgpJUz8ZsXOW12y6253s2S8B1w2a895QOKVd8z9fLTztV3RdWbUlXvys8GczNHQ==, tarball: file:projects/pod-server.tgz}
     id: file:projects/pod-server.tgz
     name: '@rush-temp/pod-server'
     version: 0.0.0
@@ -28216,7 +28216,7 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      msgpackr: 1.11.0
+      msgpackr: 1.11.2
       msgpackr-extract: 3.0.3
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
@@ -29509,7 +29509,7 @@ packages:
     dev: false
 
   file:projects/rpc.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-2BZkT/QNPKRxnqXQve49IM7Weg6wBkUSFA5eQFR4v30abuL2cP4fxTRMzEW239ynrWhw7pdVQx1Hv88y4KZu4Q==, tarball: file:projects/rpc.tgz}
+    resolution: {integrity: sha512-RJ85MrZqRr4N7UZWl5TPwYjLRbS0pfEx0/ZMB5f1CGxi9r1EAKV7IMTDiCnfkGua93vEKOqxX+pVuHhCMUDsag==, tarball: file:projects/rpc.tgz}
     id: file:projects/rpc.tgz
     name: '@rush-temp/rpc'
     version: 0.0.0
@@ -29525,7 +29525,7 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      msgpackr: 1.11.0
+      msgpackr: 1.11.2
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
@@ -33248,7 +33248,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-dTUYN+mKApDwcRRCIBOVFxHmmZGkGJ8UjtEmvyMb/HgcsWUXDuzygkJlGqYTa0LirObNqRqH6J3AbUCeiokdmg==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-zOR5nWhm639KcPxnXF9glZz7Du3lvg/uzo0sbFI5gUsB6Jp4fiiyHIU/K+OyfLjWL2thuo5EZQOsuoDPQCm3JQ==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
@@ -33278,7 +33278,7 @@ packages:
       libphonenumber-js: 1.10.56
       mime-types: 2.1.35
       mongodb: 6.12.0
-      msgpackr: 1.11.0
+      msgpackr: 1.11.2
       msgpackr-extract: 3.0.3
       postgres: 3.4.5
       prettier: 3.2.5

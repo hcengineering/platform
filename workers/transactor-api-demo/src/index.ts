@@ -13,18 +13,18 @@
 // limitations under the License.
 //
 
-import { Router, error, json } from 'itty-router'
 import {
   type ConnectOptions,
-  type TransactorService,
   type TransactorRawApi,
+  type TransactorService,
   createHttpClient,
   createRpcClient,
   getWorkspaceLogin,
   unpackModel
 } from '@hcengineering/cloud-transactor-api'
 import contact, { AvatarType, type Person } from '@hcengineering/contact'
-import core, { generateId, type AccountClient, type Ref, type TxCreateDoc, TxOperations } from '@hcengineering/core'
+import core, { type AccountClient, type Ref, type TxCreateDoc, TxOperations, generateId } from '@hcengineering/core'
+import { Router, error, json } from 'itty-router'
 
 async function callClient<T> (client: T, method: () => Promise<any>): Promise<Response> {
   try {

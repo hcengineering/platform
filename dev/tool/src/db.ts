@@ -13,9 +13,9 @@ import {
   type BackupClient,
   type Client,
   getWorkspaceId,
+  MeasureMetricsContext,
   systemAccountEmail,
-  type Doc,
-  type MeasureMetricsContext
+  type Doc
 } from '@hcengineering/core'
 import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import {
@@ -81,7 +81,7 @@ async function moveWorkspace (
       tables = tables.filter((t) => include.has(t))
     }
 
-    await createTables(pgClient, tables)
+    await createTables(new MeasureMetricsContext('', {}), pgClient, tables)
     const token = generateToken(systemAccountEmail, wsId)
     const endpoint = await getTransactorEndpoint(token, 'external')
     const connection = (await connect(endpoint, wsId, undefined, {
