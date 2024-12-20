@@ -111,9 +111,7 @@
               if (!newQuery[filterKey][key]) {
                 newQuery[filterKey][key] = newValue[key]
               } else {
-                newQuery[filterKey][key] = newQuery[filterKey][key].filter((p: any) =>
-                  newValue[key].includes(p)
-                )
+                newQuery[filterKey][key] = newQuery[filterKey][key].filter((p: any) => newValue[key].includes(p))
               }
               merged = true
               continue
