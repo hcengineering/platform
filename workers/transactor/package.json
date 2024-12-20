@@ -6,7 +6,7 @@
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev --port 3335",
-    "dev-local": "wrangler dev --port 3335 --local-upstream --host localhost",
+    "dev-local": "wrangler dev --port 3335 --local --upstream-protocol=http",
     "start": "wrangler dev --port 3335",
     "logs": "npx wrangler tail --format pretty", 
     "cf-typegen": "wrangler types",

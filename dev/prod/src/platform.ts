@@ -262,7 +262,7 @@ export async function configurePlatform() {
   })
   configureI18n()
 
-  const config: Config = await loadServerConfig( configs[clientType] ?? '/config.json')
+  const config: Config = await loadServerConfig(configs[clientType] ?? '/config.json')
   const branding: BrandingMap = config.BRANDING_URL !== undefined ? await (await fetch(config.BRANDING_URL)).json() : {}
   const myBranding = branding[window.location.host] ?? {}
 
