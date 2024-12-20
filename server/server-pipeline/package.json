@@ -45,9 +45,6 @@
     "@hcengineering/server-collaboration": "^0.6.0",
     "@hcengineering/server-collaboration-resources": "^0.6.0",
     "@hcengineering/server": "^0.6.4",
-    "@hcengineering/server-storage": "^0.6.0",
-    "@hcengineering/postgres": "^0.6.0",
-    "@hcengineering/mongo": "^0.6.1",
     "@hcengineering/server-contact": "^0.6.1",
     "@hcengineering/server-contact-resources": "^0.6.0",
     "@hcengineering/server-notification": "^0.6.1",
@@ -97,7 +94,6 @@
     "@hcengineering/server-training": "^0.1.0",
     "@hcengineering/server-training-resources": "^0.1.0",
     "@hcengineering/middleware": "^0.6.0",
-    "@hcengineering/minio": "^0.6.0",
     "@hcengineering/login-assets": "^0.6.0",
     "@hcengineering/onboard-assets": "^0.6.0",
     "@hcengineering/view-assets": "^0.6.11",
@@ -123,7 +119,6 @@
     "@hcengineering/tracker-assets": "^0.6.0",
     "@hcengineering/board-assets": "^0.6.19",
     "@hcengineering/hr-assets": "^0.6.19",
-    "@hcengineering/bitrix-assets": "^0.6.0",
     "@hcengineering/request-assets": "^0.6.0",
     "@hcengineering/document-assets": "^0.6.0",
     "@hcengineering/controlled-documents-assets": "^0.1.0",
@@ -155,7 +150,6 @@
     "@hcengineering/tracker": "^0.6.24",
     "@hcengineering/board": "^0.6.19",
     "@hcengineering/hr": "^0.6.19",
-    "@hcengineering/bitrix": "^0.6.52",
     "@hcengineering/request": "^0.6.14",
     "@hcengineering/support": "^0.6.5",
     "@hcengineering/document": "^0.6.0",
@@ -175,7 +169,6 @@
     "@hcengineering/server-fulltext": "^0.6.0",
     "@hcengineering/server-fulltext-resources": "^0.6.0",
     "@hcengineering/survey": "^0.6.0",
-    "@hcengineering/survey-assets": "^0.6.0",
-    "@hcengineering/survey-resources": "^0.6.0"
+    "@hcengineering/survey-assets": "^0.6.0"
   }
 }

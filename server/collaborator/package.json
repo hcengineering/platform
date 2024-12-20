@@ -61,6 +61,7 @@
     "@hcengineering/collaboration": "^0.6.0",
     "@hcengineering/collaborator-client": "^0.6.4",
     "@hcengineering/text": "^0.6.5",
+    "@hcengineering/text-ydoc": "^0.6.0",
     "@hcengineering/mongo": "^0.6.1",
     "@hocuspocus/server": "^2.13.5",
     "@hocuspocus/transformer": "^2.13.5",

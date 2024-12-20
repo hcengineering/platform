@@ -50,11 +50,12 @@ export interface MinioConfig extends StorageConfig {
   bucketPrefix?: string
 }
 
+export const CONFIG_KIND = 'minio'
+
 /**
  * @public
  */
 export class MinioService implements StorageAdapter {
-  static config = 'minio'
   client: Client
   constructor (readonly opt: MinioConfig) {
     this.client = new Client({

@@ -121,7 +121,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   setMetadataLocalStorage(login.metadata.LoginEndpoint, workspaceLoginInfo?.endpoint)
 
-  const endpoint = workspaceLoginInfo?.endpoint // fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
+  const endpoint = getMetadata(login.metadata.TransactorOverride) ?? workspaceLoginInfo?.endpoint // fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
   const email = workspaceLoginInfo?.email // fetchMetadataLocalStorage(login.metadata.LoginEmail)
   if (token == null || endpoint == null || email == null) {
     const navigateUrl = encodeURIComponent(JSON.stringify(loc))

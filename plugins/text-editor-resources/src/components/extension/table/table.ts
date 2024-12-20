@@ -17,11 +17,11 @@ import { type Editor } from '@tiptap/core'
 import TiptapTable from '@tiptap/extension-table'
 import { CellSelection } from '@tiptap/pm/tables'
 import { getEventPositionElement, SelectPopup, showPopup } from '@hcengineering/ui'
-import textEditor from '@hcengineering/text-editor'
+import textEditor, { type ActionContext } from '@hcengineering/text-editor'
 
 import { SvelteNodeViewRenderer } from '../../node-view'
 import TableNodeView from './TableNodeView.svelte'
-import { isTableSelected } from './utils'
+import { findTable, isTableSelected, selectTable as selectTableNode } from './utils'
 import AddColAfter from '../../icons/table/AddColAfter.svelte'
 import AddColBefore from '../../icons/table/AddColBefore.svelte'
 import AddRowAfter from '../../icons/table/AddRowAfter.svelte'
@@ -31,6 +31,8 @@ import DeleteRow from '../../icons/table/DeleteRow.svelte'
 import DeleteTable from '../../icons/table/DeleteTable.svelte'
 
 export const Table = TiptapTable.extend({
+  draggable: true,
+
   addKeyboardShortcuts () {
     return {
       'Mod-Backspace': () => handleDelete(this.editor),
@@ -145,6 +147,19 @@ export async function openTableOptions (editor: Editor, event: MouseEvent): Prom
   })
 }
 
+export async function selectTable (editor: Editor, event: MouseEvent): Promise<void> {
+  const table = findTable(editor.state.selection)
+  if (table === undefined) return
+
+  event.preventDefault()
+
+  editor.view.dispatch(selectTableNode(table, editor.state.tr))
+}
+
 export async function isEditableTableActive (editor: Editor): Promise<boolean> {
   return editor.isEditable && editor.isActive('table')
+}
+
+export async function isTableToolbarContext (editor: Editor, context: ActionContext): Promise<boolean> {
+  return editor.isEditable && editor.isActive('table') && context.tag === 'table-toolbar'
 }

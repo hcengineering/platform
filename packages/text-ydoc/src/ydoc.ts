@@ -18,9 +18,7 @@ import { Extensions, getSchema } from '@tiptap/core'
 import { Node, Schema } from '@tiptap/pm/model'
 import { prosemirrorJSONToYDoc, prosemirrorToYDoc, yDocToProsemirrorJSON } from 'y-prosemirror'
 import { Doc as YDoc, applyUpdate, encodeStateAsUpdate, XmlElement as YXmlElement, XmlText as YXmlText } from 'yjs'
-import { defaultExtensions } from './extensions'
-import { MarkupNode } from './markup/model'
-import { jsonToMarkup, markupToJSON, markupToPmNode } from './markup/utils'
+import { defaultExtensions, jsonToMarkup, markupToJSON, markupToPmNode, type MarkupNode } from '@hcengineering/text'
 
 const defaultSchema = getSchema(defaultExtensions)
 

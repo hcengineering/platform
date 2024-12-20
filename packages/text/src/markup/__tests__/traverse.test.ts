@@ -17,8 +17,8 @@ describe('traverseNode', () => {
     traverseNode(node as MarkupNode, callback)
 
     expect(callback).toHaveBeenCalledTimes(2)
-    expect(callback).toHaveBeenCalledWith(node)
-    expect(callback).toHaveBeenCalledWith(node.content[0])
+    expect(callback).toHaveBeenCalledWith(node, undefined)
+    expect(callback).toHaveBeenCalledWith(node.content[0], node)
   })
 
   it('should stop traversing if the callback returns false', () => {
@@ -40,7 +40,7 @@ describe('traverseNode', () => {
     traverseNode(node, callback)
 
     expect(callback).toHaveBeenCalledTimes(1)
-    expect(callback).toHaveBeenCalledWith(node)
+    expect(callback).toHaveBeenCalledWith(node, undefined)
   })
 })
 

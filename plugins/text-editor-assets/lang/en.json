@@ -52,6 +52,7 @@
     "Table": "Table",
     "InsertTable": "Insert table",
     "TableOptions": "Customize table",
+    "SelectTable": "Select table",
     "Width": "Width",
     "Height": "Height",
     "Unset": "Unset",
@@ -59,6 +60,9 @@
     "SeparatorLine": "Separator line",
     "TodoList": "Action item",
     "DrawingBoard": "Drawing board",
-    "MermaidDiargram": "Diagram"
+    "MermaidDiargram": "Diagram",
+    "Comment": "Comment",
+    "AddComment": "Add a comment",
+    "AddCommentPlaceholder": "Add a comment..."
   }
 }

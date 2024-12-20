@@ -26,6 +26,8 @@
   import Spinner from './Spinner.svelte'
   import IconCheck from './icons/Check.svelte'
   import IconSearch from './icons/Search.svelte'
+  import { translate } from '@hcengineering/platform'
+  import { themeStore } from '@hcengineering/theme'
 
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined
@@ -40,7 +42,7 @@
   export let loading: boolean = false
 
   let popupElement: HTMLDivElement | undefined = undefined
-  let search: string = ''
+  export let search: string = ''
 
   const dispatch = createEventDispatcher()
 
@@ -82,14 +84,33 @@
     if (key.code === 'Enter') {
       key.preventDefault()
       key.stopPropagation()
-      sendSelect(value[selection].id)
+      sendSelect(filteredObjects[selection].id)
       return true
     }
     return false
   }
   const manager = createFocusManager()
 
-  $: filteredObjects = value.filter((el) => (el.label ?? el.text ?? '').toLowerCase().includes(search.toLowerCase()))
+  let itemLabelsTranslation: Map<string, string> = new Map<string, string>()
+
+  async function translateLabels (values: SelectPopupValueType[]): Promise<void> {
+    const translateValue: (value: SelectPopupValueType) => Promise<[string, string] | null> = async (e) => {
+      if (e.label === undefined) {
+        return null
+      }
+      const text = await translate(e.label, {}, $themeStore.language)
+      return [e.label, text]
+    }
+    const promises = values.map(translateValue)
+    const result: Array<readonly [string, string] | null> = await Promise.all(promises)
+    itemLabelsTranslation = new Map(result.filter((r) => r !== null) as Array<readonly [string, string]>)
+  }
+
+  $: void translateLabels(value)
+
+  $: filteredObjects = value.filter((el) =>
+    (itemLabelsTranslation.get(el.label ?? '') ?? el.text ?? '').toLowerCase().includes(search.toLowerCase())
+  )
 
   $: huge = size === 'medium' || size === 'large'
 

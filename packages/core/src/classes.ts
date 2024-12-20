@@ -732,6 +732,8 @@ export interface BackupStatus {
 
 export interface BaseWorkspaceInfo {
   workspace: string // An uniq workspace name, Database names
+  uuid?: string // An uuid for a workspace to be used already for cockroach data
+
   disabled?: boolean
   version?: Data<Version>
   branding?: string

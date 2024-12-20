@@ -299,12 +299,21 @@ export function createModel (builder: Builder): void {
 
   // Table category
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
-    action: textEditor.function.OpenTableOptions,
-    icon: textEditor.icon.TableProps,
-    visibilityTester: textEditor.function.IsEditableTableActive,
-    label: textEditor.string.TableOptions,
+    action: textEditor.function.SelectTable,
+    icon: textEditor.icon.SelectTable,
+    visibilityTester: textEditor.function.IsTableToolbarContext,
+    label: textEditor.string.SelectTable,
     category: 70,
     index: 5
+  })
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    action: textEditor.function.OpenTableOptions,
+    icon: textEditor.icon.TableProps,
+    visibilityTester: textEditor.function.IsTableToolbarContext,
+    label: textEditor.string.TableOptions,
+    category: 70,
+    index: 10
   })
 
   // Image align category
@@ -360,5 +369,17 @@ export function createModel (builder: Builder): void {
     label: textEditor.string.Note,
     category: 110,
     index: 5
+  })
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    action: textEditor.function.CreateInlineComment,
+    icon: textEditor.icon.Comment,
+    visibilityTester: textEditor.function.ShouldShowCreateInlineCommentAction,
+    isActive: {
+      name: 'inlineComment'
+    },
+    label: textEditor.string.Comment,
+    category: 110,
+    index: 10
   })
 }

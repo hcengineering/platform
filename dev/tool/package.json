@@ -150,6 +150,7 @@
     "@hcengineering/tags": "^0.6.16",
     "@hcengineering/task": "^0.6.20",
     "@hcengineering/text": "^0.6.5",
+    "@hcengineering/text-ydoc": "^0.6.0",
     "@hcengineering/telegram": "^0.6.21",
     "@hcengineering/tracker": "^0.6.24",
     "@hcengineering/collaboration": "^0.6.0",
@@ -167,7 +168,7 @@
     "ws": "^8.18.0",
     "bufferutil": "^4.0.8",
     "utf-8-validate": "^6.0.4",
-    "msgpackr": "^1.11.0",
+    "msgpackr": "^1.11.2",
     "msgpackr-extract": "^3.0.3"
   }
 }

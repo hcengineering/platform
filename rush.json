@@ -481,6 +481,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/text-ydoc",
+      "projectFolder": "packages/text-ydoc",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/ui",
       "projectFolder": "packages/ui",
       "shouldPublish": true
@@ -2204,6 +2209,26 @@
     {
       "packageName": "@hcengineering/survey-resources",
       "projectFolder": "plugins/survey-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/cloud-transactor",
+      "projectFolder": "workers/transactor",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/cloud-transactor-api",
+      "projectFolder": "workers/transactor-api",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/cloud-transactor-api-demo",
+      "projectFolder": "workers/transactor-api-demo",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/cloud-transactor-http-api",
+      "projectFolder": "workers/transactor-http-api",
       "shouldPublish": false
     }
   ]

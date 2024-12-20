@@ -110,6 +110,13 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
     return this.contentDOMElement
   }
 
+  override stopEvent (event: Event): boolean {
+    if (typeof this.options.stopEvent === 'function') {
+      return this.options.stopEvent({ event })
+    }
+    return false
+  }
+
   update (node: ProseMirrorNode, decorations: DecorationWithType[]): boolean {
     if (typeof this.options.update === 'function') {
       return this.options.update(node, decorations)

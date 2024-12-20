@@ -415,7 +415,7 @@ class TSessionManager implements SessionManager {
         : null) ?? null
 
     if (workspace === undefined) {
-      ctx.warn('open workspace', {
+      ctx.info('open workspace', {
         email: token.email,
         workspace: workspaceInfo.workspaceId,
         wsUrl: workspaceInfo.workspaceUrl,
@@ -427,6 +427,7 @@ class TSessionManager implements SessionManager {
         token,
         workspaceInfo.workspaceUrl ?? workspaceInfo.workspaceId,
         workspaceName,
+        workspaceInfo.uuid,
         branding
       )
     }
@@ -456,7 +457,8 @@ class TSessionManager implements SessionManager {
           pipelineFactory,
           ws,
           workspaceInfo.workspaceUrl ?? workspaceInfo.workspaceId,
-          workspaceName
+          workspaceName,
+          workspaceInfo.uuid
         )
       }
     } else {
@@ -469,7 +471,14 @@ class TSessionManager implements SessionManager {
         })
         return { upgrade: true }
       }
-      pipeline = await ctx.with('💤 wait', { workspaceName }, () => (workspace as Workspace).pipeline)
+      try {
+        pipeline = await ctx.with('💤 wait', { workspaceName }, () => (workspace as Workspace).pipeline)
+      } catch (err: any) {
+        // Failed to create pipeline, etc
+        Analytics.handleError(err)
+        this.workspaces.delete(wsString)
+        throw err
+      }
     }
 
     const session = this.createSession(
@@ -536,7 +545,8 @@ class TSessionManager implements SessionManager {
     pipelineFactory: PipelineFactory,
     ws: ConnectionSocket,
     workspaceUrl: string,
-    workspaceName: string
+    workspaceName: string,
+    workspaceUuid?: string
   ): Promise<Pipeline> {
     if (LOGGING_ENABLED) {
       ctx.info('reloading workspace', { workspaceName, token: JSON.stringify(token) })
@@ -558,7 +568,7 @@ class TSessionManager implements SessionManager {
     // Re-create pipeline.
     workspace.pipeline = pipelineFactory(
       ctx,
-      { ...token.workspace, workspaceUrl, workspaceName },
+      { ...token.workspace, workspaceUrl, workspaceName, uuid: workspaceUuid },
       true,
       (ctx, tx, targets, exclude) => {
         this.broadcastAll(workspace, tx, targets, exclude)
@@ -647,6 +657,7 @@ class TSessionManager implements SessionManager {
     token: Token,
     workspaceUrl: string,
     workspaceName: string,
+    workspaceUuid: string | undefined,
     branding: Branding | null
   ): Workspace {
     const upgrade = token.extra?.model === 'upgrade'
@@ -657,7 +668,7 @@ class TSessionManager implements SessionManager {
       id: generateId(),
       pipeline: pipelineFactory(
         pipelineCtx,
-        { ...token.workspace, workspaceUrl, workspaceName },
+        { ...token.workspace, uuid: workspaceUuid, workspaceUrl, workspaceName },
         upgrade,
         (ctx, tx, targets, exclude) => {
           this.broadcastAll(workspace, tx, targets, exclude)
@@ -669,6 +680,7 @@ class TSessionManager implements SessionManager {
       upgrade,
       workspaceId: token.workspace,
       workspaceName,
+      workspaceUuid,
       branding,
       workspaceInitCompleted: false,
       tickHash: this.tickCounter % ticksPerSecond,
@@ -794,7 +806,7 @@ class TSessionManager implements SessionManager {
     ignoreSocket?: ConnectionSocket
   ): Promise<void> {
     if (LOGGING_ENABLED) {
-      this.ctx.warn('closing workspace', {
+      this.ctx.info('closing workspace', {
         workspace: workspace.id,
         wsName: workspace.workspaceName,
         code,

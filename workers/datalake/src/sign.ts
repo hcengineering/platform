@@ -14,9 +14,9 @@
 //
 
 import { AwsClient } from 'aws4fetch'
-import { error } from 'itty-router'
+import { error, json } from 'itty-router'
 
-import { handleBlobUploaded } from './blob'
+import { type BlobMetadata, handleBlobUploaded } from './blob'
 import { type MetricsContext } from './metrics'
 import { type Storage, selectStorage } from './storage'
 import { type BlobRequest, type UUID } from './types'
@@ -108,8 +108,9 @@ export async function handleSignComplete (
     return error(400)
   }
 
+  let metadata: BlobMetadata
   try {
-    await handleBlobUploaded(env, ctx, metrics, workspace, name, uuid)
+    metadata = await handleBlobUploaded(env, ctx, metrics, workspace, name, uuid)
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error({ error: message, workspace, name, uuid })
@@ -118,7 +119,7 @@ export async function handleSignComplete (
 
   await env.datalake_blobs.delete(key)
 
-  return new Response(null, { status: 201 })
+  return json(metadata)
 }
 
 export async function handleSignAbort (request: BlobRequest, env: Env, ctx: ExecutionContext): Promise<Response> {

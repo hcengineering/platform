@@ -31,6 +31,8 @@
   const maxHeight = 1000
   const minHeight = 100
 
+  $: readonly = !editor.isEditable || !selected
+
   let savedBoard: SavedBoard
   let resizer: HTMLElement
   let startY: number
@@ -137,7 +139,7 @@
       savedCmds={savedBoard.commands}
       savedProps={savedBoard.props}
       resizeable={true}
-      readonly={!selected}
+      {readonly}
       {loading}
       {selected}
       height={resizedHeight ?? node.attrs.height ?? defaultHeight}
@@ -153,7 +155,7 @@
           }}
         />
       </div>
-      {#if selected}
+      {#if selected && !readonly}
         <div
           class="handle resizer"
           bind:this={resizer}

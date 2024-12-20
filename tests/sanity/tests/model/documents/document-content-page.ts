@@ -32,8 +32,7 @@ export class DocumentContentPage extends CommonPage {
   readonly buttonInsertColumn = (col: number = 0): Locator =>
     this.page.locator('div.table-col-insert').nth(col).locator('button')
 
-  readonly buttonInsertLastRow = (): Locator =>
-    this.page.locator('table.proseTable + div.table-button-container__col + div.table-button-container__row')
+  readonly buttonInsertLastRow = (): Locator => this.page.locator('div.table-button-container__row')
 
   readonly buttonInsertInnerRow = (row: number = 0): Locator =>
     this.page.locator('table.proseTable').locator('tr').nth(row).locator('div.table-row-insert button')

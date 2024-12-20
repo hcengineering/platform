@@ -71,7 +71,8 @@ export default plugin(loginId, {
     LastToken: '' as Metadata<string>,
     LoginEndpoint: '' as Metadata<string>,
     LoginEmail: '' as Metadata<string>,
-    DisableSignUp: '' as Metadata<boolean>
+    DisableSignUp: '' as Metadata<boolean>,
+    TransactorOverride: '' as Metadata<string>
   },
   component: {
     LoginApp: '' as AnyComponent,
@@ -88,6 +89,7 @@ export default plugin(loginId, {
   },
   function: {
     SendInvite: '' as Resource<(email: string, personId?: Ref<Doc>, role?: AccountRole) => Promise<void>>,
+    ResendInvite: '' as Resource<(inviteId: string) => Promise<void>>,
     GetInviteLink: '' as Resource<
     (
       expHours: number,

@@ -42,13 +42,14 @@ createTaskModel(txes)
 describe('postgres operations', () => {
   const baseDbUri: string = process.env.DB_URL ?? 'postgresql://postgres:example@localhost:5433'
   let dbId: string = 'pg_testdb_' + generateId()
+  let dbUuid: string = crypto.randomUUID()
   let dbUri: string = baseDbUri + '/' + dbId
   const clientRef: PostgresClientReference = getDBClient(baseDbUri)
   let hierarchy: Hierarchy
   let model: ModelDb
   let client: Client
   let operations: TxOperations
-  let serverStorage: DbAdapter
+  let serverStorage: DbAdapter | undefined
 
   afterAll(async () => {
     clientRef.close()
@@ -58,6 +59,7 @@ describe('postgres operations', () => {
   beforeEach(async () => {
     try {
       dbId = 'pg_testdb_' + generateId()
+      dbUuid = crypto.randomUUID()
       dbUri = baseDbUri + '/' + dbId
       const client = await clientRef.getClient()
       await client`CREATE DATABASE ${client(dbId)}`
@@ -88,7 +90,16 @@ describe('postgres operations', () => {
     }
 
     const mctx = new MeasureMetricsContext('', {})
-    const txStorage = await createPostgresTxAdapter(mctx, hierarchy, dbUri, getWorkspaceId(dbId), model)
+    const txStorage = await createPostgresTxAdapter(
+      mctx,
+      hierarchy,
+      dbUri,
+      {
+        ...getWorkspaceId(dbId),
+        uuid: dbUuid
+      },
+      model
+    )
 
     // Put all transactions to Tx
     for (const t of txes) {
@@ -98,8 +109,17 @@ describe('postgres operations', () => {
     await txStorage.close()
 
     const ctx = new MeasureMetricsContext('client', {})
-    const serverStorage = await createPostgresAdapter(ctx, hierarchy, dbUri, getWorkspaceId(dbId), model)
-    await serverStorage.init?.()
+    const serverStorage = await createPostgresAdapter(
+      ctx,
+      hierarchy,
+      dbUri,
+      {
+        ...getWorkspaceId(dbId),
+        uuid: dbUuid
+      },
+      model
+    )
+    await serverStorage.init?.(ctx)
     client = await createClient(async (handler) => {
       const st: ClientConnection = {
         isConnected: () => true,

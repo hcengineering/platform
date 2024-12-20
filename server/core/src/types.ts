@@ -598,6 +598,7 @@ export interface Workspace {
 
   workspaceId: WorkspaceId
   workspaceName: string
+  workspaceUuid?: string
   branding: Branding | null
 }
 

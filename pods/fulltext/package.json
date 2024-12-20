@@ -73,6 +73,8 @@
     "@hcengineering/server-collaboration": "^0.6.0",
     "@hcengineering/middleware": "^0.6.0",
     "@hcengineering/server-client": "^0.6.0",
-    "@hcengineering/server-storage": "^0.6.0"
+    "@hcengineering/server-storage": "^0.6.0",
+    "@hcengineering/postgres": "^0.6.0",
+    "@hcengineering/mongo": "^0.6.1"
   }
 }
