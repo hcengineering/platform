@@ -130,8 +130,7 @@
     const resultQuery =
       search !== '' && clazz.filteringKey
         ? {
-            [clazz.filteringKey]: { $like: '%' + search + '%' },
-            _id: { $in: Array.from(targets.keys()) }
+            [clazz.filteringKey]: { $like: '%' + search + '%' }
           }
         : {
             _id: { $in: Array.from(targets.keys()) }
