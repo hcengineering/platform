@@ -12,22 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import documents, { ControlledDocument, DocumentState } from '@hcengineering/controlled-documents'
 import { type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
 import document from '@hcengineering/document'
 import tracker, { IssuePriority, type IssueStatus } from '@hcengineering/tracker'
 import {
   ImportControlledDocument,
-  ImportOrgSpace,
   ImportControlledDocumentTemplate,
+  ImportOrgSpace,
+  type ImportControlledDoc,
   type ImportDocument,
   type ImportIssue,
   type ImportProject,
   type ImportProjectType,
   type ImportTeamspace,
-  type ImportWorkspace,
-  type ImportControlledDoc
+  type ImportWorkspace
 } from './importer'
-import documents, { DocumentState, DocumentTemplate } from '@hcengineering/controlled-documents'
 
 export interface ValidationError {
   path: string
@@ -52,7 +52,7 @@ export class ImportWorkspaceBuilder {
   private readonly documentParents = new Map<string, string>()
 
   private readonly qmsSpaces = new Map<string, ImportOrgSpace>()
-  private readonly qmsTemplates = new Map<Ref<DocumentTemplate>, string>()
+  private readonly qmsTemplates = new Map<Ref<ControlledDocument>, string>()
   private readonly qmsDocsBySpace = new Map<string, Map<string, ImportControlledDoc>>()
   private readonly qmsDocsParents = new Map<string, string>()
 

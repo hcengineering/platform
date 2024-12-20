@@ -629,7 +629,7 @@ export class UnifiedFormatImporter {
           this.metadataByFilePath.set(docPath, meta)
         }
         const templateMeta = this.metadataByFilePath.get(docPath)
-        const template = await this.processControlledDocumentTemplate(docHeader as UnifiedDocumentTemplateHeader, docPath, templateMeta?.id as Ref<DocumentTemplate>)
+        const template = await this.processControlledDocumentTemplate(docHeader as UnifiedDocumentTemplateHeader, docPath, templateMeta?.id as Ref<ControlledDocument>)
         builder.addControlledDocumentTemplate(spacePath, docPath, template, parentDocPath)
 
         const subDir = path.join(currentPath, docFile.replace('.md', ''))
@@ -759,7 +759,7 @@ export class UnifiedFormatImporter {
       id: id as Ref<ControlledDocument>,
       class: documents.class.ControlledDocument,
       title: header.title,
-      template: template?.id as Ref<DocumentTemplate>,
+      template: template?.id as Ref<ControlledDocument>, // todo: test (it was Ref<DocumentTemplate>)
       code: header.code,
       seqNumber: parseInt(seqNumber ?? 'NaN'),
       major: 0,
@@ -781,7 +781,7 @@ export class UnifiedFormatImporter {
   private async processControlledDocumentTemplate (
     header: UnifiedDocumentTemplateHeader,
     docPath: string,
-    id?: Ref<DocumentTemplate>
+    id?: Ref<ControlledDocument>
   ): Promise<ImportControlledDocumentTemplate> {
     const author = this.findEmployeeByName(header.author)
     const owner = this.findEmployeeByName(header.owner)
@@ -793,7 +793,7 @@ export class UnifiedFormatImporter {
     const seqNumber = numberMatch?.[1]
 
     return {
-      id: id as Ref<DocumentTemplate>,
+      id: id as Ref<ControlledDocument>,
       class: documents.mixin.DocumentTemplate,
       title: header.title,
       docPrefix: header.docPrefix,
