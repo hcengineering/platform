@@ -22,7 +22,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:^0.6.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -38,23 +38,23 @@
     "@types/otp-generator": "^4.0.2"
   },
   "dependencies": {
-    "@hcengineering/mongo": "^0.6.1",
-    "@hcengineering/postgres": "^0.6.0",
+    "@hcengineering/mongo": "workspace:^0.6.1",
+    "@hcengineering/postgres": "workspace:^0.6.0",
     "mongodb": "^6.10.0",
     "postgres": "^3.4.5",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/contact": "^0.6.24",
-    "@hcengineering/client-resources": "^0.6.27",
-    "@hcengineering/client": "^0.6.18",
+    "@hcengineering/platform": "workspace:^0.6.11",
+    "@hcengineering/core": "workspace:^0.6.32",
+    "@hcengineering/contact": "workspace:^0.6.24",
+    "@hcengineering/client-resources": "workspace:^0.6.27",
+    "@hcengineering/client": "workspace:^0.6.18",
     "otp-generator": "^4.0.1",
-    "@hcengineering/model": "^0.6.11",
-    "@hcengineering/server-backup": "^0.6.0",
-    "@hcengineering/server-tool": "^0.6.0",
-    "@hcengineering/server-token": "^0.6.11",
-    "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/server-storage": "^0.6.0",
-    "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/server-pipeline": "^0.6.0"
+    "@hcengineering/model": "workspace:^0.6.11",
+    "@hcengineering/server-backup": "workspace:^0.6.0",
+    "@hcengineering/server-tool": "workspace:^0.6.0",
+    "@hcengineering/server-token": "workspace:^0.6.11",
+    "@hcengineering/analytics": "workspace:^0.6.0",
+    "@hcengineering/server-storage": "workspace:^0.6.0",
+    "@hcengineering/server-core": "workspace:^0.6.1",
+    "@hcengineering/server-pipeline": "workspace:^0.6.0"
   }
 }

@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "cross-env": "~7.0.3",
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:^0.6.0",
     "@types/node": "~20.11.16",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
@@ -41,23 +41,23 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/model": "^0.6.11",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/model": "workspace:^0.6.11",
+    "@hcengineering/platform": "workspace:^0.6.11",
+    "@hcengineering/core": "workspace:^0.6.32",
     "koa": "^2.15.3",
     "koa-router": "^12.0.1",
     "koa-bodyparser": "^4.4.1",
     "@koa/cors": "^5.0.0",
-    "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/server-tool": "^0.6.0",
-    "@hcengineering/server-storage": "^0.6.0",
-    "@hcengineering/server-pipeline": "^0.6.0",
-    "@hcengineering/server-client": "^0.6.0",
-    "@hcengineering/server-token": "^0.6.11",
-    "@hcengineering/server-notification": "^0.6.1",
-    "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/server-backup": "^0.6.0",
-    "@hcengineering/postgres": "^0.6.0",
-    "@hcengineering/mongo": "^0.6.1"
+    "@hcengineering/server-core": "workspace:^0.6.1",
+    "@hcengineering/server-tool": "workspace:^0.6.0",
+    "@hcengineering/server-storage": "workspace:^0.6.0",
+    "@hcengineering/server-pipeline": "workspace:^0.6.0",
+    "@hcengineering/server-client": "workspace:^0.6.0",
+    "@hcengineering/server-token": "workspace:^0.6.11",
+    "@hcengineering/server-notification": "workspace:^0.6.1",
+    "@hcengineering/analytics": "workspace:^0.6.0",
+    "@hcengineering/server-backup": "workspace:^0.6.0",
+    "@hcengineering/postgres": "workspace:^0.6.0",
+    "@hcengineering/mongo": "workspace:^0.6.1"
   }
 }

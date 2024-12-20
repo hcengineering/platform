@@ -18,7 +18,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:^0.6.0",
     "@types/node": "~20.11.16",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
@@ -35,17 +35,17 @@
     "@types/uuid": "^8.3.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/server-token": "^0.6.11",
-    "@hcengineering/text": "^0.6.5",
-    "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/query": "^0.6.12",
-    "@hcengineering/contact": "^0.6.24",
-    "@hcengineering/attachment": "^0.6.14",
-    "@hcengineering/drive": "^0.6.0",
+    "@hcengineering/core": "workspace:^0.6.32",
+    "@hcengineering/platform": "workspace:^0.6.11",
+    "@hcengineering/server-core": "workspace:^0.6.1",
+    "@hcengineering/server-token": "workspace:^0.6.11",
+    "@hcengineering/text": "workspace:^0.6.5",
+    "@hcengineering/analytics": "workspace:^0.6.0",
+    "@hcengineering/query": "workspace:^0.6.12",
+    "@hcengineering/contact": "workspace:^0.6.24",
+    "@hcengineering/attachment": "workspace:^0.6.14",
+    "@hcengineering/drive": "workspace:^0.6.0",
     "fast-equals": "^5.0.1",
-    "@hcengineering/storage": "^0.6.0"
+    "@hcengineering/storage": "workspace:^0.6.0"
   }
 }

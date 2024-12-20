@@ -21,7 +21,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:^0.6.0",
     "@types/jest": "^29.5.5",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
@@ -37,12 +37,12 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/chunter": "^0.6.20",
-    "@hcengineering/contact": "^0.6.24",
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/love": "^0.6.0",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/view": "^0.6.13"
+    "@hcengineering/chunter": "workspace:^0.6.20",
+    "@hcengineering/contact": "workspace:^0.6.24",
+    "@hcengineering/core": "workspace:^0.6.32",
+    "@hcengineering/love": "workspace:^0.6.0",
+    "@hcengineering/platform": "workspace:^0.6.11",
+    "@hcengineering/server-core": "workspace:^0.6.1",
+    "@hcengineering/view": "workspace:^0.6.13"
   }
 }

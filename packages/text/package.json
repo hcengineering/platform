@@ -22,7 +22,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:^0.6.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -39,7 +39,7 @@
     "jest-environment-jsdom": "^29.7.0"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/core": "workspace:^0.6.32",
     "@tiptap/core": "^2.6.6",
     "@tiptap/html": "^2.6.6",
     "@tiptap/pm": "^2.6.6",

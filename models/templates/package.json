@@ -16,7 +16,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:^0.6.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -28,19 +28,19 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/activity": "^0.6.0",
-    "@hcengineering/model": "^0.6.11",
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/model-core": "^0.6.0",
-    "@hcengineering/model-contact": "^0.6.1",
-    "@hcengineering/view": "^0.6.13",
-    "@hcengineering/model-view": "^0.6.0",
-    "@hcengineering/model-tracker": "^0.6.0",
-    "@hcengineering/templates": "^0.6.11",
-    "@hcengineering/templates-resources": "^0.6.0",
-    "@hcengineering/setting": "^0.6.17",
-    "@hcengineering/ui": "^0.6.15",
-    "@hcengineering/model-text-editor": "^0.6.0"
+    "@hcengineering/activity": "workspace:^0.6.0",
+    "@hcengineering/model": "workspace:^0.6.11",
+    "@hcengineering/core": "workspace:^0.6.32",
+    "@hcengineering/platform": "workspace:^0.6.11",
+    "@hcengineering/model-core": "workspace:^0.6.0",
+    "@hcengineering/model-contact": "workspace:^0.6.1",
+    "@hcengineering/view": "workspace:^0.6.13",
+    "@hcengineering/model-view": "workspace:^0.6.0",
+    "@hcengineering/model-tracker": "workspace:^0.6.0",
+    "@hcengineering/templates": "workspace:^0.6.11",
+    "@hcengineering/templates-resources": "workspace:^0.6.0",
+    "@hcengineering/setting": "workspace:^0.6.17",
+    "@hcengineering/ui": "workspace:^0.6.15",
+    "@hcengineering/model-text-editor": "workspace:^0.6.0"
   }
 }

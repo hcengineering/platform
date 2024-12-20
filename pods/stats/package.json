@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "cross-env": "~7.0.3",
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:^0.6.0",
     "@types/node": "~20.11.16",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
@@ -51,15 +51,15 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/platform": "workspace:^0.6.11",
+    "@hcengineering/core": "workspace:^0.6.32",
     "koa": "^2.15.3",
     "koa-router": "^12.0.1",
     "koa-bodyparser": "^4.4.1",
     "@koa/cors": "^5.0.0",
-    "@hcengineering/server-token": "^0.6.11",
-    "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/analytics-service": "^0.6.0"
+    "@hcengineering/server-token": "workspace:^0.6.11",
+    "@hcengineering/server-core": "workspace:^0.6.1",
+    "@hcengineering/analytics": "workspace:^0.6.0",
+    "@hcengineering/analytics-service": "workspace:^0.6.0"
   }
 }

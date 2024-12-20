@@ -22,7 +22,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:^0.6.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
@@ -37,9 +37,9 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/ui": "^0.6.15",
-    "@hcengineering/client": "^0.6.18"
+    "@hcengineering/platform": "workspace:^0.6.11",
+    "@hcengineering/core": "workspace:^0.6.32",
+    "@hcengineering/ui": "workspace:^0.6.15",
+    "@hcengineering/client": "workspace:^0.6.18"
   }
 }

@@ -20,7 +20,7 @@
     "sass": "^1.53.0",
     "svelte-preprocess": "^5.1.3",
     "svelte-check": "^3.6.9",
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:^0.6.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
@@ -38,13 +38,13 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/ui": "^0.6.15",
+    "@hcengineering/ui": "workspace:^0.6.15",
     "svelte": "^4.2.19",
     "lexorank": "~1.0.4",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/presentation": "^0.6.3",
-    "@hcengineering/notification": "^0.6.23",
-    "@hcengineering/rank": "^0.6.4"
+    "@hcengineering/platform": "workspace:^0.6.11",
+    "@hcengineering/core": "workspace:^0.6.32",
+    "@hcengineering/presentation": "workspace:^0.6.3",
+    "@hcengineering/notification": "workspace:^0.6.23",
+    "@hcengineering/rank": "workspace:^0.6.4"
   }
 }

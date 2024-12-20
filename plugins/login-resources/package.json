@@ -19,7 +19,7 @@
     "svelte-loader": "^3.2.0",
     "sass": "^1.53.0",
     "svelte-preprocess": "^5.1.3",
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:^0.6.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
@@ -39,15 +39,15 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/platform": "workspace:^0.6.11",
     "svelte": "^4.2.19",
-    "@hcengineering/login": "^0.6.12",
-    "@hcengineering/ui": "^0.6.15",
-    "@hcengineering/workbench": "^0.6.16",
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/presentation": "^0.6.3",
-    "@hcengineering/setting": "^0.6.17",
-    "@hcengineering/theme": "^0.6.5",
-    "@hcengineering/analytics": "^0.6.0"
+    "@hcengineering/login": "workspace:^0.6.12",
+    "@hcengineering/ui": "workspace:^0.6.15",
+    "@hcengineering/workbench": "workspace:^0.6.16",
+    "@hcengineering/core": "workspace:^0.6.32",
+    "@hcengineering/presentation": "workspace:^0.6.3",
+    "@hcengineering/setting": "workspace:^0.6.17",
+    "@hcengineering/theme": "workspace:^0.6.5",
+    "@hcengineering/analytics": "workspace:^0.6.0"
   }
 }

@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "cross-env": "~7.0.3",
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:^0.6.0",
     "@types/node": "~20.11.16",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
@@ -52,12 +52,12 @@
     "eslint-plugin-node": "^11.1.0"
   },
   "dependencies": {
-    "@hcengineering/client": "^0.6.18",
-    "@hcengineering/client-resources": "^0.6.27",
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/notification": "^0.6.23",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/server-token": "^0.6.11",
+    "@hcengineering/client": "workspace:^0.6.18",
+    "@hcengineering/client-resources": "workspace:^0.6.27",
+    "@hcengineering/core": "workspace:^0.6.32",
+    "@hcengineering/notification": "workspace:^0.6.23",
+    "@hcengineering/platform": "workspace:^0.6.11",
+    "@hcengineering/server-token": "workspace:^0.6.11",
     "aws-sdk": "^2.1423.0",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",

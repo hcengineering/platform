@@ -3,7 +3,7 @@
   "version": "0.6.0",
   "scripts": {},
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:^0.6.0",
     "cross-env": "~7.0.3",
     "webpack-cli": "^5.1.4",
     "webpack": "^5.97.1",

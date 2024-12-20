@@ -23,7 +23,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:^0.6.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -42,12 +42,12 @@
     "@types/ws": "^8.5.11"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/client": "^0.6.18",
-    "@hcengineering/client-resources": "^0.6.27",
-    "@hcengineering/collaborator-client": "^0.6.4",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/text": "^0.6.5"
+    "@hcengineering/core": "workspace:^0.6.32",
+    "@hcengineering/client": "workspace:^0.6.18",
+    "@hcengineering/client-resources": "workspace:^0.6.27",
+    "@hcengineering/collaborator-client": "workspace:^0.6.4",
+    "@hcengineering/platform": "workspace:^0.6.11",
+    "@hcengineering/text": "workspace:^0.6.5"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

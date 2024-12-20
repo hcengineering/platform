@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "cross-env": "~7.0.3",
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:^0.6.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint": "^8.54.0",
     "ts-node": "^10.8.0",
@@ -50,10 +50,10 @@
     "prettier": "^3.1.0"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/server-client": "^0.6.0",
-    "@hcengineering/importer": "^0.6.1",
+    "@hcengineering/core": "workspace:^0.6.32",
+    "@hcengineering/platform": "workspace:^0.6.11",
+    "@hcengineering/server-client": "workspace:^0.6.0",
+    "@hcengineering/importer": "workspace:^0.6.1",
     "commander": "^8.1.0"
   }
 }

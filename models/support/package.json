@@ -16,7 +16,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:^0.6.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -28,13 +28,13 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/model": "^0.6.11",
-    "@hcengineering/model-core": "^0.6.0",
-    "@hcengineering/model-preference": "^0.6.0",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/support": "^0.6.5",
-    "@hcengineering/support-resources": "^0.6.0",
-    "@hcengineering/ui": "^0.6.15"
+    "@hcengineering/core": "workspace:^0.6.32",
+    "@hcengineering/model": "workspace:^0.6.11",
+    "@hcengineering/model-core": "workspace:^0.6.0",
+    "@hcengineering/model-preference": "workspace:^0.6.0",
+    "@hcengineering/platform": "workspace:^0.6.11",
+    "@hcengineering/support": "workspace:^0.6.5",
+    "@hcengineering/support-resources": "workspace:^0.6.0",
+    "@hcengineering/ui": "workspace:^0.6.15"
   }
 }

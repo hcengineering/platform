@@ -18,7 +18,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/platform-rig": "workspace:^0.6.0",
     "@types/compression": "~1.7.2",
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
@@ -39,13 +39,13 @@
     "@types/body-parser": "~1.19.2"
   },
   "dependencies": {
-    "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/rpc": "^0.6.5",
-    "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/server-token": "^0.6.11",
-    "@hcengineering/server": "^0.6.4",
+    "@hcengineering/analytics": "workspace:^0.6.0",
+    "@hcengineering/core": "workspace:^0.6.32",
+    "@hcengineering/platform": "workspace:^0.6.11",
+    "@hcengineering/rpc": "workspace:^0.6.5",
+    "@hcengineering/server-core": "workspace:^0.6.1",
+    "@hcengineering/server-token": "workspace:^0.6.11",
+    "@hcengineering/server": "workspace:^0.6.4",
     "bufferutil": "^4.0.8",
     "cors": "^2.8.5",
     "express": "^4.19.2",
