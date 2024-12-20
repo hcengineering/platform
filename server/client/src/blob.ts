@@ -94,15 +94,15 @@ export class BlobClient {
             const chunks: Buffer[] = []
             const readable = await this.opt.storageAdapter.partial(ctx, this.workspace, name, written, chunkSize)
             await new Promise<void>((resolve) => {
-              readable.on('data', (chunk: Buffer) => {
-                chunks.push(chunk)
+              readable.on('data', (data: Buffer | Uint8Array) => {
+                chunks.push(Buffer.isBuffer(data) ? data : Buffer.from(data))
               })
               readable.on('end', () => {
                 readable.destroy()
                 resolve()
               })
             })
-            chunk = Buffer.concat(chunks)
+            chunk = Buffer.from(Buffer.concat(chunks))
           } else {
             const header: Record<string, string> = {
               Authorization: 'Bearer ' + this.token
