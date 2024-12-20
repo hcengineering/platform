@@ -1,0 +1,12 @@
+packages:
+  # Core packages
+  - 'packages/*'
+  # Plugins
+  - 'plugins/*'
+  # Models
+  - 'models/*'
+  # Server packages
+  - 'server/*'
+  - 'server-plugins/*'
+  # Development tools
+  - 'dev/*'
