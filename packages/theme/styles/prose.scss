@@ -386,6 +386,7 @@ table.proseTable {
   background-color: var(--theme-button-default);
   border: 1px solid var(--theme-button-border);
   border-radius: .25rem;
+  font-size: 0.875rem;
 }
 
 .proseCodeBlock {
@@ -397,13 +398,19 @@ table.proseTable {
   padding: .5rem;
   user-select: text;
   cursor: auto;
+
+  code {
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
+    word-wrap: nowrap;
+    scrollbar-width: auto;
+    font-size: 0.875rem;
+  }
 }
 
 pre.proseCodeBlock {
   position: relative;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  word-break: normal;
 }
 
 pre.proseCodeBlock {
@@ -496,6 +503,11 @@ pre.proseCodeBlock>pre.proseCode {
 
     font-size: 0.875rem;
     line-height: 1.5em;
+
+    overflow-x: auto;
+    white-space: pre;
+    word-wrap: nowrap;
+    scrollbar-width: auto;
   }
 
   .mermaidPreviewContainer {

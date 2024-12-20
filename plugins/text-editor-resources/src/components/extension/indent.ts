@@ -15,7 +15,7 @@
 
 import { Extension } from '@tiptap/core'
 import { type Node } from '@tiptap/pm/model'
-import { type EditorState, TextSelection, type Transaction } from '@tiptap/pm/state'
+import { type EditorState, Plugin, TextSelection, type Transaction } from '@tiptap/pm/state'
 
 export interface IndendOptions {
   indentUnit: string
@@ -44,8 +44,34 @@ export const IndentExtension = Extension.create<IndendOptions>({
         })
       }
     }
+  },
+
+  addProseMirrorPlugins () {
+    return [...(this.parent?.() ?? []), IndentTabFocusFixer(this.options)]
   }
 })
+
+function IndentTabFocusFixer (options: IndendOptions): Plugin {
+  return new Plugin({
+    props: {
+      handleKeyDown: (view, event) => {
+        const selection = view.state.selection
+        if (event.key !== 'Tab' || !(selection instanceof TextSelection)) return false
+
+        const lines = getLinesInSelection(view.state, selection)
+        const haveForbiddenNode = lines.some((line) => !options.allowedNodes.some((n) => n === line.node.type.name))
+
+        const shouldBlockEvent = lines.length > 0 && !haveForbiddenNode
+        if (shouldBlockEvent) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+
+        return shouldBlockEvent
+      }
+    }
+  })
+}
 
 export function adjustIndent (state: EditorState, direction: -1 | 1, options: IndendOptions): Transaction | undefined {
   const { selection } = state
@@ -80,14 +106,24 @@ export function adjustSelectionIndent (
   if (ranges.length === 1) {
     const range = ranges[0]
     const withinIndent = selection.from >= range.from && selection.to <= range.from + range.indent && range.indent > 0
-    if (!withinIndent && direction > 0) {
+    const containsLine = selection.from <= range.from && selection.to >= range.to
+    if (!withinIndent && !containsLine && direction > 0) {
       const indentOffset = indentLevelOffset(selection.from - range.from, direction)
       tr.insertText(indentUnit.slice(0, indentOffset), selection.from, selection.to)
       return
     }
   }
 
+  const isSelectionCollapsed = selection.from === selection.to
+  const affectedFromIndentStart = selection.from <= ranges[0].from + ranges[0].indent
+  const affectedFrom =
+    affectedFromIndentStart && !isSelectionCollapsed
+      ? selection.from
+      : selection.from + indentLevelOffset(ranges[0].indent, direction)
+  let affectedTo = selection.to
+
   let insertionOffset = 0
+
   for (const range of ranges) {
     if (direction > 0 ? range.text === '' : range.indent === 0) {
       continue
@@ -99,10 +135,13 @@ export function adjustSelectionIndent (
     } else {
       tr.insertText('', from, from - indentOffset)
     }
+
     insertionOffset += indentOffset
+    affectedTo = selection.to + insertionOffset
   }
 
-  tr.setSelection(selection.map(tr.doc, tr.mapping))
+  const newSelection = new TextSelection(tr.doc.resolve(affectedFrom), tr.doc.resolve(affectedTo))
+  tr.setSelection(newSelection)
 
   return tr
 }
