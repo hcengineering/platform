@@ -2,15 +2,14 @@
 
 import {
   Branding,
-  Class,
-  Doc,
-  DocumentQuery,
-  FindOptions,
   generateId,
-  MeasureMetricsContext,
-  Ref,
-  Tx,
+  type Class,
+  type Doc,
+  type DocumentQuery,
+  type FindOptions,
   type MeasureContext,
+  type Ref,
+  type Tx,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
@@ -20,6 +19,7 @@ import serverClient from '@hcengineering/server-client'
 import {
   ClientSessionCtx,
   createDummyStorageAdapter,
+  initStatisticsContext,
   loadBrandingMap,
   Pipeline,
   Session,
@@ -27,11 +27,10 @@ import {
   type PipelineFactory,
   type SessionManager
 } from '@hcengineering/server-core'
-// import { registerStringLoaders } from '@hcengineering/server-pipeline'
 import serverPlugin, { decodeToken, type Token } from '@hcengineering/server-token'
 import { DurableObject } from 'cloudflare:workers'
-import { gzip } from 'zlib'
 import { promisify } from 'util'
+import { gzip } from 'zlib'
 
 // Approach usefull only for separate build, after model-all bundle phase is executed.
 import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
@@ -40,6 +39,7 @@ import {
   registerAdapterFactry,
   registerDestroyFactry,
   registerServerPlugins,
+  registerStringLoaders,
   registerTxAdapterFactry
 } from '@hcengineering/server-pipeline'
 import model from './model.json'
@@ -68,14 +68,18 @@ export class Transactor extends DurableObject<Env> {
     registerAdapterFactry('postgresql', createPostgresAdapter, true)
     registerDestroyFactry('postgresql', createPostgreeDestroyAdapter, true)
 
+    registerStringLoaders()
     registerServerPlugins()
     this.accountsUrl = env.ACCOUNTS_URL ?? 'http://127.0.0.1:3000'
 
-    this.measureCtx = new MeasureMetricsContext('transactor-' + this.workspace, {})
+    this.measureCtx = this.measureCtx = initStatisticsContext('cloud-transactor', {
+      statsUrl: this.env.STATS_URL ?? 'http://127.0.0.1:4900',
+      serviceName: () => 'cloud-transactor: ' + this.workspace
+    })
 
     setMetadata(serverPlugin.metadata.Secret, env.SERVER_SECRET ?? 'secret')
 
-    console.log('Connecting DB to', env.DB_URL !== '' && env.DB_URL !== undefined ? 'Direct ' : 'Hyperdrive')
+    console.log(`Connecting DB to ${env.DB_URL !== '' ? 'Direct ' : 'Hyperdrive'}`)
 
     // TODO:
     const storage = createDummyStorageAdapter()

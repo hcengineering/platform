@@ -1,10 +1,10 @@
 // Copyright © 2024 Huly Labs.
 
+import { Class, Doc, DocumentQuery, FindOptions, Ref, Tx } from '@hcengineering/core'
+import { decodeToken } from '@hcengineering/server-token'
 import { RpcTarget, WorkerEntrypoint } from 'cloudflare:workers'
 import { Router, error, html } from 'itty-router'
-import { decodeToken } from '@hcengineering/server-token'
 import type { Transactor } from './transactor'
-import { Class, Doc, DocumentQuery, FindOptions, Ref, Tx } from '@hcengineering/core'
 
 export { Transactor } from './transactor'
 

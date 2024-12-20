@@ -191,6 +191,7 @@ const configs: Record<string, string> = {
   'dev-bold': '/config.json',
   'dev-server': '/config.json',
   'dev-worker': '/config-worker.json',
+  'dev-worker-local': '/config-worker-local.json',
 }
 
 function configureI18n(): void {

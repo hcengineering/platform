@@ -218,7 +218,7 @@ class BackupWorker {
                 this.workspaceStorageAdapter
               )
               try {
-                await txAdapter.init?.()
+                await txAdapter.init?.(ctx)
 
                 return (
                   await txAdapter.rawFindAll<Tx>(

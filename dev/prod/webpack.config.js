@@ -25,11 +25,12 @@ const prod = mode === 'production'
 const clientType = process.env.CLIENT_TYPE ?? ''
 const devServer = clientType === 'dev-server'
 const devServerWorker = clientType === 'dev-worker'
+const devServerWorkerLocal = clientType === 'dev-worker-local'
 const devProduction = clientType === 'dev-production'
 const devProductionHuly = clientType === 'dev-huly'
 const devProductionBold = clientType === 'dev-bold'
 const dev =
-  (process.env.CLIENT_TYPE ?? '') === 'dev' || devServer || devProduction || devProductionHuly || devProductionBold
+  (process.env.CLIENT_TYPE ?? '') === 'dev' || devServer || devProduction || devProductionHuly || devProductionBold || devServerWorker || devServerWorkerLocal
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 
 const { EsbuildPlugin } = require('esbuild-loader')
@@ -145,6 +146,7 @@ const devFrontProxy = {
 
 const proxy = {
   'dev-worker': devProxy,
+  'dev-worker-local': devProxy,
   'dev-server': devProxy,
   'dev-production': devFrontProxy,
   'dev-bold': devBoldProxy,

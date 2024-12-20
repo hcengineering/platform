@@ -62,7 +62,7 @@ class StorageBlobAdapter implements DbAdapter {
     }
   }
 
-  init?: ((domains?: string[], excludeDomains?: string[]) => Promise<void>) | undefined
+  init?: ((ctx: MeasureContext, domains?: string[], excludeDomains?: string[]) => Promise<void>) | undefined
   on?: ((handler: DbAdapterHandler) => void) | undefined
 
   async rawFindAll<T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {

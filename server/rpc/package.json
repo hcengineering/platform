@@ -40,7 +40,7 @@
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
-    "msgpackr": "^1.11.0"
+    "msgpackr": "^1.11.2"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
