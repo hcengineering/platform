@@ -104,11 +104,21 @@
         let merged = false
         for (const key in newValue) {
           if (newQuery[filterKey][key] === undefined) {
-            if (key === '$in' && typeof newQuery[filterKey] === 'string') {
-              newQuery[filterKey] = { $in: newValue[key].filter((p: any) => p === newQuery[filterKey]) }
-            } else {
-              newQuery[filterKey][key] = newValue[key]
+            if (key === '$in') {
+              if (typeof newQuery[filterKey] === 'string') {
+                newQuery[filterKey] = { $in: [newQuery[filterKey]] }
+              }
+              if (!newQuery[filterKey][key]) {
+                newQuery[filterKey][key] = newValue[key]
+              } else {
+                newQuery[filterKey][key] = newQuery[filterKey][key].filter((p: any) =>
+                  newValue[key].includes(p)
+                )
+              }
+              merged = true
+              continue
             }
+            newQuery[filterKey][key] = newValue[key]
             merged = true
             continue
           }
