@@ -182,10 +182,10 @@ export interface ImportControlledDocumentTemplate extends ImportDoc {
   author?: Ref<Employee>
   owner?: Ref<Employee>
   abstract?: string
-  reviewers: Ref<Employee>[]
-  approvers: Ref<Employee>[]
-  coAuthors: Ref<Employee>[]
-  subdocs: Array<ImportControlledDoc>
+  reviewers?: Ref<Employee>[]
+  approvers?: Ref<Employee>[]
+  coAuthors?: Ref<Employee>[]
+  subdocs: ImportControlledDoc[]
 }
 
 export interface ImportControlledDocument extends ImportDoc {
@@ -197,12 +197,12 @@ export interface ImportControlledDocument extends ImportDoc {
   minor: number
   state: DocumentState
   reviewers: Ref<Employee>[]
-  approvers: Ref<Employee>[]
-  coAuthors: Ref<Employee>[]
+  approvers?: Ref<Employee>[]
+  coAuthors?: Ref<Employee>[]
   author?: Ref<Employee>
   owner?: Ref<Employee>
   abstract?: string
-  subdocs: Array<ImportControlledDoc>
+  subdocs: ImportControlledDoc[]
 }
 
 interface ControlledDocMetadata {
@@ -901,7 +901,16 @@ export class WorkspaceImporter {
       documents.class.DocumentMeta,
       'documents',
       {
-        ...template,
+        title: template.title,
+        major: template.major,
+        minor: template.minor,
+        state: template.state,
+        author: template.author,
+        owner: template.owner,
+        abstract: template.abstract,
+        reviewers: template.reviewers ?? [],
+        approvers: template.approvers ?? [],
+        coAuthors: template.coAuthors ?? [],
         code: meta.code,
         prefix: TEMPLATE_PREFIX,
         content: contentId,
@@ -987,7 +996,16 @@ export class WorkspaceImporter {
       documents.class.DocumentMeta,
       'documents',
       {
-        ...document, // todo: revert, use only required fields
+        title: document.title,
+        major: document.major,
+        minor: document.minor,
+        state: document.state,
+        author: document.author,
+        owner: document.owner,
+        abstract: document.abstract,
+        reviewers: document.reviewers ?? [],
+        approvers: document.approvers ?? [],
+        coAuthors: document.coAuthors ?? [],
         changeControl: '' as Ref<ChangeControl>,
         code: document.code ?? `${prefix}-${seqNumber}`,
         prefix,
