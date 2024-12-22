@@ -1,8 +1,8 @@
 ---
 class: documents:mixin:DocumentTemplate
-title: TMPL 2
+title: Template Example
 category: DOC
-docPrefix: TWO
+docPrefix: ONE
 author: John Appleseed
 owner: John Appleseed
 abstract: Template for Standard Operating Procedures
@@ -13,7 +13,7 @@ approvers:
 coAuthors:
   - John Appleseed
 ---
-# TMPL 2 - TWO
+# Template Example
 
 ## 1. Purpose
 [Describe the purpose]

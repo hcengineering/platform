@@ -1,7 +1,7 @@
 ---
 class: documents:class:ControlledDocument
-template: '[VOL-SOP-0041] Doc 1/[VOL-SOP-Clinical] Tmpl 1.md'
-title: Doc 2
+template: '[VOL-SOP-0045] Public Communications/Custom template without spec code.md'
+title: Public Communications
 author: John Appleseed
 owner: John Appleseed
 abstract: Procedure for document control
@@ -13,6 +13,6 @@ coAuthors:
   - John Appleseed
 changeControl: cc-124
 ---
-# Doc 2
+# Public Communications
 
 [Document content...]

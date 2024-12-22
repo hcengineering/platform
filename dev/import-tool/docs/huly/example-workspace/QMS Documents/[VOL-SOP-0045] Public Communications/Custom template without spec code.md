@@ -1,8 +1,8 @@
 ---
 class: documents:mixin:DocumentTemplate
-title: TMPL 1
+title: Custom template without spec code
 category: DOC
-docPrefix: ONE
+docPrefix: TWO
 author: John Appleseed
 owner: John Appleseed
 abstract: Template for Standard Operating Procedures
@@ -13,7 +13,7 @@ approvers:
 coAuthors:
   - John Appleseed
 ---
-# TMPL 1 - ONE
+# Custom template without spec code
 
 ## 1. Purpose
 [Describe the purpose]
