@@ -1,7 +1,7 @@
 ---
 class: documents:class:ControlledDocument
 title: Doc 1
-template: "2. Doc 2/2. Tmpl 2.md"
+template: '[VOL-SOP-0041] Doc 1/[VOL-SOP-Clinical] Tmpl 1.md'
 author: John Appleseed
 owner: John Appleseed
 abstract: Procedure for document control
