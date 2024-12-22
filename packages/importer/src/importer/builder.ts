@@ -163,6 +163,15 @@ export class ImportWorkspaceBuilder {
       throw new Error(`Document space ${spacePath} not found`)
     }
 
+    if (doc.code !== undefined) {
+      const duplicateDoc = Array.from(docs.values()).find(
+        (existingDoc) => existingDoc.code === doc.code
+      )
+      if (duplicateDoc !== undefined) {
+        throw new Error(`Duplicate document code ${doc.code} in space ${spacePath}`)
+      }
+    }
+
     this.validateAndAdd(
       'controlledDocument',
       docPath,
@@ -189,9 +198,18 @@ export class ImportWorkspaceBuilder {
       this.qmsDocsBySpace.set(spacePath, new Map())
     }
 
-    const templates = this.qmsDocsBySpace.get(spacePath)
-    if (templates === undefined) {
+    const qmsDocs = this.qmsDocsBySpace.get(spacePath)
+    if (qmsDocs === undefined) {
       throw new Error(`Document space ${spacePath} not found`)
+    }
+
+    if (template.code !== undefined) {
+      const duplicate = Array.from(qmsDocs.values()).find(
+        (existingDoc) => existingDoc.code === template.code
+      )
+      if (duplicate !== undefined) {
+        throw new Error(`Duplicate document code ${template.code} in space ${spacePath}`)
+      }
     }
 
     this.validateAndAdd(
@@ -199,7 +217,7 @@ export class ImportWorkspaceBuilder {
       templatePath,
       template,
       (t) => this.validateControlledDocumentTemplate(t as ImportControlledDocumentTemplate),
-      templates,
+      qmsDocs,
       templatePath
     )
 
@@ -808,28 +826,8 @@ export class ImportWorkspaceBuilder {
           if (parentPath !== undefined && !docs.has(parentPath)) {
             this.addError(docPath, `Parent document not found: ${parentPath}`)
           }
-
-          // Check template exists
-          // const templates = this.templatesBySpace.get(spacePath)
-          // if (templates !== undefined && !templates.has(doc.template)) {
-          //   this.addError(docPath, `Template not found: ${doc.template}`)
-          // }
         }
       }
-
-      // // Check owners exist
-      // for (const owner of space.owners) {
-      //   if (this.accountExists(owner) === false) {
-      //     this.addError(spacePath, `Owner not found: ${owner}`)
-      //   }
-      // }
-
-      // // Check members exist
-      // for (const member of space.members) {
-      //   if (this.accountExists(member) === false) {
-      //     this.addError(spacePath, `Member not found: ${member}`)
-      //   }
-      // }
     }
   }
 }
