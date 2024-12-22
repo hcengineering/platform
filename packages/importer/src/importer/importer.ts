@@ -206,17 +206,12 @@ export interface ImportControlledDocument extends ImportDoc {
 }
 
 interface ControlledDocMetadata {
-  seqNumber: number
   documentMetaId: Ref<DocumentMeta>
-  projectDocumentId: Ref<ProjectDocument> // todo: remove
-  prefix: string
-  category?: Ref<DocumentCategory>
 }
 
 interface ControlledDocTemplateMetadata {
   seqNumber: number
   documentMetaId: Ref<DocumentMeta>
-  projectDocumentId: Ref<ProjectDocument> // todo: remove
   code: string
 }
 
@@ -781,7 +776,7 @@ export class WorkspaceImporter {
     for (const template of templateMap.values()) {
       const meta = documentMetaIds.get(template.id)
       if (meta === undefined) {
-        throw new Error('Document meta not found: ' + template.id)
+        throw new Error('Template meta not found: ' + template.id)
       }
       await this.createDocTemplateAttachedDoc(meta as ControlledDocTemplateMetadata, template, spaceId)
     }
@@ -897,7 +892,9 @@ export class WorkspaceImporter {
     const collabId = makeCollabId(documents.class.Document, template.id, 'content')
     const contentId = await this.createCollaborativeContent(template.id, collabId, content, spaceId)
 
-    const result = await this.client.addCollection(
+    const ops = this.client.apply()
+
+    const result = await ops.addCollection(
       documents.class.ControlledDocument,
       spaceId,
       meta.documentMetaId,
@@ -917,6 +914,16 @@ export class WorkspaceImporter {
       template.id as unknown as Ref<ControlledDocument> // todo: make sure it's not used anywhere as mixin id
     )
 
+    await ops.createMixin(template.id, documents.class.Document, spaceId, documents.mixin.DocumentTemplate, {
+      sequence: 0,
+      docPrefix: template.docPrefix
+    })
+
+    const commit = await ops.commit()
+    if (!commit.result) {
+      throw new Error('Failed to create document template attached doc: ' + template.title)
+    }
+
     this.logger.log('Document template attached doc created: ' + result)
     return result
   }
@@ -930,7 +937,7 @@ export class WorkspaceImporter {
     this.logger.log('Creating controlled document: ' + doc.title)
     const documentId = doc.id ?? generateId<ControlledDocument>()
 
-    const { seqNumber, prefix, category } = await useDocumentTemplate(this.client, doc.template as unknown as Ref<DocumentTemplate>)
+    // const { seqNumber, prefix, category } = await useDocumentTemplate(this.client, doc.template as unknown as Ref<DocumentTemplate>)
     const result = await createControlledDocMetadata(
       this.client,
       documents.template.ProductChangeControl, // todo: make it dynamic - wtf, commit missed?
@@ -938,8 +945,8 @@ export class WorkspaceImporter {
       spaceId,
       undefined, // project
       parentProjectDocumentId, // parent
-      prefix,
-      seqNumber,
+      'prefix',
+      0,
       doc.code ?? '',
       doc.title
     )
@@ -955,10 +962,7 @@ export class WorkspaceImporter {
 
     documentMetaIds.set(documentId, {
       seqNumber: result.seqNumber,
-      documentMetaId: result.documentMetaId,
-      projectDocumentId: result.projectDocumentId,
-      prefix,
-      category
+      documentMetaId: result.documentMetaId
     })
 
     return documentId
@@ -971,13 +975,11 @@ export class WorkspaceImporter {
     const content = await document.descrProvider()
     const collabId = makeCollabId(documents.class.Document, document.id, 'content')
     const contentId = await this.createCollaborativeContent(document.id, collabId, content, spaceId)
+
     const templateId = document.template
+    const { seqNumber, prefix, category } = await useDocumentTemplate(this.client, templateId as unknown as Ref<DocumentTemplate>)
 
     const ops = this.client.apply()
-    await ops.updateMixin(templateId, documents.class.Document, spaceId, documents.mixin.DocumentTemplate, {
-      $inc: { sequence: 1 }
-    })
-
     const result = await ops.addCollection(
       documents.class.ControlledDocument,
       spaceId,
@@ -985,20 +987,27 @@ export class WorkspaceImporter {
       documents.class.DocumentMeta,
       'documents',
       {
-        ...document,
+        ...document, // todo: revert, use only required fields
         changeControl: '' as Ref<ChangeControl>,
-        code: document.code ?? `${meta.prefix}-${meta.seqNumber}`,
-        prefix: meta.prefix,
-        category: meta.category,
-        seqNumber: meta.seqNumber,
+        code: document.code ?? `${prefix}-${seqNumber}`,
+        prefix,
+        category,
+        seqNumber,
         content: contentId,
-        template: templateId as unknown as Ref<DocumentTemplate>, // todo: test (it was Ref<DocumentTemplate>)
+        template: templateId as unknown as Ref<DocumentTemplate>,
         commentSequence: 0,
         requests: 0
       },
       document.id
     )
+
+    await ops.updateDoc(documents.class.DocumentMeta, spaceId, meta.documentMetaId, {
+      documents: 0,
+      title: `${prefix}-${seqNumber} ${document.title}`
+    })
+
     await ops.commit()
+
     this.logger.log('Controlled document attached doc created: ' + result)
 
     return result

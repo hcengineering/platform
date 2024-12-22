@@ -220,7 +220,8 @@ export async function createDocumentTemplate (
     return { seqNumber: -1, success: false }
   }
 
-  await client.addCollection<DocumentMeta, HierarchyDocument>(
+  const ops = client.apply()
+  await ops.addCollection<DocumentMeta, HierarchyDocument>(
     _class,
     space,
     documentMetaId,
@@ -238,8 +239,13 @@ export async function createDocumentTemplate (
     },
     templateId
   )
+  await ops.createMixin(templateId, documents.class.Document, space, _mixin, {
+    sequence: 0,
+    docPrefix: prefix
+  })
+  const commit = await ops.commit()
 
-  return { seqNumber, success: true }
+  return { seqNumber, success: commit.result }
 }
 
 export async function createDocumentTemplateMetadata (
@@ -314,11 +320,6 @@ export async function createDocumentTemplateMetadata (
       document: templateId
     }
   )
-
-  await ops.createMixin(templateId, documents.class.Document, space, _mixin, {
-    sequence: 0,
-    docPrefix: prefix
-  })
 
   const success = await ops.commit()
 
