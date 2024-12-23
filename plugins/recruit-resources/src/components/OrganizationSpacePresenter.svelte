@@ -13,21 +13,50 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { FoldersBrowser } from '@hcengineering/view-resources'
+  import { Action, SearchEdit } from '@hcengineering/ui'
+  import { FoldersBrowser, TreeNode } from '@hcengineering/view-resources'
+
+  import { SpacesNavModel } from '@hcengineering/workbench'
+  import { Doc, DocumentQuery } from '@hcengineering/core'
+
   import recruit from '../plugin'
+
+  export let model: SpacesNavModel
+  export let actions: () => Promise<Action[]> = async () => []
+  export let visible: boolean
+
+  let search = ''
+  let searchQuery: DocumentQuery<Doc> | undefined = undefined
+  $: searchQuery = search !== '' ? { $search: search } : undefined
 </script>
 
-<FoldersBrowser
-  _class={recruit.mixin.VacancyList}
-  storeId="organizations"
-  titleKey="name"
-  parentKey="space"
-  plainList={true}
-  allObjectsLabel={recruit.string.Organizations}
-  allObjectsIcon={recruit.icon.Vacancy}
-  getFolderLink={recruit.function.GetApplicantsLink}
-  filterKey="company"
-  noParentId={recruit.ids.AllCompanies}
-  syncWithLocationQuery={true}
-  query={{}}
-/>
+<TreeNode
+  _id={'tree-' + model.id}
+  label={model.label}
+  {actions}
+  highlighted={visible}
+  isFold={false}
+  {visible}
+>
+  <div class="pl-3 pr-3 pt-1">
+    <SearchEdit
+      bind:value={search}
+      width="auto"
+      kind={'secondary'}
+    />
+  </div>
+  <FoldersBrowser
+    _class={recruit.mixin.VacancyList}
+    storeId="organizations"
+    titleKey="name"
+    parentKey="space"
+    plainList={true}
+    allObjectsLabel={recruit.string.Organizations}
+    allObjectsIcon={recruit.icon.Vacancy}
+    getFolderLink={recruit.function.GetApplicantsLink}
+    filterKey="company"
+    noParentId={recruit.ids.AllCompanies}
+    syncWithLocationQuery={true}
+    query={searchQuery ?? {}}
+  />
+</TreeNode>

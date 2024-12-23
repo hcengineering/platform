@@ -188,22 +188,15 @@
     </svelte:fragment>
   </TreeNode>
 {:else}
-  <TreeNode
-    _id={'tree-' + model.id}
-    label={model.label}
-    actions={async () => getParentActions()}
-    highlighted={visible}
-    isFold={false}
-    {visible}
-  >
-    <Component
-      is={model?.spacePresenter}
-      props={{
-        model,
-        currentSpace,
-        currentSpecial,
-        currentFragment
-      }}
-    />
-  </TreeNode>
+  <Component
+    is={model?.spacePresenter}
+    props={{
+      model,
+      actions: async () => getParentActions(),
+      currentSpace,
+      currentSpecial,
+      currentFragment,
+      visible
+    }}
+  />
 {/if}

@@ -63,19 +63,29 @@
   let search = ''
 
   let parentQuery: DocumentQuery<Doc> = {}
+  let parentNavigatorQuery: DocumentQuery<Doc> = {}
   let resultQuery: DocumentQuery<Doc> = {}
   let spaceQuery: DocumentQuery<Doc> = {}
   let searchQuery: DocumentQuery<Doc> = {}
   $: spaceQuery = space !== undefined ? { space } : {}
   $: searchQuery = search === '' ? {} : { $search: search }
   $: resultQuery = mergeQueries(query, mergeQueries(spaceQuery, parentQuery)) ?? {}
-  $: navigatorQuery = mergeQueries(spaceQuery, searchQuery)
+  $: navigatorQuery = mergeQueries(parentNavigatorQuery, mergeQueries(spaceQuery, searchQuery))
 
-  if (syncWithLocationQuery || mergeWithLocationQuery) {
+  if (syncWithLocationQuery) {
     parentQuery = getLocation()?.query as any
     onDestroy(
       resolvedLocationStore.subscribe((newLocation) => {
         parentQuery = { ...parentQuery, ...(newLocation?.query ?? {}) }
+      })
+    )
+  }
+
+  if (mergeWithLocationQuery) {
+    parentNavigatorQuery = getLocation()?.query as any
+    onDestroy(
+      resolvedLocationStore.subscribe((newLocation) => {
+        parentNavigatorQuery = newLocation?.query ?? {}
       })
     )
   }
