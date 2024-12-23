@@ -12,9 +12,9 @@ approvers:
 coAuthors:
   - John Appleseed
 changeControl:
-  description: 0
-  reason: null
-  impact: ["Change Control Impact"]
+  description: "Change Control Description"
+  reason: "Change Control Reason"
+  impact: "Change Control Impact"
 ---
 # Incedent Management
 
