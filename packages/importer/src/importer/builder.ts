@@ -747,6 +747,15 @@ export class ImportWorkspaceBuilder {
     if (doc.abstract !== undefined) {
       errors.push(...this.validateType(doc.abstract, 'string', 'abstract'))
     }
+    if (doc.ccDescription !== undefined) {
+      errors.push(...this.validateType(doc.ccDescription, 'string', 'ccDescription'))
+    }
+    if (doc.ccImpact !== undefined) {
+      errors.push(...this.validateType(doc.ccImpact, 'string', 'ccImpact'))
+    }
+    if (doc.ccReason !== undefined) {
+      errors.push(...this.validateType(doc.ccReason, 'string', 'ccReason'))
+    }
 
     // Validate class
     if (doc.class !== documents.class.ControlledDocument) {
@@ -797,6 +806,15 @@ export class ImportWorkspaceBuilder {
     }
     if (template.abstract !== undefined) {
       errors.push(...this.validateType(template.abstract, 'string', 'abstract'))
+    }
+    if (template.ccDescription !== undefined) {
+      errors.push(...this.validateType(template.ccDescription, 'string', 'ccDescription'))
+    }
+    if (template.ccImpact !== undefined) {
+      errors.push(...this.validateType(template.ccImpact, 'string', 'ccImpact'))
+    }
+    if (template.ccReason !== undefined) {
+      errors.push(...this.validateType(template.ccReason, 'string', 'ccReason'))
     }
 
     // Validate class

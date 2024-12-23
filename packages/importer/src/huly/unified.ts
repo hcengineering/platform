@@ -102,6 +102,12 @@ interface UnifiedWorkspaceSettings {
   }>
 }
 
+interface UnifiedChangeControlHeader {
+  description?: string
+  reason?: string
+  impact?: string
+}
+
 interface UnifiedControlledDocumentHeader {
   class: 'documents:class:ControlledDocument'
   title: string
@@ -112,6 +118,7 @@ interface UnifiedControlledDocumentHeader {
   reviewers?: string[]
   approvers?: string[]
   coAuthors?: string[]
+  changeControl?: UnifiedChangeControlHeader
 }
 
 interface UnifiedDocumentTemplateHeader {
@@ -125,6 +132,7 @@ interface UnifiedDocumentTemplateHeader {
   reviewers?: string[]
   approvers?: string[]
   coAuthors?: string[]
+  changeControl?: UnifiedChangeControlHeader
 }
 
 interface UnifiedOrgSpaceSettings extends UnifiedSpaceSettings {
@@ -744,6 +752,7 @@ export class UnifiedFormatImporter {
       this.metadataById.set(templateMeta.id, templateMeta)
     }
 
+    // todo: might not be exists yet, may be pass to the builder?
     const template = this.metadataByFilePath.get(templatePath)
     if (template?.class !== documents.mixin.DocumentTemplate) {
       throw new Error(`Template is not a controlled document template: ${template?.class}`)
@@ -765,6 +774,9 @@ export class UnifiedFormatImporter {
       approvers: header.approvers?.map(email => this.findEmployeeByName(email)) ?? [],
       coAuthors: header.coAuthors?.map(email => this.findEmployeeByName(email)) ?? [],
       descrProvider: async () => await this.readMarkdownContent(docPath),
+      ccReason: header.changeControl?.reason,
+      ccImpact: header.changeControl?.impact,
+      ccDescription: header.changeControl?.description,
       subdocs: []
     }
   }
@@ -798,6 +810,9 @@ export class UnifiedFormatImporter {
       approvers: header.approvers?.map(email => this.findEmployeeByName(email)) ?? [],
       coAuthors: header.coAuthors?.map(email => this.findEmployeeByName(email)) ?? [],
       descrProvider: async () => await this.readMarkdownContent(docPath),
+      ccReason: header.changeControl?.reason,
+      ccImpact: header.changeControl?.impact,
+      ccDescription: header.changeControl?.description,
       subdocs: []
     }
   }

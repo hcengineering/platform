@@ -11,7 +11,9 @@ approvers:
   - John Appleseed
 coAuthors:
   - John Appleseed
-changeControl: cc-124
+changeControl:
+  # reason: "Change Control Reason for Public Communications"
+  impact: "Change Control Impact for Public Communications"
 ---
 # Public Communications
 

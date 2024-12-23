@@ -11,6 +11,10 @@ approvers:
   - John Appleseed
 coAuthors:
   - John Appleseed
+changeControl:
+  description: 0
+  reason: null
+  impact: ["Change Control Impact"]
 ---
 # Incedent Management
 

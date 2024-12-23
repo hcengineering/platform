@@ -185,6 +185,9 @@ export interface ImportControlledDocumentTemplate extends ImportDoc {
   reviewers?: Ref<Employee>[]
   approvers?: Ref<Employee>[]
   coAuthors?: Ref<Employee>[]
+  ccReason?: string
+  ccImpact?: string
+  ccDescription?: string
   subdocs: ImportControlledDoc[]
 }
 
@@ -196,12 +199,15 @@ export interface ImportControlledDocument extends ImportDoc {
   major: number
   minor: number
   state: DocumentState
-  reviewers: Ref<Employee>[]
+  reviewers?: Ref<Employee>[]
   approvers?: Ref<Employee>[]
   coAuthors?: Ref<Employee>[]
   author?: Ref<Employee>
   owner?: Ref<Employee>
   abstract?: string
+  ccReason?: string
+  ccImpact?: string
+  ccDescription?: string
   subdocs: ImportControlledDoc[]
 }
 
@@ -892,8 +898,11 @@ export class WorkspaceImporter {
     const collabId = makeCollabId(documents.class.Document, template.id, 'content')
     const contentId = await this.createCollaborativeContent(template.id, collabId, content, spaceId)
 
-    const ops = this.client.apply()
+    const changeControlId = template.ccReason !== undefined || template.ccImpact !== undefined || template.ccDescription !== undefined
+      ? await this.createChangeControl(spaceId, template.ccDescription, template.ccReason, template.ccImpact)
+      : '' as Ref<ChangeControl>
 
+    const ops = this.client.apply()
     const result = await ops.addCollection(
       documents.class.ControlledDocument,
       spaceId,
@@ -912,13 +921,13 @@ export class WorkspaceImporter {
         approvers: template.approvers ?? [],
         coAuthors: template.coAuthors ?? [],
         code: meta.code,
+        seqNumber: meta.seqNumber,
         prefix: TEMPLATE_PREFIX,
         content: contentId,
+        changeControl: changeControlId,
         commentSequence: 0,
         requests: 0,
-        labels: 0,
-        seqNumber: meta.seqNumber,
-        changeControl: '' as Ref<ChangeControl>
+        labels: 0
       },
       template.id as unknown as Ref<ControlledDocument> // todo: make sure it's not used anywhere as mixin id
     )
@@ -989,6 +998,11 @@ export class WorkspaceImporter {
     const { seqNumber, prefix, category } = await useDocumentTemplate(this.client, templateId as unknown as Ref<DocumentTemplate>)
 
     const ops = this.client.apply()
+
+    const changeControlId = document.ccReason !== undefined || document.ccImpact !== undefined
+      ? await this.createChangeControl(spaceId, document.ccDescription, document.ccReason, document.ccImpact)
+      : '' as Ref<ChangeControl>
+
     const result = await ops.addCollection(
       documents.class.ControlledDocument,
       spaceId,
@@ -1006,7 +1020,7 @@ export class WorkspaceImporter {
         reviewers: document.reviewers ?? [],
         approvers: document.approvers ?? [],
         coAuthors: document.coAuthors ?? [],
-        changeControl: '' as Ref<ChangeControl>,
+        changeControl: changeControlId,
         code: document.code ?? `${prefix}-${seqNumber}`,
         prefix,
         category,
@@ -1029,5 +1043,25 @@ export class WorkspaceImporter {
     this.logger.log('Controlled document attached doc created: ' + result)
 
     return result
+  }
+
+  private async createChangeControl (
+    spaceId: Ref<DocumentSpace>,
+    description?: string,
+    reason?: string,
+    impact?: string
+  ): Promise<Ref<ChangeControl>> {
+    const changeControlData: Data<ChangeControl> = {
+      reason: reason ?? '',
+      impact: impact ?? '',
+      description: description ?? '',
+      impactedDocuments: []
+    }
+
+    return await this.client.createDoc(
+      documents.class.ChangeControl,
+      spaceId,
+      changeControlData
+    )
   }
 }

@@ -12,6 +12,9 @@ approvers:
   - John Appleseed
 coAuthors:
   - John Appleseed
+changeControl:
+  reason: "Change Control Reason for Custom template without spec code"
+  impact: "Change Control Impact for Custom template without spec code"
 ---
 # Custom template without spec code
 
