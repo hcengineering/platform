@@ -1,0 +1,20 @@
+{
+  "name": "@communication/sqlite-wasm",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "^1.1.14"
+  },
+  "dependencies": {
+    "@communication/types": "workspace:*",
+    "@communication/sdk-types": "workspace:*",
+    "@sqlite.org/sqlite-wasm": "^3.47.1-build1",
+    "path": "^0.12.7",
+    "uuid": "^11.0.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5.6.3"
+  }
+}
