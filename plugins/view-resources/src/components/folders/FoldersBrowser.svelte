@@ -18,7 +18,7 @@
 
   import { Class, Doc, DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Action, IconEdit, navigate, type Location, Scroller, location, getLocation } from '@hcengineering/ui'
+  import ui, { Action, Button, IconEdit, navigate, type Location, Scroller, location, getLocation } from '@hcengineering/ui'
   import { getResource, type Resource } from '@hcengineering/platform'
   import { IntlString, Asset } from '@hcengineering/platform'
 
@@ -39,6 +39,7 @@
   export let storeId: string = 'default'
   export let filterKey: string = 'attachedTo'
   export let syncWithLocationQuery: boolean = false
+  export let limit = 100
 
   const dispatch = createEventDispatcher()
 
@@ -51,6 +52,8 @@
   const client = getClient()
 
   let foldersState: FoldersState = emptyFoldersState()
+  let count = 0
+  let total = 0
 
   const foldersManager = getFoldersManager(storeId, titleKey, parentKey, noParentId, plainList)
 
@@ -83,6 +86,8 @@
     query ?? {},
     async (result) => {
       foldersManager.setFolders(result)
+      total = result.total
+      count = result.length
       if (plainList && foldersState.folders?.length > 0) {
         if (selected === undefined) {
           await handleFolderSelected(foldersState.folders[0])
@@ -90,6 +95,8 @@
       }
     },
     {
+      limit,
+      total: true,
       sort: {
         name: SortingOrder.Ascending
       }
@@ -179,6 +186,16 @@
       {selected}
       on:selected={async (ev) => {
         await handleFolderSelected(ev.detail)
+      }}
+    />
+  {/if}
+  {#if count > 0 && count < total}
+    <Button
+      label={ui.string.ShowMore}
+      kind={'ghost'}
+      size={'small'}
+      on:click={() => {
+        limit = limit + 100
       }}
     />
   {/if}
