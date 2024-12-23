@@ -146,8 +146,7 @@ export default mergeIds(recruitId, recruit, {
     OpinionsPresenter: '' as AnyComponent,
     VacancyModifiedPresenter: '' as AnyComponent,
     CreateVacancy: '' as AnyComponent,
-    CreateCandidate: '' as AnyComponent,
-    OrganizationPanel: '' as AnyComponent
+    CreateCandidate: '' as AnyComponent
   },
   function: {
     IdProvider: '' as Resource<(doc: Doc) => Promise<string>>,

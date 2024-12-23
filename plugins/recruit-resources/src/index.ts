@@ -66,7 +66,6 @@ import ReviewPresenter from './components/review/ReviewPresenter.svelte'
 import Reviews from './components/review/Reviews.svelte'
 import ApplicantNamePresenter from './components/ApplicantNamePresenter.svelte'
 import OrganizationSpacePresenter from './components/OrganizationSpacePresenter.svelte'
-import OrganizationPanel from './components/OrganizationPanel.svelte'
 import CreateOrganization from './components/CreateOrganization.svelte'
 import recruit from './plugin'
 import {
@@ -376,7 +375,6 @@ export default async (): Promise<Resources> => ({
     VacancyModifiedPresenter,
     OrganizationSpacePresenter,
     CreateOrganization,
-    OrganizationPanel,
 
     CreateReview,
     ReviewPresenter,

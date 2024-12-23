@@ -39,9 +39,6 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
   if (loc.path[3] === 'poll') {
     return await generatePollLocation(loc, loc.path[4] as Ref<Poll>)
   }
-  if (loc.path[3] === 'organizations') {
-    return await generateCompanyLocation(loc, loc.path[4] as Ref<VacancyList>)
-  }
 
   const shortLink = loc.path[3]
 
@@ -125,11 +122,6 @@ export async function parseLinkId (id: string): Promise<Ref<Doc> | undefined> {
   return id as Ref<Doc>
 }
 
-function getPanelFragment<T extends Doc> (object: Pick<T, '_class' | '_id'>): string {
-  const component = recruit.component.OrganizationPanel
-  return getPanelURI(component, object._id, object._class, 'content')
-}
-
 export function getApplicantsLink (_id: Ref<VacancyList>): Location {
   const loc = getCurrentResolvedLocation()
   loc.path.length = 4
@@ -140,34 +132,6 @@ export function getApplicantsLink (_id: Ref<VacancyList>): Location {
   loc.query = isAllCompanies ? undefined : { ...(loc?.query ?? {}), company: _id }
 
   return loc
-}
-
-export async function generateCompanyLocation (
-  loc: Location,
-  id: Ref<VacancyList>
-): Promise<ResolvedLocation | undefined> {
-  const client = getClient()
-
-  const doc = await client.findOne(recruit.mixin.VacancyList, { _id: id })
-  if (doc === undefined) {
-    accessDeniedStore.set(true)
-    console.error(`Could not find organization ${id}.`)
-    return undefined
-  }
-
-  const appComponent = loc.path[0] ?? ''
-  const workspace = loc.path[1] ?? ''
-
-  return {
-    loc: {
-      path: [appComponent, workspace, 'organizations', id],
-      fragment: getPanelFragment(doc)
-    },
-    defaultLocation: {
-      path: [appComponent, workspace, 'organizations'],
-      fragment: getPanelFragment(doc)
-    }
-  }
 }
 
 function getShortLinkData (
