@@ -16,17 +16,16 @@
 import { type Employee } from '@hcengineering/contact'
 import { type AttachedData, type Class, type Ref, type TxOperations, Blob, Mixin } from '@hcengineering/core'
 import {
-  type Document,
-  type DocumentTemplate,
   type ControlledDocument,
+  type Document,
   type DocumentCategory,
-  type DocumentSpace,
   type DocumentMeta,
+  type DocumentSpace,
+  type DocumentTemplate,
+  type HierarchyDocument,
   type Project,
-  DocumentState,
-  HierarchyDocument,
-  ProjectDocument,
-  ProjectMeta
+  type ProjectDocument,
+  DocumentState
 } from './types'
 
 import documents from './plugin'
@@ -68,18 +67,55 @@ export async function createControlledDocFromTemplate (
     return { seqNumber: -1, success: false }
   }
 
+  const { seqNumber, prefix, content, category } = await useDocumentTemplate(client, templateId)
+  const { success, documentMetaId } = await createControlledDocMetadata(
+    client,
+    templateId,
+    documentId,
+    space,
+    project,
+    parent,
+    prefix,
+    seqNumber,
+    spec.code,
+    spec.title
+  )
+
+  if (!success) {
+    return { seqNumber: -1, success: false }
+  }
+
+  await client.addCollection(
+    docClass,
+    space,
+    documentMetaId,
+    documents.class.DocumentMeta,
+    'documents',
+    {
+      ...spec,
+      category,
+      template: templateId,
+      seqNumber,
+      prefix,
+      state: DocumentState.Draft,
+      content
+    },
+    documentId
+  )
+
+  return { seqNumber, success: true }
+}
+
+export async function useDocumentTemplate (
+  client: TxOperations,
+  templateId: Ref<DocumentTemplate>
+): Promise<{ seqNumber: number, prefix: string, content: Ref<Blob> | null, category: Ref<DocumentCategory> }> {
   const template = await client.findOne(documents.mixin.DocumentTemplate, {
     _id: templateId
   })
 
   if (template === undefined) {
-    return { seqNumber: -1, success: false }
-  }
-
-  let path: Array<Ref<DocumentMeta>> = []
-
-  if (parent !== undefined) {
-    path = await getParentPath(client, parent)
+    return { seqNumber: -1, prefix: '', content: null, category: '' as Ref<DocumentCategory> }
   }
 
   await client.updateMixin(templateId, documents.class.Document, template.space, documents.mixin.DocumentTemplate, {
@@ -90,34 +126,21 @@ export async function createControlledDocFromTemplate (
   const seqNumber = template.sequence + 1
   const prefix = template.docPrefix
 
-  return await createControlledDoc(
-    client,
-    templateId,
-    documentId,
-    { ...spec, category: template.category },
-    space,
-    project,
-    prefix,
-    seqNumber,
-    path,
-    docClass,
-    template.content
-  )
+  return { seqNumber, prefix, content: template.content, category: template.category as Ref<DocumentCategory> }
 }
 
-async function createControlledDoc (
+export async function createControlledDocMetadata (
   client: TxOperations,
   templateId: Ref<DocumentTemplate>,
   documentId: Ref<ControlledDocument>,
-  spec: AttachedData<ControlledDocument>,
   space: Ref<DocumentSpace>,
   project: Ref<Project> | undefined,
+  parent: Ref<ProjectDocument> | undefined,
   prefix: string,
   seqNumber: number,
-  path: Ref<DocumentMeta>[] = [],
-  docClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument,
-  content: Ref<Blob> | null
-): Promise<{ seqNumber: number, success: boolean }> {
+  specCode: string,
+  specTitle: string
+): Promise<{ success: boolean, seqNumber: number, documentMetaId: Ref<DocumentMeta>, projectDocumentId: Ref<ProjectDocument> }> {
   const projectId = project ?? documents.ids.NoProject
 
   const ops = client.apply()
@@ -128,23 +151,28 @@ async function createControlledDoc (
   })
 
   ops.notMatch(documents.class.Document, {
-    code: spec.code
+    code: specCode
   })
 
-  const metaId = await ops.createDoc(documents.class.DocumentMeta, space, {
+  const documentMetaId = await ops.createDoc(documents.class.DocumentMeta, space, {
     documents: 0,
-    title: `${prefix}-${seqNumber} ${spec.title}`
+    title: `${prefix}-${seqNumber} ${specTitle}`
   })
+
+  let path: Array<Ref<DocumentMeta>> = []
+  if (parent !== undefined) {
+    path = await getParentPath(client, parent)
+  }
 
   const projectMetaId = await ops.createDoc(documents.class.ProjectMeta, space, {
     project: projectId,
-    meta: metaId,
+    meta: documentMetaId,
     path,
     parent: path[0] ?? documents.ids.NoParent,
     documents: 0
   })
 
-  await client.addCollection(
+  const projectDocumentId = await client.addCollection(
     documents.class.ProjectDocument,
     space,
     projectMetaId,
@@ -157,25 +185,9 @@ async function createControlledDoc (
     }
   )
 
-  await ops.addCollection(
-    docClass,
-    space,
-    metaId,
-    documents.class.DocumentMeta,
-    'documents',
-    {
-      ...spec,
-      template: templateId,
-      seqNumber,
-      prefix,
-      state: DocumentState.Draft,
-      content
-    },
-    documentId
-  )
-
   const success = await ops.commit()
-  return { seqNumber, success: success.result }
+
+  return { success: success.result, seqNumber, documentMetaId, projectDocumentId }
 }
 
 export async function createDocumentTemplate (
@@ -191,6 +203,63 @@ export async function createDocumentTemplate (
   category: Ref<DocumentCategory>,
   author?: Ref<Employee>
 ): Promise<{ seqNumber: number, success: boolean }> {
+  const { success, seqNumber, code, documentMetaId } = await createDocumentTemplateMetadata(
+    client,
+    _class,
+    space,
+    _mixin,
+    project,
+    parent,
+    templateId,
+    prefix,
+    spec.code ?? '',
+    spec.title
+  )
+
+  if (!success) {
+    return { seqNumber: -1, success: false }
+  }
+
+  const ops = client.apply()
+  await ops.addCollection<DocumentMeta, HierarchyDocument>(
+    _class,
+    space,
+    documentMetaId,
+    documents.class.DocumentMeta,
+    'documents',
+    {
+      ...spec,
+      code,
+      seqNumber,
+      category,
+      prefix: TEMPLATE_PREFIX,
+      author,
+      owner: author,
+      content: spec.content ?? null
+    },
+    templateId
+  )
+  await ops.createMixin(templateId, documents.class.Document, space, _mixin, {
+    sequence: 0,
+    docPrefix: prefix
+  })
+  const commit = await ops.commit()
+
+  return { seqNumber, success: commit.result }
+}
+
+export async function createDocumentTemplateMetadata (
+  client: TxOperations,
+  _class: Ref<Class<Document>>,
+  space: Ref<DocumentSpace>,
+  _mixin: Ref<Mixin<DocumentTemplate>>,
+  project: Ref<Project> | undefined,
+  parent: Ref<ProjectDocument> | undefined,
+  templateId: Ref<ControlledDocument>,
+  prefix: string,
+  specCode: string,
+  specTitle: string
+): Promise<{ success: boolean, seqNumber: number, code: string, documentMetaId: Ref<DocumentMeta>, projectDocumentId: Ref<ProjectDocument> }> {
   const projectId = project ?? documents.ids.NoProject
 
   const incResult = await client.updateDoc(
@@ -203,7 +272,7 @@ export async function createDocumentTemplate (
     true
   )
   const seqNumber = (incResult as any).object.sequence as number
-  const code = spec.code === '' ? `${TEMPLATE_PREFIX}-${seqNumber}` : spec.code
+  const code = specCode === '' ? `${TEMPLATE_PREFIX}-${seqNumber}` : specCode
 
   let path: Array<Ref<DocumentMeta>> = []
 
@@ -226,20 +295,20 @@ export async function createDocumentTemplate (
     docPrefix: prefix
   })
 
-  const metaId = await ops.createDoc(documents.class.DocumentMeta, space, {
+  const documentMetaId = await ops.createDoc(documents.class.DocumentMeta, space, {
     documents: 0,
-    title: `${TEMPLATE_PREFIX}-${seqNumber} ${spec.title}`
+    title: `${TEMPLATE_PREFIX}-${seqNumber} ${specTitle}`
   })
 
   const projectMetaId = await ops.createDoc(documents.class.ProjectMeta, space, {
     project: projectId,
-    meta: metaId,
+    meta: documentMetaId,
     path,
     parent: path[0] ?? documents.ids.NoParent,
     documents: 0
   })
 
-  await client.addCollection(
+  const projectDocumentId = await client.addCollection(
     documents.class.ProjectDocument,
     space,
     projectMetaId,
@@ -252,31 +321,7 @@ export async function createDocumentTemplate (
     }
   )
 
-  await ops.addCollection<DocumentMeta, HierarchyDocument>(
-    _class,
-    space,
-    metaId,
-    documents.class.DocumentMeta,
-    'documents',
-    {
-      ...spec,
-      code,
-      seqNumber,
-      category,
-      prefix: TEMPLATE_PREFIX,
-      author,
-      owner: author,
-      content: null
-    },
-    templateId
-  )
-
-  await ops.createMixin(templateId, documents.class.Document, space, _mixin, {
-    sequence: 0,
-    docPrefix: prefix
-  })
-
   const success = await ops.commit()
 
-  return { seqNumber, success: success.result }
+  return { success: success.result, seqNumber, code, documentMetaId, projectDocumentId }
 }
