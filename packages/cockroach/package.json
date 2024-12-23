@@ -1,10 +1,10 @@
 {
-  "name": "@communication/postgres",
+  "name": "@communication/cockroach",
   "version": "0.1.0",
   "module": "src/index.ts",
   "type": "module",
   "devDependencies": {
-    "@types/bun": "^1.1.13"
+    "@types/bun": "^1.1.14"
   },
   "dependencies": {
     "@communication/types": "workspace:*",

@@ -1,9 +1,8 @@
-//TODO: Import from @platform
 export type CardID = string
 export type SocialID = string
 export type RichText = string
 
-export type ID = bigint
+export type ID = string
 export type MessageID = ID & { message: true }
 
 interface Object {
@@ -14,14 +13,19 @@ interface Object {
 export interface Message extends Object {
   id: MessageID
   content: RichText
-  version: number
+  edited: Date
   reactions: Reaction[]
   attachments: Attachment[]
 }
 
+export interface Patch extends Object {
+  message: MessageID
+  content: RichText
+}
+
 export interface Reaction extends Object {
   message: MessageID
-  reaction: number
+  reaction: string
 }
 
 export interface Attachment extends Object {
