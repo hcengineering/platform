@@ -21,7 +21,9 @@ import {
   createDummyStorageAdapter,
   initStatisticsContext,
   loadBrandingMap,
+  pingConst,
   Pipeline,
+  pongConst,
   Session,
   type ConnectionSocket,
   type PipelineFactory,
@@ -48,7 +50,6 @@ export const PREFERRED_SAVE_SIZE = 500
 export const PREFERRED_SAVE_INTERVAL = 30 * 1000
 
 export class Transactor extends DurableObject<Env> {
-  rpcHandler = new RPCHandler()
   private workspace: string = ''
 
   private sessionManager!: SessionManager
@@ -72,6 +73,8 @@ export class Transactor extends DurableObject<Env> {
     registerServerPlugins()
     this.accountsUrl = env.ACCOUNTS_URL ?? 'http://127.0.0.1:3000'
 
+    this.ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair(pingConst, pongConst))
+
     this.measureCtx = this.measureCtx = initStatisticsContext('cloud-transactor', {
       statsUrl: this.env.STATS_URL ?? 'http://127.0.0.1:4900',
       serviceName: () => 'cloud-transactor: ' + this.workspace
@@ -79,7 +82,8 @@ export class Transactor extends DurableObject<Env> {
 
     setMetadata(serverPlugin.metadata.Secret, env.SERVER_SECRET ?? 'secret')
 
-    console.log(`Connecting DB to ${env.DB_URL !== '' ? 'Direct ' : 'Hyperdrive'}`)
+    console.log({ message: 'Connecting DB', mode: env.DB_URL !== '' ? 'Direct ' : 'Hyperdrive' })
+    console.log({ message: 'use stats: ' + (this.env.STATS_URL ?? 'http://127.0.0.1:4900') })
 
     // TODO:
     const storage = createDummyStorageAdapter()
@@ -157,7 +161,13 @@ export class Transactor extends DurableObject<Env> {
         s.context.measure('receive-data', buff?.length ?? 0)
         // processRequest(s.session, cs, s.context, s.workspaceId, buff, handleRequest)
         const request = cs.readRequest(buff, s.session.binaryMode)
-        this.sessionManager.handleRequest(this.measureCtx, s.session, cs, request, this.workspace)
+        console.log({
+          message: 'handle-request',
+          method: request.method,
+          workspace: s.workspaceId,
+          user: s.session.getUser()
+        })
+        this.ctx.waitUntil(this.sessionManager.handleRequest(this.measureCtx, s.session, cs, request, this.workspace))
       },
       typeof message === 'string' ? Buffer.from(message) : Buffer.from(message)
     )
@@ -168,7 +178,9 @@ export class Transactor extends DurableObject<Env> {
     await this.handleClose(ws, 1011, 'error')
   }
 
-  async alarm (): Promise<void> {}
+  async alarm (): Promise<void> {
+    console.log({ message: 'alarm' })
+  }
 
   async handleSession (
     ws: WebSocket,
@@ -238,6 +250,7 @@ export class Transactor extends DurableObject<Env> {
       model: any
     }
   ): ConnectionSocket {
+    const rpcHandler = new RPCHandler()
     const cs: ConnectionSocket = {
       id: generateId(),
       isClosed: false,
@@ -253,23 +266,35 @@ export class Transactor extends DurableObject<Env> {
         return true
       },
       readRequest: (buffer: Buffer, binary: boolean) => {
-        return this.rpcHandler.readRequest(buffer, binary)
+        if (buffer.length === pingConst.length) {
+          if (buffer.toString() === pingConst) {
+            return { method: pingConst, params: [], id: -1, time: Date.now() }
+          }
+        }
+        return rpcHandler.readRequest(buffer, binary)
       },
       data: () => data,
       send: (ctx: MeasureContext, msg, binary, compression) => {
-        const smsg = this.rpcHandler.serialize(msg, binary)
+        const smsg = rpcHandler.serialize(msg, binary)
 
         ctx.measure('send-data', smsg.length)
         if (ws.readyState !== WebSocket.OPEN || cs.isClosed) {
           return
         }
         ws.send(smsg)
+      },
+      sendPong: () => {
+        if (ws.readyState !== WebSocket.OPEN || cs.isClosed) {
+          return
+        }
+        ws.send(pongConst)
       }
     }
     return cs
   }
 
   async broadcastMessage (message: Uint8Array, origin?: any): Promise<void> {
+    console.log({ message: 'broadcast' })
     const wss = this.ctx.getWebSockets().filter((ws) => ws.readyState === WebSocket.OPEN)
     await Promise.all(
       wss.map(async (ws) => {
@@ -315,7 +340,8 @@ export class Transactor extends DurableObject<Env> {
       data: () => {
         return {}
       },
-      send: (ctx: MeasureContext, msg, binary, compression) => {}
+      send: (ctx: MeasureContext, msg, binary, compression) => {},
+      sendPong: () => {}
     }
     return cs
   }
@@ -380,6 +406,9 @@ export class Transactor extends DurableObject<Env> {
         // it just logs them to console and return an empty result
         sendError: async (msg, error) => {
           result = { error: `${msg}`, status: `${error}` }
+        },
+        sendPong: () => {
+          cs.sendPong()
         }
       }
       await session.tx(sessionCtx, tx)
@@ -411,7 +440,8 @@ export class Transactor extends DurableObject<Env> {
         },
         sendError: async (msg, error) => {
           result = { error: `${msg}`, status: `${error}` }
-        }
+        },
+        sendPong: () => {}
       }
       await (session as any).getAccount(sessionCtx)
     } catch (error: any) {
