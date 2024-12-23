@@ -571,7 +571,7 @@ export class ImportWorkspaceBuilder {
       }
       for (const [docPath, doc] of docs) {
         if (doc.class === documents.class.ControlledDocument) {
-          const templateRef = (doc as ImportControlledDocument).templateId
+          const templateRef = (doc as ImportControlledDocument).template
           const templatePath = this.qmsTemplates.get(templateRef)
           if (templatePath === undefined) {
             this.addError(docPath, 'Controlled document reference non-existent template')
@@ -718,7 +718,7 @@ export class ImportWorkspaceBuilder {
     // Validate required fields presence and types
     errors.push(...this.validateType(doc.title, 'string', 'title'))
     errors.push(...this.validateType(doc.class, 'string', 'class'))
-    errors.push(...this.validateType(doc.templateId, 'string', 'template'))
+    errors.push(...this.validateType(doc.template, 'string', 'template'))
     errors.push(...this.validateType(doc.state, 'string', 'state'))
     if (doc.code !== undefined) {
       errors.push(...this.validateType(doc.code, 'string', 'code'))
@@ -726,7 +726,7 @@ export class ImportWorkspaceBuilder {
 
     // Validate required string fields are defined
     if (!this.validateStringDefined(doc.title)) errors.push('title is required')
-    if (!this.validateStringDefined(doc.templateId)) errors.push('template is required')
+    if (!this.validateStringDefined(doc.template)) errors.push('template is required')
 
     // Validate numbers are positive
     if (!this.validatePossitiveNumber(doc.major)) errors.push('invalid value for field "major"')

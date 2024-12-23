@@ -41,7 +41,7 @@ import {
 import { type Logger } from '../importer/logger'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 import { type FileUploader } from '../importer/uploader'
-import documents, { DocumentState, DocumentCategory, DocumentTemplate, ControlledDocument, ProjectMeta, ProjectDocument, DocumentMeta } from '@hcengineering/controlled-documents'
+import documents, { DocumentState, DocumentCategory, DocumentTemplate, ControlledDocument } from '@hcengineering/controlled-documents'
 
 interface UnifiedComment {
   author: string
@@ -752,19 +752,17 @@ export class UnifiedFormatImporter {
       this.metadataById.set(templateMeta.id, templateMeta)
     }
 
+    // todo: might not be exists yet, may be pass to the builder?
     const template = this.metadataByFilePath.get(templatePath)
     if (template?.class !== documents.mixin.DocumentTemplate) {
       throw new Error(`Template is not a controlled document template: ${template?.class}`)
     }
 
     return {
-      id,
-      docMetaId: generateId<DocumentMeta>(),
-      projectMetaId: generateId<ProjectMeta>(),
-      projectDocId: generateId<ProjectDocument>(),
+      id: id as Ref<ControlledDocument>,
       class: documents.class.ControlledDocument,
       title: header.title,
-      templateId: template?.id as Ref<ControlledDocument>,
+      template: template?.id as Ref<ControlledDocument>, // todo: test (it was Ref<DocumentTemplate>)
       code: codeMatch?.[1],
       major: 0,
       minor: 1,
@@ -796,10 +794,7 @@ export class UnifiedFormatImporter {
 
     const codeMatch = path.basename(docPath).match(/^\[([^\]]+)\]/)
     return {
-      id,
-      docMetaId: generateId<DocumentMeta>(),
-      projectMetaId: generateId<ProjectMeta>(),
-      projectDocId: generateId<ProjectDocument>(),
+      id: id as Ref<ControlledDocument>,
       class: documents.mixin.DocumentTemplate,
       title: header.title,
       docPrefix: header.docPrefix,
