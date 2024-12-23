@@ -146,9 +146,9 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
   constructor (
     private readonly urlProvider: (id: string) => string,
     private readonly logger: Logger,
-    private readonly metadataByFilePath: Map<string, DocMetadata>,
-    private readonly metadataById: Map<Ref<Doc>, DocMetadata>,
-    private readonly attachMetadataByPath: Map<string, AttachmentMetadata>,
+    private readonly pathById: Map<Ref<Doc>, string>,
+    private readonly refMetaByPath: Map<string, ReferenceMetadata>,
+    private readonly attachMetaByPath: Map<string, AttachmentMetadata>,
     personsByName: Map<string, Ref<Person>>
   ) {
     super(personsByName)
@@ -171,15 +171,21 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
     const src = node.attrs?.src
     if (src === undefined) return
 
-    const sourceMeta = this.getSourceMetadata(id)
-    if (sourceMeta == null) return
+    const sourcePath = this.getSourcePath(id)
+    if (sourcePath == null) return
 
     const href = decodeURI(src as string)
-    const fullPath = path.resolve(path.dirname(sourceMeta.path), href)
-    const attachmentMeta = this.attachMetadataByPath.get(fullPath)
+    const fullPath = path.resolve(path.dirname(sourcePath), href)
+    const attachmentMeta = this.attachMetaByPath.get(fullPath)
 
     if (attachmentMeta === undefined) {
       this.logger.error(`Attachment image not found for ${fullPath}`)
+      return
+    }
+
+    const sourceMeta = this.refMetaByPath.get(sourcePath)
+    if (sourceMeta === undefined) {
+      this.logger.error(`Source metadata not found for ${sourcePath}`)
       return
     }
 
@@ -191,22 +197,25 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
     traverseNodeMarks(node, (mark) => {
       if (mark.type !== MarkupMarkType.link) return
 
-      const sourceMeta = this.getSourceMetadata(id)
-      if (sourceMeta == null) return
+      const sourcePath = this.getSourcePath(id)
+      if (sourcePath == null) return
 
       const href = decodeURI(mark.attrs.href)
-      const fullPath = path.resolve(path.dirname(sourceMeta.path), href)
+      const fullPath = path.resolve(path.dirname(sourcePath), href)
 
-      if (this.metadataByFilePath.has(fullPath)) {
-        const targetDocMeta = this.metadataByFilePath.get(fullPath)
+      if (this.refMetaByPath.has(fullPath)) {
+        const targetDocMeta = this.refMetaByPath.get(fullPath)
         if (targetDocMeta !== undefined) {
           this.alterInternalLinkNode(node, targetDocMeta)
         }
-      } else if (this.attachMetadataByPath.has(fullPath)) {
-        const attachmentMeta = this.attachMetadataByPath.get(fullPath)
+      } else if (this.attachMetaByPath.has(fullPath)) {
+        const attachmentMeta = this.attachMetaByPath.get(fullPath)
         if (attachmentMeta !== undefined) {
           this.alterAttachmentLinkNode(node, attachmentMeta)
-          this.updateAttachmentMetadata(fullPath, attachmentMeta, id, spaceId, sourceMeta)
+          const sourceMeta = this.refMetaByPath.get(sourcePath)
+          if (sourceMeta !== undefined) {
+            this.updateAttachmentMetadata(fullPath, attachmentMeta, id, spaceId, sourceMeta)
+          }
         }
       } else {
         this.logger.log('Unknown link type, leave it as is: ' + href)
@@ -233,7 +242,7 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
     }
   }
 
-  private alterInternalLinkNode (node: MarkupNode, targetMeta: DocMetadata): void {
+  private alterInternalLinkNode (node: MarkupNode, targetMeta: ReferenceMetadata): void {
     node.type = MarkupNodeType.reference
     node.attrs = {
       id: targetMeta.id,
@@ -264,13 +273,13 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
     return mimeType !== false ? mimeType : undefined
   }
 
-  private getSourceMetadata (id: Ref<Doc>): DocMetadata | null {
-    const sourceMeta = this.metadataById.get(id)
-    if (sourceMeta == null) {
-      this.logger.error(`Source metadata not found for ${id}`)
+  private getSourcePath (id: Ref<Doc>): string | null {
+    const sourcePath = this.pathById.get(id)
+    if (sourcePath == null) {
+      this.logger.error(`Source file path not found for ${id}`)
       return null
     }
-    return sourceMeta
+    return sourcePath
   }
 
   private updateAttachmentMetadata (
@@ -278,9 +287,9 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
     attachmentMeta: AttachmentMetadata,
     id: Ref<Doc>,
     spaceId: Ref<Space>,
-    sourceMeta: DocMetadata
+    sourceMeta: ReferenceMetadata
   ): void {
-    this.attachMetadataByPath.set(fullPath, {
+    this.attachMetaByPath.set(fullPath, {
       ...attachmentMeta,
       spaceId,
       parentId: id,
@@ -289,10 +298,9 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
   }
 }
 
-interface DocMetadata {
+interface ReferenceMetadata {
   id: Ref<Doc>
   class: string
-  path: string
   refTitle: string
 }
 
@@ -306,9 +314,9 @@ interface AttachmentMetadata {
 }
 
 export class UnifiedFormatImporter {
-  private readonly metadataById = new Map<Ref<Doc>, DocMetadata>()
-  private readonly metadataByFilePath = new Map<string, DocMetadata>()
-  private readonly attachMetadataByPath = new Map<string, AttachmentMetadata>()
+  private readonly pathById = new Map<Ref<Doc>, string>()
+  private readonly refMetaByPath = new Map<string, ReferenceMetadata>()
+  private readonly attachMetaByPath = new Map<string, AttachmentMetadata>()
 
   private personsByName = new Map<string, Ref<Person>>()
   private accountsByEmail = new Map<string, Ref<PersonAccount>>()
@@ -338,9 +346,9 @@ export class UnifiedFormatImporter {
     const preprocessor = new HulyMarkdownPreprocessor(
       this.fileUploader.getFileUrl,
       this.logger,
-      this.metadataByFilePath,
-      this.metadataById,
-      this.attachMetadataByPath,
+      this.pathById,
+      this.refMetaByPath,
+      this.attachMetaByPath,
       this.personsByName
     )
     await new WorkspaceImporter(
@@ -352,7 +360,7 @@ export class UnifiedFormatImporter {
     ).performImport()
 
     this.logger.log('Importing attachments...')
-    const attachments: ImportAttachment[] = Array.from(this.attachMetadataByPath.values())
+    const attachments: ImportAttachment[] = Array.from(this.attachMetaByPath.values())
       .filter((attachment) => attachment.parentId !== undefined)
       .map((attachment) => {
         return {
@@ -471,15 +479,13 @@ export class UnifiedFormatImporter {
         const numberMatch = issueFile.match(/^(\d+)\./)
         const issueNumber = numberMatch?.[1]
 
-        const meta: DocMetadata = {
+        const meta: ReferenceMetadata = {
           id: generateId<Issue>(),
           class: tracker.class.Issue,
-          path: issuePath,
           refTitle: `${projectIdentifier}-${issueNumber}`
         }
-
-        this.metadataById.set(meta.id, meta)
-        this.metadataByFilePath.set(issuePath, meta)
+        this.pathById.set(meta.id, issuePath)
+        this.refMetaByPath.set(issuePath, meta)
 
         const issue: ImportIssue = {
           id: meta.id as Ref<Issue>,
@@ -554,15 +560,14 @@ export class UnifiedFormatImporter {
       }
 
       if (docHeader.class === document.class.Document) {
-        const docMeta: DocMetadata = {
+        const docMeta: ReferenceMetadata = {
           id: generateId<Document>(),
           class: document.class.Document,
-          path: docPath,
           refTitle: docHeader.title
         }
 
-        this.metadataById.set(docMeta.id, docMeta)
-        this.metadataByFilePath.set(docPath, docMeta)
+        this.pathById.set(docMeta.id, docPath)
+        this.refMetaByPath.set(docPath, docMeta)
 
         const doc: ImportDocument = {
           id: docMeta.id as Ref<Document>,
@@ -603,15 +608,13 @@ export class UnifiedFormatImporter {
       }
 
       if (docHeader.class === documents.class.ControlledDocument) {
-        const docMeta: DocMetadata = {
+        const docMeta: ReferenceMetadata = {
           id: generateId<ControlledDocument>(),
           class: documents.class.ControlledDocument,
-          path: docPath,
           refTitle: docHeader.title
         }
-
-        this.metadataById.set(docMeta.id, docMeta)
-        this.metadataByFilePath.set(docPath, docMeta)
+        this.pathById.set(docMeta.id, docPath)
+        this.refMetaByPath.set(docPath, docMeta)
 
         const doc = await this.processControlledDocument(docHeader as UnifiedControlledDocumentHeader, docPath, docMeta.id as Ref<ControlledDocument>)
         builder.addControlledDocument(spacePath, docPath, doc, parentDocPath)
@@ -621,17 +624,16 @@ export class UnifiedFormatImporter {
           await this.processControlledDocumentsRecursively(builder, spacePath, subDir, docPath)
         }
       } else if (docHeader.class === documents.mixin.DocumentTemplate) {
-        if (!this.metadataByFilePath.has(docPath)) {
-          const meta: DocMetadata = {
+        if (!this.refMetaByPath.has(docPath)) {
+          const meta: ReferenceMetadata = {
             id: generateId<DocumentTemplate>(),
             class: documents.mixin.DocumentTemplate,
-            path: docPath,
             refTitle: docHeader.title
           }
-          this.metadataById.set(meta.id, meta)
-          this.metadataByFilePath.set(docPath, meta)
+          this.pathById.set(meta.id, docPath)
+          this.refMetaByPath.set(docPath, meta)
         }
-        const templateMeta = this.metadataByFilePath.get(docPath)
+        const templateMeta = this.refMetaByPath.get(docPath)
         const template = await this.processControlledDocumentTemplate(docHeader as UnifiedDocumentTemplateHeader, docPath, templateMeta?.id as Ref<ControlledDocument>)
         builder.addControlledDocumentTemplate(spacePath, docPath, template, parentDocPath)
 
@@ -741,19 +743,18 @@ export class UnifiedFormatImporter {
       throw new Error(`Template file not found: ${templatePath}`)
     }
 
-    if (!this.metadataByFilePath.has(templatePath)) {
+    if (!this.refMetaByPath.has(templatePath)) {
       const templateMeta = {
         id: generateId<DocumentTemplate>(),
         class: documents.mixin.DocumentTemplate,
-        path: templatePath,
         refTitle: path.basename(templatePath)
       }
-      this.metadataByFilePath.set(templatePath, templateMeta)
-      this.metadataById.set(templateMeta.id, templateMeta)
+      this.refMetaByPath.set(templatePath, templateMeta)
+      this.pathById.set(templateMeta.id, templatePath)
     }
 
     // todo: might not be exists yet, may be pass to the builder?
-    const template = this.metadataByFilePath.get(templatePath)
+    const template = this.refMetaByPath.get(templatePath)
     if (template?.class !== documents.mixin.DocumentTemplate) {
       throw new Error(`Template is not a controlled document template: ${template?.class}`)
     }
@@ -880,9 +881,9 @@ export class UnifiedFormatImporter {
           await processDir(fullPath)
         } else if (entry.isFile()) {
           // Skip files that are already processed as documents or issues
-          if (!this.metadataByFilePath.has(fullPath)) {
+          if (!this.refMetaByPath.has(fullPath)) {
             const attachmentId = generateId<Attachment>()
-            this.attachMetadataByPath.set(fullPath, { id: attachmentId, name: entry.name, path: fullPath })
+            this.attachMetaByPath.set(fullPath, { id: attachmentId, name: entry.name, path: fullPath })
           }
         }
       }
