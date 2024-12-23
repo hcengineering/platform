@@ -11,7 +11,7 @@ for package in "$PACKAGES_DIR"/*; do
     echo "Building package: $PACKAGE_NAME"
 
     if [ -f "$ENTRY_POINT" ]; then
-      bun build "$ENTRY_POINT" --outdir "$OUT_DIR"
+      bun build "$ENTRY_POINT" --outdir "$OUT_DIR" --target bun
 
       if [ $? -eq 0 ]; then
         echo "Package $PACKAGE_NAME built successfully"
