@@ -1,0 +1,239 @@
+import {
+    type MessageID,
+    type ContextID,
+    type CardID,
+    type NotificationContext,
+    type FindNotificationContextParams, SortOrder,
+    type FindNotificationsParams, type Notification,
+    type NotificationContextUpdate
+} from '@communication/types'
+
+import {BaseDb} from './base.ts'
+import {TableName, type ContextDb, type NotificationDb} from './types.ts'
+
+export class NotificationsDb extends BaseDb {
+    async createNotification(message: MessageID, context: ContextID): Promise<void> {
+        const dbData: NotificationDb = {
+            message_id: message,
+            context
+        }
+        await this.insert(TableName.Notification, dbData)
+    }
+
+    async removeNotification(message: MessageID, context: ContextID): Promise<void> {
+        await this.remove(TableName.Notification, {
+            message_id: message,
+            context
+        })
+    }
+
+    async createContext(workspace: string, card: CardID, personWorkspace: string, lastView?: Date, lastUpdate?: Date): Promise<ContextID> {
+        const dbData: ContextDb = {
+            workspace_id: workspace,
+            card_id: card,
+            person_workspace: personWorkspace,
+            last_view: lastView,
+            last_update: lastUpdate
+        }
+        return await this.insertWithReturn(TableName.NotificationContext, dbData, 'id') as ContextID
+    }
+
+    async removeContext(context: ContextID): Promise<void> {
+        await this.remove(TableName.NotificationContext, {
+            id: context
+        })
+    }
+
+    async updateContext(context: ContextID, update: NotificationContextUpdate): Promise<void> {
+        const dbData: Partial<ContextDb> = {}
+
+        if (update.archivedFrom != null) {
+            dbData.archived_from = update.archivedFrom
+        }
+        if (update.lastView != null) {
+            dbData.last_view = update.lastView
+        }
+        if (update.lastUpdate != null) {
+            dbData.last_update = update.lastUpdate
+        }
+
+        if (Object.keys(dbData).length === 0) {
+            return
+        }
+
+        const keys = Object.keys(dbData)
+        const values = Object.values(dbData)
+
+        const sql = `UPDATE ${TableName.NotificationContext}
+                     SET ${keys.map((k, idx) => `"${k}" = $${idx + 1}`).join(', ')}
+                     WHERE id =$${keys.length + 1}`
+
+        await this.client.unsafe(sql, [values, context])
+    }
+
+    async findContexts( params: FindNotificationContextParams, personWorkspaces: string[], workspace?: string,): Promise<NotificationContext[]> {
+        const select = `
+            SELECT nc.id, nc.card_id, nc.archived_from, nc.last_view, nc.last_update
+            FROM ${TableName.NotificationContext} nc`;
+        const {where, values} = this.buildContextWhere(params, personWorkspaces, workspace)
+        // const orderSql = `ORDER BY nc.created ${params.sort === SortOrder.Asc ? 'ASC' : 'DESC'}`
+        const limit = params.limit ? ` LIMIT ${params.limit}` : ''
+        const sql = [select, where, limit].join(' ')
+
+        const result = await this.client.unsafe(sql, values);
+
+        return result.map(this.toNotificationContext);
+    }
+
+
+    async findNotifications(params: FindNotificationsParams, personWorkspace: string, workspace?: string): Promise<Notification[]> {
+        //TODO: experiment with select to improve performance, should join with attachments and reactions?
+        const select = `
+            SELECT n.message_id,
+                   n.context,
+                   m.content                   AS message_content,
+                   m.creator                   AS message_creator,
+                   m.created                   AS message_created,
+                   nc.card_id,
+                   nc.archived_from,
+                   nc.last_view,
+                   nc.last_update,
+                   (SELECT json_agg(
+                                   jsonb_build_object(
+                                           'id', p.id,
+                                           'content', p.content,
+                                           'creator', p.creator,
+                                           'created', p.created
+                                   )
+                           )
+                    FROM ${TableName.Patch} p
+                    WHERE p.message_id = m.id) AS patches
+            FROM ${TableName.Notification} n
+                     JOIN ${TableName.NotificationContext} nc ON n.context = nc.id
+                     JOIN ${TableName.Message} m ON n.message_id = m.id
+        `;
+        const {where, values} = this.buildNotificationWhere(params, personWorkspace, workspace)
+        const orderBy = params.sort ? `ORDER BY m.created ${params.sort === SortOrder.Asc ? 'ASC' : 'DESC'}` : ''
+        const limit = params.limit ? ` LIMIT ${params.limit}` : ''
+        const sql = [select, where, orderBy, limit].join(' ')
+
+        const result = await this.client.unsafe(sql, values);
+
+        return result.map(this.toNotification);
+    }
+
+    buildContextWhere(params: FindNotificationContextParams, personWorkspaces: string[], workspace?: string,): {
+        where: string,
+        values: any[]
+    } {
+        const where: string[] = []
+        const values: any[] = []
+        let index = 1
+
+        if(workspace != null) {
+            where.push(`nc.workspace_id = $${index++}`)
+            values.push(workspace)
+        }
+
+        if(personWorkspaces.length > 0) {
+            where.push(`nc.person_workspace IN (${personWorkspaces.map((it) => `$${index++}`).join(', ')})`)
+            values.push(...personWorkspaces)
+        }
+
+        for (const key of Object.keys(params)) {
+            const value = (params as any)[key]
+            switch (key) {
+                case 'card': {
+                    where.push(`nc.card_id = $${index++}`)
+                    values.push(value)
+                    break
+                }
+            }
+        }
+
+        return {where: `WHERE ${where.join(' AND ')}`, values}
+    }
+
+    buildNotificationWhere(params: FindNotificationsParams, personWorkspace: string, workspace?: string): {
+        where: string,
+        values: any[]
+    } {
+        const where: string[] = ['nc.person_workspace = $1']
+        const values: any[] = [personWorkspace]
+        let index = 2
+
+        if(workspace != null) {
+            where.push(`nc.workspace_id = $${index++}`)
+            values.push(workspace)
+        }
+
+        for (const key of Object.keys(params)) {
+            const value = (params as any)[key]
+            switch (key) {
+                case 'context': {
+                    where.push(`n.context = $${index++}`)
+                    values.push(value)
+                    break
+                }
+                case 'card': {
+                    where.push(`nc.card_id = $${index++}`)
+                    values.push(value)
+                    break
+                }
+                case 'read': {
+                    if (value === true) {
+                        where.push(`nc.last_view IS NOT NULL AND nc.last_view >= m.created`)
+                    } else if (value === false) {
+                        where.push(`(nc.last_view IS NULL OR nc.last_view > m.created)`)
+                    }
+                    break
+                }
+                case 'archived': {
+                    if (value === true) {
+                        where.push(`nc.archived_from IS NOT NULL AND nc.archived_from >= m.created`)
+                    } else if (value === false) {
+                        where.push(`(nc.archived_from IS NULL OR nc.archived_from > m.created)`)
+                    }
+                    break
+                }
+            }
+        }
+
+        return {where: `WHERE ${where.join(' AND ')}`, values}
+    }
+
+    toNotificationContext(row: any): NotificationContext {
+        return {
+            id: row.id,
+            card: row.card_id,
+            workspace: row.workspace_id,
+            personWorkspace: row.person_workspace,
+            archivedFrom: row.archived_from ? new Date(row.archived_from) : undefined,
+            lastView: row.last_view ? new Date(row.last_view) : undefined,
+            lastUpdate: row.last_update ? new Date(row.last_update) : undefined
+        }
+    }
+
+    toNotification(row: any): Notification {
+        const lastPatch = row.patches?.[0]
+        const lastView = row.last_view ? new Date(row.last_view) : undefined
+        const archivedFrom = row.archived_from ? new Date(row.archived_from) : undefined
+        const created = new Date(row.message_created)
+
+        return {
+            message: {
+                id: row.id,
+                content: lastPatch?.content ?? row.message_content,
+                creator: row.message_creator,
+                created,
+                edited: new Date(lastPatch?.created ?? row.message_created),
+                reactions: row.reactions ?? [],
+                attachments: row.attachments ?? []
+            },
+            context: row.context,
+            read: lastView != null && lastView >= created,
+            archived: archivedFrom != null && archivedFrom >= created
+        }
+    }
+}
+
