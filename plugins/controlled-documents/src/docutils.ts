@@ -139,7 +139,8 @@ export async function createControlledDocMetadata (
   prefix: string,
   seqNumber: number,
   specCode: string,
-  specTitle: string
+  specTitle: string,
+  metaId?: Ref<DocumentMeta>
 ): Promise<{ success: boolean, seqNumber: number, documentMetaId: Ref<DocumentMeta>, projectDocumentId: Ref<ProjectDocument> }> {
   const projectId = project ?? documents.ids.NoProject
 
@@ -157,7 +158,7 @@ export async function createControlledDocMetadata (
   const documentMetaId = await ops.createDoc(documents.class.DocumentMeta, space, {
     documents: 0,
     title: `${prefix}-${seqNumber} ${specTitle}`
-  })
+  }, metaId)
 
   let path: Array<Ref<DocumentMeta>> = []
   if (parent !== undefined) {
@@ -258,7 +259,8 @@ export async function createDocumentTemplateMetadata (
   templateId: Ref<ControlledDocument>,
   prefix: string,
   specCode: string,
-  specTitle: string
+  specTitle: string,
+  metaId?: Ref<DocumentMeta>
 ): Promise<{ success: boolean, seqNumber: number, code: string, documentMetaId: Ref<DocumentMeta>, projectDocumentId: Ref<ProjectDocument> }> {
   const projectId = project ?? documents.ids.NoProject
 
@@ -298,7 +300,7 @@ export async function createDocumentTemplateMetadata (
   const documentMetaId = await ops.createDoc(documents.class.DocumentMeta, space, {
     documents: 0,
     title: `${TEMPLATE_PREFIX}-${seqNumber} ${specTitle}`
-  })
+  }, metaId)
 
   const projectMetaId = await ops.createDoc(documents.class.ProjectMeta, space, {
     project: projectId,

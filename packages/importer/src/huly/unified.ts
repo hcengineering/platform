@@ -731,7 +731,7 @@ export class UnifiedFormatImporter {
     header: UnifiedControlledDocumentHeader,
     docPath: string,
     id: Ref<ControlledDocument>,
-    docMetaId: Ref<DocumentMeta>
+    metaId: Ref<DocumentMeta>
   ): Promise<ImportControlledDocument> {
     const codeMatch = path.basename(docPath).match(/^\[([^\]]+)\]/)
 
@@ -759,7 +759,7 @@ export class UnifiedFormatImporter {
 
     return {
       id,
-      docMetaId,
+      metaId,
       class: documents.class.ControlledDocument,
       title: header.title,
       template: templateId,
@@ -785,7 +785,7 @@ export class UnifiedFormatImporter {
     header: UnifiedDocumentTemplateHeader,
     docPath: string,
     id: Ref<ControlledDocument>,
-    docMetaId: Ref<DocumentMeta>
+    metaId: Ref<DocumentMeta>
   ): Promise<ImportControlledDocumentTemplate> {
     const author = this.findEmployeeByName(header.author)
     const owner = this.findEmployeeByName(header.owner)
@@ -796,7 +796,7 @@ export class UnifiedFormatImporter {
     const codeMatch = path.basename(docPath).match(/^\[([^\]]+)\]/)
     return {
       id,
-      docMetaId,
+      metaId,
       class: documents.mixin.DocumentTemplate,
       title: header.title,
       docPrefix: header.docPrefix,

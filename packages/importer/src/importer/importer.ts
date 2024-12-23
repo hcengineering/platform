@@ -27,7 +27,6 @@ import documents, {
   DocumentTemplate,
   OrgSpace,
   ProjectDocument,
-  TEMPLATE_PREFIX,
   useDocumentTemplate
 } from '@hcengineering/controlled-documents'
 import core, {
@@ -172,7 +171,7 @@ export interface ImportOrgSpace extends ImportSpace<ImportControlledDoc> {
 
 export interface ImportControlledDocumentTemplate extends ImportDoc {
   id: Ref<ControlledDocument>
-  docMetaId: Ref<DocumentMeta>
+  metaId: Ref<DocumentMeta>
   class: Ref<Class<Document>>
   docPrefix: string
   code?: string
@@ -194,7 +193,7 @@ export interface ImportControlledDocumentTemplate extends ImportDoc {
 
 export interface ImportControlledDocument extends ImportDoc {
   id: Ref<ControlledDocument>
-  docMetaId: Ref<DocumentMeta>
+  metaId: Ref<DocumentMeta>
   class: Ref<Class<ControlledDocument>>
   template: Ref<ControlledDocument> // todo: test (it was Ref<DocumentTemplate>)
   code?: string
@@ -211,16 +210,6 @@ export interface ImportControlledDocument extends ImportDoc {
   ccImpact?: string
   ccDescription?: string
   subdocs: ImportControlledDoc[]
-}
-
-interface ControlledDocMetadata {
-  documentMetaId: Ref<DocumentMeta>
-}
-
-interface ControlledDocTemplateMetadata {
-  seqNumber: number
-  documentMetaId: Ref<DocumentMeta>
-  code: string
 }
 
 export class WorkspaceImporter {
@@ -764,12 +753,12 @@ export class WorkspaceImporter {
     this.logger.log('Document space created: ' + spaceId)
 
     // Create hierarchy meta
-    const documentMetaIds = new Map<Ref<ControlledDocument>, ControlledDocMetadata | ControlledDocTemplateMetadata>()
+    const templateMetaMap = new Map<Ref<ControlledDocument>, { seqNumber: number, code: string }>()
     for (const doc of space.docs) {
       if (this.isDocumentTemplate(doc)) {
-        await this.createDocTemplateMetaHierarhy(doc as ImportControlledDocumentTemplate, documentMetaIds, spaceId)
+        await this.createDocTemplateMetaHierarhy(doc as ImportControlledDocumentTemplate, templateMetaMap, spaceId)
       } else {
-        await this.createControlledDocMetaHierarhy(doc as ImportControlledDocument, documentMetaIds, spaceId)
+        await this.createControlledDocMetaHierarhy(doc as ImportControlledDocument, templateMetaMap, spaceId)
       }
     }
 
@@ -782,21 +771,16 @@ export class WorkspaceImporter {
 
     // Create attached docs for templates
     for (const template of templateMap.values()) {
-      const meta = documentMetaIds.get(template.id)
+      const meta = templateMetaMap.get(template.id)
       if (meta === undefined) {
         throw new Error('Template meta not found: ' + template.id)
       }
-      await this.createDocTemplateAttachedDoc(meta as ControlledDocTemplateMetadata, template, spaceId)
+      await this.createDocTemplateAttachedDoc(template, meta.seqNumber, meta.code, spaceId)
     }
 
     // Create attached docs for documents
     for (const document of documentMap.values()) {
-      const documentMeta = documentMetaIds.get(document.id)
-      if (documentMeta === undefined) {
-        throw new Error('Document meta not found: ' + document.id)
-      }
-
-      await this.createControlledDocAttachedDoc(documentMeta as ControlledDocMetadata, document, spaceId)
+      await this.createControlledDocAttachedDoc(document, spaceId)
     }
 
     return spaceId
@@ -859,14 +843,14 @@ export class WorkspaceImporter {
 
   private async createDocTemplateMetaHierarhy (
     template: ImportControlledDocumentTemplate,
-    documentMetaIds: Map<Ref<ControlledDocument>, ControlledDocMetadata | ControlledDocTemplateMetadata>,
+    templateMetaMap: Map<Ref<ControlledDocument>, { seqNumber: number, code: string }>,
     spaceId: Ref<DocumentSpace>,
     parentProjectDocumentId?: Ref<ProjectDocument>
   ): Promise<Ref<ControlledDocument>> {
     this.logger.log('Creating document template: ' + template.title)
     const templateId = template.id ?? generateId<ControlledDocument>()
 
-    const result = await createDocumentTemplateMetadata(
+    const { seqNumber, code, projectDocumentId } = await createDocumentTemplateMetadata(
       this.client,
       documents.class.Document,
       spaceId,
@@ -876,23 +860,28 @@ export class WorkspaceImporter {
       templateId as unknown as Ref<ControlledDocument>, // todo: suspisios place
       template.docPrefix,
       template.code ?? '',
-      template.title
+      template.title,
+      template.metaId
     )
 
-    documentMetaIds.set(templateId, result)
+    templateMetaMap.set(templateId, { seqNumber, code })
 
     for (const subdoc of template.subdocs) {
       if (this.isDocumentTemplate(subdoc)) {
-        await this.createDocTemplateMetaHierarhy(subdoc as ImportControlledDocumentTemplate, documentMetaIds, spaceId, result.projectDocumentId)
+        await this.createDocTemplateMetaHierarhy(subdoc as ImportControlledDocumentTemplate, templateMetaMap, spaceId, projectDocumentId)
       } else {
-        await this.createControlledDocMetaHierarhy(subdoc as ImportControlledDocument, documentMetaIds, spaceId, result.projectDocumentId)
+        await this.createControlledDocMetaHierarhy(subdoc as ImportControlledDocument, templateMetaMap, spaceId, projectDocumentId)
       }
     }
 
     return templateId
   }
 
-  private async createDocTemplateAttachedDoc (meta: ControlledDocTemplateMetadata, template: ImportControlledDocumentTemplate, spaceId: Ref<DocumentSpace>): Promise<Ref<ControlledDocument>> {
+  private async createDocTemplateAttachedDoc (template: ImportControlledDocumentTemplate,
+    seqNumber: number,
+    code: string,
+    spaceId: Ref<DocumentSpace>
+  ): Promise<Ref<ControlledDocument>> {
     const content = await template.descrProvider()
 
     this.logger.log('Creating document template attached doc: ' + template.title)
@@ -908,7 +897,7 @@ export class WorkspaceImporter {
     const result = await ops.addCollection(
       documents.class.ControlledDocument,
       spaceId,
-      meta.documentMetaId,
+      template.metaId,
       documents.class.DocumentMeta,
       'documents',
       {
@@ -922,9 +911,9 @@ export class WorkspaceImporter {
         reviewers: template.reviewers ?? [],
         approvers: template.approvers ?? [],
         coAuthors: template.coAuthors ?? [],
-        code: meta.code,
-        seqNumber: meta.seqNumber,
-        prefix: TEMPLATE_PREFIX,
+        code,
+        seqNumber,
+        prefix: template.docPrefix, // todo: or TEMPLATE_PREFIX?s
         content: contentId,
         changeControl: changeControlId,
         commentSequence: 0,
@@ -950,7 +939,7 @@ export class WorkspaceImporter {
 
   private async createControlledDocMetaHierarhy (
     doc: ImportControlledDocument,
-    documentMetaIds: Map<Ref<ControlledDocument>, ControlledDocMetadata | ControlledDocTemplateMetadata>,
+    templateMetaMap: Map<Ref<ControlledDocument>, { seqNumber: number, code: string }>,
     spaceId: Ref<DocumentSpace>,
     parentProjectDocumentId?: Ref<ProjectDocument>
   ): Promise<Ref<ControlledDocument>> {
@@ -968,27 +957,23 @@ export class WorkspaceImporter {
       'prefix',
       0,
       doc.code ?? '',
-      doc.title
+      doc.title,
+      doc.metaId
     )
 
     // Process subdocs recursively
     for (const subdoc of doc.subdocs) {
       if (this.isDocumentTemplate(subdoc)) {
-        await this.createDocTemplateMetaHierarhy(subdoc as ImportControlledDocumentTemplate, documentMetaIds, spaceId, result.projectDocumentId)
+        await this.createDocTemplateMetaHierarhy(subdoc as ImportControlledDocumentTemplate, templateMetaMap, spaceId, result.projectDocumentId)
       } else {
-        await this.createControlledDocMetaHierarhy(subdoc as ImportControlledDocument, documentMetaIds, spaceId, result.projectDocumentId)
+        await this.createControlledDocMetaHierarhy(subdoc as ImportControlledDocument, templateMetaMap, spaceId, result.projectDocumentId)
       }
     }
-
-    documentMetaIds.set(documentId, {
-      seqNumber: result.seqNumber,
-      documentMetaId: result.documentMetaId
-    })
 
     return documentId
   }
 
-  private async createControlledDocAttachedDoc (meta: ControlledDocMetadata, document: ImportControlledDocument,
+  private async createControlledDocAttachedDoc (document: ImportControlledDocument,
     spaceId: Ref<DocumentSpace>): Promise<Ref<ControlledDocument>> {
     this.logger.log('Creating controlled document attached doc: ' + document.title)
 
@@ -1008,7 +993,7 @@ export class WorkspaceImporter {
     const result = await ops.addCollection(
       documents.class.ControlledDocument,
       spaceId,
-      meta.documentMetaId,
+      document.metaId,
       documents.class.DocumentMeta,
       'documents',
       {
@@ -1035,7 +1020,7 @@ export class WorkspaceImporter {
       document.id
     )
 
-    await ops.updateDoc(documents.class.DocumentMeta, spaceId, meta.documentMetaId, {
+    await ops.updateDoc(documents.class.DocumentMeta, spaceId, document.metaId, {
       documents: 0,
       title: `${prefix}-${seqNumber} ${document.title}`
     })
