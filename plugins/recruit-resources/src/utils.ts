@@ -136,7 +136,8 @@ export function getApplicantsLink (_id: Ref<VacancyList>): Location {
   loc.fragment = undefined
   loc.query = undefined
   loc.path[3] = 'candidates'
-  loc.query = _id === undefined ? undefined : { ...(loc?.query ?? {}), company: _id }
+  const isAllCompanies = _id === undefined || _id === recruit.ids.AllCompanies
+  loc.query = isAllCompanies ? undefined : { ...(loc?.query ?? {}), company: _id }
 
   return loc
 }

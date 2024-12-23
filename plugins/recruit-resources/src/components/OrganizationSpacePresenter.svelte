@@ -18,6 +18,7 @@
 
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { Doc, DocumentQuery } from '@hcengineering/core'
+  import contact from '@hcengineering/contact'
 
   import recruit from '../plugin'
 
@@ -30,20 +31,9 @@
   $: searchQuery = search !== '' ? { $search: search } : undefined
 </script>
 
-<TreeNode
-  _id={'tree-' + model.id}
-  label={model.label}
-  {actions}
-  highlighted={visible}
-  isFold={false}
-  {visible}
->
+<TreeNode _id={'tree-' + model.id} label={model.label} {actions} highlighted={visible} isFold={false} {visible}>
   <div class="pl-3 pr-3 pt-1">
-    <SearchEdit
-      bind:value={search}
-      width="auto"
-      kind={'secondary'}
-    />
+    <SearchEdit bind:value={search} width="auto" kind={'secondary'} />
   </div>
   <FoldersBrowser
     _class={recruit.mixin.VacancyList}
@@ -52,7 +42,7 @@
     parentKey="space"
     plainList={true}
     allObjectsLabel={recruit.string.Organizations}
-    allObjectsIcon={recruit.icon.Vacancy}
+    allObjectsIcon={contact.icon.Company}
     getFolderLink={recruit.function.GetApplicantsLink}
     filterKey="company"
     noParentId={recruit.ids.AllCompanies}

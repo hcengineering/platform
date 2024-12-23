@@ -191,7 +191,10 @@ export function createModel (builder: Builder): void {
                 createComponent: recruit.component.CreateVacancy,
                 titleKey: 'name',
                 parentKey: 'space',
-                plainList: true
+                plainList: true,
+                noParentId: recruit.ids.AllVacancies,
+                allObjectsLabel: recruit.string.AllVacancies,
+                allObjectsIcon: recruit.icon.Vacancy
               },
               syncWithLocationQuery: false,
               mergeWithLocationQuery: true

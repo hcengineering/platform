@@ -121,7 +121,8 @@
     "HideDoneState": "Скрыть завершенных кандидатов",
     "HideArchivedVacancies": "Скрыть архивные вакансии",
     "HideApplicantsFromArchivedVacancies": "Скрыть из архивных вакансии",
-    "CreateNewSkills": "Создать навыки, если не найдены существующие"
+    "CreateNewSkills": "Создать навыки, если не найдены существующие",
+    "AllVacancies": "Все вакансии"
   },
   "status": {
     "ApplicationExists": "Кандидат уже существует",

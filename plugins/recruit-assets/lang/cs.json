@@ -121,7 +121,8 @@
     "HideDoneState": "Skrýt dokončené přihlášky",
     "HideArchivedVacancies": "Skrýt archivované pozice",
     "HideApplicantsFromArchivedVacancies": "Skrýt z archivovaných pozic",
-    "CreateNewSkills": "Vytvořit nové dovednosti, pokud neexistují"
+    "CreateNewSkills": "Vytvořit nové dovednosti, pokud neexistují",
+    "AllVacancies": "Všechny pozice"
   },
   "status": {
     "ApplicationExists": "Přihláška již existuje",

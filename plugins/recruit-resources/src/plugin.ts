@@ -17,7 +17,7 @@ import { type Client, type Doc, type Ref } from '@hcengineering/core'
 import type { IntlString, Resource, StatusCode } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation'
-import recruit, { recruitId, type VacancyList } from '@hcengineering/recruit'
+import recruit, { recruitId, type VacancyList, type Vacancy } from '@hcengineering/recruit'
 import { type TagCategory } from '@hcengineering/tags'
 import { type AnyComponent } from '@hcengineering/ui'
 import { type FilterFunction, type FilterMode, type Viewlet } from '@hcengineering/view'
@@ -127,7 +127,8 @@ export default mergeIds(recruitId, recruit, {
     OpenVacancyList: '' as IntlString,
     Export: '' as IntlString,
     GetTalentIds: '' as IntlString,
-    CreateNewSkills: '' as IntlString
+    CreateNewSkills: '' as IntlString,
+    AllVacancies: '' as IntlString
   },
   category: {
     Other: '' as Ref<TagCategory>,
@@ -167,6 +168,7 @@ export default mergeIds(recruitId, recruit, {
     None: '' as Ref<FilterMode>
   },
   ids: {
-    AllCompanies: '' as Ref<VacancyList>
+    AllCompanies: '' as Ref<VacancyList>,
+    AllVacancies: '' as Ref<Vacancy>
   }
 })

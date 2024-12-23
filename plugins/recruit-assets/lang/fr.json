@@ -118,7 +118,8 @@
     "HideDoneState": "Masquer les candidatures terminées",
     "HideArchivedVacancies": "Masquer les postes vacants archivés",
     "HideApplicantsFromArchivedVacancies": "Masquer les candidats des postes vacants archivés",
-    "CreateNewSkills": "Créer de nouvelles compétences si les existantes ne sont pas trouvées"
+    "CreateNewSkills": "Créer de nouvelles compétences si les existantes ne sont pas trouvées",
+    "AllVacancies": "Toutes les postes vacants"
   },
   "status": {
     "ApplicationExists": "La candidature existe déjà",

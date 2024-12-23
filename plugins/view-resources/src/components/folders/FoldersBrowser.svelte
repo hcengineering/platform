@@ -18,7 +18,16 @@
 
   import { Class, Doc, DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import ui, { Action, Button, IconEdit, navigate, type Location, Scroller, location, getLocation } from '@hcengineering/ui'
+  import ui, {
+    Action,
+    Button,
+    IconEdit,
+    navigate,
+    type Location,
+    Scroller,
+    location,
+    getLocation
+  } from '@hcengineering/ui'
   import { getResource, type Resource } from '@hcengineering/platform'
   import { IntlString, Asset } from '@hcengineering/platform'
 

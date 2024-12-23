@@ -118,7 +118,8 @@
     "HideDoneState": "Ocultar solicitudes completadas",
     "HideArchivedVacancies": "Ocultar vacantes archivadas",
     "HideApplicantsFromArchivedVacancies": "Ocultar de vacantes archivadas",
-    "CreateNewSkills": "Crear nuevas habilidades si no se encuentran las existentes"
+    "CreateNewSkills": "Crear nuevas habilidades si no se encuentran las existentes",
+    "AllVacancies": "Todas las vacantes"
   },
   "status": {
     "ApplicationExists": "La solicitud ya existe",

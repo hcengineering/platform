@@ -121,7 +121,8 @@
     "HideDoneState": "隐藏已完成的申请",
     "HideArchivedVacancies": "隐藏已归档的职位",
     "HideApplicantsFromArchivedVacancies": "从已归档职位中隐藏",
-    "CreateNewSkills": "如果未找到现有技能，则创建新技能"
+    "CreateNewSkills": "如果未找到现有技能，则创建新技能",
+    "AllVacancies": "所有开放的职位"
   },
   "status": {
     "ApplicationExists": "申请已存在",

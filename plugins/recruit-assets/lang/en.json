@@ -121,7 +121,8 @@
     "HideDoneState": "Hide complete applications",
     "HideArchivedVacancies": "Hide archived Vacancies",
     "HideApplicantsFromArchivedVacancies": "Hide from archived Vacancies",
-    "CreateNewSkills": "Create new skills if existing not found"
+    "CreateNewSkills": "Create new skills if existing not found",
+    "AllVacancies": "All vacancies"
   },
   "status": {
     "ApplicationExists": "Application already exists",

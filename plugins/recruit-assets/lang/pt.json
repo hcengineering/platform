@@ -118,7 +118,8 @@
     "HideDoneState": "Ocultar candidaturas concluídas",
     "HideArchivedVacancies": "Ocultar vagas arquivadas",
     "HideApplicantsFromArchivedVacancies": "Ocultar de vagas arquivadas",
-    "CreateNewSkills": "Criar novas competências se as existentes não forem encontradas"
+    "CreateNewSkills": "Criar novas competências se as existentes não forem encontradas",
+    "AllVacancies": "Todas as vagas abertas"
   },
   "status": {
     "ApplicationExists": "A candidatura já existe",
