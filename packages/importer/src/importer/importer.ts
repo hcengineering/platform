@@ -18,8 +18,8 @@ import { Employee, type Person } from '@hcengineering/contact'
 import documents, {
   ChangeControl,
   type ControlledDocument,
-  createControlledDocMetadata,
-  createDocumentTemplateMetadata,
+  createControlledDocFromTemplate,
+  createDocumentTemplate,
   DocumentCategory,
   DocumentMeta,
   type DocumentSpace,
@@ -27,8 +27,7 @@ import documents, {
   DocumentTemplate,
   OrgSpace,
   ProjectDocument,
-  TEMPLATE_PREFIX,
-  useDocumentTemplate
+  ProjectMeta
 } from '@hcengineering/controlled-documents'
 import core, {
   type Account,
@@ -163,6 +162,7 @@ export interface ImportAttachment {
 }
 
 export type ImportControlledDoc = ImportControlledDocument | ImportControlledDocumentTemplate // todo: rename
+
 export interface ImportOrgSpace extends ImportSpace<ImportControlledDoc> {
   class: Ref<Class<DocumentSpace>>
   qualified?: Ref<Account>
@@ -171,7 +171,10 @@ export interface ImportOrgSpace extends ImportSpace<ImportControlledDoc> {
 }
 
 export interface ImportControlledDocumentTemplate extends ImportDoc {
-  id: Ref<ControlledDocument> // todo: change to Ref<ControlledDocument> ?
+  id?: Ref<ControlledDocument>
+  docMetaId?: Ref<DocumentMeta>
+  projectMetaId?: Ref<ProjectMeta>
+  projectDocId?: Ref<ProjectDocument>
   class: Ref<Class<Document>>
   docPrefix: string
   code?: string
@@ -192,9 +195,12 @@ export interface ImportControlledDocumentTemplate extends ImportDoc {
 }
 
 export interface ImportControlledDocument extends ImportDoc {
-  id: Ref<ControlledDocument>
+  id?: Ref<ControlledDocument>
+  docMetaId?: Ref<DocumentMeta>
+  projectMetaId?: Ref<ProjectMeta>
+  projectDocId?: Ref<ProjectDocument>
   class: Ref<Class<ControlledDocument>>
-  template: Ref<ControlledDocument> // todo: test (it was Ref<DocumentTemplate>)
+  templateId: Ref<ControlledDocument>
   code?: string
   major: number
   minor: number
@@ -211,14 +217,9 @@ export interface ImportControlledDocument extends ImportDoc {
   subdocs: ImportControlledDoc[]
 }
 
-interface ControlledDocMetadata {
-  documentMetaId: Ref<DocumentMeta>
-}
-
-interface ControlledDocTemplateMetadata {
-  seqNumber: number
-  documentMetaId: Ref<DocumentMeta>
-  code: string
+interface ImportControlledDocNode {
+  doc: ImportControlledDoc
+  parentProjectDocId?: Ref<ProjectDocument>
 }
 
 export class WorkspaceImporter {
@@ -761,40 +762,21 @@ export class WorkspaceImporter {
     const spaceId = await this.createOrgSpace(space)
     this.logger.log('Document space created: ' + spaceId)
 
-    // Create hierarchy meta
-    const documentMetaIds = new Map<Ref<ControlledDocument>, ControlledDocMetadata | ControlledDocTemplateMetadata>()
-    for (const doc of space.docs) {
-      if (this.isDocumentTemplate(doc)) {
-        await this.createDocTemplateMetaHierarhy(doc as ImportControlledDocumentTemplate, documentMetaIds, spaceId)
-      } else {
-        await this.createControlledDocMetaHierarhy(doc as ImportControlledDocument, documentMetaIds, spaceId)
-      }
-    }
-
     // Partition templates and documents
-    const templateMap = new Map<Ref<ControlledDocument>, ImportControlledDocumentTemplate>()
-    const documentMap = new Map<Ref<ControlledDocument>, ImportControlledDocument>()
+    const templates: ImportControlledDocNode[] = []
+    const documents: ImportControlledDocNode[] = []
     for (const doc of space.docs) {
-      this.partitionTemplatesFromDocuments(doc, documentMap, templateMap)
+      this.partitionTemplatesFromDocuments(doc, documents, templates)
     }
 
     // Create attached docs for templates
-    for (const template of templateMap.values()) {
-      const meta = documentMetaIds.get(template.id)
-      if (meta === undefined) {
-        throw new Error('Template meta not found: ' + template.id)
-      }
-      await this.createDocTemplateAttachedDoc(meta as ControlledDocTemplateMetadata, template, spaceId)
+    for (const template of templates) {
+      await this.createControlledDocumentTemplateWithSubdocs(template.doc as ImportControlledDocumentTemplate, spaceId, template.parentProjectDocId)
     }
 
     // Create attached docs for documents
-    for (const document of documentMap.values()) {
-      const documentMeta = documentMetaIds.get(document.id)
-      if (documentMeta === undefined) {
-        throw new Error('Document meta not found: ' + document.id)
-      }
-
-      await this.createControlledDocAttachedDoc(documentMeta as ControlledDocMetadata, document, spaceId)
+    for (const document of documents) {
+      await this.createControlledDocumentWithSubdocs(document.doc as ImportControlledDocument, spaceId, document.parentProjectDocId)
     }
 
     return spaceId
@@ -802,17 +784,18 @@ export class WorkspaceImporter {
 
   private partitionTemplatesFromDocuments (
     doc: ImportControlledDoc,
-    documentMap: Map<Ref<ControlledDocument>, ImportControlledDocument>,
-    templateMap: Map<Ref<ControlledDocument>, ImportControlledDocumentTemplate>
+    documents: ImportControlledDocNode[],
+    templates: ImportControlledDocNode[],
+    parentProjectDocId?: Ref<ProjectDocument>
   ): void {
     if (this.isDocumentTemplate(doc)) {
-      templateMap.set(doc.id, doc as ImportControlledDocumentTemplate)
+      templates.push({ doc, parentProjectDocId })
     } else {
-      documentMap.set(doc.id, doc as ImportControlledDocument)
+      documents.push({ doc, parentProjectDocId })
     }
 
     for (const subdoc of doc.subdocs) {
-      this.partitionTemplatesFromDocuments(subdoc, documentMap, templateMap)
+      this.partitionTemplatesFromDocuments(subdoc, documents, templates, doc.projectDocId)
     }
   }
 
@@ -855,60 +838,31 @@ export class WorkspaceImporter {
     return spaceId
   }
 
-  private async createDocTemplateMetaHierarhy (
+  async createControlledDocumentTemplateWithSubdocs (
     template: ImportControlledDocumentTemplate,
-    documentMetaIds: Map<Ref<ControlledDocument>, ControlledDocMetadata | ControlledDocTemplateMetadata>,
     spaceId: Ref<DocumentSpace>,
-    parentProjectDocumentId?: Ref<ProjectDocument>
+    parentProjectDocId?: Ref<ProjectDocument>
   ): Promise<Ref<ControlledDocument>> {
     this.logger.log('Creating document template: ' + template.title)
     const templateId = template.id ?? generateId<ControlledDocument>()
-
-    const result = await createDocumentTemplateMetadata(
-      this.client,
-      documents.class.Document,
-      spaceId,
-      documents.mixin.DocumentTemplate,
-      undefined,
-      parentProjectDocumentId,
-      templateId as unknown as Ref<ControlledDocument>, // todo: suspisios place
-      template.docPrefix,
-      template.code ?? '',
-      template.title
-    )
-
-    documentMetaIds.set(templateId, result)
-
-    for (const subdoc of template.subdocs) {
-      if (this.isDocumentTemplate(subdoc)) {
-        await this.createDocTemplateMetaHierarhy(subdoc as ImportControlledDocumentTemplate, documentMetaIds, spaceId, result.projectDocumentId)
-      } else {
-        await this.createControlledDocMetaHierarhy(subdoc as ImportControlledDocument, documentMetaIds, spaceId, result.projectDocumentId)
-      }
-    }
-
-    return templateId
-  }
-
-  private async createDocTemplateAttachedDoc (meta: ControlledDocTemplateMetadata, template: ImportControlledDocumentTemplate, spaceId: Ref<DocumentSpace>): Promise<Ref<ControlledDocument>> {
     const content = await template.descrProvider()
 
-    this.logger.log('Creating document template attached doc: ' + template.title)
-
-    const collabId = makeCollabId(documents.class.Document, template.id, 'content')
-    const contentId = await this.createCollaborativeContent(template.id, collabId, content, spaceId)
+    const collabId = makeCollabId(documents.class.Document, templateId, 'content')
+    const contentId = await this.createCollaborativeContent(templateId, collabId, content, spaceId)
 
     const changeControlId = template.ccReason !== undefined || template.ccImpact !== undefined || template.ccDescription !== undefined
       ? await this.createChangeControl(spaceId, template.ccDescription, template.ccReason, template.ccImpact)
       : '' as Ref<ChangeControl>
 
-    const ops = this.client.apply()
-    const result = await ops.addCollection(
-      documents.class.ControlledDocument,
+    await createDocumentTemplate(
+      this.client,
+      documents.class.Document,
       spaceId,
-      meta.documentMetaId,
-      documents.class.DocumentMeta,
-      'documents',
+      documents.mixin.DocumentTemplate,
+      undefined, // project
+      parentProjectDocId, // parent
+      templateId as unknown as Ref<ControlledDocument>, // todo: suspisios place
+      template.docPrefix,
       {
         title: template.title,
         major: template.major,
@@ -920,95 +874,52 @@ export class WorkspaceImporter {
         reviewers: template.reviewers ?? [],
         approvers: template.approvers ?? [],
         coAuthors: template.coAuthors ?? [],
-        code: meta.code,
-        seqNumber: meta.seqNumber,
-        prefix: TEMPLATE_PREFIX,
+        code: template.code ?? '',
         content: contentId,
         changeControl: changeControlId,
+        seqNumber: 0, // will be updated on adding new documents
         commentSequence: 0,
         requests: 0,
         labels: 0
       },
-      template.id as unknown as Ref<ControlledDocument> // todo: make sure it's not used anywhere as mixin id
+      documents.category.DOC,
+      undefined, // author
+      template.docMetaId,
+      template.projectMetaId,
+      template.projectDocId
     )
 
-    await ops.createMixin(template.id, documents.class.Document, spaceId, documents.mixin.DocumentTemplate, {
-      sequence: 0,
-      docPrefix: template.docPrefix
-    })
-
-    const commit = await ops.commit()
-    if (!commit.result) {
-      throw new Error('Failed to create document template attached doc: ' + template.title)
-    }
-
-    this.logger.log('Document template attached doc created: ' + result)
-    return result
-  }
-
-  private async createControlledDocMetaHierarhy (
-    doc: ImportControlledDocument,
-    documentMetaIds: Map<Ref<ControlledDocument>, ControlledDocMetadata | ControlledDocTemplateMetadata>,
-    spaceId: Ref<DocumentSpace>,
-    parentProjectDocumentId?: Ref<ProjectDocument>
-  ): Promise<Ref<ControlledDocument>> {
-    this.logger.log('Creating controlled document: ' + doc.title)
-    const documentId = doc.id ?? generateId<ControlledDocument>()
-
-    // const { seqNumber, prefix, category } = await useDocumentTemplate(this.client, doc.template as unknown as Ref<DocumentTemplate>)
-    const result = await createControlledDocMetadata(
-      this.client,
-      documents.template.ProductChangeControl, // todo: make it dynamic - wtf, commit missed?
-      documentId,
-      spaceId,
-      undefined, // project
-      parentProjectDocumentId, // parent
-      'prefix',
-      0,
-      doc.code ?? '',
-      doc.title
-    )
-
-    // Process subdocs recursively
-    for (const subdoc of doc.subdocs) {
+    for (const subdoc of template.subdocs) {
       if (this.isDocumentTemplate(subdoc)) {
-        await this.createDocTemplateMetaHierarhy(subdoc as ImportControlledDocumentTemplate, documentMetaIds, spaceId, result.projectDocumentId)
+        await this.createControlledDocumentTemplateWithSubdocs(subdoc as ImportControlledDocumentTemplate, spaceId, template.projectDocId)
       } else {
-        await this.createControlledDocMetaHierarhy(subdoc as ImportControlledDocument, documentMetaIds, spaceId, result.projectDocumentId)
+        await this.createControlledDocumentWithSubdocs(subdoc as ImportControlledDocument, spaceId, template.projectDocId)
       }
     }
 
-    documentMetaIds.set(documentId, {
-      seqNumber: result.seqNumber,
-      documentMetaId: result.documentMetaId
-    })
-
-    return documentId
+    return templateId
   }
 
-  private async createControlledDocAttachedDoc (meta: ControlledDocMetadata, document: ImportControlledDocument,
-    spaceId: Ref<DocumentSpace>): Promise<Ref<ControlledDocument>> {
-    this.logger.log('Creating controlled document attached doc: ' + document.title)
+  async createControlledDocumentWithSubdocs (
+    document: ImportControlledDocument,
+    spaceId: Ref<DocumentSpace>,
+    parentProjectDocId?: Ref<ProjectDocument>
+  ): Promise<Ref<ControlledDocument>> {
+    this.logger.log('Creating controlled document: ' + document.title)
+    const docId = document.id ?? generateId<ControlledDocument>()
 
     const content = await document.descrProvider()
-    const collabId = makeCollabId(documents.class.Document, document.id, 'content')
-    const contentId = await this.createCollaborativeContent(document.id, collabId, content, spaceId)
-
-    const templateId = document.template
-    const { seqNumber, prefix, category } = await useDocumentTemplate(this.client, templateId as unknown as Ref<DocumentTemplate>)
-
-    const ops = this.client.apply()
+    const collabId = makeCollabId(documents.class.ControlledDocument, docId, 'content')
+    const contentId = await this.createCollaborativeContent(docId, collabId, content, spaceId)
 
     const changeControlId = document.ccReason !== undefined || document.ccImpact !== undefined
       ? await this.createChangeControl(spaceId, document.ccDescription, document.ccReason, document.ccImpact)
       : '' as Ref<ChangeControl>
 
-    const result = await ops.addCollection(
-      documents.class.ControlledDocument,
-      spaceId,
-      meta.documentMetaId,
-      documents.class.DocumentMeta,
-      'documents',
+    const result = await createControlledDocFromTemplate(
+      this.client,
+      documents.template.ProductChangeControl, // todo: make it dynamic
+      docId,
       {
         title: document.title,
         major: document.major,
@@ -1021,28 +932,36 @@ export class WorkspaceImporter {
         approvers: document.approvers ?? [],
         coAuthors: document.coAuthors ?? [],
         changeControl: changeControlId,
-        code: document.code ?? `${prefix}-${seqNumber}`,
-        prefix,
-        category,
-        seqNumber,
+        code: document.code ?? '', // todo: test
         content: contentId,
-        template: templateId as unknown as Ref<DocumentTemplate>,
+        template: document.templateId as unknown as Ref<DocumentTemplate>,
         commentSequence: 0,
-        requests: 0
+        requests: 0,
+        prefix: '', // should be taken from template
+        seqNumber: 0 // should be taken from template
       },
-      document.id
+      spaceId,
+      undefined, // project
+      parentProjectDocId,
+      documents.class.ControlledDocument,
+      document.docMetaId,
+      document.projectMetaId,
+      document.projectDocId
     )
 
-    await ops.updateDoc(documents.class.DocumentMeta, spaceId, meta.documentMetaId, {
-      documents: 0,
-      title: `${prefix}-${seqNumber} ${document.title}`
-    })
+    if (!result.success) {
+      throw new Error('Failed to create controlled document')
+    }
 
-    await ops.commit()
+    for (const subdoc of document.subdocs) {
+      if (this.isDocumentTemplate(subdoc)) {
+        await this.createControlledDocumentTemplateWithSubdocs(subdoc as ImportControlledDocumentTemplate, spaceId, document.projectDocId)
+      } else {
+        await this.createControlledDocumentWithSubdocs(subdoc as ImportControlledDocument, spaceId, document.projectDocId)
+      }
+    }
 
-    this.logger.log('Controlled document attached doc created: ' + result)
-
-    return result
+    return docId
   }
 
   private async createChangeControl (

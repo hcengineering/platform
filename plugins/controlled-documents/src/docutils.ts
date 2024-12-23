@@ -62,7 +62,10 @@ export async function createControlledDocFromTemplate (
   space: Ref<DocumentSpace>,
   project: Ref<Project> | undefined,
   parent: Ref<ProjectDocument> | undefined,
-  docClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument
+  docClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument,
+  docMetaId?: Ref<DocumentMeta>,
+  projectMetaId?: Ref<ProjectMeta>,
+  projectDocId?: Ref<ProjectDocument>
 ): Promise<{ seqNumber: number, success: boolean }> {
   if (templateId == null) {
     return { seqNumber: -1, success: false }
@@ -101,7 +104,10 @@ export async function createControlledDocFromTemplate (
     seqNumber,
     path,
     docClass,
-    template.content
+    template.content,
+    docMetaId,
+    projectMetaId,
+    projectDocId
   )
 }
 
@@ -116,7 +122,10 @@ async function createControlledDoc (
   seqNumber: number,
   path: Ref<DocumentMeta>[] = [],
   docClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument,
-  content: Ref<Blob> | null
+  content: Ref<Blob> | null,
+  docMetaId?: Ref<DocumentMeta>,
+  projectMetaId?: Ref<ProjectMeta>,
+  projectDocId?: Ref<ProjectDocument>
 ): Promise<{ seqNumber: number, success: boolean }> {
   const projectId = project ?? documents.ids.NoProject
 
@@ -131,36 +140,37 @@ async function createControlledDoc (
     code: spec.code
   })
 
-  const metaId = await ops.createDoc(documents.class.DocumentMeta, space, {
+  const createdDocMetaId = await ops.createDoc(documents.class.DocumentMeta, space, {
     documents: 0,
     title: `${prefix}-${seqNumber} ${spec.title}`
-  })
+  }, docMetaId)
 
-  const projectMetaId = await ops.createDoc(documents.class.ProjectMeta, space, {
+  const createdProjectMetaId = await ops.createDoc(documents.class.ProjectMeta, space, {
     project: projectId,
-    meta: metaId,
+    meta: createdDocMetaId,
     path,
     parent: path[0] ?? documents.ids.NoParent,
     documents: 0
-  })
+  }, projectMetaId)
 
   await client.addCollection(
     documents.class.ProjectDocument,
     space,
-    projectMetaId,
+    createdProjectMetaId,
     documents.class.ProjectMeta,
     'documents',
     {
       project: projectId,
       initial: projectId,
       document: documentId
-    }
+    },
+    projectDocId
   )
 
   await ops.addCollection(
     docClass,
     space,
-    metaId,
+    createdDocMetaId,
     documents.class.DocumentMeta,
     'documents',
     {
@@ -189,7 +199,10 @@ export async function createDocumentTemplate (
   prefix: string,
   spec: Omit<AttachedData<ControlledDocument>, 'prefix'>,
   category: Ref<DocumentCategory>,
-  author?: Ref<Employee>
+  author?: Ref<Employee>,
+  docMetaId?: Ref<DocumentMeta>,
+  projectMetaId?: Ref<ProjectMeta>,
+  projectDocId?: Ref<ProjectDocument>
 ): Promise<{ seqNumber: number, success: boolean }> {
   const projectId = project ?? documents.ids.NoProject
 
@@ -226,36 +239,37 @@ export async function createDocumentTemplate (
     docPrefix: prefix
   })
 
-  const metaId = await ops.createDoc(documents.class.DocumentMeta, space, {
+  const createdDocMetaId = await ops.createDoc(documents.class.DocumentMeta, space, {
     documents: 0,
     title: `${TEMPLATE_PREFIX}-${seqNumber} ${spec.title}`
-  })
+  }, docMetaId)
 
-  const projectMetaId = await ops.createDoc(documents.class.ProjectMeta, space, {
+  const createdProjectMetaId = await ops.createDoc(documents.class.ProjectMeta, space, {
     project: projectId,
-    meta: metaId,
+    meta: createdDocMetaId,
     path,
     parent: path[0] ?? documents.ids.NoParent,
     documents: 0
-  })
+  }, projectMetaId)
 
   await client.addCollection(
     documents.class.ProjectDocument,
     space,
-    projectMetaId,
+    createdProjectMetaId,
     documents.class.ProjectMeta,
     'documents',
     {
       project: projectId,
       initial: projectId,
       document: templateId
-    }
+    },
+    projectDocId
   )
 
   await ops.addCollection<DocumentMeta, HierarchyDocument>(
     _class,
     space,
-    metaId,
+    createdDocMetaId,
     documents.class.DocumentMeta,
     'documents',
     {
