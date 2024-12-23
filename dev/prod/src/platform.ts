@@ -256,7 +256,6 @@ export async function configurePlatform() {
         if (err.message.includes('Loading chunk') && i != 4) {
           continue
         }
-        Analytics.handleError(err)
         location.reload()
       }
     }

@@ -964,7 +964,6 @@ export async function backup (
             break
           }
         } catch (err: any) {
-          console.error(err)
           ctx.error('failed to load chunks', { error: err })
           if (idx !== undefined) {
             await ctx.with('closeChunk', {}, async () => {
