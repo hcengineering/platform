@@ -41,7 +41,7 @@ import {
 import { type Logger } from '../importer/logger'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 import { type FileUploader } from '../importer/uploader'
-import documents, { DocumentState, DocumentCategory, DocumentTemplate, ControlledDocument } from '@hcengineering/controlled-documents'
+import documents, { DocumentState, DocumentCategory, ControlledDocument, DocumentMeta } from '@hcengineering/controlled-documents'
 
 interface UnifiedComment {
   author: string
@@ -317,6 +317,7 @@ export class UnifiedFormatImporter {
   private readonly pathById = new Map<Ref<Doc>, string>()
   private readonly refMetaByPath = new Map<string, ReferenceMetadata>()
   private readonly attachMetaByPath = new Map<string, AttachmentMetadata>()
+  private readonly ctrlDocTemplateIdByPath = new Map<string, Ref<ControlledDocument>>()
 
   private personsByName = new Map<string, Ref<Person>>()
   private accountsByEmail = new Map<string, Ref<PersonAccount>>()
@@ -607,42 +608,43 @@ export class UnifiedFormatImporter {
         continue
       }
 
-      if (docHeader.class === documents.class.ControlledDocument) {
-        const docMeta: ReferenceMetadata = {
-          id: generateId<ControlledDocument>(),
-          class: documents.class.ControlledDocument,
-          refTitle: docHeader.title
-        }
-        this.pathById.set(docMeta.id, docPath)
-        this.refMetaByPath.set(docPath, docMeta)
-
-        const doc = await this.processControlledDocument(docHeader as UnifiedControlledDocumentHeader, docPath, docMeta.id as Ref<ControlledDocument>)
-        builder.addControlledDocument(spacePath, docPath, doc, parentDocPath)
-
-        const subDir = path.join(currentPath, docFile.replace('.md', ''))
-        if (fs.existsSync(subDir) && fs.statSync(subDir).isDirectory()) {
-          await this.processControlledDocumentsRecursively(builder, spacePath, subDir, docPath)
-        }
-      } else if (docHeader.class === documents.mixin.DocumentTemplate) {
-        if (!this.refMetaByPath.has(docPath)) {
-          const meta: ReferenceMetadata = {
-            id: generateId<DocumentTemplate>(),
-            class: documents.mixin.DocumentTemplate,
-            refTitle: docHeader.title
-          }
-          this.pathById.set(meta.id, docPath)
-          this.refMetaByPath.set(docPath, meta)
-        }
-        const templateMeta = this.refMetaByPath.get(docPath)
-        const template = await this.processControlledDocumentTemplate(docHeader as UnifiedDocumentTemplateHeader, docPath, templateMeta?.id as Ref<ControlledDocument>)
-        builder.addControlledDocumentTemplate(spacePath, docPath, template, parentDocPath)
-
-        const subDir = path.join(currentPath, docFile.replace('.md', ''))
-        if (fs.existsSync(subDir) && fs.statSync(subDir).isDirectory()) {
-          await this.processControlledDocumentsRecursively(builder, spacePath, subDir, docPath)
-        }
-      } else {
+      if (docHeader.class !== documents.class.ControlledDocument && docHeader.class !== documents.mixin.DocumentTemplate) {
         throw new Error(`Unknown document class ${docHeader.class} in ${docFile}`)
+      }
+
+      const documentMetaId = generateId<DocumentMeta>()
+      const refMeta: ReferenceMetadata = {
+        id: documentMetaId,
+        class: documents.class.DocumentMeta,
+        refTitle: docHeader.title
+      }
+      this.refMetaByPath.set(docPath, refMeta)
+
+      if (docHeader.class === documents.class.ControlledDocument) {
+        const docId = generateId<ControlledDocument>()
+        this.pathById.set(docId, docPath)
+
+        const doc = await this.processControlledDocument(docHeader as UnifiedControlledDocumentHeader, docPath, docId, documentMetaId)
+        builder.addControlledDocument(spacePath, docPath, doc, parentDocPath)
+      } else {
+        if (!this.ctrlDocTemplateIdByPath.has(docPath)) {
+          const templateId = generateId<ControlledDocument>()
+          this.ctrlDocTemplateIdByPath.set(docPath, templateId)
+          this.pathById.set(templateId, docPath)
+        }
+
+        const templateId = this.ctrlDocTemplateIdByPath.get(docPath)
+        if (templateId === undefined) {
+          throw new Error(`Template ID not found: ${docPath}`)
+        }
+
+        const template = await this.processControlledDocumentTemplate(docHeader as UnifiedDocumentTemplateHeader, docPath, templateId, documentMetaId)
+        builder.addControlledDocumentTemplate(spacePath, docPath, template, parentDocPath)
+      }
+
+      const subDir = path.join(currentPath, docFile.replace('.md', ''))
+      if (fs.existsSync(subDir) && fs.statSync(subDir).isDirectory()) {
+        await this.processControlledDocumentsRecursively(builder, spacePath, subDir, docPath)
       }
     }
   }
@@ -728,7 +730,8 @@ export class UnifiedFormatImporter {
   private async processControlledDocument (
     header: UnifiedControlledDocumentHeader,
     docPath: string,
-    id?: Ref<ControlledDocument>
+    id: Ref<ControlledDocument>,
+    docMetaId: Ref<DocumentMeta>
   ): Promise<ImportControlledDocument> {
     const codeMatch = path.basename(docPath).match(/^\[([^\]]+)\]/)
 
@@ -743,27 +746,23 @@ export class UnifiedFormatImporter {
       throw new Error(`Template file not found: ${templatePath}`)
     }
 
-    if (!this.refMetaByPath.has(templatePath)) {
-      const templateMeta = {
-        id: generateId<DocumentTemplate>(),
-        class: documents.mixin.DocumentTemplate,
-        refTitle: path.basename(templatePath)
-      }
-      this.refMetaByPath.set(templatePath, templateMeta)
-      this.pathById.set(templateMeta.id, templatePath)
+    if (!this.ctrlDocTemplateIdByPath.has(templatePath)) {
+      const templateId = generateId<ControlledDocument>()
+      this.ctrlDocTemplateIdByPath.set(templatePath, templateId)
+      this.pathById.set(templateId, templatePath)
     }
 
-    // todo: might not be exists yet, may be pass to the builder?
-    const template = this.refMetaByPath.get(templatePath)
-    if (template?.class !== documents.mixin.DocumentTemplate) {
-      throw new Error(`Template is not a controlled document template: ${template?.class}`)
+    const templateId = this.ctrlDocTemplateIdByPath.get(templatePath)
+    if (templateId === undefined) {
+      throw new Error(`Template ID not found: ${templatePath}`)
     }
 
     return {
-      id: id as Ref<ControlledDocument>,
+      id,
+      docMetaId,
       class: documents.class.ControlledDocument,
       title: header.title,
-      template: template?.id as Ref<ControlledDocument>, // todo: test (it was Ref<DocumentTemplate>)
+      template: templateId,
       code: codeMatch?.[1],
       major: 0,
       minor: 1,
@@ -785,7 +784,8 @@ export class UnifiedFormatImporter {
   private async processControlledDocumentTemplate (
     header: UnifiedDocumentTemplateHeader,
     docPath: string,
-    id?: Ref<ControlledDocument>
+    id: Ref<ControlledDocument>,
+    docMetaId: Ref<DocumentMeta>
   ): Promise<ImportControlledDocumentTemplate> {
     const author = this.findEmployeeByName(header.author)
     const owner = this.findEmployeeByName(header.owner)
@@ -795,7 +795,8 @@ export class UnifiedFormatImporter {
 
     const codeMatch = path.basename(docPath).match(/^\[([^\]]+)\]/)
     return {
-      id: id as Ref<ControlledDocument>,
+      id,
+      docMetaId,
       class: documents.mixin.DocumentTemplate,
       title: header.title,
       docPrefix: header.docPrefix,

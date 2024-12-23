@@ -171,7 +171,8 @@ export interface ImportOrgSpace extends ImportSpace<ImportControlledDoc> {
 }
 
 export interface ImportControlledDocumentTemplate extends ImportDoc {
-  id: Ref<ControlledDocument> // todo: change to Ref<ControlledDocument> ?
+  id: Ref<ControlledDocument>
+  docMetaId: Ref<DocumentMeta>
   class: Ref<Class<Document>>
   docPrefix: string
   code?: string
@@ -193,6 +194,7 @@ export interface ImportControlledDocumentTemplate extends ImportDoc {
 
 export interface ImportControlledDocument extends ImportDoc {
   id: Ref<ControlledDocument>
+  docMetaId: Ref<DocumentMeta>
   class: Ref<Class<ControlledDocument>>
   template: Ref<ControlledDocument> // todo: test (it was Ref<DocumentTemplate>)
   code?: string
