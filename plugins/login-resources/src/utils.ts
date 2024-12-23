@@ -16,7 +16,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import { AccountRole, concatLink, type BaseWorkspaceInfo, type Doc, type Ref } from '@hcengineering/core'
 import { loginId, type LoginInfo, type OtpInfo, type Workspace, type WorkspaceLoginInfo } from '@hcengineering/login'
-import {
+import platform, {
   OK,
   PlatformError,
   Severity,
@@ -1058,6 +1058,10 @@ export async function restorePassword (token: string, password: string): Promise
 }
 
 async function handleStatusError (message: string, err: Status): Promise<void> {
+  if (err.code === platform.status.InvalidPassword || err.code === platform.status.AccountNotFound) {
+    // No need to send to analytics
+    return
+  }
   const label = await translate(err.code, err.params, 'en')
   Analytics.handleError(new Error(`${message}: ${label}`))
 }
