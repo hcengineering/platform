@@ -2637,6 +2637,12 @@ function wrap (
             error: new Status(Severity.ERROR, platform.status.Unauthorized, {})
           }
         }
+        if (status.code === platform.status.InvalidPassword || status.code === platform.status.AccountNotFound) {
+          ctx.warn('error', { status: status.code, err: err.message })
+          return {
+            error: status
+          }
+        }
         if (status.code === platform.status.InternalServerError) {
           Analytics.handleError(err)
           ctx.error('error', { status, err })

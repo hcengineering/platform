@@ -50,10 +50,11 @@ import core, {
 } from '@hcengineering/core'
 import platform, {
   PlatformError,
+  Severity,
+  Status,
   UNAUTHORIZED,
   broadcastEvent,
-  getMetadata,
-  unknownError
+  getMetadata
 } from '@hcengineering/platform'
 
 import { HelloRequest, HelloResponse, RPCHandler, ReqId, type Response } from '@hcengineering/rpc'
@@ -551,7 +552,7 @@ class Connection implements ClientConnection {
   }): Promise<any> {
     return this.ctx.newChild('send-request', {}).with(data.method, {}, async (ctx) => {
       if (this.closed) {
-        throw new PlatformError(unknownError('connection closed'))
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.ConnectionClosed, {}))
       }
 
       if (data.once === true) {
