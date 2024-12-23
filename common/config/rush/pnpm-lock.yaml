@@ -42,11 +42,11 @@ dependencies:
     specifier: ^5.0.0
     version: 5.0.0
   '@livekit/krisp-noise-filter':
-    specifier: ~0.2.1
-    version: 0.2.2(livekit-client@2.2.0)
+    specifier: ~0.2.13
+    version: 0.2.13(livekit-client@2.7.5)
   '@livekit/track-processors':
-    specifier: ~0.3.1
-    version: 0.3.2(livekit-client@2.2.0)
+    specifier: ~0.3.3
+    version: 0.3.3(livekit-client@2.7.5)
   '@octokit/types':
     specifier: ^12.0.0
     version: 12.6.0
@@ -1710,8 +1710,8 @@ dependencies:
     specifier: ^1.9.46
     version: 1.10.56
   livekit-client:
-    specifier: ^2.0.10
-    version: 2.2.0
+    specifier: ^2.7.5
+    version: 2.7.5
   livekit-server-sdk:
     specifier: ^2.0.10
     version: 2.6.0
@@ -4782,18 +4782,16 @@ packages:
     resolution: {integrity: sha512-GlM2AbzrErd/TmLL3E8hAHmb5Q7VhDJp35vIbyPVA5Rz55LZuRr8pwL3qrwwkVNo05gMX1J44gURKb4MHQZo7w==}
     dev: false
 
-  /@livekit/krisp-noise-filter@0.2.2(livekit-client@2.2.0):
-    resolution: {integrity: sha512-jGAxvw07+6jF3iU7jEeZ6dnr2c2nSIW3J9zt18KM+dwVsLpLNAfFchlwUStpJEmQoDhw9sQgRSOOKpqHcjj7GQ==}
+  /@livekit/krisp-noise-filter@0.2.13(livekit-client@2.7.5):
+    resolution: {integrity: sha512-41+NgOIoKsbcIG60f1Hyj4m3zPHIiq7R8HV4pfCUSgr/hnshDIbV0d53Dy/2xqBnXEPCoIbTvFRb8vBllEmYCQ==}
     peerDependencies:
       livekit-client: ^2.0.8
     dependencies:
-      livekit-client: 2.2.0
+      livekit-client: 2.7.5
     dev: false
 
-  /@livekit/protocol@1.16.0:
-    resolution: {integrity: sha512-xZZTZVh2FmWmUgNS3n+oGNbA4GcS4XOwhg8CWy75jenYxbgQ89ds7ixfMQ+F+oxktcXfJ1qsph086oRTlg8e5Q==}
-    dependencies:
-      '@bufbuild/protobuf': 1.10.0
+  /@livekit/mutex@1.0.0:
+    resolution: {integrity: sha512-aiUhoThBNF9UyGTxEURFzJLhhPLIVTnQiEVMjRhPnfHNKLfo2JY9xovHKIus7B78UD5hsP6DlgpmAsjrz4U0Iw==}
     dev: false
 
   /@livekit/protocol@1.19.1:
@@ -4802,14 +4800,20 @@ packages:
       '@bufbuild/protobuf': 1.10.0
     dev: false
 
-  /@livekit/track-processors@0.3.2(livekit-client@2.2.0):
-    resolution: {integrity: sha512-4JUCzb7yIKoVsTo8J6FTzLZJHcI6DihfX/pGRDg0SOGaxprcDPrt8jaDBBTsnGBSXHeMxl2ugN+xQjdCWzLKEA==}
+  /@livekit/protocol@1.29.4:
+    resolution: {integrity: sha512-dsqxvABHilrMA0BU5m1w8cMWSVeDjV2ZUIUDClNQZju3c30DLMfEYDHU5nmXDfaaHjNIgoRbYR7upJMozG8JJg==}
+    dependencies:
+      '@bufbuild/protobuf': 1.10.0
+    dev: false
+
+  /@livekit/track-processors@0.3.3(livekit-client@2.7.5):
+    resolution: {integrity: sha512-C5mBWe34ie0pfhCf9zAD65D26ZytzW/xGrj8Zc1BGh5kLISFDVQlefO78LZWw9K5saTamk60O4fzSCKqWMPMLA==}
     peerDependencies:
       livekit-client: ^1.12.0 || ^2.1.0
     dependencies:
       '@mediapipe/holistic': 0.5.1675471629
       '@mediapipe/tasks-vision': 0.10.9
-      livekit-client: 2.2.0
+      livekit-client: 2.7.5
     dev: false
 
   /@malept/cross-spawn-promise@2.0.0:
@@ -8537,7 +8541,7 @@ packages:
     resolution: {integrity: sha512-x1FCFnFifvYDDzTaLII71vG5uvDwgtmDTEVWAxrgeiR8VjMONcCXJx7E+USjDtHlwFmt9MysbqgF9b9Vjr6w+w==}
     engines: {node: '>=4'}
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.7.0
     dev: false
 
   /astral-regex@2.0.0:
@@ -9265,7 +9269,7 @@ packages:
     resolution: {integrity: sha512-XKxXAC3HVPv7r674zP0VC3RTXz+/JKhfyw94ljvF80yynK6VkTnqE3jMuN8b3dUVmmc43TjyxjW4KTsmB3c86g==}
     dependencies:
       debug: 4.4.0
-      tslib: 2.6.2
+      tslib: 2.7.0
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -15378,17 +15382,18 @@ packages:
     resolution: {integrity: sha512-auMesunaJ8yfkHvK4gfg1K0SaKX/6Wn9g2Aac/NwX+l5VdmFZzo/hdPGxEOETj+ryRa4/fiOPjeeKURSAJx1sg==}
     dev: false
 
-  /livekit-client@2.2.0:
-    resolution: {integrity: sha512-Iuk17l269P7SxvE3Gs3ExwoW3+lrz3BfiXOU7gTf/GqansxPx7Y+rfkLHWSBmvmAXOt+Rld4EFEpk8ARSagfnQ==}
+  /livekit-client@2.7.5:
+    resolution: {integrity: sha512-sPhHYwXvG75y1LDC50dDC9k6Z49L2vc/HcMRhzhi7yBca6ofPEebpB0bmPOry4ovrnFA+a8TL1pFR2mko1/clw==}
     dependencies:
-      '@livekit/protocol': 1.16.0
+      '@livekit/mutex': 1.0.0
+      '@livekit/protocol': 1.29.4
       events: 3.3.0
       loglevel: 1.9.1
       sdp-transform: 2.14.2
       ts-debounce: 4.0.0
-      tslib: 2.6.2
+      tslib: 2.7.0
       typed-emitter: 2.1.0
-      webrtc-adapter: 8.2.3
+      webrtc-adapter: 9.0.1
     dev: false
 
   /livekit-server-sdk@2.6.0:
@@ -15642,7 +15647,7 @@ packages:
   /lower-case@2.0.2:
     resolution: {integrity: sha512-7fm3l3NAF9WfN6W3JOmf5drwpVqX78JtoGJ3A6W0a6ZnldM41w2fV5D490psKFTpMds8TJse/eHLFFsNHHjHgg==}
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.7.0
     dev: false
 
   /lowercase-keys@2.0.0:
@@ -16477,7 +16482,7 @@ packages:
     resolution: {integrity: sha512-fgAN3jGAh+RoxUGZHTSOLJIqUc2wmoBwGR4tbpNAKmmovFoWq0OdRkb0VkldReO2a2iBT/OEulG9XSUc10r3zg==}
     dependencies:
       lower-case: 2.0.2
-      tslib: 2.6.2
+      tslib: 2.7.0
     dev: false
 
   /node-abi@3.55.0:
@@ -18661,7 +18666,7 @@ packages:
     resolution: {integrity: sha512-AA3TVj+0A2iuIoQkWEK/tqFjBq2j+6PO6Y0zJcvzLAFhEFIO3HL0vls9hWLncZbAAbK0mar7oZ4V079I/qPMxg==}
     requiresBuild: true
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.7.0
     dev: false
     optional: true
 
@@ -20609,6 +20614,10 @@ packages:
     resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
     dev: false
 
+  /tslib@2.7.0:
+    resolution: {integrity: sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==}
+    dev: false
+
   /tsscmp@1.0.6:
     resolution: {integrity: sha512-LxhtAkPDTkVCMQjt2h6eBVY28KCjikZqZfMcC15YBeNjkgUpdCfBu5HoiOTDu86v6smE8yOjyEktJ8hlbANHQA==}
     engines: {node: '>=0.6.x'}
@@ -21371,8 +21380,8 @@ packages:
       - uglify-js
     dev: false
 
-  /webrtc-adapter@8.2.3:
-    resolution: {integrity: sha512-gnmRz++suzmvxtp3ehQts6s2JtAGPuDPjA1F3a9ckNpG1kYdYuHWYpazoAnL9FS5/B21tKlhkorbdCXat0+4xQ==}
+  /webrtc-adapter@9.0.1:
+    resolution: {integrity: sha512-1AQO+d4ElfVSXyzNVTOewgGT/tAomwwztX/6e3totvyyzXPvXIIuUUjAmyZGbKBKbZOXauuJooZm3g6IuFuiNQ==}
     engines: {node: '>=6.0.0', npm: '>=3.10.0'}
     dependencies:
       sdp: 3.2.0
@@ -23937,7 +23946,7 @@ packages:
     dev: false
 
   file:projects/desktop.tgz(bufferutil@4.0.8)(sass@1.71.1)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-A11ToahoSZULhHUbTgjKyyMHDZ68BplLHTrHKKiOkZBooPhGcJZJsOLIMKNjJ5+rT+aQDeiSMFMl+2cfaeuh0A==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-dsC1AXo6G2w4mUGwtojyf7fmfs+/DtOZZ+BtgCQOlkvIJUCe2Ff8JiFgn78jAEz9tArOd553ctBfIxRIR/SiEw==, tarball: file:projects/desktop.tgz}
     id: file:projects/desktop.tgz
     name: '@rush-temp/desktop'
     version: 0.0.0
@@ -23973,7 +23982,7 @@ packages:
       file-loader: 6.2.0(webpack@5.97.1)
       fork-ts-checker-webpack-plugin: 9.0.2(typescript@5.3.3)(webpack@5.97.1)
       html-webpack-plugin: 5.6.0(webpack@5.97.1)
-      livekit-client: 2.2.0
+      livekit-client: 2.7.5
       mini-css-extract-plugin: 2.8.0(webpack@5.97.1)
       node-loader: 2.0.0(webpack@5.97.1)
       postcss: 8.4.35
@@ -25547,13 +25556,13 @@ packages:
     dev: false
 
   file:projects/love-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-dWrQ7MUtar6HnPE52l/G6rANBTPCKOs7mnI23PYyBiiKi2x7Gvs3rpFYiAF3lpTTxK5B5TZ/DThx0/YMylj5Fg==, tarball: file:projects/love-resources.tgz}
+    resolution: {integrity: sha512-xbjsBbX7ymXpU9Ua0cPKMevznsVwwejZYcFPmRpW+1WY1Kxy0pQcuGr+nV8qYSmqQa1g3RJMHTZLT/3RmohFBQ==, tarball: file:projects/love-resources.tgz}
     id: file:projects/love-resources.tgz
     name: '@rush-temp/love-resources'
     version: 0.0.0
     dependencies:
-      '@livekit/krisp-noise-filter': 0.2.2(livekit-client@2.2.0)
-      '@livekit/track-processors': 0.3.2(livekit-client@2.2.0)
+      '@livekit/krisp-noise-filter': 0.2.13(livekit-client@2.7.5)
+      '@livekit/track-processors': 0.3.3(livekit-client@2.7.5)
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
@@ -25564,7 +25573,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      livekit-client: 2.2.0
+      livekit-client: 2.7.5
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
       sass: 1.71.1
