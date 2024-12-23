@@ -2,10 +2,11 @@
 // Copyright © 2023 Hardcore Engineering Inc.
 //
 
-import { Branding, TxOperations, WorkspaceIdWithUrl } from '@hcengineering/core'
+import { Branding, generateId, TxOperations, WorkspaceIdWithUrl } from '@hcengineering/core'
 import { MarkupMarkType, MarkupNode, MarkupNodeType, traverseMarkupNode } from '@hcengineering/text'
 import { getPublicLink } from '@hcengineering/server-guest-resources'
 import { Task } from '@hcengineering/task'
+import { generateToken } from '@hcengineering/server-token'
 
 const githubLinkText = process.env.LINK_TEXT ?? 'Huly&reg;:'
 
@@ -54,6 +55,7 @@ export async function appendGuestLink (
   const publicLink = await getPublicLink(doc, client, workspace, false, branding)
   await stripGuestLink(markdown)
   appendGuestLinkToModel(markdown, publicLink, doc.identifier)
+  appendGuestLinkToImage(markdown, workspace)
 }
 
 export function appendGuestLinkToModel (markdown: MarkupNode, publicLink: string, identifier: string): void {
@@ -75,4 +77,35 @@ export function appendGuestLinkToModel (markdown: MarkupNode, publicLink: string
       ]
     }
   ]
+}
+
+function findImageTags (node: MarkupNode): MarkupNode[] {
+  if (node.type === MarkupNodeType.paragraph) {
+    return node.content?.flatMap(findImageTags) ?? []
+  }
+  if (node.type === MarkupNodeType.image) {
+    return [node]
+  }
+  return []
+}
+
+export function appendGuestLinkToImage (
+  markdown: MarkupNode,
+  workspace: WorkspaceIdWithUrl
+): void {
+  const imageTags: MarkupNode[] = markdown.content?.flatMap(findImageTags) ?? []
+
+  if (imageTags.length === 0) {
+    return
+  }
+
+  const id = generateId()
+  const token = generateToken(id, workspace, { linkId: id, guest: 'true' })
+
+  for (const imageTag of imageTags) {
+    const src = imageTag.attrs?.src
+    if (src !== undefined && imageTag.attrs !== undefined) {
+      imageTag.attrs.token = token
+    }
+  }
 }

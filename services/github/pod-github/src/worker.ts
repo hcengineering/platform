@@ -191,7 +191,7 @@ export class GithubWorker implements IntegrationManager {
       text ?? '',
       concatLink(this.getBranding()?.front ?? config.FrontURL, `/browse/?workspace=${this.workspace.name}`),
       // TODO storage URL
-      concatLink(this.getBranding()?.front ?? config.FrontURL, `/files?workspace=${this.workspace.name}&file=`),
+      concatLink(this.getBranding()?.front ?? config.FrontURL, `/files/${this.workspace.name}/`),
       preprocessor
     )
   }
