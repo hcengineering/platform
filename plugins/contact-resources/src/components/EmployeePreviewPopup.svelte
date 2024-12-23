@@ -14,8 +14,6 @@
 
   export let employeeId: Ref<Employee>
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
   let employee: Employee | undefined = undefined

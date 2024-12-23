@@ -32,7 +32,6 @@
   export let showFilter = true
 
   const allId = activity.ids.AllFilter
-  const client = getClient()
 
   let filtered: ActivityMessage[]
   let filters: ActivityMessagesFilter[] = []
@@ -47,21 +46,23 @@
   $: localStorage.setItem('activity-filter', JSON.stringify(selectedFiltersRefs))
   $: localStorage.setItem('activity-newest-first', JSON.stringify(isNewestFirst))
 
-  void client.findAll(activity.class.ActivityMessagesFilter, {}).then((res) => {
-    filters = res
+  void getClient()
+    .findAll(activity.class.ActivityMessagesFilter, {})
+    .then((res) => {
+      filters = res
 
-    if (saved !== null && saved !== undefined) {
-      const temp: Ref<ActivityMessagesFilter>[] | Ref<ActivityMessagesFilter> = JSON.parse(saved)
-      if (temp !== allId && Array.isArray(temp)) {
-        selectedFiltersRefs = temp.filter((it) => filters.findIndex((f) => it === f._id) > -1)
-        if (selectedFiltersRefs.length === 0) {
+      if (saved !== null && saved !== undefined) {
+        const temp: Ref<ActivityMessagesFilter>[] | Ref<ActivityMessagesFilter> = JSON.parse(saved)
+        if (temp !== allId && Array.isArray(temp)) {
+          selectedFiltersRefs = temp.filter((it) => filters.findIndex((f) => it === f._id) > -1)
+          if (selectedFiltersRefs.length === 0) {
+            selectedFiltersRefs = allId
+          }
+        } else {
           selectedFiltersRefs = allId
         }
-      } else {
-        selectedFiltersRefs = allId
       }
-    }
-  })
+    })
 
   const handleOptions = (ev: MouseEvent): void => {
     showPopup(

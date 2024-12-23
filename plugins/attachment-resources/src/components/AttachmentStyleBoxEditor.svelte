@@ -28,7 +28,6 @@
   export let placeholder: IntlString
   export let focusIndex = -1
   export let boundary: HTMLElement | undefined = undefined
-  const client = getClient()
 
   const queryClient = createQuery()
 
@@ -45,7 +44,7 @@
     is to check if object class and object id changed.
   */
   $: if (object && (object._id !== prevObjectId || object._class !== prevObjectClass)) {
-    description = getAttribute(client, object, key)
+    description = getAttribute(getClient(), object, key)
     prevObjectId = object._id
     prevObjectClass = object._class
   }
@@ -59,7 +58,7 @@
       if (result.length > 0) {
         if (!haveUnsavedChanges) {
           const doc = result[0]
-          description = getAttribute(client, doc, key)
+          description = getAttribute(getClient(), doc, key)
         }
       }
     })
@@ -73,6 +72,7 @@
     if (!object) {
       return
     }
+    const client = getClient()
 
     descriptionBox.createAttachments()
 
@@ -135,6 +135,7 @@
     {boundary}
     on:open-document={async (event) => {
       save(object, description)
+      const client = getClient()
       const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
       if (doc != null) {
         const location = await getObjectLinkFragment(client.getHierarchy(), doc, {}, view.component.EditDoc)

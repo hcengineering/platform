@@ -36,18 +36,19 @@
     return -1
   }
 
-  const client = getClient()
-  client.findAll(contact.class.ChannelProvider, {}).then((result) => {
-    providers = result
-    for (const provider of providers) {
-      const i = findValue(provider._id)
-      if (i !== -1) {
-        newValues.push({ ...values[i] })
-      } else {
-        newValues.push({ provider: provider._id, value: '' })
+  void getClient()
+    .findAll(contact.class.ChannelProvider, {})
+    .then((result) => {
+      providers = result
+      for (const provider of providers) {
+        const i = findValue(provider._id)
+        if (i !== -1) {
+          newValues.push({ ...values[i] })
+        } else {
+          newValues.push({ provider: provider._id, value: '' })
+        }
       }
-    }
-  })
+    })
 
   function filterUndefined (channels: AttachedData<Channel>[]): AttachedData<Channel>[] {
     return channels.filter((channel) => channel.value !== undefined && channel.value.length > 0)

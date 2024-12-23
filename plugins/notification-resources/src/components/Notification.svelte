@@ -16,9 +16,6 @@
   export let notification: PlatformNotification
   export let onRemove: () => void
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
   $: value = notification.params?.value as BrowserNotification
 
   $: senderAccount =
@@ -27,6 +24,8 @@
 
   async function openChannelInSidebar (): Promise<void> {
     if (!value.onClickLocation) return
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
     const { onClickLocation } = value
     let _id: Ref<Doc> | undefined = value.objectId
     let _class: Ref<Class<Doc>> | undefined = value.objectClass

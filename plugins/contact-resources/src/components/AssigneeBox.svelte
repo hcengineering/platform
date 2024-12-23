@@ -75,11 +75,9 @@
   let selected: Person | undefined
   let container: HTMLElement
 
-  const client = getClient()
-
   const updateSelected = reduceCalls(async function (value: Ref<Person> | null | undefined) {
     selected = value
-      ? $personByIdStore.get(value) ?? (await client.findOne(contact.class.Person, { _id: value }))
+      ? $personByIdStore.get(value) ?? (await getClient().findOne(contact.class.Person, { _id: value }))
       : undefined
   })
 
@@ -135,7 +133,7 @@
       class="w-full h-full flex-streatch"
       on:click={_click}
       use:tooltip={selected !== undefined
-        ? { label: getEmbeddedLabel(getName(client.getHierarchy(), selected)) }
+        ? { label: getEmbeddedLabel(getName(getClient().getHierarchy(), selected)) }
         : undefined}
     >
       <slot name="content" />
@@ -174,14 +172,14 @@
             ? `calc(${width ?? 'min-content'} - 1.5rem)`
             : `${width ?? 'min-content'}`}
           use:tooltip={selected !== undefined
-            ? { label: getEmbeddedLabel(getName(client.getHierarchy(), selected)) }
+            ? { label: getEmbeddedLabel(getName(getClient().getHierarchy(), selected)) }
             : undefined}
         >
           {#if selected}
             {#if hideIcon || selected}
               <UserInfo value={selected} size={avatarSize} {icon} {short} on:accent-color />
             {:else}
-              {getName(client.getHierarchy(), selected)}
+              {getName(getClient().getHierarchy(), selected)}
             {/if}
           {:else}
             <div class="flex-presenter not-selected" class:cursor-default={readonly}>
@@ -202,7 +200,7 @@
             size={'small'}
             action={() => {
               if (selected) {
-                openDoc(client.getHierarchy(), selected)
+                void openDoc(getClient().getHierarchy(), selected)
               }
             }}
           />

@@ -71,10 +71,8 @@
   $: editable = hasAccountRole(me, AccountRole.Maintainer)
   $: rows = calculateFloorSize(rooms) - (cropped ? 1 : 0)
 
-  const client = getClient()
-
   async function remove (): Promise<void> {
-    await client.remove(floor)
+    await getClient().remove(floor)
   }
 
   function renameFloor (): void {

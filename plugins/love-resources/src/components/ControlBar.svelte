@@ -132,15 +132,16 @@
   }
 
   const me = (getCurrentAccount() as PersonAccount).person
-  const client = getClient()
 
-  const camKeys = client.getModel().findAllSync(view.class.Action, { _id: love.action.ToggleVideo })?.[0]?.keyBinding
-  const micKeys = client.getModel().findAllSync(view.class.Action, { _id: love.action.ToggleMic })?.[0]?.keyBinding
+  const camKeys = getClient()
+    .getModel()
+    .findAllSync(view.class.Action, { _id: love.action.ToggleVideo })?.[0]?.keyBinding
+  const micKeys = getClient().getModel().findAllSync(view.class.Action, { _id: love.action.ToggleMic })?.[0]?.keyBinding
 
   let actions: Action[] = []
   let moreItems: DropdownIntlItem[] = []
 
-  $: void getActions(client, room, love.class.Room).then((res) => {
+  $: void getActions(getClient(), room, love.class.Room).then((res) => {
     actions = res
   })
 

@@ -39,8 +39,6 @@
 
   export let channels: Channel[] | undefined = undefined
 
-  const client = getClient()
-
   const account = getCurrentAccount() as PersonAccount
 
   let avatarEditor: EditableAvatar
@@ -54,9 +52,11 @@
 
   let email: string | undefined
   $: if (editable) {
-    client.findOne(contact.class.PersonAccount, { person: (object as Employee)._id }).then((acc) => {
-      email = acc?.email
-    })
+    void getClient()
+      .findOne(contact.class.PersonAccount, { person: (object as Employee)._id })
+      .then((acc) => {
+        email = acc?.email
+      })
   }
 
   function setName (object: Person) {
@@ -92,7 +92,7 @@
       await avatarEditor.removeAvatar(object.avatar)
     }
     const avatar = await avatarEditor.createAvatar()
-    await client.diffUpdate(object, avatar)
+    await getClient().diffUpdate(object, avatar)
   }
 
   const manager = createFocusManager()

@@ -254,7 +254,7 @@
   )
 
   async function getHolidays (month: Date): Promise<Map<Ref<Department>, Date[]>> {
-    const result = await client.findAll(hr.class.PublicHoliday, {
+    const result = await getClient().findAll(hr.class.PublicHoliday, {
       'date.month': month.getMonth(),
       'date.year': month.getFullYear()
     })
@@ -269,11 +269,10 @@
     return rMap
   }
 
-  const client = getClient()
-
   async function getDepartmentsForEmployee (departmentStaff: Staff[]): Promise<Map<Ref<Staff>, Department[]>> {
     const map = new Map<Ref<Staff>, Department[]>()
     if (departmentStaff && departmentStaff.length > 0) {
+      const client = getClient()
       const ids = departmentStaff.map((staff) => staff._id)
       const staffs = await client.findAll(contact.class.PersonAccount, { person: { $in: ids } })
       const departments = await client.findAll(hr.class.Department, {

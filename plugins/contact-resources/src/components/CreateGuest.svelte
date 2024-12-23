@@ -40,7 +40,6 @@
   let saving: boolean = false
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   async function createPerson () {
     try {
@@ -52,6 +51,7 @@
         city: '',
         avatarType: AvatarType.COLOR
       }
+      const client = getClient()
 
       await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
 

@@ -107,9 +107,7 @@
   }
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-  fillDefaults(hierarchy, doc, recruit.class.Applicant)
+  fillDefaults(getClient().getHierarchy(), doc, recruit.class.Applicant)
 
   export function canClose (): boolean {
     return (preserveCandidate || _candidate === undefined) && assignee === undefined
@@ -119,6 +117,7 @@
     if (selectedState === undefined) {
       throw new Error(`Please select initial state:${_space}`)
     }
+    const client = getClient()
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Applicant })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
@@ -189,7 +188,7 @@
     action: Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
   ): Promise<Status> {
     const impl = await getResource(action)
-    return await impl({ ...doc, space: _space }, client)
+    return await impl({ ...doc, space: _space }, getClient())
   }
 
   async function validate (
@@ -201,6 +200,7 @@
     if (doc.attachedTo !== _candidate) {
       doc.attachedTo = _candidate
     }
+    const hierarchy = getClient().getHierarchy()
     const clazz = hierarchy.getClass(_class)
     const validatorMixin = hierarchy.as(clazz, view.mixin.ObjectValidator)
     if (validatorMixin?.validator != null) {

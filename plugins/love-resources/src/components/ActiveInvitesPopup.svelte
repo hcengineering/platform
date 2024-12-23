@@ -13,24 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Person } from '@hcengineering/contact'
-  import { Avatar, CombineAvatars, personByIdStore } from '@hcengineering/contact-resources'
+  import contact from '@hcengineering/contact'
+  import { CombineAvatars } from '@hcengineering/contact-resources'
+  import { Invite, RequestStatus } from '@hcengineering/love'
   import { getClient } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
-  import { Invite, RequestStatus } from '@hcengineering/love'
   import love from '../plugin'
-  import { Ref } from '@hcengineering/core'
 
   export let invites: Invite[]
 
   $: persons = invites.map((p) => p.target)
 
-  const client = getClient()
-
   async function cancel () {
     for (const invite of invites) {
       if (invite.status === RequestStatus.Pending) {
-        await client.remove(invite)
+        await getClient().remove(invite)
       }
     }
   }

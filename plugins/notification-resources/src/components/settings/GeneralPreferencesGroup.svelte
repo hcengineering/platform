@@ -22,8 +22,7 @@
   import { providersSettings } from '../../utils'
   import ProviderPreferences from './ProviderPreferences.svelte'
 
-  const client = getClient()
-  const providers = client
+  const providers = getClient()
     .getModel()
     .findAllSync(notification.class.NotificationProvider, {})
     .sort((provider1, provider2) => provider1.order - provider2.order)

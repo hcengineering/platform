@@ -1,5 +1,6 @@
 <script lang="ts">
   import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
+  import { Organization } from '@hcengineering/contact'
   import core, { Class, Doc, Mixin, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
@@ -16,7 +17,6 @@
     showMenu
   } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { Organization } from '@hcengineering/contact'
 
   import contact from '../plugin'
   import EditOrganization from './EditOrganization.svelte'
@@ -25,8 +25,6 @@
   export let embedded: boolean = false
   export let readonly: boolean = false
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const query = createQuery()
 
   const dispatch = createEventDispatcher()
@@ -45,7 +43,7 @@
 
   $: mixins = object ? getDocMixins(object, showAllMixins) : []
 
-  $: descriptionKey = client.getHierarchy().getAttribute(contact.class.Organization, 'description')
+  $: descriptionKey = getClient().getHierarchy().getAttribute(contact.class.Organization, 'description')
 
   $: getDocAttrsInfo(mixins, ignoreKeys, contact.class.Organization).then((res) => {
     editors = res.editors

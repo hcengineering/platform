@@ -28,8 +28,6 @@
 
   export let value: Resource
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
   let space: Ref<Drive> = value.space as Ref<Drive>
@@ -47,8 +45,8 @@
   }
 
   async function findChildren (resource: Resource): Promise<Array<Ref<Folder>>> {
-    if (hierarchy.isDerived(resource._class, drive.class.Folder)) {
-      const children = await client.findAll(
+    if (getClient().getHierarchy().isDerived(resource._class, drive.class.Folder)) {
+      const children = await getClient().findAll(
         drive.class.Folder,
         { space: resource.space, path: resource._id as Ref<Folder> },
         { projection: { _id: 1 } }

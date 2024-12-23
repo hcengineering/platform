@@ -35,8 +35,6 @@
 
   const dispatch = createEventDispatcher()
 
-  const client = getClient()
-
   const query = createQuery()
 
   function updateObject (_id: Ref<Funnel>): void {
@@ -50,7 +48,7 @@
   $: updateObject(_id)
 
   function onChange (key: string, value: any): void {
-    client.updateDoc(object._class, object.space, object._id, { [key]: value })
+    void getClient().updateDoc(object._class, object.space, object._id, { [key]: value })
   }
 </script>
 

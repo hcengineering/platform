@@ -48,8 +48,6 @@
   import { onDestroy } from 'svelte'
   import SettingsButton from './SettingsButton.svelte'
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const me = getCurrentAccount()
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
@@ -66,7 +64,7 @@
     labelIntl: notification.string.All
   }
 
-  const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
+  const linkProviders = getClient().getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
   let urlObjectId: Ref<Doc> | undefined = undefined
   let urlObjectClass: Ref<Class<Doc>> | undefined = undefined
@@ -200,7 +198,7 @@
         ({ attachedTo }) => attachedTo === selectedMessageId
       )?.$lookup?.attachedTo
       if (selectedMessage === undefined) {
-        selectedMessage = await client.findOne(activity.class.ActivityMessage, { _id: selectedMessageId })
+        selectedMessage = await getClient().findOne(activity.class.ActivityMessage, { _id: selectedMessageId })
       }
     }
   }
@@ -219,6 +217,8 @@
     const tabs: TabItem[] = []
 
     let messagesTab: TabItem | undefined = undefined
+
+    const hierarchy = getClient().getHierarchy()
 
     for (const _class of classes) {
       if (hierarchy.isDerived(_class, activity.class.ActivityMessage)) {
@@ -267,6 +267,7 @@
     void selectInboxContext(linkProviders, selectedContext, selectedNotification, event?.detail.object)
   }
   function isChunterChannel (selectedContext: DocNotifyContext, urlObjectClass?: Ref<Class<Doc>>): boolean {
+    const hierarchy = getClient().getHierarchy()
     const isActivityMessageContext = hierarchy.isDerived(selectedContext.objectClass, activity.class.ActivityMessage)
     const chunterClass = isActivityMessageContext
       ? urlObjectClass ?? selectedContext.objectClass

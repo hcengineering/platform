@@ -32,19 +32,18 @@
 
   function click () {
     if (visible) {
-      const editor = hierarchy.classHierarchyMixin<Doc, ObjectEditor>(event._class, view.mixin.ObjectEditor)
+      const editor = getClient()
+        .getHierarchy()
+        .classHierarchyMixin<Doc, ObjectEditor>(event._class, view.mixin.ObjectEditor)
       if (editor?.editor !== undefined) {
         showPopup(editor.editor, { object: event })
       }
     }
   }
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-  $: presenter = hierarchy.classHierarchyMixin<Doc, CalendarEventPresenter>(
-    event._class,
-    calendar.mixin.CalendarEventPresenter
-  )
+  $: presenter = getClient()
+    .getHierarchy()
+    .classHierarchyMixin<Doc, CalendarEventPresenter>(event._class, calendar.mixin.CalendarEventPresenter)
 
   let div: HTMLDivElement
 

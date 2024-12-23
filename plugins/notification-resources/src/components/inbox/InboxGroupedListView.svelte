@@ -32,7 +32,6 @@
   export let selectedContext: Ref<DocNotifyContext> | undefined
   export let archived = false
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const contextByIdStore = inboxClient.contextById
@@ -48,9 +47,11 @@
   let displayData: [Ref<DocNotifyContext>, DisplayInboxNotification[]][] = []
   let viewlets: ActivityNotificationViewlet[] = []
 
-  void client.findAll(notification.class.ActivityNotificationViewlet, {}).then((res) => {
-    viewlets = res
-  })
+  void getClient()
+    .findAll(notification.class.ActivityNotificationViewlet, {})
+    .then((res) => {
+      viewlets = res
+    })
 
   $: if (prevArchived !== archived) {
     prevArchived = archived

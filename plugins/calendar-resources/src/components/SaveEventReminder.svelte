@@ -23,7 +23,6 @@
   export let objectId: Ref<Event>
   export let objectClass: Ref<Class<Event>>
 
-  const client = getClient()
   const query = createQuery()
   query.query(objectClass, { _id: objectId }, (res) => {
     event = res[0]
@@ -44,7 +43,7 @@
       return
     }
 
-    await client.update(event, {
+    await getClient().update(event, {
       $push: {
         reminders: shift
       }

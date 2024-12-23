@@ -52,8 +52,6 @@
   const newSeparatorOffset = 150
 
   const me = getCurrentAccount()
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = inboxClient.contextByDoc
   const notificationsByContextStore = inboxClient.inboxNotificationsByContext
@@ -102,9 +100,9 @@
 
   $: messages = $messagesStore
   $: notifyContext = $contextByDocStore.get(doc._id)
-  $: isThread = hierarchy.isDerived(doc._class, activity.class.ActivityMessage)
-  $: isChunterSpace = hierarchy.isDerived(doc._class, chunter.class.ChunterSpace)
-  $: readonly = hierarchy.isDerived(channel._class, core.class.Space)
+  $: isThread = getClient().getHierarchy().isDerived(doc._class, activity.class.ActivityMessage)
+  $: isChunterSpace = getClient().getHierarchy().isDerived(doc._class, chunter.class.ChunterSpace)
+  $: readonly = getClient().getHierarchy().isDerived(channel._class, core.class.Space)
     ? readonly || (channel as Space).archived
     : readonly
 

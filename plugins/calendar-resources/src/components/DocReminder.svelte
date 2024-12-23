@@ -25,17 +25,14 @@
   export let value: Doc
   export let title: string | undefined
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
-  $: isEvent = hierarchy.isDerived(value._class, calendar.class.Event)
+  $: isEvent = getClient().getHierarchy().isDerived(value._class, calendar.class.Event)
 
   async function click (ev: Event): Promise<void> {
     if (isEvent) {
       showPopup(SaveEventReminder, { objectId: value._id, objectClass: value._class }, ev.target as HTMLElement)
     } else {
       const currentUser = getCurrentAccount() as PersonAccount
-      const current = await client.findOne(calendar.class.Event, {
+      const current = await getClient().findOne(calendar.class.Event, {
         attachedTo: value._id,
         participants: currentUser.person
       })

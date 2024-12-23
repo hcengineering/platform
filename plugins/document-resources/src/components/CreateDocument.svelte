@@ -51,7 +51,6 @@
   }
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   let _space = space
   let _parent = parent
@@ -75,7 +74,7 @@
   }
 
   async function create (): Promise<void> {
-    await createEmptyDocument(client, id, _space, _parent, object)
+    await createEmptyDocument(getClient(), id, _space, _parent, object)
     Analytics.handleEvent(DocumentEvents.DocumentCreated, { id, parent: _parent })
     dispatch('close', id)
   }

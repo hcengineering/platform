@@ -117,6 +117,9 @@
   }
 
   function onKeydown (e: KeyboardEvent): void {
+    if (e.key === undefined) {
+      return
+    }
     const key = e.key.toLowerCase()
     const target = e.target as HTMLInputElement
 

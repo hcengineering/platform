@@ -36,9 +36,6 @@
   export let withInput: boolean = true
   export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
   let dataProvider: ChannelDataProvider | undefined
 
   const unsubscribe = messageInFocus.subscribe((id) => {
@@ -66,7 +63,7 @@
 
   let refsLoaded = false
 
-  $: isDocChannel = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
+  $: isDocChannel = !getClient().getHierarchy().isDerived(object._class, chunter.class.ChunterSpace)
 
   $: void updateDataProvider(object._id, selectedMessageId)
 
@@ -74,7 +71,7 @@
     if (dataProvider === undefined) {
       const ctx =
         context ??
-        (await client.findOne(notification.class.DocNotifyContext, {
+        (await getClient().findOne(notification.class.DocNotifyContext, {
           objectId: object._id,
           user: getCurrentAccount()._id
         }))

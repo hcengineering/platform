@@ -17,8 +17,6 @@
   export let readonly: boolean = false
   export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const query = createQuery()
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = inboxClient.contextByDoc
@@ -44,7 +42,7 @@
 
     const context =
       $contextByDocStore.get(message._id) ??
-      (await client.findOne(notification.class.DocNotifyContext, { objectId: message._id }))
+      (await getClient().findOne(notification.class.DocNotifyContext, { objectId: message._id }))
     dataProvider = new ChannelDataProvider(
       context,
       message.space,
@@ -56,7 +54,7 @@
   }
 
   $: messagesStore = dataProvider?.messagesStore
-  $: readonly = hierarchy.isDerived(message.attachedToClass, core.class.Space)
+  $: readonly = getClient().getHierarchy().isDerived(message._class, core.class.Space)
     ? (readonly || (channel as Space)?.archived) ?? false
     : readonly
 </script>

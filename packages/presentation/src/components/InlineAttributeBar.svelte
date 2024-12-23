@@ -13,14 +13,12 @@
 
   let keys: KeyedAttribute[]
 
-  const client = getClient()
-
   function isInlineAttr (hierarchy: Hierarchy, key: KeyedAttribute): boolean {
     return !isCollectionAttr(hierarchy, key) && !isCollabAttr(hierarchy, key) && !isMarkupAttr(hierarchy, key)
   }
 
   function updateKeys (_class: Ref<Class<Doc>>, ignoreKeys: string[], to: Ref<Class<Doc>> | undefined): void {
-    const hierarchy = client.getHierarchy()
+    const hierarchy = getClient().getHierarchy()
     const filtredKeys = getFiltredKeys(hierarchy, _class, ignoreKeys, to)
     keys = filtredKeys.filter(
       (key) => (extraKeys.includes(key.key) || isInlineAttr(hierarchy, key)) && key.attr.readonly !== true

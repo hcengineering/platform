@@ -44,8 +44,6 @@
   export let embedded: boolean = false
   export let readonly: boolean = false
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const me = getCurrentAccount()._id
 
   let isThreadOpened = false
@@ -55,18 +53,23 @@
     isThreadOpened = newLocation.path[4] != null
   })
 
-  $: readonly = hierarchy.isDerived(object._class, core.class.Space) ? readonly || (object as Space).archived : readonly
+  $: readonly = getClient().getHierarchy().isDerived(object._class, core.class.Space)
+    ? readonly || (object as Space).archived
+    : readonly
   $: showJoinOverlay = shouldShowJoinOverlay(object)
-  $: isDocChat = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
+  $: isDocChat = !getClient().getHierarchy().isDerived(object._class, chunter.class.ChunterSpace)
   $: withAside =
-    !embedded && !isThreadOpened && !hierarchy.isDerived(object._class, chunter.class.DirectMessage) && !showJoinOverlay
+    !embedded &&
+    !isThreadOpened &&
+    !getClient().getHierarchy().isDerived(object._class, chunter.class.DirectMessage) &&
+    !showJoinOverlay
 
   function toChannel (object: Doc): Channel {
     return object as Channel
   }
 
   function shouldShowJoinOverlay (object: Doc): boolean {
-    if (hierarchy.isDerived(object._class, core.class.Space)) {
+    if (getClient().getHierarchy().isDerived(object._class, core.class.Space)) {
       const space = object as Space
 
       return !space.members.includes(me)
@@ -76,7 +79,7 @@
   }
 
   async function join (): Promise<void> {
-    await client.update(object as Space, { $push: { members: me } })
+    await getClient().update(object as Space, { $push: { members: me } })
   }
 
   defineSeparators('aside', panelSeparators)
@@ -98,7 +101,7 @@
 
   $: if (prevObjectId !== object._id) {
     prevObjectId = object._id
-    objectChatPanel = hierarchy.classHierarchyMixin(object._class, chunter.mixin.ObjectChatPanel)
+    objectChatPanel = getClient().getHierarchy().classHierarchyMixin(object._class, chunter.mixin.ObjectChatPanel)
     isAsideShown = isAsideShown ?? objectChatPanel?.openByDefault === true
   }
 </script>
@@ -147,7 +150,7 @@
       <div class="popupPanel-body__aside" class:float={false} class:shown={withAside && isAsideShown}>
         <Separator name="aside" float index={0} />
         <div class="antiPanel-wrap__content">
-          {#if hierarchy.isDerived(object._class, chunter.class.Channel)}
+          {#if getClient().getHierarchy().isDerived(object._class, chunter.class.Channel)}
             <ChannelAside object={toChannel(object)} {objectChatPanel} />
           {:else}
             <DocAside {object} {objectChatPanel} />

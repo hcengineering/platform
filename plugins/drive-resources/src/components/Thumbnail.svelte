@@ -23,9 +23,6 @@
   export let object: WithLookup<Resource>
   export let size: IconSize = 'x-large'
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
   function extensionIconLabel (name: string): string {
     const parts = name.split('.')
     const ext = parts[parts.length - 1]
@@ -38,7 +35,7 @@
   $: version = object.$lookup?.file
   $: previewRef = version?.file
   $: isImage = version?.type?.startsWith('image/') ?? false
-  $: isFolder = hierarchy.isDerived(object._class, drive.class.Folder)
+  $: isFolder = getClient().getHierarchy().isDerived(object._class, drive.class.Folder)
 </script>
 
 {#if isFolder}

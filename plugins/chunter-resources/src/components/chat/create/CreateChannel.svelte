@@ -13,19 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { ModernEditbox, ButtonMenu, Label, Modal, TextArea } from '@hcengineering/ui'
-  import presentation, { getClient } from '@hcengineering/presentation'
-  import core, { getCurrentAccount } from '@hcengineering/core'
-  import notification from '@hcengineering/notification'
   import contact, { PersonAccount } from '@hcengineering/contact'
+  import core, { getCurrentAccount } from '@hcengineering/core'
+  import presentation, { getClient } from '@hcengineering/presentation'
+  import { ButtonMenu, Label, Modal, ModernEditbox, TextArea } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
 
-  import Lock from '../../icons/Lock.svelte'
-  import chunter from '../../../plugin'
   import { openChannel } from '../../../navigation'
+  import chunter from '../../../plugin'
+  import Lock from '../../icons/Lock.svelte'
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   const visibilityOptions = [
     {
@@ -52,6 +50,7 @@
   $: canSave = !!channelName
 
   async function save (): Promise<void> {
+    const client = getClient()
     const account = getCurrentAccount() as PersonAccount
     const space = await client.findOne(
       contact.class.PersonSpace,

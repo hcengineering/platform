@@ -72,11 +72,9 @@
 
   $: updateMessagesQuery(channel._id)
 
-  const client = getClient()
-
   async function share (): Promise<void> {
     const selectedMessages = messages.filter((m) => selected.has(m._id as string as Ref<SharedMessage>))
-    await client.addCollection(
+    await getClient().addCollection(
       gmail.class.SharedMessages,
       object.space,
       object._id,

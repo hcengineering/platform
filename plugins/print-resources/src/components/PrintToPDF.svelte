@@ -17,8 +17,6 @@
   export let object: Doc
   export let signed: boolean = false
 
-  const client = getClient()
-
   let isLoading = true
   let isLinkLoading = true
   let link: PublicLink | undefined = undefined
@@ -76,10 +74,10 @@
   }
 
   async function getObjectLocation (obj: Doc): Promise<Location> {
-    const panelComponent = client.getHierarchy().classHierarchyMixin(obj._class, view.mixin.ObjectPanel)
+    const panelComponent = getClient().getHierarchy().classHierarchyMixin(obj._class, view.mixin.ObjectPanel)
     const comp = panelComponent?.component ?? view.component.EditDoc
 
-    return await getObjectLinkFragment(client.getHierarchy(), obj, {}, comp)
+    return await getObjectLinkFragment(getClient().getHierarchy(), obj, {}, comp)
   }
 
   async function createLinkIfMissing (obj: Doc): Promise<void> {
@@ -90,7 +88,7 @@
     if (link === undefined) {
       const location = await getObjectLocation(obj)
 
-      await createPublicLink(client, obj, location)
+      await createPublicLink(getClient(), obj, location)
     }
   }
 </script>

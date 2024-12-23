@@ -43,14 +43,13 @@
   const notificationsClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = notificationsClient.contextByDoc
   const objectQuery = createQuery()
-  const client = getClient()
 
   const navigatorModel: NavigatorModel = {
     spaces: [],
     specials: chatSpecials
   }
 
-  const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
+  const linkProviders = getClient().getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
   let selectedData: { id: string, _class: Ref<Class<Doc>> } | undefined = undefined
 

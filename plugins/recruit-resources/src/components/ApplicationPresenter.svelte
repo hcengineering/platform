@@ -28,8 +28,7 @@
   export let shouldShowAvatar: boolean = true
   export let type: ObjectPresenterType = 'link'
 
-  const client = getClient()
-  const clazz = value && client.getHierarchy().getClass(value._class)
+  const clazz = value && getClient().getHierarchy().getClass(value._class)
   const shortLabel = clazz?.shortLabel
 </script>
 

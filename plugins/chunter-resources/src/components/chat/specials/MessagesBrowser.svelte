@@ -34,13 +34,12 @@
 
   $: updateSearchQuery(search)
 
-  const client = getClient()
   let messages: ChatMessage[] = []
 
   let resultQuery: DocumentQuery<ChatMessage> = { ...searchQuery }
 
   async function updateMessages (resultQuery: DocumentQuery<ChatMessage>) {
-    messages = await client.findAll(
+    messages = await getClient().findAll(
       chunter.class.ChatMessage,
       {
         ...resultQuery

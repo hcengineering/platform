@@ -24,31 +24,30 @@
 
   export let channel: ChunterSpace
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
 
   function isCommonChannel (channel?: ChunterSpace): channel is Channel {
     return channel?._class === chunter.class.Channel
   }
 
-  function onTopicChange (ev: Event) {
+  function onTopicChange (ev: Event): void {
     if (!isCommonChannel(channel)) {
       return
     }
     const newTopic = (ev.target as HTMLInputElement).value
-    client.update(channel, { topic: newTopic })
+    void getClient().update(channel, { topic: newTopic })
   }
 
-  function onDescriptionChange (ev: Event) {
+  function onDescriptionChange (ev: Event): void {
     if (channel == null) {
       return
     }
     const newDescription = (ev.target as HTMLInputElement).value
-    client.update(channel, { description: newDescription })
+    void getClient().update(channel, { description: newDescription })
   }
 
   async function leaveChannel (): Promise<void> {
-    await client.update(channel, {
+    await getClient().update(channel, {
       $pull: { members: getCurrentAccount()._id }
     })
     dispatch('close')

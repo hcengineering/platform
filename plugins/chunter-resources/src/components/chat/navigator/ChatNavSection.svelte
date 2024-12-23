@@ -38,9 +38,6 @@
   export let objectId: Ref<Doc> | undefined
   export let sortFn: (items: ChatNavItemModel[], options: SortFnOptions) => ChatNavItemModel[]
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
   let sortedItems: ChatNavItemModel[] = []
   let items: ChatNavItemModel[] = []
 
@@ -62,6 +59,9 @@
   const getChatNavItems = reduceCalls(
     async (objects: Doc[], handler: (items: ChatNavItemModel[]) => void): Promise<void> => {
       const items: ChatNavItemModel[] = []
+
+      const client = getClient()
+      const hierarchy = client.getHierarchy()
 
       for (const object of objects) {
         const { _class } = object

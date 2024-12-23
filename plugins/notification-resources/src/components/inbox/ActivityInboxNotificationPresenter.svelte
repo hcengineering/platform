@@ -35,8 +35,6 @@
   export let viewlets: ActivityNotificationViewlet[] = []
   export let space: Ref<Space> | undefined = undefined
 
-  const client = getClient()
-
   let viewlet: ActivityNotificationViewlet | undefined = undefined
   let displayMessage: DisplayActivityMessage | undefined = undefined
   let actions: Action[] = []
@@ -62,7 +60,7 @@
     }
 
     for (const v of viewlets) {
-      const matched = matchQuery([message], v.messageMatch, message._class, client.getHierarchy(), true)
+      const matched = matchQuery([message], v.messageMatch, message._class, getClient().getHierarchy(), true)
       if (matched.length > 0) {
         viewlet = v
         return
@@ -73,7 +71,7 @@
   }
 
   async function getAllActions (value: ActivityInboxNotification): Promise<Action[]> {
-    const notificationActions = await getActions(client, value, notification.class.InboxNotification)
+    const notificationActions = await getActions(getClient(), value, notification.class.InboxNotification)
 
     const result: Action[] = []
 

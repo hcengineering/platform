@@ -43,9 +43,9 @@
 
   const dispatch = createEventDispatcher()
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-  const _class: Ref<Class<ChatMessage>> = hierarchy.isDerived(object._class, activity.class.ActivityMessage)
+  const _class: Ref<Class<ChatMessage>> = getClient()
+    .getHierarchy()
+    .isDerived(object._class, activity.class.ActivityMessage)
     ? chunter.class.ThreadMessage
     : chunter.class.ChatMessage
   const createdMessageQuery = createQuery()
@@ -113,11 +113,12 @@
     if (!withTypingInfo) return
     const myTypingInfo = typingInfo.find((info) => info.person === me.person)
     if (myTypingInfo === undefined) return
-    await client.remove(myTypingInfo)
+    await getClient().remove(myTypingInfo)
   }
 
   async function updateTypingInfo (): Promise<void> {
     if (!withTypingInfo) return
+    const client = getClient()
     const myTypingInfo = typingInfo.find((info) => info.person === me.person)
 
     if (myTypingInfo === undefined) {
@@ -149,6 +150,7 @@
   }
 
   async function handleCreate (event: CustomEvent, _id: Ref<ChatMessage>): Promise<void> {
+    const client = getClient()
     try {
       const res = await createMessage(event, _id, `chunter.create.${_class} ${object._class}`)
 
@@ -164,6 +166,7 @@
   }
 
   async function handleEdit (event: CustomEvent): Promise<void> {
+    const client = getClient()
     try {
       await editMessage(event)
       const objectId = await getObjectId(object, client.getHierarchy())
@@ -196,7 +199,7 @@
 
   async function createMessage (event: CustomEvent, _id: Ref<ChatMessage>, msg: string): Promise<CommitResult> {
     const { message, attachments } = event.detail
-    const operations = client.apply(undefined, msg)
+    const operations = getClient().apply(undefined, msg)
 
     if (_class === chunter.class.ThreadMessage) {
       const parentMessage = object as ActivityMessage
@@ -234,7 +237,7 @@
       return
     }
     const { message, attachments } = event.detail
-    await client.update(chatMessage, { message, attachments, editedOn: Date.now() })
+    await getClient().update(chatMessage, { message, attachments, editedOn: Date.now() })
   }
   export function submit (): void {
     inputRef.submit()

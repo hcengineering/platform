@@ -50,18 +50,17 @@
   } as unknown as Organization
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
 
   let description = EmptyMarkup
 
-  fillDefaults(hierarchy, object, contact.class.Organization)
+  fillDefaults(getClient().getHierarchy(), object, contact.class.Organization)
 
   async function createOrganization (): Promise<void> {
     if (!isEmptyMarkup(description)) {
       const target = makeCollabId(contact.class.Organization, id, 'description')
       object.description = await createMarkup(target, description)
     }
+    const client = getClient()
     const op = client.apply()
     await op.createDoc(contact.class.Organization, contact.space.Contacts, object, id)
     await descriptionBox.createAttachments(id, op)
@@ -94,7 +93,7 @@
   let matches: WithLookup<Organization>[] = []
   let matchedChannels: AttachedData<Channel>[] = []
 
-  $: void findContacts(client, contact.class.Organization, object.name, channels).then((p) => {
+  $: void findContacts(getClient(), contact.class.Organization, object.name, channels).then((p) => {
     matches = p.contacts as Organization[]
     matchedChannels = p.channels
   })

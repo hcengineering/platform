@@ -18,19 +18,17 @@
   import type { Asset, IntlString } from '@hcengineering/platform'
   import presentation, { getClient, ObjectCreate, ObjectPopup } from '@hcengineering/presentation'
   import { AnySvelteComponent, Label } from '@hcengineering/ui'
-  import UserInfo from './UserInfo.svelte'
   import { createEventDispatcher } from 'svelte'
+  import UserInfo from './UserInfo.svelte'
 
   export let _class: Ref<Class<Contact>>
   export let options: FindOptions<Contact> | undefined = undefined
   export let selected: Ref<Person> | undefined
   export let docQuery: DocumentQuery<Contact> | undefined = undefined
 
-  const client = getClient()
-
   export let filter: (it: Doc) => boolean = (it) => {
-    if (client.getHierarchy().hasMixin(it, contact.mixin.Employee)) {
-      return client.getHierarchy().as(it, contact.mixin.Employee).active
+    if (getClient().getHierarchy().hasMixin(it, contact.mixin.Employee)) {
+      return getClient().getHierarchy().as(it, contact.mixin.Employee).active
     }
     return true
   }

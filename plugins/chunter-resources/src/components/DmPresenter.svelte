@@ -27,12 +27,10 @@
   export let disabled = false
   export let shouldShowAvatar = true
   export let type: ObjectPresenterType = 'link'
-
-  const client = getClient()
 </script>
 
 {#if value}
-  {#await getDmName(client, value) then name}
+  {#await getDmName(getClient(), value) then name}
     {#if type === 'link'}
       <NavLink app={chunterId} space={value._id} {disabled}>
         <div class="flex-presenter">

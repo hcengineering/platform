@@ -13,18 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Breadcrumbs, location as locationStore, Header, BreadcrumbItem, Loading } from '@hcengineering/ui'
-  import { createEventDispatcher, onDestroy } from 'svelte'
   import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
   import { getMessageFromLoc, messageInFocus } from '@hcengineering/activity-resources'
-  import contact from '@hcengineering/contact'
   import attachment from '@hcengineering/attachment'
+  import contact from '@hcengineering/contact'
+  import { Doc, Ref } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { BreadcrumbItem, Breadcrumbs, Header, Loading, location as locationStore } from '@hcengineering/ui'
+  import { createEventDispatcher, onDestroy } from 'svelte'
 
   import chunter from '../../plugin'
-  import { getObjectIcon, getChannelName } from '../../utils'
   import { threadMessagesStore } from '../../stores'
+  import { getChannelName, getObjectIcon } from '../../utils'
   import ThreadContent from './ThreadContent.svelte'
 
   export let _id: Ref<ActivityMessage>
@@ -35,8 +35,6 @@
   export let readonly: boolean = false
   export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
   const messageQuery = createQuery()

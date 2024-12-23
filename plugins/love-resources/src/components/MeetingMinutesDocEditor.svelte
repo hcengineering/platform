@@ -22,7 +22,6 @@
 
   export let object: MeetingMinutes
 
-  const client = getClient()
   const docQuery = createQuery()
 
   let doc: Doc | undefined
@@ -47,7 +46,7 @@
       size={'small'}
       action={async () => {
         if (doc === undefined) return
-        await openDoc(client.getHierarchy(), doc)
+        await openDoc(getClient().getHierarchy(), doc)
       }}
     />
   </span>

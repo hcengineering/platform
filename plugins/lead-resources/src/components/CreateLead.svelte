@@ -49,7 +49,6 @@
   const object: Partial<Lead> = {}
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
   const leadId: Ref<AttachedDoc> = generateId()
 
   export function canClose (): boolean {
@@ -85,6 +84,7 @@
   let kind: Ref<TaskType> | undefined = undefined
 
   async function createLead () {
+    const client = getClient()
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: lead.class.Lead })
     if (sequence === undefined || customer == null) {
       throw new Error('Lead  creation failed')

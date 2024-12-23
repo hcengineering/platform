@@ -43,10 +43,9 @@
   export let onClick: (() => void) | undefined = undefined
   export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
-  $: objectPresenter = hierarchy.classHierarchyMixin(value._class as Ref<Class<Doc>>, view.mixin.ObjectPresenter)
+  $: objectPresenter = getClient()
+    .getHierarchy()
+    .classHierarchyMixin(value._class as Ref<Class<Doc>>, view.mixin.ObjectPresenter)
 </script>
 
 {#if objectPresenter}

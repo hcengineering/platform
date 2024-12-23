@@ -17,9 +17,9 @@
   import { Class, Data, Doc, Ref, Space } from '@hcengineering/core'
 
   import { getClient } from '@hcengineering/presentation'
-  import { createAttachments } from '../utils'
-  import attachment from '../plugin'
   import { createEventDispatcher } from 'svelte'
+  import attachment from '../plugin'
+  import { createAttachments } from '../utils'
 
   export let loading: number = 0
   export let objectClass: Ref<Class<Doc>>
@@ -31,10 +31,9 @@
 
   export let dragover = false
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
 
-  async function fileDrop (e: DragEvent) {
+  async function fileDrop (e: DragEvent): Promise<void> {
     dragover = false
 
     if (canDrop && !canDrop(e)) {
@@ -49,7 +48,13 @@
 
     loading++
     try {
-      await createAttachments(client, list, { objectClass, objectId, space }, attachmentClass, attachmentClassOptions)
+      await createAttachments(
+        getClient(),
+        list,
+        { objectClass, objectId, space },
+        attachmentClass,
+        attachmentClassOptions
+      )
     } finally {
       loading--
     }

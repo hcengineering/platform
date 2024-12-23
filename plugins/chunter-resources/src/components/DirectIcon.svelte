@@ -31,20 +31,21 @@
   export let compact = false
 
   const visiblePersons = 4
-  const client = getClient()
 
   let persons: Person[] = []
 
   if (_id !== undefined && value === undefined) {
-    void client.findOne(chunter.class.DirectMessage, { _id }).then((res) => {
-      value = res
-    })
+    void getClient()
+      .findOne(chunter.class.DirectMessage, { _id })
+      .then((res) => {
+        value = res
+      })
   } else if (_id && value && value._id !== _id) {
     value = undefined
   }
 
   $: if (value !== undefined) {
-    void getDmPersons(client, value, $personByIdStore).then((res) => {
+    void getDmPersons(getClient(), value, $personByIdStore).then((res) => {
       persons = res
     })
   }
@@ -57,7 +58,7 @@
 </script>
 
 {#if persons.length === 0}
-  <Icon icon={classIcon(client, chunter.class.DirectMessage) ?? chunter.icon.Chunter} {size} />
+  <Icon icon={classIcon(getClient(), chunter.class.DirectMessage) ?? chunter.icon.Chunter} {size} />
 {/if}
 
 {#if persons.length === 1}

@@ -34,18 +34,17 @@
   export let placed: boolean = false
   export let excludedPersons: Ref<Contact>[] = []
 
-  const client = getClient()
-
   const SHADOW_OFFSET = 3
   const SHADOW_BLUR = 2
   const SHADOW_SPREAD = -1
 
   async function updateName (): Promise<void> {
-    await client.update(room, { name: room.name })
+    await getClient().update(room, { name: room.name })
   }
 
   async function changePerson (e: CustomEvent<Ref<Person> | null>): Promise<void> {
     if (isOffice(room)) {
+      const client = getClient()
       const value = e.detail
       const prevValue = room.person
       await client.update(room, { person: value })
@@ -65,7 +64,7 @@
   }
 
   async function remove (): Promise<void> {
-    await client.remove(room)
+    await getClient().remove(room)
   }
 
   $: removable = $infos.filter((i) => i.room === room._id).length === 0

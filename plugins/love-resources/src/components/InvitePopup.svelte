@@ -26,15 +26,13 @@
 
   $: person = $personByIdStore.get(invite.from)
 
-  const client = getClient()
-
   async function accept (): Promise<void> {
     const room = $rooms.find((p) => p._id === invite.room)
     if (room === undefined) return
     const myPerson = $personByIdStore.get(invite.target)
     if (myPerson === undefined) return
     if ($myInfo === undefined) return
-    await client.update(invite, { status: RequestStatus.Approved })
+    await getClient().update(invite, { status: RequestStatus.Approved })
     const place = getFreeRoomPlace(
       room,
       $infos.filter((p) => p.room === room?._id),
@@ -43,7 +41,7 @@
     await connectRoom(place.x, place.y, $myInfo, myPerson, room)
   }
   async function decline (): Promise<void> {
-    await client.update(invite, { status: RequestStatus.Rejected })
+    await getClient().update(invite, { status: RequestStatus.Rejected })
   }
 </script>
 

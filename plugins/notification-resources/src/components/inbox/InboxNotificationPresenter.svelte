@@ -13,21 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import view from '@hcengineering/view'
-  import { getClient } from '@hcengineering/presentation'
-  import { Component } from '@hcengineering/ui'
   import { Class, Doc, type Ref, type Space } from '@hcengineering/core'
   import { ActivityNotificationViewlet, DisplayInboxNotification } from '@hcengineering/notification'
+  import { getClient } from '@hcengineering/presentation'
+  import { Component } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
 
   export let value: DisplayInboxNotification
   export let object: Doc | undefined
   export let viewlets: ActivityNotificationViewlet[] = []
   export let space: Ref<Space> | undefined = undefined
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
-  $: objectPresenter = hierarchy.classHierarchyMixin(value._class as Ref<Class<Doc>>, view.mixin.ObjectPresenter)
+  $: objectPresenter = getClient()
+    .getHierarchy()
+    .classHierarchyMixin(value._class as Ref<Class<Doc>>, view.mixin.ObjectPresenter)
 </script>
 
 {#if objectPresenter}

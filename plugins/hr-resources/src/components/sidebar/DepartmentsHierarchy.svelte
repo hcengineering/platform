@@ -28,7 +28,6 @@
   export let selected: Ref<Department> | undefined
   export let level: number = 0
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
 
   function getDescendants (department: Ref<Department>): Ref<Department>[] {
@@ -37,7 +36,7 @@
 
   async function getActions (obj: Department): Promise<Action[]> {
     const result: Action[] = []
-    const extraActions = await getContributedActions(client, obj, obj._class)
+    const extraActions = await getContributedActions(getClient(), obj, obj._class)
     for (const act of extraActions) {
       result.push({
         icon: act.icon ?? IconEdit,

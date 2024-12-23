@@ -25,10 +25,8 @@
   export let onChange: (key: string, value: boolean) => void
   export let selected: boolean = false
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-  const editor = getAttributeEditor(client, _class, key)
-  const attribute = hierarchy.getAttribute(_class, key)
+  const editor = getAttributeEditor(getClient(), _class, key)
+  const attribute = getClient().getHierarchy().getAttribute(_class, key)
 </script>
 
 {#await editor then instance}
@@ -38,14 +36,14 @@
       {targetEmp}
       {key}
       {onChange}
-      cast={hierarchy.isMixin(_class) ? _class : undefined}
+      cast={getClient().getHierarchy().isMixin(_class) ? _class : undefined}
       {selected}
     >
       <svelte:fragment slot="item" let:item>
         <svelte:component
           this={instance}
           type={attribute?.type}
-          value={getAttribute(client, item, { key, attr: attribute })}
+          value={getAttribute(getClient(), item, { key, attr: attribute })}
           readonly
           disabled
           space={item.space}

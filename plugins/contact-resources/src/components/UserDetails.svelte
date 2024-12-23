@@ -13,17 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Person, getName } from '@hcengineering/contact'
   import { getClient } from '@hcengineering/presentation'
   import { IconSize } from '@hcengineering/ui'
-  import { Person, getName } from '@hcengineering/contact'
 
   import Avatar from './Avatar.svelte'
 
   export let person: Person
   export let avatarSize: IconSize = 'x-small'
   export let showStatus = true
-
-  const client = getClient()
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -31,7 +29,7 @@
 <div class="flex-row-center" on:click>
   <Avatar {person} size={avatarSize} name={person.name} on:accent-color {showStatus} />
   <div class="flex-col min-w-0 {avatarSize === 'tiny' || avatarSize === 'inline' ? 'ml-1' : 'ml-3'}">
-    <div class="label overflow-label text-left">{getName(client.getHierarchy(), person)}</div>
+    <div class="label overflow-label text-left">{getName(getClient().getHierarchy(), person)}</div>
   </div>
 </div>
 

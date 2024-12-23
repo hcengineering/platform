@@ -22,15 +22,15 @@
   } from '@hcengineering/activity'
   import { Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Grid, Label, Section, Spinner, location, Lazy } from '@hcengineering/ui'
+  import { Grid, Lazy, Section, Spinner, location } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
 
-  import ActivityExtensionComponent from './ActivityExtension.svelte'
-  import ActivityFilter from './ActivityFilter.svelte'
+  import { messageInFocus } from '../activity'
   import { combineActivityMessages, sortActivityMessages } from '../activityMessagesUtils'
   import { canGroupMessages, getMessageFromLoc, getSpace } from '../utils'
   import ActivityMessagePresenter from './activity-message/ActivityMessagePresenter.svelte'
-  import { messageInFocus } from '../activity'
+  import ActivityExtensionComponent from './ActivityExtension.svelte'
+  import ActivityFilter from './ActivityFilter.svelte'
 
   export let object: WithReferences<Doc>
   export let showCommenInput: boolean = true
@@ -38,7 +38,6 @@
   export let focusIndex: number = -1
   export let boundary: HTMLElement | undefined = undefined
 
-  const client = getClient()
   const activityMessagesQuery = createQuery()
   const refsQuery = createQuery()
 
@@ -170,9 +169,11 @@
 
   let isNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
 
-  $: void client.findAll(activity.class.ActivityExtension, { ofClass: object._class }).then((res) => {
-    extensions = res
-  })
+  $: void getClient()
+    .findAll(activity.class.ActivityExtension, { ofClass: object._class })
+    .then((res) => {
+      extensions = res
+    })
 
   // Load references from other spaces separately because they can have any different spaces
   $: if ((object.references ?? 0) > 0) {

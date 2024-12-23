@@ -40,7 +40,6 @@
   } else {
     channelsQuery.unsubscribe()
   }
-  const client = getClient()
 </script>
 
 <div class="antiContactCard">
@@ -49,12 +48,12 @@
   {#if candidate}
     <DocNavLink object={candidate} {disabled}>
       <div class="name lines-limit-2">
-        {getName(client.getHierarchy(), candidate)}
+        {getName(getClient().getHierarchy(), candidate)}
       </div>
     </DocNavLink>
-    {#if client.getHierarchy().hasMixin(candidate, recruit.mixin.Candidate)}
-      {@const cand = client.getHierarchy().as(candidate, recruit.mixin.Candidate)}
-      {@const titleAttribute = client.getHierarchy().getAttribute(recruit.mixin.Candidate, 'title')}
+    {#if getClient().getHierarchy().hasMixin(candidate, recruit.mixin.Candidate)}
+      {@const cand = getClient().getHierarchy().as(candidate, recruit.mixin.Candidate)}
+      {@const titleAttribute = getClient().getHierarchy().getAttribute(recruit.mixin.Candidate, 'title')}
       {#if !titleAttribute.hidden}
         <div class="description lines-limit-2">{cand.title ?? ''}</div>
       {/if}

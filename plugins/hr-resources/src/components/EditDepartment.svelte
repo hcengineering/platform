@@ -28,7 +28,6 @@
   let avatarEditor: EditableAvatar
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   async function onAvatarDone () {
     if (object === undefined) return
@@ -37,12 +36,12 @@
       await avatarEditor.removeAvatar(object.avatar)
     }
     const avatar = await avatarEditor.createAvatar()
-    await client.diffUpdate(object, avatar)
+    await getClient().diffUpdate(object, avatar)
   }
 
   async function nameChange (): Promise<void> {
     if (object === undefined) return
-    await client.update(object, {
+    await getClient().update(object, {
       name: object.name
     })
   }

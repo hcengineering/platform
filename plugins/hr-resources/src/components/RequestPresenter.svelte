@@ -21,9 +21,7 @@
   export let value: Request | null | undefined
   export let noShift: boolean = false
 
-  const client = getClient()
-
-  $: type = value?.type !== undefined ? client.getModel().getObject(value?.type) : undefined
+  $: type = value?.type !== undefined ? getClient().getModel().getObject(value?.type) : undefined
 </script>
 
 {#if type && value != null}

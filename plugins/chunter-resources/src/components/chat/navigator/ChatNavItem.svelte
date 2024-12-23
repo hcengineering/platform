@@ -38,8 +38,6 @@
   export let isSelected = false
   export let type: 'type-link' | 'type-tag' | 'type-anchor-link' | 'type-object' = 'type-link'
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
   const notificationClient = InboxNotificationsClientImpl.getClient()
 
@@ -53,6 +51,7 @@
       return
     }
 
+    const hierarchy = getClient().getHierarchy()
     notifications = (res.get(context._id) ?? []).filter((n) => {
       if (isActivityNotification(n)) return true
 
@@ -68,7 +67,7 @@
     actions = res
   })
 
-  const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
+  const linkProviders = getClient().getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
   async function getChannelActions (context: DocNotifyContext | undefined, object: Doc): Promise<Action[]> {
     const result: Action[] = []
@@ -92,7 +91,7 @@
       notification.action.UnReadNotifyContext,
       notification.action.ReadNotifyContext
     ]
-    const actions = (await getActions(client, context, notification.class.DocNotifyContext)).filter(
+    const actions = (await getActions(getClient(), context, notification.class.DocNotifyContext)).filter(
       ({ _id }) => !excludedActions.includes(_id)
     )
 

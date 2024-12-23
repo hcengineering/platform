@@ -24,11 +24,9 @@
   export let integration: Integration
   let shared = (integration.shared?.length ?? 0) > 0
 
-  const client = getClient()
-
   async function change (shared: Ref<Account>[]) {
     integration.shared = shared
-    await client.update(integration, {
+    await getClient().update(integration, {
       shared
     })
   }

@@ -25,9 +25,7 @@
   export let shouldShowAvatar = true
   export let type: ObjectPresenterType = 'link'
 
-  const client = getClient()
-
-  $: icon = client.getHierarchy().getClass(value._class).icon
+  $: icon = getClient().getHierarchy().getClass(value._class).icon
 </script>
 
 {#if value}

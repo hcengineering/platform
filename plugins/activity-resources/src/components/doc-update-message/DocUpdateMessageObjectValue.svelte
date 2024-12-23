@@ -35,28 +35,26 @@
   export let hasSeparator: boolean = false
   export let preview = false
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const objectQuery = createQuery()
 
   let object: Doc | undefined = undefined
 
-  $: objectPanel = hierarchy.classHierarchyMixin(objectClass, view.mixin.ObjectPanel)
-  $: objectPresenter = hierarchy.classHierarchyMixin(objectClass, view.mixin.ObjectPresenter)
+  $: objectPanel = getClient().getHierarchy().classHierarchyMixin(objectClass, view.mixin.ObjectPanel)
+  $: objectPresenter = getClient().getHierarchy().classHierarchyMixin(objectClass, view.mixin.ObjectPresenter)
 
   async function getValue (object: Doc): Promise<string | undefined> {
     if (viewlet?.valueAttr) {
       return (object as any)[viewlet.valueAttr]
     }
 
-    return await getDocLinkTitle(client, object._id, object._class, object)
+    return await getDocLinkTitle(getClient(), object._id, object._class, object)
   }
 
   async function loadObject (_id: Ref<Doc>, _class: Ref<Class<Doc>>, attachedTo: Ref<Doc>): Promise<void> {
-    const isRemoved = attachedTo === _id ? false : await checkIsObjectRemoved(client, _id, _class)
+    const isRemoved = attachedTo === _id ? false : await checkIsObjectRemoved(getClient(), _id, _class)
 
     if (isRemoved) {
-      object = await buildRemovedDoc(client, _id, _class)
+      object = await buildRemovedDoc(getClient(), _id, _class)
       objectQuery.unsubscribe()
     } else {
       objectQuery.query(_class, { _id }, (res) => {

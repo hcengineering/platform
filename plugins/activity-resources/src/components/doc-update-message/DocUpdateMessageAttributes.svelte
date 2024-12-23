@@ -33,13 +33,11 @@
   export let object: Doc | undefined
   export let message: DocUpdateMessage
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
   $: presenter =
     viewlet?.config?.[attributeModel.key]?.presenter ??
-    hierarchy.classHierarchyMixin(attributeUpdates.attrClass, activity.mixin.ActivityAttributeUpdatesPresenter)
-      ?.presenter
+    getClient()
+      .getHierarchy()
+      .classHierarchyMixin(attributeUpdates.attrClass, activity.mixin.ActivityAttributeUpdatesPresenter)?.presenter
 </script>
 
 {#if presenter}

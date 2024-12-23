@@ -65,7 +65,6 @@
 
   export let todayDate = new Date()
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
 
   $: checkToday($ticker)
@@ -616,7 +615,7 @@
           events = events
         }
       } else {
-        await client.update(event, update)
+        await getClient().update(event, update)
       }
     }
   }

@@ -13,9 +13,9 @@
 
   async function doUpdate (propName: PreferenceKey, value: any): Promise<void> {
     if ('_id' in $activePreferences) {
-      await client.update($activePreferences, { [propName]: value })
+      await getClient().update($activePreferences, { [propName]: value })
     } else {
-      await client.createDoc(desktopPreferences.class.DesktopNotificationPreference, core.space.Workspace, {
+      await getClient().createDoc(desktopPreferences.class.DesktopNotificationPreference, core.space.Workspace, {
         attachedTo: '' as Ref<Doc>,
         ...$activePreferences,
         [propName]: value
@@ -23,7 +23,6 @@
     }
   }
 
-  const client = getClient()
   function updater (propName: PreferenceKey) {
     return (e: CustomEvent) => {
       doUpdate(propName, e.detail)

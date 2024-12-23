@@ -36,7 +36,6 @@
   export let currentSpace: Ref<Space> | undefined
   export let currentFragment: string | undefined
 
-  const client = getClient()
   const query = createQuery()
 
   const me = getCurrentAccount()
@@ -59,9 +58,9 @@
     Analytics.handleEvent(DocumentEvents.CreateDocumentButtonClicked)
     showPopup(CreateDocument, { space: currentSpace, parent }, 'top', async (id) => {
       if (id !== undefined && id !== null) {
-        const doc = await client.findOne(document.class.Document, { _id: id })
+        const doc = await getClient().findOne(document.class.Document, { _id: id })
         if (doc !== undefined) {
-          void openDoc(client.getHierarchy(), doc)
+          void openDoc(getClient().getHierarchy(), doc)
         }
       }
     })

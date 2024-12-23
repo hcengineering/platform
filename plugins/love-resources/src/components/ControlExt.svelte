@@ -58,8 +58,6 @@
   import RoomPopup from './RoomPopup.svelte'
   import RoomButton from './RoomButton.svelte'
 
-  const client = getClient()
-
   interface ActiveRoom extends Room {
     participants: ParticipantInfo[]
   }
@@ -226,7 +224,7 @@
     }
 
     if ($isCurrentInstanceConnected) {
-      const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: love.ids.MeetingWidget })[0]
+      const widget = getClient().getModel().findAllSync(workbench.class.Widget, { _id: love.ids.MeetingWidget })[0]
       if (widget === undefined) return
 
       if (!isMeetingWidgetCreated) {

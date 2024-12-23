@@ -27,10 +27,9 @@
   let persons: Person[] = []
   $: persons = Array.isArray(value) ? value : [value]
 
-  async function onClick (p: Person) {
-    openDoc(getClient().getHierarchy(), p)
+  async function onClick (p: Person): Promise<void> {
+    await openDoc(getClient().getHierarchy(), p)
   }
-  const client = getClient()
 </script>
 
 {#if value}
@@ -41,7 +40,7 @@
       <div
         class="flex-presenter"
         class:inline-presenter={inline}
-        use:tooltip={{ label: calendar.string.PersonsLabel, props: { name: getName(client.getHierarchy(), p) } }}
+        use:tooltip={{ label: calendar.string.PersonsLabel, props: { name: getName(getClient().getHierarchy(), p) } }}
         on:click={() => onClick(p)}
       >
         <div class="icon">

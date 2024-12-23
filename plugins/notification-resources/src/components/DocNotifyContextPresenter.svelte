@@ -22,7 +22,6 @@
 
   export let value: DocNotifyContext
 
-  const client = getClient()
   const objectQuery = createQuery()
 
   let object: Doc | undefined
@@ -32,6 +31,7 @@
   })
 
   async function getTitle (object: Doc) {
+    const client = getClient()
     if (object._class === chunter.class.DirectMessage) {
       return await getDocTitle(client, object._id, object._class, object)
     }

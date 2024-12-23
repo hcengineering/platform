@@ -31,18 +31,16 @@
   export let focusIndex = -1
   export let editKind: EditStyle | undefined = undefined
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
-  $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
+  $: attribute = typeof key === 'string' ? getClient().getHierarchy().getAttribute(_class, key) : key.attr
   $: attributeKey = typeof key === 'string' ? key : key.key
-  $: presenterClass = attribute !== undefined ? getAttributePresenterClass(hierarchy, attribute) : undefined
+  $: presenterClass =
+    attribute !== undefined ? getAttributePresenterClass(getClient().getHierarchy(), attribute) : undefined
 
   let editor: Promise<AnySvelteComponent> | undefined
 
   $: if (presenterClass !== undefined) {
-    const typeClass = hierarchy.getClass(presenterClass.attrClass)
-    const editorMixin = hierarchy.as(typeClass, view.mixin.AttributeEditor)
+    const typeClass = getClient().getHierarchy().getClass(presenterClass.attrClass)
+    const editorMixin = getClient().getHierarchy().as(typeClass, view.mixin.AttributeEditor)
     if (editorMixin.inlineEditor !== undefined) {
       editor = getResource(editorMixin.inlineEditor)
     }
@@ -53,7 +51,7 @@
   function onChange (value: any): void {
     if (isReadonly) return
     const doc = object as Doc
-    void updateAttribute(client, doc, _class, { key: attributeKey, attr: attribute }, value)
+    void updateAttribute(getClient(), doc, _class, { key: attributeKey, attr: attribute }, value)
   }
 </script>
 
@@ -71,7 +69,7 @@
       disabled={isReadonly}
       {maxWidth}
       {attributeKey}
-      value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+      value={getAttribute(getClient(), object, { key: attributeKey, attr: attribute })}
       {onChange}
       {focus}
       {focusIndex}

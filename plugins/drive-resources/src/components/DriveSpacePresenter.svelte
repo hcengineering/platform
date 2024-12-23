@@ -32,8 +32,6 @@
   export let forciblyСollapsed: boolean = false
   export let deselect: boolean = false
 
-  const client = getClient()
-
   let folders: Ref<Folder>[] = []
   let folderById: Map<Ref<Folder>, Folder> = new Map<Ref<Folder>, Folder>()
   let descendants: Map<Ref<Folder>, Folder[]> = new Map<Ref<Folder>, Folder[]>()
@@ -85,7 +83,7 @@
 
   async function getFolderActions (obj: Folder): Promise<Action[]> {
     const result: Action[] = []
-    const extraActions = await getContributedActions(client, obj)
+    const extraActions = await getContributedActions(getClient(), obj)
     for (const act of extraActions) {
       result.push({
         icon: act.icon ?? IconEdit,

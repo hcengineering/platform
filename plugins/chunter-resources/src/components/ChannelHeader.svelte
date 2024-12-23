@@ -37,9 +37,6 @@
   export let canOpenInSidebar: boolean = false
   export let closeOnEscape: boolean = true
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
   let title: string | undefined = undefined
   let description: string | undefined = undefined
   let realWidth: number
@@ -51,6 +48,7 @@
   })
 
   async function updateDescription (_id: Ref<Doc>, _class: Ref<Class<Doc>>, object?: Doc): Promise<void> {
+    const hierarchy = getClient().getHierarchy()
     if (hierarchy.isDerived(_class, chunter.class.DirectMessage) || hierarchy.isDerived(_class, contact.class.Person)) {
       description = undefined
     } else if (hierarchy.isDerived(_class, chunter.class.Channel)) {
@@ -62,7 +60,8 @@
   }
 
   $: isPerson =
-    hierarchy.isDerived(_class, chunter.class.DirectMessage) || hierarchy.isDerived(_class, contact.class.Person)
+    getClient().getHierarchy().isDerived(_class, chunter.class.DirectMessage) ||
+    getClient().getHierarchy().isDerived(_class, contact.class.Person)
 </script>
 
 <Header

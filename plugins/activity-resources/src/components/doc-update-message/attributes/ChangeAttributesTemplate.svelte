@@ -29,11 +29,9 @@
   export let preview = false
   export let space: Ref<Space> | undefined = undefined
 
-  const client = getClient()
-
   let attributeValues: Values | Doc[] = []
 
-  $: void getAttributeValues(client, values, attributeModel._class).then((result) => {
+  $: void getAttributeValues(getClient(), values, attributeModel._class).then((result) => {
     attributeValues = result
   })
 

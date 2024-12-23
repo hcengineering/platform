@@ -33,18 +33,16 @@
   export let group: Ref<NotificationGroup>
   export let settings: Map<Ref<BaseNotificationType>, NotificationTypeSetting[]>
 
-  const client = getClient()
-
-  const providers: NotificationProvider[] = client
+  const providers: NotificationProvider[] = getClient()
     .getModel()
     .findAllSync(notification.class.NotificationProvider, {})
     .sort((provider1, provider2) => provider1.order - provider2.order)
-  const providerDefaults: NotificationProviderDefaults[] = client
+  const providerDefaults: NotificationProviderDefaults[] = getClient()
     .getModel()
     .findAllSync(notification.class.NotificationProviderDefaults, {})
   const providersMap: IdMap<NotificationProvider> = toIdMap(providers)
 
-  $: types = client.getModel().findAllSync(notification.class.BaseNotificationType, { group })
+  $: types = getClient().getModel().findAllSync(notification.class.BaseNotificationType, { group })
   $: typesMap = toIdMap(types)
 
   function getStatus (

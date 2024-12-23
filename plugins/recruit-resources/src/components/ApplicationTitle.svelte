@@ -19,8 +19,7 @@
 
   export let value: Applicant
 
-  const client = getClient()
-  const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
+  const shortLabel = getClient().getHierarchy().getClass(value._class).shortLabel
 </script>
 
 {#if value && shortLabel}

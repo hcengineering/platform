@@ -27,17 +27,14 @@
   export let notifyCount: number = 0
   export let object: Doc | undefined
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
-  $: iconMixin = hierarchy.classHierarchyMixin(value.objectClass, view.mixin.ObjectIcon)
+  $: iconMixin = getClient().getHierarchy().classHierarchyMixin(value.objectClass, view.mixin.ObjectIcon)
 </script>
 
 <div class="container">
   {#if iconMixin && object}
     <Component is={iconMixin.component} props={{ value: object, size }} />
   {:else}
-    <Icon icon={classIcon(client, value.objectClass) ?? notification.icon.Notifications} {size} />
+    <Icon icon={classIcon(getClient(), value.objectClass) ?? notification.icon.Notifications} {size} />
   {/if}
 
   <div class="notifyMarker">

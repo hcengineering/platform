@@ -95,6 +95,7 @@ export interface OptimisticTxes {
 
 export const uiContext = new MeasureMetricsContext('client-ui', {})
 
+export const pendingCreatedDocs = writable<Record<Ref<Doc>, boolean>>({})
 class UIClient extends TxOperations implements Client, OptimisticTxes {
   hook = getMetadata(plugin.metadata.ClientHook)
   constructor (
@@ -105,14 +106,13 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
   }
 
   protected pendingTxes = new Set<Ref<Tx>>()
-  protected _pendingCreatedDocs = writable<Record<Ref<Doc>, boolean>>({})
 
-  get pendingCreatedDocs (): typeof this._pendingCreatedDocs {
-    return this._pendingCreatedDocs
+  get pendingCreatedDocs (): typeof pendingCreatedDocs {
+    return pendingCreatedDocs
   }
 
   async doNotify (...tx: Tx[]): Promise<void> {
-    const pending = get(this._pendingCreatedDocs)
+    const pending = get(pendingCreatedDocs)
     let pendingUpdated = false
     tx.forEach((t) => {
       if (this.pendingTxes.has(t._id)) {
@@ -129,7 +129,7 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
       }
     })
     if (pendingUpdated) {
-      this._pendingCreatedDocs.set(pending)
+      pendingCreatedDocs.set(pending)
     }
 
     // We still want to notify about all transactions because there might be queries created after
@@ -214,9 +214,9 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
     }
 
     if (innerTx._class === core.class.TxCreateDoc) {
-      const pending = get(this._pendingCreatedDocs)
+      const pending = get(pendingCreatedDocs)
       pending[innerTx.objectId] = true
-      this._pendingCreatedDocs.set(pending)
+      pendingCreatedDocs.set(pending)
     }
 
     this.pendingTxes.add(tx._id)
@@ -275,6 +275,7 @@ export async function setClient (_client: Client): Promise<void> {
 
   const uiClient = new UIClient(pipeline, liveQuery)
 
+  pendingCreatedDocs.set({}) // Clean pending created docs
   client = uiClient
 
   const notifyCaller = reduceCalls(async () => {

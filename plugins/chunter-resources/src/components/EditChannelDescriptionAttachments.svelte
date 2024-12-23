@@ -23,7 +23,6 @@
 
   export let channel: ChunterSpace | undefined
   const myAccId = getCurrentAccount()._id
-  const client = getClient()
 
   const query = createQuery()
   let visibleAttachments: WithLookup<Attachment>[] | undefined
@@ -42,7 +41,7 @@
             ? [
                 {
                   label: attachment.string.DeleteFile,
-                  action: async () => await client.removeDoc(object._class, object.space, object._id)
+                  action: async () => await getClient().removeDoc(object._class, object.space, object._id)
                 }
               ]
             : [])

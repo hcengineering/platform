@@ -60,7 +60,6 @@
   export let closeOnEscape: boolean = true
   export let realWidth: number | undefined = undefined
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
 
   export let searchValue: string = ''
@@ -161,7 +160,7 @@
         showTooltip={{ label: view.string.Open }}
         on:click={() => {
           if (object !== undefined) {
-            void openDoc(client.getHierarchy(), object)
+            void openDoc(getClient().getHierarchy(), object)
           }
         }}
       />

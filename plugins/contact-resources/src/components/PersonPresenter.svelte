@@ -46,13 +46,13 @@
   export let showStatus: boolean = false
   export let overflowLabel = true
 
-  const client = getClient()
   $: personValue = typeof value === 'string' ? $personByIdStore.get(value) : value
 
   function getTooltip (
     tooltipLabels: PersonLabelTooltip | undefined,
     value: Person | null | undefined
   ): LabelAndProps | undefined {
+    const client = getClient()
     if (!tooltipLabels) {
       return getPersonTooltip(client, value)
     }

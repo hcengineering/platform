@@ -37,7 +37,6 @@
   export let header: IntlString | undefined = undefined
   export let headerParams: Record<string, any> = {}
 
-  const client = getClient()
   const limit = 300
   const tooltipLimit = 512
 
@@ -78,7 +77,7 @@
   let tooltipLabel: IntlString | undefined = undefined
 
   $: if (headerObject !== undefined) {
-    tooltipLabel = header ?? client.getHierarchy().getClass(headerObject._class).label
+    tooltipLabel = header ?? getClient().getHierarchy().getClass(headerObject._class).label
   } else if (person !== undefined) {
     tooltipLabel = getEmbeddedLabel(person.name)
   } else {
@@ -129,7 +128,7 @@
           {#if headerObject}
             <DocNavLink object={headerObject} colorInherit>
               <Label
-                label={header ?? client.getHierarchy().getClass(headerObject._class).label}
+                label={header ?? getClient().getHierarchy().getClass(headerObject._class).label}
                 params={headerParams}
               />
             </DocNavLink>

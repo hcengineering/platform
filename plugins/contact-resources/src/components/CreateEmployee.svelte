@@ -57,7 +57,6 @@
   }
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   async function createPerson () {
     try {
@@ -69,6 +68,8 @@
       person.avatar = info.avatar
       person.avatarType = info.avatarType
       person.avatarProps = info.avatarProps
+
+      const client = getClient()
 
       await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
       await client.createMixin(id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {

@@ -65,7 +65,6 @@
 
   export let room: Room
 
-  const client = getClient()
   function getPerson (info: ParticipantInfo | undefined, employees: IdMap<Person>): Person | undefined {
     if (info !== undefined) {
       return employees.get(info.person)
@@ -112,7 +111,7 @@
   async function back (): Promise<void> {
     const meetingMinutes = $currentMeetingMinutes
     if (meetingMinutes !== undefined) {
-      const hierarchy = client.getHierarchy()
+      const hierarchy = getClient().getHierarchy()
       const panelComponent = hierarchy.classHierarchyMixin(
         meetingMinutes._class as Ref<Class<Doc>>,
         view.mixin.ObjectPanel

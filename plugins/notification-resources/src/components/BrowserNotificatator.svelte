@@ -54,12 +54,14 @@
     )
   }
 
-  const client = getClient()
-  const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
+  const linkProviders = getClient().getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
   async function getObjectIdFromLocation (loc: Location): Promise<string | undefined> {
     const appAlias = loc.path[2]
-    const application = client.getModel().findAllSync<Application>(workbench.class.Application, { alias: appAlias })[0]
+
+    const application = getClient()
+      .getModel()
+      .findAllSync<Application>(workbench.class.Application, { alias: appAlias })[0]
 
     if (application?.locationDataResolver != null) {
       const resolver = await getResource(application.locationDataResolver)
@@ -85,14 +87,14 @@
     const sidebarObjectId = getSidebarObject()?._id
 
     if (_id && _id === sidebarObjectId) {
-      await client.remove(value)
+      await getClient().remove(value)
       return
     }
 
     const locObjectId = await getObjectIdFromLocation(getCurrentResolvedLocation())
 
     if (_id && _id === locObjectId) {
-      await client.remove(value)
+      await getClient().remove(value)
       return
     }
     addNotification(
@@ -103,7 +105,7 @@
       NotificationSeverity.Info,
       `notification-${value.objectId}`
     )
-    await client.remove(value)
+    await getClient().remove(value)
   }
 
   const query = createQuery()

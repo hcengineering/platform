@@ -61,7 +61,6 @@
   } as unknown as Customer
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
   let customerId = generateId()
 
   let channels: AttachedData<Channel>[] = []
@@ -83,6 +82,7 @@
       candidate.avatarType = info.avatarType
       candidate.avatarProps = info.avatarProps
     }
+    const client = getClient()
 
     if (client.getHierarchy().isDerived(targetClass._id, contact.class.Organization)) {
       ;(candidate as Organization).description = null

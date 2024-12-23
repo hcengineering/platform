@@ -49,12 +49,11 @@
   let dragover = false
   let wSection: number
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
 
   async function onFileUploaded ({ uuid, name, file }: FileUploadCallbackParams): Promise<void> {
     await createAttachment(
-      client,
+      getClient(),
       uuid,
       name,
       file,

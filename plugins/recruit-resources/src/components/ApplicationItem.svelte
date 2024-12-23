@@ -22,14 +22,15 @@
 
   export let value: Applicant
 
-  const client = getClient()
-  const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
+  const shortLabel = getClient().getHierarchy().getClass(value._class).shortLabel
 
   let person: Person | undefined
 
-  $: client.findOne(contact.class.Person, { _id: value.attachedTo as Ref<Person> }).then((p) => {
-    person = p
-  })
+  $: void getClient()
+    .findOne(contact.class.Person, { _id: value.attachedTo as Ref<Person> })
+    .then((p) => {
+      person = p
+    })
 </script>
 
 <div class="flex-row-center">
@@ -39,6 +40,6 @@
     {#if shortLabel}{shortLabel}-{/if}{value.number}
   </span>
   {#if person}
-    <span class="ml-1">{getName(client.getHierarchy(), person)}</span>
+    <span class="ml-1">{getName(getClient().getHierarchy(), person)}</span>
   {/if}
 </div>

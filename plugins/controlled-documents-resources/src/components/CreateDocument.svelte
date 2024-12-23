@@ -75,14 +75,22 @@
   let templateId: Ref<DocumentTemplate> | undefined = initTemplateId
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   async function handleOkAction (): Promise<void> {
     if (isTemplateMandatory && !templateId) {
       return
     }
 
-    await createControlledDocFromTemplate(client, templateId, id, object, space, undefined, undefined, documentClass)
+    await createControlledDocFromTemplate(
+      getClient(),
+      templateId,
+      id,
+      object,
+      space,
+      undefined,
+      undefined,
+      documentClass
+    )
 
     dispatch('close', id)
   }
@@ -90,7 +98,7 @@
   const manager = createFocusManager()
 
   $: if (templateId === undefined) {
-    void client
+    void getClient()
       .findOne(
         templateMixin,
         { _class: documentClass, _id: { $nin: excludedTemplates ?? [] } },

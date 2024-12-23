@@ -26,11 +26,9 @@
   export let selected: boolean = false
   export let onChange: (key: string, value: boolean) => void
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
   function isEqual (value: Person, targetEmp: Person, key: string) {
     if (cast !== undefined) {
+      const hierarchy = getClient().getHierarchy()
       value = hierarchy.as(value, cast)
       targetEmp = hierarchy.as(targetEmp, cast)
     }
@@ -38,7 +36,9 @@
     if (!(targetEmp as any)[key]) return true
     return (value as any)[key] === (targetEmp as any)[key]
   }
-  $: attribute = hierarchy.findAttribute(cast ?? value._class, key)
+  $: attribute = getClient()
+    .getHierarchy()
+    .findAttribute(cast ?? value._class, key)
   const change = (sel: boolean): void => {
     selected = sel
     onChange(key, sel)

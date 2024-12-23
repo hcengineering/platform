@@ -29,13 +29,11 @@
   export let draft = false
   export let extraProps: Record<string, any> = {}
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
   let editor: Promise<AnySvelteComponent | undefined> | undefined
 
-  $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
+  $: attribute = typeof key === 'string' ? getClient().getHierarchy().getAttribute(_class, key) : key.attr
   $: attributeKey = typeof key === 'string' ? key : key.key
   $: editor = getAttributeEditor(client, _class, key)
   $: isReadonly = (attribute.readonly ?? false) || readonly
@@ -46,7 +44,7 @@
       ;(doc as any)[attributeKey] = value
       dispatch('update', { key, value })
     } else {
-      updateAttribute(client, doc, _class, { key: attributeKey, attr: attribute }, value)
+      void updateAttribute(getClient(), doc, _class, { key: attributeKey, attr: attribute }, value)
     }
   }
 </script>
@@ -68,7 +66,7 @@
           type={attribute?.type}
           {maxWidth}
           {attributeKey}
-          value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+          value={getAttribute(getClient(), object, { key: attributeKey, attr: attribute })}
           space={object.space}
           {onChange}
           {focus}

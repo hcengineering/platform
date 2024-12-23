@@ -29,8 +29,6 @@
   import { openMessageFromSpecial } from '../../../navigation'
   import BlankView from '../../BlankView.svelte'
 
-  const client = getClient()
-
   let savedMessages: WithLookup<SavedMessage>[] = []
   let savedAttachments: WithLookup<SavedAttachments>[] = []
 
@@ -42,11 +40,13 @@
       return
     }
     const messageId: Ref<ActivityMessage> = attach.attachedTo as Ref<ActivityMessage>
-    await client.findOne(activity.class.ActivityMessage, { _id: messageId }).then((res) => {
-      if (res !== undefined) {
-        void openMessageFromSpecial(res)
-      }
-    })
+    await getClient()
+      .findOne(activity.class.ActivityMessage, { _id: messageId })
+      .then((res) => {
+        if (res !== undefined) {
+          void openMessageFromSpecial(res)
+        }
+      })
   }
 
   function getName (
@@ -58,7 +58,7 @@
     if (acc !== undefined) {
       const emp = personByIdStore.get(acc?.person)
       if (emp !== undefined) {
-        return getContactName(client.getHierarchy(), emp)
+        return getContactName(getClient().getHierarchy(), emp)
       }
     }
   }

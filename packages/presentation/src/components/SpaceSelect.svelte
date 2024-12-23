@@ -69,7 +69,6 @@
 
   let selected: (Space & IconProps) | undefined
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
 
   const mgr = getFocusManager()
@@ -77,6 +76,7 @@
     _value: Ref<Space> | undefined,
     spaceQuery: DocumentQuery<Space> | undefined
   ) {
+    const client = getClient()
     let v = _value !== undefined ? await client.findOne(_class, { ...(spaceQuery ?? {}), _id: _value }) : undefined
     selected = v
 

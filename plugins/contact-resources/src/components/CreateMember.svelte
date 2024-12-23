@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Organization, Person } from '@hcengineering/contact'
   import { Class, Ref, Space } from '@hcengineering/core'
-  import { Card, getClient } from '@hcengineering/presentation'
+  import { Card } from '@hcengineering/presentation'
   import { createFocusManager, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
@@ -32,13 +32,11 @@
     return person === undefined
   }
 
-  const client = getClient()
-
   async function createMember () {
     if (person === undefined) {
       return
     }
-    const id = await client.addCollection(contact.class.Member, space, organization, _class, 'members', {
+    const id = await getClient().addCollection(contact.class.Member, space, organization, _class, 'members', {
       contact: person
     })
 

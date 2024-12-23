@@ -13,12 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import activity from '@hcengineering/activity'
+  import { AttachmentImageSize } from '@hcengineering/attachment-resources'
   import { ThreadMessage } from '@hcengineering/chunter'
   import { Action, Label } from '@hcengineering/ui'
   import { getDocLinkTitle } from '@hcengineering/view-resources'
-  import { getClient } from '@hcengineering/presentation'
-  import activity from '@hcengineering/activity'
-  import { AttachmentImageSize } from '@hcengineering/attachment-resources'
 
   import chunter from '../../plugin'
   import ChatMessagePresenter from '../chat-message/ChatMessagePresenter.svelte'
@@ -41,8 +40,6 @@
   export let videoPreload = true
   export let readonly = false
   export let onClick: (() => void) | undefined = undefined
-
-  const client = getClient()
 </script>
 
 {#if inline && value}

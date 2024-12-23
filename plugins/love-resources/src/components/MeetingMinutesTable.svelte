@@ -10,14 +10,13 @@
   export let floor: Floor
   export let rooms: Room[] = []
 
-  const client = getClient()
   let viewlet: WithLookup<Viewlet> | undefined
   let viewOptions: ViewOptions | undefined
   let preference: ViewletPreference | undefined
 
   const preferenceQuery = createQuery()
 
-  void client
+  void getClient()
     .findAll(
       view.class.Viewlet,
       { _id: lovePlg.viewlet.TableMeetingMinutes },

@@ -18,8 +18,8 @@
   import { getClient } from '@hcengineering/presentation'
   import { Button, IconAdd } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { createAttachments } from '../utils'
   import attachment from '../plugin'
+  import { createAttachments } from '../utils'
 
   export let loading: number = 0
   export let inputFile: HTMLInputElement
@@ -30,28 +30,33 @@
   export let attachmentClass: Ref<Class<Attachment>> = attachment.class.Attachment
   export let attachmentClassOptions: Partial<Data<Attachment>> = {}
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
 
-  async function fileSelected () {
+  async function fileSelected (): Promise<void> {
     const list = inputFile.files
     if (list === null || list.length === 0) return
 
     loading++
     try {
-      await createAttachments(client, list, { objectClass, objectId, space }, attachmentClass, attachmentClassOptions)
+      await createAttachments(
+        getClient(),
+        list,
+        { objectClass, objectId, space },
+        attachmentClass,
+        attachmentClassOptions
+      )
     } finally {
       loading--
     }
 
-    if (inputFile) {
+    if (inputFile != null) {
       inputFile.value = ''
     }
 
     dispatch('attached')
   }
 
-  function openFile () {
+  function openFile (): void {
     inputFile.click()
   }
 </script>

@@ -31,7 +31,6 @@
   let loading = 0
   let images: WithLookup<Photo>[] = []
 
-  const client = getClient()
   const query = createQuery()
   query.query(
     attachment.class.Photo,
@@ -48,7 +47,7 @@
     loading++
     try {
       const uuid = await uploadFile(file)
-      await client.addCollection(attachment.class.Photo, space, objectId, _class, 'attachments', {
+      await getClient().addCollection(attachment.class.Photo, space, objectId, _class, 'attachments', {
         name: file.name,
         file: uuid,
         type: file.type,

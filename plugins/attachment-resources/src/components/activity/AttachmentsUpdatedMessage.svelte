@@ -28,10 +28,8 @@
   export let value: Attachment | undefined = undefined
   export let preview = false
 
-  const client = getClient()
-
   $: value === undefined &&
-    getOrBuildObject<Attachment>(client, _id, attachment.class.Attachment).then((res) => {
+    getOrBuildObject<Attachment>(getClient(), _id, attachment.class.Attachment).then((res) => {
       value = res
     })
 </script>

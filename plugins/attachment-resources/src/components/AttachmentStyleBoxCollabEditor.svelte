@@ -54,8 +54,6 @@
   export let useAttachmentPreview: boolean = false
   export let readonly: boolean = false
 
-  const client = getClient()
-
   const user = getCollaborationUser()
   let userComponent: AnySvelteComponent | undefined
   void getResource(contact.component.CollaborationUserAvatar).then((component) => {
@@ -190,6 +188,8 @@
         lastModified: file instanceof File ? file.lastModified : Date.now()
       }
 
+      const client = getClient()
+
       await client.addCollection(
         attachment.class.Attachment,
         object.space,
@@ -268,7 +268,7 @@
     progressItems.push(attachment._id)
     progressItems = progressItems
 
-    await client.removeCollection(
+    await getClient().removeCollection(
       attachment._class,
       attachment.space,
       attachment._id,
@@ -318,6 +318,7 @@
       {readonly}
       {attachFile}
       on:open-document={async (event) => {
+        const client = getClient()
         const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
         if (doc != null) {
           const location = await getObjectLinkFragment(client.getHierarchy(), doc, {}, view.component.EditDoc)

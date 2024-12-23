@@ -39,8 +39,6 @@
   export let actions: Action[] = []
   export let space: Ref<Space> | undefined = undefined
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
   const objectQuery = createQuery()
@@ -52,17 +50,21 @@
   let attributeModel: AttributeModel | undefined = undefined
   let object: Doc | undefined
 
-  $: [viewlet] = client
+  $: [viewlet] = getClient()
     .getModel()
     .findAllSync(activity.class.DocUpdateMessageViewlet, { action: value.action, objectClass: value.objectClass })
 
-  $: collectionAttribute = getCollectionAttribute(hierarchy, value.attachedToClass, value.updateCollection)
-  $: clazz = hierarchy.getClass(value.objectClass)
+  $: collectionAttribute = getCollectionAttribute(
+    getClient().getHierarchy(),
+    value.attachedToClass,
+    value.updateCollection
+  )
+  $: clazz = getClient().getHierarchy().getClass(value.objectClass)
 
   $: objectName = (collectionAttribute?.type as Collection<AttachedDoc>)?.itemLabel ?? clazz.label
   $: collectionName = collectionAttribute?.label
 
-  $: void getAttributeModel(client, value.attributeUpdates, value.objectClass).then((model) => {
+  $: void getAttributeModel(getClient(), value.attributeUpdates, value.objectClass).then((model) => {
     attributeModel = model
   })
 
@@ -73,6 +75,7 @@
       object = doc
       return
     }
+    const client = getClient()
 
     const isObjectRemoved = await checkIsObjectRemoved(client, _id, _class)
 

@@ -24,16 +24,16 @@
 
   export let value: Doc | undefined
 
-  const client = getClient()
-
   let parentObject: Doc | undefined
 
   $: showParent = isActivityMessage(value)
 
   $: isActivityMessage(value) &&
-    client.findOne(value.attachedToClass, { _id: value.attachedTo, space: value.space }).then((res) => {
-      parentObject = res
-    })
+    getClient()
+      .findOne(value.attachedToClass, { _id: value.attachedTo, space: value.space })
+      .then((res) => {
+        parentObject = res
+      })
 </script>
 
 <DocReferencePresenter value={showParent ? parentObject : value} compact={showParent}>

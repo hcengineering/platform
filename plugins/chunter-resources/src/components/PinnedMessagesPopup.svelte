@@ -28,7 +28,6 @@
   export let space: Ref<Space>
   export let withRefs = false
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
   const pinnedQuery = createQuery()
   const pinnedThreadsQuery = createQuery()
@@ -80,7 +79,7 @@
   }
 
   async function unpinMessage (message: ActivityMessage): Promise<void> {
-    await client.update(message, { isPinned: false })
+    await getClient().update(message, { isPinned: false })
   }
 
   $: displayMessages = sortActivityMessages(

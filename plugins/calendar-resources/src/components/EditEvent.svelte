@@ -68,7 +68,6 @@
   let externalParticipants: string[] = [...(object.externalParticipants ?? [])]
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   export function canClose (): boolean {
     return title !== undefined && title.trim().length === 0 && participants.length === 0
@@ -126,7 +125,7 @@
       if (object._class === calendar.class.ReccuringInstance) {
         await updateReccuringInstance(update, object as ReccuringInstance)
       } else {
-        await client.update(object, update)
+        await getClient().update(object, update)
       }
     }
     dispatch('close')

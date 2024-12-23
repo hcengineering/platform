@@ -10,21 +10,21 @@
 
   const dispatch = createEventDispatcher()
 
-  const client = getClient()
-
   let name: string = ''
   $: if (id !== undefined) {
-    client.findOne(love.class.Floor, { _id: id }).then((res) => {
-      name = res?.name ?? ''
-    })
+    getClient()
+      .findOne(love.class.Floor, { _id: id })
+      .then((res) => {
+        name = res?.name ?? ''
+      })
   }
 
   async function createFloor (): Promise<void> {
-    await client.createDoc(love.class.Floor, core.space.Workspace, { name })
+    await getClient().createDoc(love.class.Floor, core.space.Workspace, { name })
   }
   async function updateFloor (): Promise<void> {
     if (id === undefined) return
-    await client.updateDoc(love.class.Floor, core.space.Workspace, id, { name })
+    await getClient().updateDoc(love.class.Floor, core.space.Workspace, id, { name })
   }
 </script>
 

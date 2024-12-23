@@ -27,19 +27,18 @@
   export let context: DocNotifyContext
   export let object: ActivityMessage
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
   let title: string | undefined = undefined
   let doc: Doc | undefined = undefined
 
   $: object &&
-    client.findOne(object.attachedToClass, { _id: object.attachedTo, space: object.space }).then((res) => {
-      doc = res
-    })
+    getClient()
+      .findOne(object.attachedToClass, { _id: object.attachedTo, space: object.space })
+      .then((res) => {
+        doc = res
+      })
 
   $: doc &&
-    getDocLinkTitle(client, doc._id, doc._class, doc).then((res) => {
+    getDocLinkTitle(getClient(), doc._id, doc._class, doc).then((res) => {
       title = res
     })
 </script>
@@ -51,12 +50,15 @@
       <Label label={activity.string.In} />
     </span>
     {#if doc}
-      {#await getDocTitle(client, doc._id, doc._class, doc) then tooltipLabel}
+      {#await getDocTitle(getClient(), doc._id, doc._class, doc) then tooltipLabel}
         <span
           class="flex-presenter flex-gap-0-5"
           use:tooltip={tooltipLabel ? { label: getEmbeddedLabel(tooltipLabel) } : undefined}
         >
-          <ObjectIcon value={doc} size={hierarchy.isDerived(doc._class, contact.class.Person) ? 'tiny' : 'small'} />
+          <ObjectIcon
+            value={doc}
+            size={getClient().getHierarchy().isDerived(doc._class, contact.class.Person) ? 'tiny' : 'small'}
+          />
           {title}
         </span>
       {/await}

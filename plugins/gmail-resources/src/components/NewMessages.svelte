@@ -65,7 +65,6 @@
   )
   let channels: Channel[] = []
 
-  const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
 
   const attachmentParentId = generateId()
@@ -84,7 +83,7 @@
       templateProvider.set(contact.class.Contact, target)
       const htmlContent = markupToHTML(content)
       const message = await templateProvider.fillTemplate(htmlContent)
-      const id = await client.createDoc(plugin.class.NewMessage, core.space.Workspace, {
+      const id = await getClient().createDoc(plugin.class.NewMessage, core.space.Workspace, {
         subject,
         content: message,
         to: channel.value,
@@ -98,7 +97,7 @@
       Analytics.handleEvent(GmailEvents.SentEmail, { to: channel.value })
       await inboxClient.forceReadDoc(channel._id, channel._class)
       for (const attachment of attachments) {
-        await client.addCollection(
+        await getClient().addCollection(
           attachmentP.class.Attachment,
           core.space.Workspace,
           id,
@@ -145,7 +144,7 @@
     try {
       const uploadFile = await getResource(attachmentP.helper.UploadFile)
       const uuid = await uploadFile(file)
-      await client.addCollection(
+      await getClient().addCollection(
         attachmentP.class.Attachment,
         core.space.Workspace,
         attachmentParentId,
@@ -169,7 +168,7 @@
 
   async function removeAttachment (attachment: Attachment): Promise<void> {
     const deleteFile = await getResource(attachmentP.helper.DeleteFile)
-    await client.removeCollection(
+    await getClient().removeCollection(
       attachment._class,
       attachment.space,
       attachment._id,
@@ -195,7 +194,7 @@
   function getName (channel: Channel): string {
     const contact = contactMap.get(channel.attachedTo as Ref<Contact>)
     if (contact === undefined) return channel.value
-    return `${getContactName(client.getHierarchy(), contact)} (${channel.value})`
+    return `${getContactName(getClient().getHierarchy(), contact)} (${channel.value})`
   }
 
   const settingsQuery = createQuery()

@@ -16,7 +16,7 @@
   import contact, { Person, PersonAccount } from '@hcengineering/contact'
   import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { Class, Doc, getCurrentAccount, Markup, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { getClient, MessageViewer } from '@hcengineering/presentation'
+  import { getClient, MessageViewer, pendingCreatedDocs } from '@hcengineering/presentation'
   import { AttachmentDocList, AttachmentImageSize } from '@hcengineering/attachment-resources'
   import { getDocLinkTitle } from '@hcengineering/view-resources'
   import { Action, Button, IconEdit, ShowMore } from '@hcengineering/ui'
@@ -57,9 +57,6 @@
   export let onClick: (() => void) | undefined = undefined
   export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
-  const client = getClient()
-  const { pendingCreatedDocs } = client
-  const hierarchy = client.getHierarchy()
   const STALE_TIMEOUT_MS = 5000
   const currentAccount = getCurrentAccount()
 
@@ -74,7 +71,7 @@
   let viewlet: ChatMessageViewlet | undefined
   ;[viewlet] =
     value !== undefined
-      ? client.getModel().findAllSync(chunter.class.ChatMessageViewlet, {
+      ? getClient().getModel().findAllSync(chunter.class.ChatMessageViewlet, {
         objectClass: value.attachedToClass,
         messageClass: value._class
       })
@@ -112,9 +109,11 @@
   $: if (doc !== undefined && value?.attachedTo === doc._id) {
     object = doc
   } else if (value !== undefined) {
-    void client.findOne(value.attachedToClass, { _id: value.attachedTo }).then((result) => {
-      object = result
-    })
+    void getClient()
+      .findOne(value.attachedToClass, { _id: value.attachedTo })
+      .then((result) => {
+        object = result
+      })
   }
 
   let stale = false
@@ -137,6 +136,8 @@
     _id: Ref<Doc>,
     space: Ref<Space>
   ): Promise<ActivityMessage | undefined> {
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
     if (hierarchy.isDerived(_class, activity.class.ActivityMessage)) {
       return await client.findOne<ActivityMessage>(_class, { _id: _id as Ref<ActivityMessage>, space })
     }
@@ -206,7 +207,7 @@
   }
 
   $: socialProvider = value?.provider
-    ? client.getModel().findAllSync(contact.class.ChannelProvider, { _id: value.provider })[0]
+    ? getClient().getModel().findAllSync(contact.class.ChannelProvider, { _id: value.provider })[0]
     : undefined
 
   let displayText: Markup = value?.message ?? EmptyMarkup
@@ -219,12 +220,12 @@
 </script>
 
 {#if inline && object}
-  {#await getDocLinkTitle(client, object._id, object._class, object) then title}
+  {#await getDocLinkTitle(getClient(), object._id, object._class, object) then title}
     <ActivityDocLink
       {object}
       {title}
-      panelComponent={hierarchy.classHierarchyMixin(object._class, view.mixin.ObjectPanel)?.component ??
-        view.component.EditDoc}
+      panelComponent={getClient().getHierarchy().classHierarchyMixin(object._class, view.mixin.ObjectPanel)
+        ?.component ?? view.component.EditDoc}
     />
   {/await}
 {:else if value && !inline}

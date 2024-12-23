@@ -25,7 +25,6 @@
 
   export let value: Document
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
 
   let space: Ref<Teamspace> = value.space
@@ -39,14 +38,14 @@
   }
 
   async function save (): Promise<void> {
-    const ops = client.apply(value._id)
+    const ops = getClient().apply(value._id)
 
     await moveDocument(value, space, parent ?? document.ids.NoParent)
 
     if (space !== value.space) {
       const children = await findChildren(value)
       for (const child of children) {
-        await client.updateDoc(document.class.Document, value.space, child, {
+        await ops.updateDoc(document.class.Document, value.space, child, {
           space
         })
       }
@@ -56,7 +55,7 @@
   }
 
   async function findChildren (doc: Document): Promise<Array<Ref<Document>>> {
-    const documents = await client.findAll(
+    const documents = await getClient().findAll(
       document.class.Document,
       { space: doc.space, parent: { $ne: document.ids.NoParent } },
       { projection: { _id: 1, parent: 1 } }

@@ -36,8 +36,6 @@
     count: number
   }
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const contextsStore = inboxClient.contexts
   const contextByDocStore = inboxClient.contextByDoc
@@ -56,7 +54,7 @@
     if (model.isPinned !== isPinned) return false
     if (model._class !== undefined && model._class !== objectClass) return false
     if (model.skipClasses !== undefined && model.skipClasses.includes(objectClass)) return false
-    if (hierarchy.classHierarchyMixin(objectClass, activity.mixin.ActivityDoc) === undefined) return false
+    if (getClient().getHierarchy().classHierarchyMixin(objectClass, activity.mixin.ActivityDoc) === undefined) { return false }
     return true
   })
 
@@ -76,12 +74,12 @@
     (!$contextByDocStore.has(object._id) || isArchived(object))
 
   function isArchived (object: Doc): boolean {
-    return hierarchy.isDerived(object._class, core.class.Space) ? (object as Space).archived : false
+    return getClient().getHierarchy().isDerived(object._class, core.class.Space) ? (object as Space).archived : false
   }
 
   function loadObjects (contexts: DocNotifyContext[]): void {
     const contextsByClass = groupByArray(contexts, ({ objectClass }) => objectClass)
-
+    const hierarchy = getClient().getHierarchy()
     for (const [_class, ctx] of contextsByClass.entries()) {
       const isSpace = hierarchy.isDerived(_class, core.class.Space)
       const ids = ctx.map(({ objectId }) => objectId)
@@ -116,6 +114,7 @@
   }
 
   function getObjectGroup (object: Doc): ChatGroup {
+    const hierarchy = getClient().getHierarchy()
     if (hierarchy.isDerived(object._class, chunter.class.Channel)) {
       return 'channels'
     }
@@ -158,7 +157,7 @@
       ) {
         isObjectPushed = true
       }
-
+      const hierarchy = getClient().getHierarchy()
       for (let [_class, { docs: objects, total }] of objectsByClass.entries()) {
         const clazz = hierarchy.getClass(_class)
         const sectionObjects = [...objects]

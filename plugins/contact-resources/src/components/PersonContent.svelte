@@ -52,8 +52,6 @@
   export let type: ObjectPresenterType = 'link'
   export let overflowLabel = true
 
-  const client = getClient()
-
   const onEditClick = (evt: MouseEvent) => {
     if (!disabled) {
       onEdit?.(evt)
@@ -61,7 +59,7 @@
   }
   const dispatch = createEventDispatcher()
 
-  $: name = value ? getName(client.getHierarchy(), value) : ''
+  $: name = value ? getName(getClient().getHierarchy(), value) : ''
   $: accentColor =
     value?.name !== undefined
       ? getPlatformAvatarColorForTextDef(value?.name ?? '', $themeStore.dark)

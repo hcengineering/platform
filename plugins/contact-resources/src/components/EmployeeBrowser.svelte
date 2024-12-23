@@ -6,14 +6,13 @@
   import EmployeePresenter from './EmployeePresenter.svelte'
 
   export let search: string = ''
-  const client = getClient()
   // export let withHeader: boolean = true
   $: searchQuery = search.length ? { $search: search } : {}
   $: resultQuery = { ...searchQuery }
   let employees: Employee[] = []
 
   async function updateEmployees (resultQuery: DocumentQuery<Employee>) {
-    employees = await client.findAll(
+    employees = await getClient().findAll(
       contact.mixin.Employee,
       {
         ...resultQuery

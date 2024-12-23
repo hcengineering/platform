@@ -29,7 +29,6 @@
   export let level: number = 0
   export let once: boolean = false
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
 
   function getDescendants (obj: Ref<Folder>): Ref<Folder>[] {
@@ -38,7 +37,7 @@
 
   async function getActions (obj: Folder): Promise<Action[]> {
     const result: Action[] = []
-    const extraActions = await getContributedActions(client, obj)
+    const extraActions = await getContributedActions(getClient(), obj)
     for (const act of extraActions) {
       result.push({
         icon: act.icon ?? IconEdit,

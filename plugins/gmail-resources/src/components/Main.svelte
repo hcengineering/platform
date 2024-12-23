@@ -38,7 +38,6 @@
   export let message: Message | undefined = undefined
   export let messageId: Ref<Message> | undefined = undefined
 
-  const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
 
   const messageQuery = createQuery()
@@ -125,7 +124,7 @@
         <div class="title-wrapper">
           <span class="wrapped-title">Email</span>
           <span class="wrapped-subtitle">
-            {getName(client.getHierarchy(), object)}
+            {getName(getClient().getHierarchy(), object)}
           </span>
         </div>
       </div>

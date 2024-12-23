@@ -104,7 +104,6 @@
   let inputFile: HTMLInputElement
   let saved = false
 
-  const client = getClient()
   const query = createQuery()
   let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
   let originalAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
@@ -212,7 +211,7 @@
   async function saveAttachment (doc: Attachment, objectId: Ref<Doc> | undefined, op?: TxOperations): Promise<void> {
     if (space === undefined || objectId === undefined || _class === undefined) return
     newAttachments.delete(doc._id)
-    await (op ?? client).addCollection(
+    await (op ?? getClient()).addCollection(
       attachment.class.Attachment,
       space,
       objectId,
@@ -259,7 +258,7 @@
   async function deleteAttachment (attachment: Attachment): Promise<void> {
     removedAttachments.delete(attachment)
     if (originalAttachments.has(attachment._id)) {
-      await client.removeCollection(
+      await getClient().removeCollection(
         attachment._class,
         attachment.space,
         attachment._id,

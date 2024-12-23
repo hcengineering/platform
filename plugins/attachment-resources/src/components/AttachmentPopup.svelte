@@ -19,7 +19,6 @@
   import { ActionIcon, IconAdd, Label, Loading } from '@hcengineering/ui'
 
   import type { Doc, WithLookup } from '@hcengineering/core'
-  import core from '@hcengineering/core'
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { AttachmentPresenter } from '..'
   import attachment from '../plugin'
@@ -28,8 +27,6 @@
   export let object: Doc
   export let canAdd = true
   export let canRemove = true
-
-  const client = getClient()
 
   let docs: WithLookup<Attachment>[] = []
 
@@ -46,25 +43,32 @@
     }
   )
 
-  function add () {
+  function add (): void {
     if (canAdd) {
       inputFile.click()
     }
   }
 
-  async function createAttachment (file: File) {
+  async function createAttachment (file: File): Promise<void> {
     try {
       const uuid = await uploadFile(file)
       const metadata = await getFileMetadata(file, uuid)
 
-      await client.addCollection(attachment.class.Attachment, object.space, object._id, object._class, 'attachments', {
-        name: file.name,
-        file: uuid,
-        type: file.type,
-        size: file.size,
-        lastModified: file.lastModified,
-        metadata
-      })
+      await getClient().addCollection(
+        attachment.class.Attachment,
+        object.space,
+        object._id,
+        object._class,
+        'attachments',
+        {
+          name: file.name,
+          file: uuid,
+          type: file.type,
+          size: file.size,
+          lastModified: file.lastModified,
+          metadata
+        }
+      )
     } catch (e) {
       void setPlatformStatus(unknownError(e))
     }
@@ -89,7 +93,7 @@
 
   async function remove (doc: Attachment): Promise<void> {
     if (canRemove) {
-      await client.remove(doc)
+      await getClient().remove(doc)
     }
   }
 </script>

@@ -106,10 +106,8 @@
     return name.trim() === '' && typeId !== undefined
   }
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const templateQ = createQuery()
-  fillDefaults(hierarchy, vacancyData, recruit.class.Vacancy)
+  fillDefaults(getClient().getHierarchy(), vacancyData, recruit.class.Vacancy)
   $: typeId &&
     templateQ.query(task.class.ProjectType, { _id: typeId }, (result) => {
       const { _class, _id, description, targetClass, ...templateData } = result[0]
@@ -118,7 +116,7 @@
         fullDescription = description ?? ''
         appliedTemplateId = typeId
       }
-      fillDefaults(hierarchy, vacancyData, recruit.class.Vacancy)
+      fillDefaults(getClient().getHierarchy(), vacancyData, recruit.class.Vacancy)
     })
 
   const issueTemplatesQ = createQuery()
@@ -160,6 +158,7 @@
     template: IssueTemplateData,
     parent: Ref<Issue> = tracker.ids.NoParent
   ): Promise<Ref<Issue> | undefined> {
+    const client = getClient()
     const lastOne = await client.findOne<Issue>(
       tracker.class.Issue,
       { space },
@@ -231,6 +230,7 @@
     if (typeId === undefined || typeType === undefined) {
       throw Error(`Failed to find target project type: ${typeId}`)
     }
+    const client = getClient()
 
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Vacancy })
     if (sequence === undefined) {

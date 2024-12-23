@@ -9,23 +9,28 @@
 
   export let value: Space
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   const employees: IdMap<Person> = new Map()
 
   let membersToAdd: PersonAccount[] = []
   let channelMembers: Ref<Person>[] = []
-  client.findAll(core.class.Account, { _id: { $in: value.members } }).then((res) => {
-    channelMembers = res.filter((e) => e._class === contact.class.PersonAccount).map((e) => (e as PersonAccount).person)
-  })
+  void getClient()
+    .findAll(core.class.Account, { _id: { $in: value.members } })
+    .then((res) => {
+      channelMembers = res
+        .filter((e) => e._class === contact.class.PersonAccount)
+        .map((e) => (e as PersonAccount).person)
+    })
 
   async function changeMembersToAdd (employees: Ref<Person>[]) {
     if (employees) {
-      await client.findAll(contact.class.PersonAccount, { person: { $in: employees } }).then((res) => {
-        if (res) {
-          membersToAdd = res
-        }
-      })
+      await getClient()
+        .findAll(contact.class.PersonAccount, { person: { $in: employees } })
+        .then((res) => {
+          if (res) {
+            membersToAdd = res
+          }
+        })
     }
   }
 
@@ -56,7 +61,7 @@
       {#each membersToAdd as m}
         {@const employee = employees.get(m.person)}
         <div class="mr-2 p-1 item">
-          {employee ? getName(client.getHierarchy(), employee) : ''}
+          {employee ? getName(getClient().getHierarchy(), employee) : ''}
           <div class="tool">
             <ActionIcon
               icon={IconClose}

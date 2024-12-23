@@ -72,10 +72,8 @@
   let selected: Contact | undefined
   let container: HTMLElement
 
-  const client = getClient()
-
   async function updateSelected (value: Ref<Contact> | null | undefined): Promise<void> {
-    selected = value ? await client.findOne(_previewClass, { _id: value }) : undefined
+    selected = value ? await getClient().findOne(_previewClass, { _id: value }) : undefined
   }
 
   $: void updateSelected(value)
@@ -127,7 +125,7 @@
       on:click={_click}
       class:content-color={selected === undefined}
       use:tooltip={selected !== undefined
-        ? { label: getEmbeddedLabel(getName(client.getHierarchy(), selected)) }
+        ? { label: getEmbeddedLabel(getName(getClient().getHierarchy(), selected)) }
         : undefined}
     >
       <slot name="content" />
@@ -156,14 +154,14 @@
             ? `calc(${width ?? 'min-content'} - 1.5rem)`
             : `${width ?? 'min-content'}`}
           use:tooltip={selected !== undefined
-            ? { label: getEmbeddedLabel(getName(client.getHierarchy(), selected)) }
+            ? { label: getEmbeddedLabel(getName(getClient().getHierarchy(), selected)) }
             : undefined}
         >
           {#if selected}
             {#if hideIcon || selected}
               <UserInfo value={selected} size={avatarSize} {icon} />
             {:else}
-              {getName(client.getHierarchy(), selected)}
+              {getName(getClient().getHierarchy(), selected)}
             {/if}
           {:else}
             <div class="flex-presenter not-selected">
@@ -185,7 +183,7 @@
             size={'small'}
             action={() => {
               if (selected) {
-                openDoc(client.getHierarchy(), selected)
+                openDoc(getClient().getHierarchy(), selected)
               }
             }}
           />

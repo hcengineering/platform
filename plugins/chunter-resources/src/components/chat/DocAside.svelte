@@ -30,16 +30,13 @@
   export let object: Doc
   export let objectChatPanel: ObjectChatPanel | undefined
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
   let mixins: Array<Mixin<Doc>> = []
 
   $: mixins = getDocMixins(object)
 
   function getMixinKeys (mixin: Ref<Mixin<Doc>>): KeyedAttribute[] {
     if (object === undefined) return []
-
+    const hierarchy = getClient().getHierarchy()
     const mixinClass = hierarchy.getClass(mixin)
     const filtredKeys = getFiltredKeys(
       hierarchy,
@@ -50,7 +47,9 @@
     return filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
   }
 
-  $: readonly = hierarchy.isDerived(object._class, core.class.Space) ? (object as Space).archived : false
+  $: readonly = getClient().getHierarchy().isDerived(object._class, core.class.Space)
+    ? (object as Space).archived
+    : false
 </script>
 
 <Scroller>
@@ -65,6 +64,7 @@
   <div class="popupPanel-body__aside-grid">
     {#each mixins as mixin}
       {@const mixinKeys = getMixinKeys(mixin._id)}
+      {@const h = getClient().getHierarchy()}
       {#if mixinKeys.length}
         <div class="divider" />
         {#each mixinKeys as key (typeof key === 'string' ? key : key.key)}
@@ -72,7 +72,7 @@
             {key}
             _class={mixin._id}
             readonly={false}
-            object={hierarchy.as(object, mixin._id)}
+            object={h.as(object, mixin._id)}
             showHeader={true}
             size={'medium'}
           />

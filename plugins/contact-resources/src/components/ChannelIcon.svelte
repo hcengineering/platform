@@ -23,16 +23,16 @@
   export let value: Channel | undefined
   export let size: IconSize = 'small'
 
-  const client = getClient()
-
   let provider: ChannelProvider | undefined = undefined
 
   $: value &&
-    client.findOne(contact.class.ChannelProvider, { _id: value.provider }).then((res) => {
-      provider = res
-    })
+    getClient()
+      .findOne(contact.class.ChannelProvider, { _id: value.provider })
+      .then((res) => {
+        provider = res
+      })
 
-  $: icon = provider?.icon ?? classIcon(client, contact.class.Channel)
+  $: icon = provider?.icon ?? classIcon(getClient(), contact.class.Channel)
 </script>
 
 {#if icon}

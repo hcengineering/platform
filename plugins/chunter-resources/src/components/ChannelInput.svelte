@@ -31,11 +31,8 @@
   export let isThread = false
   export let autofocus = true
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
   let extensions: ActivityExtension[] = []
-  $: extensions = client.getModel().findAllSync(activity.class.ActivityExtension, { ofClass: object._class })
+  $: extensions = getClient().getModel().findAllSync(activity.class.ActivityExtension, { ofClass: object._class })
 
   let icon: Asset | AnySvelteComponent | undefined = undefined
 
@@ -58,7 +55,7 @@
 
   async function getName (object: Doc): Promise<{ name: string | undefined, label: IntlString | undefined }> {
     const name = await getChannelName(object._id, object._class, object)
-    const label = client.getHierarchy().getClass(object._class).label
+    const label = getClient().getHierarchy().getClass(object._class).label
 
     return { name, label }
   }

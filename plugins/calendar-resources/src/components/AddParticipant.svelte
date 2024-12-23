@@ -105,7 +105,6 @@
     input.focus()
   }
 
-  const client = getClient()
   let integrations: Integration[] = []
 
   const integrationsQuery = createQuery()
@@ -129,7 +128,11 @@
       closePopup('participants')
       return
     }
-    const persons = client.findAll(contact.class.Person, { $search: `${val}*`, _id: { $nin: excluded } }, { limit: 5 })
+    const persons = getClient().findAll(
+      contact.class.Person,
+      { $search: `${val}*`, _id: { $nin: excluded } },
+      { limit: 5 }
+    )
     const res = new Set<Ref<Person>>()
     for (const integration of integrations) {
       if (integration.value.includes(val)) {

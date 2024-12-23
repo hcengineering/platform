@@ -40,8 +40,6 @@
 
   const maxNotifications = 3
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
   const query = createQuery()
 
@@ -72,23 +70,25 @@
   let title: string | undefined
 
   $: object &&
-    getDocIdentifier(client, object._id, object._class, object).then((res) => {
+    getDocIdentifier(getClient(), object._id, object._class, object).then((res) => {
       idTitle = res
     })
 
   $: object &&
-    getDocTitle(client, object._id, object._class, object).then((res) => {
+    getDocTitle(getClient(), object._id, object._class, object).then((res) => {
       title = res
     })
 
-  $: presenterMixin = hierarchy.classHierarchyMixin(value.objectClass, notification.mixin.NotificationContextPresenter)
+  $: presenterMixin = getClient()
+    .getHierarchy()
+    .classHierarchyMixin(value.objectClass, notification.mixin.NotificationContextPresenter)
 
   let groupedNotifications: Array<InboxNotification[]> = []
 
   $: groupedNotifications = groupNotificationsByUser(notifications, $personAccountByIdStore)
 
   function isTextMessage (_class: Ref<Class<Doc>>): boolean {
-    return hierarchy.isDerived(_class, chunter.class.ChatMessage)
+    return getClient().getHierarchy().isDerived(_class, chunter.class.ChatMessage)
   }
 
   const canGroup = (it: InboxNotification): boolean => {
@@ -208,13 +208,13 @@
           {#if idTitle}
             {idTitle}
           {:else}
-            <Label label={hierarchy.getClass(value.objectClass).label} />
+            <Label label={getClient().getHierarchy().getClass(value.objectClass).label} />
           {/if}
           <span class="title overflow-label clear-mins" {title}>
             {#if title}
               {title}
             {:else}
-              <Label label={hierarchy.getClass(value.objectClass).label} />
+              <Label label={getClient().getHierarchy().getClass(value.objectClass).label} />
             {/if}
           </span>
         {/if}

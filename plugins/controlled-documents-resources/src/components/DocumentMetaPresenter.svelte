@@ -23,10 +23,8 @@
 
   export let value: DocumentMeta
 
-  const client = getClient()
-
   let lastDoc: Document | undefined
-  client
+  getClient()
     .findOne(
       documents.class.Document,
       {

@@ -78,7 +78,6 @@
   let lastId: Ref<Doc> = _id
   const query = createQuery()
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   let doc: WithLookup<Document> | undefined
   let title = ''
@@ -125,7 +124,7 @@
       const uuid = await uploadFile(file)
       const attachmentId: Ref<Attachment> = generateId()
 
-      await client.addCollection(
+      await getClient().addCollection(
         document.class.DocumentEmbedding,
         doc.space,
         doc._id,
@@ -165,7 +164,7 @@
     const nameTrimmed = title.trim()
 
     if (nameTrimmed.length > 0 && nameTrimmed !== doc.title) {
-      await client.update(doc, { title: nameTrimmed })
+      await getClient().update(doc, { title: nameTrimmed })
     }
   }
 
@@ -175,7 +174,7 @@
       const icons = [document.icon.Document, document.icon.Teamspace]
       const update = async (result: any): Promise<void> => {
         if (result !== undefined && result !== null && doc !== undefined) {
-          await client.update(doc, { icon: result.icon, color: result.color })
+          await getClient().update(doc, { icon: result.icon, color: result.color })
         }
       }
       showPopup(IconPicker, { icon, color, icons }, 'top', update, update)
@@ -384,9 +383,14 @@
               headings = evt.detail
             }}
             on:open-document={async (event) => {
-              const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
+              const doc = await getClient().findOne(event.detail._class, { _id: event.detail._id })
               if (doc != null) {
-                const location = await getObjectLinkFragment(client.getHierarchy(), doc, {}, view.component.EditDoc)
+                const location = await getObjectLinkFragment(
+                  getClient().getHierarchy(),
+                  doc,
+                  {},
+                  view.component.EditDoc
+                )
                 navigate(location)
               }
             }}

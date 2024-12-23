@@ -28,13 +28,9 @@
   export let actions: Action[] = []
   export let space: Ref<Space> | undefined = undefined
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
-  $: previewMixin = hierarchy.classHierarchyMixin(
-    value._class as Ref<Class<Doc>>,
-    activity.mixin.ActivityMessagePreview
-  )
+  $: previewMixin = getClient()
+    .getHierarchy()
+    .classHierarchyMixin(value._class as Ref<Class<Doc>>, activity.mixin.ActivityMessagePreview)
 </script>
 
 {#if previewMixin}

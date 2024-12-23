@@ -43,7 +43,6 @@
   export let draggedItem: Ref<Document> | undefined
   export let draggedOver: Ref<Document> | undefined
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
 
   function getDescendants (obj: Ref<Document>): Ref<Document>[] {
@@ -57,11 +56,11 @@
         label: document.string.CreateDocument,
         action: async (ctx: any, evt: Event) => {
           const id: Ref<Document> = generateId()
-          await createEmptyDocument(client, id, doc.space, doc._id, {})
+          await createEmptyDocument(getClient(), id, doc.space, doc._id, {})
 
-          const object = await client.findOne(document.class.Document, { _id: id })
+          const object = await getClient().findOne(document.class.Document, { _id: id })
           if (object !== undefined) {
-            openDoc(client.getHierarchy(), object)
+            void openDoc(getClient().getHierarchy(), object)
           }
         }
       }
@@ -70,7 +69,7 @@
 
   async function getMoreActions (obj: Document): Promise<Action[]> {
     const result: Action[] = []
-    const extraActions = await getContributedActions(client, obj)
+    const extraActions = await getContributedActions(getClient(), obj)
     for (const act of extraActions) {
       result.push({
         icon: act.icon ?? IconEdit,

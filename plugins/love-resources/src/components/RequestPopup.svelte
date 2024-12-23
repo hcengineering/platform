@@ -28,11 +28,10 @@
 
   $: person = $personByIdStore.get(request.person)
 
-  const client = getClient()
   let stopSound: (() => void) | null = null
 
   async function accept (): Promise<void> {
-    await client.update(request, { status: RequestStatus.Approved })
+    await getClient().update(request, { status: RequestStatus.Approved })
     if (request.room === $myOffice?._id && !$isConnected) {
       const me = (getCurrentAccount() as PersonAccount).person
       const person = $personByIdStore.get(me)
@@ -42,7 +41,7 @@
   }
 
   async function decline (): Promise<void> {
-    await client.update(request, { status: RequestStatus.Rejected })
+    await getClient().update(request, { status: RequestStatus.Rejected })
   }
 
   onMount(async () => {

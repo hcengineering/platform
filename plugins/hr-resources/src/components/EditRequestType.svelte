@@ -16,8 +16,7 @@
     [hr.ids.Overtime2, [hr.ids.Overtime]]
   ])
 
-  const client = getClient()
-  const types: RequestType[] = client.getModel().findAllSync(hr.class.RequestType, {})
+  const types: RequestType[] = getClient().getModel().findAllSync(hr.class.RequestType, {})
   const type = types.find((t) => t._id === object.type)
 
   const typesToChange: RequestType[] =
@@ -34,7 +33,7 @@
   }
   async function changeType () {
     if (newType !== undefined) {
-      await client.update(object, {
+      await getClient().update(object, {
         type: newType._id
       })
     }

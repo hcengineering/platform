@@ -32,8 +32,6 @@
 
   $: currentDescendants = descendants.get(value._id) ?? []
 
-  const client = getClient()
-
   async function changeLead (result: Employee | null | undefined): Promise<void> {
     if (result === undefined) {
       return
@@ -41,7 +39,7 @@
 
     const newLead = result === null ? null : result._id
     if (newLead !== value.teamLead) {
-      await client.update(value, { teamLead: newLead })
+      await getClient().update(value, { teamLead: newLead })
     }
   }
 
@@ -69,7 +67,7 @@
   }
 
   function edit (e: MouseEvent): void {
-    openDoc(client.getHierarchy(), value)
+    openDoc(getClient().getHierarchy(), value)
   }
 
   export let dragPerson: WithLookup<Staff> | undefined
@@ -105,7 +103,7 @@
     }}
     on:drop|preventDefault={(itm) => {
       closeTooltip()
-      addMember(client, dragPerson, value).then(() => {
+      addMember(getClient(), dragPerson, value).then(() => {
         dragPerson = undefined
         dragOver = undefined
       })

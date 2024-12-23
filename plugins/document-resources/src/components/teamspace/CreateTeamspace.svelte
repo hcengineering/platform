@@ -54,8 +54,6 @@
   export let descriptionPlaceholder: string = ''
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
 
   let name: string = teamspace?.name ?? namePlaceholder
   let description: string = teamspace?.description ?? descriptionPlaceholder
@@ -64,9 +62,9 @@
   let color = teamspace?.color ?? getColorNumberByText(name)
   let isColorSelected = false
   let members: Ref<Account>[] =
-    teamspace?.members !== undefined ? hierarchy.clone(teamspace.members) : [getCurrentAccount()._id]
+    teamspace?.members !== undefined ? getClient().getHierarchy().clone(teamspace.members) : [getCurrentAccount()._id]
   let owners: Ref<Account>[] =
-    teamspace?.owners !== undefined ? hierarchy.clone(teamspace.owners) : [getCurrentAccount()._id]
+    teamspace?.owners !== undefined ? getClient().getHierarchy().clone(teamspace.owners) : [getCurrentAccount()._id]
   let rolesAssignment: RolesAssignment = {}
 
   $: isNew = teamspace === undefined
@@ -78,7 +76,7 @@
   const loadSpaceType = reduceCalls(async (id: typeof typeId): Promise<void> => {
     spaceType =
       id !== undefined
-        ? await client
+        ? await getClient()
           .getModel()
           .findOne(core.class.SpaceType, { _id: id }, { lookup: { _id: { roles: core.class.Role } } })
         : undefined
@@ -95,7 +93,7 @@
       return {}
     }
 
-    const asMixin = hierarchy.as(teamspace, spaceType?.targetClass)
+    const asMixin = getClient().getHierarchy().as(teamspace, spaceType?.targetClass)
 
     return spaceType.$lookup.roles.reduce<RolesAssignment>((prev, { _id }) => {
       prev[_id as Ref<Role>] = (asMixin as any)[_id] ?? []
@@ -130,6 +128,8 @@
     if (teamspace === undefined || spaceType?.targetClass === undefined) {
       return
     }
+
+    const client = getClient()
 
     const teamspaceData = getTeamspaceData()
     const update: DocumentUpdate<Teamspace> = {}
@@ -196,6 +196,8 @@
 
     const teamspaceId = generateId<Teamspace>()
     const teamspaceData = getTeamspaceData()
+
+    const client = getClient()
 
     await client.createDoc(document.class.Teamspace, core.space.Space, { ...teamspaceData, type: typeId }, teamspaceId)
 

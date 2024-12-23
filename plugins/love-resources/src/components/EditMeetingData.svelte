@@ -22,13 +22,11 @@
 
   export let value: Event
 
-  const client = getClient()
-
-  $: isMeeting = client.getHierarchy().hasMixin(value, love.mixin.Meeting)
-  $: meeting = isMeeting ? client.getHierarchy().as(value, love.mixin.Meeting) : null
+  $: isMeeting = getClient().getHierarchy().hasMixin(value, love.mixin.Meeting)
+  $: meeting = isMeeting ? getClient().getHierarchy().as(value, love.mixin.Meeting) : null
 
   async function changeRoom (val: Ref<Room>): Promise<void> {
-    await client.updateMixin(value._id, value._class, value.space, love.mixin.Meeting, { room: val })
+    await getClient().updateMixin(value._id, value._class, value.space, love.mixin.Meeting, { room: val })
   }
 </script>
 

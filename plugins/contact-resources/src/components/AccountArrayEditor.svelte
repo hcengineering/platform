@@ -36,7 +36,6 @@
   export let allowGuests: boolean = false
 
   let timer: any = null
-  const client = getClient()
   let update: (() => Promise<void>) | undefined
 
   function onUpdate (evt: CustomEvent<Ref<Employee>[]>): void {
@@ -44,7 +43,7 @@
       clearTimeout(timer)
     }
     update = async () => {
-      const accounts = await client.findAll(contact.class.PersonAccount, { person: { $in: evt.detail } })
+      const accounts = await getClient().findAll(contact.class.PersonAccount, { person: { $in: evt.detail } })
       onChange?.(accounts.map((it) => it._id))
       if (timer !== null) {
         clearTimeout(timer)
@@ -82,9 +81,11 @@
     included = []
   }
 
-  $: employees = Array.from(
-    (value ?? []).map((it) => $personAccountByIdStore.get(it as Ref<PersonAccount>)?.person)
-  ).filter((it) => it !== undefined) as Ref<Employee>[]
+  $: employees = Array.isArray(value)
+    ? (Array.from((value ?? []).map((it) => $personAccountByIdStore.get(it as Ref<PersonAccount>)?.person)).filter(
+        (it) => it !== undefined
+      ) as Ref<Employee>[])
+    : []
 
   $: docQuery =
     excluded.length === 0 && included.length === 0
@@ -104,7 +105,6 @@
           }
         }
 
-  const hierarchy = client.getHierarchy()
   const me = getCurrentAccount() as PersonAccount
 
   function sort (a: Contact, b: Contact): number {
@@ -122,6 +122,7 @@
     if (!aIncludes && bIncludes) {
       return 1
     }
+    const hierarchy = getClient().getHierarchy()
     const aName = getName(hierarchy, a)
     const bName = getName(hierarchy, b)
     return aName.localeCompare(bName)

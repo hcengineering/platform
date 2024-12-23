@@ -21,11 +21,9 @@
   import { ActivityInboxNotification, InboxNotification } from '@hcengineering/notification'
 
   import { isActivityNotification, isMentionNotification } from '../utils'
+  import { get } from 'http'
 
   export let notifications: InboxNotification[]
-
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
 
   let loading = true
   let messages: ActivityMessage[] = []
@@ -35,6 +33,8 @@
   async function updateMessages (notifications: InboxNotification[]): Promise<void> {
     const result: ActivityMessage[] = []
 
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
     for (const notification of notifications) {
       if (isActivityNotification(notification)) {
         const it = notification as WithLookup<ActivityInboxNotification>

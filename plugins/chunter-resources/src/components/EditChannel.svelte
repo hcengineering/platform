@@ -32,8 +32,7 @@
 
   const dispatch = createEventDispatcher()
 
-  const client = getClient()
-  $: clazz = client.getHierarchy().getClass(_class)
+  $: clazz = getClient().getHierarchy().getClass(_class)
 
   const query = createQuery()
   $: query.query(chunter.class.ChunterSpace, { _id }, (result) => {

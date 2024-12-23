@@ -13,8 +13,6 @@
 
   $: mappedField = fieldMapping.find((it) => it.attributeName === attribute.name)
 
-  const client = getClient()
-
   const allowed = new Set([
     core.class.TypeString,
     core.class.TypeMarkup,
@@ -102,7 +100,7 @@
       icon={IconDelete}
       on:click={() => {
         if (mappedField) {
-          client.remove(mappedField)
+          void getClient().remove(mappedField)
         }
       }}
     />

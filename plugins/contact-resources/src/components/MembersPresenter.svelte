@@ -31,8 +31,6 @@
   export let retrieveMembers: (doc: Doc) => Ref<Employee>[]
   export let shouldShowLabel: boolean = true
 
-  const client = getClient()
-
   let buttonTitle = ''
 
   $: members = retrieveMembers(value)
@@ -49,11 +47,11 @@
     const memberToPush = result.filter((x) => !members.includes(x))[0]
 
     if (memberToPull) {
-      await client.update(value, { $pull: { members: memberToPull } })
+      await getClient().update(value, { $pull: { members: memberToPull } })
     }
 
     if (memberToPush) {
-      await client.update(value, { $push: { members: memberToPush } })
+      await getClient().update(value, { $push: { members: memberToPush } })
     }
   }
 

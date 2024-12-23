@@ -21,10 +21,8 @@
 
   export let value: Staff
 
-  const client = getClient()
-
   async function getDepartment (staff: Staff): Promise<Department | undefined> {
-    return await client.findOne(hr.class.Department, {
+    return await getClient().findOne(hr.class.Department, {
       _id: staff.department
     })
   }
@@ -38,7 +36,7 @@
       </div>
       <div class="flex-col">
         <div class="member-title fs-title">
-          {getName(client.getHierarchy(), value)}
+          {getName(getClient().getHierarchy(), value)}
         </div>
         {#await getDepartment(value) then department}
           {#if department}

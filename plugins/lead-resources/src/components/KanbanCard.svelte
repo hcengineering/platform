@@ -36,11 +36,10 @@
   export let config: (string | BuildModelKey)[]
   export let groupByKey: string
 
-  const client = getClient()
-  const assigneeAttribute = client.getHierarchy().getAttribute(lead.class.Lead, 'assignee')
+  const assigneeAttribute = getClient().getHierarchy().getAttribute(lead.class.Lead, 'assignee')
 
   function showLead () {
-    openDoc(client.getHierarchy(), object)
+    openDoc(getClient().getHierarchy(), object)
   }
 
   $: status = $statusStore.byId.get(object.status)

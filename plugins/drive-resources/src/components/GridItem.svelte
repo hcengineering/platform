@@ -15,12 +15,12 @@
 <script lang="ts">
   import core, { type WithLookup } from '@hcengineering/core'
   import { type Resource } from '@hcengineering/drive'
-  import { getClient } from '@hcengineering/presentation'
   import { Button, IconMoreH } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectPresenter, TimestampPresenter, openDoc, showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
 
+  import { getClient } from '@hcengineering/presentation'
   import FileSizePresenter from './FileSizePresenter.svelte'
   import ResourcePresenter from './ResourcePresenter.svelte'
   import Thumbnail from './Thumbnail.svelte'
@@ -28,8 +28,6 @@
   export let object: WithLookup<Resource>
   export let selected: boolean = false
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
   $: version = object.$lookup?.file
@@ -55,7 +53,7 @@
   <div
     class="card"
     on:click={() => {
-      void openDoc(hierarchy, object)
+      void openDoc(getClient().getHierarchy(), object)
     }}
   >
     <div class="card-content">

@@ -35,10 +35,8 @@
     return name === ''
   }
 
-  const client = getClient()
-
   async function createDepartment () {
-    const id = await client.createDoc(hr.class.Department, core.space.Workspace, {
+    const id = await getClient().createDoc(hr.class.Department, core.space.Workspace, {
       name,
       description: '',
       parent,

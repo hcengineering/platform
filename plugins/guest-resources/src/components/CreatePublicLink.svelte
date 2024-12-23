@@ -30,7 +30,6 @@
 
   export let value: Doc
 
-  const client = getClient()
   const query = createQuery()
   let loading = true
   let link: PublicLink | undefined
@@ -38,6 +37,7 @@
   const dispatch = createEventDispatcher()
 
   async function generate (object: Doc): Promise<void> {
+    const client = getClient()
     const panelComponent = client.getHierarchy().classHierarchyMixin(object._class, view.mixin.ObjectPanel)
     const comp = panelComponent?.component ?? view.component.EditDoc
     const loc = await getObjectLinkFragment(client.getHierarchy(), object, {}, comp)
@@ -80,7 +80,7 @@
         message: guest.string.RevokeConfirmation,
         action: async () => {
           if (link !== undefined) {
-            await client.remove(link)
+            await getClient().remove(link)
           }
         }
       },

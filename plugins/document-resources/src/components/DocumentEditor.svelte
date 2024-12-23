@@ -34,8 +34,6 @@
   export let editorAttributes: Record<string, string> = {}
   export let requestSideSpace: ((width: number) => void) | undefined = undefined
 
-  const client = getClient()
-
   const user = getCollaborationUser()
   let userComponent: AnySvelteComponent | undefined
   void getResource(contact.component.CollaborationUserAvatar).then((component) => {
@@ -60,7 +58,7 @@
 
   $: attribute = {
     key: 'content',
-    attr: client.getHierarchy().getAttribute(document.class.Document, 'content')
+    attr: getClient().getHierarchy().getAttribute(document.class.Document, 'content')
   }
 </script>
 

@@ -14,15 +14,14 @@
 -->
 <script lang="ts">
   import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { Action, IconMoreV, showPopup } from '@hcengineering/ui'
-  import { getActions, Menu } from '@hcengineering/view-resources'
-  import { getClient } from '@hcengineering/presentation'
-  import { getResource } from '@hcengineering/platform'
-  import view, { Action as ViewAction } from '@hcengineering/view'
   import { Ref } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
+  import { Action, IconMoreV, showPopup } from '@hcengineering/ui'
+  import view, { Action as ViewAction } from '@hcengineering/view'
+  import { getActions, Menu } from '@hcengineering/view-resources'
 
-  import ActivityMessageAction from './ActivityMessageAction.svelte'
   import { savedMessagesStore } from '../activity'
+  import ActivityMessageAction from './ActivityMessageAction.svelte'
 
   export let message: ActivityMessage | undefined
   export let actions: Action[] = []
@@ -31,8 +30,6 @@
   export let onOpen: () => void
   export let onClose: () => void
   export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
-
-  const client = getClient()
 
   let providedMenuActions: Action[] = []
   let providedInlineActions: Action[] = []

@@ -42,8 +42,6 @@
   $: fixedPersons = getPersons(fixedItems, $employeeByIdStore)
   $: editablePersons = getPersons(editableItems, $employeeByIdStore)
 
-  const client = getClient()
-
   const dispatch = createEventDispatcher()
 
   async function addPerson (evt: Event): Promise<void> {
@@ -59,8 +57,8 @@
         ignoreUsers: fixedItems,
         readonly,
         filter: (it: Doc) => {
-          if (client.getHierarchy().hasMixin(it, contact.mixin.Employee)) {
-            return client.getHierarchy().as(it, contact.mixin.Employee).active
+          if (getClient().getHierarchy().hasMixin(it, contact.mixin.Employee)) {
+            return getClient().getHierarchy().as(it, contact.mixin.Employee).active
           }
           return true
         }

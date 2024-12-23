@@ -96,7 +96,6 @@
   let externalParticipants: string[] = []
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   export function canClose (): boolean {
     return title !== undefined && title.trim().length === 0 && participants.length === 0
@@ -109,7 +108,7 @@
     if (title === '') return
     const _id = generateId<Event>()
     if (rules.length > 0) {
-      await client.addCollection(
+      await getClient().addCollection(
         calendar.class.ReccuringEvent,
         calendar.space.Calendar,
         attachedTo,
@@ -138,7 +137,7 @@
         _id as Ref<ReccuringEvent>
       )
     } else {
-      await client.addCollection(
+      await getClient().addCollection(
         calendar.class.Event,
         calendar.space.Calendar,
         attachedTo,
@@ -164,7 +163,7 @@
       )
     }
     if (space !== undefined) {
-      await docCreateManager.commit(client, _id, space, {}, 'post')
+      await docCreateManager.commit(getClient(), _id, space, {}, 'post')
     }
     dispatch('close')
   }

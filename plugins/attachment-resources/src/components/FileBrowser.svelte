@@ -28,7 +28,6 @@
 
   export let withHeader: boolean = true
 
-  const client = getClient()
   const loc = getLocation()
   const spaceId: Ref<Space> | undefined = loc.query?.spaceId as Ref<Space> | undefined
 
@@ -63,6 +62,7 @@
   ) {
     isLoading = true
 
+    const client = getClient()
     const nameQuery = searchQuery_ ? { name: { $like: '%' + searchQuery_ + '%' } } : {}
 
     const accounts = await client.findAll(contact.class.PersonAccount, { person: { $in: selectedParticipants_ } })
@@ -112,7 +112,9 @@
         ]}
         selected={isListDisplayMode ? 'table' : 'card'}
         on:select={(result) => {
-          if (result.detail !== undefined) isListDisplayMode = result.detail === 'table' ?? false
+          if (result.detail !== undefined) {
+            isListDisplayMode = result.detail === 'table'
+          }
         }}
       />
     </div>

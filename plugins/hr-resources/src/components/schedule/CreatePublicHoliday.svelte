@@ -25,12 +25,11 @@
   let title: string
   export let date: Timestamp
   export let department: Ref<Department>
-  const client = getClient()
   let existingHoliday: PublicHoliday | undefined = undefined
   const dispatch = createEventDispatcher()
 
   async function findHoliday () {
-    existingHoliday = await client.findOne(hr.class.PublicHoliday, { date: timeToTzDate(date) })
+    existingHoliday = await getClient().findOne(hr.class.PublicHoliday, { date: timeToTzDate(date) })
     if (existingHoliday !== undefined) {
       title = existingHoliday.title
       description = existingHoliday.description
@@ -40,7 +39,7 @@
 
   async function saveHoliday () {
     if (existingHoliday !== undefined) {
-      await client.updateDoc(hr.class.PublicHoliday, core.space.Workspace, existingHoliday._id, {
+      await getClient().updateDoc(hr.class.PublicHoliday, core.space.Workspace, existingHoliday._id, {
         title,
         description
       })
@@ -51,13 +50,13 @@
         date: timeToTzDate(date),
         department
       }
-      await client.createDoc(hr.class.PublicHoliday, core.space.Workspace, holiday)
+      await getClient().createDoc(hr.class.PublicHoliday, core.space.Workspace, holiday)
     }
   }
   findHoliday()
 
   function deleteHoliday () {
-    existingHoliday && client.remove(existingHoliday)
+    existingHoliday && getClient().remove(existingHoliday)
     dispatch('close')
   }
 </script>

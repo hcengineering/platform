@@ -26,8 +26,6 @@
   export let selectedDoc: Ref<Doc> | undefined = undefined
   export let activityMessage: DocUpdateMessage | undefined = undefined
 
-  const client = getClient()
-
   let channel: Channel | undefined = undefined
 
   const query = createQuery()
@@ -39,7 +37,7 @@
     if (channel === undefined) return
     const provider =
       $channelProviders.find((it) => it._id === channel.provider) ??
-      (await client.findOne(contact.class.ChannelProvider, { _id: channel.provider }))
+      (await getClient().findOne(contact.class.ChannelProvider, { _id: channel.provider }))
     return provider?.presenter
   }
 </script>

@@ -34,8 +34,6 @@
   export let selected = false
   export let actions: Action[] = []
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const notificationClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = notificationClient.contextByDoc
 
@@ -58,6 +56,7 @@
       count = 0
       return
     }
+    const hierarchy = getClient().getHierarchy()
 
     notifications = (res.get(context._id) ?? []).filter((n) => {
       if (isActivityNotification(n)) return true

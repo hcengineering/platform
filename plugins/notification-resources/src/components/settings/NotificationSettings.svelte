@@ -42,9 +42,8 @@
   import NotificationGroupSetting from './NotificationGroupSetting.svelte'
   import { providersSettings, typesSettings } from '../../utils'
 
-  const client = getClient()
-  const groups: NotificationGroup[] = client.getModel().findAllSync(notification.class.NotificationGroup, {})
-  const preferencesGroups: NotificationPreferencesGroup[] = client
+  const groups: NotificationGroup[] = getClient().getModel().findAllSync(notification.class.NotificationGroup, {})
+  const preferencesGroups: NotificationPreferencesGroup[] = getClient()
     .getModel()
     .findAllSync(notification.class.NotificationPreferencesGroup, {})
 

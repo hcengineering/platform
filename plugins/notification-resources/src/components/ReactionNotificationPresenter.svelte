@@ -20,11 +20,9 @@
 
   export let message: DisplayDocUpdateMessage
 
-  const client = getClient()
-
   let reactions: Reaction[] = []
 
-  $: void client
+  $: void getClient()
     .findAll(activity.class.Reaction, {
       space: message.space,
       _id: { $in: [message.objectId, ...(message?.previousMessages?.map((a) => a.objectId) ?? [])] as Ref<Reaction>[] }

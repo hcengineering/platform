@@ -34,8 +34,6 @@
 
   export let tab: WorkbenchTab
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const notificationClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = notificationClient.contextByDoc
 
@@ -72,7 +70,9 @@
     notifications = (res.get(context._id) ?? []).filter((n) => {
       if (isActivityNotification(n)) return true
 
-      return isMentionNotification(n) && hierarchy.isDerived(n.mentionedInClass, chunter.class.ChatMessage)
+      return (
+        isMentionNotification(n) && getClient().getHierarchy().isDerived(n.mentionedInClass, chunter.class.ChatMessage)
+      )
     })
   })
 

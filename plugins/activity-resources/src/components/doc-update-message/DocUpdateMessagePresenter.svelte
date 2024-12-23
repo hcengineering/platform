@@ -58,17 +58,18 @@
   export let space: Ref<Space> | undefined = undefined
   export let onClick: (() => void) | undefined = undefined
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
   const objectQuery = createQuery()
   const parentObjectQuery = createQuery()
 
   let objectName: IntlString | undefined = undefined
   let collectionName: IntlString | undefined = undefined
 
-  $: collectionAttribute = getCollectionAttribute(hierarchy, value.attachedToClass, value.updateCollection)
-  $: clazz = hierarchy.getClass(value.objectClass)
+  $: collectionAttribute = getCollectionAttribute(
+    getClient().getHierarchy(),
+    value.attachedToClass,
+    value.updateCollection
+  )
+  $: clazz = getClient().getHierarchy().getClass(value.objectClass)
 
   $: objectName = (collectionAttribute?.type as Collection<AttachedDoc>)?.itemLabel ?? clazz.label
   $: collectionName = collectionAttribute?.label
@@ -81,11 +82,11 @@
   let object: Doc | undefined
   let isObjectRemoved: boolean = false
 
-  $: [viewlet] = client
+  $: [viewlet] = getClient()
     .getModel()
     .findAllSync(activity.class.DocUpdateMessageViewlet, { action: value.action, objectClass: value.objectClass })
 
-  $: void getAttributeModel(client, value.attributeUpdates, value.objectClass).then((model) => {
+  $: void getAttributeModel(getClient(), value.attributeUpdates, value.objectClass).then((model) => {
     attributeModel = model
   })
 
@@ -94,8 +95,8 @@
     _id: Ref<Doc>,
     space: Ref<Space>
   ): Promise<ActivityMessage | undefined> {
-    if (hierarchy.isDerived(_class, activity.class.ActivityMessage)) {
-      return await client.findOne(activity.class.ActivityMessage, { _id: _id as Ref<ActivityMessage>, space })
+    if (getClient().getHierarchy().isDerived(_class, activity.class.ActivityMessage)) {
+      return await getClient().findOne(activity.class.ActivityMessage, { _id: _id as Ref<ActivityMessage>, space })
     }
   }
 
@@ -132,6 +133,7 @@
       isObjectRemoved = false
       return
     }
+    const client = getClient()
 
     isObjectRemoved = await checkIsObjectRemoved(client, _id, _class)
 
@@ -161,6 +163,7 @@
       parentObject = doc
       return
     }
+    const client = getClient()
 
     const isRemoved = await checkIsObjectRemoved(client, _id, _class)
 

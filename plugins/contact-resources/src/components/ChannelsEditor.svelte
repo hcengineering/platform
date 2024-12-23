@@ -50,26 +50,31 @@
       }
     )
 
-  const client = getClient()
-
   async function remove (value: Channel | AttachedData<Channel>): Promise<void> {
     if (!editable) return
     if ('_id' in value) {
-      await client.remove(value)
+      await getClient().remove(value)
     }
   }
 
   async function saveHandler (value: Channel | AttachedData<Channel>): Promise<void> {
     if (!editable) return
     if ('_id' in value) {
-      await client.update(value, {
+      await getClient().update(value, {
         value: value.value
       })
     } else {
-      await client.addCollection(contact.class.Channel, contact.space.Contacts, attachedTo, attachedClass, 'channels', {
-        value: value.value,
-        provider: value.provider
-      })
+      await getClient().addCollection(
+        contact.class.Channel,
+        contact.space.Contacts,
+        attachedTo,
+        attachedClass,
+        'channels',
+        {
+          value: value.value,
+          provider: value.provider
+        }
+      )
     }
   }
 

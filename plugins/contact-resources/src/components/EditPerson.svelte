@@ -26,7 +26,6 @@
 
   export let object: Person
   export let readonly: boolean = false
-  const client = getClient()
 
   const account = getCurrentAccount() as PersonAccount
 
@@ -45,13 +44,13 @@
   const dispatch = createEventDispatcher()
 
   function firstNameChange () {
-    client.update(object, {
+    void getClient().update(object, {
       name: combineName(firstName, getLastName(object.name))
     })
   }
 
   function lastNameChange () {
-    client.update(object, {
+    void getClient().update(object, {
       name: combineName(getFirstName(object.name), lastName)
     })
   }
@@ -70,7 +69,7 @@
       await avatarEditor.removeAvatar(object.avatar)
     }
     const avatar = await avatarEditor.createAvatar()
-    await client.diffUpdate(object, avatar)
+    await getClient().diffUpdate(object, avatar)
   }
 
   const manager = createFocusManager()

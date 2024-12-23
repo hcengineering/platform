@@ -27,12 +27,10 @@
   export let object: Organization
   export let readonly: boolean = false
 
-  const client = getClient()
-
   const dispatch = createEventDispatcher()
 
   function nameChange () {
-    client.updateDoc(object._class, object.space, object._id, { name: object.name })
+    void getClient().updateDoc(object._class, object.space, object._id, { name: object.name })
   }
 
   const accountId = getCurrentAccount()._id

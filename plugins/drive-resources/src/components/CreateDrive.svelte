@@ -39,16 +39,15 @@
   export let drive: Drive | undefined = undefined
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
 
   let name: string = drive?.name ?? ''
   let description: string = drive?.description ?? ''
   let isPrivate: boolean = drive?.private ?? false
 
   let members: Ref<Account>[] =
-    drive?.members !== undefined ? hierarchy.clone(drive.members) : [getCurrentAccount()._id]
-  let owners: Ref<Account>[] = drive?.owners !== undefined ? hierarchy.clone(drive.owners) : [getCurrentAccount()._id]
+    drive?.members !== undefined ? getClient().getHierarchy().clone(drive.members) : [getCurrentAccount()._id]
+  let owners: Ref<Account>[] =
+    drive?.owners !== undefined ? getClient().getHierarchy().clone(drive.owners) : [getCurrentAccount()._id]
   let rolesAssignment: RolesAssignment = {}
 
   let typeId: Ref<SpaceType> | undefined = drive?.type ?? driveRes.spaceType.DefaultDrive
@@ -58,7 +57,7 @@
   const loadSpaceType = reduceCalls(async (id: typeof typeId): Promise<void> => {
     spaceType =
       id !== undefined
-        ? await client
+        ? await getClient()
           .getModel()
           .findOne(core.class.SpaceType, { _id: id }, { lookup: { _id: { roles: core.class.Role } } })
         : undefined
@@ -75,7 +74,7 @@
       return {}
     }
 
-    const asMixin = hierarchy.as(drive, spaceType?.targetClass)
+    const asMixin = getClient().getHierarchy().as(drive, spaceType?.targetClass)
 
     return spaceType.$lookup.roles.reduce<RolesAssignment>((prev, { _id }) => {
       prev[_id as Ref<Role>] = (asMixin as any)[_id] ?? []
@@ -139,6 +138,7 @@
         }
       }
     }
+    const client = getClient()
 
     if (Object.keys(update).length > 0) {
       await client.update(drive, update)
@@ -164,6 +164,7 @@
 
     const driveId = generateId<Drive>()
     const driveData = getDriveData()
+    const client = getClient()
 
     await client.createDoc(driveRes.class.Drive, core.space.Space, { ...driveData, type: typeId }, driveId)
 

@@ -36,12 +36,11 @@
   const hasError = (currentMessage as unknown as NewMessage)?.status === 'error'
 
   const query = createQuery()
-  const client = getClient()
   let attachments: Attachment[] = []
 
   async function resendMessage (): Promise<void> {
     const messageId = currentMessage._id as string as Ref<NewMessage>
-    await client.updateDoc(gmail.class.NewMessage, currentMessage.space, messageId, { status: 'new' })
+    await getClient().updateDoc(gmail.class.NewMessage, currentMessage.space, messageId, { status: 'new' })
   }
 
   $: currentMessage._id &&

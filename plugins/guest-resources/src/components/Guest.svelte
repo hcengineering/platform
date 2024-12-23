@@ -49,15 +49,13 @@
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
   $deviceInfo.navigator.visible = false
 
-  const client = getClient()
-
   async function load (): Promise<boolean> {
     const loc = getCurrentLocation()
     const token = loc.query?.token
     if (token == null) return false
     const decoded = decodeTokenPayload(token)
 
-    const link = await client.findOne(guest.class.PublicLink, { _id: decoded.linkId })
+    const link = await getClient().findOne(guest.class.PublicLink, { _id: decoded.linkId })
     if (link == null) return false
     restrictionStore.set(link.restrictions)
     const mergedLoc = link.location
@@ -71,7 +69,7 @@
   let panelInstance: PanelInstance
   let popupInstance: Popup
 
-  const apps: Application[] = client
+  const apps: Application[] = getClient()
     .getModel()
     .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
 
@@ -156,6 +154,7 @@
     const space = loc.path[3] as Ref<Space>
     const special = loc.path[4]
     const fragment = loc.fragment
+    const client = getClient()
 
     currentApplication = await client.findOne<Application>(workbench.class.Application, { alias: app })
     navigatorModel = await buildNavModel(client, currentApplication)
@@ -181,7 +180,7 @@
     }
   }
 
-  const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
+  const linkProviders = getClient().getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
   async function setOpenPanelFocus (fragment: string): Promise<void> {
     const props = decodeURIComponent(fragment).split('|')
@@ -191,7 +190,7 @@
       const _class = props[2] as Ref<Class<Doc>>
       const _id = await parseLinkId(linkProviders, id, _class)
 
-      const doc = await client.findOne<Doc>(_class, { _id })
+      const doc = await getClient().findOne<Doc>(_class, { _id })
       if (doc !== undefined) {
         await checkAccess(doc)
         const provider = ListSelectionProvider.Find(doc._id)
@@ -223,6 +222,7 @@
   async function updateSpace (spaceId?: Ref<Space>): Promise<void> {
     if (spaceId === currentSpace) return
     if (spaceId === undefined) return
+    const client = getClient()
     const space = await client.findOne<Space>(core.class.Space, { _id: spaceId })
     if (space === undefined) return
     currentSpace = spaceId
@@ -244,6 +244,7 @@
 
   async function getWindowTitle (loc: Location): Promise<string | undefined> {
     if (loc.fragment == null) return
+    const client = getClient()
     const hierarchy = client.getHierarchy()
     const [, id, _class] = decodeURIComponent(loc.fragment).split('|')
     if (_class == null) return

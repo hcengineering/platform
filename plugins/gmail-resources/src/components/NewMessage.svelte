@@ -35,7 +35,6 @@
   export let currentMessage: SharedMessage | undefined
   export let selectedIntegration: Integration
 
-  const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
 
   let objectId = generateId()
@@ -66,7 +65,7 @@
   $: templateProvider !== undefined && templateProvider.set(contact.class.Contact, object)
 
   async function sendMsg (): Promise<void> {
-    await client.createDoc(
+    await getClient().createDoc(
       plugin.class.NewMessage,
       core.space.Workspace,
       {
@@ -119,7 +118,7 @@
     try {
       const uploadFile = await getResource(attachmentP.helper.UploadFile)
       const uuid = await uploadFile(file)
-      await client.addCollection(
+      await getClient().addCollection(
         attachmentP.class.Attachment,
         core.space.Workspace,
         objectId,
@@ -143,7 +142,7 @@
 
   async function removeAttachment (attachment: Attachment): Promise<void> {
     const deleteFile = await getResource(attachmentP.helper.DeleteFile)
-    await client.removeCollection(
+    await getClient().removeCollection(
       attachment._class,
       attachment.space,
       attachment._id,
@@ -197,7 +196,7 @@
     />
     <div class="flex-grow flex-col">
       <Label label={plugin.string.NewMessage} />
-      <span class="content-color"><b>{getName(client.getHierarchy(), object)} ({channel.value})</b></span>
+      <span class="content-color"><b>{getName(getClient().getHierarchy(), object)} ({channel.value})</b></span>
     </div>
   </div>
   <div class="buttons-group small-gap">

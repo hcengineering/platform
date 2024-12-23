@@ -24,8 +24,6 @@
   export let object: Contact
   export let disabled: boolean = false
 
-  const client = getClient()
-
   let channels: Channel[] = []
   const channelsQuery = createQuery()
   channelsQuery.query(
@@ -48,7 +46,7 @@
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <DocNavLink {object} {disabled}>
       <div class="name lines-limit-2">
-        {getName(client.getHierarchy(), object)}
+        {getName(getClient().getHierarchy(), object)}
       </div>
     </DocNavLink>
     <div class="description overflow-label">{object.city ?? ''}</div>

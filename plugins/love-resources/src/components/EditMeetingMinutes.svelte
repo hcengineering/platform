@@ -23,7 +23,6 @@
   export let object: MeetingMinutes
   export let readonly: boolean = false
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
 
   let currentTitle = object.title
@@ -35,7 +34,7 @@
   }
 
   async function changeTitle (): Promise<void> {
-    await client.diffUpdate(object, { title: newTitle })
+    await getClient().diffUpdate(object, { title: newTitle })
   }
 
   onMount(() => {

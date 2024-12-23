@@ -8,14 +8,12 @@
   import { krispProcessor } from '../utils'
   import { isKrispNoiseFilterSupported } from '@livekit/krisp-noise-filter'
 
-  const client = getClient()
-
   async function saveMicPreference (myPreferences: DevicesPreference | undefined, value: boolean): Promise<void> {
     if (myPreferences !== undefined) {
-      await client.update(myPreferences, { micEnabled: !value })
+      await getClient().update(myPreferences, { micEnabled: !value })
     } else {
       const space = getCurrentAccount()._id as string as Ref<Space>
-      await client.createDoc(love.class.DevicesPreference, space, {
+      await getClient().createDoc(love.class.DevicesPreference, space, {
         attachedTo: space,
         noiseCancellation: true,
         micEnabled: !value,
@@ -27,10 +25,10 @@
 
   async function saveCamPreference (myPreferences: DevicesPreference | undefined, value: boolean): Promise<void> {
     if (myPreferences !== undefined) {
-      await client.update(myPreferences, { camEnabled: !value })
+      await getClient().update(myPreferences, { camEnabled: !value })
     } else {
       const space = getCurrentAccount()._id as string as Ref<Space>
-      await client.createDoc(love.class.DevicesPreference, space, {
+      await getClient().createDoc(love.class.DevicesPreference, space, {
         attachedTo: space,
         noiseCancellation: true,
         camEnabled: !value,
@@ -45,10 +43,10 @@
     value: boolean
   ): Promise<void> {
     if (myPreferences !== undefined) {
-      await client.update(myPreferences, { noiseCancellation: value })
+      await getClient().update(myPreferences, { noiseCancellation: value })
     } else {
       const space = getCurrentAccount()._id as string as Ref<Space>
-      await client.createDoc(love.class.DevicesPreference, space, {
+      await getClient().createDoc(love.class.DevicesPreference, space, {
         attachedTo: space,
         noiseCancellation: value,
         camEnabled: true,
@@ -69,7 +67,7 @@
       <div class="flex-row-center flex-gap-4">
         <Label label={love.string.StartWithMutedMic} />
         <Toggle
-          on={!$myPreferences?.micEnabled ?? false}
+          on={!$myPreferences?.micEnabled}
           on:change={(e) => {
             saveMicPreference($myPreferences, e.detail)
           }}
@@ -78,7 +76,7 @@
       <div class="flex-row-center flex-gap-4">
         <Label label={love.string.StartWithoutVideo} />
         <Toggle
-          on={!$myPreferences?.camEnabled ?? false}
+          on={!$myPreferences?.camEnabled}
           on:change={(e) => {
             saveCamPreference($myPreferences, e.detail)
           }}

@@ -69,8 +69,6 @@
 
   export let socialIcon: Asset | undefined = undefined
 
-  const client = getClient()
-
   let menuActions: ViewAction[] = []
 
   let element: HTMLDivElement | undefined = undefined
@@ -83,7 +81,7 @@
   })
 
   $: withActions &&
-    getActions(client, message, activity.class.ActivityMessage).then((res) => {
+    getActions(getClient(), message, activity.class.ActivityMessage).then((res) => {
       menuActions = res
     })
 

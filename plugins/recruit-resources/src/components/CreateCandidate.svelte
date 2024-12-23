@@ -95,8 +95,6 @@
     }
   }
   const empty = {}
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const ignoreKeys = ['onsite', 'remote', 'title']
 
   let draft = shouldSaveDraft ? draftController.get() : undefined
@@ -129,8 +127,8 @@
 
   let avatarEditor: EditableAvatar
 
-  fillDefaults(hierarchy, empty, recruit.mixin.Candidate)
-  fillDefaults(hierarchy, object, recruit.mixin.Candidate)
+  fillDefaults(getClient().getHierarchy(), empty, recruit.mixin.Candidate)
+  fillDefaults(getClient().getHierarchy(), object, recruit.mixin.Candidate)
 
   function resumeDraft () {
     return {
@@ -156,7 +154,7 @@
 
   const key: KeyedAttribute = {
     key: 'skills',
-    attr: client.getHierarchy().getAttribute(recruit.mixin.Candidate, 'skills')
+    attr: getClient().getHierarchy().getAttribute(recruit.mixin.Candidate, 'skills')
   }
 
   let elements = new Map<Ref<TagElement>, TagElement>()
@@ -222,7 +220,7 @@
       }
     }
 
-    const applyOps = client.apply(undefined, 'create-candidate')
+    const applyOps = getClient().apply(undefined, 'create-candidate')
 
     await applyOps.createDoc(contact.class.Person, contact.space.Contacts, candidate, _id)
     await applyOps.createMixin(
@@ -267,15 +265,15 @@
       )
     }
 
-    const categories = await client.findAll(tags.class.TagCategory, { targetClass: recruit.mixin.Candidate })
+    const categories = await getClient().findAll(tags.class.TagCategory, { targetClass: recruit.mixin.Candidate })
     // Tag elements
     const skillTagElements = toIdMap(
-      await client.findAll(tags.class.TagElement, { _id: { $in: object.skills.map((it) => it.tag) } })
+      await getClient().findAll(tags.class.TagElement, { _id: { $in: object.skills.map((it) => it.tag) } })
     )
     for (const skill of object.skills) {
       // Create update tag if missing
       if (!skillTagElements.has(skill.tag)) {
-        skill.tag = await client.createDoc(tags.class.TagElement, skill.space, {
+        skill.tag = await getClient().createDoc(tags.class.TagElement, skill.space, {
           title: skill.title,
           color: skill.color,
           targetClass: recruit.mixin.Candidate,
@@ -364,7 +362,7 @@
       // Create skills
       await elementsPromise
 
-      const categories = await client.findAll(tags.class.TagCategory, { targetClass: recruit.mixin.Candidate })
+      const categories = await getClient().findAll(tags.class.TagCategory, { targetClass: recruit.mixin.Candidate })
       const categoriesMap = toIdMap(categories)
 
       const newSkills: TagReference[] = []
@@ -424,7 +422,7 @@
           const category = findTagCategory(s, categories)
           const cinstance = categoriesMap.get(category)
           e = TxProcessor.createDoc2Doc(
-            client.txFactory.createTxCreateDoc(tags.class.TagElement, core.space.Workspace, {
+            getClient().txFactory.createTxCreateDoc(tags.class.TagElement, core.space.Workspace, {
               title,
               description: `Imported skill ${s} of ${cinstance?.label ?? ''}`,
               color: getColorNumberByText(s),
@@ -439,7 +437,7 @@
         if (e !== undefined) {
           newSkills.push(
             TxProcessor.createDoc2Doc(
-              client.txFactory.createTxCreateDoc(tags.class.TagReference, core.space.Workspace, {
+              getClient().txFactory.createTxCreateDoc(tags.class.TagReference, core.space.Workspace, {
                 title: e.title,
                 color: e.color,
                 tag: e._id,
@@ -525,7 +523,7 @@
 
   $: if (object.firstName != null && object.lastName != null) {
     void findContacts(
-      client,
+      getClient(),
       contact.class.Person,
       combineName(object.firstName.trim(), object.lastName.trim()),
       object.channels
@@ -539,7 +537,7 @@
 
   function resetObject (): void {
     object = getEmptyCandidate()
-    fillDefaults(hierarchy, object, recruit.mixin.Candidate)
+    fillDefaults(getClient().getHierarchy(), object, recruit.mixin.Candidate)
   }
 
   export async function onOutsideClick (): Promise<void> {

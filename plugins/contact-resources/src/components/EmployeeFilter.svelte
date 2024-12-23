@@ -38,7 +38,6 @@
   export let space: Ref<Space> | undefined = undefined
   export let onChange: (e: Filter) => void
 
-  const client = getClient()
   filter.modes = filter.modes === undefined ? [view.filter.FilterObjectIn, view.filter.FilterObjectNin] : filter.modes
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
@@ -53,6 +52,8 @@
       await objectsPromise
     }
     targets.clear()
+
+    const client = getClient()
 
     const spaces = (
       await client.findAll(core.class.Space, { archived: true }, { projection: { _id: 1, archived: 1, _class: 1 } })

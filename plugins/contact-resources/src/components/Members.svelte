@@ -37,7 +37,6 @@
     memberItems = result
   })
 
-  const client = getClient()
   let loading = true
 
   const createApp = async (ev: MouseEvent): Promise<void> => {
@@ -56,7 +55,7 @@
       ev.target as HTMLElement,
       (result) => {
         if (result != null) {
-          client.addCollection(contact.class.Member, space, objectId, _class, 'members', {
+          void getClient().addCollection(contact.class.Member, space, objectId, _class, 'members', {
             contact: result._id
           })
         }

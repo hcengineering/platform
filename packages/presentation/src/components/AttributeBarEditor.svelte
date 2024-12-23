@@ -20,7 +20,6 @@
   import { createEventDispatcher } from 'svelte'
   import { getAttribute, KeyedAttribute, updateAttribute } from '../attributes'
   import { getAttributeEditor, getClient } from '../utils'
-  import { Analytics } from '@hcengineering/analytics'
 
   export let key: KeyedAttribute | string
   export let object: Doc | Record<string, any>
@@ -37,8 +36,6 @@
   export let width: string | undefined = '100%'
   export let justify: 'left' | 'center' = 'left'
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
   let editor: AnySvelteComponent | undefined
 
@@ -50,21 +47,21 @@
     if (draft) {
       ;(doc as any)[attributeKey] = value
     } else {
-      void updateAttribute(client, doc, doc._class, { key: attributeKey, attr: attribute }, value, false, {
+      void updateAttribute(getClient(), doc, doc._class, { key: attributeKey, attr: attribute }, value, false, {
         objectId: identifier ?? doc._id
       })
     }
   }
 
   function getEditor (_class: Ref<Class<Doc>>, key: KeyedAttribute | string): void {
-    void getAttributeEditor(client, _class, key).then((p) => {
+    void getAttributeEditor(getClient(), _class, key).then((p) => {
       editor = p
     })
   }
 
   $: getEditor(_class, key)
 
-  $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
+  $: attribute = typeof key === 'string' ? getClient().getHierarchy().getAttribute(_class, key) : key.attr
   $: attributeKey = typeof key === 'string' ? key : key.key
   $: isReadonly = (attribute.readonly ?? false) || readonly
 </script>
@@ -94,7 +91,7 @@
         type={attribute?.type}
         {maxWidth}
         {attributeKey}
-        value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+        value={getAttribute(getClient(), object, { key: attributeKey, attr: attribute })}
         space={object.space}
         {onChange}
         {focus}
@@ -108,7 +105,7 @@
         type={attribute?.type}
         {maxWidth}
         {attributeKey}
-        value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+        value={getAttribute(getClient(), object, { key: attributeKey, attr: attribute })}
         readonly={isReadonly}
         disabled={isReadonly}
         space={object.space}

@@ -1,16 +1,14 @@
 <script lang="ts">
   import { Asset, getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Menu, Action, showPopup, closePopup } from '@hcengineering/ui'
+  import { Action, closePopup, Menu, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import contact from '../plugin'
-
-  const client = getClient()
 
   const actions: Action[] = []
   const hierarchy = client.getHierarchy()
 
-  client
+  void getClient()
     .getHierarchy()
     .getDescendants(contact.class.Contact)
     .map(async (v) => {

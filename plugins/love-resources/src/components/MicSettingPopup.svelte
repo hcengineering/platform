@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { getEmbeddedLabel, translate } from '@hcengineering/platform'
+  import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { DevicesPreference } from '@hcengineering/love'
+  import { translate } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
   import { DropdownLabels, DropdownTextItem, Label, Toggle } from '@hcengineering/ui'
+  import { isKrispNoiseFilterSupported } from '@livekit/krisp-noise-filter'
   import { Room } from 'livekit-client'
   import love from '../plugin'
-  import { getActive, krispProcessor, lk, selectedMicId, selectedSpeakerId } from '../utils'
-  import { DevicesPreference } from '@hcengineering/love'
-  import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
   import { myPreferences } from '../stores'
-  import { isKrispNoiseFilterSupported } from '@livekit/krisp-noise-filter'
+  import { getActive, krispProcessor, lk, selectedMicId, selectedSpeakerId } from '../utils'
 
   void Room.getLocalDevices().then(async (devices) => {
     devices.forEach((device) => {
@@ -36,17 +36,15 @@
   $: activeSpeaker = getActive(speakers, lk.getActiveDevice('audiooutput'), localStorage.getItem(selectedSpeakerId))
   $: activeMic = getActive(mics, lk.getActiveDevice('audioinput'), localStorage.getItem(selectedMicId))
 
-  const client = getClient()
-
   async function saveNoiseCancellationPreference (
     myPreferences: DevicesPreference | undefined,
     value: boolean
   ): Promise<void> {
     if (myPreferences !== undefined) {
-      await client.update(myPreferences, { noiseCancellation: value })
+      await getClient().update(myPreferences, { noiseCancellation: value })
     } else {
       const space = getCurrentAccount()._id as string as Ref<Space>
-      await client.createDoc(love.class.DevicesPreference, space, {
+      await getClient().createDoc(love.class.DevicesPreference, space, {
         attachedTo: space,
         noiseCancellation: value,
         camEnabled: true,

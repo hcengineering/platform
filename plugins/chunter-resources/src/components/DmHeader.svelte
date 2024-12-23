@@ -33,7 +33,6 @@
   let userSearch_: string = ''
   userSearch.subscribe((v) => (userSearch_ = v))
 
-  const client = getClient()
   const query = createQuery()
   const myAccId = getCurrentAccount()._id
   let dm: DirectMessage | undefined
@@ -45,7 +44,7 @@
   async function getEmpolyeeIds () {
     const empAccIds = dm?.members.length !== 1 ? dm?.members.filter((accId) => accId !== myAccId) : dm?.members
 
-    const employeeAccounts = await client.findAll(contact.class.PersonAccount, {
+    const employeeAccounts = await getClient().findAll(contact.class.PersonAccount, {
       _id: { $in: (empAccIds ?? []) as Ref<PersonAccount>[] }
     })
 
@@ -54,13 +53,13 @@
 
   async function onSpaceEdit (): Promise<void> {
     if (dm === undefined) return
-    openDoc(client.getHierarchy(), dm)
+    openDoc(getClient().getHierarchy(), dm)
   }
 </script>
 
 <div class="ac-header divide full caption-height">
   {#if dm}
-    {#await getDmName(client, dm) then name}
+    {#await getDmName(getClient(), dm) then name}
       {#await getEmpolyeeIds() then empolyeeIds}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->

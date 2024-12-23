@@ -24,8 +24,6 @@
 
   export let integration: Integration
 
-  const client = getClient()
-
   let calendars: Calendar[] = []
   const query = createQuery()
   query.query(
@@ -40,7 +38,7 @@
   )
 
   async function update (calendar: Calendar, value: boolean) {
-    await client.update(calendar, {
+    await getClient().update(calendar, {
       hidden: !value
     })
   }

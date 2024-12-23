@@ -22,8 +22,6 @@
 
   export let value: CommonInboxNotification
 
-  const client = getClient()
-
   let content: Markup = ''
 
   $: void updateContent(value.message, value.messageHtml)
@@ -42,9 +40,11 @@
 
   $: value.headerObjectId &&
     value.headerObjectClass &&
-    client.findOne(value.headerObjectClass, { _id: value.headerObjectId }).then((doc) => {
-      headerObject = doc
-    })
+    getClient()
+      .findOne(value.headerObjectClass, { _id: value.headerObjectId })
+      .then((doc) => {
+        headerObject = doc
+      })
 </script>
 
 <BasePreview

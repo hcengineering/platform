@@ -54,8 +54,6 @@
   export let deselect: boolean = false
   export let forciblyСollapsed: boolean = false
 
-  const client = getClient()
-
   let documents: Ref<Document>[] = []
   let documentById: Map<Ref<Document>, Document> = new Map<Ref<Document>, Document>()
   let descendants: Map<Ref<Document>, Document[]> = new Map<Ref<Document>, Document[]>()
@@ -122,6 +120,7 @@
         icon: IconAdd,
         label: document.string.CreateDocument,
         action: async (ctx: any, evt: Event) => {
+          const client = getClient()
           Analytics.handleEvent(DocumentEvents.PlusDocumentButtonClicked, { parent: doc._id })
           const id: Ref<Document> = generateId()
           await createEmptyDocument(client, id, doc.space, doc._id, {})
@@ -137,7 +136,7 @@
 
   async function getMoreActions (obj: Document): Promise<Action[]> {
     const result: Action[] = []
-    const extraActions = await getContributedActions(client, obj)
+    const extraActions = await getContributedActions(getClient(), obj)
     for (const act of extraActions) {
       result.push({
         icon: act.icon ?? IconEdit,
@@ -265,7 +264,7 @@
 
   <TreeNode
     _id={space?._id}
-    icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : space?.icon ?? model.icon}
+    icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : space?.icon ?? model?.icon}
     iconProps={space?.icon === view.ids.IconWithEmoji
       ? { icon: space.color }
       : {

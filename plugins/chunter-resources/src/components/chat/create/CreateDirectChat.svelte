@@ -27,7 +27,6 @@
   import { openChannel } from '../../../navigation'
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
   const query = createQuery()
 
   let employeeIds: Ref<Employee>[] = []
@@ -43,7 +42,7 @@
   })
 
   async function loadDmName (employeeAccounts: PersonAccount[]): Promise<string> {
-    return await buildDmName(client, employeeAccounts)
+    return await buildDmName(getClient(), employeeAccounts)
   }
 
   async function createDirectMessage (): Promise<void> {

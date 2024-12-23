@@ -38,7 +38,6 @@
   const object: Person = {} as unknown as Person
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   async function createPerson () {
     const person: Data<Person> = {
@@ -51,6 +50,8 @@
     person.avatar = info.avatar
     person.avatarType = info.avatarType
     person.avatarProps = info.avatarProps
+
+    const client = getClient()
 
     const personId = await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
 
@@ -67,7 +68,7 @@
   let channels: AttachedData<Channel>[] = []
 
   let matches: Person[] = []
-  $: findPerson(client, combineName(firstName, lastName), channels).then((p) => {
+  $: void findPerson(getClient(), combineName(firstName, lastName), channels).then((p) => {
     matches = p
   })
 

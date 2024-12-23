@@ -34,7 +34,6 @@
   export let parent: Ref<Folder> | undefined
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   let _space = space
   let _parent = parent !== drive.ids.Root ? parent : undefined
@@ -57,7 +56,7 @@
       parent: _parent ?? drive.ids.Root
     }
 
-    const id = await createFolder(client, _space, data)
+    const id = await createFolder(getClient(), _space, data)
     Analytics.handleEvent(DriveEvents.FolderCreated, { id })
     dispatch('close', id)
   }

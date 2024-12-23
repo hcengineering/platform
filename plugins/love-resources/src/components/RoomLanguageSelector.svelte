@@ -26,8 +26,6 @@
   export let room: Room
   export let kind: 'dropdown' | 'icon' = 'dropdown'
 
-  const client = getClient()
-
   let container: HTMLElement
   let selectedItem: RoomLanguage = room.language
   $: selectedItem = room.language
@@ -43,7 +41,7 @@
   async function handleSelection (newLang?: RoomLanguage): Promise<void> {
     if (newLang == null) return
 
-    await client.diffUpdate(room, { language: newLang })
+    await getClient().diffUpdate(room, { language: newLang })
     await updateSessionLanguage(room)
   }
 

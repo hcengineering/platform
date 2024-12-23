@@ -91,13 +91,11 @@
       dragCard.rank = dragCardInitialRank
     }
     if (Object.keys(updates).length > 0) {
-      await client.diffUpdate(dragCard, updates)
+      await getClient().diffUpdate(dragCard, updates)
     }
     dragCard = undefined
     dragCardAvailableCategories = undefined
   }
-
-  const client = getClient()
 
   let dragCard: Item | undefined
   let dragCardInitialRank: Rank | undefined
@@ -113,7 +111,7 @@
     if (dragCard === undefined) {
       return
     }
-    await client.update(dragCard, updateValue)
+    await getClient().update(dragCard, updateValue)
   }
 
   function panelDragOver (event: Event | undefined, state: CategoryType): void {
@@ -239,7 +237,7 @@
         const updates = getUpdateProps(dragCard, state)
 
         if (updates === undefined) {
-          await client.update(dragCard, { rank: dragCard.rank })
+          await getClient().update(dragCard, { rank: dragCard.rank })
         }
       }
     }

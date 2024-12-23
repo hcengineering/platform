@@ -60,7 +60,6 @@
   let saved = false
   const dispatch = createEventDispatcher()
 
-  const client = getClient()
   const query = createQuery()
 
   $: draftKey = `${objectId}_attachments`
@@ -173,7 +172,7 @@
 
   async function saveAttachment (doc: Attachment): Promise<void> {
     if (!existingAttachments.includes(doc._id)) {
-      await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
+      await getClient().addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
       newAttachments.delete(doc._id)
     }
   }
@@ -216,7 +215,7 @@
 
   async function deleteAttachment (attachment: Attachment): Promise<void> {
     if (originalAttachments.has(attachment._id)) {
-      await client.removeCollection(
+      await getClient().removeCollection(
         attachment._class,
         attachment.space,
         attachment._id,

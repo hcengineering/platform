@@ -9,11 +9,9 @@
   export let object: Doc
   export let point: ChunterExtensionPoint
 
-  const client = getClient()
-
   let extensions: ChunterExtension[] = []
 
-  $: extensions = client.getModel().findAllSync(chunter.class.ChunterExtension, { ofClass: object._class, point })
+  $: extensions = getClient().getModel().findAllSync(chunter.class.ChunterExtension, { ofClass: object._class, point })
 </script>
 
 {#each extensions as extension}

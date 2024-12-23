@@ -15,9 +15,9 @@
 
 <script lang="ts">
   import activity, { ActivityMessage, Reaction } from '@hcengineering/activity'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { EmojiPopup, showPopup } from '@hcengineering/ui'
   import { SortingOrder } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { EmojiPopup, showPopup } from '@hcengineering/ui'
 
   import { updateDocReactions } from '../../utils'
 
@@ -26,7 +26,6 @@
 
   const maxPreviewReactions = 3
 
-  const client = getClient()
   const reactionsQuery = createQuery()
 
   let reactions: Reaction[] = []

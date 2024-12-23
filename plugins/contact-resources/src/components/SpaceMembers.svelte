@@ -33,9 +33,7 @@
   export let space: Space
   export let withAddButton: boolean = false
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-  $: label = hierarchy.getClass(space._class).label
+  $: label = getClient().getHierarchy().getClass(space._class).label
   let spaceClass = ''
   $: translateCB(label, {}, $themeStore.language, (p) => (spaceClass = p.toLowerCase()))
   let search: string = ''
@@ -43,6 +41,7 @@
   let members: Set<Ref<Person>> = new Set<Ref<Person>>()
 
   async function getUsers (accounts: Ref<Account>[], search: string): Promise<Person[]> {
+    const client = getClient()
     const query: DocumentQuery<PersonAccount> =
       isSearch > 0 ? { name: { $like: '%' + search + '%' } } : { _id: { $in: accounts as Ref<PersonAccount>[] } }
     const employess = await client.findAll(contact.class.PersonAccount, query)
@@ -57,6 +56,7 @@
   }
 
   async function add (person: Ref<Person>): Promise<void> {
+    const client = getClient()
     const account = await client.findOne(contact.class.PersonAccount, { person })
     if (account === undefined) return
     await client.update(space, {
@@ -67,6 +67,7 @@
   }
 
   async function removeMember (person: Ref<Person>): Promise<void> {
+    const client = getClient()
     const account = await client.findOne(contact.class.PersonAccount, { person })
     if (account === undefined) return
     await client.update(space, { $pull: { members: account._id } })
@@ -77,7 +78,7 @@
       if (membersIds) {
         for (const member of membersIds) {
           if (space.members.includes(member)) continue
-          await client.update(space, { $push: { members: member } })
+          await getClient().update(space, { $push: { members: member } })
         }
       }
     })
@@ -124,7 +125,7 @@
             icon={IconClose}
             size={'small'}
             action={() => {
-              removeMember(person._id)
+              void removeMember(person._id)
             }}
           />
         {/if}

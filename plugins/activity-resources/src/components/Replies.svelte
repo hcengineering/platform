@@ -31,7 +31,6 @@
   export let embedded = false
   export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
-  const client = getClient()
   const maxDisplayPersons = 5
 
   $: lastReply = object.lastReply ?? new Date().getTime()
@@ -77,7 +76,7 @@
       .slice(0, maxDisplayPersons - 1)
   }
 
-  const replyProvider = client.getModel().findAllSync(activity.class.ReplyProvider, {})[0]
+  const replyProvider = getClient().getModel().findAllSync(activity.class.ReplyProvider, {})[0]
 
   async function handleReply (e: MouseEvent): Promise<void> {
     e.stopPropagation()

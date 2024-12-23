@@ -45,8 +45,6 @@
   export let readonly: boolean = false
   export let onClick: (() => void) | undefined = undefined
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const currentAccount = getCurrentAccount() as PersonAccount
 
   const srcDocQuery = createQuery()
@@ -72,11 +70,11 @@
     targetDoc = r.shift()
   })
 
-  $: targetPanel = hierarchy.classHierarchyMixin(value.attachedToClass, view.mixin.ObjectPanel)
-  $: srcDocPanel = hierarchy.classHierarchyMixin(value.srcDocClass, view.mixin.ObjectPanel)
+  $: targetPanel = getClient().getHierarchy().classHierarchyMixin(value.attachedToClass, view.mixin.ObjectPanel)
+  $: srcDocPanel = getClient().getHierarchy().classHierarchyMixin(value.srcDocClass, view.mixin.ObjectPanel)
 
   $: targetDoc !== undefined &&
-    getDocLinkTitle(client, targetDoc._id, targetDoc._class, targetDoc).then((res) => {
+    getDocLinkTitle(getClient(), targetDoc._id, targetDoc._class, targetDoc).then((res) => {
       targetTitle = res
     })
 

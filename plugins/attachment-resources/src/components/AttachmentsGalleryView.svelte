@@ -23,7 +23,6 @@
   export let attachments: WithLookup<Attachment>[]
   let selectedFileNumber: number | undefined
   const myAccId = getCurrentAccount()._id
-  const client = getClient()
 
   const showFileMenu = async (ev: MouseEvent, object: Doc, fileNumber: number): Promise<void> => {
     selectedFileNumber = fileNumber
@@ -35,7 +34,7 @@
             ? [
                 {
                   label: attachment.string.DeleteFile,
-                  action: async () => await client.removeDoc(object._class, object.space, object._id)
+                  action: async () => await getClient().removeDoc(object._class, object.space, object._id)
                 }
               ]
             : [])

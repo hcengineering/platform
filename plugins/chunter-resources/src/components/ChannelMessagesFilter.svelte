@@ -22,8 +22,7 @@
 
   export let selectedFilters: Ref<ActivityMessagesFilter>[] = []
 
-  const client = getClient()
-  const filters = client.getModel().findAllSync(activity.class.ActivityMessagesFilter, {})
+  const filters = getClient().getModel().findAllSync(activity.class.ActivityMessagesFilter, {})
 
   const handleClick = (ev: MouseEvent): void => {
     showPopup(

@@ -21,7 +21,6 @@
   import contact from '../plugin'
   import { personAccountByIdStore } from '../utils'
   import UserBox from './UserBox.svelte'
-  import { getClient } from '@hcengineering/presentation'
 
   export let label: IntlString = contact.string.Employee
   export let value: Ref<Account> | null | undefined
@@ -33,8 +32,6 @@
   export let width: string | undefined = undefined
   export let readonly = false
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   $: accounts = matchQuery<Account>(
     Array.from($personAccountByIdStore.values()),
     docQuery,

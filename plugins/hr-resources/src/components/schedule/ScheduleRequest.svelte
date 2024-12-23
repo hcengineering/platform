@@ -23,10 +23,8 @@
   export let editable: boolean = false
   export let shouldShowDescription: boolean = true
 
-  const client = getClient()
-
   async function getType (request: Request): Promise<RequestType | undefined> {
-    return await client.findOne(hr.class.RequestType, {
+    return await getClient().findOne(hr.class.RequestType, {
       _id: request.type
     })
   }

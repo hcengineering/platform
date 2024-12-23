@@ -29,15 +29,13 @@
     Menu,
     closeTooltip,
     eventToHTMLElement,
-    getEventPopupPositionElement,
     getFocusManager,
-    getPopupPositionElement,
     showPopup
   } from '@hcengineering/ui'
   import view, { Action as ViewAction } from '@hcengineering/view'
-  import { ContextMenu, invokeAction } from '@hcengineering/view-resources'
+  import { invokeAction } from '@hcengineering/view-resources'
   import { createEventDispatcher, tick } from 'svelte'
-  import { readable, Readable, Writable, writable } from 'svelte/store'
+  import { Readable, Writable, readable, writable } from 'svelte/store'
   import { channelProviders } from '../utils'
   import ChannelEditor from './ChannelEditor.svelte'
 
@@ -211,8 +209,6 @@
     dispatch('remove', removed.channel)
   }
 
-  const client = getClient()
-
   const editChannel = (el: HTMLElement, n: number, item: Item): void => {
     if (opened !== n) {
       opened = n
@@ -233,7 +229,7 @@
           if (result === 'open') {
             if (item.action) {
               const doc = item.channel as Channel
-              const action = client.getModel().findAllSync(view.class.Action, { _id: item.action })[0]
+              const action = getClient().getModel().findAllSync(view.class.Action, { _id: item.action })[0]
               invokeAction(doc, result, action)
             } else {
               dispatch('open', item)
@@ -274,7 +270,7 @@
       closeTooltip()
       if (item.action) {
         const doc = item.channel as Channel
-        const action = client.getModel().findAllSync(view.class.Action, { _id: item.action })[0]
+        const action = getClient().getModel().findAllSync(view.class.Action, { _id: item.action })[0]
         invokeAction(doc, result, action)
       } else {
         dispatch('open', item)

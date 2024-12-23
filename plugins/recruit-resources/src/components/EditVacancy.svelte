@@ -15,7 +15,15 @@
 -->
 <script lang="ts">
   import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
-  import core, { ClassifierKind, type CollaborativeDoc, Data, Doc, Mixin, Ref } from '@hcengineering/core'
+  import core, {
+    ClassifierKind,
+    type CollaborativeDoc,
+    Data,
+    Doc,
+    type MarkupBlobRef,
+    Mixin,
+    Ref
+  } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
@@ -37,7 +45,7 @@
   let object: Required<Vacancy>
   let rawName: string = ''
   let rawDesc: string = ''
-  let rawFullDesc: CollaborativeDoc
+  let rawFullDesc: MarkupBlobRef | null = null
   let lastId: Ref<Vacancy> | undefined = undefined
 
   let showAllMixins = false
@@ -48,8 +56,6 @@
   onDestroy(async () => {
     void inboxClient.then((client) => client.readDoc(_id))
   })
-
-  const client = getClient()
 
   const query = createQuery()
   // const clazz = client.getHierarchy().getClass(recruit.class.Vacancy)
@@ -73,11 +79,11 @@
   $: updateObject(_id)
 
   const ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
-  const hierarchy = client.getHierarchy()
   let mixins: Mixin<Doc>[] = []
 
   function getMixins (object: Doc, showAllMixins: boolean): void {
     if (object === undefined) return
+    const hierarchy = getClient().getHierarchy()
     const descendants = hierarchy.getDescendants(core.class.Doc).map((p) => hierarchy.getClass(p))
 
     mixins = descendants.filter(
@@ -92,7 +98,7 @@
   $: getMixins(object, showAllMixins)
 
   let descriptionBox: AttachmentStyleBoxCollabEditor
-  $: descriptionKey = client.getHierarchy().getAttribute(recruit.class.Vacancy, 'fullDescription')
+  $: descriptionKey = getClient().getHierarchy().getAttribute(recruit.class.Vacancy, 'fullDescription')
   let saved = false
   async function save (): Promise<void> {
     if (object === undefined) {
@@ -118,7 +124,7 @@
     }
 
     if (Object.keys(updates).length > 0) {
-      await client.update(object, updates)
+      await getClient().update(object, updates)
     }
   }
 </script>

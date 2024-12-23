@@ -24,7 +24,6 @@
   export let filter: Filter
   export let onChange: (e: Filter) => void
 
-  const client = getClient()
   filter.onRemove = () => {
     FilterQuery.remove(filter.index)
   }
@@ -35,9 +34,11 @@
 
   let modes: FilterMode[] = []
 
-  client.findAll(view.class.FilterMode, { _id: { $in: filter.modes } }).then((res) => {
-    modes = res
-  })
+  void getClient()
+    .findAll(view.class.FilterMode, { _id: { $in: filter.modes } })
+    .then((res) => {
+      modes = res
+    })
 </script>
 
 <div class="selectPopup">

@@ -26,8 +26,6 @@
   export let options: FindOptions<Resource> | undefined = undefined
   export let viewOptions: ViewOptions
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const q = createQuery()
 
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
@@ -47,7 +45,7 @@
   let objects: WithLookup<Resource>[] = []
 
   $: orderBy = viewOptions.orderBy
-  $: lookup = buildConfigLookup(hierarchy, _class, config, options?.lookup)
+  $: lookup = buildConfigLookup(getClient().getHierarchy(), _class, config, options?.lookup)
 
   $: q.query(
     _class,

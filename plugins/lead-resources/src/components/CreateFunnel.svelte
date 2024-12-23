@@ -37,9 +37,6 @@
   export let funnel: Funnel | undefined = undefined
   const dispatch = createEventDispatcher()
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
   $: isNew = !funnel
 
   let name: string = funnel?.name ?? ''
@@ -57,7 +54,7 @@
   async function loadSpaceType (id: typeof typeId): Promise<void> {
     spaceType =
       id !== undefined
-        ? await client
+        ? await getClient()
           .getModel()
           .findOne(core.class.SpaceType, { _id: id }, { lookup: { _id: { roles: core.class.Role } } })
         : undefined
@@ -94,6 +91,7 @@
       return
     }
 
+    const client = getClient()
     const funnelId = await client.createDoc(leadRes.class.Funnel, core.space.Space, {
       name,
       description,

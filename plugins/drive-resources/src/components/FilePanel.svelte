@@ -42,7 +42,6 @@
   let version: FileVersion | undefined = undefined
   let download: HTMLAnchorElement
 
-  const client = getClient()
   const query = createQuery()
 
   $: query.query(
@@ -90,7 +89,7 @@
       metadata
     }
 
-    await createFileVersion(client, _id, data)
+    await createFileVersion(getClient(), _id, data)
   }
 </script>
 
