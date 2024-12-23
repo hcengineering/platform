@@ -1058,7 +1058,11 @@ export async function restorePassword (token: string, password: string): Promise
 }
 
 async function handleStatusError (message: string, err: Status): Promise<void> {
-  if (err.code === platform.status.InvalidPassword || err.code === platform.status.AccountNotFound) {
+  if (
+    err.code === platform.status.InvalidPassword ||
+    err.code === platform.status.AccountNotFound ||
+    err.code === platform.status.InvalidOtp
+  ) {
     // No need to send to analytics
     return
   }

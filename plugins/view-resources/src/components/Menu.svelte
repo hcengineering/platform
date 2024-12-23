@@ -30,8 +30,6 @@
 
   let resActions = actions
 
-  const client = getClient()
-
   let loaded = false
 
   const order: Record<ActionGroup, number> = {
@@ -44,7 +42,7 @@
     remove: 7
   }
 
-  void getActions(client, object, baseMenuClass, mode).then((result) => {
+  void getActions(getClient(), object, baseMenuClass, mode).then((result) => {
     const filtered = result.filter((a) => {
       if (excludedActions.includes(a._id)) {
         return false
@@ -63,7 +61,7 @@
       inline: a.inline,
       group: a.context.group ?? 'other',
       action: async (_: any, evt: Event) => {
-        if (overrides.has(a._id)) {
+        if (overrides?.has(a._id)) {
           overrides.get(a._id)?.(object, evt)
           return
         }

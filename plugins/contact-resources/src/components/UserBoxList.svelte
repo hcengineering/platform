@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact, Employee, Person } from '@hcengineering/contact'
+  import contact, { Person } from '@hcengineering/contact'
   import type { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { ObjectCreate, getClient } from '@hcengineering/presentation'
@@ -43,8 +43,8 @@
 
   export let sort: ((a: Person, b: Person) => number) | undefined = undefined
 
-  function filter (items: Ref<Person>[]): Ref<Person>[] {
-    return items.filter((it, idx, arr) => arr.indexOf(it) === idx)
+  function filter (items: Ref<Person>[] | undefined): Ref<Person>[] {
+    return (items ?? []).filter((it, idx, arr) => arr.indexOf(it) === idx)
   }
 
   let persons: Person[] = filter(items)
@@ -55,11 +55,10 @@
     .filter((p) => p !== undefined) as Person[]
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   async function addPerson (evt: Event): Promise<void> {
     const accounts = new Set(
-      client
+      getClient()
         .getModel()
         .findAllSync(contact.class.PersonAccount, {})
         .map((p) => p.person)
@@ -72,7 +71,7 @@
       allowDeselect: false,
       selectedUsers: filter(items),
       filter: (it: Doc) => {
-        const h = client.getHierarchy()
+        const h = getClient().getHierarchy()
         if (h.hasMixin(it, contact.mixin.Employee)) {
           const isActive = h.as(it, contact.mixin.Employee).active
           const isSelected = items.some((selectedItem) => selectedItem === it._id)
