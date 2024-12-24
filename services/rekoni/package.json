@@ -62,7 +62,7 @@
     "ts-node": "^10.8.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3",
-    "esbuild": "^0.20.0",
+    "esbuild": "^0.24.2",
     "eslint-plugin-n": "^15.4.0",
     "prettier": "^3.1.0",
     "@types/morgan": "~1.9.9"

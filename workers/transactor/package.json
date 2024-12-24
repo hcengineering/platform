@@ -20,7 +20,7 @@
     "_phase:build": "compile transpile src",
     "_phase:test": "jest --passWithNoTests --silent --forceExit",
     "_phase:format": "format src",
-    "_phase:validate": "compile validate"
+    "_phase:validate": "rushx bundle && compile validate"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241022.0",
@@ -39,7 +39,7 @@
     "ts-jest": "^29.1.1",
     "typescript": "^5.3.3",
     "wrangler": "^3.97.0",
-    "esbuild": "^0.20.0"
+    "esbuild": "^0.24.2"
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
