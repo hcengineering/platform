@@ -604,6 +604,7 @@ export class DocumentContentPage extends DocumentCommonPage {
       await expect(this.editDocumentSpace).not.toBeVisible()
       await expect(this.createNewTemplateFromSpace).not.toBeVisible()
     }
+    await this.page.keyboard.press('Escape')
   }
 
   async checkSpaceFormIsCreated (spaceName: string): Promise<void> {
