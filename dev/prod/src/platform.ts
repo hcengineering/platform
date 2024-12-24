@@ -62,6 +62,7 @@ import { viewId } from '@hcengineering/view'
 import workbench, { workbenchId } from '@hcengineering/workbench'
 import { testManagementId } from '@hcengineering/test-management'
 import { surveyId } from '@hcengineering/survey'
+import presence, { presenceId } from '@hcengineering/presence'
 
 import { bitrixId } from '@hcengineering/bitrix'
 
@@ -107,6 +108,7 @@ import '@hcengineering/view-assets'
 import '@hcengineering/workbench-assets'
 import '@hcengineering/test-management-assets'
 import '@hcengineering/survey-assets'
+import '@hcengineering/presence-assets'
 
 import github, { githubId } from '@hcengineering/github'
 import '@hcengineering/github-assets'
@@ -161,6 +163,7 @@ export interface Config {
   PREVIEW_CONFIG?: string
   UPLOAD_CONFIG?: string
   STATS_URL?: string
+  PRESENCE_URL?: string
   USE_BINARY_PROTOCOL?: boolean,
   TRANSACTOR_OVERRIDE?: string
 }
@@ -245,6 +248,7 @@ function configureI18n(): void {
    addStringsLoader(analyticsCollectorId, async (lang: string) => await import(`@hcengineering/analytics-collector-assets/lang/${lang}.json`))
    addStringsLoader(testManagementId, async (lang: string) => await import(`@hcengineering/test-management-assets/lang/${lang}.json`))
    addStringsLoader(surveyId, async (lang: string) => await import(`@hcengineering/survey-assets/lang/${lang}.json`))
+   addStringsLoader(presenceId, async (lang: string) => await import(`@hcengineering/presence-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform() {
@@ -342,6 +346,7 @@ export async function configurePlatform() {
   setMetadata(love.metadata.WebSocketURL, config.LIVEKIT_WS)
   setMetadata(print.metadata.PrintURL, config.PRINT_URL)
   setMetadata(sign.metadata.SignURL, config.SIGN_URL)
+  setMetadata(presence.metadata.PresenceUrl, config.PRESENCE_URL ?? '')
 
   const languages = myBranding.languages ? (myBranding.languages as string).split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it']
 
@@ -409,7 +414,8 @@ export async function configurePlatform() {
   addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
   addLocation(uploaderId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/uploader-resources'))
   addLocation(testManagementId, () => import(/* webpackChunkName: "test-management" */ '@hcengineering/test-management-resources'))
-  addLocation(surveyId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/survey-resources'))
+  addLocation(surveyId, () => import(/* webpackChunkName: "survey" */ '@hcengineering/survey-resources'))
+  addLocation(presenceId, () => import(/* webpackChunkName: "presence" */ '@hcengineering/presence-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

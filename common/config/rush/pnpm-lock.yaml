@@ -431,6 +431,9 @@ dependencies:
   '@rush-temp/model-preference':
     specifier: file:./projects/model-preference.tgz
     version: file:projects/model-preference.tgz
+  '@rush-temp/model-presence':
+    specifier: file:./projects/model-presence.tgz
+    version: file:projects/model-presence.tgz
   '@rush-temp/model-presentation':
     specifier: file:./projects/model-presentation.tgz
     version: file:projects/model-presentation.tgz
@@ -686,6 +689,15 @@ dependencies:
   '@rush-temp/preference-assets':
     specifier: file:./projects/preference-assets.tgz
     version: file:projects/preference-assets.tgz(esbuild@0.20.1)(ts-node@10.9.2)
+  '@rush-temp/presence':
+    specifier: file:./projects/presence.tgz
+    version: file:projects/presence.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
+  '@rush-temp/presence-assets':
+    specifier: file:./projects/presence-assets.tgz
+    version: file:projects/presence-assets.tgz(esbuild@0.20.1)(ts-node@10.9.2)
+  '@rush-temp/presence-resources':
+    specifier: file:./projects/presence-resources.tgz
+    version: file:projects/presence-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
   '@rush-temp/presentation':
     specifier: file:./projects/presentation.tgz
     version: file:projects/presentation.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -1607,9 +1619,6 @@ dependencies:
   fast-copy:
     specifier: ~3.0.1
     version: 3.0.1
-  fast-equals:
-    specifier: ^5.0.1
-    version: 5.0.1
   file-api:
     specifier: ^0.10.4
     version: 0.10.4
@@ -25738,7 +25747,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz:
-    resolution: {integrity: sha512-t+T01n/lk1uFmDQvCw+ldE7yBemi2GcvJHXQKaRBXGprTf//JM9Wd9GgvQoYyQsQO7HA8ilAkmnVH3gfP7xxFg==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-POSTd7U69WG8HMf3/Budl2bpSfRrigifVT+i8kAOYT8EfuJvT0squXq0TMjYThMNQak91IwJF040+PjIWtlTBw==, tarball: file:projects/model-all.tgz}
     name: '@rush-temp/model-all'
     version: 0.0.0
     dependencies:
@@ -26153,6 +26162,24 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       typescript: 5.3.3
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/model-presence.tgz:
+    resolution: {integrity: sha512-bE9NfhmtkeenHePBuorhYSQloGaNnGqtlw2i8ObXBD2ecu21ArwfbrJdHnQiy+Qtq8rs3j+rcCV/BcWpJSBJYQ==, tarball: file:projects/model-presence.tgz}
+    name: '@rush-temp/model-presence'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      prettier: 3.2.5
+      typescript: 5.6.2
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -28634,6 +28661,112 @@ packages:
       - ts-node
     dev: false
 
+  file:projects/presence-assets.tgz(esbuild@0.20.1)(ts-node@10.9.2):
+    resolution: {integrity: sha512-T5FtlJ3r2RJxIFv3mXYRkwfri1DVDi5e/NJawtghi5ZN7uZCS+TGLXh/p5fhoZaBWKWILxLoILuRrGZlYfZXaA==, tarball: file:projects/presence-assets.tgz}
+    id: file:projects/presence-assets.tgz
+    name: '@rush-temp/presence-assets'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      prettier: 3.2.5
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.6.2)
+      typescript: 5.6.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+    dev: false
+
+  file:projects/presence-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
+    resolution: {integrity: sha512-wPkp1Gl14BRxVtSA7GHeRGse3P/mNyw8ZMFaB+GWPy6uzKem9XOIIk6KKgvNgyZBZROcI9KxlEc5nCn6JUZNUw==, tarball: file:projects/presence-resources.tgz}
+    id: file:projects/presence-resources.tgz
+    name: '@rush-temp/presence-resources'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2)
+      fast-equals: 5.0.1
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
+      sass: 1.71.1
+      svelte: 4.2.19
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)
+      svelte-eslint-parser: 0.33.1(svelte@4.2.19)
+      svelte-loader: 3.2.0(svelte@4.2.19)
+      svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)(typescript@5.6.2)
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.6.2)
+      typescript: 5.6.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - coffeescript
+      - esbuild
+      - less
+      - node-notifier
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+      - ts-node
+    dev: false
+
+  file:projects/presence.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
+    resolution: {integrity: sha512-UAKP+9sJPe3sFFYkuaoRLl5OGmzjdjb35+WCRBenMndS9HljrLekTZp2DL9F1XiyBa4OkB38vYYy2OoobeXx6Q==, tarball: file:projects/presence.tgz}
+    id: file:projects/presence.tgz
+    name: '@rush-temp/presence'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      prettier: 3.2.5
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.6.2)
+      typescript: 5.6.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+    dev: false
+
   file:projects/presentation.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
     resolution: {integrity: sha512-oPHDMQuOu5zTYR4++5vrc3LWTZgdZLCxCmnFGSHhNSOG0uRezdWBXlJyN0IL85CI2S03RO/WT16siUOrjG5vwA==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
@@ -28795,7 +28928,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz(bufferutil@4.0.8)(sass@1.71.1)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-5Lih7OOjrS1TenY/2rwnCFmfxjY0Ef0XgCiKURsCa6Rr5BixyOBIKDznMdFXIogr6vxKf0QWbpJVYm6iZE4J/A==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-Vhce2P4UQlBdcnn6eYAjevEqIDE2pkstFrPKam87+2O8XmnR7ZPzuMVZwkWVbVmXsNjE0N9lKiKNYMdcW2ByRQ==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0

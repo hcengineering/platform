@@ -1,0 +1,9 @@
+{
+  "extends": "./node_modules/@hcengineering/platform-rig/profiles/ui/tsconfig.json",
+
+  "compilerOptions": {
+    "rootDir": "../presence-resources/src",
+    "outDir": "../presence-resources/lib",
+    "declarationDir": "../presence-resources/types"
+  }
+}

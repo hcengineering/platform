@@ -1,0 +1,13 @@
+{
+  "string": {
+    "Cancel": "Cancel",
+    "Retry": "Retry",
+    "UploadingTo": "Uploading {files, plural, =1 {# file} other {# files}} to"
+  },
+  "status": {
+    "Error": "Error",
+    "Waiting": "Waiting",
+    "Uploading": "Uploading",
+    "Completed": "Completed"
+  }
+}
