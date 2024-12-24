@@ -89,7 +89,7 @@
   export let attribute: KeyedAttribute
 
   export let user: CollaborationUser
-  // export let userComponent: AnySvelteComponent | undefined = undefined
+  export let userComponent: AnySvelteComponent | undefined = undefined
 
   export let readonly = false
 

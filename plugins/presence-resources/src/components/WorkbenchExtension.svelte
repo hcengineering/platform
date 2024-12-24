@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
 
-  import { connect } from '../client'
+  import { type PresenceClient, connect } from '../client'
 
   let parentElement: HTMLDivElement
   let client: PresenceClient | undefined
