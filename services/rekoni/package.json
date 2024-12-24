@@ -75,7 +75,7 @@
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
     "email-addresses": "^5.0.0",
-    "express": "^4.19.2",
+    "express": "^4.21.2",
     "express-form-data": "^2.0.22",
     "html-to-text": "^9.0.3",
     "jimp": "^0.16.1",

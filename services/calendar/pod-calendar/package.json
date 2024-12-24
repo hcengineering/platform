@@ -67,7 +67,7 @@
     "@hcengineering/server-token": "^0.6.11",
     "dotenv": "~16.0.0",
     "cors": "^2.8.5",
-    "express": "^4.19.2",
+    "express": "^4.21.2",
     "fast-equals": "^5.0.1",
     "file-api": "^0.10.4",
     "googleapis": "^122.0.0",

@@ -76,7 +76,7 @@
     "@telegraf/entity": "^0.5.0",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
-    "express": "^4.19.2",
+    "express": "^4.21.2",
     "htmlparser2": "^9.0.0",
     "mongodb": "^6.12.0",
     "otp-generator": "^4.0.1",

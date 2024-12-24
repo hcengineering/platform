@@ -109,7 +109,7 @@
     "@tiptap/extension-code": "^2.6.6",
     "@tiptap/extension-bubble-menu": "^2.6.6",
     "@hcengineering/task": "^0.6.20",
-    "express": "^4.19.2",
+    "express": "^4.21.2",
     "cors": "^2.8.5",
     "body-parser": "^1.20.2",
     "mongodb": "^6.12.0",
