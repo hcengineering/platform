@@ -183,12 +183,14 @@
     await tick()
     const list = inputFile.files
     if (list === null || list.length === 0) return
+    const promises: Promise<any>[] = []
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
       if (file !== null) {
-        await createAttachment(file)
+        promises.push(createAttachment(file))
       }
     }
+    await Promise.all(promises)
     inputFile.value = ''
     progress = false
   }
@@ -196,13 +198,16 @@
   async function fileDrop (e: DragEvent): Promise<void> {
     progress = true
     const list = e.dataTransfer?.files
+    const promises: Promise<any>[] = []
+
     if (list === undefined || list.length === 0) return
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
       if (file !== null) {
-        await createAttachment(file)
+        promises.push(createAttachment(file))
       }
     }
+    await Promise.all(promises)
     progress = false
   }
 
