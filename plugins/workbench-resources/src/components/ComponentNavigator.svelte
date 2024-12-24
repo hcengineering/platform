@@ -92,7 +92,11 @@
 
   function onSelected (e: CustomEvent<any>): void {
     if (syncWithLocationQuery) return
-    parentQuery = { ...parentQuery, [parentKey]: e.detail }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { [parentKey]: parentId, ...baseQuery } = parentQuery
+    const hasNoParent = e.detail === undefined || e.detail === navigationComponentProps?.noParentId
+    const parent = hasNoParent ? {} : { [parentKey]: e.detail }
+    parentQuery = { ...baseQuery, ...parent }
   }
 
   function showCreateDialog (): void {

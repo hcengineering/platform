@@ -36,6 +36,8 @@
   import { TreeNode, TreeItem, getActions as getContributedActions } from '../../index'
   import { Unsubscriber } from 'svelte/motion'
 
+  const DEFAULT_LIMIT = 100
+
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
   export let titleKey: string = 'title'
@@ -48,7 +50,7 @@
   export let storeId: string = 'default'
   export let filterKey: string = 'attachedTo'
   export let syncWithLocationQuery: boolean = false
-  export let limit = 100
+  export let limit = DEFAULT_LIMIT
 
   const dispatch = createEventDispatcher()
 
@@ -204,7 +206,7 @@
       kind={'ghost'}
       size={'small'}
       on:click={() => {
-        limit = limit + 100
+        limit = limit + DEFAULT_LIMIT
       }}
     />
   {/if}
