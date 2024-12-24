@@ -47,7 +47,7 @@
     "fork-ts-checker-webpack-plugin": "^9.0.2",
     "update-browserslist-db": "^1.1.0",
     "browserslist": "^4.23.3",
-    "esbuild": "^0.20.0",
+    "esbuild": "^0.24.2",
     "esbuild-loader": "^4.0.3",
     "typescript": "^5.3.3",
     "svelte-preprocess": "^5.1.3"

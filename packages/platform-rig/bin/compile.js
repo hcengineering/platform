@@ -172,6 +172,7 @@ async function performESBuild(filesToTranspile) {
     sourcemap: 'linked',
     allowOverwrite: true,
     format: 'cjs',
+    color: true,
     plugins: [
       copy({
         // this is equal to process.cwd(), which means we use cwd path as base path to resolve `to` path
@@ -181,7 +182,7 @@ async function performESBuild(filesToTranspile) {
           from: [args[1] + '/**/*.json'],
           to: ['./lib'],
         },
-        watch: true,
+        watch: false
       })
     ]
   })

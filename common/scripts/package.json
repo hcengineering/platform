@@ -5,7 +5,7 @@
     "format": "echo \"No format specified\""
   },
   "devDependencies": {
-    "esbuild": "^0.20.0",
+    "esbuild": "^0.24.2",
     "sharp": "~0.32.0"
   },
   "private": true
