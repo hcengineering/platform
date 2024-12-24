@@ -134,6 +134,11 @@ export function getApplicantsLink (_id: Ref<VacancyList>): Location {
   return loc
 }
 
+export async function isApplicationsSpecial (): Promise<boolean> {
+  const loc = getCurrentResolvedLocation()
+  return loc.path[3] === 'candidates'
+}
+
 function getShortLinkData (
   hierarchy: Hierarchy,
   shortLink: string

@@ -143,7 +143,8 @@ export function createModel (builder: Builder): void {
             icon: contact.icon.Company,
             // intentionally left empty in order to make space presenter working
             specials: [],
-            spacePresenter: recruit.component.OrganizationSpacePresenter
+            spacePresenter: recruit.component.OrganizationSpacePresenter,
+            visibleIf: recruit.function.IsApplicationsSpecial
           }
         ],
         specials: [

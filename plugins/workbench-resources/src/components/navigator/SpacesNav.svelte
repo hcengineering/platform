@@ -196,7 +196,9 @@
       currentSpace,
       currentSpecial,
       currentFragment,
-      visible
+      visible,
+      visibleIf,
+      spaces
     }}
   />
 {/if}

@@ -17,36 +17,47 @@
   import { FoldersBrowser, TreeNode } from '@hcengineering/view-resources'
 
   import { SpacesNavModel } from '@hcengineering/workbench'
-  import { Doc, DocumentQuery } from '@hcengineering/core'
+  import { Doc, DocumentQuery, Space } from '@hcengineering/core'
   import contact from '@hcengineering/contact'
 
   import recruit from '../plugin'
 
   export let model: SpacesNavModel
+  export let spaces: Space[]
   export let actions: () => Promise<Action[]> = async () => []
   export let visible: boolean
+  export let visibleIf: ((space: Space) => Promise<boolean>) | undefined
+
+  $: void updateVisibility(spaces)
+
+  async function updateVisibility (spaces: Space[]): Promise<void> {
+    if (visibleIf === undefined) return
+    visible = await visibleIf(spaces?.[0])
+  }
 
   let search = ''
   let searchQuery: DocumentQuery<Doc> | undefined = undefined
   $: searchQuery = search !== '' ? { $search: search } : undefined
 </script>
 
-<TreeNode _id={'tree-' + model.id} label={model.label} {actions} highlighted={visible} isFold={false} {visible}>
-  <div class="pl-3 pr-3 pt-1">
-    <SearchEdit bind:value={search} width="auto" kind={'secondary'} />
-  </div>
-  <FoldersBrowser
-    _class={recruit.mixin.VacancyList}
-    storeId="organizations"
-    titleKey="name"
-    parentKey="space"
-    plainList={true}
-    allObjectsLabel={recruit.string.Organizations}
-    allObjectsIcon={contact.icon.Company}
-    getFolderLink={recruit.function.GetApplicantsLink}
-    filterKey="company"
-    noParentId={recruit.ids.AllCompanies}
-    syncWithLocationQuery={true}
-    query={searchQuery ?? {}}
-  />
-</TreeNode>
+{#if visible}
+  <TreeNode _id={'tree-' + model.id} label={model.label} {actions} highlighted={visible} isFold={false} {visible}>
+    <div class="pl-3 pr-3 pt-1">
+      <SearchEdit bind:value={search} width="auto" kind={'secondary'} />
+    </div>
+    <FoldersBrowser
+      _class={recruit.mixin.VacancyList}
+      storeId="organizations"
+      titleKey="name"
+      parentKey="space"
+      plainList={true}
+      allObjectsLabel={recruit.string.Organizations}
+      allObjectsIcon={contact.icon.Company}
+      getFolderLink={recruit.function.GetApplicantsLink}
+      filterKey="company"
+      noParentId={recruit.ids.AllCompanies}
+      syncWithLocationQuery={true}
+      query={searchQuery ?? {}}
+    />
+  </TreeNode>
+{/if}

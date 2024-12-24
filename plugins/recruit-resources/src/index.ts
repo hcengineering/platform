@@ -82,7 +82,8 @@ import {
   objectLinkProvider,
   parseLinkId,
   resolveLocation,
-  getApplicantsLink
+  getApplicantsLink,
+  isApplicationsSpecial
 } from './utils'
 
 import { get } from 'svelte/store'
@@ -423,7 +424,8 @@ export default async (): Promise<Resources> => ({
     HideArchivedVacancies: hideArchivedVacancies,
     ApplicantHasEmail: applicantHasEmail,
     ParseLinkId: parseLinkId,
-    GetApplicantsLink: getApplicantsLink
+    GetApplicantsLink: getApplicantsLink,
+    IsApplicationsSpecial: isApplicationsSpecial
   },
   resolver: {
     Location: resolveLocation

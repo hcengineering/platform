@@ -59,7 +59,8 @@ export default mergeIds(recruitId, recruit, {
     HideDoneState: '' as ViewQueryAction,
     HideArchivedVacancies: '' as ViewQueryAction,
     ApplicantHasEmail: '' as Resource<ViewActionAvailabilityFunction>,
-    ParseLinkId: '' as Resource<(id: string) => Promise<Ref<Doc> | undefined>>
+    ParseLinkId: '' as Resource<(id: string) => Promise<Ref<Doc> | undefined>>,
+    IsApplicationsSpecial: '' as Resource<() => Promise<boolean>>
   },
   string: {
     ApplicationsShort: '' as IntlString,
