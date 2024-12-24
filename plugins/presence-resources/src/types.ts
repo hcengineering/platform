@@ -16,7 +16,6 @@
 import { type Class, type Doc, type Ref } from '@hcengineering/core'
 import { type Person } from '@hcengineering/contact'
 import { type PresenceData } from '@hcengineering/presence'
-// import { type Location } from '@hcengineering/ui'
 
 export interface Room {
   objectId: Ref<Doc>
@@ -38,7 +37,6 @@ export interface PersonRoomPresence {
 
 export interface PersonPresence {
   person: Ref<Person>
-  // location: Location
   presence: RoomPresence[]
   lastUpdated: number
 }
