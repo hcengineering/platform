@@ -12,10 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import documents, { ControlledDocument, DocumentState } from '@hcengineering/controlled-documents'
 import { type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
 import document from '@hcengineering/document'
 import tracker, { IssuePriority, type IssueStatus } from '@hcengineering/tracker'
 import {
+  ImportControlledDocument,
+  ImportControlledDocumentTemplate,
+  ImportOrgSpace,
+  type ImportControlledDoc,
   type ImportDocument,
   type ImportIssue,
   type ImportProject,
@@ -39,15 +44,21 @@ const PROJECT_IDENTIFIER_REGEX = /^[a-zA-Z_][a-zA-Z0-9_]*$/
 
 export class ImportWorkspaceBuilder {
   private readonly projects = new Map<string, ImportProject>()
-  private readonly teamspaces = new Map<string, ImportTeamspace>()
-  private readonly projectTypes = new Map<string, ImportProjectType>()
   private readonly issuesByProject = new Map<string, Map<string, ImportIssue>>()
   private readonly issueParents = new Map<string, string>()
+
+  private readonly teamspaces = new Map<string, ImportTeamspace>()
   private readonly documentsByTeamspace = new Map<string, Map<string, ImportDocument>>()
   private readonly documentParents = new Map<string, string>()
-  private readonly errors = new Map<string, ValidationError>()
 
+  private readonly qmsSpaces = new Map<string, ImportOrgSpace>()
+  private readonly qmsTemplates = new Map<Ref<ControlledDocument>, string>()
+  private readonly qmsDocsBySpace = new Map<string, Map<string, ImportControlledDoc>>()
+  private readonly qmsDocsParents = new Map<string, string>()
+
+  private readonly projectTypes = new Map<string, ImportProjectType>()
   private readonly issueStatusCache = new Map<string, Ref<IssueStatus>>()
+  private readonly errors = new Map<string, ValidationError>()
 
   constructor (
     private readonly client: TxOperations,
@@ -125,10 +136,95 @@ export class ImportWorkspaceBuilder {
     return this
   }
 
+  addOrgSpace (path: string, space: ImportOrgSpace): this {
+    this.validateAndAdd('documentSpace', path, space, (s) => this.validateOrgSpace(s), this.qmsSpaces, path)
+    return this
+  }
+
+  addControlledDocument (
+    spacePath: string,
+    docPath: string,
+    doc: ImportControlledDocument,
+    parentDocPath?: string
+  ): this {
+    if (!this.qmsDocsBySpace.has(spacePath)) {
+      this.qmsDocsBySpace.set(spacePath, new Map())
+    }
+
+    const docs = this.qmsDocsBySpace.get(spacePath)
+    if (docs === undefined) {
+      throw new Error(`Document space ${spacePath} not found`)
+    }
+
+    if (doc.code !== undefined) {
+      const duplicateDoc = Array.from(docs.values()).find((existingDoc) => existingDoc.code === doc.code)
+      if (duplicateDoc !== undefined) {
+        throw new Error(`Duplicate document code ${doc.code} in space ${spacePath}`)
+      }
+    }
+
+    this.validateAndAdd(
+      'controlledDocument',
+      docPath,
+      doc,
+      (d) => this.validateControlledDocument(d as ImportControlledDocument),
+      docs,
+      docPath
+    )
+
+    if (parentDocPath !== undefined) {
+      this.qmsDocsParents.set(docPath, parentDocPath)
+    }
+
+    return this
+  }
+
+  addControlledDocumentTemplate (
+    spacePath: string,
+    templatePath: string,
+    template: ImportControlledDocumentTemplate,
+    parentTemplatePath?: string
+  ): this {
+    if (!this.qmsDocsBySpace.has(spacePath)) {
+      this.qmsDocsBySpace.set(spacePath, new Map())
+    }
+
+    const qmsDocs = this.qmsDocsBySpace.get(spacePath)
+    if (qmsDocs === undefined) {
+      throw new Error(`Document space ${spacePath} not found`)
+    }
+
+    if (template.code !== undefined) {
+      const duplicate = Array.from(qmsDocs.values()).find((existingDoc) => existingDoc.code === template.code)
+      if (duplicate !== undefined) {
+        throw new Error(`Duplicate document code ${template.code} in space ${spacePath}`)
+      }
+    }
+
+    this.validateAndAdd(
+      'documentTemplate',
+      templatePath,
+      template,
+      (t) => this.validateControlledDocumentTemplate(t as ImportControlledDocumentTemplate),
+      qmsDocs,
+      templatePath
+    )
+
+    if (parentTemplatePath !== undefined) {
+      this.qmsDocsParents.set(templatePath, parentTemplatePath)
+    }
+
+    if (template.id !== undefined) {
+      this.qmsTemplates.set(template.id, templatePath)
+    }
+
+    return this
+  }
+
   validate (): ValidationResult {
     // Perform cross-entity validation
-    this.validateProjectReferences()
-    this.validateSpaceDocuments()
+    this.validateSpacesReferences()
+    this.validateDocumentsReferences()
 
     return {
       isValid: this.errors.size === 0,
@@ -173,9 +269,27 @@ export class ImportWorkspaceBuilder {
       }
     }
 
+    for (const [spacePath, qmsDocs] of this.qmsDocsBySpace) {
+      const space = this.qmsSpaces.get(spacePath)
+      if (space !== undefined) {
+        const rootDocPaths = Array.from(qmsDocs.keys()).filter((docPath) => !this.qmsDocsParents.has(docPath))
+
+        for (const rootPath of rootDocPaths) {
+          this.buildControlledDocumentHierarchy(rootPath, qmsDocs)
+        }
+
+        space.docs = rootDocPaths.map((path) => qmsDocs.get(path)).filter(Boolean) as ImportControlledDocument[]
+      }
+    }
+
     return {
       projectTypes: Array.from(this.projectTypes.values()),
-      spaces: [...Array.from(this.projects.values()), ...Array.from(this.teamspaces.values())]
+      spaces: [
+        ...Array.from(this.projects.values()),
+        ...Array.from(this.teamspaces.values()),
+        ...Array.from(this.qmsSpaces.values())
+      ],
+      attachments: []
     }
   }
 
@@ -415,7 +529,7 @@ export class ImportWorkspaceBuilder {
     return errors
   }
 
-  private validateProjectReferences (): void {
+  private validateSpacesReferences (): void {
     // Validate project type references
     for (const project of this.projects.values()) {
       if (project.projectType !== undefined && !this.projectTypes.has(project.projectType.name)) {
@@ -424,7 +538,7 @@ export class ImportWorkspaceBuilder {
     }
   }
 
-  private validateSpaceDocuments (): void {
+  private validateDocumentsReferences (): void {
     // Validate that issues belong to projects and documents to teamspaces
     for (const projectPath of this.issuesByProject.keys()) {
       if (!this.projects.has(projectPath)) {
@@ -435,6 +549,23 @@ export class ImportWorkspaceBuilder {
     for (const [teamspacePath] of this.documentsByTeamspace) {
       if (!this.teamspaces.has(teamspacePath)) {
         this.addError(teamspacePath, 'Documents reference non-existent teamspace')
+      }
+    }
+
+    for (const [orgSpacePath, docs] of this.qmsDocsBySpace) {
+      if (!this.qmsSpaces.has(orgSpacePath)) {
+        this.addError(orgSpacePath, 'Controlled document reference non-existent orgSpace')
+      }
+      for (const [docPath, doc] of docs) {
+        if (doc.class === documents.class.ControlledDocument) {
+          const templateRef = (doc as ImportControlledDocument).template
+          const templatePath = this.qmsTemplates.get(templateRef)
+          if (templatePath === undefined) {
+            this.addError(docPath, 'Controlled document reference non-existent template')
+          } else if (!docs.has(templatePath)) {
+            this.addError(docPath, 'Controlled document reference not in space')
+          }
+        }
       }
     }
   }
@@ -469,6 +600,20 @@ export class ImportWorkspaceBuilder {
       })
 
     issue.subdocs = childIssues
+  }
+
+  private buildControlledDocumentHierarchy (docPath: string, allDocs: Map<string, ImportControlledDoc>): void {
+    const doc = allDocs.get(docPath)
+    if (doc === undefined) return
+
+    const childDocs = Array.from(allDocs.entries())
+      .filter(([childPath]) => this.qmsDocsParents.get(childPath) === docPath)
+      .map(([childPath, childDoc]) => {
+        this.buildControlledDocumentHierarchy(childPath, allDocs)
+        return childDoc
+      })
+
+    doc.subdocs = childDocs
   }
 
   private validateEmoji (emoji: string): string[] {
@@ -528,5 +673,166 @@ export class ImportWorkspaceBuilder {
       }
     }
     return errors
+  }
+
+  private validateOrgSpace (space: ImportOrgSpace): string[] {
+    const errors: string[] = []
+
+    if (space.class !== documents.class.OrgSpace) {
+      errors.push('Invalid space class: ' + space.class)
+    }
+
+    errors.push(...this.validateType(space.title, 'string', 'title'))
+
+    if (space.emoji !== undefined) {
+      errors.push(...this.validateEmoji(space.emoji))
+    }
+
+    if (space.owners !== undefined) {
+      errors.push(...this.validateArray(space.owners, 'string', 'owners'))
+    }
+
+    if (space.members !== undefined) {
+      errors.push(...this.validateArray(space.members, 'string', 'members'))
+    }
+
+    return errors
+  }
+
+  private validateControlledDocument (doc: ImportControlledDocument): string[] {
+    const errors: string[] = []
+
+    // Validate required fields presence and types
+    errors.push(...this.validateType(doc.title, 'string', 'title'))
+    errors.push(...this.validateType(doc.class, 'string', 'class'))
+    errors.push(...this.validateType(doc.template, 'string', 'template'))
+    errors.push(...this.validateType(doc.state, 'string', 'state'))
+    if (doc.code !== undefined) {
+      errors.push(...this.validateType(doc.code, 'string', 'code'))
+    }
+
+    // Validate required string fields are defined
+    if (!this.validateStringDefined(doc.title)) errors.push('title is required')
+    if (!this.validateStringDefined(doc.template)) errors.push('template is required')
+
+    // Validate numbers are positive
+    if (!this.validatePossitiveNumber(doc.major)) errors.push('invalid value for field "major"')
+    if (!this.validatePossitiveNumber(doc.minor)) errors.push('invalid value for field "minor"')
+
+    // Validate arrays
+    errors.push(...this.validateArray(doc.reviewers, 'string', 'reviewers'))
+    errors.push(...this.validateArray(doc.approvers, 'string', 'approvers'))
+    errors.push(...this.validateArray(doc.coAuthors, 'string', 'coAuthors'))
+
+    // Validate optional fields if present
+    if (doc.author !== undefined) {
+      errors.push(...this.validateType(doc.author, 'string', 'author'))
+    }
+    if (doc.owner !== undefined) {
+      errors.push(...this.validateType(doc.owner, 'string', 'owner'))
+    }
+    if (doc.abstract !== undefined) {
+      errors.push(...this.validateType(doc.abstract, 'string', 'abstract'))
+    }
+    if (doc.ccDescription !== undefined) {
+      errors.push(...this.validateType(doc.ccDescription, 'string', 'ccDescription'))
+    }
+    if (doc.ccImpact !== undefined) {
+      errors.push(...this.validateType(doc.ccImpact, 'string', 'ccImpact'))
+    }
+    if (doc.ccReason !== undefined) {
+      errors.push(...this.validateType(doc.ccReason, 'string', 'ccReason'))
+    }
+
+    // Validate class
+    if (doc.class !== documents.class.ControlledDocument) {
+      errors.push('invalid class: ' + doc.class)
+    }
+
+    // Validate state values
+    if (doc.state !== DocumentState.Draft) {
+      errors.push('invalid state: ' + doc.state)
+    }
+
+    // todo: validate seqNumber is not duplicated (unique prefix? code?)
+
+    return errors
+  }
+
+  private validateControlledDocumentTemplate (template: ImportControlledDocumentTemplate): string[] {
+    const errors: string[] = []
+
+    // Validate required fields presence and types
+    errors.push(...this.validateType(template.title, 'string', 'title'))
+    errors.push(...this.validateType(template.class, 'string', 'class'))
+    errors.push(...this.validateType(template.docPrefix, 'string', 'docPrefix'))
+    errors.push(...this.validateType(template.state, 'string', 'state'))
+    if (template.code !== undefined) {
+      errors.push(...this.validateType(template.code, 'string', 'code'))
+    }
+
+    // Validate required string fields are defined
+    if (!this.validateStringDefined(template.title)) errors.push('title is required')
+    if (!this.validateStringDefined(template.docPrefix)) errors.push('docPrefix is required')
+
+    // Validate numbers are positive
+    if (!this.validatePossitiveNumber(template.major)) errors.push('invalid value for field "major"')
+    if (!this.validatePossitiveNumber(template.minor)) errors.push('invalid value for field "minor"')
+
+    // Validate arrays
+    errors.push(...this.validateArray(template.reviewers, 'string', 'reviewers'))
+    errors.push(...this.validateArray(template.approvers, 'string', 'approvers'))
+    errors.push(...this.validateArray(template.coAuthors, 'string', 'coAuthors'))
+
+    // Validate optional fields if present
+    if (template.author !== undefined) {
+      errors.push(...this.validateType(template.author, 'string', 'author'))
+    }
+    if (template.owner !== undefined) {
+      errors.push(...this.validateType(template.owner, 'string', 'owner'))
+    }
+    if (template.abstract !== undefined) {
+      errors.push(...this.validateType(template.abstract, 'string', 'abstract'))
+    }
+    if (template.ccDescription !== undefined) {
+      errors.push(...this.validateType(template.ccDescription, 'string', 'ccDescription'))
+    }
+    if (template.ccImpact !== undefined) {
+      errors.push(...this.validateType(template.ccImpact, 'string', 'ccImpact'))
+    }
+    if (template.ccReason !== undefined) {
+      errors.push(...this.validateType(template.ccReason, 'string', 'ccReason'))
+    }
+
+    // Validate class
+    if (template.class !== documents.mixin.DocumentTemplate) {
+      errors.push('invalid class: ' + template.class)
+    }
+
+    // Validate state values
+    if (template.state !== DocumentState.Draft) {
+      errors.push('invalid state: ' + template.state)
+    }
+
+    // todo: validate seqNumber no duplicated
+    return errors
+  }
+
+  private validateControlledDocumentSpaces (): void {
+    // Validate document spaces
+    for (const [spacePath] of this.qmsSpaces) {
+      // Validate controlled documents
+      const docs = this.qmsDocsBySpace.get(spacePath)
+      if (docs !== undefined) {
+        // for (const [docPath, doc] of docs) {
+        for (const docPath of docs.keys()) {
+          // Check parent document exists
+          const parentPath = this.documentParents.get(docPath)
+          if (parentPath !== undefined && !docs.has(parentPath)) {
+            this.addError(docPath, `Parent document not found: ${parentPath}`)
+          }
+        }
+      }
+    }
   }
 }

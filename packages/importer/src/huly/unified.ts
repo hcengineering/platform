@@ -14,7 +14,7 @@
 //
 
 import { type Attachment } from '@hcengineering/attachment'
-import contact, { type Person, type PersonAccount } from '@hcengineering/contact'
+import contact, { Employee, type Person, type PersonAccount } from '@hcengineering/contact'
 import { type Class, type Doc, generateId, type Ref, type Space, type TxOperations } from '@hcengineering/core'
 import document, { type Document } from '@hcengineering/document'
 import { MarkupMarkType, type MarkupNode, MarkupNodeType, traverseNode, traverseNodeMarks } from '@hcengineering/text'
@@ -28,6 +28,8 @@ import { ImportWorkspaceBuilder } from '../importer/builder'
 import {
   type ImportAttachment,
   type ImportComment,
+  ImportControlledDocument,
+  ImportControlledDocumentTemplate,
   type ImportDocument,
   ImportDrawing,
   type ImportIssue,
@@ -35,11 +37,18 @@ import {
   type ImportProjectType,
   type ImportTeamspace,
   type ImportWorkspace,
-  WorkspaceImporter
+  WorkspaceImporter,
+  ImportOrgSpace
 } from '../importer/importer'
 import { type Logger } from '../importer/logger'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 import { type FileUploader } from '../importer/uploader'
+import documents, {
+  DocumentState,
+  DocumentCategory,
+  ControlledDocument,
+  DocumentMeta
+} from '@hcengineering/controlled-documents'
 
 interface UnifiedComment {
   author: string
@@ -59,7 +68,7 @@ interface UnifiedIssueHeader {
 }
 
 interface UnifiedSpaceSettings {
-  class: 'tracker:class:Project' | 'document:class:Teamspace'
+  class: 'tracker:class:Project' | 'document:class:Teamspace' | 'documents:class:OrgSpace'
   title: string
   private?: boolean
   autoJoin?: boolean
@@ -101,13 +110,53 @@ interface UnifiedWorkspaceSettings {
   }>
 }
 
+interface UnifiedChangeControlHeader {
+  description?: string
+  reason?: string
+  impact?: string
+}
+
+interface UnifiedControlledDocumentHeader {
+  class: 'documents:class:ControlledDocument'
+  title: string
+  template: string
+  author: string
+  owner: string
+  abstract?: string
+  reviewers?: string[]
+  approvers?: string[]
+  coAuthors?: string[]
+  changeControl?: UnifiedChangeControlHeader
+}
+
+interface UnifiedDocumentTemplateHeader {
+  class: 'documents:mixin:DocumentTemplate'
+  title: string
+  category: string
+  docPrefix: string
+  author: string
+  owner: string
+  abstract?: string
+  reviewers?: string[]
+  approvers?: string[]
+  coAuthors?: string[]
+  changeControl?: UnifiedChangeControlHeader
+}
+
+interface UnifiedOrgSpaceSettings extends UnifiedSpaceSettings {
+  class: 'documents:class:OrgSpace'
+  qualified?: string
+  manager?: string
+  qara?: string
+}
+
 class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
   constructor (
     private readonly urlProvider: (id: string) => string,
     private readonly logger: Logger,
-    private readonly metadataByFilePath: Map<string, DocMetadata>,
-    private readonly metadataById: Map<Ref<Doc>, DocMetadata>,
-    private readonly attachMetadataByPath: Map<string, AttachmentMetadata>,
+    private readonly pathById: Map<Ref<Doc>, string>,
+    private readonly refMetaByPath: Map<string, ReferenceMetadata>,
+    private readonly attachMetaByPath: Map<string, AttachmentMetadata>,
     personsByName: Map<string, Ref<Person>>
   ) {
     super(personsByName)
@@ -130,15 +179,21 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
     const src = node.attrs?.src
     if (src === undefined) return
 
-    const sourceMeta = this.getSourceMetadata(id)
-    if (sourceMeta == null) return
+    const sourcePath = this.getSourcePath(id)
+    if (sourcePath == null) return
 
     const href = decodeURI(src as string)
-    const fullPath = path.resolve(path.dirname(sourceMeta.path), href)
-    const attachmentMeta = this.attachMetadataByPath.get(fullPath)
+    const fullPath = path.resolve(path.dirname(sourcePath), href)
+    const attachmentMeta = this.attachMetaByPath.get(fullPath)
 
     if (attachmentMeta === undefined) {
       this.logger.error(`Attachment image not found for ${fullPath}`)
+      return
+    }
+
+    const sourceMeta = this.refMetaByPath.get(sourcePath)
+    if (sourceMeta === undefined) {
+      this.logger.error(`Source metadata not found for ${sourcePath}`)
       return
     }
 
@@ -150,22 +205,25 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
     traverseNodeMarks(node, (mark) => {
       if (mark.type !== MarkupMarkType.link) return
 
-      const sourceMeta = this.getSourceMetadata(id)
-      if (sourceMeta == null) return
+      const sourcePath = this.getSourcePath(id)
+      if (sourcePath == null) return
 
       const href = decodeURI(mark.attrs.href)
-      const fullPath = path.resolve(path.dirname(sourceMeta.path), href)
+      const fullPath = path.resolve(path.dirname(sourcePath), href)
 
-      if (this.metadataByFilePath.has(fullPath)) {
-        const targetDocMeta = this.metadataByFilePath.get(fullPath)
+      if (this.refMetaByPath.has(fullPath)) {
+        const targetDocMeta = this.refMetaByPath.get(fullPath)
         if (targetDocMeta !== undefined) {
           this.alterInternalLinkNode(node, targetDocMeta)
         }
-      } else if (this.attachMetadataByPath.has(fullPath)) {
-        const attachmentMeta = this.attachMetadataByPath.get(fullPath)
+      } else if (this.attachMetaByPath.has(fullPath)) {
+        const attachmentMeta = this.attachMetaByPath.get(fullPath)
         if (attachmentMeta !== undefined) {
           this.alterAttachmentLinkNode(node, attachmentMeta)
-          this.updateAttachmentMetadata(fullPath, attachmentMeta, id, spaceId, sourceMeta)
+          const sourceMeta = this.refMetaByPath.get(sourcePath)
+          if (sourceMeta !== undefined) {
+            this.updateAttachmentMetadata(fullPath, attachmentMeta, id, spaceId, sourceMeta)
+          }
         }
       } else {
         this.logger.log('Unknown link type, leave it as is: ' + href)
@@ -192,7 +250,7 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
     }
   }
 
-  private alterInternalLinkNode (node: MarkupNode, targetMeta: DocMetadata): void {
+  private alterInternalLinkNode (node: MarkupNode, targetMeta: ReferenceMetadata): void {
     node.type = MarkupNodeType.reference
     node.attrs = {
       id: targetMeta.id,
@@ -223,13 +281,13 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
     return mimeType !== false ? mimeType : undefined
   }
 
-  private getSourceMetadata (id: Ref<Doc>): DocMetadata | null {
-    const sourceMeta = this.metadataById.get(id)
-    if (sourceMeta == null) {
-      this.logger.error(`Source metadata not found for ${id}`)
+  private getSourcePath (id: Ref<Doc>): string | null {
+    const sourcePath = this.pathById.get(id)
+    if (sourcePath == null) {
+      this.logger.error(`Source file path not found for ${id}`)
       return null
     }
-    return sourceMeta
+    return sourcePath
   }
 
   private updateAttachmentMetadata (
@@ -237,9 +295,9 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
     attachmentMeta: AttachmentMetadata,
     id: Ref<Doc>,
     spaceId: Ref<Space>,
-    sourceMeta: DocMetadata
+    sourceMeta: ReferenceMetadata
   ): void {
-    this.attachMetadataByPath.set(fullPath, {
+    this.attachMetaByPath.set(fullPath, {
       ...attachmentMeta,
       spaceId,
       parentId: id,
@@ -248,10 +306,9 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
   }
 }
 
-interface DocMetadata {
+interface ReferenceMetadata {
   id: Ref<Doc>
   class: string
-  path: string
   refTitle: string
 }
 
@@ -265,12 +322,14 @@ interface AttachmentMetadata {
 }
 
 export class UnifiedFormatImporter {
-  private readonly metadataById = new Map<Ref<Doc>, DocMetadata>()
-  private readonly metadataByFilePath = new Map<string, DocMetadata>()
-  private readonly fileMetadataByPath = new Map<string, AttachmentMetadata>()
+  private readonly pathById = new Map<Ref<Doc>, string>()
+  private readonly refMetaByPath = new Map<string, ReferenceMetadata>()
+  private readonly fileMetaByPath = new Map<string, AttachmentMetadata>()
+  private readonly ctrlDocTemplateIdByPath = new Map<string, Ref<ControlledDocument>>()
 
   private personsByName = new Map<string, Ref<Person>>()
   private accountsByEmail = new Map<string, Ref<PersonAccount>>()
+  private employeesByName = new Map<string, Ref<Employee>>()
 
   constructor (
     private readonly client: TxOperations,
@@ -278,13 +337,17 @@ export class UnifiedFormatImporter {
     private readonly logger: Logger
   ) {}
 
-  async importFolder (folderPath: string): Promise<void> {
+  private async initCaches (): Promise<void> {
     await this.cachePersonsByNames()
     await this.cacheAccountsByEmails()
+    await this.cacheEmployeesByName()
+  }
+
+  async importFolder (folderPath: string): Promise<void> {
+    await this.initCaches()
+    const workspaceData = await this.processImportFolder(folderPath)
 
     await this.collectFileMetadata(folderPath)
-
-    const workspaceData = await this.processImportFolder(folderPath)
 
     this.logger.log('========================================')
     this.logger.log('IMPORT DATA STRUCTURE: ' + JSON.stringify(workspaceData))
@@ -294,9 +357,9 @@ export class UnifiedFormatImporter {
     const preprocessor = new HulyMarkdownPreprocessor(
       this.fileUploader.getFileUrl,
       this.logger,
-      this.metadataByFilePath,
-      this.metadataById,
-      this.fileMetadataByPath,
+      this.pathById,
+      this.refMetaByPath,
+      this.fileMetaByPath,
       this.personsByName
     )
     await new WorkspaceImporter(
@@ -310,7 +373,7 @@ export class UnifiedFormatImporter {
     this.logger.log('Importing attachments...')
 
     const attachments: ImportAttachment[] = await Promise.all(
-      Array.from(this.fileMetadataByPath.values())
+      Array.from(this.fileMetaByPath.values())
         .filter((attachMeta) => attachMeta.parentId !== undefined)
         .map(async (attachMeta: AttachmentMetadata) => await this.processAttachment(attachMeta))
     )
@@ -433,6 +496,15 @@ export class UnifiedFormatImporter {
             break
           }
 
+          case documents.class.OrgSpace: {
+            const orgSpace = await this.processOrgSpace(spaceConfig as UnifiedOrgSpaceSettings)
+            builder.addOrgSpace(spacePath, orgSpace)
+            if (fs.existsSync(spacePath) && fs.statSync(spacePath).isDirectory()) {
+              await this.processControlledDocumentsRecursively(builder, spacePath, spacePath)
+            }
+            break
+          }
+
           default: {
             throw new Error(`Unknown space class ${spaceConfig.class} in ${spaceName}`)
           }
@@ -468,15 +540,13 @@ export class UnifiedFormatImporter {
         const numberMatch = issueFile.match(/^(\d+)\./)
         const issueNumber = numberMatch?.[1]
 
-        const meta: DocMetadata = {
+        const meta: ReferenceMetadata = {
           id: generateId<Issue>(),
           class: tracker.class.Issue,
-          path: issuePath,
           refTitle: `${projectIdentifier}-${issueNumber}`
         }
-
-        this.metadataById.set(meta.id, meta)
-        this.metadataByFilePath.set(issuePath, meta)
+        this.pathById.set(meta.id, issuePath)
+        this.refMetaByPath.set(issuePath, meta)
 
         const issue: ImportIssue = {
           id: meta.id as Ref<Issue>,
@@ -525,6 +595,14 @@ export class UnifiedFormatImporter {
     return account
   }
 
+  private findEmployeeByName (name: string): Ref<Employee> {
+    const employee = this.employeesByName.get(name)
+    if (employee === undefined) {
+      throw new Error(`Employee not found: ${name}`)
+    }
+    return employee
+  }
+
   private async processDocumentsRecursively (
     builder: ImportWorkspaceBuilder,
     teamspacePath: string,
@@ -543,15 +621,14 @@ export class UnifiedFormatImporter {
       }
 
       if (docHeader.class === document.class.Document) {
-        const docMeta: DocMetadata = {
+        const docMeta: ReferenceMetadata = {
           id: generateId<Document>(),
           class: document.class.Document,
-          path: docPath,
           refTitle: docHeader.title
         }
 
-        this.metadataById.set(docMeta.id, docMeta)
-        this.metadataByFilePath.set(docPath, docMeta)
+        this.pathById.set(docMeta.id, docPath)
+        this.refMetaByPath.set(docPath, docMeta)
 
         const doc: ImportDocument = {
           id: docMeta.id as Ref<Document>,
@@ -574,6 +651,79 @@ export class UnifiedFormatImporter {
     }
   }
 
+  private async processControlledDocumentsRecursively (
+    builder: ImportWorkspaceBuilder,
+    spacePath: string,
+    currentPath: string,
+    parentDocPath?: string
+  ): Promise<void> {
+    const docFiles = fs.readdirSync(currentPath).filter((f) => f.endsWith('.md'))
+
+    for (const docFile of docFiles) {
+      const docPath = path.join(currentPath, docFile)
+      const docHeader = (await this.readYamlHeader(docPath)) as
+        | UnifiedControlledDocumentHeader
+        | UnifiedDocumentTemplateHeader
+
+      if (docHeader.class === undefined) {
+        this.logger.error(`Skipping ${docFile}: not a document`)
+        continue
+      }
+
+      if (
+        docHeader.class !== documents.class.ControlledDocument &&
+        docHeader.class !== documents.mixin.DocumentTemplate
+      ) {
+        throw new Error(`Unknown document class ${docHeader.class} in ${docFile}`)
+      }
+
+      const documentMetaId = generateId<DocumentMeta>()
+      const refMeta: ReferenceMetadata = {
+        id: documentMetaId,
+        class: documents.class.DocumentMeta,
+        refTitle: docHeader.title
+      }
+      this.refMetaByPath.set(docPath, refMeta)
+
+      if (docHeader.class === documents.class.ControlledDocument) {
+        const docId = generateId<ControlledDocument>()
+        this.pathById.set(docId, docPath)
+
+        const doc = await this.processControlledDocument(
+          docHeader as UnifiedControlledDocumentHeader,
+          docPath,
+          docId,
+          documentMetaId
+        )
+        builder.addControlledDocument(spacePath, docPath, doc, parentDocPath)
+      } else {
+        if (!this.ctrlDocTemplateIdByPath.has(docPath)) {
+          const templateId = generateId<ControlledDocument>()
+          this.ctrlDocTemplateIdByPath.set(docPath, templateId)
+          this.pathById.set(templateId, docPath)
+        }
+
+        const templateId = this.ctrlDocTemplateIdByPath.get(docPath)
+        if (templateId === undefined) {
+          throw new Error(`Template ID not found: ${docPath}`)
+        }
+
+        const template = await this.processControlledDocumentTemplate(
+          docHeader as UnifiedDocumentTemplateHeader,
+          docPath,
+          templateId,
+          documentMetaId
+        )
+        builder.addControlledDocumentTemplate(spacePath, docPath, template, parentDocPath)
+      }
+
+      const subDir = path.join(currentPath, docFile.replace('.md', ''))
+      if (fs.existsSync(subDir) && fs.statSync(subDir).isDirectory()) {
+        await this.processControlledDocumentsRecursively(builder, spacePath, subDir, docPath)
+      }
+    }
+  }
+
   private processComments (currentPath: string, comments: UnifiedComment[] = []): Promise<ImportComment[]> {
     return Promise.all(
       comments.map(async (comment) => {
@@ -581,7 +731,7 @@ export class UnifiedFormatImporter {
         if (comment.attachments !== undefined) {
           for (const attachmentPath of comment.attachments) {
             const fullPath = path.resolve(currentPath, attachmentPath)
-            const attachmentMeta = this.fileMetadataByPath.get(fullPath)
+            const attachmentMeta = this.fileMetaByPath.get(fullPath)
             if (attachmentMeta !== undefined) {
               const importAttachment = await this.processAttachment(attachmentMeta)
               attachments.push(importAttachment)
@@ -650,6 +800,114 @@ export class UnifiedFormatImporter {
     }
   }
 
+  private async processOrgSpace (spaceHeader: UnifiedOrgSpaceSettings): Promise<ImportOrgSpace> {
+    return {
+      class: documents.class.OrgSpace,
+      title: spaceHeader.title,
+      private: spaceHeader.private ?? false,
+      archived: spaceHeader.archived ?? false,
+      description: spaceHeader.description,
+      owners: spaceHeader.owners?.map((email) => this.findAccountByEmail(email)) ?? [],
+      members: spaceHeader.members?.map((email) => this.findAccountByEmail(email)) ?? [],
+      qualified: spaceHeader.qualified !== undefined ? this.findAccountByEmail(spaceHeader.qualified) : undefined,
+      manager: spaceHeader.manager !== undefined ? this.findAccountByEmail(spaceHeader.manager) : undefined,
+      qara: spaceHeader.qara !== undefined ? this.findAccountByEmail(spaceHeader.qara) : undefined,
+      docs: []
+    }
+  }
+
+  private async processControlledDocument (
+    header: UnifiedControlledDocumentHeader,
+    docPath: string,
+    id: Ref<ControlledDocument>,
+    metaId: Ref<DocumentMeta>
+  ): Promise<ImportControlledDocument> {
+    const codeMatch = path.basename(docPath).match(/^\[([^\]]+)\]/)
+
+    const author = this.findEmployeeByName(header.author)
+    const owner = this.findEmployeeByName(header.owner)
+    if (author === undefined || owner === undefined) {
+      throw new Error(`Author or owner not found: ${header.author} or ${header.owner}`)
+    }
+
+    const templatePath = path.resolve(path.dirname(docPath), header.template)
+    if (!fs.existsSync(templatePath)) {
+      throw new Error(`Template file not found: ${templatePath}`)
+    }
+
+    if (!this.ctrlDocTemplateIdByPath.has(templatePath)) {
+      const templateId = generateId<ControlledDocument>()
+      this.ctrlDocTemplateIdByPath.set(templatePath, templateId)
+      this.pathById.set(templateId, templatePath)
+    }
+
+    const templateId = this.ctrlDocTemplateIdByPath.get(templatePath)
+    if (templateId === undefined) {
+      throw new Error(`Template ID not found: ${templatePath}`)
+    }
+
+    return {
+      id,
+      metaId,
+      class: documents.class.ControlledDocument,
+      title: header.title,
+      template: templateId,
+      code: codeMatch?.[1],
+      major: 0,
+      minor: 1,
+      state: DocumentState.Draft,
+      author,
+      owner,
+      abstract: header.abstract,
+      reviewers: header.reviewers?.map((email) => this.findEmployeeByName(email)) ?? [],
+      approvers: header.approvers?.map((email) => this.findEmployeeByName(email)) ?? [],
+      coAuthors: header.coAuthors?.map((email) => this.findEmployeeByName(email)) ?? [],
+      descrProvider: async () => await this.readMarkdownContent(docPath),
+      ccReason: header.changeControl?.reason,
+      ccImpact: header.changeControl?.impact,
+      ccDescription: header.changeControl?.description,
+      subdocs: []
+    }
+  }
+
+  private async processControlledDocumentTemplate (
+    header: UnifiedDocumentTemplateHeader,
+    docPath: string,
+    id: Ref<ControlledDocument>,
+    metaId: Ref<DocumentMeta>
+  ): Promise<ImportControlledDocumentTemplate> {
+    const author = this.findEmployeeByName(header.author)
+    const owner = this.findEmployeeByName(header.owner)
+    if (author === undefined || owner === undefined) {
+      throw new Error(`Author or owner not found: ${header.author} or ${header.owner}`)
+    }
+
+    const codeMatch = path.basename(docPath).match(/^\[([^\]]+)\]/)
+    return {
+      id,
+      metaId,
+      class: documents.mixin.DocumentTemplate,
+      title: header.title,
+      docPrefix: header.docPrefix,
+      code: codeMatch?.[1],
+      major: 0,
+      minor: 1,
+      state: DocumentState.Draft,
+      category: header.category as Ref<DocumentCategory>,
+      author,
+      owner,
+      abstract: header.abstract,
+      reviewers: header.reviewers?.map((email) => this.findEmployeeByName(email)) ?? [],
+      approvers: header.approvers?.map((email) => this.findEmployeeByName(email)) ?? [],
+      coAuthors: header.coAuthors?.map((email) => this.findEmployeeByName(email)) ?? [],
+      descrProvider: async () => await this.readMarkdownContent(docPath),
+      ccReason: header.changeControl?.reason,
+      ccImpact: header.changeControl?.impact,
+      ccDescription: header.changeControl?.description,
+      subdocs: []
+    }
+  }
+
   private async readYamlHeader (filePath: string): Promise<any> {
     this.logger.log('Read YAML header from: ' + filePath)
     const content = fs.readFileSync(filePath, 'utf8')
@@ -688,6 +946,20 @@ export class UnifiedFormatImporter {
     }, new Map())
   }
 
+  private async cacheEmployeesByName (): Promise<void> {
+    this.employeesByName = (await this.client.findAll(contact.mixin.Employee, {}))
+      .map((employee) => {
+        return {
+          _id: employee._id,
+          name: employee.name.split(',').reverse().join(' ')
+        }
+      })
+      .reduce((refByName, employee) => {
+        refByName.set(employee.name, employee._id)
+        return refByName
+      }, new Map())
+  }
+
   private async collectFileMetadata (folderPath: string): Promise<void> {
     const processDir = async (dir: string): Promise<void> => {
       const entries = fs.readdirSync(dir, { withFileTypes: true })
@@ -699,7 +971,7 @@ export class UnifiedFormatImporter {
           await processDir(fullPath)
         } else if (entry.isFile()) {
           const attachmentId = generateId<Attachment>()
-          this.fileMetadataByPath.set(fullPath, { id: attachmentId, name: entry.name, path: fullPath })
+          this.fileMetaByPath.set(fullPath, { id: attachmentId, name: entry.name, path: fullPath })
         }
       }
     }

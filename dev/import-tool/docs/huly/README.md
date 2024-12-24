@@ -31,12 +31,24 @@ workspace/
 │   └── files/
 │       └── diagram.png          # Can be referenced in markdown content
 └── Project Alpha.yaml           # Project configuration
+├── QMS Documents/              # QMS documentation
+│   ├── [SOP-001] Document Control.md           # Document template
+│   ├── [SOP-001] Document Control/             # Template implementations
+│   │   └── [SOP-002] Document Review.md        # Controlled document
+│   └── [WI-001] Document Template Usage.md     # Standalone controlled document
+└── QMS Documents.yaml         # QMS space configuration
 ```
 
 ### File Format Requirements
+* All spaces files must be in YAML format
+* All document/issue files must include YAML frontmatter followed by Markdown content
+* Children documents/issues are located in the folder with the same name as the parent document/issue
 
-#### Space Configuration (*.yaml)
-Project space (`Project Alpha.yaml`):
+
+#### Tracker Issues
+
+##### 1. Project Configuration (*.yaml)
+Example: `Project Alpha.yaml`:
 ```yaml
 class: tracker:class:Project       # Required
 title: Project Alpha               # Required
@@ -51,32 +63,8 @@ description: string                # Optional
 defaultIssueStatus: Todo           # Optional
 ```
 
-Teamspace (`Documentation.yaml`):
-```yaml
-class: document:class:Teamspace   # Required
-title: Documentation              # Required
-private: false                    # Optional, default: false
-autoJoin: true                    # Optional, default: true
-owners:                           # Optional, list of email addresses
-  - john.doe@example.com
-members:                          # Optional, list of email addresses
-  - joe.shmoe@example.com
-description: string               # Optional
-```
-
-#### Documents and Issues (*.md)
-All files must include YAML frontmatter followed by Markdown content:
-
-Document (`Getting Started.md`):
-```yaml
----
-class: document:class:Document    # Required
-title: Getting Started Guide      # Required
----
-# Content in Markdown format
-```
-
-Issue (`1.Project Setup.md`):
+##### 2. Issue (*.md)
+Example: `1.Project Setup.md`:
 ```yaml
 ---
 class: tracker:class:Issue        # Required
@@ -90,11 +78,11 @@ remainingTime: 4                  # Optional, in hours
 Task description in Markdown...
 ```
 
-### Task Identification
-* Human-readable task ID is formed by combining project's identifier and task number from filename
-* Example: For project with identifier "ALPHA" and task "1.Setup Project.md", the task ID will be "ALPHA-1"
+##### Issue Identification
+* Human-readable issue ID is formed by combining project's identifier and issue number from filename
+* Example: For project with identifier `ALPHA` and issue `1.Setup Project.md`, the issue ID will be `ALPHA-1`
 
-### Allowed Values
+##### Allowed Values
 
 Issue status values:
 * `Backlog`
@@ -108,6 +96,99 @@ Issue priority values:
 * `Medium`
 * `High`
 * `Urgent`
+
+#### Documents
+
+##### 1. Teamspace Configuration (*.yaml)
+Example: `Documentation.yaml`:
+```yaml
+class: document:class:Teamspace   # Required
+title: Documentation              # Required
+private: false                    # Optional, default: false
+autoJoin: true                    # Optional, default: true
+owners:                           # Optional, list of email addresses
+  - john.doe@example.com
+members:                          # Optional, list of email addresses
+  - joe.shmoe@example.com
+description: string               # Optional
+```
+
+##### 2. Document (*.md)
+Example: `Getting Started.md`:
+```yaml
+---
+class: document:class:Document    # Required
+title: Getting Started Guide      # Required
+---
+# Content in Markdown format
+```
+
+#### Controlled Documents
+##### 1. Space Configuration (*.yaml)
+QMS Document Space: `QMS Documents.yaml`:
+```yaml
+class: documents:class:OrgSpace   # Required
+title: QMS Documents              # Required
+private: false                    # Optional, default: false
+owners:                           # Optional, list of email addresses
+  - john.doe@example.com
+members:                          # Optional, list of email addresses
+  - joe.shmoe@example.com
+description: string               # Optional
+qualified: john.doe@example.com   # Optional, qualified user
+manager: jane.doe@example.com     # Optional, QMS manager
+qara: bob.smith@example.com       # Optional, QA/RA specialist
+```
+
+##### 2. Document Template (*.md)
+Example: `[SOP-001] Document Control.md`:
+```yaml
+---
+class: documents:mixin:DocumentTemplate  # Required
+title: SOP Template                      # Required
+docPrefix: SOP                           # Required, document code prefix
+category: documents:category:Procedures  # Required
+author: John Smith                       # Required
+owner: Jane Wilson                       # Required
+abstract: Template description           # Optional
+reviewers:                               # Optional
+  - alice.cooper@example.com
+approvers:                               # Optional
+  - david.brown@example.com
+coAuthors:                               # Optional
+  - bob.dylan@example.com
+---
+Template content in Markdown...
+```
+
+##### 3. Controlled Document (*.md)
+Example: `[SOP-002] Document Review.md`:
+```yaml
+---
+class: documents:class:ControlledDocument # Required
+title: Document Review Procedure          # Required
+template: [SOP-001] Document Control.md   # Required, path to template
+author: John Smith                        # Required
+owner: Jane Wilson                        # Required
+abstract: Document description            # Optional
+reviewers:                                # Optional
+  - alice.cooper@example.com
+approvers:                                # Optional
+  - david.brown@example.com
+coAuthors:                                # Optional
+  - bob.dylan@example.com
+changeControl:                            # Optional
+  description: Initial document creation
+  reason: Need for standardized process
+  impact: Improved document control
+---
+Document content in Markdown...
+```
+##### Controlled Document Code Format
+* Document code must be specified in file name: `[CODE] Any File Name.md`
+* If code is not specified for controlled document, it will be generated automatically using template's docPrefix and sequential number (e.g. `SOP-99`)
+* If code is not specified for template, it will be generated automatically as `TMPL-seqNumber`, where `seqNumber` is the sequence number of the template in the space
+
 
 ### Run Import Tool
 ```bash
@@ -125,3 +206,6 @@ docker run \
 * All users must exist in the system before import
 * Assignees are mapped by full name
 * Files in space directories can be used as attachments when referenced in markdown content
+* Document codes (in square brackets) must be unique across all document spaces
+* Controlled documents must be created in the same space as their templates
+* Controlled documents can be imported only with `Draft` status
