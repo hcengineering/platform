@@ -122,7 +122,7 @@
   }
   const handleSelect = async (event: CustomEvent): Promise<void> => {
     selected = event.detail as AnyAttribute
-    if (selected != null) {
+    if (selected?._id != null) {
       const exist = (await client.findOne(selected.attributeOf, { [selected.name]: { $exists: true } })) !== undefined
       $settingsStore = { id: selected._id, component: EditAttribute, props: { attribute: selected, exist, disabled } }
     }

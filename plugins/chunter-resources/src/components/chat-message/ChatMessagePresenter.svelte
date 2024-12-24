@@ -16,7 +16,7 @@
   import contact, { Person, PersonAccount } from '@hcengineering/contact'
   import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { Class, Doc, getCurrentAccount, Markup, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { getClient, MessageViewer } from '@hcengineering/presentation'
+  import { getClient, MessageViewer, pendingCreatedDocs } from '@hcengineering/presentation'
   import { AttachmentDocList, AttachmentImageSize } from '@hcengineering/attachment-resources'
   import { getDocLinkTitle } from '@hcengineering/view-resources'
   import { Action, Button, IconEdit, ShowMore } from '@hcengineering/ui'
@@ -58,7 +58,6 @@
   export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const client = getClient()
-  const { pendingCreatedDocs } = client
   const hierarchy = client.getHierarchy()
   const STALE_TIMEOUT_MS = 5000
   const currentAccount = getCurrentAccount()

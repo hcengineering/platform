@@ -46,7 +46,7 @@
     if (space !== value.space) {
       const children = await findChildren(value)
       for (const child of children) {
-        await client.updateDoc(document.class.Document, value.space, child, {
+        await ops.updateDoc(document.class.Document, value.space, child, {
           space
         })
       }

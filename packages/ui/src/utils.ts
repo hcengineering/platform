@@ -214,8 +214,12 @@ export function replaceURLs (text: string): string {
  * @returns {string} string with parsed URL
  */
 export function parseURL (text: string): string {
-  const matches = autolinker.parse(text, { urls: true })
-  return matches.length > 0 ? matches[0].getAnchorHref() : ''
+  try {
+    const matches = autolinker.parse(text ?? '', { urls: true })
+    return matches.length > 0 ? matches[0].getAnchorHref() : ''
+  } catch (err: any) {
+    return ''
+  }
 }
 
 /**

@@ -15,7 +15,15 @@
 -->
 <script lang="ts">
   import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
-  import core, { ClassifierKind, type CollaborativeDoc, Data, Doc, Mixin, Ref } from '@hcengineering/core'
+  import core, {
+    ClassifierKind,
+    type CollaborativeDoc,
+    Data,
+    Doc,
+    type MarkupBlobRef,
+    Mixin,
+    Ref
+  } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
@@ -37,7 +45,7 @@
   let object: Required<Vacancy>
   let rawName: string = ''
   let rawDesc: string = ''
-  let rawFullDesc: CollaborativeDoc
+  let rawFullDesc: MarkupBlobRef | null = null
   let lastId: Ref<Vacancy> | undefined = undefined
 
   let showAllMixins = false
