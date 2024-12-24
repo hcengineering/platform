@@ -29,6 +29,7 @@
   } from '@hcengineering/ui'
   import type { ButtonItem } from '@hcengineering/ui'
   import { getResource } from '@hcengineering/platform'
+  import presence from '@hcengineering/presence'
 
   export let title: string | undefined = undefined
   export let withoutActivity: boolean = false
@@ -41,6 +42,7 @@
   export let isSub: boolean = true
   export let isAside: boolean = true
   export let isUtils: boolean = true
+  export let isPresence: boolean = true
   export let isCustomAttr: boolean = true
   export let floatAside: boolean = false
   export let allowClose: boolean = true
@@ -146,6 +148,8 @@
     dispatch('select', result.detail)
   }}
 >
+  <Component is={presence.component.Presence} props={{ object }} />
+
   <svelte:fragment slot="title">
     {#if !withoutTitle}
       {#if $$slots.title}
@@ -153,6 +157,12 @@
       {:else if title}
         <div class="title not-active">{title}</div>
       {/if}
+    {/if}
+  </svelte:fragment>
+
+  <svelte:fragment slot="presence">
+    {#if isPresence}
+      <Component is={presence.component.PresenceAvatars} props={{ object, size: 'x-small', limit: 5 }} />
     {/if}
   </svelte:fragment>
 

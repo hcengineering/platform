@@ -182,6 +182,8 @@
     "@hcengineering/guest": "^0.6.4",
     "@hcengineering/guest-assets": "^0.6.0",
     "@hcengineering/guest-resources": "^0.6.0",
+    "@hcengineering/presence": "^0.6.0",
+    "@hcengineering/presence-resources": "^0.6.0",
     "@hcengineering/uploader": "^0.6.0",
     "@hcengineering/uploader-assets": "^0.6.0",
     "@hcengineering/uploader-resources": "^0.6.0",
