@@ -29,7 +29,7 @@ const config: Config = (() => {
     DeepgramApiKey: process.env.DEEPGRAM_API_KEY,
     PlatformUrl: process.env.PLATFORM_URL,
     PlatformToken: process.env.PLATFORM_TOKEN,
-    OpenaiApiKey: process.env.OPENAI_API_KEY,
+    OpenaiApiKey: process.env.OPENAI_API_KEY ?? '',
     OpenaiBaseUrl: process.env.OPENAI_BASE_URL ?? '',
     SttProvider: (process.env.STT_PROVIDER as SttProvider) ?? 'deepgram'
   }
