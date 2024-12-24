@@ -25,6 +25,8 @@ import type { WorkspaceIdWithUrl } from './utils'
 export interface DocInfo {
   id: string
   hash: string
+
+  size?: number
 }
 /**
  * @public

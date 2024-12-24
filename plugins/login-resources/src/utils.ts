@@ -215,6 +215,7 @@ function getWorkspaceSize (it: Pick<Workspace, 'backupInfo'>): number {
   let sz = 0
   sz += it.backupInfo?.dataSize ?? 0
   sz += it.backupInfo?.blobsSize ?? 0
+  sz += it.backupInfo?.backupSize ?? 0
   return sz
 }
 
