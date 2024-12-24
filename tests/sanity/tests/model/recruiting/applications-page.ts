@@ -25,8 +25,8 @@ export class ApplicationsPage extends CommonRecruitingPage {
 
   readonly buttonTabCreated = (): Locator => this.page.locator('label[data-id="tab-created"]')
   readonly textTableFirstCell = (): Locator => this.page.locator('div[class$="firstCell"]')
-  readonly buttonTypeSelector = (): Locator =>
-    this.page.locator('div[class*="hulyHeader-container"] div[class*="hulyHeader-titleGroup"] button')
+  readonly defaultVacancySelector = (): Locator =>
+    this.page.getByRole('button', { name: 'Default vacancy', exact: true })
 
   // ACTIONS
   async clickButtonTabCreated (): Promise<void> {
@@ -103,7 +103,7 @@ export class ApplicationsPage extends CommonRecruitingPage {
   }
 
   async selectType (type: string): Promise<void> {
-    await this.buttonTypeSelector().click()
+    await this.defaultVacancySelector().click()
     await this.selectMenuItem(this.page, type)
   }
 }

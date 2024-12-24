@@ -20,6 +20,8 @@ import recruit from './plugin'
 
 type RecruitDocument = Vacancy | Applicant | Review
 
+const CANDIDATES_ID = 'candidates'
+
 export async function objectLinkProvider (doc: RecruitDocument): Promise<string> {
   const location = getCurrentResolvedLocation()
   const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
@@ -127,7 +129,7 @@ export function getApplicantsLink (_id: Ref<VacancyList>): Location {
   loc.path.length = 4
   loc.fragment = undefined
   loc.query = undefined
-  loc.path[3] = 'candidates'
+  loc.path[3] = CANDIDATES_ID
   const isAllCompanies = _id === undefined || _id === recruit.ids.AllCompanies
   loc.query = isAllCompanies ? undefined : { ...(loc?.query ?? {}), company: _id }
 
@@ -136,7 +138,7 @@ export function getApplicantsLink (_id: Ref<VacancyList>): Location {
 
 export async function isApplicationsSpecial (): Promise<boolean> {
   const loc = getCurrentResolvedLocation()
-  return loc.path[3] === 'candidates'
+  return loc.path[3] === CANDIDATES_ID
 }
 
 function getShortLinkData (
@@ -191,7 +193,7 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Reso
   if (_class === recruit.class.Vacancy) {
     defaultPath.push('vacancies')
   } else if (_class === recruit.class.Applicant) {
-    defaultPath.push('candidates')
+    defaultPath.push(CANDIDATES_ID)
   }
   return {
     loc: {
