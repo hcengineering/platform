@@ -516,11 +516,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/presence-assets",
-      "projectFolder": "plugins/presence-assets",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/presence-resources",
       "projectFolder": "plugins/presence-resources",
       "shouldPublish": false

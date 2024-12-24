@@ -183,7 +183,6 @@
     "@hcengineering/guest-assets": "^0.6.0",
     "@hcengineering/guest-resources": "^0.6.0",
     "@hcengineering/presence": "^0.6.0",
-    "@hcengineering/presence-assets": "^0.6.0",
     "@hcengineering/presence-resources": "^0.6.0",
     "@hcengineering/uploader": "^0.6.0",
     "@hcengineering/uploader-assets": "^0.6.0",

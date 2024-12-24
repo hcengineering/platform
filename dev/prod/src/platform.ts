@@ -108,7 +108,6 @@ import '@hcengineering/view-assets'
 import '@hcengineering/workbench-assets'
 import '@hcengineering/test-management-assets'
 import '@hcengineering/survey-assets'
-import '@hcengineering/presence-assets'
 
 import github, { githubId } from '@hcengineering/github'
 import '@hcengineering/github-assets'
@@ -248,7 +247,6 @@ function configureI18n(): void {
    addStringsLoader(analyticsCollectorId, async (lang: string) => await import(`@hcengineering/analytics-collector-assets/lang/${lang}.json`))
    addStringsLoader(testManagementId, async (lang: string) => await import(`@hcengineering/test-management-assets/lang/${lang}.json`))
    addStringsLoader(surveyId, async (lang: string) => await import(`@hcengineering/survey-assets/lang/${lang}.json`))
-   addStringsLoader(presenceId, async (lang: string) => await import(`@hcengineering/presence-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform() {

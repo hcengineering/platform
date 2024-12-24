@@ -99,7 +99,6 @@ import '@hcengineering/analytics-collector-assets'
 import '@hcengineering/text-editor-assets'
 import '@hcengineering/test-management-assets'
 import '@hcengineering/survey-assets'
-import '@hcengineering/presence-assets'
 
 import { coreId } from '@hcengineering/core'
 import presentation, { parsePreviewConfig, parseUploadConfig, presentationId } from '@hcengineering/presentation'
@@ -153,7 +152,6 @@ function configureI18n (): void {
     async (lang: string) => await import(`@hcengineering/notification-assets/lang/${lang}.json`)
   )
   addStringsLoader(onboardId, async (lang: string) => await import(`@hcengineering/onboard-assets/lang/${lang}.json`))
-  addStringsLoader(presenceId, async (lang: string) => await import(`@hcengineering/presence-assets/lang/${lang}.json`))
   addStringsLoader(
     preferenceId,
     async (lang: string) => await import(`@hcengineering/preference-assets/lang/${lang}.json`)

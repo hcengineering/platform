@@ -692,9 +692,6 @@ dependencies:
   '@rush-temp/presence':
     specifier: file:./projects/presence.tgz
     version: file:projects/presence.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
-  '@rush-temp/presence-assets':
-    specifier: file:./projects/presence-assets.tgz
-    version: file:projects/presence-assets.tgz(esbuild@0.20.1)(ts-node@10.9.2)
   '@rush-temp/presence-resources':
     specifier: file:./projects/presence-resources.tgz
     version: file:projects/presence-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -28653,36 +28650,6 @@ packages:
       - '@babel/core'
       - '@jest/types'
       - '@types/node'
-      - babel-jest
-      - babel-plugin-macros
-      - esbuild
-      - node-notifier
-      - supports-color
-      - ts-node
-    dev: false
-
-  file:projects/presence-assets.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-T5FtlJ3r2RJxIFv3mXYRkwfri1DVDi5e/NJawtghi5ZN7uZCS+TGLXh/p5fhoZaBWKWILxLoILuRrGZlYfZXaA==, tarball: file:projects/presence-assets.tgz}
-    id: file:projects/presence-assets.tgz
-    name: '@rush-temp/presence-assets'
-    version: 0.0.0
-    dependencies:
-      '@types/jest': 29.5.12
-      '@types/node': 20.11.19
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.6.2)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.6.2)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      prettier: 3.2.5
-      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.6.2)
-      typescript: 5.6.2
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
       - babel-jest
       - babel-plugin-macros
       - esbuild
