@@ -59,14 +59,6 @@ export class LoginPage {
 
   // ASSERTS
 
-  async checkingNeedReLogin (): Promise<void> {
-    if (await this.profileButton().isVisible()) {
-      await this.openProfileMenu()
-      await this.popupItemButton('Sign out').click()
-      await this.loginWithPassword().waitFor({ state: 'visible', timeout: 15000 })
-    }
-  }
-
   async checkIfErrorMessageIsShown (): Promise<void> {
     await expect(this.invalidPasswordMessage()).toContainText('Invalid password')
   }
