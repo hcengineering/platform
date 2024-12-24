@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { groupByArray, type BaseWorkspaceInfo } from '@hcengineering/core'
+  import { groupByArray, isActiveMode, type BaseWorkspaceInfo } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { isAdminUser } from '@hcengineering/presentation'
   import {
@@ -84,6 +84,9 @@
 {#if isAdmin}
   <div class="anticrm-panel flex-row flex-grow p-5">
     <div class="fs-title p-3">Workspaces administration panel</div>
+    <div class="fs-title p-3">
+      Workspaces: {workspaces.length} active: {workspaces.filter((it) => isActiveMode(it.mode)).length}
+    </div>
     <div class="fs-title p-3 flex-no-shrink">
       <SearchEdit bind:value={search} width={'100%'} />
     </div>
@@ -174,7 +177,7 @@
                       </span>
 
                       <span class="label overflow-label" style:width={'10rem'}>
-                        {workspace.mode}
+                        {workspace.mode ?? '-'}
                       </span>
 
                       <span class="label overflow-label" style:width={'2rem'}>
@@ -191,7 +194,10 @@
                       </span>
                       <span class="flex flex-between" style:width={'5rem'}>
                         {#if workspace.backupInfo != null}
-                          {@const sz = workspace.backupInfo.dataSize + workspace.backupInfo.blobsSize}
+                          {@const sz = Math.max(
+                            workspace.backupInfo.backupSize,
+                            workspace.backupInfo.dataSize + workspace.backupInfo.blobsSize
+                          )}
                           {@const szGb = Math.round((sz * 100) / 1024) / 100}
                           {#if szGb > 0}
                             {Math.round((sz * 100) / 1024) / 100}Gb
