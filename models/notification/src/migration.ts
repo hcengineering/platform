@@ -227,7 +227,7 @@ export async function migrateDuplicateContexts (client: MigrationClient): Promis
 async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('notification migrateAccountsToSocialIds', {})
   const hierarchy = client.hierarchy
-  const socialIdByAccount = getSocialIdByOldAccount(client)
+  const socialIdByAccount = await getSocialIdByOldAccount(client)
 
   ctx.info('processing collaborators ', { })
   for (const domain of client.hierarchy.domains()) {

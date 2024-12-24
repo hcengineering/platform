@@ -213,7 +213,11 @@ class BackupWorker {
                 ctx,
                 hierarchy,
                 adapterConf.url,
-                ws.uuid,
+                {
+                  uuid: ws.uuid,
+                  dataId: ws.dataId,
+                  url: ws.url
+                },
                 modelDb,
                 this.workspaceStorageAdapter
               )

@@ -185,7 +185,7 @@ async function migrateActivityMarkup (client: MigrationClient): Promise<void> {
 
 async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('activity migrateAccountsToSocialIds', {})
-  const socialIdByAccount = getSocialIdByOldAccount(client)
+  const socialIdByAccount = await getSocialIdByOldAccount(client)
 
   ctx.info('processing activity reactions ', { })
   const iterator = await client.traverse(DOMAIN_ACTIVITY, { _class: activity.class.Reaction })

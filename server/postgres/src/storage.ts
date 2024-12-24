@@ -54,6 +54,7 @@ import core, {
   type TxUpdateDoc,
   withContext,
   type WithLookup,
+  type WorkspaceIds,
   type WorkspaceUuid
 } from '@hcengineering/core'
 import {
@@ -1839,7 +1840,7 @@ export async function createPostgresAdapter (
   ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceUuid,
+  workspaceId: WorkspaceIds,
   modelDb: ModelDb
 ): Promise<DbAdapter> {
   const client = getDBClient(url)
@@ -1847,10 +1848,10 @@ export async function createPostgresAdapter (
   const adapter = new PostgresAdapter(
     connection,
     client,
-    workspaceId,
+    workspaceId.uuid,
     hierarchy,
     modelDb,
-    'default-' + workspaceId
+    'default-' + workspaceId.uuid
   )
   return adapter
 }
@@ -1862,12 +1863,12 @@ export async function createPostgresTxAdapter (
   ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceUuid,
+  workspaceId: WorkspaceIds,
   modelDb: ModelDb
 ): Promise<TxAdapter> {
   const client = getDBClient(url)
   const connection = await client.getClient()
-  const adapter = new PostgresTxAdapter(connection, client, workspaceId, hierarchy, modelDb, 'tx' + workspaceId)
+  const adapter = new PostgresTxAdapter(connection, client, workspaceId.uuid, hierarchy, modelDb, 'tx' + workspaceId.uuid)
   await adapter.init()
   return adapter
 }

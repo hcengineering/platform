@@ -14,6 +14,7 @@ export const PlatformURI = process.env.PLATFORM_URI as string
 export const PlatformTransactor = process.env.PLATFORM_TRANSACTOR as string
 export const PlatformUser = process.env.PLATFORM_USER as string
 export const PlatformUserSecond = process.env.PLATFORM_USER_SECOND as string
+export const PlatformWs = process.env.PLATFORM_WS as string
 export const PlatformSetting = process.env.SETTING as string
 export const PlatformSettingSecond = process.env.SETTING_SECOND as string
 

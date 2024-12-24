@@ -315,7 +315,7 @@ export class WorkspaceWorker {
   async doCleanup (ctx: MeasureContext, workspace: WorkspaceInfoWithStatus): Promise<void> {
     const { dbUrl } = prepareTools([])
     const adapter = getWorkspaceDestroyAdapter(dbUrl)
-    await adapter.deleteWorkspace(ctx, workspace.uuid)
+    await adapter.deleteWorkspace(ctx, workspace.uuid, workspace.dataId)
   }
 
   private async doWorkspaceOperation (

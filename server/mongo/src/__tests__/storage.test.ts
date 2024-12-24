@@ -44,6 +44,7 @@ describe('mongo operations', () => {
   const mongodbUri: string = process.env.MONGO_URL ?? 'mongodb://localhost:27017'
   let mongoClient!: MongoClientReference
   let dbId: string = generateId()
+  let dbUuid = crypto.randomUUID()
   let hierarchy: Hierarchy
   let model: ModelDb
   let client: Client
@@ -86,7 +87,10 @@ describe('mongo operations', () => {
       new MeasureMetricsContext('', {}),
       hierarchy,
       mongodbUri,
-      dbId,
+      {
+        uuid: dbUuid,
+        url: dbUuid
+      },
       model
     )
 
@@ -94,7 +98,10 @@ describe('mongo operations', () => {
       new MeasureMetricsContext('', {}),
       hierarchy,
       mongodbUri,
-      dbId,
+      {
+        uuid: dbUuid,
+        url: dbUuid
+      },
       model
     )
 

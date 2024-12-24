@@ -27,7 +27,8 @@ import accountPlugin, {
   flattenStatus,
   type WorkspaceInfoWithStatus,
   type AccountDB,
-  type Workspace
+  type Workspace,
+  getEmailSocialId
 } from '@hcengineering/account'
 import { backupWorkspace } from '@hcengineering/backup-service'
 import { setMetadata } from '@hcengineering/platform'
@@ -135,6 +136,7 @@ import { restoreControlledDocContentMongo, restoreWikiContentMongo } from './mar
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { copyToDatalake, moveFiles, showLostFiles } from './storage'
 import { createPostgresTxAdapter, createPostgresAdapter, createPostgreeDestroyAdapter } from '@hcengineering/postgres'
+import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -310,39 +312,24 @@ export function devTool (
   //   })
   // })
 
-  // program
-  // .command('assign-workspace <email> <workspace>')
-  // .description('assign workspace')
-  // .action(async (email: string, workspace: string, cmd) => {
-  //   await withAccountDatabase(async (db) => {
-  //     console.log(`assigning user ${email} to ${workspace}...`)
-  //     try {
-  //       const workspaceInfo = await getWorkspaceById(db, workspace)
-  //       if (workspaceInfo === null) {
-  //         throw new Error(`workspace ${workspace} not found`)
-  //       }
-  //       const token = generateToken(systemAccountEmail, { name: workspaceInfo.workspace })
-  //       const endpoint = await getTransactorEndpoint(token, 'external')
-  //       console.log('assigning to workspace', workspaceInfo, endpoint)
-  //       const client = await createClient(endpoint, token)
-  //       console.log('assigning to workspace connected', workspaceInfo, endpoint)
-  //       await assignAccountToWs(
-  //         toolCtx,
-  //         db,
-  //         null,
-  //         email,
-  //         workspaceInfo.workspace,
-  //         AccountRole.User,
-  //         undefined,
-  //         undefined,
-  //         client
-  //       )
-  //       await client.close()
-  //     } catch (err: any) {
-  //       console.error(err)
-  //     }
-  //   })
-  // })
+  program
+    .command('assign-workspace <email> <workspace>')
+    .description('assign workspace')
+    .action(async (email: string, workspace: string, cmd) => {
+      await withAccountDatabase(async (db) => {
+        console.log(`assigning user ${email} to ${workspace}...`)
+        try {
+          const ws = await getWorkspace(db, workspace)
+          if (ws === null) {
+            throw new Error(`Workspace ${workspace} not found`)
+          }
+
+          await assignWorkspace(toolCtx, db, null, getToolToken(), email, ws.uuid, AccountRole.User)
+        } catch (err: any) {
+          console.error(err)
+        }
+      })
+    })
 
   // program
   // .command('show-user <email>')
@@ -388,32 +375,32 @@ export function devTool (
           const coreWsInfo = flattenStatus(wsInfo)
 
           await createWorkspace(measureCtx, version, brandingObj, coreWsInfo, txes, migrateOperations, undefined, true)
-          const token = generateToken(systemAccountUuid, undefined, { service: 'tool' })
-          await updateWorkspaceInfo(measureCtx, db, brandingObj, token, res.workspaceUuid, 'create-done', version, 100)
+          await updateWorkspaceInfo(measureCtx, db, brandingObj, getToolToken(), res.workspaceUuid, 'create-done', version, 100)
 
           console.log('create-workspace done')
         })
       }
     )
 
-  // program
-  // .command('set-user-role <email> <workspace> <role>')
-  // .description('set user role')
-  // .action(async (email: string, workspace: string, role: AccountRole, cmd) => {
-  //   console.log(`set user ${email} role for ${workspace}...`)
-  //   await withAccountDatabase(async (db) => {
-  //     const workspaceInfo = await getWorkspaceById(db, workspace)
-  //     if (workspaceInfo === null) {
-  //       throw new Error(`workspace ${workspace} not found`)
-  //     }
-  //     console.log('assigning to workspace', workspaceInfo)
-  //     const token = generateToken(systemAccountEmail, { name: workspaceInfo.workspace })
-  //     const endpoint = await getTransactorEndpoint(token, 'external')
-  //     const client = await createClient(endpoint, token)
-  //     await setRole(toolCtx, db, email, workspace, role, client)
-  //     await client.close()
-  //   })
-  // })
+  program
+    .command('set-user-role <email> <workspace> <role>')
+    .description('set user role')
+    .action(async (email: string, workspace: string, role: AccountRole, cmd) => {
+      console.log(`set user ${email} role for ${workspace}...`)
+      await withAccountDatabase(async (db) => {
+        const rolesArray = ['DocGuest', 'GUEST', 'USER', 'MAINTAINER', 'OWNER']
+        if (!rolesArray.includes(role)) {
+          throw new Error(`Invalid role ${role}. Valid roles are ${rolesArray.join(', ')}`)
+        }
+
+        const ws = await getWorkspace(db, workspace)
+        if (ws === null) {
+          throw new Error(`Workspace ${workspace} not found`)
+        }
+
+        await assignWorkspace(toolCtx, db, null, getToolToken(), email, ws.uuid, role)
+      })
+    })
 
   // program
   // .command('set-user-admin <email> <role>')
@@ -425,46 +412,47 @@ export function devTool (
   //   })
   // })
 
-  // program
-  // .command('upgrade-workspace <name>')
-  // .description('upgrade workspace')
-  // .option('-f|--force [force]', 'Force update', true)
-  // .option('-i|--indexes [indexes]', 'Force indexes rebuild', false)
-  // .action(async (workspace, cmd: { force: boolean, indexes: boolean }) => {
-  //   const { version, txes, migrateOperations } = prepareTools()
+  program
+    .command('upgrade-workspace <name>')
+    .description('upgrade workspace')
+    .option('-f|--force [force]', 'Force update', true)
+    .option('-i|--indexes [indexes]', 'Force indexes rebuild', false)
+    .action(async (workspace, cmd: { force: boolean, indexes: boolean }) => {
+      const { version, txes, migrateOperations } = prepareTools()
 
-  //   await withAccountDatabase(async (db) => {
-  //     const info = await getWorkspaceById(db, workspace)
-  //     if (info === null) {
-  //       throw new Error(`workspace ${workspace} not found`)
-  //     }
+      await withAccountDatabase(async (db) => {
+        const info = await getWorkspace(db, workspace)
+        if (info === null) {
+          throw new Error(`workspace ${workspace} not found`)
+        }
 
-  //     const measureCtx = new MeasureMetricsContext('upgrade-workspace', {})
+        const wsInfo = await getWorkspaceInfoWithStatusById(db, info.uuid)
+        if (wsInfo === null) {
+          throw new Error(`workspace ${workspace} not found`)
+        }
 
-  //     await upgradeWorkspace(
-  //       measureCtx,
-  //       version,
-  //       txes,
-  //       migrateOperations,
-  //       info,
-  //       consoleModelLogger,
-  //       async () => {},
-  //       cmd.force,
-  //       cmd.indexes,
-  //       true
-  //     )
+        const coreWsInfo = flattenStatus(wsInfo)
+        const measureCtx = new MeasureMetricsContext('upgrade-workspace', {})
 
-  //     await updateWorkspace(db, info, {
-  //       mode: 'active',
-  //       progress: 100,
-  //       version,
-  //       attempts: 0
-  //     })
+        await upgradeWorkspace(
+          measureCtx,
+          version,
+          txes,
+          migrateOperations,
+          coreWsInfo,
+          consoleModelLogger,
+          async () => {},
+          cmd.force,
+          cmd.indexes,
+          true
+        )
 
-  //     console.log(metricsToString(measureCtx.metrics, 'upgrade', 60))
-  //     console.log('upgrade-workspace done')
-  //   })
-  // })
+        await updateWorkspaceInfo(measureCtx, db, null, getToolToken(), info.uuid, 'upgrade-done', version, 100)
+
+        console.log(metricsToString(measureCtx.metrics, 'upgrade', 60))
+        console.log('upgrade-workspace done')
+      })
+    })
 
   // program
   // .command('upgrade')
@@ -975,7 +963,7 @@ export function devTool (
     .action(
       async (
         dirName: string,
-        workspace: string,
+        workspaceId: string,
         date,
         cmd: {
           merge: boolean
@@ -987,23 +975,30 @@ export function devTool (
           historyFile: string
         }
       ) => {
-        const storage = await createFileBackupStorage(dirName)
-        const endpoint = await getTransactorEndpoint(generateToken(systemAccountUuid, workspace, { service: 'tool' }), 'external')
-        const storageConfig = cmd.useStorage !== '' ? storageConfigFromEnv(process.env[cmd.useStorage]) : undefined
+        await withAccountDatabase(async (db) => {
+          const ws = await getWorkspace(db, workspaceId)
+          if (ws === null) {
+            throw new Error(`workspace ${workspaceId} not found`)
+          }
 
-        const workspaceStorage: StorageAdapter | undefined =
-          storageConfig !== undefined ? buildStorageFromConfig(storageConfig) : undefined
-        await restore(toolCtx, endpoint, workspace, storage, {
-          date: parseInt(date ?? '-1'),
-          merge: cmd.merge,
-          parallel: parseInt(cmd.parallel ?? '1'),
-          recheck: cmd.recheck,
-          include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';')),
-          skip: new Set(cmd.skip.split(';')),
-          storageAdapter: workspaceStorage,
-          historyFile: cmd.historyFile
+          const workspace = ws.uuid
+          const storage = await createFileBackupStorage(dirName)
+          const storageConfig = cmd.useStorage !== '' ? storageConfigFromEnv(process.env[cmd.useStorage]) : undefined
+
+          const workspaceStorage: StorageAdapter | undefined =
+            storageConfig !== undefined ? buildStorageFromConfig(storageConfig) : undefined
+          await restore(toolCtx, await getWorkspaceTransactorEndpoint(workspace), workspace, storage, {
+            date: parseInt(date ?? '-1'),
+            merge: cmd.merge,
+            parallel: parseInt(cmd.parallel ?? '1'),
+            recheck: cmd.recheck,
+            include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';')),
+            skip: new Set(cmd.skip.split(';')),
+            storageAdapter: workspaceStorage,
+            historyFile: cmd.historyFile
+          })
+          await workspaceStorage?.close()
         })
-        await workspaceStorage?.close()
       }
     )
 
@@ -1644,21 +1639,27 @@ export function devTool (
   //   const wsid = getWorkspaceId(workspace)
   //   const token = generateToken(systemAccountEmail, wsid)
   //   const endpoint = await getTransactorEndpoint(token)
+  //   FIXME: add dataId
   //   await fixMixinForeignAttributes(mongodbUri, wsid, endpoint, cmd)
   // })
 
-  // program
-  // .command('configure <workspace>')
-  // .description('clean archived spaces')
-  // .option('--enable <enable>', 'Enable plugin configuration', '')
-  // .option('--disable <disable>', 'Disable plugin configuration', '')
-  // .option('--list', 'List plugin states', false)
-  // .action(async (workspace: string, cmd: { enable: string, disable: string, list: boolean }) => {
-  //   console.log(JSON.stringify(cmd))
-  //   const wsid = getWorkspaceId(workspace)
-  //   const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-  //   await changeConfiguration(wsid, endpoint, cmd)
-  // })
+  program
+    .command('configure <workspace>')
+    .description('clean archived spaces')
+    .option('--enable <enable>', 'Enable plugin configuration', '')
+    .option('--disable <disable>', 'Disable plugin configuration', '')
+    .option('--list', 'List plugin states', false)
+    .action(async (workspace: string, cmd: { enable: string, disable: string, list: boolean }) => {
+      await withAccountDatabase(async (db) => {
+        console.log(JSON.stringify(cmd))
+        const ws = await getWorkspace(db, workspace)
+        if (ws === null) {
+          throw new Error(`workspace ${workspace} not found`)
+        }
+
+        await changeConfiguration(ws.uuid, await getWorkspaceTransactorEndpoint(ws.uuid), cmd)
+      })
+    })
 
   // program
   // .command('configure-all')
@@ -1806,24 +1807,28 @@ export function devTool (
   //   await restoreHrTaskTypesFromUpdates(mongodbUri, wsid, endpoint)
   // })
 
-  // program
-  // .command('change-field <workspace>')
-  // .description('change field value for the object')
-  // .requiredOption('--objectId <objectId>', 'objectId')
-  // .requiredOption('--objectClass <objectClass>')
-  // .requiredOption('--attribute <attribute>')
-  // .requiredOption('--type <type>', 'number | string')
-  // .requiredOption('--value <value>')
-  // .action(
-  //   async (
-  //     workspace: string,
-  //     cmd: { objectId: string, objectClass: string, type: string, attribute: string, value: string, domain: string }
-  //   ) => {
-  //     const wsid = getWorkspaceId(workspace)
-  //     const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-  //     await updateField(wsid, endpoint, cmd)
-  //   }
-  // )
+  program
+    .command('change-field <workspace>')
+    .description('change field value for the object')
+    .requiredOption('--objectId <objectId>', 'objectId')
+    .requiredOption('--objectClass <objectClass>')
+    .requiredOption('--attribute <attribute>')
+    .requiredOption('--type <type>', 'number | string')
+    .requiredOption('--value <value>')
+    .action(
+      async (
+        workspace: string,
+        cmd: { objectId: string, objectClass: string, type: string, attribute: string, value: string, domain: string }
+      ) => {
+        await withAccountDatabase(async (db) => {
+          const ws = await getWorkspace(db, workspace)
+          if (ws === null) {
+            throw new Error(`workspace ${workspace} not found`)
+          }
+          await updateField(ws.uuid, await getWorkspaceTransactorEndpoint(ws.uuid), cmd)
+        })
+      }
+    )
 
   // program
   // .command('recreate-elastic-indexes-mongo <workspace>')

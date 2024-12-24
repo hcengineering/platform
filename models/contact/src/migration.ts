@@ -6,12 +6,14 @@ import {
   type Class,
   type Doc,
   type Domain,
+  DOMAIN_MODEL_TX,
   DOMAIN_TX,
   generateId,
   MeasureMetricsContext,
   type Ref,
   SocialIdType,
-  type Space
+  type Space,
+  type TxCUD
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -25,7 +27,7 @@ import {
   tryUpgrade
 } from '@hcengineering/model'
 import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
-import core from '@hcengineering/model-core'
+import core, { getAccountsFromTxes } from '@hcengineering/model-core'
 import { DOMAIN_VIEW } from '@hcengineering/model-view'
 
 import contact, { contactId, DOMAIN_CHANNEL, DOMAIN_CONTACT } from './index'
@@ -87,7 +89,8 @@ async function createSocialIdentities (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('createSocialIdentities', {})
   ctx.info('processing person accounts ', { })
 
-  const personAccounts: any[] = client.model.findAllSync('contact:class:PersonAccount' as Ref<Class<Doc>>, {})
+  const personAccountsTxes: any[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, { objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>> })
+  const personAccounts = getAccountsFromTxes(personAccountsTxes)
 
   for (const pAcc of personAccounts) {
     if (pAcc.email === undefined || pAcc.email === '') continue

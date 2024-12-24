@@ -106,6 +106,8 @@ export async function getTransactorEndpoint (
           })
         })
       ).json()
+      console.log('workspaceInfo')
+      console.log(workspaceInfo)
       return workspaceInfo.result.endpoint
     } catch (err: any) {
       if (timeout > 0 && st + timeout < Date.now()) {

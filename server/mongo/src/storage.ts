@@ -27,6 +27,7 @@ import core, {
   matchQuery,
   toFindResult,
   withContext,
+  type WorkspaceIds,
   type Class,
   type Doc,
   type DocInfo,
@@ -1751,13 +1752,13 @@ export async function createMongoAdapter (
   ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceUuid,
+  workspaceId: WorkspaceIds,
   modelDb: ModelDb,
   storage?: StorageAdapter,
   options?: DbAdapterOptions
 ): Promise<DbAdapter> {
   const client = getMongoClient(url)
-  const db = getWorkspaceMongoDB(await client.getClient(), workspaceId)
+  const db = getWorkspaceMongoDB(await client.getClient(), workspaceId.dataId ?? workspaceId.uuid)
 
   return new MongoAdapter(db, hierarchy, modelDb, client, options)
 }
@@ -1769,11 +1770,11 @@ export async function createMongoTxAdapter (
   ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceUuid,
+  workspaceId: WorkspaceIds,
   modelDb: ModelDb
 ): Promise<TxAdapter> {
   const client = getMongoClient(url)
-  const db = getWorkspaceMongoDB(await client.getClient(), workspaceId)
+  const db = getWorkspaceMongoDB(await client.getClient(), workspaceId.dataId ?? workspaceId.uuid)
 
   return new MongoTxAdapter(db, hierarchy, modelDb, client)
 }

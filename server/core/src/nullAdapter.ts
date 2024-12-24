@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type Hierarchy, type MeasureContext, type ModelDb, type WorkspaceUuid } from '@hcengineering/core'
+import { type WorkspaceIds, type Hierarchy, type MeasureContext, type ModelDb } from '@hcengineering/core'
 import type { DbAdapter } from './adapter'
 import { DummyDbAdapter } from './mem'
 
@@ -24,7 +24,7 @@ export async function createNullAdapter (
   ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceUuid,
+  workspaceId: WorkspaceIds,
   modelDb: ModelDb
 ): Promise<DbAdapter> {
   return new DummyDbAdapter()

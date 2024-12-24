@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type Space, TxOperations, type Ref, type Class, type Doc } from '@hcengineering/core'
+import { type Space, TxOperations, type Ref, type Class, type Doc, DOMAIN_MODEL_TX, type TxCUD } from '@hcengineering/core'
 import { type Department } from '@hcengineering/hr'
 import {
   migrateSpace,
@@ -23,7 +23,7 @@ import {
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
+import core, { DOMAIN_SPACE, getAccountsFromTxes } from '@hcengineering/model-core'
 
 import hr, { DOMAIN_HR, hrId } from './index'
 
@@ -85,9 +85,10 @@ async function migrateDepartmentMembersToEmployee (client: MigrationClient): Pro
     const accounts = department.members
     if (accounts === undefined || accounts.length === 0) continue
 
-    const personAccounts: any[] = client.model.findAllSync('contact:class:PersonAccount' as Ref<Class<Doc>>, { _id: { $in: accounts } })
+    const personAccountsTxes: any[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, { objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>, objectId: { $in: accounts } })
+    const personAccounts = getAccountsFromTxes(personAccountsTxes)
 
-    await client.update(DOMAIN_HR, { _id: department._id }, { members: personAccounts.map((pAcc) => pAcc.person) })
+    await client.update(DOMAIN_HR, { _id: department._id }, { members: personAccounts.map((pAcc: any) => pAcc.person) })
   }
 }
 

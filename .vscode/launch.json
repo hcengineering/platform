@@ -323,6 +323,7 @@
         "MONGO_URL": "mongodb://localhost:27017",
         "DB_URL": "mongodb://localhost:27017",
         "ACCOUNTS_URL": "http://localhost:3000",
+        "ACCOUNT_DB_URL": "mongodb://localhost:27017",
         "TELEGRAM_DATABASE": "telegram-service",
         "REKONI_URL": "http://localhost:4004",
         "MODEL_VERSION": "0.6.287"

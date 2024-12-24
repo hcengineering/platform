@@ -583,8 +583,12 @@ export function generateWorkspaceUrl (name: string): string {
   return result
 }
 
+// TODO: rework later to map exact codes for specific DBs
 const DB_ERROR_CODES = {
-  UNIQUE_VIOLATION: '23505'
+  UNIQUE_VIOLATION: [
+    '23505', // Postgres, CockroachDB
+    11000 // Mongo
+  ]
 }
 
 interface CreateWorkspaceRecordResult {
@@ -654,8 +658,7 @@ export async function createWorkspaceRecord (
         workspaceUrl
       }
     } catch (err: any) {
-      // Only valid for postgres and cockroachdb (not for mongo)
-      if (err.code !== DB_ERROR_CODES.UNIQUE_VIOLATION) {
+      if (!DB_ERROR_CODES.UNIQUE_VIOLATION.includes(err.code)) {
         throw err
       }
     }
@@ -747,21 +750,22 @@ export async function sendEmailConfirmation (
 }
 
 export async function confirmEmail (ctx: MeasureContext, db: AccountDB, account: string, email: string): Promise<void> {
-  ctx.info('Confirming email', { account, email })
+  const normalizedEmail = cleanEmail(email)
+  ctx.info('Confirming email', { account, email, normalizedEmail })
 
-  const emailSocialId = await getEmailSocialId(db, email)
+  const emailSocialId = await getEmailSocialId(db, normalizedEmail)
 
   if (emailSocialId == null) {
-    ctx.error('Email social id not found', { account, email })
+    ctx.error('Email social id not found', { account, normalizedEmail })
     throw new PlatformError(
-      new Status(Severity.ERROR, platform.status.SocialIdNotFound, { socialId: email, type: SocialIdType.EMAIL })
+      new Status(Severity.ERROR, platform.status.SocialIdNotFound, { socialId: normalizedEmail, type: SocialIdType.EMAIL })
     )
   }
 
   if (emailSocialId.verifiedOn != null) {
     throw new PlatformError(
       new Status(Severity.ERROR, platform.status.SocialIdAlreadyConfirmed, {
-        socialId: email,
+        socialId: normalizedEmail,
         type: SocialIdType.EMAIL
       })
     )

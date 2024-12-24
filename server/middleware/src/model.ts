@@ -76,13 +76,13 @@ export class ModelMiddleware extends BaseMiddleware implements Middleware {
     const txAdapter = this.context.adapterManager.getAdapter(DOMAIN_TX, true) as TxAdapter
 
     const isUserTx = (it: Tx): boolean =>
-      it.modifiedBy !== core.account.System ||
-      (it as TxCUD<Doc>).objectClass === 'contact:class:Person' ||
-      (it as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount'
+      it.modifiedBy !== core.account.System
+    const isAccountTx = (it: TxCUD<Doc>): boolean =>
+      ['core:class:Account', 'contact:class:PersonAccount'].includes(it.objectClass)
 
     this.model = await ctx.with('get-model', {}, async (ctx) => {
       const allUserTxes = await ctx.with('fetch-model', {}, (ctx) => txAdapter.getModel(ctx))
-      const userTxes = allUserTxes.filter((it) => isUserTx(it))
+      const userTxes = allUserTxes.filter((it) => isUserTx(it) && !isAccountTx(it as TxCUD<Doc>))
       const model = this.systemTx.concat(userTxes)
       for (const tx of model) {
         try {

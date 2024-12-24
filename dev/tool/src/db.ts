@@ -70,7 +70,7 @@ async function moveWorkspace (
     console.log('move workspace', ws.name ?? ws.url)
     const wsId = ws.uuid
     // TODO: get workspace mongoDB
-    const mongoDB = getWorkspaceMongoDB(mongo, wsId)
+    const mongoDB = getWorkspaceMongoDB(mongo, ws.dataId ?? wsId)
     const collections = await mongoDB.collections()
     let tables = collections.map((c) => c.collectionName)
     if (include !== undefined) {

@@ -89,7 +89,10 @@ describe('postgres operations', () => {
     }
 
     const mctx = new MeasureMetricsContext('', {})
-    const txStorage = await createPostgresTxAdapter(mctx, hierarchy, dbUri, dbUuid, model)
+    const txStorage = await createPostgresTxAdapter(mctx, hierarchy, dbUri, {
+      uuid: dbUuid,
+      url: dbUri
+    }, model)
 
     // Put all transactions to Tx
     for (const t of txes) {
@@ -99,7 +102,10 @@ describe('postgres operations', () => {
     await txStorage.close()
 
     const ctx = new MeasureMetricsContext('client', {})
-    const serverStorage = await createPostgresAdapter(ctx, hierarchy, dbUri, dbUuid, model)
+    const serverStorage = await createPostgresAdapter(ctx, hierarchy, dbUri, {
+      uuid: dbUuid,
+      url: dbUri
+    }, model)
     await serverStorage.init?.()
     client = await createClient(async (handler) => {
       const st: ClientConnection = {

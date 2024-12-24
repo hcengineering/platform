@@ -171,7 +171,7 @@ export async function signUp (
 
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   const forceConfirmation = sesURL !== undefined && sesURL !== ''
-  if (sesURL !== undefined && sesURL !== '') {
+  if (forceConfirmation) {
     const normalizedEmail = cleanEmail(email)
 
     await sendEmailConfirmation(ctx, branding, account, normalizedEmail)
@@ -1354,6 +1354,12 @@ export async function assignWorkspace (
 
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
+  }
+
+  const workspace = await getWorkspaceById(db, workspaceUuid)
+
+  if (workspace == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
   }
 
   const currentRole = await db.getWorkspaceRole(account.uuid, workspaceUuid)

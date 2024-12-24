@@ -56,7 +56,7 @@ export class DBAdapterMiddleware extends BaseMiddleware implements Middleware {
             ctx,
             this.context.hierarchy,
             adapterConf.url,
-            this.context.workspace.uuid,
+            this.context.workspace,
             this.context.modelDb,
             this.context.storageAdapter
           )

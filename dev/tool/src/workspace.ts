@@ -96,11 +96,11 @@ export async function updateField (
   }
 }
 
-export async function recreateElastic (mongoUrl: string, workspaceId: WorkspaceUuid): Promise<void> {
+export async function recreateElastic (mongoUrl: string, dataId: string): Promise<void> {
   const client = getMongoClient(mongoUrl)
   const _client = await client.getClient()
   try {
-    const db = getWorkspaceMongoDB(_client, workspaceId)
+    const db = getWorkspaceMongoDB(_client, dataId)
     await db
       .collection(DOMAIN_DOC_INDEX_STATE)
       .updateMany({ _class: core.class.DocIndexState }, { $set: { needIndex: true } })

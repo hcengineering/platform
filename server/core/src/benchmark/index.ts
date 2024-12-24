@@ -17,6 +17,7 @@ import core, {
   generateId,
   toFindResult,
   TxProcessor,
+  type WorkspaceIds,
   type BenchmarkDoc,
   type Class,
   type Doc,
@@ -30,8 +31,7 @@ import core, {
   type Space,
   type Tx,
   type TxCreateDoc,
-  type TxResult,
-  type WorkspaceUuid
+  type TxResult
 } from '@hcengineering/core'
 import type { DbAdapter } from '../adapter'
 import { DummyDbAdapter } from '../mem'
@@ -121,7 +121,7 @@ export async function createBenchmarkAdapter (
   ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceUuid,
+  workspaceId: WorkspaceIds,
   modelDb: ModelDb
 ): Promise<DbAdapter> {
   return new BenchmarkDbAdapter()

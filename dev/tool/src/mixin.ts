@@ -82,6 +82,7 @@ export async function showMixinForeignAttributes (
 export async function fixMixinForeignAttributes (
   mongoUrl: string,
   workspaceId: WorkspaceUuid,
+  dataId: string | undefined,
   transactorUrl: string,
   cmd: { mixin: string, property: string }
 ): Promise<void> {
@@ -102,7 +103,7 @@ export async function fixMixinForeignAttributes (
       const client = getMongoClient(mongoUrl)
       try {
         const _client = await client.getClient()
-        const db = getWorkspaceMongoDB(_client, workspaceId)
+        const db = getWorkspaceMongoDB(_client, dataId ?? workspaceId)
 
         for (const [mixin, objects] of result) {
           console.log('fixing', mixin)

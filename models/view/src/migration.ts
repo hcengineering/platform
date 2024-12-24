@@ -83,7 +83,7 @@ async function removeDoneStateFilter (client: MigrationClient): Promise<void> {
 
 async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('view migrateAccountsToSocialIds', {})
-  const socialIdByAccount = getSocialIdByOldAccount(client)
+  const socialIdByAccount = await getSocialIdByOldAccount(client)
 
   ctx.info('processing view filtered view users ', { })
   const iterator = await client.traverse(DOMAIN_VIEW, { _class: view.class.FilteredView })

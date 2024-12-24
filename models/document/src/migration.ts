@@ -297,7 +297,7 @@ async function migrateRanks (client: MigrationClient): Promise<void> {
 
 async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('document migrateAccountsToSocialIds', {})
-  const socialIdByAccount = getSocialIdByOldAccount(client)
+  const socialIdByAccount = await getSocialIdByOldAccount(client)
 
   ctx.info('processing document lockedBy ', { })
   const iterator = await client.traverse(DOMAIN_DOCUMENT, { _class: document.class.Document })

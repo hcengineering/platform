@@ -20,9 +20,10 @@
 
   const CHECK_INTERVAL = 1000
   let checkHandle: number | undefined
+  let mounted = false
 
   async function checkAccountStatus (): Promise<void> {
-    const loginInfo = await getAccount()
+    const loginInfo = await getAccount(false)
 
     if (loginInfo?.token != null) {
       await afterConfirm()
@@ -36,13 +37,17 @@
       // we should be able to continue from this state
     }
 
-    checkHandle = setTimeout(check, CHECK_INTERVAL)
+    if (mounted) {
+      checkHandle = setTimeout(check, CHECK_INTERVAL)
+    }
   }
 
   onMount(() => {
+    mounted = true
     void check()
 
     return () => {
+      mounted = false
       if (checkHandle != null) {
         clearTimeout(checkHandle)
         checkHandle = undefined

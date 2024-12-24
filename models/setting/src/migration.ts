@@ -30,7 +30,7 @@ import { DOMAIN_SETTING } from '.'
 
 async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('setting migrateAccountsToSocialIds', {})
-  const socialIdByAccount = getSocialIdByOldAccount(client)
+  const socialIdByAccount = await getSocialIdByOldAccount(client)
 
   ctx.info('processing setting integration shared ', { })
   const iterator = await client.traverse(DOMAIN_SETTING, { _class: setting.class.Integration })

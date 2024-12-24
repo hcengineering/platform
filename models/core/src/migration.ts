@@ -44,7 +44,8 @@ import core, {
   type TxUpdateDoc,
   type Role,
   toIdMap,
-  type TypedSpace
+  type TypedSpace,
+  TxProcessor
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -292,9 +293,24 @@ async function migrateCollaborativeDocsToJson (client: MigrationClient): Promise
   }
 }
 
-export function getSocialIdByOldAccount (client: MigrationClient): Record<string, PersonId> {
+export function getAccountsFromTxes (accTxes: TxCUD<Doc>[]): any {
+  const byAccounts = accTxes.reduce<Record<string, TxCUD<Doc>[]>>((acc, tx) => {
+    if (acc[tx.objectId] === undefined) {
+      acc[tx.objectId] = []
+    }
+
+    acc[tx.objectId].push(tx)
+    return acc
+  }, {})
+
+  return Object.values(byAccounts).map((txes) => TxProcessor.buildDoc2Doc(txes)).filter((it) => it !== undefined)
+}
+
+export async function getSocialIdByOldAccount (client: MigrationClient): Promise<Record<string, PersonId>> {
   const systemAccounts = [core.account.System, core.account.ConfigUser]
-  const accounts: any = client.model.findAllSync('core:class:Account' as Ref<Class<Doc>>, {})
+  const accountsTxes: TxCUD<Doc>[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, { objectClass: { $in: ['core:class:Account', 'contact:class:PersonAccount'] as Ref<Class<Doc>>[] } })
+  const accounts = getAccountsFromTxes(accountsTxes)
+
   const socialIdByAccount: Record<string, PersonId> = {}
   for (const account of accounts) {
     if (account.email === undefined) {
@@ -316,7 +332,7 @@ export function getSocialIdByOldAccount (client: MigrationClient): Record<string
 async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('core migrateAccountsToSocialIds', {})
   const hierarchy = client.hierarchy
-  const socialIdByAccount = getSocialIdByOldAccount(client)
+  const socialIdByAccount = await getSocialIdByOldAccount(client)
 
   // migrate createdBy and modifiedBy
   for (const domain of client.hierarchy.domains()) {
