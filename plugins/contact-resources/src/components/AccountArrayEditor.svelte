@@ -82,9 +82,11 @@
     included = []
   }
 
-  $: employees = Array.from(
-    (value ?? []).map((it) => $personAccountByIdStore.get(it as Ref<PersonAccount>)?.person)
-  ).filter((it) => it !== undefined) as Ref<Employee>[]
+  $: employees = Array.isArray(value)
+    ? (Array.from((value ?? []).map((it) => $personAccountByIdStore.get(it as Ref<PersonAccount>)?.person)).filter(
+        (it) => it !== undefined
+      ) as Ref<Employee>[])
+    : []
 
   $: docQuery =
     excluded.length === 0 && included.length === 0

@@ -106,3 +106,4 @@ tests/profiles
 dump
 **/logs/**
 dev/tool/history.json
+.aider*

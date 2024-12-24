@@ -340,7 +340,7 @@
           console.log(`Error exiting fullscreen mode: ${err.message} (${err.name})`)
           $isFullScreen = false
         })
-    } else if (!document.fullscreenElement && needFullScreen) {
+    } else if (!document.fullscreenElement && needFullScreen && roomEl != null) {
       roomEl
         .requestFullscreen()
         .then(() => {
@@ -355,7 +355,7 @@
 
   function onFullScreen (): void {
     const needFullScreen = !$isFullScreen
-    if (!document.fullscreenElement && needFullScreen) {
+    if (!document.fullscreenElement && needFullScreen && roomEl != null) {
       roomEl
         .requestFullscreen()
         .then(() => {

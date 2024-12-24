@@ -511,6 +511,21 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/presence",
+      "projectFolder": "plugins/presence",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/presence-resources",
+      "projectFolder": "plugins/presence-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-presence",
+      "projectFolder": "models/presence",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/collaborator-client",
       "projectFolder": "packages/collaborator-client",
       "shouldPublish": true

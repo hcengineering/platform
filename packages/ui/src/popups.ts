@@ -149,16 +149,17 @@ export function closePopup (category?: string): void {
     } else {
       for (let i = popups.length - 1; i >= 0; i--) {
         if (popups[i].type !== 'popup') continue
-        if ((popups[i] as CompAndProps).options.fixed !== true) {
-          const isClosing = (popups[i] as CompAndProps).closing ?? false
+        const popi = popups[i] as CompAndProps
+        if (popi.options.fixed !== true) {
+          const isClosing = popi.closing ?? false
           if (popups[i].type === 'popup') {
-            ;(popups[i] as CompAndProps).closing = true
+            popi.closing = true
           }
           if (!isClosing) {
             // To prevent possible recursion, we need to check if we call some code from popup close, to do close.
-            ;(popups[i] as CompAndProps).onClose?.(undefined)
+            popi.onClose?.(undefined)
           }
-          ;(popups[i] as CompAndProps).closing = false
+          popi.closing = false
           popups.splice(i, 1)
           break
         }

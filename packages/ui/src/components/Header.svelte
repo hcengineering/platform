@@ -35,6 +35,7 @@
   export let hideSearch: boolean = false
   export let hideActions: boolean = false
   export let hideExtra: boolean = false
+  export let hidePresence: boolean = false
   export let overflowExtra: boolean = false
   export let noPrint: boolean = false
   export let freezeBefore: boolean = false
@@ -149,6 +150,11 @@
     </div>
     <!-- <div class="hulyHeader-row__divider" /> -->
     <div class="hulyHeader-row no-print" class:between={$$slots.search} class:reverse={!$$slots.search}>
+      {#if $$slots.presence && !hidePresence}
+        <div class="hulyHeader-buttonsGroup presence no-print">
+          <slot name="presence" {doubleRow} />
+        </div>
+      {/if}
       {#if $$slots.search}
         <div class="hulyHeader-buttonsGroup search">
           <slot name="search" {doubleRow} />
@@ -214,12 +220,19 @@
       />
     {/if}
 
+    {#if $$slots.presence && !hidePresence}
+      <div class="hulyHeader-buttonsGroup presence no-print">
+        <slot name="presence" {doubleRow} />
+      </div>
+    {/if}
+
     {#if $$slots.search && !hideSearch}
       <div class="hulyHeader-buttonsGroup search no-print">
         <slot name="search" {doubleRow} />
       </div>
       {#if $$slots.actions && !hideActions}<div class="hulyHeader-divider no-print" />{/if}
     {/if}
+
     {#if $$slots.extra && !hideExtra}
       <div
         class="hulyHeader-buttonsGroup extra"

@@ -204,12 +204,17 @@ test.describe('Content in the Documents tests', () => {
         await expect(documentContentPage.imageInPopup()).toBeVisible()
         await documentContentPage.fullscreenButton().click()
         await expect(documentContentPage.fullscreenImage()).toBeVisible()
-        await documentContentPage.page.keyboard.press('Escape')
-        await expect(documentContentPage.fullscreenImage()).toBeHidden()
+        await expect(async () => {
+          await documentContentPage.page.keyboard.press('Escape')
+          await expect(documentContentPage.fullscreenImage()).toBeHidden()
+          await expect(documentContentPage.imageInPopup()).toBeHidden()
+        }).toPass(retryOptions)
       })
 
       await test.step('User can open image original in the new tab', async () => {
-        const pagePromise = context.waitForEvent('page')
+        const pagePromise = context.waitForEvent('page', {
+          timeout: 15000
+        })
         await documentContentPage.clickImageOriginalButton()
         const newPage = await pagePromise
 

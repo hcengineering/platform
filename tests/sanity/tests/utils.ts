@@ -258,8 +258,7 @@ export async function createAccount (request: APIRequestContext, data: SignUpDat
 
 export async function reLogin (page: Page, data: TestData): Promise<void> {
   const loginPage: LoginPage = new LoginPage(page)
-  await loginPage.checkingNeedReLogin()
-  await (await page.goto(`${PlatformURI}`))?.finished()
+  await (await page.goto(`${PlatformURI}/login/login`))?.finished()
   await loginPage.login(data.userName, '1234')
   const swp = new SelectWorkspacePage(page)
   await swp.selectWorkspace(data.workspaceName)

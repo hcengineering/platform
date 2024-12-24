@@ -31,6 +31,7 @@ import core, {
   Data,
   generateId,
   getWorkspaceId,
+  isActiveMode,
   isArchivingMode,
   isMigrationMode,
   isWorkspaceCreating,
@@ -511,7 +512,7 @@ export async function selectWorkspace (
       }
       return result
     }
-    if (workspaceInfo.disabled === true && workspaceInfo.mode === 'active') {
+    if (workspaceInfo.disabled === true && isActiveMode(workspaceInfo.mode)) {
       ctx.error('workspace disabled', { workspaceUrl, email })
       throw new PlatformError(
         new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceUrl })
@@ -1770,14 +1771,14 @@ export async function getWorkspaceInfo (
 
   const [ws] = await ctx.with('get-workspace', {}, async () =>
     (await db.workspace.find(query)).filter(
-      (it) => it.disabled !== true || account?.admin === true || it.mode !== 'active'
+      (it) => it.disabled !== true || account?.admin === true || !isActiveMode(it.mode)
     )
   )
   if (ws == null) {
     ctx.error('no workspace', { workspace: workspace.name, email })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
-  if (ws.mode !== 'archived' && _updateLastVisit && (isAccount(account) || email === systemAccountEmail)) {
+  if (!isArchivingMode(ws.mode) && _updateLastVisit && (isAccount(account) || email === systemAccountEmail)) {
     void ctx.with('update-last-visit', {}, () => updateLastVisit(db, ws, account as Account))
   }
 
@@ -2635,6 +2636,12 @@ function wrap (
           // Let's send un authorized
           return {
             error: new Status(Severity.ERROR, platform.status.Unauthorized, {})
+          }
+        }
+        if (status.code === platform.status.InvalidPassword || status.code === platform.status.AccountNotFound) {
+          ctx.warn('error', { status: status.code, err: err.message })
+          return {
+            error: status
           }
         }
         if (status.code === platform.status.InternalServerError) {

@@ -21,7 +21,7 @@ export function defineScreenShare (): void {
       throw new DeviceUnsupportedError('getDisplayMedia not supported')
     }
 
-    return await new Promise((resolve, reject) => {
+    return await new Promise<Array<LocalTrack>>((resolve, reject) => {
       let wasSelected = false
 
       showPopup(

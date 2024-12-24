@@ -897,6 +897,12 @@ export async function backup (
       while (true) {
         try {
           const currentChunk = await ctx.with('loadChunk', {}, () => connection.loadChunk(domain, idx))
+          if (domain === DOMAIN_BLOB) {
+            result.blobsSize += currentChunk.size ?? 0
+          } else {
+            result.dataSize += currentChunk.size ?? 0
+          }
+
           idx = currentChunk.idx
           ops++
 
@@ -964,7 +970,6 @@ export async function backup (
             break
           }
         } catch (err: any) {
-          console.error(err)
           ctx.error('failed to load chunks', { error: err })
           if (idx !== undefined) {
             await ctx.with('closeChunk', {}, async () => {
@@ -1151,12 +1156,6 @@ export async function backup (
           const d = docs.shift()
           if (d === undefined) {
             break
-          }
-
-          if (domain === DOMAIN_BLOB) {
-            result.blobsSize += (d as Blob).size
-          } else {
-            result.dataSize += JSON.stringify(d).length
           }
 
           function processChanges (d: Doc, error: boolean = false): void {
@@ -1778,6 +1777,7 @@ export async function restore (
     let loaded = 0
     let el = 0
     let chunks = 0
+    let dataSize = 0
     try {
       while (true) {
         if (opt.progress !== undefined) {
@@ -1785,6 +1785,7 @@ export async function restore (
         }
         const st = Date.now()
         const it = await connection.loadChunk(c, idx)
+        dataSize += it.size ?? 0
         chunks++
 
         idx = it.idx
@@ -1809,7 +1810,12 @@ export async function restore (
         await connection.closeChunk(idx)
       }
     }
-    ctx.info('loaded', { loaded, workspace: workspaceId.name })
+    ctx.info('loaded', {
+      domain: c,
+      loaded,
+      workspace: workspaceId.name,
+      dataSize: Math.round((dataSize / (1024 * 1024)) * 100) / 100
+    })
     ctx.info('\tcompare documents', {
       size: changeset.size,
       serverSize: serverChangeset.size,

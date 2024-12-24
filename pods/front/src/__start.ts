@@ -37,6 +37,7 @@ startFront(metricsContext, {
   LOVE_ENDPOINT: process.env.LOVE_ENDPOINT ?? '',
   SIGN_URL: process.env.SIGN_URL ?? '',
   PRINT_URL: process.env.PRINT_URL ?? '',
+  PRESENCE_URL: process.env.PRESENCE_URL ?? '',
   PUSH_PUBLIC_KEY: process.env.PUSH_PUBLIC_KEY ?? '',
   POSTHOG_API_KEY: process.env.POSTHOG_API_KEY,
   POSTHOG_HOST: process.env.POSTHOG_HOST,

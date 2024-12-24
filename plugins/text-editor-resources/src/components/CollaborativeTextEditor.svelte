@@ -71,7 +71,6 @@
   } from '@hcengineering/text-editor'
   import { addTableHandler } from '../utils'
 
-  import CollaborationUsers from './CollaborationUsers.svelte'
   import TextEditorToolbar from './TextEditorToolbar.svelte'
   import { noSelectionRender, renderCursor } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
@@ -584,11 +583,11 @@
 
   <div class="textInput">
     <div class="select-text" class:hidden={loading} style="width: 100%;" bind:this={element} />
-    <div class="collaborationUsers-container flex-col flex-gap-2 pt-2">
+    <!-- <div class="collaborationUsers-container flex-col flex-gap-2 pt-2">
       {#if remoteProvider && editor && userComponent}
         <CollaborationUsers provider={remoteProvider} {editor} component={userComponent} />
       {/if}
-    </div>
+    </div> -->
   </div>
 
   {#if refActions.length > 0}

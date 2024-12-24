@@ -68,14 +68,14 @@
     "@hcengineering/server-token": "^0.6.11",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
-    "express": "^4.19.2",
+    "express": "^4.21.2",
     "fast-equals": "^5.0.1",
     "file-api": "^0.10.4",
     "googleapis": "^122.0.0",
     "google-auth-library": "^8.0.2",
     "gaxios": "^5.0.1",
     "jwt-simple": "^0.5.6",
-    "mongodb": "^6.10.0",
+    "mongodb": "^6.12.0",
     "uuid": "^8.3.2"
   }
 }

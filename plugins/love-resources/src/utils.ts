@@ -284,8 +284,10 @@ async function setKrispProcessor (pub: LocalTrackPublication): Promise<void> {
       await pub.track.setProcessor(krispProcessor)
       await krispProcessor.setEnabled($myPreferences?.noiseCancellation ?? true)
     } catch (err: any) {
-      console.error(err)
-      Analytics.handleError(err)
+      if (err?.message !== 'SDK_ALREADY_INITIALIZED') {
+        console.error(err)
+        Analytics.handleError(err)
+      }
     }
   }
 }

@@ -49,7 +49,7 @@
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
-    "express": "^4.19.2",
+    "express": "^4.21.2",
     "express-fileupload": "^1.5.1",
     "express-static-gzip": "^2.1.7",
     "uuid": "^8.3.2",

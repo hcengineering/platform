@@ -64,13 +64,13 @@
     "@hcengineering/server-client": "^0.6.0",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
-    "express": "^4.19.2",
+    "express": "^4.21.2",
     "@signpdf/signpdf": "^3.2.4",
     "@signpdf/placeholder-pdf-lib": "^3.2.4",
     "@signpdf/signer-p12": "^3.2.4",
     "@signpdf/utils": "^3.2.4",
     "node-forge": "^1.3.1",
     "pdf-lib": "^1.12.0",
-    "mongodb": "^6.10.0"
+    "mongodb": "^6.12.0"
   }
 }

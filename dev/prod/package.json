@@ -213,6 +213,8 @@
     "@hcengineering/print": "^0.6.0",
     "@hcengineering/print-assets": "^0.6.0",
     "@hcengineering/print-resources": "^0.6.0",
+    "@hcengineering/presence": "^0.6.0",
+    "@hcengineering/presence-resources": "^0.6.0",
     "@hcengineering/uploader": "^0.6.0",
     "@hcengineering/uploader-assets": "^0.6.0",
     "@hcengineering/uploader-resources": "^0.6.0",
