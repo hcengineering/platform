@@ -31,7 +31,7 @@
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
     "typescript": "^5.3.3",
-    "esbuild": "^0.20.0"
+    "esbuild": "^0.24.2"
   },
   "dependencies": {
     "@hcengineering/model": "^0.6.11",

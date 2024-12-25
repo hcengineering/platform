@@ -54,13 +54,12 @@ let prevTabId: Ref<WorkbenchTab> | undefined
 tabIdStore.subscribe((value) => {
   prevTabIdStore.set(prevTabId)
   prevTabId = value
+  saveTabToLocalStorage(value)
 })
 
 locationWorkspaceStore.subscribe((workspace) => {
   tabIdStore.set(getTabFromLocalStorage(workspace ?? ''))
 })
-
-tabIdStore.subscribe(saveTabToLocalStorage)
 
 const syncTabLoc = reduceCalls(async (): Promise<void> => {
   const loc = getCurrentLocation()
@@ -84,11 +83,14 @@ const syncTabLoc = reduceCalls(async (): Promise<void> => {
     if (t.name !== name) return false
 
     const tabLoc = getTabLocation(t)
+    if (tabLoc.path[2] !== loc.path[2]) return false
+    if (tabLoc.path[2] === notificationId) return true
 
-    return tabLoc.path[2] === loc.path[2] && tabLoc.path[3] === loc.path[3]
+    return tabLoc.path[3] === loc.path[3]
   })
 
   if (tab.name !== undefined && name !== tab.name && tab.isPinned) {
+    if (get(tabIdStore) !== tab._id) return
     if (tabByName !== undefined) {
       selectTab(tabByName._id)
       return
@@ -127,7 +129,7 @@ const syncTabLoc = reduceCalls(async (): Promise<void> => {
   }
 })
 
-locationStore.subscribe((l: Location) => {
+locationStore.subscribe(() => {
   void syncTabLoc()
 })
 

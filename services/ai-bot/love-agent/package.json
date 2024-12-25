@@ -40,9 +40,9 @@
   },
   "dependencies": {
     "@deepgram/sdk": "^3.9.0",
-    "@livekit/agents": "^0.5.1",
-    "@livekit/rtc-node": "^0.12.1",
-    "@livekit/agents-plugin-openai": "^0.7.1",
+    "@livekit/agents": "^0.6.0",
+    "@livekit/rtc-node": "^0.12.2",
+    "@livekit/agents-plugin-openai": "^0.7.3",
     "dotenv": "^16.4.5"
   }
 }
