@@ -15,35 +15,46 @@
 
 <script lang="ts">
   import { type Doc } from '@hcengineering/core'
-  import contact, { formatName } from '@hcengineering/contact'
-  import { Avatar, CombineAvatars, personByIdStore } from '@hcengineering/contact-resources'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { formatName } from '@hcengineering/contact'
+  import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { IconSize, tooltip } from '@hcengineering/ui'
+  import PresenceList from './PresenceList.svelte'
   import { presenceByObjectId } from '../store'
 
   export let object: Doc
 
   export let size: IconSize = 'small'
-  export let limit: number = 5
-  export let hideLimit: boolean = false
-  export let combine = false
+  export let limit: number = 4
 
   $: presence = $presenceByObjectId?.get(object._id) ?? []
-  $: items = presence.map((it) => it.person)
+  $: persons = presence
+    .map((it) => it.person)
+    .map((p) => $personByIdStore.get(p))
+    .filter((p) => p !== undefined)
+  $: overLimit = persons.length > limit
 </script>
 
-{#if items.length > 0}
-  {#if combine}
-    <CombineAvatars _class={contact.mixin.Employee} {items} {size} {limit} {hideLimit} />
+{#if persons.length > 0}
+  {#if overLimit}
+    <div
+      class="hulyCombineAvatars-container"
+      use:tooltip={{ component: PresenceList, props: { persons, size }, direction: 'bottom' }}
+    >
+      {#each persons.slice(0, limit) as person, i}
+        <div
+          class="hulyCombineAvatar tiny"
+          data-over={i === limit - 1 && overLimit ? `+${persons.length - limit + 1}` : undefined}
+        >
+          <Avatar name={person.name} {size} {person} />
+        </div>
+      {/each}
+    </div>
   {:else}
-    <div class="flex-row-center flex-gap-0-5">
-      {#each items as item}
-        {@const person = $personByIdStore.get(item)}
-        {#if person}
-          <div use:tooltip={{ label: getEmbeddedLabel(formatName(person.name)) }}>
-            <Avatar name={person.name} {size} {person} />
-          </div>
-        {/if}
+    <div class="flex-row-center flex-gap-1">
+      {#each persons as person}
+        <div use:tooltip={{ label: formatName(person.name) }}>
+          <Avatar name={person.name} {size} {person} />
+        </div>
       {/each}
     </div>
   {/if}
