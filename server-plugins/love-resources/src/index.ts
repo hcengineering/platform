@@ -173,11 +173,10 @@ export async function OnUserStatus (txes: Tx[], control: TriggerControl): Promis
 async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl): Promise<Tx[]> {
   const roomInfos = await control.queryFind(control.ctx, love.class.RoomInfo, {})
   const roomInfo = roomInfos.find((ri) => ri.room === info.room)
-  if (roomInfo !== undefined) {
-    roomInfo.persons.push(info.person)
+  if (roomInfo !== undefined && !roomInfo.persons.includes(info.person)) {
     return [
       control.txFactory.createTxUpdateDoc(love.class.RoomInfo, core.space.Workspace, roomInfo._id, {
-        persons: Array.from(new Set([...roomInfo.persons, info.person]))
+        $push: { persons: info.person }
       })
     ]
   } else {
@@ -221,7 +220,6 @@ async function setDefaultRoomAccess (info: ParticipantInfo, control: TriggerCont
   const roomInfos = await control.queryFind(control.ctx, love.class.RoomInfo, {})
   const oldRoomInfo = roomInfos.find((ri) => ri.persons.includes(info.person))
   if (oldRoomInfo !== undefined) {
-    oldRoomInfo.persons = oldRoomInfo.persons.filter((p) => p !== info.person)
     if (oldRoomInfo.persons.length === 0) {
       res.push(control.txFactory.createTxRemoveDoc(oldRoomInfo._class, oldRoomInfo.space, oldRoomInfo._id))
 
@@ -237,7 +235,7 @@ async function setDefaultRoomAccess (info: ParticipantInfo, control: TriggerCont
     } else {
       res.push(
         control.txFactory.createTxUpdateDoc(love.class.RoomInfo, core.space.Workspace, oldRoomInfo._id, {
-          persons: oldRoomInfo.persons
+          $pull: { persons: info.person }
         })
       )
     }
@@ -433,23 +431,44 @@ async function isRoomEmpty (
   return false
 }
 
+function combineAttributes (attributes: any[], key: string, operator: string, arrayKey: string): any[] {
+  return Array.from(
+    new Set(
+      attributes.flatMap((attr) =>
+        Array.isArray(attr[operator]?.[key]?.[arrayKey]) ? attr[operator]?.[key]?.[arrayKey] : attr[operator]?.[key]
+      )
+    )
+  ).filter((v) => v != null)
+}
+
 async function OnRoomInfo (txes: TxCUD<RoomInfo>[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
+  const personsByRoom = new Map<Ref<RoomInfo>, Ref<Person>[]>()
   for (const tx of txes) {
     if (tx._class === core.class.TxRemoveDoc) {
       const roomInfo = control.removedMap.get(tx.objectId) as RoomInfo
       if (roomInfo === undefined) continue
       if (roomInfo.room === love.ids.Reception) continue
+      personsByRoom.delete(tx.objectId)
       result.push(...(await finishRoomMeetings(roomInfo.room, tx.modifiedOn, control)))
       continue
     }
     if (tx._class === core.class.TxUpdateDoc) {
-      const newPersons = (tx as TxUpdateDoc<RoomInfo>).operations.persons
-      if (newPersons === undefined) continue
+      const updateTx = tx as TxUpdateDoc<RoomInfo>
+      const pulled = combineAttributes([updateTx.operations], 'persons', '$pull', '$in')
+      const pushed = combineAttributes([updateTx.operations], 'persons', '$push', '$each')
+
+      if (pulled.length === 0 && pushed.length === 0) continue
       const roomInfos = await control.queryFind(control.ctx, love.class.RoomInfo, {})
       const roomInfo = roomInfos.find((r) => r._id === tx.objectId)
       if (roomInfo === undefined) continue
       if (roomInfo.room === love.ids.Reception) continue
+
+      const currentPersons = personsByRoom.get(tx.objectId) ?? roomInfo.persons
+      const newPersons = currentPersons.filter((p) => !pulled.includes(p)).concat(pushed)
+
+      personsByRoom.set(tx.objectId, newPersons)
+
       if (await isRoomEmpty(roomInfo.room, roomInfo.isOffice, newPersons, control)) {
         result.push(...(await finishRoomMeetings(roomInfo.room, tx.modifiedOn, control)))
       }
