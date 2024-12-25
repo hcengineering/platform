@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import { Account, Class, Doc, IdMap, Markup, Ref, Space, generateId, toIdMap } from '@hcengineering/core'
+  import { RateLimiter, Account, Class, Doc, IdMap, Markup, Ref, Space, generateId, toIdMap } from '@hcengineering/core'
   import { Asset, IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     DraftController,
@@ -183,14 +183,14 @@
     await tick()
     const list = inputFile.files
     if (list === null || list.length === 0) return
-    const promises: Promise<any>[] = []
+    const limiter = new RateLimiter(10)
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
       if (file !== null) {
-        promises.push(createAttachment(file))
+        await limiter.add(() => createAttachment(file))
       }
     }
-    await Promise.all(promises)
+    await limiter.waitProcessing()
     inputFile.value = ''
     progress = false
   }
@@ -198,16 +198,16 @@
   async function fileDrop (e: DragEvent): Promise<void> {
     progress = true
     const list = e.dataTransfer?.files
-    const promises: Promise<any>[] = []
+    const limiter = new RateLimiter(10)
 
     if (list === undefined || list.length === 0) return
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
       if (file !== null) {
-        promises.push(createAttachment(file))
+        await limiter.add(() => createAttachment(file))
       }
     }
-    await Promise.all(promises)
+    await limiter.waitProcessing()
     progress = false
   }
 
@@ -262,17 +262,17 @@
       return
     }
     saved = true
-    const promises: Promise<any>[] = []
+    const limiter = new RateLimiter(10)
     newAttachments.forEach((p) => {
       const attachment = attachments.get(p)
       if (attachment !== undefined) {
-        promises.push(saveAttachment(attachment))
+        void limiter.add(() => saveAttachment(attachment))
       }
     })
     removedAttachments.forEach((p) => {
-      promises.push(deleteAttachment(p))
+      void limiter.add(() => deleteAttachment(p))
     })
-    await Promise.all(promises)
+    await limiter.waitProcessing()
     newAttachments.clear()
     removedAttachments.clear()
     saveDraft()
