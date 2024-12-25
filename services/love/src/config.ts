@@ -16,7 +16,6 @@
 interface Config {
   AccountsURL: string
   Port: number
-  SystemEmail: string
   ServiceID: string
 
   LiveKitHost: string
@@ -42,7 +41,6 @@ const envMap: { [key in keyof Config]: string } = {
   StorageProviderName: 'STORAGE_PROVIDER_NAME',
   Secret: 'SECRET',
   ServiceID: 'SERVICE_ID',
-  SystemEmail: 'SYSTEM_EMAIL',
   MongoUrl: 'MONGO_URL'
 }
 
@@ -59,7 +57,6 @@ const config: Config = (() => {
     StorageProviderName: process.env[envMap.StorageProviderName] ?? 's3',
     Secret: process.env[envMap.Secret],
     ServiceID: process.env[envMap.ServiceID] ?? 'love-service',
-    SystemEmail: process.env[envMap.SystemEmail] ?? 'anticrm@hc.engineering',
     MongoUrl: process.env[envMap.MongoUrl]
   }
 

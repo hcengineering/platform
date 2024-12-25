@@ -14,6 +14,7 @@ import core, {
   MeasureContext,
   RateLimiter,
   Ref,
+  systemAccountEmail,
   TxOperations
 } from '@hcengineering/core'
 import github, { GithubAuthentication, makeQuery, type GithubIntegration } from '@hcengineering/github'
@@ -730,7 +731,7 @@ export class PlatformWorker {
       }
       await rateLimiter.add(async () => {
         const token = generateToken(
-          config.SystemEmail,
+          systemAccountEmail,
           {
             name: workspace
           },

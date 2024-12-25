@@ -18,6 +18,7 @@ import contact, { Channel, Contact, type Employee, type PersonAccount } from '@h
 import core, {
   TxOperations,
   TxProcessor,
+  systemAccountEmail,
   toIdMap,
   type Account,
   type Client,
@@ -34,7 +35,6 @@ import { Collection, type Db } from 'mongodb'
 import { CalendarClient } from './calendar'
 import { CalendarController } from './calendarController'
 import { getClient } from './client'
-import config from './config'
 import { SyncHistory, type ProjectCredentials, type User } from './types'
 
 export class WorkspaceClient {
@@ -159,7 +159,7 @@ export class WorkspaceClient {
   }
 
   private async initClient (workspace: string): Promise<Client> {
-    const token = generateToken(config.SystemEmail, { name: workspace })
+    const token = generateToken(systemAccountEmail, { name: workspace })
     const client = await getClient(token)
     client.notify = (...tx: Tx[]) => {
       void this.txHandler(...tx)
