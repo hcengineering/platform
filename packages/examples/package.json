@@ -1,0 +1,19 @@
+{
+  "name": "@communication/examples",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "^1.1.14"
+  },
+  "dependencies": {
+    "@communication/client-query": "workspace:*",
+    "@communication/client-ws": "workspace:*",
+    "@communication/client-sqlite": "workspace:*",
+    "@communication/types": "workspace:*"
+  },
+  "peerDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

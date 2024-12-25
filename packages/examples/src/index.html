@@ -1,0 +1,51 @@
+<html>
+<head>
+    <style>
+        .chat {
+            width: 100%;
+            height: 500px;
+            max-height: 500px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid black;
+            margin-bottom: 20px;
+            overflow: scroll;
+        }
+
+        .messages{
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 0 20px;
+        }
+
+        .message {
+            width: 100%;
+            height: 30px;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="chat" id="chat">
+    <div class="messages" id="messages"></div>
+</div>
+<form class="chat-box" id="form">
+    <input name="text"/>
+    <button id='submit-button' type="submit">Send</button>
+</form>
+
+<button id='backward-button' type="button">Backward</button>
+<button id='forward-button' type="button">Forward</button>
+
+</body>
+<script type="module" crossorigin src="../dist/index.js"></script>
+</html>
