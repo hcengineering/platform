@@ -81,7 +81,7 @@ async function moveWorkspace (
       tables = tables.filter((t) => include.has(t))
     }
 
-    await createTables(new MeasureMetricsContext('', {}), pgClient, tables)
+    await createTables(new MeasureMetricsContext('', {}), pgClient, '', tables)
     const token = generateToken(systemAccountEmail, wsId)
     const endpoint = await getTransactorEndpoint(token, 'external')
     const connection = (await connect(endpoint, wsId, undefined, {

@@ -761,8 +761,7 @@ export async function createAcc (
   const salt = randomBytes(32)
   const hash = password !== null ? hashWithSalt(password, salt) : null
 
-  const systemEmails = [systemAccountEmail]
-  if (systemEmails.includes(email)) {
+  if (systemAccountEmail === email) {
     ctx.error('system email used for account', { email })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, { account: email }))
   }

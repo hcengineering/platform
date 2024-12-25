@@ -12,7 +12,6 @@ interface Config {
   AccountsURL: string
   ServiceID: string
   Secret: string
-  SystemEmail: string
 }
 
 const envMap: { [key in keyof Config]: string } = {
@@ -28,8 +27,7 @@ const envMap: { [key in keyof Config]: string } = {
 
   AccountsURL: 'ACCOUNTS_URL',
   ServiceID: 'SERVICE_ID',
-  Secret: 'SECRET',
-  SystemEmail: 'SYSTEM_EMAIL'
+  Secret: 'SECRET'
 }
 
 const defaults: Partial<Config> = {
@@ -45,7 +43,6 @@ const defaults: Partial<Config> = {
 
   AccountsURL: undefined,
   ServiceID: 'telegram-service',
-  SystemEmail: 'anticrm@hc.engineering',
 
   Secret: undefined
 }
@@ -76,7 +73,6 @@ const config = (() => {
     MongoURI: process.env[envMap.MongoURI],
     AccountsURL: process.env[envMap.AccountsURL],
     ServiceID: process.env[envMap.ServiceID],
-    SystemEmail: process.env[envMap.SystemEmail],
     Secret: process.env[envMap.Secret]
   }
 

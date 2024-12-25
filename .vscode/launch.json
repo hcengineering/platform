@@ -441,7 +441,6 @@
         "CLIENT_SECRET": "${env:POD_GITHUB_CLIENT_SECRET}",
         "PRIVATE_KEY": "${env:POD_GITHUB_PRIVATE_KEY}",
         "COLLABORATOR_URL": "ws://localhost:3078",
-        "SYSTEM_EMAIL": "anticrm@hc.engineering",
         "MINIO_ENDPOINT": "localhost",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
@@ -463,7 +462,6 @@
       "args": ["src/index.ts"],
       "env": {
         "ACCOUNTS_URL": "http://localhost:3000",
-        "SYSTEM_EMAIL": "anticrm@hc.engineering",
         "SECRET": "secret",
         "DOCS_RELEASE_INTERVAL": "10000",
         "DOCS_IN_REVIEW_CHECK_INTERVAL": "10000",
@@ -523,7 +521,6 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "SERVICE_ID": "sign-service",
-        "SYSTEM_EMAIL": "",
         "ACCOUNTS_URL": "http://localhost:3000",
         "BRANDING_PATH": "${workspaceRoot}/services/sign/pod-sign/debug/branding.json"
       },

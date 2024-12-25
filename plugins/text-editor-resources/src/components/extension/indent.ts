@@ -125,7 +125,7 @@ export function adjustSelectionIndent (
   let insertionOffset = 0
 
   for (const range of ranges) {
-    if (direction > 0 ? range.text === '' : range.indent === 0) {
+    if (direction > 0 ? range.text === '' && ranges.length > 1 : range.indent === 0) {
       continue
     }
     const indentOffset = indentLevelOffset(range.indent, direction)

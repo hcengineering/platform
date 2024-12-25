@@ -37,6 +37,7 @@ import core, {
   type ModelDb,
   type ObjQueryType,
   type Projection,
+  RateLimiter,
   type Ref,
   type ReverseLookups,
   type SessionData,
@@ -1506,13 +1507,18 @@ interface OperationBulk {
   mixins: TxMixin<Doc, Doc>[]
 }
 
+const initRateLimit = new RateLimiter(1)
+
 class PostgresAdapter extends PostgresAdapterBase {
   async init (ctx: MeasureContext, domains?: string[], excludeDomains?: string[]): Promise<void> {
     let resultDomains = domains ?? this.hierarchy.domains()
     if (excludeDomains !== undefined) {
       resultDomains = resultDomains.filter((it) => !excludeDomains.includes(it))
     }
-    await createTables(ctx, this.client, resultDomains)
+    const url = this.refClient.url()
+    await initRateLimit.exec(async () => {
+      await createTables(ctx, this.client, url, resultDomains)
+    })
     this._helper.domains = new Set(resultDomains as Domain[])
   }
 
@@ -1789,7 +1795,10 @@ class PostgresAdapter extends PostgresAdapterBase {
 class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
   async init (ctx: MeasureContext, domains?: string[], excludeDomains?: string[]): Promise<void> {
     const resultDomains = domains ?? [DOMAIN_TX, DOMAIN_MODEL_TX]
-    await createTables(ctx, this.client, resultDomains)
+    await initRateLimit.exec(async () => {
+      const url = this.refClient.url()
+      await createTables(ctx, this.client, url, resultDomains)
+    })
     this._helper.domains = new Set(resultDomains as Domain[])
   }
 

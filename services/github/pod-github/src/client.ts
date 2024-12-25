@@ -5,7 +5,7 @@
 
 import client, { ClientSocket } from '@hcengineering/client'
 import clientResources from '@hcengineering/client-resources'
-import { Client, ClientConnectEvent } from '@hcengineering/core'
+import { Client, ClientConnectEvent, systemAccountEmail } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import serverToken, { generateToken } from '@hcengineering/server-token'
@@ -30,7 +30,7 @@ export async function createPlatformClient (
 
   setMetadata(serverToken.metadata.Secret, config.ServerSecret)
   const token = generateToken(
-    config.SystemEmail,
+    systemAccountEmail,
     {
       name: workspace
     },

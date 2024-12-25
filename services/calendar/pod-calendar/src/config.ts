@@ -23,7 +23,6 @@ interface Config {
   Secret: string
   Credentials: string
   WATCH_URL: string
-  SystemEmail: string
   InitLimit: number
 }
 
@@ -37,7 +36,6 @@ const envMap: { [key in keyof Config]: string } = {
   ServiceID: 'SERVICE_ID',
   Secret: 'SECRET',
   Credentials: 'Credentials',
-  SystemEmail: 'SYSTEM_EMAIL',
   WATCH_URL: 'WATCH_URL',
   InitLimit: 'INIT_LIMIT'
 }
@@ -52,7 +50,6 @@ const config: Config = (() => {
     AccountsURL: process.env[envMap.AccountsURL],
     ServiceID: process.env[envMap.ServiceID] ?? 'calendar-service',
     Secret: process.env[envMap.Secret],
-    SystemEmail: process.env[envMap.SystemEmail] ?? 'anticrm@hc.engineering',
     Credentials: process.env[envMap.Credentials],
     InitLimit: parseNumber(process.env[envMap.InitLimit]) ?? 50,
     WATCH_URL: process.env[envMap.WATCH_URL]

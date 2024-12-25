@@ -117,7 +117,8 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
   },
 
   addProseMirrorPlugins () {
-    return [...(this.parent?.() ?? []), MermaidDecorator(this.options)]
+    const parent = (this.parent?.() ?? []).filter((p) => p.props.handlePaste === undefined)
+    return [...parent, MermaidDecorator(this.options)]
   },
 
   addNodeView () {

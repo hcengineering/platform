@@ -72,8 +72,13 @@ export const NumericTypes = [
   core.class.Collection
 ]
 
-export async function createTables (ctx: MeasureContext, client: postgres.Sql, domains: string[]): Promise<void> {
-  const filtered = domains.filter((d) => !loadedDomains.has(d))
+export async function createTables (
+  ctx: MeasureContext,
+  client: postgres.Sql,
+  url: string,
+  domains: string[]
+): Promise<void> {
+  const filtered = domains.filter((d) => !loadedDomains.has(url + translateDomain(d)))
   if (filtered.length === 0) {
     return
   }
@@ -90,17 +95,15 @@ export async function createTables (ctx: MeasureContext, client: postgres.Sql, d
   const exists = new Set(tables.map((it) => it.table_name))
 
   await retryTxn(client, async (client) => {
-    await ctx.with('load-schemas', {}, () =>
-      getTableSchema(
-        client,
-        mapped.filter((it) => exists.has(it))
-      )
-    )
+    const domainsToLoad = mapped.filter((it) => exists.has(it))
+    if (domainsToLoad.length > 0) {
+      await ctx.with('load-schemas', {}, () => getTableSchema(client, domainsToLoad))
+    }
     for (const domain of mapped) {
       if (!exists.has(domain)) {
         await ctx.with('create-table', {}, () => createTable(client, domain))
       }
-      loadedDomains.add(domain)
+      loadedDomains.add(url + domain)
     }
   })
 }
@@ -188,6 +191,8 @@ export async function shutdown (): Promise<void> {
 export interface PostgresClientReference {
   getClient: () => Promise<postgres.Sql>
   close: () => void
+
+  url: () => string
 }
 
 class PostgresClientReferenceImpl {
@@ -195,11 +200,16 @@ class PostgresClientReferenceImpl {
   client: postgres.Sql | Promise<postgres.Sql>
 
   constructor (
+    readonly connectionString: string,
     client: postgres.Sql | Promise<postgres.Sql>,
     readonly onclose: () => void
   ) {
     this.count = 0
     this.client = client
+  }
+
+  url (): string {
+    return this.connectionString
   }
 
   async getClient (): Promise<postgres.Sql> {
@@ -231,6 +241,10 @@ export class ClientRef implements PostgresClientReference {
   id = generateId()
   constructor (readonly client: PostgresClientReferenceImpl) {
     clientRefs.set(this.id, this)
+  }
+
+  url (): string {
+    return this.client.url()
   }
 
   closed = false
@@ -274,7 +288,7 @@ export function getDBClient (connectionString: string, database?: string): Postg
       ...extraOptions
     })
 
-    existing = new PostgresClientReferenceImpl(sql, () => {
+    existing = new PostgresClientReferenceImpl(connectionString, sql, () => {
       connections.delete(key)
     })
     connections.set(key, existing)
