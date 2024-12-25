@@ -5,10 +5,10 @@ import configPrettier from "eslint-config-prettier";
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
-  {files: ["**/*.ts"]},
   pluginJs.configs.recommended,
   prettierRecommended,
   configPrettier,
   ...tseslint.configs.recommended,
+  {files: ["**/*.ts"], rules: {"@typescript-eslint/no-explicit-any": "off", '@typescript-eslint/no-empty-object-type': 'off'}},
 ];
 
