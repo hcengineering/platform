@@ -17,7 +17,7 @@ import {
   type MessageCreatedEvent,
   type DbAdapter,
   EventType,
-  type BroadcastEvent,
+  type BroadcastEvent
 } from '@communication/sdk-types'
 import { createDbAdapter as createSqliteDbAdapter } from '@communication/sqlite-wasm'
 

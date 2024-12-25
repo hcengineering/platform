@@ -42,4 +42,3 @@ export interface Client {
   unsubscribeQuery(id: number): Promise<void>
   close(): void
 }
-
