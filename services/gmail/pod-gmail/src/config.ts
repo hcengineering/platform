@@ -24,7 +24,6 @@ interface Config {
   Secret: string
   Credentials: string
   WATCH_TOPIC_NAME: string
-  SystemEmail: string
   FooterMessage: string
   InitLimit: number
 }
@@ -39,7 +38,6 @@ const envMap: { [key in keyof Config]: string } = {
   ServiceID: 'SERVICE_ID',
   Secret: 'SECRET',
   Credentials: 'Credentials',
-  SystemEmail: 'SYSTEM_EMAIL',
   WATCH_TOPIC_NAME: 'WATCH_TOPIC_NAME',
   FooterMessage: 'FOOTER_MESSAGE',
   InitLimit: 'INIT_LIMIT'
@@ -55,7 +53,6 @@ const config: Config = (() => {
     AccountsURL: process.env[envMap.AccountsURL],
     ServiceID: process.env[envMap.ServiceID] ?? 'gmail-service',
     Secret: process.env[envMap.Secret],
-    SystemEmail: process.env[envMap.SystemEmail] ?? 'anticrm@hc.engineering',
     Credentials: process.env[envMap.Credentials],
     WATCH_TOPIC_NAME: process.env[envMap.WATCH_TOPIC_NAME],
     InitLimit: parseNumber(process.env[envMap.InitLimit]) ?? 50,

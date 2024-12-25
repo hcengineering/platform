@@ -15,6 +15,7 @@ import core, {
   Hierarchy,
   MeasureContext,
   Ref,
+  systemAccountEmail,
   Tx,
   TxCreateDoc,
   TxCUD,
@@ -31,7 +32,6 @@ import telegramP, { NewTelegramMessage } from '@hcengineering/telegram'
 import type { Collection } from 'mongodb'
 import { Api } from 'telegram'
 import { v4 as uuid } from 'uuid'
-import config from './config'
 import { platformToTelegram, telegramToPlatform } from './markup'
 import { MsgQueue } from './queue'
 import type { TelegramConnectionInterface } from './telegram'
@@ -151,7 +151,7 @@ export class WorkspaceWorker {
     lastMsgStorage: Collection<LastMsgRecord>,
     channelsStorage: Collection<WorkspaceChannel>
   ): Promise<WorkspaceWorker> {
-    const token = generateToken(config.SystemEmail, { name: workspace })
+    const token = generateToken(systemAccountEmail, { name: workspace })
     const client = await createPlatformClient(token)
 
     const worker = new WorkspaceWorker(

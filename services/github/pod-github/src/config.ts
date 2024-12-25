@@ -2,13 +2,10 @@
 // Copyright © 2023 Hardcore Engineering Inc.
 //
 
-import { systemAccountEmail } from '@hcengineering/core'
-
 interface Config {
   AccountsURL: string
   ServiceID: string
   ServerSecret: string
-  SystemEmail: string
   FrontURL: string
 
   // '*' means all workspaces
@@ -36,7 +33,6 @@ const envMap: { [key in keyof Config]: string } = {
   AccountsURL: 'ACCOUNTS_URL',
   ServiceID: 'SERVICE_ID',
   ServerSecret: 'SERVER_SECRET',
-  SystemEmail: 'SYSTEM_EMAIL',
   FrontURL: 'FRONT_URL',
 
   AppID: 'APP_ID',
@@ -62,7 +58,6 @@ const required: Array<keyof Config> = [
   'AccountsURL',
   'ServerSecret',
   'ServiceID',
-  'SystemEmail',
   'FrontURL',
   'AppID',
   'ClientID',
@@ -82,7 +77,6 @@ const config: Config = (() => {
     AccountsURL: process.env[envMap.AccountsURL],
     ServerSecret: process.env[envMap.ServerSecret],
     ServiceID: process.env[envMap.ServiceID] ?? 'github-service',
-    SystemEmail: process.env[envMap.SystemEmail] ?? systemAccountEmail,
     AllowedWorkspaces: process.env[envMap.AllowedWorkspaces]?.split(',') ?? ['*'],
     FrontURL: process.env[envMap.FrontURL] ?? '',
 

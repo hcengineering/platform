@@ -11,7 +11,6 @@ export interface Config {
   Port: number
   Secret: string
   ServiceID: string
-  SystemEmail: string
   BrandingPath: string
 }
 
@@ -25,7 +24,6 @@ const config: Config = (() => {
     Port: parseNumber(process.env.PORT) ?? 4006,
     Secret: process.env.SECRET,
     ServiceID: process.env.SERVICE_ID,
-    SystemEmail: process.env.SYSTEM_EMAIL ?? 'anticrm@hc.engineering',
     BrandingPath: process.env.BRANDING_PATH ?? ''
   }
 
