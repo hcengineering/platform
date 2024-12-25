@@ -9,22 +9,23 @@ import type {
   NotificationContextUpdate,
   RichText,
   SocialID,
-  Notification
+  Notification,
+  ThreadID
 } from '@communication/types'
 import type { FindMessagesParams } from '@communication/types'
 
 import type { BroadcastEvent } from './event.ts'
 
 export interface Client {
-  createMessage(card: CardID, content: RichText, creator: SocialID): Promise<MessageID>
-  removeMessage(id: MessageID): Promise<void>
-  createPatch(message: MessageID, content: RichText, creator: SocialID): Promise<void>
+  createMessage(thread: ThreadID, content: RichText, creator: SocialID): Promise<MessageID>
+  removeMessage(thread: ThreadID, id: MessageID): Promise<void>
+  createPatch(thread: ThreadID, message: MessageID, content: RichText, creator: SocialID): Promise<void>
 
-  createReaction(message: MessageID, reaction: string, creator: SocialID): Promise<void>
-  removeReaction(message: MessageID, reaction: string, creator: SocialID): Promise<void>
+  createReaction(thread: ThreadID, message: MessageID, reaction: string, creator: SocialID): Promise<void>
+  removeReaction(thread: ThreadID, message: MessageID, reaction: string, creator: SocialID): Promise<void>
 
-  createAttachment(message: MessageID, card: CardID, creator: SocialID): Promise<void>
-  removeAttachment(message: MessageID, card: CardID): Promise<void>
+  createAttachment(thread: ThreadID, message: MessageID, card: CardID, creator: SocialID): Promise<void>
+  removeAttachment(thread: ThreadID, message: MessageID, card: CardID): Promise<void>
 
   createNotification(message: MessageID, context: ContextID): Promise<void>
   removeNotification(message: MessageID, context: ContextID): Promise<void>

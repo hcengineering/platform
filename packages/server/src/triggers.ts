@@ -6,7 +6,7 @@ import {
   type NotificationContextCreatedEvent,
   type NotificationCreatedEvent
 } from '@communication/sdk-types'
-import type { NotificationContext, ContextID } from '@communication/types'
+import type { NotificationContext, ContextID, CardID } from '@communication/types'
 
 export class Triggers {
   constructor(private readonly db: DbAdapter) {}
@@ -21,7 +21,7 @@ export class Triggers {
   }
 
   private async createNotifications(event: MessageCreatedEvent, workspace: string): Promise<BroadcastEvent[]> {
-    const card = event.card
+    const card = event.message.thread as any as CardID
     const subscribedPersonWorkspaces = ['cd0aba36-1c4f-4170-95f2-27a12a5415f7', 'cd0aba36-1c4f-4170-95f2-27a12a5415f8']
 
     const res: BroadcastEvent[] = []
@@ -62,7 +62,7 @@ export class Triggers {
 
   private async getOrCreateContextId(
     workspace: string,
-    card: string,
+    card: CardID,
     personWorkspace: string,
     res: BroadcastEvent[],
     lastUpdate: Date,
@@ -71,7 +71,7 @@ export class Triggers {
     if (context !== undefined) {
       return context.id
     } else {
-      const contextId = await this.db.createContext(workspace, card, personWorkspace, undefined, lastUpdate)
+      const contextId = await this.db.createContext(personWorkspace, workspace, card, undefined, lastUpdate)
       const newContext = {
         id: contextId,
         card,

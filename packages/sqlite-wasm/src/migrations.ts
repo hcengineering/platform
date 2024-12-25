@@ -10,38 +10,15 @@ async function migrationV1(worker: Sqlite3Worker1Promiser, dbId: string): Promis
     sql: `
             CREATE TABLE IF NOT EXISTS message
             (
-                id      TEXT     NOT NULL,
-                content TEXT     NOT NULL,
-                creator TEXT     NOT NULL,
-                created DATETIME NOT NULL,
+                id           TEXT     NOT NULL,
+                workspace_id TEXT     NOT NULL,
+                thread_id    TEXT     NOT NULL,
+                content      TEXT     NOT NULL,
+                creator      TEXT     NOT NULL,
+                created      DATETIME NOT NULL,
                 PRIMARY KEY (id)
             )
         `
-  })
-
-  await worker('exec', {
-    dbId,
-    sql: `
-            CREATE TABLE IF NOT EXISTS message_place
-            (
-                workspace_id TEXT NOT NULL,
-                card_id      TEXT NOT NULL,
-                message_id   TEXT NOT NULL,
-
-                PRIMARY KEY (workspace_id, card_id, message_id),
-                FOREIGN KEY (message_id) REFERENCES message (id) ON DELETE CASCADE
-            )
-        `
-  })
-
-  await worker('exec', {
-    dbId,
-    sql: `CREATE INDEX IF NOT EXISTS idx_message_place_workspace_card ON message_place (workspace_id, card_id)`
-  })
-
-  await worker('exec', {
-    dbId,
-    sql: `CREATE INDEX IF NOT EXISTS idx_message_place_message_id ON message_place (message_id)`
   })
 
   await worker('exec', {
@@ -110,29 +87,29 @@ async function migrationV1(worker: Sqlite3Worker1Promiser, dbId: string): Promis
   await worker('exec', {
     dbId,
     sql: `
-    CREATE TABLE IF NOT EXISTS notification_context
-    (
-        id               TEXT NOT NULL,
-        workspace_id     TEXT NOT NULL,
-        card_id          TEXT NOT NULL,
-        person_workspace TEXT NOT NULL,
-        archived_from    DATETIME,
-        last_view        DATETIME,
-        last_update      DATETIME,
+            CREATE TABLE IF NOT EXISTS notification_context
+            (
+                id               TEXT NOT NULL,
+                workspace_id     TEXT NOT NULL,
+                card_id          TEXT NOT NULL,
+                person_workspace TEXT NOT NULL,
+                archived_from    DATETIME,
+                last_view        DATETIME,
+                last_update      DATETIME,
 
-        PRIMARY KEY (id),
-        UNIQUE (workspace_id, card_id, person_workspace)
-    );
+                PRIMARY KEY (id),
+                UNIQUE (workspace_id, card_id, person_workspace)
+            );
 
-    CREATE TABLE IF NOT EXISTS notification
-    (
-        message_id TEXT NOT NULL,
-        context_id    TEXT NOT NULL,
+            CREATE TABLE IF NOT EXISTS notification
+            (
+                message_id TEXT NOT NULL,
+                context_id TEXT NOT NULL,
 
-        PRIMARY KEY (message_id, context_id),
-        FOREIGN KEY (message_id) REFERENCES message (id) ON DELETE CASCADE,
-        FOREIGN KEY (context_id) REFERENCES notification_context (id) ON DELETE CASCADE
-    );
-  `
+                PRIMARY KEY (message_id, context_id),
+                FOREIGN KEY (message_id) REFERENCES message (id) ON DELETE CASCADE,
+                FOREIGN KEY (context_id) REFERENCES notification_context (id) ON DELETE CASCADE
+            );
+        `
   })
 }

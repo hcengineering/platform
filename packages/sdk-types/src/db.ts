@@ -10,14 +10,19 @@ import type {
   NotificationContextUpdate,
   RichText,
   SocialID,
-  Notification
+  Notification,
+  ThreadID
 } from '@communication/types'
 
 export interface DbAdapter {
-  createMessage(content: RichText, creator: SocialID, created: Date): Promise<MessageID>
+  createMessage(
+    workspace: string,
+    thread: ThreadID,
+    content: RichText,
+    creator: SocialID,
+    created: Date
+  ): Promise<MessageID>
   removeMessage(id: MessageID): Promise<void>
-
-  placeMessage(message: MessageID, card: CardID, workspace: string): Promise<void>
   createPatch(message: MessageID, content: RichText, creator: SocialID, created: Date): Promise<void>
 
   createReaction(message: MessageID, reaction: string, creator: SocialID, created: Date): Promise<void>

@@ -3,12 +3,16 @@ import {
   type BroadcastEvent,
   type DbAdapter,
   EventType,
-  type MessageCreatedEvent,
   type NotificationContextCreatedEvent,
   type NotificationCreatedEvent,
   type Response
 } from '@communication/sdk-types'
-import type { FindMessagesParams, FindNotificationContextParams, FindNotificationsParams } from '@communication/types'
+import type {
+  FindMessagesParams,
+  FindNotificationContextParams,
+  FindNotificationsParams,
+  MessageID
+} from '@communication/types'
 
 import { Session } from './session'
 import type { ConnectionInfo } from './types'
@@ -112,14 +116,40 @@ export class Manager {
   private match(event: BroadcastEvent, info: SessionInfo): boolean {
     switch (event.type) {
       case EventType.MessageCreated:
-        return this.matchMessagesQuery(event, Array.from(info.messageQueries.values()))
+        return this.matchMessagesQuery(
+          { id: event.message.id, thread: event.message.thread },
+          Array.from(info.messageQueries.values())
+        )
       case EventType.PatchCreated:
+        return this.matchMessagesQuery(
+          { thread: event.thread, id: event.patch.message },
+          Array.from(info.messageQueries.values())
+        )
       case EventType.MessageRemoved:
+        return this.matchMessagesQuery(
+          { thread: event.thread, id: event.message },
+          Array.from(info.messageQueries.values())
+        )
       case EventType.ReactionCreated:
+        return this.matchMessagesQuery(
+          { thread: event.thread, id: event.reaction.message },
+          Array.from(info.messageQueries.values())
+        )
       case EventType.ReactionRemoved:
+        return this.matchMessagesQuery(
+          { thread: event.thread, id: event.message },
+          Array.from(info.messageQueries.values())
+        )
       case EventType.AttachmentCreated:
+        return this.matchMessagesQuery(
+          { thread: event.thread, id: event.attachment.message },
+          Array.from(info.messageQueries.values())
+        )
       case EventType.AttachmentRemoved:
-        return info.messageQueries.size > 0
+        return this.matchMessagesQuery(
+          { thread: event.thread, id: event.message },
+          Array.from(info.messageQueries.values())
+        )
       case EventType.NotificationCreated:
         return (
           info.session.info.personWorkspace === event.personWorkspace &&
@@ -139,12 +169,12 @@ export class Manager {
     }
   }
 
-  private matchMessagesQuery(event: MessageCreatedEvent, queries: FindMessagesParams[]): boolean {
+  private matchMessagesQuery(params: { id?: MessageID; thread?: string }, queries: FindMessagesParams[]): boolean {
     if (queries.length === 0) return false
 
     for (const query of queries) {
-      if (query.id != null && query.id !== event.message.id) continue
-      if (query.card != null && query.card !== event.card) continue
+      if (query.id != null && query.id !== params.id) continue
+      if (query.thread != null && query.thread !== params.thread) continue
       return true
     }
 

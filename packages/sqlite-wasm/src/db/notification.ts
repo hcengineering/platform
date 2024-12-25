@@ -9,7 +9,7 @@ import {
 } from '@communication/types'
 
 import {BaseDb} from './base.ts'
-import {TableName, type ContextDb, type NotificationDb } from './types.ts'
+import {TableName, type ContextDb, type NotificationDb} from './types.ts'
 
 export class NotificationsDb extends BaseDb {
     async createNotification(message: MessageID, context: ContextID): Promise<void> {
@@ -80,7 +80,13 @@ export class NotificationsDb extends BaseDb {
 
     async findContexts(params: FindNotificationContextParams, personWorkspaces: string[], workspace?: string,): Promise<NotificationContext[]> {
         const select = `
-            SELECT nc.id, nc.card_id, nc.archived_from, nc.last_view, nc.last_update, nc.workspace_id, nc.person_workspace
+            SELECT nc.id,
+                   nc.card_id,
+                   nc.archived_from,
+                   nc.last_view,
+                   nc.last_update,
+                   nc.workspace_id,
+                   nc.person_workspace
             FROM ${TableName.NotificationContext} nc`;
         const where = this.buildContextWhere(params, personWorkspaces, workspace);
         // const orderSql = `ORDER BY nc.created ${params.sort === SortOrder.Asc ? 'ASC' : 'DESC'}`
@@ -96,104 +102,87 @@ export class NotificationsDb extends BaseDb {
     async findNotifications(params: FindNotificationsParams, personWorkspace: string, workspace?: string): Promise<Notification[]> {
         //TODO: should join with attachments and reactions?
         const select = `
-            SELECT
-                n.message_id,
-                n.context_id,
-                m.content AS message_content,
-                m.creator AS message_creator,
-                m.created AS message_created,
-                nc.card_id,
-                nc.archived_from,
-                nc.last_view,
-                nc.last_update,
-                json_group_array(
-                        json_object(
-                                'id', p.id,
-                                'content', p.content,
-                                'creator', p.creator,
-                                'created', p.created
-                        )
-                ) AS patches
-            FROM
-                ${TableName.Notification} n
-                    JOIN
-                ${TableName.NotificationContext} nc ON n.context_id = nc.id
-                    JOIN
-                ${TableName.Message} m ON n.message_id = m.id
-                    LEFT JOIN
-                ${TableName.Patch} p ON p.message_id = m.id
+            SELECT n.message_id,
+                   n.context_id,
+                   m.thread_id AS message_thread,
+                   m.content   AS message_content,
+                   m.creator   AS message_creator,
+                   m.created   AS message_created,
+                   nc.card_id,
+                   nc.archived_from,
+                   nc.last_view,
+                   nc.last_update,
+                   json_group_array(
+                           json_object(
+                                   'id', p.id,
+                                   'content', p.content,
+                                   'creator', p.creator,
+                                   'created', p.created
+                           )
+                   )           AS patches
+            FROM ${TableName.Notification} n
+                     JOIN
+                 ${TableName.NotificationContext} nc ON n.context_id = nc.id
+                     JOIN
+                 ${TableName.Message} m ON n.message_id = m.id
+                     LEFT JOIN
+                 ${TableName.Patch} p ON p.message_id = m.id
         `;
         const where = this.buildNotificationWhere(params, personWorkspace, workspace)
         const groupBy = `GROUP BY n.message_id, n.context_id, m.id, nc.card_id, nc.archived_from, nc.last_view, nc.last_update`;
         const orderBy = `ORDER BY m.created ${params.sort === SortOrder.Asc ? 'ASC' : 'DESC'}`
         const limit = params.limit ? ` LIMIT ${params.limit}` : ''
-        const sql = [select, where, groupBy,orderBy, limit].join(' ')
+        const sql = [select, where, groupBy, orderBy, limit].join(' ')
 
         const result = await this.select(sql)
 
         return result.map(it => this.toNotification(it));
     }
 
-    buildContextWhere(params: FindNotificationContextParams, personWorkspaces: string[], workspace?: string, ): string {
+    buildContextWhere(params: FindNotificationContextParams, personWorkspaces: string[], workspace?: string,): string {
         const where: string[] = []
 
-        if(workspace != null) {
+        if (workspace != null) {
             where.push(`nc.workspace_id = '${workspace}'`)
         }
-         if(personWorkspaces.length > 0) {
+        if (personWorkspaces.length > 0) {
             where.push(`nc.person_workspace IN (${personWorkspaces.map(it => `'${it}'`).join(', ')})`)
         }
 
-        for (const key of Object.keys(params)) {
-            const value = (params as any)[key]
-            switch (key) {
-                case 'card': {
-                    where.push(`nc.card_id = '${value}'`)
-                    break
-                }
-            }
+        if (params.card != null) {
+            where.push(`nc.card_id = '${params.card}'`)
         }
 
         return `WHERE ${where.join(' AND ')}`
     }
 
-    buildNotificationWhere(params: FindNotificationsParams, personWorkspace: string, workspace?: string ): string {
+    buildNotificationWhere(params: FindNotificationsParams, personWorkspace: string, workspace?: string): string {
         const where: string[] = [`nc.person_workspace = '${personWorkspace}'`]
-        if(workspace != null) {
+        if (workspace != null) {
             where.push(`nc.workspace_id = '${workspace}'`)
         }
 
-        for (const key of Object.keys(params)) {
-            const value = (params as any)[key]
-            switch (key) {
-                case 'context': {
-                    where.push(`n.context = '${value}'`)
-                    break
-                }
-                case 'card': {
-                    where.push(`nc.card_id = '${value}'`)
-                    break
-                }
-                case 'read': {
-                    if (value === true) {
-                        where.push(`nc.last_view IS NOT NULL AND nc.last_view >= m.created`)
-                    } else if (value === false) {
-                        where.push(`(nc.last_view IS NULL OR nc.last_view > m.created)`)
-                    }
-                    break
-                }
-                case 'archived': {
-                    if (value === true) {
-                        where.push(`nc.archived_from IS NOT NULL AND nc.archived_from >= m.created`)
-                    } else if (value === false) {
-                        where.push(`(nc.archived_from IS NULL OR nc.archived_from > m.created)`)
-                    }
-                    break
-                }
-            }
+        if (params.context != null) {
+            where.push(`n.context_id = '${params.context}'`)
         }
 
-        return  `WHERE ${where.join(' AND ')}`
+        if (params.read === true) {
+            where.push(`nc.last_view IS NOT NULL AND nc.last_view >= m.created`)
+        }
+
+        if (params.read === false) {
+            where.push(`(nc.last_view IS NULL OR nc.last_view > m.created)`)
+        }
+
+        if (params.archived === true) {
+            where.push(`nc.archived_from IS NOT NULL AND nc.archived_from >= m.created`)
+        }
+
+        if (params.archived === false) {
+            where.push(`(nc.archived_from IS NULL OR nc.archived_from > m.created)`)
+        }
+
+        return `WHERE ${where.join(' AND ')}`
     }
 
     toNotificationContext(row: any): NotificationContext {
@@ -217,6 +206,7 @@ export class NotificationsDb extends BaseDb {
         return {
             message: {
                 id: row.message_id,
+                thread: row.message_thread,
                 content: lastPatch?.content ?? row.message_content,
                 creator: row.message_creator,
                 created,

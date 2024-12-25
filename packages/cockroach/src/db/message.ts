@@ -6,14 +6,13 @@ import {
     SortOrder,
     type SocialID,
     type RichText,
-    Direction, type Reaction, type Attachment
+    Direction, type Reaction, type Attachment, type ThreadID
 } from '@communication/types'
 
 import {BaseDb} from './base.ts'
 import {
     TableName,
     type MessageDb,
-    type MessagePlaceDb,
     type AttachmentDb,
     type ReactionDb,
     type PatchDb
@@ -21,8 +20,10 @@ import {
 
 export class MessagesDb extends BaseDb {
     //Message
-    async createMessage(content: RichText, creator: SocialID, created: Date): Promise<MessageID> {
+    async createMessage(workspace: string, thread: ThreadID, content: RichText, creator: SocialID, created: Date): Promise<MessageID> {
         const dbData: MessageDb = {
+            workspace_id: workspace,
+            thread_id: thread,
             content: content,
             creator: creator,
             created: created,
@@ -35,15 +36,6 @@ export class MessagesDb extends BaseDb {
 
     async removeMessage(message: MessageID): Promise<void> {
         await this.remove(TableName.Message, {id: message})
-    }
-
-    async placeMessage(message: MessageID, card: CardID, workspace: string): Promise<void> {
-        const dbData: MessagePlaceDb = {
-            workspace_id: workspace,
-            card_id: card,
-            message_id: message
-        }
-        await this.insert(TableName.MessagePlace, dbData)
     }
 
     async createPatch(message: MessageID, content: RichText, creator: SocialID, created: Date): Promise<void> {
@@ -104,8 +96,7 @@ export class MessagesDb extends BaseDb {
                                ${this.subSelectPatches()},
                                ${this.subSelectAttachments()},
                                ${this.subSelectReactions()}
-                        FROM ${TableName.Message} m
-                                 INNER JOIN ${TableName.MessagePlace} mp ON m.id = mp.message_id`
+                        FROM ${TableName.Message} m`
 
         const {where, values} = this.buildMessageWhere(workspace, params)
         const orderBy = params.sort ? `ORDER BY m.created ${params.sort === SortOrder.Asc ? 'ASC' : 'DESC'}` : ''
@@ -118,39 +109,36 @@ export class MessagesDb extends BaseDb {
     }
 
     buildMessageWhere(workspace: string, params: FindMessagesParams): { where: string, values: any[] } {
-        const where: string[] = ['mp.workspace_id = $1']
+        const where: string[] = ['m.workspace_id = $1']
         const values: any[] = [workspace]
-        let index = 2
-        for (const key of Object.keys(params)) {
-            const value = (params as any)[key]
-            switch (key) {
-                case 'id': {
-                    where.push(`m.id = $${index++}`)
-                    values.push(value)
-                    break
-                }
-                case 'card': {
-                    where.push(`mp.card_id = $${index++}`)
-                    values.push(value)
-                    break
-                }
-                case 'from': {
-                    const exclude = params.excluded ?? false
-                    const direction = params.direction ?? Direction.Forward
-                    const getOperator = () => {
-                        if (exclude) {
-                            return direction === Direction.Forward ? '>' : '<'
-                        } else {
-                            return direction === Direction.Forward ? '>=' : '<='
-                        }
-                    }
 
-                    where.push(`m.created ${getOperator()} $${index++}`)
-                    values.push(value)
-                    break
+        let index = 2
+
+        if (params.id != null) {
+            where.push(`m.id = $${index++}`)
+            values.push(params.id)
+        }
+
+        if (params.thread != null) {
+            where.push(`m.thread_id = $${index++}`)
+            values.push(params.thread)
+        }
+
+        if (params.from != null) {
+            const exclude = params.excluded ?? false
+            const direction = params.direction ?? Direction.Forward
+            const getOperator = () => {
+                if (exclude) {
+                    return direction === Direction.Forward ? '>' : '<'
+                } else {
+                    return direction === Direction.Forward ? '>=' : '<='
                 }
             }
+
+            where.push(`m.created ${getOperator()} $${index++}`)
+            values.push(params.from)
         }
+
 
         return {where: `WHERE ${where.join(' AND ')}`, values}
     }
@@ -198,6 +186,7 @@ export class MessagesDb extends BaseDb {
 
         return {
             id: row.id,
+            thread: row.thread_id,
             content: lastPatch?.content ?? row.content,
             creator: row.creator,
             created: new Date(row.created),

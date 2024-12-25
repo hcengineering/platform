@@ -1,4 +1,5 @@
 import {
+  type Attachment,
   type CardID,
   type ContextID,
   type FindMessagesParams,
@@ -9,8 +10,10 @@ import {
   type Notification,
   type NotificationContext,
   type NotificationContextUpdate,
+  type Reaction,
   type RichText,
-  type SocialID
+  type SocialID,
+  type ThreadID
 } from '@communication/types'
 import {
   type BroadcastEvent,
@@ -53,10 +56,10 @@ class WsClient implements Client {
     }
   }
 
-  async createMessage(card: CardID, content: RichText, creator: SocialID): Promise<MessageID> {
+  async createMessage(thread: ThreadID, content: RichText, creator: SocialID): Promise<MessageID> {
     const event: CreateMessageEvent = {
       type: EventType.CreateMessage,
-      card,
+      thread,
       content,
       creator
     }
@@ -64,17 +67,19 @@ class WsClient implements Client {
     return (result as CreateMessageResult).id
   }
 
-  async removeMessage(message: MessageID) {
+  async removeMessage(thread: ThreadID, message: MessageID): Promise<void> {
     const event: RemoveMessageEvent = {
       type: EventType.RemoveMessage,
+      thread,
       message
     }
     await this.sendEvent(event)
   }
 
-  async createPatch(message: MessageID, content: RichText, creator: SocialID): Promise<void> {
+  async createPatch(thread: ThreadID, message: MessageID, content: RichText, creator: SocialID): Promise<void> {
     const event: CreatePatchEvent = {
       type: EventType.CreatePatch,
+      thread,
       message,
       content,
       creator
@@ -82,9 +87,10 @@ class WsClient implements Client {
     await this.sendEvent(event)
   }
 
-  async createReaction(message: MessageID, reaction: string, creator: SocialID): Promise<void> {
+  async createReaction(thread: ThreadID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
     const event: CreateReactionEvent = {
       type: EventType.CreateReaction,
+      thread,
       message,
       reaction,
       creator
@@ -92,9 +98,10 @@ class WsClient implements Client {
     await this.sendEvent(event)
   }
 
-  async removeReaction(message: MessageID, reaction: string, creator: SocialID): Promise<void> {
+  async removeReaction(thread: ThreadID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
     const event: RemoveReactionEvent = {
       type: EventType.RemoveReaction,
+      thread,
       message,
       reaction,
       creator
@@ -102,9 +109,10 @@ class WsClient implements Client {
     await this.sendEvent(event)
   }
 
-  async createAttachment(message: MessageID, card: CardID, creator: SocialID): Promise<void> {
+  async createAttachment(thread: ThreadID, message: MessageID, card: CardID, creator: SocialID): Promise<void> {
     const event: CreateAttachmentEvent = {
       type: EventType.CreateAttachment,
+      thread,
       message,
       card,
       creator
@@ -112,9 +120,10 @@ class WsClient implements Client {
     await this.sendEvent(event)
   }
 
-  async removeAttachment(message: MessageID, card: CardID): Promise<void> {
+  async removeAttachment(thread: ThreadID, message: MessageID, card: CardID): Promise<void> {
     const event: RemoveAttachmentEvent = {
       type: EventType.RemoveAttachment,
+      thread,
       message,
       card
     }
@@ -123,18 +132,37 @@ class WsClient implements Client {
 
   async findMessages(params: FindMessagesParams, queryId?: number): Promise<Message[]> {
     const rawMessages = await this.ws.send('findMessages', [params, queryId])
-    return rawMessages.map(this.toMessage)
+    return rawMessages.map((it: any) => this.toMessage(it))
   }
 
   toMessage(raw: any): Message {
     return {
       id: raw.id,
+      thread: raw.thread,
       content: raw.content,
       creator: raw.creator,
       created: new Date(raw.created),
       edited: new Date(raw.edited),
-      reactions: raw.reactions,
-      attachments: raw.attachments
+      reactions: raw.reactions.map((it: any) => this.toReaction(it)),
+      attachments: raw.attachments.map((it: any) => this.toAttachment(it))
+    }
+  }
+
+  toAttachment(raw: any): Attachment {
+    return {
+      message: raw.message,
+      card: raw.card,
+      creator: raw.creator,
+      created: new Date(raw.created)
+    }
+  }
+
+  toReaction(raw: any): Reaction {
+    return {
+      message: raw.message,
+      reaction: raw.reaction,
+      creator: raw.creator,
+      created: new Date(raw.created)
     }
   }
 

@@ -1,12 +1,12 @@
-import { type CardID, type Message, SortOrder, type Window } from '@communication/types'
+import { type Message, type SocialID, SortOrder, type ThreadID, type Window } from '@communication/types'
 import { getWebsocketClient } from '@communication/client-ws'
 import { getSqliteClient } from '@communication/client-sqlite'
 import { createMessagesQuery, initLiveQueries } from '@communication/client-query'
 
-const card1: CardID = 'cd0aba36-1c4f-4170-95f2-27a12a5415f6'
+const thread = 'cd0aba36-1c4f-4170-95f2-27a12a5415f6' as ThreadID
 const workspace = 'cd0aba36-1c4f-4170-95f2-27a12a5415f6'
 const personWorkspace = 'cd0aba36-1c4f-4170-95f2-27a12a5415f5'
-const creator1 = 'email:vasya@huly.com'
+const creator1 = 'email:vasya@huly.com' as SocialID
 
 async function getClient(type: 'ws' | 'sqlite') {
   if (type === 'ws') {
@@ -26,7 +26,7 @@ export async function example() {
 
   let window: Window<Message> | undefined = undefined
 
-  query1.query({ card: card1, sort: SortOrder.Desc }, (res) => {
+  query1.query({ thread, sort: SortOrder.Desc }, (res) => {
     window = res
     const r = window.getResult()
     r.reverse()
@@ -44,19 +44,19 @@ export async function example() {
   })
 
   async function editMessage(message: Message) {
-    await client.createPatch(message.id, message.content + '_1_', creator1)
+    await client.createPatch(thread, message.id, message.content + '_1_', creator1)
   }
 
   async function deleteMessage(message: Message) {
-    await client.removeMessage(message.id)
+    await client.removeMessage(thread, message.id)
   }
 
   async function addReaction(message: Message) {
-    await client.createReaction(message.id, '👍', creator1)
+    await client.createReaction(thread, message.id, '👍', creator1)
   }
 
   async function removeReaction(message: Message) {
-    await client.removeReaction(message.id, '👍', creator1)
+    await client.removeReaction(thread, message.id, '👍', creator1)
   }
 
   function scrollToBottom() {
@@ -116,7 +116,7 @@ export async function example() {
     const el = event.target?.getElementsByTagName('input')[0] as HTMLInputElement
     if (el.value == '' || el.value == null) return
 
-    await client.createMessage(card1, el.value, creator1)
+    await client.createMessage(thread, el.value, creator1)
 
     el.value = ''
   })

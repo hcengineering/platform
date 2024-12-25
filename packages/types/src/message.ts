@@ -1,5 +1,6 @@
-export type CardID = string
-export type SocialID = string
+export type CardID = string & { card: true }
+export type SocialID = string & { social: true }
+export type ThreadID = string & { thread: true }
 export type RichText = string
 
 export type ID = string
@@ -12,6 +13,7 @@ interface Object {
 
 export interface Message extends Object {
   id: MessageID
+  thread: ThreadID
   content: RichText
   edited: Date
   reactions: Reaction[]

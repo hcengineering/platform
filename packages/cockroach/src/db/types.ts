@@ -1,9 +1,8 @@
-import type {CardID, ContextID, MessageID, RichText, SocialID } from "@communication/types"
+import type {CardID, ContextID, MessageID, RichText, SocialID, ThreadID } from "@communication/types"
 
 export enum TableName {
     Message = 'message',
     Patch = 'patch',
-    MessagePlace = 'message_place',
     Attachment = 'attachment',
     Reaction = 'reaction',
     Notification = 'notification',
@@ -11,6 +10,8 @@ export enum TableName {
 }
 
 export interface MessageDb {
+    workspace_id: string,
+    thread_id: ThreadID,
     content: RichText,
     creator: SocialID,
     created: Date,
@@ -22,13 +23,6 @@ export interface PatchDb {
     creator: SocialID,
     created: Date,
 }
-
-export interface MessagePlaceDb {
-    workspace_id: string,
-    card_id: CardID,
-    message_id: MessageID
-}
-
 export interface ReactionDb {
     message_id: MessageID,
     reaction: string,

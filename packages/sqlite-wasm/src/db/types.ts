@@ -3,7 +3,6 @@ import type {CardID, ContextID, MessageID, RichText, SocialID } from "@communica
 export enum TableName {
     Message = 'message',
     Patch = 'patch',
-    MessagePlace = 'message_place',
     Attachment = 'attachment',
     Reaction = 'reaction',
     Notification = 'notification',
@@ -12,6 +11,8 @@ export enum TableName {
 
 export interface MessageDb {
     id: string
+    workspace_id: string,
+    thread_id: string,
     content: RichText,
     creator: SocialID,
     created: Date,
@@ -23,12 +24,6 @@ export interface PatchDb {
     content: RichText,
     creator: SocialID,
     created: Date,
-}
-
-export interface MessagePlaceDb {
-    workspace_id: string,
-    card_id: CardID,
-    message_id: MessageID
 }
 
 export interface ReactionDb {

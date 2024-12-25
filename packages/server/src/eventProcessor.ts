@@ -73,10 +73,10 @@ export class EventProcessor {
 
   private async createMessage(event: CreateMessageEvent): Promise<Result> {
     const created = new Date()
-    const id = await this.db.createMessage(event.content, event.creator, created)
-    await this.db.placeMessage(id, event.card, this.workspace)
+    const id = await this.db.createMessage(this.workspace, event.thread, event.content, event.creator, created)
     const message: Message = {
       id,
+      thread: event.thread,
       content: event.content,
       creator: event.creator,
       created: created,
@@ -86,7 +86,6 @@ export class EventProcessor {
     }
     const broadcastEvent: MessageCreatedEvent = {
       type: EventType.MessageCreated,
-      card: event.card,
       message
     }
     return {
@@ -107,6 +106,7 @@ export class EventProcessor {
     }
     const broadcastEvent: PatchCreatedEvent = {
       type: EventType.PatchCreated,
+      thread: event.thread,
       patch
     }
     return {
@@ -120,6 +120,7 @@ export class EventProcessor {
 
     const broadcastEvent: MessageRemovedEvent = {
       type: EventType.MessageRemoved,
+      thread: event.thread,
       message: event.message
     }
 
@@ -141,6 +142,7 @@ export class EventProcessor {
     }
     const broadcastEvent: ReactionCreatedEvent = {
       type: EventType.ReactionCreated,
+      thread: event.thread,
       reaction
     }
     return {
@@ -153,6 +155,7 @@ export class EventProcessor {
     await this.db.removeReaction(event.message, event.reaction, event.creator)
     const broadcastEvent: ReactionRemovedEvent = {
       type: EventType.ReactionRemoved,
+      thread: event.thread,
       message: event.message,
       reaction: event.reaction,
       creator: event.creator
@@ -175,6 +178,7 @@ export class EventProcessor {
     }
     const broadcastEvent: AttachmentCreatedEvent = {
       type: EventType.AttachmentCreated,
+      thread: event.thread,
       attachment
     }
 
@@ -188,6 +192,7 @@ export class EventProcessor {
     await this.db.removeAttachment(event.message, event.card)
     const broadcastEvent: AttachmentRemovedEvent = {
       type: EventType.AttachmentRemoved,
+      thread: event.thread,
       message: event.message,
       card: event.card
     }
@@ -222,9 +227,9 @@ export class EventProcessor {
 
   private async createNotificationContext(event: CreateNotificationContextEvent): Promise<Result> {
     const id = await this.db.createContext(
+      this.personWorkspace,
       this.workspace,
       event.card,
-      this.personWorkspace,
       event.lastView,
       event.lastUpdate
     )

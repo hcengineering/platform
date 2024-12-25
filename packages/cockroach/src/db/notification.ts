@@ -66,12 +66,12 @@ export class NotificationsDb extends BaseDb {
 
         const sql = `UPDATE ${TableName.NotificationContext}
                      SET ${keys.map((k, idx) => `"${k}" = $${idx + 1}`).join(', ')}
-                     WHERE id =$${keys.length + 1}`
+                     WHERE id = $${keys.length + 1}`
 
         await this.client.unsafe(sql, [values, context])
     }
 
-    async findContexts( params: FindNotificationContextParams, personWorkspaces: string[], workspace?: string,): Promise<NotificationContext[]> {
+    async findContexts(params: FindNotificationContextParams, personWorkspaces: string[], workspace?: string,): Promise<NotificationContext[]> {
         const select = `
             SELECT nc.id, nc.card_id, nc.archived_from, nc.last_view, nc.last_update
             FROM ${TableName.NotificationContext} nc`;
@@ -91,6 +91,7 @@ export class NotificationsDb extends BaseDb {
         const select = `
             SELECT n.message_id,
                    n.context,
+                   m.thread_id                 AS message_thread,
                    m.content                   AS message_content,
                    m.creator                   AS message_creator,
                    m.created                   AS message_created,
@@ -130,25 +131,19 @@ export class NotificationsDb extends BaseDb {
         const values: any[] = []
         let index = 1
 
-        if(workspace != null) {
+        if (workspace != null) {
             where.push(`nc.workspace_id = $${index++}`)
             values.push(workspace)
         }
 
-        if(personWorkspaces.length > 0) {
+        if (personWorkspaces.length > 0) {
             where.push(`nc.person_workspace IN (${personWorkspaces.map((it) => `$${index++}`).join(', ')})`)
             values.push(...personWorkspaces)
         }
 
-        for (const key of Object.keys(params)) {
-            const value = (params as any)[key]
-            switch (key) {
-                case 'card': {
-                    where.push(`nc.card_id = $${index++}`)
-                    values.push(value)
-                    break
-                }
-            }
+        if (params.card != null) {
+            where.push(`nc.card_id = $${index++}`)
+            values.push(params.card)
         }
 
         return {where: `WHERE ${where.join(' AND ')}`, values}
@@ -162,42 +157,33 @@ export class NotificationsDb extends BaseDb {
         const values: any[] = [personWorkspace]
         let index = 2
 
-        if(workspace != null) {
+        if (workspace != null) {
             where.push(`nc.workspace_id = $${index++}`)
             values.push(workspace)
         }
 
-        for (const key of Object.keys(params)) {
-            const value = (params as any)[key]
-            switch (key) {
-                case 'context': {
-                    where.push(`n.context = $${index++}`)
-                    values.push(value)
-                    break
-                }
-                case 'card': {
-                    where.push(`nc.card_id = $${index++}`)
-                    values.push(value)
-                    break
-                }
-                case 'read': {
-                    if (value === true) {
-                        where.push(`nc.last_view IS NOT NULL AND nc.last_view >= m.created`)
-                    } else if (value === false) {
-                        where.push(`(nc.last_view IS NULL OR nc.last_view > m.created)`)
-                    }
-                    break
-                }
-                case 'archived': {
-                    if (value === true) {
-                        where.push(`nc.archived_from IS NOT NULL AND nc.archived_from >= m.created`)
-                    } else if (value === false) {
-                        where.push(`(nc.archived_from IS NULL OR nc.archived_from > m.created)`)
-                    }
-                    break
-                }
-            }
+        if (params.context != null) {
+            where.push(`n.context = $${index++}`)
+            values.push(params.context)
         }
+
+
+        if (params.read === true) {
+            where.push(`nc.last_view IS NOT NULL AND nc.last_view >= m.created`)
+        }
+
+        if (params.read === false) {
+            where.push(`(nc.last_view IS NULL OR nc.last_view > m.created)`)
+        }
+
+        if (params.archived === true) {
+            where.push(`nc.archived_from IS NOT NULL AND nc.archived_from >= m.created`)
+        }
+
+        if (params.archived === false) {
+            where.push(`(nc.archived_from IS NULL OR nc.archived_from > m.created)`)
+        }
+
 
         return {where: `WHERE ${where.join(' AND ')}`, values}
     }
@@ -223,6 +209,7 @@ export class NotificationsDb extends BaseDb {
         return {
             message: {
                 id: row.id,
+                thread: row.message_thread,
                 content: lastPatch?.content ?? row.message_content,
                 creator: row.message_creator,
                 created,

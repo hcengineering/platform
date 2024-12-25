@@ -10,7 +10,8 @@ import type {
   Reaction,
   RichText,
   SocialID,
-  Notification
+  Notification,
+  ThreadID
 } from '@communication/types'
 
 export enum EventType {
@@ -57,18 +58,20 @@ export type Event =
 
 export interface CreateMessageEvent {
   type: EventType.CreateMessage
-  card: CardID
+  thread: ThreadID
   content: RichText
   creator: SocialID
 }
 
 export interface RemoveMessageEvent {
   type: EventType.RemoveMessage
+  thread: ThreadID
   message: MessageID
 }
 
 export interface CreatePatchEvent {
   type: EventType.CreatePatch
+  thread: ThreadID
   message: MessageID
   content: RichText
   creator: SocialID
@@ -76,6 +79,7 @@ export interface CreatePatchEvent {
 
 export interface CreateReactionEvent {
   type: EventType.CreateReaction
+  thread: ThreadID
   message: MessageID
   reaction: string
   creator: SocialID
@@ -83,6 +87,7 @@ export interface CreateReactionEvent {
 
 export interface RemoveReactionEvent {
   type: EventType.RemoveReaction
+  thread: ThreadID
   message: MessageID
   reaction: string
   creator: SocialID
@@ -90,6 +95,7 @@ export interface RemoveReactionEvent {
 
 export interface CreateAttachmentEvent {
   type: EventType.CreateAttachment
+  thread: ThreadID
   message: MessageID
   card: CardID
   creator: SocialID
@@ -97,6 +103,7 @@ export interface CreateAttachmentEvent {
 
 export interface RemoveAttachmentEvent {
   type: EventType.RemoveAttachment
+  thread: ThreadID
   message: MessageID
   card: CardID
 }
@@ -158,27 +165,30 @@ export type BroadcastEvent =
 
 export interface MessageCreatedEvent {
   type: EventType.MessageCreated
-  card: CardID
   message: Message
 }
 
 export interface MessageRemovedEvent {
   type: EventType.MessageRemoved
+  thread: ThreadID
   message: MessageID
 }
 
 export interface PatchCreatedEvent {
   type: EventType.PatchCreated
+  thread: ThreadID
   patch: Patch
 }
 
 export interface ReactionCreatedEvent {
   type: EventType.ReactionCreated
+  thread: ThreadID
   reaction: Reaction
 }
 
 export interface ReactionRemovedEvent {
   type: EventType.ReactionRemoved
+  thread: ThreadID
   message: MessageID
   reaction: string
   creator: SocialID
@@ -186,11 +196,13 @@ export interface ReactionRemovedEvent {
 
 export interface AttachmentCreatedEvent {
   type: EventType.AttachmentCreated
+  thread: ThreadID
   attachment: Attachment
 }
 
 export interface AttachmentRemovedEvent {
   type: EventType.AttachmentRemoved
+  thread: ThreadID
   message: MessageID
   card: CardID
 }

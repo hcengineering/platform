@@ -11,7 +11,8 @@ import {
   type FindNotificationContextParams,
   type NotificationContext,
   type FindNotificationsParams,
-  type Notification
+  type Notification,
+  type ThreadID
 } from '@communication/types'
 import type { DbAdapter } from '@communication/sdk-types'
 
@@ -31,12 +32,14 @@ export class CockroachAdapter implements DbAdapter {
     this.notification = new NotificationsDb(this.sqlClient)
   }
 
-  async createMessage(content: RichText, creator: SocialID, created: Date): Promise<MessageID> {
-    return await this.message.createMessage(content, creator, created)
-  }
-
-  async placeMessage(message: MessageID, card: CardID, workspace: string): Promise<void> {
-    return await this.message.placeMessage(message, card, workspace)
+  async createMessage(
+    workspace: string,
+    thread: ThreadID,
+    content: RichText,
+    creator: SocialID,
+    created: Date
+  ): Promise<MessageID> {
+    return await this.message.createMessage(workspace, thread, content, creator, created)
   }
 
   async createPatch(message: MessageID, content: RichText, creator: SocialID, created: Date): Promise<void> {

@@ -1,5 +1,4 @@
 import {
-    type CardID,
     type FindMessagesParams,
     type ID,
     type Message,
@@ -65,7 +64,7 @@ export class MessagesQuery extends BaseQuery<Message, FindMessagesParams> {
         const exists = this.result.get(message.id)
 
         if (exists !== undefined) return
-        if (!this.match(message, event.card)) return
+        if (!this.match(message)) return
 
         if (this.result.isTail()) {
             if (this.params.sort === SortOrder.Asc) {
@@ -77,11 +76,11 @@ export class MessagesQuery extends BaseQuery<Message, FindMessagesParams> {
         }
     }
 
-    private match(message: Message, card: CardID): boolean {
+    private match(message: Message): boolean {
         if (this.params.id != null && this.params.id !== message.id) {
             return false
         }
-        if (this.params.card != null && this.params.card !== card) {
+        if (this.params.thread != null && this.params.thread !== message.thread) {
             return false
         }
         return true

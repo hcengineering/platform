@@ -3,7 +3,7 @@
   "type": "module",
   "workspaces": ["packages/*"],
   "scripts": {
-    "build": "sh scripts/build.sh",
+    "build": "bun x tsc --noEmit && sh scripts/build.sh",
     "lint": "eslint packages/**/src/*.ts",
     "format": "prettier --write packages/**/src/*.ts && bun run lint"
   },

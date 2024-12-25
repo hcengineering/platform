@@ -2,6 +2,7 @@ import WebSocket, { WebSocketServer, type RawData } from 'ws'
 import { createDbAdapter } from '@communication/cockroach'
 import type { Response, HelloRequest } from '@communication/sdk-types'
 import { decodeToken } from '@hcengineering/server-token'
+import type { SocialID } from '@communication/types'
 
 import type { ConnectionInfo } from './types.ts'
 import { deserializeRequest, serializeResponse } from './utils/serialize.ts'
@@ -137,5 +138,5 @@ async function validateToken(token: string): Promise<ConnectionInfo> {
   }
 
   const personWorkspace = 'cd0aba36-1c4f-4170-95f2-27a12a5415f7'
-  return { workspace: info.workspaceId, personWorkspace, socialId: email }
+  return { workspace: info.workspaceId, personWorkspace, socialId: email as SocialID }
 }

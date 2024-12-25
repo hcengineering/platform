@@ -10,7 +10,10 @@ import {
   type FindNotificationContextParams,
   type NotificationContext,
   type FindNotificationsParams,
-  type Notification
+  type Notification,
+  type ThreadID,
+  type Attachment,
+  type Reaction
 } from '@communication/types'
 import {
   type Client,
@@ -30,16 +33,15 @@ class DbClient implements Client {
     private readonly personWorkspace: string
   ) {}
 
-  async createMessage(card: CardID, content: RichText, creator: SocialID): Promise<MessageID> {
+  async createMessage(thread: ThreadID, content: RichText, creator: SocialID): Promise<MessageID> {
     const created = new Date()
-    const id = await this.db.createMessage(content, creator, created)
-    await this.db.placeMessage(id, card, this.workspace)
+    const id = await this.db.createMessage(this.workspace, thread, content, creator, created)
 
     const event: MessageCreatedEvent = {
       type: EventType.MessageCreated,
-      card,
       message: {
         id,
+        thread,
         content,
         creator,
         created,
@@ -54,42 +56,42 @@ class DbClient implements Client {
     return id
   }
 
-  async removeMessage(message: MessageID) {
+  async removeMessage(thread: ThreadID, message: MessageID) {
     await this.db.removeMessage(message)
-    this.onEvent({ type: EventType.MessageRemoved, message })
+    this.onEvent({ type: EventType.MessageRemoved, message, thread })
   }
 
-  async createPatch(message: MessageID, content: RichText, creator: SocialID): Promise<void> {
+  async createPatch(thread: ThreadID, message: MessageID, content: RichText, creator: SocialID): Promise<void> {
     const created = new Date()
     await this.db.createPatch(message, content, creator, created)
-    this.onEvent({ type: EventType.PatchCreated, patch: { message, content, creator, created } })
+    this.onEvent({ type: EventType.PatchCreated, thread, patch: { message, content, creator, created } })
   }
 
-  async createReaction(message: MessageID, reaction: string, creator: SocialID): Promise<void> {
+  async createReaction(thread: ThreadID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
     const created = new Date()
     await this.db.createReaction(message, reaction, creator, created)
-    this.onEvent({ type: EventType.ReactionCreated, reaction: { message, reaction, creator, created } })
+    this.onEvent({ type: EventType.ReactionCreated, thread, reaction: { message, reaction, creator, created } })
   }
 
-  async removeReaction(message: MessageID, reaction: string, creator: SocialID): Promise<void> {
+  async removeReaction(thread: ThreadID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
     await this.db.removeReaction(message, reaction, creator)
-    this.onEvent({ type: EventType.ReactionRemoved, message, reaction, creator })
+    this.onEvent({ type: EventType.ReactionRemoved, thread, message, reaction, creator })
   }
 
-  async createAttachment(message: MessageID, card: CardID, creator: SocialID): Promise<void> {
+  async createAttachment(thread: ThreadID, message: MessageID, card: CardID, creator: SocialID): Promise<void> {
     const created = new Date()
     await this.db.createAttachment(message, card, creator, created)
-    this.onEvent({ type: EventType.AttachmentCreated, attachment: { message, card, creator, created } })
+    this.onEvent({ type: EventType.AttachmentCreated, thread, attachment: { message, card, creator, created } })
   }
 
-  async removeAttachment(message: MessageID, card: CardID): Promise<void> {
+  async removeAttachment(thread: ThreadID, message: MessageID, card: CardID): Promise<void> {
     await this.db.removeAttachment(message, card)
-    this.onEvent({ type: EventType.AttachmentRemoved, message, card })
+    this.onEvent({ type: EventType.AttachmentRemoved, message, card, thread })
   }
 
   async findMessages(params: FindMessagesParams): Promise<Message[]> {
     const rawMessages = await this.db.findMessages(this.workspace, params)
-    return rawMessages.map(this.toMessage)
+    return rawMessages.map((it) => this.toMessage(it))
   }
 
   async findMessage(params: FindMessagesParams): Promise<Message | undefined> {
@@ -99,15 +101,33 @@ class DbClient implements Client {
   toMessage(raw: any): Message {
     return {
       id: raw.id,
+      thread: raw.thread,
       content: raw.content,
       creator: raw.creator,
       created: new Date(raw.created),
       edited: new Date(raw.edited),
-      reactions: raw.reactions,
-      attachments: raw.attachments
+      reactions: raw.reactions.map((it: any) => this.toReaction(it)),
+      attachments: raw.attachments.map((it: any) => this.toAttachment(it))
     }
   }
 
+  toAttachment(raw: any): Attachment {
+    return {
+      message: raw.message,
+      card: raw.card,
+      creator: raw.creator,
+      created: new Date(raw.created)
+    }
+  }
+
+  toReaction(raw: any): Reaction {
+    return {
+      message: raw.message,
+      reaction: raw.reaction,
+      creator: raw.creator,
+      created: new Date(raw.created)
+    }
+  }
   async createNotification(message: MessageID, context: ContextID): Promise<void> {
     await this.db.createNotification(message, context)
   }
@@ -117,7 +137,7 @@ class DbClient implements Client {
   }
 
   async createNotificationContext(card: CardID, lastView?: Date, lastUpdate?: Date): Promise<ContextID> {
-    return await this.db.createContext(this.workspace, card, this.personWorkspace, lastView, lastUpdate)
+    return await this.db.createContext(this.personWorkspace, this.workspace, card, lastView, lastUpdate)
   }
 
   async updateNotificationContext(context: ContextID, update: NotificationContextUpdate): Promise<void> {
