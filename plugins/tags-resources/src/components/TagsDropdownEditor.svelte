@@ -67,7 +67,7 @@
           if (result.action === 'add') {
             void addRef(result.tag)
           } else if (result.action === 'remove') {
-            const filtered = items.filter((it) => it.tag ? it.tag === result.tag._id : it._id === result.tag._id)
+            const filtered = items.filter((it) => (it.tag ? it.tag === result.tag._id : it._id === result.tag._id))
             if (filtered.length > 0) {
               void removeTag(filtered[0].tag ?? filtered[0]._id)
             }
