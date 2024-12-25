@@ -237,6 +237,15 @@
                 const index = taskType.statuses.findIndex((p) => p === evt.detail.stateID)
                 const state = taskType.statuses.splice(index, 1)[0]
 
+                if (evt.detail.newCategory !== undefined) {
+                  const stateDoc = $statusStore.byId.get(evt.detail.stateID)
+                  if (stateDoc !== undefined) {
+                    await client.update(stateDoc, {
+                      category: evt.detail.newCategory
+                    })
+                  }
+                }
+
                 const statuses = [
                   ...taskType.statuses.slice(0, evt.detail.position),
                   state,
