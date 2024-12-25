@@ -794,6 +794,7 @@ export interface ViewOptionsModel {
   orderBy: OrderOption[]
   other: ViewOptionModel[]
   groupDepth?: number
+  storageKey?: string
 }
 
 /**

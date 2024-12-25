@@ -31,8 +31,11 @@ export function isDropdownType (viewOption: ViewOptionModel): viewOption is Drop
   return viewOption.type === 'dropdown'
 }
 
-export function makeViewOptionsKey (viewlet: Ref<Viewlet>, variant?: string): string {
-  const prefix = viewlet + (variant !== undefined ? `-${variant}` : '')
+function makeViewOptionsKey (viewlet: Viewlet, variant?: string, ignoreViewletKey = false): string {
+  const prefix =
+    viewlet.viewOptions?.storageKey !== undefined && !ignoreViewletKey
+      ? viewlet.viewOptions.storageKey
+      : viewlet._id + (variant !== undefined ? `-${variant}` : '')
   const loc = getCurrentResolvedLocation()
   loc.fragment = undefined
   loc.query = undefined
@@ -40,7 +43,7 @@ export function makeViewOptionsKey (viewlet: Ref<Viewlet>, variant?: string): st
 }
 
 export function setViewOptions (viewlet: Viewlet, options: ViewOptions): void {
-  const key = makeViewOptionsKey(viewlet._id, viewlet.variant)
+  const key = makeViewOptionsKey(viewlet, viewlet.variant)
   localStorage.setItem(key, JSON.stringify(options))
   setStore(key, options)
 }
@@ -52,13 +55,19 @@ function setStore (key: string, options: ViewOptions): void {
 }
 
 function _getViewOptions (viewlet: Viewlet, viewOptionStore: Map<string, ViewOptions>): ViewOptions | null {
-  const key = makeViewOptionsKey(viewlet._id, viewlet.variant)
+  const key = makeViewOptionsKey(viewlet, viewlet.variant)
   const store = viewOptionStore.get(key)
   if (store !== undefined) {
     return store
   }
-  const options = localStorage.getItem(key)
-  if (options === null) return null
+  let options = localStorage.getItem(key)
+  if (options === null) {
+    const key = makeViewOptionsKey(viewlet, viewlet.variant, true)
+    options = localStorage.getItem(key)
+    if (options === null) {
+      return null
+    }
+  }
   const res = JSON.parse(options)
   setStore(key, res)
   return res
