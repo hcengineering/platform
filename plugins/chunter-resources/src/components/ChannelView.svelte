@@ -30,6 +30,7 @@
   import { Channel, ObjectChatPanel } from '@hcengineering/chunter'
   import view from '@hcengineering/view'
   import { messageInFocus } from '@hcengineering/activity-resources'
+  import { Presence } from '@hcengineering/presence-resources'
 
   import ChannelComponent from './Channel.svelte'
   import ChannelHeader from './ChannelHeader.svelte'
@@ -102,6 +103,8 @@
     isAsideShown = isAsideShown ?? objectChatPanel?.openByDefault === true
   }
 </script>
+
+<Presence {object} />
 
 <div class="popupPanel">
   <ChannelHeader

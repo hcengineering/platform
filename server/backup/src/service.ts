@@ -189,6 +189,7 @@ class BackupWorker {
         )
         const wsUrl: WorkspaceIdWithUrl = {
           name: ws.workspace,
+          uuid: ws.uuid,
           workspaceName: ws.workspaceName ?? '',
           workspaceUrl: ws.workspaceUrl ?? ''
         }
@@ -217,7 +218,7 @@ class BackupWorker {
                 this.workspaceStorageAdapter
               )
               try {
-                await txAdapter.init?.()
+                await txAdapter.init?.(ctx)
 
                 return (
                   await txAdapter.rawFindAll<Tx>(
@@ -360,6 +361,7 @@ export async function doRestoreWorkspace (
     const storage = await createStorageBackupStorage(ctx, backupAdapter, getWorkspaceId(bucketName), ws.workspace)
     const wsUrl: WorkspaceIdWithUrl = {
       name: ws.workspace,
+      uuid: ws.uuid,
       workspaceName: ws.workspaceName ?? '',
       workspaceUrl: ws.workspaceUrl ?? ''
     }

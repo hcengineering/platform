@@ -18,10 +18,18 @@ import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-servic
 import { startBackup } from '@hcengineering/backup-service'
 import { MeasureMetricsContext, newMetrics, type Tx } from '@hcengineering/core'
 import { initStatisticsContext, type PipelineFactory } from '@hcengineering/server-core'
-import { createBackupPipeline, getConfig } from '@hcengineering/server-pipeline'
+import {
+  createBackupPipeline,
+  getConfig,
+  registerAdapterFactory,
+  registerDestroyFactory,
+  registerTxAdapterFactory
+} from '@hcengineering/server-pipeline'
 import { join } from 'path'
 
 import { readFileSync } from 'node:fs'
+import { createMongoTxAdapter, createMongoAdapter, createMongoDestroyAdapter } from '@hcengineering/mongo'
+import { createPostgresTxAdapter, createPostgresAdapter, createPostgreeDestroyAdapter } from '@hcengineering/postgres'
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
 const metricsContext = initStatisticsContext('backup', {
@@ -42,6 +50,14 @@ const sentryDSN = process.env.SENTRY_DSN
 
 configureAnalytics(sentryDSN, {})
 Analytics.setTag('application', 'backup-service')
+
+registerTxAdapterFactory('mongodb', createMongoTxAdapter)
+registerAdapterFactory('mongodb', createMongoAdapter)
+registerDestroyFactory('mongodb', createMongoDestroyAdapter)
+
+registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
+registerAdapterFactory('postgresql', createPostgresAdapter, true)
+registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
 
 startBackup(
   metricsContext,

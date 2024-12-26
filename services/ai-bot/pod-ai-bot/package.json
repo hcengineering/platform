@@ -39,7 +39,7 @@
     "@types/ws": "^8.5.11",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
-    "esbuild": "^0.20.0",
+    "esbuild": "^0.24.2",
     "eslint": "^8.54.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "eslint-plugin-import": "^2.26.0",
@@ -76,11 +76,11 @@
     "@hcengineering/love": "^0.6.0",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
-    "express": "^4.19.2",
+    "express": "^4.21.2",
     "fast-equals": "^5.0.1",
     "form-data": "^4.0.0",
     "js-tiktoken": "^1.0.14",
-    "mongodb": "^6.10.0",
+    "mongodb": "^6.12.0",
     "openai": "^4.56.0",
     "ws": "^8.18.0"
   }

@@ -16,12 +16,17 @@
 import platform, { type Plugin, addLocation, addStringsLoader, platformId } from '@hcengineering/platform'
 
 import { activityId } from '@hcengineering/activity'
+import aiBot, { aiBotId } from '@hcengineering/ai-bot'
+import analyticsCollector, { analyticsCollectorId } from '@hcengineering/analytics-collector'
 import { attachmentId } from '@hcengineering/attachment'
 import { boardId } from '@hcengineering/board'
 import calendar, { calendarId } from '@hcengineering/calendar'
 import { chunterId } from '@hcengineering/chunter'
 import client, { clientId } from '@hcengineering/client'
 import contactPlugin, { contactId } from '@hcengineering/contact'
+import { documentsId } from '@hcengineering/controlled-documents'
+import { desktopPreferencesId } from '@hcengineering/desktop-preferences'
+import { diffviewId } from '@hcengineering/diffview'
 import { documentId } from '@hcengineering/document'
 import { driveId } from '@hcengineering/drive'
 import gmail, { gmailId } from '@hcengineering/gmail'
@@ -31,47 +36,47 @@ import { imageCropperId } from '@hcengineering/image-cropper'
 import { inventoryId } from '@hcengineering/inventory'
 import { leadId } from '@hcengineering/lead'
 import login, { loginId } from '@hcengineering/login'
+import love, { loveId } from '@hcengineering/love'
 import notification, { notificationId } from '@hcengineering/notification'
 import onboard, { onboardId } from '@hcengineering/onboard'
+import print, { printId } from '@hcengineering/print'
+import { productsId } from '@hcengineering/products'
+import { questionsId } from '@hcengineering/questions'
 import { recruitId } from '@hcengineering/recruit'
 import rekoni from '@hcengineering/rekoni'
 import { requestId } from '@hcengineering/request'
 import { settingId } from '@hcengineering/setting'
+import sign from '@hcengineering/sign'
 import { supportId } from '@hcengineering/support'
 import { tagsId } from '@hcengineering/tags'
 import { taskId } from '@hcengineering/task'
 import telegram, { telegramId } from '@hcengineering/telegram'
 import { templatesId } from '@hcengineering/templates'
+import textEditor, { textEditorId } from '@hcengineering/text-editor'
 import { timeId } from '@hcengineering/time'
 import tracker, { trackerId } from '@hcengineering/tracker'
+import { trainingId } from '@hcengineering/training'
 import uiPlugin from '@hcengineering/ui'
+import { uploaderId } from '@hcengineering/uploader'
 import { viewId } from '@hcengineering/view'
 import workbench, { workbenchId } from '@hcengineering/workbench'
-import love, { loveId } from '@hcengineering/love'
-import print, { printId } from '@hcengineering/print'
-import sign from '@hcengineering/sign'
-import { desktopPreferencesId } from '@hcengineering/desktop-preferences'
-import { diffviewId } from '@hcengineering/diffview'
-import { productsId } from '@hcengineering/products'
-import { questionsId } from '@hcengineering/questions'
-import { trainingId } from '@hcengineering/training'
-import { documentsId } from '@hcengineering/controlled-documents'
-import textEditor, { textEditorId } from '@hcengineering/text-editor'
-import analyticsCollector, {analyticsCollectorId} from '@hcengineering/analytics-collector'
-import { uploaderId } from '@hcengineering/uploader'
-import aiBot, { aiBotId } from '@hcengineering/ai-bot'
 import { testManagementId } from '@hcengineering/test-management'
 import { surveyId } from '@hcengineering/survey'
+import presence, { presenceId } from '@hcengineering/presence'
 
 import { bitrixId } from '@hcengineering/bitrix'
 
 import '@hcengineering/activity-assets'
+import '@hcengineering/analytics-collector-assets'
 import '@hcengineering/attachment-assets'
 import '@hcengineering/bitrix-assets'
 import '@hcengineering/board-assets'
 import '@hcengineering/calendar-assets'
 import '@hcengineering/chunter-assets'
 import '@hcengineering/contact-assets'
+import '@hcengineering/controlled-documents-assets'
+import '@hcengineering/desktop-preferences-assets'
+import '@hcengineering/diffview-assets'
 import '@hcengineering/document-assets'
 import '@hcengineering/drive-assets'
 import '@hcengineering/gmail-assets'
@@ -80,8 +85,12 @@ import '@hcengineering/hr-assets'
 import '@hcengineering/inventory-assets'
 import '@hcengineering/lead-assets'
 import '@hcengineering/login-assets'
+import '@hcengineering/love-assets'
 import '@hcengineering/notification-assets'
 import '@hcengineering/preference-assets'
+import '@hcengineering/print-assets'
+import '@hcengineering/products-assets'
+import '@hcengineering/questions-assets'
 import '@hcengineering/recruit-assets'
 import '@hcengineering/request-assets'
 import '@hcengineering/setting-assets'
@@ -90,21 +99,13 @@ import '@hcengineering/tags-assets'
 import '@hcengineering/task-assets'
 import '@hcengineering/telegram-assets'
 import '@hcengineering/templates-assets'
+import '@hcengineering/text-editor-assets'
 import '@hcengineering/time-assets'
 import '@hcengineering/tracker-assets'
+import '@hcengineering/training-assets'
+import '@hcengineering/uploader-assets'
 import '@hcengineering/view-assets'
 import '@hcengineering/workbench-assets'
-import '@hcengineering/love-assets'
-import '@hcengineering/print-assets'
-import '@hcengineering/desktop-preferences-assets'
-import '@hcengineering/diffview-assets'
-import '@hcengineering/questions-assets'
-import '@hcengineering/training-assets'
-import '@hcengineering/products-assets'
-import '@hcengineering/controlled-documents-assets'
-import '@hcengineering/analytics-collector-assets'
-import '@hcengineering/text-editor-assets'
-import '@hcengineering/uploader-assets'
 import '@hcengineering/test-management-assets'
 import '@hcengineering/survey-assets'
 
@@ -120,12 +121,12 @@ import presentation, {
 } from '@hcengineering/presentation'
 
 import { setMetadata } from '@hcengineering/platform'
-import { setDefaultLanguage, initThemeStore } from '@hcengineering/theme'
+import { initThemeStore, setDefaultLanguage } from '@hcengineering/theme'
 
+import { Analytics } from '@hcengineering/analytics'
 import { preferenceId } from '@hcengineering/preference'
 import { uiId } from '@hcengineering/ui/src/plugin'
 import { configureAnalytics } from './analytics'
-import { Analytics } from '@hcengineering/analytics'
 
 export interface Config {
   ACCOUNTS_URL: string
@@ -161,6 +162,9 @@ export interface Config {
   PREVIEW_CONFIG?: string
   UPLOAD_CONFIG?: string
   STATS_URL?: string
+  PRESENCE_URL?: string
+  USE_BINARY_PROTOCOL?: boolean,
+  TRANSACTOR_OVERRIDE?: string
 }
 
 export interface Branding {
@@ -182,9 +186,15 @@ export interface Branding {
 
 export type BrandingMap = Record<string, Branding>
 
-const devConfig = process.env.CLIENT_TYPE === 'dev-production'
-const devConfigHuly = process.env.CLIENT_TYPE === 'dev-huly'
-const devConfigBold = process.env.CLIENT_TYPE === 'dev-bold'
+const clientType = process.env.CLIENT_TYPE
+const configs: Record<string, string> = { 
+  'dev-production': '/config-dev.json',
+  'dev-huly': '/config-huly.json',
+  'dev-bold': '/config.json',
+  'dev-server': '/config.json',
+  'dev-worker': '/config-worker.json',
+  'dev-worker-local': '/config-worker-local.json',
+}
 
 function configureI18n(): void {
    //Add localization
@@ -248,19 +258,13 @@ export async function configurePlatform() {
         if (err.message.includes('Loading chunk') && i != 4) {
           continue
         }
-        Analytics.handleError(err)
         location.reload()
       }
     }
   })
   configureI18n()
 
-  const config: Config = await loadServerConfig(
-    devConfigHuly
-      ? '/config-huly.json' : (
-        devConfigBold ? '/config-bold.json' : ( 
-          devConfig ? '/config-dev.json' : '/config.json'))
-  )
+  const config: Config = await loadServerConfig(configs[clientType] ?? '/config.json')
   const branding: BrandingMap = config.BRANDING_URL !== undefined ? await (await fetch(config.BRANDING_URL)).json() : {}
   const myBranding = branding[window.location.host] ?? {}
 
@@ -300,6 +304,7 @@ export async function configurePlatform() {
 
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(login.metadata.DisableSignUp, config.DISABLE_SIGNUP === 'true')
+  
   setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
@@ -339,8 +344,9 @@ export async function configurePlatform() {
   setMetadata(love.metadata.WebSocketURL, config.LIVEKIT_WS)
   setMetadata(print.metadata.PrintURL, config.PRINT_URL)
   setMetadata(sign.metadata.SignURL, config.SIGN_URL)
+  setMetadata(presence.metadata.PresenceUrl, config.PRESENCE_URL ?? '')
 
-  const languages = myBranding.languages ? (myBranding.languages as string).split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'zh']
+  const languages = myBranding.languages ? (myBranding.languages as string).split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it']
 
   setMetadata(uiPlugin.metadata.Languages, languages)
 
@@ -406,13 +412,15 @@ export async function configurePlatform() {
   addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
   addLocation(uploaderId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/uploader-resources'))
   addLocation(testManagementId, () => import(/* webpackChunkName: "test-management" */ '@hcengineering/test-management-resources'))
-  addLocation(surveyId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/survey-resources'))
+  addLocation(surveyId, () => import(/* webpackChunkName: "survey" */ '@hcengineering/survey-resources'))
+  addLocation(presenceId, () => import(/* webpackChunkName: "presence" */ '@hcengineering/presence-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
+  setMetadata(login.metadata.TransactorOverride, config.TRANSACTOR_OVERRIDE)
 
   // Use binary response transfer for faster performance and small transfer sizes.
-  setMetadata(client.metadata.UseBinaryProtocol, true)
+  setMetadata(client.metadata.UseBinaryProtocol, config.USE_BINARY_PROTOCOL ?? true)
   // Disable for now, since it causes performance issues on linux/docker/kubernetes boxes for now.
   setMetadata(client.metadata.UseProtocolCompression, true)
 

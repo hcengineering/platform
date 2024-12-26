@@ -202,6 +202,7 @@
     </svelte:fragment>
     <svelte:fragment slot="actions">
       <slot name="actions" />
+      <slot name="presence" />
       <slot name="pre-utils" />
       <slot name="utils" />
       {#if useMaxWidth !== undefined}

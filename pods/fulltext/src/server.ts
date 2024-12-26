@@ -30,7 +30,9 @@ import {
   LowLevelMiddleware,
   ModelMiddleware
 } from '@hcengineering/middleware'
+import { createMongoAdapter, createMongoDestroyAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
 import { PlatformError, setMetadata, unknownError } from '@hcengineering/platform'
+import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
 import serverClientPlugin, { getTransactorEndpoint, getWorkspaceInfo } from '@hcengineering/server-client'
 import serverCore, {
   createContentAdapter,
@@ -43,7 +45,14 @@ import serverCore, {
   type StorageAdapter
 } from '@hcengineering/server-core'
 import { FullTextIndexPipeline, searchFulltext, type FulltextDBConfiguration } from '@hcengineering/server-indexer'
-import { getConfig, registerServerPlugins, registerStringLoaders } from '@hcengineering/server-pipeline'
+import {
+  getConfig,
+  registerAdapterFactory,
+  registerDestroyFactory,
+  registerServerPlugins,
+  registerStringLoaders,
+  registerTxAdapterFactory
+} from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken, type Token } from '@hcengineering/server-token'
 import cors from '@koa/cors'
 import Koa from 'koa'
@@ -198,6 +207,14 @@ export async function startIndexer (
   setMetadata(serverCore.metadata.ElasticIndexName, opt.elasticIndexName)
   setMetadata(serverClientPlugin.metadata.Endpoint, opt.accountsUrl)
 
+  registerTxAdapterFactory('mongodb', createMongoTxAdapter)
+  registerAdapterFactory('mongodb', createMongoAdapter)
+  registerDestroyFactory('mongodb', createMongoDestroyAdapter)
+
+  registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
+  registerAdapterFactory('postgresql', createPostgresAdapter, true)
+  registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+
   registerServerPlugins()
   registerStringLoaders()
 
@@ -247,6 +264,7 @@ export async function startIndexer (
         opt.model,
         {
           ...workspace,
+          uuid: workspaceInfo.uuid,
           workspaceName: workspaceInfo.workspaceName ?? workspaceInfo.workspace,
           workspaceUrl: workspaceInfo.workspaceUrl ?? workspaceInfo.workspace
         },

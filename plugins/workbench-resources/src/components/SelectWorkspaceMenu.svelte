@@ -189,7 +189,10 @@
                   {#if isAdmin && ws.lastVisit != null && ws.lastVisit !== 0}
                     <div class="text-sm">
                       {#if ws.backupInfo != null}
-                        {@const sz = ws.backupInfo.dataSize + ws.backupInfo.blobsSize}
+                        {@const sz = Math.max(
+                          ws.backupInfo.backupSize,
+                          ws.backupInfo.dataSize + ws.backupInfo.blobsSize
+                        )}
                         {@const szGb = Math.round((sz * 100) / 1024) / 100}
                         {#if szGb > 0}
                           {Math.round((sz * 100) / 1024) / 100}Gb -

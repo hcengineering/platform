@@ -39,8 +39,11 @@ export interface BlobRecord extends BlobId {
   deleted: boolean
 }
 
-export interface BlobRecordWithFilename extends BlobRecord {
-  filename: string
+export type BlobWithDataRecord = BlobRecord & BlobDataRecord
+
+export interface ListBlobResult {
+  cursor: string | undefined
+  blobs: BlobWithDataRecord[]
 }
 
 export async function withPostgres<T> (
@@ -72,7 +75,8 @@ export async function withPostgres<T> (
 export interface BlobDB {
   getData: (dataId: BlobDataId) => Promise<BlobDataRecord | null>
   createData: (data: BlobDataRecord) => Promise<void>
-  getBlob: (blobId: BlobId) => Promise<BlobRecordWithFilename | null>
+  listBlobs: (workspace: string, cursor?: string, limit?: number) => Promise<ListBlobResult>
+  getBlob: (blobId: BlobId) => Promise<BlobWithDataRecord | null>
   createBlob: (blob: Omit<BlobRecord, 'filename' | 'deleted'>) => Promise<void>
   deleteBlob: (blob: BlobId) => Promise<void>
 }
@@ -99,12 +103,12 @@ export class PostgresDB implements BlobDB {
     `
   }
 
-  async getBlob (blobId: BlobId): Promise<BlobRecordWithFilename | null> {
+  async getBlob (blobId: BlobId): Promise<BlobWithDataRecord | null> {
     const { workspace, name } = blobId
 
     try {
-      const rows = await this.sql<BlobRecordWithFilename[]>`
-        SELECT b.workspace, b.name, b.hash, b.location, b.deleted, d.filename
+      const rows = await this.sql<BlobWithDataRecord[]>`
+        SELECT b.workspace, b.name, b.hash, b.location, b.deleted, d.filename, d.size, d.type
         FROM blob.blob AS b
         JOIN blob.data AS d ON b.hash = d.hash AND b.location = d.location
         WHERE b.workspace = ${workspace} AND b.name = ${name}
@@ -118,6 +122,25 @@ export class PostgresDB implements BlobDB {
     }
 
     return null
+  }
+
+  async listBlobs (workspace: string, cursor?: string, limit?: number): Promise<ListBlobResult> {
+    cursor = cursor ?? ''
+    limit = Math.min(limit ?? 100, 1000)
+
+    const rows = await this.sql<BlobWithDataRecord[]>`
+      SELECT b.workspace, b.name, b.hash, b.location, b.deleted, d.filename, d.size, d.type
+      FROM blob.blob AS b
+      JOIN blob.data AS d ON b.hash = d.hash AND b.location = d.location
+      WHERE b.workspace = ${workspace} AND b.name > ${cursor} AND b.deleted = false
+      ORDER BY b.workspace, b.name
+      LIMIT ${limit}
+    `
+
+    return {
+      cursor: rows.length > 0 ? rows[rows.length - 1].name : undefined,
+      blobs: rows
+    }
   }
 
   async createBlob (blob: Omit<BlobRecord, 'filename' | 'deleted'>): Promise<void> {
@@ -154,8 +177,12 @@ export class LoggedDB implements BlobDB {
     await this.ctx.with('db.createData', () => this.db.createData(data))
   }
 
-  async getBlob (blobId: BlobId): Promise<BlobRecordWithFilename | null> {
+  async getBlob (blobId: BlobId): Promise<BlobWithDataRecord | null> {
     return await this.ctx.with('db.getBlob', () => this.db.getBlob(blobId))
+  }
+
+  async listBlobs (workspace: string, cursor?: string, limit?: number): Promise<ListBlobResult> {
+    return await this.ctx.with('db.listBlobs', () => this.db.listBlobs(workspace, cursor, limit))
   }
 
   async createBlob (blob: Omit<BlobRecord, 'filename' | 'deleted'>): Promise<void> {

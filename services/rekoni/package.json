@@ -62,7 +62,7 @@
     "ts-node": "^10.8.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3",
-    "esbuild": "^0.20.0",
+    "esbuild": "^0.24.2",
     "eslint-plugin-n": "^15.4.0",
     "prettier": "^3.1.0",
     "@types/morgan": "~1.9.9"
@@ -75,7 +75,7 @@
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
     "email-addresses": "^5.0.0",
-    "express": "^4.19.2",
+    "express": "^4.21.2",
     "express-form-data": "^2.0.22",
     "html-to-text": "^9.0.3",
     "jimp": "^0.16.1",

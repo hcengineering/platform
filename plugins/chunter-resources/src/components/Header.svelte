@@ -33,6 +33,7 @@
   import { Doc, Ref } from '@hcengineering/core'
   import { ActivityMessagesFilter } from '@hcengineering/activity'
   import workbench from '@hcengineering/workbench'
+  import { PresenceAvatars } from '@hcengineering/presence-resources'
 
   import { userSearch } from '../index'
   import chunter from '../plugin'
@@ -53,6 +54,7 @@
   export let titleKind: 'default' | 'breadcrumbs' = 'default'
   export let withFilters: boolean = false
   export let withSearch: boolean = true
+  export let withPresence: boolean = true
   export let filters: Ref<ActivityMessagesFilter>[] = []
   export let adaptive: HeaderAdaptive = 'default'
   export let hideActions: boolean = false
@@ -115,6 +117,12 @@
   <svelte:fragment slot="description">
     {#if description}
       <div class="overflow-label content-dark-color text-sm pl-2 mt--1" title={description}>{description}</div>
+    {/if}
+  </svelte:fragment>
+
+  <svelte:fragment slot="presence">
+    {#if withPresence && object}
+      <PresenceAvatars {object} size="x-small" limit={4} />
     {/if}
   </svelte:fragment>
 

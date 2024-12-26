@@ -15,7 +15,13 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import client, { ClientSocket, ClientSocketReadyState, type ClientFactoryOptions } from '@hcengineering/client'
+import client, {
+  ClientSocket,
+  ClientSocketReadyState,
+  pingConst,
+  pongConst,
+  type ClientFactoryOptions
+} from '@hcengineering/client'
 import core, {
   Account,
   Class,
@@ -44,10 +50,11 @@ import core, {
 } from '@hcengineering/core'
 import platform, {
   PlatformError,
+  Severity,
+  Status,
   UNAUTHORIZED,
   broadcastEvent,
-  getMetadata,
-  unknownError
+  getMetadata
 } from '@hcengineering/platform'
 
 import { HelloRequest, HelloResponse, RPCHandler, ReqId, type Response } from '@hcengineering/rpc'
@@ -160,7 +167,7 @@ class Connection implements ClientConnection {
       if (!this.closed) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         void this.sendRequest({
-          method: 'ping',
+          method: pingConst,
           params: [],
           once: true,
           handleResult: async (result) => {
@@ -317,8 +324,8 @@ class Connection implements ClientConnection {
       }
       return
     }
-    if (resp.result === 'ping') {
-      void this.sendRequest({ method: 'ping', params: [] })
+    if (resp.result === pingConst) {
+      void this.sendRequest({ method: pingConst, params: [] })
       return
     }
     if (resp.id !== undefined) {
@@ -461,6 +468,27 @@ class Connection implements ClientConnection {
       if (this.websocket !== wsocket) {
         return
       }
+      if (event.data === pongConst) {
+        this.pingResponse = Date.now()
+        return
+      }
+      if (event.data === pingConst) {
+        void this.sendRequest({ method: pingConst, params: [] })
+        return
+      }
+      if (
+        event.data instanceof ArrayBuffer &&
+        (event.data.byteLength === pingConst.length || event.data.byteLength === pongConst.length)
+      ) {
+        const text = new TextDecoder().decode(event.data)
+        if (text === pingConst) {
+          void this.sendRequest({ method: pingConst, params: [] })
+        }
+        if (text === pongConst) {
+          this.pingResponse = Date.now()
+        }
+        return
+      }
       if (event.data instanceof Blob) {
         void event.data.arrayBuffer().then((data) => {
           const resp = this.rpcHandler.readResponse<any>(data, this.binaryMode)
@@ -524,7 +552,7 @@ class Connection implements ClientConnection {
   }): Promise<any> {
     return this.ctx.newChild('send-request', {}).with(data.method, {}, async (ctx) => {
       if (this.closed) {
-        throw new PlatformError(unknownError('connection closed'))
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.ConnectionClosed, {}))
       }
 
       if (data.once === true) {
@@ -546,23 +574,30 @@ class Connection implements ClientConnection {
       if (w instanceof Promise) {
         await w
       }
-      this.requests.set(id, promise)
+      if (data.method !== pingConst) {
+        this.requests.set(id, promise)
+      }
       const sendData = (): void => {
         if (this.websocket?.readyState === ClientSocketReadyState.OPEN) {
           promise.startTime = Date.now()
 
-          const dta = ctx.withSync('serialize', {}, () =>
-            this.rpcHandler.serialize(
-              {
-                method: data.method,
-                params: data.params,
-                id,
-                time: Date.now()
-              },
-              this.binaryMode
+          if (data.method !== pingConst) {
+            const dta = ctx.withSync('serialize', {}, () =>
+              this.rpcHandler.serialize(
+                {
+                  method: data.method,
+                  params: data.params,
+                  id,
+                  time: Date.now()
+                },
+                this.binaryMode
+              )
             )
-          )
-          ctx.withSync('send-data', {}, () => this.websocket?.send(dta))
+
+            ctx.withSync('send-data', {}, () => this.websocket?.send(dta))
+          } else {
+            this.websocket?.send(pingConst)
+          }
         }
       }
       if (data.allowReconnect ?? true) {
@@ -579,7 +614,9 @@ class Connection implements ClientConnection {
         sendData()
       })
       void ctx.with('broadcast-event', {}, () => broadcastEvent(client.event.NetworkRequests, this.requests.size))
-      return await promise.promise
+      if (data.method !== pingConst) {
+        return await promise.promise
+      }
     })
   }
 

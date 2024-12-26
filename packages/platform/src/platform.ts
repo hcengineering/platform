@@ -131,6 +131,7 @@ export default plugin(platformId, {
     BadError: '' as StatusCode,
     UnknownError: '' as StatusCode<{ message: string }>,
     InvalidId: '' as StatusCode<{ id: string }>,
+    ConnectionClosed: '' as StatusCode,
 
     LoadingPlugin: '' as StatusCode<{ plugin: string }>,
     NoLocationForPlugin: '' as StatusCode<{ plugin: Plugin }>,
@@ -154,7 +155,8 @@ export default plugin(platformId, {
     AccountAlreadyConfirmed: '' as StatusCode<{ account: string }>,
     WorkspaceAlreadyExists: '' as StatusCode<{ workspace: string }>,
     WorkspaceRateLimit: '' as StatusCode<{ workspace: string }>,
-    InvalidOtp: '' as StatusCode
+    InvalidOtp: '' as StatusCode,
+    InviteNotFound: '' as StatusCode<{ email: string }>
   },
   metadata: {
     locale: '' as Metadata<string>,

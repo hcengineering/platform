@@ -16,9 +16,10 @@
 import activity, { DocUpdateMessage } from '@hcengineering/activity'
 import { loadCollabJson, loadCollabYdoc, saveCollabJson, saveCollabYdoc } from '@hcengineering/collaboration'
 import { decodeDocumentId } from '@hcengineering/collaborator-client'
-import core, { AttachedData, MeasureContext, TxOperations } from '@hcengineering/core'
+import core, { AttachedData, MeasureContext, Ref, Space, TxOperations } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
-import { markupToYDocNoSchema, areEqualMarkups } from '@hcengineering/text'
+import { areEqualMarkups } from '@hcengineering/text'
+import { markupToYDocNoSchema } from '@hcengineering/text-ydoc'
 import { Doc as YDoc } from 'yjs'
 
 import { Context } from '../context'
@@ -173,6 +174,8 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     await ctx.with('update', {}, () => client.diffUpdate(current, { [objectAttr]: blobId }))
 
     await ctx.with('activity', {}, () => {
+      const space = hierarchy.isDerived(current._class, core.class.Space) ? (current._id as Ref<Space>) : current.space
+
       const data: AttachedData<DocUpdateMessage> = {
         objectId,
         objectClass,
@@ -189,7 +192,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       }
       return client.addCollection(
         activity.class.DocUpdateMessage,
-        current.space,
+        space,
         current._id,
         current._class,
         'docUpdateMessages',

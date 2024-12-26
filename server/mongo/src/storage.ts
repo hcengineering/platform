@@ -266,7 +266,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     return this.db.collection(domain).deleteMany(this.translateRawQuery(query)).then()
   }
 
-  abstract init (): Promise<void>
+  abstract init (ctx: MeasureContext): Promise<void>
 
   collection<TSchema extends Document = Document>(domain: Domain): Collection<TSchema> {
     return this._db.collection(domain)
@@ -1175,7 +1175,7 @@ interface OperationBulk {
 }
 
 class MongoAdapter extends MongoAdapterBase {
-  async init (): Promise<void> {
+  async init (ctx: MeasureContext): Promise<void> {
     await this._db.init()
   }
 
@@ -1511,7 +1511,7 @@ class MongoAdapter extends MongoAdapterBase {
 class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   txColl: Collection<Doc> | undefined
 
-  async init (): Promise<void> {
+  async init (ctx: MeasureContext): Promise<void> {
     await this._db.init(DOMAIN_TX)
     await this._db.init(DOMAIN_MODEL_TX)
   }

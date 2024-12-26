@@ -197,6 +197,12 @@
     localStorage.setItem('document.useMaxWidth', useMaxWidth.toString())
   }
 
+  let sideContentSpace = 0
+
+  function updateSizeContentSpace (width: number): void {
+    sideContentSpace = width
+  }
+
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'name'] })
   })
@@ -259,6 +265,7 @@
     isCustomAttr={false}
     isSub={false}
     bind:useMaxWidth
+    {sideContentSpace}
     printHeader={false}
     {embedded}
     adaptive={'default'}
@@ -369,6 +376,7 @@
             boundary={content}
             overflow={'none'}
             editorAttributes={{ style: 'padding: 0 2em 2em; margin: 0 -2em; min-height: 30vh' }}
+            requestSideSpace={updateSizeContentSpace}
             attachFile={async (file) => {
               return await createEmbedding(file)
             }}

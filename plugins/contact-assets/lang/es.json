@@ -63,6 +63,8 @@
     "AddMember": "Añadir miembro",
     "KickEmployee": "Expulsar empleado",
     "KickEmployeeDescr": "¿Está seguro de que desea expulsar al empleado del espacio de trabajo? Esta acción no se puede deshacer",
+    "ResendInvite": "Reenviar Invitación",
+    "ResendInviteDescr": "¿Estás seguro de que deseas reenviar una invitación a este usuario para el espacio de trabajo?",
     "Email": "Correo electrónico",
     "CreateEmployee": "Empleado",
     "Inactive": "Inactivo",

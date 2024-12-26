@@ -29,6 +29,8 @@ import {
 } from '@hcengineering/server'
 import {
   LOGGING_ENABLED,
+  pingConst,
+  pongConst,
   type ConnectionSocket,
   type HandleRequestFunction,
   type PipelineFactory,
@@ -552,9 +554,18 @@ function createWebsocketClientSocket (
       return true
     },
     readRequest: (buffer: Buffer, binary: boolean) => {
+      if (buffer.length === pingConst.length && buffer.toString() === pingConst) {
+        return { method: pingConst, params: [], id: -1, time: Date.now() }
+      }
       return rpcHandler.readRequest(buffer, binary)
     },
     data: () => data,
+    sendPong: () => {
+      if (ws.readyState !== ws.OPEN || cs.isClosed) {
+        return
+      }
+      ws.send(pongConst)
+    },
     send: (ctx: MeasureContext, msg, binary, compression) => {
       const smsg = rpcHandler.serialize(msg, binary)
 

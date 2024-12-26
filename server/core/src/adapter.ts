@@ -65,7 +65,7 @@ export type DbAdapterHandler = (
  * @public
  */
 export interface DbAdapter extends LowLevelStorage {
-  init?: (domains?: string[], excludeDomains?: string[]) => Promise<void>
+  init?: (ctx: MeasureContext, domains?: string[], excludeDomains?: string[]) => Promise<void>
 
   helper?: () => DomainHelperOperations
 
@@ -115,5 +115,5 @@ export type DbAdapterFactory = (
   url: string,
   workspaceId: WorkspaceId,
   modelDb: ModelDb,
-  storage: StorageAdapter
+  storage?: StorageAdapter
 ) => Promise<DbAdapter>

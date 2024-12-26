@@ -42,7 +42,7 @@
     "eslint-config-prettier": "^8.8.0",
     "@types/ws": "^8.5.11",
     "ts-node": "^10.8.0",
-    "esbuild": "^0.20.0",
+    "esbuild": "^0.24.2",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
@@ -74,7 +74,8 @@
     "@hcengineering/server-ai-bot": "^0.6.0",
     "ws": "^8.18.0",
     "bufferutil": "^4.0.8",
-    "msgpackr": "^1.11.0",
-    "msgpackr-extract": "^3.0.3"
+    "msgpackr": "^1.11.2",
+    "msgpackr-extract": "^3.0.3",
+    "@hcengineering/postgres": "^0.6.0"
   }
 }

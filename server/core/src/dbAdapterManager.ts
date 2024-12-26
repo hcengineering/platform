@@ -105,32 +105,30 @@ export class DbAdapterManagerImpl implements DBAdapterManager {
     }
   }
 
-  initAdapters (ctx: MeasureContext): Promise<void> {
-    return ctx.with('init-adapters', {}, async (ctx) => {
-      for (const [key, adapter] of this.adapters) {
-        // already initialized
-        if (key !== this.conf.domains[DOMAIN_TX] && adapter.init !== undefined) {
-          let excludeDomains: string[] | undefined
-          let domains: string[] | undefined
-          if (this.conf.defaultAdapter === key) {
-            excludeDomains = []
-            for (const domain in this.conf.domains) {
-              if (this.conf.domains[domain] !== key) {
-                excludeDomains.push(domain)
-              }
-            }
-          } else {
-            domains = []
-            for (const domain in this.conf.domains) {
-              if (this.conf.domains[domain] === key) {
-                domains.push(domain)
-              }
+  async initAdapters (): Promise<void> {
+    for (const [key, adapter] of this.adapters) {
+      // already initialized
+      if (key !== this.conf.domains[DOMAIN_TX] && adapter.init !== undefined) {
+        let excludeDomains: string[] | undefined
+        let domains: string[] | undefined
+        if (this.conf.defaultAdapter === key) {
+          excludeDomains = []
+          for (const domain in this.conf.domains) {
+            if (this.conf.domains[domain] !== key) {
+              excludeDomains.push(domain)
             }
           }
-          await adapter.init(domains, excludeDomains)
+        } else {
+          domains = []
+          for (const domain in this.conf.domains) {
+            if (this.conf.domains[domain] === key) {
+              domains.push(domain)
+            }
+          }
         }
+        await adapter?.init?.(this.metrics, domains, excludeDomains)
       }
-    })
+    }
   }
 
   private async updateInfo (d: Domain, adapterDomains: Map<DbAdapter, Set<Domain>>, info: DomainInfo): Promise<void> {

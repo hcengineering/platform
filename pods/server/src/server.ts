@@ -33,9 +33,18 @@ import {
 } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
-import { createServerPipeline, registerServerPlugins, registerStringLoaders } from '@hcengineering/server-pipeline'
+import {
+  createServerPipeline,
+  registerAdapterFactory,
+  registerDestroyFactory,
+  registerServerPlugins,
+  registerStringLoaders,
+  registerTxAdapterFactory
+} from '@hcengineering/server-pipeline'
 
 import { readFileSync } from 'node:fs'
+import { createMongoAdapter, createMongoDestroyAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
+import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
 registerStringLoaders()
@@ -65,6 +74,14 @@ export function start (
     mongoUrl?: string
   }
 ): { shutdown: () => Promise<void>, sessionManager: SessionManager } {
+  registerTxAdapterFactory('mongodb', createMongoTxAdapter)
+  registerAdapterFactory('mongodb', createMongoAdapter)
+  registerDestroyFactory('mongodb', createMongoDestroyAdapter)
+
+  registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
+  registerAdapterFactory('postgresql', createPostgresAdapter, true)
+  registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+
   registerServerPlugins()
 
   const externalStorage = buildStorageFromConfig(opt.storageConfig)

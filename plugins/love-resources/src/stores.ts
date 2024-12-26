@@ -81,7 +81,7 @@ export const storePromise = writable<Promise<void>>(new Promise((resolve) => {})
 
 function fillStores (): void {
   const client = getClient()
-  if (client !== undefined) {
+  if (client !== undefined || getCurrentAccount() != null) {
     const query = createQuery(true)
     const roomPromise = new Promise<void>((resolve) =>
       query.query(love.class.Room, {}, (res) => {

@@ -28,22 +28,23 @@ function $push (document: Doc, keyval: Record<string, PropertyType>): void {
     if (doc[key] === undefined) {
       doc[key] = []
     }
-    const val = keyval[key]
-    if (typeof val === 'object') {
+    const kvk = keyval[key]
+    if (typeof kvk === 'object' && kvk != null) {
       const arr = doc[key] as Array<any>
-      const desc = val as Position<PropertyType>
+      const desc = kvk as Position<PropertyType>
       if ('$each' in desc) {
-        if (arr != null) {
+        if (arr != null && Array.isArray(arr)) {
           arr.splice(desc.$position ?? 0, 0, ...desc.$each)
         }
       } else {
-        arr.push(val)
+        arr.push(kvk)
       }
     } else {
-      if (doc[key] == null) {
-        doc[key] = []
+      if (doc[key] === null || doc[key] === undefined) {
+        doc[key] = [kvk]
+      } else {
+        doc[key].push(kvk)
       }
-      doc[key].push(val)
     }
   }
 }
@@ -55,15 +56,16 @@ function $pull (document: Doc, keyval: Record<string, PropertyType>): void {
       doc[key] = []
     }
     const arr = doc[key] as Array<any>
-    if (typeof keyval[key] === 'object' && keyval[key] !== null) {
-      const { $in } = keyval[key] as PullArray<PropertyType>
+    const kvk = keyval[key]
+    if (typeof kvk === 'object' && kvk !== null) {
+      const { $in } = kvk as PullArray<PropertyType>
 
       doc[key] = (arr ?? []).filter((val) => {
         if ($in !== undefined) {
           return !$in.includes(val)
         } else {
           // We need to match all fields
-          for (const [kk, kv] of Object.entries(keyval[key])) {
+          for (const [kk, kv] of Object.entries(kvk)) {
             if (val[kk] !== kv) {
               return true
             }
@@ -72,7 +74,7 @@ function $pull (document: Doc, keyval: Record<string, PropertyType>): void {
         }
       })
     } else {
-      doc[key] = (arr ?? []).filter((val) => val !== keyval[key])
+      doc[key] = (arr ?? []).filter((val) => val !== kvk)
     }
   }
 }

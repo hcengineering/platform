@@ -15,8 +15,6 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  TxFactory,
-  WorkspaceEvent,
   cutObjectArray,
   generateId,
   isArchivingMode,
@@ -25,8 +23,10 @@ import core, {
   isWorkspaceCreating,
   systemAccountEmail,
   toWorkspaceString,
+  TxFactory,
   versionToString,
   withContext,
+  WorkspaceEvent,
   type BaseWorkspaceInfo,
   type Branding,
   type BrandingMap,
@@ -40,6 +40,7 @@ import { unknownError, type Status } from '@hcengineering/platform'
 import { type HelloRequest, type HelloResponse, type Request, type Response } from '@hcengineering/rpc'
 import {
   LOGGING_ENABLED,
+  pingConst,
   Pipeline,
   PipelineFactory,
   ServerFactory,
@@ -240,7 +241,7 @@ class TSessionManager implements SessionManager {
             if (s[1].socket.checkState()) {
               s[1].socket.send(
                 workspace.context,
-                { result: 'ping' },
+                { result: pingConst },
                 s[1].session.binaryMode,
                 s[1].session.useCompression
               )
@@ -415,7 +416,7 @@ class TSessionManager implements SessionManager {
         : null) ?? null
 
     if (workspace === undefined) {
-      ctx.warn('open workspace', {
+      ctx.info('open workspace', {
         email: token.email,
         workspace: workspaceInfo.workspaceId,
         wsUrl: workspaceInfo.workspaceUrl,
@@ -427,6 +428,7 @@ class TSessionManager implements SessionManager {
         token,
         workspaceInfo.workspaceUrl ?? workspaceInfo.workspaceId,
         workspaceName,
+        workspaceInfo.uuid,
         branding
       )
     }
@@ -456,7 +458,8 @@ class TSessionManager implements SessionManager {
           pipelineFactory,
           ws,
           workspaceInfo.workspaceUrl ?? workspaceInfo.workspaceId,
-          workspaceName
+          workspaceName,
+          workspaceInfo.uuid
         )
       }
     } else {
@@ -469,7 +472,14 @@ class TSessionManager implements SessionManager {
         })
         return { upgrade: true }
       }
-      pipeline = await ctx.with('💤 wait', { workspaceName }, () => (workspace as Workspace).pipeline)
+      try {
+        pipeline = await ctx.with('💤 wait', { workspaceName }, () => (workspace as Workspace).pipeline)
+      } catch (err: any) {
+        // Failed to create pipeline, etc
+        Analytics.handleError(err)
+        this.workspaces.delete(wsString)
+        throw err
+      }
     }
 
     const session = this.createSession(
@@ -536,7 +546,8 @@ class TSessionManager implements SessionManager {
     pipelineFactory: PipelineFactory,
     ws: ConnectionSocket,
     workspaceUrl: string,
-    workspaceName: string
+    workspaceName: string,
+    workspaceUuid?: string
   ): Promise<Pipeline> {
     if (LOGGING_ENABLED) {
       ctx.info('reloading workspace', { workspaceName, token: JSON.stringify(token) })
@@ -558,7 +569,7 @@ class TSessionManager implements SessionManager {
     // Re-create pipeline.
     workspace.pipeline = pipelineFactory(
       ctx,
-      { ...token.workspace, workspaceUrl, workspaceName },
+      { ...token.workspace, workspaceUrl, workspaceName, uuid: workspaceUuid },
       true,
       (ctx, tx, targets, exclude) => {
         this.broadcastAll(workspace, tx, targets, exclude)
@@ -647,6 +658,7 @@ class TSessionManager implements SessionManager {
     token: Token,
     workspaceUrl: string,
     workspaceName: string,
+    workspaceUuid: string | undefined,
     branding: Branding | null
   ): Workspace {
     const upgrade = token.extra?.model === 'upgrade'
@@ -657,7 +669,7 @@ class TSessionManager implements SessionManager {
       id: generateId(),
       pipeline: pipelineFactory(
         pipelineCtx,
-        { ...token.workspace, workspaceUrl, workspaceName },
+        { ...token.workspace, uuid: workspaceUuid, workspaceUrl, workspaceName },
         upgrade,
         (ctx, tx, targets, exclude) => {
           this.broadcastAll(workspace, tx, targets, exclude)
@@ -669,6 +681,7 @@ class TSessionManager implements SessionManager {
       upgrade,
       workspaceId: token.workspace,
       workspaceName,
+      workspaceUuid,
       branding,
       workspaceInitCompleted: false,
       tickHash: this.tickCounter % ticksPerSecond,
@@ -712,7 +725,8 @@ class TSessionManager implements SessionManager {
         ctx,
         sendError: async (msg, error: Status) => {
           // Assume no error send
-        }
+        },
+        sendPong: () => {}
       }
 
       const status = (await session.findAllRaw(ctx, core.class.UserStatus, { user: user._id }, { limit: 1 }))[0]
@@ -794,7 +808,7 @@ class TSessionManager implements SessionManager {
     ignoreSocket?: ConnectionSocket
   ): Promise<void> {
     if (LOGGING_ENABLED) {
-      this.ctx.warn('closing workspace', {
+      this.ctx.info('closing workspace', {
         workspace: workspace.id,
         wsName: workspace.workspaceName,
         code,
@@ -921,7 +935,7 @@ class TSessionManager implements SessionManager {
     ws: ConnectionSocket,
     request: Request<any>,
     workspace: string // wsId, toWorkspaceString()
-  ): void {
+  ): Promise<void> {
     const backupMode = service.getMode() === 'backup'
 
     const userCtx = requestCtx.newChild(
@@ -937,7 +951,7 @@ class TSessionManager implements SessionManager {
     const reqId = generateId()
 
     const st = Date.now()
-    void userCtx
+    return userCtx
       .with(`🧭 ${backupMode ? 'handleBackup' : 'handleRequest'}`, {}, async (ctx) => {
         if (request.time != null) {
           const delta = Date.now() - request.time
@@ -1011,6 +1025,9 @@ class TSessionManager implements SessionManager {
               queue: service.requests.size
             })
             userCtx.end()
+          },
+          sendPong: () => {
+            ws.sendPong()
           },
           ctx,
           sendError: async (msg, error: Status) => {
@@ -1125,7 +1142,7 @@ export function startSessionManager (
     shutdown: opt.serverFactory(
       sessions,
       (rctx, service, ws, msg, workspace) => {
-        sessions.handleRequest(rctx, service, ws, msg, workspace)
+        void sessions.handleRequest(rctx, service, ws, msg, workspace)
       },
       ctx,
       opt.pipelineFactory,

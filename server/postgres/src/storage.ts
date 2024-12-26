@@ -37,6 +37,7 @@ import core, {
   type ModelDb,
   type ObjQueryType,
   type Projection,
+  RateLimiter,
   type Ref,
   type ReverseLookups,
   type SessionData,
@@ -316,17 +317,22 @@ class ConnectionMgr {
 abstract class PostgresAdapterBase implements DbAdapter {
   protected readonly _helper: DBCollectionHelper
   protected readonly tableFields = new Map<string, string[]>()
+  protected readonly workspaceId: WorkspaceId
 
   mgr: ConnectionMgr
 
   constructor (
     protected readonly client: postgres.Sql,
     protected readonly refClient: PostgresClientReference,
-    protected readonly workspaceId: WorkspaceId,
+    protected readonly enrichedWorkspaceId: WorkspaceId,
     protected readonly hierarchy: Hierarchy,
     protected readonly modelDb: ModelDb,
     readonly mgrId: string
   ) {
+    // Swich to use uuid already before new accounts and workspaces
+    this.workspaceId = {
+      name: enrichedWorkspaceId.uuid ?? enrichedWorkspaceId.name
+    }
     this._helper = new DBCollectionHelper(this.client, this.workspaceId)
     this.mgr = new ConnectionMgr(client, mgrId)
   }
@@ -382,7 +388,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
   on?: ((handler: DbAdapterHandler) => void) | undefined
 
-  abstract init (): Promise<void>
+  abstract init (ctx: MeasureContext, domains?: string[], excludeDomains?: string[]): Promise<void>
 
   async close (): Promise<void> {
     this.mgr.close()
@@ -1501,13 +1507,18 @@ interface OperationBulk {
   mixins: TxMixin<Doc, Doc>[]
 }
 
+const initRateLimit = new RateLimiter(1)
+
 class PostgresAdapter extends PostgresAdapterBase {
-  async init (domains?: string[], excludeDomains?: string[]): Promise<void> {
+  async init (ctx: MeasureContext, domains?: string[], excludeDomains?: string[]): Promise<void> {
     let resultDomains = domains ?? this.hierarchy.domains()
     if (excludeDomains !== undefined) {
       resultDomains = resultDomains.filter((it) => !excludeDomains.includes(it))
     }
-    await createTables(this.client, resultDomains)
+    const url = this.refClient.url()
+    await initRateLimit.exec(async () => {
+      await createTables(ctx, this.client, url, resultDomains)
+    })
     this._helper.domains = new Set(resultDomains as Domain[])
   }
 
@@ -1782,9 +1793,12 @@ class PostgresAdapter extends PostgresAdapterBase {
 }
 
 class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
-  async init (domains?: string[], excludeDomains?: string[]): Promise<void> {
+  async init (ctx: MeasureContext, domains?: string[], excludeDomains?: string[]): Promise<void> {
     const resultDomains = domains ?? [DOMAIN_TX, DOMAIN_MODEL_TX]
-    await createTables(this.client, resultDomains)
+    await initRateLimit.exec(async () => {
+      const url = this.refClient.url()
+      await createTables(ctx, this.client, url, resultDomains)
+    })
     this._helper.domains = new Set(resultDomains as Domain[])
   }
 
@@ -1842,15 +1856,7 @@ export async function createPostgresAdapter (
 ): Promise<DbAdapter> {
   const client = getDBClient(url)
   const connection = await client.getClient()
-  const adapter = new PostgresAdapter(
-    connection,
-    client,
-    workspaceId,
-    hierarchy,
-    modelDb,
-    'default-' + workspaceId.name
-  )
-  return adapter
+  return new PostgresAdapter(connection, client, workspaceId, hierarchy, modelDb, 'default-' + workspaceId.name)
 }
 
 /**
@@ -1865,9 +1871,7 @@ export async function createPostgresTxAdapter (
 ): Promise<TxAdapter> {
   const client = getDBClient(url)
   const connection = await client.getClient()
-  const adapter = new PostgresTxAdapter(connection, client, workspaceId, hierarchy, modelDb, 'tx' + workspaceId.name)
-  await adapter.init()
-  return adapter
+  return new PostgresTxAdapter(connection, client, workspaceId, hierarchy, modelDb, 'tx' + workspaceId.name)
 }
 
 function isPersonAccount (tx: Tx): boolean {

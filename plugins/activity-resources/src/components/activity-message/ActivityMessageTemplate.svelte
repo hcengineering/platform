@@ -57,7 +57,7 @@
   export let hoverable = true
   export let pending = false
   export let stale = false
-  export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
+  export let hoverStyles: 'borderedHover' | 'filledHover' | 'none' = 'borderedHover'
   export let showDatePreposition = false
   export let type: ActivityMessageViewType = 'default'
   export let inlineActions: MessageInlineAction[] = []
@@ -65,12 +65,13 @@
   export let readonly: boolean = false
   export let onClick: (() => void) | undefined = undefined
   export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
+  export let embeddedActions: boolean = false
 
   export let socialIcon: Asset | undefined = undefined
 
   const client = getClient()
 
-  let menuActionIds: string[] = []
+  let menuActions: ViewAction[] = []
 
   let element: HTMLDivElement | undefined = undefined
   let isActionsOpened = false
@@ -83,7 +84,7 @@
 
   $: withActions &&
     getActions(client, message, activity.class.ActivityMessage).then((res) => {
-      menuActionIds = res.map(({ _id }) => _id)
+      menuActions = res
     })
 
   function scrollToMessage (): void {
@@ -108,7 +109,7 @@
   $: key = parentMessage != null ? `${message._id}_${parentMessage._id}` : message._id
 
   $: isHidden = !!viewlet?.onlyWithParent && parentMessage === undefined
-  $: withActionMenu = withActions && !embedded && (actions.length > 0 || menuActionIds.length > 0)
+  $: withActionMenu = withActions && !embedded && (actions.findIndex((a) => !a.inline) >= 0 || menuActions.length > 0)
 
   $: readonly = readonly || $restrictionStore.disableComments
 
@@ -148,7 +149,7 @@
     if (readonly) return
     const showCustomPopup = !isTextClicked(event.target as HTMLElement, event.clientX, event.clientY)
     if (showCustomPopup) {
-      const overrides = onReply ? new Map([[activity.action.Reply, onReply]]) : []
+      const overrides = onReply ? new Map([[activity.action.Reply, onReply]]) : new Map()
       showMenu(
         event,
         { object: message, baseMenuClass: activity.class.ActivityMessage, excludedActions, overrides },
@@ -264,7 +265,13 @@
       </div>
 
       {#if withActions && !readonly}
-        <div class="actions" class:pending class:opened={isActionsOpened} class:isShort>
+        <div
+          class="actions"
+          class:embedded={embeddedActions}
+          class:pending
+          class:opened={isActionsOpened}
+          class:isShort
+        >
           <ActivityMessageActions
             message={isReactionMessage(message) ? parentMessage : message}
             {actions}
@@ -322,6 +329,11 @@
       visibility: hidden;
       top: -0.75rem;
       right: 0.75rem;
+
+      &.embedded {
+        top: 0.25rem;
+        right: 0.25rem;
+      }
 
       &.opened:not(.pending) {
         visibility: visible;

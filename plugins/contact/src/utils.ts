@@ -16,7 +16,7 @@
 import { AttachedData, Class, Client, Doc, FindResult, Hierarchy, Ref } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { ColorDefinition } from '@hcengineering/ui'
-import { MD5 } from 'crypto-js'
+import MD5 from 'crypto-js/md5'
 import { AvatarProvider, AvatarType, Channel, Contact, Person, contactPlugin } from '.'
 import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
 

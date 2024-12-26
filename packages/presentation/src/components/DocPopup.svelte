@@ -93,13 +93,14 @@
     dispatch('update', selectedObjects)
   }
 
-  const client = getClient()
-
   let selection = 0
   let list: ListView
 
   async function handleSelection (evt: Event | undefined, objects: Doc[], selection: number): Promise<void> {
     const item = objects[selection]
+    if (item === undefined) {
+      return
+    }
 
     if (!multiSelect) {
       if (allowDeselect) {
@@ -140,7 +141,7 @@
     showPopup(c.component, c.props ?? {}, 'top', async (res) => {
       if (res != null) {
         // We expect reference to new object.
-        const newPerson = await client.findOne(_class, { _id: res })
+        const newPerson = await getClient().findOne(_class, { _id: res })
         if (newPerson !== undefined) {
           search = c.update?.(newPerson) ?? ''
           dispatch('created', newPerson)
@@ -163,7 +164,7 @@
   }
 
   function findObjectPresenter (_class: Ref<Class<Doc>>): void {
-    const presenterMixin = client.getHierarchy().classHierarchyMixin(_class, view.mixin.ObjectPresenter)
+    const presenterMixin = getClient().getHierarchy().classHierarchyMixin(_class, view.mixin.ObjectPresenter)
     if (presenterMixin?.presenter !== undefined) {
       getResource(presenterMixin.presenter)
         .then((result) => {

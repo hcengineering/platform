@@ -1,7 +1,7 @@
 services:
-  account:
-    environment:
-      - DB_URL=postgresql://postgres:example@postgres:5432
+  # account:
+  #   environment:
+  #     - DB_URL=postgresql://postgres:example@postgres:5432
   transactor:
     environment:
       - DB_URL=postgresql://postgres:example@postgres:5432

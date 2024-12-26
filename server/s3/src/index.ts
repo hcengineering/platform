@@ -60,11 +60,12 @@ export interface S3Config extends StorageConfig {
   expireTime?: string
 }
 
+export const CONFIG_KIND = 's3'
+
 /**
  * @public
  */
 export class S3Service implements StorageAdapter {
-  static config = 's3'
   expireTime: number
   client: S3
   constructor (readonly opt: S3Config) {
@@ -307,7 +308,9 @@ export class S3Service implements StorageAdapter {
         version: result.VersionId ?? null
       }
     } catch (err: any) {
-      ctx.warn('no object found', { error: err, objectName, workspaceId: workspaceId.name })
+      if (err?.$metadata?.httpStatusCode !== 404) {
+        ctx.warn('no object found', { error: err, objectName, workspaceId: workspaceId.name })
+      }
     }
   }
 

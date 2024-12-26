@@ -13,11 +13,10 @@
 // limitations under the License.
 //
 
-import { type Client } from '@hcengineering/core'
+import { systemAccountEmail, type Client } from '@hcengineering/core'
 import { generateToken, type Token } from '@hcengineering/server-token'
 
 import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
-import config from './config'
 
 export class SignController {
   private readonly clients: Map<string, Client> = new Map<string, Client>()
@@ -50,7 +49,7 @@ export class SignController {
   }
 
   private async createPlatformClient (workspace: string): Promise<Client> {
-    const token = generateToken(config.SystemEmail, {
+    const token = generateToken(systemAccountEmail, {
       name: workspace
     })
     const endpoint = await getTransactorEndpoint(token)

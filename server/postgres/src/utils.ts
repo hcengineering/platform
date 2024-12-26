@@ -22,6 +22,7 @@ import core, {
   type Domain,
   type FieldIndexConfig,
   generateId,
+  type MeasureContext,
   type MixinUpdate,
   type Projection,
   type Ref,
@@ -71,52 +72,69 @@ export const NumericTypes = [
   core.class.Collection
 ]
 
-export async function createTables (client: postgres.Sql, domains: string[]): Promise<void> {
-  const filtered = domains.filter((d) => !loadedDomains.has(d))
+export async function createTables (
+  ctx: MeasureContext,
+  client: postgres.Sql,
+  url: string,
+  domains: string[]
+): Promise<void> {
+  const filtered = domains.filter((d) => !loadedDomains.has(url + translateDomain(d)))
   if (filtered.length === 0) {
     return
   }
   const mapped = filtered.map((p) => translateDomain(p))
   const inArr = mapped.map((it) => `'${it}'`).join(', ')
-  const tables = await client.unsafe(`
+  const tables = await ctx.with('load-table', {}, () =>
+    client.unsafe(`
     SELECT table_name 
     FROM information_schema.tables 
     WHERE table_name IN (${inArr})
   `)
+  )
 
   const exists = new Set(tables.map((it) => it.table_name))
 
   await retryTxn(client, async (client) => {
+    const domainsToLoad = mapped.filter((it) => exists.has(it))
+    if (domainsToLoad.length > 0) {
+      await ctx.with('load-schemas', {}, () => getTableSchema(client, domainsToLoad))
+    }
     for (const domain of mapped) {
-      if (exists.has(domain)) {
-        await getTableSchema(client, domain)
-      } else {
-        await createTable(client, domain)
+      if (!exists.has(domain)) {
+        await ctx.with('create-table', {}, () => createTable(client, domain))
       }
-      loadedDomains.add(domain)
+      loadedDomains.add(url + domain)
     }
   })
 }
 
-async function getTableSchema (client: postgres.Sql, domain: string): Promise<void> {
-  const res = await client.unsafe(`SELECT column_name, data_type, is_nullable
-    FROM information_schema.columns
-    WHERE table_name = '${domain}' and table_schema = 'public' ORDER BY ordinal_position ASC;
-  `)
+async function getTableSchema (client: postgres.Sql, domains: string[]): Promise<void> {
+  const res = await client.unsafe(
+    `SELECT column_name, data_type, is_nullable, table_name
+            FROM information_schema.columns
+            WHERE table_name = ANY($1) and table_schema = 'public' 
+            ORDER BY table_name, ordinal_position ASC;`,
+    [domains]
+  )
 
-  const schema: Schema = {}
+  const schemas: Record<string, Schema> = {}
   for (const column of res) {
     if (column.column_name === 'workspaceId' || column.column_name === 'data') {
       continue
     }
+
+    const schema = schemas[column.table_name] ?? {}
+    schemas[column.table_name] = schema
+
     schema[column.column_name] = {
       type: parseDataType(column.data_type),
       notNull: column.is_nullable === 'NO',
       index: false
     }
   }
-
-  addSchema(domain, schema)
+  for (const [domain, schema] of Object.entries(schemas)) {
+    addSchema(domain, schema)
+  }
 }
 
 function parseDataType (type: string): DataType {
@@ -142,7 +160,7 @@ async function createTable (client: postgres.Sql, domain: string): Promise<void>
   }
   const colums = fields.join(', ')
   const res = await client.unsafe(`CREATE TABLE IF NOT EXISTS ${domain} (
-      "workspaceId" text NOT NULL,
+      "workspaceId" uuid NOT NULL,
       ${colums}, 
       data JSONB NOT NULL,
       PRIMARY KEY("workspaceId", _id)
@@ -173,6 +191,8 @@ export async function shutdown (): Promise<void> {
 export interface PostgresClientReference {
   getClient: () => Promise<postgres.Sql>
   close: () => void
+
+  url: () => string
 }
 
 class PostgresClientReferenceImpl {
@@ -180,11 +200,16 @@ class PostgresClientReferenceImpl {
   client: postgres.Sql | Promise<postgres.Sql>
 
   constructor (
+    readonly connectionString: string,
     client: postgres.Sql | Promise<postgres.Sql>,
     readonly onclose: () => void
   ) {
     this.count = 0
     this.client = client
+  }
+
+  url (): string {
+    return this.connectionString
   }
 
   async getClient (): Promise<postgres.Sql> {
@@ -216,6 +241,10 @@ export class ClientRef implements PostgresClientReference {
   id = generateId()
   constructor (readonly client: PostgresClientReferenceImpl) {
     clientRefs.set(this.id, this)
+  }
+
+  url (): string {
+    return this.client.url()
   }
 
   closed = false
@@ -259,7 +288,7 @@ export function getDBClient (connectionString: string, database?: string): Postg
       ...extraOptions
     })
 
-    existing = new PostgresClientReferenceImpl(sql, () => {
+    existing = new PostgresClientReferenceImpl(connectionString, sql, () => {
       connections.delete(key)
     })
     connections.set(key, existing)
@@ -404,10 +433,16 @@ export function isOwner (account: Account): boolean {
 }
 
 export class DBCollectionHelper implements DomainHelperOperations {
+  protected readonly workspaceId: WorkspaceId
+
   constructor (
     protected readonly client: postgres.Sql,
-    protected readonly workspaceId: WorkspaceId
-  ) {}
+    protected readonly enrichedWorkspaceId: WorkspaceId
+  ) {
+    this.workspaceId = {
+      name: enrichedWorkspaceId.uuid ?? enrichedWorkspaceId.name
+    }
+  }
 
   async dropIndex (domain: Domain, name: string): Promise<void> {}
 

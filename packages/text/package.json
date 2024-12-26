@@ -63,9 +63,7 @@
     "@tiptap/suggestion": "^2.6.6",
     "prosemirror-codemark": "^0.4.2",
     "markdown-it": "^14.0.0",
-    "fast-equals": "^5.0.1",
-    "yjs": "^13.6.19",
-    "y-prosemirror": "^1.2.12"
+    "fast-equals": "^5.0.1"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

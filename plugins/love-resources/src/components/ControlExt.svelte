@@ -13,8 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { formatName } from '@hcengineering/contact'
-  import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
+  import { personByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, Ref, toIdMap } from '@hcengineering/core'
   import {
     Invite,
@@ -26,7 +25,6 @@
     Room,
     RoomType
   } from '@hcengineering/love'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     closePopup,
@@ -35,7 +33,7 @@
     location,
     PopupResult,
     showPopup,
-    tooltip
+    closeTooltip
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import workbench from '@hcengineering/workbench'
@@ -58,6 +56,7 @@
   import RequestPopup from './RequestPopup.svelte'
   import RequestingPopup from './RequestingPopup.svelte'
   import RoomPopup from './RoomPopup.svelte'
+  import RoomButton from './RoomButton.svelte'
 
   const client = getClient()
 
@@ -139,8 +138,11 @@
 
   $: checkRequests(requests, $myInfo)
 
-  function openRoom (ev: MouseEvent, room: Room): void {
-    showPopup(RoomPopup, { room }, ev.currentTarget as HTMLElement)
+  function openRoom (room: Room): (e: MouseEvent) => void {
+    return (e: MouseEvent) => {
+      closeTooltip()
+      showPopup(RoomPopup, { room }, eventToHTMLElement(e))
+    }
   }
 
   let activeInvite: Invite | undefined = undefined
@@ -285,92 +287,27 @@
 <div class="flex-row-center flex-gap-2">
   {#if activeRooms.length > 0}
     <!--    <div class="divider" />-->
-    {#each activeRooms as active}
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div
-        class="container flex-row-center"
-        class:active={joined.find((r) => r._id === active._id)}
-        on:click={(ev) => {
-          openRoom(ev, active)
-        }}
-      >
-        <div class="mr-2 overflow-label">{getRoomName(active, $personByIdStore)}</div>
-        <div class="flex-row-center avatars">
-          {#each active.participants as participant}
-            <div use:tooltip={{ label: getEmbeddedLabel(formatName(participant.name)) }}>
-              <Avatar name={participant.name} size={'card'} person={$personByIdStore.get(participant.person)} />
-            </div>
-          {/each}
-        </div>
-      </div>
+    {#each activeRooms as active, i}
+      <RoomButton
+        label={getRoomName(active, $personByIdStore)}
+        participants={active.participants}
+        active={joined.find((r) => r._id === active._id) != null}
+        on:click={openRoom(active)}
+      />
     {/each}
   {/if}
   {#if reception && receptionParticipants.length > 0}
     {#if activeRooms.length > 0}
       <div class="divider" />
     {/if}
-    <div class="container flex-row-center flex-gap-2">
-      <div>{getRoomName(reception, $personByIdStore)}</div>
-      <div class="flex-row-center avatars">
-        {#each receptionParticipants as participant (participant._id)}
-          <div
-            use:tooltip={{ label: getEmbeddedLabel(formatName(participant.name)) }}
-            on:click={getParticipantClickHandler(participant)}
-          >
-            <Avatar name={participant.name} size={'card'} person={$personByIdStore.get(participant.person)} />
-          </div>
-        {/each}
-      </div>
-    </div>
+    <RoomButton
+      label={getRoomName(reception, $personByIdStore)}
+      participants={receptionParticipants.map((p) => ({ ...p, onclick: getParticipantClickHandler(p) }))}
+    />
   {/if}
 </div>
 
 <style lang="scss">
-  .container {
-    padding: 0.125rem 0.125rem 0.125rem 0.5rem;
-    height: 1.625rem;
-    font-weight: 500;
-    background-color: var(--theme-button-pressed);
-    border: 1px solid transparent;
-    border-radius: 0.25rem;
-    cursor: pointer;
-
-    .label {
-      font-weight: 700;
-      color: var(--theme-caption-color);
-    }
-    &.main {
-      order: -3;
-      padding-right: 0.25rem;
-
-      & + .divider {
-        order: -2;
-      }
-    }
-    &:hover {
-      background-color: var(--theme-button-hovered);
-      border-color: var(--theme-navpanel-divider);
-    }
-    &.active {
-      order: -1;
-      position: relative;
-      display: flex;
-      align-items: center;
-      padding: 0.125rem 0.125rem 0.125rem 0.5rem;
-      background-color: var(--highlight-select);
-      border-color: var(--highlight-select-border);
-
-      &:hover {
-        background-color: var(--highlight-select-hover);
-      }
-    }
-  }
-
-  .avatars {
-    gap: 0.125rem;
-  }
-
   .divider {
     height: 1.5rem;
     border: 1px solid var(--theme-divider-color);

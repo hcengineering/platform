@@ -37,7 +37,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
-    "esbuild": "^0.20.0",
+    "esbuild": "^0.24.2",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
@@ -73,6 +73,8 @@
     "@hcengineering/server-collaboration": "^0.6.0",
     "@hcengineering/middleware": "^0.6.0",
     "@hcengineering/server-client": "^0.6.0",
-    "@hcengineering/server-storage": "^0.6.0"
+    "@hcengineering/server-storage": "^0.6.0",
+    "@hcengineering/postgres": "^0.6.0",
+    "@hcengineering/mongo": "^0.6.1"
   }
 }

@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+import { RemoteParticipant, RemoteTrack, RemoteTrackPublication } from '@livekit/rtc-node'
+
 export enum TranscriptionStatus {
   Idle = 'idle',
   InProgress = 'inProgress',
@@ -22,4 +24,15 @@ export enum TranscriptionStatus {
 export interface Metadata {
   transcription?: TranscriptionStatus
   language?: string
+}
+
+export type SttProvider = 'openai' | 'deepgram'
+
+export interface Stt {
+  stop: () => void
+  start: () => void
+  subscribe: (track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant) => void
+  unsubscribe: (track: RemoteTrack | undefined, publication: RemoteTrackPublication, participant: RemoteParticipant) => void
+  updateLanguage: (language: string) => void
+  close: () => void
 }

@@ -13,21 +13,25 @@
 // limitations under the License.
 //
 
+import { SttProvider } from './type.'
+
 interface Config {
-  TranscriptDelay: number
   DeepgramApiKey: string
   PlatformUrl: string
   PlatformToken: string
+  OpenaiApiKey: string
+  OpenaiBaseUrl: string
+  SttProvider: SttProvider
 }
-
-const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
 
 const config: Config = (() => {
   const params: Partial<Config> = {
     DeepgramApiKey: process.env.DEEPGRAM_API_KEY,
-    TranscriptDelay: parseNumber(process.env.TRANSCRIPT_DELAY) ?? 3000,
     PlatformUrl: process.env.PLATFORM_URL,
-    PlatformToken: process.env.PLATFORM_TOKEN
+    PlatformToken: process.env.PLATFORM_TOKEN,
+    OpenaiApiKey: process.env.OPENAI_API_KEY ?? '',
+    OpenaiBaseUrl: process.env.OPENAI_BASE_URL ?? '',
+    SttProvider: (process.env.STT_PROVIDER as SttProvider) ?? 'deepgram'
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

@@ -23,16 +23,39 @@ import { type BlobRequest, type WorkspaceRequest, type UUID } from './types'
 import { copyVideo, deleteVideo } from './video'
 import { type MetricsContext, LoggedCache } from './metrics'
 
-interface BlobMetadata {
+export interface BlobMetadata {
   lastModified: number
   type: string
   size: number
   name: string
+  etag: string
 }
 
 export function getBlobURL (request: Request, workspace: string, name: string): string {
   const path = `/blob/${workspace}/${name}`
   return new URL(path, request.url).toString()
+}
+
+export async function handleBlobList (
+  request: WorkspaceRequest,
+  env: Env,
+  ctx: ExecutionContext,
+  metrics: MetricsContext
+): Promise<Response> {
+  const { workspace } = request
+  const cursor = extractStrParam(request.query.cursor)
+  const limit = extractIntParam(request.query.limit)
+
+  const response = await withPostgres(env, ctx, metrics, (db) => {
+    return db.listBlobs(workspace, cursor, limit)
+  })
+
+  const blobs = response.blobs.map((blob) => {
+    const { name, size, type, hash } = blob
+    return { name, size, type, etag: hash }
+  })
+
+  return json({ blobs, cursor: response.cursor })
 }
 
 export async function handleBlobGet (
@@ -68,13 +91,17 @@ export async function handleBlobGet (
     return error(404)
   }
 
-  const headers = r2MetadataHeaders(object)
+  const headers = r2MetadataHeaders(blob.hash, object)
   if (range !== undefined && object?.range !== undefined) {
     headers.set('Content-Range', rangeHeader(object.range, object.size))
   }
 
   const length = object?.range !== undefined && 'length' in object.range ? object?.range?.length : undefined
   const status = length !== undefined && length < object.size ? 206 : 200
+  if (length !== undefined && length < object.size) {
+    // for partial content use etag returned by R2
+    headers.set('ETag', object.httpEtag)
+  }
 
   const response = new Response(object?.body, { headers, status })
 
@@ -110,7 +137,7 @@ export async function handleBlobHead (
     return error(404)
   }
 
-  const headers = r2MetadataHeaders(head)
+  const headers = r2MetadataHeaders(blob.hash, head)
   return new Response(null, { headers, status: 200 })
 }
 
@@ -204,22 +231,33 @@ export async function saveBlob (
   const httpMetadata = { contentType: type, cacheControl, lastModified }
   const filename = getUniqueFilename()
 
+  const blob = await db.getBlob({ workspace, name })
+
   if (size <= hashLimit) {
     const [hashStream, uploadStream] = stream.tee()
 
     const hash = await getSha256(hashStream)
+
+    // Check if we have the same blob already
+    if (blob?.hash === hash && blob?.type === type) {
+      return { type, size, lastModified, name, etag: hash }
+    }
+
     const data = await db.getData({ hash, location })
 
     if (data !== null) {
       // Lucky boy, nothing to upload, use existing blob
       await db.createBlob({ workspace, name, hash, location })
+
+      return { type, size, lastModified, name, etag: data.hash }
     } else {
       await bucket.put(filename, uploadStream, { httpMetadata })
+
       await db.createData({ hash, location, filename, type, size })
       await db.createBlob({ workspace, name, hash, location })
-    }
 
-    return { type, size, lastModified, name }
+      return { type, size, lastModified, name, etag: hash }
+    }
   } else {
     // For large files we cannot calculate checksum beforehead
     // upload file with unique filename and then obtain checksum
@@ -229,13 +267,15 @@ export async function saveBlob (
       // We found an existing blob with the same hash
       // we can safely remove the existing blob from storage
       await Promise.all([bucket.delete(filename), db.createBlob({ workspace, name, hash, location })])
+
+      return { type, size, lastModified, name, etag: hash }
     } else {
       // Otherwise register a new hash and blob
       await db.createData({ hash, location, filename, type, size })
       await db.createBlob({ workspace, name, hash, location })
-    }
 
-    return { type, size, lastModified, name }
+      return { type, size, lastModified, name, etag: hash }
+    }
   }
 }
 
@@ -246,7 +286,7 @@ export async function handleBlobUploaded (
   workspace: string,
   name: string,
   filename: UUID
-): Promise<void> {
+): Promise<BlobMetadata> {
   const { location, bucket } = selectStorage(env, workspace)
 
   const object = await bucket.head(filename)
@@ -255,19 +295,20 @@ export async function handleBlobUploaded (
   }
 
   const hash = object.checksums.md5 !== undefined ? digestToUUID(object.checksums.md5) : (crypto.randomUUID() as UUID)
+  const size = object.size
+  const type = object.httpMetadata?.contentType ?? 'application/octet-stream'
 
   await withPostgres(env, ctx, metrics, async (db) => {
     const data = await db.getData({ hash, location })
     if (data !== null) {
       await Promise.all([bucket.delete(filename), db.createBlob({ workspace, name, hash, location })])
     } else {
-      const size = object.size
-      const type = object.httpMetadata?.contentType ?? 'application/octet-stream'
-
       await db.createData({ hash, location, filename, type, size })
       await db.createBlob({ workspace, name, hash, location })
     }
   })
+
+  return { type, size, name, etag: hash, lastModified: object.uploaded.getTime() }
 }
 
 async function uploadLargeFile (
@@ -309,7 +350,7 @@ function rangeHeader (range: R2Range, size: number): string {
   return `bytes ${start}-${end - 1}/${size}`
 }
 
-function r2MetadataHeaders (head: R2Object): Headers {
+function r2MetadataHeaders (hash: string, head: R2Object): Headers {
   return head.httpMetadata !== undefined
     ? new Headers({
       'Accept-Ranges': 'bytes',
@@ -318,7 +359,7 @@ function r2MetadataHeaders (head: R2Object): Headers {
       'Content-Security-Policy': "default-src 'none';",
       'Cache-Control': head.httpMetadata.cacheControl ?? cacheControl,
       'Last-Modified': head.uploaded.toUTCString(),
-      ETag: head.httpEtag
+      ETag: hash
     })
     : new Headers({
       'Accept-Ranges': 'bytes',
@@ -326,6 +367,31 @@ function r2MetadataHeaders (head: R2Object): Headers {
       'Content-Security-Policy': "default-src 'none';",
       'Cache-Control': cacheControl,
       'Last-Modified': head.uploaded.toUTCString(),
-      ETag: head.httpEtag
+      ETag: hash
     })
+}
+
+function extractStrParam (value: string | string[] | undefined): string | undefined {
+  if (Array.isArray(value)) {
+    return value[0]
+  }
+
+  return value
+}
+
+function extractIntParam (value: string | string[] | undefined): number | undefined {
+  if (value === undefined) {
+    return undefined
+  }
+
+  if (Array.isArray(value)) {
+    value = value[0]
+  }
+
+  const intValue = Number.parseInt(value)
+  if (Number.isInteger(intValue)) {
+    return intValue
+  }
+
+  return undefined
 }
