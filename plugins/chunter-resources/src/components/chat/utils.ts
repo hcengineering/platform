@@ -28,7 +28,7 @@ import core, {
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext } from '@hcengineering/notification'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+import { createQuery, getClient, MessageBox, onClient } from '@hcengineering/presentation'
 import { type Action, showPopup } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import workbench, { type SpecialNavModel } from '@hcengineering/workbench'
@@ -364,12 +364,9 @@ function archiveActivityChannels (contexts: DocNotifyContext[]): void {
   )
 }
 
+const savedAttachmentsQuery = createQuery(true)
 export function loadSavedAttachments (): void {
-  const client = getClient()
-
-  if (client !== undefined) {
-    const savedAttachmentsQuery = createQuery(true)
-
+  onClient(() => {
     savedAttachmentsQuery.query(
       attachment.class.SavedAttachments,
       { space: core.space.Workspace },
@@ -378,11 +375,7 @@ export function loadSavedAttachments (): void {
       },
       { lookup: { attachedTo: attachment.class.Attachment }, sort: { modifiedOn: SortingOrder.Descending } }
     )
-  } else {
-    setTimeout(() => {
-      loadSavedAttachments()
-    }, 50)
-  }
+  })
 }
 
 export async function hideActivityChannels (contexts: DocNotifyContext[]): Promise<void> {
