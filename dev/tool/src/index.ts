@@ -62,9 +62,9 @@ import {
   createBackupPipeline,
   getConfig,
   getWorkspaceDestroyAdapter,
-  registerAdapterFactry,
-  registerDestroyFactry,
-  registerTxAdapterFactry
+  registerAdapterFactory,
+  registerDestroyFactory,
+  registerTxAdapterFactory
 } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import { FileModelLogger } from '@hcengineering/server-tool'
@@ -173,13 +173,13 @@ export function devTool (
 ): void {
   const toolCtx = new MeasureMetricsContext('tool', {})
 
-  registerTxAdapterFactry('mongodb', createMongoTxAdapter)
-  registerAdapterFactry('mongodb', createMongoAdapter)
-  registerDestroyFactry('mongodb', createMongoDestroyAdapter)
+  registerTxAdapterFactory('mongodb', createMongoTxAdapter)
+  registerAdapterFactory('mongodb', createMongoAdapter)
+  registerDestroyFactory('mongodb', createMongoDestroyAdapter)
 
-  registerTxAdapterFactry('postgresql', createPostgresTxAdapter, true)
-  registerAdapterFactry('postgresql', createPostgresAdapter, true)
-  registerDestroyFactry('postgresql', createPostgreeDestroyAdapter, true)
+  registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
+  registerAdapterFactory('postgresql', createPostgresAdapter, true)
+  registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
 
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {

@@ -60,6 +60,8 @@
     "dotenv": "~16.0.0",
     "@hcengineering/backup-service": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/analytics-service": "^0.6.0"
+    "@hcengineering/analytics-service": "^0.6.0",
+    "@hcengineering/mongo": "^0.6.1",
+    "@hcengineering/postgres": "^0.6.0"
   }
 }
