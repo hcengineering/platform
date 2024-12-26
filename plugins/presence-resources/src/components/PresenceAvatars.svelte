@@ -15,8 +15,9 @@
 
 <script lang="ts">
   import { type Doc } from '@hcengineering/core'
-  import { formatName } from '@hcengineering/contact'
+  import { type Person, formatName } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
   import { IconSize, tooltip } from '@hcengineering/ui'
   import PresenceList from './PresenceList.svelte'
   import { presenceByObjectId } from '../store'
@@ -30,7 +31,7 @@
   $: persons = presence
     .map((it) => it.person)
     .map((p) => $personByIdStore.get(p))
-    .filter((p) => p !== undefined)
+    .filter((p): p is Person => p !== undefined)
   $: overLimit = persons.length > limit
 </script>
 
@@ -52,7 +53,7 @@
   {:else}
     <div class="flex-row-center flex-gap-1">
       {#each persons as person}
-        <div use:tooltip={{ label: formatName(person.name) }}>
+        <div use:tooltip={{ label: getEmbeddedLabel(formatName(person.name)) }}>
           <Avatar name={person.name} {size} {person} />
         </div>
       {/each}
