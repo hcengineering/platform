@@ -81,7 +81,8 @@ export const storePromise = writable<Promise<void>>(new Promise((resolve) => {})
 
 function fillStores (): void {
   const client = getClient()
-  if (client !== undefined || getCurrentAccount() != null) {
+  const account = getCurrentAccount() as PersonAccount | null
+  if (client !== undefined && account != null) {
     const query = createQuery(true)
     const roomPromise = new Promise<void>((resolve) =>
       query.query(love.class.Room, {}, (res) => {
@@ -107,7 +108,7 @@ function fillStores (): void {
     const requestPromise = new Promise<void>((resolve) =>
       requestsQuery.query(
         love.class.JoinRequest,
-        { person: (getCurrentAccount() as PersonAccount).person, status: RequestStatus.Pending },
+        { person: account.person, status: RequestStatus.Pending },
         (res) => {
           myRequests.set(res)
           resolve()
