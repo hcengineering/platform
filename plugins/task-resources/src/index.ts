@@ -367,7 +367,7 @@ export const joinedProjectsStore = writable<Project[]>()
 function fillStores (): void {
   const client = getClient()
 
-  if (client !== undefined) {
+  if (client !== undefined && getCurrentAccount() != null) {
     const query = createQuery(true)
     query.query(task.class.ProjectType, {}, (res) => {
       typeStore.set(toIdMap(res))
