@@ -1,7 +1,7 @@
-import { type Message, type SocialID, SortOrder, type ThreadID, type Window } from '@communication/types'
-import { getWebsocketClient } from '@communication/client-ws'
-import { getSqliteClient } from '@communication/client-sqlite'
-import { createMessagesQuery, initLiveQueries } from '@communication/client-query'
+import { type Message, type SocialID, SortOrder, type ThreadID, type Window } from '@hcengineering/communication-types'
+import { getWebsocketClient } from '@hcengineering/communication-client-ws'
+import { getSqliteClient } from '@hcengineering/communication-client-sqlite'
+import { createMessagesQuery, initLiveQueries } from '@hcengineering/communication-client-query'
 
 const thread = 'cd0aba36-1c4f-4170-95f2-27a12a5415f6' as ThreadID
 const workspace = 'cd0aba36-1c4f-4170-95f2-27a12a5415f6'

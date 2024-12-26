@@ -7,7 +7,7 @@ import {
     type SocialID,
     type RichText,
     Direction, type Reaction, type Attachment, type ThreadID
-} from '@communication/types'
+} from '@hcengineering/communication-types'
 
 import {BaseDb} from './base.ts'
 import {

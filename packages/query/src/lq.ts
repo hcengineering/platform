@@ -1,11 +1,11 @@
-import { type FindMessagesParams, type FindNotificationsParams } from '@communication/types'
+import { type FindMessagesParams, type FindNotificationsParams } from '@hcengineering/communication-types'
 import { deepEqual } from 'fast-equals'
 import type {
   Client,
   MessagesQueryCallback,
   NotificationsQueryCallback,
   BroadcastEvent
-} from '@communication/sdk-types'
+} from '@hcengineering/communication-sdk-types'
 
 import type { Query, QueryId } from './types'
 import { MessagesQuery } from './messages/query'

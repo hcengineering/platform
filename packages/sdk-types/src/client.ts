@@ -11,8 +11,8 @@ import type {
   SocialID,
   Notification,
   ThreadID
-} from '@communication/types'
-import type { FindMessagesParams } from '@communication/types'
+} from '@hcengineering/communication-types'
+import type { FindMessagesParams } from '@hcengineering/communication-types'
 
 import type { BroadcastEvent } from './event.ts'
 

@@ -1,4 +1,4 @@
-import type { Response, HelloRequest, RequestId, BroadcastEvent, Request } from '@communication/sdk-types'
+import type { Response, HelloRequest, RequestId, BroadcastEvent, Request } from '@hcengineering/communication-sdk-types'
 import { encode, decode } from '@msgpack/msgpack'
 
 const PING_TIMEOUT = 10000

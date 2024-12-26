@@ -1,5 +1,5 @@
-import { LiveQueries } from '@communication/query'
-import type { Client } from '@communication/sdk-types'
+import { LiveQueries } from '@hcengineering/communication-query'
+import type { Client } from '@hcengineering/communication-sdk-types'
 
 import { MessagesQuery, NotificationsQuery } from './query'
 

@@ -13,8 +13,8 @@ import {
   type FindNotificationsParams,
   type Notification,
   type ThreadID
-} from '@communication/types'
-import type { DbAdapter } from '@communication/sdk-types'
+} from '@hcengineering/communication-types'
+import type { DbAdapter } from '@hcengineering/communication-sdk-types'
 
 import { MessagesDb } from './db/message'
 import { NotificationsDb } from './db/notification'

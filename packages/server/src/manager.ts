@@ -6,13 +6,13 @@ import {
   type NotificationContextCreatedEvent,
   type NotificationCreatedEvent,
   type Response
-} from '@communication/sdk-types'
+} from '@hcengineering/communication-sdk-types'
 import type {
   FindMessagesParams,
   FindNotificationContextParams,
   FindNotificationsParams,
   MessageID
-} from '@communication/types'
+} from '@hcengineering/communication-types'
 
 import { Session } from './session'
 import type { ConnectionInfo } from './types'

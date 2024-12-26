@@ -5,8 +5,8 @@ import {
   type MessageCreatedEvent,
   type NotificationContextCreatedEvent,
   type NotificationCreatedEvent
-} from '@communication/sdk-types'
-import type { NotificationContext, ContextID, CardID } from '@communication/types'
+} from '@hcengineering/communication-sdk-types'
+import type { NotificationContext, ContextID, CardID } from '@hcengineering/communication-types'
 
 export class Triggers {
   constructor(private readonly db: DbAdapter) {}

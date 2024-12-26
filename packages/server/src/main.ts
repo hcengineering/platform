@@ -1,8 +1,8 @@
 import WebSocket, { WebSocketServer, type RawData } from 'ws'
-import { createDbAdapter } from '@communication/cockroach'
-import type { Response, HelloRequest } from '@communication/sdk-types'
+import { createDbAdapter } from '@hcengineering/communication-cockroach'
+import type { Response, HelloRequest } from '@hcengineering/communication-sdk-types'
 import { decodeToken } from '@hcengineering/server-token'
-import type { SocialID } from '@communication/types'
+import type { SocialID } from '@hcengineering/communication-types'
 
 import type { ConnectionInfo } from './types.ts'
 import { deserializeRequest, serializeResponse } from './utils/serialize.ts'

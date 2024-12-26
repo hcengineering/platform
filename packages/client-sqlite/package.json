@@ -1,20 +1,27 @@
 {
-  "name": "@communication/client-sqlite",
+  "name": "@hcengineering/communication-client-sqlite",
   "version": "0.1.0",
   "main": "src/index.ts",
   "module": "src/index.ts",
   "types": "./types/index.d.ts",
   "type": "module",
+  "files": [
+    "./dist",
+    "./types"
+  ],
   "devDependencies": {
     "@types/bun": "^1.1.14"
   },
   "dependencies": {
-    "@communication/types": "workspace:*",
-    "@communication/sdk-types": "workspace:*",
-    "@communication/sqlite-wasm": "workspace:*",
+    "@hcengineering/communication-types": "workspace:*",
+    "@hcengineering/communication-sdk-types": "workspace:*",
+    "@hcengineering/communication-sqlite-wasm": "workspace:*",
     "fast-equals": "^5.0.1"
   },
   "peerDependencies": {
     "typescript": "^5.6.3"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }

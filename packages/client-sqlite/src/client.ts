@@ -14,15 +14,15 @@ import {
   type ThreadID,
   type Attachment,
   type Reaction
-} from '@communication/types'
+} from '@hcengineering/communication-types'
 import {
   type Client,
   type MessageCreatedEvent,
   type DbAdapter,
   EventType,
   type BroadcastEvent
-} from '@communication/sdk-types'
-import { createDbAdapter as createSqliteDbAdapter } from '@communication/sqlite-wasm'
+} from '@hcengineering/communication-sdk-types'
+import { createDbAdapter as createSqliteDbAdapter } from '@hcengineering/communication-sqlite-wasm'
 
 class DbClient implements Client {
   onEvent: (event: BroadcastEvent) => void = () => {}

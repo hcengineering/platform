@@ -1,6 +1,10 @@
-import { type LiveQueries } from '@communication/query'
-import type { MessagesQueryCallback, NotificationsQueryCallback, QueryCallback } from '@communication/sdk-types'
-import { type FindMessagesParams, type FindNotificationsParams } from '@communication/types'
+import { type LiveQueries } from '@hcengineering/communication-query'
+import type {
+  MessagesQueryCallback,
+  NotificationsQueryCallback,
+  QueryCallback
+} from '@hcengineering/communication-sdk-types'
+import { type FindMessagesParams, type FindNotificationsParams } from '@hcengineering/communication-types'
 import { deepEqual } from 'fast-equals'
 
 class BaseQuery<P extends Record<string, any>, C extends QueryCallback<any>> {

@@ -12,8 +12,8 @@ import {
   type NotificationContext,
   type Notification,
   type ThreadID
-} from '@communication/types'
-import type { DbAdapter } from '@communication/sdk-types'
+} from '@hcengineering/communication-types'
+import type { DbAdapter } from '@hcengineering/communication-sdk-types'
 
 import { initializeSQLite, type Sqlite3Worker1Promiser } from './connection'
 import { applyMigrations } from './migrations.ts'

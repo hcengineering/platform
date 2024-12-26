@@ -1,14 +1,21 @@
 {
-  "name": "@communication/types",
+  "name": "@hcengineering/communication-types",
   "version": "0.1.0",
   "main": "src/index.ts",
   "module": "src/index.ts",
   "types": "./types/index.d.ts",
   "type": "module",
+  "files": [
+    "./dist",
+    "./types"
+  ],
   "devDependencies": {
     "@types/bun": "^1.1.14"
   },
   "peerDependencies": {
     "typescript": "^5.6.3"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }

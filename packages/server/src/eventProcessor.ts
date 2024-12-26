@@ -1,4 +1,4 @@
-import { type Message, type Patch, type Reaction, type Attachment } from '@communication/types'
+import { type Message, type Patch, type Reaction, type Attachment } from '@hcengineering/communication-types'
 import {
   EventType,
   type CreateAttachmentEvent,
@@ -28,7 +28,7 @@ import {
   type NotificationContextCreatedEvent,
   type NotificationContextRemovedEvent,
   type NotificationContextUpdatedEvent
-} from '@communication/sdk-types'
+} from '@hcengineering/communication-sdk-types'
 
 type Result = {
   broadcastEvent?: BroadcastEvent

@@ -3,7 +3,7 @@ import {
     SortOrder,
     type Notification,
     type ID,
-} from '@communication/types'
+} from '@hcengineering/communication-types'
 import {
     type NotificationCreatedEvent,
     EventType,
@@ -11,7 +11,7 @@ import {
     type NotificationContextRemovedEvent,
     type NotificationRemovedEvent,
     type NotificationContextUpdatedEvent,
-} from '@communication/sdk-types'
+} from '@hcengineering/communication-sdk-types'
 
 import {BaseQuery} from '../query.ts';
 

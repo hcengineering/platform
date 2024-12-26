@@ -12,7 +12,7 @@ import type {
   SocialID,
   Notification,
   ThreadID
-} from '@communication/types'
+} from '@hcengineering/communication-types'
 
 export enum EventType {
   CreateMessage = 'createMessage',

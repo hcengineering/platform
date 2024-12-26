@@ -1,5 +1,5 @@
 import { Packr } from 'msgpackr'
-import type {Response, Request} from '@communication/sdk-types'
+import type {Response, Request} from '@hcengineering/communication-sdk-types'
 
 import type {RawData} from "ws";
 

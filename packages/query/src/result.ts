@@ -1,4 +1,4 @@
-import type { ID } from '@communication/types'
+import type { ID } from '@hcengineering/communication-types'
 
 export class QueryResult<T> {
   private objectById: Map<ID, T>

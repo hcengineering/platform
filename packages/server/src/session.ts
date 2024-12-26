@@ -1,4 +1,4 @@
-import type { DbAdapter, Event, EventResult } from '@communication/sdk-types'
+import type { DbAdapter, Event, EventResult } from '@hcengineering/communication-sdk-types'
 import type {
   FindMessagesParams,
   FindNotificationContextParams,
@@ -6,7 +6,7 @@ import type {
   Message,
   Notification,
   NotificationContext
-} from '@communication/types'
+} from '@hcengineering/communication-types'
 
 import type { ConnectionInfo } from './types'
 import { EventProcessor } from './eventProcessor.ts'

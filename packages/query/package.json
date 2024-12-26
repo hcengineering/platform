@@ -1,17 +1,21 @@
 {
-  "name": "@communication/query",
+  "name": "@hcengineering/communication-query",
   "version": "0.1.0",
   "main": "src/index.ts",
   "module": "src/index.ts",
   "types": "./types/index.d.ts",
   "type": "module",
+  "files": [
+    "./dist",
+    "./types"
+  ],
   "devDependencies": {
     "@types/bun": "^1.1.14",
      "@types/crypto-js": "^4.2.2"
   },
   "dependencies": {
-    "@communication/types": "workspace:*",
-    "@communication/sdk-types": "workspace:*",
+    "@hcengineering/communication-types": "workspace:*",
+    "@hcengineering/communication-sdk-types": "workspace:*",
     "fast-equals": "^5.0.1"
   },
   "peerDependencies": {

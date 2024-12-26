@@ -1,5 +1,5 @@
-import { type BroadcastEvent } from '@communication/sdk-types'
-import { Direction, SortOrder, type Window } from '@communication/types'
+import { type BroadcastEvent } from '@hcengineering/communication-sdk-types'
+import { Direction, SortOrder, type Window } from '@hcengineering/communication-types'
 
 import { QueryResult } from './result.ts'
 

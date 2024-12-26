@@ -14,7 +14,7 @@ import {
   type RichText,
   type SocialID,
   type ThreadID
-} from '@communication/types'
+} from '@hcengineering/communication-types'
 import {
   type BroadcastEvent,
   type Client,
@@ -35,7 +35,7 @@ import {
   type RemoveNotificationEvent,
   type RemoveReactionEvent,
   type UpdateNotificationContextEvent
-} from '@communication/sdk-types'
+} from '@hcengineering/communication-sdk-types'
 
 import { WebSocketConnection } from './connection'
 

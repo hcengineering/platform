@@ -4,7 +4,7 @@ import {
     type Message,
     type Patch,
     SortOrder
-} from '@communication/types'
+} from '@hcengineering/communication-types'
 import {
     type AttachmentCreatedEvent,
     type MessageCreatedEvent,
@@ -15,7 +15,7 @@ import {
     type AttachmentRemovedEvent,
     type MessageRemovedEvent,
     type ReactionRemovedEvent
-} from '@communication/sdk-types'
+} from '@hcengineering/communication-sdk-types'
 
 import { BaseQuery } from '../query'
 

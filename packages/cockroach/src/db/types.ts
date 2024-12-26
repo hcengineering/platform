@@ -1,4 +1,4 @@
-import type {CardID, ContextID, MessageID, RichText, SocialID, ThreadID } from "@communication/types"
+import type {CardID, ContextID, MessageID, RichText, SocialID, ThreadID } from "@hcengineering/communication-types"
 
 export enum TableName {
     Message = 'message',

@@ -1,4 +1,4 @@
-import type { Message, Window, Notification } from '@communication/types'
+import type { Message, Window, Notification } from '@hcengineering/communication-types'
 
 export type QueryCallback<T> = (window: Window<T>) => void
 

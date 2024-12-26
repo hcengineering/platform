@@ -1,4 +1,4 @@
-import type { Window } from '@communication/types'
+import type { Window } from '@hcengineering/communication-types'
 
 import type { Query } from './types'
 

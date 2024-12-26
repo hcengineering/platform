@@ -6,7 +6,7 @@ import {
     type FindNotificationContextParams, SortOrder,
     type FindNotificationsParams, type Notification,
     type NotificationContextUpdate
-} from '@communication/types'
+} from '@hcengineering/communication-types'
 
 import {BaseDb} from './base.ts'
 import {TableName, type ContextDb, type NotificationDb} from './types.ts'

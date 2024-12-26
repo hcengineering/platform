@@ -1,5 +1,5 @@
-import { Direction, type ID, SortOrder } from '@communication/types'
-import { type BroadcastEvent, type QueryCallback, type Client } from '@communication/sdk-types'
+import { Direction, type ID, SortOrder } from '@hcengineering/communication-types'
+import { type BroadcastEvent, type QueryCallback, type Client } from '@hcengineering/communication-sdk-types'
 
 import { QueryResult } from './result'
 import { defaultQueryParams, type FindParams, type Query, type QueryId } from './types'
