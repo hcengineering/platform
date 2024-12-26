@@ -15,6 +15,10 @@
   "peerDependencies": {
     "typescript": "^5.6.3"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcengineering/communication.git"
+  },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   }
