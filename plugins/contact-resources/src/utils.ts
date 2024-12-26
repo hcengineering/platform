@@ -52,7 +52,7 @@ import core, {
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import { type IntlString, getEmbeddedLabel, getResource, translate } from '@hcengineering/platform'
-import { createQuery, getClient } from '@hcengineering/presentation'
+import { createQuery, getClient, onClient } from '@hcengineering/presentation'
 import { type TemplateDataProvider } from '@hcengineering/templates'
 import {
   getCurrentResolvedLocation,
@@ -323,42 +323,32 @@ export const personByIdStore = derived([personAccountPersonByIdStore, employeeBy
   return new Map([...m1, ...m2])
 })
 
-function fillStores (): void {
-  const client = getClient()
+const query = createQuery(true)
+const accountQ = createQuery(true)
+const accountPersonQuery = createQuery(true)
+const providerQuery = createQuery(true)
 
-  if (client !== undefined) {
-    const accountPersonQuery = createQuery(true)
+onClient(() => {
+  query.query(contact.mixin.Employee, { active: { $in: [true, false] } }, (res) => {
+    employeesStore.set(res)
+    employeeByIdStore.set(toIdMap(res))
+  })
 
-    const query = createQuery(true)
-    query.query(contact.mixin.Employee, { active: { $in: [true, false] } }, (res) => {
-      employeesStore.set(res)
-      employeeByIdStore.set(toIdMap(res))
+  accountQ.query(contact.class.PersonAccount, {}, (res) => {
+    personAccountByIdStore.set(toIdMap(res))
+
+    const persons = res.map((it) => it.person)
+
+    accountPersonQuery.query<Person>(contact.class.Person, { _id: { $in: persons } }, (res) => {
+      const personIn = toIdMap(res)
+      personAccountPersonByIdStore.set(personIn)
     })
+  })
 
-    const accountQ = createQuery(true)
-    accountQ.query(contact.class.PersonAccount, {}, (res) => {
-      personAccountByIdStore.set(toIdMap(res))
-
-      const persons = res.map((it) => it.person)
-
-      accountPersonQuery.query<Person>(contact.class.Person, { _id: { $in: persons } }, (res) => {
-        const personIn = toIdMap(res)
-        personAccountPersonByIdStore.set(personIn)
-      })
-    })
-
-    const providerQuery = createQuery(true)
-    providerQuery.query(contact.class.ChannelProvider, {}, (res) => {
-      channelProviders.set(res)
-    })
-  } else {
-    setTimeout(() => {
-      fillStores()
-    }, 50)
-  }
-}
-
-fillStores()
+  providerQuery.query(contact.class.ChannelProvider, {}, (res) => {
+    channelProviders.set(res)
+  })
+})
 
 const userStatusesQuery = createQuery(true)
 
