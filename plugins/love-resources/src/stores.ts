@@ -106,14 +106,10 @@ function fillStores (): void {
     )
     const requestsQuery = createQuery(true)
     const requestPromise = new Promise<void>((resolve) =>
-      requestsQuery.query(
-        love.class.JoinRequest,
-        { person: account.person, status: RequestStatus.Pending },
-        (res) => {
-          myRequests.set(res)
-          resolve()
-        }
-      )
+      requestsQuery.query(love.class.JoinRequest, { person: account.person, status: RequestStatus.Pending }, (res) => {
+        myRequests.set(res)
+        resolve()
+      })
     )
     const preferencesQuery = createQuery(true)
     const preferencePromise = new Promise<void>((resolve) =>
