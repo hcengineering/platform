@@ -11,12 +11,15 @@
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
-    "noEmit": true,
 
     // Best practices
     "strict": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
+
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
 
     // Some stricter flags (disabled by default)
     "noUnusedLocals": false,

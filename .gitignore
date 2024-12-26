@@ -1,6 +1,9 @@
 # build output
 dist/
 lib/
+**/types/
+
+!packages/types/
 
 # VS Code settings
 .vscode/settings.json

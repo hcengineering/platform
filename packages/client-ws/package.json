@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "main": "src/index.ts",
   "module": "src/index.ts",
+  "types": "./types/index.d.ts",
   "type": "module",
   "devDependencies": {
     "@types/bun": "^1.1.14"
