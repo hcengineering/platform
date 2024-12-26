@@ -21,11 +21,11 @@ import { SessionDataImpl, wrapPipeline, type Pipeline, type StorageAdapter } fro
 import {
   getServerPipeline,
   getTxAdapterFactory,
-  registerAdapterFactry,
-  registerDestroyFactry,
+  registerAdapterFactory,
+  registerDestroyFactory,
   registerServerPlugins,
   registerStringLoaders,
-  registerTxAdapterFactry
+  registerTxAdapterFactory
 } from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { generateToken } from '@hcengineering/server-token'
@@ -82,13 +82,13 @@ export async function createWorkspace (
     const hierarchy = new Hierarchy()
     const modelDb = new ModelDb(hierarchy)
 
-    registerTxAdapterFactry('mongodb', createMongoTxAdapter)
-    registerAdapterFactry('mongodb', createMongoAdapter)
-    registerDestroyFactry('mongodb', createMongoDestroyAdapter)
+    registerTxAdapterFactory('mongodb', createMongoTxAdapter)
+    registerAdapterFactory('mongodb', createMongoAdapter)
+    registerDestroyFactory('mongodb', createMongoDestroyAdapter)
 
-    registerTxAdapterFactry('postgresql', createPostgresTxAdapter, true)
-    registerAdapterFactry('postgresql', createPostgresAdapter, true)
-    registerDestroyFactry('postgresql', createPostgreeDestroyAdapter, true)
+    registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
+    registerAdapterFactory('postgresql', createPostgresAdapter, true)
+    registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
     registerServerPlugins()
     registerStringLoaders()
 
@@ -173,13 +173,13 @@ export async function upgradeWorkspace (
 ): Promise<void> {
   const { dbUrl } = prepareTools([])
   let pipeline: Pipeline | undefined
-  registerTxAdapterFactry('mongodb', createMongoTxAdapter)
-  registerAdapterFactry('mongodb', createMongoAdapter)
-  registerDestroyFactry('mongodb', createMongoDestroyAdapter)
+  registerTxAdapterFactory('mongodb', createMongoTxAdapter)
+  registerAdapterFactory('mongodb', createMongoAdapter)
+  registerDestroyFactory('mongodb', createMongoDestroyAdapter)
 
-  registerTxAdapterFactry('postgresql', createPostgresTxAdapter, true)
-  registerAdapterFactry('postgresql', createPostgresAdapter, true)
-  registerDestroyFactry('postgresql', createPostgreeDestroyAdapter, true)
+  registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
+  registerAdapterFactory('postgresql', createPostgresAdapter, true)
+  registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
 
   registerServerPlugins()
   registerStringLoaders()
