@@ -86,7 +86,7 @@
     }
   }
   const changeMonth = (date: Date): Date => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 1)
+    return new Date(Date.UTC(date.getFullYear(), date.getMonth() + 1, 1))
   }
 
   $: if (viewDate) viewDateSec = changeMonth(viewDate)
