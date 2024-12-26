@@ -21,6 +21,7 @@ import core, {
   TxProcessor,
   getCurrentAccount,
   reduceCalls,
+  type Account,
   type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
@@ -253,6 +254,18 @@ export function getClient (): TxOperations & Client {
   return clientProxy
 }
 
+export type OnClientListener = (client: Client, account: Account) => void
+const onClientListeners: OnClientListener[] = []
+
+export function onClient (l: OnClientListener): void {
+  onClientListeners.push(l)
+  if (client !== undefined) {
+    setTimeout(() => {
+      l(client, getCurrentAccount())
+    })
+  }
+}
+
 let txQueue: Tx[] = []
 
 export type RefreshListener = () => void
@@ -306,6 +319,10 @@ export async function setClient (_client: Client): Promise<void> {
   if (needRefresh || globalQueries.length > 0) {
     await refreshClient(true)
   }
+  const acc = getCurrentAccount()
+  onClientListeners.forEach((l) => {
+    l(_client, acc)
+  })
 }
 /**
  * @public

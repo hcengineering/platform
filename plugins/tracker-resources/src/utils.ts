@@ -36,7 +36,7 @@ import core, {
   type TxUpdateDoc
 } from '@hcengineering/core'
 import { type IntlString } from '@hcengineering/platform'
-import { createQuery, getClient } from '@hcengineering/presentation'
+import { createQuery, getClient, onClient } from '@hcengineering/presentation'
 import task, { getStatusIndex, makeRank, type ProjectType } from '@hcengineering/task'
 import { activeProjects as taskActiveProjects, taskTypeStore } from '@hcengineering/task-resources'
 import {
@@ -577,36 +577,25 @@ export interface IssueRef {
 export type IssueReverseRevMap = Map<Ref<Doc>, IssueRef[]>
 export const relatedIssues = writable<IssueReverseRevMap>(new Map())
 
-function fillStores (): void {
-  const client = getClient()
-
-  if (client !== undefined) {
-    const relatedIssuesQuery = createQuery(true)
-
-    relatedIssuesQuery.query(
-      tracker.class.Issue,
-      { 'relations._id': { $exists: true } },
-      (res) => {
-        const nMap: IssueReverseRevMap = new Map()
-        for (const r of res) {
-          for (const rr of r.relations ?? []) {
-            nMap.set(rr._id, [...(nMap.get(rr._id) ?? []), { _id: r._id, status: r.status }])
-          }
-        }
-        relatedIssues.set(nMap)
-      },
-      {
-        projection: {
-          relations: 1,
-          status: 1
+const relatedIssuesQuery = createQuery(true)
+onClient(() => {
+  relatedIssuesQuery.query(
+    tracker.class.Issue,
+    { 'relations._id': { $exists: true } },
+    (res) => {
+      const nMap: IssueReverseRevMap = new Map()
+      for (const r of res) {
+        for (const rr of r.relations ?? []) {
+          nMap.set(rr._id, [...(nMap.get(rr._id) ?? []), { _id: r._id, status: r.status }])
         }
       }
-    )
-  } else {
-    setTimeout(() => {
-      fillStores()
-    }, 50)
-  }
-}
-
-fillStores()
+      relatedIssues.set(nMap)
+    },
+    {
+      projection: {
+        relations: 1,
+        status: 1
+      }
+    }
+  )
+})
