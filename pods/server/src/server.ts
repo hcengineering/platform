@@ -35,11 +35,11 @@ import { type Token } from '@hcengineering/server-token'
 
 import {
   createServerPipeline,
-  registerAdapterFactry,
-  registerDestroyFactry,
+  registerAdapterFactory,
+  registerDestroyFactory,
   registerServerPlugins,
   registerStringLoaders,
-  registerTxAdapterFactry
+  registerTxAdapterFactory
 } from '@hcengineering/server-pipeline'
 
 import { readFileSync } from 'node:fs'
@@ -74,13 +74,13 @@ export function start (
     mongoUrl?: string
   }
 ): { shutdown: () => Promise<void>, sessionManager: SessionManager } {
-  registerTxAdapterFactry('mongodb', createMongoTxAdapter)
-  registerAdapterFactry('mongodb', createMongoAdapter)
-  registerDestroyFactry('mongodb', createMongoDestroyAdapter)
+  registerTxAdapterFactory('mongodb', createMongoTxAdapter)
+  registerAdapterFactory('mongodb', createMongoAdapter)
+  registerDestroyFactory('mongodb', createMongoDestroyAdapter)
 
-  registerTxAdapterFactry('postgresql', createPostgresTxAdapter, true)
-  registerAdapterFactry('postgresql', createPostgresAdapter, true)
-  registerDestroyFactry('postgresql', createPostgreeDestroyAdapter, true)
+  registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
+  registerAdapterFactory('postgresql', createPostgresAdapter, true)
+  registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
 
   registerServerPlugins()
 

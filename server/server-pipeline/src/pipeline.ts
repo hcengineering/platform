@@ -210,21 +210,21 @@ const txAdapterFactories: Record<string, DbAdapterFactory> = {}
 const adapterFactories: Record<string, DbAdapterFactory> = {}
 const destroyFactories: Record<string, (url: string) => WorkspaceDestroyAdapter> = {}
 
-export function registerTxAdapterFactry (name: string, factory: DbAdapterFactory, useAsDefault: boolean = true): void {
+export function registerTxAdapterFactory (name: string, factory: DbAdapterFactory, useAsDefault: boolean = true): void {
   txAdapterFactories[name] = factory
   if (useAsDefault) {
     txAdapterFactories[''] = factory
   }
 }
 
-export function registerAdapterFactry (name: string, factory: DbAdapterFactory, useAsDefault: boolean = true): void {
+export function registerAdapterFactory (name: string, factory: DbAdapterFactory, useAsDefault: boolean = true): void {
   adapterFactories[name] = factory
   if (useAsDefault) {
     adapterFactories[''] = factory
   }
 }
 
-export function registerDestroyFactry (
+export function registerDestroyFactory (
   name: string,
   factory: (url: string) => WorkspaceDestroyAdapter,
   useAsDefault: boolean = true

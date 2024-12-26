@@ -38,11 +38,11 @@ import { gzip } from 'zlib'
 import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
 import {
   createServerPipeline,
-  registerAdapterFactry,
-  registerDestroyFactry,
+  registerAdapterFactory,
+  registerDestroyFactory,
   registerServerPlugins,
   registerStringLoaders,
-  registerTxAdapterFactry
+  registerTxAdapterFactory
 } from '@hcengineering/server-pipeline'
 import model from './model.json'
 
@@ -65,9 +65,9 @@ export class Transactor extends DurableObject<Env> {
   constructor (ctx: DurableObjectState, env: Env) {
     super(ctx, env)
 
-    registerTxAdapterFactry('postgresql', createPostgresTxAdapter, true)
-    registerAdapterFactry('postgresql', createPostgresAdapter, true)
-    registerDestroyFactry('postgresql', createPostgreeDestroyAdapter, true)
+    registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
+    registerAdapterFactory('postgresql', createPostgresAdapter, true)
+    registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
 
     registerStringLoaders()
     registerServerPlugins()

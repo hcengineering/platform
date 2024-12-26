@@ -47,11 +47,11 @@ import serverCore, {
 import { FullTextIndexPipeline, searchFulltext, type FulltextDBConfiguration } from '@hcengineering/server-indexer'
 import {
   getConfig,
-  registerAdapterFactry,
-  registerDestroyFactry,
+  registerAdapterFactory,
+  registerDestroyFactory,
   registerServerPlugins,
   registerStringLoaders,
-  registerTxAdapterFactry
+  registerTxAdapterFactory
 } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken, type Token } from '@hcengineering/server-token'
 import cors from '@koa/cors'
@@ -207,13 +207,13 @@ export async function startIndexer (
   setMetadata(serverCore.metadata.ElasticIndexName, opt.elasticIndexName)
   setMetadata(serverClientPlugin.metadata.Endpoint, opt.accountsUrl)
 
-  registerTxAdapterFactry('mongodb', createMongoTxAdapter)
-  registerAdapterFactry('mongodb', createMongoAdapter)
-  registerDestroyFactry('mongodb', createMongoDestroyAdapter)
+  registerTxAdapterFactory('mongodb', createMongoTxAdapter)
+  registerAdapterFactory('mongodb', createMongoAdapter)
+  registerDestroyFactory('mongodb', createMongoDestroyAdapter)
 
-  registerTxAdapterFactry('postgresql', createPostgresTxAdapter, true)
-  registerAdapterFactry('postgresql', createPostgresAdapter, true)
-  registerDestroyFactry('postgresql', createPostgreeDestroyAdapter, true)
+  registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
+  registerAdapterFactory('postgresql', createPostgresAdapter, true)
+  registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
 
   registerServerPlugins()
   registerStringLoaders()
