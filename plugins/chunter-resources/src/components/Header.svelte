@@ -122,7 +122,7 @@
 
   <svelte:fragment slot="presence">
     {#if withPresence && object}
-      <PresenceAvatars {object} size="x-small" limit={3} />
+      <PresenceAvatars {object} size="x-small" limit={4} />
     {/if}
   </svelte:fragment>
 
