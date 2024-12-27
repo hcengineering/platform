@@ -62,12 +62,6 @@
     <LiteNodes {nodes} />
   {:else if node.type === MarkupNodeType.horizontal_rule}
     <!--  nothing-->
-  {:else if node.type === MarkupNodeType.heading}
-    {@const level = toNumber(node.attrs?.level) ?? 1}
-    {@const element = `h${level}`}
-    <svelte:element this={element}>
-      <LiteNodes {nodes} />
-    </svelte:element>
   {:else if node.type === MarkupNodeType.code_block}
     <p class="p-inline contrast" class:overflow-label={true} style:margin="0">
       <NodeMarks
