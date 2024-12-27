@@ -229,7 +229,13 @@ export class WorkspaceImporter {
           kind: 'both',
           name: taskType.name,
           ofClass: tracker.class.Issue,
-          statusCategories: [task.statusCategory.Active],
+          statusCategories: [
+            task.statusCategory.UnStarted,
+            task.statusCategory.ToDo,
+            task.statusCategory.Active,
+            task.statusCategory.Won,
+            task.statusCategory.Lost
+          ],
           statusClass: tracker.class.IssueStatus,
           icon: tracker.icon.Issue,
           color: 0,
