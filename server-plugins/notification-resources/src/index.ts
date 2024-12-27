@@ -284,9 +284,9 @@ async function getValueCollaborators (value: any, attr: AnyAttribute, control: T
       const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, { attachedTo: value, attachedToClass: contact.class.Person })
 
       return [pickPrimarySocialId(socialIds.map((it) => it.key))]
-    } else if (attr.type._class === core.class.TypeString) {
-      return [value]
     }
+  } else if (attr.type._class === core.class.TypePersonId) {
+    return [value]
   } else if (attr.type._class === core.class.ArrOf) {
     const arrOf = (attr.type as ArrOf<RefTo<Doc>>).of
 
@@ -306,7 +306,7 @@ async function getValueCollaborators (value: any, attr: AnyAttribute, control: T
 
         return Object.values(byPerson).map((socialStrings) => pickPrimarySocialId(socialStrings))
       }
-    } else if (arrOf._class === core.class.TypeString) {
+    } else if (arrOf._class === core.class.TypePersonId) {
       return Array.isArray(value) ? value : [value]
     }
   }

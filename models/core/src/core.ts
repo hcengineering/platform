@@ -69,6 +69,7 @@ import {
   TypeRef,
   TypeString,
   TypeTimestamp,
+  TypePersonId,
   UX
 } from '@hcengineering/model'
 import { getEmbeddedLabel, type IntlString, type Plugin } from '@hcengineering/platform'
@@ -100,11 +101,11 @@ export class TDoc extends TObj implements Doc {
   @Index(IndexKind.Indexed)
     modifiedOn!: Timestamp
 
-  @Prop(TypeString(), core.string.ModifiedBy)
+  @Prop(TypePersonId(), core.string.ModifiedBy)
   @Index(IndexKind.Indexed)
     modifiedBy!: PersonId
 
-  @Prop(TypeString(), core.string.CreatedBy)
+  @Prop(TypePersonId(), core.string.CreatedBy)
   @Index(IndexKind.Indexed)
     createdBy!: PersonId
 
@@ -251,6 +252,10 @@ export class TTypeFileSize extends TType {}
 @UX(core.string.Markup)
 @Model(core.class.TypeMarkup, core.class.Type)
 export class TTypeMarkup extends TType {}
+
+@UX(core.string.PersonId)
+@Model(core.class.TypePersonId, core.class.Type)
+export class TTypePersonId extends TType {}
 
 @UX(core.string.Ref)
 @Model(core.class.RefTo, core.class.Type)

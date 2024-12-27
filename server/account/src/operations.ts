@@ -653,7 +653,7 @@ export async function leaveWorkspace (
   branding: Branding | null,
   token: string,
   targetAccount: string
-): Promise<void> {
+): Promise<LoginInfo | null> {
   const { account, workspace } = decodeTokenVerbose(ctx, token)
   ctx.info('Removing account from workspace', { targetAccount, workspace })
 
@@ -664,13 +664,24 @@ export async function leaveWorkspace (
 
   const initiatorRole = await db.getWorkspaceRole(account, workspace)
 
-  if (initiatorRole == null || getRolePower(initiatorRole) < getRolePower(AccountRole.Maintainer)) {
-    ctx.error('Need to be at least maintainer to remove account from workspace', { account, workspace, initiatorRole })
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  if (account !== targetAccount) {
+    if (initiatorRole == null || (getRolePower(initiatorRole) < getRolePower(AccountRole.Maintainer))) {
+      ctx.error('Need to be at least maintainer to remove someone else\'s account from workspace', { account, workspace, initiatorRole })
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
   }
 
   await db.unassignWorkspace(targetAccount, workspace)
   ctx.info('Account removed from workspace', { targetAccount, workspace })
+
+  if (account === targetAccount) {
+    return {
+      account,
+      token: generateToken(account, '')
+    }
+  }
+
+  return null
 }
 
 export async function changeUsername (

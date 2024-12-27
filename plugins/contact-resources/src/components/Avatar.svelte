@@ -48,7 +48,7 @@
   import { loadUsersStatus, statusByUserStore } from '../utils'
   import AvatarInstance from './AvatarInstance.svelte'
 
-  export let person: (Data<WithLookup<AvatarInfo>> & { _id?: Ref<Person>, personUuid: string }) | undefined = undefined
+  export let person: (Data<WithLookup<AvatarInfo>> & { _id?: Ref<Person>, personUuid?: string }) | undefined = undefined
   export let name: string | null | undefined = undefined
   export let direct: Blob | undefined = undefined
   export let size: IconSize

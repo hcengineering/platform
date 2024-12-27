@@ -111,6 +111,7 @@
       inAction = false
     })
   }
+  onMount(() => (ignoreInitialValidation = false))
 
   function trim (field: string): void {
     object[field] = (object[field] as string).trim()

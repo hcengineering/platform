@@ -35,7 +35,7 @@ export interface AccountClient {
   confirm: () => Promise<LoginInfo>
   requestPasswordReset: (email: string) => Promise<void>
   sendInvite: (email: string, role?: AccountRole) => Promise<void>
-  leaveWorkspace: (email: string) => Promise<void>
+  leaveWorkspace: (account: string) => Promise<LoginInfo | null>
   changeUsername: (first: string, last: string) => Promise<void>
   changePassword: (oldPassword: string, newPassword: string) => Promise<void>
   signUpJoin: (email: string, password: string, first: string, last: string, inviteId: string) => Promise<WorkspaceLoginInfo>
@@ -215,13 +215,13 @@ class AccountClientImpl implements AccountClient {
     await this.rpc(request)
   }
 
-  async leaveWorkspace (email: string): Promise<void> {
+  async leaveWorkspace (account: string): Promise<LoginInfo | null> {
     const request = {
       method: 'leaveWorkspace' as const,
-      params: [email]
+      params: [account]
     }
 
-    await this.rpc(request)
+    return await this.rpc(request)
   }
 
   async changeUsername (first: string, last: string): Promise<void> {

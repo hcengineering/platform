@@ -93,6 +93,8 @@ export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<
     if (await checkCalendarsExist(control, ctx.objectId)) continue
 
     const socialStrings = await getSocialStrings(control, ctx.objectId)
+    if (socialStrings.length === 0) continue
+
     const socialString = pickPrimarySocialId(socialStrings)
     const { value } = parseSocialIdString(socialString)
 

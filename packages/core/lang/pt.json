@@ -55,6 +55,7 @@
     "AutoJoin": "Auto adesão",
     "AutoJoinDescr": "Adesão automática de novos funcionários a este espaço",
     "BlobSize": "Tamanho",
-    "BlobContentType": "Tipo de conteúdo"
+    "BlobContentType": "Tipo de conteúdo",
+    "PersonId": "ID de pessoa"
   }
 }

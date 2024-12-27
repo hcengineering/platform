@@ -62,6 +62,7 @@
     "AutoJoin": "Auto join",
     "AutoJoinDescr": "Automatically join new employees to this space",
     "BlobSize": "Size",
-    "BlobContentType": "Content type"
+    "BlobContentType": "Content type",
+    "PersonId": "Person"
   }
 }

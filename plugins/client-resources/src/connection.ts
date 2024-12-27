@@ -29,6 +29,7 @@ import core, {
   FindResult,
   LoadModelResponse,
   MeasureMetricsContext,
+  PersonId,
   Ref,
   SearchOptions,
   SearchQuery,
@@ -699,7 +700,7 @@ export function connect (
   url: string,
   handler: TxHandler,
   workspace: string,
-  user: string,
+  user: PersonId,
   opt?: ClientFactoryOptions
 ): ClientConnection {
   return new Connection(

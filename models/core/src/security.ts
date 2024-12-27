@@ -41,6 +41,7 @@ import {
   TypeBoolean,
   TypeRef,
   TypeString,
+  TypePersonId,
   UX
 } from '@hcengineering/model'
 import { getEmbeddedLabel, type Asset, type IntlString } from '@hcengineering/platform'
@@ -67,11 +68,11 @@ export class TSpace extends TDoc implements Space {
   @Index(IndexKind.Indexed)
     archived!: boolean
 
-  @Prop(ArrOf(TypeString()), core.string.Members)
+  @Prop(ArrOf(TypePersonId()), core.string.Members)
   @Index(IndexKind.Indexed)
     members!: Arr<PersonId>
 
-  @Prop(ArrOf(TypeString()), core.string.Owners)
+  @Prop(ArrOf(TypePersonId()), core.string.Owners)
     owners?: PersonId[]
 
   @Prop(TypeBoolean(), core.string.AutoJoin)
@@ -118,7 +119,7 @@ export class TSpaceType extends TDoc implements SpaceType {
   @Prop(Collection(core.class.Role), core.string.Roles)
     roles!: CollectionSize<Role>
 
-  @Prop(ArrOf(TypeString()), core.string.Members)
+  @Prop(ArrOf(TypePersonId()), core.string.Members)
     members!: Arr<PersonId>
 
   @Prop(TypeBoolean(), core.string.AutoJoin)

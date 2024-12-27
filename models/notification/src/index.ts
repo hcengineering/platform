@@ -48,6 +48,7 @@ import {
   TypeMarkup,
   TypeRef,
   TypeString,
+  TypePersonId,
   UX,
   type Builder
 } from '@hcengineering/model'
@@ -170,7 +171,7 @@ export class TClassCollaborators extends TClass {
 @Mixin(notification.mixin.Collaborators, core.class.Doc)
 @UX(notification.string.Collaborators)
 export class TCollaborators extends TDoc {
-  @Prop(ArrOf(TypeString()), notification.string.Collaborators)
+  @Prop(ArrOf(TypePersonId()), notification.string.Collaborators)
   @Index(IndexKind.Indexed)
     collaborators!: PersonId[]
 }
@@ -192,7 +193,7 @@ export class TNotificationContextPresenter extends TClass implements Notificatio
 
 @Model(notification.class.DocNotifyContext, core.class.Doc, DOMAIN_DOC_NOTIFY)
 export class TDocNotifyContext extends TDoc implements DocNotifyContext {
-  @Prop(TypeString(), core.string.Account)
+  @Prop(TypePersonId(), core.string.Account)
   @Index(IndexKind.Indexed)
     user!: PersonId
 
@@ -229,7 +230,7 @@ export class TInboxNotification extends TDoc implements InboxNotification {
   @Index(IndexKind.Indexed)
     docNotifyContext!: Ref<DocNotifyContext>
 
-  @Prop(TypeString(), core.string.Account)
+  @Prop(TypePersonId(), core.string.Account)
   @Index(IndexKind.Indexed)
     user!: PersonId
 

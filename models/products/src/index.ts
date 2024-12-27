@@ -39,6 +39,7 @@ import {
   ArrOf,
   TypeAny,
   ReadOnly,
+  TypePersonId,
   Mixin
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
@@ -78,7 +79,7 @@ export class TTypeProductVersionState extends TType {}
 @Model(products.class.Product, documents.class.ExternalSpace)
 @UX(products.string.Product, products.icon.Product, 'Product', 'name', undefined, products.string.Products)
 export class TProduct extends TExternalSpace implements Product {
-  @Prop(ArrOf(TypeString()), core.string.Members)
+  @Prop(ArrOf(TypePersonId()), core.string.Members)
   declare members: Arr<PersonId>
 
   @Prop(TypeMarkup(), products.string.Description)

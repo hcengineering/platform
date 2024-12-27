@@ -13,7 +13,7 @@ export class LoginPage {
   buttonLogin = (): Locator => this.page.locator('button', { hasText: 'Log In' })
   loginWithPassword = (): Locator => this.page.locator('a', { hasText: 'Login with password' })
   linkSignUp = (): Locator => this.page.locator('a.title', { hasText: 'Sign Up' })
-  invalidPasswordMessage = (): Locator => this.page.getByText('Invalid password')
+  invalidCredentialsMessage = (): Locator => this.page.getByText('Account not found or the provided credentials are incorrect')
   recoverLink = (): Locator => this.page.getByRole('link', { name: 'Recover' })
   passwordRecovery = (): Locator => this.page.getByText('Password recovery')
   recoveryLoginText = (): Locator => this.page.getByText('Know your password? Log In')
@@ -60,18 +60,23 @@ export class LoginPage {
   // ASSERTS
 
   async checkingNeedReLogin (): Promise<void> {
-    if (await this.profileButton().isVisible()) {
+    try {
+      await this.profileButton().waitFor({ state: 'visible', timeout: 5000 })
       await this.openProfileMenu()
       await this.popupItemButton('Sign out').click()
       await this.loginWithPassword().waitFor({ state: 'visible', timeout: 15000 })
+    } catch (e) {
+      // Do nothing
     }
   }
 
-  async checkIfErrorMessageIsShown (): Promise<void> {
-    await expect(this.invalidPasswordMessage()).toContainText('Invalid password')
+  async checkIfErrorMessageIsShown (message: string): Promise<void> {
+    if (message === 'wrong-credentials') {
+      await expect(this.invalidCredentialsMessage()).toBeVisible()
+    }
   }
 
-  async checkIfLoginButtonIsDissaabled (): Promise<void> {
+  async checkIfLoginButtonIsDisabled (): Promise<void> {
     await expect(this.buttonLogin()).toBeDisabled()
   }
 

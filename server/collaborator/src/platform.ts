@@ -13,9 +13,12 @@
 // limitations under the License.
 //
 
-import { Client, systemAccountUuid, TxOperations, WorkspaceUuid } from '@hcengineering/core'
+import core, { Client, PersonId, pickPrimarySocialId, systemAccountUuid, TxOperations, WorkspaceUuid } from '@hcengineering/core'
 import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { Token, generateToken } from '@hcengineering/server-token'
+import { getClient as getAccountClient } from '@hcengineering/account-client'
+
+import config from './config'
 
 async function connect (token: string): Promise<Client> {
   const endpoint = await getTransactorEndpoint(token)
@@ -23,7 +26,18 @@ async function connect (token: string): Promise<Client> {
 }
 
 async function getTxOperations (client: Client, token: Token, isDerived: boolean = false): Promise<TxOperations> {
-  return new TxOperations(client, token.account, isDerived)
+  let primarySocialString: PersonId
+
+  if (token.account === systemAccountUuid) {
+    primarySocialString = core.account.System
+  } else {
+    const rawToken = generateToken(token.account, token.workspace, { service: 'collaborator' })
+    const accountClient = getAccountClient(config.AccountsUrl, rawToken)
+    const socialIds = await accountClient.getSocialIds()
+    primarySocialString = pickPrimarySocialId(socialIds).key
+  }
+
+  return new TxOperations(client, primarySocialString, isDerived)
 }
 
 /**

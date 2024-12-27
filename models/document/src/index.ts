@@ -37,6 +37,7 @@ import {
   TypeNumber,
   TypeRef,
   TypeString,
+  TypePersonId,
   UX
 } from '@hcengineering/model'
 import attachment, { TAttachment } from '@hcengineering/model-attachment'
@@ -87,7 +88,7 @@ export class TDocument extends TDoc implements Document, Todoable {
   @Hidden()
   declare space: Ref<Teamspace>
 
-  @Prop(TypeString(), document.string.LockedBy)
+  @Prop(TypePersonId(), document.string.LockedBy)
   @Hidden()
     lockedBy?: PersonId
 

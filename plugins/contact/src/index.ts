@@ -230,7 +230,8 @@ export const contactPlugin = plugin(contactId, {
     CollaborationUserAvatar: '' as AnyComponent,
     CreateGuest: '' as AnyComponent,
     SpaceMembersEditor: '' as AnyComponent,
-    ContactNamePresenter: '' as AnyComponent
+    ContactNamePresenter: '' as AnyComponent,
+    PersonFilterValuePresenter: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,

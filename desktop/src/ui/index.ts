@@ -61,7 +61,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
     if (tokens !== null) {
       const loc = getCurrentLocation()
-      loc.path.splice(1, 1)
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete tokens[loc.path[1]]
       setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
     }
     setMetadata(presentation.metadata.Token, null)

@@ -62,6 +62,7 @@ import {
   TypeRef,
   TypeString,
   TypeTimestamp,
+  TypePersonId,
   UX,
   type Builder
 } from '@hcengineering/model'
@@ -226,7 +227,7 @@ export class TReaction extends TAttachedDoc implements Reaction {
   @Prop(TypeString(), activity.string.Emoji)
     emoji!: string
 
-  @Prop(TypeString(), view.string.Created)
+  @Prop(TypePersonId(), view.string.Created)
     createBy!: PersonId
 }
 

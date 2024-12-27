@@ -96,6 +96,8 @@ import TreeItem from './components/navigator/TreeItem.svelte'
 import TreeNode from './components/navigator/TreeNode.svelte'
 import StatusPresenter from './components/status/StatusPresenter.svelte'
 import StatusRefPresenter from './components/status/StatusRefPresenter.svelte'
+import PersonIdPresenter from './components/PersonIdPresenter.svelte'
+import PersonIdFilterValuePresenter from './components/filter/PersonIdFilterValuePresenter.svelte'
 import AudioViewer from './components/viewer/AudioViewer.svelte'
 import ImageViewer from './components/viewer/ImageViewer.svelte'
 import VideoViewer from './components/viewer/VideoViewer.svelte'
@@ -167,6 +169,8 @@ export { default as List } from './components/list/List.svelte'
 export { default as NavLink } from './components/navigator/NavLink.svelte'
 export { default as StatusPresenter } from './components/status/StatusPresenter.svelte'
 export { default as StatusRefPresenter } from './components/status/StatusRefPresenter.svelte'
+export { default as PersonIdPresenter } from './components/PersonIdPresenter.svelte'
+export { default as PersonIdFilterValuePresenter } from './components/filter/PersonIdFilterValuePresenter.svelte'
 export { default as FoldersBrowser } from './components/folders/FoldersBrowser.svelte'
 export { default as ListView } from './components/list/ListView.svelte'
 
@@ -293,6 +297,8 @@ export default async (): Promise<Resources> => ({
     FileSizePresenter,
     StatusPresenter,
     StatusRefPresenter,
+    PersonIdPresenter,
+    PersonIdFilterValuePresenter,
     DateFilterPresenter,
     StringFilterPresenter,
     AttachedDocPanel,

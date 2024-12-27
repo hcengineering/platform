@@ -118,7 +118,7 @@ export async function canDeleteMessage (doc?: ChatMessage): Promise<boolean> {
 
   const me = getCurrentAccount()
 
-  return doc.createdBy === me.uuid
+  return doc.createdBy !== undefined && me.socialIds.includes(doc.createdBy)
 }
 
 export function canReplyToThread (doc?: ActivityMessage): boolean {

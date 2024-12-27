@@ -330,6 +330,44 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
     await iterator.close()
   }
   ctx.info('finished processing notifications fields ', { })
+
+  ctx.info('processing doc notify contexts ', { })
+  const dncIterator = await client.traverse<DocNotifyContext>(DOMAIN_DOC_NOTIFY, { _class: notification.class.DocNotifyContext })
+  try {
+    let processed = 0
+    while (true) {
+      const docs = await dncIterator.next(200)
+      if (docs === null || docs.length === 0) {
+        break
+      }
+
+      const operations: { filter: MigrationDocumentQuery<DocNotifyContext>, update: MigrateUpdate<DocNotifyContext> }[] = []
+
+      for (const doc of docs) {
+        const oldUser = doc.user
+        const newUser = socialIdByAccount[oldUser] ?? oldUser
+
+        if (newUser !== oldUser) {
+          operations.push({
+            filter: { _id: doc._id },
+            update: {
+              user: newUser
+            }
+          })
+        }
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_DOC_NOTIFY, operations)
+      }
+
+      processed += docs.length
+      ctx.info('...processed', { count: processed })
+    }
+  } finally {
+    await dncIterator.close()
+  }
+  ctx.info('finished processing doc notify contexts ', { })
 }
 
 export async function migrateSettings (client: MigrationClient): Promise<void> {

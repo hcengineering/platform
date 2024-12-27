@@ -102,12 +102,10 @@ export async function getTransactorEndpoint (
           },
           body: JSON.stringify({
             method: 'selectWorkspace',
-            params: ['', kind, true, externalRegions]
+            params: ['', kind, externalRegions]
           })
         })
       ).json()
-      console.log('workspaceInfo')
-      console.log(workspaceInfo)
       return workspaceInfo.result.endpoint
     } catch (err: any) {
       if (timeout > 0 && st + timeout < Date.now()) {

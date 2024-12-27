@@ -267,17 +267,15 @@ async function kickEmployee (doc: Person): Promise<void> {
     label: contact.string.KickEmployee,
     message: contact.string.KickEmployeeDescr,
     action: async () => {
-      if (doc.personUuid === undefined) {
-        return
-      }
-
       const client = getClient()
 
       const employee = client.getHierarchy().as(doc, contact.mixin.Employee)
       await client.update(employee, { active: false })
 
-      const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
-      await leaveWorkspace(doc.personUuid)
+      if (doc.personUuid != null) {
+        const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
+        await leaveWorkspace(doc.personUuid)
+      }
     }
   })
 }

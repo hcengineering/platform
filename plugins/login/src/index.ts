@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { AccountRole, Doc, Person, Ref, WorkspaceInfoWithStatus } from '@hcengineering/core'
+import { AccountRole, Person, WorkspaceInfoWithStatus } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource, Status } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
-import type { WorkspaceLoginInfo } from '@hcengineering/account-client'
+import type { LoginInfo, WorkspaceLoginInfo } from '@hcengineering/account-client'
 
 export type { LoginInfo, WorkspaceLoginInfo, OtpInfo, RegionInfo } from '@hcengineering/account-client'
 
@@ -60,7 +60,7 @@ export default plugin(loginId, {
       navigateUrl?: string
     ) => Promise<string>
     >,
-    LeaveWorkspace: '' as Resource<(email: string) => Promise<void>>,
+    LeaveWorkspace: '' as Resource<(account: string) => Promise<LoginInfo | null>>,
     ChangePassword: '' as Resource<(oldPassword: string, password: string) => Promise<void>>,
     SelectWorkspace: '' as Resource<
     (workspace: string, token: string | null | undefined) => Promise<[Status, WorkspaceLoginInfo | undefined]>

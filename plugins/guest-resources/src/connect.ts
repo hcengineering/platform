@@ -54,6 +54,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   if (workspaceLoginInfo == null) {
     console.error(`Error selecting workspace ${wsUrl}. There might be something wrong with the token. Please try to log in again.`)
     // something went wrong with selecting workspace with the selected token
+    clearMetadata(wsUrl)
     navigate({
       path: [loginId]
     })

@@ -510,3 +510,7 @@ export function TypeCollaborativeDoc (): Type<MarkupBlobRef> {
 export function TypeRank (): Type<Rank> {
   return { _class: core.class.TypeRank, label: core.string.Rank }
 }
+
+export function TypePersonId (): Type<PersonId> {
+  return { _class: core.class.TypePersonId, label: core.string.PersonId }
+}

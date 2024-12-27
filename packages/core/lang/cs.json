@@ -62,6 +62,7 @@
     "AutoJoin": "Automatické připojení",
     "AutoJoinDescr": "Automaticky připojit nové zaměstnance k tomuto prostoru",
     "BlobSize": "Velikost",
-    "BlobContentType": "Typ obsahu"
+    "BlobContentType": "Typ obsahu",
+    "PersonId": "Osoba"
   }
 }

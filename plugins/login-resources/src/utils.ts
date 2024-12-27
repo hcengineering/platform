@@ -412,7 +412,7 @@ export async function getPerson (): Promise<[Status, Person | null]> {
 
 export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
   const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
-  tokens[loginInfo.workspace] = loginInfo.token
+  tokens[loginInfo.workspaceUrl] = loginInfo.token
 
   setMetadata(presentation.metadata.Token, loginInfo.token)
   setMetadataLocalStorage(login.metadata.LastToken, loginInfo.token)
@@ -610,8 +610,8 @@ export async function changeUsername (first: string, last: string): Promise<void
   }
 }
 
-export async function leaveWorkspace (email: string): Promise<void> {
-  await getAccountClient().leaveWorkspace(email)
+export async function leaveWorkspace (account: string): Promise<LoginInfo | null> {
+  return await getAccountClient().leaveWorkspace(account)
 }
 
 export async function sendInvite (email: string, role?: AccountRole): Promise<void> {

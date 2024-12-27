@@ -13,13 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { combineName, getFirstName, getLastName } from '@hcengineering/contact'
-  import { ChannelsEditor, EditableAvatar, personByIdStore, mySocialIdsStore} from '@hcengineering/contact-resources'
-  import { getCurrentAccount } from '@hcengineering/core'
-  import login from '@hcengineering/login'
-  import { getResource } from '@hcengineering/platform'
-  import { AttributeEditor, MessageBox, getClient } from '@hcengineering/presentation'
-  import { Breadcrumb, Button, EditBox, FocusHandler, Header, createFocusManager, showPopup } from '@hcengineering/ui'
+  import contact, { combineName, getCurrentEmployee, getFirstName, getLastName } from '@hcengineering/contact'
+  import { ChannelsEditor, EditableAvatar, personByIdStore, mySocialIdsStore } from '@hcengineering/contact-resources'
+  import { getCurrentAccount, SocialIdType } from '@hcengineering/core'
+  import login, { loginId } from '@hcengineering/login'
+  import { getResource, setMetadata } from '@hcengineering/platform'
+  import presentation, { AttributeEditor, MessageBox, getClient } from '@hcengineering/presentation'
+  import { Breadcrumb, Button, EditBox, FocusHandler, Header, createFocusManager, showPopup, navigate, setMetadataLocalStorage, getCurrentLocation } from '@hcengineering/ui'
+  import { clearMetadata } from '@hcengineering/workbench-resources'
+
   import setting from '../plugin'
 
   const client = getClient()
@@ -49,7 +51,19 @@
       message: setting.string.LeaveDescr,
       action: async () => {
         const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
-        await leaveWorkspace(getCurrentAccount().email)
+        const loginInfo = await leaveWorkspace(getCurrentAccount().uuid)
+
+        if (loginInfo?.token != null) {
+          const loc = getCurrentLocation()
+          clearMetadata(loc.path[1])
+          setMetadata(presentation.metadata.Token, loginInfo.token)
+          setMetadataLocalStorage(login.metadata.LastToken, loginInfo.token)
+          setMetadataLocalStorage(login.metadata.LoginAccount, loginInfo.account)
+
+          navigate({ path: [loginId, 'selectWorkspace'] })
+        } else {
+          navigate({ path: [loginId, 'login'] })
+        }
       }
     })
   }

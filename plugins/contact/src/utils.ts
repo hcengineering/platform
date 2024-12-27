@@ -301,8 +301,8 @@ export async function getPersonRefBySocialId (client: Client, socialIdString: Pe
   return socialId?.attachedTo
 }
 
-export async function getPersonRefsBySocialIds (client: Client): Promise<Record<PersonId, Ref<Person>>> {
-  const socialIds = await client.findAll(contact.class.SocialIdentity, {})
+export async function getPersonRefsBySocialIds (client: Client, ids: PersonId[] = []): Promise<Record<PersonId, Ref<Person>>> {
+  const socialIds = await client.findAll(contact.class.SocialIdentity, ids.length === 0 ? {} : { key: { $in: ids } })
   const result: Record<PersonId, Ref<Person>> = {}
 
   for (const socialId of socialIds) {
