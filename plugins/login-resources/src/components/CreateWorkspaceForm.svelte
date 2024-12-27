@@ -60,7 +60,7 @@
     func: async () => {
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-      const [loginStatus, result] = await createWorkspace(object.workspace, selectedRegion)
+      const [loginStatus, result] = await createWorkspace(object.workspace, selectedRegion ?? '')
       status = loginStatus
 
       if (result != null) {
