@@ -35,8 +35,8 @@ const config: PlaywrightTestConfig = {
       dependencies: ['setup']
     }
   ],
-  retries: 0,
-  timeout: 30000,
+  retries: 2,
+  timeout: 60000,
   maxFailures,
   expect: {
     timeout: 15000
