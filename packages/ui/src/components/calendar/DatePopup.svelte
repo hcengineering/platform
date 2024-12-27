@@ -86,7 +86,7 @@
     }
   }
   const changeMonth = (date: Date): Date => {
-    return new Date(Date.UTC(date.getFullYear(), date.getMonth() + 1, 1))
+    return new Date(Date.UTC(date.getFullYear(), date.getMonth() + 1, 1) + date.getTimezoneOffset() * 60000)
   }
 
   $: if (viewDate) viewDateSec = changeMonth(viewDate)
