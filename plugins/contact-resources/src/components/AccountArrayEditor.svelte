@@ -39,15 +39,17 @@
   const client = getClient()
   let update: (() => Promise<void>) | undefined
 
-  $: valueByPersonRef = new Map(value.map((p) => {
-    const person = $personRefByPersonIdStore.get(p)
+  $: valueByPersonRef = new Map(
+    value.map((p) => {
+      const person = $personRefByPersonIdStore.get(p)
 
-    if (person === undefined) {
-      console.error('Person not found for social id', p)
-    }
+      if (person === undefined) {
+        console.error('Person not found for social id', p)
+      }
 
-    return [person, p] as const
-  }))
+      return [person, p] as const
+    })
+  )
 
   function onUpdate (evt: CustomEvent<Ref<Employee>[]>): void {
     if (timer !== null) {

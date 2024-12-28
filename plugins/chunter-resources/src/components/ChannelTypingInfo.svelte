@@ -38,9 +38,7 @@
   function updateTypingPersons (personById: IdMap<Person>, typingInfo: PresenceTyping[]): void {
     const now = Date.now()
     const personIds = new Set(
-      typingInfo
-        .filter((info) => info.person !== me && now - info.lastTyping < typingDelay)
-        .map((info) => info.person)
+      typingInfo.filter((info) => info.person !== me && now - info.lastTyping < typingDelay).map((info) => info.person)
     )
     const names = Array.from(personIds)
       .map((personId) => personById.get(personId))

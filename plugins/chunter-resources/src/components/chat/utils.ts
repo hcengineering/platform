@@ -188,9 +188,7 @@ function isOnline (account: PersonId | undefined, userStatusByAccount: Map<Perso
 
 function isGroupChat (direct: DirectMessage, personRefByPersonId: Map<PersonId, Ref<Person>>): boolean {
   const persons = new Set(
-    direct.members
-      .map((member) => personRefByPersonId.get(member))
-      .filter((it) => it !== undefined)
+    direct.members.map((member) => personRefByPersonId.get(member)).filter((it) => it !== undefined)
   )
 
   return persons.size > 2

@@ -23,9 +23,7 @@ import {
 
 export const requestOperation: MigrateOperation = {
   async migrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
-    await tryMigrate(client, requestId, [
-
-    ])
+    await tryMigrate(client, requestId, [])
   },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

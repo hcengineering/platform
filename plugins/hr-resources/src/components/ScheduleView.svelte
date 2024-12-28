@@ -179,7 +179,7 @@
     departmentStaff: Staff[],
     descendants: Map<Ref<Department>, Department[]>
   ) {
-    editableList = [currentEmployee as Ref<Employee>]
+    editableList = [currentEmployee]
     checkDepartmentEditable(departmentById, hr.ids.Head, departmentStaff, descendants)
     editableList = editableList
   }

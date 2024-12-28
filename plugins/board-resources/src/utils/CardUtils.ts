@@ -94,7 +94,7 @@ export function addCurrentUser (card: Card, client: Client): Promise<TxResult> |
     return
   }
 
-  return client.update(card, { $push: { members: employee as Ref<Employee> } })
+  return client.update(card, { $push: { members: employee } })
 }
 
 export function archiveCard (card: Card, client: Client): Promise<TxResult> | undefined {

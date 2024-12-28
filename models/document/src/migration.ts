@@ -299,7 +299,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   const ctx = new MeasureMetricsContext('document migrateAccountsToSocialIds', {})
   const socialIdByAccount = await getSocialIdByOldAccount(client)
 
-  ctx.info('processing document lockedBy ', { })
+  ctx.info('processing document lockedBy ', {})
   const iterator = await client.traverse(DOMAIN_DOCUMENT, { _class: document.class.Document })
 
   try {
@@ -314,7 +314,8 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
 
       for (const doc of docs) {
         const document = doc as Document
-        const newLockedBy = document.lockedBy != null ? (socialIdByAccount[document.lockedBy] ?? document.lockedBy) : document.lockedBy
+        const newLockedBy =
+          document.lockedBy != null ? socialIdByAccount[document.lockedBy] ?? document.lockedBy : document.lockedBy
 
         if (newLockedBy === document.lockedBy) continue
 
@@ -336,7 +337,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   } finally {
     await iterator.close()
   }
-  ctx.info('finished processing document lockedBy ', { })
+  ctx.info('finished processing document lockedBy ', {})
 }
 
 async function removeOldClasses (client: MigrationClient): Promise<void> {

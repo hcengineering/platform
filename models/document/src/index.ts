@@ -14,7 +14,16 @@
 //
 
 import activity from '@hcengineering/activity'
-import type { Class, CollectionSize, MarkupBlobRef, Domain, Rank, Ref, Role, RolesAssignment } from '@hcengineering/core'
+import type {
+  Class,
+  CollectionSize,
+  MarkupBlobRef,
+  Domain,
+  Rank,
+  Ref,
+  Role,
+  RolesAssignment
+} from '@hcengineering/core'
 import { PersonId, AccountRole, IndexKind } from '@hcengineering/core'
 import {
   type Document,

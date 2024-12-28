@@ -14,7 +14,15 @@
 -->
 <script lang="ts">
   import { AvatarType, Channel, combineName, ContactEvents, Person } from '@hcengineering/contact'
-  import { AccountRole, AttachedData, buildSocialIdString, Data, generateId, Ref, SocialIdType } from '@hcengineering/core'
+  import {
+    AccountRole,
+    AttachedData,
+    buildSocialIdString,
+    Data,
+    generateId,
+    Ref,
+    SocialIdType
+  } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
@@ -62,12 +70,19 @@
         }
         await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
 
-        await client.addCollection(contact.class.SocialIdentity, contact.space.Contacts, id, contact.class.Person, 'socialIds', {
-          type: SocialIdType.EMAIL,
-          value: mail,
-          confirmed: false,
-          key: socialString
-        })
+        await client.addCollection(
+          contact.class.SocialIdentity,
+          contact.space.Contacts,
+          id,
+          contact.class.Person,
+          'socialIds',
+          {
+            type: SocialIdType.EMAIL,
+            value: mail,
+            confirmed: false,
+            key: socialString
+          }
+        )
       }
 
       const sendInvite = await getResource(login.function.SendInvite)
@@ -130,11 +145,7 @@
 <Card
   label={contact.string.AddGuest}
   okAction={createGuest}
-  canSave={firstName.trim().length > 0 &&
-    lastName.trim().length > 0 &&
-    email.trim().length > 0 &&
-    !exists &&
-    canSave}
+  canSave={firstName.trim().length > 0 && lastName.trim().length > 0 && email.trim().length > 0 && !exists && canSave}
   on:close={() => {
     dispatch('close')
   }}

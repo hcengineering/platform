@@ -35,12 +35,7 @@
     themeStore
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import {
-    DocAttributeBar,
-    IconPicker,
-    getDocMixins,
-    showMenu
-  } from '@hcengineering/view-resources'
+  import { DocAttributeBar, IconPicker, getDocMixins, showMenu } from '@hcengineering/view-resources'
   import type { Product } from '@hcengineering/products'
   import { createEventDispatcher, onDestroy } from 'svelte'
 

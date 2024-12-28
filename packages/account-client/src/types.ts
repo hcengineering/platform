@@ -6,8 +6,8 @@ export interface LoginInfo {
 }
 
 /**
-   * @public
-   */
+ * @public
+ */
 export interface WorkspaceLoginInfo extends LoginInfo {
   workspace: string // worspace uuid
   workspaceUrl: string

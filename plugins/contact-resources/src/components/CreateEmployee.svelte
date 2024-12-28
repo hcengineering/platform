@@ -13,15 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { AvatarType, Channel, combineName, ContactEvents, Employee, Person } from '@hcengineering/contact'
   import {
-    AvatarType,
-    Channel,
-    combineName,
-    ContactEvents,
-    Employee,
-    Person
-  } from '@hcengineering/contact'
-  import { AccountRole, AttachedData, buildSocialIdString, Data, generateId, Ref, SocialIdType } from '@hcengineering/core'
+    AccountRole,
+    AttachedData,
+    buildSocialIdString,
+    Data,
+    generateId,
+    Ref,
+    SocialIdType
+  } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
@@ -86,18 +87,25 @@
       } else {
         await client.update(existingPerson, person)
       }
-      const employeeRef = existingPerson?._id as Ref<Employee> ?? id
+      const employeeRef = (existingPerson?._id as Ref<Employee>) ?? id
 
       await client.createMixin(id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
         active: true
       })
 
-      await client.addCollection(contact.class.SocialIdentity, contact.space.Contacts, employeeRef, contact.class.Person, 'socialIds', {
-        type: SocialIdType.EMAIL,
-        value: mail,
-        confirmed: false,
-        key: socialString
-      })
+      await client.addCollection(
+        contact.class.SocialIdentity,
+        contact.space.Contacts,
+        employeeRef,
+        contact.class.Person,
+        'socialIds',
+        {
+          type: SocialIdType.EMAIL,
+          value: mail,
+          confirmed: false,
+          key: socialString
+        }
+      )
 
       const sendInvite = await getResource(login.function.SendInvite)
       await sendInvite(mail, AccountRole.User)
@@ -156,11 +164,7 @@
 <Card
   label={contact.string.CreateEmployee}
   okAction={createEmployee}
-  canSave={firstName.trim().length > 0 &&
-    lastName.trim().length > 0 &&
-    email.trim().length > 0 &&
-    !exists &&
-    canSave}
+  canSave={firstName.trim().length > 0 && lastName.trim().length > 0 && email.trim().length > 0 && !exists && canSave}
   on:close={() => {
     dispatch('close')
   }}

@@ -14,11 +14,7 @@
 -->
 <script lang="ts">
   import { ActivityInfoMessage } from '@hcengineering/activity'
-  import {
-    Avatar,
-    SystemAvatar,
-    personByPersonIdStore
-  } from '@hcengineering/contact-resources'
+  import { Avatar, SystemAvatar, personByPersonIdStore } from '@hcengineering/contact-resources'
   import { translateCB } from '@hcengineering/platform'
   import { HTMLViewer } from '@hcengineering/presentation'
   import { Action, themeStore } from '@hcengineering/ui'

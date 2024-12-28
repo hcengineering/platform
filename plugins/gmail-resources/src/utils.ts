@@ -1,9 +1,5 @@
-import contact, {
-  type Channel,
-  type Contact,
-  type Employee,
-  getName as getContactName
-} from '@hcengineering/contact'
+// import { getName as getContactName } from '@hcengineering/contact'
+import contact, { type Channel, type Contact, type Employee } from '@hcengineering/contact'
 import { type Client, type Doc, type IdMap, type Ref } from '@hcengineering/core'
 import { type Message, type SharedMessage } from '@hcengineering/gmail'
 import { getClient } from '@hcengineering/presentation'
@@ -65,8 +61,8 @@ export async function checkHasEmail (doc: Doc | Doc[] | undefined): Promise<bool
   return true
 }
 
-const EMAIL_REGEX =
-  /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
+// const EMAIL_REGEX =
+//   /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
 
 export function convertMessages (
   object: Contact,

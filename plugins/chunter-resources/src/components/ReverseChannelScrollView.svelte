@@ -232,7 +232,9 @@
     }
     const lastIndex = messages.findIndex(({ _id }) => _id === lastMsgBeforeFreeze)
     if (lastIndex === -1) return
-    const firstNewMessage = messages.find(({ createdBy }, index) => index > lastIndex && (createdBy === undefined || !socialStrings.includes(createdBy)))
+    const firstNewMessage = messages.find(
+      ({ createdBy }, index) => index > lastIndex && (createdBy === undefined || !socialStrings.includes(createdBy))
+    )
 
     if (firstNewMessage === undefined) {
       scrollToBottom()

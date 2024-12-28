@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 
-import { type Class, type Doc, type Markup, type Ref, WorkspaceUuid, concatLink, makeCollabId } from '@hcengineering/core'
+import {
+  type Class,
+  type Doc,
+  type Markup,
+  type Ref,
+  WorkspaceUuid,
+  concatLink,
+  makeCollabId
+} from '@hcengineering/core'
 import { type CollaboratorClient, getClient } from '@hcengineering/collaborator-client'
 import { parseMessageMarkdown, jsonToMarkup, markupToHTML, markupToMarkdown, htmlToMarkup } from '@hcengineering/text'
 

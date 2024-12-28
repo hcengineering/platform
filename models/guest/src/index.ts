@@ -1,10 +1,4 @@
-import {
-  type Class,
-  type IndexingConfiguration,
-  type Doc,
-  type Domain,
-  type Ref
-} from '@hcengineering/core'
+import { type Class, type IndexingConfiguration, type Doc, type Domain, type Ref } from '@hcengineering/core'
 import { type PublicLink, type Restrictions } from '@hcengineering/guest'
 import { type Builder, Model } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'

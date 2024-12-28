@@ -32,7 +32,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   const ctx = new MeasureMetricsContext('setting migrateAccountsToSocialIds', {})
   const socialIdByAccount = await getSocialIdByOldAccount(client)
 
-  ctx.info('processing setting integration shared ', { })
+  ctx.info('processing setting integration shared ', {})
   const iterator = await client.traverse(DOMAIN_SETTING, { _class: setting.class.Integration })
 
   try {
@@ -70,7 +70,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   } finally {
     await iterator.close()
   }
-  ctx.info('finished processing setting integration shared ', { })
+  ctx.info('finished processing setting integration shared ', {})
 }
 
 export const settingOperation: MigrateOperation = {

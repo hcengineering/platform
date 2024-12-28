@@ -43,17 +43,9 @@
     return Array.from(permissionsStore.ap[space]?.[permission] ?? [])
   }
 
-  $: permittedReviewers = getPermittedPersons(
-    documents.permission.ReviewDocument,
-    permissionsSpace,
-    $permissionsStore
-  )
+  $: permittedReviewers = getPermittedPersons(documents.permission.ReviewDocument, permissionsSpace, $permissionsStore)
 
-  $: permittedApprovers = getPermittedPersons(
-    documents.permission.ApproveDocument,
-    permissionsSpace,
-    $permissionsStore
-  )
+  $: permittedApprovers = getPermittedPersons(documents.permission.ApproveDocument, permissionsSpace, $permissionsStore)
 
   $: permittedCoAuthors = getPermittedPersons(
     documents.permission.CoAuthorDocument,

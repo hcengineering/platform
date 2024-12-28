@@ -47,7 +47,6 @@ import {
   TypeIntlString,
   TypeMarkup,
   TypeRef,
-  TypeString,
   TypePersonId,
   UX,
   type Builder

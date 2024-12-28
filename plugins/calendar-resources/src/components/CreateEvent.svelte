@@ -80,11 +80,15 @@
   let _calendar: Ref<Calendar> = `${myPrimaryId}_calendar` as Ref<Calendar>
 
   const q = createQuery()
-  q.query(calendar.class.ExternalCalendar, { default: true, createdBy: { $in: socialStrings }, hidden: false }, (res) => {
-    if (res.length > 0) {
-      _calendar = res[0]._id
+  q.query(
+    calendar.class.ExternalCalendar,
+    { default: true, createdBy: { $in: socialStrings }, hidden: false },
+    (res) => {
+      if (res.length > 0) {
+        _calendar = res[0]._id
+      }
     }
-  })
+  )
 
   const spaceQ = createQuery()
   let space: Space | undefined = undefined

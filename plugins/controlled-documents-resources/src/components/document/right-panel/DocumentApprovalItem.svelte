@@ -52,9 +52,7 @@
     rejectingMessage = rejectingComment?.message
   }
 
-  async function getApprovals (
-    req: DocumentRequest
-  ): Promise<PersonalApproval[]> {
+  async function getApprovals (req: DocumentRequest): Promise<PersonalApproval[]> {
     const rejectedBy: PersonalApproval[] =
       req.rejected !== undefined
         ? [

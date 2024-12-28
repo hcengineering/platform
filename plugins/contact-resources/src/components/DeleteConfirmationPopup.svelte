@@ -30,7 +30,9 @@
   const me = getCurrentEmployee()
   const objectArray = Array.isArray(object) ? object : [object]
   const dispatch = createEventDispatcher()
-  $: creators = [...new Set(objectArray.map((obj) => obj.createdBy))].map((pid) => pid !== undefined ? $personRefByPersonIdStore.get(pid) : undefined).filter((p) => p !== undefined)
+  $: creators = [...new Set(objectArray.map((obj) => obj.createdBy))]
+    .map((pid) => (pid !== undefined ? $personRefByPersonIdStore.get(pid) : undefined))
+    .filter((p) => p !== undefined)
   $: canDelete =
     (skipCheck ||
       (creators.length === 1 && creators[0] === me) ||

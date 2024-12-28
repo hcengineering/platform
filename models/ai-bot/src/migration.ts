@@ -23,9 +23,7 @@ import { aiBotId } from '@hcengineering/ai-bot'
 
 export const aiBotOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, aiBotId, [
-
-    ])
+    await tryMigrate(client, aiBotId, [])
   },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

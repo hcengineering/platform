@@ -374,7 +374,7 @@ export function benchmarkWorker (): void {
       connection = await connect(msg.transactorUrl, msg.workspaceId, msg.email)
 
       if (msg.options.mode === 'find-all') {
-        const benchmarkPersonId: PersonId = (core.account.System + '_benchmark')
+        const benchmarkPersonId: PersonId = core.account.System + '_benchmark'
         const opt = new TxOperations(connection, benchmarkPersonId)
         parentPort?.postMessage({
           type: 'operate',
@@ -584,12 +584,19 @@ export async function generateEmployee (client: TxOperations): Promise<PersonId>
 
   const socialString = buildSocialIdString({ type: SocialIdType.HULY, value: personUuid })
 
-  await client.addCollection(contact.class.SocialIdentity, contact.space.Contacts, personId, contact.class.Person, 'socialIds', {
-    type: SocialIdType.HULY,
-    value: personUuid,
-    key: socialString,
-    confirmed: true
-  })
+  await client.addCollection(
+    contact.class.SocialIdentity,
+    contact.space.Contacts,
+    personId,
+    contact.class.Person,
+    'socialIds',
+    {
+      type: SocialIdType.HULY,
+      value: personUuid,
+      key: socialString,
+      confirmed: true
+    }
+  )
 
   return socialString
 }
@@ -623,12 +630,19 @@ async function generateVacancy (client: TxOperations, members: PersonId[]): Prom
       personUuid
     })
     const socialString = buildSocialIdString({ type: SocialIdType.HULY, value: personUuid })
-    await client.addCollection(contact.class.SocialIdentity, contact.space.Contacts, personId, contact.class.Person, 'socialIds', {
-      type: SocialIdType.HULY,
-      value: personUuid,
-      key: socialString,
-      confirmed: true
-    })
+    await client.addCollection(
+      contact.class.SocialIdentity,
+      contact.space.Contacts,
+      personId,
+      contact.class.Person,
+      'socialIds',
+      {
+        type: SocialIdType.HULY,
+        value: personUuid,
+        key: socialString,
+        confirmed: true
+      }
+    )
     await client.createMixin(personId, contact.class.Person, contact.space.Contacts, recruit.mixin.Candidate, {})
     // generate applicants
     await client.addCollection(recruit.class.Applicant, _id, personId, recruit.mixin.Candidate, 'applications', {

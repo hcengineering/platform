@@ -15,13 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import {
-    generateId,
-    type AttachedData,
-    type Class,
-    type Data,
-    type Ref
-  } from '@hcengineering/core'
+  import { generateId, type AttachedData, type Class, type Data, type Ref } from '@hcengineering/core'
   import { MessageBox, getClient } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,

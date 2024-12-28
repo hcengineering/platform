@@ -26,20 +26,27 @@
   $: removed = getPersonRefs(value.removed, $personRefByPersonIdStore)
   $: added = getPersonRefs(value.added.length > 0 ? value.added : value.set, $personRefByPersonIdStore)
 
-  function getPersonRefs (values: DocAttributeUpdates['removed' | 'added' | 'set'], personRefByPersonId: Map<PersonId, Ref<Person>>): Ref<Person>[] {
-    const persons = new Set(values.map((value) => {
-      if (typeof value !== 'string') {
-        return undefined
-      }
+  function getPersonRefs (
+    values: DocAttributeUpdates['removed' | 'added' | 'set'],
+    personRefByPersonId: Map<PersonId, Ref<Person>>
+  ): Ref<Person>[] {
+    const persons = new Set(
+      values
+        .map((value) => {
+          if (typeof value !== 'string') {
+            return undefined
+          }
 
-      const person = personRefByPersonId.get(value)
+          const person = personRefByPersonId.get(value)
 
-      if (person === undefined) {
-        return undefined
-      }
+          if (person === undefined) {
+            return undefined
+          }
 
-      return person
-    }).filter((person) => person !== undefined))
+          return person
+        })
+        .filter((person) => person !== undefined)
+    )
 
     return Array.from(persons)
   }

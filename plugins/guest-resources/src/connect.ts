@@ -52,7 +52,9 @@ export async function connect (title: string): Promise<Client | undefined> {
   const selectWorkspace = await getResource(login.function.SelectWorkspace)
   const workspaceLoginInfo = (await selectWorkspace(wsUrl, token))[1]
   if (workspaceLoginInfo == null) {
-    console.error(`Error selecting workspace ${wsUrl}. There might be something wrong with the token. Please try to log in again.`)
+    console.error(
+      `Error selecting workspace ${wsUrl}. There might be something wrong with the token. Please try to log in again.`
+    )
     // something went wrong with selecting workspace with the selected token
     clearMetadata(wsUrl)
     navigate({

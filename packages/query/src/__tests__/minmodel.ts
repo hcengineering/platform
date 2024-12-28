@@ -27,7 +27,7 @@ import type {
   TxCreateDoc,
   TxCUD
 } from '@hcengineering/core'
-import core, { AccountRole, AttachedDoc, ClassifierKind, DOMAIN_MODEL, DOMAIN_TX, TxFactory } from '@hcengineering/core'
+import core, { AttachedDoc, ClassifierKind, DOMAIN_MODEL, DOMAIN_TX, TxFactory } from '@hcengineering/core'
 import type { IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 

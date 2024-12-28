@@ -35,7 +35,10 @@
   $: addedPersons = getPersons(value.added.length > 0 ? value.added : value.set, $personRefByPersonIdStore)
   $: removedPersons = getPersons(value.removed, $personRefByPersonIdStore)
 
-  function getPersons (personIds: DocAttributeUpdates['removed' | 'added' | 'set'], personRefByPersonId: Map<PersonId, Ref<Person>>): Person[] {
+  function getPersons (
+    personIds: DocAttributeUpdates['removed' | 'added' | 'set'],
+    personRefByPersonId: Map<PersonId, Ref<Person>>
+  ): Person[] {
     const persons = new Set<Ref<Person>>()
 
     for (const personId of personIds) {

@@ -58,7 +58,9 @@ export async function connect (url: string, options: ConnectOptions): Promise<Pl
   const config = await loadServerConfig(url)
 
   const { endpoint, token } = await getWorkspaceToken(url, options, config)
-  const socialStrings = (await getAccountClient(config.ACCOUNTS_URL, token).getSocialIds()).map((si) => buildSocialIdString(si))
+  const socialStrings = (await getAccountClient(config.ACCOUNTS_URL, token).getSocialIds()).map((si) =>
+    buildSocialIdString(si)
+  )
 
   if (socialStrings.length === 0) {
     throw new Error('No social ids found for the logged in user')

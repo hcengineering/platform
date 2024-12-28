@@ -85,8 +85,7 @@
               </div>
               <DropdownLabelsIntl
                 label={setting.string.Role}
-                disabled={!hasAccountRole(currentAccount, role) ||
-                  (role === AccountRole.Owner && ownersCount === 1)}
+                disabled={!hasAccountRole(currentAccount, role) || (role === AccountRole.Owner && ownersCount === 1)}
                 kind={'primary'}
                 size={'medium'}
                 {items}

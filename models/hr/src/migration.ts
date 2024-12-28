@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 
-import { type Space, TxOperations, type Ref, type Class, type Doc, DOMAIN_MODEL_TX, type TxCUD } from '@hcengineering/core'
+import {
+  type Space,
+  TxOperations,
+  type Ref,
+  type Class,
+  type Doc,
+  DOMAIN_MODEL_TX,
+  type TxCUD
+} from '@hcengineering/core'
 import { type Department } from '@hcengineering/hr'
 import {
   migrateSpace,
@@ -85,7 +93,10 @@ async function migrateDepartmentMembersToEmployee (client: MigrationClient): Pro
     const accounts = department.members
     if (accounts === undefined || accounts.length === 0) continue
 
-    const personAccountsTxes: any[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, { objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>, objectId: { $in: accounts } })
+    const personAccountsTxes: any[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
+      objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>,
+      objectId: { $in: accounts }
+    })
     const personAccounts = getAccountsFromTxes(personAccountsTxes)
 
     await client.update(DOMAIN_HR, { _id: department._id }, { members: personAccounts.map((pAcc: any) => pAcc.person) })

@@ -65,6 +65,9 @@ export function getToolToken (workspace?: string): string {
   return generateToken(systemAccountUuid, workspace, { service: 'tool' })
 }
 
-export async function getWorkspaceTransactorEndpoint (workspace: WorkspaceUuid, type: 'external' | 'internal' = 'external'): Promise<string> {
+export async function getWorkspaceTransactorEndpoint (
+  workspace: WorkspaceUuid,
+  type: 'external' | 'internal' = 'external'
+): Promise<string> {
   return await getTransactorEndpoint(getToolToken(workspace), type)
 }

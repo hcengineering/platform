@@ -15,7 +15,15 @@
 
 import chunter from '@hcengineering/chunter'
 import contact, { type PersonSpace } from '@hcengineering/contact'
-import core, { DOMAIN_TX, MeasureMetricsContext, type Class, type Doc, type DocumentQuery, type Ref, type Space } from '@hcengineering/core'
+import core, {
+  DOMAIN_TX,
+  MeasureMetricsContext,
+  type Class,
+  type Doc,
+  type DocumentQuery,
+  type Ref,
+  type Space
+} from '@hcengineering/core'
 import {
   migrateSpace,
   type MigrateUpdate,
@@ -229,7 +237,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   const hierarchy = client.hierarchy
   const socialIdByAccount = await getSocialIdByOldAccount(client)
 
-  ctx.info('processing collaborators ', { })
+  ctx.info('processing collaborators ', {})
   for (const domain of client.hierarchy.domains()) {
     ctx.info('processing domain ', { domain })
     let processed = 0
@@ -273,10 +281,19 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
       await iterator.close()
     }
   }
-  ctx.info('finished processing collaborators ', { })
+  ctx.info('finished processing collaborators ', {})
 
-  ctx.info('processing notifications fields ', { })
-  const iterator = await client.traverse(DOMAIN_NOTIFICATION, { _class: { $in: [notification.class.DocNotifyContext, notification.class.BrowserNotification, notification.class.PushSubscription, notification.class.InboxNotification] } })
+  ctx.info('processing notifications fields ', {})
+  const iterator = await client.traverse(DOMAIN_NOTIFICATION, {
+    _class: {
+      $in: [
+        notification.class.DocNotifyContext,
+        notification.class.BrowserNotification,
+        notification.class.PushSubscription,
+        notification.class.InboxNotification
+      ]
+    }
+  })
 
   try {
     let processed = 0
@@ -294,7 +311,10 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
         if (hierarchy.isDerived(doc._class, notification.class.BrowserNotification)) {
           const browserNotification = doc as BrowserNotification
           const newUser = socialIdByAccount[browserNotification.user] ?? browserNotification.user
-          const newSenderId = browserNotification.senderId !== undefined ? (socialIdByAccount[browserNotification.senderId] ?? browserNotification.senderId) : browserNotification.senderId
+          const newSenderId =
+            browserNotification.senderId !== undefined
+              ? socialIdByAccount[browserNotification.senderId] ?? browserNotification.senderId
+              : browserNotification.senderId
           if (newUser !== browserNotification.user || newSenderId !== browserNotification.senderId) {
             update = {
               user: newUser,
@@ -329,10 +349,12 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   } finally {
     await iterator.close()
   }
-  ctx.info('finished processing notifications fields ', { })
+  ctx.info('finished processing notifications fields ', {})
 
-  ctx.info('processing doc notify contexts ', { })
-  const dncIterator = await client.traverse<DocNotifyContext>(DOMAIN_DOC_NOTIFY, { _class: notification.class.DocNotifyContext })
+  ctx.info('processing doc notify contexts ', {})
+  const dncIterator = await client.traverse<DocNotifyContext>(DOMAIN_DOC_NOTIFY, {
+    _class: notification.class.DocNotifyContext
+  })
   try {
     let processed = 0
     while (true) {
@@ -341,7 +363,10 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
         break
       }
 
-      const operations: { filter: MigrationDocumentQuery<DocNotifyContext>, update: MigrateUpdate<DocNotifyContext> }[] = []
+      const operations: {
+        filter: MigrationDocumentQuery<DocNotifyContext>
+        update: MigrateUpdate<DocNotifyContext>
+      }[] = []
 
       for (const doc of docs) {
         const oldUser = doc.user
@@ -367,7 +392,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   } finally {
     await dncIterator.close()
   }
-  ctx.info('finished processing doc notify contexts ', { })
+  ctx.info('finished processing doc notify contexts ', {})
 }
 
 export async function migrateSettings (client: MigrationClient): Promise<void> {

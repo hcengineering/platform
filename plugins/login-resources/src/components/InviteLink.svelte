@@ -16,15 +16,7 @@
   import { AccountRole, getCurrentAccount, hasAccountRole, Timestamp } from '@hcengineering/core'
   import { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
-  import {
-    Button,
-    EditBox,
-    Grid,
-    Label,
-    Loading,
-    MiniToggle,
-    ticker
-  } from '@hcengineering/ui'
+  import { Button, EditBox, Grid, Label, Loading, MiniToggle, ticker } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   import login from '../plugin'

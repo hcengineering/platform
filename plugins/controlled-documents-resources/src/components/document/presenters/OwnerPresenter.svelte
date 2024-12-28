@@ -15,12 +15,11 @@
 <script lang="ts">
   import documents, { Document } from '@hcengineering/controlled-documents'
   import { Employee } from '@hcengineering/contact'
-  import { PersonPresenter } from '@hcengineering/contact-resources'
+  import { PersonPresenter, checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
-  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
 
   import document from '../../../plugin'
   import ChangeOwnerPopup from '../popups/ChangeOwnerPopup.svelte'

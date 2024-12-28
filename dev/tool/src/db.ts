@@ -1,9 +1,5 @@
-import {
-  type AccountDB,
-  type Workspace,
-  getAccount,
-  getWorkspaceById
-} from '@hcengineering/account'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { type AccountDB, type Workspace, getAccount, getWorkspaceById } from '@hcengineering/account'
 import {
   systemAccountUuid,
   type BackupClient,
@@ -90,8 +86,7 @@ async function moveWorkspace (
         continue
       }
       const cursor = collection.find()
-      const current =
-        await pgClient`SELECT _id FROM ${pgClient(domain)} WHERE "workspaceId" = ${ws.uuid}`
+      const current = await pgClient`SELECT _id FROM ${pgClient(domain)} WHERE "workspaceId" = ${ws.uuid}`
       const currentIds = new Set(current.map((r) => r._id))
       console.log('move domain', domain)
       const docs: Doc[] = []
