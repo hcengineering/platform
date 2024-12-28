@@ -1,4 +1,4 @@
-import { type AccountDB, getAccountInfoByToken } from '@hcengineering/account'
+import { type AccountDB, getLoginInfoByToken } from '@hcengineering/account'
 import { BrandingMap, concatLink, MeasureContext, getBranding } from '@hcengineering/core'
 import Router from 'koa-router'
 import qs from 'querystringify'
@@ -22,7 +22,7 @@ export function registerToken (
       const token = req.body.token ?? req.query.token
 
       void dbPromise.then((db) => {
-        getAccountInfoByToken(measureCtx, db, null, token)
+        getLoginInfoByToken(measureCtx, db, null, token)
           .then((user: any) => done(null, user))
           .catch((err: any) => done(err))
       })

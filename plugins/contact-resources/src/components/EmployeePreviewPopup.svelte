@@ -9,7 +9,7 @@
 
   import contact from '../plugin'
   import Avatar from './Avatar.svelte'
-  import { employeeByIdStore, personAccountByPersonId, statusByUserStore } from '../utils'
+  import { employeeByIdStore, socialIdsByPersonRefStore, statusByUserStore } from '../utils'
   import { EmployeePresenter } from '../index'
 
   export let employeeId: Ref<Employee>
@@ -21,8 +21,8 @@
   let employee: Employee | undefined = undefined
 
   $: employee = $employeeByIdStore.get(employeeId)
-  $: accounts = $personAccountByPersonId.get(employeeId) ?? []
-  $: isOnline = accounts.some((account) => $statusByUserStore.get(account._id)?.online === true)
+  $: socialIds = $socialIdsByPersonRefStore.get(employeeId) ?? []
+  $: isOnline = socialIds.some((sid) => $statusByUserStore.get(sid.key)?.online === true)
 
   // const statusesQuery = createQuery()
   // let editable = false

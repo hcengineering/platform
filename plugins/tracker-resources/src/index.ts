@@ -32,6 +32,7 @@ import core, {
   toIdMap,
   type TxOperations
 } from '@hcengineering/core'
+import { includesAny } from '@hcengineering/contact'
 import { type Resources, type Status, translate } from '@hcengineering/platform'
 import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
 import { type Component, type Issue, type Milestone, type Project } from '@hcengineering/tracker'
@@ -159,7 +160,6 @@ import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
 import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.svelte'
 
 import { get } from 'svelte/store'
-
 import { settingId } from '@hcengineering/setting'
 import { getAllStates } from '@hcengineering/task-resources'
 import EstimationValueEditor from './components/issues/timereport/EstimationValueEditor.svelte'
@@ -524,7 +524,7 @@ export default async (): Promise<Resources> => ({
     ) => await getAllStates(query, onUpdate, queryId, attr, false),
     GetVisibleFilters: getVisibleFilters,
     IssueChatTitleProvider: getIssueChatTitle,
-    IsProjectJoined: async (project: Project) => project.members.includes(getCurrentAccount()._id),
+    IsProjectJoined: async (project: Project) => includesAny(project.members, getCurrentAccount().socialIds),
     GetIssueStatusCategories: getIssueStatusCategories,
     SetComponentStore: setStore,
     ComponentFilterFunction: filterComponents

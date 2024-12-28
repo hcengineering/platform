@@ -14,12 +14,12 @@
 //
 
 import type { Collection, ObjectId, WithId } from 'mongodb'
-import { MeasureContext, Ref, SortingOrder, systemAccountEmail } from '@hcengineering/core'
+import { MeasureContext, PersonId, Ref, SortingOrder, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
 import { InboxNotification } from '@hcengineering/notification'
 import { TelegramNotificationRequest } from '@hcengineering/telegram'
 import { StorageAdapter } from '@hcengineering/server-core'
 import chunter, { ChunterSpace } from '@hcengineering/chunter'
-import { formatName, PersonAccount } from '@hcengineering/contact'
+import { formatName } from '@hcengineering/contact'
 import { generateToken } from '@hcengineering/server-token'
 import { getWorkspaceInfo } from '@hcengineering/server-client'
 import { ActivityMessage } from '@hcengineering/activity'
@@ -245,7 +245,7 @@ export class PlatformWorker {
 
   async getChannelName (client: WorkspaceClient, channel: ChunterSpace, email: string): Promise<string> {
     if (client.hierarchy.isDerived(channel._class, chunter.class.DirectMessage)) {
-      const persons = await client.getPersons(channel.members as Ref<PersonAccount>[], email)
+      const persons = await client.getPersons(channel.members as PersonId[], email)
       return persons
         .map(({ name }) => formatName(name))
         .sort((a, b) => a.localeCompare(b))
@@ -355,14 +355,14 @@ export class PlatformWorker {
     }
   }
 
-  async getWorkspaceInfo (workspaceId: string): Promise<WorkspaceInfo | undefined> {
+  async getWorkspaceInfo (workspaceId: WorkspaceUuid): Promise<WorkspaceInfo | undefined> {
     if (this.workspaceInfoById.has(workspaceId)) {
       return this.workspaceInfoById.get(workspaceId)
     }
 
     try {
-      const token = generateToken(systemAccountEmail, { name: workspaceId })
-      const result = await getWorkspaceInfo(token)
+      const token = generateToken(systemAccountUuid, workspaceId, { service: 'telegram' })
+      const result = await getWorkspaceInfo(token, false, undefined)
 
       if (result === undefined) {
         this.ctx.error('Failed to get workspace info', { workspaceId })
@@ -370,9 +370,9 @@ export class PlatformWorker {
       }
 
       const info: WorkspaceInfo = {
-        name: result.workspaceName ?? result.workspace,
-        url: result.workspaceUrl ?? result.workspace,
-        id: workspaceId
+        url: result.url,
+        id: workspaceId,
+        name: result.name
       }
       this.workspaceInfoById.set(workspaceId, info)
       return info

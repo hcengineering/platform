@@ -1,5 +1,5 @@
 import { Analytics } from '@hcengineering/analytics'
-import type { MeasureContext, WorkspaceId } from '@hcengineering/core'
+import type { MeasureContext, WorkspaceUuid } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import type { Readable } from 'stream'
 
@@ -17,7 +17,7 @@ export interface BlobResponse {
 export async function getFile (
   ctx: MeasureContext,
   client: StorageAdapter,
-  workspace: WorkspaceId,
+  workspace: WorkspaceUuid,
   file: string,
   res: BlobResponse
 ): Promise<void> {
@@ -62,7 +62,7 @@ export async function getFile (
           })
         })
       } catch (err: any) {
-        ctx.error('get-file-error', { workspace: workspace.name, err })
+        ctx.error('get-file-error', { workspace, err })
         Analytics.handleError(err)
         res.cork(() => {
           res.status(500)
@@ -95,7 +95,7 @@ export async function getFileRange (
   ctx: MeasureContext,
   range: string,
   client: StorageAdapter,
-  workspace: WorkspaceId,
+  workspace: WorkspaceUuid,
   uuid: string,
   res: BlobResponse
 ): Promise<void> {
@@ -173,7 +173,7 @@ export async function getFileRange (
           err?.message === 'No such key' ||
           err?.Code === 'NoSuchKey'
         ) {
-          ctx.info('No such key', { workspace: workspace.name, uuid })
+          ctx.info('No such key', { workspace, uuid })
           res.cork(() => {
             res.status(404)
             res.end()

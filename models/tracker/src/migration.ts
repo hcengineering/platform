@@ -335,24 +335,6 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
   )
 }
 
-async function migrateDefaultProjectOwners (client: MigrationClient): Promise<void> {
-  const workspaceOwners = await client.model.findAll(contact.class.PersonAccount, {
-    role: AccountRole.Owner
-  })
-
-  await client.update(
-    DOMAIN_SPACE,
-    {
-      _id: tracker.project.DefaultProject
-    },
-    {
-      $set: {
-        owners: workspaceOwners.map((it) => it._id)
-      }
-    }
-  )
-}
-
 async function migrateIssueStatuses (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_MODEL_TX,
@@ -424,10 +406,6 @@ export const trackerOperation: MigrateOperation = {
       {
         state: 'migrateDefaultTypeMixins',
         func: migrateDefaultTypeMixins
-      },
-      {
-        state: 'migrateDefaultProjectOwners',
-        func: migrateDefaultProjectOwners
       }
     ])
   },

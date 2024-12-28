@@ -14,7 +14,7 @@
 //
 
 import core, {
-  type Account,
+  type PersonId,
   type AttachedDoc,
   type Class,
   ClassifierKind,
@@ -92,7 +92,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     this.triggers.init(this.context.modelDb)
   }
 
-  async tx (ctx: MeasureContext, tx: Tx[]): Promise<TxMiddlewareResult> {
+  async tx (ctx: MeasureContext<SessionData>, tx: Tx[]): Promise<TxMiddlewareResult> {
     await this.triggers.tx(tx)
     const result = await this.provideTx(ctx, tx)
 
@@ -214,7 +214,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   ): Promise<void> {
     const sctx = ctx.contextData
     const asyncContextData: SessionDataImpl = new SessionDataImpl(
-      sctx.userEmail,
+      sctx.account,
       sctx.sessionId,
       sctx.admin,
       { txes: [], targets: {} },
@@ -223,7 +223,8 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       true,
       sctx.removedMap,
       sctx.contextCache,
-      this.context.modelDb
+      this.context.modelDb,
+      sctx.socialStringsToUsers
     )
     ctx.contextData = asyncContextData
     const aresult = await this.triggers.apply(
@@ -258,7 +259,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   private getCollectionUpdateTx<D extends Doc>(
     _id: Ref<D>,
     _class: Ref<Class<D>>,
-    modifiedBy: Ref<Account>,
+    modifiedBy: PersonId,
     modifiedOn: number,
     attachedTo: Pick<Doc, '_class' | 'space'>,
     update: DocumentUpdate<D>

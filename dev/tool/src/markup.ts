@@ -28,7 +28,7 @@ import core, {
   type Ref,
   type TxCreateDoc,
   type TxUpdateDoc,
-  type WorkspaceId,
+  type WorkspaceUuid,
   DOMAIN_TX,
   SortingOrder,
   makeCollabId,
@@ -49,7 +49,7 @@ export interface RestoreWikiContentParams {
 export async function restoreWikiContentMongo (
   ctx: MeasureContext,
   db: Db,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   storageAdapter: StorageAdapter,
   params: RestoreWikiContentParams
 ): Promise<void> {
@@ -119,7 +119,7 @@ export async function restoreWikiContentMongo (
 export async function findWikiDocYdocName (
   ctx: MeasureContext,
   db: Db,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   doc: Ref<Document>
 ): Promise<Ref<Blob> | undefined> {
   const updateContentTx = await db.collection<TxUpdateDoc<Document & { content: string }>>(DOMAIN_TX).findOne(
@@ -198,7 +198,7 @@ export interface RestoreControlledDocContentParams {
 export async function restoreControlledDocContentMongo (
   ctx: MeasureContext,
   db: Db,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   storageAdapter: StorageAdapter,
   params: RestoreWikiContentParams
 ): Promise<void> {
@@ -247,7 +247,7 @@ export async function restoreControlledDocContentMongo (
 export async function restoreControlledDocContentForDoc (
   ctx: MeasureContext,
   db: Db,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   storageAdapter: StorageAdapter,
   params: RestoreWikiContentParams,
   doc: Doc,

@@ -13,30 +13,27 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
-  import { AccountRole, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { AccountRole, Doc, getCurrentAccount } from '@hcengineering/core'
   import { Card, isAdminUser } from '@hcengineering/presentation'
   import ui, { Button, Label } from '@hcengineering/ui'
   import { ObjectPresenter } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
-  import { personAccountByIdStore } from '../utils'
-  import PersonAccountPresenter from './PersonAccountPresenter.svelte'
-  import PersonAccountRefPresenter from './PersonAccountRefPresenter.svelte'
+  import { personRefByPersonIdStore } from '../utils'
+  import { PersonRefPresenter } from '..'
 
   export let object: Doc | Doc[]
   export let deleteAction: () => void | Promise<void>
   export let skipCheck: boolean = false
   export let canDeleteExtra: boolean = true
+  const me = getCurrentEmployee()
   const objectArray = Array.isArray(object) ? object : [object]
-  const owners: PersonAccount[] = Array.from($personAccountByIdStore.values()).filter(
-    (acc) => acc.role === AccountRole.Owner
-  )
   const dispatch = createEventDispatcher()
-  $: creators = [...new Set(objectArray.map((obj) => obj.createdBy as Ref<PersonAccount>))]
+  $: creators = [...new Set(objectArray.map((obj) => obj.createdBy))].map((pid) => pid !== undefined ? $personRefByPersonIdStore.get(pid) : undefined).filter((p) => p !== undefined)
   $: canDelete =
     (skipCheck ||
-      (creators.length === 1 && creators.includes(getCurrentAccount()._id as Ref<PersonAccount>)) ||
+      (creators.length === 1 && creators[0] === me) ||
       getCurrentAccount().role === AccountRole.Owner ||
       isAdminUser()) &&
     canDeleteExtra
@@ -71,20 +68,21 @@
       </div>
       <div class="mb-2">
         <Label label={view.string.DeletePopupCreatorLabel} />
-        {#each creators as account}
+        {#each creators as person}
           <div class="my-2">
-            <PersonAccountRefPresenter value={account} />
+            <PersonRefPresenter value={person} />
           </div>
         {/each}
       </div>
-      <div class="mb-2">
+      <!-- Fix if really needed? -->
+      <!-- <div class="mb-2">
         <Label label={view.string.DeletePopupOwnerLabel} />
         {#each owners as owner}
           <div class="my-2">
-            <PersonAccountPresenter value={owner} />
+            <PersonPresenter value={owner} />
           </div>
         {/each}
-      </div>
+      </div> -->
     {/if}
   </div>
   <slot />

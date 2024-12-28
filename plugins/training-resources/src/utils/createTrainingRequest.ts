@@ -1,10 +1,11 @@
 //
 // Copyright @ 2024 Hardcore Engineering Inc.
 //
-
-import contact, { type Employee, type PersonAccount } from '@hcengineering/contact'
+import { get } from 'svelte/store'
+import { type Employee } from '@hcengineering/contact'
+import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
 import type { Training, TrainingRequest } from '@hcengineering/training'
-import core, { type Account, type AttachedData, type Ref, type Role, type RolesAssignment } from '@hcengineering/core'
+import core, { type AttachedData, type Ref, type Role, type RolesAssignment } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { navigate } from '@hcengineering/ui'
 import training from '../plugin'
@@ -48,22 +49,11 @@ export async function createTrainingRequest (
     }
 
     const mixin = client.getHierarchy().as(space, spaceType.targetClass) as unknown as RolesAssignment
-    const accountRefs = roles.reduce<Array<Ref<Account>>>(
-      (accountRefs, roleId) => [...accountRefs, ...(mixin[roleId] ?? [])],
-      []
-    )
+    const personRefByPersonId = get(personRefByPersonIdStore)
+    const employeeRefs = new Set(roles.map((roleId) => mixin[roleId] ?? []).flat().map((pid) => personRefByPersonId.get(pid)).filter((p) => p !== undefined))
 
-    const personAccounts = await client.findAll(contact.class.PersonAccount, {
-      _id: { $in: accountRefs as Array<Ref<PersonAccount>> }
-    })
-
-    const employeeRefs = personAccounts.map((personAccount) => personAccount.person as Ref<Employee>)
-    const employees = await client.findAll(contact.mixin.Employee, {
-      _id: { $in: employeeRefs }
-    })
-
-    for (const employee of employees) {
-      traineesMap.set(employee._id, true)
+    for (const employeeRef of employeeRefs) {
+      traineesMap.set(employeeRef as Ref<Employee>, true)
     }
 
     attachedData.trainees = [...traineesMap.keys()]

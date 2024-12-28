@@ -72,7 +72,7 @@ export interface TelegramFileInfo {
 }
 
 export interface WorkspaceInfo {
-  name: string
   url: string
   id: string
+  name: string
 }

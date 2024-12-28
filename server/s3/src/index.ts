@@ -20,12 +20,11 @@ import { Agent as HttpAgent } from 'http'
 import { Agent as HttpsAgent } from 'https'
 
 import core, {
-  toWorkspaceString,
   withContext,
   type Blob,
   type MeasureContext,
   type Ref,
-  type WorkspaceId
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, {
@@ -87,22 +86,22 @@ export class S3Service implements StorageAdapter {
     this.expireTime = parseInt(this.opt.expireTime ?? '168') * 3600 // use 7 * 24 - hours as default value for expireF
   }
 
-  async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
+  async initialize (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {}
 
   /**
    * @public
    */
-  getBucketId (workspaceId: WorkspaceId): string {
-    return this.opt.rootBucket ?? (this.opt.bucketPrefix ?? '') + toWorkspaceString(workspaceId)
+  getBucketId (workspaceId: WorkspaceUuid): string {
+    return this.opt.rootBucket ?? (this.opt.bucketPrefix ?? '') + workspaceId
   }
 
-  getBucketFolder (workspaceId: WorkspaceId): string {
-    return toWorkspaceString(workspaceId)
+  getBucketFolder (workspaceId: WorkspaceUuid): string {
+    return workspaceId
   }
 
   async close (): Promise<void> {}
 
-  async exists (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<boolean> {
+  async exists (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<boolean> {
     try {
       const result = await this.client.headBucket({
         Bucket: this.getBucketId(workspaceId)
@@ -119,7 +118,7 @@ export class S3Service implements StorageAdapter {
   }
 
   @withContext('make')
-  async make (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
+  async make (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {
     try {
       await this.client.createBucket({
         Bucket: this.getBucketId(workspaceId)
@@ -146,14 +145,14 @@ export class S3Service implements StorageAdapter {
             ContinuationToken: token
           })
           for (const data of res.CommonPrefixes ?? []) {
-            const wsName = data.Prefix?.split('/')?.[0]
-            if (wsName !== undefined && !info.has(wsName)) {
-              info.set(wsName, {
-                name: wsName,
+            const wsUuid = data.Prefix?.split('/')?.[0]
+            if (wsUuid !== undefined && !info.has(wsUuid)) {
+              info.set(wsUuid, {
+                name: wsUuid,
                 delete: async () => {
-                  await this.delete(ctx, { name: wsName })
+                  await this.delete(ctx, wsUuid)
                 },
-                list: async () => await this.listStream(ctx, { name: wsName })
+                list: async () => await this.listStream(ctx, wsUuid)
               })
             }
           }
@@ -165,9 +164,7 @@ export class S3Service implements StorageAdapter {
         }
         return Array.from(info.values())
       } else {
-        const productPostfix = this.getBucketFolder({
-          name: ''
-        })
+        const productPostfix = this.getBucketFolder('')
         const buckets = await this.client.listBuckets()
         return (buckets.Buckets ?? [])
           .filter((it) => it.Name !== undefined && it.Name.endsWith(productPostfix))
@@ -177,9 +174,9 @@ export class S3Service implements StorageAdapter {
             return {
               name,
               delete: async () => {
-                await this.delete(ctx, { name })
+                await this.delete(ctx, name)
               },
-              list: async () => await this.listStream(ctx, { name })
+              list: async () => await this.listStream(ctx, name)
             }
           })
       }
@@ -193,12 +190,12 @@ export class S3Service implements StorageAdapter {
     }
   }
 
-  getDocumentKey (workspace: WorkspaceId, name: string): string {
+  getDocumentKey (workspace: WorkspaceUuid, name: string): string {
     return this.opt.rootBucket === undefined ? name : `${this.getBucketFolder(workspace)}/${name}`
   }
 
   @withContext('remove')
-  async remove (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]): Promise<void> {
+  async remove (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectNames: string[]): Promise<void> {
     await this.client.deleteObjects({
       Bucket: this.getBucketId(workspaceId),
       Delete: {
@@ -208,7 +205,7 @@ export class S3Service implements StorageAdapter {
   }
 
   @withContext('delete')
-  async delete (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
+  async delete (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {
     try {
       await removeAllObjects(ctx, this, workspaceId)
     } catch (err: any) {
@@ -229,11 +226,11 @@ export class S3Service implements StorageAdapter {
     return key
   }
 
-  rootPrefix (workspaceId: WorkspaceId): string | undefined {
+  rootPrefix (workspaceId: WorkspaceUuid): string | undefined {
     return this.opt.rootBucket !== undefined ? this.getBucketFolder(workspaceId) + '/' : undefined
   }
 
-  async copy (sourceId: WorkspaceId, targetId: WorkspaceId, objectName: string): Promise<void> {
+  async copy (sourceId: WorkspaceUuid, targetId: WorkspaceUuid, objectName: string): Promise<void> {
     const copyOp = new CopyObjectCommand({
       Bucket: this.getBucketId(targetId),
       Key: this.getDocumentKey(targetId, objectName),
@@ -243,7 +240,7 @@ export class S3Service implements StorageAdapter {
   }
 
   @withContext('listStream')
-  async listStream (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<BlobStorageIterator> {
+  async listStream (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<BlobStorageIterator> {
     let hasMore = true
     const buffer: ListBlobResult[] = []
     let token: string | undefined
@@ -279,7 +276,7 @@ export class S3Service implements StorageAdapter {
             }
           }
         } catch (err: any) {
-          ctx.error('Failed to get list', { error: err, workspaceId: workspaceId.name })
+          ctx.error('Failed to get list', { error: err, workspaceId })
         }
         return buffer.splice(0, 50)
       },
@@ -288,7 +285,7 @@ export class S3Service implements StorageAdapter {
   }
 
   @withContext('stat')
-  async stat (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Blob | undefined> {
+  async stat (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectName: string): Promise<Blob | undefined> {
     try {
       const result = await this.client.headObject({
         Bucket: this.getBucketId(workspaceId),
@@ -309,17 +306,17 @@ export class S3Service implements StorageAdapter {
       }
     } catch (err: any) {
       if (err?.$metadata?.httpStatusCode !== 404) {
-        ctx.warn('no object found', { error: err, objectName, workspaceId: workspaceId.name })
+        ctx.warn('no object found', { error: err, objectName, workspaceId })
       }
     }
   }
 
   @withContext('get')
-  async get (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Readable> {
+  async get (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectName: string): Promise<Readable> {
     return await this.doGet(ctx, workspaceId, objectName)
   }
 
-  async doGet (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string, range?: string): Promise<Readable> {
+  async doGet (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectName: string, range?: string): Promise<Readable> {
     try {
       const res = await this.client.getObject({
         Bucket: this.getBucketId(workspaceId),
@@ -339,14 +336,14 @@ export class S3Service implements StorageAdapter {
       }
     } catch (err: any) {
       // In case of error return undefined
-      throw new NoSuchKeyError(`${workspaceId.name} missing ${objectName}`, err)
+      throw new NoSuchKeyError(`${workspaceId} missing ${objectName}`, err)
     }
   }
 
   @withContext('put')
   put (
     ctx: MeasureContext,
-    workspaceId: WorkspaceId,
+    workspaceId: WorkspaceUuid,
     objectName: string,
     stream: Readable | Buffer | string,
     contentType: string,
@@ -370,7 +367,7 @@ export class S3Service implements StorageAdapter {
             versionId: response.VersionId ?? null
           }
         },
-        { size, objectName, workspaceId: workspaceId.name }
+        { size, objectName, workspaceId }
       )
       // Less 5Mb
     } else {
@@ -401,13 +398,13 @@ export class S3Service implements StorageAdapter {
             versionId: output.VersionId ?? null
           }
         },
-        { size, objectName, workspaceId: workspaceId.name }
+        { size, objectName, workspaceId }
       )
     }
   }
 
   @withContext('read')
-  async read (ctx: MeasureContext, workspaceId: WorkspaceId, name: string): Promise<Buffer[]> {
+  async read (ctx: MeasureContext, workspaceId: WorkspaceUuid, name: string): Promise<Buffer[]> {
     const data = await this.doGet(ctx, workspaceId, name)
     const chunks: Buffer[] = []
 
@@ -431,7 +428,7 @@ export class S3Service implements StorageAdapter {
   @withContext('partial')
   async partial (
     ctx: MeasureContext,
-    workspaceId: WorkspaceId,
+    workspaceId: WorkspaceUuid,
     objectName: string,
     offset: number,
     length?: number
@@ -441,9 +438,9 @@ export class S3Service implements StorageAdapter {
   }
 
   @withContext('getUrl')
-  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
+  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectName: string): Promise<string> {
     const filesUrl = getMetadata(serverCore.metadata.FilesUrl) ?? ''
-    return filesUrl.replaceAll(':workspace', workspaceId.name).replaceAll(':blobId', objectName)
+    return filesUrl.replaceAll(':workspace', workspaceId).replaceAll(':blobId', objectName)
   }
 }
 

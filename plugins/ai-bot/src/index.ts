@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import { Account, type Mixin, Ref } from '@hcengineering/core'
+import { type PersonId, buildSocialIdString, type Mixin, type Ref, SocialIdType } from '@hcengineering/core'
 import type { Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { ChatMessage } from '@hcengineering/chunter'
@@ -23,7 +22,12 @@ export * from './rest'
 
 export const aiBotId = 'ai-bot' as Plugin
 
-export const aiBotAccountEmail = 'huly.ai.bot@hc.engineering'
+const aiBotAccountEmail = 'huly.ai.bot@hc.engineering'
+export const aiBotEmailSocialId = buildSocialIdString({
+  type: SocialIdType.EMAIL,
+  value: aiBotAccountEmail
+})
+export const aiBotAccount = '5a1a5faa-582c-42a6-8613-fc80a15e3ae8'
 
 export interface TransferredMessage extends ChatMessage {
   messageId: Ref<ChatMessage>
@@ -38,7 +42,7 @@ const aiBot = plugin(aiBotId, {
     TransferredMessage: '' as Ref<Mixin<TransferredMessage>>
   },
   account: {
-    AIBot: '' as Ref<Account>
+    AIBot: '' as PersonId
   }
 })
 

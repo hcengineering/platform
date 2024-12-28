@@ -13,19 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import core, { Account, DocumentQuery, Ref, matchQuery } from '@hcengineering/core'
+  import { Person } from '@hcengineering/contact'
+  import { PersonId, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { ButtonKind, ButtonSize, IconSize } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
-  import { personAccountByIdStore } from '../utils'
+  import { personRefByPersonIdStore } from '../utils'
   import UserBox from './UserBox.svelte'
-  import { getClient } from '@hcengineering/presentation'
 
   export let label: IntlString = contact.string.Employee
-  export let value: Ref<Account> | null | undefined
-  export let docQuery: DocumentQuery<Account> = {}
+  export let value: PersonId | null | undefined
+  export let include: PersonId[] = []
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let avatarSize: IconSize = 'card'
@@ -33,20 +32,12 @@
   export let width: string | undefined = undefined
   export let readonly = false
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-  $: accounts = matchQuery<Account>(
-    Array.from($personAccountByIdStore.values()),
-    docQuery,
-    core.class.Account,
-    hierarchy
-  ) as PersonAccount[]
-
-  let map = new Map<Ref<Person>, Ref<Account>>()
-  $: map = new Map(accounts.map((p) => [p.person, p._id]))
-
-  $: employees = accounts.map((p) => p.person)
-  $: selectedEmp = value && accounts.find((p) => p._id === value)?.person
+  $: docQuery = include.length === 0
+    ? {}
+    : {
+        _id: { $in: include.map((personId) => $personRefByPersonIdStore.get(personId)).filter((p) => p !== undefined) }
+      }
+  $: selectedEmp = value != null ? $personRefByPersonIdStore.get(value) : value
 
   const dispatch = createEventDispatcher()
 
@@ -62,7 +53,7 @@
 
 <UserBox
   _class={contact.mixin.Employee}
-  docQuery={{ _id: { $in: employees } }}
+  {docQuery}
   showNavigate={false}
   {kind}
   {size}

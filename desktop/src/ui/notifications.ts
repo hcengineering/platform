@@ -1,4 +1,4 @@
-import contact, { PersonAccount, formatName } from '@hcengineering/contact'
+import { getPersonBySocialId, formatName } from '@hcengineering/contact'
 import { Ref, TxOperations } from '@hcengineering/core'
 import notification, { DocNotifyContext, CommonInboxNotification, ActivityInboxNotification, InboxNotification } from '@hcengineering/notification'
 import { IntlString, addEventListener, translate } from '@hcengineering/platform'
@@ -67,14 +67,7 @@ async function hydrateNotificationAsYouCan (lastNotification: InboxNotification)
     body: ''
   }
 
-  const account = await client.getModel().findOne(contact.class.PersonAccount, { _id: lastNotification.modifiedBy as Ref<PersonAccount> })
-
-  if (account == null) {
-    return noPersonData
-  }
-
-  const person = await client.findOne(contact.class.Person, { _id: account.person })
-
+  const person = await getPersonBySocialId(client, lastNotification.modifiedBy)
   if (person == null) {
     return noPersonData
   }
@@ -122,7 +115,7 @@ export function configureNotifications (): void {
   let initTimestamp = 0
   const notificationHistory = new Map<string, number>()
 
-  addEventListener(workbench.event.NotifyConnection, async (event, account: PersonAccount) => {
+  addEventListener(workbench.event.NotifyConnection, async () => {
     client = getClient()
     const electronAPI: IPCMainExposed = (window as any).electron
 

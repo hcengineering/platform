@@ -23,7 +23,7 @@ fi
 ./tool.sh configure init-ws-qms --list
 
 # Create workspace record in accounts
-./tool.sh create-workspace sanity-ws-qms -w SanityTest
+./tool.sh create-workspace sanity-ws-qms
 # Create user record in accounts
 ./tool.sh create-account user1 -f John -l Appleseed -p 1234
 ./tool.sh create-account user2 -f Kainin -l Dirak -p 1234

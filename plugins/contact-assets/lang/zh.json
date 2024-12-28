@@ -107,6 +107,10 @@
     "AddGuest": "添加访客",
     "ViewProfile": "查看资料",
     "Viber": "Viber",
-    "ViberPlaceholder": "Viber"
+    "ViberPlaceholder": "Viber",
+    "SocialId": "社交 ID",
+    "SocialIds": "社交 ID",
+    "Type": "类型",
+    "Confirmed": "已确认"
   }
 }

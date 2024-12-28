@@ -13,8 +13,7 @@
 // limitations under the License.
 //
 
-import { type PersonAccount } from '@hcengineering/contact'
-import { type Account, type Doc, type Ref, SortingOrder, TxOperations } from '@hcengineering/core'
+import { TxOperations } from '@hcengineering/core'
 import {
   type MigrateOperation,
   type MigrationClient,
@@ -24,131 +23,11 @@ import {
   tryUpgrade,
   createDefaultSpace
 } from '@hcengineering/model'
-import { makeRank } from '@hcengineering/rank'
 import core from '@hcengineering/model-core'
-import task from '@hcengineering/task'
 import tags from '@hcengineering/tags'
-import { timeId, type ToDo, ToDoPriority } from '@hcengineering/time'
+import { timeId, ToDoPriority } from '@hcengineering/time'
 import { DOMAIN_TIME } from '.'
 import time from './plugin'
-
-export async function migrateWorkSlots (client: TxOperations): Promise<void> {
-  const h = client.getHierarchy()
-  const desc = h.getDescendants(task.class.Task)
-  const oldWorkSlots = await client.findAll(time.class.WorkSlot, {
-    attachedToClass: { $in: desc }
-  })
-  const now = Date.now()
-  const todos = new Map<Ref<Doc>, Ref<ToDo>>()
-  const count = new Map<Ref<ToDo>, number>()
-  let rank = makeRank(undefined, undefined)
-  for (const oldWorkSlot of oldWorkSlots) {
-    const todo = todos.get(oldWorkSlot.attachedTo)
-    if (todo === undefined) {
-      const acc = oldWorkSlot.space.replace('_calendar', '') as Ref<Account>
-      const account = (await client.findOne(core.class.Account, { _id: acc })) as PersonAccount
-      if (account.person !== undefined) {
-        rank = makeRank(undefined, rank)
-        const todo = await client.addCollection(
-          time.class.ProjectToDo,
-          time.space.ToDos,
-          oldWorkSlot.attachedTo,
-          oldWorkSlot.attachedToClass,
-          'todos',
-          {
-            attachedSpace: (oldWorkSlot as any).attachedSpace,
-            title: oldWorkSlot.title,
-            description: '',
-            doneOn: oldWorkSlot.dueDate > now ? null : oldWorkSlot.dueDate,
-            workslots: 0,
-            priority: ToDoPriority.NoPriority,
-            user: account.person,
-            visibility: 'public',
-            rank
-          }
-        )
-        await client.update(oldWorkSlot, {
-          attachedTo: todo,
-          attachedToClass: time.class.ProjectToDo,
-          collection: 'workslots'
-        })
-        todos.set(oldWorkSlot.attachedTo, todo)
-        count.set(todo, 1)
-      }
-    } else {
-      await client.update(oldWorkSlot, {
-        attachedTo: todo,
-        attachedToClass: time.class.ProjectToDo,
-        collection: 'workslots'
-      })
-      const c = count.get(todo) ?? 1
-      count.set(todo, c + 1)
-    }
-  }
-  for (const [todoId, c] of count.entries()) {
-    const todo = await client.findOne(time.class.ToDo, { _id: todoId })
-    if (todo === undefined) continue
-    const tx = client.txFactory.createTxUpdateDoc(time.class.ToDo, todo.space, todo._id, {
-      workslots: c
-    })
-    tx.space = core.space.DerivedTx
-    await client.tx(tx)
-  }
-}
-
-async function migrateTodosSpace (client: TxOperations): Promise<void> {
-  const oldTodos = await client.findAll(time.class.ToDo, {
-    space: { $ne: time.space.ToDos }
-  })
-  for (const oldTodo of oldTodos) {
-    const account = (await client.findOne(core.class.Account, {
-      _id: oldTodo.space as string as Ref<Account>
-    })) as PersonAccount
-    if (account.person === undefined) continue
-    await client.update(oldTodo, {
-      user: account.person,
-      space: time.space.ToDos
-    })
-  }
-}
-
-async function migrateTodosRanks (client: TxOperations): Promise<void> {
-  const doneTodos = await client.findAll(
-    time.class.ToDo,
-    {
-      rank: { $exists: false },
-      doneOn: null
-    },
-    {
-      sort: { modifiedOn: SortingOrder.Ascending }
-    }
-  )
-  let doneTodoRank = makeRank(undefined, undefined)
-  for (const todo of doneTodos) {
-    await client.update(todo, {
-      rank: doneTodoRank
-    })
-    doneTodoRank = makeRank(undefined, doneTodoRank)
-  }
-
-  const undoneTodos = await client.findAll(
-    time.class.ToDo,
-    {
-      rank: { $exists: false },
-      doneOn: { $ne: null }
-    },
-    {
-      sort: { doneOn: SortingOrder.Ascending }
-    }
-  )
-  let undoneTodoRank = makeRank(undefined, undefined)
-  for (const todo of undoneTodos) {
-    await client.update(todo, {
-      rank: undoneTodoRank
-    })
-    undoneTodoRank = makeRank(undefined, undoneTodoRank)
-  }
-}
 
 async function fillProps (client: MigrationClient): Promise<void> {
   await client.update(
@@ -200,9 +79,6 @@ export const timeOperation: MigrateOperation = {
             },
             time.category.Other
           )
-          await migrateWorkSlots(tx)
-          await migrateTodosSpace(tx)
-          await migrateTodosRanks(tx)
         }
       }
     ])

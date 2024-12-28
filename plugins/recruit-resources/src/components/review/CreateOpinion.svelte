@@ -39,7 +39,7 @@
     _id: generateId(),
     collection: 'reviews',
     modifiedOn: Date.now(),
-    modifiedBy: '' as Ref<Account>,
+    modifiedBy: '' as PersonId,
     description: '',
     value: ''
   }

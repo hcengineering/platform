@@ -17,7 +17,7 @@ const storageService = new DatalakeService({ ...(config.storages[0] as DatalakeC
 async function doTest (): Promise<void> {
   const genWorkspaceId1 = generateId()
 
-  const ws1 = { name: genWorkspaceId1 }
+  const ws1 = genWorkspaceId1
   await storageService.make(toolCtx, ws1)
 
   /// /////// Uploads

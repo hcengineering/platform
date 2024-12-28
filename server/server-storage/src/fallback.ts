@@ -3,7 +3,7 @@ import {
   type Blob,
   type MeasureContext,
   type StorageIterator,
-  type WorkspaceId
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { type Readable } from 'stream'
 
@@ -36,7 +36,7 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
   // Adapters should be in reverse order, first one is target one, and next ones are for fallback
   constructor (readonly adapters: NamedStorageAdapter[]) {}
 
-  async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
+  async initialize (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {}
 
   doTrimHash (s: string | undefined): string {
     if (s == null) {
@@ -48,7 +48,7 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
     return s
   }
 
-  find (ctx: MeasureContext, workspaceId: WorkspaceId): StorageIterator {
+  find (ctx: MeasureContext, workspaceId: WorkspaceUuid): StorageIterator {
     const storageIterator = this.makeStorageIterator(ctx, workspaceId)
 
     return {
@@ -67,7 +67,7 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
     }
   }
 
-  private makeStorageIterator (ctx: MeasureContext, workspaceId: WorkspaceId): BlobStorageIterator {
+  private makeStorageIterator (ctx: MeasureContext, workspaceId: WorkspaceUuid): BlobStorageIterator {
     // We need to reverse, since we need to iterate on latest document last
     const adapters = [...this.adapters].reverse()
     let provider: NamedStorageAdapter | undefined
@@ -111,7 +111,7 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
     }
   }
 
-  async exists (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<boolean> {
+  async exists (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<boolean> {
     for (const { adapter } of this.adapters) {
       if (!(await adapter.exists(ctx, workspaceId))) {
         return false
@@ -121,7 +121,7 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
   }
 
   @withContext('aggregator-make', {})
-  async make (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
+  async make (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {
     for (const { name, adapter } of this.adapters) {
       try {
         if (!(await adapter.exists(ctx, workspaceId))) {
@@ -145,7 +145,7 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
   }
 
   @withContext('fallback-delete', {})
-  async delete (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
+  async delete (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {
     for (const { adapter } of this.adapters) {
       if (await adapter.exists(ctx, workspaceId)) {
         await adapter.delete(ctx, workspaceId)
@@ -154,14 +154,14 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
   }
 
   @withContext('fallback-remove', {})
-  async remove (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]): Promise<void> {
+  async remove (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectNames: string[]): Promise<void> {
     // Group by provider and delegate into it.
     for (const { adapter } of this.adapters) {
       await adapter.remove(ctx, workspaceId, objectNames)
     }
   }
 
-  async listStream (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<BlobStorageIterator> {
+  async listStream (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<BlobStorageIterator> {
     const storageIterator = this.makeStorageIterator(ctx, workspaceId)
     return {
       next: async (): Promise<ListBlobResult[]> => {
@@ -174,7 +174,7 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
   }
 
   @withContext('fallback-stat', {})
-  async stat (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Blob | undefined> {
+  async stat (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectName: string): Promise<Blob | undefined> {
     for (const { name, adapter } of this.adapters) {
       const stat = await adapter.stat(ctx, workspaceId, objectName)
       if (stat !== undefined) {
@@ -185,7 +185,7 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
   }
 
   @withContext('fallback-get', {})
-  async get (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Readable> {
+  async get (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectName: string): Promise<Readable> {
     for (const { adapter } of this.adapters) {
       try {
         return await adapter.get(ctx, workspaceId, objectName)
@@ -193,13 +193,13 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
         // ignore
       }
     }
-    throw new NoSuchKeyError(`${workspaceId.name} missing ${objectName}`)
+    throw new NoSuchKeyError(`${workspaceId} missing ${objectName}`)
   }
 
   @withContext('fallback-partial', {})
   async partial (
     ctx: MeasureContext,
-    workspaceId: WorkspaceId,
+    workspaceId: WorkspaceUuid,
     objectName: string,
     offset: number,
     length?: number | undefined
@@ -211,11 +211,11 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
         // ignore
       }
     }
-    throw new NoSuchKeyError(`${workspaceId.name} missing ${objectName}`)
+    throw new NoSuchKeyError(`${workspaceId} missing ${objectName}`)
   }
 
   @withContext('fallback-read', {})
-  async read (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Buffer[]> {
+  async read (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectName: string): Promise<Buffer[]> {
     for (const { adapter } of this.adapters) {
       try {
         return await adapter.read(ctx, workspaceId, objectName)
@@ -223,13 +223,13 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
         // Ignore
       }
     }
-    throw new NoSuchKeyError(`${workspaceId.name} missing ${objectName}`)
+    throw new NoSuchKeyError(`${workspaceId} missing ${objectName}`)
   }
 
   @withContext('aggregator-put', {})
   put (
     ctx: MeasureContext,
-    workspaceId: WorkspaceId,
+    workspaceId: WorkspaceUuid,
     objectName: string,
     stream: string | Readable | Buffer,
     contentType: string,
@@ -241,11 +241,11 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
   }
 
   @withContext('aggregator-getUrl', {})
-  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, name: string): Promise<string> {
+  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceUuid, name: string): Promise<string> {
     // const { provider, stat } = await this.findProvider(ctx, workspaceId, name)
     // return await provider.getUrl(ctx, workspaceId, stat.storageId)
     const filesUrl = getMetadata(serverCore.metadata.FilesUrl) ?? ''
-    return filesUrl.replaceAll(':workspace', workspaceId.name).replaceAll(':blobId', name)
+    return filesUrl.replaceAll(':workspace', workspaceId).replaceAll(':blobId', name)
   }
 }
 

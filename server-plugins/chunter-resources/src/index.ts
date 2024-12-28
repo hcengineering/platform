@@ -15,9 +15,10 @@
 
 import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
 import chunter, { Channel, ChatMessage, chunterId, ChunterSpace, ThreadMessage } from '@hcengineering/chunter'
-import contact, { Person, PersonAccount } from '@hcengineering/contact'
+import contact, { Employee, Person } from '@hcengineering/contact'
+import { getPerson, getPersons } from '@hcengineering/server-contact'
 import core, {
-  Account,
+  PersonId,
   Class,
   concatLink,
   Doc,
@@ -48,7 +49,7 @@ import {
 import { markupToHTML, markupToText, stripTags } from '@hcengineering/text-core'
 import { workbenchId } from '@hcengineering/workbench'
 
-import { getPersonAccountById, NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
+import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
 import { encodeObjectURI } from '@hcengineering/view'
 
 const updateChatInfoDelay = 12 * 60 * 60 * 1000 // 12 hours
@@ -60,7 +61,7 @@ const hideChannelDelay = 7 * 24 * 60 * 60 * 1000 // 7 days
 export async function channelHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const channel = doc as ChunterSpace
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${chunterId}/${encodeObjectURI(channel._id, channel._class)}`
+  const path = `${workbenchId}/${control.workspace.url}/${chunterId}/${encodeObjectURI(channel._id, channel._class)}`
   const link = concatLink(front, path)
   const name = await channelTextPresenter(channel)
   return `<a href='${link}'>${name}</a>`
@@ -133,9 +134,12 @@ async function OnThreadMessageCreated (originTx: TxCUD<Doc>, control: TriggerCon
     }
   )
 
-  const personAccount = control.modelDb.getObject(originTx.modifiedBy) as PersonAccount
+  const person = await getPerson(control, originTx.modifiedBy)
+  if (person === undefined) {
+    return []
+  }
 
-  if ((message.repliedPersons ?? []).includes(personAccount.person)) {
+  if ((message.repliedPersons ?? []).includes(person._id)) {
     return [lastReplyTx]
   }
 
@@ -144,7 +148,7 @@ async function OnThreadMessageCreated (originTx: TxCUD<Doc>, control: TriggerCon
     threadMessage.space,
     threadMessage.attachedTo,
     {
-      $push: { repliedPersons: personAccount.person }
+      $push: { repliedPersons: person._id }
     }
   )
 
@@ -218,7 +222,7 @@ async function ChatNotificationsHandler (txes: TxCUD<Doc>[], control: TriggerCon
   return result
 }
 
-function joinChannel (control: TriggerControl, channel: Channel, user: Ref<Account>): Tx[] {
+function joinChannel (control: TriggerControl, channel: Channel, user: PersonId): Tx[] {
   if (channel.members.includes(user)) {
     return []
   }
@@ -231,36 +235,36 @@ function joinChannel (control: TriggerControl, channel: Channel, user: Ref<Accou
 }
 
 async function OnThreadMessageDeleted (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const removeTx = tx as TxRemoveDoc<ThreadMessage>
+  // TODO: FIXME
+  return []
+  // const removeTx = tx as TxRemoveDoc<ThreadMessage>
 
-  const message = control.removedMap.get(removeTx.objectId) as ThreadMessage
+  // const message = control.removedMap.get(removeTx.objectId) as ThreadMessage
 
-  if (message === undefined) {
-    return []
-  }
+  // if (message === undefined) {
+  //   return []
+  // }
 
-  const messages = await control.findAll(control.ctx, chunter.class.ThreadMessage, {
-    attachedTo: message.attachedTo
-  })
+  // const messages = await control.findAll(control.ctx, chunter.class.ThreadMessage, {
+  //   attachedTo: message.attachedTo
+  // })
 
-  const updateTx = control.txFactory.createTxUpdateDoc<ActivityMessage>(
-    message.attachedToClass,
-    message.space,
-    message.attachedTo,
-    {
-      repliedPersons: messages
-        .map(({ createdBy }) =>
-          createdBy !== undefined ? (control.modelDb.getObject(createdBy) as PersonAccount).person : undefined
-        )
-        .filter((person): person is Ref<Person> => person !== undefined),
-      lastReply:
-        messages.length > 0
-          ? Math.max(...messages.map(({ createdOn, modifiedOn }) => createdOn ?? modifiedOn))
-          : undefined
-    }
-  )
+  // const repliedPersons = await getPersons(control, messages.map((m) => m.createdBy).filter((pid) => pid !== undefined))
 
-  return [updateTx]
+  // const updateTx = control.txFactory.createTxUpdateDoc<ActivityMessage>(
+  //   message.attachedToClass,
+  //   message.space,
+  //   message.attachedTo,
+  //   {
+  //     repliedPersons: repliedPersons.map((p) => p._id),
+  //     lastReply:
+  //       messages.length > 0
+  //         ? Math.max(...messages.map(({ createdOn, modifiedOn }) => createdOn ?? modifiedOn))
+  //         : undefined
+  //   }
+  // )
+
+  // return [updateTx]
 }
 
 /**
@@ -297,7 +301,7 @@ export async function ChunterTrigger (txes: TxCUD<Doc>[], control: TriggerContro
 export async function getChunterNotificationContent (
   _: Doc,
   tx: TxCUD<Doc>,
-  target: Ref<Account>,
+  target: PersonId,
   control: TriggerControl
 ): Promise<NotificationContent> {
   let title: IntlString = notification.string.CommonNotificationTitle
@@ -399,15 +403,12 @@ function getActivityToHide (contexts: DocNotifyContext[], date: Timestamp): DocN
 }
 
 export async function syncChat (control: TriggerControl, status: UserStatus, date: Timestamp): Promise<void> {
-  const account = getPersonAccountById(status.user as Ref<PersonAccount>, control)
-  if (account === undefined) return
-
-  const syncInfo = (await control.findAll(control.ctx, chunter.class.ChatSyncInfo, { user: account.person })).shift()
+  const syncInfo = (await control.findAll(control.ctx, chunter.class.ChatSyncInfo, { user: status.user as Ref<Employee> })).shift()
   const shouldSync = syncInfo === undefined || date - syncInfo.timestamp > updateChatInfoDelay
   if (!shouldSync) return
 
   const contexts = await control.findAll(control.ctx, notification.class.DocNotifyContext, {
-    user: account._id,
+    user: status.user,
     hidden: false,
     isPinned: false
   })
@@ -440,12 +441,12 @@ export async function syncChat (control: TriggerControl, status: UserStatus, dat
 
   if (syncInfo === undefined) {
     const personSpace = (
-      await control.findAll(control.ctx, contact.class.PersonSpace, { person: account.person })
+      await control.findAll(control.ctx, contact.class.PersonSpace, { person: status.user as Ref<Employee> })
     ).shift()
     if (personSpace !== undefined) {
       res.push(
         control.txFactory.createTxCreateDoc(chunter.class.ChatSyncInfo, personSpace._id, {
-          user: account.person,
+          user: status.user as Ref<Employee>,
           timestamp: date
         })
       )
@@ -486,8 +487,8 @@ async function OnUserStatus (txes: TxCUD<UserStatus>[], control: TriggerControl)
   return []
 }
 
-function JoinChannelTypeMatch (originTx: Tx, _: Doc, user: Ref<Account>[]): boolean {
-  if (user.some((it) => originTx.modifiedBy === it)) return false
+function JoinChannelTypeMatch (originTx: Tx, _: Doc, person: Person, user: PersonId[]): boolean {
+  if (user.includes(originTx.modifiedBy)) return false
   if (originTx._class !== core.class.TxUpdateDoc) return false
 
   const tx = originTx as TxUpdateDoc<Channel>

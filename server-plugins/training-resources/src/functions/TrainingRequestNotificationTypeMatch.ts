@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import contact, { type Employee, type PersonAccount } from '@hcengineering/contact'
-import { type Account, type Ref, type TxCUD } from '@hcengineering/core'
+import { Person, type Employee } from '@hcengineering/contact'
+import { type PersonId, type Ref, type TxCUD } from '@hcengineering/core'
 import type { NotificationType } from '@hcengineering/notification'
 import type { TriggerControl } from '@hcengineering/server-core'
 import type { TrainingRequest } from '@hcengineering/training'
@@ -24,15 +24,13 @@ import { isTxUpdateDoc } from '../utils/isTxUpdateDoc'
 export function TrainingRequestNotificationTypeMatch (
   tx: TxCUD<TrainingRequest>,
   doc: TrainingRequest,
-  user: Ref<Account>[],
+  person: Person,
+  user: PersonId[],
   type: NotificationType,
   control: TriggerControl
 ): boolean {
   if (isTxCreateDoc(tx)) {
-    const employeeRef: Ref<Employee> = control.modelDb.findAllSync(contact.class.PersonAccount, {
-      _id: user[0] as Ref<PersonAccount>
-    })[0]?.person as Ref<Employee>
-    return doc.trainees.includes(employeeRef)
+    return doc.trainees.includes(person._id as Ref<Employee>)
   }
 
   if (isTxUpdateDoc(tx)) {
@@ -41,11 +39,8 @@ export function TrainingRequestNotificationTypeMatch (
       return false
     }
 
-    const employeeRef: Ref<Employee> = control.modelDb.findAllSync(contact.class.PersonAccount, {
-      _id: user[0] as Ref<PersonAccount>
-    })[0]?.person as Ref<Employee>
     const newTrainees = typeof pushed === 'object' ? pushed.$each : [pushed]
-    return newTrainees.includes(employeeRef)
+    return newTrainees.includes(person._id as Ref<Employee>)
   }
 
   return false

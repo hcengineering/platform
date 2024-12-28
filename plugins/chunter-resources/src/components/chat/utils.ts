@@ -14,17 +14,16 @@
 //
 import attachment, { type SavedAttachments } from '@hcengineering/attachment'
 import { type DirectMessage } from '@hcengineering/chunter'
-import contact, { type PersonAccount } from '@hcengineering/contact'
+import contact, { getCurrentEmployee, type Person } from '@hcengineering/contact'
 import core, {
-  type Account,
+  type PersonId,
   AccountRole,
   getCurrentAccount,
   hasAccountRole,
-  type IdMap,
-  type Ref,
   SortingOrder,
   type UserStatus,
-  type WithLookup
+  type WithLookup,
+  type Ref
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext } from '@hcengineering/notification'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
@@ -173,13 +172,13 @@ function sortAlphabetically (items: ChatNavItemModel[]): ChatNavItemModel[] {
 
 function getDirectCompanion (
   direct: DirectMessage,
-  me: PersonAccount,
-  personAccountById: IdMap<PersonAccount>
-): Ref<Account> | undefined {
-  return direct.members.find((member) => personAccountById.get(member as Ref<PersonAccount>)?.person !== me.person)
+  me: Ref<Person>,
+  personRefByPersonId: Map<PersonId, Ref<Person>>
+): PersonId | undefined {
+  return direct.members.find((member) => personRefByPersonId.get(member) !== me)
 }
 
-function isOnline (account: Ref<Account> | undefined, userStatusByAccount: Map<Ref<Account>, UserStatus>): boolean {
+function isOnline (account: PersonId | undefined, userStatusByAccount: Map<PersonId, UserStatus>): boolean {
   if (account === undefined) {
     return false
   }
@@ -187,10 +186,10 @@ function isOnline (account: Ref<Account> | undefined, userStatusByAccount: Map<R
   return userStatusByAccount.get(account)?.online ?? false
 }
 
-function isGroupChat (direct: DirectMessage, personAccountById: IdMap<PersonAccount>): boolean {
+function isGroupChat (direct: DirectMessage, personRefByPersonId: Map<PersonId, Ref<Person>>): boolean {
   const persons = new Set(
     direct.members
-      .map((member) => personAccountById.get(member as Ref<PersonAccount>)?.person)
+      .map((member) => personRefByPersonId.get(member))
       .filter((it) => it !== undefined)
   )
 
@@ -198,32 +197,32 @@ function isGroupChat (direct: DirectMessage, personAccountById: IdMap<PersonAcco
 }
 
 function sortDirects (items: ChatNavItemModel[], option: SortFnOptions): ChatNavItemModel[] {
-  const { userStatusByAccount, personAccountById } = option
-  const me = getCurrentAccount() as PersonAccount
+  const { userStatusByAccount, personRefByPersonId } = option
+  const me = getCurrentEmployee()
 
   return items.sort((i1, i2) => {
     const direct1 = i1.object as DirectMessage
     const direct2 = i2.object as DirectMessage
 
-    const isGroupChat1 = isGroupChat(direct1, personAccountById)
-    const isGroupChat2 = isGroupChat(direct2, personAccountById)
+    const isGroupChat1 = isGroupChat(direct1, personRefByPersonId)
+    const isGroupChat2 = isGroupChat(direct2, personRefByPersonId)
 
     if (isGroupChat1 && isGroupChat2) {
       return i1.title.localeCompare(i2.title)
     }
 
     if (isGroupChat1 && !isGroupChat2) {
-      const isOnline2 = isOnline(getDirectCompanion(direct2, me, personAccountById), userStatusByAccount)
+      const isOnline2 = isOnline(getDirectCompanion(direct2, me, personRefByPersonId), userStatusByAccount)
       return isOnline2 ? 1 : -1
     }
 
     if (!isGroupChat1 && isGroupChat2) {
-      const isOnline1 = isOnline(getDirectCompanion(direct1, me, personAccountById), userStatusByAccount)
+      const isOnline1 = isOnline(getDirectCompanion(direct1, me, personRefByPersonId), userStatusByAccount)
       return isOnline1 ? -1 : 1
     }
 
-    const account1 = getDirectCompanion(direct1, me, personAccountById)
-    const account2 = getDirectCompanion(direct2, me, personAccountById)
+    const account1 = getDirectCompanion(direct1, me, personRefByPersonId)
+    const account2 = getDirectCompanion(direct2, me, personRefByPersonId)
 
     if (account1 === undefined) {
       return 1

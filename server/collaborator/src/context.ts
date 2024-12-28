@@ -13,14 +13,14 @@
 // limitations under the License.
 //
 
-import { Blob, Ref, WorkspaceId, generateId } from '@hcengineering/core'
+import { Blob, Ref, WorkspaceUuid, generateId } from '@hcengineering/core'
 import { decodeToken } from '@hcengineering/server-token'
 import { onAuthenticatePayload } from '@hocuspocus/server'
 import { ClientFactory, simpleClientFactory } from './platform'
 
 export interface Context {
   connectionId: string
-  workspaceId: WorkspaceId
+  workspaceId: WorkspaceUuid
   clientFactory: ClientFactory
 
   content?: Ref<Blob>

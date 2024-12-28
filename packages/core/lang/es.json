@@ -58,6 +58,7 @@
     "BlobContentType": "Tipo de contenido",
     "Relation": "Relación",
     "Relations": "Relaciones",
-    "AddRelation": "Añadir relación"
+    "AddRelation": "Añadir relación",
+    "PersonId": "Id. de persona"
   }
 }

@@ -24,29 +24,29 @@ test.describe('login test', () => {
 
   test('check login', async () => {
     await loginPage.login(PlatformUser, '1234')
-    await selectWorkspacePage.selectWorkspace('SanityTest')
+    await selectWorkspacePage.selectWorkspace('sanity-ws')
     await commonTrackerPage.checkIfMainPanelIsVisible()
     await trackerNavigationMenuPage.checkIfTrackerSidebarIsVisible()
   })
 
   test('check login with wrong user and if the button is disabled ', async ({ page }) => {
-    await loginPage.checkIfLoginButtonIsDissaabled()
+    await loginPage.checkIfLoginButtonIsDisabled()
     await loginPage.login(PlatformUser, 'wrong-password')
-    await loginPage.checkIfErrorMessageIsShown()
+    await loginPage.checkIfErrorMessageIsShown('wrong-credentials')
   })
 
   test('check if user is able to go to to recovery, then login and then signup', async ({ page }) => {
     await checkIfUrlContains(page, '/login')
-    await loginPage.checkIfLoginButtonIsDissaabled()
+    await loginPage.checkIfLoginButtonIsDisabled()
     await loginPage.loginWithPassword().click()
-    await loginPage.checkIfLoginButtonIsDissaabled()
+    await loginPage.checkIfLoginButtonIsDisabled()
     await loginPage.clickOnRecover()
     await checkIfUrlContains(page, '/password')
     await loginPage.checkIfPasswordRecoveryIsVisible()
     await loginPage.clickOnRecoveryLogin()
     await checkIfUrlContains(page, '/login')
     await loginPage.loginWithPassword().click()
-    await loginPage.checkIfLoginButtonIsDissaabled()
+    await loginPage.checkIfLoginButtonIsDisabled()
     await loginPage.clickOnRecover()
     await loginPage.clickOnRecoverySignUp()
     await signupPage.checkIfSignUpButtonIsDisabled()

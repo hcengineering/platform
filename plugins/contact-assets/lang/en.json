@@ -107,6 +107,10 @@
     "AddGuest": "Add guest",
     "ViewProfile": "View profile",
     "Viber": "Viber",
-    "ViberPlaceholder": "Viber"
+    "ViberPlaceholder": "Viber",
+    "SocialId": "Social ID",
+    "SocialIds": "Social IDs",
+    "Type": "Type",
+    "Confirmed": "Confirmed"
   }
 }

@@ -60,7 +60,7 @@
 
   async function validateAccount (email: string, password: string): Promise<Status> {
     const request = {
-      method: 'getAccountInfo',
+      method: 'login',
       params: [email, password]
     }
 

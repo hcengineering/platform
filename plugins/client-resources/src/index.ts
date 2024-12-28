@@ -16,7 +16,7 @@
 import clientPlugin from '@hcengineering/client'
 import type { ClientFactoryOptions } from '@hcengineering/client/src'
 import core, {
-  AccountClient,
+  Client,
   LoadModelResponse,
   Tx,
   TxHandler,
@@ -78,7 +78,7 @@ function decodeTokenPayload (token: string): any {
 export default async () => {
   return {
     function: {
-      GetClient: async (token: string, endpoint: string, opt?: ClientFactoryOptions): Promise<AccountClient> => {
+      GetClient: async (token: string, endpoint: string, opt?: ClientFactoryOptions): Promise<Client> => {
         const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? 'none'
 
         const handler = async (handler: TxHandler): Promise<ClientConnection> => {
@@ -103,7 +103,7 @@ export default async () => {
             }
             handler(...txes)
           }
-          const tokenPayload: { workspace: string, email: string } = decodeTokenPayload(token)
+          const tokenPayload: { workspace: string, account: string } = decodeTokenPayload(token)
 
           const newOpt = { ...opt }
           const connectTimeout = opt?.connectionTimeout ?? getMetadata(clientPlugin.metadata.ConnectionTimeout)
@@ -126,7 +126,7 @@ export default async () => {
               }
             })
           }
-          const clientConnection = connect(url, upgradeHandler, tokenPayload.workspace, tokenPayload.email, newOpt)
+          const clientConnection = connect(url, upgradeHandler, tokenPayload.workspace, tokenPayload.account, newOpt)
           if (connectPromise !== undefined) {
             await connectPromise
           }

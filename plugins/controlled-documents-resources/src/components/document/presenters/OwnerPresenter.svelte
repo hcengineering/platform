@@ -20,7 +20,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
-  import { checkMyPermission, permissionsStore } from '@hcengineering/view-resources'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
 
   import document from '../../../plugin'
   import ChangeOwnerPopup from '../popups/ChangeOwnerPopup.svelte'

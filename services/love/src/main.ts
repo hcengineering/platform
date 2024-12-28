@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import { MeasureContext, Ref, WorkspaceId } from '@hcengineering/core'
+import { MeasureContext, Ref, WorkspaceUuid } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
 import { initStatisticsContext, StorageConfig, StorageConfiguration } from '@hcengineering/server-core'
@@ -72,8 +71,7 @@ export const main = async (): Promise<void> => {
   string,
   {
     name: string
-    workspace: string
-    workspaceId: WorkspaceId
+    workspace: WorkspaceUuid
     meetingMinutes?: Ref<MeetingMinutes>
   }
   >()
@@ -86,7 +84,7 @@ export const main = async (): Promise<void> => {
         for (const res of event.egressInfo.fileResults) {
           const data = dataByUUID.get(res.filename)
           if (data !== undefined && storageConfig !== undefined) {
-            const storedBlob = await saveFile(ctx, data.workspaceId, storageConfig, s3storageConfig, res.filename)
+            const storedBlob = await saveFile(ctx, data.workspace, storageConfig, s3storageConfig, res.filename)
             if (storedBlob !== undefined) {
               const client = await WorkspaceClient.create(data.workspace, ctx)
               await client.saveFile(storedBlob._id, data.name, storedBlob, data.meetingMinutes)
@@ -145,8 +143,8 @@ export const main = async (): Promise<void> => {
       const dateStr = new Date().toISOString().replace('T', '_').slice(0, 19)
       const name = `${room}_${dateStr}.mp4`
       const id = await startRecord(ctx, storageConfig, s3storageConfig, egressClient, roomClient, roomName, workspace)
-      dataByUUID.set(id, { name, workspace: workspace.name, workspaceId: workspace, meetingMinutes })
-      ctx.info('Start recording', { workspace: workspace.name, roomName, meetingMinutes })
+      dataByUUID.set(id, { name, workspace, meetingMinutes })
+      ctx.info('Start recording', { workspace, roomName, meetingMinutes })
       res.send()
     } catch (e) {
       console.error(e)
@@ -278,7 +276,7 @@ const startRecord = async (
   egressClient: EgressClient,
   roomClient: RoomServiceClient,
   roomName: string,
-  workspaceId: WorkspaceId
+  workspaceId: WorkspaceUuid
 ): Promise<string> => {
   if (storageConfig === undefined) {
     console.error('please provide storage configuration')

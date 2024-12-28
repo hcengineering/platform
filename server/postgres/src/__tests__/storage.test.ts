@@ -16,7 +16,6 @@ import core, {
   type Client,
   createClient,
   generateId,
-  getWorkspaceId,
   Hierarchy,
   MeasureMetricsContext,
   ModelDb,
@@ -88,17 +87,10 @@ describe('postgres operations', () => {
     }
 
     const mctx = new MeasureMetricsContext('', {})
-    const txStorage = await createPostgresTxAdapter(
-      mctx,
-      contextVars,
-      hierarchy,
-      dbUri,
-      {
-        ...getWorkspaceId(dbId),
-        uuid: dbUuid
-      },
-      model
-    )
+    const txStorage = await createPostgresTxAdapter(mctx, contextVars, hierarchy, dbUri, {
+      uuid: dbUuid,
+      url: dbUri
+    }, model)
 
     // Put all transactions to Tx
     for (const t of txes) {
@@ -114,8 +106,8 @@ describe('postgres operations', () => {
       hierarchy,
       dbUri,
       {
-        ...getWorkspaceId(dbId),
-        uuid: dbUuid
+        uuid: dbUuid,
+        url: dbUri
       },
       model
     )

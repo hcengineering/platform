@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type AccountDB, joinWithProvider, loginWithProvider, type LoginInfo } from '@hcengineering/account'
-import { BrandingMap, concatLink, MeasureContext, getBranding } from '@hcengineering/core'
+import { type AccountDB, LoginInfo, joinWithProvider, loginOrSignUpWithProvider } from '@hcengineering/account'
+import { BrandingMap, concatLink, MeasureContext, getBranding, SocialIdType } from '@hcengineering/core'
 import Router from 'koa-router'
 import { Issuer, Strategy } from 'openid-client'
 import qs from 'querystringify'
@@ -91,52 +91,38 @@ export function registerOpenid (
     },
     async (ctx, next) => {
       try {
-        let email = ctx.state.user.email
-        if (email == null || email === '') {
-          email = `openid:${ctx.state.user.sub}`
+        const email = ctx.state.user.email
+        const verifiedEmail = ctx.state.user.email_verified as boolean ? email : ''
+        const [first, last] = ctx.state.user.name?.split(' ') ?? [ctx.state.user.username, '']
+        measureCtx.info('Provider auth handler', { email, verifiedEmail, type: 'openid' })
+
+        let loginInfo: LoginInfo | null
+        const state = safeParseAuthState(ctx.query?.state)
+        const branding = getBranding(brandings, state?.branding)
+        const db = await dbPromise
+        const socialKey = { type: SocialIdType.OIDC, value: ctx.state.user.sub }
+
+        if (state.inviteId != null && state.inviteId !== '') {
+          loginInfo = await joinWithProvider(measureCtx, db, null, verifiedEmail, first, last, state.inviteId as any, socialKey, signUpDisabled)
+        } else {
+          loginInfo = await loginOrSignUpWithProvider(measureCtx, db, null, verifiedEmail, first, last, socialKey, signUpDisabled)
         }
 
-        const [first, last] = ctx.state.user.name?.split(' ') ?? [ctx.state.user.username, '']
-        measureCtx.info('Provider auth handler', { email, type: 'openid' })
-        if (email !== undefined) {
-          let loginInfo: LoginInfo | null
-          const state = safeParseAuthState(ctx.query?.state)
-          const branding = getBranding(brandings, state?.branding)
-          const db = await dbPromise
-          if (state.inviteId != null && state.inviteId !== '') {
-            loginInfo = await joinWithProvider(measureCtx, db, null, email, first, last, state.inviteId as any, {
-              openId: ctx.state.user.sub
-            })
-          } else {
-            loginInfo = await loginWithProvider(
-              measureCtx,
-              db,
-              null,
-              email,
-              first,
-              last,
-              {
-                openId: ctx.state.user.sub
-              },
-              signUpDisabled
-            )
-          }
+        if (loginInfo === null) {
+          measureCtx.info('Failed to auth: no associated account found', {
+            email,
+            verifiedEmail,
+            type: 'openid',
+            user: ctx.state?.user
+          })
+          ctx.redirect(concatLink(branding?.front ?? frontUrl, '/login'))
+        } else {
+          const origin = concatLink(branding?.front ?? frontUrl, '/login/auth')
+          const query = encodeURIComponent(qs.stringify({ token: loginInfo.token }))
 
-          if (loginInfo === null) {
-            measureCtx.info('Failed to auth: no associated account found', {
-              email,
-              type: 'openid',
-              user: ctx.state?.user
-            })
-            ctx.redirect(concatLink(branding?.front ?? frontUrl, '/login'))
-          } else {
-            const origin = concatLink(branding?.front ?? frontUrl, '/login/auth')
-            const query = encodeURIComponent(qs.stringify({ token: loginInfo.token }))
-
-            measureCtx.info('Success auth, redirect', { email, type: 'openid', target: origin })
-            // Successful authentication, redirect to your application
-            ctx.redirect(`${origin}?${query}`)
-          }
+          measureCtx.info('Success auth, redirect', { email, type: 'openid', target: origin })
+          // Successful authentication, redirect to your application
+          ctx.redirect(`${origin}?${query}`)
         }
       } catch (err: any) {
         measureCtx.error('failed to auth', { err, type: 'openid', user: ctx.state?.user })

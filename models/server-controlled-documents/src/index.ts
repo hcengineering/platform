@@ -15,6 +15,14 @@ export { serverDocumentsId } from '@hcengineering/server-controlled-documents/sr
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverDocuments.trigger.OnSocialIdentityCreate,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: contact.class.SocialIdentity
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverDocuments.trigger.OnDocDeleted,
     txMatch: {
       _class: core.class.TxUpdateDoc,
@@ -47,13 +55,6 @@ export function createModel (builder: Builder): void {
       _class: core.class.TxUpdateDoc,
       objectClass: documents.class.ControlledDocument,
       'operations.state': DocumentState.Effective
-    }
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverDocuments.trigger.OnWorkspaceOwnerAdded,
-    txMatch: {
-      objectClass: contact.class.PersonAccount
     }
   })
 

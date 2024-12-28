@@ -22,8 +22,8 @@ import { type Attachment } from '@hcengineering/attachment'
 import contact from '@hcengineering/contact'
 import chunter from '@hcengineering/chunter'
 import { getRoleAttributeProps } from '@hcengineering/setting'
-import type { Type, CollectionSize, Markup, Arr, RolesAssignment, Permission, Role } from '@hcengineering/core'
-import { IndexKind, Ref, Account } from '@hcengineering/core'
+import type { Type, Ref, CollectionSize, Markup, Arr, RolesAssignment, Permission, Role } from '@hcengineering/core'
+import { IndexKind, PersonId } from '@hcengineering/core'
 import {
   type Builder,
   Model,
@@ -39,6 +39,7 @@ import {
   ArrOf,
   TypeAny,
   ReadOnly,
+  TypePersonId,
   Mixin
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
@@ -78,8 +79,8 @@ export class TTypeProductVersionState extends TType {}
 @Model(products.class.Product, documents.class.ExternalSpace)
 @UX(products.string.Product, products.icon.Product, 'Product', 'name', undefined, products.string.Products)
 export class TProduct extends TExternalSpace implements Product {
-  @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Members)
-  declare members: Arr<Ref<Account>>
+  @Prop(ArrOf(TypePersonId()), core.string.Members)
+  declare members: Arr<PersonId>
 
   @Prop(TypeMarkup(), products.string.Description)
   @Index(IndexKind.FullText)
@@ -145,7 +146,7 @@ export class TProductVersion extends TProject implements ProductVersion {
 @Mixin(products.mixin.ProductTypeData, products.class.Product)
 @UX(getEmbeddedLabel('Default Products'), products.icon.ProductVersion)
 export class TProductTypeData extends TProduct implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: PersonId[]
 }
 
 function defineProduct (builder: Builder): void {

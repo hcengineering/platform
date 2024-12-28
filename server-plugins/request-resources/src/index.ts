@@ -14,10 +14,8 @@
 //
 
 import { DocUpdateMessage } from '@hcengineering/activity'
-import { PersonAccount } from '@hcengineering/contact'
 import core, {
   Doc,
-  Ref,
   Tx,
   TxCUD,
   TxCreateDoc,
@@ -155,9 +153,10 @@ async function getRequestNotificationTx (
   const notifyContexts = await control.findAll(control.ctx, notification.class.DocNotifyContext, {
     objectId: doc._id
   })
-  const usersInfo = await getUsersInfo(control.ctx, [...collaborators, tx.modifiedBy] as Ref<PersonAccount>[], control)
+  const usersInfo = await getUsersInfo(control.ctx, [...collaborators, tx.modifiedBy], control)
   const senderInfo = usersInfo.get(tx.modifiedBy) ?? {
-    _id: tx.modifiedBy
+    _id: tx.modifiedBy,
+    socialStrings: []
   }
 
   const notificationControl = await getNotificationProviderControl(ctx, control)

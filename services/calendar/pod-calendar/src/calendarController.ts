@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Account, isActiveMode, RateLimiter, Ref, systemAccountEmail } from '@hcengineering/core'
+import { PersonId, isActiveMode, RateLimiter, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
 import { type Db } from 'mongodb'
 import { type CalendarClient } from './calendar'
 import config from './config'
@@ -23,10 +23,10 @@ import { getWorkspaceInfo } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 
 export class CalendarController {
-  private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
+  private readonly workspaces: Map<WorkspaceUuid, WorkspaceClient> = new Map<WorkspaceUuid, WorkspaceClient>()
 
   private readonly credentials: ProjectCredentials
-  private readonly clients: Map<string, CalendarClient[]> = new Map<string, CalendarClient[]>()
+  private readonly clients: Map<PersonId, CalendarClient[]> = new Map<PersonId, CalendarClient[]>()
   private readonly initLimitter = new RateLimiter(config.InitLimit)
 
   protected static _instance: CalendarController
@@ -62,7 +62,7 @@ export class CalendarController {
 
     for (const [workspace, tokens] of groups) {
       await limiter.add(async () => {
-        const wstok = generateToken(systemAccountEmail, { name: workspace })
+        const wstok = generateToken(systemAccountUuid, workspace, { service: 'calendar' })
         const info = await getWorkspaceInfo(wstok)
         if (info === undefined) {
           console.log('workspace not found', workspace)
@@ -86,7 +86,7 @@ export class CalendarController {
     console.log('Calendar service started')
   }
 
-  async startWorkspace (workspace: string, tokens: Token[]): Promise<void> {
+  async startWorkspace (workspace: WorkspaceUuid, tokens: Token[]): Promise<void> {
     const workspaceClient = await this.getWorkspaceClient(workspace)
     const clients: CalendarClient[] = []
     for (const token of tokens) {
@@ -98,7 +98,7 @@ export class CalendarController {
         clearTimeout(timeout)
         clients.push(client)
       } catch (err) {
-        console.error(`Couldn't create client for ${workspace} ${token.userId} ${token.email}`)
+        console.error(`Couldn't create client for ${workspace} ${token.userId}`)
       }
     }
     for (const client of clients) {
@@ -110,41 +110,42 @@ export class CalendarController {
     console.log('Workspace started', workspace)
   }
 
-  push (email: string, mode: 'events' | 'calendar', calendarId?: string): void {
-    const clients = this.clients.get(email)
+  push (personId: PersonId, mode: 'events' | 'calendar', calendarId?: string): void {
+    const clients = this.clients.get(personId)
     for (const client of clients ?? []) {
       if (mode === 'calendar') {
-        void client.syncCalendars(email)
+        void client.syncCalendars()
       }
       if (mode === 'events' && calendarId !== undefined) {
-        void client.sync(calendarId, email)
+        void client.sync(calendarId)
       }
     }
   }
 
-  addClient (email: string, client: CalendarClient): void {
-    const clients = this.clients.get(email)
+  addClient (personId: PersonId, client: CalendarClient): void {
+    const clients = this.clients.get(personId)
     if (clients === undefined) {
-      this.clients.set(email, [client])
+      this.clients.set(personId, [client])
     } else {
       clients.push(client)
-      this.clients.set(email, clients)
+      this.clients.set(personId, clients)
     }
   }
 
-  removeClient (email: string): void {
-    const clients = this.clients.get(email)
+  removeClient (personId: PersonId): void {
+    const clients = this.clients.get(personId)
     if (clients !== undefined) {
       this.clients.set(
-        email,
+        personId,
         clients.filter((p) => !p.isClosed)
       )
     }
   }
 
-  async getUserId (email: string, workspace: string): Promise<Ref<Account>> {
+  async getUserId (account: string, workspace: WorkspaceUuid): Promise<PersonId> {
     const workspaceClient = await this.getWorkspaceClient(workspace)
-    return await workspaceClient.getUserId(email)
+
+    return await workspaceClient.getUserId(account)
   }
 
   async signout (workspace: string, value: string): Promise<void> {
@@ -178,7 +179,7 @@ export class CalendarController {
     return newClient
   }
 
-  private async getWorkspaceClient (workspace: string): Promise<WorkspaceClient> {
+  private async getWorkspaceClient (workspace: WorkspaceUuid): Promise<WorkspaceClient> {
     let res = this.workspaces.get(workspace)
     if (res === undefined) {
       try {

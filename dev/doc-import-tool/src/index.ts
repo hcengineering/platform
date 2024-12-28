@@ -14,7 +14,7 @@
 //
 import { Employee } from '@hcengineering/contact'
 import documents, { DocumentSpace } from '@hcengineering/controlled-documents'
-import { MeasureMetricsContext, Ref, getWorkspaceId, systemAccountEmail } from '@hcengineering/core'
+import { MeasureMetricsContext, Ref, systemAccountUuid } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClientPlugin from '@hcengineering/server-client'
 import { type StorageAdapter } from '@hcengineering/server-core'
@@ -89,7 +89,7 @@ export function docImportTool (): void {
         )
 
         await withStorage(async (storageAdapter) => {
-          const workspaceId = getWorkspaceId(workspace)
+          const workspaceId = workspace
 
           const config: Config = {
             doc,
@@ -102,7 +102,7 @@ export function docImportTool (): void {
             storageAdapter,
             collaboratorURL: collaboratorUrl,
             collaborator,
-            token: generateToken(systemAccountEmail, workspaceId)
+            token: generateToken(systemAccountUuid, workspaceId, { service: 'import-tool' })
           }
 
           await importDoc(ctx, config)

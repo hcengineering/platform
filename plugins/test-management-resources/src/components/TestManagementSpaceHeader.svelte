@@ -24,7 +24,8 @@
 
   export let currentSpace: Ref<TestProject> | undefined
 
-  const me = getCurrentAccount()
+  const myAcc = getCurrentAccount()
+  const socialStrings = myAcc.socialIds
 
   const query = createQuery()
 
@@ -33,7 +34,7 @@
   if (!hasProject) {
     query.query(
       testManagement.class.TestProject,
-      { archived: false, members: me._id },
+      { archived: false, members: { $in: socialStrings } },
       (res) => {
         hasProject = res.length > 0
         loading = false
@@ -87,7 +88,7 @@
     }
   ]
 
-  const dropdownItems = hasAccountRole(me, AccountRole.User)
+  const dropdownItems = hasAccountRole(myAcc, AccountRole.User)
     ? [
         {
           id: testManagement.string.CreateProject,

@@ -25,28 +25,34 @@ import {
   getFirstName,
   getLastName,
   getName,
+  getCurrentEmployee,
+  pickPrimarySocialId,
+  currentEmployeePromise,
   type Person,
-  type PersonAccount
+  type SocialIdentity,
+  type PermissionsStore,
+  type PermissionsBySpace,
+  type PersonsByPermission,
+  includesAny
 } from '@hcengineering/contact'
 import core, {
-  type Account,
-  AggregateValue,
-  AggregateValueData,
+  type AggregateValue,
   type Class,
   type Client,
   type Doc,
   type DocumentQuery,
-  getCurrentAccount,
-  groupByArray,
   type Hierarchy,
   type IdMap,
-  matchQuery,
   type ObjQueryType,
+  type Permission,
+  type PersonId,
   type Ref,
+  SocialIdType,
   type Space,
   type Timestamp,
   toIdMap,
   type TxOperations,
+  type TypedSpace,
   type UserStatus,
   type WithLookup
 } from '@hcengineering/core'
@@ -68,7 +74,6 @@ import { derived, get, writable } from 'svelte/store'
 import { type LocationData } from '@hcengineering/workbench'
 
 import contact from './plugin'
-import { personStore } from '.'
 
 export function formatDate (dueDateMs: Timestamp): string {
   return new Date(dueDateMs).toLocaleString('default', {
@@ -179,21 +184,20 @@ export async function getRefs (
 }
 
 export async function getCurrentEmployeeName (): Promise<string> {
-  const me = getCurrentAccount() as PersonAccount
-  const client = getClient()
-  const employee = await client.findOne(contact.class.Person, { _id: me.person })
+  const me = getCurrentEmployee()
+  const employee = await getClient().findOne(contact.class.Person, { _id: me })
   return employee !== undefined ? formatName(employee.name) : ''
 }
 
 export async function getCurrentEmployeeEmail (): Promise<string> {
-  const me = getCurrentAccount() as PersonAccount
-  return me.email
+  const me = getCurrentEmployee()
+  const emailSocialId = await getClient().findOne(contact.class.SocialIdentity, { type: SocialIdType.EMAIL, attachedTo: me, attachedToClass: contact.class.Person })
+  return emailSocialId?.value ?? ''
 }
 
 export async function getCurrentEmployeePosition (): Promise<string | undefined> {
-  const me = getCurrentAccount() as PersonAccount
-  const client = getClient()
-  const employee = await client.findOne<Employee>(contact.mixin.Employee, { _id: me.person as Ref<Employee> })
+  const me = getCurrentEmployee()
+  const employee = await getClient().findOne<Employee>(contact.mixin.Employee, { _id: me })
   if (employee !== undefined) {
     return employee.position ?? ''
   }
@@ -299,55 +303,141 @@ async function generateLocation (loc: Location, id: Ref<Contact>): Promise<Resol
   }
 }
 
+const currentEmployeeRefStore = writable<Ref<Employee> | undefined>()
+void currentEmployeePromise.then((employee) => {
+  currentEmployeeRefStore.set(employee)
+})
+
+/**
+ * [Ref<Employee> => Employee] mapping
+ */
 export const employeeByIdStore = writable<IdMap<WithLookup<Employee>>>(new Map())
 export const employeesStore = writable<Array<WithLookup<Employee>>>([])
+export const myEmployeeStore = derived(
+  [currentEmployeeRefStore, employeeByIdStore],
+  ([currentEmployeeRef, employeeById]) => {
+    return currentEmployeeRef !== undefined ? employeeById.get(currentEmployeeRef) : undefined
+  }
+)
+/**
+ * [Ref<Person> => Person] mapping
+ */
+export const personByIdStore = writable<IdMap<WithLookup<Person>>>(new Map())
+export const personsStore = writable<Array<WithLookup<Person>>>([])
+export const socialIdsStore = writable<Array<WithLookup<SocialIdentity>>>([])
 
-export const personAccountByIdStore = writable<IdMap<PersonAccount>>(new Map())
+// NOTE
+// In-workspace social ids of the current employee
+// Should not be used except some rare cases
+// Use getCurrentAccount().socialIds instead
+export const mySocialIdsStore = derived(
+  [currentEmployeeRefStore, socialIdsStore],
+  ([myEmployeeRef, socialIds]) => {
+    return socialIds.filter((si) => si.attachedTo === myEmployeeRef)
+  }
+)
+export const mySocialStringsStore = derived(
+  mySocialIdsStore,
+  (mySocialIds) => {
+    return mySocialIds.map((si) => si.key)
+  }
+)
+
+/**
+ * [Ref<Person> => SocialIdentity[]] mapping
+ */
+export const socialIdsByPersonRefStore = derived(
+  [personByIdStore, socialIdsStore],
+  ([personById, socialIds]) => {
+    const mapped = Array.from(personById.entries()).map(([_id, person]) => [_id, socialIds.filter((si) => si.attachedTo === person._id)] as const)
+    return new Map(mapped)
+  }
+)
+/**
+ * [Ref<Person> => PersonId (primary)] mapping
+ */
+export const primarySocialIdByPersonRefStore = derived(
+  socialIdsByPersonRefStore,
+  (socialIdsByPersonRef) => {
+    const mapped = Array.from(socialIdsByPersonRef.entries()).filter(([_, socialIds]) => socialIds.length > 0).map(([_id, socialIds]) => [_id, pickPrimarySocialId(socialIds.map((si) => si.key))] as const)
+    return new Map(mapped)
+  }
+)
+/**
+ * [PersonId (social string) => Ref<Person>] mapping
+ */
+export const personRefByPersonIdStore = derived(
+  socialIdsStore,
+  (socialIds) => {
+    const mapped = socialIds.map((si) => [si.key, si.attachedTo] as const)
+    return new Map(mapped)
+  }
+)
+/**
+ * [PersonId (social string) => Person] mapping
+ */
+export const personByPersonIdStore = derived(
+  [personRefByPersonIdStore, personByIdStore],
+  ([personRefByPersonId, personById]) => {
+    const mapped = Array.from(personRefByPersonId.entries()).map(([personId, personRef]) => {
+      const person = personById.get(personRef)
+      if (person === undefined) {
+        return undefined
+      }
+      return [personId, person] as const
+    }).filter((it) => it !== undefined) as Array<readonly [string, WithLookup<Person>]>
+    return new Map(mapped)
+  }
+)
+/**
+ * [PersonId (social string) => SocialIdentity[]] mapping
+ */
+export const socialIdsByPersonIdStore = derived(
+  [personRefByPersonIdStore, socialIdsByPersonRefStore],
+  ([personRefByPersonId, socialIdsByPersonRef]) => {
+    const mapped = Array.from(personRefByPersonId.entries()).map(([personId, personRef]) => {
+      const socialIds = socialIdsByPersonRef.get(personRef) ?? []
+      return [personId, socialIds] as const
+    })
+    return new Map(mapped)
+  }
+)
+/**
+ * [PersonId (social string) => PersonId (primary)] mapping
+ */
+export const primarySocialIdByPersonIdStore = derived(
+  socialIdsByPersonIdStore,
+  (socialIdsByPersonId) => {
+    const mapped = Array.from(socialIdsByPersonId.entries()).filter(([_, socialIds]) => socialIds.length > 0).map(([personId, socialIds]) => [personId, pickPrimarySocialId(socialIds.map((si) => si.key))] as const)
+    return new Map(mapped)
+  }
+)
 
 export const channelProviders = writable<ChannelProvider[]>([])
+export const statusByUserStore = writable<Map<PersonId, UserStatus>>(new Map())
 
-export const personAccountPersonByIdStore = writable<IdMap<WithLookup<Person>>>(new Map())
-
-export const personIdByAccountId = derived(personAccountByIdStore, (vals) => {
-  return new Map<Ref<PersonAccount>, Ref<Person>>(Array.from(vals.values()).map((it) => [it._id, it.person]))
-})
-
-export const personAccountByPersonId = derived(personAccountByIdStore, (vals) => {
-  return groupByArray(Array.from(vals.values()), (it) => it.person)
-})
-
-export const statusByUserStore = writable<Map<Ref<Account>, UserStatus>>(new Map())
-
-export const personByIdStore = derived([personAccountPersonByIdStore, employeeByIdStore], (vals) => {
-  const m1 = Array.from(vals[0].entries())
-  const m2 = Array.from(vals[1].entries())
-  return new Map([...m1, ...m2])
-})
-
-const query = createQuery(true)
-const accountQ = createQuery(true)
-const accountPersonQuery = createQuery(true)
 const providerQuery = createQuery(true)
+const personsQuery = createQuery(true)
+const employeesQuery = createQuery(true)
+const siQuery = createQuery(true)
 
 onClient(() => {
-  query.query(contact.mixin.Employee, { active: { $in: [true, false] } }, (res) => {
+  providerQuery.query(contact.class.ChannelProvider, {}, (res) => {
+    channelProviders.set(res)
+  })
+
+  personsQuery.query(contact.class.Person, {}, (res) => {
+    personsStore.set(res)
+    personByIdStore.set(toIdMap(res))
+  })
+
+  employeesQuery.query(contact.mixin.Employee, { active: { $in: [true, false] } }, (res) => {
     employeesStore.set(res)
     employeeByIdStore.set(toIdMap(res))
   })
 
-  accountQ.query(contact.class.PersonAccount, {}, (res) => {
-    personAccountByIdStore.set(toIdMap(res))
-
-    const persons = res.map((it) => it.person)
-
-    accountPersonQuery.query<Person>(contact.class.Person, { _id: { $in: persons } }, (res) => {
-      const personIn = toIdMap(res)
-      personAccountPersonByIdStore.set(personIn)
-    })
-  })
-
-  providerQuery.query(contact.class.ChannelProvider, {}, (res) => {
-    channelProviders.set(res)
+  siQuery.query(contact.class.SocialIdentity, { }, (res) => {
+    socialIdsStore.set(res)
   })
 })
 
@@ -437,74 +527,80 @@ export const grouppingPersonManager: GrouppingManager = {
  * @public
  */
 export function groupByPersonAccountCategories (categories: any[]): AggregateValue[] {
-  const mgr = get(personStore)
+  // TODO: FIXME
+  throw new Error('Not implemented')
+  // const mgr = get(personStore)
 
-  const existingCategories: AggregateValue[] = [new AggregateValue(undefined, [])]
-  const personMap = new Map<string, AggregateValue>()
+  // const existingCategories: AggregateValue[] = [new AggregateValue(undefined, [])]
+  // const personMap = new Map<string, AggregateValue>()
 
-  const usedSpaces = new Set<Ref<Space>>()
-  const personAccountList: Array<WithLookup<PersonAccount>> = []
-  for (const v of categories) {
-    const personAccount = mgr.getIdMap().get(v)
-    if (personAccount !== undefined) {
-      personAccountList.push(personAccount)
-      usedSpaces.add(personAccount.space)
-    }
-  }
+  // const usedSpaces = new Set<Ref<Space>>()
+  // const personAccountList: Array<WithLookup<PersonAccount>> = []
+  // for (const v of categories) {
+  //   const personAccount = mgr.getIdMap().get(v)
+  //   if (personAccount !== undefined) {
+  //     personAccountList.push(personAccount)
+  //     usedSpaces.add(personAccount.space)
+  //   }
+  // }
 
-  for (const personAccount of personAccountList) {
-    if (personAccount !== undefined) {
-      let fst = personMap.get(personAccount.person)
-      if (fst === undefined) {
-        const people = mgr
-          .getDocs()
-          .filter(
-            (it) => it.person === personAccount.person && (categories.includes(it._id) || usedSpaces.has(it.space))
-          )
-          .sort((a, b) => a.email.localeCompare(b.email))
-          .map((it) => new AggregateValueData(it.person, it._id, it.space))
-        fst = new AggregateValue(personAccount.person, people)
-        personMap.set(personAccount.person, fst)
-        if (fst.name === undefined) {
-          existingCategories[0] = new AggregateValue(undefined, [...existingCategories[0].values, ...fst.values])
-          // Join with first value
-        } else {
-          existingCategories.push(fst)
-        }
-      }
-    }
-  }
-  return existingCategories
+  // for (const personAccount of personAccountList) {
+  //   if (personAccount !== undefined) {
+  //     let fst = personMap.get(personAccount.person)
+  //     if (fst === undefined) {
+  //       const people = mgr
+  //         .getDocs()
+  //         .filter(
+  //           (it) => it.person === personAccount.person && (categories.includes(it._id) || usedSpaces.has(it.space))
+  //         )
+  //         .sort((a, b) => a.email.localeCompare(b.email))
+  //         .map((it) => new AggregateValueData(it.person, it._id, it.space))
+  //       fst = new AggregateValue(personAccount.person, people)
+  //       personMap.set(personAccount.person, fst)
+  //       if (fst.name === undefined) {
+  //         existingCategories[0] = new AggregateValue(undefined, [...existingCategories[0].values, ...fst.values])
+  //         // Join with first value
+  //       } else {
+  //         existingCategories.push(fst)
+  //       }
+  //     }
+  //   }
+  // }
+  // return existingCategories
 }
 
 /**
  * @public
  */
 export function groupPersonAccountValues (val: Doc[], targets: Set<any>): Doc[] {
-  const values = val
-  const result: Doc[] = []
-  const unique = [...new Set(val.map((c) => (c as PersonAccount).person))]
-  unique.forEach((label, i) => {
-    let exists = false
-    values.forEach((c) => {
-      if ((c as PersonAccount).person === label) {
-        if (!exists) {
-          result[i] = c
-          exists = targets.has(c?._id)
-        }
-      }
-    })
-  })
-  return result
+  // TODO: FIXME
+  throw new Error('Not implemented')
+  // const values = val
+  // const result: Doc[] = []
+  // const unique = [...new Set(val.map((c) => (c as PersonAccount).person))]
+  // unique.forEach((label, i) => {
+  //   let exists = false
+  //   values.forEach((c) => {
+  //     if ((c as PersonAccount).person === label) {
+  //       if (!exists) {
+  //         result[i] = c
+  //         exists = targets.has(c?._id)
+  //       }
+  //     }
+  //   })
+  // })
+  // return result
 }
 
 /**
  * @public
  */
 export function hasPersonAccountValue (value: Doc | undefined | null, values: any[]): boolean {
-  const mgr = get(personStore)
-  const personSet = new Set(mgr.filter((it) => it.person === (value as PersonAccount)?.person).map((it) => it._id))
-  return values.some((it) => personSet.has(it))
+  // TODO: FIXME
+  throw new Error('Not implemented')
+  // const mgr = get(personStore)
+  // const personSet = new Set(mgr.filter((it) => it.person === (value as PersonAccount)?.person).map((it) => it._id))
+  // return values.some((it) => personSet.has(it))
 }
 
 /**
@@ -516,22 +612,24 @@ export function groupPersonAccountValuesWithEmpty (
   key: string,
   query: DocumentQuery<Doc> | undefined
 ): Array<Ref<Doc>> {
-  const mgr = get(personStore)
-  let personAccountList = mgr.getDocs()
-  if (query !== undefined) {
-    const { [key]: st, space } = query
-    const resQuery: DocumentQuery<Doc> = {}
-    if (space !== undefined) {
-      resQuery.space = space
-    }
-    if (st !== undefined) {
-      resQuery._id = st
-    }
-    personAccountList = matchQuery<Doc>(personAccountList, resQuery, _class, hierarchy) as unknown as Array<
-    WithLookup<PersonAccount>
-    >
-  }
-  return personAccountList.map((it) => it._id)
+  // TODO: FIXME
+  throw new Error('Not implemented')
+  // const mgr = get(personStore)
+  // let personAccountList = mgr.getDocs()
+  // if (query !== undefined) {
+  //   const { [key]: st, space } = query
+  //   const resQuery: DocumentQuery<Doc> = {}
+  //   if (space !== undefined) {
+  //     resQuery.space = space
+  //   }
+  //   if (st !== undefined) {
+  //     resQuery._id = st
+  //   }
+  //   personAccountList = matchQuery<Doc>(personAccountList, resQuery, _class, hierarchy) as unknown as Array<
+  //   WithLookup<PersonAccount>
+  //   >
+  // }
+  // return personAccountList.map((it) => it._id)
 }
 
 export async function resolveLocationData (loc: Location): Promise<LocationData> {
@@ -560,3 +658,97 @@ export async function resolveLocationData (loc: Location): Promise<LocationData>
 
   return { name: getName(client.getHierarchy(), object) }
 }
+
+export function checkMyPermission (_id: Ref<Permission>, space: Ref<TypedSpace>, store: PermissionsStore): boolean {
+  return (store.whitelist.has(space) || store.ps[space]?.has(_id)) ?? false
+}
+
+const spacesStore = writable<Space[]>([])
+
+export const permissionsStore = derived(
+  [mySocialIdsStore, spacesStore, personRefByPersonIdStore],
+  ([mySocialIds, spaces, personRefByPersonId]) => {
+    const whitelistedSpaces = new Set<Ref<Space>>()
+    const permissionsBySpace: PermissionsBySpace = {}
+    const employeesByPermission: PersonsByPermission = {}
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
+    const mySocialStrings = mySocialIds.map((si) => si.key)
+
+    for (const s of spaces) {
+      if (hierarchy.isDerived(s._class, core.class.TypedSpace)) {
+        const type = client.getModel().findAllSync(core.class.SpaceType, { _id: (s as TypedSpace).type })[0]
+        const mixin = type?.targetClass
+
+        if (mixin === undefined) {
+          permissionsBySpace[s._id] = new Set()
+          employeesByPermission[s._id] = {}
+          continue
+        }
+
+        const asMixin = hierarchy.as(s, mixin)
+        const roles = client.getModel().findAllSync(core.class.Role, { attachedTo: type._id })
+        const myRoles = roles.filter((r) => includesAny((asMixin as any)[r._id] ?? [], mySocialStrings))
+        permissionsBySpace[s._id] = new Set(myRoles.flatMap((r) => r.permissions))
+
+        employeesByPermission[s._id] = {}
+
+        for (const role of roles) {
+          const assignment: PersonId[] = (asMixin as any)[role._id] ?? []
+
+          if (assignment.length === 0) {
+            continue
+          }
+
+          for (const permissionId of role.permissions) {
+            if (employeesByPermission[s._id][permissionId] === undefined) {
+              employeesByPermission[s._id][permissionId] = new Set()
+            }
+
+            assignment.forEach((pid) => {
+              const personRef = personRefByPersonId.get(pid)
+              if (personRef !== undefined) {
+                employeesByPermission[s._id][permissionId].add(personRef)
+              }
+            })
+          }
+        }
+      } else {
+        whitelistedSpaces.add(s._id)
+      }
+    }
+
+    return {
+      ps: permissionsBySpace,
+      ap: employeesByPermission,
+      whitelist: whitelistedSpaces
+    }
+  }
+)
+
+const spaceTypesQuery = createQuery(true)
+const permissionsQuery = createQuery(true)
+type TargetClassesProjection = Record<Ref<Class<Space>>, number>
+
+spaceTypesQuery.query(core.class.SpaceType, {}, (types) => {
+  const targetClasses = types.reduce<TargetClassesProjection>((acc, st) => {
+    acc[st.targetClass] = 1
+    return acc
+  }, {})
+
+  permissionsQuery.query(
+    core.class.Space,
+    {},
+    (res) => {
+      spacesStore.set(res)
+    },
+    {
+      showArchived: true,
+      projection: {
+        _id: 1,
+        type: 1,
+        ...targetClasses
+      } as any
+    }
+  )
+})

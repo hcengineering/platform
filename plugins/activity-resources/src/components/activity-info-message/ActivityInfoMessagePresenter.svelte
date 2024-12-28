@@ -14,15 +14,11 @@
 -->
 <script lang="ts">
   import { ActivityInfoMessage } from '@hcengineering/activity'
-  import { Employee, PersonAccount } from '@hcengineering/contact'
   import {
     Avatar,
     SystemAvatar,
-    employeeByIdStore,
-    personAccountByIdStore,
-    personByIdStore
+    personByPersonIdStore
   } from '@hcengineering/contact-resources'
-  import { Ref } from '@hcengineering/core'
   import { translateCB } from '@hcengineering/platform'
   import { HTMLViewer } from '@hcengineering/presentation'
   import { Action, themeStore } from '@hcengineering/ui'
@@ -44,11 +40,7 @@
   export let readonly: boolean = false
   export let onClick: (() => void) | undefined = undefined
 
-  $: personAccount = $personAccountByIdStore.get((value.createdBy ?? value.modifiedBy) as Ref<PersonAccount>)
-  $: person =
-    personAccount?.person !== undefined
-      ? $employeeByIdStore.get(personAccount.person as Ref<Employee>) ?? $personByIdStore.get(personAccount.person)
-      : undefined
+  $: person = account !== undefined ? $personByPersonIdStore.get(value.createdBy ?? value.modifiedBy) : undefined
 
   let content = ''
 

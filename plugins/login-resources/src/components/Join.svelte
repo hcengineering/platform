@@ -76,13 +76,13 @@
           )
       status = loginStatus
 
-      if (result !== undefined) {
+      if (result != null) {
         setLoginInfo(result)
 
         if (location.query?.navigateUrl != null) {
           try {
             const loc = JSON.parse(decodeURIComponent(location.query.navigateUrl)) as Location
-            if (loc.path[1] === result.workspace) {
+            if (loc.path[1] === result.workspaceUrl) {
               navigate(loc)
               return
             }
@@ -91,7 +91,7 @@
           }
         }
 
-        navigate({ path: [workbenchId, result.workspace] })
+        navigate({ path: [workbenchId, result.workspaceUrl] })
       }
     }
   }
@@ -123,13 +123,13 @@
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
     const [, result] = await checkJoined(location.query.inviteId)
     status = OK
-    if (result !== undefined) {
+    if (result != null) {
       setLoginInfo(result)
 
       if (location.query?.navigateUrl != null) {
         try {
           const loc = JSON.parse(decodeURIComponent(location.query.navigateUrl)) as Location
-          if (loc.path[1] === result.workspace) {
+          if (loc.path[1] === result.workspaceUrl) {
             navigate(loc)
             return
           }
@@ -137,7 +137,7 @@
           // Json parse error could be ignored
         }
       }
-      navigate({ path: [workbenchId, result.workspace] })
+      navigate({ path: [workbenchId, result.workspaceUrl] })
     }
   }
 </script>

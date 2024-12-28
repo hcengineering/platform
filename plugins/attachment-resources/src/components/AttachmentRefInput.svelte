@@ -190,7 +190,7 @@
         _class: attachment.class.Attachment,
         collection: 'attachments',
         modifiedOn: 0,
-        modifiedBy: '' as Ref<Account>,
+        modifiedBy: '' as PersonId,
         space,
         attachedTo: objectId,
         attachedToClass: _class,

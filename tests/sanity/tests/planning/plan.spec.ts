@@ -222,7 +222,7 @@ test.describe('Planning ToDo tests', () => {
     const api: ApiEndpoint = new ApiEndpoint(request)
     await api.createAccount(data.userName, '1234', data.firstName, data.lastName)
     await api.createWorkspaceWithLogin(data.workspaceName, data.userName, '1234')
-    await (await page.goto(`${PlatformURI}`))?.finished()
+    await (await page.goto(`${PlatformURI}/login/login`))?.finished()
     await loginPage.login(data.userName, '1234')
     const swp = new SelectWorkspacePage(page)
     await swp.selectWorkspace(data.workspaceName)

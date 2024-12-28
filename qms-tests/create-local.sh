@@ -4,7 +4,7 @@
 ./tool-local.sh  configure init-ws-qms --list
 
 # Create workspace record in accounts
-./tool-local.sh create-workspace sanity-ws-qms -w SanityTest
+./tool-local.sh create-workspace sanity-ws-qms
 # Create user record in accounts
 ./tool-local.sh create-account user1 -f John -l Appleseed -p 1234
 ./tool-local.sh confirm-email user1

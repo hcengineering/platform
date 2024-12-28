@@ -15,9 +15,9 @@
 <script lang="ts">
   import calendar, { Event, getAllEvents } from '@hcengineering/calendar'
   import { calendarByIdStore } from '@hcengineering/calendar-resources'
-  import { Person, PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee, Person } from '@hcengineering/contact'
+  import { socialIdsByPersonRefStore, personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import core, {
-    Account,
     Doc,
     IdMap,
     Ref,
@@ -25,8 +25,7 @@
     Tx,
     TxCUD,
     TxCreateDoc,
-    TxUpdateDoc,
-    getCurrentAccount
+    TxUpdateDoc
   } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -47,10 +46,9 @@
 
   $: fromDate = new Date(currentDate).setDate(currentDate.getDate() - Math.round(maxDays / 2 + 1))
   $: toDate = new Date(currentDate).setDate(currentDate.getDate() + Math.round(maxDays / 2 + 1))
-  const me = (getCurrentAccount() as PersonAccount).person
+  const me = getCurrentEmployee()
 
   let project: Project | undefined
-  let personAccounts: PersonAccount[] = []
   let slots: WorkSlot[] = []
   let events: Event[] = []
   let todos: IdMap<ToDo> = new Map()
@@ -58,16 +56,19 @@
 
   const txCreateQuery = createQuery()
 
-  let txes = new Map<Ref<Account>, Tx[]>()
+  let txes = new Map<Ref<Person>, Tx[]>()
 
+  $: personsSocialStrings = persons.map((p) => ($socialIdsByPersonRefStore.get(p) ?? []).map((si) => si.key)).flat()
   $: txCreateQuery.query(
     core.class.Tx,
-    { modifiedBy: { $in: Array.from(personAccounts.map((it) => it._id)) }, modifiedOn: { $gt: fromDate, $lt: toDate } },
+    { modifiedBy: { $in: personsSocialStrings }, modifiedOn: { $gt: fromDate, $lt: toDate } },
     (res) => {
-      const map = new Map<Ref<Account>, Tx[]>()
+      const map = new Map<Ref<Person>, Tx[]>()
       for (const t of res) {
-        const account = t.createdBy ?? t.modifiedBy
-        map.set(account, [...(map.get(account) ?? []), t])
+        const personId = t.createdBy ?? t.modifiedBy
+        const personRef = $personRefByPersonIdStore.get(personId)
+        if (personRef === undefined) continue
+        map.set(personRef, [...(map.get(personRef) ?? []), t])
       }
       txes = map
     }
@@ -76,8 +77,8 @@
   const client = getClient()
 
   function group (
-    txMap: Map<Ref<Account>, Tx[]>,
-    persons: Ref<Account>[],
+    txMap: Map<Ref<Person>, Tx[]>,
+    persons: Ref<Person>[],
     from: Timestamp,
     to: Timestamp
   ): { add: Map<Asset, { count: number, tx: TxCUD<Doc>[] }>, change: Map<Asset, { count: number, tx: TxCUD<Doc>[] }> } {
@@ -142,7 +143,6 @@
   {fromDate}
   {toDate}
   bind:project
-  bind:personAccounts
   bind:todos
   bind:slots
   bind:events
@@ -157,7 +157,6 @@
       toSlots(getAllEvents(allSlots, dayFrom, dayTo)),
       todos,
       getAllEvents(allEvents, dayFrom, dayTo),
-      personAccounts,
       me,
       $calendarByIdStore
     )}
@@ -165,8 +164,8 @@
     {@const planned = gitem?.mappings.reduce((it, val) => it + val.total, 0) ?? 0}
     {@const pevents = gitem?.events.reduce((it, val) => it + (val.dueDate - val.date), 0) ?? 0}
     {@const busy = gitem?.busy.slots.reduce((it, val) => it + (val.dueDate - val.date), 0) ?? 0}
-    {@const accounts = personAccounts.filter((it) => it.person === person).map((it) => it._id)}
-    {@const txInfo = group(txes, accounts, dayFrom, dayTo)}
+    <!-- {@const accounts = personAccounts.filter((it) => it.person === person).map((it) => it._id)} -->
+    {@const txInfo = group(txes, persons, dayFrom, dayTo)}
     <div style:overflow="auto" style:height="{height}rem" class="p-1">
       <div class="flex-row-center p-1">
         <Icon icon={time.icon.Team} size={'small'} />

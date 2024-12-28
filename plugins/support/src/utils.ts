@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Account, Ref, Space, TxOperations } from '@hcengineering/core'
+import { PersonId, Ref, Space, TxOperations } from '@hcengineering/core'
 
 import support from '.'
 
@@ -22,11 +22,11 @@ import support from '.'
  */
 export async function updateSupportConversation (
   client: TxOperations,
-  account: Ref<Account>,
+  account: PersonId,
   conversationId: string,
   hasUnreadMessages: boolean
 ): Promise<void> {
-  const space = account as string as Ref<Space>
+  const space = account as Ref<Space>
   const doc = await client.findOne(support.class.SupportConversation, { conversationId, space })
   if (doc !== undefined) {
     await client.update(doc, { hasUnreadMessages }, undefined, undefined, account)
@@ -47,10 +47,10 @@ export async function updateSupportConversation (
  */
 export async function deleteSupportConversation (
   client: TxOperations,
-  account: Ref<Account>,
+  account: PersonId,
   conversationId: string
 ): Promise<void> {
-  const space = account as string as Ref<Space>
+  const space = account as Ref<Space>
   const doc = await client.findOne(support.class.SupportConversation, { conversationId, space })
   if (doc !== undefined) {
     await client.remove(doc, undefined, account)

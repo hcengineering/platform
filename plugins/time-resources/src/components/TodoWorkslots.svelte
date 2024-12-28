@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import calendar, { Calendar, generateEventId } from '@hcengineering/calendar'
-  import contact, { PersonAccount } from '@hcengineering/contact'
+  import contact, { getCurrentEmployee } from '@hcengineering/contact'
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { closePopup, showPopup } from '@hcengineering/ui'
@@ -55,13 +55,13 @@
     const defaultDuration = 30 * 60 * 1000
     const now = Date.now()
     const date = Math.ceil(now / (30 * 60 * 1000)) * (30 * 60 * 1000)
-    const currentUser = getCurrentAccount() as PersonAccount
+    const currentAccount = getCurrentAccount()
     const extCalendar = await client.findOne(calendar.class.ExternalCalendar, {
-      createdBy: currentUser._id,
+      createdBy: currentAccount.primarySocialId,
       hidden: false,
       default: true
     })
-    const _calendar = extCalendar ? extCalendar._id : (`${currentUser._id}_calendar` as Ref<Calendar>)
+    const _calendar = extCalendar ? extCalendar._id : (`${currentAccount.primarySocialId}_calendar` as Ref<Calendar>)
     const dueDate = date + defaultDuration
     await client.addCollection(time.class.WorkSlot, calendar.space.Calendar, todo._id, todo._class, 'workslots', {
       eventId: generateEventId(),
@@ -69,7 +69,7 @@
       dueDate,
       calendar: _calendar,
       description: todo.description,
-      participants: [currentUser.person],
+      participants: [getCurrentEmployee()],
       title: todo.title,
       allDay: false,
       access: 'owner',

@@ -14,7 +14,7 @@
 //
 
 import { ClientConnectEvent, DocChunk } from '..'
-import type { Account, Class, Doc, Domain, Ref, Timestamp } from '../classes'
+import type { Class, Doc, Domain, Ref, Timestamp } from '../classes'
 import { ClientConnection } from '../client'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
@@ -91,10 +91,6 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
     async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
     async loadModel (last: Timestamp): Promise<Tx[]> {
       return txes
-    }
-
-    async getAccount (): Promise<Account> {
-      return null as unknown as Account
     }
 
     async sendForceClose (): Promise<void> {}

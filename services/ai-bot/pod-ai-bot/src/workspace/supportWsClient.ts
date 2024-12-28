@@ -32,31 +32,33 @@ export class SupportWsClient extends WorkspaceClient {
   readonly assignedChannels = new Set<Ref<OnboardingChannel>>()
 
   async initClient (): Promise<TxOperations> {
-    const client = await super.initClient()
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // const client = await super.initClient()
 
-    if (this.client != null) {
-      this.client.notify = (...txes) => {
-        this.handleTx(client, ...txes)
-      }
+    // if (this.client != null) {
+    //   this.client.notify = (...txes) => {
+    //     this.handleTx(client, ...txes)
+    //   }
 
-      const channels = await client.findAll(analyticsCollector.class.OnboardingChannel, {})
+    //   const channels = await client.findAll(analyticsCollector.class.OnboardingChannel, {})
 
-      for (const channel of channels) {
-        if (channel.members.length > 0) {
-          this.assignedChannels.add(channel._id)
-        }
-        if (channel.disableAIReplies) {
-          this.disableAiRepliesChannels.set(channel._id, { workspace: channel.workspaceId, email: channel.email })
-        }
-        if (!channel.showAIReplies) {
-          this.disableShowAiRepliesChannels.set(channel._id, { workspace: channel.workspaceId, email: channel.email })
-        }
-        const key = `${channel.email}-${channel.workspaceId}`
-        this.channelByKey.set(key, channel._id)
-      }
-    }
+    //   for (const channel of channels) {
+    //     if (channel.members.length > 0) {
+    //       this.assignedChannels.add(channel._id)
+    //     }
+    //     if (channel.disableAIReplies) {
+    //       this.disableAiRepliesChannels.set(channel._id, { workspace: channel.workspaceId, email: channel.email })
+    //     }
+    //     if (!channel.showAIReplies) {
+    //       this.disableShowAiRepliesChannels.set(channel._id, { workspace: channel.workspaceId, email: channel.email })
+    //     }
+    //     const key = `${channel.email}-${channel.workspaceId}`
+    //     this.channelByKey.set(key, channel._id)
+    //   }
+    // }
 
-    return client
+    // return client
   }
 
   allowAiReplies (workspace: string, email: string): boolean {
@@ -82,20 +84,22 @@ export class SupportWsClient extends WorkspaceClient {
   }
 
   private async updateChannels (tx: TxUpdateDoc<OnboardingChannel>): Promise<void> {
-    if (this.client === undefined) return
-    const updates = tx.operations
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // if (this.client === undefined) return
+    // const updates = tx.operations
 
-    if (updates.members !== undefined || updates.$push?.members !== undefined) {
-      this.assignedChannels.add(tx.objectId)
-    }
+    // if (updates.members !== undefined || updates.$push?.members !== undefined) {
+    //   this.assignedChannels.add(tx.objectId)
+    // }
 
-    if (updates.disableAIReplies === true) {
-      const channel = await this.client.findOne(analyticsCollector.class.OnboardingChannel, { _id: tx.objectId })
-      if (channel === undefined) return
-      this.disableAiRepliesChannels.set(channel._id, { workspace: channel.workspaceId, email: channel.email })
-    } else if (updates.disableAIReplies === false) {
-      this.disableAiRepliesChannels.delete(tx.objectId)
-    }
+    // if (updates.disableAIReplies === true) {
+    //   const channel = await this.client.findOne(analyticsCollector.class.OnboardingChannel, { _id: tx.objectId })
+    //   if (channel === undefined) return
+    //   this.disableAiRepliesChannels.set(channel._id, { workspace: channel.workspaceId, email: channel.email })
+    // } else if (updates.disableAIReplies === false) {
+    //   this.disableAiRepliesChannels.delete(tx.objectId)
+    // }
   }
 
   private txUpdateDoc (client: TxOperations, tx: TxUpdateDoc<Doc>): void {

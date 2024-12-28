@@ -15,9 +15,9 @@
 
 <script lang="ts">
   import { ComponentExtensions, getClient, LiteMessageViewer } from '@hcengineering/presentation'
-  import { Person, type PersonAccount } from '@hcengineering/contact'
-  import { Avatar, personAccountByIdStore, personByIdStore, SystemAvatar } from '@hcengineering/contact-resources'
-  import core, { Account, Doc, Ref, Timestamp, type WithLookup } from '@hcengineering/core'
+  import { Person } from '@hcengineering/contact'
+  import { Avatar, personByPersonIdStore, SystemAvatar } from '@hcengineering/contact-resources'
+  import core, { PersonId, Doc, Ref, Timestamp, type WithLookup } from '@hcengineering/core'
   import { Icon, Label, resizeObserver, TimeSince, tooltip } from '@hcengineering/ui'
   import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import activity, { ActivityMessage, ActivityMessagePreviewType } from '@hcengineering/activity'
@@ -30,7 +30,7 @@
   export let readonly = false
   export let type: ActivityMessagePreviewType = 'full'
   export let timestamp: Timestamp
-  export let account: Ref<Account> | undefined = undefined
+  export let account: PersonId | undefined = undefined
   export let isCompact = false
   export let headerObject: Doc | undefined = undefined
   export let headerIcon: Asset | undefined = undefined
@@ -47,26 +47,7 @@
   let width: number
 
   $: isCompact = width < limit
-
-  $: person = getPerson(account, $personAccountByIdStore, $personByIdStore)
-
-  function getPerson (
-    _id: Ref<Account> | undefined,
-    accountById: Map<Ref<PersonAccount>, PersonAccount>,
-    personById: Map<Ref<Person>, Person>
-  ): WithLookup<Person> | undefined {
-    if (_id === undefined) {
-      return undefined
-    }
-
-    const personAccount = accountById.get(_id as Ref<PersonAccount>)
-
-    if (personAccount === undefined) {
-      return undefined
-    }
-
-    return personById.get(personAccount.person)
-  }
+  $: person = account !== undefined ? $personByPersonIdStore.get(account) : undefined
 
   export function onActionsOpened (): void {
     isActionsOpened = true

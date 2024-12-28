@@ -13,7 +13,7 @@
 
 import { type Calendar, type Event } from '@hcengineering/calendar'
 import { isVisible } from '@hcengineering/calendar-resources'
-import { type Contact, type Person, type PersonAccount } from '@hcengineering/contact'
+import { type Contact, type Person } from '@hcengineering/contact'
 import { type IdMap, type Ref } from '@hcengineering/core'
 import { type ToDo, type WorkSlot } from '@hcengineering/time'
 import { type EventPersonMapping } from '../../types'
@@ -38,7 +38,6 @@ export function groupTeamData (
   items: WorkSlot[],
   todos: IdMap<ToDo>,
   events: Event[],
-  personAccounts: PersonAccount[],
   mePerson: Ref<Person>,
   calendarStore: IdMap<Calendar>
 ): EventPersonMapping[] {
@@ -94,7 +93,7 @@ export function groupTeamData (
     if (_calendar === undefined || _calendar.hidden) {
       continue
     }
-    for (const p of event.participants) {
+    for (const p of event.participants as Array<Ref<Person>>) {
       const mapping: EventPersonMapping = result.get(p) ?? {
         busy: {
           slots: [],

@@ -19,10 +19,9 @@
     combineName,
     ContactEvents,
     Employee,
-    Person,
-    PersonAccount
+    Person
   } from '@hcengineering/contact'
-  import core, { AccountRole, AttachedData, Data, generateId, Ref } from '@hcengineering/core'
+  import { AccountRole, AttachedData, buildSocialIdString, Data, generateId, Ref, SocialIdType } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
@@ -30,6 +29,7 @@
   import { createEventDispatcher } from 'svelte'
   import { ChannelsDropdown } from '..'
   import contact from '../plugin'
+  import { getAccountClient, personByPersonIdStore } from '../utils'
   import EditableAvatar from './EditableAvatar.svelte'
   import { Analytics } from '@hcengineering/analytics'
 
@@ -59,10 +59,21 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  async function createPerson () {
+  async function createEmployee (): Promise<void> {
     try {
       saving = true
       changeEmail()
+      const mail = email.trim()
+      const socialString = buildSocialIdString({
+        type: SocialIdType.EMAIL,
+        value: mail
+      })
+
+      const existingPerson = $personByPersonIdStore.get(socialString)
+      if (existingPerson !== undefined && client.getHierarchy().hasMixin(existingPerson, contact.mixin.Employee)) {
+        return
+      }
+
       const name = combineName(firstName, lastName)
       person.name = name
       const info = await avatarEditor.createAvatar()
@@ -70,21 +81,26 @@
       person.avatarType = info.avatarType
       person.avatarProps = info.avatarProps
 
-      await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
+      if (existingPerson === undefined) {
+        await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
+      } else {
+        await client.update(existingPerson, person)
+      }
+      const employeeRef = existingPerson?._id as Ref<Employee> ?? id
+
       await client.createMixin(id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
         active: true
       })
 
-      const mail = email.trim()
-
-      await client.createDoc(contact.class.PersonAccount, core.space.Model, {
-        email: mail,
-        person: id,
-        role: AccountRole.User
+      await client.addCollection(contact.class.SocialIdentity, contact.space.Contacts, employeeRef, contact.class.Person, 'socialIds', {
+        type: SocialIdType.EMAIL,
+        value: mail,
+        confirmed: false,
+        key: socialString
       })
 
       const sendInvite = await getResource(login.function.SendInvite)
-      await sendInvite(email.trim(), id, AccountRole.User)
+      await sendInvite(mail, AccountRole.User)
 
       for (const channel of channels) {
         await client.addCollection(
@@ -99,8 +115,8 @@
           }
         )
       }
-      if (onCreate) {
-        await onCreate(id)
+      if (onCreate != null) {
+        await onCreate(employeeRef)
       }
       Analytics.handleEvent(ContactEvents.EmployeeCreated, { id, email: mail })
       dispatch('close', id)
@@ -109,23 +125,19 @@
     }
   }
 
+  $: emailSocialString = buildSocialIdString({
+    type: SocialIdType.EMAIL,
+    value: email.trim()
+  })
+
   let channels: AttachedData<Channel>[] = []
 
-  let exists: PersonAccount | undefined
-  const query = createQuery()
-  $: query.query(
-    contact.class.PersonAccount,
-    {
-      email: email.trim()
-    },
-    (p) => {
-      exists = p[0]
-    }
-  )
+  $: emailPerson = $personByPersonIdStore.get(emailSocialString)
+  $: exists = emailPerson !== undefined && client.getHierarchy().hasMixin(emailPerson, contact.mixin.Employee)
 
   const manager = createFocusManager()
 
-  function changeEmail () {
+  function changeEmail (): void {
     const index = channels.findIndex((p) => p.provider === contact.channelProvider.Email)
     if (index !== -1) {
       channels[index].value = email.trim()
@@ -143,11 +155,11 @@
 
 <Card
   label={contact.string.CreateEmployee}
-  okAction={createPerson}
+  okAction={createEmployee}
   canSave={firstName.trim().length > 0 &&
     lastName.trim().length > 0 &&
     email.trim().length > 0 &&
-    exists === undefined &&
+    !exists &&
     canSave}
   on:close={() => {
     dispatch('close')
@@ -155,7 +167,7 @@
   on:changeContent
 >
   <svelte:fragment slot="error">
-    {#if exists !== undefined && !saving}
+    {#if exists && !saving}
       <div class="flex-row-center error-color">
         <IconInfo size={'small'} />
         <span class="text-sm overflow-label ml-2">

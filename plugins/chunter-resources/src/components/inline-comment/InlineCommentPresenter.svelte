@@ -13,9 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { getCurrentAccount, Markup, Ref } from '@hcengineering/core'
+  import { personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { getCurrentAccount, Markup } from '@hcengineering/core'
   import { MessageViewer } from '@hcengineering/presentation'
   import { Action, IconEdit, IconDelete, ShowMore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -48,12 +47,8 @@
 
   const currentAccount = getCurrentAccount()
 
-  let account: PersonAccount | undefined = undefined
-  let person: Person | undefined = undefined
-
-  $: accountId = value?.createdBy
-  $: account = accountId !== undefined ? $personAccountByIdStore.get(accountId as Ref<PersonAccount>) : undefined
-  $: person = account?.person !== undefined ? $personByIdStore.get(account.person) : undefined
+  $: account = value?.createdBy
+  $: person = account !== undefined ? $personByPersonIdStore.get(account) : undefined
 
   let isEditing = false
   let additionalActions: Action[] = []

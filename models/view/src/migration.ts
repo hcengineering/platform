@@ -15,13 +15,18 @@
 
 import {
   type MigrateOperation,
+  type MigrateUpdate,
   type MigrationClient,
+  type MigrationDocumentQuery,
   type MigrationUpgradeClient,
   tryMigrate
 } from '@hcengineering/model'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 import view, { type Filter, type FilteredView, type ViewletPreference, viewId } from '@hcengineering/view'
+import { getSocialIdByOldAccount } from '@hcengineering/model-core'
+
 import { DOMAIN_VIEW } from '.'
+import { MeasureMetricsContext } from '@hcengineering/core'
 
 async function removeDoneStatePref (client: MigrationClient): Promise<void> {
   const prefs = await client.find<ViewletPreference>(DOMAIN_PREFERENCE, {
@@ -76,6 +81,51 @@ async function removeDoneStateFilter (client: MigrationClient): Promise<void> {
   }
 }
 
+async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('view migrateAccountsToSocialIds', {})
+  const socialIdByAccount = await getSocialIdByOldAccount(client)
+
+  ctx.info('processing view filtered view users ', { })
+  const iterator = await client.traverse(DOMAIN_VIEW, { _class: view.class.FilteredView })
+
+  try {
+    let processed = 0
+    while (true) {
+      const docs = await iterator.next(200)
+      if (docs === null || docs.length === 0) {
+        break
+      }
+
+      const operations: { filter: MigrationDocumentQuery<FilteredView>, update: MigrateUpdate<FilteredView> }[] = []
+
+      for (const doc of docs) {
+        const filteredView = doc as FilteredView
+
+        if (filteredView.users === undefined || filteredView.users.length === 0) continue
+
+        const newUsers = filteredView.users.map((u) => socialIdByAccount[u] ?? u)
+
+        operations.push({
+          filter: { _id: filteredView._id },
+          update: {
+            users: newUsers
+          }
+        })
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_VIEW, operations)
+      }
+
+      processed += docs.length
+      ctx.info('...processed', { count: processed })
+    }
+  } finally {
+    await iterator.close()
+  }
+  ctx.info('finished processing view filtered view users ', { })
+}
+
 export const viewOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, viewId, [
@@ -86,6 +136,10 @@ export const viewOperation: MigrateOperation = {
       {
         state: 'remove-done-state-filter',
         func: removeDoneStateFilter
+      },
+      {
+        state: 'accounts-to-social-ids',
+        func: migrateAccountsToSocialIds
       }
     ])
   },

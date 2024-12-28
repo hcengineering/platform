@@ -32,7 +32,9 @@ import notification, {
   type InboxNotificationsClient
 } from '@hcengineering/notification'
 import { createQuery, getClient } from '@hcengineering/presentation'
+import { includesAny } from '@hcengineering/contact'
 import { derived, get, writable } from 'svelte/store'
+
 import { isActivityNotification } from './utils'
 
 /**
@@ -92,10 +94,11 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   private async init (): Promise<void> {
+    const mySocialIds = getCurrentAccount().socialIds
     this.contextsQuery.query(
       notification.class.DocNotifyContext,
       {
-        user: getCurrentAccount()._id
+        user: { $in: mySocialIds }
       },
       (result: DocNotifyContext[]) => {
         this.contexts.set(result)
@@ -107,7 +110,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       notification.class.CommonInboxNotification,
       {
         archived: false,
-        user: getCurrentAccount()._id
+        user: { $in: mySocialIds }
       },
       (result: InboxNotification[]) => {
         result.sort((a, b) => (b.createdOn ?? b.modifiedOn) - (a.createdOn ?? a.modifiedOn))
@@ -119,7 +122,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       notification.class.ActivityInboxNotification,
       {
         archived: false,
-        user: getCurrentAccount()._id
+        user: { $in: mySocialIds }
       },
       (result: ActivityInboxNotification[]) => {
         this.activityInboxNotifications.set(result)
@@ -195,10 +198,10 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         collaboratorsMixin.space,
         notification.mixin.Collaborators,
         {
-          collaborators: [getCurrentAccount()._id]
+          collaborators: [getCurrentAccount().primarySocialId]
         }
       )
-    } else if (!collaboratorsMixin.collaborators.includes(getCurrentAccount()._id)) {
+    } else if (!includesAny(collaboratorsMixin.collaborators, getCurrentAccount().socialIds)) {
       await client.updateMixin(
         collaboratorsMixin._id,
         collaboratorsMixin._class,
@@ -206,7 +209,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         notification.mixin.Collaborators,
         {
           $push: {
-            collaborators: getCurrentAccount()._id
+            collaborators: getCurrentAccount().primarySocialId
           }
         }
       )
@@ -245,7 +248,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       const inboxNotifications = await ops.findAll(
         notification.class.InboxNotification,
         {
-          user: getCurrentAccount()._id,
+          user: { $in: getCurrentAccount().socialIds },
           archived: false
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
@@ -273,7 +276,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       const inboxNotifications = await ops.findAll(
         notification.class.InboxNotification,
         {
-          user: getCurrentAccount()._id,
+          user: { $in: getCurrentAccount().socialIds },
           isViewed: false,
           archived: false
         },
@@ -298,7 +301,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       const inboxNotifications = await ops.findAll(
         notification.class.InboxNotification,
         {
-          user: getCurrentAccount()._id,
+          user: { $in: getCurrentAccount().socialIds },
           isViewed: true,
           archived: false
         },

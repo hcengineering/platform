@@ -1,21 +1,18 @@
 <script lang="ts">
-  import { Person, PersonAccount } from '@hcengineering/contact'
   import {
     EmployeePresenter,
     SystemAvatar,
-    personAccountByIdStore,
-    personByIdStore
+    personByPersonIdStore,
   } from '@hcengineering/contact-resources'
   import Avatar from '@hcengineering/contact-resources/src/components/Avatar.svelte'
-  import core, { Ref, getDisplayTime } from '@hcengineering/core'
+  import core, { getDisplayTime } from '@hcengineering/core'
   import { MessageViewer } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
   import { GithubReviewComment } from '@hcengineering/github'
 
   export let comment: GithubReviewComment
 
-  $: personAccount = $personAccountByIdStore.get((comment?.createdBy ?? comment?.modifiedBy) as Ref<PersonAccount>)
-  $: person = $personByIdStore.get(personAccount?.person as Ref<Person>)
+  $: person = $personByPersonIdStore.get(comment?.createdBy ?? comment?.modifiedBy)
 </script>
 
 {#if comment}

@@ -28,7 +28,7 @@ import core, {
   TxOperations,
   TxProcessor,
   TxUpdateDoc,
-  WorkspaceId
+  WorkspaceUuid
 } from '@hcengineering/core'
 import gmail, { type Message, type NewMessage } from '@hcengineering/gmail'
 import { type StorageAdapter } from '@hcengineering/server-core'
@@ -163,7 +163,7 @@ export class GmailClient {
     private readonly user: User,
     mongo: Db,
     client: Client,
-    private readonly workspaceId: WorkspaceId,
+    private readonly workspaceId: WorkspaceUuid,
     private readonly storageAdapter: StorageAdapter,
     private readonly workspace: WorkspaceClient
   ) {
@@ -182,7 +182,7 @@ export class GmailClient {
     mongo: Db,
     client: Client,
     workspace: WorkspaceClient,
-    workspaceId: WorkspaceId,
+    workspaceId: WorkspaceUuid,
     storageAdapter: StorageAdapter
   ): Promise<GmailClient> {
     const gmailClient = new GmailClient(ctx, credentials, user, mongo, client, workspaceId, storageAdapter, workspace)

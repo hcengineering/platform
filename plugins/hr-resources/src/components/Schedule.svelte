@@ -16,9 +16,7 @@
   import { onDestroy } from 'svelte'
   import { CalendarMode } from '@hcengineering/calendar-resources'
   import calendar from '@hcengineering/calendar-resources/src/plugin'
-  import { Employee, PersonAccount } from '@hcengineering/contact'
-  import { employeeByIdStore } from '@hcengineering/contact-resources'
-  import { DocumentQuery, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { DocumentQuery, Ref } from '@hcengineering/core'
   import { Department, Staff } from '@hcengineering/hr'
   import { createQuery } from '@hcengineering/presentation'
   import { getEmbeddedLabel } from '@hcengineering/platform'
@@ -48,14 +46,14 @@
   import Sidebar from './sidebar/Sidebar.svelte'
   import ExportPopup from './schedule/ExportPopup.svelte'
 
-  const accountEmployee = $employeeByIdStore.get((getCurrentAccount() as PersonAccount).person as Ref<Employee>)
+  const me = getCurrentEmployee()
   let accountStaff: Staff | undefined
 
   const accountStaffQ = createQuery()
 
   let department = accountStaff !== undefined ? accountStaff.department : hr.ids.Head
-  $: if (accountEmployee !== undefined) {
-    accountStaffQ.query(hr.mixin.Staff, { _id: accountEmployee._id as Ref<Staff> }, (res) => {
+  $: if (me !== undefined) {
+    accountStaffQ.query(hr.mixin.Staff, { _id: me as Ref<Staff> }, (res) => {
       accountStaff = res[0]
       department = accountStaff !== undefined ? accountStaff.department : hr.ids.Head
     })

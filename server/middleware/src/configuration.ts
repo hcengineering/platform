@@ -59,11 +59,9 @@ export class ConfigurationMiddleware extends BaseMiddleware implements Middlewar
         const txCUD = tx as TxCUD<Doc>
         const domain = this.context.hierarchy.getDomain(txCUD.objectClass)
         if (this.targetDomains.includes(domain)) {
-          if (ctx.contextData.userEmail !== configurationAccountEmail) {
-            const account = ctx.contextData.account
-            if (account.role !== AccountRole.Owner && ctx.contextData.admin !== true) {
-              throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-            }
+          const account = ctx.contextData.account
+          if (account.role !== AccountRole.Owner && ctx.contextData.admin !== true) {
+            throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
           }
         }
       }
@@ -79,15 +77,13 @@ export class ConfigurationMiddleware extends BaseMiddleware implements Middlewar
   ): Promise<FindResult<T>> {
     const domain = this.context.hierarchy.getDomain(_class)
     if (this.targetDomains.includes(domain)) {
-      if (ctx.contextData.userEmail !== configurationAccountEmail) {
-        const account = ctx.contextData.account
-        if (
-          account.role !== AccountRole.Owner &&
-          account._id !== core.account.System &&
-          ctx.contextData.admin !== true
-        ) {
-          throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-        }
+      const account = ctx.contextData.account
+      if (
+        account.role !== AccountRole.Owner &&
+        account._id !== core.account.System &&
+        ctx.contextData.admin !== true
+      ) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
       }
     }
     return this.provideFindAll(ctx, _class, query, options)

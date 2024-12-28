@@ -15,7 +15,7 @@
 
 import type { Employee } from '@hcengineering/contact'
 import {
-  Account,
+  PersonId,
   IndexKind,
   type MarkupBlobRef,
   type Role,
@@ -103,7 +103,7 @@ export class TCustomer extends TContact implements Customer {
 @Mixin(lead.mixin.DefaultFunnelTypeData, lead.class.Funnel)
 @UX(getEmbeddedLabel('Default funnel'), lead.icon.Funnel)
 export class TDefaultFunnelTypeData extends TFunnel implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: PersonId[]
 }
 
 @Mixin(lead.mixin.LeadTypeData, lead.class.Lead)

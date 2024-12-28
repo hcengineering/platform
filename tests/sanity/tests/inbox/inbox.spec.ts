@@ -274,6 +274,7 @@ test.describe('Inbox tests', () => {
       await issuesDetailsPage.checkIssue(newIssue)
 
       await leftSideMenuPage2.clickTracker()
+      await leftSideMenuPage2.closeNotification()
       await leftSideMenuPage2.clickNotification()
 
       await inboxPage2.clickOnInboxFilter('Channels')

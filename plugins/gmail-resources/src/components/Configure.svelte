@@ -14,19 +14,22 @@
 -->
 <script lang="ts">
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
-  import { Account, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { PersonId } from '@hcengineering/core'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { Integration } from '@hcengineering/setting'
   import { Grid, Label, Toggle } from '@hcengineering/ui'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import { createEventDispatcher } from 'svelte'
+
   import gmail from '../plugin'
 
   export let integration: Integration
   let shared = (integration.shared?.length ?? 0) > 0
 
+  const currentEmployee = getCurrentEmployee()
   const client = getClient()
 
-  async function change (shared: Ref<Account>[]) {
+  async function change (shared: PersonId[]) {
     integration.shared = shared
     await client.update(integration, {
       shared
@@ -40,8 +43,6 @@
   }
 
   const dispatch = createEventDispatcher()
-
-  const me = getCurrentAccount()._id
 </script>
 
 <Card
@@ -68,7 +69,7 @@
         <AccountArrayEditor
           kind={'regular'}
           label={gmail.string.AvailableTo}
-          excludeItems={[me]}
+          excludeItems={[currentEmployee]}
           value={integration.shared ?? []}
           onChange={(res) => change(res)}
         />

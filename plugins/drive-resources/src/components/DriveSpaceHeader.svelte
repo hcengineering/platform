@@ -14,19 +14,19 @@
 -->
 <script lang="ts">
   import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import { type Drive, DriveEvents } from '@hcengineering/drive'
+  import { type Drive } from '@hcengineering/drive'
   import { createQuery } from '@hcengineering/presentation'
   import { Button, ButtonWithDropdown, IconAdd, IconDropdown, Loading, SelectPopupValueType } from '@hcengineering/ui'
 
   import drive from '../plugin'
   import { getFolderIdFromFragment } from '../navigation'
   import { showCreateDrivePopup, showCreateFolderPopup, uploadFilesToDrivePopup } from '../utils'
-  import { Analytics } from '@hcengineering/analytics'
 
   export let currentSpace: Ref<Drive> | undefined
   export let currentFragment: string | undefined
 
-  const me = getCurrentAccount()
+  const myAcc = getCurrentAccount()
+  const socialStrings = myAcc.socialIds
 
   const query = createQuery()
 
@@ -34,7 +34,7 @@
   let hasDrive = false
   query.query(
     drive.class.Drive,
-    { archived: false, members: me._id },
+    { archived: false, members: { $in: socialStrings } },
     (res) => {
       hasDrive = res.length > 0
       loading = false
@@ -68,7 +68,7 @@
     }
   }
 
-  const dropdownItems = hasAccountRole(me, AccountRole.User)
+  const dropdownItems = hasAccountRole(myAcc, AccountRole.User)
     ? [
         { id: drive.string.CreateDrive, label: drive.string.CreateDrive, icon: drive.icon.Drive },
         { id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder },

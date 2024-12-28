@@ -1,5 +1,5 @@
 import client, { clientId } from '@hcengineering/client'
-import { getWorkspaceId, MeasureMetricsContext, type BackupClient, type Client } from '@hcengineering/core'
+import { MeasureMetricsContext, type BackupClient, type Client } from '@hcengineering/core'
 import { addLocation, getResource, setMetadata } from '@hcengineering/platform'
 import WebSocket from 'ws'
 
@@ -36,7 +36,7 @@ async function doBackup (dirName: string, token: string, endpoint: string, works
   const ctx = new MeasureMetricsContext('backup', {})
 
   const storage = await createFileBackupStorage(dirName)
-  const wsid = getWorkspaceId(workspace)
+  const wsid = workspace
   const client = await createClient(endpoint, token)
   try {
     ctx.info('do backup', { workspace, endpoint })

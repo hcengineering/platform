@@ -105,10 +105,11 @@ describe('query', () => {
       })
     })
 
-    await factory.createDoc(core.class.Account, core.space.Model, {
-      email: 'user1@site.com',
-      role: AccountRole.User
-    })
+    // TODO: fixme!
+    // await factory.createDoc(core.class.Account, core.space.Model, {
+    //   email: 'user1@site.com',
+    //   role: AccountRole.User
+    // })
     await factory.createDoc<Channel>(core.class.Space, core.space.Model, {
       private: true,
       name: '#0',

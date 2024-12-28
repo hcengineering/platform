@@ -2,7 +2,7 @@
   Copyright @ 2024 Hardcore Engineering Inc.
 -->
 <script lang="ts">
-  import { checkMyPermission, permissionsStore } from '@hcengineering/view-resources'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
   import { type TrainingRequest } from '@hcengineering/training'
   import type { DocumentQuery } from '@hcengineering/core'
   import { type IModeSelector, navigate, rawLocation } from '@hcengineering/ui'

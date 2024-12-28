@@ -16,7 +16,7 @@
 export * from './classes'
 export * from './client'
 export * from './collaboration'
-export { coreId, systemAccountEmail, default } from './component'
+export { coreId, systemAccountUuid, systemAccount, default } from './component'
 export * from './hierarchy'
 export * from './measurements'
 export * from './memdb'

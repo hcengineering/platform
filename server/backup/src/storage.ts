@@ -1,4 +1,4 @@
-import { MeasureContext, WorkspaceId } from '@hcengineering/core'
+import { MeasureContext, WorkspaceUuid } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { createReadStream, createWriteStream, existsSync, statSync } from 'fs'
 import { mkdir, readFile, rm, writeFile } from 'fs/promises'
@@ -66,7 +66,7 @@ class FileStorage implements BackupStorage {
 class AdapterStorage implements BackupStorage {
   constructor (
     readonly client: StorageAdapter,
-    readonly workspaceId: WorkspaceId,
+    readonly workspaceId: WorkspaceUuid,
     readonly root: string,
     readonly ctx: MeasureContext
   ) {}
@@ -130,7 +130,7 @@ export async function createFileBackupStorage (fileName: string): Promise<Backup
 export async function createStorageBackupStorage (
   ctx: MeasureContext,
   client: StorageAdapter,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   root: string
 ): Promise<BackupStorage> {
   if (!(await client.exists(ctx, workspaceId))) {

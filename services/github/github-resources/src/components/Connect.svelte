@@ -63,7 +63,7 @@
   function onConnect (): void {
     const state = btoa(
       JSON.stringify({
-        accountId: getCurrentAccount()._id,
+        accountId: getCurrentAccount().primarySocialId,
         op: 'installation',
         workspace: $location.path[1],
         token: getMetadata(presentation.metadata.Token)

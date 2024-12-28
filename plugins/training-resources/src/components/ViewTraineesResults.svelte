@@ -3,7 +3,7 @@
 -->
 
 <script lang="ts">
-  import { checkMyPermission, permissionsStore } from '@hcengineering/view-resources'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
   import { type TrainingAttempt, TrainingAttemptState } from '@hcengineering/training'
   import { DocumentQuery } from '@hcengineering/core'
   import { type IModeSelector, navigate, rawLocation } from '@hcengineering/ui'

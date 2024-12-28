@@ -7,9 +7,8 @@
   * Add since to synchronization
 */
 import { Analytics } from '@hcengineering/analytics'
-import { PersonAccount } from '@hcengineering/contact'
 import core, {
-  Account,
+  PersonId,
   AttachedData,
   Doc,
   DocumentUpdate,
@@ -53,17 +52,19 @@ import { getSince, gqlp, guessStatus, isGHWriteAllowed, syncRunner } from './uti
 export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncManager {
   createPromise: Promise<IssueExternalData | undefined> | undefined
   externalDerivedSync = false
-  async getAssigneesI (issue: GithubIssue): Promise<PersonAccount[]> {
+  async getAssigneesI (issue: GithubIssue): Promise<any[]> {
+    // TODO: FIXME
+    throw new Error('Not implemented')
     // Find Assignees and reviewers
-    const assignees: PersonAccount[] = []
+    // const assignees: PersonAccount[] = []
 
-    for (const o of issue.assignees) {
-      const acc = await this.provider.getAccountU(o)
-      if (acc !== undefined) {
-        assignees.push(acc)
-      }
-    }
-    return assignees
+    // for (const o of issue.assignees) {
+    //   const acc = await this.provider.getAccountU(o)
+    //   if (acc !== undefined) {
+    //     assignees.push(acc)
+    //   }
+    // }
+    // return assignees
   }
 
   async handleEvent<T = IssuesEvent | ProjectsV2ItemEvent>(
@@ -80,7 +81,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       login: event.sender.login,
       type: event.sender.type,
       url: event.sender.url,
-      workspace: this.provider.getWorkspaceId().name
+      workspace: this.provider.getWorkspaceId()
     })
 
     if (event.sender.type === 'Bot') {
@@ -112,7 +113,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       if (prj === undefined) {
         this.ctx.info('Event from unknown v2 project', {
           nodeId: projectV2Event.projects_v2_item.project_node_id,
-          workspace: this.provider.getWorkspaceId().name
+          workspace: this.provider.getWorkspaceId()
         })
         return
       }
@@ -129,7 +130,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         this.ctx.info('No project for repository', {
           repository: issueEvent.repository.name,
           nodeId: issueEvent.repository.node_id,
-          workspace: this.provider.getWorkspaceId().name
+          workspace: this.provider.getWorkspaceId()
         })
         return
       }
@@ -385,7 +386,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       this.ctx.info('create github issue', {
         title: (existing as Issue).title,
         number: (existing as Issue).number,
-        workspace: this.provider.getWorkspaceId().name
+        workspace: this.provider.getWorkspaceId()
       })
       const createdIssueData = await this.ctx.withLog(
         'create github issue',
@@ -394,7 +395,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           this.createPromise = this.createGithubIssue(container, { ...(existing as Issue), description }, repository)
           return await this.createPromise
         },
-        { id: (existing as Issue).identifier, workspace: this.provider.getWorkspaceId().name }
+        { id: (existing as Issue).identifier, workspace: this.provider.getWorkspaceId() }
       )
       if (createdIssueData === undefined) {
         this.ctx.error('Error create issue', { url: info.url })
@@ -491,7 +492,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     // A target node id
     const targetNodeId: string | undefined = info.targetNodeId as string
 
-    const okit = (await this.provider.getOctokit(account as Ref<PersonAccount>)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(account as PersonId)) ?? container.container.octokit
 
     const type = await this.provider.getTaskTypeOf(container.project.type, tracker.class.Issue)
     const statuses = await this.provider.getStatuses(type?._id)
@@ -547,7 +548,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       try {
         this.ctx.info('add issue to project v2', {
           url: issueExternal.url,
-          workspace: this.provider.getWorkspaceId().name
+          workspace: this.provider.getWorkspaceId()
         })
         target.prjData = await this.ctx.withLog('add issue to project v2', {}, () =>
           this.addIssueToProject(container, okit, issueExternal, target.target.projectNodeId as string)
@@ -571,7 +572,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         this.ctx.info('create platform issue', {
           url: issueExternal.url,
           title: issueExternal.title,
-          workspace: this.provider.getWorkspaceId().name
+          workspace: this.provider.getWorkspaceId()
         })
         const { markdownCompatible, markdown } = await this.provider.checkMarkdownConversion(
           container.container,
@@ -664,7 +665,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     }
   }
 
-  async afterSync (existing: Issue, update: DocumentUpdate<Doc>, account: Ref<Account>): Promise<void> {}
+  async afterSync (existing: Issue, update: DocumentUpdate<Doc>, account: PersonId): Promise<void> {}
 
   async performIssueFieldsUpdate (
     info: DocSyncInfo,
@@ -674,7 +675,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     container: ContainerFocus,
     issueExternal: IssueExternalData,
     okit: Octokit,
-    account: Ref<Account>
+    account: PersonId
   ): Promise<boolean> {
     const { state, stateReason, body, ...issueUpdate } = await this.collectIssueUpdate(
       info,
@@ -687,7 +688,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     )
 
     const isLocked =
-      info.isDescriptionLocked === true && !(await this.provider.isPlatformUser(account as Ref<PersonAccount>))
+      info.isDescriptionLocked === true && !(await this.provider.isPlatformUser(account))
 
     const hasFieldStateChanges = Object.keys(issueUpdate).length > 0 || state !== undefined
     // We should allow modification from user.
@@ -737,7 +738,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
               url: issueExternal.url,
               ...issueUpdate,
               body,
-              workspace: this.provider.getWorkspaceId().name
+              workspace: this.provider.getWorkspaceId()
             })
             if (isGHWriteAllowed()) {
               if (state === 'OPEN') {
@@ -773,7 +774,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           '==> updateIssue',
           {},
           async () => {
-            this.ctx.info('update fields', { ...issueUpdate, workspace: this.provider.getWorkspaceId().name })
+            this.ctx.info('update fields', { ...issueUpdate, workspace: this.provider.getWorkspaceId() })
             if (isGHWriteAllowed()) {
               const hasOtherChanges = Object.keys(issueUpdate).length > 0
               if (state === 'OPEN') {
@@ -818,7 +819,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     const existingIssue = existing
 
     const okit =
-      (await this.provider.getOctokit(existingIssue.modifiedBy as Ref<PersonAccount>)) ?? container.container.octokit
+      (await this.provider.getOctokit(existingIssue.modifiedBy)) ?? container.container.octokit
 
     const repoId = repository.nodeId
 
@@ -858,8 +859,8 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     }
   }
 
-  async deleteGithubDocument (container: ContainerFocus, account: Ref<Account>, id: string): Promise<void> {
-    const okit = (await this.provider.getOctokit(account as Ref<PersonAccount>)) ?? container.container.octokit
+  async deleteGithubDocument (container: ContainerFocus, account: PersonId, id: string): Promise<void> {
+    const okit = (await this.provider.getOctokit(account)) ?? container.container.octokit
 
     const q = `mutation deleteIssue($issueID: ID!) {
       deleteIssue(
@@ -879,7 +880,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
 
   private async createNewIssue (
     info: DocSyncInfo,
-    account: Ref<Account>,
+    account: PersonId,
     issueData: GithubIssueData & { status: Issue['status'] },
     issueExternal: IssueExternalData,
     repo: Ref<GithubIntegrationRepository>,
@@ -1020,7 +1021,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           if (issues.some((issue) => issue.url === undefined && Object.keys(issue).length === 0)) {
             this.ctx.error('empty document content', {
               repo: repo.name,
-              workspace: this.provider.getWorkspaceId().name,
+              workspace: this.provider.getWorkspaceId(),
               data: cutObjectArray(response)
             })
           }
@@ -1033,7 +1034,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
             this.ctx.warn('issue external retrieval switch to one by one mode', {
               errors: err.errors,
               msg: err.message,
-              workspace: this.provider.getWorkspaceId().name
+              workspace: this.provider.getWorkspaceId()
             })
           } else if (partsize === 1) {
             // We need to update issue, since it is missing on external side.
@@ -1043,7 +1044,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
                 errors: err.errors,
                 msg: err.message,
                 url: syncDoc.url,
-                workspace: this.provider.getWorkspaceId().name
+                workspace: this.provider.getWorkspaceId()
               })
               await derivedClient.diffUpdate(
                 syncDoc,
@@ -1109,7 +1110,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       }
       const since = await getSince(this.client, tracker.class.Issue, repo)
 
-      this.ctx.info('sync external issues', { repo: repo.name, since, workspace: this.provider.getWorkspaceId().name })
+      this.ctx.info('sync external issues', { repo: repo.name, since, workspace: this.provider.getWorkspaceId() })
 
       const i = integration.octokit.graphql.paginate.iterator(
         `query listIssue($name: String!, $owner: String!, $since: DateTime!, $cursor: String) {
@@ -1143,7 +1144,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           if (issues.some((issue) => issue.url === undefined && Object.keys(issue).length === 0)) {
             this.ctx.error('empty document content', {
               repo: repo.name,
-              workspace: this.provider.getWorkspaceId().name,
+              workspace: this.provider.getWorkspaceId(),
               data: cutObjectArray(data)
             })
           }
@@ -1158,7 +1159,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       this.ctx.info('sync external issues - done', {
         repo: repo.name,
         since,
-        workspace: this.provider.getWorkspaceId().name
+        workspace: this.provider.getWorkspaceId()
       })
       integration.synchronized.add(syncKey)
     }

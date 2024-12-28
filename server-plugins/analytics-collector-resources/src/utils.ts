@@ -14,7 +14,7 @@
 //
 import chunter, { Channel } from '@hcengineering/chunter'
 import core, { MeasureContext, Ref, TxOperations } from '@hcengineering/core'
-import contact, { Person } from '@hcengineering/contact'
+import { getAllEmployeesPrimarySocialStrings, getAllSocialStringsByPersonId, Person } from '@hcengineering/contact'
 import analyticsCollector, { getOnboardingChannelName, OnboardingChannel } from '@hcengineering/analytics-collector'
 import { translate } from '@hcengineering/platform'
 
@@ -27,25 +27,26 @@ interface WorkspaceInfo {
 export async function getOrCreateOnboardingChannel (
   ctx: MeasureContext,
   client: TxOperations,
-  email: string,
+  socialString: string,
   workspace: WorkspaceInfo,
   person?: Person
 ): Promise<[Ref<OnboardingChannel> | undefined, boolean]> {
+  const personIds = await getAllSocialStringsByPersonId(client, socialString)
   const channel = await client.findOne(analyticsCollector.class.OnboardingChannel, {
     workspaceId: workspace.workspaceId,
-    email
+    personId: { $in: personIds }
   })
 
   if (channel !== undefined) {
     return [channel._id, false]
   }
 
-  ctx.info('Creating user onboarding channel', { email, workspace })
+  ctx.info('Creating user onboarding channel', { personId: socialString, workspace })
 
   const _id = await client.createDoc(analyticsCollector.class.OnboardingChannel, core.space.Space, {
-    name: getOnboardingChannelName(workspace.workspaceUrl, email),
+    name: getOnboardingChannelName(workspace.workspaceUrl, socialString),
     topic: await translate(analyticsCollector.string.OnboardingChannelDescription, {
-      user: person?.name ?? email,
+      user: person?.name ?? socialString,
       workspace: workspace.workspaceName
     }),
     description: '',
@@ -53,11 +54,11 @@ export async function getOrCreateOnboardingChannel (
     members: [],
     autoJoin: false,
     archived: false,
-    email,
+    socialString,
     workspaceId: workspace.workspaceId,
     workspaceUrl: workspace.workspaceUrl,
     workspaceName: workspace.workspaceName,
-    userName: person?.name ?? email,
+    userName: person?.name ?? socialString,
     disableAIReplies: false,
     showAIReplies: true
   })
@@ -79,7 +80,7 @@ export async function createGeneralOnboardingChannel (
 
   ctx.info('Creating general onboarding channel')
 
-  const accounts = await client.findAll(contact.class.PersonAccount, {})
+  const primarySocialIds = await getAllEmployeesPrimarySocialStrings(client)
   await client.createDoc(
     chunter.class.Channel,
     core.space.Space,
@@ -88,7 +89,7 @@ export async function createGeneralOnboardingChannel (
       topic: '',
       description: '',
       private: false,
-      members: accounts.map(({ _id }) => _id),
+      members: primarySocialIds,
       autoJoin: true,
       archived: false
     },

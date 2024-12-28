@@ -32,18 +32,18 @@ import contact from '@hcengineering/contact'
 import chunter from '@hcengineering/chunter'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import {
-  Account,
   DateRangeMode,
   IndexKind,
   type RolesAssignment,
   type Role,
-  Ref,
+  type Ref,
   type Domain,
   type Timestamp,
   type Type,
   type CollectionSize,
   type MarkupBlobRef,
-  type Class
+  type Class,
+  type PersonId
 } from '@hcengineering/core'
 import {
   Mixin,
@@ -107,7 +107,7 @@ export class TTestProject extends TTypedSpace implements TestProject {
 @Mixin(testManagement.mixin.DefaultProjectTypeData, testManagement.class.TestProject)
 @UX(getEmbeddedLabel('Default project'), testManagement.icon.TestProject)
 export class TDefaultProjectTypeData extends TTestProject implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: PersonId[]
 }
 
 /**

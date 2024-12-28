@@ -55,9 +55,9 @@ export const main = async (): Promise<void> => {
           }
           const redirectURL = req.query.redirectURL as string
 
-          const { email, workspace } = decodeToken(token)
-          const userId = await calendarController.getUserId(email, workspace.name)
-          const url = CalendarClient.getAutUrl(redirectURL, workspace.name, userId, token)
+          const { account, workspace } = decodeToken(token)
+          const userId = await calendarController.getUserId(account, workspace)
+          const url = CalendarClient.getAuthUrl(redirectURL, workspace, userId, token)
           res.send(url)
         } catch (err) {
           console.log('signin error', err)
@@ -95,7 +95,7 @@ export const main = async (): Promise<void> => {
           const value = req.query.value as string
 
           const { workspace } = decodeToken(token)
-          await calendarController.signout(workspace.name, value)
+          await calendarController.signout(workspace, value)
         } catch (err) {
           console.log('signout error', err)
         }

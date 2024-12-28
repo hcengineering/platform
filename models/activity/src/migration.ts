@@ -15,7 +15,7 @@
 
 import { type ActivityMessage, type DocUpdateMessage, type Reaction } from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
-import core, { type Class, type Doc, type Domain, groupByArray, type Ref, type Space } from '@hcengineering/core'
+import core, { type Class, type Doc, type Domain, groupByArray, MeasureMetricsContext, type Ref, type Space } from '@hcengineering/core'
 import {
   type MigrateOperation,
   type MigrateUpdate,
@@ -26,6 +26,8 @@ import {
   tryMigrate
 } from '@hcengineering/model'
 import { htmlToMarkup } from '@hcengineering/text'
+import { getSocialIdByOldAccount } from '@hcengineering/model-core'
+
 import { activityId, DOMAIN_ACTIVITY, DOMAIN_REACTION, DOMAIN_USER_MENTION } from './index'
 import activity from './plugin'
 
@@ -181,6 +183,50 @@ async function migrateActivityMarkup (client: MigrationClient): Promise<void> {
   )
 }
 
+async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('activity migrateAccountsToSocialIds', {})
+  const socialIdByAccount = await getSocialIdByOldAccount(client)
+
+  ctx.info('processing activity reactions ', { })
+  const iterator = await client.traverse(DOMAIN_ACTIVITY, { _class: activity.class.Reaction })
+
+  try {
+    let processed = 0
+    while (true) {
+      const docs = await iterator.next(200)
+      if (docs === null || docs.length === 0) {
+        break
+      }
+
+      const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+
+      for (const doc of docs) {
+        const reaction = doc as Reaction
+        const newCreateBy = socialIdByAccount[reaction.createBy] ?? reaction.createBy
+
+        if (newCreateBy === reaction.createBy) continue
+
+        operations.push({
+          filter: { _id: doc._id },
+          update: {
+            createBy: newCreateBy
+          }
+        })
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_ACTIVITY, operations)
+      }
+
+      processed += docs.length
+      ctx.info('...processed', { count: processed })
+    }
+  } finally {
+    await iterator.close()
+  }
+  ctx.info('finished processing activity reactions ', { })
+}
+
 export const activityOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, activityId, [
@@ -223,6 +269,10 @@ export const activityOperation: MigrateOperation = {
           await client.move(DOMAIN_ACTIVITY, { _class: activity.class.Reaction }, DOMAIN_REACTION)
           await client.move(DOMAIN_ACTIVITY, { _class: activity.class.UserMentionInfo }, DOMAIN_USER_MENTION)
         }
+      },
+      {
+        state: 'accounts-to-social-ids',
+        func: migrateAccountsToSocialIds
       }
     ])
   },

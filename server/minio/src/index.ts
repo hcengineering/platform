@@ -16,12 +16,11 @@
 import { Client, type BucketItem, type BucketStream } from 'minio'
 
 import core, {
-  toWorkspaceString,
   withContext,
   type Blob,
   type MeasureContext,
   type Ref,
-  type WorkspaceId
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, {
@@ -68,26 +67,26 @@ export class MinioService implements StorageAdapter {
     })
   }
 
-  async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
+  async initialize (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {}
 
   /**
    * @public
    */
-  getBucketId (workspaceId: WorkspaceId): string {
-    return this.opt.rootBucket ?? (this.opt.bucketPrefix ?? '') + toWorkspaceString(workspaceId)
+  getBucketId (workspaceId: WorkspaceUuid): string {
+    return this.opt.rootBucket ?? (this.opt.bucketPrefix ?? '') + workspaceId
   }
 
-  getBucketFolder (workspaceId: WorkspaceId): string {
-    return toWorkspaceString(workspaceId)
+  getBucketFolder (workspaceId: WorkspaceUuid): string {
+    return workspaceId
   }
 
   async close (): Promise<void> {}
-  async exists (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<boolean> {
+  async exists (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<boolean> {
     return await this.client.bucketExists(this.getBucketId(workspaceId))
   }
 
   @withContext('make')
-  async make (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
+  async make (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {
     try {
       await this.client.makeBucket(this.getBucketId(workspaceId), this.opt.region ?? 'us-east-1')
     } catch (err: any) {
@@ -116,14 +115,14 @@ export class MinioService implements StorageAdapter {
           reject(err)
         })
         stream.on('data', (data) => {
-          const wsName = data.prefix?.split('/')?.[0]
-          if (wsName !== undefined && !info.has(wsName)) {
-            info.set(wsName, {
-              name: wsName,
+          const wsUuid = data.prefix?.split('/')?.[0]
+          if (wsUuid !== undefined && !info.has(wsUuid)) {
+            info.set(wsUuid, {
+              name: wsUuid,
               delete: async () => {
-                await this.delete(ctx, { name: wsName })
+                await this.delete(ctx, wsUuid)
               },
-              list: async () => await this.listStream(ctx, { name: wsName })
+              list: async () => await this.listStream(ctx, wsUuid)
             })
           }
         })
@@ -131,9 +130,7 @@ export class MinioService implements StorageAdapter {
       stream.destroy()
       return Array.from(info.values())
     } else {
-      const productPostfix = this.getBucketFolder({
-        name: ''
-      })
+      const productPostfix = this.getBucketFolder('')
       const buckets = await this.client.listBuckets()
       return buckets
         .filter((it) => it.name.endsWith(productPostfix))
@@ -143,26 +140,26 @@ export class MinioService implements StorageAdapter {
           return {
             name,
             delete: async () => {
-              await this.delete(ctx, { name })
+              await this.delete(ctx, name)
             },
-            list: async () => await this.listStream(ctx, { name })
+            list: async () => await this.listStream(ctx, name)
           }
         })
     }
   }
 
-  getDocumentKey (workspace: WorkspaceId, name: string): string {
+  getDocumentKey (workspace: WorkspaceUuid, name: string): string {
     return this.opt.rootBucket === undefined ? name : `${this.getBucketFolder(workspace)}/${name}`
   }
 
   @withContext('remove')
-  async remove (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]): Promise<void> {
+  async remove (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectNames: string[]): Promise<void> {
     const toRemove = objectNames.map((it) => this.getDocumentKey(workspaceId, it))
     await this.client.removeObjects(this.getBucketId(workspaceId), toRemove)
   }
 
   @withContext('delete')
-  async delete (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
+  async delete (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {
     try {
       await removeAllObjects(ctx, this, workspaceId)
     } catch (err: any) {
@@ -181,12 +178,12 @@ export class MinioService implements StorageAdapter {
     return key
   }
 
-  rootPrefix (workspaceId: WorkspaceId): string | undefined {
+  rootPrefix (workspaceId: WorkspaceUuid): string | undefined {
     return this.opt.rootBucket !== undefined ? this.getBucketFolder(workspaceId) + '/' : undefined
   }
 
   @withContext('listStream')
-  async listStream (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<BlobStorageIterator> {
+  async listStream (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<BlobStorageIterator> {
     let hasMore = true
     let stream: BucketStream<BucketItem> | undefined
     let done = false
@@ -268,7 +265,7 @@ export class MinioService implements StorageAdapter {
   }
 
   @withContext('stat')
-  async stat (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Blob | undefined> {
+  async stat (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectName: string): Promise<Blob | undefined> {
     try {
       const result = await this.client.statObject(
         this.getBucketId(workspaceId),
@@ -298,19 +295,19 @@ export class MinioService implements StorageAdapter {
         // Do not print error in this case
         return
       }
-      ctx.error('no object found', { error: err, objectName, workspaceId: workspaceId.name })
+      ctx.error('no object found', { error: err, objectName, workspaceId })
     }
   }
 
   @withContext('get')
-  async get (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Readable> {
+  async get (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectName: string): Promise<Readable> {
     return await this.client.getObject(this.getBucketId(workspaceId), this.getDocumentKey(workspaceId, objectName))
   }
 
   @withContext('put')
   async put (
     ctx: MeasureContext,
-    workspaceId: WorkspaceId,
+    workspaceId: WorkspaceUuid,
     objectName: string,
     stream: Readable | Buffer | string,
     contentType: string,
@@ -328,7 +325,7 @@ export class MinioService implements StorageAdapter {
   }
 
   @withContext('read')
-  async read (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Buffer[]> {
+  async read (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectName: string): Promise<Buffer[]> {
     const data = await this.client.getObject(
       this.getBucketId(workspaceId),
       this.getDocumentKey(workspaceId, objectName)
@@ -358,7 +355,7 @@ export class MinioService implements StorageAdapter {
   @withContext('partial')
   async partial (
     ctx: MeasureContext,
-    workspaceId: WorkspaceId,
+    workspaceId: WorkspaceUuid,
     objectName: string,
     offset: number,
     length?: number
@@ -372,9 +369,9 @@ export class MinioService implements StorageAdapter {
   }
 
   @withContext('getUrl')
-  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
+  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectName: string): Promise<string> {
     const filesUrl = getMetadata(serverCore.metadata.FilesUrl) ?? ''
-    return filesUrl.replaceAll(':workspace', workspaceId.name).replaceAll(':blobId', objectName)
+    return filesUrl.replaceAll(':workspace', workspaceId).replaceAll(':blobId', objectName)
   }
 }
 

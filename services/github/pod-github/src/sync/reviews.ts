@@ -1,9 +1,8 @@
 //
 // Copyright © 2023 Hardcore Engineering Inc.
 //
-import { PersonAccount } from '@hcengineering/contact'
 import core, {
-  Account,
+  PersonId,
   AttachedData,
   Doc,
   DocumentUpdate,
@@ -67,13 +66,13 @@ export class ReviewSyncManager implements DocSyncManager {
         return
       }
     }
-    this.ctx.info('reviews:handleEvent', { event, workspace: this.provider.getWorkspaceId().name })
+    this.ctx.info('reviews:handleEvent', { event, workspace: this.provider.getWorkspaceId() })
 
     const { project, repository } = await this.provider.getProjectAndRepository(event.repository.node_id)
     if (project === undefined || repository === undefined) {
       this.ctx.info('No project for repository', {
         name: event.repository.name,
-        workspace: this.provider.getWorkspaceId().name
+        workspace: this.provider.getWorkspaceId()
       })
       return
     }
@@ -141,8 +140,8 @@ export class ReviewSyncManager implements DocSyncManager {
     return true
   }
 
-  async deleteGithubDocument (container: ContainerFocus, account: Ref<Account>, id: string): Promise<void> {
-    const okit = (await this.provider.getOctokit(account as Ref<PersonAccount>)) ?? container.container.octokit
+  async deleteGithubDocument (container: ContainerFocus, account: PersonId, id: string): Promise<void> {
+    const okit = (await this.provider.getOctokit(account as PersonId)) ?? container.container.octokit
     const q = `mutation deleteReview($reviewID: ID!) {
       deletePullRequestReview(input: {
         pullRequestReviewId: $reviewID
@@ -334,7 +333,7 @@ export class ReviewSyncManager implements DocSyncManager {
     container: ContainerFocus,
     parent: DocSyncInfo,
     review: ReviewExternalData,
-    account: Ref<Account>
+    account: PersonId
   ): Promise<void> {
     const repository = await this.provider.getRepositoryById(info.repository)
     if (repository === undefined) {
@@ -378,7 +377,7 @@ export class ReviewSyncManager implements DocSyncManager {
     messageData: ReviewData,
     parent: DocSyncInfo,
     review: ReviewExternalData,
-    account: Ref<Account>
+    account: PersonId
   ): Promise<void> {
     const _id: Ref<GithubReview> = info._id as unknown as Ref<GithubReview>
     const value: AttachedData<GithubReview> = {
@@ -416,7 +415,7 @@ export class ReviewSyncManager implements DocSyncManager {
     }
     const existingReview = existing as GithubReview
     const okit =
-      (await this.provider.getOctokit(existingReview.modifiedBy as Ref<PersonAccount>)) ?? container.container.octokit
+      (await this.provider.getOctokit(existingReview.modifiedBy as PersonId)) ?? container.container.octokit
 
     // No external version yet, create it.
     try {

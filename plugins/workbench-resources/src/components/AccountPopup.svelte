@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { PersonAccount, formatName } from '@hcengineering/contact'
-  import { personByIdStore } from '@hcengineering/contact-resources'
+  import contact, { formatName } from '@hcengineering/contact'
+  import { myEmployeeStore } from '@hcengineering/contact-resources'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { createQuery } from '@hcengineering/presentation'
@@ -37,6 +37,7 @@
 
   let items: SettingsCategory[] = []
 
+  const account = getCurrentAccount()
   const settingsQuery = createQuery()
   settingsQuery.query(
     setting.class.SettingsCategory,
@@ -47,8 +48,7 @@
     { sort: { order: 1 } }
   )
 
-  const account = getCurrentAccount() as PersonAccount
-  $: person = $personByIdStore.get(account.person)
+  $: person = $myEmployeeStore
 
   function selectCategory (sp?: SettingsCategory): void {
     closePopup()
@@ -170,11 +170,12 @@
         <Component is={contact.component.Avatar} props={{ person, size: 'medium', name: person.name }} />
       {/if}
       <div class="ml-2 flex-col">
-        {#if account}
+        {#if person}
           <div class="overflow-label fs-bold caption-color">
-            {person !== undefined ? formatName(person.name) : ''}
+            {formatName(person.name)}
           </div>
-          <div class="overflow-label text-sm content-dark-color">{account.email}</div>
+          <!-- TODO: Show current primary social id? -->
+          <!-- <div class="overflow-label text-sm content-dark-color">{account.email}</div> -->
         {/if}
       </div>
     </div>

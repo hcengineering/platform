@@ -61,13 +61,14 @@ window.addEventListener('DOMContentLoaded', () => {
     const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
     if (tokens !== null) {
       const loc = getCurrentLocation()
-      loc.path.splice(1, 1)
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete tokens[loc.path[1]]
       setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
     }
     setMetadata(presentation.metadata.Token, null)
     setMetadataLocalStorage(login.metadata.LastToken, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-    setMetadataLocalStorage(login.metadata.LoginEmail, null)
+    setMetadataLocalStorage(login.metadata.LoginAccount, null)
     void closeClient().then(() => {
       navigate({ path: [loginId] })
     })
@@ -104,9 +105,9 @@ window.addEventListener('DOMContentLoaded', () => {
     // We need to obtain current token and endpoint and trigger backup
     const token = getMetadata(presentation.metadata.Token)
     const endpoint = getMetadata(presentation.metadata.Endpoint)
-    const workspace = getMetadata(presentation.metadata.WorkspaceId)
+    const workspaceUuid = getMetadata(presentation.metadata.WorkspaceUuid)
     if (isOwnerOrMaintainer()) {
-      if (token != null && endpoint != null && workspace != null) {
+      if (token != null && endpoint != null && workspaceUuid != null) {
         // ipcMain.startBackup(token, endpoint, workspace)
         closePopup()
         closePanel()

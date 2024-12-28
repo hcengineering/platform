@@ -15,6 +15,7 @@
 <script lang="ts">
   import presentation, { isAdminUser } from '@hcengineering/presentation'
   import { Project } from '@hcengineering/tracker'
+  import { includesAny } from '@hcengineering/contact'
   import {
     Icon,
     IconWithEmoji,
@@ -52,7 +53,7 @@
       />
     </div>
     <span class="label no-underline nowrap" class:fs-bold={accent}>
-      {#if openIssues && (isAdminUser() || value.members.includes(getCurrentAccount()._id))}
+      {#if openIssues && (isAdminUser() || includesAny(value.members, getCurrentAccount().socialIds))}
         <NavLink space={value._id} special={'issues'} noUnderline={false}>
           {value.name}
         </NavLink>

@@ -17,7 +17,7 @@
   import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
   import { MessageViewer, getClient } from '@hcengineering/presentation'
   import { EditBox, Grid } from '@hcengineering/ui'
-  import { checkMyPermission, permissionsStore } from '@hcengineering/view-resources'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
   import documents, { DocumentCategory } from '@hcengineering/controlled-documents'
 
   import document from '../plugin'

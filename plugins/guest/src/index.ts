@@ -20,7 +20,7 @@ export interface Restrictions {
   disableActions: boolean
 }
 
-export const guestAccountEmail = '#guest@hc.engineering'
+export const guestAccount = 'b6996120-416f-49cd-841e-e4a5d2e49c9b'
 
 export const guestId = 'guest' as Plugin
 export default plugin(guestId, {

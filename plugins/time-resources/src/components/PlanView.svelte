@@ -16,7 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher, afterUpdate, onDestroy } from 'svelte'
   import calendar, { Calendar, generateEventId } from '@hcengineering/calendar'
-  import { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { TagElement } from '@hcengineering/tags'
@@ -48,13 +48,13 @@
     if (dragItem === null) return
     const doc = dragItem
     const date = e.detail.date.getTime()
-    const currentUser = getCurrentAccount() as PersonAccount
+    const currentAccount = getCurrentAccount()
     const extCalendar = await client.findOne(calendar.class.ExternalCalendar, {
-      createdBy: currentUser._id,
+      createdBy: currentAccount.primarySocialId,
       hidden: false,
       default: true
     })
-    const _calendar = extCalendar ? extCalendar._id : (`${currentUser._id}_calendar` as Ref<Calendar>)
+    const _calendar = extCalendar ? extCalendar._id : (`${currentAccount.primarySocialId}_calendar` as Ref<Calendar>)
     const dueDate = date + defaultDuration
     await client.addCollection(time.class.WorkSlot, calendar.space.Calendar, doc._id, doc._class, 'workslots', {
       calendar: _calendar,
@@ -62,7 +62,7 @@
       date,
       dueDate,
       description: doc.description,
-      participants: [currentUser.person],
+      participants: [getCurrentEmployee()],
       title: doc.title,
       allDay: false,
       access: 'owner',

@@ -178,7 +178,7 @@
         _class: attachment.class.Attachment,
         collection: 'attachments',
         modifiedOn: 0,
-        modifiedBy: '' as Ref<Account>,
+        modifiedBy: '' as PersonId,
         space: object.space,
         attachedTo: object._id,
         attachedToClass: object._class,

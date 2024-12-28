@@ -14,6 +14,7 @@
 //
 
 import OpenAI from 'openai'
+import { type WorkspaceUuid } from '@hcengineering/core'
 
 interface Config {
   AccountsURL: string
@@ -21,7 +22,7 @@ interface Config {
   MongoURL: string
   ServerSecret: string
   ServiceID: string
-  SupportWorkspace: string
+  SupportWorkspace: WorkspaceUuid
   FirstName: string
   LastName: string
   AvatarPath: string

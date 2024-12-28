@@ -1,6 +1,5 @@
 <script lang="ts">
   import { Event, getAllEvents } from '@hcengineering/calendar'
-  import { Person, PersonAccount } from '@hcengineering/contact'
   import { IdMap, Ref } from '@hcengineering/core'
   import { Project } from '@hcengineering/task'
   import { ToDo, WorkSlot } from '@hcengineering/time'
@@ -22,11 +21,9 @@
   $: todayTo = new Date(tomorrow).setHours(0, 0, 0, 0)
 
   let project: Project | undefined
-  let personAccounts: PersonAccount[] = []
   let slots: WorkSlot[] = []
   let events: Event[] = []
   let todos: IdMap<ToDo> = new Map()
-  let persons: Ref<Person>[] = []
 
   $: yesterdaySlots = toSlots(getAllEvents(slots, yesterdayFrom, yesterdayTo))
   $: yesterdayEvents = getAllEvents(events, yesterdayFrom, yesterdayTo)
@@ -46,11 +43,9 @@
   fromDate={yesterdayFrom}
   toDate={todayTo}
   bind:project
-  bind:personAccounts
   bind:todos
   bind:slots
   bind:events
-  bind:persons
 />
 
 <Header bind:currentDate />
@@ -62,9 +57,6 @@
         slots={yesterdaySlots}
         events={yesterdayEvents}
         showAssignee
-        {persons}
-        {personAccounts}
-        {project}
         {todos}
       />
     </div>
@@ -77,9 +69,6 @@
         slots={todaySlots}
         events={todayEvents}
         showAssignee
-        {persons}
-        {personAccounts}
-        {project}
         {todos}
       />
     </div>

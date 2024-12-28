@@ -23,9 +23,8 @@ import {
   Ref,
   SearchOptions,
   SearchQuery,
-  toWorkspaceString,
   TxResult,
-  WorkspaceId
+  WorkspaceUuid
 } from '@hcengineering/core'
 import type { FullTextAdapter, IndexedDoc, SearchScoring, SearchStringResult } from '@hcengineering/server-core'
 import serverCore from '@hcengineering/server-core'
@@ -44,8 +43,8 @@ function getIndexVersion (): string {
 }
 
 class ElasticAdapter implements FullTextAdapter {
-  private readonly getFulltextDocId: (workspaceId: WorkspaceId, doc: Ref<Doc>) => Ref<Doc>
-  private readonly getDocId: (workspaceId: WorkspaceId, fulltext: Ref<Doc>) => Ref<Doc>
+  private readonly getFulltextDocId: (workspaceId: WorkspaceUuid, doc: Ref<Doc>) => Ref<Doc>
+  private readonly getDocId: (workspaceId: WorkspaceUuid, fulltext: Ref<Doc>) => Ref<Doc>
   private readonly indexName: string
 
   constructor (
@@ -54,9 +53,9 @@ class ElasticAdapter implements FullTextAdapter {
     readonly indexVersion: string
   ) {
     this.indexName = `${indexBaseName}_${indexVersion}`
-    this.getFulltextDocId = (workspaceId, doc) => `${doc}@${toWorkspaceString(workspaceId)}` as Ref<Doc>
+    this.getFulltextDocId = (workspaceId, doc) => `${doc}@${workspaceId}` as Ref<Doc>
     this.getDocId = (workspaceId, fulltext) =>
-      fulltext.slice(0, -1 * (toWorkspaceString(workspaceId).length + 1)) as Ref<Doc>
+      fulltext.slice(0, -1 * (workspaceId.length + 1)) as Ref<Doc>
   }
 
   async initMapping (ctx: MeasureContext): Promise<boolean> {
@@ -141,7 +140,7 @@ class ElasticAdapter implements FullTextAdapter {
 
   async searchString (
     ctx: MeasureContext,
-    workspaceId: WorkspaceId,
+    workspaceId: WorkspaceUuid,
     query: SearchQuery,
     options: SearchOptions & { scoring?: SearchScoring[] }
   ): Promise<SearchStringResult> {
@@ -167,7 +166,7 @@ class ElasticAdapter implements FullTextAdapter {
                   },
                   {
                     match: {
-                      workspaceId: { query: toWorkspaceString(workspaceId), operator: 'and' }
+                      workspaceId: { query: workspaceId, operator: 'and' }
                     }
                   }
                 ]
@@ -241,7 +240,7 @@ class ElasticAdapter implements FullTextAdapter {
 
   async search (
     ctx: MeasureContext,
-    workspaceId: WorkspaceId,
+    workspaceId: WorkspaceUuid,
     _classes: Ref<Class<Doc>>[],
     query: DocumentQuery<Doc>,
     size: number | undefined,
@@ -261,7 +260,7 @@ class ElasticAdapter implements FullTextAdapter {
           },
           {
             match: {
-              workspaceId: { query: toWorkspaceString(workspaceId), operator: 'and' }
+              workspaceId: { query: workspaceId, operator: 'and' }
             }
           }
         ],
@@ -344,9 +343,9 @@ class ElasticAdapter implements FullTextAdapter {
     }
   }
 
-  async index (ctx: MeasureContext, workspaceId: WorkspaceId, doc: IndexedDoc): Promise<TxResult> {
+  async index (ctx: MeasureContext, workspaceId: WorkspaceUuid, doc: IndexedDoc): Promise<TxResult> {
     const wsDoc = {
-      workspaceId: toWorkspaceString(workspaceId),
+      workspaceId,
       ...doc
     }
     const fulltextId = this.getFulltextDocId(workspaceId, doc.id)
@@ -371,7 +370,7 @@ class ElasticAdapter implements FullTextAdapter {
 
   async update (
     ctx: MeasureContext,
-    workspaceId: WorkspaceId,
+    workspaceId: WorkspaceUuid,
     id: Ref<Doc>,
     update: Record<string, any>
   ): Promise<TxResult> {
@@ -386,13 +385,13 @@ class ElasticAdapter implements FullTextAdapter {
     return {}
   }
 
-  async updateMany (ctx: MeasureContext, workspaceId: WorkspaceId, docs: IndexedDoc[]): Promise<TxResult[]> {
+  async updateMany (ctx: MeasureContext, workspaceId: WorkspaceUuid, docs: IndexedDoc[]): Promise<TxResult[]> {
     const parts = Array.from(docs)
     while (parts.length > 0) {
       const part = parts.splice(0, 500)
 
       const operations = part.flatMap((doc) => {
-        const wsDoc = { workspaceId: toWorkspaceString(workspaceId), ...doc }
+        const wsDoc = { workspaceId: workspaceId, ...doc }
         return [
           { index: { _index: this.indexName, _id: this.getFulltextDocId(workspaceId, doc.id) } },
           { ...wsDoc, type: '_doc' }
@@ -417,7 +416,7 @@ class ElasticAdapter implements FullTextAdapter {
     return []
   }
 
-  async remove (ctx: MeasureContext, workspaceId: WorkspaceId, docs: Ref<Doc>[]): Promise<void> {
+  async remove (ctx: MeasureContext, workspaceId: WorkspaceUuid, docs: Ref<Doc>[]): Promise<void> {
     try {
       while (docs.length > 0) {
         const part = docs.splice(0, 5000)
@@ -437,7 +436,7 @@ class ElasticAdapter implements FullTextAdapter {
                     },
                     {
                       match: {
-                        workspaceId: { query: toWorkspaceString(workspaceId), operator: 'and' }
+                        workspaceId: { query: workspaceId, operator: 'and' }
                       }
                     }
                   ]
@@ -457,7 +456,7 @@ class ElasticAdapter implements FullTextAdapter {
     }
   }
 
-  async clean (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
+  async clean (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {
     try {
       await this.client.deleteByQuery(
         {
@@ -469,7 +468,7 @@ class ElasticAdapter implements FullTextAdapter {
                 must: [
                   {
                     match: {
-                      workspaceId: { query: toWorkspaceString(workspaceId), operator: 'and' }
+                      workspaceId: { query: workspaceId, operator: 'and' }
                     }
                   }
                 ]
@@ -487,7 +486,7 @@ class ElasticAdapter implements FullTextAdapter {
     }
   }
 
-  async load (ctx: MeasureContext, workspaceId: WorkspaceId, docs: Ref<Doc>[]): Promise<IndexedDoc[]> {
+  async load (ctx: MeasureContext, workspaceId: WorkspaceUuid, docs: Ref<Doc>[]): Promise<IndexedDoc[]> {
     const resp = await this.client.search({
       index: this.indexName,
       type: '_doc',
@@ -503,7 +502,7 @@ class ElasticAdapter implements FullTextAdapter {
               },
               {
                 match: {
-                  workspaceId: { query: toWorkspaceString(workspaceId), operator: 'and' }
+                  workspaceId: { query: workspaceId, operator: 'and' }
                 }
               }
             ]

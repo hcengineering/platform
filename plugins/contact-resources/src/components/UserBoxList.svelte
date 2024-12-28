@@ -57,12 +57,6 @@
   const dispatch = createEventDispatcher()
 
   async function addPerson (evt: Event): Promise<void> {
-    const accounts = new Set(
-      getClient()
-        .getModel()
-        .findAllSync(contact.class.PersonAccount, {})
-        .map((p) => p.person)
-    )
     const popupProps: any = {
       _class,
       label,
@@ -77,7 +71,7 @@
           const isSelected = items.some((selectedItem) => selectedItem === it._id)
           return isActive || isSelected
         }
-        return accounts.has(it._id as Ref<Person>)
+        return true // Previously it was cheching for PersonAccount to exist. Now we could check for any social id to exist?
       },
       readonly,
       create
