@@ -89,10 +89,7 @@ function findImageTags (node: MarkupNode): MarkupNode[] {
   return []
 }
 
-export function appendGuestLinkToImage (
-  markdown: MarkupNode,
-  workspace: WorkspaceIdWithUrl
-): void {
+export function appendGuestLinkToImage (markdown: MarkupNode, workspace: WorkspaceIdWithUrl): void {
   const imageTags: MarkupNode[] = markdown.content?.flatMap(findImageTags) ?? []
 
   if (imageTags.length === 0) {
