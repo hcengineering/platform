@@ -22,7 +22,6 @@ import core, {
   TxOperations,
   UnsetOptions,
   WorkspaceIds,
-  WorkspaceUuid,
   generateId
 } from '@hcengineering/core'
 import { makeRank } from '@hcengineering/rank'

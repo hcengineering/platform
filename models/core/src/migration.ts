@@ -303,12 +303,16 @@ export function getAccountsFromTxes (accTxes: TxCUD<Doc>[]): any {
     return acc
   }, {})
 
-  return Object.values(byAccounts).map((txes) => TxProcessor.buildDoc2Doc(txes)).filter((it) => it !== undefined)
+  return Object.values(byAccounts)
+    .map((txes) => TxProcessor.buildDoc2Doc(txes))
+    .filter((it) => it !== undefined)
 }
 
 export async function getSocialIdByOldAccount (client: MigrationClient): Promise<Record<string, PersonId>> {
   const systemAccounts = [core.account.System, core.account.ConfigUser]
-  const accountsTxes: TxCUD<Doc>[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, { objectClass: { $in: ['core:class:Account', 'contact:class:PersonAccount'] as Ref<Class<Doc>>[] } })
+  const accountsTxes: TxCUD<Doc>[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
+    objectClass: { $in: ['core:class:Account', 'contact:class:PersonAccount'] as Ref<Class<Doc>>[] }
+  })
   const accounts = getAccountsFromTxes(accountsTxes)
 
   const socialIdByAccount: Record<string, PersonId> = {}
@@ -391,7 +395,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
     }
   }
 
-  ctx.info('processing spaces members, owners and roles assignment', { })
+  ctx.info('processing spaces members, owners and roles assignment', {})
   let processedSpaces = 0
   const spacesIterator = await client.traverse(DOMAIN_SPACE, {})
 
@@ -452,7 +456,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
     await spacesIterator.close()
   }
 
-  ctx.info('processing space types members', { })
+  ctx.info('processing space types members', {})
   let updatedSpaceTypes = 0
   for (const spaceType of spaceTypes) {
     if (spaceType.members === undefined || spaceType.members.length === 0) continue

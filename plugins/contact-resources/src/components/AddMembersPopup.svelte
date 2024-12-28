@@ -13,16 +13,18 @@
   const client = getClient()
 
   let membersToAdd: Ref<Person>[] = []
-  const channelMembers: Ref<Person>[] = value.members.map((pid) => {
-    const personRef = $personRefByPersonIdStore.get(pid)
+  const channelMembers: Ref<Person>[] = value.members
+    .map((pid) => {
+      const personRef = $personRefByPersonIdStore.get(pid)
 
-    if (personRef === undefined) {
-      console.error(`Person with social id ${pid} not found`)
-      return undefined
-    }
+      if (personRef === undefined) {
+        console.error(`Person with social id ${pid} not found`)
+        return undefined
+      }
 
-    return personRef
-  }).filter((e) => e !== undefined)
+      return personRef
+    })
+    .filter((e) => e !== undefined)
 
   async function changeMembersToAdd (employees: Ref<Person>[]) {
     membersToAdd = employees

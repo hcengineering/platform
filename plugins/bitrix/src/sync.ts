@@ -1,8 +1,7 @@
 import attachment, { Attachment } from '@hcengineering/attachment'
-import contact, { AvatarType, Channel, combineName, Contact, Employee } from '@hcengineering/contact'
+import contact, { Channel, Contact, Employee } from '@hcengineering/contact'
 import core, {
   PersonId,
-  AccountRole,
   ApplyOperations,
   AttachedDoc,
   Class,
@@ -940,7 +939,7 @@ async function synchronizeUsers (
         })
       }
 
-      let accountId = account?._id
+      const accountId = account?._id
       if (accountId === undefined) {
         // const employeeId = await ops.client.createDoc(contact.class.Person, contact.space.Contacts, {
         //   name: combineName(u.NAME, u.LAST_NAME),

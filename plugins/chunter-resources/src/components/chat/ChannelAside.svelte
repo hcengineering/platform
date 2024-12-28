@@ -19,7 +19,13 @@
 
   import { Channel, ChunterSpace, ObjectChatPanel } from '@hcengineering/chunter'
   import { Person } from '@hcengineering/contact'
-  import { EmployeeBox, personRefByPersonIdStore, primarySocialIdByPersonRefStore, socialIdsByPersonRefStore, SelectUsersPopup } from '@hcengineering/contact-resources'
+  import {
+    EmployeeBox,
+    personRefByPersonIdStore,
+    primarySocialIdByPersonRefStore,
+    socialIdsByPersonRefStore,
+    SelectUsersPopup
+  } from '@hcengineering/contact-resources'
 
   import ChannelMembers from '../ChannelMembers.svelte'
   import DocAside from './DocAside.svelte'
@@ -32,11 +38,12 @@
 
   let members = new Set<Ref<Person>>()
 
-  $: creatorPersonRef = object.createdBy !== undefined
-    ? $personRefByPersonIdStore.get(object.createdBy)
-    : undefined
+  $: creatorPersonRef = object.createdBy !== undefined ? $personRefByPersonIdStore.get(object.createdBy) : undefined
 
-  $: disabledRemoveFor = (object.createdBy !== undefined && !socialStrings.includes(object.createdBy) && creatorPersonRef !== undefined) ? [creatorPersonRef] : []
+  $: disabledRemoveFor =
+    object.createdBy !== undefined && !socialStrings.includes(object.createdBy) && creatorPersonRef !== undefined
+      ? [creatorPersonRef]
+      : []
   $: updateMembers(object)
 
   function updateMembers (object: Channel | undefined): void {
@@ -46,9 +53,7 @@
     }
 
     members = new Set(
-      object.members
-        .map((personId) => $personRefByPersonIdStore.get(personId))
-        .filter((p) => p !== undefined)
+      object.members.map((personId) => $personRefByPersonIdStore.get(personId)).filter((p) => p !== undefined)
     )
   }
 
@@ -57,7 +62,10 @@
   }
 
   function personsToAllSocialIds (persons: Ref<Person>[]): PersonId[] {
-    return persons.map((person) => $socialIdsByPersonRefStore.get(person)?.map((si) => si.key) ?? []).flat().filter((s) => s !== undefined)
+    return persons
+      .map((person) => $socialIdsByPersonRefStore.get(person)?.map((si) => si.key) ?? [])
+      .flat()
+      .filter((s) => s !== undefined)
   }
 
   async function changeMembers (personRefs: Ref<Person>[], object?: Channel): Promise<void> {

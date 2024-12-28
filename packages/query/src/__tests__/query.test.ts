@@ -14,7 +14,6 @@
 //
 
 import core, {
-  AccountRole,
   createClient,
   Doc,
   generateId,

@@ -13,14 +13,7 @@
 // limitations under the License.
 //
 import { saveCollabJson } from '@hcengineering/collaboration'
-import {
-  CollaborativeDoc,
-  Markup,
-  MeasureContext,
-  Blob as PlatformBlob,
-  Ref,
-  WorkspaceIds
-} from '@hcengineering/core'
+import { CollaborativeDoc, Markup, MeasureContext, Blob as PlatformBlob, Ref, WorkspaceIds } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { FileUploader, UploadResult } from './uploader'
 

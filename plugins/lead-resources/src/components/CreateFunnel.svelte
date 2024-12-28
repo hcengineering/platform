@@ -51,7 +51,8 @@
 
   let members: PersonId[] =
     funnel?.members !== undefined ? hierarchy.clone(funnel.members) : [getCurrentAccount().primarySocialId]
-  let owners: PersonId[] = funnel?.owners !== undefined ? hierarchy.clone(funnel.owners) : [getCurrentAccount().primarySocialId]
+  let owners: PersonId[] =
+    funnel?.owners !== undefined ? hierarchy.clone(funnel.owners) : [getCurrentAccount().primarySocialId]
 
   $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter((p) => p !== undefined)
   $: void loadSpaceType(typeId)

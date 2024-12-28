@@ -21,8 +21,13 @@ import activity, {
 } from '@hcengineering/activity'
 import { isReactionMessage } from '@hcengineering/activity-resources'
 import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
-import contact, { getName, getCurrentEmployee, type Employee, type Person, pickPrimarySocialId } from '@hcengineering/contact'
-import { PersonIcon, personByPersonIdStore, personRefByPersonIdStore, primarySocialIdByPersonRefStore, socialIdsByPersonIdStore } from '@hcengineering/contact-resources'
+import contact, { getName, getCurrentEmployee, type Employee, type Person } from '@hcengineering/contact'
+import {
+  PersonIcon,
+  personByPersonIdStore,
+  personRefByPersonIdStore,
+  primarySocialIdByPersonRefStore
+} from '@hcengineering/contact-resources'
 import core, {
   getCurrentAccount,
   type PersonId,
@@ -151,10 +156,7 @@ export async function canCopyMessageLink (doc?: ActivityMessage | ActivityMessag
   return true
 }
 
-export async function getDmPersons (
-  client: Client,
-  space: Space
-): Promise<Person[]> {
+export async function getDmPersons (client: Client, space: Space): Promise<Person[]> {
   if (space === undefined) {
     return []
   }
@@ -320,10 +322,7 @@ export async function joinChannel (channel: Channel, value: PersonId | PersonId[
   }
 }
 
-export async function leaveChannel (
-  channel: Channel | undefined,
-  value: PersonId | PersonId[]
-): Promise<void> {
+export async function leaveChannel (channel: Channel | undefined, value: PersonId | PersonId[]): Promise<void> {
   if (channel === undefined) return
 
   const client = getClient()
@@ -565,7 +564,9 @@ export async function createDirect (employeeIds: Array<Ref<Person>>): Promise<Re
   const myPersonIds = myAcc.socialIds
 
   for (const dm of existingDms) {
-    const existPersonsSet = new Set(dm.members.map((personId) => personRefByPersonId.get(personId)).filter((p) => p !== undefined))
+    const existPersonsSet = new Set(
+      dm.members.map((personId) => personRefByPersonId.get(personId)).filter((p) => p !== undefined)
+    )
 
     if (existPersonsSet.size !== newPersonsSet.size) {
       continue
@@ -588,7 +589,7 @@ export async function createDirect (employeeIds: Array<Ref<Person>>): Promise<Re
       description: '',
       private: true,
       archived: false,
-      members: newDirectPersons.map(((person) => {
+      members: newDirectPersons.map((person) => {
         const primaryId = primarySocialIdByPersonRef.get(person)
 
         if (primaryId === undefined) {
@@ -596,7 +597,7 @@ export async function createDirect (employeeIds: Array<Ref<Person>>): Promise<Re
         }
 
         return primaryId
-      }))
+      })
     }))
 
   const context = await client.findOne(notification.class.DocNotifyContext, {

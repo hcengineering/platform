@@ -15,7 +15,15 @@
 
 import { type ActivityMessage, type DocUpdateMessage, type Reaction } from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
-import core, { type Class, type Doc, type Domain, groupByArray, MeasureMetricsContext, type Ref, type Space } from '@hcengineering/core'
+import core, {
+  type Class,
+  type Doc,
+  type Domain,
+  groupByArray,
+  MeasureMetricsContext,
+  type Ref,
+  type Space
+} from '@hcengineering/core'
 import {
   type MigrateOperation,
   type MigrateUpdate,
@@ -187,7 +195,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   const ctx = new MeasureMetricsContext('activity migrateAccountsToSocialIds', {})
   const socialIdByAccount = await getSocialIdByOldAccount(client)
 
-  ctx.info('processing activity reactions ', { })
+  ctx.info('processing activity reactions ', {})
   const iterator = await client.traverse(DOMAIN_ACTIVITY, { _class: activity.class.Reaction })
 
   try {
@@ -224,7 +232,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   } finally {
     await iterator.close()
   }
-  ctx.info('finished processing activity reactions ', { })
+  ctx.info('finished processing activity reactions ', {})
 }
 
 export const activityOperation: MigrateOperation = {

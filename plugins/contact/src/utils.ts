@@ -13,7 +13,17 @@
 // limitations under the License.
 //
 
-import { AttachedData, buildSocialIdString, Class, Client, Doc, FindResult, Hierarchy, PersonId, Ref } from '@hcengineering/core'
+import {
+  AttachedData,
+  buildSocialIdString,
+  Class,
+  Client,
+  Doc,
+  FindResult,
+  Hierarchy,
+  PersonId,
+  Ref
+} from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { ColorDefinition } from '@hcengineering/ui'
 import contact, { AvatarProvider, AvatarType, Channel, Contact, Employee, Person } from '.'
@@ -124,11 +134,7 @@ export async function findContacts (
 
   // Same name persons
 
-  const potentialChannels = await client.findAll(
-    contact.class.Channel,
-    { value: { $in: values } },
-    { limit: 1000 }
-  )
+  const potentialChannels = await client.findAll(contact.class.Channel, { value: { $in: values } }, { limit: 1000 })
   let potentialContactIds = Array.from(new Set(potentialChannels.map((it) => it.attachedTo as Ref<Contact>)).values())
 
   if (potentialContactIds.length === 0) {
@@ -137,11 +143,7 @@ export async function findContacts (
       const lastName = getLastName(name)
       // try match using just first/last name
       potentialContactIds = (
-        await client.findAll(
-          contact.class.Contact,
-          { name: { $like: `${lastName}%${firstName}%` } },
-          { limit: 100 }
-        )
+        await client.findAll(contact.class.Contact, { name: { $like: `${lastName}%${firstName}%` } }, { limit: 100 })
       ).map((it) => it._id)
       if (potentialContactIds.length === 0) {
         return { contacts: [], channels: [] }
@@ -288,13 +290,19 @@ export async function getPersonBySocialId (client: Client, socialIdString: Perso
   return await client.findOne(contact.class.Person, { _id: socialId?.attachedTo, _class: socialId?.attachedToClass })
 }
 
-export async function getPersonRefBySocialId (client: Client, socialIdString: PersonId): Promise<Ref<Person> | undefined> {
+export async function getPersonRefBySocialId (
+  client: Client,
+  socialIdString: PersonId
+): Promise<Ref<Person> | undefined> {
   const socialId = await client.findOne(contact.class.SocialIdentity, { key: socialIdString })
 
   return socialId?.attachedTo
 }
 
-export async function getPersonRefsBySocialIds (client: Client, ids: PersonId[] = []): Promise<Record<PersonId, Ref<Person>>> {
+export async function getPersonRefsBySocialIds (
+  client: Client,
+  ids: PersonId[] = []
+): Promise<Record<PersonId, Ref<Person>>> {
   const socialIds = await client.findAll(contact.class.SocialIdentity, ids.length === 0 ? {} : { key: { $in: ids } })
   const result: Record<PersonId, Ref<Person>> = {}
 
@@ -316,7 +324,10 @@ export async function getPrimarySocialId (client: Client, person: Ref<Person>): 
 }
 
 export async function getAllSocialStringsByPersonId (client: Client, personId: PersonId): Promise<PersonId[]> {
-  const socialId = await client.findOne(contact.class.SocialIdentity, { key: personId, attachedToClass: contact.class.Person })
+  const socialId = await client.findOne(contact.class.SocialIdentity, {
+    key: personId,
+    attachedToClass: contact.class.Person
+  })
 
   if (socialId === undefined) {
     return []

@@ -12,12 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type AccountRole, Data, type Person, PersonUuid, SocialId, Version, type WorkspaceInfoWithStatus, type WorkspaceMemberInfo, concatLink } from '@hcengineering/core'
-import platform, {
-  PlatformError,
-  Severity,
-  Status
-} from '@hcengineering/platform'
+import {
+  type AccountRole,
+  Data,
+  type Person,
+  PersonUuid,
+  SocialId,
+  Version,
+  type WorkspaceInfoWithStatus,
+  type WorkspaceMemberInfo,
+  concatLink
+} from '@hcengineering/core'
+import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import type { LoginInfo, OtpInfo, WorkspaceLoginInfo, RegionInfo, WorkspaceOperation } from './types'
 
 /** @public */
@@ -38,9 +44,21 @@ export interface AccountClient {
   leaveWorkspace: (account: string) => Promise<LoginInfo | null>
   changeUsername: (first: string, last: string) => Promise<void>
   changePassword: (oldPassword: string, newPassword: string) => Promise<void>
-  signUpJoin: (email: string, password: string, first: string, last: string, inviteId: string) => Promise<WorkspaceLoginInfo>
+  signUpJoin: (
+    email: string,
+    password: string,
+    first: string,
+    last: string,
+    inviteId: string
+  ) => Promise<WorkspaceLoginInfo>
   join: (email: string, password: string, inviteId: string) => Promise<WorkspaceLoginInfo>
-  createInviteLink: (exp: number, emailMask: string, limit: number, role: AccountRole, personId?: any) => Promise<string>
+  createInviteLink: (
+    exp: number,
+    emailMask: string,
+    limit: number,
+    role: AccountRole,
+    personId?: any
+  ) => Promise<string>
   checkJoin: (inviteId: string) => Promise<WorkspaceLoginInfo>
   getWorkspaceInfo: (updateLastVisit?: boolean) => Promise<WorkspaceInfoWithStatus>
   getRegionInfo: () => Promise<RegionInfo[]>
@@ -58,10 +76,24 @@ export interface AccountClient {
 
   // Service methods
   workerHandshake: (region: string, version: Data<Version>, operation: WorkspaceOperation) => Promise<void>
-  getPendingWorkspace: (region: string, version: Data<Version>, operation: WorkspaceOperation) => Promise<WorkspaceInfoWithStatus | null>
-  updateWorkspaceInfo: (wsUuid: string, event: string, version: Data<Version>, progress: number, message?: string) => Promise<void>
+  getPendingWorkspace: (
+    region: string,
+    version: Data<Version>,
+    operation: WorkspaceOperation
+  ) => Promise<WorkspaceInfoWithStatus | null>
+  updateWorkspaceInfo: (
+    wsUuid: string,
+    event: string,
+    version: Data<Version>,
+    progress: number,
+    message?: string
+  ) => Promise<void>
   listWorkspaces: (region?: string | null, includeDisabled?: boolean) => Promise<WorkspaceInfoWithStatus[]>
-  performWorkspaceOperation: (workspaceId: string | string[], event: 'archive' | 'migrate-to' | 'unarchive', ...params: any) => Promise<boolean>
+  performWorkspaceOperation: (
+    workspaceId: string | string[],
+    event: 'archive' | 'migrate-to' | 'unarchive',
+    ...params: any
+  ) => Promise<boolean>
 }
 
 /** @public */
@@ -96,7 +128,7 @@ class AccountClientImpl implements AccountClient {
     })
   }
 
-  private async rpc<T> (request: Request): Promise<T> {
+  private async rpc<T>(request: Request): Promise<T> {
     const response = await fetch(this.url, {
       method: 'POST',
       keepalive: true,
@@ -121,7 +153,7 @@ class AccountClientImpl implements AccountClient {
 
   private flattenStatus (ws: any): WorkspaceInfoWithStatus {
     if (ws === undefined) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { }))
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, {}))
     }
 
     const status = ws.status
@@ -243,7 +275,13 @@ class AccountClientImpl implements AccountClient {
     await this.rpc(request)
   }
 
-  async signUpJoin (email: string, password: string, first: string, last: string, inviteId: string): Promise<WorkspaceLoginInfo> {
+  async signUpJoin (
+    email: string,
+    password: string,
+    first: string,
+    last: string,
+    inviteId: string
+  ): Promise<WorkspaceLoginInfo> {
     const request = {
       method: 'signUpJoin' as const,
       params: [email, password, first, last, inviteId]
@@ -261,7 +299,13 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async createInviteLink (exp: number, emailMask: string, limit: number, role: AccountRole, personId?: any): Promise<string> {
+  async createInviteLink (
+    exp: number,
+    emailMask: string,
+    limit: number,
+    role: AccountRole,
+    personId?: any
+  ): Promise<string> {
     const request = {
       method: 'createInviteLink' as const,
       params: [exp, emailMask, limit, role, personId]
@@ -360,7 +404,11 @@ class AccountClientImpl implements AccountClient {
     await this.rpc(request)
   }
 
-  async getPendingWorkspace (region: string, version: Data<Version>, operation: WorkspaceOperation): Promise<WorkspaceInfoWithStatus | null> {
+  async getPendingWorkspace (
+    region: string,
+    version: Data<Version>,
+    operation: WorkspaceOperation
+  ): Promise<WorkspaceInfoWithStatus | null> {
     const request = {
       method: 'getPendingWorkspace' as const,
       params: [region, version, operation]
@@ -374,7 +422,13 @@ class AccountClientImpl implements AccountClient {
     return this.flattenStatus(result)
   }
 
-  async updateWorkspaceInfo (wsUuid: string, event: string, version: Data<Version>, progress: number, message?: string): Promise<void> {
+  async updateWorkspaceInfo (
+    wsUuid: string,
+    event: string,
+    version: Data<Version>,
+    progress: number,
+    message?: string
+  ): Promise<void> {
     const request = {
       method: 'updateWorkspaceInfo' as const,
       params: [wsUuid, event, version, progress, message]
@@ -437,7 +491,11 @@ class AccountClientImpl implements AccountClient {
     return (await this.rpc<any[]>(request)).map((ws) => this.flattenStatus(ws))
   }
 
-  async performWorkspaceOperation (workspaceId: string | string[], event: 'archive' | 'migrate-to' | 'unarchive', ...params: any): Promise<boolean> {
+  async performWorkspaceOperation (
+    workspaceId: string | string[],
+    event: 'archive' | 'migrate-to' | 'unarchive',
+    ...params: any
+  ): Promise<boolean> {
     const request = {
       method: 'performWorkspaceOperation' as const,
       params: [workspaceId, event, ...params]

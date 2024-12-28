@@ -66,7 +66,10 @@
 
     const nameQuery = searchQuery_ ? { name: { $like: '%' + searchQuery_ + '%' } } : {}
 
-    const allSocialIds = await client.findAll(contact.class.SocialIdentity, { attachedTo: { $in: selectedParticipants_ }, attachedToClass: contact.class.Person })
+    const allSocialIds = await client.findAll(contact.class.SocialIdentity, {
+      attachedTo: { $in: selectedParticipants_ },
+      attachedToClass: contact.class.Person
+    })
     const senderQuery = allSocialIds.length !== 0 ? { modifiedBy: { $in: allSocialIds.map((si) => si.key) } } : {}
 
     let spaceQuery: { space: any }

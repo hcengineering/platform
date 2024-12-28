@@ -217,8 +217,13 @@
   $: templateProvider && !Array.isArray(value) && templateProvider.set(contact.class.Contact, value)
 
   settingsQuery.query(setting.class.Integration, { type: plugin.integrationType.Gmail, disabled: false }, (res) => {
-    integrations = res.filter((p) => (p.createdBy !== undefined && mySocialIds.includes(p.createdBy)) || (includesAny(p.shared ?? [], mySocialIds) && p.value !== ''))
-    selectedIntegration = integrations.find((p) => p.createdBy !== undefined && mySocialIds.includes(p.createdBy)) ?? integrations[0]
+    integrations = res.filter(
+      (p) =>
+        (p.createdBy !== undefined && mySocialIds.includes(p.createdBy)) ||
+        (includesAny(p.shared ?? [], mySocialIds) && p.value !== '')
+    )
+    selectedIntegration =
+      integrations.find((p) => p.createdBy !== undefined && mySocialIds.includes(p.createdBy)) ?? integrations[0]
   })
 
   function onTemplate (e: CustomEvent<string>): void {

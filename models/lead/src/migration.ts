@@ -25,7 +25,7 @@ import {
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 
-import contact, { DOMAIN_CONTACT } from '@hcengineering/model-contact'
+import { DOMAIN_CONTACT } from '@hcengineering/model-contact'
 import task, { createSequence, DOMAIN_TASK, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 
 import lead from './plugin'

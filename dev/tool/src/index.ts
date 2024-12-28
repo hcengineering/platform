@@ -373,39 +373,43 @@ export function devTool (
     .option('-i, --init <ws>', 'Init from workspace')
     .option('-r, --region <region>', 'Region')
     .option('-b, --branding <key>', 'Branding key')
-    .action(
-      async (
-        name,
-        cmd: { account: string, init?: string, branding?: string, region?: string }
-      ) => {
-        const { txes, version, migrateOperations } = prepareTools()
-        await withAccountDatabase(async (db) => {
-          const measureCtx = new MeasureMetricsContext('create-workspace', {})
-          const brandingObj =
-            cmd.branding !== undefined || cmd.init !== undefined ? { key: cmd.branding, initWorkspace: cmd.init } : null
-          const res = await createWorkspaceRecord(
-            measureCtx,
-            db,
-            brandingObj,
-            name,
-            cmd.account,
-            cmd.region,
-            'manual-creation'
-          )
-          const wsInfo = await getWorkspaceInfoWithStatusById(db, res.workspaceUuid)
+    .action(async (name, cmd: { account: string, init?: string, branding?: string, region?: string }) => {
+      const { txes, version, migrateOperations } = prepareTools()
+      await withAccountDatabase(async (db) => {
+        const measureCtx = new MeasureMetricsContext('create-workspace', {})
+        const brandingObj =
+          cmd.branding !== undefined || cmd.init !== undefined ? { key: cmd.branding, initWorkspace: cmd.init } : null
+        const res = await createWorkspaceRecord(
+          measureCtx,
+          db,
+          brandingObj,
+          name,
+          cmd.account,
+          cmd.region,
+          'manual-creation'
+        )
+        const wsInfo = await getWorkspaceInfoWithStatusById(db, res.workspaceUuid)
 
-          if (wsInfo == null) {
-            throw new Error(`Created workspace record ${res.workspaceUuid} not found`)
-          }
-          const coreWsInfo = flattenStatus(wsInfo)
+        if (wsInfo == null) {
+          throw new Error(`Created workspace record ${res.workspaceUuid} not found`)
+        }
+        const coreWsInfo = flattenStatus(wsInfo)
 
-          await createWorkspace(measureCtx, version, brandingObj, coreWsInfo, txes, migrateOperations, undefined, true)
-          await updateWorkspaceInfo(measureCtx, db, brandingObj, getToolToken(), res.workspaceUuid, 'create-done', version, 100)
+        await createWorkspace(measureCtx, version, brandingObj, coreWsInfo, txes, migrateOperations, undefined, true)
+        await updateWorkspaceInfo(
+          measureCtx,
+          db,
+          brandingObj,
+          getToolToken(),
+          res.workspaceUuid,
+          'create-done',
+          version,
+          100
+        )
 
-          console.log('create-workspace done')
-        })
-      }
-    )
+        console.log('create-workspace done')
+      })
+    })
 
   program
     .command('set-user-role <email> <workspace> <role>')

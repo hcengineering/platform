@@ -73,15 +73,7 @@ import {
   TSequence
 } from './core'
 import { definePermissions } from './permissions'
-import {
-  TPermission,
-  TRole,
-  TSpace,
-  TSpaceType,
-  TSpaceTypeDescriptor,
-  TSystemSpace,
-  TTypedSpace
-} from './security'
+import { TPermission, TRole, TSpace, TSpaceType, TSpaceTypeDescriptor, TSystemSpace, TTypedSpace } from './security'
 import { defineSpaceType } from './spaceType'
 import { TDomainStatusPlaceholder, TStatus, TStatusCategory } from './status'
 import { TUserStatus } from './transient'

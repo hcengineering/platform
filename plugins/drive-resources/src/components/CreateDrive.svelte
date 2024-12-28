@@ -48,7 +48,8 @@
 
   let members: PersonId[] =
     drive?.members !== undefined ? hierarchy.clone(drive.members) : [getCurrentAccount().primarySocialId]
-  let owners: PersonId[] = drive?.owners !== undefined ? hierarchy.clone(drive.owners) : [getCurrentAccount().primarySocialId]
+  let owners: PersonId[] =
+    drive?.owners !== undefined ? hierarchy.clone(drive.owners) : [getCurrentAccount().primarySocialId]
   let rolesAssignment: RolesAssignment = {}
 
   let typeId: Ref<SpaceType> | undefined = drive?.type ?? driveRes.spaceType.DefaultDrive

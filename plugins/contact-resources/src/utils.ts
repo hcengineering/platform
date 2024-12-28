@@ -191,7 +191,11 @@ export async function getCurrentEmployeeName (): Promise<string> {
 
 export async function getCurrentEmployeeEmail (): Promise<string> {
   const me = getCurrentEmployee()
-  const emailSocialId = await getClient().findOne(contact.class.SocialIdentity, { type: SocialIdType.EMAIL, attachedTo: me, attachedToClass: contact.class.Person })
+  const emailSocialId = await getClient().findOne(contact.class.SocialIdentity, {
+    type: SocialIdType.EMAIL,
+    attachedTo: me,
+    attachedToClass: contact.class.Person
+  })
   return emailSocialId?.value ?? ''
 }
 
@@ -330,62 +334,53 @@ export const socialIdsStore = writable<Array<WithLookup<SocialIdentity>>>([])
 // In-workspace social ids of the current employee
 // Should not be used except some rare cases
 // Use getCurrentAccount().socialIds instead
-export const mySocialIdsStore = derived(
-  [currentEmployeeRefStore, socialIdsStore],
-  ([myEmployeeRef, socialIds]) => {
-    return socialIds.filter((si) => si.attachedTo === myEmployeeRef)
-  }
-)
-export const mySocialStringsStore = derived(
-  mySocialIdsStore,
-  (mySocialIds) => {
-    return mySocialIds.map((si) => si.key)
-  }
-)
+export const mySocialIdsStore = derived([currentEmployeeRefStore, socialIdsStore], ([myEmployeeRef, socialIds]) => {
+  return socialIds.filter((si) => si.attachedTo === myEmployeeRef)
+})
+export const mySocialStringsStore = derived(mySocialIdsStore, (mySocialIds) => {
+  return mySocialIds.map((si) => si.key)
+})
 
 /**
  * [Ref<Person> => SocialIdentity[]] mapping
  */
-export const socialIdsByPersonRefStore = derived(
-  [personByIdStore, socialIdsStore],
-  ([personById, socialIds]) => {
-    const mapped = Array.from(personById.entries()).map(([_id, person]) => [_id, socialIds.filter((si) => si.attachedTo === person._id)] as const)
-    return new Map(mapped)
-  }
-)
+export const socialIdsByPersonRefStore = derived([personByIdStore, socialIdsStore], ([personById, socialIds]) => {
+  const mapped = Array.from(personById.entries()).map(
+    ([_id, person]) => [_id, socialIds.filter((si) => si.attachedTo === person._id)] as const
+  )
+  return new Map(mapped)
+})
 /**
  * [Ref<Person> => PersonId (primary)] mapping
  */
-export const primarySocialIdByPersonRefStore = derived(
-  socialIdsByPersonRefStore,
-  (socialIdsByPersonRef) => {
-    const mapped = Array.from(socialIdsByPersonRef.entries()).filter(([_, socialIds]) => socialIds.length > 0).map(([_id, socialIds]) => [_id, pickPrimarySocialId(socialIds.map((si) => si.key))] as const)
-    return new Map(mapped)
-  }
-)
+export const primarySocialIdByPersonRefStore = derived(socialIdsByPersonRefStore, (socialIdsByPersonRef) => {
+  const mapped = Array.from(socialIdsByPersonRef.entries())
+    .filter(([_, socialIds]) => socialIds.length > 0)
+    .map(([_id, socialIds]) => [_id, pickPrimarySocialId(socialIds.map((si) => si.key))] as const)
+  return new Map(mapped)
+})
 /**
  * [PersonId (social string) => Ref<Person>] mapping
  */
-export const personRefByPersonIdStore = derived(
-  socialIdsStore,
-  (socialIds) => {
-    const mapped = socialIds.map((si) => [si.key, si.attachedTo] as const)
-    return new Map(mapped)
-  }
-)
+export const personRefByPersonIdStore = derived(socialIdsStore, (socialIds) => {
+  const mapped = socialIds.map((si) => [si.key, si.attachedTo] as const)
+  return new Map(mapped)
+})
 /**
  * [PersonId (social string) => Person] mapping
  */
 export const personByPersonIdStore = derived(
   [personRefByPersonIdStore, personByIdStore],
   ([personRefByPersonId, personById]) => {
-    const mapped = Array.from(personRefByPersonId.entries()).map(([personId, personRef]) => {
-      const person = personById.get(personRef)
-      if (person === undefined) {
-        return undefined
-      }
-      return [personId, person] as const
-    }).filter((it) => it !== undefined) as Array<readonly [string, WithLookup<Person>]>
+    const mapped = Array.from(personRefByPersonId.entries())
+      .map(([personId, personRef]) => {
+        const person = personById.get(personRef)
+        if (person === undefined) {
+          return undefined
+        }
+        return [personId, person] as const
+      })
+      .filter((it) => it !== undefined) as Array<readonly [string, WithLookup<Person>]>
     return new Map(mapped)
   }
 )
@@ -405,13 +400,12 @@ export const socialIdsByPersonIdStore = derived(
 /**
  * [PersonId (social string) => PersonId (primary)] mapping
  */
-export const primarySocialIdByPersonIdStore = derived(
-  socialIdsByPersonIdStore,
-  (socialIdsByPersonId) => {
-    const mapped = Array.from(socialIdsByPersonId.entries()).filter(([_, socialIds]) => socialIds.length > 0).map(([personId, socialIds]) => [personId, pickPrimarySocialId(socialIds.map((si) => si.key))] as const)
-    return new Map(mapped)
-  }
-)
+export const primarySocialIdByPersonIdStore = derived(socialIdsByPersonIdStore, (socialIdsByPersonId) => {
+  const mapped = Array.from(socialIdsByPersonId.entries())
+    .filter(([_, socialIds]) => socialIds.length > 0)
+    .map(([personId, socialIds]) => [personId, pickPrimarySocialId(socialIds.map((si) => si.key))] as const)
+  return new Map(mapped)
+})
 
 export const channelProviders = writable<ChannelProvider[]>([])
 export const statusByUserStore = writable<Map<PersonId, UserStatus>>(new Map())
@@ -436,7 +430,7 @@ onClient(() => {
     employeeByIdStore.set(toIdMap(res))
   })
 
-  siQuery.query(contact.class.SocialIdentity, { }, (res) => {
+  siQuery.query(contact.class.SocialIdentity, {}, (res) => {
     socialIdsStore.set(res)
   })
 })

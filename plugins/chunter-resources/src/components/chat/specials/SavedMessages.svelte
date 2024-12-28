@@ -49,10 +49,7 @@
     })
   }
 
-  function getName (
-    attach: Attachment,
-    personByPersonId: Map<PersonId, Person>
-  ): string | undefined {
+  function getName (attach: Attachment, personByPersonId: Map<PersonId, Person>): string | undefined {
     const person = personByPersonId.get(attach.modifiedBy)
 
     if (person !== undefined) {

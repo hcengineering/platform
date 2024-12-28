@@ -50,7 +50,9 @@
   let members: Set<Ref<Person>> = new Set<Ref<Person>>()
 
   async function getUsers (personIds: PersonId[], search: string): Promise<Employee[]> {
-    const employeeRefs = personIds.map((pid) => $personRefByPersonIdStore.get(pid)).filter((e) => e !== undefined) as Ref<Employee>[]
+    const employeeRefs = personIds
+      .map((pid) => $personRefByPersonIdStore.get(pid))
+      .filter((e) => e !== undefined) as Ref<Employee>[]
     const query: DocumentQuery<Employee> =
       isSearch > 0 ? { name: { $like: '%' + search + '%' } } : { _id: { $in: employeeRefs } }
     const employees = await client.findAll(contact.mixin.Employee, query, { sort: { name: SortingOrder.Descending } })

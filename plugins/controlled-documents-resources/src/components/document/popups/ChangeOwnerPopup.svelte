@@ -60,9 +60,7 @@
   $: isOwner = isDocOwner(object)
 
   $: members = space?.members ?? []
-  $: employees = members
-    .map((m) => $personRefByPersonIdStore.get(m) as Ref<Employee>)
-    .filter((p) => p !== undefined)
+  $: employees = members.map((m) => $personRefByPersonIdStore.get(m) as Ref<Employee>).filter((p) => p !== undefined)
 
   $: docQuery = space?.private ?? false ? { active: true, _id: { $in: employees } } : { active: true }
 </script>

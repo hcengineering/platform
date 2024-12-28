@@ -130,7 +130,9 @@ export class TContact extends TDoc implements Contact {
   @Prop(CollectionType(contact.class.Channel), contact.string.ContactInfo)
     channels?: number
 
-  @Prop(CollectionType(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
+  @Prop(CollectionType(attachment.class.Attachment), attachment.string.Attachments, {
+    shortLabel: attachment.string.Files
+  })
     attachments?: number
 
   @Prop(CollectionType(chunter.class.ChatMessage), chunter.string.Comments)

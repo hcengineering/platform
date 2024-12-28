@@ -85,7 +85,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   const ctx = new MeasureMetricsContext('view migrateAccountsToSocialIds', {})
   const socialIdByAccount = await getSocialIdByOldAccount(client)
 
-  ctx.info('processing view filtered view users ', { })
+  ctx.info('processing view filtered view users ', {})
   const iterator = await client.traverse(DOMAIN_VIEW, { _class: view.class.FilteredView })
 
   try {
@@ -123,7 +123,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   } finally {
     await iterator.close()
   }
-  ctx.info('finished processing view filtered view users ', { })
+  ctx.info('finished processing view filtered view users ', {})
 }
 
 export const viewOperation: MigrateOperation = {

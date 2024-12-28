@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AccountRole, Client } from '..'
+import { Client } from '..'
 import type { Class, Doc, Obj, Ref } from '../classes'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'

@@ -14,7 +14,14 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { AccountRole, concatLink, type Person, type Doc, type Ref, type WorkspaceInfoWithStatus } from '@hcengineering/core'
+import {
+  AccountRole,
+  concatLink,
+  type Person,
+  type Doc,
+  type Ref,
+  type WorkspaceInfoWithStatus
+} from '@hcengineering/core'
 import type { LoginInfo, OtpInfo, WorkspaceLoginInfo, AccountClient, RegionInfo } from '@hcengineering/account-client'
 import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import { loginId } from '@hcengineering/login'
@@ -333,7 +340,11 @@ export async function selectWorkspace (
   workspaceUrl: string,
   token?: string | null | undefined
 ): Promise<[Status, WorkspaceLoginInfo | null]> {
-  const actualToken = token ?? getMetadata(presentation.metadata.Token) ?? fetchMetadataLocalStorage(login.metadata.LastToken) ?? undefined
+  const actualToken =
+    token ??
+    getMetadata(presentation.metadata.Token) ??
+    fetchMetadataLocalStorage(login.metadata.LastToken) ??
+    undefined
 
   if (actualToken == null) {
     const loc = getCurrentLocation()

@@ -53,11 +53,7 @@
   async function save (): Promise<void> {
     const primaryPersonId = getCurrentAccount().primarySocialId
     const employee = getCurrentEmployee()
-    const space = await client.findOne(
-      contact.class.PersonSpace,
-      { person: employee },
-      { projection: { _id: 1 } }
-    )
+    const space = await client.findOne(contact.class.PersonSpace, { person: employee }, { projection: { _id: 1 } })
     if (!space) return
 
     const channelId = await client.createDoc(chunter.class.Channel, core.space.Space, {

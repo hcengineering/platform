@@ -32,11 +32,14 @@
   export let width: string | undefined = undefined
   export let readonly = false
 
-  $: docQuery = include.length === 0
-    ? {}
-    : {
-        _id: { $in: include.map((personId) => $personRefByPersonIdStore.get(personId)).filter((p) => p !== undefined) }
-      }
+  $: docQuery =
+    include.length === 0
+      ? {}
+      : {
+          _id: {
+            $in: include.map((personId) => $personRefByPersonIdStore.get(personId)).filter((p) => p !== undefined)
+          }
+        }
   $: selectedEmp = value != null ? $personRefByPersonIdStore.get(value) : value
 
   const dispatch = createEventDispatcher()

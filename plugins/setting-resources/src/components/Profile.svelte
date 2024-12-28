@@ -19,7 +19,18 @@
   import login, { loginId } from '@hcengineering/login'
   import { getResource, setMetadata } from '@hcengineering/platform'
   import presentation, { AttributeEditor, MessageBox, getClient } from '@hcengineering/presentation'
-  import { Breadcrumb, Button, EditBox, FocusHandler, Header, createFocusManager, showPopup, navigate, setMetadataLocalStorage, getCurrentLocation } from '@hcengineering/ui'
+  import {
+    Breadcrumb,
+    Button,
+    EditBox,
+    FocusHandler,
+    Header,
+    createFocusManager,
+    showPopup,
+    navigate,
+    setMetadataLocalStorage,
+    getCurrentLocation
+  } from '@hcengineering/ui'
   import { clearMetadata } from '@hcengineering/workbench-resources'
 
   import setting from '../plugin'

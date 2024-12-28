@@ -33,7 +33,12 @@ import {
 } from '@hcengineering/model'
 import activity, { migrateMessagesSpace, DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import notification from '@hcengineering/notification'
-import { getAllEmployeesPrimarySocialStrings, pickPrimarySocialId, getSocialStringsByEmployee, includesAny, type Person } from '@hcengineering/contact'
+import {
+  getAllEmployeesPrimarySocialStrings,
+  pickPrimarySocialId,
+  getSocialStringsByEmployee,
+  includesAny
+} from '@hcengineering/contact'
 import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
 import { type DocUpdateMessage } from '@hcengineering/activity'
 

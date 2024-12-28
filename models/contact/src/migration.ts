@@ -87,9 +87,11 @@ async function migrateAvatars (client: MigrationClient): Promise<void> {
 
 async function createSocialIdentities (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('createSocialIdentities', {})
-  ctx.info('processing person accounts ', { })
+  ctx.info('processing person accounts ', {})
 
-  const personAccountsTxes: any[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, { objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>> })
+  const personAccountsTxes: any[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
+    objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>
+  })
   const personAccounts = getAccountsFromTxes(personAccountsTxes)
 
   for (const pAcc of personAccounts) {

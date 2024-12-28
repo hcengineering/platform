@@ -15,7 +15,6 @@
 
 import activity, { type DocUpdateMessage } from '@hcengineering/activity'
 import core, {
-  AccountRole,
   DOMAIN_MODEL_TX,
   DOMAIN_STATUS,
   type Ref,
@@ -47,7 +46,6 @@ import tracker, {
   trackerId
 } from '@hcengineering/tracker'
 
-import contact from '@hcengineering/model-contact'
 import { classicIssueTaskStatuses } from '.'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {

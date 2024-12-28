@@ -40,7 +40,8 @@
   $: query.query(chunter.class.DirectMessage, { _id: spaceId }, (result) => {
     dm = result[0]
   })
-  $: dmPersons = dm !== undefined ? dm.members.map((m) => $personRefByPersonIdStore.get(m)).filter((p) => p !== undefined) : []
+  $: dmPersons =
+    dm !== undefined ? dm.members.map((m) => $personRefByPersonIdStore.get(m)).filter((p) => p !== undefined) : []
   $: dmPersonsToDisplay = dmPersons.length === 1 ? dmPersons : dmPersons.filter((p) => p !== me)
 
   async function onSpaceEdit (): Promise<void> {

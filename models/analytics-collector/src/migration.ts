@@ -47,7 +47,7 @@ async function removeOnboardingChannels (client: MigrationClient): Promise<void>
 async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('analytics collector migrateAccountsToSocialIds', {})
 
-  ctx.info('processing analytics collector onboarding channels ', { })
+  ctx.info('processing analytics collector onboarding channels ', {})
   const iterator = await client.traverse(DOMAIN_SPACE, { _class: analyticsCollector.class.OnboardingChannel })
 
   try {
@@ -83,7 +83,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   } finally {
     await iterator.close()
   }
-  ctx.info('finished processing analytics collector onboarding channels ', { })
+  ctx.info('finished processing analytics collector onboarding channels ', {})
 }
 
 export const analyticsCollectorOperation: MigrateOperation = {
