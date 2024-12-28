@@ -13,12 +13,14 @@
 // limitations under the License.
 //
 
+import { type PersonId } from '@hcengineering/core'
+
 export enum OnboardingEvent {
   OpenChatInSidebar = 'openChatInSidebar'
 }
 
 export interface OpenChatInSidebarData {
-  email: string
+  personId: PersonId
   workspace: string
 }
 

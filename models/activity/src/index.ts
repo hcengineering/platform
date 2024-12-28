@@ -38,7 +38,7 @@ import contact, { type Person } from '@hcengineering/contact'
 import core, {
   DOMAIN_MODEL,
   IndexKind,
-  type Account,
+  type PersonId,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -62,6 +62,7 @@ import {
   TypeRef,
   TypeString,
   TypeTimestamp,
+  TypePersonId,
   UX,
   type Builder
 } from '@hcengineering/model'
@@ -226,8 +227,8 @@ export class TReaction extends TAttachedDoc implements Reaction {
   @Prop(TypeString(), activity.string.Emoji)
     emoji!: string
 
-  @Prop(TypeRef(core.class.Account), view.string.Created)
-    createBy!: Ref<Account>
+  @Prop(TypePersonId(), view.string.Created)
+    createBy!: PersonId
 }
 
 @Model(activity.class.SavedMessage, preference.class.Preference)

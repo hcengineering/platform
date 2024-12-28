@@ -13,9 +13,12 @@
 // limitations under the License.
 //
 
-import core, { Client, TxOperations, WorkspaceId, systemAccountEmail, toWorkspaceString } from '@hcengineering/core'
+import core, { Client, PersonId, pickPrimarySocialId, systemAccountUuid, TxOperations, WorkspaceUuid } from '@hcengineering/core'
 import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { Token, generateToken } from '@hcengineering/server-token'
+import { getClient as getAccountClient } from '@hcengineering/account-client'
+
+import config from './config'
 
 async function connect (token: string): Promise<Client> {
   const endpoint = await getTransactorEndpoint(token)
@@ -23,10 +26,18 @@ async function connect (token: string): Promise<Client> {
 }
 
 async function getTxOperations (client: Client, token: Token, isDerived: boolean = false): Promise<TxOperations> {
-  const account = client.getModel().getAccountByEmail(token.email)
-  const accountId = account?._id ?? core.account.System
+  let primarySocialString: PersonId
 
-  return new TxOperations(client, accountId, isDerived)
+  if (token.account === systemAccountUuid) {
+    primarySocialString = core.account.System
+  } else {
+    const rawToken = generateToken(token.account, token.workspace, { service: 'collaborator' })
+    const accountClient = getAccountClient(config.AccountsUrl, rawToken)
+    const socialIds = await accountClient.getSocialIds()
+    primarySocialString = pickPrimarySocialId(socialIds).key
+  }
+
+  return new TxOperations(client, primarySocialString, isDerived)
 }
 
 /**
@@ -47,7 +58,7 @@ export type ClientFactory = (params?: ClientFactoryParams) => Promise<TxOperatio
 export function simpleClientFactory (token: Token): ClientFactory {
   return async (params?: ClientFactoryParams) => {
     const derived = params?.derived ?? false
-    const client = await connect(generateToken(token.email, token.workspace))
+    const client = await connect(generateToken(token.account, token.workspace, { service: 'collaborator' }))
     return await getTxOperations(client, token, derived)
   }
 }
@@ -67,14 +78,12 @@ export function reusableClientFactory (token: Token, controller: Controller): Cl
  * @public
  */
 export class Controller {
-  private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
+  private readonly workspaces: Map<WorkspaceUuid, WorkspaceClient> = new Map<string, WorkspaceClient>()
 
-  async get (workspaceId: WorkspaceId): Promise<WorkspaceClient> {
-    const workspace = toWorkspaceString(workspaceId)
-
+  async get (workspace: WorkspaceUuid): Promise<WorkspaceClient> {
     let client = this.workspaces.get(workspace)
     if (client === undefined) {
-      client = await WorkspaceClient.create(workspaceId)
+      client = await WorkspaceClient.create(workspace)
       this.workspaces.set(workspace, client)
     }
 
@@ -94,12 +103,12 @@ export class Controller {
  */
 export class WorkspaceClient {
   private constructor (
-    readonly workspace: WorkspaceId,
+    readonly workspace: WorkspaceUuid,
     readonly client: Client
   ) {}
 
-  static async create (workspace: WorkspaceId): Promise<WorkspaceClient> {
-    const token = generateToken(systemAccountEmail, workspace)
+  static async create (workspace: WorkspaceUuid): Promise<WorkspaceClient> {
+    const token = generateToken(systemAccountUuid, workspace, { service: 'collaborator' })
     const client = await connect(token)
     return new WorkspaceClient(workspace, client)
   }

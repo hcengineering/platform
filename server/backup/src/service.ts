@@ -15,7 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  BaseWorkspaceInfo,
+  WorkspaceInfo,
   DOMAIN_TX,
   getWorkspaceId,
   groupByArray,
@@ -24,12 +24,13 @@ import core, {
   ModelDb,
   RateLimiter,
   SortingOrder,
-  systemAccountEmail,
+  systemAccountUuid,
   type BackupStatus,
   type Branding,
   type MeasureContext,
   type Tx,
-  type WorkspaceIdWithUrl
+  type WorkspaceIds,
+  type WorkspaceInfoWithStatus
 } from '@hcengineering/core'
 import { listAccountWorkspaces, updateBackupInfo } from '@hcengineering/server-client'
 import {
@@ -66,7 +67,7 @@ class BackupWorker {
     readonly workspaceStorageAdapter: StorageAdapter,
     readonly getConfig: (
       ctx: MeasureContext,
-      workspace: WorkspaceIdWithUrl,
+      workspace: WorkspaceIds,
       branding: Branding | null,
       externalStorage: StorageAdapter
     ) => DbConfiguration,
@@ -84,7 +85,7 @@ class BackupWorker {
 
   printStats (
     ctx: MeasureContext,
-    stats: { failedWorkspaces: BaseWorkspaceInfo[], processed: number, skipped: number }
+    stats: { failedWorkspaces: WorkspaceInfo[], processed: number, skipped: number }
   ): void {
     ctx.warn(
       `****************************************
@@ -119,7 +120,7 @@ class BackupWorker {
   async backup (
     ctx: MeasureContext,
     recheckTimeout: number
-  ): Promise<{ failedWorkspaces: BaseWorkspaceInfo[], processed: number, skipped: number }> {
+  ): Promise<{ failedWorkspaces: WorkspaceInfo[], processed: number, skipped: number }> {
     const workspacesIgnore = new Set(this.config.SkipWorkspaces.split(';'))
     ctx.info('skipped workspaces', { workspacesIgnore })
     let skipped = 0
@@ -156,7 +157,7 @@ class BackupWorker {
         skipped++
         return false
       }
-      return !workspacesIgnore.has(it.workspace)
+      return !workspacesIgnore.has(it.uuid)
     })
 
     workspaces.sort((a, b) => {
@@ -186,7 +187,7 @@ class BackupWorker {
     ctx.warn('Preparing for BACKUP', {
       total: workspaces.length,
       skipped,
-      workspaces: workspaces.map((it) => it.workspace)
+      workspaces: workspaces.map((it) => it.uuid)
     })
 
     const part = workspaces.slice(0, 500)
@@ -202,7 +203,7 @@ class BackupWorker {
 
     let index = 0
 
-    const failedWorkspaces: BaseWorkspaceInfo[] = []
+    const failedWorkspaces: WorkspaceInfoWithStatus[] = []
     let processed = 0
     const startTime = Date.now()
 
@@ -358,7 +359,7 @@ export function backupService (
   workspaceStorageAdapter: StorageAdapter,
   getConfig: (
     ctx: MeasureContext,
-    workspace: WorkspaceIdWithUrl,
+    workspace: WorkspaceIds,
     branding: Branding | null,
     externalStorage: StorageAdapter
   ) => DbConfiguration,
@@ -386,14 +387,14 @@ export function backupService (
 
 export async function doBackupWorkspace (
   ctx: MeasureContext,
-  workspace: BaseWorkspaceInfo,
+  workspace: WorkspaceInfoWithStatus,
   storage: StorageAdapter,
   config: BackupConfig,
   pipelineFactory: PipelineFactory,
   workspaceStorageAdapter: StorageAdapter,
   getConfig: (
     ctx: MeasureContext,
-    workspace: WorkspaceIdWithUrl,
+    workspace: WorkspaceIds,
     branding: Branding | null,
     externalStorage: StorageAdapter
   ) => DbConfiguration,
@@ -425,7 +426,7 @@ export async function doBackupWorkspace (
 
 export async function doRestoreWorkspace (
   rootCtx: MeasureContext,
-  ws: BaseWorkspaceInfo,
+  wsIds: WorkspaceIds,
   backupAdapter: StorageAdapter,
   bucketName: string,
   pipelineFactory: PipelineFactory,
@@ -435,20 +436,14 @@ export async function doRestoreWorkspace (
   notify?: (progress: number) => Promise<void>
 ): Promise<boolean> {
   rootCtx.warn('\nRESTORE WORKSPACE ', {
-    workspace: ws.workspace
+    workspace: wsIds.uuid
   })
-  const ctx = rootCtx.newChild(ws.workspace, { workspace: ws.workspace })
+  const ctx = rootCtx.newChild(wsIds.uuid, { workspace: wsIds.uuid })
   let pipeline: Pipeline | undefined
   try {
-    const storage = await createStorageBackupStorage(ctx, backupAdapter, getWorkspaceId(bucketName), ws.workspace)
-    const wsUrl: WorkspaceIdWithUrl = {
-      name: ws.workspace,
-      uuid: ws.uuid,
-      workspaceName: ws.workspaceName ?? '',
-      workspaceUrl: ws.workspaceUrl ?? ''
-    }
-    const result: boolean = await ctx.with('restore', { workspace: ws.workspace }, (ctx) =>
-      restore(ctx, '', getWorkspaceId(ws.workspace), storage, {
+    const storage = await createStorageBackupStorage(ctx, backupAdapter, bucketName, wsIds.uuid)
+    const result: boolean = await ctx.with('restore', { workspace: wsIds.uuid }, (ctx) =>
+      restore(ctx, '', wsIds.uuid, storage, {
         date: -1,
         skip: new Set(skipDomains),
         recheck: true,
@@ -456,9 +451,9 @@ export async function doRestoreWorkspace (
         cleanIndexState,
         getConnection: async () => {
           if (pipeline === undefined) {
-            pipeline = await pipelineFactory(ctx, wsUrl, true, () => {}, null)
+            pipeline = await pipelineFactory(ctx, wsIds, true, () => {}, null)
           }
-          return wrapPipeline(ctx, pipeline, wsUrl)
+          return wrapPipeline(ctx, pipeline, wsIds)
         },
         progress: (progress) => {
           return notify?.(progress) ?? Promise.resolve()
@@ -467,7 +462,7 @@ export async function doRestoreWorkspace (
     )
     return result
   } catch (err: any) {
-    rootCtx.error('\n\nFAILED to RESTORE', { workspace: ws.workspace, err })
+    rootCtx.error('\n\nFAILED to RESTORE', { workspace: wsIds.uuid, err })
     return false
   } finally {
     if (pipeline !== undefined) {

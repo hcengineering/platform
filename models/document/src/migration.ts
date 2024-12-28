@@ -35,7 +35,7 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
-import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
+import core, { DOMAIN_SPACE, getSocialIdByOldAccount } from '@hcengineering/model-core'
 import { DOMAIN_NOTIFICATION } from '@hcengineering/notification'
 import { type Asset } from '@hcengineering/platform'
 import { makeRank } from '@hcengineering/rank'
@@ -213,7 +213,7 @@ async function renameFieldsRevert (client: MigrationClient): Promise<void> {
     try {
       const collabId = makeDocCollabId(document, 'content')
 
-      const ydoc = await loadCollabYdoc(ctx, storage, client.workspaceId, collabId)
+      const ydoc = await loadCollabYdoc(ctx, storage, client.wsIds.uuid, collabId)
       if (ydoc === undefined) {
         continue
       }
@@ -224,7 +224,7 @@ async function renameFieldsRevert (client: MigrationClient): Promise<void> {
 
       yDocCopyXmlField(ydoc, 'description', 'content')
 
-      await saveCollabYdoc(ctx, storage, client.workspaceId, collabId, ydoc)
+      await saveCollabYdoc(ctx, storage, client.wsIds.uuid, collabId, ydoc)
     } catch (err) {
       ctx.error('error document content migration', { error: err, document: document.title })
     }
@@ -261,7 +261,7 @@ async function restoreContentField (client: MigrationClient): Promise<void> {
     try {
       const collabId = makeDocCollabId(document, 'content')
 
-      const ydoc = await loadCollabYdoc(ctx, storage, client.workspaceId, collabId)
+      const ydoc = await loadCollabYdoc(ctx, storage, client.wsIds.uuid, collabId)
       if (ydoc === undefined) {
         ctx.error('document content not found', { document: document.title })
         continue
@@ -275,7 +275,7 @@ async function restoreContentField (client: MigrationClient): Promise<void> {
       if (ydoc.share.has('')) {
         yDocCopyXmlField(ydoc, '', 'content')
         if (ydoc.share.has('content')) {
-          await saveCollabYdoc(ctx, storage, client.workspaceId, collabId, ydoc)
+          await saveCollabYdoc(ctx, storage, client.wsIds.uuid, collabId, ydoc)
         } else {
           ctx.error('document content still not found', { document: document.title })
         }
@@ -294,6 +294,50 @@ async function migrateRanks (client: MigrationClient): Promise<void> {
       await migrateSpaceRanks(client, DOMAIN_DOCUMENT, space)
     }
   }
+}
+
+async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('document migrateAccountsToSocialIds', {})
+  const socialIdByAccount = await getSocialIdByOldAccount(client)
+
+  ctx.info('processing document lockedBy ', { })
+  const iterator = await client.traverse(DOMAIN_DOCUMENT, { _class: document.class.Document })
+
+  try {
+    let processed = 0
+    while (true) {
+      const docs = await iterator.next(200)
+      if (docs === null || docs.length === 0) {
+        break
+      }
+
+      const operations: { filter: MigrationDocumentQuery<Document>, update: MigrateUpdate<Document> }[] = []
+
+      for (const doc of docs) {
+        const document = doc as Document
+        const newLockedBy = document.lockedBy != null ? (socialIdByAccount[document.lockedBy] ?? document.lockedBy) : document.lockedBy
+
+        if (newLockedBy === document.lockedBy) continue
+
+        operations.push({
+          filter: { _id: document._id },
+          update: {
+            lockedBy: newLockedBy
+          }
+        })
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_DOCUMENT, operations)
+      }
+
+      processed += docs.length
+      ctx.info('...processed', { count: processed })
+    }
+  } finally {
+    await iterator.close()
+  }
+  ctx.info('finished processing document lockedBy ', { })
 }
 
 async function removeOldClasses (client: MigrationClient): Promise<void> {
@@ -355,6 +399,10 @@ export const documentOperation: MigrateOperation = {
       {
         state: 'migrateEmbeddings',
         func: migrateEmbeddings
+      },
+      {
+        state: 'accounts-to-social-ids',
+        func: migrateAccountsToSocialIds
       }
     ])
   },

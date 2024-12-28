@@ -14,7 +14,12 @@
 // limitations under the License.
 //
 
-import { type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
+import {
+  type Account,
+  type BrandingMap,
+  type MeasureContext,
+  type Tx
+} from '@hcengineering/core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 
 import { ClientSession, startSessionManager } from '@hcengineering/server'
@@ -120,8 +125,8 @@ export function start (
     { ...opt, externalStorage, adapterSecurity: dbUrl.startsWith('postgresql') },
     {}
   )
-  const sessionFactory = (token: Token, workspace: Workspace): Session => {
-    return new ClientSession(token, workspace, token.extra?.mode === 'backup')
+  const sessionFactory = (token: Token, workspace: Workspace, account: Account): Session => {
+    return new ClientSession(token, workspace, account, token.extra?.mode === 'backup')
   }
 
   const { shutdown: onClose, sessionManager } = startSessionManager(metrics, {

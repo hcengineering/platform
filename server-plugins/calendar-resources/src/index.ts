@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 import calendar, { Calendar, Event, ExternalCalendar } from '@hcengineering/calendar'
-import contactPlugin, { Contact, Person, PersonAccount } from '@hcengineering/contact'
+import contactPlugin, { Employee, Person, SocialIdentity, pickPrimarySocialId } from '@hcengineering/contact'
 import core, {
   Class,
   Data,
@@ -23,16 +22,21 @@ import core, {
   FindOptions,
   FindResult,
   Hierarchy,
+  PersonId,
+  buildSocialIdString,
+  parseSocialIdString,
   Ref,
   Tx,
   TxCreateDoc,
   TxCUD,
+  TxMixin,
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
+import { getPerson, getSocialStrings } from '@hcengineering/server-contact'
 import { getHTMLPresenter, getTextPresenter } from '@hcengineering/server-notification-resources'
 
 /**
@@ -80,47 +84,80 @@ export async function ReminderTextPresenter (doc: Doc, control: TriggerControl):
   }
 }
 
-/**
- * @public
- */
-export async function OnPersonAccountCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    const ctx = tx as TxCreateDoc<PersonAccount>
-    const user = TxProcessor.createDoc2Doc(ctx)
+    const ctx = tx as TxMixin<Person, Employee>
 
-    result.push(
-      control.txFactory.createTxCreateDoc(
-        calendar.class.Calendar,
-        calendar.space.Calendar,
-        {
-          name: user.email,
-          hidden: false,
-          visibility: 'public'
-        },
-        `${user._id}_calendar` as Ref<Calendar>,
-        undefined,
-        user._id
-      )
-    )
+    if (ctx.attributes?.active !== true) continue
+    if (await checkCalendarsExist(control, ctx.objectId)) continue
+
+    const socialStrings = await getSocialStrings(control, ctx.objectId)
+    if (socialStrings.length === 0) continue
+
+    const socialString = pickPrimarySocialId(socialStrings)
+    const { value } = parseSocialIdString(socialString)
+
+    result.push(...await createCalendar(control, socialString, value))
   }
   return result
 }
 
-function getCalendar (calendars: Calendar[], person: Ref<PersonAccount>): Ref<Calendar> | undefined {
-  const filtered = calendars.filter((c) => (c.createdBy ?? c.modifiedBy) === person)
+export async function OnSocialIdentityCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const ctx = tx as TxCUD<SocialIdentity>
+    if (ctx._class !== core.class.TxCreateDoc) continue
+
+    const socialId = TxProcessor.createDoc2Doc(ctx as TxCreateDoc<SocialIdentity>)
+    const employee = (await control.findAll(control.ctx, contactPlugin.mixin.Employee, { _id: socialId.attachedTo as Ref<Employee> }))[0]
+    if (employee === undefined || !employee.active) continue
+
+    if (await checkCalendarsExist(control, employee._id)) continue
+
+    const socialString = buildSocialIdString(socialId)
+
+    result.push(...await createCalendar(control, socialString, socialId.value))
+  }
+  return result
+}
+
+async function checkCalendarsExist (control: TriggerControl, person: Ref<Person>): Promise<boolean> {
+  const socialStrings = await getSocialStrings(control, person)
+  const calendars = await control.findAll(control.ctx, calendar.class.Calendar, { createdBy: { $in: socialStrings } }, { limit: 1 })
+
+  return calendars.length > 0
+}
+
+async function createCalendar (control: TriggerControl, socialString: PersonId, name: string): Promise<Tx[]> {
+  const res: TxCreateDoc<Calendar> = control.txFactory.createTxCreateDoc(
+    calendar.class.Calendar,
+    calendar.space.Calendar,
+    {
+      name,
+      hidden: false,
+      visibility: 'public'
+    },
+    `${socialString}_calendar` as Ref<Calendar>,
+    undefined,
+    socialString
+  )
+  return [res]
+}
+
+function getCalendar (calendars: Calendar[], person: PersonId[]): Ref<Calendar> | undefined {
+  const filtered = calendars.filter((c) => person.includes(c.createdBy ?? c.modifiedBy))
   const defaultExternal = filtered.find((c) => (c as ExternalCalendar).default)
   if (defaultExternal !== undefined) return defaultExternal._id
   return filtered[0]?._id
 }
 
-function getEventPerson (current: Event, calendars: Calendar[], control: TriggerControl): Ref<Contact> | undefined {
+async function getEventPerson (current: Event, calendars: Calendar[], control: TriggerControl): Promise<Ref<Person> | undefined> {
   const calendar = calendars.find((c) => c._id === current.calendar)
   if (calendar === undefined) return
-  const accId = (current.createdBy ?? current.modifiedBy) as Ref<PersonAccount>
-  const acc = control.modelDb.findAllSync(contactPlugin.class.PersonAccount, { _id: accId })[0]
-  if (acc === undefined) return
-  return acc.person
+  const person = await getPerson(control, current.createdBy ?? current.modifiedBy)
+
+  return person?._id
 }
 
 async function OnEvent (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
@@ -148,11 +185,11 @@ async function onEventUpdate (ctx: TxUpdateDoc<Event>, control: TriggerControl):
   if (event.access !== 'owner') return []
   const events = await control.findAll(control.ctx, calendar.class.Event, { eventId: event.eventId })
   const res: Tx[] = []
-  const newParticipants = new Set<Ref<Contact>>(event.participants)
+  const newParticipants = new Set<Ref<Person>>(event.participants as Ref<Person>[])
   const calendars = await control.findAll(control.ctx, calendar.class.Calendar, { hidden: false })
   for (const ev of events) {
     if (ev._id === event._id) continue
-    const person = getEventPerson(ev, calendars, control)
+    const person = await getEventPerson(ev, calendars, control)
     if (person === undefined || !event.participants.includes(person)) {
       const innerTx = control.txFactory.createTxRemoveDoc(ev._class, ev.space, ev._id)
       const outerTx = control.txFactory.createTxCollectionCUD(
@@ -188,17 +225,15 @@ async function eventForNewParticipants (
   control: TriggerControl
 ): Promise<Tx[]> {
   const res: Tx[] = []
-  const accounts = await control.findAll(control.ctx, contactPlugin.class.PersonAccount, {
-    person: { $in: event.participants }
-  })
   const access = 'reader'
   const { _class, space, attachedTo, attachedToClass, collection, ...attr } = event
   const data = attr as any as Data<Event>
   for (const part of newParticipants) {
-    const acc = accounts.find((a) => a.person === part)
-    if (acc === undefined) continue
-    if (acc._id === (event.createdBy ?? event.modifiedBy)) continue
-    const calendar = getCalendar(calendars, acc._id)
+    const socialStrings = await getSocialStrings(control, part)
+    if (socialStrings.length === 0) continue
+    if (socialStrings.includes(event.createdBy ?? event.modifiedBy)) continue
+    const primarySocialString = pickPrimarySocialId(socialStrings)
+    const calendar = getCalendar(calendars, socialStrings)
     if (calendar === undefined) continue
     const innerTx = control.txFactory.createTxCreateDoc(
       _class,
@@ -206,7 +241,7 @@ async function eventForNewParticipants (
       { ...data, calendar, access },
       undefined,
       undefined,
-      acc._id
+      primarySocialString
     )
     const outerTx = control.txFactory.createTxCollectionCUD(
       attachedToClass,
@@ -215,7 +250,7 @@ async function eventForNewParticipants (
       collection,
       innerTx,
       undefined,
-      acc._id
+      primarySocialString
     )
     res.push(outerTx)
   }
@@ -229,15 +264,13 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
   const { _class, space, attachedTo, attachedToClass, collection, ...attr } = event
   const data = attr as any as Data<Event>
   const calendars = await control.findAll(control.ctx, calendar.class.Calendar, { hidden: false })
-  const accounts = await control.findAll(control.ctx, contactPlugin.class.PersonAccount, {
-    person: { $in: event.participants }
-  })
   const access = 'reader'
   for (const part of event.participants) {
-    const acc = accounts.find((a) => a.person === part)
-    if (acc === undefined) continue
-    if (acc._id === (event.createdBy ?? event.modifiedBy)) continue
-    const calendar = getCalendar(calendars, acc._id)
+    const socialStrings = await getSocialStrings(control, part as Ref<Person>)
+    if (socialStrings.length === 0) continue
+    if (socialStrings.includes(event.createdBy ?? event.modifiedBy)) continue
+    const primarySocialString = pickPrimarySocialId(socialStrings)
+    const calendar = getCalendar(calendars, socialStrings)
     if (calendar === undefined) continue
     const innerTx = control.txFactory.createTxCreateDoc(
       _class,
@@ -245,7 +278,7 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
       { ...data, calendar, access },
       undefined,
       undefined,
-      acc._id
+      primarySocialString
     )
     const outerTx = control.txFactory.createTxCollectionCUD(
       attachedToClass,
@@ -254,7 +287,7 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
       collection,
       innerTx,
       undefined,
-      acc._id
+      primarySocialString
     )
     res.push(outerTx)
   }
@@ -282,7 +315,8 @@ export default async () => ({
     FindReminders
   },
   trigger: {
-    OnPersonAccountCreate,
+    OnSocialIdentityCreate,
+    OnEmployee,
     OnEvent
   }
 })

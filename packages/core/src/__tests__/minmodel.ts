@@ -135,14 +135,14 @@ export function genMinModel (): TxCUD<Doc>[] {
       domain: DOMAIN_MODEL
     })
   )
-  txes.push(
-    createClass(core.class.Account, {
-      label: 'Account' as IntlString,
-      extends: core.class.Doc,
-      kind: ClassifierKind.CLASS,
-      domain: DOMAIN_MODEL
-    })
-  )
+  // txes.push(
+  //   createClass(core.class.Account, {
+  //     label: 'Account' as IntlString,
+  //     extends: core.class.Doc,
+  //     kind: ClassifierKind.CLASS,
+  //     domain: DOMAIN_MODEL
+  //   })
+  // )
 
   txes.push(
     createInterface(test.interface.WithState, {

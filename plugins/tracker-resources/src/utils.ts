@@ -14,7 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { type Contact } from '@hcengineering/contact'
+import { type Person } from '@hcengineering/contact'
 import core, {
   SortingOrder,
   toIdMap,
@@ -339,7 +339,7 @@ export function subIssueListProvider (subIssues: Issue[], target: Ref<Issue>): v
   }
 }
 
-export async function getPreviousAssignees (objectId: Ref<Issue> | undefined): Promise<Array<Ref<Contact>>> {
+export async function getPreviousAssignees (objectId: Ref<Issue> | undefined): Promise<Array<Ref<Person>>> {
   if (objectId === undefined) {
     return []
   }
@@ -354,7 +354,7 @@ export async function getPreviousAssignees (objectId: Ref<Issue> | undefined): P
     { objectId, 'operations.assignee': { $exists: true } },
     { sort: { modifiedOn: -1 } }
   )
-  const set = new Set<Ref<Contact>>()
+  const set = new Set<Ref<Person>>()
   const createAssignee = createTx?.attributes?.assignee
   for (const tx of updateTxes) {
     const assignee = tx.operations.assignee

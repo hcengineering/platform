@@ -18,7 +18,8 @@ import core, {
   Data,
   MeasureContext,
   Ref,
-  systemAccountEmail,
+  WorkspaceUuid,
+  systemAccountUuid,
   TxOperations,
   type Blob
 } from '@hcengineering/core'
@@ -46,7 +47,7 @@ export class WorkspaceClient {
   }
 
   private async initClient (workspace: string): Promise<Client> {
-    const token = generateToken(systemAccountEmail, { name: workspace })
+    const token = generateToken(systemAccountUuid, workspace, { service: 'love' })
     const client = await getClient(token)
     this.client = new TxOperations(client, core.account.System)
     return this.client

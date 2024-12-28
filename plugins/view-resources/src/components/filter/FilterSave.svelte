@@ -11,7 +11,6 @@
   export let viewOptions: ViewOptions | undefined = undefined
   export let _class: Ref<Class<Doc>>
 
-  const me = getCurrentAccount()._id
   let sharable = true
 
   let filterName = ''
@@ -30,7 +29,7 @@
       viewOptions,
       viewletId: getActiveViewletId(),
       sharable,
-      users: [me]
+      users: [getCurrentAccount().primarySocialId]
     })
   }
 

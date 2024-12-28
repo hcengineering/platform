@@ -7,7 +7,7 @@ import type {
   Hierarchy,
   MeasureContext,
   ModelDb,
-  WorkspaceId
+  WorkspaceUuid
 } from '@hcengineering/core'
 import core, { DOMAIN_BENCHMARK, DOMAIN_MODEL, IndexKind, IndexOrder } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
@@ -20,7 +20,7 @@ export class DomainIndexHelperImpl implements DomainHelper {
     readonly ctx: MeasureContext,
     readonly hierarchy: Hierarchy,
     readonly model: ModelDb,
-    readonly workspaceId: WorkspaceId
+    readonly workspaceId: WorkspaceUuid
   ) {
     const classes = model.findAllSync(core.class.Class, {})
 

@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { deepEqual } from 'fast-equals'
-  import { AccountArrayEditor } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import core, {
-    Account,
+    PersonId,
     Data,
     DocumentUpdate,
     RolesAssignment,
@@ -63,13 +63,14 @@
   let icon: Asset | undefined = teamspace?.icon ?? undefined
   let color = teamspace?.color ?? getColorNumberByText(name)
   let isColorSelected = false
-  let members: Ref<Account>[] =
-    teamspace?.members !== undefined ? hierarchy.clone(teamspace.members) : [getCurrentAccount()._id]
-  let owners: Ref<Account>[] =
-    teamspace?.owners !== undefined ? hierarchy.clone(teamspace.owners) : [getCurrentAccount()._id]
+  let members: PersonId[] =
+    teamspace?.members !== undefined ? hierarchy.clone(teamspace.members) : [getCurrentAccount().primarySocialId]
+  let owners: PersonId[] =
+    teamspace?.owners !== undefined ? hierarchy.clone(teamspace.owners) : [getCurrentAccount().primarySocialId]
   let rolesAssignment: RolesAssignment = {}
 
   $: isNew = teamspace === undefined
+  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter((p) => p !== undefined)
 
   let typeId: Ref<SpaceType> | undefined = teamspace?.type ?? document.spaceType.DefaultTeamspaceType
   let spaceType: WithLookup<SpaceType> | undefined
@@ -234,14 +235,14 @@
 
   $: roles = (spaceType?.$lookup?.roles ?? []) as Role[]
 
-  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
+  function handleOwnersChanged (newOwners: PersonId[]): void {
     owners = newOwners
 
     const newMembersSet = new Set([...members, ...newOwners])
     members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged (newMembers: Ref<Account>[]): void {
+  function handleMembersChanged (newMembers: PersonId[]): void {
     membersChanged = true
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
@@ -256,7 +257,7 @@
     members = newMembers
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: PersonId[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }
@@ -421,8 +422,8 @@
         <AccountArrayEditor
           value={rolesAssignment?.[role._id] ?? []}
           label={documentRes.string.TeamspaceMembers}
-          includeItems={members}
-          readonly={members.length === 0}
+          includeItems={membersPersons}
+          readonly={membersPersons.length === 0}
           onChange={(refs) => {
             handleRoleAssignmentChanged(role._id, refs)
           }}

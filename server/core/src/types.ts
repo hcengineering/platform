@@ -15,6 +15,7 @@
 
 import {
   type Account,
+  type PersonId,
   type Branding,
   type Class,
   type Doc,
@@ -38,8 +39,8 @@ import {
   type Tx,
   type TxFactory,
   type TxResult,
-  type WorkspaceId,
-  type WorkspaceIdWithUrl
+  type WorkspaceUuid,
+  type WorkspaceIds
 } from '@hcengineering/core'
 import type { Asset, Resource } from '@hcengineering/platform'
 import type { LiveQuery } from '@hcengineering/query'
@@ -161,7 +162,7 @@ export interface DBAdapterManager {
 }
 
 export interface PipelineContext {
-  workspace: WorkspaceIdWithUrl
+  workspace: WorkspaceIds
 
   lastTx?: string
 
@@ -218,7 +219,7 @@ export interface Pipeline {
  */
 export type PipelineFactory = (
   ctx: MeasureContext,
-  ws: WorkspaceIdWithUrl,
+  ws: WorkspaceIds,
   upgrade: boolean,
   broadcast: BroadcastFunc,
   branding: Branding | null
@@ -229,7 +230,7 @@ export type PipelineFactory = (
  */
 export interface TriggerControl {
   ctx: MeasureContext<SessionData>
-  workspace: WorkspaceIdWithUrl
+  workspace: WorkspaceIds
   branding: Branding | null
   txFactory: TxFactory
   findAll: <T extends Doc>(
@@ -306,7 +307,7 @@ export interface IndexedDoc {
   _class: Ref<Class<Doc>>[]
   space: Ref<Space>
   modifiedOn: Timestamp
-  modifiedBy: Ref<Account>
+  modifiedBy: PersonId
   attachedTo?: Ref<Doc>
   attachedToClass?: Ref<Class<Doc>>
   searchTitle?: string
@@ -330,23 +331,23 @@ export interface SearchStringResult {
  * @public
  */
 export interface FullTextAdapter {
-  index: (ctx: MeasureContext, workspace: WorkspaceId, doc: IndexedDoc) => Promise<TxResult>
-  update: (ctx: MeasureContext, workspace: WorkspaceId, id: Ref<Doc>, update: Record<string, any>) => Promise<TxResult>
-  remove: (ctx: MeasureContext, workspace: WorkspaceId, id: Ref<Doc>[]) => Promise<void>
+  index: (ctx: MeasureContext, workspace: WorkspaceUuid, doc: IndexedDoc) => Promise<TxResult>
+  update: (ctx: MeasureContext, workspace: WorkspaceUuid, id: Ref<Doc>, update: Record<string, any>) => Promise<TxResult>
+  remove: (ctx: MeasureContext, workspace: WorkspaceUuid, id: Ref<Doc>[]) => Promise<void>
 
-  clean: (ctx: MeasureContext, workspace: WorkspaceId) => Promise<void>
-  updateMany: (ctx: MeasureContext, workspace: WorkspaceId, docs: IndexedDoc[]) => Promise<TxResult[]>
-  load: (ctx: MeasureContext, workspace: WorkspaceId, docs: Ref<Doc>[]) => Promise<IndexedDoc[]>
+  clean: (ctx: MeasureContext, workspace: WorkspaceUuid) => Promise<void>
+  updateMany: (ctx: MeasureContext, workspace: WorkspaceUuid, docs: IndexedDoc[]) => Promise<TxResult[]>
+  load: (ctx: MeasureContext, workspace: WorkspaceUuid, docs: Ref<Doc>[]) => Promise<IndexedDoc[]>
   searchString: (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     query: SearchQuery,
     options: SearchOptions & { scoring?: SearchScoring[] }
   ) => Promise<SearchStringResult>
 
   search: (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     _classes: Ref<Class<Doc>>[],
     search: DocumentQuery<Doc>,
     size: number | undefined,
@@ -368,7 +369,7 @@ export type FullTextAdapterFactory = (url: string) => Promise<FullTextAdapter>
  * @public
  */
 export interface ContentTextAdapter {
-  content: (ctx: MeasureContext, workspace: WorkspaceId, name: string, type: string, doc: Readable) => Promise<string>
+  content: (ctx: MeasureContext, workspace: WorkspaceUuid, name: string, type: string, doc: Readable) => Promise<string>
 }
 
 /**
@@ -505,7 +506,7 @@ export interface ClientSessionCtx {
   ctx: MeasureContext
 
   pipeline: Pipeline
-
+  socialStringsToUsers: Map<PersonId, string>
   requestId: ReqId | undefined
   sendResponse: (id: ReqId | undefined, msg: any) => Promise<void>
   sendPong: () => void
@@ -624,9 +625,10 @@ export interface Workspace {
   softShutdown: number
   workspaceInitCompleted: boolean
 
-  workspaceId: WorkspaceIdWithUrl
   workspaceName: string
-  workspaceUuid?: string
+  workspaceUuid: WorkspaceUuid
+  workspaceUrl: string
+  workspaceDataId?: string
   branding: Branding | null
 }
 
@@ -640,14 +642,20 @@ export type AddSessionResponse =
   | { upgrade: true }
   | { error: any, terminate?: boolean, archived?: boolean }
 
+export type SessionFactory = (
+  token: Token,
+  workspace: Workspace,
+  account: Account
+) => Session
+
 /**
  * @public
  */
 export interface SessionManager {
-  workspaces: Map<string, Workspace>
+  workspaces: Map<WorkspaceUuid, Workspace>
   sessions: Map<string, { session: Session, socket: ConnectionSocket }>
 
-  createSession: (token: Token, workspace: Workspace) => Session
+  createSession: SessionFactory
 
   addSession: (
     ctx: MeasureContext,
@@ -660,7 +668,7 @@ export interface SessionManager {
 
   broadcastAll: (workspace: Workspace, tx: Tx[], targets?: string[]) => void
 
-  close: (ctx: MeasureContext, ws: ConnectionSocket, workspaceId: string) => Promise<void>
+  close: (ctx: MeasureContext, ws: ConnectionSocket, workspaceId: WorkspaceUuid) => Promise<void>
 
   closeAll: (
     wsId: string,
@@ -686,7 +694,7 @@ export interface SessionManager {
     service: S,
     ws: ConnectionSocket,
     request: Request<any>,
-    workspace: string // wsId, toWorkspaceString()
+    workspace: string // wsId
   ) => Promise<void>
 }
 

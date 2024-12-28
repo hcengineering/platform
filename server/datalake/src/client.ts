@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type MeasureContext, type WorkspaceId, concatLink } from '@hcengineering/core'
+import { type MeasureContext, type WorkspaceUuid, concatLink } from '@hcengineering/core'
 import FormData from 'form-data'
 import fetch, { type RequestInfo, type RequestInit, type Response } from 'node-fetch'
 import { Readable } from 'stream'
@@ -89,8 +89,8 @@ export class DatalakeClient {
     this.headers = { Authorization: 'Bearer ' + token }
   }
 
-  getObjectUrl (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): string {
-    const path = `/blob/${workspace.name}/${encodeURIComponent(objectName)}`
+  getObjectUrl (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): string {
+    const path = `/blob/${workspace}/${encodeURIComponent(objectName)}`
     return concatLink(this.endpoint, path)
   }
 
@@ -100,7 +100,7 @@ export class DatalakeClient {
     cursor: string | undefined,
     limit: number = 100
   ): Promise<ListObjectOutput> {
-    const path = `/blob/${workspace.name}`
+    const path = `/blob/${workspace}`
     const url = new URL(concatLink(this.endpoint, path))
     url.searchParams.append('limit', String(limit))
     if (cursor !== undefined) {
@@ -253,7 +253,7 @@ export class DatalakeClient {
     stream: Readable | Buffer | string,
     params: UploadObjectParams
   ): Promise<ObjectMetadata> {
-    const path = `/upload/form-data/${workspace.name}`
+    const path = `/upload/form-data/${workspace}`
     const url = concatLink(this.endpoint, path)
 
     const form = new FormData()
@@ -356,7 +356,7 @@ export class DatalakeClient {
       secretAccessKey: string
     }
   ): Promise<void> {
-    const path = `/upload/s3/${workspace.name}/${encodeURIComponent(objectName)}`
+    const path = `/upload/s3/${workspace}/${encodeURIComponent(objectName)}`
     const url = concatLink(this.endpoint, path)
 
     await fetchSafe(ctx, url, {
@@ -388,7 +388,7 @@ export class DatalakeClient {
       filename: string
     }
   ): Promise<void> {
-    const path = `/upload/r2/${workspace.name}/${encodeURIComponent(objectName)}`
+    const path = `/upload/r2/${workspace}/${encodeURIComponent(objectName)}`
     const url = concatLink(this.endpoint, path)
 
     await fetchSafe(ctx, url, {
@@ -439,8 +439,8 @@ export class DatalakeClient {
     }
   }
 
-  private getSignObjectUrl (workspace: WorkspaceId, objectName: string): string {
-    const path = `/upload/signed-url/${workspace.name}/${encodeURIComponent(objectName)}`
+  private getSignObjectUrl (workspace: WorkspaceUuid, objectName: string): string {
+    const path = `/upload/signed-url/${workspace}/${encodeURIComponent(objectName)}`
     return concatLink(this.endpoint, path)
   }
 
@@ -452,7 +452,7 @@ export class DatalakeClient {
     objectName: string,
     params: UploadObjectParams
   ): Promise<MultipartUpload> {
-    const path = `/upload/multipart/${workspace.name}/${encodeURIComponent(objectName)}`
+    const path = `/upload/multipart/${workspace}/${encodeURIComponent(objectName)}`
     const url = concatLink(this.endpoint, path)
 
     try {
@@ -478,7 +478,7 @@ export class DatalakeClient {
     partNumber: number,
     body: Readable | Buffer | string
   ): Promise<MultipartUploadPart> {
-    const path = `/upload/multipart/${workspace.name}/${encodeURIComponent(objectName)}/part`
+    const path = `/upload/multipart/${workspace}/${encodeURIComponent(objectName)}/part`
     const url = new URL(concatLink(this.endpoint, path))
     url.searchParams.append('key', multipart.key)
     url.searchParams.append('uploadId', multipart.uploadId)
@@ -504,7 +504,7 @@ export class DatalakeClient {
     multipart: MultipartUpload,
     parts: MultipartUploadPart[]
   ): Promise<ObjectMetadata> {
-    const path = `/upload/multipart/${workspace.name}/${encodeURIComponent(objectName)}/complete`
+    const path = `/upload/multipart/${workspace}/${encodeURIComponent(objectName)}/complete`
     const url = new URL(concatLink(this.endpoint, path))
     url.searchParams.append('key', multipart.key)
     url.searchParams.append('uploadId', multipart.uploadId)
@@ -528,7 +528,7 @@ export class DatalakeClient {
     objectName: string,
     multipart: MultipartUpload
   ): Promise<void> {
-    const path = `/upload/multipart/${workspace.name}/${encodeURIComponent(objectName)}/abort`
+    const path = `/upload/multipart/${workspace}/${encodeURIComponent(objectName)}/abort`
     const url = new URL(concatLink(this.endpoint, path))
     url.searchParams.append('key', multipart.key)
     url.searchParams.append('uploadId', multipart.uploadId)

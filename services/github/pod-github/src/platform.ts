@@ -5,7 +5,7 @@
 
 import chunter from '@hcengineering/chunter'
 import core, {
-  Account,
+  PersonId,
   BrandingMap,
   Client,
   ClientConnectEvent,
@@ -13,28 +13,28 @@ import core, {
   isActiveMode,
   MeasureContext,
   RateLimiter,
-  Ref,
-  systemAccountEmail,
   TimeRateLimiter,
-  TxOperations
+  TxOperations,
+  systemAccountUuid,
+  WorkspaceUuid,
+  WorkspaceInfoWithStatus
 } from '@hcengineering/core'
 import github, { GithubAuthentication, makeQuery, type GithubIntegration } from '@hcengineering/github'
 import { getMongoClient, MongoClientReference } from '@hcengineering/mongo'
 import { setMetadata } from '@hcengineering/platform'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { generateToken } from '@hcengineering/server-token'
+import { getClient as getAccountClient } from '@hcengineering/account-client'
 import tracker from '@hcengineering/tracker'
 import { Installation, type InstallationCreatedEvent, type InstallationUnsuspendEvent } from '@octokit/webhooks-types'
 import { Collection } from 'mongodb'
 import { App, Octokit } from 'octokit'
 
-import { ClientWorkspaceInfo } from '@hcengineering/account'
 import { Analytics } from '@hcengineering/analytics'
 import { SplitLogger } from '@hcengineering/analytics-service'
-import contact, { Person, PersonAccount } from '@hcengineering/contact'
+import contact, { Person } from '@hcengineering/contact'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import { join } from 'path'
-import { getWorkspaceInfo } from './account'
 import { createPlatformClient } from './client'
 import config from './config'
 import { registerLoaders } from './loaders'
@@ -219,7 +219,7 @@ export class PlatformWorker {
     ctx: MeasureContext,
     workspace: string,
     installationId: number,
-    accountId: Ref<Account>
+    accountId: PersonId
   ): Promise<void> {
     const oldInstallation = this.integrations.find((it) => it.installationId === installationId)
     if (oldInstallation != null) {
@@ -315,7 +315,7 @@ export class PlatformWorker {
     workspace: string
     code: string
     state: string
-    accountId: Ref<Account>
+    accountId: PersonId
   }): Promise<void> {
     try {
       const uri =
@@ -387,148 +387,150 @@ export class PlatformWorker {
   }
 
   private async updateAccountAuthRecord (
-    payload: { workspace: string, accountId: Ref<Account> },
+    payload: { workspace: string, accountId: PersonId },
     update: DocumentUpdate<GithubAuthentication>,
     dta: GithubUserRecord | undefined,
     revoke: boolean
   ): Promise<void> {
-    try {
-      let platformClient: Client | undefined
-      let shouldClose = false
-      try {
-        platformClient = this.clients.get(payload.workspace)?.client
-        if (platformClient === undefined) {
-          shouldClose = true
-          ;({ client: platformClient } = await createPlatformClient(payload.workspace, 30000))
-        }
-        const client = new TxOperations(platformClient, payload.accountId)
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // try {
+    //   let platformClient: Client | undefined
+    //   let shouldClose = false
+    //   try {
+    //     platformClient = this.clients.get(payload.workspace)?.client
+    //     if (platformClient === undefined) {
+    //       shouldClose = true
+    //       ;({ client: platformClient } = await createPlatformClient(payload.workspace, 30000))
+    //     }
+    //     const client = new TxOperations(platformClient, payload.accountId)
 
-        let personAuths = await client.findAll(github.class.GithubAuthentication, {
-          attachedTo: payload.accountId
-        })
-        if (personAuths.length > 1) {
-          for (const auth of personAuths.slice(1)) {
-            await client.remove(auth)
-          }
-          personAuths.length = 1
-        }
+    //     let personAuths = await client.findAll(github.class.GithubAuthentication, {
+    //       attachedTo: payload.accountId
+    //     })
+    //     if (personAuths.length > 1) {
+    //       for (const auth of personAuths.slice(1)) {
+    //         await client.remove(auth)
+    //       }
+    //       personAuths.length = 1
+    //     }
 
-        if (revoke) {
-          for (const personAuth of personAuths) {
-            await client.remove(personAuth, Date.now(), payload.accountId)
-          }
-        } else {
-          if (personAuths.length > 0) {
-            await client.update<GithubAuthentication>(personAuths[0], update, false, Date.now(), payload.accountId)
-          } else if (dta !== undefined) {
-            const authId = await client.createDoc<GithubAuthentication>(
-              github.class.GithubAuthentication,
-              core.space.Workspace,
-              {
-                error: null,
-                authRequestTime: Date.now(),
-                createdAt: new Date(),
-                followers: 0,
-                following: 0,
-                nodeId: '',
-                updatedAt: new Date(),
-                url: '',
-                repositories: 0,
-                organizations: { totalCount: 0, nodes: [] },
-                closedIssues: 0,
-                openIssues: 0,
-                mergedPRs: 0,
-                openPRs: 0,
-                closedPRs: 0,
-                repositoryDiscussions: 0,
-                starredRepositories: 0,
-                ...update,
-                attachedTo: payload.accountId,
-                login: dta._id
-              },
-              undefined,
-              undefined,
-              payload.accountId
-            )
+    //     if (revoke) {
+    //       for (const personAuth of personAuths) {
+    //         await client.remove(personAuth, Date.now(), payload.accountId)
+    //       }
+    //     } else {
+    //       if (personAuths.length > 0) {
+    //         await client.update<GithubAuthentication>(personAuths[0], update, false, Date.now(), payload.accountId)
+    //       } else if (dta !== undefined) {
+    //         const authId = await client.createDoc<GithubAuthentication>(
+    //           github.class.GithubAuthentication,
+    //           core.space.Workspace,
+    //           {
+    //             error: null,
+    //             authRequestTime: Date.now(),
+    //             createdAt: new Date(),
+    //             followers: 0,
+    //             following: 0,
+    //             nodeId: '',
+    //             updatedAt: new Date(),
+    //             url: '',
+    //             repositories: 0,
+    //             organizations: { totalCount: 0, nodes: [] },
+    //             closedIssues: 0,
+    //             openIssues: 0,
+    //             mergedPRs: 0,
+    //             openPRs: 0,
+    //             closedPRs: 0,
+    //             repositoryDiscussions: 0,
+    //             starredRepositories: 0,
+    //             ...update,
+    //             attachedTo: payload.accountId,
+    //             login: dta._id
+    //           },
+    //           undefined,
+    //           undefined,
+    //           payload.accountId
+    //         )
 
-            personAuths = await client.findAll(github.class.GithubAuthentication, {
-              _id: authId
-            })
-          }
-        }
+    //         personAuths = await client.findAll(github.class.GithubAuthentication, {
+    //           _id: authId
+    //         })
+    //       }
+    //     }
 
-        // We need to re-bind previously created github:login account to a proper person.
-        const account = client.getModel().getObject(payload.accountId) as PersonAccount
-        const person = (await client.findOne(contact.class.Person, { _id: account.person })) as Person
-        if (person !== undefined) {
-          if (!revoke) {
-            const personSpace = await client.findOne(contact.class.PersonSpace, { person: person._id })
-            if (personSpace !== undefined) {
-              await createNotification(client, person, {
-                user: account._id,
-                space: personSpace._id,
-                message: github.string.AuthenticatedWithGithub,
-                props: {
-                  login: update.login
-                }
-              })
-            }
+    //     // We need to re-bind previously created github:login account to a proper person.
+    //     const account = client.getModel().getObject(payload.accountId) as PersonAccount
+    //     const person = (await client.findOne(contact.class.Person, { _id: account.person })) as Person
+    //     if (person !== undefined) {
+    //       if (!revoke) {
+    //         const personSpace = await client.findOne(contact.class.PersonSpace, { person: person._id })
+    //         if (personSpace !== undefined) {
+    //           await createNotification(client, person, {
+    //             user: account._id,
+    //             space: personSpace._id,
+    //             message: github.string.AuthenticatedWithGithub,
+    //             props: {
+    //               login: update.login
+    //             }
+    //           })
+    //         }
 
-            const githubAccount = client.getModel().getAccountByEmail('github:' + update.login) as PersonAccount
-            if (githubAccount !== undefined && githubAccount.person !== account.person) {
-              const dummyPerson = githubAccount.person
-              // To add activity entry to dummy person.
-              await client.update(githubAccount, { person: account.person }, false, Date.now(), payload.accountId)
+    //         const githubAccount = client.getModel().getAccountByEmail('github:' + update.login) as PersonAccount
+    //         if (githubAccount !== undefined && githubAccount.person !== account.person) {
+    //           const dummyPerson = githubAccount.person
+    //           // To add activity entry to dummy person.
+    //           await client.update(githubAccount, { person: account.person }, false, Date.now(), payload.accountId)
 
-              const dPerson = (await client.findOne(contact.class.Person, { _id: dummyPerson })) as Person
-              if (person !== undefined && dPerson !== undefined) {
-                const personSpace = await client.findOne(contact.class.PersonSpace, { person: person._id })
-                if (personSpace !== undefined) {
-                  await createNotification(client, dPerson, {
-                    user: githubAccount._id,
-                    space: personSpace._id,
-                    message: github.string.AuthenticatedWithGithubEmployee,
-                    props: {
-                      login: update.login
-                    }
-                  })
-                }
-              }
-            }
-          } else {
-            const personSpace = await client.findOne(contact.class.PersonSpace, { person: person._id })
-            if (personSpace !== undefined) {
-              await createNotification(client, person, {
-                user: account._id,
-                space: personSpace._id,
-                message: github.string.AuthenticationRevokedGithub,
-                props: {
-                  login: update.login
-                }
-              })
-            }
-          }
-        }
+    //           const dPerson = (await client.findOne(contact.class.Person, { _id: dummyPerson })) as Person
+    //           if (person !== undefined && dPerson !== undefined) {
+    //             const personSpace = await client.findOne(contact.class.PersonSpace, { person: person._id })
+    //             if (personSpace !== undefined) {
+    //               await createNotification(client, dPerson, {
+    //                 user: githubAccount._id,
+    //                 space: personSpace._id,
+    //                 message: github.string.AuthenticatedWithGithubEmployee,
+    //                 props: {
+    //                   login: update.login
+    //                 }
+    //               })
+    //             }
+    //           }
+    //         }
+    //       } else {
+    //         const personSpace = await client.findOne(contact.class.PersonSpace, { person: person._id })
+    //         if (personSpace !== undefined) {
+    //           await createNotification(client, person, {
+    //             user: account._id,
+    //             space: personSpace._id,
+    //             message: github.string.AuthenticationRevokedGithub,
+    //             props: {
+    //               login: update.login
+    //             }
+    //           })
+    //         }
+    //       }
+    //     }
 
-        if (dta !== undefined && personAuths.length === 1) {
-          try {
-            await syncUser(this.ctx, dta, personAuths[0], client, payload.accountId)
-          } catch (err: any) {
-            if (err.response?.data?.message === 'Bad credentials') {
-              await this.revokeUserAuth(dta)
-            } else {
-              this.ctx.error(`Failed to sync user ${dta._id}`, { error: errorToObj(err) })
-            }
-          }
-        }
-      } finally {
-        if (shouldClose) {
-          await platformClient?.close()
-        }
-      }
-    } catch (err: any) {
-      Analytics.handleError(err)
-    }
+    //     if (dta !== undefined && personAuths.length === 1) {
+    //       try {
+    //         await syncUser(this.ctx, dta, personAuths[0], client, payload.accountId)
+    //       } catch (err: any) {
+    //         if (err.response?.data?.message === 'Bad credentials') {
+    //           await this.revokeUserAuth(dta)
+    //         } else {
+    //           this.ctx.error(`Failed to sync user ${dta._id}`, { error: errorToObj(err) })
+    //         }
+    //       }
+    //     }
+    //   } finally {
+    //     if (shouldClose) {
+    //       await platformClient?.close()
+    //     }
+    //   }
+    // } catch (err: any) {
+    //   Analytics.handleError(err)
+    // }
   }
 
   async checkRefreshToken (auth: GithubUserRecord, force: boolean = false): Promise<void> {
@@ -581,7 +583,7 @@ export class PlatformWorker {
     return await this.userManager.getAccount(login)
   }
 
-  async getAccountByRef (workspace: string, ref: Ref<Account>): Promise<GithubUserRecord | undefined> {
+  async getAccountByRef (workspace: string, ref: PersonId): Promise<GithubUserRecord | undefined> {
     return await this.userManager.getAccountByRef(workspace, ref)
   }
 
@@ -665,7 +667,7 @@ export class PlatformWorker {
         integeration.enabled = enabled
       }
 
-      await worker.syncUserData(this.ctx, await this.getUsers(worker.workspace.name))
+      await worker.syncUserData(this.ctx, await this.getUsers(worker.workspace.uuid))
       await worker.reloadRepositories(install.id)
 
       worker.triggerUpdate()
@@ -706,21 +708,21 @@ export class PlatformWorker {
     this.triggerCheckWorkspaces()
   }
 
-  async getWorkspaces (): Promise<string[]> {
+  async getWorkspaces (): Promise<WorkspaceUuid[]> {
     const workspaces = new Set(this.integrations.map((it) => it.workspace))
 
     return Array.from(workspaces)
   }
 
-  async checkWorkspaceIsActive (token: string, workspace: string): Promise<ClientWorkspaceInfo | undefined> {
-    let workspaceInfo: ClientWorkspaceInfo | undefined
+  async checkWorkspaceIsActive (token: string, workspace: string): Promise<WorkspaceInfoWithStatus | undefined> {
+    let workspaceInfo: WorkspaceInfoWithStatus | undefined
     try {
-      workspaceInfo = await getWorkspaceInfo(token)
+      workspaceInfo = await getAccountClient(token).getWorkspaceInfo(true)
     } catch (err: any) {
       this.ctx.error('Workspace not found:', { workspace })
       return
     }
-    if (workspaceInfo?.workspace === undefined) {
+    if (workspaceInfo?.uuid === undefined) {
       this.ctx.error('No workspace exists for workspaceId', { workspace })
       return
     }
@@ -728,16 +730,18 @@ export class PlatformWorker {
       this.ctx.warn('Workspace is in maitenance, skipping for now.', { workspace })
       return
     }
-    if (workspaceInfo?.disabled === true) {
+    if (workspaceInfo?.isDisabled === true) {
       this.ctx.warn('Workspace is disabled', { workspace })
       return
     }
-    const lastVisit = (Date.now() - workspaceInfo.lastVisit) / (3600 * 24 * 1000) // In days
+
+    const lastVisit = (Date.now() - (workspaceInfo.lastVisit ?? 0)) / (3600 * 24 * 1000) // In days
 
     if (config.WorkspaceInactivityInterval > 0 && lastVisit > config.WorkspaceInactivityInterval) {
       this.ctx.warn('Workspace is inactive for too long, skipping for now.', { workspace })
       return
     }
+
     return workspaceInfo
   }
 
@@ -775,11 +779,9 @@ export class PlatformWorker {
       }
       await rateLimiter.add(async () => {
         const token = generateToken(
-          systemAccountEmail,
-          {
-            name: workspace
-          },
-          { mode: 'github' }
+          systemAccountUuid,
+          workspace,
+          { service: 'github', mode: 'github' }
         )
         const workspaceInfo = await this.checkWorkspaceIsActive(token, workspace)
         if (workspaceInfo === undefined) {
@@ -788,12 +790,12 @@ export class PlatformWorker {
         }
         try {
           const branding = Object.values(this.brandingMap).find((b) => b.key === workspaceInfo?.branding) ?? null
-          const workerCtx = this.ctx.newChild('worker', { workspace: workspaceInfo.workspace }, {})
+          const workerCtx = this.ctx.newChild('worker', { workspace: workspaceInfo.uuid }, {})
 
-          connecting.set(workspaceInfo.workspace, Date.now())
+          connecting.set(workspaceInfo.uuid, Date.now())
           workerCtx.info('************************* Register worker ************************* ', {
-            workspaceId: workspaceInfo.workspaceId,
-            workspace: workspaceInfo.workspace,
+            workspaceId: workspaceInfo.uuid,
+            workspaceUrl: workspaceInfo.url,
             index: widx,
             total: workspaces.length
           })
@@ -804,9 +806,9 @@ export class PlatformWorker {
             workerCtx,
             this.installations,
             {
-              name: workspace,
-              workspaceUrl: workspaceInfo.workspace,
-              workspaceName: workspace
+              dataId: workspaceInfo.dataId,
+              url: workspaceInfo.url,
+              uuid: workspaceInfo.uuid
             },
             branding,
             this.app,
@@ -841,8 +843,8 @@ export class PlatformWorker {
           if (worker !== undefined) {
             initialized = true
             workerCtx.info('************************* Register worker Done ************************* ', {
-              workspaceId: workspaceInfo.workspaceId,
-              workspace: workspaceInfo.workspace,
+              workspaceId: workspaceInfo.uuid,
+              workspaceUrl: workspaceInfo.url,
               index: widx,
               total: workspaces.length
             })
@@ -852,8 +854,8 @@ export class PlatformWorker {
             workerCtx.info(
               '************************* Failed Register worker, timeout or integrations removed *************************',
               {
-                workspaceId: workspaceInfo.workspaceId,
-                workspace: workspaceInfo.workspace,
+                workspaceId: workspaceInfo.uuid,
+                workspaceUrl: workspaceInfo.url,
                 index: widx,
                 total: workspaces.length
               }
@@ -866,7 +868,7 @@ export class PlatformWorker {
           console.error(e)
           errors++
         } finally {
-          connecting.delete(workspaceInfo.workspace)
+          connecting.delete(workspaceInfo.uuid)
         }
       })
     }
@@ -1091,7 +1093,7 @@ export class PlatformWorker {
         payload.installation.html_url
       )
       const doSyncUsers = async (worker: GithubWorker): Promise<void> => {
-        const users = await this.getUsers(worker.workspace.name)
+        const users = await this.getUsers(worker.workspace.uuid)
         await worker.syncUserData(this.ctx, users)
       }
       catchEventError(doSyncUsers(worker), payload.action, name, id, payload.installation.html_url)

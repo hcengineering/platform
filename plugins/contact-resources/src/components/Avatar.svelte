@@ -31,7 +31,7 @@
 </script>
 
 <script lang="ts">
-  import { Employee, getAvatarProviderId, getFirstName, getLastName, Person } from '@hcengineering/contact'
+  import { getAvatarProviderId, getFirstName, getLastName, Person } from '@hcengineering/contact'
   import { Asset, getMetadata, getResource } from '@hcengineering/platform'
   import { getBlobURL, reduceCalls } from '@hcengineering/presentation'
   import {
@@ -45,10 +45,10 @@
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
 
-  import { loadUsersStatus, employeeByIdStore, personAccountByPersonId, statusByUserStore } from '../utils'
+  import { loadUsersStatus, statusByUserStore } from '../utils'
   import AvatarInstance from './AvatarInstance.svelte'
 
-  export let person: (Data<WithLookup<AvatarInfo>> & { _id?: Ref<Person> }) | undefined = undefined
+  export let person: (Data<WithLookup<AvatarInfo>> & { _id?: Ref<Person>, personUuid?: string }) | undefined = undefined
   export let name: string | null | undefined = undefined
   export let direct: Blob | undefined = undefined
   export let size: IconSize
@@ -125,14 +125,10 @@
     loadUsersStatus()
   })
 
-  let employee: Employee | undefined = undefined
-
-  $: employee = person?._id && showStatus ? $employeeByIdStore.get(person._id as Ref<Employee>) : undefined
-  $: accounts = employee?.active ? $personAccountByPersonId.get(employee._id) ?? [] : []
-  $: isOnline = accounts.some((account) => $statusByUserStore.get(account._id)?.online === true)
+  $: isOnline = person !== undefined && $statusByUserStore.get(person.personUuid)?.online === true
 </script>
 
-{#if showStatus && accounts.length > 0}
+{#if showStatus && person}
   <div class="relative">
     <AvatarInstance
       bind:this={avatarInst}

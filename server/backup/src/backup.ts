@@ -31,11 +31,10 @@ import core, {
   RateLimiter,
   Ref,
   SortingOrder,
-  systemAccountEmail,
   toIdMap,
-  toWorkspaceString,
   TxProcessor,
-  WorkspaceId,
+  systemAccountUuid,
+  WorkspaceUuid,
   type BackupStatus,
   type Blob,
   type DocIndexState,
@@ -130,7 +129,7 @@ export interface BackupSnapshot {
  * @public
  */
 export interface BackupInfo {
-  workspace: string
+  workspace: WorkspaceUuid
   version: string
   snapshots: BackupSnapshot[]
   snapshotsIndex?: number
@@ -426,8 +425,8 @@ async function writeChanges (storage: BackupStorage, snapshot: string, changes: 
 export async function cloneWorkspace (
   ctx: MeasureContext,
   transactorUrl: string,
-  sourceWorkspaceId: WorkspaceId,
-  targetWorkspaceId: WorkspaceId,
+  sourceWorkspaceId: WorkspaceUuid,
+  targetWorkspaceId: WorkspaceUuid,
   clearTime: boolean = true,
   progress: (value: number) => Promise<void>,
   storageAdapter: StorageAdapter
@@ -462,7 +461,7 @@ export async function cloneWorkspace (
 
         let i = 0
         for (const c of domains) {
-          ctx.info('clone domain...', { domain: c, workspace: targetWorkspaceId.name })
+          ctx.info('clone domain...', { domain: c, workspace: targetWorkspaceId })
 
           // We need to clean target connection before copying something.
           await ctx.with('clean-domain', { domain: c }, (ctx) => cleanDomain(ctx, targetConnection, c))
@@ -493,7 +492,7 @@ export async function cloneWorkspace (
                 for (const { id, hash } of it.docs) {
                   processed++
                   if (Date.now() - st > 2500) {
-                    ctx.info('processed', { processed, time: Date.now() - st, workspace: targetWorkspaceId.name })
+                    ctx.info('processed', { processed, time: Date.now() - st, workspace: targetWorkspaceId })
                     st = Date.now()
                   }
 
@@ -509,14 +508,14 @@ export async function cloneWorkspace (
                   needRetrieveChunks.push(needRetrieve)
                 }
                 if (it.finished) {
-                  ctx.info('processed-end', { processed, time: Date.now() - st, workspace: targetWorkspaceId.name })
+                  ctx.info('processed-end', { processed, time: Date.now() - st, workspace: targetWorkspaceId })
                   await ctx.with('close-chunk', {}, async () => {
                     await sourceConnection.closeChunk(idx as number)
                   })
                   break
                 }
               } catch (err: any) {
-                ctx.error('failed to clone', { err, workspace: targetWorkspaceId.name })
+                ctx.error('failed to clone', { err, workspace: targetWorkspaceId })
                 if (idx !== undefined) {
                   await ctx.with('load-chunk', {}, () => sourceConnection.closeChunk(idx as number))
                 }
@@ -597,8 +596,8 @@ export async function cloneWorkspace (
       }
     },
     {
-      source: sourceWorkspaceId.name,
-      target: targetWorkspaceId.name
+      source: sourceWorkspaceId,
+      target: targetWorkspaceId
     }
   )
 }
@@ -665,7 +664,7 @@ export interface BackupResult extends Omit<BackupStatus, 'backups' | 'lastBackup
 export async function backup (
   ctx: MeasureContext,
   transactorUrl: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   storage: BackupStorage,
   options: {
     include?: Set<string>
@@ -702,7 +701,7 @@ export async function backup (
     backupSize: 0
   }
   ctx = ctx.newChild('backup', {
-    workspaceId: workspaceId.name,
+    workspaceId,
     force: options.force,
     recheck: options.freshBackup,
     timeout: options.timeout
@@ -719,7 +718,7 @@ export async function backup (
   if (options.timeout > 0) {
     timer = setInterval(() => {
       if (ops === 0) {
-        ctx.error('Timeout during backup', { workspace: workspaceId.name, timeout: options.timeout / 1000 })
+        ctx.error('Timeout during backup', { workspace: workspaceId, timeout: options.timeout / 1000 })
         ops = 0
         _canceled = true
       }
@@ -734,7 +733,7 @@ export async function backup (
 
   try {
     let backupInfo: BackupInfo = {
-      workspace: workspaceId.name,
+      workspace: workspaceId,
       version: '0.6.2',
       snapshots: []
     }
@@ -748,7 +747,7 @@ export async function backup (
     }
     backupInfo.version = '0.6.2'
 
-    backupInfo.workspace = workspaceId.name
+    backupInfo.workspace = workspaceId
 
     let lastTx: Tx | undefined
 
@@ -759,7 +758,7 @@ export async function backup (
       if (lastTx !== undefined) {
         if (lastTx._id === backupInfo.lastTxId && !options.force) {
           printEnd = false
-          ctx.info('No transaction changes. Skipping backup.', { workspace: workspaceId.name })
+          ctx.info('No transaction changes. Skipping backup.', { workspace: workspaceId })
           result.result = false
           return result
         }
@@ -768,11 +767,12 @@ export async function backup (
     }
     const token =
       options.token ??
-      generateToken(systemAccountEmail, workspaceId, {
+      generateToken(systemAccountUuid, workspaceId, {
+        service: 'backup',
         mode: 'backup'
       })
 
-    ctx.warn('starting backup', { workspace: workspaceId.name })
+    ctx.warn('starting backup', { workspace: workspaceId })
 
     connection =
       options.getConnection !== undefined
@@ -787,7 +787,7 @@ export async function backup (
       )
       if (lastTx !== undefined) {
         if (lastTx._id === backupInfo.lastTxId && !options.force) {
-          ctx.info('No transaction changes. Skipping backup.', { workspace: workspaceId.name })
+          ctx.info('No transaction changes. Skipping backup.', { workspace: workspaceId })
           if (options.getConnection === undefined) {
             await connection.close()
           }
@@ -874,7 +874,7 @@ export async function backup (
         processed,
         digest: digest.size,
         time: Date.now() - st,
-        workspace: workspaceId.name
+        workspace: workspaceId
       })
       const oldHash = new Map<Ref<Doc>, string>()
 
@@ -915,7 +915,7 @@ export async function backup (
                 processed,
                 digest: digest.size,
                 time: Date.now() - st,
-                workspace: workspaceId.name
+                workspace: workspaceId
               })
               st = Date.now()
             }
@@ -962,7 +962,7 @@ export async function backup (
               processed,
               digest: digest.size,
               time: Date.now() - st,
-              workspace: workspaceId.name
+              workspace: workspaceId
             })
             await ctx.with('closeChunk', {}, async () => {
               await connection.closeChunk(idx as number)
@@ -1033,7 +1033,7 @@ export async function backup (
       }
 
       if (needRetrieveChunks.length > 0) {
-        ctx.info('dumping domain...', { workspace: workspaceId.name, domain })
+        ctx.info('dumping domain...', { workspace: workspaceId, domain })
       }
 
       const totalChunks = needRetrieveChunks.flatMap((it) => it.length).reduce((p, c) => p + c, 0)
@@ -1058,7 +1058,7 @@ export async function backup (
         ctx.info('Retrieve chunk', {
           needRetrieve: needRetrieveChunks.reduce((v, docs) => v + docs.length, 0),
           toLoad: needRetrieve.length,
-          workspace: workspaceId.name,
+          workspace: workspaceId,
           lastSize: Math.round((lastSize * 100) / (1024 * 1024)) / 100
         })
         let docs: Doc[] = []
@@ -1071,7 +1071,7 @@ export async function backup (
           }
           ops++
         } catch (err: any) {
-          ctx.error('error loading docs', { domain, err, workspace: workspaceId.name })
+          ctx.error('error loading docs', { domain, err, workspace: workspaceId })
           // Put back.
           needRetrieveChunks.push(needRetrieve)
           continue
@@ -1112,7 +1112,7 @@ export async function backup (
             _pack = pack()
             stIndex++
             const storageFile = join(backupIndex, `${domain}-data-${snapshot.date}-${stIndex}.tar.gz`)
-            ctx.info('storing from domain', { domain, storageFile, workspace: workspaceId.name })
+            ctx.info('storing from domain', { domain, storageFile, workspace: workspaceId })
             domainInfo.storage = [...(domainInfo.storage ?? []), storageFile]
             const tmpFile = join(tmpRoot, basename(storageFile) + '.tmp')
             const tempFile = createWriteStream(tmpFile)
@@ -1143,7 +1143,7 @@ export async function backup (
               })
 
               // We need to upload file to storage
-              ctx.info('Upload pack file', { storageFile, size: sz, workspace: workspaceId.name })
+              ctx.info('Upload pack file', { storageFile, size: sz, workspace: workspaceId })
               await storage.writeFile(storageFile, createReadStream(tmpFile))
               await rm(tmpFile)
 
@@ -1407,12 +1407,12 @@ export async function backup (
 
     return result
   } catch (err: any) {
-    ctx.error('backup error', { err, workspace: workspaceId.name })
+    ctx.error('backup error', { err, workspace: workspaceId })
     return result
   } finally {
     await rm(tmpRoot, { recursive: true })
     if (printEnd) {
-      ctx.info('end backup', { workspace: workspaceId.name, totalTime: Date.now() - st })
+      ctx.info('end backup', { workspace: workspaceId, totalTime: Date.now() - st })
     }
     if (options.getConnection === undefined && connection !== undefined) {
       await connection.close()
@@ -1650,7 +1650,7 @@ export async function backupFind (storage: BackupStorage, id: Ref<Doc>, domain?:
 export async function restore (
   ctx: MeasureContext,
   transactorUrl: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   storage: BackupStorage,
   opt: {
     date: number
@@ -1678,7 +1678,7 @@ export async function restore (
   if (opt.date !== -1) {
     const bk = backupInfo.snapshots.findIndex((it) => it.date === opt.date)
     if (bk === -1) {
-      ctx.error('could not restore to', { date: opt.date, file: infoFile, workspaceId: workspaceId.name })
+      ctx.error('could not restore to', { date: opt.date, file: infoFile, workspaceId })
       throw new Error(`${infoFile} could not restore to ${opt.date}. Snapshot is missing.`)
     }
     snapshots = backupInfo.snapshots.slice(0, bk + 1)
@@ -1694,7 +1694,7 @@ export async function restore (
     Object.keys(s.domains).forEach((it) => domains.add(it as Domain))
   }
 
-  ctx.info('connecting:', { transactorUrl, workspace: workspaceId.name })
+  ctx.info('connecting:', { transactorUrl, workspace: workspaceId })
 
   const historyFile: Record<string, string> =
     opt.historyFile !== undefined && existsSync(opt.historyFile)
@@ -1703,7 +1703,8 @@ export async function restore (
 
   const token =
     opt.token ??
-    generateToken(systemAccountEmail, workspaceId, {
+    generateToken(systemAccountUuid, workspaceId, {
+      service: 'backup',
       mode: 'backup',
       model: 'upgrade'
     })
@@ -1718,7 +1719,7 @@ export async function restore (
       let serverEndpoint = await getTransactorEndpoint(token, 'external')
       serverEndpoint = serverEndpoint.replaceAll('wss://', 'https://').replace('ws://', 'http://')
       await fetch(
-        serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close&wsId=${toWorkspaceString(workspaceId)}`,
+        serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close&wsId=${workspaceId}`,
         {
           method: 'PUT'
         }
@@ -1757,7 +1758,7 @@ export async function restore (
       ctx.info('Uploaded', {
         msg,
         written: newDownloadedMb,
-        workspace: workspaceId.name
+        workspace: workspaceId
       })
     }
   }
@@ -1797,7 +1798,7 @@ export async function restore (
         }
 
         if (el > 2500) {
-          ctx.info('loaded from server', { domain: c, loaded, el, chunks, workspace: workspaceId.name })
+          ctx.info('loaded from server', { domain: c, loaded, el, chunks, workspace: workspaceId })
           el = 0
           chunks = 0
         }
@@ -1813,13 +1814,13 @@ export async function restore (
     ctx.info('loaded', {
       domain: c,
       loaded,
-      workspace: workspaceId.name,
+      workspace: workspaceId,
       dataSize: Math.round((dataSize / (1024 * 1024)) * 100) / 100
     })
     ctx.info('\tcompare documents', {
       size: changeset.size,
       serverSize: serverChangeset.size,
-      workspace: workspaceId.name
+      workspace: workspaceId
     })
 
     // Let's find difference
@@ -1856,7 +1857,7 @@ export async function restore (
           totalSend,
           from: docsToAdd.size + totalSend,
           sendSize,
-          workspace: workspaceId.name
+          workspace: workspaceId
         })
         // Correct docs without space
         for (const d of docs) {
@@ -1940,7 +1941,7 @@ export async function restore (
                   }
                 }
               } catch (err: any) {
-                ctx.warn('failed to upload blob', { _id: blob._id, err, workspace: workspaceId.name })
+                ctx.warn('failed to upload blob', { _id: blob._id, err, workspace: workspaceId })
               }
             }
             docsToAdd.delete(blob._id)
@@ -1954,20 +1955,20 @@ export async function restore (
                 totalSend,
                 from: docsToAdd.size + totalSend,
                 sendSize,
-                workspace: workspaceId.name
+                workspace: workspaceId
               })
             }
           })
         }
 
         if (requiredDocs.size > 0) {
-          ctx.info('updating', { domain: c, requiredDocs: requiredDocs.size, workspace: workspaceId.name })
+          ctx.info('updating', { domain: c, requiredDocs: requiredDocs.size, workspace: workspaceId })
           // We have required documents here.
           for (const sf of d.storage ?? []) {
             if (docsToAdd.size === 0) {
               break
             }
-            ctx.info('processing', { storageFile: sf, processed, workspace: workspaceId.name })
+            ctx.info('processing', { storageFile: sf, processed, workspace: workspaceId })
 
             const readStream = await storage.load(sf)
             const ex = extract()
@@ -2063,19 +2064,19 @@ export async function restore (
 
     await sendChunk(undefined, 0)
     async function performCleanOfDomain (docsToRemove: Ref<Doc>[], c: Domain): Promise<void> {
-      ctx.info('cleanup', { toRemove: docsToRemove.length, workspace: workspaceId.name, domain: c })
+      ctx.info('cleanup', { toRemove: docsToRemove.length, workspace: workspaceId, domain: c })
       while (docsToRemove.length > 0) {
         const part = docsToRemove.splice(0, 10000)
         try {
           await connection.clean(c, part)
         } catch (err: any) {
-          ctx.error('failed to clean, will retry', { error: err, workspaceId: workspaceId.name })
+          ctx.error('failed to clean, will retry', { error: err, workspaceId })
           docsToRemove.push(...part)
         }
       }
     }
     async function performCleanDocIndexState (docsToRemove: Ref<Doc>[]): Promise<void> {
-      ctx.info('cleanup', { toRemove: docsToRemove.length, workspace: workspaceId.name, domain: c })
+      ctx.info('cleanup', { toRemove: docsToRemove.length, workspace: workspaceId, domain: c })
       while (docsToRemove.length > 0) {
         const part = docsToRemove.splice(0, 1000)
         try {
@@ -2087,7 +2088,7 @@ export async function restore (
           })
           await connection.upload(DOMAIN_DOC_INDEX_STATE, docs)
         } catch (err: any) {
-          ctx.error('failed to clean, will retry', { error: err, workspaceId: workspaceId.name })
+          ctx.error('failed to clean, will retry', { error: err, workspaceId })
           docsToRemove.push(...part)
         }
       }
@@ -2121,7 +2122,7 @@ export async function restore (
         continue
       }
       await limiter.add(async () => {
-        ctx.info('processing domain', { domain: c, workspaceId: workspaceId.name })
+        ctx.info('processing domain', { domain: c, workspaceId: workspaceId })
         let retry = 5
         let delay = 1
         while (retry > 0) {
@@ -2129,13 +2130,13 @@ export async function restore (
           try {
             await processDomain(c)
             if (delay > 1) {
-              ctx.warn('retry-success', { retry, delay, workspaceId: workspaceId.name })
+              ctx.warn('retry-success', { retry, delay, workspaceId: workspaceId })
             }
             break
           } catch (err: any) {
-            ctx.error('failed to process domain', { err, domain: c, workspaceId: workspaceId.name })
+            ctx.error('failed to process domain', { err, domain: c, workspaceId: workspaceId })
             if (retry !== 0) {
-              ctx.warn('cool-down to retry', { delay, domain: c, workspaceId: workspaceId.name })
+              ctx.warn('cool-down to retry', { delay, domain: c, workspaceId: workspaceId })
               await new Promise((resolve) => setTimeout(resolve, delay * 1000))
               delay++
             }

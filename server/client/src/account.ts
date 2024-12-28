@@ -18,29 +18,28 @@ import {
   BackupStatus,
   Doc,
   Ref,
-  type BaseWorkspaceInfo,
+  type WorkspaceInfoWithStatus,
   type Data,
   type Version,
   type WorkspaceUpdateEvent
 } from '@hcengineering/core'
+
 import { getMetadata, PlatformError, unknownError } from '@hcengineering/platform'
 
 import plugin from './plugin'
 
 export interface WorkspaceLoginInfo extends LoginInfo {
   workspace: string
-  workspaceId: string
+  endpoint: string
 }
 export interface LoginInfo {
+  account: string
   token: string
-  endpoint: string
-  confirmed: boolean
-  email: string
 }
 
 const connectionErrorCodes = ['ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND']
 
-export async function listAccountWorkspaces (token: string, region: string | null = null): Promise<BaseWorkspaceInfo[]> {
+export async function listAccountWorkspaces (token: string, region: string | null = null): Promise<WorkspaceInfoWithStatus[]> {
   const accountsUrl = getAccoutsUrlOrFail()
   const workspaces = await (
     await fetch(accountsUrl, {
@@ -55,12 +54,12 @@ export async function listAccountWorkspaces (token: string, region: string | nul
     })
   ).json()
 
-  return (workspaces.result as BaseWorkspaceInfo[]) ?? []
+  return workspaces.result ?? []
 }
 
-export async function updateBackupInfo (token: string, info: BackupStatus): Promise<BaseWorkspaceInfo[]> {
+export async function updateBackupInfo (token: string, info: BackupStatus): Promise<void> {
   const accountsUrl = getAccoutsUrlOrFail()
-  const workspaces = await (
+  await (
     await fetch(accountsUrl, {
       method: 'POST',
       headers: {
@@ -72,8 +71,6 @@ export async function updateBackupInfo (token: string, info: BackupStatus): Prom
       })
     })
   ).json()
-
-  return (workspaces.result as BaseWorkspaceInfo[]) ?? []
 }
 
 const externalRegions = process.env.EXTERNAL_REGIONS?.split(';') ?? []
@@ -96,7 +93,7 @@ export async function getTransactorEndpoint (
   const st = Date.now()
   while (true) {
     try {
-      const workspaceInfo: { result: BaseWorkspaceInfo } = await (
+      const workspaceInfo = await (
         await fetch(accountsUrl, {
           method: 'POST',
           headers: {
@@ -105,7 +102,7 @@ export async function getTransactorEndpoint (
           },
           body: JSON.stringify({
             method: 'selectWorkspace',
-            params: ['', kind, true, externalRegions]
+            params: ['', kind, externalRegions]
           })
         })
       ).json()
@@ -180,7 +177,7 @@ export async function getPendingWorkspace (
   region: string,
   version: Data<Version>,
   operation: 'create' | 'upgrade' | 'all' | 'all+backup'
-): Promise<BaseWorkspaceInfo | undefined> {
+): Promise<WorkspaceInfoWithStatus | undefined> {
   const accountsUrl = getAccoutsUrlOrFail()
   const workspaces = await (
     await fetch(accountsUrl, {
@@ -195,7 +192,7 @@ export async function getPendingWorkspace (
     })
   ).json()
 
-  return workspaces.result as BaseWorkspaceInfo
+  return workspaces.result as WorkspaceInfoWithStatus
 }
 
 export async function updateWorkspaceInfo (
@@ -240,11 +237,30 @@ export async function workerHandshake (
   })
 }
 
+export async function getLoginInfoByToken (
+  token: string,
+  url: string | undefined
+): Promise<void> {
+  const accountsUrl = url ?? getAccoutsUrlOrFail()
+
+  await fetch(accountsUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      method: 'getLoginInfoByToken',
+      params: [token]
+    })
+  })
+}
+
 export async function getWorkspaceInfo (
   token: string,
-  updateLastAccess = false
-): Promise<BaseWorkspaceInfo | undefined> {
-  const accountsUrl = getAccoutsUrlOrFail()
+  updateLastAccess = false,
+  url: string | undefined
+): Promise<WorkspaceInfoWithStatus | undefined> {
+  const accountsUrl = url ?? getAccoutsUrlOrFail()
   const workspaceInfo = await (
     await fetch(accountsUrl, {
       method: 'POST',
@@ -259,10 +275,32 @@ export async function getWorkspaceInfo (
     })
   ).json()
 
-  return workspaceInfo.result as BaseWorkspaceInfo | undefined
+  if (workspaceInfo.error !== undefined) {
+    throw new Error(JSON.stringify(workspaceInfo.error))
+  }
+
+  const workspace = workspaceInfo.result
+
+  if (workspace == null) {
+    return undefined
+  }
+
+  const status = workspace.status ?? {}
+
+  const workspaceWithStatus = {
+    ...workspace,
+    ...status,
+    version: {
+      major: status.versionMajor,
+      minor: status.versionMinor,
+      patch: status.versionPatch
+    }
+  }
+
+  return workspaceWithStatus
 }
 
-export async function login (user: string, password: string, workspace: string): Promise<string> {
+export async function login (user: string, password: string, workspace: string): Promise<LoginInfo> {
   const accountsUrl = getAccoutsUrlOrFail()
   const response = await fetch(accountsUrl, {
     method: 'POST',
@@ -271,15 +309,15 @@ export async function login (user: string, password: string, workspace: string):
     },
     body: JSON.stringify({
       method: 'login',
-      params: [user, password, workspace]
+      params: [user, password]
     })
   })
 
   const result = await response.json()
-  return result.result?.token
+  return result.result
 }
 
-export async function getUserWorkspaces (token: string): Promise<BaseWorkspaceInfo[]> {
+export async function getUserWorkspaces (token: string): Promise<WorkspaceInfoWithStatus[]> {
   const accountsUrl = getAccoutsUrlOrFail()
   const response = await fetch(accountsUrl, {
     method: 'POST',
@@ -293,7 +331,7 @@ export async function getUserWorkspaces (token: string): Promise<BaseWorkspaceIn
     })
   })
   const result = await response.json()
-  return (result.result as BaseWorkspaceInfo[]) ?? []
+  return (result.result as WorkspaceInfoWithStatus[]) ?? []
 }
 
 export async function selectWorkspace (token: string, workspace: string): Promise<WorkspaceLoginInfo> {

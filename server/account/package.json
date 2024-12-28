@@ -36,7 +36,7 @@
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
     "@types/otp-generator": "^4.0.2",
-    "@types/crypto-js": "^4.2.2"
+    "@types/pg": "^8.11.6"
   },
   "dependencies": {
     "@hcengineering/mongo": "^0.6.1",
@@ -45,18 +45,11 @@
     "postgres": "^3.4.5",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/core": "^0.6.32",
-    "@hcengineering/contact": "^0.6.24",
-    "@hcengineering/client-resources": "^0.6.27",
-    "@hcengineering/client": "^0.6.18",
     "otp-generator": "^4.0.1",
-    "@hcengineering/model": "^0.6.11",
-    "@hcengineering/server-backup": "^0.6.0",
-    "@hcengineering/server-tool": "^0.6.0",
     "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/server-storage": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/server-pipeline": "^0.6.0",
-    "crypto-js": "^4.2.0"
+    "@hcengineering/server-pipeline": "^0.6.0"
   }
 }

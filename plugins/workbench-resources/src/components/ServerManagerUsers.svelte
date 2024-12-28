@@ -1,11 +1,12 @@
 <script lang="ts">
-  import contact, { PersonAccount } from '@hcengineering/contact'
-  import { groupByArray, systemAccountEmail } from '@hcengineering/core'
+  import contact from '@hcengineering/contact'
+  import { groupByArray } from '@hcengineering/core'
   import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
-  import presentation, { createQuery, isAdminUser, type OverviewStatistics } from '@hcengineering/presentation'
+  import presentation, { isAdminUser, type OverviewStatistics } from '@hcengineering/presentation'
   import { Button, CheckBox, ticker } from '@hcengineering/ui'
   import Expandable from '@hcengineering/ui/src/components/Expandable.svelte'
   import { FixedColumn, ObjectPresenter } from '@hcengineering/view-resources'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
   import { workspacesStore } from '../utils'
 
   const token: string = getMetadata(presentation.metadata.Token) ?? ''
@@ -23,18 +24,7 @@
   }
   let data: OverviewStatistics | undefined
   $: void fetchStats($ticker)
-
-  const employeeQuery = createQuery()
-
-  let employees = new Map<string, PersonAccount>()
-
-  employeeQuery.query(contact.class.PersonAccount, {}, (res) => {
-    const emp = new Map<string, PersonAccount>()
-    for (const r of res) {
-      emp.set(r.email, r)
-    }
-    employees = emp
-  })
+  $: employees = $employeeByIdStore
   let realUsers: boolean
   let showActive5: boolean
 

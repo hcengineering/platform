@@ -13,7 +13,7 @@ export class LoginPage {
   buttonLogin = (): Locator => this.page.locator('button', { hasText: 'Log In' })
   loginWithPassword = (): Locator => this.page.locator('a', { hasText: 'Login with password' })
   linkSignUp = (): Locator => this.page.locator('a.title', { hasText: 'Sign Up' })
-  invalidPasswordMessage = (): Locator => this.page.getByText('Invalid password')
+  invalidCredentialsMessage = (): Locator => this.page.getByText('Account not found or the provided credentials are incorrect')
   recoverLink = (): Locator => this.page.getByRole('link', { name: 'Recover' })
   passwordRecovery = (): Locator => this.page.getByText('Password recovery')
   recoveryLoginText = (): Locator => this.page.getByText('Know your password? Log In')
@@ -59,11 +59,13 @@ export class LoginPage {
 
   // ASSERTS
 
-  async checkIfErrorMessageIsShown (): Promise<void> {
-    await expect(this.invalidPasswordMessage()).toContainText('Invalid password')
+  async checkIfErrorMessageIsShown (message: string): Promise<void> {
+    if (message === 'wrong-credentials') {
+      await expect(this.invalidCredentialsMessage()).toBeVisible()
+    }
   }
 
-  async checkIfLoginButtonIsDissaabled (): Promise<void> {
+  async checkIfLoginButtonIsDisabled (): Promise<void> {
     await expect(this.buttonLogin()).toBeDisabled()
   }
 

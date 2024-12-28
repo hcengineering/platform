@@ -3,7 +3,7 @@
   import documents, { DocumentRequest } from '@hcengineering/controlled-documents'
   import chunter from '@hcengineering/chunter'
   import { type Person } from '@hcengineering/contact'
-  import { PersonRefPresenter, personAccountByIdStore } from '@hcengineering/contact-resources'
+  import { PersonRefPresenter } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Chevron, Label, tooltip } from '@hcengineering/ui'
@@ -44,7 +44,7 @@
       return
     }
 
-    approvals = await getApprovals(req, $personAccountByIdStore)
+    approvals = await getApprovals(req)
     const rejectingComment = await client.findOne(chunter.class.ChatMessage, {
       attachedTo: req?._id,
       attachedToClass: req?._class
@@ -53,8 +53,7 @@
   }
 
   async function getApprovals (
-    req: DocumentRequest,
-    accountById: typeof $personAccountByIdStore
+    req: DocumentRequest
   ): Promise<PersonalApproval[]> {
     const rejectedBy: PersonalApproval[] =
       req.rejected !== undefined

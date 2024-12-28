@@ -18,7 +18,7 @@ import {
   type Blob,
   type MeasureContext,
   type Ref,
-  type WorkspaceId,
+  type WorkspaceUuid,
   concatLink,
   RateLimiter
 } from '@hcengineering/core'
@@ -42,7 +42,7 @@ export interface MoveFilesParams {
 
 export async function moveFiles (
   ctx: MeasureContext,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   exAdapter: StorageAdapterEx,
   params: MoveFilesParams
 ): Promise<void> {
@@ -67,7 +67,7 @@ export async function moveFiles (
 
 export async function showLostFiles (
   ctx: MeasureContext,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   db: Db,
   storageAdapter: StorageAdapter,
   { showAll }: { showAll: boolean }
@@ -95,7 +95,7 @@ async function processAdapter (
   exAdapter: StorageAdapterEx,
   source: StorageAdapter,
   target: StorageAdapter,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   params: MoveFilesParams
 ): Promise<void> {
   if (source === target) {
@@ -222,7 +222,7 @@ async function processFile (
   ctx: MeasureContext,
   source: Pick<StorageAdapter, 'get'>,
   target: Pick<StorageAdapter, 'put'>,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   blob: Blob
 ): Promise<UploadedObjectInfo> {
   const readable = await source.get(ctx, workspaceId, blob._id)
@@ -267,7 +267,7 @@ export interface CopyDatalakeParams {
 
 export async function copyToDatalake (
   ctx: MeasureContext,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   config: S3Config,
   adapter: S3Service,
   datalake: DatalakeClient,
@@ -374,7 +374,7 @@ export async function copyToDatalake (
 
 export async function copyBlobToDatalake (
   ctx: MeasureContext,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   blob: ListBlobResult,
   config: S3Config,
   adapter: S3Service,

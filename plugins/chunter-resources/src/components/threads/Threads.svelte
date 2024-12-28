@@ -13,11 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getCurrentAccount, SortingOrder } from '@hcengineering/core'
+  import { SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Scroller } from '@hcengineering/ui'
   import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { socialIdsByPersonRefStore } from '@hcengineering/contact-resources'
   import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
   import notification from '@hcengineering/notification'
   import attachment from '@hcengineering/attachment'
@@ -27,7 +28,8 @@
   import { openMessageFromSpecial } from '../../navigation'
 
   const threadsQuery = createQuery()
-  const me = getCurrentAccount() as PersonAccount
+  const me = getCurrentEmployee()
+  $: mySocialStrings = ($socialIdsByPersonRefStore.get(me) ?? []).map((si) => si.key)
 
   let threads: ActivityMessage[] = []
 
@@ -35,7 +37,7 @@
     activity.class.ActivityMessage,
     {
       replies: { $exists: true },
-      [`${notification.mixin.Collaborators}.collaborators`]: me._id
+      [`${notification.mixin.Collaborators}.collaborators`]: { $in: mySocialStrings }
     },
     (res) => {
       threads = res.filter(({ replies }) => (replies ?? 0) > 0)

@@ -1,6 +1,7 @@
 // Copyright © 2024 Huly Labs.
 
 import {
+  type Account,
   generateId,
   NoMetricsContext,
   type Class,
@@ -20,6 +21,7 @@ import serverCore, {
   pingConst,
   pongConst,
   Session,
+  Workspace,
   type ConnectionSocket,
   type PipelineFactory,
   type SessionManager
@@ -155,7 +157,7 @@ export class Transactor extends DurableObject<Env> {
       .blockConcurrencyWhile(async () => {
         this.sessionManager = createSessionManager(
           this.measureCtx,
-          (token: Token, workspace) => new ClientSession(token, workspace, false),
+          (token: Token, workspace: Workspace, account: Account) => new ClientSession(token, workspace, account, false),
           loadBrandingMap(), // TODO: Support branding map
           {
             pingTimeout: 10000,
@@ -184,7 +186,7 @@ export class Transactor extends DurableObject<Env> {
 
       // By design, all fetches to this durable object will be for the same workspace
       if (this.workspace === '') {
-        this.workspace = payload.workspace.name
+        this.workspace = payload.workspace
       }
 
       if (!(await this.handleSession(server, request, payload, token, sessionId))) {
@@ -260,7 +262,7 @@ export class Transactor extends DurableObject<Env> {
       remoteAddress: request.headers.get('CF-Connecting-IP') ?? '',
       userAgent: request.headers.get('user-agent') ?? '',
       language: request.headers.get('accept-language') ?? '',
-      email: token.email,
+      account: token.account,
       mode: token.extra?.mode,
       model: token.extra?.model
     }
@@ -332,7 +334,7 @@ export class Transactor extends DurableObject<Env> {
       remoteAddress: string
       userAgent: string
       language: string
-      email: string
+      account: string
       mode: any
       model: any
     }
@@ -462,7 +464,7 @@ export class Transactor extends DurableObject<Env> {
     }
     // By design, all fetches to this durable object will be for the same workspace
     if (this.workspace === '') {
-      this.workspace = token.workspace.name
+      this.workspace = token.workspace
     }
     return session.session
   }
@@ -540,6 +542,7 @@ export class Transactor extends DurableObject<Env> {
       const session = await this.makeRpcSession(rawToken, cs)
       const pipeline =
         session.workspace.pipeline instanceof Promise ? await session.workspace.pipeline : session.workspace.pipeline
+      throw new Error('Not implemented')
       return session.getRawAccount(pipeline)
     } catch (error: any) {
       return { error: `${error}` }

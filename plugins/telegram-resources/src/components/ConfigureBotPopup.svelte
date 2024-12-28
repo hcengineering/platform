@@ -102,7 +102,7 @@
           Authorization: 'Bearer ' + getMetadata(presentation.metadata.Token),
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ code: event.detail, account: getCurrentAccount()._id })
+        body: JSON.stringify({ code: event.detail, account: getCurrentAccount().primarySocialId })
       })
       isCodeValid = res.ok
       if (!res.ok) {

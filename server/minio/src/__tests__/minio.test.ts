@@ -41,8 +41,8 @@ describe('minio operations', () => {
 
     expect(genWorkspaceId1).not.toEqual(genWorkspaceId2)
 
-    const ws1 = { name: genWorkspaceId1 }
-    const ws2 = { name: genWorkspaceId2 }
+    const ws1 = genWorkspaceId1
+    const ws2 = genWorkspaceId2
     await minioService.make(toolCtx, ws1)
     await minioService.make(toolCtx, ws2)
 

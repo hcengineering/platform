@@ -1,5 +1,4 @@
 import { Analytics } from '@hcengineering/analytics'
-import { PersonAccount } from '@hcengineering/contact'
 import core, {
   AnyAttribute,
   Class,
@@ -107,10 +106,14 @@ export class ProjectsSyncManager implements DocSyncManager {
       return { needSync: githubSyncVersion }
     }
 
-    const okit = await this.provider.getOctokit(container.project.createdBy as Ref<PersonAccount>)
+    if (container.project.createdBy === undefined) {
+      return
+    }
+
+    const okit = await this.provider.getOctokit(container.project.createdBy)
     if (okit === undefined) {
       this.ctx.info('No Authentication for author, waiting for authentication.', {
-        workspace: this.provider.getWorkspaceId().name
+        workspace: this.provider.getWorkspaceId()
       })
       return { needSync: githubSyncVersion, error: 'Need authentication for user' }
     }
@@ -271,7 +274,7 @@ export class ProjectsSyncManager implements DocSyncManager {
     const platformUpdate = collectUpdate<Milestone>(previousData, existingMilestone, Array.from(allAttributes.keys()))
 
     const okit =
-      (await this.provider.getOctokit(existing.modifiedBy as Ref<PersonAccount>)) ?? container.container.octokit
+      (await this.provider.getOctokit(existing.modifiedBy)) ?? container.container.octokit
 
     // Remove current same values from update
     for (const [k, v] of Object.entries(update)) {
@@ -322,7 +325,7 @@ export class ProjectsSyncManager implements DocSyncManager {
     if (project === undefined || repository === undefined) {
       this.ctx.error('Unable to find project and repository for event', {
         name: event.repository.name,
-        workspace: this.provider.getWorkspaceId().name
+        workspace: this.provider.getWorkspaceId()
       })
       return
     }
@@ -392,10 +395,10 @@ export class ProjectsSyncManager implements DocSyncManager {
         continue
       }
 
-      const okit = await this.provider.getOctokit(integration.integration.createdBy as Ref<PersonAccount>)
+      const okit = await this.provider.getOctokit(integration.integration.createdBy)
       if (okit === undefined) {
         this.ctx.info('No Authentication for author, waiting for authentication.', {
-          workspace: this.provider.getWorkspaceId().name
+          workspace: this.provider.getWorkspaceId()
         })
         continue
       }

@@ -55,9 +55,9 @@ import {
   type CollectionSize,
   type Role,
   type TypedSpace,
-  type Account,
   type RolesAssignment,
-  type Rank
+  type Rank,
+  type PersonId
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -472,7 +472,7 @@ export class TDocumentApprovalRequest extends TDocumentRequest implements Docume
 @Mixin(documents.mixin.DocumentSpaceTypeData, documents.class.DocumentSpace)
 @UX(getEmbeddedLabel('Default Documents'), documents.icon.Document)
 export class TDocumentSpaceTypeData extends TDocumentSpace implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: PersonId[]
 }
 
 /**

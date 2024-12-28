@@ -1,12 +1,12 @@
-import contact, { type Employee, type PersonAccount, getFirstName, getLastName } from '@hcengineering/contact'
+import contact, { type Employee, getFirstName, getLastName } from '@hcengineering/contact'
 import { employeeByIdStore } from '@hcengineering/contact-resources'
 import { type Class, type Doc, type Hierarchy, type Ref } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import login from '@hcengineering/login'
-import presentation, { getClient } from '@hcengineering/presentation'
+import presentation from '@hcengineering/presentation'
 import setting from '@hcengineering/setting'
 import { type TemplateDataProvider } from '@hcengineering/templates'
-import { get } from 'svelte/store'
+import { getClient as getAccountClientRaw, type AccountClient } from '@hcengineering/account-client'
 
 function isEditable (hierarchy: Hierarchy, p: Class<Doc>): boolean {
   let ancestors = [p._id]
@@ -65,81 +65,56 @@ export async function getValue (provider: TemplateDataProvider): Promise<string 
 }
 
 export async function getOwnerFirstName (provider: TemplateDataProvider): Promise<string | undefined> {
-  const value = provider.get(setting.class.Integration)
-  if (value === undefined) return
-  const client = getClient()
-  const employeeAccount = await client.findOne(contact.class.PersonAccount, {
-    _id: value.modifiedBy as Ref<PersonAccount>
-  })
-  if (employeeAccount !== undefined) {
-    const employee = get(employeeByIdStore).get(employeeAccount.person as Ref<Employee>)
-    return employee != null ? getFirstName(employee.name) : undefined
-  }
+  // TODO: FIXME
+  throw new Error('Not implemented')
+  // const value = provider.get(setting.class.Integration)
+  // if (value === undefined) return
+  // const client = getClient()
+  // const employeeAccount = await client.findOne(contact.class.PersonAccount, {
+  //   _id: value.modifiedBy as PersonId
+  // })
+  // if (employeeAccount !== undefined) {
+  //   const employee = get(employeeByIdStore).get(employeeAccount.person as Ref<Employee>)
+  //   return employee != null ? getFirstName(employee.name) : undefined
+  // }
 }
 
 export async function getOwnerLastName (provider: TemplateDataProvider): Promise<string | undefined> {
-  const value = provider.get(setting.class.Integration)
-  if (value === undefined) return
-  const client = getClient()
-  const employeeAccount = await client.findOne(contact.class.PersonAccount, {
-    _id: value.modifiedBy as Ref<PersonAccount>
-  })
-  if (employeeAccount !== undefined) {
-    const employee = get(employeeByIdStore).get(employeeAccount.person as Ref<Employee>)
-    return employee != null ? getLastName(employee.name) : undefined
-  }
+  // TODO: FIXME
+  throw new Error('Not implemented')
+  // const value = provider.get(setting.class.Integration)
+  // if (value === undefined) return
+  // const client = getClient()
+  // const employeeAccount = await client.findOne(contact.class.PersonAccount, {
+  //   _id: value.modifiedBy as PersonId
+  // })
+  // if (employeeAccount !== undefined) {
+  //   const employee = get(employeeByIdStore).get(employeeAccount.person as Ref<Employee>)
+  //   return employee != null ? getLastName(employee.name) : undefined
+  // }
 }
 
 export async function getOwnerPosition (provider: TemplateDataProvider): Promise<string | undefined> {
-  const value = provider.get(setting.class.Integration)
-  if (value === undefined) return
-  const client = getClient()
-  const employeeAccount = await client.findOne(contact.class.PersonAccount, {
-    _id: value.modifiedBy as Ref<PersonAccount>
-  })
-  if (employeeAccount !== undefined) {
-    const employee = get(employeeByIdStore).get(employeeAccount.person as Ref<Employee>)
-    if (employee != null && client.getHierarchy().hasMixin(employee, contact.mixin.Employee)) {
-      return client.getHierarchy().as(employee, contact.mixin.Employee)?.position ?? undefined
-    }
-    return undefined
-  }
+  // TODO: FIXME
+  throw new Error('Not implemented')
+  // const value = provider.get(setting.class.Integration)
+  // if (value === undefined) return
+  // const client = getClient()
+  // const employeeAccount = await client.findOne(contact.class.PersonAccount, {
+  //   _id: value.modifiedBy as PersonId
+  // })
+  // if (employeeAccount !== undefined) {
+  //   const employee = get(employeeByIdStore).get(employeeAccount.person as Ref<Employee>)
+  //   if (employee != null && client.getHierarchy().hasMixin(employee, contact.mixin.Employee)) {
+  //     return client.getHierarchy().as(employee, contact.mixin.Employee)?.position ?? undefined
+  //   }
+  //   return undefined
+  // }
 }
 
-export async function rpcAccount (method: string, ...params: any[]): Promise<any> {
+export function getAccountClient (): AccountClient {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
-
-  if (accountsUrl === undefined) {
-    throw new Error('accounts url not specified')
-  }
-
   const token = getMetadata(presentation.metadata.Token)
-  if (token === undefined) {
-    throw new Error('no token available for the session')
-  }
 
-  const request = {
-    method,
-    params
-  }
-
-  try {
-    const response = await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(request)
-    })
-    const res = await response.json()
-
-    if (res.error != null) {
-      throw new Error(`Failed to ${method}: ${res.error}`)
-    }
-
-    return res
-  } catch (err: any) {
-    throw new Error(`Fetch error when calling ${method}: ${err.message}`)
-  }
+  return getAccountClientRaw(accountsUrl, token)
 }

@@ -8,10 +8,9 @@
   import { RequestStatus } from '@hcengineering/request'
   import { Label, ModernDialog, showPopup } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
-  import contact, { Employee, PersonAccount } from '@hcengineering/contact'
+  import { Employee } from '@hcengineering/contact'
   import { Class, Ref } from '@hcengineering/core'
-  import { UserBoxItems } from '@hcengineering/contact-resources'
-  import { permissionsStore } from '@hcengineering/view-resources'
+  import { UserBoxItems, permissionsStore } from '@hcengineering/contact-resources'
   import documents, {
     ControlledDocument,
     ControlledDocumentState,
@@ -39,20 +38,7 @@
   const permissionId = isReviewRequest ? documents.permission.ReviewDocument : documents.permission.ApproveDocument
   $: permissionsSpace =
     controlledDoc.space === documents.space.UnsortedTemplates ? documents.space.QualityDocuments : controlledDoc.space
-  $: permittedAccounts = $permissionsStore.ap[permissionsSpace]?.[permissionId] ?? new Set()
-  let permittedPeople: Array<Ref<Employee>> = []
-
-  $: if (permittedAccounts.size > 0) {
-    void client
-      .findAll(contact.class.PersonAccount, {
-        _id: { $in: Array.from(permittedAccounts) as Array<Ref<PersonAccount>> }
-      })
-      .then((res) => {
-        permittedPeople = res.map((pa) => pa.person) as Array<Ref<Employee>>
-      })
-  } else {
-    permittedPeople = []
-  }
+  $: permittedPeople = $permissionsStore.ap[permissionsSpace]?.[permissionId] ?? new Set()
 
   let docRequest: DocumentRequest | undefined
   let loading = true

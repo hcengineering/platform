@@ -55,9 +55,9 @@
     const loc = getCurrentLocation()
     const token = loc.query?.token
     if (token == null) return false
-    const decoded = decodeTokenPayload(token)
+    const { extra } = decodeTokenPayload(token)
 
-    const link = await client.findOne(guest.class.PublicLink, { _id: decoded.linkId })
+    const link = await client.findOne(guest.class.PublicLink, { _id: extra.linkId })
     if (link == null) return false
     restrictionStore.set(link.restrictions)
     const mergedLoc = link.location

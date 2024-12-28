@@ -8,7 +8,7 @@ import {
   MeasureMetricsContext,
   ModelDb,
   Ref,
-  WorkspaceId
+  WorkspaceIds
 } from '@hcengineering/core'
 import { MigrateUpdate, MigrationClient, MigrationIterator, ModelLogger } from '@hcengineering/model'
 import { Pipeline, StorageAdapter } from '@hcengineering/server-core'
@@ -24,7 +24,7 @@ export class MigrateClientImpl implements MigrationClient {
     readonly model: ModelDb,
     readonly logger: ModelLogger,
     readonly storageAdapter: StorageAdapter,
-    readonly workspaceId: WorkspaceId
+    readonly wsIds: WorkspaceIds
   ) {
     if (this.pipeline.context.lowLevelStorage === undefined) {
       throw new Error('lowLevelStorage is not defined')

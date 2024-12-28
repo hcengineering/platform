@@ -25,7 +25,6 @@ import { TChatMessage } from '@hcengineering/model-chunter'
 export { serverAiBotId } from '@hcengineering/server-ai-bot'
 
 export const DOMAIN_AI_BOT = 'ai_bot' as Domain
-
 @Mixin(aiBot.mixin.TransferredMessage, chunter.class.ChatMessage)
 export class TTransferredMessage extends TChatMessage implements TransferredMessage {
   messageId!: Ref<ChatMessage>

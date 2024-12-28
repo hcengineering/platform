@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type PersonAccount } from '@hcengineering/contact'
 import {
   type Document,
   type DocumentMeta,
@@ -27,7 +26,6 @@ import {
   type Client,
   type Doc,
   type DocumentQuery,
-  getCurrentAccount,
   type Ref,
   type RelatedDocument,
   SortingOrder,
@@ -36,6 +34,7 @@ import {
 import { type Resources } from '@hcengineering/platform'
 import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
+import { getCurrentEmployee } from '@hcengineering/contact'
 
 import CreateDocument from './components/CreateDocument.svelte'
 import DeleteCategoryPopup from './components/category/popups/DeleteCategoryPopup.svelte'
@@ -206,8 +205,8 @@ async function canDeleteDocument (obj?: Doc | Doc[]): Promise<boolean> {
   }
 
   const objs = (Array.isArray(obj) ? obj : [obj]) as Document[]
-  const currentUser = getCurrentAccount() as PersonAccount
-  const isOwner = objs.every((doc) => doc.owner === currentUser.person)
+  const currentUser = getCurrentEmployee()
+  const isOwner = objs.every((doc) => doc.owner === currentUser)
 
   if (!isOwner) {
     return false
@@ -222,8 +221,8 @@ async function canArchiveDocument (obj?: Doc | Doc[]): Promise<boolean> {
   }
 
   const objs = (Array.isArray(obj) ? obj : [obj]) as Document[]
-  const currentUser = getCurrentAccount() as PersonAccount
-  const isOwner = objs.every((doc) => doc.owner === currentUser.person)
+  const currentUser = getCurrentEmployee()
+  const isOwner = objs.every((doc) => doc.owner === currentUser)
 
   if (isOwner) {
     return true

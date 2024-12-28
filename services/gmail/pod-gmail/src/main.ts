@@ -54,18 +54,20 @@ export const main = async (): Promise<void> => {
       type: 'get',
       handler: async (req, res) => {
         try {
-          const token = extractToken(req.headers)
+          // TODO: FIXME
+          throw new Error('Not implemented')
+          // const token = extractToken(req.headers)
 
-          if (token === undefined) {
-            res.status(401).send()
-            return
-          }
-          const redirectURL = req.query.redirectURL as string
+          // if (token === undefined) {
+          //   res.status(401).send()
+          //   return
+          // }
+          // const redirectURL = req.query.redirectURL as string
 
-          const { email, workspace } = decodeToken(token)
-          const gmail = await gmailController.getGmailClient(email, workspace.name, token)
-          const url = gmail.getAutUrl(redirectURL)
-          res.send(url)
+          // const { workspace } = decodeToken(token)
+          // const gmail = await gmailController.getGmailClient(email, workspace, token)
+          // const url = gmail.getAutUrl(redirectURL)
+          // res.send(url)
         } catch (err) {
           console.log('signin error', (err as any).message)
           res.status(500).send()
@@ -88,15 +90,17 @@ export const main = async (): Promise<void> => {
       type: 'get',
       handler: async (req, res) => {
         try {
-          const token = extractToken(req.headers)
+          // TODO: FIXME
+          throw new Error('Not implemented')
+          // const token = extractToken(req.headers)
 
-          if (token === undefined) {
-            res.status(401).send()
-            return
-          }
+          // if (token === undefined) {
+          //   res.status(401).send()
+          //   return
+          // }
 
-          const { email, workspace } = decodeToken(token)
-          await gmailController.signout(workspace.name, email)
+          // const { email, workspace } = decodeToken(token)
+          // await gmailController.signout(workspace.name, email)
         } catch (err) {
           console.log('signout error', JSON.stringify(err))
         }

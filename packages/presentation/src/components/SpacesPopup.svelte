@@ -45,13 +45,11 @@
         }
       : undefined
 
-  const me = getCurrentAccount()._id
-
   const query = createQuery()
   $: query.query(
     _class,
     {
-      members: me,
+      members: { $in: getCurrentAccount().socialIds },
       ...(spaceQuery ?? {}),
       ...(search !== undefined && search !== ''
         ? {

@@ -13,20 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person, PersonAccount } from '@hcengineering/contact'
+
+  import { Person, getCurrentEmployee } from '@hcengineering/contact'
   import { UserInfo, personByIdStore } from '@hcengineering/contact-resources'
-  import { Class, Doc, IdMap, Ref, getCurrentAccount } from '@hcengineering/core'
-  import {
-    MeetingMinutes,
-    ParticipantInfo,
-    Room,
-    RoomType,
-    isOffice,
-    loveId,
-    roomAccessIcon,
-    roomAccessLabel
-  } from '@hcengineering/love'
-  import { getClient } from '@hcengineering/presentation'
+  import { Class, Doc, IdMap, Ref } from '@hcengineering/core'
+
   import {
     IconArrowLeft,
     IconUpOutline,
@@ -41,6 +32,18 @@
     panelstore,
     showPopup
   } from '@hcengineering/ui'
+
+  import {
+    MeetingMinutes,
+    ParticipantInfo,
+    Room,
+    RoomType,
+    isOffice,
+    loveId,
+    roomAccessIcon,
+    roomAccessLabel
+  } from '@hcengineering/love'
+  import { getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -159,7 +162,7 @@
     })
   }
 
-  const me = (getCurrentAccount() as PersonAccount).person
+  const me = getCurrentEmployee()
   function canGoBack (joined: boolean, location: Location, meetingMinutes?: MeetingMinutes): boolean {
     if (!joined) return false
     if (location.path[2] !== loveId) return true

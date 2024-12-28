@@ -17,9 +17,10 @@ import { decodeDocumentId } from '@hcengineering/collaborator-client'
 import { MeasureContext } from '@hcengineering/core'
 import { decodeToken } from '@hcengineering/server-token'
 import { Extension, onAuthenticatePayload } from '@hocuspocus/server'
+import { getClient as getAccountClient } from '@hcengineering/account-client'
 
-import { getWorkspaceInfo } from '../account'
 import { Context, buildContext } from '../context'
+import config from '../config'
 
 export interface AuthenticationConfiguration {
   ctx: MeasureContext
@@ -42,10 +43,10 @@ export class AuthenticationExtension implements Extension {
       ctx.info('authenticate', { workspaceId, mode: token.extra?.mode ?? '' })
 
       // verify workspace can be accessed with the token
-      const workspaceInfo = await getWorkspaceInfo(data.token)
+      const workspaceInfo = await getAccountClient(config.AccountsUrl, data.token).getWorkspaceInfo()
 
-      // verify workspace url in the document matches the token
-      if (workspaceInfo.workspaceId !== workspaceId) {
+      // verify workspace uuid in the document matches the token
+      if (workspaceInfo.uuid !== workspaceId) {
         throw new Error('documentName must include workspace id')
       }
 

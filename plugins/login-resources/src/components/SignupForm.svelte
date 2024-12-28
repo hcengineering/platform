@@ -62,7 +62,7 @@
 
       status = loginStatus
 
-      if (result !== undefined) {
+      if (result != null) {
         setMetadata(presentation.metadata.Token, result.token)
         setMetadataLocalStorage(login.metadata.LastToken, result.token)
         goTo('confirmationSend')

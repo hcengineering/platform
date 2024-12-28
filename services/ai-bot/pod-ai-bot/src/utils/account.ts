@@ -14,45 +14,43 @@
 //
 
 import {
-  AccountRole,
-  BaseWorkspaceInfo,
+  WorkspaceInfoWithStatus,
   isWorkspaceCreating,
   MeasureContext,
-  systemAccountEmail
+  systemAccountUuid,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
-import { getWorkspaceInfo, assignWorkspace } from '@hcengineering/server-client'
-import aiBot, { aiBotAccountEmail } from '@hcengineering/ai-bot'
-
-import { wait } from './common'
 
 const ASSIGN_WORKSPACE_DELAY_MS = 5 * 1000 // 5 secs
 const MAX_ASSIGN_ATTEMPTS = 5
 
-async function tryGetWorkspaceInfo (ws: string, ctx: MeasureContext): Promise<BaseWorkspaceInfo | undefined> {
-  const systemToken = generateToken(systemAccountEmail, { name: ws })
-  for (let i = 0; i < 5; i++) {
-    try {
-      const info = await getWorkspaceInfo(systemToken)
+async function tryGetWorkspaceInfo (ws: WorkspaceUuid, ctx: MeasureContext): Promise<WorkspaceInfoWithStatus | undefined> {
+  // TODO: FIXME
+  throw new Error('Not implemented')
+  // const systemToken = generateToken(systemAccountUuid, ws, { service: 'aibot' })
+  // for (let i = 0; i < 5; i++) {
+  //   try {
+  //     const info = await getWorkspaceInfo(systemToken)
 
-      if (info == null) {
-        await wait(ASSIGN_WORKSPACE_DELAY_MS)
-        continue
-      }
+  //     if (info == null) {
+  //       await wait(ASSIGN_WORKSPACE_DELAY_MS)
+  //       continue
+  //     }
 
-      return info
-    } catch (e) {
-      ctx.error('Error during get workspace info:', { e })
-      await wait(ASSIGN_WORKSPACE_DELAY_MS)
-    }
-  }
+  //     return info
+  //   } catch (e) {
+  //     ctx.error('Error during get workspace info:', { e })
+  //     await wait(ASSIGN_WORKSPACE_DELAY_MS)
+  //   }
+  // }
 }
 
 const timeoutByWorkspace = new Map<string, NodeJS.Timeout>()
 const attemptsByWorkspace = new Map<string, number>()
 
 export async function tryAssignToWorkspace (
-  workspace: string,
+  workspace: WorkspaceUuid,
   ctx: MeasureContext,
   clearAttempts = true
 ): Promise<boolean> {
@@ -78,8 +76,10 @@ export async function tryAssignToWorkspace (
       return false
     }
 
-    const token = generateToken(systemAccountEmail, { name: '-' }, { service: 'aibot' })
-    await assignWorkspace(token, aiBotAccountEmail, workspace, AccountRole.User, undefined, false, aiBot.account.AIBot)
+    const token = generateToken(systemAccountUuid, undefined, { service: 'aibot' })
+    // TODO: FIXME
+    // replace parameters after fixing server account client
+    // await assignWorkspace(token, aiBotAccountEmail, workspace, AccountRole.User, undefined, false, aiBot.account.AIBot)
     ctx.info('Assigned to workspace: ', { workspace })
     return true
   } catch (e) {

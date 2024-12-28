@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { type Ref, type Doc, SortingOrder, getCurrentAccount, WithLookup, toIdMap } from '@hcengineering/core'
+  import { type Ref, type Doc, SortingOrder, WithLookup, toIdMap } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import type { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import { type Action } from '@hcengineering/ui'
   import documents, {
     type ControlledDocument,
@@ -46,8 +46,7 @@
   import DropArea from './DropArea.svelte'
 
   const dispatch = createEventDispatcher()
-  const currentUser = getCurrentAccount() as PersonAccount
-  const currentPerson = currentUser.person
+  const currentPerson = getCurrentEmployee()
 
   let docs: WithLookup<ProjectDocument>[] = []
 

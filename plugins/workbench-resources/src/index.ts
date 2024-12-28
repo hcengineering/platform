@@ -43,6 +43,7 @@ export { default as ComponentNavigator } from './components/ComponentNavigator.s
 
 export { SpecialView }
 
+export { clearMetadata } from './connect'
 export * from './utils'
 export * from './sidebar'
 export default async (): Promise<Resources> => ({

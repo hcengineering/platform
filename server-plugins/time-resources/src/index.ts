@@ -14,7 +14,8 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
+import contact, { Employee, Person, pickPrimarySocialId } from '@hcengineering/contact'
+
 import core, {
   AttachedData,
   Class,
@@ -31,11 +32,14 @@ import core, {
   TxProcessor,
   TxUpdateDoc,
   toIdMap,
-  Space
+  Space,
+  getCurrentAccount,
+  includesAny
 } from '@hcengineering/core'
 import notification, { CommonInboxNotification } from '@hcengineering/notification'
 import { getResource } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
+import { getSocialStrings, getPerson, getAllSocialStringsByPersonId } from '@hcengineering/server-contact'
 import { ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
 import {
   getCommonNotificationTxes,
@@ -248,12 +252,6 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
     }
 
     const todo = TxProcessor.createDoc2Doc(createTx)
-    const account = control.modelDb.getAccountByPersonId(todo.user) as PersonAccount[]
-
-    if (account.length === 0) {
-      continue
-    }
-
     const object = (await control.findAll(control.ctx, todo.attachedToClass, { _id: todo.attachedTo }))[0]
     if (object === undefined) {
       continue
@@ -271,14 +269,16 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
       continue
     }
 
+    const currentAcc = getCurrentAccount()
+
     if (
       !hierarchy.isDerived(objectSpace._class, core.class.SystemSpace) &&
-      !objectSpace.members.includes(account[0]._id)
+      !includesAny(objectSpace.members, currentAcc.socialIds)
     ) {
       continue
     }
 
-    const person = (
+    const employee = (
       await control.findAll(
         control.ctx,
         contact.mixin.Employee,
@@ -286,7 +286,7 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
         { limit: 1 }
       )
     )[0]
-    if (person === undefined) {
+    if (employee === undefined) {
       continue
     }
 
@@ -297,30 +297,30 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
       continue
     }
 
+    const socialStrings = await getSocialStrings(control, employee._id)
+    const primarySocialString = pickPrimarySocialId(socialStrings)
+
     // TODO: Select a proper account
     const receiverInfo: ReceiverInfo = {
-      _id: account[0]._id,
-      account: account[0],
-      person,
+      _id: primarySocialString,
+      person: employee,
+      socialStrings,
+
+      employee,
       space: personSpace._id
     }
 
-    const senderAccount = control.modelDb.findAllSync(contact.class.PersonAccount, {
-      _id: tx.modifiedBy as Ref<PersonAccount>
-    })[0]
-    const senderPerson =
-      senderAccount !== undefined
-        ? (await control.findAll(control.ctx, contact.class.Person, { _id: senderAccount.person }))[0]
-        : undefined
+    const senderPerson = await getPerson(control, tx.modifiedBy)
+    const senderSocialStrings = await getAllSocialStringsByPersonId(control, [tx.modifiedBy])
 
     const senderInfo: SenderInfo = {
       _id: tx.modifiedBy,
-      account: senderAccount,
-      person: senderPerson
+      person: senderPerson,
+      socialStrings: senderSocialStrings
     }
     const notificationControl = await getNotificationProviderControl(control.ctx, control)
-    const notifyResult = await isShouldNotifyTx(control, createTx, todo, account, true, false, notificationControl)
-    const content = await getNotificationContent(tx, account, senderInfo, todo, control)
+    const notifyResult = await isShouldNotifyTx(control, createTx, todo, socialStrings, true, false, notificationControl)
+    const content = await getNotificationContent(tx, socialStrings, senderInfo, todo, control)
     const data: Partial<Data<CommonInboxNotification>> = {
       ...content,
       header: time.string.ToDo,
@@ -349,9 +349,12 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
     await control.apply(control.ctx, txes)
 
     const ids = txes.map((it) => it._id)
-    control.ctx.contextData.broadcast.targets.notifications = (it) => {
-      if (ids.includes(it._id)) {
-        return [receiverInfo.account.email]
+    const personUuid = receiverInfo.person?.personUuid
+    if (personUuid !== undefined) {
+      control.ctx.contextData.broadcast.targets.notifications = (it) => {
+        if (ids.includes(it._id)) {
+          return [personUuid]
+        }
       }
     }
   }
@@ -618,14 +621,12 @@ async function getIssueToDoData (
   user: Ref<Person>,
   control: TriggerControl
 ): Promise<AttachedData<ProjectToDo> | undefined> {
-  const acc = control.modelDb.getAccountByPersonId(user) as PersonAccount[]
-  if (acc.length === 0) return
   const firstTodoItem = (
     await control.findAll(
       control.ctx,
       time.class.ToDo,
       {
-        user: { $in: acc.map((it) => it.person) },
+        user,
         doneOn: null
       },
       {

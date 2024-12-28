@@ -34,9 +34,13 @@ import {
   IndexKind,
   Obj,
   Permission,
+  PersonId,
   Ref,
   Role,
   roleOrder,
+  SocialId,
+  SocialIdType,
+  SocialKey,
   Space,
   TypedSpace,
   WorkspaceMode,
@@ -120,39 +124,12 @@ export function toFindResult<T extends Doc> (docs: T[], total?: number, lookupMa
   return Object.assign(docs, { total: length, lookupMap })
 }
 
-/**
- * @public
- */
-export interface WorkspaceId {
-  name: string
-  uuid?: string
-}
+export type WorkspaceUuid = string
 
-/**
- * @public
- */
-export interface WorkspaceIdWithUrl extends WorkspaceId {
-  workspaceUrl: string
-  workspaceName: string
-}
-
-/**
- * @public
- *
- * Previously was combining workspace with productId, if not equal ''
- * Now just returning workspace as is. Keeping it to simplify further refactoring of ws id.
- */
-export function getWorkspaceId (workspace: string): WorkspaceId {
-  return {
-    name: workspace
-  }
-}
-
-/**
- * @public
- */
-export function toWorkspaceString (id: WorkspaceId): string {
-  return id.name
+export interface WorkspaceIds {
+  uuid: string
+  url: string
+  dataId?: string // Old workspace identifier. E.g. Database name in Mongo, bucket in R2, etc.
 }
 
 /**
@@ -578,7 +555,7 @@ export async function checkPermission (
 
   const me = getCurrentAccount()
   const asMixin = client.getHierarchy().as(space, mixin)
-  const myRoles = type.$lookup?.roles?.filter((role) => (asMixin as any)[role._id]?.includes(me._id)) as Role[]
+  const myRoles = type.$lookup?.roles?.filter((role) => (asMixin as any)[role._id]?.includes(me.uuid)) as Role[]
 
   if (myRoles === undefined) {
     return false
@@ -843,7 +820,6 @@ export function pluginFilterTx (
 /**
  * @public
  */
-
 export class TimeRateLimiter {
   idCounter: number = 0
   active: number = 0
@@ -916,4 +892,22 @@ export function combineAttributes (
       )
     )
   ).filter((v) => v != null)
+}
+
+export function buildSocialIdString (key: SocialKey): PersonId {
+  return `${key.type}:${key.value}`
+}
+
+export function parseSocialIdString (id: PersonId): SocialKey {
+  const [type, value] = id.split(':')
+
+  return { type: type as SocialIdType, value }
+}
+
+export function pickPrimarySocialId (socialIds: SocialId[]): SocialId {
+  if (socialIds.length === 0) {
+    throw new Error('No social ids provided')
+  }
+
+  return socialIds[0]
 }
