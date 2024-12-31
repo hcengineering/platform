@@ -1,5 +1,5 @@
 {
   "string": {
-    "loadingPlugin": "Loading plugin '<b>'{plugin}'</b>'..."
+    "loadingPlugin": "Plugin '<b>'{plugin}'</b>' wird geladen..."
   }
 }

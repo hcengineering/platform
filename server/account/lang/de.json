@@ -1,0 +1,19 @@
+{
+  "string": {
+    "ConfirmationText": "Vielen Dank für Ihr Interesse an {name}. Um die Registrierung abzuschließen, fügen Sie bitte den folgenden Link in die Adresszeile Ihres Browsers ein: {link}. Mit freundlichen Grüßen, Ihr {name}-Team.",
+    "ConfirmationHTML": "<p>Hallo,</p><p>Vielen Dank für Ihr Interesse an {name}. Um die Registrierung abzuschließen, klicken Sie bitte <a href={link}>hier</a> oder fügen Sie den folgenden Link in die Adresszeile Ihres Browsers ein.</p><p>{link}</p><p>Mit freundlichen Grüßen,</p><p>Ihr {name}-Team.</p>",
+    "ConfirmationSubject": "Bestätigen Sie Ihre E-Mail-Adresse für die Registrierung bei {name}",
+    "RecoveryText": "Wir haben eine Anfrage zum Zurücksetzen des Passworts für Ihr Konto erhalten. Um Ihr Passwort zurückzusetzen, fügen Sie bitte den folgenden Link in die Adresszeile Ihres Browsers ein: {link}. Falls Sie kein Zurücksetzen des Passworts angefordert haben, ignorieren Sie bitte diese E-Mail.",
+    "RecoveryHTML": "<p>Wir haben eine Anfrage zum Zurücksetzen des Passworts für Ihr Konto erhalten. Um Ihr Passwort zurückzusetzen, klicken Sie bitte auf den folgenden Link: <a href={link}>Passwort zurücksetzen</a></p><p>Falls der Link zum Zurücksetzen des Passworts nicht funktioniert, fügen Sie bitte den folgenden Link in die Adresszeile Ihres Browsers ein: {link}</p><p>Falls Sie kein Zurücksetzen des Passworts angefordert haben, ignorieren Sie bitte diese E-Mail.</p>",
+    "RecoverySubject": "Passwort wiederherstellen",
+    "InviteText": "Sie wurden zu {ws} eingeladen. Um beizutreten, fügen Sie bitte den folgenden Link in die Adresszeile Ihres Browsers ein: {link}. Der Link ist {expHours} Stunden gültig.",
+    "InviteHTML": "<p>Sie wurden zu {ws} eingeladen. Um beizutreten, klicken Sie bitte auf den folgenden Link: <a href={link}>Beitreten</a></p><p>Falls der Einladungslink nicht funktioniert, fügen Sie bitte den folgenden Link in die Adresszeile Ihres Browsers ein: {link}</p><p>Der Link ist {expHours} Stunden gültig.</p>",
+    "InviteSubject": "Einladung zu {ws}",
+    "OtpText": "Bestätigen Sie Ihre E-Mail-Adresse für den Zugriff auf {app}!\n\nIhr Bestätigungscode steht unten - geben Sie ihn in dem Fenster ein, in dem Sie sich bei {app} anmelden.\n\n{code}\n\nWenn Sie diese E-Mail nicht angefordert haben, müssen Sie sich keine Sorgen machen — Sie können sie einfach ignorieren.",
+    "OtpHTML": "<h3>Bestätigen Sie Ihre E-Mail-Adresse für den Zugriff auf {app}!</h3><p>Ihr Bestätigungscode steht unten - geben Sie ihn in dem Fenster ein, in dem Sie sich bei {app} anmelden.<p/><br/><b style=\"font-size:36px\">{code}</b><br/><br/><p>Wenn Sie diese E-Mail nicht angefordert haben, müssen Sie sich keine Sorgen machen — Sie können sie einfach ignorieren.</p>",
+    "OtpSubject": "{app} Bestätigungscode: {code}",
+    "ResendInviteText": "Sie wurden erneut zu {ws} eingeladen. Bitte verwenden Sie den folgenden Link zum Beitreten: {link}. Der erneute Einladungslink ist {expHours} Stunden gültig.",
+    "ResendInviteHTML": "<p>Sie wurden erneut zu {ws} eingeladen. Um beizutreten, klicken Sie bitte auf den folgenden Link: <a href={link}>Beitreten</a></p><p>Falls der Einladungslink nicht funktioniert, fügen Sie bitte den folgenden Link in die Adresszeile Ihres Browsers ein: {link}</p><p>Der erneute Einladungslink ist {expHours} Stunden gültig.</p>",
+    "ResendInviteSubject": "Erneute Einladung zu {ws}"
+  }
+}
