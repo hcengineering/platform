@@ -54,7 +54,7 @@
   $: collapsed = getCollapsed(_class, nonEmpty)
 </script>
 
-{#if showHeader && ((keys.length > 0) || isMainClass)}
+{#if showHeader && (keys.length > 0 || isMainClass)}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
