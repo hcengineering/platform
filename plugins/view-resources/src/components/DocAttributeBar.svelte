@@ -38,6 +38,7 @@
   {allowedCollections}
   {showHeader}
   {readonly}
+  mainClass
   on:update
 />
 {#each mixins as mixin}
