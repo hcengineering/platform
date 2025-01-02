@@ -64,6 +64,8 @@ import {
   getWorkspaceDestroyAdapter,
   registerAdapterFactory,
   registerDestroyFactory,
+  registerServerPlugins,
+  registerStringLoaders,
   registerTxAdapterFactory
 } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
@@ -180,6 +182,8 @@ export function devTool (
   registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
   registerAdapterFactory('postgresql', createPostgresAdapter, true)
   registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+  registerServerPlugins()
+  registerStringLoaders()
 
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {
