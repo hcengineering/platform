@@ -661,6 +661,7 @@ export type WorkspaceMode =
   | 'pending-deletion' // -> 'deleting'
   | 'deleting' // -> "deleted"
   | 'active'
+  | 'deleted'
   | 'archiving-pending-backup' // -> 'cleaning'
   | 'archiving-backup' // -> 'archiving-pending-clean'
   | 'archiving-pending-clean' // -> 'archiving-clean'

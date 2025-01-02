@@ -33,8 +33,7 @@ import core, {
   type MeasureContext,
   type Tx,
   type TxWorkspaceEvent,
-  type WorkspaceId,
-  type WorkspaceIdWithUrl
+  type WorkspaceId
 } from '@hcengineering/core'
 import { unknownError, type Status } from '@hcengineering/platform'
 import { type HelloRequest, type HelloResponse, type Request, type Response } from '@hcengineering/rpc'
@@ -109,12 +108,7 @@ class TSessionManager implements SessionManager {
 
   constructor (
     readonly ctx: MeasureContext,
-    readonly sessionFactory: (
-      token: Token,
-      pipeline: Pipeline,
-      workspaceId: WorkspaceIdWithUrl,
-      branding: Branding | null
-    ) => Session,
+    readonly sessionFactory: (token: Token, workspace: Workspace) => Session,
     readonly timeouts: Timeouts,
     readonly brandingMap: BrandingMap,
     readonly profiling:
@@ -288,8 +282,8 @@ class TSessionManager implements SessionManager {
     this.ticks++
   }
 
-  createSession (token: Token, pipeline: Pipeline, workspaceId: WorkspaceIdWithUrl, branding: Branding | null): Session {
-    return this.sessionFactory(token, pipeline, workspaceId, branding)
+  createSession (token: Token, workspace: Workspace): Session {
+    return this.sessionFactory(token, workspace)
   }
 
   async getWorkspaceInfo (ctx: MeasureContext, token: string): Promise<WorkspaceLoginInfo | undefined> {
@@ -473,7 +467,12 @@ class TSessionManager implements SessionManager {
         return { upgrade: true }
       }
       try {
-        pipeline = await ctx.with('💤 wait', { workspaceName }, () => (workspace as Workspace).pipeline)
+        if (workspace.pipeline instanceof Promise) {
+          pipeline = await workspace.pipeline
+          workspace.pipeline = pipeline
+        } else {
+          pipeline = workspace.pipeline
+        }
       } catch (err: any) {
         // Failed to create pipeline, etc
         Analytics.handleError(err)
@@ -482,16 +481,7 @@ class TSessionManager implements SessionManager {
       }
     }
 
-    const session = this.createSession(
-      token,
-      pipeline,
-      {
-        ...workspace.workspaceId,
-        workspaceName: workspaceInfo.workspaceName ?? '',
-        workspaceUrl: workspaceInfo.workspaceUrl ?? ''
-      },
-      branding
-    )
+    const session = this.createSession(token, workspace)
 
     session.sessionId = sessionId !== undefined && (sessionId ?? '').trim().length > 0 ? sessionId : generateId()
     session.sessionInstanceId = generateId()
@@ -508,7 +498,7 @@ class TSessionManager implements SessionManager {
     // We do not need to wait for set-status, just return session to client
     const _workspace = workspace
     void ctx
-      .with('set-status', {}, (ctx) => this.trySetStatus(ctx, session, true, _workspace.workspaceId))
+      .with('set-status', {}, (ctx) => this.trySetStatus(ctx, pipeline, session, true, _workspace.workspaceId))
       .catch(() => {})
 
     if (this.timeMinutes > 0) {
@@ -661,6 +651,7 @@ class TSessionManager implements SessionManager {
     workspaceUuid: string | undefined,
     branding: Branding | null
   ): Workspace {
+    const wsId = toWorkspaceString(token.workspace)
     const upgrade = token.extra?.model === 'upgrade'
     const context = ctx.newChild('🧲 session', {})
     const pipelineCtx = context.newChild('🧲 pipeline-factory', {})
@@ -679,7 +670,11 @@ class TSessionManager implements SessionManager {
       sessions: new Map(),
       softShutdown: workspaceSoftShutdownTicks,
       upgrade,
-      workspaceId: token.workspace,
+      workspaceId: {
+        ...token.workspace,
+        workspaceName,
+        workspaceUrl
+      },
       workspaceName,
       workspaceUuid,
       branding,
@@ -688,12 +683,13 @@ class TSessionManager implements SessionManager {
       tickHandlers: new Map(),
       token: generateToken(systemAccountEmail, token.workspace)
     }
-    this.workspaces.set(toWorkspaceString(token.workspace), workspace)
+    this.workspaces.set(wsId, workspace)
     return workspace
   }
 
   private async trySetStatus (
     ctx: MeasureContext,
+    pipeline: Pipeline,
     session: Session,
     online: boolean,
     workspaceId: WorkspaceId
@@ -702,7 +698,7 @@ class TSessionManager implements SessionManager {
     if (current !== undefined) {
       await current
     }
-    const promise = this.setStatus(ctx, session, online, workspaceId)
+    const promise = this.setStatus(ctx, pipeline, session, online, workspaceId)
     this.statusPromises.set(session.getUser(), promise)
     await promise
     this.statusPromises.delete(session.getUser())
@@ -710,38 +706,28 @@ class TSessionManager implements SessionManager {
 
   private async setStatus (
     ctx: MeasureContext,
+    pipeline: Pipeline,
     session: Session,
     online: boolean,
     workspaceId: WorkspaceId
   ): Promise<void> {
     try {
-      const user = session.pipeline().context.modelDb.getAccountByEmail(session.getUser())
+      const user = pipeline.context.modelDb.getAccountByEmail(session.getUser())
       if (user === undefined) return
 
-      const clientCtx: ClientSessionCtx = {
-        sendResponse: async (msg) => {
-          // No response
-        },
-        ctx,
-        sendError: async (msg, error: Status) => {
-          // Assume no error send
-        },
-        sendPong: () => {}
-      }
-
-      const status = (await session.findAllRaw(ctx, core.class.UserStatus, { user: user._id }, { limit: 1 }))[0]
+      const status = (await pipeline.findAll(ctx, core.class.UserStatus, { user: user._id }, { limit: 1 }))[0]
       const txFactory = new TxFactory(user._id, true)
       if (status === undefined) {
         const tx = txFactory.createTxCreateDoc(core.class.UserStatus, core.space.Space, {
           online,
           user: user._id
         })
-        await session.tx(clientCtx, tx)
+        await pipeline.tx(ctx, [tx])
       } else if (status.online !== online) {
         const tx = txFactory.createTxUpdateDoc(status._class, status.space, status._id, {
           online
         })
-        await session.tx(clientCtx, tx)
+        await pipeline.tx(ctx, [tx])
       }
     } catch {}
   }
@@ -763,6 +749,7 @@ class TSessionManager implements SessionManager {
       this.sessions.delete(ws.id)
       if (workspace !== undefined) {
         workspace.sessions.delete(sessionRef.session.sessionId)
+        const pipeline = workspace.pipeline instanceof Promise ? await workspace.pipeline : workspace.pipeline
 
         workspace.tickHandlers.set(sessionRef.session.sessionId, {
           ticks: this.timeouts.reconnectTimeout * ticksPerSecond,
@@ -773,9 +760,13 @@ class TSessionManager implements SessionManager {
             if (workspace !== undefined) {
               const another = Array.from(workspace.sessions.values()).findIndex((p) => p.session.getUser() === user)
               if (another === -1 && !workspace.upgrade) {
-                void this.trySetStatus(workspace.context, sessionRef.session, false, workspace.workspaceId).catch(
-                  () => {}
-                )
+                void this.trySetStatus(
+                  workspace.context,
+                  pipeline,
+                  sessionRef.session,
+                  false,
+                  workspace.workspaceId
+                ).catch(() => {})
               }
             }
           }
@@ -929,6 +920,41 @@ class TSessionManager implements SessionManager {
     }
   }
 
+  createOpContext (
+    ctx: MeasureContext,
+    pipeline: Pipeline,
+    request: Request<any>,
+    service: Session,
+    ws: ConnectionSocket
+  ): ClientSessionCtx {
+    const st = Date.now()
+    return {
+      ctx,
+      pipeline,
+      requestId: request.id,
+      sendResponse: (reqId, msg) =>
+        sendResponse(ctx, service, ws, {
+          id: reqId,
+          result: msg,
+          time: Date.now() - st,
+          bfst: Date.now(),
+          queue: service.requests.size
+        }),
+      sendPong: () => {
+        ws.sendPong()
+      },
+      sendError: (reqId, msg, error: Status) =>
+        sendResponse(ctx, service, ws, {
+          id: reqId,
+          result: msg,
+          error,
+          time: Date.now() - st,
+          bfst: Date.now(),
+          queue: service.requests.size
+        })
+    }
+  }
+
   handleRequest<S extends Session>(
     requestCtx: MeasureContext,
     service: S,
@@ -936,43 +962,38 @@ class TSessionManager implements SessionManager {
     request: Request<any>,
     workspace: string // wsId, toWorkspaceString()
   ): Promise<void> {
-    const backupMode = service.getMode() === 'backup'
-
-    const userCtx = requestCtx.newChild(
-      '📞 client',
-      !backupMode
-        ? {
-            workspace: '🧲 ' + workspace
-          }
-        : {}
-    )
+    const userCtx = requestCtx.newChild('📞 client', {})
 
     // Calculate total number of clients
     const reqId = generateId()
 
     const st = Date.now()
     return userCtx
-      .with(`🧭 ${backupMode ? 'handleBackup' : 'handleRequest'}`, {}, async (ctx) => {
+      .with('🧭 handleRequest', {}, async (ctx) => {
         if (request.time != null) {
           const delta = Date.now() - request.time
           requestCtx.measure('msg-receive-delta', delta)
         }
-        const wsRef = this.workspaces.get(workspace)
-        if (wsRef === undefined) {
+        if (service.workspace.closing !== undefined) {
           ws.send(
             ctx,
             {
               id: request.id,
-              error: unknownError('No workspace')
+              error: unknownError('Workspace is closing')
             },
             service.binaryMode,
             service.useCompression
           )
           return
         }
-        if (request.method === 'forceClose') {
+        if (request.id === -1 && request.method === 'hello') {
+          this.handleHello<S>(request, service, ctx, workspace, ws, requestCtx)
+          return
+        }
+        if (request.id === -2 && request.method === 'forceClose') {
           let done = false
-          if (wsRef.upgrade) {
+          const wsRef = this.workspaces.get(workspace)
+          if (wsRef?.upgrade ?? false) {
             done = true
             this.ctx.warn('FORCE CLOSE', { workspace })
             // In case of upgrade, we need to force close workspace not in interval handler
@@ -985,62 +1006,6 @@ class TSessionManager implements SessionManager {
           ws.send(ctx, forceCloseResponse, service.binaryMode, service.useCompression)
           return
         }
-        if (request.id === -1 && request.method === 'hello') {
-          const hello = request as HelloRequest
-          service.binaryMode = hello.binary ?? false
-          service.useCompression = hello.compression ?? false
-
-          if (LOGGING_ENABLED) {
-            ctx.info('hello happen', {
-              workspace,
-              user: service.getUser(),
-              binary: service.binaryMode,
-              compression: service.useCompression,
-              timeToHello: Date.now() - service.createTime,
-              workspaceUsers: this.workspaces.get(workspace)?.sessions?.size,
-              totalUsers: this.sessions.size
-            })
-          }
-          const reconnect = this.reconnectIds.has(service.sessionId)
-          if (reconnect) {
-            this.reconnectIds.delete(service.sessionId)
-          }
-          const helloResponse: HelloResponse = {
-            id: -1,
-            result: 'hello',
-            binary: service.binaryMode,
-            reconnect,
-            serverVersion: this.serverVersion
-          }
-          ws.send(requestCtx, helloResponse, false, false)
-          return
-        }
-        const opContext = (ctx: MeasureContext): ClientSessionCtx => ({
-          sendResponse: async (msg) => {
-            await sendResponse(requestCtx, service, ws, {
-              id: request.id,
-              result: msg,
-              time: Date.now() - st,
-              bfst: Date.now(),
-              queue: service.requests.size
-            })
-            userCtx.end()
-          },
-          sendPong: () => {
-            ws.sendPong()
-          },
-          ctx,
-          sendError: async (msg, error: Status) => {
-            await sendResponse(ctx, service, ws, {
-              id: request.id,
-              result: msg,
-              error,
-              time: Date.now() - st,
-              bfst: Date.now(),
-              queue: service.requests.size
-            })
-          }
-        })
 
         service.requests.set(reqId, {
           id: reqId,
@@ -1052,11 +1017,16 @@ class TSessionManager implements SessionManager {
           return
         }
 
+        const pipeline =
+          service.workspace.pipeline instanceof Promise ? await service.workspace.pipeline : service.workspace.pipeline
+
         const f = (service as any)[request.method]
         try {
           const params = [...request.params]
 
-          await ctx.with('🧨 process', {}, (callTx) => f.apply(service, [opContext(callTx), ...params]))
+          await ctx.with('🧨 process', {}, (callTx) =>
+            f.apply(service, [this.createOpContext(callTx, pipeline, request, service, ws), ...params])
+          )
         } catch (err: any) {
           Analytics.handleError(err)
           if (LOGGING_ENABLED) {
@@ -1079,16 +1049,48 @@ class TSessionManager implements SessionManager {
         service.requests.delete(reqId)
       })
   }
+
+  private handleHello<S extends Session>(
+    request: Request<any>,
+    service: S,
+    ctx: MeasureContext<any>,
+    workspace: string,
+    ws: ConnectionSocket,
+    requestCtx: MeasureContext<any>
+  ): void {
+    const hello = request as HelloRequest
+    service.binaryMode = hello.binary ?? false
+    service.useCompression = hello.compression ?? false
+
+    if (LOGGING_ENABLED) {
+      ctx.info('hello happen', {
+        workspace,
+        user: service.getUser(),
+        binary: service.binaryMode,
+        compression: service.useCompression,
+        timeToHello: Date.now() - service.createTime,
+        workspaceUsers: this.workspaces.get(workspace)?.sessions?.size,
+        totalUsers: this.sessions.size
+      })
+    }
+    const reconnect = this.reconnectIds.has(service.sessionId)
+    if (reconnect) {
+      this.reconnectIds.delete(service.sessionId)
+    }
+    const helloResponse: HelloResponse = {
+      id: -1,
+      result: 'hello',
+      binary: service.binaryMode,
+      reconnect,
+      serverVersion: this.serverVersion
+    }
+    ws.send(requestCtx, helloResponse, false, false)
+  }
 }
 
 export function createSessionManager (
   ctx: MeasureContext,
-  sessionFactory: (
-    token: Token,
-    pipeline: Pipeline,
-    workspaceId: WorkspaceIdWithUrl,
-    branding: Branding | null
-  ) => Session,
+  sessionFactory: (token: Token, workspace: Workspace) => Session,
   brandingMap: BrandingMap,
   timeouts: Timeouts,
   profiling:
@@ -1110,12 +1112,7 @@ export function startSessionManager (
   opt: {
     port: number
     pipelineFactory: PipelineFactory
-    sessionFactory: (
-      token: Token,
-      pipeline: Pipeline,
-      workspaceId: WorkspaceIdWithUrl,
-      branding: Branding | null
-    ) => Session
+    sessionFactory: (token: Token, workspace: Workspace) => Session
     brandingMap: BrandingMap
     serverFactory: ServerFactory
     enableCompression?: boolean

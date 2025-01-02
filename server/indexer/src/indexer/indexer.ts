@@ -759,12 +759,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       systemAccountEmail,
       '',
       true,
-      { targets: {}, txes: [] },
+      undefined,
       this.workspace,
       null,
       false,
-      new Map(),
-      new Map(),
+      undefined,
+      undefined,
       this.model
     )
   }

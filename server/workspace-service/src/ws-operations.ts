@@ -288,12 +288,12 @@ export async function upgradeWorkspaceWith (
       systemAccountEmail,
       'backup',
       true,
-      { targets: {}, txes: [] },
+      undefined,
       wsUrl,
       null,
       true,
-      new Map(),
-      new Map(),
+      undefined,
+      undefined,
       pipeline.context.modelDb
     )
     ctx.contextData = contextData

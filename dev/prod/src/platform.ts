@@ -420,7 +420,9 @@ export async function configurePlatform() {
   setMetadata(login.metadata.TransactorOverride, config.TRANSACTOR_OVERRIDE)
 
   // Use binary response transfer for faster performance and small transfer sizes.
-  setMetadata(client.metadata.UseBinaryProtocol, config.USE_BINARY_PROTOCOL ?? true)
+  const binaryOverride = localStorage.getItem(client.metadata.UseBinaryProtocol)
+  setMetadata(client.metadata.UseBinaryProtocol, binaryOverride != null ? binaryOverride === 'true' : (config.USE_BINARY_PROTOCOL ?? true))
+
   // Disable for now, since it causes performance issues on linux/docker/kubernetes boxes for now.
   setMetadata(client.metadata.UseProtocolCompression, true)
 
