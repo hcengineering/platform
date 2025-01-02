@@ -6,7 +6,8 @@ import {
   type Type,
   type Space,
   type SpaceTypeDescriptor,
-  type Permission
+  type Permission,
+  Role
 } from '@hcengineering/core'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
@@ -275,6 +276,11 @@ export const documentsPlugin = plugin(documentsId, {
     CM: '' as Ref<DocumentCategory>,
     CA: '' as Ref<DocumentCategory>,
     CC: '' as Ref<DocumentCategory>
+  },
+  role: {
+    QARA: '' as Ref<Role>,
+    Manager: '' as Ref<Role>,
+    QualifiedUser: '' as Ref<Role>
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>

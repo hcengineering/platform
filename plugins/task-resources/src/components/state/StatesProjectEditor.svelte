@@ -35,32 +35,73 @@
   let dragState: Ref<Status>
   let opened: Ref<Status> | undefined
 
-  function dragswap (ev: MouseEvent, i: number): boolean {
+  function dragswap (ev: MouseEvent, i: number, targetCategory: Ref<StatusCategory>): boolean {
     if (readonly) return false
     const s = selected as number
-    if (i < s) {
-      return ev.offsetY < elements[i].offsetHeight / 2
-    } else if (i > s) {
-      return ev.offsetY > elements[i].offsetHeight / 2
+    const sourceState = states[s]
+    const sourceCategory = sourceState.category
+
+    if (sourceCategory === targetCategory) {
+      if (i < s) {
+        return ev.offsetY < elements[i].offsetHeight / 2
+      } else if (i > s) {
+        return ev.offsetY > elements[i].offsetHeight / 2
+      }
+    } else {
+      return true
     }
     return false
   }
 
-  function dragover (ev: MouseEvent, i: number): void {
+  function dragover (ev: MouseEvent, i: number, targetCategory: Ref<StatusCategory>): void {
     if (readonly) return
     const s = selected as number
-    if (dragswap(ev, i)) {
+
+    if (dragswap(ev, i, targetCategory)) {
       ;[states[i], states[s]] = [states[s], states[i]]
       selected = i
     }
   }
 
-  function onMove (to: number): void {
+  function moveState (i: number): void {
+    if (readonly || selected === undefined || i === selected) return
+
+    // Get state to move
+    const stateToMove = states[selected]
+
+    // Remove state from old position
+    states.splice(selected, 1)
+
+    // Adjust target index if moving forward
+    const targetIndex = i > selected ? i - 1 : i
+
+    // Insert state at new position
+    states.splice(targetIndex, 0, stateToMove)
+
+    // Update selected index
+    selected = targetIndex
+  }
+
+  function onMove (to: number, targetCategory: Ref<StatusCategory>): void {
     if (readonly) return
-    dispatch('move', {
-      stateID: dragState,
-      position: to
-    })
+
+    const state = $statusStore.byId.get(dragState)
+
+    if (state !== undefined && state.category !== targetCategory) {
+      const newStates = states.filter((s) => s._id !== dragState)
+      newStates.splice(to, 0, state)
+
+      dispatch('move', {
+        stateID: dragState,
+        position: to,
+        newCategory: targetCategory
+      })
+    } else {
+      dispatch('move', {
+        stateID: dragState,
+        position: to
+      })
+    }
   }
 
   let categories: StatusCategory[] = []
@@ -150,6 +191,21 @@
       <Label label={cat.label} />
     </div>
     <div class="hulyTableAttr-content__wrapper">
+      {#if states.length === 0}
+        <!-- Placeholder для пустой категории -->
+        <button
+          class="hulyTableAttr-content__row disableMouseOver"
+          style="height: 100%; min-height: 3rem;"
+          draggable={false}
+          on:drop|preventDefault={() => {
+            onMove(prevIndex, cat._id)
+          }}
+          on:dragover|preventDefault={() => {
+            moveState(prevIndex)
+          }}
+        >
+        </button>
+      {/if}
       {#each states as state, i (state._id)}
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <button
@@ -161,10 +217,10 @@
             handleSelect(state)
           }}
           on:dragover|preventDefault={(ev) => {
-            dragover(ev, i + prevIndex)
+            dragover(ev, i + prevIndex, cat._id)
           }}
           on:drop|preventDefault={() => {
-            onMove(prevIndex + i)
+            onMove(prevIndex + i, cat._id)
           }}
           on:dragstart={() => {
             selected = i + prevIndex
