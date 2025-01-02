@@ -123,9 +123,6 @@ export async function OnWorkSlotCreate (txes: Tx[], control: TriggerControl): Pr
       continue
     }
     const project = (await control.findAll(control.ctx, task.class.Project, { _id: issue.space }))[0]
-    if (project === undefined) {
-      return
-    }
     if (project !== undefined) {
       const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
       if (type?.classic) {
