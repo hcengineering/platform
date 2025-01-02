@@ -123,6 +123,9 @@ export async function OnWorkSlotCreate (txes: Tx[], control: TriggerControl): Pr
       continue
     }
     const project = (await control.findAll(control.ctx, task.class.Project, { _id: issue.space }))[0]
+    if (project === undefined) {
+      return
+    }
     if (project !== undefined) {
       const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
       if (type?.classic) {
@@ -456,6 +459,76 @@ export async function IssueToDoFactory (actualTx: TxCUD<Issue>, control: Trigger
   return []
 }
 
+async function generateChangeStatusTx (
+  control: TriggerControl,
+  factory: TxFactory,
+  issue: Issue,
+  todo: ToDo
+): Promise<Tx | undefined> {
+  if (await isClassic(control, issue.space)) {
+    const taskType = (await control.modelDb.findAll(task.class.TaskType, { _id: issue.kind }))[0]
+    if (taskType !== undefined) {
+      const index = taskType.statuses.findIndex((p) => p === issue.status)
+      const nextStatus = taskType.statuses[index + 1]
+      const currentStatus = taskType.statuses[index]
+
+      const current = await getStatus(control, currentStatus)
+      const next = await getStatus(control, nextStatus)
+      if (isValidStatusChange(current, next)) {
+        const unfinished = await getUnfinishedTodos(control, issue._id)
+        if (unfinished.length > 0) return
+
+        const testers = await getTesters(control)
+        for (const tester of testers) {
+          if (!(await tester(control, todo))) {
+            return
+          }
+        }
+
+        return createStatusChangeTx(factory, issue, nextStatus)
+      }
+    }
+  }
+}
+
+async function isClassic (control: TriggerControl, space: Ref<Project>): Promise<boolean> {
+  const project = (await control.findAll(control.ctx, tracker.class.Project, { _id: space }))[0]
+  const projectType = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
+  return projectType?.classic ?? false
+}
+
+async function getUnfinishedTodos (control: TriggerControl, issueId: Ref<Issue>): Promise<ToDo[]> {
+  return await control.findAll(control.ctx, time.class.ToDo, { attachedTo: issueId, doneOn: null }, { limit: 1 })
+}
+
+async function getTesters (
+  control: TriggerControl
+): Promise<((control: TriggerControl, todo: ToDo) => Promise<boolean>)[]> {
+  const helpers = await control.modelDb.findAll<TodoAutomationHelper>(time.class.TodoAutomationHelper, {})
+  return await Promise.all(helpers.map((it) => getResource(it.onDoneTester)))
+}
+
+async function getStatus (control: TriggerControl, statusId: Ref<Status> | undefined): Promise<Status | undefined> {
+  if (statusId === undefined) return
+  return (await control.modelDb.findAll(core.class.Status, { _id: statusId }))[0]
+}
+
+function isValidStatusChange (current: Status | undefined, next: Status | undefined): boolean {
+  if (current === undefined || next === undefined) return false
+  return (
+    current.category !== task.statusCategory.Lost &&
+    next.category !== task.statusCategory.Lost &&
+    current.category !== task.statusCategory.Won
+  )
+}
+
+function createStatusChangeTx (factory: TxFactory, issue: Issue, nextStatus: Ref<Status>): Tx {
+  const innerTx = factory.createTxUpdateDoc(issue._class, issue.space, issue._id, {
+    status: nextStatus
+  })
+  return factory.createTxCollectionCUD(issue.attachedToClass, issue.attachedTo, issue.space, issue.collection, innerTx)
+}
+
 /**
  * @public
  */
@@ -476,53 +549,11 @@ export async function IssueToDoDone (
   )[0]
   if (issue !== undefined) {
     if (!isDerived) {
-      const project = (await control.findAll(control.ctx, task.class.Project, { _id: issue.space }))[0]
-      if (project !== undefined) {
-        const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
-        if (type?.classic) {
-          const taskType = (await control.modelDb.findAll(task.class.TaskType, { _id: issue.kind }))[0]
-          if (taskType !== undefined) {
-            const index = taskType.statuses.findIndex((p) => p === issue.status)
-
-            const helpers = await control.modelDb.findAll<TodoAutomationHelper>(time.class.TodoAutomationHelper, {})
-            const testers = await Promise.all(helpers.map((it) => getResource(it.onDoneTester)))
-            let allowed = true
-            for (const tester of testers) {
-              if (!(await tester(control, todo))) {
-                allowed = false
-                break
-              }
-            }
-            if (index !== -1 && allowed) {
-              const nextStatus = taskType.statuses[index + 1]
-              if (nextStatus !== undefined) {
-                const currentStatus = taskType.statuses[index]
-                const current = (await control.modelDb.findAll(core.class.Status, { _id: currentStatus }))[0]
-                const next = (await control.modelDb.findAll(core.class.Status, { _id: nextStatus }))[0]
-                if (
-                  current.category !== task.statusCategory.Lost &&
-                  next.category !== task.statusCategory.Lost &&
-                  current.category !== task.statusCategory.Won
-                ) {
-                  const innerTx = factory.createTxUpdateDoc(issue._class, issue.space, issue._id, {
-                    status: nextStatus
-                  })
-                  const outerTx = factory.createTxCollectionCUD(
-                    issue.attachedToClass,
-                    issue.attachedTo,
-                    issue.space,
-                    issue.collection,
-                    innerTx
-                  )
-                  res.push(outerTx)
-                }
-              }
-            }
-          }
-        }
+      const changeTx = await generateChangeStatusTx(control, factory, issue, todo)
+      if (changeTx !== undefined) {
+        res.push(changeTx)
       }
     }
-
     if (total > 0) {
       // round to nearest 15 minutes
       total = Math.round(total / 15) * 15
