@@ -6,8 +6,6 @@ import { P12Signer } from '@signpdf/signer-p12'
 import signpdf from '@signpdf/signpdf'
 import { PDFDocument, StandardFonts, degrees, degreesToRadians, rgb } from 'pdf-lib'
 
-import { systemAccountEmail } from '@hcengineering/core'
-
 interface Rect {
   x: number
   y: number
@@ -50,7 +48,7 @@ export async function signPDF (file: Buffer, certp12: Buffer, pwd: string, ctx: 
   // Make it configurable when will be needed to allow signing for different reasons.
   const options: Options = {
     name: ctx.title,
-    contactInfo: systemAccountEmail,
+    contactInfo: 'anticrm@hc.engineering',
     appName: ctx.title,
     reason: 'Export from the system',
     location: 'N/A'
