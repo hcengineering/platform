@@ -98,10 +98,10 @@
     flex-direction: column;
     padding-block: var(--spacing-2);
     height: 100%;
-    width: 3.5rem;
+    width: var(--app-panel-width);
     min-width: 3.5rem;
     max-width: 3.5rem;
-    background-color: var(--theme-navpanel-color);
+    background-color: var(--theme-workbench-color);
     border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
     overflow-y: auto;
   }

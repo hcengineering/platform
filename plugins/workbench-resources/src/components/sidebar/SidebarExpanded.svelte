@@ -158,7 +158,6 @@
     min-width: 0;
     min-height: 0;
     background-color: var(--theme-panel-color);
-
     border-left: none;
   }
 

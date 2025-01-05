@@ -124,7 +124,7 @@
   --theme-refinput-border: rgba(255, 255, 255, .1);
 
   // Be aware to update defineAlpha() function in colors.ts
-  --theme-bg-color: #1A1A28;
+  --theme-bg-color: #14141f;
   --theme-bg-accent-color: rgba(0, 0, 0, .08);
   --theme-bg-dark-color: rgba(0, 0, 0, .2);
   --theme-back-color: #0f0f18;
@@ -188,6 +188,7 @@
   --theme-popup-shadow: 0 0 .5rem rgba(0, 0, 0, .2);
   --theme-popup-checkicon: #FFFFFF99;
   --theme-panel-color: #1A1A28;
+  --theme-workbench-color: #1A1A28;
   --theme-calendar-today-color: #fff;
   --theme-calendar-holiday-color: #eb5757;
   --theme-calendar-weekend-color: rgba(242, 153, 74, 1);
@@ -446,6 +447,7 @@
   --theme-popup-shadow: 0 0 .5rem rgba(0, 0, 0, .2);
   --theme-popup-checkicon: #205DC2;
   --theme-panel-color: #FFFFFF;
+  --theme-workbench-color: #FFFFFF;
   --theme-calendar-today-color: #000;
   --theme-calendar-holiday-color: #eb5757;
   --theme-calendar-weekend-color: rgba(242, 153, 74, 1);
