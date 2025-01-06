@@ -16,7 +16,7 @@
   import { Person } from '@hcengineering/contact'
   import { Data, Doc, Ref, generateId } from '@hcengineering/core'
   import { Card, KeyedAttribute, SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
-  import tags, { TagElement } from '@hcengineering/tags'
+  import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { TaskType } from '@hcengineering/task'
   import { TaskKindSelector } from '@hcengineering/task-resources'
   import { StyledTextBox } from '@hcengineering/text-editor-resources'
