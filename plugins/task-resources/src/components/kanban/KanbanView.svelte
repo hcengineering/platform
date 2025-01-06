@@ -56,7 +56,7 @@
   export let space: Ref<Project> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let query: DocumentQuery<Task> = {}
-  export let viewOptionsConfig: ViewOptionModel[] | undefined
+  export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
   export let viewOptions: ViewOptions
   export let viewlet: Viewlet
   export let config: (string | BuildModelKey)[]

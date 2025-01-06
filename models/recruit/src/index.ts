@@ -213,7 +213,8 @@ export function createModel (builder: Builder): void {
                 ['assigned', view.string.Assigned, {}],
                 ['created', view.string.Created, {}],
                 ['subscribed', view.string.Subscribed, {}]
-              ]
+              ],
+              descriptors: [view.viewlet.List, view.viewlet.Table, task.viewlet.Kanban]
             }
           },
           {
