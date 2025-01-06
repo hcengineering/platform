@@ -77,7 +77,7 @@ export const tableKitExtensions: KitExtension[] = [
   [
     10,
     Table.configure({
-      resizable: false,
+      resizable: true,
       HTMLAttributes: {
         class: 'proseTable'
       }
