@@ -173,7 +173,7 @@
       border-top-color: var(--theme-divider-color);
       border-bottom: 1px solid var(--theme-divider-color);
       z-index: 491;
-      filter: drop-shadow(-2px 0 5px rgba(0, 0, 0, .2));
+      filter: drop-shadow(-2px 0 5px rgba(0, 0, 0, 0.2));
     }
 
     @media (max-width: 680px) {
