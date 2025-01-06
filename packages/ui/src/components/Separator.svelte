@@ -513,9 +513,12 @@
     container.style.maxWidth = ''
   }
   const clearSibling = (): void => {
-    if (separator === null) return
-    if (separators != null && prevElement != null && separators[index].float !== undefined) clearContainer(prevElement)
-    if (separators != null && nextElement != null && separators[index + 1].float !== undefined) { clearContainer(nextElement) }
+    if (separators != null && prevElement != null && separators[index].float !== undefined) {
+      clearContainer(prevElement)
+    }
+    if (separators != null && nextElement != null && separators[index + 1].float !== undefined) {
+      clearContainer(nextElement)
+    }
   }
   const clearParent = (): void => {
     if (parentElement === null && separator != null) parentElement = separator.parentElement as HTMLElement
