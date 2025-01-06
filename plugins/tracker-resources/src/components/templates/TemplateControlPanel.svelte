@@ -84,6 +84,7 @@
     width={'100%'}
     size={'medium'}
     kind={'link'}
+    showAlways
     on:change={async (evt) => {
       if (evt.detail !== undefined) {
         await client.update(issue, { kind: evt.detail })

@@ -134,6 +134,8 @@
     spaceQuery.unsubscribe()
     currentProject = undefined
   }
+
+  $: labelRefs = labels.map((it) => ({ ...(it as unknown as TagReference), _id: generateId(), tag: it._id }))
 </script>
 
 <Card
@@ -212,7 +214,7 @@
     <Component
       is={tags.component.TagsDropdownEditor}
       props={{
-        items: labels,
+        items: labelRefs,
         key,
         targetClass: tracker.class.Issue,
         countLabel: tracker.string.NumberLabels,

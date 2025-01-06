@@ -14,6 +14,7 @@
   export let size: ButtonSize = 'medium'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
+  export let showAlways: boolean = false
   export let allTypes = false
 
   const client = getClient()
@@ -48,7 +49,7 @@
   }
 </script>
 
-{#if projectType !== undefined && items.length > 1}
+{#if projectType !== undefined && (items.length > 1 || showAlways)}
   <DropdownLabels
     {focusIndex}
     {kind}
