@@ -86,19 +86,16 @@
   })
 </script>
 
+<!-- prettier-ignore -->
 <NodeViewWrapper class="table-node-wrapper" data-drag-handle>
   <div class="table-wrapper" class:table-selected={editable && focused}>
     <div class="table-scroller">
       <table class={className} bind:this={tableElement}>
         <colgroup bind:this={colgroupElement} />
         <NodeViewContent as="tbody" />
-      </table>
-      <!-- this comment is necessary to remove the whitespace character that Svelte adds between elements, which causes various problems in prosemirror
-    -->
-    </div>
-    <!--  https://github.com/sveltejs/svelte/issues/12765
-    -->
-    <div class="table-toolbar-components" contenteditable="false">
+      </table><!-- this comment is necessary to remove the whitespace character that Svelte adds between elements, which causes various problems in prosemirror
+    --></div><!--  https://github.com/sveltejs/svelte/issues/12765
+    --><div class="table-toolbar-components" contenteditable="false">
       {#if editable && focused}
         <div class="table-toolbar-container">
           <TableToolbar {editor} />
@@ -128,23 +125,18 @@
 
 <style lang="scss">
   .table-wrapper {
+    --table-offscreen-spacing: 2rem;
+
     width: max-content;
-    max-width: 100%;
+    max-width: calc(100% + var(--table-offscreen-spacing) * 2);
     position: relative;
 
+    margin: 0 calc(var(--table-offscreen-spacing) * -1);
+
     .table-scroller {
-      padding: 1.25rem 0;
+      padding: 1.25rem var(--table-offscreen-spacing);
       overflow-x: scroll;
       scrollbar-width: auto;
-    }
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
     }
 
     .table-button-container {
@@ -195,7 +187,7 @@
 
       &__row {
         bottom: -0.25rem;
-        left: 0;
+        left: var(--table-offscreen-spacing);
         right: 0;
 
         .table-button {
