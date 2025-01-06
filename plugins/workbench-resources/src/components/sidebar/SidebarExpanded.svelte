@@ -22,7 +22,8 @@
     Location,
     Header,
     Breadcrumbs,
-    getCurrentLocation
+    getCurrentLocation,
+    Separator
   } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
 
@@ -32,6 +33,7 @@
 
   export let widgets: Widget[] = []
   export let preferences: WidgetPreference[] = []
+  export let float: boolean = false
 
   let widgetId: Ref<Widget> | undefined = undefined
   let widget: Widget | undefined = undefined
@@ -96,70 +98,92 @@
   }
 </script>
 
-<div class="sidebar-content">
-  {#if widget?.component}
-    <div class="component" use:resizeObserver={resize}>
-      {#if widget.headerLabel}
-        <Header
-          allowFullsize={false}
-          type="type-aside"
-          hideBefore={true}
-          hideActions={false}
-          hideDescription={true}
-          adaptive="disabled"
-          closeOnEscape={false}
+<div class="sidebar-wrap__content" class:float>
+  {#if float}
+    <Separator name={'main'} index={0} color={'var(--theme-navpanel-border)'} float={'sidebar'} />
+  {/if}
+  <div class="sidebar-content">
+    {#if widget?.component}
+      <div class="component" use:resizeObserver={resize}>
+        {#if widget.headerLabel}
+          <Header
+            allowFullsize={false}
+            type="type-aside"
+            hideBefore={true}
+            hideActions={false}
+            hideDescription={true}
+            adaptive="disabled"
+            closeOnEscape={false}
+            on:close={() => {
+              if (widget !== undefined) {
+                closeWidget(widget._id)
+              }
+            }}
+          >
+            <Breadcrumbs items={[{ label: widget.headerLabel }]} currentOnly />
+          </Header>
+        {/if}
+        <Component
+          is={widget?.component}
+          props={{ tab, widgetState, height: componentHeight, width: componentWidth, widget }}
           on:close={() => {
             if (widget !== undefined) {
               closeWidget(widget._id)
             }
           }}
-        >
-          <Breadcrumbs items={[{ label: widget.headerLabel }]} currentOnly />
-        </Header>
-      {/if}
-      <Component
-        is={widget?.component}
-        props={{ tab, widgetState, height: componentHeight, width: componentWidth, widget }}
-        on:close={() => {
-          if (widget !== undefined) {
-            closeWidget(widget._id)
-          }
-        }}
-      />
-    </div>
+        />
+      </div>
+    {/if}
+  </div>
+  {#if widget !== undefined && tabs.length > 0}
+    <SidebarTabs
+      {tabs}
+      selected={tab?.id}
+      {widget}
+      on:close={(e) => {
+        void handleTabClose(e.detail, widget)
+      }}
+      on:open={(e) => {
+        handleTabOpen(e.detail, widget)
+      }}
+    />
   {/if}
 </div>
-{#if widget !== undefined && tabs.length > 0}
-  <SidebarTabs
-    {tabs}
-    selected={tab?.id}
-    {widget}
-    on:close={(e) => {
-      void handleTabClose(e.detail, widget)
-    }}
-    on:open={(e) => {
-      handleTabOpen(e.detail, widget)
-    }}
-  />
-{/if}
-<WidgetsBar {widgets} {preferences} selected={widgetId} />
+<WidgetsBar {widgets} {preferences} selected={widgetId} expandedFloat={float} />
 
 <style lang="scss">
+  .sidebar-wrap__content,
   .sidebar-content {
     display: flex;
-    flex-direction: column;
-
-    border-top: 1px solid transparent; // var(--theme-divider-color);
-    border-right: 1px solid var(--theme-divider-color);
-    overflow: auto;
-
-    width: calc(100% - 3.5rem);
     height: 100%;
     min-width: 0;
     min-height: 0;
+  }
+  .sidebar-wrap__content {
+    width: calc(100% - 3.5rem);
     background-color: var(--theme-panel-color);
-
+    border-top: 1px solid transparent; // var(--theme-divider-color);
+    border-right: 1px solid var(--theme-divider-color);
     border-left: none;
+
+    &.float {
+      position: absolute;
+      top: 0;
+      right: 3.5rem;
+      border-top-color: var(--theme-divider-color);
+      border-bottom: 1px solid var(--theme-divider-color);
+      z-index: 491;
+      filter: drop-shadow(-2px 0 5px rgba(0, 0, 0, .2));
+    }
+
+    @media (max-width: 680px) {
+      border-top: none;
+    }
+  }
+  .sidebar-content {
+    overflow: auto;
+    flex-direction: column;
+    width: 100%;
   }
 
   .component {

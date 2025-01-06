@@ -86,11 +86,11 @@
     flex-direction: column;
     overflow-x: hidden;
     overflow-y: auto;
-    width: 30px;
-    min-width: 30px;
-    max-width: 30px;
+    width: 2rem;
+    min-width: 2rem;
+    max-width: 2rem;
     height: 100%;
-    border-right: 1px solid var(--theme-divider-color);
+    border-left: 1px solid var(--theme-divider-color);
     gap: 0.25rem;
     align-items: center;
     padding: 0.25rem 0;

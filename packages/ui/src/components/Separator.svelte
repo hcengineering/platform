@@ -504,6 +504,24 @@
     if (parentElement != null && typeof float === 'string') parentElement.setAttribute('data-float', float)
   }
 
+  const clearContainer = (container: HTMLElement): void => {
+    if (container === null) return
+    if (container.hasAttribute('data-float')) container.removeAttribute('data-float')
+    if (container.hasAttribute('data-size')) container.removeAttribute('data-size')
+    container.style.width = ''
+    container.style.minWidth = ''
+    container.style.maxWidth = ''
+  }
+  const clearSibling = (): void => {
+    if (separator === null) return
+    if (separators != null && prevElement != null && separators[index].float !== undefined) clearContainer(prevElement)
+    if (separators != null && nextElement != null && separators[index + 1].float !== undefined) clearContainer(nextElement)
+  }
+  const clearParent = (): void => {
+    if (parentElement === null && separator != null) parentElement = separator.parentElement as HTMLElement
+    if (parentElement != null && typeof float === 'string') clearContainer(parentElement)
+  }
+
   const calculateSeparators = (): void => {
     if (parentElement != null) {
       const elements: Element[] = Array.from(parentElement.children)
@@ -600,6 +618,10 @@
     }
   })
   onDestroy(() => {
+    if (mounted) {
+      if (sState === SeparatorState.FLOAT) clearParent()
+      else if (sState === SeparatorState.NORMAL) clearSibling()
+    }
     window.removeEventListener('resize', resizeDocument)
     if (sState !== SeparatorState.FLOAT && $separatorsStore.filter((f) => f === name).length > 0) {
       $separatorsStore = $separatorsStore.filter((f) => f !== name)
