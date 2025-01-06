@@ -12,7 +12,7 @@ export class TemplateDetailsPage extends CommonTrackerPage {
   buttonAddLabel = (): Locator => this.page.locator('//span[text()="Labels"]/following-sibling::button[1]//span')
   buttonComponent = (): Locator => this.page.locator('//span[text()="Component"]/following-sibling::div[1]/div/button')
   buttonEstimation = (): Locator => this.page.locator('//span[text()="Estimation"]/following-sibling::div[1]/button')
-  buttonDueDate = (): Locator => this.page.locator('(//span[text()="Due date"]/following-sibling::div[1]/button')
+  buttonDueDate = (): Locator => this.page.locator('//span[text()="Due date"]/following-sibling::div[1]/button')
   buttonSaveDueDate = (): Locator => this.page.locator('div.footer > button')
   activityContent = (): Locator => this.page.locator('div.grid div.content')
   buttonDelete = (): Locator => this.page.locator('button[class*="menuItem"] > span', { hasText: 'Delete' })
