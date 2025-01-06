@@ -434,18 +434,20 @@ export class TGithubComponent extends TComponent implements GithubComponent {
 }
 
 @Mixin(github.mixin.GithubMilestone, tracker.class.Milestone)
-@UX(github.string.GithubIssue)
+@UX(github.string.GithubMilestone)
 export class TGithubMilestone extends TMilestone implements GithubMilestone {
-  @Prop(TypeHyperlink(), getEmbeddedLabel('Github URL'))
+  @Prop(TypeHyperlink(), getEmbeddedLabel('Github Project URL'))
   @Index(IndexKind.FullText)
   @ReadOnly()
     url!: Hyperlink
 
   @Prop(TypeString(), getEmbeddedLabel('NodeID'))
+  @Hidden()
   @ReadOnly()
     projectNodeId!: string
 
   @Prop(TypeNumber(), getEmbeddedLabel('Number'))
+  @Hidden()
   @ReadOnly()
     projectNumber!: number
 

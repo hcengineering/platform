@@ -46,6 +46,7 @@
     "Options": "Опции",
     "Projects": "Проекты ({count})",
     "GithubIssue": "Github тикет",
+    "GithubMilestone": "GitHub Майлстоун (Проект)",
     "OnlyOrganizationError": "Поддерживаются только Аккаунты организации",
     "Mergeable": "Готовность к влитию",
     "IssueRepositoryTarget": "Репозиторий",

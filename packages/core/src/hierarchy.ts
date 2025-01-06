@@ -82,9 +82,13 @@ export class Hierarchy {
     return m ?? doc._class
   }
 
-  hasMixin<D extends Doc, M extends D>(doc: D, mixin: Ref<Mixin<M>>): boolean {
+  static hasMixin<D extends Doc, M extends D>(doc: D, mixin: Ref<Mixin<M>>): boolean {
     const d = Hierarchy.toDoc(doc)
     return typeof (d as any)[mixin] === 'object'
+  }
+
+  hasMixin<D extends Doc, M extends D>(doc: D, mixin: Ref<Mixin<M>>): boolean {
+    return Hierarchy.hasMixin(doc, mixin)
   }
 
   classHierarchyMixin<D extends Doc, M extends D>(

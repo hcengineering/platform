@@ -697,6 +697,35 @@ export class PlatformWorker {
     return Array.from(workspaces)
   }
 
+  async checkWorkspaceIsActive (token: string, workspace: string): Promise<ClientWorkspaceInfo | undefined> {
+    let workspaceInfo: ClientWorkspaceInfo | undefined
+    try {
+      workspaceInfo = await getWorkspaceInfo(token)
+    } catch (err: any) {
+      this.ctx.error('Workspace not found:', { workspace })
+      return
+    }
+    if (workspaceInfo?.workspace === undefined) {
+      this.ctx.error('No workspace exists for workspaceId', { workspace })
+      return
+    }
+    if (!isActiveMode(workspaceInfo?.mode)) {
+      this.ctx.warn('Workspace is in maitenance, skipping for now.', { workspace })
+      return
+    }
+    if (workspaceInfo?.disabled === true) {
+      this.ctx.warn('Workspace is disabled', { workspace })
+      return
+    }
+    const lastVisit = (Date.now() - workspaceInfo.lastVisit) / (3600 * 24 * 1000) // In days
+
+    if (config.WorkspaceInactivityInterval > 0 && lastVisit > config.WorkspaceInactivityInterval) {
+      this.ctx.warn('Workspace is inactive for too long, skipping for now.', { workspace })
+      return
+    }
+    return workspaceInfo
+  }
+
   private async checkWorkspaces (): Promise<boolean> {
     this.ctx.info('************************* Check workspaces ************************* ', {
       workspaces: this.clients.size
@@ -737,25 +766,9 @@ export class PlatformWorker {
           },
           { mode: 'github' }
         )
-        let workspaceInfo: ClientWorkspaceInfo | undefined
-        try {
-          workspaceInfo = await getWorkspaceInfo(token, true)
-        } catch (err: any) {
-          this.ctx.error('Workspace not found:', { workspace })
+        const workspaceInfo = await this.checkWorkspaceIsActive(token, workspace)
+        if (workspaceInfo === undefined) {
           errors++
-          return
-        }
-        if (workspaceInfo?.workspace === undefined) {
-          this.ctx.error('No workspace exists for workspaceId', { workspace })
-          errors++
-          return
-        }
-        if (!isActiveMode(workspaceInfo?.mode)) {
-          this.ctx.warn('Workspace is in maitenance, skipping for now.', { workspace })
-          return
-        }
-        if (workspaceInfo?.disabled === true) {
-          this.ctx.warn('Workspace is disabled', { workspace })
           return
         }
         try {
@@ -786,6 +799,14 @@ export class PlatformWorker {
               if (event === ClientConnectEvent.Refresh || event === ClientConnectEvent.Upgraded) {
                 void this.clients.get(workspace)?.refreshClient(event === ClientConnectEvent.Upgraded)
               }
+              // We need to check if workspace is inactive
+              void this.checkWorkspaceIsActive(token, workspace).then((res) => {
+                if (res === undefined) {
+                  this.ctx.warn('Workspace is inactive, removing from clients list.', { workspace })
+                  this.clients.delete(workspace)
+                  void worker?.close()
+                }
+              })
             }
           )
           if (worker !== undefined) {

@@ -33,6 +33,7 @@ import {
   ExternalSyncField,
   IntegrationContainer,
   IntegrationManager,
+  githubExternalSyncVersion,
   githubSyncVersion
 } from '../types'
 import {
@@ -353,7 +354,16 @@ export class ProjectsSyncManager implements DocSyncManager {
     syncDocs: DocSyncInfo[],
     repository: GithubIntegrationRepository,
     project: GithubProject
-  ): Promise<void> {}
+  ): Promise<void> {
+    for (const d of syncDocs) {
+      if (d.objectClass === tracker.class.Milestone) {
+        // no external data for doc
+        await derivedClient.update<DocSyncInfo>(d, {
+          externalVersion: githubExternalSyncVersion
+        })
+      }
+    }
+  }
 
   repositoryDisabled (integration: IntegrationContainer, repo: GithubIntegrationRepository): void {
     integration.synchronized.delete(`${repo._id}:issues`)
