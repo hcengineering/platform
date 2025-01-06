@@ -549,6 +549,7 @@ class Connection implements ClientConnection {
     once?: boolean // Require handleResult to retrieve result
     measure?: (time: number, result: any, serverTime: number, queue: number, toRecieve: number) => void
     allowReconnect?: boolean
+    overrideId?: number
   }): Promise<any> {
     return this.ctx.newChild('send-request', {}).with(data.method, {}, async (ctx) => {
       if (this.closed) {
@@ -566,7 +567,7 @@ class Connection implements ClientConnection {
         }
       }
 
-      const id = this.lastId++
+      const id = data.overrideId ?? this.lastId++
       const promise = new RequestPromise(data.method, data.params, data.handleResult)
       promise.handleTime = data.measure
 
@@ -725,7 +726,7 @@ class Connection implements ClientConnection {
   }
 
   sendForceClose (): Promise<void> {
-    return this.sendRequest({ method: 'forceClose', params: [], allowReconnect: false })
+    return this.sendRequest({ method: 'forceClose', params: [], allowReconnect: false, overrideId: -2, once: true })
   }
 }
 

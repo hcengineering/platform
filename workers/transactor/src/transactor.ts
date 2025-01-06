@@ -1,7 +1,6 @@
 // Copyright © 2024 Huly Labs.
 
 import {
-  Branding,
   generateId,
   type Class,
   type Doc,
@@ -9,20 +8,17 @@ import {
   type FindOptions,
   type MeasureContext,
   type Ref,
-  type Tx,
-  type WorkspaceIdWithUrl
+  type Tx
 } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { RPCHandler } from '@hcengineering/rpc'
 import { ClientSession, createSessionManager, doSessionOp, type WebsocketData } from '@hcengineering/server'
 import serverClient from '@hcengineering/server-client'
 import {
-  ClientSessionCtx,
   createDummyStorageAdapter,
   initStatisticsContext,
   loadBrandingMap,
   pingConst,
-  Pipeline,
   pongConst,
   Session,
   type ConnectionSocket,
@@ -108,8 +104,7 @@ export class Transactor extends DurableObject<Env> {
 
       this.sessionManager = createSessionManager(
         this.measureCtx,
-        (token: Token, pipeline: Pipeline, workspaceId: WorkspaceIdWithUrl, branding: Branding | null) =>
-          new ClientSession(token, pipeline, workspaceId, branding, false),
+        (token: Token, workspace) => new ClientSession(token, workspace, false),
         loadBrandingMap(), // TODO: Support branding map
         {
           pingTimeout: 10000,
@@ -383,7 +378,9 @@ export class Transactor extends DurableObject<Env> {
     const cs = this.createDummyClientSocket()
     try {
       const session = await this.makeRpcSession(rawToken, cs)
-      result = await session.findAllRaw(this.measureCtx, _class, query ?? {}, options ?? {})
+      const pipeline =
+        session.workspace.pipeline instanceof Promise ? await session.workspace.pipeline : session.workspace.pipeline
+      result = await pipeline.findAll(this.measureCtx, _class, query ?? {}, options ?? {})
     } catch (error: any) {
       result = { error: `${error}` }
     } finally {
@@ -397,21 +394,9 @@ export class Transactor extends DurableObject<Env> {
     const cs = this.createDummyClientSocket()
     try {
       const session = await this.makeRpcSession(rawToken, cs)
-      const sessionCtx: ClientSessionCtx = {
-        ctx: this.measureCtx,
-        sendResponse: async (msg) => {
-          result = msg
-        },
-        // TODO: Inedeed, the pipeline doesn't return errors,
-        // it just logs them to console and return an empty result
-        sendError: async (msg, error) => {
-          result = { error: `${msg}`, status: `${error}` }
-        },
-        sendPong: () => {
-          cs.sendPong()
-        }
-      }
-      await session.tx(sessionCtx, tx)
+      const pipeline =
+        session.workspace.pipeline instanceof Promise ? await session.workspace.pipeline : session.workspace.pipeline
+      await pipeline.tx(this.measureCtx, [tx])
     } catch (error: any) {
       result = { error: `${error}` }
     } finally {
@@ -420,35 +405,43 @@ export class Transactor extends DurableObject<Env> {
     return result
   }
 
-  async getModel (): Promise<any> {
+  async getModel (rawToken: string): Promise<any> {
+    let result: Tx[] = []
+    const cs = this.createDummyClientSocket()
+    try {
+      const session = await this.makeRpcSession(rawToken, cs)
+      const pipeline =
+        session.workspace.pipeline instanceof Promise ? await session.workspace.pipeline : session.workspace.pipeline
+      const ret = await pipeline.loadModel(this.measureCtx, 0)
+      if (Array.isArray(ret)) {
+        result = ret
+      } else {
+        result = ret.transactions
+      }
+    } catch (error: any) {
+      result = []
+    } finally {
+      await this.sessionManager.close(this.measureCtx, cs, this.workspace)
+    }
+
     const encoder = new TextEncoder()
-    const buffer = encoder.encode(JSON.stringify(model))
+    const buffer = encoder.encode(JSON.stringify(result))
     const gzipAsync = promisify(gzip)
     const compressed = await gzipAsync(buffer)
     return compressed
   }
 
-  async getAccount (rawToken: string, workspaceId: string, tx: Tx): Promise<any> {
-    let result
+  async getAccount (rawToken: string): Promise<any> {
     const cs = this.createDummyClientSocket()
     try {
       const session = await this.makeRpcSession(rawToken, cs)
-      const sessionCtx: ClientSessionCtx = {
-        ctx: this.measureCtx,
-        sendResponse: async (msg) => {
-          result = msg
-        },
-        sendError: async (msg, error) => {
-          result = { error: `${msg}`, status: `${error}` }
-        },
-        sendPong: () => {}
-      }
-      await (session as any).getAccount(sessionCtx)
+      const pipeline =
+        session.workspace.pipeline instanceof Promise ? await session.workspace.pipeline : session.workspace.pipeline
+      return session.getRawAccount(pipeline)
     } catch (error: any) {
-      result = { error: `${error}` }
+      return { error: `${error}` }
     } finally {
       await this.sessionManager.close(this.measureCtx, cs, this.workspace)
     }
-    return result
   }
 }
