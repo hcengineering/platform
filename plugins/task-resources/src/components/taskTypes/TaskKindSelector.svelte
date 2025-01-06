@@ -12,6 +12,8 @@
   export let baseClass: Ref<Class<Doc>> | undefined = undefined
   export let kind: ButtonKind = 'regular'
   export let size: ButtonSize = 'medium'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string | undefined = undefined
   export let allTypes = false
 
   const client = getClient()
@@ -52,6 +54,8 @@
     {kind}
     {size}
     {items}
+    {justify}
+    {width}
     dataId={'btnSelectTaskType'}
     bind:selected={value}
     enableSearch={false}

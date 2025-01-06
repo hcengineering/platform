@@ -44,9 +44,11 @@
   const client = getClient()
 
   let newIssue: IssueTemplateChild = childIssue !== undefined ? { ...childIssue } : getIssueDefaults()
-  let thisRef: HTMLDivElement
+  let thisRef: HTMLDivElement | undefined
   let focusIssueTitle: () => void
   let labels: TagElement[] = []
+  let canSave = getTitle(newIssue.title ?? '').length > 0
+  $: canSave = getTitle(newIssue.title ?? '').length > 0
 
   const labelsQuery = createQuery()
 
@@ -72,20 +74,25 @@
     }
   }
 
-  function resetToDefaults () {
+  function resetToDefaults (): void {
     newIssue = getIssueDefaults()
+    labels = []
     focusIssueTitle?.()
   }
 
-  function getTitle (value: string) {
+  function getTitle (value: string): string {
     return value.trim()
   }
 
-  function close () {
+  function close (): void {
     dispatch('close')
   }
 
-  async function createIssue () {
+  function onDelete (): void {
+    dispatch('close', ['delete', newIssue])
+  }
+
+  function createIssue (): void {
     if (!canSave) {
       return
     }
@@ -99,7 +106,7 @@
     if (childIssue === undefined) {
       dispatch('create', value)
     } else {
-      dispatch('close', value)
+      dispatch('close', ['update', value])
     }
 
     resetToDefaults()
@@ -121,8 +128,7 @@
   )
   let currentProject: Project | undefined = undefined
 
-  $: thisRef && thisRef.scrollIntoView({ behavior: 'smooth' })
-  $: canSave = getTitle(newIssue.title ?? '').length > 0
+  $: thisRef !== undefined && thisRef.scrollIntoView({ behavior: 'smooth' })
 
   $: labelRefs = labels.map((it) => ({ ...(it as unknown as TagReference), _id: generateId(), tag: it._id }))
 </script>
@@ -200,6 +206,9 @@
       />
     </div>
     <div class="ml-2 buttons-group small-gap">
+      {#if childIssue !== undefined}
+        <Button label={presentation.string.Delete} size="small" kind="dangerous" on:click={onDelete} />
+      {/if}
       <Button label={presentation.string.Cancel} size="small" kind="ghost" on:click={close} />
       <Button
         disabled={!canSave}

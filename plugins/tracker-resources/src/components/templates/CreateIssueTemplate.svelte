@@ -15,8 +15,10 @@
 <script lang="ts">
   import { Person } from '@hcengineering/contact'
   import { Data, Doc, Ref, generateId } from '@hcengineering/core'
-  import { Card, KeyedAttribute, SpaceSelector, getClient } from '@hcengineering/presentation'
+  import { Card, KeyedAttribute, SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
   import tags, { TagElement } from '@hcengineering/tags'
+  import { TaskType } from '@hcengineering/task'
+  import { TaskKindSelector } from '@hcengineering/task-resources'
   import { StyledTextBox } from '@hcengineering/text-editor-resources'
   import { Component as ComponentType, IssuePriority, IssueTemplate, Milestone, Project } from '@hcengineering/tracker'
   import { Component, EditBox, Label } from '@hcengineering/ui'
@@ -39,6 +41,7 @@
   export let relatedTo: Doc | undefined
 
   let labels: TagElement[] = []
+  let kind: Ref<TaskType> | undefined = undefined
 
   let objectId: Ref<IssueTemplate> = generateId()
   let object: Data<IssueTemplate> = {
@@ -93,6 +96,7 @@
       comments: 0,
       attachments: 0,
       labels: labels.map((it) => it._id),
+      kind,
       relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : []
     }
 
@@ -119,6 +123,17 @@
   function addTagRef (tag: TagElement): void {
     labels = [...labels, tag]
   }
+
+  let currentProject: Project | undefined
+  const spaceQuery = createQuery()
+  $: if (_space !== undefined) {
+    spaceQuery.query(tracker.class.Project, { _id: _space }, (res) => {
+      currentProject = res[0]
+    })
+  } else {
+    spaceQuery.unsubscribe()
+    currentProject = undefined
+  }
 </script>
 
 <Card
@@ -144,7 +159,17 @@
     />
   </svelte:fragment>
   <svelte:fragment slot="title" let:label>
-    <Label {label} />
+    <div class="flex-row-center gap-2 pt-1 pb-1 pr-1">
+      <span class="overflow-label">
+        <Label {label} />
+      </span>
+      <TaskKindSelector
+        projectType={currentProject?.type}
+        bind:value={kind}
+        baseClass={tracker.class.Issue}
+        size={'small'}
+      />
+    </div>
   </svelte:fragment>
 
   <EditBox

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import { RateLimiter, Account, Class, Doc, IdMap, Markup, Ref, Space, generateId, toIdMap } from '@hcengineering/core'
+  import { Account, Class, Doc, IdMap, Markup, RateLimiter, Ref, Space, generateId, toIdMap } from '@hcengineering/core'
   import { Asset, IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     DraftController,
@@ -25,9 +25,9 @@
     getFileMetadata,
     uploadFile
   } from '@hcengineering/presentation'
+  import { EmptyMarkup } from '@hcengineering/text'
   import textEditor, { type RefAction } from '@hcengineering/text-editor'
   import { AttachIcon, ReferenceInput } from '@hcengineering/text-editor-resources'
-  import { EmptyMarkup } from '@hcengineering/text'
   import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import attachment from '../plugin'
@@ -196,11 +196,11 @@
   }
 
   async function fileDrop (e: DragEvent): Promise<void> {
-    progress = true
     const list = e.dataTransfer?.files
     const limiter = new RateLimiter(10)
 
     if (list === undefined || list.length === 0) return
+    progress = true
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
       if (file !== null) {
