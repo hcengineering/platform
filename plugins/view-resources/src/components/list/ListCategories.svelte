@@ -72,7 +72,7 @@
   export let level: number
   export let initIndex = 0
   export let newObjectProps: (doc: Doc | undefined) => Record<string, any> | undefined
-  export let viewOptionsConfig: ViewOptionModel[] | undefined
+  export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
   export let dragItem: {
     doc?: Doc
     revert?: () => void

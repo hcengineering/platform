@@ -16,7 +16,7 @@
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import { ActionContext } from '@hcengineering/presentation'
   import { FadeOptions, Scroller, tableSP } from '@hcengineering/ui'
-  import { BuildModelKey, ViewOptions, Viewlet } from '@hcengineering/view'
+  import { BuildModelKey, ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
   import { onMount } from 'svelte'
   import { focusStore, ListSelectionProvider, SelectDirection } from '../selection'
   import { LoadingProps } from '../utils'
@@ -35,6 +35,7 @@
   export let fade: FadeOptions = tableSP
   export let prefferedSorting: string = 'modifiedOn'
   export let viewOptions: ViewOptions | undefined = undefined
+  export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
   export let viewlet: Viewlet | undefined = undefined
   export let readonly = false
 
@@ -83,7 +84,7 @@
     {prefferedSorting}
     {tableId}
     {viewOptions}
-    viewOptionsConfig={viewlet?.viewOptions?.other}
+    viewOptionsConfig={viewOptionsConfig ?? viewlet?.viewOptions?.other}
     selection={listProvider.current($focusStore)}
     {readonly}
     on:row-focus={(evt) => {

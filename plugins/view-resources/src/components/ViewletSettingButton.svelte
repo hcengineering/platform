@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { ButtonIcon, showPopup, closeTooltip } from '@hcengineering/ui'
-  import { ViewOptions, Viewlet } from '@hcengineering/view'
+  import { ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
   import view from '../plugin'
-  import { getViewOptions, viewOptionStore } from '../viewOptions'
+  import { getViewOptions, viewOptionStore, defaultOptions } from '../viewOptions'
   import ViewOptionsButton from './ViewOptionsButton.svelte'
   import ViewletSetting from './ViewletSetting.svelte'
   import { restrictionStore } from '../utils'
@@ -25,6 +25,7 @@
   export let viewOptions: ViewOptions | undefined = undefined
   export let viewlet: Viewlet | undefined = undefined
   export let disabled: boolean = false
+  export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
 
   let btn: HTMLButtonElement
   let pressed: boolean = false
@@ -37,14 +38,14 @@
     })
   }
 
-  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
+  $: viewOptions = getViewOptions(viewlet, $viewOptionStore, defaultOptions)
 
   $: disabled = $restrictionStore.readonly
 </script>
 
 {#if viewlet}
   {#if viewOptions}
-    <ViewOptionsButton {viewlet} {kind} {viewOptions} />
+    <ViewOptionsButton {viewlet} {kind} {viewOptions} {viewOptionsConfig} />
   {/if}
   <ButtonIcon
     icon={view.icon.Configure}

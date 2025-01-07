@@ -18,7 +18,7 @@ import { groupByCategory } from './utils'
 
 export const noCategory = '#no_category'
 
-export const defaulOptions: ViewOptions = {
+export const defaultOptions: ViewOptions = {
   groupBy: [noCategory],
   orderBy: ['modifiedBy', SortingOrder.Descending]
 }
@@ -75,8 +75,8 @@ function _getViewOptions (viewlet: Viewlet, viewOptionStore: Map<string, ViewOpt
 
 function getDefaults (viewOptions: ViewOptionsModel): ViewOptions {
   const res: ViewOptions = {
-    groupBy: [viewOptions.groupBy[0] ?? defaulOptions.groupBy[0]],
-    orderBy: viewOptions.orderBy?.[0] ?? defaulOptions.orderBy
+    groupBy: [viewOptions.groupBy[0] ?? defaultOptions.groupBy[0]],
+    orderBy: viewOptions.orderBy?.[0] ?? defaultOptions.orderBy
   }
   for (const opt of viewOptions.other) {
     res[opt.key] = opt.defaultValue
@@ -87,7 +87,7 @@ function getDefaults (viewOptions: ViewOptionsModel): ViewOptions {
 export function getViewOptions (
   viewlet: Viewlet | undefined,
   viewOptionStore: Map<string, ViewOptions>,
-  defaults = defaulOptions
+  defaults = defaultOptions
 ): ViewOptions {
   if (viewlet === undefined) {
     return { ...defaults }
