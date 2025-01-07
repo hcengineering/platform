@@ -50,8 +50,7 @@ import documents, {
   type ProjectMeta,
   ControlledDocumentState,
   DocumentState,
-  getDocumentName,
-  getDocumentId
+  getDocumentName
 } from '@hcengineering/controlled-documents'
 import { type Request } from '@hcengineering/request'
 
@@ -583,7 +582,7 @@ export async function documentIdentifierProvider (client: Client, ref: Ref<Docum
     return ''
   }
 
-  return getDocumentId(document)
+  return document.code
 }
 
 export function documentCompareFn (doc1: Document, doc2: Document): number {
