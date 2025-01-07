@@ -16,10 +16,10 @@
 -->
 <script lang="ts">
   import { IconAdd } from '@hcengineering/ui'
-  import { onDestroy } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import { NodeViewContent, NodeViewProps, NodeViewWrapper } from '../../node-view'
   import { findTable, insertColumn, insertRow } from './utils'
-  import { TableMap } from '@tiptap/pm/tables'
+  import { TableMap, updateColumnsOnResize } from '@tiptap/pm/tables'
   import TableToolbar from './TableToolbar.svelte'
 
   export let node: NodeViewProps['node']
@@ -66,58 +66,77 @@
     }
   }
 
+  function updateColumns (): void {
+    updateColumnsOnResize(node, colgroupElement, tableElement, 25)
+  }
+
+  $: if (node && colgroupElement && tableElement) {
+    updateColumns()
+  }
+
+  let tableElement: HTMLTableElement
+  let colgroupElement: HTMLTableColElement
+
+  onMount(() => {
+    updateColumns()
+  })
+
   onDestroy(() => {
     editor.off('selectionUpdate', handleSelectionUpdate)
   })
 </script>
 
+<!-- prettier-ignore -->
 <NodeViewWrapper class="table-node-wrapper" data-drag-handle>
   <div class="table-wrapper" class:table-selected={editable && focused}>
-    <table class={className}>
-      <NodeViewContent as="tbody" />
-    </table>
-
-    {#if editable && focused}
-      <div class="table-toolbar-container" contenteditable="false">
-        <TableToolbar {editor} />
-      </div>
-
-      <!-- add col button -->
-      <div class="table-button-container table-button-container__col flex" contenteditable="false">
-        <div class="w-full h-full flex showOnHover">
-          <button class="table-button w-full h-full" on:click={handleAddColumn}>
-            <div class="table-button__dot" />
-            <div class="table-button__icon"><IconAdd size={'small'} /></div>
-          </button>
+    <div class="table-scroller">
+      <table class={className} bind:this={tableElement}>
+        <colgroup bind:this={colgroupElement} />
+        <NodeViewContent as="tbody" />
+      </table><!-- this comment is necessary to remove the whitespace character that Svelte adds between elements, which causes various problems in prosemirror
+    --></div><!--  https://github.com/sveltejs/svelte/issues/12765
+    --><div class="table-toolbar-components" contenteditable="false">
+      {#if editable && focused}
+        <div class="table-toolbar-container">
+          <TableToolbar {editor} />
         </div>
-      </div>
-
-      <!-- add row button -->
-      <div class="table-button-container table-button-container__row flex" contenteditable="false">
-        <div class="w-full h-full flex showOnHover">
-          <button class="table-button w-full h-full" on:click={handleAddRow}>
-            <div class="table-button__dot" />
-            <div class="table-button__icon"><IconAdd size={'small'} /></div>
-          </button>
+        <!-- add col button -->
+        <div class="table-button-container table-button-container__col flex">
+          <div class="w-full h-full flex showOnHover">
+            <button class="table-button w-full h-full" on:click={handleAddColumn}>
+              <div class="table-button__dot" />
+              <div class="table-button__icon"><IconAdd size={'small'} /></div>
+            </button>
+          </div>
         </div>
-      </div>
-    {/if}
+        <!-- add row button -->
+        <div class="table-button-container table-button-container__row flex">
+          <div class="w-full h-full flex showOnHover">
+            <button class="table-button w-full h-full" on:click={handleAddRow}>
+              <div class="table-button__dot" />
+              <div class="table-button__icon"><IconAdd size={'small'} /></div>
+            </button>
+          </div>
+        </div>
+      {/if}
+    </div>
   </div>
 </NodeViewWrapper>
 
 <style lang="scss">
   .table-wrapper {
-    position: relative;
-    display: flex;
-    padding: 1.25rem 0;
+    --table-offscreen-spacing: 2rem;
 
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
+    width: max-content;
+    max-width: calc(100% + var(--table-offscreen-spacing) * 2);
+    position: relative;
+
+    margin: 0 calc(var(--table-offscreen-spacing) * -1);
+
+    .table-scroller {
+      padding: 1.25rem var(--table-offscreen-spacing);
+      overflow-x: scroll;
+      scrollbar-width: auto;
     }
 
     .table-button-container {
@@ -156,26 +175,22 @@
       }
 
       &__col {
-        right: -1.25rem;
+        right: -1.5rem;
         top: 0;
         bottom: 0;
         margin: 1.25rem 0;
 
         .table-button {
-          border-top-left-radius: 0;
-          border-bottom-left-radius: 0;
           width: 1.25rem;
         }
       }
 
       &__row {
-        bottom: 0;
-        left: 0;
+        bottom: -0.25rem;
+        left: var(--table-offscreen-spacing);
         right: 0;
 
         .table-button {
-          border-top-left-radius: 0;
-          border-top-right-radius: 0;
           height: 1.25rem;
         }
       }

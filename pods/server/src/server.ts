@@ -14,22 +14,16 @@
 // limitations under the License.
 //
 
-import {
-  type Branding,
-  type BrandingMap,
-  type MeasureContext,
-  type Tx,
-  type WorkspaceIdWithUrl
-} from '@hcengineering/core'
+import { type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 
 import { ClientSession, startSessionManager } from '@hcengineering/server'
 import {
-  type Pipeline,
   type ServerFactory,
   type Session,
   type SessionManager,
-  type StorageConfiguration
+  type StorageConfiguration,
+  type Workspace
 } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
@@ -42,9 +36,9 @@ import {
   registerTxAdapterFactory
 } from '@hcengineering/server-pipeline'
 
-import { readFileSync } from 'node:fs'
 import { createMongoAdapter, createMongoDestroyAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
 import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
+import { readFileSync } from 'node:fs'
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
 registerStringLoaders()
@@ -93,13 +87,8 @@ export function start (
     { ...opt, externalStorage, adapterSecurity: dbUrl.startsWith('postgresql') },
     {}
   )
-  const sessionFactory = (
-    token: Token,
-    pipeline: Pipeline,
-    workspaceId: WorkspaceIdWithUrl,
-    branding: Branding | null
-  ): Session => {
-    return new ClientSession(token, pipeline, workspaceId, branding, token.extra?.mode === 'backup')
+  const sessionFactory = (token: Token, workspace: Workspace): Session => {
+    return new ClientSession(token, workspace, token.extra?.mode === 'backup')
   }
 
   const { shutdown: onClose, sessionManager } = startSessionManager(metrics, {

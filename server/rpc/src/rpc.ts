@@ -46,6 +46,8 @@ export interface HelloResponse extends Response<any> {
   binary: boolean
   reconnect?: boolean
   serverVersion: string
+  lastTx?: string
+  lastHash?: string // Last model hash
 }
 
 function replacer (key: string, value: any): any {

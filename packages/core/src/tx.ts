@@ -51,7 +51,8 @@ export enum WorkspaceEvent {
   IndexingUpdate,
   SecurityChange,
   MaintenanceNotification,
-  BulkUpdate
+  BulkUpdate,
+  LastTx
 }
 
 /**

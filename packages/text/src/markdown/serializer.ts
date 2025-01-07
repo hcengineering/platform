@@ -140,7 +140,22 @@ export const storeNodes: Record<string, NodeProcessor> = {
 
   image: (state, node) => {
     const attrs = nodeAttrs(node)
-    if (attrs['file-id'] != null) {
+    if (attrs.token != null && attrs['file-id'] != null) {
+      // Convert image to token format
+      state.write(
+        '![' +
+          state.esc(`${attrs.alt ?? ''}`) +
+          '](' +
+          (state.imageUrl +
+            `${attrs['file-id']}` +
+            `?file=${attrs['file-id']}` +
+            (attrs.width != null ? '&width=' + state.esc(`${attrs.width}`) : '') +
+            (attrs.height != null ? '&height=' + state.esc(`${attrs.height}`) : '') +
+            (attrs.token != null ? '&token=' + state.esc(`${attrs.token}`) : '')) +
+          (attrs.title != null ? ' ' + state.quote(`${attrs.title}`) : '') +
+          ')'
+      )
+    } else if (attrs['file-id'] != null) {
       // Convert image to fileid format
       state.write(
         '![' +

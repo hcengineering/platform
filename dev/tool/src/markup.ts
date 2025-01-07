@@ -13,10 +13,17 @@
 // limitations under the License.
 //
 
-import { loadCollabYdoc, saveCollabYdoc, yDocCopyXmlField } from '@hcengineering/collaboration'
+import {
+  loadCollabYdoc,
+  saveCollabJson,
+  saveCollabYdoc,
+  yDocCopyXmlField,
+  yDocFromBuffer
+} from '@hcengineering/collaboration'
 import core, {
   type Blob,
   type Doc,
+  type Hierarchy,
   type MeasureContext,
   type Ref,
   type TxCreateDoc,
@@ -24,6 +31,7 @@ import core, {
   type WorkspaceId,
   DOMAIN_TX,
   SortingOrder,
+  makeCollabId,
   makeCollabYdocId,
   makeDocCollabId
 } from '@hcengineering/core'
@@ -289,4 +297,66 @@ export async function restoreControlledDocContentForDoc (
   }
 
   return true
+}
+
+export async function restoreMarkupRefsMongo (
+  ctx: MeasureContext,
+  db: Db,
+  workspaceId: WorkspaceId,
+  hierarchy: Hierarchy,
+  storageAdapter: StorageAdapter
+): Promise<void> {
+  const classes = hierarchy.getDescendants(core.class.Doc)
+  for (const _class of classes) {
+    const domain = hierarchy.findDomain(_class)
+    if (domain === undefined) continue
+
+    const allAttributes = hierarchy.getAllAttributes(_class)
+    const attributes = Array.from(allAttributes.values()).filter((attribute) => {
+      return hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)
+    })
+
+    if (attributes.length === 0) continue
+    if (hierarchy.isMixin(_class) && attributes.every((p) => p.attributeOf !== _class)) continue
+
+    ctx.info('processing', { _class, attributes: attributes.map((p) => p.name) })
+
+    const collection = db.collection<Doc>(domain)
+    const iterator = collection.find({ _class })
+    try {
+      while (true) {
+        const doc = await iterator.next()
+        if (doc === null) {
+          break
+        }
+
+        for (const attribute of attributes) {
+          const isMixin = hierarchy.isMixin(attribute.attributeOf)
+
+          const attributeName = isMixin ? `${attribute.attributeOf}.${attribute.name}` : attribute.name
+
+          const value = isMixin
+            ? ((doc as any)[attribute.attributeOf]?.[attribute.name] as string)
+            : ((doc as any)[attribute.name] as string)
+
+          if (typeof value === 'string') {
+            continue
+          }
+
+          const collabId = makeCollabId(doc._class, doc._id, attribute.name)
+          const ydocId = makeCollabYdocId(collabId)
+
+          try {
+            const buffer = await storageAdapter.read(ctx, workspaceId, ydocId)
+            const ydoc = yDocFromBuffer(Buffer.concat(buffer as any))
+
+            const jsonId = await saveCollabJson(ctx, storageAdapter, workspaceId, collabId, ydoc)
+            await collection.updateOne({ _id: doc._id }, { $set: { [attributeName]: jsonId } })
+          } catch {}
+        }
+      }
+    } finally {
+      await iterator.close()
+    }
+  }
 }

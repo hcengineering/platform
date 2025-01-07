@@ -24,6 +24,8 @@
   import SidebarMini from './SidebarMini.svelte'
   import SidebarExpanded from './SidebarExpanded.svelte'
 
+  export let expandedFloat: boolean = false
+
   const client = getClient()
 
   const widgets = client.getModel().findAllSync(workbench.class.Widget, {})
@@ -64,13 +66,14 @@
 <div
   id="sidebar"
   class="antiPanel-application vertical sidebar-container"
-  class:mini
-  class:float={$deviceInfo.aside.float}
+  class:mini={mini || expandedFloat}
+  class:expandedFloat
+  class:float={$deviceInfo.aside.float && !expandedFloat}
 >
   {#if mini}
     <SidebarMini {widgets} {preferences} />
   {:else if $sidebarStore.variant === SidebarVariant.EXPANDED}
-    <SidebarExpanded {widgets} {preferences} />
+    <SidebarExpanded {widgets} {preferences} float={expandedFloat} />
   {/if}
 </div>
 
@@ -96,8 +99,18 @@
   @media (max-width: 1024px) {
     .sidebar-container {
       width: 100%;
+
+      &:not(.expandedFloat) {
+        border-radius: var(--medium-BorderRadius);
+      }
+      &.expandedFloat {
+        border-left-color: transparent;
+      }
+    }
+  }
+  @media (max-width: 680px) {
+    .sidebar-container {
       border: 1px solid var(--theme-navpanel-divider);
-      border-radius: var(--medium-BorderRadius);
     }
   }
 </style>

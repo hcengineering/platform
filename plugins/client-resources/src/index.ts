@@ -118,10 +118,10 @@ export default async () => {
                   reject(new Error(`Connection timeout, and no connection established to ${endpoint}`))
                 }
               }, connectTimeout)
-              newOpt.onConnect = async (event, data) => {
+              newOpt.onConnect = async (event, lastTx, data) => {
                 // Any event is fine, it means server is alive.
                 clearTimeout(connectTO)
-                await opt?.onConnect?.(event, data)
+                await opt?.onConnect?.(event, lastTx, data)
                 resolve()
               }
             })

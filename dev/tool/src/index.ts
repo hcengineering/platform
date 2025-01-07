@@ -69,7 +69,7 @@ import {
   registerTxAdapterFactory
 } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import { FileModelLogger } from '@hcengineering/server-tool'
+import { FileModelLogger, buildModel } from '@hcengineering/server-tool'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 import path from 'path'
 
@@ -143,7 +143,7 @@ import {
   moveFromMongoToPG,
   moveWorkspaceFromMongoToPG
 } from './db'
-import { restoreControlledDocContentMongo, restoreWikiContentMongo } from './markup'
+import { restoreControlledDocContentMongo, restoreWikiContentMongo, restoreMarkupRefsMongo } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount } from './renameAccount'
 import { copyToDatalake, moveFiles, showLostFiles } from './storage'
@@ -1342,6 +1342,61 @@ export function devTool (
             client.close()
           }
         })
+      })
+    })
+
+  program
+    .command('restore-markup-ref-mongo')
+    .description('restore markup document content refs')
+    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+    .option('-f, --force', 'Force update', false)
+    .action(async (cmd: { workspace: string, force: boolean }) => {
+      const { txes, version } = prepareTools()
+
+      const { hierarchy } = await buildModel(toolCtx, txes)
+
+      let workspaces: Workspace[] = []
+      await withAccountDatabase(async (db) => {
+        workspaces = await listWorkspacesPure(db)
+        workspaces = workspaces
+          .filter((p) => isActiveMode(p.mode))
+          .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
+          .sort((a, b) => b.lastVisit - a.lastVisit)
+      })
+
+      console.log('found workspaces', workspaces.length)
+
+      await withStorage(async (storageAdapter) => {
+        const mongodbUri = getMongoDBUrl()
+        const client = getMongoClient(mongodbUri)
+        const _client = await client.getClient()
+
+        try {
+          const count = workspaces.length
+          let index = 0
+          for (const workspace of workspaces) {
+            index++
+
+            toolCtx.info('processing workspace', {
+              workspace: workspace.workspace,
+              version: workspace.version,
+              index,
+              count
+            })
+
+            if (!cmd.force && (workspace.version === undefined || !deepEqual(workspace.version, version))) {
+              console.log(`upgrade to ${versionToString(version)} is required`)
+              continue
+            }
+
+            const workspaceId = getWorkspaceId(workspace.workspace)
+            const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
+
+            await restoreMarkupRefsMongo(toolCtx, wsDb, workspaceId, hierarchy, storageAdapter)
+          }
+        } finally {
+          client.close()
+        }
       })
     })
 

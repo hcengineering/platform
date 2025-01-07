@@ -172,6 +172,7 @@ table.proseTable {
 
       &__selected {
         left: 0;
+
         &::before {
           right: 0;
           top: 0;
@@ -203,8 +204,7 @@ table.proseTable {
       }
 
       &:hover {
-        &:not(.table-row-handle__selected) {
-        }
+        &:not(.table-row-handle__selected) {}
 
         button {
           opacity: 1;
@@ -213,6 +213,7 @@ table.proseTable {
 
       &__selected {
         top: 0;
+
         &::before {
           bottom: 0;
           left: 0;
@@ -243,6 +244,27 @@ table.proseTable {
 
       .table-insert-marker {
         width: 1px;
+      }
+    }
+
+    .column-resize-handle {
+      position: absolute;
+      right: -1px;
+      top: -1px;
+      bottom: -1px;
+      width: 1px;
+      z-index: 100;
+      background-color: var(--primary-button-focused);
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -5px;
+        right: -5px;
+        bottom: 0;
+        cursor: col-resize;
+        z-index: 100;
       }
     }
 
@@ -291,13 +313,13 @@ table.proseTable {
       }
 
       &:hover+.table-insert-marker {
-        opacity: 1;
+        display: block;
       }
     }
 
     .table-insert-marker {
       background-color: var(--primary-button-focused);
-      opacity: 0;
+      display: none;
     }
   }
 
@@ -526,7 +548,7 @@ pre.proseCodeBlock>pre.proseCode {
   border-bottom: 2px solid rgba(255, 203, 0, .35);
   padding-bottom: 2px;
   transition: background 0.2s ease, border 0.2s ease;
-  
+
   &.active {
     transition-delay: 150ms;
     background: rgba(255, 203, 0, .24);

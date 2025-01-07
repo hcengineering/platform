@@ -108,9 +108,11 @@ class Connection implements ClientConnection {
 
   private helloRecieved: boolean = false
 
-  onConnect?: (event: ClientConnectEvent, data: any) => Promise<void>
+  onConnect?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
 
   rpcHandler = new RPCHandler()
+
+  lastHash?: string
 
   constructor (
     private readonly ctx: MeasureContext,
@@ -142,6 +144,11 @@ class Connection implements ClientConnection {
     this.onConnect = opt?.onConnect
 
     this.scheduleOpen(this.ctx, false)
+  }
+
+  async getLastHash (ctx: MeasureContext): Promise<string | undefined> {
+    await this.waitOpenConnection(ctx)
+    return this.lastHash
   }
 
   private schedulePing (socketId: number): void {
@@ -272,7 +279,7 @@ class Connection implements ClientConnection {
     if (resp.id === -1) {
       this.delay = 0
       if (resp.result?.state === 'upgrading') {
-        void this.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
+        void this.onConnect?.(ClientConnectEvent.Maintenance, undefined, resp.result.stats)
         this.upgrading = true
         this.delay = 3
         return
@@ -286,6 +293,7 @@ class Connection implements ClientConnection {
         // We need to clear dial timer, since we recieve hello response.
         clearTimeout(this.dialTimer)
         this.dialTimer = null
+        this.lastHash = (resp as HelloResponse).lastHash
 
         const serverVersion = helloResp.serverVersion
         console.log('Connected to server:', serverVersion)
@@ -315,6 +323,7 @@ class Connection implements ClientConnection {
 
         void this.onConnect?.(
           (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected,
+          (resp as HelloResponse).lastTx,
           this.sessionId
         )
         this.schedulePing(socketId)
@@ -549,6 +558,7 @@ class Connection implements ClientConnection {
     once?: boolean // Require handleResult to retrieve result
     measure?: (time: number, result: any, serverTime: number, queue: number, toRecieve: number) => void
     allowReconnect?: boolean
+    overrideId?: number
   }): Promise<any> {
     return this.ctx.newChild('send-request', {}).with(data.method, {}, async (ctx) => {
       if (this.closed) {
@@ -566,7 +576,7 @@ class Connection implements ClientConnection {
         }
       }
 
-      const id = this.lastId++
+      const id = data.overrideId ?? this.lastId++
       const promise = new RequestPromise(data.method, data.params, data.handleResult)
       promise.handleTime = data.measure
 
@@ -725,7 +735,7 @@ class Connection implements ClientConnection {
   }
 
   sendForceClose (): Promise<void> {
-    return this.sendRequest({ method: 'forceClose', params: [], allowReconnect: false })
+    return this.sendRequest({ method: 'forceClose', params: [], allowReconnect: false, overrideId: -2, once: true })
   }
 }
 

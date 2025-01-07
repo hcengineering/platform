@@ -126,7 +126,8 @@
   import { get } from 'svelte/store'
 
   const HIDE_NAVIGATOR = 720
-  const HIDE_ASIDE = 1024
+  const HIDE_ASIDE = 680 // sm
+  const FLOAT_ASIDE = 1024 // lg
   let contentPanel: HTMLElement
 
   const { setTheme } = getContext<{ setTheme: (theme: string) => void }>('theme')
@@ -642,13 +643,14 @@
     }
   }
   checkWorkbenchWidth()
-  $: if ($deviceInfo.docWidth <= HIDE_ASIDE && !$deviceInfo.aside.float) {
+  $: if ($deviceInfo.docWidth <= FLOAT_ASIDE && !$deviceInfo.aside.float) {
     $deviceInfo.aside.visible = false
     $deviceInfo.aside.float = true
-  } else if ($deviceInfo.docWidth > HIDE_ASIDE && $deviceInfo.aside.float) {
+  } else if ($deviceInfo.docWidth > FLOAT_ASIDE && $deviceInfo.aside.float) {
     $deviceInfo.aside.float = false
     $deviceInfo.aside.visible = !hiddenAside
   }
+  $: expandedFloatASide = $deviceInfo.docWidth <= FLOAT_ASIDE && $deviceInfo.docWidth > HIDE_ASIDE
   const checkOnHide = (): void => {
     if ($deviceInfo.navigator.visible && $deviceInfo.navigator.float) $deviceInfo.navigator.visible = false
   }
@@ -976,6 +978,7 @@
       <div
         bind:this={contentPanel}
         class={navigatorModel === undefined ? 'hulyPanels-container' : 'hulyComponent overflow-hidden'}
+        class:straighteningCorners={expandedFloatASide && $sidebarStore.variant === SidebarVariant.EXPANDED}
         data-id={'contentPanel'}
       >
         {#if currentApplication && currentApplication.component}
@@ -1014,15 +1017,15 @@
         {/if}
       </div>
     </div>
-    {#if !$deviceInfo.aside.float}
-      {#if $sidebarStore.variant === SidebarVariant.EXPANDED}
+    {#if $deviceInfo.docWidth > HIDE_ASIDE}
+      {#if $sidebarStore.variant === SidebarVariant.EXPANDED && !expandedFloatASide}
         <Separator name={'main'} index={0} color={'transparent'} separatorSize={0} short />
       {/if}
-      <WidgetsBar />
+      <WidgetsBar expandedFloat={expandedFloatASide} />
     {/if}
   </div>
   <Dock />
-  {#if $deviceInfo.aside.float}
+  {#if $deviceInfo.docWidth <= HIDE_ASIDE}
     <div
       class="antiPanel-navigator right fly no-print {$deviceInfo.navigator.direction === 'horizontal'
         ? 'portrait'
@@ -1067,6 +1070,9 @@
     &.inner {
       background-color: var(--theme-navpanel-color);
 
+      .straighteningCorners {
+        border-radius: var(--medium-BorderRadius) 0 0 var(--medium-BorderRadius);
+      }
       &.rounded {
         border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
       }
