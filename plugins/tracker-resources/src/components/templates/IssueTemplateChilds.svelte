@@ -35,17 +35,15 @@
   let isCollapsed = false
   let isCreating = false
 
-  function handleIssueSwap (ev: CustomEvent<{ id: Ref<Issue>, toIndex: number }>) {
-    if (children) {
-      const { id, toIndex } = ev.detail
-      const index = children.findIndex((p) => p.id === id)
-      if (index !== -1 && index !== toIndex) {
-        const [fromIssue] = children.splice(index, 1)
-        const leftPart = children.slice(0, toIndex)
-        const rightPart = children.slice(toIndex)
-        children = [...leftPart, fromIssue, ...rightPart]
-        dispatch('update-issues', children)
-      }
+  function handleIssueSwap (ev: CustomEvent<{ id: Ref<Issue>, toIndex: number }>): void {
+    const { id, toIndex } = ev.detail
+    const index = children.findIndex((p) => p.id === id)
+    if (index !== -1 && index !== toIndex) {
+      const [fromIssue] = children.splice(index, 1)
+      const leftPart = children.slice(0, toIndex)
+      const rightPart = children.slice(toIndex)
+      children = [...leftPart, fromIssue, ...rightPart]
+      dispatch('update-issues', children)
     }
   }
 
@@ -96,6 +94,7 @@
           {project}
           on:move={handleIssueSwap}
           on:update-issue
+          on:update-issues
         />
       </Scroller>
     </div>
