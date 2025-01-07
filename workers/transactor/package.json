@@ -39,7 +39,8 @@
     "ts-jest": "^29.1.1",
     "typescript": "^5.3.3",
     "wrangler": "^3.97.0",
-    "esbuild": "^0.24.2"
+    "esbuild": "^0.24.2",
+    "@types/snappyjs": "^0.7.1"
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
@@ -54,6 +55,7 @@
     "@hcengineering/server-pipeline": "^0.6.0",
     "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/storage": "^0.6.0",
-    "itty-router": "^5.0.18"
+    "itty-router": "^5.0.18",
+    "snappyjs": "^0.7.0"
   }
 }

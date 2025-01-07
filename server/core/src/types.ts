@@ -709,7 +709,6 @@ export type ServerFactory = (
   ctx: MeasureContext,
   pipelineFactory: PipelineFactory,
   port: number,
-  enableCompression: boolean,
   accountsUrl: string,
   externalStorage: StorageAdapter
 ) => () => Promise<void>

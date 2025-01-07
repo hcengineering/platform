@@ -57,6 +57,7 @@ import platform, {
   broadcastEvent,
   getMetadata
 } from '@hcengineering/platform'
+import { uncompress } from 'snappyjs'
 
 import { HelloRequest, HelloResponse, RPCHandler, ReqId, type Response } from '@hcengineering/rpc'
 
@@ -89,6 +90,7 @@ class RequestPromise {
 class Connection implements ClientConnection {
   private websocket: ClientSocket | null = null
   binaryMode = false
+  compressionMode = false
   private readonly requests = new Map<ReqId, RequestPromise>()
   private lastId = 0
   private interval: number | undefined
@@ -107,7 +109,7 @@ class Connection implements ClientConnection {
 
   private pingResponse: number = Date.now()
 
-  private helloRecieved: boolean = false
+  private helloReceived: boolean = false
 
   private account: Account | undefined
 
@@ -205,7 +207,7 @@ class Connection implements ClientConnection {
   }
 
   isConnected (): boolean {
-    return this.websocket != null && this.websocket.readyState === ClientSocketReadyState.OPEN && this.helloRecieved
+    return this.websocket != null && this.websocket.readyState === ClientSocketReadyState.OPEN && this.helloReceived
   }
 
   delay = 0
@@ -289,9 +291,8 @@ class Connection implements ClientConnection {
       }
       if (resp.result === 'hello') {
         const helloResp = resp as HelloResponse
-        if (helloResp.binary) {
-          this.binaryMode = true
-        }
+        this.binaryMode = helloResp.binary
+        this.compressionMode = helloResp.useCompression ?? false
 
         // We need to clear dial timer, since we recieve hello response.
         clearTimeout(this.dialTimer)
@@ -307,7 +308,7 @@ class Connection implements ClientConnection {
           return
         }
         this.account = helloResp.account
-        this.helloRecieved = true
+        this.helloReceived = true
         if (this.upgrading) {
           // We need to call upgrade since connection is upgraded
           this.opt?.onUpgrade?.()
@@ -439,6 +440,7 @@ class Connection implements ClientConnection {
 
   private openConnection (ctx: MeasureContext, socketId: number): void {
     this.binaryMode = false
+    this.helloReceived = false
     // Use defined factory or browser default one.
     const clientSocketFactory =
       this.opt?.socketFactory ??
@@ -503,11 +505,28 @@ class Connection implements ClientConnection {
       }
       if (event.data instanceof Blob) {
         void event.data.arrayBuffer().then((data) => {
+          if (this.compressionMode && this.helloReceived) {
+            try {
+              data = uncompress(data)
+            } catch (err: any) {
+              // Ignore
+              console.error(err)
+            }
+          }
           const resp = this.rpcHandler.readResponse<any>(data, this.binaryMode)
           this.handleMsg(socketId, resp)
         })
       } else {
-        const resp = this.rpcHandler.readResponse<any>(event.data, this.binaryMode)
+        let data = event.data
+        if (this.compressionMode && this.helloReceived) {
+          try {
+            data = uncompress(data)
+          } catch (err: any) {
+            // Ignore
+            console.error(err)
+          }
+        }
+        const resp = this.rpcHandler.readResponse<any>(data, this.binaryMode)
         this.handleMsg(socketId, resp)
       }
     }
@@ -525,15 +544,14 @@ class Connection implements ClientConnection {
         return
       }
       const useBinary = this.opt?.useBinaryProtocol ?? getMetadata(client.metadata.UseBinaryProtocol) ?? true
-      const useCompression =
+      this.compressionMode =
         this.opt?.useProtocolCompression ?? getMetadata(client.metadata.UseProtocolCompression) ?? false
-      this.helloRecieved = false
       const helloRequest: HelloRequest = {
         method: 'hello',
         params: [],
         id: -1,
         binary: useBinary,
-        compression: useCompression
+        compression: this.compressionMode
       }
       ctx.withSync('send-hello', {}, () => this.websocket?.send(this.rpcHandler.serialize(helloRequest, false)))
     }
