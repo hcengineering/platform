@@ -162,6 +162,11 @@ export interface DBAdapterManager {
 
 export interface PipelineContext {
   workspace: WorkspaceIdWithUrl
+
+  lastTx?: string
+
+  lastHash?: string
+
   hierarchy: Hierarchy
   modelDb: ModelDb
   branding: Branding | null

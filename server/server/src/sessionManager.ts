@@ -990,7 +990,7 @@ class TSessionManager implements SessionManager {
           return
         }
         if (request.id === -1 && request.method === 'hello') {
-          this.handleHello<S>(request, service, ctx, workspace, ws, requestCtx)
+          await this.handleHello<S>(request, service, ctx, workspace, ws, requestCtx)
           return
         }
         if (request.id === -2 && request.method === 'forceClose') {
@@ -1053,14 +1053,14 @@ class TSessionManager implements SessionManager {
       })
   }
 
-  private handleHello<S extends Session>(
+  private async handleHello<S extends Session>(
     request: Request<any>,
     service: S,
     ctx: MeasureContext<any>,
     workspace: string,
     ws: ConnectionSocket,
     requestCtx: MeasureContext<any>
-  ): void {
+  ): Promise<void> {
     const hello = request as HelloRequest
     service.binaryMode = hello.binary ?? false
     service.useCompression = hello.compression ?? false
@@ -1080,12 +1080,16 @@ class TSessionManager implements SessionManager {
     if (reconnect) {
       this.reconnectIds.delete(service.sessionId)
     }
+    const pipeline =
+      service.workspace.pipeline instanceof Promise ? await service.workspace.pipeline : service.workspace.pipeline
     const helloResponse: HelloResponse = {
       id: -1,
       result: 'hello',
       binary: service.binaryMode,
       reconnect,
-      serverVersion: this.serverVersion
+      serverVersion: this.serverVersion,
+      lastTx: pipeline.context.lastTx,
+      lastHash: pipeline.context.lastHash
     }
     ws.send(requestCtx, helloResponse, false, false)
   }
