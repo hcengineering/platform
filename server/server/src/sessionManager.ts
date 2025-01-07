@@ -549,6 +549,7 @@ class TSessionManager implements SessionManager {
     // Drop all existing clients
     workspace.closing = this.closeAll(wsString, workspace, 0, 'upgrade')
     await workspace.closing
+    workspace.closing = undefined
     // Wipe workspace and update values.
     workspace.workspaceName = workspaceName
     if (!workspace.upgrade) {
@@ -786,8 +787,9 @@ class TSessionManager implements SessionManager {
     if (ws !== undefined) {
       ws.upgrade = true // We need to similare upgrade to refresh all clients.
       ws.closing = this.closeAll(wsId, ws, 99, 'force-close', ignoreSocket)
-      await ws.closing
       this.workspaces.delete(wsId)
+      await ws.closing
+      ws.closing = undefined
     }
   }
 
@@ -818,6 +820,7 @@ class TSessionManager implements SessionManager {
         this.sendUpgrade(workspace.context, webSocket, s.binaryMode)
       }
       webSocket.close()
+      this.reconnectIds.delete(s.sessionId)
     }
 
     if (LOGGING_ENABLED) {
