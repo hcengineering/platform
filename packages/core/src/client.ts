@@ -22,7 +22,7 @@ import { MeasureContext, MeasureMetricsContext } from './measurements'
 import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, FulltextStorage, Storage, TxResult, WithLookup } from './storage'
 import { SearchOptions, SearchQuery, SearchResult } from './storage'
-import { Tx, TxCUD, type TxWorkspaceEvent } from './tx'
+import { Tx, TxCUD, WorkspaceEvent, type TxWorkspaceEvent } from './tx'
 import { toFindResult } from './utils'
 
 /**
@@ -249,7 +249,7 @@ export async function createClient (
       client.updateFromRemote(...tx)
     }
     for (const t of tx) {
-      if (t._class === core.class.TxWorkspaceEvent) {
+      if (t._class === core.class.TxWorkspaceEvent && (t as TxWorkspaceEvent).event === WorkspaceEvent.LastTx) {
         lastTx = (t as TxWorkspaceEvent).params.lastTx
       }
     }
