@@ -21,11 +21,9 @@ import { Hierarchy } from './hierarchy'
 import { MeasureContext, MeasureMetricsContext } from './measurements'
 import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, FulltextStorage, Storage, TxResult, WithLookup } from './storage'
-import { SearchOptions, SearchQuery, SearchResult, SortingOrder } from './storage'
-import { Tx, TxCUD } from './tx'
+import { SearchOptions, SearchQuery, SearchResult } from './storage'
+import { Tx, TxCUD, type TxWorkspaceEvent } from './tx'
 import { toFindResult } from './utils'
-
-const transactionThreshold = 500
 
 /**
  * @public
@@ -85,11 +83,13 @@ export interface ClientConnection extends Storage, FulltextStorage, BackupClient
   isConnected: () => boolean
 
   close: () => Promise<void>
-  onConnect?: (event: ClientConnectEvent, data: any) => Promise<void>
+  onConnect?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
 
   // If hash is passed, will return LoadModelResponse
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
   getAccount: () => Promise<Account>
+
+  getLastHash?: (ctx: MeasureContext) => Promise<string | undefined>
 }
 
 class ClientImpl implements AccountClient, BackupClient {
@@ -236,7 +236,7 @@ export async function createClient (
   let hierarchy = new Hierarchy()
   let model = new ModelDb(hierarchy)
 
-  let lastTx: number = 0
+  let lastTx: string | undefined
 
   function txHandler (...tx: Tx[]): void {
     if (tx == null || tx.length === 0) {
@@ -248,7 +248,11 @@ export async function createClient (
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       client.updateFromRemote(...tx)
     }
-    lastTx = tx.reduce((cur, it) => (it.modifiedOn > cur ? it.modifiedOn : cur), 0)
+    for (const t of tx) {
+      if (t._class === core.class.TxWorkspaceEvent) {
+        lastTx = (t as TxWorkspaceEvent).params.lastTx
+      }
+    }
   }
   const conn = await ctx.with('connect', {}, () => connect(txHandler))
 
@@ -264,11 +268,14 @@ export async function createClient (
   txHandler(...txBuffer)
   txBuffer = undefined
 
-  const oldOnConnect: ((event: ClientConnectEvent, data: any) => Promise<void>) | undefined = conn.onConnect
-  conn.onConnect = async (event, data) => {
+  const oldOnConnect:
+  | ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>)
+  | undefined = conn.onConnect
+  conn.onConnect = async (event, _lastTx, data) => {
     console.log('Client: onConnect', event)
     if (event === ClientConnectEvent.Maintenance) {
-      await oldOnConnect?.(ClientConnectEvent.Maintenance, data)
+      lastTx = _lastTx
+      await oldOnConnect?.(ClientConnectEvent.Maintenance, _lastTx, data)
       return
     }
     // Find all new transactions and apply
@@ -282,51 +289,27 @@ export async function createClient (
       model = new ModelDb(hierarchy)
 
       await ctx.with('build-model', {}, (ctx) => buildModel(ctx, loadModelResponse, modelFilter, hierarchy, model))
-      await oldOnConnect?.(ClientConnectEvent.Upgraded, data)
-
+      await oldOnConnect?.(ClientConnectEvent.Upgraded, _lastTx, data)
+      lastTx = _lastTx
       // No need to fetch more stuff since upgrade was happened.
       return
     }
 
-    if (event === ClientConnectEvent.Connected) {
+    if (event === ClientConnectEvent.Connected && _lastTx !== lastTx && lastTx === undefined) {
       // No need to do anything here since we connected.
-      await oldOnConnect?.(event, data)
+      await oldOnConnect?.(event, _lastTx, data)
+      lastTx = _lastTx
       return
     }
 
-    // We need to look for last {transactionThreshold} transactions and if it is more since lastTx one we receive, we need to perform full refresh.
-    if (lastTx === 0) {
-      await oldOnConnect?.(ClientConnectEvent.Refresh, data)
+    if (_lastTx === lastTx) {
+      // Same lastTx, no need to refresh
+      await oldOnConnect?.(ClientConnectEvent.Reconnected, _lastTx, data)
       return
     }
-    const atxes = await ctx.with('find-atx', {}, () =>
-      conn.findAll(
-        core.class.Tx,
-        { modifiedOn: { $gt: lastTx }, objectSpace: { $ne: core.space.Model } },
-        { sort: { modifiedOn: SortingOrder.Ascending, _id: SortingOrder.Ascending }, limit: transactionThreshold }
-      )
-    )
-
-    let needFullRefresh = false
-    // if we have attachment document create/delete we need to full refresh, since some derived data could be missing
-    for (const tx of atxes) {
-      if (
-        (tx as TxCUD<Doc>).attachedTo !== undefined &&
-        (tx._class === core.class.TxCreateDoc || tx._class === core.class.TxRemoveDoc)
-      ) {
-        needFullRefresh = true
-        break
-      }
-    }
-
-    if (atxes.length < transactionThreshold && !needFullRefresh) {
-      console.log('applying input transactions', atxes.length)
-      txHandler(...atxes)
-      await oldOnConnect?.(ClientConnectEvent.Reconnected, data)
-    } else {
-      // We need to trigger full refresh on queries, etc.
-      await oldOnConnect?.(ClientConnectEvent.Refresh, data)
-    }
+    lastTx = _lastTx
+    // We need to trigger full refresh on queries, etc.
+    await oldOnConnect?.(ClientConnectEvent.Refresh, lastTx, data)
   }
 
   return client
@@ -344,6 +327,10 @@ async function tryLoadModel (
     hash: ''
   }
 
+  if (conn.getLastHash !== undefined && (await conn.getLastHash(ctx)) === current.hash) {
+    // We have same model hash.
+    return current
+  }
   const lastTxTime = getLastTxTime(current.transactions)
   const result = await ctx.with('connection-load-model', { hash: current.hash !== '' }, (ctx) =>
     conn.loadModel(lastTxTime, current.hash)
@@ -357,21 +344,23 @@ async function tryLoadModel (
       hash: ''
     }
   }
-
-  // Save concatenated
-  void ctx
-    .with('persistence-store', {}, (ctx) =>
-      persistence?.store({
-        ...result,
-        transactions: !result.full ? current.transactions.concat(result.transactions) : result.transactions
+  const transactions = current.transactions.concat(result.transactions)
+  if (result.hash !== current.hash) {
+    // Save concatenated, if have some more of them.
+    void ctx
+      .with('persistence-store', {}, (ctx) =>
+        persistence?.store({
+          ...result,
+          transactions: !result.full ? transactions : result.transactions
+        })
+      )
+      .catch((err) => {
+        Analytics.handleError(err)
       })
-    )
-    .catch((err) => {
-      Analytics.handleError(err)
-    })
+  }
 
   if (!result.full && !reload) {
-    result.transactions = current.transactions.concat(result.transactions)
+    result.transactions = transactions
   }
 
   return result

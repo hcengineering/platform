@@ -115,6 +115,7 @@ export class ModelMiddleware extends BaseMiddleware implements Middleware {
 
   private setLastHash (hash: string): void {
     this.lastHash = hash
+    this.context.lastHash = this.lastHash
     this.lastHashResponse = Promise.resolve({
       full: false,
       hash,
