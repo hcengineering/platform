@@ -13,13 +13,12 @@
 // limitations under the License.
 import documents, {
   documentsId,
-  getDocumentId,
   type ControlledDocument,
   type Document,
   type Project,
   type ProjectDocument
 } from '@hcengineering/controlled-documents'
-import { type Client, type Doc, type Ref } from '@hcengineering/core'
+import { type Doc, type Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
 import view, { type ObjectPanel } from '@hcengineering/view'
@@ -158,14 +157,4 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
   }
 
   return undefined
-}
-
-export async function documentIdentifierProvider (client: Client, ref: Ref<Document>, doc?: Document): Promise<string> {
-  const document = doc ?? (await client.findOne(documents.class.Document, { _id: ref }))
-
-  if (document === undefined) {
-    return ''
-  }
-
-  return getDocumentId(document)
 }
