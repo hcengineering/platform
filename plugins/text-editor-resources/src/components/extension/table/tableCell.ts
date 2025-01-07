@@ -18,17 +18,19 @@ import TiptapTableCell from '@tiptap/extension-table-cell'
 import { Plugin, PluginKey, type Selection } from '@tiptap/pm/state'
 import { DecorationSet } from '@tiptap/pm/view'
 
-import { findTable } from './utils'
+import { CellSelection, type Rect, TableMap } from '@tiptap/pm/tables'
 import { columnHandlerDecoration } from './decorations/columnHandlerDecoration'
 import { columnInsertDecoration } from './decorations/columnInsertDecoration'
+import { rowHandlerDecoration } from './decorations/rowHandlerDecoration'
 import { rowInsertDecoration } from './decorations/rowInsertDecoration'
 import { tableDragMarkerDecoration } from './decorations/tableDragMarkerDecoration'
 import { tableSelectionDecoration } from './decorations/tableSelectionDecoration'
-import { rowHandlerDecoration } from './decorations/rowHandlerDecoration'
+import { findTable } from './utils'
+import { type Node } from '@tiptap/pm/model'
 
 export const TableCell = TiptapTableCell.extend({
   addProseMirrorPlugins () {
-    return [tableCellDecorationPlugin(this.editor)]
+    return [tableCellDecorationPlugin(this.editor), tableSelectionNormalizer()]
   }
 })
 
@@ -77,4 +79,81 @@ const tableCellDecorationPlugin = (editor: Editor): Plugin<TableCellDecorationPl
       }
     }
   })
+}
+
+const tableSelectionNormalizer = (): Plugin<any> => {
+  return new Plugin({
+    appendTransaction: (transactions, oldState, newState) => {
+      const selection = newState.selection
+      if (selection.eq(oldState.selection) || !(selection instanceof CellSelection)) return
+
+      const table = findTable(newState.selection)
+      if (table === undefined) return
+
+      const tableMap = TableMap.get(table.node)
+
+      let rect: Rect | undefined
+
+      const walkCell = (pos: number): void => {
+        const cell = tableMap.findCell(pos)
+        if (cell === undefined) return
+
+        if (rect === undefined) {
+          rect = { ...cell }
+        } else {
+          rect.left = Math.min(rect.left, cell.left)
+          rect.top = Math.min(rect.top, cell.top)
+
+          rect.right = Math.max(rect.right, cell.right)
+          rect.bottom = Math.max(rect.bottom, cell.bottom)
+        }
+      }
+
+      selection.forEachCell((_node, pos) => {
+        walkCell(pos - table.pos - 1)
+      })
+      if (rect === undefined) return
+
+      const rectSelection: number[] = []
+      for (let row = rect.top; row < rect.bottom; row++) {
+        for (let col = rect.left; col < rect.right; col++) {
+          rectSelection.push(tableMap.map[row * tableMap.width + col])
+        }
+      }
+      rectSelection.forEach((pos) => {
+        walkCell(pos)
+      })
+
+      if (rect === undefined) return
+
+      // Original promemirror implementation of TableMap.positionAt skips rowspawn cells, which leads to unpredictable selection behaviour
+      const firstCellOffset = cellPositionAt(tableMap, rect.bottom - 1, rect.right - 1, table.node)
+      const lastCellOffset = cellPositionAt(tableMap, rect.top, rect.left, table.node)
+
+      const firstCellPos = newState.doc.resolve(table.start + firstCellOffset)
+      const lastCellPos = newState.doc.resolve(table.start + lastCellOffset)
+
+      const reverseOrder = selection.$anchorCell.pos > selection.$headCell.pos
+      const $head = reverseOrder ? lastCellPos : firstCellPos
+      const $anchor = reverseOrder ? firstCellPos : lastCellPos
+
+      const newSelection = new CellSelection($anchor, $head)
+
+      if (newSelection.eq(newState.selection)) return
+
+      return newState.tr.setSelection(new CellSelection($anchor, $head))
+    }
+  })
+}
+
+function cellPositionAt (tableMap: TableMap, row: number, col: number, table: Node): number {
+  for (let i = 0, rowStart = 0; ; i++) {
+    const rowEnd = rowStart + table.child(i).nodeSize
+    if (i === row) {
+      const index = col + row * tableMap.width
+      const rowEndIndex = (row + 1) * tableMap.width
+      return index === rowEndIndex ? rowEnd - 1 : tableMap.map[index]
+    }
+    rowStart = rowEnd
+  }
 }
