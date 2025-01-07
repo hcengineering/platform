@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Fragment, type Node as ProseMirrorNode } from '@tiptap/pm/model'
+import { Fragment, type Node, type Node as ProseMirrorNode } from '@tiptap/pm/model'
 import type { Transaction } from '@tiptap/pm/state'
 import { type CellSelection, TableMap } from '@tiptap/pm/tables'
 import type { TableNodeLocation } from '../types'
@@ -150,10 +150,7 @@ function tableToCells (table: TableNodeLocation): TableRows {
 function tableFromCells (editor: Editor, table: TableNodeLocation, rows: TableRows, tr: Transaction): void {
   const schema = editor.schema.nodes
   const newRowNodes = rows.map((row) =>
-    schema.tableRow.create(
-      null,
-      row.filter((cell) => cell !== null)
-    )
+    schema.tableRow.create(null, row.filter((cell) => cell !== null) as readonly Node[])
   )
   const newTableNode = table.node.copy(Fragment.from(newRowNodes))
   tr.replaceWith(table.pos, table.pos + table.node.nodeSize, newTableNode)
