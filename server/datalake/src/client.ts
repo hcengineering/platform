@@ -73,6 +73,11 @@ interface MultipartUploadPart {
   etag: string
 }
 
+export interface R2UploadParams {
+  location: string
+  bucket: string
+}
+
 /** @public */
 export class DatalakeClient {
   constructor (private readonly endpoint: string) {}
@@ -320,6 +325,8 @@ export class DatalakeClient {
     return await this.signObjectComplete(ctx, workspace, objectName)
   }
 
+  // S3
+
   async uploadFromS3 (
     ctx: MeasureContext,
     workspace: WorkspaceId,
@@ -331,6 +338,37 @@ export class DatalakeClient {
     }
   ): Promise<void> {
     const path = `/upload/s3/${workspace.name}/${encodeURIComponent(objectName)}`
+    const url = concatLink(this.endpoint, path)
+
+    await fetchSafe(ctx, url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(params)
+    })
+  }
+
+  // R2
+
+  async getR2UploadParams (ctx: MeasureContext, workspace: WorkspaceId): Promise<R2UploadParams> {
+    const path = `/upload/r2/${workspace.name}`
+    const url = concatLink(this.endpoint, path)
+
+    const response = await fetchSafe(ctx, url)
+    const json = (await response.json()) as R2UploadParams
+    return json
+  }
+
+  async uploadFromR2 (
+    ctx: MeasureContext,
+    workspace: WorkspaceId,
+    objectName: string,
+    params: {
+      filename: string
+    }
+  ): Promise<void> {
+    const path = `/upload/r2/${workspace.name}/${encodeURIComponent(objectName)}`
     const url = concatLink(this.endpoint, path)
 
     await fetchSafe(ctx, url, {
