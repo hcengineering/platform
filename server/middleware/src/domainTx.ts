@@ -17,6 +17,7 @@ import core, {
   Domain,
   groupByArray,
   TxProcessor,
+  withContext,
   type Doc,
   type MeasureContext,
   type SessionData,
@@ -41,6 +42,7 @@ import { BaseMiddleware } from '@hcengineering/server-core'
 export class DomainTxMiddleware extends BaseMiddleware implements Middleware {
   adapterManager!: DBAdapterManager
 
+  @withContext('domainTx-middleware')
   static async create (ctx: MeasureContext, context: PipelineContext, next?: Middleware): Promise<Middleware> {
     const middleware = new DomainTxMiddleware(context, next)
     if (context.adapterManager == null) {

@@ -329,6 +329,7 @@ async function tryLoadModel (
 
   if (conn.getLastHash !== undefined && (await conn.getLastHash(ctx)) === current.hash) {
     // We have same model hash.
+    current.full = false // Since we load, no need to send full
     return current
   }
   const lastTxTime = getLastTxTime(current.transactions)
