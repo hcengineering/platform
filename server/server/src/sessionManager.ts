@@ -716,21 +716,38 @@ class TSessionManager implements SessionManager {
       const user = pipeline.context.modelDb.getAccountByEmail(session.getUser())
       if (user === undefined) return
 
-      const status = (await pipeline.findAll(ctx, core.class.UserStatus, { user: user._id }, { limit: 1 }))[0]
+      const clientCtx: ClientSessionCtx = {
+        requestId: undefined,
+        pipeline,
+        sendResponse: async (msg) => {
+          // No response
+        },
+        ctx,
+        sendError: async (msg, error: Status) => {
+          // Assume no error send
+        },
+        sendPong: () => {}
+      }
+      const status = (
+        await session.findAllRaw(ctx, pipeline, core.class.UserStatus, { user: user._id }, { limit: 1 })
+      )[0]
       const txFactory = new TxFactory(user._id, true)
       if (status === undefined) {
         const tx = txFactory.createTxCreateDoc(core.class.UserStatus, core.space.Space, {
           online,
           user: user._id
         })
-        await pipeline.tx(ctx, [tx])
+        await session.tx(clientCtx, tx)
       } else if (status.online !== online) {
         const tx = txFactory.createTxUpdateDoc(status._class, status.space, status._id, {
           online
         })
-        await pipeline.tx(ctx, [tx])
+        await session.tx(clientCtx, tx)
       }
-    } catch {}
+    } catch (err: any) {
+      ctx.error('failed to set status', { err })
+      Analytics.handleError(err)
+    }
   }
 
   async close (ctx: MeasureContext, ws: ConnectionSocket, wsid: string): Promise<void> {
