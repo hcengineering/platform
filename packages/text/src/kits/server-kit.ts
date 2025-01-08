@@ -90,7 +90,7 @@ export const ServerKit = Extension.create<ServerKitOptions>({
       TextAlign.configure({
         types: ['heading', 'paragraph'],
         alignments: ['left', 'center', 'right'],
-        defaultAlignment: 'left'
+        defaultAlignment: null
       }),
       TodoItemNode,
       TodoListNode,

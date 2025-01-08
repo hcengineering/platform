@@ -660,6 +660,7 @@ A list of closed updated issues`
       content: [
         {
           type: MarkupNodeType.paragraph,
+          attrs: { textAlign: null },
           content: [
             {
               type: MarkupNodeType.text,
@@ -689,7 +690,7 @@ A list of closed updated issues`
       content: [
         {
           type: MarkupNodeType.heading,
-          attrs: { level: 1 },
+          attrs: { level: 1, textAlign: null },
           content: [
             {
               type: MarkupNodeType.text,
@@ -699,6 +700,7 @@ A list of closed updated issues`
         },
         {
           type: MarkupNodeType.paragraph,
+          attrs: { textAlign: null },
           content: [
             {
               text: '\n',
@@ -708,7 +710,7 @@ A list of closed updated issues`
         },
         {
           type: MarkupNodeType.heading,
-          attrs: { level: 2 },
+          attrs: { level: 2, textAlign: null },
           content: [
             {
               type: MarkupNodeType.text,

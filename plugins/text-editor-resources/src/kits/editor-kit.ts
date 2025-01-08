@@ -278,7 +278,7 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                     this.options.textAlign ?? {
                       types: ['heading', 'paragraph'],
                       alignments: ['left', 'center', 'right'],
-                      defaultAlignment: 'left'
+                      defaultAlignment: null
                     }
                   )
                 ])
