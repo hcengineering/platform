@@ -2,6 +2,7 @@
   import { Employee, Person } from '@hcengineering/contact'
   import { Ref, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
   import ui, { IconSize, LabelAndProps } from '@hcengineering/ui'
   import { PersonLabelTooltip, employeeByIdStore, personByIdStore } from '..'
   import PersonPresenter from '../components/PersonPresenter.svelte'
@@ -26,7 +27,13 @@
   export let compact: boolean = false
   export let showStatus: boolean = false
 
-  $: employeeValue = typeof value === 'string' ? ($personByIdStore.get(value) as Employee) : (value as Employee)
+  const client = getClient()
+  const h = client.getHierarchy()
+
+  $: employeeValue = h.as(
+    typeof value === 'string' ? ($personByIdStore.get(value) as Person) : (value as Person),
+    contact.mixin.Employee
+  )
 
   $: active = employeeValue !== undefined ? $employeeByIdStore.get(employeeValue?._id)?.active ?? false : false
 
