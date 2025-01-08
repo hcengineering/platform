@@ -15,14 +15,14 @@
 
 import { type Editor } from '@tiptap/core'
 import { type EditorState } from '@tiptap/pm/state'
-import { TableMap } from '@tiptap/pm/tables'
+import { CellSelection, TableMap } from '@tiptap/pm/tables'
 import { Decoration } from '@tiptap/pm/view'
 import textEditor from '@hcengineering/text-editor'
 
 import { type TableNodeLocation } from '../types'
 import { findTable, getSelectedRows, isRowSelected, selectRow } from '../utils'
 
-import { duplicateRows, moveRow } from './actions'
+import { duplicateRows, moveSelectedRows } from './actions'
 import DeleteRow from '../../../icons/table/DeleteRow.svelte'
 import Duplicate from '../../../icons/table/Duplicate.svelte'
 import { createCellsHandle, type OptionItem } from './cellsHandle'
@@ -120,8 +120,10 @@ const handleMouseDown = (
 
     if (row !== dropIndex) {
       let tr = editor.state.tr
-      tr = selectRow(table, dropIndex, tr)
-      tr = moveRow(table, row, dropIndex, tr)
+      const selection = editor.state.selection
+      if (selection instanceof CellSelection) {
+        tr = moveSelectedRows(editor, table, selection, dropIndex, tr)
+      }
       editor.view.dispatch(tr)
     }
     window.removeEventListener('mouseup', handleFinish)

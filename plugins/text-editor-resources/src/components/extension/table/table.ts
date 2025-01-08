@@ -117,6 +117,24 @@ export async function openTableOptions (editor: Editor, event: MouseEvent): Prom
       }
     },
     {
+      id: '#mergeCells',
+      icon: textEditor.icon.MergeCells,
+      label: textEditor.string.MergeCells,
+      action: () => editor.commands.mergeCells(),
+      category: {
+        label: textEditor.string.CategoryCell
+      }
+    },
+    {
+      id: '#splitCell',
+      icon: textEditor.icon.SplitCells,
+      label: textEditor.string.SplitCells,
+      action: () => editor.commands.splitCell(),
+      category: {
+        label: textEditor.string.CategoryCell
+      }
+    },
+    {
       id: '#deleteTable',
       icon: DeleteTable,
       label: textEditor.string.DeleteTable,
