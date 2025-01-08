@@ -30,10 +30,9 @@
   const client = getClient()
   const h = client.getHierarchy()
 
-  $: employeeValue = h.as(
-    typeof value === 'string' ? ($personByIdStore.get(value) as Person) : (value as Person),
-    contact.mixin.Employee
-  )
+  $: person = typeof value === 'string' ? ($personByIdStore.get(value) as Person) : (value as Person)
+
+  $: employeeValue = person !== undefined ? h.as(person, contact.mixin.Employee) : undefined
 
   $: active = employeeValue !== undefined ? $employeeByIdStore.get(employeeValue?._id)?.active ?? false : false
 
