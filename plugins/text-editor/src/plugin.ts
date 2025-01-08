@@ -84,11 +84,14 @@ export default plugin(textEditorId, {
     DeleteColumn: '' as IntlString,
     AddRowBefore: '' as IntlString,
     AddRowAfter: '' as IntlString,
+    MergeCells: '' as IntlString,
+    SplitCells: '' as IntlString,
     DeleteRow: '' as IntlString,
     DeleteTable: '' as IntlString,
     Duplicate: '' as IntlString,
     CategoryRow: '' as IntlString,
     CategoryColumn: '' as IntlString,
+    CategoryCell: '' as IntlString,
     Table: '' as IntlString,
     TableOptions: '' as IntlString,
     SelectTable: '' as IntlString,
@@ -125,6 +128,8 @@ export default plugin(textEditorId, {
     Download: '' as Asset,
     Note: '' as Asset,
     Comment: '' as Asset,
-    SelectTable: '' as Asset
+    SelectTable: '' as Asset,
+    MergeCells: '' as Asset,
+    SplitCells: '' as Asset
   }
 })
