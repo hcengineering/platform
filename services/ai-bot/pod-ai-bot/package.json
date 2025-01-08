@@ -75,7 +75,7 @@
     "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/setting": "^0.6.17",
     "@hcengineering/text": "^0.6.5",
-    "@hcengineering/rank": "^0.6.0",
+    "@hcengineering/rank": "^0.6.4",
     "@hcengineering/server-storage": "^0.6.0",
     "@hcengineering/workbench": "^0.6.16",
     "@hcengineering/love": "^0.6.0",
