@@ -87,6 +87,7 @@
     "mermaid": "~11.4.1",
     "@hcengineering/theme": "^0.6.5",
     "tippy.js": "~6.3.7",
-    "@hcengineering/chunter": "^0.6.20"
+    "@hcengineering/chunter": "^0.6.20",
+    "@tiptap/extension-text-align": "~2.11.0"
   }
 }

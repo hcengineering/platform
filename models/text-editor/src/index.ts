@@ -147,6 +147,42 @@ function createImageAlignmentAction (builder: Builder, align: 'center' | 'left' 
   })
 }
 
+function createTextAlignmentAction (builder: Builder, align: 'center' | 'left' | 'right'): void {
+  let icon: Asset
+  let label: IntlString
+  let index: number
+  switch (align) {
+    case 'left':
+      icon = textEditor.icon.AlignLeft
+      label = textEditor.string.AlignLeft
+      index = 5
+      break
+    case 'center':
+      icon = textEditor.icon.AlignCenter
+      label = textEditor.string.AlignCenter
+      index = 10
+      break
+    case 'right':
+      icon = textEditor.icon.AlignRight
+      label = textEditor.string.AlignRight
+      index = 15
+      break
+  }
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    kind: 'text',
+    action: {
+      command: 'setTextAlign',
+      params: align
+    },
+    visibilityTester: textEditor.function.IsEditable,
+    icon,
+    label,
+    category: 45,
+    index
+  })
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(TRefInputActionItem, TTextEditorExtensionFactory, TTextEditorAction)
 
@@ -252,6 +288,11 @@ export function createModel (builder: Builder): void {
     category: 40,
     index: 10
   })
+
+  // Text align category
+  createTextAlignmentAction(builder, 'left')
+  createTextAlignmentAction(builder, 'center')
+  createTextAlignmentAction(builder, 'right')
 
   // Quote category
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {

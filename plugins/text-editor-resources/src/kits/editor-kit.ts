@@ -38,6 +38,7 @@ import { DefaultKit, type DefaultKitOptions } from './default-kit'
 import { MermaidExtension, type MermaidOptions, mermaidOptions } from '../components/extension/mermaid'
 import { DrawingBoardExtension, type DrawingBoardOptions } from '../components/extension/drawingBoard'
 import { type IndendOptions, IndentExtension, indentExtensionOptions } from '../components/extension/indent'
+import TextAlign, { type TextAlignOptions } from '@tiptap/extension-text-align'
 
 export interface EditorKitOptions extends DefaultKitOptions {
   history?: false
@@ -55,6 +56,7 @@ export interface EditorKitOptions extends DefaultKitOptions {
   drawingBoard?: DrawingBoardOptions | false
   mermaid?: MermaidOptions | false
   indent?: IndendOptions | false
+  textAlign?: TextAlignOptions | false
   mode?: 'full' | 'compact'
   note?: NoteOptions | false
   submit?: SubmitOptions | false
@@ -266,6 +268,19 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                 staticKitExtensions.push([
                   860,
                   IndentExtension.configure(this.options.indent ?? indentExtensionOptions)
+                ])
+              }
+
+              if (this.options.textAlign !== false) {
+                staticKitExtensions.push([
+                  870,
+                  TextAlign.configure(
+                    this.options.textAlign ?? {
+                      types: ['heading', 'paragraph'],
+                      alignments: ['left', 'center', 'right'],
+                      defaultAlignment: 'left'
+                    }
+                  )
                 ])
               }
 
