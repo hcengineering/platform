@@ -584,7 +584,8 @@
         "PASSWORD": "password",
         "AVATAR_PATH": "./assets/avatar.png",
         "AVATAR_CONTENT_TYPE": ".png",
-        "LOVE_ENDPOINT": "http://localhost:8096"
+        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        "LOVE_ENDPOINT": "http://localhost:8096",
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
