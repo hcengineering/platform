@@ -347,7 +347,7 @@ export async function updateDataWorkspaceIdToUuid (
               throw new Error('workspace uuid is required but not defined')
             }
 
-            await client`UPDATE ${client(table)} SET "workspaceId" = ${uuid} WHERE "workspaceIdOld" = ${ws.workspace}`
+            await client`UPDATE ${client(table)} SET "workspaceId" = ${uuid} WHERE "workspaceIdOld" = ${ws.workspace} OR "workspaceIdOld" = ${uuid}`
           }
         })
 
