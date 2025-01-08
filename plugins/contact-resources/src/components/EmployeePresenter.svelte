@@ -32,9 +32,9 @@
 
   $: person = typeof value === 'string' ? ($personByIdStore.get(value) as Person) : (value as Person)
 
-  $: employeeValue = person !== undefined ? h.as(person, contact.mixin.Employee) : undefined
+  $: employeeValue = person != null ? h.as(person, contact.mixin.Employee) : undefined
 
-  $: active = employeeValue !== undefined ? $employeeByIdStore.get(employeeValue?._id)?.active ?? false : false
+  $: active = employeeValue?.active ?? false
 
   function getPreviewPopup (active: boolean, value: Employee | undefined): LabelAndProps | undefined {
     if (!active || value === undefined || !showPopup) {
