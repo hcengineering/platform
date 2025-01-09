@@ -200,7 +200,7 @@
   .table-toolbar-container {
     position: absolute;
     top: -1.5rem;
-    right: 0;
+    right: var(--table-offscreen-spacing);
     z-index: 200;
   }
 </style>

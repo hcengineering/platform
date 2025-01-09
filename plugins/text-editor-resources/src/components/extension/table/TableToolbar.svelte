@@ -50,15 +50,34 @@
     actions = out
   }
 
-  $: actionsQuery.query(textEditor.class.TextEditorAction, { category: 70 }, (result) => {
+  $: actionsQuery.query(textEditor.class.TextEditorAction, { kind: 'table' }, (result) => {
     void updateActions([...result], actionCtx)
+  })
+
+  $: categories = actions.reduce<[number, TextEditorAction][][]>((acc, action) => {
+    const { category, index } = action
+    if (acc[category] === undefined) acc[category] = []
+    acc[category].push([index, action])
+    return acc
+  }, [])
+
+  $: categories.forEach((category) => {
+    category.sort((a, b) => a[0] - b[0])
   })
 </script>
 
 <div class="table-toolbar flex" contenteditable="false">
-  {#each actions as action}
-    <TextActionButton {action} {editor} size="small" {actionCtx} blockMouseEvents={false} />
-  {/each}
+  <div class="text-editor-toolbar buttons-group xsmall-gap">
+    {#each Object.values(categories) as category, index}
+      {#if index > 0}
+        <div class="buttons-divider" />
+      {/if}
+
+      {#each category as [_, action]}
+        <TextActionButton {action} {editor} size="small" {actionCtx} blockMouseEvents={false} />
+      {/each}
+    {/each}
+  </div>
 </div>
 
 <style lang="scss">

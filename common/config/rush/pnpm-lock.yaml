@@ -6260,6 +6260,14 @@ packages:
       '@tiptap/core': 2.6.6(@tiptap/pm@2.6.6)
     dev: false
 
+  /@tiptap/extension-text-style@2.11.0(@tiptap/core@2.6.6):
+    resolution: {integrity: sha512-vuA16wMZ6J3fboL7FObwV2f5uN9Vg0WYmqU7971vxzJyaRj9VE1eeH8Kh5fq4RgwDzc13MZGvZZV4HcE1R8o8A==}
+    peerDependencies:
+      '@tiptap/core': ^2.7.0
+    dependencies:
+      '@tiptap/core': 2.6.6(@tiptap/pm@2.6.6)
+    dev: false
+
   /@tiptap/extension-text@2.6.6(@tiptap/core@2.6.6):
     resolution: {integrity: sha512-e84uILnRzNzcwK1DVQNpXVmBG1Cq3BJipTOIDl1LHifOok7MBjhI/X+/NR0bd3N2t6gmDTWi63+4GuJ5EeDmsg==}
     peerDependencies:
@@ -27298,7 +27306,7 @@ packages:
     dev: false
 
   file:projects/pod-ai-bot.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4)(zod@3.23.8):
-    resolution: {integrity: sha512-OPo+KhRKsPQhO1eqOIgL30ef9s/TAnEf21bAwzxLLcB70AIwMyjfPRzzJHDOIbVjCzA8t4YFQ5MWWoLUveylFg==, tarball: file:projects/pod-ai-bot.tgz}
+    resolution: {integrity: sha512-R2ByQWsnvxxBGk/Ql7z8CK8NRb4XXREC0rndthdpfqw1dhwofuHiHpU2sb7L+OTHiz0do16L5gOLb7R1CbMecw==, tarball: file:projects/pod-ai-bot.tgz}
     id: file:projects/pod-ai-bot.tgz
     name: '@rush-temp/pod-ai-bot'
     version: 0.0.0
@@ -27773,7 +27781,7 @@ packages:
     dev: false
 
   file:projects/pod-love.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-Ibi2id+aFeeH3lGo2z5GW3Wg3ZWha/5VTWYxXxC0IQr/ivvk+LFlWShEuCyG8XYvIoy6OVAmafgpfOKeUrQjsg==, tarball: file:projects/pod-love.tgz}
+    resolution: {integrity: sha512-G70rzmJHk/en1EdQHEs2HEK9/D2IY0i/iF0WZtU2FWLtSzlJb5UC0hrpVfxD/aWcnfmmqcLQu+b2siYrnUFSmQ==, tarball: file:projects/pod-love.tgz}
     id: file:projects/pod-love.tgz
     name: '@rush-temp/pod-love'
     version: 0.0.0
@@ -32542,6 +32550,7 @@ packages:
       '@tiptap/extension-table-header': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/extension-table-row': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/extension-text-align': 2.11.0(@tiptap/core@2.6.6)
+      '@tiptap/extension-text-style': 2.11.0(@tiptap/core@2.6.6)
       '@tiptap/extension-typography': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/extension-underline': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/pm': 2.6.6
@@ -32686,7 +32695,7 @@ packages:
     dev: false
 
   file:projects/text.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.24.2)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-zmM6GDzeNuMbMA7iWwhg8hBc43fylNW7cEmk0fSWw9+G9NqD2MLv2dVb5dnAcPAioj9WBdDakWcrLAAHUBJyMw==, tarball: file:projects/text.tgz}
+    resolution: {integrity: sha512-p2TRL6FgtqVBooDf+E5A4HB+45VS03IvNxudhC9gCotewS726ZLOxl2XdfeuYB2rHYbzdmmiG2zb8GbPwqTkOw==, tarball: file:projects/text.tgz}
     id: file:projects/text.tgz
     name: '@rush-temp/text'
     version: 0.0.0
@@ -32707,6 +32716,7 @@ packages:
       '@tiptap/extension-task-item': 2.6.6(@tiptap/core@2.6.6)(@tiptap/pm@2.6.6)
       '@tiptap/extension-task-list': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/extension-text-align': 2.11.0(@tiptap/core@2.6.6)
+      '@tiptap/extension-text-style': 2.11.0(@tiptap/core@2.6.6)
       '@tiptap/extension-typography': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/extension-underline': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/html': 2.6.6(@tiptap/core@2.6.6)(@tiptap/pm@2.6.6)

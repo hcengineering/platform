@@ -247,6 +247,18 @@ export function createModel (builder: Builder): void {
     index: 20
   })
 
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    action: textEditor.function.SetTextColor,
+    icon: textEditor.icon.TextStyle,
+    visibilityTester: textEditor.function.IsTextStylingEnabled,
+    isActive: {
+      name: 'textStyle'
+    },
+    label: textEditor.string.SetTextColor,
+    category: 20,
+    index: 25
+  })
+
   // Link category
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
     action: textEditor.function.FormatLink,
@@ -338,23 +350,36 @@ export function createModel (builder: Builder): void {
     index: 10
   })
 
+  // Table cell category
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    kind: 'table',
+    action: textEditor.function.SetBackgroundColor,
+    icon: textEditor.icon.Brush,
+    visibilityTester: textEditor.function.IsTableToolbarContext,
+    label: textEditor.string.SetCellHighlightColor,
+    category: 65,
+    index: 5
+  })
+
   // Table category
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    kind: 'table',
     action: textEditor.function.SelectTable,
     icon: textEditor.icon.SelectTable,
     visibilityTester: textEditor.function.IsTableToolbarContext,
     label: textEditor.string.SelectTable,
     category: 70,
-    index: 5
+    index: 15
   })
 
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    kind: 'table',
     action: textEditor.function.OpenTableOptions,
     icon: textEditor.icon.TableProps,
     visibilityTester: textEditor.function.IsTableToolbarContext,
     label: textEditor.string.TableOptions,
     category: 70,
-    index: 10
+    index: 20
   })
 
   // Image align category
