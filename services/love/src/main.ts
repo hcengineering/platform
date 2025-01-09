@@ -116,7 +116,7 @@ export const main = async (): Promise<void> => {
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.get('/checkRecordAvailable', async (_req, res) => {
-    res.send(await checkRecordAvailable(storageConfig))
+    res.send(await checkRecordAvailable(storageConfig, s3storageConfig))
   })
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -254,8 +254,13 @@ const createToken = async (roomName: string, _id: string, participantName: strin
   return await at.toJwt()
 }
 
-const checkRecordAvailable = async (storageConfig: StorageConfig | undefined): Promise<boolean> => {
-  return storageConfig !== undefined
+const checkRecordAvailable = async (
+  storageConfig: StorageConfig | undefined,
+  s3storageConfig: StorageConfig | undefined
+): Promise<boolean> => {
+  if (storageConfig !== undefined && storageConfig.kind === 's3') return true
+  if (storageConfig !== undefined && storageConfig.kind === 'datalake' && s3storageConfig !== undefined) return true
+  return false
 }
 
 const startRecord = async (
