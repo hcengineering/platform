@@ -1,19 +1,22 @@
+import aiBot from '@hcengineering/ai-bot'
+import { connectMeeting, disconnectMeeting } from '@hcengineering/ai-bot-resources'
 import { Analytics } from '@hcengineering/analytics'
 import calendar, { type Event, getAllEvents } from '@hcengineering/calendar'
+import chunter from '@hcengineering/chunter'
 import contact, { getName, type Person, type PersonAccount } from '@hcengineering/contact'
 import { personByIdStore } from '@hcengineering/contact-resources'
 import core, {
   AccountRole,
   concatLink,
   type Data,
+  type Doc,
   generateId,
   getCurrentAccount,
+  type Hierarchy,
   type IdMap,
   type Ref,
   type Space,
-  type TxOperations,
-  type Hierarchy,
-  type Doc
+  type TxOperations
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import {
@@ -24,16 +27,16 @@ import {
   LoveEvents,
   loveId,
   type Meeting,
+  type MeetingMinutes,
+  MeetingStatus,
   type Office,
   type ParticipantInfo,
   RequestStatus,
   type Room,
   RoomAccess,
-  RoomType,
-  TranscriptionStatus,
   type RoomMetadata,
-  type MeetingMinutes,
-  MeetingStatus
+  RoomType,
+  TranscriptionStatus
 } from '@hcengineering/love'
 import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
 import presentation, {
@@ -43,18 +46,29 @@ import presentation, {
   getClient
 } from '@hcengineering/presentation'
 import {
+  closePanel,
   type DropdownTextItem,
   getCurrentLocation,
   navigate,
-  showPopup,
   panelstore,
-  closePanel
+  showPopup
 } from '@hcengineering/ui'
+import view from '@hcengineering/view'
+import { getObjectLinkFragment } from '@hcengineering/view-resources'
+import { type Widget, type WidgetTab } from '@hcengineering/workbench'
+import {
+  currentWorkspaceStore,
+  openWidget,
+  openWidgetTab,
+  sidebarStore,
+  updateWidgetState
+} from '@hcengineering/workbench-resources'
 import { isKrispNoiseFilterSupported, KrispNoiseFilter } from '@livekit/krisp-noise-filter'
 import { BackgroundBlur, type BackgroundOptions, type ProcessorWrapper } from '@livekit/track-processors'
 import {
   type AudioCaptureOptions,
   ConnectionState,
+  Room as LKRoom,
   LocalAudioTrack,
   type LocalTrack,
   type LocalTrackPublication,
@@ -62,30 +76,16 @@ import {
   type RemoteParticipant,
   type RemoteTrack,
   type RemoteTrackPublication,
-  Room as LKRoom,
   RoomEvent,
   Track,
   type VideoCaptureOptions
 } from 'livekit-client'
 import { get, writable } from 'svelte/store'
-import aiBot from '@hcengineering/ai-bot'
-import { connectMeeting, disconnectMeeting } from '@hcengineering/ai-bot-resources'
-import {
-  openWidget,
-  sidebarStore,
-  updateWidgetState,
-  currentWorkspaceStore,
-  openWidgetTab
-} from '@hcengineering/workbench-resources'
-import { type Widget, type WidgetTab } from '@hcengineering/workbench'
-import view from '@hcengineering/view'
-import chunter from '@hcengineering/chunter'
-import { getObjectLinkFragment } from '@hcengineering/view-resources'
 
 import { sendMessage } from './broadcast'
-import love from './plugin'
-import { $myPreferences, currentRoom, currentMeetingMinutes, selectedRoomPlace, myOffice } from './stores'
 import RoomSettingsPopup from './components/RoomSettingsPopup.svelte'
+import love from './plugin'
+import { $myPreferences, currentMeetingMinutes, currentRoom, myOffice, selectedRoomPlace } from './stores'
 
 export const selectedCamId = 'selectedDevice_cam'
 export const selectedMicId = 'selectedDevice_mic'
@@ -858,6 +858,27 @@ export async function tryConnect (
   } else {
     await connectRoom(x, y, currentInfo, currentPerson, room)
   }
+}
+
+export async function endMeeting (
+  room: Office,
+  rooms: Room[],
+  infos: ParticipantInfo[],
+  currentInfo: ParticipantInfo
+): Promise<void> {
+  const roomInfos = infos.filter((p) => p.room === room._id && room.person !== p.person)
+  for (const roomInfo of roomInfos) {
+    await kick(roomInfo.person, rooms, infos)
+  }
+  await leaveRoom(currentInfo, room)
+}
+
+export async function kick (person: Ref<Person>, rooms: Room[], infos: ParticipantInfo[]): Promise<void> {
+  const personInfo = infos.find((p) => p.person === person)
+  if (personInfo === undefined) return
+  const personOffice = rooms.find((r) => isOffice(r) && r.person === personInfo.person)
+  const client = getClient()
+  await client.update(personInfo, { room: personOffice?._id ?? love.ids.Reception, x: 0, y: 0 })
 }
 
 export async function invite (person: Ref<Person>, room: Ref<Room> | undefined): Promise<void> {

@@ -16,7 +16,7 @@
   import { Person, PersonAccount } from '@hcengineering/contact'
   import { personByIdStore, UserInfo } from '@hcengineering/contact-resources'
   import { IdMap, getCurrentAccount, Ref, Class, Doc } from '@hcengineering/core'
-  import ui, {
+  import {
     ModernButton,
     SplitButton,
     IconArrowLeft,
@@ -44,8 +44,9 @@
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
   import { getClient } from '@hcengineering/presentation'
   import love from '../plugin'
-  import { currentRoom, infos, invites, myInfo, myOffice, myRequests, currentMeetingMinutes } from '../stores'
+  import { currentRoom, infos, invites, myInfo, myOffice, myRequests, currentMeetingMinutes, rooms } from '../stores'
   import {
+    endMeeting,
     getRoomName,
     isCameraEnabled,
     isConnected,
@@ -75,7 +76,9 @@
   let joined: boolean = false
   $: joined = $myInfo?.room === room._id
 
-  $: allowLeave = $myInfo?.room !== ($myOffice?._id ?? love.ids.Reception)
+  $: isMyOffice = $myInfo?.room === $myOffice?._id
+
+  $: allowLeave = !isMyOffice && $myInfo?.room !== love.ids.Reception
 
   let info: ParticipantInfo[] = []
   $: info = $infos.filter((p) => p.room === room._id)
@@ -101,6 +104,13 @@
 
   async function leave (): Promise<void> {
     await leaveRoom($myInfo, $myOffice)
+    dispatch('close')
+  }
+
+  async function end (): Promise<void> {
+    if (isOffice(room) && $myInfo !== undefined) {
+      await endMeeting(room, $rooms, $infos, $myInfo)
+    }
     dispatch('close')
   }
 
@@ -218,17 +228,27 @@
       />
     </div>
   {/if}
-  {#if $location.path[2] !== loveId || (joined && allowLeave) || !joined}
+  {#if $location.path[2] !== loveId || (joined && (allowLeave || isMyOffice)) || !joined}
     <div class="btns flex-row-center flex-reverse flex-no-shrink w-full flex-gap-2">
-      {#if joined && allowLeave}
-        <ModernButton
-          label={love.string.LeaveRoom}
-          icon={love.icon.LeaveRoom}
-          size={'large'}
-          kind={'negative'}
-          on:click={leave}
-        />
-      {:else if !joined}
+      {#if joined}
+        {#if allowLeave}
+          <ModernButton
+            label={love.string.LeaveRoom}
+            icon={love.icon.LeaveRoom}
+            size={'large'}
+            kind={'negative'}
+            on:click={leave}
+          />
+        {:else if isMyOffice}
+          <ModernButton
+            label={love.string.EndMeeting}
+            icon={love.icon.LeaveRoom}
+            size={'large'}
+            kind={'negative'}
+            on:click={end}
+          />
+        {/if}
+      {:else}
         <ModernButton
           icon={love.icon.EnterRoom}
           label={love.string.EnterRoom}

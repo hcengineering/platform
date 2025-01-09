@@ -75,10 +75,12 @@
     "JoinMeeting": "Připojit se ke schůzce",
     "MeetingStart": "Začátek schůzky",
     "MeetingEnd": "Konec schůzky",
+    "EndMeeting": "Ukončit schůzku",
     "Status": "Stav",
     "Active": "Aktivní",
     "Finished": "Dokončeno",
     "StartWithRecording": "Začít s nahráváním",
-    "Language": "Jazyk"
+    "Language": "Jazyk",
+    "Kick": "Vyhodit"
   }
 }

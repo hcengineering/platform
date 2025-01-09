@@ -89,7 +89,7 @@
     e.stopPropagation()
     e.preventDefault()
     if (person !== undefined) {
-      if (room._id === $myInfo?.room || $myInfo === undefined) return
+      if ($myInfo === undefined) return
       showPopup(PersonActionPopup, { room, person: person._id }, eventToHTMLElement(e))
     } else {
       await openRoom(x, y)
