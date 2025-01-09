@@ -42,7 +42,7 @@ export interface SocialId {
   type: SocialIdType
   value: string
   key?: string // Calculated from type and value
-  personId: string
+  personUuid: string
   createdOn?: Timestamp
   verifiedOn?: Timestamp
 }
@@ -92,7 +92,6 @@ export interface Workspace {
   region?: string
   createdBy: string // Account UUID
   billingAccount: string // Account UUID
-  // members: Member[]
   createdOn?: Timestamp
 }
 
@@ -132,7 +131,7 @@ export interface AccountDB {
   person: DbCollection<Person>
   account: DbCollection<Account>
   socialId: DbCollection<SocialId>
-  workspace: WorkspaceDbCollection
+  workspace: DbCollection<Workspace>
   workspaceStatus: DbCollection<WorkspaceStatus>
   accountEvent: DbCollection<AccountEvent>
   otp: DbCollection<OTP>
@@ -146,22 +145,6 @@ export interface AccountDB {
   getWorkspaceRole: (accountId: string, workspaceId: string) => Promise<AccountRole | null>
   getWorkspaceMembers: (workspaceId: string) => Promise<WorkspaceMemberInfo[]>
   getAccountWorkspaces: (accountId: string) => Promise<WorkspaceInfoWithStatus[]>
-  setPassword: (accountId: string, passwordHash: Buffer, salt: Buffer) => Promise<void>
-  resetPassword: (accountId: string) => Promise<void>
-}
-
-export interface DbCollection<T> {
-  find: (query: Query<T>, sort?: Sort<T>, limit?: number) => Promise<T[]>
-  findOne: (query: Query<T>) => Promise<T | null>
-  insertOne: <K extends keyof T | undefined>(
-    data: Partial<T>,
-    idKey?: K
-  ) => Promise<any>
-  updateOne: (query: Query<T>, ops: Operations<T>) => Promise<void>
-  deleteMany: (query: Query<T>) => Promise<void>
-}
-
-export interface WorkspaceDbCollection extends DbCollection<Workspace> {
   getPendingWorkspace: (
     region: string,
     version: Data<Version>,
@@ -169,6 +152,18 @@ export interface WorkspaceDbCollection extends DbCollection<Workspace> {
     processingTimeoutMs: number,
     wsLivenessMs?: number
   ) => Promise<WorkspaceInfoWithStatus | undefined>
+  setPassword: (accountId: string, passwordHash: Buffer, salt: Buffer) => Promise<void>
+  resetPassword: (accountId: string) => Promise<void>
+}
+
+export interface DbCollection<T> {
+  find: (query: Query<T>, sort?: Sort<T>, limit?: number) => Promise<T[]>
+  findOne: (query: Query<T>) => Promise<T | null>
+  insertOne: (
+    data: Partial<T>
+  ) => Promise<any>
+  updateOne: (query: Query<T>, ops: Operations<T>) => Promise<void>
+  deleteMany: (query: Query<T>) => Promise<void>
 }
 
 export type Sort<T> = { [K in keyof T]?: T[K] extends (Record<string, any> | undefined) ? Sort<T[K]> : 'ascending' | 'descending' }

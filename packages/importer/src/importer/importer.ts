@@ -175,9 +175,9 @@ export interface ImportDrawing {
 export type ImportControlledDoc = ImportControlledDocument | ImportControlledDocumentTemplate // todo: rename
 export interface ImportOrgSpace extends ImportSpace<ImportControlledDoc> {
   class: Ref<Class<DocumentSpace>>
-  qualified?: Ref<Account>
-  manager?: Ref<Account>
-  qara?: Ref<Account>
+  qualified?: PersonId
+  manager?: PersonId
+  qara?: PersonId
 }
 
 export interface ImportControlledDocumentTemplate extends ImportDoc {
