@@ -34,10 +34,10 @@
   import Avatar from './Avatar.svelte'
   import ChannelPresenter from './ChannelPresenter.svelte'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
-  import EditEmployee from './EditEmployee.svelte'
   import MergeAttributeComparer from './MergeAttributeComparer.svelte'
   import MergeComparer from './MergeComparer.svelte'
   import UserBox from './UserBox.svelte'
+  import EditPerson from './EditPerson.svelte'
 
   export let value: Person
   const dispatch = createEventDispatcher()
@@ -434,7 +434,7 @@
         {/each}
       </div>
       <div class="flex-col-center antiPopup p-4">
-        <EditEmployee object={result} readonly channels={resultChannels} />
+        <EditPerson object={result} readonly channels={resultChannels} />
       </div>
     {/if}
   {/key}

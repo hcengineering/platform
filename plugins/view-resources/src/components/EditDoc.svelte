@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Mixin, Ref } from '@hcengineering/core'
+  import { Class, Doc, Hierarchy, Mixin, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
@@ -86,7 +86,7 @@
       query.query(_class, { _id }, (result) => {
         object = result[0]
         if (object != null) {
-          realObjectClass = object._class
+          realObjectClass = Hierarchy.mixinOrClass(object)
         }
       })
     } else {
