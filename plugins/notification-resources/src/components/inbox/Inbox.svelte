@@ -429,7 +429,9 @@
           />
         </Scroller>
       </div>
-      <Separator name="inbox" float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} />
+      {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
+        <Separator name="inbox" float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} />
+      {/if}
     </div>
     <Separator
       name="inbox"

@@ -921,7 +921,6 @@
     border-radius: 0.125rem;
     box-shadow: 0 0 1px 1px var(--theme-overlay-color);
     opacity: 0;
-    z-index: 1;
     cursor: pointer;
 
     &.hovered {

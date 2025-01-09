@@ -98,7 +98,6 @@
       name={'team'}
       float={$deviceInfo.navigator.float}
       index={0}
-      disabledWhen={['panel-aside']}
       color={'transparent'}
       separatorSize={0}
       short
