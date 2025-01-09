@@ -450,12 +450,8 @@ export class DBCollectionHelper implements DomainHelperOperations {
   async create (domain: Domain): Promise<void> {}
 
   async exists (domain: Domain): Promise<boolean> {
-    const exists = await this.client`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_name = '${this.client(translateDomain(domain))}'
-    `
-    return exists.length > 0
+    // Always exists. We don't need to check for index existence
+    return true
   }
 
   async listDomains (): Promise<Set<Domain>> {
@@ -469,10 +465,8 @@ export class DBCollectionHelper implements DomainHelperOperations {
   }
 
   async estimatedCount (domain: Domain): Promise<number> {
-    const res = await this
-      .client`SELECT COUNT(_id) FROM ${this.client(translateDomain(domain))} WHERE "workspaceId" = ${this.workspaceId.name}`
-
-    return res.count
+    // We should always return 0, since no controlled index stuff is required for postgres driver
+    return 0
   }
 }
 

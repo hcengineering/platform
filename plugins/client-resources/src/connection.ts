@@ -44,6 +44,7 @@ import core, {
   TxApplyIf,
   TxHandler,
   TxResult,
+  clone,
   generateId,
   toFindResult,
   type MeasureContext
@@ -107,6 +108,8 @@ class Connection implements ClientConnection {
   private pingResponse: number = Date.now()
 
   private helloRecieved: boolean = false
+
+  private account: Account | undefined
 
   onConnect?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
 
@@ -303,7 +306,7 @@ class Connection implements ClientConnection {
           this.websocket?.close()
           return
         }
-
+        this.account = helloResp.account
         this.helloRecieved = true
         if (this.upgrading) {
           // We need to call upgrade since connection is upgraded
@@ -322,8 +325,8 @@ class Connection implements ClientConnection {
         }
 
         void this.onConnect?.(
-          (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected,
-          (resp as HelloResponse).lastTx,
+          helloResp.reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected,
+          helloResp.lastTx,
           this.sessionId
         )
         this.schedulePing(socketId)
@@ -635,6 +638,9 @@ class Connection implements ClientConnection {
   }
 
   getAccount (): Promise<Account> {
+    if (this.account !== undefined) {
+      return clone(this.account)
+    }
     return this.sendRequest({ method: 'getAccount', params: [] })
   }
 
