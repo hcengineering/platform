@@ -461,7 +461,7 @@ export const telegram = new (class TelegramHelper {
     return 'code'
   }
 
-  private clearTTL(phone: string): void {
+  clearTTL(phone: string): void {
     const existingTTL = this.ttls.get(phone)
     if (existingTTL !== undefined) {
       clearTimeout(existingTTL)
