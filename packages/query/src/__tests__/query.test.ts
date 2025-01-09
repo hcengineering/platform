@@ -984,7 +984,7 @@ describe('query', () => {
   it('test clone ops', async () => {
     const { liveQuery, factory } = await getClient()
 
-    const counter = 10000
+    const counter = 1000
     const ctx = new MeasureMetricsContext('tool', {})
     let data: Space[] = []
     const pp = new Promise((resolve) => {

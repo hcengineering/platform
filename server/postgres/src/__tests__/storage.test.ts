@@ -14,11 +14,7 @@
 //
 import core, {
   type Client,
-  type ClientConnection,
   createClient,
-  type Doc,
-  type DocChunk,
-  type Domain,
   generateId,
   getWorkspaceId,
   Hierarchy,
@@ -29,7 +25,7 @@ import core, {
   type Space,
   TxOperations
 } from '@hcengineering/core'
-import { type DbAdapter } from '@hcengineering/server-core'
+import { type DbAdapter, wrapAdapterToClient } from '@hcengineering/server-core'
 import { createPostgresAdapter, createPostgresTxAdapter } from '..'
 import { getDBClient, type PostgresClientReference, shutdown } from '../utils'
 import { genMinModel } from './minmodel'
@@ -121,22 +117,7 @@ describe('postgres operations', () => {
     )
     await serverStorage.init?.(ctx)
     client = await createClient(async (handler) => {
-      const st: ClientConnection = {
-        isConnected: () => true,
-        findAll: async (_class, query, options) => await serverStorage.findAll(ctx, _class, query, options),
-        tx: async (tx) => await serverStorage.tx(ctx, tx),
-        searchFulltext: async () => ({ docs: [] }),
-        close: async () => {},
-        loadChunk: async (domain): Promise<DocChunk> => await Promise.reject(new Error('unsupported')),
-        closeChunk: async (idx) => {},
-        loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
-        upload: async (domain: Domain, docs: Doc[]) => {},
-        clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
-        loadModel: async () => txes,
-        getAccount: async () => ({}) as any,
-        sendForceClose: async () => {}
-      }
-      return st
+      return wrapAdapterToClient(ctx, serverStorage, txes)
     })
 
     operations = new TxOperations(client, core.account.System)

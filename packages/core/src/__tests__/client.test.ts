@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 import { IntlString, Plugin } from '@hcengineering/platform'
+import { ClientConnectEvent, DocChunk } from '..'
 import type { Account, Class, Data, Doc, Domain, PluginConfiguration, Ref, Timestamp } from '../classes'
 import { ClassifierKind, DOMAIN_MODEL, Space } from '../classes'
 import { ClientConnection, createClient } from '../client'
-import { clone } from '../clone'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
@@ -103,38 +103,62 @@ describe('client', () => {
         return await transactions.findAll(_class, query)
       }
 
-      return {
-        isConnected: () => true,
-        findAll,
+      return new (class implements ClientConnection {
+        handler?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
 
-        searchFulltext: async (query: SearchQuery, options: SearchOptions): Promise<SearchResult> => {
+        set onConnect (
+          handler: ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>) | undefined
+        ) {
+          this.handler = handler
+          void this.handler?.(ClientConnectEvent.Connected, '', {})
+        }
+
+        get onConnect ():
+        | ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>)
+        | undefined {
+          return this.handler
+        }
+
+        isConnected = (): boolean => true
+        findAll = findAll
+
+        searchFulltext = async (query: SearchQuery, options: SearchOptions): Promise<SearchResult> => {
           return { docs: [] }
-        },
+        }
 
-        tx: async (tx: Tx): Promise<TxResult> => {
+        tx = async (tx: Tx): Promise<TxResult> => {
           if (tx.objectSpace === core.space.Model) {
             hierarchy.tx(tx)
           }
           const result = await Promise.all([transactions.tx(tx)])
           return result[0]
-        },
-        close: async () => {},
+        }
 
-        loadChunk: async (domain: Domain, idx?: number) => ({
+        close = async (): Promise<void> => {}
+
+        loadChunk = async (domain: Domain, idx?: number): Promise<DocChunk> => ({
           idx: -1,
-          index: -1,
           docs: [],
-          finished: true,
-          digest: ''
-        }),
-        closeChunk: async (idx: number) => {},
-        loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
-        upload: async (domain: Domain, docs: Doc[]) => {},
-        clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
-        loadModel: async (last: Timestamp) => clone(txes),
-        getAccount: async () => null as unknown as Account,
-        sendForceClose: async () => {}
-      }
+          finished: true
+        })
+
+        async closeChunk (idx: number): Promise<void> {}
+        async loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+          return []
+        }
+
+        async upload (domain: Domain, docs: Doc[]): Promise<void> {}
+        async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
+        async loadModel (last: Timestamp): Promise<Tx[]> {
+          return txes
+        }
+
+        async getAccount (): Promise<Account> {
+          return null as unknown as Account
+        }
+
+        async sendForceClose (): Promise<void> {}
+      })()
     }
     const spyCreate = jest.spyOn(TxProcessor, 'createDoc2Doc')
     const spyUpdate = jest.spyOn(TxProcessor, 'updateDoc2Doc')
