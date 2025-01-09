@@ -1202,7 +1202,7 @@ export class GithubWorker implements IntegrationManager {
     const projects: GithubProject[] = []
     const repositories: GithubIntegrationRepository[] = []
 
-    const allProjects = await this.liveQuery.queryFind<GithubProject>(github.mixin.GithubProject, {})
+    const allProjects = await this.liveQuery.queryFind<GithubProject>(github.mixin.GithubProject, { archived: false })
     const allRepositories = await this.liveQuery.queryFind(github.class.GithubIntegrationRepository, { enabled: true })
 
     for (const it of Array.from(this.integrations.values())) {
