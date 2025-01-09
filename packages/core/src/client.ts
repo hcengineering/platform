@@ -254,8 +254,19 @@ export async function createClient (
       }
     }
   }
-  let initialized = false
   const conn = await ctx.with('connect', {}, () => connect(txHandler))
+
+  const { mode, current, addition } = await ctx.with('load-model', {}, (ctx) => loadModel(ctx, conn, txPersistence))
+  switch (mode) {
+    case 'same':
+    case 'upgrade':
+      await ctx.with('build-model', {}, (ctx) => buildModel(ctx, current, modelFilter, hierarchy, model))
+      break
+    case 'addition':
+      await ctx.with('build-model', {}, (ctx) =>
+        buildModel(ctx, current.concat(addition), modelFilter, hierarchy, model)
+      )
+  }
 
   txBuffer = txBuffer.filter((tx) => tx.space !== core.space.Model)
 
@@ -268,70 +279,50 @@ export async function createClient (
   const oldOnConnect:
   | ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>)
   | undefined = conn.onConnect
-
-  await new Promise<void>((resolve) => {
-    conn.onConnect = async (event, _lastTx, data) => {
-      console.log('Client: onConnect', event)
-      if (event === ClientConnectEvent.Maintenance) {
-        lastTx = _lastTx
-        await oldOnConnect?.(ClientConnectEvent.Maintenance, _lastTx, data)
-        return
-      }
-      // Find all new transactions and apply
-      const { mode, current, addition } = await ctx.with('load-model', {}, (ctx) => loadModel(ctx, conn, txPersistence))
-      if (!initialized) {
-        switch (mode) {
-          case 'same':
-          case 'upgrade':
-            await ctx.with('build-model', {}, (ctx) => buildModel(ctx, current, modelFilter, hierarchy, model))
-            break
-          case 'addition':
-            await ctx.with('build-model', {}, (ctx) =>
-              buildModel(ctx, current.concat(addition), modelFilter, hierarchy, model)
-            )
-        }
-        initialized = true
-      } else {
-        switch (mode) {
-          case 'upgrade':
-            // We have upgrade procedure and need rebuild all stuff.
-            hierarchy = new Hierarchy()
-            model = new ModelDb(hierarchy)
-            ;(client as ClientImpl).setModel(hierarchy, model)
-
-            await ctx.with('build-model', {}, (ctx) => buildModel(ctx, current, modelFilter, hierarchy, model))
-            await oldOnConnect?.(ClientConnectEvent.Upgraded, _lastTx, data)
-            // No need to fetch more stuff since upgrade was happened.
-            break
-          case 'addition':
-            await ctx.with('build-model', {}, (ctx) =>
-              buildModel(ctx, current.concat(addition), modelFilter, hierarchy, model)
-            )
-            break
-        }
-      }
-      resolve()
-
-      if (lastTx === undefined) {
-        // No need to do anything here since we connected.
-        await oldOnConnect?.(event, _lastTx, data)
-        lastTx = _lastTx
-        resolve()
-        return
-      }
-
-      if (lastTx === _lastTx) {
-        // Same lastTx, no need to refresh
-        await oldOnConnect?.(ClientConnectEvent.Reconnected, _lastTx, data)
-        resolve()
-        return
-      }
+  conn.onConnect = async (event, _lastTx, data) => {
+    console.log('Client: onConnect', event)
+    if (event === ClientConnectEvent.Maintenance) {
       lastTx = _lastTx
-      // We need to trigger full refresh on queries, etc.
-      await oldOnConnect?.(ClientConnectEvent.Refresh, lastTx, data)
-      resolve()
+      await oldOnConnect?.(ClientConnectEvent.Maintenance, _lastTx, data)
+      return
     }
-  })
+    // Find all new transactions and apply
+    const { mode, current, addition } = await ctx.with('load-model', {}, (ctx) => loadModel(ctx, conn, txPersistence))
+
+    switch (mode) {
+      case 'upgrade':
+        // We have upgrade procedure and need rebuild all stuff.
+        hierarchy = new Hierarchy()
+        model = new ModelDb(hierarchy)
+        ;(client as ClientImpl).setModel(hierarchy, model)
+
+        await ctx.with('build-model', {}, (ctx) => buildModel(ctx, current, modelFilter, hierarchy, model))
+        await oldOnConnect?.(ClientConnectEvent.Upgraded, _lastTx, data)
+        // No need to fetch more stuff since upgrade was happened.
+        break
+      case 'addition':
+        await ctx.with('build-model', {}, (ctx) =>
+          buildModel(ctx, current.concat(addition), modelFilter, hierarchy, model)
+        )
+        break
+    }
+
+    if (lastTx === undefined) {
+      // No need to do anything here since we connected.
+      await oldOnConnect?.(event, _lastTx, data)
+      lastTx = _lastTx
+      return
+    }
+
+    if (lastTx === _lastTx) {
+      // Same lastTx, no need to refresh
+      await oldOnConnect?.(ClientConnectEvent.Reconnected, _lastTx, data)
+      return
+    }
+    lastTx = _lastTx
+    // We need to trigger full refresh on queries, etc.
+    await oldOnConnect?.(ClientConnectEvent.Refresh, lastTx, data)
+  }
 
   return client
 }
