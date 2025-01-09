@@ -16,6 +16,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import {
   toFindResult,
+  withContext,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -66,6 +67,7 @@ class PipelineImpl implements Pipeline {
     return pipeline
   }
 
+  @withContext('build-chain')
   private async buildChain (
     ctx: MeasureContext,
     constructors: MiddlewareCreator[],

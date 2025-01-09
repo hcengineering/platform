@@ -418,6 +418,7 @@ class TSessionManager implements SessionManager {
       })
       workspace = this.createWorkspace(
         ctx.parent ?? ctx,
+        ctx,
         pipelineFactory,
         token,
         workspaceInfo.workspaceUrl ?? workspaceInfo.workspaceId,
@@ -435,7 +436,7 @@ class TSessionManager implements SessionManager {
           workspace: workspaceInfo.workspaceId,
           wsUrl: workspaceInfo.workspaceUrl
         })
-        pipeline = await ctx.with('💤 wait', { workspaceName }, () => (workspace as Workspace).pipeline)
+        pipeline = await ctx.with('💤 wait-pipeline', {}, () => (workspace as Workspace).pipeline)
       } else {
         ctx.warn('reconnect workspace in upgrade switch', {
           email: token.email,
@@ -466,9 +467,10 @@ class TSessionManager implements SessionManager {
         })
         return { upgrade: true }
       }
+
       try {
         if (workspace.pipeline instanceof Promise) {
-          pipeline = await workspace.pipeline
+          pipeline = await ctx.with('💤 wait-pipeline', {}, () => (workspace as Workspace).pipeline)
           workspace.pipeline = pipeline
         } else {
           pipeline = workspace.pipeline
@@ -645,6 +647,7 @@ class TSessionManager implements SessionManager {
 
   private createWorkspace (
     ctx: MeasureContext,
+    pipelineCtx: MeasureContext,
     pipelineFactory: PipelineFactory,
     token: Token,
     workspaceUrl: string,
@@ -655,7 +658,6 @@ class TSessionManager implements SessionManager {
     const wsId = toWorkspaceString(token.workspace)
     const upgrade = token.extra?.model === 'upgrade'
     const context = ctx.newChild('🧲 session', {})
-    const pipelineCtx = context.newChild('🧲 pipeline-factory', {})
     const workspace: Workspace = {
       context,
       id: generateId(),
@@ -1106,7 +1108,8 @@ class TSessionManager implements SessionManager {
       reconnect,
       serverVersion: this.serverVersion,
       lastTx: pipeline.context.lastTx,
-      lastHash: pipeline.context.lastHash
+      lastHash: pipeline.context.lastHash,
+      account: service.getRawAccount(pipeline)
     }
     ws.send(requestCtx, helloResponse, false, false)
   }

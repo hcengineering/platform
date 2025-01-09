@@ -151,7 +151,7 @@ export interface DBAdapterManager {
 
   close: () => Promise<void>
 
-  registerHelper: (helper: DomainHelper) => Promise<void>
+  registerHelper: (ctx: MeasureContext, helper: DomainHelper) => Promise<void>
 
   initAdapters: (ctx: MeasureContext) => Promise<void>
 

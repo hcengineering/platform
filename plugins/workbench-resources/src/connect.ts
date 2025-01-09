@@ -227,7 +227,7 @@ export async function connect (title: string): Promise<Client | undefined> {
             return
           }
           try {
-            if (event === ClientConnectEvent.Connected) {
+            if (event === ClientConnectEvent.Connected || event === ClientConnectEvent.Reconnected) {
               setMetadata(presentation.metadata.SessionId, data)
             }
             if ((_clientSet && event === ClientConnectEvent.Connected) || event === ClientConnectEvent.Refresh) {

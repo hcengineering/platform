@@ -175,6 +175,7 @@
                 }
               : false,
             drawingBoard: false,
+            textAlign: false,
             submit: supportSubmit ? { submit } : false,
             toolbar: {
               element: textToolbarElement,

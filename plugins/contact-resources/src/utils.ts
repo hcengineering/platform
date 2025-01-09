@@ -275,11 +275,12 @@ async function generateLocation (loc: Location, id: Ref<Contact>): Promise<Resol
     console.error(`Could not find contact ${id}.`)
     return undefined
   }
+  const isEmployee = client.getHierarchy().hasMixin(doc, contact.mixin.Employee)
   const appComponent = loc.path[0] ?? ''
   const workspace = loc.path[1] ?? ''
   const special = client.getHierarchy().isDerived(doc._class, contact.class.Organization)
     ? 'companies'
-    : client.getHierarchy().isDerived(doc._class, contact.mixin.Employee)
+    : isEmployee
       ? 'employees'
       : 'persons'
 
@@ -289,11 +290,11 @@ async function generateLocation (loc: Location, id: Ref<Contact>): Promise<Resol
   return {
     loc: {
       path: [appComponent, workspace],
-      fragment: getPanelURI(component, doc._id, doc._class, 'content')
+      fragment: getPanelURI(component, doc._id, isEmployee ? contact.mixin.Employee : doc._class, 'content')
     },
     defaultLocation: {
       path: [appComponent, workspace, contactId, special],
-      fragment: getPanelURI(component, doc._id, doc._class, 'content')
+      fragment: getPanelURI(component, doc._id, isEmployee ? contact.mixin.Employee : doc._class, 'content')
     }
   }
 }

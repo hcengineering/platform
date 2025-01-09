@@ -1235,6 +1235,9 @@ dependencies:
   '@tiptap/extension-task-list':
     specifier: ^2.6.6
     version: 2.6.6(@tiptap/core@2.6.6)
+  '@tiptap/extension-text-align':
+    specifier: ~2.11.0
+    version: 2.11.0(@tiptap/core@2.6.6)
   '@tiptap/extension-typography':
     specifier: ^2.6.6
     version: 2.6.6(@tiptap/core@2.6.6)
@@ -1634,9 +1637,6 @@ dependencies:
   googleapis:
     specifier: ^122.0.0
     version: 122.0.0
-  got:
-    specifier: ^11.8.3
-    version: 11.8.6
   graphql:
     specifier: ^16.8.0
     version: 16.9.0
@@ -6248,6 +6248,14 @@ packages:
     resolution: {integrity: sha512-0N4xCCJZu0PcKoCRDywQngNNW6qlB26hyVJGDGgW53p/2zk5gdlzAA6/NxElO3iSAXKFm0QOWAg/x8E+ggDu4w==}
     peerDependencies:
       '@tiptap/core': ^2.6.6
+    dependencies:
+      '@tiptap/core': 2.6.6(@tiptap/pm@2.6.6)
+    dev: false
+
+  /@tiptap/extension-text-align@2.11.0(@tiptap/core@2.6.6):
+    resolution: {integrity: sha512-VRXBqO17po6ddqhoWLBa2aCX/tqHdzdKPLfjnBy1fF8hjQKbidzjMWhb4CMm31ApvJjKK/DTkM3EnyYS/XDhng==}
+    peerDependencies:
+      '@tiptap/core': ^2.7.0
     dependencies:
       '@tiptap/core': 2.6.6(@tiptap/pm@2.6.6)
     dev: false
@@ -24760,7 +24768,7 @@ packages:
     dev: false
 
   file:projects/importer.tgz(esbuild@0.24.2)(ts-node@10.9.2):
-    resolution: {integrity: sha512-2BSUFKldNxsA3oJ/xjVKMJc975re0WnY1T24b0yscLWNGfMchaPaHNLBMIpd3d4rXywTX0qqBNPt+aWkp2XVBA==, tarball: file:projects/importer.tgz}
+    resolution: {integrity: sha512-nd4QEoFM7LFj37X/9PCtKl2HTaQl3xnpCbJL+FBuYPJhimHzG4KTvb3E5vZ31OZxgAzYBBLZb1KsswqqlXAJ9A==, tarball: file:projects/importer.tgz}
     id: file:projects/importer.tgz
     name: '@rush-temp/importer'
     version: 0.0.0
@@ -27290,7 +27298,7 @@ packages:
     dev: false
 
   file:projects/pod-ai-bot.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4)(zod@3.23.8):
-    resolution: {integrity: sha512-zCUFPyseaS/JuRQ5JMtR1n8ybdRgxQzRn2aP528X1x+jOBVEH2L7VjDGBx1jsJGuUKvCJBCoOAQlCHDgfRambQ==, tarball: file:projects/pod-ai-bot.tgz}
+    resolution: {integrity: sha512-OPo+KhRKsPQhO1eqOIgL30ef9s/TAnEf21bAwzxLLcB70AIwMyjfPRzzJHDOIbVjCzA8t4YFQ5MWWoLUveylFg==, tarball: file:projects/pod-ai-bot.tgz}
     id: file:projects/pod-ai-bot.tgz
     name: '@rush-temp/pod-ai-bot'
     version: 0.0.0
@@ -27301,6 +27309,7 @@ packages:
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
       '@types/node-fetch': 2.6.11
+      '@types/uuid': 8.3.4
       '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
@@ -27325,6 +27334,7 @@ packages:
       ts-jest: 29.1.2(esbuild@0.24.2)(jest@29.7.0)(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
       typescript: 5.3.3
+      uuid: 8.3.2
       ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     transitivePeerDependencies:
       - '@aws-sdk/credential-providers'
@@ -27401,7 +27411,7 @@ packages:
     dev: false
 
   file:projects/pod-backup.tgz:
-    resolution: {integrity: sha512-f8l7TT88HfNQ8lRgFe4lA5Zbzb3nPF+9dBmaOAd1SFLWAnbp959dyN4CxGPWQDu4VeQ50vKe3wg7FxoYpgQRyg==, tarball: file:projects/pod-backup.tgz}
+    resolution: {integrity: sha512-Ccg90DAJu+vNRMm00Z8W768WT8M6AKzjUFktH9/RBbDGQSF+UYQNm7Ah/cMJnJ0GMOg/dQ//r7Tob7WL4kaBeg==, tarball: file:projects/pod-backup.tgz}
     name: '@rush-temp/pod-backup'
     version: 0.0.0
     dependencies:
@@ -27895,7 +27905,7 @@ packages:
     dev: false
 
   file:projects/pod-ses.tgz:
-    resolution: {integrity: sha512-Z+IlSWDXbE1r5gAGoFhvdyRXh8qZUlANdrO4jWmT0HuDHWeDibkjK5/YXnqztHDmMbz3QI60RotnYOdJwkqSLA==, tarball: file:projects/pod-ses.tgz}
+    resolution: {integrity: sha512-P+HVwQR4SO6F4EXl5ReGR6hbng8CKsl4IK6Ww6u7yhNh1x7YGKzmV7UMRjSUc7qsNu4CzOhF7AYatCB602ANjA==, tarball: file:projects/pod-ses.tgz}
     name: '@rush-temp/pod-ses'
     version: 0.0.0
     dependencies:
@@ -32508,7 +32518,7 @@ packages:
     dev: false
 
   file:projects/text-editor-resources.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.24.2)(highlight.js@11.8.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-F0E6R31dkSA4Oa+lx7pYoKeHmMI1N0wMDKomkWOhwtChvWo3EZRj9xySEthXFV8au0htnsi+rKeywFOCcGdmGg==, tarball: file:projects/text-editor-resources.tgz}
+    resolution: {integrity: sha512-7dR/DxZ3NRHi1qbcIIwu94XiC5aklrmIsXSjx/Nd8lsNy4Tyc0+1nB8lM6di7SF89cG/xwk3JokDbL3tlYQKbw==, tarball: file:projects/text-editor-resources.tgz}
     id: file:projects/text-editor-resources.tgz
     name: '@rush-temp/text-editor-resources'
     version: 0.0.0
@@ -32531,6 +32541,7 @@ packages:
       '@tiptap/extension-table-cell': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/extension-table-header': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/extension-table-row': 2.6.6(@tiptap/core@2.6.6)
+      '@tiptap/extension-text-align': 2.11.0(@tiptap/core@2.6.6)
       '@tiptap/extension-typography': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/extension-underline': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/pm': 2.6.6
@@ -32675,7 +32686,7 @@ packages:
     dev: false
 
   file:projects/text.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.24.2)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-1V1MwGEZv1UxhJ4js4mIMG6U87MbA6jlzPZyE6EmtNpYbQ12DfVTp2XpiK3JlZKs95itkJcFCSTQIMsYSrw4yw==, tarball: file:projects/text.tgz}
+    resolution: {integrity: sha512-zmM6GDzeNuMbMA7iWwhg8hBc43fylNW7cEmk0fSWw9+G9NqD2MLv2dVb5dnAcPAioj9WBdDakWcrLAAHUBJyMw==, tarball: file:projects/text.tgz}
     id: file:projects/text.tgz
     name: '@rush-temp/text'
     version: 0.0.0
@@ -32695,6 +32706,7 @@ packages:
       '@tiptap/extension-table-row': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/extension-task-item': 2.6.6(@tiptap/core@2.6.6)(@tiptap/pm@2.6.6)
       '@tiptap/extension-task-list': 2.6.6(@tiptap/core@2.6.6)
+      '@tiptap/extension-text-align': 2.11.0(@tiptap/core@2.6.6)
       '@tiptap/extension-typography': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/extension-underline': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/html': 2.6.6(@tiptap/core@2.6.6)(@tiptap/pm@2.6.6)
@@ -32893,7 +32905,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-nyx2osnJq6th2Ttrw5B2TIHUc2j8nTnB4tvx0jIXQLjiq/FEUxBluKLb2eEoHntQ5TxCWEC9a69jkO/QnNWfwA==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-Cw36G6uROkPkNIJDl7WeHjhHKmbQth6wmjMu4vBQGz+DfuPf9Eg63SFKq29rOssZ4LlJB1d22Y7XnxilCuXK5g==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:

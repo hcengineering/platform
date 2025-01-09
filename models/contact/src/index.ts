@@ -518,11 +518,6 @@ export function createModel (builder: Builder): void {
     grouppingManager: contact.aggregation.GrouppingPersonManager
   })
 
-  builder.mixin(contact.mixin.Employee, core.class.Class, view.mixin.ObjectEditor, {
-    editor: contact.component.EditEmployee,
-    pinned: true
-  })
-
   builder.mixin(contact.class.Organization, core.class.Class, view.mixin.ObjectEditor, {
     editor: contact.component.EditOrganization,
     pinned: true

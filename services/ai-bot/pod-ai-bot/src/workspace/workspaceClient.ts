@@ -22,6 +22,7 @@ import aiBot, {
   IdentityResponse
 } from '@hcengineering/ai-bot'
 import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-collector'
+import attachment, { Attachment } from '@hcengineering/attachment'
 import chunter, {
   ChatMessage,
   type ChatWidgetTab,
@@ -59,7 +60,7 @@ import { Room } from '@hcengineering/love'
 import { countTokens } from '@hcengineering/openai'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getOrCreateOnboardingChannel } from '@hcengineering/server-analytics-collector-resources'
-import { BlobClient, login } from '@hcengineering/server-client'
+import { login } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { jsonToMarkup, MarkdownParser, markupToText } from '@hcengineering/text'
 import workbench, { SidebarEvent, TxSidebarEvent } from '@hcengineering/workbench'
@@ -67,10 +68,11 @@ import fs from 'fs'
 import { WithId } from 'mongodb'
 import OpenAI from 'openai'
 
+import { StorageAdapter } from '@hcengineering/server-core'
 import config from '../config'
 import { AIControl } from '../controller'
 import { HistoryRecord } from '../types'
-import { createChatCompletion, requestSummary } from '../utils/openai'
+import { createChatCompletionWithTools, requestSummary } from '../utils/openai'
 import { connectPlatform, getDirect } from '../utils/platform'
 import { LoveController } from './love'
 
@@ -80,8 +82,6 @@ const UPDATE_TYPING_TIMEOUT_MS = 1000
 export class WorkspaceClient {
   client: Client | undefined
   opClient: Promise<TxOperations> | TxOperations
-
-  blobClient: BlobClient
 
   loginTimeout: NodeJS.Timeout | undefined
   loginDelayMs = 2 * 1000
@@ -103,6 +103,7 @@ export class WorkspaceClient {
   love: LoveController | undefined
 
   constructor (
+    readonly storage: StorageAdapter,
     readonly transactorUrl: string,
     readonly token: string,
     readonly workspace: string,
@@ -110,7 +111,6 @@ export class WorkspaceClient {
     readonly ctx: MeasureContext,
     readonly info: WorkspaceInfoRecord | undefined
   ) {
-    this.blobClient = new BlobClient(transactorUrl, token, { name: this.workspace })
     this.opClient = this.initClient()
     void this.opClient.then((opClient) => {
       this.opClient = opClient
@@ -154,7 +154,14 @@ export class WorkspaceClient {
       if (!isAlreadyUploaded) {
         const data = fs.readFileSync(config.AvatarPath)
 
-        await this.blobClient.upload(this.ctx, config.AvatarName, data.length, config.AvatarContentType, data)
+        await this.storage.put(
+          this.ctx,
+          { name: this.workspace },
+          config.AvatarName,
+          data,
+          config.AvatarContentType,
+          data.length
+        )
         await this.controller.updateAvatarInfo(this.workspace, config.AvatarPath, lastModified)
         this.ctx.info('Avatar file uploaded successfully', { workspace: this.workspace, path: config.AvatarPath })
       }
@@ -209,9 +216,9 @@ export class WorkspaceClient {
       return
     }
 
-    const exist = await this.blobClient.checkFile(this.ctx, config.AvatarName)
+    const exist = await this.storage.stat(this.ctx, { name: this.workspace }, config.AvatarName)
 
-    if (!exist) {
+    if (exist === undefined) {
       this.ctx.error('Cannot find file', { file: config.AvatarName, workspace: this.workspace })
       return
     }
@@ -449,11 +456,23 @@ export class WorkspaceClient {
     this.historyMap.set(objectId, currentHistory)
   }
 
+  async getAttachments (client: TxOperations, objectId: Ref<Doc>): Promise<Attachment[]> {
+    return await client.findAll(attachment.class.Attachment, { attachedTo: objectId })
+  }
+
   async processMessageEvent (event: AIMessageEventRequest): Promise<void> {
     if (this.controller.aiClient === undefined) return
 
     const { user, objectId, objectClass, messageClass } = event
-    const promptText = markupToText(event.message)
+    const client = await this.opClient
+    let promptText = markupToText(event.message)
+    const files = await this.getAttachments(client, event.messageId)
+    if (files.length > 0) {
+      promptText += '\n\nAttachments:'
+      for (const file of files) {
+        promptText += `\nName:${file.name} FileId:${file.file} Type:${file.type}`
+      }
+    }
     const prompt: OpenAI.ChatCompletionMessageParam = { content: promptText, role: 'user' }
     const promptTokens = countTokens([prompt], this.controller.encoding)
 
@@ -462,7 +481,6 @@ export class WorkspaceClient {
       return
     }
 
-    const client = await this.opClient
     const op = client.apply(undefined, 'AIMessageRequestEvent')
     const hierarchy = client.getHierarchy()
 
@@ -479,16 +497,15 @@ export class WorkspaceClient {
 
     void this.pushHistory(promptText, prompt.role, promptTokens, user, objectId, objectClass)
 
-    const chatCompletion = await createChatCompletion(this.controller.aiClient, prompt, user, history)
-    const response = chatCompletion?.choices[0].message.content
+    const chatCompletion = await createChatCompletionWithTools(this, this.controller.aiClient, prompt, user, history)
+    const response = chatCompletion?.completion
 
     if (response == null) {
       await this.finishTyping(client, objectId)
       return
     }
     const responseTokens =
-      chatCompletion?.usage?.completion_tokens ??
-      countTokens([{ content: response, role: 'assistant' }], this.controller.encoding)
+      chatCompletion?.usage ?? countTokens([{ content: response, role: 'assistant' }], this.controller.encoding)
 
     void this.pushHistory(response, 'assistant', responseTokens, user, objectId, objectClass)
 
