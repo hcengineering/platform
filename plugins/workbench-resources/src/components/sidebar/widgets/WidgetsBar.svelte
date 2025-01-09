@@ -24,7 +24,6 @@
   export let widgets: Widget[] = []
   export let preferences: WidgetPreference[] = []
   export let selected: Ref<Widget> | undefined = undefined
-  export let expandedFloat: boolean = false
 
   function handleAddWidget (): void {
     showPopup(AddWidgetsPopup, { widgets })
@@ -32,8 +31,7 @@
 
   function handleSelectWidget (widget: Widget): void {
     if (selected === widget._id) {
-      if ($deviceInfo.aside.float && !expandedFloat) $deviceInfo.aside.visible = false
-      else minimizeSidebar(true)
+      minimizeSidebar(true)
     } else {
       openWidget(widget, $sidebarStore.widgetsState.get(widget._id)?.data, { active: true, openedByUser: true })
     }

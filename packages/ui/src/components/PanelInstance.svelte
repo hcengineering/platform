@@ -93,9 +93,9 @@
                 top: 'var(--status-bar-height)',
                 bottom: '4.25rem',
                 left: '0',
-                right: '0',
-                width: '100%',
-                height: 'calc(100dvh - var(--status-bar-height) - 4.25rem)',
+                right: '3.5rem',
+                width: '',
+                height: 'calc(100dvh - var(--status-bar-height) - var(--app-panel-width))',
                 maxWidth: '100%',
                 maxHeight: '100%',
                 minWidth: '0'

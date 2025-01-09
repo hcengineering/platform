@@ -23,7 +23,8 @@
     Header,
     Breadcrumbs,
     getCurrentLocation,
-    Separator
+    Separator,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
 
@@ -33,7 +34,6 @@
 
   export let widgets: Widget[] = []
   export let preferences: WidgetPreference[] = []
-  export let float: boolean = false
 
   let widgetId: Ref<Widget> | undefined = undefined
   let widget: Widget | undefined = undefined
@@ -54,6 +54,7 @@
   $: if ($sidebarStore.widget === undefined) {
     sidebarStore.update((s) => ({ ...s, variant: SidebarVariant.MINI }))
   }
+  $: float = $deviceInfo.aside.float
 
   function closeWrongTabs (loc: Location): void {
     if (widget === undefined) return
@@ -99,7 +100,7 @@
 </script>
 
 <div class="sidebar-wrap__content" class:float>
-  {#if float}
+  {#if float && !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
     <Separator name={'main'} index={0} color={'var(--theme-navpanel-border)'} float={'sidebar'} />
   {/if}
   <div class="sidebar-content">
@@ -149,7 +150,7 @@
     />
   {/if}
 </div>
-<WidgetsBar {widgets} {preferences} selected={widgetId} expandedFloat={float} />
+<WidgetsBar {widgets} {preferences} selected={widgetId} />
 
 <style lang="scss">
   .sidebar-wrap__content,
@@ -172,12 +173,16 @@
       right: 3.5rem;
       border-top-color: var(--theme-divider-color);
       border-bottom: 1px solid var(--theme-divider-color);
-      z-index: 491;
+      z-index: 440;
       filter: drop-shadow(-2px 0 5px rgba(0, 0, 0, 0.2));
-    }
 
-    @media (max-width: 680px) {
-      border-top: none;
+      :global(.mobile-theme) & {
+        overflow: hidden;
+        height: calc(100% - var(--app-panel-width));
+        border: 1px solid var(--theme-divider-color);
+        border-radius: var(--medium-BorderRadius);
+        filter: var(--theme-navpanel-shadow-mobile);
+      }
     }
   }
   .sidebar-content {
