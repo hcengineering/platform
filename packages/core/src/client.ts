@@ -254,11 +254,8 @@ export async function createClient (
       }
     }
   }
+  let initialized = false
   const conn = await ctx.with('connect', {}, () => connect(txHandler))
-
-  await ctx.with('load-model', { reload: false }, (ctx) =>
-    loadModel(ctx, conn, modelFilter, hierarchy, model, false, txPersistence)
-  )
 
   txBuffer = txBuffer.filter((tx) => tx.space !== core.space.Model)
 
@@ -271,100 +268,72 @@ export async function createClient (
   const oldOnConnect:
   | ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>)
   | undefined = conn.onConnect
-  conn.onConnect = async (event, _lastTx, data) => {
-    console.log('Client: onConnect', event)
-    if (event === ClientConnectEvent.Maintenance) {
+
+  await new Promise<void>((resolve) => {
+    conn.onConnect = async (event, _lastTx, data) => {
+      console.log('Client: onConnect', event)
+      if (event === ClientConnectEvent.Maintenance) {
+        lastTx = _lastTx
+        await oldOnConnect?.(ClientConnectEvent.Maintenance, _lastTx, data)
+        return
+      }
+      // Find all new transactions and apply
+      const { mode, current, addition } = await ctx.with('load-model', {}, (ctx) => loadModel(ctx, conn, txPersistence))
+      if (!initialized) {
+        switch (mode) {
+          case 'same':
+          case 'upgrade':
+            await ctx.with('build-model', {}, (ctx) => buildModel(ctx, current, modelFilter, hierarchy, model))
+            break
+          case 'addition':
+            await ctx.with('build-model', {}, (ctx) =>
+              buildModel(ctx, current.concat(addition), modelFilter, hierarchy, model)
+            )
+        }
+        initialized = true
+      } else {
+        switch (mode) {
+          case 'upgrade':
+            // We have upgrade procedure and need rebuild all stuff.
+            hierarchy = new Hierarchy()
+            model = new ModelDb(hierarchy)
+            ;(client as ClientImpl).setModel(hierarchy, model)
+
+            await ctx.with('build-model', {}, (ctx) => buildModel(ctx, current, modelFilter, hierarchy, model))
+            await oldOnConnect?.(ClientConnectEvent.Upgraded, _lastTx, data)
+            // No need to fetch more stuff since upgrade was happened.
+            break
+          case 'addition':
+            await ctx.with('build-model', {}, (ctx) =>
+              buildModel(ctx, current.concat(addition), modelFilter, hierarchy, model)
+            )
+            break
+        }
+      }
+      resolve()
+
+      if (lastTx === undefined) {
+        // No need to do anything here since we connected.
+        await oldOnConnect?.(event, _lastTx, data)
+        lastTx = _lastTx
+        resolve()
+        return
+      }
+
+      if (lastTx === _lastTx) {
+        // Same lastTx, no need to refresh
+        await oldOnConnect?.(ClientConnectEvent.Reconnected, _lastTx, data)
+        resolve()
+        return
+      }
       lastTx = _lastTx
-      await oldOnConnect?.(ClientConnectEvent.Maintenance, _lastTx, data)
-      return
+      // We need to trigger full refresh on queries, etc.
+      await oldOnConnect?.(ClientConnectEvent.Refresh, lastTx, data)
+      resolve()
     }
-    // Find all new transactions and apply
-    const loadModelResponse = await ctx.with('connect', { reload: true }, (ctx) =>
-      loadModel(ctx, conn, modelFilter, hierarchy, model, true, txPersistence)
-    )
-
-    if (event === ClientConnectEvent.Reconnected && loadModelResponse.full) {
-      // We have upgrade procedure and need rebuild all stuff.
-      hierarchy = new Hierarchy()
-      model = new ModelDb(hierarchy)
-
-      await ctx.with('build-model', {}, (ctx) => buildModel(ctx, loadModelResponse, modelFilter, hierarchy, model))
-      await oldOnConnect?.(ClientConnectEvent.Upgraded, _lastTx, data)
-      lastTx = _lastTx
-      // No need to fetch more stuff since upgrade was happened.
-      return
-    }
-
-    if (event === ClientConnectEvent.Connected && _lastTx !== lastTx && lastTx === undefined) {
-      // No need to do anything here since we connected.
-      await oldOnConnect?.(event, _lastTx, data)
-      lastTx = _lastTx
-      return
-    }
-
-    if (_lastTx === lastTx) {
-      // Same lastTx, no need to refresh
-      await oldOnConnect?.(ClientConnectEvent.Reconnected, _lastTx, data)
-      return
-    }
-    lastTx = _lastTx
-    // We need to trigger full refresh on queries, etc.
-    await oldOnConnect?.(ClientConnectEvent.Refresh, lastTx, data)
-  }
+  })
 
   return client
-}
-
-async function tryLoadModel (
-  ctx: MeasureContext,
-  conn: ClientConnection,
-  reload: boolean,
-  persistence?: TxPersistenceStore
-): Promise<LoadModelResponse> {
-  const current = (await ctx.with('persistence-load', {}, () => persistence?.load())) ?? {
-    full: true,
-    transactions: [],
-    hash: ''
-  }
-
-  if (conn.getLastHash !== undefined && (await conn.getLastHash(ctx)) === current.hash) {
-    // We have same model hash.
-    current.full = false // Since we load, no need to send full
-    return current
-  }
-  const lastTxTime = getLastTxTime(current.transactions)
-  const result = await ctx.with('connection-load-model', { hash: current.hash !== '' }, (ctx) =>
-    conn.loadModel(lastTxTime, current.hash)
-  )
-
-  if (Array.isArray(result)) {
-    // Fallback to old behavior, only for tests
-    return {
-      full: true,
-      transactions: result,
-      hash: ''
-    }
-  }
-  const transactions = current.transactions.concat(result.transactions)
-  if (result.hash !== current.hash) {
-    // Save concatenated, if have some more of them.
-    void ctx
-      .with('persistence-store', {}, (ctx) =>
-        persistence?.store({
-          ...result,
-          transactions: !result.full ? transactions : result.transactions
-        })
-      )
-      .catch((err) => {
-        Analytics.handleError(err)
-      })
-  }
-
-  if (!result.full && !reload) {
-    result.transactions = transactions
-  }
-
-  return result
 }
 
 // Ignore Employee accounts.
@@ -381,37 +350,59 @@ function isPersonAccount (tx: Tx): boolean {
 async function loadModel (
   ctx: MeasureContext,
   conn: ClientConnection,
-  modelFilter: ModelFilter | undefined,
-  hierarchy: Hierarchy,
-  model: ModelDb,
-  reload = false,
   persistence?: TxPersistenceStore
-): Promise<LoadModelResponse> {
+): Promise<{ mode: 'same' | 'addition' | 'upgrade', current: Tx[], addition: Tx[] }> {
   const t = Date.now()
 
-  const modelResponse = await ctx.with('try-load-model', { reload }, (ctx) =>
-    tryLoadModel(ctx, conn, reload, persistence)
+  const current = (await ctx.with('persistence-load', {}, () => persistence?.load())) ?? {
+    full: true,
+    transactions: [],
+    hash: ''
+  }
+
+  if (conn.getLastHash !== undefined && (await conn.getLastHash(ctx)) === current.hash) {
+    // We have same model hash.
+    return { mode: 'same', current: current.transactions, addition: [] }
+  }
+  const lastTxTime = getLastTxTime(current.transactions)
+  const result = await ctx.with('connection-load-model', { hash: current.hash !== '' }, (ctx) =>
+    conn.loadModel(lastTxTime, current.hash)
   )
 
-  if (reload && modelResponse.full) {
-    return modelResponse
+  if (Array.isArray(result)) {
+    // Fallback to old behavior, only for tests
+    return {
+      mode: 'same',
+      current: result,
+      addition: []
+    }
   }
+
+  // Save concatenated, if have some more of them.
+  void ctx
+    .with('persistence-store', {}, (ctx) =>
+      persistence?.store({
+        ...result,
+        // Store concatinated old + new txes
+        transactions: result.full ? result.transactions : current.transactions.concat(result.transactions)
+      })
+    )
+    .catch((err) => {
+      Analytics.handleError(err)
+    })
 
   if (typeof window !== 'undefined') {
-    console.log(
-      'find' + (modelResponse.full ? 'full model' : 'model diff'),
-      modelResponse.transactions.length,
-      Date.now() - t
-    )
+    console.log('find' + (result.full ? 'full model' : 'model diff'), result.transactions.length, Date.now() - t)
   }
-
-  await ctx.with('build-model', {}, (ctx) => buildModel(ctx, modelResponse, modelFilter, hierarchy, model))
-  return modelResponse
+  if (result.full) {
+    return { mode: 'upgrade', current: result.transactions, addition: [] }
+  }
+  return { mode: 'addition', current: current.transactions, addition: result.transactions }
 }
 
 async function buildModel (
   ctx: MeasureContext,
-  modelResponse: LoadModelResponse,
+  transactions: Tx[],
   modelFilter: ModelFilter | undefined,
   hierarchy: Hierarchy,
   model: ModelDb
@@ -419,7 +410,7 @@ async function buildModel (
   const systemTx: Tx[] = []
   const userTx: Tx[] = []
 
-  const atxes = modelResponse.transactions
+  const atxes = transactions
 
   ctx.withSync('split txes', {}, () => {
     atxes.forEach((tx) =>

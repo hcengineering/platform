@@ -24,8 +24,6 @@
   import SidebarMini from './SidebarMini.svelte'
   import SidebarExpanded from './SidebarExpanded.svelte'
 
-  export let expandedFloat: boolean = false
-
   const client = getClient()
 
   const widgets = client.getModel().findAllSync(workbench.class.Widget, {})
@@ -63,17 +61,11 @@
   })
 </script>
 
-<div
-  id="sidebar"
-  class="antiPanel-application vertical sidebar-container"
-  class:mini={mini || expandedFloat}
-  class:expandedFloat
-  class:float={$deviceInfo.aside.float && !expandedFloat}
->
+<div id="sidebar" class="antiPanel-application vertical sidebar-container" class:mini={mini || $deviceInfo.aside.float}>
   {#if mini}
     <SidebarMini {widgets} {preferences} />
   {:else if $sidebarStore.variant === SidebarVariant.EXPANDED}
-    <SidebarExpanded {widgets} {preferences} float={expandedFloat} />
+    <SidebarExpanded {widgets} {preferences} />
   {/if}
 </div>
 
@@ -84,33 +76,23 @@
     min-width: 25rem;
     border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
 
-    &.mini:not(.float) {
+    &.mini {
+      justify-content: flex-end;
       width: calc(3.5rem + 1px) !important;
       min-width: calc(3.5rem + 1px) !important;
       max-width: calc(3.5rem + 1px) !important;
-    }
-    &.mini.float {
-      justify-content: flex-end;
-    }
-    &.float > :global(.sidebar-content) {
-      border-top: none;
     }
   }
   @media (max-width: 1024px) {
     .sidebar-container {
       width: 100%;
-
-      &:not(.expandedFloat) {
-        border-radius: var(--medium-BorderRadius);
-      }
-      &.expandedFloat {
-        border-left-color: transparent;
-      }
+      border-left-color: transparent;
     }
   }
-  @media (max-width: 680px) {
-    .sidebar-container {
-      border: 1px solid var(--theme-navpanel-divider);
+  @media (max-width: 480px) {
+    :global(.mobile-theme) .sidebar-container {
+      border-right: none;
+      border-bottom-right-radius: 0 !important;
     }
   }
 </style>

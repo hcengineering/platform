@@ -19,9 +19,9 @@ import core, {
   TxOperations,
   cutObjectArray,
   generateId,
-  makeDocCollabId,
+  makeCollabId,
   makeCollabJsonId,
-  makeCollabId
+  makeDocCollabId
 } from '@hcengineering/core'
 import github, {
   DocSyncInfo,
@@ -46,7 +46,6 @@ import {
   githubSyncVersion
 } from '../types'
 import { IssueExternalData, issueDetails } from './githubTypes'
-import { appendGuestLink } from './guest'
 import { GithubIssueData, IssueSyncManagerBase, IssueSyncTarget, IssueUpdate, WithMarkup } from './issueBase'
 import { syncConfig } from './syncConfig'
 import { getSince, gqlp, guessStatus, isGHWriteAllowed, syncRunner } from './utils'
@@ -307,7 +306,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         external: issueExternal,
         externalVersion: githubExternalSyncVersion,
         lastModified: new Date(issueExternal.updatedAt).getTime(),
-        allowOpenInHuly: true
+        addHulyLink: true
       })
 
       // We need trigger comments, if their sync data created before
@@ -332,6 +331,9 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     if (container?.container === undefined) {
       return { needSync: githubSyncVersion }
     }
+
+    let needCreateConnectedAtHuly = info.addHulyLink === true
+
     if (
       (container.project.projectNodeId === undefined ||
         !container.container.projectStructure.has(container.project._id)) &&
@@ -413,12 +415,13 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         url: issueExternal.url.toLowerCase(),
         githubNumber: issueExternal.number,
         lastModified: new Date(issueExternal.updatedAt).getTime(),
-        allowOpenInHuly: true,
+        addHulyLink: false, // Do not need, since we create comment on Github about issue is connected.
         current: {
           title: issueExternal.title,
           description: await this.provider.getMarkup(container.container, issueExternal.body, this.stripGuestLink)
         }
       }
+      needCreateConnectedAtHuly = true
       await derivedClient.update(info, update)
       info.external = update.external
       info.externalVersion = update.externalVersion
@@ -462,6 +465,11 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         }
       }
     }
+
+    if (existing !== undefined && issueExternal !== undefined && needCreateConnectedAtHuly) {
+      await this.addHulyLink(info, syncResult, existing, issueExternal, container)
+    }
+
     return {
       ...syncResult,
       issueExternal,
@@ -837,10 +845,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       }
     }`
 
-    const body =
-      (await this.provider.getMarkdown(existingIssue.description, async (nodes) => {
-        await appendGuestLink(this.client, existing, nodes, this.provider.getWorkspaceId(), this.provider.getBranding())
-      })) ?? ''
+    const body = (await this.provider.getMarkdown(existingIssue.description)) ?? ''
     if (isGHWriteAllowed()) {
       const response:
       | {

@@ -75,10 +75,12 @@
     "JoinMeeting": "Присоединиться к встрече",
     "MeetingStart": "Начало встречи",
     "MeetingEnd": "Конец встречи",
+    "EndMeeting": "Завершить встречу",
     "Status": "Статус",
     "Active": "Активно",
     "Finished": "Завершено",
     "StartWithRecording": "Начинать с записью",
-    "Language": "Язык"
+    "Language": "Язык",
+    "Kick": "Выгнать"
   }
 }

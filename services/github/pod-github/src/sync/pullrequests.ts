@@ -357,7 +357,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       external: pullRequestExternal,
       externalVersion: githubExternalSyncVersion,
       derivedVersion: '',
-      allowOpenInHuly: true,
+      addHulyLink: true,
       lastModified,
       lastGithubUser: account
     })
@@ -961,6 +961,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     if (container?.container === undefined) {
       return { needSync: githubSyncVersion }
     }
+    const needCreateConnectedAtHuly = info.addHulyLink === true
     if (
       (container.project.projectNodeId === undefined ||
         !container.container.projectStructure.has(container.project._id)) &&
@@ -991,6 +992,9 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
 
     const syncResult = await this.syncToTarget(target, container, existing, pullRequestExternal, derivedClient, info)
 
+    if (existing !== undefined && pullRequestExternal !== undefined && needCreateConnectedAtHuly) {
+      await this.addHulyLink(info, syncResult, existing, pullRequestExternal, container)
+    }
     return {
       ...syncResult,
       targetNodeId: target.target.projectNodeId

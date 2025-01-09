@@ -1,5 +1,6 @@
 import core, {
   AccountRole,
+  ClientConnectEvent,
   WorkspaceEvent,
   generateId,
   getTypeOf,
@@ -11,17 +12,27 @@ import core, {
   type BulkUpdateEvent,
   type Class,
   type Client,
+  type ClientConnection,
   type Doc,
+  type DocChunk,
+  type DocumentQuery,
+  type Domain,
+  type FindOptions,
+  type FindResult,
   type MeasureContext,
   type ModelDb,
   type Ref,
+  type SearchResult,
   type SessionData,
+  type Tx,
+  type TxResult,
   type TxWorkspaceEvent,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
 import { type Hash } from 'crypto'
 import fs from 'fs'
+import type { DbAdapter } from './adapter'
 import { BackupClientOps } from './storage'
 import type { Pipeline } from './types'
 
@@ -292,4 +303,66 @@ export function wrapPipeline (
     tx: (tx) => pipeline.tx(ctx, [tx]),
     notify: (...tx) => {}
   }
+}
+
+export function wrapAdapterToClient (ctx: MeasureContext, storageAdapter: DbAdapter, txes: Tx[]): ClientConnection {
+  class TestClientConnection implements ClientConnection {
+    isConnected = (): boolean => true
+
+    handler?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
+
+    set onConnect (
+      handler: ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>) | undefined
+    ) {
+      this.handler = handler
+      void this.handler?.(ClientConnectEvent.Connected, '', {})
+    }
+
+    get onConnect (): ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>) | undefined {
+      return this.handler
+    }
+
+    async findAll<T extends Doc>(
+      _class: Ref<Class<Doc>>,
+      query: DocumentQuery<Doc>,
+      options?: FindOptions<Doc>
+    ): Promise<FindResult<T>> {
+      return (await storageAdapter.findAll(ctx, _class, query, options)) as any
+    }
+
+    async tx (tx: Tx): Promise<TxResult> {
+      return await storageAdapter.tx(ctx, tx)
+    }
+
+    async searchFulltext (): Promise<SearchResult> {
+      return { docs: [] }
+    }
+
+    async close (): Promise<void> {}
+
+    async loadChunk (domain: Domain): Promise<DocChunk> {
+      throw new Error('unsupported')
+    }
+
+    async closeChunk (idx: number): Promise<void> {}
+
+    async loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+      return []
+    }
+
+    async upload (domain: Domain, docs: Doc[]): Promise<void> {}
+
+    async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
+
+    async loadModel (): Promise<Tx[]> {
+      return txes
+    }
+
+    async getAccount (): Promise<Account> {
+      return {} as any
+    }
+
+    async sendForceClose (): Promise<void> {}
+  }
+  return new TestClientConnection()
 }

@@ -48,6 +48,7 @@ export default mergeIds(githubId, github, {
     PRClosedAt: '' as IntlString,
     MergeCommitSHA: '' as IntlString,
     GithubIssue: '' as IntlString,
+    GithubMilestone: '' as IntlString,
     Mergeable: '' as IntlString,
     GithubUser: '' as IntlString,
 

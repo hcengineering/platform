@@ -126,7 +126,6 @@
   import { get } from 'svelte/store'
 
   const HIDE_NAVIGATOR = 720
-  const HIDE_ASIDE = 680 // sm
   const FLOAT_ASIDE = 1024 // lg
   let contentPanel: HTMLElement
 
@@ -650,7 +649,6 @@
     $deviceInfo.aside.float = false
     $deviceInfo.aside.visible = !hiddenAside
   }
-  $: expandedFloatASide = $deviceInfo.docWidth <= FLOAT_ASIDE && $deviceInfo.docWidth > HIDE_ASIDE
   const checkOnHide = (): void => {
     if ($deviceInfo.navigator.visible && $deviceInfo.navigator.float) $deviceInfo.navigator.visible = false
   }
@@ -780,10 +778,7 @@
       <path d="M15.8,17.5h1.8v-0.4C17,17.4,16.4,17.5,15.8,17.5z" />
     </clipPath>
   </svg>
-  <div
-    class="workbench-container"
-    style:flex-direction={$deviceInfo.navigator.direction === 'horizontal' ? 'column-reverse' : 'row'}
-  >
+  <div class="workbench-container apps-{$deviceInfo.navigator.direction}">
     <div
       class="antiPanel-application {$deviceInfo.navigator.direction} no-print"
       class:lastDivider={!$deviceInfo.navigator.visible}
@@ -910,134 +905,125 @@
         application: currentApplication?._id
       }}
     />
-    <div
-      class="workbench-container inner"
-      class:rounded={$sidebarStore.variant === SidebarVariant.EXPANDED}
-      use:resizeObserver={(element) => {
-        workbenchWidth = element.clientWidth
-        checkWorkbenchWidth()
-      }}
-    >
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      {#if $deviceInfo.navigator.float && $deviceInfo.navigator.visible}
-        <div class="cover shown" on:click={() => ($deviceInfo.navigator.visible = false)} />
-      {/if}
-      {#if mainNavigator}
-        <div
-          class="antiPanel-navigator no-print {$deviceInfo.navigator.direction === 'horizontal'
-            ? 'portrait'
-            : 'landscape'} border-left"
-          class:fly={$deviceInfo.navigator.float}
-        >
-          <div class="antiPanel-wrap__content hulyNavPanel-container">
-            {#if currentApplication}
-              <NavHeader label={currentApplication.label} />
-              {#if currentApplication.navHeaderComponent}
-                <Component
-                  is={currentApplication.navHeaderComponent}
-                  props={{
-                    currentSpace,
-                    currentSpecial,
-                    currentFragment
-                  }}
-                  shrink
-                />
+    <div class="flex-row-center w-full h-full">
+      <div
+        class="workbench-container inner"
+        class:rounded={$sidebarStore.variant === SidebarVariant.EXPANDED}
+        use:resizeObserver={(element) => {
+          workbenchWidth = element.clientWidth
+          checkWorkbenchWidth()
+        }}
+      >
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        {#if $deviceInfo.navigator.float && $deviceInfo.navigator.visible}
+          <div class="cover shown" on:click={() => ($deviceInfo.navigator.visible = false)} />
+        {/if}
+        {#if mainNavigator}
+          <div
+            class="antiPanel-navigator no-print {$deviceInfo.navigator.direction === 'horizontal'
+              ? 'portrait'
+              : 'landscape'} border-left"
+            class:fly={$deviceInfo.navigator.float}
+          >
+            <div class="antiPanel-wrap__content hulyNavPanel-container">
+              {#if currentApplication}
+                <NavHeader label={currentApplication.label} />
+                {#if currentApplication.navHeaderComponent}
+                  <Component
+                    is={currentApplication.navHeaderComponent}
+                    props={{
+                      currentSpace,
+                      currentSpecial,
+                      currentFragment
+                    }}
+                    shrink
+                  />
+                {/if}
               {/if}
+              <Navigator
+                {currentSpace}
+                {currentSpecial}
+                {currentFragment}
+                model={navigatorModel}
+                {currentApplication}
+                on:open={checkOnHide}
+              />
+              <NavFooter>
+                {#if currentApplication && currentApplication.navFooterComponent}
+                  <Component is={currentApplication.navFooterComponent} props={{ currentSpace }} />
+                {/if}
+              </NavFooter>
+            </div>
+            {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
+              <Separator
+                name={'workbench'}
+                float={$deviceInfo.navigator.float ? 'navigator' : true}
+                index={0}
+                color={'var(--theme-navpanel-border)'}
+              />
             {/if}
-            <Navigator
-              {currentSpace}
-              {currentSpecial}
-              {currentFragment}
-              model={navigatorModel}
-              {currentApplication}
-              on:open={checkOnHide}
-            />
-            <NavFooter>
-              {#if currentApplication && currentApplication.navFooterComponent}
-                <Component is={currentApplication.navFooterComponent} props={{ currentSpace }} />
-              {/if}
-            </NavFooter>
           </div>
           <Separator
             name={'workbench'}
-            float={$deviceInfo.navigator.float ? 'navigator' : true}
+            float={$deviceInfo.navigator.float}
             index={0}
-            color={'var(--theme-navpanel-border)'}
+            color={'transparent'}
+            separatorSize={0}
+            short
           />
-        </div>
-        <Separator
-          name={'workbench'}
-          float={$deviceInfo.navigator.float}
-          index={0}
-          color={'transparent'}
-          separatorSize={0}
-          short
-        />
-      {/if}
-      <div
-        bind:this={contentPanel}
-        class={navigatorModel === undefined ? 'hulyPanels-container' : 'hulyComponent overflow-hidden'}
-        class:straighteningCorners={expandedFloatASide && $sidebarStore.variant === SidebarVariant.EXPANDED}
-        data-id={'contentPanel'}
-      >
-        {#if currentApplication && currentApplication.component}
-          <Component
-            is={currentApplication.component}
-            props={{
-              currentSpace
-            }}
-          />
-        {:else if specialComponent}
-          <Component
-            is={specialComponent.component}
-            props={{
-              model: navigatorModel,
-              ...specialComponent.componentProps,
-              currentSpace,
-              space: currentSpace,
-              navigationModel: specialComponent?.navigationModel
-            }}
-            on:action={(e) => {
-              if (e?.detail) {
-                const loc = getCurrentLocation()
-                loc.query = { ...loc.query, ...e.detail }
-                navigate(loc)
-              }
-            }}
-          />
-        {:else if currentView?.component !== undefined}
-          <Component is={currentView.component} props={{ ...currentView.componentProps, currentView }} />
-        {:else if $accessDeniedStore}
-          <div class="flex-center h-full">
-            <h2><Label label={workbench.string.AccessDenied} /></h2>
-          </div>
-        {:else}
-          <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
         {/if}
+        <div
+          bind:this={contentPanel}
+          class={navigatorModel === undefined ? 'hulyPanels-container' : 'hulyComponent overflow-hidden'}
+          class:straighteningCorners={$deviceInfo.aside.float &&
+            $sidebarStore.variant === SidebarVariant.EXPANDED &&
+            !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
+          data-id={'contentPanel'}
+        >
+          {#if currentApplication && currentApplication.component}
+            <Component
+              is={currentApplication.component}
+              props={{
+                currentSpace
+              }}
+            />
+          {:else if specialComponent}
+            <Component
+              is={specialComponent.component}
+              props={{
+                model: navigatorModel,
+                ...specialComponent.componentProps,
+                currentSpace,
+                space: currentSpace,
+                navigationModel: specialComponent?.navigationModel
+              }}
+              on:action={(e) => {
+                if (e?.detail) {
+                  const loc = getCurrentLocation()
+                  loc.query = { ...loc.query, ...e.detail }
+                  navigate(loc)
+                }
+              }}
+            />
+          {:else if currentView?.component !== undefined}
+            <Component is={currentView.component} props={{ ...currentView.componentProps, currentView }} />
+          {:else if $accessDeniedStore}
+            <div class="flex-center h-full">
+              <h2><Label label={workbench.string.AccessDenied} /></h2>
+            </div>
+          {:else}
+            <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
+          {/if}
+        </div>
       </div>
-    </div>
-    {#if $deviceInfo.docWidth > HIDE_ASIDE}
-      {#if $sidebarStore.variant === SidebarVariant.EXPANDED && !expandedFloatASide}
+      {#if $sidebarStore.variant === SidebarVariant.EXPANDED && !$deviceInfo.aside.float}
         <Separator name={'main'} index={0} color={'transparent'} separatorSize={0} short />
       {/if}
-      <WidgetsBar expandedFloat={expandedFloatASide} />
-    {/if}
+      <WidgetsBar />
+    </div>
   </div>
   <Dock />
-  {#if $deviceInfo.docWidth <= HIDE_ASIDE}
-    <div
-      class="antiPanel-navigator right fly no-print {$deviceInfo.navigator.direction === 'horizontal'
-        ? 'portrait'
-        : 'landscape'}"
-      style:display={$deviceInfo.aside.visible ? 'flex' : 'none'}
-    >
-      <Separator name={'main'} index={0} color={'transparent'} separatorSize={0} short float={'sidebar'} />
-      <div class="antiPanel-wrap__content hulyNavPanel-container">
-        <WidgetsBar />
-      </div>
-    </div>
-  {/if}
   <div bind:this={cover} class="cover" />
   <TooltipInstance />
   <PanelInstance bind:this={panelInstance} contentPanel={elementPanel}>
@@ -1067,6 +1053,9 @@
     background-color: var(--theme-panel-color);
     touch-action: none;
 
+    &.apps-horizontal {
+      flex-direction: column-reverse;
+    }
     &.inner {
       background-color: var(--theme-navpanel-color);
 

@@ -35,9 +35,6 @@ export async function getS3UploadParams (
   s3StorageConfig: StorageConfig | undefined
 ): Promise<S3UploadParams> {
   if (storageConfig.kind === 's3') {
-    if (storageConfig.kind !== 's3') {
-      throw new Error('Please provide S3 storage config')
-    }
     return await getS3UploadParamsS3(ctx, workspaceId, storageConfig as S3Config)
   } else if (storageConfig.kind === 'datalake') {
     if (s3StorageConfig === undefined || s3StorageConfig.kind !== 's3') {
@@ -62,9 +59,6 @@ export async function saveFile (
   filename: string
 ): Promise<Blob | undefined> {
   if (storageConfig.kind === 's3') {
-    if (storageConfig.kind !== 's3') {
-      throw new Error('Please provide S3 storage config')
-    }
     return await saveFileToS3(ctx, workspaceId, storageConfig as S3Config, filename)
   } else if (storageConfig.kind === 'datalake') {
     if (s3StorageConfig === undefined || s3StorageConfig.kind !== 's3') {
