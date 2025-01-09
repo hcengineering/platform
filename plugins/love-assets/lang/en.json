@@ -75,10 +75,12 @@
     "JoinMeeting": "Join meeting",
     "MeetingStart": "Meeting start",
     "MeetingEnd": "Meeting end",
+    "EndMeeting": "End meeting",
     "Status": "Status",
     "Active": "Active",
     "Finished": "Finished",
     "StartWithRecording": "Start with recording",
-    "Language": "Language"
+    "Language": "Language",
+    "Kick": "Kick"
   }
 }

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { personByIdStore } from '@hcengineering/contact-resources'
-  import { IdMap, Ref, toIdMap } from '@hcengineering/core'
+  import { getCurrentAccount, IdMap, Ref, toIdMap } from '@hcengineering/core'
   import {
     Invite,
     isOffice,
@@ -42,9 +42,11 @@
   import love from '../plugin'
   import { activeInvites, currentRoom, infos, myInfo, myInvites, myOffice, myRequests, rooms } from '../stores'
   import {
+    connectRoom,
     createMeetingVideoWidgetTab,
     createMeetingWidget,
     disconnect,
+    endMeeting,
     getRoomName,
     isCurrentInstanceConnected,
     leaveRoom,
@@ -57,6 +59,7 @@
   import RequestingPopup from './RequestingPopup.svelte'
   import RoomPopup from './RoomPopup.svelte'
   import RoomButton from './RoomButton.svelte'
+  import { Person, PersonAccount } from '@hcengineering/contact'
 
   const client = getClient()
 
@@ -105,7 +108,7 @@
     if (activeRequest === undefined) {
       activeRequest = requests.find((r) => r.room === $myInfo?.room)
       if (activeRequest !== undefined) {
-        showPopup(RequestPopup, { request: activeRequest }, myOfficeElement, undefined, undefined, {
+        showPopup(RequestPopup, { request: activeRequest }, undefined, undefined, undefined, {
           category: joinRequestCategory,
           overlay: false,
           fixed: true
@@ -120,7 +123,7 @@
   function checkMyRequests (requests: JoinRequest[]): void {
     if (requests.length > 0) {
       if (myRequestsPopup === undefined) {
-        myRequestsPopup = showPopup(RequestingPopup, { request: requests[0] }, myOfficeElement, undefined, undefined, {
+        myRequestsPopup = showPopup(RequestingPopup, { request: requests[0] }, undefined, undefined, undefined, {
           category: myJoinRequestCategory,
           overlay: false,
           fixed: true
@@ -133,8 +136,6 @@
   }
 
   $: checkMyRequests($myRequests)
-
-  let myOfficeElement: HTMLDivElement
 
   $: checkRequests(requests, $myInfo)
 
@@ -158,7 +159,7 @@
     if (activeInvite === undefined) {
       activeInvite = invites[0]
       if (activeInvite !== undefined) {
-        showPopup(InvitePopup, { invite: activeInvite }, myOfficeElement, undefined, undefined, {
+        showPopup(InvitePopup, { invite: activeInvite }, undefined, undefined, undefined, {
           category: inviteCategory,
           overlay: false,
           fixed: true
@@ -173,21 +174,29 @@
     infos: ParticipantInfo[],
     myInfo: ParticipantInfo | undefined,
     myOffice: Office | undefined,
+    personByIdStore: IdMap<Person>,
     isConnected: boolean
   ): Promise<void> {
-    if (myOffice !== undefined) {
-      if (myInfo !== undefined && myInfo.room === myOffice._id) {
-        const filtered = infos.filter((p) => p.room === myOffice._id && p.person !== myInfo.person)
-        if (filtered.length === 0) {
-          if (isConnected) {
-            await disconnect()
-          }
+    if (myInfo !== undefined && myInfo.room === (myOffice?._id ?? love.ids.Reception)) {
+      if (myOffice === undefined) {
+        await disconnect()
+        return
+      }
+      const filtered = infos.filter((p) => p.room === myOffice._id && p.person !== myInfo.person)
+      if (filtered.length === 0) {
+        if (isConnected) {
+          await disconnect()
         }
+      } else if (!isConnected) {
+        const me = getCurrentAccount() as PersonAccount
+        const myPerson = personByIdStore.get(me.person)
+        if (myPerson === undefined) return
+        await connectRoom(0, 0, myInfo, myPerson, myOffice)
       }
     }
   }
 
-  $: checkOwnRoomConnection($infos, $myInfo, $myOffice, $isCurrentInstanceConnected)
+  $: checkOwnRoomConnection($infos, $myInfo, $myOffice, $personByIdStore, $isCurrentInstanceConnected)
 
   const myInvitesCategory = 'myInvites'
 
@@ -196,7 +205,7 @@
   function checkActiveInvites (invites: Invite[]): void {
     if (invites.length > 0) {
       if (myInvitesPopup === undefined) {
-        myInvitesPopup = showPopup(ActiveInvitesPopup, { invites }, myOfficeElement, undefined, undefined, {
+        myInvitesPopup = showPopup(ActiveInvitesPopup, { invites }, undefined, undefined, undefined, {
           category: myInvitesCategory,
           overlay: false,
           fixed: true
@@ -277,7 +286,11 @@
 
   const beforeUnloadListener = () => {
     if ($myInfo !== undefined && $isCurrentInstanceConnected) {
-      leaveRoom($myInfo, $myOffice)
+      if ($myOffice !== undefined && $myInfo.room === $myOffice._id) {
+        endMeeting($myOffice, $rooms, $infos, $myInfo)
+      } else {
+        leaveRoom($myInfo, $myOffice)
+      }
     }
   }
 
@@ -287,7 +300,7 @@
 <div class="flex-row-center flex-gap-2">
   {#if activeRooms.length > 0}
     <!--    <div class="divider" />-->
-    {#each activeRooms as active, i}
+    {#each activeRooms as active}
       <RoomButton
         label={getRoomName(active, $personByIdStore)}
         participants={active.participants}
@@ -296,7 +309,7 @@
       />
     {/each}
   {/if}
-  {#if reception && receptionParticipants.length > 0}
+  {#if reception !== undefined && receptionParticipants.length > 0}
     {#if activeRooms.length > 0}
       <div class="divider" />
     {/if}

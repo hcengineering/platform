@@ -75,10 +75,12 @@
     "JoinMeeting": "Participar na reunião",
     "MeetingStart": "Início da reunião",
     "MeetingEnd": "Fim da reunião",
+    "EndMeeting": "Terminar reunião",
     "Status": "Estado",
     "Active": "Ativo",
     "Finished": "Finalizado",
     "StartWithRecording": "Começar com gravação",
-    "Language": "Idioma"
+    "Language": "Idioma",
+    "Kick": "Expulsar"
   }
 }
