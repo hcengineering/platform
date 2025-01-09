@@ -182,10 +182,7 @@ class TelegramConnection {
         // Handle Telegram RPC-specific errors
         const rpcError = e
         console.error(`Telegram RPC error during connection attempt ${this.reconnectAttempts}: ${rpcError.message}`)
-        if (
-          rpcError.message.includes('AUTH_KEY_UNREGISTERED') ||
-          rpcError.message.includes('SESSION_REVOKED')
-        ) {
+        if (rpcError.message.includes('AUTH_KEY_UNREGISTERED') || rpcError.message.includes('SESSION_REVOKED')) {
           // Authentication errors - need to re-authenticate
           this._signInFlow = undefined // Force re-authentication
           throw new ApiError(Code.PhoneCodeInvalid, 'Re-authentication required') // Use existing auth error code
