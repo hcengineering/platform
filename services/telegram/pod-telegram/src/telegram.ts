@@ -20,13 +20,13 @@ class SignInFlow {
   private _state: SignInState = 'init'
   private codeHash: string | undefined
 
-  constructor(
+  constructor (
     private readonly client: TelegramClient,
     private readonly phone: string,
     private readonly onEnd: () => void
   ) {}
 
-  async init(): Promise<void> {
+  async init (): Promise<void> {
     if (this._state !== 'init') {
       throw Error('Invalid sign in method')
     }
@@ -36,11 +36,11 @@ class SignInFlow {
     this._state = 'code'
   }
 
-  get state(): SignInState {
+  get state (): SignInState {
     return this._state
   }
 
-  async code(code: string): Promise<boolean> {
+  async code (code: string): Promise<boolean> {
     if (this._state !== 'code') {
       throw Error('Invalid sign in method')
     }
@@ -77,7 +77,7 @@ class SignInFlow {
     }
   }
 
-  async pass(password: string): Promise<void> {
+  async pass (password: string): Promise<void> {
     if (this._state !== 'pass') {
       throw Error('Invalid sign in method')
     }
@@ -89,12 +89,12 @@ class SignInFlow {
     this.finish()
   }
 
-  private finish(): void {
+  private finish (): void {
     this._state = 'end'
     this.onEnd()
   }
 
-  private get creds(): { apiId: number; apiHash: string } {
+  private get creds (): { apiId: number, apiHash: string } {
     return {
       apiId: this.client.apiId,
       apiHash: this.client.apiHash
@@ -116,11 +116,11 @@ class TelegramConnection {
   private static readonly RECONNECT_TIMEOUT = 5000 // 5 seconds timeout for connection attempts
   private static readonly RECONNECT_BACKOFF = 1000 // Add 1 second delay between retries
 
-  private delay(ms: number): Promise<void> {
+  private delay (ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
-  constructor(
+  constructor (
     readonly client: TelegramClient,
     readonly phone: string
   ) {
@@ -130,7 +130,7 @@ class TelegramConnection {
     this.setReadinessInterval()
   }
 
-  setReadinessInterval(): void {
+  setReadinessInterval (): void {
     if (this.readinessInterval === undefined) {
       this.readinessInterval = setInterval(() => {
         void this.reconnect()
@@ -138,7 +138,7 @@ class TelegramConnection {
     }
   }
 
-  private async connectWithTimeout(): Promise<void> {
+  private async connectWithTimeout (): Promise<void> {
     const timeoutId = setTimeout(() => {
       // Force disconnect if we timeout
       void this.client.disconnect()
@@ -152,7 +152,7 @@ class TelegramConnection {
     }
   }
 
-  async tryReconnect(): Promise<void> {
+  async tryReconnect (): Promise<void> {
     if (this.connecting) {
       return
     }
@@ -180,21 +180,21 @@ class TelegramConnection {
       // Handle specific error types
       if (e instanceof RPCError) {
         // Handle Telegram RPC-specific errors
-        const rpcError = e as RPCError
+        const rpcError = e
         console.error(`Telegram RPC error during connection attempt ${this.reconnectAttempts}: ${rpcError.message}`)
         if (
-          rpcError.message.indexOf('AUTH_KEY_UNREGISTERED') !== -1 ||
-          rpcError.message.indexOf('SESSION_REVOKED') !== -1
+          rpcError.message.includes('AUTH_KEY_UNREGISTERED') ||
+          rpcError.message.includes('SESSION_REVOKED')
         ) {
           // Authentication errors - need to re-authenticate
           this._signInFlow = undefined // Force re-authentication
           throw new ApiError(Code.PhoneCodeInvalid, 'Re-authentication required') // Use existing auth error code
         }
       } else if (e instanceof Error) {
-        const error = e as Error
-        if (error.message.indexOf('Connection attempt timed out') !== -1) {
+        const error = e
+        if (error.message.includes('Connection attempt timed out')) {
           console.error(`Connection timeout on attempt ${this.reconnectAttempts}`)
-        } else if (error.message.indexOf('ECONNREFUSED') !== -1 || error.message.indexOf('ENETUNREACH') !== -1) {
+        } else if (error.message.includes('ECONNREFUSED') || error.message.includes('ENETUNREACH')) {
           console.error(`Network error on attempt ${this.reconnectAttempts}: ${error.message}`)
         } else {
           console.error(`Connection attempt ${this.reconnectAttempts} failed: ${error.message}`)
@@ -219,7 +219,7 @@ class TelegramConnection {
     }
   }
 
-  async reconnect(): Promise<void> {
+  async reconnect (): Promise<void> {
     try {
       const ready = await this.isReady()
 
@@ -235,7 +235,7 @@ class TelegramConnection {
     }
   }
 
-  private clearHandlers(): void {
+  private clearHandlers (): void {
     // Clear all event handlers to prevent memory leaks
     this.client.listEventHandlers().forEach(([builder, callback]) => {
       this.client.removeEventHandler(callback, builder)
@@ -245,14 +245,14 @@ class TelegramConnection {
     this.subID = 0
   }
 
-  private clearIntervals(): void {
+  private clearIntervals (): void {
     if (this.readinessInterval !== undefined) {
       clearInterval(this.readinessInterval)
       this.readinessInterval = undefined
     }
   }
 
-  async close(): Promise<void> {
+  async close (): Promise<void> {
     this.clearIntervals()
     this.clearHandlers()
 
@@ -264,7 +264,7 @@ class TelegramConnection {
     }
   }
 
-  async signOut(): Promise<void> {
+  async signOut (): Promise<void> {
     try {
       await this.client.invoke(new Api.auth.LogOut())
     } finally {
@@ -274,7 +274,7 @@ class TelegramConnection {
     }
   }
 
-  async signIn(): Promise<void> {
+  async signIn (): Promise<void> {
     // Clear any existing handlers before starting new sign in
     this.clearHandlers()
 
@@ -286,7 +286,7 @@ class TelegramConnection {
     await this._signInFlow.init()
   }
 
-  async isReady(): Promise<boolean> {
+  async isReady (): Promise<boolean> {
     if (this._signInFlow !== undefined) {
       return false
     }
@@ -294,11 +294,11 @@ class TelegramConnection {
     return await this.client.isUserAuthorized()
   }
 
-  get signInFlow(): typeof this._signInFlow {
+  get signInFlow (): typeof this._signInFlow {
     return this._signInFlow
   }
 
-  handleSub(): void {
+  handleSub (): void {
     if (this.handlerAdded) {
       return
     }
@@ -322,7 +322,7 @@ class TelegramConnection {
     }, new NewMessage({}))
   }
 
-  sub(l: Listener): () => void {
+  sub (l: Listener): () => void {
     this.handleSub()
     const subID = this.subID++
     this.listeners.set(subID, l)
@@ -330,7 +330,7 @@ class TelegramConnection {
     return () => this.listeners.delete(subID)
   }
 
-  getMsgs(user: EntityLike, from?: number, to?: number, limit?: number): _MessagesIter {
+  getMsgs (user: EntityLike, from?: number, to?: number, limit?: number): _MessagesIter {
     return this.client.iterMessages(user, {
       minId: to,
       limit,
@@ -338,7 +338,7 @@ class TelegramConnection {
     }) as _MessagesIter
   }
 
-  async getUsers(): Promise<Api.User[]> {
+  async getUsers (): Promise<Api.User[]> {
     const dialogs = this.client.iterDialogs({})
     const res: Api.User[] = []
 
@@ -352,7 +352,7 @@ class TelegramConnection {
     return res
   }
 
-  async getUser(value: string): Promise<Api.User | undefined> {
+  async getUser (value: string): Promise<Api.User | undefined> {
     try {
       const res = await this.client.getEntity(value)
       if (res.className === 'User' && res.bot === false) {
@@ -363,7 +363,7 @@ class TelegramConnection {
     }
   }
 
-  async sendMsg(
+  async sendMsg (
     to: string,
     message: string,
     formattingEntities: Api.TypeMessageEntity[] = [],
@@ -378,7 +378,7 @@ class TelegramConnection {
 
   // That means we want to write message to user by phone number
   // when he is no in our contact list. That would lead an error.
-  async isContactImportRequired(to: string): Promise<boolean> {
+  async isContactImportRequired (to: string): Promise<boolean> {
     if (!to.startsWith('+')) {
       return false
     }
@@ -397,7 +397,7 @@ class TelegramConnection {
     return true
   }
 
-  async addContact(contact: { phone: string; firstName: string; lastName: string }): Promise<void> {
+  async addContact (contact: { phone: string, firstName: string, lastName: string }): Promise<void> {
     const result = await this.client.invoke(
       new Api.contacts.ImportContacts({
         contacts: [
@@ -414,7 +414,7 @@ class TelegramConnection {
     }
   }
 
-  getToken(): string | undefined {
+  getToken (): string | undefined {
     // TODO: Need recheck
     // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
     return (this.client.session.save() as never as string) ?? undefined
@@ -430,7 +430,7 @@ export const telegram = new (class TelegramHelper {
   readonly conns = new Map<string, TelegramConnection>()
   readonly ttls = new Map<string, NodeJS.Timeout>()
 
-  async auth(phone: string): Promise<SignInState> {
+  async auth (phone: string): Promise<SignInState> {
     // Clear any existing TTL timeout for this phone
     this.clearTTL(phone)
 
@@ -467,7 +467,7 @@ export const telegram = new (class TelegramHelper {
     return 'code'
   }
 
-  clearTTL(phone: string): void {
+  clearTTL (phone: string): void {
     const existingTTL = this.ttls.get(phone)
     if (existingTTL !== undefined) {
       clearTimeout(existingTTL)
@@ -475,7 +475,7 @@ export const telegram = new (class TelegramHelper {
     }
   }
 
-  async authCode(phone: string, code: string): Promise<boolean> {
+  async authCode (phone: string, code: string): Promise<boolean> {
     const conn = this.conns.get(phone)
 
     if (conn?.signInFlow === undefined) {
@@ -501,7 +501,7 @@ export const telegram = new (class TelegramHelper {
     }
   }
 
-  async authPass(phone: string, pass: string): Promise<void> {
+  async authPass (phone: string, pass: string): Promise<void> {
     const conn = this.conns.get(phone)
 
     if (conn?.signInFlow === undefined) {
@@ -522,7 +522,7 @@ export const telegram = new (class TelegramHelper {
     }
   }
 
-  async getOrCreate(phone: string): Promise<TelegramConnection> {
+  async getOrCreate (phone: string): Promise<TelegramConnection> {
     const existingConn = this.conns.get(phone)
 
     if (existingConn !== undefined) {
@@ -535,16 +535,16 @@ export const telegram = new (class TelegramHelper {
     return conn
   }
 
-  getConnection(phone: string): TelegramConnection | undefined {
+  getConnection (phone: string): TelegramConnection | undefined {
     return this.conns.get(phone)
   }
 
-  forgetConnection(phone: string): void {
+  forgetConnection (phone: string): void {
     this.conns.delete(phone)
     this.clearTTL(phone)
   }
 
-  async create(phone: string, token?: string): Promise<TelegramConnection> {
+  async create (phone: string, token?: string): Promise<TelegramConnection> {
     const session = new StringSession(token)
     const client = new TelegramClient(session, config.TelegramApiID, config.TelegramApiHash, {
       connectionRetries: 5,
