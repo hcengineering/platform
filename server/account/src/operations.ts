@@ -104,7 +104,7 @@ export async function login (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
     }
 
-    const existingAccount = await db.account.findOne({ uuid: emailSocialId.personId })
+    const existingAccount = await db.account.findOne({ uuid: emailSocialId.personUuid })
 
     if (existingAccount == null) {
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
@@ -146,7 +146,7 @@ export async function loginOtp (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
 
-  const account = await getAccount(db, emailSocialId.personId)
+  const account = await getAccount(db, emailSocialId.personUuid)
 
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
@@ -201,18 +201,18 @@ export async function signUpOtp (
   let personUuid: string
 
   if (emailSocialId !== null) {
-    const existingAccount = await db.account.findOne({ uuid: emailSocialId.personId })
+    const existingAccount = await db.account.findOne({ uuid: emailSocialId.personUuid })
 
     if (existingAccount !== null) {
       ctx.error('An account with the provided email already exists', { email })
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {}))
     }
 
-    personUuid = emailSocialId.personId
+    personUuid = emailSocialId.personUuid
   } else {
     // There's no person linked to this email, so we need to create a new one
     personUuid = await db.person.insertOne({ firstName, lastName })
-    const newSocialId = { type: SocialIdType.EMAIL, value: normalizedEmail, personId: personUuid }
+    const newSocialId = { type: SocialIdType.EMAIL, value: normalizedEmail, personUuid }
     const emailSocialIdId = await db.socialId.insertOne(newSocialId)
     emailSocialId = { ...newSocialId, id: emailSocialIdId }
   }
@@ -248,11 +248,11 @@ export async function validateOtp (
   }
 
   // This method handles both login and signup
-  const account = await db.account.findOne({ uuid: emailSocialId.personId })
+  const account = await db.account.findOne({ uuid: emailSocialId.personUuid })
 
   if (account == null) {
     // This is a signup
-    await createAccount(db, emailSocialId.personId, true)
+    await createAccount(db, emailSocialId.personUuid, true)
 
     ctx.info('OTP signup success', emailSocialId)
   } else {
@@ -262,8 +262,8 @@ export async function validateOtp (
   }
 
   return {
-    account: emailSocialId.personId,
-    token: generateToken(emailSocialId.personId)
+    account: emailSocialId.personUuid,
+    token: generateToken(emailSocialId.personUuid)
   }
 }
 
@@ -280,7 +280,7 @@ export async function createWorkspace (
   ctx.info('Creating workspace record', { workspaceName, account, region })
 
   // Any confirmed social ID will do
-  const socialId = await db.socialId.findOne({ personId: account, verifiedOn: { $gt: 0 } })
+  const socialId = await db.socialId.findOne({ personUuid: account, verifiedOn: { $gt: 0 } })
 
   if (socialId == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotConfirmed, {}))
@@ -290,7 +290,7 @@ export async function createWorkspace (
 
   await db.assignWorkspace(account, workspaceUuid, AccountRole.Owner)
 
-  ctx.info('Creating workspace record done', { workspaceName, region, account: socialId.personId })
+  ctx.info('Creating workspace record done', { workspaceName, region, account: socialId.personUuid })
 
   return {
     account,
@@ -447,7 +447,7 @@ export async function checkJoin (
 
   const emailSocialId = await db.socialId.findOne({
     type: SocialIdType.EMAIL,
-    personId: accountUuid,
+    personUuid: accountUuid,
     verifiedOn: { $gt: 0 }
   })
   const email = emailSocialId?.value ?? ''
@@ -576,12 +576,12 @@ export async function requestPasswordReset (
     )
   }
 
-  const account = await getAccount(db, emailSocialId.personId)
+  const account = await getAccount(db, emailSocialId.personUuid)
 
   if (account == null) {
     ctx.info('Account not found', { email, normalizedEmail })
     throw new PlatformError(
-      new Status(Severity.ERROR, platform.status.AccountNotFound, { account: emailSocialId.personId })
+      new Status(Severity.ERROR, platform.status.AccountNotFound, { account: emailSocialId.personUuid })
     )
   }
 
@@ -971,7 +971,7 @@ export async function getLoginInfoByToken (
 
   if (!isDocGuest && !isSystem) {
     // Any confirmed social ID will do
-    const socialId = await db.socialId.findOne({ personId: accountUuid, verifiedOn: { $gt: 0 } })
+    const socialId = await db.socialId.findOne({ personUuid: accountUuid, verifiedOn: { $gt: 0 } })
 
     if (socialId == null) {
       return {
@@ -1034,7 +1034,7 @@ export async function getSocialIds (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
-  return await db.socialId.find({ personId: account, verifiedOn: { $gt: 0 } })
+  return await db.socialId.find({ personUuid: account, verifiedOn: { $gt: 0 } })
 }
 
 export async function getPerson (
@@ -1069,7 +1069,7 @@ export async function findPerson (
     return
   }
 
-  return socialId.personId
+  return socialId.personUuid
 }
 
 export async function getWorkspaceMembers (
@@ -1161,7 +1161,7 @@ export async function getPendingWorkspace (
   const wsLivenessDays = getMetadata(accountPlugin.metadata.WsLivenessDays)
   const wsLivenessMs = wsLivenessDays !== undefined ? wsLivenessDays * 24 * 60 * 60 * 1000 : undefined
 
-  const result = await db.workspace.getPendingWorkspace(region, version, operation, processingTimeoutMs, wsLivenessMs)
+  const result = await db.getPendingWorkspace(region, version, operation, processingTimeoutMs, wsLivenessMs)
 
   if (result != null) {
     ctx.info('getPendingWorkspace', {
@@ -1377,7 +1377,7 @@ export async function assignWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
 
-  const account = await getAccount(db, emailSocialId.personId)
+  const account = await getAccount(db, emailSocialId.personUuid)
 
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))

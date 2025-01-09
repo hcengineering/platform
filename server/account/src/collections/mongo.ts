@@ -20,7 +20,6 @@ import type {
   DbCollection,
   Query,
   Operations,
-  WorkspaceDbCollection,
   WorkspaceOperation,
   AccountDB,
   Account,
@@ -43,10 +42,11 @@ interface MongoIndex {
   options: CreateIndexesOptions & { name: string }
 }
 
-export class MongoDbCollection<T extends Record<string, any>> implements DbCollection<T> {
+export class MongoDbCollection<T extends Record<string, any>, K extends keyof T | undefined = undefined> implements DbCollection<T> {
   constructor (
     readonly name: string,
-    readonly db: Db
+    readonly db: Db,
+    readonly idKey?: K
   ) {}
 
   get collection (): Collection<T> {
@@ -119,10 +119,11 @@ export class MongoDbCollection<T extends Record<string, any>> implements DbColle
     return await this.collection.findOne<T>(query as Filter<T>)
   }
 
-  async insertOne<K extends keyof T | undefined> (data: Partial<T>, idKey?: K): Promise<any> {
+  async insertOne (data: Partial<T>): Promise<K extends keyof T ? T[K] : undefined> {
     const toInsert: Partial<T> & {
       _id?: string
     } = { ...data }
+    const idKey = this.idKey
 
     if (idKey !== undefined) {
       const key = (new UUID()).toJSON()
@@ -132,7 +133,7 @@ export class MongoDbCollection<T extends Record<string, any>> implements DbColle
 
     await this.collection.insertOne(toInsert as OptionalUnlessRequiredId<T>)
 
-    return idKey !== undefined ? toInsert[idKey] : undefined
+    return (idKey !== undefined ? toInsert[idKey] : undefined) as K extends keyof T ? T[K] : undefined
   }
 
   async updateOne (query: Query<T>, ops: Operations<T>): Promise<void> {
@@ -158,9 +159,9 @@ export class MongoDbCollection<T extends Record<string, any>> implements DbColle
   }
 }
 
-export class AccountMongoDbCollection extends MongoDbCollection<Account> implements DbCollection<Account> {
+export class AccountMongoDbCollection extends MongoDbCollection<Account, 'uuid'> implements DbCollection<Account> {
   constructor (db: Db) {
-    super('account', db)
+    super('account', db, 'uuid')
   }
 
   convertToObj (acc: Account): Account {
@@ -186,25 +187,11 @@ export class AccountMongoDbCollection extends MongoDbCollection<Account> impleme
 
     return res !== null ? this.convertToObj(res) : null
   }
-
-  async insertOne (data: Partial<Account>): Promise<any> {
-    return await super.insertOne(data, 'uuid')
-  }
 }
 
-export class PersonMongoDbCollection extends MongoDbCollection<Person> implements DbCollection<Person> {
+export class SocialIdMongoDbCollection extends MongoDbCollection<SocialId, 'id'> implements DbCollection<SocialId> {
   constructor (db: Db) {
-    super('person', db)
-  }
-
-  async insertOne (data: Partial<Person>): Promise<any> {
-    return await super.insertOne(data, 'uuid')
-  }
-}
-
-export class SocialIdMongoDbCollection extends MongoDbCollection<SocialId> implements DbCollection<SocialId> {
-  constructor (db: Db) {
-    super('socialId', db)
+    super('socialId', db, 'id')
   }
 
   async insertOne (data: Partial<SocialId>): Promise<any> {
@@ -215,143 +202,12 @@ export class SocialIdMongoDbCollection extends MongoDbCollection<SocialId> imple
     return await super.insertOne({
       ...data,
       key: buildSocialIdString(data as SocialKey)
-    }, 'id')
-  }
-}
-
-export class WorkspaceMongoDbCollection extends MongoDbCollection<WorkspaceInfoWithStatus> implements WorkspaceDbCollection {
-  constructor (db: Db) {
-    super('workspace', db)
-  }
-
-  async insertOne (data: Partial<WorkspaceInfoWithStatus>): Promise<any> {
-    return await super.insertOne(data, 'uuid')
-  }
-
-  async getPendingWorkspace (
-    region: string,
-    version: Data<Version>,
-    operation: WorkspaceOperation,
-    processingTimeoutMs: number,
-    wsLivenessMs?: number
-  ): Promise<WorkspaceInfoWithStatus | undefined> {
-    const pendingCreationQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [{ 'status.mode': { $in: ['pending-creation', 'creating'] } }]
-
-    const migrationQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [
-      { 'status.mode': { $in: ['migration-backup', 'migration-pending-backup', 'migration-clean', 'migration-pending-clean'] } }
-    ]
-
-    const archivingQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [
-      { 'status.mode': { $in: ['archiving-pending-backup', 'archiving-backup', 'archiving-pending-clean', 'archiving-clean'] } }
-    ]
-
-    const deletingQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [{ 'status.mode': { $in: ['pending-deletion', 'deleting'] } }]
-    const restoreQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [{ 'status.mode': { $in: ['pending-restore', 'restoring'] } }]
-
-    const versionQuery = {
-      $or: [
-        { 'status.versionMajor': { $lt: version.major } },
-        { 'status.versionMajor': version.major, 'status.versionMinor': { $lt: version.minor } },
-        { 'status.versionMajor': version.major, 'status.versionMinor': version.minor, 'status.versionPatch': { $lt: version.patch } }
-      ]
-    }
-    const pendingUpgradeQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [
-      {
-        $and: [
-          {
-            $or: [{ 'status.isDisabled': false }, { 'status.isDisabled': { $exists: false } }]
-          },
-          {
-            $or: [{ 'status.mode': 'active' }, { 'status.mode': { $exists: false } }]
-          },
-          versionQuery,
-          ...(wsLivenessMs !== undefined
-            ? [
-                {
-                  'status.lastVisit': { $gt: Date.now() - wsLivenessMs }
-                }
-              ]
-            : [])
-        ]
-      },
-      {
-        $or: [{ 'status.isDisabled': false }, { 'status.isDisabled': { $exists: false } }],
-        'status.mode': 'upgrading'
-      }
-    ]
-    // TODO: support returning pending deletion workspaces when we will actually want
-    // to clear them with the worker.
-
-    const defaultRegionQuery = { $or: [{ region: { $exists: false } }, { region: '' }] }
-    let operationQuery: Filter<WorkspaceInfoWithStatus> = {}
-
-    switch (operation) {
-      case 'create':
-        operationQuery = { $or: pendingCreationQuery }
-        break
-      case 'upgrade':
-        operationQuery = { $or: pendingUpgradeQuery }
-        break
-      case 'all':
-        operationQuery = { $or: [...pendingCreationQuery, ...pendingUpgradeQuery] }
-        break
-      case 'all+backup':
-        operationQuery = {
-          $or: [
-            ...pendingCreationQuery,
-            ...pendingUpgradeQuery,
-            ...migrationQuery,
-            ...archivingQuery,
-            ...restoreQuery,
-            ...deletingQuery
-          ]
-        }
-        break
-    }
-    const attemptsQuery = { $or: [{ 'status.processingAttempts': { $exists: false } }, { 'status.processingAttempts': { $lte: 3 } }] }
-
-    // We must have all the conditions in the DB query and we cannot filter anything in the code
-    // because of possible concurrency between account services. We have to update "lastProcessingTime"
-    // at the time of retrieval and not after some additional processing.
-    const query: Filter<WorkspaceInfoWithStatus> = {
-      $and: [
-        { 'status.mode': { $ne: 'manual-creation' } },
-        operationQuery,
-        attemptsQuery,
-        region !== '' ? { region } : defaultRegionQuery,
-        {
-          $or: [
-            { 'status.lastProcessingTime': { $exists: false } },
-            { 'status.lastProcessingTime': { $lt: Date.now() - processingTimeoutMs } }
-          ]
-        }
-      ]
-    }
-
-    return (
-      (await this.collection.findOneAndUpdate(
-        query,
-        {
-          $inc: {
-            'status.processingAttempts': 1
-          },
-          $set: {
-            'status.lastProcessingTime': Date.now()
-          }
-        },
-        {
-          returnDocument: 'after',
-          sort: {
-            'status.lastVisit': -1 // Use last visit as a priority
-          }
-        }
-      )) ?? undefined
-    )
+    })
   }
 }
 
 export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceStatus> {
-  constructor (private readonly wsCollection: WorkspaceMongoDbCollection) {}
+  constructor (private readonly wsCollection: MongoDbCollection<WorkspaceInfoWithStatus, 'uuid'>) {}
 
   private toWsQuery (query: Query<WorkspaceStatus>): Query<WorkspaceInfoWithStatus> {
     const res: Query<WorkspaceInfoWithStatus> = {}
@@ -455,16 +311,6 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
   }
 }
 
-export class WorkspaceInviteMongoDbCollection extends MongoDbCollection<WorkspaceInvite> implements DbCollection<WorkspaceInvite> {
-  constructor (db: Db) {
-    super('invite', db)
-  }
-
-  async insertOne (data: Partial<WorkspaceInvite>): Promise<any> {
-    return await super.insertOne(data, 'id')
-  }
-}
-
 interface WorkspaceMember {
   workspaceUuid: string
   accountUuid: string
@@ -472,26 +318,26 @@ interface WorkspaceMember {
 }
 
 export class MongoAccountDB implements AccountDB {
-  person: PersonMongoDbCollection
+  person: MongoDbCollection<Person, 'uuid'>
   socialId: SocialIdMongoDbCollection
-  workspace: WorkspaceMongoDbCollection
+  workspace: MongoDbCollection<WorkspaceInfoWithStatus, 'uuid'>
   workspaceStatus: WorkspaceStatusMongoDbCollection
   account: AccountMongoDbCollection
   accountEvent: MongoDbCollection<AccountEvent>
   otp: MongoDbCollection<OTP>
-  invite: WorkspaceInviteMongoDbCollection
+  invite: MongoDbCollection<WorkspaceInvite, 'id'>
 
   workspaceMembers: MongoDbCollection<WorkspaceMember>
 
   constructor (readonly db: Db) {
-    this.person = new PersonMongoDbCollection(db)
+    this.person = new MongoDbCollection<Person, 'uuid'>('person', db, 'uuid')
     this.socialId = new SocialIdMongoDbCollection(db)
-    this.workspace = new WorkspaceMongoDbCollection(db)
+    this.workspace = new MongoDbCollection<WorkspaceInfoWithStatus, 'uuid'>('workspace', db, 'uuid')
     this.workspaceStatus = new WorkspaceStatusMongoDbCollection(this.workspace)
     this.account = new AccountMongoDbCollection(db)
     this.accountEvent = new MongoDbCollection<AccountEvent>('accountEvent', db)
     this.otp = new MongoDbCollection<OTP>('otp', db)
-    this.invite = new WorkspaceInviteMongoDbCollection(db)
+    this.invite = new MongoDbCollection<WorkspaceInvite, 'id'>('invite', db, 'id')
 
     this.workspaceMembers = new MongoDbCollection<WorkspaceMember>('workspaceMembers', db)
   }
@@ -563,6 +409,120 @@ export class MongoAccountDB implements AccountDB {
     return res
   }
 
+  async getPendingWorkspace (
+    region: string,
+    version: Data<Version>,
+    operation: WorkspaceOperation,
+    processingTimeoutMs: number,
+    wsLivenessMs?: number
+  ): Promise<WorkspaceInfoWithStatus | undefined> {
+    const pendingCreationQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [{ 'status.mode': { $in: ['pending-creation', 'creating'] } }]
+
+    const migrationQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [
+      { 'status.mode': { $in: ['migration-backup', 'migration-pending-backup', 'migration-clean', 'migration-pending-clean'] } }
+    ]
+
+    const archivingQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [
+      { 'status.mode': { $in: ['archiving-pending-backup', 'archiving-backup', 'archiving-pending-clean', 'archiving-clean'] } }
+    ]
+
+    const deletingQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [{ 'status.mode': { $in: ['pending-deletion', 'deleting'] } }]
+    const restoreQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [{ 'status.mode': { $in: ['pending-restore', 'restoring'] } }]
+
+    const versionQuery = {
+      $or: [
+        { 'status.versionMajor': { $lt: version.major } },
+        { 'status.versionMajor': version.major, 'status.versionMinor': { $lt: version.minor } },
+        { 'status.versionMajor': version.major, 'status.versionMinor': version.minor, 'status.versionPatch': { $lt: version.patch } }
+      ]
+    }
+    const pendingUpgradeQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [
+      {
+        $and: [
+          {
+            $or: [{ 'status.isDisabled': false }, { 'status.isDisabled': { $exists: false } }]
+          },
+          {
+            $or: [{ 'status.mode': 'active' }, { 'status.mode': { $exists: false } }]
+          },
+          versionQuery,
+          ...(wsLivenessMs !== undefined
+            ? [
+                {
+                  'status.lastVisit': { $gt: Date.now() - wsLivenessMs }
+                }
+              ]
+            : [])
+        ]
+      },
+      {
+        $or: [{ 'status.isDisabled': false }, { 'status.isDisabled': { $exists: false } }],
+        'status.mode': 'upgrading'
+      }
+    ]
+    // TODO: support returning pending deletion workspaces when we will actually want
+    // to clear them with the worker.
+
+    const defaultRegionQuery = { $or: [{ region: { $exists: false } }, { region: '' }] }
+    let operationQuery: Filter<WorkspaceInfoWithStatus> = {}
+
+    switch (operation) {
+      case 'create':
+        operationQuery = { $or: pendingCreationQuery }
+        break
+      case 'upgrade':
+        operationQuery = { $or: pendingUpgradeQuery }
+        break
+      case 'all':
+        operationQuery = { $or: [...pendingCreationQuery, ...pendingUpgradeQuery] }
+        break
+      case 'all+backup':
+        operationQuery = {
+          $or: [...pendingCreationQuery, ...pendingUpgradeQuery, ...migrationQuery, ...archivingQuery, ...restoreQuery, ...deletingQuery]
+        }
+        break
+    }
+    const attemptsQuery = { $or: [{ 'status.processingAttempts': { $exists: false } }, { 'status.processingAttempts': { $lte: 3 } }] }
+
+    // We must have all the conditions in the DB query and we cannot filter anything in the code
+    // because of possible concurrency between account services. We have to update "lastProcessingTime"
+    // at the time of retrieval and not after some additional processing.
+    const query: Filter<WorkspaceInfoWithStatus> = {
+      $and: [
+        { 'status.mode': { $ne: 'manual-creation' } },
+        operationQuery,
+        attemptsQuery,
+        region !== '' ? { region } : defaultRegionQuery,
+        {
+          $or: [
+            { 'status.lastProcessingTime': { $exists: false } },
+            { 'status.lastProcessingTime': { $lt: Date.now() - processingTimeoutMs } }
+          ]
+        }
+      ]
+    }
+
+    return (
+      (await this.workspace.collection.findOneAndUpdate(
+        query,
+        {
+          $inc: {
+            'status.processingAttempts': 1
+          },
+          $set: {
+            'status.lastProcessingTime': Date.now()
+          }
+        },
+        {
+          returnDocument: 'after',
+          sort: {
+            'status.lastVisit': -1 // Use last visit as a priority
+          }
+        }
+      )) ?? undefined
+    )
+  }
+
   async updateWorkspaceRole (accountId: string, workspaceId: string, role: AccountRole): Promise<void> {
     await this.workspaceMembers.updateOne(
       {
@@ -594,12 +554,6 @@ export class MongoAccountDB implements AccountDB {
     const wsIds = members.map((m) => m.workspaceUuid)
 
     return await this.workspace.find({ uuid: { $in: wsIds } })
-    // const workspaceStatuses = await this.workspaceStatus.find({ workspaceUuid: { $in: wsIds } })
-    // const statusesById = workspaceStatuses.reduce<Record<string, WorkspaceStatus>>((acc, ws) => {
-    //   acc[ws.workspaceUuid] = ws
-    //   return acc
-    // }, {})
-    // return workspaces.map((ws) => ({ ...ws, status: statusesById[ws.uuid] }))
   }
 
   async setPassword (accountId: string, passwordHash: Buffer, salt: Buffer): Promise<void> {

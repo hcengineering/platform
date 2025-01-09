@@ -20,7 +20,6 @@ import type {
   Query,
   Operations,
   Workspace,
-  WorkspaceDbCollection,
   WorkspaceOperation,
   AccountDB,
   Account,
@@ -37,14 +36,58 @@ import type {
   WorkspaceMemberInfo
 } from '../types'
 
-export class PostgresDbCollection<T extends Record<string, any>> implements DbCollection<T> {
+export class PostgresDbCollection<T extends Record<string, any>, K extends keyof T | undefined = undefined> implements DbCollection<T> {
   constructor (
     readonly name: string,
-    readonly client: Sql
+    readonly client: Sql,
+    readonly idKey?: K,
+    readonly ns: string = 'global_account'
   ) {}
 
+  getTableName (): string {
+    if (this.ns === '') {
+      return this.name
+    }
+
+    return `${this.ns}.${this.name}`
+  }
+
+  protected toSnakeCase (str: string): string {
+    return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)
+  }
+
+  protected toCamelCase (str: string): string {
+    return str.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase())
+  }
+
+  protected convertKeysToCamelCase (obj: any): any {
+    if (Array.isArray(obj)) {
+      return obj.map(v => this.convertKeysToCamelCase(v))
+    } else if (obj !== null && typeof obj === 'object') {
+      const camelObj: any = {}
+      for (const key of Object.keys(obj)) {
+        camelObj[this.toCamelCase(key)] = this.convertKeysToCamelCase(obj[key])
+      }
+      return camelObj
+    }
+    return obj
+  }
+
+  protected convertKeysToSnakeCase (obj: any): any {
+    if (Array.isArray(obj)) {
+      return obj.map(v => this.convertKeysToSnakeCase(v))
+    } else if (obj !== null && typeof obj === 'object') {
+      const snakeObj: any = {}
+      for (const key of Object.keys(obj)) {
+        snakeObj[this.toSnakeCase(key)] = this.convertKeysToSnakeCase(obj[key])
+      }
+      return snakeObj
+    }
+    return obj
+  }
+
   protected buildSelectClause (): string {
-    return `SELECT * FROM ${this.name}`
+    return `SELECT * FROM ${this.getTableName()}`
   }
 
   protected buildWhereClause (query: Query<T>, lastRefIdx: number = 0): [string, any[]] {
@@ -59,6 +102,7 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
     for (const key of Object.keys(query)) {
       const qKey = query[key]
       const operator = typeof qKey === 'object' ? Object.keys(qKey)[0] : ''
+      const snakeKey = this.toSnakeCase(key)
       switch (operator) {
         case '$in': {
           const inVals = Object.values(qKey as object)[0]
@@ -68,30 +112,30 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
             inVars.push(`$${currIdx}`)
             values.push(val)
           }
-          whereChunks.push(`"${key}" IN (${inVars.join(', ')})`)
+          whereChunks.push(`"${snakeKey}" IN (${inVars.join(', ')})`)
           break
         }
         case '$lt': {
           currIdx++
-          whereChunks.push(`"${key}" < $${currIdx}`)
+          whereChunks.push(`"${snakeKey}" < $${currIdx}`)
           values.push(Object.values(qKey as object)[0])
           break
         }
         case '$lte': {
           currIdx++
-          whereChunks.push(`"${key}" <= $${currIdx}`)
+          whereChunks.push(`"${snakeKey}" <= $${currIdx}`)
           values.push(Object.values(qKey as object)[0])
           break
         }
         case '$gt': {
           currIdx++
-          whereChunks.push(`"${key}" > $${currIdx}`)
+          whereChunks.push(`"${snakeKey}" > $${currIdx}`)
           values.push(Object.values(qKey as object)[0])
           break
         }
         case '$gte': {
           currIdx++
-          whereChunks.push(`"${key}" >= $${currIdx}`)
+          whereChunks.push(`"${snakeKey}" >= $${currIdx}`)
           values.push(Object.values(qKey as object)[0])
           break
         }
@@ -103,7 +147,7 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
         }
         default: {
           currIdx++
-          whereChunks.push(`"${key}" = $${currIdx}`)
+          whereChunks.push(`"${snakeKey}" = $${currIdx}`)
           values.push(qKey)
         }
       }
@@ -116,14 +160,15 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
     const sortChunks: string[] = []
 
     for (const key of Object.keys(sort)) {
-      sortChunks.push(`"${key}" ${sort[key] === 'ascending' ? 'ASC' : 'DESC'}`)
+      const snakeKey = this.toSnakeCase(key)
+      sortChunks.push(`"${snakeKey}" ${sort[key] === 'ascending' ? 'ASC' : 'DESC'}`)
     }
 
     return `ORDER BY ${sortChunks.join(', ')}`
   }
 
   protected convertToObj (row: unknown): T {
-    return row as T
+    return this.convertKeysToCamelCase(row) as T
   }
 
   async find (query: Query<T>, sort?: Sort<T>, limit?: number): Promise<T[]> {
@@ -152,19 +197,20 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
     return (await this.find(query, undefined, 1))[0] ?? null
   }
 
-  async insertOne<K extends keyof T | undefined>(
-    data: Partial<T>,
-    idKey?: K
+  async insertOne (
+    data: Partial<T>
   ): Promise<K extends keyof T ? T[K] : undefined> {
-    const keys: string[] = Object.keys(data)
-    const values = Object.values(data)
+    const snakeData = this.convertKeysToSnakeCase(data)
+    const keys: string[] = Object.keys(snakeData)
+    const values = Object.values(snakeData) as any
 
-    const sql = `INSERT INTO ${this.name} (${keys.map((k) => `"${k}"`).join(', ')}) VALUES (${keys.map((_, idx) => `$${idx + 1}`).join(', ')})`
+    const sql = `INSERT INTO ${this.getTableName()} (${keys.map((k) => `"${k}"`).join(', ')}) VALUES (${keys.map((_, idx) => `$${idx + 1}`).join(', ')}) RETURNING *`
 
     let res: any | undefined
     await this.client.begin(async (client) => {
       res = await client.unsafe(sql, values)
     })
+    const idKey = this.idKey
 
     if (idKey === undefined) {
       return undefined as any
@@ -184,15 +230,17 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
           const inc = ops.$inc as Partial<T>
 
           for (const incKey of Object.keys(inc)) {
+            const snakeKey = this.toSnakeCase(incKey)
             currIdx++
-            updateChunks.push(`"${incKey}" = "${incKey}" + $${currIdx}`)
+            updateChunks.push(`"${snakeKey}" = "${snakeKey}" + $${currIdx}`)
             values.push(inc[incKey])
           }
           break
         }
         default: {
+          const snakeKey = this.toSnakeCase(key)
           currIdx++
-          updateChunks.push(`"${key}" = $${currIdx}`)
+          updateChunks.push(`"${snakeKey}" = $${currIdx}`)
           values.push(ops[key])
         }
       }
@@ -202,7 +250,7 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
   }
 
   async updateOne (query: Query<T>, ops: Operations<T>): Promise<void> {
-    const sqlChunks: string[] = [`UPDATE ${this.name}`]
+    const sqlChunks: string[] = [`UPDATE ${this.getTableName()}`]
     const [updateClause, updateValues] = this.buildUpdateClause(ops)
     const [whereClause, whereValues] = this.buildWhereClause(query, updateValues.length)
 
@@ -218,7 +266,7 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
   }
 
   async deleteMany (query: Query<T>): Promise<void> {
-    const sqlChunks: string[] = [`DELETE FROM ${this.name}`]
+    const sqlChunks: string[] = [`DELETE FROM ${this.getTableName()}`]
     const [whereClause, whereValues] = this.buildWhereClause(query)
 
     if (whereClause !== '') {
@@ -232,252 +280,104 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
   }
 }
 
-export class AccountPostgresDbCollection extends PostgresDbCollection<Account> implements DbCollection<Account> {
+export class AccountPostgresDbCollection extends PostgresDbCollection<Account, 'uuid'> implements DbCollection<Account> {
+  private readonly passwordKeys = ['hash', 'salt']
+
   constructor (readonly client: Sql) {
-    super('account', client)
+    super('account', client, 'uuid')
+  }
+
+  getPasswordsTableName (): string {
+    const ownName = 'account_passwords'
+    if (this.ns === '') {
+      return ownName
+    }
+
+    return `${this.ns}.${ownName}`
   }
 
   protected buildSelectClause (): string {
-    return `SELECT 
-      _id, 
-      email, 
-      hash, 
-      salt, 
-      first, 
-      last, 
-      admin, 
-      confirmed, 
-      "lastWorkspace", 
-      "createdOn", 
-      "lastVisit", 
-      "githubId",
-      "openId",
-      array(
-        SELECT workspace 
-        FROM workspace_assignment t 
-        WHERE t.account = ${this.name}._id
-      ) as workspaces FROM ${this.name}`
+    return `SELECT * FROM (
+      SELECT 
+        a.uuid,
+        a.timezone,
+        a.locale,
+        p.hash,
+        p.salt
+      FROM ${this.getTableName()} as a
+        LEFT JOIN ${this.getPasswordsTableName()} as p ON p.account_uuid = a.uuid
+    )`
   }
 
-  async insertOne<K extends keyof Account | undefined>(
-    data: Partial<Account>,
-    idKey?: K
-  ): Promise<K extends keyof Account ? Account[K] : undefined> {
-    // TODO: remove if not needed in the end
-    // if (data.workspaces !== undefined) {
-    //   if (data.workspaces.length > 0) {
-    //     console.warn('Cannot assign workspaces directly')
-    //   }
-
-    //   delete data.workspaces
-    // }
-
-    return await super.insertOne(data, idKey)
-  }
-}
-
-export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspace> implements WorkspaceDbCollection {
-  constructor (readonly client: Sql) {
-    super('workspace', client)
-  }
-
-  protected buildSelectClause (): string {
-    return `SELECT 
-      _id, 
-      workspace,
-      disabled,
-      json_build_object(
-          'major', "versionMajor", 
-          'minor', "versionMinor", 
-          'patch', "versionPatch"
-        ) version,
-      branding,
-      "workspaceUrl",
-      "workspaceName",
-      "createdOn",
-      "lastVisit",
-      "createdBy",
-      mode,
-      progress,
-      endpoint,
-      region,
-      "lastProcessingTime",
-      attempts,
-      message,
-      "backupInfo",
-      array(
-        SELECT account 
-        FROM workspace_assignment t
-        WHERE t.workspace = ${this.name}._id
-      ) as accounts FROM ${this.name}`
-  }
-
-  objectToDb (data: Partial<Workspace>): any {
-    const dbData: any = {
-      ...data
+  async find (query: Query<Account>): Promise<Account[]> {
+    if (Object.keys(query).some((k) => this.passwordKeys.includes(k))) {
+      throw new Error('Passwords are not allowed in find query conditions')
     }
 
-    // if (data.members !== undefined) {
-    //   if (data.members.length > 0) {
-    //     console.warn('Cannot assign members directly')
-    //   }
+    const result = await super.find(query)
 
-    //   delete dbData.accounts
-    // }
-
-    // TODO: proper support for status
-    // const version = data.version
-    // if (data.version !== undefined) {
-    //   delete dbData.version
-    //   dbData.versionMajor = version?.major ?? 0
-    //   dbData.versionMinor = version?.minor ?? 0
-    //   dbData.versionPatch = version?.patch ?? 0
-    // }
-
-    return dbData
-  }
-
-  async insertOne<K extends keyof Workspace | undefined>(
-    data: Partial<Workspace>,
-    idKey?: K
-  ): Promise<K extends keyof Workspace ? Workspace[K] : undefined> {
-    return await super.insertOne(this.objectToDb(data), idKey)
-  }
-
-  async updateOne (query: Query<Workspace>, ops: Operations<Workspace>): Promise<void> {
-    await super.updateOne(query, this.objectToDb(ops))
-  }
-
-  async getPendingWorkspace (
-    region: string,
-    version: Data<Version>,
-    operation: WorkspaceOperation,
-    processingTimeoutMs: number,
-    wsLivenessMs?: number
-  ): Promise<WorkspaceInfoWithStatus | undefined> {
-    const sqlChunks: string[] = [`SELECT 
-          w.uuid,
-          w.name,
-          w.url,
-          w.branding,
-          w.location,
-          w.region,
-          w.created_by,
-          w.created_on,
-          w.billing_account, 
-          json_build_object(
-            'mode', s.mode,
-            'processing_progress', s.processing_progress,
-            'version_major', s.version_major,
-            'version_minor', s.version_minor,
-            'version_patch', s.version_patch,
-            'last_processing_time', s.last_processing_time,
-            'last_visit', s.last_visit,
-            'is_disabled', s.is_disabled,
-            'processing_attempts', s.processing_attempts,
-            'processing_message', s.processing_message,
-            'backup_info', s.backup_info
-          ) status
-           FROM workspace as w
-           INNER JOIN workspace_status as s ON s.workspace_uuid = w.uuid
-    `]
-    const whereChunks: string[] = []
-    const values: any[] = []
-
-    const pendingCreationSql = "s.mode IN ('pending-creation', 'creating')"
-    const migrationSql =
-      "s.mode IN ('migration-backup', 'migration-pending-backup', 'migration-clean', 'migration-pending-clean')"
-
-    const restoringSql = "s.mode IN ('pending-restore', 'restoring')"
-    const deletingSql = "s.mode IN ('pending-deletion', 'deleting')"
-    const archivingSql = "s.mode IN ('archiving-pending-backup', 'archiving-backup', 'archiving-pending-clean', 'archiving-clean')"
-    const versionSql =
-      '(s.version_major < $1) OR (s.version_major = $1 AND s.version_minor < $2) OR (s.version_major = $1 AND s.version_minor = $2 AND s.version_patch < $3)'
-    const pendingUpgradeSql = `(((s.is_disabled = FALSE OR s.is_disabled IS NULL) AND (s.mode = 'active' OR s.mode IS NULL) AND ${versionSql} ${wsLivenessMs !== undefined ? 'AND s.last_visit > $4' : ''}) OR ((s.is_disabled = FALSE OR s.is_disabled IS NULL) AND s.mode = 'upgrading'))`
-    let operationSql: string = ''
-    switch (operation) {
-      case 'create':
-        operationSql = pendingCreationSql
-        break
-      case 'upgrade':
-        operationSql = pendingUpgradeSql
-        break
-      case 'all':
-        operationSql = `(${pendingCreationSql} OR ${pendingUpgradeSql})`
-        break
-      case 'all+backup':
-        operationSql = `(${pendingCreationSql} OR ${pendingUpgradeSql} OR ${migrationSql} OR ${archivingSql} OR ${restoringSql}) OR ${deletingSql}`
-        break
-    }
-
-    if (operation === 'upgrade' || operation === 'all') {
-      values.push(version.major, version.minor, version.patch)
-
-      if (wsLivenessMs !== undefined) {
-        values.push(Date.now() - wsLivenessMs)
+    for (const r of result) {
+      if (r.hash != null) {
+        r.hash = Buffer.from(Object.values(r.hash))
+      }
+      if (r.salt != null) {
+        r.salt = Buffer.from(Object.values(r.salt))
       }
     }
-    whereChunks.push(operationSql)
 
-    // TODO: support returning pending deletion workspaces when we will actually want
-    // to clear them with the worker.
-    whereChunks.push("s.mode <> 'manual-creation'")
-    whereChunks.push('(s.attempts IS NULL OR s.attempts <= 3)')
-    whereChunks.push(`(s.last_processing_time IS NULL OR s.last_processing_time < $${values.length + 1})`)
-    values.push(Date.now() - processingTimeoutMs)
+    return result
+  }
 
-    if (region !== '') {
-      whereChunks.push(`region = $${values.length + 1}`)
-      values.push(region)
-    } else {
-      whereChunks.push("(w.region IS NULL OR w.region = '')")
+  async insertOne (data: Partial<Account>): Promise<Account['uuid']> {
+    if (Object.keys(data).some((k) => this.passwordKeys.includes(k))) {
+      throw new Error('Passwords are not allowed in insert query')
     }
 
-    sqlChunks.push(`WHERE ${whereChunks.join(' AND ')}`)
-    sqlChunks.push('ORDER BY s.last_visit DESC')
-    sqlChunks.push('LIMIT 1')
-    // Note: SKIP LOCKED is supported starting from Postgres 9.5 and CockroachDB v22.2.1
-    sqlChunks.push('FOR UPDATE SKIP LOCKED')
+    return await super.insertOne(data)
+  }
 
-    // We must have all the conditions in the DB query and we cannot filter anything in the code
-    // because of possible concurrency between account services.
-    let res: any | undefined
-    await this.client.begin(async (client) => {
-      res = await client.unsafe(sqlChunks.join(' '), values)
+  async updateOne (query: Query<Account>, ops: Operations<Account>): Promise<void> {
+    if (Object.keys({ ...ops, ...query }).some((k) => this.passwordKeys.includes(k))) {
+      throw new Error('Passwords are not allowed in update query')
+    }
 
-      if ((res.length ?? 0) > 0) {
-        await client.unsafe(
-          `UPDATE ${this.name} SET attempts = attempts + 1, "lastProcessingTime" = $1 WHERE _id = $2`,
-          [Date.now(), res[0]._id]
-        )
-      }
-    })
+    await super.updateOne(query, ops)
+  }
 
-    return res[0] as WorkspaceInfoWithStatus
+  async deleteMany (query: Query<Account>): Promise<void> {
+    if (Object.keys(query).some((k) => this.passwordKeys.includes(k))) {
+      throw new Error('Passwords are not allowed in delete query')
+    }
+
+    await super.deleteMany(query)
   }
 }
 
 export class PostgresAccountDB implements AccountDB {
   readonly wsMembersName = 'workspace_members'
 
-  person: PostgresDbCollection<Person>
-  account: PostgresDbCollection<Account>
-  socialId: PostgresDbCollection<SocialId>
-  workspace: WorkspacePostgresDbCollection
+  person: PostgresDbCollection<Person, 'uuid'>
+  account: AccountPostgresDbCollection
+  socialId: PostgresDbCollection<SocialId, 'id'>
+  workspace: PostgresDbCollection<Workspace, 'uuid'>
   workspaceStatus: PostgresDbCollection<WorkspaceStatus>
   accountEvent: PostgresDbCollection<AccountEvent>
   otp: PostgresDbCollection<OTP>
   invite: PostgresDbCollection<WorkspaceInvite>
 
-  constructor (readonly client: Sql) {
-    this.person = new PostgresDbCollection<Person>('person', client)
+  constructor (readonly client: Sql, readonly ns: string = 'global_account') {
+    this.person = new PostgresDbCollection<Person, 'uuid'>('person', client, 'uuid')
     this.account = new AccountPostgresDbCollection(client)
-    this.socialId = new PostgresDbCollection<SocialId>('social_id', client)
+    this.socialId = new PostgresDbCollection<SocialId, 'id'>('social_id', client, 'id')
     this.workspaceStatus = new PostgresDbCollection<WorkspaceStatus>('workspace_status', client)
-    this.workspace = new WorkspacePostgresDbCollection(client)
+    this.workspace = new PostgresDbCollection<Workspace, 'uuid'>('workspace', client, 'uuid')
     this.accountEvent = new PostgresDbCollection<AccountEvent>('account_event', client)
     this.otp = new PostgresDbCollection<OTP>('otp', client)
     this.invite = new PostgresDbCollection<WorkspaceInvite>('invite', client)
+  }
+
+  getWsMembersTableName (): string {
+    return `${this.ns}.${this.wsMembersName}`
   }
 
   async init (): Promise<void> {
@@ -518,7 +418,7 @@ export class PostgresAccountDB implements AccountDB {
   async createWorkspace (data: WorkspaceData, status: WorkspaceStatusData): Promise<string> {
     try {
       return await this.client.begin(async (client) => {
-        const workspace = await this.workspace.insertOne(data) as string
+        const workspace = await this.workspace.insertOne(data)
         await this.workspaceStatus.insertOne({ ...status, workspaceUuid: workspace })
 
         return workspace
@@ -531,30 +431,30 @@ export class PostgresAccountDB implements AccountDB {
 
   async assignWorkspace (accountUuid: string, workspaceUuid: string, role: AccountRole): Promise<void> {
     await this.client.begin(async (client) => {
-      await client`INSERT INTO ${client(this.wsMembersName)} (workspace_uuid, account_uuid, role) VALUES (${workspaceUuid}, ${accountUuid}, ${role})`
+      await client`INSERT INTO ${client(this.getWsMembersTableName())} (workspace_uuid, account_uuid, role) VALUES (${workspaceUuid}, ${accountUuid}, ${role})`
     })
   }
 
   async unassignWorkspace (accountUuid: string, workspaceUuid: string): Promise<void> {
     await this.client.begin(async (client) => {
-      await client`DELETE FROM ${client(this.wsMembersName)} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
+      await client`DELETE FROM ${client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
     })
   }
 
   async updateWorkspaceRole (accountUuid: string, workspaceUuid: string, role: AccountRole): Promise<void> {
     await this.client.begin(async (client) => {
-      await client`UPDATE ${this.wsMembersName} SET role = ${role} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
+      await client`UPDATE ${client(this.getWsMembersTableName())} SET role = ${role} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
     })
   }
 
   async getWorkspaceRole (accountUuid: string, workspaceUuid: string): Promise<AccountRole | null> {
-    const res: any = await this.client`SELECT role FROM ${this.wsMembersName} WHERE workspace_uuid = ${workspaceUuid} AND account = ${accountUuid}`
+    const res: any = await this.client`SELECT role FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
 
     return res[0]?.role ?? null
   }
 
   async getWorkspaceMembers (workspaceUuid: string): Promise<WorkspaceMemberInfo[]> {
-    const res: any = await this.client`SELECT role FROM ${this.wsMembersName} WHERE workspace_uuid = ${workspaceUuid}`
+    const res: any = await this.client`SELECT role FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid}`
 
     return res.map((p: any) => ({
       person: p.account_uuid,
@@ -586,10 +486,10 @@ export class PostgresAccountDB implements AccountDB {
             'processing_message', s.processing_message,
             'backup_info', s.backup_info
           ) status 
-           FROM ${this.wsMembersName} as m 
-           INNER JOIN workspace as w
-           INNER JOIN workspace_status as s
-           WHERE m.workspace_uuid = w.uuid AND s.workspace_uuid = w.uuid AND m.account_uuid = $1
+           FROM ${this.getWsMembersTableName()} as m 
+           INNER JOIN ${this.workspace.getTableName()} as w ON m.workspace_uuid = w.uuid
+           INNER JOIN ${this.workspaceStatus.getTableName()} as s ON s.workspace_uuid = w.uuid
+           WHERE m.account_uuid = $1
            ORDER BY s.last_visit DESC
     `
 
@@ -598,14 +498,122 @@ export class PostgresAccountDB implements AccountDB {
     return res
   }
 
+  async getPendingWorkspace (
+    region: string,
+    version: Data<Version>,
+    operation: WorkspaceOperation,
+    processingTimeoutMs: number,
+    wsLivenessMs?: number
+  ): Promise<WorkspaceInfoWithStatus | undefined> {
+    const sqlChunks: string[] = [`SELECT 
+          w.uuid,
+          w.name,
+          w.url,
+          w.branding,
+          w.location,
+          w.region,
+          w.created_by,
+          w.created_on,
+          w.billing_account, 
+          json_build_object(
+            'mode', s.mode,
+            'processing_progress', s.processing_progress,
+            'version_major', s.version_major,
+            'version_minor', s.version_minor,
+            'version_patch', s.version_patch,
+            'last_processing_time', s.last_processing_time,
+            'last_visit', s.last_visit,
+            'is_disabled', s.is_disabled,
+            'processing_attempts', s.processing_attempts,
+            'processing_message', s.processing_message,
+            'backup_info', s.backup_info
+          ) status
+           FROM ${this.workspace.getTableName()} as w
+           INNER JOIN ${this.workspaceStatus.getTableName()} as s ON s.workspace_uuid = w.uuid
+    `]
+    const whereChunks: string[] = []
+    const values: any[] = []
+
+    const pendingCreationSql = "s.mode IN ('pending-creation', 'creating')"
+    const migrationSql =
+      "s.mode IN ('migration-backup', 'migration-pending-backup', 'migration-clean', 'migration-pending-clean')"
+
+    const restoringSql = "s.mode IN ('pending-restore', 'restoring')"
+    const deletingSql = "s.mode IN ('pending-deletion', 'deleting')"
+    const archivingSql = "s.mode IN ('archiving-pending-backup', 'archiving-backup', 'archiving-pending-clean', 'archiving-clean')"
+    const versionSql =
+      '(s.version_major < $1) OR (s.version_major = $1 AND s.version_minor < $2) OR (s.version_major = $1 AND s.version_minor = $2 AND s.version_patch < $3)'
+    const pendingUpgradeSql = `(((s.is_disabled = FALSE OR s.is_disabled IS NULL) AND (s.mode = 'active' OR s.mode IS NULL) AND ${versionSql} ${wsLivenessMs !== undefined ? 'AND s.last_visit > $4' : ''}) OR ((s.is_disabled = FALSE OR s.is_disabled IS NULL) AND s.mode = 'upgrading'))`
+    let operationSql: string = ''
+    switch (operation) {
+      case 'create':
+        operationSql = pendingCreationSql
+        break
+      case 'upgrade':
+        operationSql = pendingUpgradeSql
+        break
+      case 'all':
+        operationSql = `(${pendingCreationSql} OR ${pendingUpgradeSql})`
+        break
+      case 'all+backup':
+        operationSql = `(${pendingCreationSql} OR ${pendingUpgradeSql} OR ${migrationSql} OR ${archivingSql} OR ${restoringSql}) OR ${deletingSql}`
+        break
+    }
+
+    if (operation !== 'create') {
+      values.push(version.major, version.minor, version.patch)
+
+      if (wsLivenessMs !== undefined) {
+        values.push(Date.now() - wsLivenessMs)
+      }
+    }
+    whereChunks.push(operationSql)
+
+    // TODO: support returning pending deletion workspaces when we will actually want
+    // to clear them with the worker.
+    whereChunks.push("s.mode <> 'manual-creation'")
+    whereChunks.push('(s.processing_attempts IS NULL OR s.processing_attempts <= 3)')
+    whereChunks.push(`(s.last_processing_time IS NULL OR s.last_processing_time < $${values.length + 1})`)
+    values.push(Date.now() - processingTimeoutMs)
+
+    if (region !== '') {
+      whereChunks.push(`region = $${values.length + 1}`)
+      values.push(region)
+    } else {
+      whereChunks.push("(w.region IS NULL OR w.region = '')")
+    }
+
+    sqlChunks.push(`WHERE ${whereChunks.join(' AND ')}`)
+    sqlChunks.push('ORDER BY s.last_visit DESC')
+    sqlChunks.push('LIMIT 1')
+    // Note: SKIP LOCKED is supported starting from Postgres 9.5 and CockroachDB v22.2.1
+    sqlChunks.push('FOR UPDATE SKIP LOCKED')
+
+    // We must have all the conditions in the DB query and we cannot filter anything in the code
+    // because of possible concurrency between account services.
+    let res: any | undefined
+    await this.client.begin(async (client) => {
+      res = await client.unsafe(sqlChunks.join(' '), values)
+
+      if ((res.length ?? 0) > 0) {
+        await client.unsafe(
+          `UPDATE ${this.workspaceStatus.getTableName()} SET processing_attempts = processing_attempts + 1, "last_processing_time" = $1 WHERE workspace_uuid = $2`,
+          [Date.now(), res[0].uuid]
+        )
+      }
+    })
+
+    return res[0] as WorkspaceInfoWithStatus
+  }
+
   async setPassword (accountUuid: string, hash: Buffer, salt: Buffer): Promise<void> {
     await this.client.begin(async (client) => {
-      await client`UPSERT INTO account_passwords (account_uuid, hash, salt) VALUES (${accountUuid}, ${hash as unknown as Uint8Array}, ${salt as unknown as Uint8Array})`
+      await client`UPSERT INTO ${client(this.account.getPasswordsTableName())} (account_uuid, hash, salt) VALUES (${accountUuid}, ${hash as unknown as Uint8Array}, ${salt as unknown as Uint8Array})`
     })
   }
 
   async resetPassword (accountUuid: string): Promise<void> {
-    await this.client`DELETE FROM account_passwords WHERE account_uuid = ${accountUuid}`
+    await this.client`DELETE FROM ${this.client(this.account.getPasswordsTableName())} WHERE account_uuid = ${accountUuid}`
   }
 
   protected getMigrations (): [string, string][] {
@@ -665,14 +673,14 @@ export class PostgresAccountDB implements AccountDB {
           id INT8 NOT NULL DEFAULT unique_rowid(),
           type global_account.social_id_type NOT NULL,
           value STRING NOT NULL,
-          key STRING AS (CONCAT(type, ':', value)) STORED,
+          key STRING AS (CONCAT(type::STRING, ':', value)) STORED,
           person_uuid UUID NOT NULL,
           created_on TIMESTAMP NOT NULL DEFAULT current_timestamp(),
           verified_on TIMESTAMP,
           CONSTRAINT social_id_pk PRIMARY KEY (id),
-          CONSTRAINT social_id_type_identifier_idx UNIQUE (type, identifier),
-          CONSTRAINT social_id_account_idx INDEX (person_uuid),
-          CONSTRAINT social_id_person_fk FOREIGN KEY (person_uuid) REFERENCES global_account.person(uuid),
+          CONSTRAINT social_id_type_identifier_idx UNIQUE (type, value),
+          INDEX social_id_account_idx (person_uuid),
+          CONSTRAINT social_id_person_fk FOREIGN KEY (person_uuid) REFERENCES global_account.person(uuid)
       );
 
       /* ======= W O R K S P A C E ======= */
@@ -680,6 +688,7 @@ export class PostgresAccountDB implements AccountDB {
           uuid UUID NOT NULL DEFAULT gen_random_uuid(),
           name STRING NOT NULL,
           url STRING NOT NULL,
+          data_id STRING,
           branding STRING,
           location global_account.location,
           region STRING,
@@ -695,11 +704,11 @@ export class PostgresAccountDB implements AccountDB {
       CREATE TABLE IF NOT EXISTS global_account.workspace_status (
           workspace_uuid UUID NOT NULL,
           mode STRING,
-          processing_progress INT2 DEFAULT 0,,
+          processing_progress INT2 DEFAULT 0,
           version_major INT2 NOT NULL DEFAULT 0,
           version_minor INT2 NOT NULL DEFAULT 0,
           version_patch INT4 NOT NULL DEFAULT 0,
-          last_processing_time TIMESTAMP DEFAULT 0,
+          last_processing_time TIMESTAMP DEFAULT '1970-01-01 00:00:00',
           last_visit TIMESTAMP,
           is_disabled BOOL DEFAULT FALSE,
           processing_attempts INT2 DEFAULT 0,
@@ -728,7 +737,7 @@ export class PostgresAccountDB implements AccountDB {
           code STRING NOT NULL,
           expires_on TIMESTAMP NOT NULL,
           created_on TIMESTAMP NOT NULL DEFAULT current_timestamp(),
-          CONSTRAINT otp_pk PRIMARY KEY (social_id, otp),
+          CONSTRAINT otp_pk PRIMARY KEY (social_id, code),
           CONSTRAINT otp_social_id_fk FOREIGN KEY (social_id) REFERENCES global_account.social_id(id)
       );
 
@@ -741,7 +750,7 @@ export class PostgresAccountDB implements AccountDB {
           remaining_uses INT2,
           role global_account.workspace_role NOT NULL DEFAULT 'USER',
           CONSTRAINT invite_pk PRIMARY KEY (id),
-          CONSTRAINT workspace_invite_idx INDEX (workspace_uuid),
+          INDEX workspace_invite_idx (workspace_uuid),
           CONSTRAINT invite_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES global_account.workspace(uuid)
       );
     `

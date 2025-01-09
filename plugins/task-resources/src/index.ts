@@ -16,7 +16,7 @@
 
 import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
-import { type Employee, type PersonAccount } from '@hcengineering/contact'
+import { type Employee } from '@hcengineering/contact'
 import core, {
   toIdMap,
   getCurrentAccount,

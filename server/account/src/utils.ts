@@ -410,7 +410,7 @@ export async function createAccount (db: AccountDB, personUuid: string, confirme
   // Create Huly social id and account
   // Currently, it's always created along with the account but never confirmed.
   // What's the actual use case for it?
-  await db.socialId.insertOne({ type: SocialIdType.HULY, value: personUuid, personId: personUuid, ...(confirmed ? { verifiedOn: Date.now() } : {}) })
+  await db.socialId.insertOne({ type: SocialIdType.HULY, value: personUuid, personUuid, ...(confirmed ? { verifiedOn: Date.now() } : {}) })
   await db.account.insertOne({ uuid: personUuid })
 }
 
@@ -430,20 +430,20 @@ export async function signUpByEmail (
   let personUuid: string
 
   if (emailSocialId !== null) {
-    const existingAccount = await db.account.findOne({ uuid: emailSocialId.personId })
+    const existingAccount = await db.account.findOne({ uuid: emailSocialId.personUuid })
 
     if (existingAccount !== null) {
       ctx.error('An account with the provided email already exists', { email })
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {}))
     }
 
-    personUuid = emailSocialId.personId
+    personUuid = emailSocialId.personUuid
     // Person exists, but may have different name, need to update with what's been provided
     await db.person.updateOne({ uuid: personUuid }, { firstName, lastName })
   } else {
     // There's no person we can link to this email, so we need to create a new one
     personUuid = await db.person.insertOne({ firstName, lastName })
-    await db.socialId.insertOne({ type: SocialIdType.EMAIL, value: normalizedEmail, personId: personUuid, ...(confirmed ? { verifiedOn: Date.now() } : {}) })
+    await db.socialId.insertOne({ type: SocialIdType.EMAIL, value: normalizedEmail, personUuid, ...(confirmed ? { verifiedOn: Date.now() } : {}) })
   }
 
   await createAccount(db, personUuid, confirmed)
@@ -914,7 +914,7 @@ export async function loginOrSignUpWithProvider (
   // Find if any of the target/email social ids exist
   const targetSocialId = await db.socialId.findOne(socialId)
   const emailSocialId = normalizedEmail !== '' ? await db.socialId.findOne({ type: SocialIdType.EMAIL, value: normalizedEmail }) : undefined
-  let personUuid = targetSocialId?.personId ?? emailSocialId?.personId
+  let personUuid = targetSocialId?.personUuid ?? emailSocialId?.personUuid
 
   if (personUuid == null) {
     if (signUpDisabled) {
@@ -941,7 +941,7 @@ export async function loginOrSignUpWithProvider (
 
   // We should check and reset password if there's an account with password but no social ids have been
   // confirmed yet
-  const confirmedSocialId = await db.socialId.findOne({ personId: personUuid, verifiedOn: { $gt: 0 } })
+  const confirmedSocialId = await db.socialId.findOne({ personUuid, verifiedOn: { $gt: 0 } })
 
   if (confirmedSocialId == null) {
     await db.resetPassword(personUuid)
@@ -949,14 +949,14 @@ export async function loginOrSignUpWithProvider (
 
   // Create and/or confirm missing social ids
   if (targetSocialId == null) {
-    await db.socialId.insertOne({ ...socialId, personId: personUuid, verifiedOn: Date.now() })
+    await db.socialId.insertOne({ ...socialId, personUuid, verifiedOn: Date.now() })
   } else if (targetSocialId.verifiedOn == null) {
     await db.socialId.updateOne({ id: targetSocialId.id }, { verifiedOn: Date.now() })
   }
 
   if (emailSocialId == null) {
     if (normalizedEmail !== '') {
-      await db.socialId.insertOne({ type: SocialIdType.EMAIL, value: normalizedEmail, personId: personUuid, verifiedOn: Date.now() })
+      await db.socialId.insertOne({ type: SocialIdType.EMAIL, value: normalizedEmail, personUuid, verifiedOn: Date.now() })
     }
   } else if (emailSocialId.verifiedOn == null) {
     await db.socialId.updateOne({ id: emailSocialId.id }, { verifiedOn: Date.now() })

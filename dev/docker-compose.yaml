@@ -286,7 +286,7 @@ services:
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
-      - SUPPORT_WORKSPACE=support
+      - SUPPORT_WORKSPACE=09b65664-b3c3-4ea8-b9a1-c9688bde17f0
       - AI_BOT_URL=http://host.docker.internal:4010
     restart: unless-stopped
   transactor_pg:
@@ -481,7 +481,7 @@ services:
       - 'MONGO_OPTIONS={"appName":"analytics","maxPoolSize":1}'
       - SERVICE_ID=analytics-collector-service
       - ACCOUNTS_URL=http://host.docker.internal:3000
-      - SUPPORT_WORKSPACE=support
+      - SUPPORT_WORKSPACE=09b65664-b3c3-4ea8-b9a1-c9688bde17f0
       - STATS_URL=http://host.docker.internal:4900
   aiBot:
     image: hardcoreeng/ai-bot
@@ -494,7 +494,7 @@ services:
       - SERVER_SECRET=secret
       - MONGO_URL=${MONGO_URL}
       - ACCOUNTS_URL=http://host.docker.internal:3000
-      - SUPPORT_WORKSPACE=support
+      - SUPPORT_WORKSPACE=09b65664-b3c3-4ea8-b9a1-c9688bde17f0
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FIRST_NAME=Jolie
       - LAST_NAME=AI
