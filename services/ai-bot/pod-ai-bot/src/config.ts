@@ -36,6 +36,7 @@ interface Config {
   MaxHistoryRecords: number
   Port: number
   LoveEndpoint: string
+  DataLabApiKey: string
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -61,7 +62,8 @@ const config: Config = (() => {
     MaxContentTokens: parseNumber(process.env.MAX_CONTENT_TOKENS) ?? 128 * 100,
     MaxHistoryRecords: parseNumber(process.env.MAX_HISTORY_RECORDS) ?? 500,
     Port: parseNumber(process.env.PORT) ?? 4010,
-    LoveEndpoint: process.env.LOVE_ENDPOINT ?? ''
+    LoveEndpoint: process.env.LOVE_ENDPOINT ?? '',
+    DataLabApiKey: process.env.DATALAB_API_KEY ?? ''
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

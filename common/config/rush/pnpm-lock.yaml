@@ -27298,7 +27298,7 @@ packages:
     dev: false
 
   file:projects/pod-ai-bot.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4)(zod@3.23.8):
-    resolution: {integrity: sha512-zCUFPyseaS/JuRQ5JMtR1n8ybdRgxQzRn2aP528X1x+jOBVEH2L7VjDGBx1jsJGuUKvCJBCoOAQlCHDgfRambQ==, tarball: file:projects/pod-ai-bot.tgz}
+    resolution: {integrity: sha512-OPo+KhRKsPQhO1eqOIgL30ef9s/TAnEf21bAwzxLLcB70AIwMyjfPRzzJHDOIbVjCzA8t4YFQ5MWWoLUveylFg==, tarball: file:projects/pod-ai-bot.tgz}
     id: file:projects/pod-ai-bot.tgz
     name: '@rush-temp/pod-ai-bot'
     version: 0.0.0
@@ -27309,6 +27309,7 @@ packages:
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
       '@types/node-fetch': 2.6.11
+      '@types/uuid': 8.3.4
       '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
@@ -27333,6 +27334,7 @@ packages:
       ts-jest: 29.1.2(esbuild@0.24.2)(jest@29.7.0)(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
       typescript: 5.3.3
+      uuid: 8.3.2
       ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     transitivePeerDependencies:
       - '@aws-sdk/credential-providers'

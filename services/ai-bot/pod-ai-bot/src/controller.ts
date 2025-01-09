@@ -29,22 +29,24 @@ import {
   TranslateRequest,
   TranslateResponse
 } from '@hcengineering/ai-bot'
+import { Markup, MeasureContext, Ref, WorkspaceId } from '@hcengineering/core'
+import { Room } from '@hcengineering/love'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
-import OpenAI from 'openai'
-import { encodingForModel } from 'js-tiktoken'
 import { htmlToMarkup, markupToHTML } from '@hcengineering/text'
-import { Markup, MeasureContext, Ref, WorkspaceId } from '@hcengineering/core'
-import { Room } from '@hcengineering/love'
+import { encodingForModel } from 'js-tiktoken'
+import OpenAI from 'openai'
 
-import { WorkspaceClient } from './workspace/workspaceClient'
+import { StorageAdapter } from '@hcengineering/server-core'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import config from './config'
 import { DbStorage } from './storage'
-import { SupportWsClient } from './workspace/supportWsClient'
 import { AIReplyTransferData } from './types'
 import { tryAssignToWorkspace } from './utils/account'
 import { translateHtml } from './utils/openai'
+import { SupportWsClient } from './workspace/supportWsClient'
+import { WorkspaceClient } from './workspace/workspaceClient'
 
 const CLOSE_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes
 
@@ -54,6 +56,7 @@ export class AIControl {
   private readonly connectingWorkspaces = new Map<string, Promise<void>>()
 
   readonly aiClient?: OpenAI
+  readonly storageAdapter: StorageAdapter
   readonly encoding = encodingForModel(config.OpenAIModel)
 
   supportClient: SupportWsClient | undefined = undefined
@@ -70,6 +73,7 @@ export class AIControl {
         })
         : undefined
     void this.connectSupportWorkspace()
+    this.storageAdapter = buildStorageFromConfig(storageConfigFromEnv())
   }
 
   async getWorkspaceRecord (workspace: string): Promise<WorkspaceInfoRecord> {
@@ -125,10 +129,26 @@ export class AIControl {
     this.ctx.info('Listen workspace: ', { workspace })
 
     if (workspace === config.SupportWorkspace) {
-      return new SupportWsClient(endpoint, token, workspace, this, this.ctx.newChild(workspace, {}), info)
+      return new SupportWsClient(
+        this.storageAdapter,
+        endpoint,
+        token,
+        workspace,
+        this,
+        this.ctx.newChild(workspace, {}),
+        info
+      )
     }
 
-    return new WorkspaceClient(endpoint, token, workspace, this, this.ctx.newChild(workspace, {}), info)
+    return new WorkspaceClient(
+      this.storageAdapter,
+      endpoint,
+      token,
+      workspace,
+      this,
+      this.ctx.newChild(workspace, {}),
+      info
+    )
   }
 
   async initWorkspaceClient (workspace: string): Promise<void> {
