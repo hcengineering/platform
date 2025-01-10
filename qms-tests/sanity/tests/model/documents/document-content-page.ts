@@ -455,8 +455,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   async chooseFilter (category: string): Promise<void> {
     await this.filter.click()
     await this.filterCategory.hover()
-    await this.filterCategory.click()
-    await this.page.getByRole('button', { name: 'Category' }).click()
+    await this.page.getByRole('button', { name: 'Category', exact: true }).click()
     await this.page.getByText(category).click({ force: true })
     await this.page.keyboard.press('Escape')
   }
