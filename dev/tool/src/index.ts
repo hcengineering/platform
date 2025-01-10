@@ -367,24 +367,28 @@ export function devTool (
   // })
 
   program
-    .command('create-workspace <name>')
+    .command('create-workspace <name> <owner_social_id>')
     .description('create workspace')
-    .option('-a, --account <account>', 'Owner account uuid', '1749089e-22e6-48de-af4e-165e18fbd2f9')
     .option('-i, --init <ws>', 'Init from workspace')
     .option('-r, --region <region>', 'Region')
     .option('-b, --branding <key>', 'Branding key')
-    .action(async (name, cmd: { account: string, init?: string, branding?: string, region?: string }) => {
+    .action(async (name, socialString, cmd: { account: string, init?: string, branding?: string, region?: string }) => {
       const { txes, version, migrateOperations } = prepareTools()
       await withAccountDatabase(async (db) => {
         const measureCtx = new MeasureMetricsContext('create-workspace', {})
         const brandingObj =
           cmd.branding !== undefined || cmd.init !== undefined ? { key: cmd.branding, initWorkspace: cmd.init } : null
+        const socialId = await db.socialId.findOne({ key: socialString })
+        if (socialId == null) {
+          throw new Error(`Social id ${socialString} not found`)
+        }
+
         const res = await createWorkspaceRecord(
           measureCtx,
           db,
           brandingObj,
           name,
-          cmd.account,
+          socialId.personUuid,
           cmd.region,
           'manual-creation'
         )

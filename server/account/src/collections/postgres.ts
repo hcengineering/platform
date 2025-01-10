@@ -171,7 +171,7 @@ export class PostgresDbCollection<T extends Record<string, any>, K extends keyof
     return this.convertKeysToCamelCase(row) as T
   }
 
-  async find (query: Query<T>, sort?: Sort<T>, limit?: number): Promise<T[]> {
+  async find (query: Query<T>, sort?: Sort<T>, limit?: number, client?: Sql): Promise<T[]> {
     const sqlChunks: string[] = [this.buildSelectClause()]
     const [whereClause, whereValues] = this.buildWhereClause(query)
 
@@ -188,17 +188,19 @@ export class PostgresDbCollection<T extends Record<string, any>, K extends keyof
     }
 
     const finalSql: string = sqlChunks.join(' ')
-    const result = await this.client.unsafe(finalSql, whereValues)
+    const _client = client ?? this.client
+    const result = await _client.unsafe(finalSql, whereValues)
 
     return result.map((row) => this.convertToObj(row))
   }
 
-  async findOne (query: Query<T>): Promise<T | null> {
-    return (await this.find(query, undefined, 1))[0] ?? null
+  async findOne (query: Query<T>, client?: Sql): Promise<T | null> {
+    return (await this.find(query, undefined, 1, client))[0] ?? null
   }
 
   async insertOne (
-    data: Partial<T>
+    data: Partial<T>,
+    client?: Sql
   ): Promise<K extends keyof T ? T[K] : undefined> {
     const snakeData = this.convertKeysToSnakeCase(data)
     const keys: string[] = Object.keys(snakeData)
@@ -206,10 +208,8 @@ export class PostgresDbCollection<T extends Record<string, any>, K extends keyof
 
     const sql = `INSERT INTO ${this.getTableName()} (${keys.map((k) => `"${k}"`).join(', ')}) VALUES (${keys.map((_, idx) => `$${idx + 1}`).join(', ')}) RETURNING *`
 
-    let res: any | undefined
-    await this.client.begin(async (client) => {
-      res = await client.unsafe(sql, values)
-    })
+    const _client = client ?? this.client
+    const res: any | undefined = await _client.unsafe(sql, values)
     const idKey = this.idKey
 
     if (idKey === undefined) {
@@ -249,7 +249,7 @@ export class PostgresDbCollection<T extends Record<string, any>, K extends keyof
     return [`SET ${updateChunks.join(', ')}`, values]
   }
 
-  async updateOne (query: Query<T>, ops: Operations<T>): Promise<void> {
+  async updateOne (query: Query<T>, ops: Operations<T>, client?: Sql): Promise<void> {
     const sqlChunks: string[] = [`UPDATE ${this.getTableName()}`]
     const [updateClause, updateValues] = this.buildUpdateClause(ops)
     const [whereClause, whereValues] = this.buildWhereClause(query, updateValues.length)
@@ -260,12 +260,11 @@ export class PostgresDbCollection<T extends Record<string, any>, K extends keyof
     }
 
     const finalSql = sqlChunks.join(' ')
-    await this.client.begin(async (client) => {
-      await client.unsafe(finalSql, [...updateValues, ...whereValues])
-    })
+    const _client = client ?? this.client
+    await _client.unsafe(finalSql, [...updateValues, ...whereValues])
   }
 
-  async deleteMany (query: Query<T>): Promise<void> {
+  async deleteMany (query: Query<T>, client?: Sql): Promise<void> {
     const sqlChunks: string[] = [`DELETE FROM ${this.getTableName()}`]
     const [whereClause, whereValues] = this.buildWhereClause(query)
 
@@ -274,9 +273,8 @@ export class PostgresDbCollection<T extends Record<string, any>, K extends keyof
     }
 
     const finalSql = sqlChunks.join(' ')
-    await this.client.begin(async (client) => {
-      await client.unsafe(finalSql, whereValues)
-    })
+    const _client = client ?? this.client
+    await _client.unsafe(finalSql, whereValues)
   }
 }
 
@@ -309,12 +307,12 @@ export class AccountPostgresDbCollection extends PostgresDbCollection<Account, '
     )`
   }
 
-  async find (query: Query<Account>): Promise<Account[]> {
+  async find (query: Query<Account>, sort?: Sort<Account>, limit?: number, client?: Sql): Promise<Account[]> {
     if (Object.keys(query).some((k) => this.passwordKeys.includes(k))) {
       throw new Error('Passwords are not allowed in find query conditions')
     }
 
-    const result = await super.find(query)
+    const result = await super.find(query, sort, limit, client)
 
     for (const r of result) {
       if (r.hash != null) {
@@ -328,28 +326,28 @@ export class AccountPostgresDbCollection extends PostgresDbCollection<Account, '
     return result
   }
 
-  async insertOne (data: Partial<Account>): Promise<Account['uuid']> {
+  async insertOne (data: Partial<Account>, client?: Sql): Promise<Account['uuid']> {
     if (Object.keys(data).some((k) => this.passwordKeys.includes(k))) {
       throw new Error('Passwords are not allowed in insert query')
     }
 
-    return await super.insertOne(data)
+    return await super.insertOne(data, client)
   }
 
-  async updateOne (query: Query<Account>, ops: Operations<Account>): Promise<void> {
+  async updateOne (query: Query<Account>, ops: Operations<Account>, client?: Sql): Promise<void> {
     if (Object.keys({ ...ops, ...query }).some((k) => this.passwordKeys.includes(k))) {
       throw new Error('Passwords are not allowed in update query')
     }
 
-    await super.updateOne(query, ops)
+    await super.updateOne(query, ops, client)
   }
 
-  async deleteMany (query: Query<Account>): Promise<void> {
+  async deleteMany (query: Query<Account>, client?: Sql): Promise<void> {
     if (Object.keys(query).some((k) => this.passwordKeys.includes(k))) {
       throw new Error('Passwords are not allowed in delete query')
     }
 
-    await super.deleteMany(query)
+    await super.deleteMany(query, client)
   }
 }
 
@@ -416,35 +414,24 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   async createWorkspace (data: WorkspaceData, status: WorkspaceStatusData): Promise<string> {
-    try {
-      return await this.client.begin(async (client) => {
-        const workspace = await this.workspace.insertOne(data)
-        await this.workspaceStatus.insertOne({ ...status, workspaceUuid: workspace })
+    return await this.client.begin(async (client) => {
+      const workspaceUuid = await this.workspace.insertOne(data, client)
+      await this.workspaceStatus.insertOne({ ...status, workspaceUuid }, client)
 
-        return workspace
-      })
-    } catch (err: any) {
-      await this.client.unsafe('ROLLBACK')
-      throw err
-    }
+      return workspaceUuid
+    })
   }
 
   async assignWorkspace (accountUuid: string, workspaceUuid: string, role: AccountRole): Promise<void> {
-    await this.client.begin(async (client) => {
-      await client`INSERT INTO ${client(this.getWsMembersTableName())} (workspace_uuid, account_uuid, role) VALUES (${workspaceUuid}, ${accountUuid}, ${role})`
-    })
+    await this.client`INSERT INTO ${this.client(this.getWsMembersTableName())} (workspace_uuid, account_uuid, role) VALUES (${workspaceUuid}, ${accountUuid}, ${role})`
   }
 
   async unassignWorkspace (accountUuid: string, workspaceUuid: string): Promise<void> {
-    await this.client.begin(async (client) => {
-      await client`DELETE FROM ${client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
-    })
+    await this.client`DELETE FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
   }
 
   async updateWorkspaceRole (accountUuid: string, workspaceUuid: string, role: AccountRole): Promise<void> {
-    await this.client.begin(async (client) => {
-      await client`UPDATE ${client(this.getWsMembersTableName())} SET role = ${role} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
-    })
+    await this.client`UPDATE ${this.client(this.getWsMembersTableName())} SET role = ${role} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
   }
 
   async getWorkspaceRole (accountUuid: string, workspaceUuid: string): Promise<AccountRole | null> {
@@ -607,9 +594,7 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   async setPassword (accountUuid: string, hash: Buffer, salt: Buffer): Promise<void> {
-    await this.client.begin(async (client) => {
-      await client`UPSERT INTO ${client(this.account.getPasswordsTableName())} (account_uuid, hash, salt) VALUES (${accountUuid}, ${hash as unknown as Uint8Array}, ${salt as unknown as Uint8Array})`
-    })
+    await this.client`UPSERT INTO ${this.client(this.account.getPasswordsTableName())} (account_uuid, hash, salt) VALUES (${accountUuid}, ${hash as unknown as Uint8Array}, ${salt as unknown as Uint8Array})`
   }
 
   async resetPassword (accountUuid: string): Promise<void> {
