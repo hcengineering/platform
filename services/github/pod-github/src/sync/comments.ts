@@ -355,6 +355,10 @@ export class CommentSyncManager implements DocSyncManager {
     }
   }
 
+  isHulyLinkComment (message: string): boolean {
+    return message.includes('<p>Connected to') && message.includes('Huly&reg;')
+  }
+
   private async createComment (
     info: DocSyncInfo,
     messageData: MessageData,
@@ -366,6 +370,11 @@ export class CommentSyncManager implements DocSyncManager {
     const value: AttachedData<ChatMessage> = {
       ...messageData,
       attachments: 0
+    }
+    // Check if it is Connected message.
+    if ((comment as any).performed_via_github_app !== undefined && this.isHulyLinkComment(comment.body)) {
+      // No need to create comment on platform.
+      return
     }
     await this.client.addCollection(
       chunter.class.ChatMessage,
