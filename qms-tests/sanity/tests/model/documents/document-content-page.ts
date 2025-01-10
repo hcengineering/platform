@@ -6,6 +6,7 @@ import { DocumentHistoryPage } from './document-history-page'
 
 export class DocumentContentPage extends DocumentCommonPage {
   readonly page: Page
+  readonly panel: Locator
   readonly buttonDocumentTitle: Locator
   readonly buttonMoreActions: Locator
   readonly textDocumentStatus: Locator
@@ -103,6 +104,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   constructor (page: Page) {
     super(page)
     this.page = page
+    this.panel = page.locator('.popupPanel-body')
     this.buttonDocumentTitle = page.locator('button.version-item span.name')
     this.buttonMoreActions = page.locator('.hulyHeader-buttonsGroup > .no-print > .antiButton').first()
     this.textDocumentStatus = page.locator('button.version-item div.root span.label')
@@ -260,16 +262,16 @@ export class DocumentContentPage extends DocumentCommonPage {
   }
 
   async checkIfReviewersAndApproversAreVisible (): Promise<void> {
-    await expect(this.page.getByText('Appleseed John').first()).toBeVisible()
-    await expect(this.page.getByText('Dirak Kainin')).toBeVisible()
-    await expect(this.page.getByText('Appleseed John').nth(1)).toBeVisible()
+    await expect(this.panel.getByText('Appleseed John').first()).toBeVisible()
+    await expect(this.panel.getByText('Dirak Kainin')).toBeVisible()
+    await expect(this.panel.getByText('Appleseed John').nth(1)).toBeVisible()
   }
 
   async checkTheUserCantChangeReviewersAndApprovers (): Promise<void> {
-    await this.page.getByText('Appleseed John').first().click()
-    await expect(this.page.getByText('Dirak Kainin').nth(1)).not.toBeVisible()
-    await this.page.getByText('Dirak Kainin').click()
-    await expect(this.page.getByText('Dirak Kainin').nth(1)).not.toBeVisible()
+    await this.panel.getByText('Appleseed John').first().click()
+    await expect(this.panel.getByText('Dirak Kainin').nth(1)).not.toBeVisible()
+    await this.panel.getByText('Dirak Kainin').click()
+    await expect(this.panel.getByText('Dirak Kainin').nth(1)).not.toBeVisible()
   }
 
   async clickDocumentHeader (name: string): Promise<void> {
