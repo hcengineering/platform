@@ -64,7 +64,6 @@ const palette = {
 }
 
 export async function openBackgroundColorOptions (editor: Editor, event: MouseEvent): Promise<void> {
-  console.log(palette)
   await new Promise<void>((resolve) => {
     showPopup(ColorPicker, { palette: palette.background }, getEventPositionElement(event), (val) => {
       const color: string | undefined = val?.color
