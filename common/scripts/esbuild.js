@@ -13,7 +13,7 @@ const defaultConfig = {
   keepNames: false,
   sourcemap: false,
   logLevel: 'error',
-  external: [],
+  external: ['snappy'],
   define: {},
 };
 

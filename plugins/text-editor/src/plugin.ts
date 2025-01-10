@@ -93,8 +93,6 @@ export default plugin(textEditorId, {
     CategoryColumn: '' as IntlString,
     CategoryCell: '' as IntlString,
     Table: '' as IntlString,
-    TableOptions: '' as IntlString,
-    SelectTable: '' as IntlString,
     Width: '' as IntlString,
     Height: '' as IntlString,
     Unset: '' as IntlString,
@@ -102,7 +100,12 @@ export default plugin(textEditorId, {
     SeparatorLine: '' as IntlString,
     TodoList: '' as IntlString,
     DrawingBoard: '' as IntlString,
-    MermaidDiargram: '' as IntlString
+    MermaidDiargram: '' as IntlString,
+
+    TableOptions: '' as IntlString,
+    SelectTable: '' as IntlString,
+    SetCellHighlightColor: '' as IntlString,
+    SetTextColor: '' as IntlString
   },
   icon: {
     Header1: '' as Asset,
@@ -130,6 +133,8 @@ export default plugin(textEditorId, {
     Comment: '' as Asset,
     SelectTable: '' as Asset,
     MergeCells: '' as Asset,
-    SplitCells: '' as Asset
+    SplitCells: '' as Asset,
+    Brush: '' as Asset,
+    TextStyle: '' as Asset
   }
 })

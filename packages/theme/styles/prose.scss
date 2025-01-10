@@ -38,7 +38,7 @@ table.proseTable {
   th {
     min-width: 1rem;
     height: 2rem;
-    border: 1px solid var(--button-border-hover);
+    border: 1px solid var(--text-editor-table-border-color);
     padding: .25rem .5rem;
     vertical-align: top;
     box-sizing: border-box;
@@ -387,6 +387,12 @@ table.proseTable {
       height: 100%;
       transform: rotate(90deg);
     }
+  }
+}
+
+.table-node-selected {
+  .proseTable {
+    background-color: var(--text-editor-selected-node-background);
   }
 }
 

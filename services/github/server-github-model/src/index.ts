@@ -16,6 +16,10 @@ export function createModel (builder: Builder): void {
     trigger: serverGithub.trigger.OnProjectChanges,
     isAsync: true
   })
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverGithub.trigger.OnGithubBroadcast,
+    isAsync: false
+  })
 
   // We should skip activity github mixin stuff.
   builder.createDoc(time.class.TodoAutomationHelper, core.space.Model, {

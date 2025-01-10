@@ -13,17 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { AccountRole, Ref, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { MultipleDraftController, getClient } from '@hcengineering/presentation'
+  import { TrackerEvents } from '@hcengineering/tracker'
   import { ButtonWithDropdown, IconAdd, IconDropdown, SelectPopupValueType, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { Project, TrackerEvents } from '@hcengineering/tracker'
-  import { Analytics } from '@hcengineering/analytics'
 
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'
   import CreateIssue from './CreateIssue.svelte'
-  import { importTasks } from '..'
 
   export let currentSpace: Ref<Space> | undefined
 
@@ -70,7 +69,6 @@
   const client = getClient()
 
   let keys: string[] | undefined = undefined
-  let inputFile: HTMLInputElement
   async function dropdownItemSelected (res?: SelectPopupValueType['id']): Promise<void> {
     if (res == null) return
 
@@ -79,39 +77,15 @@
       showPopup(tracker.component.CreateProject, {}, 'top', () => {
         closed = true
       })
-    } else if (res === tracker.string.Import) {
-      inputFile.click()
     } else {
       await newIssue()
     }
   }
 
-  async function fileSelected (): Promise<void> {
-    const list = inputFile.files
-    if (list === null || list.length === 0) return
-    for (let index = 0; index < list.length; index++) {
-      const file = list.item(index)
-      if (file !== null && currentSpace != null) {
-        await importTasks(file, currentSpace as Ref<Project>)
-      }
-    }
-    inputFile.value = ''
-  }
-  client.findOne(view.class.Action, { _id: tracker.action.NewIssue }).then((p) => (keys = p?.keyBinding))
+  void client.findOne(view.class.Action, { _id: tracker.action.NewIssue }).then((p) => (keys = p?.keyBinding))
 </script>
 
 <div class="antiNav-subheader">
-  <input
-    bind:this={inputFile}
-    disabled={inputFile == null}
-    multiple
-    type="file"
-    name="file"
-    id="tasksInput"
-    accept="application/json"
-    style="display: none"
-    on:change={fileSelected}
-  />
   <ButtonWithDropdown
     icon={IconAdd}
     justify={'left'}

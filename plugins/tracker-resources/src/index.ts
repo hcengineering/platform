@@ -14,9 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import core, {
-  AccountRole,
   type AttachedDoc,
   type Attribute,
   type Class,
@@ -76,6 +74,7 @@ import StatusEditor from './components/issues/StatusEditor.svelte'
 import StatusFilterValuePresenter from './components/issues/StatusFilterValuePresenter.svelte'
 import StatusPresenter from './components/issues/StatusPresenter.svelte'
 import TitlePresenter from './components/issues/TitlePresenter.svelte'
+import LabelsView from './components/LabelsView.svelte'
 import EditMilestone from './components/milestones/EditMilestone.svelte'
 import MilestoneDatePresenter from './components/milestones/MilestoneDatePresenter.svelte'
 import MyIssues from './components/myissues/MyIssues.svelte'
@@ -88,7 +87,6 @@ import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
 import SettingsRelatedTargets from './components/SettingsRelatedTargets.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
-import LabelsView from './components/LabelsView.svelte'
 import {
   getIssueIdByIdentifier,
   getIssueTitle,
@@ -162,11 +160,7 @@ import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.s
 
 import { get } from 'svelte/store'
 
-import contact, { AvatarType } from '@hcengineering/contact'
-import { personAccountByIdStore, personAccountPersonByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-import notification, { type Collaborators } from '@hcengineering/notification'
 import { settingId } from '@hcengineering/setting'
-import task, { type TaskType } from '@hcengineering/task'
 import { getAllStates } from '@hcengineering/task-resources'
 import EstimationValueEditor from './components/issues/timereport/EstimationValueEditor.svelte'
 import TimePresenter from './components/issues/timereport/TimePresenter.svelte'
@@ -404,167 +398,6 @@ async function deleteMilestone (milestones: Milestone | Milestone[]): Promise<vo
   }
 }
 
-type ImportIssue = Issue & { activity: ChatMessage[] }
-
-export async function importTasks (tasks: File, space: Ref<Project>): Promise<void> {
-  const reader = new FileReader()
-  reader.readAsText(tasks)
-
-  const personAccountById = get(personAccountByIdStore)
-  const personAccountList = Array.from(personAccountById.values())
-  const personAccountPersonById = get(personAccountPersonByIdStore)
-  const personList = Array.from(get(personByIdStore).values())
-
-  const client = getClient()
-  const statuses = await client.findAll(tracker.class.IssueStatus, {})
-  reader.onload = async () => {
-    let tasksArray: ImportIssue[] = Array.from(JSON.parse(reader.result as string))
-    const personToImport = Array.from(
-      new Set(tasksArray.flatMap((t) => [t.createdBy, t.modifiedBy, ...t.activity.flatMap((act) => act.modifiedBy)]))
-    ).filter((x) => x !== undefined) as string[]
-    const peopleToAdd = personToImport.filter((p) => personList.find((x) => x.name === p) === undefined)
-    if (peopleToAdd.length > 0) {
-      console.log('Next people will be created to import properly', peopleToAdd)
-      for (const personToCreate of peopleToAdd) {
-        const personId = await client.createDoc(contact.class.Person, contact.space.Contacts, {
-          name: personToCreate,
-          avatarType: AvatarType.COLOR,
-          city: '',
-          comments: 0,
-          channels: 0,
-          attachments: 0
-        })
-        await client.createDoc(contact.class.PersonAccount, core.space.Model, {
-          email: `imported:${personId}`,
-          person: personId,
-          role: AccountRole.User
-        })
-      }
-    }
-    const idsParent: Array<{ id: Ref<Issue>, identifier: string }> = []
-
-    while (tasksArray.length > 0) {
-      let taskParsing: ImportIssue | undefined = tasksArray.find((t: ImportIssue) => t?.parents?.length === 0)
-      if (taskParsing === undefined) {
-        taskParsing = tasksArray.find((t: Issue) =>
-          t?.parents?.every((p) => idsParent.findIndex((par) => par.id === p.parentId) !== -1)
-        )
-      }
-      if (taskParsing != null) {
-        tasksArray = tasksArray.filter((t) => t._id !== taskParsing?._id)
-        const proj = await client.findOne(tracker.class.Project, { _id: space })
-        const modifiedByPerson = personList.find((p) => p.name === taskParsing?.modifiedBy)?._id
-        const assignee =
-          taskParsing.assignee !== null ? personList.find((p) => p.name === taskParsing?.assignee)?._id ?? null : null
-        if (modifiedByPerson === undefined) throw new Error('Person not found')
-        const modifiedBy = personAccountList.find((pA) => pA.person === modifiedByPerson)?._id
-        if (modifiedBy === undefined) throw new Error('modifiedBy account not found')
-
-        const collaborators = (taskParsing as any)['notification:mixin:Collaborators']?.collaborators
-        const collaboratorsToImport =
-          collaborators !== undefined
-            ? collaborators
-              .map((name: string) => {
-                const person = personList.find((p) => p.name === name)?._id
-                if (person === undefined) return undefined
-                const account = personAccountPersonById.get(person)
-                return account?._id
-              })
-              .filter((c: any) => c !== undefined)
-            : undefined
-
-        const incResult = await client.updateDoc(
-          tracker.class.Project,
-          core.space.Space,
-          space,
-          {
-            $inc: { sequence: 1 }
-          },
-          true
-        )
-        const number = (incResult as any).object.sequence
-        const identifier = `${proj?.identifier}-${number}`
-        idsParent.push({ id: taskParsing._id, identifier })
-        const taskKind = proj?.type !== undefined ? { parent: proj.type } : {}
-        const kind = (await client.findOne(task.class.TaskType, taskKind)) as TaskType
-        const status = statuses.find((s) => s.name === taskParsing?.status)?._id
-        if (status === undefined) throw new Error('status not found')
-        const taskToCreate = {
-          title: taskParsing.title,
-          description: taskParsing.description,
-          component: taskParsing.component,
-          milestone: taskParsing.milestone,
-          number,
-          status,
-          priority: taskParsing.priority,
-          rank: taskParsing.rank,
-          comments: 0,
-          subIssues: 0,
-          dueDate: taskParsing.dueDate,
-          parents: taskParsing.parents.map((p) => ({
-            ...p,
-            space,
-            identifier: idsParent.find((par) => par.id === p.parentId)?.identifier ?? p.identifier
-          })),
-          reportedTime: 0,
-          remainingTime: 0,
-          estimation: taskParsing.estimation,
-          reports: 0,
-          childInfo: taskParsing.childInfo,
-          identifier,
-          modifiedBy,
-          assignee,
-          kind: kind._id
-        }
-        await client.addCollection(
-          tracker.class.Issue,
-          space,
-          taskParsing?.attachedTo ?? tracker.ids.NoParent,
-          taskParsing._class,
-          'subIssues',
-          taskToCreate,
-          taskParsing._id
-        )
-
-        if (collaboratorsToImport !== undefined) {
-          await client.createMixin<Doc, Collaborators>(
-            taskParsing._id,
-            taskParsing._class,
-            space,
-            notification.mixin.Collaborators,
-            {
-              collaborators: collaboratorsToImport
-            }
-          )
-        }
-
-        // Push activity
-        if (taskParsing.activity !== undefined) {
-          const act = taskParsing.activity.sort((a, b) => a.modifiedOn - b.modifiedOn)
-          for (const activityMessage of act) {
-            const modifiedByPerson = personList.find((p) => p.name === activityMessage.modifiedBy)?._id
-            const modifiedBy = personAccountList.find((pA) => pA.person === modifiedByPerson)?._id
-            if (modifiedBy === undefined) throw new Error('modifiedBy account not found')
-            await client.addCollection(
-              chunter.class.ChatMessage,
-              space,
-              taskParsing._id,
-              tracker.class.Issue,
-              'comments',
-              {
-                message: activityMessage.message
-              },
-              activityMessage._id,
-              activityMessage.modifiedOn,
-              modifiedBy
-            )
-          }
-        }
-      }
-    }
-  }
-}
-
 function filterComponents (doc: Component, target: Component): boolean {
   return doc.label.toLowerCase().trim() === target.label.toLowerCase().trim() && doc._id !== target._id
 }
@@ -702,8 +535,7 @@ export default async (): Promise<Resources> => ({
     EditProject: editProject,
     DeleteMilestone: deleteMilestone,
     DeleteProject: deleteProject,
-    DeleteIssue: deleteIssue,
-    ImportIssues: importTasks
+    DeleteIssue: deleteIssue
   },
   resolver: {
     Location: resolveLocation

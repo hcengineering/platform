@@ -19,7 +19,7 @@ export async function createPlatformClient (
   workspace: string,
   timeout: number,
   reconnect?: (event: ClientConnectEvent, data: any) => Promise<void>
-): Promise<Client> {
+): Promise<{ client: Client, endpoint: string }> {
   setMetadata(client.metadata.ClientSocketFactory, (url) => {
     return new WebSocket(url, {
       headers: {
@@ -45,5 +45,5 @@ export async function createPlatformClient (
     onConnect: reconnect
   })
 
-  return connection
+  return { client: connection, endpoint }
 }

@@ -50,6 +50,7 @@ export interface HelloResponse extends Response<any> {
   lastTx?: string
   lastHash?: string // Last model hash
   account: Account
+  useCompression?: boolean
 }
 
 function replacer (key: string, value: any): any {

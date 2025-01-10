@@ -29,6 +29,7 @@ import serverPlugin, { decodeToken, type Token } from '@hcengineering/server-tok
 import { DurableObject } from 'cloudflare:workers'
 import { promisify } from 'util'
 import { gzip } from 'zlib'
+import { compress } from 'snappyjs'
 
 // Approach usefull only for separate build, after model-all bundle phase is executed.
 import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
@@ -111,7 +112,8 @@ export class Transactor extends DurableObject<Env> {
           reconnectTimeout: 3000
         },
         undefined,
-        this.accountsUrl
+        this.accountsUrl,
+        env.ENABLE_COMPRESSION === 'true'
       )
     })
   }
@@ -269,13 +271,18 @@ export class Transactor extends DurableObject<Env> {
         return rpcHandler.readRequest(buffer, binary)
       },
       data: () => data,
-      send: (ctx: MeasureContext, msg, binary, compression) => {
-        const smsg = rpcHandler.serialize(msg, binary)
+      send: (ctx: MeasureContext, msg, binary, _compression) => {
+        let smsg = rpcHandler.serialize(msg, binary)
 
         ctx.measure('send-data', smsg.length)
         if (ws.readyState !== WebSocket.OPEN || cs.isClosed) {
           return
         }
+
+        if (_compression) {
+          smsg = compress(smsg)
+        }
+
         ws.send(smsg)
       },
       sendPong: () => {

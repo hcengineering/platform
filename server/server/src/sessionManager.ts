@@ -117,7 +117,8 @@ class TSessionManager implements SessionManager {
       stop: () => Promise<string | undefined>
     }
     | undefined,
-    readonly accountsUrl: string
+    readonly accountsUrl: string,
+    readonly enableCompression: boolean
   ) {
     this.checkInterval = setInterval(() => {
       this.handleTick()
@@ -1082,7 +1083,7 @@ class TSessionManager implements SessionManager {
   ): Promise<void> {
     const hello = request as HelloRequest
     service.binaryMode = hello.binary ?? false
-    service.useCompression = hello.compression ?? false
+    service.useCompression = this.enableCompression ? hello.compression ?? false : false
 
     if (LOGGING_ENABLED) {
       ctx.info('hello happen', {
@@ -1109,7 +1110,8 @@ class TSessionManager implements SessionManager {
       serverVersion: this.serverVersion,
       lastTx: pipeline.context.lastTx,
       lastHash: pipeline.context.lastHash,
-      account: service.getRawAccount(pipeline)
+      account: service.getRawAccount(pipeline),
+      useCompression: service.useCompression
     }
     ws.send(requestCtx, helloResponse, false, false)
   }
@@ -1126,9 +1128,18 @@ export function createSessionManager (
     stop: () => Promise<string | undefined>
   }
   | undefined,
-  accountsUrl: string
+  accountsUrl: string,
+  enableCompression: boolean
 ): SessionManager {
-  return new TSessionManager(ctx, sessionFactory, timeouts, brandingMap ?? null, profiling, accountsUrl)
+  return new TSessionManager(
+    ctx,
+    sessionFactory,
+    timeouts,
+    brandingMap ?? null,
+    profiling,
+    accountsUrl,
+    enableCompression
+  )
 }
 
 /**
@@ -1160,7 +1171,8 @@ export function startSessionManager (
       reconnectTimeout: 500
     },
     opt.profiling,
-    opt.accountsUrl
+    opt.accountsUrl,
+    opt.enableCompression ?? false
   )
   return {
     shutdown: opt.serverFactory(
@@ -1171,7 +1183,6 @@ export function startSessionManager (
       ctx,
       opt.pipelineFactory,
       opt.port,
-      opt.enableCompression ?? false,
       opt.accountsUrl,
       opt.externalStorage
     ),

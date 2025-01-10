@@ -15,7 +15,7 @@
 import { type Class, type Doc, type Ref, type Space } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { getBlobRef, getClient } from '@hcengineering/presentation'
-import { CodeExtension, codeOptions } from '@hcengineering/text'
+import { BackgroundColor, CodeExtension, codeOptions, TextColor, TextStyle } from '@hcengineering/text'
 import textEditor, { type ActionContext, type ExtensionCreator, type TextEditorMode } from '@hcengineering/text-editor'
 import { type AnyExtension, type Editor, Extension } from '@tiptap/core'
 import { type Level } from '@tiptap/extension-heading'
@@ -199,6 +199,12 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
 
               if (mode === 'compact') {
                 staticKitExtensions.push([400, ParagraphExtension.configure()])
+              }
+
+              if (mode === 'full') {
+                staticKitExtensions.push([410, TextStyle.configure({})])
+                staticKitExtensions.push([420, TextColor.configure({})])
+                staticKitExtensions.push([430, BackgroundColor.configure({ types: ['tableCell'] })])
               }
 
               staticKitExtensions.push([

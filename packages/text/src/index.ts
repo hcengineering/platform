@@ -22,6 +22,7 @@ export * from './markup/utils'
 export * from './nodes'
 // export * from './ydoc'
 export * from './marks/code'
+export * from './marks/colors'
 export * from './marks/noteBase'
 export * from './markdown'
 export * from './markdown/serializer'
@@ -31,3 +32,5 @@ export * from './markdown/node'
 
 export * from './kits/default-kit'
 export * from './kits/server-kit'
+
+export { TextStyle, type TextStyleOptions } from '@tiptap/extension-text-style'

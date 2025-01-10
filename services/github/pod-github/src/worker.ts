@@ -35,7 +35,8 @@ import core, {
   reduceCalls,
   toIdMap,
   type Blob,
-  type MigrationState
+  type MigrationState,
+  type TimeRateLimiter
 } from '@hcengineering/core'
 import github, {
   DocSyncInfo,
@@ -336,6 +337,7 @@ export class GithubWorker implements IntegrationManager {
 
   private constructor (
     readonly ctx: MeasureContext,
+    readonly limiter: TimeRateLimiter,
     readonly platform: PlatformWorker,
     readonly installations: Map<number, InstallationRecord>,
     readonly client: Client,
@@ -1152,23 +1154,26 @@ export class GithubWorker implements IntegrationManager {
     const _projects = toIdMap(projects)
     const _repositories = repositories.map((it) => it._id)
 
-    const docs = await this.ctx.with(
-      'find-doc-sync-info',
-      {},
-      (ctx) =>
-        this._client.findAll<DocSyncInfo>(
-          github.class.DocSyncInfo,
-          {
-            needSync: { $ne: githubSyncVersion },
-            externalVersion: { $in: [githubExternalSyncVersion, '#'] },
-            space: { $in: Array.from(_projects.keys()) },
-            repository: { $in: [null, ..._repositories] }
-          },
-          {
-            limit: 50
-          }
-        ),
-      { _projects, _repositories }
+    const docs = await this.limiter.exec(
+      async () =>
+        await this.ctx.with(
+          'find-doc-sync-info',
+          {},
+          (ctx) =>
+            this._client.findAll<DocSyncInfo>(
+              github.class.DocSyncInfo,
+              {
+                needSync: { $ne: githubSyncVersion },
+                externalVersion: { $in: [githubExternalSyncVersion, '#'] },
+                space: { $in: Array.from(_projects.keys()) },
+                repository: { $in: [null, ..._repositories] }
+              },
+              {
+                limit: 50
+              }
+            ),
+          { _projects, _repositories }
+        )
     )
 
     //
@@ -1289,98 +1294,100 @@ export class GithubWorker implements IntegrationManager {
     })
 
     for (const info of orderedSyncInfo) {
-      try {
-        const existing = externalDocs.find((it) => it._id === info._id)
-        const mapper = this.mappers.find((it) => it._class.includes(info.objectClass))?.mapper
-        if (mapper === undefined) {
-          this.ctx.info('No mapper for class', { objectClass: info.objectClass, workspace: this.workspace.name })
-          await derivedClient.update<DocSyncInfo>(info, {
-            needSync: githubSyncVersion
-          })
-          continue
-        }
-        const repo = await this.getRepositoryById(info.repository)
-        if (repo !== undefined && !repo.enabled) {
-          continue
-        }
-
-        let parent =
-          info.parent !== undefined
-            ? parents.find((it) => it.url.toLowerCase() === info.parent?.toLowerCase())
-            : undefined
-        if (
-          parent === undefined &&
-          existing !== undefined &&
-          this.client.getHierarchy().isDerived(existing._class, core.class.AttachedDoc)
-        ) {
-          // Find with attached parent
-          parent = attachedParents.find((it) => it._id === (existing as AttachedDoc).attachedTo)
-        }
-
-        if (existing !== undefined && existing.space !== info.space) {
-          // document is moved to non github project, so for github it like delete.
-          const targetProject = await this.client.findOne(github.mixin.GithubProject, {
-            _id: existing.space as Ref<GithubProject>
-          })
-          if (await mapper.handleDelete(existing, info, derivedClient, false, parent)) {
-            const h = this._client.getHierarchy()
-            await derivedClient.remove(info)
-            if (h.hasMixin(existing, github.mixin.GithubIssue)) {
-              const mixinData = this._client.getHierarchy().as(existing, github.mixin.GithubIssue)
-              await this._client.update<GithubIssue>(
-                mixinData,
-                {
-                  url: '',
-                  githubNumber: 0,
-                  repository: '' as Ref<GithubIntegrationRepository>
-                },
-                false,
-                Date.now(),
-                existing.modifiedBy
-              )
-            }
-            continue
-          }
-          if (targetProject !== undefined) {
-            // We need to sync into new project.
+      await this.limiter.exec(async () => {
+        try {
+          const existing = externalDocs.find((it) => it._id === info._id)
+          const mapper = this.mappers.find((it) => it._class.includes(info.objectClass))?.mapper
+          if (mapper === undefined) {
+            this.ctx.info('No mapper for class', { objectClass: info.objectClass, workspace: this.workspace.name })
             await derivedClient.update<DocSyncInfo>(info, {
-              external: null,
-              current: null,
-              url: '',
-              needSync: '',
-              externalVersion: '',
-              githubNumber: 0,
-              repository: null
+              needSync: githubSyncVersion
             })
+            return
           }
-        }
-
-        if (info.deleted === true) {
-          if (await mapper.handleDelete(existing, info, derivedClient, true)) {
-            await derivedClient.remove(info)
+          const repo = await this.getRepositoryById(info.repository)
+          if (repo !== undefined && !repo.enabled) {
+            return
           }
-          continue
-        }
 
-        const docUpdate = await this.ctx.withLog(
-          'sync doc',
-          {},
-          (ctx) => mapper.sync(existing, info, parent, derivedClient),
-          { url: info.url.toLowerCase(), workspace: this.workspace.name }
-        )
-        if (docUpdate !== undefined) {
-          await derivedClient.update(info, docUpdate)
+          let parent =
+            info.parent !== undefined
+              ? parents.find((it) => it.url.toLowerCase() === info.parent?.toLowerCase())
+              : undefined
+          if (
+            parent === undefined &&
+            existing !== undefined &&
+            this.client.getHierarchy().isDerived(existing._class, core.class.AttachedDoc)
+          ) {
+            // Find with attached parent
+            parent = attachedParents.find((it) => it._id === (existing as AttachedDoc).attachedTo)
+          }
+
+          if (existing !== undefined && existing.space !== info.space) {
+            // document is moved to non github project, so for github it like delete.
+            const targetProject = await this.client.findOne(github.mixin.GithubProject, {
+              _id: existing.space as Ref<GithubProject>
+            })
+            if (await mapper.handleDelete(existing, info, derivedClient, false, parent)) {
+              const h = this._client.getHierarchy()
+              await derivedClient.remove(info)
+              if (h.hasMixin(existing, github.mixin.GithubIssue)) {
+                const mixinData = this._client.getHierarchy().as(existing, github.mixin.GithubIssue)
+                await this._client.update<GithubIssue>(
+                  mixinData,
+                  {
+                    url: '',
+                    githubNumber: 0,
+                    repository: '' as Ref<GithubIntegrationRepository>
+                  },
+                  false,
+                  Date.now(),
+                  existing.modifiedBy
+                )
+              }
+              return
+            }
+            if (targetProject !== undefined) {
+              // We need to sync into new project.
+              await derivedClient.update<DocSyncInfo>(info, {
+                external: null,
+                current: null,
+                url: '',
+                needSync: '',
+                externalVersion: '',
+                githubNumber: 0,
+                repository: null
+              })
+            }
+          }
+
+          if (info.deleted === true) {
+            if (await mapper.handleDelete(existing, info, derivedClient, true)) {
+              await derivedClient.remove(info)
+            }
+            return
+          }
+
+          const docUpdate = await this.ctx.withLog(
+            'sync doc',
+            {},
+            (ctx) => mapper.sync(existing, info, parent, derivedClient),
+            { url: info.url.toLowerCase(), workspace: this.workspace.name }
+          )
+          if (docUpdate !== undefined) {
+            await derivedClient.update(info, docUpdate)
+          }
+        } catch (err: any) {
+          Analytics.handleError(err)
+          this.ctx.error('failed to sync doc', { _id: info._id, objectClass: info.objectClass, error: err })
+          // Mark to stop processing of document, before restart.
+          await derivedClient.update<DocSyncInfo>(info, {
+            error: errorToObj(err),
+            needSync: githubSyncVersion,
+            externalVersion: githubExternalSyncVersion
+          })
         }
-      } catch (err: any) {
-        Analytics.handleError(err)
-        this.ctx.error('failed to sync doc', { _id: info._id, objectClass: info.objectClass, error: err })
-        // Mark to stop processing of document, before restart.
-        await derivedClient.update<DocSyncInfo>(info, {
-          error: errorToObj(err),
-          needSync: githubSyncVersion,
-          externalVersion: githubExternalSyncVersion
-        })
-      }
+      })
     }
   }
 
@@ -1564,15 +1571,17 @@ export class GithubWorker implements IntegrationManager {
   ): Promise<GithubWorker | undefined> {
     ctx.info('Connecting to', { workspace: workspace.workspaceUrl, workspaceId: workspace.workspaceName })
     let client: Client | undefined
+    let endpoint: string | undefined
     try {
-      client = await createPlatformClient(workspace.name, 30000, async (event: ClientConnectEvent) => {
+      ;({ client, endpoint } = await createPlatformClient(workspace.name, 30000, async (event: ClientConnectEvent) => {
         reconnect(workspace.name, event)
-      })
+      }))
 
       await GithubWorker.checkIntegrations(client, installations)
 
       const worker = new GithubWorker(
         ctx,
+        platformWorker.getRateLimiter(endpoint ?? ''),
         platformWorker,
         installations,
         client,

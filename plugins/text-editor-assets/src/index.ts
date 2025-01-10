@@ -43,5 +43,7 @@ loadMetadata(textEditor.icon, {
   Comment: `${icons}#comment`,
   SelectTable: `${icons}#move`,
   MergeCells: `${icons}#union`,
-  SplitCells: `${icons}#divide`
+  SplitCells: `${icons}#divide`,
+  Brush: `${icons}#brush`,
+  TextStyle: `${icons}#textStyle`
 })

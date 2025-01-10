@@ -17,7 +17,7 @@ import { findParentNode } from '@tiptap/core'
 import { type Selection, type Transaction } from '@tiptap/pm/state'
 import { CellSelection, type Rect, TableMap, addColumn, addRow } from '@tiptap/pm/tables'
 
-import { type TableNodeLocation } from './types'
+import { TableSelection, type TableNodeLocation } from './types'
 
 export function insertColumn (table: TableNodeLocation, index: number, tr: Transaction): Transaction {
   const map = TableMap.get(table.node)
@@ -71,7 +71,7 @@ export function selectTable (table: TableNodeLocation, tr: Transaction): Transac
   const $head = tr.doc.resolve(table.start + map[0])
   const $anchor = tr.doc.resolve(table.start + map[map.length - 1])
 
-  return tr.setSelection(new CellSelection($anchor, $head))
+  return tr.setSelection(new TableSelection($anchor, $head))
 }
 
 export const isColumnSelected = (columnIndex: number, selection: Selection): boolean => {
