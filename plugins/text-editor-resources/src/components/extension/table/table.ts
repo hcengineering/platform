@@ -29,23 +29,66 @@ import AddRowBefore from '../../icons/table/AddRowBefore.svelte'
 import DeleteCol from '../../icons/table/DeleteCol.svelte'
 import DeleteRow from '../../icons/table/DeleteRow.svelte'
 import DeleteTable from '../../icons/table/DeleteTable.svelte'
+import { Plugin } from '@tiptap/pm/state'
+import { TableSelection } from './types'
+import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
 export const Table = TiptapTable.extend({
   draggable: true,
 
   addKeyboardShortcuts () {
     return {
-      'Mod-Backspace': () => handleDelete(this.editor),
-      'Mod-Delete': () => handleDelete(this.editor)
+      Backspace: () => handleDelete(this.editor),
+      Delete: () => handleDelete(this.editor),
+      'Mod-Backspace': () => handleModDelete(this.editor),
+      'Mod-Delete': () => handleModDelete(this.editor)
     }
   },
   addNodeView () {
     return SvelteNodeViewRenderer(TableNodeView, {})
+  },
+  addProseMirrorPlugins () {
+    return [...(this.parent?.() ?? []), tableSelectionHighlight()]
   }
 })
 
 function handleDelete (editor: Editor): boolean {
-  const { selection } = editor.state
+  const { selection } = editor.state.tr
+  if (selection instanceof TableSelection && isTableSelected(selection)) {
+    return editor.commands.deleteTable()
+  }
+  return false
+}
+
+export const tableSelectionHighlight = (): Plugin<DecorationSet> => {
+  return new Plugin<DecorationSet>({
+    props: {
+      decorations (state) {
+        return this.getState(state)
+      }
+    },
+    state: {
+      init: () => {
+        return DecorationSet.empty
+      },
+      apply (tr, value, oldState, newState) {
+        const selection = newState.selection
+        if (!(selection instanceof TableSelection)) return DecorationSet.empty
+
+        const table = findTable(newState.selection)
+        if (table === undefined) return DecorationSet.empty
+
+        const decorations: Decoration[] = [
+          Decoration.node(table.pos, table.pos + table.node.nodeSize, { class: 'table-node-selected' })
+        ]
+        return DecorationSet.create(newState.doc, decorations)
+      }
+    }
+  })
+}
+
+function handleModDelete (editor: Editor): boolean {
+  const { selection } = editor.state.tr
   if (selection instanceof CellSelection) {
     if (isTableSelected(selection)) {
       return editor.commands.deleteTable()

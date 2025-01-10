@@ -390,6 +390,12 @@ table.proseTable {
   }
 }
 
+.table-node-selected {
+  .proseTable {
+    background-color: var(--text-editor-selected-node-background);
+  }
+}
+
 .proseBlockQuote {
   margin-inline: 1px 0;
   padding-left: 1.5em;
