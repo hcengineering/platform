@@ -1,4 +1,4 @@
-import { Account, MarkupBlobRef, Ref } from '@hcengineering/core'
+import { MarkupBlobRef, PersonId, Ref } from '@hcengineering/core'
 import document, { Document, getFirstRank, Teamspace } from '@hcengineering/document'
 import { makeRank } from '@hcengineering/rank'
 import { parseMessageMarkdown } from '@hcengineering/text'
@@ -38,11 +38,11 @@ async function pdfToMarkdown (
 ): Promise<string | undefined> {
   if (config.DataLabApiKey !== '') {
     try {
-      const stat = await workspaceClient.storage.stat(workspaceClient.ctx, { name: workspaceClient.workspace }, fileId)
+      const stat = await workspaceClient.storage.stat(workspaceClient.ctx, workspaceClient.workspace, fileId)
       if (stat?.contentType !== 'application/pdf') {
         return
       }
-      const file = await workspaceClient.storage.get(workspaceClient.ctx, { name: workspaceClient.workspace }, fileId)
+      const file = await workspaceClient.storage.get(workspaceClient.ctx, workspaceClient.workspace, fileId)
       const buffer = await stream2buffer(file)
 
       const url = 'https://www.datalab.to/api/v1/marker'
@@ -83,7 +83,7 @@ async function pdfToMarkdown (
 
 async function saveFile (
   workspaceClient: WorkspaceClient,
-  user: string | undefined,
+  user: PersonId | undefined,
   args: { fileId: string, folder: string | undefined, parent: string | undefined, name: string }
 ): Promise<string> {
   console.log('Save file', args)
@@ -97,7 +97,7 @@ async function saveFile (
   const fileId = uuid()
   await workspaceClient.storage.put(
     workspaceClient.ctx,
-    { name: workspaceClient.workspace },
+    workspaceClient.workspace,
     fileId,
     converted,
     'application/json'
@@ -136,13 +136,14 @@ function getTeamspace (
 
 async function getFoldersForDocuments (
   workspaceClient: WorkspaceClient,
-  user: string | undefined,
+  user: PersonId | undefined,
   args: Record<string, any>
 ): Promise<string> {
   const client = await workspaceClient.opClient
+  // TODO: need a set of user PersonIds here
   const spaces = await client.findAll(
     document.class.Teamspace,
-    user !== undefined ? { members: user as Ref<Account>, archived: false } : { archived: false }
+    user !== undefined ? { members: user, archived: false } : { archived: false }
   )
   let res = 'Folders:\n'
   for (const space of spaces) {
@@ -167,7 +168,7 @@ type PredefinedToolFunction<T extends object | string> = Omit<
 T extends string ? RunnableFunctionWithoutParse : RunnableFunctionWithParse<any>,
 'function'
 >
-type ToolFunc = (workspaceClient: WorkspaceClient, user: string | undefined, args: any) => Promise<string> | string
+type ToolFunc = (workspaceClient: WorkspaceClient, user: PersonId | undefined, args: any) => Promise<string> | string
 
 const tools: [PredefinedTool<any>, ToolFunc][] = []
 
@@ -227,7 +228,7 @@ registerTool<object>(
   saveFile
 )
 
-export function getTools (workspaceClient: WorkspaceClient, user: string | undefined): RunnableTools<BaseFunctionsArgs> {
+export function getTools (workspaceClient: WorkspaceClient, user: PersonId | undefined): RunnableTools<BaseFunctionsArgs> {
   const result: (RunnableToolFunctionWithoutParse | RunnableToolFunctionWithParse<any>)[] = []
   for (const tool of tools) {
     const res: RunnableToolFunctionWithoutParse | RunnableToolFunctionWithParse<any> = {

@@ -545,11 +545,11 @@ export interface Session {
   // Client methods
   ping: (ctx: ClientSessionCtx) => Promise<void>
   getUser: () => string
+  getUserSocialIds: () => PersonId[]
 
   loadModel: (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string) => Promise<void>
-  getAccount: (ctx: ClientSessionCtx) => Promise<void>
 
-  getRawAccount: (pipeline: Pipeline) => Account
+  getRawAccount: () => Account
   findAll: <T extends Doc>(
     ctx: ClientSessionCtx,
     _class: Ref<Class<T>>,
@@ -557,8 +557,7 @@ export interface Session {
     options?: FindOptions<T>
   ) => Promise<void>
   findAllRaw: <T extends Doc>(
-    ctx: MeasureContext,
-    pipeline: Pipeline,
+    ctx: ClientSessionCtx,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>

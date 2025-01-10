@@ -540,10 +540,9 @@ export class Transactor extends DurableObject<Env> {
     const cs = this.createDummyClientSocket()
     try {
       const session = await this.makeRpcSession(rawToken, cs)
-      const pipeline =
-        session.workspace.pipeline instanceof Promise ? await session.workspace.pipeline : session.workspace.pipeline
-      throw new Error('Not implemented')
-      return session.getRawAccount(pipeline)
+      // const pipeline =
+      //   session.workspace.pipeline instanceof Promise ? await session.workspace.pipeline : session.workspace.pipeline
+      return session.getRawAccount()
     } catch (error: any) {
       return { error: `${error}` }
     } finally {

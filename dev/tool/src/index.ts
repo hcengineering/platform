@@ -1443,19 +1443,19 @@ export function devTool (
   //     })
   //   })
 
-  program
-    .command('confirm-email <email>')
-    .description('confirm user email')
-    .action(async (email: string, cmd) => {
-      await withAccountDatabase(async (db) => {
-        const account = await getAccount(db, email)
-        if (account?.confirmed === true) {
-          console.log(`Already confirmed:${email}`)
-        } else {
-          await confirmEmail(db, email)
-        }
-      })
-    })
+  // program
+  //   .command('confirm-email <email>')
+  //   .description('confirm user email')
+  //   .action(async (email: string, cmd) => {
+  //     await withAccountDatabase(async (db) => {
+  //       const account = await getAccount(db, email)
+  //       if (account?.confirmed === true) {
+  //         console.log(`Already confirmed:${email}`)
+  //       } else {
+  //         await confirmEmail(db, email)
+  //       }
+  //     })
+  //   })
 
   // program
   // .command('diff-workspace <workspace>')
