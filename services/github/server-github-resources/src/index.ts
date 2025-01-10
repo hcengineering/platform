@@ -27,7 +27,25 @@ import tracker from '@hcengineering/tracker'
 /**
  * @public
  */
+export async function OnGithubBroadcast (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  // Enhance broadcast to send DocSyncInfo change only to system account.
+  control.ctx.contextData.broadcast.targets.github = (it) => {
+    if (TxProcessor.isExtendsCUD(it._class)) {
+      if ((it as TxCUD<Doc>).objectClass === github.class.DocSyncInfo) {
+        return [systemAccountEmail]
+      }
+    }
+  }
+  return []
+}
+
+/**
+ * @public
+ */
 export async function OnProjectChanges (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  // Enhance broadcast to send DocSyncInfo change only to system account.
+  await OnGithubBroadcast(txes, control)
+
   const result: Tx[] = []
   const cache = new Map<string, any>()
 
@@ -83,7 +101,8 @@ export async function OnProjectChanges (txes: Tx[], control: TriggerControl): Pr
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    OnProjectChanges
+    OnProjectChanges,
+    OnGithubBroadcast
   },
   functions: {
     TodoDoneTester
@@ -206,14 +225,6 @@ function updateSyncDoc (
       data
     )
   )
-
-  control.ctx.contextData.broadcast.targets.github = (it) => {
-    if (control.hierarchy.isDerived(it._class, core.class.TxCUD)) {
-      if ((it as TxCUD<Doc>).objectClass === github.class.DocSyncInfo) {
-        return [systemAccountEmail]
-      }
-    }
-  }
 }
 
 function createSyncDoc (
@@ -249,11 +260,4 @@ function createSyncDoc (
       cud.objectId as Ref<DocSyncInfo>
     )
   )
-  control.ctx.contextData.broadcast.targets.github = (it) => {
-    if (control.hierarchy.isDerived(it._class, core.class.TxCUD)) {
-      if ((it as TxCUD<Doc>).objectClass === github.class.DocSyncInfo) {
-        return [systemAccountEmail]
-      }
-    }
-  }
 }

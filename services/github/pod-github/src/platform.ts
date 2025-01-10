@@ -15,6 +15,7 @@ import core, {
   RateLimiter,
   Ref,
   systemAccountEmail,
+  TimeRateLimiter,
   TxOperations
 } from '@hcengineering/core'
 import github, { GithubAuthentication, makeQuery, type GithubIntegration } from '@hcengineering/github'
@@ -73,6 +74,8 @@ export class PlatformWorker {
 
   userManager!: UserManager
 
+  rateLimits = new Map<string, TimeRateLimiter>()
+
   private constructor (
     readonly ctx: MeasureContext,
     readonly app: App,
@@ -81,6 +84,15 @@ export class PlatformWorker {
   ) {
     setMetadata(serverToken.metadata.Secret, config.ServerSecret)
     registerLoaders()
+  }
+
+  getRateLimiter (endpoint: string): TimeRateLimiter {
+    let limiter = this.rateLimits.get(endpoint)
+    if (limiter === undefined) {
+      limiter = new TimeRateLimiter(config.RateLimit)
+      this.rateLimits.set(endpoint, limiter)
+    }
+    return limiter
   }
 
   public async initStorage (): Promise<void> {
@@ -230,7 +242,7 @@ export class PlatformWorker {
         } else {
           let client: Client | undefined
           try {
-            client = await createPlatformClient(oldWorkspace, 30000)
+            ;({ client } = await createPlatformClient(oldWorkspace, 30000))
             await this.removeInstallationFromWorkspace(oldWorker, installationId)
             await client.close()
           } catch (err: any) {
@@ -386,7 +398,7 @@ export class PlatformWorker {
         platformClient = this.clients.get(payload.workspace)?.client
         if (platformClient === undefined) {
           shouldClose = true
-          platformClient = await createPlatformClient(payload.workspace, 30000)
+          ;({ client: platformClient } = await createPlatformClient(payload.workspace, 30000))
         }
         const client = new TxOperations(platformClient, payload.accountId)
 

@@ -29,6 +29,9 @@ interface Config {
   BrandingPath: string
 
   WorkspaceInactivityInterval: number // Interval in days to stop workspace synchronization if not visited
+
+  // Limits
+  RateLimit: number
 }
 
 const envMap: { [key in keyof Config]: string } = {
@@ -55,7 +58,11 @@ const envMap: { [key in keyof Config]: string } = {
   SentryDSN: 'SENTRY_DSN',
   BrandingPath: 'BRANDING_PATH',
 
-  WorkspaceInactivityInterval: 'WORKSPACE_INACTIVITY_INTERVAL'
+  WorkspaceInactivityInterval: 'WORKSPACE_INACTIVITY_INTERVAL',
+
+  // Limits
+
+  RateLimit: 'RATE_LIMIT' // Operations per second for one transactor
 }
 
 const required: Array<keyof Config> = [
@@ -101,7 +108,8 @@ const config: Config = (() => {
 
     SentryDSN: process.env[envMap.SentryDSN],
     BrandingPath: process.env[envMap.BrandingPath] ?? '',
-    WorkspaceInactivityInterval: parseInt(process.env[envMap.WorkspaceInactivityInterval] ?? '5') // In days
+    WorkspaceInactivityInterval: parseInt(process.env[envMap.WorkspaceInactivityInterval] ?? '5'), // In days
+    RateLimit: parseInt(process.env[envMap.RateLimit] ?? '25')
   }
 
   const missingEnv = required.filter((key) => params[key] === undefined).map((key) => envMap[key])
