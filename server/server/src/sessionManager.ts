@@ -35,7 +35,8 @@ import core, {
   type WorkspaceInfoWithStatus,
   Account,
   pickPrimarySocialId,
-  buildSocialIdString
+  buildSocialIdString,
+  type PersonId
 } from '@hcengineering/core'
 import { getClient as getAccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { unknownError, type Status } from '@hcengineering/platform'
@@ -747,12 +748,12 @@ class TSessionManager implements SessionManager {
       const clientCtx: ClientSessionCtx = {
         requestId: undefined,
         pipeline,
-        sendResponse: async (msg) => {
+        sendResponse: async () => {
           // No response
         },
         ctx,
         socialStringsToUsers: this.getActiveSocialStringsToUsersMap(workspaceId),
-        sendError: async (msg, error: Status) => {
+        sendError: async () => {
           // Assume no error send
         },
         sendPong: () => {}
@@ -924,7 +925,7 @@ class TSessionManager implements SessionManager {
     wsid: string
   ): Promise<void> {
     const wsUID = workspace.id
-    const logParams = { wsid, workspace, wsName: workspace.workspaceName }
+    const logParams = { wsid, workspace: workspace.id, wsName: workspace.workspaceName }
     if (workspace.sessions.size === 0) {
       if (LOGGING_ENABLED) {
         this.ctx.warn('no sessions for workspace', logParams)

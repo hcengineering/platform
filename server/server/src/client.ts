@@ -90,6 +90,10 @@ export class ClientSession implements Session {
     return this.account.socialIds
   }
 
+  getRawAccount (): Account {
+    return this.account
+  }
+
   isUpgradeClient (): boolean {
     return this.token.extra?.model === 'upgrade'
   }
@@ -118,7 +122,7 @@ export class ClientSession implements Session {
       {
         uuid: this.workspace.workspaceUuid,
         url: this.workspace.workspaceUrl,
-        dataId?: this.workspace.workspaceDataId
+        dataId: this.workspace.workspaceDataId
       },
       this.workspace.branding,
       false,

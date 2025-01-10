@@ -302,7 +302,7 @@ export async function restoreControlledDocContentForDoc (
 export async function restoreMarkupRefsMongo (
   ctx: MeasureContext,
   db: Db,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   hierarchy: Hierarchy,
   storageAdapter: StorageAdapter
 ): Promise<void> {
