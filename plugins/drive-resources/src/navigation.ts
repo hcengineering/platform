@@ -158,7 +158,7 @@ export async function generateDriveLocation (loc: Location, id: Ref<Drive>): Pro
 
   return {
     loc: {
-      path: [appComponent, workspace, driveId],
+      path: [appComponent, workspace, driveId, id],
       fragment: getPanelFragment(doc)
     },
     defaultLocation: {
