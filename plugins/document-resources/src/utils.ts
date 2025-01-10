@@ -122,11 +122,11 @@ export async function generateLocation (loc: Location, id: Ref<Document>): Promi
 
   return {
     loc: {
-      path: [appComponent, workspace, documentId, doc.space],
+      path: [appComponent, workspace],
       fragment: getPanelURI(document.component.EditDoc, doc._id, doc._class, 'content')
     },
     defaultLocation: {
-      path: [appComponent, workspace, documentId],
+      path: [appComponent, workspace],
       fragment: getPanelURI(document.component.EditDoc, doc._id, doc._class, 'content')
     }
   }
