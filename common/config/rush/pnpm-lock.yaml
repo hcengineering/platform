@@ -158,9 +158,6 @@ dependencies:
   '@rush-temp/cloud-branding':
     specifier: file:./projects/cloud-branding.tgz
     version: file:projects/cloud-branding.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.24.2)(ts-node@10.9.2)(utf-8-validate@6.0.4)
-  '@rush-temp/cloud-datalake':
-    specifier: file:./projects/cloud-datalake.tgz
-    version: file:projects/cloud-datalake.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.24.2)(ts-node@10.9.2)(utf-8-validate@6.0.4)
   '@rush-temp/cloud-transactor':
     specifier: file:./projects/cloud-transactor.tgz
     version: file:projects/cloud-transactor.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(ts-node@10.9.2)(utf-8-validate@6.0.4)
@@ -1442,9 +1439,6 @@ dependencies:
   aws-sdk:
     specifier: ^2.1423.0
     version: 2.1664.0
-  aws4fetch:
-    specifier: ^1.0.20
-    version: 1.0.20
   base64-js:
     specifier: ^1.5.1
     version: 1.5.1
@@ -8650,10 +8644,6 @@ packages:
       util: 0.12.5
       uuid: 8.0.0
       xml2js: 0.6.2
-    dev: false
-
-  /aws4fetch@1.0.20:
-    resolution: {integrity: sha512-/djoAN709iY65ETD6LKCtyyEI04XIBP5xVvfmNxsEP0uJB5tyaGBztSryRr4HqMStr9R06PisQE7m9zDTXKu6g==}
     dev: false
 
   /axobject-query@4.0.0:
@@ -23000,43 +22990,6 @@ packages:
       - utf-8-validate
     dev: false
 
-  file:projects/cloud-datalake.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.24.2)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-pOjup2gTfDH4Qq9r4LTeVnf+nDQvlTSUOxLtT+bKnrHM0jQQ705v6wYtmkpWD7CtEwwCvS9CH+iPZwB5ZNpzqQ==, tarball: file:projects/cloud-datalake.tgz}
-    id: file:projects/cloud-datalake.tgz
-    name: '@rush-temp/cloud-datalake'
-    version: 0.0.0
-    dependencies:
-      '@cloudflare/workers-types': 4.20241022.0
-      '@types/jest': 29.5.12
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.6.2)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
-      aws4fetch: 1.0.20
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.6.2)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      itty-router: 5.0.18
-      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      postgres: 3.4.5
-      prettier: 3.2.5
-      ts-jest: 29.1.2(esbuild@0.24.2)(jest@29.7.0)(typescript@5.6.2)
-      typescript: 5.6.2
-      wrangler: 3.97.0(@cloudflare/workers-types@4.20241022.0)(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - '@types/node'
-      - babel-jest
-      - babel-plugin-macros
-      - bufferutil
-      - esbuild
-      - node-notifier
-      - supports-color
-      - ts-node
-      - utf-8-validate
-    dev: false
-
   file:projects/cloud-transactor.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(ts-node@10.9.2)(utf-8-validate@6.0.4):
     resolution: {integrity: sha512-6kBv/3KfTsOvsDrfVXQvQwtLM72ltx4oPHc3cJ9xtG82XLeQLLpeJmCy6CNDVOtXaqnagwF5TKm/zCw4sc/dFQ==, tarball: file:projects/cloud-transactor.tgz}
     id: file:projects/cloud-transactor.tgz
@@ -27298,7 +27251,7 @@ packages:
     dev: false
 
   file:projects/pod-ai-bot.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4)(zod@3.23.8):
-    resolution: {integrity: sha512-OPo+KhRKsPQhO1eqOIgL30ef9s/TAnEf21bAwzxLLcB70AIwMyjfPRzzJHDOIbVjCzA8t4YFQ5MWWoLUveylFg==, tarball: file:projects/pod-ai-bot.tgz}
+    resolution: {integrity: sha512-R2ByQWsnvxxBGk/Ql7z8CK8NRb4XXREC0rndthdpfqw1dhwofuHiHpU2sb7L+OTHiz0do16L5gOLb7R1CbMecw==, tarball: file:projects/pod-ai-bot.tgz}
     id: file:projects/pod-ai-bot.tgz
     name: '@rush-temp/pod-ai-bot'
     version: 0.0.0
@@ -27773,7 +27726,7 @@ packages:
     dev: false
 
   file:projects/pod-love.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-Ibi2id+aFeeH3lGo2z5GW3Wg3ZWha/5VTWYxXxC0IQr/ivvk+LFlWShEuCyG8XYvIoy6OVAmafgpfOKeUrQjsg==, tarball: file:projects/pod-love.tgz}
+    resolution: {integrity: sha512-G70rzmJHk/en1EdQHEs2HEK9/D2IY0i/iF0WZtU2FWLtSzlJb5UC0hrpVfxD/aWcnfmmqcLQu+b2siYrnUFSmQ==, tarball: file:projects/pod-love.tgz}
     id: file:projects/pod-love.tgz
     name: '@rush-temp/pod-love'
     version: 0.0.0
