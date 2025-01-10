@@ -87,9 +87,12 @@
       return rawName !== undefined ? formatName(rawName) : ''
     }
 
-    const authorSignDate = reviewRequest !== undefined
-      ? reviewRequest.createdOn
-      : (approvalRequest !== undefined ? approvalRequest.createdOn : $controlledDocument.createdOn)
+    const authorSignDate =
+      reviewRequest !== undefined
+        ? reviewRequest.createdOn
+        : approvalRequest !== undefined
+          ? approvalRequest.createdOn
+          : $controlledDocument.createdOn
 
     signers = [
       {

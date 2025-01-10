@@ -29,7 +29,7 @@ export const $canSendForApproval = combine(
   (document, isLatestVersion, state, comments, training, reviewHistory) => {
     let haveBeenReviewedOnce = false
     if (document !== null) {
-      const reviews = (reviewHistory ?? []).filter(review => review.attachedTo === document._id)
+      const reviews = (reviewHistory ?? []).filter((review) => review.attachedTo === document._id)
       if (reviews.length > 0) haveBeenReviewedOnce = true
     }
     return (
