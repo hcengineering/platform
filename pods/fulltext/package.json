@@ -15,7 +15,7 @@
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
     "get-model": "node ../../common/scripts/esbuild.js --entry=src/get-model.ts --keep-names=true --bundle=true --define=MODEL_VERSION --define=VERSION --define=GIT_REVISION  && node ./bundle/bundle.js > ./bundle/model.json",
-    "bundle": "rushx get-model && node ../../common/scripts/esbuild.js --keep-names=true --bundle=true --external=*.node --sourcemap=external",
+    "bundle": "rushx get-model && node ../../common/scripts/esbuild.js --keep-names=true --bundle=true --external=*.node --external=snappy --sourcemap=external",
     "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/fulltext",
     "docker:tbuild": "docker build -t hardcoreeng/fulltext . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/fulltext",
     "docker:abuild": "docker build -t hardcoreeng/fulltext . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/fulltext",

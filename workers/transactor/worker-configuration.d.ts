@@ -12,4 +12,6 @@ interface Env {
   DB_URL: string | undefined
 
   STATS_URL: string | undefined
+
+  ENABLE_COMPRESSION: string | undefined
 }
