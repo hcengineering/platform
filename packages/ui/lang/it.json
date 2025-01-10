@@ -54,6 +54,7 @@
     "French": "Français",
     "Italian": "Italiano",
     "Czech": "Čeština",
+    "German": "Deutsch",
     "MinutesBefore": "{minutes, plural, =1 {un minuto prima} other {# minuti prima}}",
     "HoursBefore": "{hours, plural, =1 {un'ora prima} other {# ore prima}}",
     "DaysBefore": "{days, plural, =1 {un giorno prima} other {# giorni prima}}",
