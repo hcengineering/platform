@@ -346,7 +346,7 @@ export async function configurePlatform() {
   setMetadata(sign.metadata.SignURL, config.SIGN_URL)
   setMetadata(presence.metadata.PresenceUrl, config.PRESENCE_URL ?? '')
 
-  const languages = myBranding.languages ? (myBranding.languages as string).split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it']
+  const languages = myBranding.languages ? (myBranding.languages as string).split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it', 'de']
 
   setMetadata(uiPlugin.metadata.Languages, languages)
 
