@@ -1,0 +1,25 @@
+{
+  "status": {
+    "CategoryRequired": "Kategorie erforderlich",
+    "NameRequired": "Name erforderlich"
+  },
+  "string": {
+    "Categories": "Kategorien",
+    "Category": "Kategorie",
+    "CategoryCreateLabel": "Kategorie",
+    "CreateCategory": "Kategorie erstellen",
+    "CreateSubcategory": "Unterkategorie erstellen",
+    "Inventory": "Inventar",
+    "ProductCreateLabel": "Produkt",
+    "CreateProduct": "Produkt erstellen",
+    "Products": "Produkte",
+    "Product": "Produkt",
+    "Variant": "Variante",
+    "SKU": "Artikelnummer",
+    "Variants": "Varianten",
+    "NoVariantsForProduct": "Es gibt keine Varianten für dieses Produkt.",
+    "CreateVariant": "Variante erstellen",
+    "ConfigLabel": "Inventar",
+    "ConfigDescription": "Erweiterung zur Verwaltung von Erweiterungen"
+  }
+}
