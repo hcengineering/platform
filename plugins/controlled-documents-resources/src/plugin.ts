@@ -116,9 +116,11 @@ export default mergeIds(documentsId, documents, {
 
     ConfirmApproval: '' as IntlString,
     ConfirmRejection: '' as IntlString,
+    ConfirmApprovalSubmission: '' as IntlString,
     ProvideRejectionReason: '' as IntlString,
     RejectionReason: '' as IntlString,
     ConfirmReviewCompletion: '' as IntlString,
+    ConfirmReviewSubmission: '' as IntlString,
     AddApprovalTitle: '' as IntlString,
     AddApprovalDescription1: '' as IntlString,
     AddApprovalDescription2: '' as IntlString,

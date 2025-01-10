@@ -82,7 +82,11 @@
     if (requireSignature) {
       showPopup(
         SignatureDialog,
-        { confirmationTitle: documentsRes.string.ConfirmReviewCompletion },
+        {
+          confirmationTitle: isReviewRequest
+            ? documentsRes.string.ConfirmReviewSubmission
+            : documentsRes.string.ConfirmApprovalSubmission
+        },
         'center',
         async (res) => {
           if (!res) return
