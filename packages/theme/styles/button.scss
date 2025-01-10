@@ -196,8 +196,7 @@
     text-overflow: ellipsis;
     overflow: hidden;
     min-width: 0;
-    font-weight: 700;
-    color: var(--theme-caption-color);
+    font-weight: 500;
   }
   &-icons { gap: var(--spacing-0_25); }
   &:hover {
