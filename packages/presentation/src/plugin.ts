@@ -144,6 +144,7 @@ export default plugin(presentationId, {
     Workspace: '' as Metadata<string>,
     WorkspaceId: '' as Metadata<string>,
     FrontUrl: '' as Asset,
+    LinkPreviewUrl: '' as Metadata<string>,
     UploadConfig: '' as Metadata<UploadConfig>,
     PreviewConfig: '' as Metadata<PreviewConfig | undefined>,
     ClientHook: '' as Metadata<ClientHook>,

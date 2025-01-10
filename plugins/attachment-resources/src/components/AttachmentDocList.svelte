@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import core, { type Doc, type Ref, type WithLookup } from '@hcengineering/core'
+  import { type Doc, type Ref, type WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
 
   import attachment from '../plugin'

@@ -21,6 +21,7 @@
     getBlobRef,
     getFileUrl,
     previewTypes,
+    fetchJson,
     sizeToWidth
   } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
@@ -28,8 +29,9 @@
   import filesize from 'filesize'
   import { createEventDispatcher } from 'svelte'
   import { getType, openAttachmentInSidebar, showAttachmentPreviewPopup } from '../utils'
-
+  import { type LinkPreviewDetails } from '@hcengineering/presentation'
   import AttachmentName from './AttachmentName.svelte'
+  import Spinner from '@hcengineering/ui/src/components/Spinner.svelte'
 
   export let value: WithLookup<Attachment> | undefined
   export let removable: boolean = false
@@ -39,7 +41,7 @@
 
   const dispatch = createEventDispatcher()
 
-  const maxLenght: number = 30
+  const maxLenght: number = 20
   const trimFilename = (fname: string): string =>
     fname.length > maxLenght ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2) : fname
 
@@ -83,6 +85,16 @@
       await openAttachmentInSidebar(value)
     }
   }
+  async function fetchLinkPreviewDetails (): Promise<LinkPreviewDetails> {
+    if (value === undefined) {
+      return {}
+    }
+    try {
+      return await fetchJson(value.file, value.name) as LinkPreviewDetails
+    } catch {
+      return {}
+    }
+  }
 
   function middleClickHandler (e: MouseEvent): void {
     if (e.button !== 1) return
@@ -106,7 +118,7 @@
   <AttachmentName {value} />
 {:else}
   <div class="flex-row-center attachment-container">
-    {#if value}
+    {#if value !== undefined && value.type !== 'application/link-preview'}
       {#await getBlobRef(value.file, value.name, sizeToWidth('large')) then valueRef}
         <a
           class="no-line"
@@ -164,6 +176,41 @@
             </span>
           </div>
         </div>
+      {/await}
+    {:else if value !== undefined && value.type === 'application/link-preview'}
+    {#await fetchLinkPreviewDetails() }
+    <Spinner size='small'/>
+    {:then linkPreviewDetails }
+    <div class="flex-center icon">
+      {#if linkPreviewDetails.icon}
+      <img src="{linkPreviewDetails.icon}" width="32" height="32" alt="link-preview">
+      {:else}
+        URL
+      {/if}
+    </div>
+    <div class="flex-col info-container">
+        <div class="name">
+          <a target="_blank" class="no-line" style:flex-shrink={0} href="{linkPreviewDetails.url}">{trimFilename(linkPreviewDetails?.title ?? value.name)}</a>
+        </div>
+        <div class="info-content flex-row-center">
+          <span class="actions inline-flex clear-mins ml-1 gap-1">
+            {#if linkPreviewDetails.description}
+            {trimFilename(linkPreviewDetails.description)}
+            <span>•</span>
+            {/if}
+            <span
+              class="remove-link"
+              on:click={(ev) => {
+                ev.stopPropagation()
+                ev.preventDefault()
+                dispatch('remove', value)
+              }}
+            >
+            <Label label={presentation.string.Delete} />
+            </span>
+          </span>
+        </div>
+      </div>
       {/await}
     {/if}
   </div>

@@ -29,12 +29,25 @@
 {#if attachments.length}
   <Scroller contentDirection={'horizontal'} horizontal gap={'gap-3'} scrollSnap>
     {#each attachments as attachment}
+      {#if attachment !== undefined && attachment.type !== 'application/link-preview'}
       <AttachmentPreview
         value={attachment}
         isSaved={savedAttachmentsIds?.includes(attachment._id) ?? false}
         {imageSize}
         {videoPreload}
       />
+      {/if}
     {/each}
   </Scroller>
+  {#each attachments as attachment}
+    {#if attachment !== undefined && attachment.type === 'application/link-preview'}
+    <br>
+    <AttachmentPreview
+      value={attachment}
+      isSaved={savedAttachmentsIds?.includes(attachment._id) ?? false}
+      {imageSize}
+      {videoPreload}
+    />
+    {/if}
+  {/each}
 {/if}

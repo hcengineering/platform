@@ -89,7 +89,7 @@ export async function createAttachment (
   }
 }
 
-export function getType (type: string): 'image' | 'text' | 'json' | 'video' | 'audio' | 'pdf' | 'other' {
+export function getType (type: string): 'image' | 'text' | 'json' | 'video' | 'audio' | 'pdf' | 'link-preview' | 'other' {
   if (type.startsWith('image/')) {
     return 'image'
   }
@@ -99,7 +99,7 @@ export function getType (type: string): 'image' | 'text' | 'json' | 'video' | 'a
   if (type.startsWith('video/')) {
     return 'video'
   }
-  if (type.includes('application/pdf')) {
+  if (type === 'application/pdf') {
     return 'pdf'
   }
   if (type === 'application/json') {
@@ -108,7 +108,9 @@ export function getType (type: string): 'image' | 'text' | 'json' | 'video' | 'a
   if (type.startsWith('text/')) {
     return 'text'
   }
-
+  if (type === 'application/link-preview') {
+    return 'link-preview'
+  }
   return 'other'
 }
 

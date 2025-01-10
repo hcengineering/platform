@@ -40,7 +40,7 @@ import { taskId } from '@hcengineering/task'
 import telegram, { telegramId } from '@hcengineering/telegram'
 import { templatesId } from '@hcengineering/templates'
 import tracker, { trackerId } from '@hcengineering/tracker'
-import uiPlugin, { getCurrentLocation, locationStorageKeyId, locationToUrl, navigate, parseLocation, setLocationStorageKey } from '@hcengineering/ui'
+import uiPlugin, { getCurrentLocation, locationStorageKeyId, navigate, setLocationStorageKey } from '@hcengineering/ui'
 import { uploaderId } from '@hcengineering/uploader'
 import { viewId } from '@hcengineering/view'
 import workbench, { workbenchId } from '@hcengineering/workbench'
@@ -215,6 +215,7 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
   setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG, config.UPLOAD_URL))
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
+  setMetadata(presentation.metadata.LinkPreviewUrl, config.LINK_PREVIEW_URL ?? '')
   setMetadata(presentation.metadata.StatsUrl, config.STATS_URL)
 
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR ?? '')
@@ -238,7 +239,7 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(notification.metadata.PushPublicKey, config.PUSH_PUBLIC_KEY)
 
   setMetadata(rekoni.metadata.RekoniUrl, config.REKONI_URL)
-  setMetadata(contactPlugin.metadata.LastNameFirst, myBranding.lastNameFirst === 'true' ?? false)
+  setMetadata(contactPlugin.metadata.LastNameFirst, myBranding.lastNameFirst === 'true')
   setMetadata(love.metadata.ServiceEnpdoint, config.LOVE_ENDPOINT)
   setMetadata(love.metadata.WebSocketURL, config.LIVEKIT_WS)
   setMetadata(print.metadata.PrintURL, config.PRINT_URL)

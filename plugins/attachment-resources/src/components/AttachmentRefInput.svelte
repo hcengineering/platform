@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
   import { Account, Class, Doc, IdMap, Markup, RateLimiter, Ref, Space, generateId, toIdMap } from '@hcengineering/core'
-  import { Asset, IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { Asset, IntlString, setPlatformStatus, unknownError, getMetadata } from '@hcengineering/platform'
   import {
     DraftController,
     createQuery,
@@ -23,7 +23,10 @@
     draftsStore,
     getClient,
     getFileMetadata,
-    uploadFile
+    uploadFile,
+    fetchLinkPreviewDetails,
+    canDisplayLinkPreview,
+    isLinkPreviewEnabled,
   } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
   import textEditor, { type RefAction } from '@hcengineering/text-editor'
@@ -70,6 +73,7 @@
   let originalAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
   const newAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
   const removedAttachments: Set<Attachment> = new Set<Attachment>()
+  const urlSet = new Set<string>()
 
   let progress = false
 
@@ -88,13 +92,23 @@
         _id: { $in: Array.from(attachments.keys()) }
       },
       (res) => {
-        existingAttachments = res.map((p) => p._id)
+        existingAttachments = res.map((p) => {
+          if (p.type === 'application/link-preview') {
+            urlSet.add(getUrlKey(p.name))
+          }
+          return p._id
+        })
       }
     )
   } else {
     existingAttachments = []
     existingAttachmentsQuery.unsubscribe()
   }
+
+function getUrlKey (s: string): string {
+  const url = new URL(s)
+  return url.host + url.pathname
+}
 
   $: objectId && updateAttachments(objectId)
 
@@ -111,6 +125,7 @@
       })
       originalAttachments.clear()
       removedAttachments.clear()
+      urlSet.clear()
       query.unsubscribe()
     } else if (!skipAttachmentsPreload) {
       query.query(
@@ -128,6 +143,7 @@
       newAttachments.clear()
       originalAttachments.clear()
       removedAttachments.clear()
+      urlSet.clear()
       query.unsubscribe()
     }
   }
@@ -212,6 +228,9 @@
   }
 
   async function removeAttachment (attachment: Attachment): Promise<void> {
+    if (attachment.type === 'application/link-preview') {
+      urlSet.delete(getUrlKey(attachment.name))
+    }
     removedAttachments.add(attachment)
     attachments.delete(attachment._id)
     attachments = attachments
@@ -220,6 +239,9 @@
   }
 
   async function deleteAttachment (attachment: Attachment): Promise<void> {
+    if (attachment.type === 'application/link-preview') {
+      urlSet.delete(getUrlKey(attachment.name))
+    }
     if (originalAttachments.has(attachment._id)) {
       await client.removeCollection(
         attachment._class,
@@ -274,6 +296,7 @@
     })
     await limiter.waitProcessing()
     newAttachments.clear()
+    urlSet.clear()
     removedAttachments.clear()
     saveDraft()
   }
@@ -285,8 +308,46 @@
     dispatch('message', { message: event.detail, attachments: attachments.size })
   }
 
+  function updateLinkPreview (): void {
+    const hrefs = refContainer.getElementsByTagName('a')
+    const newUrls: string[] = []
+    for (let i = 0; i < hrefs.length; i++) {
+      if (hrefs[i].target !== '_blank') {
+        continue
+      }
+      if (urlSet.has(getUrlKey(hrefs[i].href))) {
+        continue
+      }
+      newUrls.push(hrefs[i].href)
+    }
+    console.log(urlSet)
+    if (newUrls.length > 0) {
+      void loadLinks(newUrls)
+    }
+  }
+
   function onUpdate (event: CustomEvent): void {
+    if (isLinkPreviewEnabled()) {
+      updateLinkPreview()
+    }
     dispatch('update', { message: event.detail, attachments: attachments.size })
+  }
+
+  async function loadLinks (urls: string[]): Promise<void> {
+    progress = true
+    for (const url of urls) {
+      if (urlSet.has(url)) {
+        continue
+      }
+      urlSet.add(getUrlKey(url))
+      const meta = await fetchLinkPreviewDetails(url)
+      if (canDisplayLinkPreview(meta) && meta.url !== undefined) {
+        const blob = new Blob([JSON.stringify(meta)])
+        const file = new File([blob], meta.url, { type: 'application/link-preview' })
+        void createAttachment(file)
+      }
+    }
+    progress = false
   }
 
   async function loadFiles (evt: ClipboardEvent): Promise<void> {
@@ -313,15 +374,14 @@
     if (!allowed) {
       return false
     }
-
     const hasFiles = Array.from(evt.clipboardData?.items ?? []).some((i) => i.kind === 'file')
 
-    if (!hasFiles) {
-      return false
+    if (hasFiles) {
+      void loadFiles(evt)
+      return true
     }
 
-    void loadFiles(evt)
-    return true
+    return false
   }
 </script>
 
