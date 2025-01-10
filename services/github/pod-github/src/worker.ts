@@ -1320,7 +1320,7 @@ export class GithubWorker implements IntegrationManager {
           const existing = externalDocs.find((it) => it._id === info._id)
           const mapper = this.mappers.find((it) => it._class.includes(info.objectClass))?.mapper
           if (mapper === undefined) {
-            this.ctx.info('No mapper for class', { objectClass: info.objectClass, workspace: this.workspace.name })
+            this.ctx.info('No mapper for class', { objectClass: info.objectClass, workspace: this.workspace.uuid })
             await derivedClient.update<DocSyncInfo>(info, {
               needSync: githubSyncVersion
             })
@@ -1393,7 +1393,7 @@ export class GithubWorker implements IntegrationManager {
             'sync doc',
             {},
             (ctx) => mapper.sync(existing, info, parent, derivedClient),
-            { url: info.url.toLowerCase(), workspace: this.workspace.name }
+            { url: info.url.toLowerCase(), workspace: this.workspace.uuid }
           )
           if (docUpdate !== undefined) {
             await derivedClient.update(info, docUpdate)
