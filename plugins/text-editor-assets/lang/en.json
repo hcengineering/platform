@@ -66,6 +66,8 @@
     "MermaidDiargram": "Diagram",
     "Comment": "Comment",
     "AddComment": "Add a comment",
-    "AddCommentPlaceholder": "Add a comment..."
+    "AddCommentPlaceholder": "Add a comment...",
+    "SetCellHighlightColor": "Set cell color",
+    "SetTextColor": "Set text color"
   }
 }

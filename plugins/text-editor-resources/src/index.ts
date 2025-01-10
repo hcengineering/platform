@@ -26,6 +26,7 @@ import {
 import { openImage, downloadImage, expandImage, moreImageActions } from './components/extension/imageExt'
 import { configureNote, isEditableNote } from './components/extension/note'
 import { createInlineComment, shouldShowCreateInlineCommentAction } from './components/extension/inlineComment'
+import { isTextStylingEnabled, openBackgroundColorOptions, openTextColorOptions } from './components/extension/colors'
 
 export * from '@hcengineering/presentation/src/types'
 export type { EditorKitOptions } from './kits/editor-kit'
@@ -97,8 +98,12 @@ export default async (): Promise<Resources> => ({
     IsEditableNote: isEditableNote,
     IsEditable: isEditable,
     IsHeadingVisible: isHeadingVisible,
+    IsTextStylingEnabled: isTextStylingEnabled,
 
     CreateInlineComment: createInlineComment,
-    ShouldShowCreateInlineCommentAction: shouldShowCreateInlineCommentAction
+    ShouldShowCreateInlineCommentAction: shouldShowCreateInlineCommentAction,
+
+    SetBackgroundColor: openBackgroundColorOptions,
+    SetTextColor: openTextColorOptions
   }
 })

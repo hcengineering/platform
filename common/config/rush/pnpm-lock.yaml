@@ -6254,6 +6254,14 @@ packages:
       '@tiptap/core': 2.6.6(@tiptap/pm@2.6.6)
     dev: false
 
+  /@tiptap/extension-text-style@2.11.0(@tiptap/core@2.6.6):
+    resolution: {integrity: sha512-vuA16wMZ6J3fboL7FObwV2f5uN9Vg0WYmqU7971vxzJyaRj9VE1eeH8Kh5fq4RgwDzc13MZGvZZV4HcE1R8o8A==}
+    peerDependencies:
+      '@tiptap/core': ^2.7.0
+    dependencies:
+      '@tiptap/core': 2.6.6(@tiptap/pm@2.6.6)
+    dev: false
+
   /@tiptap/extension-text@2.6.6(@tiptap/core@2.6.6):
     resolution: {integrity: sha512-e84uILnRzNzcwK1DVQNpXVmBG1Cq3BJipTOIDl1LHifOok7MBjhI/X+/NR0bd3N2t6gmDTWi63+4GuJ5EeDmsg==}
     peerDependencies:
@@ -32495,6 +32503,7 @@ packages:
       '@tiptap/extension-table-header': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/extension-table-row': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/extension-text-align': 2.11.0(@tiptap/core@2.6.6)
+      '@tiptap/extension-text-style': 2.11.0(@tiptap/core@2.6.6)
       '@tiptap/extension-typography': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/extension-underline': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/pm': 2.6.6
@@ -32639,7 +32648,7 @@ packages:
     dev: false
 
   file:projects/text.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.24.2)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-zmM6GDzeNuMbMA7iWwhg8hBc43fylNW7cEmk0fSWw9+G9NqD2MLv2dVb5dnAcPAioj9WBdDakWcrLAAHUBJyMw==, tarball: file:projects/text.tgz}
+    resolution: {integrity: sha512-p2TRL6FgtqVBooDf+E5A4HB+45VS03IvNxudhC9gCotewS726ZLOxl2XdfeuYB2rHYbzdmmiG2zb8GbPwqTkOw==, tarball: file:projects/text.tgz}
     id: file:projects/text.tgz
     name: '@rush-temp/text'
     version: 0.0.0
@@ -32660,6 +32669,7 @@ packages:
       '@tiptap/extension-task-item': 2.6.6(@tiptap/core@2.6.6)(@tiptap/pm@2.6.6)
       '@tiptap/extension-task-list': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/extension-text-align': 2.11.0(@tiptap/core@2.6.6)
+      '@tiptap/extension-text-style': 2.11.0(@tiptap/core@2.6.6)
       '@tiptap/extension-typography': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/extension-underline': 2.6.6(@tiptap/core@2.6.6)
       '@tiptap/html': 2.6.6(@tiptap/core@2.6.6)(@tiptap/pm@2.6.6)

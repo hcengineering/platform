@@ -36,9 +36,13 @@ export default mergeIds(textEditorId, textEditor, {
     IsTableToolbarContext: '' as Resource<TextActionVisibleFunction>,
     IsEditableNote: '' as Resource<TextActionVisibleFunction>,
     IsEditable: '' as Resource<TextActionVisibleFunction>,
+    IsTextStylingEnabled: '' as Resource<TextActionVisibleFunction>,
     IsHeadingVisible: '' as Resource<TextActionVisibleFunction>,
 
     CreateInlineComment: '' as Resource<TextActionFunction>,
-    ShouldShowCreateInlineCommentAction: '' as Resource<TextActionVisibleFunction>
+    ShouldShowCreateInlineCommentAction: '' as Resource<TextActionVisibleFunction>,
+
+    SetBackgroundColor: '' as Resource<TextActionFunction>,
+    SetTextColor: '' as Resource<TextActionFunction>
   }
 })

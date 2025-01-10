@@ -66,6 +66,8 @@
     "MermaidDiargram": "Диаграмма",
     "Comment": "Комментарий",
     "AddComment": "Добавить комментарий",
-    "AddCommentPlaceholder": "Добавьте комментарий..."
+    "AddCommentPlaceholder": "Добавьте комментарий...",
+    "SetCellHighlightColor": "Изменить цвет ячеек",
+    "SetTextColor": "Изменить цвет текста"
   }
 }
