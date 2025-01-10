@@ -39,7 +39,8 @@ import {
   documentSnapshotsUpdated,
   trainingUpdated,
   projectUpdated,
-  projectDocumentsUpdated
+  projectDocumentsUpdated,
+  reviewRequestHistoryUpdated
 } from './actions'
 import { $documentCommentsFilter } from './documentComments'
 import { $controlledDocument, $documentTraining } from './editor'
@@ -48,6 +49,7 @@ const controlledDocumentQuery = createQuery(true)
 const documentVersionsQuery = createQuery(true)
 const documentSnapshotsQuery = createQuery(true)
 const reviewRequestQuery = createQuery(true)
+const reviewRequestHistoryQuery = createQuery(true)
 const approvalRequestQuery = createQuery(true)
 const documentCommentsQuery = createQuery(true)
 const workingCopyMetadataQuery = createQuery(true)
@@ -119,6 +121,25 @@ const queryReviewRequestFx = createEffect(
       (result) => {
         if (result !== null && result !== undefined && result.length > 0) {
           reviewRequestUpdated(result[0])
+        }
+      }
+    )
+  }
+)
+
+const queryReviewRequestHistoryFx = createEffect(
+  (payload: { _id: Ref<ControlledDocument>, _class: Ref<Class<ControlledDocument>> }) => {
+    const { _id, _class } = payload
+    if (_id == null || _class == null) {
+      reviewRequestHistoryQuery.unsubscribe()
+      return
+    }
+    reviewRequestHistoryQuery.query(
+      documents.class.DocumentReviewRequest,
+      { attachedTo: _id, attachedToClass: _class },
+      (result) => {
+        if (result !== null && result !== undefined && result.length > 0) {
+          reviewRequestHistoryUpdated(result)
         }
       }
     )
@@ -259,6 +280,7 @@ forward({
   to: [
     queryControlledDocumentFx,
     queryReviewRequestFx,
+    queryReviewRequestHistoryFx,
     queryApprovalRequestFx,
     querySavedAttachmentsFx,
     queryProjectFx,
