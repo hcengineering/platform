@@ -89,7 +89,9 @@ export async function createAttachment (
   }
 }
 
-export function getType (type: string): 'image' | 'text' | 'json' | 'video' | 'audio' | 'pdf' | 'link-preview' | 'other' {
+export function getType (
+  type: string
+): 'image' | 'text' | 'json' | 'video' | 'audio' | 'pdf' | 'link-preview' | 'other' {
   if (type.startsWith('image/')) {
     return 'image'
   }

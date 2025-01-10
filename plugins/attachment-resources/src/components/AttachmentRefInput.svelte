@@ -26,7 +26,7 @@
     uploadFile,
     fetchLinkPreviewDetails,
     canDisplayLinkPreview,
-    isLinkPreviewEnabled,
+    isLinkPreviewEnabled
   } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
   import textEditor, { type RefAction } from '@hcengineering/text-editor'
@@ -73,6 +73,7 @@
   let originalAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
   const newAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
   const removedAttachments: Set<Attachment> = new Set<Attachment>()
+  const maxLinkPreviewCount = 3
   const urlSet = new Set<string>()
 
   let progress = false
@@ -105,10 +106,10 @@
     existingAttachmentsQuery.unsubscribe()
   }
 
-function getUrlKey (s: string): string {
-  const url = new URL(s)
-  return url.host + url.pathname
-}
+  function getUrlKey (s: string): string {
+    const url = new URL(s)
+    return url.host + url.pathname
+  }
 
   $: objectId && updateAttachments(objectId)
 
@@ -320,14 +321,13 @@ function getUrlKey (s: string): string {
       }
       newUrls.push(hrefs[i].href)
     }
-    console.log(urlSet)
     if (newUrls.length > 0) {
       void loadLinks(newUrls)
     }
   }
 
   function onUpdate (event: CustomEvent): void {
-    if (isLinkPreviewEnabled()) {
+    if (isLinkPreviewEnabled() && urlSet.size < maxLinkPreviewCount) {
       updateLinkPreview()
     }
     dispatch('update', { message: event.detail, attachments: attachments.size })
@@ -345,6 +345,8 @@ function getUrlKey (s: string): string {
         const blob = new Blob([JSON.stringify(meta)])
         const file = new File([blob], meta.url, { type: 'application/link-preview' })
         void createAttachment(file)
+      } else {
+        urlSet.delete(getUrlKey(url))
       }
     }
     progress = false

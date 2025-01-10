@@ -13,47 +13,47 @@
 // limitations under the License.
 // -->
 <script lang="ts">
-import { type LinkPreviewDetails } from '@hcengineering/presentation'
-import { fetchJson } from '@hcengineering/presentation'
-import { type Attachment } from '@hcengineering/attachment'
-import { type WithLookup } from '@hcengineering/core'
-import { Spinner } from '@hcengineering/ui'
-export let attachment: WithLookup<Attachment>
+  import { type LinkPreviewDetails } from '@hcengineering/presentation'
+  import { fetchJson } from '@hcengineering/presentation'
+  import { type Attachment } from '@hcengineering/attachment'
+  import { type WithLookup } from '@hcengineering/core'
+  import { Spinner } from '@hcengineering/ui'
+  export let attachment: WithLookup<Attachment>
 
-async function fetchViewModel (): Promise<LinkPreviewDetails> {
-  try {
-    return await fetchJson(attachment.file, attachment.name) as LinkPreviewDetails
-  } catch {
-    return {}
+  async function fetchViewModel (): Promise<LinkPreviewDetails> {
+    try {
+      return (await fetchJson(attachment.file, attachment.name)) as LinkPreviewDetails
+    } catch {
+      return {}
+    }
   }
-}
-
 </script>
+
 <div class="quote">
   {#await fetchViewModel()}
-  <div class="centered">
-    <Spinner size="medium" />
-  </div>
-  {:then md }
-  <div class="content">
-    <div class="flex">
-      {#if md.icon}
-      <img src={md.icon} width=22 height=22 class="round-image" alt="link-preview-icon" />
-      &nbsp;
-      {/if}
-      <b><a target="_blank" href="{md.host}">{md.hostname}</a></b>
+    <div class="centered">
+      <Spinner size="medium" />
     </div>
-    {#if md.title !== md.hostname}
-    <b><a target="_blank" href="{md.url}">{md.title}</a></b>
-    <br/>
-    {/if}
-    {#if md.description}
-    {md.description}
-    {/if}
-    {#if md.image}
-    <img src={md.image} class="round-image" alt="link-preview"/>
-    {/if}
-  </div>
+  {:then md}
+    <div class="content">
+      <div class="flex">
+        {#if md.icon}
+          <img src={md.icon} width="22" height="22" class="round-image" alt="link-preview-icon" />
+          &nbsp;
+        {/if}
+        <b><a target="_blank" href={md.host}>{md.hostname}</a></b>
+      </div>
+      {#if md.title !== md.hostname}
+        <b><a target="_blank" href={md.url}>{md.title}</a></b>
+        <br />
+      {/if}
+      {#if md.description}
+        {md.description}
+      {/if}
+      {#if md.image}
+        <img src={md.image} class="round-image" alt="link-preview" />
+      {/if}
+    </div>
   {/await}
 </div>
 

@@ -90,7 +90,7 @@
       return {}
     }
     try {
-      return await fetchJson(value.file, value.name) as LinkPreviewDetails
+      return (await fetchJson(value.file, value.name)) as LinkPreviewDetails
     } catch {
       return {}
     }
@@ -178,39 +178,41 @@
         </div>
       {/await}
     {:else if value !== undefined && value.type === 'application/link-preview'}
-    {#await fetchLinkPreviewDetails() }
-    <Spinner size='small'/>
-    {:then linkPreviewDetails }
-    <div class="flex-center icon">
-      {#if linkPreviewDetails.icon}
-      <img src="{linkPreviewDetails.icon}" width="32" height="32" alt="link-preview">
-      {:else}
-        URL
-      {/if}
-    </div>
-    <div class="flex-col info-container">
-        <div class="name">
-          <a target="_blank" class="no-line" style:flex-shrink={0} href="{linkPreviewDetails.url}">{trimFilename(linkPreviewDetails?.title ?? value.name)}</a>
+      {#await fetchLinkPreviewDetails()}
+        <Spinner size="small" />
+      {:then linkPreviewDetails}
+        <div class="flex-center icon">
+          {#if linkPreviewDetails.icon}
+            <img src={linkPreviewDetails.icon} width="32" height="32" alt="link-preview" />
+          {:else}
+            URL
+          {/if}
         </div>
-        <div class="info-content flex-row-center">
-          <span class="actions inline-flex clear-mins ml-1 gap-1">
-            {#if linkPreviewDetails.description}
-            {trimFilename(linkPreviewDetails.description)}
-            <span>•</span>
-            {/if}
-            <span
-              class="remove-link"
-              on:click={(ev) => {
-                ev.stopPropagation()
-                ev.preventDefault()
-                dispatch('remove', value)
-              }}
+        <div class="flex-col info-container">
+          <div class="name">
+            <a target="_blank" class="no-line" style:flex-shrink={0} href={linkPreviewDetails.url}
+              >{trimFilename(linkPreviewDetails?.title ?? value.name)}</a
             >
-            <Label label={presentation.string.Delete} />
+          </div>
+          <div class="info-content flex-row-center">
+            <span class="actions inline-flex clear-mins ml-1 gap-1">
+              {#if linkPreviewDetails.description}
+                {trimFilename(linkPreviewDetails.description)}
+                <span>•</span>
+              {/if}
+              <span
+                class="remove-link"
+                on:click={(ev) => {
+                  ev.stopPropagation()
+                  ev.preventDefault()
+                  dispatch('remove', value)
+                }}
+              >
+                <Label label={presentation.string.Delete} />
+              </span>
             </span>
-          </span>
+          </div>
         </div>
-      </div>
       {/await}
     {/if}
   </div>

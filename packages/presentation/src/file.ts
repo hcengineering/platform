@@ -286,10 +286,7 @@ async function uploadFileWithSignedUrl (file: File, uuid: string, uploadUrl: str
 }
 
 export async function fetchJson (file: string, name: string): Promise<Blob | undefined> {
-  const resp = await fetch(
-    getFileUrl(file, name),
-    { signal: AbortSignal.timeout(5 * 1000) }
-  )
+  const resp = await fetch(getFileUrl(file, name), { signal: AbortSignal.timeout(5 * 1000) })
   if (!resp.ok) {
     console.error({ error: `failed to process request: ${resp.status}` })
     return undefined

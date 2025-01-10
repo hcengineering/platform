@@ -37,10 +37,10 @@
   const dispatch = createEventDispatcher()
 
   $: type = getType(value.type)
-
 </script>
+
 {#if type === 'link-preview'}
-  <LinkPreviewPresenter attachment={value}/>
+  <LinkPreviewPresenter attachment={value} />
 {:else if type === 'image'}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
