@@ -31,7 +31,7 @@ export async function OnGithubBroadcast (txes: Tx[], control: TriggerControl): P
   control.ctx.contextData.broadcast.targets.github = (it) => {
     if (TxProcessor.isExtendsCUD(it._class)) {
       if ((it as TxCUD<Doc>).objectClass === github.class.DocSyncInfo) {
-        return [systemAccountEmail]
+        return [systemAccountUuid]
       }
     }
   }
