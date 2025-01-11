@@ -248,6 +248,7 @@ class TSessionManager implements SessionManager {
               this.ctx.warn('request hang found', {
                 sec,
                 wsId,
+                total: s[1].session.requests.size,
                 user: s[1].session.getUser(),
                 ...cutObjectArray(r.params)
               })
@@ -506,7 +507,9 @@ class TSessionManager implements SessionManager {
 
   private updateConnectErrorInfo (token: Token): void {
     this.clientErrors++
-    this.lastClients = [token.email, ...this.lastClients.slice(0, 9)]
+    if (!this.lastClients.includes(token.email)) {
+      this.lastClients = [token.email, ...this.lastClients.slice(0, 9)]
+    }
   }
 
   private wsFromToken (token: Token): WorkspaceLoginInfo {
