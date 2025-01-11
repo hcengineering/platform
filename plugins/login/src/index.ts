@@ -93,11 +93,11 @@ export default plugin(loginId, {
     EmailMask: '' as IntlString,
     NoLimit: '' as IntlString,
     InviteLimit: '' as IntlString,
-    PasswordMinLength: '' as IntlString<{ min: string }>,
-    PasswordMinSpecialChars: '' as IntlString<{ min: string }>,
-    PasswordMinDigits: '' as IntlString<{ min: string }>,
-    PasswordMinUpperChars: '' as IntlString<{ min: string }>,
-    PasswordMinLowerChars: '' as IntlString<{ min: string }>
+    PasswordMinLength: '' as IntlString<{ count: number }>,
+    PasswordMinSpecialChars: '' as IntlString<{ count: number }>,
+    PasswordMinDigits: '' as IntlString<{ count: number }>,
+    PasswordMinUpperChars: '' as IntlString<{ count: number }>,
+    PasswordMinLowerChars: '' as IntlString<{ count: number }>
   },
   function: {
     SendInvite: '' as Resource<(email: string, personId?: Ref<Doc>, role?: AccountRole) => Promise<void>>,
