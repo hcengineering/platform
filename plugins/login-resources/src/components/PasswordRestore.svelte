@@ -18,11 +18,13 @@
   import presentation from '@hcengineering/presentation'
   import { getCurrentLocation, setMetadataLocalStorage } from '@hcengineering/ui'
   import login from '../plugin'
+  import type { Field } from '../types'
   import { goTo, restorePassword } from '../utils'
   import Form from './Form.svelte'
+  import { getPasswordValidationRules } from '../validations'
 
-  const fields = [
-    { id: 'new-password', name: 'password', i18n: login.string.Password, password: true },
+  const fields: Array<Field> = [
+    { id: 'new-password', name: 'password', i18n: login.string.Password, password: true, rules: getPasswordValidationRules() },
     { id: 'new-password', name: 'password2', i18n: login.string.PasswordRepeat, password: true }
   ]
 
