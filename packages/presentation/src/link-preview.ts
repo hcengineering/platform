@@ -30,20 +30,23 @@ export interface LinkPreviewDetails {
 }
 
 export function canDisplayLinkPreview (val: LinkPreviewDetails): boolean {
-  if (val.hostname === undefined && val.title === undefined) {
+  if (val.hostname === undefined) {
     return false
   }
   if (val.image === undefined && val.description === undefined) {
     return false
   }
+  if (val.title === undefined && val.description === undefined) {
+    return false
+  }
   return true
 }
 
-export async function fetchLinkPreviewDetails (url: string): Promise<LinkPreviewDetails> {
+export async function fetchLinkPreviewDetails (url: string, timeoutMs = 15000): Promise<LinkPreviewDetails> {
   try {
     const linkPreviewUrl = getMetadata(presentation.metadata.LinkPreviewUrl)
     const response = await fetch(`${linkPreviewUrl}?q=${url}`, {
-      signal: AbortSignal.timeout(5 * 1000)
+      signal: AbortSignal.timeout(timeoutMs)
     })
     if (!response.ok) {
       throw new Error(`status: ${response.status}`)

@@ -22,7 +22,6 @@
   import { getType, showAttachmentPreviewPopup } from '../utils'
   import AttachmentActions from './AttachmentActions.svelte'
   import AttachmentImagePreview from './AttachmentImagePreview.svelte'
-  import LinkPreviewPresenter from './LinkPreviewPresenter.svelte'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
   import AttachmentVideoPreview from './AttachmentVideoPreview.svelte'
   import AudioPlayer from './AudioPlayer.svelte'
@@ -39,9 +38,7 @@
   $: type = getType(value.type)
 </script>
 
-{#if type === 'link-preview'}
-  <LinkPreviewPresenter attachment={value} />
-{:else if type === 'image'}
+{#if type === 'image'}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div

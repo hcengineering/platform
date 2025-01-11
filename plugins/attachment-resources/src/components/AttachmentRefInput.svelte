@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
   import { Account, Class, Doc, IdMap, Markup, RateLimiter, Ref, Space, generateId, toIdMap } from '@hcengineering/core'
-  import { Asset, IntlString, setPlatformStatus, unknownError, getMetadata } from '@hcengineering/platform'
+  import { Asset, IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     DraftController,
     createQuery,
@@ -35,6 +35,7 @@
   import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import attachment from '../plugin'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
+  import { rmSync } from 'fs'
 
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
@@ -106,9 +107,32 @@
     existingAttachmentsQuery.unsubscribe()
   }
 
+  function isValidUrl (s: string): boolean {
+    let url: URL
+    try {
+      url = new URL(s)
+    } catch {
+      return false
+    }
+    return url.protocol.startsWith('http')
+  }
+
+  function longestSegment (s: string): string {
+    const segments = s.split('.')
+    let maxLen = segments[0].length
+    let result = segments[0]
+    for (const segment of segments) {
+      if (segment.length > maxLen) {
+        result = segment
+        maxLen = segment.length
+      }
+    }
+    return result
+  }
   function getUrlKey (s: string): string {
     const url = new URL(s)
-    return url.host + url.pathname
+    console.log(url)
+    return longestSegment(url.host) + url.pathname
   }
 
   $: objectId && updateAttachments(objectId)
@@ -229,9 +253,6 @@
   }
 
   async function removeAttachment (attachment: Attachment): Promise<void> {
-    if (attachment.type === 'application/link-preview') {
-      urlSet.delete(getUrlKey(attachment.name))
-    }
     removedAttachments.add(attachment)
     attachments.delete(attachment._id)
     attachments = attachments
@@ -311,14 +332,18 @@
 
   function updateLinkPreview (): void {
     const hrefs = refContainer.getElementsByTagName('a')
+    console.log(hrefs)
     const newUrls: string[] = []
     for (let i = 0; i < hrefs.length; i++) {
-      if (hrefs[i].target !== '_blank') {
+      if (hrefs[i].target !== '_blank' || !isValidUrl(hrefs[i].href)) {
         continue
       }
-      if (urlSet.has(getUrlKey(hrefs[i].href))) {
+      console.log(hrefs[i].href)
+      const key = getUrlKey(hrefs[i].href)
+      if (urlSet.has(key)) {
         continue
       }
+      urlSet.add(key)
       newUrls.push(hrefs[i].href)
     }
     if (newUrls.length > 0) {
@@ -327,7 +352,7 @@
   }
 
   function onUpdate (event: CustomEvent): void {
-    if (isLinkPreviewEnabled() && urlSet.size < maxLinkPreviewCount) {
+    if (isLinkPreviewEnabled() && !loading && urlSet.size < maxLinkPreviewCount) {
       updateLinkPreview()
     }
     dispatch('update', { message: event.detail, attachments: attachments.size })
@@ -336,17 +361,11 @@
   async function loadLinks (urls: string[]): Promise<void> {
     progress = true
     for (const url of urls) {
-      if (urlSet.has(url)) {
-        continue
-      }
-      urlSet.add(getUrlKey(url))
       const meta = await fetchLinkPreviewDetails(url)
       if (canDisplayLinkPreview(meta) && meta.url !== undefined) {
         const blob = new Blob([JSON.stringify(meta)])
         const file = new File([blob], meta.url, { type: 'application/link-preview' })
         void createAttachment(file)
-      } else {
-        urlSet.delete(getUrlKey(url))
       }
     }
     progress = false

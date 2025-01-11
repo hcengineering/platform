@@ -285,17 +285,12 @@ async function uploadFileWithSignedUrl (file: File, uuid: string, uploadUrl: str
   }
 }
 
-export async function fetchJson (file: string, name: string): Promise<Blob | undefined> {
-  const resp = await fetch(getFileUrl(file, name), { signal: AbortSignal.timeout(5 * 1000) })
-  if (!resp.ok) {
-    console.error({ error: `failed to process request: ${resp.status}` })
-    return undefined
-  }
+export async function getJsonOrEmpty (file: string, name: string, timeoutMs = 3000): Promise<any> {
   try {
+    const fileUrl = getFileUrl(file, name)
+    const resp = await fetch(fileUrl, { signal: AbortSignal.timeout(timeoutMs) })
     return await resp.json()
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    console.error({ error: 'failed to parse json:' + message })
+  } catch {
+    return []
   }
-  return undefined
 }

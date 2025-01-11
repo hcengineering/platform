@@ -25,6 +25,7 @@ import AttachmentDocList from './components/AttachmentDocList.svelte'
 import AttachmentDroppable from './components/AttachmentDroppable.svelte'
 import AttachmentGalleryPresenter from './components/AttachmentGalleryPresenter.svelte'
 import AttachmentList from './components/AttachmentList.svelte'
+import AttachmentGroup from './components/AttachmentGroup.svelte'
 import AttachmentPresenter from './components/AttachmentPresenter.svelte'
 import AttachmentPreview from './components/AttachmentPreview.svelte'
 import AttachmentRefInput from './components/AttachmentRefInput.svelte'
@@ -53,6 +54,7 @@ export {
   AttachmentDroppable,
   AttachmentGalleryPresenter,
   AttachmentList,
+  AttachmentGroup,
   AttachmentPresenter,
   AttachmentPreview,
   AttachmentRefInput,

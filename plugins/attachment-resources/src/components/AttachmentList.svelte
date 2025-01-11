@@ -16,7 +16,6 @@
   import { Attachment } from '@hcengineering/attachment'
   import { Ref, type WithLookup } from '@hcengineering/core'
   import { Scroller } from '@hcengineering/ui'
-
   import { AttachmentImageSize } from '../types'
   import AttachmentPreview from './AttachmentPreview.svelte'
 
@@ -28,26 +27,13 @@
 
 {#if attachments.length}
   <Scroller contentDirection={'horizontal'} horizontal gap={'gap-3'} scrollSnap>
-    {#each attachments as attachment}
-      {#if attachment !== undefined && attachment.type !== 'application/link-preview'}
-        <AttachmentPreview
-          value={attachment}
-          isSaved={savedAttachmentsIds?.includes(attachment._id) ?? false}
-          {imageSize}
-          {videoPreload}
-        />
-      {/if}
-    {/each}
-  </Scroller>
-  {#each attachments as attachment}
-    {#if attachment !== undefined && attachment.type === 'application/link-preview'}
-      <br />
+    {#each attachments as attachment}}
       <AttachmentPreview
         value={attachment}
         isSaved={savedAttachmentsIds?.includes(attachment._id) ?? false}
         {imageSize}
         {videoPreload}
       />
-    {/if}
-  {/each}
+    {/each}
+  </Scroller>
 {/if}
