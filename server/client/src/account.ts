@@ -258,7 +258,7 @@ export async function getLoginInfoByToken (
 export async function getWorkspaceInfo (
   token: string,
   updateLastAccess = false,
-  url: string | undefined
+  url: string | undefined = undefined
 ): Promise<WorkspaceInfoWithStatus | undefined> {
   const accountsUrl = url ?? getAccoutsUrlOrFail()
   const workspaceInfo = await (
