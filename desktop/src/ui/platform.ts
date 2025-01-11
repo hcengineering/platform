@@ -248,7 +248,7 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(aiBot.metadata.EndpointURL, config.AI_URL)
   setMetadata(presence.metadata.PresenceUrl, config.PRESENCE_URL ?? '')
 
-  const languages = myBranding.languages !== undefined && myBranding.languages !== '' ? myBranding.languages.split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it']
+  const languages = myBranding.languages !== undefined && myBranding.languages !== '' ? myBranding.languages.split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it', 'de']
 
   setMetadata(uiPlugin.metadata.Languages, languages)
 

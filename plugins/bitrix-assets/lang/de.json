@@ -1,0 +1,18 @@
+{
+  "string": {
+    "BitrixTokenUrl": "Bitrix24 Token-URL",
+    "Bitrix": "",
+    "BitrixDesc": "Bitrix 24 Integration",
+    "Settings": "Konfigurieren",
+    "NotAllowed": "Ohne Administratorrechte nicht erlaubt",
+    "BitrixEntityType": "Entitätszuordnung",
+    "FieldMapping": "Feldzuordnung",
+    "AddField": "Zuordnung hinzufügen",
+    "Attribute": "Attribut",
+    "MapField": "Zuordnen...",
+    "BitrixImport": "Mit Bitrix synchronisieren",
+    "AddMapping": "Entitätszuordnung hinzufügen",
+    "ConfigLabel": "Bitrix24",
+    "ConfigDescription": "Erweiterung für Bitrix 24 Integration"
+  }
+}

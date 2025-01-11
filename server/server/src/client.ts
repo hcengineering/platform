@@ -58,7 +58,7 @@ export class ClientSession implements Session {
   createTime = Date.now()
   requests = new Map<string, SessionRequest>()
   binaryMode: boolean = false
-  useCompression: boolean = true
+  useCompression: boolean = false
   sessionId = ''
   lastRequest = Date.now()
 
