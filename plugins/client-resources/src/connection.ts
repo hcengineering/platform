@@ -513,8 +513,17 @@ class Connection implements ClientConnection {
               console.error(err)
             }
           }
-          const resp = this.rpcHandler.readResponse<any>(data, this.binaryMode)
-          this.handleMsg(socketId, resp)
+          try {
+            const resp = this.rpcHandler.readResponse<any>(data, this.binaryMode)
+            this.handleMsg(socketId, resp)
+          } catch (err: any) {
+            if (!this.helloReceived) {
+              // Just error and ignore for now.
+              console.error(err)
+            } else {
+              throw err
+            }
+          }
         })
       } else {
         let data = event.data
@@ -526,8 +535,17 @@ class Connection implements ClientConnection {
             console.error(err)
           }
         }
-        const resp = this.rpcHandler.readResponse<any>(data, this.binaryMode)
-        this.handleMsg(socketId, resp)
+        try {
+          const resp = this.rpcHandler.readResponse<any>(data, this.binaryMode)
+          this.handleMsg(socketId, resp)
+        } catch (err: any) {
+          if (!this.helloReceived) {
+            // Just error and ignore for now.
+            console.error(err)
+          } else {
+            throw err
+          }
+        }
       }
     }
     wsocket.onclose = (ev) => {
