@@ -361,7 +361,7 @@ export class PostgresAccountDB implements AccountDB {
   workspaceStatus: PostgresDbCollection<WorkspaceStatus>
   accountEvent: PostgresDbCollection<AccountEvent>
   otp: PostgresDbCollection<OTP>
-  invite: PostgresDbCollection<WorkspaceInvite>
+  invite: PostgresDbCollection<WorkspaceInvite, 'id'>
 
   constructor (readonly client: Sql, readonly ns: string = 'global_account') {
     this.person = new PostgresDbCollection<Person, 'uuid'>('person', client, 'uuid')
@@ -371,7 +371,7 @@ export class PostgresAccountDB implements AccountDB {
     this.workspace = new PostgresDbCollection<Workspace, 'uuid'>('workspace', client, 'uuid')
     this.accountEvent = new PostgresDbCollection<AccountEvent>('account_event', client)
     this.otp = new PostgresDbCollection<OTP>('otp', client)
-    this.invite = new PostgresDbCollection<WorkspaceInvite>('invite', client)
+    this.invite = new PostgresDbCollection<WorkspaceInvite, 'id'>('invite', client, 'id')
   }
 
   getWsMembersTableName (): string {

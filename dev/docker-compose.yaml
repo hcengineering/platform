@@ -86,6 +86,7 @@ services:
       - ACCOUNT_PORT=3000
       - SERVER_SECRET=secret
       - STATS_URL=http://host.docker.internal:4900
+      # - DB_URL=postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable
       # - DB_URL=postgresql://postgres:example@postgres:5432
       - DB_URL=${MONGO_URL}
       # - DB_NS=account-2
