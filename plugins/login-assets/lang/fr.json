@@ -57,6 +57,11 @@
     "Next": "Suivant",
     "Skip": "Passer",
     "SignUpCompleted": "Inscription terminée",
-    "StartUsingHuly": "Commencez à utiliser Huly"
+    "StartUsingHuly": "Commencez à utiliser Huly",
+    "PasswordMinLength": "{count, plural, =1 {Le mot de passe doit contenir au moins # caractère} other {Le mot de passe doit contenir au moins # caractères}}",
+    "PasswordMinSpecialChars": "{count, plural, =1 {Le mot de passe doit contenir au moins # caractère spécial} other {Le mot de passe doit contenir au moins # caractères spéciaux}}",
+    "PasswordMinDigits": "{count, plural, =1 {Le mot de passe doit contenir au moins # chiffre} other {Le mot de passe doit contenir au moins # chiffres}}",
+    "PasswordMinUpperChars": "{count, plural, =1 {Le mot de passe doit contenir au moins # lettre majuscule} other {Le mot de passe doit contenir au moins # lettres majuscules}}",
+    "PasswordMinLowerChars": "{count, plural, =1 {Le mot de passe doit contenir au moins # lettre minuscule} other {Le mot de passe doit contenir au moins # lettres minuscules}}"
   }
 }
