@@ -255,14 +255,14 @@ export function getClient (): TxOperations & Client {
   return clientProxy
 }
 
-export type OnClientListener = (client: Client, account: Account) => void
+export type OnClientListener = (client: Client, account: Account) => void | Promise<void>
 const onClientListeners: OnClientListener[] = []
 
 export function onClient (l: OnClientListener): void {
   onClientListeners.push(l)
   if (client !== undefined) {
     setTimeout(() => {
-      l(client, getCurrentAccount())
+      void l(client, getCurrentAccount())
     })
   }
 }

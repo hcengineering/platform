@@ -14,6 +14,8 @@
 //
 import activity from '@hcengineering/activity'
 import {
+  type Account,
+  type Client,
   SortingOrder,
   getCurrentAccount,
   toIdMap,
@@ -31,7 +33,7 @@ import notification, {
   type InboxNotification,
   type InboxNotificationsClient
 } from '@hcengineering/notification'
-import { createQuery, getClient } from '@hcengineering/presentation'
+import { createQuery, getClient, onClient } from '@hcengineering/presentation'
 import { includesAny } from '@hcengineering/contact'
 import { derived, get, writable } from 'svelte/store'
 
@@ -90,11 +92,11 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   private _contextByDoc = new Map<Ref<Doc>, DocNotifyContext>()
 
   private constructor () {
-    void this.init()
+    onClient(this.init.bind(this))
   }
 
-  private async init (): Promise<void> {
-    const mySocialIds = getCurrentAccount().socialIds
+  private async init (client: Client, account: Account): Promise<void> {
+    const mySocialIds = account.socialIds
     this.contextsQuery.query(
       notification.class.DocNotifyContext,
       {
