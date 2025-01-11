@@ -24,7 +24,13 @@
   import { getPasswordValidationRules } from '../validations'
 
   const fields: Array<Field> = [
-    { id: 'new-password', name: 'password', i18n: login.string.Password, password: true, rules: getPasswordValidationRules() },
+    {
+      id: 'new-password',
+      name: 'password',
+      i18n: login.string.Password,
+      password: true,
+      rules: getPasswordValidationRules()
+    },
     { id: 'new-password', name: 'password2', i18n: login.string.PasswordRepeat, password: true }
   ]
 

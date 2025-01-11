@@ -29,7 +29,13 @@
     { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
     { id: 'family-name', name: 'last', i18n: login.string.LastName, short: true },
     { id: 'email', name: 'username', i18n: login.string.Email },
-    { id: 'new-password', name: 'password', i18n: login.string.Password, password: true, rules: getPasswordValidationRules() },
+    {
+      id: 'new-password',
+      name: 'password',
+      i18n: login.string.Password,
+      password: true,
+      rules: getPasswordValidationRules()
+    },
     { id: 'new-password', name: 'password2', i18n: login.string.PasswordRepeat, password: true }
   ]
 

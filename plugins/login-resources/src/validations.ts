@@ -13,9 +13,7 @@
 // limitations under the License.
 //
 
-import {
-  getMetadata
-} from '@hcengineering/platform'
+import { getMetadata } from '@hcengineering/platform'
 
 import login from './plugin'
 import type { Field } from './types'
@@ -36,7 +34,8 @@ export function getPasswordValidationRules (): Field['rules'] {
       ruleDescrParams: { count: passwordValidations?.MinLength }
     },
     {
-      rule: (value: string) => (value.match(/[^a-zA-Z0-9]/g)?.length ?? 0) >= (passwordValidations?.MinSpecialChars ?? 0),
+      rule: (value: string) =>
+        (value.match(/[^a-zA-Z0-9]/g)?.length ?? 0) >= (passwordValidations?.MinSpecialChars ?? 0),
       notMatch: false,
       ruleDescr: login.string.PasswordMinSpecialChars,
       ruleDescrParams: { count: passwordValidations?.MinSpecialChars }

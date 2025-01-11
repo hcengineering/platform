@@ -72,9 +72,8 @@
       }
       if (f.rules !== undefined) {
         for (const rule of f.rules) {
-          const isValid = typeof rule.rule === 'function'
-            ? rule.rule(v) !== rule.notMatch
-            : rule.rule.test(v) !== rule.notMatch
+          const isValid =
+            typeof rule.rule === 'function' ? rule.rule(v) !== rule.notMatch : rule.rule.test(v) !== rule.notMatch
 
           if (!isValid) {
             status = new Status(Severity.INFO, rule.ruleDescr, rule.ruleDescrParams ?? {})
