@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { isActiveMode, MeasureContext, RateLimiter, systemAccountEmail } from '@hcengineering/core'
+import { isActiveMode, MeasureContext, RateLimiter, systemAccountUuid } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 
 import { type Db } from 'mongodb'
@@ -74,7 +74,7 @@ export class GmailController {
     const limiter = new RateLimiter(config.InitLimit)
     for (const [workspace, tokens] of groups) {
       await limiter.add(async () => {
-        const wstok = generateToken(systemAccountEmail, { name: workspace })
+        const wstok = generateToken(systemAccountUuid, workspace)
         const info = await getWorkspaceInfo(wstok)
         if (info === undefined) {
           console.log('workspace not found', workspace)
