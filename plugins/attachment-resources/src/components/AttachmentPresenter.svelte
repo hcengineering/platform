@@ -35,13 +35,14 @@
   export let removable: boolean = false
   export let showPreview = false
   export let preview = false
+  export let progress = false
 
   const dispatch = createEventDispatcher()
 
-  const maxLenght: number = 30
+  const maxLength: number = 30
 
   const trimFilename = (fname: string): string =>
-    fname.length > maxLenght ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2) : fname
+    fname.length > maxLength ? fname.substr(0, (maxLength - 1) / 2) + '...' + fname.substr(-(maxLength - 1) / 2) : fname
 
   $: canRemove =
     removable &&

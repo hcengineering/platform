@@ -26,9 +26,9 @@
   })
 </script>
 
-<div class="quote">
+<div class="quote content">
   {#if viewModel}
-    <div class="content gapV-2">
+    <div class="gapV-2">
       <div class="flex gap-1">
         {#if viewModel.icon !== undefined && !useDefaultIcon}
           <img
@@ -60,7 +60,9 @@
             {viewModel.description}
           {/if}
           {#if viewModel.image}
-            <img src={viewModel.image} class="round-image" alt="link-preview" />
+            <a target="_blank" href={viewModel.url}>
+              <img src={viewModel.image} class="round-image" alt="link-preview" />
+            </a>
           {/if}
         </div>
       </div>
@@ -74,9 +76,10 @@
 
 <style lang="scss">
   .round-image {
-    border-radius: 5px;
-    max-width: 15rem;
-    max-height: 15rem;
+    border: 0.5px solid;
+    border-radius: 7px;
+    max-width: 25rem;
+    max-height: 25rem;
   }
   .preview-icon {
     max-width: 22px;
@@ -87,7 +90,7 @@
     padding-left: 15px;
   }
   .content {
-    max-width: 15rem;
-    max-height: 25rem;
+    max-width: 35rem;
+    max-height: 35rem;
   }
 </style>

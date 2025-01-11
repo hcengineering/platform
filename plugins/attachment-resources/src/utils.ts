@@ -101,16 +101,16 @@ export function getType (
   if (type.startsWith('video/')) {
     return 'video'
   }
-  if (type === 'application/pdf') {
+  if (type.includes('application/pdf')) {
     return 'pdf'
   }
-  if (type === 'application/json') {
+  if (type.includes('application/json')) {
     return 'json'
   }
   if (type.startsWith('text/')) {
     return 'text'
   }
-  if (type === 'application/link-preview') {
+  if (type.includes('application/link-preview')) {
     return 'link-preview'
   }
   return 'other'

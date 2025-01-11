@@ -48,13 +48,8 @@ export async function fetchLinkPreviewDetails (url: string, timeoutMs = 15000): 
     const response = await fetch(`${linkPreviewUrl}?q=${url}`, {
       signal: AbortSignal.timeout(timeoutMs)
     })
-    if (!response.ok) {
-      throw new Error(`status: ${response.status}`)
-    }
-    console.log(response)
     return response.json() as LinkPreviewDetails
-  } catch (error) {
-    console.error(`An error occurced on fetching or parsing data by ${url}, error:`, error)
+  } catch {
     return {}
   }
 }

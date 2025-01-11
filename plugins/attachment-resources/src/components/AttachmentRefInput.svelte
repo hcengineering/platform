@@ -131,7 +131,6 @@
   }
   function getUrlKey (s: string): string {
     const url = new URL(s)
-    console.log(url)
     return longestSegment(url.host) + url.pathname
   }
 
@@ -332,13 +331,11 @@
 
   function updateLinkPreview (): void {
     const hrefs = refContainer.getElementsByTagName('a')
-    console.log(hrefs)
     const newUrls: string[] = []
     for (let i = 0; i < hrefs.length; i++) {
       if (hrefs[i].target !== '_blank' || !isValidUrl(hrefs[i].href)) {
         continue
       }
-      console.log(hrefs[i].href)
       const key = getUrlKey(hrefs[i].href)
       if (urlSet.has(key)) {
         continue
@@ -361,11 +358,15 @@
   async function loadLinks (urls: string[]): Promise<void> {
     progress = true
     for (const url of urls) {
-      const meta = await fetchLinkPreviewDetails(url)
-      if (canDisplayLinkPreview(meta) && meta.url !== undefined) {
-        const blob = new Blob([JSON.stringify(meta)])
-        const file = new File([blob], meta.url, { type: 'application/link-preview' })
-        void createAttachment(file)
+      try {
+        const meta = await fetchLinkPreviewDetails(url)
+        if (canDisplayLinkPreview(meta) && meta.url !== undefined) {
+          const blob = new Blob([JSON.stringify(meta)])
+          const file = new File([blob], meta.url, { type: 'application/link-preview' })
+          void createAttachment(file)
+        }
+      } catch (err: any) {
+        void setPlatformStatus(unknownError(err))
       }
     }
     progress = false
