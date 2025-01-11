@@ -498,12 +498,6 @@ class TSessionManager implements SessionManager {
       workspace.workspaceInitCompleted = true
     }
 
-    // We do not need to wait for set-status, just return session to client
-    const _workspace = workspace
-    void ctx
-      .with('set-status', {}, (ctx) => this.trySetStatus(ctx, pipeline, session, true, _workspace.workspaceId))
-      .catch(() => {})
-
     if (this.timeMinutes > 0) {
       ws.send(ctx, { result: this.createMaintenanceWarning() }, session.binaryMode, session.useCompression)
     }
@@ -837,7 +831,7 @@ class TSessionManager implements SessionManager {
       s.workspaceClosed = true
       if (reason === 'upgrade' || reason === 'force-close') {
         // Override message handler, to wait for upgrading response from clients.
-        this.sendUpgrade(workspace.context, webSocket, s.binaryMode)
+        this.sendUpgrade(workspace.context, webSocket, s.binaryMode, s.useCompression)
       }
       webSocket.close()
       this.reconnectIds.delete(s.sessionId)
@@ -877,7 +871,7 @@ class TSessionManager implements SessionManager {
     }
   }
 
-  private sendUpgrade (ctx: MeasureContext, webSocket: ConnectionSocket, binary: boolean): void {
+  private sendUpgrade (ctx: MeasureContext, webSocket: ConnectionSocket, binary: boolean, compression: boolean): void {
     webSocket.send(
       ctx,
       {
@@ -886,7 +880,7 @@ class TSessionManager implements SessionManager {
         }
       },
       binary,
-      false
+      compression
     )
   }
 
@@ -1081,39 +1075,49 @@ class TSessionManager implements SessionManager {
     ws: ConnectionSocket,
     requestCtx: MeasureContext<any>
   ): Promise<void> {
-    const hello = request as HelloRequest
-    service.binaryMode = hello.binary ?? false
-    service.useCompression = this.enableCompression ? hello.compression ?? false : false
+    try {
+      const hello = request as HelloRequest
+      service.binaryMode = hello.binary ?? false
+      service.useCompression = this.enableCompression ? hello.compression ?? false : false
 
-    if (LOGGING_ENABLED) {
-      ctx.info('hello happen', {
-        workspace,
-        user: service.getUser(),
+      if (LOGGING_ENABLED) {
+        ctx.info('hello happen', {
+          workspace,
+          user: service.getUser(),
+          binary: service.binaryMode,
+          compression: service.useCompression,
+          timeToHello: Date.now() - service.createTime,
+          workspaceUsers: this.workspaces.get(workspace)?.sessions?.size,
+          totalUsers: this.sessions.size
+        })
+      }
+      const reconnect = this.reconnectIds.has(service.sessionId)
+      if (reconnect) {
+        this.reconnectIds.delete(service.sessionId)
+      }
+      const pipeline =
+        service.workspace.pipeline instanceof Promise ? await service.workspace.pipeline : service.workspace.pipeline
+      const helloResponse: HelloResponse = {
+        id: -1,
+        result: 'hello',
         binary: service.binaryMode,
-        compression: service.useCompression,
-        timeToHello: Date.now() - service.createTime,
-        workspaceUsers: this.workspaces.get(workspace)?.sessions?.size,
-        totalUsers: this.sessions.size
-      })
+        reconnect,
+        serverVersion: this.serverVersion,
+        lastTx: pipeline.context.lastTx,
+        lastHash: pipeline.context.lastHash,
+        account: service.getRawAccount(pipeline),
+        useCompression: service.useCompression
+      }
+      ws.send(requestCtx, helloResponse, false, false)
+
+      // We do not need to wait for set-status, just return session to client
+      const _workspace = service.workspace
+      void ctx
+        .with('set-status', {}, (ctx) => this.trySetStatus(ctx, pipeline, service, true, _workspace.workspaceId))
+        .catch(() => {})
+    } catch (err: any) {
+      ctx.error('error', { err })
     }
-    const reconnect = this.reconnectIds.has(service.sessionId)
-    if (reconnect) {
-      this.reconnectIds.delete(service.sessionId)
-    }
-    const pipeline =
-      service.workspace.pipeline instanceof Promise ? await service.workspace.pipeline : service.workspace.pipeline
-    const helloResponse: HelloResponse = {
-      id: -1,
-      result: 'hello',
-      binary: service.binaryMode,
-      reconnect,
-      serverVersion: this.serverVersion,
-      lastTx: pipeline.context.lastTx,
-      lastHash: pipeline.context.lastHash,
-      account: service.getRawAccount(pipeline),
-      useCompression: service.useCompression
-    }
-    ws.send(requestCtx, helloResponse, false, false)
   }
 }
 

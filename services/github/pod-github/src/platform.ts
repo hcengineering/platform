@@ -795,6 +795,7 @@ export class PlatformWorker {
             total: workspaces.length
           })
 
+          let initialized = false
           const worker = await GithubWorker.create(
             this,
             workerCtx,
@@ -811,17 +812,20 @@ export class PlatformWorker {
               if (event === ClientConnectEvent.Refresh || event === ClientConnectEvent.Upgraded) {
                 void this.clients.get(workspace)?.refreshClient(event === ClientConnectEvent.Upgraded)
               }
-              // We need to check if workspace is inactive
-              void this.checkWorkspaceIsActive(token, workspace).then((res) => {
-                if (res === undefined) {
-                  this.ctx.warn('Workspace is inactive, removing from clients list.', { workspace })
-                  this.clients.delete(workspace)
-                  void worker?.close()
-                }
-              })
+              if (initialized) {
+                // We need to check if workspace is inactive
+                void this.checkWorkspaceIsActive(token, workspace).then((res) => {
+                  if (res === undefined) {
+                    this.ctx.warn('Workspace is inactive, removing from clients list.', { workspace })
+                    this.clients.delete(workspace)
+                    void worker?.close()
+                  }
+                })
+              }
             }
           )
           if (worker !== undefined) {
+            initialized = true
             workerCtx.info('************************* Register worker Done ************************* ', {
               workspaceId: workspaceInfo.workspaceId,
               workspace: workspaceInfo.workspace,

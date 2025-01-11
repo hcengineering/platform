@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MeasureContext, RateLimiter } from '@hcengineering/core'
+import { isActiveMode, MeasureContext, RateLimiter, systemAccountEmail } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 
 import { type Db } from 'mongodb'
@@ -22,6 +22,8 @@ import config from './config'
 import { type GmailClient } from './gmail'
 import { type ProjectCredentials, type Token, type User } from './types'
 import { WorkspaceClient } from './workspaceClient'
+import { generateToken } from '@hcengineering/server-token'
+import { getWorkspaceInfo } from '@hcengineering/server-client'
 
 export class GmailController {
   private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
@@ -72,6 +74,16 @@ export class GmailController {
     const limiter = new RateLimiter(config.InitLimit)
     for (const [workspace, tokens] of groups) {
       await limiter.add(async () => {
+        const wstok = generateToken(systemAccountEmail, { name: workspace })
+        const info = await getWorkspaceInfo(wstok)
+        if (info === undefined) {
+          console.log('workspace not found', workspace)
+          return
+        }
+        if (!isActiveMode(info.mode)) {
+          console.log('workspace is not active', workspace)
+          return
+        }
         const startPromise = this.startWorkspace(workspace, tokens)
         const timeoutPromise = new Promise<void>((resolve) => {
           setTimeout(() => {
