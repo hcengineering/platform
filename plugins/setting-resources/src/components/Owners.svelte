@@ -46,7 +46,9 @@
   })
 
   query.query(contact.mixin.Employee, { active: true }, (res) => {
-    employees = res.filter((e) => e.personUuid != null).sort((a, b) => formatName(a.name).localeCompare(formatName(b.name)))
+    employees = res
+      .filter((e) => e.personUuid != null)
+      .sort((a, b) => formatName(a.name).localeCompare(formatName(b.name)))
   })
 
   async function change (personUuid: string, value: AccountRole): Promise<void> {
@@ -63,7 +65,9 @@
   }
   let search = ''
 
-  $: ownersCount = employees.filter((e) => e.personUuid != null && workspaceMembers[e.personUuid] === AccountRole.Owner).length
+  $: ownersCount = employees.filter(
+    (e) => e.personUuid != null && workspaceMembers[e.personUuid] === AccountRole.Owner
+  ).length
 </script>
 
 <div class="hulyComponent">

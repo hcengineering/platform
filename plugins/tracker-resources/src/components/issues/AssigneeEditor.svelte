@@ -123,7 +123,9 @@
         }
 
         const allMembers = projects.map((p) => p.members).flat()
-        const allPersonsSet = new Set(allMembers.map((p) => $personRefByPersonIdStore.get(p)).filter((p) => p !== undefined))
+        const allPersonsSet = new Set(
+          allMembers.map((p) => $personRefByPersonIdStore.get(p)).filter((p) => p !== undefined)
+        )
 
         return Array.from(allPersonsSet)
       }

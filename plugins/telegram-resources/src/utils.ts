@@ -13,13 +13,10 @@
 // limitations under the License.
 //
 
-import contact, { getCurrentEmployee, type Employee } from '@hcengineering/contact'
-import { employeeByIdStore, getContactChannel } from '@hcengineering/contact-resources'
-import { type Ref } from '@hcengineering/core'
+import contact, { getCurrentEmployee } from '@hcengineering/contact'
+import { getContactChannel } from '@hcengineering/contact-resources'
 import { getClient } from '@hcengineering/presentation'
-import setting from '@hcengineering/setting'
 import { type TemplateDataProvider } from '@hcengineering/templates'
-import { get } from 'svelte/store'
 import { getMetadata } from '@hcengineering/platform'
 
 import telegram from './plugin'

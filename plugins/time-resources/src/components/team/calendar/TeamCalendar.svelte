@@ -17,16 +17,7 @@
   import { calendarByIdStore } from '@hcengineering/calendar-resources'
   import { getCurrentEmployee, Person } from '@hcengineering/contact'
   import { socialIdsByPersonRefStore, personRefByPersonIdStore } from '@hcengineering/contact-resources'
-  import core, {
-    Doc,
-    IdMap,
-    Ref,
-    Timestamp,
-    Tx,
-    TxCUD,
-    TxCreateDoc,
-    TxUpdateDoc
-  } from '@hcengineering/core'
+  import core, { Doc, IdMap, Ref, Timestamp, Tx, TxCUD, TxCreateDoc, TxUpdateDoc } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Project } from '@hcengineering/task'
@@ -138,16 +129,7 @@
   $: allEvents = getAllEvents(events, fromDate, toDate)
 </script>
 
-<WithTeamData
-  {space}
-  {fromDate}
-  {toDate}
-  bind:project
-  bind:todos
-  bind:slots
-  bind:events
-  bind:persons
-/>
+<WithTeamData {space} {fromDate} {toDate} bind:project bind:todos bind:slots bind:events bind:persons />
 
 <PersonCalendar {persons} startDate={currentDate} {maxDays}>
   <svelte:fragment slot="day" let:day let:today let:weekend let:person let:height>

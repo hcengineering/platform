@@ -77,16 +77,7 @@
   }
 </script>
 
-<WithTeamData
-  {space}
-  {fromDate}
-  {toDate}
-  bind:project
-  bind:todos
-  bind:slots
-  bind:events
-  bind:persons
-/>
+<WithTeamData {space} {fromDate} {toDate} bind:project bind:todos bind:slots bind:events bind:persons />
 <PersonCalendar
   {persons}
   startDate={currentDate}

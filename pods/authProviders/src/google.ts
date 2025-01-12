@@ -78,9 +78,28 @@ export function registerGoogle (
         const socialKey = { type: SocialIdType.GOOGLE, value: email }
 
         if (state.inviteId != null && state.inviteId !== '') {
-          loginInfo = await joinWithProvider(measureCtx, db, null, email, first, last, state.inviteId as any, socialKey, signUpDisabled)
+          loginInfo = await joinWithProvider(
+            measureCtx,
+            db,
+            null,
+            email,
+            first,
+            last,
+            state.inviteId as any,
+            socialKey,
+            signUpDisabled
+          )
         } else {
-          loginInfo = await loginOrSignUpWithProvider(measureCtx, db, null, email, first, last, socialKey, signUpDisabled)
+          loginInfo = await loginOrSignUpWithProvider(
+            measureCtx,
+            db,
+            null,
+            email,
+            first,
+            last,
+            socialKey,
+            signUpDisabled
+          )
         }
 
         if (loginInfo === null) {

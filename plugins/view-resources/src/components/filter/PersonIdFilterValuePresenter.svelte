@@ -33,7 +33,4 @@
   }
 </script>
 
-<Component
-  is={contact.component.PersonFilterValuePresenter}
-  props={{ value: persons }}
-/>
+<Component is={contact.component.PersonFilterValuePresenter} props={{ value: persons }} />

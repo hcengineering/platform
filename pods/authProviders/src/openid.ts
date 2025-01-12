@@ -92,7 +92,7 @@ export function registerOpenid (
     async (ctx, next) => {
       try {
         const email = ctx.state.user.email
-        const verifiedEmail = ctx.state.user.email_verified as boolean ? email : ''
+        const verifiedEmail = (ctx.state.user.email_verified as boolean) ? email : ''
         const [first, last] = ctx.state.user.name?.split(' ') ?? [ctx.state.user.username, '']
         measureCtx.info('Provider auth handler', { email, verifiedEmail, type: 'openid' })
 
@@ -103,9 +103,28 @@ export function registerOpenid (
         const socialKey = { type: SocialIdType.OIDC, value: ctx.state.user.sub }
 
         if (state.inviteId != null && state.inviteId !== '') {
-          loginInfo = await joinWithProvider(measureCtx, db, null, verifiedEmail, first, last, state.inviteId as any, socialKey, signUpDisabled)
+          loginInfo = await joinWithProvider(
+            measureCtx,
+            db,
+            null,
+            verifiedEmail,
+            first,
+            last,
+            state.inviteId as any,
+            socialKey,
+            signUpDisabled
+          )
         } else {
-          loginInfo = await loginOrSignUpWithProvider(measureCtx, db, null, verifiedEmail, first, last, socialKey, signUpDisabled)
+          loginInfo = await loginOrSignUpWithProvider(
+            measureCtx,
+            db,
+            null,
+            verifiedEmail,
+            first,
+            last,
+            socialKey,
+            signUpDisabled
+          )
         }
 
         if (loginInfo === null) {

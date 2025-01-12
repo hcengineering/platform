@@ -14,12 +14,7 @@
 // limitations under the License.
 //
 
-import {
-  type Account,
-  type BrandingMap,
-  type MeasureContext,
-  type Tx
-} from '@hcengineering/core'
+import { type Account, type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 
 import { ClientSession, startSessionManager } from '@hcengineering/server'

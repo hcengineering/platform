@@ -16,7 +16,7 @@
 import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
 import chunter, { Channel, ChatMessage, chunterId, ChunterSpace, ThreadMessage } from '@hcengineering/chunter'
 import contact, { Employee, Person } from '@hcengineering/contact'
-import { getPerson, getPersons } from '@hcengineering/server-contact'
+import { getPerson } from '@hcengineering/server-contact'
 import core, {
   PersonId,
   Class,
@@ -32,7 +32,6 @@ import core, {
   TxCreateDoc,
   TxCUD,
   TxProcessor,
-  TxRemoveDoc,
   TxUpdateDoc,
   UserStatus,
   type MeasureContext,
@@ -403,7 +402,9 @@ function getActivityToHide (contexts: DocNotifyContext[], date: Timestamp): DocN
 }
 
 export async function syncChat (control: TriggerControl, status: UserStatus, date: Timestamp): Promise<void> {
-  const syncInfo = (await control.findAll(control.ctx, chunter.class.ChatSyncInfo, { user: status.user as Ref<Employee> })).shift()
+  const syncInfo = (
+    await control.findAll(control.ctx, chunter.class.ChatSyncInfo, { user: status.user as Ref<Employee> })
+  ).shift()
   const shouldSync = syncInfo === undefined || date - syncInfo.timestamp > updateChatInfoDelay
   if (!shouldSync) return
 

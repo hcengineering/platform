@@ -98,7 +98,7 @@ export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<
     const socialString = pickPrimarySocialId(socialStrings)
     const { value } = parseSocialIdString(socialString)
 
-    result.push(...await createCalendar(control, socialString, value))
+    result.push(...(await createCalendar(control, socialString, value)))
   }
   return result
 }
@@ -110,21 +110,28 @@ export async function OnSocialIdentityCreate (txes: Tx[], control: TriggerContro
     if (ctx._class !== core.class.TxCreateDoc) continue
 
     const socialId = TxProcessor.createDoc2Doc(ctx as TxCreateDoc<SocialIdentity>)
-    const employee = (await control.findAll(control.ctx, contactPlugin.mixin.Employee, { _id: socialId.attachedTo as Ref<Employee> }))[0]
+    const employee = (
+      await control.findAll(control.ctx, contactPlugin.mixin.Employee, { _id: socialId.attachedTo as Ref<Employee> })
+    )[0]
     if (employee === undefined || !employee.active) continue
 
     if (await checkCalendarsExist(control, employee._id)) continue
 
     const socialString = buildSocialIdString(socialId)
 
-    result.push(...await createCalendar(control, socialString, socialId.value))
+    result.push(...(await createCalendar(control, socialString, socialId.value)))
   }
   return result
 }
 
 async function checkCalendarsExist (control: TriggerControl, person: Ref<Person>): Promise<boolean> {
   const socialStrings = await getSocialStrings(control, person)
-  const calendars = await control.findAll(control.ctx, calendar.class.Calendar, { createdBy: { $in: socialStrings } }, { limit: 1 })
+  const calendars = await control.findAll(
+    control.ctx,
+    calendar.class.Calendar,
+    { createdBy: { $in: socialStrings } },
+    { limit: 1 }
+  )
 
   return calendars.length > 0
 }
@@ -152,7 +159,11 @@ function getCalendar (calendars: Calendar[], person: PersonId[]): Ref<Calendar> 
   return filtered[0]?._id
 }
 
-async function getEventPerson (current: Event, calendars: Calendar[], control: TriggerControl): Promise<Ref<Person> | undefined> {
+async function getEventPerson (
+  current: Event,
+  calendars: Calendar[],
+  control: TriggerControl
+): Promise<Ref<Person> | undefined> {
   const calendar = calendars.find((c) => c._id === current.calendar)
   if (calendar === undefined) return
   const person = await getPerson(control, current.createdBy ?? current.modifiedBy)

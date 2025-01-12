@@ -98,18 +98,11 @@ export async function getPersonNotificationTxes (
   const doc = (await control.findAll(ctx, reference.srcDocClass, { _id: reference.srcDocId }))[0]
 
   const receiverPerson = (
-    await control.findAll(
-      ctx,
-      contact.mixin.Employee,
-      { _id: receiver as Ref<Employee>, active: true },
-      { limit: 1 }
-    )
+    await control.findAll(ctx, contact.mixin.Employee, { _id: receiver as Ref<Employee>, active: true }, { limit: 1 })
   )[0]
   if (receiverPerson === undefined) return res
 
-  const receiverSpace = (
-    await control.findAll(ctx, contact.class.PersonSpace, { person: receiver }, { limit: 1 })
-  )[0]
+  const receiverSpace = (await control.findAll(ctx, contact.class.PersonSpace, { person: receiver }, { limit: 1 }))[0]
   if (receiverSpace === undefined) return res
 
   // TODO: Do we need for all or just one?
@@ -162,7 +155,7 @@ export async function getPersonNotificationTxes (
 
   const { type, value } = parseSocialIdString(senderId)
 
-  const senderSocialIds = (await control.findAll(ctx, contact.class.SocialIdentity, { type, value }))
+  const senderSocialIds = await control.findAll(ctx, contact.class.SocialIdentity, { type, value })
   const senderSocialId = senderSocialIds[0]
 
   const senderPerson =
@@ -285,9 +278,7 @@ async function checkSpace (
   const id = pickPrimarySocialId(personIds)
 
   if (!isMember) {
-    res.push(
-      control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, { $push: { members: id } })
-    )
+    res.push(control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, { $push: { members: id } }))
   }
 
   return true

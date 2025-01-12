@@ -96,7 +96,12 @@ import view, {
   type ViewletDescriptor
 } from '@hcengineering/view'
 
-import contact, { getCurrentEmployee, getAllSocialStringsByPersonRef, getName, type Contact } from '@hcengineering/contact'
+import contact, {
+  getCurrentEmployee,
+  getAllSocialStringsByPersonRef,
+  getName,
+  type Contact
+} from '@hcengineering/contact'
 import { get, writable } from 'svelte/store'
 import plugin from './plugin'
 import { noCategory } from './viewOptions'

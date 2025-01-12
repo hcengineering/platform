@@ -15,7 +15,6 @@
 import core, {
   type Client,
   createClient,
-  generateId,
   Hierarchy,
   MeasureMetricsContext,
   ModelDb,
@@ -37,10 +36,9 @@ createTaskModel(txes)
 const contextVars: Record<string, any> = {}
 
 describe('postgres operations', () => {
-  const baseDbUri: string = process.env.DB_URL ?? 'postgresql://postgres:example@localhost:5433'
-  let dbId: string = 'pg_testdb_' + generateId()
+  const baseDbUri: string = process.env.DB_URL ?? 'postgresql://root@localhost:26257/defaultdb?sslmode=disable'
   let dbUuid: string = crypto.randomUUID()
-  let dbUri: string = baseDbUri + '/' + dbId
+let dbUri: string = baseDbUri.replace('defaultdb', dbUuid)
   const clientRef: PostgresClientReference = getDBClient(contextVars, baseDbUri)
   let hierarchy: Hierarchy
   let model: ModelDb
@@ -55,14 +53,16 @@ describe('postgres operations', () => {
 
   beforeEach(async () => {
     try {
-      dbId = 'pg_testdb_' + generateId()
       dbUuid = crypto.randomUUID()
-      dbUri = baseDbUri + '/' + dbId
+      dbUri = baseDbUri.replace('defaultdb', dbUuid)
       const client = await clientRef.getClient()
-      await client`CREATE DATABASE ${client(dbId)}`
+      await client`CREATE DATABASE ${client(dbUuid)}`
     } catch (err) {
       console.error(err)
     }
+
+    jest.setTimeout(30000)
+    await initDb()
   })
 
   afterEach(async () => {
@@ -118,11 +118,6 @@ describe('postgres operations', () => {
 
     operations = new TxOperations(client, core.account.System)
   }
-
-  beforeEach(async () => {
-    jest.setTimeout(30000)
-    await initDb()
-  })
 
   it('check add', async () => {
     const times: number[] = []

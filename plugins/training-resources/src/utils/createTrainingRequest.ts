@@ -50,7 +50,13 @@ export async function createTrainingRequest (
 
     const mixin = client.getHierarchy().as(space, spaceType.targetClass) as unknown as RolesAssignment
     const personRefByPersonId = get(personRefByPersonIdStore)
-    const employeeRefs = new Set(roles.map((roleId) => mixin[roleId] ?? []).flat().map((pid) => personRefByPersonId.get(pid)).filter((p) => p !== undefined))
+    const employeeRefs = new Set(
+      roles
+        .map((roleId) => mixin[roleId] ?? [])
+        .flat()
+        .map((pid) => personRefByPersonId.get(pid))
+        .filter((p) => p !== undefined)
+    )
 
     for (const employeeRef of employeeRefs) {
       traineesMap.set(employeeRef as Ref<Employee>, true)
