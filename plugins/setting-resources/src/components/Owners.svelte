@@ -46,7 +46,7 @@
   })
 
   query.query(contact.mixin.Employee, { active: true }, (res) => {
-    employees = res.sort((a, b) => formatName(a.name).localeCompare(formatName(b.name)))
+    employees = res.filter((e) => e.personUuid != null).sort((a, b) => formatName(a.name).localeCompare(formatName(b.name)))
   })
 
   async function change (personUuid: string, value: AccountRole): Promise<void> {
@@ -63,7 +63,7 @@
   }
   let search = ''
 
-  $: ownersCount = Object.values(workspaceMembers).filter((role) => role === AccountRole.Owner).length
+  $: ownersCount = employees.filter((e) => e.personUuid != null && workspaceMembers[e.personUuid] === AccountRole.Owner).length
 </script>
 
 <div class="hulyComponent">
@@ -77,8 +77,9 @@
     <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
       <div class="hulyComponent-content">
         {#each employees as employee (employee._id)}
-          {@const role = workspaceMembers[employee.personUuid]}
-          {#if role !== undefined && employee.name?.includes(search)}
+          {@const personUuid = employee.personUuid ?? undefined}
+          {@const role = personUuid !== undefined ? workspaceMembers[personUuid] : undefined}
+          {#if personUuid !== undefined && role !== undefined && employee.name?.includes(search)}
             <div class="flex-row-center p-2 flex-no-shrink">
               <div class="p-1 min-w-80">
                 <EmployeePresenter value={employee} disabled={false} />
@@ -91,7 +92,7 @@
                 {items}
                 selected={role}
                 on:selected={(e) => {
-                  void change(employee.personUuid, e.detail)
+                  void change(personUuid, e.detail)
                 }}
               />
             </div>

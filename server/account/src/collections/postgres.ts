@@ -441,7 +441,7 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   async getWorkspaceMembers (workspaceUuid: string): Promise<WorkspaceMemberInfo[]> {
-    const res: any = await this.client`SELECT role FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid}`
+    const res: any = await this.client`SELECT account_uuid, role FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid}`
 
     return res.map((p: any) => ({
       person: p.account_uuid,
