@@ -532,6 +532,14 @@ export function cutObjectArray (obj: any): any {
   return r
 }
 
+export function includesAny (arr1: string[] | null | undefined, arr2: string[] | null | undefined): boolean {
+  if (arr1 == null || arr1.length === 0 || arr2 == null || arr2.length === 0) {
+    return false
+  }
+
+  return arr1.some((m) => arr2.includes(m))
+}
+
 export const isEnum =
   <T>(e: T) =>
     (token: any): token is T[keyof T] => {
@@ -555,7 +563,7 @@ export async function checkPermission (
 
   const me = getCurrentAccount()
   const asMixin = client.getHierarchy().as(space, mixin)
-  const myRoles = type.$lookup?.roles?.filter((role) => (asMixin as any)[role._id]?.includes(me.uuid)) as Role[]
+  const myRoles = type.$lookup?.roles?.filter((role) => includesAny((asMixin as any)[role._id], me.socialIds)) as Role[]
 
   if (myRoles === undefined) {
     return false

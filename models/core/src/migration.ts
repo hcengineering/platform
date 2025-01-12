@@ -428,7 +428,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
 
             for (const role of roles ?? []) {
               const oldAssignees: string[] | undefined = (mixin as any)[role._id]
-              if (oldAssignees !== undefined && oldAssignees.length > 0) {
+              if (oldAssignees != null && oldAssignees.length > 0) {
                 const newAssignees = oldAssignees.map((a) => socialIdByAccount[a])
 
                 update[`${type.targetClass}.${role._id}`] = newAssignees
