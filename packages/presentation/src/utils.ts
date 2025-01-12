@@ -322,7 +322,7 @@ export async function setClient (_client: Client): Promise<void> {
   }
   const acc = getCurrentAccount()
   onClientListeners.forEach((l) => {
-    l(_client, acc)
+    void l(_client, acc)
   })
 }
 /**
