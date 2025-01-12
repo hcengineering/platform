@@ -52,12 +52,7 @@
             on:open={(res) => (attachmentPopupId = res.detail)}
           />
         {:else}
-          <AttachmentPresenter
-            value={attachment}
-            removable={!readonly}
-            showPreview
-            on:remove
-          />
+          <AttachmentPresenter value={attachment} removable={!readonly} showPreview on:remove />
         {/if}
       {/each}
       {#if progress}
