@@ -38,39 +38,19 @@
   )
 </script>
 
-<WithTeamData
-  {space}
-  fromDate={yesterdayFrom}
-  toDate={todayTo}
-  bind:project
-  bind:todos
-  bind:slots
-  bind:events
-/>
+<WithTeamData {space} fromDate={yesterdayFrom} toDate={todayTo} bind:project bind:todos bind:slots bind:events />
 
 <Header bind:currentDate />
 {#if project}
   <div class="flex-row-top background-body-color h-full">
     <div class="item flex-col">
-      <DayPlan
-        day={yesterday}
-        slots={yesterdaySlots}
-        events={yesterdayEvents}
-        showAssignee
-        {todos}
-      />
+      <DayPlan day={yesterday} slots={yesterdaySlots} events={yesterdayEvents} showAssignee {todos} />
     </div>
     <div class="flex-no-shrink">
       <Border />
     </div>
     <div class="item flex-col">
-      <DayPlan
-        day={today}
-        slots={todaySlots}
-        events={todayEvents}
-        showAssignee
-        {todos}
-      />
+      <DayPlan day={today} slots={todaySlots} events={todayEvents} showAssignee {todos} />
     </div>
   </div>
 {/if}

@@ -566,23 +566,28 @@ export async function selectWorkspace (
  *
  * 1. Converts all characters to lowercase
  * 2. Only keeps alphanumeric characters (a-z, 0-9) and hyphens (-)
- * 3. Cannot start with a number
- * 4. Removes all other special characters
+ * 3. Cannot start with a number or hyphen
+ * 4. Cannot end with a hyphen
+ * 5. Removes all other special characters
  */
 export function generateWorkspaceUrl (name: string): string {
   const lowercaseName = name.toLowerCase()
   let result = ''
+  let isFirst = true
 
   for (const char of lowercaseName) {
     const isValidChar = /[a-z0-9-]/.test(char)
     const isNumber = /[0-9]/.test(char)
+    const isHyphen = char === '-'
 
-    if (isValidChar && (result.length > 0 || !isNumber)) {
+    if (isValidChar && (!isFirst || (!isNumber && !isHyphen))) {
       result += char
+      isFirst = false
     }
   }
 
-  return result
+  // Trim hyphens from the end
+  return result.replace(/-+$/, '')
 }
 
 // TODO: rework later to map exact codes for specific DBs

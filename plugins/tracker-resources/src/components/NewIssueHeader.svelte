@@ -19,8 +19,6 @@
   import { TrackerEvents } from '@hcengineering/tracker'
   import { ButtonWithDropdown, IconAdd, IconDropdown, SelectPopupValueType, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { TrackerEvents } from '@hcengineering/tracker'
-  import { Analytics } from '@hcengineering/analytics'
 
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'

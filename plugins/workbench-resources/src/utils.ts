@@ -14,7 +14,16 @@
 // limitations under the License.
 //
 
-import type { Account, Class, Client, Doc, Ref, Space, TxOperations, WorkspaceInfoWithStatus } from '@hcengineering/core'
+import type {
+  Account,
+  Class,
+  Client,
+  Doc,
+  Ref,
+  Space,
+  TxOperations,
+  WorkspaceInfoWithStatus
+} from '@hcengineering/core'
 import core, { hasAccountRole } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
 import { getResource, setMetadata } from '@hcengineering/platform'

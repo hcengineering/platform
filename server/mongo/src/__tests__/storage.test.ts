@@ -16,8 +16,6 @@
 import core, {
   type Client,
   createClient,
-  generateId,
- 
   Hierarchy,
   MeasureMetricsContext,
   ModelDb,
@@ -39,7 +37,6 @@ createTaskModel(txes)
 describe('mongo operations', () => {
   const mongodbUri: string = process.env.MONGO_URL ?? 'mongodb://localhost:27017'
   let mongoClient!: MongoClientReference
-  let dbId: string = generateId()
   let dbUuid = crypto.randomUUID()
   let hierarchy: Hierarchy
   let model: ModelDb
@@ -57,12 +54,13 @@ describe('mongo operations', () => {
   })
 
   beforeEach(async () => {
-    dbId = 'mongo-testdb-' + generateId()
+    dbUuid = crypto.randomUUID()
+    await initDb()
   })
 
   afterEach(async () => {
     try {
-      await (await mongoClient.getClient()).db(dbId).dropDatabase()
+      await (await mongoClient.getClient()).db(dbUuid).dropDatabase()
     } catch (eee) {}
     await serverStorage.close()
   })
@@ -118,10 +116,6 @@ describe('mongo operations', () => {
 
     operations = new TxOperations(client, core.account.System)
   }
-
-  beforeEach(async () => {
-    await initDb()
-  })
 
   it('check add', async () => {
     const times: number[] = []

@@ -13,147 +13,125 @@
 // limitations under the License.
 //
 
-import aiBot, {
-  AIEventType,
-  AIMessageEventRequest,
-  AITransferEventRequest
-} from '@hcengineering/ai-bot'
-import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-collector'
-import chunter, { ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
-import contact from '@hcengineering/contact'
-import core, {
-  AccountRole,
-  AttachedDoc,
-  Doc,
-  Ref,
-  Tx,
-  TxCreateDoc,
-  TxCUD,
-  TxProcessor,
-  TxUpdateDoc,
-  UserStatus
-} from '@hcengineering/core'
+import aiBot from '@hcengineering/ai-bot'
+import analyticsCollector from '@hcengineering/analytics-collector'
+import chunter, { ChatMessage, ThreadMessage } from '@hcengineering/chunter'
+import core, { AttachedDoc, Tx, TxCreateDoc, TxCUD, TxProcessor } from '@hcengineering/core'
 import { ActivityInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
 import { TriggerControl } from '@hcengineering/server-core'
 
-import { createAccountRequest, getSupportWorkspaceId, sendAIEvents } from './utils'
+// async function isDirectAvailable (direct: DirectMessage, control: TriggerControl): Promise<boolean> {
+//   const { members } = direct
 
-async function isDirectAvailable (direct: DirectMessage, control: TriggerControl): Promise<boolean> {
-  // TODO: FIXME
-  throw new Error('Not implemented')
-  // const { members } = direct
+//   if (!members.includes(aiBot.account.AIBot)) {
+//     return false
+//   }
 
-  // if (!members.includes(aiBot.account.AIBot)) {
-  //   return false
-  // }
+//   const personAccounts = await control.modelDb.findAll(contact.class.PersonAccount, {
+//     _id: { $in: members as PersonId[] }
+//   })
+//   const persons = new Set(personAccounts.map((account) => account.person))
 
-  // const personAccounts = await control.modelDb.findAll(contact.class.PersonAccount, {
-  //   _id: { $in: members as PersonId[] }
-  // })
-  // const persons = new Set(personAccounts.map((account) => account.person))
+//   return persons.size === 2
+// }
 
-  // return persons.size === 2
-}
+// async function getMessageDoc (message: ChatMessage, control: TriggerControl): Promise<Doc | undefined> {
+//   if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
+//     const thread = message as ThreadMessage
+//     const _id = thread.objectId
+//     const _class = thread.objectClass
 
-async function getMessageDoc (message: ChatMessage, control: TriggerControl): Promise<Doc | undefined> {
-  if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
-    const thread = message as ThreadMessage
-    const _id = thread.objectId
-    const _class = thread.objectClass
+//     return (await control.findAll(control.ctx, _class, { _id }))[0]
+//   } else {
+//     const _id = message.attachedTo
+//     const _class = message.attachedToClass
 
-    return (await control.findAll(control.ctx, _class, { _id }))[0]
-  } else {
-    const _id = message.attachedTo
-    const _class = message.attachedToClass
+//     return (await control.findAll(control.ctx, _class, { _id }))[0]
+//   }
+// }
 
-    return (await control.findAll(control.ctx, _class, { _id }))[0]
-  }
-}
+// function getMessageData (doc: Doc, message: ChatMessage, email: string): AIMessageEventRequest {
+//   return {
+//     type: AIEventType.Message,
+//     createdOn: message.createdOn ?? message.modifiedOn,
+//     objectId: message.attachedTo,
+//     objectClass: message.attachedToClass,
+//     objectSpace: doc.space,
+//     collection: message.collection,
+//     messageClass: message._class,
+//     messageId: message._id,
+//     message: message.message,
+//     user: message.createdBy ?? message.modifiedBy,
+//     email
+//   }
+// }
 
-function getMessageData (doc: Doc, message: ChatMessage, email: string): AIMessageEventRequest {
-  return {
-    type: AIEventType.Message,
-    createdOn: message.createdOn ?? message.modifiedOn,
-    objectId: message.attachedTo,
-    objectClass: message.attachedToClass,
-    objectSpace: doc.space,
-    collection: message.collection,
-    messageClass: message._class,
-    messageId: message._id,
-    message: message.message,
-    user: message.createdBy ?? message.modifiedBy,
-    email
-  }
-}
+// function getThreadMessageData (message: ThreadMessage, email: string): AIMessageEventRequest {
+//   return {
+//     type: AIEventType.Message,
+//     createdOn: message.createdOn ?? message.modifiedOn,
+//     objectId: message.attachedTo,
+//     objectClass: message.attachedToClass,
+//     objectSpace: message.space,
+//     collection: message.collection,
+//     messageClass: message._class,
+//     message: message.message,
+//     messageId: message._id,
+//     user: message.createdBy ?? message.modifiedBy,
+//     email
+//   }
+// }
 
-function getThreadMessageData (message: ThreadMessage, email: string): AIMessageEventRequest {
-  return {
-    type: AIEventType.Message,
-    createdOn: message.createdOn ?? message.modifiedOn,
-    objectId: message.attachedTo,
-    objectClass: message.attachedToClass,
-    objectSpace: message.space,
-    collection: message.collection,
-    messageClass: message._class,
-    message: message.message,
-    messageId: message._id,
-    user: message.createdBy ?? message.modifiedBy,
-    email
-  }
-}
+// async function getThreadParent (control: TriggerControl, message: ChatMessage): Promise<Ref<ChatMessage> | undefined> {
+//   if (!control.hierarchy.isDerived(message.attachedToClass, chunter.class.ChatMessage)) {
+//     return undefined
+//   }
 
-async function getThreadParent (control: TriggerControl, message: ChatMessage): Promise<Ref<ChatMessage> | undefined> {
-  if (!control.hierarchy.isDerived(message.attachedToClass, chunter.class.ChatMessage)) {
-    return undefined
-  }
+//   const parentInfo = (
+//     await control.findAll(control.ctx, message.attachedToClass, {
+//       _id: message.attachedTo as Ref<ChatMessage>,
+//       [aiBot.mixin.TransferredMessage]: { $exists: true }
+//     })
+//   )[0]
 
-  const parentInfo = (
-    await control.findAll(control.ctx, message.attachedToClass, {
-      _id: message.attachedTo as Ref<ChatMessage>,
-      [aiBot.mixin.TransferredMessage]: { $exists: true }
-    })
-  )[0]
+//   if (parentInfo !== undefined) {
+//     return control.hierarchy.as(parentInfo, aiBot.mixin.TransferredMessage).messageId
+//   }
 
-  if (parentInfo !== undefined) {
-    return control.hierarchy.as(parentInfo, aiBot.mixin.TransferredMessage).messageId
-  }
+//   return message.attachedTo as Ref<ChatMessage>
+// }
 
-  return message.attachedTo as Ref<ChatMessage>
-}
+// async function createTransferEvent (
+//   control: TriggerControl,
+//   message: ChatMessage,
+//   account: any,
+//   data: AIMessageEventRequest
+// ): Promise<AITransferEventRequest | undefined> {
+//   if (account.role !== AccountRole.Owner) {
+//     return
+//   }
 
-async function createTransferEvent (
-  control: TriggerControl,
-  message: ChatMessage,
-  account: any,
-  data: AIMessageEventRequest
-): Promise<AITransferEventRequest | undefined> {
-  // TODO: FIXME
-  throw new Error('Not implemented')
-  // if (account.role !== AccountRole.Owner) {
-  //   return
-  // }
+//   const supportWorkspaceId = getSupportWorkspaceId()
 
-  // const supportWorkspaceId = getSupportWorkspaceId()
+//   if (supportWorkspaceId === undefined) {
+//     return
+//   }
 
-  // if (supportWorkspaceId === undefined) {
-  //   return
-  // }
-
-  // return {
-  //   type: AIEventType.Transfer,
-  //   createdOn: message.createdOn ?? message.modifiedOn,
-  //   messageClass: data.messageClass,
-  //   message: message.message,
-  //   collection: data.collection,
-  //   toWorkspace: supportWorkspaceId,
-  //   toPersonId: account,
-  //   fromWorkspace: control.workspace.uuid,
-  //   // fromWorkspaceName: control.workspace.workspaceName,
-  //   fromWorkspaceUrl: control.workspace.url,
-  //   messageId: message._id,
-  //   parentMessageId: await getThreadParent(control, message)
-  // }
-}
+//   return {
+//     type: AIEventType.Transfer,
+//     createdOn: message.createdOn ?? message.modifiedOn,
+//     messageClass: data.messageClass,
+//     message: message.message,
+//     collection: data.collection,
+//     toWorkspace: supportWorkspaceId,
+//     toPersonId: account,
+//     fromWorkspace: control.workspace.uuid,
+//     // fromWorkspaceName: control.workspace.workspaceName,
+//     fromWorkspaceUrl: control.workspace.url,
+//     messageId: message._id,
+//     parentMessageId: await getThreadParent(control, message)
+//   }
+// }
 
 async function onBotDirectMessageSend (control: TriggerControl, message: ChatMessage): Promise<void> {
   // TODO: FIXME

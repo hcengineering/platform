@@ -115,11 +115,15 @@
   let _calendar: Ref<Calendar> = `${myAccount.primarySocialId}_calendar` as Ref<Calendar>
 
   const q = createQuery()
-  q.query(calendar.class.ExternalCalendar, { default: true, hidden: false, createdBy: { $in: $mySocialStringsStore } }, (res) => {
-    if (res.length > 0) {
-      _calendar = res[0]._id
+  q.query(
+    calendar.class.ExternalCalendar,
+    { default: true, hidden: false, createdBy: { $in: $mySocialStringsStore } },
+    (res) => {
+      if (res.length > 0) {
+        _calendar = res[0]._id
+      }
     }
-  })
+  )
 
   let slots: WorkSlot[] = []
 

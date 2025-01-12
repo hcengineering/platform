@@ -20,7 +20,13 @@ import core, {
   pickPrimarySocialId,
   AccountRole
 } from '@hcengineering/core'
-import contact, { combineName, setCurrentEmployee, AvatarType, type Person, type Employee } from '@hcengineering/contact'
+import contact, {
+  combineName,
+  setCurrentEmployee,
+  AvatarType,
+  type Person,
+  type Employee
+} from '@hcengineering/contact'
 import login, { loginId } from '@hcengineering/login'
 import { broadcastEvent, getMetadata, getResource, OK, setMetadata, translateCB } from '@hcengineering/platform'
 import presentation, {
@@ -86,10 +92,16 @@ export async function connect (title: string): Promise<Client | undefined> {
   let token = tokens[wsUrl]
 
   const selectWorkspace = await getResource(login.function.SelectWorkspace)
-  const workspaceLoginInfo = await ctx.with('select-workspace', {}, async () => (await selectWorkspace(wsUrl, token))[1])
+  const workspaceLoginInfo = await ctx.with(
+    'select-workspace',
+    {},
+    async () => (await selectWorkspace(wsUrl, token))[1]
+  )
 
   if (workspaceLoginInfo == null) {
-    console.error(`Error selecting workspace ${wsUrl}. There might be something wrong with the token. Please try to log in again.`)
+    console.error(
+      `Error selecting workspace ${wsUrl}. There might be something wrong with the token. Please try to log in again.`
+    )
     // something went wrong with selecting workspace with the selected token
     clearMetadata(wsUrl)
     navigate({
@@ -110,7 +122,9 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   if (workspace == null) {
     // something went wrong, workspace not exist, redirect to login
-    console.error(`Error fetching workspace ${wsUrl}. It might no longer exist or be inaccessible. Please try to log in again.`)
+    console.error(
+      `Error fetching workspace ${wsUrl}. It might no longer exist or be inaccessible. Please try to log in again.`
+    )
     navigate({
       path: [loginId]
     })
@@ -317,7 +331,11 @@ export async function connect (title: string): Promise<Client | undefined> {
         },
         ctx,
         onDialTimeout: async () => {
-          const newLoginInfo = await ctx.with('select-workspace', {}, async () => (await selectWorkspace(wsUrl, token))[1])
+          const newLoginInfo = await ctx.with(
+            'select-workspace',
+            {},
+            async () => (await selectWorkspace(wsUrl, token))[1]
+          )
           if (newLoginInfo?.endpoint !== endpoint) {
             console.log('endpoint changed, reloading')
             location.reload()
@@ -415,9 +433,14 @@ async function ensureEmployee (
     const socialIdentity = await client.findOne(contact.class.SocialIdentity, { key: { $in: me.socialIds } })
 
     if (socialIdentity !== undefined && !socialIdentity.confirmed) {
-      const updateSocialIdentityTx = txFactory.createTxUpdateDoc(contact.class.SocialIdentity, contact.space.Contacts, socialIdentity._id, {
-        confirmed: true
-      })
+      const updateSocialIdentityTx = txFactory.createTxUpdateDoc(
+        contact.class.SocialIdentity,
+        contact.space.Contacts,
+        socialIdentity._id,
+        {
+          confirmed: true
+        }
+      )
 
       await client.tx(updateSocialIdentityTx)
     }
@@ -466,9 +489,15 @@ async function ensureEmployee (
           return null
         }
 
-        const createEmployeeTx = txFactory.createTxMixin(personRef, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
-          active: true
-        })
+        const createEmployeeTx = txFactory.createTxMixin(
+          personRef,
+          contact.class.Person,
+          contact.space.Contacts,
+          contact.mixin.Employee,
+          {
+            active: true
+          }
+        )
 
         await client.tx(createEmployeeTx)
       })
