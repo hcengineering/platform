@@ -11,6 +11,7 @@
   ],
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
+  "template": "default",
   "scripts": {
     "build": "compile",
     "build:watch": "compile",
