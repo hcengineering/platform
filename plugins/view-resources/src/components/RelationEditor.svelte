@@ -1,11 +1,11 @@
 <script lang="ts">
-  import core, { Association, Doc } from '@hcengineering/core'
-  import { Button, IconAdd, Label, Section, showPopup } from '@hcengineering/ui'
-  import { getClient } from '@hcengineering/presentation'
-  import ObjectPresenter from './ObjectPresenter.svelte'
-  import ObjectBoxPopup from './ObjectBoxPopup.svelte'
+  import core, { Association, Doc, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Button, IconAdd, Label, Section, showPopup } from '@hcengineering/ui'
+  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import DocTable from './DocTable.svelte'
+  import ObjectBoxPopup from './ObjectBoxPopup.svelte'
 
   export let object: Doc
   export let docs: Doc[]
@@ -36,6 +36,46 @@
       }
     )
   }
+
+  let viewlet: WithLookup<Viewlet> | undefined
+  let preference: ViewletPreference | undefined = undefined
+
+  const query = createQuery()
+
+  $: query.query(
+    view.class.Viewlet,
+    {
+      attachTo: _class
+    },
+    (res) => {
+      viewlet = res[0]
+    },
+    {
+      lookup: {
+        descriptor: view.class.ViewletDescriptor
+      }
+    }
+  )
+
+  const preferenceQuery = createQuery()
+
+  $: if (viewlet != null) {
+    preferenceQuery.query(
+      view.class.ViewletPreference,
+      {
+        space: core.space.Workspace,
+        attachedTo: viewlet._id
+      },
+      (res) => {
+        preference = res[0]
+      },
+      { limit: 1 }
+    )
+  } else {
+    preferenceQuery.unsubscribe()
+  }
+
+  $: config = preference?.config ?? viewlet?.config
 </script>
 
 <Section {label}>
@@ -49,12 +89,9 @@
 
   <svelte:fragment slot="content">
     <div class="antiSection-empty solid flex-col mt-3">
-      {#if docs?.length > 0}
+      {#if docs?.length > 0 && config != null}
         <div class="self-start flex-col flex-gap-2">
-          <DocTable objects={docs} {_class} />
-          {#each docs as doc}
-            <ObjectPresenter value={doc} />
-          {/each}
+          <DocTable objects={docs} {_class} {config} />
         </div>
       {:else if !readonly}
         <!-- svelte-ignore a11y-click-events-have-key-events -->

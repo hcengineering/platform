@@ -37,13 +37,17 @@
   const hierarchy = client.getHierarchy()
 
   const descendants = hierarchy.getDescendants(core.class.Doc)
+  const viewlets = new Set(
+    client
+      .getModel()
+      .findAllSync(view.class.Viewlet, { descriptor: view.viewlet.Table })
+      .map((p) => p.attachTo)
+  )
   const classes = descendants
     .map((p) => hierarchy.getClass(p))
     .filter((p) => {
       if (p.label === undefined) return false
-      if (!hierarchy.hasMixin(p, view.mixin.ObjectPresenter)) return false
-      const mixin = hierarchy.classHierarchyMixin(p._id, view.mixin.ObjectEditor)
-      return mixin !== undefined
+      return viewlets.has(p._id)
     })
     .map((p) => {
       return { id: p._id, label: p.label }

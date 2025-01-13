@@ -119,7 +119,7 @@
   const updateModelOptions = reduceCalls(async function updateModelOptions (
     client: TxOperations,
     _class: Ref<Class<Doc>>,
-    config: Array<string | BuildModelKey> | undefined
+    keys: Array<string | BuildModelKey>
   ): Promise<void> {
     const newModelOpts = { client, _class, keys }
     if (modelOptions == null || !deepEqual(modelOptions, newModelOpts)) {
