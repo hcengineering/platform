@@ -52,6 +52,9 @@ jobs:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
       - name: Publish base image
+        env:
+          DOCKER_CLI_HINTS: false
+          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
         run: |
           echo Pushing base image
           cd ./dev/base-image
