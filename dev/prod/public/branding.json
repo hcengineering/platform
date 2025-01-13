@@ -64,6 +64,7 @@
     "defaultApplication": "documents",
     "defaultSpace": "documents:space:QualityDocuments",
     "defaultSpecial": "",
+    "lastNameFirst": "true",
     "links": [
       {
         "rel": "shortcut icon",
