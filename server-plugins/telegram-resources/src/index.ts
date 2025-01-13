@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
 import contact, { Channel, ChannelProvider, Contact, Employee, formatName, Person } from '@hcengineering/contact'

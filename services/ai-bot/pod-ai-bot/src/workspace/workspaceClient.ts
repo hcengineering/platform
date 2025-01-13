@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import aiBot, {
   aiBotAccount,
   AIMessageEventRequest,
@@ -30,14 +30,7 @@ import chunter, {
   ThreadMessage,
   TypingInfo
 } from '@hcengineering/chunter'
-import contact, {
-  AvatarType,
-  combineName,
-  getFirstName,
-  getLastName,
-  getName,
-  Person
-} from '@hcengineering/contact'
+import contact, { AvatarType, combineName, getFirstName, getLastName, getName, Person } from '@hcengineering/contact'
 import core, {
   PersonId,
   Blob,
@@ -153,14 +146,7 @@ export class WorkspaceClient {
       if (!isAlreadyUploaded) {
         const data = fs.readFileSync(config.AvatarPath)
 
-        await this.storage.put(
-          this.ctx,
-          this.workspace,
-          config.AvatarName,
-          data,
-          config.AvatarContentType,
-          data.length
-        )
+        await this.storage.put(this.ctx, this.workspace, config.AvatarName, data, config.AvatarContentType, data.length)
         await this.controller.updateAvatarInfo(this.workspace, config.AvatarPath, lastModified)
         this.ctx.info('Avatar file uploaded successfully', { workspace: this.workspace, path: config.AvatarPath })
       }
@@ -579,7 +565,8 @@ export class WorkspaceClient {
 
   async transferToUserDirect (event: AITransferEventRequest): Promise<void> {
     const client = await this.opClient
-    const direct = this.directByPersonId.get(event.toPersonId) ?? (await getDirect(client, event.toPersonId, this.aiPerson?._id))
+    const direct =
+      this.directByPersonId.get(event.toPersonId) ?? (await getDirect(client, event.toPersonId, this.aiPerson?._id))
 
     if (direct === undefined) {
       return

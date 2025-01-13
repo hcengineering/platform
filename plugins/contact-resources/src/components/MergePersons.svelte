@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   import { Analytics } from '@hcengineering/analytics'
   import { Channel, Person, getName } from '@hcengineering/contact'
   import core, {

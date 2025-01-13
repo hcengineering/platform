@@ -1718,12 +1718,9 @@ export async function restore (
     try {
       let serverEndpoint = await getTransactorEndpoint(token, 'external')
       serverEndpoint = serverEndpoint.replaceAll('wss://', 'https://').replace('ws://', 'http://')
-      await fetch(
-        serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close&wsId=${workspaceId}`,
-        {
-          method: 'PUT'
-        }
-      )
+      await fetch(serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close&wsId=${workspaceId}`, {
+        method: 'PUT'
+      })
     } catch (err: any) {
       // Ignore
     }
@@ -2122,7 +2119,7 @@ export async function restore (
         continue
       }
       await limiter.add(async () => {
-        ctx.info('processing domain', { domain: c, workspaceId: workspaceId })
+        ctx.info('processing domain', { domain: c, workspaceId })
         let retry = 5
         let delay = 1
         while (retry > 0) {
@@ -2130,13 +2127,13 @@ export async function restore (
           try {
             await processDomain(c)
             if (delay > 1) {
-              ctx.warn('retry-success', { retry, delay, workspaceId: workspaceId })
+              ctx.warn('retry-success', { retry, delay, workspaceId })
             }
             break
           } catch (err: any) {
-            ctx.error('failed to process domain', { err, domain: c, workspaceId: workspaceId })
+            ctx.error('failed to process domain', { err, domain: c, workspaceId })
             if (retry !== 0) {
-              ctx.warn('cool-down to retry', { delay, domain: c, workspaceId: workspaceId })
+              ctx.warn('cool-down to retry', { delay, domain: c, workspaceId })
               await new Promise((resolve) => setTimeout(resolve, delay * 1000))
               delay++
             }

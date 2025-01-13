@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 //
 // Copyright © 2022 Hardcore Engineering Inc.
 //

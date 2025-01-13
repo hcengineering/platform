@@ -54,8 +54,7 @@ class ElasticAdapter implements FullTextAdapter {
   ) {
     this.indexName = `${indexBaseName}_${indexVersion}`
     this.getFulltextDocId = (workspaceId, doc) => `${doc}@${workspaceId}` as Ref<Doc>
-    this.getDocId = (workspaceId, fulltext) =>
-      fulltext.slice(0, -1 * (workspaceId.length + 1)) as Ref<Doc>
+    this.getDocId = (workspaceId, fulltext) => fulltext.slice(0, -1 * (workspaceId.length + 1)) as Ref<Doc>
   }
 
   async initMapping (ctx: MeasureContext): Promise<boolean> {
@@ -391,7 +390,7 @@ class ElasticAdapter implements FullTextAdapter {
       const part = parts.splice(0, 500)
 
       const operations = part.flatMap((doc) => {
-        const wsDoc = { workspaceId: workspaceId, ...doc }
+        const wsDoc = { workspaceId, ...doc }
         return [
           { index: { _index: this.indexName, _id: this.getFulltextDocId(workspaceId, doc.id) } },
           { ...wsDoc, type: '_doc' }

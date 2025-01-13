@@ -357,12 +357,9 @@ export async function upgradeModel (
   const token = generateToken(systemAccountUuid, wsIds.uuid, { service: 'tool', admin: 'true' })
 
   try {
-    await fetch(
-      serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close&wsId=${wsIds.uuid}`,
-      {
-        method: 'PUT'
-      }
-    )
+    await fetch(serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close&wsId=${wsIds.uuid}`, {
+      method: 'PUT'
+    })
   } catch (err: any) {
     // Ignore error if transactor is not yet ready
   }

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import core, {
   AttachedDoc,
   Class,
@@ -62,26 +62,26 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
   }
 
   tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
-    for (const tx of txes) {
-      let target: string[] | undefined
-      // TODO: FIXME
-      // if (this.isTargetDomain(tx)) {
-      //   const account = ctx.contextData.account._id
-      //   if (account !== tx.modifiedBy && account !== core.account.System) {
-      //     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-      //   }
-      //   const modifiedByAccount = ctx.contextData.getAccount(tx.modifiedBy)
-      //   target = [ctx.contextData.userEmail, systemAccountEmail]
-      //   if (modifiedByAccount !== undefined && !target.includes(modifiedByAccount.email)) {
-      //     target.push(modifiedByAccount.email)
-      //   }
-      //   ctx.contextData.broadcast.targets['checkDomain' + account] = (tx) => {
-      //     if (this.isTargetDomain(tx)) {
-      //       return target
-      //     }
-      //   }
-      // }
-    }
+    // TODO: FIXME
+    // for (const tx of txes) {
+    //   let target: string[] | undefined
+    //   if (this.isTargetDomain(tx)) {
+    //     const account = ctx.contextData.account._id
+    //     if (account !== tx.modifiedBy && account !== core.account.System) {
+    //       throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    //     }
+    //     const modifiedByAccount = ctx.contextData.getAccount(tx.modifiedBy)
+    //     target = [ctx.contextData.userEmail, systemAccountEmail]
+    //     if (modifiedByAccount !== undefined && !target.includes(modifiedByAccount.email)) {
+    //       target.push(modifiedByAccount.email)
+    //     }
+    //     ctx.contextData.broadcast.targets['checkDomain' + account] = (tx) => {
+    //       if (this.isTargetDomain(tx)) {
+    //         return target
+    //       }
+    //     }
+    //   }
+    // }
     return this.provideTx(ctx, txes)
   }
 

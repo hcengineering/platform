@@ -19,8 +19,15 @@ const getSecret = (): string => {
 /**
  * @public
  */
-export function generateToken (accountUuid: string, workspaceUuid?: WorkspaceUuid, extra?: Record<string, string>): string {
-  return encode({ ...(extra !== undefined ? { extra } : {}), account: accountUuid, workspace: workspaceUuid }, getSecret())
+export function generateToken (
+  accountUuid: string,
+  workspaceUuid?: WorkspaceUuid,
+  extra?: Record<string, string>
+): string {
+  return encode(
+    { ...(extra !== undefined ? { extra } : {}), account: accountUuid, workspace: workspaceUuid },
+    getSecret()
+  )
 }
 
 /**

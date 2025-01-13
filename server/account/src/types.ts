@@ -159,14 +159,14 @@ export interface AccountDB {
 export interface DbCollection<T> {
   find: (query: Query<T>, sort?: Sort<T>, limit?: number) => Promise<T[]>
   findOne: (query: Query<T>) => Promise<T | null>
-  insertOne: (
-    data: Partial<T>
-  ) => Promise<any>
+  insertOne: (data: Partial<T>) => Promise<any>
   updateOne: (query: Query<T>, ops: Operations<T>) => Promise<void>
   deleteMany: (query: Query<T>) => Promise<void>
 }
 
-export type Sort<T> = { [K in keyof T]?: T[K] extends (Record<string, any> | undefined) ? Sort<T[K]> : 'ascending' | 'descending' }
+export type Sort<T> = {
+  [K in keyof T]?: T[K] extends Record<string, any> | undefined ? Sort<T[K]> : 'ascending' | 'descending'
+}
 
 export type Query<T> = {
   [P in keyof T]?: T[P] | QueryOperator<T[P]>
@@ -195,17 +195,24 @@ export type AccountMethodHandler = (
   token?: string
 ) => Promise<any>
 
-export type WorkspaceEvent = 'ping' | 'create-started' | 'upgrade-started' | 'progress' | 'create-done' | 'upgrade-done' | 'migrate-backup-started' // -> state = 'migration-backup'
-| 'restore-started'
-| 'restore-done'
-| 'migrate-backup-done' // -> state = 'migration-pending-cleaning'
-| 'migrate-clean-started' // -> state = 'migration-cleaning'
-| 'migrate-clean-done' // -> state = 'pending-restoring'
-| 'archiving-backup-started' // -> state = 'archiving'
-| 'archiving-backup-done' // -> state = 'archiving-pending-cleaning'
-| 'archiving-clean-started'
-| 'archiving-clean-done'
-| 'archiving-done'
+export type WorkspaceEvent =
+  | 'ping'
+  | 'create-started'
+  | 'upgrade-started'
+  | 'progress'
+  | 'create-done'
+  | 'upgrade-done'
+  | 'migrate-backup-started' // -> state = 'migration-backup'
+  | 'restore-started'
+  | 'restore-done'
+  | 'migrate-backup-done' // -> state = 'migration-pending-cleaning'
+  | 'migrate-clean-started' // -> state = 'migration-cleaning'
+  | 'migrate-clean-done' // -> state = 'pending-restoring'
+  | 'archiving-backup-started' // -> state = 'archiving'
+  | 'archiving-backup-done' // -> state = 'archiving-pending-cleaning'
+  | 'archiving-clean-started'
+  | 'archiving-clean-done'
+  | 'archiving-done'
 export type WorkspaceOperation = 'create' | 'upgrade' | 'all' | 'all+backup'
 export interface LoginInfo {
   account: string

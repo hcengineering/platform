@@ -54,8 +54,8 @@ export class NotificationsMiddleware extends BaseMiddleware implements Middlewar
   }
 
   processTx (ctx: MeasureContext<SessionData>, tx: Tx): void {
-    let target: string[] | undefined
     // TODO: FIXME
+    // let target: string[] | undefined
     // if (this.isTargetDomain(tx)) {
     //   const account = ctx.contextData.account._id
     //   if (account !== tx.modifiedBy && account !== core.account.System) {

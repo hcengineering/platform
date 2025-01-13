@@ -150,7 +150,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     derivedClient: TxOperations,
     parent?: DocSyncInfo
   ): Promise<void> {
-    const okit = (await this.provider.getOctokit(account as PersonId)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(account)) ?? container.container.octokit
     const q = `mutation deleteReviewComment($reviewID: ID!) {
       deletePullRequestReviewComment(input: {
         id: $reviewID
@@ -415,7 +415,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     if (Object.keys(platformUpdate).length > 0) {
       if (platformUpdate.body !== undefined) {
         const body = await this.provider.getMarkup(container.container, platformUpdate.body)
-        const okit = (await this.provider.getOctokit(account as PersonId)) ?? container.container.octokit
+        const okit = (await this.provider.getOctokit(account)) ?? container.container.octokit
         const q = `mutation updateReviewComment($commentID: ID!, $body: String!) {
           updatePullRequestReviewComment(input: {
             threadId: $threadID
@@ -486,8 +486,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
       return {}
     }
     const existingReview = existing as GithubReviewComment
-    const okit =
-      (await this.provider.getOctokit(existingReview.modifiedBy as PersonId)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(existingReview.modifiedBy)) ?? container.container.octokit
 
     // No external version yet, create it.
     try {

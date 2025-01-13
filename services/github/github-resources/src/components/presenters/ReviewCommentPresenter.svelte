@@ -1,9 +1,5 @@
 <script lang="ts">
-  import {
-    EmployeePresenter,
-    SystemAvatar,
-    personByPersonIdStore,
-  } from '@hcengineering/contact-resources'
+  import { EmployeePresenter, SystemAvatar, personByPersonIdStore } from '@hcengineering/contact-resources'
   import Avatar from '@hcengineering/contact-resources/src/components/Avatar.svelte'
   import core, { getDisplayTime } from '@hcengineering/core'
   import { MessageViewer } from '@hcengineering/presentation'

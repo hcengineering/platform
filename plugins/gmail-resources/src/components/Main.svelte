@@ -14,6 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
   import { employeeByIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
@@ -48,8 +49,8 @@
   let currentMessage: SharedMessage | undefined = undefined
 
   let newMessage: boolean = false
-  let allIntegrations: Integration[] = []
-  let integrations: Integration[] = []
+  const allIntegrations: Integration[] = []
+  const integrations: Integration[] = []
   let selectedIntegration: Integration | undefined = undefined
 
   channel && inboxClient.forceReadDoc(channel._id, channel._class)
@@ -95,10 +96,11 @@
 
   $: templateProvider && selectedIntegration && templateProvider.set(setting.class.Integration, selectedIntegration)
 
+  // TODO: FIXME
   settingsQuery.query(setting.class.Integration, { type: gmail.integrationType.Gmail }, (res) => {
-    allIntegrations = res.filter((p) => !p.disabled && p.value !== '')
-    integrations = allIntegrations.filter((p) => p.createdBy === me || p.shared?.includes(me))
-    selectedIntegration = integrations.find((p) => p.createdBy === me) ?? integrations[0]
+    // allIntegrations = res.filter((p) => !p.disabled && p.value !== '')
+    // integrations = allIntegrations.filter((p) => p.createdBy === me || p.shared?.includes(me))
+    // selectedIntegration = integrations.find((p) => p.createdBy === me) ?? integrations[0]
   })
 
   // TODO: FIXME

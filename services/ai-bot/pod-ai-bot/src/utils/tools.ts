@@ -228,7 +228,10 @@ registerTool<object>(
   saveFile
 )
 
-export function getTools (workspaceClient: WorkspaceClient, user: PersonId | undefined): RunnableTools<BaseFunctionsArgs> {
+export function getTools (
+  workspaceClient: WorkspaceClient,
+  user: PersonId | undefined
+): RunnableTools<BaseFunctionsArgs> {
   const result: (RunnableToolFunctionWithoutParse | RunnableToolFunctionWithParse<any>)[] = []
   for (const tool of tools) {
     const res: RunnableToolFunctionWithoutParse | RunnableToolFunctionWithParse<any> = {

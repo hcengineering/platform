@@ -231,11 +231,7 @@ export function loadBrandingMap (brandingPath?: string): BrandingMap {
   return brandings
 }
 
-export function wrapPipeline (
-  ctx: MeasureContext,
-  pipeline: Pipeline,
-  wsIds: WorkspaceIds
-): Client & BackupClient {
+export function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsIds: WorkspaceIds): Client & BackupClient {
   const contextData = new SessionDataImpl(
     systemAccount,
     'pipeline',

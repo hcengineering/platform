@@ -27,7 +27,14 @@ import {
   PersonUuid,
   isActiveMode
 } from '@hcengineering/core'
-import platform, { getMetadata, PlatformError, Severity, Status, translate, unknownError } from '@hcengineering/platform'
+import platform, {
+  getMetadata,
+  PlatformError,
+  Severity,
+  Status,
+  translate,
+  unknownError
+} from '@hcengineering/platform'
 import { decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 
 import { accountPlugin } from './plugin'
@@ -326,15 +333,13 @@ export async function createInviteLink (
 
   ctx.info('Creating invite link', { workspace, workspaceName: workspace.name, emailMask, limit })
 
-  return await db.invite.insertOne(
-    {
-      workspaceUuid,
-      expiresOn: exp < 0 ? -1 : Date.now() + exp,
-      emailPattern: emailMask,
-      remainingUses: limit,
-      role
-    }
-  )
+  return await db.invite.insertOne({
+    workspaceUuid,
+    expiresOn: exp < 0 ? -1 : Date.now() + exp,
+    emailPattern: emailMask,
+    remainingUses: limit,
+    role
+  })
 }
 
 export async function sendInvite (
@@ -666,8 +671,12 @@ export async function leaveWorkspace (
   const initiatorRole = await db.getWorkspaceRole(account, workspace)
 
   if (account !== targetAccount) {
-    if (initiatorRole == null || (getRolePower(initiatorRole) < getRolePower(AccountRole.Maintainer))) {
-      ctx.error('Need to be at least maintainer to remove someone else\'s account from workspace', { account, workspace, initiatorRole })
+    if (initiatorRole == null || getRolePower(initiatorRole) < getRolePower(AccountRole.Maintainer)) {
+      ctx.error("Need to be at least maintainer to remove someone else's account from workspace", {
+        account,
+        workspace,
+        initiatorRole
+      })
       throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
     }
   }
@@ -839,11 +848,10 @@ export async function listWorkspaces (
     workspaces = workspaces.filter((it) => !statusesMap[it.uuid].isDisabled)
   }
 
-  return workspaces
-    .map((it) => ({
-      ...it,
-      status: statusesMap[it.uuid]
-    }))
+  return workspaces.map((it) => ({
+    ...it,
+    status: statusesMap[it.uuid]
+  }))
 }
 
 export async function performWorkspaceOperation (
@@ -865,7 +873,7 @@ export async function performWorkspaceOperation (
 
   const workspaces = await getWorkspacesInfoWithStatusByIds(db, workspaceUuids)
   if (workspaces.length === 0) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { }))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, {}))
   }
 
   let ops = 0
@@ -932,10 +940,7 @@ export async function performWorkspaceOperation (
     }
 
     if (Object.keys(update).length !== 0) {
-      await db.workspaceStatus.updateOne(
-        { workspaceUuid: workspace.uuid },
-        update
-      )
+      await db.workspaceStatus.updateOne({ workspaceUuid: workspace.uuid }, update)
       ops++
     }
   }
@@ -1109,7 +1114,11 @@ export async function updateWorkspaceRole (
 
   const accRole = await db.getWorkspaceRole(account, workspace)
 
-  if (accRole == null || getRolePower(accRole) < getRolePower(AccountRole.Maintainer) || getRolePower(accRole) < getRolePower(targetRole)) {
+  if (
+    accRole == null ||
+    getRolePower(accRole) < getRolePower(AccountRole.Maintainer) ||
+    getRolePower(accRole) < getRolePower(targetRole)
+  ) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
@@ -1305,10 +1314,7 @@ export async function updateWorkspaceInfo (
   )
 
   if (Object.keys(wsUpdate).length !== 0) {
-    await db.workspace.updateOne(
-      { uuid: workspace.uuid },
-      wsUpdate
-    )
+    await db.workspace.updateOne({ uuid: workspace.uuid }, wsUpdate)
   }
 }
 
@@ -1398,7 +1404,43 @@ export async function assignWorkspace (
   }
 }
 
-export type AccountMethods = 'login' | 'loginOtp' | 'signUp' | 'signUpOTP' | 'validateOtp' | 'createWorkspace' | 'createInviteLink' | 'sendInvite' | 'selectWorkspace' | 'join' | 'checkJoin' | 'signUpJoin' | 'confirm' | 'changePassword' | 'requestPassword' | 'restorePassword' | 'leaveWorkspace' | 'changeUsername' | 'updateWorkspaceName' | 'deleteWorkspace' | 'getRegionInfo' | 'getUserWorkspaces' | 'getWorkspaceInfo' | 'listWorkspaces' | 'getLoginInfoByToken' | 'getSocialIds' | 'getPendingWorkspace' | 'updateWorkspaceInfo' | 'workerHandshake' | 'updateBackupInfo' | 'assignWorkspace' | 'getPerson' | 'getWorkspaceMembers' | 'updateWorkspaceRole' | 'findPerson' | 'performWorkspaceOperation'
+export type AccountMethods =
+  | 'login'
+  | 'loginOtp'
+  | 'signUp'
+  | 'signUpOTP'
+  | 'validateOtp'
+  | 'createWorkspace'
+  | 'createInviteLink'
+  | 'sendInvite'
+  | 'selectWorkspace'
+  | 'join'
+  | 'checkJoin'
+  | 'signUpJoin'
+  | 'confirm'
+  | 'changePassword'
+  | 'requestPassword'
+  | 'restorePassword'
+  | 'leaveWorkspace'
+  | 'changeUsername'
+  | 'updateWorkspaceName'
+  | 'deleteWorkspace'
+  | 'getRegionInfo'
+  | 'getUserWorkspaces'
+  | 'getWorkspaceInfo'
+  | 'listWorkspaces'
+  | 'getLoginInfoByToken'
+  | 'getSocialIds'
+  | 'getPendingWorkspace'
+  | 'updateWorkspaceInfo'
+  | 'workerHandshake'
+  | 'updateBackupInfo'
+  | 'assignWorkspace'
+  | 'getPerson'
+  | 'getWorkspaceMembers'
+  | 'updateWorkspaceRole'
+  | 'findPerson'
+  | 'performWorkspaceOperation'
 
 /**
  * @public

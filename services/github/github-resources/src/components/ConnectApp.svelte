@@ -52,12 +52,8 @@
     }
 
     const rawState = JSON.parse(atob(state))
-    const {
-      accountId,
-      op,
-      workspace,
-      token
-    }: { accountId: PersonId, workspace: string, op: string, token: string } = rawState
+    const { accountId, op, workspace, token }: { accountId: PersonId, workspace: string, op: string, token: string } =
+      rawState
 
     if (op === 'installation') {
       if (installationId == null || setupAction === null) {

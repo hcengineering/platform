@@ -14,7 +14,15 @@
 //
 
 import calendar, { Event, ExternalCalendar } from '@hcengineering/calendar'
-import contact, { Channel, Contact, Person, getPrimarySocialId, getPersonRefBySocialId, getPersonRefsBySocialIds, type Employee } from '@hcengineering/contact'
+import contact, {
+  Channel,
+  Contact,
+  Person,
+  getPrimarySocialId,
+  getPersonRefBySocialId,
+  getPersonRefsBySocialIds,
+  type Employee
+} from '@hcengineering/contact'
 import core, {
   PersonId,
   SocialIdType,

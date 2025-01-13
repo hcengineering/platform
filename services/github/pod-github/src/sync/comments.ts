@@ -134,7 +134,7 @@ export class CommentSyncManager implements DocSyncManager {
   }
 
   async deleteGithubDocument (container: ContainerFocus, account: PersonId, id: string): Promise<void> {
-    const okit = (await this.provider.getOctokit(account as PersonId)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(account)) ?? container.container.octokit
 
     const q = `mutation deleteComment($commentID: ID!) {
       deleteIssueComment(
@@ -336,8 +336,7 @@ export class CommentSyncManager implements DocSyncManager {
 
     if (Object.keys(platformUpdate).length > 0) {
       // Check and update body with external
-      const okit =
-        (await this.provider.getOctokit(existing.modifiedBy as PersonId)) ?? container.container.octokit
+      const okit = (await this.provider.getOctokit(existing.modifiedBy)) ?? container.container.octokit
       await okit?.rest.issues.updateComment({
         owner: repository.owner?.login as string,
         repo: repository.name,
@@ -406,8 +405,7 @@ export class CommentSyncManager implements DocSyncManager {
       return {}
     }
     const chatMessage = existing as ChatMessage
-    const okit =
-      (await this.provider.getOctokit(chatMessage.modifiedBy as PersonId)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(chatMessage.modifiedBy)) ?? container.container.octokit
 
     // No external version yet, create it.
     try {

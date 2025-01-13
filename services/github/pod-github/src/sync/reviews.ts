@@ -141,7 +141,7 @@ export class ReviewSyncManager implements DocSyncManager {
   }
 
   async deleteGithubDocument (container: ContainerFocus, account: PersonId, id: string): Promise<void> {
-    const okit = (await this.provider.getOctokit(account as PersonId)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(account)) ?? container.container.octokit
     const q = `mutation deleteReview($reviewID: ID!) {
       deletePullRequestReview(input: {
         pullRequestReviewId: $reviewID
@@ -414,8 +414,7 @@ export class ReviewSyncManager implements DocSyncManager {
       return {}
     }
     const existingReview = existing as GithubReview
-    const okit =
-      (await this.provider.getOctokit(existingReview.modifiedBy as PersonId)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(existingReview.modifiedBy)) ?? container.container.octokit
 
     // No external version yet, create it.
     try {

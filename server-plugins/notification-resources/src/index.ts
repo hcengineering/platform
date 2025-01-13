@@ -268,7 +268,10 @@ async function getValueCollaborators (value: any, attr: AnyAttribute, control: T
     const to = (attr.type as RefTo<Doc>).to
 
     if (hierarchy.isDerived(to, contact.class.Person)) {
-      const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, { attachedTo: value, attachedToClass: contact.class.Person })
+      const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, {
+        attachedTo: value,
+        attachedToClass: contact.class.Person
+      })
 
       return [pickPrimarySocialId(socialIds.map((it) => it.key))]
     }
@@ -280,7 +283,10 @@ async function getValueCollaborators (value: any, attr: AnyAttribute, control: T
     if (arrOf._class === core.class.RefTo) {
       const to = (arrOf as RefTo<Doc>).to
       if (hierarchy.isDerived(to, contact.class.Person)) {
-        const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, { attachedTo: { $in: value }, attachedToClass: contact.class.Person })
+        const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, {
+          attachedTo: { $in: value },
+          attachedToClass: contact.class.Person
+        })
 
         const byPerson = socialIds.reduce<Record<Ref<Person>, PersonId[]>>((map, it) => {
           if (map[it.attachedTo] === undefined) {
@@ -854,17 +860,14 @@ export async function createCollabDocInfo (
     return res
   }
 
-  const usersInfo = await ctx.with(
-    'get-user-info',
-    {},
-    (ctx) => getUsersInfo(ctx, [...Array.from(targets), tx.modifiedBy], control)
+  const usersInfo = await ctx.with('get-user-info', {}, (ctx) =>
+    getUsersInfo(ctx, [...Array.from(targets), tx.modifiedBy], control)
   )
   const sender: SenderInfo = usersInfo.get(tx.modifiedBy) ?? {
     _id: tx.modifiedBy,
     socialStrings: []
   }
 
-  const allTargets = await getAllSocialStringsByPersonId(control, Array.from(targets))
   const settings = await getNotificationProviderControl(ctx, control)
   for (const target of allTargets) {
     const info: ReceiverInfo | undefined = toReceiverInfo(control.hierarchy, usersInfo.get(target))
@@ -1149,6 +1152,7 @@ async function updateCollaboratorsMixin (
       cache.set(object._id, object)
       cache.set(space._id, space)
 
+      const allStringsNewCollabs = await getAllSocialStringsByPersonId(control, newCollabs)
       const docNotifyContexts = await control.findAll(ctx, notification.class.DocNotifyContext, {
         user: { $in: allStringsNewCollabs },
         objectId: tx.objectId
@@ -1569,7 +1573,7 @@ async function applyUserTxes (
   }
 
   for (const [user, txs] of map.entries()) {
-    const person = (cache.get(user) as Person) ?? await getPerson(control, user)
+    const person = (cache.get(user) as Person) ?? (await getPerson(control, user))
     const personUuid = person?.personUuid
 
     if (personUuid !== undefined) {
@@ -1605,7 +1609,9 @@ async function updateCollaborators (
   const ops = isMixinTx(tx) ? tx.attributes : (tx as TxUpdateDoc<Doc>).operations
   const addedCollaborators = await getNewCollaborators(ops, mixin, objectClass, control)
   const isSpace = control.hierarchy.isDerived(objectClass, core.class.Space)
-  const removedCollaborators = isSpace ? await getRemovedMembers(ops, mixin, objectClass as Ref<Class<Space>>, control) : []
+  const removedCollaborators = isSpace
+    ? await getRemovedMembers(ops, mixin, objectClass as Ref<Class<Space>>, control)
+    : []
 
   if (removedCollaborators.length === 0 && addedCollaborators.length === 0) return []
 
@@ -1615,7 +1621,12 @@ async function updateCollaborators (
   if (doc === undefined) return []
 
   const res: Tx[] = []
-  const currentCollaborators = new Set(await getAllSocialStringsByPersonId(control, hierarchy.as(doc, notification.mixin.Collaborators).collaborators ?? []))
+  const currentCollaborators = new Set(
+    await getAllSocialStringsByPersonId(
+      control,
+      hierarchy.as(doc, notification.mixin.Collaborators).collaborators ?? []
+    )
+  )
   const toAdd = addedCollaborators.filter((p) => !currentCollaborators.has(p))
 
   if (toAdd.length === 0 && removedCollaborators.length === 0) return []

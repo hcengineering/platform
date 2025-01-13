@@ -6,6 +6,7 @@
   TODO:
   * Add since to synchronization
 */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import activity from '@hcengineering/activity'
 import { Analytics } from '@hcengineering/analytics'
 import { CollaboratorClient } from '@hcengineering/collaborator-client'

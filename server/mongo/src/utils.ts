@@ -13,13 +13,7 @@
 // limitations under the License.
 //
 
-import {
-  generateId,
-  type Doc,
-  type Domain,
-  type FieldIndexConfig,
-  type WorkspaceUuid
-} from '@hcengineering/core'
+import { generateId, type Doc, type Domain, type FieldIndexConfig } from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
 import { MongoClient, type Collection, type Db, type Document } from 'mongodb'

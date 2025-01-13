@@ -286,7 +286,9 @@ export async function OnSocialIdentityCreate (_txes: Tx[], control: TriggerContr
   const account = control.ctx.contextData.account
   if (account.role !== AccountRole.Owner) return []
 
-  const defaultSpace = (await control.findAll(control.ctx, documents.class.OrgSpace, { _id: documents.space.QualityDocuments }))[0]
+  const defaultSpace = (
+    await control.findAll(control.ctx, documents.class.OrgSpace, { _id: documents.space.QualityDocuments })
+  )[0]
 
   if (defaultSpace === undefined) return []
 

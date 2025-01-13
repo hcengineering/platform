@@ -1,5 +1,6 @@
-// import contact, { type Employee, getFirstName, getLastName } from '@hcengineering/contact'
-// import { employeeByIdStore } from '@hcengineering/contact-resources'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import contact, { type Employee, getFirstName, getLastName } from '@hcengineering/contact'
+import { employeeByIdStore } from '@hcengineering/contact-resources'
 import { type Class, type Doc, type Hierarchy, type Ref } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import login from '@hcengineering/login'

@@ -1,7 +1,7 @@
 //
 // Copyright © 2023 Hardcore Engineering Inc.
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import chunter from '@hcengineering/chunter'
 import core, {
   Doc,

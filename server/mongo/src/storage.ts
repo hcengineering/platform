@@ -61,8 +61,7 @@ import core, {
   type TxRemoveDoc,
   type TxResult,
   type TxUpdateDoc,
-  type WithLookup,
-  type WorkspaceUuid
+  type WithLookup
 } from '@hcengineering/core'
 import {
   type DbAdapter,

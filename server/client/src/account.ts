@@ -39,7 +39,10 @@ export interface LoginInfo {
 
 const connectionErrorCodes = ['ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND']
 
-export async function listAccountWorkspaces (token: string, region: string | null = null): Promise<WorkspaceInfoWithStatus[]> {
+export async function listAccountWorkspaces (
+  token: string,
+  region: string | null = null
+): Promise<WorkspaceInfoWithStatus[]> {
   const accountsUrl = getAccoutsUrlOrFail()
   const workspaces = await (
     await fetch(accountsUrl, {
@@ -237,10 +240,7 @@ export async function workerHandshake (
   })
 }
 
-export async function getLoginInfoByToken (
-  token: string,
-  url: string | undefined
-): Promise<void> {
+export async function getLoginInfoByToken (token: string, url: string | undefined): Promise<void> {
   const accountsUrl = url ?? getAccoutsUrlOrFail()
 
   await fetch(accountsUrl, {

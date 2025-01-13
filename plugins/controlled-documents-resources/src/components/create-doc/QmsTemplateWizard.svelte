@@ -25,14 +25,7 @@
     createDocumentTemplate
   } from '@hcengineering/controlled-documents'
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import {
-    type AttachedData,
-    type Class,
-    type Data,
-    type Ref,
-    type Mixin,
-    generateId
-  } from '@hcengineering/core'
+  import { type AttachedData, type Class, type Data, type Ref, type Mixin, generateId } from '@hcengineering/core'
   import { MessageBox, getClient } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,

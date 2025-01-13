@@ -336,7 +336,16 @@ export async function OnKnock (txes: Tx[], control: TriggerControl): Promise<Tx[
               })
               const primarySocialString = pickPrimarySocialId(socialStrings)
               // TODO: Select proper account target
-              await createPushNotification(control, primarySocialString, title, body, request._id, subscriptions, from, path)
+              await createPushNotification(
+                control,
+                primarySocialString,
+                title,
+                body,
+                request._id,
+                subscriptions,
+                from,
+                path
+              )
             }
           }
         }
@@ -352,7 +361,9 @@ export async function OnInvite (txes: Tx[], control: TriggerControl): Promise<Tx
     if (actualTx._class === core.class.TxCreateDoc) {
       const invite = TxProcessor.createDoc2Doc(actualTx)
       if (invite.status === RequestStatus.Pending) {
-        const target = (await control.findAll(control.ctx, contact.mixin.Employee, { _id: invite.target as Ref<Employee> }))[0]
+        const target = (
+          await control.findAll(control.ctx, contact.mixin.Employee, { _id: invite.target as Ref<Employee> })
+        )[0]
         if (target === undefined) {
           continue
         }

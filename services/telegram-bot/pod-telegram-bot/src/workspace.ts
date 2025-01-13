@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import core, {
   PersonId,
   Blob,
@@ -297,12 +297,7 @@ export class WorkspaceClient {
     // return false
   }
 
-  async replyToMessage (
-    account: any,
-    record: MessageRecord,
-    text: string,
-    files: TelegramFileInfo[]
-  ): Promise<boolean> {
+  async replyToMessage (account: any, record: MessageRecord, text: string, files: TelegramFileInfo[]): Promise<boolean> {
     // TODO: FIXME
     throw new Error('Not implemented')
     // const message = await this.client.findOne(activity.class.ActivityMessage, { _id: record.messageId })

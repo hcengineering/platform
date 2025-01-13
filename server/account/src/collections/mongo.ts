@@ -42,7 +42,8 @@ interface MongoIndex {
   options: CreateIndexesOptions & { name: string }
 }
 
-export class MongoDbCollection<T extends Record<string, any>, K extends keyof T | undefined = undefined> implements DbCollection<T> {
+export class MongoDbCollection<T extends Record<string, any>, K extends keyof T | undefined = undefined>
+implements DbCollection<T> {
   constructor (
     readonly name: string,
     readonly db: Db,
@@ -126,8 +127,8 @@ export class MongoDbCollection<T extends Record<string, any>, K extends keyof T 
     const idKey = this.idKey
 
     if (idKey !== undefined) {
-      const key = (new UUID()).toJSON()
-      toInsert[idKey] = data[idKey] ?? key as any
+      const key = new UUID().toJSON()
+      toInsert[idKey] = data[idKey] ?? (key as any)
       toInsert._id = toInsert._id ?? toInsert[idKey]
     }
 
@@ -172,11 +173,7 @@ export class AccountMongoDbCollection extends MongoDbCollection<Account, 'uuid'>
     }
   }
 
-  async find (
-    query: Query<Account>,
-    sort?: Sort<Account>,
-    limit?: number
-  ): Promise<Account[]> {
+  async find (query: Query<Account>, sort?: Sort<Account>, limit?: number): Promise<Account[]> {
     const res = await super.find(query, sort, limit)
 
     return res.map((acc: Account) => this.convertToObj(acc))
@@ -224,7 +221,7 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
           res.status = {}
         }
 
-        (res.status as any)[key] = targetVal
+        ;(res.status as any)[key] = targetVal
       }
     }
 
@@ -241,7 +238,7 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
     }
 
     for (const key of Object.keys(sort)) {
-      (res.status as any)[key] = (sort as any)[key]
+      ;(res.status as any)[key] = (sort as any)[key]
     }
 
     return res
@@ -256,7 +253,7 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
       if (['$inc', '$set'].includes(key)) {
         res[key] = {}
         for (const incKey of Object.keys(op)) {
-          (res[key])[`status.${incKey}`] = op[incKey]
+          res[key][`status.${incKey}`] = op[incKey]
         }
       } else {
         res[`status.${key}`] = op
@@ -266,11 +263,7 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
     return res
   }
 
-  async find (
-    query: Query<WorkspaceStatus>,
-    sort?: Sort<WorkspaceStatus>,
-    limit?: number
-  ): Promise<WorkspaceStatus[]> {
+  async find (query: Query<WorkspaceStatus>, sort?: Sort<WorkspaceStatus>, limit?: number): Promise<WorkspaceStatus[]> {
     return (await this.wsCollection.find(this.toWsQuery(query), this.toWsSort(sort), limit)).map((ws) => ws.status)
   }
 
@@ -416,14 +409,24 @@ export class MongoAccountDB implements AccountDB {
     processingTimeoutMs: number,
     wsLivenessMs?: number
   ): Promise<WorkspaceInfoWithStatus | undefined> {
-    const pendingCreationQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [{ 'status.mode': { $in: ['pending-creation', 'creating'] } }]
+    const pendingCreationQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [
+      { 'status.mode': { $in: ['pending-creation', 'creating'] } }
+    ]
 
     const migrationQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [
-      { 'status.mode': { $in: ['migration-backup', 'migration-pending-backup', 'migration-clean', 'migration-pending-clean'] } }
+      {
+        'status.mode': {
+          $in: ['migration-backup', 'migration-pending-backup', 'migration-clean', 'migration-pending-clean']
+        }
+      }
     ]
 
     const archivingQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [
-      { 'status.mode': { $in: ['archiving-pending-backup', 'archiving-backup', 'archiving-pending-clean', 'archiving-clean'] } }
+      {
+        'status.mode': {
+          $in: ['archiving-pending-backup', 'archiving-backup', 'archiving-pending-clean', 'archiving-clean']
+        }
+      }
     ]
 
     const deletingQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [{ 'status.mode': { $in: ['pending-deletion', 'deleting'] } }]
@@ -433,7 +436,11 @@ export class MongoAccountDB implements AccountDB {
       $or: [
         { 'status.versionMajor': { $lt: version.major } },
         { 'status.versionMajor': version.major, 'status.versionMinor': { $lt: version.minor } },
-        { 'status.versionMajor': version.major, 'status.versionMinor': version.minor, 'status.versionPatch': { $lt: version.patch } }
+        {
+          'status.versionMajor': version.major,
+          'status.versionMinor': version.minor,
+          'status.versionPatch': { $lt: version.patch }
+        }
       ]
     }
     const pendingUpgradeQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [
@@ -482,7 +489,9 @@ export class MongoAccountDB implements AccountDB {
         }
         break
     }
-    const attemptsQuery = { $or: [{ 'status.processingAttempts': { $exists: false } }, { 'status.processingAttempts': { $lte: 3 } }] }
+    const attemptsQuery = {
+      $or: [{ 'status.processingAttempts': { $exists: false } }, { 'status.processingAttempts': { $lte: 3 } }]
+    }
 
     // We must have all the conditions in the DB query and we cannot filter anything in the code
     // because of possible concurrency between account services. We have to update "lastProcessingTime"

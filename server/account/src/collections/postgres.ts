@@ -36,7 +36,8 @@ import type {
   WorkspaceMemberInfo
 } from '../types'
 
-export class PostgresDbCollection<T extends Record<string, any>, K extends keyof T | undefined = undefined> implements DbCollection<T> {
+export class PostgresDbCollection<T extends Record<string, any>, K extends keyof T | undefined = undefined>
+implements DbCollection<T> {
   constructor (
     readonly name: string,
     readonly client: Sql,
@@ -53,7 +54,7 @@ export class PostgresDbCollection<T extends Record<string, any>, K extends keyof
   }
 
   protected toSnakeCase (str: string): string {
-    return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)
+    return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
   }
 
   protected toCamelCase (str: string): string {
@@ -62,7 +63,7 @@ export class PostgresDbCollection<T extends Record<string, any>, K extends keyof
 
   protected convertKeysToCamelCase (obj: any): any {
     if (Array.isArray(obj)) {
-      return obj.map(v => this.convertKeysToCamelCase(v))
+      return obj.map((v) => this.convertKeysToCamelCase(v))
     } else if (obj !== null && typeof obj === 'object') {
       const camelObj: any = {}
       for (const key of Object.keys(obj)) {
@@ -75,7 +76,7 @@ export class PostgresDbCollection<T extends Record<string, any>, K extends keyof
 
   protected convertKeysToSnakeCase (obj: any): any {
     if (Array.isArray(obj)) {
-      return obj.map(v => this.convertKeysToSnakeCase(v))
+      return obj.map((v) => this.convertKeysToSnakeCase(v))
     } else if (obj !== null && typeof obj === 'object') {
       const snakeObj: any = {}
       for (const key of Object.keys(obj)) {
@@ -198,10 +199,7 @@ export class PostgresDbCollection<T extends Record<string, any>, K extends keyof
     return (await this.find(query, undefined, 1, client))[0] ?? null
   }
 
-  async insertOne (
-    data: Partial<T>,
-    client?: Sql
-  ): Promise<K extends keyof T ? T[K] : undefined> {
+  async insertOne (data: Partial<T>, client?: Sql): Promise<K extends keyof T ? T[K] : undefined> {
     const snakeData = this.convertKeysToSnakeCase(data)
     const keys: string[] = Object.keys(snakeData)
     const values = Object.values(snakeData) as any
@@ -278,7 +276,9 @@ export class PostgresDbCollection<T extends Record<string, any>, K extends keyof
   }
 }
 
-export class AccountPostgresDbCollection extends PostgresDbCollection<Account, 'uuid'> implements DbCollection<Account> {
+export class AccountPostgresDbCollection
+  extends PostgresDbCollection<Account, 'uuid'>
+  implements DbCollection<Account> {
   private readonly passwordKeys = ['hash', 'salt']
 
   constructor (readonly client: Sql) {
@@ -363,7 +363,10 @@ export class PostgresAccountDB implements AccountDB {
   otp: PostgresDbCollection<OTP>
   invite: PostgresDbCollection<WorkspaceInvite, 'id'>
 
-  constructor (readonly client: Sql, readonly ns: string = 'global_account') {
+  constructor (
+    readonly client: Sql,
+    readonly ns: string = 'global_account'
+  ) {
     this.person = new PostgresDbCollection<Person, 'uuid'>('person', client, 'uuid')
     this.account = new AccountPostgresDbCollection(client)
     this.socialId = new PostgresDbCollection<SocialId, 'id'>('social_id', client, 'id')
@@ -423,25 +426,30 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   async assignWorkspace (accountUuid: string, workspaceUuid: string, role: AccountRole): Promise<void> {
-    await this.client`INSERT INTO ${this.client(this.getWsMembersTableName())} (workspace_uuid, account_uuid, role) VALUES (${workspaceUuid}, ${accountUuid}, ${role})`
+    await this
+      .client`INSERT INTO ${this.client(this.getWsMembersTableName())} (workspace_uuid, account_uuid, role) VALUES (${workspaceUuid}, ${accountUuid}, ${role})`
   }
 
   async unassignWorkspace (accountUuid: string, workspaceUuid: string): Promise<void> {
-    await this.client`DELETE FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
+    await this
+      .client`DELETE FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
   }
 
   async updateWorkspaceRole (accountUuid: string, workspaceUuid: string, role: AccountRole): Promise<void> {
-    await this.client`UPDATE ${this.client(this.getWsMembersTableName())} SET role = ${role} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
+    await this
+      .client`UPDATE ${this.client(this.getWsMembersTableName())} SET role = ${role} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
   }
 
   async getWorkspaceRole (accountUuid: string, workspaceUuid: string): Promise<AccountRole | null> {
-    const res: any = await this.client`SELECT role FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
+    const res: any = await this
+      .client`SELECT role FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
 
     return res[0]?.role ?? null
   }
 
   async getWorkspaceMembers (workspaceUuid: string): Promise<WorkspaceMemberInfo[]> {
-    const res: any = await this.client`SELECT account_uuid, role FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid}`
+    const res: any = await this
+      .client`SELECT account_uuid, role FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid}`
 
     return res.map((p: any) => ({
       person: p.account_uuid,
@@ -492,7 +500,8 @@ export class PostgresAccountDB implements AccountDB {
     processingTimeoutMs: number,
     wsLivenessMs?: number
   ): Promise<WorkspaceInfoWithStatus | undefined> {
-    const sqlChunks: string[] = [`SELECT 
+    const sqlChunks: string[] = [
+      `SELECT 
           w.uuid,
           w.name,
           w.url,
@@ -517,7 +526,8 @@ export class PostgresAccountDB implements AccountDB {
           ) status
            FROM ${this.workspace.getTableName()} as w
            INNER JOIN ${this.workspaceStatus.getTableName()} as s ON s.workspace_uuid = w.uuid
-    `]
+    `
+    ]
     const whereChunks: string[] = []
     const values: any[] = []
 
@@ -594,11 +604,13 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   async setPassword (accountUuid: string, hash: Buffer, salt: Buffer): Promise<void> {
-    await this.client`UPSERT INTO ${this.client(this.account.getPasswordsTableName())} (account_uuid, hash, salt) VALUES (${accountUuid}, ${hash as unknown as Uint8Array}, ${salt as unknown as Uint8Array})`
+    await this
+      .client`UPSERT INTO ${this.client(this.account.getPasswordsTableName())} (account_uuid, hash, salt) VALUES (${accountUuid}, ${hash as unknown as Uint8Array}, ${salt as unknown as Uint8Array})`
   }
 
   async resetPassword (accountUuid: string): Promise<void> {
-    await this.client`DELETE FROM ${this.client(this.account.getPasswordsTableName())} WHERE account_uuid = ${accountUuid}`
+    await this
+      .client`DELETE FROM ${this.client(this.account.getPasswordsTableName())} WHERE account_uuid = ${accountUuid}`
   }
 
   protected getMigrations (): [string, string][] {

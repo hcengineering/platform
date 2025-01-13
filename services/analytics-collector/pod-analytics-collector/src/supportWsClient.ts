@@ -187,7 +187,11 @@ export class SupportWsClient extends WorkspaceClient {
     )
   }
 
-  async processAction (action: Action, person: Person, onboardingMessages: Collection<OnboardingMessage>): Promise<void> {
+  async processAction (
+    action: Action,
+    person: Person,
+    onboardingMessages: Collection<OnboardingMessage>
+  ): Promise<void> {
     switch (action.name) {
       case MessageActions.Accept: {
         const personId = await this.getPersonId(person._id)
@@ -205,7 +209,7 @@ export class SupportWsClient extends WorkspaceClient {
 
   async getPersonId (person: Ref<Person>): Promise<PersonId | undefined> {
     const cachedPersonId = this.personIdByPerson.get(person)
-    const personId = cachedPersonId ?? await getPrimarySocialId(await this.opClient, person)
+    const personId = cachedPersonId ?? (await getPrimarySocialId(await this.opClient, person))
 
     if (personId === undefined) {
       console.error('Person id not found for person', person)

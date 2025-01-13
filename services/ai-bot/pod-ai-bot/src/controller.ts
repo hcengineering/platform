@@ -116,7 +116,10 @@ export class AIControl {
     this.closeWorkspaceTimeouts.set(workspace, newTimeoutId)
   }
 
-  async createWorkspaceClient (workspace: WorkspaceUuid, info: WorkspaceInfoRecord): Promise<WorkspaceClient | undefined> {
+  async createWorkspaceClient (
+    workspace: WorkspaceUuid,
+    info: WorkspaceInfoRecord
+  ): Promise<WorkspaceClient | undefined> {
     const isAssigned = await tryAssignToWorkspace(workspace, this.ctx)
 
     if (!isAssigned) {

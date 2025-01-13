@@ -34,7 +34,9 @@ export async function getDirect (
     return
   }
 
-  const existingDm = (await client.findAll(chunter.class.DirectMessage, { members: aiBotEmailSocialId })).find((dm) => dm.members.every((m) => m === aiBotEmailSocialId || personIds.has(m)))
+  const existingDm = (await client.findAll(chunter.class.DirectMessage, { members: aiBotEmailSocialId })).find((dm) =>
+    dm.members.every((m) => m === aiBotEmailSocialId || personIds.has(m))
+  )
 
   if (existingDm !== undefined) {
     return existingDm._id
