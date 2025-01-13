@@ -105,7 +105,7 @@
         </div>
       {/if}
       {#if label}
-        <span class="secondary-textColor overflow-label heading-medium-16 mr-2">{label}</span>
+        <span class="secondary-textColor overflow-label heading-medium-16 line-height-auto mr-2">{label}</span>
       {:else if intlLabel}
         <div class="secondary-textColor overflow-label mr-2">
           <Label label={intlLabel} />
