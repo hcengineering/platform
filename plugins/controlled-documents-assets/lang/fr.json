@@ -76,6 +76,8 @@
     "ProvideRejectionReason": "Tapez la raison du rejet...",
     "RejectionReason": "Raison du rejet",
     "ConfirmReviewCompletion": "Confirmer l'achèvement de la révision",
+    "ConfirmApprovalSubmission": "Confirmer la soumission pour approbation",
+    "ConfirmReviewSubmission": "Confirmer la soumission pour examen",
     "AddApprovalTitle": "Envoyer votre document aux approuveurs",
     "AddApprovalDescription1": "Pour préparer votre document à l'approbation, il doit remplir quelques conditions :",
     "AddApprovalDescription2": "a le statut 'Brouillon' ou 'Révisé'",

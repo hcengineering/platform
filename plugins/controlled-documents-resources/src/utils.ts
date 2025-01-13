@@ -185,6 +185,7 @@ export async function getDocumentMetaLinkFragment (document: Doc): Promise<Locat
 export interface TeamPopupData {
   controlledDoc: ControlledDocument
   requestClass: Ref<Class<DocumentRequest>>
+  requireSignature?: boolean
 }
 
 export async function sendReviewRequest (

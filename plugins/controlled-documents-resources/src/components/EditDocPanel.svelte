@@ -165,7 +165,8 @@
 
     const teamPopupData: TeamPopupData = {
       controlledDoc: $controlledDocument,
-      requestClass
+      requestClass,
+      requireSignature: true
     }
 
     showPopup(TeamPopup, teamPopupData, 'center')
