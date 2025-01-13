@@ -1,5 +1,6 @@
 FROM node:22
 
+RUN apt-get update
 RUN apt-get install libjemalloc2 dumb-init
 RUN apt-get clean
 
