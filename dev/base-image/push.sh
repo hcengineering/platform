@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-docker push hardcoreeng/base
-docker push hardcoreeng/rekoni-base
-docker push hardcoreeng/print-base
-docker push hardcoreeng/front-base
+# Default version if not set
+VERSION=${VERSION:-"latest"}
+
+docker push hardcoreeng/base:${VERSION}
+docker push hardcoreeng/rekoni-base:${VERSION}
+docker push hardcoreeng/print-base:${VERSION}
+docker push hardcoreeng/front-base:${VERSION}
