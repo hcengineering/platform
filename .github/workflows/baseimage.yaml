@@ -55,5 +55,5 @@ jobs:
         run: |
           echo Pushing base image
           cd ./dev/base-image
-          ./publish.sh
+          ./push.sh
 
