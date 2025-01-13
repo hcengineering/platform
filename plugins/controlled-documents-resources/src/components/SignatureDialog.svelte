@@ -18,7 +18,8 @@
   import { createEventDispatcher } from 'svelte'
   import login from '@hcengineering/login'
   import { ERROR, IntlString, OK, Severity, Status, getMetadata, translate } from '@hcengineering/platform'
-  import { EditBox, StylishEdit, ModernDialog, fetchMetadataLocalStorage } from '@hcengineering/ui'
+  import { EditBox, StylishEdit, ModernDialog } from '@hcengineering/ui'
+  import { getCurrentAccount, parseSocialIdString, SocialIdType } from '@hcengineering/core'
 
   import documents from '../plugin'
   import StatusControl from './requests/StatusControl.svelte'
@@ -29,12 +30,14 @@
   export let isRejection: boolean = false
 
   const dispatch = createEventDispatcher()
+  const account = getCurrentAccount()
 
   let rejectionNote = ''
 
   const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
-  const email: string =
-    getMetadata(login.metadata.LoginEmail) ?? fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
+  const emailSocialIdString = account.socialIds.find((si) => parseSocialIdString(si).type === SocialIdType.EMAIL)
+  const emailSocialId = emailSocialIdString !== undefined ? parseSocialIdString(emailSocialIdString) : undefined
+  const email: string = emailSocialId?.value ?? ''
   const disableEmailField = email !== ''
 
   const object: LoginInfo = {

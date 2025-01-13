@@ -24,15 +24,14 @@
     createChangeControl,
     createDocumentTemplate
   } from '@hcengineering/controlled-documents'
-  import { Employee } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import {
     type AttachedData,
     type Class,
     type Data,
     type Ref,
     type Mixin,
-    generateId,
-    getCurrentAccount
+    generateId
   } from '@hcengineering/core'
   import { MessageBox, getClient } from '@hcengineering/presentation'
   import {
