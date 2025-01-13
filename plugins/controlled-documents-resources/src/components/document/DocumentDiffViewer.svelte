@@ -2,7 +2,7 @@
   import { getContext, onDestroy } from 'svelte'
   import { getClient } from '@hcengineering/presentation'
   import { makeDocCollabId, type Doc } from '@hcengineering/core'
-  import { CollaborationIds, type Ydoc } from '@hcengineering/text-editor'
+  import { CollaborationIds } from '@hcengineering/text-editor'
   import {
     CollaborationDiffViewer,
     Provider,
@@ -29,9 +29,9 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const ydoc = getContext<Ydoc>(CollaborationIds.Doc)
+  const ydoc: any = getContext(CollaborationIds.Doc)
 
-  let comparedYdoc: Ydoc | undefined = undefined
+  let comparedYdoc: any | undefined = undefined
   let comparedProvider: Provider | undefined = undefined
   let loading = true
 

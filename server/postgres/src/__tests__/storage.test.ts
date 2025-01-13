@@ -14,11 +14,7 @@
 //
 import core, {
   type Client,
-  type ClientConnection,
   createClient,
-  type Doc,
-  type DocChunk,
-  type Domain,
   generateId,
   getWorkspaceId,
   Hierarchy,
@@ -29,7 +25,7 @@ import core, {
   type Space,
   TxOperations
 } from '@hcengineering/core'
-import { type DbAdapter } from '@hcengineering/server-core'
+import { type DbAdapter, wrapAdapterToClient } from '@hcengineering/server-core'
 import { createPostgresAdapter, createPostgresTxAdapter } from '..'
 import { getDBClient, type PostgresClientReference, shutdown } from '../utils'
 import { genMinModel } from './minmodel'
@@ -42,13 +38,14 @@ createTaskModel(txes)
 describe('postgres operations', () => {
   const baseDbUri: string = process.env.DB_URL ?? 'postgresql://postgres:example@localhost:5433'
   let dbId: string = 'pg_testdb_' + generateId()
+  let dbUuid: string = crypto.randomUUID()
   let dbUri: string = baseDbUri + '/' + dbId
   const clientRef: PostgresClientReference = getDBClient(baseDbUri)
   let hierarchy: Hierarchy
   let model: ModelDb
   let client: Client
   let operations: TxOperations
-  let serverStorage: DbAdapter
+  let serverStorage: DbAdapter | undefined
 
   afterAll(async () => {
     clientRef.close()
@@ -58,6 +55,7 @@ describe('postgres operations', () => {
   beforeEach(async () => {
     try {
       dbId = 'pg_testdb_' + generateId()
+      dbUuid = crypto.randomUUID()
       dbUri = baseDbUri + '/' + dbId
       const client = await clientRef.getClient()
       await client`CREATE DATABASE ${client(dbId)}`
@@ -88,7 +86,16 @@ describe('postgres operations', () => {
     }
 
     const mctx = new MeasureMetricsContext('', {})
-    const txStorage = await createPostgresTxAdapter(mctx, hierarchy, dbUri, getWorkspaceId(dbId), model)
+    const txStorage = await createPostgresTxAdapter(
+      mctx,
+      hierarchy,
+      dbUri,
+      {
+        ...getWorkspaceId(dbId),
+        uuid: dbUuid
+      },
+      model
+    )
 
     // Put all transactions to Tx
     for (const t of txes) {
@@ -98,25 +105,19 @@ describe('postgres operations', () => {
     await txStorage.close()
 
     const ctx = new MeasureMetricsContext('client', {})
-    const serverStorage = await createPostgresAdapter(ctx, hierarchy, dbUri, getWorkspaceId(dbId), model)
-    await serverStorage.init?.()
+    const serverStorage = await createPostgresAdapter(
+      ctx,
+      hierarchy,
+      dbUri,
+      {
+        ...getWorkspaceId(dbId),
+        uuid: dbUuid
+      },
+      model
+    )
+    await serverStorage.init?.(ctx)
     client = await createClient(async (handler) => {
-      const st: ClientConnection = {
-        isConnected: () => true,
-        findAll: async (_class, query, options) => await serverStorage.findAll(ctx, _class, query, options),
-        tx: async (tx) => await serverStorage.tx(ctx, tx),
-        searchFulltext: async () => ({ docs: [] }),
-        close: async () => {},
-        loadChunk: async (domain): Promise<DocChunk> => await Promise.reject(new Error('unsupported')),
-        closeChunk: async (idx) => {},
-        loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
-        upload: async (domain: Domain, docs: Doc[]) => {},
-        clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
-        loadModel: async () => txes,
-        getAccount: async () => ({}) as any,
-        sendForceClose: async () => {}
-      }
-      return st
+      return wrapAdapterToClient(ctx, serverStorage, txes)
     })
 
     operations = new TxOperations(client, core.account.System)

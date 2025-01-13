@@ -38,7 +38,8 @@ export function showBoardPopup (board: SavedBoard, editor: Editor): void {
       DrawingBoardPopup,
       {
         savedCmds: board.commands,
-        savedProps: board.props
+        savedProps: board.props,
+        readonly: !editor.isEditable
       },
       'centered',
       () => {

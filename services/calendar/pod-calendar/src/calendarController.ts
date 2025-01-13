@@ -13,12 +13,14 @@
 // limitations under the License.
 //
 
-import { Account, RateLimiter, Ref } from '@hcengineering/core'
+import { Account, isActiveMode, RateLimiter, Ref, systemAccountEmail } from '@hcengineering/core'
 import { type Db } from 'mongodb'
 import { type CalendarClient } from './calendar'
 import config from './config'
 import { type ProjectCredentials, type Token, type User } from './types'
 import { WorkspaceClient } from './workspaceClient'
+import { getWorkspaceInfo } from '@hcengineering/server-client'
+import { generateToken } from '@hcengineering/server-token'
 
 export class CalendarController {
   private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
@@ -60,6 +62,16 @@ export class CalendarController {
 
     for (const [workspace, tokens] of groups) {
       await limiter.add(async () => {
+        const wstok = generateToken(systemAccountEmail, { name: workspace })
+        const info = await getWorkspaceInfo(wstok)
+        if (info === undefined) {
+          console.log('workspace not found', workspace)
+          return
+        }
+        if (!isActiveMode(info.mode)) {
+          console.log('workspace is not active', workspace)
+          return
+        }
         const startPromise = this.startWorkspace(workspace, tokens)
         const timeoutPromise = new Promise<void>((resolve) => {
           setTimeout(() => {

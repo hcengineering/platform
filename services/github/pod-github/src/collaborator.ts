@@ -4,7 +4,7 @@
 //
 
 import { CollaboratorClient, getClient as getCollaboratorClient } from '@hcengineering/collaborator-client'
-import { WorkspaceId } from '@hcengineering/core'
+import { systemAccountEmail, WorkspaceId } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import config from './config'
 
@@ -12,6 +12,6 @@ import config from './config'
  * @public
  */
 export function createCollaboratorClient (workspaceId: WorkspaceId): CollaboratorClient {
-  const token = generateToken(config.SystemEmail, workspaceId, { mode: 'github' })
+  const token = generateToken(systemAccountEmail, workspaceId, { mode: 'github' })
   return getCollaboratorClient(workspaceId, token, config.CollaboratorURL)
 }

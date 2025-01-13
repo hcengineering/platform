@@ -15,7 +15,7 @@
 import { type Class, type Doc, type Ref, type Space } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { getBlobRef, getClient } from '@hcengineering/presentation'
-import { CodeExtension, codeOptions } from '@hcengineering/text'
+import { BackgroundColor, CodeExtension, codeOptions, TextColor, TextStyle } from '@hcengineering/text'
 import textEditor, { type ActionContext, type ExtensionCreator, type TextEditorMode } from '@hcengineering/text-editor'
 import { type AnyExtension, type Editor, Extension } from '@tiptap/core'
 import { type Level } from '@tiptap/extension-heading'
@@ -35,6 +35,10 @@ import { ParagraphExtension } from '../components/extension/paragraph'
 import { SubmitExtension, type SubmitOptions } from '../components/extension/submit'
 import { Table, TableCell, TableRow } from '../components/extension/table'
 import { DefaultKit, type DefaultKitOptions } from './default-kit'
+import { MermaidExtension, type MermaidOptions, mermaidOptions } from '../components/extension/mermaid'
+import { DrawingBoardExtension, type DrawingBoardOptions } from '../components/extension/drawingBoard'
+import { type IndendOptions, IndentExtension, indentExtensionOptions } from '../components/extension/indent'
+import TextAlign, { type TextAlignOptions } from '@tiptap/extension-text-align'
 
 export interface EditorKitOptions extends DefaultKitOptions {
   history?: false
@@ -49,6 +53,10 @@ export interface EditorKitOptions extends DefaultKitOptions {
     }
   })
   | false
+  drawingBoard?: DrawingBoardOptions | false
+  mermaid?: MermaidOptions | false
+  indent?: IndendOptions | false
+  textAlign?: TextAlignOptions | false
   mode?: 'full' | 'compact'
   note?: NoteOptions | false
   submit?: SubmitOptions | false
@@ -71,7 +79,7 @@ export const tableKitExtensions: KitExtension[] = [
   [
     10,
     Table.configure({
-      resizable: false,
+      resizable: true,
       HTMLAttributes: {
         class: 'proseTable'
       }
@@ -193,6 +201,12 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                 staticKitExtensions.push([400, ParagraphExtension.configure()])
               }
 
+              if (mode === 'full') {
+                staticKitExtensions.push([410, TextStyle.configure({})])
+                staticKitExtensions.push([420, TextColor.configure({})])
+                staticKitExtensions.push([430, BackgroundColor.configure({ types: ['tableCell'] })])
+              }
+
               staticKitExtensions.push([
                 500,
                 ListKeymapExtension.configure({
@@ -246,6 +260,34 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                 }
 
                 staticKitExtensions.push([800, ImageExtension.configure(imageOptions)])
+              }
+
+              if (this.options.drawingBoard !== false) {
+                staticKitExtensions.push([840, DrawingBoardExtension.configure(this.options.drawingBoard)])
+              }
+
+              if (this.options.mermaid !== false) {
+                staticKitExtensions.push([850, MermaidExtension.configure(this.options.mermaid ?? mermaidOptions)])
+              }
+
+              if (this.options.indent !== false) {
+                staticKitExtensions.push([
+                  860,
+                  IndentExtension.configure(this.options.indent ?? indentExtensionOptions)
+                ])
+              }
+
+              if (this.options.textAlign !== false) {
+                staticKitExtensions.push([
+                  870,
+                  TextAlign.configure(
+                    this.options.textAlign ?? {
+                      types: ['heading', 'paragraph'],
+                      alignments: ['left', 'center', 'right'],
+                      defaultAlignment: null
+                    }
+                  )
+                ])
               }
 
               if (this.options.toolbar !== false) {

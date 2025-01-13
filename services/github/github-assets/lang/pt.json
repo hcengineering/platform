@@ -46,6 +46,7 @@
     "Options": "Opções",
     "Projects": "Projetos ({count})",
     "GithubIssue": "Issue do Github",
+    "GithubMilestone": "GitHub Milestone(Project)",
     "OnlyOrganizationError": "Somente contas de organização são suportadas",
     "Mergeable": "Pronto para ser mergeado",
     "IssueRepositoryTarget": "em",

@@ -33,6 +33,9 @@ import { DefaultKit, DefaultKitOptions } from './default-kit'
 import { CodeExtension, codeOptions } from '../marks/code'
 import { NoteBaseExtension } from '../marks/noteBase'
 import { CommentNode } from '../nodes/comment'
+import TextAlign from '@tiptap/extension-text-align'
+import TextStyle from '@tiptap/extension-text-style'
+import { BackgroundColor, TextColor } from '../marks/colors'
 
 const headingLevels: Level[] = [1, 2, 3, 4, 5, 6]
 
@@ -86,12 +89,20 @@ export const ServerKit = Extension.create<ServerKitOptions>({
       ...taskListExtensions,
       ...fileExtensions,
       ...imageExtensions,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+        alignments: ['left', 'center', 'right'],
+        defaultAlignment: null
+      }),
       TodoItemNode,
       TodoListNode,
       ReferenceNode,
       CommentNode,
       NodeUuid,
-      NoteBaseExtension
+      NoteBaseExtension,
+      TextStyle.configure({}),
+      TextColor.configure({}),
+      BackgroundColor.configure({ types: ['tableCell'] })
     ]
   }
 })

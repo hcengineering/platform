@@ -20,6 +20,7 @@
   import { Widget } from '@hcengineering/workbench'
   import { ActivityMessage } from '@hcengineering/activity'
   import { ChatWidgetTab } from '@hcengineering/chunter'
+  import { Presence } from '@hcengineering/presence-resources'
   import { updateTabData } from '@hcengineering/workbench-resources'
 
   import Channel from './Channel.svelte'
@@ -76,6 +77,7 @@
 </script>
 
 {#if object && renderChannel && visible}
+  <Presence {object} />
   <div class="channel" class:invisible={threadId !== undefined} style:height style:width>
     <ChannelHeader
       _id={object._id}

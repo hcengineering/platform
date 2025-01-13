@@ -91,6 +91,7 @@
 <div
   class="flex-col w-full clear-mins mobile-wrapper"
   class:left-divider={!$deviceInfo.navigator.visible}
+  class:right-divider={!visibleCalendar}
   bind:this={mainPanel}
 >
   <ToDos {mode} {tag} bind:currentDate />

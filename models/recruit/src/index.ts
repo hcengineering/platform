@@ -213,7 +213,8 @@ export function createModel (builder: Builder): void {
                 ['assigned', view.string.Assigned, {}],
                 ['created', view.string.Created, {}],
                 ['subscribed', view.string.Subscribed, {}]
-              ]
+              ],
+              descriptors: [view.viewlet.List, view.viewlet.Table, task.viewlet.Kanban]
             }
           },
           {
@@ -361,7 +362,8 @@ export function createModel (builder: Builder): void {
       viewOptions: {
         groupBy: [],
         orderBy: [],
-        other: [vacancyHideArchivedOption]
+        other: [vacancyHideArchivedOption],
+        storageKey: 'vacancyViewOptions'
       }
     },
     recruit.viewlet.TableVacancy
@@ -502,7 +504,8 @@ export function createModel (builder: Builder): void {
       viewOptions: {
         groupBy: [],
         orderBy: [],
-        other: [applicationDoneOption, hideApplicantsFromArchivedVacanciesOption]
+        other: [applicationDoneOption, hideApplicantsFromArchivedVacanciesOption],
+        storageKey: 'applicantViewOptions'
       }
     },
     recruit.viewlet.ApplicantTable
@@ -559,7 +562,8 @@ export function createModel (builder: Builder): void {
           action: view.function.ShowEmptyGroups,
           label: view.string.ShowEmptyGroups
         }
-      ]
+      ],
+      storageKey: 'applicantViewOptions'
     }
     if (colors) {
       model.other.push(showColorsViewOption)
@@ -784,7 +788,8 @@ export function createModel (builder: Builder): void {
           ['modifiedOn', SortingOrder.Descending],
           ['createdOn', SortingOrder.Descending]
         ],
-        other: [vacancyHideArchivedOption]
+        other: [vacancyHideArchivedOption],
+        storageKey: 'vacancyViewOptions'
       }
     },
     recruit.viewlet.ListVacancy

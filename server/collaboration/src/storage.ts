@@ -19,13 +19,14 @@ import {
   type Ref,
   type WorkspaceId,
   Markup,
+  MarkupBlobRef,
   MeasureContext,
   generateId,
   makeCollabJsonId,
   makeCollabYdocId
 } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
-import { yDocToMarkup } from '@hcengineering/text'
+import { yDocToMarkup } from '@hcengineering/text-ydoc'
 import { Doc as YDoc } from 'yjs'
 
 import { yDocFromBuffer, yDocToBuffer } from './ydoc'
@@ -35,9 +36,9 @@ export async function loadCollabYdoc (
   ctx: MeasureContext,
   storageAdapter: StorageAdapter,
   workspace: WorkspaceId,
-  doc: CollaborativeDoc
+  doc: CollaborativeDoc | MarkupBlobRef
 ): Promise<YDoc | undefined> {
-  const blobId = makeCollabYdocId(doc)
+  const blobId = typeof doc === 'string' ? doc : makeCollabYdocId(doc)
 
   const blob = await storageAdapter.stat(ctx, workspace, blobId)
   if (blob === undefined) {
@@ -61,10 +62,10 @@ export async function saveCollabYdoc (
   ctx: MeasureContext,
   storageAdapter: StorageAdapter,
   workspace: WorkspaceId,
-  doc: CollaborativeDoc,
+  doc: CollaborativeDoc | MarkupBlobRef,
   ydoc: YDoc
 ): Promise<Ref<Blob>> {
-  const blobId = makeCollabYdocId(doc)
+  const blobId = typeof doc === 'string' ? doc : makeCollabYdocId(doc)
 
   const buffer = yDocToBuffer(ydoc)
   await storageAdapter.put(ctx, workspace, blobId, buffer, 'application/ydoc', buffer.length)

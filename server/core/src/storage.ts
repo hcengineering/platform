@@ -52,6 +52,7 @@ export class BackupClientOps {
     return ctx.with('load-chunk', {}, async (ctx) => {
       idx = idx ?? this.idIndex++
       let chunk: ChunkInfo | undefined = this.chunkInfo.get(idx)
+      let size = 0
       if (chunk !== undefined) {
         chunk.index++
         if (chunk.finished === undefined || chunk.finished) {
@@ -74,12 +75,16 @@ export class BackupClientOps {
           break
         }
         docs.push(..._docs)
+        for (const d of _docs) {
+          size += d.size ?? 0
+        }
       }
 
       return {
         idx,
         docs,
-        finished: chunk.finished
+        finished: chunk.finished,
+        size
       }
     })
   }

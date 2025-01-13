@@ -156,12 +156,14 @@
           on:select={onSelected}
         />
       </div>
-      <Separator
-        name={'parentsNavigator'}
-        float={floatNavigator ? 'navigator' : true}
-        index={0}
-        color={'var(--theme-divider-color)'}
-      />
+      {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
+        <Separator
+          name={'parentsNavigator'}
+          float={floatNavigator ? 'navigator' : true}
+          index={0}
+          color={'var(--theme-divider-color)'}
+        />
+      {/if}
     </div>
     <Separator name={'parentsNavigator'} float={floatNavigator} index={0} color={'var(--theme-divider-color)'} />
   {/if}

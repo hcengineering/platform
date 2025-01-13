@@ -18,7 +18,7 @@ import type { AnyAttribute, Class, Classifier, Doc, Domain, Interface, Mixin, Ob
 import { ClassifierKind } from './classes'
 import { clone as deepClone } from './clone'
 import core from './component'
-import { _createMixinProxy, _mixinClass, _toDoc } from './proxy'
+import { _createMixinProxy, _mixinClass, _toDoc, PROXY_MIXIN_CLASS_KEY } from './proxy'
 import type { Tx, TxCreateDoc, TxMixin, TxRemoveDoc, TxUpdateDoc } from './tx'
 import { TxProcessor } from './tx'
 
@@ -53,7 +53,9 @@ export class Hierarchy {
   }
 
   as<D extends Doc, M extends D>(doc: D, mixin: Ref<Mixin<M>>): M {
-    return new Proxy(doc, this.getMixinProxyHandler(mixin)) as M
+    if ((doc as any)[PROXY_MIXIN_CLASS_KEY] === mixin) return doc as M
+
+    return new Proxy(Hierarchy.toDoc(doc), this.getMixinProxyHandler(mixin)) as M
   }
 
   asIf<D extends Doc, M extends D>(doc: D | undefined, mixin: Ref<Mixin<M>>): M | undefined {
@@ -80,9 +82,13 @@ export class Hierarchy {
     return m ?? doc._class
   }
 
-  hasMixin<D extends Doc, M extends D>(doc: D, mixin: Ref<Mixin<M>>): boolean {
+  static hasMixin<D extends Doc, M extends D>(doc: D, mixin: Ref<Mixin<M>>): boolean {
     const d = Hierarchy.toDoc(doc)
     return typeof (d as any)[mixin] === 'object'
+  }
+
+  hasMixin<D extends Doc, M extends D>(doc: D, mixin: Ref<Mixin<M>>): boolean {
+    return Hierarchy.hasMixin(doc, mixin)
   }
 
   classHierarchyMixin<D extends Doc, M extends D>(

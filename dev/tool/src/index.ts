@@ -58,9 +58,18 @@ import serverClientPlugin, {
   listAccountWorkspaces,
   updateBackupInfo
 } from '@hcengineering/server-client'
-import { createBackupPipeline, getConfig, getWorkspaceDestroyAdapter } from '@hcengineering/server-pipeline'
+import {
+  createBackupPipeline,
+  getConfig,
+  getWorkspaceDestroyAdapter,
+  registerAdapterFactory,
+  registerDestroyFactory,
+  registerServerPlugins,
+  registerStringLoaders,
+  registerTxAdapterFactory
+} from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import { FileModelLogger } from '@hcengineering/server-tool'
+import { FileModelLogger, buildModel } from '@hcengineering/server-tool'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 import path from 'path'
 
@@ -89,12 +98,19 @@ import core, {
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import contact from '@hcengineering/model-contact'
-import { getMongoClient, getWorkspaceMongoDB, shutdown } from '@hcengineering/mongo'
+import {
+  createMongoAdapter,
+  createMongoDestroyAdapter,
+  createMongoTxAdapter,
+  getMongoClient,
+  getWorkspaceMongoDB,
+  shutdown
+} from '@hcengineering/mongo'
 import { backupDownload } from '@hcengineering/server-backup/src/backup'
 
-import { createDatalakeClient, DatalakeService, type DatalakeConfig } from '@hcengineering/datalake'
+import { createDatalakeClient, CONFIG_KIND as DATALAKE_CONFIG_KIND, type DatalakeConfig } from '@hcengineering/datalake'
 import { getModelVersion } from '@hcengineering/model-all'
-import { S3Service, type S3Config } from '@hcengineering/s3'
+import { CONFIG_KIND as S3_CONFIG_KIND, S3Service, type S3Config } from '@hcengineering/s3'
 import type { PipelineFactory, StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
@@ -120,11 +136,18 @@ import {
   restoreRecruitingTaskTypes
 } from './clean'
 import { changeConfiguration } from './configuration'
-import { moveAccountDbFromMongoToPG, moveFromMongoToPG, moveWorkspaceFromMongoToPG } from './db'
-import { restoreControlledDocContentMongo, restoreWikiContentMongo } from './markup'
+import {
+  generateUuidMissingWorkspaces,
+  updateDataWorkspaceIdToUuid,
+  moveAccountDbFromMongoToPG,
+  moveFromMongoToPG,
+  moveWorkspaceFromMongoToPG
+} from './db'
+import { restoreControlledDocContentMongo, restoreWikiContentMongo, restoreMarkupRefsMongo } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount } from './renameAccount'
 import { copyToDatalake, moveFiles, showLostFiles } from './storage'
+import { createPostgresTxAdapter, createPostgresAdapter, createPostgreeDestroyAdapter } from '@hcengineering/postgres'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -151,6 +174,16 @@ export function devTool (
   extendProgram?: (prog: Command) => void
 ): void {
   const toolCtx = new MeasureMetricsContext('tool', {})
+
+  registerTxAdapterFactory('mongodb', createMongoTxAdapter)
+  registerAdapterFactory('mongodb', createMongoAdapter)
+  registerDestroyFactory('mongodb', createMongoDestroyAdapter)
+
+  registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
+  registerAdapterFactory('postgresql', createPostgresAdapter, true)
+  registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+  registerServerPlugins()
+  registerStringLoaders()
 
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {
@@ -947,25 +980,46 @@ export function devTool (
     .option('-c, --recheck', 'Force hash recheck on server', false)
     .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
+    .option('--use-storage <useStorage>', 'Use workspace storage adapter from env variable', '')
+    .option(
+      '--history-file <historyFile>',
+      'Store blob send info into file. Will skip already send documents.',
+      undefined
+    )
     .description('dump workspace transactions and minio resources')
     .action(
       async (
         dirName: string,
         workspace: string,
         date,
-        cmd: { merge: boolean, parallel: string, recheck: boolean, include: string, skip: string }
+        cmd: {
+          merge: boolean
+          parallel: string
+          recheck: boolean
+          include: string
+          skip: string
+          useStorage: string
+          historyFile: string
+        }
       ) => {
         const storage = await createFileBackupStorage(dirName)
         const wsid = getWorkspaceId(workspace)
         const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+        const storageConfig = cmd.useStorage !== '' ? storageConfigFromEnv(process.env[cmd.useStorage]) : undefined
+
+        const workspaceStorage: StorageAdapter | undefined =
+          storageConfig !== undefined ? buildStorageFromConfig(storageConfig) : undefined
         await restore(toolCtx, endpoint, wsid, storage, {
           date: parseInt(date ?? '-1'),
           merge: cmd.merge,
           parallel: parseInt(cmd.parallel ?? '1'),
           recheck: cmd.recheck,
           include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';')),
-          skip: new Set(cmd.skip.split(';'))
+          skip: new Set(cmd.skip.split(';')),
+          storageAdapter: workspaceStorage,
+          historyFile: cmd.historyFile
         })
+        await workspaceStorage?.close()
       }
     )
 
@@ -1149,12 +1203,12 @@ export function devTool (
 
       const storageConfig = storageConfigFromEnv(process.env.STORAGE)
 
-      const storages = storageConfig.storages.filter((p) => p.kind === S3Service.config) as S3Config[]
+      const storages = storageConfig.storages.filter((p) => p.kind === S3_CONFIG_KIND) as S3Config[]
       if (storages.length === 0) {
         throw new Error('S3 storage config is required')
       }
 
-      const datalakeConfig = storageConfig.storages.find((p) => p.kind === DatalakeService.config)
+      const datalakeConfig = storageConfig.storages.find((p) => p.kind === DATALAKE_CONFIG_KIND)
       if (datalakeConfig === undefined) {
         throw new Error('Datalake storage config is required')
       }
@@ -1288,6 +1342,61 @@ export function devTool (
             client.close()
           }
         })
+      })
+    })
+
+  program
+    .command('restore-markup-ref-mongo')
+    .description('restore markup document content refs')
+    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+    .option('-f, --force', 'Force update', false)
+    .action(async (cmd: { workspace: string, force: boolean }) => {
+      const { txes, version } = prepareTools()
+
+      const { hierarchy } = await buildModel(toolCtx, txes)
+
+      let workspaces: Workspace[] = []
+      await withAccountDatabase(async (db) => {
+        workspaces = await listWorkspacesPure(db)
+        workspaces = workspaces
+          .filter((p) => isActiveMode(p.mode))
+          .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
+          .sort((a, b) => b.lastVisit - a.lastVisit)
+      })
+
+      console.log('found workspaces', workspaces.length)
+
+      await withStorage(async (storageAdapter) => {
+        const mongodbUri = getMongoDBUrl()
+        const client = getMongoClient(mongodbUri)
+        const _client = await client.getClient()
+
+        try {
+          const count = workspaces.length
+          let index = 0
+          for (const workspace of workspaces) {
+            index++
+
+            toolCtx.info('processing workspace', {
+              workspace: workspace.workspace,
+              version: workspace.version,
+              index,
+              count
+            })
+
+            if (!cmd.force && (workspace.version === undefined || !deepEqual(workspace.version, version))) {
+              console.log(`upgrade to ${versionToString(version)} is required`)
+              continue
+            }
+
+            const workspaceId = getWorkspaceId(workspace.workspace)
+            const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
+
+            await restoreMarkupRefsMongo(toolCtx, wsDb, workspaceId, hierarchy, storageAdapter)
+          }
+        } finally {
+          client.close()
+        }
       })
     })
 
@@ -1946,6 +2055,29 @@ export function devTool (
         })
 
         console.log('Attempts counter for workspace', workspace, 'has been reset')
+      })
+    })
+
+  program
+    .command('generate-uuid-workspaces')
+    .description('generate uuids for all workspaces which are missing it')
+    .option('-d, --dryrun', 'Dry run', false)
+    .action(async (cmd: { dryrun: boolean }) => {
+      await withAccountDatabase(async (db) => {
+        console.log('generate uuids for all workspaces which are missing it')
+        await generateUuidMissingWorkspaces(toolCtx, db, cmd.dryrun)
+      })
+    })
+
+  program
+    .command('update-data-wsid-to-uuid')
+    .description('updates workspaceId in pg/cr to uuid')
+    .option('-d, --dryrun', 'Dry run', false)
+    .action(async (cmd: { dryrun: boolean }) => {
+      await withAccountDatabase(async (db) => {
+        console.log('updates workspaceId in pg/cr to uuid')
+        const { dbUrl } = prepareTools()
+        await updateDataWorkspaceIdToUuid(toolCtx, db, dbUrl, cmd.dryrun)
       })
     })
 

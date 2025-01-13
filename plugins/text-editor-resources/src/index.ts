@@ -17,9 +17,16 @@
 import { type Resources } from '@hcengineering/platform'
 import { formatLink } from './kits/default-kit'
 import { isEditable, isHeadingVisible } from './kits/editor-kit'
-import { openTableOptions, isEditableTableActive } from './components/extension/table/table'
+import {
+  openTableOptions,
+  isEditableTableActive,
+  isTableToolbarContext,
+  selectTable
+} from './components/extension/table/table'
 import { openImage, downloadImage, expandImage, moreImageActions } from './components/extension/imageExt'
 import { configureNote, isEditableNote } from './components/extension/note'
+import { createInlineComment, shouldShowCreateInlineCommentAction } from './components/extension/inlineComment'
+import { isTextStylingEnabled, openBackgroundColorOptions, openTextColorOptions } from './components/extension/colors'
 
 export * from '@hcengineering/presentation/src/types'
 export type { EditorKitOptions } from './kits/editor-kit'
@@ -80,14 +87,23 @@ export default async (): Promise<Resources> => ({
   function: {
     FormatLink: formatLink,
     OpenTableOptions: openTableOptions,
+    SelectTable: selectTable,
     OpenImage: openImage,
     ExpandImage: expandImage,
     DownloadImage: downloadImage,
     MoreImageActions: moreImageActions,
     ConfigureNote: configureNote,
     IsEditableTableActive: isEditableTableActive,
+    IsTableToolbarContext: isTableToolbarContext,
     IsEditableNote: isEditableNote,
     IsEditable: isEditable,
-    IsHeadingVisible: isHeadingVisible
+    IsHeadingVisible: isHeadingVisible,
+    IsTextStylingEnabled: isTextStylingEnabled,
+
+    CreateInlineComment: createInlineComment,
+    ShouldShowCreateInlineCommentAction: shouldShowCreateInlineCommentAction,
+
+    SetBackgroundColor: openBackgroundColorOptions,
+    SetTextColor: openTextColorOptions
   }
 })

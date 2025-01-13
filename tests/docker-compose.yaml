@@ -139,6 +139,7 @@ services:
       - BRANDING_PATH=/var/cfg/branding.json
       - FULLTEXT_URL=http://fulltext:4710
       - STATS_URL=http://stats:4901
+      - ENABLE_COMPRESSION=true
   collaborator:
     image: hardcoreeng/collaborator
     links:

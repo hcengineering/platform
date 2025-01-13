@@ -23,6 +23,7 @@
   export let size: IconSize
   export let editor: Editor
   export let actionCtx: ActionContext
+  export let blockMouseEvents = true
 
   const dispatch = createEventDispatcher()
   let selected: boolean = false
@@ -44,6 +45,11 @@
   }
 
   async function handleClick (event: MouseEvent): Promise<void> {
+    if (blockMouseEvents) {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+
     const handler = action.action
 
     if (typeof handler === 'string') {
@@ -67,7 +73,7 @@
   use:tooltip={{ label: action.label }}
   tabindex="0"
   data-id={'btn' + action.label.split(':').pop()}
-  on:click|preventDefault|stopPropagation={handleClick}
+  on:click={handleClick}
 >
   <Icon icon={action.icon} {size} />
 </button>

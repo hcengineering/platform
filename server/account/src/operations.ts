@@ -31,6 +31,7 @@ import core, {
   Data,
   generateId,
   getWorkspaceId,
+  isActiveMode,
   isArchivingMode,
   isMigrationMode,
   isWorkspaceCreating,
@@ -63,7 +64,6 @@ import { connect } from '@hcengineering/server-tool'
 import { randomBytes } from 'crypto'
 import otpGenerator from 'otp-generator'
 
-import { getWorkspaceDestroyAdapter } from '@hcengineering/server-pipeline'
 import { accountPlugin } from './plugin'
 import type {
   Account,
@@ -93,6 +93,7 @@ import {
   toAccountInfo,
   verifyPassword
 } from './utils'
+import { getWorkspaceDestroyAdapter } from '@hcengineering/server-pipeline'
 
 /**
  * @public
@@ -511,7 +512,7 @@ export async function selectWorkspace (
       }
       return result
     }
-    if (workspaceInfo.disabled === true && workspaceInfo.mode === 'active') {
+    if (workspaceInfo.disabled === true && isActiveMode(workspaceInfo.mode)) {
       ctx.error('workspace disabled', { workspaceUrl, email })
       throw new PlatformError(
         new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceUrl })
@@ -760,8 +761,7 @@ export async function createAcc (
   const salt = randomBytes(32)
   const hash = password !== null ? hashWithSalt(password, salt) : null
 
-  const systemEmails = [systemAccountEmail]
-  if (systemEmails.includes(email)) {
+  if (systemAccountEmail === email) {
     ctx.error('system email used for account', { email })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, { account: email }))
   }
@@ -1607,6 +1607,46 @@ export async function getInviteLink (
   return result
 }
 
+/**
+ * @public
+ * @description This function gets or create an invitation. The second return parameter
+ * can be used to check if invite is created
+ */
+async function getOrCreateInvite (
+  db: AccountDB,
+  workspace: WorkspaceId,
+  emailMask: string,
+  personId?: Ref<Person>
+): Promise<[ObjectId, boolean]> {
+  let invite = await db.invite.findOne({ emailMask })
+
+  if (invite !== null) {
+    return [invite, false]
+  }
+
+  if (invite === null) {
+    const expHours = 48
+    const newExp = Date.now() + expHours * 60 * 60 * 1000
+
+    const data = {
+      workspace,
+      exp: newExp,
+      emailMask,
+      limit: 1,
+      role: AccountRole.User,
+      personId
+    }
+
+    invite = await db.invite.insertOne(data, '_id')
+  }
+
+  if (invite === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InviteNotFound, { email: emailMask }))
+  }
+
+  return [invite, true]
+}
+
 function mapToClientWorkspace (ws: Workspace): ClientWorkspaceInfo {
   const { _id, accounts, ...data } = ws
   return { ...data, workspace: ws.workspaceUrl ?? ws.workspace, workspaceId: ws.workspace }
@@ -1672,7 +1712,7 @@ export async function getAllWorkspaces (
   }
 
   return (await db.workspace.find({})).map((it) => {
-    it.accounts = (it.accounts ?? []).map((it) => it.toString())
+    ;(it as any).accounts = (it.accounts ?? []).length
     return it
   })
 }
@@ -1730,14 +1770,14 @@ export async function getWorkspaceInfo (
 
   const [ws] = await ctx.with('get-workspace', {}, async () =>
     (await db.workspace.find(query)).filter(
-      (it) => it.disabled !== true || account?.admin === true || it.mode !== 'active'
+      (it) => it.disabled !== true || account?.admin === true || !isActiveMode(it.mode)
     )
   )
   if (ws == null) {
     ctx.error('no workspace', { workspace: workspace.name, email })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
-  if (ws.mode !== 'archived' && _updateLastVisit && (isAccount(account) || email === systemAccountEmail)) {
+  if (!isArchivingMode(ws.mode) && _updateLastVisit && (isAccount(account) || email === systemAccountEmail)) {
     void ctx.with('update-last-visit', {}, () => updateLastVisit(db, ws, account as Account))
   }
 
@@ -2463,6 +2503,74 @@ export async function sendInvite (
   ctx.info('Invite sent', { email, workspace, link })
 }
 
+/**
+ *
+ * @public
+ */
+export async function resendInvite (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  emailMask: string,
+  personId?: Ref<Person>
+): Promise<void> {
+  const { workspace, email } = decodeToken(ctx, token)
+  const currentAccount = await getAccount(db, email)
+  if (currentAccount === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
+  }
+
+  const wsPromise = await getWorkspaceById(db, workspace.name)
+  if (wsPromise === null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspace.name })
+    )
+  }
+
+  const [invite, created] = await getOrCreateInvite(db, workspace, emailMask, personId)
+
+  const inviteId = invite._id
+  const expHours = 48
+
+  if (!created) {
+    const newExp = Date.now() + expHours * 60 * 60 * 1000
+
+    await db.invite.updateOne({ _id: db.getObjectId(inviteId) }, { exp: newExp })
+  }
+
+  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+  if (sesURL === undefined || sesURL === '') {
+    throw new Error('Please provide email service url')
+  }
+  const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
+  if (front === undefined || front === '') {
+    throw new Error('Please provide front url')
+  }
+
+  const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
+  const ws = wsPromise.workspaceName ?? wsPromise.workspace
+  const lang = branding?.language
+  const text = await translate(accountPlugin.string.ResendInviteText, { link, ws, expHours }, lang)
+  const html = await translate(accountPlugin.string.ResendInviteHTML, { link, ws, expHours }, lang)
+  const subject = await translate(accountPlugin.string.ResendInviteSubject, { ws }, lang)
+
+  const to = emailMask
+  await fetch(concatLink(sesURL, '/send'), {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      text,
+      html,
+      subject,
+      to
+    })
+  })
+  ctx.info('Invite resend and email sent', { email: emailMask, workspace: wsPromise.workspace, link })
+}
+
 async function deactivatePersonAccount (
   ctx: MeasureContext,
   db: AccountDB,
@@ -2527,6 +2635,12 @@ function wrap (
           // Let's send un authorized
           return {
             error: new Status(Severity.ERROR, platform.status.Unauthorized, {})
+          }
+        }
+        if (status.code === platform.status.InvalidPassword || status.code === platform.status.AccountNotFound) {
+          ctx.warn('error', { status: status.code, err: err.message })
+          return {
+            error: status
           }
         }
         if (status.code === platform.status.InternalServerError) {
@@ -2795,6 +2909,7 @@ export function getMethods (hasSignUp: boolean = true): Record<string, AccountMe
     requestPassword: wrap(requestPassword),
     restorePassword: wrap(restorePassword),
     sendInvite: wrap(sendInvite),
+    resendInvite: wrap(resendInvite),
     confirm: wrap(confirm),
     getAccountInfoByToken: wrap(getAccountInfoByToken),
     createMissingEmployee: wrap(createMissingEmployee),

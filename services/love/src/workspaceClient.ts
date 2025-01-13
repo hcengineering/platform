@@ -12,13 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import core, { Client, Ref, TxOperations, type Blob, Data, MeasureContext } from '@hcengineering/core'
+import attachment, { Attachment } from '@hcengineering/attachment'
+import core, {
+  Client,
+  Data,
+  MeasureContext,
+  Ref,
+  systemAccountEmail,
+  TxOperations,
+  type Blob
+} from '@hcengineering/core'
 import drive, { createFile } from '@hcengineering/drive'
 import love, { MeetingMinutes } from '@hcengineering/love'
 import { generateToken } from '@hcengineering/server-token'
-import attachment, { Attachment } from '@hcengineering/attachment'
 import { getClient } from './client'
-import config from './config'
 
 export class WorkspaceClient {
   private client!: TxOperations
@@ -39,7 +46,7 @@ export class WorkspaceClient {
   }
 
   private async initClient (workspace: string): Promise<Client> {
-    const token = generateToken(config.SystemEmail, { name: workspace })
+    const token = generateToken(systemAccountEmail, { name: workspace })
     const client = await getClient(token)
     this.client = new TxOperations(client, core.account.System)
     return this.client

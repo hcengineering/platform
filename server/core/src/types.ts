@@ -43,7 +43,7 @@ import {
 } from '@hcengineering/core'
 import type { Asset, Resource } from '@hcengineering/platform'
 import type { LiveQuery } from '@hcengineering/query'
-import type { Request, Response } from '@hcengineering/rpc'
+import type { ReqId, Request, Response } from '@hcengineering/rpc'
 import type { Token } from '@hcengineering/server-token'
 import { type Readable } from 'stream'
 import type { DbAdapter, DomainHelper } from './adapter'
@@ -151,7 +151,7 @@ export interface DBAdapterManager {
 
   close: () => Promise<void>
 
-  registerHelper: (helper: DomainHelper) => Promise<void>
+  registerHelper: (ctx: MeasureContext, helper: DomainHelper) => Promise<void>
 
   initAdapters: (ctx: MeasureContext) => Promise<void>
 
@@ -162,6 +162,11 @@ export interface DBAdapterManager {
 
 export interface PipelineContext {
   workspace: WorkspaceIdWithUrl
+
+  lastTx?: string
+
+  lastHash?: string
+
   hierarchy: Hierarchy
   modelDb: ModelDb
   branding: Branding | null
@@ -496,31 +501,21 @@ export interface SessionRequest {
 
 export interface ClientSessionCtx {
   ctx: MeasureContext
-  sendResponse: (msg: any) => Promise<void>
-  sendError: (msg: any, error: any) => Promise<void>
+
+  pipeline: Pipeline
+
+  requestId: ReqId | undefined
+  sendResponse: (id: ReqId | undefined, msg: any) => Promise<void>
+  sendPong: () => void
+  sendError: (id: ReqId | undefined, msg: any, error: any) => Promise<void>
 }
 
 /**
  * @public
  */
 export interface Session {
+  workspace: Workspace
   createTime: number
-  getUser: () => string
-  pipeline: () => Pipeline
-  ping: (ctx: ClientSessionCtx) => Promise<void>
-  findAll: <T extends Doc>(
-    ctx: ClientSessionCtx,
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T>
-  ) => Promise<void>
-  findAllRaw: <T extends Doc>(
-    ctx: MeasureContext,
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T>
-  ) => Promise<FindResult<T>>
-  tx: (ctx: ClientSessionCtx, tx: Tx) => Promise<void>
 
   // Session restore information
   sessionId: string
@@ -543,6 +538,35 @@ export interface Session {
   getMode: () => string
 
   broadcast: (ctx: MeasureContext, socket: ConnectionSocket, tx: Tx[]) => void
+
+  // Client methods
+  ping: (ctx: ClientSessionCtx) => Promise<void>
+  getUser: () => string
+
+  loadModel: (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string) => Promise<void>
+  getAccount: (ctx: ClientSessionCtx) => Promise<void>
+
+  getRawAccount: (pipeline: Pipeline) => Account
+  findAll: <T extends Doc>(
+    ctx: ClientSessionCtx,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<void>
+  findAllRaw: <T extends Doc>(
+    ctx: MeasureContext,
+    pipeline: Pipeline,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<FindResult<T>>
+  searchFulltext: (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions) => Promise<void>
+  tx: (ctx: ClientSessionCtx, tx: Tx) => Promise<void>
+  loadChunk: (ctx: ClientSessionCtx, domain: Domain, idx?: number) => Promise<void>
+  closeChunk: (ctx: ClientSessionCtx, idx: number) => Promise<void>
+  loadDocs: (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
+  upload: (ctx: ClientSessionCtx, domain: Domain, docs: Doc[]) => Promise<void>
+  clean: (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
 }
 
 /**
@@ -553,6 +577,8 @@ export interface ConnectionSocket {
   isClosed: boolean
   close: () => void
   send: (ctx: MeasureContext, msg: Response<any>, binary: boolean, compression: boolean) => void
+
+  sendPong: () => void
   data: () => Record<string, any>
 
   readRequest: (buffer: Buffer, binary: boolean) => Request<any>
@@ -584,7 +610,7 @@ export interface Workspace {
   context: MeasureContext
   id: string
   token: string // Account workspace update token.
-  pipeline: Promise<Pipeline>
+  pipeline: Promise<Pipeline> | Pipeline
   tickHash: number
 
   tickHandlers: Map<string, TickHandler>
@@ -596,8 +622,9 @@ export interface Workspace {
   softShutdown: number
   workspaceInitCompleted: boolean
 
-  workspaceId: WorkspaceId
+  workspaceId: WorkspaceIdWithUrl
   workspaceName: string
+  workspaceUuid?: string
   branding: Branding | null
 }
 
@@ -618,12 +645,7 @@ export interface SessionManager {
   workspaces: Map<string, Workspace>
   sessions: Map<string, { session: Session, socket: ConnectionSocket }>
 
-  createSession: (
-    token: Token,
-    pipeline: Pipeline,
-    workspaceId: WorkspaceIdWithUrl,
-    branding: Branding | null
-  ) => Session
+  createSession: (token: Token, workspace: Workspace) => Session
 
   addSession: (
     ctx: MeasureContext,
@@ -663,7 +685,7 @@ export interface SessionManager {
     ws: ConnectionSocket,
     request: Request<any>,
     workspace: string // wsId, toWorkspaceString()
-  ) => void
+  ) => Promise<void>
 }
 
 /**
@@ -687,7 +709,9 @@ export type ServerFactory = (
   ctx: MeasureContext,
   pipelineFactory: PipelineFactory,
   port: number,
-  enableCompression: boolean,
   accountsUrl: string,
   externalStorage: StorageAdapter
 ) => () => Promise<void>
+
+export const pingConst = 'ping'
+export const pongConst = 'pong!'

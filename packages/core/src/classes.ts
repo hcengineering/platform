@@ -661,6 +661,7 @@ export type WorkspaceMode =
   | 'pending-deletion' // -> 'deleting'
   | 'deleting' // -> "deleted"
   | 'active'
+  | 'deleted'
   | 'archiving-pending-backup' // -> 'cleaning'
   | 'archiving-backup' // -> 'archiving-pending-clean'
   | 'archiving-pending-clean' // -> 'archiving-clean'
@@ -732,6 +733,8 @@ export interface BackupStatus {
 
 export interface BaseWorkspaceInfo {
   workspace: string // An uniq workspace name, Database names
+  uuid?: string // An uuid for a workspace to be used already for cockroach data
+
   disabled?: boolean
   version?: Data<Version>
   branding?: string

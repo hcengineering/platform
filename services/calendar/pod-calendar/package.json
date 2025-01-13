@@ -41,7 +41,7 @@
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
     "@typescript-eslint/parser": "^6.11.0",
-    "esbuild": "^0.20.0",
+    "esbuild": "^0.24.2",
     "eslint": "^8.54.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "eslint-plugin-import": "^2.26.0",
@@ -67,13 +67,13 @@
     "@hcengineering/server-token": "^0.6.11",
     "dotenv": "~16.0.0",
     "cors": "^2.8.5",
-    "express": "^4.19.2",
+    "express": "^4.21.2",
     "fast-equals": "^5.0.1",
     "file-api": "^0.10.4",
     "googleapis": "^122.0.0",
     "google-auth-library": "^8.0.2",
     "jwt-simple": "^0.5.6",
-    "mongodb": "^6.10.0",
+    "mongodb": "^6.12.0",
     "ws": "^8.18.0"
   }
 }

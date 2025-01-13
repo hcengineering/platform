@@ -10,10 +10,7 @@
     IconArrowRight,
     checkMobile,
     deviceOptionsStore as deviceInfo,
-    checkAdaptiveMatching,
-    ButtonIcon,
-    IconDetailsFilled,
-    IconDetails
+    checkAdaptiveMatching
   } from '../../'
   import { desktopPlatform, getCurrentLocation, location, locationStorageKeyId, navigate } from '../../location'
   import uiPlugin from '../../plugin'
@@ -140,8 +137,6 @@
   updateDeviceSize()
 
   $: secondRow = checkAdaptiveMatching($deviceInfo.size, 'xs')
-  $: asideFloat = $deviceInfo.aside.float
-  $: asideOpen = $deviceInfo.aside.visible
   $: appsMini =
     $deviceInfo.isMobile &&
     (($deviceInfo.isPortrait && $deviceInfo.docWidth <= 480) ||
@@ -200,20 +195,6 @@
           {/if}
         </div>
         <div class="flex-row-reverse" style:-webkit-app-region={'no-drag'}>
-          {#if asideFloat && !secondRow}
-            <div class="antiHSpacer x2" />
-            <ButtonIcon
-              icon={asideOpen ? IconDetailsFilled : IconDetails}
-              iconProps={{ fill: 'var(--theme-dark-color)' }}
-              kind={'tertiary'}
-              size={'extra-small'}
-              hasMenu
-              pressed={$deviceInfo.aside.visible}
-              on:click={() => {
-                $deviceInfo.aside.visible = !$deviceInfo.aside.visible
-              }}
-            />
-          {/if}
           <div class="clock">
             <Clock />
           </div>
@@ -234,17 +215,6 @@
           </div>
           <div class="flex-row-center flex-gap-0-5">
             <RootBarExtension position="right" />
-            <ButtonIcon
-              icon={asideOpen ? IconDetailsFilled : IconDetails}
-              iconProps={{ fill: 'var(--theme-dark-color)' }}
-              kind={'tertiary'}
-              size={'extra-small'}
-              hasMenu
-              pressed={$deviceInfo.aside.visible}
-              on:click={() => {
-                $deviceInfo.aside.visible = !$deviceInfo.aside.visible
-              }}
-            />
           </div>
         </div>
       {/if}

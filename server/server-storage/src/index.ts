@@ -15,5 +15,4 @@
 //
 
 export * from './fallback'
-export * from './blobStorage'
 export * from './starter'

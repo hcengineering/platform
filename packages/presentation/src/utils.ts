@@ -21,6 +21,7 @@ import core, {
   TxProcessor,
   getCurrentAccount,
   reduceCalls,
+  type Account,
   type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
@@ -53,7 +54,7 @@ import { getRawCurrentLocation, workspaceId, type AnyComponent, type AnySvelteCo
 import view, { type AttributeCategory, type AttributeEditor } from '@hcengineering/view'
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
-import { get, writable, type Writable } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 
 import { type KeyedAttribute } from '..'
 import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPipeline } from './pipeline'
@@ -63,7 +64,7 @@ export { reduceCalls } from '@hcengineering/core'
 
 let liveQuery: LQ
 let rawLiveQuery: LQ
-let client: TxOperations & Client & OptimisticTxes
+let client: TxOperations & Client
 let pipeline: PresentationPipeline
 
 const txListeners: Array<(...tx: Tx[]) => void> = []
@@ -89,13 +90,11 @@ export function removeTxListener (l: (tx: Tx) => void): void {
   }
 }
 
-export interface OptimisticTxes {
-  pendingCreatedDocs: Writable<Record<Ref<Doc>, boolean>>
-}
-
 export const uiContext = new MeasureMetricsContext('client-ui', {})
 
-class UIClient extends TxOperations implements Client, OptimisticTxes {
+export const pendingCreatedDocs = writable<Record<Ref<Doc>, boolean>>({})
+
+class UIClient extends TxOperations implements Client {
   hook = getMetadata(plugin.metadata.ClientHook)
   constructor (
     client: Client,
@@ -105,14 +104,9 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
   }
 
   protected pendingTxes = new Set<Ref<Tx>>()
-  protected _pendingCreatedDocs = writable<Record<Ref<Doc>, boolean>>({})
-
-  get pendingCreatedDocs (): typeof this._pendingCreatedDocs {
-    return this._pendingCreatedDocs
-  }
 
   async doNotify (...tx: Tx[]): Promise<void> {
-    const pending = get(this._pendingCreatedDocs)
+    const pending = get(pendingCreatedDocs)
     let pendingUpdated = false
     tx.forEach((t) => {
       if (this.pendingTxes.has(t._id)) {
@@ -129,7 +123,7 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
       }
     })
     if (pendingUpdated) {
-      this._pendingCreatedDocs.set(pending)
+      pendingCreatedDocs.set(pending)
     }
 
     // We still want to notify about all transactions because there might be queries created after
@@ -214,9 +208,9 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
     }
 
     if (innerTx._class === core.class.TxCreateDoc) {
-      const pending = get(this._pendingCreatedDocs)
+      const pending = get(pendingCreatedDocs)
       pending[innerTx.objectId] = true
-      this._pendingCreatedDocs.set(pending)
+      pendingCreatedDocs.set(pending)
     }
 
     this.pendingTxes.add(tx._id)
@@ -231,11 +225,45 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
   }
 }
 
+const hierarchyProxy = new Proxy(
+  {},
+  {
+    get (target, p, receiver) {
+      const h = client.getHierarchy()
+      return Reflect.get(h, p)
+    }
+  }
+) as TxOperations & Client
+
+// We need a proxy to handle all the calls to the proper client.
+const clientProxy = new Proxy(
+  {},
+  {
+    get (target, p, receiver) {
+      if (p === 'getHierarchy') {
+        return () => hierarchyProxy
+      }
+      return Reflect.get(client, p)
+    }
+  }
+) as TxOperations & Client
 /**
  * @public
  */
-export function getClient (): TxOperations & Client & OptimisticTxes {
-  return client
+export function getClient (): TxOperations & Client {
+  return clientProxy
+}
+
+export type OnClientListener = (client: Client, account: Account) => void
+const onClientListeners: OnClientListener[] = []
+
+export function onClient (l: OnClientListener): void {
+  onClientListeners.push(l)
+  if (client !== undefined) {
+    setTimeout(() => {
+      l(client, getCurrentAccount())
+    })
+  }
 }
 
 let txQueue: Tx[] = []
@@ -252,6 +280,7 @@ export function addRefreshListener (r: RefreshListener): void {
  * @public
  */
 export async function setClient (_client: Client): Promise<void> {
+  pendingCreatedDocs.set({})
   if (liveQuery !== undefined) {
     await liveQuery.close()
   }
@@ -290,6 +319,10 @@ export async function setClient (_client: Client): Promise<void> {
   if (needRefresh || globalQueries.length > 0) {
     await refreshClient(true)
   }
+  const acc = getCurrentAccount()
+  onClientListeners.forEach((l) => {
+    l(_client, acc)
+  })
 }
 /**
  * @public
@@ -700,7 +733,7 @@ export function isSpace (space: Doc): space is Space {
 }
 
 export function isSpaceClass (_class: Ref<Class<Doc>>): boolean {
-  return getClient().getHierarchy().isDerived(_class, core.class.Space)
+  return client.getHierarchy().isDerived(_class, core.class.Space)
 }
 
 export function setPresentationCookie (token: string, workspaceId: string): void {

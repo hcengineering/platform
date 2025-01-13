@@ -19,6 +19,9 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
   import { tooltip, Icon } from '@hcengineering/ui'
+  import { personByIdStore } from '@hcengineering/contact-resources'
+
+  import { getRoomName } from '../utils'
 
   export let value: WithLookup<Room>
   export let inline: boolean = false
@@ -27,6 +30,8 @@
   export let noUnderline: boolean = false
   export let shouldShowAvatar = true
   export let type: ObjectPresenterType = 'link'
+
+  $: roomName = getRoomName(value, $personByIdStore)
 </script>
 
 {#if value}
@@ -34,20 +39,20 @@
     <ObjectMention object={value} {disabled} {accent} {noUnderline} />
   {:else if type === 'link'}
     <DocNavLink object={value} {disabled} {accent} {noUnderline}>
-      <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
+      <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(roomName) }}>
         {#if shouldShowAvatar}
           <div class="icon">
             <Icon icon={love.icon.Love} size={'small'} />
           </div>
         {/if}
         <div class="label nowrap flex flex-gap-2" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
-          <span>{value.name}</span>
+          <span>{roomName}</span>
         </div>
       </div>
     </DocNavLink>
   {:else if type === 'text'}
-    <span class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
-      {value.name}
+    <span class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(roomName) }}>
+      {roomName}
     </span>
   {/if}
 {/if}

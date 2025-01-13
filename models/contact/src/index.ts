@@ -518,11 +518,6 @@ export function createModel (builder: Builder): void {
     grouppingManager: contact.aggregation.GrouppingPersonManager
   })
 
-  builder.mixin(contact.mixin.Employee, core.class.Class, view.mixin.ObjectEditor, {
-    editor: contact.component.EditEmployee,
-    pinned: true
-  })
-
   builder.mixin(contact.class.Organization, core.class.Class, view.mixin.ObjectEditor, {
     editor: contact.component.EditOrganization,
     pinned: true
@@ -915,6 +910,25 @@ export function createModel (builder: Builder): void {
       secured: true
     },
     contact.action.KickEmployee
+  )
+
+  createAction(
+    builder,
+    {
+      action: contact.actionImpl.ResendInvite,
+      label: contact.string.ResendInvite,
+      query: {},
+      category: contact.category.Contact,
+      target: contact.mixin.Employee,
+      input: 'focus',
+      context: {
+        mode: ['context'],
+        group: 'remove'
+      },
+      secured: true,
+      visibilityTester: contact.function.CanResendInvitation
+    },
+    contact.action.ResendInvite
   )
 
   createAction(

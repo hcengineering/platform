@@ -8,8 +8,8 @@
   "devDependencies": {
     "eslint-config-standard-with-typescript": "^40.0.0",
     "svelte-eslint-parser": "^0.33.1",
-    "esbuild": "^0.20.0",
-    "esbuild-svelte": "^0.8.0",
+    "esbuild": "^0.24.2",
+    "esbuild-svelte": "^0.9.0",
     "esbuild-plugin-copy": "~2.1.1"
   },
   "dependencies": {

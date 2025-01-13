@@ -175,7 +175,9 @@
       <div class="antiPanel-wrap__content hulyNavPanel-container">
         <ChatNavigator {object} {currentSpecial} on:select={handleChannelSelected} />
       </div>
-      <Separator name="chat" float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} />
+      {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
+        <Separator name="chat" float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} />
+      {/if}
     </div>
     <Separator
       name="chat"

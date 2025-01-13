@@ -33,7 +33,7 @@ export class HocuspocusCollabProvider extends HocuspocusProvider implements Prov
     const parameters: Record<string, any> = {}
 
     const content = configuration.parameters?.content
-    if (content !== null && content !== '') {
+    if (content !== null && content !== undefined && content !== '') {
       parameters.content = content
     }
 

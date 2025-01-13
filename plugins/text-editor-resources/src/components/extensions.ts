@@ -108,22 +108,22 @@ export const completionConfig: Partial<CompletionOptions> = {
             props: {
               ...props,
               close: () => {
-                component.destroy()
+                component?.destroy()
               }
             }
           })
         },
         onUpdate (props: SuggestionProps) {
-          component.updateProps(props)
+          component?.updateProps(props)
         },
         onKeyDown (props: SuggestionKeyDownProps) {
           if (props.event.key === 'Escape') {
             props.event.stopPropagation()
           }
-          return component.onKeyDown(props)
+          return component?.onKeyDown(props)
         },
         onExit () {
-          component.destroy()
+          component?.destroy()
         }
       }
     }
@@ -181,22 +181,22 @@ export function inlineCommandsConfig (
               props: {
                 ...props,
                 close: () => {
-                  component.destroy()
+                  component?.destroy()
                 }
               }
             })
           },
           onUpdate (props: SuggestionProps) {
-            component.updateProps(props)
+            component?.updateProps(props)
           },
           onKeyDown (props: SuggestionKeyDownProps) {
             if (props.event.key === 'Escape') {
               props.event.stopPropagation()
             }
-            return component.onKeyDown(props)
+            return component?.onKeyDown(props)
           },
           onExit () {
-            component.destroy()
+            component?.destroy()
           }
         }
       }

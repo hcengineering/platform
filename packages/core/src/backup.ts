@@ -10,6 +10,8 @@ export interface DocChunk {
   idx: number
   // _id => hash mapping
   docs: DocInfo[]
+
+  size?: number // Estimated size of the chunk data
   finished: boolean
 }
 

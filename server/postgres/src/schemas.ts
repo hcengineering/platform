@@ -239,6 +239,11 @@ const docSyncInfo: Schema = {
     notNull: false,
     index: false
   },
+  parent: {
+    type: 'text',
+    notNull: false,
+    index: false
+  },
   objectClass: {
     type: 'text',
     notNull: false,

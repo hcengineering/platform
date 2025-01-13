@@ -35,6 +35,7 @@ export interface Config {
   DESKTOP_UPDATES_URL?: string
   DESKTOP_UPDATES_CHANNEL?: string
   TELEGRAM_BOT_URL?: string
+  PRESENCE_URL?: string
 
   STATS_URL?: string
 }

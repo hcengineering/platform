@@ -35,7 +35,8 @@ import github, {
 } from '@hcengineering/github'
 import { IntlString } from '@hcengineering/platform'
 import { LiveQuery } from '@hcengineering/query'
-import task, { TaskType } from '@hcengineering/task'
+import { getPublicLink } from '@hcengineering/server-guest-resources'
+import task, { TaskType, type Task } from '@hcengineering/task'
 import { MarkupNode, MarkupNodeType, areEqualMarkups, markupToJSON, traverseNode } from '@hcengineering/text'
 import time, { type ToDo } from '@hcengineering/time'
 import tracker, { Issue, IssuePriority } from '@hcengineering/tracker'
@@ -59,7 +60,7 @@ import {
   projectValue,
   supportedGithubTypes
 } from './githubTypes'
-import { appendGuestLink, stripGuestLink } from './guest'
+import { stripGuestLink } from './guest'
 import { syncConfig } from './syncConfig'
 import {
   collectUpdate,
@@ -998,13 +999,7 @@ export abstract class IssueSyncManagerBase {
     }
     if (platformUpdate.description != null) {
       // Need to convert to markdown
-      const pp = async (nodes: MarkupNode): Promise<void> => {
-        await appendGuestLink(this.client, doc, nodes, this.provider.getWorkspaceId(), this.provider.getBranding())
-      }
-      issueUpdate.body = await this.provider.getMarkdown(
-        platformUpdate.description ?? '',
-        info.allowOpenInHuly === true ? pp : undefined
-      )
+      issueUpdate.body = await this.provider.getMarkdown(platformUpdate.description ?? '')
       issueData.description = await this.provider.getMarkup(
         container.container,
         issueUpdate.body ?? '',
@@ -1270,7 +1265,7 @@ export abstract class IssueSyncManagerBase {
 
     if (existing !== undefined && deleteExisting) {
       const childItems = await derivedClient.findAll(github.class.DocSyncInfo, {
-        parentUrl: (issueExternal.url ?? '').toLowerCase()
+        parent: (issueExternal.url ?? '').toLowerCase()
       })
       for (const u of childItems) {
         // We need just to clean all of them, since child's for issue are comments for now.
@@ -1313,6 +1308,37 @@ export abstract class IssueSyncManagerBase {
         await derivedClient?.update(child, { needSync: '' })
       }
       this.provider.sync()
+    }
+  }
+
+  async addHulyLink (
+    info: DocSyncInfo,
+    syncResult: DocumentUpdate<DocSyncInfo>,
+    object: Doc,
+    external: IssueExternalData,
+    container: ContainerFocus
+  ): Promise<void> {
+    const repository = await this.provider.getRepositoryById(info.repository)
+    if (repository !== undefined) {
+      syncResult.addHulyLink = false
+      const publicLink = await getPublicLink(
+        object,
+        this.client,
+        this.provider.getWorkspaceId(),
+        false,
+        this.provider.getBranding()
+      )
+      // We need to create comment on Github about issue is connected.
+      await container.container.octokit.rest.issues.createComment({
+        owner: repository.owner?.login as string,
+        repo: repository.name,
+        issue_number: external.number,
+
+        body: `<p>Connected to <b><a href="${publicLink}">Huly&reg;: ${(object as Task).identifier}</a></b></p>`,
+        headers: {
+          'X-GitHub-Api-Version': '2022-11-28'
+        }
+      })
     }
   }
 }

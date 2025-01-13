@@ -61,12 +61,7 @@
   })
 </script>
 
-<div
-  id="sidebar"
-  class="antiPanel-application vertical sidebar-container"
-  class:mini
-  class:float={$deviceInfo.aside.float}
->
+<div id="sidebar" class="antiPanel-application vertical sidebar-container" class:mini={mini || $deviceInfo.aside.float}>
   {#if mini}
     <SidebarMini {widgets} {preferences} />
   {:else if $sidebarStore.variant === SidebarVariant.EXPANDED}
@@ -81,23 +76,23 @@
     min-width: 25rem;
     border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
 
-    &.mini:not(.float) {
+    &.mini {
+      justify-content: flex-end;
       width: calc(3.5rem + 1px) !important;
       min-width: calc(3.5rem + 1px) !important;
       max-width: calc(3.5rem + 1px) !important;
-    }
-    &.mini.float {
-      justify-content: flex-end;
-    }
-    &.float > :global(.sidebar-content) {
-      border-top: none;
     }
   }
   @media (max-width: 1024px) {
     .sidebar-container {
       width: 100%;
-      border: 1px solid var(--theme-navpanel-divider);
-      border-radius: var(--medium-BorderRadius);
+      border-left-color: transparent;
+    }
+  }
+  @media (max-width: 480px) {
+    :global(.mobile-theme) .sidebar-container {
+      border-right: none;
+      border-bottom-right-radius: 0 !important;
     }
   }
 </style>

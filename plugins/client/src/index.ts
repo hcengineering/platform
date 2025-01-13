@@ -62,7 +62,7 @@ export interface ClientFactoryOptions {
   onUpgrade?: () => void
   onUnauthorized?: () => void
   onArchived?: () => void
-  onConnect?: (event: ClientConnectEvent, data: any) => Promise<void>
+  onConnect?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
   ctx?: MeasureContext
   onDialTimeout?: () => void | Promise<void>
 }
@@ -76,6 +76,9 @@ export type ClientFactory = (token: string, endpoint: string, opt?: ClientFactor
 // It will also filter out all UI Elements, like Actions, View declarations etc.
 // ui - will filter out all server element's and all UI disabled elements.
 export type FilterMode = 'none' | 'client' | 'ui'
+
+export const pingConst = 'ping'
+export const pongConst = 'pong!'
 
 export default plugin(clientId, {
   metadata: {

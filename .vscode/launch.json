@@ -54,7 +54,7 @@
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER":"ws",
-        "MODEL_VERSION": "0.6.287",
+        "MODEL_VERSION": "0.6.382",
         // "VERSION": "0.6.289",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
@@ -165,7 +165,7 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
-        "MODEL_VERSION": "v0.6.287",
+        "MODEL_VERSION": "v0.6.382",
         "WS_OPERATION": "all+backup",
         "BACKUP_STORAGE": "minio|minio?accessKey=minioadmin&secretKey=minioadmin",
         "BACKUP_BUCKET": "dev-backups",
@@ -197,7 +197,7 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
-        "MODEL_VERSION": "v0.6.287",
+        "MODEL_VERSION": "v0.6.382",
         "WS_OPERATION": "all+backup",
         "BACKUP_STORAGE": "minio|minio?accessKey=minioadmin&secretKey=minioadmin",
         "BACKUP_BUCKET": "dev-backups",
@@ -325,7 +325,7 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         "TELEGRAM_DATABASE": "telegram-service",
         "REKONI_URL": "http://localhost:4004",
-        "MODEL_VERSION": "0.6.287"
+        "MODEL_VERSION": "0.6.382"
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
@@ -352,7 +352,7 @@
         "MONGO_URL": "mongodb://localhost:27017",
         "TELEGRAM_DATABASE": "telegram-service",
         "REKONI_URL": "http://localhost:4004",
-        "MODEL_VERSION": "0.6.287"
+        "MODEL_VERSION": "0.6.382"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
@@ -441,7 +441,6 @@
         "CLIENT_SECRET": "${env:POD_GITHUB_CLIENT_SECRET}",
         "PRIVATE_KEY": "${env:POD_GITHUB_PRIVATE_KEY}",
         "COLLABORATOR_URL": "ws://localhost:3078",
-        "SYSTEM_EMAIL": "anticrm@hc.engineering",
         "MINIO_ENDPOINT": "localhost",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
@@ -463,7 +462,6 @@
       "args": ["src/index.ts"],
       "env": {
         "ACCOUNTS_URL": "http://localhost:3000",
-        "SYSTEM_EMAIL": "anticrm@hc.engineering",
         "SECRET": "secret",
         "DOCS_RELEASE_INTERVAL": "10000",
         "DOCS_IN_REVIEW_CHECK_INTERVAL": "10000",
@@ -523,7 +521,6 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "SERVICE_ID": "sign-service",
-        "SYSTEM_EMAIL": "",
         "ACCOUNTS_URL": "http://localhost:3000",
         "BRANDING_PATH": "${workspaceRoot}/services/sign/pod-sign/debug/branding.json"
       },
@@ -587,7 +584,8 @@
         "PASSWORD": "password",
         "AVATAR_PATH": "./assets/avatar.png",
         "AVATAR_CONTENT_TYPE": ".png",
-        "LOVE_ENDPOINT": "http://localhost:8096"
+        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        "LOVE_ENDPOINT": "http://localhost:8096",
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,

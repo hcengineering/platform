@@ -271,6 +271,7 @@
           editorAttributes={{ style: 'padding: 0 2em; margin: 0 -2em;' }}
           overflow="none"
           canShowPopups={!$areDocumentCommentPopupsOpened}
+          enableInlineComments={false}
           onExtensions={handleExtensions}
           kitOptions={{
             note: {

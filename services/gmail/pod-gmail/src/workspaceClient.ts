@@ -20,6 +20,7 @@ import core, {
   type Doc,
   MeasureContext,
   type Ref,
+  systemAccountEmail,
   type Tx,
   type TxCreateDoc,
   TxProcessor,
@@ -31,7 +32,6 @@ import type { StorageAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 import { type Db } from 'mongodb'
 import { getClient } from './client'
-import config from './config'
 import { GmailClient } from './gmail'
 import { type Channel, type ProjectCredentials, type User } from './types'
 
@@ -121,7 +121,7 @@ export class WorkspaceClient {
   }
 
   private async initClient (workspace: string): Promise<Client> {
-    const token = generateToken(config.SystemEmail, { name: workspace })
+    const token = generateToken(systemAccountEmail, { name: workspace })
     console.log('token', token, workspace)
     const client = await getClient(token)
     client.notify = (...tx: Tx[]) => {

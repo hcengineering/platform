@@ -79,6 +79,8 @@ export function initStatisticsContext (
     logConsole?: boolean
     factory?: () => MeasureMetricsContext
     getUsers?: () => WorkspaceStatistics[]
+    statsUrl?: string
+    serviceName?: () => string
   }
 ): MeasureContext {
   let metricsContext: MeasureMetricsContext
@@ -88,7 +90,7 @@ export function initStatisticsContext (
     metricsContext = new MeasureMetricsContext(serviceName, {}, {}, newMetrics())
   }
 
-  const statsUrl = process.env.STATS_URL
+  const statsUrl = ops?.statsUrl ?? process.env.STATS_URL
 
   const metricsFile = ops?.logFile
 
@@ -129,7 +131,7 @@ export function initStatisticsContext (
         if (statsUrl !== undefined) {
           const token = generateToken(systemAccountEmail, { name: '' }, { service: 'true' })
           const data: ServiceStatistics = {
-            serviceName,
+            serviceName: ops?.serviceName?.() ?? serviceName,
             cpu: getCPUInfo(),
             memory: getMemoryInfo(),
             stats: metricsContext.metrics,

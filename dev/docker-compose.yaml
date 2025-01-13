@@ -22,6 +22,8 @@ services:
   postgres:
     image: postgres
     container_name: postgres
+    extra_hosts:
+      - "host.docker.internal:host-gateway"    
     environment:
       - POSTGRES_PASSWORD=example
     volumes:
@@ -268,7 +270,7 @@ services:
       - UV_THREADPOOL_SIZE=10
       - SERVER_PORT=3333
       - SERVER_SECRET=secret
-      - ENABLE_COMPRESSION=true
+      - ENABLE_COMPRESSION=false
       - STATS_URL=http://host.docker.internal:4900
       - FULLTEXT_URL=http://host.docker.internal:4700
       # - DB_URL=postgresql://postgres:example@postgres:5432
@@ -341,7 +343,7 @@ services:
       # - UV_THREADPOOL_SIZE=10
       - SERVER_PORT=3332
       - SERVER_SECRET=secret
-      - ENABLE_COMPRESSION=true
+      - ENABLE_COMPRESSION=false
       - FULLTEXT_URL=http://host.docker.internal:4702
       - STATS_URL=http://host.docker.internal:4900
       - DB_URL=postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable

@@ -16,7 +16,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import { AccountRole, concatLink, type BaseWorkspaceInfo, type Doc, type Ref } from '@hcengineering/core'
 import { loginId, type LoginInfo, type OtpInfo, type Workspace, type WorkspaceLoginInfo } from '@hcengineering/login'
-import {
+import platform, {
   OK,
   PlatformError,
   Severity,
@@ -215,6 +215,7 @@ function getWorkspaceSize (it: Pick<Workspace, 'backupInfo'>): number {
   let sz = 0
   sz += it.backupInfo?.dataSize ?? 0
   sz += it.backupInfo?.blobsSize ?? 0
+  sz += it.backupInfo?.backupSize ?? 0
   return sz
 }
 
@@ -933,6 +934,32 @@ export async function sendInvite (email: string, personId?: Ref<Doc>, role?: Acc
   })
 }
 
+export async function resendInvite (email: string): Promise<void> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const token = getMetadata(presentation.metadata.Token) as string
+
+  const params = [email]
+
+  const request = {
+    method: 'resendInvite',
+    params
+  }
+
+  await fetch(accountsUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(request)
+  })
+}
+
 export async function requestPassword (email: string): Promise<Status> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
@@ -1032,6 +1059,14 @@ export async function restorePassword (token: string, password: string): Promise
 }
 
 async function handleStatusError (message: string, err: Status): Promise<void> {
+  if (
+    err.code === platform.status.InvalidPassword ||
+    err.code === platform.status.AccountNotFound ||
+    err.code === platform.status.InvalidOtp
+  ) {
+    // No need to send to analytics
+    return
+  }
   const label = await translate(err.code, err.params, 'en')
   Analytics.handleError(new Error(`${message}: ${label}`))
 }

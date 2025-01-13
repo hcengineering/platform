@@ -1,5 +1,6 @@
 import core, {
   AccountRole,
+  ClientConnectEvent,
   WorkspaceEvent,
   generateId,
   getTypeOf,
@@ -11,17 +12,27 @@ import core, {
   type BulkUpdateEvent,
   type Class,
   type Client,
+  type ClientConnection,
   type Doc,
+  type DocChunk,
+  type DocumentQuery,
+  type Domain,
+  type FindOptions,
+  type FindResult,
   type MeasureContext,
   type ModelDb,
   type Ref,
+  type SearchResult,
   type SessionData,
+  type Tx,
+  type TxResult,
   type TxWorkspaceEvent,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
 import { type Hash } from 'crypto'
 import fs from 'fs'
+import type { DbAdapter } from './adapter'
 import { BackupClientOps } from './storage'
 import type { Pipeline } from './types'
 
@@ -167,20 +178,51 @@ export function getUser (modelDb: ModelDb, userEmail: string | undefined, admin?
 
 export class SessionDataImpl implements SessionData {
   _account: Account | undefined
+  _removedMap: Map<Ref<Doc>, Doc> | undefined
+  _contextCache: Map<string, any> | undefined
+  _broadcast: SessionData['broadcast'] | undefined
 
   constructor (
     readonly userEmail: string,
     readonly sessionId: string,
     readonly admin: boolean | undefined,
-    readonly broadcast: SessionData['broadcast'],
+    _broadcast: SessionData['broadcast'] | undefined,
     readonly workspace: WorkspaceIdWithUrl,
     readonly branding: Branding | null,
     readonly isAsyncContext: boolean,
-    readonly removedMap: Map<Ref<Doc>, Doc>,
-    readonly contextCache: Map<string, any>,
+    _removedMap: Map<Ref<Doc>, Doc> | undefined,
+    _contextCache: Map<string, any> | undefined,
     readonly modelDb: ModelDb,
     readonly rawAccount?: Account
-  ) {}
+  ) {
+    this._removedMap = _removedMap
+    this._contextCache = _contextCache
+    this._broadcast = _broadcast
+  }
+
+  get broadcast (): SessionData['broadcast'] {
+    if (this._broadcast === undefined) {
+      this._broadcast = {
+        targets: {},
+        txes: []
+      }
+    }
+    return this._broadcast
+  }
+
+  get removedMap (): Map<Ref<Doc>, Doc> {
+    if (this._removedMap === undefined) {
+      this._removedMap = new Map()
+    }
+    return this._removedMap
+  }
+
+  get contextCache (): Map<string, any> {
+    if (this._contextCache === undefined) {
+      this._contextCache = new Map()
+    }
+    return this._contextCache
+  }
 
   get account (): Account {
     this._account = this.rawAccount ?? this._account ?? getUser(this.modelDb, this.userEmail, this.admin)
@@ -234,8 +276,8 @@ export function wrapPipeline (
     wsUrl,
     null,
     true,
-    new Map(),
-    new Map(),
+    undefined,
+    undefined,
     pipeline.context.modelDb
   )
   ctx.contextData = contextData
@@ -261,4 +303,66 @@ export function wrapPipeline (
     tx: (tx) => pipeline.tx(ctx, [tx]),
     notify: (...tx) => {}
   }
+}
+
+export function wrapAdapterToClient (ctx: MeasureContext, storageAdapter: DbAdapter, txes: Tx[]): ClientConnection {
+  class TestClientConnection implements ClientConnection {
+    isConnected = (): boolean => true
+
+    handler?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
+
+    set onConnect (
+      handler: ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>) | undefined
+    ) {
+      this.handler = handler
+      void this.handler?.(ClientConnectEvent.Connected, '', {})
+    }
+
+    get onConnect (): ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>) | undefined {
+      return this.handler
+    }
+
+    async findAll<T extends Doc>(
+      _class: Ref<Class<Doc>>,
+      query: DocumentQuery<Doc>,
+      options?: FindOptions<Doc>
+    ): Promise<FindResult<T>> {
+      return (await storageAdapter.findAll(ctx, _class, query, options)) as any
+    }
+
+    async tx (tx: Tx): Promise<TxResult> {
+      return await storageAdapter.tx(ctx, tx)
+    }
+
+    async searchFulltext (): Promise<SearchResult> {
+      return { docs: [] }
+    }
+
+    async close (): Promise<void> {}
+
+    async loadChunk (domain: Domain): Promise<DocChunk> {
+      throw new Error('unsupported')
+    }
+
+    async closeChunk (idx: number): Promise<void> {}
+
+    async loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+      return []
+    }
+
+    async upload (domain: Domain, docs: Doc[]): Promise<void> {}
+
+    async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
+
+    async loadModel (): Promise<Tx[]> {
+      return txes
+    }
+
+    async getAccount (): Promise<Account> {
+      return {} as any
+    }
+
+    async sendForceClose (): Promise<void> {}
+  }
+  return new TestClientConnection()
 }

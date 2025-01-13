@@ -13,15 +13,25 @@
 // limitations under the License.
 //
 
-import { loadCollabYdoc, saveCollabYdoc, yDocCopyXmlField } from '@hcengineering/collaboration'
+import {
+  loadCollabYdoc,
+  saveCollabJson,
+  saveCollabYdoc,
+  yDocCopyXmlField,
+  yDocFromBuffer
+} from '@hcengineering/collaboration'
 import core, {
   type Blob,
   type Doc,
+  type Hierarchy,
   type MeasureContext,
   type Ref,
   type TxCreateDoc,
+  type TxUpdateDoc,
   type WorkspaceId,
   DOMAIN_TX,
+  SortingOrder,
+  makeCollabId,
   makeCollabYdocId,
   makeDocCollabId
 } from '@hcengineering/core'
@@ -63,13 +73,18 @@ export async function restoreWikiContentMongo (
       }
 
       const correctCollabId = { objectClass: doc._class, objectId: doc._id, objectAttr: 'content' }
-      const wrongCollabId = { objectClass: doc._class, objectId: doc._id, objectAttr: 'description' }
 
-      const stat = storageAdapter.stat(ctx, workspaceId, makeCollabYdocId(wrongCollabId))
+      const wrongYdocId = await findWikiDocYdocName(ctx, db, workspaceId, doc._id)
+      if (wrongYdocId === undefined) {
+        console.log('current ydoc not found', doc._id)
+        continue
+      }
+
+      const stat = storageAdapter.stat(ctx, workspaceId, wrongYdocId)
       if (stat === undefined) continue
 
       const ydoc1 = await loadCollabYdoc(ctx, storageAdapter, workspaceId, correctCollabId)
-      const ydoc2 = await loadCollabYdoc(ctx, storageAdapter, workspaceId, wrongCollabId)
+      const ydoc2 = await loadCollabYdoc(ctx, storageAdapter, workspaceId, wrongYdocId)
 
       if (ydoc1 !== undefined && ydoc1.share.has('content')) {
         // There already is content, we should skip the document
@@ -98,6 +113,81 @@ export async function restoreWikiContentMongo (
   } finally {
     printStats()
     await iterator.close()
+  }
+}
+
+export async function findWikiDocYdocName (
+  ctx: MeasureContext,
+  db: Db,
+  workspaceId: WorkspaceId,
+  doc: Ref<Document>
+): Promise<Ref<Blob> | undefined> {
+  const updateContentTx = await db.collection<TxUpdateDoc<Document & { content: string }>>(DOMAIN_TX).findOne(
+    {
+      _class: core.class.TxUpdateDoc,
+      objectId: doc,
+      objectClass: document.class.Document,
+      'operations.content': { $exists: true }
+    },
+    {
+      sort: { modifiedOn: SortingOrder.Descending }
+    }
+  )
+
+  if (updateContentTx?.operations?.content != null) {
+    const value = updateContentTx.operations.content as string
+    if (value.includes(':')) {
+      console.log('found update content tx', doc, value)
+      return value.split(':')[0] as Ref<Blob>
+    }
+  }
+
+  const updateDescriptionTx = await db.collection<TxUpdateDoc<Document & { description: string }>>(DOMAIN_TX).findOne(
+    {
+      _class: core.class.TxUpdateDoc,
+      objectId: doc,
+      objectClass: document.class.Document,
+      'operations.description': { $exists: true }
+    },
+    {
+      sort: { modifiedOn: SortingOrder.Descending }
+    }
+  )
+
+  if (updateDescriptionTx?.operations?.description != null) {
+    const value = updateDescriptionTx.operations.description
+    if (value.includes(':')) {
+      console.log('found update description tx', doc, value)
+      return value.split(':')[0] as Ref<Blob>
+    }
+  }
+
+  const createContentTx = await db.collection<TxCreateDoc<Document & { content: string }>>(DOMAIN_TX).findOne({
+    _class: core.class.TxCreateDoc,
+    objectId: doc,
+    objectClass: document.class.Document,
+    'attributes.content': { $exists: true }
+  })
+
+  if (createContentTx?.attributes?.content != null) {
+    const value = createContentTx.attributes.content
+    if (value.includes(':')) {
+      console.log('found create content tx', doc, value)
+      return value.split(':')[0] as Ref<Blob>
+    }
+  }
+
+  const createContentIdTx = await db.collection<TxCreateDoc<Document & { contentId: Ref<Blob> }>>(DOMAIN_TX).findOne({
+    _class: core.class.TxCreateDoc,
+    objectId: doc,
+    objectClass: document.class.Document,
+    'attributes.contentId': { $exists: true }
+  })
+
+  if (createContentIdTx?.attributes?.contentId != null) {
+    const value = createContentIdTx.attributes.contentId
+    console.log('found create contentId tx', doc, value)
+    return value
   }
 }
 
@@ -207,4 +297,66 @@ export async function restoreControlledDocContentForDoc (
   }
 
   return true
+}
+
+export async function restoreMarkupRefsMongo (
+  ctx: MeasureContext,
+  db: Db,
+  workspaceId: WorkspaceId,
+  hierarchy: Hierarchy,
+  storageAdapter: StorageAdapter
+): Promise<void> {
+  const classes = hierarchy.getDescendants(core.class.Doc)
+  for (const _class of classes) {
+    const domain = hierarchy.findDomain(_class)
+    if (domain === undefined) continue
+
+    const allAttributes = hierarchy.getAllAttributes(_class)
+    const attributes = Array.from(allAttributes.values()).filter((attribute) => {
+      return hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)
+    })
+
+    if (attributes.length === 0) continue
+    if (hierarchy.isMixin(_class) && attributes.every((p) => p.attributeOf !== _class)) continue
+
+    ctx.info('processing', { _class, attributes: attributes.map((p) => p.name) })
+
+    const collection = db.collection<Doc>(domain)
+    const iterator = collection.find({ _class })
+    try {
+      while (true) {
+        const doc = await iterator.next()
+        if (doc === null) {
+          break
+        }
+
+        for (const attribute of attributes) {
+          const isMixin = hierarchy.isMixin(attribute.attributeOf)
+
+          const attributeName = isMixin ? `${attribute.attributeOf}.${attribute.name}` : attribute.name
+
+          const value = isMixin
+            ? ((doc as any)[attribute.attributeOf]?.[attribute.name] as string)
+            : ((doc as any)[attribute.name] as string)
+
+          if (typeof value === 'string') {
+            continue
+          }
+
+          const collabId = makeCollabId(doc._class, doc._id, attribute.name)
+          const ydocId = makeCollabYdocId(collabId)
+
+          try {
+            const buffer = await storageAdapter.read(ctx, workspaceId, ydocId)
+            const ydoc = yDocFromBuffer(Buffer.concat(buffer as any))
+
+            const jsonId = await saveCollabJson(ctx, storageAdapter, workspaceId, collabId, ydoc)
+            await collection.updateOne({ _id: doc._id }, { $set: { [attributeName]: jsonId } })
+          } catch {}
+        }
+      }
+    } finally {
+      await iterator.close()
+    }
+  }
 }

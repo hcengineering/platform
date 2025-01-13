@@ -14,8 +14,10 @@
 // limitations under the License.
 //
 
+import activity from '@hcengineering/activity'
+import chunter from '@hcengineering/chunter'
+import { type Employee, type PersonAccount } from '@hcengineering/contact'
 import core, {
-  getCurrentAccount,
   toIdMap,
   type Attribute,
   type Class,
@@ -27,7 +29,7 @@ import core, {
   type TxOperations
 } from '@hcengineering/core'
 import { type IntlString, type Resources } from '@hcengineering/platform'
-import { createQuery, getClient } from '@hcengineering/presentation'
+import { createQuery, getClient, onClient } from '@hcengineering/presentation'
 import task, {
   getStatusIndex,
   makeRank,
@@ -41,9 +43,6 @@ import { getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
 import { type ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, groupBy, statusStore } from '@hcengineering/view-resources'
 import { get, writable } from 'svelte/store'
-import { type Employee, type PersonAccount } from '@hcengineering/contact'
-import activity from '@hcengineering/activity'
-import chunter from '@hcengineering/chunter'
 
 import AssignedTasks from './components/AssignedTasks.svelte'
 import Dashboard from './components/Dashboard.svelte'
@@ -69,14 +68,14 @@ import TaskKindSelector from './components/taskTypes/TaskKindSelector.svelte'
 import TaskTypeClassPresenter from './components/taskTypes/TaskTypeClassPresenter.svelte'
 import TaskTypePresenter from './components/taskTypes/TaskTypePresenter.svelte'
 
-import ProjectTypeSelector from './components/projectTypes/ProjectTypeSelector.svelte'
+import { employeeByIdStore, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
 import CreateProjectType from './components/projectTypes/CreateProjectType.svelte'
-import ProjectTypeGeneralSectionEditor from './components/projectTypes/ProjectTypeGeneralSectionEditor.svelte'
-import ProjectTypeTasksTypeSectionEditor from './components/projectTypes/ProjectTypeTasksTypeSectionEditor.svelte'
 import ProjectTypeAutomationsSectionEditor from './components/projectTypes/ProjectTypeAutomationsSectionEditor.svelte'
 import ProjectTypeCollectionsSectionEditor from './components/projectTypes/ProjectTypeCollectionsSectionEditor.svelte'
+import ProjectTypeGeneralSectionEditor from './components/projectTypes/ProjectTypeGeneralSectionEditor.svelte'
+import ProjectTypeSelector from './components/projectTypes/ProjectTypeSelector.svelte'
+import ProjectTypeTasksTypeSectionEditor from './components/projectTypes/ProjectTypeTasksTypeSectionEditor.svelte'
 import TaskTypeEditor from './components/taskTypes/TaskTypeEditor.svelte'
-import { employeeByIdStore, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
 
 export { default as AssigneePresenter } from './components/AssigneePresenter.svelte'
 export { default as TypeSelector } from './components/TypeSelector.svelte'
@@ -364,33 +363,24 @@ export const taskTypeStore = writable<IdMap<TaskType>>(new Map())
 export const typesOfJoinedProjectsStore = writable<Array<Ref<ProjectType>>>()
 export const joinedProjectsStore = writable<Project[]>()
 
-function fillStores (): void {
-  const client = getClient()
+const query = createQuery(true)
+const taskQuery = createQuery(true)
+const projectQuery = createQuery(true)
 
-  if (client !== undefined) {
-    const query = createQuery(true)
-    query.query(task.class.ProjectType, {}, (res) => {
-      typeStore.set(toIdMap(res))
-    })
+onClient((client, user) => {
+  query.query(task.class.ProjectType, {}, (res) => {
+    typeStore.set(toIdMap(res))
+  })
 
-    const taskQuery = createQuery(true)
-    taskQuery.query(task.class.TaskType, {}, (res) => {
-      taskTypeStore.set(toIdMap(res))
-    })
+  taskQuery.query(task.class.TaskType, {}, (res) => {
+    taskTypeStore.set(toIdMap(res))
+  })
 
-    const projectQuery = createQuery(true)
-    projectQuery.query(task.class.Project, { members: getCurrentAccount()._id }, (res) => {
-      typesOfJoinedProjectsStore.set(res.map((r) => r.type).filter((it, idx, arr) => arr.indexOf(it) === idx))
-      joinedProjectsStore.set(res)
-    })
-  } else {
-    setTimeout(() => {
-      fillStores()
-    }, 50)
-  }
-}
-
-fillStores()
+  projectQuery.query(task.class.Project, { members: user._id }, (res) => {
+    typesOfJoinedProjectsStore.set(res.map((r) => r.type).filter((it, idx, arr) => arr.indexOf(it) === idx))
+    joinedProjectsStore.set(res)
+  })
+})
 
 export const selectedTypeStore = writable<Ref<ProjectType> | undefined>(undefined)
 export const selectedTaskTypeStore = writable<Ref<TaskType> | undefined>(undefined)

@@ -149,7 +149,8 @@ export default plugin(chunterId, {
     ThreadMessagePresenter: '' as AnyComponent,
     ChatMessagePreview: '' as AnyComponent,
     ThreadMessagePreview: '' as AnyComponent,
-    DirectIcon: '' as AnyComponent
+    DirectIcon: '' as AnyComponent,
+    InlineCommentThread: '' as AnyComponent
   },
   activity: {
     MembersChangedMessage: '' as AnyComponent

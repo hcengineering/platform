@@ -64,73 +64,75 @@ export class DbAdapterManagerImpl implements DBAdapterManager {
     return this.defaultAdapter
   }
 
-  async registerHelper (helper: DomainHelper): Promise<void> {
+  async registerHelper (ctx: MeasureContext, helper: DomainHelper): Promise<void> {
     this.domainHelper = helper
-    await this.initDomains()
+    await this.initDomains(ctx)
   }
 
-  async initDomains (): Promise<void> {
+  async initDomains (ctx: MeasureContext): Promise<void> {
     const adapterDomains = new Map<DbAdapter, Set<Domain>>()
     for (const d of this.context.hierarchy.domains()) {
       // We need to init domain info
-      const info = this.getDomainInfo(d)
-      await this.updateInfo(d, adapterDomains, info)
+      await ctx.with('update-info', { domain: d }, async (ctx) => {
+        const info = this.getDomainInfo(d)
+        await this.updateInfo(d, adapterDomains, info)
+      })
     }
-    for (const adapter of this.adapters.values()) {
-      adapter.on?.((domain, event, count, helper) => {
-        const info = this.getDomainInfo(domain)
-        const oldDocuments = info.documents
-        switch (event) {
-          case 'add':
-            info.documents += count
-            break
-          case 'update':
-            break
-          case 'delete':
-            info.documents -= count
-            break
-          case 'read':
-            break
-        }
+    for (const [name, adapter] of this.adapters.entries()) {
+      await ctx.with('domain-helper', { name }, async (ctx) => {
+        adapter.on?.((domain, event, count, helper) => {
+          const info = this.getDomainInfo(domain)
+          const oldDocuments = info.documents
+          switch (event) {
+            case 'add':
+              info.documents += count
+              break
+            case 'update':
+              break
+            case 'delete':
+              info.documents -= count
+              break
+            case 'read':
+              break
+          }
 
-        if (oldDocuments < 50 && info.documents > 50) {
-          // We have more 50 documents, we need to check for indexes
-          void this.domainHelper?.checkDomain(this.metrics, domain, info.documents, helper)
-        }
-        if (oldDocuments > 50 && info.documents < 50) {
-          // We have more 50 documents, we need to check for indexes
-          void this.domainHelper?.checkDomain(this.metrics, domain, info.documents, helper)
-        }
+          if (oldDocuments < 50 && info.documents > 50) {
+            // We have more 50 documents, we need to check for indexes
+            void this.domainHelper?.checkDomain(this.metrics, domain, info.documents, helper)
+          }
+          if (oldDocuments > 50 && info.documents < 50) {
+            // We have more 50 documents, we need to check for indexes
+            void this.domainHelper?.checkDomain(this.metrics, domain, info.documents, helper)
+          }
+        })
       })
     }
   }
 
-  initAdapters (ctx: MeasureContext): Promise<void> {
-    return ctx.with('init-adapters', {}, async (ctx) => {
-      for (const [key, adapter] of this.adapters) {
-        // already initialized
-        if (key !== this.conf.domains[DOMAIN_TX] && adapter.init !== undefined) {
-          let excludeDomains: string[] | undefined
-          let domains: string[] | undefined
-          if (this.conf.defaultAdapter === key) {
-            excludeDomains = []
-            for (const domain in this.conf.domains) {
-              if (this.conf.domains[domain] !== key) {
-                excludeDomains.push(domain)
-              }
-            }
-          } else {
-            domains = []
-            for (const domain in this.conf.domains) {
-              if (this.conf.domains[domain] === key) {
-                domains.push(domain)
-              }
+  async initAdapters (): Promise<void> {
+    for (const [key, adapter] of this.adapters) {
+      // already initialized
+      if (key !== this.conf.domains[DOMAIN_TX] && adapter.init !== undefined) {
+        let excludeDomains: string[] | undefined
+        let domains: string[] | undefined
+        if (this.conf.defaultAdapter === key) {
+          excludeDomains = []
+          for (const domain in this.conf.domains) {
+            if (this.conf.domains[domain] !== key) {
+              excludeDomains.push(domain)
             }
           }
-          await adapter.init(domains, excludeDomains)
+        } else {
+          domains = []
+          for (const domain in this.conf.domains) {
+            if (this.conf.domains[domain] === key) {
+              domains.push(domain)
+            }
+          }
         }
+        await adapter?.init?.(this.metrics, domains, excludeDomains)
       }
-    })
+    }
   }
 
   private async updateInfo (d: Domain, adapterDomains: Map<DbAdapter, Set<Domain>>, info: DomainInfo): Promise<void> {

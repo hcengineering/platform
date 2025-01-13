@@ -39,8 +39,8 @@ import {
   type Tx,
   type TxResult
 } from '@hcengineering/core'
-import { createDummyStorageAdapter } from '@hcengineering/server-core'
 import { ClientSession, startSessionManager } from '@hcengineering/server'
+import { createDummyStorageAdapter } from '@hcengineering/server-core'
 import { startHttpServer } from '../server_http'
 import { genMinModel } from './minmodel'
 
@@ -94,8 +94,7 @@ describe('server', () => {
         loadModel: async (ctx, lastModelTx, hash) => []
       }
     },
-    sessionFactory: (token, pipeline, workspaceId, branding) =>
-      new ClientSession(token, pipeline, workspaceId, branding, true),
+    sessionFactory: (token, workspace) => new ClientSession(token, workspace, true),
     port: 3335,
     brandingMap: {},
     serverFactory: startHttpServer,
@@ -206,8 +205,7 @@ describe('server', () => {
           loadModel: async (ctx, lastModelTx, hash) => []
         }
       },
-      sessionFactory: (token, pipeline, workspaceId, branding) =>
-        new ClientSession(token, pipeline, workspaceId, branding, true),
+      sessionFactory: (token, workspace) => new ClientSession(token, workspace, true),
       port: 3336,
       brandingMap: {},
       serverFactory: startHttpServer,

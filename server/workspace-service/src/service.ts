@@ -42,9 +42,20 @@ import path from 'path'
 import { Analytics } from '@hcengineering/analytics'
 import { doBackupWorkspace, doRestoreWorkspace } from '@hcengineering/server-backup'
 import type { PipelineFactory, StorageAdapter } from '@hcengineering/server-core'
-import { createBackupPipeline, getConfig, getWorkspaceDestroyAdapter } from '@hcengineering/server-pipeline'
+import {
+  createBackupPipeline,
+  getConfig,
+  getWorkspaceDestroyAdapter,
+  registerAdapterFactory,
+  registerDestroyFactory,
+  registerServerPlugins,
+  registerStringLoaders,
+  registerTxAdapterFactory
+} from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { createWorkspace, upgradeWorkspace } from './ws-operations'
+import { createMongoTxAdapter, createMongoAdapter, createMongoDestroyAdapter } from '@hcengineering/mongo'
+import { createPostgresTxAdapter, createPostgresAdapter, createPostgreeDestroyAdapter } from '@hcengineering/postgres'
 
 export interface WorkspaceOptions {
   errorHandler: (workspace: BaseWorkspaceInfo, error: any) => Promise<void>
@@ -107,6 +118,16 @@ export class WorkspaceWorker {
     await withRetryConnUntilSuccess(workerHandshake)(token, this.region, this.version, this.operation)
 
     ctx.info('Successfully connected to the account service')
+
+    registerTxAdapterFactory('mongodb', createMongoTxAdapter)
+    registerAdapterFactory('mongodb', createMongoAdapter)
+    registerDestroyFactory('mongodb', createMongoDestroyAdapter)
+
+    registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
+    registerAdapterFactory('postgresql', createPostgresAdapter, true)
+    registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+    registerServerPlugins()
+    registerStringLoaders()
 
     while (!isCanceled()) {
       await this.waitForAvailableThread()

@@ -16,7 +16,6 @@
 interface Config {
   AccountsURL: string
   Port: number
-  SystemEmail: string
   ServiceID: string
 
   LiveKitHost: string
@@ -25,6 +24,7 @@ interface Config {
 
   StorageConfig: string
   StorageProviderName: string
+  S3StorageConfig: string
   Secret: string
 
   MongoUrl: string
@@ -40,9 +40,9 @@ const envMap: { [key in keyof Config]: string } = {
 
   StorageConfig: 'STORAGE_CONFIG',
   StorageProviderName: 'STORAGE_PROVIDER_NAME',
+  S3StorageConfig: 'S3_STORAGE_CONFIG',
   Secret: 'SECRET',
   ServiceID: 'SERVICE_ID',
-  SystemEmail: 'SYSTEM_EMAIL',
   MongoUrl: 'MONGO_URL'
 }
 
@@ -57,13 +57,13 @@ const config: Config = (() => {
     ApiSecret: process.env[envMap.ApiSecret],
     StorageConfig: process.env[envMap.StorageConfig],
     StorageProviderName: process.env[envMap.StorageProviderName] ?? 's3',
+    S3StorageConfig: process.env[envMap.S3StorageConfig],
     Secret: process.env[envMap.Secret],
     ServiceID: process.env[envMap.ServiceID] ?? 'love-service',
-    SystemEmail: process.env[envMap.SystemEmail] ?? 'anticrm@hc.engineering',
     MongoUrl: process.env[envMap.MongoUrl]
   }
 
-  const optional = ['StorageConfig']
+  const optional = ['StorageConfig', 'S3StorageConfig']
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>)
     .filter((key) => !optional.includes(key))

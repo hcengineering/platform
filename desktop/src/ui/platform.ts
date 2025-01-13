@@ -29,6 +29,7 @@ import { leadId } from '@hcengineering/lead'
 import login, { loginId } from '@hcengineering/login'
 import notification, { notificationId } from '@hcengineering/notification'
 import onboard, { onboardId } from '@hcengineering/onboard'
+import presence, { presenceId } from '@hcengineering/presence'
 import { recruitId } from '@hcengineering/recruit'
 import rekoni from '@hcengineering/rekoni'
 import { requestId } from '@hcengineering/request'
@@ -245,8 +246,9 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(uiPlugin.metadata.DefaultApplication, login.component.LoginApp)
   setMetadata(analyticsCollector.metadata.EndpointURL, config.ANALYTICS_COLLECTOR_URL)
   setMetadata(aiBot.metadata.EndpointURL, config.AI_URL)
+  setMetadata(presence.metadata.PresenceUrl, config.PRESENCE_URL ?? '')
 
-  const languages = myBranding.languages !== undefined && myBranding.languages !== '' ? myBranding.languages.split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt']
+  const languages = myBranding.languages !== undefined && myBranding.languages !== '' ? myBranding.languages.split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it', 'de']
 
   setMetadata(uiPlugin.metadata.Languages, languages)
 
@@ -303,6 +305,7 @@ export async function configurePlatform (): Promise<void> {
   addLocation(productsId, async () => await import('@hcengineering/products-resources'))
   addLocation(documentsId, async () => await import('@hcengineering/controlled-documents-resources'))
   addLocation(uploaderId, async () => await import('@hcengineering/uploader-resources'))
+  addLocation(presenceId, async () => await import('@hcengineering/presence-resources'))
   addLocation(githubId, async () => await import(/* webpackChunkName: "github" */ '@hcengineering/github-resources'))
   addLocation(
     desktopPreferencesId,
@@ -313,7 +316,7 @@ export async function configurePlatform (): Promise<void> {
   addLocation(printId, () => import(/* webpackChunkName: "print" */ '@hcengineering/print-resources'))
   addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
   addLocation(testManagementId, () => import(/* webpackChunkName: "test-management" */ '@hcengineering/test-management-resources'))
-  addLocation(surveyId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/survey-resources'))
+  addLocation(surveyId, () => import(/* webpackChunkName: "survey" */ '@hcengineering/survey-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

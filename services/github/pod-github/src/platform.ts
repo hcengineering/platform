@@ -14,6 +14,8 @@ import core, {
   MeasureContext,
   RateLimiter,
   Ref,
+  systemAccountEmail,
+  TimeRateLimiter,
   TxOperations
 } from '@hcengineering/core'
 import github, { GithubAuthentication, makeQuery, type GithubIntegration } from '@hcengineering/github'
@@ -72,6 +74,8 @@ export class PlatformWorker {
 
   userManager!: UserManager
 
+  rateLimits = new Map<string, TimeRateLimiter>()
+
   private constructor (
     readonly ctx: MeasureContext,
     readonly app: App,
@@ -80,6 +84,15 @@ export class PlatformWorker {
   ) {
     setMetadata(serverToken.metadata.Secret, config.ServerSecret)
     registerLoaders()
+  }
+
+  getRateLimiter (endpoint: string): TimeRateLimiter {
+    let limiter = this.rateLimits.get(endpoint)
+    if (limiter === undefined) {
+      limiter = new TimeRateLimiter(config.RateLimit)
+      this.rateLimits.set(endpoint, limiter)
+    }
+    return limiter
   }
 
   public async initStorage (): Promise<void> {
@@ -229,7 +242,7 @@ export class PlatformWorker {
         } else {
           let client: Client | undefined
           try {
-            client = await createPlatformClient(oldWorkspace, 30000)
+            ;({ client } = await createPlatformClient(oldWorkspace, 30000))
             await this.removeInstallationFromWorkspace(oldWorker, installationId)
             await client.close()
           } catch (err: any) {
@@ -385,7 +398,7 @@ export class PlatformWorker {
         platformClient = this.clients.get(payload.workspace)?.client
         if (platformClient === undefined) {
           shouldClose = true
-          platformClient = await createPlatformClient(payload.workspace, 30000)
+          ;({ client: platformClient } = await createPlatformClient(payload.workspace, 30000))
         }
         const client = new TxOperations(platformClient, payload.accountId)
 
@@ -696,6 +709,35 @@ export class PlatformWorker {
     return Array.from(workspaces)
   }
 
+  async checkWorkspaceIsActive (token: string, workspace: string): Promise<ClientWorkspaceInfo | undefined> {
+    let workspaceInfo: ClientWorkspaceInfo | undefined
+    try {
+      workspaceInfo = await getWorkspaceInfo(token)
+    } catch (err: any) {
+      this.ctx.error('Workspace not found:', { workspace })
+      return
+    }
+    if (workspaceInfo?.workspace === undefined) {
+      this.ctx.error('No workspace exists for workspaceId', { workspace })
+      return
+    }
+    if (!isActiveMode(workspaceInfo?.mode)) {
+      this.ctx.warn('Workspace is in maitenance, skipping for now.', { workspace })
+      return
+    }
+    if (workspaceInfo?.disabled === true) {
+      this.ctx.warn('Workspace is disabled', { workspace })
+      return
+    }
+    const lastVisit = (Date.now() - workspaceInfo.lastVisit) / (3600 * 24 * 1000) // In days
+
+    if (config.WorkspaceInactivityInterval > 0 && lastVisit > config.WorkspaceInactivityInterval) {
+      this.ctx.warn('Workspace is inactive for too long, skipping for now.', { workspace })
+      return
+    }
+    return workspaceInfo
+  }
+
   private async checkWorkspaces (): Promise<boolean> {
     this.ctx.info('************************* Check workspaces ************************* ', {
       workspaces: this.clients.size
@@ -730,31 +772,15 @@ export class PlatformWorker {
       }
       await rateLimiter.add(async () => {
         const token = generateToken(
-          config.SystemEmail,
+          systemAccountEmail,
           {
             name: workspace
           },
           { mode: 'github' }
         )
-        let workspaceInfo: ClientWorkspaceInfo | undefined
-        try {
-          workspaceInfo = await getWorkspaceInfo(token, true)
-        } catch (err: any) {
-          this.ctx.error('Workspace not found:', { workspace })
+        const workspaceInfo = await this.checkWorkspaceIsActive(token, workspace)
+        if (workspaceInfo === undefined) {
           errors++
-          return
-        }
-        if (workspaceInfo?.workspace === undefined) {
-          this.ctx.error('No workspace exists for workspaceId', { workspace })
-          errors++
-          return
-        }
-        if (!isActiveMode(workspaceInfo?.mode)) {
-          this.ctx.warn('Workspace is in maitenance, skipping for now.', { workspace })
-          return
-        }
-        if (workspaceInfo?.disabled === true) {
-          this.ctx.warn('Workspace is disabled', { workspace })
           return
         }
         try {
@@ -769,6 +795,7 @@ export class PlatformWorker {
             total: workspaces.length
           })
 
+          let initialized = false
           const worker = await GithubWorker.create(
             this,
             workerCtx,
@@ -785,9 +812,20 @@ export class PlatformWorker {
               if (event === ClientConnectEvent.Refresh || event === ClientConnectEvent.Upgraded) {
                 void this.clients.get(workspace)?.refreshClient(event === ClientConnectEvent.Upgraded)
               }
+              if (initialized) {
+                // We need to check if workspace is inactive
+                void this.checkWorkspaceIsActive(token, workspace).then((res) => {
+                  if (res === undefined) {
+                    this.ctx.warn('Workspace is inactive, removing from clients list.', { workspace })
+                    this.clients.delete(workspace)
+                    void worker?.close()
+                  }
+                })
+              }
             }
           )
           if (worker !== undefined) {
+            initialized = true
             workerCtx.info('************************* Register worker Done ************************* ', {
               workspaceId: workspaceInfo.workspaceId,
               workspace: workspaceInfo.workspace,

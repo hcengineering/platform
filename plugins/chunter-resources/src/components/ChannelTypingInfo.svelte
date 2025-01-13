@@ -14,14 +14,15 @@
 -->
 <script lang="ts">
   import { onMount } from 'svelte'
-  import chunter, { TypingInfo } from '@hcengineering/chunter'
+  import chunter from '@hcengineering/chunter'
   import { getName, Person } from '@hcengineering/contact'
   import { personByIdStore } from '@hcengineering/contact-resources'
   import { getCurrentAccount, IdMap } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
+  import { PresenceTyping } from '../types'
 
-  export let typingInfo: TypingInfo[] = []
+  export let typingInfo: PresenceTyping[] = []
 
   const typingDelay = 2000
   const maxTypingPersons = 3
@@ -34,7 +35,7 @@
 
   $: updateTypingPersons($personByIdStore, typingInfo)
 
-  function updateTypingPersons (personById: IdMap<Person>, typingInfo: TypingInfo[]) {
+  function updateTypingPersons (personById: IdMap<Person>, typingInfo: PresenceTyping[]): void {
     const now = Date.now()
     const personIds = new Set(
       typingInfo

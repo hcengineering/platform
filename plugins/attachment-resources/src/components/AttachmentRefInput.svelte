@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import { Account, Class, Doc, IdMap, Markup, Ref, Space, generateId, toIdMap } from '@hcengineering/core'
+  import { Account, Class, Doc, IdMap, Markup, RateLimiter, Ref, Space, generateId, toIdMap } from '@hcengineering/core'
   import { Asset, IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     DraftController,
@@ -25,9 +25,9 @@
     getFileMetadata,
     uploadFile
   } from '@hcengineering/presentation'
+  import { EmptyMarkup } from '@hcengineering/text'
   import textEditor, { type RefAction } from '@hcengineering/text-editor'
   import { AttachIcon, ReferenceInput } from '@hcengineering/text-editor-resources'
-  import { EmptyMarkup } from '@hcengineering/text'
   import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import attachment from '../plugin'
@@ -183,26 +183,31 @@
     await tick()
     const list = inputFile.files
     if (list === null || list.length === 0) return
+    const limiter = new RateLimiter(10)
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
       if (file !== null) {
-        await createAttachment(file)
+        await limiter.add(() => createAttachment(file))
       }
     }
+    await limiter.waitProcessing()
     inputFile.value = ''
     progress = false
   }
 
   async function fileDrop (e: DragEvent): Promise<void> {
-    progress = true
     const list = e.dataTransfer?.files
+    const limiter = new RateLimiter(10)
+
     if (list === undefined || list.length === 0) return
+    progress = true
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
       if (file !== null) {
-        await createAttachment(file)
+        await limiter.add(() => createAttachment(file))
       }
     }
+    await limiter.waitProcessing()
     progress = false
   }
 
@@ -257,17 +262,17 @@
       return
     }
     saved = true
-    const promises: Promise<any>[] = []
+    const limiter = new RateLimiter(10)
     newAttachments.forEach((p) => {
       const attachment = attachments.get(p)
       if (attachment !== undefined) {
-        promises.push(saveAttachment(attachment))
+        void limiter.add(() => saveAttachment(attachment))
       }
     })
     removedAttachments.forEach((p) => {
-      promises.push(deleteAttachment(p))
+      void limiter.add(() => deleteAttachment(p))
     })
-    await Promise.all(promises)
+    await limiter.waitProcessing()
     newAttachments.clear()
     removedAttachments.clear()
     saveDraft()

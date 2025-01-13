@@ -9,7 +9,8 @@ test.describe('Tracker public link issues tests', () => {
   test('Public link generate', async ({ browser }) => {
     const publicLinkIssue: NewIssue = {
       title: `Public link generate issue-${generateId()}`,
-      description: 'Public link generate issue'
+      description: 'Public link generate issue',
+      projectName: 'Default'
     }
 
     let link: string
@@ -60,7 +61,8 @@ test.describe('Tracker public link issues tests', () => {
   test('Public link Revoke', async ({ browser }) => {
     const publicLinkIssue: NewIssue = {
       title: `Public link Revoke issue-${generateId()}`,
-      description: 'Public link Revoke issue'
+      description: 'Public link Revoke issue',
+      projectName: 'Default'
     }
 
     const newContext = await browser.newContext({ storageState: PlatformSetting })

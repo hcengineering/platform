@@ -86,7 +86,9 @@
     }
   }
   const changeMonth = (date: Date): Date => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 1)
+    // We should use the second day to protect the result of the month-shifted against the effects of time zone changes.
+    const secondDay = 2
+    return new Date(date.getFullYear(), date.getMonth() + 1, secondDay)
   }
 
   $: if (viewDate) viewDateSec = changeMonth(viewDate)

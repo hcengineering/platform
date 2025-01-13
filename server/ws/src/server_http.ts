@@ -29,6 +29,8 @@ import {
 } from '@hcengineering/server'
 import {
   LOGGING_ENABLED,
+  pingConst,
+  pongConst,
   type ConnectionSocket,
   type HandleRequestFunction,
   type PipelineFactory,
@@ -43,7 +45,9 @@ import os from 'os'
 import { WebSocketServer, type RawData, type WebSocket } from 'ws'
 
 import 'bufferutil'
+import { compress } from 'snappy'
 import 'utf-8-validate'
+
 let profiling = false
 const rpcHandler = new RPCHandler()
 /**
@@ -58,14 +62,12 @@ export function startHttpServer (
   ctx: MeasureContext,
   pipelineFactory: PipelineFactory,
   port: number,
-  enableCompression: boolean,
   accountsUrl: string,
   externalStorage: StorageAdapter
 ): () => Promise<void> {
   if (LOGGING_ENABLED) {
     ctx.info('starting server on', {
       port,
-      enableCompression,
       accountsUrl,
       parallel: os.availableParallelism()
     })
@@ -322,27 +324,7 @@ export function startHttpServer (
   const httpServer = http.createServer(app)
   const wss = new WebSocketServer({
     noServer: true,
-    perMessageDeflate: enableCompression
-      ? {
-          zlibDeflateOptions: {
-            // See zlib defaults.
-            chunkSize: 32 * 1024,
-            memLevel: 1,
-            level: 1
-          },
-          zlibInflateOptions: {
-            chunkSize: 32 * 1024,
-            level: 1,
-            memLevel: 1
-          },
-          serverNoContextTakeover: true,
-          clientNoContextTakeover: true,
-          // Below options specified as default values.
-          concurrencyLimit: Math.max(10, os.availableParallelism()), // Limits zlib concurrency for perf.
-          threshold: 1024 // Size (in bytes) below which messages
-          // should not be compressed if context takeover is disabled.
-        }
-      : false,
+    perMessageDeflate: false,
     skipUTF8Validation: true,
     maxPayload: 250 * 1024 * 1024,
     clientTracking: false // We do not need to track clients inside clients.
@@ -552,10 +534,19 @@ function createWebsocketClientSocket (
       return true
     },
     readRequest: (buffer: Buffer, binary: boolean) => {
+      if (buffer.length === pingConst.length && buffer.toString() === pingConst) {
+        return { method: pingConst, params: [], id: -1, time: Date.now() }
+      }
       return rpcHandler.readRequest(buffer, binary)
     },
     data: () => data,
-    send: (ctx: MeasureContext, msg, binary, compression) => {
+    sendPong: () => {
+      if (ws.readyState !== ws.OPEN || cs.isClosed) {
+        return
+      }
+      ws.send(pongConst)
+    },
+    send: (ctx: MeasureContext, msg, binary, _compression) => {
       const smsg = rpcHandler.serialize(msg, binary)
 
       ctx.measure('send-data', smsg.length)
@@ -563,15 +554,24 @@ function createWebsocketClientSocket (
       if (ws.readyState !== ws.OPEN || cs.isClosed) {
         return
       }
-      ws.send(smsg, { binary: true, compress: compression }, (err) => {
+
+      const handleErr = (err?: Error): void => {
+        ctx.measure('msg-send-delta', Date.now() - st)
         if (err != null) {
           if (!`${err.message}`.includes('WebSocket is not open')) {
             ctx.error('send error', { err })
             Analytics.handleError(err)
           }
         }
-        ctx.measure('msg-send-delta', Date.now() - st)
-      })
+      }
+
+      if (_compression) {
+        void compress(smsg).then((msg: any) => {
+          ws.send(msg, { binary: true }, handleErr)
+        })
+      } else {
+        ws.send(smsg, { binary: true }, handleErr)
+      }
     }
   }
   return cs

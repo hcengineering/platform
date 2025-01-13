@@ -220,9 +220,10 @@
   const spaceQuery = createQuery()
 
   let vacancy: Vacancy | undefined
+  const me = getCurrentAccount()._id
 
   $: if (_space) {
-    spaceQuery.query(recruit.class.Vacancy, { _id: _space }, (res) => {
+    spaceQuery.query(recruit.class.Vacancy, { _id: _space, members: me }, (res) => {
       vacancy = res.shift()
     })
   }
@@ -306,7 +307,7 @@
         id={'vacancy.talant.selector'}
         focusIndex={1}
         readonly={preserveCandidate}
-        _class={recruit.mixin.Candidate}
+        _class={contact.class.Person}
         options={{ sort: { modifiedOn: -1 } }}
         excluded={existingApplicants}
         label={recruit.string.Talent}
@@ -329,7 +330,11 @@
     <div class="flex-grow">
       <SpaceSelect
         _class={recruit.class.Vacancy}
-        spaceQuery={{ archived: false, ...($selectedTypeStore !== undefined ? { type: $selectedTypeStore } : {}) }}
+        spaceQuery={{
+          archived: false,
+          members: me,
+          ...($selectedTypeStore !== undefined ? { type: $selectedTypeStore } : {})
+        }}
         spaceOptions={orgOptions}
         readonly={preserveVacancy}
         label={recruit.string.Vacancy}

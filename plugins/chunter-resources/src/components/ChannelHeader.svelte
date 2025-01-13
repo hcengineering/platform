@@ -32,6 +32,7 @@
   export let canOpen: boolean = false
   export let withAside: boolean = false
   export let withSearch: boolean = true
+  export let withPresence: boolean = true
   export let isAsideShown: boolean = false
   export let filters: Ref<ActivityMessagesFilter>[] = []
   export let canOpenInSidebar: boolean = false
@@ -80,6 +81,7 @@
   {withAside}
   {isAsideShown}
   {withSearch}
+  {withPresence}
   {canOpenInSidebar}
   {closeOnEscape}
   bind:realWidth

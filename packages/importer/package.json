@@ -45,6 +45,7 @@
     "@hcengineering/chunter": "^0.6.20",
     "@hcengineering/collaboration": "^0.6.0",
     "@hcengineering/contact": "^0.6.24",
+    "@hcengineering/controlled-documents": "^0.1.0",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/document": "^0.6.0",
     "@hcengineering/model-attachment": "^0.6.0",

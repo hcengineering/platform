@@ -29,6 +29,7 @@
   } from '@hcengineering/ui'
   import type { ButtonItem } from '@hcengineering/ui'
   import { getResource } from '@hcengineering/platform'
+  import presence from '@hcengineering/presence'
 
   export let title: string | undefined = undefined
   export let withoutActivity: boolean = false
@@ -41,11 +42,13 @@
   export let isSub: boolean = true
   export let isAside: boolean = true
   export let isUtils: boolean = true
+  export let isPresence: boolean = true
   export let isCustomAttr: boolean = true
   export let floatAside: boolean = false
   export let allowClose: boolean = true
   export let embedded: boolean = false
   export let useMaxWidth: boolean | undefined = undefined
+  export let sideContentSpace: number = 0
   export let isFullSize: boolean = false
   export let contentClasses: string | undefined = undefined
   export let content: HTMLElement | undefined | null = undefined
@@ -145,6 +148,8 @@
     dispatch('select', result.detail)
   }}
 >
+  <Component is={presence.component.Presence} props={{ object }} />
+
   <svelte:fragment slot="title">
     {#if !withoutTitle}
       {#if $$slots.title}
@@ -152,6 +157,12 @@
       {:else if title}
         <div class="title not-active">{title}</div>
       {/if}
+    {/if}
+  </svelte:fragment>
+
+  <svelte:fragment slot="presence">
+    {#if isPresence}
+      <Component is={presence.component.PresenceAvatars} props={{ object, size: 'x-small', limit: 5 }} />
     {/if}
   </svelte:fragment>
 
@@ -246,6 +257,8 @@
       bind:this={content}
       class={contentClasses ?? 'popupPanel-body__main-content py-8 clear-mins'}
       class:max={useMaxWidth}
+      class:side-content-space={sideContentSpace > 0}
+      style:--side-content-space={`${sideContentSpace}px`}
     >
       <slot />
       {#if !withoutActivity}
@@ -275,6 +288,8 @@
       <div
         class={contentClasses ?? 'popupPanel-body__main-content py-8'}
         class:max={useMaxWidth}
+        class:side-content-space={sideContentSpace > 0}
+        style:--side-content-space={`${sideContentSpace}px`}
         use:resizeObserver={(element) => {
           activityRef?.onContainerResized?.(element)
         }}

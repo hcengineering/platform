@@ -48,9 +48,10 @@
     "@hcengineering/server": "^0.6.4",
     "bufferutil": "^4.0.8",
     "cors": "^2.8.5",
-    "express": "^4.19.2",
+    "express": "^4.21.2",
     "utf-8-validate": "^6.0.4",
     "ws": "^8.18.0",
-    "body-parser": "^1.20.2"
+    "body-parser": "^1.20.2",
+    "snappy": "^7.2.2"
   }
 }

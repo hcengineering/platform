@@ -1,0 +1,32 @@
+{
+  "string": {
+    "Drive": "Laufwerk",
+    "Drives": "Laufwerke",
+    "Grid": "Raster",
+    "File": "Datei",
+    "Files": "Dateien",
+    "FileVersion": "Dateiversion",
+    "FileVersions": "Dateiversionen",
+    "Folder": "Ordner",
+    "Folders": "Ordner",
+    "Resource": "Ressource",
+    "Name": "Name",
+    "Description": "Beschreibung",
+    "Parent": "Übergeordnet",
+    "Path": "Pfad",
+    "Version": "Version",
+    "Size": "Größe",
+    "ContentType": "Inhaltstyp",
+    "LastModified": "Zuletzt geändert",
+    "Download": "Herunterladen",
+    "Upload": "Hochladen",
+    "CreateDrive": "Laufwerk erstellen",
+    "CreateFolder": "Ordner erstellen",
+    "UploadFile": "Dateien hochladen",
+    "EditDrive": "Laufwerk bearbeiten",
+    "Rename": "Umbenennen",
+    "Restore": "Wiederherstellen",
+    "RoleLabel": "Rolle",
+    "Root": "/"
+  }
+}

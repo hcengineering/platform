@@ -58,6 +58,13 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverLove.trigger.OnRoomInfo,
+    txMatch: {
+      objectClass: love.class.RoomInfo
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverLove.trigger.OnKnock,
     txMatch: {
       objectClass: love.class.JoinRequest,

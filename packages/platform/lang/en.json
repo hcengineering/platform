@@ -18,6 +18,7 @@
     "WorkspaceRateLimit": "Server is busy, Please wait a bit and try again",
     "AccountAlreadyConfirmed": "Account already confirmed",
     "WorkspaceAlreadyExists": "Workspace already exists",
-    "InvalidOtp": "Invalid code"
+    "InvalidOtp": "Invalid code",
+    "InviteNotFound": "Invitation with email:{email} not found."
   }
 }

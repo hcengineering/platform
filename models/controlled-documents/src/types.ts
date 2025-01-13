@@ -90,6 +90,7 @@ import core, {
 } from '@hcengineering/model-core'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import tags, { type TagReference } from '@hcengineering/tags'
+import time, { type ToDo } from '@hcengineering/time'
 import training, { type Training, type TrainingRequest } from '@hcengineering/training'
 
 import documents from './plugin'
@@ -397,6 +398,9 @@ export class TControlledDocument extends THierarchyDocument implements Controlle
   @Prop(TypeRef(documents.class.Document), documents.string.ChangeControl)
   @Hidden()
     changeControl!: Ref<ChangeControl>
+
+  @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
+    todos?: CollectionSize<ToDo>
 }
 
 @Model(documents.class.ChangeControl, core.class.Doc, DOMAIN_DOCUMENTS)

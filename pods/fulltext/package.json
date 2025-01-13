@@ -15,7 +15,7 @@
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
     "get-model": "node ../../common/scripts/esbuild.js --entry=src/get-model.ts --keep-names=true --bundle=true --define=MODEL_VERSION --define=VERSION --define=GIT_REVISION  && node ./bundle/bundle.js > ./bundle/model.json",
-    "bundle": "rushx get-model && node ../../common/scripts/esbuild.js --keep-names=true --bundle=true --external=*.node --sourcemap=external",
+    "bundle": "rushx get-model && node ../../common/scripts/esbuild.js --keep-names=true --bundle=true --external=*.node --external=snappy --sourcemap=external",
     "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/fulltext",
     "docker:tbuild": "docker build -t hardcoreeng/fulltext . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/fulltext",
     "docker:abuild": "docker build -t hardcoreeng/fulltext . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/fulltext",
@@ -37,7 +37,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
-    "esbuild": "^0.20.0",
+    "esbuild": "^0.24.2",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
@@ -73,6 +73,8 @@
     "@hcengineering/server-collaboration": "^0.6.0",
     "@hcengineering/middleware": "^0.6.0",
     "@hcengineering/server-client": "^0.6.0",
-    "@hcengineering/server-storage": "^0.6.0"
+    "@hcengineering/server-storage": "^0.6.0",
+    "@hcengineering/postgres": "^0.6.0",
+    "@hcengineering/mongo": "^0.6.1"
   }
 }

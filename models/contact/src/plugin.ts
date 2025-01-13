@@ -35,7 +35,6 @@ export default mergeIds(contactId, contact, {
     ContactRefPresenter: '' as AnyComponent,
     ContactPresenter: '' as AnyComponent,
     EditPerson: '' as AnyComponent,
-    EditEmployee: '' as AnyComponent,
     EditOrganization: '' as AnyComponent,
     OrganizationPresenter: '' as AnyComponent,
     Contacts: '' as AnyComponent,
@@ -120,6 +119,7 @@ export default mergeIds(contactId, contact, {
   },
   action: {
     KickEmployee: '' as Ref<Action>,
+    ResendInvite: '' as Ref<Action>,
     DeleteEmployee: '' as Ref<Action>,
     MergePersons: '' as Ref<Action<Doc, any>>,
     OpenChannel: '' as Ref<Action>,
@@ -127,7 +127,8 @@ export default mergeIds(contactId, contact, {
   },
   actionImpl: {
     KickEmployee: '' as ViewAction,
-    OpenChannel: '' as ViewAction
+    OpenChannel: '' as ViewAction,
+    ResendInvite: '' as ViewAction
   },
   function: {
     GetCurrentEmployeeName: '' as Resource<TemplateFieldFunc>,

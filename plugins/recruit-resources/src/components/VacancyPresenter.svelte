@@ -31,7 +31,7 @@
   export let type: ObjectPresenterType = 'link'
 
   const dispatch = createEventDispatcher()
-  $: accentColor = getPlatformAvatarColorForTextDef(value.name, $themeStore.dark)
+  $: accentColor = getPlatformAvatarColorForTextDef(value?.name ?? '', $themeStore.dark)
 
   $: dispatch('accent-color', accentColor)
   onMount(() => {

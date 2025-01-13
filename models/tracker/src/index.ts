@@ -510,6 +510,14 @@ export function createModel (builder: Builder): void {
     value: true
   })
 
+  builder.mixin(tracker.class.Milestone, core.class.Class, setting.mixin.Editable, {
+    value: true
+  })
+
+  builder.mixin(tracker.class.Component, core.class.Class, setting.mixin.Editable, {
+    value: true
+  })
+
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.LinkProvider, {
     encode: tracker.function.GetIssueLinkFragment
   })

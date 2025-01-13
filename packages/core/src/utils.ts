@@ -125,6 +125,7 @@ export function toFindResult<T extends Doc> (docs: T[], total?: number, lookupMa
  */
 export interface WorkspaceId {
   name: string
+  uuid?: string
 }
 
 /**
@@ -352,7 +353,11 @@ export class RateLimiter {
   }
 
   async waitProcessing (): Promise<void> {
-    await Promise.all(this.processingQueue.values())
+    while (this.processingQueue.size > 0) {
+      await new Promise<void>((resolve) => {
+        this.notify.push(resolve)
+      })
+    }
   }
 }
 
@@ -833,4 +838,69 @@ export function pluginFilterTx (
   console.log('exclude plugin', msg)
   systemTx = systemTx.filter((t) => !totalExcluded.has(t._id))
   return systemTx
+}
+
+/**
+ * @public
+ */
+
+export class TimeRateLimiter {
+  idCounter: number = 0
+  processingQueue = new Map<number, Promise<void>>()
+  last: number = 0
+  rate: number
+  period: number
+  executions: { time: number, running: boolean }[] = []
+
+  queue: (() => Promise<void>)[] = []
+  notify: (() => void)[] = []
+
+  constructor (rate: number, period: number = 1000) {
+    this.rate = rate
+    this.period = period
+  }
+
+  private cleanupExecutions (): void {
+    const now = Date.now()
+    this.executions = this.executions.filter((time) => time.running || now - time.time < this.period)
+  }
+
+  async exec<T, B extends Record<string, any> = any>(op: (args?: B) => Promise<T>, args?: B): Promise<T> {
+    const processingId = this.idCounter++
+
+    while (this.processingQueue.size >= this.rate || this.executions.length >= this.rate) {
+      this.cleanupExecutions()
+      if (this.executions.length < this.rate) {
+        break
+      }
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, this.period / this.rate)
+      })
+    }
+
+    const v = { time: Date.now(), running: true }
+    try {
+      this.executions.push(v)
+      const p = op(args)
+      this.processingQueue.set(processingId, p as Promise<void>)
+      return await p
+    } finally {
+      v.running = false
+      this.processingQueue.delete(processingId)
+      this.cleanupExecutions()
+      const n = this.notify.shift()
+      if (n !== undefined) {
+        n()
+      }
+    }
+  }
+
+  async waitProcessing (): Promise<void> {
+    while (this.processingQueue.size > 0) {
+      console.log('wait', this.processingQueue.size)
+      await new Promise<void>((resolve) => {
+        this.notify.push(resolve)
+      })
+    }
+  }
 }

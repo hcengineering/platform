@@ -1,6 +1,6 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -35,7 +35,6 @@
   export let removable: boolean = false
   export let showPreview = false
   export let preview = false
-  export let progress: boolean = false
 
   const dispatch = createEventDispatcher()
 
