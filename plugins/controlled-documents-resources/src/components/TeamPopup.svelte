@@ -106,7 +106,7 @@
             readonly}
           docQuery={{
             active: true,
-            _id: { $in: permittedPeople }
+            _id: { $in: Array.from(permittedPeople) }
           }}
           on:update={({ detail }) => (users = detail)}
         />
