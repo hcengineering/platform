@@ -562,7 +562,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
             const domain = translateDomain(options.domainLookup.domain)
             const key = options.domainLookup.field
-            const as = `dl_lookup_${domain}_${key}`
+            const as = `lookup_${domain}_${key}`
             joins.push({
               isReverse: false,
               table: domain,
