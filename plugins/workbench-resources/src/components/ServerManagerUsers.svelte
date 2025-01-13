@@ -5,9 +5,8 @@
   import presentation, { createQuery, isAdminUser, type OverviewStatistics } from '@hcengineering/presentation'
   import { Button, CheckBox, ticker } from '@hcengineering/ui'
   import Expandable from '@hcengineering/ui/src/components/Expandable.svelte'
-  import { ObjectPresenter } from '@hcengineering/view-resources'
+  import { FixedColumn, ObjectPresenter } from '@hcengineering/view-resources'
   import { workspacesStore } from '../utils'
-  import FixedColumn from '@hcengineering/view-resources/src/components/FixedColumn.svelte'
 
   const token: string = getMetadata(presentation.metadata.Token) ?? ''
 
