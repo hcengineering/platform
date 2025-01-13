@@ -453,6 +453,7 @@
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/services/github/pod-github",
       "protocol": "inspector",
+      "attachSimplePort": 0,
       "outputCapture": "std"
     },
     {

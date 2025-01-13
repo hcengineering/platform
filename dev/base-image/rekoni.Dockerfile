@@ -6,4 +6,4 @@ RUN apt-get install -y \
   poppler-utils \
   html2text \
   unrtf
-RUN npm install --ignore-scripts=false --verbose sharp@v0.30.2 pdfjs-dist@v2.12.313 --unsafe-perm
+RUN npm install --ignore-scripts=false --verbose sharp@v0.32.6 pdfjs-dist@v2.12.313 --unsafe-perm

@@ -56,7 +56,9 @@
     {/if}
   </div>
   <ExpandCollapse isExpanded={expanded}>
-    <slot />
+    {#if expanded}
+      <slot />
+    {/if}
   </ExpandCollapse>
 </div>
 
