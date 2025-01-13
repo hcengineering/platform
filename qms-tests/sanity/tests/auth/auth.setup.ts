@@ -1,7 +1,15 @@
 import { test as setup, Page } from '@playwright/test'
 import path from 'path'
 
-import { PlatformUser, PlatformUserSecond, PlatformUserThird, PlatformUserQara, PlatformWs, PlatformURI, setTestOptions } from '../utils'
+import {
+  PlatformUser,
+  PlatformUserSecond,
+  PlatformUserThird,
+  PlatformUserQara,
+  PlatformWs,
+  PlatformURI,
+  setTestOptions
+} from '../utils'
 import { LoginPage } from '../model/login-page'
 import { SelectWorkspacePage } from '../model/select-workspace-page'
 

@@ -37,10 +37,6 @@ export class LoginPage {
     }
   }
 
-  async clickOnLoginWithPassword (): Promise<void> {
-    await this.loginWithPassword.click()
-  }
-
   async checkIfUserIsLoggedIn (credentials: string): Promise<void> {
     if (credentials === 'wrong-email' || credentials === 'wrong-password') {
       await expect(this.buttonLogin).toBeVisible()
