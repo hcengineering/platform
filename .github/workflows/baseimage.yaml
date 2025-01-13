@@ -50,7 +50,11 @@ jobs:
           DOCKER_CLI_HINTS: false
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
           VERSION: ${{ inputs.version }}
-
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: hardcoreeng
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
       - name: Publish base image
         env:
           DOCKER_CLI_HINTS: false
