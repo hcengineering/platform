@@ -50,7 +50,7 @@ async function generateDocumentLocation (
 
   return {
     loc: {
-      path: [appComponent, workspace, documentsId, doc.space],
+      path: [appComponent, workspace],
       fragment: getPanelFragment(doc)
     },
     defaultLocation: {
@@ -86,7 +86,7 @@ async function generateProjectDocumentLocation (
 
   return {
     loc: {
-      path: [appComponent, workspace, documentsId, prjdoc.space],
+      path: [appComponent, workspace],
       fragment: getPanelFragment(prjdoc)
     },
     defaultLocation: {

@@ -130,7 +130,10 @@ export async function generateFileLocation (loc: Location, id: Ref<File>): Promi
 
   return {
     loc: {
-      path: [appComponent, workspace, driveId],
+      path:
+        doc.parent !== undefined
+          ? [appComponent, workspace, driveId, 'folder', doc.parent]
+          : [appComponent, workspace, driveId],
       fragment: getPanelFragment(doc)
     },
     defaultLocation: {
