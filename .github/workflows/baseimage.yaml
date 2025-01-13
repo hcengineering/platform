@@ -6,12 +6,15 @@ concurrency:
   group: 'service-base'
   cancel-in-progress: true
 
-# Controls when the action will run.
 on:
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag for the images'
+        required: false
+        default: 'latest'
+        type: string
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   docker-build:
     runs-on: ubuntu-latest
@@ -46,15 +49,13 @@ jobs:
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: hardcoreeng
-          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+          VERSION: ${{ inputs.version }}
+
       - name: Publish base image
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
+          VERSION: ${{ inputs.version }}
         run: |
           echo Pushing base image
           cd ./dev/base-image
