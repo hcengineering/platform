@@ -29,14 +29,7 @@ import core, {
   TxUpdateDoc
 } from '@hcengineering/core'
 import gmail from '@hcengineering/gmail'
-import hr, {
-  Department,
-  fromTzDate,
-  PublicHoliday,
-  Request,
-  Staff,
-  tzDateEqual
-} from '@hcengineering/hr'
+import hr, { Department, fromTzDate, PublicHoliday, Request, Staff, tzDateEqual } from '@hcengineering/hr'
 import notification, { NotificationType } from '@hcengineering/notification'
 import { translate } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
@@ -113,7 +106,8 @@ function getTxes (
           $push: { members: emp }
         })
       )
-    ).flat()
+    )
+    .flat()
   if (removed === undefined) return pushTxes
   const pullTxes = removed
     .map((dep) =>
@@ -122,7 +116,8 @@ function getTxes (
           $pull: { members: emp }
         })
       )
-    ).flat()
+    )
+    .flat()
   return [...pullTxes, ...pushTxes]
 }
 
@@ -155,25 +150,12 @@ export async function OnDepartmentStaff (txes: Tx[], control: TriggerControl): P
       const push = (await buildHierarchy(departmentId, control)).map((p) => p._id)
 
       if (lastDepartment === undefined) {
-        result.push(
-          ...getTxes(
-            control.txFactory,
-            [employee],
-            push
-          )
-        )
+        result.push(...getTxes(control.txFactory, [employee], push))
       } else {
         let removed = (await buildHierarchy(lastDepartment, control)).map((p) => p._id)
         const added = exlude(removed, push)
         removed = exlude(push, removed)
-        result.push(
-          ...getTxes(
-            control.txFactory,
-            [employee],
-            added,
-            removed
-          )
-        )
+        result.push(...getTxes(control.txFactory, [employee], added, removed))
       }
     }
   }

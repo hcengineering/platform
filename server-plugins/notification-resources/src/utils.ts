@@ -48,7 +48,12 @@ import notification, {
 } from '@hcengineering/notification'
 import { getMetadata, getResource, IntlString, translate } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
-import { getPersonsBySocialIds, getEmployeesBySocialIds, getSocialStringsByPersons, getPerson } from '@hcengineering/server-contact'
+import {
+  getPersonsBySocialIds,
+  getEmployeesBySocialIds,
+  getSocialStringsByPersons,
+  getPerson
+} from '@hcengineering/server-contact'
 import serverNotification, {
   HTMLPresenter,
   NotificationPresenter,
@@ -144,8 +149,8 @@ export function isAllowed (
   provider: NotificationProvider,
   notificationControl: NotificationProviderControl
 ): boolean {
-  const providerSettings = (notificationControl.byProvider.get(provider._id) ?? []).filter(
-    ({ createdBy }) => createdBy !== undefined ? receiver.includes(createdBy) : false
+  const providerSettings = (notificationControl.byProvider.get(provider._id) ?? []).filter(({ createdBy }) =>
+    createdBy !== undefined ? receiver.includes(createdBy) : false
   )
 
   if (providerSettings.length > 0 && providerSettings.every((s) => !s.enabled)) {
@@ -209,14 +214,7 @@ export async function isShouldNotifyTx (
         const f = await getResource(mixin.func)
         const person = await getPerson(control, personIds[0])
         if (person === undefined) continue
-        const res = f(
-          tx,
-          object,
-          person,
-          personIds,
-          type,
-          control
-        )
+        const res = f(tx, object, person, personIds, type, control)
         if (!res) continue
       }
     }
@@ -461,18 +459,21 @@ export async function getUsersInfo (
   if (ids.length === 0) return new Map()
 
   const employeesBySocialId = await getEmployeesBySocialIds(control, ids)
-  const presentEmployeeIds = Object.values(employeesBySocialId).map((it) => it?._id).filter((it) => it !== undefined)
-  const missingSocialIds = Object.entries(employeesBySocialId).filter(([, employee]) => employee === undefined).map(([id]) => id)
+  const presentEmployeeIds = Object.values(employeesBySocialId)
+    .map((it) => it?._id)
+    .filter((it) => it !== undefined)
+  const missingSocialIds = Object.entries(employeesBySocialId)
+    .filter(([, employee]) => employee === undefined)
+    .map(([id]) => id)
   const personsBySocialId = await getPersonsBySocialIds(control, missingSocialIds)
 
   const employeesIds = new Set(presentEmployeeIds)
-  const spaces = (await control.findAll(ctx, contact.class.PersonSpace, {})).filter((it) => employeesIds.has(it.person as Ref<Employee>))
+  const spaces = (await control.findAll(ctx, contact.class.PersonSpace, {})).filter((it) =>
+    employeesIds.has(it.person as Ref<Employee>)
+  )
   const spacesByEmployee = groupByArray(spaces, (it) => it.person)
 
-  const persons = [
-    ...presentEmployeeIds,
-    ...Object.values(personsBySocialId).map((it) => it._id)
-  ]
+  const persons = [...presentEmployeeIds, ...Object.values(personsBySocialId).map((it) => it._id)]
 
   const socialStringsByPersons = await getSocialStringsByPersons(control, persons as Ref<Person>[])
 

@@ -29,11 +29,7 @@ export async function createPlatformClient (
   })
 
   setMetadata(serverToken.metadata.Secret, config.ServerSecret)
-  const token = generateToken(
-    systemAccountUuid,
-    workspace,
-    { service: 'github', mode: 'github' }
-  )
+  const token = generateToken(systemAccountUuid, workspace, { service: 'github', mode: 'github' })
   setMetadata(client.metadata.UseBinaryProtocol, true)
   setMetadata(client.metadata.UseProtocolCompression, true)
   setMetadata(client.metadata.ConnectionTimeout, timeout)

@@ -14,12 +14,7 @@
 //
 import { generateToken, Token } from '@hcengineering/server-token'
 import { AnalyticEvent } from '@hcengineering/analytics-collector'
-import {
-  AccountRole,
-  MeasureContext,
-  isWorkspaceCreating,
-  WorkspaceUuid
-} from '@hcengineering/core'
+import { AccountRole, MeasureContext, isWorkspaceCreating, WorkspaceUuid } from '@hcengineering/core'
 import { Person } from '@hcengineering/contact'
 import { getClient as getAccountClient, WorkspaceLoginInfo } from '@hcengineering/account-client'
 import { Db, Collection } from 'mongodb'

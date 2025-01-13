@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   WorkspaceInfoWithStatus,
   isWorkspaceCreating,
@@ -25,7 +25,10 @@ import { generateToken } from '@hcengineering/server-token'
 const ASSIGN_WORKSPACE_DELAY_MS = 5 * 1000 // 5 secs
 const MAX_ASSIGN_ATTEMPTS = 5
 
-async function tryGetWorkspaceInfo (ws: WorkspaceUuid, ctx: MeasureContext): Promise<WorkspaceInfoWithStatus | undefined> {
+async function tryGetWorkspaceInfo (
+  ws: WorkspaceUuid,
+  ctx: MeasureContext
+): Promise<WorkspaceInfoWithStatus | undefined> {
   // TODO: FIXME
   throw new Error('Not implemented')
   // const systemToken = generateToken(systemAccountUuid, ws, { service: 'aibot' })
@@ -76,8 +79,8 @@ export async function tryAssignToWorkspace (
       return false
     }
 
-    const token = generateToken(systemAccountUuid, undefined, { service: 'aibot' })
     // TODO: FIXME
+    // const token = generateToken(systemAccountUuid, undefined, { service: 'aibot' })
     // replace parameters after fixing server account client
     // await assignWorkspace(token, aiBotAccountEmail, workspace, AccountRole.User, undefined, false, aiBot.account.AIBot)
     ctx.info('Assigned to workspace: ', { workspace })

@@ -2,7 +2,7 @@
 // Copyright © 2023 Hardcore Engineering Inc.
 //
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import chunter from '@hcengineering/chunter'
 import core, {
   PersonId,
@@ -778,11 +778,7 @@ export class PlatformWorker {
         continue
       }
       await rateLimiter.add(async () => {
-        const token = generateToken(
-          systemAccountUuid,
-          workspace,
-          { service: 'github', mode: 'github' }
-        )
+        const token = generateToken(systemAccountUuid, workspace, { service: 'github', mode: 'github' })
         const workspaceInfo = await this.checkWorkspaceIsActive(token, workspace)
         if (workspaceInfo === undefined) {
           errors++

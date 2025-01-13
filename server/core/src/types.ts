@@ -332,7 +332,12 @@ export interface SearchStringResult {
  */
 export interface FullTextAdapter {
   index: (ctx: MeasureContext, workspace: WorkspaceUuid, doc: IndexedDoc) => Promise<TxResult>
-  update: (ctx: MeasureContext, workspace: WorkspaceUuid, id: Ref<Doc>, update: Record<string, any>) => Promise<TxResult>
+  update: (
+    ctx: MeasureContext,
+    workspace: WorkspaceUuid,
+    id: Ref<Doc>,
+    update: Record<string, any>
+  ) => Promise<TxResult>
   remove: (ctx: MeasureContext, workspace: WorkspaceUuid, id: Ref<Doc>[]) => Promise<void>
 
   clean: (ctx: MeasureContext, workspace: WorkspaceUuid) => Promise<void>
@@ -641,11 +646,7 @@ export type AddSessionResponse =
   | { upgrade: true }
   | { error: any, terminate?: boolean, archived?: boolean }
 
-export type SessionFactory = (
-  token: Token,
-  workspace: Workspace,
-  account: Account
-) => Session
+export type SessionFactory = (token: Token, workspace: Workspace, account: Account) => Session
 
 /**
  * @public

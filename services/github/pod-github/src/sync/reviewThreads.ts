@@ -363,7 +363,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
     if (Object.keys(platformUpdate).length > 0) {
       // Check and update  external
       if (platformUpdate.isResolved !== undefined && githubConfiguration.ResolveThreadSupported) {
-        const okit = (await this.provider.getOctokit(account as PersonId)) ?? container.container.octokit
+        const okit = (await this.provider.getOctokit(account)) ?? container.container.octokit
         const q = `mutation updateReviewThread($threadID: ID!) {
           ${platformUpdate.isResolved ? 'resolveReviewThread' : 'unresolveReviewThread'} (
             input: {
@@ -437,8 +437,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
       return {}
     }
     const existingReview = existing as GithubReviewThread
-    const okit =
-      (await this.provider.getOctokit(existingReview.modifiedBy as PersonId)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(existingReview.modifiedBy)) ?? container.container.octokit
 
     // No external version yet, create it.
     // Will be added into pending state.

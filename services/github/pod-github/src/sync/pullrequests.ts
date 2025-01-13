@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Analytics } from '@hcengineering/analytics'
 import { Person } from '@hcengineering/contact'
 import core, {
@@ -1030,8 +1031,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     }
 
     const hasFieldsUpdate = Object.keys(issueUpdate).length > 0 || state !== undefined
-    const isLocked =
-      info.isDescriptionLocked === true && !(await this.provider.isPlatformUser(account as PersonId))
+    const isLocked = info.isDescriptionLocked === true && !(await this.provider.isPlatformUser(account))
 
     if (hasFieldsUpdate || body !== undefined) {
       if (body !== undefined && !isLocked) {

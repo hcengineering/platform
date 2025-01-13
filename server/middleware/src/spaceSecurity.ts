@@ -194,11 +194,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
   }
 
-  private pushMembersHandle (
-    ctx: MeasureContext,
-    addedMembers: PersonId | Position<PersonId>,
-    space: Ref<Space>
-  ): void {
+  private pushMembersHandle (ctx: MeasureContext, addedMembers: PersonId | Position<PersonId>, space: Ref<Space>): void {
     if (typeof addedMembers === 'object') {
       for (const member of addedMembers.$each) {
         this.addMemberSpace(member, space)
@@ -275,14 +271,12 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   private broadcastNonMembers (ctx: MeasureContext<SessionData>, space: SpaceWithMembers): void {
     const { socialStringsToUsers } = ctx.contextData
     const members = space?.members ?? []
-    const memberUsers = new Set(members.map((m) => socialStringsToUsers.get(m) ?? undefined).filter((u) => u !== undefined))
+    const memberUsers = new Set(
+      members.map((m) => socialStringsToUsers.get(m) ?? undefined).filter((u) => u !== undefined)
+    )
     const users = Array.from(socialStringsToUsers.values()).filter((u) => !memberUsers.has(u))
 
-    this.brodcastEvent(
-      ctx,
-      users,
-      space._id
-    )
+    this.brodcastEvent(ctx, users, space._id)
   }
 
   private broadcastAll (ctx: MeasureContext, space: SpaceWithMembers): void {
@@ -351,7 +345,9 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   }
 
   getTargets (socialStrings: PersonId[], socialStringsToUsers: Map<PersonId, string>): string[] {
-    const users = new Set(socialStrings.map((s) => socialStringsToUsers.get(s)).filter((u) => u !== undefined) as string[])
+    const users = new Set(
+      socialStrings.map((s) => socialStringsToUsers.get(s)).filter((u) => u !== undefined) as string[]
+    )
     // Do we need to add system account to targets?
     // res.push(systemAccountUuid)
     return Array.from(users)
@@ -439,7 +435,9 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       if (space === undefined) return undefined
       if (this.systemSpaces.has(space._id) || this.mainSpaces.has(space._id)) return undefined
 
-      return space.members.length === 0 ? undefined : this.getTargets(space?.members, ctx.contextData.socialStringsToUsers)
+      return space.members.length === 0
+        ? undefined
+        : this.getTargets(space?.members, ctx.contextData.socialStringsToUsers)
     }
 
     await this.next?.handleBroadcast(ctx)

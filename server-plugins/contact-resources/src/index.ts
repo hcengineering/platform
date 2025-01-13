@@ -99,17 +99,17 @@ export async function OnSocialIdentityCreate (_txes: Tx[], control: TriggerContr
     if (ctx._class !== core.class.TxCreateDoc) continue
 
     const socialId = TxProcessor.createDoc2Doc(ctx)
-    const employee = (await control.findAll(control.ctx, contact.mixin.Employee, { _id: socialId.attachedTo as Ref<Employee> }))[0]
+    const employee = (
+      await control.findAll(control.ctx, contact.mixin.Employee, { _id: socialId.attachedTo as Ref<Employee> })
+    )[0]
     if (employee === undefined || !employee.active) continue
     const socialString = buildSocialIdString(socialId)
-    const txes = await createPersonSpace(
-      socialString,
-      employee._id,
-      control
-    )
+    const txes = await createPersonSpace(socialString, employee._id, control)
     result.push(...txes)
 
-    const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, { attachedTo: socialId.attachedTo })
+    const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, {
+      attachedTo: socialId.attachedTo
+    })
     if (socialIds.every((si) => si._id !== socialId._id)) {
       socialIds.push(socialId)
     }
@@ -135,18 +135,17 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
   for (const tx of _txes) {
     const mixinTx = tx as TxMixin<Person, Employee>
     if (mixinTx.attributes.active !== true) continue
-    const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, { attachedTo: mixinTx.objectId, attachedToClass: contact.class.Person })
+    const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, {
+      attachedTo: mixinTx.objectId,
+      attachedToClass: contact.class.Person
+    })
     const socialStrings = socialIds.map(buildSocialIdString)
     if (socialStrings.length === 0) continue
 
     const socialId = pickPrimarySocialId(socialStrings)
     const spaces = await control.findAll(control.ctx, core.class.Space, { autoJoin: true })
 
-    const txes = await createPersonSpace(
-      socialId,
-      mixinTx.objectId,
-      control
-    )
+    const txes = await createPersonSpace(socialId, mixinTx.objectId, control)
     result.push(...txes)
 
     for (const space of spaces) {
@@ -321,7 +320,13 @@ export async function getCurrentEmployeeEmail (control: TriggerControl, context:
   const person = await getTriggerCurrentPerson(control)
   if (person === undefined) return ''
 
-  const emailSocialId = (await control.findAll(control.ctx, contact.class.SocialIdentity, { attachedTo: person._id, attachedToClass: contact.class.Person, type: SocialIdType.EMAIL }))[0]
+  const emailSocialId = (
+    await control.findAll(control.ctx, contact.class.SocialIdentity, {
+      attachedTo: person._id,
+      attachedToClass: contact.class.Person,
+      type: SocialIdType.EMAIL
+    })
+  )[0]
   if (emailSocialId === undefined) return ''
 
   return emailSocialId.value

@@ -18,7 +18,6 @@ import core, {
   Data,
   MeasureContext,
   Ref,
-  WorkspaceUuid,
   systemAccountUuid,
   TxOperations,
   type Blob

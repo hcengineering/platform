@@ -28,8 +28,7 @@ import core, {
   type Obj,
   type Ref,
   type TxCUD,
-  type TxCreateDoc,
-  AccountRole
+  type TxCreateDoc
 } from '@hcengineering/core'
 import type { IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -183,8 +182,6 @@ export function genMinModel (): TxCUD<Doc>[] {
   const u1 = 'User1' as PersonId
   const u2 = 'User2' as PersonId
   txes.push(
-    // createDoc(core.class.Account, { email: 'user1@site.com', role: AccountRole.User }, u1),
-    // createDoc(core.class.Account, { email: 'user2@site.com', role: AccountRole.User }, u2),
     createDoc(core.class.Space, {
       name: 'Sp1',
       description: '',

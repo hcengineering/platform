@@ -14,6 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   import attachment from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, Person, getName as getContactName } from '@hcengineering/contact'

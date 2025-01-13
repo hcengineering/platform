@@ -31,7 +31,7 @@ import core, {
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
 
-const configurationAccountEmail = '#configurator@hc.engineering'
+export const configurationAccountEmail = '#configurator@hc.engineering'
 /**
  * @public
  */
@@ -78,11 +78,7 @@ export class ConfigurationMiddleware extends BaseMiddleware implements Middlewar
     const domain = this.context.hierarchy.getDomain(_class)
     if (this.targetDomains.includes(domain)) {
       const account = ctx.contextData.account
-      if (
-        account.role !== AccountRole.Owner &&
-        account._id !== core.account.System &&
-        ctx.contextData.admin !== true
-      ) {
+      if (account.role !== AccountRole.Owner && account._id !== core.account.System && ctx.contextData.admin !== true) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
       }
     }

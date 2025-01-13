@@ -410,7 +410,12 @@ export async function createAccount (db: AccountDB, personUuid: string, confirme
   // Create Huly social id and account
   // Currently, it's always created along with the account but never confirmed.
   // What's the actual use case for it?
-  await db.socialId.insertOne({ type: SocialIdType.HULY, value: personUuid, personUuid, ...(confirmed ? { verifiedOn: Date.now() } : {}) })
+  await db.socialId.insertOne({
+    type: SocialIdType.HULY,
+    value: personUuid,
+    personUuid,
+    ...(confirmed ? { verifiedOn: Date.now() } : {})
+  })
   await db.account.insertOne({ uuid: personUuid })
 }
 
@@ -443,7 +448,12 @@ export async function signUpByEmail (
   } else {
     // There's no person we can link to this email, so we need to create a new one
     personUuid = await db.person.insertOne({ firstName, lastName })
-    await db.socialId.insertOne({ type: SocialIdType.EMAIL, value: normalizedEmail, personUuid, ...(confirmed ? { verifiedOn: Date.now() } : {}) })
+    await db.socialId.insertOne({
+      type: SocialIdType.EMAIL,
+      value: normalizedEmail,
+      personUuid,
+      ...(confirmed ? { verifiedOn: Date.now() } : {})
+    })
   }
 
   await createAccount(db, personUuid, confirmed)
@@ -765,7 +775,10 @@ export async function confirmEmail (ctx: MeasureContext, db: AccountDB, account:
   if (emailSocialId == null) {
     ctx.error('Email social id not found', { account, normalizedEmail })
     throw new PlatformError(
-      new Status(Severity.ERROR, platform.status.SocialIdNotFound, { socialId: normalizedEmail, type: SocialIdType.EMAIL })
+      new Status(Severity.ERROR, platform.status.SocialIdNotFound, {
+        socialId: normalizedEmail,
+        type: SocialIdType.EMAIL
+      })
     )
   }
 
@@ -793,7 +806,10 @@ export async function getWorkspaceById (db: AccountDB, uuid: string): Promise<Wo
   return await db.workspace.findOne({ uuid })
 }
 
-export async function getWorkspaceInfoWithStatusById (db: AccountDB, uuid: string): Promise<WorkspaceInfoWithStatus | null> {
+export async function getWorkspaceInfoWithStatusById (
+  db: AccountDB,
+  uuid: string
+): Promise<WorkspaceInfoWithStatus | null> {
   const ws = await db.workspace.findOne({ uuid })
   const status = await db.workspaceStatus.findOne({ workspaceUuid: uuid })
 
@@ -807,7 +823,10 @@ export async function getWorkspaceInfoWithStatusById (db: AccountDB, uuid: strin
   }
 }
 
-export async function getWorkspacesInfoWithStatusByIds (db: AccountDB, uuids: string[]): Promise<WorkspaceInfoWithStatus[]> {
+export async function getWorkspacesInfoWithStatusByIds (
+  db: AccountDB,
+  uuids: string[]
+): Promise<WorkspaceInfoWithStatus[]> {
   const statuses = await db.workspaceStatus.find({ workspaceUuid: { $in: uuids } })
   const statusesMap = statuses.reduce<Record<string, WorkspaceStatus>>((sm, s) => {
     sm[s.workspaceUuid] = s
@@ -918,7 +937,8 @@ export async function loginOrSignUpWithProvider (
 
   // Find if any of the target/email social ids exist
   const targetSocialId = await db.socialId.findOne(socialId)
-  const emailSocialId = normalizedEmail !== '' ? await db.socialId.findOne({ type: SocialIdType.EMAIL, value: normalizedEmail }) : undefined
+  const emailSocialId =
+    normalizedEmail !== '' ? await db.socialId.findOne({ type: SocialIdType.EMAIL, value: normalizedEmail }) : undefined
   let personUuid = targetSocialId?.personUuid ?? emailSocialId?.personUuid
 
   if (personUuid == null) {
@@ -961,7 +981,12 @@ export async function loginOrSignUpWithProvider (
 
   if (emailSocialId == null) {
     if (normalizedEmail !== '') {
-      await db.socialId.insertOne({ type: SocialIdType.EMAIL, value: normalizedEmail, personUuid, verifiedOn: Date.now() })
+      await db.socialId.insertOne({
+        type: SocialIdType.EMAIL,
+        value: normalizedEmail,
+        personUuid,
+        verifiedOn: Date.now()
+      })
     }
   } else if (emailSocialId.verifiedOn == null) {
     await db.socialId.updateOne({ id: emailSocialId.id }, { verifiedOn: Date.now() })
@@ -997,18 +1022,35 @@ export async function joinWithProvider (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
   }
 
-  const loginInfo = await loginOrSignUpWithProvider(ctx, db, branding, normalizedEmail, first, last, socialId, signUpDisabled)
+  const loginInfo = await loginOrSignUpWithProvider(
+    ctx,
+    db,
+    branding,
+    normalizedEmail,
+    first,
+    last,
+    socialId,
+    signUpDisabled
+  )
 
   if (loginInfo == null) {
     return null
   }
 
-  return await doJoinByInvite(ctx, db, branding, generateToken(loginInfo.account, workspaceUuid), loginInfo.account, workspace, invite)
+  return await doJoinByInvite(
+    ctx,
+    db,
+    branding,
+    generateToken(loginInfo.account, workspaceUuid),
+    loginInfo.account,
+    workspace,
+    invite
+  )
 }
 
 export function flattenStatus (ws: WorkspaceInfoWithStatus): WorkspaceInfoWithStatusCore {
   if (ws === undefined) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { }))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, {}))
   }
 
   const status = ws.status

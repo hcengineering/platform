@@ -62,7 +62,7 @@ describe('s3 operations', () => {
     const w1Objects2 = await objectsToArray(toolCtx, minioService, ws1)
     expect(w1Objects2.map((it) => it._id)).toEqual(['obj1.txt', 'obj2.txt'])
 
-    const read = await minioService.read(toolCtx, ws1, 'obj1.txt') as unknown as Uint8Array[]
+    const read = (await minioService.read(toolCtx, ws1, 'obj1.txt')) as unknown as Uint8Array[]
     const data = Buffer.concat(read)
 
     expect('obj1').toEqual(data.toString())

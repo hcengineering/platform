@@ -25,19 +25,33 @@ export async function getTriggerCurrentPerson (control: TriggerControl): Promise
     return undefined
   }
 
-  const person = (await control.findAll(control.ctx, contact.class.Person, { _id: socialIdentity.attachedTo, _class: socialIdentity.attachedToClass }))[0]
+  const person = (
+    await control.findAll(control.ctx, contact.class.Person, {
+      _id: socialIdentity.attachedTo,
+      _class: socialIdentity.attachedToClass
+    })
+  )[0]
 
   return person
 }
 
 export async function getSocialStrings (control: TriggerControl, person: Ref<Person>): Promise<PersonId[]> {
-  const socialIdentities = await control.findAll(control.ctx, contact.class.SocialIdentity, { attachedTo: person, attachedToClass: contact.class.Person })
+  const socialIdentities = await control.findAll(control.ctx, contact.class.SocialIdentity, {
+    attachedTo: person,
+    attachedToClass: contact.class.Person
+  })
 
   return socialIdentities.map((s) => s.key)
 }
 
-export async function getSocialStringsByPersons (control: TriggerControl, persons: Ref<Person>[]): Promise<Record<Ref<Person>, PersonId[]>> {
-  const socialIdentities = await control.findAll(control.ctx, contact.class.SocialIdentity, { attachedTo: { $in: persons }, attachedToClass: contact.class.Person })
+export async function getSocialStringsByPersons (
+  control: TriggerControl,
+  persons: Ref<Person>[]
+): Promise<Record<Ref<Person>, PersonId[]>> {
+  const socialIdentities = await control.findAll(control.ctx, contact.class.SocialIdentity, {
+    attachedTo: { $in: persons },
+    attachedToClass: contact.class.Person
+  })
 
   return socialIdentities.reduce<Record<Ref<Person>, PersonId[]>>((acc, s) => {
     if (acc[s.attachedTo] === undefined) {
@@ -50,9 +64,15 @@ export async function getSocialStringsByPersons (control: TriggerControl, person
   }, {})
 }
 
-export async function getAllSocialStringsByPersonId (control: TriggerControl, personIds: PersonId[]): Promise<PersonId[]> {
+export async function getAllSocialStringsByPersonId (
+  control: TriggerControl,
+  personIds: PersonId[]
+): Promise<PersonId[]> {
   const socialIdentities = await control.findAll(control.ctx, contact.class.SocialIdentity, { key: { $in: personIds } })
-  const allSocialIdentities = await control.findAll(control.ctx, contact.class.SocialIdentity, { attachedTo: { $in: socialIdentities.map((sid) => sid.attachedTo) }, attachedToClass: contact.class.Person })
+  const allSocialIdentities = await control.findAll(control.ctx, contact.class.SocialIdentity, {
+    attachedTo: { $in: socialIdentities.map((sid) => sid.attachedTo) },
+    attachedToClass: contact.class.Person
+  })
 
   return allSocialIdentities.map((sid) => sid.key)
 }
@@ -66,14 +86,21 @@ export async function getPerson (control: TriggerControl, personId: PersonId): P
 
 export async function getPersons (control: TriggerControl, personIds: PersonId[]): Promise<Person[]> {
   const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, { key: { $in: personIds } })
-  const persons = await control.findAll(control.ctx, contact.class.Person, { _id: { $in: socialIds.map((s) => s.attachedTo) } })
+  const persons = await control.findAll(control.ctx, contact.class.Person, {
+    _id: { $in: socialIds.map((s) => s.attachedTo) }
+  })
 
   return persons
 }
 
-export async function getPersonsBySocialIds (control: TriggerControl, personIds: PersonId[]): Promise<Record<string, Person>> {
+export async function getPersonsBySocialIds (
+  control: TriggerControl,
+  personIds: PersonId[]
+): Promise<Record<string, Person>> {
   const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, { key: { $in: personIds } })
-  const persons = toIdMap(await control.findAll(control.ctx, contact.class.Person, { _id: { $in: socialIds.map((s) => s.attachedTo) } }))
+  const persons = toIdMap(
+    await control.findAll(control.ctx, contact.class.Person, { _id: { $in: socialIds.map((s) => s.attachedTo) } })
+  )
 
   return socialIds.reduce<Record<string, Person>>((acc, s) => {
     const person = persons.get(s.attachedTo)
@@ -89,21 +116,32 @@ export async function getPersonsBySocialIds (control: TriggerControl, personIds:
 
 export async function getEmployee (control: TriggerControl, personId: PersonId): Promise<Employee | undefined> {
   const socialId = (await control.findAll(control.ctx, contact.class.SocialIdentity, { key: personId }))[0]
-  const employee = (await control.findAll(control.ctx, contact.mixin.Employee, { _id: socialId.attachedTo as Ref<Employee> }))[0]
+  const employee = (
+    await control.findAll(control.ctx, contact.mixin.Employee, { _id: socialId.attachedTo as Ref<Employee> })
+  )[0]
 
   return employee
 }
 
 export async function getEmployees (control: TriggerControl, personIds: PersonId[]): Promise<Employee[]> {
   const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, { key: { $in: personIds } })
-  const employees = await control.findAll(control.ctx, contact.mixin.Employee, { _id: { $in: socialIds.map((s) => s.attachedTo as Ref<Employee>) } })
+  const employees = await control.findAll(control.ctx, contact.mixin.Employee, {
+    _id: { $in: socialIds.map((s) => s.attachedTo as Ref<Employee>) }
+  })
 
   return employees
 }
 
-export async function getEmployeesBySocialIds (control: TriggerControl, personIds: PersonId[]): Promise<Record<string, Employee | undefined>> {
+export async function getEmployeesBySocialIds (
+  control: TriggerControl,
+  personIds: PersonId[]
+): Promise<Record<string, Employee | undefined>> {
   const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, { key: { $in: personIds } })
-  const employees = toIdMap(await control.findAll(control.ctx, contact.mixin.Employee, { _id: { $in: socialIds.map((s) => s.attachedTo as Ref<Employee>) } }))
+  const employees = toIdMap(
+    await control.findAll(control.ctx, contact.mixin.Employee, {
+      _id: { $in: socialIds.map((s) => s.attachedTo as Ref<Employee>) }
+    })
+  )
 
   return socialIds.reduce<Record<string, Employee | undefined>>((acc, s) => {
     acc[s.key] = employees.get(s.attachedTo as Ref<Employee>)

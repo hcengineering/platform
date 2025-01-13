@@ -1,4 +1,5 @@
 <script lang="ts">
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   import { type Drawing } from '@hcengineering/attachment'
   import core, { DateRangeMode } from '@hcengineering/core'
   import { DatePresenter, IconScribble } from '@hcengineering/ui'

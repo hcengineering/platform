@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { IncomingHttpHeaders } from 'http'
 import { SocialIdType } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'

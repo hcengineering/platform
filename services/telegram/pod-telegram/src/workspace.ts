@@ -1,10 +1,5 @@
 import attachment, { Attachment } from '@hcengineering/attachment'
-import contact, {
-  Channel,
-  Contact as PContact,
-  getFirstName,
-  getLastName
-} from '@hcengineering/contact'
+import contact, { Channel, Contact as PContact, getFirstName, getLastName } from '@hcengineering/contact'
 import core, {
   PersonId,
   Blob,

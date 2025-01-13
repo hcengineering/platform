@@ -687,8 +687,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       tracker.class.Issue
     )
 
-    const isLocked =
-      info.isDescriptionLocked === true && !(await this.provider.isPlatformUser(account))
+    const isLocked = info.isDescriptionLocked === true && !(await this.provider.isPlatformUser(account))
 
     const hasFieldStateChanges = Object.keys(issueUpdate).length > 0 || state !== undefined
     // We should allow modification from user.
@@ -818,8 +817,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
   ): Promise<IssueExternalData | undefined> {
     const existingIssue = existing
 
-    const okit =
-      (await this.provider.getOctokit(existingIssue.modifiedBy)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(existingIssue.modifiedBy)) ?? container.container.octokit
 
     const repoId = repository.nodeId
 

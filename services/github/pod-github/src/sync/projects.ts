@@ -273,8 +273,7 @@ export class ProjectsSyncManager implements DocSyncManager {
     const allAttributes = this.client.getHierarchy().getAllAttributes(tracker.class.Milestone)
     const platformUpdate = collectUpdate<Milestone>(previousData, existingMilestone, Array.from(allAttributes.keys()))
 
-    const okit =
-      (await this.provider.getOctokit(existing.modifiedBy)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(existing.modifiedBy)) ?? container.container.octokit
 
     // Remove current same values from update
     for (const [k, v] of Object.entries(update)) {

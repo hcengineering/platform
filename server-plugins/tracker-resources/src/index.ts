@@ -119,7 +119,7 @@ export async function getIssueNotificationContent (
     if (
       updateTx.operations.assignee !== null &&
       updateTx.operations.assignee !== undefined &&
-      await isSamePerson(control, updateTx.operations.assignee, target)
+      (await isSamePerson(control, updateTx.operations.assignee, target))
     ) {
       body = tracker.string.IssueAssignedToYou
     } else {
@@ -157,7 +157,9 @@ export async function OnSocialIdentityCreate (_txes: Tx[], control: TriggerContr
   const account = control.ctx.contextData.account
   if (account.role !== AccountRole.Owner) return []
 
-  const defaultSpace = (await control.findAll(control.ctx, tracker.class.Project, { _id: tracker.project.DefaultProject }))[0]
+  const defaultSpace = (
+    await control.findAll(control.ctx, tracker.class.Project, { _id: tracker.project.DefaultProject })
+  )[0]
 
   if (defaultSpace === undefined) return []
 

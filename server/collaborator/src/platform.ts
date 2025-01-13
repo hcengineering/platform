@@ -13,7 +13,14 @@
 // limitations under the License.
 //
 
-import core, { Client, PersonId, pickPrimarySocialId, systemAccountUuid, TxOperations, WorkspaceUuid } from '@hcengineering/core'
+import core, {
+  Client,
+  PersonId,
+  pickPrimarySocialId,
+  systemAccountUuid,
+  TxOperations,
+  WorkspaceUuid
+} from '@hcengineering/core'
 import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { Token, generateToken } from '@hcengineering/server-token'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
