@@ -1,5 +1,5 @@
 FROM hardcoreeng/front-base:v20250113a
-WORKDIR /usr/src/app
+WORKDIR /app
 
 COPY bundle/bundle.js ./
 COPY bundle/bundle.js.map ./
