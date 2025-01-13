@@ -277,7 +277,14 @@ class Connection implements ClientConnection {
           this.opt?.onArchived?.()
         }
       }
-      console.error(resp.error)
+
+      if (resp.id !== undefined) {
+        const promise = this.requests.get(resp.id)
+        if (promise !== undefined) {
+          promise.reject(new PlatformError(resp.error))
+        }
+      }
+
       return
     }
 
