@@ -287,4 +287,39 @@ describe('mongo operations', () => {
     expect((r4[0].$lookup?.attachedTo as TaskComment)?._id).toEqual(commentId)
     expect(((r4[0].$lookup?.attachedTo as any)?.$lookup.attachedTo as Task)?._id).toEqual(docId)
   })
+
+  it('check associations', async () => {
+    const association = await operations.findOne(core.class.Association, {})
+    if (association == null) {
+      throw new Error('Association not found')
+    }
+
+    const firstTask = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+      name: 'my-task',
+      description: 'Descr',
+      rate: 20
+    })
+
+    const secondTask = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+      name: 'my-task2',
+      description: 'Descr',
+      rate: 20
+    })
+
+    await operations.createDoc(core.class.Relation, '' as Ref<Space>, {
+      docA: firstTask,
+      docB: secondTask,
+      association: association._id
+    })
+
+    const r = await client.findAll(
+      taskPlugin.class.Task,
+      { _id: firstTask },
+      {
+        associations: [[association._id, 1]]
+      }
+    )
+    expect(r.length).toEqual(1)
+    expect((r[0].$associations?.[association._id][0] as unknown as Task)?._id).toEqual(secondTask)
+  })
 })

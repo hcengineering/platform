@@ -20,7 +20,6 @@ import core, {
   Class,
   Classifier,
   ClassifierKind,
-  MarkupBlobRef,
   Data,
   DateRangeMode,
   Doc,
@@ -33,6 +32,7 @@ import core, {
   IndexKind,
   Interface,
   Markup,
+  MarkupBlobRef,
   MixinData,
   Obj,
   PropertyType,
@@ -386,6 +386,13 @@ export class Builder {
  */
 export function TypeString (): Type<string> {
   return { _class: core.class.TypeString, label: core.string.String }
+}
+
+/**
+ * @public
+ */
+export function TypeRelation (): Type<string> {
+  return { _class: core.class.TypeRelation, label: core.string.Relation }
 }
 
 /**

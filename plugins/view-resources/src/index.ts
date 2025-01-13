@@ -168,6 +168,7 @@ export { default as NavLink } from './components/navigator/NavLink.svelte'
 export { default as StatusPresenter } from './components/status/StatusPresenter.svelte'
 export { default as StatusRefPresenter } from './components/status/StatusRefPresenter.svelte'
 export { default as FoldersBrowser } from './components/folders/FoldersBrowser.svelte'
+export { default as RelationsEditor } from './components/RelationsEditor.svelte'
 export { default as ListView } from './components/list/ListView.svelte'
 
 export * from './filter'

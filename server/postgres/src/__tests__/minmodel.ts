@@ -15,6 +15,7 @@
 
 import core, {
   type Account,
+  AccountRole,
   type Arr,
   type AttachedDoc,
   type Class,
@@ -23,17 +24,18 @@ import core, {
   type Doc,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MODEL,
+  DOMAIN_RELATION,
   DOMAIN_TX,
   type Mixin,
   type Obj,
   type Ref,
   type TxCreateDoc,
   type TxCUD,
-  TxFactory,
-  AccountRole
+  TxFactory
 } from '@hcengineering/core'
 import type { IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { taskPlugin } from './tasks'
 
 export const txFactory = new TxFactory(core.account.System)
 
@@ -94,6 +96,22 @@ export function genMinModel (): TxCUD<Doc>[] {
   txes.push(createClass(core.class.Obj, { label: 'Obj' as IntlString, kind: ClassifierKind.CLASS }))
   txes.push(
     createClass(core.class.Doc, { label: 'Doc' as IntlString, extends: core.class.Obj, kind: ClassifierKind.CLASS })
+  )
+  txes.push(
+    createClass(core.class.Relation, {
+      label: 'Relation' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS,
+      domain: DOMAIN_RELATION
+    })
+  )
+  txes.push(
+    createClass(core.class.Association, {
+      label: 'Association' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS,
+      domain: DOMAIN_MODEL
+    })
   )
   txes.push(
     createClass(core.class.AttachedDoc, {
@@ -220,6 +238,16 @@ export function genMinModel (): TxCUD<Doc>[] {
       extends: core.class.Doc,
       kind: ClassifierKind.CLASS,
       domain: DOMAIN_MODEL
+    })
+  )
+
+  txes.push(
+    createDoc(core.class.Association, {
+      nameA: 'my-assoc',
+      nameB: 'my-assoc',
+      classA: taskPlugin.class.Task,
+      classB: taskPlugin.class.Task,
+      type: '1:1'
     })
   )
   return txes

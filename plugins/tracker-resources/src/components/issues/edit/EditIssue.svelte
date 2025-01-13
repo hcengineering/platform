@@ -40,7 +40,7 @@
     navigate
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { DocNavLink, ParentsNavigator, showMenu } from '@hcengineering/view-resources'
+  import { DocNavLink, ParentsNavigator, showMenu, RelationsEditor } from '@hcengineering/view-resources'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { Analytics } from '@hcengineering/analytics'
 
@@ -308,6 +308,8 @@
         <SubIssues focusIndex={50} {issue} shouldSaveDraft />
       {/key}
     </div>
+
+    <RelationsEditor object={issue} {readonly} />
 
     {#if editorFooter}
       <div class="step-tb-6">

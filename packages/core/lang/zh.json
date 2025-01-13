@@ -62,6 +62,9 @@
     "AutoJoin": "自动加入",
     "AutoJoinDescr": "自动将新员工加入此空间",
     "BlobSize": "大小",
-    "BlobContentType": "內容類型"
+    "BlobContentType": "內容類型",
+    "Relation": "关系",
+    "Relations": "关系",
+    "AddRelation": "添加关系"
   }
 }

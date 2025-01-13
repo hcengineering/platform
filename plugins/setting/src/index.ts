@@ -123,6 +123,7 @@ export default plugin(settingId, {
     Password: '' as Ref<Doc>,
     Setting: '' as Ref<Doc>,
     Integrations: '' as Ref<Doc>,
+    Relations: '' as Ref<Doc>,
     Support: '' as Ref<Doc>,
     Privacy: '' as Ref<Doc>,
     Terms: '' as Ref<Doc>,
@@ -164,7 +165,8 @@ export default plugin(settingId, {
     SpaceTypePropertiesSectionEditor: '' as AnyComponent,
     SpaceTypeRolesSectionEditor: '' as AnyComponent,
     RoleEditor: '' as AnyComponent,
-    RoleAssignmentEditor: '' as AnyComponent
+    RoleAssignmentEditor: '' as AnyComponent,
+    RelationSetting: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,
@@ -221,7 +223,8 @@ export default plugin(settingId, {
     Enums: '' as Asset,
     InviteSettings: '' as Asset,
     InviteWorkspace: '' as Asset,
-    Views: '' as Asset
+    Views: '' as Asset,
+    Relations: '' as Asset
   },
   templateFieldCategory: {
     Integration: '' as Ref<TemplateFieldCategory>

@@ -62,6 +62,9 @@
     "AutoJoin": "Rejoindre automatiquement",
     "AutoJoinDescr": "Ajouter automatiquement les nouveaux employés à cet espace",
     "BlobSize": "Taille",
-    "BlobContentType": "Type de contenu"
+    "BlobContentType": "Type de contenu",
+    "Relation": "Relation",
+    "Relations": "Relations",
+    "AddRelation": "Ajouter une relation"
   }
 }

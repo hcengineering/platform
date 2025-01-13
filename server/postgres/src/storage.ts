@@ -15,6 +15,7 @@
 
 import core, {
   AccountRole,
+  type AssociationQuery,
   type Class,
   type Doc,
   type DocInfo,
@@ -23,6 +24,7 @@ import core, {
   type Domain,
   DOMAIN_MODEL,
   DOMAIN_MODEL_TX,
+  DOMAIN_RELATION,
   DOMAIN_SPACE,
   DOMAIN_TX,
   type FindOptions,
@@ -397,7 +399,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
   async rawFindAll<T extends Doc>(_domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
     const domain = translateDomain(_domain)
-    const select = `SELECT ${this.getProjection(domain, options?.projection, [])} FROM ${domain}`
+    const select = `SELECT ${this.getProjection(domain, options?.projection, [], options?.associations)} FROM ${domain}`
     const sqlChunks: string[] = []
     sqlChunks.push(`WHERE ${this.buildRawQuery(domain, query, options)}`)
     if (options?.sort !== undefined) {
@@ -572,7 +574,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
               toClass: undefined
             })
           }
-          const select = `SELECT ${this.getProjection(domain, options?.projection, joins)} FROM ${domain}`
+          const select = `SELECT ${this.getProjection(domain, options?.projection, joins, options?.associations)} FROM ${domain}`
           const secJoin = this.addSecurity(query, domain, ctx.contextData)
           if (secJoin !== undefined) {
             sqlChunks.push(secJoin)
@@ -604,7 +606,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
             const finalSql: string = [select, ...sqlChunks].join(' ')
             fquery = finalSql
             const result = await connection.unsafe(finalSql)
-            if (options?.lookup === undefined && options?.domainLookup === undefined) {
+            if (
+              options?.lookup === undefined &&
+              options?.domainLookup === undefined &&
+              options?.associations === undefined
+            ) {
               return toFindResult(
                 result.map((p) => parseDocWithProjection(p as any, domain, options?.projection)),
                 total
@@ -655,13 +661,14 @@ abstract class PostgresAdapterBase implements DbAdapter {
         modelJoins.push(join)
       } else if (join.isReverse) {
         reverseJoins.push(join)
-      } else {
+      } else if (join.path !== '') {
         simpleJoins.push(join)
       }
     }
     for (const row of rows) {
       /* eslint-disable @typescript-eslint/consistent-type-assertions */
-      let doc: WithLookup<T> = map.get(row._id) ?? ({ _id: row._id, $lookup: {} } as WithLookup<T>)
+      let doc: WithLookup<T> = map.get(row._id) ?? ({ _id: row._id, $lookup: {}, $associations: {} } as WithLookup<T>)
+      const associations: Record<string, any> = doc.$associations as Record<string, any>
       const lookup: Record<string, any> = doc.$lookup as Record<string, any>
       let joinIndex: number | undefined
       let skip = false
@@ -706,7 +713,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
             }
 
             const join = simpleJoins[joinIndex ?? 0]
-
+            if (join === undefined) {
+              continue
+            }
             const res = this.getLookupValue(join.path, lookup)
             if (res === undefined) continue
             const { obj, key: p } = res
@@ -720,6 +729,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
                 obj[p][key] = row[column] === 'NULL' ? null : row[column]
               }
             }
+          } else if (column.startsWith('assoc_')) {
+            const keys = column.split('_')
+            const key = keys[keys.length - 1]
+            associations[key] = row[column]
           } else {
             joinIndex = undefined
             if (!map.has(row._id)) {
@@ -1222,25 +1235,47 @@ abstract class PostgresAdapterBase implements DbAdapter {
         : `${tkey} @> '${typeof value === 'string' ? '"' + value + '"' : value}'`
   }
 
+  private getReverseProjection (join: JoinProps): string[] {
+    let classsesQuery = ''
+    if (join.classes !== undefined) {
+      if (join.classes.length === 1) {
+        classsesQuery = ` AND ${join.toAlias}._class = '${join.classes[0]}'`
+      } else {
+        classsesQuery = ` AND ${join.toAlias}._class IN (${join.classes.map((c) => `'${c}'`).join(', ')})`
+      }
+    }
+    return [
+      `(SELECT jsonb_agg(${join.toAlias}.*) FROM ${join.table} AS ${join.toAlias} WHERE ${join.fromAlias}.${join.fromField} = ${join.toAlias}."${join.toField}" ${classsesQuery}) AS ${join.toAlias}`
+    ]
+  }
+
   private getProjectionsAliases (join: JoinProps): string[] {
     if (join.table === DOMAIN_MODEL) return []
-    if (join.isReverse) {
-      let classsesQuery = ''
-      if (join.classes !== undefined) {
-        if (join.classes.length === 1) {
-          classsesQuery = ` AND ${join.toAlias}._class = '${join.classes[0]}'`
-        } else {
-          classsesQuery = ` AND ${join.toAlias}._class IN (${join.classes.map((c) => `'${c}'`).join(', ')})`
-        }
-      }
-      return [
-        `(SELECT jsonb_agg(${join.toAlias}.*) FROM ${join.table} AS ${join.toAlias} WHERE ${join.fromAlias}.${join.fromField} = ${join.toAlias}."${join.toField}" ${classsesQuery}) AS ${join.toAlias}`
-      ]
-    }
+    if (join.path === '') return []
+    if (join.isReverse) return this.getReverseProjection(join)
     const fields = getDocFieldsByDomains(join.table)
     const res: string[] = []
     for (const key of [...fields, 'data']) {
-      res.push(`${join.toAlias}."${key}" as "lookup_${join.path.replaceAll('.', '_')}_${key}"`)
+      res.push(`${join.toAlias}."${key}" as "${join.toAlias}_${key}"`)
+    }
+    return res
+  }
+
+  getAssociationsProjections (baseDomain: string, associations: AssociationQuery[]): string[] {
+    const res: string[] = []
+    for (const association of associations) {
+      const _id = association[0]
+      const assoc = this.modelDb.findObject(_id)
+      if (assoc === undefined) {
+        continue
+      }
+      const isReverse = association[1] === -1
+      const _class = isReverse ? assoc.classA : assoc.classB
+      const keyA = isReverse ? 'docB' : 'docA'
+      const keyB = isReverse ? 'docA' : 'docB'
+      res.push(
+        `(SELECT jsonb_agg(assoc.*) FROM ${translateDomain(this.hierarchy.getDomain(_class))} AS assoc JOIN ${translateDomain(DOMAIN_RELATION)} as relation ON relation."${keyB}" = assoc."_id" AND relation."workspaceId" = '${this.workspaceId.name}' WHERE relation."${keyA}" = ${translateDomain(baseDomain)}."_id" AND assoc."workspaceId" = '${this.workspaceId.name}') AS assoc_${association[0]}`
+      )
     }
     return res
   }
@@ -1252,9 +1287,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
   private getProjection<T extends Doc>(
     baseDomain: string,
     projection: Projection<T> | undefined,
-    joins: JoinProps[]
+    joins: JoinProps[],
+    associations: AssociationQuery[] | undefined
   ): string | '*' {
-    if (projection === undefined && joins.length === 0) return `${baseDomain}.*`
+    if (projection === undefined && joins.length === 0 && associations === undefined) return `${baseDomain}.*`
     const res: string[] = []
     let dataAdded = false
     if (projection === undefined) {
@@ -1279,6 +1315,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
     }
     for (const join of joins) {
       res.push(...this.getProjectionsAliases(join))
+    }
+    if (associations !== undefined) {
+      res.push(...this.getAssociationsProjections(baseDomain, associations))
     }
     return res.join(', ')
   }
