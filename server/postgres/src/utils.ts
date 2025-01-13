@@ -475,7 +475,7 @@ export function parseDocWithProjection<T extends Doc> (
   domain: string,
   projection?: Projection<T> | undefined
 ): T {
-  const { workspaceId, data, ...rest } = doc
+  const { workspaceId, data, '%hash%': hash, ...rest } = doc
   const schema = getSchema(domain)
   for (const key in rest) {
     if ((rest as any)[key] === 'NULL' || (rest as any)[key] === null) {

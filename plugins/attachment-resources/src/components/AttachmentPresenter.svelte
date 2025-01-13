@@ -35,7 +35,6 @@
   export let removable: boolean = false
   export let showPreview = false
   export let preview = false
-  export let progress = false
 
   const dispatch = createEventDispatcher()
 

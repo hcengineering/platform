@@ -743,6 +743,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
                 if (column === 'createdOn' || column === 'modifiedOn') {
                   const val = Number.parseInt(row[column])
                   ;(doc as any)[column] = Number.isNaN(val) ? null : val
+                } else if (column === '%hash%') {
+                  // Ignore
                 } else {
                   ;(doc as any)[column] = row[column] === 'NULL' ? null : row[column]
                 }
@@ -1283,6 +1285,22 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
   async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     return []
+  }
+
+  stripHash<T extends Doc>(docs: T | T[]): T | T[] {
+    if (Array.isArray(docs)) {
+      docs.forEach((it) => {
+        if ('%hash%' in it) {
+          delete it['%hash%']
+        }
+        return it
+      })
+    } else if (typeof docs === 'object' && docs != null) {
+      if ('%hash%' in docs) {
+        delete docs['%hash%']
+      }
+    }
+    return docs
   }
 
   strimSize (str?: string): string {
@@ -1841,7 +1859,7 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
     const userTx: Tx[] = []
 
     model.forEach((tx) => (tx.modifiedBy === core.account.System && !isPersonAccount(tx) ? systemTx : userTx).push(tx))
-    return systemTx.concat(userTx)
+    return this.stripHash(systemTx.concat(userTx)) as Tx[]
   }
 }
 /**
