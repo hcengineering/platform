@@ -985,7 +985,8 @@
             <Component
               is={currentApplication.component}
               props={{
-                currentSpace
+                currentSpace,
+                workbenchWidth
               }}
             />
           {:else if specialComponent}
@@ -996,7 +997,8 @@
                 ...specialComponent.componentProps,
                 currentSpace,
                 space: currentSpace,
-                navigationModel: specialComponent?.navigationModel
+                navigationModel: specialComponent?.navigationModel,
+                workbenchWidth
               }}
               on:action={(e) => {
                 if (e?.detail) {
@@ -1007,7 +1009,10 @@
               }}
             />
           {:else if currentView?.component !== undefined}
-            <Component is={currentView.component} props={{ ...currentView.componentProps, currentView }} />
+            <Component
+              is={currentView.component}
+              props={{ ...currentView.componentProps, currentView, workbenchWidth }}
+            />
           {:else if $accessDeniedStore}
             <div class="flex-center h-full">
               <h2><Label label={workbench.string.AccessDenied} /></h2>
