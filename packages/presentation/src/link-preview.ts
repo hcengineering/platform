@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 import { getMetadata } from '@hcengineering/platform'
-import presentation from './plugin'
+import plugin from './plugin'
 
 export function isLinkPreviewEnabled (): boolean {
-  return getMetadata(presentation.metadata.LinkPreviewUrl) !== undefined
+  return getMetadata(plugin.metadata.LinkPreviewUrl) !== undefined
 }
 export interface LinkPreviewDetails {
   title?: string
@@ -44,8 +44,13 @@ export function canDisplayLinkPreview (val: LinkPreviewDetails): boolean {
 
 export async function fetchLinkPreviewDetails (url: string, timeoutMs = 15000): Promise<LinkPreviewDetails> {
   try {
-    const linkPreviewUrl = getMetadata(presentation.metadata.LinkPreviewUrl)
-    const response = await fetch(`${linkPreviewUrl}?q=${url}`, {
+    const linkPreviewUrl = getMetadata(plugin.metadata.LinkPreviewUrl)
+    let token: string = ''
+    if (getMetadata(plugin.metadata.Token) !== undefined) {
+      token = getMetadata(plugin.metadata.Token) as string
+    }
+    const response = await fetch(`${linkPreviewUrl}/details?q=${url}`, {
+      headers: { Authorization: 'Bearer ' + token },
       signal: AbortSignal.timeout(timeoutMs)
     })
     return response.json() as LinkPreviewDetails

@@ -1,5 +1,5 @@
 //
-// Copyright © 2022, 2023 Hardcore Engineering Inc.
+// Copyright © 2022, 2023, 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -157,6 +157,7 @@ export interface Config {
   TELEGRAM_BOT_URL?: string
   AI_URL?:string
   DISABLE_SIGNUP?: string
+  LINK_PREVIEW_URL?: string
   // Could be defined for dev environment
   FRONT_URL?: string
   PREVIEW_CONFIG?: string
@@ -313,7 +314,7 @@ export async function configurePlatform() {
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
   setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG, config.UPLOAD_URL))
   setMetadata(presentation.metadata.StatsUrl, config.STATS_URL)
-
+  setMetadata(presentation.metadata.LinkPreviewUrl, config.LINK_PREVIEW_URL)
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR)
 
   if (config.MODEL_VERSION != null) {
@@ -339,7 +340,7 @@ export async function configurePlatform() {
   setMetadata(rekoni.metadata.RekoniUrl, config.REKONI_URL)
 
   setMetadata(uiPlugin.metadata.DefaultApplication, login.component.LoginApp)
-  setMetadata(contactPlugin.metadata.LastNameFirst, myBranding.lastNameFirst === 'true' ?? false)
+  setMetadata(contactPlugin.metadata.LastNameFirst, myBranding.lastNameFirst === 'true')
   setMetadata(love.metadata.ServiceEnpdoint, config.LOVE_ENDPOINT)
   setMetadata(love.metadata.WebSocketURL, config.LIVEKIT_WS)
   setMetadata(print.metadata.PrintURL, config.PRINT_URL)

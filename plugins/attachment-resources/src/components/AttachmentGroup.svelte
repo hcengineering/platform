@@ -45,5 +45,7 @@
   }
 </script>
 
-<AttachmentList attachments={otherAttachments} {savedAttachmentsIds} {imageSize} {videoPreload} />
-<LinkPreviewList attachments={linkPreviewAttachments} />
+<div class="gapV-2">
+  <AttachmentList attachments={otherAttachments} {savedAttachmentsIds} {imageSize} {videoPreload} />
+  <LinkPreviewList attachments={linkPreviewAttachments} />
+</div>

@@ -291,6 +291,6 @@ export async function getJsonOrEmpty (file: string, name: string): Promise<any> 
     const resp = await fetch(fileUrl)
     return await resp.json()
   } catch {
-    return []
+    return {}
   }
 }

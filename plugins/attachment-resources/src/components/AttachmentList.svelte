@@ -27,7 +27,7 @@
 
 {#if attachments.length}
   <Scroller contentDirection={'horizontal'} horizontal gap={'gap-3'} scrollSnap>
-    {#each attachments as attachment}}
+    {#each attachments as attachment}
       <AttachmentPreview
         value={attachment}
         isSaved={savedAttachmentsIds?.includes(attachment._id) ?? false}
