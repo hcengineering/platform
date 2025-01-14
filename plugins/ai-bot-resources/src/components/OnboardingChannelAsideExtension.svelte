@@ -21,7 +21,7 @@
       const req: OnboardingEventRequest<OpenChatInSidebarData> = {
         event: OnboardingEvent.OpenChatInSidebar,
         data: {
-          email: object.email,
+          personId: object.socialString,
           workspace: object.workspaceId
         }
       }

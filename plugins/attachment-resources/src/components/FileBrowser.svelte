@@ -125,7 +125,6 @@
 <div class="hulyHeader-container background-comp-header-color">
   <FileBrowserFilters
     {requestedSpaceClasses}
-    {spaceId}
     bind:selectedParticipants
     bind:selectedSpaces
     bind:selectedDateId

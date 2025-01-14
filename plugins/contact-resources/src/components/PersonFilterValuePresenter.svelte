@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
+  import { Person } from '@hcengineering/contact'
   import contact from '../plugin'
   import CombineAvatars from './CombineAvatars.svelte'
 

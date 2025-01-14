@@ -100,10 +100,6 @@ export async function getTranslatedControlledDocStates (lang: string): Promise<T
   }
 }
 
-export function notEmpty<T> (id: T | undefined | null): id is T {
-  return id !== undefined && id !== null && id !== ''
-}
-
 export function isSpace (hierarchy: Hierarchy, doc: Doc): doc is DocumentSpace {
   return hierarchy.isDerived(doc._class, documents.class.DocumentSpace)
 }

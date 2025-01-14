@@ -16,7 +16,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
 
   import { Employee } from '@hcengineering/contact'
-  import { PersonId, Ref } from '@hcengineering/core'
+  import { PersonId, Ref, notEmpty } from '@hcengineering/core'
   import { primarySocialIdByPersonRefStore, SelectUsersPopup } from '@hcengineering/contact-resources'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { Modal, showPopup } from '@hcengineering/ui'
@@ -33,7 +33,7 @@
   let dmName = ''
   let hidden = true
 
-  $: primaryPersonIds = employeeIds.map((e) => $primarySocialIdByPersonRefStore.get(e)).filter((e) => e !== undefined)
+  $: primaryPersonIds = employeeIds.map((e) => $primarySocialIdByPersonRefStore.get(e)).filter(notEmpty)
   $: void loadDmName(primaryPersonIds).then((r) => {
     dmName = r
   })

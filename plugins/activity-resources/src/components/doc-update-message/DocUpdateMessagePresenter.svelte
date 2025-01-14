@@ -101,7 +101,7 @@
     parentMessage = res as DisplayActivityMessage
   })
 
-  $: person = $personByPersonIdStore.get(value.createdBy)
+  $: person = value.createdBy !== undefined ? $personByPersonIdStore.get(value.createdBy) : undefined
 
   $: void loadObject(value.objectId, value.objectClass, doc)
   $: void loadParentObject(value, parentMessage, doc)

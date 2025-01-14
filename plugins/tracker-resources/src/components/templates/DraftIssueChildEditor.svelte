@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import core, { Account, Doc, generateId, Ref } from '@hcengineering/core'
+  import core, { Doc, generateId, type PersonId, Ref } from '@hcengineering/core'
   import presentation, { DraftController, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { TaskType } from '@hcengineering/task'

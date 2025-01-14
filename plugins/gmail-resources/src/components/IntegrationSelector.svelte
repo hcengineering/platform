@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { AccountBox } from '@hcengineering/contact-resources'
+  import { notEmpty, type PersonId } from '@hcengineering/core'
   import { Integration } from '@hcengineering/setting'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
 
@@ -22,7 +23,7 @@
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'small'
 
-  $: ids = Array.from(new Set(integrations.map((p) => p.createdBy as PersonId)))
+  $: ids = Array.from(new Set(integrations.map((p) => p.createdBy))).filter(notEmpty)
 
   function change (e: CustomEvent<PersonId | null>) {
     if (e.detail === null) {

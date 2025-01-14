@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { getCurrentAccount, PersonId, Ref } from '@hcengineering/core'
+  import core, { getCurrentAccount, PersonId, Ref, notEmpty } from '@hcengineering/core'
   import presentation from '@hcengineering/presentation'
   import { Label, showPopup, tooltip } from '@hcengineering/ui'
 
@@ -52,13 +52,11 @@
       return
     }
 
-    members = new Set(
-      object.members.map((personId) => $personRefByPersonIdStore.get(personId)).filter((p) => p !== undefined)
-    )
+    members = new Set(object.members.map((personId) => $personRefByPersonIdStore.get(personId)).filter(notEmpty))
   }
 
   function personsToPrimaryIds (persons: Ref<Person>[]): PersonId[] {
-    return persons.map((person) => $primarySocialIdByPersonRefStore.get(person)).filter((s) => s !== undefined)
+    return persons.map((person) => $primarySocialIdByPersonRefStore.get(person)).filter(notEmpty)
   }
 
   function personsToAllSocialIds (persons: Ref<Person>[]): PersonId[] {

@@ -39,6 +39,7 @@
   $: permissionsSpace =
     controlledDoc.space === documents.space.UnsortedTemplates ? documents.space.QualityDocuments : controlledDoc.space
   $: permittedPeople = $permissionsStore.ap[permissionsSpace]?.[permissionId] ?? new Set()
+  $: permittedEmployees = Array.from(permittedPeople) as Ref<Employee>[]
 
   let docRequest: DocumentRequest | undefined
   let loading = true
@@ -106,7 +107,7 @@
             readonly}
           docQuery={{
             active: true,
-            _id: { $in: Array.from(permittedPeople) }
+            _id: { $in: permittedEmployees }
           }}
           on:update={({ detail }) => (users = detail)}
         />

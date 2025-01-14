@@ -36,7 +36,7 @@
   export let readonly: boolean = false
   export let onClick: (() => void) | undefined = undefined
 
-  $: person = account !== undefined ? $personByPersonIdStore.get(value.createdBy ?? value.modifiedBy) : undefined
+  $: person = $personByPersonIdStore.get(value.createdBy ?? value.modifiedBy)
 
   let content = ''
 

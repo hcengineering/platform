@@ -17,7 +17,7 @@
   import { Icon, IconAdd, IconDelete, Label } from '@hcengineering/ui'
   import { personRefByPersonIdStore, PersonRefPresenter } from '@hcengineering/contact-resources'
   import { Person } from '@hcengineering/contact'
-  import { type PersonId, type Ref } from '@hcengineering/core'
+  import { type PersonId, type Ref, notEmpty } from '@hcengineering/core'
   import activity, { DocAttributeUpdates } from '@hcengineering/activity'
   import notification from '@hcengineering/notification'
 
@@ -45,7 +45,7 @@
 
           return person
         })
-        .filter((person) => person !== undefined)
+        .filter(notEmpty)
     )
 
     return Array.from(persons)

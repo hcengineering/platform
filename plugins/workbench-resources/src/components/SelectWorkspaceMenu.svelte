@@ -158,7 +158,7 @@
           .slice(0, 500) as ws, i}
           {@const wsName = ws.name ?? ws.url}
           {@const _activeSession = activeSessions[ws.uuid]}
-          {@const lastUsageDays = Math.round((Date.now() - ws.lastVisit) / (1000 * 3600 * 24))}
+          {@const lastUsageDays = Math.round((Date.now() - (ws.lastVisit ?? 0)) / (1000 * 3600 * 24))}
           <a
             class="stealth"
             href={getWorkspaceLink(ws)}

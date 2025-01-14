@@ -23,7 +23,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { getDocTitle, getDocIdentifier, Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
+  import { Class, Doc, PersonId, Ref, WithLookup } from '@hcengineering/core'
   import chunter from '@hcengineering/chunter'
   import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import { Person } from '@hcengineering/contact'
@@ -101,7 +101,7 @@
 
   function groupNotificationsByUser (
     notifications: WithLookup<InboxNotification>[],
-    personRefByPersonId: Map<PersonIn, Ref<Person>>
+    personRefByPersonId: Map<PersonId, Ref<Person>>
   ): Array<InboxNotification[]> {
     const result: Array<InboxNotification[]> = []
     let group: InboxNotification[] = []

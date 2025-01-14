@@ -93,7 +93,7 @@
   }
 
   $: updateKeys(issue._class, ignoreKeys)
-  $: creatorPerson = $personRefByPersonIdStore.get(issue.createdBy)
+  $: creatorPerson = issue.createdBy !== undefined ? $personRefByPersonIdStore.get(issue.createdBy) : undefined
 </script>
 
 <div class="popupPanel-body__aside-grid">

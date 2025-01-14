@@ -22,7 +22,8 @@
     Role,
     RolesAssignment,
     SpaceType,
-    WithLookup
+    WithLookup,
+    notEmpty
   } from '@hcengineering/core'
   import lead, { Funnel, LeadEvents } from '@hcengineering/lead'
   import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
@@ -54,7 +55,7 @@
   let owners: PersonId[] =
     funnel?.owners !== undefined ? hierarchy.clone(funnel.owners) : [getCurrentAccount().primarySocialId]
 
-  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter((p) => p !== undefined)
+  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter(notEmpty)
   $: void loadSpaceType(typeId)
   async function loadSpaceType (id: typeof typeId): Promise<void> {
     spaceType =

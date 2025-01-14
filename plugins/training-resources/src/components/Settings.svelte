@@ -19,7 +19,7 @@
   import contact from '@hcengineering/contact-resources/src/plugin'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
   import core, {
-    type Account,
+    type PersonId,
     type Ref,
     type Role,
     type RolesAssignment,

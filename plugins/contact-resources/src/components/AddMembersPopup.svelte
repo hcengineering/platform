@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Person, getName } from '@hcengineering/contact'
-  import { Ref, Space } from '@hcengineering/core'
+  import { Ref, Space, notEmpty } from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { ActionIcon, Button, IconClose, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -24,15 +24,13 @@
 
       return personRef
     })
-    .filter((e) => e !== undefined)
+    .filter(notEmpty)
 
-  async function changeMembersToAdd (employees: Ref<Person>[]) {
+  async function changeMembersToAdd (employees: Ref<Person>[]): Promise<void> {
     membersToAdd = employees
   }
 
-  $: selectedEmployees = membersToAdd.map((e) => e.person)
-
-  function removeMember (_id: Ref<Person>) {
+  function removeMember (_id: Ref<Person>): void {
     membersToAdd = membersToAdd.filter((m) => m !== _id)
   }
 </script>
@@ -80,7 +78,7 @@
       }}
       multiSelect={true}
       allowDeselect={true}
-      selectedUsers={selectedEmployees}
+      selectedUsers={membersToAdd}
       ignoreUsers={channelMembers}
       shadows={false}
       on:update={(ev) => changeMembersToAdd(ev.detail)}

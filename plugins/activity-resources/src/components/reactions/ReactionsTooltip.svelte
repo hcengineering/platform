@@ -6,7 +6,7 @@
 
   export let reactionAccounts: PersonId[]
 
-  $: persons = reactionAccounts.map((user) => personRefByPersonIdStore.get(user))
+  $: persons = reactionAccounts.map((user) => $personRefByPersonIdStore.get(user))
 </script>
 
 <div class="m-2 flex-col flex-gap-2">

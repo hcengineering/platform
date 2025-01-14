@@ -1,12 +1,12 @@
 <script lang="ts">
   import contact from '@hcengineering/contact'
-  import { groupByArray } from '@hcengineering/core'
+  import { groupByArray, systemAccountUuid } from '@hcengineering/core'
   import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
   import presentation, { isAdminUser, type OverviewStatistics } from '@hcengineering/presentation'
   import { Button, CheckBox, ticker } from '@hcengineering/ui'
   import Expandable from '@hcengineering/ui/src/components/Expandable.svelte'
   import { FixedColumn, ObjectPresenter } from '@hcengineering/view-resources'
-  import { employeeByIdStore } from '@hcengineering/contact-resources'
+  import { employeeByIdStore, personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import { workspacesStore } from '../utils'
 
   const token: string = getMetadata(presentation.metadata.Token) ?? ''
@@ -33,7 +33,8 @@
     (it) => it.service
   )
 
-  const isSystemAccount = (it: string): boolean => it === systemAccountEmail || it === 'huly.ai.bot@hc.engineering'
+  const isSystemAccount = (it: string): boolean =>
+    it === systemAccountUuid || it === '5a1a5faa-582c-42a6-8613-fc80a15e3ae8' // Hardcoded AiBot account, fix me later!
 </script>
 
 <div class="p-6">
@@ -78,7 +79,7 @@
       </svelte:fragment>
       <div class="p-1">
         {#each ss as act}
-          {@const wsInstance = $workspacesStore.find((it) => it.workspaceId === act.wsId)}
+          {@const wsInstance = $workspacesStore.find((it) => it.uuid === act.wsId)}
           {@const totalFind = act.sessions.reduce((it, itm) => itm.total.find + it, 0)}
           {@const totalTx = act.sessions.reduce((it, itm) => itm.total.tx + it, 0)}
 
@@ -96,7 +97,7 @@
                 <svelte:fragment slot="title">
                   <div class="flex flex-row-center flex-between flex-grow p-1">
                     <div class="fs-title" class:greyed={realGroup.length === 0}>
-                      Workspace: {wsInstance?.workspaceName ?? act.wsId}: {employeeGroups.length} current 5 mins => {currentFind}/{currentTx},
+                      Workspace: {wsInstance?.name ?? act.wsId}: {employeeGroups.length} current 5 mins => {currentFind}/{currentTx},
                       total => {totalFind}/{totalTx}
                     </div>
                     {#if isAdminUser()}
@@ -118,7 +119,7 @@
                 </svelte:fragment>
                 <div class="flex-col">
                   {#each employeeGroups as employeeId}
-                    {@const employee = employees.get(employeeId)}
+                    {@const personRef = $personRefByPersonIdStore.get(employeeId)}
                     {@const connections = act.sessions.filter((it) => it.userId === employeeId)}
 
                     {@const find = connections.reduce((it, itm) => itm.current.find + it, 0)}
@@ -127,10 +128,10 @@
                       <Expandable>
                         <svelte:fragment slot="title">
                           <div class="flex-row-center p-1">
-                            {#if employee}
+                            {#if personRef}
                               <ObjectPresenter
                                 _class={contact.mixin.Employee}
-                                objectId={employee.person}
+                                objectId={personRef}
                                 props={{ shouldShowAvatar: true, disabled: true }}
                               />
                             {:else}

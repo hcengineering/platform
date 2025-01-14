@@ -125,7 +125,7 @@
     loadUsersStatus()
   })
 
-  $: isOnline = person !== undefined && $statusByUserStore.get(person.personUuid)?.online === true
+  $: isOnline = person?.personUuid !== undefined && $statusByUserStore.get(person.personUuid)?.online === true
 </script>
 
 {#if showStatus && person}

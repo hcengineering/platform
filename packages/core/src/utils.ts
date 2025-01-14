@@ -919,3 +919,7 @@ export function pickPrimarySocialId (socialIds: SocialId[]): SocialId {
 
   return socialIds[0]
 }
+
+export function notEmpty<T> (id: T | undefined | null): id is T {
+  return id !== undefined && id !== null && id !== ''
+}
