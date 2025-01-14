@@ -230,6 +230,19 @@ export function createModel (builder: Builder): void {
     setting.class.WorkspaceSettingCategory,
     core.space.Model,
     {
+      name: 'backup',
+      label: setting.string.Backup,
+      icon: setting.icon.Setting,
+      component: setting.component.Backup,
+      order: 950,
+      role: AccountRole.Owner
+    },
+    setting.ids.Backup
+  )
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
       name: 'owners',
       label: setting.string.Owners,
       icon: setting.icon.Owners,

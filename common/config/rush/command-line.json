@@ -202,7 +202,7 @@
       "name": "docker:build",
       "phases": ["_phase:build", "_phase:bundle", "_phase:package", "_phase:docker-build"],
       "enableParallelism": true,
-      "incremental": true
+      "incremental": true      
     },
     {
       "summary": "docker:rebuild",
