@@ -68,7 +68,7 @@ class TransactorRpcTarget extends RpcTarget {
   }
 
   async getModel (): Promise<any> {
-    return (this.transactor as any).getModel()
+    return (this.transactor as any).getModel(this.token)
   }
 
   async getAccount (): Promise<any> {
