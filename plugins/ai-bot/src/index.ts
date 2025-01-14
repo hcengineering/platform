@@ -22,7 +22,7 @@ export * from './rest'
 
 export const aiBotId = 'ai-bot' as Plugin
 
-const aiBotAccountEmail = 'huly.ai.bot@hc.engineering'
+export const aiBotAccountEmail = 'huly.ai.bot@hc.engineering'
 export const aiBotEmailSocialId = buildSocialIdString({
   type: SocialIdType.EMAIL,
   value: aiBotAccountEmail

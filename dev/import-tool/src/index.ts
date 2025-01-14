@@ -29,7 +29,8 @@ import serverClientPlugin, {
   createClient,
   getUserWorkspaces,
   login,
-  selectWorkspace
+  selectWorkspace,
+  getAccountClient
 } from '@hcengineering/server-client'
 import { program } from 'commander'
 import { readFileSync } from 'fs'
@@ -79,21 +80,23 @@ export function importTool (): void {
     console.log('Setting up Accounts URL: ', config.ACCOUNTS_URL)
     setMetadata(serverClientPlugin.metadata.Endpoint, config.ACCOUNTS_URL)
     console.log('Trying to login user: ', user)
-    const { account, token } = await login(user, password, workspaceUrl)
+    const unauthAccountClient = getAccountClient()
+    const { account, token } = await unauthAccountClient.login(user, password)
     if (token === undefined || account === undefined) {
       console.log('Login failed for user: ', user)
       return
     }
 
     console.log('Looking for workspace: ', workspaceUrl)
-    const allWorkspaces = await getUserWorkspaces(token)
+    const accountClient = getAccountClient(token)
+    const allWorkspaces = await accountClient.getUserWorkspaces()
     const workspaces = allWorkspaces.filter((ws) => ws.url === workspaceUrl)
     if (workspaces.length < 1) {
       console.log('Workspace not found: ', workspaceUrl)
       return
     }
     console.log('Workspace found')
-    const selectedWs = await selectWorkspace(token, workspaces[0].url)
+    const selectedWs = await accountClient.selectWorkspace(workspaces[0].url)
     console.log(selectedWs)
 
     console.log('Connecting to Transactor URL: ', selectedWs.endpoint)

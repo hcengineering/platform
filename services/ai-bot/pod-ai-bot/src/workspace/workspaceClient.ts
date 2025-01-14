@@ -53,7 +53,7 @@ import { Room } from '@hcengineering/love'
 import { countTokens } from '@hcengineering/openai'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getOrCreateOnboardingChannel } from '@hcengineering/server-analytics-collector-resources'
-import { login } from '@hcengineering/server-client'
+import { getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { jsonToMarkup, MarkdownParser, markupToText } from '@hcengineering/text'
 import workbench, { SidebarEvent, TxSidebarEvent } from '@hcengineering/workbench'
@@ -159,8 +159,8 @@ export class WorkspaceClient {
 
   private async tryLogin (): Promise<void> {
     this.ctx.info('Logging in: ', { workspace: this.workspace })
-
-    const token = await login(aiBotAccount, config.Password, this.workspace)
+    const accountClient = getAccountClient()
+    const token = await accountClient.login(aiBotAccount, config.Password)
 
     clearTimeout(this.loginTimeout)
 

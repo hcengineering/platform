@@ -23,7 +23,7 @@ import { type GmailClient } from './gmail'
 import { type ProjectCredentials, type Token, type User } from './types'
 import { WorkspaceClient } from './workspaceClient'
 import { generateToken } from '@hcengineering/server-token'
-import { getWorkspaceInfo } from '@hcengineering/server-client'
+import { getAccountClient } from '@hcengineering/server-client'
 
 export class GmailController {
   private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
@@ -75,7 +75,9 @@ export class GmailController {
     for (const [workspace, tokens] of groups) {
       await limiter.add(async () => {
         const wstok = generateToken(systemAccountUuid, workspace)
-        const info = await getWorkspaceInfo(wstok)
+        const accountClient = getAccountClient(wstok)
+        const info = await accountClient.getWorkspaceInfo()
+
         if (info === undefined) {
           console.log('workspace not found', workspace)
           return

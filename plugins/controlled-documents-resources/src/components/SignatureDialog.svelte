@@ -17,7 +17,17 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import login from '@hcengineering/login'
-  import { ERROR, IntlString, OK, Severity, Status, getMetadata, translate } from '@hcengineering/platform'
+  import { getClient as getAccountClient } from '@hcengineering/account-client'
+  import {
+    ERROR,
+    IntlString,
+    OK,
+    PlatformError,
+    Severity,
+    Status,
+    getMetadata,
+    translate
+  } from '@hcengineering/platform'
   import { EditBox, StylishEdit, ModernDialog } from '@hcengineering/ui'
   import { getCurrentAccount, parseSocialIdString, SocialIdType } from '@hcengineering/core'
 
@@ -62,24 +72,18 @@
   }
 
   async function validateAccount (email: string, password: string): Promise<Status> {
-    const request = {
-      method: 'login',
-      params: [email, password]
-    }
+    const accountClient = getAccountClient()
 
     try {
-      const response = await fetch(accountsUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(request)
-      })
-      const result = await response.json()
+      await accountClient.login(email, password)
 
-      return result.error ?? OK
+      return OK
     } catch (err: any) {
-      return ERROR
+      if (err instanceof PlatformError) {
+        return err.status
+      } else {
+        return ERROR
+      }
     }
   }
 

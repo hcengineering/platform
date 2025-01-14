@@ -29,7 +29,7 @@ import core, {
   type WorkspaceIds,
   type WorkspaceInfoWithStatus
 } from '@hcengineering/core'
-import { listAccountWorkspaces, updateBackupInfo } from '@hcengineering/server-client'
+import { getAccountClient } from '@hcengineering/server-client'
 import {
   wrapPipeline,
   type DbConfiguration,
@@ -116,7 +116,8 @@ class BackupWorker {
     const workspacesIgnore = new Set(this.config.SkipWorkspaces.split(';'))
     ctx.info('skipped workspaces', { workspacesIgnore })
     let skipped = 0
-    const allWorkspaces = await listAccountWorkspaces(this.config.Token, this.region)
+    const accountClient = getAccountClient(this.config.Token)
+    const allWorkspaces = await accountClient.listWorkspaces(this.region)
     const workspaces = allWorkspaces.filter((it) => {
       if (!isActiveMode(it.mode)) {
         // We should backup only active workspaces
@@ -265,7 +266,8 @@ class BackupWorker {
           processed += 1
 
           const token = generateToken(systemAccountUuid, ws.uuid, { service: 'backup' })
-          await updateBackupInfo(token, backupInfo)
+          const accountClient = getAccountClient(token)
+          await accountClient.updateBackupInfo(backupInfo)
         }
       } catch (err: any) {
         rootCtx.error('\n\nFAILED to BACKUP', { workspace: ws.uuid, err })
