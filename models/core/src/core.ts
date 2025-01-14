@@ -14,40 +14,43 @@
 //
 
 import {
-  DOMAIN_BLOB,
-  DOMAIN_CONFIGURATION,
-  DOMAIN_DOC_INDEX_STATE,
-  DOMAIN_MIGRATION,
-  DOMAIN_MODEL,
-  IndexKind,
   type Account,
   type AnyAttribute,
   type ArrOf,
+  type Association,
   type AttachedDoc,
   type Blob,
   type Card,
   type Class,
   type ClassifierKind,
-  type MarkupBlobRef,
   type Collection,
   type Configuration,
   type ConfigurationElement,
   type Doc,
   type DocIndexState,
   type Domain,
+  DOMAIN_BLOB,
+  DOMAIN_CONFIGURATION,
+  DOMAIN_DOC_INDEX_STATE,
+  DOMAIN_MIGRATION,
+  DOMAIN_MODEL,
+  DOMAIN_RELATION,
   type DomainIndexConfiguration,
   type Enum,
   type EnumOf,
   type FieldIndexConfig,
   type FullTextSearchContext,
   type IndexingConfiguration,
+  IndexKind,
   type Interface,
+  type MarkupBlobRef,
   type MigrationState,
   type Mixin,
   type Obj,
   type PluginConfiguration,
   type Ref,
   type RefTo,
+  type Relation,
   type Space,
   type Timestamp,
   type TransientConfiguration,
@@ -145,6 +148,28 @@ export class TAttachedDoc extends TDoc implements AttachedDoc {
   @Prop(TypeString(), core.string.Collection)
   @Hidden()
     collection!: string
+}
+
+@Model(core.class.Association, core.class.Doc, DOMAIN_MODEL)
+export class TAssociation extends TDoc implements Association {
+  classA!: Ref<Class<Doc>>
+
+  classB!: Ref<Class<Doc>>
+
+  nameA!: string
+
+  nameB!: string
+
+  type!: '1:1' | '1:N' | 'N:N'
+}
+
+@Model(core.class.Relation, core.class.Doc, DOMAIN_RELATION)
+export class TRelation extends TDoc implements Relation {
+  docA!: Ref<Doc<Space>>
+
+  docB!: Ref<Doc<Space>>
+
+  association!: Ref<Association>
 }
 
 @Model(core.class.Blob, core.class.Doc, DOMAIN_BLOB)

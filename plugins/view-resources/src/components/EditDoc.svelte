@@ -34,6 +34,7 @@
   import { DocNavLink, ParentsNavigator, getDocAttrsInfo, getDocLabel, getDocMixins, showMenu, parseLinkId } from '..'
   import { getCollectionCounter } from '../utils'
   import DocAttributeBar from './DocAttributeBar.svelte'
+  import RelationsEditor from './RelationsEditor.svelte'
 
   export let _id: Ref<Doc> | string
   export let _class: Ref<Class<Doc>>
@@ -352,6 +353,8 @@
         </div>
       {/if}
     {/each}
+
+    <RelationsEditor {object} {readonly} />
 
     {#if editorFooter}
       <div class="step-tb-6">

@@ -62,6 +62,9 @@
     "AutoJoin": "Автоприсоединение",
     "AutoJoinDescr": "Автоматически присоединять новых сотрудников к этому пространству",
     "BlobSize": "Размер",
-    "BlobContentType": "Тип контента"
+    "BlobContentType": "Тип контента",
+    "Relation": "Связь",
+    "Relations": "Связи",
+    "AddRelation": "Добавить связь"
   }
 }

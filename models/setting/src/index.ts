@@ -284,6 +284,20 @@ export function createModel (builder: Builder): void {
     setting.class.WorkspaceSettingCategory,
     core.space.Model,
     {
+      name: 'relation',
+      label: core.string.Relations,
+      icon: setting.icon.Relations,
+      component: setting.component.RelationSetting,
+      group: 'settings-editor',
+      role: AccountRole.Maintainer,
+      order: 4501
+    },
+    setting.ids.Relations
+  )
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
       name: 'enums',
       label: setting.string.Enums,
       icon: setting.icon.Enums,

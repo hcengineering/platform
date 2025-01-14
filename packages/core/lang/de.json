@@ -62,6 +62,9 @@
     "AutoJoin": "Automatisch beitreten",
     "AutoJoinDescr": "Neue Mitarbeiter automatisch diesem Arbeitsbereich hinzufügen",
     "BlobSize": "Größe",
-    "BlobContentType": "Inhaltstyp"
+    "BlobContentType": "Inhaltstyp",
+    "Relation": "Beziehung",
+    "Relations": "Beziehungen",
+    "AddRelation": "Beziehung hinzufügen"
   }
 }

@@ -32,5 +32,6 @@ loadMetadata(setting.icon, {
   Enums: `${icons}#enums`,
   InviteSettings: `${icons}#inviteSettings`,
   InviteWorkspace: `${icons}#inviteWorkspace`,
-  Views: `${icons}#views`
+  Views: `${icons}#views`,
+  Relations: `${icons}#relation`
 })
