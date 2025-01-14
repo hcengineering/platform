@@ -58,6 +58,7 @@
     "@hcengineering/chunter": "^0.6.20",
     "@hcengineering/text-editor": "^0.6.0",
     "@hcengineering/collaboration": "^0.6.0",
-    "@hcengineering/time": "^0.6.0"
+    "@hcengineering/time": "^0.6.0",
+    "@hcengineering/rank": "^0.6.4"
   }
 }

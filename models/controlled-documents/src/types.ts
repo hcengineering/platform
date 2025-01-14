@@ -58,7 +58,8 @@ import {
   type Role,
   type TypedSpace,
   type Account,
-  type RolesAssignment
+  type RolesAssignment,
+  type Rank
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -181,6 +182,10 @@ export class TProjectMeta extends TDoc implements ProjectMeta {
 
   @Prop(Collection(documents.class.ProjectDocument), documents.string.Documents)
     documents!: CollectionSize<ProjectDocument>
+
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    rank!: Rank
 }
 
 @Model(documents.class.ProjectDocument, core.class.AttachedDoc, DOMAIN_DOCUMENTS)

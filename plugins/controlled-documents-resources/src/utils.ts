@@ -11,51 +11,53 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import core, {
-  type Class,
-  type Doc,
-  type DocumentQuery,
-  type Hierarchy,
-  type Ref,
-  type Tx,
-  type TxOperations,
-  type Space,
-  type Markup,
-  type Client,
-  type WithLookup,
-  SortingOrder,
-  getCurrentAccount,
-  checkPermission
-} from '@hcengineering/core'
-import { type IntlString, translate } from '@hcengineering/platform'
-import { getClient } from '@hcengineering/presentation'
-import { type Person, type Employee, type PersonAccount } from '@hcengineering/contact'
-import request, { RequestStatus } from '@hcengineering/request'
-import { isEmptyMarkup } from '@hcengineering/text'
-import { showPopup, getUserTimezone, type Location } from '@hcengineering/ui'
-import { type KeyFilter } from '@hcengineering/view'
 import chunter from '@hcengineering/chunter'
+import { type Employee, type Person, type PersonAccount } from '@hcengineering/contact'
 import documents, {
   type ControlledDocument,
   type Document,
-  type DocumentRequest,
-  type DocumentTemplate,
-  type DocumentSpace,
   type DocumentCategory,
-  type DocumentMeta,
   type DocumentComment,
+  type DocumentMeta,
+  type DocumentRequest,
+  type DocumentSpace,
+  type DocumentTemplate,
   type OrgSpace,
   type Project,
   type ProjectDocument,
   type ProjectMeta,
   ControlledDocumentState,
   DocumentState,
-  getDocumentName
+  getDocumentName,
+  getFirstRank
 } from '@hcengineering/controlled-documents'
-import { type Request } from '@hcengineering/request'
+import core, {
+  type Class,
+  type Client,
+  type Doc,
+  type DocumentQuery,
+  type Hierarchy,
+  type Markup,
+  type QuerySelector,
+  type Ref,
+  type Space,
+  type Tx,
+  type TxOperations,
+  type WithLookup,
+  SortingOrder,
+  checkPermission,
+  getCurrentAccount
+} from '@hcengineering/core'
+import { type IntlString, translate } from '@hcengineering/platform'
+import { getClient } from '@hcengineering/presentation'
+import request, { type Request, RequestStatus } from '@hcengineering/request'
+import { isEmptyMarkup } from '@hcengineering/text'
+import { type Location, getUserTimezone, showPopup } from '@hcengineering/ui'
+import { type KeyFilter } from '@hcengineering/view'
 
-import documentsResources from './plugin'
+import { makeRank } from '@hcengineering/rank'
 import { getProjectDocumentLink } from './navigation'
+import documentsResources from './plugin'
 import { wizardOpened } from './stores/wizards/create-document'
 
 export type TranslatedDocumentStates = Readonly<Record<DocumentState, string>>
@@ -652,4 +654,42 @@ export function formatSignatureDate (date: number): string {
     minute: 'numeric',
     second: 'numeric'
   })
+}
+
+export async function moveDocument (doc: ProjectMeta, space: Ref<Space>, target?: ProjectMeta): Promise<void> {
+  const client = getClient()
+
+  let parent = documents.ids.NoParent
+  let path: Array<Ref<DocumentMeta>> = []
+  if (target !== undefined) {
+    parent = target.meta
+    path = [target.meta, ...target.path]
+  }
+
+  const prevRank = await getFirstRank(client, space, doc.project, parent)
+  const rank = makeRank(prevRank, undefined)
+
+  await client.update(doc, { parent, path, rank })
+}
+
+export async function moveDocumentBefore (doc: ProjectMeta, before: ProjectMeta): Promise<void> {
+  const client = getClient()
+
+  const { space, parent, path } = before
+  const query = { rank: { $lt: before.rank } as unknown as QuerySelector<ProjectMeta['rank']> }
+  const lastRank = await getFirstRank(client, space, doc.project, parent, SortingOrder.Descending, query)
+  const rank = makeRank(lastRank, before.rank)
+
+  await client.update(doc, { parent, path, rank })
+}
+
+export async function moveDocumentAfter (doc: ProjectMeta, after: ProjectMeta): Promise<void> {
+  const client = getClient()
+
+  const { space, parent, path } = after
+  const query = { rank: { $gt: after.rank } as unknown as QuerySelector<ProjectMeta['rank']> }
+  const nextRank = await getFirstRank(client, space, doc.project, parent, SortingOrder.Ascending, query)
+  const rank = makeRank(after.rank, nextRank)
+
+  await client.update(doc, { parent, path, rank })
 }

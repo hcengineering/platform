@@ -27,7 +27,6 @@
     DocumentState
   } from '@hcengineering/controlled-documents'
   import { TreeItem } from '@hcengineering/view-resources'
-  import { compareDocs } from '../../utils'
 
   export let projectMeta: ProjectMeta[] = []
   export let childrenByParent: Record<Ref<DocumentMeta>, Array<ProjectMeta>>
@@ -36,12 +35,38 @@
   export let getMoreActions: ((obj: Doc, originalEvent?: MouseEvent) => Promise<Action[]>) | undefined = undefined
   export let collapsedPrefix: string = ''
 
+  export let onDragStart: ((e: DragEvent, object: Ref<DocumentMeta>) => void) | undefined = undefined
+  export let onDragOver: ((e: DragEvent, object: Ref<DocumentMeta>) => void) | undefined = undefined
+  export let onDragEnd: ((e: DragEvent, object: Ref<DocumentMeta>) => void) | undefined = undefined
+  export let onDrop: ((e: DragEvent, object: Ref<DocumentMeta>) => void) | undefined = undefined
+
+  export let draggedItem: Ref<DocumentMeta> | undefined = undefined
+  export let draggedOver: Ref<DocumentMeta> | undefined = undefined
+
+  import DropArea from './DropArea.svelte'
+
   const dispatch = createEventDispatcher()
   const currentUser = getCurrentAccount() as PersonAccount
   const currentPerson = currentUser.person
 
-  const docsQuery = createQuery()
   let docs: WithLookup<ProjectDocument>[] = []
+
+  function sortDocs (meta: ProjectMeta[]): void {
+    const metaById = new Map(meta.map((p) => [p._id, p]))
+    docs = docs.slice().sort((a, b) => {
+      const metaA = metaById.get(a.attachedTo)
+      const metaB = metaById.get(b.attachedTo)
+
+      if (metaA !== undefined && metaB !== undefined) {
+        return metaA.rank.localeCompare(metaB.rank)
+      }
+      return 0
+    })
+  }
+
+  $: sortDocs(projectMeta)
+
+  const docsQuery = createQuery()
 
   $: docsQuery.query(
     documents.class.ProjectDocument,
@@ -79,12 +104,7 @@
         }
       }
 
-      docs.sort((a, b) => {
-        if (a.$lookup?.document !== undefined && b.$lookup?.document !== undefined) {
-          return compareDocs(a.$lookup.document, b.$lookup.document)
-        }
-        return 0
-      })
+      sortDocs(projectMeta)
     },
     {
       lookup: {
@@ -110,37 +130,62 @@
 
   {#if doc}
     {@const children = childrenByParent[doc.attachedTo] ?? []}
-    <TreeItem
-      _id={doc._id}
-      icon={documents.icon.Document}
-      iconProps={{
-        fill: 'currentColor'
-      }}
-      title={getDocumentName(doc)}
-      selected={selected === doc._id || selected === prjdoc._id}
-      isFold
-      empty={children.length === 0 || children === undefined}
-      actions={getMoreActions !== undefined ? () => getDocMoreActions(prjdoc) : undefined}
-      {level}
-      {collapsedPrefix}
-      shouldTooltip
-      on:click={() => {
-        dispatch('selected', prjdoc)
-      }}
-    >
-      <svelte:fragment slot="dropbox">
-        {#if children.length}
-          <svelte:self
-            projectMeta={children}
-            {childrenByParent}
-            {selected}
-            {collapsedPrefix}
-            {getMoreActions}
-            level={level + 1}
-            on:selected
-          />
-        {/if}
-      </svelte:fragment>
-    </TreeItem>
+    {@const isDraggedOver = draggedOver === doc.attachedTo}
+    <div class="flex-col relative">
+      {#if isDraggedOver}
+        <DropArea />
+      {/if}
+      <TreeItem
+        _id={doc._id}
+        icon={documents.icon.Document}
+        iconProps={{
+          fill: 'currentColor'
+        }}
+        title={getDocumentName(doc)}
+        selected={selected === doc._id || selected === prjdoc._id}
+        isFold
+        empty={children.length === 0 || children === undefined}
+        actions={getMoreActions !== undefined ? () => getDocMoreActions(prjdoc) : undefined}
+        {level}
+        {collapsedPrefix}
+        shouldTooltip
+        on:click={() => {
+          dispatch('selected', prjdoc)
+        }}
+        draggable={onDragStart !== undefined}
+        on:dragstart={(evt) => {
+          onDragStart?.(evt, doc.attachedTo)
+        }}
+        on:dragover={(evt) => {
+          onDragOver?.(evt, doc.attachedTo)
+        }}
+        on:dragend={(evt) => {
+          onDragEnd?.(evt, doc.attachedTo)
+        }}
+        on:drop={(evt) => {
+          onDrop?.(evt, doc.attachedTo)
+        }}
+      >
+        <svelte:fragment slot="dropbox">
+          {#if children.length}
+            <svelte:self
+              projectMeta={children}
+              {childrenByParent}
+              {selected}
+              {collapsedPrefix}
+              {getMoreActions}
+              level={level + 1}
+              {onDragStart}
+              {onDragOver}
+              {onDragEnd}
+              {onDrop}
+              {draggedItem}
+              {draggedOver}
+              on:selected
+            />
+          {/if}
+        </svelte:fragment>
+      </TreeItem>
+    </div>
   {/if}
 {/each}

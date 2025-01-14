@@ -16,7 +16,8 @@ import {
   type TypedSpace,
   type Timestamp,
   SpaceType,
-  SpaceTypeDescriptor
+  SpaceTypeDescriptor,
+  Rank
 } from '@hcengineering/core'
 import { type TagReference } from '@hcengineering/tags'
 import { Request } from '@hcengineering/request'
@@ -91,6 +92,8 @@ export interface ProjectMeta extends Doc {
   // head: Ref<HierarchyDocument>
 
   documents: CollectionSize<ProjectDocument>
+
+  rank: Rank
 }
 
 /**
