@@ -18,9 +18,14 @@ import {
   isWorkspaceCreating,
   MeasureContext,
   systemAccountUuid,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  AccountRole
 } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
+import { getAccountClient } from '@hcengineering/server-client'
+import { aiBotAccountEmail } from '@hcengineering/ai-bot'
+
+import { wait } from './common'
 
 const ASSIGN_WORKSPACE_DELAY_MS = 5 * 1000 // 5 secs
 const MAX_ASSIGN_ATTEMPTS = 5
@@ -29,24 +34,23 @@ async function tryGetWorkspaceInfo (
   ws: WorkspaceUuid,
   ctx: MeasureContext
 ): Promise<WorkspaceInfoWithStatus | undefined> {
-  // TODO: FIXME
-  throw new Error('Not implemented')
-  // const systemToken = generateToken(systemAccountUuid, ws, { service: 'aibot' })
-  // for (let i = 0; i < 5; i++) {
-  //   try {
-  //     const info = await getWorkspaceInfo(systemToken)
+  const systemToken = generateToken(systemAccountUuid, ws, { service: 'aibot' })
+  const accountClient = getAccountClient(systemToken)
+  for (let i = 0; i < 5; i++) {
+    try {
+      const info = await accountClient.getWorkspaceInfo()
 
-  //     if (info == null) {
-  //       await wait(ASSIGN_WORKSPACE_DELAY_MS)
-  //       continue
-  //     }
+      if (info == null) {
+        await wait(ASSIGN_WORKSPACE_DELAY_MS)
+        continue
+      }
 
-  //     return info
-  //   } catch (e) {
-  //     ctx.error('Error during get workspace info:', { e })
-  //     await wait(ASSIGN_WORKSPACE_DELAY_MS)
-  //   }
-  // }
+      return info
+    } catch (e) {
+      ctx.error('Error during get workspace info:', { e })
+      await wait(ASSIGN_WORKSPACE_DELAY_MS)
+    }
+  }
 }
 
 const timeoutByWorkspace = new Map<string, NodeJS.Timeout>()
@@ -62,6 +66,8 @@ export async function tryAssignToWorkspace (
   }
   clearTimeout(timeoutByWorkspace.get(workspace))
   try {
+    const systemToken = generateToken(systemAccountUuid, undefined, { service: 'aibot' })
+    const accountClient = getAccountClient(systemToken)
     const info = await tryGetWorkspaceInfo(workspace, ctx)
 
     if (info === undefined) {
@@ -79,10 +85,7 @@ export async function tryAssignToWorkspace (
       return false
     }
 
-    // TODO: FIXME
-    // const token = generateToken(systemAccountUuid, undefined, { service: 'aibot' })
-    // replace parameters after fixing server account client
-    // await assignWorkspace(token, aiBotAccountEmail, workspace, AccountRole.User, undefined, false, aiBot.account.AIBot)
+    await accountClient.assignWorkspace(aiBotAccountEmail, workspace, AccountRole.User)
     ctx.info('Assigned to workspace: ', { workspace })
     return true
   } catch (e) {

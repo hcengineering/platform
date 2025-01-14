@@ -32,7 +32,7 @@ import core, {
   type WorkspaceIds,
   type WorkspaceInfoWithStatus
 } from '@hcengineering/core'
-import { listAccountWorkspaces, updateBackupInfo } from '@hcengineering/server-client'
+import { getAccountClient } from '@hcengineering/server-client'
 import {
   wrapPipeline,
   type DbConfiguration,

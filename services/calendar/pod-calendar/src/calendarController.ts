@@ -19,7 +19,7 @@ import { type CalendarClient } from './calendar'
 import config from './config'
 import { type ProjectCredentials, type Token, type User } from './types'
 import { WorkspaceClient } from './workspaceClient'
-import { getWorkspaceInfo } from '@hcengineering/server-client'
+import { getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 
 export class CalendarController {
@@ -63,7 +63,9 @@ export class CalendarController {
     for (const [workspace, tokens] of groups) {
       await limiter.add(async () => {
         const wstok = generateToken(systemAccountUuid, workspace, { service: 'calendar' })
-        const info = await getWorkspaceInfo(wstok)
+        const accountClient = getAccountClient(wstok)
+        const info = await accountClient.getWorkspaceInfo()
+
         if (info === undefined) {
           console.log('workspace not found', workspace)
           return

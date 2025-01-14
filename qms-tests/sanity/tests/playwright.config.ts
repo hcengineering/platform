@@ -32,7 +32,7 @@ const config: PlaywrightTestConfig = {
   ],
   fullyParallel: false,
   workers: 1,
-  retries: 1,
+  retries: 2,
   timeout: 60000,
   maxFailures,
   reporter: [

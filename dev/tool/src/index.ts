@@ -49,8 +49,7 @@ import serverClientPlugin, {
   BlobClient,
   createClient,
   getTransactorEndpoint,
-  listAccountWorkspaces,
-  updateBackupInfo
+  getAccountClient
 } from '@hcengineering/server-client'
 import {
   createBackupPipeline,
@@ -1057,53 +1056,57 @@ export function devTool (
   //     await backup(toolCtx, endpoint, wsid, storage)
   //   })
   // })
+
   // program
-  // .command('backup-s3-clean <bucketName> <days>')
-  // .description('dump workspace transactions and minio resources')
-  // .action(async (bucketName: string, days: string, cmd) => {
-  //   const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
-  //   const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+  //   .command('backup-s3-clean <bucketName> <days>')
+  //   .description('dump workspace transactions and minio resources')
+  //   .action(async (bucketName: string, days: string, cmd) => {
+  //     const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+  //     const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
 
-  //   const daysInterval = Date.now() - parseInt(days) * 24 * 60 * 60 * 1000
-  //   try {
-  //     const token = generateToken(systemAccountEmail, { name: 'any' })
-  //     const workspaces = (await listAccountWorkspaces(token)).filter((it) => {
-  //       const lastBackup = it.backupInfo?.lastBackup ?? 0
-  //       if (lastBackup > daysInterval) {
-  //         // No backup required, interval not elapsed
-  //         return true
-  //       }
+  //     const daysInterval = Date.now() - parseInt(days) * 24 * 60 * 60 * 1000
+  //     try {
+  //       const token = generateToken(systemAccountUuid, undefined, { service: 'tool' })
+  //       const accountClient = getAccountClient(token)
+  //       const workspaces = (await accountClient.listWorkspaces()).filter((it) => {
+  //         const lastBackup = it.backupInfo?.lastBackup ?? 0
+  //         if (lastBackup > daysInterval) {
+  //           // No backup required, interval not elapsed
+  //           return true
+  //         }
 
-  //       if (it.lastVisit == null) {
+  //         if (it.lastVisit == null) {
+  //           return false
+  //         }
+
   //         return false
-  //       }
-
-  //       return false
-  //     })
-  //     workspaces.sort((a, b) => {
-  //       return (b.backupInfo?.backupSize ?? 0) - (a.backupInfo?.backupSize ?? 0)
-  //     })
-
-  //     for (const ws of workspaces) {
-  //       const storage = await createStorageBackupStorage(
-  //         toolCtx,
-  //         storageAdapter,
-  //         getWorkspaceId(bucketName),
-  //         ws.workspace
-  //       )
-  //       await backupRemoveLast(storage, daysInterval)
-  //       await updateBackupInfo(generateToken(systemAccountEmail, { name: 'any' }), {
-  //         backups: ws.backupInfo?.backups ?? 0,
-  //         backupSize: ws.backupInfo?.backupSize ?? 0,
-  //         blobsSize: ws.backupInfo?.blobsSize ?? 0,
-  //         dataSize: ws.backupInfo?.dataSize ?? 0,
-  //         lastBackup: daysInterval
   //       })
+  //       workspaces.sort((a, b) => {
+  //         return (b.backupInfo?.backupSize ?? 0) - (a.backupInfo?.backupSize ?? 0)
+  //       })
+
+  //       for (const ws of workspaces) {
+  //         const storage = await createStorageBackupStorage(
+  //           toolCtx,
+  //           storageAdapter,
+  //           getWorkspaceId(bucketName),
+  //           ws.workspace
+  //         )
+  //         await backupRemoveLast(storage, daysInterval)
+  //         const accountClient = getAccountClient(token)
+  //         await accountClient.updateBackupInfo({
+  //           backups: ws.backupInfo?.backups ?? 0,
+  //           backupSize: ws.backupInfo?.backupSize ?? 0,
+  //           blobsSize: ws.backupInfo?.blobsSize ?? 0,
+  //           dataSize: ws.backupInfo?.dataSize ?? 0,
+  //           lastBackup: daysInterval
+  //         })
+  //       }
+  //     } finally {
+  //       await storageAdapter.close()
   //     }
-  //   } finally {
-  //     await storageAdapter.close()
-  //   }
-  // })
+  //   })
+
   // program
   // .command('backup-clean <dirName> <days>')
   // .description('dump workspace transactions and minio resources')

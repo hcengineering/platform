@@ -21,7 +21,7 @@ import { StorageAdapter } from '@hcengineering/server-core'
 import chunter, { ChunterSpace } from '@hcengineering/chunter'
 import { formatName } from '@hcengineering/contact'
 import { generateToken } from '@hcengineering/server-token'
-import { getWorkspaceInfo } from '@hcengineering/server-client'
+import { getAccountClient } from '@hcengineering/server-client'
 import { ActivityMessage } from '@hcengineering/activity'
 
 import {
@@ -362,7 +362,8 @@ export class PlatformWorker {
 
     try {
       const token = generateToken(systemAccountUuid, workspaceId, { service: 'telegram' })
-      const result = await getWorkspaceInfo(token, false, undefined)
+      const accountClient = getAccountClient(token)
+      const result = await accountClient.getWorkspaceInfo(false)
 
       if (result === undefined) {
         this.ctx.error('Failed to get workspace info', { workspaceId })

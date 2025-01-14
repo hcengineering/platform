@@ -12,19 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import {
-  AccountRole,
-  BackupStatus,
-  Doc,
-  Ref,
-  type WorkspaceInfoWithStatus,
-  type Data,
-  type Version,
-  type WorkspaceUpdateEvent
-} from '@hcengineering/core'
-
-import { getMetadata, PlatformError, unknownError } from '@hcengineering/platform'
+import { getClient as getAccountClientRaw, type AccountClient } from '@hcengineering/account-client'
+import { getMetadata } from '@hcengineering/platform'
 
 import plugin from './plugin'
 
@@ -39,41 +28,10 @@ export interface LoginInfo {
 
 const connectionErrorCodes = ['ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND']
 
-export async function listAccountWorkspaces (
-  token: string,
-  region: string | null = null
-): Promise<WorkspaceInfoWithStatus[]> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  const workspaces = await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'listWorkspaces',
-        params: [token, region, 'active']
-      })
-    })
-  ).json()
+export function getAccountClient (token?: string): AccountClient {
+  const accountsUrl = getMetadata(plugin.metadata.Endpoint)
 
-  return workspaces.result ?? []
-}
-
-export async function updateBackupInfo (token: string, info: BackupStatus): Promise<void> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'updateBackupInfo',
-        params: [token, info]
-      })
-    })
-  ).json()
+  return getAccountClientRaw(accountsUrl, token)
 }
 
 const externalRegions = process.env.EXTERNAL_REGIONS?.split(';') ?? []
@@ -92,27 +50,15 @@ export async function getTransactorEndpoint (
   kind: 'internal' | 'external' | 'byregion' = 'byregion',
   timeout: number = -1
 ): Promise<string> {
-  const accountsUrl = getAccoutsUrlOrFail()
+  const accountClient = getAccountClient(token)
   const st = Date.now()
   while (true) {
     try {
-      const workspaceInfo = await (
-        await fetch(accountsUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer ' + token
-          },
-          body: JSON.stringify({
-            method: 'selectWorkspace',
-            params: ['', kind, externalRegions]
-          })
-        })
-      ).json()
-      if (workspaceInfo.result === undefined) {
+      const workspaceInfo = await accountClient.selectWorkspace('', kind, externalRegions)
+      if (workspaceInfo === undefined) {
         throw new Error('Workspace not found')
       }
-      return workspaceInfo.result.endpoint
+      return workspaceInfo.endpoint
     } catch (err: any) {
       if (timeout > 0 && st + timeout < Date.now()) {
         // Timeout happened
@@ -173,237 +119,4 @@ export function withRetryConnUntilSuccess<P extends any[], T> (
   }
 
   return withRetry(f, shouldFail)
-}
-
-export async function getPendingWorkspace (
-  token: string,
-  region: string,
-  version: Data<Version>,
-  operation: 'create' | 'upgrade' | 'all' | 'all+backup'
-): Promise<WorkspaceInfoWithStatus | undefined> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  const workspaces = await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'getPendingWorkspace',
-        params: [token, region, version, operation]
-      })
-    })
-  ).json()
-
-  return workspaces.result as WorkspaceInfoWithStatus
-}
-
-export async function updateWorkspaceInfo (
-  token: string,
-  workspaceId: string,
-  event: WorkspaceUpdateEvent,
-  version: Data<Version>,
-  progress: number,
-  message?: string
-): Promise<void> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'updateWorkspaceInfo',
-        params: [token, workspaceId, event, version, progress, message]
-      })
-    })
-  ).json()
-}
-
-export async function workerHandshake (
-  token: string,
-  region: string,
-  version: Data<Version>,
-  operation: 'create' | 'upgrade' | 'all' | 'all+backup'
-): Promise<void> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  await fetch(accountsUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      method: 'workerHandshake',
-      params: [token, region, version, operation]
-    })
-  })
-}
-
-export async function getLoginInfoByToken (token: string, url: string | undefined): Promise<void> {
-  const accountsUrl = url ?? getAccoutsUrlOrFail()
-
-  await fetch(accountsUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      method: 'getLoginInfoByToken',
-      params: [token]
-    })
-  })
-}
-
-export async function getWorkspaceInfo (
-  token: string,
-  updateLastAccess = false,
-  url: string | undefined = undefined
-): Promise<WorkspaceInfoWithStatus | undefined> {
-  const accountsUrl = url ?? getAccoutsUrlOrFail()
-  const workspaceInfo = await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'getWorkspaceInfo',
-        params: updateLastAccess ? [true] : []
-      })
-    })
-  ).json()
-
-  if (workspaceInfo.error !== undefined) {
-    throw new Error(JSON.stringify(workspaceInfo.error))
-  }
-
-  const workspace = workspaceInfo.result
-
-  if (workspace == null) {
-    return undefined
-  }
-
-  const status = workspace.status ?? {}
-
-  const workspaceWithStatus = {
-    ...workspace,
-    ...status,
-    version: {
-      major: status.versionMajor,
-      minor: status.versionMinor,
-      patch: status.versionPatch
-    }
-  }
-
-  return workspaceWithStatus
-}
-
-export async function login (user: string, password: string, workspace: string): Promise<LoginInfo> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  const response = await fetch(accountsUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      method: 'login',
-      params: [user, password]
-    })
-  })
-
-  const result = await response.json()
-  return result.result
-}
-
-export async function getUserWorkspaces (token: string): Promise<WorkspaceInfoWithStatus[]> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  const response = await fetch(accountsUrl, {
-    method: 'POST',
-    headers: {
-      Authorization: 'Bearer ' + token,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      method: 'getUserWorkspaces',
-      params: []
-    })
-  })
-  const result = await response.json()
-  return (result.result as WorkspaceInfoWithStatus[]) ?? []
-}
-
-export async function selectWorkspace (token: string, workspace: string): Promise<WorkspaceLoginInfo> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  const response = await fetch(accountsUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token
-    },
-    body: JSON.stringify({
-      method: 'selectWorkspace',
-      params: [workspace, 'external']
-    })
-  })
-  const result = await response.json()
-  return result.result as WorkspaceLoginInfo
-}
-
-function getAccoutsUrlOrFail (): string {
-  const accountsUrl = getMetadata(plugin.metadata.Endpoint)
-  if (accountsUrl == null) {
-    throw new PlatformError(unknownError('No account endpoint specified'))
-  }
-  return accountsUrl
-}
-
-export async function assignWorkspace (
-  token: string,
-  email: string,
-  workspace: string,
-  role: AccountRole = AccountRole.User,
-  personId?: Ref<Doc>,
-  shouldReplaceAccount = false,
-  personAccountId?: Ref<Doc>
-): Promise<WorkspaceLoginInfo> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  const res = await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'assignWorkspace',
-        params: [token, email, workspace, role, personId, shouldReplaceAccount, undefined, personAccountId]
-      })
-    })
-  ).json()
-
-  return res.result as WorkspaceLoginInfo
-}
-
-export async function createAccount (
-  email: string,
-  password: string,
-  firstName: string,
-  lastName: string
-): Promise<WorkspaceLoginInfo> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  const workspace = await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'createAccount',
-        params: [email, password, firstName, lastName]
-      })
-    })
-  ).json()
-
-  return workspace.result as WorkspaceLoginInfo
 }

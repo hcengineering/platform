@@ -14,6 +14,7 @@
 //
 import {
   type AccountRole,
+  BackupStatus,
   Data,
   type Person,
   PersonUuid,
@@ -33,7 +34,11 @@ export interface AccountClient {
 
   // RPC
   getUserWorkspaces: () => Promise<WorkspaceInfoWithStatus[]>
-  selectWorkspace: (workspaceUrl: string) => Promise<WorkspaceLoginInfo>
+  selectWorkspace: (
+    workspaceUrl: string,
+    kind?: 'external' | 'internal' | 'byregion',
+    externalRegions?: string[]
+  ) => Promise<WorkspaceLoginInfo>
   validateOtp: (email: string, code: string) => Promise<LoginInfo>
   loginOtp: (email: string) => Promise<OtpInfo>
   getLoginInfoByToken: () => Promise<LoginInfo | WorkspaceLoginInfo>
@@ -94,6 +99,8 @@ export interface AccountClient {
     event: 'archive' | 'migrate-to' | 'unarchive',
     ...params: any
   ) => Promise<boolean>
+  assignWorkspace: (email: string, workspaceUuid: string, role: AccountRole) => Promise<void>
+  updateBackupInfo: (info: BackupStatus) => Promise<void>
 }
 
 /** @public */
@@ -106,7 +113,7 @@ export function getClient (accountsUrl?: string, token?: string): AccountClient 
 }
 
 interface Request {
-  method: string // TODO: replace with AccountMethods
+  method: string
   params: any[]
 }
 
@@ -176,10 +183,14 @@ class AccountClientImpl implements AccountClient {
     return (await this.rpc<any[]>(request)).map((ws) => this.flattenStatus(ws))
   }
 
-  async selectWorkspace (workspaceUrl: string): Promise<WorkspaceLoginInfo> {
+  async selectWorkspace (
+    workspaceUrl: string,
+    kind: 'external' | 'internal' | 'byregion' = 'external',
+    externalRegions: string[] = []
+  ): Promise<WorkspaceLoginInfo> {
     const request = {
       method: 'selectWorkspace' as const,
-      params: [workspaceUrl, 'external']
+      params: [workspaceUrl, kind, externalRegions]
     }
 
     return await this.rpc(request)
@@ -485,10 +496,10 @@ class AccountClientImpl implements AccountClient {
   async listWorkspaces (region?: string | null, includeDisabled?: boolean): Promise<WorkspaceInfoWithStatus[]> {
     const request = {
       method: 'listWorkspaces' as const,
-      params: []
+      params: [region, includeDisabled]
     }
 
-    return (await this.rpc<any[]>(request)).map((ws) => this.flattenStatus(ws))
+    return ((await this.rpc<any[]>(request)) ?? []).map((ws) => this.flattenStatus(ws))
   }
 
   async performWorkspaceOperation (
@@ -502,6 +513,24 @@ class AccountClientImpl implements AccountClient {
     }
 
     return await this.rpc(request)
+  }
+
+  async updateBackupInfo (info: BackupStatus): Promise<void> {
+    const request = {
+      method: 'updateBackupInfo' as const,
+      params: [info]
+    }
+
+    await this.rpc(request)
+  }
+
+  async assignWorkspace (email: string, workspaceUuid: string, role: AccountRole): Promise<void> {
+    const request = {
+      method: 'assignWorkspace' as const,
+      params: [email, workspaceUuid, role]
+    }
+
+    await this.rpc(request)
   }
 }
 
