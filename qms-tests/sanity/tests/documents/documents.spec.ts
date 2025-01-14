@@ -926,7 +926,29 @@ test.describe('QMS. Documents tests', () => {
       await attachScreenshot('TESTS-206_check_document.png', page)
     })
 
-    await test.step('7. Send for Approval', async () => {
+    await test.step('7. Send for Review', async () => {
+      await documentContentPage.buttonSendForReview.click()
+      await documentContentPage.fillSelectReviewersForm([])
+      await documentContentPage.checkDocumentStatus(DocumentStatus.IN_REVIEW)
+      await documentContentPage.checkDocument({
+        ...documentDetails,
+        status: DocumentStatus.IN_REVIEW
+      })
+      await attachScreenshot('TESTS-206_send_for_review_2.png', page)
+    })
+
+    await test.step('8. Complete Review', async () => {
+      const documentContentPageSecond = new DocumentContentPage(userSecondPage)
+
+      await documentContentPageSecond.completeReview()
+
+      await documentContentPageSecond.checkDocumentStatus(DocumentStatus.REVIEWED)
+      await documentContentPageSecond.checkCurrentRights(DocumentRights.VIEWING)
+
+      await attachScreenshot('TESTS-206_complete_review_2.png', page)
+    })
+
+    await test.step('9. Send for Approval', async () => {
       await documentContentPage.buttonSendForApproval.click()
       await documentContentPage.fillSelectApproversForm([reviewer])
       await documentContentPage.checkDocumentStatus(DocumentStatus.IN_APPROVAL)
@@ -938,7 +960,7 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
     })
 
-    await test.step('8. Approve document', async () => {
+    await test.step('10. Approve document', async () => {
       const documentsPageSecond = new DocumentsPage(userSecondPage)
       await documentsPageSecond.openDocument(completeDocument.title)
 
@@ -957,7 +979,7 @@ test.describe('QMS. Documents tests', () => {
       await attachScreenshot('TESTS-206_approve_document.png', page)
     })
 
-    await test.step('9. Check document', async () => {
+    await test.step('11. Check document', async () => {
       await documentContentPage.checkDocumentStatus(DocumentStatus.EFFECTIVE)
       await documentContentPage.checkDocument({
         ...documentDetails,
@@ -969,7 +991,7 @@ test.describe('QMS. Documents tests', () => {
       await attachScreenshot('TESTS-206_check_document.png', page)
     })
 
-    await test.step('10. Check History tab', async () => {
+    await test.step('12. Check History tab', async () => {
       await documentContentPage.buttonHistoryTab.first().click()
 
       const documentHistoryPage = new DocumentHistoryPage(page)

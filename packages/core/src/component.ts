@@ -19,6 +19,7 @@ import type {
   Account,
   AnyAttribute,
   ArrOf,
+  Association,
   AttachedDoc,
   Blob,
   Card,
@@ -43,6 +44,7 @@ import type {
   Ref,
   RefTo,
   RelatedDocument,
+  Relation,
   Role,
   Space,
   SpaceType,
@@ -108,6 +110,7 @@ export default plugin(coreId, {
     Permission: '' as Ref<Class<Permission>>,
     Account: '' as Ref<Class<Account>>,
     Type: '' as Ref<Class<Type<any>>>,
+    TypeRelation: '' as Ref<Class<Type<string>>>,
     TypeString: '' as Ref<Class<Type<string>>>,
     TypeBlob: '' as Ref<Class<Type<Ref<Blob>>>>,
     TypeIntlString: '' as Ref<Class<Type<IntlString>>>,
@@ -141,7 +144,9 @@ export default plugin(coreId, {
     MigrationState: '' as Ref<Class<MigrationState>>,
 
     BenchmarkDoc: '' as Ref<Class<BenchmarkDoc>>,
-    FullTextSearchContext: '' as Ref<Mixin<FullTextSearchContext>>
+    FullTextSearchContext: '' as Ref<Mixin<FullTextSearchContext>>,
+    Association: '' as Ref<Class<Association>>,
+    Relation: '' as Ref<Class<Relation>>
   },
   mixin: {
     ConfigurationElement: '' as Ref<Mixin<ConfigurationElement>>,
@@ -184,6 +189,10 @@ export default plugin(coreId, {
     String: '' as IntlString,
     Record: '' as IntlString,
     Markup: '' as IntlString,
+    Relation: '' as IntlString,
+    Relations: '' as IntlString,
+    AddRelation: '' as IntlString,
+    Collaborative: '' as IntlString,
     CollaborativeDoc: '' as IntlString,
     MarkupBlobRef: '' as IntlString,
     Number: '' as IntlString,

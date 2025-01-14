@@ -31,6 +31,7 @@ import { TBenchmarkDoc } from './benchmark'
 import core from './component'
 import {
   TArrOf,
+  TAssociation,
   TAttachedDoc,
   TAttribute,
   TBlob,
@@ -52,6 +53,7 @@ import {
   TObj,
   TPluginConfiguration,
   TRefTo,
+  TRelation,
   TTransientConfiguration,
   TType,
   TTypeAny,
@@ -155,6 +157,8 @@ export function createModel (builder: Builder): void {
     TStatusCategory,
     TMigrationState,
     TBlob,
+    TRelation,
+    TAssociation,
     TDomainIndexConfiguration,
     TBenchmarkDoc,
     TTransientConfiguration

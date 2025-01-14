@@ -84,6 +84,8 @@
     "ProvideRejectionReason": "Type rejection reason...",
     "RejectionReason": "Rejection reason",
     "ConfirmReviewCompletion": "Confirm review completion",
+    "ConfirmApprovalSubmission": "Confirm submission for approval",
+    "ConfirmReviewSubmission": "Confirm submission for review",
     "AddApprovalTitle": "Send your document to approvers",
     "AddApprovalDescription1": "To prepare your document for approval it should fit few requirements:",
     "AddApprovalDescription2": "has status 'Draft' or 'Reviewed'",

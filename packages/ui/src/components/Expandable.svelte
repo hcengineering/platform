@@ -26,6 +26,9 @@
   export let expandable = true
   export let contentColor = false
   export let showChevron = true
+
+  let wasExpanded = expanded
+  $: if (expanded) wasExpanded = true
 </script>
 
 <div class="flex-col">
@@ -56,7 +59,9 @@
     {/if}
   </div>
   <ExpandCollapse isExpanded={expanded}>
-    <slot />
+    {#if wasExpanded}
+      <slot />
+    {/if}
   </ExpandCollapse>
 </div>
 

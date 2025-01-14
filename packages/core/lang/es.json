@@ -55,6 +55,9 @@
     "AutoJoin": "Auto unirse",
     "AutoJoinDescr": "Unirse automáticamente a los nuevos empleados a este espacio",
     "BlobSize": "Tamaño",
-    "BlobContentType": "Tipo de contenido"
+    "BlobContentType": "Tipo de contenido",
+    "Relation": "Relación",
+    "Relations": "Relaciones",
+    "AddRelation": "Añadir relación"
   }
 }

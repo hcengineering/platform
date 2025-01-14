@@ -43,6 +43,7 @@ import {
   documentAllVersionsUpdated,
   editorModeUpdated,
   reviewRequestUpdated,
+  reviewRequestHistoryUpdated,
   rightPanelTabChanged,
   documentSnapshotsUpdated,
   trainingUpdated,
@@ -120,6 +121,10 @@ export const $training = createStore<Training | null>(null)
 
 export const $reviewRequest = createStore<DocumentReviewRequest | null>(null)
   .on(reviewRequestUpdated, (_, payload) => payload)
+  .reset(controlledDocumentClosed)
+
+export const $reviewRequestHistory = createStore<DocumentReviewRequest[] | null>(null)
+  .on(reviewRequestHistoryUpdated, (_, payload) => payload)
   .reset(controlledDocumentClosed)
 
 export const $approvalRequest = createStore<DocumentApprovalRequest | null>(null)

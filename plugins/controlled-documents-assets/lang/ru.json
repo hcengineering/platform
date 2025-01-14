@@ -84,6 +84,8 @@
     "ProvideRejectionReason": "Напишите причину отказа",
     "RejectionReason": "Причина отказа",
     "ConfirmReviewCompletion": "Подтвердите окончание рецензии",
+    "ConfirmApprovalSubmission": "Подтвердите отправку на рецензцию",
+    "ConfirmReviewSubmission": "Подтвердите отправку на утверждение",
     "AddApprovalTitle": "Отправьте ваш документ на утверждение",
     "AddApprovalDescription1": "Для отправки вашего документа на утверждение, он должен удовлетворять следующим требованиям:",
     "AddApprovalDescription2": "иметь статус 'Рабочая копия' или 'Рецензии получены'",

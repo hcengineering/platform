@@ -105,6 +105,26 @@ export interface UXObject extends Obj {
 /**
  * @public
  */
+export interface Association extends Doc {
+  classA: Ref<Class<Doc>>
+  classB: Ref<Class<Doc>>
+  nameA: string
+  nameB: string
+  type: '1:1' | '1:N' | 'N:N'
+}
+
+/**
+ * @public
+ */
+export interface Relation extends Doc {
+  docA: Ref<Doc>
+  docB: Ref<Doc>
+  association: Ref<Association>
+}
+
+/**
+ * @public
+ */
 export interface AttachedDoc<
   Parent extends Doc = Doc,
   Collection extends Extract<keyof Parent, string> | string = Extract<keyof Parent, string> | string,
@@ -356,6 +376,11 @@ export const DOMAIN_MIGRATION = '_migrations' as Domain
  * @public
  */
 export const DOMAIN_TRANSIENT = 'transient' as Domain
+
+/**
+ * @public
+ */
+export const DOMAIN_RELATION = 'relation' as Domain
 
 /**
  * @public

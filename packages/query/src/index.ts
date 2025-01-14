@@ -512,12 +512,16 @@ export class LiveQuery implements WithTx, Client {
     space: Ref<Space>,
     q: Query
   ): Promise<Doc | undefined> {
-    const lookup = q.options?.lookup
-    const docIdKey = _id + JSON.stringify(lookup ?? {}) + q._class
+    const options: any = {}
+    if (q.options?.associations !== undefined) {
+      options.associations = q.options?.associations
+    }
+    if (q.options?.lookup !== undefined) {
+      options.lookup = q.options?.lookup
+    }
+    const docIdKey = _id + JSON.stringify(options ?? {}) + q._class
 
-    const current =
-      docCache.get(docIdKey) ??
-      (await this.client.findOne<Doc>(q._class, { _id, space }, lookup !== undefined ? { lookup } : undefined))
+    const current = docCache.get(docIdKey) ?? (await this.client.findOne<Doc>(q._class, { _id, space }, options))
     if (current !== undefined) {
       docCache.set(docIdKey, current)
     } else {
