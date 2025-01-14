@@ -10,8 +10,6 @@ import { StringSession } from 'telegram/sessions'
 import type { Dialog } from 'telegram/tl/custom/dialog'
 import config from './config'
 import { ApiError, Code } from './error'
-// Using built-in types instead of node:timers for better compatibility
-type Timeout = ReturnType<typeof setTimeout>
 
 Logger.setLevel('none')
 
@@ -109,16 +107,8 @@ class TelegramConnection {
   private readonly listeners = new Map<number, Listener>()
   private subID = 0
   private handlerAdded = false
-  private readinessInterval: Timeout | undefined
+  private readinessInterval: NodeJS.Timeout | undefined
   private connecting = false
-  private reconnectAttempts = 0
-  private static readonly MAX_RECONNECT_ATTEMPTS = 3
-  private static readonly RECONNECT_TIMEOUT = 5000 // 5 seconds timeout for connection attempts
-  private static readonly RECONNECT_BACKOFF = 1000 // Add 1 second delay between retries
-
-  private delay (ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-  }
 
   constructor (
     readonly client: TelegramClient,
@@ -138,20 +128,6 @@ class TelegramConnection {
     }
   }
 
-  private async connectWithTimeout (): Promise<void> {
-    const timeoutId = setTimeout(() => {
-      // Force disconnect if we timeout
-      void this.client.disconnect()
-      throw new Error('Connection attempt timed out')
-    }, TelegramConnection.RECONNECT_TIMEOUT)
-
-    try {
-      await this.client.connect()
-    } finally {
-      clearTimeout(timeoutId)
-    }
-  }
-
   async tryReconnect (): Promise<void> {
     if (this.connecting) {
       return
@@ -159,58 +135,14 @@ class TelegramConnection {
 
     if (this.client.connected === true) {
       console.log('Already connected')
-      this.reconnectAttempts = 0 // Reset counter on successful connection
-      return
-    }
-
-    if (this.reconnectAttempts >= TelegramConnection.MAX_RECONNECT_ATTEMPTS) {
-      console.error(`Max reconnection attempts (${TelegramConnection.MAX_RECONNECT_ATTEMPTS}) reached`)
-      // Reset counter but wait for next interval
-      this.reconnectAttempts = 0
       return
     }
 
     try {
       this.connecting = true
-      await this.connectWithTimeout()
-      this.reconnectAttempts = 0 // Reset on successful connection
+      await this.client.connect()
     } catch (e: unknown) {
-      this.reconnectAttempts++
-
-      // Handle specific error types
-      if (e instanceof RPCError) {
-        // Handle Telegram RPC-specific errors
-        const rpcError = e
-        console.error(`Telegram RPC error during connection attempt ${this.reconnectAttempts}: ${rpcError.message}`)
-        if (rpcError.message.includes('AUTH_KEY_UNREGISTERED') || rpcError.message.includes('SESSION_REVOKED')) {
-          // Authentication errors - need to re-authenticate
-          this._signInFlow = undefined // Force re-authentication
-          throw new ApiError(Code.PhoneCodeInvalid, 'Re-authentication required') // Use existing auth error code
-        }
-      } else if (e instanceof Error) {
-        const error = e
-        if (error.message.includes('Connection attempt timed out')) {
-          console.error(`Connection timeout on attempt ${this.reconnectAttempts}`)
-        } else if (error.message.includes('ECONNREFUSED') || error.message.includes('ENETUNREACH')) {
-          console.error(`Network error on attempt ${this.reconnectAttempts}: ${error.message}`)
-        } else {
-          console.error(`Connection attempt ${this.reconnectAttempts} failed: ${error.message}`)
-        }
-      } else {
-        console.error(`Connection attempt ${this.reconnectAttempts} failed with unknown error`)
-      }
-
-      // Add exponential backoff delay using callback
-      const backoffDelay = TelegramConnection.RECONNECT_BACKOFF * Math.pow(2, this.reconnectAttempts - 1)
-      await this.delay(backoffDelay)
-
-      // If we've hit max attempts, emit a more specific error
-      if (this.reconnectAttempts >= TelegramConnection.MAX_RECONNECT_ATTEMPTS) {
-        throw new ApiError(
-          Code.PhoneCodeInvalid,
-          `Failed to connect after ${TelegramConnection.MAX_RECONNECT_ATTEMPTS} attempts`
-        ) // Use existing error code
-      }
+      console.error(e)
     } finally {
       this.connecting = false
     }
@@ -224,57 +156,25 @@ class TelegramConnection {
         await this.tryReconnect()
       }
     } catch (err) {
-      if (err instanceof Error) {
-        console.error(`Reconnection error: ${err.message}`)
-      } else {
-        console.error('Unknown reconnection error occurred')
-      }
-    }
-  }
-
-  private clearHandlers (): void {
-    // Clear all event handlers to prevent memory leaks
-    this.client.listEventHandlers().forEach(([builder, callback]) => {
-      this.client.removeEventHandler(callback, builder)
-    })
-    this.handlerAdded = false
-    this.listeners.clear()
-    this.subID = 0
-  }
-
-  private clearIntervals (): void {
-    if (this.readinessInterval !== undefined) {
-      clearInterval(this.readinessInterval)
-      this.readinessInterval = undefined
+      console.log(err)
     }
   }
 
   async close (): Promise<void> {
-    this.clearIntervals()
-    this.clearHandlers()
-
-    try {
-      await this.client.disconnect()
-    } catch (e) {
-      // Log but don't throw as we're cleaning up
-      console.error('Error during disconnect:', e instanceof Error ? e.message : 'Unknown error')
+    if (this.readinessInterval !== undefined) {
+      clearInterval(this.readinessInterval)
     }
+    this.client.listEventHandlers().forEach(([builder, callback]) => {
+      this.client.removeEventHandler(callback, builder)
+    })
+    await this.client.disconnect()
   }
 
   async signOut (): Promise<void> {
-    try {
-      await this.client.invoke(new Api.auth.LogOut())
-    } finally {
-      // Always clean up resources even if logout fails
-      await this.close()
-      this._signInFlow = undefined
-    }
+    await this.client.invoke(new Api.auth.LogOut())
   }
 
   async signIn (): Promise<void> {
-    // Clear any existing handlers before starting new sign in
-    this.clearHandlers()
-
     this._signInFlow = new SignInFlow(this.client, this.phone, () => {
       this._signInFlow = undefined
       this.client.session.save()
@@ -428,22 +328,17 @@ export const telegram = new (class TelegramHelper {
   readonly ttls = new Map<string, NodeJS.Timeout>()
 
   async auth (phone: string): Promise<SignInState> {
-    // Clear any existing TTL timeout for this phone
-    this.clearTTL(phone)
-
     const conn = await this.getOrCreate(phone)
 
-    // Set new TTL timeout
-    this.ttls.set(
-      phone,
-      setTimeout(() => {
-        console.log(`TTL expired for connection ${phone}, cleaning up...`)
-        this.forgetConnection(phone)
-        void conn.close().catch((e) => {
-          console.error(`Error during TTL cleanup for ${phone}:`, e instanceof Error ? e.message : 'Unknown error')
-        })
-      }, config.TelegramAuthTTL)
-    )
+    if (!this.ttls.has(phone)) {
+      this.ttls.set(
+        phone,
+        setTimeout(() => {
+          this.conns.delete(phone)
+          void conn.close()
+        }, config.TelegramAuthTTL)
+      )
+    }
 
     if (conn.signInFlow !== undefined) {
       return conn.signInFlow.state
@@ -452,24 +347,13 @@ export const telegram = new (class TelegramHelper {
     try {
       await conn.signIn()
     } catch (err) {
-      // On error, clean up everything
       this.forgetConnection(phone)
-      await conn.close().catch((e) => {
-        console.error(`Error during error cleanup for ${phone}:`, e instanceof Error ? e.message : 'Unknown error')
-      })
+      await conn.close()
 
       throw err
     }
 
     return 'code'
-  }
-
-  clearTTL (phone: string): void {
-    const existingTTL = this.ttls.get(phone)
-    if (existingTTL !== undefined) {
-      clearTimeout(existingTTL)
-      this.ttls.delete(phone)
-    }
   }
 
   async authCode (phone: string, code: string): Promise<boolean> {
@@ -479,23 +363,7 @@ export const telegram = new (class TelegramHelper {
       throw Error('Sign in is not initialized')
     }
 
-    try {
-      const needsPassword = await conn.signInFlow.code(code)
-
-      if (!needsPassword) {
-        // Authentication completed successfully, reset TTL
-        this.clearTTL(phone)
-      }
-
-      return needsPassword
-    } catch (err) {
-      // On authentication error, clean up
-      this.forgetConnection(phone)
-      await conn.close().catch((e) => {
-        console.error(`Error during auth code cleanup for ${phone}:`, e instanceof Error ? e.message : 'Unknown error')
-      })
-      throw err
-    }
+    return await conn.signInFlow.code(code)
   }
 
   async authPass (phone: string, pass: string): Promise<void> {
@@ -505,18 +373,7 @@ export const telegram = new (class TelegramHelper {
       throw Error('Sign in is not initialized')
     }
 
-    try {
-      await conn.signInFlow.pass(pass)
-      // Authentication completed successfully, reset TTL
-      this.clearTTL(phone)
-    } catch (err) {
-      // On authentication error, clean up
-      this.forgetConnection(phone)
-      await conn.close().catch((e) => {
-        console.error(`Error during auth pass cleanup for ${phone}:`, e instanceof Error ? e.message : 'Unknown error')
-      })
-      throw err
-    }
+    await conn.signInFlow.pass(pass)
   }
 
   async getOrCreate (phone: string): Promise<TelegramConnection> {
@@ -538,7 +395,12 @@ export const telegram = new (class TelegramHelper {
 
   forgetConnection (phone: string): void {
     this.conns.delete(phone)
-    this.clearTTL(phone)
+    const timeout = this.ttls.get(phone)
+
+    if (timeout !== undefined) {
+      this.ttls.delete(phone)
+      clearTimeout(timeout)
+    }
   }
 
   async create (phone: string, token?: string): Promise<TelegramConnection> {
