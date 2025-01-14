@@ -119,6 +119,17 @@
     "DeleteSpaceTypeConfirm": "Êtes-vous sûr de vouloir supprimer ce type d'espace ?",
     "WorkspaceName": "Nom de l'espace de travail",
     "Workspace": "Espace de travail",
-    "OwnerOrMaintainerRequired": "Vous devez être propriétaire ou responsable d'un espace de travail"
+    "OwnerOrMaintainerRequired": "Vous devez être propriétaire ou responsable d'un espace de travail",
+    "Backup": "Sauvegarde",
+    "BackupLast": "Dernière sauvegarde",
+    "BackupTotalSnapshots": "Total des instantanés",
+    "BackupTotalFiles": "Fichiers",
+    "BackupSize": "Taille de la sauvegarde",
+    "BackupLinkInfo": "Un répertoire de sauvegarde est disponible à",
+    "BackupBearerTokenInfo": "Un jeton d'authentification est nécessaire pour accéder à la sauvegarde. Veuillez cliquer sur le bouton pour copier le jeton dans le presse-papiers.",
+    "BackupSnapshots": "Instantanés",
+    "BackupFileDownload": "Télécharger",
+    "BackupFiles": "Fichiers",
+    "BackupNoBackup": "Aucune sauvegarde disponible"
   }
 }

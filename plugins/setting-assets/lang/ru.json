@@ -120,6 +120,17 @@
     "DeleteSpaceTypeConfirm": "Вы действительно хотите удалить этот тип пространства?",
     "WorkspaceName": "Название рабочего пространства",
     "Workspace": "Рабочее пространство",
-    "OwnerOrMaintainerRequired": "Вы должны иметь роль Владельца/Сопровождаемого"
+    "OwnerOrMaintainerRequired": "Вы должны иметь роль Владельца/Сопровождаемого",
+    "Backup": "Резервная копия",
+    "BackupLast": "Последняя резервная копия",
+    "BackupTotalSnapshots": "Всего снимков",
+    "BackupTotalFiles": "Файлы",
+    "BackupSize": "Размер резервной копии",
+    "BackupLinkInfo": "Директория резервных копий доступна по адресу",
+    "BackupBearerTokenInfo": "Для доступа к резервной копии требуется токен авторизации. Пожалуйста, нажмите кнопку, чтобы скопировать токен в буфер обмена.",
+    "BackupSnapshots": "Снимки",
+    "BackupFileDownload": "Скачать",
+    "BackupFiles": "Файлы",
+    "BackupNoBackup": "Резервные копии отсутствуют"
   }
 }
