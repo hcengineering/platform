@@ -15,7 +15,7 @@
 <script lang="ts">
   import { DirectMessage } from '@hcengineering/chunter'
   import contact, { Person } from '@hcengineering/contact'
-  import { Avatar, CombineAvatars, personByIdStore } from '@hcengineering/contact-resources'
+  import { Avatar, CombineAvatars } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Icon, IconSize } from '@hcengineering/ui'
@@ -44,7 +44,7 @@
   }
 
   $: if (value !== undefined) {
-    void getDmPersons(client, value, $personByIdStore).then((res) => {
+    void getDmPersons(client, value).then((res) => {
       persons = res
     })
   }

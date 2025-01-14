@@ -26,7 +26,8 @@
     generateId,
     getCurrentAccount,
     WithLookup,
-    Class
+    Class,
+    notEmpty
   } from '@hcengineering/core'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor-resources'
@@ -55,7 +56,7 @@
   let rolesAssignment: RolesAssignment = {}
 
   $: isNew = docSpace === undefined
-  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter((p) => p !== undefined)
+  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter(notEmpty)
 
   let typeId: Ref<DocumentSpaceType> | undefined = docSpace?.type ?? documents.spaceType.DocumentSpaceType
   let spaceType: WithLookup<DocumentSpaceType> | undefined

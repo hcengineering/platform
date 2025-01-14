@@ -19,10 +19,10 @@
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { Employee } from '@hcengineering/contact'
   import core, {
-    Account,
     Class,
     Doc,
     DocData,
+    type PersonId,
     Ref,
     SortingOrder,
     fillDefaults,

@@ -26,7 +26,8 @@
     SortingOrder,
     SpaceType,
     generateId,
-    getCurrentAccount
+    getCurrentAccount,
+    notEmpty
   } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
@@ -80,7 +81,7 @@
 
   let typeId: Ref<ProjectType> | undefined = project?.type
   $: typeType = typeId !== undefined ? $typeStore.get(typeId) : undefined
-  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter((p) => p !== undefined)
+  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter(notEmpty)
   let autoJoin = project?.autoJoin ?? typeType?.autoJoin ?? false
 
   const dispatch = createEventDispatcher()

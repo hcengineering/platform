@@ -18,7 +18,7 @@
   import { Action, Label, ShowMore } from '@hcengineering/ui'
   import { personByPersonIdStore } from '@hcengineering/contact-resources'
   import { Doc } from '@hcengineering/core'
-  import { Person } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import view, { ObjectPanel } from '@hcengineering/view'
   import { DocNavLink, getDocLinkTitle } from '@hcengineering/view-resources'
 
@@ -47,7 +47,7 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const currentEmployee = getCurrentPerson()
+  const currentEmployee = getCurrentEmployee()
 
   const srcDocQuery = createQuery()
   const targetDocQuery = createQuery()
@@ -60,9 +60,7 @@
 
   let targetTitle: string | undefined = undefined
 
-  let person: Person | undefined = undefined
-
-  $: person = account !== undefined ? $personByPersonIdStore.get(value.createdBy ?? value.modifiedBy) : undefined
+  $: person = $personByPersonIdStore.get(value.createdBy ?? value.modifiedBy)
 
   $: srcDocQuery.query(value.srcDocClass, { _id: value.srcDocId }, (result) => {
     srcDoc = result.shift()

@@ -25,7 +25,8 @@
     SpaceType,
     generateId,
     getCurrentAccount,
-    WithLookup
+    WithLookup,
+    notEmpty
   } from '@hcengineering/core'
   import document, { Teamspace, DocumentEvents } from '@hcengineering/document'
   import { Asset } from '@hcengineering/platform'
@@ -70,7 +71,7 @@
   let rolesAssignment: RolesAssignment = {}
 
   $: isNew = teamspace === undefined
-  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter((p) => p !== undefined)
+  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter(notEmpty)
 
   let typeId: Ref<SpaceType> | undefined = teamspace?.type ?? document.spaceType.DefaultTeamspaceType
   let spaceType: WithLookup<SpaceType> | undefined

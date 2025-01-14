@@ -14,7 +14,18 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import { Account, Class, Doc, IdMap, Markup, RateLimiter, Ref, Space, generateId, toIdMap } from '@hcengineering/core'
+  import {
+    Class,
+    Doc,
+    IdMap,
+    Markup,
+    PersonId,
+    RateLimiter,
+    Ref,
+    Space,
+    generateId,
+    toIdMap
+  } from '@hcengineering/core'
   import { Asset, IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     DraftController,

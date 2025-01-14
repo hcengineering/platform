@@ -91,7 +91,9 @@
   }
 
   const account = getCurrentAccount()
-  $: canRemove = hasAccountRole(account, AccountRole.Maintainer) || space.createdBy === account._id
+  $: canRemove =
+    hasAccountRole(account, AccountRole.Maintainer) ||
+    (space.createdBy !== undefined && account.socialIds.includes(space.createdBy))
 </script>
 
 <div class="flex-row-reverse mb-3 mt-3"><SearchEdit bind:value={search} /></div>

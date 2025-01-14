@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact, { Person } from '@hcengineering/contact'
   import { CreateGuest, personRefByPersonIdStore } from '@hcengineering/contact-resources'
-  import { Ref } from '@hcengineering/core'
+  import { Ref, type PersonId } from '@hcengineering/core'
   import { IntlString, translateCB } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'

@@ -47,13 +47,13 @@
 
   const currentAccount = getCurrentAccount()
 
-  $: account = value?.createdBy
-  $: person = account !== undefined ? $personByPersonIdStore.get(account) : undefined
+  $: creatorSocialString = value?.createdBy
+  $: person = creatorSocialString !== undefined ? $personByPersonIdStore.get(creatorSocialString) : undefined
 
   let isEditing = false
   let additionalActions: Action[] = []
 
-  $: isOwn = account !== undefined && account._id === currentAccount._id
+  $: isOwn = creatorSocialString !== undefined && currentAccount.socialIds.includes(creatorSocialString)
 
   $: additionalActions = [
     ...(isOwn

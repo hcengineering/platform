@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { type Ref, SortingOrder } from '@hcengineering/core'
+  import { type Ref, SortingOrder, notEmpty } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { getCurrentEmployee } from '@hcengineering/contact'
   import documents, {
@@ -25,7 +25,7 @@
     type ProjectMeta
   } from '@hcengineering/controlled-documents'
 
-  import { compareDocs, notEmpty } from '../../../../utils'
+  import { compareDocs } from '../../../../utils'
   import DocumentFlatTreeElement from './DocumentFlatTreeElement.svelte'
 
   export let document: HierarchyDocument | undefined

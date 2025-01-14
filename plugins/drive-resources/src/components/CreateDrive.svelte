@@ -26,7 +26,8 @@
     SpaceType,
     generateId,
     getCurrentAccount,
-    WithLookup
+    WithLookup,
+    notEmpty
   } from '@hcengineering/core'
   import { Drive, DriveEvents } from '@hcengineering/drive'
   import presentation, { Card, getClient, reduceCalls } from '@hcengineering/presentation'
@@ -55,7 +56,7 @@
   let typeId: Ref<SpaceType> | undefined = drive?.type ?? driveRes.spaceType.DefaultDrive
   let spaceType: WithLookup<SpaceType> | undefined
 
-  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter((p) => p !== undefined)
+  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter(notEmpty)
   $: void loadSpaceType(typeId)
   const loadSpaceType = reduceCalls(async (id: typeof typeId): Promise<void> => {
     spaceType =

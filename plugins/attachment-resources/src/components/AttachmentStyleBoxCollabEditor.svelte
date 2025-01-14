@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachment, { Attachment, BlobMetadata, AttachmentsEvents } from '@hcengineering/attachment'
   import contact from '@hcengineering/contact'
-  import { Account, Doc, Ref, generateId, type Blob } from '@hcengineering/core'
+  import { Doc, PersonId, Ref, generateId, type Blob } from '@hcengineering/core'
   import { IntlString, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     FileOrBlob,

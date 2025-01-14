@@ -16,9 +16,9 @@
   import { createEventDispatcher } from 'svelte'
   import { Label } from '@hcengineering/ui'
   import { TypedSpace, type Data, type Ref, type Permission } from '@hcengineering/core'
-  import { type Employee, getCurrentEmployee } from '@hcengineering/contact'
+  import { type Employee, type PermissionsStore, getCurrentEmployee } from '@hcengineering/contact'
   import documents, { type ControlledDocument } from '@hcengineering/controlled-documents'
-  import { UserBoxItems, type PermissionsStore, permissionsStore } from '@hcengineering/contact-resources'
+  import { UserBoxItems, permissionsStore } from '@hcengineering/contact-resources'
 
   export let controlledDoc: Data<ControlledDocument>
   export let space: Ref<TypedSpace>
@@ -39,8 +39,8 @@
     permission: Ref<Permission>,
     space: Ref<TypedSpace>,
     permissionsStore: PermissionsStore
-  ): Ref<Person>[] {
-    return Array.from(permissionsStore.ap[space]?.[permission] ?? [])
+  ): Ref<Employee>[] {
+    return Array.from(permissionsStore.ap[space]?.[permission] ?? []) as Ref<Employee>[]
   }
 
   $: permittedReviewers = getPermittedPersons(documents.permission.ReviewDocument, permissionsSpace, $permissionsStore)

@@ -144,7 +144,7 @@
     const setPublic = await switchPublicAction(filteredView, originalEvent)
     const hide = await hideAction(filteredView)
 
-    if (filteredView.createdBy === me) {
+    if (filteredView.createdBy !== undefined && myAcc.socialIds.includes(filteredView.createdBy)) {
       const remove = await removeAction(filteredView)
       return [...setPublic, ...rename, ...remove, ...copyUrl]
     }
@@ -157,7 +157,7 @@
         icon: view.icon.Archive,
         label: view.string.Hide,
         action: async (ctx: any, evt: Event) => {
-          await client.update(object, { $pull: { users: me } })
+          await client.update(object, { $pull: { users: { $in: myAcc.socialIds } } })
         }
       }
     ]

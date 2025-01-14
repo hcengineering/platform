@@ -16,7 +16,7 @@
   import contact, { Employee, Person } from '@hcengineering/contact'
   import { AssigneeBox, AssigneePopup, personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import { AssigneeCategory } from '@hcengineering/contact-resources/src/assignee'
-  import { Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
+  import { Doc, DocumentQuery, notEmpty, Ref, Space } from '@hcengineering/core'
   import { RuleApplyResult, getClient, getDocRules } from '@hcengineering/presentation'
   import { Component, Issue, TrackerEvents } from '@hcengineering/tracker'
   import { ButtonKind, ButtonSize, IconSize, TooltipAlignment } from '@hcengineering/ui'
@@ -123,9 +123,7 @@
         }
 
         const allMembers = projects.map((p) => p.members).flat()
-        const allPersonsSet = new Set(
-          allMembers.map((p) => $personRefByPersonIdStore.get(p)).filter((p) => p !== undefined)
-        )
+        const allPersonsSet = new Set(allMembers.map((p) => $personRefByPersonIdStore.get(p)).filter(notEmpty))
 
         return Array.from(allPersonsSet)
       }

@@ -21,7 +21,7 @@
 
   export let value: DocumentSnapshot
 
-  $: employee = $personByPersonIdStore.get(value.createdBy)
+  $: employee = value.createdBy !== undefined ? $personByPersonIdStore.get(value.createdBy) : undefined
 </script>
 
 <div class="container flex-col flex-gap-2 flex-no-shrink">
