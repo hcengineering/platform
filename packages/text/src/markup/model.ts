@@ -38,6 +38,7 @@ export enum MarkupNodeType {
   table_row = 'tableRow',
   table_cell = 'tableCell',
   table_header = 'tableHeader',
+  mermaid = 'mermaid',
   comment = 'comment'
 }
 

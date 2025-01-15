@@ -33,6 +33,7 @@ import { DefaultKit, DefaultKitOptions } from './default-kit'
 import { CodeExtension, codeOptions } from '../marks/code'
 import { NoteBaseExtension } from '../marks/noteBase'
 import { CommentNode } from '../nodes/comment'
+import { MermaidExtension, mermaidOptions } from '../nodes/mermaid'
 import TextAlign from '@tiptap/extension-text-align'
 import TextStyle from '@tiptap/extension-text-style'
 import { BackgroundColor, TextColor } from '../marks/colors'
@@ -85,6 +86,7 @@ export const ServerKit = Extension.create<ServerKitOptions>({
       }),
       CodeBlockExtension.configure(codeBlockOptions),
       CodeExtension.configure(codeOptions),
+      MermaidExtension.configure(mermaidOptions),
       ...tableExtensions,
       ...taskListExtensions,
       ...fileExtensions,
