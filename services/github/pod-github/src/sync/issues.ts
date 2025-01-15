@@ -95,13 +95,15 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     if (projectV2Event) {
       const projectV2Event = event as ProjectsV2ItemEvent
 
-      const githubProjects = await this.provider.liveQuery.queryFind(github.mixin.GithubProject, {})
+      const githubProjects = await this.provider.liveQuery.findAll(github.mixin.GithubProject, {
+        archived: false
+      })
       let prj = githubProjects.find((it) => it.projectNodeId === projectV2Event.projects_v2_item.project_node_id)
       if (prj === undefined) {
         // Checking for milestones
-        const m = (await this.provider.liveQuery.queryFind(github.mixin.GithubMilestone, {})).find(
-          (it) => it.projectNodeId === projectV2Event.projects_v2_item.project_node_id
-        )
+        const m = await this.provider.liveQuery.findOne(github.mixin.GithubMilestone, {
+          projectNodeId: projectV2Event.projects_v2_item.project_node_id
+        })
         if (m !== undefined) {
           prj = githubProjects.find((it) => it._id === m.space)
         }
@@ -353,13 +355,9 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         }
         if (info.repository == null) {
           // No need to sync if component it not yet set
-          const repos = (await this.provider.getProjectRepositories(container.project._id))
-            .map((it) => it.name)
-            .join(', ')
           this.ctx.error('Not syncing repository === null', {
             url: info.url,
-            identifier: (existing as Issue).identifier,
-            repos
+            identifier: (existing as Issue).identifier
           })
           return { needSync: githubSyncVersion }
         }
@@ -372,13 +370,9 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     if (info.external === undefined && existing !== undefined) {
       const repository = await this.provider.getRepositoryById(info.repository)
       if (repository === undefined) {
-        const repos = (await this.provider.getProjectRepositories(container.project._id))
-          .map((it) => it.name)
-          .join(', ')
         this.ctx.error('Not syncing repository === undefined', {
           url: info.url,
-          identifier: (existing as Issue).identifier,
-          repos
+          identifier: (existing as Issue).identifier
         })
         return { needSync: githubSyncVersion }
       }

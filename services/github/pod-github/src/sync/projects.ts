@@ -446,9 +446,9 @@ export class ProjectsSyncManager implements DocSyncManager {
 
       if (syncConfig.SupportMilestones && integration.type === 'Organization') {
         // Check project milestones and sync their structure as well.
-        const milestones = (await this.provider.liveQuery.queryFind(github.mixin.GithubMilestone, {})).filter(
-          (it) => it.space === prj._id
-        )
+        const milestones = await this.provider.liveQuery.findAll(github.mixin.GithubMilestone, {
+          space: prj._id
+        })
         for (const m of milestones) {
           if (this.provider.isClosing()) {
             break

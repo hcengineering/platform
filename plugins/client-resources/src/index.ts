@@ -133,7 +133,7 @@ export default async () => {
           return await Promise.resolve(clientConnection)
         }
 
-        const modelFilter: ModelFilter = async (txes) => {
+        const modelFilter: ModelFilter = (txes) => {
           if (filterModel === 'client') {
             return returnClientTxes(txes)
           }
@@ -177,7 +177,18 @@ function returnClientTxes (txes: Tx[]): Tx[] {
     'templates:class:TemplateField' as Ref<Class<Doc>>,
     'activity:class:DocUpdateMessageViewlet' as Ref<Class<Doc>>,
     'core:class:PluginConfiguration' as Ref<Class<Doc>>,
-    'core:class:DomainIndexConfiguration' as Ref<Class<Doc>>
+    'core:class:DomainIndexConfiguration' as Ref<Class<Doc>>,
+    'view:class:ViewletDescriptor' as Ref<Class<Doc>>,
+    'presentation:class:ComponentPointExtension' as Ref<Class<Doc>>,
+    'activity:class:ActivityMessagesFilter' as Ref<Class<Doc>>,
+    'view:class:ActionCategory' as Ref<Class<Doc>>,
+    'activity:class:ActivityExtension' as Ref<Class<Doc>>,
+    'chunter:class:ChatMessageViewlet' as Ref<Class<Doc>>,
+    'activity:class:ActivityMessageControl' as Ref<Class<Doc>>,
+    'notification:class:ActivityNotificationViewlet' as Ref<Class<Doc>>,
+    'setting:class:SettingsCategory' as Ref<Class<Doc>>,
+    'setting:class:WorkspaceSettingCategory' as Ref<Class<Doc>>,
+    'notification:class:NotificationProvider' as Ref<Class<Doc>>
   ])
 
   const result = pluginFilterTx(excludedPlugins, configs, txes).filter((tx) => {

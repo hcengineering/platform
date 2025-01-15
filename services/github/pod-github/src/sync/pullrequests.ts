@@ -100,13 +100,15 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     if (projectV2Event) {
       const projectV2Event = _event as ProjectsV2ItemEvent
 
-      const githubProjects = await this.provider.liveQuery.queryFind(github.mixin.GithubProject, {})
+      const githubProjects = await this.provider.liveQuery.findAll(github.mixin.GithubProject, {
+        archived: false
+      })
       let prj = githubProjects.find((it) => it.projectNodeId === projectV2Event.projects_v2_item.project_node_id)
       if (prj === undefined) {
         // Checking for milestones
-        const m = (await this.provider.liveQuery.queryFind(github.mixin.GithubMilestone, {})).find(
-          (it) => it.projectNodeId === projectV2Event.projects_v2_item.project_node_id
-        )
+        const m = await this.provider.liveQuery.findOne(github.mixin.GithubMilestone, {
+          projectNodeId: projectV2Event.projects_v2_item.project_node_id
+        })
         if (m !== undefined) {
           prj = githubProjects.find((it) => it._id === m.space)
         }

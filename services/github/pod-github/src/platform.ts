@@ -52,6 +52,7 @@ export interface InstallationRecord {
   repositories?: InstallationCreatedEvent['repositories'] | InstallationUnsuspendEvent['repositories']
   type: 'Bot' | 'User' | 'Organization'
   octokit: Octokit
+  suspended: boolean
 }
 
 export class PlatformWorker {
@@ -593,7 +594,8 @@ export class PlatformWorker {
         login: tinst.account.login,
         loginNodeId: tinst.account.node_id,
         type: tinst.account?.type ?? 'User',
-        installationName: `${tinst.account?.html_url ?? ''}`
+        installationName: `${tinst.account?.html_url ?? ''}`,
+        suspended: install.data.suspended_at != null
       }
       this.updateInstallationRecord(installationId, val)
     }
@@ -609,6 +611,7 @@ export class PlatformWorker {
       current.loginNodeId = val.loginNodeId
       current.type = val.type
       current.installationName = val.installationName
+      current.suspended = val.suspended
       if (val.repositories !== undefined) {
         current.repositories = val.repositories
       }
@@ -625,7 +628,8 @@ export class PlatformWorker {
         login: tinst.account.login,
         loginNodeId: tinst.account.node_id,
         type: tinst.account?.type ?? 'User',
-        installationName: `${tinst.account?.html_url ?? ''}`
+        installationName: `${tinst.account?.html_url ?? ''}`,
+        suspended: install.installation.suspended_at != null
       }
       this.updateInstallationRecord(install.installation.id, val)
       ctx.info('Found installation', {
@@ -650,23 +654,22 @@ export class PlatformWorker {
       type: install.account?.type ?? 'User',
       loginNodeId: install.account.node_id,
       installationName: iName,
-      repositories
+      repositories,
+      suspended: !enabled
     })
 
     const worker = this.getWorker(install.id)
     if (worker !== undefined) {
+      const integeration = worker.integrations.get(install.id)
+      if (integeration !== undefined) {
+        integeration.enabled = enabled
+      }
+
       await worker.syncUserData(this.ctx, await this.getUsers(worker.workspace.name))
       await worker.reloadRepositories(install.id)
 
       worker.triggerUpdate()
       worker.triggerSync()
-    }
-
-    // Need to inform workspace
-    const integeration = this.integrations.find((it) => it.installationId === install.id)
-    if (integeration !== undefined) {
-      const worker = this.clients.get(integeration.workspace) as GithubWorker
-      worker?.triggerUpdate()
     }
 
     // Check if no workspace was available
@@ -810,17 +813,28 @@ export class PlatformWorker {
             this.storageAdapter,
             (workspace, event) => {
               if (event === ClientConnectEvent.Refresh || event === ClientConnectEvent.Upgraded) {
-                void this.clients.get(workspace)?.refreshClient(event === ClientConnectEvent.Upgraded)
+                void this.clients
+                  .get(workspace)
+                  ?.refreshClient(event === ClientConnectEvent.Upgraded)
+                  ?.catch((err) => {
+                    workerCtx.error('Failed to refresh', { error: err })
+                  })
               }
               if (initialized) {
                 // We need to check if workspace is inactive
-                void this.checkWorkspaceIsActive(token, workspace).then((res) => {
-                  if (res === undefined) {
-                    this.ctx.warn('Workspace is inactive, removing from clients list.', { workspace })
-                    this.clients.delete(workspace)
-                    void worker?.close()
-                  }
-                })
+                void this.checkWorkspaceIsActive(token, workspace)
+                  .then((res) => {
+                    if (res === undefined) {
+                      this.ctx.warn('Workspace is inactive, removing from clients list.', { workspace })
+                      this.clients.delete(workspace)
+                      void worker?.close().catch((err) => {
+                        this.ctx.error('Failed to close workspace', { workspace, error: err })
+                      })
+                    }
+                  })
+                  .catch((err) => {
+                    this.ctx.error('Failed to check workspace is active', { workspace, error: err })
+                  })
               }
             }
           )
@@ -879,7 +893,9 @@ export class PlatformWorker {
         try {
           this.ctx.info('workspace removed from tracking list', { workspace: deleted })
           this.clients.delete(deleted)
-          void ws.close()
+          void ws.close().catch((err) => {
+            this.ctx.error('Error', { error: err })
+          })
         } catch (err: any) {
           Analytics.handleError(err)
           errors++

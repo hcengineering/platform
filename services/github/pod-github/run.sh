@@ -10,4 +10,4 @@ export MINIO_SECRET_KEY=minioadmin
 export MINIO_ENDPOINT=localhost
 export MONGO_URL=mongodb://localhost:27017
 rush bundle --to @hcengineering/pod-github
-node $@ bundle/bundle.js
+node $@ bundle/bundle.js $@
