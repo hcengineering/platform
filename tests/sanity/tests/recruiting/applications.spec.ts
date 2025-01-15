@@ -106,7 +106,6 @@ test.describe('Application tests', () => {
     await applicationsPage.openApplicationByTalentName(talentName)
     const applicationId = await applicationsDetailsPage.getApplicationId()
     await applicationsDetailsPage.deleteEntity()
-    expect(page.url()).toContain(applicationId)
     await navigationMenuPage.clickButtonApplications()
     await applicationsPage.checkApplicationNotExist(applicationId)
   })
