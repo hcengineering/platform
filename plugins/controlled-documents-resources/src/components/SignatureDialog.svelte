@@ -72,7 +72,7 @@
   }
 
   async function validateAccount (email: string, password: string): Promise<Status> {
-    const accountClient = getAccountClient()
+    const accountClient = getAccountClient(accountsUrl)
 
     try {
       await accountClient.login(email, password)
