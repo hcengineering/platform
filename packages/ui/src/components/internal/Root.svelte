@@ -10,7 +10,8 @@
     IconArrowRight,
     checkMobile,
     deviceOptionsStore as deviceInfo,
-    checkAdaptiveMatching
+    checkAdaptiveMatching,
+    clipboardText
   } from '../../'
   import { desktopPlatform, getCurrentLocation, location, locationStorageKeyId, navigate } from '../../location'
   import uiPlugin from '../../plugin'
@@ -141,6 +142,22 @@
     $deviceInfo.isMobile &&
     (($deviceInfo.isPortrait && $deviceInfo.docWidth <= 480) ||
       (!$deviceInfo.isPortrait && $deviceInfo.docHeight <= 480))
+
+  // Copying text to the clipboard (alternative method for mobile devices)
+  $: if ($clipboardText !== '') {
+    const textarea = document.createElement('textarea')
+    textarea.value = $clipboardText
+    textarea.classList.add('clipboardArea')
+    document.body.appendChild(textarea)
+    textarea.select()
+    try {
+      document.execCommand('copy')
+    } catch (err) {
+      console.error(err)
+    }
+    clipboardText.set('')
+    document.body.removeChild(textarea)
+  }
 </script>
 
 <svelte:window bind:innerWidth={docWidth} bind:innerHeight={docHeight} />
@@ -316,5 +333,10 @@
 
   .left-items {
     overflow-x: auto;
+  }
+  :global(.clipboardArea) {
+    width: 0;
+    height: 0;
+    opacity: 0;
   }
 </style>

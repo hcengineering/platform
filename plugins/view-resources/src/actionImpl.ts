@@ -19,7 +19,8 @@ import {
   isPopupPosAlignment,
   navigate,
   showPanel,
-  showPopup
+  showPopup,
+  clipboardText
 } from '@hcengineering/ui'
 import MoveView from './components/Move.svelte'
 import view from './plugin'
@@ -73,7 +74,9 @@ async function CopyTextToClipboard (
     const text = Array.isArray(doc)
       ? (await Promise.all(doc.map(async (d) => await getText(d, props.props)))).join(',')
       : await getText(doc, props.props)
-    await navigator.clipboard.writeText(text)
+    if (navigator.clipboard != null && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(text)
+    } else clipboardText.set(text)
   }
 }
 
