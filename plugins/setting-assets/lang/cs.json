@@ -119,6 +119,17 @@
     "DeleteSpaceTypeConfirm": "Opravdu chcete tento typ prostoru smazat?",
     "WorkspaceName": "Název pracovního prostoru",
     "Workspace": "Pracovní prostor",
-    "OwnerOrMaintainerRequired": "Musíte být vlastníkem nebo správcem pracovního prostoru"
+    "OwnerOrMaintainerRequired": "Musíte být vlastníkem nebo správcem pracovního prostoru",
+    "Backup": "Záloha",
+    "BackupLast": "Poslední záloha",
+    "BackupTotalSnapshots": "Celkem snímků",
+    "BackupTotalFiles": "Soubory",
+    "BackupSize": "Velikost zálohy",
+    "BackupLinkInfo": "Záložní adresář je dostupný na",
+    "BackupBearerTokenInfo": "Pro přístup k záloze je vyžadován přístupový token. Klikněte na tlačítko pro zkopírování tokenu do schránky.",
+    "BackupSnapshots": "Snímky",
+    "BackupFileDownload": "Stáhnout",
+    "BackupFiles": "Soubory",
+    "BackupNoBackup": "Žádná záloha není k dispozici"
   }
 }

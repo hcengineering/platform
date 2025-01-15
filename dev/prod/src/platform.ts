@@ -45,7 +45,7 @@ import { questionsId } from '@hcengineering/questions'
 import { recruitId } from '@hcengineering/recruit'
 import rekoni from '@hcengineering/rekoni'
 import { requestId } from '@hcengineering/request'
-import { settingId } from '@hcengineering/setting'
+import setting, { settingId } from '@hcengineering/setting'
 import sign from '@hcengineering/sign'
 import { supportId } from '@hcengineering/support'
 import { tagsId } from '@hcengineering/tags'
@@ -165,6 +165,7 @@ export interface Config {
   PRESENCE_URL?: string
   USE_BINARY_PROTOCOL?: boolean,
   TRANSACTOR_OVERRIDE?: string
+  BACKUP_URL?: string
 }
 
 export interface Branding {
@@ -432,6 +433,8 @@ export async function configurePlatform() {
   setMetadata(workbench.metadata.DefaultApplication, myBranding.defaultApplication ?? 'tracker')
   setMetadata(workbench.metadata.DefaultSpace, myBranding.defaultSpace ?? tracker.project.DefaultProject)
   setMetadata(workbench.metadata.DefaultSpecial, myBranding.defaultSpecial ?? 'issues')
+
+  setMetadata(setting.metadata.BackupUrl, config.BACKUP_URL ?? '')
 
   initThemeStore()
 }

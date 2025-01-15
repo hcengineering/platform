@@ -1,7 +1,7 @@
 import login, { loginId } from '@hcengineering/login'
 import { getEmbeddedLabel, getMetadata, setMetadata } from '@hcengineering/platform'
 import presentation, { closeClient, MessageBox, setDownloadProgress } from '@hcengineering/presentation'
-import { settingId } from '@hcengineering/setting'
+import settings, { settingId } from '@hcengineering/setting'
 import {
   closePanel,
   closePopup,
@@ -24,7 +24,6 @@ import { isOwnerOrMaintainer } from '@hcengineering/core'
 import { configurePlatform } from './platform'
 import { defineScreenShare } from './screenShare'
 import { IPCMainExposed } from './types'
-import settings from '@hcengineering/setting'
 
 defineScreenShare()
 
@@ -108,7 +107,17 @@ window.addEventListener('DOMContentLoaded', () => {
     const workspace = getMetadata(presentation.metadata.WorkspaceId)
     if (isOwnerOrMaintainer()) {
       if (token != null && endpoint != null && workspace != null) {
-        ipcMain.startBackup(token, endpoint, workspace)
+        // ipcMain.startBackup(token, endpoint, workspace)
+        closePopup()
+        closePanel()
+        const loc = getCurrentResolvedLocation()
+        loc.fragment = undefined
+        loc.query = undefined
+        loc.path[2] = settingId
+        loc.path[3] = 'setting'
+        loc.path[4] = 'backup'
+        loc.path.length = 5
+        navigate(loc)
       }
     } else {
       showPopup(MessageBox, {

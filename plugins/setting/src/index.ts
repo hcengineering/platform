@@ -14,7 +14,7 @@
 //
 
 import type { Account, AccountRole, Blob, Class, Configuration, Doc, Mixin, Ref } from '@hcengineering/core'
-import type { Plugin } from '@hcengineering/platform'
+import type { Metadata, Plugin } from '@hcengineering/platform'
 import { Asset, IntlString, Resource, plugin } from '@hcengineering/platform'
 import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
 import { AnyComponent } from '@hcengineering/ui'
@@ -133,7 +133,8 @@ export default plugin(settingId, {
     InviteSettings: '' as Ref<Doc>,
     WorkspaceSetting: '' as Ref<Doc>,
     ManageSpaces: '' as Ref<Doc>,
-    Spaces: '' as Ref<Doc>
+    Spaces: '' as Ref<Doc>,
+    Backup: '' as Ref<Doc>
   },
   mixin: {
     Editable: '' as Ref<Mixin<Editable>>,
@@ -166,7 +167,8 @@ export default plugin(settingId, {
     SpaceTypeRolesSectionEditor: '' as AnyComponent,
     RoleEditor: '' as AnyComponent,
     RoleAssignmentEditor: '' as AnyComponent,
-    RelationSetting: '' as AnyComponent
+    RelationSetting: '' as AnyComponent,
+    Backup: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,
@@ -206,7 +208,18 @@ export default plugin(settingId, {
     Collections: '' as IntlString,
     SpaceTypes: '' as IntlString,
     Roles: '' as IntlString,
-    OwnerOrMaintainerRequired: '' as IntlString
+    OwnerOrMaintainerRequired: '' as IntlString,
+    Backup: '' as IntlString,
+    BackupLast: '' as IntlString,
+    BackupTotalSnapshots: '' as IntlString,
+    BackupTotalFiles: '' as IntlString,
+    BackupSize: '' as IntlString,
+    BackupLinkInfo: '' as IntlString,
+    BackupBearerTokenInfo: '' as IntlString,
+    BackupSnapshots: '' as IntlString,
+    BackupFileDownload: '' as IntlString,
+    BackupFiles: '' as IntlString,
+    BackupNoBackup: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,
@@ -234,5 +247,8 @@ export default plugin(settingId, {
     OwnerLastName: '' as Ref<TemplateField>,
     OwnerPosition: '' as Ref<TemplateField>,
     Value: '' as Ref<TemplateField>
+  },
+  metadata: {
+    BackupUrl: '' as Metadata<string>
   }
 })
