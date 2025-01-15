@@ -101,6 +101,7 @@
     {draggable}
     on:dragstart
     on:dragover
+    on:dragend
     on:drop
   >
     {#if isFold && !empty}

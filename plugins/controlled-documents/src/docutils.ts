@@ -27,9 +27,10 @@ import {
   type ProjectDocument,
   DocumentState
 } from './types'
+import { makeRank } from '@hcengineering/rank'
 
 import documents from './plugin'
-import { TEMPLATE_PREFIX } from './utils'
+import { getFirstRank, TEMPLATE_PREFIX } from './utils'
 
 async function getParentPath (client: TxOperations, parent: Ref<ProjectDocument>): Promise<Array<Ref<DocumentMeta>>> {
   const parentDocObj = await client.findOne(documents.class.ProjectDocument, {
@@ -175,12 +176,16 @@ export async function createControlledDocMetadata (
     path = await getParentPath(client, parent)
   }
 
+  const parentMeta = path[0] ?? documents.ids.NoParent
+  const lastRank = await getFirstRank(client, space, projectId, parentMeta)
+
   const projectMetaId = await ops.createDoc(documents.class.ProjectMeta, space, {
     project: projectId,
     meta: documentMetaId,
     path,
-    parent: path[0] ?? documents.ids.NoParent,
-    documents: 0
+    parent: parentMeta,
+    documents: 0,
+    rank: makeRank(lastRank, undefined)
   })
 
   const projectDocumentId = await client.addCollection(
@@ -323,12 +328,16 @@ export async function createDocumentTemplateMetadata (
     metaId
   )
 
+  const parentMeta = path[0] ?? documents.ids.NoParent
+  const lastRank = await getFirstRank(client, space, projectId, parentMeta)
+
   const projectMetaId = await ops.createDoc(documents.class.ProjectMeta, space, {
     project: projectId,
     meta: documentMetaId,
     path,
     parent: path[0] ?? documents.ids.NoParent,
-    documents: 0
+    documents: 0,
+    rank: makeRank(lastRank, undefined)
   })
 
   const projectDocumentId = await client.addCollection(
