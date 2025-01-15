@@ -60,7 +60,7 @@
     object._class,
     { _id: object._id },
     (res) => {
-      relationsB = res[0].$associations ?? {}
+      relationsB = res?.[0]?.$associations ?? {}
     },
     { associations: associationsB.map((a) => [a._id, -1]) }
   )
