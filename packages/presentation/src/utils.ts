@@ -50,7 +50,13 @@ import core, {
 } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
-import { getRawCurrentLocation, workspaceId, type AnyComponent, type AnySvelteComponent } from '@hcengineering/ui'
+import {
+  getRawCurrentLocation,
+  workspaceId,
+  type AnyComponent,
+  type AnySvelteComponent,
+  clipboardText
+} from '@hcengineering/ui'
 import view, { type AttributeCategory, type AttributeEditor } from '@hcengineering/view'
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
@@ -562,7 +568,9 @@ export async function copyTextToClipboard (text: string | Promise<string>): Prom
     await navigator.clipboard.write([clipboardItem])
   } catch {
     // Fallback to default clipboard API implementation
-    await navigator.clipboard.writeText(text instanceof Promise ? await text : text)
+    if (navigator.clipboard != null && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(text instanceof Promise ? await text : text)
+    } else clipboardText.set(text instanceof Promise ? await text : text)
   }
 }
 
