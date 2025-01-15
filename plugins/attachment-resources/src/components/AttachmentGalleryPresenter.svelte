@@ -42,6 +42,7 @@
   function openAttachment (): void {
     showAttachmentPreviewPopup(value)
   }
+
   $: src = getFileUrl(value.file, value.name)
 </script>
 

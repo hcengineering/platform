@@ -284,3 +284,13 @@ async function uploadFileWithSignedUrl (file: File, uuid: string, uploadUrl: str
     })
   }
 }
+
+export async function getJsonOrEmpty (file: string, name: string): Promise<any> {
+  try {
+    const fileUrl = getFileUrl(file, name)
+    const resp = await fetch(fileUrl)
+    return await resp.json()
+  } catch {
+    return {}
+  }
+}

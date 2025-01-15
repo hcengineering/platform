@@ -14,12 +14,12 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import core, { type Doc, type Ref, type WithLookup } from '@hcengineering/core'
+  import { type Doc, type Ref, type WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
 
   import attachment from '../plugin'
   import { AttachmentImageSize } from '../types'
-  import AttachmentList from './AttachmentList.svelte'
+  import AttachmentGroup from './AttachmentGroup.svelte'
 
   export let value: Doc & { attachments?: number }
   export let attachments: Attachment[] | undefined = undefined
@@ -39,7 +39,6 @@
       resAttachments = attachments
       return
     }
-
     if (value && value.attachments && value.attachments > 0) {
       query.query(
         attachment.class.Attachment,
@@ -60,4 +59,4 @@
   })
 </script>
 
-<AttachmentList attachments={resAttachments} {savedAttachmentsIds} {imageSize} {videoPreload} />
+<AttachmentGroup attachments={resAttachments} {savedAttachmentsIds} {imageSize} {videoPreload} />

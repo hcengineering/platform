@@ -89,7 +89,9 @@ export async function createAttachment (
   }
 }
 
-export function getType (type: string): 'image' | 'text' | 'json' | 'video' | 'audio' | 'pdf' | 'other' {
+export function getType (
+  type: string
+): 'image' | 'text' | 'json' | 'video' | 'audio' | 'pdf' | 'link-preview' | 'other' {
   if (type.startsWith('image/')) {
     return 'image'
   }
@@ -102,13 +104,15 @@ export function getType (type: string): 'image' | 'text' | 'json' | 'video' | 'a
   if (type.includes('application/pdf')) {
     return 'pdf'
   }
-  if (type === 'application/json') {
+  if (type.includes('application/json')) {
     return 'json'
   }
   if (type.startsWith('text/')) {
     return 'text'
   }
-
+  if (type.includes('application/link-preview')) {
+    return 'link-preview'
+  }
   return 'other'
 }
 

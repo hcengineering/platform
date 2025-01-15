@@ -1,5 +1,5 @@
-<!--
-// Copyright © 2023 Hardcore Engineering Inc.
+<!-- //
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,21 +11,18 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
+// -->
+
 <script lang="ts">
-  import { Label } from '@hcengineering/ui'
-  import { IntlString } from '@hcengineering/platform'
-  export let label: IntlString | undefined
+  import LinkPreviewPresenter from './LinkPreviewPresenter.svelte'
+  import { type WithLookup } from '@hcengineering/core'
+  import { type Attachment } from '@hcengineering/attachment'
+
+  export let attachments: WithLookup<Attachment>[] = []
 </script>
 
-{#if label}
-  <span class="text-sm lower"> <Label {label} /></span>
-{/if}
-
-<style lang="scss">
-  span {
-    margin-left: 0.25rem;
-    font-weight: 400;
-    line-height: 1.25rem;
-  }
-</style>
+<div class="gapV-2">
+  {#each attachments as attachment}
+    <LinkPreviewPresenter {attachment} />
+  {/each}
+</div>
