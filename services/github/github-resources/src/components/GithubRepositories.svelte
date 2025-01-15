@@ -142,7 +142,11 @@
   }
 </script>
 
-<div style:background-color={!integration.alive ? 'var(--primary-button-disabled)' : undefined} style:border-radius="0.5rem" class='p-1'>
+<div
+  style:background-color={!integration.alive ? 'var(--primary-button-disabled)' : undefined}
+  style:border-radius="0.5rem"
+  class="p-1"
+>
   <Expandable expanded={true}>
     <svelte:fragment slot="title">
       <span class="fs-title flex-row-center flex-between flex-grow flex">
