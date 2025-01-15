@@ -119,6 +119,17 @@
     "DeleteSpaceTypeConfirm": "您确定要删除此空间类型吗？",
     "WorkspaceName": "工作区名称",
     "Workspace": "工作区",
-    "OwnerOrMaintainerRequired": "您需要成为工作空间所有者或维护者"
+    "OwnerOrMaintainerRequired": "您需要成为工作空间所有者或维护者",
+    "Backup": "备份",
+    "BackupLast": "最近备份",
+    "BackupTotalSnapshots": "快照总数",
+    "BackupTotalFiles": "文件",
+    "BackupSize": "备份大小",
+    "BackupLinkInfo": "备份目录位于",
+    "BackupBearerTokenInfo": "访问备份需要访问令牌。请点击复制按钮将令牌复制到剪贴板。",
+    "BackupSnapshots": "快照",
+    "BackupFileDownload": "下载",
+    "BackupFiles": "文件",
+    "BackupNoBackup": "暂无可用备份"
   }
 }

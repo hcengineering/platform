@@ -12,7 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { ApplyOperations, Data, DocumentUpdate, Ref, TxOperations } from '@hcengineering/core'
+import {
+  ApplyOperations,
+  Data,
+  DocumentQuery,
+  DocumentUpdate,
+  Rank,
+  Ref,
+  SortingOrder,
+  Space,
+  TxOperations
+} from '@hcengineering/core'
 import { LexoDecimal, LexoNumeralSystem36, LexoRank } from 'lexorank'
 import LexoRankBucket from 'lexorank/lib/lexoRank/lexoRankBucket'
 
@@ -22,6 +32,7 @@ import {
   ChangeControl,
   ControlledDocument,
   Document,
+  DocumentMeta,
   DocumentSpace,
   DocumentState,
   Project,
@@ -143,7 +154,8 @@ export async function copyProjectDocuments (
       meta: meta.meta,
       path: meta.path,
       parent: meta.parent,
-      documents: meta.documents
+      documents: meta.documents,
+      rank: meta.rank
     })
 
     // copy project docs attached to meta
@@ -163,6 +175,26 @@ export async function copyProjectDocuments (
       )
     }
   }
+}
+
+/**
+ * @public
+ */
+export async function getFirstRank (
+  client: TxOperations,
+  space: Ref<Space>,
+  project: Ref<Project>,
+  parent: Ref<DocumentMeta>,
+  sort: SortingOrder = SortingOrder.Descending,
+  extra: DocumentQuery<ProjectMeta> = {}
+): Promise<Rank | undefined> {
+  const doc = await client.findOne(
+    documents.class.ProjectMeta,
+    { space, project, parent, ...extra },
+    { sort: { rank: sort }, projection: { rank: 1 } }
+  )
+
+  return doc?.rank
 }
 
 /**

@@ -14,4 +14,6 @@ interface Env {
   STATS_URL: string | undefined
 
   ENABLE_COMPRESSION: string | undefined
+
+  FULLTEXT_URL: string | undefined
 }

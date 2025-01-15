@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,19 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Label } from '@hcengineering/ui'
-  import { IntlString } from '@hcengineering/platform'
-  export let label: IntlString | undefined
+  export let top: number
 </script>
 
-{#if label}
-  <span class="text-sm lower"> <Label {label} /></span>
-{/if}
+<div class="drop-marker" style="top: {top}px;" />
 
 <style lang="scss">
-  span {
-    margin-left: 0.25rem;
-    font-weight: 400;
-    line-height: 1.25rem;
+  .drop-marker {
+    pointer-events: none;
+    position: absolute;
+    z-index: 100;
+    height: 0.125rem;
+    background-color: var(--primary-button-focused);
+
+    left: 0.75rem;
+    right: 0.75rem;
+    top: 10rem;
   }
 </style>

@@ -110,6 +110,17 @@
     "DeleteSpaceTypeConfirm": "¿Estás seguro de que quieres eliminar este tipo de espacio?",
     "WorkspaceName": "Nombre del espacio de trabajo",
     "Workspace": "Espacio de trabajo",
-    "OwnerOrMaintainerRequired": "Necesitas ser Propietario o Mantenedor del espacio de trabajo"
+    "OwnerOrMaintainerRequired": "Necesitas ser Propietario o Mantenedor del espacio de trabajo",
+    "Backup": "Copia de seguridad",
+    "BackupLast": "Última copia de seguridad",
+    "BackupTotalSnapshots": "Total de instantáneas",
+    "BackupTotalFiles": "Archivos",
+    "BackupSize": "Tamaño de la copia",
+    "BackupLinkInfo": "El directorio de copias de seguridad está disponible en",
+    "BackupBearerTokenInfo": "Se requiere un token de acceso para acceder a la copia de seguridad. Por favor, haga clic en el botón para copiar el token al portapapeles.",
+    "BackupSnapshots": "Instantáneas",
+    "BackupFileDownload": "Descargar",
+    "BackupFiles": "Archivos",
+    "BackupNoBackup": "No hay copias de seguridad disponibles"
   }
 }

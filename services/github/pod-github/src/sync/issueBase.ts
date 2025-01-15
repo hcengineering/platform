@@ -207,9 +207,9 @@ export abstract class IssueSyncManagerBase {
           })
 
           if (syncData !== undefined) {
-            const milestone = (
-              await this.provider.liveQuery.queryFind<GithubMilestone>(github.mixin.GithubMilestone, {})
-            ).find((it) => it.projectNodeId === projectId)
+            const milestone = await this.client.findOne<GithubMilestone>(github.mixin.GithubMilestone, {
+              projectNodeId: projectId
+            })
 
             const target: IssueSyncTarget | undefined =
               milestone !== undefined
@@ -264,11 +264,6 @@ export abstract class IssueSyncManagerBase {
 
             let structure = integration.projectStructure.get(target.target._id)
 
-            const repositories = await this.provider.liveQuery.queryFind<GithubIntegrationRepository>(
-              github.class.GithubIntegrationRepository,
-              {}
-            )
-
             for (const f of target.prjData.fieldValues?.nodes ?? []) {
               if (!('id' in f)) {
                 continue
@@ -281,8 +276,13 @@ export abstract class IssueSyncManagerBase {
                   needProjectRefresh = true
                 }
               }
-              if (needProjectRefresh) {
-                const repo = repositories.find((it) => it._id === syncData.repository)
+              if (needProjectRefresh && syncData.repository != null) {
+                const repo = await this.provider.liveQuery.findOne<GithubIntegrationRepository>(
+                  github.class.GithubIntegrationRepository,
+                  {
+                    _id: syncData.repository
+                  }
+                )
 
                 if (repo !== undefined) {
                   await this.provider.handleEvent(github.class.GithubIntegration, integration.installationId, repo, {})
@@ -1153,9 +1153,9 @@ export abstract class IssueSyncManagerBase {
     if (existingIssue !== undefined) {
       // Select a milestone project
       if (existingIssue.milestone != null) {
-        const milestone = (
-          await this.provider.liveQuery.queryFind<GithubMilestone>(github.mixin.GithubMilestone, {})
-        ).find((it) => it._id === existingIssue.milestone)
+        const milestone = await this.provider.liveQuery.findOne<GithubMilestone>(github.mixin.GithubMilestone, {
+          _id: existingIssue.milestone as Ref<GithubMilestone>
+        })
         if (milestone === undefined) {
           return
         }

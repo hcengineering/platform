@@ -215,7 +215,7 @@ export interface TxPersistenceStore {
   store: (model: LoadModelResponse) => Promise<void>
 }
 
-export type ModelFilter = (tx: Tx[]) => Promise<Tx[]>
+export type ModelFilter = (tx: Tx[]) => Tx[]
 
 /**
  * @public
@@ -256,17 +256,21 @@ export async function createClient (
   }
   const conn = await ctx.with('connect', {}, () => connect(txHandler))
 
-  const { mode, current, addition } = await ctx.with('load-model', {}, (ctx) => loadModel(ctx, conn, txPersistence))
+  let { mode, current, addition } = await ctx.with('load-model', {}, (ctx) => loadModel(ctx, conn, txPersistence))
   switch (mode) {
     case 'same':
     case 'upgrade':
-      await ctx.with('build-model', {}, (ctx) => buildModel(ctx, current, modelFilter, hierarchy, model))
+      ctx.withSync('build-model', {}, (ctx) => {
+        buildModel(ctx, current, modelFilter, hierarchy, model)
+      })
       break
     case 'addition':
-      await ctx.with('build-model', {}, (ctx) =>
+      ctx.withSync('build-model', {}, (ctx) => {
         buildModel(ctx, current.concat(addition), modelFilter, hierarchy, model)
-      )
+      })
   }
+  current = []
+  addition = []
 
   txBuffer = txBuffer.filter((tx) => tx.space !== core.space.Model)
 
@@ -287,7 +291,7 @@ export async function createClient (
       return
     }
     // Find all new transactions and apply
-    const { mode, current, addition } = await ctx.with('load-model', {}, (ctx) => loadModel(ctx, conn, txPersistence))
+    let { mode, current, addition } = await ctx.with('load-model', {}, (ctx) => loadModel(ctx, conn, txPersistence))
 
     switch (mode) {
       case 'upgrade':
@@ -296,16 +300,21 @@ export async function createClient (
         model = new ModelDb(hierarchy)
         ;(client as ClientImpl).setModel(hierarchy, model)
 
-        await ctx.with('build-model', {}, (ctx) => buildModel(ctx, current, modelFilter, hierarchy, model))
+        ctx.withSync('build-model', {}, (ctx) => {
+          buildModel(ctx, current, modelFilter, hierarchy, model)
+        })
+        current = []
         await oldOnConnect?.(ClientConnectEvent.Upgraded, _lastTx, data)
         // No need to fetch more stuff since upgrade was happened.
         break
       case 'addition':
-        await ctx.with('build-model', {}, (ctx) =>
+        ctx.withSync('build-model', {}, (ctx) => {
           buildModel(ctx, current.concat(addition), modelFilter, hierarchy, model)
-        )
+        })
         break
     }
+    current = []
+    addition = []
 
     if (lastTx === undefined) {
       // No need to do anything here since we connected.
@@ -391,13 +400,13 @@ async function loadModel (
   return { mode: 'addition', current: current.transactions, addition: result.transactions }
 }
 
-async function buildModel (
+function buildModel (
   ctx: MeasureContext,
   transactions: Tx[],
   modelFilter: ModelFilter | undefined,
   hierarchy: Hierarchy,
   model: ModelDb
-): Promise<void> {
+): void {
   const systemTx: Tx[] = []
   const userTx: Tx[] = []
 
@@ -416,7 +425,7 @@ async function buildModel (
 
   let txes = systemTx.concat(userTx)
   if (modelFilter !== undefined) {
-    txes = await modelFilter(txes)
+    txes = modelFilter(txes)
   }
 
   ctx.withSync('build hierarchy', {}, () => {

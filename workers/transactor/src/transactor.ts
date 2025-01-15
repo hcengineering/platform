@@ -94,7 +94,7 @@ export class Transactor extends DurableObject<Env> {
           externalStorage: storage,
           adapterSecurity: false,
           disableTriggers: false,
-          fulltextUrl: undefined // TODO: Pass fulltext service URI.
+          fulltextUrl: env.FULLTEXT_URL // TODO: Pass fulltext service URI.
         }
       )
       return await pipeline(ctx, ws, upgrade, broadcast, branding)

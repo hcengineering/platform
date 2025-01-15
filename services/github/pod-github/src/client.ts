@@ -44,7 +44,8 @@ export async function createPlatformClient (
   const connection = await (
     await clientResources()
   ).function.GetClient(token, endpoint, {
-    onConnect: reconnect
+    onConnect: reconnect,
+    useGlobalRPCHandler: true
   })
 
   return { client: connection, endpoint }

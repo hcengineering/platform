@@ -186,6 +186,8 @@
         {/each}
       {/if}
     </th>
+  {:else if node.type === MarkupNodeType.mermaid}
+    <!-- TODO -->
   {:else if node.type === MarkupNodeType.comment}
     <!-- Ignore -->
   {:else}

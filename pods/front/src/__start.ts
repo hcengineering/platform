@@ -46,5 +46,6 @@ startFront(metricsContext, {
   ANALYTICS_COLLECTOR_URL: process.env.ANALYTICS_COLLECTOR_URL,
   AI_URL: process.env.AI_URL,
   TELEGRAM_BOT_URL: process.env.TELEGRAM_BOT_URL,
-  STATS_URL: process.env.STATS_API ?? process.env.STATS_URL
+  STATS_URL: process.env.STATS_API ?? process.env.STATS_URL,
+  BACKUP_URL: process.env.BACKUP_URL
 })

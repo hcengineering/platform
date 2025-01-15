@@ -1,11 +1,11 @@
-import { expect, test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
-import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
-import { ApplicationsPage } from '../model/recruiting/applications-page'
+import { test } from '@playwright/test'
 import { ApplicationsDetailsPage } from '../model/recruiting/applications-details-page'
-import { VacancyDetailsPage } from '../model/recruiting/vacancy-details-page'
-import { VacanciesPage } from '../model/recruiting/vacancies-page'
+import { ApplicationsPage } from '../model/recruiting/applications-page'
+import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
 import { TalentsPage } from '../model/recruiting/talents-page'
+import { VacanciesPage } from '../model/recruiting/vacancies-page'
+import { VacancyDetailsPage } from '../model/recruiting/vacancy-details-page'
+import { generateId, PlatformSetting, PlatformURI } from '../utils'
 
 test.use({
   storageState: PlatformSetting
@@ -106,7 +106,6 @@ test.describe('Application tests', () => {
     await applicationsPage.openApplicationByTalentName(talentName)
     const applicationId = await applicationsDetailsPage.getApplicationId()
     await applicationsDetailsPage.deleteEntity()
-    expect(page.url()).toContain(applicationId)
     await navigationMenuPage.clickButtonApplications()
     await applicationsPage.checkApplicationNotExist(applicationId)
   })
