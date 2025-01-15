@@ -88,6 +88,7 @@
     "AuthenticationRevokedGithub": "Re-authorization for {login} is required for the proper functioning of the GitHub App",
     "UnlinkInstallationTitle": "Uninstall Github App",
     "UnlinkInstallation": "Are you sure you want to uninstall the GitHub App? Synchronization will be disabled.",
-    "RemoveInstallation": "Uninstall"
+    "RemoveInstallation": "Uninstall",
+    "Suspended": "Suspended"
   }
 }

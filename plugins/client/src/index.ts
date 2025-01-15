@@ -65,6 +65,8 @@ export interface ClientFactoryOptions {
   onConnect?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
   ctx?: MeasureContext
   onDialTimeout?: () => void | Promise<void>
+
+  useGlobalRPCHandler?: boolean
 }
 
 /**

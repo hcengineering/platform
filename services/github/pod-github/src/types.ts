@@ -126,8 +126,6 @@ export interface IntegrationManager {
 
   isPlatformUser: (account: Ref<PersonAccount>) => Promise<boolean>
 
-  getProjectRepositories: (space: Ref<Space>) => Promise<GithubIntegrationRepository[]>
-
   getRepositoryById: (ref?: Ref<GithubIntegrationRepository> | null) => Promise<GithubIntegrationRepository | undefined>
 
   isClosing: () => boolean

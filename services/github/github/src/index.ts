@@ -600,6 +600,7 @@ export default plugin(githubId, {
     AuthenticatedWithGithub: '' as IntlString,
     AuthenticationRevokedGithub: '' as IntlString,
     AuthenticatedWithGithubEmployee: '' as IntlString,
-    AuthenticatedWithGithubRequired: '' as IntlString
+    AuthenticatedWithGithubRequired: '' as IntlString,
+    Suspended: '' as IntlString
   }
 })
