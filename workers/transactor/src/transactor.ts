@@ -2,6 +2,8 @@
 
 import {
   generateId,
+  MeasureMetricsContext,
+  newMetrics,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -27,9 +29,9 @@ import {
 } from '@hcengineering/server-core'
 import serverPlugin, { decodeToken, type Token } from '@hcengineering/server-token'
 import { DurableObject } from 'cloudflare:workers'
+import { compress } from 'snappyjs'
 import { promisify } from 'util'
 import { gzip } from 'zlib'
-import { compress } from 'snappyjs'
 
 // Approach usefull only for separate build, after model-all bundle phase is executed.
 import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
@@ -41,6 +43,7 @@ import {
   registerStringLoaders,
   registerTxAdapterFactory
 } from '@hcengineering/server-pipeline'
+import { CloudFlareLogger } from './logger'
 import model from './model.json'
 
 export const PREFERRED_SAVE_SIZE = 500
@@ -74,12 +77,13 @@ export class Transactor extends DurableObject<Env> {
 
     this.measureCtx = this.measureCtx = initStatisticsContext('cloud-transactor', {
       statsUrl: this.env.STATS_URL ?? 'http://127.0.0.1:4900',
-      serviceName: () => 'cloud-transactor: ' + this.workspace
+      serviceName: () => 'cloud-transactor: ' + this.workspace,
+      factory: () => new MeasureMetricsContext('transactor', {}, {}, newMetrics(), new CloudFlareLogger())
     })
 
     setMetadata(serverPlugin.metadata.Secret, env.SERVER_SECRET ?? 'secret')
 
-    console.log({ message: 'Connecting DB', mode: env.DB_URL !== '' ? 'Direct ' : 'Hyperdrive' })
+    console.log({ message: 'Connecting DB', mode: env.DB_MODE ?? 'hyperdrive' })
     console.log({ message: 'use stats: ' + (this.env.STATS_URL ?? 'http://127.0.0.1:4900') })
 
     // TODO:
@@ -88,13 +92,14 @@ export class Transactor extends DurableObject<Env> {
     this.pipelineFactory = async (ctx, ws, upgrade, broadcast, branding) => {
       const pipeline = createServerPipeline(
         this.measureCtx,
-        env.DB_URL !== '' && env.DB_URL !== undefined ? env.DB_URL : env.HYPERDRIVE.connectionString,
+        env.DB_MODE === 'direct' ? env.DB_URL ?? '' : env.HYPERDRIVE.connectionString,
         model,
         {
           externalStorage: storage,
           adapterSecurity: false,
           disableTriggers: false,
-          fulltextUrl: env.FULLTEXT_URL // TODO: Pass fulltext service URI.
+          fulltextUrl: env.FULLTEXT_URL,
+          extraLogging: true
         }
       )
       return await pipeline(ctx, ws, upgrade, broadcast, branding)
@@ -113,8 +118,11 @@ export class Transactor extends DurableObject<Env> {
         },
         undefined,
         this.accountsUrl,
-        env.ENABLE_COMPRESSION === 'true'
+        env.ENABLE_COMPRESSION === 'true',
+        false
       )
+    }).catch(err => {
+      console.error('Failed to init transactor', err)
     })
   }
 
