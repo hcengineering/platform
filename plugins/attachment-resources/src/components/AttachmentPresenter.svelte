@@ -26,7 +26,6 @@
     sizeToWidth
   } from '@hcengineering/presentation'
   import { Label, Spinner } from '@hcengineering/ui'
-  import { permissionsStore } from '@hcengineering/view-resources'
   import WebIcon from './icons/Web.svelte'
   import filesize from 'filesize'
   import { createEventDispatcher, onMount } from 'svelte'
