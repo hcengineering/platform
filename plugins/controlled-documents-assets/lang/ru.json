@@ -295,7 +295,12 @@
     "DeleteDocumentCategoryPermission": "Удалять категорию",
     "DeleteDocumentCategoryDescription": "Предоставляет пользователям разрешение удалять категорию",
     "ConfigLabel": "Управляемые Документы",
-    "ConfigDescription": "Расширение для управления управляемыми документами"
+    "ConfigDescription": "Расширение для управления управляемыми документами",
+
+    "Transfer": "Трансфер",
+    "TransferWarning": "После этого действия вы и члены вашей команды, возможно, не сможете редактировать этот документ.",
+    "TransferDocuments": "Трансфер управляемых документов",
+    "TransferDocumentsHint": "Документы, которые будут перенесены в выбранное пространство:"
   },
   "controlledDocStates": {
     "Empty": "",
