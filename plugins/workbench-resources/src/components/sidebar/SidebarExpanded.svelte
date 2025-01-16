@@ -99,7 +99,7 @@
   }
 </script>
 
-<div class="sidebar-wrap__content" class:float>
+<div class="sidebar-wrap__content{float ? ` apps-${$deviceInfo.navigator.direction}` : ''}" class:float>
   {#if float && !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
     <Separator name={'main'} index={0} color={'var(--theme-navpanel-border)'} float={'sidebar'} />
   {/if}
@@ -178,10 +178,16 @@
 
       :global(.mobile-theme) & {
         overflow: hidden;
-        height: calc(100% - var(--app-panel-width));
         border: 1px solid var(--theme-divider-color);
         border-radius: var(--medium-BorderRadius);
         filter: var(--theme-navpanel-shadow-mobile);
+
+        &.apps-horizontal {
+          height: calc(100% - var(--app-panel-width));
+        }
+        :global(.antiSeparator) {
+          display: none;
+        }
       }
     }
   }
