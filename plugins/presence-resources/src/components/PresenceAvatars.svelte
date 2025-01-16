@@ -18,7 +18,7 @@
   import { type Person, formatName } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { IconSize, tooltip } from '@hcengineering/ui'
+  import { IconSize, tooltip, deviceOptionsStore as deviceInfo, checkAdaptiveMatching } from '@hcengineering/ui'
   import PresenceList from './PresenceList.svelte'
   import { presenceByObjectId } from '../store'
 
@@ -33,10 +33,11 @@
     .map((p) => $personByIdStore.get(p))
     .filter((p): p is Person => p !== undefined)
   $: overLimit = persons.length > limit
+  $: adaptive = checkAdaptiveMatching($deviceInfo.size, 'md') || overLimit
 </script>
 
 {#if persons.length > 0}
-  {#if overLimit}
+  {#if adaptive}
     <div
       class="hulyCombineAvatars-container"
       use:tooltip={{ component: PresenceList, props: { persons, size }, direction: 'bottom' }}
