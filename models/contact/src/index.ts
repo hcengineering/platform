@@ -697,6 +697,17 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    contact.class.ChannelProvider,
+    core.space.Model,
+    {
+      label: contact.string.Viber,
+      icon: contact.icon.Viber,
+      placeholder: contact.string.ViberPlaceholder
+    },
+    contact.channelProvider.Viber
+  )
+
+  builder.createDoc(
     contact.class.AvatarProvider,
     core.space.Model,
     {
