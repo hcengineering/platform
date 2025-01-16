@@ -37,7 +37,12 @@ import {
 } from '@hcengineering/server-pipeline'
 
 import { createMongoAdapter, createMongoDestroyAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
-import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
+import {
+  createPostgreeDestroyAdapter,
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  setDbUnsafePrepareOptions
+} from '@hcengineering/postgres'
 import { readFileSync } from 'node:fs'
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
@@ -75,6 +80,15 @@ export function start (
   registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
   registerAdapterFactory('postgresql', createPostgresAdapter, true)
   registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+
+  const usePrepare = process.env.DB_PREPARE === 'true'
+
+  setDbUnsafePrepareOptions({
+    find: usePrepare,
+    model: false,
+    update: usePrepare,
+    upload: usePrepare
+  })
 
   registerServerPlugins()
 

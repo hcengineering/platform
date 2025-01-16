@@ -34,7 +34,13 @@ import { promisify } from 'util'
 import { gzip } from 'zlib'
 
 // Approach usefull only for separate build, after model-all bundle phase is executed.
-import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
+import {
+  createPostgreeDestroyAdapter,
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  setDBExtraOptions,
+  setDbUnsafePrepareOptions
+} from '@hcengineering/postgres'
 import {
   createServerPipeline,
   registerAdapterFactory,
@@ -65,6 +71,18 @@ export class Transactor extends DurableObject<Env> {
   constructor (ctx: DurableObjectState, env: Env) {
     super(ctx, env)
 
+    setDBExtraOptions({
+      ssl: false,
+      connection: {
+        application_name: 'cloud-transactor'
+      }
+    })
+    setDbUnsafePrepareOptions({
+      upload: false,
+      find: false,
+      update: false,
+      model: false
+    })
     registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
     registerAdapterFactory('postgresql', createPostgresAdapter, true)
     registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
@@ -83,8 +101,9 @@ export class Transactor extends DurableObject<Env> {
 
     setMetadata(serverPlugin.metadata.Secret, env.SERVER_SECRET ?? 'secret')
 
-    console.log({ message: 'Connecting DB', mode: env.DB_MODE ?? 'hyperdrive' })
-    console.log({ message: 'use stats: ' + (this.env.STATS_URL ?? 'http://127.0.0.1:4900') })
+    console.log({ message: 'Connecting DB', mode: env.DB_URL !== '' ? 'Direct ' : 'Hyperdrive' })
+    console.log({ message: 'use stats', url: this.env.STATS_URL })
+    console.log({ message: 'use fulltext', url: this.env.FULLTEXT_URL })
 
     // TODO:
     const storage = createDummyStorageAdapter()
@@ -105,25 +124,27 @@ export class Transactor extends DurableObject<Env> {
       return await pipeline(ctx, ws, upgrade, broadcast, branding)
     }
 
-    void this.ctx.blockConcurrencyWhile(async () => {
-      setMetadata(serverClient.metadata.Endpoint, env.ACCOUNTS_URL)
+    void this.ctx
+      .blockConcurrencyWhile(async () => {
+        setMetadata(serverClient.metadata.Endpoint, env.ACCOUNTS_URL)
 
-      this.sessionManager = createSessionManager(
-        this.measureCtx,
-        (token: Token, workspace) => new ClientSession(token, workspace, false),
-        loadBrandingMap(), // TODO: Support branding map
-        {
-          pingTimeout: 10000,
-          reconnectTimeout: 3000
-        },
-        undefined,
-        this.accountsUrl,
-        env.ENABLE_COMPRESSION === 'true',
-        false
-      )
-    }).catch(err => {
-      console.error('Failed to init transactor', err)
-    })
+        this.sessionManager = createSessionManager(
+          this.measureCtx,
+          (token: Token, workspace) => new ClientSession(token, workspace, false),
+          loadBrandingMap(), // TODO: Support branding map
+          {
+            pingTimeout: 10000,
+            reconnectTimeout: 3000
+          },
+          undefined,
+          this.accountsUrl,
+          env.ENABLE_COMPRESSION === 'true',
+          false
+        )
+      })
+      .catch((err) => {
+        console.error('Failed to init transactor', err)
+      })
   }
 
   async fetch (request: Request): Promise<Response> {
