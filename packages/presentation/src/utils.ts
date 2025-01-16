@@ -50,13 +50,7 @@ import core, {
 } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
-import {
-  getRawCurrentLocation,
-  workspaceId,
-  type AnyComponent,
-  type AnySvelteComponent,
-  clipboardText
-} from '@hcengineering/ui'
+import { getRawCurrentLocation, workspaceId, type AnyComponent, type AnySvelteComponent } from '@hcengineering/ui'
 import view, { type AttributeCategory, type AttributeEditor } from '@hcengineering/view'
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
@@ -558,6 +552,23 @@ export async function getBlobURL (blob: Blob): Promise<string> {
 /**
  * @public
  */
+export function copyTextToClipboardOldBrowser (text: string): void {
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.classList.add('hulyClipboardArea')
+  document.body.appendChild(textarea)
+  textarea.select()
+  try {
+    document.execCommand('copy')
+  } catch (err) {
+    console.error(err)
+  }
+  document.body.removeChild(textarea)
+}
+
+/**
+ * @public
+ */
 export async function copyTextToClipboard (text: string | Promise<string>): Promise<void> {
   try {
     // Safari specific behavior
@@ -570,7 +581,7 @@ export async function copyTextToClipboard (text: string | Promise<string>): Prom
     // Fallback to default clipboard API implementation
     if (navigator.clipboard != null && typeof navigator.clipboard.writeText === 'function') {
       await navigator.clipboard.writeText(text instanceof Promise ? await text : text)
-    } else clipboardText.set(text instanceof Promise ? await text : text)
+    } else copyTextToClipboardOldBrowser(text instanceof Promise ? await text : text)
   }
 }
 

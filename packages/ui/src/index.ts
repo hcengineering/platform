@@ -328,6 +328,4 @@ export const deviceOptionsStore = writable<DeviceOptions>({
   twoRows: false
 })
 
-export const clipboardText = writable<string>('')
-
 export default uis

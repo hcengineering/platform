@@ -9,7 +9,14 @@ import {
   getCurrentAccount
 } from '@hcengineering/core'
 import { type Asset, type IntlString, type Resource, getResource } from '@hcengineering/platform'
-import { MessageBox, getClient, updateAttribute, type ContextStore, contextStore } from '@hcengineering/presentation'
+import {
+  MessageBox,
+  getClient,
+  updateAttribute,
+  type ContextStore,
+  contextStore,
+  copyTextToClipboardOldBrowser
+} from '@hcengineering/presentation'
 import {
   type AnyComponent,
   type AnySvelteComponent,
@@ -19,8 +26,7 @@ import {
   isPopupPosAlignment,
   navigate,
   showPanel,
-  showPopup,
-  clipboardText
+  showPopup
 } from '@hcengineering/ui'
 import MoveView from './components/Move.svelte'
 import view from './plugin'
@@ -76,7 +82,7 @@ async function CopyTextToClipboard (
       : await getText(doc, props.props)
     if (navigator.clipboard != null && typeof navigator.clipboard.writeText === 'function') {
       await navigator.clipboard.writeText(text)
-    } else clipboardText.set(text)
+    } else copyTextToClipboardOldBrowser(text)
   }
 }
 
