@@ -78,6 +78,9 @@ export class ApplicationsPage extends CommonRecruitingPage {
       .locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })
       .locator('div[class*="firstCell"]')
       .click()
+    await expect(
+      this.page.locator('div.hulyHeader-container div.hulyHeader-titleGroup', { hasText: talentName.lastName })
+    ).toBeVisible({ timeout: 1000 })
   }
 
   async checkApplicationState (talentName: TalentName, done: string): Promise<void> {

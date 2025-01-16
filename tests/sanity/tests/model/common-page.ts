@@ -141,6 +141,7 @@ export class CommonPage {
 
   async pressYesDeletePopup (page: Page): Promise<void> {
     await this.viewStringDeleteObjectButtonPrimary().click()
+    await expect(this.viewStringDeleteObjectButtonPrimary()).not.toBeVisible({ timeout: 1000 })
   }
 
   async addNewTagPopup (page: Page, title: string, description: string): Promise<void> {
