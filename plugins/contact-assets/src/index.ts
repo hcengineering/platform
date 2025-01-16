@@ -28,6 +28,7 @@ loadMetadata(contact.icon, {
   Telegram: `${icons}#telegram`,
   Twitter: `${icons}#twitter`,
   VK: `${icons}#vk`,
+  Viber: `${icons}#viber`,
   WhatsApp: `${icons}#whatsapp`,
   Skype: `${icons}#skype`,
   Youtube: `${icons}#youtube`,

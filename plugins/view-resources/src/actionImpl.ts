@@ -9,7 +9,14 @@ import {
   getCurrentAccount
 } from '@hcengineering/core'
 import { type Asset, type IntlString, type Resource, getResource } from '@hcengineering/platform'
-import { MessageBox, getClient, updateAttribute, type ContextStore, contextStore } from '@hcengineering/presentation'
+import {
+  MessageBox,
+  getClient,
+  updateAttribute,
+  type ContextStore,
+  contextStore,
+  copyTextToClipboardOldBrowser
+} from '@hcengineering/presentation'
 import {
   type AnyComponent,
   type AnySvelteComponent,
@@ -73,7 +80,9 @@ async function CopyTextToClipboard (
     const text = Array.isArray(doc)
       ? (await Promise.all(doc.map(async (d) => await getText(d, props.props)))).join(',')
       : await getText(doc, props.props)
-    await navigator.clipboard.writeText(text)
+    if (navigator.clipboard != null && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(text)
+    } else copyTextToClipboardOldBrowser(text)
   }
 }
 
