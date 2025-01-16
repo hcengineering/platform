@@ -10,6 +10,7 @@
   export let size: ButtonSize = 'medium'
   export let kind: ButtonKind = 'link'
   export let editable: boolean = true
+  export let onChange: ((value: any) => void) | undefined
 
   const client = getClient()
   $: status = $statusStore.byId.get(object.status)
@@ -21,15 +22,19 @@
       return
     }
 
-    await client.updateCollection(
-      object._class,
-      object.space,
-      object._id,
-      object.attachedTo,
-      object.attachedToClass,
-      object.collection,
-      { dueDate: newDueDate }
-    )
+    if (onChange !== undefined) {
+      onChange(newDueDate)
+    } else {
+      await client.updateCollection(
+        object._class,
+        object.space,
+        object._id,
+        object.attachedTo,
+        object.attachedToClass,
+        object.collection,
+        { dueDate: newDueDate }
+      )
+    }
   }
 </script>
 
