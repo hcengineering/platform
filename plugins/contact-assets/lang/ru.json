@@ -105,6 +105,8 @@
     "For": "Для",
     "SelectUsers": "Выберите пользователей",
     "AddGuest": "Добавить гостя",
-    "ViewProfile": "Посмотреть профиль"
+    "ViewProfile": "Посмотреть профиль",
+    "Viber": "Viber",
+    "ViberPlaceholder": "Viber"
   }
 }
