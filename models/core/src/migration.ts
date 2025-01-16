@@ -45,7 +45,8 @@ import core, {
   type Role,
   toIdMap,
   type TypedSpace,
-  TxProcessor
+  TxProcessor,
+  type AccountRole
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -308,6 +309,14 @@ export function getAccountsFromTxes (accTxes: TxCUD<Doc>[]): any {
     .filter((it) => it !== undefined)
 }
 
+async function getOldPersonAccounts (client: MigrationClient): Promise<Array<{ email: string, role: AccountRole }>> {
+  const accountsTxes: TxCUD<Doc>[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
+    objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>
+  })
+
+  return getAccountsFromTxes(accountsTxes)
+}
+
 export async function getSocialIdByOldAccount (client: MigrationClient): Promise<Record<string, PersonId>> {
   const systemAccounts = [core.account.System, core.account.ConfigUser]
   const accountsTxes: TxCUD<Doc>[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
@@ -482,6 +491,18 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
     updatedSpaceTypes++
   }
   ctx.info('finished processing space types members', { totalSpaceTypes: spaceTypes.length, updatedSpaceTypes })
+
+  ctx.info('assigning workspace roles...')
+  const oldPersonAccounts = await getOldPersonAccounts(client)
+  for (const { email, role } of oldPersonAccounts) {
+    try {
+      await client.accountClient.updateWorkspaceRoleByEmail(email, role)
+    } catch (err: any) {
+      ctx.error('Failed to update workspace role', { email, role, err })
+    }
+  }
+
+  ctx.info('finished assigning workspace roles', { users: oldPersonAccounts.length })
 }
 
 async function processMigrateJsonForDomain (

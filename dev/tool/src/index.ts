@@ -396,8 +396,9 @@ export function devTool (
           throw new Error(`Created workspace record ${res.workspaceUuid} not found`)
         }
         const coreWsInfo = flattenStatus(wsInfo)
+        const accountClient = getAccountClient(getToolToken())
 
-        await createWorkspace(measureCtx, version, brandingObj, coreWsInfo, txes, migrateOperations, undefined, true)
+        await createWorkspace(measureCtx, version, brandingObj, coreWsInfo, txes, migrateOperations, accountClient, undefined, true)
         await updateWorkspaceInfo(
           measureCtx,
           db,
@@ -464,12 +465,14 @@ export function devTool (
 
         const coreWsInfo = flattenStatus(wsInfo)
         const measureCtx = new MeasureMetricsContext('upgrade-workspace', {})
+        const accountClient = getAccountClient(getToolToken())
 
         await upgradeWorkspace(
           measureCtx,
           version,
           txes,
           migrateOperations,
+          accountClient,
           coreWsInfo,
           consoleModelLogger,
           async () => {},

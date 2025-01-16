@@ -55,11 +55,16 @@ export interface Account {
   salt?: Buffer | null
 }
 
+// TODO: type data with generic type
 export interface AccountEvent {
   accountUuid: string
-  eventType: string
+  eventType: AccountEventType
   data?: Record<string, any>
   time: Timestamp
+}
+
+export enum AccountEventType {
+  ACCOUNT_CREATED = 'account_created'
 }
 
 export interface Member {
@@ -104,6 +109,7 @@ export interface OTP {
 
 export interface WorkspaceInvite {
   id: string // bigint should be represented as string as it exceeds JS safe integer limit
+  migratedFrom?: string // old invite id to be able to find migrated invites
   workspaceUuid: string
   expiresOn: Timestamp
   emailPattern?: string

@@ -12,6 +12,7 @@ import {
 } from '@hcengineering/core'
 import { MigrateUpdate, MigrationClient, MigrationIterator, ModelLogger } from '@hcengineering/model'
 import { Pipeline, StorageAdapter } from '@hcengineering/server-core'
+import { AccountClient } from '@hcengineering/account-client'
 
 /**
  * Upgrade client implementation.
@@ -24,6 +25,7 @@ export class MigrateClientImpl implements MigrationClient {
     readonly model: ModelDb,
     readonly logger: ModelLogger,
     readonly storageAdapter: StorageAdapter,
+    readonly accountClient: AccountClient,
     readonly wsIds: WorkspaceIds
   ) {
     if (this.pipeline.context.lowLevelStorage === undefined) {

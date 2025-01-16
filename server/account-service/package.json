@@ -48,6 +48,7 @@
     "@hcengineering/auth-providers": "^0.6.0",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/mongo": "^0.6.1",
+    "@hcengineering/contact": "^0.6.24",
     "mongodb": "^6.12.0",
     "koa": "^2.15.3",
     "koa-router": "^12.0.1",
