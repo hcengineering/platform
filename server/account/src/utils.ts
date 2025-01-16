@@ -52,7 +52,8 @@ import {
   type Workspace,
   LoginInfo,
   WorkspaceLoginInfo,
-  WorkspaceStatus
+  WorkspaceStatus,
+  AccountEventType
 } from './types'
 import { Analytics } from '@hcengineering/analytics'
 import { decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
@@ -406,7 +407,7 @@ export async function isOtpValid (db: AccountDB, socialId: string, code: string)
   return (otpData?.expiresOn ?? 0) > Date.now()
 }
 
-export async function createAccount (db: AccountDB, personUuid: string, confirmed = false): Promise<void> {
+export async function createAccount (db: AccountDB, personUuid: string, confirmed = false, createdOn = Date.now()): Promise<void> {
   // Create Huly social id and account
   // Currently, it's always created along with the account but never confirmed.
   // What's the actual use case for it?
@@ -417,6 +418,11 @@ export async function createAccount (db: AccountDB, personUuid: string, confirme
     ...(confirmed ? { verifiedOn: Date.now() } : {})
   })
   await db.account.insertOne({ uuid: personUuid })
+  await db.accountEvent.insertOne({
+    accountUuid: personUuid,
+    eventType: AccountEventType.ACCOUNT_CREATED,
+    time: createdOn
+  })
 }
 
 export async function signUpByEmail (
@@ -845,7 +851,13 @@ export async function getWorkspaceByUrl (db: AccountDB, url: string): Promise<Wo
 }
 
 export async function getWorkspaceInvite (db: AccountDB, id: string): Promise<WorkspaceInvite | null> {
-  return await db.invite.findOne({ id })
+  const invite = await db.invite.findOne({ id })
+
+  if (invite != null) {
+    return invite
+  }
+
+  return await db.invite.findOne({ migratedFrom: id })
 }
 
 export async function getEmailSocialId (db: AccountDB, email: string): Promise<SocialId | null> {

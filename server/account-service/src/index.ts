@@ -23,6 +23,7 @@ import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 import os from 'os'
+import { migrateFromOldAccounts } from './migration/migration'
 
 /**
  * @public
@@ -35,6 +36,8 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     console.log('Please provide DB_URL')
     process.exit(1)
   }
+
+  const oldAccsUrl = process.env.OLD_ACCOUNTS_URL ?? (dbUrl.startsWith('mongodb://') ? dbUrl : undefined)
 
   const transactorUri = process.env.TRANSACTOR_URL
   if (transactorUri === undefined) {
@@ -91,6 +94,11 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
 
   const dbNs = process.env.DB_NS
   const accountsDb = getAccountDB(dbUrl, dbNs)
+  const migrations = accountsDb.then(async ([db]) => {
+    if (oldAccsUrl !== undefined) {
+      await migrateFromOldAccounts(oldAccsUrl, db)
+    }
+  })
 
   const app = new Koa()
   const router = new Router()
@@ -216,6 +224,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     }
 
     const [db] = await accountsDb
+    await migrations
 
     let host: string | undefined
     const origin = ctx.request.headers.origin ?? ctx.request.headers.referer

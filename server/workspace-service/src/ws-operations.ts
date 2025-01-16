@@ -21,6 +21,7 @@ import { getServerPipeline, getTxAdapterFactory, sharedPipelineContextVars } fro
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { generateToken } from '@hcengineering/server-token'
 import { initializeWorkspace, initModel, prepareTools, updateModel, upgradeModel } from '@hcengineering/server-tool'
+import { AccountClient, getClient as getAccountClient } from '@hcengineering/account-client'
 
 /**
  * @public
@@ -32,6 +33,7 @@ export async function createWorkspace (
   workspaceInfo: WorkspaceInfoWithStatus,
   txes: Tx[],
   migrationOperation: [string, MigrateOperation][],
+  accountClient: AccountClient,
   handleWsEvent?: (
     event: 'ping' | 'create-started' | 'progress' | 'create-done',
     version: Data<Version>,
@@ -105,6 +107,7 @@ export async function createWorkspace (
         pipeline,
         client,
         storageAdapter,
+        accountClient,
         ctxModellogger,
         async (event, version, value) => {
           ctx.info('upgrade workspace', { event, value })
@@ -136,6 +139,7 @@ export async function upgradeWorkspace (
   version: Data<Version>,
   txes: Tx[],
   migrationOperation: [string, MigrateOperation][],
+  accountClient: AccountClient,
   ws: WorkspaceInfoWithStatus,
   logger: ModelLogger = consoleModelLogger,
   handleWsEvent?: (
@@ -184,6 +188,7 @@ export async function upgradeWorkspace (
       pipeline,
       wrapPipeline(ctx, pipeline, wsUrl),
       storageAdapter,
+      accountClient,
       logger,
       handleWsEvent,
       forceUpdate,
@@ -208,6 +213,7 @@ export async function upgradeWorkspaceWith (
   pipeline: Pipeline,
   connection: Client,
   storageAdapter: StorageAdapter,
+  accountClient: AccountClient,
   logger: ModelLogger = consoleModelLogger,
   handleWsEvent?: (
     event: 'upgrade-started' | 'progress' | 'upgrade-done' | 'ping',
@@ -269,6 +275,7 @@ export async function upgradeWorkspaceWith (
       pipeline,
       connection,
       storageAdapter,
+      accountClient,
       migrationOperation,
       logger,
       async (value) => {

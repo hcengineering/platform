@@ -1098,6 +1098,30 @@ export async function getWorkspaceMembers (
   return await db.getWorkspaceMembers(workspace)
 }
 
+export async function updateWorkspaceRoleByEmail (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  email: string,
+  targetRole: AccountRole
+): Promise<void> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+
+  if (!['workspace', 'tool'].includes(extra?.service)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const normalizedEmail = cleanEmail(email)
+  const emailSocialId = await getEmailSocialId(db, normalizedEmail)
+
+  if (emailSocialId == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
+  }
+
+  await updateWorkspaceRole(ctx, db, branding, token, emailSocialId.personUuid, targetRole)
+}
+
 export async function updateWorkspaceRole (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1112,7 +1136,7 @@ export async function updateWorkspaceRole (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
   }
 
-  const accRole = await db.getWorkspaceRole(account, workspace)
+  const accRole = account === systemAccountUuid ? AccountRole.Owner : (await db.getWorkspaceRole(account, workspace))
 
   if (
     accRole == null ||
@@ -1372,7 +1396,7 @@ export async function assignWorkspace (
   role: AccountRole
 ): Promise<void> {
   const { extra } = decodeTokenVerbose(ctx, token)
-  if (!['aibot', 'tool'].includes(extra?.service)) {
+  if (!['aibot', 'tool', 'workspace'].includes(extra?.service)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
@@ -1441,6 +1465,7 @@ export type AccountMethods =
   | 'updateWorkspaceRole'
   | 'findPerson'
   | 'performWorkspaceOperation'
+  | 'updateWorkspaceRoleByEmail'
 
 /**
  * @public
@@ -1487,7 +1512,8 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     updateBackupInfo: wrap(updateBackupInfo),
     assignWorkspace: wrap(assignWorkspace),
     listWorkspaces: wrap(listWorkspaces),
-    performWorkspaceOperation: wrap(performWorkspaceOperation)
+    performWorkspaceOperation: wrap(performWorkspaceOperation),
+    updateWorkspaceRoleByEmail: wrap(updateWorkspaceRoleByEmail)
   }
 }
 

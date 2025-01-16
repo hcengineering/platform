@@ -229,6 +229,7 @@ export class WorkspaceWorker {
       const branding = getBranding(this.brandings, ws.branding)
       const wsId = ws.uuid
       const token = generateToken(systemAccountUuid, wsId, { service: 'workspace' })
+      const accountClient = getAccountClient(this.accountsUrl, token)
       const handleWsEventWithRetry = (
         event: 'ping' | 'create-started' | 'progress' | 'create-done',
         version: Data<Version>,
@@ -237,7 +238,7 @@ export class WorkspaceWorker {
       ): Promise<void> => {
         return withRetryConnUntilTimeout(
           () =>
-            getAccountClient(this.accountsUrl, token).updateWorkspaceInfo(ws.uuid, event, version, progress, message),
+            accountClient.updateWorkspaceInfo(ws.uuid, event, version, progress, message),
           5000
         )()
       }
@@ -250,6 +251,7 @@ export class WorkspaceWorker {
           ws,
           this.txes,
           this.migrationOperation,
+          accountClient,
           handleWsEventWithRetry
         )
       } else {
@@ -323,6 +325,7 @@ export class WorkspaceWorker {
 
     try {
       const token = generateToken(systemAccountUuid, ws.uuid, { service: 'workspace' })
+      const accountClient = getAccountClient(this.accountsUrl, token)
       const handleWsEventWithRetry = (
         event: 'upgrade-started' | 'progress' | 'upgrade-done' | 'ping',
         version: Data<Version>,
@@ -341,6 +344,7 @@ export class WorkspaceWorker {
         this.version,
         this.txes,
         this.migrationOperation,
+        accountClient,
         ws,
         logger,
         handleWsEventWithRetry,

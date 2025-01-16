@@ -37,6 +37,7 @@ import core, {
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger, tryMigrate } from '@hcengineering/model'
 import { DomainIndexHelperImpl, Pipeline, StorageAdapter, type DbAdapter } from '@hcengineering/server-core'
+import { AccountClient } from '@hcengineering/account-client'
 import { InitScript, WorkspaceInitializer } from './initializer'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
@@ -235,6 +236,7 @@ export async function upgradeModel (
   pipeline: Pipeline,
   connection: Client,
   storageAdapter: StorageAdapter,
+  accountClient: AccountClient,
   migrateOperations: [string, MigrateOperation][],
   logger: ModelLogger = consoleModelLogger,
   progress: (value: number) => Promise<void>,
@@ -254,6 +256,7 @@ export async function upgradeModel (
     modelDb,
     logger,
     storageAdapter,
+    accountClient,
     wsIds
   )
 
@@ -286,6 +289,7 @@ export async function upgradeModel (
     modelDb,
     logger,
     storageAdapter,
+    accountClient,
     wsIds
   )
 
@@ -372,12 +376,13 @@ async function prepareMigrationClient (
   model: ModelDb,
   logger: ModelLogger,
   storageAdapter: StorageAdapter,
+  accountClient: AccountClient,
   wsIds: WorkspaceIds
 ): Promise<{
     migrateClient: MigrateClientImpl
     migrateState: Map<string, Set<string>>
   }> {
-  const migrateClient = new MigrateClientImpl(pipeline, hierarchy, model, logger, storageAdapter, wsIds)
+  const migrateClient = new MigrateClientImpl(pipeline, hierarchy, model, logger, storageAdapter, accountClient, wsIds)
   const states = await migrateClient.find<MigrationState>(DOMAIN_MIGRATION, { _class: core.class.MigrationState })
   const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
 
