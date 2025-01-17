@@ -125,11 +125,11 @@
     "BackupTotalSnapshots": "Total Snapshots",
     "BackupTotalFiles": "Files",
     "BackupSize": "Backup size",
-    "BackupLinkInfo": "A backup directory is available at",
-    "BackupBearerTokenInfo": "A bearer token is required to access the backup. Please click copy to clipboard button to copy the token." ,
-    "BackupSnapshots": "Snapshots",
-    "BackupFileDownload": "Download",
-    "BackupFiles": "Files",
-    "BackupNoBackup": "No backup available"
+    "BackupLinkInfo": "The URL of a backup directory that can be downloaded recursively using tools like wget or curl.",
+    "BackupBearerTokenInfo": "A bearer token is required to access the backup.",
+    "BackupSnapshots": "Backup Snapshots",
+    "BackupFileDownload": "Download File",
+    "BackupFiles": "Backup Files",
+    "BackupNoBackup": "No backups are currently available."
   }
 }

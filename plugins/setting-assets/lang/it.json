@@ -125,11 +125,11 @@
     "BackupTotalSnapshots": "Totale istantanee",
     "BackupTotalFiles": "File",
     "BackupSize": "Dimensione backup",
-    "BackupLinkInfo": "Una directory di backup è disponibile in",
-    "BackupBearerTokenInfo": "È richiesto un token di accesso per accedere al backup. Fare clic sul pulsante per copiare il token negli appunti.",
-    "BackupSnapshots": "Istantanee",
-    "BackupFileDownload": "Scarica",
-    "BackupFiles": "File",
-    "BackupNoBackup": "Nessun backup disponibile"
+    "BackupLinkInfo": "L'URL di una directory di backup che può essere scaricata ricorsivamente utilizzando strumenti come wget o curl.",
+    "BackupBearerTokenInfo": "È richiesto un token di accesso per accedere al backup.",
+    "BackupSnapshots": "Istantanee di backup",
+    "BackupFileDownload": "Scarica file",
+    "BackupFiles": "File di backup",
+    "BackupNoBackup": "Non sono attualmente disponibili backup."
   }
 }
