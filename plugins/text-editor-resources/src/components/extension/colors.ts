@@ -33,7 +33,7 @@ function colorVar (tag: string, prefix = 'text'): string {
 
 function colorSpec (tag: string, prefix = 'text'): ColorSpec {
   const color = colorVar(tag, prefix)
-  return { color, preview: colorVar(tag) }
+  return { color }
 }
 
 const palette = {

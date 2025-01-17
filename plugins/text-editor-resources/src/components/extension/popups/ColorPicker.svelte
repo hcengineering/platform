@@ -59,7 +59,8 @@
     position: relative;
     width: 1.5rem;
     height: 1.5rem;
-    border: 1px solid var(--theme-button-border);
+    border-radius: 0.25rem;
     cursor: pointer;
+    box-shadow: var(--text-editor-color-picker-outline) 0px 0px 0px 1px inset;
   }
 </style>
