@@ -295,7 +295,12 @@
     "DeleteDocumentCategoryPermission": "Delete document category",
     "DeleteDocumentCategoryDescription": "Grants users ability to delete a document category",
     "ConfigLabel": "Controlled Documents",
-    "ConfigDescription": "Extension to manage controlled documents"
+    "ConfigDescription": "Extension to manage controlled documents",
+
+    "Transfer": "Transfer",
+    "TransferWarning": "Some team members may lose the ability to view or edit this document after this action.",
+    "TransferDocuments": "Transfer controlled documents",
+    "TransferDocumentsHint": "Documents to be transferred to the selected space:"
   },
   "controlledDocStates": {
     "Empty": "",

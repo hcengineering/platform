@@ -118,6 +118,7 @@ export const documentsPlugin = plugin(documentsId, {
     DeleteDocument: '' as Ref<Action>,
     ArchiveDocument: '' as Ref<Action>,
     EditDocSpace: '' as Ref<Action>,
+    TransferDocument: '' as Ref<Action>,
     Print: '' as Ref<Action<Doc, { signed: boolean }>>
   },
   function: {
@@ -259,7 +260,12 @@ export const documentsPlugin = plugin(documentsId, {
     DeleteDocumentCategoryPermission: '' as IntlString,
     DeleteDocumentCategoryDescription: '' as IntlString,
     ConfigLabel: '' as IntlString,
-    ConfigDescription: '' as IntlString
+    ConfigDescription: '' as IntlString,
+
+    Transfer: '' as IntlString,
+    TransferWarning: '' as IntlString,
+    TransferDocuments: '' as IntlString,
+    TransferDocumentsHint: '' as IntlString
   },
   ids: {
     NoParent: '' as Ref<DocumentMeta>,

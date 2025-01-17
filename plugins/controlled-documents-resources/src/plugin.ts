@@ -238,6 +238,7 @@ export default mergeIds(documentsId, documents, {
     GetDocumentMetaLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     CanDeleteDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanArchiveDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanTransferDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     ControlledDocumentTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
   }
 })

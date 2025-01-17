@@ -679,6 +679,24 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
+      action: documents.actionImpl.TransferDocument,
+      label: documents.string.Transfer,
+      icon: view.icon.Move,
+      input: 'any',
+      category: view.category.General,
+      target: documents.class.ProjectDocument,
+      visibilityTester: documents.function.CanTransferDocument,
+      context: {
+        mode: ['context', 'browser'],
+        group: 'copy'
+      }
+    },
+    documents.action.TransferDocument
+  )
+
+  createAction(
+    builder,
+    {
       action: documents.actionImpl.DeleteDocument,
       label: view.string.Delete,
       icon: view.icon.Delete,

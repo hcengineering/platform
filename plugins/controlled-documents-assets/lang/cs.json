@@ -129,7 +129,12 @@
     "Copy": "kopírovat",
 
     "ConfigLabel": "Řízené dokumenty",
-    "ConfigDescription": "Rozšíření pro správu řízených dokumentů"
+    "ConfigDescription": "Rozšíření pro správu řízených dokumentů",
+
+    "Transfer": "Přenos",
+    "TransferWarning": "Někteří členové týmu mohou po této akci ztratit možnost prohlížet nebo upravovat tento dokument.",
+    "TransferDocuments": "Přenos řízených dokumentů",
+    "TransferDocumentsHint": "Dokumenty, které mají být přeneseny do vybraného prostoru:"
   },
   "controlledDocStates": {
     "Empty": "",
