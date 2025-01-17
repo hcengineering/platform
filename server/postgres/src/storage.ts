@@ -1267,7 +1267,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             switch (type) {
               case 'common':
                 if (Array.isArray(val) && val.includes(null)) {
-                  res.push(`(${tkey} = ANY(${vars.addArray(val, inferType(val))})) OR ${tkey} IS NULL)`)
+                  res.push(`(${tkey} = ANY(${vars.addArray(val, inferType(val))})) OR ${tkey} IS NULL`)
                 } else {
                   if (val.length > 0) {
                     res.push(`${tkey} = ANY(${vars.addArray(val, inferType(val))})`)
