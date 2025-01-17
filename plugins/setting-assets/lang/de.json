@@ -122,14 +122,14 @@
     "OwnerOrMaintainerRequired": "Sie müssen Eigentümer oder Betreuer des Arbeitsbereichs sein",
     "Backup": "Sicherung",
     "BackupLast": "Letzte Sicherung",
-    "BackupTotalSnapshots": "Gesamtanzahl Snapshots",
+    "BackupTotalSnapshots": "Gesamtanzahl der Schnappschüsse",
     "BackupTotalFiles": "Dateien",
     "BackupSize": "Sicherungsgröße",
-    "BackupLinkInfo": "Ein Sicherungsverzeichnis ist verfügbar unter",
-    "BackupBearerTokenInfo": "Für den Zugriff auf die Sicherung wird ein Bearer-Token benötigt. Bitte klicken Sie auf die Schaltfläche 'Kopieren', um den Token in die Zwischenablage zu kopieren.",
-    "BackupSnapshots": "Snapshots",
-    "BackupFileDownload": "Herunterladen",
-    "BackupFiles": "Dateien",
-    "BackupNoBackup": "Keine Sicherung verfügbar"
+    "BackupLinkInfo": "Die URL eines Sicherungsverzeichnisses, das rekursiv mit Tools wie wget oder curl heruntergeladen werden kann.",
+    "BackupBearerTokenInfo": "Ein Bearer-Token ist erforderlich, um auf die Sicherung zuzugreifen.",
+    "BackupSnapshots": "Sicherungsschnappschüsse",
+    "BackupFileDownload": "Datei herunterladen",
+    "BackupFiles": "Sicherungsdateien",
+    "BackupNoBackup": "Derzeit sind keine Sicherungen verfügbar."
   }
 }

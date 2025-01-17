@@ -20,6 +20,7 @@
     "bundle": "node ../../../common/scripts/esbuild.js",
     "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/ses",
     "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/ses staging",
+    "docker:abuild": "docker build -t hardcoreeng/ses . --platform=linux/arm64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/ses",
     "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/ses",
     "run-local": "cross-env SOURCE=no-reply@bold.ru ts-node src/index.ts",
     "format": "format src",

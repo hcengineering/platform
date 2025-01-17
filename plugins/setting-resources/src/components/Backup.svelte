@@ -22,6 +22,7 @@
   import { onMount } from 'svelte'
   import setting from '../plugin'
   import { BackupInfo, BackupSnapshot } from '../types'
+  import Expand from '@hcengineering/ui/src/components/icons/Expand.svelte'
 
   let loading = true
 
@@ -108,9 +109,9 @@
     if (diffHours < 24) {
       if (diffHours === 0) {
         const diffMinutes = Math.floor(diffMs / (1000 * 60))
-        return `- ${diffMinutes} minutes ago`
+        return `${diffMinutes} minutes ago`
       }
-      return `- ${diffHours} hours ago`
+      return `${diffHours} hours ago`
     }
 
     return ''
@@ -142,6 +143,7 @@
     }
   }
   let copied = false
+  let copied2 = false
 
   $: snapshots = backupInfo?.info?.snapshots ?? []
 </script>
@@ -172,47 +174,48 @@
         <span class="flex-row-center">
           <Label label={setting.string.BackupSize} />: {getBackupSize(backupInfo?.files ?? [])}
         </span>
-
-        <div class="mt-2">
-          <div class="flex-row-center mt-2">
-            <Label label={setting.string.BackupLinkInfo} />:
-            <a href={getFileUrl('index.html')} target="_blank" rel="noopener noreferrer">
-              <Link label="index.html">
-                {getFileUrl('index.html')}
-              </Link>
-            </a>
-          </div>
-          <div class="mt-2">
-            <Label label={setting.string.BackupBearerTokenInfo} />
-          </div>
-          <Button
-            label={copied ? view.string.Copied : view.string.CopyToClipboard}
-            on:click={() => {
-              void navigator.clipboard.writeText(token).then(() => {
-                copied = true
-                setTimeout(() => {
-                  copied = false
-                }, 2500)
-              })
-            }}
-          />
-        </div>
       </div>
 
       <Expandable bordered>
         <svelte:fragment slot="title">
-          <div class="flex-no-shrink flex-row-center">
+          <div class="flex-no-shrink flex-row-center p-1">
             <Label label={setting.string.BackupSnapshots} />:
             {snapshots.length}
           </div>
         </svelte:fragment>
+        <div class="p-1">
+          <div class="file-item">
+            <div class="file-name">{'index.json'}</div>
+            <div class="file-info">
+              <span class="file-size">
+                {getSize(JSON.stringify(backupInfo).length)}
+              </span>
+              <div class="file-actions">
+                <Button label={setting.string.BackupFileDownload} on:click={() => downloadFile('index.json')} />
+              </div>
+            </div>
+          </div>
+          <div class="file-item">
+            <div class="file-name">{'backup.json.gz'}</div>
+            <div class="file-info">
+              <span class="file-size">
+                {getSize(fileSizes.get('backup.json.gz') ?? 0)}
+              </span>
+              <div class="file-actions">
+                <Button label={setting.string.BackupFileDownload} on:click={() => downloadFile('backup.json.gz')} />
+              </div>
+            </div>
+          </div>
+        </div>
+
         {#if backupInfo?.info?.snapshots}
-          {#each backupInfo.info.snapshots as snapshot, i}
+          {@const snLen = backupInfo.info.snapshots.length}
+          {#each backupInfo.info.snapshots.reverse() as snapshot, i}
             <div class="flex-no-shrink">
               <Expandable expandable bordered>
                 <svelte:fragment slot="title">
-                  <div class="flex-row-center">
-                    #{i}
+                  <div class="flex-row-center ml-1">
+                    #{snLen - i}
                     {formatDate(snapshot.date)}
                     {formatAgoHours(snapshot.date)} -
                     {getSnapshotSummary(snapshot)}
@@ -226,6 +229,22 @@
                           <div class="domain-header">{domain}</div>
                           <div class="files-list">
                             {#each data.storage as filename}
+                              <div class="file-item">
+                                <div class="file-name">{filename}</div>
+                                <div class="file-info">
+                                  <span class="file-size">
+                                    {getSize(fileSizes.get(filename) ?? 0)}
+                                  </span>
+                                  <div class="file-actions">
+                                    <Button
+                                      label={setting.string.BackupFileDownload}
+                                      on:click={() => downloadFile(filename)}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            {/each}
+                            {#each data.snapshots ?? [] as filename}
                               <div class="file-item">
                                 <div class="file-name">{filename}</div>
                                 <div class="file-info">
@@ -260,27 +279,67 @@
         {/if}
       </Expandable>
 
-      <Expandable bordered>
+      <Expandable expanded={true} bordered>
         <svelte:fragment slot="title">
-          <div class="flex-no-shrink flex-row-center">
-            <Label label={setting.string.BackupFiles} />:
-            {backupInfo?.files.length}
-            {getBackupSize(backupInfo?.files ?? [])}
+          <div class="p-1">
+            <Label label={setting.string.BackupFiles} />
           </div>
         </svelte:fragment>
-        {#each backupInfo?.files ?? [] as file}
+        <div class="p-1">
           <div class="file-item">
-            <div class="file-name">{file.name}</div>
+            <div class="file-name">{'index.json'}</div>
             <div class="file-info">
-              <span class="file-size">
-                {getSize(file.size ?? 0)}
-              </span>
               <div class="file-actions">
-                <Button label={setting.string.BackupFileDownload} on:click={() => downloadFile(file.name)} />
+                <Button label={setting.string.BackupFileDownload} on:click={() => downloadFile('index.json')} />
               </div>
             </div>
           </div>
-        {/each}
+          <div class="file-item">
+            <div class="file-name">{'index.html'}</div>
+            <div class="file-info">
+              <div class="file-actions">
+                <Button label={setting.string.BackupFileDownload} on:click={() => downloadFile('index.html')} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-2">
+          <div class="flex-row-center mt-2 flex-between">
+            <div class="wrap">
+              <Label label={setting.string.BackupLinkInfo} />
+              <div class="select-text anti-component p-3 border-b-1 border-divider-color">
+                {getFileUrl('index.html')}
+              </div>
+            </div>
+            <Button
+              label={copied ? view.string.Copied : view.string.CopyToClipboard}
+              on:click={() => {
+                void navigator.clipboard.writeText(getFileUrl('index.html')).then(() => {
+                  copied = true
+                  setTimeout(() => {
+                    copied = false
+                  }, 2500)
+                })
+              }}
+            />
+          </div>
+          <div class="mt-2 flex-row-center flex-between">
+            <Label label={setting.string.BackupBearerTokenInfo} />
+
+            <Button
+              label={copied2 ? view.string.Copied : view.string.CopyToClipboard}
+              on:click={() => {
+                void navigator.clipboard.writeText(token).then(() => {
+                  copied2 = true
+                  setTimeout(() => {
+                    copied2 = false
+                  }, 2500)
+                })
+              }}
+            />
+          </div>
+        </div>
       </Expandable>
     {/if}
   </Scroller>
@@ -305,14 +364,14 @@
   .files-list {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.05rem;
   }
 
   .file-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem;
+    padding: 0.05rem;
     background-color: var(--theme-bg-accent);
     border-radius: 0.25rem;
 

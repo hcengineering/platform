@@ -113,14 +113,14 @@
     "OwnerOrMaintainerRequired": "Necesitas ser Propietario o Mantenedor del espacio de trabajo",
     "Backup": "Copia de seguridad",
     "BackupLast": "Última copia de seguridad",
-    "BackupTotalSnapshots": "Total de instantáneas",
+    "BackupTotalSnapshots": "Total instantáneas",
     "BackupTotalFiles": "Archivos",
-    "BackupSize": "Tamaño de la copia",
-    "BackupLinkInfo": "El directorio de copias de seguridad está disponible en",
-    "BackupBearerTokenInfo": "Se requiere un token de acceso para acceder a la copia de seguridad. Por favor, haga clic en el botón para copiar el token al portapapeles.",
-    "BackupSnapshots": "Instantáneas",
-    "BackupFileDownload": "Descargar",
-    "BackupFiles": "Archivos",
-    "BackupNoBackup": "No hay copias de seguridad disponibles"
+    "BackupSize": "Tamaño de la copia de seguridad",
+    "BackupLinkInfo": "La URL de un directorio de copia de seguridad que se puede descargar de forma recursiva usando herramientas como wget o curl.",
+    "BackupBearerTokenInfo": "Se requiere un token de portador para acceder a la copia de seguridad.",
+    "BackupSnapshots": "Instantáneas de copia de seguridad",
+    "BackupFileDownload": "Descargar archivo",
+    "BackupFiles": "Archivos de copia de seguridad",
+    "BackupNoBackup": "No hay copias de seguridad disponibles actualmente."
   }
 }

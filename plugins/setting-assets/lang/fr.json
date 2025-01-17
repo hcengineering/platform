@@ -125,11 +125,11 @@
     "BackupTotalSnapshots": "Total des instantanés",
     "BackupTotalFiles": "Fichiers",
     "BackupSize": "Taille de la sauvegarde",
-    "BackupLinkInfo": "Un répertoire de sauvegarde est disponible à",
-    "BackupBearerTokenInfo": "Un jeton d'authentification est nécessaire pour accéder à la sauvegarde. Veuillez cliquer sur le bouton pour copier le jeton dans le presse-papiers.",
-    "BackupSnapshots": "Instantanés",
-    "BackupFileDownload": "Télécharger",
-    "BackupFiles": "Fichiers",
-    "BackupNoBackup": "Aucune sauvegarde disponible"
+    "BackupLinkInfo": "L'URL d'un répertoire de sauvegarde pouvant être téléchargé de manière récursive à l'aide d'outils comme wget ou curl.",
+    "BackupBearerTokenInfo": "Un jeton d'accès est requis pour accéder à la sauvegarde.",
+    "BackupSnapshots": "Instantanés de sauvegarde",
+    "BackupFileDownload": "Télécharger le fichier",
+    "BackupFiles": "Fichiers de sauvegarde",
+    "BackupNoBackup": "Aucune sauvegarde n'est actuellement disponible."
   }
 }
