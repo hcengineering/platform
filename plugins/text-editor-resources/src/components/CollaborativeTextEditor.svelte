@@ -83,7 +83,7 @@
   import { type FileAttachFunction } from './extension/types'
   import { completionConfig, inlineCommandsConfig } from './extensions'
   import { mermaidOptions } from './extension/mermaid'
-  import { InlineCommentExtension } from './extension/inlineComment'
+  import { InlineCommentCollaborationExtension } from './extension/inlineComment'
 
   export let object: Doc
   export let attribute: KeyedAttribute
@@ -435,7 +435,12 @@
 
     if (enableInlineComments) {
       optionalExtensions.push(
-        InlineCommentExtension.configure({ ydoc, boundary, popupContainer: editorPopupContainer, requestSideSpace })
+        InlineCommentCollaborationExtension.configure({
+          ydoc,
+          boundary,
+          popupContainer: editorPopupContainer,
+          requestSideSpace
+        })
       )
     }
 

@@ -24,6 +24,7 @@ export const mermaidOptions: CodeBlockOptions = {
 export const MermaidExtension = CodeBlock.extend({
   name: 'mermaid',
   group: 'block',
+  marks: 'inline-comment',
 
   parseHTML () {
     return [
