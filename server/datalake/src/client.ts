@@ -90,9 +90,9 @@ export class DatalakeClient {
   async listObjects (
     ctx: MeasureContext,
     workspace: WorkspaceId,
-    cursor: string | undefined
+    cursor: string | undefined,
+    limit: number = 100
   ): Promise<ListObjectOutput> {
-    const limit = 100
     const path = `/blob/${workspace.name}`
     const url = new URL(concatLink(this.endpoint, path))
     url.searchParams.append('limit', String(limit))

@@ -1193,12 +1193,14 @@ export function devTool (
 
   program
     .command('copy-s3-datalake')
-    .description('migrate files from s3 to datalake')
+    .description('copy files from s3 to datalake')
     .option('-w, --workspace <workspace>', 'Selected workspace only', '')
     .option('-c, --concurrency <concurrency>', 'Number of files being processed concurrently', '10')
-    .action(async (cmd: { workspace: string, concurrency: string }) => {
+    .option('-e, --existing', 'Copy existing blobs', false)
+    .action(async (cmd: { workspace: string, concurrency: string, existing: boolean }) => {
       const params = {
-        concurrency: parseInt(cmd.concurrency)
+        concurrency: parseInt(cmd.concurrency),
+        existing: cmd.existing
       }
 
       const storageConfig = storageConfigFromEnv(process.env.STORAGE)
@@ -1222,14 +1224,32 @@ export function devTool (
         workspaces = workspaces
           .filter((p) => isActiveMode(p.mode) || isArchivingMode(p.mode))
           .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
-          .sort((a, b) => b.lastVisit - a.lastVisit)
+          // .sort((a, b) => b.lastVisit - a.lastVisit)
+          .sort((a, b) => {
+            if (a.backupInfo !== undefined && b.backupInfo !== undefined) {
+              return b.backupInfo.blobsSize - a.backupInfo.blobsSize
+            } else if (b.backupInfo !== undefined) {
+              return 1
+            } else if (a.backupInfo !== undefined) {
+              return -1
+            } else {
+              return b.lastVisit - a.lastVisit
+            }
+          })
       })
 
       const count = workspaces.length
+      console.log('found workspaces', count)
+
       let index = 0
       for (const workspace of workspaces) {
         index++
-        toolCtx.info('processing workspace', { workspace: workspace.workspace, index, count })
+        toolCtx.info('processing workspace', {
+          workspace: workspace.workspace,
+          index,
+          count,
+          blobsSize: workspace.backupInfo?.blobsSize ?? 0
+        })
         const workspaceId = getWorkspaceId(workspace.workspace)
 
         for (const config of storages) {
