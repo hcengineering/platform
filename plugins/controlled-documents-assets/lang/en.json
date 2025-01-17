@@ -298,7 +298,7 @@
     "ConfigDescription": "Extension to manage controlled documents",
 
     "Transfer": "Transfer",
-    "TransferWarning": "You and your team members may not be able to edit this document after this action.",
+    "TransferWarning": "Some team members may lose the ability to view or edit this document after this action.",
     "TransferDocuments": "Transfer controlled documents",
     "TransferDocumentsHint": "Documents to be transferred to the selected space:"
   },
