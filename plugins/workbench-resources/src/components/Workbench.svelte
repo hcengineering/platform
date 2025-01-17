@@ -665,7 +665,9 @@
     $sidebarStore.variant !== SidebarVariant.MINI &&
     $sidebarStore.widget === undefined &&
     $sidebarStore.widgetsState.size > 0
-  ) { $sidebarStore.widget = Array.from($sidebarStore.widgetsState.keys())[0] }
+  ) {
+    $sidebarStore.widget = Array.from($sidebarStore.widgetsState.keys())[0]
+  }
   location.subscribe(() => {
     if (mobileAdaptive && $sidebarStore.variant !== SidebarVariant.MINI) $sidebarStore.variant = SidebarVariant.MINI
   })
