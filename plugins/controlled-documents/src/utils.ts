@@ -489,10 +489,11 @@ async function _transferDocuments (
 
   if (mode === 'check') return true
 
-  const promises = Array.from(updates).map((u) => client.update(u[0], u[1]))
-  await Promise.all(promises)
+  const ops = client.apply()
+  for (const u of updates) await ops.update(u[0], u[1])
 
-  return true
+  const commit = await ops.commit()
+  return commit.result
 }
 
 /**
