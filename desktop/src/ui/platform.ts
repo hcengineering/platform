@@ -33,7 +33,7 @@ import presence, { presenceId } from '@hcengineering/presence'
 import { recruitId } from '@hcengineering/recruit'
 import rekoni from '@hcengineering/rekoni'
 import { requestId } from '@hcengineering/request'
-import { settingId } from '@hcengineering/setting'
+import setting, { settingId } from '@hcengineering/setting'
 import { supportId } from '@hcengineering/support'
 import { tagsId } from '@hcengineering/tags'
 import { taskId } from '@hcengineering/task'
@@ -345,6 +345,8 @@ export async function configurePlatform (): Promise<void> {
   })
 
   configureNotifications()
+
+  setMetadata(setting.metadata.BackupUrl, config.BACKUP_URL ?? '')
 
   if (config.INITIAL_URL !== '') {
     setLocationStorageKey('uberflow_child')

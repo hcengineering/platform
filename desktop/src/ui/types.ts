@@ -38,6 +38,8 @@ export interface Config {
   UPLOAD_CONFIG: string
   UPLOAD_URL: string
   VERSION?: string
+
+  BACKUP_URL?: string
 }
 
 export interface Branding {
