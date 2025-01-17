@@ -54,7 +54,7 @@
   $: if ($sidebarStore.widget === undefined) {
     sidebarStore.update((s) => ({ ...s, variant: SidebarVariant.MINI }))
   }
-  $: float = $deviceInfo.aside.float
+  $: float = $sidebarStore.float
 
   function closeWrongTabs (loc: Location): void {
     if (widget === undefined) return
@@ -99,7 +99,7 @@
   }
 </script>
 
-<div class="sidebar-wrap__content{float ? ` apps-${$deviceInfo.navigator.direction}` : ''}" class:float>
+<div class="sidebar-wrap__content{float ? ` float apps-${$deviceInfo.navigator.direction}` : ''}">
   {#if float && !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
     <Separator name={'main'} index={0} color={'var(--theme-navpanel-border)'} float={'sidebar'} />
   {/if}
