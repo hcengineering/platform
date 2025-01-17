@@ -45,16 +45,16 @@ export async function migrateFromOldAccounts (oldAccsUrl: string, accountDB: Acc
       }
 
       const accountUuid = await migrateAccount(account, accountDB)
-      accountsIdToUuid[account._id] = accountUuid
+      accountsIdToUuid[account._id.toString()] = accountUuid
       accountsEmailToUuid[account.email] = accountUuid
 
       accountsProcessed++
       if (accountsProcessed % 100 === 0) {
-        console.log('Processed accounts: ', accountsProcessed)
+        console.log('Processed accounts:', accountsProcessed)
       }
     }
 
-    console.log('Total accounts processed: ', accountsProcessed)
+    console.log('Total accounts processed:', accountsProcessed)
 
     let processedWorkspaces = 0
     const workspacesCursor = oldAccountDb.workspace.findCursor({})
@@ -71,12 +71,12 @@ export async function migrateFromOldAccounts (oldAccsUrl: string, accountDB: Acc
       }
       processedWorkspaces++
       if (processedWorkspaces % 100 === 0) {
-        console.log('Processed workspaces: ', processedWorkspaces)
+        console.log('Processed workspaces:', processedWorkspaces)
       }
     }
 
-    console.log('Total workspaces processed: ', processedWorkspaces)
-    console.log('Total workspaces created/ensured: ', Object.values(workspacesIdToUuid).length)
+    console.log('Total workspaces processed:', processedWorkspaces)
+    console.log('Total workspaces created/ensured:', Object.values(workspacesIdToUuid).length)
 
     let invitesProcessed = 0
     const invitesCursor = oldAccountDb.invite.findCursor({})
@@ -88,7 +88,7 @@ export async function migrateFromOldAccounts (oldAccsUrl: string, accountDB: Acc
 
       const workspaceUuid = workspacesIdToUuid[invite.workspace.name]
       if (workspaceUuid === undefined) {
-        console.log('No workspace with id', invite.workspace.name, ' found for invite ', invite._id)
+        console.log('No workspace with id', invite.workspace.name, 'found for invite', invite._id)
         continue
       }
 
@@ -103,10 +103,10 @@ export async function migrateFromOldAccounts (oldAccsUrl: string, accountDB: Acc
 
       invitesProcessed++
       if (invitesProcessed % 100 === 0) {
-        console.log('Processed invites: ', invitesProcessed)
+        console.log('Processed invites:', invitesProcessed)
       }
     }
-    console.log('Total invites processed: ', invitesProcessed)
+    console.log('Total invites processed:', invitesProcessed)
     await oldAccountDb.migration.insertOne({ key: migrationKey, completed: true })
     console.log('Migration of accounts database from old accounts COMPLETED')
   } finally {
@@ -188,13 +188,13 @@ async function migrateAccount (account: OldAccount, accountDB: AccountDB): Promi
 
 async function migrateWorkspace (workspace: OldWorkspace, accountDB: AccountDB, accountsIdToUuid: Record<string, string>, accountsEmailToUuid: Record<string, string>): Promise<string | undefined> {
   if (workspace.workspaceUrl == null) {
-    console.log('No workspace url, skipping ', workspace.workspace)
+    console.log('No workspace url, skipping', workspace.workspace)
     return
   }
 
   const createdBy = workspace.createdBy !== undefined ? accountsEmailToUuid[workspace.createdBy] : 'N/A'
   if (createdBy === undefined) {
-    console.log('No account found for workspace ', workspace.workspace, ' created by ', workspace.createdBy)
+    console.log('No account found for workspace', workspace.workspace, 'created by', workspace.createdBy)
     return
   }
 
@@ -237,11 +237,11 @@ async function migrateWorkspace (workspace: OldWorkspace, accountDB: AccountDB, 
   }
 
   const existingMembers = new Set((await accountDB.getWorkspaceMembers(workspaceUuid)).map((mi) => mi.person))
-  for (const member of workspace.accounts) {
+  for (const member of (workspace.accounts ?? []).map((it) => it.toString())) {
     const accountUuid = accountsIdToUuid[member]
 
     if (accountUuid === undefined) {
-      console.log('No account found for workspace ', workspace.workspace, ' member ', member)
+      console.log('No account found for workspace', workspace.workspace, 'member', member)
       continue
     }
 
@@ -249,7 +249,8 @@ async function migrateWorkspace (workspace: OldWorkspace, accountDB: AccountDB, 
       continue
     }
 
-    await accountDB.assignWorkspace(accountUuid, workspaceUuid, AccountRole.User) // TODO: SET ACTUAL USER ROLE
+    // Actual roles are being set in workspace migration
+    await accountDB.assignWorkspace(accountUuid, workspaceUuid, AccountRole.Guest)
   }
 
   return workspaceUuid
