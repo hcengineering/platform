@@ -45,6 +45,7 @@ export default {
           &copy; 2024 <a href="https://hulylabs.com">Huly Labs</a>`
         )
       )
+      .all('*', () => error(404))
 
     return await router.fetch(request).catch(error)
   }

@@ -92,6 +92,8 @@ export function createServerPipeline (
     adapterSecurity?: boolean
 
     externalStorage: StorageAdapter
+
+    extraLogging?: boolean // If passed, will log every request/etc.
   },
   extensions?: Partial<DbConfiguration>
 ): PipelineFactory {
