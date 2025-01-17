@@ -113,14 +113,14 @@
     "OwnerOrMaintainerRequired": "Precisa de ser proprietário ou mantenedor do espaço de trabalho",
     "Backup": "Backup",
     "BackupLast": "Último backup",
-    "BackupTotalSnapshots": "Total de instantâneos",
+    "BackupTotalSnapshots": "Total de Snapshots",
     "BackupTotalFiles": "Arquivos",
     "BackupSize": "Tamanho do backup",
-    "BackupLinkInfo": "Um diretório de backup está disponível em",
-    "BackupBearerTokenInfo": "É necessário um token de acesso para acessar o backup. Clique no botão para copiar o token para a área de transferência.",
-    "BackupSnapshots": "Instantâneos",
-    "BackupFileDownload": "Baixar",
-    "BackupFiles": "Arquivos",
-    "BackupNoBackup": "Nenhum backup disponível"
+    "BackupLinkInfo": "A URL de um diretório de backup que pode ser baixado recursivamente usando ferramentas como wget ou curl.",
+    "BackupBearerTokenInfo": "É necessário um token bearer para acessar o backup.",
+    "BackupSnapshots": "Snapshots de Backup",
+    "BackupFileDownload": "Baixar Arquivo",
+    "BackupFiles": "Arquivos de Backup",
+    "BackupNoBackup": "Não há backups disponíveis no momento."
   }
 }

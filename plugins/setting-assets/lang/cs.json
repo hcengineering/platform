@@ -122,14 +122,14 @@
     "OwnerOrMaintainerRequired": "Musíte být vlastníkem nebo správcem pracovního prostoru",
     "Backup": "Záloha",
     "BackupLast": "Poslední záloha",
-    "BackupTotalSnapshots": "Celkem snímků",
+    "BackupTotalSnapshots": "Celkový počet snímků",
     "BackupTotalFiles": "Soubory",
     "BackupSize": "Velikost zálohy",
-    "BackupLinkInfo": "Záložní adresář je dostupný na",
-    "BackupBearerTokenInfo": "Pro přístup k záloze je vyžadován přístupový token. Klikněte na tlačítko pro zkopírování tokenu do schránky.",
-    "BackupSnapshots": "Snímky",
-    "BackupFileDownload": "Stáhnout",
-    "BackupFiles": "Soubory",
-    "BackupNoBackup": "Žádná záloha není k dispozici"
+    "BackupLinkInfo": "URL adresář zálohy, který lze stáhnout rekurzivně pomocí nástrojů jako wget nebo curl.",
+    "BackupBearerTokenInfo": "Přístup k záloze vyžaduje bearer token.",
+    "BackupSnapshots": "Snímky záloh",
+    "BackupFileDownload": "Stáhnout soubor",
+    "BackupFiles": "Soubory záloh",
+    "BackupNoBackup": "V současné době nejsou k dispozici žádné zálohy."
   }
 }
