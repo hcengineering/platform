@@ -1244,7 +1244,12 @@ export function devTool (
       let index = 0
       for (const workspace of workspaces) {
         index++
-        toolCtx.info('processing workspace', { workspace: workspace.workspace, index, count, blobsSize: workspace.backupInfo?.blobsSize ?? 0 })
+        toolCtx.info('processing workspace', {
+          workspace: workspace.workspace,
+          index,
+          count,
+          blobsSize: workspace.backupInfo?.blobsSize ?? 0
+        })
         const workspaceId = getWorkspaceId(workspace.workspace)
 
         for (const config of storages) {
