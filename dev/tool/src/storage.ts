@@ -261,6 +261,7 @@ async function retryOnFailure<T> (
 
 export interface CopyDatalakeParams {
   concurrency: number
+  existing: boolean
 }
 
 export async function copyToDatalake (
@@ -281,7 +282,9 @@ export async function copyToDatalake (
 
   let time = Date.now()
   let processedCnt = 0
+  let processedSize = 0
   let skippedCnt = 0
+  let existingCnt = 0
   let failedCnt = 0
 
   function printStats (): void {
@@ -291,13 +294,31 @@ export async function copyToDatalake (
       processedCnt,
       'skipped',
       skippedCnt,
+      'existing',
+      existingCnt,
       'failed',
       failedCnt,
-      Math.round(duration / 1000) + 's'
+      Math.round(duration / 1000) + 's',
+      formatSize(processedSize)
     )
 
     time = Date.now()
   }
+
+  const existing = new Set<string>()
+
+  let cursor: string | undefined = ''
+  let hasMore = true
+  while (hasMore) {
+    const res = await datalake.listObjects(ctx, workspaceId, cursor, 1000)
+    cursor = res.cursor
+    hasMore = res.cursor !== undefined
+    for (const blob of res.blobs) {
+      existing.add(blob.name)
+    }
+  }
+
+  console.info('found blobs in datalake:', existing.size)
 
   const rateLimiter = new RateLimiter(params.concurrency)
 
@@ -315,6 +336,12 @@ export async function copyToDatalake (
           continue
         }
 
+        if (!params.existing && existing.has(objectName)) {
+          // TODO handle mutable blobs
+          existingCnt++
+          continue
+        }
+
         await rateLimiter.add(async () => {
           try {
             await retryOnFailure(
@@ -323,6 +350,7 @@ export async function copyToDatalake (
               async () => {
                 await copyBlobToDatalake(ctx, workspaceId, blob, config, adapter, datalake)
                 processedCnt += 1
+                processedSize += blob.size
               },
               50
             )
@@ -352,11 +380,6 @@ export async function copyBlobToDatalake (
   datalake: DatalakeClient
 ): Promise<void> {
   const objectName = blob._id
-  const stat = await datalake.statObject(ctx, workspaceId, objectName)
-  if (stat !== undefined) {
-    return
-  }
-
   if (blob.size < 1024 * 1024 * 64) {
     // Handle small file
     const { endpoint, accessKey: accessKeyId, secretKey: secretAccessKey, region } = config
@@ -391,4 +414,11 @@ export async function copyBlobToDatalake (
       }
     }
   }
+}
+
+export function formatSize (size: number): string {
+  const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+  const pow = size === 0 ? 0 : Math.floor(Math.log(size) / Math.log(1024))
+  const val = (1.0 * size) / Math.pow(1024, pow)
+  return `${val.toFixed(2)} ${units[pow]}`
 }

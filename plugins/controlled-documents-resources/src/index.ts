@@ -28,7 +28,9 @@ import {
   type Document,
   type DocumentSpace,
   DocumentState,
-  type DocumentMeta
+  type DocumentMeta,
+  type ProjectDocument,
+  type Project
 } from '@hcengineering/controlled-documents'
 import { type Resources } from '@hcengineering/platform'
 import { type ObjectSearchResult, getClient, MessageBox } from '@hcengineering/presentation'
@@ -101,6 +103,7 @@ import {
   createTemplate
 } from './utils'
 import { comment, isCommentVisible } from './text'
+import TransferDocumentPopup from './components/document/popups/TransferDocumentPopup.svelte'
 
 export { DocumentStatusTag, DocumentTitle, DocumentVersionPresenter, StatePresenter }
 
@@ -205,6 +208,46 @@ async function canArchiveDocument (obj?: Doc | Doc[]): Promise<boolean> {
       async (space) => await checkPermission(getClient(), documents.permission.ArchiveDocument, space)
     )
   ).then((res) => res.every((r) => r))
+}
+
+async function canTransferDocument (obj?: Doc | Doc[]): Promise<boolean> {
+  if (obj == null) {
+    return false
+  }
+
+  const objs = (Array.isArray(obj) ? obj : [obj]) as Document[]
+  const spaces = new Set(objs.map((doc) => doc.space))
+
+  return await Promise.all(
+    Array.from(spaces).map(
+      async (space) => await checkPermission(getClient(), documents.permission.ArchiveDocument, space)
+    )
+  ).then((res) => res.every((r) => r))
+}
+
+async function transferDocuments (selection: Document | Document[]): Promise<void> {
+  const objects = Array.isArray(selection) ? selection : [selection]
+
+  const client = getClient()
+  const h = client.getHierarchy()
+
+  let sourceDocumentIds: Array<Ref<DocumentMeta>> = []
+  let sourceSpaceId: Ref<DocumentSpace> | undefined
+  let sourceProjectId: Ref<Project<DocumentSpace>> | undefined
+
+  if (objects.length < 1) return
+  if (h.isDerived(objects[0]._class, documents.class.ProjectDocument)) {
+    const pjDocs = objects as unknown as ProjectDocument[]
+    const pjMeta = await client.findAll(documents.class.ProjectMeta, { _id: { $in: pjDocs.map((d) => d.attachedTo) } })
+    const docMeta = await client.findAll(documents.class.DocumentMeta, { _id: { $in: pjMeta.map((d) => d.meta) } })
+    sourceDocumentIds = docMeta.map((d) => d._id)
+    sourceSpaceId = pjDocs[0].space
+    sourceProjectId = pjDocs[0].project
+  }
+
+  if (sourceDocumentIds.length < 1) return
+
+  showPopup(TransferDocumentPopup, { sourceDocumentIds, sourceSpaceId, sourceProjectId })
 }
 
 async function isLatestDraftDoc (obj?: Doc | Doc[]): Promise<boolean> {
@@ -322,6 +365,7 @@ export default async (): Promise<Resources> => ({
     GetDocumentMetaLinkFragment: getDocumentMetaLinkFragment,
     CanDeleteDocument: canDeleteDocument,
     CanArchiveDocument: canArchiveDocument,
+    CanTransferDocument: canTransferDocument,
     DocumentIdentifierProvider: documentIdentifierProvider,
     ControlledDocumentTitleProvider: getControlledDocumentTitle,
     Comment: comment,
@@ -334,6 +378,7 @@ export default async (): Promise<Resources> => ({
     CreateTemplate: createTemplate,
     DeleteDocument: deleteDocuments,
     ArchiveDocument: archiveDocuments,
+    TransferDocument: transferDocuments,
     EditDocSpace: editDocSpace
   },
   resolver: {

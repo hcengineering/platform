@@ -293,7 +293,12 @@
     "DeleteDocumentCategoryPermission": "Dokumentenkategorie löschen",
     "DeleteDocumentCategoryDescription": "Gewährt Benutzern die Möglichkeit, eine Dokumentenkategorie zu löschen",
     "ConfigLabel": "Kontrollierte Dokumente",
-    "ConfigDescription": "Erweiterung zur Verwaltung kontrollierter Dokumente"
+    "ConfigDescription": "Erweiterung zur Verwaltung kontrollierter Dokumente",
+
+    "Transfer": "Übertragung",
+    "TransferWarning": "Einige Teammitglieder können dieses Dokument nach dieser Aktion möglicherweise nicht mehr anzeigen oder bearbeiten.",
+    "TransferDocuments": "Übertragung kontrollierter Dokumente",
+    "TransferDocumentsHint": "Dokumente, die in den ausgewählten Bereich übertragen werden sollen:"
   },
   "controlledDocStates": {
     "Empty": "",

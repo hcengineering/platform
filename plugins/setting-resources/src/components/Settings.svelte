@@ -136,7 +136,6 @@
   const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: settingPlg.ids.SettingsWidget })[0]
   $: if (moveASide && asideComponent != null && $sidebarStore.widget !== widget._id) {
     openWidget(widget, { component: asideComponent, ...asideProps }, { active: true, openedByUser: true })
-    $deviceInfo.aside.visible = true
   } else if (moveASide && asideComponent == null && $sidebarStore.widget === widget._id) {
     closeWidget(widget._id)
     minimizeSidebar()

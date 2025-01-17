@@ -39,12 +39,14 @@ export interface WidgetState {
 
 export interface SidebarState {
   variant: SidebarVariant
+  float: boolean
   widgetsState: Map<Ref<Widget>, WidgetState>
   widget?: Ref<Widget>
 }
 
 export const defaultSidebarState: SidebarState = {
   variant: SidebarVariant.MINI,
+  float: false,
   widgetsState: new Map()
 }
 
@@ -75,10 +77,12 @@ function getSidebarStateFromLocalStorage (workspace: string): SidebarState {
 
   try {
     const parsed = JSON.parse(state)
+    const device = get(deviceInfo)
 
     return {
       ...defaultSidebarState,
       ...parsed,
+      variant: device.isMobile && device.minWidth ? SidebarVariant.MINI : parsed.variant ?? defaultSidebarState.variant,
       widgetsState: new Map(Object.entries(parsed.widgetsState ?? {}))
     }
   } catch (e) {
@@ -94,9 +98,14 @@ function setSidebarStateToLocalStorage (state: SidebarState): void {
 
   const sidebarStateLocalStorageKey = getSideBarLocalStorageKey(workspace)
   if (sidebarStateLocalStorageKey === undefined) return
+  const device = get(deviceInfo)
   window.localStorage.setItem(
     sidebarStateLocalStorageKey,
-    JSON.stringify({ ...state, widgetsState: Object.fromEntries(state.widgetsState.entries()) })
+    JSON.stringify({
+      ...state,
+      variant: device.isMobile && device.minWidth ? SidebarVariant.MINI : state.variant,
+      widgetsState: Object.fromEntries(state.widgetsState.entries())
+    })
   )
 }
 
@@ -255,10 +264,6 @@ export function createWidgetTab (widget: Widget, tab: WidgetTab, newTab = false)
     widgetsState,
     variant: SidebarVariant.EXPANDED
   })
-  const devInfo = get(deviceInfo)
-  if (devInfo.aside.float && !devInfo.aside.visible) {
-    deviceInfo.set({ ...devInfo, aside: { visible: true, float: true } })
-  }
 }
 
 export function pinWidgetTab (widget: Widget, tabId: string): void {
@@ -338,10 +343,6 @@ export function minimizeSidebar (closedByUser = false): void {
   }
 
   sidebarStore.set({ ...state, ...widgetsState, widget: undefined, variant: SidebarVariant.MINI })
-  const devInfo = get(deviceInfo)
-  if (devInfo.aside.float && devInfo.aside.visible) {
-    deviceInfo.set({ ...devInfo, aside: { visible: false, float: true } })
-  }
 }
 
 export function updateTabData (widget: Ref<Widget>, tabId: string, data: Record<string, any>): void {

@@ -387,7 +387,7 @@
   $: activeParticipants = getActiveParticipants(participants)
 </script>
 
-<div bind:this={roomEl} class="flex-col-center w-full h-full right-navpanel-border" class:theme-dark={$isFullScreen}>
+<div bind:this={roomEl} class="flex-col-center w-full h-full" class:theme-dark={$isFullScreen}>
   {#if $isConnected && !$isCurrentInstanceConnected}
     <div class="flex justify-center error h-full w-full clear-mins">
       <Label label={love.string.AnotherWindowError} />

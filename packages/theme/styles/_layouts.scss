@@ -917,6 +917,11 @@ a.no-line {
 
 .text-line-through { text-decoration: line-through; }
 
+.hulyClipboardArea {
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
 .hidden-text {
   position: absolute;
   visibility: hidden;
