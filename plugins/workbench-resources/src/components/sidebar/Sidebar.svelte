@@ -61,7 +61,7 @@
   })
 </script>
 
-<div id="sidebar" class="antiPanel-application vertical sidebar-container" class:mini={mini || $deviceInfo.aside.float}>
+<div id="sidebar" class="antiPanel-application vertical sidebar-container" class:mini={mini || $sidebarStore.float}>
   {#if mini}
     <SidebarMini {widgets} {preferences} />
   {:else if $sidebarStore.variant === SidebarVariant.EXPANDED}

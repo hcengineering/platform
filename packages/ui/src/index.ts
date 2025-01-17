@@ -320,7 +320,6 @@ export const deviceOptionsStore = writable<DeviceOptions>({
   isPortrait: false,
   isMobile: false,
   navigator: { visible: true, float: false, direction: 'vertical' },
-  aside: { visible: true, float: false },
   fontSize: 0,
   size: null,
   sizes: { xs: false, sm: false, md: false, lg: false, xl: false, xxl: false },
