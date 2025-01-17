@@ -122,7 +122,7 @@ const close = (): void => {
 }
 
 process.on('unhandledRejection', (reason, promise) => {
-  metricsContext.error('Unhandled Rejection at:', { origin, promise })
+  metricsContext.error('Unhandled Rejection at:', { reason, promise })
 })
 
 global.process.on('uncaughtException', (error, origin) => {

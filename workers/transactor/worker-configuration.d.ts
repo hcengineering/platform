@@ -16,4 +16,6 @@ interface Env {
   ENABLE_COMPRESSION: string | undefined
 
   FULLTEXT_URL: string | undefined
+
+  DB_MODE: 'hyperdrive' | 'direct' | undefined
 }

@@ -19,7 +19,7 @@ import { getDBClient, retryTxn } from './utils'
 
 export { getDocFieldsByDomains, translateDomain } from './schemas'
 export * from './storage'
-export { convertDoc, createTables, getDBClient, retryTxn } from './utils'
+export { convertDoc, createTables, getDBClient, retryTxn, setDBExtraOptions, setDbUnsafePrepareOptions } from './utils'
 
 export function createPostgreeDestroyAdapter (url: string): WorkspaceDestroyAdapter {
   return {
@@ -33,7 +33,9 @@ export function createPostgreeDestroyAdapter (url: string): WorkspaceDestroyAdap
           for (const [domain] of Object.entries(domainSchemas)) {
             await ctx.with('delete-workspace-domain', {}, async () => {
               await retryTxn(connection, async (client) => {
-                await client`delete from ${connection(domain)} where "workspaceId" = '${connection(workspace.uuid ?? workspace.name)}'`
+                await client.unsafe(`delete from ${domain} where "workspaceId" = $1::uuid`, [
+                  workspace.uuid ?? workspace.name
+                ])
               })
             })
           }

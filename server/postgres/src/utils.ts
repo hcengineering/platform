@@ -30,7 +30,7 @@ import core, {
 } from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
-import postgres from 'postgres'
+import postgres, { type Options } from 'postgres'
 import {
   addSchema,
   type DataType,
@@ -83,37 +83,48 @@ export async function createTables (
     return
   }
   const mapped = filtered.map((p) => translateDomain(p))
-  const inArr = mapped.map((it) => `'${it}'`).join(', ')
   const tables = await ctx.with('load-table', {}, () =>
-    client.unsafe(`
+    client.unsafe(
+      `
     SELECT table_name 
-    FROM information_schema.tables 
-    WHERE table_name IN (${inArr})
-  `)
+    FROM information_schema.tables
+    WHERE table_name = ANY( $1::text[] )
+  `,
+      [mapped]
+    )
   )
 
   const exists = new Set(tables.map((it) => it.table_name))
 
-  await retryTxn(client, async (client) => {
-    const domainsToLoad = mapped.filter((it) => exists.has(it))
-    if (domainsToLoad.length > 0) {
-      await ctx.with('load-schemas', {}, () => getTableSchema(client, domainsToLoad))
-    }
-    for (const domain of mapped) {
-      if (!exists.has(domain)) {
-        await ctx.with('create-table', {}, () => createTable(client, domain))
-      }
+  const domainsToLoad = mapped.filter((it) => exists.has(it))
+  if (domainsToLoad.length > 0) {
+    await ctx.with('load-schemas', {}, () => getTableSchema(client, domainsToLoad))
+  }
+  const domainsToCreate: string[] = []
+  for (const domain of mapped) {
+    if (!exists.has(domain)) {
+      domainsToCreate.push(domain)
+    } else {
       loadedDomains.add(url + domain)
     }
-  })
+  }
+
+  if (domainsToCreate.length > 0) {
+    await retryTxn(client, async (client) => {
+      for (const domain of domainsToCreate) {
+        await ctx.with('create-table', {}, () => createTable(client, domain))
+        loadedDomains.add(url + domain)
+      }
+    })
+  }
 }
 
 async function getTableSchema (client: postgres.Sql, domains: string[]): Promise<void> {
   const res = await client.unsafe(
-    `SELECT column_name, data_type, is_nullable, table_name
+    `SELECT column_name::name, data_type::text, is_nullable::text, table_name::name
             FROM information_schema.columns
-            WHERE table_name = ANY($1) and table_schema = 'public' 
-            ORDER BY table_name, ordinal_position ASC;`,
+            WHERE table_name = ANY($1::text[]) and table_schema = 'public'::name 
+            ORDER BY table_name::name, ordinal_position::int ASC;`,
     [domains]
   )
 
@@ -266,6 +277,29 @@ export class ClientRef implements PostgresClientReference {
   }
 }
 
+let dbExtraOptions: Partial<Options<any>> = {}
+export function setDBExtraOptions (options: Partial<Options<any>>): void {
+  dbExtraOptions = options
+}
+
+export interface DbUnsafePrepareOptions {
+  upload: boolean
+  find: boolean
+  update: boolean
+  model: boolean
+}
+
+export let dbUnsafePrepareOptions: DbUnsafePrepareOptions = {
+  upload: true,
+  find: true,
+  update: true,
+  model: true
+}
+
+export function setDbUnsafePrepareOptions (options: DbUnsafePrepareOptions): void {
+  dbUnsafePrepareOptions = options
+}
+
 /**
  * Initialize a workspace connection to DB
  * @public
@@ -285,6 +319,11 @@ export function getDBClient (connectionString: string, database?: string): Postg
       transform: {
         undefined: null
       },
+      debug: false,
+      notice: false,
+      onnotice (notice) {},
+      onparameter (key, value) {},
+      ...dbExtraOptions,
       ...extraOptions
     })
 
@@ -374,7 +413,7 @@ export function inferType (val: any): string {
     return '::boolean'
   }
   if (Array.isArray(val)) {
-    const type = inferType(val[0])
+    const type = inferType(val[0] ?? val[1])
     if (type !== '') {
       return type + '[]'
     }
