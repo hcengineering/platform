@@ -71,6 +71,7 @@ interface NodePatchSpec {
 export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
   name: 'mermaid',
   group: 'block',
+  marks: 'inline-comment',
 
   draggable: true,
   selectable: true,
