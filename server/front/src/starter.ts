@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2024 Hardcore Engineering Inc.
+// Copyright © 2021-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -109,6 +109,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
 
   const brandingUrl = process.env.BRANDING_URL
 
+  const linkPreviewUrl = process.env.LINK_PREVIEW_URL
+
   setMetadata(serverToken.metadata.Secret, serverSecret)
 
   const disableSignUp = process.env.DISABLE_SIGNUP
@@ -130,7 +132,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     previewConfig,
     uploadConfig,
     pushPublicKey,
-    disableSignUp
+    disableSignUp,
+    linkPreviewUrl
   }
   console.log('Starting Front service with', config)
   const shutdown = start(ctx, config, SERVER_PORT, extraConfig)
