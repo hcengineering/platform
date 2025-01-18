@@ -283,13 +283,6 @@ function configureI18n(): void {
    addStringsLoader(surveyId, async (lang: string) => await import(`@hcengineering/survey-assets/lang/${lang}.json`))
 }
 
-function parseNumberOrZero(value?:string|number) :number {
-  if (typeof value === 'number' ) return value ?? 0;
-  
-  const parsed = parseInt(value ?? '0')
-  return isNaN(parsed) ? 0 : parsed
-}
-
 export async function configurePlatform() {
   setMetadata(platform.metadata.LoadHelper, async (loader) => {
     for (let i = 0; i < 5; i++) {
