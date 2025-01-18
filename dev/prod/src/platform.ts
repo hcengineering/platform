@@ -158,11 +158,7 @@ export interface Config {
   AI_URL?:string
   DISABLE_SIGNUP?: string
   LINK_PREVIEW_URL?: string
-  PASSWORD_MIN_LENGTH?: string | number
-  PASSWORD_MIN_SPECIAL_CHARS?: string | number
-  PASSWORD_MIN_DIGITS?: string | number
-  PASSWORD_MIN_UPPER_CHARS?: string | number
-  PASSWORD_MIN_LOWER_CHARS?: string | number
+  PASSWORD_STRICTNESS?: "very_strict" | "strict" | "normal" | "none"
   // Could be defined for dev environment
   FRONT_URL?: string
   PREVIEW_CONFIG?: string
@@ -201,6 +197,37 @@ const configs: Record<string, string> = {
   'dev-server': '/config.json',
   'dev-worker': '/config-worker.json',
   'dev-worker-local': '/config-worker-local.json',
+}
+
+const PASSWORD_REQUIREMENTS : Record<Config['PASSWORD_STRICTNESS'], Record<string, number>> = {
+  very_strict: {
+    MinDigits: 4,
+    MinLength: 32,
+    MinLowerChars: 4,
+    MinSpecialChars: 4,
+    MinUpperChars: 4
+  },
+  strict: {
+    MinDigits: 2,
+    MinLength: 16,
+    MinLowerChars: 2,
+    MinSpecialChars: 2,
+    MinUpperChars: 2
+  },
+  normal: {
+    MinDigits: 1,
+    MinLength: 8,
+    MinLowerChars: 1,
+    MinSpecialChars: 1,
+    MinUpperChars: 1
+  },
+  none: {
+    MinDigits: 0,
+    MinLength: 0,
+    MinLowerChars: 0,
+    MinSpecialChars: 0,
+    MinUpperChars: 0
+  }
 }
 
 function configureI18n(): void {
@@ -319,13 +346,7 @@ export async function configurePlatform() {
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(login.metadata.DisableSignUp, config.DISABLE_SIGNUP === 'true')
 
-  setMetadata(login.metadata.PasswordValidations, {
-    MinDigits: parseNumberOrZero(config.PASSWORD_MIN_DIGITS),
-    MinLength: parseNumberOrZero(config.PASSWORD_MIN_LENGTH),
-    MinLowerChars: parseNumberOrZero(config.PASSWORD_MIN_LOWER_CHARS),
-    MinSpecialChars: parseNumberOrZero(config.PASSWORD_MIN_SPECIAL_CHARS),
-    MinUpperChars: parseNumberOrZero(config.PASSWORD_MIN_UPPER_CHARS)
-  })
+  setMetadata(login.metadata.PasswordValidations, PASSWORD_REQUIREMENTS[config.PASSWORD_STRICTNESS ?? 'none'])
   
   setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
