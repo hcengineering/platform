@@ -504,7 +504,7 @@ export async function selectWorkspace (
       const result: WorkspaceLoginInfo = {
         endpoint: '',
         email,
-        token: '',
+        token: generateToken(email, getWorkspaceId(workspaceInfo.workspace), getExtra(accountInfo)),
         workspace: workspaceUrl,
         workspaceId: workspaceInfo.workspace,
         mode: workspaceInfo.mode,
