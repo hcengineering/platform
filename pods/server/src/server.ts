@@ -41,7 +41,7 @@ import {
   createPostgreeDestroyAdapter,
   createPostgresAdapter,
   createPostgresTxAdapter,
-  setDbUnsafePrepareOptions
+  setDBExtraOptions
 } from '@hcengineering/postgres'
 import { readFileSync } from 'node:fs'
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
@@ -83,11 +83,8 @@ export function start (
 
   const usePrepare = process.env.DB_PREPARE === 'true'
 
-  setDbUnsafePrepareOptions({
-    find: usePrepare,
-    model: false,
-    update: usePrepare,
-    upload: usePrepare
+  setDBExtraOptions({
+    prepare: usePrepare // We override defaults
   })
 
   registerServerPlugins()

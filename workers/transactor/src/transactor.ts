@@ -38,8 +38,9 @@ import {
   createPostgreeDestroyAdapter,
   createPostgresAdapter,
   createPostgresTxAdapter,
+  getDBClient,
   setDBExtraOptions,
-  setDbUnsafePrepareOptions
+  setExtraOptions
 } from '@hcengineering/postgres'
 import {
   createServerPipeline,
@@ -75,13 +76,11 @@ export class Transactor extends DurableObject<Env> {
       ssl: false,
       connection: {
         application_name: 'cloud-transactor'
-      }
+      },
+      prepare: false
     })
-    setDbUnsafePrepareOptions({
-      upload: false,
-      find: false,
-      update: false,
-      model: false
+    setExtraOptions({
+      useCF: true
     })
     registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
     registerAdapterFactory('postgresql', createPostgresAdapter, true)
@@ -105,23 +104,28 @@ export class Transactor extends DurableObject<Env> {
     console.log({ message: 'use stats', url: this.env.STATS_URL })
     console.log({ message: 'use fulltext', url: this.env.FULLTEXT_URL })
 
+    const dbUrl = env.DB_MODE === 'direct' ? env.DB_URL ?? '' : env.HYPERDRIVE.connectionString
+
     // TODO:
     const storage = createDummyStorageAdapter()
 
     this.pipelineFactory = async (ctx, ws, upgrade, broadcast, branding) => {
-      const pipeline = createServerPipeline(
-        this.measureCtx,
-        env.DB_MODE === 'direct' ? env.DB_URL ?? '' : env.HYPERDRIVE.connectionString,
-        model,
-        {
-          externalStorage: storage,
-          adapterSecurity: false,
-          disableTriggers: false,
-          fulltextUrl: env.FULLTEXT_URL,
-          extraLogging: true
-        }
-      )
-      return await pipeline(ctx, ws, upgrade, broadcast, branding)
+      const pipeline = createServerPipeline(this.measureCtx, dbUrl, model, {
+        externalStorage: storage,
+        adapterSecurity: false,
+        disableTriggers: false,
+        fulltextUrl: env.FULLTEXT_URL,
+        extraLogging: true
+      })
+      const result = await pipeline(ctx, ws, upgrade, broadcast, branding)
+
+      const client = getDBClient(dbUrl)
+      const connection = await client.getClient()
+      const t1 = Date.now()
+      await connection`select now()`
+      console.log('DB query time', Date.now() - t1)
+      client.close()
+      return result
     }
 
     void this.ctx

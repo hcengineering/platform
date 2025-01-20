@@ -57,6 +57,7 @@
     "Next": "Next",
     "Skip": "Skip",
     "SignUpCompleted": "Sign up completed",
-    "StartUsingHuly": "Start using Huly"
+    "StartUsingHuly": "Start using Huly",
+    "WorkspaceArchivedDesc": "Workspace is archived because of being unused, Please contact us to restore..."
   }
 }

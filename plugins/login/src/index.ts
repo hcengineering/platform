@@ -85,7 +85,9 @@ export default plugin(loginId, {
     LinkValidHours: '' as IntlString,
     EmailMask: '' as IntlString,
     NoLimit: '' as IntlString,
-    InviteLimit: '' as IntlString
+    InviteLimit: '' as IntlString,
+    WorkspaceArchived: '' as IntlString,
+    WorkspaceArchivedDesc: '' as IntlString
   },
   function: {
     SendInvite: '' as Resource<(email: string, personId?: Ref<Doc>, role?: AccountRole) => Promise<void>>,

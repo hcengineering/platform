@@ -100,6 +100,10 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
     return undefined
   }
 
+  if (loc.path[3] === undefined) {
+    return undefined
+  }
+
   if (loc.path[3] === 'surveys') {
     return undefined
   }
