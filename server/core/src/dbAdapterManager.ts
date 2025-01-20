@@ -109,7 +109,7 @@ export class DbAdapterManagerImpl implements DBAdapterManager {
     }
   }
 
-  async initAdapters (): Promise<void> {
+  async initAdapters (ctx: MeasureContext): Promise<void> {
     for (const [key, adapter] of this.adapters) {
       // already initialized
       if (key !== this.conf.domains[DOMAIN_TX] && adapter.init !== undefined) {
@@ -130,7 +130,7 @@ export class DbAdapterManagerImpl implements DBAdapterManager {
             }
           }
         }
-        await adapter?.init?.(this.metrics, domains, excludeDomains)
+        await ctx.with(`init adapter ${key}`, {}, (ctx) => adapter?.init?.(ctx, domains, excludeDomains))
       }
     }
   }

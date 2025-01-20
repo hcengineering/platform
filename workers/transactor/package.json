@@ -5,7 +5,7 @@
   "template": "cloud",
   "scripts": {
     "deploy": "wrangler deploy",
-    "dev": "wrangler dev --port 3335",
+    "dev": "wrangler dev --port 3335 --remote",
     "dev-local": "wrangler dev --port 3335 --local --upstream-protocol=http",
     "start": "wrangler dev --port 3335",
     "logs": "npx wrangler tail --format pretty", 
