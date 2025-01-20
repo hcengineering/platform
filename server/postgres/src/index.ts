@@ -19,7 +19,7 @@ import { getDBClient, retryTxn } from './utils'
 
 export { getDocFieldsByDomains, translateDomain } from './schemas'
 export * from './storage'
-export { convertDoc, createTables, getDBClient, retryTxn, setDBExtraOptions, setDbUnsafePrepareOptions } from './utils'
+export { convertDoc, createTables, getDBClient, retryTxn, setDBExtraOptions, setExtraOptions } from './utils'
 
 export function createPostgreeDestroyAdapter (url: string): WorkspaceDestroyAdapter {
   return {

@@ -55,6 +55,8 @@ process.on('exit', () => {
 const clientRefs = new Map<string, ClientRef>()
 const loadedDomains = new Set<string>()
 
+let loadedTables = new Set<string>()
+
 export async function retryTxn (
   pool: postgres.Sql,
   operation: (client: postgres.TransactionSql) => Promise<any>
@@ -83,26 +85,30 @@ export async function createTables (
     return
   }
   const mapped = filtered.map((p) => translateDomain(p))
-  const tables = await ctx.with('load-table', {}, () =>
-    client.unsafe(
-      `
+  const t = Date.now()
+  loadedTables =
+    loadedTables.size === 0
+      ? new Set(
+        (
+          await ctx.with('load-table', {}, () =>
+            client.unsafe(`
     SELECT table_name 
     FROM information_schema.tables
-    WHERE table_name = ANY( $1::text[] )
-  `,
-      [mapped]
-    )
-  )
+    WHERE table_schema NOT IN ('pg_catalog', 'information_schema')
+    AND table_name NOT LIKE 'pg_%'`)
+          )
+        ).map((it) => it.table_name)
+      )
+      : loadedTables
+  console.log('load-table', Date.now() - t)
 
-  const exists = new Set(tables.map((it) => it.table_name))
-
-  const domainsToLoad = mapped.filter((it) => exists.has(it))
+  const domainsToLoad = mapped.filter((it) => loadedTables.has(it))
   if (domainsToLoad.length > 0) {
     await ctx.with('load-schemas', {}, () => getTableSchema(client, domainsToLoad))
   }
   const domainsToCreate: string[] = []
   for (const domain of mapped) {
-    if (!exists.has(domain)) {
+    if (!loadedTables.has(domain)) {
       domainsToCreate.push(domain)
     } else {
       loadedDomains.add(url + domain)
@@ -120,13 +126,10 @@ export async function createTables (
 }
 
 async function getTableSchema (client: postgres.Sql, domains: string[]): Promise<void> {
-  const res = await client.unsafe(
-    `SELECT column_name::name, data_type::text, is_nullable::text, table_name::name
+  const res = await client.unsafe(`SELECT column_name::name, data_type::text, is_nullable::text, table_name::name
             FROM information_schema.columns
-            WHERE table_name = ANY($1::text[]) and table_schema = 'public'::name 
-            ORDER BY table_name::name, ordinal_position::int ASC;`,
-    [domains]
-  )
+            WHERE table_name IN (${domains.map((it) => `'${it}'`).join(', ')}) and table_schema = 'public'::name  
+            ORDER BY table_name::name, ordinal_position::int ASC;`)
 
   const schemas: Record<string, Schema> = {}
   for (const column of res) {
@@ -277,27 +280,25 @@ export class ClientRef implements PostgresClientReference {
   }
 }
 
-let dbExtraOptions: Partial<Options<any>> = {}
+export let dbExtraOptions: Partial<Options<any>> = {}
 export function setDBExtraOptions (options: Partial<Options<any>>): void {
   dbExtraOptions = options
 }
 
-export interface DbUnsafePrepareOptions {
-  upload: boolean
-  find: boolean
-  update: boolean
-  model: boolean
+export function getPrepare (): { prepare: boolean } {
+  return { prepare: dbExtraOptions.prepare ?? false }
 }
 
-export let dbUnsafePrepareOptions: DbUnsafePrepareOptions = {
-  upload: true,
-  find: true,
-  update: true,
-  model: true
+export interface DBExtraOptions {
+  useCF: boolean
 }
 
-export function setDbUnsafePrepareOptions (options: DbUnsafePrepareOptions): void {
-  dbUnsafePrepareOptions = options
+export let dbExtra: DBExtraOptions = {
+  useCF: false
+}
+
+export function setExtraOptions (options: DBExtraOptions): void {
+  dbExtra = options
 }
 
 /**
