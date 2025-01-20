@@ -31,6 +31,7 @@ import core, {
   AttachedDoc,
   Class,
   Collection,
+  combineAttributes,
   concatLink,
   Data,
   Doc,
@@ -82,6 +83,7 @@ import { markupToText, stripTags } from '@hcengineering/text'
 import { encodeObjectURI } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 import webpush, { WebPushError } from 'web-push'
+import { Analytics } from '@hcengineering/analytics'
 
 import { Content, ContextsCache, ContextsCacheKey, NotifyParams, NotifyResult } from './types'
 import {
@@ -102,7 +104,8 @@ import {
   replaceAll,
   toReceiverInfo,
   updateNotifyContextsSpace,
-  type NotificationProviderControl
+  type NotificationProviderControl,
+  getObjectSpace
 } from './utils'
 
 export function getPushCollaboratorTx (
@@ -933,16 +936,16 @@ async function removeContexts (
 
 export async function createCollabDocInfo (
   ctx: MeasureContext,
+  res: Tx[],
   collaborators: Ref<PersonAccount>[],
   control: TriggerControl,
   tx: TxCUD<Doc>,
   object: Doc,
   activityMessages: ActivityMessage[],
   params: NotifyParams,
-  unsubscribe: Ref<PersonAccount>[] = []
+  unsubscribe: Ref<PersonAccount>[] = [],
+  cache = new Map<Ref<Doc>, Doc>()
 ): Promise<Tx[]> {
-  let res: Tx[] = []
-
   if (tx.space === core.space.DerivedTx) {
     return res
   }
@@ -973,7 +976,35 @@ export async function createCollabDocInfo (
     await removeContexts(ctx, notifyContexts, unsubscribe, control)
   }
 
-  const targets = new Set(collaborators)
+  const space = await getObjectSpace(control, object, cache)
+
+  if (space === undefined) {
+    control.ctx.error('Cannot find space for object', object)
+    Analytics.handleError(
+      new Error(`Cannot find space ${object.space} for objectId ${object._id}, objectClass ${object._class}`)
+    )
+    return res
+  }
+
+  cache.set(space._id, space)
+
+  const filteredCollaborators = control.hierarchy.isDerived(object._class, core.class.SystemSpace)
+    ? collaborators
+    : collaborators.filter(
+      (it) =>
+        space.members.includes(it) ||
+          res.some((tx) => {
+            if (tx._class === core.class.TxUpdateDoc) {
+              const updateTx = tx as TxUpdateDoc<Space>
+              if (updateTx.objectId === space._id) {
+                const added = combineAttributes([updateTx.operations], 'members', '$push', '$each')
+                return added.includes(it)
+              }
+            }
+            return false
+          })
+    )
+  const targets = new Set(filteredCollaborators)
 
   // user is not collaborator of himself, but we should notify user of changes related to users account (mentions, comments etc)
   if (control.hierarchy.isDerived(object._class, contact.class.Person)) {
@@ -1106,8 +1137,7 @@ async function getSpaceCollabTxes (
     return []
   }
 
-  const space =
-    cache.get(doc.space) ?? (await control.findAll(ctx, core.class.Space, { _id: doc.space }, { limit: 1 }))[0]
+  const space = await getObjectSpace(control, doc, cache)
   if (space === undefined) return []
 
   cache.set(space._id, space)
@@ -1121,16 +1151,43 @@ async function getSpaceCollabTxes (
     if (collabs.collaborators !== undefined) {
       return await createCollabDocInfo(
         ctx,
+        [],
         collabs.collaborators as Ref<PersonAccount>[],
         control,
         tx,
         doc,
         activityMessages,
-        { isSpace: true, isOwn: false, shouldUpdateTimestamp: true }
+        { isSpace: true, isOwn: false, shouldUpdateTimestamp: true },
+        [],
+        cache
       )
     }
   }
   return []
+}
+
+async function pushCollaboratorsToPublicSpace (
+  control: TriggerControl,
+  doc: Doc,
+  collaborators: Ref<Account>[],
+  cache: Map<Ref<Doc>, Doc>
+): Promise<Tx[]> {
+  const space = await getObjectSpace(control, doc, cache)
+  if (space === undefined) return []
+
+  cache.set(space._id, space)
+
+  if (control.hierarchy.isDerived(space._class, core.class.SystemSpace)) {
+    return []
+  }
+
+  if (space.private) {
+    return []
+  }
+
+  return collaborators
+    .filter((it) => !space.members.includes(it))
+    .map((it) => control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, { $push: { members: it } }))
 }
 
 async function createCollaboratorDoc (
@@ -1152,21 +1209,36 @@ async function createCollaboratorDoc (
   const collaborators = await ctx.with('get-collaborators', {}, (ctx) => getDocCollaborators(ctx, doc, mixin, control))
   const mixinTx = getMixinTx(tx, control, collaborators)
 
-  const notificationTxes = await ctx.with('create-collabdocinfo', {}, (ctx) =>
-    createCollabDocInfo(ctx, collaborators as Ref<PersonAccount>[], control, tx, doc, activityMessage, {
-      isOwn: true,
-      isSpace: false,
-      shouldUpdateTimestamp: true
-    })
-  )
   res.push(mixinTx)
-  res.push(...notificationTxes)
 
   res.push(
     ...(await ctx.with('get-space-collabtxes', {}, (ctx) =>
       getSpaceCollabTxes(ctx, control, doc, tx, activityMessage, cache)
     ))
   )
+
+  res.push(...(await pushCollaboratorsToPublicSpace(control, doc, collaborators, cache)))
+
+  const notificationTxes = await ctx.with('create-collabdocinfo', {}, (ctx) =>
+    createCollabDocInfo(
+      ctx,
+      res,
+      collaborators as Ref<PersonAccount>[],
+      control,
+      tx,
+      doc,
+      activityMessage,
+      {
+        isOwn: true,
+        isSpace: false,
+        shouldUpdateTimestamp: true
+      },
+      [],
+      cache
+    )
+  )
+
+  res.push(...notificationTxes)
 
   return res
 }
@@ -1176,7 +1248,8 @@ async function updateCollaboratorsMixin (
   tx: TxMixin<Doc, Collaborators>,
   control: TriggerControl,
   activityMessages: ActivityMessage[],
-  originTx: TxCUD<Doc>
+  originTx: TxCUD<Doc>,
+  cache: Map<Ref<Doc>, Doc>
 ): Promise<Tx[]> {
   const { hierarchy } = control
 
@@ -1232,6 +1305,13 @@ async function updateCollaboratorsMixin (
     }
 
     if (newCollabs.length > 0) {
+      const object = cache.get(tx.objectId) ?? (await control.findAll(ctx, tx.objectClass, { _id: tx.objectId }))[0]
+      if (object === undefined) return res
+      const space = await getObjectSpace(control, object, cache)
+
+      cache.set(object._id, object)
+      cache.set(space._id, space)
+
       const docNotifyContexts = await control.findAll(ctx, notification.class.DocNotifyContext, {
         user: { $in: newCollabs },
         objectId: tx.objectId
@@ -1245,6 +1325,15 @@ async function updateCollaboratorsMixin (
       for (const collab of newCollabs) {
         const target = toReceiverInfo(hierarchy, infos.get(collab))
         if (target === undefined) continue
+        if (space.private && !space.members.includes(target.account._id)) continue
+
+        if (!hierarchy.isDerived(space._class, core.class.SystemSpace) && !space.members.includes(target.account._id)) {
+          res.push(
+            control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+              $push: { members: target.account._id }
+            })
+          )
+        }
 
         for (const message of activityMessages) {
           await pushActivityInboxNotifications(
@@ -1309,11 +1398,22 @@ async function collectionCollabDoc (
 
   res = res.concat(
     await ctx.with('create-collab-doc-info', {}, (ctx) =>
-      createCollabDocInfo(ctx, collaborators as Ref<PersonAccount>[], control, tx, doc, activityMessages, {
-        isOwn: false,
-        isSpace: false,
-        shouldUpdateTimestamp: true
-      })
+      createCollabDocInfo(
+        ctx,
+        res,
+        collaborators as Ref<PersonAccount>[],
+        control,
+        tx,
+        doc,
+        activityMessages,
+        {
+          isOwn: false,
+          isSpace: false,
+          shouldUpdateTimestamp: true
+        },
+        [],
+        cache
+      )
     )
   )
 
@@ -1446,7 +1546,6 @@ async function updateCollaboratorDoc (
   ctx: MeasureContext,
   tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>,
   control: TriggerControl,
-  originTx: TxCUD<Doc>,
   activityMessages: ActivityMessage[],
   cache: Map<Ref<Doc>, Doc>
 ): Promise<Tx[]> {
@@ -1479,13 +1578,15 @@ async function updateCollaboratorDoc (
       await ctx.with('create-collab-docinfo', {}, (ctx) =>
         createCollabDocInfo(
           ctx,
+          res,
           collabsInfo.result as Ref<PersonAccount>[],
           control,
           tx,
           doc,
           activityMessages,
           params,
-          collabsInfo.removed as Ref<PersonAccount>[]
+          collabsInfo.removed as Ref<PersonAccount>[],
+          cache
         )
       )
     )
@@ -1495,7 +1596,18 @@ async function updateCollaboratorDoc (
     )
     res.push(getMixinTx(tx, control, collaborators))
     res = res.concat(
-      await createCollabDocInfo(ctx, collaborators as Ref<PersonAccount>[], control, tx, doc, activityMessages, params)
+      await createCollabDocInfo(
+        ctx,
+        res,
+        collaborators as Ref<PersonAccount>[],
+        control,
+        tx,
+        doc,
+        activityMessages,
+        params,
+        [],
+        cache
+      )
     )
   }
 
@@ -1737,11 +1849,18 @@ export async function createCollaboratorNotifications (
     case core.class.TxUpdateDoc:
     case core.class.TxMixin: {
       let res = await ctx.with('updateCollaboratorDoc', {}, (ctx) =>
-        updateCollaboratorDoc(ctx, tx as TxUpdateDoc<Doc>, control, originTx ?? tx, activityMessages, cache)
+        updateCollaboratorDoc(ctx, tx as TxUpdateDoc<Doc>, control, activityMessages, cache)
       )
       res = res.concat(
         await ctx.with('updateCollaboratorMixin', {}, (ctx) =>
-          updateCollaboratorsMixin(ctx, tx as TxMixin<Doc, Collaborators>, control, activityMessages, originTx ?? tx)
+          updateCollaboratorsMixin(
+            ctx,
+            tx as TxMixin<Doc, Collaborators>,
+            control,
+            activityMessages,
+            originTx ?? tx,
+            cache
+          )
         )
       )
       return await applyUserTxes(ctx, control, res)
