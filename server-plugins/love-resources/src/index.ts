@@ -26,7 +26,8 @@ import core, {
   TxMixin,
   TxProcessor,
   TxUpdateDoc,
-  UserStatus
+  UserStatus,
+  combineAttributes
 } from '@hcengineering/core'
 import love, {
   Invite,
@@ -429,16 +430,6 @@ async function isRoomEmpty (
   }
 
   return false
-}
-
-function combineAttributes (attributes: any[], key: string, operator: string, arrayKey: string): any[] {
-  return Array.from(
-    new Set(
-      attributes.flatMap((attr) =>
-        Array.isArray(attr[operator]?.[key]?.[arrayKey]) ? attr[operator]?.[key]?.[arrayKey] : attr[operator]?.[key]
-      )
-    )
-  ).filter((v) => v != null)
 }
 
 async function OnRoomInfo (txes: TxCUD<RoomInfo>[], control: TriggerControl): Promise<Tx[]> {

@@ -34,7 +34,8 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc,
   UserStatus,
-  type MeasureContext
+  type MeasureContext,
+  combineAttributes
 } from '@hcengineering/core'
 import notification, { DocNotifyContext, NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString, translate } from '@hcengineering/platform'
@@ -357,16 +358,6 @@ async function OnChatMessageRemoved (txes: TxCUD<ChatMessage>[], control: Trigge
     })
   }
   return res
-}
-
-function combineAttributes (attributes: any[], key: string, operator: string, arrayKey: string): any[] {
-  return Array.from(
-    new Set(
-      attributes.flatMap((attr) =>
-        Array.isArray(attr[operator]?.[key]?.[arrayKey]) ? attr[operator]?.[key]?.[arrayKey] : attr[operator]?.[key]
-      )
-    )
-  ).filter((v) => v != null)
 }
 
 function getDirectsToHide (directs: DocNotifyContext[], date: Timestamp): DocNotifyContext[] {
