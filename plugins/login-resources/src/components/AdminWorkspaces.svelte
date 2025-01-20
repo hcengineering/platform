@@ -60,7 +60,8 @@
       (it) =>
         (it.workspaceName?.includes(search) ?? false) ||
         (it.workspaceUrl?.includes(search) ?? false) ||
-        it.workspace?.includes(search)
+        it.workspace?.includes(search) ||
+        it.createdBy?.includes(search)
     ),
     (it) => {
       const lastUsageDays = Math.round((now - it.lastVisit) / (1000 * 3600 * 24))
@@ -169,6 +170,9 @@
                           />
                         </div>
                       </span>
+                      <div class="ml-1" style:width={'12rem'}>
+                        {workspace.createdBy}
+                      </div>
                       <span class="label overflow-label" style:width={'8rem'}>
                         {workspace.region ?? ''}
                       </span>
