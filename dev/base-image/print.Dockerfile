@@ -1,5 +1,9 @@
 FROM hardcoreeng/base
 
+# Chromium hangs when usging LD_PRELOAD and MALLOC_CONF
+ENV LD_PRELOAD=
+ENV MALLOC_CONF=
+
 # We don't need the standalone Chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 # Set executable path for puppeteer
