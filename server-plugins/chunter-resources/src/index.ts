@@ -45,7 +45,7 @@ import {
   getDocCollaborators,
   getMixinTx
 } from '@hcengineering/server-notification-resources'
-import { markupToHTML, markupToText, stripTags } from '@hcengineering/text'
+import { markupToHTML, markupToText, stripTags } from '@hcengineering/text-core'
 import { workbenchId } from '@hcengineering/workbench'
 
 import { getPersonAccountById, NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
