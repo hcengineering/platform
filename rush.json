@@ -476,6 +476,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/text-core",
+      "projectFolder": "packages/text-core",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/text",
       "projectFolder": "packages/text",
       "shouldPublish": true

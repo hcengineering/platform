@@ -23,7 +23,6 @@
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",
-    "@types/crypto-js": "^4.1.1",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -42,8 +41,7 @@
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/templates": "^0.6.11",
-    "@hcengineering/view": "^0.6.13",
-    "crypto-js": "^4.1.1"
+    "@hcengineering/view": "^0.6.13"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

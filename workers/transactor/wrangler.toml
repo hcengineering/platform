@@ -25,6 +25,18 @@ mode = "smart"
 # ACCOUNTS_URL = "http://127.0.0.1:3000"
 # SERVER_SECRET = "secret"
 DB_MODE='hyperdrive'
+# FRONT_URL
+ENABLE_COMPRESSION=true
+# ACCOUNTS_URL
+# FULLTEXT_URL
+# STATS_URL
+# PUSH_PUBLIC_KEY
+# PUSH_PRIVATE_KEY
+# SENTRY_DSN
+# SUPPORT_WORKSPACE
+# TELEGRAM_BOT_URL
+# AI_BOT_URL
+# LAST_NAME_FIRST
 
 # Bind the Workers AI model catalog. Run machine learning models, powered by serverless GPUs, on Cloudflare’s global network
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#workers-ai

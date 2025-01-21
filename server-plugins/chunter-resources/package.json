@@ -50,6 +50,6 @@
     "@hcengineering/server-notification": "^0.6.1",
     "@hcengineering/server-notification-resources": "^0.6.0",
     "@hcengineering/server": "^0.6.4",
-    "@hcengineering/text": "^0.6.5"
+    "@hcengineering/text-core": "^0.6.0"
   }
 }

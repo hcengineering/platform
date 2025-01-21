@@ -37,7 +37,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "intl-messageformat": "^9.7.1"
+    "intl-messageformat": "^10.7.14"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

@@ -3,10 +3,10 @@ import MarkdownIt, { type Token } from 'markdown-it'
 import type { RuleCore } from 'markdown-it/lib/parser_core'
 import type StateCore from 'markdown-it/lib/rules_core/state_core'
 
+import { Attrs, AttrValue, MarkupMark, MarkupMarkType, MarkupNode, MarkupNodeType } from '@hcengineering/text-core'
+import { htmlToJSON } from '../markup/utils'
 import { addToSet, removeFromSet, sameSet } from './marks'
 import { messageContent } from './node'
-import { Attrs, AttrValue, MarkupMark, MarkupMarkType, MarkupNode, MarkupNodeType } from '../markup/model'
-import { htmlToJSON } from '../markup/utils'
 
 interface ParsingBlockRule {
   block: MarkupNodeType

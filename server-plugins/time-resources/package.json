@@ -47,7 +47,7 @@
     "@hcengineering/task": "^0.6.20",
     "@hcengineering/tracker": "^0.6.24",
     "@hcengineering/server-time": "^0.6.0",
-    "@hcengineering/text": "^0.6.5",
+    "@hcengineering/text-core": "^0.6.0",
     "@hcengineering/time": "^0.6.0"
   }
 }

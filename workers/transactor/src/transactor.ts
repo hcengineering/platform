@@ -16,7 +16,7 @@ import { setMetadata } from '@hcengineering/platform'
 import { RPCHandler } from '@hcengineering/rpc'
 import { ClientSession, createSessionManager, doSessionOp, type WebsocketData } from '@hcengineering/server'
 import serverClient from '@hcengineering/server-client'
-import {
+import serverCore, {
   createDummyStorageAdapter,
   initStatisticsContext,
   loadBrandingMap,
@@ -52,6 +52,12 @@ import {
 } from '@hcengineering/server-pipeline'
 import { CloudFlareLogger } from './logger'
 import model from './model.json'
+// import { configureAnalytics } from '@hcengineering/analytics-service'
+// import { Analytics } from '@hcengineering/analytics'
+import serverAiBot from '@hcengineering/server-ai-bot'
+import serverNotification from '@hcengineering/server-notification'
+import serverTelegram from '@hcengineering/server-telegram'
+import contactPlugin from '@hcengineering/contact'
 
 export const PREFERRED_SAVE_SIZE = 500
 export const PREFERRED_SAVE_INTERVAL = 30 * 1000
@@ -82,6 +88,20 @@ export class Transactor extends DurableObject<Env> {
     setExtraOptions({
       useCF: true
     })
+
+    // configureAnalytics(env.SENTRY_DSN, {})
+    // Analytics.setTag('application', 'transactor')
+
+    const lastNameFirst = process.env.LAST_NAME_FIRST === 'true'
+    setMetadata(contactPlugin.metadata.LastNameFirst, lastNameFirst)
+    setMetadata(serverCore.metadata.FrontUrl, env.FRONT_URL)
+    setMetadata(serverCore.metadata.FilesUrl, env.FILES_URL)
+    setMetadata(serverNotification.metadata.SesUrl, env.SES_URL ?? '')
+    setMetadata(serverNotification.metadata.SesAuthToken, env.SES_AUTH_TOKEN)
+    setMetadata(serverTelegram.metadata.BotUrl, process.env.TELEGRAM_BOT_URL)
+    setMetadata(serverAiBot.metadata.SupportWorkspaceId, process.env.SUPPORT_WORKSPACE)
+    setMetadata(serverAiBot.metadata.EndpointURL, process.env.AI_BOT_URL)
+
     registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
     registerAdapterFactory('postgresql', createPostgresAdapter, true)
     registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)

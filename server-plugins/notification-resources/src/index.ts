@@ -79,10 +79,9 @@ import serverNotification, {
   SenderInfo
 } from '@hcengineering/server-notification'
 import serverView from '@hcengineering/server-view'
-import { markupToText, stripTags } from '@hcengineering/text'
+import { markupToText, stripTags } from '@hcengineering/text-core'
 import { encodeObjectURI } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
-import webpush, { WebPushError } from 'web-push'
 import { Analytics } from '@hcengineering/analytics'
 
 import { Content, ContextsCache, ContextsCacheKey, NotifyParams, NotifyResult } from './types'
@@ -574,10 +573,9 @@ export async function createPushNotification (
   senderAvatar?: Data<AvatarInfo>,
   path?: string[]
 ): Promise<void> {
-  const publicKey = getMetadata(notification.metadata.PushPublicKey)
-  const privateKey = getMetadata(serverNotification.metadata.PushPrivateKey)
-  const subject = getMetadata(serverNotification.metadata.PushSubject) ?? 'mailto:hey@huly.io'
-  if (privateKey === undefined || publicKey === undefined) return
+  const sesURL: string | undefined = getMetadata(serverNotification.metadata.SesUrl)
+  const sesAuth: string | undefined = getMetadata(serverNotification.metadata.SesAuthToken)
+  if (sesURL === undefined || sesURL === '') return
   const userSubscriptions = subscriptions.filter((it) => it.user === target)
   const data: PushData = {
     title,
@@ -604,34 +602,45 @@ export async function createPushNotification (
     }
   }
 
-  webpush.setVapidDetails(subject, publicKey, privateKey)
   const limiter = new RateLimiter(5)
-
   for (const subscription of userSubscriptions) {
     await limiter.add(async () => {
-      await sendPushToSubscription(control, target, subscription, data)
+      await sendPushToSubscription(sesURL, sesAuth, control, target, subscription, data)
     })
   }
+  await limiter.waitProcessing()
 }
 
-const errorMessages = ['expired', 'Unregistered', 'No such subscription']
-
 async function sendPushToSubscription (
+  sesURL: string,
+  sesAuth: string | undefined,
   control: TriggerControl,
   targetUser: Ref<Account>,
   subscription: PushSubscription,
   data: PushData
 ): Promise<void> {
   try {
-    await webpush.sendNotification(subscription, JSON.stringify(data))
+    const result: 'ok' | 'clear-push' = (
+      await (
+        await fetch(concatLink(sesURL, '/web-push'), {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
+          },
+          body: JSON.stringify({
+            subscription,
+            data
+          })
+        })
+      ).json()
+    ).result
+    if (result === 'clear-push') {
+      const tx = control.txFactory.createTxRemoveDoc(subscription._class, subscription.space, subscription._id)
+      await control.apply(control.ctx, [tx])
+    }
   } catch (err) {
     control.ctx.info('Cannot send push notification to', { user: targetUser, err })
-    if (err instanceof WebPushError) {
-      if (errorMessages.some((p) => JSON.stringify((err as WebPushError).body).includes(p))) {
-        const tx = control.txFactory.createTxRemoveDoc(subscription._class, subscription.space, subscription._id)
-        await control.apply(control.ctx, [tx])
-      }
-    }
   }
 }
 
