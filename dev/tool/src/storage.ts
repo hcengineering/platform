@@ -425,7 +425,7 @@ function uploadMultipart (
   return new Promise<void>((resolve, reject) => {
     const passthrough = new PassThrough()
 
-    const cleanup = () => {
+    const cleanup = (): void => {
       stream.removeAllListeners()
       passthrough.removeAllListeners()
       stream.destroy()
