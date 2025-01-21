@@ -103,7 +103,7 @@
 
   {#await srcRef then src}
     {#if !isLoading}
-      {#if src === ''}
+      {#if src === '' || src === undefined}
         <div class="centered">
           <Label label={presentation.string.FailedToPreview} />
         </div>

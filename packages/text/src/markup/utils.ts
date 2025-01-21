@@ -18,100 +18,23 @@ import { Editor, Extensions, getSchema } from '@tiptap/core'
 import { generateHTML, generateJSON } from '@tiptap/html'
 import { Node as ProseMirrorNode, Schema } from '@tiptap/pm/model'
 
-import { deepEqual } from 'fast-equals'
+import {
+  MarkupNode,
+  emptyMarkupNode,
+  jsonToMarkup,
+  markupToJSON,
+  nodeDoc,
+  nodeParagraph,
+  nodeText
+} from '@hcengineering/text-core'
 import { defaultExtensions } from '../extensions'
-import { nodeDoc, nodeParagraph, nodeText } from './dsl'
-import { MarkupMark, MarkupNode, MarkupNodeType, emptyMarkupNode } from './model'
 
 /** @public */
-export const EmptyMarkup: Markup = jsonToMarkup(emptyMarkupNode())
 const defaultSchema = getSchema(defaultExtensions)
 
 /** @public */
 export function getMarkup (editor?: Editor): Markup {
   return jsonToMarkup(editor?.getJSON() as MarkupNode)
-}
-
-/** @public */
-export function isEmptyMarkup (markup: Markup | undefined): boolean {
-  if (markup === undefined || markup === null || markup === '') {
-    return true
-  }
-  return isEmptyNode(markupToJSON(markup))
-}
-
-/** @public */
-export function areEqualMarkups (markup1: Markup, markup2: Markup): boolean {
-  if (markup1 === markup2) {
-    return true
-  }
-
-  const node1 = markupToJSON(markup1)
-  const node2 = markupToJSON(markup2)
-
-  if (isEmptyNode(node1) && isEmptyNode(node2)) {
-    return true
-  }
-
-  return equalNodes(node1, node2)
-}
-
-/** @public */
-export function areEqualJson (json1: MarkupNode, json2: MarkupNode): boolean {
-  return equalNodes(json1, json2)
-}
-
-function equalNodes (node1: MarkupNode, node2: MarkupNode): boolean {
-  if (node1.type !== node2.type) return false
-
-  const text1 = node1.text ?? ''
-  const text2 = node2.text ?? ''
-  if (text1 !== text2) return false
-
-  if (!equalArrays(node1.content, node2.content, equalNodes)) return false
-  if (!equalArrays(node1.marks, node2.marks, equalMarks)) return false
-  if (!equalRecords(node1.attrs, node2.attrs)) return false
-
-  return true
-}
-
-function equalArrays<T> (a: T[] | undefined, b: T[] | undefined, equal: (a: T, b: T) => boolean): boolean {
-  if (a === b) return true
-  const arr1 = a ?? []
-  const arr2 = b ?? []
-  if (arr1.length !== arr2.length) return false
-  return arr1.every((item1, i) => equal(item1, arr2[i]))
-}
-
-function equalRecords (a: Record<string, any> | undefined, b: Record<string, any> | undefined): boolean {
-  if (a === b) return true
-  a = Object.fromEntries(Object.entries(a ?? {}).filter(([_, v]) => v != null))
-  b = Object.fromEntries(Object.entries(b ?? {}).filter(([_, v]) => v != null))
-  return deepEqual(a, b)
-}
-
-function equalMarks (a: MarkupMark, b: MarkupMark): boolean {
-  return a.type === b.type && equalRecords(a.attrs, b.attrs)
-}
-
-const emptyNodes = [MarkupNodeType.hard_break]
-
-const nonEmptyNodes = [
-  MarkupNodeType.horizontal_rule,
-  MarkupNodeType.image,
-  MarkupNodeType.reference,
-  MarkupNodeType.subLink,
-  MarkupNodeType.table
-]
-
-/** @public */
-export function isEmptyNode (node: MarkupNode): boolean {
-  if (emptyNodes.includes(node.type)) return true
-  if (nonEmptyNodes.includes(node.type)) return false
-  if (node.text !== undefined && node.text?.trim().length > 0) return false
-
-  const content = node.content ?? []
-  return content.every(isEmptyNode)
 }
 
 // Markup
@@ -127,15 +50,8 @@ export function markupToPmNode (markup: Markup, schema?: Schema, extensions?: Ex
   return jsonToPmNode(json, schema, extensions)
 }
 
-// JSON
-
 /** @public */
-export function jsonToMarkup (json: MarkupNode): Markup {
-  return JSON.stringify(json)
-}
-
-/** @public */
-export function markupToJSON (markup: Markup): MarkupNode {
+export function markupHtmlToJSON (markup: Markup): MarkupNode {
   if (markup == null || markup === '') {
     return emptyMarkupNode()
   }
@@ -178,10 +94,10 @@ export function pmNodeToText (node: ProseMirrorNode): string {
   return jsonToText(node.toJSON())
 }
 
-export function markupToText (markup: Markup, schema?: Schema, extensions?: Extensions): string {
-  const pmNode = markupToPmNode(markup, schema, extensions)
-  return pmNode.textBetween(0, pmNode.content.size, '\n', '')
-}
+// export function markupToText (markup: Markup, schema?: Schema, extensions?: Extensions): string {
+//   const pmNode = markupToPmNode(markup, schema, extensions)
+//   return pmNode.textBetween(0, pmNode.content.size, '\n', '')
+// }
 
 // HTML
 
@@ -191,11 +107,11 @@ export function htmlToMarkup (html: string, extensions?: Extensions): Markup {
   return jsonToMarkup(json)
 }
 
-/** @public */
-export function markupToHTML (markup: Markup, extensions?: Extensions): string {
-  const json = markupToJSON(markup)
-  return jsonToHTML(json, extensions)
-}
+// /** @public */
+// export function markupToHTML (markup: Markup, extensions?: Extensions): string {
+//   const json = markupToJSON(markup)
+//   return jsonToHTML(json, extensions)
+// }
 
 /** @public */
 export function htmlToJSON (html: string, extensions?: Extensions): MarkupNode {
@@ -220,56 +136,4 @@ export function htmlToPmNode (html: string, schema?: Schema, extensions?: Extens
 export function pmNodeToHTML (node: ProseMirrorNode, extensions?: Extensions): string {
   extensions ??= defaultExtensions
   return generateHTML(node.toJSON(), extensions)
-}
-
-// UTILS
-
-const ELLIPSIS_CHAR = '…'
-const WHITESPACE = ' '
-
-/** @public */
-export function stripTags (markup: Markup, textLimit = 0, extensions: Extensions | undefined = undefined): string {
-  const schema = extensions === undefined ? defaultSchema : getSchema(extensions)
-  const parsed = markupToPmNode(markup, schema)
-
-  const textParts: string[] = []
-  let charCount = 0
-  let isHardStop = false
-
-  const pushText = (text: string): void => {
-    if (textLimit > 0 && charCount + text.length > textLimit) {
-      const toAddCount = textLimit - charCount
-      const textPart = text.substring(0, toAddCount)
-      textParts.push(textPart)
-      textParts.push(ELLIPSIS_CHAR)
-      isHardStop = true
-    } else {
-      textParts.push(text)
-      charCount += text.length
-    }
-  }
-
-  parsed.descendants((node, _pos, parent): boolean => {
-    if (isHardStop) {
-      return false
-    }
-
-    if (node.type.isText) {
-      const text = node.text ?? ''
-      pushText(text)
-      return false
-    } else if (node.type.isBlock) {
-      if (textParts.length > 0 && textParts[textParts.length - 1] !== WHITESPACE) {
-        textParts.push(WHITESPACE)
-        charCount++
-      }
-    } else if (node.type.name === 'reference') {
-      const label = node.attrs.label ?? ''
-      pushText(label.length > 0 ? `@${label}` : '')
-    }
-    return true
-  })
-
-  const result = textParts.join('')
-  return result
 }

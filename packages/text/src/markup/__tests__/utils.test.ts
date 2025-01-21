@@ -17,28 +17,34 @@
 // limitations under the License.
 //
 
-import { Editor, getSchema } from '@tiptap/core'
-import { MarkupMarkType, MarkupNode, MarkupNodeType } from '../model'
 import {
   areEqualMarkups,
+  isEmptyMarkup,
+  isEmptyNode,
+  jsonToMarkup,
+  MarkupMarkType,
+  MarkupNode,
+  MarkupNodeType,
+  markupToJSON,
+  nodeDoc,
+  nodeParagraph,
+  nodeText,
+  markupToHTML
+} from '@hcengineering/text-core'
+import { Editor, getSchema } from '@tiptap/core'
+import { ServerKit } from '../../kits/server-kit'
+import {
   getMarkup,
   htmlToJSON,
   htmlToMarkup,
   htmlToPmNode,
-  isEmptyMarkup,
-  isEmptyNode,
   jsonToHTML,
-  jsonToMarkup,
   jsonToText,
-  markupToHTML,
-  markupToJSON,
   markupToPmNode,
   pmNodeToHTML,
   pmNodeToJSON,
   pmNodeToMarkup
 } from '../utils'
-import { ServerKit } from '../../kits/server-kit'
-import { nodeDoc, nodeParagraph, nodeText } from '../dsl'
 
 // mock tiptap functions
 jest.mock('@tiptap/html', () => ({

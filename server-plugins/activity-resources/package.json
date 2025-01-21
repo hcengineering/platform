@@ -44,7 +44,7 @@
     "@hcengineering/server-activity": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-notification-resources": "^0.6.0",
-    "@hcengineering/text": "^0.6.5",
+    "@hcengineering/text-core": "^0.6.0",
     "@hcengineering/contact": "^0.6.24"
   }
 }

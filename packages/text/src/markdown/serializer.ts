@@ -1,8 +1,8 @@
+import { MarkupMark, MarkupNode, MarkupNodeType } from '@hcengineering/text-core'
 import { generateHTML } from '@tiptap/html'
+import { defaultExtensions } from '../extensions'
 import { isInSet, markEq } from './marks'
 import { messageContent, nodeAttrs } from './node'
-import { MarkupMark, MarkupNode, MarkupNodeType } from '../markup/model'
-import { defaultExtensions } from '../extensions'
 
 type FirstDelim = (i: number, attrs?: Record<string, any>, parentAttrs?: Record<string, any>) => string
 interface IState {

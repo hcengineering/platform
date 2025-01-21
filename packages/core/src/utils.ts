@@ -904,3 +904,18 @@ export class TimeRateLimiter {
     }
   }
 }
+
+export function combineAttributes (
+  attributes: any[],
+  key: string,
+  operator: '$push' | '$pull',
+  arrayKey: '$each' | '$in'
+): any[] {
+  return Array.from(
+    new Set(
+      attributes.flatMap((attr) =>
+        Array.isArray(attr[operator]?.[key]?.[arrayKey]) ? attr[operator]?.[key]?.[arrayKey] : attr[operator]?.[key]
+      )
+    )
+  ).filter((v) => v != null)
+}

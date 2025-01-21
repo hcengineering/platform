@@ -13,20 +13,57 @@
 // limitations under the License.
 //
 
+import { PushSubscription, type PushData } from '@hcengineering/notification'
+import type { Request, Response } from 'express'
+import webpush, { WebPushError } from 'web-push'
 import config from './config'
 import { createServer, listen } from './server'
 import { SES } from './ses'
 import { Endpoint } from './types'
 
+const errorMessages = ['expired', 'Unregistered', 'No such subscription']
+async function sendPushToSubscription (subscription: PushSubscription, data: PushData): Promise<'ok' | 'clear-push'> {
+  try {
+    await webpush.sendNotification(subscription, JSON.stringify(data))
+  } catch (err: any) {
+    if (err instanceof WebPushError) {
+      if (errorMessages.some((p) => JSON.stringify((err as WebPushError).body).includes(p))) {
+        return 'clear-push'
+      }
+    }
+  }
+  return 'ok'
+}
+
 export const main = async (): Promise<void> => {
   const ses = new SES()
   console.log('SES service has been started')
+
+  if (config.PushPublicKey !== undefined && config.PushPrivateKey !== undefined) {
+    webpush.setVapidDetails(config.PushSubject ?? 'mailto:hey@huly.io', config.PushPublicKey, config.PushPublicKey)
+  }
+
+  const checkAuth = (req: Request<any>, res: Response<any>): boolean => {
+    if (config.AuthToken !== undefined) {
+      // We need to verify authorization
+      const authorization = req.headers.authorization ?? ''
+      const token = authorization.replace('Bearer ', '')
+      if (token !== config.AuthToken) {
+        res.status(401).send({ err: 'Invalid auth token' })
+        return false
+      }
+    }
+    return true
+  }
 
   const endpoints: Endpoint[] = [
     {
       endpoint: '/send',
       type: 'post',
       handler: async (req, res) => {
+        if (!checkAuth(req, res)) {
+          return
+        }
         const text = req.body?.text
         if (text === undefined) {
           res.status(400).send({ err: "'text' is missing" })
@@ -53,6 +90,28 @@ export const main = async (): Promise<void> => {
         }
 
         res.send()
+      }
+    },
+    {
+      endpoint: '/web-push',
+      type: 'post',
+      handler: async (req, res) => {
+        if (!checkAuth(req, res)) {
+          return
+        }
+        const data: PushData | undefined = req.body?.data
+        if (data === undefined) {
+          res.status(400).send({ err: "'data' is missing" })
+          return
+        }
+        const subscription: PushSubscription | undefined = req.body?.subscription
+        if (subscription === undefined) {
+          res.status(400).send({ err: "'subscription' is missing" })
+          return
+        }
+
+        const result = await sendPushToSubscription(subscription, data)
+        res.json({ result })
       }
     }
   ]

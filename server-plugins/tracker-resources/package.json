@@ -47,7 +47,7 @@
     "@hcengineering/server-notification": "^0.6.1",
     "@hcengineering/server-task-resources": "^0.6.0",
     "@hcengineering/task": "^0.6.20",
-    "@hcengineering/text": "^0.6.5",
+    "@hcengineering/text-core": "^0.6.0",
     "@hcengineering/tracker": "^0.6.24",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/workbench": "^0.6.16"
