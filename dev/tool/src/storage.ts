@@ -23,6 +23,7 @@ import {
   RateLimiter
 } from '@hcengineering/core'
 import { type DatalakeClient } from '@hcengineering/datalake'
+import { type UploadObjectParams } from '@hcengineering/datalake/types/client'
 import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import { type S3Config, type S3Service } from '@hcengineering/s3'
 import {
@@ -32,7 +33,7 @@ import {
   type UploadedObjectInfo
 } from '@hcengineering/server-core'
 import { type Db } from 'mongodb'
-import { PassThrough } from 'stream'
+import { PassThrough, type Readable } from 'stream'
 
 export interface MoveFilesParams {
   concurrency: number
@@ -400,20 +401,62 @@ export async function copyBlobToDatalake (
         type: stat.contentType,
         size: stat.size
       }
+
       const readable = await adapter.get(ctx, workspaceId, objectName)
       try {
-        readable.on('end', () => {
-          readable.destroy()
-        })
         console.log('uploading huge blob', objectName, Math.round(stat.size / 1024 / 1024), 'MB')
-        const stream = readable.pipe(new PassThrough())
-        await datalake.uploadMultipart(ctx, workspaceId, objectName, stream, metadata)
+        await uploadMultipart(ctx, datalake, workspaceId, objectName, readable, metadata)
         console.log('done', objectName)
       } finally {
         readable.destroy()
       }
     }
   }
+}
+
+function uploadMultipart (
+  ctx: MeasureContext,
+  datalake: DatalakeClient,
+  workspaceId: WorkspaceId,
+  objectName: string,
+  stream: Readable,
+  metadata: UploadObjectParams
+): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    const passthrough = new PassThrough()
+
+    const cleanup = () => {
+      stream.removeAllListeners()
+      passthrough.removeAllListeners()
+      stream.destroy()
+      passthrough.destroy()
+    }
+
+    stream.on('error', (err) => {
+      ctx.error('error reading blob', { err })
+      cleanup()
+      reject(err)
+    })
+    passthrough.on('error', (err) => {
+      ctx.error('error reading blob', { err })
+      cleanup()
+      reject(err)
+    })
+
+    stream.pipe(passthrough)
+
+    datalake
+      .uploadMultipart(ctx, workspaceId, objectName, passthrough, metadata)
+      .then(() => {
+        cleanup()
+        resolve()
+      })
+      .catch((err) => {
+        ctx.error('failed to upload blob', { err })
+        cleanup()
+        reject(err)
+      })
+  })
 }
 
 export function formatSize (size: number): string {

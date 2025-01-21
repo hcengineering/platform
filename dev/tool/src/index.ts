@@ -1197,12 +1197,14 @@ export function devTool (
     .description('copy files from s3 to datalake')
     .option('-w, --workspace <workspace>', 'Selected workspace only', '')
     .option('-c, --concurrency <concurrency>', 'Number of files being processed concurrently', '10')
+    .option('-s, --skip <number>', 'Number of workspaces to skip', '0')
     .option('-e, --existing', 'Copy existing blobs', false)
-    .action(async (cmd: { workspace: string, concurrency: string, existing: boolean }) => {
+    .action(async (cmd: { workspace: string, concurrency: string, existing: boolean, skip: string }) => {
       const params = {
         concurrency: parseInt(cmd.concurrency),
         existing: cmd.existing
       }
+      const skip = parseInt(cmd.skip)
 
       const storageConfig = storageConfigFromEnv(process.env.STORAGE)
 
@@ -1245,6 +1247,11 @@ export function devTool (
       let index = 0
       for (const workspace of workspaces) {
         index++
+        if (index <= skip) {
+          toolCtx.info('processing workspace', { workspace: workspace.workspace, index, count })
+          continue
+        }
+
         toolCtx.info('processing workspace', {
           workspace: workspace.workspace,
           index,
