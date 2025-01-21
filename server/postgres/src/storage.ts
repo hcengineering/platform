@@ -352,13 +352,12 @@ class ValuesVariables {
     )
   }
 
-  addArrayI (value: any[], type: string = ''): string[] {
+  addArrayI (value: any[], type: string = ''): string {
     const vals = value.filter((it) => it != null)
-    const vv: string[] = []
-    vals.forEach((it) => {
-      vv.push(this.add(it, type))
-    })
-    return vv
+    if (vals.length === 0) {
+      return "array['NULL']"
+    }
+    return this.add(vals, type)
   }
 
   injectVars (sql: string): string {
@@ -716,11 +715,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
             }
           })) as FindResult<T>
         } catch (err) {
-          ctx.error('Error in findAll', { err, sql: vars.injectVars(fquery) })
+          ctx.error('Error in findAll', { err, sql: fquery, sqlFull: vars.injectVars(fquery) })
           throw err
         }
       },
-      () => ({ fquery, vars: vars.getValues() })
+      () => ({ query, psql: fquery, sql: vars.injectVars(fquery) })
     )
   }
 
@@ -1303,14 +1302,14 @@ abstract class PostgresAdapterBase implements DbAdapter {
                 break
               case 'array':
                 {
-                  const vv = vars.addArrayI(val)
-                  res.push(`${tkey} && array[${vv.length > 0 ? vv.join(', ') : 'NULL'}]`)
+                  const vv = vars.addArrayI(val, inferType(val))
+                  res.push(`${tkey} && ${vv}`)
                 }
                 break
               case 'dataArray':
                 {
-                  const vv = vars.addArrayI(val)
-                  res.push(`${tkey} ?| array[${vv.length > 0 ? vv.join(', ') : 'NULL'}]`)
+                  const vv = vars.addArrayI(val, inferType(val))
+                  res.push(`${tkey} ?| ${vv}`)
                 }
                 break
             }
