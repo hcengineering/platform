@@ -89,6 +89,12 @@ export class PostgresDbCollection<T extends Record<string, any>> implements DbCo
           values.push(Object.values(qKey as object)[0])
           break
         }
+        case '$ne': {
+          currIdx++
+          whereChunks.push(`"${key}" != $${currIdx}`)
+          values.push(Object.values(qKey as object)[0])
+          break
+        }
         default: {
           currIdx++
           whereChunks.push(`"${key}" = $${currIdx}`)

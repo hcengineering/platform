@@ -2678,7 +2678,14 @@ export async function joinWithProvider (
     }
     let account = await getAccount(db, email)
     if (account == null && extra !== undefined) {
-      account = await getAccountByQuery(db, extra)
+      // Temporary: we don't want to use githubUser to search yet
+      // but we want to save it in the account
+      const extraSearch = {
+        ...extra
+      }
+      delete extraSearch.githubUser
+
+      account = await getAccountByQuery(db, extraSearch)
     }
     if (account !== null) {
       // we should clean password if account is not confirmed
@@ -2760,7 +2767,14 @@ export async function loginWithProvider (
     }
     let account = await getAccount(db, email)
     if (account == null && extra !== undefined) {
-      account = await getAccountByQuery(db, extra)
+      // Temporary: we don't want to use githubUser to search yet
+      // but we want to save it in the account
+      const extraSearch = {
+        ...extra
+      }
+      delete extraSearch.githubUser
+
+      account = await getAccountByQuery(db, extraSearch)
     }
     if (account !== null) {
       // we should clean password if account is not confirmed
