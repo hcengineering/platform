@@ -81,6 +81,8 @@
     "Finished": "Finished",
     "StartWithRecording": "Start with recording",
     "Language": "Language",
-    "Kick": "Kick"
+    "Kick": "Kick",
+    "WithAudio": "With audio",
+    "ShareWithAudioTooltip": "Share with audio, you should reshare for apply changes"
   }
 }

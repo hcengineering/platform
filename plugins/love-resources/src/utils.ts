@@ -77,6 +77,7 @@ import {
   type RemoteTrack,
   type RemoteTrackPublication,
   RoomEvent,
+  type ScreenShareCaptureOptions,
   Track,
   type VideoCaptureOptions
 } from 'livekit-client'
@@ -174,6 +175,7 @@ export const isMicEnabled = writable<boolean>(false)
 export const isCameraEnabled = writable<boolean>(false)
 export const isSharingEnabled = writable<boolean>(false)
 export const isFullScreen = writable<boolean>(false)
+export const isShareWithSound = writable<boolean>(false)
 
 function handleTrackSubscribed (
   track: RemoteTrack,
@@ -586,10 +588,14 @@ export async function setMic (value: boolean): Promise<void> {
   }
 }
 
-export async function setShare (value: boolean): Promise<void> {
+export async function setShare (value: boolean, withAudio: boolean = false): Promise<void> {
   if ($isCurrentInstanceConnected) {
     try {
-      await lk.localParticipant.setScreenShareEnabled(value)
+      const options: ScreenShareCaptureOptions = {}
+      if (withAudio) {
+        options.audio = true
+      }
+      await lk.localParticipant.setScreenShareEnabled(value, options)
     } catch (err) {
       console.error(err)
     }
