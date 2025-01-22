@@ -15,6 +15,7 @@
 //
 
 import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
+import { Analytics } from '@hcengineering/analytics'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
 import contact, {
   Employee,
@@ -39,7 +40,6 @@ import core, {
   generateId,
   MeasureContext,
   MixinUpdate,
-  RateLimiter,
   Ref,
   RefTo,
   SortingOrder,
@@ -82,7 +82,6 @@ import serverView from '@hcengineering/server-view'
 import { markupToText, stripTags } from '@hcengineering/text-core'
 import { encodeObjectURI } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
-import { Analytics } from '@hcengineering/analytics'
 
 import { Content, ContextsCache, ContextsCacheKey, NotifyParams, NotifyResult } from './types'
 import {
@@ -92,6 +91,7 @@ import {
   getNotificationContent,
   getNotificationLink,
   getNotificationProviderControl,
+  getObjectSpace,
   getTextPresenter,
   getUsersInfo,
   isAllowed,
@@ -103,8 +103,7 @@ import {
   replaceAll,
   toReceiverInfo,
   updateNotifyContextsSpace,
-  type NotificationProviderControl,
-  getObjectSpace
+  type NotificationProviderControl
 } from './utils'
 
 export function getPushCollaboratorTx (
@@ -602,13 +601,7 @@ export async function createPushNotification (
     }
   }
 
-  const limiter = new RateLimiter(5)
-  for (const subscription of userSubscriptions) {
-    await limiter.add(async () => {
-      await sendPushToSubscription(sesURL, sesAuth, control, target, subscription, data)
-    })
-  }
-  await limiter.waitProcessing()
+  void sendPushToSubscription(sesURL, sesAuth, control, target, userSubscriptions, data)
 }
 
 async function sendPushToSubscription (
@@ -616,11 +609,11 @@ async function sendPushToSubscription (
   sesAuth: string | undefined,
   control: TriggerControl,
   targetUser: Ref<Account>,
-  subscription: PushSubscription,
+  subscriptions: PushSubscription[],
   data: PushData
 ): Promise<void> {
   try {
-    const result: 'ok' | 'clear-push' = (
+    const result: Ref<PushSubscription>[] = (
       await (
         await fetch(concatLink(sesURL, '/web-push'), {
           method: 'post',
@@ -629,15 +622,17 @@ async function sendPushToSubscription (
             ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
           },
           body: JSON.stringify({
-            subscription,
+            subscriptions,
             data
           })
         })
       ).json()
     ).result
-    if (result === 'clear-push') {
-      const tx = control.txFactory.createTxRemoveDoc(subscription._class, subscription.space, subscription._id)
-      await control.apply(control.ctx, [tx])
+    if (result.length > 0) {
+      const domain = control.hierarchy.findDomain(notification.class.PushSubscription)
+      if (domain !== undefined) {
+        await control.lowLevel.clean(control.ctx, domain, result)
+      }
     }
   } catch (err) {
     control.ctx.info('Cannot send push notification to', { user: targetUser, err })
