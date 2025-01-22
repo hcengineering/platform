@@ -77,7 +77,7 @@ import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv }
 import { program, type Command } from 'commander'
 import { addControlledDocumentRank } from './qms'
 import { clearTelegramHistory } from './telegram'
-import { diffWorkspace, recreateElastic, updateField } from './workspace'
+import { diffWorkspace, updateField } from './workspace'
 
 import core, {
   AccountRole,
@@ -149,6 +149,7 @@ import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount } from './renameAccount'
 import { copyToDatalake, moveFiles, showLostFiles } from './storage'
 import { createPostgresTxAdapter, createPostgresAdapter, createPostgreeDestroyAdapter } from '@hcengineering/postgres'
+import { reindexWorkspace } from './fulltext'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -1925,27 +1926,43 @@ export function devTool (
     )
 
   program
-    .command('recreate-elastic-indexes-mongo <workspace>')
-    .description('reindex workspace to elastic')
+    .command('fulltext-reindex <workspace>')
+    .description('reindex workspace')
     .action(async (workspace: string) => {
-      const mongodbUri = getMongoDBUrl()
+      const fulltextUrl = process.env.FULLTEXT_URL
+      if (fulltextUrl === undefined) {
+        console.error('please provide FULLTEXT_URL')
+        process.exit(1)
+      }
+
       const wsid = getWorkspaceId(workspace)
-      await recreateElastic(mongodbUri, wsid)
+      const token = generateToken(systemAccountEmail, wsid)
+
+      console.log('reindex workspace', workspace)
+      await reindexWorkspace(toolCtx, fulltextUrl, token)
+      console.log('done', workspace)
     })
 
   program
-    .command('recreate-all-elastic-indexes-mongo')
-    .description('reindex elastic')
+    .command('fulltext-reindex-all')
+    .description('reindex workspaces')
     .action(async () => {
-      const { dbUrl } = prepareTools()
-      const mongodbUri = getMongoDBUrl()
+      const fulltextUrl = process.env.FULLTEXT_URL
+      if (fulltextUrl === undefined) {
+        console.error('please provide FULLTEXT_URL')
+        process.exit(1)
+      }
 
       await withAccountDatabase(async (db) => {
         const workspaces = await listWorkspacesRaw(db)
         workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
         for (const workspace of workspaces) {
           const wsid = getWorkspaceId(workspace.workspace)
-          await recreateElastic(mongodbUri ?? dbUrl, wsid)
+          const token = generateToken(systemAccountEmail, wsid)
+
+          console.log('reindex workspace', workspace)
+          await reindexWorkspace(toolCtx, fulltextUrl, token)
+          console.log('done', workspace)
         }
       })
     })

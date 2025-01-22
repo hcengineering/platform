@@ -80,6 +80,7 @@ import {
   createTables,
   DBCollectionHelper,
   type DBDoc,
+  dbExtra,
   getDBClient,
   getPrepare,
   inferType,
@@ -673,7 +674,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             sqlChunks.push(secJoin)
           }
           if (joins.length > 0) {
-            sqlChunks.push(this.buildJoinString(joins))
+            sqlChunks.push(this.buildJoinString(vars, joins))
           }
           sqlChunks.push(`WHERE ${this.buildQuery(vars, _class, domain, query, joins, options)}`)
 
@@ -699,7 +700,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
             const finalSql: string = [select, ...sqlChunks].join(' ')
             fquery = finalSql
 
-            const result = await connection.unsafe(finalSql, vars.getValues(), getPrepare())
+            const result = dbExtra?.useCF
+              ? await connection.unsafe(vars.injectVars(finalSql), undefined, { prepare: false })
+              : await connection.unsafe(finalSql, vars.getValues(), getPrepare())
             if (
               options?.lookup === undefined &&
               options?.domainLookup === undefined &&
@@ -934,19 +937,19 @@ abstract class PostgresAdapterBase implements DbAdapter {
     }
   }
 
-  private buildJoinString (value: JoinProps[]): string {
+  private buildJoinString (vars: ValuesVariables, value: JoinProps[]): string {
     const res: string[] = []
     for (const val of value) {
       if (val.isReverse) continue
       if (val.table === DOMAIN_MODEL) continue
       res.push(
-        `LEFT JOIN ${val.table} AS ${val.toAlias} ON ${val.fromAlias}.${val.fromField} = ${val.toAlias}."${val.toField}" AND ${val.toAlias}."workspaceId" = '${this.workspaceId.name}'`
+        `LEFT JOIN ${val.table} AS ${val.toAlias} ON ${val.fromAlias}.${val.fromField} = ${val.toAlias}."${val.toField}" AND ${val.toAlias}."workspaceId" = ${vars.add(this.workspaceId.name, '::uuid')}`
       )
       if (val.classes !== undefined) {
         if (val.classes.length === 1) {
-          res.push(`AND ${val.toAlias}._class = '${val.classes[0]}'`)
+          res.push(`AND ${val.toAlias}._class = ${vars.add(val.classes[0], '::text')}`)
         } else {
-          res.push(`AND ${val.toAlias}._class IN (${val.classes.map((c) => `'${c}'`).join(', ')})`)
+          res.push(`AND ${val.toAlias}._class = ANY (${vars.addArray(val.classes, '::text[]')})`)
         }
       }
     }
@@ -1251,7 +1254,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   private translateQueryValue (vars: ValuesVariables, tkey: string, value: any, type: ValueType): string | undefined {
-    const tkeyData = tkey.includes('data->') || tkey.includes('data#>>')
+    const tkeyData = tkey.includes('data') && (tkey.includes('->') || tkey.includes('#>>'))
     if (tkeyData && (Array.isArray(value) || (typeof value !== 'object' && typeof value !== 'string'))) {
       value = Array.isArray(value) ? value.map((it) => (it == null ? null : `${it}`)) : `${value}`
     }
