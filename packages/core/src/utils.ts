@@ -846,7 +846,7 @@ export function pluginFilterTx (
 
 export class TimeRateLimiter {
   idCounter: number = 0
-  processingQueue = new Map<number, Promise<void>>()
+  active: number = 0
   last: number = 0
   rate: number
   period: number
@@ -866,9 +866,7 @@ export class TimeRateLimiter {
   }
 
   async exec<T, B extends Record<string, any> = any>(op: (args?: B) => Promise<T>, args?: B): Promise<T> {
-    const processingId = this.idCounter++
-
-    while (this.processingQueue.size >= this.rate || this.executions.length >= this.rate) {
+    while (this.active >= this.rate || this.executions.length >= this.rate) {
       this.cleanupExecutions()
       if (this.executions.length < this.rate) {
         break
@@ -882,11 +880,11 @@ export class TimeRateLimiter {
     try {
       this.executions.push(v)
       const p = op(args)
-      this.processingQueue.set(processingId, p as Promise<void>)
+      this.active++
       return await p
     } finally {
       v.running = false
-      this.processingQueue.delete(processingId)
+      this.active--
       this.cleanupExecutions()
       const n = this.notify.shift()
       if (n !== undefined) {
@@ -896,8 +894,8 @@ export class TimeRateLimiter {
   }
 
   async waitProcessing (): Promise<void> {
-    while (this.processingQueue.size > 0) {
-      console.log('wait', this.processingQueue.size)
+    while (this.active > 0) {
+      console.log('wait', this.active)
       await new Promise<void>((resolve) => {
         this.notify.push(resolve)
       })
