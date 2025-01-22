@@ -40,6 +40,7 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
+    "@hcengineering/text-core": "^0.6.0",
     "@tiptap/core": "^2.6.6",
     "@tiptap/html": "^2.6.6",
     "@tiptap/pm": "^2.6.6",

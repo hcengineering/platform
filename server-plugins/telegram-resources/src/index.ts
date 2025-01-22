@@ -49,7 +49,7 @@ import serverTelegram from '@hcengineering/server-telegram'
 import { generateToken } from '@hcengineering/server-token'
 import setting, { Integration } from '@hcengineering/setting'
 import telegram, { TelegramMessage, TelegramNotificationRequest } from '@hcengineering/telegram'
-import { markupToHTML } from '@hcengineering/text'
+import { markupToHTML } from '@hcengineering/text-core'
 
 /**
  * @public

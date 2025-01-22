@@ -81,6 +81,8 @@
     "Finished": "Finito",
     "StartWithRecording": "Inizia con la registrazione",
     "Language": "Lingua",
-    "Kick": "Espellere"
+    "Kick": "Espellere",
+    "WithAudio": "Con audio",
+    "ShareWithAudioTooltip": "Condividi con audio, devi condividere nuovamente per applicare le modifiche"
   }
 }

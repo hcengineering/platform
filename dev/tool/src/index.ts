@@ -75,8 +75,9 @@ import path from 'path'
 
 import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { program, type Command } from 'commander'
+import { addControlledDocumentRank } from './qms'
 import { clearTelegramHistory } from './telegram'
-import { diffWorkspace, recreateElastic, updateField } from './workspace'
+import { diffWorkspace, updateField } from './workspace'
 
 import core, {
   AccountRole,
@@ -145,9 +146,10 @@ import {
 } from './db'
 import { restoreControlledDocContentMongo, restoreWikiContentMongo, restoreMarkupRefsMongo } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
-import { fixAccountEmails, renameAccount } from './renameAccount'
+import { fixAccountEmails, renameAccount, fillGithubUsers } from './account'
 import { copyToDatalake, moveFiles, showLostFiles } from './storage'
 import { createPostgresTxAdapter, createPostgresAdapter, createPostgreeDestroyAdapter } from '@hcengineering/postgres'
+import { reindexWorkspace } from './fulltext'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -1196,12 +1198,14 @@ export function devTool (
     .description('copy files from s3 to datalake')
     .option('-w, --workspace <workspace>', 'Selected workspace only', '')
     .option('-c, --concurrency <concurrency>', 'Number of files being processed concurrently', '10')
+    .option('-s, --skip <number>', 'Number of workspaces to skip', '0')
     .option('-e, --existing', 'Copy existing blobs', false)
-    .action(async (cmd: { workspace: string, concurrency: string, existing: boolean }) => {
+    .action(async (cmd: { workspace: string, concurrency: string, existing: boolean, skip: string }) => {
       const params = {
         concurrency: parseInt(cmd.concurrency),
         existing: cmd.existing
       }
+      const skip = parseInt(cmd.skip)
 
       const storageConfig = storageConfigFromEnv(process.env.STORAGE)
 
@@ -1244,6 +1248,11 @@ export function devTool (
       let index = 0
       for (const workspace of workspaces) {
         index++
+        if (index <= skip) {
+          toolCtx.info('processing workspace', { workspace: workspace.workspace, index, count })
+          continue
+        }
+
         toolCtx.info('processing workspace', {
           workspace: workspace.workspace,
           index,
@@ -1917,27 +1926,43 @@ export function devTool (
     )
 
   program
-    .command('recreate-elastic-indexes-mongo <workspace>')
-    .description('reindex workspace to elastic')
+    .command('fulltext-reindex <workspace>')
+    .description('reindex workspace')
     .action(async (workspace: string) => {
-      const mongodbUri = getMongoDBUrl()
+      const fulltextUrl = process.env.FULLTEXT_URL
+      if (fulltextUrl === undefined) {
+        console.error('please provide FULLTEXT_URL')
+        process.exit(1)
+      }
+
       const wsid = getWorkspaceId(workspace)
-      await recreateElastic(mongodbUri, wsid)
+      const token = generateToken(systemAccountEmail, wsid)
+
+      console.log('reindex workspace', workspace)
+      await reindexWorkspace(toolCtx, fulltextUrl, token)
+      console.log('done', workspace)
     })
 
   program
-    .command('recreate-all-elastic-indexes-mongo')
-    .description('reindex elastic')
+    .command('fulltext-reindex-all')
+    .description('reindex workspaces')
     .action(async () => {
-      const { dbUrl } = prepareTools()
-      const mongodbUri = getMongoDBUrl()
+      const fulltextUrl = process.env.FULLTEXT_URL
+      if (fulltextUrl === undefined) {
+        console.error('please provide FULLTEXT_URL')
+        process.exit(1)
+      }
 
       await withAccountDatabase(async (db) => {
         const workspaces = await listWorkspacesRaw(db)
         workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
         for (const workspace of workspaces) {
           const wsid = getWorkspaceId(workspace.workspace)
-          await recreateElastic(mongodbUri ?? dbUrl, wsid)
+          const token = generateToken(systemAccountEmail, wsid)
+
+          console.log('reindex workspace', workspace)
+          await reindexWorkspace(toolCtx, fulltextUrl, token)
+          console.log('done', workspace)
         }
       })
     })
@@ -2098,6 +2123,65 @@ export function devTool (
         console.log('updates workspaceId in pg/cr to uuid')
         const { dbUrl } = prepareTools()
         await updateDataWorkspaceIdToUuid(toolCtx, db, dbUrl, cmd.dryrun)
+      })
+    })
+
+  program
+    .command('add-controlled-doc-rank-mongo')
+    .description('add rank to controlled documents')
+    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+    .action(async (cmd: { workspace: string }) => {
+      const { version } = prepareTools()
+
+      let workspaces: Workspace[] = []
+      await withAccountDatabase(async (db) => {
+        workspaces = await listWorkspacesPure(db)
+        workspaces = workspaces
+          .filter((p) => isActiveMode(p.mode))
+          .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
+          .sort((a, b) => b.lastVisit - a.lastVisit)
+      })
+
+      console.log('found workspaces', workspaces.length)
+
+      const mongodbUri = getMongoDBUrl()
+      const client = getMongoClient(mongodbUri)
+      const _client = await client.getClient()
+
+      try {
+        const count = workspaces.length
+        let index = 0
+        for (const workspace of workspaces) {
+          index++
+
+          toolCtx.info('processing workspace', {
+            workspace: workspace.workspace,
+            version: workspace.version,
+            index,
+            count
+          })
+
+          if (workspace.version === undefined || !deepEqual(workspace.version, version)) {
+            console.log(`upgrade to ${versionToString(version)} is required`)
+            continue
+          }
+          const workspaceId = getWorkspaceId(workspace.workspace)
+          const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
+
+          await addControlledDocumentRank(toolCtx, wsDb, workspaceId)
+        }
+      } finally {
+        client.close()
+      }
+    })
+
+  program
+    .command('fill-github-users')
+    .option('-t, --token <token>', 'Github token to increase the limit of requests to GitHub')
+    .description('adds github username info to all accounts')
+    .action(async (cmd: { token?: string }) => {
+      await withAccountDatabase(async (db) => {
+        await fillGithubUsers(toolCtx, db, cmd.token)
       })
     })
 

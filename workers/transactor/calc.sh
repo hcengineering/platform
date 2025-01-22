@@ -17,5 +17,7 @@ done <<< "$files"
 
 # Sort the array by size (numerically, in descending order) and print
 printf '%s\n' "${file_info[@]}" | sort -t: -k1,1nr | while IFS=: read -r size path; do
-    echo "Size: $(($size/1024)) KB - $path"
+    if [ $(($size/1024)) -ne 0 ]; then
+        echo "Size: $(($size/1024)) KB - $path"
+    fi
 done

@@ -97,7 +97,9 @@ export default plugin(loginId, {
     PasswordMinSpecialChars: '' as IntlString<{ count: number }>,
     PasswordMinDigits: '' as IntlString<{ count: number }>,
     PasswordMinUpperChars: '' as IntlString<{ count: number }>,
-    PasswordMinLowerChars: '' as IntlString<{ count: number }>
+    PasswordMinLowerChars: '' as IntlString<{ count: number }>,
+    WorkspaceArchived: '' as IntlString,
+    WorkspaceArchivedDesc: '' as IntlString
   },
   function: {
     SendInvite: '' as Resource<(email: string, personId?: Ref<Doc>, role?: AccountRole) => Promise<void>>,

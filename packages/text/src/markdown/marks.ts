@@ -1,5 +1,5 @@
 import { deepEqual } from 'fast-equals'
-import { MarkupMark, MarkupMarkType, MarkupNode } from '../markup/model'
+import { MarkupMark, MarkupMarkType, MarkupNode } from '@hcengineering/text-core'
 
 export function traverseMarks (node: MarkupNode, f: (el: MarkupMark) => void): void {
   node.marks?.forEach(f)

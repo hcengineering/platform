@@ -80,8 +80,9 @@ import {
   createTables,
   DBCollectionHelper,
   type DBDoc,
-  dbUnsafePrepareOptions,
+  dbExtra,
   getDBClient,
+  getPrepare,
   inferType,
   isDataField,
   isOwner,
@@ -325,14 +326,15 @@ class ValuesVariables {
 
   add (value: any, type: string = ''): string {
     // Compact value if string and same
-    if (typeof value === 'string') {
-      const v = this.valueHashes.get(value + ':' + type)
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      const vkey = `${value}:${type}`
+      const v = this.valueHashes.get(vkey)
       if (v !== undefined) {
         return v
       }
       this.values.push(value)
       const idx = type !== '' ? `$${this.index++}${type}` : `$${this.index++}`
-      this.valueHashes.set(value + ':' + type, idx)
+      this.valueHashes.set(vkey, idx)
       return idx
     } else {
       this.values.push(value)
@@ -351,13 +353,39 @@ class ValuesVariables {
     )
   }
 
-  addArrayI (value: any[], type: string = ''): string[] {
+  addArrayI (value: any[], type: string = ''): string {
     const vals = value.filter((it) => it != null)
-    const vv: string[] = []
-    vals.forEach((it) => {
-      vv.push(this.add(it, type))
+    if (vals.length === 0) {
+      return "array['NULL']"
+    }
+    return this.add(vals, type)
+  }
+
+  injectVars (sql: string): string {
+    const escQuote = (d: any | any[]): string => {
+      if (d == null) {
+        return 'NULL'
+      }
+      if (Array.isArray(d)) {
+        return 'ARRAY[' + d.map(escQuote).join(',') + ']'
+      }
+      switch (typeof d) {
+        case 'number':
+          if (isNaN(d) || !isFinite(d)) {
+            throw new Error('Invalid number value')
+          }
+          return d.toString()
+        case 'boolean':
+          return d ? 'TRUE' : 'FALSE'
+        case 'string':
+          return `'${d.replace(/'/g, "''")}'`
+        default:
+          throw new Error(`Unsupported value type: ${typeof d}`)
+      }
+    }
+    return sql.replaceAll(/(\$\d+)/g, (_, v) => {
+      return escQuote(this.getValues()[parseInt(v.substring(1)) - 1] ?? v)
     })
-    return vv
   }
 }
 
@@ -457,9 +485,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     }
     const finalSql: string = [select, ...sqlChunks].join(' ')
     const result: DBDoc[] = await this.mgr.retry(undefined, (client) =>
-      client.unsafe(finalSql, vars.getValues(), {
-        prepare: dbUnsafePrepareOptions.find
-      })
+      client.unsafe(finalSql, vars.getValues(), getPrepare())
     )
     return result.map((p) => parseDocWithProjection(p, domain, options?.projection))
   }
@@ -519,9 +545,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const res = await client.unsafe(
           `SELECT * FROM ${translateDomain(domain)} WHERE ${translatedQuery} FOR UPDATE`,
           vars.getValues(),
-          {
-            prepare: dbUnsafePrepareOptions.find
-          }
+          getPrepare()
         )
         const docs = res.map((p) => parseDoc(p as any, schemaFields.schema))
         for (const doc of docs) {
@@ -553,9 +577,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
                     WHERE "workspaceId" = ${params.add(this.workspaceId.name, '::uuid')} 
                       AND _id = ${params.add(doc._id, '::text')}`,
             params.getValues(),
-            {
-              prepare: dbUnsafePrepareOptions.update
-            }
+            getPrepare()
           )
         }
       })
@@ -593,9 +615,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       await client.unsafe(
         `UPDATE ${translateDomain(domain)} SET ${updates.join(', ')} WHERE ${translatedQuery};`,
         vars.getValues(),
-        {
-          prepare: dbUnsafePrepareOptions.find
-        }
+        getPrepare()
       )
     })
   }
@@ -604,9 +624,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
     const vars = new ValuesVariables()
     const translatedQuery = this.buildRawQuery(vars, domain, query)
     await this.mgr.retry(undefined, async (client) => {
-      await client.unsafe(`DELETE FROM ${translateDomain(domain)} WHERE ${translatedQuery}`, vars.getValues(), {
-        prepare: dbUnsafePrepareOptions.update
-      })
+      await client.unsafe(
+        `DELETE FROM ${translateDomain(domain)} WHERE ${translatedQuery}`,
+        vars.getValues(),
+        getPrepare()
+      )
     })
   }
 
@@ -652,7 +674,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             sqlChunks.push(secJoin)
           }
           if (joins.length > 0) {
-            sqlChunks.push(this.buildJoinString(joins))
+            sqlChunks.push(this.buildJoinString(vars, joins))
           }
           sqlChunks.push(`WHERE ${this.buildQuery(vars, _class, domain, query, joins, options)}`)
 
@@ -670,18 +692,17 @@ abstract class PostgresAdapterBase implements DbAdapter {
             if (options?.total === true) {
               const totalReq = `SELECT COUNT(${domain}._id) as count FROM ${domain}`
               const totalSql = [totalReq, ...totalSqlChunks].join(' ')
-              const totalResult = await connection.unsafe(totalSql, vars.getValues(), {
-                prepare: dbUnsafePrepareOptions.find
-              })
+              const totalResult = await connection.unsafe(totalSql, vars.getValues(), getPrepare())
               const parsed = Number.parseInt(totalResult[0].count)
               total = Number.isNaN(parsed) ? 0 : parsed
             }
 
             const finalSql: string = [select, ...sqlChunks].join(' ')
             fquery = finalSql
-            const result = await connection.unsafe(finalSql, vars.getValues(), {
-              prepare: dbUnsafePrepareOptions.find
-            })
+
+            const result = dbExtra?.useCF
+              ? await connection.unsafe(vars.injectVars(finalSql), undefined, { prepare: false })
+              : await connection.unsafe(finalSql, vars.getValues(), getPrepare())
             if (
               options?.lookup === undefined &&
               options?.domainLookup === undefined &&
@@ -697,11 +718,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
             }
           })) as FindResult<T>
         } catch (err) {
-          ctx.error('Error in findAll', { err })
+          ctx.error('Error in findAll', { err, sql: fquery, sqlFull: vars.injectVars(fquery) })
           throw err
         }
       },
-      () => ({ fquery, vars: vars.getValues() })
+      () => ({ query, psql: fquery, sql: vars.injectVars(fquery) })
     )
   }
 
@@ -916,19 +937,19 @@ abstract class PostgresAdapterBase implements DbAdapter {
     }
   }
 
-  private buildJoinString (value: JoinProps[]): string {
+  private buildJoinString (vars: ValuesVariables, value: JoinProps[]): string {
     const res: string[] = []
     for (const val of value) {
       if (val.isReverse) continue
       if (val.table === DOMAIN_MODEL) continue
       res.push(
-        `LEFT JOIN ${val.table} AS ${val.toAlias} ON ${val.fromAlias}.${val.fromField} = ${val.toAlias}."${val.toField}" AND ${val.toAlias}."workspaceId" = '${this.workspaceId.name}'`
+        `LEFT JOIN ${val.table} AS ${val.toAlias} ON ${val.fromAlias}.${val.fromField} = ${val.toAlias}."${val.toField}" AND ${val.toAlias}."workspaceId" = ${vars.add(this.workspaceId.name, '::uuid')}`
       )
       if (val.classes !== undefined) {
         if (val.classes.length === 1) {
-          res.push(`AND ${val.toAlias}._class = '${val.classes[0]}'`)
+          res.push(`AND ${val.toAlias}._class = ${vars.add(val.classes[0], '::text')}`)
         } else {
-          res.push(`AND ${val.toAlias}._class IN (${val.classes.map((c) => `'${c}'`).join(', ')})`)
+          res.push(`AND ${val.toAlias}._class = ANY (${vars.addArray(val.classes, '::text[]')})`)
         }
       }
     }
@@ -1170,8 +1191,13 @@ abstract class PostgresAdapterBase implements DbAdapter {
     if (join.isReverse) {
       return `${join.toAlias}->'${tKey}'`
     }
-    const res = isDataField(domain, tKey) ? (isDataArray ? `data->'${tKey}'` : `data#>>'{${tKey}}'`) : key
-    return `${join.toAlias}.${res}`
+    if (isDataField(domain, tKey)) {
+      if (isDataArray) {
+        return `${join.toAlias}."data"->'${tKey}'`
+      }
+      return `${join.toAlias}."data"#>>'{${tKey}}'`
+    }
+    return `${join.toAlias}."${tKey}"`
   }
 
   private transformKey<T extends Doc>(
@@ -1228,7 +1254,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   private translateQueryValue (vars: ValuesVariables, tkey: string, value: any, type: ValueType): string | undefined {
-    const tkeyData = tkey.includes('data->') || tkey.includes('data#>>')
+    const tkeyData = tkey.includes('data') && (tkey.includes('->') || tkey.includes('#>>'))
     if (tkeyData && (Array.isArray(value) || (typeof value !== 'object' && typeof value !== 'string'))) {
       value = Array.isArray(value) ? value.map((it) => (it == null ? null : `${it}`)) : `${value}`
     }
@@ -1267,7 +1293,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
             switch (type) {
               case 'common':
                 if (Array.isArray(val) && val.includes(null)) {
-                  res.push(`(${tkey} = ANY(${vars.addArray(val, inferType(val))})) OR ${tkey} IS NULL`)
+                  const vv = vars.addArray(val, inferType(val))
+                  res.push(`(${tkey} = ANY(${vv}) OR ${tkey} IS NULL)`)
                 } else {
                   if (val.length > 0) {
                     res.push(`${tkey} = ANY(${vars.addArray(val, inferType(val))})`)
@@ -1278,14 +1305,14 @@ abstract class PostgresAdapterBase implements DbAdapter {
                 break
               case 'array':
                 {
-                  const vv = vars.addArrayI(val)
-                  res.push(`${tkey} && array[${vv.length > 0 ? vv.join(', ') : 'NULL'}]`)
+                  const vv = vars.addArrayI(val, inferType(val))
+                  res.push(`${tkey} && ${vv}`)
                 }
                 break
               case 'dataArray':
                 {
-                  const vv = vars.addArrayI(val)
-                  res.push(`${tkey} ?| array[${vv.length > 0 ? vv.join(', ') : 'NULL'}]`)
+                  const vv = vars.addArrayI(val, inferType(val))
+                  res.push(`${tkey} ?| ${vv}`)
                 }
                 break
             }
@@ -1504,9 +1531,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           `SELECT * FROM ${translateDomain(domain)} 
                     WHERE  "workspaceId" = $1::uuid AND _id = ANY($2::text[])`,
           [this.workspaceId.name, docs],
-          {
-            prepare: dbUnsafePrepareOptions.find
-          }
+          getPrepare()
         )
         return res.map((p) => parseDocWithProjection(p as any, domain))
       })
@@ -1561,9 +1586,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
                   `INSERT INTO ${tdomain} ("workspaceId", ${insertStr}) VALUES ${vals} 
                             ON CONFLICT ("workspaceId", _id) DO UPDATE SET ${onConflictStr};`,
                   values.getValues(),
-                  {
-                    prepare: dbUnsafePrepareOptions.upload
-                  }
+                  getPrepare()
                 )
             )
           } else {
@@ -1573,9 +1596,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
                 await client.unsafe(
                   `INSERT INTO ${tdomain} ("workspaceId", ${insertStr}) VALUES ${vals};`,
                   values.getValues(),
-                  {
-                    prepare: dbUnsafePrepareOptions.upload
-                  }
+                  getPrepare()
                 )
             )
           }
@@ -1597,9 +1618,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           client.unsafe(
             `DELETE FROM ${tdomain} WHERE "workspaceId" = $1 AND _id = ANY($2::text[])`,
             [this.workspaceId.name, part],
-            {
-              prepare: dbUnsafePrepareOptions.upload
-            }
+            getPrepare()
           )
         )
       })
@@ -1618,9 +1637,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const vars = new ValuesVariables()
         const finalSql = `SELECT DISTINCT ${key} as ${field}, Count(*) AS count FROM ${translateDomain(domain)} WHERE ${this.buildRawQuery(vars, domain, query ?? {})} GROUP BY ${key}`
         return await this.mgr.retry(ctx.id, async (connection) => {
-          const result = await connection.unsafe(finalSql, vars.getValues(), {
-            prepare: dbUnsafePrepareOptions.find
-          })
+          const result = await connection.unsafe(finalSql, vars.getValues(), getPrepare())
           return new Map(result.map((r) => [r[field.toLocaleLowerCase()], parseInt(r.count)]))
         })
       } catch (err) {
@@ -1721,9 +1738,7 @@ class PostgresAdapter extends PostgresAdapterBase {
           SET ${updates.join(', ')}  
           WHERE "workspaceId" = ${wsId} AND _id = ${oId}`,
           params.getValues(),
-          {
-            prepare: dbUnsafePrepareOptions.update
-          }
+          getPrepare()
         )
       })
     })
@@ -1836,9 +1851,7 @@ class PostgresAdapter extends PostgresAdapterBase {
               WHERE "workspaceId" = ${wsId} 
                 AND _id = ${oId}`,
               params.getValues(),
-              {
-                prepare: dbUnsafePrepareOptions.update
-              }
+              getPrepare()
             )
           })
           if (tx.retrieve === true && doc !== undefined) {
@@ -1927,11 +1940,7 @@ class PostgresAdapter extends PostgresAdapterBase {
             WHERE "workspaceId" = $1::uuid AND "_id" = update_data.__id`
 
             await this.mgr.retry(ctx.id, (client) =>
-              ctx.with('bulk-update', {}, () =>
-                client.unsafe(op, data, {
-                  prepare: dbUnsafePrepareOptions.update
-                })
-              )
+              ctx.with('bulk-update', {}, () => client.unsafe(op, data, getPrepare()))
             )
           }
         }
@@ -1965,9 +1974,7 @@ class PostgresAdapter extends PostgresAdapterBase {
           forUpdate ? ' FOR UPDATE' : ''
         }`,
         [this.workspaceId.name, _id],
-        {
-          prepare: dbUnsafePrepareOptions.find
-        }
+        getPrepare()
       )
       const dbDoc = res[0] as any
       return dbDoc !== undefined ? parseDoc(dbDoc, getSchema(domain)) : undefined
@@ -2014,9 +2021,7 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
   async getModel (ctx: MeasureContext): Promise<Tx[]> {
     const res: DBDoc[] = await this.mgr.retry(undefined, (client) => {
       return client.unsafe(
-        `SELECT * FROM "${translateDomain(DOMAIN_MODEL_TX)}" WHERE "workspaceId" = $1::uuid ORDER BY _id::text ASC, "modifiedOn"::bigint ASC`,
-        [this.workspaceId.name],
-        { prepare: dbUnsafePrepareOptions.model }
+        `SELECT * FROM "${translateDomain(DOMAIN_MODEL_TX)}" WHERE "workspaceId" = '${this.workspaceId.name}'::uuid ORDER BY _id::text ASC, "modifiedOn"::bigint ASC`
       )
     })
 

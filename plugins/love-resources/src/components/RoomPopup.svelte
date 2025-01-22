@@ -14,43 +14,45 @@
 -->
 <script lang="ts">
   import { Person, PersonAccount } from '@hcengineering/contact'
-  import { personByIdStore, UserInfo } from '@hcengineering/contact-resources'
-  import { IdMap, getCurrentAccount, Ref, Class, Doc } from '@hcengineering/core'
+  import { UserInfo, personByIdStore } from '@hcengineering/contact-resources'
+  import { Class, Doc, IdMap, Ref, getCurrentAccount } from '@hcengineering/core'
   import {
-    ModernButton,
-    SplitButton,
-    IconArrowLeft,
-    IconUpOutline,
-    Label,
-    eventToHTMLElement,
-    Location,
-    location,
-    navigate,
-    showPopup,
-    Scroller,
-    panelstore
-  } from '@hcengineering/ui'
-  import {
+    MeetingMinutes,
     ParticipantInfo,
     Room,
     RoomType,
     isOffice,
     loveId,
     roomAccessIcon,
-    roomAccessLabel,
-    MeetingMinutes
+    roomAccessLabel
   } from '@hcengineering/love'
-  import { createEventDispatcher } from 'svelte'
-  import { getObjectLinkFragment } from '@hcengineering/view-resources'
   import { getClient } from '@hcengineering/presentation'
+  import {
+    IconArrowLeft,
+    IconUpOutline,
+    Label,
+    Location,
+    ModernButton,
+    Scroller,
+    SplitButton,
+    eventToHTMLElement,
+    location,
+    navigate,
+    panelstore,
+    showPopup
+  } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+  import { getObjectLinkFragment } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
-  import { currentRoom, infos, invites, myInfo, myOffice, myRequests, currentMeetingMinutes, rooms } from '../stores'
+  import { currentMeetingMinutes, currentRoom, infos, invites, myInfo, myOffice, myRequests, rooms } from '../stores'
   import {
     endMeeting,
     getRoomName,
     isCameraEnabled,
     isConnected,
     isMicEnabled,
+    isShareWithSound,
     isSharingEnabled,
     leaveRoom,
     screenSharing,
@@ -62,7 +64,7 @@
   import CamSettingPopup from './CamSettingPopup.svelte'
   import MicSettingPopup from './MicSettingPopup.svelte'
   import RoomAccessPopup from './RoomAccessPopup.svelte'
-  import view from '@hcengineering/view'
+  import ShareSettingPopup from './ShareSettingPopup.svelte'
 
   export let room: Room
 
@@ -99,7 +101,9 @@
   }
 
   async function changeShare (): Promise<void> {
-    await setShare(!$isSharingEnabled)
+    const newValue = !$isSharingEnabled
+    const audio = newValue && $isShareWithSound
+    await setShare(newValue, audio)
   }
 
   async function leave (): Promise<void> {
@@ -112,6 +116,10 @@
       await endMeeting(room, $rooms, $infos, $myInfo)
     }
     dispatch('close')
+  }
+
+  function shareSettings (e: MouseEvent): void {
+    showPopup(ShareSettingPopup, {}, eventToHTMLElement(e))
   }
 
   async function connect (): Promise<void> {
@@ -207,14 +215,15 @@
         />
       {/if}
       {#if allowShare}
-        <ModernButton
-          icon={$isSharingEnabled ? love.icon.SharingEnabled : love.icon.SharingDisabled}
-          label={$isSharingEnabled ? love.string.StopShare : love.string.Share}
-          tooltip={{ label: $isSharingEnabled ? love.string.StopShare : love.string.Share }}
-          disabled={($screenSharing && !$isSharingEnabled) || !$isConnected}
-          kind={'secondary'}
+        <SplitButton
           size={'large'}
-          on:click={changeShare}
+          icon={$isSharingEnabled ? love.icon.SharingEnabled : love.icon.SharingDisabled}
+          showTooltip={{ label: $isSharingEnabled ? love.string.StopShare : love.string.Share }}
+          disabled={($screenSharing && !$isSharingEnabled) || !$isConnected}
+          action={changeShare}
+          secondIcon={IconUpOutline}
+          secondAction={shareSettings}
+          separate
         />
       {/if}
       <ModernButton

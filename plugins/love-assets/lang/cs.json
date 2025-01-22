@@ -81,6 +81,8 @@
     "Finished": "Dokončeno",
     "StartWithRecording": "Začít s nahráváním",
     "Language": "Jazyk",
-    "Kick": "Vyhodit"
+    "Kick": "Vyhodit",
+    "WithAudio": "S audio",
+    "ShareWithAudioTooltip": "Sdílet s audio, musíte znovu sdílet pro aplikování změn"
   }
 }

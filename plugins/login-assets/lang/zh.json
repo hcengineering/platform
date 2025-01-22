@@ -62,6 +62,7 @@
     "PasswordMinSpecialChars": "{count, plural, =1 {密码至少需要 # 个特殊字符} other {密码至少需要 # 个特殊字符}}",
     "PasswordMinDigits": "{count, plural, =1 {密码至少需要 # 个数字} other {密码至少需要 # 个数字}}",
     "PasswordMinUpperChars": "{count, plural, =1 {密码至少需要 # 个大写字母} other {密码至少需要 # 个大写字母}}",
-    "PasswordMinLowerChars": "{count, plural, =1 {密码至少需要 # 个小写字母} other {密码至少需要 # 个小写字母}}"
+    "PasswordMinLowerChars": "{count, plural, =1 {密码至少需要 # 个小写字母} other {密码至少需要 # 个小写字母}}",
+    "WorkspaceArchivedDesc": "工作区因未使用而归档，请与我们联系以恢复..."
   }
 }

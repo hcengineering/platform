@@ -14,24 +14,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { isArchivingMode } from '@hcengineering/core'
   import { LoginInfo, Workspace } from '@hcengineering/login'
   import { OK, Severity, Status } from '@hcengineering/platform'
   import presentation, { NavLink, isAdminUser, reduceCalls } from '@hcengineering/presentation'
+  import MessageBox from '@hcengineering/presentation/src/components/MessageBox.svelte'
   import {
     Button,
     Label,
-    Spinner,
     Scroller,
     SearchEdit,
+    Spinner,
     deviceOptionsStore as deviceInfo,
     setMetadataLocalStorage,
+    showPopup,
     ticker
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
   import login from '../plugin'
   import { getAccount, getHref, getWorkspaces, goTo, navigateToWorkspace, selectWorkspace } from '../utils'
   import StatusControl from './StatusControl.svelte'
-  import { isArchivingMode } from '@hcengineering/core'
 
   export let navigateUrl: string | undefined = undefined
   let workspaces: Workspace[] = []
@@ -67,6 +69,17 @@
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
     const [loginStatus, result] = await selectWorkspace(workspace)
+    if (isArchivingMode(result?.mode)) {
+      showPopup(MessageBox, {
+        label: login.string.SelectWorkspace,
+        message: login.string.WorkspaceArchivedDesc,
+        canSubmit: false,
+        params: {},
+        action: async () => {}
+      })
+      status = loginStatus
+      return
+    }
     status = loginStatus
 
     navigateToWorkspace(workspace, result, navigateUrl)
@@ -139,17 +152,19 @@
                 {#if isArchivingMode(workspace.mode)}
                   - <Label label={presentation.string.Archived} />
                 {/if}
-                {#if workspace.mode !== 'active'}
+                {#if workspace.mode !== 'active' && workspace.mode !== 'archived'}
                   ({workspace.progress}%)
                 {/if}
               </span>
-              {#if isAdmin}
-                <span class="text-xs flex-row-center flex-center">
+              <span class="text-xs flex-row-center flex-center">
+                {#if isAdmin}
                   {workspace.workspace}
                   {#if workspace.region !== undefined}
                     at ({workspace.region})
                   {/if}
-                  <div class="text-sm">
+                {/if}
+                <div class="text-sm">
+                  {#if isAdmin}
                     {#if workspace.backupInfo != null}
                       {@const sz = workspace.backupInfo.dataSize + workspace.backupInfo.blobsSize}
                       {@const szGb = Math.round((sz * 100) / 1024) / 100}
@@ -159,10 +174,10 @@
                         - {Math.round(sz)}Mb -
                       {/if}
                     {/if}
-                    ({lastUsageDays} days)
-                  </div>
-                </span>
-              {/if}
+                  {/if}
+                  ({lastUsageDays} days)
+                </div>
+              </span>
             </div>
           </div>
         {/each}

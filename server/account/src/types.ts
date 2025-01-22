@@ -46,6 +46,7 @@ export interface Account {
   createdOn: number
   lastVisit: number
   githubId?: string
+  githubUser?: string
   openId?: string
 }
 
@@ -146,6 +147,7 @@ export interface UpgradeStatistic {
 
 interface Operator<T, P extends keyof T> {
   $in?: T[P][]
+  $ne?: T[P] | null
   $lt?: T[P]
   $lte?: T[P]
   $gt?: T[P]

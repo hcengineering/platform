@@ -115,10 +115,12 @@ export async function sendEmailNotification (
       ctx.error('Please provide email service url to enable email notifications.')
       return
     }
+    const sesAuth: string | undefined = getMetadata(serverNotification.metadata.SesAuthToken)
     await fetch(concatLink(sesURL, '/send'), {
       method: 'post',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
       },
       body: JSON.stringify({
         text,

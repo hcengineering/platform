@@ -654,3 +654,10 @@ export async function getNotificationProviderControl (
   }
   return new NotificationProviderControl(providersSettings, typesSettings)
 }
+
+export async function getObjectSpace (control: TriggerControl, doc: Doc, cache: Map<Ref<Doc>, Doc>): Promise<Space> {
+  return control.hierarchy.isDerived(doc._class, core.class.Space)
+    ? (doc as Space)
+    : (cache.get(doc.space) as Space) ??
+        (await control.findAll<Space>(control.ctx, core.class.Space, { _id: doc.space }, { limit: 1 }))[0]
+}

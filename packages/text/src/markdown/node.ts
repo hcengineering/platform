@@ -1,4 +1,4 @@
-import { Attrs, MarkupNode } from '../markup/model'
+import { Attrs, MarkupNode } from '@hcengineering/text-core'
 
 export function traverseMarkupNode (node: MarkupNode, f: (el: MarkupNode) => void): void {
   f(node)
