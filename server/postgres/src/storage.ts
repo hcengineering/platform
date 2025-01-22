@@ -93,7 +93,6 @@ import {
   parseUpdate,
   type PostgresClientReference
 } from './utils'
-
 async function * createCursorGenerator (
   client: postgres.ReservedSql,
   sql: string,
@@ -192,11 +191,10 @@ class ConnectionInfo {
   }
 }
 
-const connections = new Map<string, ConnectionInfo>()
-
 class ConnectionMgr {
   constructor (
     protected readonly client: postgres.Sql,
+    protected readonly connections: () => Map<string, ConnectionInfo>,
     readonly mgrId: string
   ) {}
 
@@ -296,10 +294,10 @@ class ConnectionMgr {
   }
 
   release (id: string): void {
-    const conn = connections.get(id)
+    const conn = this.connections().get(id)
     if (conn !== undefined) {
       conn.released = true
-      connections.delete(id) // We need to delete first
+      this.connections().delete(id) // We need to delete first
       conn.release()
     } else {
       console.log('wrne')
@@ -307,10 +305,11 @@ class ConnectionMgr {
   }
 
   close (): void {
-    for (const [k, conn] of Array.from(connections.entries()).filter(
+    const cnts = this.connections()
+    for (const [k, conn] of Array.from(cnts.entries()).filter(
       ([, it]: [string, ConnectionInfo]) => it.mgrId === this.mgrId
     )) {
-      connections.delete(k)
+      cnts.delete(k)
       try {
         conn.release()
       } catch (err: any) {
@@ -320,12 +319,12 @@ class ConnectionMgr {
   }
 
   getConnection (id: string, managed: boolean = true): ConnectionInfo {
-    let conn = connections.get(id)
+    let conn = this.connections().get(id)
     if (conn === undefined) {
       conn = new ConnectionInfo(this.mgrId, id, this.client, managed)
     }
     if (managed) {
-      connections.set(id, conn)
+      this.connections().set(id, conn)
     }
     return conn
   }
@@ -407,6 +406,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
   protected readonly tableFields = new Map<string, string[]>()
   protected readonly workspaceId: WorkspaceId
 
+  protected connections = new Map<string, ConnectionInfo>()
+
   mgr: ConnectionMgr
 
   constructor (
@@ -422,7 +423,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       name: enrichedWorkspaceId.uuid ?? enrichedWorkspaceId.name
     }
     this._helper = new DBCollectionHelper(this.client, this.workspaceId)
-    this.mgr = new ConnectionMgr(client, mgrId)
+    this.mgr = new ConnectionMgr(client, () => this.connections, mgrId)
   }
 
   reserveContext (id: string): () => void {
@@ -430,7 +431,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     return () => {
       conn.released = true
       conn.release()
-      connections.delete(id) // We need to delete first
+      this.connections.delete(id) // We need to delete first
     }
   }
 
@@ -477,7 +478,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
   on?: ((handler: DbAdapterHandler) => void) | undefined
 
-  abstract init (ctx: MeasureContext, domains?: string[], excludeDomains?: string[]): Promise<void>
+  abstract init (
+    ctx: MeasureContext,
+    contextVars: Record<string, any>,
+    domains?: string[],
+    excludeDomains?: string[]
+  ): Promise<void>
 
   async close (): Promise<void> {
     this.mgr.close()
@@ -1672,7 +1678,14 @@ interface OperationBulk {
 const initRateLimit = new RateLimiter(1)
 
 class PostgresAdapter extends PostgresAdapterBase {
-  async init (ctx: MeasureContext, domains?: string[], excludeDomains?: string[]): Promise<void> {
+  async init (
+    ctx: MeasureContext,
+    contextVars: Record<string, any>,
+    domains?: string[],
+    excludeDomains?: string[]
+  ): Promise<void> {
+    this.connections = contextVars.cntInfoPG ?? new Map<string, ConnectionInfo>()
+    contextVars.cntInfoPG = this.connections
     let resultDomains = domains ?? this.hierarchy.domains()
     if (excludeDomains !== undefined) {
       resultDomains = resultDomains.filter((it) => !excludeDomains.includes(it))
@@ -1977,7 +1990,15 @@ class PostgresAdapter extends PostgresAdapterBase {
 }
 
 class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
-  async init (ctx: MeasureContext, domains?: string[], excludeDomains?: string[]): Promise<void> {
+  async init (
+    ctx: MeasureContext,
+    contextVars: Record<string, any>,
+    domains?: string[],
+    excludeDomains?: string[]
+  ): Promise<void> {
+    this.connections = contextVars.cntInfoPG ?? new Map<string, ConnectionInfo>()
+    contextVars.cntInfoPG = this.connections
+
     const resultDomains = domains ?? [DOMAIN_TX, DOMAIN_MODEL_TX]
     await initRateLimit.exec(async () => {
       const url = this.refClient.url()
@@ -2035,12 +2056,13 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
  */
 export async function createPostgresAdapter (
   ctx: MeasureContext,
+  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId,
   modelDb: ModelDb
 ): Promise<DbAdapter> {
-  const client = getDBClient(url)
+  const client = getDBClient(contextVars, url)
   const connection = await client.getClient()
   return new PostgresAdapter(connection, client, workspaceId, hierarchy, modelDb, 'default-' + workspaceId.name)
 }
@@ -2050,12 +2072,13 @@ export async function createPostgresAdapter (
  */
 export async function createPostgresTxAdapter (
   ctx: MeasureContext,
+  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId,
   modelDb: ModelDb
 ): Promise<TxAdapter> {
-  const client = getDBClient(url)
+  const client = getDBClient(contextVars, url)
   const connection = await client.getClient()
   return new PostgresTxAdapter(connection, client, workspaceId, hierarchy, modelDb, 'tx' + workspaceId.name)
 }

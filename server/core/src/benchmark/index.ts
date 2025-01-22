@@ -119,6 +119,7 @@ class BenchmarkDbAdapter extends DummyDbAdapter {
  */
 export async function createBenchmarkAdapter (
   ctx: MeasureContext,
+  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId,

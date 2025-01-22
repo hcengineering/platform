@@ -37,7 +37,8 @@ export function startBackup (
     workspace: WorkspaceIdWithUrl,
     branding: Branding | null,
     externalStorage: StorageAdapter
-  ) => DbConfiguration
+  ) => DbConfiguration,
+  contextVars: Record<string, any>
 ): void {
   const config = _config()
   setMetadata(serverToken.metadata.Secret, config.Secret)
@@ -66,7 +67,8 @@ export function startBackup (
     (ctx, workspace, branding, externalStorage) => {
       return getConfig(ctx, mainDbUrl, workspace, branding, externalStorage)
     },
-    config.Region
+    config.Region,
+    contextVars
   )
 
   process.on('SIGINT', shutdown)
@@ -94,6 +96,7 @@ export async function backupWorkspace (
   freshBackup: boolean = false,
   clean: boolean = false,
   downloadLimit: number,
+  contextVars: Record<string, any>,
 
   onFinish?: (backupStorage: StorageAdapter, workspaceStorage: StorageAdapter) => Promise<void>
 ): Promise<boolean> {
@@ -130,7 +133,8 @@ export async function backupWorkspace (
       freshBackup,
       clean,
       downloadLimit,
-      []
+      [],
+      contextVars
     )
     if (result && onFinish !== undefined) {
       await onFinish(storageAdapter, workspaceStorageAdapter)

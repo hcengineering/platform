@@ -19,12 +19,20 @@ import { getDBClient, retryTxn } from './utils'
 
 export { getDocFieldsByDomains, translateDomain } from './schemas'
 export * from './storage'
-export { convertDoc, createTables, getDBClient, retryTxn, setDBExtraOptions, setExtraOptions } from './utils'
+export {
+  convertDoc,
+  createTables,
+  getDBClient,
+  retryTxn,
+  setDBExtraOptions,
+  setExtraOptions,
+  shutdownPostgres
+} from './utils'
 
 export function createPostgreeDestroyAdapter (url: string): WorkspaceDestroyAdapter {
   return {
-    deleteWorkspace: async (ctx, workspace): Promise<void> => {
-      const client = getDBClient(url)
+    deleteWorkspace: async (ctx, contextVars, workspace): Promise<void> => {
+      const client = getDBClient(contextVars, url)
       try {
         const connection = await client.getClient()
 

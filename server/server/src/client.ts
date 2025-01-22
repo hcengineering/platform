@@ -102,7 +102,7 @@ export class ClientSession implements Session {
 
   async loadModel (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string): Promise<void> {
     this.includeSessionContext(ctx.ctx, ctx.pipeline)
-    const result = await ctx.ctx.with('load-model', {}, () => ctx.pipeline.loadModel(ctx.ctx, lastModelTx, hash))
+    const result = await ctx.ctx.with('load-model', {}, (_ctx) => ctx.pipeline.loadModel(_ctx, lastModelTx, hash))
     await ctx.sendResponse(ctx.requestId, result)
   }
 

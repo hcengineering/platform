@@ -78,6 +78,12 @@ export function getTxAdapterFactory (
 }
 
 /**
+ * A pipelice context used by standalong services to hold global variables.
+ * In case of Durable Objects, it should not be shared and individual context should be created.
+ */
+export const sharedPipelineContextVars: Record<string, any> = {}
+
+/**
  * @public
  */
 
@@ -94,6 +100,7 @@ export function createServerPipeline (
     externalStorage: StorageAdapter
 
     extraLogging?: boolean // If passed, will log every request/etc.
+    pipelineContextVars?: Record<string, any>
   },
   extensions?: Partial<DbConfiguration>
 ): PipelineFactory {
@@ -137,7 +144,8 @@ export function createServerPipeline (
       branding,
       modelDb,
       hierarchy,
-      storageAdapter: opt.externalStorage
+      storageAdapter: opt.externalStorage,
+      contextVars: opt.pipelineContextVars ?? sharedPipelineContextVars
     }
     return createPipeline(ctx, middlewares, context)
   }
@@ -183,7 +191,8 @@ export function createBackupPipeline (
       branding,
       modelDb,
       hierarchy,
-      storageAdapter: opt.externalStorage
+      storageAdapter: opt.externalStorage,
+      contextVars: {}
     }
     return createPipeline(ctx, middlewares, context)
   }

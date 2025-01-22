@@ -66,6 +66,7 @@ class BackupWorker {
       externalStorage: StorageAdapter
     ) => DbConfiguration,
     readonly region: string,
+    readonly contextVars: Record<string, any>,
     readonly freshWorkspace: boolean = false,
     readonly clean: boolean = false,
     readonly skipDomains: string[] = []
@@ -211,6 +212,7 @@ class BackupWorker {
               const modelDb = new ModelDb(hierarchy)
               const txAdapter = await adapterConf.factory(
                 ctx,
+                this.contextVars,
                 hierarchy,
                 adapterConf.url,
                 wsUrl,
@@ -218,7 +220,7 @@ class BackupWorker {
                 this.workspaceStorageAdapter
               )
               try {
-                await txAdapter.init?.(ctx)
+                await txAdapter.init?.(ctx, this.contextVars)
 
                 return (
                   await txAdapter.rawFindAll<Tx>(
@@ -292,9 +294,18 @@ export function backupService (
     externalStorage: StorageAdapter
   ) => DbConfiguration,
   region: string,
+  contextVars: Record<string, any>,
   recheck?: boolean
 ): () => void {
-  const backupWorker = new BackupWorker(storage, config, pipelineFactory, workspaceStorageAdapter, getConfig, region)
+  const backupWorker = new BackupWorker(
+    storage,
+    config,
+    pipelineFactory,
+    workspaceStorageAdapter,
+    getConfig,
+    region,
+    contextVars
+  )
 
   const shutdown = (): void => {
     void backupWorker.close()
@@ -322,6 +333,7 @@ export async function doBackupWorkspace (
   clean: boolean,
   downloadLimit: number,
   skipDomains: string[],
+  contextVars: Record<string, any>,
   notify?: (progress: number) => Promise<void>
 ): Promise<boolean> {
   const backupWorker = new BackupWorker(
@@ -331,6 +343,7 @@ export async function doBackupWorkspace (
     workspaceStorageAdapter,
     getConfig,
     region,
+    contextVars,
     freshWorkspace,
     clean,
     skipDomains
