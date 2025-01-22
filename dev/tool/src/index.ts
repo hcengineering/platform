@@ -146,7 +146,7 @@ import {
 } from './db'
 import { restoreControlledDocContentMongo, restoreWikiContentMongo, restoreMarkupRefsMongo } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
-import { fixAccountEmails, renameAccount } from './renameAccount'
+import { fixAccountEmails, renameAccount, fillGithubUsers } from './account'
 import { copyToDatalake, moveFiles, showLostFiles } from './storage'
 import { createPostgresTxAdapter, createPostgresAdapter, createPostgreeDestroyAdapter } from '@hcengineering/postgres'
 import { reindexWorkspace } from './fulltext'
@@ -2173,6 +2173,16 @@ export function devTool (
       } finally {
         client.close()
       }
+    })
+
+  program
+    .command('fill-github-users')
+    .option('-t, --token <token>', 'Github token to increase the limit of requests to GitHub')
+    .description('adds github username info to all accounts')
+    .action(async (cmd: { token?: string }) => {
+      await withAccountDatabase(async (db) => {
+        await fillGithubUsers(toolCtx, db, cmd.token)
+      })
     })
 
   extendProgram?.(program)

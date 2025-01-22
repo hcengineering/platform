@@ -103,4 +103,13 @@ export function createModel (builder: Builder): void {
       mixin: contact.mixin.Employee
     }
   })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverNotification.trigger.PushNotificationsHandler,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: notification.class.InboxNotification
+    }
+  })
 }
