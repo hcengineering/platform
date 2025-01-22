@@ -239,6 +239,9 @@ export class TInboxNotification extends TDoc implements InboxNotification {
   @Prop(TypeBoolean(), core.string.Boolean)
     archived!: boolean
 
+  objectId!: Ref<Doc>
+  objectClass!: Ref<Class<Doc>>
+
   declare space: Ref<PersonSpace>
 
   title?: IntlString

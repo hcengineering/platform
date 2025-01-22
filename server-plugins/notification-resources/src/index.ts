@@ -15,16 +15,8 @@
 //
 
 import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
-import { Analytics } from '@hcengineering/analytics'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
-import contact, {
-  Employee,
-  getAvatarProviderId,
-  getGravatarUrl,
-  Person,
-  PersonAccount,
-  type AvatarInfo
-} from '@hcengineering/contact'
+import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
   AnyAttribute,
@@ -33,7 +25,6 @@ import core, {
   Class,
   Collection,
   combineAttributes,
-  concatLink,
   Data,
   Doc,
   DocumentUpdate,
@@ -64,26 +55,28 @@ import notification, {
   DocNotifyContext,
   InboxNotification,
   MentionInboxNotification,
-  notificationId,
-  NotificationType,
-  PushData,
-  PushSubscription
+  NotificationType
 } from '@hcengineering/notification'
-import { getMetadata, getResource, translate } from '@hcengineering/platform'
-import serverCore, { type TriggerControl } from '@hcengineering/server-core'
+import { getResource, translate } from '@hcengineering/platform'
+import { type TriggerControl } from '@hcengineering/server-core'
 import serverNotification, {
   getPersonAccountById,
   NOTIFICATION_BODY_SIZE,
-  PUSH_NOTIFICATION_TITLE_SIZE,
   ReceiverInfo,
   SenderInfo
 } from '@hcengineering/server-notification'
-import serverView from '@hcengineering/server-view'
 import { markupToText, stripTags } from '@hcengineering/text-core'
-import { encodeObjectURI } from '@hcengineering/view'
-import { workbenchId } from '@hcengineering/workbench'
+import { Analytics } from '@hcengineering/analytics'
 
-import { Content, ContextsCache, ContextsCacheKey, NotifyParams, NotifyResult } from './types'
+import {
+  AvailableProvidersCache,
+  AvailableProvidersCacheKey,
+  Content,
+  ContextsCache,
+  ContextsCacheKey,
+  NotifyParams,
+  NotifyResult
+} from './types'
 import {
   createPullCollaboratorsTx,
   createPushCollaboratorsTx,
@@ -105,6 +98,7 @@ import {
   updateNotifyContextsSpace,
   type NotificationProviderControl
 } from './utils'
+import { PushNotificationsHandler } from './push'
 
 export function getPushCollaboratorTx (
   control: TriggerControl,
@@ -165,20 +159,8 @@ export async function getCommonNotificationTxes (
 
   if (notificationTx !== undefined) {
     const notificationData = TxProcessor.createDoc2Doc(notificationTx)
-    const subscriptions = await control.findAll(ctx, notification.class.PushSubscription, { user: receiver._id })
-    await applyNotificationProviders(
-      notificationData,
-      notifyResult,
-      attachedTo,
-      attachedToClass,
-      control,
-      res,
-      doc,
-      receiver,
-      sender,
-      subscriptions,
-      _class
-    )
+
+    await applyNotificationProviders(notificationData, notifyResult, control, res, doc, receiver, sender, _class)
   }
 
   return res
@@ -383,6 +365,8 @@ export async function pushInboxNotifications (
     isViewed: false,
     docNotifyContext: docNotifyContextId,
     archived: false,
+    objectId,
+    objectClass,
     ...data
   }
   const notificationTx = control.txFactory.createTxCreateDoc(_class, receiver.space, notificationData)
@@ -489,156 +473,6 @@ export async function getTranslatedNotificationContent (
   return { title: '', body: '' }
 }
 
-function isReactionMessage (message?: ActivityMessage): boolean {
-  return (
-    message !== undefined &&
-    message._class === activity.class.DocUpdateMessage &&
-    (message as DocUpdateMessage).objectClass === activity.class.Reaction
-  )
-}
-
-export async function createPushFromInbox (
-  control: TriggerControl,
-  receiver: ReceiverInfo,
-  attachedTo: Ref<Doc>,
-  attachedToClass: Ref<Class<Doc>>,
-  data: Data<InboxNotification>,
-  _class: Ref<Class<InboxNotification>>,
-  sender: SenderInfo,
-  _id: Ref<Doc>,
-  subscriptions: PushSubscription[],
-  message?: ActivityMessage
-): Promise<Tx | undefined> {
-  let { title, body } = await getTranslatedNotificationContent(data, _class, control)
-  if (title === '' || body === '') {
-    return
-  }
-
-  title = title.slice(0, PUSH_NOTIFICATION_TITLE_SIZE)
-
-  const senderPerson = sender.person
-  const linkProviders = control.modelDb.findAllSync(serverView.mixin.ServerLinkIdProvider, {})
-  const provider = linkProviders.find(({ _id }) => _id === attachedToClass)
-
-  let id: string = attachedTo
-
-  if (provider !== undefined) {
-    const encodeFn = await getResource(provider.encode)
-    const doc = (await control.findAll(control.ctx, attachedToClass, { _id: attachedTo }))[0]
-
-    if (doc === undefined) {
-      return
-    }
-
-    id = await encodeFn(doc, control)
-  }
-
-  const path = [workbenchId, control.workspace.workspaceUrl, notificationId, encodeObjectURI(id, attachedToClass)]
-  await createPushNotification(
-    control,
-    receiver._id as Ref<PersonAccount>,
-    title,
-    body,
-    _id,
-    subscriptions,
-    senderPerson,
-    path
-  )
-  return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, receiver.space, {
-    user: receiver._id,
-    title,
-    body,
-    senderId: sender._id,
-    tag: _id,
-    objectId: attachedTo,
-    objectClass: attachedToClass,
-    messageId: isReactionMessage(message) ? (message?.attachedTo as Ref<ActivityMessage>) : message?._id,
-    messageClass: isReactionMessage(message)
-      ? (message?.attachedToClass as Ref<Class<ActivityMessage>>)
-      : message?._class,
-    onClickLocation: {
-      path
-    }
-  })
-}
-
-export async function createPushNotification (
-  control: TriggerControl,
-  target: Ref<PersonAccount>,
-  title: string,
-  body: string,
-  _id: string,
-  subscriptions: PushSubscription[],
-  senderAvatar?: Data<AvatarInfo>,
-  path?: string[]
-): Promise<void> {
-  const sesURL: string | undefined = getMetadata(serverNotification.metadata.SesUrl)
-  const sesAuth: string | undefined = getMetadata(serverNotification.metadata.SesAuthToken)
-  if (sesURL === undefined || sesURL === '') return
-  const userSubscriptions = subscriptions.filter((it) => it.user === target)
-  const data: PushData = {
-    title,
-    body
-  }
-  if (_id !== undefined) {
-    data.tag = _id
-  }
-  const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const domainPath = `${workbenchId}/${control.workspace.workspaceUrl}`
-  data.domain = concatLink(front, domainPath)
-  if (path !== undefined) {
-    data.url = concatLink(front, path.join('/'))
-  }
-  if (senderAvatar != null) {
-    const provider = getAvatarProviderId(senderAvatar.avatarType)
-    if (provider === contact.avatarProvider.Image) {
-      if (senderAvatar.avatar != null) {
-        const url = await control.storageAdapter.getUrl(control.ctx, control.workspace, senderAvatar.avatar)
-        data.icon = url.includes('://') ? url : concatLink(front, url)
-      }
-    } else if (provider === contact.avatarProvider.Gravatar && senderAvatar.avatarProps?.url !== undefined) {
-      data.icon = getGravatarUrl(senderAvatar.avatarProps?.url, 512)
-    }
-  }
-
-  void sendPushToSubscription(sesURL, sesAuth, control, target, userSubscriptions, data)
-}
-
-async function sendPushToSubscription (
-  sesURL: string,
-  sesAuth: string | undefined,
-  control: TriggerControl,
-  targetUser: Ref<Account>,
-  subscriptions: PushSubscription[],
-  data: PushData
-): Promise<void> {
-  try {
-    const result: Ref<PushSubscription>[] = (
-      await (
-        await fetch(concatLink(sesURL, '/web-push'), {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
-          },
-          body: JSON.stringify({
-            subscriptions,
-            data
-          })
-        })
-      ).json()
-    ).result
-    if (result.length > 0) {
-      const domain = control.hierarchy.findDomain(notification.class.PushSubscription)
-      if (domain !== undefined) {
-        await control.lowLevel.clean(control.ctx, domain, result)
-      }
-    }
-  } catch (err) {
-    control.ctx.info('Cannot send push notification to', { user: targetUser, err })
-  }
-}
-
 /**
  * @public
  */
@@ -682,40 +516,16 @@ export async function pushActivityInboxNotifications (
 export async function applyNotificationProviders (
   data: InboxNotification,
   notifyResult: NotifyResult,
-  attachedTo: Ref<Doc>,
-  attachedToClass: Ref<Class<Doc>>,
   control: TriggerControl,
   res: Tx[],
   object: Doc,
   receiver: ReceiverInfo,
   sender: SenderInfo,
-  subscriptions: PushSubscription[],
   _class = notification.class.ActivityInboxNotification,
   message?: ActivityMessage
 ): Promise<void> {
   const resources = control.modelDb.findAllSync(serverNotification.class.NotificationProviderResources, {})
   for (const [provider, types] of notifyResult.entries()) {
-    if (provider === notification.providers.PushNotificationProvider) {
-      // const now = Date.now()
-      const pushTx = await createPushFromInbox(
-        control,
-        receiver,
-        attachedTo,
-        attachedToClass,
-        data,
-        _class,
-        sender,
-        data._id,
-        subscriptions,
-        message
-      )
-      if (pushTx !== undefined) {
-        res.push(pushTx)
-      }
-
-      continue
-    }
-
     const resource = resources.find((it) => it.provider === provider)
 
     if (resource === undefined) continue
@@ -789,8 +599,7 @@ export async function getNotificationTxes (
   params: NotifyParams,
   docNotifyContexts: DocNotifyContext[],
   activityMessages: ActivityMessage[],
-  settings: NotificationProviderControl,
-  subscriptions: PushSubscription[]
+  settings: NotificationProviderControl
 ): Promise<Tx[]> {
   if (receiver.account === undefined) {
     return []
@@ -828,17 +637,23 @@ export async function getNotificationTxes (
       if (notificationTx !== undefined) {
         const notificationData = TxProcessor.createDoc2Doc(notificationTx)
 
+        const current: AvailableProvidersCache = control.contextCache.get(AvailableProvidersCacheKey) ?? new Map()
+        const providers = Array.from(notifyResult.keys()).filter(
+          (p) => p !== notification.providers.InboxNotificationProvider
+        )
+        if (providers.length > 0) {
+          current.set(notificationData._id, providers)
+          control.contextCache.set('AvailableNotificationProviders', current)
+        }
+
         await applyNotificationProviders(
           notificationData,
           notifyResult,
-          message.attachedTo,
-          message.attachedToClass,
           control,
           res,
           object,
           receiver,
           sender,
-          subscriptions,
           notificationData._class,
           message
         )
@@ -1030,9 +845,6 @@ export async function createCollabDocInfo (
   }
 
   const settings = await getNotificationProviderControl(ctx, control)
-  const subscriptions = (await control.queryFind(ctx, notification.class.PushSubscription, {})).filter((it) =>
-    targets.has(it.user as Ref<PersonAccount>)
-  )
 
   for (const target of targets) {
     const info: ReceiverInfo | undefined = toReceiverInfo(control.hierarchy, usersInfo.get(target))
@@ -1049,8 +861,7 @@ export async function createCollabDocInfo (
       params,
       notifyContexts,
       docMessages,
-      settings,
-      subscriptions
+      settings
     )
     const ids = new Set(targetRes.map((it) => it._id))
     if (info.account?.email !== undefined) {
@@ -2031,6 +1842,7 @@ async function OnDocRemove (txes: TxCUD<Doc>[], control: TriggerControl): Promis
 }
 
 export * from './types'
+export * from './push'
 export * from './utils'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -2039,7 +1851,8 @@ export default async () => ({
     OnAttributeCreate,
     OnAttributeUpdate,
     OnDocRemove,
-    OnEmployeeDeactivate
+    OnEmployeeDeactivate,
+    PushNotificationsHandler
   },
   function: {
     IsUserInFieldValueTypeMatch: isUserInFieldValueTypeMatch,

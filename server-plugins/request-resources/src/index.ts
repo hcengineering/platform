@@ -161,10 +161,7 @@ async function getRequestNotificationTx (
   }
 
   const notificationControl = await getNotificationProviderControl(ctx, control)
-  const collaboratorsSet = new Set(collaborators)
-  const subscriptions = (await control.queryFind(control.ctx, notification.class.PushSubscription, {})).filter((it) =>
-    collaboratorsSet.has(it.user)
-  )
+
   for (const target of collaborators) {
     const targetInfo = toReceiverInfo(control.hierarchy, usersInfo.get(target))
     if (targetInfo === undefined) continue
@@ -179,8 +176,7 @@ async function getRequestNotificationTx (
       { isOwn: true, isSpace: false, shouldUpdateTimestamp: true },
       notifyContexts,
       messages,
-      notificationControl,
-      subscriptions
+      notificationControl
     )
     res.push(...txes)
   }

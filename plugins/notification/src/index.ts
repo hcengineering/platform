@@ -235,6 +235,8 @@ export interface InboxNotification extends Doc<PersonSpace> {
   isViewed: boolean
 
   docNotifyContext: Ref<DocNotifyContext>
+  objectId: Ref<Doc>
+  objectClass: Ref<Class<Doc>>
 
   // For browser notifications
   title?: IntlString
