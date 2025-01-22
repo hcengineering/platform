@@ -149,24 +149,34 @@ export async function fillGithubUsers (ctx: MeasureContext, db: AccountDB): Prom
     while (true) {
       try {
         if (account.githubId == null) break
-
-        const githubUserRes = await getGithubUser(account.githubId)
-        if (githubUserRes.code === 200 && githubUserRes.login != null) {
-          await db.account.updateOne({ _id: account._id }, { githubUser: githubUserRes.login })
-          ctx.info('github user added', { githubId: account.githubId, githubUser: githubUserRes.login })
-          break
-        } else if (githubUserRes.code === 404) {
-          ctx.info('github user not found', { githubId: account.githubId })
-          break
-        } else if (githubUserRes.code === 403) {
-          const timeout =
-            githubUserRes.rateLimitReset != null
-              ? githubUserRes.rateLimitReset - Date.now() + 1000
-              : defaultRetryTimeout
-          ctx.info('rate limit exceeded. Retrying in ', { githubId: account.githubId, retryTimeout: timeout })
-          await new Promise((resolve) => setTimeout(resolve, timeout))
+        let username: string | undefined
+        if ((account.email).startsWith('github:')) {
+          username = account.email.slice(7)
         } else {
-          ctx.error('failed to get github user', { githubId: account.githubId, ...githubUserRes })
+          const githubUserRes = await getGithubUser(account.githubId)
+          if (githubUserRes.code === 200 && githubUserRes.login != null) {
+            username = githubUserRes.login
+          } else if (githubUserRes.code === 404) {
+            ctx.info('github user not found', { githubId: account.githubId })
+            break
+          } else if (githubUserRes.code === 403) {
+            const timeout =
+              githubUserRes.rateLimitReset != null
+                ? githubUserRes.rateLimitReset - Date.now() + 1000
+                : defaultRetryTimeout
+            ctx.info('rate limit exceeded. Retrying in ', {
+              githubId: account.githubId,
+              retryTimeoutMin: Math.ceil(timeout / (1000 * 60))
+            })
+            await new Promise((resolve) => setTimeout(resolve, timeout))
+          } else {
+            ctx.error('failed to get github user', { githubId: account.githubId, ...githubUserRes })
+            break
+          }
+        }
+        if (username != null) {
+          await db.account.updateOne({ _id: account._id }, { githubUser: username.toLowerCase() })
+          ctx.info('github user added', { githubId: account.githubId, githubUser: username.toLowerCase() })
           break
         }
       } catch (err: any) {
