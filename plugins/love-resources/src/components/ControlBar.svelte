@@ -19,6 +19,10 @@
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import {
+    ButtonMenu,
+    DropdownIntlItem,
+    IconMaximize,
+    IconMoreV,
     IconUpOutline,
     ModernButton,
     PopupInstance,
@@ -26,11 +30,7 @@
     eventToHTMLElement,
     showPopup,
     type AnySvelteComponent,
-    type CompAndProps,
-    IconMoreV,
-    ButtonMenu,
-    DropdownIntlItem,
-    IconMaximize
+    type CompAndProps
   } from '@hcengineering/ui'
   import view, { Action } from '@hcengineering/view'
   import { getActions } from '@hcengineering/view-resources'
@@ -38,30 +38,32 @@
   import love from '../plugin'
   import { currentRoom, myInfo, myOffice } from '../stores'
   import {
-    isTranscriptionAllowed,
     isCameraEnabled,
     isConnected,
     isFullScreen,
     isMicEnabled,
     isRecording,
-    isTranscription,
     isRecordingAvailable,
+    isShareWithSound,
     isSharingEnabled,
+    isTranscription,
+    isTranscriptionAllowed,
     leaveRoom,
     record,
     screenSharing,
     setCam,
     setMic,
     setShare,
-    stopTranscription,
-    startTranscription
+    startTranscription,
+    stopTranscription
   } from '../utils'
   import CamSettingPopup from './CamSettingPopup.svelte'
+  import ControlBarContainer from './ControlBarContainer.svelte'
   import MicSettingPopup from './MicSettingPopup.svelte'
   import RoomAccessPopup from './RoomAccessPopup.svelte'
   import RoomLanguageSelector from './RoomLanguageSelector.svelte'
-  import ControlBarContainer from './ControlBarContainer.svelte'
   import RoomModal from './RoomModal.svelte'
+  import ShareSettingPopup from './ShareSettingPopup.svelte'
 
   export let room: Room
   export let canMaximize: boolean = true
@@ -86,7 +88,9 @@
   }
 
   async function changeShare (): Promise<void> {
-    await setShare(!$isSharingEnabled)
+    const newValue = !$isSharingEnabled
+    const audio = newValue && $isShareWithSound
+    await setShare(newValue, audio)
   }
 
   async function leave (): Promise<void> {
@@ -119,6 +123,14 @@
       popup = getPopup(CamSettingPopup, e)
     } else {
       showPopup(CamSettingPopup, {}, eventToHTMLElement(e))
+    }
+  }
+
+  function shareSettings (e: MouseEvent): void {
+    if (fullScreen) {
+      popup = getPopup(ShareSettingPopup, e)
+    } else {
+      showPopup(ShareSettingPopup, {}, eventToHTMLElement(e))
     }
   }
 
@@ -208,13 +220,15 @@
         />
       {/if}
       {#if allowShare}
-        <ModernButton
-          icon={$isSharingEnabled ? love.icon.SharingEnabled : love.icon.SharingDisabled}
-          tooltip={{ label: $isSharingEnabled ? love.string.StopShare : love.string.Share }}
-          disabled={($screenSharing && !$isSharingEnabled) || !$isConnected}
-          kind={'secondary'}
+        <SplitButton
           size={'large'}
-          on:click={changeShare}
+          icon={$isSharingEnabled ? love.icon.SharingEnabled : love.icon.SharingDisabled}
+          showTooltip={{ label: $isSharingEnabled ? love.string.StopShare : love.string.Share }}
+          disabled={($screenSharing && !$isSharingEnabled) || !$isConnected}
+          action={changeShare}
+          secondIcon={IconUpOutline}
+          secondAction={shareSettings}
+          separate
         />
       {/if}
       {#if hasAccountRole(getCurrentAccount(), AccountRole.User) && $isRecordingAvailable}

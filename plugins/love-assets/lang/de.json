@@ -79,6 +79,8 @@
     "Active": "Aktiv",
     "Finished": "Beendet",
     "StartWithRecording": "Mit Aufnahme starten",
-    "Language": "Sprache"
+    "Language": "Sprache",
+    "WithAudio": "Mit Audio",
+    "ShareWithAudioTooltip": "Mit Audio teilen, Sie müssen erneut teilen, um die Änderungen zu übernehmen"
   }
 }
