@@ -2160,10 +2160,11 @@ export function devTool (
 
   program
     .command('fill-github-users')
+    .option('-t, --token <token>', 'Github token to increase the limit of requests to GitHub')
     .description('adds github username info to all accounts')
-    .action(async () => {
+    .action(async (cmd: { token?: string }) => {
       await withAccountDatabase(async (db) => {
-        await fillGithubUsers(toolCtx, db)
+        await fillGithubUsers(toolCtx, db, cmd.token)
       })
     })
 

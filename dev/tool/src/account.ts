@@ -104,8 +104,17 @@ interface GithubUserResult {
   rateLimitReset?: number | null
 }
 
-async function getGithubUser (githubId: string): Promise<GithubUserResult> {
-  const res = await fetch(`https://api.github.com/user/${githubId}`)
+async function getGithubUser (githubId: string, ghToken?: string): Promise<GithubUserResult> {
+  const options =
+    ghToken !== undefined
+      ? {
+          headers: {
+            Authorization: `Bearer ${ghToken}`,
+            Accept: 'application/vnd.github.v3+json'
+          }
+        }
+      : undefined
+  const res = await fetch(`https://api.github.com/user/${githubId}`, options)
 
   if (res.status === 200) {
     return {
@@ -129,7 +138,7 @@ async function getGithubUser (githubId: string): Promise<GithubUserResult> {
   }
 }
 
-export async function fillGithubUsers (ctx: MeasureContext, db: AccountDB): Promise<void> {
+export async function fillGithubUsers (ctx: MeasureContext, db: AccountDB, ghToken?: string): Promise<void> {
   const githubAccounts = await db.account.find({ githubId: { $ne: null } })
   if (githubAccounts.length === 0) {
     ctx.info('no github accounts found')
@@ -150,10 +159,10 @@ export async function fillGithubUsers (ctx: MeasureContext, db: AccountDB): Prom
       try {
         if (account.githubId == null) break
         let username: string | undefined
-        if ((account.email).startsWith('github:')) {
+        if (account.email.startsWith('github:')) {
           username = account.email.slice(7)
         } else {
-          const githubUserRes = await getGithubUser(account.githubId)
+          const githubUserRes = await getGithubUser(account.githubId, ghToken)
           if (githubUserRes.code === 200 && githubUserRes.login != null) {
             username = githubUserRes.login
           } else if (githubUserRes.code === 404) {
