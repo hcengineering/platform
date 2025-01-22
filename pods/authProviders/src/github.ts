@@ -76,7 +76,8 @@ export function registerGithub (
           const db = await dbPromise
           if (state.inviteId != null && state.inviteId !== '') {
             loginInfo = await joinWithProvider(measureCtx, db, null, email, first, last, state.inviteId as any, {
-              githubId: ctx.state.user.id
+              githubId: ctx.state.user.id,
+              githubUser: ctx.state.user.username
             })
           } else {
             loginInfo = await loginWithProvider(
@@ -87,7 +88,8 @@ export function registerGithub (
               first,
               last,
               {
-                githubId: ctx.state.user.id
+                githubId: ctx.state.user.id,
+                githubUser: ctx.state.user.username
               },
               signUpDisabled
             )

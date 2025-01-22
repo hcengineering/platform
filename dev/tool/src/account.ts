@@ -97,3 +97,87 @@ async function fixEmailInWorkspace (
     await connection.close()
   }
 }
+
+interface GithubUserResult {
+  login: string | null
+  code: number
+  rateLimitReset?: number | null
+}
+
+async function getGithubUser (githubId: string): Promise<GithubUserResult> {
+  const res = await fetch(`https://api.github.com/user/${githubId}`)
+
+  if (res.status === 200) {
+    return {
+      login: (await res.json()).login,
+      code: 200
+    }
+  }
+
+  if (res.status === 403) {
+    const rateLimitReset = res.headers.get('X-RateLimit-Reset')
+    return {
+      login: null,
+      code: res.status,
+      rateLimitReset: rateLimitReset != null ? parseInt(rateLimitReset) * 1000 : null
+    }
+  }
+
+  return {
+    login: null,
+    code: res.status
+  }
+}
+
+export async function fillGithubUsers (ctx: MeasureContext, db: AccountDB): Promise<void> {
+  const githubAccounts = await db.account.find({ githubId: { $ne: null } })
+  if (githubAccounts.length === 0) {
+    ctx.info('no github accounts found')
+    return
+  }
+
+  const accountsToProcess = githubAccounts.filter(({ githubId, githubUser }) => githubUser == null && githubId != null)
+  if (accountsToProcess.length === 0) {
+    ctx.info('no github accounts left to fill')
+    return
+  }
+
+  ctx.info('processing github accounts', { total: accountsToProcess.length })
+  const defaultRetryTimeout = 1000 * 60 * 5 // 5 minutes
+  let processed = 0
+  for (const account of accountsToProcess) {
+    while (true) {
+      try {
+        if (account.githubId == null) break
+
+        const githubUserRes = await getGithubUser(account.githubId)
+        if (githubUserRes.code === 200 && githubUserRes.login != null) {
+          await db.account.updateOne({ _id: account._id }, { githubUser: githubUserRes.login })
+          ctx.info('github user added', { githubId: account.githubId, githubUser: githubUserRes.login })
+          break
+        } else if (githubUserRes.code === 404) {
+          ctx.info('github user not found', { githubId: account.githubId })
+          break
+        } else if (githubUserRes.code === 403) {
+          const timeout =
+            githubUserRes.rateLimitReset != null
+              ? githubUserRes.rateLimitReset - Date.now() + 1000
+              : defaultRetryTimeout
+          ctx.info('rate limit exceeded. Retrying in ', { githubId: account.githubId, retryTimeout: timeout })
+          await new Promise((resolve) => setTimeout(resolve, timeout))
+        } else {
+          ctx.error('failed to get github user', { githubId: account.githubId, ...githubUserRes })
+          break
+        }
+      } catch (err: any) {
+        ctx.error('failed to fill github user', { githubId: account.githubId, err })
+        break
+      }
+    }
+    processed++
+    if (processed % 100 === 0) {
+      ctx.info('processing accounts:', { processed, of: accountsToProcess.length })
+    }
+  }
+  ctx.info('finished processing accounts:', { processed, of: accountsToProcess.length })
+}
