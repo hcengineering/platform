@@ -247,6 +247,43 @@ export async function migrateSettings (client: MigrationClient): Promise<void> {
   )
 }
 
+export async function migrateNotificationsObject (client: MigrationClient): Promise<void> {
+  while (true) {
+    const notifications = await client.find<InboxNotification>(
+      DOMAIN_NOTIFICATION,
+      { objectId: { $exists: false }, docNotifyContext: { $exists: true } },
+      { limit: 500 }
+    )
+
+    if (notifications.length === 0) return
+
+    const contextIds = Array.from(new Set(notifications.map((n) => n.docNotifyContext)))
+    const contexts = await client.find<DocNotifyContext>(DOMAIN_DOC_NOTIFY, { _id: { $in: contextIds } })
+
+    for (const context of contexts) {
+      await client.update(
+        DOMAIN_NOTIFICATION,
+        { docNotifyContext: context._id, objectId: { $exists: false } },
+        { objectId: context.objectId, objectClass: context.objectClass }
+      )
+    }
+
+    const toDelete: Ref<InboxNotification>[] = []
+
+    for (const notification of notifications) {
+      const context = contexts.find((c) => c._id === notification.docNotifyContext)
+
+      if (context === undefined) {
+        toDelete.push(notification._id)
+      }
+    }
+
+    if (toDelete.length > 0) {
+      await client.deleteMany(DOMAIN_NOTIFICATION, { _id: { $in: toDelete } })
+    }
+  }
+}
+
 export const notificationOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, notificationId, [
@@ -429,6 +466,10 @@ export const notificationOperation: MigrateOperation = {
         func: async (client) => {
           await client.update(DOMAIN_DOC_NOTIFY, { space: core.space.Space }, { space: core.space.Workspace })
         }
+      },
+      {
+        state: 'migrate-notifications-object',
+        func: migrateNotificationsObject
       }
     ])
   },

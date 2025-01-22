@@ -36,6 +36,8 @@ export async function createNotification (
   } else {
     await client.createDoc(notification.class.CommonInboxNotification, data.space, {
       user: data.user,
+      objectId: forDoc._id,
+      objectClass: forDoc._class,
       icon: github.icon.Github,
       message: data.message,
       props: data.props,
