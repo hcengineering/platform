@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import type { Ref } from '@hcengineering/core'
 import { PushSubscription, type PushData } from '@hcengineering/notification'
 import type { Request, Response } from 'express'
 import webpush, { WebPushError } from 'web-push'
@@ -22,25 +23,39 @@ import { SES } from './ses'
 import { Endpoint } from './types'
 
 const errorMessages = ['expired', 'Unregistered', 'No such subscription']
-async function sendPushToSubscription (subscription: PushSubscription, data: PushData): Promise<'ok' | 'clear-push'> {
-  try {
-    await webpush.sendNotification(subscription, JSON.stringify(data))
-  } catch (err: any) {
-    if (err instanceof WebPushError) {
-      if (errorMessages.some((p) => JSON.stringify((err as WebPushError).body).includes(p))) {
-        return 'clear-push'
+async function sendPushToSubscription (
+  subscriptions: PushSubscription[],
+  data: PushData
+): Promise<Ref<PushSubscription>[]> {
+  const result: Ref<PushSubscription>[] = []
+  for (const subscription of subscriptions) {
+    try {
+      await webpush.sendNotification(subscription, JSON.stringify(data))
+    } catch (err: any) {
+      if (err instanceof WebPushError) {
+        if (errorMessages.some((p) => JSON.stringify((err as WebPushError).body).includes(p))) {
+          result.push(subscription._id)
+        }
       }
     }
   }
-  return 'ok'
+  return result
 }
 
 export const main = async (): Promise<void> => {
   const ses = new SES()
   console.log('SES service has been started')
+  let webpushInitDone = false
 
   if (config.PushPublicKey !== undefined && config.PushPrivateKey !== undefined) {
-    webpush.setVapidDetails(config.PushSubject ?? 'mailto:hey@huly.io', config.PushPublicKey, config.PushPublicKey)
+    try {
+      const subj = config.PushSubject ?? 'mailto:hey@huly.io'
+      console.log('Setting VAPID details', subj, config.PushPublicKey.length, config.PushPrivateKey.length)
+      webpush.setVapidDetails(config.PushSubject ?? 'mailto:hey@huly.io', config.PushPublicKey, config.PushPrivateKey)
+      webpushInitDone = true
+    } catch (err: any) {
+      console.error(err)
+    }
   }
 
   const checkAuth = (req: Request<any>, res: Response<any>): boolean => {
@@ -104,14 +119,18 @@ export const main = async (): Promise<void> => {
           res.status(400).send({ err: "'data' is missing" })
           return
         }
-        const subscription: PushSubscription | undefined = req.body?.subscription
-        if (subscription === undefined) {
-          res.status(400).send({ err: "'subscription' is missing" })
+        const subscriptions: PushSubscription[] | undefined = req.body?.subscriptions
+        if (subscriptions === undefined) {
+          res.status(400).send({ err: "'subscriptions' is missing" })
+          return
+        }
+        if (!webpushInitDone) {
+          res.json({ result: [] }).end()
           return
         }
 
-        const result = await sendPushToSubscription(subscription, data)
-        res.json({ result })
+        const result = await sendPushToSubscription(subscriptions, data)
+        res.json({ result }).end()
       }
     }
   ]

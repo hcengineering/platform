@@ -15,4 +15,8 @@
 
 import { main } from './main'
 
-void main()
+void main().catch((err) => {
+  if (err != null) {
+    console.error(err)
+  }
+})
