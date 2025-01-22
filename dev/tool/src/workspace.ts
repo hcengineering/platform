@@ -20,7 +20,6 @@ import core, {
   type Class,
   type Client as CoreClient,
   type Doc,
-  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_TX,
   type Ref,
   type Tx,
@@ -94,18 +93,5 @@ export async function updateField (
     await connection.upload(connection.getHierarchy().getDomain(doc?._class), [doc])
   } finally {
     await connection.close()
-  }
-}
-
-export async function recreateElastic (mongoUrl: string, workspaceId: WorkspaceId): Promise<void> {
-  const client = getMongoClient(mongoUrl)
-  const _client = await client.getClient()
-  try {
-    const db = getWorkspaceMongoDB(_client, workspaceId)
-    await db
-      .collection(DOMAIN_DOC_INDEX_STATE)
-      .updateMany({ _class: core.class.DocIndexState }, { $set: { needIndex: true } })
-  } finally {
-    client.close()
   }
 }

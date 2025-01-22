@@ -161,6 +161,14 @@ class WorkspaceIndexer {
     return result
   }
 
+  async reindex (): Promise<void> {
+    await this.fulltext.cancel()
+    await this.fulltext.clearIndex()
+    await this.fulltext.startIndexing(() => {
+      this.lastUpdate = Date.now()
+    })
+  }
+
   async close (): Promise<void> {
     await this.fulltext.cancel()
     await this.pipeline.close()
@@ -186,6 +194,10 @@ interface Search {
   _classes: Ref<Class<Doc>>[]
   query: DocumentQuery<Doc>
   fullTextLimit: number
+}
+
+interface Reindex {
+  token: string
 }
 
 export async function startIndexer (
@@ -383,6 +395,26 @@ export async function startIndexer (
         await ctx.with('index-documents', {}, (ctx) => indexer.fulltext.indexDocuments(ctx, request.requests))
       }
       req.body = {}
+    } catch (err: any) {
+      Analytics.handleError(err)
+      console.error(err)
+      req.res.writeHead(404, {})
+      req.res.end()
+    }
+  })
+
+  router.put('/api/v1/reindex', async (req, res) => {
+    try {
+      const request = req.request.body as Reindex
+      const decoded = decodeToken(request.token) // Just to be safe
+      req.body = {}
+
+      ctx.info('reindex', { workspace: decoded.workspace })
+      const indexer = await getIndexer(ctx, decoded.workspace, request.token, true)
+      if (indexer !== undefined) {
+        indexer.lastUpdate = Date.now()
+        await indexer.reindex()
+      }
     } catch (err: any) {
       Analytics.handleError(err)
       console.error(err)
