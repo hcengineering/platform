@@ -669,7 +669,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
           // Add workspace name as $1
 
           const select = `SELECT ${this.getProjection(domain, options?.projection, joins, options?.associations)} FROM ${domain}`
-          const secJoin = this.addSecurity(vars, query, domain, ctx.contextData)
+          const showArchived = options?.showArchived ?? false
+          const secJoin = this.addSecurity(vars, query, showArchived, domain, ctx.contextData)
           if (secJoin !== undefined) {
             sqlChunks.push(secJoin)
           }
@@ -729,6 +730,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
   addSecurity<T extends Doc>(
     vars: ValuesVariables,
     query: DocumentQuery<T>,
+    showArchived: boolean,
     domain: string,
     sessionContext: SessionData
   ): string | undefined {
@@ -742,7 +744,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
         if (domain === DOMAIN_SPACE && isOwner(acc)) return
         const key = domain === DOMAIN_SPACE ? '_id' : domain === DOMAIN_TX ? "data ->> 'objectSpace'" : 'space'
         const privateCheck = domain === DOMAIN_SPACE ? ' OR sec.private = false' : ''
-        const q = `(sec.members @> '{"${acc._id}"}' OR sec."_class" = '${core.class.SystemSpace}'${privateCheck})`
+        const archivedCheck = showArchived ? '' : ' AND sec.archived = false'
+        const q = `(sec.members @> '{"${acc._id}"}' OR sec."_class" = '${core.class.SystemSpace}'${privateCheck})${archivedCheck}`
         return `INNER JOIN ${translateDomain(DOMAIN_SPACE)} AS sec ON sec._id = ${domain}.${key} AND sec."workspaceId" = ${vars.add(this.workspaceId.name, '::uuid')} AND ${q}`
       }
     }

@@ -332,7 +332,9 @@ export function createModel (builder: Builder): void {
     key: 'hideArchived',
     type: 'toggle',
     defaultValue: true,
-    label: recruit.string.HideArchivedVacancies
+    actionTarget: 'options',
+    action: view.function.HideArchived,
+    label: view.string.HideArchived
   }
 
   builder.createDoc(
@@ -452,8 +454,8 @@ export function createModel (builder: Builder): void {
     key: 'hideArchivedVacancies',
     type: 'toggle',
     defaultValue: true,
-    actionTarget: 'query',
-    action: recruit.function.HideArchivedVacancies,
+    actionTarget: 'options',
+    action: view.function.HideArchived,
     label: recruit.string.HideApplicantsFromArchivedVacancies
   }
 
@@ -524,8 +526,7 @@ export function createModel (builder: Builder): void {
         }
       },
       baseQuery: {
-        isDone: false,
-        '$lookup.space.archived': false
+        isDone: false
       }
     },
     recruit.viewlet.TableApplicantMatch
@@ -776,9 +777,6 @@ export function createModel (builder: Builder): void {
       configOptions: {
         strict: true,
         hiddenKeys: ['name', 'space', 'modifiedOn']
-      },
-      baseQuery: {
-        '$lookup.space.archived': false
       },
       viewOptions: {
         groupBy: ['company', 'dueTo', 'createdBy'],

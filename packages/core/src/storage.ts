@@ -128,6 +128,8 @@ export type FindOptions<T extends Doc> = {
 
   // If specified total will be returned
   total?: boolean
+
+  showArchived?: boolean
 }
 
 /**

@@ -697,9 +697,25 @@ export interface ViewOption {
   defaultValue: any
   label: IntlString
   hidden?: (viewOptions: ViewOptions) => boolean
-  actionTarget?: 'query' | 'category' | 'display'
+  actionTarget?: 'query' | 'category' | 'display' | 'options'
   action?: Resource<(value: any, ...params: any) => any>
 }
+
+/**
+ * @public
+ */
+export type ViewOptionsAction<T extends Doc = Doc> = Resource<
+(value: any, query: FindOptions<T> | undefined) => FindOptions<T>
+>
+
+/**
+ * @public
+ */
+export interface ViewOptionsOption extends ViewOption {
+  actionTarget: 'options'
+  action: ViewOptionsAction<Doc>
+}
+
 /**
  * @public
  */

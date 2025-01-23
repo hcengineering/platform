@@ -30,7 +30,7 @@ export function isOwner (account: Account, ctx: MeasureContext<SessionData>): bo
 }
 
 export function isSystem (account: Account, ctx: MeasureContext<SessionData>): boolean {
-  return account._id === core.account.System || ctx.contextData.admin === true
+  return account._id === core.account.System
 }
 
 export function filterBroadcastOnly (tx: Tx[], hierarchy: Hierarchy): Tx[] {

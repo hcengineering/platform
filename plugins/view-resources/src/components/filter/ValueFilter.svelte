@@ -82,31 +82,20 @@
             [prefix + filter.key.key]: { $like: '%' + search + '%' }
           }
         : {}
-    const isDerivedFromSpace = hierarchy.isDerived(_class, core.class.Space)
 
     async function doQuery (limit: number | undefined, sortedValues: any[] | undefined): Promise<boolean> {
       const p = client.findAll(
         _class,
         {
           ...resultQuery,
-          ...(space !== undefined
-            ? { space }
-            : isDerivedFromSpace
-              ? viewOptions === undefined || viewOptions?.hideArchived === true
-                ? { archived: false }
-                : {}
-              : {
-                  '$lookup.space.archived': false
-                }),
+          ...(space !== undefined ? { space } : {}),
           ...(sortedValues !== undefined ? { [prefix + filter.key.key]: { $nin: sortedValues } } : {})
         },
         {
           sort: { modifiedOn: SortingOrder.Descending },
           projection: { [prefix + filter.key.key]: 1 },
           ...(limit !== undefined ? { limit } : {}),
-          lookup: {
-            space: core.class.Space
-          }
+          showArchived: viewOptions?.hideArchived === false
         }
       )
       if (limit !== undefined) {
