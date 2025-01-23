@@ -27,7 +27,7 @@ export async function translateHtml (client: OpenAI, html: string, lang: string)
     messages: [
       {
         role: 'system',
-        content: `Your task is to translate the text into ${lang} while preserving the html structure and metadata`
+        content: `Your task is to translate the text into ${lang} while preserving the html structure and metadata. Do not translate <span data-type="reference">`
       },
       {
         role: 'user',
