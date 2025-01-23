@@ -1276,6 +1276,9 @@ importers:
       '@types/cors':
         specifier: ^2.8.12
         version: 2.8.17
+      '@types/crypto-js':
+        specifier: ^4.2.2
+        version: 4.2.2
       '@types/csvtojson':
         specifier: ^2.0.0
         version: 2.0.3
@@ -1535,8 +1538,8 @@ importers:
         specifier: ~22.8.7
         version: 22.8.8
       electron:
-        specifier: ^33.3.0
-        version: 33.3.0
+        specifier: ^34.0.1
+        version: 34.0.1
       electron-builder:
         specifier: ^25.1.8
         version: 25.1.8
@@ -1729,9 +1732,6 @@ importers:
       markdown-it:
         specifier: ^14.0.0
         version: 14.0.0
-      md5.js:
-        specifier: ^1.3.5
-        version: 1.3.5
       mermaid:
         specifier: ~11.4.1
         version: 11.4.1
@@ -3939,7 +3939,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/cloud-transactor@file:projects/cloud-transactor.tgz':
-    resolution: {integrity: sha512-RmuejZDmaNRcHOCurZBKIHOgqyfTwUNtJdhzJEANVw3XAbuapCjlaCwmtK5bad2D6S1+VrHrXoF4vw4FamxZkw==, tarball: file:projects/cloud-transactor.tgz}
+    resolution: {integrity: sha512-TQDXA+MVvGBCnHIw+j0hCHr3f1DdzxS71ZHu8IXlIFK1d5RcfC4zubzHllBdwU/ld0svVrj18dHke+YpJDRcKw==, tarball: file:projects/cloud-transactor.tgz}
     version: 0.0.0
 
   '@rush-temp/collaboration@file:projects/collaboration.tgz':
@@ -3963,7 +3963,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/contact@file:projects/contact.tgz':
-    resolution: {integrity: sha512-59CabCDtmhSMmziQMA8E7sB/xLjRibcfTjx/EuYh4trtpfOawQ6lVZSljJ3Fr3huHHg4A8A14L71MC4PgPSepQ==, tarball: file:projects/contact.tgz}
+    resolution: {integrity: sha512-79dZ9DTczWnB5eBmX1XH8d/mw8RjbGeCK+ryNpym3Bh3kykq7RwuTeTRvIlPTzk+vkCCXzb34A/zSdaslTyfnw==, tarball: file:projects/contact.tgz}
     version: 0.0.0
 
   '@rush-temp/controlled-documents-assets@file:projects/controlled-documents-assets.tgz':
@@ -3987,7 +3987,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop-1@file:projects/desktop-1.tgz':
-    resolution: {integrity: sha512-JNWlSwhVC9iFMp9JD5gg98hOEQDkmM22a3Yvv1coMSuh3eKgu0D43VOecW6s5IS4BNfiF5I87OLnTXBnmV0lOw==, tarball: file:projects/desktop-1.tgz}
+    resolution: {integrity: sha512-Sfhqq2K9Tx7rvlHAiyfNxfIsHXf7h3FAO8Zt23G3kWi5Fr0gSBjKLncLmroYQ76KDDsOspak5mRyGoEMS3UYpQ==, tarball: file:projects/desktop-1.tgz}
     version: 0.0.0
 
   '@rush-temp/desktop-preferences-assets@file:projects/desktop-preferences-assets.tgz':
@@ -4003,7 +4003,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop@file:projects/desktop.tgz':
-    resolution: {integrity: sha512-Q/89OJitC8+RRAlMxT3jzlsz5/mKPdgw55FTvXQL3wxQiAPymBU7RlFS3DheD13G0hEy4YDhYZcBYb8H5EQxFg==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-uh6lFeHjgPw/N/GA5iU+K8tdWjvda2LZYQ3zsTI50jOd3fQJA2x/YPvK9L/hHWTMEBB0sGjglGyLZK4SwfSuzA==, tarball: file:projects/desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/devmodel-resources@file:projects/devmodel-resources.tgz':
@@ -4647,7 +4647,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/print-resources@file:projects/print-resources.tgz':
-    resolution: {integrity: sha512-KoZ+51PxtzhT+sk/eOjVkHdfHNadvHz1tykCBfmJjlRC2Igx9bLuRjS4HeSme4O0iGDGho7t19ZjWiIxzJaNuA==, tarball: file:projects/print-resources.tgz}
+    resolution: {integrity: sha512-AXbCRkoKotRSyP2OGH3c+yfmX3nrkqE0MTgXmT2YHlBwC6Cuandocuyqyzl+VCEO0N2n3kEJatYlGhsuuxVX7A==, tarball: file:projects/print-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/print@file:projects/print.tgz':
@@ -8156,8 +8156,8 @@ packages:
   electron-windows-badge@1.1.0:
     resolution: {integrity: sha512-hWFbUk9u3fQHcKzTAcjZAN7XH9bL9oH9g20RRDU/DVDNqdMI03GzlBZfR/R8R1krYu9AT4biLqSCAxnt9LMAfA==}
 
-  electron@33.3.0:
-    resolution: {integrity: sha512-316ZlFUHJmzGrhRj87tVStxyYvknDqVR9eYSsGKAHY7auhVWFLIcPPGxcnbD/H1mez8CpDjXvEjcz76zpWxsXw==}
+  electron@34.0.1:
+    resolution: {integrity: sha512-aArw5tAM80i3CKwEREnyZSM1SkARf5Jd1yBMTIdOL4pB1M+p/oDeyWSFI9Dl+vujyfJKiK4SS5+j19wna1onMw==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
 
@@ -9143,10 +9143,6 @@ packages:
 
   has-unicode@2.0.1:
     resolution: {integrity: sha512-8Rf9Y83NBReMnx0gFzA8JImQACstCYWUplepDa9xprwwtmgEZUF0h/i5xSA625zB/I37EtrswSST6OXxwaaIJQ==}
-
-  hash-base@3.1.0:
-    resolution: {integrity: sha512-1nmYp/rhMDiE7AYkDw+lLwlAzz0AntGIe51F3RfFfEqyQ3feY2eI/NcwC6umIQVOASPMsWJLJScWKSSvzL9IVA==}
-    engines: {node: '>=4'}
 
   hasown@2.0.1:
     resolution: {integrity: sha512-1/th4MHjnwncwXsIW6QMzlvYL9kG5e/CpVvLRZe4XPa8TOUNbCELqmvhDmnkNsAjwaG4+I8gJJL0JBvTTLO9qA==}
@@ -10357,9 +10353,6 @@ packages:
   matcher@3.0.0:
     resolution: {integrity: sha512-OkeDaAZ/bQCxeFAozM55PKcKU0yJMPGifLwV4Qgjitu+5MoAfSQN4lsLJeXZ1b8w0x+/Emda6MZgXS1jvsapng==}
     engines: {node: '>=10'}
-
-  md5.js@1.3.5:
-    resolution: {integrity: sha512-xitP+WxNPcTTOgnTJcrhM0xvdPepipPSf3I8EIpGKeFLjt3PlJLIDG3u8EX53ZIubkb+5U2+3rELYpEhHhzdkg==}
 
   md5@2.3.0:
     resolution: {integrity: sha512-T1GITYmFaKuO91vxyoQMFETst+O71VUPEU3ze5GNzDm0OWdP8v1ziTaAEPUr/3kLsY3Sftgz242A1SetQiDL7g==}
@@ -16981,7 +16974,6 @@ snapshots:
 
   '@rush-temp/contact@file:projects/contact.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
     dependencies:
-      '@types/crypto-js': 4.2.2
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
@@ -16991,7 +16983,6 @@ snapshots:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      md5.js: 1.3.5
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.3.3)
       typescript: 5.3.3
@@ -17170,7 +17161,7 @@ snapshots:
       '@vercel/webpack-asset-relocator-loader': 1.7.4
       cross-env: 7.0.3
       dotenv: 16.0.3
-      electron: 33.3.0
+      electron: 34.0.1
       electron-builder: 25.1.8
       electron-squirrel-startup: 1.0.1
       node-loader: 2.0.0(webpack@5.97.1)
@@ -17286,7 +17277,7 @@ snapshots:
       css-loader: 5.2.7(webpack@5.97.1)
       dotenv: 16.0.3
       dotenv-webpack: 8.0.1(webpack@5.97.1)
-      electron: 33.3.0
+      electron: 34.0.1
       electron-context-menu: 4.0.4
       electron-log: 5.1.7
       electron-squirrel-startup: 1.0.1
@@ -29350,7 +29341,7 @@ snapshots:
 
   electron-windows-badge@1.1.0: {}
 
-  electron@33.3.0:
+  electron@34.0.1:
     dependencies:
       '@electron/get': 2.0.3
       '@types/node': 20.11.19
@@ -30702,12 +30693,6 @@ snapshots:
       has-symbols: 1.0.3
 
   has-unicode@2.0.1: {}
-
-  hash-base@3.1.0:
-    dependencies:
-      inherits: 2.0.4
-      readable-stream: 3.6.2
-      safe-buffer: 5.2.1
 
   hasown@2.0.1:
     dependencies:
@@ -32234,12 +32219,6 @@ snapshots:
     dependencies:
       escape-string-regexp: 4.0.0
     optional: true
-
-  md5.js@1.3.5:
-    dependencies:
-      hash-base: 3.1.0
-      inherits: 2.0.4
-      safe-buffer: 5.2.1
 
   md5@2.3.0:
     dependencies:
