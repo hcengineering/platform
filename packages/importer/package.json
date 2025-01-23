@@ -62,7 +62,7 @@
     "csvtojson": "^2.0.10",
     "js-yaml": "^4.1.0",
     "image-size": "^1.1.1",
-    "mammoth": "~1.9.0"
+    "mammoth": "^1.9.0"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

@@ -4120,7 +4120,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/importer@file:projects/importer.tgz':
-    resolution: {integrity: sha512-zizP5lgUg15CabPcapeEmr6lkox8gzkC+siK4VIdj8VTTNDQ23htiYpvPwxfgV6bT86QgN054AMw3rDSqoeJyA==, tarball: file:projects/importer.tgz}
+    resolution: {integrity: sha512-BuK2vaX5lBsSX2OREMAZ4Iaz6pqGg+1s/1RuNK/siSmjsO0G67Eenk3k9pmWZ7SS0ocnBNxv6KCDO/NfJ7VOrw==, tarball: file:projects/importer.tgz}
     version: 0.0.0
 
   '@rush-temp/inventory-assets@file:projects/inventory-assets.tgz':
@@ -4584,7 +4584,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-print@file:projects/pod-print.tgz':
-    resolution: {integrity: sha512-19hcUtJBpca/kmHtIv4Z30rvHIaMLeGm3PdirKFuVS7VAdmYV6Um+m4o+5fq2LUUcda4T10vHscPeAvZR8EPEA==, tarball: file:projects/pod-print.tgz}
+    resolution: {integrity: sha512-uH6mY0Z3/3bbAe+rGjr2WPJmavKnoNgKZ5KoLqToGGF+iDzZOZGLjd8OrwUI90Z3behW7PPIRuPDGiRmFGOtcw==, tarball: file:projects/pod-print.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-server@file:projects/pod-server.tgz':
@@ -4668,7 +4668,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/qms-doc-import-tool@file:projects/qms-doc-import-tool.tgz':
-    resolution: {integrity: sha512-QqdrovP6ZWs8dmU+6Ly95n8BFMjlvtMcme4uj9XgPqCKMOmuMhtQ0Wn5ae3h8hzgB1K2HK25F0BPrzhRBGlxTA==, tarball: file:projects/qms-doc-import-tool.tgz}
+    resolution: {integrity: sha512-m7UFAU/1lPMVaVWNf5rvDKrRWTxOzjuWinK48EQ8OSJD3JSB5SP/IHrW9zSckgWBnLYL1vnljAgjM0QZ2qjIlQ==, tarball: file:projects/qms-doc-import-tool.tgz}
     version: 0.0.0
 
   '@rush-temp/qms-tests-sanity@file:projects/qms-tests-sanity.tgz':
@@ -4708,7 +4708,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/rekoni-service@file:projects/rekoni-service.tgz':
-    resolution: {integrity: sha512-c3Vh1CX471Q8N6l5hoftqqktDZ7PuqzOXwcnhy5bNc14ynVi8Q9mTV7hHeP5xCFzQzepXCQ+tF5Etparbn2pdQ==, tarball: file:projects/rekoni-service.tgz}
+    resolution: {integrity: sha512-KwM2th57U3OVRVgPsNgcakA3gCpIYsASv2TeeqJAbv0cFim1ha1xDaeb8A96O9vTHjHRknDfgqQVYYIUdosQwQ==, tarball: file:projects/rekoni-service.tgz}
     version: 0.0.0
 
   '@rush-temp/rekoni@file:projects/rekoni.tgz':
@@ -10273,9 +10273,6 @@ packages:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
     hasBin: true
 
-  lop@0.4.1:
-    resolution: {integrity: sha512-9xyho9why2A2tzm5aIcMWKvzqKsnxrf9B5I+8O30olh6lQU8PH978LqZoI4++37RBgS1Em5i54v1TFs/3wnmXQ==}
-
   lop@0.4.2:
     resolution: {integrity: sha512-RefILVDQ4DKoRZsJ4Pj22TxE3omDO47yFpkIBoDKzkqPRISs5U1cnAdg/5583YPkWPaLIYHOKRMQSvjFsO26cw==}
 
@@ -10327,11 +10324,6 @@ packages:
 
   makeerror@1.0.12:
     resolution: {integrity: sha512-JmqCvUhmt43madlpFzG4BQzG2Z3m6tvQDNKdClZnO3VbIudJYmxsT0FNJMeiB2+JTSlTQTSbU8QdesVmwJcmLg==}
-
-  mammoth@1.8.0:
-    resolution: {integrity: sha512-pJNfxSk9IEGVpau+tsZFz22ofjUsl2mnA5eT8PjPs2n0BP+rhVte4Nez6FdgEuxv3IGI3afiV46ImKqTGDVlbA==}
-    engines: {node: '>=12.0.0'}
-    hasBin: true
 
   mammoth@1.9.0:
     resolution: {integrity: sha512-F+0NxzankQV9XSUAuVKvkdQK0GbtGGuqVnND9aVf9VSeUA82LQa29GjLqYU6Eez8LHqSJG3eGiDW3224OKdpZg==}
@@ -13455,8 +13447,8 @@ snapshots:
       '@aws-crypto/sha1-browser': 3.0.0
       '@aws-crypto/sha256-browser': 3.0.0
       '@aws-crypto/sha256-js': 3.0.0
-      '@aws-sdk/client-sso-oidc': 3.577.0(@aws-sdk/client-sts@3.577.0)
-      '@aws-sdk/client-sts': 3.577.0
+      '@aws-sdk/client-sso-oidc': 3.577.0
+      '@aws-sdk/client-sts': 3.577.0(@aws-sdk/client-sso-oidc@3.577.0)
       '@aws-sdk/core': 3.576.0
       '@aws-sdk/credential-provider-node': 3.577.0(@aws-sdk/client-sso-oidc@3.577.0)(@aws-sdk/client-sts@3.577.0)
       '@aws-sdk/middleware-bucket-endpoint': 3.577.0
@@ -13513,11 +13505,11 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/client-sso-oidc@3.577.0(@aws-sdk/client-sts@3.577.0)':
+  '@aws-sdk/client-sso-oidc@3.577.0':
     dependencies:
       '@aws-crypto/sha256-browser': 3.0.0
       '@aws-crypto/sha256-js': 3.0.0
-      '@aws-sdk/client-sts': 3.577.0
+      '@aws-sdk/client-sts': 3.577.0(@aws-sdk/client-sso-oidc@3.577.0)
       '@aws-sdk/core': 3.576.0
       '@aws-sdk/credential-provider-node': 3.577.0(@aws-sdk/client-sso-oidc@3.577.0)(@aws-sdk/client-sts@3.577.0)
       '@aws-sdk/middleware-host-header': 3.577.0
@@ -13556,7 +13548,6 @@ snapshots:
       '@smithy/util-utf8': 3.0.0
       tslib: 2.6.2
     transitivePeerDependencies:
-      - '@aws-sdk/client-sts'
       - aws-crt
 
   '@aws-sdk/client-sso@3.577.0':
@@ -13602,11 +13593,11 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/client-sts@3.577.0':
+  '@aws-sdk/client-sts@3.577.0(@aws-sdk/client-sso-oidc@3.577.0)':
     dependencies:
       '@aws-crypto/sha256-browser': 3.0.0
       '@aws-crypto/sha256-js': 3.0.0
-      '@aws-sdk/client-sso-oidc': 3.577.0(@aws-sdk/client-sts@3.577.0)
+      '@aws-sdk/client-sso-oidc': 3.577.0
       '@aws-sdk/core': 3.576.0
       '@aws-sdk/credential-provider-node': 3.577.0(@aws-sdk/client-sso-oidc@3.577.0)(@aws-sdk/client-sts@3.577.0)
       '@aws-sdk/middleware-host-header': 3.577.0
@@ -13645,6 +13636,7 @@ snapshots:
       '@smithy/util-utf8': 3.0.0
       tslib: 2.6.2
     transitivePeerDependencies:
+      - '@aws-sdk/client-sso-oidc'
       - aws-crt
 
   '@aws-sdk/core@3.576.0':
@@ -13678,7 +13670,7 @@ snapshots:
 
   '@aws-sdk/credential-provider-ini@3.577.0(@aws-sdk/client-sso-oidc@3.577.0)(@aws-sdk/client-sts@3.577.0)':
     dependencies:
-      '@aws-sdk/client-sts': 3.577.0
+      '@aws-sdk/client-sts': 3.577.0(@aws-sdk/client-sso-oidc@3.577.0)
       '@aws-sdk/credential-provider-env': 3.577.0
       '@aws-sdk/credential-provider-process': 3.577.0
       '@aws-sdk/credential-provider-sso': 3.577.0(@aws-sdk/client-sso-oidc@3.577.0)
@@ -13735,7 +13727,7 @@ snapshots:
 
   '@aws-sdk/credential-provider-web-identity@3.577.0(@aws-sdk/client-sts@3.577.0)':
     dependencies:
-      '@aws-sdk/client-sts': 3.577.0
+      '@aws-sdk/client-sts': 3.577.0(@aws-sdk/client-sso-oidc@3.577.0)
       '@aws-sdk/types': 3.577.0
       '@smithy/property-provider': 3.0.0
       '@smithy/types': 3.0.0
@@ -13894,7 +13886,7 @@ snapshots:
 
   '@aws-sdk/token-providers@3.577.0(@aws-sdk/client-sso-oidc@3.577.0)':
     dependencies:
-      '@aws-sdk/client-sso-oidc': 3.577.0(@aws-sdk/client-sts@3.577.0)
+      '@aws-sdk/client-sso-oidc': 3.577.0
       '@aws-sdk/types': 3.577.0
       '@smithy/property-provider': 3.0.0
       '@smithy/shared-ini-file-loader': 3.0.0
@@ -20768,7 +20760,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.21.2
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      mammoth: 1.8.0
+      mammoth: 1.9.0
       prettier: 3.2.5
       puppeteer: 22.14.0(bufferutil@4.0.8)(typescript@5.3.3)(utf-8-validate@6.0.4)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.3.3)
@@ -21541,7 +21533,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       htmlparser2: 9.1.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      mammoth: 1.8.0
+      mammoth: 1.9.0
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
@@ -21850,7 +21842,7 @@ snapshots:
       jimp: 0.16.13
       jwt-simple: 0.5.6
       libphonenumber-js: 1.10.56
-      mammoth: 1.8.0
+      mammoth: 1.9.0
       mime-types: 2.1.35
       morgan: 1.10.0
       node-loader: 2.0.0(webpack@5.97.1)
@@ -32121,12 +32113,6 @@ snapshots:
     dependencies:
       js-tokens: 4.0.0
 
-  lop@0.4.1:
-    dependencies:
-      duck: 0.1.12
-      option: 0.2.4
-      underscore: 1.13.7
-
   lop@0.4.2:
     dependencies:
       duck: 0.1.12
@@ -32198,19 +32184,6 @@ snapshots:
   makeerror@1.0.12:
     dependencies:
       tmpl: 1.0.5
-
-  mammoth@1.8.0:
-    dependencies:
-      '@xmldom/xmldom': 0.8.10
-      argparse: 1.0.10
-      base64-js: 1.5.1
-      bluebird: 3.4.7
-      dingbat-to-unicode: 1.0.1
-      jszip: 3.10.1
-      lop: 0.4.1
-      path-is-absolute: 1.0.1
-      underscore: 1.13.7
-      xmlbuilder: 10.1.1
 
   mammoth@1.9.0:
     dependencies:
