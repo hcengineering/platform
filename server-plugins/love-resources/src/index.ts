@@ -334,11 +334,9 @@ export async function OnKnock (txes: Tx[], control: TriggerControl): Promise<Tx[
               const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
                 user: { $in: socialStrings }
               })
-              const primarySocialString = pickPrimarySocialId(socialStrings)
-              // TODO: Select proper account target
               await createPushNotification(
                 control,
-                primarySocialString,
+                socialStrings,
                 title,
                 body,
                 request._id,
@@ -394,9 +392,7 @@ export async function OnInvite (txes: Tx[], control: TriggerControl): Promise<Tx
           const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
             user: { $in: socialStrings }
           })
-          // TODO: Select a proper user
-          const primarySocialString = pickPrimarySocialId(socialStrings)
-          await createPushNotification(control, primarySocialString, title, body, invite._id, subscriptions, from, path)
+          await createPushNotification(control, socialStrings, title, body, invite._id, subscriptions, from, path)
         }
       }
     }

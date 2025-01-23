@@ -113,7 +113,7 @@ import type { PipelineFactory, StorageAdapter, StorageAdapterEx } from '@hcengin
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
 import { getAccountDBUrl, getMongoDBUrl } from './__start'
-import { fillGithubUsers, fixAccountEmails, renameAccount } from './account'
+// import { fillGithubUsers, fixAccountEmails, renameAccount } from './account'
 import {
   benchmark,
   benchmarkWorker,

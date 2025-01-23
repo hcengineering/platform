@@ -1166,12 +1166,13 @@ async function updateCollaboratorsMixin (
       for (const collab of newCollabs) {
         const target = toReceiverInfo(hierarchy, infos.get(collab))
         if (target === undefined) continue
-        if (space.private && !space.members.includes(target.account._id)) continue
+        const isMember = includesAny(space.members, target.socialStrings)
+        if (space.private && !isMember) continue
 
-        if (!hierarchy.isDerived(space._class, core.class.SystemSpace) && !space.members.includes(target.account._id)) {
+        if (!hierarchy.isDerived(space._class, core.class.SystemSpace) && !isMember) {
           res.push(
             control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
-              $push: { members: target.account._id }
+              $push: { members: collab }
             })
           )
         }
