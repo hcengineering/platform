@@ -304,7 +304,11 @@ function addNodeContent (builder: NodeBuilder, node?: MarkupNode): void {
     builder.addText(`<img src="${src}" alt="${alt}"/>`)
   } else if (node.type === MarkupNodeType.reference) {
     const label = toString(attrs.label)
+    builder.addTag(
+      `<span class="antiMention reference" data-type="reference" label="${attrs.label}" id="${attrs.id}" objectclass="${attrs.objectclass}">`
+    )
     builder.addText(label !== undefined ? `@${label}` : '')
+    builder.addTag('</span>')
   } else if (node.type === MarkupNodeType.hard_break) {
     builder.addTag('<br/>')
   } else if (node.type === MarkupNodeType.ordered_list) {

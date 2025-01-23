@@ -51,7 +51,22 @@ export const ReferenceNode = Node.create<ReferenceOptions>({
   parseHTML () {
     return [
       {
-        tag: `span[data-type="${this.name}"]`
+        tag: `span[data-type="${this.name}"]`,
+        getAttrs: (el) => {
+          const id = (el as HTMLSpanElement).getAttribute('id')?.trim()
+          const label = (el as HTMLSpanElement).getAttribute('label')?.trim()
+          const objectclass = (el as HTMLSpanElement).getAttribute('objectclass')?.trim()
+
+          if (id == null || label == null || objectclass == null) {
+            return false
+          }
+
+          return {
+            id,
+            label,
+            objectclass
+          }
+        }
       }
     ]
   },
