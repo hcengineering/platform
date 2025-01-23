@@ -14,10 +14,9 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import ui, { Scroller, Label } from '../..'
+  import ui, { Scroller, Label, deviceOptionsStore as deviceInfo } from '../..'
   import { addZero, areDatesEqual, day as getDay, getMonday, getWeekDayName } from './internal/DateUtils'
 
-  export let mondayStart = true
   export let cellHeight: string | undefined = undefined
   export let selectedDate: Date = new Date()
   export let currentDate: Date = selectedDate
@@ -31,7 +30,7 @@
   const todayDate = new Date()
 
   $: weekMonday = startFromWeekStart
-    ? getMonday(currentDate, mondayStart)
+    ? getMonday(currentDate, $deviceInfo.mondayStart)
     : new Date(new Date(currentDate).setHours(0, 0, 0, 0))
 
   function getDate (startDate: Date, dayIndex: number, minutes: number): Date {

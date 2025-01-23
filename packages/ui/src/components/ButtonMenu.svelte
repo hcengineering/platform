@@ -25,7 +25,7 @@
   export let label: IntlString | undefined = undefined
   export let labelParams: Record<string, any> = {}
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
-  export let size: 'large' | 'medium' | 'small' = 'large'
+  export let size: 'large' | 'medium' | 'small' | 'extra-small' | 'min' = 'large'
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
   export let iconProps: any | undefined = undefined
   export let disabled: boolean = false

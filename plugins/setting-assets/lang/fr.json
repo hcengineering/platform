@@ -131,6 +131,8 @@
     "BackupFileDownload": "Télécharger le fichier",
     "BackupFiles": "Fichiers de sauvegarde",
     "BackupNoBackup": "Aucune sauvegarde n'est actuellement disponible.",
+    "Calendar": "Calendrier",
+    "StartOfTheWeekOnMonday": "Début de la semaine le lundi",
     "AddAttribute": "Ajouter un attribut"
   }
 }

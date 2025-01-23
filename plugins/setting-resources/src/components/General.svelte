@@ -27,7 +27,9 @@
     IconDelete,
     Label,
     navigate,
-    showPopup
+    showPopup,
+    ModernToggle,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import { loginId } from '@hcengineering/login'
   import { EditableAvatar } from '@hcengineering/contact-resources'
@@ -159,6 +161,14 @@
             {#if isEditingName}
               <Button icon={IconClose} kind="ghost" size="small" on:click={handleCancelEditName} />
             {/if}
+          </div>
+          <div class="flex-col flex-gap-4 mt-6">
+            <div class="title"><Label label={setting.string.Calendar} /></div>
+            <ModernToggle
+              bind:checked={$deviceInfo.mondayStart}
+              label={setting.string.StartOfTheWeekOnMonday}
+              size={'small'}
+            />
           </div>
           <div class="delete mt-6">
             <Button icon={IconDelete} kind="dangerous" label={setting.string.DeleteWorkspace} on:click={handleDelete} />

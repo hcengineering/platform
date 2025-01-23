@@ -386,6 +386,7 @@ export interface DeviceOptions {
   sizes: Record<WidthType, boolean>
   minWidth: boolean
   twoRows: boolean
+  mondayStart: boolean
   theme?: string
   language?: string
   replacedPanel?: HTMLElement

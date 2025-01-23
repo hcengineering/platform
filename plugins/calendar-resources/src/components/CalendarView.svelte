@@ -34,7 +34,8 @@
     areDatesEqual,
     getMonday,
     showPopup,
-    AnySvelteComponent
+    AnySvelteComponent,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
 
   import { CalendarMode, DayCalendar, calendarByIdStore, hidePrivateEvents } from '../index'
@@ -61,7 +62,7 @@
   const myPrimaryId = acc.primarySocialId
   const mySocialStrings = acc.socialIds
 
-  const mondayStart = true
+  $: mondayStart = $deviceInfo.mondayStart
   let mode: CalendarMode = allowedModes.includes(CalendarMode.Days) ? CalendarMode.Days : allowedModes[0]
 
   // Current selected day
@@ -337,7 +338,6 @@
 {/if}
 {#if mode === CalendarMode.Year}
   <YearCalendar
-    {mondayStart}
     cellHeight={'2.5rem'}
     bind:selectedDate
     bind:currentDate
@@ -354,7 +354,7 @@
     </svelte:fragment>
   </YearCalendar>
 {:else if mode === CalendarMode.Month}
-  <MonthCalendar {mondayStart} cellHeight={'8.5rem'} bind:selectedDate bind:currentDate>
+  <MonthCalendar cellHeight={'8.5rem'} bind:selectedDate bind:currentDate>
     <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
       <Day
         events={findEvents(objects, date)}
@@ -380,7 +380,6 @@
   <DayCalendar
     bind:this={dayCalendar}
     events={objects}
-    {mondayStart}
     displayedDaysCount={7}
     {dragItemId}
     startFromWeekStart
@@ -398,7 +397,6 @@
       bind:this={dayCalendar}
       events={objects}
       {dragItemId}
-      {mondayStart}
       displayedDaysCount={mode === CalendarMode.Days ? 3 : 1}
       startFromWeekStart={false}
       bind:selectedDate

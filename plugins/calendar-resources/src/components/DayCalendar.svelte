@@ -50,7 +50,6 @@
   import EventElement from './EventElement.svelte'
 
   export let events: Event[]
-  export let mondayStart = true
   export let selectedDate: Date = new Date()
   export let currentDate: Date = selectedDate
   export let displayedDaysCount = 7
@@ -69,6 +68,7 @@
   const dispatch = createEventDispatcher()
 
   $: checkToday($ticker)
+  $: mondayStart = $deviceInfo.mondayStart
 
   function checkToday (now: number): void {
     if (!areDatesEqual(todayDate, new Date())) {

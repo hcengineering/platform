@@ -131,6 +131,8 @@
     "BackupFileDownload": "Download File",
     "BackupFiles": "Backup Files",
     "BackupNoBackup": "No backups are currently available.",
+    "Calendar": "Calendar",
+    "StartOfTheWeekOnMonday": "Start of the week on Monday",
     "AddAttribute": "Add attribute"
   }
 }
