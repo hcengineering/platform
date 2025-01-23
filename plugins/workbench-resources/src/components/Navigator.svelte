@@ -81,7 +81,7 @@
 
   let requestIndex = 0
   async function update (model: NavigatorModel, spaces: Space[], preferences: Map<Ref<Doc>, SpacePreference>) {
-    shownSpaces = spaces.filter((sp) => !preferences.has(sp._id))
+    shownSpaces = spaces.filter((sp) => !sp.archived && !preferences.has(sp._id))
     starred = spaces.filter((sp) => preferences.has(sp._id))
     if (model.specials !== undefined) {
       const [sp, resIndex] = await updateSpecials(model.specials, spaces, ++requestIndex)
