@@ -141,6 +141,13 @@
     $deviceInfo.isMobile &&
     (($deviceInfo.isPortrait && $deviceInfo.docWidth <= 480) ||
       (!$deviceInfo.isPortrait && $deviceInfo.docHeight <= 480))
+
+  $deviceInfo.mondayStart = localStorage.getItem('mondayStart') === 'true' ?? true
+  let oldmondayStart: boolean = $deviceInfo.mondayStart
+  $: if (oldmondayStart !== $deviceInfo.mondayStart) {
+    localStorage.setItem('mondayStart', `${$deviceInfo.mondayStart}`)
+    oldmondayStart = $deviceInfo.mondayStart
+  }
 </script>
 
 <svelte:window bind:innerWidth={docWidth} bind:innerHeight={docHeight} />

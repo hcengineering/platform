@@ -41,14 +41,12 @@
       )
       : today
   $: currentDate = defaultDate
-  const mondayStart: boolean = true
 </script>
 
 <div class="month-popup-container">
   {#if mode !== DateRangeMode.TIME}
     <Month
       bind:currentDate
-      {mondayStart}
       on:update={(result) => {
         if (result.detail !== undefined) {
           dispatch('close', result.detail)

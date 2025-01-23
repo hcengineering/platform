@@ -130,6 +130,8 @@
     "BackupSnapshots": "备份快照",
     "BackupFileDownload": "下载文件",
     "BackupFiles": "备份文件",
-    "BackupNoBackup": "当前没有可用的备份。"
+    "BackupNoBackup": "当前没有可用的备份。",
+    "Calendar": "日历",
+    "StartOfTheWeekOnMonday": "星期一开始一周"
   }
 }

@@ -130,6 +130,8 @@
     "BackupSnapshots": "Sicherungsschnappschüsse",
     "BackupFileDownload": "Datei herunterladen",
     "BackupFiles": "Sicherungsdateien",
-    "BackupNoBackup": "Derzeit sind keine Sicherungen verfügbar."
+    "BackupNoBackup": "Derzeit sind keine Sicherungen verfügbar.",
+    "Calendar": "Kalender",
+    "StartOfTheWeekOnMonday": "Wochenstart am Montag"
   }
 }

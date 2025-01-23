@@ -18,6 +18,7 @@
   import ButtonIcon from '../ButtonIcon.svelte'
   import IconChevronLeft from '../icons/ChevronLeft.svelte'
   import IconChevronRight from '../icons/ChevronRight.svelte'
+  import { deviceOptionsStore as deviceInfo } from '../..'
   import {
     ICell,
     TCellStyle,
@@ -32,13 +33,13 @@
   } from './internal/DateUtils'
 
   export let currentDate: Date | null
-  export let mondayStart: boolean = true
   export let timeZone: string = getUserTimezone()
   export let hideNavigator: boolean = false
   export let replacementDay: boolean = false
 
   const dispatch = createEventDispatcher()
 
+  $: mondayStart = $deviceInfo.mondayStart
   let monthYear: string
   const today: Date = new Date(Date.now())
   const viewDate: Date = new Date(currentDate ?? today)

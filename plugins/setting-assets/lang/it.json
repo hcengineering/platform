@@ -130,6 +130,8 @@
     "BackupSnapshots": "Istantanee di backup",
     "BackupFileDownload": "Scarica file",
     "BackupFiles": "File di backup",
-    "BackupNoBackup": "Non sono attualmente disponibili backup."
+    "BackupNoBackup": "Non sono attualmente disponibili backup.",
+    "Calendar": "Calendario",
+    "StartOfTheWeekOnMonday": "Inizio della settimana lunedì"
   }
 }

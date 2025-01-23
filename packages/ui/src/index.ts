@@ -324,7 +324,8 @@ export const deviceOptionsStore = writable<DeviceOptions>({
   size: null,
   sizes: { xs: false, sm: false, md: false, lg: false, xl: false, xxl: false },
   minWidth: false,
-  twoRows: false
+  twoRows: false,
+  mondayStart: true
 })
 
 export default uis
