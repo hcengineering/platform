@@ -755,7 +755,7 @@ async function removeContexts (
 
 export async function createCollabDocInfo (
   ctx: MeasureContext,
-  res: Tx[],
+  currentRes: Tx[],
   collaborators: Ref<PersonAccount>[],
   control: TriggerControl,
   tx: TxCUD<Doc>,
@@ -765,6 +765,8 @@ export async function createCollabDocInfo (
   unsubscribe: Ref<PersonAccount>[] = [],
   cache = new Map<Ref<Doc>, Doc>()
 ): Promise<Tx[]> {
+  let res: Tx[] = []
+
   if (tx.space === core.space.DerivedTx) {
     return res
   }
@@ -812,7 +814,7 @@ export async function createCollabDocInfo (
     : collaborators.filter(
       (it) =>
         space.members.includes(it) ||
-          res.some((tx) => {
+          currentRes.some((tx) => {
             if (tx._class === core.class.TxUpdateDoc) {
               const updateTx = tx as TxUpdateDoc<Space>
               if (updateTx.objectId === space._id) {
