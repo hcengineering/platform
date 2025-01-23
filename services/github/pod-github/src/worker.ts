@@ -872,57 +872,59 @@ export class GithubWorker implements IntegrationManager {
   }
 
   private async queryAccounts (): Promise<void> {
-    const updateAccounts = async (accounts: PersonAccount[]): Promise<void> => {
-      const persons = await this.liveQuery.findAll(contact.class.Person, {
-        _id: { $in: accounts.map((it) => it.person) }
-      })
-      const h = this.client.getHierarchy()
-      for (const a of accounts) {
-        if (a.email.startsWith('github:')) {
-          const login = a.email.substring(7)
-          const person = persons.find((it) => it._id === a.person)
-          if (person !== undefined) {
-            // #1 check if person has GithubUser mixin.
-            if (!h.hasMixin(person, github.mixin.GithubUser)) {
-              await this._client.createMixin(person._id, person._class, person.space, github.mixin.GithubUser, {
-                url: `https://github.com/${login}`
-              })
-            } else {
-              const ghu = h.as(person, github.mixin.GithubUser)
-              if (ghu.url !== `https://github.com/${login}`) {
-                await this._client.updateMixin(person._id, person._class, person.space, github.mixin.GithubUser, {
-                  url: `https://github.com/${login}`
-                })
-              }
-            }
-            // #2 check if person has contact github and if not add it.
-            const channel = await this._client.findOne(contact.class.Channel, {
-              provider: contact.channelProvider.GitHub,
-              value: login,
-              attachedTo: person._id
-            })
-            if (channel === undefined) {
-              await this._client.addCollection(
-                contact.class.Channel,
-                person.space,
-                person._id,
-                contact.class.Person,
-                'channels',
-                {
-                  provider: contact.channelProvider.GitHub,
-                  value: login
-                }
-              )
-            }
-          }
-        }
-      }
-    }
-    await new Promise<void>((resolve, reject) => {
-      this.liveQuery.query(contact.class.PersonAccount, {}, (res) => {
-        void updateAccounts(res).then(resolve).catch(reject)
-      })
-    })
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // const updateAccounts = async (accounts: PersonAccount[]): Promise<void> => {
+    //   const persons = await this.liveQuery.findAll(contact.class.Person, {
+    //     _id: { $in: accounts.map((it) => it.person) }
+    //   })
+    //   const h = this.client.getHierarchy()
+    //   for (const a of accounts) {
+    //     if (a.email.startsWith('github:')) {
+    //       const login = a.email.substring(7)
+    //       const person = persons.find((it) => it._id === a.person)
+    //       if (person !== undefined) {
+    //         // #1 check if person has GithubUser mixin.
+    //         if (!h.hasMixin(person, github.mixin.GithubUser)) {
+    //           await this._client.createMixin(person._id, person._class, person.space, github.mixin.GithubUser, {
+    //             url: `https://github.com/${login}`
+    //           })
+    //         } else {
+    //           const ghu = h.as(person, github.mixin.GithubUser)
+    //           if (ghu.url !== `https://github.com/${login}`) {
+    //             await this._client.updateMixin(person._id, person._class, person.space, github.mixin.GithubUser, {
+    //               url: `https://github.com/${login}`
+    //             })
+    //           }
+    //         }
+    //         // #2 check if person has contact github and if not add it.
+    //         const channel = await this._client.findOne(contact.class.Channel, {
+    //           provider: contact.channelProvider.GitHub,
+    //           value: login,
+    //           attachedTo: person._id
+    //         })
+    //         if (channel === undefined) {
+    //           await this._client.addCollection(
+    //             contact.class.Channel,
+    //             person.space,
+    //             person._id,
+    //             contact.class.Person,
+    //             'channels',
+    //             {
+    //               provider: contact.channelProvider.GitHub,
+    //               value: login
+    //             }
+    //           )
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
+    // await new Promise<void>((resolve, reject) => {
+    //   this.liveQuery.query(contact.class.PersonAccount, {}, (res) => {
+    //     void updateAccounts(res).then(resolve).catch(reject)
+    //   })
+    // })
   }
 
   async performExternalSync (
@@ -1614,7 +1616,7 @@ export class GithubWorker implements IntegrationManager {
         workspace,
         branding
       )
-      ctx.info('Init worker', { workspace: workspace.workspaceUrl, workspaceId: workspace.workspaceName })
+      ctx.info('Init worker', { workspace: workspace.url, workspaceId: workspace.uuid })
       void worker.init()
       return worker
     } catch (err: any) {

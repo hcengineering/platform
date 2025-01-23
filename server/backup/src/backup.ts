@@ -2008,7 +2008,7 @@ export async function restore (
                   try {
                     doc = JSON.parse(bf.toString()) as Doc
                   } catch (err) {
-                    ctx.warn('failed to parse blob metadata', { name, workspace: workspaceId.name, err })
+                    ctx.warn('failed to parse blob metadata', { name, workspace: workspaceId, err })
                     next()
                     return
                   }

@@ -24,6 +24,9 @@ import {
   SocialIdType,
   type BackupStatus,
   type Branding,
+  AccountRole,
+  type Person,
+  type WorkspaceMemberInfo,
   PersonUuid,
   isActiveMode
 } from '@hcengineering/core'
@@ -38,13 +41,11 @@ import platform, {
 import { decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 
 import { accountPlugin } from './plugin'
-import { AccountRole } from './types'
 import type {
   AccountDB,
   LoginInfo,
   OtpInfo,
   RegionInfo,
-  Person,
   WorkspaceEvent,
   WorkspaceOperation,
   AccountMethodHandler,
@@ -52,7 +53,6 @@ import type {
   WorkspaceInfoWithStatus,
   WorkspaceStatus,
   SocialId,
-  WorkspaceMemberInfo,
   Workspace
 } from './types'
 import {

@@ -145,7 +145,7 @@ import { reindexWorkspace } from './fulltext'
 import { restoreControlledDocContentMongo, restoreMarkupRefsMongo, restoreWikiContentMongo } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 
-import { fixAccountEmails, renameAccount, fillGithubUsers } from './account'
+// import { fixAccountEmails, renameAccount, fillGithubUsers } from './account'
 import { copyToDatalake, moveFiles, showLostFiles } from './storage'
 import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
 

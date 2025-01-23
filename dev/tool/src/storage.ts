@@ -417,7 +417,7 @@ export async function copyBlobToDatalake (
 function uploadMultipart (
   ctx: MeasureContext,
   datalake: DatalakeClient,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   objectName: string,
   stream: Readable,
   metadata: UploadObjectParams

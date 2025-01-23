@@ -14,7 +14,7 @@
 //
 import { UUID } from 'mongodb'
 import type { Collection, CreateIndexesOptions, Db, Filter, OptionalUnlessRequiredId, Sort as RawSort } from 'mongodb'
-import { buildSocialIdString, SocialKey, type AccountRole, type Data, type Version } from '@hcengineering/core'
+import { type Person, type WorkspaceMemberInfo, buildSocialIdString, SocialKey, type AccountRole, type Data, type Version } from '@hcengineering/core'
 
 import type {
   DbCollection,
@@ -23,7 +23,6 @@ import type {
   WorkspaceOperation,
   AccountDB,
   Account,
-  Person,
   SocialId,
   WorkspaceInvite,
   OTP,
@@ -32,8 +31,7 @@ import type {
   WorkspaceData,
   WorkspaceInfoWithStatus,
   WorkspaceStatusData,
-  Sort,
-  WorkspaceMemberInfo
+  Sort
 } from '../types'
 import { isShallowEqual } from '../utils'
 

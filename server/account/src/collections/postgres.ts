@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import { Sql } from 'postgres'
-import { type Data, type Version, AccountRole } from '@hcengineering/core'
+import { type Data, type Version, type Person, type WorkspaceMemberInfo, AccountRole } from '@hcengineering/core'
 
 import type {
   DbCollection,
@@ -27,13 +27,11 @@ import type {
   WorkspaceInvite,
   AccountEvent,
   SocialId,
-  Person,
   WorkspaceData,
   WorkspaceStatus,
   WorkspaceStatusData,
   WorkspaceInfoWithStatus,
-  Sort,
-  WorkspaceMemberInfo
+  Sort
 } from '../types'
 
 export class PostgresDbCollection<T extends Record<string, any>, K extends keyof T | undefined = undefined>
