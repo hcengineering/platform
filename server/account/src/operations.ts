@@ -82,7 +82,8 @@ import {
   signUpByEmail,
   selectWorkspace,
   doJoinByInvite,
-  getWorkspacesInfoWithStatusByIds
+  getWorkspacesInfoWithStatusByIds,
+  getSocialIdByKey
 } from './utils'
 
 // Move to config?
@@ -1007,6 +1008,7 @@ export async function getLoginInfoByToken (
     return {
       ...loginInfo,
       workspace: workspace.uuid,
+      workspaceDataId: workspace.dataId,
       endpoint: getEndpoint(ctx, workspace.uuid, workspace.region, EndpointKind.External),
       role
     }
@@ -1088,12 +1090,12 @@ export async function getWorkspaceMembers (
   return await db.getWorkspaceMembers(workspace)
 }
 
-export async function updateWorkspaceRoleByEmail (
+export async function updateWorkspaceRoleBySocialId (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  email: string,
+  socialKey: string,
   targetRole: AccountRole
 ): Promise<void> {
   const { extra } = decodeTokenVerbose(ctx, token)
@@ -1102,14 +1104,12 @@ export async function updateWorkspaceRoleByEmail (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
-  const normalizedEmail = cleanEmail(email)
-  const emailSocialId = await getEmailSocialId(db, normalizedEmail)
-
-  if (emailSocialId == null) {
+  const socialId = await getSocialIdByKey(db, socialKey.toLowerCase())
+  if (socialId == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
 
-  await updateWorkspaceRole(ctx, db, branding, token, emailSocialId.personUuid, targetRole)
+  await updateWorkspaceRole(ctx, db, branding, token, socialId.personUuid, targetRole)
 }
 
 export async function updateWorkspaceRole (
@@ -1126,7 +1126,7 @@ export async function updateWorkspaceRole (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
   }
 
-  const accRole = account === systemAccountUuid ? AccountRole.Owner : (await db.getWorkspaceRole(account, workspace))
+  const accRole = (account === systemAccountUuid) ? AccountRole.Owner : (await db.getWorkspaceRole(account, workspace))
 
   if (
     accRole == null ||
@@ -1455,7 +1455,7 @@ export type AccountMethods =
   | 'updateWorkspaceRole'
   | 'findPerson'
   | 'performWorkspaceOperation'
-  | 'updateWorkspaceRoleByEmail'
+  | 'updateWorkspaceRoleBySocialId'
 
 /**
  * @public
@@ -1503,7 +1503,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     assignWorkspace: wrap(assignWorkspace),
     listWorkspaces: wrap(listWorkspaces),
     performWorkspaceOperation: wrap(performWorkspaceOperation),
-    updateWorkspaceRoleByEmail: wrap(updateWorkspaceRoleByEmail)
+    updateWorkspaceRoleBySocialId: wrap(updateWorkspaceRoleBySocialId)
   }
 }
 

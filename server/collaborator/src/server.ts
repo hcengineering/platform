@@ -32,6 +32,7 @@ import { simpleClientFactory } from './platform'
 import { RpcErrorResponse, RpcRequest, RpcResponse, methods } from './rpc'
 import { PlatformStorageAdapter } from './storage/platform'
 import { MarkupTransformer } from './transformers/markup'
+import { getWorkspaceIds } from './utils'
 
 /**
  * @public
@@ -103,10 +104,13 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
 
   const rpcCtx = ctx.newChild('rpc', {})
 
-  const getContext = (token: Token): Context => {
+  const getContext = async (rawToken: string, token: Token): Promise<Context> => {
+    const ids = await getWorkspaceIds(rawToken)
+
     return {
       connectionId: generateId(),
-      workspaceId: token.workspace,
+      workspaceId: ids.uuid,
+      workspaceDataId: ids.dataId ?? ids.uuid,
       clientFactory: simpleClientFactory(token)
     }
   }
@@ -164,8 +168,9 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
       return
     }
 
-    const token = decodeToken(authHeader.split(' ')[1])
-    const context = getContext(token)
+    const rawToken = authHeader.split(' ')[1]
+    const token = decodeToken(rawToken)
+    const context = await getContext(rawToken, token)
 
     rpcCtx.info('rpc', { method: request.method, connectionId: context.connectionId, mode: token.extra?.mode ?? '' })
     await rpcCtx.with('/rpc', { method: request.method }, async (ctx) => {

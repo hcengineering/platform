@@ -114,6 +114,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   token = workspaceLoginInfo.token
   setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
   setMetadata(presentation.metadata.WorkspaceUuid, workspaceLoginInfo.workspace)
+  setMetadata(presentation.metadata.WorkspaceDataId, workspaceLoginInfo.workspaceDataId)
   setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
   setMetadata(presentation.metadata.Token, token)
 
@@ -157,7 +158,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     }
   }
 
-  setPresentationCookie(token, workspaceLoginInfo.workspace)
+  setPresentationCookie(token, workspaceLoginInfo.workspaceDataId ?? workspaceLoginInfo.workspace)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, workspaceLoginInfo?.endpoint)
 
   const endpoint = getMetadata(login.metadata.TransactorOverride) ?? workspaceLoginInfo?.endpoint
@@ -560,6 +561,7 @@ export function clearMetadata (ws: string): void {
 
   setMetadata(presentation.metadata.Token, null)
   setMetadata(presentation.metadata.WorkspaceUuid, null)
+  setMetadata(presentation.metadata.WorkspaceDataId, null)
   setMetadataLocalStorage(login.metadata.LastToken, null)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   setMetadataLocalStorage(login.metadata.LoginAccount, null)

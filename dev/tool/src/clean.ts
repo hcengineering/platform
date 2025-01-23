@@ -53,6 +53,7 @@ import core, {
   type TxRemoveDoc,
   type TxUpdateDoc,
   type WorkspaceUuid,
+  type WorkspaceDataId,
   generateId,
   getObjectValue,
   toIdMap,
@@ -1106,6 +1107,7 @@ export async function removeDuplicateIds (
 
   //     ctx.info(`Processing workspace ${workspace.name ?? workspace.url ?? workspace.uuid}`)
   //     const workspaceId = workspace.uuid
+  //     const wsDataId = workspace.dataId ?? workspaceId
   //     const db = getWorkspaceMongoDB(_client, workspace.dataId)
   //     const plugins = [workspace.uuid]
   //     if (workspace.dataId != null) {
@@ -1122,7 +1124,7 @@ export async function removeDuplicateIds (
   //     for (const set of ids) {
   //       if (set[1].length === 0) continue
   //       for (const doc of set[1]) {
-  //         await updateId(ctx, wsClient, db, storageAdapter, workspaceId, doc)
+  //         await updateId(ctx, wsClient, db, storageAdapter, wsDataId, doc)
   //       }
   //     }
   //     await wsClient.sendForceClose()
@@ -1157,7 +1159,7 @@ export async function removeDuplicateIds (
 //   client: CoreClient & BackupClient,
 //   db: Db,
 //   storage: StorageAdapter,
-//   workspaceId: WorkspaceId,
+//   workspaceId: WorkspaceDataId,
 //   docRef: RelatedDocument
 // ): Promise<void> {
 //   const h = client.getHierarchy()
@@ -1244,7 +1246,7 @@ export async function removeDuplicateIds (
 //   ctx: MeasureContext,
 //   _id: CollaborativeDoc,
 //   storage: StorageAdapter,
-//   workspaceId: WorkspaceId,
+//   workspaceId: WorkspaceDataId,
 //   contentDoc: Doc,
 //   newId: Ref<Doc>,
 //   doc: RelatedDocument

@@ -21,6 +21,7 @@ import { getClient as getAccountClient } from '@hcengineering/account-client'
 
 import { Context, buildContext } from '../context'
 import config from '../config'
+import { getWorkspaceIds } from '../utils'
 
 export interface AuthenticationConfiguration {
   ctx: MeasureContext
@@ -43,14 +44,14 @@ export class AuthenticationExtension implements Extension {
       ctx.info('authenticate', { workspaceId, mode: token.extra?.mode ?? '' })
 
       // verify workspace can be accessed with the token
-      const workspaceInfo = await getAccountClient(config.AccountsUrl, data.token).getWorkspaceInfo()
+      const ids = await getWorkspaceIds(data.token)
 
       // verify workspace uuid in the document matches the token
-      if (workspaceInfo.uuid !== workspaceId) {
+      if (ids.uuid !== workspaceId) {
         throw new Error('documentName must include workspace id')
       }
 
-      return buildContext(data)
+      return buildContext(data, ids.dataId)
     })
   }
 }

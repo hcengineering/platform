@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type MeasureContext, type WorkspaceUuid, concatLink } from '@hcengineering/core'
+import { type MeasureContext, type WorkspaceDataId, concatLink } from '@hcengineering/core'
 import FormData from 'form-data'
 import fetch, { type RequestInfo, type RequestInit, type Response } from 'node-fetch'
 import { Readable } from 'stream'
@@ -82,14 +82,14 @@ export interface R2UploadParams {
 export class DatalakeClient {
   constructor (private readonly endpoint: string) {}
 
-  getObjectUrl (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): string {
-    const path = `/blob/${workspace}/${encodeURIComponent(objectName)}`
+  getObjectUrl (ctx: MeasureContext, wsDataId: WorkspaceDataId, objectName: string): string {
+    const path = `/blob/${wsDataId}/${encodeURIComponent(objectName)}`
     return concatLink(this.endpoint, path)
   }
 
   async listObjects (
     ctx: MeasureContext,
-    workspace: WorkspaceUuid,
+    workspace: WorkspaceDataId,
     cursor: string | undefined,
     limit: number = 100
   ): Promise<ListObjectOutput> {
@@ -104,7 +104,7 @@ export class DatalakeClient {
     return (await response.json()) as ListObjectOutput
   }
 
-  async getObject (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<Readable> {
+  async getObject (ctx: MeasureContext, workspace: WorkspaceDataId, objectName: string): Promise<Readable> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
 
     let response
@@ -127,7 +127,7 @@ export class DatalakeClient {
 
   async getPartialObject (
     ctx: MeasureContext,
-    workspace: WorkspaceUuid,
+    workspace: WorkspaceDataId,
     objectName: string,
     offset: number,
     length?: number
@@ -157,7 +157,7 @@ export class DatalakeClient {
 
   async statObject (
     ctx: MeasureContext,
-    workspace: WorkspaceUuid,
+    workspace: WorkspaceDataId,
     objectName: string
   ): Promise<StatObjectOutput | undefined> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
@@ -185,7 +185,7 @@ export class DatalakeClient {
     }
   }
 
-  async deleteObject (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<void> {
+  async deleteObject (ctx: MeasureContext, workspace: WorkspaceDataId, objectName: string): Promise<void> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
     try {
       await fetchSafe(ctx, url, { method: 'DELETE' })
@@ -199,7 +199,7 @@ export class DatalakeClient {
 
   async putObject (
     ctx: MeasureContext,
-    workspace: WorkspaceUuid,
+    workspace: WorkspaceDataId,
     objectName: string,
     stream: Readable | Buffer | string,
     params: UploadObjectParams
@@ -234,7 +234,7 @@ export class DatalakeClient {
 
   async uploadWithFormData (
     ctx: MeasureContext,
-    workspace: WorkspaceUuid,
+    workspace: WorkspaceDataId,
     objectName: string,
     stream: Readable | Buffer | string,
     params: UploadObjectParams
@@ -271,7 +271,7 @@ export class DatalakeClient {
 
   async uploadMultipart (
     ctx: MeasureContext,
-    workspace: WorkspaceUuid,
+    workspace: WorkspaceDataId,
     objectName: string,
     stream: Readable | Buffer | string,
     params: UploadObjectParams
@@ -299,7 +299,7 @@ export class DatalakeClient {
 
   async uploadWithSignedURL (
     ctx: MeasureContext,
-    workspace: WorkspaceUuid,
+    workspace: WorkspaceDataId,
     objectName: string,
     stream: Readable | Buffer | string,
     params: UploadObjectParams
@@ -329,7 +329,7 @@ export class DatalakeClient {
 
   async uploadFromS3 (
     ctx: MeasureContext,
-    workspace: WorkspaceUuid,
+    workspace: WorkspaceDataId,
     objectName: string,
     params: {
       url: string
@@ -350,7 +350,7 @@ export class DatalakeClient {
   }
 
   // R2
-  async getR2UploadParams (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<R2UploadParams> {
+  async getR2UploadParams (ctx: MeasureContext, workspace: WorkspaceDataId): Promise<R2UploadParams> {
     const path = `/upload/r2/${workspace}`
     const url = concatLink(this.endpoint, path)
 
@@ -361,7 +361,7 @@ export class DatalakeClient {
 
   async uploadFromR2 (
     ctx: MeasureContext,
-    workspace: WorkspaceUuid,
+    workspace: WorkspaceDataId,
     objectName: string,
     params: {
       filename: string
@@ -381,7 +381,7 @@ export class DatalakeClient {
 
   // Signed URL
 
-  private async signObjectSign (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<string> {
+  private async signObjectSign (ctx: MeasureContext, workspace: WorkspaceDataId, objectName: string): Promise<string> {
     try {
       const url = this.getSignObjectUrl(workspace, objectName)
       const response = await fetchSafe(ctx, url, { method: 'POST' })
@@ -394,7 +394,7 @@ export class DatalakeClient {
 
   private async signObjectComplete (
     ctx: MeasureContext,
-    workspace: WorkspaceUuid,
+    workspace: WorkspaceDataId,
     objectName: string
   ): Promise<ObjectMetadata> {
     try {
@@ -407,7 +407,7 @@ export class DatalakeClient {
     }
   }
 
-  private async signObjectDelete (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<void> {
+  private async signObjectDelete (ctx: MeasureContext, workspace: WorkspaceDataId, objectName: string): Promise<void> {
     try {
       const url = this.getSignObjectUrl(workspace, objectName)
       await fetchSafe(ctx, url, { method: 'DELETE' })
@@ -417,7 +417,7 @@ export class DatalakeClient {
     }
   }
 
-  private getSignObjectUrl (workspace: WorkspaceUuid, objectName: string): string {
+  private getSignObjectUrl (workspace: WorkspaceDataId, objectName: string): string {
     const path = `/upload/signed-url/${workspace}/${encodeURIComponent(objectName)}`
     return concatLink(this.endpoint, path)
   }
@@ -426,7 +426,7 @@ export class DatalakeClient {
 
   private async multipartUploadStart (
     ctx: MeasureContext,
-    workspace: WorkspaceUuid,
+    workspace: WorkspaceDataId,
     objectName: string,
     params: UploadObjectParams
   ): Promise<MultipartUpload> {
@@ -449,7 +449,7 @@ export class DatalakeClient {
 
   private async multipartUploadPart (
     ctx: MeasureContext,
-    workspace: WorkspaceUuid,
+    workspace: WorkspaceDataId,
     objectName: string,
     multipart: MultipartUpload,
     partNumber: number,
@@ -472,7 +472,7 @@ export class DatalakeClient {
 
   private async multipartUploadComplete (
     ctx: MeasureContext,
-    workspace: WorkspaceUuid,
+    workspace: WorkspaceDataId,
     objectName: string,
     multipart: MultipartUpload,
     parts: MultipartUploadPart[]
@@ -493,7 +493,7 @@ export class DatalakeClient {
 
   private async multipartUploadAbort (
     ctx: MeasureContext,
-    workspace: WorkspaceUuid,
+    workspace: WorkspaceDataId,
     objectName: string,
     multipart: MultipartUpload
   ): Promise<void> {

@@ -37,8 +37,7 @@ import notification, {
   notificationId,
   type BrowserNotification,
   type DocNotifyContext,
-  type InboxNotification,
-  type PushSubscription
+  type InboxNotification
 } from '@hcengineering/notification'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 
@@ -284,71 +283,62 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   ctx.info('finished processing collaborators ', {})
 
   ctx.info('processing notifications fields ', {})
-  const iterator = await client.traverse(DOMAIN_NOTIFICATION, {
-    _class: {
-      $in: [
-        notification.class.DocNotifyContext,
-        notification.class.BrowserNotification,
-        notification.class.PushSubscription,
-        notification.class.InboxNotification
-      ]
+  function chunkArray<T> (array: T[], chunkSize: number): T[][] {
+    const chunks: T[][] = []
+    for (let i = 0; i < array.length; i += chunkSize) {
+      chunks.push(array.slice(i, i + chunkSize))
     }
-  })
-
-  try {
-    let processed = 0
-    while (true) {
-      const docs = await iterator.next(200)
-      if (docs === null || docs.length === 0) {
-        break
-      }
-
-      const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
-
-      for (const doc of docs) {
-        let update: MigrateUpdate<Doc> | undefined
-
-        if (hierarchy.isDerived(doc._class, notification.class.BrowserNotification)) {
-          const browserNotification = doc as BrowserNotification
-          const newUser = socialIdByAccount[browserNotification.user] ?? browserNotification.user
-          const newSenderId =
-            browserNotification.senderId !== undefined
-              ? socialIdByAccount[browserNotification.senderId] ?? browserNotification.senderId
-              : browserNotification.senderId
-          if (newUser !== browserNotification.user || newSenderId !== browserNotification.senderId) {
-            update = {
-              user: newUser,
-              senderId: newSenderId
-            }
-          }
-        } else {
-          const docWithUser = doc as DocNotifyContext | PushSubscription | InboxNotification
-          const newUser = socialIdByAccount[docWithUser.user] ?? docWithUser.user
-          if (newUser !== docWithUser.user) {
-            update = {
-              user: newUser
-            }
-          }
-        }
-
-        if (update === undefined) continue
-
-        operations.push({
-          filter: { _id: doc._id },
-          update
-        })
-      }
-
-      if (operations.length > 0) {
-        await client.bulk(DOMAIN_NOTIFICATION, operations)
-      }
-
-      processed += docs.length
-      ctx.info('...processed', { count: processed })
-    }
-  } finally {
-    await iterator.close()
+    return chunks
   }
+
+  const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+  for (const [accId, socialId] of Object.entries(socialIdByAccount)) {
+    if (accId === socialId) continue
+    operations.push({
+      filter: {
+        user: accId,
+        _class: {
+          $in: [
+            notification.class.DocNotifyContext,
+            notification.class.BrowserNotification,
+            notification.class.PushSubscription,
+            notification.class.InboxNotification,
+            notification.class.ActivityInboxNotification,
+            notification.class.CommonInboxNotification
+          ]
+        }
+      },
+      update: {
+        user: socialId
+      }
+    })
+    operations.push({
+      filter: {
+        senderId: accId,
+        _class: notification.class.BrowserNotification
+      },
+      update: {
+        senderId: socialId
+      }
+    })
+  }
+
+  if (operations.length > 0) {
+    const operationsChunks = chunkArray(operations, 40)
+    let processed = 0
+    for (const operationsChunk of operationsChunks) {
+      if (operationsChunk.length === 0) continue
+
+      await client.bulk(DOMAIN_NOTIFICATION, operationsChunk)
+      processed++
+      if (operationsChunks.length > 1) {
+        ctx.info('processed chunk', { processed, of: operationsChunks.length })
+      }
+    }
+  } else {
+    ctx.info('no user accounts to migrate')
+  }
+
   ctx.info('finished processing notifications fields ', {})
 
   ctx.info('processing doc notify contexts ', {})
@@ -641,10 +631,10 @@ export const notificationOperation: MigrateOperation = {
           await client.update(DOMAIN_DOC_NOTIFY, { space: core.space.Space }, { space: core.space.Workspace })
         }
       },
-      {
-        state: 'migrate-notifications-object',
-        func: migrateNotificationsObject
-      },
+      // {
+      //   state: 'migrate-notifications-object',
+      //   func: migrateNotificationsObject
+      // },
       {
         state: 'accounts-to-social-ids',
         func: migrateAccountsToSocialIds

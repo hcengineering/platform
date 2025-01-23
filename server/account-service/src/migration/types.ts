@@ -46,6 +46,7 @@ export interface Account {
   createdOn: number
   lastVisit: number
   githubId?: string
+  githubUser?: string
   openId?: string
 }
 

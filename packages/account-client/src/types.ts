@@ -10,6 +10,7 @@ export interface LoginInfo {
  */
 export interface WorkspaceLoginInfo extends LoginInfo {
   workspace: string // worspace uuid
+  workspaceDataId?: string
   workspaceUrl: string
   endpoint: string
   token: string

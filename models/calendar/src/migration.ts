@@ -37,14 +37,13 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   const ctx = new MeasureMetricsContext('calendar migrateAccountsToSocialIds', {})
   const hierarchy = client.hierarchy
   const socialIdByAccount = await getSocialIdByOldAccount(client)
-  const calClasses = hierarchy.getDescendants(calendar.class.Calendar)
   const eventClasses = hierarchy.getDescendants(calendar.class.Event)
 
   const calendars = await client.find<Calendar>(DOMAIN_CALENDAR, {
-    _class: { $in: calClasses }
+    _class: calendar.class.Calendar
   })
 
-  ctx.info('processing', { calClasses })
+  ctx.info('processing internal calendars')
 
   for (const calendar of calendars) {
     const id = calendar._id
@@ -84,7 +83,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
       for (const event of events) {
         const id = event.calendar
         if (!id.endsWith('_calendar')) {
-          ctx.warn('Wrong calendar id format', { calendar: event.calendar })
+          // Nothing to do, in external calendar
           continue
         }
 

@@ -63,10 +63,11 @@ export async function connect (title: string): Promise<Client | undefined> {
     return
   }
 
-  setPresentationCookie(token, workspaceLoginInfo.workspace)
+  setPresentationCookie(token, workspaceLoginInfo.workspaceDataId ?? workspaceLoginInfo.workspace)
 
   setMetadata(presentation.metadata.Token, token)
   setMetadata(presentation.metadata.WorkspaceUuid, workspaceLoginInfo.workspace)
+  setMetadata(presentation.metadata.WorkspaceDataId, workspaceLoginInfo.workspaceDataId)
   setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
 
   if (_token !== token && _client !== undefined) {

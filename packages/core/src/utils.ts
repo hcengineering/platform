@@ -125,11 +125,11 @@ export function toFindResult<T extends Doc> (docs: T[], total?: number, lookupMa
 }
 
 export type WorkspaceUuid = string
-
+export type WorkspaceDataId = string
 export interface WorkspaceIds {
   uuid: string
   url: string
-  dataId?: string // Old workspace identifier. E.g. Database name in Mongo, bucket in R2, etc.
+  dataId?: WorkspaceDataId // Old workspace identifier. E.g. Database name in Mongo, bucket in R2, etc.
 }
 
 /**
