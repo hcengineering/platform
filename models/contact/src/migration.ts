@@ -2,6 +2,7 @@
 
 import { AvatarType, type SocialIdentity, type Contact } from '@hcengineering/contact'
 import {
+  type AccountRole,
   buildSocialIdString,
   type Class,
   type Doc,
@@ -11,7 +12,6 @@ import {
   generateId,
   MeasureMetricsContext,
   type Ref,
-  SocialIdType,
   type Space,
   type TxCUD
 } from '@hcengineering/core'
@@ -27,7 +27,7 @@ import {
   tryUpgrade
 } from '@hcengineering/model'
 import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
-import core, { getAccountsFromTxes } from '@hcengineering/model-core'
+import core, { getAccountsFromTxes, getSocialKeyByOldEmail } from '@hcengineering/model-core'
 import { DOMAIN_VIEW } from '@hcengineering/model-view'
 
 import contact, { contactId, DOMAIN_CHANNEL, DOMAIN_CONTACT } from './index'
@@ -85,6 +85,39 @@ async function migrateAvatars (client: MigrationClient): Promise<void> {
   )
 }
 
+async function getOldPersonAccounts (client: MigrationClient): Promise<Array<{ person: any, email: string, role: AccountRole }>> {
+  const accountsTxes: TxCUD<Doc>[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
+    objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>
+  })
+
+  return getAccountsFromTxes(accountsTxes)
+}
+
+async function assignWorkspaceRoles (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('contact assignWorkspaceRoles', {})
+  ctx.info('assigning workspace roles...')
+  const oldPersonAccounts = await getOldPersonAccounts(client)
+  for (const { person, email, role } of oldPersonAccounts) {
+    // check it's an active employee
+    const personObj = (await client.find(DOMAIN_CONTACT, { _id: person, _class: contact.class.Person }))[0]
+    if (personObj === undefined) {
+      continue
+    }
+    const employee = client.hierarchy.as(personObj, contact.mixin.Employee)
+    if (employee === undefined || !employee.active) {
+      continue
+    }
+    const socialKey = getSocialKeyByOldEmail(email)
+    try {
+      await client.accountClient.updateWorkspaceRoleBySocialId(buildSocialIdString(socialKey), role)
+    } catch (err: any) {
+      ctx.error('Failed to update workspace role', { email, ...socialKey, role, err })
+    }
+  }
+
+  ctx.info('finished assigning workspace roles', { users: oldPersonAccounts.length })
+}
+
 async function createSocialIdentities (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('createSocialIdentities', {})
   ctx.info('processing person accounts ', {})
@@ -94,13 +127,12 @@ async function createSocialIdentities (client: MigrationClient): Promise<void> {
   })
   const personAccounts = getAccountsFromTxes(personAccountsTxes)
 
-  for (const pAcc of personAccounts) {
-    if (pAcc.email === undefined || pAcc.email === '') continue
-    const socialIdKey = {
-      type: SocialIdType.EMAIL,
-      value: pAcc.email
-    }
+  // for (const pAcc of personAccounts) {
+  for (const pAcc of personAccounts.filter((a: any) => a.person === '629d983ba125a3831a3424ff')) {
+    const email: string = pAcc.email ?? ''
+    if (email === '') continue
 
+    const socialIdKey = getSocialKeyByOldEmail(email)
     const socialId: SocialIdentity = {
       _id: generateId(),
       _class: contact.class.SocialIdentity,
@@ -267,6 +299,10 @@ export const contactOperation: MigrateOperation = {
       {
         state: 'create-social-identities',
         func: createSocialIdentities
+      },
+      {
+        state: 'assign-workspace-roles',
+        func: assignWorkspaceRoles
       }
     ])
   },

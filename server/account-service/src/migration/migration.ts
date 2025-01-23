@@ -45,6 +45,10 @@ export async function migrateFromOldAccounts (oldAccsUrl: string, accountDB: Acc
       }
 
       const accountUuid = await migrateAccount(account, accountDB)
+      if (accountUuid == null) {
+        console.log('Account not migrated', account)
+        continue
+      }
       accountsIdToUuid[account._id.toString()] = accountUuid
       accountsEmailToUuid[account.email] = accountUuid
 
@@ -114,14 +118,19 @@ export async function migrateFromOldAccounts (oldAccsUrl: string, accountDB: Acc
   }
 }
 
-async function migrateAccount (account: OldAccount, accountDB: AccountDB): Promise<string> {
+async function migrateAccount (account: OldAccount, accountDB: AccountDB): Promise<string | undefined> {
   let primaryKey: SocialKey
   let secondaryKey: SocialKey | undefined
 
   if (account.githubId != null) {
+    if (account.githubUser == null) {
+      console.log('No github user found for github id', account.githubId)
+      return
+    }
+
     primaryKey = {
       type: SocialIdType.GITHUB,
-      value: account.githubId
+      value: account.githubUser
     }
     secondaryKey = !account.email.startsWith('github:')
       ? {

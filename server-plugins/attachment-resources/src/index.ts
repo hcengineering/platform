@@ -45,7 +45,7 @@ export async function OnAttachmentDelete (
     }
   }
   if (toDelete.length > 0) {
-    await storageAdapter.remove(ctx, workspace.uuid, toDelete)
+    await storageAdapter.remove(ctx, workspace.dataId ?? workspace.uuid, toDelete)
   }
 
   return result

@@ -39,6 +39,7 @@
   } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { getCurrentEmployee } from '@hcengineering/contact'
 
   import hr from '../plugin'
 

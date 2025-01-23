@@ -443,7 +443,7 @@ export async function doRestoreWorkspace (
   try {
     const storage = await createStorageBackupStorage(ctx, backupAdapter, bucketName, wsIds.uuid)
     const result: boolean = await ctx.with('restore', { workspace: wsIds.uuid }, (ctx) =>
-      restore(ctx, '', wsIds.uuid, storage, {
+      restore(ctx, '', wsIds, storage, {
         date: -1,
         skip: new Set(skipDomains),
         recheck: true,

@@ -228,6 +228,7 @@ export interface LoginInfo {
 export interface WorkspaceLoginInfo extends LoginInfo {
   workspace: string
   workspaceUrl: string
+  workspaceDataId?: string
   endpoint: string
   role: AccountRole
 }

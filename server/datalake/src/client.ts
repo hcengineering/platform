@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type MeasureContext, type WorkspaceUuid, concatLink } from '@hcengineering/core'
+import { type MeasureContext, type WorkspaceDataId, concatLink } from '@hcengineering/core'
 import FormData from 'form-data'
 import fetch, { type RequestInfo, type RequestInit, type Response } from 'node-fetch'
 import { Readable } from 'stream'
@@ -89,8 +89,8 @@ export class DatalakeClient {
     this.headers = { Authorization: 'Bearer ' + token }
   }
 
-  getObjectUrl (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): string {
-    const path = `/blob/${workspace}/${encodeURIComponent(objectName)}`
+  getObjectUrl (ctx: MeasureContext, wsDataId: WorkspaceDataId, objectName: string): string {
+    const path = `/blob/${wsDataId}/${encodeURIComponent(objectName)}`
     return concatLink(this.endpoint, path)
   }
 
@@ -439,7 +439,7 @@ export class DatalakeClient {
     }
   }
 
-  private getSignObjectUrl (workspace: WorkspaceUuid, objectName: string): string {
+  private getSignObjectUrl (workspace: WorkspaceDataId, objectName: string): string {
     const path = `/upload/signed-url/${workspace}/${encodeURIComponent(objectName)}`
     return concatLink(this.endpoint, path)
   }

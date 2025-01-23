@@ -142,6 +142,7 @@ export default plugin(presentationId, {
     Token: '' as Metadata<string>,
     Endpoint: '' as Metadata<string>,
     WorkspaceUuid: '' as Metadata<string>,
+    WorkspaceDataId: '' as Metadata<string>,
     FrontUrl: '' as Asset,
     LinkPreviewUrl: '' as Metadata<string>,
     UploadConfig: '' as Metadata<UploadConfig>,

@@ -34,12 +34,13 @@ import core, {
   toIdMap,
   TxProcessor,
   systemAccountUuid,
-  WorkspaceUuid,
+  type WorkspaceUuid,
   type BackupStatus,
   type Blob,
   type DocIndexState,
   type Tx,
-  type TxCUD
+  type TxCUD,
+  type WorkspaceIds
 } from '@hcengineering/core'
 import { BlobClient, createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { estimateDocSize, type StorageAdapter } from '@hcengineering/server-core'
@@ -664,7 +665,7 @@ export interface BackupResult extends Omit<BackupStatus, 'backups' | 'lastBackup
 export async function backup (
   ctx: MeasureContext,
   transactorUrl: string,
-  workspaceId: WorkspaceUuid,
+  wsIds: WorkspaceIds,
   storage: BackupStorage,
   options: {
     include?: Set<string>
@@ -700,6 +701,7 @@ export async function backup (
     blobsSize: 0,
     backupSize: 0
   }
+  const workspaceId = wsIds.uuid
   ctx = ctx.newChild('backup', {
     workspaceId,
     force: options.force,
@@ -797,7 +799,7 @@ export async function backup (
       }
     }
 
-    const blobClient = new BlobClient(transactorUrl, token, workspaceId, { storageAdapter: options.storageAdapter })
+    const blobClient = new BlobClient(transactorUrl, token, wsIds, { storageAdapter: options.storageAdapter })
 
     const domains = [
       DOMAIN_MODEL_TX,
@@ -1650,7 +1652,7 @@ export async function backupFind (storage: BackupStorage, id: Ref<Doc>, domain?:
 export async function restore (
   ctx: MeasureContext,
   transactorUrl: string,
-  workspaceId: WorkspaceUuid,
+  wsIds: WorkspaceIds,
   storage: BackupStorage,
   opt: {
     date: number
@@ -1668,7 +1670,7 @@ export async function restore (
   }
 ): Promise<boolean> {
   const infoFile = 'backup.json.gz'
-
+  const workspaceId = wsIds.uuid
   if (!(await storage.exists(infoFile))) {
     ctx.error('file not pressent', { file: infoFile })
     throw new Error(`${infoFile} should present to restore`)
@@ -1726,7 +1728,7 @@ export async function restore (
     }
   }
 
-  const blobClient = new BlobClient(transactorUrl, token, workspaceId, { storageAdapter: opt.storageAdapter })
+  const blobClient = new BlobClient(transactorUrl, token, wsIds, { storageAdapter: opt.storageAdapter })
   console.log('connected')
 
   // We need to find empty domains and clean them.

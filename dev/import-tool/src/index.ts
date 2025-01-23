@@ -102,7 +102,7 @@ export function importTool (): void {
     console.log('Connecting to Transactor URL: ', selectedWs.endpoint)
     const connection = await createClient(selectedWs.endpoint, selectedWs.token)
     const client = new TxOperations(connection, account)
-    const fileUploader = new FrontFileUploader(getFrontUrl(), selectedWs.workspace, selectedWs.token)
+    const fileUploader = new FrontFileUploader(getFrontUrl(), selectedWs.workspace, selectedWs.workspaceDataId ?? selectedWs.workspace, selectedWs.token)
     try {
       await f(client, fileUploader)
     } catch (err: any) {

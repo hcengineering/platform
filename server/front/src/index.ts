@@ -15,8 +15,8 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { MeasureContext, Blob as PlatformBlob, WorkspaceUuid, metricsAggregate, type Ref } from '@hcengineering/core'
-import { Token, decodeToken } from '@hcengineering/server-token'
+import { MeasureContext, Blob as PlatformBlob, WorkspaceDataId, metricsAggregate, type Ref } from '@hcengineering/core'
+import { decodeToken } from '@hcengineering/server-token'
 import { StorageAdapter } from '@hcengineering/storage'
 import bp from 'body-parser'
 import cors from 'cors'
@@ -29,6 +29,7 @@ import { join, normalize, resolve } from 'path'
 import { cwd } from 'process'
 import sharp, { type Sharp } from 'sharp'
 import { v4 as uuid } from 'uuid'
+import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { preConditions } from './utils'
 
 import fs, { createReadStream, mkdtempSync } from 'fs'
@@ -41,7 +42,7 @@ const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-ag
 async function storageUpload (
   ctx: MeasureContext,
   storageAdapter: StorageAdapter,
-  workspace: WorkspaceUuid,
+  workspace: WorkspaceDataId,
   file: UploadedFile
 ): Promise<string> {
   const uuid = file.name
@@ -80,7 +81,7 @@ async function getFileRange (
   stat: PlatformBlob,
   range: string,
   client: StorageAdapter,
-  workspace: WorkspaceUuid,
+  workspace: WorkspaceDataId,
   res: Response
 ): Promise<void> {
   const uuid = stat._id
@@ -161,7 +162,7 @@ async function getFile (
   ctx: MeasureContext,
   stat: PlatformBlob,
   client: StorageAdapter,
-  workspace: WorkspaceUuid,
+  workspace: WorkspaceDataId,
   req: Request,
   res: Response
 ): Promise<void> {
@@ -409,6 +410,23 @@ export function start (
     })
   )
 
+  const getWorkspaceDataId = async (ctx: MeasureContext, token: string, path?: string): Promise<string | null> => {
+    const accountClient = getAccountClient(config.accountsUrl, token)
+    const workspaceInfo = await accountClient.getWorkspaceInfo()
+    const actualDataId = workspaceInfo.dataId ?? workspaceInfo.uuid
+    if (path === undefined) {
+      return actualDataId
+    }
+
+    const expectedDataId = path.split('/')[2]
+    if (expectedDataId !== undefined && actualDataId !== expectedDataId) {
+      ctx.error('Cannot validate dataId', { expectedDataId, actualDataId, path, workspaceUuid: workspaceInfo.uuid, workspaceDataId: workspaceInfo.dataId })
+      return null
+    }
+
+    return actualDataId
+  }
+
   const filesHandler = async (req: Request<any>, res: Response<any>): Promise<void> => {
     await ctx.with(
       'handle-file',
@@ -421,7 +439,11 @@ export function start (
             cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1] ??
             (req.query.token as string | undefined) ??
             ''
-          const payload = decodeToken(token)
+          const workspaceDataId = await getWorkspaceDataId(ctx, token, req.path)
+          if (workspaceDataId === null) {
+            res.status(403).send()
+            return
+          }
 
           const uuid = req.params.file ?? req.query.file
           if (uuid === undefined) {
@@ -429,12 +451,12 @@ export function start (
             return
           }
 
-          let blobInfo = await ctx.with('stat', { workspace: payload.workspace }, (ctx) =>
-            config.storageAdapter.stat(ctx, payload.workspace, uuid)
+          let blobInfo = await ctx.with('stat', { workspace: workspaceDataId }, (ctx) =>
+            config.storageAdapter.stat(ctx, workspaceDataId, uuid)
           )
 
           if (blobInfo === undefined) {
-            ctx.error('No such key', { file: uuid, workspace: payload.workspace })
+            ctx.error('No such key', { file: uuid, workspace: workspaceDataId })
             res.status(404).send()
             return
           }
@@ -461,7 +483,7 @@ export function start (
           const accept = req.headers.accept
           if (accept !== undefined && isImage && blobInfo.contentType !== 'image/gif' && size !== undefined) {
             blobInfo = await ctx.with('resize', {}, (ctx) =>
-              getGeneratePreview(ctx, blobInfo as PlatformBlob, size, uuid, config, payload, accept, () =>
+              getGeneratePreview(ctx, blobInfo as PlatformBlob, size, uuid, config, workspaceDataId, accept, () =>
                 join(tempFileDir, `${++temoFileIndex}`)
               )
             )
@@ -469,14 +491,14 @@ export function start (
 
           const range = req.headers.range
           if (range !== undefined) {
-            await ctx.with('file-range', { workspace: payload.workspace }, (ctx) =>
-              getFileRange(ctx, blobInfo as PlatformBlob, range, config.storageAdapter, payload.workspace, res)
+            await ctx.with('file-range', { workspace: workspaceDataId }, (ctx) =>
+              getFileRange(ctx, blobInfo as PlatformBlob, range, config.storageAdapter, workspaceDataId, res)
             )
           } else {
             await ctx.with(
               'file',
-              { workspace: payload.workspace },
-              (ctx) => getFile(ctx, blobInfo as PlatformBlob, config.storageAdapter, payload.workspace, req, res),
+              { workspace: workspaceDataId },
+              (ctx) => getFile(ctx, blobInfo as PlatformBlob, config.storageAdapter, workspaceDataId, req, res),
               { uuid }
             )
           }
@@ -542,8 +564,12 @@ export function start (
 
         try {
           const token = authHeader.split(' ')[1]
-          const payload = decodeToken(token)
-          const uuid = await storageUpload(ctx, config.storageAdapter, payload.workspace, file)
+          const workspaceDataId = await getWorkspaceDataId(ctx, token, req.path)
+          if (workspaceDataId === null) {
+            res.status(403).send()
+            return
+          }
+          const uuid = await storageUpload(ctx, config.storageAdapter, workspaceDataId, file)
 
           res.status(200).send([
             {
@@ -569,7 +595,11 @@ export function start (
       }
 
       const token = authHeader.split(' ')[1]
-      const payload = decodeToken(token)
+      const workspaceDataId = await getWorkspaceDataId(ctx, token, req.path)
+      if (workspaceDataId === null) {
+        res.status(403).send()
+        return
+      }
       const uuid = req.query.file as string
       if (uuid === '') {
         res.status(500).send()
@@ -577,7 +607,7 @@ export function start (
       }
 
       // TODO: We need to allow delete only of user attached documents. (https://front.hc.engineering/workbench/platform/tracker/TSK-1081)
-      await config.storageAdapter.remove(ctx, payload.workspace, [uuid])
+      await config.storageAdapter.remove(ctx, workspaceDataId, [uuid])
 
       res.status(200).send()
     } catch (error: any) {
@@ -587,14 +617,7 @@ export function start (
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.delete('/files', handleDelete)
-
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.delete('/files/*', handleDelete)
-
-  // todo remove it after update all customers chrome extensions
-  app.get('/import', (req, res) => {
+  const handleImportGet = async (req: Request, res: Response): Promise<void> => {
     try {
       const authHeader = req.headers.authorization
       if (authHeader === undefined) {
@@ -602,7 +625,11 @@ export function start (
         return
       }
       const token = authHeader.split(' ')[1]
-      const payload = decodeToken(token)
+      const workspaceDataId = await getWorkspaceDataId(ctx, token)
+      if (workspaceDataId === null) {
+        res.status(403).send()
+        return
+      }
       const url = req.query.url as string
       const cookie = req.query.cookie as string | undefined
       // const attachedTo = req.query.attachedTo as Ref<Doc> | undefined
@@ -640,7 +667,7 @@ export function start (
             .on('end', function () {
               const buffer = Buffer.concat(data as unknown as Uint8Array[])
               config.storageAdapter
-                .put(ctx, payload.workspace, id, buffer, contentType, buffer.length)
+                .put(ctx, workspaceDataId, id, buffer, contentType, buffer.length)
                 .then(async () => {
                   res.status(200).send({
                     id,
@@ -672,9 +699,9 @@ export function start (
       ctx.error('error', { error })
       res.status(500).send()
     }
-  })
+  }
 
-  app.post('/import', (req, res) => {
+  const handleImportPost = async (req: Request, res: Response): Promise<void> => {
     try {
       const authHeader = req.headers.authorization
       if (authHeader === undefined) {
@@ -682,7 +709,11 @@ export function start (
         return
       }
       const token = authHeader.split(' ')[1]
-      const payload = decodeToken(token)
+      const workspaceDataId = await getWorkspaceDataId(ctx, token)
+      if (workspaceDataId === null) {
+        res.status(403).send()
+        return
+      }
       const { url, cookie } = req.body
       if (url === undefined) {
         res.status(500).send('URL param is not defined')
@@ -719,7 +750,7 @@ export function start (
             const buffer = Buffer.concat(data as unknown as Uint8Array[])
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             config.storageAdapter
-              .put(ctx, payload.workspace, id, buffer, contentType ?? 'application/octet-stream', buffer.length)
+              .put(ctx, workspaceDataId, id, buffer, contentType ?? 'application/octet-stream', buffer.length)
               .then(async () => {
                 res.status(200).send({
                   id,
@@ -744,6 +775,21 @@ export function start (
       ctx.error('error', { error })
       res.status(500).send()
     }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.delete('/files', handleDelete)
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.delete('/files/*', handleDelete)
+
+  // todo remove it after update all customers chrome extensions
+  app.get('/import', (req, res) => {
+    void handleImportGet(req, res)
+  })
+
+  app.post('/import', (req, res) => {
+    void handleImportPost(req, res)
   })
 
   const filesPatterns = [
@@ -801,7 +847,7 @@ async function getGeneratePreview (
   size: number | undefined,
   uuid: string,
   config: { storageAdapter: StorageAdapter },
-  payload: Token,
+  wsDataId: WorkspaceDataId,
   accept: string,
   tempFile: () => string
 ): Promise<PlatformBlob> {
@@ -836,7 +882,7 @@ async function getGeneratePreview (
 
   const sizeId = uuid + `%preview%${size}${format !== 'jpeg' ? format : ''}`
 
-  const d = await config.storageAdapter.stat(ctx, payload.workspace, sizeId)
+  const d = await config.storageAdapter.stat(ctx, wsDataId, sizeId)
   const hasSmall = d !== undefined && d.size > 0
 
   if (hasSmall) {
@@ -849,7 +895,7 @@ async function getGeneratePreview (
       // Let's get data and resize it
       const fname = tempFile()
       files.push(fname)
-      await writeFile(fname, await config.storageAdapter.get(ctx, payload.workspace, uuid))
+      await writeFile(fname, await config.storageAdapter.get(ctx, wsDataId, uuid))
 
       pipeline = sharp(fname)
       const md = await pipeline.metadata()
@@ -909,7 +955,7 @@ async function getGeneratePreview (
       // Add support of avif as well.
       const upload = await config.storageAdapter.put(
         ctx,
-        payload.workspace,
+        wsDataId,
         sizeId,
         createReadStream(outFile),
         contentType,

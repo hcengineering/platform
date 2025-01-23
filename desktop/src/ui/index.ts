@@ -106,9 +106,16 @@ window.addEventListener('DOMContentLoaded', () => {
     const token = getMetadata(presentation.metadata.Token)
     const endpoint = getMetadata(presentation.metadata.Endpoint)
     const workspaceUuid = getMetadata(presentation.metadata.WorkspaceUuid)
+    // const workspaceDataId = getMetadata(presentation.metadata.WorkspaceDataId)
+    // const workspaceUrl = getMetadata(presentation.metadata.WorkspaceUrl)
+    // const wsIds = {
+    //   uuid: workspaceUuid,
+    //   dataId: workspaceDataId,
+    //   url: workspaceUrl
+    // }
     if (isOwnerOrMaintainer()) {
       if (token != null && endpoint != null && workspaceUuid != null) {
-        // ipcMain.startBackup(token, endpoint, workspace)
+        // ipcMain.startBackup(token, endpoint, wsIds)
         closePopup()
         closePanel()
         const loc = getCurrentResolvedLocation()

@@ -572,14 +572,18 @@ export async function createDirect (employeeIds: Array<Ref<Person>>): Promise<Re
       continue
     }
 
+    let match = true
     for (const person of existPersonsSet) {
       if (!newPersonsSet.has(person as Ref<Person>)) {
-        continue
+        match = false
+        break
       }
     }
 
-    direct = dm
-    break
+    if (match) {
+      direct = dm
+      break
+    }
   }
 
   const dmId =

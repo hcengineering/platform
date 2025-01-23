@@ -101,7 +101,7 @@ export interface AccountClient {
   ) => Promise<boolean>
   assignWorkspace: (email: string, workspaceUuid: string, role: AccountRole) => Promise<void>
   updateBackupInfo: (info: BackupStatus) => Promise<void>
-  updateWorkspaceRoleByEmail: (email: string, targetRole: AccountRole) => Promise<void>
+  updateWorkspaceRoleBySocialId: (socialKey: string, targetRole: AccountRole) => Promise<void>
 }
 
 /** @public */
@@ -534,10 +534,10 @@ class AccountClientImpl implements AccountClient {
     await this.rpc(request)
   }
 
-  async updateWorkspaceRoleByEmail (email: string, targetRole: AccountRole): Promise<void> {
+  async updateWorkspaceRoleBySocialId (socialKey: string, targetRole: AccountRole): Promise<void> {
     const request = {
-      method: 'updateWorkspaceRoleByEmail' as const,
-      params: [email, targetRole]
+      method: 'updateWorkspaceRoleBySocialId' as const,
+      params: [socialKey, targetRole]
     }
 
     await this.rpc(request)

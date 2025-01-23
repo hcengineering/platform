@@ -64,17 +64,17 @@ export class DatalakeService implements StorageAdapter {
     this.client = createDatalakeClient(opt, token)
   }
 
-  async initialize (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {}
+  async initialize (ctx: MeasureContext, dataId: WorkspaceDataId): Promise<void> {}
 
   async close (): Promise<void> {}
 
-  async exists (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<boolean> {
+  async exists (ctx: MeasureContext, dataId: WorkspaceDataId): Promise<boolean> {
     // workspace/buckets not supported, assume that always exist
     return true
   }
 
   @withContext('make')
-  async make (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {
+  async make (ctx: MeasureContext, dataId: WorkspaceDataId): Promise<void> {
     // workspace/buckets not supported, assume that always exist
   }
 
@@ -92,7 +92,7 @@ export class DatalakeService implements StorageAdapter {
   }
 
   @withContext('delete')
-  async delete (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {
+  async delete (ctx: MeasureContext, dataId: WorkspaceDataId): Promise<void> {
     // not supported, just do nothing and pretend we deleted the workspace
   }
 
@@ -124,7 +124,7 @@ export class DatalakeService implements StorageAdapter {
             }
           }
         } catch (err: any) {
-          ctx.error('Failed to get list', { error: err, workspaceId })
+          ctx.error('Failed to get list', { error: err, dataId })
         }
         return buffer.splice(0, 50)
       },
@@ -133,7 +133,7 @@ export class DatalakeService implements StorageAdapter {
   }
 
   @withContext('stat')
-  async stat (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectName: string): Promise<Blob | undefined> {
+  async stat (ctx: MeasureContext, dataId: WorkspaceDataId, objectName: string): Promise<Blob | undefined> {
     try {
       const result = await this.client.statObject(ctx, workspaceId, objectName)
       if (result !== undefined) {
@@ -151,7 +151,7 @@ export class DatalakeService implements StorageAdapter {
         }
       }
     } catch (err) {
-      ctx.error('failed to stat object', { error: err, objectName, workspaceId })
+      ctx.error('failed to stat object', { error: err, objectName, dataId })
     }
   }
 
@@ -163,7 +163,7 @@ export class DatalakeService implements StorageAdapter {
   @withContext('put')
   async put (
     ctx: MeasureContext,
-    workspaceId: WorkspaceUuid,
+    dataId: WorkspaceDataId,
     objectName: string,
     stream: Readable | Buffer | string,
     contentType: string,
@@ -200,7 +200,7 @@ export class DatalakeService implements StorageAdapter {
   @withContext('partial')
   async partial (
     ctx: MeasureContext,
-    workspaceId: WorkspaceUuid,
+    dataId: WorkspaceDataId,
     objectName: string,
     offset: number,
     length?: number
@@ -208,8 +208,8 @@ export class DatalakeService implements StorageAdapter {
     return await this.client.getPartialObject(ctx, workspaceId, objectName, offset, length)
   }
 
-  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceUuid, objectName: string): Promise<string> {
-    return this.client.getObjectUrl(ctx, workspaceId, objectName)
+  async getUrl (ctx: MeasureContext, dataId: WorkspaceDataId, objectName: string): Promise<string> {
+    return this.client.getObjectUrl(ctx, dataId, objectName)
   }
 }
 
