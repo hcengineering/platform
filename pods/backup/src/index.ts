@@ -27,9 +27,14 @@ import {
 } from '@hcengineering/server-pipeline'
 import { join } from 'path'
 
+import { createMongoAdapter, createMongoDestroyAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
+import {
+  createPostgreeDestroyAdapter,
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  setDBExtraOptions
+} from '@hcengineering/postgres'
 import { readFileSync } from 'node:fs'
-import { createMongoTxAdapter, createMongoAdapter, createMongoDestroyAdapter } from '@hcengineering/mongo'
-import { createPostgresTxAdapter, createPostgresAdapter, createPostgreeDestroyAdapter } from '@hcengineering/postgres'
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
 const metricsContext = initStatisticsContext('backup', {
@@ -50,6 +55,12 @@ const sentryDSN = process.env.SENTRY_DSN
 
 configureAnalytics(sentryDSN, {})
 Analytics.setTag('application', 'backup-service')
+
+const usePrepare = process.env.DB_PREPARE === 'true'
+
+setDBExtraOptions({
+  prepare: usePrepare // We override defaults
+})
 
 registerTxAdapterFactory('mongodb', createMongoTxAdapter)
 registerAdapterFactory('mongodb', createMongoAdapter)
