@@ -1572,6 +1572,7 @@ spaceTypesQuery.query(core.class.SpaceType, {}, (types) => {
       })
     },
     {
+      showArchived: true,
       projection: {
         _id: 1,
         type: 1,

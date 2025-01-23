@@ -669,7 +669,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           // Add workspace name as $1
 
           const select = `SELECT ${this.getProjection(domain, options?.projection, joins, options?.associations)} FROM ${domain}`
-          const showArchived = options?.showArchived ?? false
+          const showArchived = options?.showArchived ?? (query._id !== undefined && typeof query._id === 'string')
           const secJoin = this.addSecurity(vars, query, showArchived, domain, ctx.contextData)
           if (secJoin !== undefined) {
             sqlChunks.push(secJoin)

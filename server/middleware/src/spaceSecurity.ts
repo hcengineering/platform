@@ -526,7 +526,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const account = ctx.contextData.account
     const isSpace = this.context.hierarchy.isDerived(_class, core.class.Space)
     const field = this.getKey(domain)
-    const showArchived: boolean = options?.showArchived ?? false
+    const showArchived: boolean = options?.showArchived ?? (query._id !== undefined && typeof query._id === 'string')
 
     let clientFilterSpaces: Set<Ref<Space>> | undefined
 
