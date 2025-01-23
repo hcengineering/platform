@@ -1726,9 +1726,6 @@ importers:
       lowlight:
         specifier: ^3.1.0
         version: 3.1.0
-      mammoth:
-        specifier: ^1.6.0
-        version: 1.8.0
       markdown-it:
         specifier: ^14.0.0
         version: 14.0.0
@@ -4119,11 +4116,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/import-tool@file:projects/import-tool.tgz':
-    resolution: {integrity: sha512-imMlneB1gppaXcJi4brs9jxXdGgK5zUGanT6vjF2+lNnrRCnp1X3Ys6/iRVLlexVOnSsA6BTpaZ1Xo5SSTO/gg==, tarball: file:projects/import-tool.tgz}
+    resolution: {integrity: sha512-7UYxZJAfpG5tyGsx3QP16BWblLkaUWwxYDSj3frXU+7oduZIFkxpW0UNYuhOLg64T6sqYc0qihz1Jq9rZXhj4A==, tarball: file:projects/import-tool.tgz}
     version: 0.0.0
 
   '@rush-temp/importer@file:projects/importer.tgz':
-    resolution: {integrity: sha512-nd4QEoFM7LFj37X/9PCtKl2HTaQl3xnpCbJL+FBuYPJhimHzG4KTvb3E5vZ31OZxgAzYBBLZb1KsswqqlXAJ9A==, tarball: file:projects/importer.tgz}
+    resolution: {integrity: sha512-zizP5lgUg15CabPcapeEmr6lkox8gzkC+siK4VIdj8VTTNDQ23htiYpvPwxfgV6bT86QgN054AMw3rDSqoeJyA==, tarball: file:projects/importer.tgz}
     version: 0.0.0
 
   '@rush-temp/inventory-assets@file:projects/inventory-assets.tgz':
@@ -10279,6 +10276,9 @@ packages:
   lop@0.4.1:
     resolution: {integrity: sha512-9xyho9why2A2tzm5aIcMWKvzqKsnxrf9B5I+8O30olh6lQU8PH978LqZoI4++37RBgS1Em5i54v1TFs/3wnmXQ==}
 
+  lop@0.4.2:
+    resolution: {integrity: sha512-RefILVDQ4DKoRZsJ4Pj22TxE3omDO47yFpkIBoDKzkqPRISs5U1cnAdg/5583YPkWPaLIYHOKRMQSvjFsO26cw==}
+
   lower-case@2.0.2:
     resolution: {integrity: sha512-7fm3l3NAF9WfN6W3JOmf5drwpVqX78JtoGJ3A6W0a6ZnldM41w2fV5D490psKFTpMds8TJse/eHLFFsNHHjHgg==}
 
@@ -10330,6 +10330,11 @@ packages:
 
   mammoth@1.8.0:
     resolution: {integrity: sha512-pJNfxSk9IEGVpau+tsZFz22ofjUsl2mnA5eT8PjPs2n0BP+rhVte4Nez6FdgEuxv3IGI3afiV46ImKqTGDVlbA==}
+    engines: {node: '>=12.0.0'}
+    hasBin: true
+
+  mammoth@1.9.0:
+    resolution: {integrity: sha512-F+0NxzankQV9XSUAuVKvkdQK0GbtGGuqVnND9aVf9VSeUA82LQa29GjLqYU6Eez8LHqSJG3eGiDW3224OKdpZg==}
     engines: {node: '>=12.0.0'}
     hasBin: true
 
@@ -18227,6 +18232,7 @@ snapshots:
   '@rush-temp/import-tool@file:projects/import-tool.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:
       '@types/jest': 29.5.12
+      '@types/js-yaml': 4.0.9
       '@types/node': 20.11.19
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
@@ -18239,6 +18245,7 @@ snapshots:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      js-yaml: 4.1.0
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.6.2)
@@ -18272,6 +18279,7 @@ snapshots:
       image-size: 1.1.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       js-yaml: 4.1.0
+      mammoth: 1.9.0
       mime-types: 2.1.35
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
@@ -32119,6 +32127,12 @@ snapshots:
       option: 0.2.4
       underscore: 1.13.7
 
+  lop@0.4.2:
+    dependencies:
+      duck: 0.1.12
+      option: 0.2.4
+      underscore: 1.13.7
+
   lower-case@2.0.2:
     dependencies:
       tslib: 2.7.0
@@ -32194,6 +32208,19 @@ snapshots:
       dingbat-to-unicode: 1.0.1
       jszip: 3.10.1
       lop: 0.4.1
+      path-is-absolute: 1.0.1
+      underscore: 1.13.7
+      xmlbuilder: 10.1.1
+
+  mammoth@1.9.0:
+    dependencies:
+      '@xmldom/xmldom': 0.8.10
+      argparse: 1.0.10
+      base64-js: 1.5.1
+      bluebird: 3.4.7
+      dingbat-to-unicode: 1.0.1
+      jszip: 3.10.1
+      lop: 0.4.2
       path-is-absolute: 1.0.1
       underscore: 1.13.7
       xmlbuilder: 10.1.1

@@ -50,13 +50,13 @@ import documents, {
   DocumentMeta
 } from '@hcengineering/controlled-documents'
 
-interface UnifiedComment {
+export interface UnifiedComment {
   author: string
   text: string
   attachments?: string[]
 }
 
-interface UnifiedIssueHeader {
+export interface UnifiedIssueHeader {
   class: 'tracker:class:Issue'
   title: string
   status: string
@@ -67,7 +67,7 @@ interface UnifiedIssueHeader {
   comments?: UnifiedComment[]
 }
 
-interface UnifiedSpaceSettings {
+export interface UnifiedSpaceSettings {
   class: 'tracker:class:Project' | 'document:class:Teamspace' | 'documents:class:OrgSpace'
   title: string
   private?: boolean
@@ -79,7 +79,7 @@ interface UnifiedSpaceSettings {
   emoji?: string
 }
 
-interface UnifiedProjectSettings extends UnifiedSpaceSettings {
+export interface UnifiedProjectSettings extends UnifiedSpaceSettings {
   class: 'tracker:class:Project'
   identifier: string
   id?: 'tracker:project:DefaultProject'
@@ -87,16 +87,16 @@ interface UnifiedProjectSettings extends UnifiedSpaceSettings {
   defaultIssueStatus?: string
 }
 
-interface UnifiedTeamspaceSettings extends UnifiedSpaceSettings {
+export interface UnifiedTeamspaceSettings extends UnifiedSpaceSettings {
   class: 'document:class:Teamspace'
 }
 
-interface UnifiedDocumentHeader {
+export interface UnifiedDocumentHeader {
   class: 'document:class:Document'
   title: string
 }
 
-interface UnifiedWorkspaceSettings {
+export interface UnifiedWorkspaceSettings {
   projectTypes?: Array<{
     name: string
     taskTypes?: Array<{
@@ -110,13 +110,13 @@ interface UnifiedWorkspaceSettings {
   }>
 }
 
-interface UnifiedChangeControlHeader {
+export interface UnifiedChangeControlHeader {
   description?: string
   reason?: string
   impact?: string
 }
 
-interface UnifiedControlledDocumentHeader {
+export interface UnifiedControlledDocumentHeader {
   class: 'documents:class:ControlledDocument'
   title: string
   template: string
@@ -129,7 +129,7 @@ interface UnifiedControlledDocumentHeader {
   changeControl?: UnifiedChangeControlHeader
 }
 
-interface UnifiedDocumentTemplateHeader {
+export interface UnifiedDocumentTemplateHeader {
   class: 'documents:mixin:DocumentTemplate'
   title: string
   category: string
@@ -143,7 +143,7 @@ interface UnifiedDocumentTemplateHeader {
   changeControl?: UnifiedChangeControlHeader
 }
 
-interface UnifiedOrgSpaceSettings extends UnifiedSpaceSettings {
+export interface UnifiedOrgSpaceSettings extends UnifiedSpaceSettings {
   class: 'documents:class:OrgSpace'
   qualified?: string
   manager?: string
