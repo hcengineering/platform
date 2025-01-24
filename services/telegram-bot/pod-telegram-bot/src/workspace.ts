@@ -330,6 +330,7 @@ export class WorkspaceClient {
     const attachments = await this.client.findAll(attachment.class.Attachment, { attachedTo: _id })
     const res: PlatformFileInfo[] = []
     for (const attachment of attachments) {
+      if (attachment.type === 'application/link-preview') continue
       const chunks = await this.storageAdapter.read(this.ctx, { name: this.workspace }, attachment.file)
       const buffer = Buffer.concat(chunks)
       if (buffer.length > 0) {
