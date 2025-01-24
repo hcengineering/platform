@@ -25,13 +25,7 @@ import {
   type Logger
 } from '@hcengineering/importer'
 import { setMetadata } from '@hcengineering/platform'
-import serverClientPlugin, {
-  createClient,
-  getUserWorkspaces,
-  login,
-  selectWorkspace,
-  getAccountClient
-} from '@hcengineering/server-client'
+import serverClientPlugin, { createClient, getAccountClient } from '@hcengineering/server-client'
 import { program } from 'commander'
 import { readFileSync } from 'fs'
 import * as yaml from 'js-yaml'
