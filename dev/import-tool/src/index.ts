@@ -34,6 +34,7 @@ import serverClientPlugin, {
 import { program } from 'commander'
 import { readFileSync } from 'fs'
 import * as yaml from 'js-yaml'
+import mammoth from 'mammoth'
 import { join } from 'path'
 
 class ConsoleLogger implements Logger {
@@ -196,6 +197,8 @@ export function importTool (): void {
         ...config.steps,
         { name: '_addStubHeader' }
       ]
+
+      config.htmlConverter = async (path) => (await mammoth.convertToHtml({ path })).value
 
       const converter = new DocumentConverter(config, defaultDocumentPreprocessors)
       await converter.processFolder(dir)

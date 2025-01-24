@@ -16,7 +16,6 @@
 import { defaultExtensions, htmlToJSON, MarkupNode, serializeMessage } from '@hcengineering/text'
 import { mkdir, readdir, readFile, writeFile } from 'fs/promises'
 import * as yaml from 'js-yaml'
-import mammoth from 'mammoth'
 import { basename, dirname, extname, join, relative } from 'path'
 import { UnifiedControlledDocumentHeader, UnifiedDocumentTemplateHeader } from '../huly/unified'
 
@@ -24,6 +23,7 @@ export interface DocumentConverterOptions {
   outputPath: string
   owner: string
   steps: DocumentPreprocessorOptions<any>[]
+  htmlConverter: (path: string) => Promise<string>
 }
 
 export interface DocumentState {
@@ -72,7 +72,7 @@ export class DocumentConverter {
   }
 
   async processDocument (path: string, root: string): Promise<void> {
-    const htmlString = await convertToHTML(path)
+    const htmlString = await this.options.htmlConverter(path)
     const markup = htmlToJSON(htmlString, defaultExtensions)
 
     let document: DocumentState = {
@@ -112,10 +112,6 @@ function compileMarkdown (file: DocumentState): string {
 
   const finalContent = headerString + markdown
   return finalContent
-}
-
-async function convertToHTML (path: string): Promise<string> {
-  return (await mammoth.convertToHtml({ path })).value
 }
 
 function fileNameNoExt (path: string): string {
