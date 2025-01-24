@@ -347,7 +347,7 @@
   }
 
   .content {
-    padding-left: 3.25rem;
+    padding: 0 3.25rem;
   }
 
   .bottomSpacing {
