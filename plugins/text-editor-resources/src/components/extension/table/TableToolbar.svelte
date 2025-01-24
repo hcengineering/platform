@@ -50,7 +50,7 @@
     actions = out
   }
 
-  $: actionsQuery.query(textEditor.class.TextEditorAction, { kind: 'table' }, (result) => {
+  actionsQuery.query(textEditor.class.TextEditorAction, { kind: 'table' }, (result) => {
     void updateActions([...result], actionCtx)
   })
 

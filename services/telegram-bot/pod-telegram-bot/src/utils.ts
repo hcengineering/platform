@@ -80,11 +80,13 @@ export function platformToTelegram (message: string, limit: number): string {
   string,
   {
     count: number
+    hasContent: boolean
+    defaultText: string
   }
   >()
 
   const parser = new Parser({
-    onopentag: (tag) => {
+    onopentag: (tag, attributes) => {
       if (tag === 'br' || tag === 'p') {
         return
       }
@@ -104,18 +106,37 @@ export function platformToTelegram (message: string, limit: number): string {
         return
       }
 
+      let defaultText = ''
+
+      if (tag === 'a' && 'href' in attributes) {
+        newMessage += `<a href="${attributes.href}">`
+        defaultText = attributes.href
+      } else {
+        newMessage += `<${tag}>`
+      }
+
       openedTags.set(tag, {
-        count: 1
+        count: 1,
+        hasContent: false,
+        defaultText
       })
-      newMessage += `<${tag}>`
     },
-    ontext: (text) => {
+    ontext: (rawText) => {
       if (textLength >= limit) {
         return
       }
 
-      textLength += unescape(text).length
-      newMessage += unescape(text)
+      const text = unescape(rawText)
+      textLength += text.length
+      newMessage += text
+
+      const lastOpenedTag = Array.from(openedTags.keys()).pop()
+      if (lastOpenedTag != null) {
+        const tagData = openedTags.get(lastOpenedTag)
+        if (tagData != null && text !== '') {
+          tagData.hasContent = true
+        }
+      }
 
       if (textLength > limit) {
         const extra = textLength - limit + 1
@@ -146,6 +167,10 @@ export function platformToTelegram (message: string, limit: number): string {
       // We have unknown tag
       if (existingTag === undefined) {
         return
+      }
+
+      if (!existingTag.hasContent && existingTag.defaultText !== '') {
+        newMessage += existingTag.defaultText
       }
 
       existingTag.count -= 1

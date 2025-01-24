@@ -41,7 +41,7 @@
     const from = getPos()
     const to = from + node.nodeSize
 
-    focused = editor.state.selection.from <= to && editor.state.selection.to >= from
+    focused = editor.state.selection.from <= to && editor.state.selection.to >= from && editor.isActive('table')
   }
 
   function handleAddRow (evt: Event): void {

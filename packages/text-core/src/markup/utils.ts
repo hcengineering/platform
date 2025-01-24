@@ -255,6 +255,8 @@ function addMarks (builder: NodeBuilder, marks: MarkupMark[], next?: () => void)
       addMark(builder, mark, () => {
         addMarks(builder, others, next)
       })
+    } else {
+      addMark(builder, mark, next)
     }
   }
 }
