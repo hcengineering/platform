@@ -280,6 +280,15 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     )
   }
 
+  private broadcastAll (ctx: MeasureContext, space: SpaceWithMembers): void {
+    const users = this.context.modelDb.findAllSync(core.class.Account, {})
+    this.brodcastEvent(
+      ctx,
+      users.map((p) => p._id),
+      space._id
+    )
+  }
+
   private async handleUpdate (ctx: MeasureContext, tx: TxCUD<Space>): Promise<void> {
     await this.init(ctx)
 
@@ -309,6 +318,9 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
       if (updateDoc.operations.$pull?.members !== undefined) {
         this.pullMembersHandle(ctx, updateDoc.operations.$pull.members, space._id)
+      }
+      if (updateDoc.operations.archived !== undefined) {
+        this.broadcastAll(ctx, space)
       }
       const updatedSpace = TxProcessor.updateDoc2Doc(space as any, updateDoc)
       this.spacesMap.set(updateDoc.objectId, updatedSpace)

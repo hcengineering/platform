@@ -519,9 +519,10 @@ export class LiveQuery implements WithTx, Client {
     if (q.options?.lookup !== undefined) {
       options.lookup = q.options?.lookup
     }
-    if (q.options?.showArchived !== undefined) {
-      options.showArchived = q.options?.showArchived
-    }
+    const showArchived: boolean =
+      options?.showArchived ?? (q.query._id !== undefined && typeof q.query._id === 'string')
+
+    options.showArchived = showArchived
     const docIdKey = _id + JSON.stringify(options ?? {}) + q._class
 
     const current = docCache.get(docIdKey) ?? (await this.client.findOne<Doc>(q._class, { _id, space }, options))
