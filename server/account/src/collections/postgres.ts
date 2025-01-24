@@ -370,7 +370,7 @@ export class PostgresAccountDB implements AccountDB {
     this.socialId = new PostgresDbCollection<SocialId, 'id'>('social_id', client, 'id')
     this.workspaceStatus = new PostgresDbCollection<WorkspaceStatus>('workspace_status', client)
     this.workspace = new PostgresDbCollection<Workspace, 'uuid'>('workspace', client, 'uuid')
-    this.accountEvent = new PostgresDbCollection<AccountEvent>('account_event', client)
+    this.accountEvent = new PostgresDbCollection<AccountEvent>('account_events', client)
     this.otp = new PostgresDbCollection<OTP>('otp', client)
     this.invite = new PostgresDbCollection<WorkspaceInvite, 'id'>('invite', client, 'id')
   }
