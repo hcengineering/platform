@@ -40,6 +40,8 @@ import { FileModelLogger, prepareTools } from '@hcengineering/server-tool'
 import path from 'path'
 
 import { Analytics } from '@hcengineering/analytics'
+import { createMongoAdapter, createMongoDestroyAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
+import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
 import { doBackupWorkspace, doRestoreWorkspace } from '@hcengineering/server-backup'
 import type { PipelineFactory, StorageAdapter } from '@hcengineering/server-core'
 import {
@@ -54,8 +56,6 @@ import {
 } from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { createWorkspace, upgradeWorkspace } from './ws-operations'
-import { createMongoTxAdapter, createMongoAdapter, createMongoDestroyAdapter } from '@hcengineering/mongo'
-import { createPostgresTxAdapter, createPostgresAdapter, createPostgreeDestroyAdapter } from '@hcengineering/postgres'
 
 export interface WorkspaceOptions {
   errorHandler: (workspace: BaseWorkspaceInfo, error: any) => Promise<void>
@@ -115,7 +115,14 @@ export class WorkspaceWorker {
 
     ctx.info('Sending a handshake to the account service...')
 
-    await withRetryConnUntilSuccess(workerHandshake)(token, this.region, this.version, this.operation)
+    while (true) {
+      try {
+        await withRetryConnUntilSuccess(workerHandshake)(token, this.region, this.version, this.operation)
+        break
+      } catch (err: any) {
+        ctx.error('error', { err })
+      }
+    }
 
     ctx.info('Successfully connected to the account service')
 
@@ -150,7 +157,10 @@ export class WorkspaceWorker {
             }),
             workspace,
             opt
-          )
+          ).catch((err) => {
+            Analytics.handleError(err)
+            ctx.error('error', { err })
+          })
         })
       }
     }

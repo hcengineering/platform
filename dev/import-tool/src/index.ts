@@ -13,6 +13,18 @@
 // limitations under the License.
 //
 import { concatLink, TxOperations } from '@hcengineering/core'
+import {
+  ClickupImporter,
+  defaultDocumentPreprocessors,
+  DocumentConverter,
+  FrontFileUploader,
+  importNotion,
+  UnifiedFormatImporter,
+  type DocumentConverterOptions,
+  type FileUploader,
+  type Logger
+} from '@hcengineering/importer'
+import { setMetadata } from '@hcengineering/platform'
 import serverClientPlugin, {
   createClient,
   getUserWorkspaces,
@@ -20,15 +32,10 @@ import serverClientPlugin, {
   selectWorkspace
 } from '@hcengineering/server-client'
 import { program } from 'commander'
-import { setMetadata } from '@hcengineering/platform'
-import {
-  UnifiedFormatImporter,
-  ClickupImporter,
-  importNotion,
-  FrontFileUploader,
-  type FileUploader,
-  type Logger
-} from '@hcengineering/importer'
+import { readFileSync } from 'fs'
+import * as yaml from 'js-yaml'
+import mammoth from 'mammoth'
+import { join } from 'path'
 
 class ConsoleLogger implements Logger {
   log (msg: string, data?: any): void {
@@ -163,6 +170,39 @@ export function importTool (): void {
         const importer = new UnifiedFormatImporter(client, uploader, new ConsoleLogger())
         await importer.importFolder(dir)
       })
+    })
+
+  program
+    .command('convert-qms-docx <dir>')
+    .requiredOption('-o, --out <dir>', 'out')
+    .option('-c, --config <file>', 'configPath')
+    .description('convert QMS document into Unified Huly Format')
+    .action(async (dir: string, cmd) => {
+      const { out, configPath } = cmd
+      const configSearchPath = configPath ?? join(dir, 'import.yaml')
+
+      let config: DocumentConverterOptions
+      try {
+        const configYaml = readFileSync(configSearchPath, 'utf-8')
+        const configFromFile = yaml.load(configYaml) as DocumentConverterOptions
+        config = { ...configFromFile, outputPath: out }
+      } catch (e: any) {
+        console.error(`Unable to load config file from ${configSearchPath}: ${e}`)
+        return
+      }
+
+      config.steps = [
+        { name: '_extractImages' },
+        { name: '_cleanupMarkup' },
+        ...config.steps,
+        { name: '_addStubHeader' }
+      ]
+
+      config.htmlConverter = async (path) => (await mammoth.convertToHtml({ path })).value
+
+      const converter = new DocumentConverter(config, defaultDocumentPreprocessors)
+      await converter.processFolder(dir)
+      await converter.flush()
     })
 
   program.parse(process.argv)

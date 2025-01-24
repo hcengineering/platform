@@ -122,20 +122,24 @@ export function serveWorkspaceAccount (
     brandings
   )
 
-  void worker.start(
-    measureCtx,
-    {
-      errorHandler: async (ws, err) => {
-        Analytics.handleError(err)
+  void worker
+    .start(
+      measureCtx,
+      {
+        errorHandler: async (ws, err) => {
+          Analytics.handleError(err)
+        },
+        force: false,
+        console: false,
+        logs: 'upgrade-logs',
+        waitTimeout,
+        backup
       },
-      force: false,
-      console: false,
-      logs: 'upgrade-logs',
-      waitTimeout,
-      backup
-    },
-    () => canceled
-  )
+      () => canceled
+    )
+    .catch((err) => {
+      measureCtx.error('failed to start', { err })
+    })
 
   const close = (): void => {
     canceled = true

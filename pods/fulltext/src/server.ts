@@ -32,7 +32,12 @@ import {
 } from '@hcengineering/middleware'
 import { createMongoAdapter, createMongoDestroyAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
 import { PlatformError, setMetadata, unknownError } from '@hcengineering/platform'
-import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
+import {
+  createPostgreeDestroyAdapter,
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  setDBExtraOptions
+} from '@hcengineering/postgres'
 import serverClientPlugin, { getTransactorEndpoint, getWorkspaceInfo } from '@hcengineering/server-client'
 import serverCore, {
   createContentAdapter,
@@ -214,6 +219,12 @@ export async function startIndexer (
   }
 ): Promise<() => void> {
   const closeTimeout = 5 * 60 * 1000
+
+  const usePrepare = process.env.DB_PREPARE === 'true'
+
+  setDBExtraOptions({
+    prepare: usePrepare // We override defaults
+  })
 
   setMetadata(serverToken.metadata.Secret, opt.serverSecret)
   setMetadata(serverCore.metadata.ElasticIndexName, opt.elasticIndexName)

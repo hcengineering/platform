@@ -1727,8 +1727,8 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0
       mammoth:
-        specifier: ^1.6.0
-        version: 1.8.0
+        specifier: ^1.9.0
+        version: 1.9.0
       markdown-it:
         specifier: ^14.0.0
         version: 14.0.0
@@ -4119,7 +4119,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/import-tool@file:projects/import-tool.tgz':
-    resolution: {integrity: sha512-imMlneB1gppaXcJi4brs9jxXdGgK5zUGanT6vjF2+lNnrRCnp1X3Ys6/iRVLlexVOnSsA6BTpaZ1Xo5SSTO/gg==, tarball: file:projects/import-tool.tgz}
+    resolution: {integrity: sha512-yTXXuY90bmLrEEiipvDCuv+mLPokLCSLajsI3+hEES0iCdCbiJlua2NYv73WVshCcu0oq1acpRPElKxELjNgDw==, tarball: file:projects/import-tool.tgz}
     version: 0.0.0
 
   '@rush-temp/importer@file:projects/importer.tgz':
@@ -4587,7 +4587,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-print@file:projects/pod-print.tgz':
-    resolution: {integrity: sha512-19hcUtJBpca/kmHtIv4Z30rvHIaMLeGm3PdirKFuVS7VAdmYV6Um+m4o+5fq2LUUcda4T10vHscPeAvZR8EPEA==, tarball: file:projects/pod-print.tgz}
+    resolution: {integrity: sha512-uH6mY0Z3/3bbAe+rGjr2WPJmavKnoNgKZ5KoLqToGGF+iDzZOZGLjd8OrwUI90Z3behW7PPIRuPDGiRmFGOtcw==, tarball: file:projects/pod-print.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-server@file:projects/pod-server.tgz':
@@ -4671,7 +4671,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/qms-doc-import-tool@file:projects/qms-doc-import-tool.tgz':
-    resolution: {integrity: sha512-QqdrovP6ZWs8dmU+6Ly95n8BFMjlvtMcme4uj9XgPqCKMOmuMhtQ0Wn5ae3h8hzgB1K2HK25F0BPrzhRBGlxTA==, tarball: file:projects/qms-doc-import-tool.tgz}
+    resolution: {integrity: sha512-m7UFAU/1lPMVaVWNf5rvDKrRWTxOzjuWinK48EQ8OSJD3JSB5SP/IHrW9zSckgWBnLYL1vnljAgjM0QZ2qjIlQ==, tarball: file:projects/qms-doc-import-tool.tgz}
     version: 0.0.0
 
   '@rush-temp/qms-tests-sanity@file:projects/qms-tests-sanity.tgz':
@@ -4711,7 +4711,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/rekoni-service@file:projects/rekoni-service.tgz':
-    resolution: {integrity: sha512-c3Vh1CX471Q8N6l5hoftqqktDZ7PuqzOXwcnhy5bNc14ynVi8Q9mTV7hHeP5xCFzQzepXCQ+tF5Etparbn2pdQ==, tarball: file:projects/rekoni-service.tgz}
+    resolution: {integrity: sha512-KwM2th57U3OVRVgPsNgcakA3gCpIYsASv2TeeqJAbv0cFim1ha1xDaeb8A96O9vTHjHRknDfgqQVYYIUdosQwQ==, tarball: file:projects/rekoni-service.tgz}
     version: 0.0.0
 
   '@rush-temp/rekoni@file:projects/rekoni.tgz':
@@ -10276,8 +10276,8 @@ packages:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
     hasBin: true
 
-  lop@0.4.1:
-    resolution: {integrity: sha512-9xyho9why2A2tzm5aIcMWKvzqKsnxrf9B5I+8O30olh6lQU8PH978LqZoI4++37RBgS1Em5i54v1TFs/3wnmXQ==}
+  lop@0.4.2:
+    resolution: {integrity: sha512-RefILVDQ4DKoRZsJ4Pj22TxE3omDO47yFpkIBoDKzkqPRISs5U1cnAdg/5583YPkWPaLIYHOKRMQSvjFsO26cw==}
 
   lower-case@2.0.2:
     resolution: {integrity: sha512-7fm3l3NAF9WfN6W3JOmf5drwpVqX78JtoGJ3A6W0a6ZnldM41w2fV5D490psKFTpMds8TJse/eHLFFsNHHjHgg==}
@@ -10328,8 +10328,8 @@ packages:
   makeerror@1.0.12:
     resolution: {integrity: sha512-JmqCvUhmt43madlpFzG4BQzG2Z3m6tvQDNKdClZnO3VbIudJYmxsT0FNJMeiB2+JTSlTQTSbU8QdesVmwJcmLg==}
 
-  mammoth@1.8.0:
-    resolution: {integrity: sha512-pJNfxSk9IEGVpau+tsZFz22ofjUsl2mnA5eT8PjPs2n0BP+rhVte4Nez6FdgEuxv3IGI3afiV46ImKqTGDVlbA==}
+  mammoth@1.9.0:
+    resolution: {integrity: sha512-F+0NxzankQV9XSUAuVKvkdQK0GbtGGuqVnND9aVf9VSeUA82LQa29GjLqYU6Eez8LHqSJG3eGiDW3224OKdpZg==}
     engines: {node: '>=12.0.0'}
     hasBin: true
 
@@ -18227,6 +18227,7 @@ snapshots:
   '@rush-temp/import-tool@file:projects/import-tool.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:
       '@types/jest': 29.5.12
+      '@types/js-yaml': 4.0.9
       '@types/node': 20.11.19
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
@@ -18239,6 +18240,8 @@ snapshots:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      js-yaml: 4.1.0
+      mammoth: 1.9.0
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.6.2)
@@ -20760,7 +20763,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.21.2
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      mammoth: 1.8.0
+      mammoth: 1.9.0
       prettier: 3.2.5
       puppeteer: 22.14.0(bufferutil@4.0.8)(typescript@5.3.3)(utf-8-validate@6.0.4)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.3.3)
@@ -21533,7 +21536,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       htmlparser2: 9.1.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      mammoth: 1.8.0
+      mammoth: 1.9.0
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
@@ -21842,7 +21845,7 @@ snapshots:
       jimp: 0.16.13
       jwt-simple: 0.5.6
       libphonenumber-js: 1.10.56
-      mammoth: 1.8.0
+      mammoth: 1.9.0
       mime-types: 2.1.35
       morgan: 1.10.0
       node-loader: 2.0.0(webpack@5.97.1)
@@ -32113,7 +32116,7 @@ snapshots:
     dependencies:
       js-tokens: 4.0.0
 
-  lop@0.4.1:
+  lop@0.4.2:
     dependencies:
       duck: 0.1.12
       option: 0.2.4
@@ -32185,7 +32188,7 @@ snapshots:
     dependencies:
       tmpl: 1.0.5
 
-  mammoth@1.8.0:
+  mammoth@1.9.0:
     dependencies:
       '@xmldom/xmldom': 0.8.10
       argparse: 1.0.10
@@ -32193,7 +32196,7 @@ snapshots:
       bluebird: 3.4.7
       dingbat-to-unicode: 1.0.1
       jszip: 3.10.1
-      lop: 0.4.1
+      lop: 0.4.2
       path-is-absolute: 1.0.1
       underscore: 1.13.7
       xmlbuilder: 10.1.1

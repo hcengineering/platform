@@ -28,6 +28,7 @@ import { startHttpServer } from '@hcengineering/server-ws'
 import { join } from 'path'
 import { start } from '.'
 import { profileStart, profileStop } from './inspector'
+import { setDBExtraOptions } from '@hcengineering/postgres'
 
 configureAnalytics(process.env.SENTRY_DSN, {})
 Analytics.setTag('application', 'transactor')
@@ -57,6 +58,12 @@ setOperationLogProfiling(process.env.OPERATION_PROFILING === 'true')
 
 const config = serverConfigFromEnv()
 const storageConfig: StorageConfiguration = storageConfigFromEnv()
+
+const usePrepare = process.env.DB_PREPARE === 'true'
+
+setDBExtraOptions({
+  prepare: usePrepare // We override defaults
+})
 
 const lastNameFirst = process.env.LAST_NAME_FIRST === 'true'
 setMetadata(contactPlugin.metadata.LastNameFirst, lastNameFirst)
