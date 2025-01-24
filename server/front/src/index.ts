@@ -420,7 +420,13 @@ export function start (
 
     const expectedDataId = path.split('/')[2]
     if (expectedDataId !== undefined && actualDataId !== expectedDataId) {
-      ctx.error('Cannot validate dataId', { expectedDataId, actualDataId, path, workspaceUuid: workspaceInfo.uuid, workspaceDataId: workspaceInfo.dataId })
+      ctx.error('Cannot validate dataId', {
+        expectedDataId,
+        actualDataId,
+        path,
+        workspaceUuid: workspaceInfo.uuid,
+        workspaceDataId: workspaceInfo.dataId
+      })
       return null
     }
 

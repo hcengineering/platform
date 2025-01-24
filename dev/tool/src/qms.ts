@@ -19,7 +19,11 @@ import { DOMAIN_DOCUMENTS } from '@hcengineering/model-controlled-documents'
 import { type Db } from 'mongodb'
 import { makeRank } from '@hcengineering/task'
 
-export async function addControlledDocumentRank (ctx: MeasureContext, db: Db, workspaceId: WorkspaceUuid): Promise<void> {
+export async function addControlledDocumentRank (
+  ctx: MeasureContext,
+  db: Db,
+  workspaceId: WorkspaceUuid
+): Promise<void> {
   const collections = await db.listCollections().toArray()
   if (collections.find((it) => it.name === DOMAIN_DOCUMENTS) === undefined) {
     ctx.error('skipping migration, no collection found', { workspace: workspaceId })

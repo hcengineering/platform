@@ -22,10 +22,10 @@ import {
   tryMigrate
 } from '@hcengineering/model'
 import analyticsCollector, { analyticsCollectorId } from '@hcengineering/analytics-collector'
-import { DOMAIN_SPACE } from '@hcengineering/model-core'
+import { DOMAIN_SPACE, getSocialKeyByOldEmail } from '@hcengineering/model-core'
 import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
 import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
-import { buildSocialIdString, type Doc, MeasureMetricsContext, SocialIdType } from '@hcengineering/core'
+import { buildSocialIdString, type Doc, MeasureMetricsContext } from '@hcengineering/core'
 
 async function removeOnboardingChannels (client: MigrationClient): Promise<void> {
   const channels = await client.find(DOMAIN_SPACE, { 'analytics:mixin:AnalyticsChannel': { $exists: true } })
@@ -63,7 +63,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
       for (const doc of docs) {
         const email = (doc as any).email
         if (email === undefined || email === '') continue
-        const socialString = buildSocialIdString({ type: SocialIdType.EMAIL, value: email })
+        const socialString = buildSocialIdString(getSocialKeyByOldEmail(email))
 
         operations.push({
           filter: { _id: doc._id },

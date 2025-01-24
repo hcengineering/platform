@@ -14,13 +14,7 @@
 //
 
 import chunter from '@hcengineering/chunter'
-import core, {
-  type Markup,
-  type Timestamp,
-  type PersonId,
-  generateId,
-  getCurrentAccount
-} from '@hcengineering/core'
+import core, { type Markup, type Timestamp, type PersonId, generateId, getCurrentAccount } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { type ActionContext } from '@hcengineering/presentation'
 import type { AnySvelteComponent } from '@hcengineering/ui'

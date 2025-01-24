@@ -79,7 +79,10 @@ export class FrontFileUploader implements FileUploader {
   }
 
   public getFileUrl (id: string): string {
-    return concatLink(this.frontUrl, `/files/${this.workspaceDataId ?? this.workspaceId}/${id}?file=${id}&workspace=${this.workspaceId}`)
+    return concatLink(
+      this.frontUrl,
+      `/files/${this.workspaceDataId ?? this.workspaceId}/${id}?file=${id}&workspace=${this.workspaceId}`
+    )
   }
 
   public async uploadCollaborativeDoc (collabId: CollaborativeDoc, content: Markup): Promise<UploadResult> {

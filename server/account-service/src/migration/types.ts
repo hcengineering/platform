@@ -13,15 +13,7 @@
 // limitations under the License.
 //
 
-import type {
-  AccountRole,
-  BackupStatus,
-  Data,
-  Ref,
-  Timestamp,
-  Version,
-  WorkspaceMode
-} from '@hcengineering/core'
+import type { AccountRole, BackupStatus, Data, Ref, Timestamp, Version, WorkspaceMode } from '@hcengineering/core'
 import type { Person } from '@hcengineering/contact'
 import { type FindCursor } from 'mongodb'
 

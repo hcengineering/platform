@@ -60,8 +60,6 @@ import { get, writable } from 'svelte/store'
 import { type KeyedAttribute } from '..'
 import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPipeline } from './pipeline'
 import plugin from './plugin'
-import { getRoleAttributeProps } from '../../../plugins/setting/types'
-import { ResultArray } from '@hcengineering/query/types/results'
 
 export { reduceCalls } from '@hcengineering/core'
 

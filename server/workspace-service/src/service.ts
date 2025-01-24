@@ -237,8 +237,7 @@ export class WorkspaceWorker {
         message?: string
       ): Promise<void> => {
         return withRetryConnUntilTimeout(
-          () =>
-            accountClient.updateWorkspaceInfo(ws.uuid, event, version, progress, message),
+          () => accountClient.updateWorkspaceInfo(ws.uuid, event, version, progress, message),
           5000
         )()
       }

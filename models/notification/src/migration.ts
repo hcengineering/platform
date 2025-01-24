@@ -262,7 +262,9 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
           operations.push({
             filter: { _id: doc._id },
             update: {
-              [`${notification.mixin.Collaborators}.collaborators`]: newCollaborators
+              [`${notification.mixin.Collaborators}`]: {
+                collaborators: newCollaborators
+              }
             }
           })
         }

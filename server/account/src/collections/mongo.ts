@@ -14,7 +14,15 @@
 //
 import { UUID } from 'mongodb'
 import type { Collection, CreateIndexesOptions, Db, Filter, OptionalUnlessRequiredId, Sort as RawSort } from 'mongodb'
-import { type Person, type WorkspaceMemberInfo, buildSocialIdString, SocialKey, type AccountRole, type Data, type Version } from '@hcengineering/core'
+import {
+  type Person,
+  type WorkspaceMemberInfo,
+  buildSocialIdString,
+  SocialKey,
+  type AccountRole,
+  type Data,
+  type Version
+} from '@hcengineering/core'
 
 import type {
   DbCollection,

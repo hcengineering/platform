@@ -195,7 +195,12 @@ async function migrateAccount (account: OldAccount, accountDB: AccountDB): Promi
   return personUuid
 }
 
-async function migrateWorkspace (workspace: OldWorkspace, accountDB: AccountDB, accountsIdToUuid: Record<string, string>, accountsEmailToUuid: Record<string, string>): Promise<string | undefined> {
+async function migrateWorkspace (
+  workspace: OldWorkspace,
+  accountDB: AccountDB,
+  accountsIdToUuid: Record<string, string>,
+  accountsEmailToUuid: Record<string, string>
+): Promise<string | undefined> {
   if (workspace.workspaceUrl == null) {
     console.log('No workspace url, skipping', workspace.workspace)
     return

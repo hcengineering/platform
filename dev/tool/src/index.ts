@@ -399,7 +399,17 @@ export function devTool (
         const coreWsInfo = flattenStatus(wsInfo)
         const accountClient = getAccountClient(getToolToken())
 
-        await createWorkspace(measureCtx, version, brandingObj, coreWsInfo, txes, migrateOperations, accountClient, undefined, true)
+        await createWorkspace(
+          measureCtx,
+          version,
+          brandingObj,
+          coreWsInfo,
+          txes,
+          migrateOperations,
+          accountClient,
+          undefined,
+          true
+        )
         await updateWorkspaceInfo(
           measureCtx,
           db,

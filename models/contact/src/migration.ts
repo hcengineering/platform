@@ -85,7 +85,9 @@ async function migrateAvatars (client: MigrationClient): Promise<void> {
   )
 }
 
-async function getOldPersonAccounts (client: MigrationClient): Promise<Array<{ person: any, email: string, role: AccountRole }>> {
+async function getOldPersonAccounts (
+  client: MigrationClient
+): Promise<Array<{ person: any, email: string, role: AccountRole }>> {
   const accountsTxes: TxCUD<Doc>[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
     objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>
   })
@@ -127,8 +129,7 @@ async function createSocialIdentities (client: MigrationClient): Promise<void> {
   })
   const personAccounts = getAccountsFromTxes(personAccountsTxes)
 
-  // for (const pAcc of personAccounts) {
-  for (const pAcc of personAccounts.filter((a: any) => a.person === '629d983ba125a3831a3424ff')) {
+  for (const pAcc of personAccounts) {
     const email: string = pAcc.email ?? ''
     if (email === '') continue
 

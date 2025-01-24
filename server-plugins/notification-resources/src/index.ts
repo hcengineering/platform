@@ -16,12 +16,7 @@
 
 import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
-import contact, {
-  Employee,
-  includesAny,
-  pickPrimarySocialId,
-  type Person
-} from '@hcengineering/contact'
+import contact, { Employee, includesAny, pickPrimarySocialId, type Person } from '@hcengineering/contact'
 import core, {
   PersonId,
   AnyAttribute,
@@ -1439,18 +1434,7 @@ async function updateCollaboratorDoc (
     )
     res.push(getMixinTx(tx, control, collaborators))
     res = res.concat(
-      await createCollabDocInfo(
-        ctx,
-        res,
-        collaborators,
-        control,
-        tx,
-        doc,
-        activityMessages,
-        params,
-        [],
-        cache
-      )
+      await createCollabDocInfo(ctx, res, collaborators, control, tx, doc, activityMessages, params, [], cache)
     )
   }
 

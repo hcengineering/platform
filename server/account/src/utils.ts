@@ -407,7 +407,12 @@ export async function isOtpValid (db: AccountDB, socialId: string, code: string)
   return (otpData?.expiresOn ?? 0) > Date.now()
 }
 
-export async function createAccount (db: AccountDB, personUuid: string, confirmed = false, createdOn = Date.now()): Promise<void> {
+export async function createAccount (
+  db: AccountDB,
+  personUuid: string,
+  confirmed = false,
+  createdOn = Date.now()
+): Promise<void> {
   // Create Huly social id and account
   // Currently, it's always created along with the account but never confirmed.
   // What's the actual use case for it?

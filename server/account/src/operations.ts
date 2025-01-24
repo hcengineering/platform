@@ -1136,7 +1136,7 @@ export async function updateWorkspaceRole (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
   }
 
-  const accRole = (account === systemAccountUuid) ? AccountRole.Owner : (await db.getWorkspaceRole(account, workspace))
+  const accRole = account === systemAccountUuid ? AccountRole.Owner : await db.getWorkspaceRole(account, workspace)
 
   if (
     accRole == null ||
