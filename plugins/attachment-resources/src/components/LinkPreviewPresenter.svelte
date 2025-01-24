@@ -33,7 +33,7 @@
 <div class="quote content">
   {#if canDisplay}
     <div class="gapV-2">
-      <div class="flex gap-1">
+      <div class="flex-row-center gap-1">
         {#if viewModel.icon !== undefined && !useDefaultIcon}
           <img
             src={viewModel.icon}
@@ -81,14 +81,15 @@
     max-height: 25rem;
   }
   .preview-icon {
-    max-width: 22px;
-    max-height: 22px;
+    max-width: 16px;
+    max-height: 16px;
   }
   .quote {
     border-left: 0.25rem solid;
-    padding-left: 15px;
+    padding-left: 0.75rem;
   }
   .content {
+    scroll-snap-align: start;
     max-width: 35rem;
     max-height: 35rem;
   }

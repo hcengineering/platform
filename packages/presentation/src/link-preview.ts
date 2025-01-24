@@ -33,10 +33,10 @@ export function canDisplayLinkPreview (val: LinkPreviewDetails): boolean {
   if (val.hostname === undefined) {
     return false
   }
-  if (val.image === undefined && val.description === undefined) {
+  if (val.image === undefined && val.description?.trim() === '') {
     return false
   }
-  if (val.title === undefined && val.description === undefined) {
+  if (val.title?.trim() === '' && val.description?.trim() === '') {
     return false
   }
   return true
@@ -53,7 +53,9 @@ export async function fetchLinkPreviewDetails (url: string, timeoutMs = 15000): 
       headers: { Authorization: 'Bearer ' + token },
       signal: AbortSignal.timeout(timeoutMs)
     })
-    return response.json() as LinkPreviewDetails
+    const res = (await response.json()) as LinkPreviewDetails
+    res.url = url
+    return res
   } catch {
     return {}
   }
