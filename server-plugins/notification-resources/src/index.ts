@@ -864,7 +864,7 @@ export async function createCollabDocInfo (
   }
 
   const settings = await getNotificationProviderControl(ctx, control)
-  for (const target of allTargets) {
+  for (const target of targets) {
     const info: ReceiverInfo | undefined = toReceiverInfo(control.hierarchy, usersInfo.get(target))
 
     if (info === undefined) continue
