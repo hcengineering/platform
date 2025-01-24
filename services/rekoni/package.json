@@ -81,7 +81,7 @@
     "jimp": "^0.16.1",
     "jwt-simple": "^0.5.6",
     "libphonenumber-js": "^1.9.46",
-    "mammoth": "^1.6.0",
+    "mammoth": "^1.9.0",
     "mime-types": "~2.1.34",
     "pdfjs-dist": "2.12.313",
     "sharp": "~0.32.0",
