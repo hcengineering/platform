@@ -317,6 +317,11 @@ export function getDBClient (connectionString: string, database?: string): Postg
       },
       database,
       max: 10,
+      min: 2,
+      connect_timeout: 10,
+      idle_timeout: 30,
+      max_lifetime: 300,
+      fetch_types: true,
       transform: {
         undefined: null
       },
