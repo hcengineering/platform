@@ -21,7 +21,7 @@ import { getServerPipeline, getTxAdapterFactory, sharedPipelineContextVars } fro
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { generateToken } from '@hcengineering/server-token'
 import { initializeWorkspace, initModel, prepareTools, updateModel, upgradeModel } from '@hcengineering/server-tool'
-import { AccountClient, getClient as getAccountClient } from '@hcengineering/account-client'
+import { type AccountClient } from '@hcengineering/account-client'
 
 /**
  * @public

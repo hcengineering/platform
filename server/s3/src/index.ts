@@ -19,7 +19,14 @@ import { NodeHttpHandler } from '@smithy/node-http-handler'
 import { Agent as HttpAgent } from 'http'
 import { Agent as HttpsAgent } from 'https'
 
-import core, { withContext, type Blob, type MeasureContext, type Ref, type WorkspaceUuid, type WorkspaceDataId } from '@hcengineering/core'
+import core, {
+  withContext,
+  type Blob,
+  type MeasureContext,
+  type Ref,
+  type WorkspaceUuid,
+  type WorkspaceDataId
+} from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, {
   NoSuchKeyError,

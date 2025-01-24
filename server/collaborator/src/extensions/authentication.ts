@@ -17,10 +17,8 @@ import { decodeDocumentId } from '@hcengineering/collaborator-client'
 import { MeasureContext } from '@hcengineering/core'
 import { decodeToken } from '@hcengineering/server-token'
 import { Extension, onAuthenticatePayload } from '@hocuspocus/server'
-import { getClient as getAccountClient } from '@hcengineering/account-client'
 
 import { Context, buildContext } from '../context'
-import config from '../config'
 import { getWorkspaceIds } from '../utils'
 
 export interface AuthenticationConfiguration {

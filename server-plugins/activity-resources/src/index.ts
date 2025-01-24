@@ -138,16 +138,11 @@ export async function createReactionNotifications (tx: TxCUD<Reaction>, control:
   const docUpdateMessage = TxProcessor.createDoc2Doc(messageTx as TxCreateDoc<DocUpdateMessage>)
 
   res = res.concat(
-    await createCollabDocInfo(
-      control.ctx,
-      res,
-      [user],
-      control,
-      tx,
-      parentMessage,
-      [docUpdateMessage],
-      { isOwn: true, isSpace: false, shouldUpdateTimestamp: false }
-    )
+    await createCollabDocInfo(control.ctx, res, [user], control, tx, parentMessage, [docUpdateMessage], {
+      isOwn: true,
+      isSpace: false,
+      shouldUpdateTimestamp: false
+    })
   )
 
   return res

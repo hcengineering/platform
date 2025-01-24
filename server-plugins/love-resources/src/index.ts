@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import contact, { Employee, Person, formatName, getName, pickPrimarySocialId } from '@hcengineering/contact'
+import contact, { Employee, Person, formatName, getName } from '@hcengineering/contact'
 import core, {
   concatLink,
   Doc,
@@ -334,16 +334,7 @@ export async function OnKnock (txes: Tx[], control: TriggerControl): Promise<Tx[
               const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
                 user: { $in: socialStrings }
               })
-              await createPushNotification(
-                control,
-                socialStrings,
-                title,
-                body,
-                request._id,
-                subscriptions,
-                from,
-                path
-              )
+              await createPushNotification(control, socialStrings, title, body, request._id, subscriptions, from, path)
             }
           }
         }

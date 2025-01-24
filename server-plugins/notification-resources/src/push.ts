@@ -88,16 +88,7 @@ async function createPushFromInbox (
   }
 
   const path = [workbenchId, control.workspace.url, notificationId, encodeObjectURI(id, n.objectClass)]
-  await createPushNotification(
-    control,
-    receiver,
-    title,
-    body,
-    n._id,
-    subscriptions,
-    senderPerson,
-    path
-  )
+  await createPushNotification(control, receiver, title, body, n._id, subscriptions, senderPerson, path)
 
   const messageInfo = getMessageInfo(n, control.hierarchy)
   const primarySocialString = pickPrimarySocialId(receiver)
@@ -187,7 +178,11 @@ export async function createPushNotification (
     const provider = getAvatarProviderId(senderAvatar.avatarType)
     if (provider === contact.avatarProvider.Image) {
       if (senderAvatar.avatar != null) {
-        const url = await control.storageAdapter.getUrl(control.ctx, control.workspace.dataId ?? control.workspace.uuid, senderAvatar.avatar)
+        const url = await control.storageAdapter.getUrl(
+          control.ctx,
+          control.workspace.dataId ?? control.workspace.uuid,
+          senderAvatar.avatar
+        )
         data.icon = url.includes('://') ? url : concatLink(front, url)
       }
     } else if (provider === contact.avatarProvider.Gravatar && senderAvatar.avatarProps?.url !== undefined) {

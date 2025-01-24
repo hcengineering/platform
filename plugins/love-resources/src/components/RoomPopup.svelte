@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-
   import { Person, getCurrentEmployee } from '@hcengineering/contact'
   import { UserInfo, personByIdStore } from '@hcengineering/contact-resources'
   import { Class, Doc, IdMap, Ref } from '@hcengineering/core'

@@ -15,7 +15,14 @@
 
 import { Client, type BucketItem, type BucketStream } from 'minio'
 
-import core, { withContext, type Blob, type MeasureContext, type Ref, type WorkspaceUuid, type WorkspaceDataId } from '@hcengineering/core'
+import core, {
+  withContext,
+  type Blob,
+  type MeasureContext,
+  type Ref,
+  type WorkspaceUuid,
+  type WorkspaceDataId
+} from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, {
   removeAllObjects,
@@ -261,10 +268,7 @@ export class MinioService implements StorageAdapter {
   @withContext('stat')
   async stat (ctx: MeasureContext, dataId: WorkspaceDataId, objectName: string): Promise<Blob | undefined> {
     try {
-      const result = await this.client.statObject(
-        this.getBucketId(dataId),
-        this.getDocumentKey(dataId, objectName)
-      )
+      const result = await this.client.statObject(this.getBucketId(dataId), this.getDocumentKey(dataId, objectName))
       const rootPrefix = this.rootPrefix(dataId)
       return {
         provider: '',
@@ -320,10 +324,7 @@ export class MinioService implements StorageAdapter {
 
   @withContext('read')
   async read (ctx: MeasureContext, dataId: WorkspaceDataId, objectName: string): Promise<Buffer[]> {
-    const data = await this.client.getObject(
-      this.getBucketId(dataId),
-      this.getDocumentKey(dataId, objectName)
-    )
+    const data = await this.client.getObject(this.getBucketId(dataId), this.getDocumentKey(dataId, objectName))
     const chunks: Buffer[] = []
 
     await new Promise((resolve, reject) => {

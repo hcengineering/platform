@@ -236,7 +236,14 @@ async function processMigrateContentFor (
           if (value != null && value.startsWith('{')) {
             try {
               const buffer = Buffer.from(value)
-              await storageAdapter.put(ctx, client.wsIds.dataId ?? client.wsIds.uuid, blobId, buffer, 'application/json', buffer.length)
+              await storageAdapter.put(
+                ctx,
+                client.wsIds.dataId ?? client.wsIds.uuid,
+                blobId,
+                buffer,
+                'application/json',
+                buffer.length
+              )
             } catch (err) {
               ctx.error('failed to process document', { _class: doc._class, _id: doc._id, err })
             }
@@ -325,16 +332,15 @@ export async function getSocialIdByOldAccount (client: MigrationClient): Promise
     if (systemAccounts.includes(account._id)) {
       socialIdByAccount[account._id] = account._id
     } else {
-      const socialId = buildSocialIdString({ type: SocialIdType.EMAIL, value: account.email })
-
-      socialIdByAccount[account._id] = socialId
+      socialIdByAccount[account._id] = buildSocialIdString(getSocialKeyByOldEmail(account.email))
     }
   }
 
   return socialIdByAccount
 }
 
-export function getSocialKeyByOldEmail (email: string): SocialKey {
+export function getSocialKeyByOldEmail (rawEmail: string): SocialKey {
+  const email = rawEmail.toLowerCase()
   let type: SocialIdType
   let value: string
   if (email.startsWith('github:')) {
@@ -455,7 +461,9 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
               if (oldAssignees != null && oldAssignees.length > 0) {
                 const newAssignees = oldAssignees.map((a) => socialIdByAccount[a])
 
-                update[`${type.targetClass}.${role._id}`] = newAssignees
+                update[`${type.targetClass}`] = {
+                  [role._id]: newAssignees
+                }
               }
             }
           }
