@@ -115,7 +115,7 @@
         {#await getJsonOrEmpty(value.file, value.name)}
           <Spinner size="small" />
         {:then linkPreviewDetails}
-          <div class="flex-center icon">
+          <div class="flex-center icon image">
             {#if linkPreviewDetails.icon !== undefined && !useDefaultIcon}
               <img
                 src={linkPreviewDetails.icon}

@@ -333,7 +333,7 @@
     const hrefs = refContainer.getElementsByTagName('a')
     const newUrls: string[] = []
     for (let i = 0; i < hrefs.length; i++) {
-      if (hrefs[i].target !== '_blank' || !isValidUrl(hrefs[i].href)) {
+      if (hrefs[i].target !== '_blank' || !isValidUrl(hrefs[i].href) || hrefs[i].rel === '') {
         continue
       }
       const key = getUrlKey(hrefs[i].href)
@@ -363,7 +363,7 @@
         if (canDisplayLinkPreview(meta) && meta.url !== undefined) {
           const blob = new Blob([JSON.stringify(meta)])
           const file = new File([blob], meta.url, { type: 'application/link-preview' })
-          void createAttachment(file)
+          await createAttachment(file)
         }
       } catch (err: any) {
         void setPlatformStatus(unknownError(err))
