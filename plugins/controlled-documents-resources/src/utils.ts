@@ -423,10 +423,16 @@ export async function canCreateChildTemplate (
   }
 
   const client = getClient()
-  const spaceId: Ref<DocumentSpace> = isSpace(client.getHierarchy(), doc) ? doc._id : doc.space
-  const orgSpace = await client.findOne(documents.class.OrgSpace, { _id: spaceId })
+  const hierarchy = client.getHierarchy()
+  const spaceId: Ref<DocumentSpace> = isSpace(hierarchy, doc) ? doc._id : doc.space
+  const orgSpace = await client.findOne(documents.class.DocumentSpace, { _id: spaceId })
 
-  return orgSpace !== undefined && (await checkPermission(client, documents.permission.CreateDocument, spaceId))
+  if (orgSpace === undefined) return false
+
+  const isExternalSpace = hierarchy.isDerived(orgSpace._class, documents.class.ExternalSpace)
+  const canCreateDocuments = await checkPermission(client, documents.permission.CreateDocument, spaceId)
+
+  return !isExternalSpace && canCreateDocuments
 }
 
 export async function canCreateChildDocument (
