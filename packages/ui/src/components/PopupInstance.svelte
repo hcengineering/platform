@@ -74,7 +74,7 @@
     direction: 'bottom'
   }
 
-  $: document.body.style.cursor = drag ? 'all-scroll' : 'default'
+  $: document.body.style.cursor = drag ? 'all-scroll' : ''
   $: docSize = checkAdaptiveMatching($deviceInfo.size, 'md')
   $: isFullMobile =
     $deviceInfo.isMobile &&
