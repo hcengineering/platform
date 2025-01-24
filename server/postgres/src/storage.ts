@@ -741,7 +741,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           return
         }
         if (query.space === acc._id) return
-        if (domain === DOMAIN_SPACE && isOwner(acc)) return
+        if (domain === DOMAIN_SPACE && isOwner(acc) && showArchived) return
         const key = domain === DOMAIN_SPACE ? '_id' : domain === DOMAIN_TX ? "data ->> 'objectSpace'" : 'space'
         const privateCheck = domain === DOMAIN_SPACE ? ' OR sec.private = false' : ''
         const archivedCheck = showArchived ? '' : ' AND sec.archived = false'
