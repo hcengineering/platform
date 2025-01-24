@@ -31,10 +31,8 @@
   let configurations: Record<Ref<Class<Doc>>, Viewlet['config']> = {}
 
   function fetchConfigurations (viewlet: Viewlet): void {
-    configurationsLoading = true
     configurations = {}
-
-    objectConfigurations.query(
+    configurationsLoading = objectConfigurations.query(
       view.class.Viewlet,
       {
         attachTo: { $in: hierarchy.getDescendants(_class) },
@@ -49,8 +47,7 @@
   }
 
   function fetchPreferences (viewlet: Viewlet): void {
-    preferencesLoading = true
-    preferenceQuery.query(
+    preferencesLoading = preferenceQuery.query(
       view.class.ViewletPreference,
       {
         space: core.space.Workspace,
