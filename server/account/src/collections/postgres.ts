@@ -34,6 +34,40 @@ import type {
   Sort
 } from '../types'
 
+function toSnakeCase (str: string): string {
+  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
+}
+
+function toCamelCase (str: string): string {
+  return str.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase())
+}
+
+function convertKeysToCamelCase (obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map((v) => convertKeysToCamelCase(v))
+  } else if (obj !== null && typeof obj === 'object') {
+    const camelObj: any = {}
+    for (const key of Object.keys(obj)) {
+      camelObj[toCamelCase(key)] = convertKeysToCamelCase(obj[key])
+    }
+    return camelObj
+  }
+  return obj
+}
+
+function convertKeysToSnakeCase (obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map((v) => convertKeysToSnakeCase(v))
+  } else if (obj !== null && typeof obj === 'object') {
+    const snakeObj: any = {}
+    for (const key of Object.keys(obj)) {
+      snakeObj[toSnakeCase(key)] = convertKeysToSnakeCase(obj[key])
+    }
+    return snakeObj
+  }
+  return obj
+}
+
 export class PostgresDbCollection<T extends Record<string, any>, K extends keyof T | undefined = undefined>
 implements DbCollection<T> {
   constructor (
@@ -49,40 +83,6 @@ implements DbCollection<T> {
     }
 
     return `${this.ns}.${this.name}`
-  }
-
-  protected toSnakeCase (str: string): string {
-    return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
-  }
-
-  protected toCamelCase (str: string): string {
-    return str.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase())
-  }
-
-  protected convertKeysToCamelCase (obj: any): any {
-    if (Array.isArray(obj)) {
-      return obj.map((v) => this.convertKeysToCamelCase(v))
-    } else if (obj !== null && typeof obj === 'object') {
-      const camelObj: any = {}
-      for (const key of Object.keys(obj)) {
-        camelObj[this.toCamelCase(key)] = this.convertKeysToCamelCase(obj[key])
-      }
-      return camelObj
-    }
-    return obj
-  }
-
-  protected convertKeysToSnakeCase (obj: any): any {
-    if (Array.isArray(obj)) {
-      return obj.map((v) => this.convertKeysToSnakeCase(v))
-    } else if (obj !== null && typeof obj === 'object') {
-      const snakeObj: any = {}
-      for (const key of Object.keys(obj)) {
-        snakeObj[this.toSnakeCase(key)] = this.convertKeysToSnakeCase(obj[key])
-      }
-      return snakeObj
-    }
-    return obj
   }
 
   protected buildSelectClause (): string {
@@ -101,7 +101,7 @@ implements DbCollection<T> {
     for (const key of Object.keys(query)) {
       const qKey = query[key]
       const operator = typeof qKey === 'object' ? Object.keys(qKey)[0] : ''
-      const snakeKey = this.toSnakeCase(key)
+      const snakeKey = toSnakeCase(key)
       switch (operator) {
         case '$in': {
           const inVals = Object.values(qKey as object)[0]
@@ -159,7 +159,7 @@ implements DbCollection<T> {
     const sortChunks: string[] = []
 
     for (const key of Object.keys(sort)) {
-      const snakeKey = this.toSnakeCase(key)
+      const snakeKey = toSnakeCase(key)
       sortChunks.push(`"${snakeKey}" ${sort[key] === 'ascending' ? 'ASC' : 'DESC'}`)
     }
 
@@ -167,7 +167,7 @@ implements DbCollection<T> {
   }
 
   protected convertToObj (row: unknown): T {
-    return this.convertKeysToCamelCase(row) as T
+    return convertKeysToCamelCase(row) as T
   }
 
   async find (query: Query<T>, sort?: Sort<T>, limit?: number, client?: Sql): Promise<T[]> {
@@ -198,7 +198,7 @@ implements DbCollection<T> {
   }
 
   async insertOne (data: Partial<T>, client?: Sql): Promise<K extends keyof T ? T[K] : undefined> {
-    const snakeData = this.convertKeysToSnakeCase(data)
+    const snakeData = convertKeysToSnakeCase(data)
     const keys: string[] = Object.keys(snakeData)
     const values = Object.values(snakeData) as any
 
@@ -226,7 +226,7 @@ implements DbCollection<T> {
           const inc = ops.$inc as Partial<T>
 
           for (const incKey of Object.keys(inc)) {
-            const snakeKey = this.toSnakeCase(incKey)
+            const snakeKey = toSnakeCase(incKey)
             currIdx++
             updateChunks.push(`"${snakeKey}" = "${snakeKey}" + $${currIdx}`)
             values.push(inc[incKey])
@@ -234,7 +234,7 @@ implements DbCollection<T> {
           break
         }
         default: {
-          const snakeKey = this.toSnakeCase(key)
+          const snakeKey = toSnakeCase(key)
           currIdx++
           updateChunks.push(`"${snakeKey}" = $${currIdx}`)
           values.push(ops[key])
@@ -488,7 +488,7 @@ export class PostgresAccountDB implements AccountDB {
 
     const res: any = await this.client.unsafe(sql, [accountUuid])
 
-    return res
+    return convertKeysToCamelCase(res)
   }
 
   async getPendingWorkspace (
@@ -598,7 +598,7 @@ export class PostgresAccountDB implements AccountDB {
       }
     })
 
-    return res[0] as WorkspaceInfoWithStatus
+    return convertKeysToCamelCase(res[0]) as WorkspaceInfoWithStatus
   }
 
   async setPassword (accountUuid: string, hash: Buffer, salt: Buffer): Promise<void> {

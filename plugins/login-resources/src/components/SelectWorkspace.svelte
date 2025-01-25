@@ -28,13 +28,12 @@
     Spinner,
     deviceOptionsStore as deviceInfo,
     setMetadataLocalStorage,
-    showPopup,
-    ticker
+    showPopup
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
 
   import login from '../plugin'
-  import { getAccount, getHref, getWorkspaces, goTo, navigateToWorkspace, selectWorkspace } from '../utils'
+  import { fetchWorkspace, getAccount, getHref, getWorkspaces, goTo, navigateToWorkspace, selectWorkspace } from '../utils'
   import StatusControl from './StatusControl.svelte'
 
   export let navigateUrl: string | undefined = undefined
@@ -50,7 +49,7 @@
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const updateWorkspaces = reduceCalls(async function updateWorkspaces (_time: number): Promise<void> {
+  const updateWorkspaces = reduceCalls(async function updateWorkspaces (_time?: number): Promise<void> {
     try {
       workspaces = await getWorkspaces()
     } catch (e) {
@@ -70,16 +69,20 @@
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
     const [loginStatus, result] = await selectWorkspace(workspaceUrl)
-    if (isArchivingMode(result?.mode)) {
-      showPopup(MessageBox, {
-        label: login.string.SelectWorkspace,
-        message: login.string.WorkspaceArchivedDesc,
-        canSubmit: false,
-        params: {},
-        action: async () => {}
-      })
-      status = loginStatus
-      return
+    if (result != null) {
+      const [, wsResult] = await fetchWorkspace()
+
+      if (isArchivingMode(wsResult?.mode)) {
+        showPopup(MessageBox, {
+          label: login.string.SelectWorkspace,
+          message: login.string.WorkspaceArchivedDesc,
+          canSubmit: false,
+          params: {},
+          action: async () => {}
+        })
+        status = loginStatus
+        return
+      }
     }
     status = loginStatus
 
@@ -141,7 +144,7 @@
           .filter((it) => search === '' || (it.name?.includes(search) ?? false) || it.url.includes(search))
           .slice(0, 500) as workspace}
           {@const wsName = workspace.name ?? workspace.url}
-          {@const lastUsageDays = Math.round((Date.now() - workspace.lastVisit) / (1000 * 3600 * 24))}
+          {@const lastUsageDays = workspace.lastVisit === undefined ? 'N/A' : Math.round((Date.now() - workspace.lastVisit) / (1000 * 3600 * 24))}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div

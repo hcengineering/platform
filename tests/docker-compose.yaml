@@ -20,8 +20,10 @@ services:
     command: server /data --address ":9000" --console-address ":9001"
     expose:
       - 9000
+      - 9001
     ports:
       - 9002:9000
+      - 9003:9001
   elastic:
     image: 'elasticsearch:7.14.2'
     expose:
@@ -92,6 +94,7 @@ services:
     environment:
       - SERVER_PORT=8083
       - SERVER_SECRET=secret
+      - ACCOUNTS_URL_INTERNAL=http://account:3003
       - ACCOUNTS_URL=http://localhost:3003
       - UPLOAD_URL=/files
       - ELASTIC_URL=http://elastic:9200
