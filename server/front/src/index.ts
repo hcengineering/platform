@@ -251,6 +251,7 @@ export function start (
   config: {
     storageAdapter: StorageAdapter
     accountsUrl: string
+    accountsUrlInternal?: string
     uploadUrl: string
     filesUrl: string
     modelVersion: string
@@ -411,7 +412,7 @@ export function start (
   )
 
   const getWorkspaceDataId = async (ctx: MeasureContext, token: string, path?: string): Promise<string | null> => {
-    const accountClient = getAccountClient(config.accountsUrl, token)
+    const accountClient = getAccountClient(config.accountsUrlInternal ?? config.accountsUrl, token)
     const workspaceInfo = await accountClient.getWorkspaceInfo()
     const actualDataId = workspaceInfo.dataId ?? workspaceInfo.uuid
     if (path === undefined) {
