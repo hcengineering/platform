@@ -622,6 +622,13 @@ export class PostgresAccountDB implements AccountDB {
       `
       CREATE SCHEMA IF NOT EXISTS global_account;
 
+      /* ======= FUNCTIONS ======= */
+
+      CREATE OR REPLACE FUNCTION current_epoch_ms() 
+      RETURNS BIGINT AS $$
+          SELECT (extract(epoch from current_timestamp) * 1000)::bigint;
+      $$ LANGUAGE SQL;
+
       /* ======= T Y P E S ======= */
       CREATE TYPE global_account.social_id_type AS ENUM ('email', 'github', 'google', 'phone', 'oidc', 'huly', 'telegram');
       CREATE TYPE global_account.location AS ENUM ('kv', 'weur', 'eeur', 'wnam', 'enam', 'apac');
@@ -657,7 +664,7 @@ export class PostgresAccountDB implements AccountDB {
       CREATE TABLE IF NOT EXISTS global_account.account_events (
           account_uuid UUID NOT NULL,
           event_type STRING NOT NULL,
-          time TIMESTAMP NOT NULL DEFAULT current_timestamp(),
+          time BIGINT NOT NULL DEFAULT current_epoch_ms(),
           data JSONB,
           CONSTRAINT account_events_pk PRIMARY KEY (account_uuid, event_type, time),
           CONSTRAINT account_events_account_fk FOREIGN KEY (account_uuid) REFERENCES global_account.account(uuid)
@@ -670,8 +677,8 @@ export class PostgresAccountDB implements AccountDB {
           value STRING NOT NULL,
           key STRING AS (CONCAT(type::STRING, ':', value)) STORED,
           person_uuid UUID NOT NULL,
-          created_on TIMESTAMP NOT NULL DEFAULT current_timestamp(),
-          verified_on TIMESTAMP,
+          created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
+          verified_on BIGINT,
           CONSTRAINT social_id_pk PRIMARY KEY (id),
           CONSTRAINT social_id_type_identifier_idx UNIQUE (type, value),
           INDEX social_id_account_idx (person_uuid),
@@ -688,7 +695,7 @@ export class PostgresAccountDB implements AccountDB {
           location global_account.location,
           region STRING,
           created_by UUID NOT NULL, -- account uuid
-          created_on TIMESTAMP NOT NULL DEFAULT current_timestamp(),
+          created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
           billing_account UUID NOT NULL,
           CONSTRAINT workspace_pk PRIMARY KEY (uuid),
           CONSTRAINT workspace_url_unique UNIQUE (url),
@@ -703,8 +710,8 @@ export class PostgresAccountDB implements AccountDB {
           version_major INT2 NOT NULL DEFAULT 0,
           version_minor INT2 NOT NULL DEFAULT 0,
           version_patch INT4 NOT NULL DEFAULT 0,
-          last_processing_time TIMESTAMP DEFAULT '1970-01-01 00:00:00',
-          last_visit TIMESTAMP,
+          last_processing_time BIGINT DEFAULT 0,
+          last_visit BIGINT,
           is_disabled BOOL DEFAULT FALSE,
           processing_attempts INT2 DEFAULT 0,
           processing_message STRING,
@@ -730,8 +737,8 @@ export class PostgresAccountDB implements AccountDB {
       CREATE TABLE IF NOT EXISTS global_account.otp (
           social_id INT8 NOT NULL,
           code STRING NOT NULL,
-          expires_on TIMESTAMP NOT NULL,
-          created_on TIMESTAMP NOT NULL DEFAULT current_timestamp(),
+          expires_on BIGINT NOT NULL,
+          created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
           CONSTRAINT otp_pk PRIMARY KEY (social_id, code),
           CONSTRAINT otp_social_id_fk FOREIGN KEY (social_id) REFERENCES global_account.social_id(id)
       );
@@ -740,7 +747,7 @@ export class PostgresAccountDB implements AccountDB {
       CREATE TABLE IF NOT EXISTS global_account.invite (
           id INT8 NOT NULL DEFAULT unique_rowid(),
           workspace_uuid UUID NOT NULL,
-          expires_on TIMESTAMP NOT NULL,
+          expires_on BIGINT NOT NULL,
           email_pattern STRING,
           remaining_uses INT2,
           role global_account.workspace_role NOT NULL DEFAULT 'USER',
