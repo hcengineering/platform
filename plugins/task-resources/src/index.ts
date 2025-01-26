@@ -376,10 +376,15 @@ onClient((client, user) => {
     taskTypeStore.set(toIdMap(res))
   })
 
-  projectQuery.query(task.class.Project, { members: user._id }, (res) => {
-    typesOfJoinedProjectsStore.set(res.map((r) => r.type).filter((it, idx, arr) => arr.indexOf(it) === idx))
-    joinedProjectsStore.set(res)
-  })
+  projectQuery.query(
+    task.class.Project,
+    { members: user._id },
+    (res) => {
+      typesOfJoinedProjectsStore.set(res.map((r) => r.type).filter((it, idx, arr) => arr.indexOf(it) === idx))
+      joinedProjectsStore.set(res)
+    },
+    { showArchived: true }
+  )
 })
 
 export const selectedTypeStore = writable<Ref<ProjectType> | undefined>(undefined)

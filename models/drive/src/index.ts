@@ -277,8 +277,8 @@ function defineDrive (builder: Builder): void {
             key: 'hideArchived',
             type: 'toggle',
             defaultValue: true,
-            actionTarget: 'query',
-            action: drive.function.HideArchivedDrives,
+            actionTarget: 'options',
+            action: view.function.HideArchived,
             label: view.string.HideArchived
           }
         ]

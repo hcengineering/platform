@@ -217,8 +217,8 @@ function defineTeamspace (builder: Builder): void {
             key: 'hideArchived',
             type: 'toggle',
             defaultValue: true,
-            actionTarget: 'query',
-            action: document.function.HideArchivedTeamspaces,
+            actionTarget: 'options',
+            action: view.function.HideArchived,
             label: view.string.HideArchived
           }
         ]

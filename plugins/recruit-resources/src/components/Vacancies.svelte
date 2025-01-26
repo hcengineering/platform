@@ -205,10 +205,7 @@
       viewlet,
       viewOptions,
       viewOptionsConfig: viewlet.viewOptions?.other,
-      query: {
-        ...resultQuery,
-        ...(viewOptions?.hideArchived !== false ? { archived: false } : {})
-      },
+      query: resultQuery,
       totalQuery: {},
       tableId: 'vacanciesData'
     }}

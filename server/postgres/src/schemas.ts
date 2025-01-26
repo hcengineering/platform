@@ -82,6 +82,11 @@ const spaceSchema: Schema = {
     notNull: true,
     index: true,
     indexType: 'gin'
+  },
+  archived: {
+    type: 'bool',
+    notNull: true,
+    index: true
   }
 }
 

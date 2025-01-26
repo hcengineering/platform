@@ -21,7 +21,7 @@ import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineer
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type TagCategory } from '@hcengineering/tags'
 import { type AnyComponent } from '@hcengineering/ui'
-import type { Viewlet, Action, ActionCategory, ViewAction, ViewQueryAction } from '@hcengineering/view'
+import type { Action, ActionCategory, ViewAction, Viewlet } from '@hcengineering/view'
 
 export default mergeIds(documentId, document, {
   component: {
@@ -52,8 +52,7 @@ export default mergeIds(documentId, document, {
   },
   function: {
     CanLockDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    CanUnlockDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    HideArchivedTeamspaces: '' as ViewQueryAction
+    CanUnlockDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   viewlet: {
     TeamspaceTable: '' as Ref<Viewlet>

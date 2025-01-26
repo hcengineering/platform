@@ -28,7 +28,6 @@
     mergeQueries
   } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
-  import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient, reduceCalls, updateAttribute } from '@hcengineering/presentation'
   import ui, {
     Button,
@@ -41,20 +40,14 @@
     mouseAttractor,
     resizeObserver
   } from '@hcengineering/ui'
-  import {
-    AttributeModel,
-    BuildModelKey,
-    BuildModelOptions,
-    ViewOptionModel,
-    ViewOptions,
-    ViewQueryOption
-  } from '@hcengineering/view'
+  import { AttributeModel, BuildModelKey, BuildModelOptions, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
   import { showMenu } from '../actions'
   import view from '../plugin'
   import { LoadingProps, buildConfigLookup, buildModel, restrictionStore } from '../utils'
   import IconUpDown from './icons/UpDown.svelte'
+  import { getResultOptions, getResultQuery } from '../viewOptions'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -128,28 +121,7 @@
       : { ...(options?.sort ?? {}), [sortKey]: sortOrder }
   }
 
-  async function getResultQuery (
-    query: DocumentQuery<Doc>,
-    viewOptions: ViewOptionModel[] | undefined,
-    viewOptionsStore: ViewOptions | undefined
-  ): Promise<DocumentQuery<Doc>> {
-    if (viewOptions === undefined || viewOptionsStore === undefined) {
-      return query
-    }
-    let result: DocumentQuery<Doc> = hierarchy.clone(query)
-    for (const viewOption of viewOptions) {
-      if (viewOption.actionTarget !== 'query') continue
-      const queryOption = viewOption as ViewQueryOption
-      const f = await getResource(queryOption.action)
-      const resultP = f(viewOptionsStore[queryOption.key] ?? queryOption.defaultValue, result)
-      if (resultP instanceof Promise) {
-        result = await resultP
-      } else {
-        result = resultP
-      }
-    }
-    return result
-  }
+  let resultOptions = options
 
   const update = reduceCalls(async function (
     _class: Ref<Class<Doc>>,
@@ -158,9 +130,9 @@
     sortOrder: SortingOrder,
     lookup: Lookup<Doc>,
     limit: number,
-    options?: FindOptions<Doc>
+    options: FindOptions<Doc> | undefined
   ) {
-    const p = await getResultQuery(query, viewOptionsConfig, viewOptions)
+    const p = await getResultQuery(hierarchy, query, viewOptionsConfig, viewOptions)
     const resultQuery = mergeQueries(p, query)
     loading += q.query(
       _class,
@@ -180,7 +152,11 @@
       ? 1
       : 0
   })
-  $: void update(_class, query, _sortKey, sortOrder, lookup, limit, options)
+  $: void update(_class, query, _sortKey, sortOrder, lookup, limit, resultOptions)
+
+  $: void getResultOptions(options, viewOptionsConfig, viewOptions).then((p) => {
+    resultOptions = p
+  })
 
   $: dispatch('content', objects)
 
@@ -194,7 +170,7 @@
         gtotal = total
       }
     },
-    { limit: 1, ...options, sort: getSort(_sortKey), lookup, total: true }
+    { limit: 1, ...resultOptions, sort: getSort(_sortKey), lookup, total: true }
   )
 
   const totalQueryQ = createQuery()
@@ -206,6 +182,7 @@
         gtotal = result.total === -1 ? 0 : result.total
       },
       {
+        ...resultOptions,
         lookup,
         limit: 1,
         total: true
@@ -300,7 +277,7 @@
     return getObjectValue(attribute.key, object)
   }
 
-  function onChange (value: any, doc: Doc, key: string, attribute: AnyAttribute) {
+  function onChange (value: any, doc: Doc, key: string, attribute: AnyAttribute): void {
     updateAttribute(client, doc, _class, { key, attr: attribute }, value)
   }
 

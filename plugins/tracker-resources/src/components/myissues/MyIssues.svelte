@@ -75,18 +75,6 @@
     { sort: { _id: 1 }, projection: { _id: 1 } }
   )
 
-  const allProjectQuery = createQuery()
-  let allProjects: Pick<Project, '_class' | '_id' | 'archived'>[] = []
-
-  allProjectQuery.query(
-    tracker.class.Project,
-    {},
-    (res) => {
-      allProjects = res
-    },
-    { projection: { _id: 1, archived: 1 } }
-  )
-
   $: queries = { assigned, active, backlog, created, subscribed }
   $: mode = $resolvedLocationStore.query?.mode ?? undefined
   $: if (mode === undefined || (queries as any)[mode] === undefined) {
@@ -94,9 +82,7 @@
   }
   $: if (mode !== undefined) {
     query = { ...(queries as any)[mode] }
-    if (query?.space === undefined) {
-      query = { ...query, space: { $in: allProjects.filter((it) => !it.archived).map((it) => it._id) } }
-    }
+
     modeSelectorProps = {
       config,
       mode,
