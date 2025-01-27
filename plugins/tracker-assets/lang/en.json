@@ -286,7 +286,8 @@
     "DefaultIssueStatus": "Default issue status",
     "IssueStatus": "Status",
     "Extensions": "Extensions",
-    "RoleLabel": "Role: {role}"
+    "RoleLabel": "Role: {role}",
+    "UnsetParentIssue": "Unset parent issue"
   },
   "status": {}
 }

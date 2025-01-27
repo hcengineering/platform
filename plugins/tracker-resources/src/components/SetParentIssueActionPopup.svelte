@@ -66,24 +66,13 @@
 
   $: selected = !Array.isArray(value) ? ('attachedTo' in value ? value.attachedTo : undefined) : undefined
   $: ignoreObjects = !Array.isArray(value) ? ('_id' in value ? [value._id] : []) : undefined
-  $: docQuery = {
-    'parents.parentId': {
-      $nin: [
-        ...new Set(
-          (Array.isArray(value) ? value : [value])
-            .map((issue) => ('_id' in issue ? issue._id : null))
-            .filter((x): x is Ref<Issue> => x !== null)
-        )
-      ]
-    }
-  }
 </script>
 
 <ObjectPopup
   _class={tracker.class.Issue}
   {options}
-  {docQuery}
   {selected}
+  category={tracker.completion.IssueCategory}
   multiSelect={false}
   allowDeselect={true}
   placeholder={tracker.string.SetParent}
@@ -91,7 +80,7 @@
   {ignoreObjects}
   shadows={true}
   {width}
-  searchMode={'fulltext'}
+  searchMode={'spotlight'}
   on:update
   on:close={onClose}
 >

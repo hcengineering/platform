@@ -286,7 +286,8 @@
     "DefaultIssueStatus": "Статус по умолчанию",
     "IssueStatus": "Статус",
     "Extensions": "Дополнительно",
-    "RoleLabel": "Роль: {role}"
+    "RoleLabel": "Роль: {role}",
+    "UnsetParentIssue": "Снять родительскую задачу"
   },
   "status": {}
 }
