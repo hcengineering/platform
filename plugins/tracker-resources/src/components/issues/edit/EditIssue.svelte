@@ -285,7 +285,7 @@
     {#if hasParentIssue}
       <div class="mb-6 flex-row-center">
         <SubIssueSelector {issue} />
-        {#if hasParentIssue}
+        {#if !readonly}
           <div class="ml-2">
             <Button
               icon={tracker.icon.UnsetParent}
