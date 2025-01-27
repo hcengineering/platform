@@ -18,20 +18,25 @@
   import { type WithLookup } from '@hcengineering/core'
   import { Spinner } from '@hcengineering/ui'
   import WebIcon from './icons/Web.svelte'
+  import { onMount } from 'svelte'
 
   export let attachment: WithLookup<Attachment>
   let useDefaultIcon = false
   let viewModel: LinkPreviewDetails
-  let canDisplay = false
 
-  void getJsonOrEmpty(attachment.file, attachment.name).then((res) => {
-    viewModel = res as LinkPreviewDetails
-    canDisplay = canDisplayLinkPreview(viewModel)
+  onMount(() => {
+    void getJsonOrEmpty(attachment.file, attachment.name)
+      .then((res) => {
+        viewModel = res as LinkPreviewDetails
+      })
+      .catch((err) => {
+        console.error(err)
+      })
   })
 </script>
 
 <div class="quote content">
-  {#if canDisplay}
+  {#if viewModel}
     <div class="gapV-2">
       <div class="flex-row-center gap-1">
         {#if viewModel.icon !== undefined && !useDefaultIcon}
