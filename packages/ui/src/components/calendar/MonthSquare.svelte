@@ -42,13 +42,13 @@
 
   const dispatch = createEventDispatcher()
 
-  $: firstDayOfCurrentMonth = firstDay(viewDate, $deviceInfo.mondayStart)
+  $: firstDayOfCurrentMonth = firstDay(viewDate, $deviceInfo.firstDayOfWeek)
   let monthYear: string
   const today: Date = new Date(Date.now())
 
   afterUpdate(() => {
     monthYear = capitalizeFirstLetter(getMonthName(viewDate)) + ' ' + viewDate.getFullYear()
-    firstDayOfCurrentMonth = firstDay(viewDate, $deviceInfo.mondayStart)
+    firstDayOfCurrentMonth = firstDay(viewDate, $deviceInfo.firstDayOfWeek)
   })
 
   function inRange (currentDate: Date | null, selectedTo: Date | null | undefined, target: Date): boolean {

@@ -123,6 +123,7 @@
     "BackupFiles": "Arquivos de Backup",
     "BackupNoBackup": "Não há backups disponíveis no momento.",
     "Calendar": "Calendário",
-    "StartOfTheWeekOnMonday": "Início da semana na segunda-feira"
+    "StartOfTheWeek": "Início da semana",
+    "SystemSetupString": "Configuração do sistema ({day})"
   }
 }

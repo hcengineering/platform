@@ -32,7 +32,7 @@
     MonthCalendar,
     YearCalendar,
     areDatesEqual,
-    getMonday,
+    getWeekStart,
     showPopup,
     AnySvelteComponent,
     deviceOptionsStore as deviceInfo
@@ -59,7 +59,6 @@
 
   const me = getCurrentAccount() as PersonAccount
 
-  $: mondayStart = $deviceInfo.mondayStart
   let mode: CalendarMode = allowedModes.includes(CalendarMode.Days) ? CalendarMode.Days : allowedModes[0]
 
   // Current selected day
@@ -80,7 +79,7 @@
         return new Date(date).setHours(0, 0, 0, 0)
       }
       case CalendarMode.Week: {
-        return getMonday(date, mondayStart).setHours(0, 0, 0, 0)
+        return getWeekStart(date, $deviceInfo.firstDayOfWeek).getTime()
       }
       case CalendarMode.Month: {
         return new Date(new Date(date).setDate(-7)).setHours(0, 0, 0, 0)
@@ -100,8 +99,8 @@
         return new Date(date).setDate(date.getDate() + 1)
       }
       case CalendarMode.Week: {
-        const monday = getMonday(date, mondayStart)
-        return new Date(monday.setDate(monday.getDate() + 7)).setHours(0, 0, 0, 0)
+        const startDay = getWeekStart(date, $deviceInfo.firstDayOfWeek)
+        return new Date(startDay.setDate(startDay.getDate() + 7)).getTime()
       }
       case CalendarMode.Month: {
         return new Date(new Date(date).setMonth(date.getMonth() + 1, 14)).setHours(0, 0, 0, 0)
@@ -313,7 +312,7 @@
 {#if headerComponent}
   <svelte:component
     this={headerComponent}
-    {mode}
+    bind:mode
     {currentDate}
     {ddItems}
     monthName={getMonthName(currentDate)}
@@ -324,7 +323,7 @@
   />
 {:else}
   <CalendarHeader
-    {mode}
+    bind:mode
     {currentDate}
     {ddItems}
     monthName={getMonthName(currentDate)}
