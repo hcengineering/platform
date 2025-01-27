@@ -158,6 +158,9 @@ export function matchQuery<T extends Doc> (
 ): Doc[] {
   const baseClass = hierarchy.getBaseClass(clazz)
   let result = docs.filter((r) => hierarchy.isDerived(r._class, baseClass))
+  if (baseClass !== clazz) {
+    result = docs.filter((r) => hierarchy.hasMixin(r, clazz))
+  }
   for (const key in query) {
     if (skipLookup && key.startsWith('$lookup.')) {
       continue
