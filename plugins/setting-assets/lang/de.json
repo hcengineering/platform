@@ -132,7 +132,8 @@
     "BackupFiles": "Sicherungsdateien",
     "BackupNoBackup": "Derzeit sind keine Sicherungen verfügbar.",
     "Calendar": "Kalender",
-    "StartOfTheWeekOnMonday": "Wochenstart am Montag",
+    "StartOfTheWeek": "Wochenstart",
+    "SystemSetupString": "Systemkonfiguration ({day})",
     "AddAttribute": "Attribut hinzufügen"
   }
 }

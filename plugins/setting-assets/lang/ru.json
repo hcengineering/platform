@@ -133,7 +133,8 @@
     "BackupFiles": "Файлы резервной копии",
     "BackupNoBackup": "В настоящее время резервные копии недоступны.",
     "Calendar": "Календарь",
-    "StartOfTheWeekOnMonday": "Начало недели в понедельник",
+    "StartOfTheWeek": "Начало недели",
+    "SystemSetupString": "Системная настройка ({day})",
     "AddAttribute": "Добавить атрибут"
   }
 }

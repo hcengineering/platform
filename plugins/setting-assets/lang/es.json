@@ -123,7 +123,8 @@
     "BackupFiles": "Archivos de copia de seguridad",
     "BackupNoBackup": "No hay copias de seguridad disponibles actualmente.",
     "Calendar": "Calendario",
-    "StartOfTheWeekOnMonday": "Comienzo de la semana el lunes",
+    "StartOfTheWeek": "Inicio de la semana",
+    "SystemSetupString": "Configuración del sistema ({day})",
     "AddAttribute": "Añadir atributo"
   }
 }

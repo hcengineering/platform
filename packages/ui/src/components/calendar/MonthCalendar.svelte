@@ -28,9 +28,9 @@
   $: devSize = $deviceInfo.size
   $: shortName = checkAdaptiveMatching(devSize, 'lg')
 
-  $: firstDayOfCurrentMonth = firstDay(currentDate, $deviceInfo.mondayStart)
+  $: firstDayOfCurrentMonth = firstDay(currentDate, $deviceInfo.firstDayOfWeek)
 
-  function onSelect (date: Date) {
+  function onSelect (date: Date): void {
     dispatch('change', date)
   }
 

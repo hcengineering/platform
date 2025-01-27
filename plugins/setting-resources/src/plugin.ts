@@ -115,6 +115,7 @@ export default mergeIds(settingId, setting, {
     WorkspaceName: '' as IntlString,
     Workspace: '' as IntlString,
     Calendar: '' as IntlString,
-    StartOfTheWeekOnMonday: '' as IntlString
+    StartOfTheWeek: '' as IntlString,
+    SystemSetupString: '' as IntlString
   }
 })

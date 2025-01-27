@@ -29,7 +29,7 @@
     closeTooltip,
     deviceOptionsStore as deviceInfo,
     day as getDay,
-    getMonday,
+    getWeekStart,
     getWeekDayName,
     resizeObserver,
     ticker,
@@ -68,7 +68,6 @@
   const dispatch = createEventDispatcher()
 
   $: checkToday($ticker)
-  $: mondayStart = $deviceInfo.mondayStart
 
   function checkToday (now: number): void {
     if (!areDatesEqual(todayDate, new Date())) {
@@ -146,14 +145,13 @@
     return result
   }
 
-  $: calendarEvents = toCalendar(events, weekMonday, displayedDaysCount, startHour, displayedHours + startHour)
-
   $: fontSize = $deviceInfo.fontSize
   $: docHeight = $deviceInfo.docHeight
   $: cellHeight = 4 * fontSize
-  $: weekMonday = startFromWeekStart
-    ? getMonday(currentDate, mondayStart)
+  $: weekStart = startFromWeekStart
+    ? getWeekStart(currentDate, $deviceInfo.firstDayOfWeek)
     : new Date(new Date(currentDate).setHours(0, 0, 0, 0))
+  $: calendarEvents = toCalendar(events, weekStart, displayedDaysCount, startHour, displayedHours + startHour)
 
   let timer: any
   let container: HTMLElement
@@ -362,13 +360,13 @@
 
   const getRect = (event: CalendarItem): CalendarElementRect => {
     const result = { ...nullCalendarElement }
-    const checkDate = new Date(weekMonday.getTime() + MILLISECONDS_IN_DAY * event.day)
+    const checkDate = new Date(weekStart.getTime() + MILLISECONDS_IN_DAY * event.day)
     const startDay = checkDate.setHours(startHour, 0, 0, 0)
     const endDay = checkDate.setHours(displayedHours - 1, 59, 59, 999)
     const startTime = event.date <= startDay ? { hours: startHour, mins: 0 } : convertToTime(event.date)
     const endTime =
       event.dueDate > endDay ? { hours: displayedHours - startHour, mins: 0 } : convertToTime(event.dueDate)
-    if (getDay(weekMonday, event.day).setHours(endTime.hours, endTime.mins, 0, 0) <= todayDate.getTime()) {
+    if (getDay(weekStart, event.day).setHours(endTime.hours, endTime.mins, 0, 0) <= todayDate.getTime()) {
       result.visibility = 0
     }
     result.top =
@@ -407,8 +405,8 @@
     const index = adRows.findIndex((ev) => ev.id === id)
 
     const checkTime = new Date().setHours(0, 0, 0, 0)
-    const startEvent = getDay(weekMonday, typeof day !== 'undefined' ? day : adRows[index].startCol).getTime()
-    const endEvent = getDay(weekMonday, adRows[index].endCol).setHours(24)
+    const startEvent = getDay(weekStart, typeof day !== 'undefined' ? day : adRows[index].startCol).getTime()
+    const endEvent = getDay(weekStart, adRows[index].endCol).setHours(24)
     if (endEvent <= checkTime) result.visibility = 0
     else if (startEvent <= checkTime && endEvent > checkTime) {
       const eventTime = endEvent - startEvent
@@ -484,7 +482,7 @@
   const checkNowLine = (): void => {
     if (timer) clearInterval(timer)
     let equal = false
-    for (let i = 0; i < displayedDaysCount; i++) if (areDatesEqual(getDay(weekMonday, i), todayDate)) equal = true
+    for (let i = 0; i < displayedDaysCount; i++) if (areDatesEqual(getDay(weekStart, i), todayDate)) equal = true
     if (equal) {
       renderNow()
       timer = setInterval(() => {
@@ -818,7 +816,7 @@
     {#if showHeader}
       <div class="sticky-header head center"><span class="zone">{getTimeZone()}</span></div>
       {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
-        {@const day = getDay(weekMonday, dayOfWeek)}
+        {@const day = getDay(weekStart, dayOfWeek)}
         {@const tday = areDatesEqual(todayDate, day)}
         <div class="sticky-header head title" class:center={displayedDaysCount > 1}>
           <span class="day" class:today={tday}>{day.getDate()}</span>
@@ -964,7 +962,7 @@
         </div>
       {/if}
       {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
-        {@const day = getDay(weekMonday, dayOfWeek)}
+        {@const day = getDay(weekStart, dayOfWeek)}
         {@const weekend = isWeekend(day)}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div

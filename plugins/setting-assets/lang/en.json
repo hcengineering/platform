@@ -132,7 +132,8 @@
     "BackupFiles": "Backup Files",
     "BackupNoBackup": "No backups are currently available.",
     "Calendar": "Calendar",
-    "StartOfTheWeekOnMonday": "Start of the week on Monday",
+    "StartOfTheWeek": "Start of the week",
+    "SystemSetupString": "System Setup ({day})",
     "AddAttribute": "Add attribute"
   }
 }
