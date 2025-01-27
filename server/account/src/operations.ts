@@ -221,8 +221,8 @@ export async function signUpOtp (
     // There's no person linked to this email, so we need to create a new one
     personUuid = await db.person.insertOne({ firstName, lastName })
     const newSocialId = { type: SocialIdType.EMAIL, value: normalizedEmail, personUuid }
-    const emailSocialIdId = await db.socialId.insertOne(newSocialId)
-    emailSocialId = { ...newSocialId, id: emailSocialIdId }
+    const emailSocialIdKey = await db.socialId.insertOne(newSocialId)
+    emailSocialId = { ...newSocialId, key: emailSocialIdKey }
   }
 
   return await sendOtp(ctx, db, branding, emailSocialId)
@@ -243,16 +243,16 @@ export async function validateOtp (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
 
-  const isValid = await isOtpValid(db, emailSocialId.id, code)
+  const isValid = await isOtpValid(db, emailSocialId.key, code)
 
   if (!isValid) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidOtp, {}))
   }
 
-  await db.otp.deleteMany({ socialId: emailSocialId.id })
+  await db.otp.deleteMany({ socialId: emailSocialId.key })
 
   if (emailSocialId.verifiedOn == null) {
-    await db.socialId.updateOne({ id: emailSocialId.id }, { verifiedOn: Date.now() })
+    await db.socialId.updateOne({ key: emailSocialId.key }, { verifiedOn: Date.now() })
   }
 
   // This method handles both login and signup
@@ -648,7 +648,7 @@ export async function restorePassword (
   await setPassword(ctx, db, branding, account, password)
 
   if (emailSocialId.verifiedOn == null) {
-    await db.socialId.updateOne({ id: emailSocialId.id }, { verifiedOn: Date.now() })
+    await db.socialId.updateOne({ key: emailSocialId.key }, { verifiedOn: Date.now() })
   }
 
   return await login(ctx, db, branding, email, password)

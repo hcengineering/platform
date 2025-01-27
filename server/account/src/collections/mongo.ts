@@ -192,9 +192,9 @@ export class AccountMongoDbCollection extends MongoDbCollection<Account, 'uuid'>
   }
 }
 
-export class SocialIdMongoDbCollection extends MongoDbCollection<SocialId, 'id'> implements DbCollection<SocialId> {
+export class SocialIdMongoDbCollection extends MongoDbCollection<SocialId, 'key'> implements DbCollection<SocialId> {
   constructor (db: Db) {
-    super('socialId', db, 'id')
+    super('socialId', db, 'key')
   }
 
   async insertOne (data: Partial<SocialId>): Promise<any> {

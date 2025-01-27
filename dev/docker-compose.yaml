@@ -104,7 +104,7 @@ services:
       - PORT=4900
       - SERVER_SECRET=secret
     restart: unless-stopped
-  # workspace:
+  workspace:
     image: hardcoreeng/workspace
     extra_hosts:
       - 'host.docker.internal:host-gateway'
