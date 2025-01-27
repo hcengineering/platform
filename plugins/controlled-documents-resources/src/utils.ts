@@ -121,8 +121,7 @@ export function isProjectDocument (hierarchy: Hierarchy, doc: Doc): doc is Proje
 
 export function isFolder (hierarchy: Hierarchy, doc: Doc): doc is ProjectDocument {
   if (!isProjectDocument(hierarchy, doc)) return false
-  const pjdoc = doc
-  return pjdoc.document === documents.ids.Folder
+  return doc.document === documents.ids.Folder
 }
 
 export async function getVisibleFilters (filters: KeyFilter[], space?: Ref<Space>): Promise<KeyFilter[]> {

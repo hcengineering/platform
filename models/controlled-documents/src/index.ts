@@ -831,7 +831,8 @@ export function createModel (builder: Builder): void {
       visibilityTester: documents.function.CanOpenDocument,
       override: [view.action.Open]
     },
-    documents.action.OpenDocument)
+    documents.action.OpenDocument
+  )
 
   createAction(
     builder,
@@ -846,7 +847,8 @@ export function createModel (builder: Builder): void {
       visibilityTester: documents.function.CanOpenDocument,
       override: [view.action.OpenInNewTab]
     },
-    documents.action.OpenDocumentInNewTab)
+    documents.action.OpenDocumentInNewTab
+  )
 
   function createPrintAction<T extends Doc = Doc> (target: Ref<Class<T>>, id?: Ref<Action<T, any>>): void {
     createAction(
