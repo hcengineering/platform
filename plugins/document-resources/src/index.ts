@@ -160,10 +160,6 @@ export async function canUnlockDocument (doc: Document | Document[]): Promise<bo
   return arr.some((p) => p.lockedBy != null)
 }
 
-export function hideArchivedTeamspaces (value: boolean, query: DocumentQuery<Teamspace>): DocumentQuery<Teamspace> {
-  return value ? { ...query, archived: false } : query
-}
-
 export default async (): Promise<Resources> => ({
   component: {
     CreateDocument,
@@ -202,8 +198,7 @@ export default async (): Promise<Resources> => ({
     CanLockDocument: canLockDocument,
     CanUnlockDocument: canUnlockDocument,
     GetDocumentLinkId: getDocumentLinkId,
-    ParseDocumentId: parseDocumentId,
-    HideArchivedTeamspaces: hideArchivedTeamspaces
+    ParseDocumentId: parseDocumentId
   },
   resolver: {
     Location: resolveLocation

@@ -129,7 +129,7 @@ import {
 } from './filter'
 
 import { AggregationMiddleware, AnalyticsMiddleware } from './middleware'
-import { showEmptyGroups } from './viewOptions'
+import { hideArchived, showEmptyGroups } from './viewOptions'
 import {
   canArchiveSpace,
   canDeleteObject,
@@ -321,6 +321,7 @@ export default async (): Promise<Resources> => ({
     FilterContainsResult: containsResult,
     FilterNestedMatchResult: nestedMatchResult,
     FilterNestedDontMatchResult: nestedDontMatchResult,
+    HideArchived: hideArchived,
     ShowEmptyGroups: showEmptyGroups,
     FilterDateOutdated: dateOutdated,
     FilterDateToday: dateToday,

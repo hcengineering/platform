@@ -545,7 +545,10 @@ export function defineViewlets (builder: Builder): void {
           presenter: tracker.component.ModificationDatePresenter,
           displayProps: { fixed: 'right', dividerBefore: true }
         }
-      ]
+      ],
+      options: {
+        showArchived: true
+      }
     },
     tracker.viewlet.ProjectList
   )

@@ -58,6 +58,11 @@
     "Skip": "Salta",
     "SignUpCompleted": "Registrazione completata",
     "StartUsingHuly": "Inizia a usare Huly",
+    "PasswordMinLength": "{count, plural, =1 {La password deve contenere almeno # carattere} other {La password deve contenere almeno # caratteri}}",
+    "PasswordMinSpecialChars": "{count, plural, =1 {La password deve contenere almeno # carattere speciale} other {La password deve contenere almeno # caratteri speciali}}",
+    "PasswordMinDigits": "{count, plural, =1 {La password deve contenere almeno # numero} other {La password deve contenere almeno # numeri}}",
+    "PasswordMinUpperChars": "{count, plural, =1 {La password deve contenere almeno # lettera maiuscola} other {La password deve contenere almeno # lettere maiuscole}}",
+    "PasswordMinLowerChars": "{count, plural, =1 {La password deve contenere almeno # lettera minuscola} other {La password deve contenere almeno # lettere minuscole}}",
     "WorkspaceArchivedDesc": "Il workspace è stato archiviato perché inutilizzato. Si prega di contattarci per ripristinarlo..."
   }
 }

@@ -1,14 +1,14 @@
 {
-  "ACCOUNTS_URL":"/account",
+  "ACCOUNTS_URL": "/account",
   "COLLABORATOR_URL": "ws://localhost:3078",
-  "UPLOAD_URL":"/files",
+  "UPLOAD_URL": "/files",
   "TELEGRAM_URL": "http://localhost:8086",
   "GMAIL_URL": "http://localhost:8088",
   "CALENDAR_URL": "http://localhost:8095",
   "REKONI_URL": "/rekoni",
   "GITHUB_APP": "uberflow-dev",
   "GITHUB_CLIENTID": "Iv1.43f9cac43bd68617",
-  "GITHUB_URL":"http://localhost:3500",
+  "GITHUB_URL": "http://localhost:3500",
   "LAST_NAME_FIRST": "true",
   "PRINT_URL": "http://localhost:4005",
   "SIGN_URL": "http://localhost:4006",
@@ -17,5 +17,6 @@
   "BRANDING_URL": "/branding.json",
   "VERSION": null,
   "MODEL_VERSION": null,
-  "STATS_URL": "http://localhost:4900"
+  "STATS_URL": "http://localhost:4900",
+  "PASSWORD_STRICTNESS": "none"
 }

@@ -16,7 +16,13 @@
 import { type Blob, type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import { type FilterFunction, type ViewAction, type ViewCategoryAction, viewId } from '@hcengineering/view'
+import {
+  type FilterFunction,
+  type ViewAction,
+  type ViewCategoryAction,
+  viewId,
+  type ViewOptionsAction
+} from '@hcengineering/view'
 import { type BlobMetadata, type FileOrBlob, type FilePreviewExtension } from '@hcengineering/presentation/src/types'
 import { type PresentationMiddlewareFactory } from '@hcengineering/presentation/src/pipeline'
 import view from '@hcengineering/view-resources/src/plugin'
@@ -135,6 +141,7 @@ export default mergeIds(viewId, view, {
     FilterDateNotSpecified: '' as FilterFunction,
     FilterDateCustom: '' as FilterFunction,
     ShowEmptyGroups: '' as ViewCategoryAction,
+    HideArchived: '' as ViewOptionsAction,
     CanDeleteObject: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanEditSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanArchiveSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
