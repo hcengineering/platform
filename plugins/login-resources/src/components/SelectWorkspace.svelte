@@ -33,7 +33,15 @@
   import { onMount } from 'svelte'
 
   import login from '../plugin'
-  import { fetchWorkspace, getAccount, getHref, getWorkspaces, goTo, navigateToWorkspace, selectWorkspace } from '../utils'
+  import {
+    fetchWorkspace,
+    getAccount,
+    getHref,
+    getWorkspaces,
+    goTo,
+    navigateToWorkspace,
+    selectWorkspace
+  } from '../utils'
   import StatusControl from './StatusControl.svelte'
 
   export let navigateUrl: string | undefined = undefined
@@ -144,7 +152,10 @@
           .filter((it) => search === '' || (it.name?.includes(search) ?? false) || it.url.includes(search))
           .slice(0, 500) as workspace}
           {@const wsName = workspace.name ?? workspace.url}
-          {@const lastUsageDays = workspace.lastVisit === undefined ? 'N/A' : Math.round((Date.now() - workspace.lastVisit) / (1000 * 3600 * 24))}
+          {@const lastUsageDays =
+            workspace.lastVisit === undefined
+              ? 'N/A'
+              : Math.round((Date.now() - workspace.lastVisit) / (1000 * 3600 * 24))}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div
