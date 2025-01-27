@@ -1,6 +1,6 @@
 <script lang="ts">
   import emojiRegex from 'emoji-regex'
-  import { createEventDispatcher, getContext } from 'svelte'
+  import { createEventDispatcher, getContext, onMount } from 'svelte'
   import { IntlString } from '@hcengineering/platform'
 
   import Label from './Label.svelte'
@@ -17,8 +17,6 @@
   import { tooltip } from '../tooltips'
   import { AnySvelteComponent, emojiSP } from '../types'
   import plugin from '../plugin'
-  import { fromCodePoint } from '../utils'
-
   export let embedded = false
   export let selected: string | undefined
   export let disabled: boolean = false
@@ -140,12 +138,16 @@
 
   let currentCategory = categories[0]
 
-  function getEmojis (startCode: number, endCode: number, postfix?: number[]): Array<string | undefined> {
-    return [...Array(endCode - startCode + 1).keys()].map((v) => {
-      const str = postfix ? fromCodePoint(v + startCode, ...postfix) : fromCodePoint(v + startCode)
-      if ([...str.matchAll(regex)].length > 0) return str
-      return undefined
-    })
+  function getEmojis(startCode: number, endCode: number, postfix?: number[]): Array<string> {
+    const result = []
+    for (let i = startCode; i <= endCode; i++) {
+      const codePoints = [i, ...(postfix || [])]
+      const str = String.fromCodePoint(...codePoints)
+      if (regex.test(str)) {
+        result.push(str)
+      }
+    }
+    return result
   }
 
   function generateSkinToneEmojis (baseEmoji: number): string[] {
@@ -174,7 +176,7 @@
 
       const emojisElement = labelElement.nextElementSibling as HTMLElement
 
-      return emojisElement.offsetTop + emojisElement.offsetHeight - emojiRowHeightPx > scrollElement.scrollTop
+      return (emojisElement.offsetTop + emojisElement.offsetHeight) * 0.9 - emojiRowHeightPx > scrollElement.scrollTop
     })
 
     if (selectedCategory) {
