@@ -22,24 +22,11 @@
   import { onMount } from 'svelte'
   import { BottomAction } from '..'
   import { makeSequential } from '../mutex'
+  import type { Field } from '../types'
   import login from '../plugin'
   import BottomActionComponent from './BottomAction.svelte'
   import Providers from './Providers.svelte'
   import Tabs from './Tabs.svelte'
-
-  interface Field {
-    id?: string
-    name: string
-    i18n: IntlString
-    password?: boolean
-    optional?: boolean
-    short?: boolean
-    rules?: {
-      rule: RegExp
-      notMatch: boolean
-      ruleDescr: IntlString
-    }[]
-  }
 
   interface Action {
     i18n: IntlString
@@ -85,8 +72,11 @@
       }
       if (f.rules !== undefined) {
         for (const rule of f.rules) {
-          if (rule.rule.test(v) === rule.notMatch) {
-            status = new Status(Severity.INFO, rule.ruleDescr, {})
+          const isValid =
+            typeof rule.rule === 'function' ? rule.rule(v) !== rule.notMatch : rule.rule.test(v) !== rule.notMatch
+
+          if (!isValid) {
+            status = new Status(Severity.INFO, rule.ruleDescr, rule.ruleDescrParams ?? {})
             return false
           }
         }
