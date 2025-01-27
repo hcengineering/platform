@@ -41,6 +41,7 @@ import type {
   Sequence,
   ControlledDocumentSnapshot
 } from './types'
+import type { NotificationType } from '@hcengineering/notification'
 
 /**
  * @public
@@ -307,6 +308,9 @@ export const documentsPlugin = plugin(documentsId, {
   },
   template: {
     ProductChangeControl: '' as Ref<DocumentTemplate>
+  },
+  notification: {
+    CoAuthorsNotification: '' as Ref<NotificationType>
   }
 })
 
