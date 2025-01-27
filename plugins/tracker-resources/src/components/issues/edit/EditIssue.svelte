@@ -175,6 +175,13 @@
   $: taskType = issue?.kind !== undefined ? $taskTypeStore.get(issue?.kind) : undefined
 
   $: projectType = taskType?.parent !== undefined ? $typeStore.get(taskType.parent) : undefined
+
+  async function unsetParentIssue (): Promise<void> {
+    if (issue === undefined || readonly) return
+
+    await client.update(issue, { attachedTo: tracker.ids.NoParent })
+    Analytics.handleEvent(TrackerEvents.IssueParentUnset, { issue: issue.identifier ?? issue._id })
+  }
 </script>
 
 {#if !embedded}
@@ -276,8 +283,22 @@
     </svelte:fragment>
 
     {#if hasParentIssue}
-      <div class="mb-6">
+      <div class="mb-6 flex-row-center">
         <SubIssueSelector {issue} />
+        {#if hasParentIssue}
+          <div class="ml-2">
+            <Button
+              icon={tracker.icon.UnsetParent}
+              iconProps={{ size: 'medium' }}
+              kind={'regular'}
+              showTooltip={{ label: tracker.string.UnsetParentIssue }}
+              dataId={'btnUnsetParent'}
+              on:click={() => {
+                void unsetParentIssue()
+              }}
+            />
+          </div>
+        {/if}
       </div>
     {/if}
     <EditBox
