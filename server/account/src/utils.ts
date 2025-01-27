@@ -23,6 +23,7 @@ import { MongoAccountDB } from './collections/mongo'
 import { PostgresAccountDB } from './collections/postgres'
 import { accountPlugin } from './plugin'
 import type { Account, AccountDB, AccountInfo, RegionInfo, WorkspaceInfo } from './types'
+import { sharedPipelineContextVars } from '@hcengineering/server-pipeline'
 
 export async function getAccountDB (uri: string, dbNs?: string): Promise<[AccountDB, () => void]> {
   const isMongo = uri.startsWith('mongodb://')
@@ -41,7 +42,7 @@ export async function getAccountDB (uri: string, dbNs?: string): Promise<[Accoun
       }
     ]
   } else {
-    const client = getDBClient(uri)
+    const client = getDBClient(sharedPipelineContextVars, uri)
     const pgClient = await client.getClient()
     // TODO: if dbNs is provided put tables in that schema
     const pgAccount = new PostgresAccountDB(pgClient)

@@ -54,10 +54,10 @@ import { CloudFlareLogger } from './logger'
 import model from './model.json'
 // import { configureAnalytics } from '@hcengineering/analytics-service'
 // import { Analytics } from '@hcengineering/analytics'
+import contactPlugin from '@hcengineering/contact'
 import serverAiBot from '@hcengineering/server-ai-bot'
 import serverNotification from '@hcengineering/server-notification'
 import serverTelegram from '@hcengineering/server-telegram'
-import contactPlugin from '@hcengineering/contact'
 
 export const PREFERRED_SAVE_SIZE = 500
 export const PREFERRED_SAVE_INTERVAL = 30 * 1000
@@ -74,6 +74,8 @@ export class Transactor extends DurableObject<Env> {
   private readonly accountsUrl: string
 
   private readonly sessions = new Map<WebSocket, WebsocketData>()
+
+  private readonly contextVars: Record<string, any> = {}
 
   constructor (ctx: DurableObjectState, env: Env) {
     super(ctx, env)
@@ -135,11 +137,12 @@ export class Transactor extends DurableObject<Env> {
         adapterSecurity: false,
         disableTriggers: false,
         fulltextUrl: env.FULLTEXT_URL,
-        extraLogging: true
+        extraLogging: true,
+        pipelineContextVars: this.contextVars
       })
       const result = await pipeline(ctx, ws, upgrade, broadcast, branding)
 
-      const client = getDBClient(dbUrl)
+      const client = getDBClient(this.contextVars, dbUrl)
       const connection = await client.getClient()
       const t1 = Date.now()
       await connection`select now()`

@@ -66,10 +66,11 @@ import {
   registerDestroyFactory,
   registerServerPlugins,
   registerStringLoaders,
-  registerTxAdapterFactory
+  registerTxAdapterFactory,
+  sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import { FileModelLogger, buildModel } from '@hcengineering/server-tool'
+import { buildModel, FileModelLogger } from '@hcengineering/server-tool'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 import path from 'path'
 
@@ -105,12 +106,18 @@ import {
   createMongoTxAdapter,
   getMongoClient,
   getWorkspaceMongoDB,
-  shutdown
+  shutdownMongo
 } from '@hcengineering/mongo'
 import { backupDownload } from '@hcengineering/server-backup/src/backup'
 
 import { createDatalakeClient, CONFIG_KIND as DATALAKE_CONFIG_KIND, type DatalakeConfig } from '@hcengineering/datalake'
 import { getModelVersion } from '@hcengineering/model-all'
+import {
+  createPostgreeDestroyAdapter,
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  shutdownPostgres
+} from '@hcengineering/postgres'
 import { CONFIG_KIND as S3_CONFIG_KIND, S3Service, type S3Config } from '@hcengineering/s3'
 import type { PipelineFactory, StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
@@ -139,17 +146,16 @@ import {
 import { changeConfiguration } from './configuration'
 import {
   generateUuidMissingWorkspaces,
-  updateDataWorkspaceIdToUuid,
   moveAccountDbFromMongoToPG,
   moveFromMongoToPG,
-  moveWorkspaceFromMongoToPG
+  moveWorkspaceFromMongoToPG,
+  updateDataWorkspaceIdToUuid
 } from './db'
-import { restoreControlledDocContentMongo, restoreWikiContentMongo, restoreMarkupRefsMongo } from './markup'
+import { reindexWorkspace } from './fulltext'
+import { restoreControlledDocContentMongo, restoreMarkupRefsMongo, restoreWikiContentMongo } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount, fillGithubUsers } from './account'
 import { copyToDatalake, moveFiles, showLostFiles } from './storage'
-import { createPostgresTxAdapter, createPostgresAdapter, createPostgreeDestroyAdapter } from '@hcengineering/postgres'
-import { reindexWorkspace } from './fulltext'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -162,6 +168,16 @@ const colorConstants = {
   colorPencil: '\u001b[38;2;253;182;0m',
   reset: '\u001b[0m'
 }
+
+// Register close on process exit.
+process.on('exit', () => {
+  shutdownPostgres(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+  shutdownMongo(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+})
 
 /**
  * @public
@@ -220,7 +236,7 @@ export function devTool (
     }
     closeAccountsDb()
     console.log(`closing database connection to '${uri}'...`)
-    await shutdown()
+    await shutdownMongo()
   }
 
   async function withStorage (f: (storageAdapter: StorageAdapter) => Promise<any>): Promise<void> {
@@ -648,6 +664,7 @@ export function devTool (
                   true,
                   true,
                   5000, // 5 gigabytes per blob
+                  sharedPipelineContextVars,
                   async (storage, workspaceStorage) => {
                     if (cmd.remove) {
                       await updateArchiveInfo(toolCtx, db, ws.workspace, true)
@@ -667,7 +684,7 @@ export function devTool (
 
                       const destroyer = getWorkspaceDestroyAdapter(dbUrl)
 
-                      await destroyer.deleteWorkspace(toolCtx, { name: ws.workspace })
+                      await destroyer.deleteWorkspace(toolCtx, sharedPipelineContextVars, { name: ws.workspace })
                     }
                   }
                 )
@@ -718,7 +735,8 @@ export function devTool (
                 cmd.region,
                 false,
                 false,
-                100
+                100,
+                sharedPipelineContextVars
               )
             ) {
               processed++

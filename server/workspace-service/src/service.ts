@@ -40,8 +40,18 @@ import { FileModelLogger, prepareTools } from '@hcengineering/server-tool'
 import path from 'path'
 
 import { Analytics } from '@hcengineering/analytics'
-import { createMongoAdapter, createMongoDestroyAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
-import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
+import {
+  createMongoAdapter,
+  createMongoDestroyAdapter,
+  createMongoTxAdapter,
+  shutdownMongo
+} from '@hcengineering/mongo'
+import {
+  createPostgreeDestroyAdapter,
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  shutdownPostgres
+} from '@hcengineering/postgres'
 import { doBackupWorkspace, doRestoreWorkspace } from '@hcengineering/server-backup'
 import type { PipelineFactory, StorageAdapter } from '@hcengineering/server-core'
 import {
@@ -52,7 +62,8 @@ import {
   registerDestroyFactory,
   registerServerPlugins,
   registerStringLoaders,
-  registerTxAdapterFactory
+  registerTxAdapterFactory,
+  sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { createWorkspace, upgradeWorkspace } from './ws-operations'
@@ -71,6 +82,16 @@ export interface WorkspaceOptions {
     bucketName: string
   }
 }
+
+// Register close on process exit.
+process.on('exit', () => {
+  shutdownPostgres(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+  shutdownMongo(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+})
 
 export type WorkspaceOperation = 'create' | 'upgrade' | 'all' | 'all+backup'
 
@@ -348,7 +369,7 @@ export class WorkspaceWorker {
   async doCleanup (ctx: MeasureContext, workspace: BaseWorkspaceInfo): Promise<void> {
     const { dbUrl } = prepareTools([])
     const adapter = getWorkspaceDestroyAdapter(dbUrl)
-    await adapter.deleteWorkspace(ctx, { name: workspace.workspace })
+    await adapter.deleteWorkspace(ctx, sharedPipelineContextVars, { name: workspace.workspace })
   }
 
   private async doWorkspaceOperation (
@@ -500,6 +521,7 @@ export class WorkspaceWorker {
         archive,
         50000,
         ['blob'],
+        sharedPipelineContextVars,
         (_p: number) => {
           if (progress !== Math.round(_p)) {
             progress = Math.round(_p)

@@ -30,13 +30,19 @@ import {
   LowLevelMiddleware,
   ModelMiddleware
 } from '@hcengineering/middleware'
-import { createMongoAdapter, createMongoDestroyAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
+import {
+  createMongoAdapter,
+  createMongoDestroyAdapter,
+  createMongoTxAdapter,
+  shutdownMongo
+} from '@hcengineering/mongo'
 import { PlatformError, setMetadata, unknownError } from '@hcengineering/platform'
 import {
   createPostgreeDestroyAdapter,
   createPostgresAdapter,
   createPostgresTxAdapter,
-  setDBExtraOptions
+  setDBExtraOptions,
+  shutdownPostgres
 } from '@hcengineering/postgres'
 import serverClientPlugin, { getTransactorEndpoint, getWorkspaceInfo } from '@hcengineering/server-client'
 import serverCore, {
@@ -56,7 +62,8 @@ import {
   registerDestroyFactory,
   registerServerPlugins,
   registerStringLoaders,
-  registerTxAdapterFactory
+  registerTxAdapterFactory,
+  sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken, type Token } from '@hcengineering/server-token'
 import cors from '@koa/cors'
@@ -104,7 +111,8 @@ class WorkspaceIndexer {
       branding: null,
       modelDb,
       hierarchy,
-      storageAdapter: externalStorage
+      storageAdapter: externalStorage,
+      contextVars: {}
     }
     result.pipeline = await createPipeline(ctx, middlewares, context)
 
@@ -204,6 +212,15 @@ interface Search {
 interface Reindex {
   token: string
 }
+// Register close on process exit.
+process.on('exit', () => {
+  shutdownPostgres(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+  shutdownMongo(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+})
 
 export async function startIndexer (
   ctx: MeasureContext,
