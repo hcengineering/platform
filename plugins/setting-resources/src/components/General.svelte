@@ -188,6 +188,12 @@
             {#if isEditingName}
               <Button icon={IconClose} kind="ghost" size="small" on:click={handleCancelEditName} />
             {/if}
+            <Button
+              icon={IconDelete}
+              kind="dangerous"
+              on:click={handleDelete}
+              showTooltip={{ label: setting.string.DeleteWorkspace }}
+            />
           </div>
           <div class="flex-col flex-gap-4 mt-6">
             <div class="title"><Label label={setting.string.Calendar} /></div>
@@ -202,9 +208,6 @@
                 on:selected={onSelected}
               />
             </div>
-          </div>
-          <div class="delete mt-6">
-            <Button icon={IconDelete} kind="dangerous" label={setting.string.DeleteWorkspace} on:click={handleDelete} />
           </div>
         </div>
       </Scroller>
