@@ -25,11 +25,15 @@ import core, {
   TxUpdateDoc,
   type Account,
   type RolesAssignment,
-  type Timestamp
+  type Timestamp,
+  Doc,
+  combineAttributes,
+  TxCUD
 } from '@hcengineering/core'
 import { RequestStatus } from '@hcengineering/request'
 import { TriggerControl } from '@hcengineering/server-core'
 import training, { TrainingState, type TrainingRequest } from '@hcengineering/training'
+import { NotificationType } from '@hcengineering/notification'
 
 async function getDocs (
   control: TriggerControl,
@@ -421,6 +425,31 @@ export async function documentTextPresenter (doc: ControlledDocument): Promise<s
   return doc.title
 }
 
+function CoAuthorsTypeMatch (
+  originTx: TxCUD<ControlledDocument>,
+  _doc: Doc,
+  accounts: Ref<Account>[],
+  _type: NotificationType,
+  control: TriggerControl
+): boolean {
+  if (accounts.some((it) => originTx.modifiedBy === it)) return false
+  if (originTx._class === core.class.TxUpdateDoc) {
+    const tx = originTx as TxUpdateDoc<ControlledDocument>
+    const employees = Array.isArray(tx.operations.coAuthors)
+      ? tx.operations.coAuthors ?? []
+      : (combineAttributes([tx.operations], 'coAuthors', '$push', '$each') as Ref<Employee>[])
+    const employeeAccounts = employees.flatMap((it) => control.modelDb.getAccountByPersonId(it)).map((it) => it._id)
+    return accounts.some((it) => employeeAccounts.includes(it))
+  } else if (originTx._class === core.class.TxCreateDoc) {
+    const tx = originTx as TxCreateDoc<ControlledDocument>
+    const employees = tx.attributes.coAuthors
+    const coAuthorAccounts = employees.flatMap((it) => control.modelDb.getAccountByPersonId(it)).map((it) => it._id)
+    return accounts.some((it) => coAuthorAccounts.includes(it))
+  }
+
+  return false
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
@@ -431,6 +460,7 @@ export default async () => ({
     OnWorkspaceOwnerAdded
   },
   function: {
-    ControlledDocumentTextPresenter: documentTextPresenter
+    ControlledDocumentTextPresenter: documentTextPresenter,
+    CoAuthorsTypeMatch
   }
 })

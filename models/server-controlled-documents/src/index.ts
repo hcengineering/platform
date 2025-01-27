@@ -9,6 +9,7 @@ import documents, { DocumentState } from '@hcengineering/controlled-documents'
 import serverDocuments from '@hcengineering/server-controlled-documents'
 import contact from '@hcengineering/contact'
 import serverNotification from '@hcengineering/server-notification'
+import notification from '@hcengineering/notification'
 
 export { serverDocumentsId } from '@hcengineering/server-controlled-documents/src/index'
 
@@ -66,4 +67,13 @@ export function createModel (builder: Builder): void {
   builder.mixin(documents.class.ControlledDocument, core.class.Class, serverNotification.mixin.TextPresenter, {
     presenter: serverDocuments.function.ControlledDocumentTextPresenter
   })
+
+  builder.mixin(
+    documents.notification.CoAuthorsNotification,
+    notification.class.NotificationType,
+    serverNotification.mixin.TypeMatch,
+    {
+      func: serverDocuments.function.CoAuthorsTypeMatch
+    }
+  )
 }

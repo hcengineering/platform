@@ -898,9 +898,11 @@ export function defineNotifications (builder: Builder): void {
       'effectiveDate',
       'plannedEffectiveDate',
       'changeControl',
-      'coAuthors'
+      'coAuthors',
+      'reviewers',
+      'approvers'
     ],
-    ['owner', 'comments', 'reviewers', 'approvers']
+    ['owner', 'comments']
   )
 }
 

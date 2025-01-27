@@ -76,7 +76,6 @@ export default mergeIds(documentsId, documents, {
   notification: {
     DocumentsNotificationGroup: '' as Ref<NotificationGroup>,
     ContentNotification: '' as Ref<NotificationType>,
-    StateNotification: '' as Ref<NotificationType>,
-    CoAuthorsNotification: '' as Ref<NotificationType>
+    StateNotification: '' as Ref<NotificationType>
   }
 })
