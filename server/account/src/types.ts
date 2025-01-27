@@ -38,10 +38,9 @@ export enum Location {
 // AccountRole in core
 // Person in core
 export interface SocialId {
-  id: string // bigint should be represented as string as it exceeds JS safe integer limit
   type: SocialIdType
   value: string
-  key?: string // Calculated from type and value
+  key: string // Calculated from type and value
   personUuid: string
   createdOn?: Timestamp
   verifiedOn?: Timestamp

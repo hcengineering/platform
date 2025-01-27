@@ -354,7 +354,7 @@ export class PostgresAccountDB implements AccountDB {
 
   person: PostgresDbCollection<Person, 'uuid'>
   account: AccountPostgresDbCollection
-  socialId: PostgresDbCollection<SocialId, 'id'>
+  socialId: PostgresDbCollection<SocialId, 'key'>
   workspace: PostgresDbCollection<Workspace, 'uuid'>
   workspaceStatus: PostgresDbCollection<WorkspaceStatus>
   accountEvent: PostgresDbCollection<AccountEvent>
@@ -367,7 +367,7 @@ export class PostgresAccountDB implements AccountDB {
   ) {
     this.person = new PostgresDbCollection<Person, 'uuid'>('person', client, 'uuid')
     this.account = new AccountPostgresDbCollection(client)
-    this.socialId = new PostgresDbCollection<SocialId, 'id'>('social_id', client, 'id')
+    this.socialId = new PostgresDbCollection<SocialId, 'key'>('social_id', client, 'key')
     this.workspaceStatus = new PostgresDbCollection<WorkspaceStatus>('workspace_status', client)
     this.workspace = new PostgresDbCollection<Workspace, 'uuid'>('workspace', client, 'uuid')
     this.accountEvent = new PostgresDbCollection<AccountEvent>('account_events', client)
@@ -672,15 +672,13 @@ export class PostgresAccountDB implements AccountDB {
 
       /* ======= S O C I A L   I D S ======= */
       CREATE TABLE IF NOT EXISTS global_account.social_id (
-          id INT8 NOT NULL DEFAULT unique_rowid(),
           type global_account.social_id_type NOT NULL,
           value STRING NOT NULL,
           key STRING AS (CONCAT(type::STRING, ':', value)) STORED,
           person_uuid UUID NOT NULL,
           created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
           verified_on BIGINT,
-          CONSTRAINT social_id_pk PRIMARY KEY (id),
-          CONSTRAINT social_id_type_identifier_idx UNIQUE (type, value),
+          CONSTRAINT social_id_pk PRIMARY KEY (type, value),
           INDEX social_id_account_idx (person_uuid),
           CONSTRAINT social_id_person_fk FOREIGN KEY (person_uuid) REFERENCES global_account.person(uuid)
       );

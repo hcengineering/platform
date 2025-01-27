@@ -339,7 +339,7 @@ export async function sendOtp (
   socialId: SocialId
 ): Promise<OtpInfo> {
   const ts = Date.now()
-  const otpData = (await db.otp.find({ socialId: socialId.id }, { createdOn: 'descending' }, 1))[0]
+  const otpData = (await db.otp.find({ socialId: socialId.key }, { createdOn: 'descending' }, 1))[0]
   const retryDelay = getMetadata(accountPlugin.metadata.OtpRetryDelaySec) ?? 30
 
   if (otpData !== undefined && otpData.expiresOn > ts && otpData.createdOn + retryDelay * 1000 > ts) {
@@ -350,7 +350,9 @@ export async function sendOtp (
 
   switch (socialId.type) {
     case SocialIdType.EMAIL: {
-      sendMethod = sendOtpEmail
+      // DEBUG!!!
+      // sendMethod = sendOtpEmail
+      sendMethod = async () => {}
       break
     }
     default:
@@ -362,7 +364,7 @@ export async function sendOtp (
   const code = await generateUniqueOtp(db)
 
   await sendMethod(ctx, branding, code, socialId.value)
-  await db.otp.insertOne({ socialId: socialId.id, code, expiresOn: ts + ttlMs, createdOn: ts })
+  await db.otp.insertOne({ socialId: socialId.key, code, expiresOn: ts + ttlMs, createdOn: ts })
 
   return { sent: true, retryOn: ts + retryDelayMs }
 }
@@ -805,7 +807,7 @@ export async function confirmEmail (ctx: MeasureContext, db: AccountDB, account:
     )
   }
 
-  await db.socialId.updateOne({ id: emailSocialId.id }, { verifiedOn: Date.now() })
+  await db.socialId.updateOne({ key: emailSocialId.key }, { verifiedOn: Date.now() })
 }
 
 export async function useInvite (db: AccountDB, inviteId: string): Promise<void> {
@@ -1000,7 +1002,7 @@ export async function loginOrSignUpWithProvider (
   if (targetSocialId == null) {
     await db.socialId.insertOne({ ...socialId, personUuid, verifiedOn: Date.now() })
   } else if (targetSocialId.verifiedOn == null) {
-    await db.socialId.updateOne({ id: targetSocialId.id }, { verifiedOn: Date.now() })
+    await db.socialId.updateOne({ key: targetSocialId.key }, { verifiedOn: Date.now() })
   }
 
   if (emailSocialId == null) {
@@ -1013,7 +1015,7 @@ export async function loginOrSignUpWithProvider (
       })
     }
   } else if (emailSocialId.verifiedOn == null) {
-    await db.socialId.updateOne({ id: emailSocialId.id }, { verifiedOn: Date.now() })
+    await db.socialId.updateOne({ key: emailSocialId.key }, { verifiedOn: Date.now() })
   }
 
   return {

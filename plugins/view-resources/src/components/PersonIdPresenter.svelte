@@ -20,6 +20,7 @@
   import ObjectPresenter from './ObjectPresenter.svelte'
 
   export let value: PersonId | undefined
+  export let shouldShowName = true
 
   const client = getClient()
   let person: Ref<Person> | undefined
@@ -33,5 +34,5 @@
 </script>
 
 {#if person}
-  <ObjectPresenter objectId={person} _class={contact.class.Person} />
+  <ObjectPresenter objectId={person} _class={contact.class.Person} {shouldShowName} />
 {/if}
