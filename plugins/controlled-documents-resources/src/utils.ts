@@ -119,6 +119,12 @@ export function isProjectDocument (hierarchy: Hierarchy, doc: Doc): doc is Proje
   return hierarchy.isDerived(doc._class, documents.class.ProjectDocument)
 }
 
+export function isFolder (hierarchy: Hierarchy, doc: Doc): doc is ProjectDocument {
+  if (!isProjectDocument(hierarchy, doc)) return false
+  const pjdoc = doc
+  return pjdoc.document === documents.ids.Folder
+}
+
 export async function getVisibleFilters (filters: KeyFilter[], space?: Ref<Space>): Promise<KeyFilter[]> {
   // Removes the "Space" filter if a specific space is provided
   return space === undefined ? filters : filters.filter((f) => f.key !== 'space')
@@ -461,6 +467,112 @@ export async function canCreateChildDocument (
   return true
 }
 
+export async function canCreateChildFolder (
+  doc?: Document | Document[] | DocumentSpace | DocumentSpace[] | ProjectDocument | ProjectDocument[],
+  includeProjects = false
+): Promise<boolean> {
+  if (doc === null || doc === undefined) {
+    return false
+  }
+  if (Array.isArray(doc)) {
+    return false
+  }
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const spaceId: Ref<DocumentSpace> = isSpace(hierarchy, doc) ? doc._id : doc.space
+
+  const canCreateDocument = await checkPermission(client, documents.permission.CreateDocument, spaceId)
+  if (!canCreateDocument) {
+    return false
+  }
+
+  if (isSpace(hierarchy, doc)) {
+    const spaceType = await client.findOne(documents.class.DocumentSpaceType, { _id: doc.type })
+    return includeProjects || spaceType?.projects !== true
+  }
+
+  if (isProjectDocument(hierarchy, doc)) {
+    return await isEditableProject(doc.project)
+  }
+
+  return true
+}
+
+export async function canRenameFolder (
+  doc?: Document | Document[] | DocumentSpace | DocumentSpace[] | ProjectDocument | ProjectDocument[],
+  includeProjects = false
+): Promise<boolean> {
+  if (doc === null || doc === undefined) {
+    return false
+  }
+  if (Array.isArray(doc)) {
+    return false
+  }
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const spaceId: Ref<DocumentSpace> = isSpace(hierarchy, doc) ? doc._id : doc.space
+
+  const canCreateDocument = await checkPermission(client, documents.permission.CreateDocument, spaceId)
+  if (!canCreateDocument) {
+    return false
+  }
+
+  if (isSpace(hierarchy, doc)) {
+    const spaceType = await client.findOne(documents.class.DocumentSpaceType, { _id: doc.type })
+    return includeProjects || spaceType?.projects !== true
+  }
+
+  if (!isFolder(hierarchy, doc)) {
+    return false
+  }
+
+  return await isEditableProject(doc.project)
+}
+
+export async function canDeleteFolder (obj?: Doc | Doc[]): Promise<boolean> {
+  if (obj == null) {
+    return false
+  }
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  const objs = (Array.isArray(obj) ? obj : [obj]) as Document[]
+
+  const isFolders = objs.every((doc) => isFolder(hierarchy, doc))
+  if (!isFolders) {
+    return false
+  }
+
+  const folders = objs as unknown as ProjectDocument[]
+
+  const pjMeta = await client.findAll(documents.class.ProjectMeta, { _id: { $in: folders.map((f) => f.attachedTo) } })
+  const directChildren = await client.findAll(documents.class.ProjectMeta, {
+    parent: { $in: pjMeta.map((p) => p.meta) }
+  })
+
+  if (directChildren.length > 0) {
+    return false
+  }
+
+  const currentUser = getCurrentAccount() as PersonAccount
+  const isOwner = objs.every((doc) => doc.owner === currentUser.person)
+
+  if (isOwner) {
+    return true
+  }
+
+  const spaces = new Set(objs.map((doc) => doc.space))
+
+  return await Promise.all(
+    Array.from(spaces).map(
+      async (space) => await checkPermission(getClient(), documents.permission.ArchiveDocument, space)
+    )
+  ).then((res) => res.every((r) => r))
+}
+
 export async function canDeleteDocumentCategory (doc?: Doc | Doc[]): Promise<boolean> {
   if (doc === null || doc === undefined) {
     return false
@@ -627,6 +739,54 @@ export async function createChildTemplate (doc: ProjectDocument): Promise<void> 
   showPopup(documents.component.QmsTemplateWizard, {})
 }
 
+export async function createChildFolder (doc: ProjectDocument): Promise<void> {
+  const props = {
+    space: doc.space,
+    project: doc.project,
+    parent: doc._id
+  }
+
+  showPopup(documents.component.CreateFolder, props)
+}
+
+export async function renameFolder (doc: ProjectDocument): Promise<void> {
+  const client = getClient()
+
+  const pjmeta = await client.findOne(documents.class.ProjectMeta, { _id: doc.attachedTo })
+  if (pjmeta === undefined) return
+
+  const meta = await client.findOne(documents.class.DocumentMeta, { _id: pjmeta.meta })
+  if (meta === undefined) return
+
+  const props = {
+    folder: meta,
+    name: meta.title
+  }
+
+  showPopup(documents.component.CreateFolder, props)
+}
+
+export async function deleteFolder (obj: ProjectDocument | ProjectDocument[]): Promise<void> {
+  const client = getClient()
+
+  if (!(await canDeleteFolder(obj))) {
+    return
+  }
+
+  const objs = Array.isArray(obj) ? obj : [obj]
+
+  const pjmeta = await client.findAll(documents.class.ProjectMeta, { _id: { $in: objs.map((p) => p.attachedTo) } })
+  const meta = await client.findAll(documents.class.DocumentMeta, { _id: { $in: pjmeta.map((p) => p.meta) } })
+
+  const docsToRemove = [...objs, ...pjmeta, ...meta]
+  const ops = client.apply()
+  for (const doc of docsToRemove) {
+    await ops.remove(doc)
+  }
+
+  await ops.commit()
+}
+
 export async function createDocument (space: DocumentSpace): Promise<void> {
   const project = await getLatestProjectId(space._id)
   wizardOpened({
@@ -640,6 +800,15 @@ export async function createTemplate (space: OrgSpace): Promise<void> {
   const project = await getLatestProjectId(space._id)
   wizardOpened({ $$currentStep: 'info', location: { space: space._id, project: project ?? documents.ids.NoProject } })
   showPopup(documents.component.QmsTemplateWizard, {})
+}
+
+export async function createFolder (space: DocumentSpace): Promise<void> {
+  const project = await getLatestProjectId(space._id)
+  const props = {
+    space: space._id,
+    project: project ?? documents.ids.NoProject
+  }
+  showPopup(documents.component.CreateFolder, props)
 }
 
 export function formatSignatureDate (date: number): string {

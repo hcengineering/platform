@@ -106,20 +106,28 @@ export const documentsPlugin = plugin(documentsId, {
     DocumentMetaPresenter: '' as AnyComponent,
     DocumentVersionPresenter: '' as AnyComponent,
     DeleteCategoryPopup: '' as AnyComponent,
-    DocumentIcon: '' as AnyComponent
+    DocumentIcon: '' as AnyComponent,
+    CreateFolder: '' as AnyComponent
   },
   action: {
     ChangeDocumentOwner: '' as Ref<Action<Doc, any>>,
     CreateChildDocument: '' as Ref<Action<Document, any>>,
     CreateChildTemplate: '' as Ref<Action<Document, any>>,
+    CreateChildFolder: '' as Ref<Action<Document, any>>,
+    RenameFolder: '' as Ref<Action<Document, any>>,
+    DeleteFolder: '' as Ref<Action<Document, any>>,
     CreateDocument: '' as Ref<Action<DocumentSpace, any>>,
     CreateTemplate: '' as Ref<Action<DocumentSpace, any>>,
+    CreateFolder: '' as Ref<Action<DocumentSpace, any>>,
     DeleteDocumentCategory: '' as Ref<Action<Doc, any>>,
     DeleteDocument: '' as Ref<Action>,
     ArchiveDocument: '' as Ref<Action>,
     EditDocSpace: '' as Ref<Action>,
     TransferDocument: '' as Ref<Action>,
-    Print: '' as Ref<Action<Doc, { signed: boolean }>>
+    Print: '' as Ref<Action<Doc, { signed: boolean }>>,
+    PrintProjectDocument: '' as Ref<Action<Doc, { signed: boolean }>>,
+    OpenDocument: '' as Ref<Action<Doc, { signed: boolean }>>,
+    OpenDocumentInNewTab: '' as Ref<Action<Doc, { signed: boolean }>>
   },
   function: {
     CanChangeDocumentOwner: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
@@ -130,6 +138,7 @@ export const documentsPlugin = plugin(documentsId, {
     CheckmarkCircle: '' as Asset,
     DocumentApplication: '' as Asset,
     NewDocument: '' as Asset,
+    Folder: '' as Asset,
     Document: '' as Asset,
     Library: '' as Asset,
     StateDraft: '' as Asset,
@@ -211,6 +220,8 @@ export const documentsPlugin = plugin(documentsId, {
     ChangeOwnerWarning: '' as IntlString,
     CreateDocument: '' as IntlString,
     CreateTemplate: '' as IntlString,
+    CreateFolder: '' as IntlString,
+    RenameFolder: '' as IntlString,
     DeleteCategory: '' as IntlString,
     DeleteCategoryHint: '' as IntlString,
     DeleteCategoryWarning: '' as IntlString,
@@ -227,6 +238,7 @@ export const documentsPlugin = plugin(documentsId, {
     Path: '' as IntlString,
     CreateChildDocument: '' as IntlString,
     CreateChildTemplate: '' as IntlString,
+    CreateChildFolder: '' as IntlString,
     All: '' as IntlString,
     ImpactAnalysis: '' as IntlString,
     ImpactedDocuments: '' as IntlString,
@@ -269,7 +281,8 @@ export const documentsPlugin = plugin(documentsId, {
   },
   ids: {
     NoParent: '' as Ref<DocumentMeta>,
-    NoProject: '' as Ref<Project>
+    NoProject: '' as Ref<Project>,
+    Folder: '' as Ref<HierarchyDocument>
   },
   sequence: {
     Templates: '' as Ref<Sequence>,

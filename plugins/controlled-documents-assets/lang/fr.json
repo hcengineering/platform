@@ -258,7 +258,11 @@
     "Transfer": "Transfert",
     "TransferWarning": "Certains membres de l'équipe peuvent perdre la possibilité de visualiser ou de modifier ce document après cette action.",
     "TransferDocuments": "Transférer des documents contrôlés",
-    "TransferDocumentsHint": "Documents à transférer dans l'espace sélectionné:"
+    "TransferDocumentsHint": "Documents à transférer dans l'espace sélectionné:",
+
+    "CreateFolder": "Créer un nouveau dossier",
+    "RenameFolder": "Renommer le dossier",
+    "CreateChildFolder": "Créer un sous-dossier"
   },
   "controlledDocStates": {
     "Empty": "",

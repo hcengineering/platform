@@ -256,7 +256,11 @@
     "Transfer": "Trasferimento",
     "TransferWarning": "Alcuni membri del team potrebbero perdere la possibilità di visualizzare o modificare il documento dopo questa azione.",
     "TransferDocuments": "Trasferimento di documenti controllati",
-    "TransferDocumentsHint": "Documenti da trasferire nello spazio selezionato:"
+    "TransferDocumentsHint": "Documenti da trasferire nello spazio selezionato:",
+
+    "CreateFolder": "Crea nuova cartella",
+    "RenameFolder": "Rinomina cartella",
+    "CreateChildFolder": "Crea sottocartella"
   },
   "controlledDocStates": {
     "Empty": "",
