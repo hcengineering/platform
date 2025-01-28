@@ -1,5 +1,5 @@
-import { type PersonAccount } from '@hcengineering/contact'
-import { getCurrentAccount, type Ref } from '@hcengineering/core'
+import { getCurrentEmployee } from '@hcengineering/contact'
+import { type Ref } from '@hcengineering/core'
 import {
   RequestStatus,
   type DevicesPreference,
@@ -13,21 +13,19 @@ import {
 } from '@hcengineering/love'
 import { createQuery, onClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
-import { personIdByAccountId } from '@hcengineering/contact-resources'
-import aiBot from '@hcengineering/ai-bot'
+import { aiBotEmailSocialId } from '@hcengineering/ai-bot'
 
 import love from './plugin'
+import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
 
 export const rooms = writable<Room[]>([])
 export const myOffice = derived(rooms, (val) => {
-  const me = getCurrentAccount()
-  const personId = (me as PersonAccount).person
+  const personId = getCurrentEmployee()
   return val.find((p) => (p as Office).person === personId) as Office | undefined
 })
 export const infos = writable<ParticipantInfo[]>([])
 export const myInfo = derived(infos, (val) => {
-  const me = getCurrentAccount()
-  const personId = (me as PersonAccount).person
+  const personId = getCurrentEmployee()
   return val.find((p) => p.person === personId)
 })
 export const currentRoom = derived([rooms, myInfo], ([rooms, myInfo]) => {
@@ -48,13 +46,11 @@ export const activeFloor = derived([rooms, myInfo, myOffice], ([rooms, myInfo, m
 export const myRequests = writable<JoinRequest[]>([])
 export const invites = writable<Invite[]>([])
 export const myInvites = derived([invites, myInfo], ([val, info]) => {
-  const me = getCurrentAccount()
-  const personId = (me as PersonAccount).person
+  const personId = getCurrentEmployee()
   return val.filter((p) => p.target === personId && info?.room !== p.room)
 })
 export const activeInvites = derived(invites, (val) => {
-  const me = getCurrentAccount()
-  const personId = (me as PersonAccount).person
+  const personId = getCurrentEmployee()
   return val.filter((p) => p.from === personId)
 })
 
@@ -66,9 +62,9 @@ export const selectedRoomPlace = writable<{ _id: Ref<Room>, x: number, y: number
 
 function filterParticipantInfo (value: ParticipantInfo[]): ParticipantInfo[] {
   const map = new Map<string, ParticipantInfo>()
-  const aiPersonId = get(personIdByAccountId).get(aiBot.account.AIBot as Ref<PersonAccount>)
+  const aiPerson = get(personRefByPersonIdStore).get(aiBotEmailSocialId)
   for (const val of value) {
-    if (aiPersonId !== undefined && val.person === aiPersonId) {
+    if (aiPerson !== undefined && val.person === aiPerson) {
       map.set(val._id, val)
     } else {
       map.set(val.person, val)
@@ -108,7 +104,7 @@ onClient(() => {
   const requestPromise = new Promise<void>((resolve) =>
     requestsQuery.query(
       love.class.JoinRequest,
-      { person: (getCurrentAccount() as PersonAccount).person, status: RequestStatus.Pending },
+      { person: getCurrentEmployee(), status: RequestStatus.Pending },
       (res) => {
         myRequests.set(res)
         resolve()

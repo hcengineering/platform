@@ -24,16 +24,8 @@
     createChangeControl,
     createDocumentTemplate
   } from '@hcengineering/controlled-documents'
-  import { Employee, PersonAccount } from '@hcengineering/contact'
-  import {
-    type AttachedData,
-    type Class,
-    type Data,
-    type Ref,
-    type Mixin,
-    generateId,
-    getCurrentAccount
-  } from '@hcengineering/core'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { type AttachedData, type Class, type Data, type Ref, type Mixin, generateId } from '@hcengineering/core'
   import { MessageBox, getClient } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
@@ -68,7 +60,7 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const currentUser = getCurrentAccount() as PersonAccount
+  const currentUser = getCurrentEmployee()
 
   const steps: IWizardStep<TemplateWizardStep>[] = [
     {
@@ -112,8 +104,8 @@
     seqNumber: 0,
     category: undefined,
     abstract: '',
-    author: currentUser.person as Ref<Employee>,
-    owner: currentUser.person as Ref<Employee>,
+    author: currentUser,
+    owner: currentUser,
     state: DocumentState.Draft,
     snapshots: 0,
     changeControl: ccRecordId,
@@ -163,7 +155,7 @@
       docObject.docPrefix,
       spec,
       category,
-      currentUser.person as Ref<Employee>
+      currentUser
     )
 
     if (!success) {

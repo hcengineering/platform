@@ -13,30 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { personAccountByIdStore } from '@hcengineering/contact-resources'
-  import contact, { PersonAccount } from '@hcengineering/contact'
-  import { getCurrentAccount, Ref } from '@hcengineering/core'
-  import { DisplayDocUpdateMessage, DocAttributeUpdates } from '@hcengineering/activity'
+  import { mySocialStringsStore } from '@hcengineering/contact-resources'
+  import contact, { includesAny } from '@hcengineering/contact'
+  import { DisplayDocUpdateMessage } from '@hcengineering/activity'
   import notification from '@hcengineering/notification'
   import { BaseMessagePreview } from '@hcengineering/activity-resources'
   import { Action, Icon, Label } from '@hcengineering/ui'
+  import { type PersonId } from '@hcengineering/core'
 
   export let message: DisplayDocUpdateMessage
   export let actions: Action[] = []
 
-  const me = getCurrentAccount()._id
-
   $: attributeUpdates = message.attributeUpdates ?? { added: [], removed: [], set: [] }
-
-  $: isMeAdded = includeMe(attributeUpdates.added.length > 0 ? attributeUpdates.added : attributeUpdates.set)
-
-  function includeMe (values: DocAttributeUpdates['removed' | 'added' | 'set']): boolean {
-    return values.some((value) => {
-      const account = $personAccountByIdStore.get(value as Ref<PersonAccount>)
-
-      return account?._id === me
-    })
-  }
+  $: addedAttributes = (attributeUpdates.added.length > 0 ? attributeUpdates.added : attributeUpdates.set) ?? []
+  $: isMeAdded = includesAny(addedAttributes as PersonId[], $mySocialStringsStore)
 </script>
 
 <BaseMessagePreview {actions} {message} on:click>

@@ -23,7 +23,8 @@
   export let user: CollaborationUser
 </script>
 
-<Component
+TODO
+<!-- <Component
   is={view.component.ObjectPresenter}
   props={{
     objectId: user.id,
@@ -31,4 +32,4 @@
     shouldShowAvatar: true,
     shouldShowName: true
   }}
-/>
+/> -->

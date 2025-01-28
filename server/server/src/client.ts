@@ -30,13 +30,15 @@ import {
   type SessionData,
   type Timestamp,
   type Tx,
-  type TxCUD
+  type TxCUD,
+  type PersonId,
+  type WorkspaceDataId,
+  type PersonUuid
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import {
   BackupClientOps,
   createBroadcastEvent,
-  getUser,
   SessionDataImpl,
   type ClientSessionCtx,
   type ConnectionSocket,
@@ -71,20 +73,27 @@ export class ClientSession implements Session {
 
   ops: BackupClientOps | undefined
   opsPipeline: Pipeline | undefined
-
-  account?: Account
   isAdmin: boolean
 
   constructor (
     protected readonly token: Token,
     readonly workspace: Workspace,
+    readonly account: Account,
     readonly allowUpload: boolean
   ) {
     this.isAdmin = this.token.extra?.admin === 'true'
   }
 
-  getUser (): string {
-    return this.token.email
+  getUser (): PersonUuid {
+    return this.token.account
+  }
+
+  getUserSocialIds (): PersonId[] {
+    return this.account.socialIds
+  }
+
+  getRawAccount (): Account {
+    return this.account
   }
 
   isUpgradeClient (): boolean {
@@ -101,42 +110,35 @@ export class ClientSession implements Session {
   }
 
   async loadModel (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string): Promise<void> {
-    this.includeSessionContext(ctx.ctx, ctx.pipeline)
-    const result = await ctx.ctx.with('load-model', {}, (_ctx) => ctx.pipeline.loadModel(_ctx, lastModelTx, hash))
+    this.includeSessionContext(ctx)
+    const result = await ctx.ctx.with('load-model', {}, () => ctx.pipeline.loadModel(ctx.ctx, lastModelTx, hash))
     await ctx.sendResponse(ctx.requestId, result)
   }
 
-  async getAccount (ctx: ClientSessionCtx): Promise<void> {
-    await ctx.sendResponse(ctx.requestId, this.getRawAccount(ctx.pipeline))
-  }
-
-  getRawAccount (pipeline: Pipeline): Account {
-    if (this.account === undefined) {
-      this.account = getUser(pipeline.context.modelDb, this.token.email, this.isAdmin)
-    }
-    return this.account
-  }
-
-  includeSessionContext (ctx: MeasureContext, pipeline: Pipeline): void {
+  includeSessionContext (ctx: ClientSessionCtx): void {
+    const dataId = this.workspace.workspaceDataId ?? (this.workspace.workspaceUuid as unknown as WorkspaceDataId)
     const contextData = new SessionDataImpl(
-      this.token.email,
+      this.account,
       this.sessionId,
       this.isAdmin,
       undefined,
-      this.workspace.workspaceId,
+      {
+        uuid: this.workspace.workspaceUuid,
+        url: this.workspace.workspaceUrl,
+        dataId
+      },
       this.workspace.branding,
       false,
       undefined,
       undefined,
-      pipeline.context.modelDb,
-      this.getRawAccount(pipeline)
+      ctx.pipeline.context.modelDb,
+      ctx.socialStringsToUsers
     )
-    ctx.contextData = contextData
+    ctx.ctx.contextData = contextData
   }
 
   findAllRaw<T extends Doc>(
-    ctx: MeasureContext,
-    pipeline: Pipeline,
+    ctx: ClientSessionCtx,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
@@ -144,8 +146,8 @@ export class ClientSession implements Session {
     this.lastRequest = Date.now()
     this.total.find++
     this.current.find++
-    this.includeSessionContext(ctx, pipeline)
-    return pipeline.findAll(ctx, _class, query, options)
+    this.includeSessionContext(ctx)
+    return ctx.pipeline.findAll(ctx.ctx, _class, query, options)
   }
 
   async findAll<T extends Doc>(
@@ -154,12 +156,12 @@ export class ClientSession implements Session {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<void> {
-    await ctx.sendResponse(ctx.requestId, await this.findAllRaw(ctx.ctx, ctx.pipeline, _class, query, options))
+    await ctx.sendResponse(ctx.requestId, await this.findAllRaw(ctx, _class, query, options))
   }
 
   async searchFulltext (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions): Promise<void> {
     this.lastRequest = Date.now()
-    this.includeSessionContext(ctx.ctx, ctx.pipeline)
+    this.includeSessionContext(ctx)
     await ctx.sendResponse(ctx.requestId, await ctx.pipeline.searchFulltext(ctx.ctx, query, options))
   }
 
@@ -167,7 +169,7 @@ export class ClientSession implements Session {
     this.lastRequest = Date.now()
     this.total.tx++
     this.current.tx++
-    this.includeSessionContext(ctx.ctx, ctx.pipeline)
+    this.includeSessionContext(ctx)
 
     let cid = 'client_' + generateId()
     ctx.ctx.id = cid

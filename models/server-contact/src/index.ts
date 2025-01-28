@@ -72,20 +72,20 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverContact.trigger.OnSocialIdentityCreate,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: contact.class.SocialIdentity
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverContact.trigger.OnEmployeeCreate,
     txMatch: {
       objectClass: contact.class.Person,
       _class: core.class.TxMixin,
       mixin: contact.mixin.Employee,
       'attributes.active': true
-    }
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverContact.trigger.OnPersonAccountCreate,
-    txMatch: {
-      objectClass: contact.class.PersonAccount,
-      _class: core.class.TxCreateDoc
     }
   })
 

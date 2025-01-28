@@ -35,12 +35,15 @@
     client.updateDoc(object._class, object.space, object._id, { name: object.name })
   }
 
-  const accountId = getCurrentAccount()._id
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
   const settingsQuery = createQuery()
-  $: settingsQuery.query(setting.class.Integration, { createdBy: accountId, disabled: false }, (res) => {
-    integrations = new Set(res.map((p) => p.type))
-  })
+  $: settingsQuery.query(
+    setting.class.Integration,
+    { createdBy: { $in: getCurrentAccount().socialIds }, disabled: false },
+    (res) => {
+      integrations = new Set(res.map((p) => p.type))
+    }
+  )
 
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'name', 'channels'] })

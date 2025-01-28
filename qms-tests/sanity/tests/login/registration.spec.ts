@@ -82,7 +82,6 @@ test.describe('Registration tests', () => {
     await allure.tms('TESTS-396', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-396')
     await test.step('1. Try to login with wrong password', async () => {
       const loginPage = new LoginPage(page)
-      await loginPage.loginWithPassword.click()
       await loginPage.login('user1', 'wrongPassword')
       await loginPage.checkIfUserIsLoggedIn('wrong-password')
     })
@@ -94,7 +93,6 @@ test.describe('Registration tests', () => {
     await allure.tms('TESTS-397', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-397')
     await test.step('1. Try to login with wrong email', async () => {
       const loginPage = new LoginPage(page)
-      await loginPage.loginWithPassword.click()
       await loginPage.login('wrongEmail', '1234')
       await loginPage.checkIfUserIsLoggedIn('wrong-email')
     })
@@ -106,7 +104,6 @@ test.describe('Registration tests', () => {
     await allure.tms('TESTS-398', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-397')
     await test.step('1. Try to login with working credentials', async () => {
       const loginPage = new LoginPage(page)
-      await loginPage.loginWithPassword.click()
       await loginPage.login('user1', '1234')
       await loginPage.checkIfUserIsLoggedIn('correct-credentials')
     })

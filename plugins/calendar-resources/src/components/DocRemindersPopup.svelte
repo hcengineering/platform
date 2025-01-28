@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { Event } from '@hcengineering/calendar'
-  import { PersonAccount } from '@hcengineering/contact'
-  import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { Class, Doc, Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Button, deviceOptionsStore as deviceInfo, IconAdd, Label, Scroller, showPopup } from '@hcengineering/ui'
   import calendar from '../plugin'
@@ -26,14 +26,14 @@
   export let attachedToClass: Ref<Class<Doc>>
   export let title: string | undefined
 
-  const currentUser = getCurrentAccount() as PersonAccount
+  const currentUser = getCurrentEmployee()
   let events: Event[] = []
   const query = createQuery()
   $: query.query(
     calendar.class.Event,
     {
       attachedTo,
-      participants: currentUser.person
+      participants: currentUser
     },
     (res) => {
       events = res.filter((p) => p.reminders !== undefined && p.reminders.length > 0)

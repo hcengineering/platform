@@ -17,6 +17,7 @@
   import { Class, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
+  import { IconSize } from '@hcengineering/ui'
   import { PersonLabelTooltip } from '..'
   import PersonPresenter from './PersonPresenter.svelte'
 
@@ -31,8 +32,9 @@
   export let shouldShowPlaceholder = true
   export let defaultName: IntlString | undefined = undefined
   export let tooltipLabels: PersonLabelTooltip | undefined = undefined
-  export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
+  export let avatarSize: IconSize = 'x-small'
   export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
+  export let compact = false
 
   let person: Person | undefined
   const query = createQuery()
@@ -67,5 +69,6 @@
   {disabled}
   {inline}
   {accent}
+  {compact}
   on:accent-color
 />

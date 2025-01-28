@@ -24,7 +24,6 @@
   let name: string = ''
   const description: string = ''
   let isPrivate: boolean = false
-  const me = getCurrentAccount()._id
 
   export function canClose (): boolean {
     return name === ''
@@ -38,7 +37,7 @@
       description,
       private: isPrivate,
       archived: false,
-      members: [me]
+      members: [getCurrentAccount().primarySocialId]
     })
   }
 </script>

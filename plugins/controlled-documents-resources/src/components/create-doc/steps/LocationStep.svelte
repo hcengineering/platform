@@ -23,7 +23,7 @@
   } from '@hcengineering/controlled-documents'
   import { SpaceSelector, getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
-  import { permissionsStore } from '@hcengineering/view-resources'
+  import { permissionsStore } from '@hcengineering/contact-resources'
 
   import { $locationStep as locationStep, locationStepUpdated } from '../../../stores/wizards/create-document'
   import DocumentParentSelector from '../../hierarchy/DocumentParentSelector.svelte'

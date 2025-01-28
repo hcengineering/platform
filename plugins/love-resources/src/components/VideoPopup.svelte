@@ -13,9 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import aiBot from '@hcengineering/ai-bot'
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import { personIdByAccountId } from '@hcengineering/contact-resources'
+  import { aiBotEmailSocialId } from '@hcengineering/ai-bot'
+  import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { RoomType, Room as TypeRoom } from '@hcengineering/love'
   import { MessageBox } from '@hcengineering/presentation'
@@ -65,8 +64,7 @@
     isAgent: boolean
   }
 
-  let aiPersonId: Ref<Person> | undefined = undefined
-  $: aiPersonId = $personIdByAccountId.get(aiBot.account.AIBot as Ref<PersonAccount>)
+  $: aiPersonId = $personRefByPersonIdStore.get(aiBotEmailSocialId)
 
   const dispatch = createEventDispatcher()
 

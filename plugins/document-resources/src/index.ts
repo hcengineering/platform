@@ -137,7 +137,7 @@ export async function lockContent (doc: Document | Document[]): Promise<void> {
 
   const arr = Array.isArray(doc) ? doc : [doc]
   for (const doc of arr) {
-    await client.diffUpdate(doc, { lockedBy: me._id })
+    await client.diffUpdate(doc, { lockedBy: me.primarySocialId })
   }
 }
 

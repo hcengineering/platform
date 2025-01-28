@@ -23,10 +23,10 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { getDocTitle, getDocIdentifier, Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { Class, Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
+  import { Class, Doc, PersonId, Ref, WithLookup } from '@hcengineering/core'
   import chunter from '@hcengineering/chunter'
-  import { personAccountByIdStore } from '@hcengineering/contact-resources'
-  import { Person, PersonAccount } from '@hcengineering/contact'
+  import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import { Person } from '@hcengineering/contact'
 
   import InboxNotificationPresenter from './inbox/InboxNotificationPresenter.svelte'
   import NotifyContextIcon from './NotifyContextIcon.svelte'
@@ -85,7 +85,7 @@
 
   let groupedNotifications: Array<InboxNotification[]> = []
 
-  $: groupedNotifications = groupNotificationsByUser(notifications, $personAccountByIdStore)
+  $: groupedNotifications = groupNotificationsByUser(notifications, $personRefByPersonIdStore)
 
   function isTextMessage (_class: Ref<Class<Doc>>): boolean {
     return hierarchy.isDerived(_class, chunter.class.ChatMessage)
@@ -101,15 +101,15 @@
 
   function groupNotificationsByUser (
     notifications: WithLookup<InboxNotification>[],
-    personAccountById: IdMap<PersonAccount>
+    personRefByPersonId: Map<PersonId, Ref<Person>>
   ): Array<InboxNotification[]> {
     const result: Array<InboxNotification[]> = []
     let group: InboxNotification[] = []
     let person: Ref<Person> | undefined = undefined
 
     for (const it of notifications) {
-      const account = it.createdBy ?? it.modifiedBy
-      const curPerson = personAccountById.get(account as Ref<PersonAccount>)?.person
+      const pid = it.createdBy ?? it.modifiedBy
+      const curPerson = personRefByPersonId.get(pid)
       const allowGroup = canGroup(it)
 
       if (!allowGroup || curPerson === undefined) {

@@ -1,6 +1,5 @@
 import { deepEqual } from 'fast-equals'
-import core, { Ref, TxOperations } from '@hcengineering/core'
-import { PersonAccount } from '@hcengineering/contact'
+import core, { type PersonId, type Ref, TxOperations } from '@hcengineering/core'
 
 import chunter, { DirectMessage } from '.'
 
@@ -9,8 +8,8 @@ import chunter, { DirectMessage } from '.'
  */
 export async function getDirectChannel (
   client: TxOperations,
-  me: Ref<PersonAccount>,
-  employeeAccount: Ref<PersonAccount>
+  me: PersonId,
+  employeeAccount: PersonId
 ): Promise<Ref<DirectMessage>> {
   const accIds = [me, employeeAccount].sort()
   const existingDms = await client.findAll(chunter.class.DirectMessage, {})

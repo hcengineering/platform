@@ -6,12 +6,12 @@
   TODO:
   * Add since to synchronization
 */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import activity from '@hcengineering/activity'
 import { Analytics } from '@hcengineering/analytics'
 import { CollaboratorClient } from '@hcengineering/collaborator-client'
-import { PersonAccount } from '@hcengineering/contact'
 import core, {
-  Account,
+  PersonId,
   AttachedDoc,
   Class,
   Doc,
@@ -138,17 +138,19 @@ export abstract class IssueSyncManagerBase {
     this.provider = provider
   }
 
-  async getAssignees (issue: IssueExternalData): Promise<PersonAccount[]> {
+  async getAssignees (issue: IssueExternalData): Promise<any[]> {
+    // TODO: FIXME
+    throw new Error('Not implemented')
     // Find Assignees and reviewers
-    const assignees: PersonAccount[] = []
+    // const assignees: PersonAccount[] = []
 
-    for (const o of issue.assignees.nodes) {
-      const acc = await this.provider.getAccount(o)
-      if (acc !== undefined) {
-        assignees.push(acc)
-      }
-    }
-    return assignees
+    // for (const o of issue.assignees.nodes) {
+    //   const acc = await this.provider.getAccount(o)
+    //   if (acc !== undefined) {
+    //     assignees.push(acc)
+    //   }
+    // }
+    // return assignees
   }
 
   async processProjectV2Event (
@@ -227,7 +229,7 @@ export abstract class IssueSyncManagerBase {
               return
             }
 
-            this.ctx.info('event for issue', { url: syncData.url, workspace: this.provider.getWorkspaceId().name })
+            this.ctx.info('event for issue', { url: syncData.url, workspace: this.provider.getWorkspaceId() })
             const externalData = syncData.external as IssueExternalData
             // We need to replace field values we retrieved
             target.prjData = externalData.projectItems.nodes.find(
@@ -255,7 +257,7 @@ export abstract class IssueSyncManagerBase {
             })
 
             if (event.changes.field_value === undefined) {
-              this.ctx.info('No changes for change event', { event, workspace: this.provider.getWorkspaceId().name })
+              this.ctx.info('No changes for change event', { event, workspace: this.provider.getWorkspaceId() })
               return
             }
 
@@ -338,7 +340,7 @@ export abstract class IssueSyncManagerBase {
     external: IssueExternalData,
     derivedClient: TxOperations,
     update: IssueUpdate,
-    account: Ref<Account>,
+    account: PersonId,
     prj: GithubProject,
     needSync: boolean,
     syncData?: DocSyncInfo,
@@ -639,7 +641,7 @@ export abstract class IssueSyncManagerBase {
           this.ctx.error('error during field update', {
             error: err,
             response,
-            workspace: this.provider.getWorkspaceId().name
+            workspace: this.provider.getWorkspaceId()
           })
           errors.push({ error: err, response })
         }
@@ -682,10 +684,10 @@ export abstract class IssueSyncManagerBase {
     container: ContainerFocus,
     issueExternal: IssueExternalData,
     okit: Octokit,
-    account: Ref<Account>
+    account: PersonId
   ): Promise<boolean>
 
-  abstract afterSync (existing: Issue, account: Ref<Account>, issueExternal: any, info: DocSyncInfo): Promise<void>
+  abstract afterSync (existing: Issue, account: PersonId, issueExternal: any, info: DocSyncInfo): Promise<void>
 
   async handleDiffUpdate (
     target: IssueSyncTarget,
@@ -694,265 +696,267 @@ export abstract class IssueSyncManagerBase {
     issueData: GithubIssueData,
     container: ContainerFocus,
     issueExternal: IssueExternalData,
-    account: Ref<Account>,
-    accountGH: Ref<Account>,
+    account: PersonId,
+    accountGH: PersonId,
     syncToProject: boolean
   ): Promise<DocumentUpdate<DocSyncInfo>> {
-    let needUpdate = false
-    if (!this.client.getHierarchy().hasMixin(existing, github.mixin.GithubIssue)) {
-      await this.ctx.withLog(
-        'create mixin issue: GithubIssue',
-        {},
-        async () => {
-          await this.client.createMixin<Issue, GithubIssueP>(
-            existing._id as Ref<GithubIssueP>,
-            existing._class,
-            existing.space,
-            github.mixin.GithubIssue,
-            {
-              githubNumber: issueExternal.number,
-              url: issueExternal.url,
-              repository: info.repository as Ref<GithubIntegrationRepository>
-            }
-          )
-          await this.notifyConnected(container, info, existing, issueExternal)
-        },
-        { identifier: existing.identifier, url: issueExternal.url }
-      )
-      // Re iterate to have existing value with mixin inside.
-      needUpdate = true
-    } else {
-      const ghIssue = this.client.getHierarchy().as(existing, github.mixin.GithubIssue)
-      await this.client.diffUpdate(ghIssue, {
-        githubNumber: issueExternal.number,
-        url: issueExternal.url,
-        repository: info.repository as Ref<GithubIntegrationRepository>
-      })
-      if (ghIssue.url !== issueExternal.url) {
-        await this.notifyConnected(container, info, existing, issueExternal)
-      }
-    }
-    if (!this.client.getHierarchy().hasMixin(existing, container.project.mixinClass)) {
-      await this.ctx.withLog(
-        'create mixin issue',
-        {},
-        () =>
-          this.client.createMixin<Issue, Issue>(
-            existing._id as Ref<GithubIssueP>,
-            existing._class,
-            existing.space,
-            container.project.mixinClass,
-            {}
-          ),
-        { identifier: existing.identifier, url: issueExternal.url }
-      )
-      // Re iterate to have existing value with mixin inside.
-      needUpdate = true
-    }
-    if (needUpdate) {
-      return { needSync: '' }
-    }
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // let needUpdate = false
+    // if (!this.client.getHierarchy().hasMixin(existing, github.mixin.GithubIssue)) {
+    //   await this.ctx.withLog(
+    //     'create mixin issue: GithubIssue',
+    //     {},
+    //     async () => {
+    //       await this.client.createMixin<Issue, GithubIssueP>(
+    //         existing._id as Ref<GithubIssueP>,
+    //         existing._class,
+    //         existing.space,
+    //         github.mixin.GithubIssue,
+    //         {
+    //           githubNumber: issueExternal.number,
+    //           url: issueExternal.url,
+    //           repository: info.repository as Ref<GithubIntegrationRepository>
+    //         }
+    //       )
+    //       await this.notifyConnected(container, info, existing, issueExternal)
+    //     },
+    //     { identifier: existing.identifier, url: issueExternal.url }
+    //   )
+    //   // Re iterate to have existing value with mixin inside.
+    //   needUpdate = true
+    // } else {
+    //   const ghIssue = this.client.getHierarchy().as(existing, github.mixin.GithubIssue)
+    //   await this.client.diffUpdate(ghIssue, {
+    //     githubNumber: issueExternal.number,
+    //     url: issueExternal.url,
+    //     repository: info.repository as Ref<GithubIntegrationRepository>
+    //   })
+    //   if (ghIssue.url !== issueExternal.url) {
+    //     await this.notifyConnected(container, info, existing, issueExternal)
+    //   }
+    // }
+    // if (!this.client.getHierarchy().hasMixin(existing, container.project.mixinClass)) {
+    //   await this.ctx.withLog(
+    //     'create mixin issue',
+    //     {},
+    //     () =>
+    //       this.client.createMixin<Issue, Issue>(
+    //         existing._id as Ref<GithubIssueP>,
+    //         existing._class,
+    //         existing.space,
+    //         container.project.mixinClass,
+    //         {}
+    //       ),
+    //     { identifier: existing.identifier, url: issueExternal.url }
+    //   )
+    //   // Re iterate to have existing value with mixin inside.
+    //   needUpdate = true
+    // }
+    // if (needUpdate) {
+    //   return { needSync: '' }
+    // }
 
-    const existingIssue = this.client.getHierarchy().as(existing, container.project.mixinClass)
-    const previousData: GithubIssueData = info.current ?? ({} as unknown as GithubIssueData)
-    const type = await this.provider.getTaskTypeOf(container.project.type, existing._class)
-    const stst = await this.provider.getStatuses(type?._id)
+    // const existingIssue = this.client.getHierarchy().as(existing, container.project.mixinClass)
+    // const previousData: GithubIssueData = info.current ?? ({} as unknown as GithubIssueData)
+    // const type = await this.provider.getTaskTypeOf(container.project.type, existing._class)
+    // const stst = await this.provider.getStatuses(type?._id)
 
-    const update = collectUpdate<Issue>(previousData, issueData, Object.keys(issueData))
+    // const update = collectUpdate<Issue>(previousData, issueData, Object.keys(issueData))
 
-    const allAttributes = this.client.getHierarchy().getAllAttributes(container.project.mixinClass)
-    const platformUpdate = collectUpdate<Issue>(previousData, existingIssue, Array.from(allAttributes.keys()))
+    // const allAttributes = this.client.getHierarchy().getAllAttributes(container.project.mixinClass)
+    // const platformUpdate = collectUpdate<Issue>(previousData, existingIssue, Array.from(allAttributes.keys()))
 
-    const okit = (await this.provider.getOctokit(account as Ref<PersonAccount>)) ?? container.container.octokit
+    // const okit = (await this.provider.getOctokit(account as PersonId)) ?? container.container.octokit
 
-    // Remove current same values from update
-    for (const [k, v] of Object.entries(update)) {
-      if ((existingIssue as any)[k] === v) {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete (update as any)[k]
-      }
-    }
+    // // Remove current same values from update
+    // for (const [k, v] of Object.entries(update)) {
+    //   if ((existingIssue as any)[k] === v) {
+    //     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    //     delete (update as any)[k]
+    //   }
+    // }
 
-    if (update.description !== undefined) {
-      if (update.description === existingIssue.description) {
-        delete update.description
-      }
-    }
+    // if (update.description !== undefined) {
+    //   if (update.description === existingIssue.description) {
+    //     delete update.description
+    //   }
+    // }
 
-    for (const [k, v] of Object.entries(update)) {
-      let pv = (platformUpdate as any)[k]
+    // for (const [k, v] of Object.entries(update)) {
+    //   let pv = (platformUpdate as any)[k]
 
-      if (k === 'description' && pv != null) {
-        const mdown = await this.provider.getMarkdown(pv)
-        pv = await this.provider.getMarkup(container.container, mdown, this.stripGuestLink)
-      }
-      if (pv != null && pv !== v) {
-        // We have conflict of values, assume platform is more proper one.
-        this.ctx.error('conflict', { id: existing.identifier, k })
-        // Assume platform change is more important in case of conflict values.
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete (update as any)[k]
-        continue
-      }
-    }
+    //   if (k === 'description' && pv != null) {
+    //     const mdown = await this.provider.getMarkdown(pv)
+    //     pv = await this.provider.getMarkup(container.container, mdown, this.stripGuestLink)
+    //   }
+    //   if (pv != null && pv !== v) {
+    //     // We have conflict of values, assume platform is more proper one.
+    //     this.ctx.error('conflict', { id: existing.identifier, k })
+    //     // Assume platform change is more important in case of conflict values.
+    //     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    //     delete (update as any)[k]
+    //     continue
+    //   }
+    // }
 
-    await this.fillBackChanges(update, existingIssue, issueExternal)
+    // await this.fillBackChanges(update, existingIssue, issueExternal)
 
-    let needExternalSync = false
+    // let needExternalSync = false
 
-    if (container !== undefined && okit !== undefined) {
-      // Check and update issue fields.
-      needExternalSync = await this.performIssueFieldsUpdate(
-        info,
-        existing,
-        platformUpdate,
-        issueData,
-        container,
-        issueExternal,
-        okit,
-        account
-      )
+    // if (container !== undefined && okit !== undefined) {
+    //   // Check and update issue fields.
+    //   needExternalSync = await this.performIssueFieldsUpdate(
+    //     info,
+    //     existing,
+    //     platformUpdate,
+    //     issueData,
+    //     container,
+    //     issueExternal,
+    //     okit,
+    //     account
+    //   )
 
-      const fieldsUpdate: { id: string, value: any, dataType: GithubDataType }[] = []
+    //   const fieldsUpdate: { id: string, value: any, dataType: GithubDataType }[] = []
 
-      // Collect field update.
-      for (const [k, v] of Object.entries(platformUpdate)) {
-        const mapping = target.mappings.filter((it) => it != null).find((it) => it.name === k)
-        if (mapping === undefined) {
-          continue
-        }
-        const attr = this.client.getHierarchy().getAttribute(mapping._class, mapping.name)
+    //   // Collect field update.
+    //   for (const [k, v] of Object.entries(platformUpdate)) {
+    //     const mapping = target.mappings.filter((it) => it != null).find((it) => it.name === k)
+    //     if (mapping === undefined) {
+    //       continue
+    //     }
+    //     const attr = this.client.getHierarchy().getAttribute(mapping._class, mapping.name)
 
-        if (attr.name === 'status') {
-          // Handle status field
-          const status = stst.find((it) => it._id === v) as Status
-          const optionId = this.findOptionId(container, mapping.githubId, status.name, target)
-          if (optionId !== undefined) {
-            fieldsUpdate.push({
-              id: mapping.githubId,
-              dataType: 'SINGLE_SELECT',
-              value: optionId
-            })
-            this.ctx.info('   => prepare issue status update', {
-              url: issueExternal.url,
-              name: status.name,
-              workspace: this.provider.getWorkspaceId().name
-            })
-            continue
-          }
-        }
-        if (attr.name === 'priority') {
-          const values: Record<IssuePriority, string> = {
-            [IssuePriority.NoPriority]: '',
-            [IssuePriority.High]: 'High',
-            [IssuePriority.Medium]: 'Medium',
-            [IssuePriority.Low]: 'Low',
-            [IssuePriority.Urgent]: 'Urgent'
-          }
-          // Handle priority field TODO: Add clear of field
-          const priorityName = values[v as IssuePriority]
-          const optionId = this.findOptionId(container, mapping.githubId, priorityName, target)
-          if (optionId !== undefined) {
-            fieldsUpdate.push({
-              id: mapping.githubId,
-              dataType: 'SINGLE_SELECT',
-              value: optionId
-            })
-            this.ctx.info('   => prepare issue priority update', {
-              url: issueExternal.url,
-              priority: priorityName,
-              workspace: this.provider.getWorkspaceId().name
-            })
-            continue
-          }
-        }
+    //     if (attr.name === 'status') {
+    //       // Handle status field
+    //       const status = stst.find((it) => it._id === v) as Status
+    //       const optionId = this.findOptionId(container, mapping.githubId, status.name, target)
+    //       if (optionId !== undefined) {
+    //         fieldsUpdate.push({
+    //           id: mapping.githubId,
+    //           dataType: 'SINGLE_SELECT',
+    //           value: optionId
+    //         })
+    //         this.ctx.info('   => prepare issue status update', {
+    //           url: issueExternal.url,
+    //           name: status.name,
+    //           workspace: this.provider.getWorkspaceId()
+    //         })
+    //         continue
+    //       }
+    //     }
+    //     if (attr.name === 'priority') {
+    //       const values: Record<IssuePriority, string> = {
+    //         [IssuePriority.NoPriority]: '',
+    //         [IssuePriority.High]: 'High',
+    //         [IssuePriority.Medium]: 'Medium',
+    //         [IssuePriority.Low]: 'Low',
+    //         [IssuePriority.Urgent]: 'Urgent'
+    //       }
+    //       // Handle priority field TODO: Add clear of field
+    //       const priorityName = values[v as IssuePriority]
+    //       const optionId = this.findOptionId(container, mapping.githubId, priorityName, target)
+    //       if (optionId !== undefined) {
+    //         fieldsUpdate.push({
+    //           id: mapping.githubId,
+    //           dataType: 'SINGLE_SELECT',
+    //           value: optionId
+    //         })
+    //         this.ctx.info('   => prepare issue priority update', {
+    //           url: issueExternal.url,
+    //           priority: priorityName,
+    //           workspace: this.provider.getWorkspaceId()
+    //         })
+    //         continue
+    //       }
+    //     }
 
-        const dataType = getType(attr)
-        if (dataType === 'SINGLE_SELECT') {
-          // Handle status field
-          const optionId = this.findOptionId(container, mapping.githubId, v, target)
-          if (optionId !== undefined) {
-            fieldsUpdate.push({
-              id: mapping.githubId,
-              dataType: 'SINGLE_SELECT',
-              value: optionId
-            })
-            this.ctx.info(`   => prepare issue field ${attr.label} update`, {
-              url: issueExternal.url,
-              value: v,
-              workspace: this.provider.getWorkspaceId().name
-            })
-            continue
-          }
-        }
+    //     const dataType = getType(attr)
+    //     if (dataType === 'SINGLE_SELECT') {
+    //       // Handle status field
+    //       const optionId = this.findOptionId(container, mapping.githubId, v, target)
+    //       if (optionId !== undefined) {
+    //         fieldsUpdate.push({
+    //           id: mapping.githubId,
+    //           dataType: 'SINGLE_SELECT',
+    //           value: optionId
+    //         })
+    //         this.ctx.info(`   => prepare issue field ${attr.label} update`, {
+    //           url: issueExternal.url,
+    //           value: v,
+    //           workspace: this.provider.getWorkspaceId()
+    //         })
+    //         continue
+    //       }
+    //     }
 
-        if (dataType === undefined) {
-          continue
-        }
-        fieldsUpdate.push({
-          id: mapping.githubId,
-          dataType,
-          value: v
-        })
-        this.ctx.info(`=> prepare issue field ${attr.label} update`, {
-          url: issueExternal.url,
-          value: v,
-          workspace: this.provider.getWorkspaceId().name
-        })
-      }
-      if (fieldsUpdate.length > 0 && syncToProject && target.prjData !== undefined) {
-        const errors = await this.updateIssueValues(target, okit, fieldsUpdate)
-        if (errors.length === 0) {
-          needExternalSync = true
-        }
-      }
-      // TODO: Add support for labels, milestone, assignees
-    }
+    //     if (dataType === undefined) {
+    //       continue
+    //     }
+    //     fieldsUpdate.push({
+    //       id: mapping.githubId,
+    //       dataType,
+    //       value: v
+    //     })
+    //     this.ctx.info(`=> prepare issue field ${attr.label} update`, {
+    //       url: issueExternal.url,
+    //       value: v,
+    //       workspace: this.provider.getWorkspaceId()
+    //     })
+    //   }
+    //   if (fieldsUpdate.length > 0 && syncToProject && target.prjData !== undefined) {
+    //     const errors = await this.updateIssueValues(target, okit, fieldsUpdate)
+    //     if (errors.length === 0) {
+    //       needExternalSync = true
+    //     }
+    //   }
+    //   // TODO: Add support for labels, milestone, assignees
+    // }
 
-    // We need remove all readonly field values
-    for (const k of Object.keys(update)) {
-      // Skip readonly fields
-      const attr = this.client.getHierarchy().findAttribute(target.project.mixinClass, k)
-      if (attr?.readonly === true) {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete (update as any)[k]
-        continue
-      }
-    }
+    // // We need remove all readonly field values
+    // for (const k of Object.keys(update)) {
+    //   // Skip readonly fields
+    //   const attr = this.client.getHierarchy().findAttribute(target.project.mixinClass, k)
+    //   if (attr?.readonly === true) {
+    //     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    //     delete (update as any)[k]
+    //     continue
+    //   }
+    // }
 
-    // Update collaborative description
-    if (update.description !== undefined) {
-      this.ctx.info(`<= perform ${issueExternal.url} update to collaborator`, {
-        workspace: this.provider.getWorkspaceId().name
-      })
-      try {
-        const description = update.description as Markup
-        issueData.description = description
-        const collabId = makeDocCollabId(existingIssue, 'description')
-        await this.collaborator.updateMarkup(collabId, description)
-      } catch (err: any) {
-        Analytics.handleError(err)
-        this.ctx.error('error during description update', err)
-      }
-    }
+    // // Update collaborative description
+    // if (update.description !== undefined) {
+    //   this.ctx.info(`<= perform ${issueExternal.url} update to collaborator`, {
+    //     workspace: this.provider.getWorkspaceId()
+    //   })
+    //   try {
+    //     const description = update.description as Markup
+    //     issueData.description = description
+    //     const collabId = makeDocCollabId(existingIssue, 'description')
+    //     await this.collaborator.updateMarkup(collabId, description)
+    //   } catch (err: any) {
+    //     Analytics.handleError(err)
+    //     this.ctx.error('error during description update', err)
+    //   }
+    // }
 
-    if (Object.keys(update).length > 0) {
-      // We have some fields to update of existing from external
-      this.ctx.info(`<= perform ${issueExternal.url} update to platform`, {
-        ...update,
-        workspace: this.provider.getWorkspaceId().name
-      })
-      await this.client.update(existingIssue, update, false, new Date().getTime(), accountGH)
-    }
+    // if (Object.keys(update).length > 0) {
+    //   // We have some fields to update of existing from external
+    //   this.ctx.info(`<= perform ${issueExternal.url} update to platform`, {
+    //     ...update,
+    //     workspace: this.provider.getWorkspaceId()
+    //   })
+    //   await this.client.update(existingIssue, update, false, new Date().getTime(), accountGH)
+    // }
 
-    await this.afterSync(existingIssue, accountGH, issueExternal, info)
-    // We need to trigger external version retrieval, via sync or event, to prevent move sync operations from platform before we will be sure all is updated on github.
-    return {
-      current: issueData,
-      needSync: githubSyncVersion,
-      ...(needExternalSync ? { externalVersion: '' } : {}),
-      lastGithubUser: null
-    }
+    // await this.afterSync(existingIssue, accountGH, issueExternal, info)
+    // // We need to trigger external version retrieval, via sync or event, to prevent move sync operations from platform before we will be sure all is updated on github.
+    // return {
+    //   current: issueData,
+    //   needSync: githubSyncVersion,
+    //   ...(needExternalSync ? { externalVersion: '' } : {}),
+    //   lastGithubUser: null
+    // }
   }
 
   private async notifyConnected (
@@ -985,81 +989,83 @@ export abstract class IssueSyncManagerBase {
     issueExternal: IssueExternalData,
     _class: Ref<Class<Issue>>
   ): Promise<Record<string, any>> {
-    const issueUpdate: {
-      title?: string
-      body?: string
-      stateReason?: string
-      assigneeIds?: string[]
-    } & Record<string, any> = {}
-    if (platformUpdate.title != null) {
-      if (platformUpdate.title !== issueExternal.title) {
-        issueUpdate.title = platformUpdate.title
-      }
-      issueData.title = platformUpdate.title
-    }
-    if (platformUpdate.description != null) {
-      // Need to convert to markdown
-      issueUpdate.body = await this.provider.getMarkdown(platformUpdate.description ?? '')
-      issueData.description = await this.provider.getMarkup(
-        container.container,
-        issueUpdate.body ?? '',
-        this.stripGuestLink
-      )
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // const issueUpdate: {
+    //   title?: string
+    //   body?: string
+    //   stateReason?: string
+    //   assigneeIds?: string[]
+    // } & Record<string, any> = {}
+    // if (platformUpdate.title != null) {
+    //   if (platformUpdate.title !== issueExternal.title) {
+    //     issueUpdate.title = platformUpdate.title
+    //   }
+    //   issueData.title = platformUpdate.title
+    // }
+    // if (platformUpdate.description != null) {
+    //   // Need to convert to markdown
+    //   issueUpdate.body = await this.provider.getMarkdown(platformUpdate.description ?? '')
+    //   issueData.description = await this.provider.getMarkup(
+    //     container.container,
+    //     issueUpdate.body ?? '',
+    //     this.stripGuestLink
+    //   )
 
-      // Of value is same, not need to update.
-      if (compareMarkdown(issueUpdate.body, issueExternal.body)) {
-        delete issueUpdate.body
-      }
-    }
-    if (platformUpdate.assignee !== undefined) {
-      const info =
-        platformUpdate.assignee !== null
-          ? await this.provider.getGithubLogin(container.container, platformUpdate.assignee)
-          : undefined
-      // Check external
+    //   // Of value is same, not need to update.
+    //   if (compareMarkdown(issueUpdate.body, issueExternal.body)) {
+    //     delete issueUpdate.body
+    //   }
+    // }
+    // if (platformUpdate.assignee !== undefined) {
+    //   const info =
+    //     platformUpdate.assignee !== null
+    //       ? await this.provider.getGithubLogin(container.container, platformUpdate.assignee)
+    //       : undefined
+    //   // Check external
 
-      const currentAssignees = issueExternal.assignees.nodes.map((it) => it.id)
-      currentAssignees.sort((a, b) => a.localeCompare(b))
+    //   const currentAssignees = issueExternal.assignees.nodes.map((it) => it.id)
+    //   currentAssignees.sort((a, b) => a.localeCompare(b))
 
-      issueUpdate.assigneeIds = info !== undefined ? [info.id] : []
-      issueUpdate.assigneeIds.sort((a, b) => a.localeCompare(b))
+    //   issueUpdate.assigneeIds = info !== undefined ? [info.id] : []
+    //   issueUpdate.assigneeIds.sort((a, b) => a.localeCompare(b))
 
-      if (deepEqual(currentAssignees, issueUpdate.assigneeIds)) {
-        // Same ids
-        delete issueUpdate.assigneeIds
-      }
-      issueData.assignee = platformUpdate.assignee
-    }
+    //   if (deepEqual(currentAssignees, issueUpdate.assigneeIds)) {
+    //     // Same ids
+    //     delete issueUpdate.assigneeIds
+    //   }
+    //   issueData.assignee = platformUpdate.assignee
+    // }
 
-    const status = platformUpdate.status ?? issueData.status
-    const type = await this.provider.getTaskTypeOf(container.project.type, _class)
-    const statuses = await this.provider.getStatuses(type?._id)
-    const st = statuses.find((it) => it._id === status)
-    if (st !== undefined) {
-      // Need to convert to two operations.
-      switch (st.category) {
-        case task.statusCategory.UnStarted:
-        case task.statusCategory.ToDo:
-        case task.statusCategory.Active:
-          if (issueExternal.state !== 'OPEN') {
-            issueUpdate.state = 'OPEN'
-          }
-          break
-        case task.statusCategory.Won:
-          if (issueExternal.state !== 'CLOSED' || issueExternal.stateReason !== 'COMPLETED') {
-            issueUpdate.state = 'CLOSED'
-            issueUpdate.stateReason = 'COMPLETED'
-          }
-          break
-        case task.statusCategory.Lost:
-          if (issueExternal.state !== 'CLOSED' || issueExternal.stateReason !== 'NOT_PLANNED') {
-            issueUpdate.state = 'CLOSED'
-            issueUpdate.stateReason = 'not_planed' // Not supported change to github
-          }
-          break
-      }
-    }
-    return issueUpdate
+    // const status = platformUpdate.status ?? issueData.status
+    // const type = await this.provider.getTaskTypeOf(container.project.type, _class)
+    // const statuses = await this.provider.getStatuses(type?._id)
+    // const st = statuses.find((it) => it._id === status)
+    // if (st !== undefined) {
+    //   // Need to convert to two operations.
+    //   switch (st.category) {
+    //     case task.statusCategory.UnStarted:
+    //     case task.statusCategory.ToDo:
+    //     case task.statusCategory.Active:
+    //       if (issueExternal.state !== 'OPEN') {
+    //         issueUpdate.state = 'OPEN'
+    //       }
+    //       break
+    //     case task.statusCategory.Won:
+    //       if (issueExternal.state !== 'CLOSED' || issueExternal.stateReason !== 'COMPLETED') {
+    //         issueUpdate.state = 'CLOSED'
+    //         issueUpdate.stateReason = 'COMPLETED'
+    //       }
+    //       break
+    //     case task.statusCategory.Lost:
+    //       if (issueExternal.state !== 'CLOSED' || issueExternal.stateReason !== 'NOT_PLANNED') {
+    //         issueUpdate.state = 'CLOSED'
+    //         issueUpdate.stateReason = 'not_planed' // Not supported change to github
+    //       }
+    //       break
+    //   }
+    // }
+    // return issueUpdate
   }
 
   async syncIssues (
@@ -1086,14 +1092,14 @@ export abstract class IssueSyncManagerBase {
     for (const issue of issues) {
       try {
         if (issue.url === undefined && Object.keys(issue).length === 0) {
-          this.ctx.info('Retrieve empty document', { repo: repo.name, workspace: this.provider.getWorkspaceId().name })
+          this.ctx.info('Retrieve empty document', { repo: repo.name, workspace: this.provider.getWorkspaceId() })
           continue
         }
         const existing =
           syncInfo.find((it) => it.url.toLowerCase() === issue.url.toLowerCase()) ??
           syncInfo.find((it) => (it.external as IssueExternalData)?.id === issue.id)
         if (existing === undefined && syncDocs === undefined) {
-          this.ctx.info('Create sync doc', { url: issue.url, workspace: this.provider.getWorkspaceId().name })
+          this.ctx.info('Create sync doc', { url: issue.url, workspace: this.provider.getWorkspaceId() })
           await ops.createDoc<DocSyncInfo>(github.class.DocSyncInfo, repo.githubProject, {
             url: issue.url.toLowerCase(),
             needSync: '',
@@ -1112,7 +1118,7 @@ export abstract class IssueSyncManagerBase {
           }
           const externalEqual = deepEqual(existing.external, issue)
           if (!externalEqual || existing.externalVersion !== githubExternalSyncVersion) {
-            this.ctx.info('Update sync doc', { url: issue.url, workspace: this.provider.getWorkspaceId().name })
+            this.ctx.info('Update sync doc', { url: issue.url, workspace: this.provider.getWorkspaceId() })
             await ops.diffUpdate(
               existing,
               {
@@ -1178,7 +1184,7 @@ export abstract class IssueSyncManagerBase {
     }
   }
 
-  abstract deleteGithubDocument (container: ContainerFocus, account: Ref<Account>, id: string): Promise<void>
+  abstract deleteGithubDocument (container: ContainerFocus, account: PersonId, id: string): Promise<void>
 
   async handleDelete (
     existing: Doc | undefined,
@@ -1207,7 +1213,7 @@ export abstract class IssueSyncManagerBase {
     }
     const account =
       existing?.createdBy ?? (await this.provider.getAccount(issueExternal.author))?._id ?? core.account.System
-    const okit = (await this.provider.getOctokit(account as Ref<PersonAccount>)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(account as PersonId)) ?? container.container.octokit
 
     if (existing !== undefined && issueExternal !== undefined) {
       let target = await this.getMilestoneIssueTarget(
@@ -1324,7 +1330,10 @@ export abstract class IssueSyncManagerBase {
       const publicLink = await getPublicLink(
         object,
         this.client,
-        this.provider.getWorkspaceId(),
+        {
+          uuid: this.provider.getWorkspaceId(),
+          url: this.provider.getWorkspaceUrl()
+        },
         false,
         this.provider.getBranding()
       )

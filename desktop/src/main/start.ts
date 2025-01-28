@@ -424,10 +424,10 @@ autoUpdater.on('update-downloaded', (info) => {
   autoUpdater.quitAndInstall()
 })
 
-ipcMain.on('start-backup', (event, token, endpoint, workspace) => {
-  console.log('start backup', token, endpoint, workspace)
+ipcMain.on('start-backup', (event, token, endpoint, wsIds) => {
+  console.log('start backup', token, endpoint, wsIds)
   if (mainWindow != null) {
-    startBackup(mainWindow, token, endpoint, workspace, (cmd: string, ...args: any[]) => {
+    startBackup(mainWindow, token, endpoint, wsIds, (cmd: string, ...args: any[]) => {
       mainWindow?.webContents.send(cmd, ...args)
     })
   }

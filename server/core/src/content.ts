@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type MeasureContext, type WorkspaceId } from '@hcengineering/core'
+import { type MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 import { type Readable } from 'stream'
 import { type ContentTextAdapterConfiguration } from './configuration'
 import { type ContentTextAdapter } from './types'
@@ -24,7 +24,7 @@ class ContentAdapter implements ContentTextAdapter {
     private readonly defaultAdapter: ContentTextAdapter
   ) {}
 
-  content (ctx: MeasureContext, workspace: WorkspaceId, name: string, type: string, doc: Readable): Promise<string> {
+  content (ctx: MeasureContext, workspace: WorkspaceUuid, name: string, type: string, doc: Readable): Promise<string> {
     const adapter = this.adapters.get(type) ?? this.defaultAdapter
     return adapter.content(ctx, workspace, name, type, doc)
   }

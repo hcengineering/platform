@@ -28,7 +28,7 @@
   import { type Doc, type Ref, type Space } from '@hcengineering/core'
   import presentation, { getClient, SpaceSelector } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
-  import { permissionsStore } from '@hcengineering/view-resources'
+  import { permissionsStore } from '@hcengineering/contact-resources'
   import { createEventDispatcher } from 'svelte'
 
   import documentsRes from '../../../plugin'

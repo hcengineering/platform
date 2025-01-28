@@ -20,9 +20,10 @@ import core, {
   MeasureContext,
   Ref,
   TxOperations,
+  type WorkspaceDataId,
   generateId,
   makeDocCollabId,
-  systemAccountEmail,
+  systemAccountUuid,
   type Blob
 } from '@hcengineering/core'
 import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
@@ -40,9 +41,9 @@ export default async function importExtractedFile (
   extractedFile: ExtractedFile
 ): Promise<void> {
   const { workspaceId } = config
-  const token = generateToken(systemAccountEmail, workspaceId)
+  const token = generateToken(systemAccountUuid, workspaceId)
   const transactorUrl = await getTransactorEndpoint(token, 'external')
-  console.log(`Connecting to transactor: ${transactorUrl} (ws: '${workspaceId.name}')`)
+  console.log(`Connecting to transactor: ${transactorUrl} (ws: '${workspaceId}')`)
   const connection = (await createClient(transactorUrl, token)) as CoreClient & BackupClient
 
   try {
@@ -252,7 +253,7 @@ export async function processImages (
   const dom = parseDocument(section.content)
   const imageNodes = findAll((n) => n.tagName === 'img', dom.children)
 
-  const { storageAdapter, workspaceId, uploadURL } = config
+  const { storageAdapter, workspaceId, workspaceDataId, uploadURL } = config
 
   const imageUploads = imageNodes.map(async (img) => {
     const src = img.attribs.src
@@ -272,7 +273,14 @@ export async function processImages (
 
     // upload
     const uuid = generateId()
-    await storageAdapter.put(ctx, workspaceId, uuid, fileContents, mimeType, fileSize)
+    await storageAdapter.put(
+      ctx,
+      workspaceDataId ?? (workspaceId as unknown as WorkspaceDataId),
+      uuid,
+      fileContents,
+      mimeType,
+      fileSize
+    )
 
     // attachment
     const attachmentId: Ref<Attachment> = generateId()

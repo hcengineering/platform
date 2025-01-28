@@ -60,7 +60,7 @@ export function getHref (path: Pages): string {
 }
 
 export async function ensureConfirmed (account: LoginInfo): Promise<void> {
-  if (!account.confirmed) {
+  if (account.token === undefined) {
     const loc = getCurrentLocation()
     loc.path[0] = 'login'
     loc.path[1] = 'confirmationSend'
@@ -74,9 +74,9 @@ export async function afterConfirm (clearQuery = false): Promise<void> {
   if (joinedWS.length === 0) {
     goTo('onboard', clearQuery)
   } else if (joinedWS.length === 1) {
-    const result = (await selectWorkspace(joinedWS[0].workspace, null))[1]
+    const result = (await selectWorkspace(joinedWS[0].url, null))[1]
     if (result !== undefined) {
-      navigateToWorkspace(joinedWS[0].workspace, result, undefined, clearQuery)
+      navigateToWorkspace(joinedWS[0].url, result, undefined, clearQuery)
     }
   } else {
     goToLogin('selectWorkspace', clearQuery)

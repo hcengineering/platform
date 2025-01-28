@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-import { generateId } from '@hcengineering/core'
+import { generateId, WorkspaceDataId } from '@hcengineering/core'
 import { StorageConfiguration, initStatisticsContext } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
-import { Token, decodeToken } from '@hcengineering/server-token'
+import { getClient as getAccountClientRaw, AccountClient, WorkspaceLoginInfo } from '@hcengineering/account-client'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { IncomingHttpHeaders, type Server } from 'http'
@@ -25,8 +25,13 @@ import { IncomingHttpHeaders, type Server } from 'http'
 import { convertToHtml } from './convert'
 import { ApiError } from './error'
 import { PrintOptions, print, validKinds } from './print'
+import config from './config'
 
-const extractCookieToken = (cookie?: string): Token | null => {
+function getAccountClient (token: string): AccountClient {
+  return getAccountClientRaw(config.AccountsUrl, token)
+}
+
+const extractCookieToken = (cookie?: string): string | null => {
   if (cookie === undefined || cookie === null) {
     return null
   }
@@ -42,10 +47,10 @@ const extractCookieToken = (cookie?: string): Token | null => {
     return null
   }
 
-  return decodeToken(encodedToken)
+  return encodedToken
 }
 
-const extractAuthorizationToken = (authorization?: string): Token | null => {
+const extractAuthorizationToken = (authorization?: string): string | null => {
   if (authorization === undefined || authorization === null) {
     return null
   }
@@ -55,10 +60,10 @@ const extractAuthorizationToken = (authorization?: string): Token | null => {
     return null
   }
 
-  return decodeToken(encodedToken)
+  return encodedToken
 }
 
-const extractQueryToken = (queryParams: any): Token | null => {
+const extractQueryToken = (queryParams: any): string | null => {
   if (queryParams == null) {
     return null
   }
@@ -69,10 +74,10 @@ const extractQueryToken = (queryParams: any): Token | null => {
     return null
   }
 
-  return decodeToken(encodedToken)
+  return encodedToken
 }
 
-const extractToken = (headers: IncomingHttpHeaders, queryParams: any): Token => {
+const extractToken = (headers: IncomingHttpHeaders, queryParams: any): string => {
   try {
     const token =
       extractCookieToken(headers.cookie) ??
@@ -89,7 +94,7 @@ const extractToken = (headers: IncomingHttpHeaders, queryParams: any): Token => 
   }
 }
 
-type AsyncRequestHandler = (req: Request, res: Response, token: Token, next: NextFunction) => Promise<void>
+type AsyncRequestHandler = (req: Request, res: Response, wsDataId: WorkspaceDataId, next: NextFunction) => Promise<void>
 
 const handleRequest = async (
   fn: AsyncRequestHandler,
@@ -99,7 +104,14 @@ const handleRequest = async (
 ): Promise<void> => {
   try {
     const token = extractToken(req.headers, req.query)
-    await fn(req, res, token, next)
+    const loginInfo = await getAccountClient(token).getLoginInfoByToken()
+    const workspace = (loginInfo as WorkspaceLoginInfo)?.workspace
+    if (workspace === undefined) {
+      throw new ApiError(401, "Couldn't find workspace with the provided token")
+    }
+    const wsDataId = (loginInfo as WorkspaceLoginInfo)?.workspaceDataId
+
+    await fn(req, res, wsDataId ?? (workspace as unknown as WorkspaceDataId), next)
   } catch (err: unknown) {
     next(err)
   }
@@ -120,10 +132,9 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
 
   app.get(
     '/print',
-    wrapRequest(async (req, res, token) => {
+    wrapRequest(async (req, res, wsUuid) => {
       const rawlink = req.query.link as string
       const link = decodeURIComponent(rawlink)
-
       const kind = req.query.kind as PrintOptions['kind']
 
       if (kind !== undefined && !validKinds.includes(kind as any)) {
@@ -155,7 +166,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
 
       const printId = `print-${generateId()}`
 
-      await storageAdapter.put(measureCtx, token.workspace, printId, printRes, `application/${kind}`, printRes.length)
+      await storageAdapter.put(measureCtx, wsUuid, printId, printRes, `application/${kind}`, printRes.length)
 
       res.contentType('application/json')
       res.send({ id: printId })
@@ -164,10 +175,10 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
 
   app.get(
     '/convert/:file',
-    wrapRequest(async (req, res, token) => {
+    wrapRequest(async (req, res, wsUuid) => {
       const convertableFormats = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document']
       const file = req.params.file
-      const stat = await storageAdapter.stat(measureCtx, token.workspace, file)
+      const stat = await storageAdapter.stat(measureCtx, wsUuid, file)
 
       if (stat === undefined) {
         throw new ApiError(404, `File ${file} not found`)
@@ -178,10 +189,10 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
       }
 
       const convertId = getConvertId(file, stat.etag)
-      const convertStats = await storageAdapter.stat(measureCtx, token.workspace, convertId)
+      const convertStats = await storageAdapter.stat(measureCtx, wsUuid, convertId)
 
       if (convertStats === undefined) {
-        const originalFile = await storageAdapter.read(measureCtx, token.workspace, file)
+        const originalFile = await storageAdapter.read(measureCtx, wsUuid, file)
 
         if (originalFile === undefined) {
           throw new ApiError(404, `File ${file} not found`)
@@ -195,7 +206,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
 
         const htmlBuf = Buffer.from(htmlRes)
 
-        await storageAdapter.put(measureCtx, token.workspace, convertId, htmlBuf, 'text/html', htmlBuf.length)
+        await storageAdapter.put(measureCtx, wsUuid, convertId, htmlBuf, 'text/html', htmlBuf.length)
       }
 
       res.contentType('application/json')

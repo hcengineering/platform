@@ -20,9 +20,8 @@ import activity, {
   DocUpdateMessage,
   Reaction
 } from '@hcengineering/activity'
-import { PersonAccount } from '@hcengineering/contact'
 import core, {
-  Account,
+  PersonId,
   AttachedDoc,
   Class,
   Collection,
@@ -139,16 +138,11 @@ export async function createReactionNotifications (tx: TxCUD<Reaction>, control:
   const docUpdateMessage = TxProcessor.createDoc2Doc(messageTx as TxCreateDoc<DocUpdateMessage>)
 
   res = res.concat(
-    await createCollabDocInfo(
-      control.ctx,
-      res,
-      [user] as Ref<PersonAccount>[],
-      control,
-      tx,
-      parentMessage,
-      [docUpdateMessage],
-      { isOwn: true, isSpace: false, shouldUpdateTimestamp: false }
-    )
+    await createCollabDocInfo(control.ctx, res, [user], control, tx, parentMessage, [docUpdateMessage], {
+      isOwn: true,
+      isSpace: false,
+      shouldUpdateTimestamp: false
+    })
   )
 
   return res
@@ -169,7 +163,7 @@ function getDocUpdateMessageTx (
   originTx: TxCUD<Doc>,
   object: Doc,
   rawMessage: Data<DocUpdateMessage>,
-  modifiedBy?: Ref<Account>
+  modifiedBy?: PersonId
 ): TxCUD<DocUpdateMessage> {
   const { hierarchy } = control
   const space = isSpace(object, hierarchy) ? object._id : object.space
@@ -199,7 +193,7 @@ export async function pushDocUpdateMessages (
   res: TxCUD<DocUpdateMessage>[],
   object: Doc | undefined,
   originTx: TxCUD<Doc>,
-  modifiedBy?: Ref<Account>,
+  modifiedBy?: PersonId,
   objectCache?: DocObjectCache,
   controlRules?: ActivityMessageControl[]
 ): Promise<TxCUD<DocUpdateMessage>[]> {
@@ -417,7 +411,7 @@ async function OnDocRemoved (txes: TxCUD<Doc>[], control: TriggerControl): Promi
 async function ReactionNotificationContentProvider (
   doc: ActivityMessage,
   originTx: TxCUD<Doc>,
-  _: Ref<Account>,
+  _: PersonId,
   control: TriggerControl
 ): Promise<NotificationContent> {
   const tx = originTx as TxCreateDoc<Reaction>

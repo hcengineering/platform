@@ -14,17 +14,15 @@
 -->
 <script lang="ts">
   import documents, { Document } from '@hcengineering/controlled-documents'
-  import { Employee } from '@hcengineering/contact'
-  import { PersonPresenter } from '@hcengineering/contact-resources'
+  import { Employee, getCurrentEmployee } from '@hcengineering/contact'
+  import { PersonPresenter, checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
-  import { checkMyPermission, permissionsStore } from '@hcengineering/view-resources'
 
   import document from '../../../plugin'
   import ChangeOwnerPopup from '../popups/ChangeOwnerPopup.svelte'
-  import { getCurrentEmployee } from '../../../utils'
 
   export let _id: Ref<Employee> | undefined
   export let value: Employee | null | undefined

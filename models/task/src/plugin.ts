@@ -27,13 +27,11 @@ export default mergeIds(taskId, task, {
   action: {
     EditStatuses: '' as Ref<Action>,
     ArchiveState: '' as Ref<Action>,
-    PublicLink: '' as Ref<Action<Doc, any>>,
-    ExportTasks: '' as Ref<Action>
+    PublicLink: '' as Ref<Action<Doc, any>>
   },
   actionImpl: {
     EditStatuses: '' as ViewAction,
-    SelectStatus: '' as ViewAction,
-    ExportTasks: '' as ViewAction
+    SelectStatus: '' as ViewAction
   },
   category: {
     Task: '' as Ref<ActionCategory>,

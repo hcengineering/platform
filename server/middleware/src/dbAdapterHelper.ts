@@ -30,7 +30,7 @@ export class DBAdapterInitMiddleware extends BaseMiddleware implements Middlewar
     await ctx.with('init-adapters', {}, async (ctx) => {
       await context.adapterManager?.initAdapters?.(ctx)
     })
-    const domainHelper = new DomainIndexHelperImpl(ctx, context.hierarchy, context.modelDb, context.workspace)
+    const domainHelper = new DomainIndexHelperImpl(ctx, context.hierarchy, context.modelDb, context.workspace.uuid)
     await ctx.with('register-helper', {}, async (ctx) => {
       await context.adapterManager?.registerHelper?.(ctx, domainHelper)
     })

@@ -21,10 +21,11 @@ import core, {
   Space,
   TxOperations,
   UnsetOptions,
-  WorkspaceId,
+  WorkspaceIds,
   generateId
 } from '@hcengineering/core'
 import { makeRank } from '@hcengineering/rank'
+import { AccountClient } from '@hcengineering/account-client'
 import { StorageAdapter } from '@hcengineering/storage'
 import { ModelLogger } from './utils'
 
@@ -115,8 +116,9 @@ export interface MigrationClient {
 
   migrateState: Map<string, Set<string>>
   storageAdapter: StorageAdapter
+  accountClient: AccountClient
 
-  workspaceId: WorkspaceId
+  wsIds: WorkspaceIds
 }
 
 /**

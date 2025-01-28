@@ -33,6 +33,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     process.exit(1)
   }
 
+  const accountsUrlInternal = process.env.ACCOUNTS_URL_INTERNAL
+
   const uploadUrl = process.env.UPLOAD_URL
   if (uploadUrl === undefined) {
     console.error('please provide upload url')
@@ -118,6 +120,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
   const config = {
     storageAdapter,
     accountsUrl,
+    accountsUrlInternal,
     uploadUrl,
     filesUrl,
     modelVersion,

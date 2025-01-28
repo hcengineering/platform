@@ -15,7 +15,6 @@
 
 import activity, { type DocUpdateMessage } from '@hcengineering/activity'
 import core, {
-  AccountRole,
   DOMAIN_MODEL_TX,
   DOMAIN_STATUS,
   type Ref,
@@ -47,7 +46,6 @@ import tracker, {
   trackerId
 } from '@hcengineering/tracker'
 
-import contact from '@hcengineering/model-contact'
 import { classicIssueTaskStatuses } from '.'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
@@ -335,24 +333,6 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
   )
 }
 
-async function migrateDefaultProjectOwners (client: MigrationClient): Promise<void> {
-  const workspaceOwners = await client.model.findAll(contact.class.PersonAccount, {
-    role: AccountRole.Owner
-  })
-
-  await client.update(
-    DOMAIN_SPACE,
-    {
-      _id: tracker.project.DefaultProject
-    },
-    {
-      $set: {
-        owners: workspaceOwners.map((it) => it._id)
-      }
-    }
-  )
-}
-
 async function migrateIssueStatuses (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_MODEL_TX,
@@ -424,10 +404,6 @@ export const trackerOperation: MigrateOperation = {
       {
         state: 'migrateDefaultTypeMixins',
         func: migrateDefaultTypeMixins
-      },
-      {
-        state: 'migrateDefaultProjectOwners',
-        func: migrateDefaultProjectOwners
       }
     ])
   },

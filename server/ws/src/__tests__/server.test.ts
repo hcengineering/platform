@@ -20,12 +20,11 @@ import { generateToken } from '@hcengineering/server-token'
 import WebSocket from 'ws'
 
 import {
-  getWorkspaceId,
   Hierarchy,
   MeasureMetricsContext,
   ModelDb,
   toFindResult,
-  type Account,
+  type PersonId,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -37,7 +36,9 @@ import {
   type SessionData,
   type Space,
   type Tx,
-  type TxResult
+  type TxResult,
+  type PersonUuid,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { ClientSession, startSessionManager } from '@hcengineering/server'
 import { createDummyStorageAdapter } from '@hcengineering/server-core'
@@ -94,7 +95,7 @@ describe('server', () => {
         loadModel: async (ctx, lastModelTx, hash) => []
       }
     },
-    sessionFactory: (token, workspace) => new ClientSession(token, workspace, true),
+    sessionFactory: (token, workspace, account) => new ClientSession(token, workspace, account, true),
     port: 3335,
     brandingMap: {},
     serverFactory: startHttpServer,
@@ -103,7 +104,7 @@ describe('server', () => {
   })
 
   function connect (): WebSocket {
-    const token: string = generateToken('', getWorkspaceId('latest'))
+    const token: string = generateToken('' as PersonUuid, 'latest' as WorkspaceUuid)
     return new WebSocket(`ws://localhost:3335/${token}`)
   }
 
@@ -178,7 +179,7 @@ describe('server', () => {
               _class: 'result' as Ref<Class<Doc>>,
               _id: '1' as Ref<Doc & { sessionId: string }>,
               space: '' as Ref<Space>,
-              modifiedBy: '' as Ref<Account>,
+              modifiedBy: '' as PersonId,
               modifiedOn: Date.now(),
               sessionId: ctx.contextData.sessionId
             }
@@ -205,7 +206,7 @@ describe('server', () => {
           loadModel: async (ctx, lastModelTx, hash) => []
         }
       },
-      sessionFactory: (token, workspace) => new ClientSession(token, workspace, true),
+      sessionFactory: (token, workspace, account) => new ClientSession(token, workspace, account, true),
       port: 3336,
       brandingMap: {},
       serverFactory: startHttpServer,
@@ -262,7 +263,7 @@ describe('server', () => {
 
     try {
       //
-      const token: string = generateToken('my@email.com', getWorkspaceId('latest'))
+      const token: string = generateToken('my-account-uuid' as PersonUuid, 'latest' as WorkspaceUuid)
       let clearTo: any
       const timeoutPromise = new Promise<void>((resolve) => {
         clearTo = setTimeout(resolve, 4000)

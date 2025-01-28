@@ -14,7 +14,7 @@
 //
 import { createQuery, getClient } from '@hcengineering/presentation'
 import {
-  type Account,
+  type PersonId,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -40,7 +40,7 @@ export interface MessageMetadata {
   _class: Ref<Class<ActivityMessage>>
   createdOn?: Timestamp
   modifiedOn: Timestamp
-  createdBy?: Ref<Account>
+  createdBy?: PersonId
 }
 
 interface Chunk {
@@ -550,8 +550,6 @@ export class ChannelDataProvider implements IChannelDataProvider {
       return -1
     }
 
-    const me = getCurrentAccount()._id
-
     let newTimestamp = 0
 
     if (lastViewedTimestamp !== undefined && firstNotification !== undefined) {
@@ -561,7 +559,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     }
 
     return metadata.findIndex((message) => {
-      if (message.createdBy === me) {
+      if (message.createdBy !== undefined && getCurrentAccount().socialIds.includes(message.createdBy)) {
         return false
       }
 

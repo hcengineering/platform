@@ -15,8 +15,8 @@
 
 import activity from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
-import { AccountRole, DOMAIN_MODEL, type Account, type Blob, type Domain, type Ref } from '@hcengineering/core'
-import { Mixin, Model, UX, type Builder } from '@hcengineering/model'
+import { AccountRole, DOMAIN_MODEL, type PersonId, type Blob, type Domain, type Ref } from '@hcengineering/core'
+import { Mixin, Model, type Builder, UX } from '@hcengineering/model'
 import core, { TClass, TConfiguration, TDoc } from '@hcengineering/model-core'
 import view, { createAction } from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'
@@ -53,7 +53,7 @@ export class TIntegration extends TDoc implements Integration {
   type!: Ref<IntegrationType>
   disabled!: boolean
   value!: string
-  shared!: Ref<Account>[]
+  shared!: PersonId[]
   error?: IntlString | null
 }
 @Model(setting.class.SettingsCategory, core.class.Doc, DOMAIN_MODEL)

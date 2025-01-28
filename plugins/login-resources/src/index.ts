@@ -25,7 +25,7 @@ import {
   sendInvite,
   resendInvite,
   fetchWorkspace,
-  createMissingEmployee,
+  getPerson,
   getInviteLink
 } from './utils'
 /*!
@@ -45,7 +45,7 @@ export default async () => ({
     ChangePassword: changePassword,
     SelectWorkspace: selectWorkspace,
     FetchWorkspace: fetchWorkspace,
-    CreateEmployee: createMissingEmployee,
+    GetPerson: getPerson,
     GetWorkspaces: getWorkspaces,
     SendInvite: sendInvite,
     ResendInvite: resendInvite,

@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Account, generateId, Ref } from '@hcengineering/core'
+  import core, { generateId, PersonId, Ref } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
   import { EditBox, Grid } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -33,7 +33,7 @@
     _id: generateId(),
     collection: 'variants',
     modifiedOn: Date.now(),
-    modifiedBy: '' as Ref<Account>
+    modifiedBy: '' as PersonId
   }
 
   const dispatch = createEventDispatcher()

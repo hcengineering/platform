@@ -21,7 +21,6 @@
   import { dateFileBrowserFilters, fileTypeFileBrowserFilters } from '..'
 
   export let requestedSpaceClasses: Ref<Class<Space>>[]
-  export let spaceId: Ref<Space> | undefined
   export let selectedParticipants: Ref<Person>[]
   export let selectedSpaces: Ref<Space>[]
   export let selectedDateId: string

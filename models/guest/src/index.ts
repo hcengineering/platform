@@ -1,12 +1,5 @@
-import {
-  AccountRole,
-  type Class,
-  type IndexingConfiguration,
-  type Doc,
-  type Domain,
-  type Ref
-} from '@hcengineering/core'
-import { type PublicLink, type Restrictions, guestAccountEmail } from '@hcengineering/guest'
+import { type Class, type IndexingConfiguration, type Doc, type Domain, type Ref } from '@hcengineering/core'
+import { type PublicLink, type Restrictions } from '@hcengineering/guest'
 import { type Builder, Model } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
 import { type Location } from '@hcengineering/ui'
@@ -26,15 +19,6 @@ export class TPublicLink extends TDoc implements PublicLink {
 export function createModel (builder: Builder): void {
   builder.createModel(TPublicLink)
 
-  builder.createDoc(
-    core.class.Account,
-    core.space.Model,
-    {
-      email: guestAccountEmail,
-      role: AccountRole.DocGuest
-    },
-    guest.account.Guest
-  )
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: GUEST_DOMAIN,
     disabled: [

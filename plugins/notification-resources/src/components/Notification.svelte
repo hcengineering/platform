@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
-  import { Avatar, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
+  import { Avatar, personByPersonIdStore } from '@hcengineering/contact-resources'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { BrowserNotification } from '@hcengineering/notification'
   import { Button, navigate, Notification as PlatformNotification, NotificationToast } from '@hcengineering/ui'
@@ -20,10 +19,7 @@
   const hierarchy = client.getHierarchy()
 
   $: value = notification.params?.value as BrowserNotification
-
-  $: senderAccount =
-    value.senderId !== undefined ? $personAccountByIdStore.get(value.senderId as Ref<PersonAccount>) : undefined
-  $: sender = senderAccount !== undefined ? $personByIdStore.get(senderAccount.person) : undefined
+  $: sender = value.senderId !== undefined ? $personByPersonIdStore.get(value.senderId) : undefined
 
   async function openChannelInSidebar (): Promise<void> {
     if (!value.onClickLocation) return

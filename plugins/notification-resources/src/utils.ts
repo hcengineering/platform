@@ -25,6 +25,7 @@ import {
   isReactionMessage,
   messageInFocus
 } from '@hcengineering/activity-resources'
+import { includesAny } from '@hcengineering/contact'
 import { Analytics } from '@hcengineering/analytics'
 import chunter, { type ThreadMessage } from '@hcengineering/chunter'
 import core, {
@@ -233,7 +234,7 @@ export async function subscribeDoc (
   op: 'add' | 'remove',
   doc?: Doc
 ): Promise<void> {
-  const me = getCurrentAccount()._id
+  const myAcc = getCurrentAccount()
   const hierarchy = client.getHierarchy()
 
   if (hierarchy.classHierarchyMixin(docClass, notification.mixin.ClassCollaborators) === undefined) return
@@ -243,17 +244,18 @@ export async function subscribeDoc (
   if (hierarchy.hasMixin(target, notification.mixin.Collaborators)) {
     const collab = hierarchy.as(target, notification.mixin.Collaborators)
     let collabUpdate: DocumentUpdate<Collaborators> | undefined
+    const includesMe = includesAny(collab.collaborators, myAcc.socialIds)
 
-    if (collab.collaborators.includes(me) && op === 'remove') {
+    if (includesMe && op === 'remove') {
       collabUpdate = {
         $pull: {
-          collaborators: me
+          collaborators: { $in: myAcc.socialIds }
         }
       }
-    } else if (!collab.collaborators.includes(me) && op === 'add') {
+    } else if (!includesMe && op === 'add') {
       collabUpdate = {
         $push: {
-          collaborators: me
+          collaborators: myAcc.primarySocialId
         }
       }
     }
@@ -263,7 +265,7 @@ export async function subscribeDoc (
     }
   } else if (op === 'add') {
     await client.createMixin(docId, docClass, target.space, notification.mixin.Collaborators, {
-      collaborators: [me]
+      collaborators: [myAcc.primarySocialId]
     })
   }
 }
@@ -747,7 +749,7 @@ export async function subscribePush (): Promise<boolean> {
           applicationServerKey: publicKey
         })
         await client.createDoc(notification.class.PushSubscription, core.space.Workspace, {
-          user: getCurrentAccount()._id,
+          user: getCurrentAccount().primarySocialId,
           endpoint: subscription.endpoint,
           keys: {
             p256dh: arrayBufferToBase64(subscription.getKey('p256dh')),
@@ -756,12 +758,12 @@ export async function subscribePush (): Promise<boolean> {
         })
       } else {
         const exists = await client.findOne(notification.class.PushSubscription, {
-          user: getCurrentAccount()._id,
+          user: getCurrentAccount().primarySocialId,
           endpoint: current.endpoint
         })
         if (exists === undefined) {
           await client.createDoc(notification.class.PushSubscription, core.space.Workspace, {
-            user: getCurrentAccount()._id,
+            user: getCurrentAccount().primarySocialId,
             endpoint: current.endpoint,
             keys: {
               p256dh: arrayBufferToBase64(current.getKey('p256dh')),

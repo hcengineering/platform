@@ -14,17 +14,16 @@
 //
 import attachment, { type SavedAttachments } from '@hcengineering/attachment'
 import { type DirectMessage } from '@hcengineering/chunter'
-import contact, { type PersonAccount } from '@hcengineering/contact'
+import contact, { type Person } from '@hcengineering/contact'
 import core, {
-  type Account,
+  type PersonId,
   AccountRole,
   getCurrentAccount,
   hasAccountRole,
-  type IdMap,
-  type Ref,
   SortingOrder,
   type UserStatus,
-  type WithLookup
+  type WithLookup,
+  type PersonUuid
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext } from '@hcengineering/notification'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
@@ -171,70 +170,72 @@ function sortAlphabetically (items: ChatNavItemModel[]): ChatNavItemModel[] {
   return items.sort((i1, i2) => i1.title.localeCompare(i2.title))
 }
 
-function getDirectCompanion (
-  direct: DirectMessage,
-  me: PersonAccount,
-  personAccountById: IdMap<PersonAccount>
-): Ref<Account> | undefined {
-  return direct.members.find((member) => personAccountById.get(member as Ref<PersonAccount>)?.person !== me.person)
+function getDirectCompanion (direct: DirectMessage, mySocialIds: PersonId[]): PersonId | undefined {
+  return direct.members.find((member) => !mySocialIds.includes(member))
 }
 
-function isOnline (account: Ref<Account> | undefined, userStatusByAccount: Map<Ref<Account>, UserStatus>): boolean {
-  if (account === undefined) {
+function isOnline (
+  user: PersonId | undefined,
+  personByPersonId: Map<PersonId, Person>,
+  userStatusByAccount: Map<PersonUuid, UserStatus>
+): boolean {
+  if (user === undefined) {
     return false
   }
 
-  return userStatusByAccount.get(account)?.online ?? false
+  const person = personByPersonId.get(user)
+
+  if (person?.personUuid === undefined) {
+    return false
+  }
+
+  return userStatusByAccount.get(person.personUuid)?.online ?? false
 }
 
-function isGroupChat (direct: DirectMessage, personAccountById: IdMap<PersonAccount>): boolean {
-  const persons = new Set(
-    direct.members
-      .map((member) => personAccountById.get(member as Ref<PersonAccount>)?.person)
-      .filter((it) => it !== undefined)
-  )
+function isGroupChat (direct: DirectMessage, personByPersonId: Map<PersonId, Person>): boolean {
+  const persons = new Set(direct.members.map((member) => personByPersonId.get(member)).filter((it) => it !== undefined))
 
   return persons.size > 2
 }
 
 function sortDirects (items: ChatNavItemModel[], option: SortFnOptions): ChatNavItemModel[] {
-  const { userStatusByAccount, personAccountById } = option
-  const me = getCurrentAccount() as PersonAccount
+  const { userStatusByAccount, personByPersonId } = option
+  const mySocialIds = getCurrentAccount().socialIds
 
   return items.sort((i1, i2) => {
     const direct1 = i1.object as DirectMessage
     const direct2 = i2.object as DirectMessage
 
-    const isGroupChat1 = isGroupChat(direct1, personAccountById)
-    const isGroupChat2 = isGroupChat(direct2, personAccountById)
+    const isGroupChat1 = isGroupChat(direct1, personByPersonId)
+    const isGroupChat2 = isGroupChat(direct2, personByPersonId)
 
     if (isGroupChat1 && isGroupChat2) {
       return i1.title.localeCompare(i2.title)
     }
 
     if (isGroupChat1 && !isGroupChat2) {
-      const isOnline2 = isOnline(getDirectCompanion(direct2, me, personAccountById), userStatusByAccount)
+      const isOnline2 = isOnline(getDirectCompanion(direct2, mySocialIds), personByPersonId, userStatusByAccount)
       return isOnline2 ? 1 : -1
     }
 
     if (!isGroupChat1 && isGroupChat2) {
-      const isOnline1 = isOnline(getDirectCompanion(direct1, me, personAccountById), userStatusByAccount)
+      const isOnline1 = isOnline(getDirectCompanion(direct1, mySocialIds), personByPersonId, userStatusByAccount)
       return isOnline1 ? -1 : 1
     }
 
-    const account1 = getDirectCompanion(direct1, me, personAccountById)
-    const account2 = getDirectCompanion(direct2, me, personAccountById)
+    const user1 = getDirectCompanion(direct1, mySocialIds)
+    const user2 = getDirectCompanion(direct2, mySocialIds)
 
-    if (account1 === undefined) {
+    if (user1 === undefined) {
       return 1
     }
 
-    if (account2 === undefined) {
+    if (user2 === undefined) {
       return -1
     }
 
-    const isOnline1 = isOnline(account1, userStatusByAccount)
-    const isOnline2 = isOnline(account2, userStatusByAccount)
+    const isOnline1 = isOnline(user1, personByPersonId, userStatusByAccount)
+    const isOnline2 = isOnline(user2, personByPersonId, userStatusByAccount)
 
     if (isOnline1 === isOnline2) {
       return i1.title.localeCompare(i2.title)

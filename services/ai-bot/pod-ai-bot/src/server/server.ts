@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Token } from '@hcengineering/server-token'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
@@ -23,8 +23,7 @@ import {
   AIEventRequest,
   ConnectMeetingRequest,
   DisconnectMeetingRequest,
-  PostTranscriptRequest,
-  aiBotAccountEmail
+  PostTranscriptRequest
 } from '@hcengineering/ai-bot'
 import { extractToken } from '@hcengineering/server-client'
 import { MeasureContext } from '@hcengineering/core'
@@ -79,8 +78,8 @@ export function createServer (controller: AIControl, ctx: MeasureContext): Expre
   app.post(
     '/connect',
     wrapRequest(async (_, res, token) => {
-      ctx.info('Request to connect to workspace', { workspace: token.workspace.name })
-      await controller.connect(token.workspace.name)
+      ctx.info('Request to connect to workspace', { workspace: token.workspace })
+      await controller.connect(token.workspace)
 
       res.status(200)
       res.json({})
@@ -96,25 +95,27 @@ export function createServer (controller: AIControl, ctx: MeasureContext): Expre
 
       const events = Array.isArray(req.body) ? req.body : [req.body]
 
-      await controller.processEvent(token.workspace.name, events as AIEventRequest[])
+      await controller.processEvent(token.workspace, events as AIEventRequest[])
     })
   )
 
   app.post(
     '/love/transcript',
     wrapRequest(async (req, res, token) => {
-      if (req.body == null || Array.isArray(req.body) || typeof req.body !== 'object') {
-        throw new ApiError(400)
-      }
+      // TODO: FIXME
+      throw new Error('Not implemented')
+      // if (req.body == null || Array.isArray(req.body) || typeof req.body !== 'object') {
+      //   throw new ApiError(400)
+      // }
 
-      if (token.email !== aiBotAccountEmail) {
-        throw new ApiError(401)
-      }
+      // if (token.email !== aiBotAccountEmail) {
+      //   throw new ApiError(401)
+      // }
 
-      await controller.processLoveTranscript(req.body as PostTranscriptRequest)
+      // await controller.processLoveTranscript(req.body as PostTranscriptRequest)
 
-      res.status(200)
-      res.json({})
+      // res.status(200)
+      // res.json({})
     })
   )
 
@@ -151,19 +152,21 @@ export function createServer (controller: AIControl, ctx: MeasureContext): Expre
   app.get(
     '/love/:roomName/identity',
     wrapRequest(async (req, res, token) => {
-      if (token.email !== aiBotAccountEmail) {
-        throw new ApiError(401)
-      }
+      // TODO: FIXME
+      throw new Error('Not implemented')
+      // if (token.email !== aiBotAccountEmail) {
+      //   throw new ApiError(401)
+      // }
 
-      const roomName = req.params.roomName
-      const resp = await controller.getLoveIdentity(roomName)
+      // const roomName = req.params.roomName
+      // const resp = await controller.getLoveIdentity(roomName)
 
-      if (resp === undefined) {
-        throw new ApiError(404)
-      }
+      // if (resp === undefined) {
+      //   throw new ApiError(404)
+      // }
 
-      res.status(200)
-      res.json(resp)
+      // res.status(200)
+      // res.json(resp)
     })
   )
 

@@ -42,6 +42,7 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/contact": "^0.6.24",
+    "@hcengineering/server-contact": "^0.6.1",
     "@hcengineering/chunter": "^0.6.20",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/login": "^0.6.12",

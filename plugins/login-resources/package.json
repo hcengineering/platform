@@ -48,6 +48,7 @@
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/setting": "^0.6.17",
     "@hcengineering/theme": "^0.6.5",
-    "@hcengineering/analytics": "^0.6.0"
+    "@hcengineering/analytics": "^0.6.0",
+    "@hcengineering/account-client": "^0.6.0"
   }
 }

@@ -44,9 +44,10 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverLead.trigger.OnWorkspaceOwnerAdded,
+    trigger: serverLead.trigger.OnSocialIdentityCreate,
     txMatch: {
-      objectClass: contact.class.PersonAccount
+      _class: core.class.TxCreateDoc,
+      objectClass: contact.class.SocialIdentity
     }
   })
 }

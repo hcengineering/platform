@@ -14,14 +14,7 @@
 //
 
 import chunter from '@hcengineering/chunter'
-import core, {
-  type Account,
-  type Markup,
-  type Ref,
-  type Timestamp,
-  generateId,
-  getCurrentAccount
-} from '@hcengineering/core'
+import core, { type Markup, type Timestamp, type PersonId, generateId, getCurrentAccount } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { type ActionContext } from '@hcengineering/presentation'
 import type { AnySvelteComponent } from '@hcengineering/ui'
@@ -95,7 +88,7 @@ interface InlineComment {
   message: Markup
 
   createdOn: Timestamp
-  createdBy: Ref<Account>
+  createdBy: PersonId
 
   editedOn?: Timestamp
 }
@@ -754,7 +747,7 @@ function updateThreadComment (
           _id: generateId(),
           _class: core.class.Obj,
           thread: patch.thread,
-          createdBy: account._id,
+          createdBy: account.primarySocialId,
           createdOn: Date.now(),
           message: patch.message
         }

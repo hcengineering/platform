@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Blob, CollaborativeDoc, Markup, MarkupBlobRef, Ref, WorkspaceId, concatLink } from '@hcengineering/core'
+import { Blob, CollaborativeDoc, Markup, MarkupBlobRef, Ref, WorkspaceUuid, concatLink } from '@hcengineering/core'
 import { encodeDocumentId } from './utils'
 
 /** @public */
@@ -54,20 +54,20 @@ export interface CollaboratorClient {
 }
 
 /** @public */
-export function getClient (workspaceId: WorkspaceId, token: string, collaboratorUrl: string): CollaboratorClient {
+export function getClient (workspaceId: WorkspaceUuid, token: string, collaboratorUrl: string): CollaboratorClient {
   const url = collaboratorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://')
   return new CollaboratorClientImpl(workspaceId, token, url)
 }
 
 class CollaboratorClientImpl implements CollaboratorClient {
   constructor (
-    private readonly workspace: WorkspaceId,
+    private readonly workspace: WorkspaceUuid,
     private readonly token: string,
     private readonly collaboratorUrl: string
   ) {}
 
   private async rpc<P, R>(document: CollaborativeDoc, method: string, payload: P): Promise<R> {
-    const workspace = this.workspace.name
+    const workspace = this.workspace
     const documentId = encodeDocumentId(workspace, document)
 
     const url = concatLink(this.collaboratorUrl, `/rpc/${encodeURIComponent(documentId)}`)

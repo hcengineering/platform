@@ -39,6 +39,9 @@ const isUserTx = (it: Tx): boolean =>
   (it as TxCUD<Doc>).objectClass === 'contact:class:Person' ||
   (it as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount'
 
+const isAccountTx = (it: TxCUD<Doc>): boolean =>
+  ['core:class:Account', 'contact:class:PersonAccount'].includes(it.objectClass)
+
 /**
  * @public
  */
@@ -75,7 +78,7 @@ export class ModelMiddleware extends BaseMiddleware implements Middleware {
   @withContext('get-model')
   async getUserTx (ctx: MeasureContext, txAdapter: TxAdapter): Promise<Tx[]> {
     const allUserTxes = await ctx.with('fetch-model', {}, (ctx) => txAdapter.getModel(ctx))
-    return allUserTxes.filter((it) => isUserTx(it))
+    return allUserTxes.filter((it) => isUserTx(it) && !isAccountTx(it as TxCUD<Doc>))
   }
 
   async init (ctx: MeasureContext): Promise<void> {

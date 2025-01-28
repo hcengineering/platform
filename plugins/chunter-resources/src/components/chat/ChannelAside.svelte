@@ -13,13 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Account, Class, getCurrentAccount, Ref } from '@hcengineering/core'
+  import core, { getCurrentAccount, PersonId, Ref, notEmpty } from '@hcengineering/core'
   import presentation from '@hcengineering/presentation'
   import { Label, showPopup, tooltip } from '@hcengineering/ui'
 
   import { Channel, ChunterSpace, ObjectChatPanel } from '@hcengineering/chunter'
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import { EmployeeBox, personAccountByIdStore, SelectUsersPopup } from '@hcengineering/contact-resources'
+  import { Person } from '@hcengineering/contact'
+  import {
+    EmployeeBox,
+    personRefByPersonIdStore,
+    primarySocialIdByPersonRefStore,
+    socialIdsByPersonRefStore,
+    SelectUsersPopup
+  } from '@hcengineering/contact-resources'
 
   import ChannelMembers from '../ChannelMembers.svelte'
   import DocAside from './DocAside.svelte'
@@ -28,15 +34,16 @@
   export let object: ChunterSpace
   export let objectChatPanel: ObjectChatPanel | undefined
 
-  const currentAccount = getCurrentAccount()
+  const socialStrings = getCurrentAccount().socialIds
 
   let members = new Set<Ref<Person>>()
 
-  $: creatorPersonRef = object?.createdBy
-    ? $personAccountByIdStore.get(object.createdBy as Ref<PersonAccount>)?.person
-    : undefined
+  $: creatorPersonRef = object.createdBy !== undefined ? $personRefByPersonIdStore.get(object.createdBy) : undefined
 
-  $: disabledRemoveFor = currentAccount._id !== object?.createdBy && creatorPersonRef ? [creatorPersonRef] : []
+  $: disabledRemoveFor =
+    object.createdBy !== undefined && !socialStrings.includes(object.createdBy) && creatorPersonRef !== undefined
+      ? [creatorPersonRef]
+      : []
   $: updateMembers(object)
 
   function updateMembers (object: Channel | undefined): void {
@@ -45,17 +52,18 @@
       return
     }
 
-    members = new Set(
-      object.members
-        .map((accountId) => {
-          const personAccount = $personAccountByIdStore.get(accountId as Ref<PersonAccount>)
-          if (personAccount === undefined) {
-            return undefined
-          }
-          return personAccount.person
-        })
-        .filter((_id): _id is Ref<Person> => !!_id)
-    )
+    members = new Set(object.members.map((personId) => $personRefByPersonIdStore.get(personId)).filter(notEmpty))
+  }
+
+  function personsToPrimaryIds (persons: Ref<Person>[]): PersonId[] {
+    return persons.map((person) => $primarySocialIdByPersonRefStore.get(person)).filter(notEmpty)
+  }
+
+  function personsToAllSocialIds (persons: Ref<Person>[]): PersonId[] {
+    return persons
+      .map((person) => $socialIdsByPersonRefStore.get(person)?.map((si) => si.key) ?? [])
+      .flat()
+      .filter((s) => s !== undefined)
   }
 
   async function changeMembers (personRefs: Ref<Person>[], object?: Channel): Promise<void> {
@@ -63,16 +71,14 @@
       return
     }
 
-    const personAccounts = Array.from($personAccountByIdStore.values())
+    const personsToLeave = Array.from(members).filter((_id) => !personRefs.includes(_id))
+    const allSocialStringsToLeave = personsToAllSocialIds(personsToLeave)
+    const socialStringsToLeave = object.members.filter((s) => allSocialStringsToLeave.includes(s))
 
-    const newMembers: Ref<Account>[] = personAccounts
-      .filter(({ person }) => personRefs.includes(person))
-      .map(({ _id }) => _id)
+    const personsToJoin = personRefs.filter((_id) => !members.has(_id))
+    const socialStringsToJoin = personsToPrimaryIds(personsToJoin)
 
-    const toLeave = object.members.filter((_id) => !newMembers.includes(_id))
-    const toJoin = newMembers.filter((_id) => !object.members.includes(_id))
-
-    await Promise.all([leaveChannel(object, toLeave), joinChannel(object, toJoin)])
+    await Promise.all([leaveChannel(object, socialStringsToLeave), joinChannel(object, socialStringsToJoin)])
   }
 
   async function removeMember (ev: CustomEvent): Promise<void> {
@@ -86,15 +92,10 @@
       return
     }
 
-    const accounts = Array.from($personAccountByIdStore.values())
-      .filter((account) => account.person === personId)
-      .map(({ _id }) => _id)
+    const allSocialStringsToLeave = personsToAllSocialIds([personId])
+    const socialStringsToLeave = object.members.filter((s) => allSocialStringsToLeave.includes(s))
 
-    if (accounts.length === 0) {
-      return
-    }
-
-    await leaveChannel(object, accounts)
+    await leaveChannel(object, socialStringsToLeave)
   }
 
   function openSelectUsersPopup (): void {

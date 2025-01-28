@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { AccountBox } from '@hcengineering/contact-resources'
-  import { Account, Ref } from '@hcengineering/core'
+  import { notEmpty, type PersonId } from '@hcengineering/core'
   import { Integration } from '@hcengineering/setting'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
 
@@ -23,9 +23,9 @@
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'small'
 
-  $: ids = Array.from(new Set(integrations.map((p) => p.createdBy as Ref<Account>)))
+  $: ids = Array.from(new Set(integrations.map((p) => p.createdBy))).filter(notEmpty)
 
-  function change (e: CustomEvent<Ref<Account> | null>) {
+  function change (e: CustomEvent<PersonId | null>) {
     if (e.detail === null) {
       selected = undefined
     } else {
@@ -34,4 +34,4 @@
   }
 </script>
 
-<AccountBox value={selected?.modifiedBy} {kind} {size} docQuery={{ _id: { $in: ids } }} on:change={change} />
+<AccountBox value={selected?.modifiedBy} {kind} {size} include={ids} on:change={change} />

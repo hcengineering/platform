@@ -14,10 +14,9 @@
 -->
 <script lang="ts">
   import { DirectMessage } from '@hcengineering/chunter'
-  import contact, { PersonAccount } from '@hcengineering/contact'
-  import { CombineAvatars } from '@hcengineering/contact-resources'
+  import contact, { getCurrentEmployee } from '@hcengineering/contact'
+  import { CombineAvatars, personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import type { Ref } from '@hcengineering/core'
-  import { getCurrentAccount } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { SearchEdit } from '@hcengineering/ui'
   import { openDoc } from '@hcengineering/view-resources'
@@ -35,22 +34,15 @@
 
   const client = getClient()
   const query = createQuery()
-  const myAccId = getCurrentAccount()._id
+  const me = getCurrentEmployee()
   let dm: DirectMessage | undefined
 
   $: query.query(chunter.class.DirectMessage, { _id: spaceId }, (result) => {
     dm = result[0]
   })
-
-  async function getEmpolyeeIds () {
-    const empAccIds = dm?.members.length !== 1 ? dm?.members.filter((accId) => accId !== myAccId) : dm?.members
-
-    const employeeAccounts = await client.findAll(contact.class.PersonAccount, {
-      _id: { $in: (empAccIds ?? []) as Ref<PersonAccount>[] }
-    })
-
-    return employeeAccounts.map((ea) => ea.person)
-  }
+  $: dmPersons =
+    dm !== undefined ? dm.members.map((m) => $personRefByPersonIdStore.get(m)).filter((p) => p !== undefined) : []
+  $: dmPersonsToDisplay = dmPersons.length === 1 ? dmPersons : dmPersons.filter((p) => p !== me)
 
   async function onSpaceEdit (): Promise<void> {
     if (dm === undefined) return
@@ -61,16 +53,14 @@
 <div class="ac-header divide full caption-height">
   {#if dm}
     {#await getDmName(client, dm) then name}
-      {#await getEmpolyeeIds() then empolyeeIds}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div class="ac-header__wrap-title" on:click={onSpaceEdit}>
-          <div class="ac-header__icon">
-            <CombineAvatars _class={contact.mixin.Employee} items={empolyeeIds} size={'x-small'} />
-          </div>
-          <span class="ac-header__title">{name}</span>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div class="ac-header__wrap-title" on:click={onSpaceEdit}>
+        <div class="ac-header__icon">
+          <CombineAvatars _class={contact.mixin.Employee} items={dmPersonsToDisplay} size={'x-small'} />
         </div>
-      {/await}
+        <span class="ac-header__title">{name}</span>
+      </div>
     {/await}
   {/if}
   {#if withSearch}

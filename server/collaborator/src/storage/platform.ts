@@ -23,14 +23,13 @@ import { markupToYDocNoSchema } from '@hcengineering/text-ydoc'
 import { Doc as YDoc } from 'yjs'
 
 import { Context } from '../context'
-
 import { CollabStorageAdapter } from './adapter'
 
 export class PlatformStorageAdapter implements CollabStorageAdapter {
   constructor (private readonly storage: StorageAdapter) {}
 
   async loadDocument (ctx: MeasureContext, documentName: string, context: Context): Promise<YDoc | undefined> {
-    const { content, workspaceId } = context
+    const { content, workspaceDataId } = context
     const { documentId } = decodeDocumentId(documentName)
 
     // try to load document content
@@ -39,7 +38,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
 
       const ydoc = await ctx.with('loadCollabYdoc', {}, (ctx) => {
         return withRetry(ctx, 5, () => {
-          return loadCollabYdoc(ctx, this.storage, context.workspaceId, documentId)
+          return loadCollabYdoc(ctx, this.storage, workspaceDataId, documentId)
         })
       })
 
@@ -58,7 +57,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
 
         const markup = await ctx.with('loadCollabJson', {}, (ctx) => {
           return withRetry(ctx, 5, () => {
-            return loadCollabJson(ctx, this.storage, workspaceId, content)
+            return loadCollabJson(ctx, this.storage, workspaceDataId, content)
           })
         })
         if (markup !== undefined) {
@@ -66,7 +65,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
 
           // if document was loaded from the initial content or storage we need to save
           // it to ensure the next time we load it from the ydoc document
-          await saveCollabYdoc(ctx, this.storage, workspaceId, documentId, ydoc)
+          await saveCollabYdoc(ctx, this.storage, workspaceDataId, documentId, ydoc)
 
           return ydoc
         }
@@ -90,7 +89,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       curr: () => Record<string, string>
     }
   ): Promise<Record<string, string> | undefined> {
-    const { clientFactory } = context
+    const { clientFactory, workspaceDataId } = context
     const { documentId } = decodeDocumentId(documentName)
 
     const client = await ctx.with('connect', {}, () => clientFactory())
@@ -100,7 +99,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
         ctx.info('save document ydoc content', { documentName })
         await ctx.with('saveCollabYdoc', {}, (ctx) => {
           return withRetry(ctx, 5, () => {
-            return saveCollabYdoc(ctx, this.storage, context.workspaceId, documentId, document)
+            return saveCollabYdoc(ctx, this.storage, workspaceDataId, documentId, document)
           })
         })
       } catch (err) {
@@ -112,7 +111,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
 
       ctx.info('save document content to platform', { documentName })
       return await ctx.with('save-to-platform', {}, (ctx) => {
-        return this.saveDocumentToPlatform(ctx, client, documentName, getMarkup)
+        return this.saveDocumentToPlatform(ctx, client, context, documentName, getMarkup)
       })
     } finally {
       await client.close()
@@ -122,13 +121,15 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
   async saveDocumentToPlatform (
     ctx: MeasureContext,
     client: Omit<TxOperations, 'close'>,
+    context: Context,
     documentName: string,
     getMarkup: {
       prev: () => Record<string, string>
       curr: () => Record<string, string>
     }
   ): Promise<Record<string, string> | undefined> {
-    const { documentId, workspaceId } = decodeDocumentId(documentName)
+    const { workspaceDataId } = context
+    const { documentId } = decodeDocumentId(documentName)
     const { objectAttr, objectClass, objectId } = documentId
 
     const attribute = client.getHierarchy().findAttribute(objectClass, objectAttr)
@@ -167,7 +168,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
 
     const blobId = await ctx.with('saveCollabJson', {}, (ctx) => {
       return withRetry(ctx, 5, () => {
-        return saveCollabJson(ctx, this.storage, { name: workspaceId }, documentId, markup.curr[objectAttr])
+        return saveCollabJson(ctx, this.storage, workspaceDataId, documentId, markup.curr[objectAttr])
       })
     })
 

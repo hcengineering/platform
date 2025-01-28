@@ -65,6 +65,7 @@
     "BlobContentType": "內容類型",
     "Relation": "关系",
     "Relations": "关系",
-    "AddRelation": "添加关系"
+    "AddRelation": "添加关系",
+    "PersonId": "人员 ID"
   }
 }

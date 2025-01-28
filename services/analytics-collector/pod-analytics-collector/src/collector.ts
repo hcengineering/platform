@@ -14,34 +14,28 @@
 //
 import { generateToken, Token } from '@hcengineering/server-token'
 import { AnalyticEvent } from '@hcengineering/analytics-collector'
-import {
-  AccountRole,
-  getWorkspaceId,
-  MeasureContext,
-  toWorkspaceString,
-  isWorkspaceCreating,
-  WorkspaceId
-} from '@hcengineering/core'
+import { AccountRole, MeasureContext, isWorkspaceCreating, WorkspaceUuid, PersonUuid } from '@hcengineering/core'
 import { Person } from '@hcengineering/contact'
+import { getClient as getAccountClient, WorkspaceLoginInfo } from '@hcengineering/account-client'
 import { Db, Collection } from 'mongodb'
 
 import { WorkspaceClient } from './workspaceClient'
 import config from './config'
-import { getWorkspaceInfo } from './account'
 import { SupportWsClient } from './supportWsClient'
 import { Action, OnboardingMessage } from './types'
 
 const closeWorkspaceTimeout = 10 * 60 * 1000 // 10 minutes
 
 export class Collector {
-  private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
-  private readonly closeWorkspaceTimeouts: Map<string, NodeJS.Timeout> = new Map<string, NodeJS.Timeout>()
-  private readonly createdWorkspaces: Set<string> = new Set<string>()
+  private readonly workspaces: Map<WorkspaceUuid, WorkspaceClient> = new Map<WorkspaceUuid, WorkspaceClient>()
+  private readonly closeWorkspaceTimeouts: Map<WorkspaceUuid, NodeJS.Timeout> = new Map<WorkspaceUuid, NodeJS.Timeout>()
+  private readonly createdWorkspaces: Set<WorkspaceUuid> = new Set<WorkspaceUuid>()
 
   private readonly onboardingMessagesCollection: Collection<OnboardingMessage>
 
   supportClient: SupportWsClient | undefined = undefined
 
+  // <account-workspace key, Person>
   persons = new Map<string, Person>()
 
   constructor (
@@ -49,11 +43,11 @@ export class Collector {
     private readonly db: Db
   ) {
     this.onboardingMessagesCollection = this.db.collection<OnboardingMessage>('messages')
-    this.supportClient = this.getSupportWorkspaceClient()
+    // this.supportClient = this.getSupportWorkspaceClient() // TODO: FIXME
   }
 
-  getWorkspaceClient (workspaceId: WorkspaceId): WorkspaceClient {
-    const workspace = toWorkspaceString(workspaceId)
+  getWorkspaceClient (workspaceId: WorkspaceUuid): WorkspaceClient {
+    const workspace = workspaceId
 
     let wsClient: WorkspaceClient
 
@@ -71,7 +65,7 @@ export class Collector {
     return wsClient
   }
 
-  setWorkspaceCloseTimeout (workspace: string): void {
+  setWorkspaceCloseTimeout (workspace: WorkspaceUuid): void {
     const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
 
     if (timeoutId !== undefined) {
@@ -86,21 +80,23 @@ export class Collector {
   }
 
   getSupportWorkspaceClient (): SupportWsClient {
-    let client: SupportWsClient
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // let client: SupportWsClient
 
-    if (this.supportClient !== undefined) {
-      client = this.supportClient
-    } else {
-      client = new SupportWsClient(this.ctx, getWorkspaceId(config.SupportWorkspace))
-      this.supportClient = client
-    }
+    // if (this.supportClient !== undefined) {
+    //   client = this.supportClient
+    // } else {
+    //   client = new SupportWsClient(this.ctx, config.SupportWorkspace)
+    //   this.supportClient = client
+    // }
 
-    this.setWorkspaceCloseTimeout(config.SupportWorkspace)
+    // this.setWorkspaceCloseTimeout(config.SupportWorkspace)
 
-    return client
+    // return client
   }
 
-  async closeWorkspaceClient (workspace: string): Promise<void> {
+  async closeWorkspaceClient (workspace: WorkspaceUuid): Promise<void> {
     this.ctx.info('Closing workspace client', { workspace })
     const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
 
@@ -123,7 +119,7 @@ export class Collector {
   }
 
   collect (events: AnalyticEvent[], token: Token): void {
-    if (toWorkspaceString(token.workspace) === config.SupportWorkspace) {
+    if (token.workspace === config.SupportWorkspace) {
       return
     }
 
@@ -131,20 +127,21 @@ export class Collector {
   }
 
   async isWorkspaceCreated (token: Token): Promise<boolean> {
-    const ws = toWorkspaceString(token.workspace)
+    const ws = token.workspace
 
     if (this.createdWorkspaces.has(ws)) {
       return true
     }
 
-    const info = await getWorkspaceInfo(generateToken(token.email, token.workspace, token.extra))
-    this.ctx.info('workspace info', info)
+    const rawToken = generateToken(token.account, token.workspace, token.extra)
+    const wsInfo = await getAccountClient(config.AccountsUrl, rawToken).getWorkspaceInfo()
+    this.ctx.info('workspace info', wsInfo)
 
-    if (info === undefined) {
+    if (wsInfo === undefined) {
       return false
     }
 
-    if (isWorkspaceCreating(info?.mode)) {
+    if (isWorkspaceCreating(wsInfo?.mode)) {
       return false
     }
 
@@ -152,31 +149,29 @@ export class Collector {
     return true
   }
 
-  async getPerson (email: string, workspace: WorkspaceId): Promise<Person | undefined> {
-    const wsString = toWorkspaceString(workspace)
-    const key = `${email}-${wsString}`
+  async getPerson (account: PersonUuid, workspace: WorkspaceUuid): Promise<Person | undefined> {
+    const key = `${account}-${workspace}`
 
     if (this.persons.has(key)) {
       return this.persons.get(key)
     }
 
+    const token = generateToken(account, workspace, { service: 'analytics-collector' })
+    const wsLoginInfo = await getAccountClient(config.AccountsUrl, token).getLoginInfoByToken()
+
+    if ((wsLoginInfo as WorkspaceLoginInfo).role !== AccountRole.Owner) {
+      return
+    }
+
     const fromWsClient = this.getWorkspaceClient(workspace)
-    const account = await fromWsClient.getAccount(email)
-
-    if (account === undefined) {
-      this.ctx.error('Cannnot found account', { email, workspace: wsString })
-      return
-    }
-
-    if (account.role !== AccountRole.Owner) {
-      return
-    }
-
     const person = await fromWsClient.getPerson(account)
 
-    if (person !== undefined) {
-      this.persons.set(key, person)
+    if (person === undefined) {
+      this.ctx.error('Cannnot find person', { account, workspace })
+      return
     }
+
+    this.persons.set(key, person)
 
     return person
   }
@@ -188,7 +183,7 @@ export class Collector {
       return
     }
 
-    const person = await this.getPerson(token.email, token.workspace)
+    const person = await this.getPerson(token.account, token.workspace)
 
     if (person === undefined) {
       return
@@ -196,19 +191,25 @@ export class Collector {
 
     const client = this.getSupportWorkspaceClient()
 
-    await client.pushEvents(events, token.email, token.workspace, person, this.onboardingMessagesCollection)
+    await client.pushEvents(events, token.workspace, person, this.onboardingMessagesCollection)
   }
 
   async processAction (action: Action, token: Token): Promise<void> {
-    const ws = toWorkspaceString(token.workspace)
+    const ws = token.workspace
 
     if (ws !== config.SupportWorkspace) {
       return
     }
 
+    const person = await this.getPerson(token.account, token.workspace)
+
+    if (person === undefined) {
+      return
+    }
+
     const client = this.getSupportWorkspaceClient()
 
-    await client.processAction(action, token.email, this.onboardingMessagesCollection)
+    await client.processAction(action, person, this.onboardingMessagesCollection)
   }
 
   async close (): Promise<void> {

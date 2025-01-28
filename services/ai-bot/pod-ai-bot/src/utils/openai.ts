@@ -20,6 +20,7 @@ import config from '../config'
 import { HistoryRecord } from '../types'
 import { WorkspaceClient } from '../workspace/workspaceClient'
 import { getTools } from './tools'
+import { PersonId } from '@hcengineering/core'
 
 export async function translateHtml (client: OpenAI, html: string, lang: string): Promise<string | undefined> {
   const response = await client.chat.completions.create({
@@ -71,7 +72,7 @@ export async function createChatCompletionWithTools (
   workspaceClient: WorkspaceClient,
   client: OpenAI,
   message: OpenAI.ChatCompletionMessageParam,
-  user?: string,
+  user?: PersonId,
   history: OpenAI.ChatCompletionMessageParam[] = [],
   skipCache = true
 ): Promise<

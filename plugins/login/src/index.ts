@@ -1,5 +1,5 @@
 //
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2020-2024 Anticrm Platform Contributors.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,56 +13,18 @@
 // limitations under the License.
 //
 
-import { AccountRole, Doc, Ref, Timestamp, WorkspaceMode, type BackupStatus } from '@hcengineering/core'
+import { AccountRole, Person, WorkspaceInfoWithStatus } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource, Status } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
+import type { LoginInfo, WorkspaceLoginInfo } from '@hcengineering/account-client'
+
+export type { LoginInfo, WorkspaceLoginInfo, OtpInfo, RegionInfo } from '@hcengineering/account-client'
 
 /**
  * @public
  */
 export const loginId = 'login' as Plugin
-
-/**
- * @public
- */
-export interface Workspace {
-  workspace: string // workspace Url
-  workspaceName?: string // A company name
-  workspaceId: string // A unique identifier for the workspace
-
-  mode?: WorkspaceMode
-  progress?: number
-
-  lastVisit: number
-  backupInfo?: BackupStatus
-  region?: string
-}
-
-/**
- * @public
- */
-export interface WorkspaceLoginInfo extends LoginInfo {
-  workspace: string // worspaceUrl in db
-  workspaceId: string // workspace in db (actual ID)
-  mode?: WorkspaceMode
-  progress?: number
-}
-
-/**
- * @public
- */
-export interface LoginInfo {
-  token: string
-  endpoint: string
-  confirmed: boolean
-  email: string
-}
-
-export interface OtpInfo {
-  sent: boolean
-  retryOn: Timestamp
-}
 
 export default plugin(loginId, {
   metadata: {
@@ -70,7 +32,7 @@ export default plugin(loginId, {
     LoginTokens: '' as Metadata<Record<string, string>>,
     LastToken: '' as Metadata<string>,
     LoginEndpoint: '' as Metadata<string>,
-    LoginEmail: '' as Metadata<string>,
+    LoginAccount: '' as Metadata<string>,
     DisableSignUp: '' as Metadata<boolean>,
     TransactorOverride: '' as Metadata<string>,
     PasswordValidations: '' as Metadata<{
@@ -102,7 +64,7 @@ export default plugin(loginId, {
     WorkspaceArchivedDesc: '' as IntlString
   },
   function: {
-    SendInvite: '' as Resource<(email: string, personId?: Ref<Doc>, role?: AccountRole) => Promise<void>>,
+    SendInvite: '' as Resource<(email: string, role?: AccountRole) => Promise<void>>,
     ResendInvite: '' as Resource<(inviteId: string) => Promise<void>>,
     GetInviteLink: '' as Resource<
     (
@@ -113,13 +75,13 @@ export default plugin(loginId, {
       navigateUrl?: string
     ) => Promise<string>
     >,
-    LeaveWorkspace: '' as Resource<(email: string) => Promise<void>>,
+    LeaveWorkspace: '' as Resource<(account: string) => Promise<LoginInfo | null>>,
     ChangePassword: '' as Resource<(oldPassword: string, password: string) => Promise<void>>,
     SelectWorkspace: '' as Resource<
     (workspace: string, token: string | null | undefined) => Promise<[Status, WorkspaceLoginInfo | undefined]>
     >,
-    FetchWorkspace: '' as Resource<(workspace: string) => Promise<[Status, WorkspaceLoginInfo | undefined]>>,
-    CreateEmployee: '' as Resource<(workspace: string) => Promise<[Status]>>,
-    GetWorkspaces: '' as Resource<() => Promise<Workspace[]>>
+    FetchWorkspace: '' as Resource<() => Promise<[Status, WorkspaceInfoWithStatus | undefined]>>,
+    GetPerson: '' as Resource<() => Promise<[Status, Person]>>,
+    GetWorkspaces: '' as Resource<() => Promise<WorkspaceInfoWithStatus[]>>
   }
 })

@@ -14,7 +14,7 @@
 //
 import { Employee } from '@hcengineering/contact'
 import documents, { DocumentSpace } from '@hcengineering/controlled-documents'
-import { MeasureMetricsContext, Ref, getWorkspaceId, systemAccountEmail } from '@hcengineering/core'
+import { MeasureMetricsContext, Ref, systemAccountUuid, WorkspaceUuid, type WorkspaceDataId } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClientPlugin from '@hcengineering/server-client'
 import { type StorageAdapter } from '@hcengineering/server-core'
@@ -74,13 +74,14 @@ export function docImportTool (): void {
     .description('import doc into workspace')
     .option('-s|--spec <spec>', 'Specification file')
     .option('-b|--backend <backend>', 'Conversion backend', 'pandoc')
+    .option('-d|--dataId <workspaceDataId>', 'Workspace data ID')
     .option('--space <space>', 'Doc space ID', documents.space.QualityDocuments)
     .action(
       async (
         doc: string,
-        workspace: string,
+        workspace: WorkspaceUuid,
         owner: Ref<Employee>,
-        cmd: { backend: string, space: Ref<DocumentSpace>, spec?: string }
+        cmd: { backend: string, workspaceDataId?: WorkspaceDataId, space: Ref<DocumentSpace>, spec?: string }
       ) => {
         console.log(
           `Importing document '${doc}' into workspace '${workspace}', owner: ${JSON.stringify(owner)}, spec: ${
@@ -89,11 +90,12 @@ export function docImportTool (): void {
         )
 
         await withStorage(async (storageAdapter) => {
-          const workspaceId = getWorkspaceId(workspace)
+          const workspaceId = workspace
 
           const config: Config = {
             doc,
             workspaceId,
+            workspaceDataId: cmd.workspaceDataId,
             owner,
             backend: getBackend(cmd.backend),
             specFile: cmd.spec,
@@ -102,7 +104,7 @@ export function docImportTool (): void {
             storageAdapter,
             collaboratorURL: collaboratorUrl,
             collaborator,
-            token: generateToken(systemAccountEmail, workspaceId)
+            token: generateToken(systemAccountUuid, workspaceId, { service: 'import-tool' })
           }
 
           await importDoc(ctx, config)

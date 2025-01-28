@@ -14,6 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import contact, { PermissionsStore } from '@hcengineering/contact'
   import type { Attachment } from '@hcengineering/attachment'
   import core, { type WithLookup } from '@hcengineering/core'
   import presentation, {
@@ -25,10 +26,11 @@
     sizeToWidth
   } from '@hcengineering/presentation'
   import { Label, Spinner } from '@hcengineering/ui'
-  import { permissionsStore } from '@hcengineering/view-resources'
   import WebIcon from './icons/Web.svelte'
   import filesize from 'filesize'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
+  import { getResource } from '@hcengineering/platform'
+  import { Readable } from 'svelte/store'
   import { getType, openAttachmentInSidebar, showAttachmentPreviewPopup } from '../utils'
   import AttachmentName from './AttachmentName.svelte'
 
@@ -38,6 +40,11 @@
   export let preview = false
 
   const dispatch = createEventDispatcher()
+  let permissionsStore: Readable<PermissionsStore>
+
+  onMount(async () => {
+    permissionsStore = await getResource(contact.store.Permissions)
+  })
 
   const maxLength: number = 30
 
@@ -48,6 +55,7 @@
     removable &&
     value !== undefined &&
     value.readonly !== true &&
+    permissionsStore != null &&
     ($permissionsStore.whitelist.has(value.space) ||
       !$permissionsStore.ps[value.space]?.has(core.permission.ForbidDeleteObject))
 

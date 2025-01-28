@@ -14,7 +14,8 @@
 -->
 <script lang="ts">
   import { personByIdStore } from '@hcengineering/contact-resources'
-  import { getCurrentAccount, IdMap, Ref, toIdMap } from '@hcengineering/core'
+  import { IdMap, Ref, toIdMap } from '@hcengineering/core'
+  import { Person, getCurrentEmployee } from '@hcengineering/contact'
   import {
     Invite,
     isOffice,
@@ -59,7 +60,6 @@
   import RequestingPopup from './RequestingPopup.svelte'
   import RoomPopup from './RoomPopup.svelte'
   import RoomButton from './RoomButton.svelte'
-  import { Person, PersonAccount } from '@hcengineering/contact'
 
   const client = getClient()
 
@@ -188,8 +188,7 @@
           await disconnect()
         }
       } else if (!isConnected) {
-        const me = getCurrentAccount() as PersonAccount
-        const myPerson = personByIdStore.get(me.person)
+        const myPerson = personByIdStore.get(getCurrentEmployee())
         if (myPerson === undefined) return
         await connectRoom(0, 0, myInfo, myPerson, myOffice)
       }

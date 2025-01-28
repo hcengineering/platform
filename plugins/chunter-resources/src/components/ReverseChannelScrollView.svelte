@@ -51,7 +51,7 @@
   const loadMoreThreshold = 200
   const newSeparatorOffset = 150
 
-  const me = getCurrentAccount()
+  const socialStrings = getCurrentAccount().socialIds
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const inboxClient = InboxNotificationsClientImpl.getClient()
@@ -232,7 +232,9 @@
     }
     const lastIndex = messages.findIndex(({ _id }) => _id === lastMsgBeforeFreeze)
     if (lastIndex === -1) return
-    const firstNewMessage = messages.find(({ createdBy }, index) => index > lastIndex && createdBy !== me._id)
+    const firstNewMessage = messages.find(
+      ({ createdBy }, index) => index > lastIndex && (createdBy === undefined || !socialStrings.includes(createdBy))
+    )
 
     if (firstNewMessage === undefined) {
       scrollToBottom()

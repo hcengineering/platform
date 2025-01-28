@@ -52,6 +52,14 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverTracker.trigger.OnSocialIdentityCreate,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: contact.class.SocialIdentity
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTracker.trigger.OnIssueUpdate,
     txMatch: {
       objectClass: { $in: [tracker.class.Issue, tracker.class.TimeSpendReport] }
@@ -63,13 +71,6 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: core.class.TxRemoveDoc,
       objectClass: tracker.class.Component
-    }
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTracker.trigger.OnWorkspaceOwnerAdded,
-    txMatch: {
-      objectClass: contact.class.PersonAccount
     }
   })
 

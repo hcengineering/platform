@@ -1,5 +1,5 @@
 import { Analytics } from '@hcengineering/analytics'
-import type { MeasureContext, WorkspaceId } from '@hcengineering/core'
+import type { MeasureContext, WorkspaceDataId } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import type { Readable } from 'stream'
 
@@ -17,11 +17,11 @@ export interface BlobResponse {
 export async function getFile (
   ctx: MeasureContext,
   client: StorageAdapter,
-  workspace: WorkspaceId,
+  wsDataId: WorkspaceDataId,
   file: string,
   res: BlobResponse
 ): Promise<void> {
-  const stat = await ctx.with('stat', {}, () => client.stat(ctx, workspace, file))
+  const stat = await ctx.with('stat', {}, () => client.stat(ctx, wsDataId, file))
   if (stat === undefined) {
     ctx.error('No such key', { file })
     res.cork(() => {
@@ -36,7 +36,7 @@ export async function getFile (
     { contentType: stat.contentType },
     async (ctx) => {
       try {
-        const dataStream = await ctx.with('readable', {}, () => client.get(ctx, workspace, file))
+        const dataStream = await ctx.with('readable', {}, () => client.get(ctx, wsDataId, file))
         await new Promise<void>((resolve, reject) => {
           res.cork(() => {
             res.writeHead(200, {
@@ -62,7 +62,7 @@ export async function getFile (
           })
         })
       } catch (err: any) {
-        ctx.error('get-file-error', { workspace: workspace.name, err })
+        ctx.error('get-file-error', { workspace: wsDataId, err })
         Analytics.handleError(err)
         res.cork(() => {
           res.status(500)
@@ -95,11 +95,11 @@ export async function getFileRange (
   ctx: MeasureContext,
   range: string,
   client: StorageAdapter,
-  workspace: WorkspaceId,
+  wsDataId: WorkspaceDataId,
   uuid: string,
   res: BlobResponse
 ): Promise<void> {
-  const stat = await ctx.with('stats', {}, () => client.stat(ctx, workspace, uuid))
+  const stat = await ctx.with('stats', {}, () => client.stat(ctx, wsDataId, uuid))
   if (stat === undefined) {
     ctx.error('No such key', { file: uuid })
     res.cork(() => {
@@ -133,7 +133,7 @@ export async function getFileRange (
         const dataStream = await ctx.with(
           'partial',
           {},
-          () => client.partial(ctx, workspace, uuid, start, end - start + 1),
+          () => client.partial(ctx, wsDataId, uuid, start, end - start + 1),
           {}
         )
         await new Promise<void>((resolve, reject) => {
@@ -173,7 +173,7 @@ export async function getFileRange (
           err?.message === 'No such key' ||
           err?.Code === 'NoSuchKey'
         ) {
-          ctx.info('No such key', { workspace: workspace.name, uuid })
+          ctx.info('No such key', { workspace: wsDataId, uuid })
           res.cork(() => {
             res.status(404)
             res.end()

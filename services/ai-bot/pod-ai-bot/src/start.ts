@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { setMetadata } from '@hcengineering/platform'
 import serverAiBot from '@hcengineering/server-ai-bot'
-import serverClient, { createAccount } from '@hcengineering/server-client'
+import serverClient from '@hcengineering/server-client'
 import serverToken from '@hcengineering/server-token'
-import { aiBotAccountEmail } from '@hcengineering/ai-bot'
 import { initStatisticsContext } from '@hcengineering/server-core'
 
 import { AIControl } from './controller'
@@ -42,8 +41,10 @@ export const start = async (): Promise<void> => {
   for (let i = 0; i < 5; i++) {
     ctx.info('Creating bot account', { attempt: i })
     try {
-      await createAccount(aiBotAccountEmail, config.Password, config.FirstName, config.LastName)
-      break
+      // TODO: FIXME replace with signUp with getAccountClient
+      throw new Error('Not implemented')
+      // await createAccount(aiBotAccountEmail, config.Password, config.FirstName, config.LastName)
+      // break
     } catch (e) {
       ctx.error('Error during account creation', { error: e })
     }

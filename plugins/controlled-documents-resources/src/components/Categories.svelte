@@ -18,7 +18,8 @@
   import { ActionContext } from '@hcengineering/presentation'
   import { Button, IconAdd, Loading, showPopup } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
-  import { TableBrowser, ViewletPanelHeader, checkMyPermission, permissionsStore } from '@hcengineering/view-resources'
+  import { TableBrowser, ViewletPanelHeader } from '@hcengineering/view-resources'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
 
   import document from '../plugin'
   import CreateDocumentCategory from './CreateDocumentCategory.svelte'

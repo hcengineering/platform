@@ -1,18 +1,24 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { IncomingHttpHeaders } from 'http'
-import { PlatformWorker } from './platform'
-import { createServer, Handler, listen } from './server'
-import { telegram } from './telegram'
-
+import { SocialIdType } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
 import { initStatisticsContext, type StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { decodeToken, type Token } from '@hcengineering/server-token'
+
+import { PlatformWorker } from './platform'
+import { createServer, Handler, listen } from './server'
+import { telegram } from './telegram'
 import config from './config'
 
-const extractToken = (header: IncomingHttpHeaders): Token | undefined => {
+const extractTokenRaw = (headers: IncomingHttpHeaders): string | undefined => {
+  return headers.authorization?.slice(7)
+}
+
+const extractToken = (headers: IncomingHttpHeaders): Token | undefined => {
   try {
-    return decodeToken(header.authorization?.slice(7) ?? '')
+    return decodeToken(extractTokenRaw(headers) ?? '')
   } catch {
     return undefined
   }
@@ -29,168 +35,175 @@ export const main = async (): Promise<void> => {
   const storageAdapter = buildStorageFromConfig(storageConfig)
 
   const platformWorker = await PlatformWorker.create(ctx, storageAdapter)
-  const endpoints: Array<[string, Handler]> = [
-    [
-      '/signin',
-      async (req, res) => {
-        const token = extractToken(req.headers)
+  // TODO: FIXME
+  const endpoints: Array<[string, Handler]> = []
+  // [
+  //   [
+  //     '/signin',
+  //     async (req, res) => {
+  //       const token = extractToken(req.headers)
+  //       const rawToken = extractTokenRaw(req.headers)
 
-        if (token === undefined) {
-          res.status(401).send()
-          return
-        }
+  //       if (token === undefined || rawToken === undefined) {
+  //         res.status(401).send()
+  //         return
+  //       }
 
-        const { email, workspace } = token
-        const phone = req.body?.phone
-        if (phone === undefined) {
-          res.status(400).send({ err: "'phone' is missing" })
-          return
-        }
+  //       const { workspace } = token
+  //       const phone = req.body?.phone
+  //       if (phone === undefined) {
+  //         res.status(400).send({ err: "'phone' is missing" })
+  //         return
+  //       }
 
-        const existingRec = await platformWorker.getUserRecord({
-          phone,
-          workspace: workspace.name
-        })
+  //       const existingRec = await platformWorker.getUserRecord({
+  //         phone,
+  //         workspace
+  //       })
 
-        if (existingRec !== undefined) {
-          if (existingRec.email === email) {
-            res.send({
-              next: 'end'
-            })
-          } else {
-            res.status(400).send({ err: 'Phone number already in use' })
-          }
+  //       if (existingRec !== undefined) {
+  //         const socialIds = await getSocialIds(rawToken)
 
-          return
-        }
+  //         const email = socialIds.find((si) => si.type === SocialIdType.EMAIL)?.value
 
-        const next = await telegram.auth(phone)
-        res.send({ next })
-      }
-    ],
-    [
-      '/signin/code',
-      async (req, res) => {
-        const token = extractToken(req.headers)
+  //         if (existingRec.email === email) {
+  //           res.send({
+  //             next: 'end'
+  //           })
+  //         } else {
+  //           res.status(400).send({ err: 'Phone number already in use' })
+  //         }
 
-        if (token === undefined) {
-          res.status(401).send()
-          return
-        }
+  //         return
+  //       }
 
-        const { email, workspace } = token
-        const phone = req.body?.phone
-        if (phone === undefined) {
-          res.status(400).send({ err: "'phone' is missing" })
-          return
-        }
+  //       const next = await telegram.auth(phone)
+  //       res.send({ next })
+  //     }
+  //   ],
+  //   [
+  //     '/signin/code',
+  //     async (req, res) => {
+  //       const token = extractToken(req.headers)
 
-        const existingRec = await platformWorker.getUserRecord({
-          phone,
-          workspace: workspace.name
-        })
+  //       if (token === undefined) {
+  //         res.status(401).send()
+  //         return
+  //       }
 
-        if (existingRec !== undefined) {
-          if (existingRec.email === email) {
-            res.send({
-              next: 'end'
-            })
-          } else {
-            res.status(400).send({ err: 'Phone number already in use' })
-          }
+  //       const { workspace } = token
+  //       const phone = req.body?.phone
+  //       if (phone === undefined) {
+  //         res.status(400).send({ err: "'phone' is missing" })
+  //         return
+  //       }
 
-          return
-        }
+  //       const existingRec = await platformWorker.getUserRecord({
+  //         phone,
+  //         workspace
+  //       })
 
-        const done = await telegram.authCode(phone, req.body.code ?? '')
+  //       if (existingRec !== undefined) {
+  //         if (existingRec.email === email) {
+  //           res.send({
+  //             next: 'end'
+  //           })
+  //         } else {
+  //           res.status(400).send({ err: 'Phone number already in use' })
+  //         }
 
-        if (done) {
-          const conn = telegram.getConnection(phone)
+  //         return
+  //       }
 
-          if (conn !== undefined) {
-            await platformWorker.addUser({
-              email,
-              workspace: workspace.name,
-              phone,
-              conn
-            })
-            telegram.forgetConnection(phone)
-          }
-        }
+  //       const done = await telegram.authCode(phone, req.body.code ?? '')
 
-        res.send({
-          next: done ? 'end' : 'pass'
-        })
-      }
-    ],
-    [
-      '/signin/pass',
-      async (req, res) => {
-        const token = extractToken(req.headers)
+  //       if (done) {
+  //         const conn = telegram.getConnection(phone)
 
-        if (token === undefined) {
-          res.status(401).send()
-          return
-        }
+  //         if (conn !== undefined) {
+  //           await platformWorker.addUser({
+  //             email,
+  //             workspace: workspace.name,
+  //             phone,
+  //             conn
+  //           })
+  //           telegram.forgetConnection(phone)
+  //         }
+  //       }
 
-        const { email, workspace } = token
-        const phone = req.body?.phone
-        if (phone === undefined) {
-          res.status(400).send({ err: "'phone' is missing" })
-          return
-        }
+  //       res.send({
+  //         next: done ? 'end' : 'pass'
+  //       })
+  //     }
+  //   ],
+  //   [
+  //     '/signin/pass',
+  //     async (req, res) => {
+  //       const token = extractToken(req.headers)
 
-        const existingRec = await platformWorker.getUserRecord({
-          phone,
-          workspace: workspace.name
-        })
+  //       if (token === undefined) {
+  //         res.status(401).send()
+  //         return
+  //       }
 
-        if (existingRec !== undefined) {
-          if (existingRec.email === email) {
-            res.send({
-              next: 'end'
-            })
-          } else {
-            res.status(400).send({ err: 'Phone number already in use' })
-          }
+  //       const { email, workspace } = token
+  //       const phone = req.body?.phone
+  //       if (phone === undefined) {
+  //         res.status(400).send({ err: "'phone' is missing" })
+  //         return
+  //       }
 
-          return
-        }
+  //       const existingRec = await platformWorker.getUserRecord({
+  //         phone,
+  //         workspace
+  //       })
 
-        await telegram.authPass(phone, req.body.pass ?? '')
+  //       if (existingRec !== undefined) {
+  //         if (existingRec.email === email) {
+  //           res.send({
+  //             next: 'end'
+  //           })
+  //         } else {
+  //           res.status(400).send({ err: 'Phone number already in use' })
+  //         }
 
-        const conn = telegram.getConnection(phone)
+  //         return
+  //       }
 
-        if (conn !== undefined) {
-          await platformWorker.addUser({
-            email,
-            workspace: workspace.name,
-            phone,
-            conn
-          })
-          telegram.forgetConnection(phone)
-        }
+  //       await telegram.authPass(phone, req.body.pass ?? '')
 
-        res.send({ next: 'end' })
-      }
-    ],
-    [
-      '/signout',
-      async (req, res) => {
-        const token = extractToken(req.headers)
+  //       const conn = telegram.getConnection(phone)
 
-        if (token === undefined) {
-          res.status(401).send()
-          return
-        }
+  //       if (conn !== undefined) {
+  //         await platformWorker.addUser({
+  //           email,
+  //           workspace,
+  //           phone,
+  //           conn
+  //         })
+  //         telegram.forgetConnection(phone)
+  //       }
 
-        const { email, workspace } = token
-        await platformWorker.removeUser({ email, workspace: workspace.name })
+  //       res.send({ next: 'end' })
+  //     }
+  //   ],
+  //   [
+  //     '/signout',
+  //     async (req, res) => {
+  //       const token = extractToken(req.headers)
 
-        res.send()
-      }
-    ]
-  ]
+  //       if (token === undefined) {
+  //         res.status(401).send()
+  //         return
+  //       }
+
+  //       const { email, workspace } = token
+  //       await platformWorker.removeUser({ email, workspace })
+
+  //       res.send()
+  //     }
+  //   ]
+  // ]
 
   const server = listen(createServer(endpoints), config.Port, config.Host)
 

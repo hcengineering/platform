@@ -13,16 +13,20 @@
 // limitations under the License.
 //
 
-import { type MeasureContext, type Ref, type WorkspaceId } from '@hcengineering/core'
+import { type WorkspaceUuid, type MeasureContext, type Ref } from '@hcengineering/core'
 import documents, { type DocumentMeta, type ProjectMeta } from '@hcengineering/controlled-documents'
 import { DOMAIN_DOCUMENTS } from '@hcengineering/model-controlled-documents'
 import { type Db } from 'mongodb'
 import { makeRank } from '@hcengineering/task'
 
-export async function addControlledDocumentRank (ctx: MeasureContext, db: Db, workspaceId: WorkspaceId): Promise<void> {
+export async function addControlledDocumentRank (
+  ctx: MeasureContext,
+  db: Db,
+  workspaceId: WorkspaceUuid
+): Promise<void> {
   const collections = await db.listCollections().toArray()
   if (collections.find((it) => it.name === DOMAIN_DOCUMENTS) === undefined) {
-    ctx.error('skipping migration, no collection found', { workspace: workspaceId.name })
+    ctx.error('skipping migration, no collection found', { workspace: workspaceId })
     return
   }
 

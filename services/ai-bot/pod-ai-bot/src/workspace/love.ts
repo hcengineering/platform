@@ -12,22 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ConnectMeetingRequest } from '@hcengineering/ai-bot'
 import chunter from '@hcengineering/chunter'
-import { Person } from '@hcengineering/contact'
 import core, {
-  concatLink,
-  Doc,
-  Markup,
-  MeasureContext,
   Ref,
-  TxCreateDoc,
-  TxCUD,
   TxOperations,
+  concatLink,
   TxProcessor,
-  TxUpdateDoc
+  TxCUD,
+  Doc,
+  TxCreateDoc,
+  TxUpdateDoc,
+  MeasureContext,
+  Markup,
+  WorkspaceUuid
 } from '@hcengineering/core'
+import { Person } from '@hcengineering/contact'
 import love, {
   getFreeRoomPlace,
   MeetingMinutes,
@@ -49,7 +50,7 @@ export class LoveController {
   private readonly meetingMinutes: MeetingMinutes[] = []
 
   constructor (
-    private readonly workspace: string,
+    private readonly workspace: WorkspaceUuid,
     private readonly ctx: MeasureContext,
     private readonly token: string,
     private readonly client: TxOperations,
@@ -171,33 +172,35 @@ export class LoveController {
   }
 
   async processTranscript (text: string, person: Ref<Person>, roomId: Ref<Room>): Promise<void> {
-    const room = await this.getRoom(roomId)
-    const participant = await this.getRoomParticipant(roomId, person)
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // const room = await this.getRoom(roomId)
+    // const participant = await this.getRoomParticipant(roomId, person)
 
-    if (room === undefined || participant === undefined) {
-      return
-    }
+    // if (room === undefined || participant === undefined) {
+    //   return
+    // }
 
-    const personAccount = this.client.getModel().getAccountByPersonId(participant.person)[0]
-    const doc = await this.getMeetingMinutes(room)
+    // const personAccount = this.client.getModel().getAccountByPersonId(participant.person)[0]
+    // const doc = await this.getMeetingMinutes(room)
 
-    if (doc === undefined) return
-    const op = this.client.apply(undefined, undefined, true)
+    // if (doc === undefined) return
+    // const op = this.client.apply(undefined, undefined, true)
 
-    await op.addCollection(
-      chunter.class.ChatMessage,
-      core.space.Workspace,
-      doc._id,
-      doc._class,
-      'transcription',
-      {
-        message: this.transcriptToMarkup(text)
-      },
-      undefined,
-      undefined,
-      personAccount._id
-    )
-    await op.commit()
+    // await op.addCollection(
+    //   chunter.class.ChatMessage,
+    //   core.space.Workspace,
+    //   doc._id,
+    //   doc._class,
+    //   'transcription',
+    //   {
+    //     message: this.transcriptToMarkup(text)
+    //   },
+    //   undefined,
+    //   undefined,
+    //   personAccount._id
+    // )
+    // await op.commit()
   }
 
   hasActiveConnections (): boolean {

@@ -15,7 +15,7 @@
 
 import { ActivityMessage } from '@hcengineering/activity'
 import { ChannelItem } from '@hcengineering/contact'
-import { Account, AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
+import { PersonId, AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
 import { InboxNotification, NotificationProvider, NotificationType } from '@hcengineering/notification'
 import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -64,7 +64,7 @@ export interface TelegramNotificationRequest {
   messageId?: Ref<ActivityMessage>
   attachments: boolean
   workspace: string
-  account: Ref<Account>
+  account: PersonId
   title: string
   quote?: string
   body: string

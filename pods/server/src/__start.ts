@@ -107,7 +107,7 @@ const workspaceToWorkspaceStats = (ws: Workspace): WorkspaceStatistics => {
     clientsTotal: new Set(Array.from(ws.sessions.values()).map((it) => it.session.getUser())).size,
     sessionsTotal: ws.sessions.size,
     workspaceName: ws.workspaceName,
-    wsId: ws.workspaceId.name,
+    wsId: ws.workspaceUuid,
     sessions: Array.from(ws.sessions.values()).map((it) => entryToUserStats(it.session, it.socket))
   }
 }

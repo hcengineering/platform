@@ -15,8 +15,9 @@
 
   let calendars: ExternalCalendar[] = []
   const me = getCurrentAccount()
+  const socialStrings = me.socialIds
   const q = createQuery()
-  q.query(calendarPlugin.class.ExternalCalendar, { createdBy: me._id, hidden: false }, (res) => {
+  q.query(calendarPlugin.class.ExternalCalendar, { createdBy: { $in: socialStrings }, hidden: false }, (res) => {
     calendars = res
   })
 

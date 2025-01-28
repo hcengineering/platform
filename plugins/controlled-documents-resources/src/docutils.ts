@@ -43,8 +43,9 @@ import documents, {
   createChangeControl,
   createControlledDocFromTemplate as controlledDocFromTemplate
 } from '@hcengineering/controlled-documents'
+import { getCurrentEmployee } from '@hcengineering/contact'
 import documentsRes from './plugin'
-import { getCurrentEmployee, getDocumentVersionString } from './utils'
+import { getDocumentVersionString } from './utils'
 
 export async function createControlledDocFromTemplate (
   client: TxOperations,

@@ -30,7 +30,6 @@ import documents, {
   useDocumentTemplate
 } from '@hcengineering/controlled-documents'
 import core, {
-  type Account,
   type AttachedData,
   type Class,
   type CollaborativeDoc,
@@ -47,7 +46,8 @@ import core, {
   type Space,
   type Status,
   type Timestamp,
-  type TxOperations
+  type TxOperations,
+  type PersonId
 } from '@hcengineering/core'
 import document, { type Document, getFirstRank, type Teamspace } from '@hcengineering/document'
 import task, {
@@ -102,8 +102,8 @@ export interface ImportSpace<T extends ImportDoc> {
   archived?: boolean
   description?: string
   emoji?: string
-  owners?: Ref<Account>[]
-  members?: Ref<Account>[]
+  owners?: PersonId[]
+  members?: PersonId[]
   docs: T[]
 }
 export interface ImportDoc {
@@ -147,7 +147,7 @@ export interface ImportIssue extends ImportDoc {
 
 export interface ImportComment {
   text: string
-  author?: Ref<Account>
+  author?: PersonId
   date?: Timestamp
   attachments?: ImportAttachment[]
 }
@@ -175,9 +175,9 @@ export interface ImportDrawing {
 export type ImportControlledDoc = ImportControlledDocument | ImportControlledDocumentTemplate // todo: rename
 export interface ImportOrgSpace extends ImportSpace<ImportControlledDoc> {
   class: Ref<Class<DocumentSpace>>
-  qualified?: Ref<Account>
-  manager?: Ref<Account>
-  qara?: Ref<Account>
+  qualified?: PersonId
+  manager?: PersonId
+  qara?: PersonId
 }
 
 export interface ImportControlledDocumentTemplate extends ImportDoc {

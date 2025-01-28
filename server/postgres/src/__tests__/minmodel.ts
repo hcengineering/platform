@@ -14,8 +14,7 @@
 //
 
 import core, {
-  type Account,
-  AccountRole,
+  type PersonId,
   type Arr,
   type AttachedDoc,
   type Class,
@@ -50,7 +49,7 @@ export function createDoc<T extends Doc> (
   _class: Ref<Class<T>>,
   attributes: Data<T>,
   id?: Ref<T>,
-  modifiedBy?: Ref<Account>
+  modifiedBy?: PersonId
 ): TxCreateDoc<Doc> {
   const result = txFactory.createTxCreateDoc(_class, core.space.Model, attributes, id)
   if (modifiedBy !== undefined) {
@@ -146,15 +145,6 @@ export function genMinModel (): TxCUD<Doc>[] {
   )
 
   txes.push(
-    createClass(core.class.Account, {
-      label: 'Account' as IntlString,
-      extends: core.class.Doc,
-      kind: ClassifierKind.CLASS,
-      domain: DOMAIN_MODEL
-    })
-  )
-
-  txes.push(
     createClass(core.class.Tx, {
       label: 'Tx' as IntlString,
       extends: core.class.Doc,
@@ -208,11 +198,9 @@ export function genMinModel (): TxCUD<Doc>[] {
     })
   )
 
-  const u1 = 'User1' as Ref<Account>
-  const u2 = 'User2' as Ref<Account>
+  const u1 = 'User1' as PersonId
+  const u2 = 'User2' as PersonId
   txes.push(
-    createDoc(core.class.Account, { email: 'user1@site.com', role: AccountRole.User }, u1),
-    createDoc(core.class.Account, { email: 'user2@site.com', role: AccountRole.User }, u2),
     createDoc(core.class.Space, {
       name: 'Sp1',
       description: '',

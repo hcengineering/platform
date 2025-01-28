@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { isActiveMode, MeasureContext, RateLimiter, systemAccountEmail } from '@hcengineering/core'
+import { isActiveMode, MeasureContext, RateLimiter, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 
 import { type Db } from 'mongodb'
@@ -23,7 +23,7 @@ import { type GmailClient } from './gmail'
 import { type ProjectCredentials, type Token, type User } from './types'
 import { WorkspaceClient } from './workspaceClient'
 import { generateToken } from '@hcengineering/server-token'
-import { getWorkspaceInfo } from '@hcengineering/server-client'
+import { getAccountClient } from '@hcengineering/server-client'
 
 export class GmailController {
   private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
@@ -74,8 +74,10 @@ export class GmailController {
     const limiter = new RateLimiter(config.InitLimit)
     for (const [workspace, tokens] of groups) {
       await limiter.add(async () => {
-        const wstok = generateToken(systemAccountEmail, { name: workspace })
-        const info = await getWorkspaceInfo(wstok)
+        const wstok = generateToken(systemAccountUuid, workspace as any) // TODO: FIXME
+        const accountClient = getAccountClient(wstok)
+        const info = await accountClient.getWorkspaceInfo()
+
         if (info === undefined) {
           console.log('workspace not found', workspace)
           return
@@ -84,7 +86,7 @@ export class GmailController {
           console.log('workspace is not active', workspace)
           return
         }
-        const startPromise = this.startWorkspace(workspace, tokens)
+        const startPromise = this.startWorkspace(workspace as any, tokens) // TODO: FIXME
         const timeoutPromise = new Promise<void>((resolve) => {
           setTimeout(() => {
             resolve()
@@ -97,7 +99,7 @@ export class GmailController {
     await limiter.waitProcessing()
   }
 
-  async startWorkspace (workspace: string, tokens: Token[]): Promise<void> {
+  async startWorkspace (workspace: WorkspaceUuid, tokens: Token[]): Promise<void> {
     const workspaceClient = await this.getWorkspaceClient(workspace)
     const clients: GmailClient[] = []
     for (const token of tokens) {
@@ -141,13 +143,13 @@ export class GmailController {
     }
   }
 
-  async getGmailClient (email: string, workspace: string, token: string): Promise<GmailClient> {
+  async getGmailClient (email: string, workspace: WorkspaceUuid, token: string): Promise<GmailClient> {
     const workspaceClient = await this.getWorkspaceClient(workspace)
     const userId = await workspaceClient.getUserId(email)
     return await workspaceClient.createGmailClient({ userId, workspace, token })
   }
 
-  async signout (workspace: string, email: string): Promise<void> {
+  async signout (workspace: WorkspaceUuid, email: string): Promise<void> {
     const workspaceClient = await this.getWorkspaceClient(workspace)
     const clients = await workspaceClient.signout(email)
     if (clients === 0) {
@@ -168,7 +170,7 @@ export class GmailController {
     return newClient
   }
 
-  private async getWorkspaceClient (workspace: string): Promise<WorkspaceClient> {
+  private async getWorkspaceClient (workspace: WorkspaceUuid): Promise<WorkspaceClient> {
     let res = this.workspaces.get(workspace)
     if (res === undefined) {
       try {

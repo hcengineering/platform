@@ -13,21 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 import {
   type Hierarchy,
   type MeasureContext,
   type SearchOptions,
   type SearchQuery,
   type SearchResult,
-  type WorkspaceId
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import type { FullTextAdapter } from '@hcengineering/server-core'
 import { getScoringConfig, mapSearchResultDoc } from './mapper'
 
 export async function searchFulltext (
   ctx: MeasureContext,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   hierarchy: Hierarchy,
   adapter: FullTextAdapter,
   query: SearchQuery,

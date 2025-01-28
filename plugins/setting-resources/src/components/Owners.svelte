@@ -13,14 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { PersonAccount, formatName } from '@hcengineering/contact'
-  import { EmployeePresenter, employeesStore } from '@hcengineering/contact-resources'
+  import contact, { Employee, formatName } from '@hcengineering/contact'
+  import { EmployeePresenter } from '@hcengineering/contact-resources'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import { Breadcrumb, DropdownIntlItem, DropdownLabelsIntl, SearchInput, Header, Scroller } from '@hcengineering/ui'
+  import { onMount } from 'svelte'
+
+  import { getAccountClient } from '../utils'
   import setting from '../plugin'
 
-  const client = getClient()
   const query = createQuery()
   const currentAccount = getCurrentAccount()
 
@@ -30,25 +32,42 @@
     { id: AccountRole.Owner, label: setting.string.Owner }
   ]
 
-  let accounts: PersonAccount[] = []
-  let owners: PersonAccount[] = []
-  $: owners = accounts.filter((p) => p.role === AccountRole.Owner)
+  const accountClient = getAccountClient()
+  let workspaceMembers: Record<string, AccountRole> = {}
+  let employees: Employee[] = []
 
-  query.query(contact.class.PersonAccount, {}, (res) => {
-    owners = res.filter((p) => p.role === AccountRole.Owner)
-    accounts = res
+  onMount(async () => {
+    const members = await accountClient.getWorkspaceMembers()
+    workspaceMembers = members.reduce<Record<string, AccountRole>>((wm, m) => {
+      wm[m.person] = m.role
+
+      return wm
+    }, {})
   })
 
-  async function change (account: PersonAccount, value: AccountRole): Promise<void> {
-    await client.update(account, {
-      role: value
-    })
+  query.query(contact.mixin.Employee, { active: true }, (res) => {
+    employees = res
+      .filter((e) => e.personUuid != null)
+      .sort((a, b) => formatName(a.name).localeCompare(formatName(b.name)))
+  })
+
+  async function change (personUuid: string, value: AccountRole): Promise<void> {
+    if (accountClient == null) {
+      return
+    }
+
+    try {
+      await accountClient.updateWorkspaceRole(personUuid, value)
+      workspaceMembers[personUuid] = value
+    } catch (e) {
+      console.error(e)
+    }
   }
   let search = ''
 
-  $: employees = $employeesStore
-    .filter((p) => p.active)
-    .sort((a, b) => formatName(a.name).localeCompare(formatName(b.name)))
+  $: ownersCount = employees.filter(
+    (e) => e.personUuid != null && workspaceMembers[e.personUuid] === AccountRole.Owner
+  ).length
 </script>
 
 <div class="hulyComponent">
@@ -62,22 +81,22 @@
     <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
       <div class="hulyComponent-content">
         {#each employees as employee (employee._id)}
-          {@const acc = accounts.find((p) => p.person === employee._id)}
-          {#if acc && employee.name?.includes(search)}
+          {@const personUuid = employee.personUuid ?? undefined}
+          {@const role = personUuid !== undefined ? workspaceMembers[personUuid] : undefined}
+          {#if personUuid !== undefined && role !== undefined && employee.name?.includes(search)}
             <div class="flex-row-center p-2 flex-no-shrink">
               <div class="p-1 min-w-80">
                 <EmployeePresenter value={employee} disabled={false} />
               </div>
               <DropdownLabelsIntl
                 label={setting.string.Role}
-                disabled={!hasAccountRole(currentAccount, acc.role) ||
-                  (acc.role === AccountRole.Owner && owners.length === 1)}
+                disabled={!hasAccountRole(currentAccount, role) || (role === AccountRole.Owner && ownersCount === 1)}
                 kind={'primary'}
                 size={'medium'}
                 {items}
-                selected={acc.role}
+                selected={role}
                 on:selected={(e) => {
-                  void change(acc, e.detail)
+                  void change(personUuid, e.detail)
                 }}
               />
             </div>

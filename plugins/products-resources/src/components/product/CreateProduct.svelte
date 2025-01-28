@@ -23,10 +23,9 @@
   import { type Product, ProductVersionState } from '@hcengineering/products'
   import { type Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { PersonAccount } from '@hcengineering/contact'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
   import core, {
-    Account,
+    PersonId,
     Data,
     Ref,
     Role,
@@ -61,7 +60,7 @@
   const manager = createFocusManager()
 
   const productId: Ref<Product> = generateId()
-  const currentUser = getCurrentAccount() as PersonAccount
+  const currentAccount = getCurrentAccount()
 
   let descriptionBox: AttachmentStyledBox
 
@@ -120,14 +119,14 @@
     })
   }
 
-  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
+  function handleOwnersChanged (newOwners: PersonId[]): void {
     object.owners = newOwners
 
     const newMembersSet = new Set([...object.owners, ...object.members])
     object.members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged (newMembers: Ref<Account>[]): void {
+  function handleMembersChanged (newMembers: PersonId[]): void {
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
     const removedMembersSet = new Set(object.members.filter((m) => !newMembersSet.has(m)))
@@ -141,7 +140,7 @@
     object.members = newMembers
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: PersonId[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }
@@ -214,13 +213,13 @@
       name: '',
       description: '',
       private: true,
-      members: [currentUser._id],
+      members: [currentAccount.primarySocialId],
       archived: false,
       // ExternalSpace
       type: products.spaceType.ProductType,
       // Product
       fullDescription: '',
-      owners: [currentUser._id]
+      owners: [currentAccount.primarySocialId]
     }
   }
 

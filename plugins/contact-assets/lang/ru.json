@@ -107,6 +107,10 @@
     "AddGuest": "Добавить гостя",
     "ViewProfile": "Посмотреть профиль",
     "Viber": "Viber",
-    "ViberPlaceholder": "Viber"
+    "ViberPlaceholder": "Viber",
+    "SocialId": "Социальный ID",
+    "SocialIds": "Социальные ID",
+    "Type": "Тип",
+    "Confirmed": "Подтвержден"
   }
 }

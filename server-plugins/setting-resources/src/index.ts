@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import contact, { Person, PersonAccount, getFirstName, getLastName } from '@hcengineering/contact'
-import core, { Account, Doc, Ref, Role, Tx, TxUpdateDoc } from '@hcengineering/core'
+import contact, { Person, getFirstName, getLastName } from '@hcengineering/contact'
+import core, { PersonId, Doc, Role, Tx, TxUpdateDoc } from '@hcengineering/core'
 import { getEmbeddedLabel, translate } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
 import setting, { Integration } from '@hcengineering/setting'
@@ -43,18 +42,21 @@ export async function getValue (control: TriggerControl, context: Record<string,
   return value.value
 }
 
-async function getEmployee (control: TriggerControl, _id: Ref<Account>): Promise<Person | undefined> {
-  const employeeAccount = control.modelDb.findAllSync(contact.class.PersonAccount, {
-    _id: _id as Ref<PersonAccount>
-  })[0]
-  if (employeeAccount !== undefined) {
-    const employee = (
-      await control.findAll(control.ctx, contact.class.Person, {
-        _id: employeeAccount.person
-      })
-    )[0]
-    return employee
-  }
+async function getEmployee (control: TriggerControl, _id: PersonId): Promise<Person | undefined> {
+  // TODO: FIXME
+  // Related to integrations
+  throw new Error('Not implemented')
+  // const employeeAccount = control.modelDb.findAllSync(contact.class.PersonAccount, {
+  //   _id: _id as PersonId
+  // })[0]
+  // if (employeeAccount !== undefined) {
+  //   const employee = (
+  //     await control.findAll(control.ctx, contact.class.Person, {
+  //       _id: employeeAccount.person
+  //     })
+  //   )[0]
+  //   return employee
+  // }
 }
 
 export async function getOwnerFirstName (

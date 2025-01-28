@@ -15,8 +15,8 @@
 //
 
 import { ActivityMessage } from '@hcengineering/activity'
-import contact, { Employee, Person, PersonAccount, PersonSpace } from '@hcengineering/contact'
-import { Account, Class, Doc, Mixin, Ref, Tx, TxCUD } from '@hcengineering/core'
+import { Employee, Person, PersonSpace } from '@hcengineering/contact'
+import { PersonId, Class, Doc, Mixin, Ref, Tx, TxCUD } from '@hcengineering/core'
 import {
   BaseNotificationType,
   InboxNotification,
@@ -32,37 +32,6 @@ import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
  */
 export const serverNotificationId = 'server-notification' as Plugin
 export { DOMAIN_USER_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_DOC_NOTIFY } from '@hcengineering/notification'
-
-/**
- * @public
- */
-export function getPersonAccountById (_id: Ref<Account>, control: TriggerControl): PersonAccount | undefined {
-  const account = control.modelDb.findAllSync(
-    contact.class.PersonAccount,
-    {
-      _id: _id as Ref<PersonAccount>
-    },
-    { limit: 1 }
-  )[0]
-  return account
-}
-
-/**
- * @public
- */
-export async function getEmployee (employee: Ref<Employee>, control: TriggerControl): Promise<Employee | undefined> {
-  const account = (
-    await control.findAll(
-      control.ctx,
-      contact.mixin.Employee,
-      {
-        _id: employee
-      },
-      { limit: 1 }
-    )
-  )[0]
-  return account !== undefined ? control.hierarchy.as(account, contact.mixin.Employee) : undefined
-}
 
 /**
  * @public
@@ -87,7 +56,7 @@ export interface TextPresenter<T extends Doc = any> extends Class<T> {
  * @public
  */
 export type TypeMatchFunc = Resource<
-(tx: Tx, doc: Doc, user: Ref<Account>[], type: NotificationType, control: TriggerControl) => boolean
+(tx: Tx, doc: Doc, person: Person, socialIds: PersonId[], type: NotificationType, control: TriggerControl) => boolean
 >
 
 /**
@@ -103,7 +72,7 @@ export interface TypeMatch extends NotificationType {
 export type NotificationContentProvider = (
   doc: Doc,
   tx: TxCUD<Doc>,
-  target: Ref<Account>,
+  target: PersonId,
   control: TriggerControl
 ) => Promise<NotificationContent>
 
@@ -115,16 +84,18 @@ export interface NotificationPresenter extends Class<Doc> {
 }
 
 export interface ReceiverInfo {
-  _id: Ref<Account>
-  account: PersonAccount
-  person: Employee
+  _id: PersonId
+  person: Person
+  socialStrings: PersonId[]
+
   space: Ref<PersonSpace>
+  employee: Employee
 }
 
 export interface SenderInfo {
-  _id: Ref<Account>
-  account?: PersonAccount
+  _id: PersonId
   person?: Person
+  socialStrings: PersonId[]
 }
 
 export type NotificationProviderFunc = (

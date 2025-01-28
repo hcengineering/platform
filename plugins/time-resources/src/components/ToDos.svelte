@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { DocumentQuery, Ref, WithLookup, IdMap } from '@hcengineering/core'
   import type { ToDo, WorkSlot } from '@hcengineering/time'
-  import type { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import type { IntlString } from '@hcengineering/platform'
   import type { TagElement } from '@hcengineering/tags'
   import type { Project } from '@hcengineering/tracker'
@@ -33,7 +33,7 @@
     IconMenuClose,
     deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
-  import { getCurrentAccount, toIdMap, SortingOrder } from '@hcengineering/core'
+  import { toIdMap, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import tracker from '@hcengineering/tracker'
   import tags from '@hcengineering/tags'
@@ -47,8 +47,7 @@
   export let tag: Ref<TagElement> | undefined
   export let currentDate: Date
 
-  const acc = getCurrentAccount() as PersonAccount
-  const user = acc.person
+  const user = getCurrentEmployee()
 
   const doneQuery = createQuery()
   const inboxQuery = createQuery()
