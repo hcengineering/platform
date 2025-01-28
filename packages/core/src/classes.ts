@@ -16,6 +16,7 @@
 
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import type { DocumentQuery } from './storage'
+import { WorkspaceDataId, WorkspaceUuid } from './utils'
 
 /**
  * @public
@@ -79,14 +80,14 @@ export interface Account {
  * @public
  * Global person UUID.
  */
-export type PersonUuid = string
+export type PersonUuid = string & { __personUuid: true }
 
 /**
  * @public
  * String representation of a social id linked to a global person.
  * E.g. email:pied.piper@hcengineering.com or huly:ea3bf257-94b5-4a31-a7da-466d578d850f
  */
-export type PersonId = string
+export type PersonId = string & { __personId: true }
 
 export interface BasePerson {
   name: string
@@ -543,7 +544,7 @@ export interface Person {
 // TODO: move to contact
 export interface UserStatus extends Doc {
   online: boolean
-  user: string // // global person/account uuid
+  user: PersonUuid
 }
 
 /**
@@ -786,8 +787,8 @@ export type WorkspaceUpdateEvent =
   | 'delete-done'
 
 export interface WorkspaceInfo {
-  uuid: string
-  dataId?: string // Old workspace identifier. E.g. Database name in Mongo, bucket in R2, etc.
+  uuid: WorkspaceUuid
+  dataId?: WorkspaceDataId // Old workspace identifier. E.g. Database name in Mongo, bucket in R2, etc.
   name: string
   url: string
   region?: string
@@ -834,7 +835,7 @@ export interface SocialId {
   id: string
   type: SocialIdType
   value: string
-  key: string
+  key: PersonId
   verifiedOn?: number
 }
 

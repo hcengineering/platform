@@ -29,7 +29,7 @@ import {
   TranslateRequest,
   TranslateResponse
 } from '@hcengineering/ai-bot'
-import { Markup, MeasureContext, Ref, WorkspaceUuid } from '@hcengineering/core'
+import { Markup, MeasureContext, Ref, type WorkspaceDataId, type WorkspaceUuid } from '@hcengineering/core'
 import { Room } from '@hcengineering/love'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
@@ -51,8 +51,8 @@ import { WorkspaceClient } from './workspace/workspaceClient'
 const CLOSE_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes
 
 export class AIControl {
-  private readonly workspaces: Map<WorkspaceUuid, WorkspaceClient> = new Map<string, WorkspaceClient>()
-  private readonly closeWorkspaceTimeouts: Map<WorkspaceUuid, NodeJS.Timeout> = new Map<string, NodeJS.Timeout>()
+  private readonly workspaces: Map<WorkspaceUuid, WorkspaceClient> = new Map<WorkspaceUuid, WorkspaceClient>()
+  private readonly closeWorkspaceTimeouts: Map<WorkspaceUuid, NodeJS.Timeout> = new Map<WorkspaceUuid, NodeJS.Timeout>()
   private readonly connectingWorkspaces = new Map<WorkspaceUuid, Promise<void>>()
 
   readonly aiClient?: OpenAI
@@ -87,7 +87,7 @@ export class AIControl {
     }
   }
 
-  async closeWorkspaceClient (workspace: string): Promise<void> {
+  async closeWorkspaceClient (workspace: WorkspaceUuid): Promise<void> {
     const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
 
     if (timeoutId !== undefined) {
@@ -108,7 +108,7 @@ export class AIControl {
     this.connectingWorkspaces.delete(workspace)
   }
 
-  updateClearInterval (workspace: string): void {
+  updateClearInterval (workspace: WorkspaceUuid): void {
     const newTimeoutId = setTimeout(() => {
       void this.closeWorkspaceClient(workspace)
     }, CLOSE_INTERVAL_MS)
@@ -137,6 +137,7 @@ export class AIControl {
         endpoint,
         token,
         workspace,
+        workspace as unknown as WorkspaceDataId, // TODO: FIXME
         this,
         this.ctx.newChild(workspace, {}),
         info
@@ -148,6 +149,7 @@ export class AIControl {
       endpoint,
       token,
       workspace,
+      workspace as unknown as WorkspaceDataId, // TODO: FIXME
       this,
       this.ctx.newChild(workspace, {}),
       info
@@ -271,14 +273,14 @@ export class AIControl {
     }
   }
 
-  async processMessageEvent (workspace: string, event: AIMessageEventRequest): Promise<void> {
+  async processMessageEvent (workspace: WorkspaceUuid, event: AIMessageEventRequest): Promise<void> {
     const wsClient = await this.getWorkspaceClient(workspace)
     if (wsClient === undefined) return
 
     await wsClient.processMessageEvent(event)
   }
 
-  async processEvent (workspace: string, events: AIEventRequest[]): Promise<void> {
+  async processEvent (workspace: WorkspaceUuid, events: AIEventRequest[]): Promise<void> {
     for (const event of events) {
       switch (event.type) {
         case AIEventType.Transfer:
@@ -294,7 +296,7 @@ export class AIControl {
     }
   }
 
-  async connect (workspace: string): Promise<void> {
+  async connect (workspace: WorkspaceUuid): Promise<void> {
     await this.initWorkspaceClient(workspace)
   }
 
@@ -314,7 +316,7 @@ export class AIControl {
 
   async getLoveIdentity (roomName: string): Promise<IdentityResponse | undefined> {
     const parsed = roomName.split('_')
-    const workspace = parsed[0]
+    const workspace = parsed[0] as WorkspaceUuid
 
     if (workspace === null) return
 
@@ -329,7 +331,7 @@ export class AIControl {
 
   async processLoveTranscript (request: PostTranscriptRequest): Promise<void> {
     const parsed = request.roomName.split('_')
-    const workspace = parsed[0]
+    const workspace = parsed[0] as WorkspaceUuid
     const roomId = parsed[parsed.length - 1]
 
     if (workspace === null || roomId === null) return

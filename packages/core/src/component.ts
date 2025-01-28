@@ -57,7 +57,8 @@ import type {
   Type,
   TypeAny,
   TypedSpace,
-  UserStatus
+  UserStatus,
+  PersonUuid
 } from './classes'
 import { Status, StatusCategory } from './status'
 import type {
@@ -82,11 +83,11 @@ export const coreId = 'core' as Plugin
  */
 // TODO: consider removing email?
 export const systemAccountEmail = 'anticrm@hc.engineering'
-export const systemAccountUuid = '1749089e-22e6-48de-af4e-165e18fbd2f9'
+export const systemAccountUuid = '1749089e-22e6-48de-af4e-165e18fbd2f9' as PersonUuid
 export const systemAccount: Account = {
   uuid: systemAccountUuid,
   role: AccountRole.Owner,
-  primarySocialId: '',
+  primarySocialId: '' as PersonId,
   socialIds: []
 }
 

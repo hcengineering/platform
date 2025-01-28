@@ -45,7 +45,6 @@ import core, {
 import { BlobClient, createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { estimateDocSize, type StorageAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
-import { connect } from '@hcengineering/server-tool'
 import { deepEqual } from 'fast-equals'
 import {
   createReadStream,
@@ -432,218 +431,220 @@ export async function cloneWorkspace (
   progress: (value: number) => Promise<void>,
   storageAdapter: StorageAdapter
 ): Promise<void> {
-  await ctx.with(
-    'clone-workspace',
-    {},
-    async (ctx) => {
-      const sourceConnection = await ctx.with(
-        'connect-source',
-        {},
-        async (ctx) =>
-          (await connect(transactorUrl, sourceWorkspaceId, undefined, {
-            mode: 'backup'
-          })) as unknown as CoreClient & BackupClient
-      )
-      const targetConnection = await ctx.with(
-        'connect-target',
-        {},
-        async (ctx) =>
-          (await connect(transactorUrl, targetWorkspaceId, undefined, {
-            mode: 'backup',
-            model: 'upgrade',
-            admin: 'true'
-          })) as unknown as CoreClient & BackupClient
-      )
-      try {
-        const domains = sourceConnection
-          .getHierarchy()
-          .domains()
-          .filter((it) => it !== DOMAIN_TRANSIENT && it !== DOMAIN_MODEL)
+  // TODO: FIXME
+  throw new Error('Not implemented')
+  // await ctx.with(
+  //   'clone-workspace',
+  //   {},
+  //   async (ctx) => {
+  //     const sourceConnection = await ctx.with(
+  //       'connect-source',
+  //       {},
+  //       async (ctx) =>
+  //         (await connect(transactorUrl, sourceWorkspaceId, undefined, {
+  //           mode: 'backup'
+  //         })) as unknown as CoreClient & BackupClient
+  //     )
+  //     const targetConnection = await ctx.with(
+  //       'connect-target',
+  //       {},
+  //       async (ctx) =>
+  //         (await connect(transactorUrl, targetWorkspaceId, undefined, {
+  //           mode: 'backup',
+  //           model: 'upgrade',
+  //           admin: 'true'
+  //         })) as unknown as CoreClient & BackupClient
+  //     )
+  //     try {
+  //       const domains = sourceConnection
+  //         .getHierarchy()
+  //         .domains()
+  //         .filter((it) => it !== DOMAIN_TRANSIENT && it !== DOMAIN_MODEL)
 
-        let i = 0
-        for (const c of domains) {
-          ctx.info('clone domain...', { domain: c, workspace: targetWorkspaceId })
+  //       let i = 0
+  //       for (const c of domains) {
+  //         ctx.info('clone domain...', { domain: c, workspace: targetWorkspaceId })
 
-          // We need to clean target connection before copying something.
-          await ctx.with('clean-domain', { domain: c }, (ctx) => cleanDomain(ctx, targetConnection, c))
+  //         // We need to clean target connection before copying something.
+  //         await ctx.with('clean-domain', { domain: c }, (ctx) => cleanDomain(ctx, targetConnection, c))
 
-          const changes: Snapshot = {
-            added: new Map(),
-            updated: new Map(),
-            removed: []
-          }
+  //         const changes: Snapshot = {
+  //           added: new Map(),
+  //           updated: new Map(),
+  //           removed: []
+  //         }
 
-          let idx: number | undefined
+  //         let idx: number | undefined
 
-          // update digest tar
-          const needRetrieveChunks: Ref<Doc>[][] = []
+  //         // update digest tar
+  //         const needRetrieveChunks: Ref<Doc>[][] = []
 
-          let processed = 0
-          let domainProgress = 0
-          let st = Date.now()
-          // Load all digest from collection.
-          await ctx.with('retrieve-domain-info', { domain: c }, async (ctx) => {
-            while (true) {
-              try {
-                const it = await ctx.with('load-chunk', {}, () => sourceConnection.loadChunk(c, idx))
-                idx = it.idx
+  //         let processed = 0
+  //         let domainProgress = 0
+  //         let st = Date.now()
+  //         // Load all digest from collection.
+  //         await ctx.with('retrieve-domain-info', { domain: c }, async (ctx) => {
+  //           while (true) {
+  //             try {
+  //               const it = await ctx.with('load-chunk', {}, () => sourceConnection.loadChunk(c, idx))
+  //               idx = it.idx
 
-                let needRetrieve: Ref<Doc>[] = []
+  //               let needRetrieve: Ref<Doc>[] = []
 
-                for (const { id, hash } of it.docs) {
-                  processed++
-                  if (Date.now() - st > 2500) {
-                    ctx.info('processed', { processed, time: Date.now() - st, workspace: targetWorkspaceId })
-                    st = Date.now()
-                  }
+  //               for (const { id, hash } of it.docs) {
+  //                 processed++
+  //                 if (Date.now() - st > 2500) {
+  //                   ctx.info('processed', { processed, time: Date.now() - st, workspace: targetWorkspaceId })
+  //                   st = Date.now()
+  //                 }
 
-                  changes.added.set(id as Ref<Doc>, hash)
-                  needRetrieve.push(id as Ref<Doc>)
+  //                 changes.added.set(id as Ref<Doc>, hash)
+  //                 needRetrieve.push(id as Ref<Doc>)
 
-                  if (needRetrieve.length > 200) {
-                    needRetrieveChunks.push(needRetrieve)
-                    needRetrieve = []
-                  }
-                }
-                if (needRetrieve.length > 0) {
-                  needRetrieveChunks.push(needRetrieve)
-                }
-                if (it.finished) {
-                  ctx.info('processed-end', { processed, time: Date.now() - st, workspace: targetWorkspaceId })
-                  await ctx.with('close-chunk', {}, async () => {
-                    await sourceConnection.closeChunk(idx as number)
-                  })
-                  break
-                }
-              } catch (err: any) {
-                ctx.error('failed to clone', { err, workspace: targetWorkspaceId })
-                if (idx !== undefined) {
-                  await ctx.with('load-chunk', {}, () => sourceConnection.closeChunk(idx as number))
-                }
-                // Try again
-                idx = undefined
-                processed = 0
-              }
-            }
-          })
-          await ctx.with('clone-domain', { domain: c }, async (ctx) => {
-            while (needRetrieveChunks.length > 0) {
-              const needRetrieve = needRetrieveChunks.shift() as Ref<Doc>[]
+  //                 if (needRetrieve.length > 200) {
+  //                   needRetrieveChunks.push(needRetrieve)
+  //                   needRetrieve = []
+  //                 }
+  //               }
+  //               if (needRetrieve.length > 0) {
+  //                 needRetrieveChunks.push(needRetrieve)
+  //               }
+  //               if (it.finished) {
+  //                 ctx.info('processed-end', { processed, time: Date.now() - st, workspace: targetWorkspaceId })
+  //                 await ctx.with('close-chunk', {}, async () => {
+  //                   await sourceConnection.closeChunk(idx as number)
+  //                 })
+  //                 break
+  //               }
+  //             } catch (err: any) {
+  //               ctx.error('failed to clone', { err, workspace: targetWorkspaceId })
+  //               if (idx !== undefined) {
+  //                 await ctx.with('load-chunk', {}, () => sourceConnection.closeChunk(idx as number))
+  //               }
+  //               // Try again
+  //               idx = undefined
+  //               processed = 0
+  //             }
+  //           }
+  //         })
+  //         await ctx.with('clone-domain', { domain: c }, async (ctx) => {
+  //           while (needRetrieveChunks.length > 0) {
+  //             const needRetrieve = needRetrieveChunks.shift() as Ref<Doc>[]
 
-              ctx.info('Retrieve chunk:', { count: needRetrieve.length })
-              let docs: Doc[] = []
-              try {
-                docs = await ctx.with('load-docs', {}, (ctx) => sourceConnection.loadDocs(c, needRetrieve))
-                if (clearTime) {
-                  docs = prepareClonedDocuments(docs)
-                }
-                const executor = new RateLimiter(10)
-                for (const d of docs) {
-                  if (d._class === core.class.Blob) {
-                    const blob = d as Blob
-                    await executor.add(async () => {
-                      try {
-                        ctx.info('clone blob', { name: blob._id, contentType: blob.contentType })
-                        const readable = await storageAdapter.get(ctx, sourceWorkspaceId, blob._id)
-                        const passThrue = new PassThrough()
-                        readable.pipe(passThrue)
-                        await storageAdapter.put(
-                          ctx,
-                          targetWorkspaceId,
-                          blob._id,
-                          passThrue,
-                          blob.contentType,
-                          blob.size
-                        )
-                      } catch (err: any) {
-                        Analytics.handleError(err)
-                        console.error(err)
-                      }
-                      domainProgress++
-                      await progress((100 / domains.length) * i + (100 / domains.length / processed) * domainProgress)
-                    })
-                  } else {
-                    domainProgress++
-                  }
-                }
-                await executor.waitProcessing()
-                await ctx.with('upload-docs', {}, (ctx) => targetConnection.upload(c, docs), { length: docs.length })
-                await progress((100 / domains.length) * i + (100 / domains.length / processed) * domainProgress)
-              } catch (err: any) {
-                console.log(err)
-                Analytics.handleError(err)
-                // Put back.
-                needRetrieveChunks.push(needRetrieve)
-                continue
-              }
-            }
-          })
+  //             ctx.info('Retrieve chunk:', { count: needRetrieve.length })
+  //             let docs: Doc[] = []
+  //             try {
+  //               docs = await ctx.with('load-docs', {}, (ctx) => sourceConnection.loadDocs(c, needRetrieve))
+  //               if (clearTime) {
+  //                 docs = prepareClonedDocuments(docs)
+  //               }
+  //               const executor = new RateLimiter(10)
+  //               for (const d of docs) {
+  //                 if (d._class === core.class.Blob) {
+  //                   const blob = d as Blob
+  //                   await executor.add(async () => {
+  //                     try {
+  //                       ctx.info('clone blob', { name: blob._id, contentType: blob.contentType })
+  //                       const readable = await storageAdapter.get(ctx, sourceWorkspaceId, blob._id)
+  //                       const passThrue = new PassThrough()
+  //                       readable.pipe(passThrue)
+  //                       await storageAdapter.put(
+  //                         ctx,
+  //                         targetWorkspaceId,
+  //                         blob._id,
+  //                         passThrue,
+  //                         blob.contentType,
+  //                         blob.size
+  //                       )
+  //                     } catch (err: any) {
+  //                       Analytics.handleError(err)
+  //                       console.error(err)
+  //                     }
+  //                     domainProgress++
+  //                     await progress((100 / domains.length) * i + (100 / domains.length / processed) * domainProgress)
+  //                   })
+  //                 } else {
+  //                   domainProgress++
+  //                 }
+  //               }
+  //               await executor.waitProcessing()
+  //               await ctx.with('upload-docs', {}, (ctx) => targetConnection.upload(c, docs), { length: docs.length })
+  //               await progress((100 / domains.length) * i + (100 / domains.length / processed) * domainProgress)
+  //             } catch (err: any) {
+  //               console.log(err)
+  //               Analytics.handleError(err)
+  //               // Put back.
+  //               needRetrieveChunks.push(needRetrieve)
+  //               continue
+  //             }
+  //           }
+  //         })
 
-          i++
-          await progress((100 / domains.length) * i)
-        }
-      } catch (err: any) {
-        console.error(err)
-        Analytics.handleError(err)
-      } finally {
-        ctx.info('end clone')
-        await ctx.with('close-source', {}, async (ctx) => {
-          await sourceConnection.close()
-        })
-        await ctx.with('close-target', {}, async (ctx) => {
-          await targetConnection.sendForceClose()
-          await targetConnection.close()
-        })
-      }
-    },
-    {
-      source: sourceWorkspaceId,
-      target: targetWorkspaceId
-    }
-  )
+  //         i++
+  //         await progress((100 / domains.length) * i)
+  //       }
+  //     } catch (err: any) {
+  //       console.error(err)
+  //       Analytics.handleError(err)
+  //     } finally {
+  //       ctx.info('end clone')
+  //       await ctx.with('close-source', {}, async (ctx) => {
+  //         await sourceConnection.close()
+  //       })
+  //       await ctx.with('close-target', {}, async (ctx) => {
+  //         await targetConnection.sendForceClose()
+  //         await targetConnection.close()
+  //       })
+  //     }
+  //   },
+  //   {
+  //     source: sourceWorkspaceId,
+  //     target: targetWorkspaceId
+  //   }
+  // )
 }
 
-function prepareClonedDocuments (docs: Doc[]): Doc[] {
-  docs = docs.map((p) => {
-    // if full text is skipped, we need to clean stages for indexes.
-    if (p._class === core.class.DocIndexState) {
-      ;(p as DocIndexState).needIndex = true
-    }
+// function prepareClonedDocuments (docs: Doc[]): Doc[] {
+//   docs = docs.map((p) => {
+//     // if full text is skipped, we need to clean stages for indexes.
+//     if (p._class === core.class.DocIndexState) {
+//       ;(p as DocIndexState).needIndex = true
+//     }
 
-    return {
-      ...p,
-      modifiedOn: Date.now(),
-      createdOn: Date.now()
-    }
-  })
-  return docs
-}
+//     return {
+//       ...p,
+//       modifiedOn: Date.now(),
+//       createdOn: Date.now()
+//     }
+//   })
+//   return docs
+// }
 
-async function cleanDomain (ctx: MeasureContext, connection: CoreClient & BackupClient, domain: Domain): Promise<void> {
-  // Load all digest from collection.
-  let idx: number | undefined
-  const ids: Ref<Doc>[] = []
-  while (true) {
-    try {
-      const it = await connection.loadChunk(domain, idx)
-      idx = it.idx
+// async function cleanDomain (ctx: MeasureContext, connection: CoreClient & BackupClient, domain: Domain): Promise<void> {
+//   // Load all digest from collection.
+//   let idx: number | undefined
+//   const ids: Ref<Doc>[] = []
+//   while (true) {
+//     try {
+//       const it = await connection.loadChunk(domain, idx)
+//       idx = it.idx
 
-      ids.push(...it.docs.map((it) => it.id as Ref<Doc>))
-      if (it.finished) {
-        break
-      }
-    } catch (err: any) {
-      console.error(err)
-      if (idx !== undefined) {
-        await connection.closeChunk(idx)
-      }
-    }
-  }
-  while (ids.length > 0) {
-    const part = ids.splice(0, 5000)
-    await connection.clean(domain, part)
-  }
-}
+//       ids.push(...it.docs.map((it) => it.id as Ref<Doc>))
+//       if (it.finished) {
+//         break
+//       }
+//     } catch (err: any) {
+//       console.error(err)
+//       if (idx !== undefined) {
+//         await connection.closeChunk(idx)
+//       }
+//     }
+//   }
+//   while (ids.length > 0) {
+//     const part = ids.splice(0, 5000)
+//     await connection.clean(domain, part)
+//   }
+// }
 
 function doTrimHash (s: string | undefined): string | undefined {
   if (s == null) {

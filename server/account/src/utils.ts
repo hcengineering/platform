@@ -28,7 +28,8 @@ import {
   type WorkspaceInfoWithStatus as WorkspaceInfoWithStatusCore,
   isActiveMode,
   isArchivingMode,
-  isMigrationMode
+  isMigrationMode,
+  type PersonUuid
 } from '@hcengineering/core'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
@@ -304,7 +305,7 @@ export async function setPassword (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  personUuid: string,
+  personUuid: PersonUuid,
   password: string
 ): Promise<void> {
   if (password == null || password === '') {
@@ -411,7 +412,7 @@ export async function isOtpValid (db: AccountDB, socialId: string, code: string)
 
 export async function createAccount (
   db: AccountDB,
-  personUuid: string,
+  personUuid: PersonUuid,
   confirmed = false,
   createdOn = Date.now()
 ): Promise<void> {
@@ -441,11 +442,11 @@ export async function signUpByEmail (
   firstName: string,
   lastName: string,
   confirmed = false
-): Promise<string> {
+): Promise<PersonUuid> {
   const normalizedEmail = cleanEmail(email)
 
   const emailSocialId = await getEmailSocialId(db, normalizedEmail)
-  let personUuid: string
+  let personUuid: PersonUuid
 
   if (emailSocialId !== null) {
     const existingAccount = await db.account.findOne({ uuid: emailSocialId.personUuid })
@@ -625,7 +626,7 @@ const DB_ERROR_CODES = {
 }
 
 interface CreateWorkspaceRecordResult {
-  workspaceUuid: string
+  workspaceUuid: WorkspaceUuid
   workspaceUrl: string
 }
 
@@ -634,7 +635,7 @@ export async function createWorkspaceRecord (
   db: AccountDB,
   branding: Branding | null,
   workspaceName: string,
-  account: string,
+  account: PersonUuid,
   region: string = '',
   initMode: WorkspaceMode = 'pending-creation'
 ): Promise<CreateWorkspaceRecordResult> {
@@ -710,7 +711,7 @@ export async function createWorkspaceRecord (
   }
 }
 
-export async function checkInvite (ctx: MeasureContext, invite: WorkspaceInvite, email: string): Promise<string> {
+export async function checkInvite (ctx: MeasureContext, invite: WorkspaceInvite, email: string): Promise<WorkspaceUuid> {
   if (invite.remainingUses === 0) {
     ctx.error('Invite limit exceeded', { email, ...invite })
     Analytics.handleError(new Error(`Invite limit exceeded ${email}`))
@@ -741,7 +742,7 @@ export async function checkInvite (ctx: MeasureContext, invite: WorkspaceInvite,
 export async function sendEmailConfirmation (
   ctx: MeasureContext,
   branding: Branding | null,
-  account: string,
+  account: PersonUuid,
   email: string
 ): Promise<void> {
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
@@ -756,7 +757,7 @@ export async function sendEmailConfirmation (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
 
-  const token = generateToken(account, '', {
+  const token = generateToken(account, undefined, {
     confirmEmail: email
   })
 
@@ -814,17 +815,17 @@ export async function useInvite (db: AccountDB, inviteId: string): Promise<void>
   await db.invite.updateOne({ id: inviteId }, { $inc: { remainingUses: -1 } })
 }
 
-export async function getAccount (db: AccountDB, uuid: string): Promise<Account | null> {
+export async function getAccount (db: AccountDB, uuid: PersonUuid): Promise<Account | null> {
   return await db.account.findOne({ uuid })
 }
 
-export async function getWorkspaceById (db: AccountDB, uuid: string): Promise<Workspace | null> {
+export async function getWorkspaceById (db: AccountDB, uuid: WorkspaceUuid): Promise<Workspace | null> {
   return await db.workspace.findOne({ uuid })
 }
 
 export async function getWorkspaceInfoWithStatusById (
   db: AccountDB,
-  uuid: string
+  uuid: WorkspaceUuid
 ): Promise<WorkspaceInfoWithStatus | null> {
   const ws = await db.workspace.findOne({ uuid })
   const status = await db.workspaceStatus.findOne({ workspaceUuid: uuid })
@@ -841,7 +842,7 @@ export async function getWorkspaceInfoWithStatusById (
 
 export async function getWorkspacesInfoWithStatusByIds (
   db: AccountDB,
-  uuids: string[]
+  uuids: WorkspaceUuid[]
 ): Promise<WorkspaceInfoWithStatus[]> {
   const statuses = await db.workspaceStatus.find({ workspaceUuid: { $in: uuids } })
   const statusesMap = statuses.reduce<Record<string, WorkspaceStatus>>((sm, s) => {
@@ -922,7 +923,7 @@ export async function doJoinByInvite (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  account: string,
+  account: PersonUuid,
   workspace: Workspace,
   invite: WorkspaceInvite
 ): Promise<WorkspaceLoginInfo> {

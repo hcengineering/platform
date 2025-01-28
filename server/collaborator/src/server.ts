@@ -14,7 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { MeasureContext, generateId, metricsAggregate } from '@hcengineering/core'
+import { MeasureContext, type WorkspaceDataId, generateId, metricsAggregate } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { Hocuspocus } from '@hocuspocus/server'
@@ -110,7 +110,7 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
     return {
       connectionId: generateId(),
       workspaceId: ids.uuid,
-      workspaceDataId: ids.dataId ?? ids.uuid,
+      workspaceDataId: ids.dataId ?? ids.uuid as unknown as WorkspaceDataId,
       clientFactory: simpleClientFactory(token)
     }
   }

@@ -38,11 +38,11 @@ async function pdfToMarkdown (
 ): Promise<string | undefined> {
   if (config.DataLabApiKey !== '') {
     try {
-      const stat = await workspaceClient.storage.stat(workspaceClient.ctx, workspaceClient.workspace, fileId)
+      const stat = await workspaceClient.storage.stat(workspaceClient.ctx, workspaceClient.wsDataId, fileId)
       if (stat?.contentType !== 'application/pdf') {
         return
       }
-      const file = await workspaceClient.storage.get(workspaceClient.ctx, workspaceClient.workspace, fileId)
+      const file = await workspaceClient.storage.get(workspaceClient.ctx, workspaceClient.wsDataId, fileId)
       const buffer = await stream2buffer(file)
 
       const url = 'https://www.datalab.to/api/v1/marker'
@@ -97,7 +97,7 @@ async function saveFile (
   const fileId = uuid()
   await workspaceClient.storage.put(
     workspaceClient.ctx,
-    workspaceClient.workspace,
+    workspaceClient.wsDataId,
     fileId,
     converted,
     'application/json'

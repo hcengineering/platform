@@ -46,7 +46,7 @@ export function buildContext (data: onAuthenticatePayload, wsDataId?: WorkspaceD
   return {
     connectionId,
     workspaceId: decodedToken.workspace,
-    workspaceDataId: wsDataId ?? decodedToken.workspace,
+    workspaceDataId: wsDataId ?? decodedToken.workspace as unknown as WorkspaceDataId,
     clientFactory: simpleClientFactory(decodedToken),
     content
   }

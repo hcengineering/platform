@@ -36,7 +36,8 @@ import core, {
   Account,
   pickPrimarySocialId,
   buildSocialIdString,
-  type PersonId
+  type PersonId,
+  type WorkspaceDataId
 } from '@hcengineering/core'
 import { getClient as getAccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { unknownError, type Status } from '@hcengineering/platform'
@@ -89,7 +90,7 @@ class TSessionManager implements SessionManager {
   readonly workspaces = new Map<WorkspaceUuid, Workspace>()
   checkInterval: any
 
-  sessions = new Map<WorkspaceUuid, { session: Session, socket: ConnectionSocket }>()
+  sessions = new Map<string, { session: Session, socket: ConnectionSocket }>()
   reconnectIds = new Set<string>()
 
   maintenanceTimer: any
@@ -265,7 +266,7 @@ class TSessionManager implements SessionManager {
             wsId,
             upgrade: workspace.upgrade
           })
-          workspace.closing = this.performWorkspaceCloseCheck(workspace, workspace.workspaceUuid, wsId)
+          workspace.closing = this.performWorkspaceCloseCheck(workspace, wsId)
         }
       } else {
         workspace.softShutdown = workspaceSoftShutdownTicks
@@ -311,7 +312,7 @@ class TSessionManager implements SessionManager {
         return {
           uuid: loginInfo.account,
           role: loginInfo.role,
-          primarySocialId: '',
+          primarySocialId: '' as PersonId,
           socialIds: []
         }
       }
@@ -350,7 +351,7 @@ class TSessionManager implements SessionManager {
     token: Token,
     rawToken: string,
     pipelineFactory: PipelineFactory,
-    sessionId: WorkspaceUuid | undefined
+    sessionId: string | undefined
   ): Promise<
     | { session: Session, context: MeasureContext, workspaceId: WorkspaceUuid }
     | { upgrade: true, progress?: number }
@@ -673,8 +674,8 @@ class TSessionManager implements SessionManager {
     token: Token,
     workspaceUrl: string,
     workspaceName: string,
-    workspaceUuid: string | undefined,
-    workspaceDataId: string | undefined,
+    workspaceUuid: WorkspaceUuid | undefined,
+    workspaceDataId: WorkspaceDataId | undefined,
     branding: Branding | null
   ): Workspace {
     const upgrade = token.extra?.model === 'upgrade'
@@ -756,7 +757,7 @@ class TSessionManager implements SessionManager {
       }
 
       const status = (await session.findAllRaw(clientCtx, core.class.UserStatus, { user }, { limit: 1 }))[0]
-      const txFactory = new TxFactory(user, true)
+      const txFactory = new TxFactory(session.getRawAccount().primarySocialId, true)
       if (status === undefined) {
         const tx = txFactory.createTxCreateDoc(core.class.UserStatus, core.space.Space, {
           online,
@@ -824,7 +825,7 @@ class TSessionManager implements SessionManager {
     }
   }
 
-  async forceClose (wsId: string, ignoreSocket?: ConnectionSocket): Promise<void> {
+  async forceClose (wsId: WorkspaceUuid, ignoreSocket?: ConnectionSocket): Promise<void> {
     const ws = this.workspaces.get(wsId)
     if (ws !== undefined) {
       ws.upgrade = true // We need to similare upgrade to refresh all clients.
@@ -921,11 +922,10 @@ class TSessionManager implements SessionManager {
 
   private async performWorkspaceCloseCheck (
     workspace: Workspace,
-    workspaceId: WorkspaceUuid,
-    wsid: string
+    wsUuid: WorkspaceUuid
   ): Promise<void> {
     const wsUID = workspace.id
-    const logParams = { wsid, workspace: workspace.id, wsName: workspace.workspaceName }
+    const logParams = { wsUuid, workspace: workspace.id, wsName: workspace.workspaceName }
     if (workspace.sessions.size === 0) {
       if (LOGGING_ENABLED) {
         this.ctx.warn('no sessions for workspace', logParams)
@@ -940,8 +940,8 @@ class TSessionManager implements SessionManager {
           await Promise.race([pl.close(), to])
           to.cancelHandle()
 
-          if (this.workspaces.get(wsid)?.id === wsUID) {
-            this.workspaces.delete(wsid)
+          if (this.workspaces.get(wsUuid)?.id === wsUID) {
+            this.workspaces.delete(wsUuid)
           }
           workspace.context.end()
           if (LOGGING_ENABLED) {
@@ -950,7 +950,7 @@ class TSessionManager implements SessionManager {
         }
       } catch (err: any) {
         Analytics.handleError(err)
-        this.workspaces.delete(wsid)
+        this.workspaces.delete(wsUuid)
         if (LOGGING_ENABLED) {
           this.ctx.error('failed', { ...logParams, error: err })
         }
@@ -1122,7 +1122,7 @@ class TSessionManager implements SessionManager {
     request: Request<any>,
     service: S,
     ctx: MeasureContext<any>,
-    workspace: string,
+    workspace: WorkspaceUuid,
     ws: ConnectionSocket,
     requestCtx: MeasureContext<any>
   ): Promise<void> {

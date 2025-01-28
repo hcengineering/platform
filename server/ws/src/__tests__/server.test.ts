@@ -36,7 +36,9 @@ import {
   type SessionData,
   type Space,
   type Tx,
-  type TxResult
+  type TxResult,
+  type PersonUuid,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { ClientSession, startSessionManager } from '@hcengineering/server'
 import { createDummyStorageAdapter } from '@hcengineering/server-core'
@@ -102,7 +104,7 @@ describe('server', () => {
   })
 
   function connect (): WebSocket {
-    const token: string = generateToken('', 'latest')
+    const token: string = generateToken('' as PersonUuid, 'latest' as WorkspaceUuid)
     return new WebSocket(`ws://localhost:3335/${token}`)
   }
 
@@ -261,7 +263,7 @@ describe('server', () => {
 
     try {
       //
-      const token: string = generateToken('my@email.com', 'latest')
+      const token: string = generateToken('my-account-uuid' as PersonUuid, 'latest' as WorkspaceUuid)
       let clearTo: any
       const timeoutPromise = new Promise<void>((resolve) => {
         clearTo = setTimeout(resolve, 4000)

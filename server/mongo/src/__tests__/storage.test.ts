@@ -22,7 +22,8 @@ import core, {
   type Ref,
   SortingOrder,
   type Space,
-  TxOperations
+  TxOperations,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { type DbAdapter, wrapAdapterToClient } from '@hcengineering/server-core'
 import { createMongoAdapter, createMongoTxAdapter } from '..'
@@ -37,7 +38,7 @@ createTaskModel(txes)
 describe('mongo operations', () => {
   const mongodbUri: string = process.env.MONGO_URL ?? 'mongodb://localhost:27017'
   let mongoClient!: MongoClientReference
-  let dbUuid = crypto.randomUUID()
+  let dbUuid = crypto.randomUUID() as WorkspaceUuid
   let hierarchy: Hierarchy
   let model: ModelDb
   let client: Client
@@ -54,7 +55,7 @@ describe('mongo operations', () => {
   })
 
   beforeEach(async () => {
-    dbUuid = crypto.randomUUID()
+    dbUuid = crypto.randomUUID() as WorkspaceUuid
     await initDb()
   })
 

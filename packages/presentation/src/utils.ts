@@ -22,7 +22,6 @@ import core, {
   getCurrentAccount,
   reduceCalls,
   type Account,
-  type WorkspaceUuid,
   type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
@@ -47,7 +46,8 @@ import core, {
   type TxCUD,
   type TxResult,
   type TypeAny,
-  type WithLookup
+  type WithLookup,
+  type WorkspaceDataId
 } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
@@ -758,7 +758,7 @@ export function isSpaceClass (_class: Ref<Class<Doc>>): boolean {
   return client.getHierarchy().isDerived(_class, core.class.Space)
 }
 
-export function setPresentationCookie (token: string, workspaceUuid: WorkspaceUuid): void {
+export function setPresentationCookie (token: string, workspaceUuid: WorkspaceDataId): void {
   function setToken (path: string): void {
     const res =
       encodeURIComponent(plugin.metadata.Token.replaceAll(':', '-')) +

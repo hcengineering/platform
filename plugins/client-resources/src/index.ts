@@ -18,11 +18,13 @@ import type { ClientFactoryOptions } from '@hcengineering/client/src'
 import core, {
   Client,
   LoadModelResponse,
+  type PersonUuid,
   Tx,
   TxHandler,
   TxPersistenceStore,
   TxWorkspaceEvent,
   WorkspaceEvent,
+  type WorkspaceUuid,
   concatLink,
   createClient,
   fillConfiguration,
@@ -70,10 +72,16 @@ if (typeof localStorage !== 'undefined') {
   })
 }
 
+interface TokenPayload {
+  workspace?: WorkspaceUuid
+  account?: PersonUuid
+  extra?: any
+}
+
 /**
  * @public
  */
-function decodeTokenPayload (token: string): any {
+function decodeTokenPayload (token: string): TokenPayload {
   try {
     return JSON.parse(atob(token.split('.')[1]))
   } catch (err: any) {
@@ -111,7 +119,10 @@ export default async () => {
             }
             handler(...txes)
           }
-          const tokenPayload: { workspace: string, account: string } = decodeTokenPayload(token)
+          const tokenPayload = decodeTokenPayload(token)
+          if (tokenPayload.workspace === undefined || tokenPayload.account === undefined) {
+            throw new Error('Workspace or account not found in token')
+          }
 
           const newOpt = { ...opt }
           const connectTimeout = opt?.connectionTimeout ?? getMetadata(clientPlugin.metadata.ConnectionTimeout)

@@ -3,7 +3,7 @@ import type { BlobStorageIterator, BucketInfo, StorageAdapter, UploadedObjectInf
 import { Readable } from 'stream'
 
 export class MemStorageAdapter implements StorageAdapter {
-  files = new Map<string, Blob & { content: Buffer, workspace: string }>()
+  files = new Map<string, Blob & { content: Buffer, workspace: WorkspaceDataId }>()
 
   async initialize (ctx: MeasureContext, dataId: WorkspaceDataId): Promise<void> {}
 

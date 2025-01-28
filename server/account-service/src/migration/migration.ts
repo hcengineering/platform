@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { AccountRole, SocialIdType, type SocialKey } from '@hcengineering/core'
+import { AccountRole, type PersonUuid, SocialIdType, type WorkspaceDataId, type WorkspaceUuid, type SocialKey } from '@hcengineering/core'
 import { type AccountDB, createAccount } from '@hcengineering/account'
 import { getMongoAccountDB } from './utils'
 import { type Account as OldAccount, type Workspace as OldWorkspace } from './types'
@@ -29,11 +29,11 @@ export async function migrateFromOldAccounts (oldAccsUrl: string, accountDB: Acc
     }
 
     // Mapping between <ObjectId, UUID>
-    const accountsIdToUuid: Record<string, string> = {}
+    const accountsIdToUuid: Record<string, PersonUuid> = {}
     // Mapping between <email, UUID>
-    const accountsEmailToUuid: Record<string, string> = {}
+    const accountsEmailToUuid: Record<string, PersonUuid> = {}
     // Mapping between <OldId, UUID>
-    const workspacesIdToUuid: Record<string, string> = {}
+    const workspacesIdToUuid: Record<WorkspaceDataId, WorkspaceUuid> = {}
 
     console.log('Migrating accounts database from old accounts')
     let accountsProcessed = 0
@@ -118,7 +118,7 @@ export async function migrateFromOldAccounts (oldAccsUrl: string, accountDB: Acc
   }
 }
 
-async function migrateAccount (account: OldAccount, accountDB: AccountDB): Promise<string | undefined> {
+async function migrateAccount (account: OldAccount, accountDB: AccountDB): Promise<PersonUuid | undefined> {
   let primaryKey: SocialKey
   let secondaryKey: SocialKey | undefined
 
@@ -156,7 +156,7 @@ async function migrateAccount (account: OldAccount, accountDB: AccountDB): Promi
     }
   }
 
-  let personUuid: string
+  let personUuid: PersonUuid
   const verified = account.confirmed === true ? { verifiedOn: Date.now() } : {}
 
   const existing = await accountDB.socialId.findOne(primaryKey)
@@ -198,22 +198,22 @@ async function migrateAccount (account: OldAccount, accountDB: AccountDB): Promi
 async function migrateWorkspace (
   workspace: OldWorkspace,
   accountDB: AccountDB,
-  accountsIdToUuid: Record<string, string>,
-  accountsEmailToUuid: Record<string, string>
-): Promise<string | undefined> {
+  accountsIdToUuid: Record<string, PersonUuid>,
+  accountsEmailToUuid: Record<string, PersonUuid>
+): Promise<WorkspaceUuid | undefined> {
   if (workspace.workspaceUrl == null) {
     console.log('No workspace url, skipping', workspace.workspace)
     return
   }
 
-  const createdBy = workspace.createdBy !== undefined ? accountsEmailToUuid[workspace.createdBy] : 'N/A'
+  const createdBy = workspace.createdBy !== undefined ? accountsEmailToUuid[workspace.createdBy] : 'N/A' as PersonUuid
   if (createdBy === undefined) {
     console.log('No account found for workspace', workspace.workspace, 'created by', workspace.createdBy)
     return
   }
 
   const existingWorkspace = await accountDB.workspace.findOne({ url: workspace.workspaceUrl })
-  let workspaceUuid: string
+  let workspaceUuid: WorkspaceUuid
 
   if (existingWorkspace == null) {
     workspaceUuid = await accountDB.workspace.insertOne({

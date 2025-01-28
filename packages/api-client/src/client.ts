@@ -35,7 +35,8 @@ import {
   MixinData,
   generateId,
   PersonId,
-  buildSocialIdString
+  buildSocialIdString,
+  WorkspaceUuid
 } from '@hcengineering/core'
 import client, { clientId } from '@hcengineering/client'
 import { addLocation, getResource } from '@hcengineering/platform'
@@ -58,7 +59,8 @@ export async function connect (url: string, options: ConnectOptions): Promise<Pl
   const config = await loadServerConfig(url)
 
   const { endpoint, token } = await getWorkspaceToken(url, options, config)
-  const socialStrings = (await getAccountClient(config.ACCOUNTS_URL, token).getSocialIds()).map((si) =>
+  const accountClient = getAccountClient(config.ACCOUNTS_URL, token)
+  const socialStrings = (await accountClient.getSocialIds()).map((si) =>
     buildSocialIdString(si)
   )
 
@@ -66,20 +68,27 @@ export async function connect (url: string, options: ConnectOptions): Promise<Pl
     throw new Error('No social ids found for the logged in user')
   }
 
-  return await createClient(url, endpoint, token, socialStrings[0], config, options)
+  const wsLoginInfo = await accountClient.selectWorkspace(options.workspace)
+
+  if (wsLoginInfo === undefined) {
+    throw new Error(`Workspace ${options.workspace} not found`)
+  }
+
+  return await createClient(url, endpoint, token, wsLoginInfo.workspace, socialStrings[0], config, options)
 }
 
 async function createClient (
   url: string,
   endpoint: string,
   token: string,
+  workspaceUuid: WorkspaceUuid,
   user: PersonId,
   config: ServerConfig,
   options: ConnectOptions
 ): Promise<PlatformClient> {
   addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@hcengineering/client-resources'))
 
-  const { workspace, socketFactory, connectionTimeout } = options
+  const { socketFactory, connectionTimeout } = options
 
   const clientFactory = await getResource(client.function.GetClient)
   const connection = await clientFactory(token, endpoint, {
@@ -87,7 +96,7 @@ async function createClient (
     connectionTimeout
   })
 
-  return new PlatformClientImpl(url, workspace, token, config, connection, user)
+  return new PlatformClientImpl(url, workspaceUuid, token, config, connection, user)
 }
 
 class PlatformClientImpl implements PlatformClient {
@@ -96,7 +105,7 @@ class PlatformClientImpl implements PlatformClient {
 
   constructor (
     private readonly url: string,
-    private readonly workspace: string,
+    private readonly workspace: WorkspaceUuid,
     private readonly token: string,
     private readonly config: ServerConfig,
     private readonly connection: Client,

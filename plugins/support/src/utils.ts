@@ -26,7 +26,7 @@ export async function updateSupportConversation (
   conversationId: string,
   hasUnreadMessages: boolean
 ): Promise<void> {
-  const space = account as Ref<Space>
+  const space = account as unknown as Ref<Space>
   const doc = await client.findOne(support.class.SupportConversation, { conversationId, space })
   if (doc !== undefined) {
     await client.update(doc, { hasUnreadMessages }, undefined, undefined, account)
@@ -50,7 +50,7 @@ export async function deleteSupportConversation (
   account: PersonId,
   conversationId: string
 ): Promise<void> {
-  const space = account as Ref<Space>
+  const space = account as unknown as Ref<Space>
   const doc = await client.findOne(support.class.SupportConversation, { conversationId, space })
   if (doc !== undefined) {
     await client.remove(doc, undefined, account)

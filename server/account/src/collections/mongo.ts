@@ -21,7 +21,9 @@ import {
   SocialKey,
   type AccountRole,
   type Data,
-  type Version
+  type Version,
+  type PersonUuid,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 
 import type {
@@ -311,8 +313,8 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
 }
 
 interface WorkspaceMember {
-  workspaceUuid: string
-  accountUuid: string
+  workspaceUuid: WorkspaceUuid
+  accountUuid: PersonUuid
   role: AccountRole
 }
 
@@ -382,7 +384,7 @@ export class MongoAccountDB implements AccountDB {
     ])
   }
 
-  async assignWorkspace (accountId: string, workspaceId: string, role: AccountRole): Promise<void> {
+  async assignWorkspace (accountId: PersonUuid, workspaceId: WorkspaceUuid, role: AccountRole): Promise<void> {
     await this.workspaceMembers.insertOne({
       workspaceUuid: workspaceId,
       accountUuid: accountId,
@@ -390,14 +392,14 @@ export class MongoAccountDB implements AccountDB {
     })
   }
 
-  async unassignWorkspace (accountId: string, workspaceId: string): Promise<void> {
+  async unassignWorkspace (accountId: PersonUuid, workspaceId: WorkspaceUuid): Promise<void> {
     await this.workspaceMembers.deleteMany({
       workspaceUuid: workspaceId,
       accountUuid: accountId
     })
   }
 
-  async createWorkspace (data: WorkspaceData, status: WorkspaceStatusData): Promise<string> {
+  async createWorkspace (data: WorkspaceData, status: WorkspaceStatusData): Promise<WorkspaceUuid> {
     const res = await this.workspace.insertOne(data)
 
     await this.workspaceStatus.insertOne({
@@ -538,7 +540,7 @@ export class MongoAccountDB implements AccountDB {
     )
   }
 
-  async updateWorkspaceRole (accountId: string, workspaceId: string, role: AccountRole): Promise<void> {
+  async updateWorkspaceRole (accountId: PersonUuid, workspaceId: WorkspaceUuid, role: AccountRole): Promise<void> {
     await this.workspaceMembers.updateOne(
       {
         workspaceUuid: workspaceId,
@@ -548,7 +550,7 @@ export class MongoAccountDB implements AccountDB {
     )
   }
 
-  async getWorkspaceRole (accountId: string, workspaceId: string): Promise<AccountRole | null> {
+  async getWorkspaceRole (accountId: PersonUuid, workspaceId: WorkspaceUuid): Promise<AccountRole | null> {
     const assignment = await this.workspaceMembers.findOne({
       workspaceUuid: workspaceId,
       accountUuid: accountId
@@ -557,25 +559,25 @@ export class MongoAccountDB implements AccountDB {
     return assignment?.role ?? null
   }
 
-  async getWorkspaceMembers (workspaceId: string): Promise<WorkspaceMemberInfo[]> {
+  async getWorkspaceMembers (workspaceId: WorkspaceUuid): Promise<WorkspaceMemberInfo[]> {
     return (await this.workspaceMembers.find({ workspaceUuid: workspaceId })).map((wmi) => ({
       person: wmi.accountUuid,
       role: wmi.role
     }))
   }
 
-  async getAccountWorkspaces (accountId: string): Promise<WorkspaceInfoWithStatus[]> {
+  async getAccountWorkspaces (accountId: PersonUuid): Promise<WorkspaceInfoWithStatus[]> {
     const members = await this.workspaceMembers.find({ accountUuid: accountId })
     const wsIds = members.map((m) => m.workspaceUuid)
 
     return await this.workspace.find({ uuid: { $in: wsIds } })
   }
 
-  async setPassword (accountId: string, passwordHash: Buffer, salt: Buffer): Promise<void> {
+  async setPassword (accountId: PersonUuid, passwordHash: Buffer, salt: Buffer): Promise<void> {
     await this.account.updateOne({ uuid: accountId }, { hash: passwordHash, salt })
   }
 
-  async resetPassword (accountId: string): Promise<void> {
+  async resetPassword (accountId: PersonUuid): Promise<void> {
     await this.account.updateOne({ uuid: accountId }, { hash: null, salt: null })
   }
 }

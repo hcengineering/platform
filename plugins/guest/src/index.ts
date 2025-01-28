@@ -1,4 +1,4 @@
-import { Class, Doc, Ref } from '@hcengineering/core'
+import { Class, Doc, PersonUuid, Ref } from '@hcengineering/core'
 import type { Asset, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { AnyComponent, Location } from '@hcengineering/ui'
@@ -20,7 +20,7 @@ export interface Restrictions {
   disableActions: boolean
 }
 
-export const guestAccount = 'b6996120-416f-49cd-841e-e4a5d2e49c9b'
+export const guestAccount = 'b6996120-416f-49cd-841e-e4a5d2e49c9b' as PersonUuid
 
 export const guestId = 'guest' as Plugin
 export default plugin(guestId, {

@@ -353,6 +353,7 @@ services:
       - SECRET=secret
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - STATS_URL=http://host.docker.internal:4900
+      - ACCOUNTS_URL=http://host.docker.internal:3000
   sign:
     image: hardcoreeng/sign
     extra_hosts:

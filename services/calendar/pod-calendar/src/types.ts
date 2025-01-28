@@ -14,7 +14,7 @@
 //
 
 import { RecurringRule } from '@hcengineering/calendar'
-import type { PersonId, Timestamp } from '@hcengineering/core'
+import type { PersonId, Timestamp, WorkspaceUuid } from '@hcengineering/core'
 import type { NextFunction, Request, Response } from 'express'
 import type { Credentials } from 'google-auth-library'
 
@@ -59,7 +59,7 @@ export interface ReccuringData {
 
 export interface User {
   userId: PersonId
-  workspace: string
+  workspace: WorkspaceUuid
   token: string
 }
 

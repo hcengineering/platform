@@ -8,7 +8,9 @@ import core, {
   versionToString,
   type Client,
   type Version,
-  type Ref
+  type Ref,
+  type WorkspaceDataId,
+  type PersonId
 } from '@hcengineering/core'
 import { setCurrentEmployee, type Employee } from '@hcengineering/contact'
 import login, { loginId } from '@hcengineering/login'
@@ -63,7 +65,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     return
   }
 
-  setPresentationCookie(token, workspaceLoginInfo.workspaceDataId ?? workspaceLoginInfo.workspace)
+  setPresentationCookie(token, workspaceLoginInfo.workspaceDataId ?? workspaceLoginInfo.workspace as unknown as WorkspaceDataId)
 
   setMetadata(presentation.metadata.Token, token)
   setMetadata(presentation.metadata.WorkspaceUuid, workspaceLoginInfo.workspace)
@@ -194,7 +196,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   const me: Account = {
     uuid: account,
     role: workspaceLoginInfo.role,
-    primarySocialId: '',
+    primarySocialId: '' as PersonId,
     socialIds: []
   }
 
@@ -248,7 +250,7 @@ function clearMetadata (ws: string): void {
     delete tokens[loc.path[1]]
     setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
   }
-  const currentWorkspace = getMetadata(presentation.metadata.WorkspaceUuid)
+  const currentWorkspace = getMetadata(presentation.metadata.WorkspaceDataId) ?? getMetadata(presentation.metadata.WorkspaceUuid) as unknown as WorkspaceDataId
   if (currentWorkspace !== undefined) {
     setPresentationCookie('', currentWorkspace)
   }

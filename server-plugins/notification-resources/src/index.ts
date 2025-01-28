@@ -1523,7 +1523,7 @@ async function applyUserTxes (
   ctx: MeasureContext,
   control: TriggerControl,
   txes: Tx[],
-  cache: Map<PersonId, Doc> = new Map<Ref<Doc>, Doc>()
+  cache: Map<PersonId, Doc> = new Map<PersonId, Doc>()
 ): Promise<Tx[]> {
   const map: Map<PersonId, Tx[]> = new Map<PersonId, Tx[]>()
   const res: Tx[] = []

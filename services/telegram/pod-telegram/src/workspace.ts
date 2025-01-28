@@ -16,8 +16,8 @@ import core, {
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc,
-  WorkspaceUuid,
-  systemAccountUuid
+  systemAccountUuid,
+  WorkspaceDataId
 } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
@@ -50,7 +50,7 @@ export class WorkspaceWorker {
     private readonly ctx: MeasureContext,
     private readonly client: Client,
     private readonly storageAdapter: StorageAdapter,
-    private readonly workspace: string,
+    private readonly workspace: WorkspaceDataId,
     private readonly userStorage: Collection<UserRecord>,
     private readonly lastMsgStorage: Collection<LastMsgRecord>,
     private readonly channelsStorage: Collection<WorkspaceChannel>
@@ -140,12 +140,12 @@ export class WorkspaceWorker {
   static async create (
     ctx: MeasureContext,
     storageAdapter: StorageAdapter,
-    workspace: WorkspaceUuid,
+    workspace: WorkspaceDataId,
     userStorage: Collection<UserRecord>,
     lastMsgStorage: Collection<LastMsgRecord>,
     channelsStorage: Collection<WorkspaceChannel>
   ): Promise<WorkspaceWorker> {
-    const token = generateToken(systemAccountUuid, workspace, { service: 'telegram' })
+    const token = generateToken(systemAccountUuid, workspace as any, { service: 'telegram' }) // TODO: FIXME
     const client = await createPlatformClient(token)
 
     const worker = new WorkspaceWorker(
@@ -278,7 +278,7 @@ export class WorkspaceWorker {
 
     const integration = await this.client.findOne(settingP.class.Integration, {
       type: telegramP.integrationType.Telegram,
-      createdBy: rec.userId
+      createdBy: rec.userId as any // TODO: FIXME
     })
 
     if (integration === undefined) {
@@ -530,7 +530,7 @@ export class WorkspaceWorker {
 
   private async sendNewMsgs (record: UserRecord): Promise<void> {
     const newMessages = await this.client.findAll(telegramP.class.NewMessage, {
-      modifiedBy: record.userId,
+      modifiedBy: record.userId as any, // TODO: FIXME
       status: 'new'
     })
     for (const message of newMessages) {
@@ -543,7 +543,7 @@ export class WorkspaceWorker {
   }
 
   private makePlatformMsg (event: Event, record: UserRecord, channel: Channel): TxCUD<TelegramMessage> {
-    const factory = new TxFactory(record.userId)
+    const factory = new TxFactory(record.userId as any) // TODO: FIXME
     const modifiedOn = event.msg.date * 1000
     const tx = factory.createTxCollectionCUD<Channel, TelegramMessage>(
       channel._class,
@@ -638,7 +638,7 @@ export class WorkspaceWorker {
     const attachments = await this.client.findAll(attachment.class.Attachment, { attachedTo: msg._id })
     const res: Buffer[] = []
     for (const attachment of attachments) {
-      const chunks = await this.storageAdapter.read(this.ctx, this.workspace, attachment.file)
+      const chunks = await this.storageAdapter.read(this.ctx, this.workspace, attachment.file) // TODO: FIXME
       const buffer = Buffer.concat(chunks as unknown as Uint8Array[])
       if (buffer.length > 0) {
         res.push(
@@ -657,7 +657,7 @@ export class WorkspaceWorker {
     createTx: TxCUD<TelegramMessage>
   ): Promise<void> {
     const msg = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<TelegramMessage>)
-    const factory = new TxFactory(record.userId)
+    const factory = new TxFactory(record.userId as any) // TODO: FIXME
     const files = await getFiles(event.msg)
     for (const file of files) {
       try {

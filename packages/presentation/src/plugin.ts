@@ -15,6 +15,8 @@
 //
 
 import {
+  type WorkspaceDataId,
+  type WorkspaceUuid,
   type Class,
   type Client,
   type Doc,
@@ -141,8 +143,8 @@ export default plugin(presentationId, {
     CollaboratorUrl: '' as Metadata<string>,
     Token: '' as Metadata<string>,
     Endpoint: '' as Metadata<string>,
-    WorkspaceUuid: '' as Metadata<string>,
-    WorkspaceDataId: '' as Metadata<string>,
+    WorkspaceUuid: '' as Metadata<WorkspaceUuid>,
+    WorkspaceDataId: '' as Metadata<WorkspaceDataId>,
     FrontUrl: '' as Asset,
     LinkPreviewUrl: '' as Metadata<string>,
     UploadConfig: '' as Metadata<UploadConfig>,

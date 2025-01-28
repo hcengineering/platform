@@ -54,7 +54,7 @@ export class WorkspaceClient {
   }
 
   static async create (
-    workspace: string,
+    workspace: WorkspaceUuid,
     ctx: MeasureContext,
     storageAdapter: StorageAdapter
   ): Promise<WorkspaceClient> {
@@ -71,8 +71,6 @@ export class WorkspaceClient {
     space: Ref<Space>,
     files: TelegramFileInfo[]
   ): Promise<number> {
-    const wsId = generateToken(this.workspace)
-
     let attachments = 0
 
     for (const file of files) {
@@ -80,7 +78,7 @@ export class WorkspaceClient {
         const response = await fetch(file.url)
         const buffer = Buffer.from(await response.arrayBuffer())
         const uuid = generateId()
-        await this.storageAdapter.put(this.ctx, wsId, uuid, buffer, file.type, file.size)
+        await this.storageAdapter.put(this.ctx, this.workspace as any, uuid, buffer, file.type, file.size) // TODO: FIXME
         const tx = factory.createTxCollectionCUD<ChatMessage, Attachment>(
           _class,
           _id,
@@ -337,7 +335,7 @@ export class WorkspaceClient {
     const res: PlatformFileInfo[] = []
     for (const attachment of attachments) {
       if (attachment.type === 'application/link-preview') continue
-      const chunks = await this.storageAdapter.read(this.ctx, this.workspace, attachment.file)
+      const chunks = await this.storageAdapter.read(this.ctx, this.workspace as any, attachment.file) // TODO: FIXME
       const buffer = Buffer.concat(chunks)
       if (buffer.length > 0) {
         res.push({

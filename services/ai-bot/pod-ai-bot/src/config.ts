@@ -49,7 +49,7 @@ const config: Config = (() => {
     MongoURL: process.env.MONGO_URL,
     ServerSecret: process.env.SERVER_SECRET,
     ServiceID: process.env.SERVICE_ID ?? 'ai-bot-service',
-    SupportWorkspace: process.env.SUPPORT_WORKSPACE ?? '',
+    // SupportWorkspace: process.env.SUPPORT_WORKSPACE as WorkspaceUuid, // TODO: FIXME
     FirstName: process.env.FIRST_NAME,
     LastName: process.env.LAST_NAME,
     AvatarPath: process.env.AVATAR_PATH ?? './assets/avatar.png',

@@ -33,7 +33,8 @@ import core, {
   WorkspaceIds,
   type Client,
   type Ref,
-  type WithLookup
+  type WithLookup,
+  type WorkspaceDataId
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger, tryMigrate } from '@hcengineering/model'
 import { DomainIndexHelperImpl, Pipeline, StorageAdapter, type DbAdapter } from '@hcengineering/server-core'
@@ -130,7 +131,7 @@ export async function initModel (
 
     logger.log('create storage bucket', { workspaceId })
 
-    await storageAdapter.make(ctx, workspaceId)
+    await storageAdapter.make(ctx, workspaceId as unknown as WorkspaceDataId)
     await progress(100)
   } catch (err: any) {
     ctx.error('Failed to create workspace', { error: err })

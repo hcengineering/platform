@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext, generateId } from '@hcengineering/core'
+import { MeasureMetricsContext, type WorkspaceDataId, generateId } from '@hcengineering/core'
 import { objectsToArray, type StorageConfiguration } from '@hcengineering/server-core'
 import { S3Service, processConfigFromEnv, type S3Config } from '..'
 
@@ -41,8 +41,8 @@ describe('s3 operations', () => {
 
     expect(genWorkspaceId1).not.toEqual(genWorkspaceId2)
 
-    const ws1 = genWorkspaceId1
-    const ws2 = genWorkspaceId2
+    const ws1 = genWorkspaceId1 as unknown as WorkspaceDataId
+    const ws2 = genWorkspaceId2 as unknown as WorkspaceDataId
     await minioService.make(toolCtx, ws1)
     await minioService.make(toolCtx, ws2)
 

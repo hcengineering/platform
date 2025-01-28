@@ -23,7 +23,10 @@ import {
   SocialIdType,
   WorkspaceMode,
   WorkspaceMemberInfo,
-  BackupStatus
+  BackupStatus,
+  type PersonUuid,
+  type WorkspaceUuid,
+  type WorkspaceDataId
 } from '@hcengineering/core'
 
 /* ========= D A T A B A S E  E N T I T I E S ========= */
@@ -41,13 +44,13 @@ export interface SocialId {
   type: SocialIdType
   value: string
   key: string // Calculated from type and value
-  personUuid: string
+  personUuid: PersonUuid
   createdOn?: Timestamp
   verifiedOn?: Timestamp
 }
 
 export interface Account {
-  uuid: string
+  uuid: PersonUuid
   timezone?: string
   locale?: string
   hash?: Buffer | null
@@ -56,7 +59,7 @@ export interface Account {
 
 // TODO: type data with generic type
 export interface AccountEvent {
-  accountUuid: string
+  accountUuid: PersonUuid
   eventType: AccountEventType
   data?: Record<string, any>
   time: Timestamp
@@ -67,12 +70,12 @@ export enum AccountEventType {
 }
 
 export interface Member {
-  accountUuid: string
+  accountUuid: PersonUuid
   role: AccountRole
 }
 
 export interface WorkspaceStatus {
-  workspaceUuid: string
+  workspaceUuid: WorkspaceUuid
   mode: WorkspaceMode
   processingProgress?: number
   versionMajor: number
@@ -87,15 +90,15 @@ export interface WorkspaceStatus {
 }
 
 export interface Workspace {
-  uuid: string
+  uuid: WorkspaceUuid
   name: string
   url: string
-  dataId?: string // Old workspace identifier. E.g. Database name in Mongo, bucket in R2, etc.
+  dataId?: WorkspaceDataId // Old workspace identifier. E.g. Database name in Mongo, bucket in R2, etc.
   branding?: string
   location?: Location
   region?: string
-  createdBy: string // Account UUID
-  billingAccount: string // Account UUID
+  createdBy: PersonUuid
+  billingAccount: PersonUuid
   createdOn?: Timestamp
 }
 
@@ -109,7 +112,7 @@ export interface OTP {
 export interface WorkspaceInvite {
   id: string // bigint should be represented as string as it exceeds JS safe integer limit
   migratedFrom?: string // old invite id to be able to find migrated invites
-  workspaceUuid: string
+  workspaceUuid: WorkspaceUuid
   expiresOn: Timestamp
   emailPattern?: string
   remainingUses?: number
@@ -143,13 +146,13 @@ export interface AccountDB {
   invite: DbCollection<WorkspaceInvite>
 
   init: () => Promise<void>
-  createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<string>
-  assignWorkspace: (accountId: string, workspaceId: string, role: AccountRole) => Promise<void>
-  updateWorkspaceRole: (accountId: string, workspaceId: string, role: AccountRole) => Promise<void>
-  unassignWorkspace: (accountId: string, workspaceId: string) => Promise<void>
-  getWorkspaceRole: (accountId: string, workspaceId: string) => Promise<AccountRole | null>
-  getWorkspaceMembers: (workspaceId: string) => Promise<WorkspaceMemberInfo[]>
-  getAccountWorkspaces: (accountId: string) => Promise<WorkspaceInfoWithStatus[]>
+  createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>
+  assignWorkspace: (accountId: PersonUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
+  updateWorkspaceRole: (accountId: PersonUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
+  unassignWorkspace: (accountId: PersonUuid, workspaceId: WorkspaceUuid) => Promise<void>
+  getWorkspaceRole: (accountId: PersonUuid, workspaceId: WorkspaceUuid) => Promise<AccountRole | null>
+  getWorkspaceMembers: (workspaceId: WorkspaceUuid) => Promise<WorkspaceMemberInfo[]>
+  getAccountWorkspaces: (accountId: PersonUuid) => Promise<WorkspaceInfoWithStatus[]>
   getPendingWorkspace: (
     region: string,
     version: Data<Version>,
@@ -157,8 +160,8 @@ export interface AccountDB {
     processingTimeoutMs: number,
     wsLivenessMs?: number
   ) => Promise<WorkspaceInfoWithStatus | undefined>
-  setPassword: (accountId: string, passwordHash: Buffer, salt: Buffer) => Promise<void>
-  resetPassword: (accountId: string) => Promise<void>
+  setPassword: (accountId: PersonUuid, passwordHash: Buffer, salt: Buffer) => Promise<void>
+  resetPassword: (accountId: PersonUuid) => Promise<void>
 }
 
 export interface DbCollection<T> {
@@ -220,14 +223,14 @@ export type WorkspaceEvent =
   | 'archiving-done'
 export type WorkspaceOperation = 'create' | 'upgrade' | 'all' | 'all+backup'
 export interface LoginInfo {
-  account: string
+  account: PersonUuid
   token?: string
 }
 
 export interface WorkspaceLoginInfo extends LoginInfo {
-  workspace: string
+  workspace: WorkspaceUuid
   workspaceUrl: string
-  workspaceDataId?: string
+  workspaceDataId?: WorkspaceDataId
   endpoint: string
   role: AccountRole
 }

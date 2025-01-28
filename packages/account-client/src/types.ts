@@ -1,7 +1,7 @@
-import { AccountRole, type Timestamp } from '@hcengineering/core'
+import { WorkspaceDataId, WorkspaceUuid, type AccountRole, type PersonUuid, type Timestamp } from '@hcengineering/core'
 
 export interface LoginInfo {
-  account: string
+  account: PersonUuid
   token?: string
 }
 
@@ -9,8 +9,8 @@ export interface LoginInfo {
  * @public
  */
 export interface WorkspaceLoginInfo extends LoginInfo {
-  workspace: string // worspace uuid
-  workspaceDataId?: string
+  workspace: WorkspaceUuid // worspace uuid
+  workspaceDataId?: WorkspaceDataId
   workspaceUrl: string
   endpoint: string
   token: string

@@ -14,7 +14,7 @@
 //
 import { ObjectId as MongoObjectId, UUID } from 'mongodb'
 import type { Collection, CreateIndexesOptions, Db, Filter, FindCursor, OptionalUnlessRequiredId, Sort } from 'mongodb'
-
+import { type WorkspaceUuid } from '@hcengineering/core'
 import type {
   DbCollection,
   Query,
@@ -181,7 +181,7 @@ export class WorkspaceMongoDbCollection extends MongoDbCollection<Workspace> imp
 
   async insertOne<K extends keyof Workspace>(data: Partial<Workspace>, idKey?: K): Promise<any> {
     if (data.uuid === undefined) {
-      data.uuid = new UUID().toJSON()
+      data.uuid = new UUID().toJSON() as WorkspaceUuid
     }
 
     return await super.insertOne(data, idKey)

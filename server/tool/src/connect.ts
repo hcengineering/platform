@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Client, systemAccountUuid, Tx, WorkspaceUuid } from '@hcengineering/core'
+import { Client, type PersonUuid, systemAccountUuid, Tx, type WorkspaceUuid } from '@hcengineering/core'
 import { createClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 
@@ -26,7 +26,7 @@ import { generateToken } from '@hcengineering/server-token'
 export async function connect (
   transactorUrl: string,
   workspace: WorkspaceUuid,
-  account?: string,
+  account?: PersonUuid,
   extra?: Record<string, string>,
   model?: Tx[],
   connectTimeout: number = 0

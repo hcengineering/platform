@@ -1,4 +1,4 @@
-import { MeasureMetricsContext, generateId } from '@hcengineering/core'
+import { MeasureMetricsContext, type WorkspaceDataId, generateId } from '@hcengineering/core'
 import type { StorageConfiguration } from '@hcengineering/server-core'
 import { S3Service, processConfigFromEnv, type S3Config } from '.'
 
@@ -23,7 +23,7 @@ async function doTest (): Promise<void> {
 
   const genWorkspaceId1 = generateId()
 
-  const ws1 = genWorkspaceId1
+  const ws1 = genWorkspaceId1 as unknown as WorkspaceDataId
   await storageService.make(toolCtx, ws1)
   /// /////// Uploads
   let st1 = Date.now()

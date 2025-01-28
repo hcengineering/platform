@@ -1,5 +1,5 @@
 import { Employee } from '@hcengineering/contact'
-import { Ref, WorkspaceUuid } from '@hcengineering/core'
+import { Ref, WorkspaceDataId, WorkspaceUuid } from '@hcengineering/core'
 import { DocumentSpace } from '@hcengineering/controlled-documents'
 import { StorageAdapter } from '@hcengineering/server-core'
 
@@ -12,6 +12,7 @@ export interface Config {
   collaboratorURL: string
   uploadURL: string
   workspaceId: WorkspaceUuid
+  workspaceDataId?: WorkspaceDataId
   owner: Ref<Employee>
   backend: HtmlConversionBackend
   space: Ref<DocumentSpace>

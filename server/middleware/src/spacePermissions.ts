@@ -147,9 +147,10 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
    */
   private checkPermission (ctx: MeasureContext<SessionData>, space: Ref<TypedSpace>, id: Ref<Permission>): boolean {
     const account = ctx.contextData.account
-    const permissions = this.permissionsBySpace[space]?.[account.uuid] ?? new Set()
+    const socialStrings = account.socialIds
+    const permissions = socialStrings.map((si) => this.permissionsBySpace[space]?.[si] ?? [])
 
-    return permissions.has(id)
+    return permissions.some((ps) => ps.has(id))
   }
 
   private throwForbidden (): void {

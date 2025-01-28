@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import core, {
   MeasureMetricsContext,
   RateLimiter,
@@ -30,7 +30,8 @@ import core, {
   type Metrics,
   type Ref,
   type WorkspaceUuid,
-  SocialIdType
+  SocialIdType,
+  type PersonUuid
 } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
@@ -49,7 +50,7 @@ import { type Vacancy } from '@hcengineering/recruit'
 import { WebSocket } from 'ws'
 
 interface StartMessage {
-  email: string
+  account: PersonUuid
   workspaceId: WorkspaceUuid
   transactorUrl: string
   id: number
@@ -88,7 +89,7 @@ interface PendingMsg extends Msg {
 
 export async function benchmark (
   workspaceId: WorkspaceUuid[],
-  users: Map<WorkspaceUuid, string[]>,
+  users: Map<WorkspaceUuid, PersonUuid[]>,
   accountsUrl: string,
   cmd: {
     from: number
@@ -309,7 +310,7 @@ export async function benchmark (
               const endpoint = await getTransactorEndpoint(token, 'external')
               console.log('endpoint', endpoint, 'workspace', wsid)
               const msg: StartMessage = {
-                email: wsUsers[randNum(wsUsers.length)],
+                account: wsUsers[randNum(wsUsers.length)],
                 workspaceId: wsid,
                 transactorUrl: endpoint,
                 id: i,
@@ -371,10 +372,10 @@ export function benchmarkWorker (): void {
       setMetadata(client.metadata.UseProtocolCompression, msg.compression)
       console.log('connecting to', msg.workspaceId)
 
-      connection = await connect(msg.transactorUrl, msg.workspaceId, msg.email)
+      connection = await connect(msg.transactorUrl, msg.workspaceId, msg.account)
 
       if (msg.options.mode === 'find-all') {
-        const benchmarkPersonId: PersonId = core.account.System + '_benchmark'
+        const benchmarkPersonId = (core.account.System + '_benchmark') as PersonId
         const opt = new TxOperations(connection, benchmarkPersonId)
         parentPort?.postMessage({
           type: 'operate',
@@ -480,39 +481,41 @@ export function benchmarkWorker (): void {
 
 export type StressBenchmarkMode = 'wrong' | 'connect-disconnect'
 export async function stressBenchmark (transactor: string, mode: StressBenchmarkMode): Promise<void> {
-  if (mode === 'wrong') {
-    console.log('Stress with wrong workspace/email')
-    let counter = 0
-    const rate = new RateLimiter(1)
-    while (true) {
-      try {
-        counter++
-        console.log('Attempt', counter)
-        const token = generateToken(generateId(), generateId())
-        await rate.add(async () => {
-          try {
-            const ws = new WebSocket(concatLink(transactor, token))
-            await new Promise<void>((resolve) => {
-              ws.onopen = () => {
-                resolve()
-              }
-            })
-            // ws.close()
-            // await createClient(transactor, token, undefined, 50)
-            console.log('out')
-          } catch (err: any) {
-            console.error(err)
-          }
-        })
-      } catch (err: any) {
-        // Ignore
-      }
-    }
-  }
+  // TODO: FIXME
+  throw new Error('Not implemented')
+  // if (mode === 'wrong') {
+  //   console.log('Stress with wrong workspace/email')
+  //   let counter = 0
+  //   const rate = new RateLimiter(1)
+  //   while (true) {
+  //     try {
+  //       counter++
+  //       console.log('Attempt', counter)
+  //       const token = generateToken(generateId(), generateId())
+  //       await rate.add(async () => {
+  //         try {
+  //           const ws = new WebSocket(concatLink(transactor, token))
+  //           await new Promise<void>((resolve) => {
+  //             ws.onopen = () => {
+  //               resolve()
+  //             }
+  //           })
+  //           // ws.close()
+  //           // await createClient(transactor, token, undefined, 50)
+  //           console.log('out')
+  //         } catch (err: any) {
+  //           console.error(err)
+  //         }
+  //       })
+  //     } catch (err: any) {
+  //       // Ignore
+  //     }
+  //   }
+  // }
 }
 
-export async function testFindAll (endpoint: string, workspace: string, email: string): Promise<void> {
-  const connection = await connect(endpoint, workspace, email)
+export async function testFindAll (endpoint: string, workspace: WorkspaceUuid, account: PersonUuid): Promise<void> {
+  const connection = await connect(endpoint, workspace, account)
   try {
     const client = new TxOperations(connection, core.account.System)
     const start = Date.now()
@@ -534,7 +537,7 @@ export async function testFindAll (endpoint: string, workspace: string, email: s
 
 export async function generateWorkspaceData (
   endpoint: string,
-  workspace: string,
+  workspace: WorkspaceUuid,
   parallel: boolean,
   email: string
 ): Promise<void> {
@@ -570,7 +573,7 @@ export async function generateWorkspaceData (
 }
 
 export async function generateEmployee (client: TxOperations): Promise<PersonId> {
-  const personUuid = generateId()
+  const personUuid = generateId() as unknown as PersonUuid // TODO: will it work or need to actually be a UUID?
   const personId = await client.createDoc(contact.class.Person, contact.space.Contacts, {
     name: generateId().toString(),
     city: '',
@@ -622,7 +625,7 @@ async function generateVacancy (client: TxOperations, members: PersonId[]): Prom
 
   for (let i = 0; i < 100; i++) {
     // generate candidate
-    const personUuid = generateId()
+    const personUuid = generateId() as unknown as PersonUuid // TODO: will it work or need to actually be a UUID?
     const personId = await client.createDoc(contact.class.Person, contact.space.Contacts, {
       name: generateId().toString(),
       city: '',

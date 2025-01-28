@@ -464,7 +464,7 @@ export async function getUsersInfo (
     .filter((it) => it !== undefined)
   const missingSocialIds = Object.entries(employeesBySocialId)
     .filter(([, employee]) => employee === undefined)
-    .map(([id]) => id)
+    .map(([id]) => id as PersonId)
   const personsBySocialId = await getPersonsBySocialIds(control, missingSocialIds)
 
   const employeesIds = new Set(presentEmployeeIds)

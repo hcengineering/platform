@@ -37,7 +37,8 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc,
   Type,
-  type MeasureContext
+  type MeasureContext,
+  type WorkspaceDataId
 } from '@hcengineering/core'
 import notification, { CommonInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
 import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
@@ -401,7 +402,8 @@ async function getCreateReferencesTxes (
       const blobId = (createdDoc as any)[attr.name] as Ref<Blob>
       if (blobId != null) {
         try {
-          const buffer = await storage.read(ctx, control.workspace.uuid, blobId)
+          const dataId = control.workspace.dataId ?? control.workspace.uuid as unknown as WorkspaceDataId
+          const buffer = await storage.read(ctx, dataId, blobId)
           const markup = Buffer.concat(buffer as any).toString()
           const attrReferences = getReferencesData(srcDocId, srcDocClass, attachedDocId, attachedDocClass, markup)
           refs.push(...attrReferences)
@@ -448,7 +450,8 @@ async function getUpdateReferencesTxes (
       try {
         const blobId = (updatedDoc as any)[attr.name] as Ref<Blob>
         if (blobId != null) {
-          const buffer = await storage.read(ctx, control.workspace.uuid, blobId)
+          const dataId = control.workspace.dataId ?? control.workspace.uuid as unknown as WorkspaceDataId
+          const buffer = await storage.read(ctx, dataId, blobId)
           const markup = Buffer.concat(buffer as any).toString()
           const attrReferences = getReferencesData(srcDocId, srcDocClass, attachedDocId, attachedDocClass, markup)
           references.push(...attrReferences)

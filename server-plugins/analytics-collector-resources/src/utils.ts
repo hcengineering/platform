@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import chunter, { Channel } from '@hcengineering/chunter'
-import core, { MeasureContext, Ref, TxOperations } from '@hcengineering/core'
+import core, { MeasureContext, PersonId, Ref, TxOperations } from '@hcengineering/core'
 import { getAllEmployeesPrimarySocialStrings, getAllSocialStringsByPersonId, Person } from '@hcengineering/contact'
 import analyticsCollector, { getOnboardingChannelName, OnboardingChannel } from '@hcengineering/analytics-collector'
 import { translate } from '@hcengineering/platform'
@@ -27,7 +27,7 @@ interface WorkspaceInfo {
 export async function getOrCreateOnboardingChannel (
   ctx: MeasureContext,
   client: TxOperations,
-  socialString: string,
+  socialString: PersonId,
   workspace: WorkspaceInfo,
   person?: Person
 ): Promise<[Ref<OnboardingChannel> | undefined, boolean]> {

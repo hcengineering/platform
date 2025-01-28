@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type FindResult, type MeasureContext } from '@hcengineering/core'
+import { WorkspaceUuid, type FindResult, type MeasureContext } from '@hcengineering/core'
 
 import type {
   AddSessionActive,
@@ -64,7 +64,7 @@ export function processRequest (
   session: Session,
   cs: ConnectionSocket,
   context: MeasureContext,
-  workspaceId: string,
+  workspaceId: WorkspaceUuid,
   buff: any,
   handleRequest: HandleRequestFunction
 ): void {

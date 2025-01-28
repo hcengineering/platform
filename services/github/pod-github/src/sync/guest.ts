@@ -2,7 +2,7 @@
 // Copyright © 2023 Hardcore Engineering Inc.
 //
 
-import { Branding, generateId, TxOperations, WorkspaceIds, WorkspaceUuid } from '@hcengineering/core'
+import { Branding, generateUuid, PersonUuid, TxOperations, WorkspaceIds, WorkspaceUuid } from '@hcengineering/core'
 import { MarkupMarkType, MarkupNode, MarkupNodeType, traverseMarkupNode } from '@hcengineering/text'
 import { getPublicLink } from '@hcengineering/server-guest-resources'
 import { Task } from '@hcengineering/task'
@@ -96,7 +96,7 @@ export function appendGuestLinkToImage (markdown: MarkupNode, workspace: Workspa
     return
   }
 
-  const id = generateId()
+  const id = generateUuid() as PersonUuid
   const token = generateToken(id, workspace, { linkId: id, guest: 'true' })
 
   for (const imageTag of imageTags) {

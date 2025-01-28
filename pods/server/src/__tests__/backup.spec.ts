@@ -2,6 +2,8 @@ import core, {
   DOMAIN_TX,
   generateId,
   MeasureMetricsContext,
+  type WorkspaceDataId,
+  type WorkspaceUuid,
   type Doc,
   type LowLevelStorage,
   type Ref,
@@ -22,7 +24,7 @@ describe.skip('test-backup-find', () => {
   it('check create/load/clean', async () => {
     const toolCtx = new MeasureMetricsContext('-', {})
     // We should setup a DB with docuemnts and try to backup them.
-    const wsIds = { dataId: 'testdb-backup-test', uuid: 'test', url: 'test' }
+    const wsIds = { dataId: 'testdb-backup-test' as WorkspaceDataId, uuid: 'test' as WorkspaceUuid, url: 'test' }
     const storageConfig = storageConfigFromEnv(STORAGE_CONFIG)
     const storageAdapter = buildStorageFromConfig(storageConfig)
     const pipeline = await getServerPipeline(toolCtx, model, dbURL, wsIds, storageAdapter, {
@@ -66,7 +68,7 @@ describe.skip('test-backup-find', () => {
   it('check traverse', async () => {
     const toolCtx = new MeasureMetricsContext('-', {})
     // We should setup a DB with docuemnts and try to backup them.
-    const wsIds = { dataId: 'testdb-backup-test', uuid: 'test', url: 'test' }
+    const wsIds = { dataId: 'testdb-backup-test' as WorkspaceDataId, uuid: 'test' as WorkspaceUuid, url: 'test' }
 
     const storageConfig = storageConfigFromEnv(STORAGE_CONFIG)
     const storageAdapter = buildStorageFromConfig(storageConfig)

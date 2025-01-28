@@ -1,4 +1,4 @@
-import { MeasureMetricsContext, type MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
+import { MeasureMetricsContext, type WorkspaceDataId, type MeasureContext } from '@hcengineering/core'
 import type { NamedStorageAdapter } from '@hcengineering/storage'
 import { FallbackStorageAdapter } from '../fallback'
 import { MemStorageAdapter } from './memAdapters'
@@ -9,7 +9,7 @@ describe('aggregator tests', () => {
     mem2: MemStorageAdapter
     aggr: FallbackStorageAdapter
     testCtx: MeasureContext
-    ws1: WorkspaceUuid
+    ws1: WorkspaceDataId
   } {
     const mem1 = new MemStorageAdapter()
 
@@ -20,9 +20,10 @@ describe('aggregator tests', () => {
     const aggr = new FallbackStorageAdapter(adapters)
 
     const testCtx = new MeasureMetricsContext('test', {})
-    const ws1: WorkspaceUuid = 'ws1'
+    const ws1 = 'ws1' as WorkspaceDataId
     return { mem1, mem2, aggr, ws1, testCtx }
   }
+
   it('not reuse existing storage', async () => {
     const { mem1, aggr, ws1, testCtx } = prepare1()
 

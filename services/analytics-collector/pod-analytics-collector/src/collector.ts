@@ -14,7 +14,7 @@
 //
 import { generateToken, Token } from '@hcengineering/server-token'
 import { AnalyticEvent } from '@hcengineering/analytics-collector'
-import { AccountRole, MeasureContext, isWorkspaceCreating, WorkspaceUuid } from '@hcengineering/core'
+import { AccountRole, MeasureContext, isWorkspaceCreating, WorkspaceUuid, PersonUuid } from '@hcengineering/core'
 import { Person } from '@hcengineering/contact'
 import { getClient as getAccountClient, WorkspaceLoginInfo } from '@hcengineering/account-client'
 import { Db, Collection } from 'mongodb'
@@ -65,7 +65,7 @@ export class Collector {
     return wsClient
   }
 
-  setWorkspaceCloseTimeout (workspace: string): void {
+  setWorkspaceCloseTimeout (workspace: WorkspaceUuid): void {
     const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
 
     if (timeoutId !== undefined) {
@@ -80,21 +80,23 @@ export class Collector {
   }
 
   getSupportWorkspaceClient (): SupportWsClient {
-    let client: SupportWsClient
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // let client: SupportWsClient
 
-    if (this.supportClient !== undefined) {
-      client = this.supportClient
-    } else {
-      client = new SupportWsClient(this.ctx, config.SupportWorkspace)
-      this.supportClient = client
-    }
+    // if (this.supportClient !== undefined) {
+    //   client = this.supportClient
+    // } else {
+    //   client = new SupportWsClient(this.ctx, config.SupportWorkspace)
+    //   this.supportClient = client
+    // }
 
-    this.setWorkspaceCloseTimeout(config.SupportWorkspace)
+    // this.setWorkspaceCloseTimeout(config.SupportWorkspace)
 
-    return client
+    // return client
   }
 
-  async closeWorkspaceClient (workspace: string): Promise<void> {
+  async closeWorkspaceClient (workspace: WorkspaceUuid): Promise<void> {
     this.ctx.info('Closing workspace client', { workspace })
     const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
 
@@ -147,7 +149,7 @@ export class Collector {
     return true
   }
 
-  async getPerson (account: string, workspace: WorkspaceUuid): Promise<Person | undefined> {
+  async getPerson (account: PersonUuid, workspace: WorkspaceUuid): Promise<Person | undefined> {
     const key = `${account}-${workspace}`
 
     if (this.persons.has(key)) {

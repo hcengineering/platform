@@ -135,7 +135,7 @@ export async function getEmployees (control: TriggerControl, personIds: PersonId
 export async function getEmployeesBySocialIds (
   control: TriggerControl,
   personIds: PersonId[]
-): Promise<Record<string, Employee | undefined>> {
+): Promise<Record<PersonId, Employee | undefined>> {
   const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, { key: { $in: personIds } })
   const employees = toIdMap(
     await control.findAll(control.ctx, contact.mixin.Employee, {
