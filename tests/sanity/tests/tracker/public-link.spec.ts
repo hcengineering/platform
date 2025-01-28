@@ -45,7 +45,6 @@ test.describe('Tracker public link issues tests', () => {
         await clearPage.goto(link)
 
         const clearIssuesDetailsPage = new IssuesDetailsPage(clearPage)
-        await clearIssuesDetailsPage.waitDetailsOpened(publicLinkIssue.title)
         await clearIssuesDetailsPage.checkIssue({
           ...publicLinkIssue,
           status: 'Backlog'
@@ -91,7 +90,6 @@ test.describe('Tracker public link issues tests', () => {
         await setTestOptions(clearPage)
 
         const clearIssuesDetailsPage = new IssuesDetailsPage(clearPage)
-        await clearIssuesDetailsPage.waitDetailsOpened(publicLinkIssue.title)
         await clearIssuesDetailsPage.checkIssue({
           ...publicLinkIssue,
           status: 'Backlog'
