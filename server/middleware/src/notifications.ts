@@ -21,8 +21,10 @@ import core, {
   TxProcessor,
   type SessionData,
   TxApplyIf,
-  systemAccountUuid
+  systemAccountUuid,
+  type PersonUuid
 } from '@hcengineering/core'
+import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
 import { DOMAIN_USER_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_DOC_NOTIFY } from '@hcengineering/server-notification'
 
@@ -54,24 +56,23 @@ export class NotificationsMiddleware extends BaseMiddleware implements Middlewar
   }
 
   processTx (ctx: MeasureContext<SessionData>, tx: Tx): void {
-    // TODO: FIXME
-    // let target: string[] | undefined
-    // if (this.isTargetDomain(tx)) {
-    //   const account = ctx.contextData.account._id
-    //   if (account !== tx.modifiedBy && account !== core.account.System) {
-    //     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-    //   }
-    //   const modifiedByAccount = ctx.contextData.getAccount(tx.modifiedBy)
-    //   target = [ctx.contextData.userEmail, systemAccountEmail]
-    //   if (modifiedByAccount !== undefined && !target.includes(modifiedByAccount.email)) {
-    //     target.push(modifiedByAccount.email)
-    //   }
-    //   ctx.contextData.broadcast.targets['checkDomain' + account] = (tx) => {
-    //     if (this.isTargetDomain(tx)) {
-    //       return target
-    //     }
-    //   }
-    // }
+    let target: PersonUuid[] | undefined
+    if (this.isTargetDomain(tx)) {
+      const account = ctx.contextData.account
+      if (!account.socialIds.includes(tx.modifiedBy) && account.uuid !== systemAccountUuid) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      }
+      const modifiedByAccount = ctx.contextData.socialStringsToUsers.get(tx.modifiedBy)
+      target = [account.uuid, systemAccountUuid]
+      if (modifiedByAccount !== undefined && !target.includes(modifiedByAccount)) {
+        target.push(modifiedByAccount)
+      }
+      ctx.contextData.broadcast.targets['checkDomain' + account.uuid] = (tx) => {
+        if (this.isTargetDomain(tx)) {
+          return target
+        }
+      }
+    }
   }
 
   tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {

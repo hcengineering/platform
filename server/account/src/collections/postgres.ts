@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 import { Sql } from 'postgres'
-import { type Data, type Version, type Person, type WorkspaceMemberInfo, AccountRole, type PersonUuid, type WorkspaceUuid } from '@hcengineering/core'
+import {
+  type Data,
+  type Version,
+  type Person,
+  type WorkspaceMemberInfo,
+  AccountRole,
+  type PersonUuid,
+  type WorkspaceUuid
+} from '@hcengineering/core'
 
 import type {
   DbCollection,

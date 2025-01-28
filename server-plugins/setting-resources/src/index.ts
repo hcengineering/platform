@@ -44,6 +44,7 @@ export async function getValue (control: TriggerControl, context: Record<string,
 
 async function getEmployee (control: TriggerControl, _id: PersonId): Promise<Person | undefined> {
   // TODO: FIXME
+  // Related to integrations
   throw new Error('Not implemented')
   // const employeeAccount = control.modelDb.findAllSync(contact.class.PersonAccount, {
   //   _id: _id as PersonId

@@ -27,7 +27,8 @@ import core, {
   type TxResult,
   type TxWorkspaceEvent,
   type PersonId,
-  systemAccount
+  systemAccount,
+  type PersonUuid
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import { type Hash } from 'crypto'
@@ -170,7 +171,7 @@ export class SessionDataImpl implements SessionData {
     _removedMap: Map<Ref<Doc>, Doc> | undefined,
     _contextCache: Map<string, any> | undefined,
     readonly modelDb: ModelDb,
-    readonly socialStringsToUsers: Map<PersonId, string>
+    readonly socialStringsToUsers: Map<PersonId, PersonUuid>
   ) {
     this._removedMap = _removedMap
     this._contextCache = _contextCache

@@ -45,7 +45,7 @@ export async function OnFileVersionDelete (
     }
   }
   if (toDelete.length > 0) {
-    const dataId = workspace.dataId ?? workspace.uuid as unknown as WorkspaceDataId
+    const dataId = workspace.dataId ?? (workspace.uuid as unknown as WorkspaceDataId)
     await storageAdapter.remove(ctx, dataId, toDelete)
   }
 

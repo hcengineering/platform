@@ -116,7 +116,7 @@ export class ClientSession implements Session {
   }
 
   includeSessionContext (ctx: ClientSessionCtx): void {
-    const dataId = this.workspace.workspaceDataId ?? this.workspace.workspaceUuid as unknown as WorkspaceDataId
+    const dataId = this.workspace.workspaceDataId ?? (this.workspace.workspaceUuid as unknown as WorkspaceDataId)
     const contextData = new SessionDataImpl(
       this.account,
       this.sessionId,

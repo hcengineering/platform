@@ -110,7 +110,7 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
     return {
       connectionId: generateId(),
       workspaceId: ids.uuid,
-      workspaceDataId: ids.dataId ?? ids.uuid as unknown as WorkspaceDataId,
+      workspaceDataId: ids.dataId ?? (ids.uuid as unknown as WorkspaceDataId),
       clientFactory: simpleClientFactory(token)
     }
   }

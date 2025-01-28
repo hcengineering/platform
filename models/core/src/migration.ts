@@ -239,7 +239,7 @@ async function processMigrateContentFor (
               const buffer = Buffer.from(value)
               await storageAdapter.put(
                 ctx,
-                client.wsIds.dataId ?? client.wsIds.uuid as unknown as WorkspaceDataId,
+                client.wsIds.dataId ?? (client.wsIds.uuid as unknown as WorkspaceDataId),
                 blobId,
                 buffer,
                 'application/json',
@@ -582,7 +582,7 @@ async function processMigrateJsonForDoc (
       : attribute.name
 
     const collabId = makeDocCollabId(doc, attribute.name)
-    const dataId = wsIds.dataId ?? wsIds.uuid as unknown as WorkspaceDataId
+    const dataId = wsIds.dataId ?? (wsIds.uuid as unknown as WorkspaceDataId)
     if (value.startsWith('{')) {
       // For some reason we have documents that are already markups
       const jsonId = await retry(5, async () => {

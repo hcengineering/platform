@@ -10,10 +10,16 @@ import core, {
   TxUpdateDoc,
   type Timestamp,
   type RolesAssignment,
-  AccountRole
+  AccountRole,
+  type TxCUD,
+  type Doc,
+  PersonId,
+  combineAttributes,
+  includesAny,
+  TxCreateDoc
 } from '@hcengineering/core'
 import { pickPrimarySocialId, type Employee } from '@hcengineering/contact'
-import { getSocialStrings, getEmployees } from '@hcengineering/server-contact'
+import { getSocialStrings, getEmployees, getSocialStringsByPersons } from '@hcengineering/server-contact'
 import { TriggerControl } from '@hcengineering/server-core'
 
 import documents, {
@@ -382,26 +388,28 @@ export async function documentTextPresenter (doc: ControlledDocument): Promise<s
   return doc.title
 }
 
-function CoAuthorsTypeMatch (
+async function CoAuthorsTypeMatch (
   originTx: TxCUD<ControlledDocument>,
   _doc: Doc,
-  accounts: Ref<Account>[],
+  socialIds: PersonId[],
   _type: NotificationType,
   control: TriggerControl
-): boolean {
-  if (accounts.some((it) => originTx.modifiedBy === it)) return false
+): Promise<boolean> {
+  if (socialIds.includes(originTx.modifiedBy)) return false
   if (originTx._class === core.class.TxUpdateDoc) {
     const tx = originTx as TxUpdateDoc<ControlledDocument>
     const employees = Array.isArray(tx.operations.coAuthors)
       ? tx.operations.coAuthors ?? []
       : (combineAttributes([tx.operations], 'coAuthors', '$push', '$each') as Ref<Employee>[])
-    const employeeAccounts = employees.flatMap((it) => control.modelDb.getAccountByPersonId(it)).map((it) => it._id)
-    return accounts.some((it) => employeeAccounts.includes(it))
+    const employeeSocialStrings = Object.values(await getSocialStringsByPersons(control, employees)).flat()
+
+    return includesAny(socialIds, employeeSocialStrings)
   } else if (originTx._class === core.class.TxCreateDoc) {
     const tx = originTx as TxCreateDoc<ControlledDocument>
     const employees = tx.attributes.coAuthors
-    const coAuthorAccounts = employees.flatMap((it) => control.modelDb.getAccountByPersonId(it)).map((it) => it._id)
-    return accounts.some((it) => coAuthorAccounts.includes(it))
+    const employeeSocialStrings = Object.values(await getSocialStringsByPersons(control, employees)).flat()
+
+    return includesAny(socialIds, employeeSocialStrings)
   }
 
   return false

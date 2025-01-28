@@ -213,7 +213,7 @@ async function renameFieldsRevert (client: MigrationClient): Promise<void> {
 
     try {
       const collabId = makeDocCollabId(document, 'content')
-      const dataId = client.wsIds.dataId ?? client.wsIds.uuid as unknown as WorkspaceDataId
+      const dataId = client.wsIds.dataId ?? (client.wsIds.uuid as unknown as WorkspaceDataId)
       const ydoc = await loadCollabYdoc(ctx, storage, dataId, collabId)
       if (ydoc === undefined) {
         continue
@@ -261,7 +261,7 @@ async function restoreContentField (client: MigrationClient): Promise<void> {
   for (const document of documents) {
     try {
       const collabId = makeDocCollabId(document, 'content')
-      const dataId = client.wsIds.dataId ?? client.wsIds.uuid as unknown as WorkspaceDataId
+      const dataId = client.wsIds.dataId ?? (client.wsIds.uuid as unknown as WorkspaceDataId)
       const ydoc = await loadCollabYdoc(ctx, storage, dataId, collabId)
       if (ydoc === undefined) {
         ctx.error('document content not found', { document: document.title })

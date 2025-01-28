@@ -100,7 +100,11 @@ function getFilesUrl (): string {
 }
 
 export function getCurrentWorkspaceId (): WorkspaceDataId {
-  return getMetadata(plugin.metadata.WorkspaceDataId) ?? getMetadata(plugin.metadata.WorkspaceUuid) as unknown as WorkspaceDataId ?? '' as WorkspaceDataId
+  return (
+    getMetadata(plugin.metadata.WorkspaceDataId) ??
+    (getMetadata(plugin.metadata.WorkspaceUuid) as unknown as WorkspaceDataId) ??
+    ('' as WorkspaceDataId)
+  )
 }
 
 /**

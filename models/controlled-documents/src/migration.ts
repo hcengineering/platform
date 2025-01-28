@@ -301,7 +301,7 @@ async function migrateDocSections (client: MigrationClient): Promise<void> {
     // Migrate sections headers + content
     try {
       const collabId = makeDocCollabId(document, 'content')
-      const dataId = client.wsIds.dataId ?? client.wsIds.uuid as unknown as WorkspaceDataId
+      const dataId = client.wsIds.dataId ?? (client.wsIds.uuid as unknown as WorkspaceDataId)
       const ydoc = await loadCollabYdoc(ctx, storage, dataId, collabId)
       if (ydoc === undefined) {
         // no content, ignore

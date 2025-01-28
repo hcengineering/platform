@@ -557,8 +557,8 @@ export async function canDeleteFolder (obj?: Doc | Doc[]): Promise<boolean> {
     return false
   }
 
-  const currentUser = getCurrentAccount() as PersonAccount
-  const isOwner = objs.every((doc) => doc.owner === currentUser.person)
+  const me = getCurrentEmployee()
+  const isOwner = objs.every((doc) => doc.owner === me)
 
   if (isOwner) {
     return true

@@ -513,7 +513,7 @@ export interface ClientSessionCtx {
   ctx: MeasureContext
 
   pipeline: Pipeline
-  socialStringsToUsers: Map<PersonId, string>
+  socialStringsToUsers: Map<PersonId, PersonUuid>
   requestId: ReqId | undefined
   sendResponse: (id: ReqId | undefined, msg: any) => Promise<void>
   sendPong: () => void

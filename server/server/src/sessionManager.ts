@@ -37,7 +37,8 @@ import core, {
   pickPrimarySocialId,
   buildSocialIdString,
   type PersonId,
-  type WorkspaceDataId
+  type WorkspaceDataId,
+  type PersonUuid
 } from '@hcengineering/core'
 import { getClient as getAccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { unknownError, type Status } from '@hcengineering/platform'
@@ -920,10 +921,7 @@ class TSessionManager implements SessionManager {
     }
   }
 
-  private async performWorkspaceCloseCheck (
-    workspace: Workspace,
-    wsUuid: WorkspaceUuid
-  ): Promise<void> {
+  private async performWorkspaceCloseCheck (workspace: Workspace, wsUuid: WorkspaceUuid): Promise<void> {
     const wsUID = workspace.id
     const logParams = { wsUuid, workspace: workspace.id, wsName: workspace.workspaceName }
     if (workspace.sessions.size === 0) {
@@ -1003,13 +1001,13 @@ class TSessionManager implements SessionManager {
   }
 
   // TODO: cache this map and update when sessions created/closed
-  getActiveSocialStringsToUsersMap (workspace: WorkspaceUuid): Map<PersonId, string> {
+  getActiveSocialStringsToUsersMap (workspace: WorkspaceUuid): Map<PersonId, PersonUuid> {
     const ws = this.workspaces.get(workspace)
     if (ws === undefined) {
       return new Map()
     }
 
-    const res = new Map<PersonId, string>()
+    const res = new Map<PersonId, PersonUuid>()
     for (const s of ws.sessions.values()) {
       const sessionAccount = s.session.getUser()
       if (sessionAccount === systemAccountUuid) {

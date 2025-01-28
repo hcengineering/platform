@@ -411,10 +411,14 @@ export function start (
     })
   )
 
-  const getWorkspaceDataId = async (ctx: MeasureContext, token: string, path?: string): Promise<WorkspaceDataId | null> => {
+  const getWorkspaceDataId = async (
+    ctx: MeasureContext,
+    token: string,
+    path?: string
+  ): Promise<WorkspaceDataId | null> => {
     const accountClient = getAccountClient(config.accountsUrlInternal ?? config.accountsUrl, token)
     const workspaceInfo = await accountClient.getWorkspaceInfo()
-    const actualDataId = workspaceInfo.dataId ?? workspaceInfo.uuid as unknown as WorkspaceDataId
+    const actualDataId = workspaceInfo.dataId ?? (workspaceInfo.uuid as unknown as WorkspaceDataId)
     if (path === undefined) {
       return actualDataId
     }

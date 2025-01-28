@@ -351,9 +351,7 @@ export async function sendOtp (
 
   switch (socialId.type) {
     case SocialIdType.EMAIL: {
-      // DEBUG!!!
-      // sendMethod = sendOtpEmail
-      sendMethod = async () => {}
+      sendMethod = sendOtpEmail
       break
     }
     default:
@@ -1085,4 +1083,8 @@ export function flattenStatus (ws: WorkspaceInfoWithStatus): WorkspaceInfoWithSt
   delete (result as any).status
 
   return result
+}
+
+export async function cleanExpiredOtp (db: AccountDB): Promise<void> {
+  await db.otp.deleteMany({ expiresOn: { $lte: Date.now() } })
 }

@@ -14,7 +14,15 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { generateId, systemAccountUuid, type WorkspaceUuid, type MeasureContext, type Tx, type WorkspaceIds, type WorkspaceDataId } from '@hcengineering/core'
+import {
+  generateId,
+  systemAccountUuid,
+  type WorkspaceUuid,
+  type MeasureContext,
+  type Tx,
+  type WorkspaceIds,
+  type WorkspaceDataId
+} from '@hcengineering/core'
 import platform, { Severity, Status, UNAUTHORIZED, unknownStatus } from '@hcengineering/platform'
 import { RPCHandler, type Response } from '@hcengineering/rpc'
 import {
@@ -27,7 +35,11 @@ import {
   type BlobResponse,
   type WebsocketData
 } from '@hcengineering/server'
-import { getClient as getAccountClientRaw, type WorkspaceLoginInfo, type AccountClient } from '@hcengineering/account-client'
+import {
+  getClient as getAccountClientRaw,
+  type WorkspaceLoginInfo,
+  type AccountClient
+} from '@hcengineering/account-client'
 import {
   LOGGING_ENABLED,
   pingConst,
@@ -233,108 +245,116 @@ export function startHttpServer (
     }
   })
 
-  app.put('/api/v1/blob', catchError(async (req, res) => {
-    try {
-      const authHeader = req.headers.authorization
-      if (authHeader === undefined) {
-        res.status(403).send({ error: 'Unauthorized' })
-        return
-      }
-      const token = authHeader.split(' ')[1]
-      const wsIds = await getWorkspaceIds(token)
+  app.put(
+    '/api/v1/blob',
+    catchError(async (req, res) => {
+      try {
+        const authHeader = req.headers.authorization
+        if (authHeader === undefined) {
+          res.status(403).send({ error: 'Unauthorized' })
+          return
+        }
 
-      if (wsIds.uuid == null) {
-        res.status(401).send({ error: 'No workspace found' })
-      }
+        const token = authHeader.split(' ')[1]
+        const wsIds = await getWorkspaceIds(token)
 
-      const name = req.query.name as string
-      const contentType = req.query.contentType as string
-      const size = parseInt((req.query.size as string) ?? '-1')
-      const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB limit
+        if (wsIds.uuid == null) {
+          res.status(401).send({ error: 'No workspace found' })
+        }
 
-      if (size > MAX_FILE_SIZE) {
-        res.writeHead(413, { 'Content-Type': 'application/json' })
-        res.end(JSON.stringify({ error: 'File too large' }))
-        return
-      }
-      if (Number.isNaN(size)) {
-        ctx.error('/api/v1/blob put error', {
-          message: 'invalid NaN file size',
-          name,
-          workspace: wsIds.uuid
-        })
-        res.writeHead(404, {})
-        res.end()
-        return
-      }
-      const dataId = wsIds.dataId ?? wsIds.uuid as unknown as WorkspaceDataId
-      ctx
-        .with(
-          'storage upload',
-          { workspace: wsIds.uuid },
-          (ctx) => externalStorage.put(ctx, dataId, name, req, contentType, size !== -1 ? size : undefined),
-          { file: name, contentType }
-        )
-        .then(() => {
-          res.writeHead(200, { 'Cache-Control': 'no-cache' })
-          res.end()
-        })
-        .catch((err) => {
-          Analytics.handleError(err)
-          ctx.error('/api/v1/blob put error', { err })
+        const name = req.query.name as string
+        const contentType = req.query.contentType as string
+        const size = parseInt((req.query.size as string) ?? '-1')
+        const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB limit
+
+        if (size > MAX_FILE_SIZE) {
+          res.writeHead(413, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: 'File too large' }))
+          return
+        }
+        if (Number.isNaN(size)) {
+          ctx.error('/api/v1/blob put error', {
+            message: 'invalid NaN file size',
+            name,
+            workspace: wsIds.uuid
+          })
           res.writeHead(404, {})
           res.end()
-        })
-    } catch (err: any) {
-      Analytics.handleError(err)
-      ctx.error('/api/v1/blob put error', { err })
-      res.writeHead(404, {})
-      res.end()
-    }
-  }))
-  app.get('/api/v1/blob', catchError(async (req, res) => {
-    try {
-      const authHeader = req.headers.authorization
-      if (authHeader === undefined) {
-        res.status(403).send({ error: 'Unauthorized' })
-        return
-      }
-
-      const token = authHeader.split(' ')[1]
-      const wsIds = await getWorkspaceIds(token)
-
-      if (wsIds.uuid == null) {
-        res.status(401).send({ error: 'No workspace found' })
-      }
-
-      const name = req.query.name as string
-      const dataId = wsIds.dataId ?? wsIds.uuid as unknown as WorkspaceDataId
-
-      const range = req.headers.range
-      if (range !== undefined) {
+          return
+        }
+        const dataId = wsIds.dataId ?? (wsIds.uuid as unknown as WorkspaceDataId)
         ctx
-          .with('file-range', { workspace: wsIds.uuid }, (ctx) =>
-            getFileRange(ctx, range, externalStorage, dataId, name, wrapRes(res))
+          .with(
+            'storage upload',
+            { workspace: dataId },
+            (ctx) => externalStorage.put(ctx, dataId, name, req, contentType, size !== -1 ? size : undefined),
+            { file: name, contentType }
           )
+          .then(() => {
+            res.writeHead(200, { 'Cache-Control': 'no-cache' })
+            res.end()
+          })
           .catch((err) => {
+            Analytics.handleError(err)
+            ctx.error('/api/v1/blob put error', { err })
+            res.writeHead(404, {})
+            res.end()
+          })
+      } catch (err: any) {
+        Analytics.handleError(err)
+        ctx.error('/api/v1/blob put error', { err })
+        res.writeHead(404, {})
+        res.end()
+      }
+    })
+  )
+
+  app.get(
+    '/api/v1/blob',
+    catchError(async (req, res) => {
+      try {
+        const authHeader = req.headers.authorization
+        if (authHeader === undefined) {
+          res.status(403).send({ error: 'Unauthorized' })
+          return
+        }
+
+        const token = authHeader.split(' ')[1]
+        const wsIds = await getWorkspaceIds(token)
+
+        if (wsIds.uuid == null) {
+          res.status(401).send({ error: 'No workspace found' })
+        }
+
+        const name = req.query.name as string
+        const dataId = wsIds.dataId ?? (wsIds.uuid as unknown as WorkspaceDataId)
+
+        const range = req.headers.range
+        if (range !== undefined) {
+          ctx
+            .with('file-range', { workspace: wsIds.uuid }, (ctx) =>
+              getFileRange(ctx, range, externalStorage, dataId, name, wrapRes(res))
+            )
+            .catch((err) => {
+              Analytics.handleError(err)
+              ctx.error('/api/v1/blob get error', { err })
+              res.writeHead(404, {})
+              res.end()
+            })
+        } else {
+          void getFile(ctx, externalStorage, dataId, name, wrapRes(res)).catch((err) => {
             Analytics.handleError(err)
             ctx.error('/api/v1/blob get error', { err })
             res.writeHead(404, {})
             res.end()
           })
-      } else {
-        void getFile(ctx, externalStorage, dataId, name, wrapRes(res)).catch((err) => {
-          Analytics.handleError(err)
-          ctx.error('/api/v1/blob get error', { err })
-          res.writeHead(404, {})
-          res.end()
-        })
+        }
+      } catch (err: any) {
+        Analytics.handleError(err)
+        ctx.error('/api/v1/blob get error', { err })
       }
-    } catch (err: any) {
-      Analytics.handleError(err)
-      ctx.error('/api/v1/blob get error', { err })
-    }
-  }))
+    })
+  )
 
   app.put('/api/v1/broadcast', (req, res) => {
     try {

@@ -641,7 +641,7 @@ export class GithubWorker implements IntegrationManager {
 
   async uploadFile (patch: string, file?: string, contentType?: string): Promise<Blob | undefined> {
     const id: string = file ?? generateId()
-    const dataId = this.workspace.dataId ?? this.workspace.uuid as unknown as WorkspaceDataId
+    const dataId = this.workspace.dataId ?? (this.workspace.uuid as unknown as WorkspaceDataId)
     await this.storageAdapter.put(this.ctx, dataId, id, patch, contentType ?? 'text/x-patch')
     return await this.storageAdapter.stat(this.ctx, dataId, id)
   }

@@ -44,7 +44,8 @@ import core, {
   clone,
   generateId,
   toFindResult,
-  type SessionData
+  type SessionData,
+  type PersonUuid
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import {
@@ -241,7 +242,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
         changed.push(newMem)
       }
     }
-    // TODO: consider checking if changed social strings actually change assigned accounts
+    // TODO: consider checking if updated social strings actually change assigned accounts
     if (changed.length > 0) {
       this.brodcastEvent(ctx, changed, space._id)
     }
@@ -276,13 +277,11 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     this.brodcastEvent(ctx, users, space._id)
   }
 
-  private broadcastAll (ctx: MeasureContext, space: SpaceWithMembers): void {
-    const users = this.context.modelDb.findAllSync(core.class.Account, {})
-    this.brodcastEvent(
-      ctx,
-      users.map((p) => p._id),
-      space._id
-    )
+  private broadcastAll (ctx: MeasureContext<SessionData>, space: SpaceWithMembers): void {
+    const { socialStringsToUsers } = ctx.contextData
+    const users = Array.from(socialStringsToUsers.keys())
+
+    this.brodcastEvent(ctx, users, space._id)
   }
 
   private async handleUpdate (ctx: MeasureContext, tx: TxCUD<Space>): Promise<void> {
@@ -341,7 +340,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
   }
 
-  getTargets (socialStrings: PersonId[], socialStringsToUsers: Map<PersonId, string>): string[] {
+  getTargets (socialStrings: PersonId[], socialStringsToUsers: Map<PersonId, PersonUuid>): string[] {
     const users = new Set(
       socialStrings.map((s) => socialStringsToUsers.get(s)).filter((u) => u !== undefined) as string[]
     )
@@ -443,7 +442,12 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   private getAllAllowedSpaces (account: Account, isData: boolean, showArchived: boolean): Ref<Space>[] {
     const userSocialStrings = account.socialIds
     const userSpaces = new Set(userSocialStrings.map((s) => this.allowedSpaces[s] ?? []).flat())
-    const res = [...Array.from(userSpaces), account.uuid as unknown as Ref<Space>, ...this.systemSpaces, ...this.mainSpaces]
+    const res = [
+      ...Array.from(userSpaces),
+      account.uuid as unknown as Ref<Space>,
+      ...this.systemSpaces,
+      ...this.mainSpaces
+    ]
     const unfilteredRes = isData ? res : [...res, ...this.publicSpaces]
     if (showArchived) {
       return unfilteredRes

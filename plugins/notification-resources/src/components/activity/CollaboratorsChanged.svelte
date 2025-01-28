@@ -37,7 +37,7 @@
             return undefined
           }
 
-          const person = personRefByPersonId.get(value)
+          const person = personRefByPersonId.get(value as PersonId)
 
           if (person === undefined) {
             return undefined

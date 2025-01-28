@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import { type Asset, type IntlString } from '@hcengineering/platform'
-import { type PersonId, type Class, type Doc, type Ref, type UserStatus } from '@hcengineering/core'
+import { type PersonId, type Class, type Doc, type Ref, type UserStatus, type PersonUuid } from '@hcengineering/core'
 import { type Person } from '@hcengineering/contact'
 import { type DocNotifyContext } from '@hcengineering/notification'
 import { type AnySvelteComponent, type IconSize, type Action } from '@hcengineering/ui'
@@ -22,8 +22,8 @@ export type ChatGroup = 'activity' | 'direct' | 'channels' | 'starred'
 
 export interface SortFnOptions {
   contexts: DocNotifyContext[]
-  userStatusByAccount: Map<PersonId, UserStatus>
-  personRefByPersonId: Map<PersonId, Ref<Person>>
+  userStatusByAccount: Map<PersonUuid, UserStatus>
+  personByPersonId: Map<PersonId, Person>
 }
 
 export interface ChatNavGroupModel {

@@ -112,7 +112,7 @@ export class WorkspaceClient {
   }
 
   get wsDataId (): WorkspaceDataId {
-    return this.workspaceDataId ?? this.workspace as unknown as WorkspaceDataId
+    return this.workspaceDataId ?? (this.workspace as unknown as WorkspaceDataId)
   }
 
   protected async initClient (): Promise<TxOperations> {

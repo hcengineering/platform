@@ -152,7 +152,7 @@ export const main = async (): Promise<void> => {
         res.status(401).send()
         return
       }
-      const dataId = (wsLoginInfo as WorkspaceLoginInfo)?.workspaceDataId ?? workspace as unknown as WorkspaceDataId
+      const dataId = (wsLoginInfo as WorkspaceLoginInfo)?.workspaceDataId ?? (workspace as unknown as WorkspaceDataId)
       const dateStr = new Date().toISOString().replace('T', '_').slice(0, 19)
       const name = `${room}_${dateStr}.mp4`
       const id = await startRecord(ctx, storageConfig, s3storageConfig, egressClient, roomClient, roomName, dataId)
