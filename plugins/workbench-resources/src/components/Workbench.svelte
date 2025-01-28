@@ -584,10 +584,10 @@
   async function updateSpace (spaceId?: Ref<Space>): Promise<void> {
     if (spaceId === currentSpace) return
     clear(2)
+    currentSpace = spaceId
     if (spaceId === undefined) return
     const space = await client.findOne<Space>(core.class.Space, { _id: spaceId })
     if (space === undefined) return
-    currentSpace = spaceId
     const spaceClass = client.getHierarchy().getClass(space._class)
     const view = client.getHierarchy().as(spaceClass, workbench.mixin.SpaceView)
     currentView = view.view

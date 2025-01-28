@@ -31,7 +31,6 @@
   import { Card, getClient } from '@hcengineering/presentation'
   import { UserBox, UserBoxList } from '@hcengineering/contact-resources'
   import { Applicant, Candidate, RecruitEvents, Review } from '@hcengineering/recruit'
-  import task from '@hcengineering/task'
   import { EmptyMarkup } from '@hcengineering/text'
   import { StyledTextArea } from '@hcengineering/text-editor-resources'
   import { DateRangePresenter, EditBox, Status as StatusControl } from '@hcengineering/ui'
@@ -98,7 +97,7 @@
   }
 
   async function createReview () {
-    const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Review })
+    const sequence = await client.findOne(core.class.Sequence, { attachedTo: recruit.class.Review })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
     }

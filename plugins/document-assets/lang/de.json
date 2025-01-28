@@ -50,7 +50,6 @@
     "ConfigDescription": "Erweiterung für kollaborative Dokumentbearbeitung",
     "Icon": "Symbol",
     "Color": "Farbe",
-    "RoleLabel": "Rolle: {role}",
-    "Embeddings": "Einbettungen"
+    "RoleLabel": "Rolle: {role}"
   }
 }

@@ -1,0 +1,19 @@
+{
+  "string": {
+    "Card": "Carte",
+    "CardApplication": "Cartes",
+    "Cards": "Cartes",
+    "Content": "Contenu",
+    "CreateCard": "Créer une carte",
+    "CreateMasterTag": "Créer un tag maître",
+    "CreateTag": "Créer un tag",
+    "MasterTag": "Tag maître",
+    "MasterTags": "Tags maîtres",
+    "Parent": "Parent",
+    "Tags": "Tags",
+    "Tag": "Tag",
+    "CardLibrary": "Bibliothèque de cartes",
+    "MinimizeAll": "Minimiser tout",
+    "ExpandAll": "Développer tout"
+  }
+}

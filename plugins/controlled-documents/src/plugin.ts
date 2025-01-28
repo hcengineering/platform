@@ -7,7 +7,8 @@ import {
   type Space,
   type SpaceTypeDescriptor,
   type Permission,
-  Role
+  Role,
+  Sequence
 } from '@hcengineering/core'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
@@ -38,7 +39,6 @@ import type {
   Project,
   ProjectMeta,
   ProjectDocument,
-  Sequence,
   ControlledDocumentSnapshot
 } from './types'
 import type { NotificationType } from '@hcengineering/notification'
@@ -70,8 +70,6 @@ export const documentsPlugin = plugin(documentsId, {
     ControlledDocument: '' as Ref<Class<ControlledDocument>>,
     ChangeControl: '' as Ref<Class<ChangeControl>>,
     DocumentComment: '' as Ref<Class<DocumentComment>>,
-
-    Sequence: '' as Ref<Class<Sequence>>,
 
     DocumentRequest: '' as Ref<Class<DocumentRequest>>,
     DocumentReviewRequest: '' as Ref<Class<DocumentReviewRequest>>,

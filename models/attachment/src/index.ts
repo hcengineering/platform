@@ -14,7 +14,14 @@
 //
 
 import activity from '@hcengineering/activity'
-import type { Attachment, AttachmentMetadata, Drawing, Photo, SavedAttachments } from '@hcengineering/attachment'
+import type {
+  Attachment,
+  AttachmentMetadata,
+  Drawing,
+  Embedding,
+  Photo,
+  SavedAttachments
+} from '@hcengineering/attachment'
 import { IndexKind, type Blob, type Class, type Doc, type Domain, type Ref } from '@hcengineering/core'
 import {
   Hidden,
@@ -72,6 +79,10 @@ export class TAttachment extends TAttachedDoc implements Attachment {
   metadata?: AttachmentMetadata
 }
 
+@Model(attachment.class.Embedding, attachment.class.Attachment)
+@UX(attachment.string.Embeddings)
+export class TEmbedding extends TAttachment implements Embedding {}
+
 @Model(attachment.class.Photo, attachment.class.Attachment)
 @UX(attachment.string.Photo)
 export class TPhoto extends TAttachment implements Photo {}
@@ -99,7 +110,7 @@ export class TDrawing extends TDoc implements Drawing {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TAttachment, TDrawing, TPhoto, TSavedAttachments)
+  builder.createModel(TAttachment, TEmbedding, TDrawing, TPhoto, TSavedAttachments)
 
   builder.mixin(attachment.class.Attachment, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: attachment.component.AttachmentPresenter

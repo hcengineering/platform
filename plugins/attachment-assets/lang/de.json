@@ -53,6 +53,7 @@
     "FilterAttachments": "Anhänge",
     "RemovedAttachment": "Anhang entfernt",
     "ContentType": "Inhaltstyp",
-    "OpenInWindow": "In Fenster öffnen"
+    "OpenInWindow": "In Fenster öffnen",
+    "Embeddings": "Einbettungen"
   }
 }

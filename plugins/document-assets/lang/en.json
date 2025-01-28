@@ -57,7 +57,6 @@
 
     "Icon": "Icon",
     "Color": "Color",
-    "RoleLabel": "Role: {role}",
-    "Embeddings": "Embeddings"
+    "RoleLabel": "Role: {role}"
   }
 }

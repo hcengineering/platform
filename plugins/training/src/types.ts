@@ -1,9 +1,7 @@
-import type { Answer, Percentage, Question } from '@hcengineering/questions'
 import type { Attachment } from '@hcengineering/attachment'
 import type { Employee } from '@hcengineering/contact'
 import {
   type AttachedDoc,
-  type Class,
   type CollectionSize,
   type Doc,
   type Markup,
@@ -11,6 +9,7 @@ import {
   type Timestamp,
   type TypedSpace
 } from '@hcengineering/core'
+import type { Answer, Percentage, Question } from '@hcengineering/questions'
 
 export const trainingPrefix = 'TR'
 
@@ -104,14 +103,4 @@ export interface TrainingAttempt extends AttachedDoc<TrainingRequest, 'attempts'
    * Number of passed assessment questions in related training, filled on submission, used to display results
    */
   assessmentsPassed: number | null
-}
-
-/**
- * @public
- *
- * Generic sequence attached to a class for cases when a single increment goes through all instances of the class.
- */
-export interface Sequence extends Doc {
-  attachedTo: Ref<Class<Doc>>
-  sequence: number
 }

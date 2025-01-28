@@ -46,16 +46,16 @@
   export let space: Ref<Space> | undefined = undefined
   export let icon: Asset
   export let label: IntlString
-  export let createEvent: string | undefined
-  export let createLabel: IntlString | undefined
-  export let createComponent: AnyComponent | undefined
+  export let createEvent: string | undefined = undefined
+  export let createLabel: IntlString | undefined = undefined
+  export let createComponent: AnyComponent | undefined = undefined
   export let createComponentProps: Record<string, any> = {}
-  export let createButton: AnyComponent | undefined
+  export let createButton: AnyComponent | undefined = undefined
   export let isCreationDisabled = false
   export let descriptors: Array<Ref<ViewletDescriptor>> | undefined = undefined
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
   export let modes: IModeSelector<any> | undefined = undefined
-  export let navigationModel: ParentsNavigationModel | undefined
+  export let navigationModel: ParentsNavigationModel | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()

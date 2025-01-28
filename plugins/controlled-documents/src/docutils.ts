@@ -14,7 +14,7 @@
 //
 
 import { type Employee } from '@hcengineering/contact'
-import { type AttachedData, type Class, type Ref, type TxOperations, Blob, Mixin } from '@hcengineering/core'
+import core, { type AttachedData, type Class, type Ref, type TxOperations, Blob, Mixin } from '@hcengineering/core'
 import {
   type ControlledDocument,
   type Document,
@@ -286,7 +286,7 @@ export async function createDocumentTemplateMetadata (
   const projectId = project ?? documents.ids.NoProject
 
   const incResult = await client.updateDoc(
-    documents.class.Sequence,
+    core.class.Sequence,
     documents.space.Documents,
     documents.sequence.Templates,
     {

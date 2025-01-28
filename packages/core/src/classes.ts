@@ -80,13 +80,6 @@ export interface Doc<S extends Space = Space> extends Obj {
   createdOn?: Timestamp // Marked as optional since it will be filled by platform.
 }
 
-export interface Card extends Doc {
-  title: string
-  description?: MarkupBlobRef | null
-  identifier?: string
-  parent?: Ref<Card> | null
-}
-
 /**
  * @public
  */
@@ -398,6 +391,11 @@ export const DOMAIN_BLOB = 'blob' as Domain
 
 export const DOMAIN_DOC_INDEX_STATE = 'doc-index-state' as Domain
 
+/**
+ * @public
+ */
+export const DOMAIN_SEQUENCE = 'sequence' as Domain
+
 // S P A C E
 
 /**
@@ -554,6 +552,14 @@ export interface DocIndexState extends Doc {
   objectClass: Ref<Class<Doc>>
   needIndex: boolean
   removed: boolean
+}
+
+/**
+ * @public
+ */
+export interface Sequence extends Doc {
+  attachedTo: Ref<Class<Doc>>
+  sequence: number
 }
 
 /**

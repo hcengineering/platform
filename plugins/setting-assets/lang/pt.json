@@ -121,6 +121,7 @@
     "BackupSnapshots": "Snapshots de Backup",
     "BackupFileDownload": "Baixar Arquivo",
     "BackupFiles": "Arquivos de Backup",
-    "BackupNoBackup": "Não há backups disponíveis no momento."
+    "BackupNoBackup": "Não há backups disponíveis no momento.",
+    "AddAttribute": "Adicionar atributo"
   }
 }

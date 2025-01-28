@@ -14,7 +14,7 @@
 //
 
 import contact from '@hcengineering/contact'
-import {
+import core, {
   toIdMap,
   type Client,
   type Doc,
@@ -117,7 +117,7 @@ export async function queryApplication (
 
   // Check number pattern
 
-  const sequence = (await client.findOne(task.class.Sequence, { attachedTo: _class }))?.sequence ?? 0
+  const sequence = (await client.findOne(core.class.Sequence, { attachedTo: _class }))?.sequence ?? 0
 
   const q: DocumentQuery<Applicant> = { $search: search }
   if (filter?.in !== undefined || filter?.nin !== undefined) {

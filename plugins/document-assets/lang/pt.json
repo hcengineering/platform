@@ -50,7 +50,6 @@
     "ConfigDescription": "Extensão para edição colaborativa de documentos",
     "Icon": "Ícone",
     "Color": "Cor",
-    "RoleLabel": "Papel: {role}",
-    "Embeddings": "Incorporações"
+    "RoleLabel": "Papel: {role}"
   }
 }

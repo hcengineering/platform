@@ -21,6 +21,7 @@
   import { getMixinStyle } from '../utils'
 
   export let value: Doc
+  export let fullSize: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -28,17 +29,7 @@
   let mixins: Array<Mixin<Doc>> = []
 
   $: if (value !== undefined) {
-    const baseDomain = hierarchy.getDomain(value._class)
-    const ancestors = hierarchy.getAncestors(value._class)
-    let parentClass: Ref<Class<Doc>> = value._class
-    for (const ancestor of ancestors) {
-      try {
-        const domain = hierarchy.getClass(ancestor).domain
-        if (domain === baseDomain) {
-          parentClass = ancestor
-        }
-      } catch {}
-    }
+    const parentClass: Ref<Class<Doc>> = hierarchy.getParentClass(value._class)
 
     mixins = hierarchy
       .getDescendants(parentClass)
@@ -56,10 +47,10 @@
       {@const userMixin = hierarchy.hasMixin(mixin, setting.mixin.UserMixin)}
       <div
         class="mixin-selector"
-        class:user-selector={userMixin}
+        class:user-selector={userMixin && !fullSize}
         style={getMixinStyle(mixin._id, true, $themeStore.dark)}
       >
-        {#if !userMixin}
+        {#if !userMixin || fullSize}
           <Label label={mixin.label} />
         {:else}
           <div use:tooltip={{ label: mixin.label }}>

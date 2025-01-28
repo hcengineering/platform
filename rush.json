@@ -2230,6 +2230,26 @@
       "packageName": "@hcengineering/cloud-transactor",
       "projectFolder": "workers/transactor",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/card",
+      "projectFolder": "plugins/card",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-card",
+      "projectFolder": "models/card",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/card-assets",
+      "projectFolder": "plugins/card-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/card-resources",
+      "projectFolder": "plugins/card-resources",
+      "shouldPublish": false
     }
   ]
 }

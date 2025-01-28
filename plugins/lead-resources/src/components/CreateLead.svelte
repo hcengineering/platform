@@ -16,7 +16,7 @@
 <script lang="ts">
   import contact, { Contact } from '@hcengineering/contact'
   import { UserBox } from '@hcengineering/contact-resources'
-  import {
+  import core, {
     AccountRole,
     AttachedData,
     AttachedDoc,
@@ -85,7 +85,7 @@
   let kind: Ref<TaskType> | undefined = undefined
 
   async function createLead () {
-    const sequence = await client.findOne(task.class.Sequence, { attachedTo: lead.class.Lead })
+    const sequence = await client.findOne(core.class.Sequence, { attachedTo: lead.class.Lead })
     if (sequence === undefined || customer == null) {
       throw new Error('Lead  creation failed')
     }
@@ -120,7 +120,7 @@
         customerInstance._class,
         customerInstance.space,
         lead.mixin.Customer,
-        { description: '' }
+        { customerDescription: null }
       )
     }
 

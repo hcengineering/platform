@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DateRangeMode, TypeDate as DateType } from '@hcengineering/core'
+  import core, { DateRangeMode, TypeDate as DateType } from '@hcengineering/core'
   import { TypeDate } from '@hcengineering/model'
   import { IntlString } from '@hcengineering/platform'
   import { DropdownLabelsIntl, Label, DropdownIntlItem } from '@hcengineering/ui'
@@ -46,7 +46,7 @@
   const label = items.find((item) => item.id === type?.mode)?.label ?? ('' as IntlString)
 
   onMount(() => {
-    if (type === undefined) {
+    if (type?._class !== core.class.TypeDate) {
       dispatch('change', { type: TypeDate() })
     }
   })

@@ -53,6 +53,7 @@
     "FilterAttachments": "Allegati",
     "RemovedAttachment": "Allegato rimosso",
     "ContentType": "Tipo di contenuto",
-    "OpenInWindow": "Apri in una nuova finestra"
+    "OpenInWindow": "Apri in una nuova finestra",
+    "Embeddings": "Incorporamenti"
   }
 }

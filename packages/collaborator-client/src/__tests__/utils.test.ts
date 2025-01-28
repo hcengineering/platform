@@ -19,18 +19,18 @@ import { encodeDocumentId, decodeDocumentId } from '../utils'
 describe('utils', () => {
   it('encodeDocumentId', () => {
     const doc: CollaborativeDoc = {
-      objectClass: core.class.Card,
+      objectClass: core.class.Doc,
       objectId: 'doc1' as Ref<Doc>,
       objectAttr: 'description'
     }
-    expect(encodeDocumentId('ws1', doc)).toEqual('ws1|core:class:Card|doc1|description')
+    expect(encodeDocumentId('ws1', doc)).toEqual('ws1|core:class:Doc|doc1|description')
   })
 
   describe('decodeDocumentId', () => {
-    expect(decodeDocumentId('ws1|core:class:Card|doc1|description')).toEqual({
+    expect(decodeDocumentId('ws1|core:class:Doc|doc1|description')).toEqual({
       workspaceId: 'ws1',
       documentId: {
-        objectClass: core.class.Card,
+        objectClass: core.class.Doc,
         objectId: 'doc1' as Ref<Doc>,
         objectAttr: 'description'
       }

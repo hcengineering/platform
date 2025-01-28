@@ -16,6 +16,7 @@
 import activity, { type DocUpdateMessage } from '@hcengineering/activity'
 import {
   DOMAIN_MODEL_TX,
+  DOMAIN_SEQUENCE,
   DOMAIN_STATUS,
   DOMAIN_TX,
   TxOperations,
@@ -23,6 +24,7 @@ import {
   type Attribute,
   type Class,
   type Doc,
+  type Domain,
   type Ref,
   type Space,
   type Status,
@@ -53,15 +55,15 @@ import {
   type TaskType
 } from '@hcengineering/task'
 
-import { DOMAIN_KANBAN, DOMAIN_TASK } from '.'
+import { DOMAIN_TASK } from '.'
 import task from './plugin'
 
 /**
  * @public
  */
 export async function createSequence (tx: TxOperations, _class: Ref<Class<Doc>>): Promise<void> {
-  if ((await tx.findOne(task.class.Sequence, { attachedTo: _class })) === undefined) {
-    await tx.createDoc(task.class.Sequence, core.space.Workspace, {
+  if ((await tx.findOne(core.class.Sequence, { attachedTo: _class })) === undefined) {
+    await tx.createDoc(core.class.Sequence, core.space.Workspace, {
       attachedTo: _class,
       sequence: 0
     })
@@ -566,7 +568,7 @@ export const taskOperation: MigrateOperation = {
       {
         state: 'removeDeprecatedSpace',
         func: async (client: MigrationClient) => {
-          await migrateSpace(client, task.space.Sequence, core.space.Workspace, [DOMAIN_KANBAN])
+          await migrateSpace(client, task.space.Sequence, core.space.Workspace, ['kanban' as Domain])
         }
       },
       {
@@ -602,6 +604,17 @@ export const taskOperation: MigrateOperation = {
               isDone: false
             }
           )
+        }
+      },
+      {
+        state: 'migrateSequnce',
+        func: async (client: MigrationClient) => {
+          await client.update(
+            'kanban' as Domain,
+            { _class: 'task:class:Sequence' as Ref<Class<Doc>> },
+            { _class: core.class.Sequence }
+          )
+          await client.move('kanban' as Domain, { _class: core.class.Sequence }, DOMAIN_SEQUENCE)
         }
       }
     ])

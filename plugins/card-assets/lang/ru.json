@@ -1,0 +1,19 @@
+{
+  "string": {
+    "Card": "Карта",
+    "CardApplication": "Карты",
+    "Cards": "Карты",
+    "Content": "Содержание",
+    "CreateCard": "Создать карту",
+    "CreateMasterTag": "Создать мастер-тег",
+    "CreateTag": "Создать тег",
+    "MasterTag": "Мастер-тег",
+    "MasterTags": "Мастер-теги",
+    "Parent": "Родитель",
+    "Tags": "Теги",
+    "Tag": "Тег",
+    "CardLibrary": "Библиотека карт",
+    "MinimizeAll": "Свернуть все",
+    "ExpandAll": "Развернуть все"
+  }
+}

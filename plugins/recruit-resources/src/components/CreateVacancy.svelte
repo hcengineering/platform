@@ -232,7 +232,7 @@
       throw Error(`Failed to find target project type: ${typeId}`)
     }
 
-    const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Vacancy })
+    const sequence = await client.findOne(core.class.Sequence, { attachedTo: recruit.class.Vacancy })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
     }

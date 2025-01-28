@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import type { Person } from '@hcengineering/contact'
-  import { Account, generateId, Ref } from '@hcengineering/core'
+  import core, { Account, generateId, Ref } from '@hcengineering/core'
   import { OK, Status } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
   import type { Opinion, Review } from '@hcengineering/recruit'
-  import task, { Project } from '@hcengineering/task'
+  import { Project } from '@hcengineering/task'
   import { StyledTextArea } from '@hcengineering/text-editor-resources'
   import { EditBox, Status as StatusControl } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -52,7 +52,7 @@
   }
 
   async function createOpinion () {
-    const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Review })
+    const sequence = await client.findOne(core.class.Sequence, { attachedTo: recruit.class.Review })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
     }

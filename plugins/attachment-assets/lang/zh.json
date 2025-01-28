@@ -53,6 +53,7 @@
     "FilterAttachments": "附件",
     "RemovedAttachment": "移除附件",
     "ContentType": "内容类型",
-    "OpenInWindow": "在新窗口中打开"
+    "OpenInWindow": "在新窗口中打开",
+    "Embeddings": "嵌入"
   }
 }

@@ -121,6 +121,7 @@
     "BackupSnapshots": "Instantáneas de copia de seguridad",
     "BackupFileDownload": "Descargar archivo",
     "BackupFiles": "Archivos de copia de seguridad",
-    "BackupNoBackup": "No hay copias de seguridad disponibles actualmente."
+    "BackupNoBackup": "No hay copias de seguridad disponibles actualmente.",
+    "AddAttribute": "Añadir atributo"
   }
 }

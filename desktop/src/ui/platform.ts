@@ -49,6 +49,7 @@ import { timeId } from '@hcengineering/time'
 import { desktopPreferencesId } from '@hcengineering/desktop-preferences'
 import guest, { guestId } from '@hcengineering/guest'
 import { bitrixId } from '@hcengineering/bitrix'
+import { cardId } from '@hcengineering/card'
 import { productsId } from '@hcengineering/products'
 import { questionsId } from '@hcengineering/questions'
 import { trainingId } from '@hcengineering/training'
@@ -99,6 +100,7 @@ import '@hcengineering/analytics-collector-assets'
 import '@hcengineering/text-editor-assets'
 import '@hcengineering/test-management-assets'
 import '@hcengineering/survey-assets'
+import '@hcengineering/card-assets'
 
 import { coreId } from '@hcengineering/core'
 import presentation, { parsePreviewConfig, parseUploadConfig, presentationId } from '@hcengineering/presentation'
@@ -192,6 +194,7 @@ function configureI18n (): void {
   addStringsLoader(analyticsCollectorId, async (lang: string) => await import(`@hcengineering/analytics-collector-assets/lang/${lang}.json`))
   addStringsLoader(testManagementId, async (lang: string) => await import(`@hcengineering/test-management-assets/lang/${lang}.json`))
   addStringsLoader(surveyId, async (lang: string) => await import(`@hcengineering/survey-assets/lang/${lang}.json`))
+  addStringsLoader(cardId, async (lang: string) => await import(`@hcengineering/card-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform (): Promise<void> {
@@ -318,6 +321,7 @@ export async function configurePlatform (): Promise<void> {
   addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
   addLocation(testManagementId, () => import(/* webpackChunkName: "test-management" */ '@hcengineering/test-management-resources'))
   addLocation(surveyId, () => import(/* webpackChunkName: "survey" */ '@hcengineering/survey-resources'))
+  addLocation(cardId, () => import(/* webpackChunkName: "card" */ '@hcengineering/card-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

@@ -130,6 +130,7 @@
     "BackupSnapshots": "Instantanés de sauvegarde",
     "BackupFileDownload": "Télécharger le fichier",
     "BackupFiles": "Fichiers de sauvegarde",
-    "BackupNoBackup": "Aucune sauvegarde n'est actuellement disponible."
+    "BackupNoBackup": "Aucune sauvegarde n'est actuellement disponible.",
+    "AddAttribute": "Ajouter un attribut"
   }
 }

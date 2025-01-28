@@ -1,0 +1,19 @@
+{
+  "string": {
+    "Card": "Karta",
+    "CardApplication": "Karty",
+    "Cards": "Karty",
+    "Content": "Obsah",
+    "CreateCard": "Vytvořit kartu",
+    "CreateMasterTag": "Vytvořit hlavní štítek",
+    "CreateTag": "Vytvořit štítek",
+    "MasterTag": "Hlavní štítek",
+    "MasterTags": "Hlavní štítky",
+    "Parent": "Rodič",
+    "Tags": "Štítky",
+    "Tag": "Štítek",
+    "CardLibrary": "Knihovna karet",
+    "MinimizeAll": "Minimalizovat vše",
+    "ExpandAll": "Rozbalit vše"
+  }
+}

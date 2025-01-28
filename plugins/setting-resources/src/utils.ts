@@ -15,17 +15,22 @@ function isEditable (hierarchy: Hierarchy, p: Class<Doc>): boolean {
   } catch (err: any) {
     console.error(err)
   }
+  let result = false
   for (const ao of ancestors) {
     try {
       const cl = hierarchy.getClass(ao)
-      if (hierarchy.hasMixin(cl, setting.mixin.Editable) && hierarchy.as(cl, setting.mixin.Editable).value) {
-        return true
+      if (hierarchy.hasMixin(cl, setting.mixin.Editable)) {
+        if (hierarchy.as(cl, setting.mixin.Editable).value) {
+          result = true
+        } else {
+          return false
+        }
       }
     } catch (err: any) {
       return false
     }
   }
-  return false
+  return result
 }
 export function filterDescendants (
   hierarchy: Hierarchy,

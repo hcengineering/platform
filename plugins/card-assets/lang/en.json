@@ -1,0 +1,19 @@
+{
+  "string": {
+    "Card": "Card",
+    "CardApplication": "Cards",
+    "Cards": "Cards",
+    "Content": "Content",
+    "CreateCard": "Create Card",
+    "CreateMasterTag": "Create Master Tag",
+    "CreateTag": "Create Tag",
+    "MasterTag": "Master Tag",
+    "MasterTags": "Master Tags",
+    "Parent": "Parent",
+    "Tags": "Tags",
+    "Tag": "Tag",
+    "CardLibrary": "Card Library",
+    "MinimizeAll": "Minimize All",
+    "ExpandAll": "Expand All"
+  }
+}

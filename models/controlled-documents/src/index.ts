@@ -57,7 +57,6 @@ import {
   TDocumentCategory,
   TControlledDocument,
   TChangeControl,
-  TSequence,
   TDocumentRequest,
   TDocumentReviewRequest,
   TDocumentApprovalRequest,
@@ -92,8 +91,6 @@ export function createModel (builder: Builder): void {
     TDocumentCategory,
     TControlledDocument,
     TChangeControl,
-    TSequence,
-
     TDocumentRequest,
     TDocumentReviewRequest,
     TDocumentApprovalRequest,

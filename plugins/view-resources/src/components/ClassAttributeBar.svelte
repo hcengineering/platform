@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { Class, Doc, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { AttributesBar, KeyedAttribute, getAttribute, getClient } from '@hcengineering/presentation'
+  import { AttributesBar, KeyedAttribute, createQuery, getAttribute, getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import { Button, Label, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
   import { getFiltredKeys, isCollectionAttr, restrictionStore } from '../utils'
@@ -43,6 +43,11 @@
 
   $: updateKeys(_class, ignoreKeys, to)
 
+  const query = createQuery()
+  $: query.query(core.class.Attribute, { attributeOf: _class }, () => {
+    updateKeys(_class, ignoreKeys, to)
+  })
+
   $: nonEmpty = keys.find((it) => getAttribute(client, object, it) != null)
 
   $: label = showLabel ?? hierarchy.getClass(_class).label
@@ -52,6 +57,9 @@
   }
 
   $: collapsed = getCollapsed(_class, nonEmpty)
+
+  $: clazz = hierarchy.getClass(_class)
+  $: isEditable = hierarchy.hasMixin(clazz, setting.mixin.Editable) && hierarchy.as(clazz, setting.mixin.Editable).value
 </script>
 
 {#if showHeader && (keys.length > 0 || isMainClass)}
@@ -75,7 +83,7 @@
       </div>
     </div>
     <div class="tool">
-      {#if !$restrictionStore.disableNavigation}
+      {#if !$restrictionStore.disableNavigation && isEditable}
         <Button
           icon={setting.icon.Setting}
           kind={'link'}

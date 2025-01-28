@@ -1,6 +1,6 @@
 import { type Card } from '@hcengineering/board'
 import { type Employee, type PersonAccount } from '@hcengineering/contact'
-import {
+import core, {
   type TxOperations as Client,
   type TxResult,
   getCurrentAccount,
@@ -11,7 +11,7 @@ import {
   type Status
 } from '@hcengineering/core'
 import { showPanel } from '@hcengineering/ui'
-import task, { makeRank } from '@hcengineering/task'
+import { makeRank } from '@hcengineering/task'
 import board from '../plugin'
 
 export async function createCard (
@@ -20,7 +20,7 @@ export async function createCard (
   status: Ref<Status>,
   attribues: Partial<AttachedData<Card>> & { kind: Card['kind'] }
 ): Promise<Ref<Card>> {
-  const sequence = await client.findOne(task.class.Sequence, { attachedTo: board.class.Card })
+  const sequence = await client.findOne(core.class.Sequence, { attachedTo: board.class.Card })
   if (sequence === undefined) {
     throw new Error('sequence object not found')
   }

@@ -13,18 +13,34 @@
 // limitations under the License.
 //
 
-import { TxOperations, type Ref, type TypedSpace } from '@hcengineering/core'
+import { Class, Doc, DOMAIN_SEQUENCE, Sequence, TxOperations, type Ref, type TypedSpace } from '@hcengineering/core'
 import {
+  tryMigrate,
   tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
-import training, { trainingId, type Sequence } from '@hcengineering/training'
+import training, { trainingId } from '@hcengineering/training'
+import { DOMAIN_TRAINING } from './types'
 
 export const trainingOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    await tryMigrate(client, trainingId, [
+      {
+        state: 'migrateSequnce',
+        func: async (client: MigrationClient) => {
+          await client.update(
+            DOMAIN_TRAINING,
+            { _class: 'training:class:Sequence' as Ref<Class<Doc>> },
+            { _class: core.class.Sequence }
+          )
+          await client.move(DOMAIN_TRAINING, { _class: core.class.Sequence }, DOMAIN_SEQUENCE)
+        }
+      }
+    ])
+  },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
     await tryUpgrade(state, client, trainingId, [
       {
@@ -65,7 +81,7 @@ async function ensureTypedSpace (tx: TxOperations): Promise<Ref<TypedSpace>> {
 }
 
 async function ensureSequence (tx: TxOperations): Promise<Ref<Sequence>> {
-  const existing = await tx.findOne(training.class.Sequence, {
+  const existing = await tx.findOne(core.class.Sequence, {
     attachedTo: training.class.Training
   })
 
@@ -73,7 +89,7 @@ async function ensureSequence (tx: TxOperations): Promise<Ref<Sequence>> {
     return existing._id
   }
 
-  return await tx.createDoc(training.class.Sequence, training.space.Trainings, {
+  return await tx.createDoc(core.class.Sequence, training.space.Trainings, {
     attachedTo: training.class.Training,
     sequence: 0
   })

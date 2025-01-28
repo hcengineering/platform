@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Association, Data } from '@hcengineering/core'
+  import core, { Association, Class, Data, Doc, Ref } from '@hcengineering/core'
   import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import {
@@ -43,16 +43,28 @@
       .findAllSync(view.class.Viewlet, { descriptor: view.viewlet.Table })
       .map((p) => p.attachTo)
   )
-  const classes = descendants
-    .map((p) => hierarchy.getClass(p))
-    .filter((p) => {
-      if (p.label === undefined) return false
-      return viewlets.has(p._id)
-    })
-    .map((p) => {
-      return { id: p._id, label: p.label }
-    })
-  console.log(classes)
+
+  function filterClasses (descendants: Ref<Class<Doc>>[], viewlets: Set<Ref<Class<Doc>>>): DropdownIntlItem[] {
+    const result = []
+    const added = new Set<Ref<Class<Doc>>>()
+    for (const _id of descendants) {
+      if (added.has(_id)) continue
+      const _class = hierarchy.getClass(_id)
+      if (_class.extends !== undefined && added.has(_class.extends)) {
+        added.add(_id)
+        result.push({ id: _id, label: _class.label })
+      }
+      if (_class.label === undefined) continue
+      if (viewlets.has(hierarchy.getBaseClass(_id))) {
+        added.add(_id)
+        result.push({ id: _id, label: _class.label })
+      }
+    }
+    return result
+  }
+
+  const classes = filterClasses(descendants, viewlets)
+
   let classA = classes.find((p) => p.id === association.classA) ?? classes[0]
   let classB = classes.find((p) => p.id === association.classB) ?? classes[0]
   let classARef = classA?.id
@@ -90,8 +102,8 @@
       })
     } else {
       await client.createDoc(core.class.Association, core.space.Model, {
-        classA: classARef,
-        classB: classBRef,
+        classA: classARef as Ref<Class<Doc>>,
+        classB: classBRef as Ref<Class<Doc>>,
         type: mode,
         nameA,
         nameB

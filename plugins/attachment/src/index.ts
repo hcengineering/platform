@@ -48,6 +48,11 @@ export interface Attachment extends AttachedDoc {
 /**
  * @public
  */
+export interface Embedding extends Attachment {}
+
+/**
+ * @public
+ */
 export type AttachmentMetadata = BlobMetadata
 
 /**
@@ -91,6 +96,7 @@ export default plugin(attachmentId, {
   },
   class: {
     Attachment: '' as Ref<Class<Attachment>>,
+    Embedding: '' as Ref<Class<Embedding>>,
     Drawing: '' as Ref<Class<Drawing>>,
     Photo: '' as Ref<Class<Photo>>,
     SavedAttachments: '' as Ref<Class<SavedAttachments>>
@@ -122,6 +128,7 @@ export default plugin(attachmentId, {
     DeleteFile: '' as IntlString,
     Attachments: '' as IntlString,
     FileBrowser: '' as IntlString,
-    OpenInWindow: '' as IntlString
+    OpenInWindow: '' as IntlString,
+    Embeddings: '' as IntlString
   }
 })

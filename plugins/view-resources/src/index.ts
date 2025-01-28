@@ -176,6 +176,7 @@ export * from './middleware'
 export * from './selection'
 export * from './status'
 export * from './utils'
+export * from './icons'
 export * from './objectIterator'
 export {
   buildModel,

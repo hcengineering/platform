@@ -66,12 +66,21 @@
   $: classQuery.query(core.class.Class, { _id: _class }, (res) => {
     clazz = res.shift()
   })
-  function hasCustomAttributes (_class: Ref<Class<Doc>>): boolean {
+
+  const attrQuery = createQuery()
+
+  $: attributes = getCustomAttributes(_class)
+
+  $: attrQuery.query(core.class.Attribute, { attributeOf: _class }, () => {
+    attributes = getCustomAttributes(_class)
+  })
+
+  function getCustomAttributes (_class: Ref<Class<Doc>>): AnyAttribute[] {
     const cl = hierarchy.getClass(_class)
     const attributes = Array.from(
       hierarchy.getAllAttributes(_class, _class === ofClass ? core.class.Doc : cl.extends).values()
     )
-    return attributes.length > 0
+    return attributes
   }
 
   export function createAttribute (ev: MouseEvent): void {
@@ -138,7 +147,7 @@
       <div class="hulyInput-body">
         <Label label={clazz.label} />
       </div>
-      {#if clazz.kind === ClassifierKind.MIXIN && hierarchy.hasMixin(clazz, settings.mixin.UserMixin)}
+      {#if hierarchy.hasMixin(clazz, settings.mixin.UserMixin)}
         <div class="ml-2">
           <ActionIcon icon={IconEdit} size="small" action={editLabel} {disabled} />
         </div>
@@ -208,7 +217,7 @@
         </div>
       </div>
     {/each}
-  {:else if hasCustomAttributes(_class)}
+  {:else if attributes.length > 0}
     <div class="hulyTableAttr-content class">
       <ClassAttributesList
         {_class}

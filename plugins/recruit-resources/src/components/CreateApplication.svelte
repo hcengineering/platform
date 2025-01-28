@@ -119,7 +119,7 @@
     if (selectedState === undefined) {
       throw new Error(`Please select initial state:${_space}`)
     }
-    const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Applicant })
+    const sequence = await client.findOne(core.class.Sequence, { attachedTo: recruit.class.Applicant })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
     }

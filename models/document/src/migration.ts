@@ -14,17 +14,17 @@
 //
 
 import {
+  DOMAIN_MODEL_TX,
+  DOMAIN_TX,
+  makeDocCollabId,
+  MeasureMetricsContext,
+  SortingOrder,
   type Class,
   type CollaborativeDoc,
   type Doc,
-  type Ref,
-  DOMAIN_TX,
-  DOMAIN_MODEL_TX,
-  MeasureMetricsContext,
-  SortingOrder,
-  makeDocCollabId
+  type Ref
 } from '@hcengineering/core'
-import { type DocumentSnapshot, type Document, type Teamspace } from '@hcengineering/document'
+import { type Document, type DocumentSnapshot, type Teamspace } from '@hcengineering/document'
 import {
   migrateSpaceRanks,
   tryMigrate,
@@ -41,6 +41,7 @@ import { type Asset } from '@hcengineering/platform'
 import { makeRank } from '@hcengineering/rank'
 
 import { loadCollabYdoc, saveCollabYdoc, yDocCopyXmlField } from '@hcengineering/collaboration'
+import attachment, { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import document, { documentId, DOMAIN_DOCUMENT } from './index'
 
 async function migrateDocumentIcons (client: MigrationClient): Promise<void> {
@@ -350,9 +351,22 @@ export const documentOperation: MigrateOperation = {
       {
         state: 'removeOldClasses',
         func: removeOldClasses
+      },
+      {
+        state: 'migrateEmbeddings',
+        func: migrateEmbeddings
       }
     ])
   },
 
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
+}
+
+async function migrateEmbeddings (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_DOCUMENT,
+    { _class: 'document:class:DocumentEmbedding' as Ref<Class<Doc>> },
+    { _class: attachment.class.Embedding }
+  )
+  await client.move(DOMAIN_DOCUMENT, { _class: attachment.class.Embedding }, DOMAIN_ATTACHMENT)
 }

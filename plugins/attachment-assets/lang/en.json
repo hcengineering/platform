@@ -53,6 +53,7 @@
     "FilterAttachments": "Attachments",
     "RemovedAttachment": "Removed attachment",
     "ContentType": "Content type",
-    "OpenInWindow": "Open in window"
+    "OpenInWindow": "Open in window",
+    "Embeddings": "Embeddings"
   }
 }

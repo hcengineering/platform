@@ -38,15 +38,7 @@
     <NavHeader label={hr.string.HRApplication} />
 
     <Scroller shrink>
-      <TreeNode
-        _id={'tree-hr'}
-        label={hr.string.Departments}
-        highlighted={department !== undefined}
-        isFold={department !== undefined}
-        noDivider
-      >
-        <DepartmentsHierarchy {departments} {descendants} {departmentById} selected={department} on:selected />
-      </TreeNode>
+      <DepartmentsHierarchy {departments} {descendants} {departmentById} selected={department} on:selected />
     </Scroller>
 
     <NavFooter />

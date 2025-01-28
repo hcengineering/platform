@@ -130,6 +130,7 @@
     "BackupSnapshots": "Backup Snapshots",
     "BackupFileDownload": "Download File",
     "BackupFiles": "Backup Files",
-    "BackupNoBackup": "No backups are currently available."
+    "BackupNoBackup": "No backups are currently available.",
+    "AddAttribute": "Add attribute"
   }
 }

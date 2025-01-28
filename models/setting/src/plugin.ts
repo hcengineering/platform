@@ -54,6 +54,7 @@ export default mergeIds(settingId, setting, {
     Settings: '' as Ref<ActionCategory>
   },
   action: {
+    CreateMixin: '' as Ref<Action<Doc, any>>,
     DeleteMixin: '' as Ref<Action>
   },
   actionImpl: {

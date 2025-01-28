@@ -26,6 +26,7 @@ import {
   type Class,
   type Data,
   type Doc,
+  DOMAIN_SEQUENCE,
   DOMAIN_TX,
   generateId,
   makeDocCollabId,
@@ -115,7 +116,7 @@ async function createProductChangeControlTemplate (tx: TxOperations): Promise<vo
       impactedDocuments: []
     }
 
-    const seq = await tx.findOne(documents.class.Sequence, {
+    const seq = await tx.findOne(core.class.Sequence, {
       _id: documents.sequence.Templates
     })
 
@@ -161,13 +162,13 @@ async function createProductChangeControlTemplate (tx: TxOperations): Promise<vo
 }
 
 async function createTemplateSequence (tx: TxOperations): Promise<void> {
-  const templateSeq = await tx.findOne(documents.class.Sequence, {
+  const templateSeq = await tx.findOne(core.class.Sequence, {
     _id: documents.sequence.Templates
   })
 
   if (templateSeq === undefined) {
     await tx.createDoc(
-      documents.class.Sequence,
+      core.class.Sequence,
       documents.space.Documents,
       {
         attachedTo: documents.mixin.DocumentTemplate,
@@ -417,6 +418,17 @@ export const documentsOperation: MigrateOperation = {
       {
         state: 'migrateProjectMetaRank',
         func: migrateProjectMetaRank
+      },
+      {
+        state: 'migrateSequnce',
+        func: async (client: MigrationClient) => {
+          await client.update(
+            DOMAIN_DOCUMENTS,
+            { _class: 'documents:class:Sequence' as Ref<Class<Doc>> },
+            { _class: core.class.Sequence }
+          )
+          await client.move(DOMAIN_DOCUMENTS, { _class: core.class.Sequence }, DOMAIN_SEQUENCE)
+        }
       }
     ])
   },
