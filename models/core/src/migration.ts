@@ -46,7 +46,8 @@ import core, {
   toIdMap,
   type TypedSpace,
   TxProcessor,
-  type SocialKey
+  type SocialKey,
+  type WorkspaceDataId
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -238,7 +239,7 @@ async function processMigrateContentFor (
               const buffer = Buffer.from(value)
               await storageAdapter.put(
                 ctx,
-                client.wsIds.dataId ?? client.wsIds.uuid,
+                client.wsIds.dataId ?? client.wsIds.uuid as unknown as WorkspaceDataId,
                 blobId,
                 buffer,
                 'application/json',
@@ -378,13 +379,13 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   for (const [accId, socialId] of Object.entries(socialIdByAccount)) {
     if (accId === socialId) continue
     operations.push({
-      filter: { createdBy: accId },
+      filter: { createdBy: accId as any },
       update: {
         createdBy: socialId
       }
     })
     operations.push({
-      filter: { modifiedBy: accId },
+      filter: { modifiedBy: accId as any },
       update: {
         modifiedBy: socialId
       }
@@ -581,7 +582,7 @@ async function processMigrateJsonForDoc (
       : attribute.name
 
     const collabId = makeDocCollabId(doc, attribute.name)
-    const dataId = wsIds.dataId ?? wsIds.uuid
+    const dataId = wsIds.dataId ?? wsIds.uuid as unknown as WorkspaceDataId
     if (value.startsWith('{')) {
       // For some reason we have documents that are already markups
       const jsonId = await retry(5, async () => {

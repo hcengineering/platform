@@ -39,7 +39,7 @@ export class BlobClient {
   }
 
   get workspaceDataId (): WorkspaceDataId {
-    return this.workspace.dataId ?? this.workspace.uuid
+    return this.workspace.dataId ?? this.workspace.uuid as unknown as WorkspaceDataId
   }
 
   async checkFile (ctx: MeasureContext, name: string): Promise<boolean> {

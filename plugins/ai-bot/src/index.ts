@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type PersonId, buildSocialIdString, type Mixin, type Ref, SocialIdType } from '@hcengineering/core'
+import { type PersonId, buildSocialIdString, type Mixin, type Ref, SocialIdType, PersonUuid } from '@hcengineering/core'
 import type { Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { ChatMessage } from '@hcengineering/chunter'
@@ -27,7 +27,7 @@ export const aiBotEmailSocialId = buildSocialIdString({
   type: SocialIdType.EMAIL,
   value: aiBotAccountEmail
 })
-export const aiBotAccount = '5a1a5faa-582c-42a6-8613-fc80a15e3ae8'
+export const aiBotAccount = '5a1a5faa-582c-42a6-8613-fc80a15e3ae8' as PersonUuid
 
 export interface TransferredMessage extends ChatMessage {
   messageId: Ref<ChatMessage>

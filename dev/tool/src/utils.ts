@@ -53,7 +53,7 @@ export async function getWorkspace (db: AccountDB, workspace: string): Promise<W
   let wsObj: Workspace | null
 
   if (uuidRegex.test(workspace)) {
-    wsObj = await getWorkspaceById(db, workspace)
+    wsObj = await getWorkspaceById(db, workspace as WorkspaceUuid)
   } else {
     wsObj = await getWorkspaceByUrl(db, workspace)
   }
@@ -61,7 +61,7 @@ export async function getWorkspace (db: AccountDB, workspace: string): Promise<W
   return wsObj
 }
 
-export function getToolToken (workspace?: string): string {
+export function getToolToken (workspace?: WorkspaceUuid): string {
   return generateToken(systemAccountUuid, workspace, { service: 'tool' })
 }
 

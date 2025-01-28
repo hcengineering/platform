@@ -20,7 +20,11 @@ import { getMetadata } from '@hcengineering/platform'
 import presentation from './plugin'
 
 function getClient (): CollaboratorClient {
-  const workspaceUuid = getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
+  const workspaceUuid = getMetadata(presentation.metadata.WorkspaceUuid)
+  if (workspaceUuid === undefined) {
+    throw new Error('WorkspaceUuid is not defined')
+  }
+
   const token = getMetadata(presentation.metadata.Token) ?? ''
   const collaboratorURL = getMetadata(presentation.metadata.CollaboratorUrl) ?? ''
 

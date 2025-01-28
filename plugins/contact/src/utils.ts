@@ -344,13 +344,13 @@ export async function getAllSocialStringsByPersonRef (client: Client, person: Re
   return socialIds.map((it) => it.key)
 }
 
-export async function getSocialStringsByEmployee (client: Client): Promise<Record<Ref<Person>, string[]>> {
+export async function getSocialStringsByEmployee (client: Client): Promise<Record<Ref<Person>, PersonId[]>> {
   const employees = await client.findAll(contact.mixin.Employee, { active: true })
   const socialIds = await client.findAll(contact.class.SocialIdentity, {
     attachedTo: { $in: employees.map((it) => it._id) },
     attachedToClass: contact.class.Person
   })
-  const socialStringsByPerson: Record<Ref<Person>, string[]> = {}
+  const socialStringsByPerson: Record<Ref<Person>, PersonId[]> = {}
 
   for (const socialId of socialIds) {
     const socialStrings = socialStringsByPerson[socialId.attachedTo]

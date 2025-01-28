@@ -243,7 +243,7 @@ export class PlatformWorker {
         } else {
           let client: Client | undefined
           try {
-            ;({ client } = await createPlatformClient(oldWorkspace, 30000))
+            ;({ client } = await createPlatformClient(oldWorkspace as WorkspaceUuid, 30000)) // TODO: FIXME
             await this.removeInstallationFromWorkspace(oldWorker, installationId)
             await client.close()
           } catch (err: any) {
@@ -709,7 +709,7 @@ export class PlatformWorker {
   }
 
   async getWorkspaces (): Promise<WorkspaceUuid[]> {
-    const workspaces = new Set(this.integrations.map((it) => it.workspace))
+    const workspaces = new Set(this.integrations.map((it) => it.workspace as WorkspaceUuid)) // TODO: FIXME
 
     return Array.from(workspaces)
   }
@@ -751,7 +751,7 @@ export class PlatformWorker {
     })
     let workspaces = await this.getWorkspaces()
     if (process.env.GITHUB_USE_WS !== undefined) {
-      workspaces = [process.env.GITHUB_USE_WS]
+      workspaces = [process.env.GITHUB_USE_WS as WorkspaceUuid]
     }
     const toDelete = new Set<string>(this.clients.keys())
 

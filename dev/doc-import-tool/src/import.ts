@@ -20,6 +20,7 @@ import core, {
   MeasureContext,
   Ref,
   TxOperations,
+  type WorkspaceDataId,
   generateId,
   makeDocCollabId,
   systemAccountUuid,
@@ -252,7 +253,7 @@ export async function processImages (
   const dom = parseDocument(section.content)
   const imageNodes = findAll((n) => n.tagName === 'img', dom.children)
 
-  const { storageAdapter, workspaceId, uploadURL } = config
+  const { storageAdapter, workspaceId, workspaceDataId, uploadURL } = config
 
   const imageUploads = imageNodes.map(async (img) => {
     const src = img.attribs.src
@@ -272,7 +273,7 @@ export async function processImages (
 
     // upload
     const uuid = generateId()
-    await storageAdapter.put(ctx, workspaceId, uuid, fileContents, mimeType, fileSize)
+    await storageAdapter.put(ctx, workspaceDataId ?? workspaceId as unknown as WorkspaceDataId, uuid, fileContents, mimeType, fileSize)
 
     // attachment
     const attachmentId: Ref<Attachment> = generateId()

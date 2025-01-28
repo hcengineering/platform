@@ -1,4 +1,4 @@
-import { MeasureMetricsContext, generateId } from '@hcengineering/core'
+import { MeasureMetricsContext, type WorkspaceDataId, generateId } from '@hcengineering/core'
 import type { StorageConfiguration } from '@hcengineering/server-core'
 import { DatalakeService, processConfigFromEnv, type DatalakeConfig } from '.'
 
@@ -15,7 +15,7 @@ const toolCtx = new MeasureMetricsContext('test', {})
 const storageService = new DatalakeService({ ...(config.storages[0] as DatalakeConfig) })
 
 async function doTest (): Promise<void> {
-  const genWorkspaceId1 = generateId()
+  const genWorkspaceId1 = generateId() as unknown as WorkspaceDataId
 
   const ws1 = genWorkspaceId1
   await storageService.make(toolCtx, ws1)

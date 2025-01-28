@@ -11,7 +11,8 @@ import {
   type FindOptions,
   type MeasureContext,
   type Ref,
-  type Tx
+  type Tx,
+  WorkspaceUuid
 } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { RPCHandler } from '@hcengineering/rpc'
@@ -65,7 +66,7 @@ export const PREFERRED_SAVE_SIZE = 500
 export const PREFERRED_SAVE_INTERVAL = 30 * 1000
 
 export class Transactor extends DurableObject<Env> {
-  private workspace: string = ''
+  private workspace = '' as WorkspaceUuid
 
   private sessionManager!: SessionManager
 

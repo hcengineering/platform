@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Blob, MeasureContext, WorkspaceUuid } from '@hcengineering/core'
+import { Blob, MeasureContext, WorkspaceDataId } from '@hcengineering/core'
 import { DatalakeConfig, DatalakeService, createDatalakeClient } from '@hcengineering/datalake'
 import { S3Config, S3Service } from '@hcengineering/s3'
 import { StorageConfig } from '@hcengineering/server-core'
@@ -30,7 +30,7 @@ export interface S3UploadParams {
 
 export async function getS3UploadParams (
   ctx: MeasureContext,
-  workspaceId: WorkspaceUuid,
+  workspaceId: WorkspaceDataId,
   storageConfig: StorageConfig,
   s3StorageConfig: StorageConfig | undefined
 ): Promise<S3UploadParams> {
@@ -53,7 +53,7 @@ export async function getS3UploadParams (
 
 export async function saveFile (
   ctx: MeasureContext,
-  workspaceId: WorkspaceUuid,
+  workspaceId: WorkspaceDataId,
   storageConfig: StorageConfig,
   s3StorageConfig: StorageConfig | undefined,
   filename: string
@@ -78,7 +78,7 @@ export async function saveFile (
 
 async function getS3UploadParamsS3 (
   ctx: MeasureContext,
-  workspaceId: WorkspaceUuid,
+  workspaceId: WorkspaceDataId,
   storageConfig: S3Config
 ): Promise<S3UploadParams> {
   const endpoint = storageConfig.endpoint
@@ -101,7 +101,7 @@ async function getS3UploadParamsS3 (
 
 async function getS3UploadParamsDatalake (
   ctx: MeasureContext,
-  workspaceId: WorkspaceUuid,
+  workspaceId: WorkspaceDataId,
   config: DatalakeConfig,
   s3config: S3Config
 ): Promise<S3UploadParams> {
@@ -127,7 +127,7 @@ async function getS3UploadParamsDatalake (
 
 async function saveFileToS3 (
   ctx: MeasureContext,
-  workspaceId: WorkspaceUuid,
+  workspaceId: WorkspaceDataId,
   config: S3Config,
   filename: string
 ): Promise<Blob | undefined> {
@@ -139,7 +139,7 @@ async function saveFileToS3 (
 
 async function saveFileToDatalake (
   ctx: MeasureContext,
-  workspaceId: WorkspaceUuid,
+  workspaceId: WorkspaceDataId,
   config: DatalakeConfig,
   s3config: S3Config,
   filename: string
@@ -155,15 +155,15 @@ async function saveFileToDatalake (
   return await storageAdapter.stat(ctx, workspaceId, uuid)
 }
 
-function getBucket (storageConfig: S3Config, workspaceId: WorkspaceUuid): string {
+function getBucket (storageConfig: S3Config, workspaceId: WorkspaceDataId): string {
   return storageConfig.rootBucket ?? (storageConfig.bucketPrefix ?? '') + workspaceId
 }
 
-function getBucketFolder (workspaceId: WorkspaceUuid): string {
+function getBucketFolder (workspaceId: WorkspaceDataId): string {
   return workspaceId
 }
 
-function getDocumentKey (storageConfig: any, workspace: WorkspaceUuid, name: string): string {
+function getDocumentKey (storageConfig: any, workspace: WorkspaceDataId, name: string): string {
   return storageConfig.rootBucket === undefined ? name : `${getBucketFolder(workspace)}/${name}`
 }
 
@@ -174,6 +174,6 @@ function stripPrefix (prefix: string | undefined, key: string): string {
   return key
 }
 
-function rootPrefix (storageConfig: S3Config, workspaceId: WorkspaceUuid): string | undefined {
+function rootPrefix (storageConfig: S3Config, workspaceId: WorkspaceDataId): string | undefined {
   return storageConfig.rootBucket !== undefined ? getBucketFolder(workspaceId) + '/' : undefined
 }

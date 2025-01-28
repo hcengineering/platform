@@ -85,7 +85,7 @@ export function reusableClientFactory (token: Token, controller: Controller): Cl
  * @public
  */
 export class Controller {
-  private readonly workspaces: Map<WorkspaceUuid, WorkspaceClient> = new Map<string, WorkspaceClient>()
+  private readonly workspaces: Map<WorkspaceUuid, WorkspaceClient> = new Map<WorkspaceUuid, WorkspaceClient>()
 
   async get (workspace: WorkspaceUuid): Promise<WorkspaceClient> {
     let client = this.workspaces.get(workspace)

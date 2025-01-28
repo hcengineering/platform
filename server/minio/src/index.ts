@@ -20,7 +20,6 @@ import core, {
   type Blob,
   type MeasureContext,
   type Ref,
-  type WorkspaceUuid,
   type WorkspaceDataId
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
@@ -116,14 +115,14 @@ export class MinioService implements StorageAdapter {
           reject(err)
         })
         stream.on('data', (data) => {
-          const wsUuid = data.prefix?.split('/')?.[0]
-          if (wsUuid !== undefined && !info.has(wsUuid)) {
-            info.set(wsUuid, {
-              name: wsUuid,
+          const wsDataId = data.prefix?.split('/')?.[0] as WorkspaceDataId
+          if (wsDataId !== undefined && !info.has(wsDataId)) {
+            info.set(wsDataId, {
+              name: wsDataId,
               delete: async () => {
-                await this.delete(ctx, wsUuid)
+                await this.delete(ctx, wsDataId)
               },
-              list: async () => await this.listStream(ctx, wsUuid)
+              list: async () => await this.listStream(ctx, wsDataId)
             })
           }
         })
@@ -131,13 +130,13 @@ export class MinioService implements StorageAdapter {
       stream.destroy()
       return Array.from(info.values())
     } else {
-      const productPostfix = this.getBucketFolder('')
+      const productPostfix = this.getBucketFolder('' as WorkspaceDataId)
       const buckets = await this.client.listBuckets()
       return buckets
         .filter((it) => it.name.endsWith(productPostfix))
         .map((it) => {
-          let name = it.name
-          name = name.slice(0, name.length - productPostfix.length)
+          let name = it.name as WorkspaceDataId
+          name = name.slice(0, name.length - productPostfix.length) as WorkspaceDataId
           return {
             name,
             delete: async () => {
@@ -149,7 +148,7 @@ export class MinioService implements StorageAdapter {
     }
   }
 
-  getDocumentKey (workspace: WorkspaceUuid, name: string): string {
+  getDocumentKey (workspace: WorkspaceDataId, name: string): string {
     return this.opt.rootBucket === undefined ? name : `${this.getBucketFolder(workspace)}/${name}`
   }
 

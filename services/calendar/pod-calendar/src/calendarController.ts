@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { PersonId, isActiveMode, RateLimiter, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
+import { PersonId, isActiveMode, RateLimiter, systemAccountUuid, WorkspaceUuid, PersonUuid } from '@hcengineering/core'
 import { type Db } from 'mongodb'
 import { type CalendarClient } from './calendar'
 import config from './config'
@@ -46,7 +46,7 @@ export class CalendarController {
 
   async startAll (): Promise<void> {
     const tokens = await this.mongo.collection<Token>('tokens').find().toArray()
-    const groups = new Map<string, Token[]>()
+    const groups = new Map<WorkspaceUuid, Token[]>()
     console.log('start calendar service', tokens.length)
     for (const token of tokens) {
       const group = groups.get(token.workspace)
@@ -144,13 +144,13 @@ export class CalendarController {
     }
   }
 
-  async getUserId (account: string, workspace: WorkspaceUuid): Promise<PersonId> {
+  async getUserId (account: PersonUuid, workspace: WorkspaceUuid): Promise<PersonId> {
     const workspaceClient = await this.getWorkspaceClient(workspace)
 
     return await workspaceClient.getUserId(account)
   }
 
-  async signout (workspace: string, value: string): Promise<void> {
+  async signout (workspace: WorkspaceUuid, value: PersonId): Promise<void> {
     const workspaceClient = await this.getWorkspaceClient(workspace)
     const clients = await workspaceClient.signout(value)
     if (clients === 0) {
@@ -158,7 +158,7 @@ export class CalendarController {
     }
   }
 
-  removeWorkspace (workspace: string): void {
+  removeWorkspace (workspace: WorkspaceUuid): void {
     this.workspaces.delete(workspace)
   }
 

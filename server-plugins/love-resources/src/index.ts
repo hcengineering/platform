@@ -26,7 +26,8 @@ import core, {
   TxProcessor,
   TxUpdateDoc,
   UserStatus,
-  combineAttributes
+  combineAttributes,
+  type PersonUuid
 } from '@hcengineering/core'
 import love, {
   Invite,
@@ -91,7 +92,7 @@ export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<
   return result
 }
 
-async function createUserInfo (user: string, control: TriggerControl): Promise<Tx[]> {
+async function createUserInfo (user: PersonUuid, control: TriggerControl): Promise<Tx[]> {
   const person = (await control.findAll(control.ctx, contact.class.Person, { personUuid: user }))[0]
   if (person === undefined) return []
 
@@ -124,7 +125,7 @@ async function createUserInfo (user: string, control: TriggerControl): Promise<T
   return [ptx]
 }
 
-async function removeUserInfo (user: string, control: TriggerControl): Promise<Tx[]> {
+async function removeUserInfo (user: PersonUuid, control: TriggerControl): Promise<Tx[]> {
   const person = (await control.findAll(control.ctx, contact.class.Person, { personUuid: user }))[0]
   if (person === undefined) return []
 

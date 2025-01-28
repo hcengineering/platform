@@ -21,7 +21,8 @@ import core, {
   type Ref,
   SortingOrder,
   type Space,
-  TxOperations
+  TxOperations,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { type DbAdapter, wrapAdapterToClient } from '@hcengineering/server-core'
 import { createPostgresAdapter, createPostgresTxAdapter } from '..'
@@ -37,8 +38,8 @@ const contextVars: Record<string, any> = {}
 
 describe('postgres operations', () => {
   const baseDbUri: string = process.env.DB_URL ?? 'postgresql://root@localhost:26257/defaultdb?sslmode=disable'
-  let dbUuid: string = crypto.randomUUID()
-let dbUri: string = baseDbUri.replace('defaultdb', dbUuid)
+  let dbUuid = crypto.randomUUID() as WorkspaceUuid
+  let dbUri: string = baseDbUri.replace('defaultdb', dbUuid)
   const clientRef: PostgresClientReference = getDBClient(contextVars, baseDbUri)
   let hierarchy: Hierarchy
   let model: ModelDb
@@ -53,7 +54,7 @@ let dbUri: string = baseDbUri.replace('defaultdb', dbUuid)
 
   beforeEach(async () => {
     try {
-      dbUuid = crypto.randomUUID()
+      dbUuid = crypto.randomUUID() as WorkspaceUuid
       dbUri = baseDbUri.replace('defaultdb', dbUuid)
       const client = await clientRef.getClient()
       await client`CREATE DATABASE ${client(dbUuid)}`

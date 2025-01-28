@@ -212,7 +212,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     space: Ref<Space>
   ): void {
     if (typeof removedMembers === 'object') {
-      const { $in } = removedMembers
+      const { $in } = removedMembers as PullArray<PersonId>
       if ($in !== undefined) {
         for (const member of $in) {
           this.removeMemberSpace(member, space)
@@ -271,10 +271,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   private broadcastNonMembers (ctx: MeasureContext<SessionData>, space: SpaceWithMembers): void {
     const { socialStringsToUsers } = ctx.contextData
     const members = space?.members ?? []
-    const memberUsers = new Set(
-      members.map((m) => socialStringsToUsers.get(m) ?? undefined).filter((u) => u !== undefined)
-    )
-    const users = Array.from(socialStringsToUsers.values()).filter((u) => !memberUsers.has(u))
+    const users = Array.from(socialStringsToUsers.keys()).filter((si) => !members.includes(si))
 
     this.brodcastEvent(ctx, users, space._id)
   }
@@ -446,7 +443,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   private getAllAllowedSpaces (account: Account, isData: boolean, showArchived: boolean): Ref<Space>[] {
     const userSocialStrings = account.socialIds
     const userSpaces = new Set(userSocialStrings.map((s) => this.allowedSpaces[s] ?? []).flat())
-    const res = [...Array.from(userSpaces), account.uuid as Ref<Space>, ...this.systemSpaces, ...this.mainSpaces]
+    const res = [...Array.from(userSpaces), account.uuid as unknown as Ref<Space>, ...this.systemSpaces, ...this.mainSpaces]
     const unfilteredRes = isData ? res : [...res, ...this.publicSpaces]
     if (showArchived) {
       return unfilteredRes

@@ -51,7 +51,7 @@ export class WorkspaceClient {
     private readonly credentials: ProjectCredentials,
     private readonly mongo: Db,
     private readonly storageAdapter: StorageAdapter,
-    private readonly workspace: string
+    private readonly workspace: WorkspaceUuid
   ) {}
 
   static async create (
@@ -59,7 +59,7 @@ export class WorkspaceClient {
     credentials: ProjectCredentials,
     mongo: Db,
     storageAdapter: StorageAdapter,
-    workspace: string
+    workspace: WorkspaceUuid
   ): Promise<WorkspaceClient> {
     const instance = new WorkspaceClient(ctx, credentials, mongo, storageAdapter, workspace)
     await instance.initClient(workspace)

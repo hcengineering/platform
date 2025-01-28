@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { Client, MeasureContext, systemAccountUuid, TxOperations, WorkspaceUuid } from '@hcengineering/core'
+import core, { Client, MeasureContext, PersonUuid, systemAccountUuid, TxOperations, WorkspaceUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import contact, { Person } from '@hcengineering/contact'
 
@@ -43,7 +43,7 @@ export class WorkspaceClient {
     return new TxOperations(this.client, core.account.System)
   }
 
-  async getPerson (personUuid: string): Promise<Person | undefined> {
+  async getPerson (personUuid: PersonUuid): Promise<Person | undefined> {
     const opClient = await this.opClient
     return await opClient.findOne(contact.class.Person, {
       personUuid

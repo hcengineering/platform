@@ -54,7 +54,8 @@ import core, {
   type TxOperations,
   type TypedSpace,
   type UserStatus,
-  type WithLookup
+  type WithLookup,
+  type PersonUuid
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import { type IntlString, getEmbeddedLabel, getResource, translate } from '@hcengineering/platform'
@@ -380,7 +381,7 @@ export const personByPersonIdStore = derived(
         }
         return [personId, person] as const
       })
-      .filter((it) => it !== undefined) as Array<readonly [string, WithLookup<Person>]>
+      .filter((it) => it !== undefined) as Array<readonly [PersonId, WithLookup<Person>]>
     return new Map(mapped)
   }
 )
@@ -408,7 +409,7 @@ export const primarySocialIdByPersonIdStore = derived(socialIdsByPersonIdStore, 
 })
 
 export const channelProviders = writable<ChannelProvider[]>([])
-export const statusByUserStore = writable<Map<PersonId, UserStatus>>(new Map())
+export const statusByUserStore = writable<Map<PersonUuid, UserStatus>>(new Map())
 
 const providerQuery = createQuery(true)
 const personsQuery = createQuery(true)
@@ -439,7 +440,7 @@ const userStatusesQuery = createQuery(true)
 
 export function loadUsersStatus (): void {
   userStatusesQuery.query(core.class.UserStatus, {}, (res) => {
-    statusByUserStore.set(new Map(res.map((it) => [it.user, it])))
+    statusByUserStore.set(new Map(res.map((it) => [it.user, it] as [PersonUuid, UserStatus])))
   })
 }
 

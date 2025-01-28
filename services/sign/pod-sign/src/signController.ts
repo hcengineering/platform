@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { systemAccountUuid, type Client } from '@hcengineering/core'
+import { systemAccountUuid, WorkspaceUuid, type Client } from '@hcengineering/core'
 import { generateToken, type Token } from '@hcengineering/server-token'
 
 import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
@@ -48,7 +48,7 @@ export class SignController {
     return client
   }
 
-  private async createPlatformClient (workspace: string): Promise<Client> {
+  private async createPlatformClient (workspace: WorkspaceUuid): Promise<Client> {
     const token = generateToken(systemAccountUuid, workspace, { service: 'sign' })
     const endpoint = await getTransactorEndpoint(token)
     const connection = await createClient(endpoint, token)

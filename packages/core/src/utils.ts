@@ -84,6 +84,10 @@ export function generateId<T extends Doc> (join: string = ''): Ref<T> {
   return (timestamp() + join + random + join + count()) as Ref<T>
 }
 
+export function generateUuid (): string {
+  return crypto.randomUUID()
+}
+
 /** @public */
 export function isId (value: any): value is Ref<any> {
   return typeof value === 'string' && /^[0-9a-f]{24,24}$/.test(value)
@@ -124,10 +128,10 @@ export function toFindResult<T extends Doc> (docs: T[], total?: number, lookupMa
   return Object.assign(docs, { total: length, lookupMap })
 }
 
-export type WorkspaceUuid = string
-export type WorkspaceDataId = string
+export type WorkspaceUuid = string & { __workspaceUuid: true }
+export type WorkspaceDataId = string & { __workspaceDataId: true }
 export interface WorkspaceIds {
-  uuid: string
+  uuid: WorkspaceUuid
   url: string
   dataId?: WorkspaceDataId // Old workspace identifier. E.g. Database name in Mongo, bucket in R2, etc.
 }
@@ -903,7 +907,7 @@ export function combineAttributes (
 }
 
 export function buildSocialIdString (key: SocialKey): PersonId {
-  return `${key.type}:${key.value}`
+  return `${key.type}:${key.value}` as PersonId
 }
 
 export function parseSocialIdString (id: PersonId): SocialKey {

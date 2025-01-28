@@ -35,7 +35,7 @@ import core, {
   FindResult,
   LoadModelResponse,
   MeasureMetricsContext,
-  PersonId,
+  type PersonUuid,
   Ref,
   SearchOptions,
   SearchQuery,
@@ -45,6 +45,7 @@ import core, {
   TxApplyIf,
   TxHandler,
   TxResult,
+  type WorkspaceUuid,
   clone,
   generateId,
   toFindResult,
@@ -126,8 +127,8 @@ class Connection implements ClientConnection {
     private readonly ctx: MeasureContext,
     private readonly url: string,
     private readonly handler: TxHandler,
-    readonly workspace: string,
-    readonly user: string,
+    readonly workspace: WorkspaceUuid,
+    readonly user: PersonUuid,
     readonly opt?: ClientFactoryOptions
   ) {
     if (typeof sessionStorage !== 'undefined') {
@@ -834,8 +835,8 @@ class Connection implements ClientConnection {
 export function connect (
   url: string,
   handler: TxHandler,
-  workspace: string,
-  user: PersonId,
+  workspace: WorkspaceUuid,
+  user: PersonUuid,
   opt?: ClientFactoryOptions
 ): ClientConnection {
   return new Connection(

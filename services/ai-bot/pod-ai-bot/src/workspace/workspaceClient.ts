@@ -47,7 +47,8 @@ import core, {
   TxCUD,
   TxOperations,
   TxRemoveDoc,
-  WorkspaceUuid
+  type WorkspaceUuid,
+  type WorkspaceDataId
 } from '@hcengineering/core'
 import { Room } from '@hcengineering/love'
 import { countTokens } from '@hcengineering/openai'
@@ -99,6 +100,7 @@ export class WorkspaceClient {
     readonly transactorUrl: string,
     readonly token: string,
     readonly workspace: WorkspaceUuid,
+    readonly workspaceDataId: WorkspaceDataId | undefined,
     readonly controller: AIControl,
     readonly ctx: MeasureContext,
     readonly info: WorkspaceInfoRecord | undefined
@@ -107,6 +109,10 @@ export class WorkspaceClient {
     void this.opClient.then((opClient) => {
       this.opClient = opClient
     })
+  }
+
+  get wsDataId (): WorkspaceDataId {
+    return this.workspaceDataId ?? this.workspace as unknown as WorkspaceDataId
   }
 
   protected async initClient (): Promise<TxOperations> {
@@ -146,7 +152,7 @@ export class WorkspaceClient {
       if (!isAlreadyUploaded) {
         const data = fs.readFileSync(config.AvatarPath)
 
-        await this.storage.put(this.ctx, this.workspace, config.AvatarName, data, config.AvatarContentType, data.length)
+        await this.storage.put(this.ctx, this.wsDataId, config.AvatarName, data, config.AvatarContentType, data.length)
         await this.controller.updateAvatarInfo(this.workspace, config.AvatarPath, lastModified)
         this.ctx.info('Avatar file uploaded successfully', { workspace: this.workspace, path: config.AvatarPath })
       }
@@ -196,7 +202,7 @@ export class WorkspaceClient {
       return
     }
 
-    const exist = await this.storage.stat(this.ctx, this.workspace, config.AvatarName)
+    const exist = await this.storage.stat(this.ctx, this.wsDataId, config.AvatarName)
 
     if (exist === undefined) {
       this.ctx.error('Cannot find file', { file: config.AvatarName, workspace: this.workspace })

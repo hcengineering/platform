@@ -172,7 +172,7 @@ export async function cleanWorkspace (
 
 export async function fixMinioBW (
   ctx: MeasureContext,
-  workspaceId: WorkspaceUuid,
+  workspaceId: WorkspaceDataId,
   storageService: StorageAdapter
 ): Promise<void> {
   console.log('try clean bw miniature for ', workspaceId)

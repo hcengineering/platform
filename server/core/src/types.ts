@@ -40,7 +40,9 @@ import {
   type TxFactory,
   type TxResult,
   type WorkspaceUuid,
-  type WorkspaceIds
+  type WorkspaceIds,
+  type WorkspaceDataId,
+  type PersonUuid
 } from '@hcengineering/core'
 import type { Asset, Resource } from '@hcengineering/platform'
 import type { LiveQuery } from '@hcengineering/query'
@@ -549,7 +551,7 @@ export interface Session {
 
   // Client methods
   ping: (ctx: ClientSessionCtx) => Promise<void>
-  getUser: () => string
+  getUser: () => PersonUuid
   getUserSocialIds: () => PersonId[]
 
   loadModel: (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string) => Promise<void>
@@ -632,14 +634,14 @@ export interface Workspace {
   workspaceName: string
   workspaceUuid: WorkspaceUuid
   workspaceUrl: string
-  workspaceDataId?: string
+  workspaceDataId?: WorkspaceDataId
   branding: Branding | null
 }
 
 export interface AddSessionActive {
   session: Session
   context: MeasureContext
-  workspaceId: string
+  workspaceId: WorkspaceUuid
 }
 export type AddSessionResponse =
   | AddSessionActive
@@ -671,14 +673,14 @@ export interface SessionManager {
   close: (ctx: MeasureContext, ws: ConnectionSocket, workspaceId: WorkspaceUuid) => Promise<void>
 
   closeAll: (
-    wsId: string,
+    wsId: WorkspaceUuid,
     workspace: Workspace,
     code: number,
     reason: 'upgrade' | 'shutdown',
     ignoreSocket?: ConnectionSocket
   ) => Promise<void>
 
-  forceClose: (wsId: string, ignoreSocket?: ConnectionSocket) => Promise<void>
+  forceClose: (wsId: WorkspaceUuid, ignoreSocket?: ConnectionSocket) => Promise<void>
 
   closeWorkspaces: (ctx: MeasureContext) => Promise<void>
 
@@ -694,7 +696,7 @@ export interface SessionManager {
     service: S,
     ws: ConnectionSocket,
     request: Request<any>,
-    workspace: string // wsId
+    workspace: WorkspaceUuid
   ) => Promise<void>
 }
 
@@ -706,7 +708,7 @@ export type HandleRequestFunction = <S extends Session>(
   service: S,
   ws: ConnectionSocket,
   msg: Request<any>,
-  workspaceId: string
+  workspaceId: WorkspaceUuid
 ) => void
 
 /**

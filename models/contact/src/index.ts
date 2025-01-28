@@ -44,7 +44,9 @@ import {
   type Domain,
   type Ref,
   type Timestamp,
-  type SocialIdType
+  type SocialIdType,
+  type PersonUuid,
+  type PersonId
 } from '@hcengineering/core'
 import {
   Collection as CollectionType,
@@ -58,6 +60,7 @@ import {
   TypeBoolean,
   TypeCollaborativeDoc,
   TypeDate,
+  TypePersonId,
   TypeRecord,
   TypeRef,
   TypeString,
@@ -166,9 +169,9 @@ export class TSocialIdentity extends TAttachedDoc implements SocialIdentity {
   declare attachedTo: Ref<Person>
   declare attachedToClass: Ref<Class<Person>>
 
-  @Prop(TypeString(), getEmbeddedLabel('Key'))
+  @Prop(TypePersonId(), getEmbeddedLabel('Key'))
   @Hidden()
-    key!: string
+    key!: PersonId
 
   @Prop(TypeString(), contact.string.Type)
     type!: SocialIdType
@@ -187,7 +190,7 @@ export class TSocialIdentity extends TAttachedDoc implements SocialIdentity {
 export class TPerson extends TContact implements Person {
   @Prop(TypeString(), getEmbeddedLabel('UUID'))
   @Hidden()
-    personUuid?: string
+    personUuid?: PersonUuid
 
   @Prop(TypeDate(DateRangeMode.DATE, false), contact.string.Birthday)
     birthday?: Timestamp

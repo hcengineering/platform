@@ -95,7 +95,7 @@ export const main = async (): Promise<void> => {
           const value = req.query.value as string
 
           const { workspace } = decodeToken(token)
-          await calendarController.signout(workspace, value)
+          await calendarController.signout(workspace, value as any) // TODO: FIXME
         } catch (err) {
           console.log('signout error', err)
         }
@@ -122,7 +122,7 @@ export const main = async (): Promise<void> => {
             res.status(400).send({ err: "'data' is missing" })
             return
           }
-          calendarController.push(data.user, data.mode as 'events' | 'calendar', data.calendarId)
+          calendarController.push(data.user as any, data.mode as 'events' | 'calendar', data.calendarId) // TODO: FIXME
         }
 
         res.send()

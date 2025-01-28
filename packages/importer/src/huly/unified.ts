@@ -15,7 +15,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type Attachment } from '@hcengineering/attachment'
 import contact, { Employee, type Person } from '@hcengineering/contact'
-import { type Class, type Doc, generateId, type Ref, type Space, type TxOperations } from '@hcengineering/core'
+import { type Class, type Doc, generateId, PersonId, type Ref, type Space, type TxOperations } from '@hcengineering/core'
 import document, { type Document } from '@hcengineering/document'
 import { MarkupMarkType, type MarkupNode, MarkupNodeType, traverseNode, traverseNodeMarks } from '@hcengineering/text'
 import tracker, { type Issue, Project } from '@hcengineering/tracker'
@@ -587,7 +587,7 @@ export class UnifiedFormatImporter {
     return person
   }
 
-  private findAccountByEmail (email: string): Ref<any> {
+  private findAccountByEmail (email: string): PersonId {
     // TODO: FIXME
     throw new Error('Not implemented')
     // const account = this.accountsByEmail.get(email)

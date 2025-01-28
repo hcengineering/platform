@@ -32,7 +32,8 @@ import {
   type Tx,
   type TxResult,
   type Blob,
-  type WorkspaceIds
+  type WorkspaceIds,
+  type WorkspaceDataId
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import {
@@ -44,7 +45,7 @@ import {
 
 class StorageBlobAdapter implements DbAdapter {
   constructor (
-    readonly storageId: string,
+    readonly storageId: WorkspaceDataId,
     readonly client: StorageAdapterEx, // Should not be closed
     readonly ctx: MeasureContext
   ) {}
@@ -148,7 +149,7 @@ export async function createStorageDataAdapter (
   if (storage === undefined) {
     throw new Error('Storage adapter required')
   }
-  const storageId = workspaceId.dataId ?? workspaceId.uuid
+  const storageId = workspaceId.dataId ?? workspaceId.uuid as unknown as WorkspaceDataId
   // We need to create bucket if it doesn't exist
   if (!(await storage.exists(ctx, storageId))) {
     await storage.make(ctx, storageId)

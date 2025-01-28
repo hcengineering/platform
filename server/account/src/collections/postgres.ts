@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import { Sql } from 'postgres'
-import { type Data, type Version, type Person, type WorkspaceMemberInfo, AccountRole } from '@hcengineering/core'
+import { type Data, type Version, type Person, type WorkspaceMemberInfo, AccountRole, type PersonUuid, type WorkspaceUuid } from '@hcengineering/core'
 
 import type {
   DbCollection,
@@ -414,7 +414,7 @@ export class PostgresAccountDB implements AccountDB {
     )
   }
 
-  async createWorkspace (data: WorkspaceData, status: WorkspaceStatusData): Promise<string> {
+  async createWorkspace (data: WorkspaceData, status: WorkspaceStatusData): Promise<WorkspaceUuid> {
     return await this.client.begin(async (client) => {
       const workspaceUuid = await this.workspace.insertOne(data, client)
       await this.workspaceStatus.insertOne({ ...status, workspaceUuid }, client)
@@ -423,29 +423,29 @@ export class PostgresAccountDB implements AccountDB {
     })
   }
 
-  async assignWorkspace (accountUuid: string, workspaceUuid: string, role: AccountRole): Promise<void> {
+  async assignWorkspace (accountUuid: PersonUuid, workspaceUuid: WorkspaceUuid, role: AccountRole): Promise<void> {
     await this
       .client`INSERT INTO ${this.client(this.getWsMembersTableName())} (workspace_uuid, account_uuid, role) VALUES (${workspaceUuid}, ${accountUuid}, ${role})`
   }
 
-  async unassignWorkspace (accountUuid: string, workspaceUuid: string): Promise<void> {
+  async unassignWorkspace (accountUuid: PersonUuid, workspaceUuid: WorkspaceUuid): Promise<void> {
     await this
       .client`DELETE FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
   }
 
-  async updateWorkspaceRole (accountUuid: string, workspaceUuid: string, role: AccountRole): Promise<void> {
+  async updateWorkspaceRole (accountUuid: PersonUuid, workspaceUuid: WorkspaceUuid, role: AccountRole): Promise<void> {
     await this
       .client`UPDATE ${this.client(this.getWsMembersTableName())} SET role = ${role} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
   }
 
-  async getWorkspaceRole (accountUuid: string, workspaceUuid: string): Promise<AccountRole | null> {
+  async getWorkspaceRole (accountUuid: PersonUuid, workspaceUuid: WorkspaceUuid): Promise<AccountRole | null> {
     const res: any = await this
       .client`SELECT role FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
 
     return res[0]?.role ?? null
   }
 
-  async getWorkspaceMembers (workspaceUuid: string): Promise<WorkspaceMemberInfo[]> {
+  async getWorkspaceMembers (workspaceUuid: WorkspaceUuid): Promise<WorkspaceMemberInfo[]> {
     const res: any = await this
       .client`SELECT account_uuid, role FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid}`
 
@@ -455,7 +455,7 @@ export class PostgresAccountDB implements AccountDB {
     }))
   }
 
-  async getAccountWorkspaces (accountUuid: string): Promise<WorkspaceInfoWithStatus[]> {
+  async getAccountWorkspaces (accountUuid: PersonUuid): Promise<WorkspaceInfoWithStatus[]> {
     const sql = `SELECT 
           w.uuid,
           w.name,
@@ -601,12 +601,12 @@ export class PostgresAccountDB implements AccountDB {
     return convertKeysToCamelCase(res[0]) as WorkspaceInfoWithStatus
   }
 
-  async setPassword (accountUuid: string, hash: Buffer, salt: Buffer): Promise<void> {
+  async setPassword (accountUuid: PersonUuid, hash: Buffer, salt: Buffer): Promise<void> {
     await this
       .client`UPSERT INTO ${this.client(this.account.getPasswordsTableName())} (account_uuid, hash, salt) VALUES (${accountUuid}, ${hash as unknown as Uint8Array}, ${salt as unknown as Uint8Array})`
   }
 
-  async resetPassword (accountUuid: string): Promise<void> {
+  async resetPassword (accountUuid: PersonUuid): Promise<void> {
     await this
       .client`DELETE FROM ${this.client(this.account.getPasswordsTableName())} WHERE account_uuid = ${accountUuid}`
   }

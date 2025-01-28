@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import { saveCollabJson } from '@hcengineering/collaboration'
-import { CollaborativeDoc, Markup, MeasureContext, Blob as PlatformBlob, Ref, WorkspaceIds } from '@hcengineering/core'
+import { CollaborativeDoc, Markup, MeasureContext, Blob as PlatformBlob, Ref, WorkspaceDataId, WorkspaceIds } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { FileUploader, UploadResult } from './uploader'
 
@@ -26,11 +26,16 @@ export class StorageFileUploader implements FileUploader {
     this.uploadFile = this.uploadFile.bind(this)
   }
 
+  get dataId (): WorkspaceDataId {
+    return this.wsIds.dataId ?? this.wsIds.uuid as unknown as WorkspaceDataId
+  }
+
   public async uploadFile (id: string, blob: Blob): Promise<UploadResult> {
     try {
       const arrayBuffer = await blob.arrayBuffer()
       const buffer = Buffer.from(arrayBuffer)
-      await this.storageAdapter.put(this.ctx, this.wsIds.uuid, id, buffer, blob.type, buffer.byteLength)
+
+      await this.storageAdapter.put(this.ctx, this.dataId, id, buffer, blob.type, buffer.byteLength)
       return { success: true, id: id as Ref<PlatformBlob> }
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : String(error) }
@@ -39,7 +44,7 @@ export class StorageFileUploader implements FileUploader {
 
   public async uploadCollaborativeDoc (collabId: CollaborativeDoc, content: Markup): Promise<UploadResult> {
     try {
-      const blobId = await saveCollabJson(this.ctx, this.storageAdapter, this.wsIds.uuid, collabId, content)
+      const blobId = await saveCollabJson(this.ctx, this.storageAdapter, this.dataId, collabId, content)
       return { success: true, id: blobId }
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : String(error) }

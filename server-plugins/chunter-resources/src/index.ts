@@ -15,8 +15,8 @@
 
 import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
 import chunter, { Channel, ChatMessage, chunterId, ChunterSpace, ThreadMessage } from '@hcengineering/chunter'
-import contact, { Employee, Person } from '@hcengineering/contact'
-import { getPerson } from '@hcengineering/server-contact'
+import contact, { Person } from '@hcengineering/contact'
+import { getPerson, getSocialStrings } from '@hcengineering/server-contact'
 import core, {
   PersonId,
   Class,
@@ -402,14 +402,18 @@ function getActivityToHide (contexts: DocNotifyContext[], date: Timestamp): DocN
 }
 
 export async function syncChat (control: TriggerControl, status: UserStatus, date: Timestamp): Promise<void> {
+  const person = (await control.findAll(control.ctx, contact.class.Person, { personUuid: status.user }))[0]
+  if (person == null) return
+
   const syncInfo = (
-    await control.findAll(control.ctx, chunter.class.ChatSyncInfo, { user: status.user as Ref<Employee> })
+    await control.findAll(control.ctx, chunter.class.ChatSyncInfo, { user: person._id })
   ).shift()
   const shouldSync = syncInfo === undefined || date - syncInfo.timestamp > updateChatInfoDelay
   if (!shouldSync) return
 
+  const socialIds = await getSocialStrings(control, person._id)
   const contexts = await control.findAll(control.ctx, notification.class.DocNotifyContext, {
-    user: status.user,
+    user: { $in: socialIds },
     hidden: false,
     isPinned: false
   })
@@ -442,12 +446,12 @@ export async function syncChat (control: TriggerControl, status: UserStatus, dat
 
   if (syncInfo === undefined) {
     const personSpace = (
-      await control.findAll(control.ctx, contact.class.PersonSpace, { person: status.user as Ref<Employee> })
+      await control.findAll(control.ctx, contact.class.PersonSpace, { person: person._id })
     ).shift()
     if (personSpace !== undefined) {
       res.push(
         control.txFactory.createTxCreateDoc(chunter.class.ChatSyncInfo, personSpace._id, {
-          user: status.user as Ref<Employee>,
+          user: person._id,
           timestamp: date
         })
       )

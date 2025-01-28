@@ -31,7 +31,9 @@ import {
   type Timestamp,
   type Tx,
   type TxCUD,
-  PersonId
+  type PersonId,
+  type WorkspaceDataId,
+  type PersonUuid
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import {
@@ -82,7 +84,7 @@ export class ClientSession implements Session {
     this.isAdmin = this.token.extra?.admin === 'true'
   }
 
-  getUser (): string {
+  getUser (): PersonUuid {
     return this.token.account
   }
 
@@ -114,6 +116,7 @@ export class ClientSession implements Session {
   }
 
   includeSessionContext (ctx: ClientSessionCtx): void {
+    const dataId = this.workspace.workspaceDataId ?? this.workspace.workspaceUuid as unknown as WorkspaceDataId
     const contextData = new SessionDataImpl(
       this.account,
       this.sessionId,
@@ -122,7 +125,7 @@ export class ClientSession implements Session {
       {
         uuid: this.workspace.workspaceUuid,
         url: this.workspace.workspaceUrl,
-        dataId: this.workspace.workspaceDataId
+        dataId
       },
       this.workspace.branding,
       false,

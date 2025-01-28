@@ -24,7 +24,6 @@ import core, {
   type Blob,
   type MeasureContext,
   type Ref,
-  type WorkspaceUuid,
   type WorkspaceDataId
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
@@ -146,14 +145,14 @@ export class S3Service implements StorageAdapter {
             ContinuationToken: token
           })
           for (const data of res.CommonPrefixes ?? []) {
-            const wsUuid = data.Prefix?.split('/')?.[0]
-            if (wsUuid !== undefined && !info.has(wsUuid)) {
-              info.set(wsUuid, {
-                name: wsUuid,
+            const wsDataId = data.Prefix?.split('/')?.[0] as WorkspaceDataId
+            if (wsDataId !== undefined && !info.has(wsDataId)) {
+              info.set(wsDataId, {
+                name: wsDataId,
                 delete: async () => {
-                  await this.delete(ctx, wsUuid)
+                  await this.delete(ctx, wsDataId)
                 },
-                list: async () => await this.listStream(ctx, wsUuid)
+                list: async () => await this.listStream(ctx, wsDataId)
               })
             }
           }
@@ -165,13 +164,13 @@ export class S3Service implements StorageAdapter {
         }
         return Array.from(info.values())
       } else {
-        const productPostfix = this.getBucketFolder('')
+        const productPostfix = this.getBucketFolder('' as WorkspaceDataId)
         const buckets = await this.client.listBuckets()
         return (buckets.Buckets ?? [])
           .filter((it) => it.Name !== undefined && it.Name.endsWith(productPostfix))
           .map((it) => {
-            let name = it.Name ?? ''
-            name = name.slice(0, name.length - productPostfix.length)
+            let name = (it.Name ?? '') as WorkspaceDataId
+            name = name.slice(0, name.length - productPostfix.length) as WorkspaceDataId
             return {
               name,
               delete: async () => {
@@ -191,7 +190,7 @@ export class S3Service implements StorageAdapter {
     }
   }
 
-  getDocumentKey (workspace: WorkspaceUuid, name: string): string {
+  getDocumentKey (workspace: WorkspaceDataId, name: string): string {
     return this.opt.rootBucket === undefined ? name : `${this.getBucketFolder(workspace)}/${name}`
   }
 
@@ -231,7 +230,7 @@ export class S3Service implements StorageAdapter {
     return this.opt.rootBucket !== undefined ? this.getBucketFolder(dataId) + '/' : undefined
   }
 
-  async copy (sourceId: WorkspaceUuid, targetId: WorkspaceUuid, objectName: string): Promise<void> {
+  async copy (sourceId: WorkspaceDataId, targetId: WorkspaceDataId, objectName: string): Promise<void> {
     const copyOp = new CopyObjectCommand({
       Bucket: this.getBucketId(targetId),
       Key: this.getDocumentKey(targetId, objectName),

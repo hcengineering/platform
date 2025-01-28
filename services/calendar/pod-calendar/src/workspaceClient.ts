@@ -39,7 +39,8 @@ import core, {
   type TxCreateDoc,
   type TxRemoveDoc,
   type TxUpdateDoc,
-  systemAccountUuid
+  systemAccountUuid,
+  PersonUuid
 } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import setting, { Integration } from '@hcengineering/setting'
@@ -76,7 +77,7 @@ export class WorkspaceClient {
   private constructor (
     private readonly credentials: ProjectCredentials,
     private readonly mongo: Db,
-    private readonly workspace: string,
+    private readonly workspace: WorkspaceUuid,
     private readonly serviceController: CalendarController
   ) {
     this.syncHistory = mongo.collection<SyncHistory>('syncHistories')
@@ -85,7 +86,7 @@ export class WorkspaceClient {
   static async create (
     credentials: ProjectCredentials,
     mongo: Db,
-    workspace: string,
+    workspace: WorkspaceUuid,
     serviceController: CalendarController
   ): Promise<WorkspaceClient> {
     const instance = new WorkspaceClient(credentials, mongo, workspace, serviceController)
@@ -121,7 +122,7 @@ export class WorkspaceClient {
     await this.client?.close()
   }
 
-  async getUserId (account: string): Promise<PersonId> {
+  async getUserId (account: PersonUuid): Promise<PersonId> {
     const person = await this.client.findOne(contact.class.Person, { personUuid: account })
     if (person === undefined) {
       throw new Error('Person not found')
@@ -600,7 +601,7 @@ export class WorkspaceClient {
     const integrations = this.integrations.byContact.get(person) ?? []
     for (const integration of integrations) {
       if (integration !== '') {
-        await this.signout(integration, true)
+        await this.signout(integration as any, true) // TODO: FIXME
       }
     }
   }

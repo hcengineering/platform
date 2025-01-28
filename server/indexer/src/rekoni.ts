@@ -1,4 +1,4 @@
-import { type MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
+import { systemAccountUuid, type MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 import { type ContentTextAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 
@@ -14,7 +14,7 @@ export async function createRekoniAdapter (url: string): Promise<ContentTextAdap
       type: string,
       doc
     ): Promise<string> => {
-      const token = generateToken('anticrm-hcenginnering', workspace)
+      const token = generateToken(systemAccountUuid, workspace, { service: 'rekoni' })
       try {
         // Node doesn't support Readable with fetch.
         const chunks: any[] = []

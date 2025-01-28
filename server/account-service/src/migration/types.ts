@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { AccountRole, BackupStatus, Data, Ref, Timestamp, Version, WorkspaceMode } from '@hcengineering/core'
+import type { AccountRole, BackupStatus, Data, Ref, Timestamp, Version, WorkspaceDataId, WorkspaceMode, WorkspaceUuid } from '@hcengineering/core'
 import type { Person } from '@hcengineering/contact'
 import { type FindCursor } from 'mongodb'
 
@@ -46,8 +46,8 @@ export interface Account {
  * @public
  */
 export interface Workspace {
-  workspace: string // An uniq workspace name, Database names
-  uuid?: string // An uuid for a workspace to be used already for cockroach data
+  workspace: WorkspaceDataId // An uniq workspace name, Database names
+  uuid?: WorkspaceUuid // An uuid for a workspace to be used already for cockroach data
 
   disabled?: boolean
   version?: Data<Version>
@@ -130,7 +130,7 @@ export interface RegionInfo {
 export interface Invite {
   _id: ObjectId
   workspace: {
-    name: string // workspace field
+    name: WorkspaceDataId // workspace field
   }
   exp: number
   emailMask: string

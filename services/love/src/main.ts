@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { MeasureContext, Ref, WorkspaceUuid } from '@hcengineering/core'
+import { MeasureContext, Ref, WorkspaceDataId, WorkspaceUuid } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
 import { initStatisticsContext, StorageConfig, StorageConfiguration } from '@hcengineering/server-core'
 import { storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
+import { getClient as getAccountClientRaw, WorkspaceLoginInfo, type AccountClient } from '@hcengineering/account-client'
 import { RoomMetadata, TranscriptionStatus, MeetingMinutes } from '@hcengineering/love'
 import cors from 'cors'
 import express from 'express'
@@ -42,6 +43,10 @@ const extractToken = (header: IncomingHttpHeaders): any => {
   } catch {
     return undefined
   }
+}
+
+function getAccountClient (token?: string): AccountClient {
+  return getAccountClientRaw(config.AccountsURL, token)
 }
 
 export const main = async (): Promise<void> => {
@@ -72,6 +77,7 @@ export const main = async (): Promise<void> => {
   {
     name: string
     workspace: WorkspaceUuid
+    workspaceDataId: WorkspaceDataId
     meetingMinutes?: Ref<MeetingMinutes>
   }
   >()
@@ -84,7 +90,7 @@ export const main = async (): Promise<void> => {
         for (const res of event.egressInfo.fileResults) {
           const data = dataByUUID.get(res.filename)
           if (data !== undefined && storageConfig !== undefined) {
-            const storedBlob = await saveFile(ctx, data.workspace, storageConfig, s3storageConfig, res.filename)
+            const storedBlob = await saveFile(ctx, data.workspaceDataId, storageConfig, s3storageConfig, res.filename)
             if (storedBlob !== undefined) {
               const client = await WorkspaceClient.create(data.workspace, ctx)
               await client.saveFile(storedBlob._id, data.name, storedBlob, data.meetingMinutes)
@@ -137,13 +143,20 @@ export const main = async (): Promise<void> => {
     const roomName = req.body.roomName
     const room = req.body.room
     const meetingMinutes = req.body.meetingMinutes
-    const { workspace } = decodeToken(token)
 
     try {
+      const wsLoginInfo = await getAccountClient(token).getLoginInfoByToken()
+      const workspace = (wsLoginInfo as WorkspaceLoginInfo)?.workspace
+      if (workspace == null) {
+        console.error('No workspace found for the token')
+        res.status(401).send()
+        return
+      }
+      const dataId = (wsLoginInfo as WorkspaceLoginInfo)?.workspaceDataId ?? workspace as unknown as WorkspaceDataId
       const dateStr = new Date().toISOString().replace('T', '_').slice(0, 19)
       const name = `${room}_${dateStr}.mp4`
-      const id = await startRecord(ctx, storageConfig, s3storageConfig, egressClient, roomClient, roomName, workspace)
-      dataByUUID.set(id, { name, workspace, meetingMinutes })
+      const id = await startRecord(ctx, storageConfig, s3storageConfig, egressClient, roomClient, roomName, dataId)
+      dataByUUID.set(id, { name, workspace, workspaceDataId: dataId, meetingMinutes })
       ctx.info('Start recording', { workspace, roomName, meetingMinutes })
       res.send()
     } catch (e) {
@@ -276,7 +289,7 @@ const startRecord = async (
   egressClient: EgressClient,
   roomClient: RoomServiceClient,
   roomName: string,
-  workspaceId: WorkspaceUuid
+  workspaceId: WorkspaceDataId
 ): Promise<string> => {
   if (storageConfig === undefined) {
     console.error('please provide storage configuration')

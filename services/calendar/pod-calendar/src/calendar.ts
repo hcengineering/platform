@@ -113,7 +113,7 @@ export class CalendarClient {
     const state: State = {
       token,
       redirectURL,
-      workspace,
+      workspace: workspace as any, // TODO: FIXME
       userId
     }
     const authUrl = oAuth2Client.generateAuthUrl({

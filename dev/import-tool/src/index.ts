@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { concatLink, TxOperations } from '@hcengineering/core'
+import { buildSocialIdString, concatLink, SocialIdType, TxOperations } from '@hcengineering/core'
 import {
   ClickupImporter,
   defaultDocumentPreprocessors,
@@ -95,7 +95,7 @@ export function importTool (): void {
 
     console.log('Connecting to Transactor URL: ', selectedWs.endpoint)
     const connection = await createClient(selectedWs.endpoint, selectedWs.token)
-    const client = new TxOperations(connection, account)
+    const client = new TxOperations(connection, buildSocialIdString({ type: SocialIdType.EMAIL, value: user }))
     const fileUploader = new FrontFileUploader(
       getFrontUrl(),
       selectedWs.workspace,

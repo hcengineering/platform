@@ -1,4 +1,4 @@
-import { MeasureContext, WorkspaceUuid } from '@hcengineering/core'
+import { MeasureContext, PersonUuid, WorkspaceUuid } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { decode, encode } from 'jwt-simple'
 import serverPlugin from './plugin'
@@ -7,8 +7,8 @@ import serverPlugin from './plugin'
  * @public
  */
 export interface Token {
-  account: string
-  workspace: string
+  account: PersonUuid
+  workspace: WorkspaceUuid
   extra?: Record<string, any>
 }
 
@@ -20,7 +20,7 @@ const getSecret = (): string => {
  * @public
  */
 export function generateToken (
-  accountUuid: string,
+  accountUuid: PersonUuid,
   workspaceUuid?: WorkspaceUuid,
   extra?: Record<string, string>
 ): string {

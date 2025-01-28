@@ -27,8 +27,9 @@ import {
   AccountRole,
   type Person,
   type WorkspaceMemberInfo,
-  PersonUuid,
-  isActiveMode
+  type PersonUuid,
+  isActiveMode,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import platform, {
   getMetadata,
@@ -206,7 +207,7 @@ export async function signUpOtp (
   // Note: can support OTP based on any other social logins later
   const normalizedEmail = cleanEmail(email)
   let emailSocialId = await getEmailSocialId(db, normalizedEmail)
-  let personUuid: string
+  let personUuid: PersonUuid
 
   if (emailSocialId !== null) {
     const existingAccount = await db.account.findOne({ uuid: emailSocialId.personUuid })
@@ -594,7 +595,7 @@ export async function requestPasswordReset (
   const sesURL = getSesUrl()
   const front = getFrontUrl(branding)
 
-  const token = generateToken(account.uuid, '', {
+  const token = generateToken(account.uuid, undefined, {
     restoreEmail: normalizedEmail
   })
 
@@ -659,7 +660,7 @@ export async function leaveWorkspace (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  targetAccount: string
+  targetAccount: PersonUuid
 ): Promise<LoginInfo | null> {
   const { account, workspace } = decodeTokenVerbose(ctx, token)
   ctx.info('Removing account from workspace', { targetAccount, workspace })
@@ -688,7 +689,7 @@ export async function leaveWorkspace (
   if (account === targetAccount) {
     return {
       account,
-      token: generateToken(account, '')
+      token: generateToken(account, undefined)
     }
   }
 
@@ -860,7 +861,7 @@ export async function performWorkspaceOperation (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  workspaceId: string | string[],
+  workspaceId: WorkspaceUuid | WorkspaceUuid[],
   event: 'archive' | 'migrate-to' | 'unarchive',
   ...params: any
 ): Promise<boolean> {
@@ -947,8 +948,8 @@ export async function getLoginInfoByToken (
   branding: Branding | null,
   token: string
 ): Promise<LoginInfo | WorkspaceLoginInfo> {
-  let accountUuid: string
-  let workspaceUuid: string
+  let accountUuid: PersonUuid
+  let workspaceUuid: WorkspaceUuid
   let extra: any
   try {
     ;({ account: accountUuid, workspace: workspaceUuid, extra } = decodeTokenVerbose(ctx, token))
@@ -1117,7 +1118,7 @@ export async function updateWorkspaceRole (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  targetAccount: string,
+  targetAccount: PersonUuid,
   targetRole: AccountRole
 ): Promise<void> {
   const { account, workspace } = decodeTokenVerbose(ctx, token)
@@ -1208,7 +1209,7 @@ export async function updateWorkspaceInfo (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  workspaceUuid: string,
+  workspaceUuid: WorkspaceUuid,
   event: WorkspaceEvent,
   version: Data<Version>, // A worker version
   progress: number,
@@ -1382,7 +1383,7 @@ export async function assignWorkspace (
   branding: Branding | null,
   token: string,
   email: string,
-  workspaceUuid: string,
+  workspaceUuid: WorkspaceUuid,
   role: AccountRole
 ): Promise<void> {
   const { extra } = decodeTokenVerbose(ctx, token)

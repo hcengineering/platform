@@ -171,6 +171,7 @@ services:
       - MONGO_URL=${MONGO_URL}
       - MONGO_OPTIONS={"appName":"print","maxPoolSize":1}
       - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - ACCOUNTS_URL=http://account:3003
     deploy:
       resources:
         limits:

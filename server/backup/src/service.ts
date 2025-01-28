@@ -27,7 +27,8 @@ import core, {
   type MeasureContext,
   type Tx,
   type WorkspaceIds,
-  type WorkspaceInfoWithStatus
+  type WorkspaceInfoWithStatus,
+  WorkspaceDataId
 } from '@hcengineering/core'
 import { getAccountClient } from '@hcengineering/server-client'
 import {
@@ -183,7 +184,7 @@ class BackupWorker {
       const ctx = rootCtx.newChild(ws.uuid, { workspace: ws.uuid })
       let pipeline: Pipeline | undefined
       try {
-        const storage = await createStorageBackupStorage(ctx, this.storageAdapter, this.config.BucketName, ws.uuid)
+        const storage = await createStorageBackupStorage(ctx, this.storageAdapter, this.config.BucketName as WorkspaceDataId, ws.uuid)
         const wsIds: WorkspaceIds = {
           uuid: ws.uuid,
           dataId: ws.dataId,
@@ -372,7 +373,7 @@ export async function doRestoreWorkspace (
   const ctx = rootCtx.newChild(wsIds.uuid, { workspace: wsIds.uuid })
   let pipeline: Pipeline | undefined
   try {
-    const storage = await createStorageBackupStorage(ctx, backupAdapter, bucketName, wsIds.uuid)
+    const storage = await createStorageBackupStorage(ctx, backupAdapter, bucketName as WorkspaceDataId, wsIds.uuid)
     const result: boolean = await ctx.with('restore', { workspace: wsIds.uuid }, (ctx) =>
       restore(ctx, '', wsIds, storage, {
         date: -1,

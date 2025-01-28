@@ -22,7 +22,7 @@ export class PlatformWorker {
   }
 
   async addUser (tgUser: TgUser): Promise<void> {
-    const { workspace, phone } = tgUser
+    const { workspace, phone } = tgUser as any // TODO: FIXME
     const res = await this.storage.findOne({ phone, workspace })
 
     if (res !== null) {
@@ -100,7 +100,7 @@ export class PlatformWorker {
         const worker = await WorkspaceWorker.create(
           ctx,
           storageAdapter,
-          workspace,
+          workspace as any, // TODO: FIXME
           userStorage,
           lastMsgStorage,
           channelStorage

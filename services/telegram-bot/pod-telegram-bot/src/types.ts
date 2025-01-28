@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Class, Ref, Timestamp } from '@hcengineering/core'
+import { Class, Ref, Timestamp, WorkspaceUuid } from '@hcengineering/core'
 import { InboxNotification } from '@hcengineering/notification'
 import { ChunterSpace } from '@hcengineering/chunter'
 import { ActivityMessage } from '@hcengineering/activity'
@@ -22,7 +22,7 @@ export interface UserRecord {
   telegramId: number
   telegramUsername?: string
   email: string
-  workspaces: string[]
+  workspaces: WorkspaceUuid[]
 }
 
 export interface MessageRecord {
