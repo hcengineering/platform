@@ -80,12 +80,14 @@
         props: { label: attribute.label }
       }}
     >
-      <div class="flex flex-gap-1 items-center">
-        {#if withIcon && icon}
+      {#if withIcon && icon}
+        <div class="flex flex-gap-1 items-center">
           <Icon {icon} size="small" />
-        {/if}
+          <Label label={attribute.label} />
+        </div>
+      {:else}
         <Label label={attribute.label} />
-      </div>
+      {/if}
     </span>
     <div class="flex flex-grow min-w-0">
       <svelte:component
