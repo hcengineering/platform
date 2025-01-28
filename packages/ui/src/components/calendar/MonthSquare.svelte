@@ -29,10 +29,10 @@
     isWeekend,
     weekday
   } from './internal/DateUtils'
+  import { deviceOptionsStore as deviceInfo } from '../..'
 
   export let currentDate: Date | null
   export let viewDate: Date
-  export let mondayStart: boolean = true
   export let hideNavigator: 'all' | 'left' | 'right' | 'none' = 'none'
   export let viewUpdate: boolean = true
   export let noPadding: boolean = false
@@ -42,13 +42,13 @@
 
   const dispatch = createEventDispatcher()
 
-  $: firstDayOfCurrentMonth = firstDay(viewDate, mondayStart)
+  $: firstDayOfCurrentMonth = firstDay(viewDate, $deviceInfo.firstDayOfWeek)
   let monthYear: string
   const today: Date = new Date(Date.now())
 
   afterUpdate(() => {
     monthYear = capitalizeFirstLetter(getMonthName(viewDate)) + ' ' + viewDate.getFullYear()
-    firstDayOfCurrentMonth = firstDay(viewDate, mondayStart)
+    firstDayOfCurrentMonth = firstDay(viewDate, $deviceInfo.firstDayOfWeek)
   })
 
   function inRange (currentDate: Date | null, selectedTo: Date | null | undefined, target: Date): boolean {

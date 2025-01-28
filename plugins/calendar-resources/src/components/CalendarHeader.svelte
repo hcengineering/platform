@@ -37,7 +37,7 @@
     {monthName}
     <span>{currentDate.getFullYear()}</span>
   </div>
-  <CalendarNavigation {ddItems} {mode} {onToday} {onBack} {onForward} />
+  <CalendarNavigation {ddItems} bind:mode {onToday} {onBack} {onForward} />
 </div>
 
 <style lang="scss">

@@ -131,6 +131,9 @@
     "BackupSnapshots": "Снимки резервной копии",
     "BackupFileDownload": "Скачать файл",
     "BackupFiles": "Файлы резервной копии",
-    "BackupNoBackup": "В настоящее время резервные копии недоступны."
+    "BackupNoBackup": "В настоящее время резервные копии недоступны.",
+    "Calendar": "Календарь",
+    "StartOfTheWeek": "Начало недели",
+    "SystemSetupString": "Системная настройка ({day})"
   }
 }

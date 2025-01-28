@@ -14,10 +14,9 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import ui, { Scroller, Label } from '../..'
-  import { addZero, areDatesEqual, day as getDay, getMonday, getWeekDayName } from './internal/DateUtils'
+  import ui, { Scroller, Label, deviceOptionsStore as deviceInfo } from '../..'
+  import { addZero, areDatesEqual, day as getDay, getWeekStart, getWeekDayName } from './internal/DateUtils'
 
-  export let mondayStart = true
   export let cellHeight: string | undefined = undefined
   export let selectedDate: Date = new Date()
   export let currentDate: Date = selectedDate
@@ -30,8 +29,8 @@
 
   const todayDate = new Date()
 
-  $: weekMonday = startFromWeekStart
-    ? getMonday(currentDate, mondayStart)
+  $: startDay = startFromWeekStart
+    ? getWeekStart(currentDate, $deviceInfo.firstDayOfWeek)
     : new Date(new Date(currentDate).setHours(0, 0, 0, 0))
 
   function getDate (startDate: Date, dayIndex: number, minutes: number): Date {
@@ -46,7 +45,7 @@
       <tr class="scroller-thead__tr">
         <th><Label label={ui.string.HoursLabel} /></th>
         {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
-          {@const day = getDay(weekMonday, dayOfWeek)}
+          {@const day = getDay(startDay, dayOfWeek)}
           <th>
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -75,7 +74,7 @@
           {#each [...Array(displayedDaysCount).keys()] as dayIndex}
             <td class="calendar-td cell" style:height={cellHeight}>
               {#if $$slots.cell}
-                <slot name="cell" date={getDate(weekMonday, dayIndex, hourOfDay * 60)} />
+                <slot name="cell" date={getDate(startDay, dayIndex, hourOfDay * 60)} />
               {/if}
             </td>
           {/each}
