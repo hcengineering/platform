@@ -51,7 +51,9 @@
     canCreateChildDocument,
     moveDocument,
     moveDocumentBefore,
-    moveDocumentAfter
+    moveDocumentAfter,
+    canCreateChildFolder,
+    createFolder
   } from '../../utils'
 
   import documents from '../../plugin'
@@ -174,6 +176,21 @@
         group: 'create',
         action: async () => {
           await createDocument(space)
+        }
+      })
+    }
+
+    if (
+      spaceType?.projects === true &&
+      (await isEditableProject(project)) &&
+      (await canCreateChildFolder(space, true))
+    ) {
+      actions.push({
+        icon: documents.icon.Folder,
+        label: documents.string.CreateFolder,
+        group: 'create',
+        action: async () => {
+          await createFolder(space)
         }
       })
     }

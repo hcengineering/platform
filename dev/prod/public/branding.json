@@ -24,7 +24,7 @@
       },
       {
         "rel": "apple-touch-icon",
-        "href": "/huly/icon-192.png"
+        "href": "/huly/apple-touch-icon.png"
       }
     ]
   },
@@ -53,7 +53,7 @@
       },
       {
         "rel": "apple-touch-icon",
-        "href": "/huly/icon-192.png"
+        "href": "/huly/apple-touch-icon.png"
       }
     ]
   },

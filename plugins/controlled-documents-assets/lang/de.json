@@ -298,7 +298,11 @@
     "Transfer": "Übertragung",
     "TransferWarning": "Einige Teammitglieder können dieses Dokument nach dieser Aktion möglicherweise nicht mehr anzeigen oder bearbeiten.",
     "TransferDocuments": "Übertragung kontrollierter Dokumente",
-    "TransferDocumentsHint": "Dokumente, die in den ausgewählten Bereich übertragen werden sollen:"
+    "TransferDocumentsHint": "Dokumente, die in den ausgewählten Bereich übertragen werden sollen:",
+
+    "CreateFolder": "Neuen Ordner erstellen",
+    "RenameFolder": "Ordner umbenennen",
+    "CreateChildFolder": "Unterordner erstellen"
   },
   "controlledDocStates": {
     "Empty": "",

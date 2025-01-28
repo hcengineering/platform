@@ -21,6 +21,7 @@ loadMetadata(documents.icon, {
   Approvals: `${icons}#approvals`,
   DocumentApplication: `${icons}#documentapplication`,
   NewDocument: `${icons}#newdocument`,
+  Folder: `${icons}#c-folder`,
   Document: `${icons}#document`,
   Library: `${icons}#library`,
   StateApproved: `${icons}#state-approved`,

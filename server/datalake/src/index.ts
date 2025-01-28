@@ -107,7 +107,7 @@ export class DatalakeService implements StorageAdapter {
                 _id: blob.name as Ref<Blob>,
                 _class: core.class.Blob,
                 etag: blob.etag,
-                size: blob.size ?? 0,
+                size: (typeof blob.size === 'string' ? parseInt(blob.size) : blob.size) ?? 0,
                 provider: this.opt.name,
                 space: core.space.Configuration,
                 modifiedBy: core.account.ConfigUser,

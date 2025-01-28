@@ -37,7 +37,6 @@ import core, {
   type SessionData,
   type Tx
 } from '@hcengineering/core'
-import { PlatformError, unknownError } from '@hcengineering/platform'
 import type {
   IndexedDoc,
   Middleware,
@@ -91,9 +90,6 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
   }
 
   async init (ctx: MeasureContext): Promise<void> {
-    if (this.context.adapterManager == null) {
-      throw new PlatformError(unknownError('Adapter manager should be specified'))
-    }
     this.contexts = new Map(
       this.context.modelDb.findAllSync(core.class.FullTextSearchContext, {}).map((it) => [it.toClass, it])
     )

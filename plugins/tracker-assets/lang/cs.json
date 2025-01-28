@@ -276,7 +276,8 @@
     "DefaultIssueStatus": "Výchozí stav úkolu",
     "IssueStatus": "Stav",
     "Extensions": "Rozšíření",
-    "RoleLabel": "Role: {role}"
+    "RoleLabel": "Role: {role}",
+    "UnsetParentIssue": "Odebrat nadřazený úkol"
   },
   "status": {}
 }

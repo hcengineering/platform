@@ -276,6 +276,30 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
     },
     tracker.action.SetParent
   )
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.UpdateDocument,
+      actionProps: {
+        key: 'attachedTo',
+        value: tracker.ids.NoParent
+      },
+      query: {
+        attachedTo: { $ne: tracker.ids.NoParent }
+      },
+      label: tracker.string.UnsetParentIssue,
+      icon: tracker.icon.UnsetParent,
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context'],
+        application: tracker.app.Tracker,
+        group: 'associate'
+      }
+    },
+    tracker.action.UnsetParent
+  )
 
   createAction(
     builder,

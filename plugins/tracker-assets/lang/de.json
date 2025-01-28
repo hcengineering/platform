@@ -286,7 +286,8 @@
     "DefaultIssueStatus": "Standard-Aufgabenstatus",
     "IssueStatus": "Status",
     "Extensions": "Erweiterungen",
-    "RoleLabel": "Rolle: {role}"
+    "RoleLabel": "Rolle: {role}",
+    "UnsetParentIssue": "Übergeordnete Aufgabe entfernen"
   },
   "status": {}
 }

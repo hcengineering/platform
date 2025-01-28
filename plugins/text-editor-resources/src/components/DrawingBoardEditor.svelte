@@ -225,7 +225,7 @@
   .board {
     position: relative;
     width: 100%;
-    background-color: var(--theme-navpanel-color);
+    background-color: var(--drawing-bg-color);
     border: 1px solid var(--theme-navpanel-border);
     border-radius: var(--small-BorderRadius);
 

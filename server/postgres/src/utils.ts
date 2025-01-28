@@ -43,15 +43,6 @@ import {
   translateDomain
 } from './schemas'
 
-const connections = new Map<string, PostgresClientReferenceImpl>()
-
-// Register close on process exit.
-process.on('exit', () => {
-  shutdown().catch((err) => {
-    console.error(err)
-  })
-})
-
 const clientRefs = new Map<string, ClientRef>()
 const loadedDomains = new Set<string>()
 
@@ -195,7 +186,12 @@ async function createTable (client: postgres.Sql, domain: string): Promise<void>
 /**
  * @public
  */
-export async function shutdown (): Promise<void> {
+export async function shutdownPostgres (contextVars: Record<string, any>): Promise<void> {
+  const connections: Map<string, PostgresClientReferenceImpl> | undefined =
+    contextVars.pgConnections ?? new Map<string, PostgresClientReferenceImpl>()
+  if (connections === undefined) {
+    return
+  }
   for (const c of connections.values()) {
     c.close(true)
   }
@@ -305,9 +301,16 @@ export function setExtraOptions (options: DBExtraOptions): void {
  * Initialize a workspace connection to DB
  * @public
  */
-export function getDBClient (connectionString: string, database?: string): PostgresClientReference {
+export function getDBClient (
+  contextVars: Record<string, any>,
+  connectionString: string,
+  database?: string
+): PostgresClientReference {
   const extraOptions = JSON.parse(process.env.POSTGRES_OPTIONS ?? '{}')
   const key = `${connectionString}${extraOptions}`
+  const connections = contextVars.pgConnections ?? new Map<string, PostgresClientReferenceImpl>()
+  contextVars.pgConnections = connections
+
   let existing = connections.get(key)
 
   if (existing === undefined) {

@@ -14,7 +14,7 @@
 //
 
 import contact, { Channel, formatName } from '@hcengineering/contact'
-import {
+import core, {
   Account,
   Class,
   concatLink,
@@ -40,6 +40,7 @@ import serverNotification, {
 import { getContentByTemplate } from '@hcengineering/server-notification-resources'
 import { getMetadata } from '@hcengineering/platform'
 import { ActivityMessage } from '@hcengineering/activity'
+import aiBot from '@hcengineering/ai-bot'
 
 /**
  * @public
@@ -171,7 +172,11 @@ const SendEmailNotifications: NotificationProviderFunc = async (
     return []
   }
 
-  if (!receiver.person.active) {
+  if (
+    !receiver.person.active ||
+    receiver.account._id === core.account.System ||
+    receiver.account._id === aiBot.account.AIBot
+  ) {
     return []
   }
 

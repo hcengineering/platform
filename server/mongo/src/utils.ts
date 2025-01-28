@@ -27,19 +27,12 @@ import { MongoClient, type Collection, type Db, type Document } from 'mongodb'
 
 const connections = new Map<string, MongoClientReferenceImpl>()
 
-// Register mongo close on process exit.
-process.on('exit', () => {
-  shutdown().catch((err) => {
-    console.error(err)
-  })
-})
-
 const clientRefs = new Map<string, ClientRef>()
 
 /**
  * @public
  */
-export async function shutdown (): Promise<void> {
+export async function shutdownMongo (contextVars: Record<string, any> = {}): Promise<void> {
   for (const it of Array.from(clientRefs.values())) {
     console.error((it as any).stack)
   }

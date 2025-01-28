@@ -65,7 +65,8 @@ async function searchCategory (
   client: TxOperations,
   cl: Ref<Class<Doc>>,
   query: string,
-  categories: ObjectSearchCategory[]
+  categories: ObjectSearchCategory[],
+  limit?: number
 ): Promise<SearchSection | undefined> {
   const r = await client.searchFulltext(
     {
@@ -73,7 +74,7 @@ async function searchCategory (
       classes: [cl]
     },
     {
-      limit: 5
+      limit: limit ?? 5
     }
   )
   const category = findCategoryByClass(categories, cl)
@@ -84,12 +85,13 @@ async function doFulltextSearch (
   client: TxOperations,
   classes: Array<Ref<Class<Doc>>>,
   query: string,
-  categories: ObjectSearchCategory[]
+  categories: ObjectSearchCategory[],
+  limit?: number
 ): Promise<SearchSection[]> {
   const sections: SearchSection[] = []
   const promises: Array<Promise<SearchSection | undefined>> = []
   for (const cl of classes) {
-    promises.push(searchCategory(client, cl, query, categories))
+    promises.push(searchCategory(client, cl, query, categories, limit))
   }
 
   const resolvedSections = await Promise.all(promises)
@@ -113,7 +115,9 @@ const categoriesByContext = new Map<string, ObjectSearchCategory[]>()
 
 export async function searchFor (
   context: 'mention' | 'spotlight',
-  query: string
+  query: string,
+  category?: Ref<ObjectSearchCategory>,
+  limit?: number
 ): Promise<{ items: SearchItem[], query: string }> {
   const client = getClient()
   let categories = categoriesByContext.get(context)
@@ -129,12 +133,13 @@ export async function searchFor (
   }
 
   const classesToSearch: Array<Ref<Class<Doc>>> = []
-  for (const cat of categories) {
+  const cats = category === undefined ? categories : categories.filter((it) => it._id === category)
+  for (const cat of cats) {
     if (cat.classToSearch !== undefined) {
       classesToSearch.push(cat.classToSearch)
     }
   }
 
-  const sections = await doFulltextSearch(client, classesToSearch, query, categories)
+  const sections = await doFulltextSearch(client, classesToSearch, query, categories, limit)
   return { items: packSearchResultsForListView(sections), query }
 }

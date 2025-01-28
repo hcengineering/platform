@@ -300,7 +300,11 @@
     "Transfer": "Transfer",
     "TransferWarning": "Some team members may lose the ability to view or edit this document after this action.",
     "TransferDocuments": "Transfer controlled documents",
-    "TransferDocumentsHint": "Documents to be transferred to the selected space:"
+    "TransferDocumentsHint": "Documents to be transferred to the selected space:",
+
+    "CreateFolder": "Create new folder",
+    "RenameFolder": "Rename folder",
+    "CreateChildFolder": "Create child folder"
   },
   "controlledDocStates": {
     "Empty": "",

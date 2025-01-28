@@ -6,7 +6,7 @@
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { TriggerFunc } from '@hcengineering/server-core'
-import { Presenter } from '@hcengineering/server-notification'
+import { Presenter, TypeMatchFunc } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -25,6 +25,7 @@ export default plugin(serverDocumentsId, {
     OnWorkspaceOwnerAdded: '' as Resource<TriggerFunc>
   },
   function: {
-    ControlledDocumentTextPresenter: '' as Resource<Presenter>
+    ControlledDocumentTextPresenter: '' as Resource<Presenter>,
+    CoAuthorsTypeMatch: '' as TypeMatchFunc
   }
 })

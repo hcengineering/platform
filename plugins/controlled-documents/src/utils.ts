@@ -443,9 +443,9 @@ async function _transferDocuments (
     if (bundle.DocumentMeta.length !== 1) return false
     if (bundle.ProjectMeta.length !== 1) return false
     if (bundle.DocumentMeta[0].space !== cx.request.sourceSpaceId) return false
-    if (bundle.ControlledDocument.length < 1) return false
 
-    const isTemplate = hierarchy.hasMixin(bundle.ControlledDocument[0], documents.mixin.DocumentTemplate)
+    const anydoc = bundle.ControlledDocument[0]
+    const isTemplate = anydoc !== undefined && hierarchy.hasMixin(anydoc, documents.mixin.DocumentTemplate)
     if (isTemplate && hierarchy.isDerived(cx.targetSpace._class, documents.class.ExternalSpace)) return false
   }
 

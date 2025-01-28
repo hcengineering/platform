@@ -66,6 +66,8 @@ import {
   TDocumentComment
 } from './types'
 import { defineSpaceType } from './spaceType'
+import { type Class, type Doc, type Ref } from '@hcengineering/core'
+import { type Action } from '@hcengineering/view'
 
 export { documentsId } from '@hcengineering/controlled-documents/src/index'
 export * from './types'
@@ -459,6 +461,51 @@ export function createModel (builder: Builder): void {
     documentsPlugin.action.CreateChildTemplate
   )
 
+  createAction<Document>(
+    builder,
+    {
+      action: documents.actionImpl.CreateChildFolder,
+      label: documentsPlugin.string.CreateChildFolder,
+      icon: documents.icon.Folder,
+      category: view.category.General,
+      input: 'focus', // should only work for one document, not bulk
+      target: documents.class.ProjectDocument,
+      visibilityTester: documents.function.CanCreateChildFolder,
+      context: { mode: ['context'], group: 'create' }
+    },
+    documentsPlugin.action.CreateChildFolder
+  )
+
+  createAction<Document>(
+    builder,
+    {
+      action: documents.actionImpl.RenameFolder,
+      label: view.string.Rename,
+      icon: view.icon.Edit,
+      category: view.category.General,
+      input: 'focus', // should only work for one document, not bulk
+      target: documents.class.ProjectDocument,
+      visibilityTester: documents.function.CanRenameFolder,
+      context: { mode: ['context'], group: 'edit' }
+    },
+    documentsPlugin.action.RenameFolder
+  )
+
+  createAction<Document>(
+    builder,
+    {
+      action: documents.actionImpl.DeleteFolder,
+      label: view.string.Delete,
+      icon: view.icon.Delete,
+      category: view.category.General,
+      input: 'focus', // should only work for one document, not bulk
+      target: documents.class.ProjectDocument,
+      visibilityTester: documents.function.CanDeleteFolder,
+      context: { mode: ['context'], group: 'remove' }
+    },
+    documentsPlugin.action.DeleteFolder
+  )
+
   createAction<DocumentSpace>(
     builder,
     {
@@ -487,6 +534,21 @@ export function createModel (builder: Builder): void {
       context: { mode: ['context'], group: 'create' }
     },
     documentsPlugin.action.CreateTemplate
+  )
+
+  createAction<DocumentSpace>(
+    builder,
+    {
+      action: documents.actionImpl.CreateFolder,
+      label: documentsPlugin.string.CreateFolder,
+      icon: documents.icon.Folder,
+      category: view.category.General,
+      input: 'none',
+      target: documents.class.DocumentSpace,
+      visibilityTester: documents.function.CanCreateFolder,
+      context: { mode: ['context'], group: 'create' }
+    },
+    documentsPlugin.action.CreateFolder
   )
 
   createAction(
@@ -758,21 +820,59 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: print.actionImpl.Print,
-      actionProps: {
-        signed: true
-      },
-      label: print.string.PrintToPDF,
-      icon: print.icon.Print,
+      action: view.actionImpl.Open,
+      label: view.string.Open,
+      icon: view.icon.Open,
+      keyBinding: ['Enter'],
+      input: 'focus',
       category: view.category.General,
-      input: 'focus', // NOTE: should only work for one doc for now, not bulk
-      target: documents.class.Document,
-      context: { mode: ['context', 'browser'], group: 'tools' },
-      visibilityTester: print.function.CanPrint,
-      override: [print.action.Print]
+      target: documents.class.ProjectDocument,
+      context: { mode: ['browser', 'context'], group: 'edit' },
+      visibilityTester: documents.function.CanOpenDocument,
+      override: [view.action.Open]
     },
-    documents.action.Print
+    documents.action.OpenDocument
   )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.OpenInNewTab,
+      label: view.string.OpenInNewTab,
+      icon: view.icon.Open,
+      input: 'focus',
+      category: view.category.General,
+      target: documents.class.ProjectDocument,
+      context: { mode: ['browser', 'context'], group: 'edit' },
+      visibilityTester: documents.function.CanOpenDocument,
+      override: [view.action.OpenInNewTab]
+    },
+    documents.action.OpenDocumentInNewTab
+  )
+
+  function createPrintAction<T extends Doc = Doc> (target: Ref<Class<T>>, id?: Ref<Action<T, any>>): void {
+    createAction(
+      builder,
+      {
+        action: print.actionImpl.Print,
+        actionProps: {
+          signed: true
+        },
+        label: print.string.PrintToPDF,
+        icon: print.icon.Print,
+        category: view.category.General,
+        input: 'focus', // NOTE: should only work for one doc for now, not bulk
+        target,
+        context: { mode: ['context', 'browser'], group: 'tools' },
+        visibilityTester: documents.function.CanPrintDocument,
+        override: [print.action.Print]
+      },
+      id
+    )
+  }
+
+  createPrintAction(documents.class.ProjectDocument, documents.action.PrintProjectDocument)
+  createPrintAction(documents.class.Document, documents.action.Print)
 
   defineSpaceType(builder)
   definePermissions(builder)
@@ -898,9 +998,11 @@ export function defineNotifications (builder: Builder): void {
       'effectiveDate',
       'plannedEffectiveDate',
       'changeControl',
-      'coAuthors'
+      'coAuthors',
+      'reviewers',
+      'approvers'
     ],
-    ['owner', 'comments', 'reviewers', 'approvers']
+    ['owner', 'comments']
   )
 }
 

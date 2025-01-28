@@ -33,21 +33,37 @@ import {
   registerDestroyFactory,
   registerServerPlugins,
   registerStringLoaders,
-  registerTxAdapterFactory
+  registerTxAdapterFactory,
+  sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
 
-import { createMongoAdapter, createMongoDestroyAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
+import {
+  createMongoAdapter,
+  createMongoDestroyAdapter,
+  createMongoTxAdapter,
+  shutdownMongo
+} from '@hcengineering/mongo'
 import {
   createPostgreeDestroyAdapter,
   createPostgresAdapter,
   createPostgresTxAdapter,
-  setDBExtraOptions
+  setDBExtraOptions,
+  shutdownPostgres
 } from '@hcengineering/postgres'
 import { readFileSync } from 'node:fs'
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
 registerStringLoaders()
 
+// Register close on process exit.
+process.on('exit', () => {
+  shutdownPostgres(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+  shutdownMongo(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+})
 /**
  * @public
  */

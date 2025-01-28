@@ -16,7 +16,7 @@ import core, {
 import { consoleModelLogger, type MigrateOperation, type ModelLogger } from '@hcengineering/model'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { SessionDataImpl, wrapPipeline, type Pipeline, type StorageAdapter } from '@hcengineering/server-core'
-import { getServerPipeline, getTxAdapterFactory } from '@hcengineering/server-pipeline'
+import { getServerPipeline, getTxAdapterFactory, sharedPipelineContextVars } from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { generateToken } from '@hcengineering/server-token'
 import { initializeWorkspace, initModel, prepareTools, updateModel, upgradeModel } from '@hcengineering/server-tool'
@@ -82,7 +82,7 @@ export async function createWorkspace (
         externalStorage: storageAdapter,
         usePassedCtx: true
       })
-      const txAdapter = await txFactory(ctx, hierarchy, dbUrl, wsId, modelDb, storageAdapter)
+      const txAdapter = await txFactory(ctx, sharedPipelineContextVars, hierarchy, dbUrl, wsId, modelDb, storageAdapter)
       await childLogger.withLog('init-workspace', {}, (ctx) =>
         initModel(ctx, wsId, txes, txAdapter, storageAdapter, ctxModellogger, async (value) => {})
       )

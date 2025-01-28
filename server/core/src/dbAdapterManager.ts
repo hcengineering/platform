@@ -130,7 +130,9 @@ export class DbAdapterManagerImpl implements DBAdapterManager {
             }
           }
         }
-        await ctx.with(`init adapter ${key}`, {}, (ctx) => adapter?.init?.(ctx, domains, excludeDomains))
+        await ctx.with(`init adapter ${key}`, {}, (ctx) =>
+          adapter?.init?.(ctx, this.context.contextVars, domains, excludeDomains)
+        )
       }
     }
   }

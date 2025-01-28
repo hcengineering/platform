@@ -28,7 +28,7 @@ import core, {
 } from '@hcengineering/core'
 import { type DbAdapter, wrapAdapterToClient } from '@hcengineering/server-core'
 import { createMongoAdapter, createMongoTxAdapter } from '..'
-import { getMongoClient, type MongoClientReference, shutdown } from '../utils'
+import { getMongoClient, type MongoClientReference, shutdownMongo } from '../utils'
 import { genMinModel } from './minmodel'
 import { createTaskModel, type Task, type TaskComment, taskPlugin } from './tasks'
 
@@ -52,7 +52,7 @@ describe('mongo operations', () => {
 
   afterAll(async () => {
     mongoClient.close()
-    await shutdown()
+    await shutdownMongo()
   })
 
   beforeEach(async () => {
@@ -80,6 +80,7 @@ describe('mongo operations', () => {
     const mctx = new MeasureMetricsContext('', {})
     const txStorage = await createMongoTxAdapter(
       new MeasureMetricsContext('', {}),
+      {},
       hierarchy,
       mongodbUri,
       getWorkspaceId(dbId),
@@ -88,6 +89,7 @@ describe('mongo operations', () => {
 
     serverStorage = await createMongoAdapter(
       new MeasureMetricsContext('', {}),
+      {},
       hierarchy,
       mongodbUri,
       getWorkspaceId(dbId),

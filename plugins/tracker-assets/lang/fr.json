@@ -269,7 +269,8 @@
     "DefaultIssueStatus": "Statut par défaut de l'issue",
     "IssueStatus": "Statut",
     "Extensions": "Extensions",
-    "RoleLabel": "Rôle : {role}"
+    "RoleLabel": "Rôle : {role}",
+    "UnsetParentIssue": "Désélectionner l'issue parent"
   },
   "status": {}
 }

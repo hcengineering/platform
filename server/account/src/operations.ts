@@ -92,7 +92,7 @@ import {
   toAccountInfo,
   verifyPassword
 } from './utils'
-import { getWorkspaceDestroyAdapter } from '@hcengineering/server-pipeline'
+import { getWorkspaceDestroyAdapter, sharedPipelineContextVars } from '@hcengineering/server-pipeline'
 
 import MD5 from 'crypto-js/md5'
 function buildGravatarId (email: string): string {
@@ -2364,7 +2364,7 @@ export async function dropWorkspaceFull (
   const ws = await dropWorkspace(ctx, db, branding, workspaceId)
 
   const adapter = getWorkspaceDestroyAdapter(dbUrl)
-  await adapter.deleteWorkspace(ctx, { name: ws.workspace })
+  await adapter.deleteWorkspace(ctx, sharedPipelineContextVars, { name: ws.workspace })
 
   const wspace = getWorkspaceId(workspaceId)
   const hasBucket = await storageAdapter?.exists(ctx, wspace)

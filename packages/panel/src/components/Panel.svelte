@@ -18,7 +18,7 @@
   import { Writable, writable } from 'svelte/store'
 
   import activity from '@hcengineering/activity'
-  import { Doc } from '@hcengineering/core'
+  import { AccountRole, Doc, getCurrentAccount } from '@hcengineering/core'
   import {
     Component,
     deviceOptionsStore as deviceInfo,
@@ -63,6 +63,11 @@
   export let hideActions: boolean = false
   export let hideExtra: boolean = false
   export let overflowExtra: boolean = false
+
+  const account = getCurrentAccount()
+  $: isGuest = account.role === AccountRole.DocGuest
+
+  $: showActivity = !withoutActivity && !isGuest
 
   export function getAside (): string | boolean {
     return panel.getAside()
@@ -109,7 +114,7 @@
   afterUpdate(async () => {
     const fn = await getResource(activity.function.ShouldScrollToActivity)
 
-    if (!withoutActivity && fn?.()) {
+    if (showActivity && fn?.()) {
       return
     }
 
@@ -243,7 +248,7 @@
   {#if $deviceInfo.isMobile}
     <div bind:this={content} class="popupPanel-body__mobile-content clear-mins" class:max={useMaxWidth}>
       <slot />
-      {#if !withoutActivity}
+      {#if showActivity}
         {#key object._id}
           <Component
             is={activity.component.Activity}
@@ -261,7 +266,7 @@
       style:--side-content-space={`${sideContentSpace}px`}
     >
       <slot />
-      {#if !withoutActivity}
+      {#if showActivity}
         {#key object._id}
           <Component
             is={activity.component.Activity}
@@ -295,7 +300,7 @@
         }}
       >
         <slot />
-        {#if !withoutActivity}
+        {#if showActivity}
           {#key object._id}
             <Component
               is={activity.component.Activity}

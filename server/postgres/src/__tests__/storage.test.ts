@@ -27,7 +27,7 @@ import core, {
 } from '@hcengineering/core'
 import { type DbAdapter, wrapAdapterToClient } from '@hcengineering/server-core'
 import { createPostgresAdapter, createPostgresTxAdapter } from '..'
-import { getDBClient, type PostgresClientReference, shutdown } from '../utils'
+import { getDBClient, type PostgresClientReference, shutdownPostgres } from '../utils'
 import { genMinModel } from './minmodel'
 import { createTaskModel, type Task, type TaskComment, taskPlugin } from './tasks'
 
@@ -35,12 +35,14 @@ const txes = genMinModel()
 
 createTaskModel(txes)
 
+const contextVars: Record<string, any> = {}
+
 describe('postgres operations', () => {
   const baseDbUri: string = process.env.DB_URL ?? 'postgresql://postgres:example@localhost:5433'
   let dbId: string = 'pg_testdb_' + generateId()
   let dbUuid: string = crypto.randomUUID()
   let dbUri: string = baseDbUri + '/' + dbId
-  const clientRef: PostgresClientReference = getDBClient(baseDbUri)
+  const clientRef: PostgresClientReference = getDBClient(contextVars, baseDbUri)
   let hierarchy: Hierarchy
   let model: ModelDb
   let client: Client
@@ -49,7 +51,7 @@ describe('postgres operations', () => {
 
   afterAll(async () => {
     clientRef.close()
-    await shutdown()
+    await shutdownPostgres(contextVars)
   })
 
   beforeEach(async () => {
@@ -88,6 +90,7 @@ describe('postgres operations', () => {
     const mctx = new MeasureMetricsContext('', {})
     const txStorage = await createPostgresTxAdapter(
       mctx,
+      contextVars,
       hierarchy,
       dbUri,
       {
@@ -107,6 +110,7 @@ describe('postgres operations', () => {
     const ctx = new MeasureMetricsContext('client', {})
     const serverStorage = await createPostgresAdapter(
       ctx,
+      contextVars,
       hierarchy,
       dbUri,
       {
@@ -115,7 +119,7 @@ describe('postgres operations', () => {
       },
       model
     )
-    await serverStorage.init?.(ctx)
+    await serverStorage.init?.(ctx, contextVars)
     client = await createClient(async (handler) => {
       return wrapAdapterToClient(ctx, serverStorage, txes)
     })

@@ -125,12 +125,17 @@ export function getFileSrcSet (_blob: Ref<Blob>, width?: number): string {
 export async function getVideoMeta (file: string, filename?: string): Promise<VideoMeta | undefined> {
   const cfg = getPreviewConfig()
 
-  const url = cfg.video
+  let url = cfg.video
     .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceId()))
     .replaceAll(':blobId', encodeURIComponent(file))
 
   if (url === '') {
     return undefined
+  }
+
+  const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
+  if (!url.includes('://')) {
+    url = concatLink(frontUrl ?? '', url)
   }
 
   try {
