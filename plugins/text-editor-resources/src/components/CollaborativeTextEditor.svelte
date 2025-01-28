@@ -17,23 +17,25 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import {
+    AccountRole,
     type Blob,
     Class,
     type CollaborativeDoc,
     type Doc,
     type Ref,
     generateId,
+    getCurrentAccount,
     makeDocCollabId
   } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import {
+    DrawingCmd,
+    KeyedAttribute,
     getAttribute,
     getClient,
     getFileUrl,
     getImageSize,
-    imageSizeToRatio,
-    KeyedAttribute,
-    DrawingCmd
+    imageSizeToRatio
   } from '@hcengineering/presentation'
   import { markupToJSON } from '@hcengineering/text'
   import {
@@ -56,12 +58,6 @@
   import { createEventDispatcher, getContext, onDestroy, onMount } from 'svelte'
   import { Doc as YDoc } from 'yjs'
 
-  import { Completion } from '../Completion'
-  import { deleteAttachment } from '../command/deleteAttachment'
-  import { textEditorCommandHandler } from '../commands'
-  import { EditorKitOptions, getEditorKit } from '../../src/kits/editor-kit'
-  import { Provider } from '../provider/types'
-  import { createLocalProvider, createRemoteProvider } from '../provider/utils'
   import textEditor, {
     CollaborationIds,
     CollaborationUser,
@@ -69,6 +65,12 @@
     TextEditorCommandHandler,
     TextEditorHandler
   } from '@hcengineering/text-editor'
+  import { EditorKitOptions, getEditorKit } from '../../src/kits/editor-kit'
+  import { Completion } from '../Completion'
+  import { deleteAttachment } from '../command/deleteAttachment'
+  import { textEditorCommandHandler } from '../commands'
+  import { Provider } from '../provider/types'
+  import { createLocalProvider, createRemoteProvider } from '../provider/utils'
   import { addTableHandler } from '../utils'
 
   import TextEditorToolbar from './TextEditorToolbar.svelte'
@@ -79,11 +81,11 @@
   import { FileUploadExtension } from './extension/fileUploadExt'
   import { ImageUploadExtension } from './extension/imageUploadExt'
   import { InlineCommandsExtension } from './extension/inlineCommands'
+  import { InlineCommentCollaborationExtension } from './extension/inlineComment'
   import { LeftMenuExtension } from './extension/leftMenu'
+  import { mermaidOptions } from './extension/mermaid'
   import { type FileAttachFunction } from './extension/types'
   import { completionConfig, inlineCommandsConfig } from './extensions'
-  import { mermaidOptions } from './extension/mermaid'
-  import { InlineCommentCollaborationExtension } from './extension/inlineComment'
 
   export let object: Doc
   export let attribute: KeyedAttribute
@@ -117,6 +119,9 @@
 
   const client = getClient()
   const dispatch = createEventDispatcher()
+
+  const account = getCurrentAccount()
+  $: isGuest = account.role === AccountRole.DocGuest
 
   const objectClass = object._class
   const objectId = object._id
@@ -433,7 +438,7 @@
   onMount(async () => {
     await ph
 
-    if (enableInlineComments) {
+    if (enableInlineComments && !isGuest) {
       optionalExtensions.push(
         InlineCommentCollaborationExtension.configure({
           ydoc,
