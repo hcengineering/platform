@@ -298,6 +298,10 @@
   .panel-instance & {
     background-color: var(--theme-panel-color);
     border: 1px solid var(--theme-divider-color);
+
+    @media print {
+      border: none;
+    }
   }
 
   .popupPanel-title {
