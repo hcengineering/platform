@@ -1,0 +1,19 @@
+{
+  "string": {
+    "Card": "卡片",
+    "CardApplication": "卡片应用",
+    "Cards": "卡片",
+    "Content": "内容",
+    "CreateCard": "创建卡片",
+    "CreateMasterTag": "创建主标签",
+    "CreateTag": "创建标签",
+    "MasterTag": "主标签",
+    "MasterTags": "主标签",
+    "Parent": "父级",
+    "Tags": "标签",
+    "Tag": "标签",
+    "CardLibrary": "卡片库",
+    "MinimizeAll": "全部最小化",
+    "ExpandAll": "全部展开"
+  }
+}

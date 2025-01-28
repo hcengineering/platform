@@ -1,0 +1,19 @@
+{
+  "string": {
+    "Card": "Tarjeta",
+    "CardApplication": "Tarjetas",
+    "Cards": "Tarjetas",
+    "Content": "Contenido",
+    "CreateCard": "Crear Tarjeta",
+    "CreateMasterTag": "Crear Etiqueta Maestra",
+    "CreateTag": "Crear Etiqueta",
+    "MasterTag": "Etiqueta Maestra",
+    "MasterTags": "Etiquetas Maestras",
+    "Parent": "Padre",
+    "Tags": "Etiquetas",
+    "Tag": "Etiqueta",
+    "CardLibrary": "Biblioteca de Tarjetas",
+    "MinimizeAll": "Minimizar Todo",
+    "ExpandAll": "Expandir Todo"
+  }
+}

@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import type { IntlString, Plugin, StatusCode } from '@hcengineering/platform'
+import type { Asset, IntlString, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { Mixin, Version, type Rank } from '.'
+import type { BenchmarkDoc } from './benchmark'
 import type {
   Account,
   AnyAttribute,
@@ -22,9 +23,7 @@ import type {
   Association,
   AttachedDoc,
   Blob,
-  Card,
   Class,
-  MarkupBlobRef,
   Collection,
   Configuration,
   ConfigurationElement,
@@ -37,6 +36,7 @@ import type {
   Hyperlink,
   IndexingConfiguration,
   Interface,
+  MarkupBlobRef,
   MigrationState,
   Obj,
   Permission,
@@ -46,6 +46,7 @@ import type {
   RelatedDocument,
   Relation,
   Role,
+  Sequence,
   Space,
   SpaceType,
   SpaceTypeDescriptor,
@@ -69,7 +70,6 @@ import type {
   TxUpdateDoc,
   TxWorkspaceEvent
 } from './tx'
-import type { BenchmarkDoc } from './benchmark'
 
 /**
  * @public
@@ -85,7 +85,6 @@ export default plugin(coreId, {
   class: {
     Obj: '' as Ref<Class<Obj>>,
     Doc: '' as Ref<Class<Doc>>,
-    Card: '' as Ref<Class<Card>>,
     Blob: '' as Ref<Class<Blob>>,
     AttachedDoc: '' as Ref<Class<AttachedDoc>>,
     Class: '' as Ref<Class<Class<Obj>>>,
@@ -146,7 +145,23 @@ export default plugin(coreId, {
     BenchmarkDoc: '' as Ref<Class<BenchmarkDoc>>,
     FullTextSearchContext: '' as Ref<Mixin<FullTextSearchContext>>,
     Association: '' as Ref<Class<Association>>,
-    Relation: '' as Ref<Class<Relation>>
+    Relation: '' as Ref<Class<Relation>>,
+    Sequence: '' as Ref<Class<Sequence>>
+  },
+  icon: {
+    TypeString: '' as Asset,
+    TypeBlob: '' as Asset,
+    TypeHyperlink: '' as Asset,
+    TypeNumber: '' as Asset,
+    TypeMarkup: '' as Asset,
+    TypeRank: '' as Asset,
+    TypeRecord: '' as Asset,
+    TypeBoolean: '' as Asset,
+    TypeDate: '' as Asset,
+    TypeRef: '' as Asset,
+    TypeArray: '' as Asset,
+    TypeEnumOf: '' as Asset,
+    TypeCollection: '' as Asset
   },
   mixin: {
     ConfigurationElement: '' as Ref<Mixin<ConfigurationElement>>,

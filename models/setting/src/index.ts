@@ -445,24 +445,28 @@ export function createModel (builder: Builder): void {
     actions: [view.action.Delete]
   })
 
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: setting.component.CreateMixin,
-      fillProps: {
-        _object: 'value'
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: setting.component.CreateMixin,
+        fillProps: {
+          _object: 'value'
+        }
+      },
+      label: setting.string.CreateMixin,
+      input: 'focus',
+      icon: view.icon.Pin,
+      category: setting.category.Settings,
+      target: core.class.Class,
+      context: {
+        mode: ['context', 'browser'],
+        group: 'edit'
       }
     },
-    label: setting.string.CreateMixin,
-    input: 'focus',
-    icon: view.icon.Pin,
-    category: setting.category.Settings,
-    target: core.class.Class,
-    context: {
-      mode: ['context', 'browser'],
-      group: 'edit'
-    }
-  })
+    setting.action.CreateMixin
+  )
 
   createAction(
     builder,

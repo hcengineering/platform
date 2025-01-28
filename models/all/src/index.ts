@@ -75,6 +75,7 @@ import tracker, { trackerId, createModel as trackerModel } from '@hcengineering/
 import { uploaderId, createModel as uploaderModel } from '@hcengineering/model-uploader'
 import view, { viewId, createModel as viewModel } from '@hcengineering/model-view'
 import workbench, { workbenchId, createModel as workbenchModel } from '@hcengineering/model-workbench'
+import card, { cardId, createModel as cardModel } from '@hcengineering/model-card'
 import { desktopPreferencesId, createModel as desktopPreferencesModel } from '@hcengineering/model-desktop-preferences'
 
 import document, { documentId, createModel as documentModel } from '@hcengineering/model-document'
@@ -144,7 +145,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     notification.class.NotificationGroup,
     view.class.Action,
     contact.class.ChannelProvider,
-    setting.class.IntegrationType
+    setting.class.IntegrationType,
+    setting.class.WorkspaceSettingCategory
   ]
 
   const builders: BuilderConfig[] = [
@@ -257,17 +259,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [uploaderModel, uploaderId],
     [notificationModel, notificationId],
     [preferenceModel, preferenceId],
-    [
-      analyticsCollectorModel,
-      analyticsCollectorId,
-      {
-        label: inventory.string.ConfigLabel,
-        description: inventory.string.ConfigDescription,
-        enabled: true,
-        beta: false,
-        classFilter: defaultFilter
-      }
-    ],
+    [analyticsCollectorModel, analyticsCollectorId],
     [
       hrModel,
       hrId,
@@ -368,6 +360,18 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     ],
     [printModel, printId],
     [aiBotModel, aiBotId],
+    [
+      cardModel,
+      cardId,
+      {
+        label: card.string.Cards,
+        description: card.string.ConfigDescription,
+        enabled: true,
+        beta: true,
+        icon: card.icon.Card,
+        classFilter: defaultFilter
+      }
+    ],
     [driveModel, driveId],
     [
       documentsModel,

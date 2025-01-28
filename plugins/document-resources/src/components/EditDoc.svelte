@@ -45,6 +45,7 @@
     ClassAttributeBar,
     IconPicker,
     ParentsNavigator,
+    RelationsEditor,
     getObjectLinkFragment,
     restrictionStore,
     showMenu
@@ -126,7 +127,7 @@
       const attachmentId: Ref<Attachment> = generateId()
 
       await client.addCollection(
-        document.class.DocumentEmbedding,
+        attachment.class.Embedding,
         doc.space,
         doc._id,
         document.class.Document,
@@ -398,6 +399,8 @@
         {/key}
       </div>
     </div>
+
+    <RelationsEditor object={doc} {readonly} />
 
     <svelte:fragment slot="aside">
       {#if selectedAside === 'references'}

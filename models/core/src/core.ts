@@ -20,7 +20,6 @@ import {
   type Association,
   type AttachedDoc,
   type Blob,
-  type Card,
   type Class,
   type ClassifierKind,
   type Collection,
@@ -43,7 +42,6 @@ import {
   type IndexingConfiguration,
   IndexKind,
   type Interface,
-  type MarkupBlobRef,
   type MigrationState,
   type Mixin,
   type Obj,
@@ -52,11 +50,13 @@ import {
   type RefTo,
   type Relation,
   type Space,
+  type Sequence,
   type Timestamp,
   type TransientConfiguration,
   type Type,
   type TypeAny,
-  type Version
+  type Version,
+  DOMAIN_SEQUENCE
 } from '@hcengineering/core'
 import {
   Hidden,
@@ -66,7 +66,6 @@ import {
   Prop,
   ReadOnly,
   TypeBoolean,
-  TypeCollaborativeDoc,
   TypeFileSize,
   TypeIntlString,
   TypeRef,
@@ -115,22 +114,6 @@ export class TDoc extends TObj implements Doc {
   @ReadOnly()
   @Index(IndexKind.IndexedDsc)
     createdOn!: Timestamp
-}
-
-@Model(core.class.Card, core.class.Doc)
-@UX(core.string.Object)
-export class TCard extends TDoc implements Card {
-  @Prop(TypeString(), core.string.Name)
-    title!: string
-
-  @Prop(TypeCollaborativeDoc(), core.string.Description)
-    description!: MarkupBlobRef | null
-
-  @Prop(TypeString(), core.string.Id)
-    identifier?: string | undefined
-
-  @Prop(TypeRef(core.class.Card), core.string.AttachedTo)
-    parent?: Ref<Card> | null
 }
 
 @Model(core.class.AttachedDoc, core.class.Doc)
@@ -406,4 +389,13 @@ export class TTypeRank extends TType {}
 export class TTransientConfiguration extends TClass implements TransientConfiguration {
   @Prop(TypeBoolean(), core.string.Private)
     broadcastOnly!: boolean
+}
+
+@Model(core.class.Sequence, core.class.Doc, DOMAIN_SEQUENCE)
+export class TSequence extends TDoc implements Sequence {
+  @Prop(TypeRef(core.class.Class), core.string.AttachedTo)
+  @Index(IndexKind.Indexed)
+    attachedTo!: Ref<Class<Doc>>
+
+  sequence!: number
 }

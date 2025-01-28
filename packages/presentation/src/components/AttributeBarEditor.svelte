@@ -16,11 +16,10 @@
 <script lang="ts">
   import type { Class, Doc, Ref } from '@hcengineering/core'
   import type { AnySvelteComponent, ButtonKind, ButtonSize } from '@hcengineering/ui'
-  import { Label, tooltip } from '@hcengineering/ui'
+  import { Icon, Label, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { getAttribute, KeyedAttribute, updateAttribute } from '../attributes'
   import { getAttributeEditor, getClient } from '../utils'
-  import { Analytics } from '@hcengineering/analytics'
 
   export let key: KeyedAttribute | string
   export let object: Doc | Record<string, any>
@@ -28,6 +27,7 @@
   export let maxWidth: string | undefined = undefined
   export let focus: boolean = false
   export let showHeader: boolean = true
+  export let withIcon: boolean = false
   export let readonly = false
   export let draft = false
   export let identifier: string | undefined = undefined
@@ -67,6 +67,8 @@
   $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
   $: attributeKey = typeof key === 'string' ? key : key.key
   $: isReadonly = (attribute.readonly ?? false) || readonly
+
+  $: icon = attribute?.icon ?? attribute?.type?.icon
 </script>
 
 {#if editor}
@@ -77,7 +79,13 @@
         component: Label,
         props: { label: attribute.label }
       }}
-      ><Label label={attribute.label} />
+    >
+      <div class="flex flex-gap-1 items-center">
+        {#if withIcon && icon}
+          <Icon {icon} size="small" />
+        {/if}
+        <Label label={attribute.label} />
+      </div>
     </span>
     <div class="flex flex-grow min-w-0">
       <svelte:component
