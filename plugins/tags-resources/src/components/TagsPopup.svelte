@@ -126,7 +126,7 @@
 
   async function onSearchKeydown (ev: KeyboardEvent): Promise<void> {
     if (ev.code !== 'Enter') return
-    if (!inProcess && objects.length < 1) {
+    if (!inProcess && !hideAdd && objects.length < 1) {
       inProcess = true
       await createTagElementQuick()
       ev.preventDefault()
