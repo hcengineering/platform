@@ -49,7 +49,7 @@ export async function OnDelete (
       const toRemove: string[] = toDelete.map(makeCollabYdocId)
       if (toRemove.length > 0) {
         await ctx.with('remove', {}, async () => {
-          const dataId = workspace.dataId ?? workspace.uuid as unknown as WorkspaceDataId
+          const dataId = workspace.dataId ?? (workspace.uuid as unknown as WorkspaceDataId)
           await storageAdapter.remove(ctx, dataId, toRemove)
         })
       }

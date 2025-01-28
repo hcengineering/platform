@@ -134,7 +134,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   }
 
   get workspaceDataId (): WorkspaceDataId {
-    return this.workspace.dataId ?? this.workspace.uuid as unknown as WorkspaceDataId
+    return this.workspace.dataId ?? (this.workspace.uuid as unknown as WorkspaceDataId)
   }
 
   async cancel (): Promise<void> {

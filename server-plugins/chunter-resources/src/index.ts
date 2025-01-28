@@ -405,9 +405,7 @@ export async function syncChat (control: TriggerControl, status: UserStatus, dat
   const person = (await control.findAll(control.ctx, contact.class.Person, { personUuid: status.user }))[0]
   if (person == null) return
 
-  const syncInfo = (
-    await control.findAll(control.ctx, chunter.class.ChatSyncInfo, { user: person._id })
-  ).shift()
+  const syncInfo = (await control.findAll(control.ctx, chunter.class.ChatSyncInfo, { user: person._id })).shift()
   const shouldSync = syncInfo === undefined || date - syncInfo.timestamp > updateChatInfoDelay
   if (!shouldSync) return
 
@@ -445,9 +443,7 @@ export async function syncChat (control: TriggerControl, status: UserStatus, dat
   }
 
   if (syncInfo === undefined) {
-    const personSpace = (
-      await control.findAll(control.ctx, contact.class.PersonSpace, { person: person._id })
-    ).shift()
+    const personSpace = (await control.findAll(control.ctx, contact.class.PersonSpace, { person: person._id })).shift()
     if (personSpace !== undefined) {
       res.push(
         control.txFactory.createTxCreateDoc(chunter.class.ChatSyncInfo, personSpace._id, {

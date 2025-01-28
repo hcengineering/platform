@@ -152,7 +152,7 @@ export class WorkspaceInitializer {
       const id = uuid()
       const resp = await fetch(step.fromUrl)
       const buffer = Buffer.from(await resp.arrayBuffer())
-      const dataId = this.wsIds.dataId ?? this.wsIds.uuid as unknown as WorkspaceDataId
+      const dataId = this.wsIds.dataId ?? (this.wsIds.uuid as unknown as WorkspaceDataId)
 
       await this.storageAdapter.put(this.ctx, dataId, id, buffer, step.contentType, buffer.length)
       if (step.resultVariable !== undefined) {
@@ -300,7 +300,7 @@ export class WorkspaceInitializer {
 
     const json = parseMessageMarkdown(data ?? '', this.imageUrl)
     const markup = jsonToMarkup(json)
-    const dataId = this.wsIds.dataId ?? this.wsIds.uuid as unknown as WorkspaceDataId
+    const dataId = this.wsIds.dataId ?? (this.wsIds.uuid as unknown as WorkspaceDataId)
 
     return await saveCollabJson(this.ctx, this.storageAdapter, dataId, doc, markup)
   }

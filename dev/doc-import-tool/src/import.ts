@@ -273,7 +273,14 @@ export async function processImages (
 
     // upload
     const uuid = generateId()
-    await storageAdapter.put(ctx, workspaceDataId ?? workspaceId as unknown as WorkspaceDataId, uuid, fileContents, mimeType, fileSize)
+    await storageAdapter.put(
+      ctx,
+      workspaceDataId ?? (workspaceId as unknown as WorkspaceDataId),
+      uuid,
+      fileContents,
+      mimeType,
+      fileSize
+    )
 
     // attachment
     const attachmentId: Ref<Attachment> = generateId()

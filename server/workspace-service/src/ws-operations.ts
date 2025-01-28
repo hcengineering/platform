@@ -81,7 +81,15 @@ export async function createWorkspace (
         externalStorage: storageAdapter,
         usePassedCtx: true
       })
-      const txAdapter = await txFactory(ctx, sharedPipelineContextVars, hierarchy, dbUrl, wsIds, modelDb, storageAdapter)
+      const txAdapter = await txFactory(
+        ctx,
+        sharedPipelineContextVars,
+        hierarchy,
+        dbUrl,
+        wsIds,
+        modelDb,
+        storageAdapter
+      )
       await childLogger.withLog('init-workspace', {}, (ctx) =>
         initModel(ctx, wsId, txes, txAdapter, storageAdapter, ctxModellogger, async (value) => {})
       )

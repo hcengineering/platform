@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 import { saveCollabJson } from '@hcengineering/collaboration'
-import { CollaborativeDoc, Markup, MeasureContext, Blob as PlatformBlob, Ref, WorkspaceDataId, WorkspaceIds } from '@hcengineering/core'
+import {
+  CollaborativeDoc,
+  Markup,
+  MeasureContext,
+  Blob as PlatformBlob,
+  Ref,
+  WorkspaceDataId,
+  WorkspaceIds
+} from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { FileUploader, UploadResult } from './uploader'
 
@@ -27,7 +35,7 @@ export class StorageFileUploader implements FileUploader {
   }
 
   get dataId (): WorkspaceDataId {
-    return this.wsIds.dataId ?? this.wsIds.uuid as unknown as WorkspaceDataId
+    return this.wsIds.dataId ?? (this.wsIds.uuid as unknown as WorkspaceDataId)
   }
 
   public async uploadFile (id: string, blob: Blob): Promise<UploadResult> {

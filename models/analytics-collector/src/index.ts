@@ -18,7 +18,7 @@ import { type OnboardingChannel } from '@hcengineering/analytics-collector'
 import chunter from '@hcengineering/chunter'
 import { TChannel } from '@hcengineering/model-chunter'
 import activity, { type ActivityMessageControl } from '@hcengineering/activity'
-import core from '@hcengineering/core'
+import core, { type PersonId, type WorkspaceUuid } from '@hcengineering/core'
 
 import analyticsCollector from './plugin'
 
@@ -42,7 +42,7 @@ export class TOnboardingChannel extends TChannel implements OnboardingChannel {
 
   @Prop(TypeString(), analyticsCollector.string.SocialId)
   @ReadOnly()
-    socialString!: string
+    socialString!: PersonId
 
   @Prop(TypeString(), analyticsCollector.string.WorkspaceName)
   @ReadOnly()
@@ -54,7 +54,7 @@ export class TOnboardingChannel extends TChannel implements OnboardingChannel {
 
   @Prop(TypeString(), analyticsCollector.string.WorkspaceId)
   @ReadOnly()
-    workspaceId!: string
+    workspaceId!: WorkspaceUuid
 
   @Prop(TypeBoolean(), analyticsCollector.string.DisableAIReplies)
     disableAIReplies!: boolean

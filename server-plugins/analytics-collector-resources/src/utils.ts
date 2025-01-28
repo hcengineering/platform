@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 import chunter, { Channel } from '@hcengineering/chunter'
-import core, { MeasureContext, PersonId, Ref, TxOperations } from '@hcengineering/core'
+import core, { MeasureContext, PersonId, Ref, TxOperations, type WorkspaceUuid } from '@hcengineering/core'
 import { getAllEmployeesPrimarySocialStrings, getAllSocialStringsByPersonId, Person } from '@hcengineering/contact'
 import analyticsCollector, { getOnboardingChannelName, OnboardingChannel } from '@hcengineering/analytics-collector'
 import { translate } from '@hcengineering/platform'
 
 interface WorkspaceInfo {
-  workspaceId: string
+  workspaceId: WorkspaceUuid
   workspaceName: string
   workspaceUrl: string
 }

@@ -12,7 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { AccountRole, type PersonUuid, SocialIdType, type WorkspaceDataId, type WorkspaceUuid, type SocialKey } from '@hcengineering/core'
+import {
+  AccountRole,
+  type PersonUuid,
+  SocialIdType,
+  type WorkspaceDataId,
+  type WorkspaceUuid,
+  type SocialKey
+} from '@hcengineering/core'
 import { type AccountDB, createAccount } from '@hcengineering/account'
 import { getMongoAccountDB } from './utils'
 import { type Account as OldAccount, type Workspace as OldWorkspace } from './types'
@@ -206,7 +213,7 @@ async function migrateWorkspace (
     return
   }
 
-  const createdBy = workspace.createdBy !== undefined ? accountsEmailToUuid[workspace.createdBy] : 'N/A' as PersonUuid
+  const createdBy = workspace.createdBy !== undefined ? accountsEmailToUuid[workspace.createdBy] : ('N/A' as PersonUuid)
   if (createdBy === undefined) {
     console.log('No account found for workspace', workspace.workspace, 'created by', workspace.createdBy)
     return

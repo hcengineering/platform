@@ -8,7 +8,8 @@ import account, {
   accountId,
   getAccountDB,
   getAllTransactors,
-  getMethods
+  getMethods,
+  cleanExpiredOtp
 } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
@@ -126,16 +127,15 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     !hasSignUp
   )
 
-  // TODO: FIXME
-  // void accountsDb.then((res) => {
-  //   const [db] = res
-  //   setInterval(
-  //     () => {
-  //       void cleanExpiredOtp(db)
-  //     },
-  //     3 * 60 * 1000
-  //   )
-  // })
+  void accountsDb.then((res) => {
+    const [db] = res
+    setInterval(
+      () => {
+        void cleanExpiredOtp(db)
+      },
+      3 * 60 * 1000
+    )
+  })
 
   const extractToken = (header: IncomingHttpHeaders): string | undefined => {
     try {

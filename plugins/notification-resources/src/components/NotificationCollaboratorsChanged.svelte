@@ -19,13 +19,14 @@
   import notification from '@hcengineering/notification'
   import { BaseMessagePreview } from '@hcengineering/activity-resources'
   import { Action, Icon, Label } from '@hcengineering/ui'
+  import { type PersonId } from '@hcengineering/core'
 
   export let message: DisplayDocUpdateMessage
   export let actions: Action[] = []
 
   $: attributeUpdates = message.attributeUpdates ?? { added: [], removed: [], set: [] }
   $: addedAttributes = (attributeUpdates.added.length > 0 ? attributeUpdates.added : attributeUpdates.set) ?? []
-  $: isMeAdded = includesAny(addedAttributes as string[], $mySocialStringsStore)
+  $: isMeAdded = includesAny(addedAttributes as PersonId[], $mySocialStringsStore)
 </script>
 
 <BaseMessagePreview {actions} {message} on:click>

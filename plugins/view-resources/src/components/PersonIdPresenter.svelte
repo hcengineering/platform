@@ -16,11 +16,14 @@
   import { PersonId, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import contact, { getPersonRefBySocialId, Person } from '@hcengineering/contact'
+  import { IconSize } from '@hcengineering/ui'
 
   import ObjectPresenter from './ObjectPresenter.svelte'
 
   export let value: PersonId | undefined
   export let shouldShowName = true
+  export let noUnderline = false
+  export let avatarSize: IconSize = 'x-small'
 
   const client = getClient()
   let person: Ref<Person> | undefined
@@ -34,5 +37,11 @@
 </script>
 
 {#if person}
-  <ObjectPresenter objectId={person} _class={contact.class.Person} {shouldShowName} />
+  <ObjectPresenter
+    objectId={person}
+    _class={contact.class.Person}
+    {shouldShowName}
+    {noUnderline}
+    props={{ avatarSize }}
+  />
 {/if}

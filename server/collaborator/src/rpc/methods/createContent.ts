@@ -40,7 +40,7 @@ export async function createContent (
   const { documentId, workspaceId } = decodeDocumentId(documentName)
 
   const result: Record<string, Ref<Blob>> = {}
-  const dataId = context.workspaceDataId ?? workspaceId as WorkspaceDataId
+  const dataId = context.workspaceDataId ?? (workspaceId as WorkspaceDataId)
   for (const [field, markup] of Object.entries(content)) {
     const blob = await saveCollabJson(ctx, storageAdapter, dataId, documentId, markup)
     result[field] = blob

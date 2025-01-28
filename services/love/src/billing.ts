@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { concatLink, MeasureContext, systemAccountEmail } from '@hcengineering/core'
+import { concatLink, MeasureContext, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { AccessToken, EgressInfo } from 'livekit-server-sdk'
 import config from './config'
@@ -74,10 +74,10 @@ export async function saveLiveKitSessionBilling (ctx: MeasureContext, sessionId:
   }
 
   const session = await getLiveKitSession(ctx, sessionId)
-  const workspace = session.roomName.split('_')[0]
+  const workspace = session.roomName.split('_')[0] as WorkspaceUuid
   const endpoint = concatLink(config.BillingUrl, `/api/v1/billing/${workspace}/livekit/session`)
 
-  const token = generateToken(systemAccountEmail, { name: workspace })
+  const token = generateToken(systemAccountUuid, workspace)
 
   try {
     const res = await fetch(endpoint, {
@@ -113,10 +113,10 @@ export async function saveLiveKitEgressBilling (ctx: MeasureContext, egress: Egr
   const egressEnd = Number(egress.endedAt) / 1000 / 1000
   const duration = (egressEnd - egressStart) / 1000
 
-  const workspace = egress.roomName.split('_')[0]
+  const workspace = egress.roomName.split('_')[0] as WorkspaceUuid
   const endpoint = concatLink(config.BillingUrl, `/api/v1/billing/${workspace}/livekit/egress`)
 
-  const token = generateToken(systemAccountEmail, { name: workspace })
+  const token = generateToken(systemAccountUuid, workspace)
 
   try {
     const res = await fetch(endpoint, {

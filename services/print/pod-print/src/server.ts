@@ -107,11 +107,11 @@ const handleRequest = async (
     const loginInfo = await getAccountClient(token).getLoginInfoByToken()
     const workspace = (loginInfo as WorkspaceLoginInfo)?.workspace
     if (workspace === undefined) {
-      throw new ApiError(401, 'Couldn\'t find workspace with the provided token')
+      throw new ApiError(401, "Couldn't find workspace with the provided token")
     }
     const wsDataId = (loginInfo as WorkspaceLoginInfo)?.workspaceDataId
 
-    await fn(req, res, wsDataId ?? workspace as unknown as WorkspaceDataId, next)
+    await fn(req, res, wsDataId ?? (workspace as unknown as WorkspaceDataId), next)
   } catch (err: unknown) {
     next(err)
   }

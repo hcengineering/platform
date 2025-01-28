@@ -32,7 +32,13 @@ function getAccountClient (token: string): AccountClient {
   return getAccountClientRaw(config.AccountsUrl, token)
 }
 
-type AsyncRequestHandler = (req: Request, res: Response, wsDataId: WorkspaceDataId, branding: Branding | null, next: NextFunction) => Promise<void>
+type AsyncRequestHandler = (
+  req: Request,
+  res: Response,
+  wsDataId: WorkspaceDataId,
+  branding: Branding | null,
+  next: NextFunction
+) => Promise<void>
 
 const handleRequest = async (
   fn: AsyncRequestHandler,
@@ -46,11 +52,11 @@ const handleRequest = async (
     const loginInfo = await getAccountClient(rawToken).getLoginInfoByToken()
     const workspace = (loginInfo as WorkspaceLoginInfo)?.workspace
     if (workspace === undefined) {
-      throw new ApiError(401, 'Couldn\'t find workspace with the provided token')
+      throw new ApiError(401, "Couldn't find workspace with the provided token")
     }
     const wsDataId = (loginInfo as WorkspaceLoginInfo)?.workspaceDataId
     const branding = extractBranding(brandings, req.headers)
-    await fn(req, res, wsDataId ?? workspace as unknown as WorkspaceDataId, branding, next)
+    await fn(req, res, wsDataId ?? (workspace as unknown as WorkspaceDataId), branding, next)
   } catch (err: unknown) {
     next(err)
   }

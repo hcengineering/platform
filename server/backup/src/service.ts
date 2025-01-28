@@ -184,7 +184,12 @@ class BackupWorker {
       const ctx = rootCtx.newChild(ws.uuid, { workspace: ws.uuid })
       let pipeline: Pipeline | undefined
       try {
-        const storage = await createStorageBackupStorage(ctx, this.storageAdapter, this.config.BucketName as WorkspaceDataId, ws.uuid)
+        const storage = await createStorageBackupStorage(
+          ctx,
+          this.storageAdapter,
+          this.config.BucketName as WorkspaceDataId,
+          ws.uuid
+        )
         const wsIds: WorkspaceIds = {
           uuid: ws.uuid,
           dataId: ws.dataId,

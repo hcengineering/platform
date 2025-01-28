@@ -149,7 +149,7 @@ export async function createStorageDataAdapter (
   if (storage === undefined) {
     throw new Error('Storage adapter required')
   }
-  const storageId = workspaceId.dataId ?? workspaceId.uuid as unknown as WorkspaceDataId
+  const storageId = workspaceId.dataId ?? (workspaceId.uuid as unknown as WorkspaceDataId)
   // We need to create bucket if it doesn't exist
   if (!(await storage.exists(ctx, storageId))) {
     await storage.make(ctx, storageId)

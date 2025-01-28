@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Account, Doc, DocIndexState, Domain, PersonId, Ref } from './classes'
+import type { Account, Doc, DocIndexState, Domain, PersonId, PersonUuid, Ref } from './classes'
 import { MeasureContext } from './measurements'
 import { DocumentQuery, FindOptions } from './storage'
 import type { DocumentUpdate, Tx } from './tx'
@@ -51,7 +51,7 @@ export interface SessionData {
   isTriggerCtx?: boolean
   workspace: WorkspaceIds
   branding: Branding | null
-  socialStringsToUsers: Map<PersonId, string>
+  socialStringsToUsers: Map<PersonId, PersonUuid>
   fulltextUpdates?: Map<Ref<DocIndexState>, DocIndexState>
 
   asyncRequests?: (() => Promise<void>)[]

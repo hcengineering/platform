@@ -43,7 +43,7 @@ export class Collector {
     private readonly db: Db
   ) {
     this.onboardingMessagesCollection = this.db.collection<OnboardingMessage>('messages')
-    this.supportClient = this.getSupportWorkspaceClient()
+    // this.supportClient = this.getSupportWorkspaceClient() // TODO: FIXME
   }
 
   getWorkspaceClient (workspaceId: WorkspaceUuid): WorkspaceClient {
