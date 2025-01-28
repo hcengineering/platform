@@ -297,7 +297,11 @@
     "Transfer": "转让",
     "TransferWarning": "执行此操作后，某些团队成员可能会失去查看或编辑此文档的能力",
     "TransferDocuments": "移交受控文件",
-    "TransferDocumentsHint": "要转移到所选空间的文件："
+    "TransferDocumentsHint": "要转移到所选空间的文件：",
+
+    "CreateFolder": "创建新文件夹",
+    "RenameFolder": "重命名文件夹",
+    "CreateChildFolder": "创建子文件夹"
   },
   "controlledDocStates": {
     "Empty": "",

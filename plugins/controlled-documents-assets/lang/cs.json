@@ -291,7 +291,11 @@
     "Transfer": "Přenos",
     "TransferWarning": "Někteří členové týmu mohou po této akci ztratit možnost prohlížet nebo upravovat tento dokument.",
     "TransferDocuments": "Přenos řízených dokumentů",
-    "TransferDocumentsHint": "Dokumenty, které mají být přeneseny do vybraného prostoru:"
+    "TransferDocumentsHint": "Dokumenty, které mají být přeneseny do vybraného prostoru:",
+
+    "CreateFolder": "Vytvořit novou složku",
+    "RenameFolder": "Přejmenovat složku",
+    "CreateChildFolder": "Vytvořit podsložku"
   },
   "controlledDocStates": {
     "Empty": "",

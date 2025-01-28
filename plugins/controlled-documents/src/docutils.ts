@@ -357,3 +357,55 @@ export async function createDocumentTemplateMetadata (
 
   return { success: success.result, seqNumber, code, documentMetaId, projectDocumentId }
 }
+
+export async function createNewFolder (
+  client: TxOperations,
+  space: Ref<DocumentSpace>,
+  project: Ref<Project> | undefined,
+  parent: Ref<ProjectDocument> | undefined,
+  title: string
+): Promise<{
+    success: boolean
+    documentMetaId: Ref<DocumentMeta>
+    projectDocumentId: Ref<ProjectDocument>
+  }> {
+  const projectId = project ?? documents.ids.NoProject
+
+  const ops = client.apply()
+
+  const documentMetaId = await ops.createDoc(documents.class.DocumentMeta, space, { documents: 0, title })
+
+  let path: Array<Ref<DocumentMeta>> = []
+  if (parent !== undefined) {
+    path = await getParentPath(client, parent)
+  }
+
+  const parentMeta = path[0] ?? documents.ids.NoParent
+  const lastRank = await getFirstRank(client, space, projectId, parentMeta)
+
+  const projectMetaId = await ops.createDoc(documents.class.ProjectMeta, space, {
+    project: projectId,
+    meta: documentMetaId,
+    path,
+    parent: parentMeta,
+    documents: 0,
+    rank: makeRank(lastRank, undefined)
+  })
+
+  const projectDocumentId = await client.addCollection(
+    documents.class.ProjectDocument,
+    space,
+    projectMetaId,
+    documents.class.ProjectMeta,
+    'documents',
+    {
+      project: projectId,
+      initial: projectId,
+      document: documents.ids.Folder
+    }
+  )
+
+  const success = await ops.commit()
+
+  return { success: success.result, documentMetaId, projectDocumentId }
+}
