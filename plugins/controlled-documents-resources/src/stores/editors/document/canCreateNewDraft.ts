@@ -21,9 +21,10 @@ export const $canCreateNewDraft = combine($controlledDocument, $documentAllVersi
   if (document == null) return false
 
   const currentIndex = versions.findIndex((p) => p._id === document._id)
+  const forbiddenStates = [DocumentState.Draft, DocumentState.Obsolete]
 
   return (
     versions.slice(0, currentIndex).every((p) => p.state === DocumentState.Deleted) &&
-    document.state !== DocumentState.Draft
+    !forbiddenStates.includes(document.state)
   )
 })

@@ -295,7 +295,12 @@
 
     "CreateFolder": "Vytvořit novou složku",
     "RenameFolder": "Přejmenovat složku",
-    "CreateChildFolder": "Vytvořit podsložku"
+    "CreateChildFolder": "Vytvořit podsložku",
+
+    "Obsolete": "Zastaralé",
+    "MakeDocumentObsolete": "Označit jako zastaralé",
+    "MakeDocumentObsoleteDialog": "Označit {count, plural, one {dokument jako zastaralý} other {dokumenty jako zastaralé}}",
+    "MakeDocumentObsoleteConfirm": "Opravdu chcete označit následující dokumenty jako zastaralé: {titles}?"
   },
   "controlledDocStates": {
     "Empty": "",

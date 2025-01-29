@@ -38,6 +38,9 @@
       case DocumentState.Archived:
         statusWMLabel = plugin.string.Archived
         break
+      case DocumentState.Obsolete:
+        statusWMLabel = plugin.string.Obsolete
+        break
     }
   }
 
@@ -51,7 +54,7 @@
     $controlledDocument != null &&
     (isOrgSpace
       ? $controlledDocument.state !== DocumentState.Effective
-      : ![DocumentState.Effective, DocumentState.Archived].includes($controlledDocument.state))
+      : ![DocumentState.Effective, DocumentState.Obsolete, DocumentState.Archived].includes($controlledDocument.state))
 </script>
 
 {#if $controlledDocument !== null}
