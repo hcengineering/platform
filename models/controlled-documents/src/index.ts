@@ -153,6 +153,7 @@ export function createModel (builder: Builder): void {
                 ['inProgress', documents.string.InProgress, {}],
                 ['effective', documents.string.Effective, {}],
                 ['archived', documents.string.Archived, {}],
+                ['obsolete', documents.string.Obsolete, {}],
                 ['all', documents.string.All, {}]
               ]
             }
@@ -173,6 +174,7 @@ export function createModel (builder: Builder): void {
                 ['effective', documents.string.Effective, {}],
                 ['inProgress', documents.string.InProgress, {}],
                 ['archived', documents.string.Archived, {}],
+                ['obsolete', documents.string.Obsolete, {}],
                 ['all', documents.string.All, {}]
               ]
             }
@@ -777,16 +779,37 @@ export function createModel (builder: Builder): void {
     documents.action.DeleteDocument
   )
 
+  // createAction(
+  //   builder,
+  //   {
+  //     action: documents.actionImpl.ArchiveDocument,
+  //     label: view.string.Archive,
+  //     icon: view.icon.Archive,
+  //     input: 'any',
+  //     category: view.category.General,
+  //     target: documents.class.Document,
+  //     visibilityTester: documents.function.CanArchiveDocument,
+  //     query: {
+  //       state: DocumentState.Effective
+  //     },
+  //     context: {
+  //       mode: ['context', 'browser'],
+  //       group: 'remove'
+  //     }
+  //   },
+  //   documents.action.ArchiveDocument
+  // )
+
   createAction(
     builder,
     {
-      action: documents.actionImpl.ArchiveDocument,
-      label: view.string.Archive,
+      action: documents.actionImpl.MakeDocumentObsolete,
+      label: documents.string.MakeDocumentObsolete,
       icon: view.icon.Archive,
       input: 'any',
       category: view.category.General,
       target: documents.class.Document,
-      visibilityTester: documents.function.CanArchiveDocument,
+      visibilityTester: documents.function.CanMakeDocumentObsolete,
       query: {
         state: DocumentState.Effective
       },
@@ -795,7 +818,7 @@ export function createModel (builder: Builder): void {
         group: 'remove'
       }
     },
-    documents.action.ArchiveDocument
+    documents.action.MakeDocumentObsolete
   )
 
   createAction(

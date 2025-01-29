@@ -260,7 +260,12 @@
 
     "CreateFolder": "Crea nuova cartella",
     "RenameFolder": "Rinomina cartella",
-    "CreateChildFolder": "Crea sottocartella"
+    "CreateChildFolder": "Crea sottocartella",
+
+    "Obsolete": "Obsoleto",
+    "MakeDocumentObsolete": "Segna come obsoleto",
+    "MakeDocumentObsoleteDialog": "Segna {count, plural, one {il documento come obsoleto} other {i documenti come obsoleti}}",
+    "MakeDocumentObsoleteConfirm": "Vuoi davvero segnare i seguenti documenti come obsoleti: {titles}?"
   },
   "controlledDocStates": {
     "Empty": "",

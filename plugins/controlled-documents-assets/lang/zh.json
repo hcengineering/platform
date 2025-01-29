@@ -301,7 +301,12 @@
 
     "CreateFolder": "创建新文件夹",
     "RenameFolder": "重命名文件夹",
-    "CreateChildFolder": "创建子文件夹"
+    "CreateChildFolder": "创建子文件夹",
+    
+    "Obsolete": "已过时",
+    "MakeDocumentObsolete": "标记为过时",
+    "MakeDocumentObsoleteDialog": "标记 {count, plural, one {文档为过时} other {文档为过时}}",
+    "MakeDocumentObsoleteConfirm": "您确定要将以下文档标记为过时吗：{titles}？"
   },
   "controlledDocStates": {
     "Empty": "",

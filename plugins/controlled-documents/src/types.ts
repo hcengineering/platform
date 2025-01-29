@@ -194,7 +194,8 @@ export enum DocumentState {
   Draft = 'draft',
   Effective = 'effective',
   Archived = 'archived',
-  Deleted = 'deleted'
+  Deleted = 'deleted',
+  Obsolete = 'obsolete'
 }
 
 /**
