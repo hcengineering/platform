@@ -40,6 +40,7 @@ import login, { loginId } from '@hcengineering/login'
 import love, { loveId } from '@hcengineering/love'
 import notification, { notificationId } from '@hcengineering/notification'
 import onboard, { onboardId } from '@hcengineering/onboard'
+import personalBrowser, { personalBrowserId } from '@hcengineering/personal-browser'
 import presence, { presenceId } from '@hcengineering/presence'
 import print, { printId } from '@hcengineering/print'
 import { productsId } from '@hcengineering/products'
@@ -89,6 +90,7 @@ import '@hcengineering/lead-assets'
 import '@hcengineering/login-assets'
 import '@hcengineering/love-assets'
 import '@hcengineering/notification-assets'
+import '@hcengineering/personal-browser-assets'
 import '@hcengineering/preference-assets'
 import '@hcengineering/print-assets'
 import '@hcengineering/products-assets'
@@ -283,6 +285,7 @@ function configureI18n(): void {
   addStringsLoader(testManagementId, async (lang: string) => await import(`@hcengineering/test-management-assets/lang/${lang}.json`))
   addStringsLoader(surveyId, async (lang: string) => await import(`@hcengineering/survey-assets/lang/${lang}.json`))
   addStringsLoader(cardId, async (lang: string) => await import(`@hcengineering/card-assets/lang/${lang}.json`))
+  addStringsLoader(personalBrowserId, async (lang: string) => await import(`@hcengineering/personal-browser-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform() {
@@ -453,6 +456,7 @@ export async function configurePlatform() {
   addLocation(surveyId, () => import(/* webpackChunkName: "survey" */ '@hcengineering/survey-resources'))
   addLocation(presenceId, () => import(/* webpackChunkName: "presence" */ '@hcengineering/presence-resources'))
   addLocation(cardId, () => import(/* webpackChunkName: "card" */ '@hcengineering/card-resources'))
+  addLocation(personalBrowserId, () => import(/* webpackChunkName: "card" */ '@hcengineering/personal-browser-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
