@@ -2250,6 +2250,26 @@
       "packageName": "@hcengineering/card-resources",
       "projectFolder": "plugins/card-resources",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/personal-browser",
+      "projectFolder": "plugins/personal-browser",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/personal-browser-assets",
+      "projectFolder": "plugins/personal-browser-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/personal-browser-resources",
+      "projectFolder": "plugins/personal-browser-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-personal-browser",
+      "projectFolder": "models/personal-browser",
+      "shouldPublish": false
     }
   ]
 }

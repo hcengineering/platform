@@ -100,6 +100,10 @@ import testManagement, {
   testManagementId,
   createModel as testManagementModel
 } from '@hcengineering/model-test-management'
+import personalBrowser, {
+  personalBrowserId,
+  createModel as personalBrowserModel
+} from '@hcengineering/model-personal-browser'
 
 import {
   serverDocumentsId,
@@ -428,6 +432,17 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     ],
     [surveyModel, surveyId],
     [presenceModel, presenceId],
+    [
+      personalBrowserModel,
+      personalBrowserId,
+      {
+        label: personalBrowser.string.ConfigLabel,
+        description: personalBrowser.string.ConfigDescription,
+        enabled: true,
+        beta: true,
+        classFilter: defaultFilter
+      }
+    ],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
