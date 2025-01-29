@@ -687,6 +687,7 @@ export class PostgresAccountDB implements AccountDB {
           created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
           verified_on BIGINT,
           CONSTRAINT social_id_pk PRIMARY KEY (type, value),
+          CONSTRAINT social_id_key_unique UNIQUE (key),
           INDEX social_id_account_idx (person_uuid),
           CONSTRAINT social_id_person_fk FOREIGN KEY (person_uuid) REFERENCES global_account.person(uuid)
       );
