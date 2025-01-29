@@ -343,7 +343,7 @@ export async function OnMessageNotified (
 
 export async function OnUserStatus (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   // TODO: FIXME
-  throw new Error('Not implemented')
+  return [] // Not implemented
   // for (const originTx of txes) {
   //   const tx = originTx as TxCUD<UserStatus>
 

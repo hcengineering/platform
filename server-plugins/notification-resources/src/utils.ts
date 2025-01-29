@@ -214,7 +214,10 @@ export async function isShouldNotifyTx (
         const f = await getResource(mixin.func)
         const person = await getPerson(control, personIds[0])
         if (person === undefined) continue
-        const res = f(tx, object, person, personIds, type, control)
+        let res = f(tx, object, person, personIds, type, control)
+        if (res instanceof Promise) {
+          res = await res
+        }
         if (!res) continue
       }
     }

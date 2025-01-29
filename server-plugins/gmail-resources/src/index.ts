@@ -96,7 +96,7 @@ export function IsIncomingMessageTypeMatch (
   tx: Tx,
   doc: Doc,
   person: Person,
-  user: PersonId,
+  user: PersonId[],
   type: NotificationType,
   control: TriggerControl
 ): boolean {

@@ -15,7 +15,6 @@
 //
 -->
 <script lang="ts">
-  import core from '@hcengineering/core'
   import { Component } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { CollaborationUser } from '@hcengineering/text-editor'
@@ -23,13 +22,11 @@
   export let user: CollaborationUser
 </script>
 
-TODO
-<!-- <Component
-  is={view.component.ObjectPresenter}
+<Component
+  is={view.component.PersonIdPresenter}
   props={{
-    objectId: user.id,
-    _class: core.class.Account,
+    value: user.id,
     shouldShowAvatar: true,
     shouldShowName: true
   }}
-/> -->
+/>

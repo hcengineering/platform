@@ -18,7 +18,7 @@ import core, {
   includesAny,
   TxCreateDoc
 } from '@hcengineering/core'
-import { pickPrimarySocialId, type Employee } from '@hcengineering/contact'
+import { Person, pickPrimarySocialId, type Employee } from '@hcengineering/contact'
 import { getSocialStrings, getEmployees, getSocialStringsByPersons } from '@hcengineering/server-contact'
 import { TriggerControl } from '@hcengineering/server-core'
 
@@ -391,6 +391,7 @@ export async function documentTextPresenter (doc: ControlledDocument): Promise<s
 async function CoAuthorsTypeMatch (
   originTx: TxCUD<ControlledDocument>,
   _doc: Doc,
+  person: Person,
   socialIds: PersonId[],
   _type: NotificationType,
   control: TriggerControl

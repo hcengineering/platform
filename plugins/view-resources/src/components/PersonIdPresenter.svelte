@@ -22,6 +22,7 @@
 
   export let value: PersonId | undefined
   export let shouldShowName = true
+  export let shouldShowAvatar = true
   export let noUnderline = false
   export let avatarSize: IconSize = 'x-small'
 
@@ -41,6 +42,7 @@
     objectId={person}
     _class={contact.class.Person}
     {shouldShowName}
+    {shouldShowAvatar}
     {noUnderline}
     props={{ avatarSize }}
   />

@@ -85,6 +85,7 @@ export function generateId<T extends Doc> (join: string = ''): Ref<T> {
 }
 
 export function generateUuid (): string {
+  // Consider own implementation if it will be slow
   return crypto.randomUUID()
 }
 
