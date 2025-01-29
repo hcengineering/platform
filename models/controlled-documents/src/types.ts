@@ -30,7 +30,6 @@ import {
   type DocumentSpaceTypeDescriptor,
   type DocumentState,
   type DocumentTemplate,
-  type Sequence,
   type DocumentMeta,
   type ExternalSpace,
   type OrgSpace,
@@ -49,7 +48,6 @@ import {
   IndexKind,
   type Class,
   type MarkupBlobRef,
-  type Doc,
   type Domain,
   type Ref,
   type Timestamp,
@@ -457,12 +455,6 @@ export class TDocumentComment extends TChatMessage implements DocumentComment {
 
   @Prop(TypeNumber(), documents.string.Index)
     index?: number
-}
-
-@Model(documents.class.Sequence, core.class.Doc, DOMAIN_DOCUMENTS)
-export class TSequence extends TDoc implements Sequence {
-  attachedTo!: Ref<Class<Doc>>
-  sequence!: number
 }
 
 @Model(documents.class.DocumentRequest, request.class.Request)

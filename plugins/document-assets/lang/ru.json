@@ -57,7 +57,6 @@
 
     "Icon": "Иконка",
     "Color": "Цвет",
-    "RoleLabel": "Роль: {role}",
-    "Embeddings": "Вложения"
+    "RoleLabel": "Роль: {role}"
   }
 }

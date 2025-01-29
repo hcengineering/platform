@@ -242,15 +242,6 @@ export enum ControlledDocumentState {
 
 /**
  * @public
- * Generic sequence attached to a class for cases when a single increment goes through all instances of the class.
- */
-export interface Sequence extends Doc {
-  attachedTo: Ref<Class<Doc>>
-  sequence: number
-}
-
-/**
- * @public
  * Base class for all document related requests
  */
 export interface DocumentRequest extends Request {}

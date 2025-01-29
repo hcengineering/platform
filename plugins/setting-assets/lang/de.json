@@ -130,6 +130,7 @@
     "BackupSnapshots": "Sicherungsschnappschüsse",
     "BackupFileDownload": "Datei herunterladen",
     "BackupFiles": "Sicherungsdateien",
-    "BackupNoBackup": "Derzeit sind keine Sicherungen verfügbar."
+    "BackupNoBackup": "Derzeit sind keine Sicherungen verfügbar.",
+    "AddAttribute": "Attribut hinzufügen"
   }
 }

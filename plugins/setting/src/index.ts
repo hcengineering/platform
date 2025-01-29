@@ -168,7 +168,8 @@ export default plugin(settingId, {
     RoleEditor: '' as AnyComponent,
     RoleAssignmentEditor: '' as AnyComponent,
     RelationSetting: '' as AnyComponent,
-    Backup: '' as AnyComponent
+    Backup: '' as AnyComponent,
+    CreateAttributePopup: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,
@@ -219,7 +220,8 @@ export default plugin(settingId, {
     BackupSnapshots: '' as IntlString,
     BackupFileDownload: '' as IntlString,
     BackupFiles: '' as IntlString,
-    BackupNoBackup: '' as IntlString
+    BackupNoBackup: '' as IntlString,
+    AddAttribute: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,

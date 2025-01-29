@@ -35,7 +35,7 @@
   $: if (spaceId !== undefined) {
     const loc = getLocation()
     loc.query = undefined
-    navigate(loc)
+    navigate(loc, true)
   }
   export let requestedSpaceClasses: Ref<Class<Space>>[] = []
   const currentUser = getCurrentAccount() as PersonAccount
