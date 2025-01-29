@@ -35,7 +35,6 @@ import {
   TAttachedDoc,
   TAttribute,
   TBlob,
-  TCard,
   TClass,
   TCollection,
   TConfiguration,
@@ -71,7 +70,8 @@ import {
   TTypeRelatedDocument,
   TTypeString,
   TTypeTimestamp,
-  TVersion
+  TVersion,
+  TSequence
 } from './core'
 import { definePermissions } from './permissions'
 import {
@@ -146,13 +146,13 @@ export function createModel (builder: Builder): void {
     TEnum,
     TTypeAny,
     TTypeRelatedDocument,
-    TCard,
     TDocIndexState,
     TFullTextSearchContext,
     TConfiguration,
     TConfigurationElement,
     TIndexConfiguration,
     TStatus,
+    TSequence,
     TDomainStatusPlaceholder,
     TStatusCategory,
     TMigrationState,

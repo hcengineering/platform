@@ -130,6 +130,7 @@
     "BackupSnapshots": "Snímky záloh",
     "BackupFileDownload": "Stáhnout soubor",
     "BackupFiles": "Soubory záloh",
-    "BackupNoBackup": "V současné době nejsou k dispozici žádné zálohy."
+    "BackupNoBackup": "V současné době nejsou k dispozici žádné zálohy.",
+    "AddAttribute": "Přidat atribut"
   }
 }

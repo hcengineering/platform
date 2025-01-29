@@ -50,7 +50,6 @@
     "ConfigDescription": "Estensione per la modifica collaborativa dei documenti",
     "Icon": "Icona",
     "Color": "Colore",
-    "RoleLabel": "Ruolo: {role}",
-    "Embeddings": "Incorporamenti"
+    "RoleLabel": "Ruolo: {role}"
   }
 }

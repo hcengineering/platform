@@ -40,7 +40,6 @@ import view, { classPresenter, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import training from './plugin'
 import {
-  TSequence,
   TTraining,
   TTrainingAttempt,
   TTrainingAttemptState,
@@ -91,8 +90,6 @@ function defineBase (builder: Builder): void {
     },
     presenter: training.component.TrainingRequestNotificationPresenter
   })
-
-  builder.createModel(TSequence)
 }
 
 function defineSpaceType (builder: Builder): void {

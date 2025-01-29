@@ -282,6 +282,7 @@ export type DocumentUpdate<T extends Doc> = Partial<Data<T>> &
 PushOptions<T> &
 SetEmbeddedOptions<T> &
 IncOptions<T> &
+UnsetOptions &
 SpaceUpdate
 
 /**
