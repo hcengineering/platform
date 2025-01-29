@@ -741,12 +741,12 @@ export class PostgresAccountDB implements AccountDB {
 
       /* ======= O T P ======= */
       CREATE TABLE IF NOT EXISTS global_account.otp (
-          social_id INT8 NOT NULL,
+          social_id STRING NOT NULL,
           code STRING NOT NULL,
           expires_on BIGINT NOT NULL,
           created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
           CONSTRAINT otp_pk PRIMARY KEY (social_id, code),
-          CONSTRAINT otp_social_id_fk FOREIGN KEY (social_id) REFERENCES global_account.social_id(id)
+          CONSTRAINT otp_social_id_fk FOREIGN KEY (social_id) REFERENCES global_account.social_id(key)
       );
 
       /* ======= I N V I T E ======= */
