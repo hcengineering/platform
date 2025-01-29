@@ -96,16 +96,18 @@ class BackupWorker {
     console.log('schedule backup with interval', this.config.Interval, 'seconds')
     while (!this.canceled) {
       try {
-        const res = await this.backup(ctx, this.config.CoolDown * 1000)
+        const res = await this.backup(ctx, (this.config.Interval / 4) * 1000)
         this.printStats(ctx, res)
+        if (res.skipped === 0) {
+          console.log('cool down', this.config.CoolDown, 'seconds')
+          await new Promise<void>((resolve) => setTimeout(resolve, this.config.CoolDown * 1000))
+        }
       } catch (err: any) {
         Analytics.handleError(err)
         ctx.error('error retry in cool down/5', { cooldown: this.config.CoolDown, error: err })
         await new Promise<void>((resolve) => setTimeout(resolve, (this.config.CoolDown / 5) * 1000))
         continue
       }
-      console.log('cool down', this.config.CoolDown, 'seconds')
-      await new Promise<void>((resolve) => setTimeout(resolve, this.config.CoolDown * 1000))
     }
   }
 
@@ -145,14 +147,30 @@ class BackupWorker {
       return !workspacesIgnore.has(it.workspace)
     })
     workspaces.sort((a, b) => {
-      return (b.backupInfo?.backupSize ?? 0) - (a.backupInfo?.backupSize ?? 0)
+      const lastBackupMin = Math.round(((a.backupInfo?.lastBackup ?? 0) - (b.backupInfo?.lastBackup ?? 0)) / 60)
+      if (lastBackupMin === 0) {
+        // Same minute, sort by backup size
+        return (a.backupInfo?.backupSize ?? 0) - (b.backupInfo?.backupSize ?? 0)
+      }
+      return lastBackupMin
     })
 
-    ctx.info('Preparing for BACKUP', {
+    ctx.warn('Preparing for BACKUP', {
       total: workspaces.length,
       skipped,
       workspaces: workspaces.map((it) => it.workspace)
     })
+
+    const part = workspaces.slice(0, 500)
+    let idx = 0
+    for (const ws of part) {
+      ctx.warn('prepare workspace', {
+        idx: ++idx,
+        workspace: ws.workspaceUrl ?? ws.workspace,
+        backupSize: ws.backupInfo?.backupSize ?? 0,
+        lastBackupSec: (Date.now() - (ws.backupInfo?.lastBackup ?? 0)) / 1000
+      })
+    }
 
     return await this.doBackup(ctx, workspaces, recheckTimeout)
   }

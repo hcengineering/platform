@@ -394,7 +394,7 @@
         "DB_URL": "mongodb://localhost:27017",
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         "SECRET": "secret",
-        "REGION": "pg",
+        "REGION": "cockroach",
         "BUCKET_NAME":"backups",
         "INTERVAL":"30"
       },

@@ -50,7 +50,7 @@ export async function listAccountWorkspaces (token: string, region: string | nul
       },
       body: JSON.stringify({
         method: 'listWorkspaces',
-        params: [token, region]
+        params: [token, region, 'active']
       })
     })
   ).json()
