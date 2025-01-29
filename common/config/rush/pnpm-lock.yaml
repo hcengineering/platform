@@ -433,6 +433,9 @@ importers:
       '@rush-temp/model-notification':
         specifier: file:./projects/model-notification.tgz
         version: file:projects/model-notification.tgz
+      '@rush-temp/model-personal-browser':
+        specifier: file:./projects/model-personal-browser.tgz
+        version: file:projects/model-personal-browser.tgz
       '@rush-temp/model-preference':
         specifier: file:./projects/model-preference.tgz
         version: file:projects/model-preference.tgz
@@ -622,6 +625,15 @@ importers:
       '@rush-temp/panel':
         specifier: file:./projects/panel.tgz
         version: file:projects/panel.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/personal-browser':
+        specifier: file:./projects/personal-browser.tgz
+        version: file:projects/personal-browser.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/personal-browser-assets':
+        specifier: file:./projects/personal-browser-assets.tgz
+        version: file:projects/personal-browser-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/personal-browser-resources':
+        specifier: file:./projects/personal-browser-resources.tgz
+        version: file:projects/personal-browser-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       '@rush-temp/platform':
         specifier: file:./projects/platform.tgz
         version: file:projects/platform.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
@@ -3931,7 +3943,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/card-resources@file:projects/card-resources.tgz':
-    resolution: {integrity: sha512-5XUIDT9Sm6CjX5nOi2lQxJlwTYrG4KDRkq1zzBjygbFTAZyUJoxXN+UJZJ+TdXvv5x3aGv9anI2M8OyQ4+ZQgg==, tarball: file:projects/card-resources.tgz}
+    resolution: {integrity: sha512-Jxo50voYR7wohUB/IWsR7DlU7e9StUDJWN7i78vDwp9xQ+7j1N/fIggZshbtw/Bzj6vyiwFa67TDDfEOGgvbaw==, tarball: file:projects/card-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/card@file:projects/card.tgz':
@@ -4027,7 +4039,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop@file:projects/desktop.tgz':
-    resolution: {integrity: sha512-eMzRgV4EJ9F+zFRY9JqL8PF9XFG8GsPaMdJ0w7e3O9CoondBikuDA0Mt3C6Rc4u3HHJQZU8AHxXSPktWJZ2Jtg==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-Nsk9alooHTtoJvn9YQfFxmdCf+4sglDyjbozIxtzlQI1R8uGeu/IIOvY3kcTwIJUnDIcaFES7cMU/abVJUiUxA==, tarball: file:projects/desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/devmodel-resources@file:projects/devmodel-resources.tgz':
@@ -4219,7 +4231,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-all@file:projects/model-all.tgz':
-    resolution: {integrity: sha512-gkINR6HbfTB1ZSXTI2WHg9B+zIZtcSmb+Bb9fVxbGtq6e+RnxSlOlvjEBoru3ElfIO8x6SYd/KoQhRossQQKnQ==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-vAnyG9hEz1489r8Z0HOw12ppXoR+XAXPUDSs8+DyNFyUjjk2VZf0hx176ebE7OwfQz6hQIa3jYbfTqO6CuLE3A==, tarball: file:projects/model-all.tgz}
     version: 0.0.0
 
   '@rush-temp/model-analytics-collector@file:projects/model-analytics-collector.tgz':
@@ -4304,6 +4316,10 @@ packages:
 
   '@rush-temp/model-notification@file:projects/model-notification.tgz':
     resolution: {integrity: sha512-k7valecajKQwOhAeROASPm+RO2/D3xZSkan8Z09kmy+9dNLYBxQT/mr7k+HBdlzU4JD3fDQRP6EStyJBkLFZsQ==, tarball: file:projects/model-notification.tgz}
+    version: 0.0.0
+
+  '@rush-temp/model-personal-browser@file:projects/model-personal-browser.tgz':
+    resolution: {integrity: sha512-ZOwJC9FJ3zYji9P37G/fzk9JVZ+PxzCiMJJNtONq7sLh6NCmomhjojOmg1xeVO1WaVRk827ZzuMiPQXNhrsvXw==, tarball: file:projects/model-personal-browser.tgz}
     version: 0.0.0
 
   '@rush-temp/model-preference@file:projects/model-preference.tgz':
@@ -4562,6 +4578,18 @@ packages:
     resolution: {integrity: sha512-cjwk9I0RxeNJQTgtbbcQlwiurbp+/T5MbiRnYTLWvxsMBVWnnxD5nToECUt1QdW/CjSSbPsaYP8hoMgt/AufCw==, tarball: file:projects/panel.tgz}
     version: 0.0.0
 
+  '@rush-temp/personal-browser-assets@file:projects/personal-browser-assets.tgz':
+    resolution: {integrity: sha512-yGiP0aFiYA6RZiY4Ufqhk2egfhWvjEi3GOjcmLZ3eAl3samu/g4b3BcAKzo6SimMwKM2GQF+9oKHn1F/5LmSjA==, tarball: file:projects/personal-browser-assets.tgz}
+    version: 0.0.0
+
+  '@rush-temp/personal-browser-resources@file:projects/personal-browser-resources.tgz':
+    resolution: {integrity: sha512-dE2Jeu1rsu0l18l6oKj0Z+D99sS8fkuAcqoqh9alzavqquUvgGSXtTUB24l6Y6A0tbpshtAMLhmFSFgwPtSGHw==, tarball: file:projects/personal-browser-resources.tgz}
+    version: 0.0.0
+
+  '@rush-temp/personal-browser@file:projects/personal-browser.tgz':
+    resolution: {integrity: sha512-dBx6We9vl3uuETflughn1Q1jmxjzQdxZ0rf+OiZZ6lRM0u304BhlM7459AMcaZ76oxkqZ6ulRYVVxr8k7ZGHaA==, tarball: file:projects/personal-browser.tgz}
+    version: 0.0.0
+
   '@rush-temp/platform-rig@file:projects/platform-rig.tgz':
     resolution: {integrity: sha512-Ex4y6Gru0FdNgfJ8Q/TOIOZLrvmk+4eDiepGH95XOsHgcTQTfhHPfNwYBgC5yOqQrY9O8GDqWUZtV+KySEAQjg==, tarball: file:projects/platform-rig.tgz}
     version: 0.0.0
@@ -4683,7 +4711,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/prod@file:projects/prod.tgz':
-    resolution: {integrity: sha512-LoYSjTvEdxhPgqQs+DOrNAK+Is2IToigzPvsFSMhsHqqgWohf2ZsZnDSHDZjzGzp2zypb+UyFbuNnJkiCIWDVw==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-3ZiUUL9iIzKvkfTD/nIHbudwlcXZre2R4R0rxupKERvU/dmKjjGZqxJnw/rKb3ztSNDWklDZ2apHGcF2tYTzYg==, tarball: file:projects/prod.tgz}
     version: 0.0.0
 
   '@rush-temp/products-assets@file:projects/products-assets.tgz':
@@ -5255,7 +5283,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/view-assets@file:projects/view-assets.tgz':
-    resolution: {integrity: sha512-z0nwxd7vykvG7TFFFTEXmVBGHDuPaxNWBTonuFVkplbOCNiLnWSBjQTnBZyxiwhe8LWbVPHBmaKIb12Wu/EDXA==, tarball: file:projects/view-assets.tgz}
+    resolution: {integrity: sha512-pfE46HgiagIANMqqPW5EMmboWGkHbWUW+pknNVJNdVO/lRKoyj8qmKyxseKlcq1y3dlSkrsNXw8ggUXOuwOIvQ==, tarball: file:projects/view-assets.tgz}
     version: 0.0.0
 
   '@rush-temp/view-resources@file:projects/view-resources.tgz':
@@ -13478,8 +13506,8 @@ snapshots:
       '@aws-crypto/sha1-browser': 3.0.0
       '@aws-crypto/sha256-browser': 3.0.0
       '@aws-crypto/sha256-js': 3.0.0
-      '@aws-sdk/client-sso-oidc': 3.577.0(@aws-sdk/client-sts@3.577.0)
-      '@aws-sdk/client-sts': 3.577.0
+      '@aws-sdk/client-sso-oidc': 3.577.0
+      '@aws-sdk/client-sts': 3.577.0(@aws-sdk/client-sso-oidc@3.577.0)
       '@aws-sdk/core': 3.576.0
       '@aws-sdk/credential-provider-node': 3.577.0(@aws-sdk/client-sso-oidc@3.577.0)(@aws-sdk/client-sts@3.577.0)
       '@aws-sdk/middleware-bucket-endpoint': 3.577.0
@@ -13536,11 +13564,11 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/client-sso-oidc@3.577.0(@aws-sdk/client-sts@3.577.0)':
+  '@aws-sdk/client-sso-oidc@3.577.0':
     dependencies:
       '@aws-crypto/sha256-browser': 3.0.0
       '@aws-crypto/sha256-js': 3.0.0
-      '@aws-sdk/client-sts': 3.577.0
+      '@aws-sdk/client-sts': 3.577.0(@aws-sdk/client-sso-oidc@3.577.0)
       '@aws-sdk/core': 3.576.0
       '@aws-sdk/credential-provider-node': 3.577.0(@aws-sdk/client-sso-oidc@3.577.0)(@aws-sdk/client-sts@3.577.0)
       '@aws-sdk/middleware-host-header': 3.577.0
@@ -13579,7 +13607,6 @@ snapshots:
       '@smithy/util-utf8': 3.0.0
       tslib: 2.6.2
     transitivePeerDependencies:
-      - '@aws-sdk/client-sts'
       - aws-crt
 
   '@aws-sdk/client-sso@3.577.0':
@@ -13625,11 +13652,11 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/client-sts@3.577.0':
+  '@aws-sdk/client-sts@3.577.0(@aws-sdk/client-sso-oidc@3.577.0)':
     dependencies:
       '@aws-crypto/sha256-browser': 3.0.0
       '@aws-crypto/sha256-js': 3.0.0
-      '@aws-sdk/client-sso-oidc': 3.577.0(@aws-sdk/client-sts@3.577.0)
+      '@aws-sdk/client-sso-oidc': 3.577.0
       '@aws-sdk/core': 3.576.0
       '@aws-sdk/credential-provider-node': 3.577.0(@aws-sdk/client-sso-oidc@3.577.0)(@aws-sdk/client-sts@3.577.0)
       '@aws-sdk/middleware-host-header': 3.577.0
@@ -13668,6 +13695,7 @@ snapshots:
       '@smithy/util-utf8': 3.0.0
       tslib: 2.6.2
     transitivePeerDependencies:
+      - '@aws-sdk/client-sso-oidc'
       - aws-crt
 
   '@aws-sdk/core@3.576.0':
@@ -13701,7 +13729,7 @@ snapshots:
 
   '@aws-sdk/credential-provider-ini@3.577.0(@aws-sdk/client-sso-oidc@3.577.0)(@aws-sdk/client-sts@3.577.0)':
     dependencies:
-      '@aws-sdk/client-sts': 3.577.0
+      '@aws-sdk/client-sts': 3.577.0(@aws-sdk/client-sso-oidc@3.577.0)
       '@aws-sdk/credential-provider-env': 3.577.0
       '@aws-sdk/credential-provider-process': 3.577.0
       '@aws-sdk/credential-provider-sso': 3.577.0(@aws-sdk/client-sso-oidc@3.577.0)
@@ -13758,7 +13786,7 @@ snapshots:
 
   '@aws-sdk/credential-provider-web-identity@3.577.0(@aws-sdk/client-sts@3.577.0)':
     dependencies:
-      '@aws-sdk/client-sts': 3.577.0
+      '@aws-sdk/client-sts': 3.577.0(@aws-sdk/client-sso-oidc@3.577.0)
       '@aws-sdk/types': 3.577.0
       '@smithy/property-provider': 3.0.0
       '@smithy/types': 3.0.0
@@ -13917,7 +13945,7 @@ snapshots:
 
   '@aws-sdk/token-providers@3.577.0(@aws-sdk/client-sso-oidc@3.577.0)':
     dependencies:
-      '@aws-sdk/client-sso-oidc': 3.577.0(@aws-sdk/client-sts@3.577.0)
+      '@aws-sdk/client-sso-oidc': 3.577.0
       '@aws-sdk/types': 3.577.0
       '@smithy/property-provider': 3.0.0
       '@smithy/shared-ini-file-loader': 3.0.0
@@ -19220,6 +19248,20 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@rush-temp/model-personal-browser@file:projects/model-personal-browser.tgz':
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      prettier: 3.2.5
+      typescript: 5.6.2
+    transitivePeerDependencies:
+      - supports-color
+
   '@rush-temp/model-preference@file:projects/model-preference.tgz':
     dependencies:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
@@ -20322,6 +20364,97 @@ snapshots:
       - pug
       - stylus
       - sugarss
+      - supports-color
+      - ts-node
+
+  '@rush-temp/personal-browser-assets@file:projects/personal-browser-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
+      typescript: 5.6.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+
+  '@rush-temp/personal-browser-resources@file:projects/personal-browser-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      fast-equals: 5.0.1
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
+      sass: 1.71.1
+      svelte: 4.2.19
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)
+      svelte-eslint-parser: 0.33.1(svelte@4.2.19)
+      svelte-loader: 3.2.0(svelte@4.2.19)
+      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)(typescript@5.6.2)
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
+      typescript: 5.6.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - coffeescript
+      - esbuild
+      - less
+      - node-notifier
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+      - ts-node
+
+  '@rush-temp/personal-browser@file:projects/personal-browser.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
+      typescript: 5.6.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
       - supports-color
       - ts-node
 
