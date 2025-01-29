@@ -20,7 +20,7 @@
     DisplayActivityMessage,
     WithReferences
   } from '@hcengineering/activity'
-  import { Doc, Ref, SortingOrder } from '@hcengineering/core'
+  import { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Grid, Label, Section, Spinner, location, Lazy } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
@@ -39,6 +39,7 @@
   export let boundary: HTMLElement | undefined = undefined
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
   const activityMessagesQuery = createQuery()
   const refsQuery = createQuery()
 
@@ -170,9 +171,24 @@
 
   let isNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
 
-  $: void client.findAll(activity.class.ActivityExtension, { ofClass: object._class }).then((res) => {
-    extensions = res
-  })
+  $: extensions = getExtensions(object._class)
+
+  function getExtensions (_class: Ref<Class<Doc>>): ActivityExtension[] {
+    try {
+      let clazz: Ref<Class<Doc>> | undefined = _class
+      while (clazz !== undefined) {
+        const res = client.getModel().findAllSync(activity.class.ActivityExtension, { ofClass: clazz })
+        if (res.length > 0) {
+          return res
+        }
+        clazz = hierarchy.getClass(_class).extends
+      }
+    } catch (e) {
+      console.error(e)
+      return []
+    }
+    return []
+  }
 
   // Load references from other spaces separately because they can have any different spaces
   $: if ((object.references ?? 0) > 0) {
