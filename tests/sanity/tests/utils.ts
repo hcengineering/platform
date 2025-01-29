@@ -234,6 +234,8 @@ export async function uploadFile (page: Page, fileName: string, fileUploadTestId
 
 export async function getInviteLink (page: Page): Promise<string | null> {
   const leftSideMenuPage = new LeftSideMenuPage(page)
+  // If we don't wait and it's called on inital render initial navigate may close the popup in the middle
+  await leftSideMenuPage.appHeader().waitFor({ state: 'visible' })
   await leftSideMenuPage.openProfileMenu()
   await leftSideMenuPage.inviteToWorkspace()
   await leftSideMenuPage.getInviteLink()
