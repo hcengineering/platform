@@ -2250,6 +2250,11 @@
       "packageName": "@hcengineering/card-resources",
       "projectFolder": "plugins/card-resources",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/green",
+      "projectFolder": "pods/green",
+      "shouldPublish": false
     }
   ]
 }

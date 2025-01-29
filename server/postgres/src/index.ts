@@ -17,6 +17,7 @@ import type { WorkspaceDestroyAdapter } from '@hcengineering/server-core'
 import { domainSchemas } from './schemas'
 import { getDBClient, retryTxn } from './utils'
 
+export { createDBClient } from './client'
 export { getDocFieldsByDomains, translateDomain } from './schemas'
 export * from './storage'
 export {
@@ -25,7 +26,6 @@ export {
   getDBClient,
   retryTxn,
   setDBExtraOptions,
-  setExtraOptions,
   shutdownPostgres
 } from './utils'
 

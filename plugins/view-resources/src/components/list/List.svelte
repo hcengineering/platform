@@ -23,22 +23,15 @@
     Space,
     mergeQueries
   } from '@hcengineering/core'
-  import { IntlString, getResource } from '@hcengineering/platform'
+  import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient, reduceCalls } from '@hcengineering/presentation'
   import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
-  import {
-    BuildModelKey,
-    ViewOptionModel,
-    ViewOptions,
-    ViewOptionsOption,
-    ViewQueryOption,
-    Viewlet
-  } from '@hcengineering/view'
+  import { BuildModelKey, ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { SelectionFocusProvider } from '../../selection'
   import { buildConfigLookup } from '../../utils'
-  import ListCategories from './ListCategories.svelte'
   import { getResultOptions, getResultQuery } from '../../viewOptions'
+  import ListCategories from './ListCategories.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined

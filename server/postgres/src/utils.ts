@@ -30,7 +30,8 @@ import core, {
 } from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
-import postgres, { type Options } from 'postgres'
+import postgres, { type Options, type ParameterOrJSON } from 'postgres'
+import type { DBClient } from './client'
 import {
   addSchema,
   type DataType,
@@ -86,7 +87,10 @@ export async function createTables (
     SELECT table_name 
     FROM information_schema.tables
     WHERE table_schema NOT IN ('pg_catalog', 'information_schema')
-    AND table_name NOT LIKE 'pg_%'`)
+    AND table_name NOT LIKE 'pg_%'
+    AND table_name NOT LIKE 'cluster_%'
+    AND table_name NOT LIKE 'kv_%'
+    AND table_name NOT LIKE 'node_%'`)
           )
         ).map((it) => it.table_name)
       )
@@ -285,17 +289,7 @@ export function getPrepare (): { prepare: boolean } {
   return { prepare: dbExtraOptions.prepare ?? false }
 }
 
-export interface DBExtraOptions {
-  useCF: boolean
-}
-
-export let dbExtra: DBExtraOptions = {
-  useCF: false
-}
-
-export function setExtraOptions (options: DBExtraOptions): void {
-  dbExtra = options
-}
+export const doFetchTypes = true
 
 /**
  * Initialize a workspace connection to DB
@@ -324,7 +318,6 @@ export function getDBClient (
       connect_timeout: 10,
       idle_timeout: 30,
       max_lifetime: 300,
-      fetch_types: true,
       transform: {
         undefined: null
       },
@@ -333,7 +326,8 @@ export function getDBClient (
       onnotice (notice) {},
       onparameter (key, value) {},
       ...dbExtraOptions,
-      ...extraOptions
+      ...extraOptions,
+      fetch_types: doFetchTypes
     })
 
     existing = new PostgresClientReferenceImpl(connectionString, sql, () => {
@@ -484,7 +478,7 @@ export class DBCollectionHelper implements DomainHelperOperations {
   protected readonly workspaceId: WorkspaceId
 
   constructor (
-    protected readonly client: postgres.Sql,
+    protected readonly client: DBClient,
     protected readonly enrichedWorkspaceId: WorkspaceId
   ) {
     this.workspaceId = {
@@ -518,6 +512,50 @@ export class DBCollectionHelper implements DomainHelperOperations {
   }
 }
 
+export function decodeArray (value: string): string[] {
+  if (value === 'NULL') return []
+  // Remove first and last character (the array brackets)
+  const inner = value.substring(1, value.length - 1)
+  const items = inner.split(',')
+  return items.map((item) => {
+    // Remove quotes at start/end if they exist
+    let result = item
+    if (result.startsWith('"')) {
+      result = result.substring(1)
+    }
+    if (result.endsWith('"')) {
+      result = result.substring(0, result.length - 1)
+    }
+    // Replace escaped quotes with regular quotes
+    let final = ''
+    for (let i = 0; i < result.length; i++) {
+      if (result[i] === '\\' && result[i + 1] === '"') {
+        final += '"'
+        i++ // Skip next char
+      } else {
+        final += result[i]
+      }
+    }
+    return final
+  })
+}
+
+export function convertArrayParams (parameters?: ParameterOrJSON<any>[]): any[] | undefined {
+  if (parameters === undefined) return undefined
+  return parameters.map((param) => {
+    if (Array.isArray(param)) {
+      if (param.length === 0) return '{}'
+      const sanitized = param.map((item) => {
+        if (item === null) return 'NULL'
+        if (typeof item === 'string') return `"${item.replace(/"/g, '\\"')}"`
+        return String(item)
+      })
+      return `{${sanitized.join(',')}}`
+    }
+    return param
+  })
+}
+
 export function parseDocWithProjection<T extends Doc> (
   doc: DBDoc,
   domain: string,
@@ -535,6 +573,8 @@ export function parseDocWithProjection<T extends Doc> (
       }
     } else if (schema[key] !== undefined && schema[key].type === 'bigint') {
       ;(rest as any)[key] = Number.parseInt((rest as any)[key])
+    } else if (schema[key] !== undefined && schema[key].type === 'text[]' && typeof (rest as any)[key] === 'string') {
+      ;(rest as any)[key] = decodeArray((rest as any)[key])
     }
   }
   if (projection !== undefined) {
@@ -565,6 +605,8 @@ export function parseDoc<T extends Doc> (doc: DBDoc, schema: Schema): T {
       }
     } else if (schema[key] !== undefined && schema[key].type === 'bigint') {
       ;(rest as any)[key] = Number.parseInt((rest as any)[key])
+    } else if (schema[key] !== undefined && schema[key].type === 'text[]' && typeof (rest as any)[key] === 'string') {
+      ;(rest as any)[key] = decodeArray((rest as any)[key])
     }
   }
   const res = {
