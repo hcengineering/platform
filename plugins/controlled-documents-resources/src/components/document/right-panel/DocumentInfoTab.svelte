@@ -59,7 +59,7 @@
   }
 
   $: isDocCodeEditable =
-    $isEditable && $controlledDocument != null && $controlledDocument.major === 0 && $controlledDocument.minor === 0
+    $isEditable && $controlledDocument != null && $controlledDocument.major === 0 && $controlledDocument.minor === 1
   $: isDocPrefixEditable = isDocCodeEditable
   $: isTemplate =
     $controlledDocument != null && hierarchy.hasMixin($controlledDocument, documents.mixin.DocumentTemplate)
