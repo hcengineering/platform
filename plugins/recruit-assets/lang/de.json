@@ -121,7 +121,8 @@
     "HideDoneState": "Abgeschlossene Bewerbungen ausblenden",
     "HideArchivedVacancies": "Archivierte Stellen ausblenden",
     "HideApplicantsFromArchivedVacancies": "Aus archivierten Stellen ausblenden",
-    "CreateNewSkills": "Neue Fähigkeiten erstellen, wenn keine bestehenden gefunden werden"
+    "CreateNewSkills": "Neue Fähigkeiten erstellen, wenn keine bestehenden gefunden werden",
+    "SwapFirstAndLastNames": "Vor- und Nachnamen tauschen"
   },
   "status": {
     "ApplicationExists": "Bewerbung existiert bereits",
