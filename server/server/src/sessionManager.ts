@@ -296,6 +296,7 @@ class TSessionManager implements SessionManager {
       const userInfo = await (
         await fetch(this.accountsUrl, {
           method: 'POST',
+          keepalive: true,
           headers: {
             Authorization: 'Bearer ' + token,
             'Content-Type': 'application/json'

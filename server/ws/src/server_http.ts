@@ -218,6 +218,13 @@ export function startHttpServer (
       const name = req.query.name as string
       const contentType = req.query.contentType as string
       const size = parseInt((req.query.size as string) ?? '-1')
+      const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB limit
+
+      if (size > MAX_FILE_SIZE) {
+        res.writeHead(413, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ error: 'File too large' }))
+        return
+      }
       if (Number.isNaN(size)) {
         ctx.error('/api/v1/blob put error', {
           message: 'invalid NaN file size',
@@ -304,14 +311,23 @@ export function startHttpServer (
           })
           .on('end', () => {
             // on end of data, perform necessary action
-            const data = JSON.parse(Buffer.concat(body as any).toString())
-            if (Array.isArray(data)) {
-              sessions.broadcastAll(ws, data as Tx[])
-            } else {
-              sessions.broadcastAll(ws, [data as unknown as Tx])
+            try {
+              const data = JSON.parse(Buffer.concat(body as any).toString())
+              if (Array.isArray(data)) {
+                sessions.broadcastAll(ws, data as Tx[])
+              } else {
+                sessions.broadcastAll(ws, [data as unknown as Tx])
+              }
+              res.end()
+            } catch (err: any) {
+              ctx.error('JSON parse error', { err })
+              res.writeHead(400, {})
+              res.end()
             }
-            res.end()
           })
+      } else {
+        res.writeHead(404, {})
+        res.end()
       }
     } catch (err: any) {
       Analytics.handleError(err)
@@ -441,6 +457,10 @@ export function startHttpServer (
         webSocketData,
         (s) => {
           ctx.error('error', { err, user: s.session.getUser() })
+          if (!(s.session.workspaceClosed ?? false)) {
+            // remove session after 1seconds, give a time to reconnect.
+            void sessions.close(ctx, cs, toWorkspaceString(token.workspace))
+          }
         },
         Buffer.from('')
       )

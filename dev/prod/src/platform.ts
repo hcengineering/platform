@@ -153,20 +153,20 @@ export interface Config {
   PRINT_URL?: string
   POSTHOG_API_KEY?: string
   POSTHOG_HOST?: string
-  ANALYTICS_COLLECTOR_URL?:string
+  ANALYTICS_COLLECTOR_URL?: string
   BRANDING_URL?: string
   TELEGRAM_BOT_URL?: string
-  AI_URL?:string
+  AI_URL?: string
   DISABLE_SIGNUP?: string
   LINK_PREVIEW_URL?: string
-  PASSWORD_STRICTNESS?: "very_strict" | "strict" | "normal" | "none"
+  PASSWORD_STRICTNESS?: 'very_strict' | 'strict' | 'normal' | 'none'
   // Could be defined for dev environment
   FRONT_URL?: string
   PREVIEW_CONFIG?: string
   UPLOAD_CONFIG?: string
   STATS_URL?: string
   PRESENCE_URL?: string
-  USE_BINARY_PROTOCOL?: boolean,
+  USE_BINARY_PROTOCOL?: boolean
   TRANSACTOR_OVERRIDE?: string
   BACKUP_URL?: string
 }
@@ -191,16 +191,16 @@ export interface Branding {
 export type BrandingMap = Record<string, Branding>
 
 const clientType = process.env.CLIENT_TYPE
-const configs: Record<string, string> = { 
+const configs: Record<string, string> = {
   'dev-production': '/config-dev.json',
   'dev-huly': '/config-huly.json',
   'dev-bold': '/config.json',
   'dev-server': '/config.json',
   'dev-worker': '/config-worker.json',
-  'dev-worker-local': '/config-worker-local.json',
+  'dev-worker-local': '/config-worker-local.json'
 }
 
-const PASSWORD_REQUIREMENTS : Record<Config['PASSWORD_STRICTNESS'], Record<string, number>> = {
+const PASSWORD_REQUIREMENTS: Record<Config['PASSWORD_STRICTNESS'], Record<string, number>> = {
   very_strict: {
     MinDigits: 4,
     MinLength: 32,
@@ -235,12 +235,21 @@ function configureI18n(): void {
   //Add localization
   addStringsLoader(platformId, async (lang: string) => await import(`@hcengineering/platform/lang/${lang}.json`))
   addStringsLoader(coreId, async (lang: string) => await import(`@hcengineering/core/lang/${lang}.json`))
-  addStringsLoader(presentationId, async (lang: string) => await import(`@hcengineering/presentation/lang/${lang}.json`))
-  addStringsLoader(textEditorId, async (lang: string) => await import(`@hcengineering/text-editor-assets/lang/${lang}.json`))
+  addStringsLoader(
+    presentationId,
+    async (lang: string) => await import(`@hcengineering/presentation/lang/${lang}.json`)
+  )
+  addStringsLoader(
+    textEditorId,
+    async (lang: string) => await import(`@hcengineering/text-editor-assets/lang/${lang}.json`)
+  )
   addStringsLoader(uiId, async (lang: string) => await import(`@hcengineering/ui/lang/${lang}.json`))
   addStringsLoader(uploaderId, async (lang: string) => await import(`@hcengineering/uploader-assets/lang/${lang}.json`))
   addStringsLoader(activityId, async (lang: string) => await import(`@hcengineering/activity-assets/lang/${lang}.json`))
-  addStringsLoader(attachmentId, async (lang: string) => await import(`@hcengineering/attachment-assets/lang/${lang}.json`))
+  addStringsLoader(
+    attachmentId,
+    async (lang: string) => await import(`@hcengineering/attachment-assets/lang/${lang}.json`)
+  )
   addStringsLoader(bitrixId, async (lang: string) => await import(`@hcengineering/bitrix-assets/lang/${lang}.json`))
   addStringsLoader(boardId, async (lang: string) => await import(`@hcengineering/board-assets/lang/${lang}.json`))
   addStringsLoader(calendarId, async (lang: string) => await import(`@hcengineering/calendar-assets/lang/${lang}.json`))
@@ -249,12 +258,21 @@ function configureI18n(): void {
   addStringsLoader(driveId, async (lang: string) => await import(`@hcengineering/drive-assets/lang/${lang}.json`))
   addStringsLoader(gmailId, async (lang: string) => await import(`@hcengineering/gmail-assets/lang/${lang}.json`))
   addStringsLoader(hrId, async (lang: string) => await import(`@hcengineering/hr-assets/lang/${lang}.json`))
-  addStringsLoader(inventoryId, async (lang: string) => await import(`@hcengineering/inventory-assets/lang/${lang}.json`))
+  addStringsLoader(
+    inventoryId,
+    async (lang: string) => await import(`@hcengineering/inventory-assets/lang/${lang}.json`)
+  )
   addStringsLoader(leadId, async (lang: string) => await import(`@hcengineering/lead-assets/lang/${lang}.json`))
   addStringsLoader(loginId, async (lang: string) => await import(`@hcengineering/login-assets/lang/${lang}.json`))
-  addStringsLoader(notificationId, async (lang: string) => await import(`@hcengineering/notification-assets/lang/${lang}.json`))
+  addStringsLoader(
+    notificationId,
+    async (lang: string) => await import(`@hcengineering/notification-assets/lang/${lang}.json`)
+  )
   addStringsLoader(onboardId, async (lang: string) => await import(`@hcengineering/onboard-assets/lang/${lang}.json`))
-  addStringsLoader(preferenceId, async (lang: string) => await import(`@hcengineering/preference-assets/lang/${lang}.json`))
+  addStringsLoader(
+    preferenceId,
+    async (lang: string) => await import(`@hcengineering/preference-assets/lang/${lang}.json`)
+  )
   addStringsLoader(recruitId, async (lang: string) => await import(`@hcengineering/recruit-assets/lang/${lang}.json`))
   addStringsLoader(requestId, async (lang: string) => await import(`@hcengineering/request-assets/lang/${lang}.json`))
   addStringsLoader(settingId, async (lang: string) => await import(`@hcengineering/setting-assets/lang/${lang}.json`))
@@ -262,25 +280,46 @@ function configureI18n(): void {
   addStringsLoader(tagsId, async (lang: string) => await import(`@hcengineering/tags-assets/lang/${lang}.json`))
   addStringsLoader(taskId, async (lang: string) => await import(`@hcengineering/task-assets/lang/${lang}.json`))
   addStringsLoader(telegramId, async (lang: string) => await import(`@hcengineering/telegram-assets/lang/${lang}.json`))
-  addStringsLoader(templatesId, async (lang: string) => await import(`@hcengineering/templates-assets/lang/${lang}.json`))
+  addStringsLoader(
+    templatesId,
+    async (lang: string) => await import(`@hcengineering/templates-assets/lang/${lang}.json`)
+  )
   addStringsLoader(trackerId, async (lang: string) => await import(`@hcengineering/tracker-assets/lang/${lang}.json`))
   addStringsLoader(viewId, async (lang: string) => await import(`@hcengineering/view-assets/lang/${lang}.json`))
-  addStringsLoader(workbenchId, async (lang: string) => await import(`@hcengineering/workbench-assets/lang/${lang}.json`))
+  addStringsLoader(
+    workbenchId,
+    async (lang: string) => await import(`@hcengineering/workbench-assets/lang/${lang}.json`)
+  )
 
-  addStringsLoader(desktopPreferencesId, async (lang: string) => await import(`@hcengineering/desktop-preferences-assets/lang/${lang}.json`))
+  addStringsLoader(
+    desktopPreferencesId,
+    async (lang: string) => await import(`@hcengineering/desktop-preferences-assets/lang/${lang}.json`)
+  )
   addStringsLoader(diffviewId, async (lang: string) => await import(`@hcengineering/diffview-assets/lang/${lang}.json`))
   addStringsLoader(documentId, async (lang: string) => await import(`@hcengineering/document-assets/lang/${lang}.json`))
   addStringsLoader(timeId, async (lang: string) => await import(`@hcengineering/time-assets/lang/${lang}.json`))
   addStringsLoader(githubId, async (lang: string) => await import(`@hcengineering/github-assets/lang/${lang}.json`))
-  addStringsLoader(documentsId, async (lang: string) => await import(`@hcengineering/controlled-documents-assets/lang/${lang}.json`))
+  addStringsLoader(
+    documentsId,
+    async (lang: string) => await import(`@hcengineering/controlled-documents-assets/lang/${lang}.json`)
+  )
   addStringsLoader(productsId, async (lang: string) => await import(`@hcengineering/products-assets/lang/${lang}.json`))
-  addStringsLoader(questionsId, async (lang: string) => await import(`@hcengineering/questions-assets/lang/${lang}.json`))
+  addStringsLoader(
+    questionsId,
+    async (lang: string) => await import(`@hcengineering/questions-assets/lang/${lang}.json`)
+  )
   addStringsLoader(trainingId, async (lang: string) => await import(`@hcengineering/training-assets/lang/${lang}.json`))
   addStringsLoader(guestId, async (lang: string) => await import(`@hcengineering/guest-assets/lang/${lang}.json`))
   addStringsLoader(loveId, async (lang: string) => await import(`@hcengineering/love-assets/lang/${lang}.json`))
   addStringsLoader(printId, async (lang: string) => await import(`@hcengineering/print-assets/lang/${lang}.json`))
-  addStringsLoader(analyticsCollectorId, async (lang: string) => await import(`@hcengineering/analytics-collector-assets/lang/${lang}.json`))
-  addStringsLoader(testManagementId, async (lang: string) => await import(`@hcengineering/test-management-assets/lang/${lang}.json`))
+  addStringsLoader(
+    analyticsCollectorId,
+    async (lang: string) => await import(`@hcengineering/analytics-collector-assets/lang/${lang}.json`)
+  )
+  addStringsLoader(
+    testManagementId,
+    async (lang: string) => await import(`@hcengineering/test-management-assets/lang/${lang}.json`)
+  )
   addStringsLoader(surveyId, async (lang: string) => await import(`@hcengineering/survey-assets/lang/${lang}.json`))
   addStringsLoader(cardId, async (lang: string) => await import(`@hcengineering/card-assets/lang/${lang}.json`))
 }
@@ -301,7 +340,8 @@ export async function configurePlatform() {
   configureI18n()
 
   const config: Config = await loadServerConfig(configs[clientType] ?? '/config.json')
-  const branding: BrandingMap = config.BRANDING_URL !== undefined ? await (await fetch(config.BRANDING_URL)).json() : {}
+  const branding: BrandingMap =
+    config.BRANDING_URL !== undefined ? await (await fetch(config.BRANDING_URL, { keepalive: true })).json() : {}
   const myBranding = branding[window.location.host] ?? {}
 
   console.log('loading configuration', config)
@@ -342,7 +382,7 @@ export async function configurePlatform() {
   setMetadata(login.metadata.DisableSignUp, config.DISABLE_SIGNUP === 'true')
 
   setMetadata(login.metadata.PasswordValidations, PASSWORD_REQUIREMENTS[config.PASSWORD_STRICTNESS ?? 'none'])
-  
+
   setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
@@ -384,7 +424,9 @@ export async function configurePlatform() {
   setMetadata(sign.metadata.SignURL, config.SIGN_URL)
   setMetadata(presence.metadata.PresenceUrl, config.PRESENCE_URL ?? '')
 
-  const languages = myBranding.languages ? (myBranding.languages as string).split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it', 'de']
+  const languages = myBranding.languages
+    ? (myBranding.languages as string).split(',').map((l) => l.trim())
+    : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it', 'de']
 
   setMetadata(uiPlugin.metadata.Languages, languages)
 
@@ -418,15 +460,24 @@ export async function configurePlatform() {
   addLocation(telegramId, () => import(/* webpackChunkName: "telegram" */ '@hcengineering/telegram-resources'))
   addLocation(attachmentId, () => import(/* webpackChunkName: "attachment" */ '@hcengineering/attachment-resources'))
   addLocation(gmailId, () => import(/* webpackChunkName: "gmail" */ '@hcengineering/gmail-resources'))
-  addLocation(imageCropperId, () => import(/* webpackChunkName: "image-cropper" */ '@hcengineering/image-cropper-resources'))
+  addLocation(
+    imageCropperId,
+    () => import(/* webpackChunkName: "image-cropper" */ '@hcengineering/image-cropper-resources')
+  )
   addLocation(inventoryId, () => import(/* webpackChunkName: "inventory" */ '@hcengineering/inventory-resources'))
   addLocation(templatesId, () => import(/* webpackChunkName: "templates" */ '@hcengineering/templates-resources'))
-  addLocation(notificationId, () => import(/* webpackChunkName: "notification" */ '@hcengineering/notification-resources'))
+  addLocation(
+    notificationId,
+    () => import(/* webpackChunkName: "notification" */ '@hcengineering/notification-resources')
+  )
   addLocation(tagsId, () => import(/* webpackChunkName: "tags" */ '@hcengineering/tags-resources'))
   addLocation(calendarId, () => import(/* webpackChunkName: "calendar" */ '@hcengineering/calendar-resources'))
   addLocation(diffviewId, () => import(/* webpackChunkName: "diffview" */ '@hcengineering/diffview-resources'))
   addLocation(timeId, () => import(/* webpackChunkName: "time" */ '@hcengineering/time-resources'))
-  addLocation(desktopPreferencesId, () => import(/* webpackChunkName: "desktop-preferences" */ '@hcengineering/desktop-preferences-resources'))
+  addLocation(
+    desktopPreferencesId,
+    () => import(/* webpackChunkName: "desktop-preferences" */ '@hcengineering/desktop-preferences-resources')
+  )
   addLocation(analyticsCollectorId, async () => await import('@hcengineering/analytics-collector-resources'))
   addLocation(aiBotId, async () => await import('@hcengineering/ai-bot-resources'))
 
@@ -443,13 +494,19 @@ export async function configurePlatform() {
   addLocation(questionsId, () => import(/* webpackChunkName: "training" */ '@hcengineering/questions-resources'))
   addLocation(trainingId, () => import(/* webpackChunkName: "training" */ '@hcengineering/training-resources'))
   addLocation(productsId, () => import(/* webpackChunkName: "products" */ '@hcengineering/products-resources'))
-  addLocation(documentsId, () => import(/* webpackChunkName: "documents" */ '@hcengineering/controlled-documents-resources'))
+  addLocation(
+    documentsId,
+    () => import(/* webpackChunkName: "documents" */ '@hcengineering/controlled-documents-resources')
+  )
   addLocation(guestId, () => import(/* webpackChunkName: "guest" */ '@hcengineering/guest-resources'))
   addLocation(loveId, () => import(/* webpackChunkName: "love" */ '@hcengineering/love-resources'))
   addLocation(printId, () => import(/* webpackChunkName: "print" */ '@hcengineering/print-resources'))
   addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
   addLocation(uploaderId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/uploader-resources'))
-  addLocation(testManagementId, () => import(/* webpackChunkName: "test-management" */ '@hcengineering/test-management-resources'))
+  addLocation(
+    testManagementId,
+    () => import(/* webpackChunkName: "test-management" */ '@hcengineering/test-management-resources')
+  )
   addLocation(surveyId, () => import(/* webpackChunkName: "survey" */ '@hcengineering/survey-resources'))
   addLocation(presenceId, () => import(/* webpackChunkName: "presence" */ '@hcengineering/presence-resources'))
   addLocation(cardId, () => import(/* webpackChunkName: "card" */ '@hcengineering/card-resources'))
@@ -460,7 +517,10 @@ export async function configurePlatform() {
 
   // Use binary response transfer for faster performance and small transfer sizes.
   const binaryOverride = localStorage.getItem(client.metadata.UseBinaryProtocol)
-  setMetadata(client.metadata.UseBinaryProtocol, binaryOverride != null ? binaryOverride === 'true' : (config.USE_BINARY_PROTOCOL ?? true))
+  setMetadata(
+    client.metadata.UseBinaryProtocol,
+    binaryOverride != null ? binaryOverride === 'true' : config.USE_BINARY_PROTOCOL ?? true
+  )
 
   // Disable for now, since it causes performance issues on linux/docker/kubernetes boxes for now.
   setMetadata(client.metadata.UseProtocolCompression, true)

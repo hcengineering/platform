@@ -113,6 +113,7 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
     try {
       await fetch(this.fulltextEndpoint + '/api/v1/warmup', {
         method: 'PUT',
+        keepalive: true,
         headers: {
           'Content-Type': 'application/json'
         },
@@ -137,6 +138,7 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
       return await (
         await fetch(this.fulltextEndpoint + '/api/v1/search', {
           method: 'PUT',
+          keepalive: true,
           headers: {
             'Content-Type': 'application/json'
           },
@@ -360,6 +362,7 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
         return await (
           await fetch(this.fulltextEndpoint + '/api/v1/full-text-search', {
             method: 'PUT',
+            keepalive: true,
             headers: {
               'Content-Type': 'application/json'
             },
@@ -390,6 +393,7 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
     try {
       await fetch(this.fulltextEndpoint + '/api/v1/close', {
         method: 'PUT',
+        keepalive: true,
         headers: {
           'Content-Type': 'application/json'
         },

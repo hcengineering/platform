@@ -207,6 +207,7 @@ export class STT implements Stt {
     try {
       await fetch(`${config.PlatformUrl}/love/transcript`, {
         method: 'POST',
+        keepalive: true,
         headers: {
           'Content-Type': 'application/json',
           Authorization: 'Bearer ' + config.PlatformToken
