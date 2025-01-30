@@ -209,6 +209,7 @@ async function sendPushToSubscription (
       await (
         await fetch(concatLink(sesURL, '/web-push'), {
           method: 'post',
+          keepalive: true,
           headers: {
             'Content-Type': 'application/json',
             ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})

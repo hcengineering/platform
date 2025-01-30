@@ -23,7 +23,9 @@ async function loadServerConfig (url: string): Promise<any> {
 
   do {
     try {
-      res = await fetch(url)
+      res = await fetch(url, {
+        keepalive: true
+      })
       break
     } catch (e) {
       retries--
@@ -93,7 +95,7 @@ const expose: IPCMainExposed = {
   branding: async () => {
     const cfg = await expose.config()
     const branding: BrandingMap = await (
-      await fetch(cfg.BRANDING_URL ?? concatLink(cfg.FRONT_URL, 'branding.json'))
+      await fetch(cfg.BRANDING_URL ?? concatLink(cfg.FRONT_URL, 'branding.json'), { keepalive: true })
     ).json()
     const host = await ipcRenderer.invoke('get-host')
     return branding[host] ?? {}

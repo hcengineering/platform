@@ -782,7 +782,7 @@ export async function loadServerConfig (url: string): Promise<any> {
 
   do {
     try {
-      res = await fetch(url)
+      res = await fetch(url, { keepalive: true })
       break
     } catch (e: any) {
       retries--
