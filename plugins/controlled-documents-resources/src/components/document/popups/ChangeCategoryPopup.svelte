@@ -19,7 +19,7 @@
   import { createEventDispatcher } from 'svelte'
 
   import { Ref } from '@hcengineering/core'
-  import DropdownLabelsPopup from '@hcengineering/ui/src/components/DropdownLabelsPopup.svelte'
+  import { DropdownLabelsPopup } from '@hcengineering/ui'
 
   export let object: DocumentTemplate
 
