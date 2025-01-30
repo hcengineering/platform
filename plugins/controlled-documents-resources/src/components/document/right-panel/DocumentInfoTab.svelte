@@ -22,6 +22,7 @@
 
   import documentsRes from '../../../plugin'
   import {
+    $documentAllVersionsDescSorted as documentAllVersions,
     $controlledDocument as controlledDocument,
     $isEditable as isEditable,
     $projectRef as projectRef
@@ -41,6 +42,7 @@
   import AbstractEditor from '../editors/AbstractEditor.svelte'
   import DocumentFlatHierarchy from './info/DocumentFlatHierarchy.svelte'
   import DocumentPrefixPresenter from '../presenters/DocumentPrefixPresenter.svelte'
+  import ChangeCategoryPopup from '../popups/ChangeCategoryPopup.svelte'
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -58,9 +60,20 @@
     )
   }
 
-  $: isDocCodeEditable =
-    $isEditable && $controlledDocument != null && $controlledDocument.major === 0 && $controlledDocument.minor === 1
-  $: isDocPrefixEditable = isDocCodeEditable
+  function handleCategoryEdit (event: MouseEvent): void {
+    event?.preventDefault()
+    event?.stopPropagation()
+
+    showPopup(
+      ChangeCategoryPopup,
+      {
+        object: $controlledDocument
+      },
+      eventToHTMLElement(event)
+    )
+  }
+
+  $: isEditableDraft = $isEditable && $controlledDocument != null && $documentAllVersions.length === 1
   $: isTemplate =
     $controlledDocument != null && hierarchy.hasMixin($controlledDocument, documents.mixin.DocumentTemplate)
 
@@ -81,7 +94,7 @@
           value={$controlledDocument}
           isRegular
           disableLink
-          editable={isDocCodeEditable}
+          editable={isEditableDraft}
           on:edit={(e) => {
             handleCodeEdit(e.detail)
           }}
@@ -89,7 +102,13 @@
       </DocumentInfo>
 
       <DocumentInfo label={documentsRes.string.Category}>
-        <CategoryPresenter value={$controlledDocument.category} />
+        <CategoryPresenter
+          value={$controlledDocument.category}
+          editable={isEditableDraft}
+          on:edit={(e) => {
+            handleCategoryEdit(e.detail)
+          }}
+        />
       </DocumentInfo>
 
       {#if !isTemplate}
@@ -100,7 +119,7 @@
 
       {#if isTemplate}
         <DocumentInfo label={documentsRes.string.DocumentPrefix}>
-          <DocumentPrefixPresenter value={asTemplate} editable={isDocPrefixEditable} />
+          <DocumentPrefixPresenter value={asTemplate} editable={isEditableDraft} />
         </DocumentInfo>
       {/if}
 
