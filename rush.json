@@ -2252,6 +2252,16 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/mail",
+      "projectFolder": "plugins/mail",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-mail",
+      "projectFolder": "models/mail",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/personal-browser",
       "projectFolder": "plugins/personal-browser",
       "shouldPublish": false

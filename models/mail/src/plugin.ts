@@ -1,5 +1,6 @@
 //
-// Copyright © 2025 Hardcore Engineering Inc.
+// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2021 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,7 +14,13 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@hcengineering/platform'
-import personalBrowser, { personalBrowserId } from '@hcengineering/personal-browser'
+import { type IntlString, mergeIds } from '@hcengineering/platform'
+import mail, { mailId } from '@hcengineering/mail'
 
-export default mergeIds(personalBrowserId, personalBrowser, {})
+export default mergeIds(mailId, mail, {
+  string: {
+    Subject: '' as IntlString,
+    MailThread: '' as IntlString,
+    MailThreadId: '' as IntlString
+  }
+})

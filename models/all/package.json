@@ -115,6 +115,7 @@
     "@hcengineering/model-survey": "^0.6.0",
     "@hcengineering/model-presence": "^0.6.0",
     "@hcengineering/model-card": "^0.6.0",
+    "@hcengineering/model-mail": "^0.6.0",
     "@hcengineering/model-personal-browser": "^0.6.0"
   }
 }

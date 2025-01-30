@@ -13,7 +13,22 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@hcengineering/platform'
-import personalBrowser, { personalBrowserId } from '@hcengineering/personal-browser'
+import type { Class, Ref } from '@hcengineering/core'
+import { type Plugin, plugin } from '@hcengineering/platform'
+import type { ChunterSpace } from '@hcengineering/chunter'
 
-export default mergeIds(personalBrowserId, personalBrowser, {})
+export interface MailThread extends ChunterSpace {
+  subject: string
+  mailThreadId: string
+}
+
+/**
+ * @public
+ */
+export const mailId = 'mail' as Plugin
+
+export default plugin(mailId, {
+  class: {
+    MailThread: '' as Ref<Class<MailThread>>
+  }
+})

@@ -31,9 +31,7 @@ export const personalBrowserPlugin = plugin(personalBrowserId, {
     PersonalBrowser: '' as Ref<Doc>
   },
   icon: {
-    PersonalBrowser: '' as Asset,
-    PersonalBrowserVersion: '' as Asset,
-    PersonalBrowserApplication: '' as Asset
+    PersonalBrowser: '' as Asset
   },
   class: {
   },

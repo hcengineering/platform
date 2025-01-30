@@ -104,6 +104,7 @@ import personalBrowser, {
   personalBrowserId,
   createModel as personalBrowserModel
 } from '@hcengineering/model-personal-browser'
+import { mailId, createModel as mailModel } from '@hcengineering/model-mail'
 
 import {
   serverDocumentsId,
@@ -443,6 +444,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         classFilter: defaultFilter
       }
     ],
+    [mailModel, mailId],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
