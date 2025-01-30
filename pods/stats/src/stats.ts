@@ -131,8 +131,7 @@ export function serveStats (ctx: MeasureContext, onClose?: () => void): void {
       }
       req.body = dta
     } catch (err: any) {
-      Analytics.handleError(err)
-      console.error(err)
+      console.error(err, req.host, req.headers, req.ip)
       req.res.writeHead(404, {})
       req.res.end()
     }
@@ -182,8 +181,7 @@ export function serveStats (ctx: MeasureContext, onClose?: () => void): void {
       req.res.writeHead(200)
       req.res.end()
     } catch (err: any) {
-      Analytics.handleError(err)
-      console.error(err)
+      console.error(err, req.host, req.headers, req.ip)
       req.res.writeHead(404, {})
       req.res.end()
     }
