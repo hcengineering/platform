@@ -259,7 +259,7 @@ export async function getAllWorkspaces (): Promise<WorkspaceInfoWithStatus[]> {
   let workspaces: WorkspaceInfoWithStatus[]
 
   try {
-    workspaces = await getAccountClient(token).listWorkspaces(null, true)
+    workspaces = await getAccountClient(token).listWorkspaces()
   } catch (err: any) {
     if (err instanceof PlatformError) {
       await handleStatusError('Get workspaces error', err.status)

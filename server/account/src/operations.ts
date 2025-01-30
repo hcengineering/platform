@@ -29,7 +29,8 @@ import {
   type WorkspaceMemberInfo,
   type PersonUuid,
   isActiveMode,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type WorkspaceMode
 } from '@hcengineering/core'
 import platform, {
   getMetadata,
@@ -830,7 +831,7 @@ export async function listWorkspaces (
   branding: Branding | null,
   token: string,
   region?: string | null,
-  includeDisabled: boolean = false
+  mode?: WorkspaceMode | null
 ): Promise<WorkspaceInfoWithStatus[]> {
   const { extra } = decodeTokenVerbose(ctx, token)
 
@@ -844,11 +845,18 @@ export async function listWorkspaces (
     return sm
   }, {})
 
-  let workspaces = await db.workspace.find(region != null ? { region } : {})
+  const workspaces = (await db.workspace.find(region != null ? { region } : {})).filter((it) => {
+    const status = statusesMap[it.uuid]
+    if (status.isDisabled) {
+      return false
+    }
 
-  if (!includeDisabled) {
-    workspaces = workspaces.filter((it) => !statusesMap[it.uuid].isDisabled)
-  }
+    if (mode != null) {
+      return status.mode === mode
+    }
+
+    return true
+  })
 
   return workspaces.map((it) => ({
     ...it,

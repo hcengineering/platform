@@ -196,7 +196,7 @@ class BackupWorker {
     for (const ws of part) {
       ctx.warn('prepare workspace', {
         idx: ++idx,
-        workspace: ws.workspaceUrl ?? ws.workspace,
+        workspace: ws.url ?? ws.uuid,
         backupSize: ws.backupInfo?.backupSize ?? 0,
         lastBackupSec: (now - (ws.backupInfo?.lastBackup ?? 0)) / 1000
       })

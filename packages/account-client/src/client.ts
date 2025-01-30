@@ -22,6 +22,7 @@ import {
   Version,
   type WorkspaceInfoWithStatus,
   type WorkspaceMemberInfo,
+  WorkspaceMode,
   concatLink
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
@@ -93,7 +94,7 @@ export interface AccountClient {
     progress: number,
     message?: string
   ) => Promise<void>
-  listWorkspaces: (region?: string | null, includeDisabled?: boolean) => Promise<WorkspaceInfoWithStatus[]>
+  listWorkspaces: (region?: string | null, mode?: WorkspaceMode | null) => Promise<WorkspaceInfoWithStatus[]>
   performWorkspaceOperation: (
     workspaceId: string | string[],
     event: 'archive' | 'migrate-to' | 'unarchive',
@@ -494,10 +495,10 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async listWorkspaces (region?: string | null, includeDisabled?: boolean): Promise<WorkspaceInfoWithStatus[]> {
+  async listWorkspaces (region?: string | null, mode: WorkspaceMode | null = null): Promise<WorkspaceInfoWithStatus[]> {
     const request = {
       method: 'listWorkspaces' as const,
-      params: [region, includeDisabled]
+      params: [region, mode]
     }
 
     return ((await this.rpc<any[]>(request)) ?? []).map((ws) => this.flattenStatus(ws))

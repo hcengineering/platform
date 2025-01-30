@@ -1086,7 +1086,7 @@ export function devTool (
   //     try {
   //       const token = generateToken(systemAccountUuid, undefined, { service: 'tool' })
   //       const accountClient = getAccountClient(token)
-  //       const workspaces = (await accountClient.listWorkspaces()).filter((it) => {
+  //       const workspaces = (await accountClient.listWorkspaces(null, 'active')).filter((it) => {
   //         const lastBackup = it.backupInfo?.lastBackup ?? 0
   //         if (lastBackup > daysInterval) {
   //           // No backup required, interval not elapsed

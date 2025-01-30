@@ -243,8 +243,8 @@ async function canMakeDocumentObsolete (obj?: Doc | Doc[]): Promise<boolean> {
   }
 
   const objs = (Array.isArray(obj) ? obj : [obj]) as Document[]
-  const currentUser = getCurrentAccount() as PersonAccount
-  const isOwner = objs.every((doc) => doc.owner === currentUser.person)
+  const currentUser = getCurrentEmployee()
+  const isOwner = objs.every((doc) => doc.owner === currentUser)
 
   if (isOwner) {
     return true
