@@ -246,7 +246,7 @@
     "@hcengineering/card": "^0.6.0",
     "@hcengineering/card-assets": "^0.6.0",
     "@hcengineering/card-resources": "^0.6.0",
-    "@sentry/svelte": "~7.101.0",
+    "@sentry/svelte": "^8.52.1",
     "posthog-js": "~1.122.0"
   }
 }

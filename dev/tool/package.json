@@ -160,7 +160,7 @@
     "commander": "^8.1.0",
     "csv-parse": "~5.1.0",
     "email-addresses": "^5.0.0",
-    "fast-equals": "^5.0.1",
+    "fast-equals": "^5.2.2",
     "libphonenumber-js": "^1.9.46",
     "mime-types": "~2.1.34",
     "mongodb": "^6.12.0",

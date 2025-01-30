@@ -44,6 +44,6 @@
     "@hcengineering/server-notification": "^0.6.1",
     "@hcengineering/query": "^0.6.12",
     "@hcengineering/analytics": "^0.6.0",
-    "fast-equals": "^5.0.1"
+    "fast-equals": "^5.2.2"
   }
 }

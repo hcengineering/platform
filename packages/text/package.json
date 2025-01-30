@@ -64,7 +64,7 @@
     "@tiptap/suggestion": "^2.11.3",
     "prosemirror-codemark": "^0.4.2",
     "markdown-it": "^14.0.0",
-    "fast-equals": "^5.0.1",
+    "fast-equals": "^5.2.2",
     "@tiptap/extension-text-align": "~2.11.0",
     "@tiptap/extension-text-style": "~2.11.0"
   },

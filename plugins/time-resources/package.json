@@ -66,7 +66,7 @@
     "@hcengineering/rank": "^0.6.4",
     "@tiptap/extension-task-item": "^2.11.3",
     "@tiptap/extension-task-list": "^2.11.3",
-    "fast-equals": "^5.0.1",
+    "fast-equals": "^5.2.2",
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/activity-resources": "^0.6.1",
     "@hcengineering/workbench-resources": "^0.6.1"
