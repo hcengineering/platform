@@ -73,7 +73,7 @@ class GreenClient implements DBClient {
           console.warn('green failed after retries', query)
           return await this.connection.unsafe(query, params, getPrepare())
         }
-        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 100))
+        await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100))
       }
     }
 

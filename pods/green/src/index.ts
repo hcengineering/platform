@@ -44,10 +44,12 @@ async function toResponse (compression: string, data: any, response: http.Server
       })
       .end(await compress(JSON.stringify(data)))
   } else {
-    response.writeHead(200, {
-      'content-type': 'application/json',
-      'keep-alive': 'timeout=5'
-    }).end(JSON.stringify(data))
+    response
+      .writeHead(200, {
+        'content-type': 'application/json',
+        'keep-alive': 'timeout=5'
+      })
+      .end(JSON.stringify(data))
   }
 }
 
@@ -65,7 +67,11 @@ setInterval(() => {
 
 let queryId = 0
 
-async function handleSQLFind (compression: string, req: http.IncomingMessage, response: http.ServerResponse): Promise<void> {
+async function handleSQLFind (
+  compression: string,
+  req: http.IncomingMessage,
+  response: http.ServerResponse
+): Promise<void> {
   let data = ''
   for await (const chunk of req) {
     data += chunk
@@ -103,7 +109,7 @@ async function handleSQLFind (compression: string, req: http.IncomingMessage, re
 
 const reqHandler = (req: http.IncomingMessage, resp: http.ServerResponse): void => {
   const token = ((req.headers.authorization as string) ?? '').split(' ')[1]
-  const compression = ((req.headers.compression as string) ?? '')
+  const compression = (req.headers.compression as string) ?? ''
   if (token !== authToken) {
     resp.writeHead(401).end('Unauthorized')
     return
