@@ -1,5 +1,14 @@
 <script lang="ts">
-  import { groupByArray, isActiveMode, type BaseWorkspaceInfo } from '@hcengineering/core'
+  import {
+    groupByArray,
+    isActiveMode,
+    isArchivingMode,
+    isDeletingMode,
+    isMigrationMode,
+    isRestoringMode,
+    reduceCalls,
+    type BaseWorkspaceInfo
+  } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { isAdminUser } from '@hcengineering/presentation'
   import {
@@ -14,7 +23,8 @@
     Popup,
     Scroller,
     SearchEdit,
-    ticker
+    ticker,
+    CheckBox
   } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
   import { getAllWorkspaces, getRegionInfo, performWorkspaceOperation, type RegionInfo } from '../utils'
@@ -32,13 +42,14 @@
 
   let workspaces: WorkspaceInfo[] = []
 
-  $: if ($ticker > 0) {
-    void getAllWorkspaces().then((res) => {
-      workspaces = res.sort((a, b) =>
-        (b.workspaceUrl ?? b.workspace).localeCompare(a.workspaceUrl ?? a.workspace)
-      ) as WorkspaceInfo[]
-    })
-  }
+  const updateWorkspaces = reduceCalls(async (_: number) => {
+    const res = await getAllWorkspaces()
+    workspaces = res.sort((a, b) =>
+      (b.workspaceUrl ?? b.workspace).localeCompare(a.workspaceUrl ?? a.workspace)
+    ) as WorkspaceInfo[]
+  })
+
+  $: void updateWorkspaces($ticker)
 
   const now = Date.now()
 
@@ -55,13 +66,26 @@
     FewOrMoreYears: 10000000
   }
 
+  let limit = 50
+
+  // Individual filters
+
+  let showActive: boolean = true
+  let showArchived: boolean = false
+  let showDeleted: boolean = true
+  let showOther: boolean = true
+
   $: groupped = groupByArray(
     workspaces.filter(
       (it) =>
-        (it.workspaceName?.includes(search) ?? false) ||
-        (it.workspaceUrl?.includes(search) ?? false) ||
-        it.workspace?.includes(search) ||
-        it.createdBy?.includes(search)
+        ((it.workspaceName?.includes(search) ?? false) ||
+          (it.workspaceUrl?.includes(search) ?? false) ||
+          it.workspace?.includes(search) ||
+          it.createdBy?.includes(search)) &&
+        ((showActive && isActiveMode(it.mode)) ||
+          (showArchived && isArchivingMode(it.mode)) ||
+          (showDeleted && isDeletingMode(it.mode)) ||
+          (showOther && (isMigrationMode(it.mode) || isRestoringMode(it.mode))))
     ),
     (it) => {
       const lastUsageDays = Math.round((now - it.lastVisit) / (1000 * 3600 * 24))
@@ -92,6 +116,26 @@
       <SearchEdit bind:value={search} width={'100%'} />
     </div>
 
+    <div class="p-3 flex-col">
+      <span class="fs-title mr-2">Filters: </span>
+      <div class="flex-row-center">
+        Show active workspaces:
+        <CheckBox bind:checked={showActive} />
+      </div>
+      <div class="flex-row-center">
+        <span class="mr-2">Show archived workspaces:</span>
+        <CheckBox bind:checked={showArchived} />
+      </div>
+      <div class="flex-row-center">
+        <span class="mr-2">Show deleted workspaces:</span>
+        <CheckBox bind:checked={showDeleted} />
+      </div>
+      <div class="flex-row-center">
+        <span class="mr-2">Show other workspaces:</span>
+        <CheckBox bind:checked={showOther} />
+      </div>
+    </div>
+
     <div class="fs-title p-3 flex-row-center">
       <span class="mr-2"> Migration region selector: </span>
       <ButtonMenu
@@ -109,6 +153,7 @@
         <div class="mr-4">
           {#each Object.keys(dayRanges) as k}
             {@const v = groupped.get(k) ?? []}
+            {@const hasMore = (groupped.get(k) ?? []).length > limit}
             {@const activeV = v.filter((it) => it.mode === 'active' && (it.region ?? '') !== selectedRegionId)}
             {@const archiveV = v.filter((it) => it.mode === 'active')}
             {@const archivedD = v.filter((it) => it.mode === 'archived')}
@@ -116,12 +161,30 @@
             {#if v.length > 0}
               <Expandable expandable={true} bordered={true}>
                 <svelte:fragment slot="title">
-                  <span class="fs-title focused-button">
-                    {k} - {v.length}
+                  <span class="fs-title focused-button flex-row-center">
+                    {k} -
+                    {#if hasMore}
+                      {limit} of {v.length}
+                    {:else}
+                      {v.length}
+                    {/if}
                     {#if av > 0}
                       - maitenance: {av}
                     {/if}
                   </span>
+                </svelte:fragment>
+                <svelte:fragment slot="title-tools">
+                  {#if hasMore}
+                    <div class="ml-4">
+                      <Button
+                        label={getEmbeddedLabel(`More ${k}`)}
+                        kind={'link'}
+                        on:click={() => {
+                          limit += 50
+                        }}
+                      />
+                    </div>
+                  {/if}
                 </svelte:fragment>
                 <svelte:fragment slot="tools">
                   {#if archiveV.length > 0}
@@ -153,7 +216,7 @@
                     />
                   {/if}
                 </svelte:fragment>
-                {#each v as workspace}
+                {#each v.slice(0, limit) as workspace}
                   {@const wsName = workspace.workspaceName ?? workspace.workspace}
                   {@const lastUsageDays = Math.round((Date.now() - workspace.lastVisit) / (1000 * 3600 * 24))}
                   <!-- svelte-ignore a11y-click-events-have-key-events -->

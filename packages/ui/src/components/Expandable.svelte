@@ -51,6 +51,11 @@
       <span class="fs-title overflow-label" class:content-color={contentColor}>
         {#if label}<Label {label} />{/if}<slot name="title" />
       </span>
+      {#if $$slots['title-tools']}
+        <div class="buttons-group small-gap">
+          <slot name="title-tools" />
+        </div>
+      {/if}
     </div>
     {#if $$slots.tools}
       <div class="buttons-group small-gap">
