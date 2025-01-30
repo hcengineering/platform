@@ -194,7 +194,7 @@ const SvelteNodeViewRenderer = (
   component: SvelteNodeViewComponent,
   options: Partial<SvelteNodeViewRendererOptions>
 ): NodeViewRenderer => {
-  return (props) => (new SvelteNodeView(component, props, options))
+  return (props) => new SvelteNodeView(component, props, options)
 }
 
 export default SvelteNodeViewRenderer
