@@ -86,7 +86,9 @@
     "pdfjs-dist": "2.12.313",
     "sharp": "~0.32.0",
     "morgan": "^1.10.0",
-    "@hcengineering/server-core": "^0.6.1"
+    "@hcengineering/server-core": "^0.6.1",
+    "@hcengineering/server-token": "^0.6.11",
+    "@hcengineering/platform": "^0.6.11"
   },
   "description": "Document recognition service"
 }
