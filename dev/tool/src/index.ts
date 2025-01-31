@@ -1279,10 +1279,11 @@ export function devTool (
           blobsSize: workspace.backupInfo?.blobsSize ?? 0
         })
         const workspaceId = getWorkspaceId(workspace.workspace)
+        const token = generateToken(systemAccountEmail, workspaceId)
 
         for (const config of storages) {
           const storage = new S3Service(config)
-          await copyToDatalake(toolCtx, workspaceId, config, storage, datalake, params)
+          await copyToDatalake(toolCtx, workspaceId, config, storage, datalake, token, params)
         }
       }
     })
