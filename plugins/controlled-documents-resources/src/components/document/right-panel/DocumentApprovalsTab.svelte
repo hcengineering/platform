@@ -51,7 +51,7 @@
 </script>
 
 <RightPanelTabHeader>
-  <Label label={document.string.DocumentApprovals} />
+  <Label label={document.string.ValidationWorkflow} />
 </RightPanelTabHeader>
 
 <Scroller>

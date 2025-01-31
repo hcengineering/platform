@@ -2,7 +2,7 @@
   import { slide } from 'svelte/transition'
   import documents, { DocumentRequest } from '@hcengineering/controlled-documents'
   import chunter from '@hcengineering/chunter'
-  import { type Person } from '@hcengineering/contact'
+  import { PersonAccount, type Person } from '@hcengineering/contact'
   import { PersonRefPresenter, personAccountByIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
@@ -14,6 +14,7 @@
   import RejectedIcon from '../../icons/Rejected.svelte'
   import CancelledIcon from '../../icons/Cancelled.svelte'
   import WaitingIcon from '../../icons/Waiting.svelte'
+  import InfoIcon from '../../icons/Info.svelte'
   import SignatureInfo from './SignatureInfo.svelte'
 
   export let request: DocumentRequest
@@ -32,6 +33,8 @@
 
   let rejectingMessage: string | undefined
   let approvals: PersonalApproval[] = []
+
+  $: creator = request?.createdBy ? $personAccountByIdStore.get(request.createdBy as Ref<PersonAccount>) : undefined
 
   $: void getRequestData(request)
 
@@ -119,6 +122,28 @@
 </button>
 {#if expanded}
   <div class="section" transition:slide|local>
+    {#if creator}
+      <div class="creator">
+        <PersonRefPresenter value={creator.person} avatarSize="x-small" />
+        {#key request.createdOn}
+          <span
+            class="flex gap-1"
+            use:tooltip={request.createdOn !== undefined
+              ? {
+                  component: SignatureInfo,
+                  props: {
+                    id: creator.person,
+                    timestamp: request.createdOn
+                  }
+                }
+              : undefined}
+          >
+            <span><Label label={documents.string.Author} /></span>
+            <InfoIcon size="medium" />
+          </span>
+        {/key}
+      </div>
+    {/if}
     {#each approvals as approver}
       <div class="approver">
         <PersonRefPresenter value={approver.person} avatarSize="x-small" />
@@ -205,7 +230,8 @@
     }
   }
 
-  .approver {
+  .approver,
+  .creator {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -213,5 +239,9 @@
     &:not(:first-child) {
       margin-top: 1rem;
     }
+  }
+
+  .creator {
+    opacity: 0.4;
   }
 </style>

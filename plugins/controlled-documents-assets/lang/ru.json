@@ -21,7 +21,7 @@
     "Major": "Мажорная",
     "Minor": "Минорная",
     "Patch": "Патч",
-    "DocumentApprovals": "Рецензии и утверждения",
+    "ValidationWorkflow": "Процесс валидации",
     "ChangeOwner": "Изменить владельца документа",
     "ChangeOwnerHintBeginning": "Передайте права владельца документа",
     "ChangeOwnerHintEnd": "другому лицу.",
