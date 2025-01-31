@@ -399,7 +399,7 @@ export function createModel (builder: Builder): void {
       icon: love.icon.Mic,
       keyBinding: ['Meta + keyD'],
       category: love.category.Office,
-      allowedForEditableContent: true,
+      allowedForEditableContent: 'always',
       input: 'none',
       target: core.class.Doc,
       context: {
@@ -415,7 +415,7 @@ export function createModel (builder: Builder): void {
       action: love.actionImpl.ToggleVideo,
       label: love.string.Camera,
       icon: love.icon.Cam,
-      allowedForEditableContent: true,
+      allowedForEditableContent: 'always',
       keyBinding: ['Meta + keyE'],
       category: love.category.Office,
       input: 'none',
