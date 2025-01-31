@@ -110,6 +110,11 @@ export function serveWorkspaceAccount (
   setMetadata(serverClientPlugin.metadata.UserAgent, 'WorkspaceService')
   setMetadata(serverNotification.metadata.InboxOnlyNotifications, true)
 
+  const fulltextUrl = process.env.FULLTEXT_URL
+  if (fulltextUrl === undefined) {
+    console.log('Please provide fulltext url to be able to clean fulltext index')
+  }
+
   let canceled = false
 
   const worker = new WorkspaceWorker(
@@ -119,7 +124,8 @@ export function serveWorkspaceAccount (
     region,
     parseInt(process.env.PARALLEL ?? '1'),
     wsOperation,
-    brandings
+    brandings,
+    fulltextUrl
   )
 
   void worker

@@ -34,7 +34,6 @@
   import card from '../plugin'
   import CreateTag from './CreateTag.svelte'
 
-  const canEdit = isOwnerOrMaintainer()
   const loc = getLocation()
 
   let _class: Ref<MasterTag> | undefined = loc.query?._class as Ref<MasterTag> | undefined
@@ -109,7 +108,7 @@
       <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
         <div class="hulyComponent-content">
           {#if _class !== undefined}
-            <ClassAttributes {_class} disabled={!canEdit} />
+            <ClassAttributes {_class} disabled={false} />
           {/if}
         </div>
       </Scroller>

@@ -20,7 +20,7 @@
 
   export let value: Card
 
-  const selected = value._class
+  let selected = value._class
 
   const clQuery = createQuery()
   const client = getClient()
@@ -39,6 +39,7 @@
 
   async function select (event: CustomEvent): Promise<void> {
     const update = { _class: event.detail } as any
+    selected = event.detail
     await client.update(value, update)
   }
 
@@ -48,19 +49,19 @@
 <div class="flex flex-gap-2 items-center item caption-color">
   <Icon icon={card.icon.MasterTag} size="large" />
   <Label label={card.string.MasterTag} />
-  <div class="tag">
-    {#if value._class === card.class.Card}
-      <DropdownLabelsIntl
-        {items}
-        {selected}
-        disabled={value._class !== card.class.Card}
-        label={card.string.MasterTag}
-        on:selected={select}
-      />
-    {:else}
+  {#if value._class === card.class.Card}
+    <DropdownLabelsIntl
+      {items}
+      {selected}
+      disabled={value._class !== card.class.Card}
+      label={card.string.MasterTag}
+      on:selected={select}
+    />
+  {:else}
+    <div class="tag">
       <Label {label} />
-    {/if}
-  </div>
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">

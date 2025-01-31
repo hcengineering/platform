@@ -111,7 +111,10 @@
             size={'medium'}
             icon={IconArrowLeft}
             on:click={() => {
-              if (viewUpdate) viewDate.setMonth(viewDate.getMonth() - 1)
+              if (viewUpdate) {
+                viewDate.setDate(1)
+                viewDate.setMonth(viewDate.getMonth() - 1)
+              }
               dispatch('navigation', -1)
             }}
           />
@@ -122,7 +125,10 @@
             size={'medium'}
             icon={IconArrowRight}
             on:click={() => {
-              if (viewUpdate) viewDate.setMonth(viewDate.getMonth() + 1)
+              if (viewUpdate) {
+                viewDate.setDate(1)
+                viewDate.setMonth(viewDate.getMonth() + 1)
+              }
               dispatch('navigation', 1)
             }}
           />

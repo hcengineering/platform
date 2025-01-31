@@ -14,6 +14,10 @@
     "Tag": "Štítek",
     "CardLibrary": "Knihovna karet",
     "MinimizeAll": "Minimalizovat vše",
-    "ExpandAll": "Rozbalit vše"
+    "ExpandAll": "Rozbalit vše",
+    "DeleteTag": "Smazat štítek",
+    "DeleteTagConfirm": "Opravdu chcete smazat tento štítek? Všechny související vlastnosti budou smazány",
+    "DeleteMasterTag": "Smazat hlavní štítek",
+    "DeleteMasterTagConfirm": "Opravdu chcete smazat tento hlavní štítek? Všechny objekty související s tímto hlavním štítkem budou smazány"
   }
 }

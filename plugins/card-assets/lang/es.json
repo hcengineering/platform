@@ -14,6 +14,10 @@
     "Tag": "Etiqueta",
     "CardLibrary": "Biblioteca de Tarjetas",
     "MinimizeAll": "Minimizar Todo",
-    "ExpandAll": "Expandir Todo"
+    "ExpandAll": "Expandir Todo",
+    "DeleteTag": "Eliminar Etiqueta",
+    "DeleteTagConfirm": "¿Está seguro de que desea eliminar esta etiqueta? Todas las propiedades relacion",
+    "DeleteMasterTag": "Eliminar Etiqueta Maestra",
+    "DeleteMasterTagConfirm": "¿Está seguro de que desea eliminar esta etiqueta maestra? Todos los objetos relacionados con esta etiqueta maestra serán eliminados"
   }
 }

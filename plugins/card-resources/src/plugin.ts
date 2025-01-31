@@ -40,6 +40,10 @@ export default mergeIds(cardId, card, {
     ConfigDescription: '' as IntlString,
     SearchCard: '' as IntlString,
     MinimizeAll: '' as IntlString,
-    ExpandAll: '' as IntlString
+    ExpandAll: '' as IntlString,
+    DeleteTag: '' as IntlString,
+    DeleteTagConfirm: '' as IntlString,
+    DeleteMasterTag: '' as IntlString,
+    DeleteMasterTagConfirm: '' as IntlString
   }
 })

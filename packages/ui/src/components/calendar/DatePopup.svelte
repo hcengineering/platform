@@ -81,6 +81,7 @@
   }
   const navigateMonth = (result: any): void => {
     if (result) {
+      viewDate.setDate(1)
       viewDate.setMonth(viewDate.getMonth() + result)
       viewDate = viewDate
     }

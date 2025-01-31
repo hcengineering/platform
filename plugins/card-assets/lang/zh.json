@@ -14,6 +14,10 @@
     "Tag": "标签",
     "CardLibrary": "卡片库",
     "MinimizeAll": "全部最小化",
-    "ExpandAll": "全部展开"
+    "ExpandAll": "全部展开",
+    "DeleteTag": "删除标签",
+    "DeleteTagConfirm": "您确定要删除此标签吗？所有相关属性将被删除",
+    "DeleteMasterTag": "删除主标签",
+    "DeleteMasterTagConfirm": "您确定要删除此主标签吗？所有与此主标签相关的对象将被删除"
   }
 }

@@ -14,6 +14,10 @@
     "Tag": "Tag",
     "CardLibrary": "Biblioteca de Cartões",
     "MinimizeAll": "Minimizar Tudo",
-    "ExpandAll": "Expandir Tudo"
+    "ExpandAll": "Expandir Tudo",
+    "DeleteTag": "Excluir Tag",
+    "DeleteTagConfirm": "Tem certeza de que deseja excluir esta tag? Todas as propriedades relacionadas serão excluídas",
+    "DeleteMasterTag": "Excluir Tag Mestre",
+    "DeleteMasterTagConfirm": "Tem certeza de que deseja excluir esta tag mestre? Todos os objetos relacionados a esta tag mestre serão excluídos"
   }
 }

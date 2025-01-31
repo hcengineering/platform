@@ -13,7 +13,14 @@
 // limitations under the License.
 //
 
-import core, { type Blob, type MeasureContext, type Ref, type WorkspaceId, withContext } from '@hcengineering/core'
+import core, {
+  type Blob,
+  type MeasureContext,
+  type Ref,
+  type WorkspaceId,
+  systemAccountEmail,
+  withContext
+} from '@hcengineering/core'
 
 import {
   type BlobStorageIterator,
@@ -24,6 +31,7 @@ import {
   type StorageConfiguration,
   type UploadedObjectInfo
 } from '@hcengineering/server-core'
+import { generateToken } from '@hcengineering/server-token'
 import { type Readable } from 'stream'
 import { type UploadObjectParams, DatalakeClient } from './client'
 
@@ -76,9 +84,10 @@ export class DatalakeService implements StorageAdapter {
 
   @withContext('remove')
   async remove (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]): Promise<void> {
+    const token = generateToken(systemAccountEmail, workspaceId)
     await Promise.all(
       objectNames.map(async (objectName) => {
-        await this.client.deleteObject(ctx, workspaceId, objectName)
+        await this.client.deleteObject(ctx, token, workspaceId, objectName)
       })
     )
   }
@@ -90,6 +99,8 @@ export class DatalakeService implements StorageAdapter {
 
   @withContext('listStream')
   async listStream (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<BlobStorageIterator> {
+    const token = generateToken(systemAccountEmail, workspaceId)
+
     let hasMore = true
     const buffer: ListBlobResult[] = []
     let cursor: string | undefined
@@ -98,7 +109,7 @@ export class DatalakeService implements StorageAdapter {
       next: async () => {
         try {
           while (hasMore && buffer.length < 50) {
-            const res = await this.client.listObjects(ctx, workspaceId, cursor)
+            const res = await this.client.listObjects(ctx, token, workspaceId, cursor)
             hasMore = res.cursor !== undefined
             cursor = res.cursor
 
@@ -127,7 +138,8 @@ export class DatalakeService implements StorageAdapter {
   @withContext('stat')
   async stat (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Blob | undefined> {
     try {
-      const result = await this.client.statObject(ctx, workspaceId, objectName)
+      const token = generateToken(systemAccountEmail, workspaceId)
+      const result = await this.client.statObject(ctx, token, workspaceId, objectName)
       if (result !== undefined) {
         return {
           provider: '',
@@ -149,7 +161,8 @@ export class DatalakeService implements StorageAdapter {
 
   @withContext('get')
   async get (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Readable> {
-    return await this.client.getObject(ctx, workspaceId, objectName)
+    const token = generateToken(systemAccountEmail, workspaceId)
+    return await this.client.getObject(ctx, token, workspaceId, objectName)
   }
 
   @withContext('put')
@@ -161,6 +174,8 @@ export class DatalakeService implements StorageAdapter {
     contentType: string,
     size?: number
   ): Promise<UploadedObjectInfo> {
+    const token = generateToken(systemAccountEmail, workspaceId)
+
     const params: UploadObjectParams = {
       lastModified: Date.now(),
       type: contentType,
@@ -168,7 +183,7 @@ export class DatalakeService implements StorageAdapter {
     }
 
     const { etag } = await ctx.with('put', {}, (ctx) =>
-      withRetry(ctx, 5, () => this.client.putObject(ctx, workspaceId, objectName, stream, params))
+      withRetry(ctx, 5, () => this.client.putObject(ctx, token, workspaceId, objectName, stream, params))
     )
 
     return {
@@ -179,7 +194,8 @@ export class DatalakeService implements StorageAdapter {
 
   @withContext('read')
   async read (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Buffer[]> {
-    const data = await this.client.getObject(ctx, workspaceId, objectName)
+    const token = generateToken(systemAccountEmail, workspaceId)
+    const data = await this.client.getObject(ctx, token, workspaceId, objectName)
     const chunks: Buffer[] = []
 
     for await (const chunk of data) {
@@ -197,7 +213,8 @@ export class DatalakeService implements StorageAdapter {
     offset: number,
     length?: number
   ): Promise<Readable> {
-    return await this.client.getPartialObject(ctx, workspaceId, objectName, offset, length)
+    const token = generateToken(systemAccountEmail, workspaceId)
+    return await this.client.getPartialObject(ctx, token, workspaceId, objectName, offset, length)
   }
 
   async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {

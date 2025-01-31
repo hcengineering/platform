@@ -13,10 +13,11 @@
 // limitations under the License.
 //
 
-import { Blob, MeasureContext, toWorkspaceString, WorkspaceId } from '@hcengineering/core'
+import { Blob, MeasureContext, systemAccountEmail, toWorkspaceString, WorkspaceId } from '@hcengineering/core'
 import { DatalakeConfig, DatalakeService, createDatalakeClient } from '@hcengineering/datalake'
 import { S3Config, S3Service } from '@hcengineering/s3'
 import { StorageConfig } from '@hcengineering/server-core'
+import { generateToken } from '@hcengineering/server-token'
 import { v4 as uuid } from 'uuid'
 
 export interface S3UploadParams {
@@ -105,8 +106,9 @@ async function getS3UploadParamsDatalake (
   config: DatalakeConfig,
   s3config: S3Config
 ): Promise<S3UploadParams> {
+  const token = generateToken(systemAccountEmail, workspaceId)
   const client = createDatalakeClient(config)
-  const { bucket } = await client.getR2UploadParams(ctx, workspaceId)
+  const { bucket } = await client.getR2UploadParams(ctx, token, workspaceId)
 
   const endpoint = s3config.endpoint
   const accessKey = s3config.accessKey
@@ -144,13 +146,14 @@ async function saveFileToDatalake (
   s3config: S3Config,
   filename: string
 ): Promise<Blob | undefined> {
+  const token = generateToken(systemAccountEmail, workspaceId)
   const client = createDatalakeClient(config)
   const storageAdapter = new DatalakeService(config)
 
   const prefix = rootPrefix(s3config, workspaceId)
   const uuid = stripPrefix(prefix, filename)
 
-  await client.uploadFromR2(ctx, workspaceId, uuid, { filename: uuid })
+  await client.uploadFromR2(ctx, token, workspaceId, uuid, { filename: uuid })
 
   return await storageAdapter.stat(ctx, workspaceId, uuid)
 }
