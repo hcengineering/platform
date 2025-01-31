@@ -116,7 +116,6 @@
 
   $: _id !== undefined &&
     query.query(card.class.Card, { _id }, async (result) => {
-      console.log('1')
       ;[doc] = result
       title = doc?.title ?? ''
     })
