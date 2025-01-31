@@ -20,7 +20,7 @@ export const tooltipstore = derived(modalStore, (modals) => {
     return emptyTooltip
   }
   const tooltip = modals.filter((m) => m?.type === 'tooltip')
-  return tooltip.length > 0 ? (tooltip[0] as LabelAndProps) : emptyTooltip
+  return tooltip.length > 0 ? (tooltip[tooltip.length - 1] as LabelAndProps) : emptyTooltip
 })
 
 let toHandler: any
@@ -94,6 +94,7 @@ export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
     destroy () {
       node.removeEventListener('mousemove', show)
       node.removeEventListener('mouseleave', hide)
+      closeTooltip()
     }
   }
 }
