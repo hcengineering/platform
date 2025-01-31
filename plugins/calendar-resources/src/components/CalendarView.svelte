@@ -188,6 +188,7 @@
         break
       }
       case CalendarMode.Month: {
+        currentDate.setDate(1)
         currentDate.setMonth(currentDate.getMonth() + val)
         break
       }

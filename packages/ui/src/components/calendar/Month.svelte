@@ -90,6 +90,7 @@
             size={'extra-small'}
             inheritColor
             on:click={() => {
+              viewDate.setDate(1)
               viewDate.setMonth(viewDate.getMonth() - 1)
               renderCellStyles()
             }}
@@ -100,6 +101,7 @@
             size={'extra-small'}
             inheritColor
             on:click={() => {
+              viewDate.setDate(1)
               viewDate.setMonth(viewDate.getMonth() + 1)
               renderCellStyles()
             }}
