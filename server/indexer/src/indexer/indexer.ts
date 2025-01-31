@@ -51,7 +51,8 @@ import core, {
   isIndexedAttribute,
   toIdMap,
   withContext,
-  systemAccount
+  systemAccount,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import drivePlugin, { type FileVersion } from '@hcengineering/drive'
 import type {
@@ -219,18 +220,21 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       ctx.warn('Rebuild DB index complete', { workspace: this.workspace.uuid })
     }
 
-    const fullReindex = 'full-text-indexer-v4'
+    const fullReindex = 'full-text-indexer-v5'
     if (migrations.find((it) => it.state === fullReindex) === undefined) {
-      ctx.warn('rebuilding index to v4', { workspace: this.workspace.uuid })
+      ctx.warn('rebuilding index to v5', { workspace: this.workspace.uuid })
       // Clean all existing docs, they will be re-created on verify stage
       await this.storage.rawDeleteMany<DocIndexState>(DOMAIN_DOC_INDEX_STATE, {})
+      if (this.workspace.dataId != null) {
+        await this.fulltextAdapter.clean(ctx, this.workspace.dataId as unknown as WorkspaceUuid)
+      }
       await this.fulltextAdapter.clean(ctx, this.workspace.uuid)
-      ctx.warn('rebuilding index to v3 complete', { workspace: this.workspace.uuid })
+      ctx.warn('rebuilding index to v5 complete', { workspace: this.workspace.uuid })
 
       await this.addMigration(ctx, fullReindex)
     }
 
-    const docStructure = 'full-text-structure-v4'
+    const docStructure = 'full-text-structure-v5'
     if (migrations.find((it) => it.state === docStructure) === undefined) {
       ctx.warn('verify document structure', { version: docStructure, workspace: this.workspace.uuid })
 
@@ -294,13 +298,16 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       const migrations = await this.storage.findAll<MigrationState>(ctx, core.class.MigrationState, {
         plugin: coreId,
         state: {
-          $in: ['verify-indexes-v2', 'full-text-indexer-v4', 'full-text-structure-v4']
+          $in: ['verify-indexes-v2', 'full-text-indexer-v5', 'full-text-structure-v4']
         }
       })
 
       const refs = migrations.map((it) => it._id)
       await this.storage.clean(ctx, DOMAIN_MIGRATION, refs)
     } else {
+      if (this.workspace.dataId != null) {
+        await this.fulltextAdapter.clean(this.metrics, this.workspace.dataId as unknown as WorkspaceUuid)
+      }
       await this.fulltextAdapter.clean(this.metrics, this.workspace.uuid)
     }
   }

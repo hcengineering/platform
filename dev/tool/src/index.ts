@@ -1973,23 +1973,28 @@ export function devTool (
       }
     )
 
-  // program
-  //   .command('fulltext-reindex <workspace>')
-  //   .description('reindex workspace')
-  //   .action(async (workspace: string) => {
-  //     const fulltextUrl = process.env.FULLTEXT_URL
-  //     if (fulltextUrl === undefined) {
-  //       console.error('please provide FULLTEXT_URL')
-  //       process.exit(1)
-  //     }
+  program
+    .command('fulltext-reindex <workspace>')
+    .description('reindex workspace')
+    .action(async (workspace: string) => {
+      const fulltextUrl = process.env.FULLTEXT_URL
+      if (fulltextUrl === undefined) {
+        console.error('please provide FULLTEXT_URL')
+        process.exit(1)
+      }
 
-  //     const wsid = getWorkspaceId(workspace)
-  //     const token = generateToken(systemAccountEmail, wsid)
+      await withAccountDatabase(async (db) => {
+        const ws = await getWorkspace(db, workspace)
 
-  //     console.log('reindex workspace', workspace)
-  //     await reindexWorkspace(toolCtx, fulltextUrl, token)
-  //     console.log('done', workspace)
-  //   })
+        if (ws == null) {
+          throw new Error(`workspace ${workspace} not found`)
+        }
+
+        console.log('reindex workspace', workspace)
+        await reindexWorkspace(toolCtx, fulltextUrl, getToolToken(ws?.uuid))
+        console.log('done', workspace)
+      })
+    })
 
   // program
   //   .command('fulltext-reindex-all')
