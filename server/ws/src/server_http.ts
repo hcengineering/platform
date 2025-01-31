@@ -518,7 +518,7 @@ export function startHttpServer (
           ctx.error('error', { err, user: s.session.getUser() })
           if (!(s.session.workspaceClosed ?? false)) {
             // remove session after 1seconds, give a time to reconnect.
-            void sessions.close(ctx, cs, toWorkspaceString(token.workspace))
+            void sessions.close(ctx, cs, token.workspace)
           }
         },
         Buffer.from('')

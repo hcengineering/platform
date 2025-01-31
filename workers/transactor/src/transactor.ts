@@ -271,7 +271,7 @@ export class Transactor extends DurableObject<Env> {
       message: 'New session attempt',
       remoteAddress: data.remoteAddress,
       userAgent: data.userAgent,
-      email: data.email
+      account: data.account
     })
     this.ctx.acceptWebSocket(ws)
     const cs = this.createWebsocketClientSocket(ws, data)
@@ -316,8 +316,8 @@ export class Transactor extends DurableObject<Env> {
       console.log({
         message: 'Session established successfully:',
         sessionId: session.session.sessionId,
-        workspaceId: token.workspace.name,
-        user: token.email
+        workspaceId: token.workspace,
+        user: token.account
       })
       this.sessions.set(ws, webSocketData)
     } catch (err: any) {
@@ -417,7 +417,7 @@ export class Transactor extends DurableObject<Env> {
     const session = this.sessions.get(ws)
     if (session !== undefined) {
       this.sessions.delete(ws)
-      console.log({ message: 'Cleaning up session for', email: session.payload.email })
+      console.log({ message: 'Cleaning up session for', account: session.payload.account })
       await this.sessionManager.close(this.measureCtx, session.connectionSocket as ConnectionSocket, this.workspace)
     }
   }
