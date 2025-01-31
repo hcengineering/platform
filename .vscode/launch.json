@@ -55,7 +55,7 @@
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER":"ws",
-        "MODEL_VERSION": "0.6.382",
+        "MODEL_VERSION": "0.6.421",
         // "VERSION": "0.6.289",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
@@ -166,7 +166,7 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
-        "MODEL_VERSION": "v0.6.382",
+        "MODEL_VERSION": "v0.6.421",
         "WS_OPERATION": "all+backup",
         "BACKUP_STORAGE": "minio|minio?accessKey=minioadmin&secretKey=minioadmin",
         "BACKUP_BUCKET": "dev-backups",
@@ -189,6 +189,7 @@
         // "DB_URL": "mongodb://localhost:27017",
         // "DB_URL": "postgresql://postgres:example@localhost:5432",
         "DB_URL": "postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable",
+        "FULLTEXT_URL": "http://host.docker.internal:4702",
         "REGION": "cockroach",
         "SERVER_SECRET": "secret",
         "TRANSACTOR_URL": "ws://localhost:3332",
@@ -198,7 +199,7 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
-        "MODEL_VERSION": "v0.6.382",
+        "MODEL_VERSION": "0.6.421",
         "WS_OPERATION": "all+backup",
         "BACKUP_STORAGE": "minio|minio?accessKey=minioadmin&secretKey=minioadmin",
         "BACKUP_BUCKET": "dev-backups",
@@ -326,7 +327,7 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         "TELEGRAM_DATABASE": "telegram-service",
         "REKONI_URL": "http://localhost:4004",
-        "MODEL_VERSION": "0.6.382"
+        "MODEL_VERSION": "0.6.421"
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
@@ -353,7 +354,7 @@
         "MONGO_URL": "mongodb://localhost:27017",
         "TELEGRAM_DATABASE": "telegram-service",
         "REKONI_URL": "http://localhost:4004",
-        "MODEL_VERSION": "0.6.382"
+        "MODEL_VERSION": "0.6.421"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,

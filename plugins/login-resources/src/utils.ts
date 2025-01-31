@@ -274,7 +274,7 @@ export async function getWorkspaces (): Promise<Workspace[]> {
 
 export async function performWorkspaceOperation (
   workspace: string | string[],
-  operation: 'archive' | 'migrate-to' | 'unarchive',
+  operation: 'archive' | 'migrate-to' | 'unarchive' | 'delete',
   ...params: any[]
 ): Promise<boolean> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)

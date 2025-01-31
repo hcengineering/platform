@@ -1271,6 +1271,14 @@ export async function updateWorkspaceInfo (
       update.mode = 'archived'
       update.progress = 100
       break
+    case 'delete-started':
+      update.mode = 'deleting'
+      update.progress = 0
+      break
+    case 'delete-done':
+      update.mode = 'deleted'
+      update.progress = 100
+      break
     case 'ping':
     default:
       break
@@ -1297,7 +1305,7 @@ export async function performWorkspaceOperation (
   branding: Branding | null,
   token: string,
   workspaceId: string | string[],
-  event: 'archive' | 'migrate-to' | 'unarchive',
+  event: 'archive' | 'migrate-to' | 'unarchive' | 'delete',
   ...params: any
 ): Promise<boolean> {
   const decodedToken = decodeToken(ctx, token)
@@ -1320,6 +1328,16 @@ export async function performWorkspaceOperation (
   for (const workspaceInfo of workspaceInfos) {
     const update: Partial<WorkspaceInfo> = {}
     switch (event) {
+      case 'delete':
+        if (workspaceInfo.mode !== 'active') {
+          throw new PlatformError(unknownError('Archive allowed only for active workspaces'))
+        }
+
+        update.mode = 'pending-deletion'
+        update.attempts = 0
+        update.progress = 0
+        update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
+        break
       case 'archive':
         if (workspaceInfo.mode !== 'active') {
           throw new PlatformError(unknownError('Archive allowed only for active workspaces'))

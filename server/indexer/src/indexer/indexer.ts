@@ -283,17 +283,21 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     }
   }
 
-  async clearIndex (): Promise<void> {
-    const ctx = this.metrics
-    const migrations = await this.storage.findAll<MigrationState>(ctx, core.class.MigrationState, {
-      plugin: coreId,
-      state: {
-        $in: ['verify-indexes-v2', 'full-text-indexer-v4', 'full-text-structure-v4']
-      }
-    })
+  async clearIndex (onlyDrop = false): Promise<void> {
+    if (!onlyDrop) {
+      const ctx = this.metrics
+      const migrations = await this.storage.findAll<MigrationState>(ctx, core.class.MigrationState, {
+        plugin: coreId,
+        state: {
+          $in: ['verify-indexes-v2', 'full-text-indexer-v4', 'full-text-structure-v4']
+        }
+      })
 
-    const refs = migrations.map((it) => it._id)
-    await this.storage.clean(ctx, DOMAIN_MIGRATION, refs)
+      const refs = migrations.map((it) => it._id)
+      await this.storage.clean(ctx, DOMAIN_MIGRATION, refs)
+    } else {
+      await this.fulltextAdapter.clean(this.metrics, this.workspace)
+    }
   }
 
   broadcastClasses = new Set<Ref<Class<Doc>>>()

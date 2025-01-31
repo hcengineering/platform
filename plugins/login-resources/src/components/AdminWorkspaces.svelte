@@ -102,6 +102,9 @@
   $: {
     // Assign backup idx
     const backupSorting = [...sortedWorkspaces].filter((it) => {
+      if (!isActiveMode(it.mode)) {
+        return false
+      }
       const lastBackup = it.backupInfo?.lastBackup ?? 0
       if ((now - lastBackup) / 1000 < backupInterval) {
         // No backup required, interval not elapsed
@@ -456,6 +459,24 @@
                                 message: getEmbeddedLabel('Please confirm'),
                                 action: async () => {
                                   await performWorkspaceOperation(workspace.workspace, 'migrate-to', selectedRegionId)
+                                }
+                              })
+                            }}
+                          />
+                        {/if}
+
+                        {#if !isDeletingMode(workspace.mode) && !isArchivingMode(workspace.mode)}
+                          <Button
+                            icon={IconStop}
+                            size={'small'}
+                            kind={'dangerous'}
+                            label={getEmbeddedLabel('Delete')}
+                            on:click={() => {
+                              showPopup(MessageBox, {
+                                label: getEmbeddedLabel(`Delete ${workspace.workspaceUrl}`),
+                                message: getEmbeddedLabel('Please confirm'),
+                                action: async () => {
+                                  await performWorkspaceOperation(workspace.workspace, 'delete')
                                 }
                               })
                             }}
