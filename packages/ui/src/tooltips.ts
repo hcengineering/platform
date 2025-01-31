@@ -1,5 +1,5 @@
 import { type IntlString } from '@hcengineering/platform'
-import { derived } from 'svelte/store'
+import { derived, get } from 'svelte/store'
 import type { AnyComponent, AnySvelteComponent, LabelAndProps, TooltipAlignment } from './types'
 import { modalStore } from './modals'
 
@@ -92,9 +92,12 @@ export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
     },
 
     destroy () {
+      const currentTooltip = get(tooltipstore)
+      if (currentTooltip?.element != null && currentTooltip.element === node) {
+        closeTooltip()
+      }
       node.removeEventListener('mousemove', show)
       node.removeEventListener('mouseleave', hide)
-      closeTooltip()
     }
   }
 }
@@ -118,7 +121,7 @@ export function showTooltip (
     props,
     anchor,
     onUpdate,
-    kind: kind ?? 'tooltip',
+    kind,
     keys,
     type: 'tooltip'
   }
@@ -128,10 +131,12 @@ export function showTooltip (
       if (tooltip.kind !== undefined && storedValue.kind === undefined) {
         storedValue.kind = tooltip.kind
       }
-      if (storedValue.kind === undefined) {
-        storedValue.kind = 'tooltip'
-      }
     }
+
+    if (storedValue.kind == null) {
+      storedValue.kind = 'tooltip'
+    }
+
     old.push(storedValue)
     return old
   })
