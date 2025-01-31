@@ -13,7 +13,13 @@
 // limitations under the License.
 //
 
+import type { Ref } from '@hcengineering/core'
 import { mergeIds } from '@hcengineering/platform'
 import personalBrowser, { personalBrowserId } from '@hcengineering/personal-browser'
+import type { Viewlet } from '@hcengineering/view'
 
-export default mergeIds(personalBrowserId, personalBrowser, {})
+export default mergeIds(personalBrowserId, personalBrowser, {
+  viewlet: {
+    TableMail: '' as Ref<Viewlet>
+  }
+})

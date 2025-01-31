@@ -15,6 +15,8 @@
 
 import { type Resources } from '@hcengineering/platform'
 
+export { default as plugin } from './plugin'
+
 export default async (): Promise<Resources> => ({
   component: {
   }

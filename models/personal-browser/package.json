@@ -29,10 +29,12 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
+    "@hcengineering/mail": "^0.6.0",
     "@hcengineering/model": "^0.6.11",
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/model-presentation": "^0.6.0",
     "@hcengineering/model-workbench": "^0.6.1",
+    "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/personal-browser": "^0.6.0",

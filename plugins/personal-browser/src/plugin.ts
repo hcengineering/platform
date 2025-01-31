@@ -31,7 +31,8 @@ export const personalBrowserPlugin = plugin(personalBrowserId, {
     PersonalBrowser: '' as Ref<Doc>
   },
   icon: {
-    PersonalBrowser: '' as Asset
+    PersonalBrowser: '' as Asset,
+    Mail: '' as Asset
   },
   class: {
   },
@@ -39,8 +40,10 @@ export const personalBrowserPlugin = plugin(personalBrowserId, {
     ProjectType: '' as Ref<SpaceTypeDescriptor>
   },
   string: {
+    PersonalBrowser: '' as IntlString,
     ConfigLabel: '' as IntlString,
-    ConfigDescription: '' as IntlString
+    ConfigDescription: '' as IntlString,
+    Mail: '' as IntlString
   }
 })
 

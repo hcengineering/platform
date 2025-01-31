@@ -13,7 +13,13 @@
 // limitations under the License.
 //
 
+import { AccountRole } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
+import core from '@hcengineering/model-core'
+import view, { type Viewlet } from '@hcengineering/model-view'
+import workbench from '@hcengineering/model-workbench'
+import mail from '@hcengineering/mail'
+import { personalBrowserId } from '@hcengineering/personal-browser'
 
 import personalBrowser from './plugin'
 
@@ -22,4 +28,47 @@ export { personalBrowserId } from '@hcengineering/personal-browser'
 export { personalBrowser as default }
 
 export function createModel (builder: Builder): void {
+  builder.createDoc(
+    workbench.class.Application,
+    core.space.Model,
+    {
+      label: personalBrowser.string.PersonalBrowser,
+      icon: personalBrowser.icon.PersonalBrowser,
+      alias: personalBrowserId,
+      accessLevel: AccountRole.User,
+      hidden: false,
+      navigatorModel: {
+        spaces: [],
+        specials: [
+          {
+            id: 'mail',
+            label: personalBrowser.string.Mail,
+            icon: personalBrowser.icon.Mail,
+            component: workbench.component.SpecialView,
+            componentProps: {
+              _class: mail.class.MailThread,
+              icon: personalBrowser.icon.Mail,
+              label: personalBrowser.string.Mail
+            }
+          }
+        ]
+      }
+    },
+    personalBrowser.app.PersonalBrowser
+  )
+
+  builder.createDoc<Viewlet>(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: mail.class.MailThread,
+      descriptor: view.viewlet.Table,
+      config: ['', 'modifiedOn'],
+      configOptions: {
+        hiddenKeys: ['name', 'questions'],
+        sortable: true
+      }
+    },
+    personalBrowser.viewlet.TableMail
+  )
 }

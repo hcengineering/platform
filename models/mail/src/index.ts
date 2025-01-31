@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import { IndexKind } from '@hcengineering/core'
+import activity from '@hcengineering/activity'
+import core, { IndexKind } from '@hcengineering/core'
 import {
   type Builder,
   Index,
@@ -47,4 +48,6 @@ export class TMailThread extends TChunterSpace implements MailThread {
 
 export function createModel (builder: Builder): void {
   builder.createModel(TMailThread)
+
+  builder.mixin(mail.class.MailThread, core.class.Class, activity.mixin.ActivityDoc, {})
 }

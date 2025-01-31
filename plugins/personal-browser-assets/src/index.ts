@@ -7,5 +7,6 @@ import personalBrowser from '@hcengineering/personal-browser'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(personalBrowser.icon, {
-  PersonalBrowser: `${icons}#browser`
+  PersonalBrowser: `${icons}#browser`,
+  Mail: `${icons}#browser`
 })
