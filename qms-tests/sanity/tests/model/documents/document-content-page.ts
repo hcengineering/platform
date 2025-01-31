@@ -733,14 +733,14 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.confirmSubmission()
   }
 
-  async fillSelectApproversForm (approvers: Array<string>): Promise<void> {
+  async fillSelectApproversForm (approvers: Array<string>, skipConfirm: boolean = false): Promise<void> {
     await this.buttonAddMembers.click()
     for (const approver of approvers) {
       await this.selectListItemWithSearch(this.page, approver)
     }
     await this.textSelectApproversPopup.click({ force: true })
     await this.buttonSelectMemberSubmit.click()
-    await this.confirmSubmission()
+    if (!skipConfirm) await this.confirmSubmission()
   }
 
   async checkCurrentRights (right: DocumentRights): Promise<void> {
