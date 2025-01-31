@@ -110,7 +110,7 @@ export async function createWorkspace (
         storageAdapter,
         ctxModellogger,
         async (event, version, value) => {
-          ctx.info('Init script progress', { event, value })
+          ctx.info('upgrade workspace', { event, value })
           await handleWsEvent?.('progress', version, 80 + Math.round((Math.min(value, 100) / 100) * 20))
         },
         false,

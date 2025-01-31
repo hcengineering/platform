@@ -387,6 +387,7 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
       "mode IN ('migration-backup', 'migration-pending-backup', 'migration-clean', 'migration-pending-clean')"
 
     const restoringSql = "mode IN ('pending-restore', 'restoring')"
+    const deletingSql = "mode IN ('pending-deletion', 'deleting')"
 
     const archivingSql =
       "mode IN ('archiving-pending-backup', 'archiving-backup', 'archiving-pending-clean', 'archiving-clean')"
@@ -405,7 +406,7 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
         operationSql = `(${pendingCreationSql} OR ${pendingUpgradeSql})`
         break
       case 'all+backup':
-        operationSql = `(${pendingCreationSql} OR ${pendingUpgradeSql} OR ${migrationSql} OR ${archivingSql} OR ${restoringSql})`
+        operationSql = `(${pendingCreationSql} OR ${pendingUpgradeSql} OR ${migrationSql} OR ${archivingSql} OR ${restoringSql}) OR ${deletingSql}`
         break
     }
 

@@ -709,7 +709,7 @@ export function isActiveMode (mode?: WorkspaceMode): boolean {
   return mode === 'active'
 }
 export function isDeletingMode (mode: WorkspaceMode): boolean {
-  return mode === 'pending-deletion' || mode === 'deleting'
+  return mode === 'pending-deletion' || mode === 'deleting' || mode === 'deleted'
 }
 export function isArchivingMode (mode?: WorkspaceMode): boolean {
   return (
@@ -751,6 +751,8 @@ export type WorkspaceUpdateEvent =
   | 'archiving-clean-started'
   | 'archiving-clean-done'
   | 'archiving-done'
+  | 'delete-started'
+  | 'delete-done'
 
 export interface BackupStatus {
   dataSize: number

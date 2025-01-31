@@ -10,10 +10,11 @@
     type BaseWorkspaceInfo
   } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { isAdminUser } from '@hcengineering/presentation'
+  import { isAdminUser, MessageBox } from '@hcengineering/presentation'
   import {
     Button,
     ButtonMenu,
+    CheckBox,
     Expandable,
     IconArrowRight,
     IconOpen,
@@ -23,11 +24,13 @@
     Popup,
     Scroller,
     SearchEdit,
-    ticker,
-    CheckBox
+    showPopup,
+    ticker
   } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
   import { getAllWorkspaces, getRegionInfo, performWorkspaceOperation, type RegionInfo } from '../utils'
+
+  $: now = $ticker
 
   $: isAdmin = isAdminUser()
 
@@ -42,16 +45,119 @@
 
   let workspaces: WorkspaceInfo[] = []
 
+  enum SortingRule {
+    Name = '1',
+    BackupDate = '2',
+    BackupSize = '3',
+    LastVisit = '4'
+  }
+
+  let sortingRule = SortingRule.BackupDate
+
+  const sortRules = {
+    [SortingRule.Name]: 'Name',
+    [SortingRule.BackupDate]: 'Backup date',
+    [SortingRule.BackupSize]: 'Backup size',
+    [SortingRule.LastVisit]: 'Last visit'
+  }
+
   const updateWorkspaces = reduceCalls(async (_: number) => {
     const res = await getAllWorkspaces()
-    workspaces = res.sort((a, b) =>
-      (b.workspaceUrl ?? b.workspace).localeCompare(a.workspaceUrl ?? a.workspace)
-    ) as WorkspaceInfo[]
+    workspaces = res as WorkspaceInfo[]
   })
 
   $: void updateWorkspaces($ticker)
 
-  const now = Date.now()
+  $: sortedWorkspaces = workspaces
+    .filter(
+      (it) =>
+        ((it.workspaceName?.includes(search) ?? false) ||
+          (it.workspaceUrl?.includes(search) ?? false) ||
+          it.workspace?.includes(search) ||
+          it.createdBy?.includes(search)) &&
+        ((showActive && isActiveMode(it.mode)) ||
+          (showArchived && isArchivingMode(it.mode)) ||
+          (showDeleted && isDeletingMode(it.mode)) ||
+          (showOther && (isMigrationMode(it.mode) || isRestoringMode(it.mode))))
+    )
+    .sort((a, b) => {
+      switch (sortingRule) {
+        case SortingRule.BackupDate: {
+          return (a.backupInfo?.lastBackup ?? 0) - (b.backupInfo?.lastBackup ?? 0)
+        }
+        case SortingRule.BackupSize:
+          return (b.backupInfo?.backupSize ?? 0) - (a.backupInfo?.backupSize ?? 0)
+        case SortingRule.LastVisit:
+          return (b.lastVisit ?? 0) - (a.lastVisit ?? 0)
+      }
+      return (b.workspaceUrl ?? b.workspace).localeCompare(a.workspaceUrl ?? a.workspace)
+    })
+
+  let backupIdx = new Map<string, number>()
+
+  const backupInterval: number = 43200
+
+  let backupable: WorkspaceInfo[] = []
+
+  $: {
+    // Assign backup idx
+    const backupSorting = [...sortedWorkspaces].filter((it) => {
+      if (!isActiveMode(it.mode)) {
+        return false
+      }
+      const lastBackup = it.backupInfo?.lastBackup ?? 0
+      if ((now - lastBackup) / 1000 < backupInterval) {
+        // No backup required, interval not elapsed
+        return false
+      }
+
+      const createdOn = Math.floor((now - it.createdOn) / 1000)
+      if (createdOn <= 2) {
+        // Skip if we created is less 2 days
+        return false
+      }
+      if (it.lastVisit == null) {
+        return false
+      }
+
+      const lastVisitSec = Math.floor((now - it.lastVisit) / 1000)
+      if (lastVisitSec > backupInterval) {
+        // No backup required, interval not elapsed
+        return false
+      }
+      return true
+    })
+    const newBackupIdx = new Map<string, number>()
+
+    backupSorting.sort((a, b) => {
+      return (a.backupInfo?.lastBackup ?? 0) - (b.backupInfo?.lastBackup ?? 0)
+    })
+
+    // Shift new with existing ones.
+    const existingNew = groupByArray(backupSorting, (it) => it.backupInfo != null)
+
+    const existing = existingNew.get(true) ?? []
+    const newOnes = existingNew.get(false) ?? []
+    const mixedBackupSorting: WorkspaceInfo[] = []
+
+    while (existing.length > 0 || newOnes.length > 0) {
+      const e = existing.shift()
+      const n = newOnes.shift()
+      if (e != null) {
+        mixedBackupSorting.push(e)
+      }
+      if (n != null) {
+        mixedBackupSorting.push(n)
+      }
+    }
+
+    backupable = mixedBackupSorting
+
+    for (const [idx, it] of mixedBackupSorting.entries()) {
+      newBackupIdx.set(it.workspace, idx)
+    }
+    backupIdx = newBackupIdx
+  }
 
   const dayRanges = {
     Today: 1,
@@ -72,32 +178,19 @@
 
   let showActive: boolean = true
   let showArchived: boolean = false
-  let showDeleted: boolean = true
+  let showDeleted: boolean = false
   let showOther: boolean = true
 
-  $: groupped = groupByArray(
-    workspaces.filter(
-      (it) =>
-        ((it.workspaceName?.includes(search) ?? false) ||
-          (it.workspaceUrl?.includes(search) ?? false) ||
-          it.workspace?.includes(search) ||
-          it.createdBy?.includes(search)) &&
-        ((showActive && isActiveMode(it.mode)) ||
-          (showArchived && isArchivingMode(it.mode)) ||
-          (showDeleted && isDeletingMode(it.mode)) ||
-          (showOther && (isMigrationMode(it.mode) || isRestoringMode(it.mode))))
-    ),
-    (it) => {
-      const lastUsageDays = Math.round((now - it.lastVisit) / (1000 * 3600 * 24))
-      return Object.entries(dayRanges).find(([_k, v]) => lastUsageDays <= v)?.[0] ?? 'Other'
-    }
-  )
+  $: groupped = groupByArray(sortedWorkspaces, (it) => {
+    const lastUsageDays = Math.round((now - it.lastVisit) / (1000 * 3600 * 24))
+    return Object.entries(dayRanges).find(([_k, v]) => lastUsageDays <= v)?.[0] ?? 'Other'
+  })
 
   let regionInfo: RegionInfo[] = []
 
   let selectedRegionId: string = ''
   void getRegionInfo().then((_regionInfo) => {
-    regionInfo = _regionInfo ?? []
+    regionInfo = _regionInfo?.filter((it) => it.name !== '') ?? []
     if (selectedRegionId === '' && regionInfo.length > 0) {
       selectedRegionId = regionInfo[0].region
     }
@@ -111,6 +204,8 @@
     <div class="fs-title p-3">Workspaces administration panel</div>
     <div class="fs-title p-3">
       Workspaces: {workspaces.length} active: {workspaces.filter((it) => isActiveMode(it.mode)).length}
+
+      Backupable: {backupable.length} new: {backupable.reduce((p, it) => p + (it.backupInfo == null ? 1 : 0), 0)}
     </div>
     <div class="fs-title p-3 flex-no-shrink">
       <SearchEdit bind:value={search} width={'100%'} />
@@ -134,6 +229,19 @@
         <span class="mr-2">Show other workspaces:</span>
         <CheckBox bind:checked={showOther} />
       </div>
+    </div>
+
+    <div class="fs-title p-3 flex-row-center">
+      <span class="mr-2"> Sorting order: {sortingRule} </span>
+      <ButtonMenu
+        selected={sortingRule}
+        autoSelectionIfOne
+        title={sortRules[sortingRule]}
+        items={Object.entries(sortRules).map((it) => ({ id: it[0], label: getEmbeddedLabel(it[1]) }))}
+        on:selected={(it) => {
+          sortingRule = it.detail
+        }}
+      />
     </div>
 
     <div class="fs-title p-3 flex-row-center">
@@ -193,10 +301,16 @@
                       label={getEmbeddedLabel(`Mass Archive ${archiveV.length}`)}
                       kind={'ghost'}
                       on:click={() => {
-                        void performWorkspaceOperation(
-                          archiveV.map((it) => it.workspace),
-                          'archive'
-                        )
+                        showPopup(MessageBox, {
+                          label: getEmbeddedLabel(`Mass Archive ${archiveV.length}`),
+                          message: getEmbeddedLabel(`Please confirm archive ${archiveV.length} workspaces`),
+                          action: async () => {
+                            void performWorkspaceOperation(
+                              archiveV.map((it) => it.workspace),
+                              'archive'
+                            )
+                          }
+                        })
                       }}
                     />
                   {/if}
@@ -207,18 +321,25 @@
                       kind={'positive'}
                       label={getEmbeddedLabel(`Mass Migrate ${activeV.length} to ${selectedRegionName ?? ''}`)}
                       on:click={() => {
-                        void performWorkspaceOperation(
-                          activeV.map((it) => it.workspace),
-                          'migrate-to',
-                          selectedRegionId
-                        )
+                        showPopup(MessageBox, {
+                          label: getEmbeddedLabel(`Mass Migrate ${archiveV.length}`),
+                          message: getEmbeddedLabel(`Please confirm migrate ${archiveV.length} workspaces`),
+                          action: async () => {
+                            await performWorkspaceOperation(
+                              activeV.map((it) => it.workspace),
+                              'migrate-to',
+                              selectedRegionId
+                            )
+                          }
+                        })
                       }}
                     />
                   {/if}
                 </svelte:fragment>
                 {#each v.slice(0, limit) as workspace}
                   {@const wsName = workspace.workspaceName ?? workspace.workspace}
-                  {@const lastUsageDays = Math.round((Date.now() - workspace.lastVisit) / (1000 * 3600 * 24))}
+                  {@const lastUsageDays = Math.round((now - workspace.lastVisit) / (1000 * 3600 * 24))}
+                  {@const bIdx = backupIdx.get(workspace.workspace)}
                   <!-- svelte-ignore a11y-click-events-have-key-events -->
                   <!-- svelte-ignore a11y-no-static-element-interactions -->
                   <div class="flex fs-title cursor-pointer focused-button bordered">
@@ -272,6 +393,9 @@
                             {Math.round(sz * 100) / 100}Mb
                           {/if}
                         {/if}
+                        {#if bIdx != null}
+                          [#{bIdx}]
+                        {/if}
                       </span>
                       <span class="flex flex-between" style:width={'5rem'}>
                         {#if workspace.backupInfo != null}
@@ -294,7 +418,13 @@
                             label={getEmbeddedLabel('Archive')}
                             kind={'ghost'}
                             on:click={() => {
-                              void performWorkspaceOperation(workspace.workspace, 'archive')
+                              showPopup(MessageBox, {
+                                label: getEmbeddedLabel(`Archive ${workspace.workspaceUrl}`),
+                                message: getEmbeddedLabel('Please confirm'),
+                                action: async () => {
+                                  await performWorkspaceOperation(workspace.workspace, 'archive')
+                                }
+                              })
                             }}
                           />
                         {/if}
@@ -306,7 +436,13 @@
                             kind={'ghost'}
                             label={getEmbeddedLabel('Unarchive')}
                             on:click={() => {
-                              void performWorkspaceOperation(workspace.workspace, 'unarchive')
+                              showPopup(MessageBox, {
+                                label: getEmbeddedLabel(`Unarchive ${workspace.workspaceUrl}`),
+                                message: getEmbeddedLabel('Please confirm'),
+                                action: async () => {
+                                  await performWorkspaceOperation(workspace.workspace, 'unarchive')
+                                }
+                              })
                             }}
                           />
                         {/if}
@@ -318,7 +454,31 @@
                             kind={'positive'}
                             label={getEmbeddedLabel('Migrate ' + (selectedRegionName ?? ''))}
                             on:click={() => {
-                              void performWorkspaceOperation(workspace.workspace, 'migrate-to', selectedRegionId)
+                              showPopup(MessageBox, {
+                                label: getEmbeddedLabel(`Migrate ${workspace.workspaceUrl}`),
+                                message: getEmbeddedLabel('Please confirm'),
+                                action: async () => {
+                                  await performWorkspaceOperation(workspace.workspace, 'migrate-to', selectedRegionId)
+                                }
+                              })
+                            }}
+                          />
+                        {/if}
+
+                        {#if !isDeletingMode(workspace.mode) && !isArchivingMode(workspace.mode)}
+                          <Button
+                            icon={IconStop}
+                            size={'small'}
+                            kind={'dangerous'}
+                            label={getEmbeddedLabel('Delete')}
+                            on:click={() => {
+                              showPopup(MessageBox, {
+                                label: getEmbeddedLabel(`Delete ${workspace.workspaceUrl}`),
+                                message: getEmbeddedLabel('Please confirm'),
+                                action: async () => {
+                                  await performWorkspaceOperation(workspace.workspace, 'delete')
+                                }
+                              })
                             }}
                           />
                         {/if}

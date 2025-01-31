@@ -174,12 +174,14 @@ class WorkspaceIndexer {
     return result
   }
 
-  async reindex (): Promise<void> {
+  async reindex (onlyDrop: boolean): Promise<void> {
     await this.fulltext.cancel()
-    await this.fulltext.clearIndex()
-    await this.fulltext.startIndexing(() => {
-      this.lastUpdate = Date.now()
-    })
+    await this.fulltext.clearIndex(onlyDrop)
+    if (!onlyDrop) {
+      await this.fulltext.startIndexing(() => {
+        this.lastUpdate = Date.now()
+      })
+    }
   }
 
   async close (): Promise<void> {
@@ -211,6 +213,7 @@ interface Search {
 
 interface Reindex {
   token: string
+  onlyDrop?: boolean
 }
 // Register close on process exit.
 process.on('exit', () => {
@@ -441,7 +444,7 @@ export async function startIndexer (
       const indexer = await getIndexer(ctx, decoded.workspace, request.token, true)
       if (indexer !== undefined) {
         indexer.lastUpdate = Date.now()
-        await indexer.reindex()
+        await indexer.reindex(request?.onlyDrop ?? false)
       }
     } catch (err: any) {
       Analytics.handleError(err)
