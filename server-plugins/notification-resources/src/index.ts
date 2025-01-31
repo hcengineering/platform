@@ -1385,6 +1385,7 @@ async function updateCollaboratorDoc (
 
     if (collabsInfo.added.length > 0) {
       res.push(createPushCollaboratorsTx(control, tx.objectId, tx.objectClass, tx.objectSpace, collabsInfo.added))
+      res.push(...(await pushCollaboratorsToPublicSpace(control, doc, collabsInfo.added, cache)))
     }
 
     if (collabsInfo.removed.length > 0) {
@@ -1602,6 +1603,7 @@ async function updateCollaborators (
 
   if (toAdd.length > 0) {
     res.push(createPushCollaboratorsTx(control, objectId, objectClass, objectSpace, toAdd))
+    res.push(...(await pushCollaboratorsToPublicSpace(control, doc, toAdd, cache)))
   }
 
   if (removedCollaborators.length > 0) {
