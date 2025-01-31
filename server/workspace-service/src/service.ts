@@ -506,7 +506,8 @@ export class WorkspaceWorker {
           Timeout: 0,
           SkipWorkspaces: '',
           AccountsURL: '',
-          Interval: 0
+          Interval: 0,
+          Parallel: 1
         },
         pipelineFactory,
         workspaceStorageAdapter,

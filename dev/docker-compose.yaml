@@ -495,6 +495,7 @@ services:
       - MONGO_URL=${MONGO_URL}
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - SUPPORT_WORKSPACE=support
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FIRST_NAME=Jolie
       - LAST_NAME=AI
       - PASSWORD=password

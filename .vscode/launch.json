@@ -397,7 +397,7 @@
         "SECRET": "secret",
         "REGION": "cockroach",
         "BUCKET_NAME":"backups",
-        "INTERVAL":"30"
+        "INTERVAL":"43200"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "showAsyncStacks": true,
