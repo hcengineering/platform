@@ -230,6 +230,7 @@
     min-height: 2.75rem;
     min-width: 0;
     background: var(--theme-bg-color);
+    border-radius: 0.25rem 0.25rem 0 0;
 
     .on-hover {
       visibility: hidden;
@@ -268,7 +269,7 @@
 
     /* Global styles in components.scss and there is an influence from the Scroller component */
     &.collapsed {
-      border-radius: 0 0 0.25rem 0.25rem;
+      border-radius: 0.25rem;
 
       .chevron {
         transform: rotate(0deg);
