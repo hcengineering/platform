@@ -97,7 +97,7 @@ export interface AccountClient {
   listWorkspaces: (region?: string | null, mode?: WorkspaceMode | null) => Promise<WorkspaceInfoWithStatus[]>
   performWorkspaceOperation: (
     workspaceId: string | string[],
-    event: 'archive' | 'migrate-to' | 'unarchive',
+    event: 'archive' | 'migrate-to' | 'unarchive' | 'delete',
     ...params: any
   ) => Promise<boolean>
   assignWorkspace: (email: string, workspaceUuid: string, role: AccountRole) => Promise<void>
@@ -506,7 +506,7 @@ class AccountClientImpl implements AccountClient {
 
   async performWorkspaceOperation (
     workspaceId: string | string[],
-    event: 'archive' | 'migrate-to' | 'unarchive',
+    event: 'archive' | 'migrate-to' | 'unarchive' | 'delete',
     ...params: any
   ): Promise<boolean> {
     const request = {

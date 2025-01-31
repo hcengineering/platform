@@ -301,7 +301,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       const refs = migrations.map((it) => it._id)
       await this.storage.clean(ctx, DOMAIN_MIGRATION, refs)
     } else {
-      await this.fulltextAdapter.clean(this.metrics, this.workspace)
+      await this.fulltextAdapter.clean(this.metrics, this.workspace.uuid)
     }
   }
 
