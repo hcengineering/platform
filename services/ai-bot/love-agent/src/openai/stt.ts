@@ -34,7 +34,7 @@ export class STT implements Stt {
     modalities: ['text'],
     instructions:
       'You are an expert transcription assistant. Your task is to listen to audio content and transcribe it into text with high accuracy. Do not summarize or skip any content; transcribe everything exactly as spoken.',
-    model: 'gpt-4o-realtime-preview',
+    model: config.OpenAiModel,
     apiKey: config.OpenaiApiKey,
     ...(config.OpenaiBaseUrl === '' ? {} : { baseUrl: config.OpenaiBaseUrl })
   })
@@ -69,18 +69,23 @@ export class STT implements Stt {
     publication: RemoteTrackPublication,
     participant: RemoteParticipant
   ): Promise<void> {
-    if (this.trackBySid.has(publication.sid)) return
-    this.trackBySid.set(publication.sid, track)
-    this.participantBySid.set(publication.sid, participant)
+    const sid = publication.sid
+    if (sid === undefined) return
+
+    if (this.trackBySid.has(sid)) return
+    this.trackBySid.set(sid, track)
+    this.participantBySid.set(sid, participant)
     if (this.isInProgress) {
-      await this.subscribeOpenai(publication.sid)
+      await this.subscribeOpenai(sid)
     }
   }
 
   unsubscribe (_: RemoteTrack | undefined, publication: RemoteTrackPublication, participant: RemoteParticipant): void {
-    this.trackBySid.delete(publication.sid)
-    this.participantBySid.delete(participant.sid)
-    this.unsubscribeOpenai(publication.sid)
+    const sid = publication.sid
+    if (sid === undefined) return
+    this.trackBySid.delete(sid)
+    this.participantBySid.delete(sid)
+    this.unsubscribeOpenai(sid)
   }
 
   unsubscribeOpenai (sid: string): void {
