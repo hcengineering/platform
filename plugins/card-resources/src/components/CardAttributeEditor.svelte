@@ -47,13 +47,15 @@
 </script>
 
 <div use:resizeObserver={(element) => (width = element.clientWidth)}>
-  <div class="flex btn flex-gap-2">
-    <Button label={card.string.MinimizeAll} kind={'ghost'} iconRight={IconUpOutline} on:click={collapseAll} />
-    <Button label={card.string.ExpandAll} kind={'ghost'} iconRight={IconDownOutline} on:click={expandAll} />
-  </div>
+  {#if mixins.length > 0}
+    <div class="flex btn flex-gap-2">
+      <Button label={card.string.MinimizeAll} kind={'ghost'} iconRight={IconUpOutline} on:click={collapseAll} />
+      <Button label={card.string.ExpandAll} kind={'ghost'} iconRight={IconDownOutline} on:click={expandAll} />
+    </div>
+  {/if}
   <div class="divider" />
   <div class="masterTag">
-    <MasterTagAttributes bind:this={masterTagAttributes} {readonly} {value} {columns} {ignoreKeys} />
+    <MasterTagAttributes bind:this={masterTagAttributes} {readonly} {value} {ignoreKeys} />
   </div>
   {#if mixins.length > 0}
     <div class="divider" />

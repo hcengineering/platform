@@ -21,10 +21,17 @@ import { mergeIds, type Resource } from '@hcengineering/platform'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
 import { type Location, type ResolvedLocation } from '@hcengineering/ui'
 import { type LocationData } from '@hcengineering/workbench'
+import { type Action, type ViewAction } from '@hcengineering/view'
 
 export default mergeIds(cardId, card, {
   app: {
     Card: '' as Ref<Doc>
+  },
+  actionImpl: {
+    DeleteMasterTag: '' as ViewAction
+  },
+  action: {
+    DeleteMasterTag: '' as Ref<Action>
   },
   ids: {
     MasterTags: '' as Ref<Doc>

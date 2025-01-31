@@ -15,6 +15,7 @@
 <script lang="ts">
   import { Card, Tag } from '@hcengineering/card'
   import { getClient } from '@hcengineering/presentation'
+  import setting, { settingId } from '@hcengineering/setting'
   import {
     Button,
     Chevron,
@@ -29,8 +30,6 @@
     themeStore
   } from '@hcengineering/ui'
   import CardAttributes from './CardAttributes.svelte'
-  import { isOwnerOrMaintainer } from '@hcengineering/core'
-  import setting, { settingId } from '@hcengineering/setting'
 
   export let value: Card
   export let tag: Tag
@@ -63,36 +62,34 @@
     <Label {label} />
     <Chevron expanded={!isCollapsed} outline fill={'var(--content-color'} />
   </div>
-  {#if isOwnerOrMaintainer()}
-    <div class="btns">
-      <Button
-        icon={IconAdd}
-        kind={'link'}
-        size={'medium'}
-        showTooltip={{ label: setting.string.AddAttribute }}
-        on:click={(ev) => {
-          showPopup(setting.component.CreateAttributePopup, { _class: tag._id }, 'top')
-        }}
-      />
-      <Button
-        icon={setting.icon.Setting}
-        kind={'link'}
-        size={'medium'}
-        showTooltip={{ label: setting.string.ClassSetting }}
-        on:click={(ev) => {
-          ev.stopPropagation()
-          const loc = getCurrentResolvedLocation()
-          loc.path[2] = settingId
-          loc.path[3] = 'setting'
-          loc.path[4] = 'masterTags'
-          loc.path.length = 5
-          loc.query = { _class: tag._id }
-          loc.fragment = undefined
-          navigate(loc)
-        }}
-      />
-    </div>
-  {/if}
+  <div class="btns">
+    <Button
+      icon={IconAdd}
+      kind={'link'}
+      size={'medium'}
+      showTooltip={{ label: setting.string.AddAttribute }}
+      on:click={(ev) => {
+        showPopup(setting.component.CreateAttributePopup, { _class: tag._id }, 'top')
+      }}
+    />
+    <Button
+      icon={setting.icon.Setting}
+      kind={'link'}
+      size={'medium'}
+      showTooltip={{ label: setting.string.ClassSetting }}
+      on:click={(ev) => {
+        ev.stopPropagation()
+        const loc = getCurrentResolvedLocation()
+        loc.path[2] = settingId
+        loc.path[3] = 'setting'
+        loc.path[4] = 'masterTags'
+        loc.path.length = 5
+        loc.query = { _class: tag._id }
+        loc.fragment = undefined
+        navigate(loc)
+      }}
+    />
+  </div>
 </div>
 <ExpandCollapse isExpanded={!isCollapsed}>
   <CardAttributes object={value} _class={tag._id} to={tag.extends} {readonly} {ignoreKeys} />

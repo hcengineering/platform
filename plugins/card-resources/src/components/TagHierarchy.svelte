@@ -13,68 +13,64 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { MasterTag } from '@hcengineering/card'
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { NavItem } from '@hcengineering/ui'
-  import { showMenu, NavLink } from '@hcengineering/view-resources'
+  import { NavLink, showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import card from '../plugin'
 
-  export let classes: Ref<Class<Doc>>[] = []
+  export let classes: MasterTag[] = []
+  export let allClasses: MasterTag[] = []
   export let _class: Ref<Class<Doc>> | undefined
   export let level: number = 0
 
   const client = getClient()
   const dispatch = createEventDispatcher()
-  let descendants = new Map<Ref<Class<Doc>>, Ref<Class<Doc>>[]>()
+  let descendants = new Map<Ref<Class<Doc>>, MasterTag[]>()
 
-  function getDescendants (_class: Ref<Class<Doc>>): Ref<Class<Doc>>[] {
+  function getDescendants (_class: Ref<MasterTag>): MasterTag[] {
     const hierarchy = client.getHierarchy()
-    const result: Ref<Class<Doc>>[] = []
+    const result: MasterTag[] = []
     const desc = hierarchy.getDescendants(_class)
     for (const clazz of desc) {
       const cls = hierarchy.getClass(clazz)
-      if (cls.extends === _class) {
-        result.push(clazz)
+      if (cls.extends === _class && cls._class === card.class.MasterTag) {
+        result.push(cls)
       }
     }
     return result
   }
 
-  function fillDescendants (classes: Ref<Class<Doc>>[]): void {
+  function fillDescendants (classes: MasterTag[]): void {
     for (const cl of classes) {
-      descendants.set(cl, getDescendants(cl))
+      descendants.set(cl._id, getDescendants(cl._id))
     }
     descendants = descendants
   }
 
-  const query = createQuery()
-  query.query(card.class.MasterTag, {}, () => {
-    fillDescendants(classes)
-  })
-
-  $: fillDescendants(classes)
+  $: fillDescendants(allClasses)
 </script>
 
-{#each classes as cl}
-  {@const clazz = client.getHierarchy().getClass(cl)}
-  <NavLink space={cl}>
+{#each classes as clazz}
+  <NavLink space={clazz._id}>
     <NavItem
       _id={clazz._id}
       label={clazz.label}
       isFold
       empty
       {level}
-      selected={cl === _class}
+      selected={clazz._id === _class}
       on:click={() => {
-        dispatch('select', cl)
+        dispatch('select', clazz._id)
       }}
       on:contextmenu={(evt) => {
         showMenu(evt, { object: clazz })
       }}
     />
   </NavLink>
-  {#if (descendants.get(cl)?.length ?? 0) > 0}
-    <svelte:self classes={descendants.get(cl) ?? []} {_class} level={level + 1} on:select />
+  {#if (descendants.get(clazz._id)?.length ?? 0) > 0}
+    <svelte:self classes={descendants.get(clazz._id) ?? []} {_class} level={level + 1} on:select />
   {/if}
 {/each}
