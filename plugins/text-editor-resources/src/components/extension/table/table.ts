@@ -13,15 +13,14 @@
 // limitations under the License.
 //
 
+import textEditor, { type ActionContext } from '@hcengineering/text-editor'
+import { getEventPositionElement, SelectPopup, showPopup } from '@hcengineering/ui'
 import { type Editor } from '@tiptap/core'
 import TiptapTable from '@tiptap/extension-table'
-import { CellSelection } from '@tiptap/pm/tables'
-import { getEventPositionElement, SelectPopup, showPopup } from '@hcengineering/ui'
-import textEditor, { type ActionContext } from '@hcengineering/text-editor'
+import { CellSelection, TableMap } from '@tiptap/pm/tables'
 
-import { SvelteNodeViewRenderer } from '../../node-view'
-import TableNodeView from './TableNodeView.svelte'
-import { findTable, isTableSelected, selectTable as selectTableNode } from './utils'
+import { Plugin, type Transaction } from '@tiptap/pm/state'
+import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import AddColAfter from '../../icons/table/AddColAfter.svelte'
 import AddColBefore from '../../icons/table/AddColBefore.svelte'
 import AddRowAfter from '../../icons/table/AddRowAfter.svelte'
@@ -29,9 +28,10 @@ import AddRowBefore from '../../icons/table/AddRowBefore.svelte'
 import DeleteCol from '../../icons/table/DeleteCol.svelte'
 import DeleteRow from '../../icons/table/DeleteRow.svelte'
 import DeleteTable from '../../icons/table/DeleteTable.svelte'
-import { Plugin } from '@tiptap/pm/state'
+import { SvelteNodeViewRenderer } from '../../node-view'
+import TableNodeView from './TableNodeView.svelte'
 import { TableSelection } from './types'
-import { Decoration, DecorationSet } from '@tiptap/pm/view'
+import { findTable, isTableSelected, selectTable as selectTableNode } from './utils'
 
 export const Table = TiptapTable.extend({
   draggable: true,
@@ -48,7 +48,7 @@ export const Table = TiptapTable.extend({
     return SvelteNodeViewRenderer(TableNodeView, {})
   },
   addProseMirrorPlugins () {
-    return [...(this.parent?.() ?? []), tableSelectionHighlight()]
+    return [...(this.parent?.() ?? []), tableSelectionHighlight(), cleanupBrokenTables()]
   }
 })
 
@@ -83,6 +83,32 @@ export const tableSelectionHighlight = (): Plugin<DecorationSet> => {
         ]
         return DecorationSet.create(newState.doc, decorations)
       }
+    }
+  })
+}
+
+export const cleanupBrokenTables = (): Plugin<DecorationSet> => {
+  return new Plugin<DecorationSet>({
+    appendTransaction: (transactions, oldState, newState) => {
+      const lastTx = transactions[0]
+      if (!lastTx?.docChanged) return
+
+      let tr: Transaction | undefined
+      newState.doc.descendants((node, pos) => {
+        if (node.type.name !== 'table') return
+
+        const map = TableMap.get(node)
+
+        const isBroken = map.width === 0 || map.height === 0
+        if (!isBroken) return
+
+        tr = tr ?? newState.tr
+        const mpos = tr.mapping.map(pos)
+
+        tr = tr.delete(mpos, mpos + node.nodeSize)
+      })
+
+      return tr
     }
   })
 }
