@@ -70,6 +70,7 @@ export default mergeIds(settingId, setting, {
     AddOwner: '' as IntlString,
     User: '' as IntlString,
     Maintainer: '' as IntlString,
+    Guest: '' as IntlString,
     Owner: '' as IntlString,
     OwnerFirstName: '' as IntlString,
     OwnerLastName: '' as IntlString,

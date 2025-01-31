@@ -73,7 +73,7 @@ const sentryDSN = process.env.SENTRY_DSN
 configureAnalytics(sentryDSN, {})
 Analytics.setTag('application', 'backup-service')
 
-const usePrepare = process.env.DB_PREPARE === 'true'
+const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
 
 setDBExtraOptions({
   prepare: usePrepare // We override defaults

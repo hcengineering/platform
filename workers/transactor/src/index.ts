@@ -22,22 +22,25 @@ export default {
     const router = Router()
 
     router
-      .get('/:token', ({ params, headers }) => {
+      .get('/:token', async ({ params, headers }) => {
         if (headers.get('Upgrade') !== 'websocket') {
           return new Response('Expected header Upgrade: websocket', { status: 426 })
         }
         try {
           const decodedToken = decodeToken(params.token, true, env.SERVER_SECRET)
-          console.log('connecting', decodedToken.email)
+          console.log({ message: 'connecting', email: decodedToken.email, workspace: decodedToken.workspace.name })
 
           const id = env.TRANSACTOR.idFromName(decodedToken.workspace.name)
           const stub = env.TRANSACTOR.get(id)
 
-          return stub.fetch(request)
+          return await stub.fetch(request)
         } catch (err: any) {
-          return new Response('Expected header Upgrade: websocket', { status: 426 })
+          console.error({ message: 'Request failed:', err, errMessage: err.message, stack: err.stack })
+
+          return new Response('Invalid', { status: 401 })
         }
       })
+
       // TODO: Add statistics using storage
       .all('/', () =>
         html(

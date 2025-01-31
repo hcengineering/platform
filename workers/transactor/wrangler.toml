@@ -2,7 +2,7 @@
 name = "cloud-transactor"
 main = "src/index.ts"
 compatibility_date = "2024-09-23"
-compatibility_flags = ["nodejs_compat_v2"]
+compatibility_flags = ["nodejs_compat"]
 keep_vars = true
 
 [observability.logs]
@@ -37,6 +37,7 @@ ENABLE_COMPRESSION=true
 # TELEGRAM_BOT_URL
 # AI_BOT_URL
 # LAST_NAME_FIRST
+USE_GREEN='true'
 
 # Bind the Workers AI model catalog. Run machine learning models, powered by serverless GPUs, on Cloudflare’s global network
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#workers-ai

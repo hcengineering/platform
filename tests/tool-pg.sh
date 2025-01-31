@@ -13,4 +13,4 @@ export ELASTIC_URL=http://localhost:9201
 export SERVER_SECRET=secret
 export DB_URL=postgresql://postgres:example@localhost:5433
 
-node ../dev/tool/bundle/bundle.js $@
+node ${TOOL_OPTIONS} ../dev/tool/bundle/bundle.js $@

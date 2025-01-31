@@ -248,7 +248,7 @@ export function registerDestroyFactory (
 
 function matchTxAdapterFactory (dbUrl: string): DbAdapterFactory {
   for (const [k, v] of Object.entries(txAdapterFactories)) {
-    if (dbUrl.startsWith(k)) {
+    if (k !== '' && dbUrl.startsWith(k)) {
       return v
     }
   }
@@ -257,7 +257,7 @@ function matchTxAdapterFactory (dbUrl: string): DbAdapterFactory {
 
 function matchAdapterFactory (dbUrl: string): DbAdapterFactory {
   for (const [k, v] of Object.entries(adapterFactories)) {
-    if (dbUrl.startsWith(k)) {
+    if (k !== '' && dbUrl.startsWith(k)) {
       return v
     }
   }
