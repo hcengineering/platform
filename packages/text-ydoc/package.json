@@ -41,11 +41,11 @@
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/text": "^0.6.5",
-    "@tiptap/core": "^2.6.6",
-    "@tiptap/pm": "^2.6.6",
-    "fast-equals": "^5.0.1",
-    "yjs": "^13.6.19",
-    "y-prosemirror": "^1.2.12"
+    "@tiptap/core": "^2.11.3",
+    "@tiptap/pm": "^2.11.3",
+    "fast-equals": "^5.2.2",
+    "yjs": "^13.6.23",
+    "y-prosemirror": "^1.2.15"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

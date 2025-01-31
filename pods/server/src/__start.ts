@@ -59,7 +59,7 @@ setOperationLogProfiling(process.env.OPERATION_PROFILING === 'true')
 const config = serverConfigFromEnv()
 const storageConfig: StorageConfiguration = storageConfigFromEnv()
 
-const usePrepare = process.env.DB_PREPARE === 'true'
+const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
 
 setDBExtraOptions({
   prepare: usePrepare // We override defaults

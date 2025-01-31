@@ -306,7 +306,8 @@ export const domainSchemas: Record<string, Schema> = {
   [translateDomain('notification-user')]: userNotificationSchema,
   [translateDomain('github_sync')]: docSyncInfo,
   [translateDomain('github_user')]: githubLogin,
-  [DOMAIN_RELATION]: relationSchema
+  [DOMAIN_RELATION]: relationSchema,
+  kanban: defaultSchema
 }
 
 export function getSchema (domain: string): Schema {

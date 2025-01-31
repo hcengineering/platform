@@ -119,7 +119,8 @@
     "HideDoneState": "Nascondi candidature completate",
     "HideArchivedVacancies": "Nascondi posizioni archiviate",
     "HideApplicantsFromArchivedVacancies": "Nascondi da posizioni archiviate",
-    "CreateNewSkills": "Crea nuove competenze se quelle esistenti non vengono trovate"
+    "CreateNewSkills": "Crea nuove competenze se quelle esistenti non vengono trovate",
+    "SwapFirstAndLastNames": "Scambia nome e cognome"
   },
   "status": {
     "ApplicationExists": "La candidatura esiste già",

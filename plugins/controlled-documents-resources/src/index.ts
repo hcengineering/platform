@@ -182,6 +182,24 @@ async function archiveDocuments (obj: Document | Document[]): Promise<void> {
   })
 }
 
+async function makeDocumentObsolete (obj: Document | Document[]): Promise<void> {
+  const docs = Array.isArray(obj) ? obj : [obj]
+  const docNames = docs.map((d) => `${d.title} (${d.prefix}-${d.seqNumber})`).join(', ')
+
+  showPopup(MessageBox, {
+    label: documents.string.MakeDocumentObsoleteDialog,
+    labelProps: { count: docs.length },
+    message: documents.string.MakeDocumentObsoleteConfirm,
+    params: { titles: docNames },
+    action: async () => {
+      const client = getClient()
+      for (const doc of docs) {
+        await client.update(doc, { state: DocumentState.Obsolete })
+      }
+    }
+  })
+}
+
 async function canDeleteDocument (obj?: Doc | Doc[]): Promise<boolean> {
   if (obj == null) {
     return false
@@ -199,6 +217,28 @@ async function canDeleteDocument (obj?: Doc | Doc[]): Promise<boolean> {
 }
 
 async function canArchiveDocument (obj?: Doc | Doc[]): Promise<boolean> {
+  if (obj == null) {
+    return false
+  }
+
+  const objs = (Array.isArray(obj) ? obj : [obj]) as Document[]
+  const currentUser = getCurrentAccount() as PersonAccount
+  const isOwner = objs.every((doc) => doc.owner === currentUser.person)
+
+  if (isOwner) {
+    return true
+  }
+
+  const spaces = new Set(objs.map((doc) => doc.space))
+
+  return await Promise.all(
+    Array.from(spaces).map(
+      async (space) => await checkPermission(getClient(), documents.permission.ArchiveDocument, space)
+    )
+  ).then((res) => res.every((r) => r))
+}
+
+async function canMakeDocumentObsolete (obj?: Doc | Doc[]): Promise<boolean> {
   if (obj == null) {
     return false
   }
@@ -411,6 +451,7 @@ export default async (): Promise<Resources> => ({
     GetDocumentMetaLinkFragment: getDocumentMetaLinkFragment,
     CanDeleteDocument: canDeleteDocument,
     CanArchiveDocument: canArchiveDocument,
+    CanMakeDocumentObsolete: canMakeDocumentObsolete,
     CanTransferDocument: canTransferDocument,
     CanOpenDocument: canOpenDocument,
     CanPrintDocument: canPrintDocument,
@@ -430,6 +471,7 @@ export default async (): Promise<Resources> => ({
     CreateFolder: createFolder,
     DeleteDocument: deleteDocuments,
     ArchiveDocument: archiveDocuments,
+    MakeDocumentObsolete: makeDocumentObsolete,
     TransferDocument: transferDocuments,
     EditDocSpace: editDocSpace
   },

@@ -66,11 +66,11 @@
     "@hcengineering/controlled-documents": "^0.1.0",
     "@hcengineering/training": "^0.1.0",
     "@hcengineering/training-resources": "^0.1.0",
-    "@tiptap/core": "^2.6.6",
+    "@tiptap/core": "^2.11.3",
     "effector": "~22.8.7",
     "svelte": "^4.2.19",
     "slugify": "^1.6.6",
-    "fast-equals": "^5.0.1",
+    "fast-equals": "^5.2.2",
     "@hcengineering/rank": "^0.6.4",
     "@hcengineering/print": "^0.6.0"
   }

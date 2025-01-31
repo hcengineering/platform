@@ -237,7 +237,7 @@ export async function startIndexer (
 ): Promise<() => void> {
   const closeTimeout = 5 * 60 * 1000
 
-  const usePrepare = process.env.DB_PREPARE === 'true'
+  const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
 
   setDBExtraOptions({
     prepare: usePrepare // We override defaults

@@ -36,6 +36,7 @@ import {
   registerTxAdapterFactory,
   sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
+import { uncompress } from 'snappy'
 
 import {
   createMongoAdapter,
@@ -47,6 +48,8 @@ import {
   createPostgreeDestroyAdapter,
   createPostgresAdapter,
   createPostgresTxAdapter,
+  registerGreenDecoder,
+  registerGreenUrl,
   setDBExtraOptions,
   shutdownPostgres
 } from '@hcengineering/postgres'
@@ -97,7 +100,10 @@ export function start (
   registerAdapterFactory('postgresql', createPostgresAdapter, true)
   registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
 
-  const usePrepare = process.env.DB_PREPARE === 'true'
+  const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
+
+  registerGreenDecoder('snappy', uncompress)
+  registerGreenUrl(process.env.GREEN_URL)
 
   setDBExtraOptions({
     prepare: usePrepare // We override defaults

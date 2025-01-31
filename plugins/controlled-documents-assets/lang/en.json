@@ -119,6 +119,11 @@
     "Archived": "Archived",
     "Deleted": "Deleted",
     "MetaAbstract": "Abstract",
+    
+    "Obsolete": "Obsolete",
+    "MakeDocumentObsolete": "Mark as obsolete",
+    "MakeDocumentObsoleteDialog": "Mark {count, plural, =0 {document} other {documents}} as obsolete",
+    "MakeDocumentObsoleteConfirm": "Do you really want to mark the following documents as obsolete: {titles}?",
 
     "ContentTab": "Content",
     "TeamTab": "Team",

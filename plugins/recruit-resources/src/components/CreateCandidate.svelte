@@ -67,12 +67,15 @@
     Label,
     MiniToggle,
     showPopup,
-    Spinner
+    Spinner,
+    ActionIcon
   } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import recruit from '../plugin'
   import { getCandidateIdentifier } from '../utils'
   import YesNo from './YesNo.svelte'
+  import IconSwitch from './icons/Switch.svelte'
+  import IconShuffle from './icons/Shuffle.svelte'
 
   export let shouldSaveDraft: boolean = true
 
@@ -631,7 +634,7 @@
         maxWidth={'30rem'}
       />
     </div>
-    <div class="ml-4">
+    <div class="flex-col items-center flex-gap-2 ml-4">
       <EditableAvatar
         disabled={loading}
         bind:this={avatarEditor}
@@ -641,6 +644,16 @@
         }}
         size={'large'}
         name={combineName(object?.firstName?.trim() ?? '', object?.lastName?.trim() ?? '')}
+      />
+      <ActionIcon
+        icon={IconShuffle}
+        label={recruit.string.SwapFirstAndLastNames}
+        size={'medium'}
+        action={() => {
+          const first = object.firstName
+          object.firstName = object.lastName
+          object.lastName = first
+        }}
       />
     </div>
   </div>

@@ -629,24 +629,6 @@ export async function createDirect (employeeIds: Array<Ref<Employee>>): Promise<
     if (context.hidden) {
       await client.updateDoc(context._class, context.space, context._id, { hidden: false })
     }
-
-    return dmId
   }
-
-  const space = await client.findOne(
-    contact.class.PersonSpace,
-    { person: me.person as Ref<Person> },
-    { projection: { _id: 1 } }
-  )
-  if (space == null) return dmId
-  await client.createDoc(notification.class.DocNotifyContext, space._id, {
-    user: me._id,
-    objectId: dmId,
-    objectClass: chunter.class.DirectMessage,
-    objectSpace: core.space.Space,
-    hidden: false,
-    isPinned: false
-  })
-
   return dmId
 }

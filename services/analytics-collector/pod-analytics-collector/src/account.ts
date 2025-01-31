@@ -22,6 +22,7 @@ export async function getWorkspaceInfo (token: string): Promise<WorkspaceInfo | 
   const workspaceInfo = await (
     await fetch(accountsUrl, {
       method: 'POST',
+      keepalive: true,
       headers: {
         Authorization: 'Bearer ' + token,
         'Content-Type': 'application/json'

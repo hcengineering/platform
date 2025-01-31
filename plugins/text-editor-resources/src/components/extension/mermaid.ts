@@ -287,7 +287,9 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
         stopEvent: (event) => {
           if (event instanceof DragEvent && !nodeState.folded) {
             event.preventDefault()
+            return true
           }
+          return false
         },
         update: (node, decorations) => {
           if (node.type.name !== MermaidExtension.name) return false

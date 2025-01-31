@@ -50,6 +50,6 @@
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/view-resources": "^0.6.0",
     "svelte": "^4.2.19",
-    "fast-equals": "^5.0.1"
+    "fast-equals": "^5.2.2"
   }
 }

@@ -119,6 +119,7 @@ export async function sendEmailNotification (
     const sesAuth: string | undefined = getMetadata(serverNotification.metadata.SesAuthToken)
     await fetch(concatLink(sesURL, '/send'), {
       method: 'post',
+      keepalive: true,
       headers: {
         'Content-Type': 'application/json',
         ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})

@@ -2,8 +2,7 @@
 
 import {
   generateId,
-  MeasureMetricsContext,
-  newMetrics,
+  NoMetricsContext,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -15,10 +14,8 @@ import {
 import { setMetadata } from '@hcengineering/platform'
 import { RPCHandler } from '@hcengineering/rpc'
 import { ClientSession, createSessionManager, doSessionOp, type WebsocketData } from '@hcengineering/server'
-import serverClient from '@hcengineering/server-client'
 import serverCore, {
   createDummyStorageAdapter,
-  initStatisticsContext,
   loadBrandingMap,
   pingConst,
   pongConst,
@@ -29,7 +26,7 @@ import serverCore, {
 } from '@hcengineering/server-core'
 import serverPlugin, { decodeToken, type Token } from '@hcengineering/server-token'
 import { DurableObject } from 'cloudflare:workers'
-import { compress } from 'snappyjs'
+import { compress, uncompress } from 'snappyjs'
 import { promisify } from 'util'
 import { gzip } from 'zlib'
 
@@ -39,8 +36,9 @@ import {
   createPostgresAdapter,
   createPostgresTxAdapter,
   getDBClient,
-  setDBExtraOptions,
-  setExtraOptions
+  registerGreenDecoder,
+  registerGreenUrl,
+  setDBExtraOptions
 } from '@hcengineering/postgres'
 import {
   createServerPipeline,
@@ -84,11 +82,7 @@ export class Transactor extends DurableObject<Env> {
       ssl: false,
       connection: {
         application_name: 'cloud-transactor'
-      },
-      prepare: false
-    })
-    setExtraOptions({
-      useCF: true
+      }
     })
 
     // configureAnalytics(env.SENTRY_DSN, {})
@@ -108,17 +102,23 @@ export class Transactor extends DurableObject<Env> {
     registerAdapterFactory('postgresql', createPostgresAdapter, true)
     registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
 
+    if (env.USE_GREEN === 'true') {
+      registerGreenUrl(env.GREEN_URL)
+      registerGreenDecoder('snappy', uncompress)
+    }
+
     registerStringLoaders()
     registerServerPlugins()
     this.accountsUrl = env.ACCOUNTS_URL ?? 'http://127.0.0.1:3000'
 
     this.ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair(pingConst, pongConst))
 
-    this.measureCtx = this.measureCtx = initStatisticsContext('cloud-transactor', {
-      statsUrl: this.env.STATS_URL ?? 'http://127.0.0.1:4900',
-      serviceName: () => 'cloud-transactor: ' + this.workspace,
-      factory: () => new MeasureMetricsContext('transactor', {}, {}, newMetrics(), new CloudFlareLogger())
-    })
+    this.measureCtx = new NoMetricsContext(new CloudFlareLogger())
+    // initStatisticsContext('ctr-' + ctx.id.toString(), {
+    //   statsUrl: this.env.STATS_URL ?? 'http://127.0.0.1:4900',
+    //   serviceName: () => 'cloud-transactor: ' + this.workspace,
+    //   factory: () => new MeasureMetricsContext('transactor', {}, {}, newMetrics(), new CloudFlareLogger())
+    // })
 
     setMetadata(serverPlugin.metadata.Secret, env.SERVER_SECRET ?? 'secret')
 
@@ -153,8 +153,6 @@ export class Transactor extends DurableObject<Env> {
 
     void this.ctx
       .blockConcurrencyWhile(async () => {
-        setMetadata(serverClient.metadata.Endpoint, env.ACCOUNTS_URL)
-
         this.sessionManager = createSessionManager(
           this.measureCtx,
           (token: Token, workspace) => new ClientSession(token, workspace, false),
@@ -170,7 +168,7 @@ export class Transactor extends DurableObject<Env> {
         )
       })
       .catch((err) => {
-        console.error('Failed to init transactor', err)
+        console.error({ message: 'Failed to init transactor', err })
       })
   }
 
@@ -194,7 +192,7 @@ export class Transactor extends DurableObject<Env> {
       }
       return new Response(null, { status: 101, webSocket: client })
     } catch (err: any) {
-      console.error(err)
+      console.error({ message: 'Failed to handle request', errMsg: err.message, errStack: err.stack })
       return new Response(null, { status: 404 })
     }
   }
@@ -208,31 +206,47 @@ export class Transactor extends DurableObject<Env> {
     if (cs === undefined) {
       return
     }
-    doSessionOp(
-      session,
-      (s, buff) => {
-        s.context.measure('receive-data', buff?.length ?? 0)
-        // processRequest(s.session, cs, s.context, s.workspaceId, buff, handleRequest)
-        const request = cs.readRequest(buff, s.session.binaryMode)
-        console.log({
-          message: 'handle-request',
-          method: request.method,
-          workspace: s.workspaceId,
-          user: s.session.getUser()
-        })
-        this.ctx.waitUntil(this.sessionManager.handleRequest(this.measureCtx, s.session, cs, request, this.workspace))
-      },
-      typeof message === 'string' ? Buffer.from(message) : Buffer.from(message)
-    )
+    try {
+      doSessionOp(
+        session,
+        (s, buff) => {
+          s.context.measure('receive-data', buff?.length ?? 0)
+          // processRequest(s.session, cs, s.context, s.workspaceId, buff, handleRequest)
+          const request = cs.readRequest(buff, s.session.binaryMode)
+          const st = Date.now()
+          const r = this.sessionManager.handleRequest(this.measureCtx, s.session, cs, request, this.workspace)
+          void r.finally(() => {
+            console.log({
+              message: 'handle-request',
+              method: request.method,
+              params: request.params,
+              workspace: s.workspaceId,
+              user: s.session.getUser(),
+              time: Date.now() - st
+            })
+          })
+          this.ctx.waitUntil(r)
+        },
+        typeof message === 'string' ? Buffer.from(message) : Buffer.from(message)
+      )
+    } catch (err: any) {
+      console.error({ message: 'Failed to handle message:', err })
+    }
   }
 
   async webSocketError (ws: WebSocket, error: unknown): Promise<void> {
-    console.error('WebSocket error:', error)
+    console.error({ message: 'WebSocket error:', error })
     await this.handleClose(ws, 1011, 'error')
   }
 
   async alarm (): Promise<void> {
-    console.log({ message: 'alarm' })
+    const memoryUsage = process.memoryUsage()
+    console.log({
+      message: 'Resource usage',
+      memoryUsed: memoryUsage.rss,
+      heapTotal: memoryUsage.heapTotal,
+      heapUsed: memoryUsage.heapUsed
+    })
   }
 
   async handleSession (
@@ -250,44 +264,64 @@ export class Transactor extends DurableObject<Env> {
       mode: token.extra?.mode,
       model: token.extra?.model
     }
+    console.log({
+      message: 'New session attempt',
+      remoteAddress: data.remoteAddress,
+      userAgent: data.userAgent,
+      email: data.email
+    })
+    this.ctx.acceptWebSocket(ws)
     const cs = this.createWebsocketClientSocket(ws, data)
 
-    const session = await this.sessionManager.addSession(
-      this.measureCtx,
-      cs,
-      token,
-      rawToken,
-      this.pipelineFactory,
-      sessionId ?? undefined
-    )
-
-    const webSocketData: WebsocketData = {
-      connectionSocket: cs,
-      payload: token,
-      token: rawToken,
-      session,
-      url: ''
-    }
-
-    if ('error' in session) {
-      if (session.terminate === true) {
-        ws.close()
-      }
-      throw session.error
-    }
-    if ('upgrade' in session) {
-      cs.send(
+    try {
+      const session = await this.sessionManager.addSession(
         this.measureCtx,
-        { id: -1, result: { state: 'upgrading', stats: (session as any).upgradeInfo } },
-        false,
-        false
+        cs,
+        token,
+        rawToken,
+        this.pipelineFactory,
+        sessionId ?? undefined
       )
-      cs.close()
-      return true
-    }
 
-    this.sessions.set(ws, webSocketData)
-    this.ctx.acceptWebSocket(ws)
+      const webSocketData: WebsocketData = {
+        connectionSocket: cs,
+        payload: token,
+        token: rawToken,
+        session,
+        url: ''
+      }
+
+      if ('error' in session) {
+        console.error({ message: 'Failed to establish session:', error: session.error })
+        ws.close(4003, 'Session establishment failed')
+        if (session.terminate === true) {
+          ws.close()
+        }
+        throw session.error
+      }
+      if ('upgrade' in session) {
+        cs.send(
+          this.measureCtx,
+          { id: -1, result: { state: 'upgrading', stats: (session as any).upgradeInfo } },
+          false,
+          false
+        )
+        cs.close()
+        return true
+      }
+
+      console.log({
+        message: 'Session established successfully:',
+        sessionId: session.session.sessionId,
+        workspaceId: token.workspace.name,
+        user: token.email
+      })
+      this.sessions.set(ws, webSocketData)
+    } catch (err: any) {
+      console.error({ message: 'Failed to establish session:', err })
+      ws.close(4003, 'Session establishment failed')
+      throw err
+    }
 
     return true
   }
@@ -365,19 +399,22 @@ export class Transactor extends DurableObject<Env> {
     try {
       ws.send(message)
     } catch (error) {
-      console.error('Failed to send message:', error)
+      console.error({ message: 'Failed to send message:', error })
       await this.handleClose(ws, 1011, 'error')
     }
   }
 
   async handleClose (ws: WebSocket, code: number, reason?: string): Promise<void> {
     try {
+      console.log({ message: 'Closing connection with code', code, reason })
       ws.close(code, reason)
     } catch (err) {
-      console.error('Failed to close WebSocket:', err)
+      console.error({ message: 'Failed to close WebSocket:', err })
     }
     const session = this.sessions.get(ws)
     if (session !== undefined) {
+      this.sessions.delete(ws)
+      console.log({ message: 'Cleaning up session for', email: session.payload.email })
       await this.sessionManager.close(this.measureCtx, session.connectionSocket as ConnectionSocket, this.workspace)
     }
   }

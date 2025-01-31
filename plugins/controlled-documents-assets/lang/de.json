@@ -302,7 +302,12 @@
 
     "CreateFolder": "Neuen Ordner erstellen",
     "RenameFolder": "Ordner umbenennen",
-    "CreateChildFolder": "Unterordner erstellen"
+    "CreateChildFolder": "Unterordner erstellen",
+
+    "Obsolete": "Veraltet",
+    "MakeDocumentObsolete": "Als veraltet markieren",
+    "MakeDocumentObsoleteDialog": "{count, plural, one {Dokument als veraltet markieren} other {Dokumente als veraltet markieren}}",
+    "MakeDocumentObsoleteConfirm": "Möchten Sie die folgenden Dokumente wirklich als veraltet markieren: {titles}?"
   },
   "controlledDocStates": {
     "Empty": "",

@@ -43,12 +43,16 @@ export function doSessionOp (
   if (data.session instanceof Promise) {
     // We need to copy since we will out of protected buffer area
     const msgCopy = Buffer.copyBytesFrom(msg)
-    void data.session.then((_session) => {
-      data.session = _session
-      if ('session' in _session) {
-        op(_session, msgCopy)
-      }
-    })
+    void data.session
+      .then((_session) => {
+        data.session = _session
+        if ('session' in _session) {
+          op(_session, msgCopy)
+        }
+      })
+      .catch((err) => {
+        console.error({ message: 'Failed to process session operation', err })
+      })
   } else {
     if (data.session !== undefined && 'session' in data.session) {
       op(data.session, msg)

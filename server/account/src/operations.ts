@@ -63,6 +63,7 @@ import { connect } from '@hcengineering/server-tool'
 import { randomBytes } from 'crypto'
 import otpGenerator from 'otp-generator'
 
+import { getWorkspaceDestroyAdapter, sharedPipelineContextVars } from '@hcengineering/server-pipeline'
 import { accountPlugin } from './plugin'
 import type {
   Account,
@@ -92,7 +93,6 @@ import {
   toAccountInfo,
   verifyPassword
 } from './utils'
-import { getWorkspaceDestroyAdapter, sharedPipelineContextVars } from '@hcengineering/server-pipeline'
 
 import MD5 from 'crypto-js/md5'
 function buildGravatarId (email: string): string {
@@ -866,7 +866,8 @@ export async function listWorkspaces (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  region?: string | null
+  region?: string | null,
+  mode?: WorkspaceMode | null
 ): Promise<WorkspaceInfo[]> {
   decodeToken(ctx, token) // Just verify token is valid
 
@@ -874,9 +875,17 @@ export async function listWorkspaces (
     region = null
   }
 
-  return (await db.workspace.find(region != null ? { region } : {}))
-    .filter((it) => it.disabled !== true)
-    .map(trimWorkspaceInfo)
+  const q: Query<Workspace> = {
+    disabled: { $ne: true }
+  }
+  if (region != null) {
+    q.region = region
+  }
+  if (mode != null) {
+    q.mode = mode
+  }
+
+  return (await db.workspace.find(q)).map(trimWorkspaceInfo)
 }
 
 /**
@@ -1701,7 +1710,8 @@ export async function getAllWorkspaces (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  token: string
+  token: string,
+  mode?: WorkspaceMode
 ): Promise<BaseWorkspaceInfo[]> {
   const { email } = decodeToken(ctx, token)
   const account = await getAccount(db, email)

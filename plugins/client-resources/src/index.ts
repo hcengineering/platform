@@ -60,6 +60,14 @@ if (typeof localStorage !== 'undefined') {
       resolve(db)
     }
   })
+  void dbPromise.then((res) => {
+    if (res !== undefined) {
+      res.onclose = () => {
+        dbRequest = undefined
+        dbPromise = Promise.resolve(undefined)
+      }
+    }
+  })
 }
 
 /**

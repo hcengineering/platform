@@ -82,7 +82,8 @@ export async function getTranslatedDocumentStates (lang: string): Promise<Transl
     [DocumentState.Draft]: await translate(documents.string.Draft, {}, lang),
     [DocumentState.Deleted]: await translate(documents.string.Deleted, {}, lang),
     [DocumentState.Effective]: await translate(documents.string.Effective, {}, lang),
-    [DocumentState.Archived]: await translate(documents.string.Archived, {}, lang)
+    [DocumentState.Archived]: await translate(documents.string.Archived, {}, lang),
+    [DocumentState.Obsolete]: await translate(documents.string.Obsolete, {}, lang)
   }
 }
 
@@ -158,6 +159,8 @@ export async function getDocumentMetaLinkFragment (document: Doc): Promise<Locat
       targetDocument = doc
       break
     } else if (doc.state === DocumentState.Deleted && targetDocument === undefined) {
+      targetDocument = doc
+    } else if (doc.state === DocumentState.Obsolete && targetDocument === undefined) {
       targetDocument = doc
     } else if (doc.state === DocumentState.Draft) {
       targetDocument = doc
@@ -363,13 +366,15 @@ export const statesTags: StatesTags = {
   [DocumentState.Draft]: 'draft',
   [DocumentState.Effective]: 'effective',
   [DocumentState.Archived]: 'obsolete',
-  [DocumentState.Deleted]: 'obsolete'
+  [DocumentState.Deleted]: 'obsolete',
+  [DocumentState.Obsolete]: 'obsolete'
 }
 
 export const documentStatesOrder = [
   DocumentState.Draft,
   DocumentState.Effective,
   DocumentState.Archived,
+  DocumentState.Obsolete,
   DocumentState.Deleted
 ]
 

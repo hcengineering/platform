@@ -118,6 +118,7 @@
       DocumentState.Archived,
       DocumentState.Deleted,
       DocumentState.Effective,
+      DocumentState.Obsolete,
       ControlledDocumentState.InApproval,
       ControlledDocumentState.Approved,
       ControlledDocumentState.ToReview

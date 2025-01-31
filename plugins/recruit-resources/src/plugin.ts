@@ -127,7 +127,8 @@ export default mergeIds(recruitId, recruit, {
     OpenVacancyList: '' as IntlString,
     Export: '' as IntlString,
     GetTalentIds: '' as IntlString,
-    CreateNewSkills: '' as IntlString
+    CreateNewSkills: '' as IntlString,
+    SwapFirstAndLastNames: '' as IntlString
   },
   category: {
     Other: '' as Ref<TagCategory>,

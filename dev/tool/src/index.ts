@@ -123,6 +123,7 @@ import type { PipelineFactory, StorageAdapter, StorageAdapterEx } from '@hcengin
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
 import { getAccountDBUrl, getMongoDBUrl } from './__start'
+import { fillGithubUsers, fixAccountEmails, renameAccount } from './account'
 import {
   benchmark,
   benchmarkWorker,
@@ -154,7 +155,6 @@ import {
 import { reindexWorkspace } from './fulltext'
 import { restoreControlledDocContentMongo, restoreMarkupRefsMongo, restoreWikiContentMongo } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
-import { fixAccountEmails, renameAccount, fillGithubUsers } from './account'
 import { copyToDatalake, moveFiles, showLostFiles } from './storage'
 
 const colorConstants = {
@@ -200,6 +200,7 @@ export function devTool (
   registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
   registerAdapterFactory('postgresql', createPostgresAdapter, true)
   registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+
   registerServerPlugins()
   registerStringLoaders()
 

@@ -13,7 +13,7 @@
 // limitations under the License.
 // -->
 <script lang="ts">
-  import { getJsonOrEmpty, type LinkPreviewDetails, canDisplayLinkPreview } from '@hcengineering/presentation'
+  import { getJsonOrEmpty, type LinkPreviewDetails } from '@hcengineering/presentation'
   import { type Attachment } from '@hcengineering/attachment'
   import { type WithLookup } from '@hcengineering/core'
   import { Spinner } from '@hcengineering/ui'
@@ -22,12 +22,27 @@
 
   export let attachment: WithLookup<Attachment>
   let useDefaultIcon = false
+  let retryCount = 0
   let viewModel: LinkPreviewDetails
+  let previewImageSrc: string | undefined
+
+  function refreshPreviewImage (): void {
+    if (viewModel?.image === undefined) {
+      return
+    }
+    if (retryCount > 3) {
+      previewImageSrc = undefined
+      return
+    }
+    retryCount++
+    previewImageSrc = `${viewModel.image}#${Date.now()}`
+  }
 
   onMount(() => {
     void getJsonOrEmpty(attachment.file, attachment.name)
       .then((res) => {
         viewModel = res as LinkPreviewDetails
+        refreshPreviewImage()
       })
       .catch((err) => {
         console.error(err)
@@ -63,9 +78,16 @@
           {#if viewModel.description}
             {viewModel.description}
           {/if}
-          {#if viewModel.image}
+          {#if previewImageSrc}
             <a target="_blank" href={viewModel.url}>
-              <img src={viewModel.image} class="round-image" alt="link-preview" />
+              <img
+                src={previewImageSrc}
+                class="round-image"
+                alt="link-preview"
+                on:error={() => {
+                  refreshPreviewImage()
+                }}
+              />
             </a>
           {/if}
         </div>
