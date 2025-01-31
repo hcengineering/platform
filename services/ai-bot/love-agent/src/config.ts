@@ -13,24 +13,26 @@
 // limitations under the License.
 //
 
-import { SttProvider } from './type.'
+import { SttProvider } from './type.js'
 
 interface Config {
   DeepgramApiKey: string
-  PlatformUrl: string
-  PlatformToken: string
+  OpenAiModel: string
   OpenaiApiKey: string
   OpenaiBaseUrl: string
+  PlatformToken: string
+  PlatformUrl: string
   SttProvider: SttProvider
 }
 
 const config: Config = (() => {
   const params: Partial<Config> = {
-    DeepgramApiKey: process.env.DEEPGRAM_API_KEY,
-    PlatformUrl: process.env.PLATFORM_URL,
-    PlatformToken: process.env.PLATFORM_TOKEN,
+    DeepgramApiKey: process.env.DEEPGRAM_API_KEY ?? '',
+    OpenAiModel: process.env.OPENAI_MODEL ?? 'gpt-4o-realtime-preview-2024-12-17',
     OpenaiApiKey: process.env.OPENAI_API_KEY ?? '',
     OpenaiBaseUrl: process.env.OPENAI_BASE_URL ?? '',
+    PlatformToken: process.env.PLATFORM_TOKEN,
+    PlatformUrl: process.env.PLATFORM_URL,
     SttProvider: (process.env.STT_PROVIDER as SttProvider) ?? 'deepgram'
   }
 

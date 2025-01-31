@@ -81,7 +81,7 @@ export class AIControl {
   }
 
   async connectSupportWorkspace (): Promise<void> {
-    if (this.supportClient === undefined) {
+    if (this.supportClient === undefined && config.SupportWorkspace !== '') {
       const record = await this.getWorkspaceRecord(config.SupportWorkspace)
       this.supportClient = (await this.createWorkspaceClient(config.SupportWorkspace, record)) as SupportWsClient
     }

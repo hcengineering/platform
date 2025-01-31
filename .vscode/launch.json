@@ -590,6 +590,7 @@
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
+      "runtimeVersion": "20",
       "cwd": "${workspaceRoot}/services/ai-bot/pod-ai-bot",
       "protocol": "inspector",
       "outputCapture": "std"
