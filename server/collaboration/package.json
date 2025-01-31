@@ -43,6 +43,6 @@
     "@hcengineering/text": "^0.6.5",
     "@hcengineering/text-ydoc": "^0.6.0",
     "base64-js": "^1.5.1",
-    "yjs": "^13.6.19"
+    "yjs": "^13.6.23"
   }
 }

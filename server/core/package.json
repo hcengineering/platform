@@ -41,7 +41,7 @@
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/query": "^0.6.12",
-    "fast-equals": "^5.0.1",
+    "fast-equals": "^5.2.2",
     "@hcengineering/storage": "^0.6.0",
     "uuid": "^8.3.2"
   }
