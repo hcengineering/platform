@@ -6,7 +6,9 @@
     isDeletingMode,
     isMigrationMode,
     isRestoringMode,
+    isUpgradingMode,
     reduceCalls,
+    versionToString,
     type BaseWorkspaceInfo
   } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
@@ -29,6 +31,7 @@
   } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
   import { getAllWorkspaces, getRegionInfo, performWorkspaceOperation, type RegionInfo } from '../utils'
+  import Check from '@hcengineering/ui/src/components/icons/Check.svelte'
 
   $: now = $ticker
 
@@ -78,7 +81,7 @@
         ((showActive && isActiveMode(it.mode)) ||
           (showArchived && isArchivingMode(it.mode)) ||
           (showDeleted && isDeletingMode(it.mode)) ||
-          (showOther && (isMigrationMode(it.mode) || isRestoringMode(it.mode))))
+          (showOther && (isMigrationMode(it.mode) || isRestoringMode(it.mode) || isUpgradingMode(it.mode))))
     )
     .sort((a, b) => {
       switch (sortingRule) {
@@ -101,7 +104,7 @@
 
   $: {
     // Assign backup idx
-    const backupSorting = [...sortedWorkspaces].filter((it) => {
+    const backupSorting = [...workspaces].filter((it) => {
       if (!isActiveMode(it.mode)) {
         return false
       }
@@ -197,15 +200,41 @@
   })
 
   $: selectedRegionName = regionInfo.find((it) => it.region === selectedRegionId)?.name
+
+  $: byVersion = groupByArray(
+    workspaces.filter((it) => {
+      const lastUsed = Math.round((now - it.lastVisit) / (1000 * 3600 * 24))
+      return isActiveMode(it.mode) && lastUsed < 1
+    }),
+    (it) => versionToString(it.version ?? { major: 0, minor: 0, patch: 0 })
+  )
+
+  let superAdminMode = false
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 {#if isAdmin}
-  <div class="anticrm-panel flex-row flex-grow p-5">
-    <div class="fs-title p-3">Workspaces administration panel</div>
+  <div class="anticrm-panel flex-row flex-grow p-5" style:overflow-y={'auto'}>
+    <div class="flex-between">
+      <div class="fs-title p-3">Workspaces administration panel</div>
+      <div>
+        <CheckBox bind:checked={superAdminMode} />
+      </div>
+    </div>
     <div class="fs-title p-3">
       Workspaces: {workspaces.length} active: {workspaces.filter((it) => isActiveMode(it.mode)).length}
 
+      upgrading: {workspaces.filter((it) => isUpgradingMode(it.mode)).length}
+
       Backupable: {backupable.length} new: {backupable.reduce((p, it) => p + (it.backupInfo == null ? 1 : 0), 0)}
+
+      <div class="flex-row-center">
+        {#each byVersion.entries() as [k, v]}
+          <div class="p-1">
+            {k}: {v.length}
+          </div>
+        {/each}
+      </div>
     </div>
     <div class="fs-title p-3 flex-no-shrink">
       <SearchEdit bind:value={search} width={'100%'} />
@@ -263,9 +292,9 @@
             {@const v = groupped.get(k) ?? []}
             {@const hasMore = (groupped.get(k) ?? []).length > limit}
             {@const activeV = v.filter((it) => it.mode === 'active' && (it.region ?? '') !== selectedRegionId)}
-            {@const archiveV = v.filter((it) => it.mode === 'active')}
-            {@const archivedD = v.filter((it) => it.mode === 'archived')}
-            {@const av = v.length - archiveV.length - archivedD.length}
+            {@const archivedV = v.filter((it) => it.mode === 'archived')}
+            {@const deletedV = v.filter((it) => it.mode === 'deleted')}
+            {@const av = v.length - archivedV.length - deletedV.length}
             {#if v.length > 0}
               <Expandable expandable={true} bordered={true}>
                 <svelte:fragment slot="title">
@@ -285,7 +314,7 @@
                   {#if hasMore}
                     <div class="ml-4">
                       <Button
-                        label={getEmbeddedLabel(`More ${k}`)}
+                        label={getEmbeddedLabel('More items')}
                         kind={'link'}
                         on:click={() => {
                           limit += 50
@@ -295,18 +324,18 @@
                   {/if}
                 </svelte:fragment>
                 <svelte:fragment slot="tools">
-                  {#if archiveV.length > 0}
+                  {#if archivedV.length > 0}
                     <Button
                       icon={IconStop}
-                      label={getEmbeddedLabel(`Mass Archive ${archiveV.length}`)}
+                      label={getEmbeddedLabel(`Mass Archive ${archivedV.length}`)}
                       kind={'ghost'}
                       on:click={() => {
                         showPopup(MessageBox, {
-                          label: getEmbeddedLabel(`Mass Archive ${archiveV.length}`),
-                          message: getEmbeddedLabel(`Please confirm archive ${archiveV.length} workspaces`),
+                          label: getEmbeddedLabel(`Mass Archive ${archivedV.length}`),
+                          message: getEmbeddedLabel(`Please confirm archive ${archivedV.length} workspaces`),
                           action: async () => {
                             void performWorkspaceOperation(
-                              archiveV.map((it) => it.workspace),
+                              archivedV.map((it) => it.workspace),
                               'archive'
                             )
                           }
@@ -322,8 +351,8 @@
                       label={getEmbeddedLabel(`Mass Migrate ${activeV.length} to ${selectedRegionName ?? ''}`)}
                       on:click={() => {
                         showPopup(MessageBox, {
-                          label: getEmbeddedLabel(`Mass Migrate ${archiveV.length}`),
-                          message: getEmbeddedLabel(`Please confirm migrate ${archiveV.length} workspaces`),
+                          label: getEmbeddedLabel(`Mass Migrate ${archivedV.length}`),
+                          message: getEmbeddedLabel(`Please confirm migrate ${archivedV.length} workspaces`),
                           action: async () => {
                             await performWorkspaceOperation(
                               activeV.map((it) => it.workspace),
@@ -465,7 +494,7 @@
                           />
                         {/if}
 
-                        {#if !isDeletingMode(workspace.mode) && !isArchivingMode(workspace.mode)}
+                        {#if superAdminMode && !isDeletingMode(workspace.mode) && !isArchivingMode(workspace.mode)}
                           <Button
                             icon={IconStop}
                             size={'small'}
