@@ -107,8 +107,8 @@ async function getS3UploadParamsDatalake (
   s3config: S3Config
 ): Promise<S3UploadParams> {
   const token = generateToken(systemAccountEmail, workspaceId)
-  const client = createDatalakeClient(config)
-  const { bucket } = await client.getR2UploadParams(ctx, token, workspaceId)
+  const client = createDatalakeClient(config, token)
+  const { bucket } = await client.getR2UploadParams(ctx, workspaceId)
 
   const endpoint = s3config.endpoint
   const accessKey = s3config.accessKey
@@ -147,13 +147,13 @@ async function saveFileToDatalake (
   filename: string
 ): Promise<Blob | undefined> {
   const token = generateToken(systemAccountEmail, workspaceId)
-  const client = createDatalakeClient(config)
+  const client = createDatalakeClient(config, token)
   const storageAdapter = new DatalakeService(config)
 
   const prefix = rootPrefix(s3config, workspaceId)
   const uuid = stripPrefix(prefix, filename)
 
-  await client.uploadFromR2(ctx, token, workspaceId, uuid, { filename: uuid })
+  await client.uploadFromR2(ctx, workspaceId, uuid, { filename: uuid })
 
   return await storageAdapter.stat(ctx, workspaceId, uuid)
 }

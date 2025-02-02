@@ -21,7 +21,6 @@ import core, {
   systemAccountEmail,
   withContext
 } from '@hcengineering/core'
-
 import {
   type BlobStorageIterator,
   type BucketInfo,
@@ -47,9 +46,9 @@ export interface DatalakeConfig extends StorageConfig {
 /**
  * @public
  */
-export function createDatalakeClient (opt: DatalakeConfig): DatalakeClient {
+export function createDatalakeClient (opt: DatalakeConfig, token: string): DatalakeClient {
   const endpoint = Number.isInteger(opt.port) ? `${opt.endpoint}:${opt.port}` : opt.endpoint
-  return new DatalakeClient(endpoint)
+  return new DatalakeClient(endpoint, token)
 }
 
 export const CONFIG_KIND = 'datalake'
@@ -61,7 +60,8 @@ export class DatalakeService implements StorageAdapter {
   private readonly client: DatalakeClient
 
   constructor (readonly opt: DatalakeConfig) {
-    this.client = createDatalakeClient(opt)
+    const token = generateToken(systemAccountEmail, { name: '' }, { service: 'datalake' })
+    this.client = createDatalakeClient(opt, token)
   }
 
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
@@ -84,10 +84,9 @@ export class DatalakeService implements StorageAdapter {
 
   @withContext('remove')
   async remove (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]): Promise<void> {
-    const token = generateToken(systemAccountEmail, workspaceId)
     await Promise.all(
       objectNames.map(async (objectName) => {
-        await this.client.deleteObject(ctx, token, workspaceId, objectName)
+        await this.client.deleteObject(ctx, workspaceId, objectName)
       })
     )
   }
@@ -99,8 +98,6 @@ export class DatalakeService implements StorageAdapter {
 
   @withContext('listStream')
   async listStream (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<BlobStorageIterator> {
-    const token = generateToken(systemAccountEmail, workspaceId)
-
     let hasMore = true
     const buffer: ListBlobResult[] = []
     let cursor: string | undefined
@@ -109,7 +106,7 @@ export class DatalakeService implements StorageAdapter {
       next: async () => {
         try {
           while (hasMore && buffer.length < 50) {
-            const res = await this.client.listObjects(ctx, token, workspaceId, cursor)
+            const res = await this.client.listObjects(ctx, workspaceId, cursor)
             hasMore = res.cursor !== undefined
             cursor = res.cursor
 
@@ -138,8 +135,7 @@ export class DatalakeService implements StorageAdapter {
   @withContext('stat')
   async stat (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Blob | undefined> {
     try {
-      const token = generateToken(systemAccountEmail, workspaceId)
-      const result = await this.client.statObject(ctx, token, workspaceId, objectName)
+      const result = await this.client.statObject(ctx, workspaceId, objectName)
       if (result !== undefined) {
         return {
           provider: '',
@@ -161,8 +157,7 @@ export class DatalakeService implements StorageAdapter {
 
   @withContext('get')
   async get (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Readable> {
-    const token = generateToken(systemAccountEmail, workspaceId)
-    return await this.client.getObject(ctx, token, workspaceId, objectName)
+    return await this.client.getObject(ctx, workspaceId, objectName)
   }
 
   @withContext('put')
@@ -174,8 +169,6 @@ export class DatalakeService implements StorageAdapter {
     contentType: string,
     size?: number
   ): Promise<UploadedObjectInfo> {
-    const token = generateToken(systemAccountEmail, workspaceId)
-
     const params: UploadObjectParams = {
       lastModified: Date.now(),
       type: contentType,
@@ -183,7 +176,7 @@ export class DatalakeService implements StorageAdapter {
     }
 
     const { etag } = await ctx.with('put', {}, (ctx) =>
-      withRetry(ctx, 5, () => this.client.putObject(ctx, token, workspaceId, objectName, stream, params))
+      withRetry(ctx, 5, () => this.client.putObject(ctx, workspaceId, objectName, stream, params))
     )
 
     return {
@@ -194,8 +187,7 @@ export class DatalakeService implements StorageAdapter {
 
   @withContext('read')
   async read (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Buffer[]> {
-    const token = generateToken(systemAccountEmail, workspaceId)
-    const data = await this.client.getObject(ctx, token, workspaceId, objectName)
+    const data = await this.client.getObject(ctx, workspaceId, objectName)
     const chunks: Buffer[] = []
 
     for await (const chunk of data) {
@@ -213,8 +205,7 @@ export class DatalakeService implements StorageAdapter {
     offset: number,
     length?: number
   ): Promise<Readable> {
-    const token = generateToken(systemAccountEmail, workspaceId)
-    return await this.client.getPartialObject(ctx, token, workspaceId, objectName, offset, length)
+    return await this.client.getPartialObject(ctx, workspaceId, objectName, offset, length)
   }
 
   async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
