@@ -175,6 +175,7 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
         })
         res.status(200).send(response)
       } catch (err: any) {
+        Analytics.handleError(err)
         res.status(500).send({ error: err.message })
       }
     })
