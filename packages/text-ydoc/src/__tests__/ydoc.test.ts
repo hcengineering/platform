@@ -14,7 +14,8 @@
 //
 
 import { Markup } from '@hcengineering/core'
-import { markupToYDoc, markupToYDocNoSchema, yDocToMarkup } from '../ydoc'
+import { markupToJSON } from '@hcengineering/text'
+import { jsonToYDocNoSchema, markupToYDoc, markupToYDocNoSchema, yDocToMarkup } from '../ydoc'
 
 describe('ydoc', () => {
   const markups: Markup[] = [
@@ -58,6 +59,16 @@ describe('ydoc', () => {
       const back = yDocToMarkup(ydoc, 'test')
 
       expect(JSON.parse(back)).toEqual(JSON.parse(markup))
+    })
+  })
+
+  describe.each(markups)('jsonToYDocNoSchema', (markup) => {
+    it('converts json to ydoc', () => {
+      const json = markupToJSON(markup)
+      const ydoc1 = jsonToYDocNoSchema(json, 'test')
+      const ydoc2 = markupToYDoc(markup, 'test')
+
+      expect(ydoc1.getXmlFragment('test').toJSON()).toEqual(ydoc2.getXmlFragment('test').toJSON())
     })
   })
 })
