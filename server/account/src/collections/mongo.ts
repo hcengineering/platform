@@ -437,8 +437,12 @@ export class MongoAccountDB implements AccountDB {
       }
     ]
 
-    const deletingQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [{ 'status.mode': { $in: ['pending-deletion', 'deleting'] } }]
-    const restoreQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [{ 'status.mode': { $in: ['pending-restore', 'restoring'] } }]
+    const deletingQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [
+      { 'status.mode': { $in: ['pending-deletion', 'deleting'] } }
+    ]
+    const restoreQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [
+      { 'status.mode': { $in: ['pending-restore', 'restoring'] } }
+    ]
 
     const versionQuery = {
       $or: [
@@ -493,7 +497,14 @@ export class MongoAccountDB implements AccountDB {
         break
       case 'all+backup':
         operationQuery = {
-          $or: [...pendingCreationQuery, ...pendingUpgradeQuery, ...migrationQuery, ...archivingQuery, ...restoreQuery, ...deletingQuery]
+          $or: [
+            ...pendingCreationQuery,
+            ...pendingUpgradeQuery,
+            ...migrationQuery,
+            ...archivingQuery,
+            ...restoreQuery,
+            ...deletingQuery
+          ]
         }
         break
     }

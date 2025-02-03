@@ -390,7 +390,11 @@ export class WorkspaceWorker {
     await this.doReindexFulltext(ctx, workspace, onlyDrop)
   }
 
-  private async doReindexFulltext (ctx: MeasureContext, workspace: WorkspaceInfoWithStatus, onlyDrop: boolean): Promise<void> {
+  private async doReindexFulltext (
+    ctx: MeasureContext,
+    workspace: WorkspaceInfoWithStatus,
+    onlyDrop: boolean
+  ): Promise<void> {
     if (this.fulltextUrl !== undefined) {
       const token = generateToken(systemAccountUuid, workspace.uuid, { service: 'workspace' })
 

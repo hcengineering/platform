@@ -256,7 +256,7 @@ class BackupWorker {
       url: ws.url
     })
     const ctx = rootCtx.newChild(ws.uuid, { workspace: ws.uuid, url: ws.url })
-    const dataId = ws.dataId ?? ws.uuid as unknown as WorkspaceDataId
+    const dataId = ws.dataId ?? (ws.uuid as unknown as WorkspaceDataId)
     let pipeline: Pipeline | undefined
     try {
       const storage = await createStorageBackupStorage(
