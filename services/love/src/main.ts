@@ -155,7 +155,16 @@ export const main = async (): Promise<void> => {
       const dataId = (wsLoginInfo as WorkspaceLoginInfo)?.workspaceDataId ?? (workspace as unknown as WorkspaceDataId)
       const dateStr = new Date().toISOString().replace('T', '_').slice(0, 19)
       const name = `${room}_${dateStr}.mp4`
-      const id = await startRecord(ctx, storageConfig, s3storageConfig, egressClient, roomClient, roomName, dataId)
+      const id = await startRecord(
+        ctx,
+        storageConfig,
+        s3storageConfig,
+        egressClient,
+        roomClient,
+        roomName,
+        workspace,
+        dataId
+      )
       dataByUUID.set(id, { name, workspace, workspaceDataId: dataId, meetingMinutes })
       ctx.info('Start recording', { workspace, roomName, meetingMinutes })
       res.send()
@@ -289,13 +298,14 @@ const startRecord = async (
   egressClient: EgressClient,
   roomClient: RoomServiceClient,
   roomName: string,
+  workspaceUuid: WorkspaceUuid,
   workspaceId: WorkspaceDataId
 ): Promise<string> => {
   if (storageConfig === undefined) {
     console.error('please provide storage configuration')
     throw new Error('please provide storage configuration')
   }
-  const uploadParams = await getS3UploadParams(ctx, workspaceId, storageConfig, s3StorageConfig)
+  const uploadParams = await getS3UploadParams(ctx, workspaceUuid, workspaceId, storageConfig, s3StorageConfig)
 
   const { filepath, endpoint, accessKey, secret, region, bucket } = uploadParams
   const output = new EncodedFileOutput({

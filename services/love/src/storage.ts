@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Blob, MeasureContext, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
+import { Blob, MeasureContext, systemAccountUuid, type WorkspaceDataId, type WorkspaceUuid } from '@hcengineering/core'
 import { DatalakeConfig, DatalakeService, createDatalakeClient } from '@hcengineering/datalake'
 import { S3Config, S3Service } from '@hcengineering/s3'
 import { StorageConfig } from '@hcengineering/server-core'
@@ -31,19 +31,21 @@ export interface S3UploadParams {
 
 export async function getS3UploadParams (
   ctx: MeasureContext,
-  workspaceId: WorkspaceDataId,
+  workspaceUuid: WorkspaceUuid,
+  workspaceDataId: WorkspaceDataId,
   storageConfig: StorageConfig,
   s3StorageConfig: StorageConfig | undefined
 ): Promise<S3UploadParams> {
   if (storageConfig.kind === 's3') {
-    return await getS3UploadParamsS3(ctx, workspaceId, storageConfig as S3Config)
+    return await getS3UploadParamsS3(ctx, workspaceDataId, storageConfig as S3Config)
   } else if (storageConfig.kind === 'datalake') {
     if (s3StorageConfig === undefined || s3StorageConfig.kind !== 's3') {
       throw new Error('Please provide S3 storage config')
     }
     return await getS3UploadParamsDatalake(
       ctx,
-      workspaceId,
+      workspaceUuid,
+      workspaceDataId,
       storageConfig as DatalakeConfig,
       s3StorageConfig as S3Config
     )
@@ -102,11 +104,12 @@ async function getS3UploadParamsS3 (
 
 async function getS3UploadParamsDatalake (
   ctx: MeasureContext,
+  workspaceUuid: WorkspaceDataId,
   workspaceId: WorkspaceDataId,
   config: DatalakeConfig,
   s3config: S3Config
 ): Promise<S3UploadParams> {
-  const token = generateToken(systemAccountUuid, workspaceId)
+  const token = generateToken(systemAccountUuid, workspaceUuid)
   const client = createDatalakeClient(config, token)
   const { bucket } = await client.getR2UploadParams(ctx, workspaceId)
 
