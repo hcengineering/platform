@@ -31,7 +31,6 @@
   } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
   import { getAllWorkspaces, getRegionInfo, performWorkspaceOperation, type RegionInfo } from '../utils'
-  import Check from '@hcengineering/ui/src/components/icons/Check.svelte'
 
   $: now = $ticker
 
