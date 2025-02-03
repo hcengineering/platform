@@ -118,7 +118,7 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
     if (typeof this.options.stopEvent === 'function') {
       return this.options.stopEvent({ event })
     }
-    return false
+    return super.stopEvent(event)
   }
 
   update (node: Node, decorations: readonly Decoration[]): boolean {
