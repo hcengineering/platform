@@ -1239,7 +1239,6 @@ export function devTool (
       }
 
       toolCtx.info('using datalake', { datalake: datalakeConfig })
-      const datalake = createDatalakeClient(datalakeConfig as DatalakeConfig)
 
       let workspaces: Workspace[] = []
       await withAccountDatabase(async (db) => {
@@ -1280,10 +1279,11 @@ export function devTool (
         })
         const workspaceId = getWorkspaceId(workspace.workspace)
         const token = generateToken(systemAccountEmail, workspaceId)
+        const datalake = createDatalakeClient(datalakeConfig as DatalakeConfig, token)
 
         for (const config of storages) {
           const storage = new S3Service(config)
-          await copyToDatalake(toolCtx, workspaceId, config, storage, datalake, token, params)
+          await copyToDatalake(toolCtx, workspaceId, config, storage, datalake, params)
         }
       }
     })

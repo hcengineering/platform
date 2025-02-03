@@ -271,7 +271,6 @@ export async function copyToDatalake (
   config: S3Config,
   adapter: S3Service,
   datalake: DatalakeClient,
-  token: string,
   params: CopyDatalakeParams
 ): Promise<void> {
   console.log('copying from', config.name, 'concurrency:', params.concurrency)
@@ -312,7 +311,7 @@ export async function copyToDatalake (
   let cursor: string | undefined = ''
   let hasMore = true
   while (hasMore) {
-    const res = await datalake.listObjects(ctx, token, workspaceId, cursor, 1000)
+    const res = await datalake.listObjects(ctx, workspaceId, cursor, 1000)
     cursor = res.cursor
     hasMore = res.cursor !== undefined
     for (const blob of res.blobs) {
@@ -350,7 +349,7 @@ export async function copyToDatalake (
               ctx,
               5,
               async () => {
-                await copyBlobToDatalake(ctx, workspaceId, blob, config, adapter, datalake, token)
+                await copyBlobToDatalake(ctx, workspaceId, blob, config, adapter, datalake)
                 processedCnt += 1
                 processedSize += blob.size
               },
@@ -379,8 +378,7 @@ export async function copyBlobToDatalake (
   blob: ListBlobResult,
   config: S3Config,
   adapter: S3Service,
-  datalake: DatalakeClient,
-  token: string
+  datalake: DatalakeClient
 ): Promise<void> {
   const objectName = blob._id
   if (blob.size < 1024 * 1024 * 64) {
@@ -392,7 +390,7 @@ export async function copyBlobToDatalake (
     const url = concatLink(endpoint, `${bucketId}/${objectId}`)
 
     const params = { url, accessKeyId, secretAccessKey, region }
-    await datalake.uploadFromS3(ctx, token, workspaceId, objectName, params)
+    await datalake.uploadFromS3(ctx, workspaceId, objectName, params)
   } else {
     // Handle huge file
     const stat = await adapter.stat(ctx, workspaceId, objectName)
@@ -407,7 +405,7 @@ export async function copyBlobToDatalake (
       const readable = await adapter.get(ctx, workspaceId, objectName)
       try {
         console.log('uploading huge blob', objectName, Math.round(stat.size / 1024 / 1024), 'MB')
-        await uploadMultipart(ctx, token, datalake, workspaceId, objectName, readable, metadata)
+        await uploadMultipart(ctx, datalake, workspaceId, objectName, readable, metadata)
         console.log('done', objectName)
       } finally {
         readable.destroy()
@@ -418,7 +416,6 @@ export async function copyBlobToDatalake (
 
 function uploadMultipart (
   ctx: MeasureContext,
-  token: string,
   datalake: DatalakeClient,
   workspaceId: WorkspaceId,
   objectName: string,
@@ -449,7 +446,7 @@ function uploadMultipart (
     stream.pipe(passthrough)
 
     datalake
-      .uploadMultipart(ctx, token, workspaceId, objectName, passthrough, metadata)
+      .uploadMultipart(ctx, workspaceId, objectName, passthrough, metadata)
       .then(() => {
         cleanup()
         resolve()
