@@ -1,6 +1,8 @@
 {
   "string": {
     "ConfigLabel": "Persönlicher Browser",
-    "ConfigDescription": "Persönlicher Browser"
+    "ConfigDescription": "Persönlicher Browser",
+    "PersonalBrowser": "Persönlicher Browser",
+    "Mail": "E-Mail"
   }
 }

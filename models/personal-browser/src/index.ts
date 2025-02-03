@@ -63,7 +63,7 @@ export function createModel (builder: Builder): void {
     {
       attachTo: mail.class.MailThread,
       descriptor: view.viewlet.Table,
-      config: ['', 'modifiedOn'],
+      config: ['createdBy', 'modifiedOn'],
       configOptions: {
         hiddenKeys: ['name', 'questions'],
         sortable: true

@@ -2262,6 +2262,16 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/mail-assets",
+      "projectFolder": "plugins/mail-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/mail-resources",
+      "projectFolder": "plugins/mail-resources",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/personal-browser",
       "projectFolder": "plugins/personal-browser",
       "shouldPublish": false

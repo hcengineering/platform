@@ -58,6 +58,7 @@ import aiBot, { aiBotId } from '@hcengineering/ai-bot'
 import { testManagementId } from '@hcengineering/test-management'
 import { surveyId } from '@hcengineering/survey'
 import { personalBrowserId } from '@hcengineering/personal-browser'
+import { mailId } from '@hcengineering/mail'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/attachment-assets'
@@ -102,6 +103,7 @@ import '@hcengineering/text-editor-assets'
 import '@hcengineering/test-management-assets'
 import '@hcengineering/survey-assets'
 import '@hcengineering/card-assets'
+import '@hcengineering/mail-assets'
 
 import { coreId } from '@hcengineering/core'
 import presentation, { parsePreviewConfig, parseUploadConfig, presentationId } from '@hcengineering/presentation'
@@ -197,6 +199,7 @@ function configureI18n (): void {
   addStringsLoader(surveyId, async (lang: string) => await import(`@hcengineering/survey-assets/lang/${lang}.json`))
   addStringsLoader(cardId, async (lang: string) => await import(`@hcengineering/card-assets/lang/${lang}.json`))
   addStringsLoader(personalBrowserId, async (lang: string) => await import(`@hcengineering/personal-browser-assets/lang/${lang}.json`))
+  addStringsLoader(mailId, async (lang: string) => await import(`@hcengineering/mail-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform (): Promise<void> {

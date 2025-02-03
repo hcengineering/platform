@@ -355,6 +355,12 @@ importers:
       '@rush-temp/mail':
         specifier: file:./projects/mail.tgz
         version: file:projects/mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/mail-assets':
+        specifier: file:./projects/mail-assets.tgz
+        version: file:projects/mail-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/mail-resources':
+        specifier: file:./projects/mail-resources.tgz
+        version: file:projects/mail-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       '@rush-temp/middleware':
         specifier: file:./projects/middleware.tgz
         version: file:projects/middleware.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
@@ -4045,7 +4051,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop@file:projects/desktop.tgz':
-    resolution: {integrity: sha512-Nsk9alooHTtoJvn9YQfFxmdCf+4sglDyjbozIxtzlQI1R8uGeu/IIOvY3kcTwIJUnDIcaFES7cMU/abVJUiUxA==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-l5i9UIRyxClzCaoLAppJFZP6ig+Hg5+2PLsCt6yiGg7yW+Ro7K9Fe/f2VSTx2wsQ2jorC2B0kcPrxrrzz8jfwA==, tarball: file:projects/desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/devmodel-resources@file:projects/devmodel-resources.tgz':
@@ -4220,6 +4226,14 @@ packages:
     resolution: {integrity: sha512-D9QBf+/PREVaj/zqju1EnET+45ImzmEpqYThK+I2fbGxZ2t128DbfspBi3Lf2pUure8yF2PSTlTJSzKmUtgvpA==, tarball: file:projects/love.tgz}
     version: 0.0.0
 
+  '@rush-temp/mail-assets@file:projects/mail-assets.tgz':
+    resolution: {integrity: sha512-Lp1APt1DRMNrH2DhlOTTJjjIPhThHuc1+3Jj1fJU1ryH4FcJwCDFRw9InLEhjphf9cGC6z06EpgL3+3FtHOmJg==, tarball: file:projects/mail-assets.tgz}
+    version: 0.0.0
+
+  '@rush-temp/mail-resources@file:projects/mail-resources.tgz':
+    resolution: {integrity: sha512-8PtetoobhgQAiaGjqRf2aOgVY3Xh0KkyWTVLA2GIKaWY0lD0Vt69jDk1jptyXJOfkQLXRTSk7JxTs9lH96q8UQ==, tarball: file:projects/mail-resources.tgz}
+    version: 0.0.0
+
   '@rush-temp/mail@file:projects/mail.tgz':
     resolution: {integrity: sha512-khCqnHqt/MDtJv8eTx08ov9GkvC00wPeb1Q+QE5zk7xqbjK/QYJWPmdMRkvOJobCHLh2/g6ST2lgNbV938hrJA==, tarball: file:projects/mail.tgz}
     version: 0.0.0
@@ -4325,7 +4339,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-mail@file:projects/model-mail.tgz':
-    resolution: {integrity: sha512-jR6RnmEoxYrvkOyGrMqC9Tqg/PYXUwliagNWoQtcEdQDIKT81+TF/NBhoew0+Aei4jH6mEmxpKwhHYg7JlZszw==, tarball: file:projects/model-mail.tgz}
+    resolution: {integrity: sha512-Z2WZ+9IF0119TDZDyODrcI3ptuQLQ/h7WaxvbPIFsUQm+MI5VPV6hCNUBNp8if2XQLmSn0YByejtW1bSBz/WAg==, tarball: file:projects/model-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/model-notification@file:projects/model-notification.tgz':
@@ -4333,7 +4347,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-personal-browser@file:projects/model-personal-browser.tgz':
-    resolution: {integrity: sha512-ZOwJC9FJ3zYji9P37G/fzk9JVZ+PxzCiMJJNtONq7sLh6NCmomhjojOmg1xeVO1WaVRk827ZzuMiPQXNhrsvXw==, tarball: file:projects/model-personal-browser.tgz}
+    resolution: {integrity: sha512-OxBDKFosN/3hsy9Ot0fDJTpzqFJvNLWxgJXtmculo1ksyKacMGZc4+9Ouxj49NFQ4JPl1UpBLZjaWPQ7xuyo3w==, tarball: file:projects/model-personal-browser.tgz}
     version: 0.0.0
 
   '@rush-temp/model-preference@file:projects/model-preference.tgz':
@@ -4725,7 +4739,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/prod@file:projects/prod.tgz':
-    resolution: {integrity: sha512-3ZiUUL9iIzKvkfTD/nIHbudwlcXZre2R4R0rxupKERvU/dmKjjGZqxJnw/rKb3ztSNDWklDZ2apHGcF2tYTzYg==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-VGcdKEeJ4AXJQJQ1GA6gkPUf9dJ2jx1JU2JZAfqTvYTHWas8ubnt0Zho7HSNI7zmNBoCXcxXyAyVzx4jWZwkyg==, tarball: file:projects/prod.tgz}
     version: 0.0.0
 
   '@rush-temp/products-assets@file:projects/products-assets.tgz':
@@ -18863,6 +18877,71 @@ snapshots:
       - node-notifier
       - supports-color
       - svelte
+      - ts-node
+
+  '@rush-temp/mail-assets@file:projects/mail-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
+      typescript: 5.6.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+
+  '@rush-temp/mail-resources@file:projects/mail-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
+      sass: 1.71.1
+      svelte: 4.2.19
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)
+      svelte-eslint-parser: 0.33.1(svelte@4.2.19)
+      svelte-loader: 3.2.0(svelte@4.2.19)
+      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)(typescript@5.6.2)
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
+      typescript: 5.6.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - coffeescript
+      - esbuild
+      - less
+      - node-notifier
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
       - ts-node
 
   '@rush-temp/mail@file:projects/mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':

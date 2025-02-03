@@ -249,6 +249,9 @@
     "@hcengineering/personal-browser": "^0.6.0",
     "@hcengineering/personal-browser-assets": "^0.6.0",
     "@hcengineering/personal-browser-resources": "^0.6.0",
+    "@hcengineering/mail": "^0.6.0",
+    "@hcengineering/mail-assets": "^0.6.0",
+    "@hcengineering/mail-resources": "^0.6.0",
     "@sentry/svelte": "~7.101.0",
     "posthog-js": "~1.122.0"
   }

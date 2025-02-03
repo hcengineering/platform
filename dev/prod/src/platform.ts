@@ -40,7 +40,7 @@ import login, { loginId } from '@hcengineering/login'
 import love, { loveId } from '@hcengineering/love'
 import notification, { notificationId } from '@hcengineering/notification'
 import onboard, { onboardId } from '@hcengineering/onboard'
-import personalBrowser, { personalBrowserId } from '@hcengineering/personal-browser'
+import { personalBrowserId } from '@hcengineering/personal-browser'
 import presence, { presenceId } from '@hcengineering/presence'
 import print, { printId } from '@hcengineering/print'
 import { productsId } from '@hcengineering/products'
@@ -65,6 +65,7 @@ import uiPlugin from '@hcengineering/ui'
 import { uploaderId } from '@hcengineering/uploader'
 import { viewId } from '@hcengineering/view'
 import workbench, { workbenchId } from '@hcengineering/workbench'
+import { mailId } from '@hcengineering/mail'
 
 import { bitrixId } from '@hcengineering/bitrix'
 
@@ -286,6 +287,7 @@ function configureI18n(): void {
   addStringsLoader(surveyId, async (lang: string) => await import(`@hcengineering/survey-assets/lang/${lang}.json`))
   addStringsLoader(cardId, async (lang: string) => await import(`@hcengineering/card-assets/lang/${lang}.json`))
   addStringsLoader(personalBrowserId, async (lang: string) => await import(`@hcengineering/personal-browser-assets/lang/${lang}.json`))
+  addStringsLoader(mailId, async (lang: string) => await import(`@hcengineering/mail-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform() {
@@ -457,6 +459,7 @@ export async function configurePlatform() {
   addLocation(presenceId, () => import(/* webpackChunkName: "presence" */ '@hcengineering/presence-resources'))
   addLocation(cardId, () => import(/* webpackChunkName: "card" */ '@hcengineering/card-resources'))
   addLocation(personalBrowserId, () => import(/* webpackChunkName: "card" */ '@hcengineering/personal-browser-resources'))
+  addLocation(mailId, () => import(/* webpackChunkName: "card" */ '@hcengineering/mail-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
