@@ -46,7 +46,10 @@
       messages = res.sort((message) => (message?.isPinned ? -1 : 1))
       loading = false
     },
-    { sort: { createdOn: activityOrderNewestFirst ? SortingOrder.Descending : SortingOrder.Ascending } }
+    {
+      sort: { createdOn: activityOrderNewestFirst ? SortingOrder.Descending : SortingOrder.Ascending },
+      showArchived: true
+    }
   )
 
   let isTextMode = false

@@ -48,7 +48,8 @@
   const options: FindOptions<Review> = {
     lookup: {
       application: recruit.class.Applicant
-    }
+    },
+    showArchived: true
   }
 </script>
 

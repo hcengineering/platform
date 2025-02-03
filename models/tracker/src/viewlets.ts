@@ -66,6 +66,14 @@ export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
       action: view.function.ShowEmptyGroups,
       label: view.string.ShowEmptyGroups
     },
+    {
+      key: 'hideArchived',
+      type: 'toggle',
+      defaultValue: true,
+      actionTarget: 'options',
+      action: view.function.HideArchived,
+      label: view.string.HideArchived
+    },
     ...(!kanban ? [showColorsViewOption] : [])
   ]
 })

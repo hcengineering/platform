@@ -47,6 +47,9 @@
         },
         (res) => {
           resAttachments = res
+        },
+        {
+          showArchived: true
         }
       )
     } else {
