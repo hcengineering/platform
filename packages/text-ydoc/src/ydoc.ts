@@ -17,7 +17,14 @@ import { generateId, Markup } from '@hcengineering/core'
 import { Extensions, getSchema } from '@tiptap/core'
 import { Node, Schema } from '@tiptap/pm/model'
 import { prosemirrorJSONToYDoc, prosemirrorToYDoc, yDocToProsemirrorJSON } from 'y-prosemirror'
-import { Doc as YDoc, applyUpdate, encodeStateAsUpdate, XmlElement as YXmlElement, XmlText as YXmlText } from 'yjs'
+import {
+  Doc as YDoc,
+  XmlElement as YXmlElement,
+  XmlFragment as YXmlFragment,
+  XmlText as YXmlText,
+  applyUpdate,
+  encodeStateAsUpdate
+} from 'yjs'
 import { defaultExtensions, jsonToMarkup, markupToJSON, markupToPmNode, type MarkupNode } from '@hcengineering/text'
 
 const defaultSchema = getSchema(defaultExtensions)
@@ -45,13 +52,11 @@ export function markupToYDocNoSchema (markup: Markup, field: string): YDoc {
  * @public
  */
 export function jsonToYDocNoSchema (json: MarkupNode, field: string): YDoc {
-  const nodes = json.type === 'doc' ? json.content ?? [] : [json]
-  const content = nodes.map(nodeToYXmlElement)
-
   const ydoc = new YDoc({ guid: generateId() })
-
   const fragment = ydoc.getXmlFragment(field)
-  fragment.push(content)
+
+  const nodes = json.type === 'doc' ? json.content ?? [] : [json]
+  nodes.map((p) => nodeToYXmlElement(fragment, p))
 
   return ydoc
 }
@@ -59,13 +64,13 @@ export function jsonToYDocNoSchema (json: MarkupNode, field: string): YDoc {
 /**
  * Convert ProseMirror JSON Node representation to YXmlElement
  * */
-function nodeToYXmlElement (node: MarkupNode): YXmlElement | YXmlText {
+function nodeToYXmlElement (parent: YXmlFragment, node: MarkupNode): YXmlElement | YXmlText {
   const elem = node.type === 'text' ? new YXmlText() : new YXmlElement(node.type)
+  parent.push([elem])
 
   if (elem instanceof YXmlElement) {
     if (node.content !== undefined && node.content.length > 0) {
-      const content = node.content.map(nodeToYXmlElement)
-      elem.push(content)
+      node.content.map((p) => nodeToYXmlElement(elem, p))
     }
   } else {
     // https://github.com/yjs/y-prosemirror/blob/master/src/plugins/sync-plugin.js#L777
