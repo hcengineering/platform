@@ -733,6 +733,10 @@ export function isRestoringMode (mode?: WorkspaceMode): boolean {
   return mode === 'restoring' || mode === 'pending-restore'
 }
 
+export function isUpgradingMode (mode?: WorkspaceMode): boolean {
+  return mode === 'upgrading'
+}
+
 export type WorkspaceUpdateEvent =
   | 'ping'
   | 'create-started'

@@ -54,7 +54,7 @@
   let applications: Map<Ref<Vacancy>, ApplicationInfo> = new Map<Ref<Vacancy>, ApplicationInfo>()
 
   const applicantQuery = createQuery()
-  applicantQuery.query(
+  $: applicantQuery.query(
     recruit.class.Applicant,
     {},
     (res) => {
@@ -69,6 +69,7 @@
       applications = applications
     },
     {
+      showArchived: true,
       projection: {
         _id: 1,
         modifiedOn: 1,

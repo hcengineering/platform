@@ -140,7 +140,7 @@ export function migrateViewOpttions (): void {
 }
 
 export function hideArchived (value: any, options: FindOptions<Doc> | undefined): FindOptions<Doc> {
-  return value === false ? { ...options, showArchived: true } : options ?? {}
+  return typeof value === 'boolean' ? { ...options, showArchived: !value } : options ?? {}
 }
 
 export async function showEmptyGroups (

@@ -232,7 +232,8 @@
           _id: {
             reactions: activity.class.Reaction
           }
-        }
+        },
+        showArchived: true
       }
     )
     if (!res) {
