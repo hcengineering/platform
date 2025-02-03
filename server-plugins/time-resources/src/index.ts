@@ -33,7 +33,6 @@ import core, {
   TxUpdateDoc,
   toIdMap,
   Space,
-  getCurrentAccount,
   includesAny
 } from '@hcengineering/core'
 import notification, { CommonInboxNotification } from '@hcengineering/notification'
@@ -269,7 +268,7 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
       continue
     }
 
-    const currentAcc = getCurrentAccount()
+    const currentAcc = control.ctx.contextData.account
 
     if (
       !hierarchy.isDerived(objectSpace._class, core.class.SystemSpace) &&
