@@ -82,7 +82,7 @@
     "StartWithRecording": "Start with recording",
     "Language": "Language",
     "Kick": "Kick",
-    "WithAudio": "With audio",
-    "ShareWithAudioTooltip": "Share with audio, you should reshare for apply changes"
+    "WithAudio": "Include system audio",
+    "ShareWithAudioTooltip": "Share your screen with system audio. Restart screen share to apply changes."
   }
 }
