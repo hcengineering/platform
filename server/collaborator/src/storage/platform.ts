@@ -96,24 +96,31 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     const { clientFactory } = context
     const { documentId } = decodeDocumentId(documentName)
 
-    const client = await ctx.with('connect', {}, () => clientFactory())
+    try {
+      ctx.info('save document ydoc content', { documentName })
+      await ctx.with('saveCollabYdoc', {}, (ctx) => {
+        return withRetry(ctx, 5, () => {
+          return saveCollabYdoc(ctx, this.storage, context.workspaceId, documentId, document)
+        })
+      })
+    } catch (err: any) {
+      Analytics.handleError(err)
+      ctx.error('failed to save document ydoc content', { documentName, error: err })
+      // raise an error if failed to save document to storage
+      // this will prevent document from being unloaded from memory
+      throw err
+    }
+
+    let client: TxOperations
+    try {
+      client = await ctx.with('connect', {}, () => clientFactory())
+    } catch (err: any) {
+      Analytics.handleError(err)
+      ctx.error('failed to connect to platform', { documentName, error: err })
+      throw err
+    }
 
     try {
-      try {
-        ctx.info('save document ydoc content', { documentName })
-        await ctx.with('saveCollabYdoc', {}, (ctx) => {
-          return withRetry(ctx, 5, () => {
-            return saveCollabYdoc(ctx, this.storage, context.workspaceId, documentId, document)
-          })
-        })
-      } catch (err: any) {
-        Analytics.handleError(err)
-        ctx.error('failed to save document ydoc content', { documentName, error: err })
-        // raise an error if failed to save document to storage
-        // this will prevent document from being unloaded from memory
-        throw err
-      }
-
       ctx.info('save document content to platform', { documentName })
       return await ctx.with('save-to-platform', {}, (ctx) => {
         return this.saveDocumentToPlatform(ctx, client, documentName, getMarkup)
