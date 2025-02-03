@@ -118,11 +118,14 @@ class TSessionManager implements SessionManager {
     }
     | undefined,
     readonly accountsUrl: string,
-    readonly enableCompression: boolean
+    readonly enableCompression: boolean,
+    readonly doHandleTick: boolean = true
   ) {
-    this.checkInterval = setInterval(() => {
-      this.handleTick()
-    }, 1000 / ticksPerSecond)
+    if (this.doHandleTick) {
+      this.checkInterval = setInterval(() => {
+        this.handleTick()
+      }, 1000 / ticksPerSecond)
+    }
   }
 
   scheduleMaintenance (timeMinutes: number): void {
@@ -293,6 +296,7 @@ class TSessionManager implements SessionManager {
       const userInfo = await (
         await fetch(this.accountsUrl, {
           method: 'POST',
+          keepalive: true,
           headers: {
             Authorization: 'Bearer ' + token,
             'Content-Type': 'application/json'
@@ -1136,7 +1140,8 @@ export function createSessionManager (
   }
   | undefined,
   accountsUrl: string,
-  enableCompression: boolean
+  enableCompression: boolean,
+  doHandleTick: boolean = true
 ): SessionManager {
   return new TSessionManager(
     ctx,
@@ -1145,7 +1150,8 @@ export function createSessionManager (
     brandingMap ?? null,
     profiling,
     accountsUrl,
-    enableCompression
+    enableCompression,
+    doHandleTick
   )
 }
 

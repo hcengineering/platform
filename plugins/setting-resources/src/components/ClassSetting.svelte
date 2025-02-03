@@ -59,7 +59,7 @@
   $: if (_class !== undefined && ofClass === undefined) {
     const loc = getLocation()
     loc.query = undefined
-    navigate(loc)
+    navigate(loc, true)
   }
 
   const clQuery = createQuery()

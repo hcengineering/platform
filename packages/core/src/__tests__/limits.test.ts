@@ -72,7 +72,7 @@ describe('TimeRateLimiter', () => {
     const operations = Promise.all([limiter.exec(mockFn), limiter.exec(mockFn), limiter.exec(mockFn)])
 
     expect(mockFn).toHaveBeenCalledTimes(2)
-    expect(limiter.processingQueue.size).toBe(2)
+    expect(limiter.active).toBe(2)
 
     jest.advanceTimersByTime(500)
     await Promise.resolve()
@@ -84,7 +84,7 @@ describe('TimeRateLimiter', () => {
     await Promise.resolve()
     await Promise.resolve()
 
-    expect(limiter.processingQueue.size).toBe(0)
+    expect(limiter.active).toBe(0)
 
     expect(mockFn).toHaveBeenCalledTimes(3)
 
@@ -104,7 +104,7 @@ describe('TimeRateLimiter', () => {
       console.log('wait complete')
     })
 
-    expect(limiter.processingQueue.size).toBe(1)
+    expect(limiter.active).toBe(1)
 
     jest.advanceTimersByTime(1001)
     await Promise.resolve()
@@ -113,6 +113,6 @@ describe('TimeRateLimiter', () => {
 
     await waitPromise
     await operation
-    expect(limiter.processingQueue.size).toBe(0)
+    expect(limiter.active).toBe(0)
   })
 })

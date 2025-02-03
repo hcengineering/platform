@@ -15,7 +15,14 @@
 import { type Class, type Doc, type Ref, type Space } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { getBlobRef, getClient } from '@hcengineering/presentation'
-import { BackgroundColor, CodeExtension, codeOptions, TextColor, TextStyle } from '@hcengineering/text'
+import {
+  BackgroundColor,
+  CodeExtension,
+  codeOptions,
+  InlineCommentMark,
+  TextColor,
+  TextStyle
+} from '@hcengineering/text'
 import textEditor, { type ActionContext, type ExtensionCreator, type TextEditorMode } from '@hcengineering/text-editor'
 import { type AnyExtension, type Editor, Extension } from '@tiptap/core'
 import { type Level } from '@tiptap/extension-heading'
@@ -39,6 +46,7 @@ import { MermaidExtension, type MermaidOptions, mermaidOptions } from '../compon
 import { DrawingBoardExtension, type DrawingBoardOptions } from '../components/extension/drawingBoard'
 import { type IndendOptions, IndentExtension, indentExtensionOptions } from '../components/extension/indent'
 import TextAlign, { type TextAlignOptions } from '@tiptap/extension-text-align'
+import { LinkShortcutsExtension } from '../components/extension/link'
 
 export interface EditorKitOptions extends DefaultKitOptions {
   history?: false
@@ -182,6 +190,7 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                   })
                 ],
                 [110, EditableExtension],
+                [150, InlineCommentMark.configure({})],
                 [200, CodeBlockHighlighExtension.configure(codeBlockHighlightOptions)],
                 [210, CodeExtension.configure(codeOptions)],
                 [220, HardBreakExtension.configure({ shortcuts: mode })]
@@ -306,6 +315,8 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                   })
                 ])
               }
+
+              staticKitExtensions.push([950, LinkShortcutsExtension.configure({})])
 
               if (mode !== 'compact' && this.options.note !== false) {
                 staticKitExtensions.push([1000, NoteExtension.configure(this.options.note ?? {})])

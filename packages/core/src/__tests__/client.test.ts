@@ -28,8 +28,8 @@ import { fillConfiguration, pluginFilterTx } from '../utils'
 import { connect } from './connection'
 import { genMinModel } from './minmodel'
 
-function filterPlugin (plugin: Plugin): (txes: Tx[]) => Promise<Tx[]> {
-  return async (txes) => {
+function filterPlugin (plugin: Plugin): (txes: Tx[]) => Tx[] {
+  return (txes) => {
     const configs = new Map<Ref<PluginConfiguration>, PluginConfiguration>()
     fillConfiguration(txes, configs)
 

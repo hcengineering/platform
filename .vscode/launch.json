@@ -40,6 +40,7 @@
         // "DB_URL": "mongodb://localhost:27017",
         // "DB_URL": "postgresql://postgres:example@localhost:5432",
         "DB_URL": "postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable",
+        "GREEN_URL": "http://host.docker.internal:6767?token=secret",
         "SERVER_PORT": "3332",
         "APM_SERVER_URL2": "http://localhost:8200",
         "METRICS_CONSOLE": "false",
@@ -54,7 +55,7 @@
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER":"ws",
-        "MODEL_VERSION": "0.6.382",
+        "MODEL_VERSION": "0.6.421",
         // "VERSION": "0.6.289",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
@@ -165,7 +166,7 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
-        "MODEL_VERSION": "v0.6.382",
+        "MODEL_VERSION": "v0.6.421",
         "WS_OPERATION": "all+backup",
         "BACKUP_STORAGE": "minio|minio?accessKey=minioadmin&secretKey=minioadmin",
         "BACKUP_BUCKET": "dev-backups",
@@ -188,6 +189,7 @@
         // "DB_URL": "mongodb://localhost:27017",
         // "DB_URL": "postgresql://postgres:example@localhost:5432",
         "DB_URL": "postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable",
+        "FULLTEXT_URL": "http://host.docker.internal:4702",
         "REGION": "cockroach",
         "SERVER_SECRET": "secret",
         "TRANSACTOR_URL": "ws://localhost:3332",
@@ -197,7 +199,7 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
-        "MODEL_VERSION": "v0.6.382",
+        "MODEL_VERSION": "0.6.421",
         "WS_OPERATION": "all+backup",
         "BACKUP_STORAGE": "minio|minio?accessKey=minioadmin&secretKey=minioadmin",
         "BACKUP_BUCKET": "dev-backups",
@@ -255,6 +257,7 @@
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost"
       },
+      "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/pods/collaborator",
@@ -325,7 +328,7 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         "TELEGRAM_DATABASE": "telegram-service",
         "REKONI_URL": "http://localhost:4004",
-        "MODEL_VERSION": "0.6.382"
+        "MODEL_VERSION": "0.6.421"
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
@@ -352,7 +355,7 @@
         "MONGO_URL": "mongodb://localhost:27017",
         "TELEGRAM_DATABASE": "telegram-service",
         "REKONI_URL": "http://localhost:4004",
-        "MODEL_VERSION": "0.6.382"
+        "MODEL_VERSION": "0.6.421"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
@@ -394,9 +397,9 @@
         "DB_URL": "mongodb://localhost:27017",
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         "SECRET": "secret",
-        "REGION": "pg",
+        "REGION": "cockroach",
         "BUCKET_NAME":"backups",
-        "INTERVAL":"30"
+        "INTERVAL":"43200"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "showAsyncStacks": true,
@@ -453,6 +456,7 @@
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/services/github/pod-github",
       "protocol": "inspector",
+      "attachSimplePort": 0,
       "outputCapture": "std"
     },
     {
@@ -589,6 +593,7 @@
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
+      "runtimeVersion": "20",
       "cwd": "${workspaceRoot}/services/ai-bot/pod-ai-bot",
       "protocol": "inspector",
       "outputCapture": "std"

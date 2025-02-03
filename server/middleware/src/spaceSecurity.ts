@@ -55,7 +55,7 @@ import {
   type PipelineContext
 } from '@hcengineering/server-core'
 import { isOwner, isSystem } from './utils'
-type SpaceWithMembers = Pick<Space, '_id' | 'members' | 'private' | '_class'>
+type SpaceWithMembers = Pick<Space, '_id' | 'members' | 'private' | '_class' | 'archived'>
 
 /**
  * @public
@@ -133,6 +133,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
               {},
               {
                 projection: {
+                  archived: 1,
                   private: 1,
                   _class: 1,
                   _id: 1,
@@ -279,6 +280,15 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     )
   }
 
+  private broadcastAll (ctx: MeasureContext, space: SpaceWithMembers): void {
+    const users = this.context.modelDb.findAllSync(core.class.Account, {})
+    this.brodcastEvent(
+      ctx,
+      users.map((p) => p._id),
+      space._id
+    )
+  }
+
   private async handleUpdate (ctx: MeasureContext, tx: TxCUD<Space>): Promise<void> {
     await this.init(ctx)
 
@@ -308,6 +318,9 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
       if (updateDoc.operations.$pull?.members !== undefined) {
         this.pullMembersHandle(ctx, updateDoc.operations.$pull.members, space._id)
+      }
+      if (updateDoc.operations.archived !== undefined) {
+        this.broadcastAll(ctx, space)
       }
       const updatedSpace = TxProcessor.updateDoc2Doc(space as any, updateDoc)
       this.spacesMap.set(updateDoc.objectId, updatedSpace)
@@ -433,10 +446,14 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     await this.next?.handleBroadcast(ctx)
   }
 
-  private getAllAllowedSpaces (account: Account, isData: boolean): Ref<Space>[] {
+  private getAllAllowedSpaces (account: Account, isData: boolean, showArchived: boolean): Ref<Space>[] {
     const userSpaces = this.allowedSpaces[account._id] ?? []
     const res = [...userSpaces, account._id as string as Ref<Space>, ...this.systemSpaces, ...this.mainSpaces]
-    return isData ? res : [...res, ...this.publicSpaces]
+    const unfilteredRes = isData ? res : [...res, ...this.publicSpaces]
+    if (showArchived) {
+      return unfilteredRes
+    }
+    return unfilteredRes.filter((p) => this.spacesMap.get(p)?.archived !== true)
   }
 
   async getDomainSpaces (ctx: MeasureContext, domain: Domain): Promise<Set<Ref<Space>>> {
@@ -471,9 +488,10 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     account: Account,
     query: ObjQueryType<T['space']>,
     domain: Domain,
-    isSpace: boolean
+    isSpace: boolean,
+    showArchived: boolean
   ): Promise<ObjQueryType<T['space']> | undefined> {
-    const spaces = await this.filterByDomain(ctx, domain, this.getAllAllowedSpaces(account, !isSpace))
+    const spaces = await this.filterByDomain(ctx, domain, this.getAllAllowedSpaces(account, !isSpace, showArchived))
     if (query == null) {
       if (spaces.allDomainSpaces) {
         return undefined
@@ -520,13 +538,14 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const account = ctx.contextData.account
     const isSpace = this.context.hierarchy.isDerived(_class, core.class.Space)
     const field = this.getKey(domain)
+    const showArchived: boolean = options?.showArchived ?? (query._id !== undefined && typeof query._id === 'string')
 
     let clientFilterSpaces: Set<Ref<Space>> | undefined
 
     if (!isSystem(account, ctx) && account.role !== AccountRole.DocGuest && domain !== DOMAIN_MODEL) {
-      if (!isOwner(account, ctx) || !isSpace) {
+      if (!isOwner(account, ctx) || !isSpace || !showArchived) {
         if (query[field] !== undefined) {
-          const res = await this.mergeQuery(ctx, account, query[field], domain, isSpace)
+          const res = await this.mergeQuery(ctx, account, query[field], domain, isSpace, showArchived)
           if (res === undefined) {
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete newQuery[field]
@@ -539,7 +558,11 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
             }
           }
         } else {
-          const spaces = await this.filterByDomain(ctx, domain, this.getAllAllowedSpaces(account, !isSpace))
+          const spaces = await this.filterByDomain(
+            ctx,
+            domain,
+            this.getAllAllowedSpaces(account, !isSpace, showArchived)
+          )
           if (spaces.allDomainSpaces) {
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete newQuery[field]
@@ -581,7 +604,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       if (options?.lookup !== undefined) {
         for (const object of findResult) {
           if (object.$lookup !== undefined) {
-            this.filterLookup(ctx, object.$lookup)
+            this.filterLookup(ctx, object.$lookup, showArchived)
           }
         }
       }
@@ -598,7 +621,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const newQuery = { ...query }
     const account = ctx.contextData.account
     if (!isSystem(account, ctx)) {
-      const allSpaces = this.getAllAllowedSpaces(account, true)
+      const allSpaces = this.getAllAllowedSpaces(account, true, false)
       if (query.classes !== undefined) {
         const res = new Set<Ref<Space>>()
         const passedDomains = new Set<string>()
@@ -622,11 +645,11 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return result
   }
 
-  filterLookup<T extends Doc>(ctx: MeasureContext, lookup: LookupData<T>): void {
+  filterLookup<T extends Doc>(ctx: MeasureContext, lookup: LookupData<T>, showArchived: boolean): void {
     if (Object.keys(lookup).length === 0) return
     const account = ctx.contextData.account
     if (isSystem(account, ctx)) return
-    const allowedSpaces = new Set(this.getAllAllowedSpaces(account, true))
+    const allowedSpaces = new Set(this.getAllAllowedSpaces(account, true, showArchived))
     for (const key in lookup) {
       const val = lookup[key]
       if (Array.isArray(val)) {

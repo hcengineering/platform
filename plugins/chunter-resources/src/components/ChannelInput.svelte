@@ -35,7 +35,24 @@
   const hierarchy = client.getHierarchy()
 
   let extensions: ActivityExtension[] = []
-  $: extensions = client.getModel().findAllSync(activity.class.ActivityExtension, { ofClass: object._class })
+  $: extensions = getExtensions(object._class)
+
+  function getExtensions (_class: Ref<Class<Doc>>): ActivityExtension[] {
+    try {
+      let clazz: Ref<Class<Doc>> | undefined = _class
+      while (clazz !== undefined) {
+        const res = client.getModel().findAllSync(activity.class.ActivityExtension, { ofClass: clazz })
+        if (res.length > 0) {
+          return res
+        }
+        clazz = hierarchy.getClass(_class).extends
+      }
+    } catch (e) {
+      console.error(e)
+      return []
+    }
+    return []
+  }
 
   let icon: Asset | AnySvelteComponent | undefined = undefined
 

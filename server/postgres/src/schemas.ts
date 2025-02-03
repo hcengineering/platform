@@ -1,4 +1,4 @@
-import { DOMAIN_DOC_INDEX_STATE, DOMAIN_MODEL_TX, DOMAIN_SPACE, DOMAIN_TX } from '@hcengineering/core'
+import { DOMAIN_DOC_INDEX_STATE, DOMAIN_MODEL_TX, DOMAIN_RELATION, DOMAIN_SPACE, DOMAIN_TX } from '@hcengineering/core'
 
 export type DataType = 'bigint' | 'bool' | 'text' | 'text[]'
 
@@ -82,6 +82,25 @@ const spaceSchema: Schema = {
     notNull: true,
     index: true,
     indexType: 'gin'
+  },
+  archived: {
+    type: 'bool',
+    notNull: true,
+    index: true
+  }
+}
+
+const relationSchema: Schema = {
+  ...baseSchema,
+  docA: {
+    type: 'text',
+    notNull: true,
+    index: true
+  },
+  docB: {
+    type: 'text',
+    notNull: true,
+    index: true
   }
 }
 
@@ -286,7 +305,9 @@ export const domainSchemas: Record<string, Schema> = {
   [translateDomain('notification-dnc')]: dncSchema,
   [translateDomain('notification-user')]: userNotificationSchema,
   [translateDomain('github_sync')]: docSyncInfo,
-  [translateDomain('github_user')]: githubLogin
+  [translateDomain('github_user')]: githubLogin,
+  [DOMAIN_RELATION]: relationSchema,
+  kanban: defaultSchema
 }
 
 export function getSchema (domain: string): Schema {

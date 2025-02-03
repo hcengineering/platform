@@ -65,6 +65,7 @@ export async function createAccountRequest (workspace: WorkspaceId, ctx: Measure
     ctx.info('Requesting AI account creation', { url, workspace })
     await fetch(concatLink(url, '/connect'), {
       method: 'POST',
+      keepalive: true,
       headers: {
         Authorization: 'Bearer ' + generateToken(systemAccountEmail, workspace),
         'Content-Type': 'application/json'

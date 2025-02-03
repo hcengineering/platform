@@ -1,5 +1,13 @@
-import { nodeDoc, nodeImage, nodeParagraph, nodeReference, nodeText, markLink, markUnderline } from '../dsl'
-import { MarkupNodeType } from '../model'
+import {
+  markLink,
+  markUnderline,
+  MarkupNodeType,
+  nodeDoc,
+  nodeImage,
+  nodeParagraph,
+  nodeReference,
+  nodeText
+} from '@hcengineering/text-core'
 import { jsonToHTML } from '../utils'
 
 describe('dsl', () => {

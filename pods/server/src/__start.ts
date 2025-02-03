@@ -7,7 +7,6 @@ import { Analytics } from '@hcengineering/analytics'
 import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
 import contactPlugin from '@hcengineering/contact'
 import { MeasureMetricsContext, newMetrics, setOperationLogProfiling } from '@hcengineering/core'
-import notification from '@hcengineering/notification'
 import { setMetadata } from '@hcengineering/platform'
 import { serverConfigFromEnv } from '@hcengineering/server'
 import serverAiBot from '@hcengineering/server-ai-bot'
@@ -29,6 +28,7 @@ import { startHttpServer } from '@hcengineering/server-ws'
 import { join } from 'path'
 import { start } from '.'
 import { profileStart, profileStop } from './inspector'
+import { setDBExtraOptions } from '@hcengineering/postgres'
 
 configureAnalytics(process.env.SENTRY_DSN, {})
 Analytics.setTag('application', 'transactor')
@@ -59,16 +59,19 @@ setOperationLogProfiling(process.env.OPERATION_PROFILING === 'true')
 const config = serverConfigFromEnv()
 const storageConfig: StorageConfiguration = storageConfigFromEnv()
 
+const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
+
+setDBExtraOptions({
+  prepare: usePrepare // We override defaults
+})
+
 const lastNameFirst = process.env.LAST_NAME_FIRST === 'true'
 setMetadata(contactPlugin.metadata.LastNameFirst, lastNameFirst)
 setMetadata(serverCore.metadata.FrontUrl, config.frontUrl)
 setMetadata(serverCore.metadata.FilesUrl, config.filesUrl)
 setMetadata(serverToken.metadata.Secret, config.serverSecret)
 setMetadata(serverNotification.metadata.SesUrl, config.sesUrl ?? '')
-setMetadata(notification.metadata.PushPublicKey, config.pushPublicKey)
-setMetadata(serverNotification.metadata.PushPrivateKey, config.pushPrivateKey)
-setMetadata(serverNotification.metadata.PushSubject, config.pushSubject)
-setMetadata(serverCore.metadata.ElasticIndexVersion, 'v1')
+setMetadata(serverNotification.metadata.SesAuthToken, config.sesAuthToken)
 setMetadata(serverTelegram.metadata.BotUrl, process.env.TELEGRAM_BOT_URL)
 setMetadata(serverAiBot.metadata.SupportWorkspaceId, process.env.SUPPORT_WORKSPACE)
 setMetadata(serverAiBot.metadata.EndpointURL, process.env.AI_BOT_URL)
@@ -122,7 +125,7 @@ const close = (): void => {
 }
 
 process.on('unhandledRejection', (reason, promise) => {
-  metricsContext.error('Unhandled Rejection at:', { origin, promise })
+  metricsContext.error('Unhandled Rejection at:', { reason, promise })
 })
 
 global.process.on('uncaughtException', (error, origin) => {

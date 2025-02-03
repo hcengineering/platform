@@ -13,8 +13,14 @@
 // limitations under the License.
 //
 
-import core, { type Blob, type MeasureContext, type Ref, type WorkspaceId, withContext } from '@hcengineering/core'
-
+import core, {
+  type Blob,
+  type MeasureContext,
+  type Ref,
+  type WorkspaceId,
+  systemAccountEmail,
+  withContext
+} from '@hcengineering/core'
 import {
   type BlobStorageIterator,
   type BucketInfo,
@@ -24,6 +30,7 @@ import {
   type StorageConfiguration,
   type UploadedObjectInfo
 } from '@hcengineering/server-core'
+import { generateToken } from '@hcengineering/server-token'
 import { type Readable } from 'stream'
 import { type UploadObjectParams, DatalakeClient } from './client'
 
@@ -39,9 +46,9 @@ export interface DatalakeConfig extends StorageConfig {
 /**
  * @public
  */
-export function createDatalakeClient (opt: DatalakeConfig): DatalakeClient {
+export function createDatalakeClient (opt: DatalakeConfig, token: string): DatalakeClient {
   const endpoint = Number.isInteger(opt.port) ? `${opt.endpoint}:${opt.port}` : opt.endpoint
-  return new DatalakeClient(endpoint)
+  return new DatalakeClient(endpoint, token)
 }
 
 export const CONFIG_KIND = 'datalake'
@@ -53,7 +60,8 @@ export class DatalakeService implements StorageAdapter {
   private readonly client: DatalakeClient
 
   constructor (readonly opt: DatalakeConfig) {
-    this.client = createDatalakeClient(opt)
+    const token = generateToken(systemAccountEmail, { name: '' }, { service: 'datalake' })
+    this.client = createDatalakeClient(opt, token)
   }
 
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
@@ -107,7 +115,7 @@ export class DatalakeService implements StorageAdapter {
                 _id: blob.name as Ref<Blob>,
                 _class: core.class.Blob,
                 etag: blob.etag,
-                size: blob.size ?? 0,
+                size: (typeof blob.size === 'string' ? parseInt(blob.size) : blob.size) ?? 0,
                 provider: this.opt.name,
                 space: core.space.Configuration,
                 modifiedBy: core.account.ConfigUser,

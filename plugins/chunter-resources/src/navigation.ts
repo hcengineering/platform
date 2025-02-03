@@ -5,8 +5,7 @@ import {
   getLocation,
   type Location,
   navigate,
-  languageStore,
-  deviceOptionsStore as deviceInfo
+  languageStore
 } from '@hcengineering/ui'
 import { type Ref, type Doc, type Class, generateId } from '@hcengineering/core'
 import activity, { type ActivityMessage } from '@hcengineering/activity'
@@ -179,10 +178,6 @@ export async function getThreadLink (doc: ThreadMessage): Promise<Location> {
 export async function replyToThread (message: ActivityMessage, e: Event): Promise<void> {
   const fromSidebar = isElementFromSidebar(e.target as HTMLElement)
   const loc = getCurrentLocation()
-
-  const dev = get(deviceInfo)
-  dev.aside.visible = true
-  deviceInfo.set(dev)
 
   threadMessagesStore.set(message)
 

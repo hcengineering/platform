@@ -84,6 +84,8 @@
     "ProvideRejectionReason": "Type rejection reason...",
     "RejectionReason": "Rejection reason",
     "ConfirmReviewCompletion": "Confirm review completion",
+    "ConfirmApprovalSubmission": "Confirm submission for approval",
+    "ConfirmReviewSubmission": "Confirm submission for review",
     "AddApprovalTitle": "Send your document to approvers",
     "AddApprovalDescription1": "To prepare your document for approval it should fit few requirements:",
     "AddApprovalDescription2": "has status 'Draft' or 'Reviewed'",
@@ -117,6 +119,11 @@
     "Archived": "Archived",
     "Deleted": "Deleted",
     "MetaAbstract": "Abstract",
+    
+    "Obsolete": "Obsolete",
+    "MakeDocumentObsolete": "Mark as obsolete",
+    "MakeDocumentObsoleteDialog": "Mark {count, plural, =0 {document} other {documents}} as obsolete",
+    "MakeDocumentObsoleteConfirm": "Do you really want to mark the following documents as obsolete: {titles}?",
 
     "ContentTab": "Content",
     "TeamTab": "Team",
@@ -293,7 +300,16 @@
     "DeleteDocumentCategoryPermission": "Delete document category",
     "DeleteDocumentCategoryDescription": "Grants users ability to delete a document category",
     "ConfigLabel": "Controlled Documents",
-    "ConfigDescription": "Extension to manage controlled documents"
+    "ConfigDescription": "Extension to manage controlled documents",
+
+    "Transfer": "Transfer",
+    "TransferWarning": "Some team members may lose the ability to view or edit this document after this action.",
+    "TransferDocuments": "Transfer controlled documents",
+    "TransferDocumentsHint": "Documents to be transferred to the selected space:",
+
+    "CreateFolder": "Create new folder",
+    "RenameFolder": "Rename folder",
+    "CreateChildFolder": "Create child folder"
   },
   "controlledDocStates": {
     "Empty": "",

@@ -27,7 +27,7 @@ import core, {
 } from '@hcengineering/core'
 import { type DbAdapter, wrapAdapterToClient } from '@hcengineering/server-core'
 import { createPostgresAdapter, createPostgresTxAdapter } from '..'
-import { getDBClient, type PostgresClientReference, shutdown } from '../utils'
+import { getDBClient, type PostgresClientReference, shutdownPostgres } from '../utils'
 import { genMinModel } from './minmodel'
 import { createTaskModel, type Task, type TaskComment, taskPlugin } from './tasks'
 
@@ -35,12 +35,14 @@ const txes = genMinModel()
 
 createTaskModel(txes)
 
+const contextVars: Record<string, any> = {}
+
 describe('postgres operations', () => {
   const baseDbUri: string = process.env.DB_URL ?? 'postgresql://postgres:example@localhost:5433'
   let dbId: string = 'pg_testdb_' + generateId()
   let dbUuid: string = crypto.randomUUID()
   let dbUri: string = baseDbUri + '/' + dbId
-  const clientRef: PostgresClientReference = getDBClient(baseDbUri)
+  const clientRef: PostgresClientReference = getDBClient(contextVars, baseDbUri)
   let hierarchy: Hierarchy
   let model: ModelDb
   let client: Client
@@ -49,7 +51,7 @@ describe('postgres operations', () => {
 
   afterAll(async () => {
     clientRef.close()
-    await shutdown()
+    await shutdownPostgres(contextVars)
   })
 
   beforeEach(async () => {
@@ -88,6 +90,7 @@ describe('postgres operations', () => {
     const mctx = new MeasureMetricsContext('', {})
     const txStorage = await createPostgresTxAdapter(
       mctx,
+      contextVars,
       hierarchy,
       dbUri,
       {
@@ -107,6 +110,7 @@ describe('postgres operations', () => {
     const ctx = new MeasureMetricsContext('client', {})
     const serverStorage = await createPostgresAdapter(
       ctx,
+      contextVars,
       hierarchy,
       dbUri,
       {
@@ -115,7 +119,7 @@ describe('postgres operations', () => {
       },
       model
     )
-    await serverStorage.init?.(ctx)
+    await serverStorage.init?.(ctx, contextVars)
     client = await createClient(async (handler) => {
       return wrapAdapterToClient(ctx, serverStorage, txes)
     })
@@ -329,5 +333,40 @@ describe('postgres operations', () => {
     )
     expect((r4[0].$lookup?.attachedTo as TaskComment)?._id).toEqual(commentId)
     expect(((r4[0].$lookup?.attachedTo as any)?.$lookup.attachedTo as Task)?._id).toEqual(docId)
+  })
+
+  it('check associations', async () => {
+    const association = await operations.findOne(core.class.Association, {})
+    if (association == null) {
+      throw new Error('Association not found')
+    }
+
+    const firstTask = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+      name: 'my-task',
+      description: 'Descr',
+      rate: 20
+    })
+
+    const secondTask = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+      name: 'my-task2',
+      description: 'Descr',
+      rate: 20
+    })
+
+    await operations.createDoc(core.class.Relation, '' as Ref<Space>, {
+      docA: firstTask,
+      docB: secondTask,
+      association: association._id
+    })
+
+    const r = await client.findAll(
+      taskPlugin.class.Task,
+      { _id: firstTask },
+      {
+        associations: [[association._id, 1]]
+      }
+    )
+    expect(r.length).toEqual(1)
+    expect((r[0].$associations?.[association._id][0] as unknown as Task)?._id).toEqual(secondTask)
   })
 })

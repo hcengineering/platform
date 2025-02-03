@@ -18,16 +18,24 @@
   import presentation from '@hcengineering/presentation'
   import { setMetadataLocalStorage } from '@hcengineering/ui'
   import login from '../plugin'
+  import { getPasswordValidationRules } from '../validations'
   import { goTo, signUp } from '../utils'
   import Form from './Form.svelte'
+  import type { Field } from '../types'
 
   export let signUpDisabled = false
 
-  const fields = [
+  const fields: Array<Field> = [
     { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
     { id: 'family-name', name: 'last', i18n: login.string.LastName, short: true },
     { id: 'email', name: 'username', i18n: login.string.Email },
-    { id: 'new-password', name: 'password', i18n: login.string.Password, password: true },
+    {
+      id: 'new-password',
+      name: 'password',
+      i18n: login.string.Password,
+      password: true,
+      rules: getPasswordValidationRules()
+    },
     { id: 'new-password', name: 'password2', i18n: login.string.PasswordRepeat, password: true }
   ]
 

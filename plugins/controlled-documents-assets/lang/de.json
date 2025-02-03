@@ -293,7 +293,21 @@
     "DeleteDocumentCategoryPermission": "Dokumentenkategorie löschen",
     "DeleteDocumentCategoryDescription": "Gewährt Benutzern die Möglichkeit, eine Dokumentenkategorie zu löschen",
     "ConfigLabel": "Kontrollierte Dokumente",
-    "ConfigDescription": "Erweiterung zur Verwaltung kontrollierter Dokumente"
+    "ConfigDescription": "Erweiterung zur Verwaltung kontrollierter Dokumente",
+
+    "Transfer": "Übertragung",
+    "TransferWarning": "Einige Teammitglieder können dieses Dokument nach dieser Aktion möglicherweise nicht mehr anzeigen oder bearbeiten.",
+    "TransferDocuments": "Übertragung kontrollierter Dokumente",
+    "TransferDocumentsHint": "Dokumente, die in den ausgewählten Bereich übertragen werden sollen:",
+
+    "CreateFolder": "Neuen Ordner erstellen",
+    "RenameFolder": "Ordner umbenennen",
+    "CreateChildFolder": "Unterordner erstellen",
+
+    "Obsolete": "Veraltet",
+    "MakeDocumentObsolete": "Als veraltet markieren",
+    "MakeDocumentObsoleteDialog": "{count, plural, one {Dokument als veraltet markieren} other {Dokumente als veraltet markieren}}",
+    "MakeDocumentObsoleteConfirm": "Möchten Sie die folgenden Dokumente wirklich als veraltet markieren: {titles}?"
   },
   "controlledDocStates": {
     "Empty": "",

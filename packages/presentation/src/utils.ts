@@ -552,6 +552,23 @@ export async function getBlobURL (blob: Blob): Promise<string> {
 /**
  * @public
  */
+export function copyTextToClipboardOldBrowser (text: string): void {
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.classList.add('hulyClipboardArea')
+  document.body.appendChild(textarea)
+  textarea.select()
+  try {
+    document.execCommand('copy')
+  } catch (err) {
+    console.error(err)
+  }
+  document.body.removeChild(textarea)
+}
+
+/**
+ * @public
+ */
 export async function copyTextToClipboard (text: string | Promise<string>): Promise<void> {
   try {
     // Safari specific behavior
@@ -562,7 +579,9 @@ export async function copyTextToClipboard (text: string | Promise<string>): Prom
     await navigator.clipboard.write([clipboardItem])
   } catch {
     // Fallback to default clipboard API implementation
-    await navigator.clipboard.writeText(text instanceof Promise ? await text : text)
+    if (navigator.clipboard != null && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(text instanceof Promise ? await text : text)
+    } else copyTextToClipboardOldBrowser(text instanceof Promise ? await text : text)
   }
 }
 
@@ -763,7 +782,7 @@ export async function loadServerConfig (url: string): Promise<any> {
 
   do {
     try {
-      res = await fetch(url)
+      res = await fetch(url, { keepalive: true })
       break
     } catch (e: any) {
       retries--

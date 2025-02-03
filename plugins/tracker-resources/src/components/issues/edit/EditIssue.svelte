@@ -40,7 +40,7 @@
     navigate
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { DocNavLink, ParentsNavigator, showMenu } from '@hcengineering/view-resources'
+  import { DocNavLink, ParentsNavigator, showMenu, RelationsEditor } from '@hcengineering/view-resources'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { Analytics } from '@hcengineering/analytics'
 
@@ -175,6 +175,13 @@
   $: taskType = issue?.kind !== undefined ? $taskTypeStore.get(issue?.kind) : undefined
 
   $: projectType = taskType?.parent !== undefined ? $typeStore.get(taskType.parent) : undefined
+
+  async function unsetParentIssue (): Promise<void> {
+    if (issue === undefined || readonly) return
+
+    await client.update(issue, { attachedTo: tracker.ids.NoParent })
+    Analytics.handleEvent(TrackerEvents.IssueParentUnset, { issue: issue.identifier ?? issue._id })
+  }
 </script>
 
 {#if !embedded}
@@ -276,8 +283,22 @@
     </svelte:fragment>
 
     {#if hasParentIssue}
-      <div class="mb-6">
+      <div class="mb-6 flex-row-center">
         <SubIssueSelector {issue} />
+        {#if !readonly}
+          <div class="ml-2">
+            <Button
+              icon={tracker.icon.UnsetParent}
+              iconProps={{ size: 'medium' }}
+              kind={'regular'}
+              showTooltip={{ label: tracker.string.UnsetParentIssue }}
+              dataId={'btnUnsetParent'}
+              on:click={() => {
+                void unsetParentIssue()
+              }}
+            />
+          </div>
+        {/if}
       </div>
     {/if}
     <EditBox
@@ -308,6 +329,8 @@
         <SubIssues focusIndex={50} {issue} shouldSaveDraft />
       {/key}
     </div>
+
+    <RelationsEditor object={issue} {readonly} />
 
     {#if editorFooter}
       <div class="step-tb-6">

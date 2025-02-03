@@ -5,12 +5,12 @@
   "template": "cloud",
   "scripts": {
     "deploy": "wrangler deploy",
-    "dev": "wrangler dev --port 3335",
+    "dev": "wrangler dev --port 3335 --remote",
     "dev-local": "wrangler dev --port 3335 --local --upstream-protocol=http",
     "start": "wrangler dev --port 3335",
     "logs": "npx wrangler tail --format pretty", 
     "cf-typegen": "wrangler types",
-    "get-model": "mkdir -p bundle && esbuild src/get-model.ts --bundle --keep-names --platform=node --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --define:process.env.VERSION=$(node ../../common/scripts/show_tag.js) --define:process.env.GIT_REVISION=$(../../common/scripts/git_version.sh) --outfile=bundle/bundle.js --log-level=error && node ./bundle/bundle.js > ./src/model.json",
+    "get-model": "mkdir -p bundle && esbuild src/get-model.ts --bundle --keep-names --external:*.node --platform=node --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --define:process.env.VERSION=$(node ../../common/scripts/show_tag.js) --define:process.env.GIT_REVISION=$(../../common/scripts/git_version.sh) --outfile=bundle/bundle.js --log-level=error && node ./bundle/bundle.js > ./src/model.json",
     "bundle": "rushx get-model && wrangler deploy --dry-run --outdir dist",
     "build": "compile",
     "build:watch": "compile",
@@ -38,7 +38,7 @@
     "prettier": "^3.1.0",
     "ts-jest": "^29.1.1",
     "typescript": "^5.3.3",
-    "wrangler": "^3.97.0",
+    "wrangler": "^3.106.0",
     "esbuild": "^0.24.2",
     "@types/snappyjs": "^0.7.1"
   },
@@ -54,7 +54,12 @@
     "@hcengineering/server-client": "^0.6.0",
     "@hcengineering/server-pipeline": "^0.6.0",
     "@hcengineering/server-token": "^0.6.11",
+    "@hcengineering/contact": "^0.6.24",
     "@hcengineering/storage": "^0.6.0",
+    "@hcengineering/server-notification": "^0.6.1",
+    "@hcengineering/notification": "^0.6.23",
+    "@hcengineering/server-ai-bot": "^0.6.0",
+    "@hcengineering/server-telegram": "^0.6.0",
     "itty-router": "^5.0.18",
     "snappyjs": "^0.7.0"
   }

@@ -159,19 +159,12 @@
 
   const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
+  const mobileAdaptive = $deviceInfo.isMobile && $deviceInfo.minWidth
   const defaultNavigator = !(getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true)
   const savedNavigator = localStorage.getItem('hiddenNavigator')
-  const savedAside = localStorage.getItem('hiddenAside')
   let hiddenNavigator: boolean = savedNavigator !== null ? savedNavigator === 'true' : defaultNavigator
-  let hiddenAside: boolean = savedAside !== null ? savedAside === 'true' : defaultNavigator
+  let hiddenAside: boolean = true
   $deviceInfo.navigator.visible = !hiddenNavigator
-  $deviceInfo.aside.visible = !hiddenAside
-  sidebarStore.subscribe((sidebar) => {
-    if (!$deviceInfo.aside.float) {
-      hiddenAside = sidebar.variant === SidebarVariant.MINI
-      localStorage.setItem('hiddenAside', `${hiddenAside}`)
-    }
-  })
 
   async function toggleNav (): Promise<void> {
     $deviceInfo.navigator.visible = !$deviceInfo.navigator.visible
@@ -591,10 +584,10 @@
   async function updateSpace (spaceId?: Ref<Space>): Promise<void> {
     if (spaceId === currentSpace) return
     clear(2)
+    currentSpace = spaceId
     if (spaceId === undefined) return
     const space = await client.findOne<Space>(core.class.Space, { _id: spaceId })
     if (space === undefined) return
-    currentSpace = spaceId
     const spaceClass = client.getHierarchy().getClass(space._class)
     const view = client.getHierarchy().as(spaceClass, workbench.mixin.SpaceView)
     currentView = view.view
@@ -642,37 +635,42 @@
     }
   }
   checkWorkbenchWidth()
-  $: if ($deviceInfo.docWidth <= FLOAT_ASIDE && !$deviceInfo.aside.float) {
-    $deviceInfo.aside.visible = false
-    $deviceInfo.aside.float = true
-  } else if ($deviceInfo.docWidth > FLOAT_ASIDE && $deviceInfo.aside.float) {
-    $deviceInfo.aside.float = false
-    $deviceInfo.aside.visible = !hiddenAside
+  $: if ($deviceInfo.docWidth <= FLOAT_ASIDE && !$sidebarStore.float) {
+    hiddenAside = $sidebarStore.variant === SidebarVariant.MINI
+    $sidebarStore.float = true
+  } else if ($deviceInfo.docWidth > FLOAT_ASIDE && $sidebarStore.float) {
+    $sidebarStore.float = false
+    $sidebarStore.variant = hiddenAside ? SidebarVariant.MINI : SidebarVariant.EXPANDED
   }
   const checkOnHide = (): void => {
     if ($deviceInfo.navigator.visible && $deviceInfo.navigator.float) $deviceInfo.navigator.visible = false
   }
   let oldNavVisible: boolean = $deviceInfo.navigator.visible
-  let oldASideVisible: boolean = $deviceInfo.aside.visible
-  $: if (oldNavVisible !== $deviceInfo.navigator.visible || oldASideVisible !== $deviceInfo.aside.visible) {
-    if ($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.navigator.float) {
-      if ($deviceInfo.navigator.visible && $deviceInfo.aside.visible) {
+  let oldASideVisible: boolean = $sidebarStore.variant !== SidebarVariant.MINI
+  $: if (
+    oldNavVisible !== $deviceInfo.navigator.visible ||
+    oldASideVisible !== ($sidebarStore.variant !== SidebarVariant.MINI)
+  ) {
+    if (mobileAdaptive && $deviceInfo.navigator.float) {
+      if ($deviceInfo.navigator.visible && $sidebarStore.variant !== SidebarVariant.MINI) {
         if (oldNavVisible) $deviceInfo.navigator.visible = false
-        else $deviceInfo.aside.visible = false
+        else $sidebarStore.variant = SidebarVariant.MINI
       }
     }
     oldNavVisible = $deviceInfo.navigator.visible
-    oldASideVisible = $deviceInfo.aside.visible
+    oldASideVisible = $sidebarStore.variant !== SidebarVariant.MINI
   }
   $: if (
-    $deviceInfo.aside.float &&
-    $deviceInfo.aside.visible &&
-    $sidebarStore.variant === SidebarVariant.MINI &&
+    $sidebarStore.float &&
+    $sidebarStore.variant !== SidebarVariant.MINI &&
+    $sidebarStore.widget === undefined &&
     $sidebarStore.widgetsState.size > 0
   ) {
-    $sidebarStore.variant = SidebarVariant.EXPANDED
     $sidebarStore.widget = Array.from($sidebarStore.widgetsState.keys())[0]
   }
+  location.subscribe(() => {
+    if (mobileAdaptive && $sidebarStore.variant !== SidebarVariant.MINI) $sidebarStore.variant = SidebarVariant.MINI
+  })
   $: $deviceInfo.navigator.direction = $deviceInfo.isMobile && $deviceInfo.isPortrait ? 'horizontal' : 'vertical'
   let appsMini: boolean
   $: appsMini =
@@ -976,16 +974,17 @@
         <div
           bind:this={contentPanel}
           class={navigatorModel === undefined ? 'hulyPanels-container' : 'hulyComponent overflow-hidden'}
-          class:straighteningCorners={$deviceInfo.aside.float &&
+          class:straighteningCorners={$sidebarStore.float &&
             $sidebarStore.variant === SidebarVariant.EXPANDED &&
-            !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
+            !(mobileAdaptive && $deviceInfo.isPortrait)}
           data-id={'contentPanel'}
         >
           {#if currentApplication && currentApplication.component}
             <Component
               is={currentApplication.component}
               props={{
-                currentSpace
+                currentSpace,
+                workbenchWidth
               }}
             />
           {:else if specialComponent}
@@ -996,7 +995,8 @@
                 ...specialComponent.componentProps,
                 currentSpace,
                 space: currentSpace,
-                navigationModel: specialComponent?.navigationModel
+                navigationModel: specialComponent?.navigationModel,
+                workbenchWidth
               }}
               on:action={(e) => {
                 if (e?.detail) {
@@ -1007,7 +1007,10 @@
               }}
             />
           {:else if currentView?.component !== undefined}
-            <Component is={currentView.component} props={{ ...currentView.componentProps, currentView }} />
+            <Component
+              is={currentView.component}
+              props={{ ...currentView.componentProps, currentView, workbenchWidth }}
+            />
           {:else if $accessDeniedStore}
             <div class="flex-center h-full">
               <h2><Label label={workbench.string.AccessDenied} /></h2>
@@ -1017,7 +1020,7 @@
           {/if}
         </div>
       </div>
-      {#if $sidebarStore.variant === SidebarVariant.EXPANDED && !$deviceInfo.aside.float}
+      {#if $sidebarStore.variant === SidebarVariant.EXPANDED && !$sidebarStore.float}
         <Separator name={'main'} index={0} color={'transparent'} separatorSize={0} short />
       {/if}
       <WidgetsBar />

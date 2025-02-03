@@ -48,7 +48,8 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
 
   const app = express()
   app.use(cors())
-  app.use(bp.json())
+  app.use(express.json({ limit: '10mb' }))
+  app.use(bp.json({ limit: '10mb' }))
 
   const extensionsCtx = ctx.newChild('extensions', {})
   const transformer = new MarkupTransformer()
@@ -174,6 +175,7 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
         })
         res.status(200).send(response)
       } catch (err: any) {
+        Analytics.handleError(err)
         res.status(500).send({ error: err.message })
       }
     })

@@ -1,0 +1,23 @@
+{
+  "string": {
+    "Card": "Tarjeta",
+    "CardApplication": "Tarjetas",
+    "Cards": "Tarjetas",
+    "Content": "Contenido",
+    "CreateCard": "Crear Tarjeta",
+    "CreateMasterTag": "Crear Etiqueta Maestra",
+    "CreateTag": "Crear Etiqueta",
+    "MasterTag": "Etiqueta Maestra",
+    "MasterTags": "Etiquetas Maestras",
+    "Parent": "Padre",
+    "Tags": "Etiquetas",
+    "Tag": "Etiqueta",
+    "CardLibrary": "Biblioteca de Tarjetas",
+    "MinimizeAll": "Minimizar Todo",
+    "ExpandAll": "Expandir Todo",
+    "DeleteTag": "Eliminar Etiqueta",
+    "DeleteTagConfirm": "¿Está seguro de que desea eliminar esta etiqueta? Todas las propiedades relacion",
+    "DeleteMasterTag": "Eliminar Etiqueta Maestra",
+    "DeleteMasterTagConfirm": "¿Está seguro de que desea eliminar esta etiqueta maestra? Todos los objetos relacionados con esta etiqueta maestra serán eliminados"
+  }
+}

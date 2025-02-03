@@ -235,7 +235,8 @@ export const contactPlugin = plugin(contactId, {
     Homepage: '' as Ref<ChannelProvider>,
     Whatsapp: '' as Ref<ChannelProvider>,
     Skype: '' as Ref<ChannelProvider>,
-    Profile: '' as Ref<ChannelProvider>
+    Profile: '' as Ref<ChannelProvider>,
+    Viber: '' as Ref<ChannelProvider>
   },
   avatarProvider: {
     Color: '' as Ref<AvatarProvider>,
@@ -273,7 +274,8 @@ export const contactPlugin = plugin(contactId, {
     ComponentMembers: '' as Asset,
     Profile: '' as Asset,
     KickUser: '' as Asset,
-    Contacts: '' as Asset
+    Contacts: '' as Asset,
+    Viber: '' as Asset
   },
   space: {
     Contacts: '' as Ref<Space>

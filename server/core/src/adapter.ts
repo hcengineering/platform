@@ -65,7 +65,12 @@ export type DbAdapterHandler = (
  * @public
  */
 export interface DbAdapter extends LowLevelStorage {
-  init?: (ctx: MeasureContext, domains?: string[], excludeDomains?: string[]) => Promise<void>
+  init?: (
+    ctx: MeasureContext,
+    contextVars: Record<string, any>,
+    domains?: string[],
+    excludeDomains?: string[]
+  ) => Promise<void>
 
   helper?: () => DomainHelperOperations
 
@@ -103,7 +108,7 @@ export interface TxAdapter extends DbAdapter {
  * @public
  */
 export interface WorkspaceDestroyAdapter {
-  deleteWorkspace: (ctx: MeasureContext, workspace: WorkspaceId) => Promise<void>
+  deleteWorkspace: (ctx: MeasureContext, contextVars: Record<string, any>, workspace: WorkspaceId) => Promise<void>
 }
 
 /**
@@ -111,6 +116,7 @@ export interface WorkspaceDestroyAdapter {
  */
 export type DbAdapterFactory = (
   ctx: MeasureContext,
+  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId,

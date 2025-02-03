@@ -13,8 +13,20 @@
 // limitations under the License.
 //
 
+import chunter from '@hcengineering/chunter'
+import core, {
+  type Account,
+  type Markup,
+  type Ref,
+  type Timestamp,
+  generateId,
+  getCurrentAccount
+} from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
-import { type Editor, Mark } from '@tiptap/core'
+import { type ActionContext } from '@hcengineering/presentation'
+import type { AnySvelteComponent } from '@hcengineering/ui'
+import { type Editor, Extension } from '@tiptap/core'
+import { type Node } from '@tiptap/pm/model'
 import {
   type EditorState,
   Plugin,
@@ -25,16 +37,10 @@ import {
   type Transaction
 } from '@tiptap/pm/state'
 import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view'
-import { SvelteRenderer } from '../node-view'
-import type { AnySvelteComponent } from '@hcengineering/ui'
-import { Fragment, Slice, type Node } from '@tiptap/pm/model'
-import { type Account, type Markup, type Ref, type Timestamp, getCurrentAccount, generateId } from '@hcengineering/core'
 import tippy, { type Instance } from 'tippy.js'
 import 'tippy.js/animations/shift-toward.css'
 import { type Doc as YDoc, type Map as YMap } from 'yjs'
-import core from '@hcengineering/core'
-import { type ActionContext } from '@hcengineering/presentation'
-import chunter from '@hcengineering/chunter'
+import { SvelteRenderer } from '../node-view'
 
 interface InlineCommentExtensionOptions {
   boundary?: HTMLElement
@@ -111,41 +117,10 @@ interface ThreadPresenterProps {
   handleResolveThread?: (() => void) | undefined
 }
 
-const extensionName = 'inline-comment'
+const extensionName = 'inlineCommentCollaboration'
 
-export const InlineCommentExtension = Mark.create<InlineCommentExtensionOptions>({
-  name: 'inline-comment',
-  excludes: '',
-
-  inclusive: false,
-
-  parseHTML () {
-    return [
-      {
-        tag: 'span.proseInlineComment[data-inline-comment-thread]'
-      }
-    ]
-  },
-
-  renderHTML ({ HTMLAttributes, mark }) {
-    return ['span', { ...HTMLAttributes, class: 'proseInlineComment' }, 0]
-  },
-
-  addAttributes () {
-    const name = 'data-inline-comment-thread-id'
-    return {
-      thread: {
-        default: undefined,
-        parseHTML: (element) => {
-          return element.getAttribute(name)
-        },
-        renderHTML: (attributes) => {
-          return { [name]: attributes.thread }
-        }
-      }
-    }
-  },
-
+export const InlineCommentCollaborationExtension = Extension.create<InlineCommentExtensionOptions>({
+  name: extensionName,
   addProseMirrorPlugins () {
     return [...(this.parent?.() ?? []), InlineCommentDecorator(this.options)]
   }
@@ -180,13 +155,6 @@ export function InlineCommentDecorator (options: InlineCommentExtensionOptions):
       },
       handleDOMEvents: {
         mousemove: handleInlineCommentMouseHover
-      },
-      transformPasted: (slice) => {
-        const nodes: Node[] = []
-        slice.content.forEach((node) => {
-          nodes.push(removeMarkFromNode(node, 'inline-comment'))
-        })
-        return new Slice(Fragment.fromArray(nodes), slice.openStart, slice.openEnd)
       }
     },
     state: {
@@ -489,22 +457,6 @@ function handleInlineCommentMouseHover (view: EditorView, event: MouseEvent): vo
   }
 
   updatePointerState(view, { hover: threadIds })
-}
-
-function removeMarkFromNode (node: Node, name: string): Node {
-  if (node.isText) {
-    return node.mark(node.marks.filter((mark) => mark.type.name !== name))
-  }
-
-  if (node.content.size > 0) {
-    const nodes: Node[] = []
-    node.content.forEach((child) => {
-      nodes.push(removeMarkFromNode(child, name))
-    })
-    return node.copy(Fragment.fromArray(nodes))
-  }
-
-  return node
 }
 
 interface InlineCommentViewProps {

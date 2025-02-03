@@ -109,6 +109,9 @@ export function createModel (builder: Builder): void {
       attachTo: survey.class.Poll,
       descriptor: view.viewlet.Table,
       config: ['', 'isCompleted', 'modifiedOn'],
+      options: {
+        showArchived: true
+      },
       configOptions: {
         hiddenKeys: ['name', 'survey', 'questions'],
         sortable: true

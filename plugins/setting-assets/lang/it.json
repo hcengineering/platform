@@ -119,6 +119,18 @@
     "DeleteSpaceTypeConfirm": "Sei sicuro di voler eliminare questo tipo di spazio?",
     "WorkspaceName": "Nome spazio di lavoro",
     "Workspace": "Spazio di lavoro",
-    "OwnerOrMaintainerRequired": "Devi essere un proprietario o un manutentore dello spazio di lavoro"
+    "OwnerOrMaintainerRequired": "Devi essere un proprietario o un manutentore dello spazio di lavoro",
+    "Backup": "Backup",
+    "BackupLast": "Ultimo backup",
+    "BackupTotalSnapshots": "Totale istantanee",
+    "BackupTotalFiles": "File",
+    "BackupSize": "Dimensione backup",
+    "BackupLinkInfo": "L'URL di una directory di backup che può essere scaricata ricorsivamente utilizzando strumenti come wget o curl.",
+    "BackupBearerTokenInfo": "È richiesto un token di accesso per accedere al backup.",
+    "BackupSnapshots": "Istantanee di backup",
+    "BackupFileDownload": "Scarica file",
+    "BackupFiles": "File di backup",
+    "BackupNoBackup": "Non sono attualmente disponibili backup.",
+    "AddAttribute": "Aggiungi attributo"
   }
 }

@@ -50,6 +50,6 @@
     "@hcengineering/login": "^0.6.12",
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
-    "fast-copy": "~3.0.1"
+    "fast-copy": "^3.0.2"
   }
 }

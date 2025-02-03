@@ -1,8 +1,19 @@
-import { type Class, type Doc, type DocumentQuery, type Ref, SortingOrder, type Space } from '@hcengineering/core'
+import {
+  type Class,
+  type Doc,
+  type DocumentQuery,
+  type FindOptions,
+  type Hierarchy,
+  type Ref,
+  SortingOrder,
+  type Space
+} from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { type LiveQuery, createQuery, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
 import { locationToUrl, getCurrentResolvedLocation } from '@hcengineering/ui'
 import {
+  type ViewOptionsOption,
+  type ViewQueryOption,
   type DropdownViewOption,
   type Groupping,
   type ToggleViewOption,
@@ -128,6 +139,10 @@ export function migrateViewOpttions (): void {
   }
 }
 
+export function hideArchived (value: any, options: FindOptions<Doc> | undefined): FindOptions<Doc> {
+  return typeof value === 'boolean' ? { ...options, showArchived: !value } : options ?? {}
+}
+
 export async function showEmptyGroups (
   _class: Ref<Class<Doc>>,
   query: DocumentQuery<Doc> | undefined,
@@ -190,3 +205,45 @@ export const CategoryQuery = {
 }
 
 export const viewOptionStore = writable(new Map<string, ViewOptions>())
+
+export async function getResultOptions<T extends Doc> (
+  options: FindOptions<T> | undefined,
+  viewOptions: ViewOptionModel[] | undefined,
+  viewOptionsStore: ViewOptions | undefined
+): Promise<FindOptions<T> | undefined> {
+  if (viewOptions === undefined || viewOptionsStore === undefined) {
+    return options
+  }
+  let result: FindOptions<T> = options !== undefined ? { ...options } : {}
+  for (const viewOption of viewOptions) {
+    if (viewOption.actionTarget !== 'options') continue
+    const queryOption = viewOption as ViewOptionsOption
+    const f = await getResource(queryOption.action)
+    result = f(viewOptionsStore[queryOption.key] ?? queryOption.defaultValue, result) as FindOptions<T>
+  }
+  return Object.keys(result).length > 0 ? result : undefined
+}
+
+export async function getResultQuery (
+  hierarchy: Hierarchy,
+  query: DocumentQuery<Doc>,
+  viewOptions: ViewOptionModel[] | undefined,
+  viewOptionsStore: ViewOptions | undefined
+): Promise<DocumentQuery<Doc>> {
+  if (viewOptions === undefined || viewOptionsStore === undefined) {
+    return query
+  }
+  let result: DocumentQuery<Doc> = hierarchy.clone(query)
+  for (const viewOption of viewOptions) {
+    if (viewOption.actionTarget !== 'query') continue
+    const queryOption = viewOption as ViewQueryOption
+    const f = await getResource(queryOption.action)
+    const resultP = f(viewOptionsStore[queryOption.key] ?? queryOption.defaultValue, result)
+    if (resultP instanceof Promise) {
+      result = await resultP
+    } else {
+      result = resultP
+    }
+  }
+  return result
+}

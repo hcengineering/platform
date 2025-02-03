@@ -16,7 +16,7 @@
 import type { Asset, Resource } from '@hcengineering/platform'
 
 import type { KeysByType } from 'simplytyped'
-import type { AttachedDoc, Class, Doc, Ref, Space } from './classes'
+import type { Association, AttachedDoc, Class, Doc, Ref, Space } from './classes'
 import type { Tx } from './tx'
 
 /**
@@ -113,6 +113,8 @@ export type Projection<T extends Doc> = {
   [P in keyof T]?: 0 | 1
 }
 
+export type AssociationQuery = [Ref<Association>, 1 | -1]
+
 /**
  * @public
  */
@@ -122,9 +124,12 @@ export type FindOptions<T extends Doc> = {
   sort?: SortingQuery<T>
   lookup?: Lookup<T>
   projection?: Projection<T>
+  associations?: AssociationQuery[]
 
   // If specified total will be returned
   total?: boolean
+
+  showArchived?: boolean
 }
 
 /**
@@ -185,6 +190,7 @@ export type LookupData<T extends Doc> = Partial<RefsAsDocs<T>>
  */
 export type WithLookup<T extends Doc> = T & {
   $lookup?: LookupData<T>
+  $associations?: Record<string, Doc[]>
   $source?: {
     $score: number // Score for document result
     [key: string]: any

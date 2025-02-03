@@ -1,9 +1,8 @@
+import { MarkupNode, markupToJSON } from '@hcengineering/text-core'
 import { Extensions } from '@tiptap/core'
 import { defaultExtensions } from '../extensions'
 import { MarkdownParser } from './parser'
 import { MarkdownState, storeMarks, storeNodes } from './serializer'
-import { MarkupNode } from '../markup/model'
-import { markupToJSON } from '../markup/utils'
 
 /**
  * @public

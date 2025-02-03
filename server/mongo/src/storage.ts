@@ -16,6 +16,7 @@
 import core, {
   DOMAIN_MODEL,
   DOMAIN_MODEL_TX,
+  DOMAIN_RELATION,
   DOMAIN_TX,
   SortingOrder,
   TxProcessor,
@@ -27,6 +28,7 @@ import core, {
   matchQuery,
   toFindResult,
   withContext,
+  type AssociationQuery,
   type Class,
   type Doc,
   type DocInfo,
@@ -461,6 +463,32 @@ abstract class MongoAdapterBase implements DbAdapter {
     return result
   }
 
+  private getAssociations (associations: AssociationQuery[]): LookupStep[] {
+    const res: LookupStep[] = []
+    for (const association of associations) {
+      const assoc = this.modelDb.findObject(association[0])
+      if (assoc === undefined) continue
+      const isReverse = association[1] === -1
+      const _class = !isReverse ? assoc.classB : assoc.classA
+      const targetDomain = this.hierarchy.getDomain(_class)
+      if (targetDomain === DOMAIN_MODEL) continue
+      const as = association[0] + '_hidden_association'
+      res.push({
+        from: DOMAIN_RELATION,
+        localField: '_id',
+        foreignField: isReverse ? 'docB' : 'docA',
+        as
+      })
+      res.push({
+        from: targetDomain,
+        localField: as + '.' + (isReverse ? 'docA' : 'docB'),
+        foreignField: '_id',
+        as: association[0] + '_association'
+      })
+    }
+    return res
+  }
+
   private fillLookup<T extends Doc>(
     _class: Ref<Class<T>>,
     object: any,
@@ -484,6 +512,25 @@ abstract class MongoAdapterBase implements DbAdapter {
     } else {
       targetObject.$lookup[key] = this.modelDb.findAllSync(_class, { _id: targetObject[key] })[0]
     }
+  }
+
+  private fillAssociationsValue (associations: AssociationQuery[], object: any): Record<string, Doc[]> {
+    const res: Record<string, Doc[]> = {}
+    for (const association of associations) {
+      const assocKey = association[0] + '_hidden_association'
+      const data = object[assocKey]
+      if (data !== undefined && Array.isArray(data)) {
+        const filtered = new Set(
+          data.filter((it) => it.association === association[0]).map((it) => (association[1] === 1 ? it.docB : it.docA))
+        )
+        const fullKey = association[0] + '_association'
+        const arr = object[fullKey]
+        if (arr !== undefined && Array.isArray(arr)) {
+          res[association[0]] = arr.filter((it) => filtered.has(it._id))
+        }
+      }
+    }
+    return res
   }
 
   private fillLookupValue<T extends Doc>(
@@ -615,6 +662,11 @@ abstract class MongoAdapterBase implements DbAdapter {
       })
     }
 
+    if (options.associations !== undefined && options.associations.length > 0) {
+      const assoc = this.getAssociations(options.associations)
+      steps.push(...assoc)
+    }
+
     if (slowPipeline) {
       if (Object.keys(tquery.base).length > 0) {
         pipeline.push({ $match: tquery.base })
@@ -679,6 +731,12 @@ abstract class MongoAdapterBase implements DbAdapter {
       })
       if (row.$lookup !== undefined) {
         for (const [, v] of Object.entries(row.$lookup)) {
+          this.stripHash(v)
+        }
+      }
+      if (options.associations !== undefined && options.associations.length > 0) {
+        row.$associations = this.fillAssociationsValue(options.associations, row)
+        for (const [, v] of Object.entries(row.$associations)) {
           this.stripHash(v)
         }
       }
@@ -747,7 +805,7 @@ abstract class MongoAdapterBase implements DbAdapter {
 
   private clearExtraLookups (row: any): void {
     for (const key in row) {
-      if (key.endsWith('_lookup')) {
+      if (key.endsWith('_lookup') || key.endsWith('_association')) {
         // eslint-disable-next-line
         delete row[key]
       }
@@ -842,6 +900,7 @@ abstract class MongoAdapterBase implements DbAdapter {
       const domain = options?.domain ?? this.hierarchy.getDomain(_class)
       if (
         options?.lookup != null ||
+        options?.associations != null ||
         this.isEnumSort(_class, options) ||
         this.isRulesSort(options) ||
         options?.domainLookup !== undefined
@@ -1520,7 +1579,6 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
     if (tx.length === 0) {
       return []
     }
-
     const opName = tx.length === 1 ? 'tx-one' : 'tx'
     const modelTxes: Tx[] = []
     const baseTxes: Tx[] = []
@@ -1749,6 +1807,7 @@ function translateLikeQuery (pattern: string): { $regex: string, $options: strin
  */
 export async function createMongoAdapter (
   ctx: MeasureContext,
+  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId,
@@ -1767,6 +1826,7 @@ export async function createMongoAdapter (
  */
 export async function createMongoTxAdapter (
   ctx: MeasureContext,
+  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId,

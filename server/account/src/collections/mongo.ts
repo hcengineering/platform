@@ -233,6 +233,8 @@ export class WorkspaceMongoDbCollection extends MongoDbCollection<Workspace> imp
       { mode: { $in: ['archiving-pending-backup', 'archiving-backup', 'archiving-pending-clean', 'archiving-clean'] } }
     ]
 
+    const deletingQuery: Filter<Workspace>['$or'] = [{ mode: { $in: ['pending-deletion', 'deleting'] } }]
+
     const restoreQuery: Filter<Workspace>['$or'] = [{ mode: { $in: ['pending-restore', 'restoring'] } }]
 
     const versionQuery = {
@@ -284,7 +286,14 @@ export class WorkspaceMongoDbCollection extends MongoDbCollection<Workspace> imp
         break
       case 'all+backup':
         operationQuery = {
-          $or: [...pendingCreationQuery, ...pendingUpgradeQuery, ...migrationQuery, ...archivingQuery, ...restoreQuery]
+          $or: [
+            ...pendingCreationQuery,
+            ...pendingUpgradeQuery,
+            ...migrationQuery,
+            ...archivingQuery,
+            ...restoreQuery,
+            ...deletingQuery
+          ]
         }
         break
     }

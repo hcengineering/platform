@@ -20,7 +20,6 @@ import core, {
   Class,
   Classifier,
   ClassifierKind,
-  MarkupBlobRef,
   Data,
   DateRangeMode,
   Doc,
@@ -33,6 +32,7 @@ import core, {
   IndexKind,
   Interface,
   Markup,
+  MarkupBlobRef,
   MixinData,
   Obj,
   PropertyType,
@@ -385,91 +385,98 @@ export class Builder {
  * @public
  */
 export function TypeString (): Type<string> {
-  return { _class: core.class.TypeString, label: core.string.String }
+  return { _class: core.class.TypeString, label: core.string.String, icon: core.icon.TypeString }
+}
+
+/**
+ * @public
+ */
+export function TypeRelation (): Type<string> {
+  return { _class: core.class.TypeRelation, label: core.string.Relation, icon: core.icon.TypeRef }
 }
 
 /**
  * @public
  */
 export function TypeBlob (): Type<string> {
-  return { _class: core.class.TypeBlob, label: core.string.String }
+  return { _class: core.class.TypeBlob, label: core.string.String, icon: core.icon.TypeBlob }
 }
 
 /**
  * @public
  */
 export function TypeHyperlink (): Type<Hyperlink> {
-  return { _class: core.class.TypeHyperlink, label: core.string.Hyperlink }
+  return { _class: core.class.TypeHyperlink, label: core.string.Hyperlink, icon: core.icon.TypeHyperlink }
 }
 
 /**
  * @public
  */
 export function TypeNumber (): Type<number> {
-  return { _class: core.class.TypeNumber, label: core.string.Number }
+  return { _class: core.class.TypeNumber, label: core.string.Number, icon: core.icon.TypeNumber }
 }
 
 /**
  * @public
  */
 export function TypeMarkup (): Type<Markup> {
-  return { _class: core.class.TypeMarkup, label: core.string.Markup }
+  return { _class: core.class.TypeMarkup, label: core.string.Markup, icon: core.icon.TypeMarkup }
 }
 
 /**
  * @public
  */
-export function TypeRecord (): Type<Markup> {
-  return { _class: core.class.TypeRecord, label: core.string.Record }
+export function TypeRecord (): Type<Record<any, any>> {
+  return { _class: core.class.TypeRecord, label: core.string.Record, icon: core.icon.TypeRecord }
 }
 
 /**
  * @public
  */
 export function TypeIntlString (): Type<IntlString> {
-  return { _class: core.class.TypeIntlString, label: core.string.IntlString }
+  return { _class: core.class.TypeIntlString, label: core.string.IntlString, icon: core.icon.TypeRef }
 }
 
 /**
  * @public
  */
 export function TypeBoolean (): Type<boolean> {
-  return { _class: core.class.TypeBoolean, label: core.string.Boolean }
+  return { _class: core.class.TypeBoolean, label: core.string.Boolean, icon: core.icon.TypeBoolean }
 }
 
 /**
  * @public
  */
 export function TypeTimestamp (): Type<Timestamp> {
-  return { _class: core.class.TypeTimestamp, label: core.string.Timestamp }
+  return { _class: core.class.TypeTimestamp, label: core.string.Timestamp, icon: core.icon.TypeDate }
 }
 
 /**
  * @public
  */
 export function TypeDate (mode: DateRangeMode = DateRangeMode.DATE, withShift: boolean = true): TypeDateType {
-  return { _class: core.class.TypeDate, label: core.string.Date, mode, withShift }
+  return { _class: core.class.TypeDate, label: core.string.Date, icon: core.icon.TypeDate, mode, withShift }
 }
 
 /**
  * @public
  */
 export function TypeRef (_class: Ref<Class<Doc>>): RefTo<Doc> {
-  return { _class: core.class.RefTo, label: core.string.Ref, to: _class }
+  return { _class: core.class.RefTo, label: core.string.Ref, icon: core.icon.TypeRef, to: _class }
 }
 
 /**
  * @public
  */
 export function TypeEnum (of: Ref<Enum>): EnumOf {
-  return { _class: core.class.EnumOf, label: core.string.Enum, of }
+  return { _class: core.class.EnumOf, label: core.string.Enum, icon: core.icon.TypeEnumOf, of }
 }
 
 /**
  * @public
  */
 export function TypeFileSize (): Type<number> {
-  return { _class: core.class.TypeFileSize, label: core.string.Size }
+  return { _class: core.class.TypeFileSize, label: core.string.Size, icon: core.icon.TypeNumber }
 }
 
 /**
@@ -487,26 +494,32 @@ export function TypeAny<AnyComponent = any> (
  * @public
  */
 export function Collection<T extends AttachedDoc> (clazz: Ref<Class<T>>, itemLabel?: IntlString): TypeCollection<T> {
-  return { _class: core.class.Collection, label: core.string.Collection, of: clazz, itemLabel }
+  return {
+    _class: core.class.Collection,
+    label: core.string.Collection,
+    icon: core.icon.TypeCollection,
+    of: clazz,
+    itemLabel
+  }
 }
 
 /**
  * @public
  */
 export function ArrOf<T extends PropertyType | Ref<Doc>> (type: Type<T>): TypeArrOf<T> {
-  return { _class: core.class.ArrOf, label: core.string.Array, of: type }
+  return { _class: core.class.ArrOf, label: core.string.Array, of: type, icon: core.icon.TypeArray }
 }
 
 /**
  * @public
  */
 export function TypeCollaborativeDoc (): Type<MarkupBlobRef> {
-  return { _class: core.class.TypeCollaborativeDoc, label: core.string.MarkupBlobRef }
+  return { _class: core.class.TypeCollaborativeDoc, label: core.string.MarkupBlobRef, icon: core.icon.TypeMarkup }
 }
 
 /**
  * @public
  */
 export function TypeRank (): Type<Rank> {
-  return { _class: core.class.TypeRank, label: core.string.Rank }
+  return { _class: core.class.TypeRank, label: core.string.Rank, icon: core.icon.TypeRank }
 }

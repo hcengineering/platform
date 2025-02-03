@@ -78,6 +78,7 @@
           _class={recruit.class.Applicant}
           config={preference?.config ?? viewlet.config}
           query={{ space: objectId }}
+          options={{ showArchived: true }}
           loadingProps={{ length: applications }}
           {readonly}
         />

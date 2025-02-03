@@ -28,15 +28,16 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/model": "^0.6.11",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/model-core": "^0.6.0",
-    "@hcengineering/request": "^0.6.14",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/controlled-documents": "^0.1.0",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/model": "^0.6.11",
+    "@hcengineering/model-core": "^0.6.0",
+    "@hcengineering/notification": "^0.6.23",
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/request": "^0.6.14",
     "@hcengineering/server-controlled-documents": "^0.1.0",
+    "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-notification": "^0.6.1"
   }
 }

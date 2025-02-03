@@ -15,7 +15,7 @@
 <script lang="ts">
   import { getMetadata } from '@hcengineering/platform'
   import { MarkupMark, MarkupMarkType } from '@hcengineering/text'
-  import { navigate, parseLocation } from '@hcengineering/ui'
+  import uiPlugin, { navigate, parseLocation } from '@hcengineering/ui'
 
   import presentation from '../../plugin'
 
@@ -29,8 +29,15 @@
         const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
 
         if (url.origin === frontUrl) {
-          e.preventDefault()
-          navigate(parseLocation(url))
+          const loc = parseLocation(url)
+          const routes = getMetadata(uiPlugin.metadata.Routes)
+          const app = routes?.get(loc.path[0])
+
+          if (app !== undefined) {
+            e.preventDefault()
+            e.stopPropagation()
+            navigate(loc)
+          }
         }
       }
     } catch (err) {

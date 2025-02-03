@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import { type Markup, MeasureContext } from '@hcengineering/core'
 import {
   Document,
@@ -99,7 +100,7 @@ export class StorageExtension implements Extension {
       return
     }
 
-    this.updates.delete(documentName)
+    updates.collaborators = new Set()
     await this.storeDocument(documentName, document, updates.context)
   }
 
@@ -122,7 +123,7 @@ export class StorageExtension implements Extension {
       return
     }
 
-    this.updates.delete(documentName)
+    updates.collaborators = new Set()
     await this.storeDocument(documentName, document, context)
   }
 
@@ -139,7 +140,8 @@ export class StorageExtension implements Extension {
       return await ctx.with('load-document', {}, (ctx) => {
         return adapter.loadDocument(ctx, documentName, context)
       })
-    } catch (err) {
+    } catch (err: any) {
+      Analytics.handleError(err)
       ctx.error('failed to load document', { documentName, error: err })
       throw new Error('Failed to load document')
     }
@@ -157,7 +159,8 @@ export class StorageExtension implements Extension {
       )
 
       this.markups.set(documentName, currMarkup ?? {})
-    } catch (err) {
+    } catch (err: any) {
+      Analytics.handleError(err)
       ctx.error('failed to save document', { documentName, error: err })
       throw new Error('Failed to save document')
     }

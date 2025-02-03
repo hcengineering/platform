@@ -375,9 +375,9 @@ export function fitPopupElement (
     } else if (element === 'full-centered') {
       const rect = contentPanel !== undefined ? contentPanel.getBoundingClientRect() : { top: 0 }
       newProps.top = `${Math.max(20, rect.top + 1)}px`
-      newProps.bottom = '20px'
-      newProps.left = '20px'
-      newProps.right = '20px'
+      newProps.bottom = '.5rem'
+      newProps.left = '.5rem'
+      newProps.right = '.5rem'
       show = true
     } else if (element === 'content' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()

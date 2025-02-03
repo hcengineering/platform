@@ -88,6 +88,7 @@
     "AuthenticationRevokedGithub": "Se requiere una nueva autorización para {login} para el correcto funcionamiento de la aplicación de GitHub",
     "UnlinkInstallationTitle": "Desinstalar aplicación de Github",
     "UnlinkInstallation": "¿Estás seguro de que deseas desinstalar la aplicación de GitHub? La sincronización se deshabilitará.",
-    "RemoveInstallation": "Desinstalar"
+    "RemoveInstallation": "Desinstalar",
+    "Suspended": "Suspended"
   }
 }

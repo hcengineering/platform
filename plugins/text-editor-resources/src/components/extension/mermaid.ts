@@ -71,6 +71,7 @@ interface NodePatchSpec {
 export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
   name: 'mermaid',
   group: 'block',
+  marks: 'inline-comment',
 
   draggable: true,
   selectable: true,
@@ -286,7 +287,9 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
         stopEvent: (event) => {
           if (event instanceof DragEvent && !nodeState.folded) {
             event.preventDefault()
+            return true
           }
+          return false
         },
         update: (node, decorations) => {
           if (node.type.name !== MermaidExtension.name) return false

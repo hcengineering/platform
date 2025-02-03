@@ -751,7 +751,7 @@ export function categorizeFields (
 }
 
 export function makeViewletKey (loc?: Location): string {
-  loc = loc != null ? { path: loc.path } : getCurrentResolvedLocation()
+  loc = loc != null ? { path: loc.path, fragment: loc.fragment } : getCurrentResolvedLocation()
   loc.query = undefined
 
   if (loc.fragment != null && loc.fragment !== '') {
@@ -1572,6 +1572,7 @@ spaceTypesQuery.query(core.class.SpaceType, {}, (types) => {
       })
     },
     {
+      showArchived: true,
       projection: {
         _id: 1,
         type: 1,

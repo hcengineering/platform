@@ -15,8 +15,8 @@
 <script lang="ts">
   import type { Card as BoardCard } from '@hcengineering/board'
   import board from '../../plugin'
-  import task, { makeRank } from '@hcengineering/task'
-  import { AttachedData, generateId, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import { makeRank } from '@hcengineering/task'
+  import core, { AttachedData, generateId, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { IconAdd, Button, showPopup } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
   import AddCardEditor from './AddCardEditor.svelte'
@@ -31,7 +31,7 @@
   async function addCard (title: string) {
     const newCardId = generateId()
 
-    const sequence = await client.findOne(task.class.Sequence, { attachedTo: board.class.Card })
+    const sequence = await client.findOne(core.class.Sequence, { attachedTo: board.class.Card })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
     }

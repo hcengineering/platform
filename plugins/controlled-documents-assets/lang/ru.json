@@ -84,6 +84,8 @@
     "ProvideRejectionReason": "Напишите причину отказа",
     "RejectionReason": "Причина отказа",
     "ConfirmReviewCompletion": "Подтвердите окончание рецензии",
+    "ConfirmApprovalSubmission": "Подтвердите отправку на рецензцию",
+    "ConfirmReviewSubmission": "Подтвердите отправку на утверждение",
     "AddApprovalTitle": "Отправьте ваш документ на утверждение",
     "AddApprovalDescription1": "Для отправки вашего документа на утверждение, он должен удовлетворять следующим требованиям:",
     "AddApprovalDescription2": "иметь статус 'Рабочая копия' или 'Рецензии получены'",
@@ -293,7 +295,21 @@
     "DeleteDocumentCategoryPermission": "Удалять категорию",
     "DeleteDocumentCategoryDescription": "Предоставляет пользователям разрешение удалять категорию",
     "ConfigLabel": "Управляемые Документы",
-    "ConfigDescription": "Расширение для управления управляемыми документами"
+    "ConfigDescription": "Расширение для управления управляемыми документами",
+
+    "Transfer": "Трансфер",
+    "TransferWarning": "После этого действия некоторые члены команды могут потерять возможность просматривать или редактировать этот документ.",
+    "TransferDocuments": "Трансфер управляемых документов",
+    "TransferDocumentsHint": "Документы, которые будут перенесены в выбранное пространство:",
+
+    "CreateFolder": "Создать новую папку",
+    "RenameFolder": "Переименовать папку",
+    "CreateChildFolder": "Создать подпапку",
+
+    "Obsolete": "Устаревший",
+    "MakeDocumentObsolete": "Пометить как устаревшее",
+    "MakeDocumentObsoleteDialog": "Пометить {count, plural, one {документ как устаревший} other {документы как устаревшие}}",
+    "MakeDocumentObsoleteConfirm": "Вы действительно хотите пометить следующие документы как устаревшие: {titles}?"
   },
   "controlledDocStates": {
     "Empty": "",

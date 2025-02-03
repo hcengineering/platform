@@ -38,7 +38,7 @@ async function generateDocumentLocation (
 ): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
-  const doc = await client.findOne(documents.class.ControlledDocument, { _id: document })
+  const doc = await client.findOne(documents.class.ControlledDocument, { _id: document }, { showArchived: true })
   if (doc === undefined) {
     accessDeniedStore.set(true)
     console.error(`Could not find document ${document}.`)
@@ -50,7 +50,7 @@ async function generateDocumentLocation (
 
   return {
     loc: {
-      path: [appComponent, workspace, documentsId, doc.space],
+      path: [appComponent, workspace],
       fragment: getPanelFragment(doc)
     },
     defaultLocation: {
@@ -67,14 +67,14 @@ async function generateProjectDocumentLocation (
 ): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
-  const doc = await client.findOne(documents.class.ControlledDocument, { _id: document })
+  const doc = await client.findOne(documents.class.ControlledDocument, { _id: document }, { showArchived: true })
   if (doc === undefined) {
     accessDeniedStore.set(true)
     console.error(`Could not find document ${document}.`)
     return undefined
   }
 
-  const prjdoc = await client.findOne(documents.class.ProjectDocument, { document, project })
+  const prjdoc = await client.findOne(documents.class.ProjectDocument, { document, project }, { showArchived: true })
   if (prjdoc === undefined) {
     accessDeniedStore.set(true)
     console.error(`Could not find project document ${project} ${document}.`)
@@ -86,7 +86,7 @@ async function generateProjectDocumentLocation (
 
   return {
     loc: {
-      path: [appComponent, workspace, documentsId, prjdoc.space],
+      path: [appComponent, workspace],
       fragment: getPanelFragment(prjdoc)
     },
     defaultLocation: {

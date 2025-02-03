@@ -28,6 +28,7 @@ import {
 } from '@hcengineering/postgres'
 import { type DBDoc } from '@hcengineering/postgres/types/utils'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
+import { sharedPipelineContextVars } from '@hcengineering/server-pipeline'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
 import { type MongoClient, UUID } from 'mongodb'
@@ -45,7 +46,7 @@ export async function moveFromMongoToPG (
   }
   const client = getMongoClient(mongoUrl)
   const mongo = await client.getClient()
-  const pg = getDBClient(dbUrl)
+  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
   const pgClient = await pg.getClient()
 
   for (let index = 0; index < workspaces.length; index++) {
@@ -168,7 +169,7 @@ export async function moveWorkspaceFromMongoToPG (
   }
   const client = getMongoClient(mongoUrl)
   const mongo = await client.getClient()
-  const pg = getDBClient(dbUrl)
+  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
   const pgClient = await pg.getClient()
 
   await moveWorkspace(accountDb, mongo, pgClient, ws, region, include, force)
@@ -306,7 +307,7 @@ export async function updateDataWorkspaceIdToUuid (
     throw new Error('dbUrl is required')
   }
 
-  const pg = getDBClient(dbUrl)
+  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
   try {
     const pgClient = await pg.getClient()
 

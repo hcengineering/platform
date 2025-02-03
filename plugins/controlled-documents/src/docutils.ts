@@ -14,7 +14,7 @@
 //
 
 import { type Employee } from '@hcengineering/contact'
-import { type AttachedData, type Class, type Ref, type TxOperations, Blob, Mixin } from '@hcengineering/core'
+import core, { type AttachedData, type Class, type Ref, type TxOperations, Blob, Mixin } from '@hcengineering/core'
 import {
   type ControlledDocument,
   type Document,
@@ -27,9 +27,10 @@ import {
   type ProjectDocument,
   DocumentState
 } from './types'
+import { makeRank } from '@hcengineering/rank'
 
 import documents from './plugin'
-import { TEMPLATE_PREFIX } from './utils'
+import { getFirstRank, TEMPLATE_PREFIX } from './utils'
 
 async function getParentPath (client: TxOperations, parent: Ref<ProjectDocument>): Promise<Array<Ref<DocumentMeta>>> {
   const parentDocObj = await client.findOne(documents.class.ProjectDocument, {
@@ -175,12 +176,16 @@ export async function createControlledDocMetadata (
     path = await getParentPath(client, parent)
   }
 
+  const parentMeta = path[0] ?? documents.ids.NoParent
+  const lastRank = await getFirstRank(client, space, projectId, parentMeta)
+
   const projectMetaId = await ops.createDoc(documents.class.ProjectMeta, space, {
     project: projectId,
     meta: documentMetaId,
     path,
-    parent: path[0] ?? documents.ids.NoParent,
-    documents: 0
+    parent: parentMeta,
+    documents: 0,
+    rank: makeRank(lastRank, undefined)
   })
 
   const projectDocumentId = await client.addCollection(
@@ -281,7 +286,7 @@ export async function createDocumentTemplateMetadata (
   const projectId = project ?? documents.ids.NoProject
 
   const incResult = await client.updateDoc(
-    documents.class.Sequence,
+    core.class.Sequence,
     documents.space.Documents,
     documents.sequence.Templates,
     {
@@ -323,12 +328,16 @@ export async function createDocumentTemplateMetadata (
     metaId
   )
 
+  const parentMeta = path[0] ?? documents.ids.NoParent
+  const lastRank = await getFirstRank(client, space, projectId, parentMeta)
+
   const projectMetaId = await ops.createDoc(documents.class.ProjectMeta, space, {
     project: projectId,
     meta: documentMetaId,
     path,
     parent: path[0] ?? documents.ids.NoParent,
-    documents: 0
+    documents: 0,
+    rank: makeRank(lastRank, undefined)
   })
 
   const projectDocumentId = await client.addCollection(
@@ -347,4 +356,56 @@ export async function createDocumentTemplateMetadata (
   const success = await ops.commit()
 
   return { success: success.result, seqNumber, code, documentMetaId, projectDocumentId }
+}
+
+export async function createNewFolder (
+  client: TxOperations,
+  space: Ref<DocumentSpace>,
+  project: Ref<Project> | undefined,
+  parent: Ref<ProjectDocument> | undefined,
+  title: string
+): Promise<{
+    success: boolean
+    documentMetaId: Ref<DocumentMeta>
+    projectDocumentId: Ref<ProjectDocument>
+  }> {
+  const projectId = project ?? documents.ids.NoProject
+
+  const ops = client.apply()
+
+  const documentMetaId = await ops.createDoc(documents.class.DocumentMeta, space, { documents: 0, title })
+
+  let path: Array<Ref<DocumentMeta>> = []
+  if (parent !== undefined) {
+    path = await getParentPath(client, parent)
+  }
+
+  const parentMeta = path[0] ?? documents.ids.NoParent
+  const lastRank = await getFirstRank(client, space, projectId, parentMeta)
+
+  const projectMetaId = await ops.createDoc(documents.class.ProjectMeta, space, {
+    project: projectId,
+    meta: documentMetaId,
+    path,
+    parent: parentMeta,
+    documents: 0,
+    rank: makeRank(lastRank, undefined)
+  })
+
+  const projectDocumentId = await client.addCollection(
+    documents.class.ProjectDocument,
+    space,
+    projectMetaId,
+    documents.class.ProjectMeta,
+    'documents',
+    {
+      project: projectId,
+      initial: projectId,
+      document: documents.ids.Folder
+    }
+  )
+
+  const success = await ops.commit()
+
+  return { success: success.result, documentMetaId, projectDocumentId }
 }

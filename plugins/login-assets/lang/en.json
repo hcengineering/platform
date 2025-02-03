@@ -57,6 +57,12 @@
     "Next": "Next",
     "Skip": "Skip",
     "SignUpCompleted": "Sign up completed",
-    "StartUsingHuly": "Start using Huly"
+    "StartUsingHuly": "Start using Huly",
+    "PasswordMinLength": "{count, plural, =1 {Password must be at least # character long} other {Password must be at least # characters long}}",
+    "PasswordMinSpecialChars": "{count, plural, =1 {Password must contain at least # special character} other {Password must contain at least # special characters}}",
+    "PasswordMinDigits": "{count, plural, =1 {Password must contain at least # number} other {Password must contain at least # numbers}}",
+    "PasswordMinUpperChars": "{count, plural, =1 {Password must contain at least # uppercase letter} other {Password must contain at least # uppercase letters}}",
+    "PasswordMinLowerChars": "{count, plural, =1 {Password must contain at least # lowercase letter} other {Password must contain at least # lowercase letters}}",
+    "WorkspaceArchivedDesc": "Workspace is archived because of being unused, Please contact us to restore..."
   }
 }

@@ -15,6 +15,7 @@
 
 import core, {
   AccountRole,
+  type AssociationQuery,
   type Class,
   type Doc,
   type DocInfo,
@@ -23,6 +24,7 @@ import core, {
   type Domain,
   DOMAIN_MODEL,
   DOMAIN_MODEL_TX,
+  DOMAIN_RELATION,
   DOMAIN_SPACE,
   DOMAIN_TX,
   type FindOptions,
@@ -64,6 +66,7 @@ import {
   type TxAdapter
 } from '@hcengineering/server-core'
 import type postgres from 'postgres'
+import { createDBClient, createGreenDBClient, type DBClient } from './client'
 import {
   getDocFieldsByDomains,
   getSchema,
@@ -74,11 +77,12 @@ import {
 } from './schemas'
 import { type ValueType } from './types'
 import {
+  convertArrayParams,
   convertDoc,
   createTables,
   DBCollectionHelper,
   type DBDoc,
-  escapeBackticks,
+  doFetchTypes,
   getDBClient,
   inferType,
   isDataField,
@@ -87,17 +91,16 @@ import {
   NumericTypes,
   parseDoc,
   parseDocWithProjection,
-  parseUpdate,
-  type PostgresClientReference
+  parseUpdate
 } from './utils'
-
 async function * createCursorGenerator (
-  client: postgres.ReservedSql,
+  client: postgres.Sql,
   sql: string,
+  params: any,
   schema: Schema,
   bulkSize = 1000
 ): AsyncGenerator<Doc[]> {
-  const cursor = client.unsafe(sql).cursor(bulkSize)
+  const cursor = client.unsafe(sql, doFetchTypes ? params : convertArrayParams(params)).cursor(bulkSize)
   try {
     let docs: Doc[] = []
     for await (const part of cursor) {
@@ -113,27 +116,25 @@ async function * createCursorGenerator (
     }
   } catch (err: any) {
     console.error('failed to recieve data', { err })
+    throw err // Rethrow the error after logging
   }
 }
 
 class ConnectionInfo {
   // It should preserve at least one available connection in pool, other connection should be closed
-  available: postgres.ReservedSql[] = []
+  available: DBClient[] = []
 
   released: boolean = false
 
   constructor (
     readonly mgrId: string,
     readonly connectionId: string,
-    protected readonly client: postgres.Sql,
+    protected readonly client: DBClient,
     readonly managed: boolean
   ) {}
 
-  async withReserve (
-    reserveOrPool: boolean,
-    action: (reservedClient: postgres.ReservedSql | postgres.Sql) => Promise<any>
-  ): Promise<any> {
-    let reserved: postgres.ReservedSql | undefined
+  async withReserve (reserveOrPool: boolean, action: (reservedClient: DBClient) => Promise<any>): Promise<any> {
+    let reserved: DBClient | undefined
 
     // Check if we have at least one available connection and reserve one more if required.
     if (this.available.length === 0) {
@@ -141,7 +142,7 @@ class ConnectionInfo {
         reserved = await this.client.reserve()
       }
     } else {
-      reserved = this.available.shift() as postgres.ReservedSql
+      reserved = this.available.shift() as DBClient
     }
 
     try {
@@ -152,7 +153,11 @@ class ConnectionInfo {
       throw err
     } finally {
       if (this.released) {
-        reserved?.release()
+        try {
+          reserved?.release()
+        } catch (err: any) {
+          console.error('failed to release', err)
+        }
       } else {
         // after use we put into available
         if (reserved !== undefined) {
@@ -164,7 +169,11 @@ class ConnectionInfo {
           const toRelease = this.available.splice(1, this.available.length - 1)
 
           for (const r of toRelease) {
-            r.release()
+            try {
+              r.release()
+            } catch (err: any) {
+              console.error('failed to relase', err)
+            }
           }
         }
       }
@@ -172,25 +181,21 @@ class ConnectionInfo {
   }
 
   release (): void {
-    for (const c of this.available) {
+    for (const c of [...this.available]) {
       c.release()
     }
     this.available = []
   }
 }
 
-const connections = new Map<string, ConnectionInfo>()
-
 class ConnectionMgr {
   constructor (
-    protected readonly client: postgres.Sql,
+    protected readonly client: DBClient,
+    protected readonly connections: () => Map<string, ConnectionInfo>,
     readonly mgrId: string
   ) {}
 
-  async write (
-    id: string | undefined,
-    fn: (client: postgres.Sql | postgres.ReservedSql) => Promise<any>
-  ): Promise<void> {
+  async write (id: string | undefined, fn: (client: DBClient) => Promise<any>): Promise<void> {
     const backoffInterval = 25 // millis
     const maxTries = 5
     let tries = 0
@@ -204,12 +209,13 @@ class ConnectionMgr {
         const retry: boolean | Error = await connection.withReserve(true, async (client) => {
           tries++
           try {
-            await client.unsafe('BEGIN;')
+            await client.execute('BEGIN;')
             await fn(client)
-            await client.unsafe('COMMIT;')
+            await client.execute('COMMIT;')
             return true
           } catch (err: any) {
-            await client.unsafe('ROLLBACK;')
+            await client.execute('ROLLBACK;')
+            console.error({ message: 'failed to process tx', error: err.message, cause: err })
 
             if (err.code !== '40001' || tries === maxTries) {
               return err
@@ -238,7 +244,7 @@ class ConnectionMgr {
     }
   }
 
-  async read (id: string | undefined, fn: (client: postgres.Sql | postgres.ReservedSql) => Promise<any>): Promise<any> {
+  async retry (id: string | undefined, fn: (client: DBClient) => Promise<any>): Promise<any> {
     const backoffInterval = 25 // millis
     const maxTries = 5
     let tries = 0
@@ -254,6 +260,7 @@ class ConnectionMgr {
           try {
             return { result: await fn(client) }
           } catch (err: any) {
+            console.error({ message: 'failed to process sql', error: err.message, cause: err })
             if (err.code !== '40001' || tries === maxTries) {
               return err
             } else {
@@ -283,10 +290,10 @@ class ConnectionMgr {
   }
 
   release (id: string): void {
-    const conn = connections.get(id)
+    const conn = this.connections().get(id)
     if (conn !== undefined) {
       conn.released = true
-      connections.delete(id) // We need to delete first
+      this.connections().delete(id) // We need to delete first
       conn.release()
     } else {
       console.log('wrne')
@@ -294,23 +301,99 @@ class ConnectionMgr {
   }
 
   close (): void {
-    for (const [k, conn] of Array.from(connections.entries()).filter(
+    const cnts = this.connections()
+    for (const [k, conn] of Array.from(cnts.entries()).filter(
       ([, it]: [string, ConnectionInfo]) => it.mgrId === this.mgrId
     )) {
-      connections.delete(k)
-      conn.release()
+      cnts.delete(k)
+      try {
+        conn.release()
+      } catch (err: any) {
+        console.error('failed to release connection')
+      }
     }
   }
 
   getConnection (id: string, managed: boolean = true): ConnectionInfo {
-    let conn = connections.get(id)
+    let conn = this.connections().get(id)
     if (conn === undefined) {
       conn = new ConnectionInfo(this.mgrId, id, this.client, managed)
     }
     if (managed) {
-      connections.set(id, conn)
+      this.connections().set(id, conn)
     }
     return conn
+  }
+}
+
+class ValuesVariables {
+  index: number = 1
+  values: any[] = []
+
+  valueHashes = new Map<string, string>()
+
+  add (value: any, type: string = ''): string {
+    // Compact value if string and same
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      const vkey = `${value}:${type}`
+      const v = this.valueHashes.get(vkey)
+      if (v !== undefined) {
+        return v
+      }
+      this.values.push(value)
+      const idx = type !== '' ? `$${this.index++}${type}` : `$${this.index++}`
+      this.valueHashes.set(vkey, idx)
+      return idx
+    } else {
+      this.values.push(value)
+      return type !== '' ? `$${this.index++}${type}` : `$${this.index++}`
+    }
+  }
+
+  getValues (): any[] {
+    return this.values
+  }
+
+  addArray (value: any[], type: string = ''): string {
+    return this.add(
+      value.filter((it) => it != null),
+      type
+    )
+  }
+
+  addArrayI (value: any[], type: string = ''): string {
+    const vals = value.filter((it) => it != null)
+    if (vals.length === 0) {
+      return "array['NULL']"
+    }
+    return this.add(vals, type)
+  }
+
+  injectVars (sql: string): string {
+    const escQuote = (d: any | any[]): string => {
+      if (d == null) {
+        return 'NULL'
+      }
+      if (Array.isArray(d)) {
+        return 'ARRAY[' + d.map(escQuote).join(',') + ']'
+      }
+      switch (typeof d) {
+        case 'number':
+          if (isNaN(d) || !isFinite(d)) {
+            throw new Error('Invalid number value')
+          }
+          return d.toString()
+        case 'boolean':
+          return d ? 'TRUE' : 'FALSE'
+        case 'string':
+          return `'${d.replace(/'/g, "''")}'`
+        default:
+          throw new Error(`Unsupported value type: ${typeof d}`)
+      }
+    }
+    return sql.replaceAll(/(\$\d+)/g, (_, v) => {
+      return escQuote(this.getValues()[parseInt(v.substring(1)) - 1] ?? v)
+    })
   }
 }
 
@@ -319,11 +402,16 @@ abstract class PostgresAdapterBase implements DbAdapter {
   protected readonly tableFields = new Map<string, string[]>()
   protected readonly workspaceId: WorkspaceId
 
+  protected connections = new Map<string, ConnectionInfo>()
+
   mgr: ConnectionMgr
 
   constructor (
-    protected readonly client: postgres.Sql,
-    protected readonly refClient: PostgresClientReference,
+    protected readonly client: DBClient,
+    protected readonly refClient: {
+      url: () => string
+      close: () => void
+    },
     protected readonly enrichedWorkspaceId: WorkspaceId,
     protected readonly hierarchy: Hierarchy,
     protected readonly modelDb: ModelDb,
@@ -334,7 +422,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       name: enrichedWorkspaceId.uuid ?? enrichedWorkspaceId.name
     }
     this._helper = new DBCollectionHelper(this.client, this.workspaceId)
-    this.mgr = new ConnectionMgr(client, mgrId)
+    this.mgr = new ConnectionMgr(client, () => this.connections, mgrId)
   }
 
   reserveContext (id: string): () => void {
@@ -342,7 +430,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     return () => {
       conn.released = true
       conn.release()
-      connections.delete(id) // We need to delete first
+      this.connections.delete(id) // We need to delete first
     }
   }
 
@@ -356,8 +444,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
     const tdomain = translateDomain(_domain)
 
+    const vars = new ValuesVariables()
     const sqlChunks: string[] = [`SELECT * FROM ${tdomain}`]
-    sqlChunks.push(`WHERE ${this.buildRawQuery(tdomain, query, options)}`)
+    sqlChunks.push(`WHERE ${this.buildRawQuery(vars, tdomain, query, options)}`)
     if (options?.sort !== undefined) {
       sqlChunks.push(this.buildRawOrder(tdomain, options.sort))
     }
@@ -366,7 +455,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
     }
     const finalSql: string = sqlChunks.join(' ')
 
-    const cursor: AsyncGenerator<Doc[]> = createCursorGenerator(client, finalSql, schema)
+    const rawClient = client.raw()
+
+    const cursor: AsyncGenerator<Doc[]> = createCursorGenerator(rawClient, finalSql, vars.getValues(), schema)
     return {
       next: async (count: number): Promise<T[] | null> => {
         const result = await cursor.next()
@@ -388,7 +479,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
   on?: ((handler: DbAdapterHandler) => void) | undefined
 
-  abstract init (ctx: MeasureContext, domains?: string[], excludeDomains?: string[]): Promise<void>
+  abstract init (
+    ctx: MeasureContext,
+    contextVars: Record<string, any>,
+    domains?: string[],
+    excludeDomains?: string[]
+  ): Promise<void>
 
   async close (): Promise<void> {
     this.mgr.close()
@@ -397,9 +493,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
   async rawFindAll<T extends Doc>(_domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
     const domain = translateDomain(_domain)
-    const select = `SELECT ${this.getProjection(domain, options?.projection, [])} FROM ${domain}`
+    const vars = new ValuesVariables()
+    const select = `SELECT ${this.getProjection(vars, domain, options?.projection, [], options?.associations)} FROM ${domain}`
     const sqlChunks: string[] = []
-    sqlChunks.push(`WHERE ${this.buildRawQuery(domain, query, options)}`)
+    sqlChunks.push(`WHERE ${this.buildRawQuery(vars, domain, query, options)}`)
     if (options?.sort !== undefined) {
       sqlChunks.push(this.buildRawOrder(domain, options.sort))
     }
@@ -407,7 +504,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       sqlChunks.push(`LIMIT ${options.limit}`)
     }
     const finalSql: string = [select, ...sqlChunks].join(' ')
-    const result: DBDoc[] = await this.mgr.read(undefined, (client) => client.unsafe(finalSql))
+    const result: DBDoc[] = await this.mgr.retry(undefined, (client) => client.execute(finalSql, vars.getValues()))
     return result.map((p) => parseDocWithProjection(p, domain, options?.projection))
   }
 
@@ -427,13 +524,18 @@ abstract class PostgresAdapterBase implements DbAdapter {
     return `ORDER BY ${res.join(', ')}`
   }
 
-  buildRawQuery<T extends Doc>(domain: string, query: DocumentQuery<T>, options?: FindOptions<T>): string {
+  buildRawQuery<T extends Doc>(
+    vars: ValuesVariables,
+    domain: string,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): string {
     const res: string[] = []
-    res.push(`"workspaceId" = '${this.workspaceId.name}'`)
+    res.push(`"workspaceId" = ${vars.add(this.workspaceId.name, '::uuid')}`)
     for (const key in query) {
       const value = query[key]
       const tkey = this.transformKey(domain, core.class.Doc, key, false)
-      const translated = this.translateQueryValue(tkey, value, 'common')
+      const translated = this.translateQueryValue(vars, tkey, value, 'common')
       if (translated !== undefined) {
         res.push(translated)
       }
@@ -446,7 +548,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
     query: DocumentQuery<T>,
     operations: DocumentUpdate<T>
   ): Promise<void> {
-    const translatedQuery = this.buildRawQuery(domain, query)
+    const vars = new ValuesVariables()
+    const translatedQuery = this.buildRawQuery(vars, domain, query)
     if ((operations as any).$set !== undefined) {
       ;(operations as any) = { ...(operations as any).$set }
     }
@@ -457,16 +560,18 @@ abstract class PostgresAdapterBase implements DbAdapter {
     const schemaFields = getSchemaAndFields(domain)
     if (isOps) {
       await this.mgr.write(undefined, async (client) => {
-        const res = await client.unsafe(`SELECT * FROM ${translateDomain(domain)} WHERE ${translatedQuery} FOR UPDATE`)
-        const docs = res.map((p) => parseDoc(p as any, schemaFields.schema))
+        const res = await client.execute(
+          `SELECT * FROM ${translateDomain(domain)} WHERE ${translatedQuery} FOR UPDATE`,
+          vars.getValues()
+        )
+        const docs = res.map((p) => parseDoc(p, schemaFields.schema))
         for (const doc of docs) {
           if (doc === undefined) continue
           const prevAttachedTo = (doc as any).attachedTo
           TxProcessor.applyUpdate(doc, operations)
           ;(doc as any)['%hash%'] = this.curHash()
           const converted = convertDoc(domain, doc, this.workspaceId.name, schemaFields)
-          const params: any[] = [doc._id, this.workspaceId.name]
-          let paramsIndex = params.length + 1
+          const params = new ValuesVariables()
           const updates: string[] = []
           const { extractedFields, remainingData } = parseUpdate(operations, schemaFields)
           const newAttachedTo = (doc as any).attachedTo
@@ -474,21 +579,21 @@ abstract class PostgresAdapterBase implements DbAdapter {
             for (const key in extractedFields) {
               const val = (extractedFields as any)[key]
               if (key === 'attachedTo' && val === prevAttachedTo) continue
-              updates.push(`"${key}" = $${paramsIndex++}`)
-              params.push(val)
+              updates.push(`"${key}" = ${params.add(val)}`)
             }
           } else if (prevAttachedTo !== undefined && prevAttachedTo !== newAttachedTo) {
-            updates.push(`"attachedTo" = $${paramsIndex++}`)
-            params.push(newAttachedTo)
+            updates.push(`"attachedTo" = ${params.add(newAttachedTo)}`)
           }
 
           if (Object.keys(remainingData).length > 0) {
-            updates.push(`data = $${paramsIndex++}`)
-            params.push(converted.data)
+            updates.push(`data = ${params.add(converted.data, '::json')}`)
           }
-          await client.unsafe(
-            `UPDATE ${translateDomain(domain)} SET ${updates.join(', ')} WHERE "workspaceId" = $2 AND _id = $1`,
-            params
+          await client.execute(
+            `UPDATE ${translateDomain(domain)} 
+                    SET ${updates.join(', ')} 
+                    WHERE "workspaceId" = ${params.add(this.workspaceId.name, '::uuid')} 
+                      AND _id = ${params.add(doc._id, '::text')}`,
+            params.getValues()
           )
         }
       })
@@ -503,40 +608,38 @@ abstract class PostgresAdapterBase implements DbAdapter {
     operations: DocumentUpdate<T>,
     schemaFields: SchemaAndFields
   ): Promise<void> {
-    const translatedQuery = this.buildRawQuery(domain, query)
+    const vars = new ValuesVariables()
+    const translatedQuery = this.buildRawQuery(vars, domain, query)
     const updates: string[] = []
-    const params: any[] = []
-    let paramsIndex = params.length + 1
     const { extractedFields, remainingData } = parseUpdate(operations, schemaFields)
     const { space, attachedTo, ...ops } = operations as any
     for (const key in extractedFields) {
-      updates.push(`"${key}" = $${paramsIndex++}`)
-      params.push((extractedFields as any)[key])
+      updates.push(`"${key}" = ${vars.add((extractedFields as any)[key])}`)
     }
     let from = 'data'
     let dataUpdated = false
     for (const key in remainingData) {
       if (ops[key] === undefined) continue
       const val = (remainingData as any)[key]
-      from = `jsonb_set(${from}, '{${key}}', coalesce(to_jsonb($${paramsIndex++}${inferType(val)}), 'null') , true)`
-      params.push(val)
+      from = `jsonb_set(${from}, '{${key}}', coalesce(to_jsonb(${vars.add(val)}${inferType(val)}), 'null') , true)`
       dataUpdated = true
     }
     if (dataUpdated) {
       updates.push(`data = ${from}`)
     }
-    await this.mgr.write(undefined, async (client) => {
-      await client.unsafe(
-        `UPDATE ${translateDomain(domain)} SET ${updates.join(', ')} WHERE ${translatedQuery}`,
-        params
+    await this.mgr.retry(undefined, async (client) => {
+      await client.execute(
+        `UPDATE ${translateDomain(domain)} SET ${updates.join(', ')} WHERE ${translatedQuery};`,
+        vars.getValues()
       )
     })
   }
 
   async rawDeleteMany<T extends Doc>(domain: Domain, query: DocumentQuery<T>): Promise<void> {
-    const translatedQuery = this.buildRawQuery(domain, query)
-    await this.mgr.write(undefined, async (client) => {
-      await client.unsafe(`DELETE FROM ${translateDomain(domain)} WHERE ${translatedQuery}`)
+    const vars = new ValuesVariables()
+    const translatedQuery = this.buildRawQuery(vars, domain, query)
+    await this.mgr.retry(undefined, async (client) => {
+      await client.execute(`DELETE FROM ${translateDomain(domain)} WHERE ${translatedQuery}`, vars.getValues())
     })
   }
 
@@ -546,7 +649,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
     query: DocumentQuery<T>,
     options?: ServerFindOptions<T>
   ): Promise<FindResult<T>> {
-    let fquery = ''
+    let fquery: any = ''
+    const vars = new ValuesVariables()
     return ctx.with(
       'findAll',
       {},
@@ -554,35 +658,21 @@ abstract class PostgresAdapterBase implements DbAdapter {
         try {
           const domain = translateDomain(options?.domain ?? this.hierarchy.getDomain(_class))
           const sqlChunks: string[] = []
-          const joins = this.buildJoin(_class, options?.lookup)
-          if (options?.domainLookup !== undefined) {
-            const baseDomain = translateDomain(this.hierarchy.getDomain(_class))
 
-            const domain = translateDomain(options.domainLookup.domain)
-            const key = options.domainLookup.field
-            const as = `dl_lookup_${domain}_${key}`
-            joins.push({
-              isReverse: false,
-              table: domain,
-              path: options.domainLookup.field,
-              toAlias: as,
-              toField: '_id',
-              fromField: key,
-              fromAlias: baseDomain,
-              toClass: undefined
-            })
-          }
-          const select = `SELECT ${this.getProjection(domain, options?.projection, joins)} FROM ${domain}`
-          const secJoin = this.addSecurity(query, domain, ctx.contextData)
+          const joins = this.buildJoins<T>(_class, options)
+          // Add workspace name as $1
+
+          const select = `SELECT ${this.getProjection(vars, domain, options?.projection, joins, options?.associations)} FROM ${domain}`
+
+          const showArchived = options?.showArchived ?? (query._id !== undefined && typeof query._id === 'string')
+          const secJoin = this.addSecurity(vars, query, showArchived, domain, ctx.contextData)
           if (secJoin !== undefined) {
             sqlChunks.push(secJoin)
           }
           if (joins.length > 0) {
-            sqlChunks.push(this.buildJoinString(joins))
+            sqlChunks.push(this.buildJoinString(vars, joins))
           }
-          sqlChunks.push(`WHERE ${this.buildQuery(_class, domain, query, joins, options)}`)
-
-          const totalSqlChunks = [...sqlChunks]
+          sqlChunks.push(`WHERE ${this.buildQuery(vars, _class, domain, query, joins, options)}`)
 
           if (options?.sort !== undefined) {
             sqlChunks.push(this.buildOrder(_class, domain, options.sort, joins))
@@ -591,22 +681,40 @@ abstract class PostgresAdapterBase implements DbAdapter {
             sqlChunks.push(`LIMIT ${options.limit}`)
           }
 
-          return (await this.mgr.read(ctx.id, async (connection) => {
+          return (await this.mgr.retry(ctx.id, async (connection) => {
             let total = options?.total === true ? 0 : -1
             if (options?.total === true) {
+              const pvars = new ValuesVariables()
+              const showArchived = options?.showArchived ?? (query._id !== undefined && typeof query._id === 'string')
+              const secJoin = this.addSecurity(pvars, query, showArchived, domain, ctx.contextData)
+              const totalChunks: string[] = []
+              if (secJoin !== undefined) {
+                totalChunks.push(secJoin)
+              }
+              const joins = this.buildJoin(_class, options?.lookup)
+              if (joins.length > 0) {
+                totalChunks.push(this.buildJoinString(pvars, joins))
+              }
+              totalChunks.push(`WHERE ${this.buildQuery(pvars, _class, domain, query, joins, options)}`)
+
               const totalReq = `SELECT COUNT(${domain}._id) as count FROM ${domain}`
-              const totalSql = [totalReq, ...totalSqlChunks].join(' ')
-              const totalResult = await connection.unsafe(totalSql)
+              const totalSql = [totalReq, ...totalChunks].join(' ')
+              const totalResult = await connection.execute(totalSql, pvars.getValues())
               const parsed = Number.parseInt(totalResult[0].count)
               total = Number.isNaN(parsed) ? 0 : parsed
             }
 
             const finalSql: string = [select, ...sqlChunks].join(' ')
             fquery = finalSql
-            const result = await connection.unsafe(finalSql)
-            if (options?.lookup === undefined && options?.domainLookup === undefined) {
+
+            const result = await connection.execute(finalSql, vars.getValues())
+            if (
+              options?.lookup === undefined &&
+              options?.domainLookup === undefined &&
+              options?.associations === undefined
+            ) {
               return toFindResult(
-                result.map((p) => parseDocWithProjection(p as any, domain, options?.projection)),
+                result.map((p) => parseDocWithProjection(p, domain, options?.projection)),
                 total
               )
             } else {
@@ -615,15 +723,51 @@ abstract class PostgresAdapterBase implements DbAdapter {
             }
           })) as FindResult<T>
         } catch (err) {
-          ctx.error('Error in findAll', { err })
+          const sqlFull = vars.injectVars(fquery)
+          ctx.error('Error in findAll', { err, sql: fquery, sqlFull })
           throw err
         }
       },
-      () => ({ fquery })
+      () => ({
+        query,
+        psql: fquery
+          .replace(/\s+/g, ' ')
+          .replace(/(FROM|WHERE|ORDER BY|GROUP BY|LIMIT|OFFSET|LEFT JOIN|RIGHT JOIN|INNER JOIN|JOIN)/gi, '\n$1')
+          .split('\n'),
+        sql: vars.injectVars(fquery)
+      })
     )
   }
 
-  addSecurity<T extends Doc>(query: DocumentQuery<T>, domain: string, sessionContext: SessionData): string | undefined {
+  private buildJoins<T extends Doc>(_class: Ref<Class<T>>, options: ServerFindOptions<T> | undefined): JoinProps[] {
+    const joins = this.buildJoin(_class, options?.lookup)
+    if (options?.domainLookup !== undefined) {
+      const baseDomain = translateDomain(this.hierarchy.getDomain(_class))
+
+      const domain = translateDomain(options.domainLookup.domain)
+      const key = options.domainLookup.field
+      const as = `lookup_${domain}_${key}`
+      joins.push({
+        isReverse: false,
+        table: domain,
+        path: options.domainLookup.field,
+        toAlias: as,
+        toField: '_id',
+        fromField: key,
+        fromAlias: baseDomain,
+        toClass: undefined
+      })
+    }
+    return joins
+  }
+
+  addSecurity<T extends Doc>(
+    vars: ValuesVariables,
+    query: DocumentQuery<T>,
+    showArchived: boolean,
+    domain: string,
+    sessionContext: SessionData
+  ): string | undefined {
     if (sessionContext !== undefined && sessionContext.isTriggerCtx !== true) {
       if (sessionContext.admin !== true && sessionContext.account !== undefined) {
         const acc = sessionContext.account
@@ -631,11 +775,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
           return
         }
         if (query.space === acc._id) return
-        if (domain === DOMAIN_SPACE && isOwner(acc)) return
+        if (domain === DOMAIN_SPACE && isOwner(acc) && showArchived) return
         const key = domain === DOMAIN_SPACE ? '_id' : domain === DOMAIN_TX ? "data ->> 'objectSpace'" : 'space'
         const privateCheck = domain === DOMAIN_SPACE ? ' OR sec.private = false' : ''
-        const q = `(sec.members @> '{"${acc._id}"}' OR sec."_class" = '${core.class.SystemSpace}'${privateCheck})`
-        return `INNER JOIN ${translateDomain(DOMAIN_SPACE)} AS sec ON sec._id = ${domain}.${key} AND sec."workspaceId" = '${this.workspaceId.name}' AND ${q}`
+        const archivedCheck = showArchived ? '' : ' AND sec.archived = false'
+        const q = `(sec.members @> '{"${acc._id}"}' OR sec."_class" = '${core.class.SystemSpace}'${privateCheck})${archivedCheck}`
+        return `INNER JOIN ${translateDomain(DOMAIN_SPACE)} AS sec ON sec._id = ${domain}.${key} AND sec."workspaceId" = ${vars.add(this.workspaceId.name, '::uuid')} AND ${q}`
       }
     }
   }
@@ -655,13 +800,14 @@ abstract class PostgresAdapterBase implements DbAdapter {
         modelJoins.push(join)
       } else if (join.isReverse) {
         reverseJoins.push(join)
-      } else {
+      } else if (join.path !== '') {
         simpleJoins.push(join)
       }
     }
     for (const row of rows) {
       /* eslint-disable @typescript-eslint/consistent-type-assertions */
-      let doc: WithLookup<T> = map.get(row._id) ?? ({ _id: row._id, $lookup: {} } as WithLookup<T>)
+      let doc: WithLookup<T> = map.get(row._id) ?? ({ _id: row._id, $lookup: {}, $associations: {} } as WithLookup<T>)
+      const associations: Record<string, any> = doc.$associations as Record<string, any>
       const lookup: Record<string, any> = doc.$lookup as Record<string, any>
       let joinIndex: number | undefined
       let skip = false
@@ -706,7 +852,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
             }
 
             const join = simpleJoins[joinIndex ?? 0]
-
+            if (join === undefined) {
+              continue
+            }
             const res = this.getLookupValue(join.path, lookup)
             if (res === undefined) continue
             const { obj, key: p } = res
@@ -720,6 +868,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
                 obj[p][key] = row[column] === 'NULL' ? null : row[column]
               }
             }
+          } else if (column.startsWith('assoc_')) {
+            const keys = column.split('_')
+            const key = keys[keys.length - 1]
+            associations[key] = row[column]
           } else {
             joinIndex = undefined
             if (!map.has(row._id)) {
@@ -822,19 +974,19 @@ abstract class PostgresAdapterBase implements DbAdapter {
     }
   }
 
-  private buildJoinString (value: JoinProps[]): string {
+  private buildJoinString (vars: ValuesVariables, value: JoinProps[]): string {
     const res: string[] = []
     for (const val of value) {
       if (val.isReverse) continue
       if (val.table === DOMAIN_MODEL) continue
       res.push(
-        `LEFT JOIN ${val.table} AS ${val.toAlias} ON ${val.fromAlias}.${val.fromField} = ${val.toAlias}."${val.toField}" AND ${val.toAlias}."workspaceId" = '${this.workspaceId.name}'`
+        `LEFT JOIN ${val.table} AS ${val.toAlias} ON ${val.fromAlias}.${val.fromField} = ${val.toAlias}."${val.toField}" AND ${val.toAlias}."workspaceId" = ${vars.add(this.workspaceId.name, '::uuid')}`
       )
       if (val.classes !== undefined) {
         if (val.classes.length === 1) {
-          res.push(`AND ${val.toAlias}._class = '${val.classes[0]}'`)
+          res.push(`AND ${val.toAlias}._class = ${vars.add(val.classes[0], '::text')}`)
         } else {
-          res.push(`AND ${val.toAlias}._class IN (${val.classes.map((c) => `'${c}'`).join(', ')})`)
+          res.push(`AND ${val.toAlias}._class = ANY (${vars.addArray(val.classes, '::text[]')})`)
         }
       }
     }
@@ -949,6 +1101,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   private buildQuery<T extends Doc>(
+    vars: ValuesVariables,
     _class: Ref<Class<T>>,
     baseDomain: string,
     _query: DocumentQuery<T>,
@@ -957,7 +1110,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
   ): string {
     const res: string[] = []
     const query = { ..._query }
-    res.push(`${baseDomain}."workspaceId" = '${this.workspaceId.name}'`)
+    res.push(`${baseDomain}."workspaceId" = ${vars.add(this.workspaceId.name, '::uuid')}`)
     if (options?.skipClass !== true) {
       query._class = this.fillClass(_class, query) as any
     }
@@ -972,7 +1125,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       if (value === undefined) continue
       const valueType = this.getValueType(_class, key)
       const tkey = this.getKey(_class, baseDomain, key, joins, valueType === 'dataArray')
-      const translated = this.translateQueryValue(tkey, value, valueType)
+      const translated = this.translateQueryValue(vars, tkey, value, valueType)
       if (translated !== undefined) {
         res.push(translated)
       }
@@ -1075,8 +1228,13 @@ abstract class PostgresAdapterBase implements DbAdapter {
     if (join.isReverse) {
       return `${join.toAlias}->'${tKey}'`
     }
-    const res = isDataField(domain, tKey) ? (isDataArray ? `data->'${tKey}'` : `data#>>'{${tKey}}'`) : key
-    return `${join.toAlias}.${res}`
+    if (isDataField(domain, tKey)) {
+      if (isDataArray) {
+        return `${join.toAlias}."data"->'${tKey}'`
+      }
+      return `${join.toAlias}."data"#>>'{${tKey}}'`
+    }
+    return `${join.toAlias}."${tKey}"`
   }
 
   private transformKey<T extends Doc>(
@@ -1132,81 +1290,90 @@ abstract class PostgresAdapterBase implements DbAdapter {
     return key
   }
 
-  private translateQueryValue (tkey: string, value: any, type: ValueType): string | undefined {
+  private translateQueryValue (vars: ValuesVariables, tkey: string, value: any, type: ValueType): string | undefined {
+    const tkeyData = tkey.includes('data') && (tkey.includes('->') || tkey.includes('#>>'))
+    if (tkeyData && (Array.isArray(value) || (typeof value !== 'object' && typeof value !== 'string'))) {
+      value = Array.isArray(value) ? value.map((it) => (it == null ? null : `${it}`)) : `${value}`
+    }
+
     if (value === null) {
       return `${tkey} IS NULL`
     } else if (typeof value === 'object' && !Array.isArray(value)) {
       // we can have multiple criteria for one field
       const res: string[] = []
       for (const operator in value) {
-        const val = value[operator]
+        let val = value[operator]
+        if (tkeyData && (Array.isArray(val) || (typeof val !== 'object' && typeof val !== 'string'))) {
+          val = Array.isArray(val) ? val.map((it) => (it == null ? null : `${it}`)) : `${val}`
+        }
         switch (operator) {
           case '$ne':
             if (val === null) {
               res.push(`${tkey} IS NOT NULL`)
             } else {
-              res.push(`${tkey} != '${val}'`)
+              res.push(`${tkey} != ${vars.add(val, inferType(val))}`)
             }
             break
           case '$gt':
-            res.push(`${tkey} > '${val}'`)
+            res.push(`${tkey} > ${vars.add(val, inferType(val))}`)
             break
           case '$gte':
-            res.push(`${tkey} >= '${val}'`)
+            res.push(`${tkey} >= ${vars.add(val, inferType(val))}`)
             break
           case '$lt':
-            res.push(`${tkey} < '${val}'`)
+            res.push(`${tkey} < ${vars.add(val, inferType(val))}`)
             break
           case '$lte':
-            res.push(`${tkey} <= '${val}'`)
+            res.push(`${tkey} <= ${vars.add(val, inferType(val))}`)
             break
           case '$in':
             switch (type) {
               case 'common':
                 if (Array.isArray(val) && val.includes(null)) {
-                  res.push(
-                    `(${tkey} IN (${val
-                      .filter((it) => it != null)
-                      .map((v: any) => `'${v}'`)
-                      .join(', ')}) OR ${tkey} IS NULL)`
-                  )
+                  const vv = vars.addArray(val, inferType(val))
+                  res.push(`(${tkey} = ANY(${vv}) OR ${tkey} IS NULL)`)
                 } else {
-                  res.push(`${tkey} IN (${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'})`)
+                  if (val.length > 0) {
+                    res.push(`${tkey} = ANY(${vars.addArray(val, inferType(val))})`)
+                  } else {
+                    res.push(`${tkey} IN ('NULL')`)
+                  }
                 }
                 break
               case 'array':
-                res.push(`${tkey} && array[${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'}]`)
+                {
+                  const vv = vars.addArrayI(val, inferType(val))
+                  res.push(`${tkey} && ${vv}`)
+                }
                 break
               case 'dataArray':
-                res.push(`${tkey} ?| array[${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'}]`)
+                {
+                  const vv = vars.addArrayI(val, inferType(val))
+                  res.push(`${tkey} ?| ${vv}`)
+                }
                 break
             }
             break
           case '$nin':
             if (Array.isArray(val) && val.includes(null)) {
-              res.push(
-                `(${tkey} NOT IN (${val
-                  .filter((it) => it != null)
-                  .map((v: any) => `'${v}'`)
-                  .join(', ')}) AND ${tkey} IS NOT NULL)`
-              )
-            } else if (val.length > 0) {
-              res.push(`${tkey} NOT IN (${val.map((v: any) => `'${v}'`).join(', ')})`)
+              res.push(`(${tkey} != ALL(${vars.addArray(val, inferType(val))}) AND ${tkey} IS NOT NULL)`)
+            } else if (Array.isArray(val) && val.length > 0) {
+              res.push(`${tkey} != ALL(${vars.addArray(val, inferType(val))})`)
             }
             break
           case '$like':
-            res.push(`${tkey} ILIKE '${escapeBackticks(val)}'`)
+            res.push(`${tkey} ILIKE ${vars.add(val, inferType(val))}`)
             break
           case '$exists':
-            res.push(`${tkey} IS ${val === true ? 'NOT NULL' : 'NULL'}`)
+            res.push(`${tkey} IS ${val === true || val === 'true' ? 'NOT NULL' : 'NULL'}`)
             break
           case '$regex':
-            res.push(`${tkey} SIMILAR TO '${escapeBackticks(val)}'`)
+            res.push(`${tkey} SIMILAR TO ${vars.add(val, inferType(val))}`)
             break
           case '$options':
             break
           case '$all':
-            res.push(`${tkey} @> ARRAY[${value}]`)
+            res.push(`${tkey} @> ${vars.addArray(value, inferType(value))}`)
             break
           default:
             res.push(`${tkey} @> '[${JSON.stringify(value)}]'`)
@@ -1215,32 +1382,62 @@ abstract class PostgresAdapterBase implements DbAdapter {
       }
       return res.length === 0 ? undefined : res.join(' AND ')
     }
+
     return type === 'common'
-      ? `${tkey} = '${escapeBackticks(value)}'`
+      ? `${tkey} = ${vars.add(value, inferType(value))}`
       : type === 'array'
         ? `${tkey} @> '${typeof value === 'string' ? '{"' + value + '"}' : value}'`
         : `${tkey} @> '${typeof value === 'string' ? '"' + value + '"' : value}'`
   }
 
-  private getProjectionsAliases (join: JoinProps): string[] {
-    if (join.table === DOMAIN_MODEL) return []
-    if (join.isReverse) {
-      let classsesQuery = ''
-      if (join.classes !== undefined) {
-        if (join.classes.length === 1) {
-          classsesQuery = ` AND ${join.toAlias}._class = '${join.classes[0]}'`
-        } else {
-          classsesQuery = ` AND ${join.toAlias}._class IN (${join.classes.map((c) => `'${c}'`).join(', ')})`
-        }
+  private getReverseProjection (vars: ValuesVariables, join: JoinProps): string[] {
+    let classsesQuery = ''
+    if (join.classes !== undefined) {
+      if (join.classes.length === 1) {
+        classsesQuery = ` AND ${join.toAlias}._class = ${vars.add(join.classes[0])}`
+      } else {
+        classsesQuery = ` AND ${join.toAlias}._class = ANY (${vars.add(join.classes, '::text[]')})`
       }
-      return [
-        `(SELECT jsonb_agg(${join.toAlias}.*) FROM ${join.table} AS ${join.toAlias} WHERE ${join.fromAlias}.${join.fromField} = ${join.toAlias}."${join.toField}" ${classsesQuery}) AS ${join.toAlias}`
-      ]
     }
+    return [
+      `(SELECT jsonb_agg(${join.toAlias}.*) FROM ${join.table} AS ${join.toAlias} WHERE ${join.fromAlias}.${join.fromField} = ${join.toAlias}."${join.toField}" ${classsesQuery}) AS ${join.toAlias}`
+    ]
+  }
+
+  private getProjectionsAliases (vars: ValuesVariables, join: JoinProps): string[] {
+    if (join.table === DOMAIN_MODEL) return []
+    if (join.path === '') return []
+    if (join.isReverse) return this.getReverseProjection(vars, join)
     const fields = getDocFieldsByDomains(join.table)
     const res: string[] = []
     for (const key of [...fields, 'data']) {
-      res.push(`${join.toAlias}."${key}" as "lookup_${join.path.replaceAll('.', '_')}_${key}"`)
+      res.push(`${join.toAlias}."${key}" as "${join.toAlias}_${key}"`)
+    }
+    return res
+  }
+
+  getAssociationsProjections (vars: ValuesVariables, baseDomain: string, associations: AssociationQuery[]): string[] {
+    const res: string[] = []
+    for (const association of associations) {
+      const _id = association[0]
+      const assoc = this.modelDb.findObject(_id)
+      if (assoc === undefined) {
+        continue
+      }
+      const isReverse = association[1] === -1
+      const _class = isReverse ? assoc.classA : assoc.classB
+      const keyA = isReverse ? 'docB' : 'docA'
+      const keyB = isReverse ? 'docA' : 'docB'
+      const wsId = vars.add(this.workspaceId.name, '::uuid')
+      res.push(
+        `(SELECT jsonb_agg(assoc.*) 
+          FROM ${translateDomain(this.hierarchy.getDomain(_class))} AS assoc 
+          JOIN ${translateDomain(DOMAIN_RELATION)} as relation 
+          ON relation."${keyB}" = assoc."_id" 
+          AND relation."workspaceId" = ${wsId}
+          WHERE relation."${keyA}" = ${translateDomain(baseDomain)}."_id" 
+          AND assoc."workspaceId" = ${wsId}) AS assoc_${association[0]}`
+      )
     }
     return res
   }
@@ -1250,11 +1447,13 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   private getProjection<T extends Doc>(
+    vars: ValuesVariables,
     baseDomain: string,
     projection: Projection<T> | undefined,
-    joins: JoinProps[]
+    joins: JoinProps[],
+    associations: AssociationQuery[] | undefined
   ): string | '*' {
-    if (projection === undefined && joins.length === 0) return `${baseDomain}.*`
+    if (projection === undefined && joins.length === 0 && associations === undefined) return `${baseDomain}.*`
     const res: string[] = []
     let dataAdded = false
     if (projection === undefined) {
@@ -1278,7 +1477,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
       }
     }
     for (const join of joins) {
-      res.push(...this.getProjectionsAliases(join))
+      res.push(...this.getProjectionsAliases(vars, join))
+    }
+    if (associations !== undefined) {
+      res.push(...this.getAssociationsProjections(vars, baseDomain, associations))
     }
     return res.join(', ')
   }
@@ -1318,7 +1520,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     const ctx = _ctx.newChild('find', { domain })
 
     let initialized: boolean = false
-    let client: postgres.ReservedSql
+    let client: DBClient
 
     const tdomain = translateDomain(domain)
     const schema = getSchema(domain)
@@ -1326,9 +1528,13 @@ abstract class PostgresAdapterBase implements DbAdapter {
     const workspaceId = this.workspaceId
 
     function createBulk (projection: string, limit = 50000): AsyncGenerator<Doc[]> {
-      const sql = `SELECT ${projection} FROM ${tdomain} WHERE "workspaceId" = '${workspaceId.name}'`
+      const sql = `
+        SELECT ${projection}
+        FROM ${tdomain}
+        WHERE "workspaceId" = '${workspaceId.name}'
+      `
 
-      return createCursorGenerator(client, sql, schema, limit)
+      return createCursorGenerator(client.raw(), sql, undefined, schema, limit)
     }
     let bulk: AsyncGenerator<Doc[]>
 
@@ -1369,65 +1575,56 @@ abstract class PostgresAdapterBase implements DbAdapter {
         return []
       }
 
-      return await this.mgr.read('', async (client) => {
-        const res =
-          await client`SELECT * FROM ${client(translateDomain(domain))} WHERE  "workspaceId" = ${this.workspaceId.name} AND _id = ANY(${docs})`
-        return res.map((p) => parseDocWithProjection(p as any, domain))
+      return await this.mgr.retry('', async (client) => {
+        const res = await client.execute(
+          `SELECT * 
+          FROM ${translateDomain(domain)}
+          WHERE "workspaceId" = $1::uuid 
+                    AND _id = ANY($2::text[])`,
+          [this.workspaceId.name, docs]
+        )
+        return res.map((p) => parseDocWithProjection(p, domain))
       })
     })
   }
 
-  upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
+  upload (ctx: MeasureContext, domain: Domain, docs: Doc[], handleConflicts: boolean = true): Promise<void> {
     return ctx.with('upload', { domain }, async (ctx) => {
       const schemaFields = getSchemaAndFields(domain)
       const filedsWithData = [...schemaFields.fields, 'data']
-      const insertFields: string[] = []
-      const onConflict: string[] = []
-      for (const field of filedsWithData) {
-        insertFields.push(`"${field}"`)
-        onConflict.push(`"${field}" = EXCLUDED."${field}"`)
-      }
+
+      const insertFields = filedsWithData.map((field) => `"${field}"`)
+      const onConflict = handleConflicts ? filedsWithData.map((field) => `"${field}" = EXCLUDED."${field}"`) : []
+
       const insertStr = insertFields.join(', ')
       const onConflictStr = onConflict.join(', ')
 
       try {
-        const toUpload = [...docs]
         const tdomain = translateDomain(domain)
-        while (toUpload.length > 0) {
-          const part = toUpload.splice(0, 200)
-          const values: any[] = []
+        const batchSize = 200
+        for (let i = 0; i < docs.length; i += batchSize) {
+          const part = docs.slice(i, i + batchSize)
+          const values = new ValuesVariables()
           const vars: string[] = []
-          let index = 1
-          for (let i = 0; i < part.length; i++) {
-            const doc = part[i]
-            const variables: string[] = []
-
+          const wsId = values.add(this.workspaceId.name, '::uuid')
+          for (const doc of part) {
             if (!('%hash%' in doc) || doc['%hash%'] === '' || doc['%hash%'] == null) {
               ;(doc as any)['%hash%'] = this.curHash() // We need to set current hash
             }
             const d = convertDoc(domain, doc, this.workspaceId.name, schemaFields)
-
-            values.push(d.workspaceId)
-            variables.push(`$${index++}`)
-            for (const field of schemaFields.fields) {
-              values.push(d[field])
-              variables.push(`$${index++}`)
-            }
-            values.push(d.data)
-            variables.push(`$${index++}`)
+            const variables = [
+              wsId,
+              ...schemaFields.fields.map((field) => values.add(d[field], `::${schemaFields.schema[field].type}`)),
+              values.add(d.data, '::json')
+            ]
             vars.push(`(${variables.join(', ')})`)
           }
 
           const vals = vars.join(',')
-          await this.mgr.write(
-            ctx.id,
-            async (client) =>
-              await client.unsafe(
-                `INSERT INTO ${tdomain} ("workspaceId", ${insertStr}) VALUES ${vals} 
-              ON CONFLICT ("workspaceId", _id) DO UPDATE SET ${onConflictStr};`,
-                values
-              )
-          )
+          const query = `INSERT INTO ${tdomain} ("workspaceId", ${insertStr}) VALUES ${vals} ${
+            handleConflicts ? `ON CONFLICT ("workspaceId", _id) DO UPDATE SET ${onConflictStr}` : ''
+          };`
+          await this.mgr.retry(ctx.id, async (client) => await client.execute(query, values.getValues()))
         }
       } catch (err: any) {
         ctx.error('failed to upload', { err })
@@ -1438,15 +1635,14 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
   async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
     const tdomain = translateDomain(domain)
-    const toClean = [...docs]
-    while (toClean.length > 0) {
-      const part = toClean.splice(0, 2500)
+    const batchSize = 2500
+    const query = `DELETE FROM ${tdomain} WHERE "workspaceId" = $1 AND _id = ANY($2::text[])`
+
+    for (let i = 0; i < docs.length; i += batchSize) {
+      const part = docs.slice(i, i + batchSize)
       await ctx.with('clean', {}, () => {
-        return this.mgr.write(
-          ctx.id,
-          (client) =>
-            client`DELETE FROM ${client(tdomain)} WHERE "workspaceId" = ${this.workspaceId.name} AND _id = ANY(${part})`
-        )
+        const params = [this.workspaceId.name, part]
+        return this.mgr.retry(ctx.id, (client) => client.execute(query, params))
       })
     }
   }
@@ -1460,11 +1656,17 @@ abstract class PostgresAdapterBase implements DbAdapter {
     const key = isDataField(domain, field) ? `data ->> '${field}'` : `"${field}"`
     return ctx.with('groupBy', { domain }, async (ctx) => {
       try {
-        return await this.mgr.read(ctx.id, async (connection) => {
-          const result = await connection.unsafe(
-            `SELECT DISTINCT ${key} as ${field}, Count(*) AS count FROM ${translateDomain(domain)} WHERE ${this.buildRawQuery(domain, query ?? {})} GROUP BY ${key}`
-          )
-          return new Map(result.map((r) => [r[field.toLocaleLowerCase()], parseInt(r.count)]))
+        const vars = new ValuesVariables()
+        const sqlChunks: string[] = [
+          `SELECT ${key} as _${field}, Count(*) AS count`,
+          `FROM ${translateDomain(domain)}`,
+          `WHERE ${this.buildRawQuery(vars, domain, query ?? {})}`,
+          `GROUP BY _${field}`
+        ]
+        const finalSql = sqlChunks.join(' ')
+        return await this.mgr.retry(ctx.id, async (connection) => {
+          const result = await connection.execute(finalSql, vars.getValues())
+          return new Map(result.map((r) => [r[`_${field.toLowerCase()}`], r.count]))
         })
       } catch (err) {
         ctx.error('Error while grouping by', { domain, field })
@@ -1487,31 +1689,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
   @withContext('insert')
   async insert (ctx: MeasureContext, domain: string, docs: Doc[]): Promise<TxResult> {
-    const schemaFields = getSchemaAndFields(domain)
-    const filedsWithData = [...schemaFields.fields, 'data']
-    const columns: string[] = ['workspaceId']
-    for (const field of filedsWithData) {
-      columns.push(field)
-    }
-    while (docs.length > 0) {
-      const part = docs.splice(0, 500)
-      const values: DBDoc[] = []
-      for (let i = 0; i < part.length; i++) {
-        const doc = part[i]
-        if ((doc as any)['%hash%'] == null) {
-          ;(doc as any)['%hash%'] = this.curHash()
-        }
-        const d = convertDoc(domain, doc, this.workspaceId.name, schemaFields)
-        values.push(d)
-      }
-      await this.mgr.write(ctx.id, async (client) => {
-        try {
-          await client`INSERT INTO ${client(translateDomain(domain))} ${client(values, columns)}`
-        } catch (err: any) {
-          console.error('inserting error', err)
-        }
-      })
-    }
+    await this.upload(ctx, domain as Domain, docs, false)
     return {}
   }
 }
@@ -1528,14 +1706,21 @@ interface OperationBulk {
 const initRateLimit = new RateLimiter(1)
 
 class PostgresAdapter extends PostgresAdapterBase {
-  async init (ctx: MeasureContext, domains?: string[], excludeDomains?: string[]): Promise<void> {
-    let resultDomains = domains ?? this.hierarchy.domains()
+  async init (
+    ctx: MeasureContext,
+    contextVars: Record<string, any>,
+    domains?: string[],
+    excludeDomains?: string[]
+  ): Promise<void> {
+    this.connections = contextVars.cntInfoPG ?? new Map<string, ConnectionInfo>()
+    contextVars.cntInfoPG = this.connections
+    let resultDomains = [...(domains ?? this.hierarchy.domains()), 'kanban']
     if (excludeDomains !== undefined) {
       resultDomains = resultDomains.filter((it) => !excludeDomains.includes(it))
     }
     const url = this.refClient.url()
     await initRateLimit.exec(async () => {
-      await createTables(ctx, this.client, url, resultDomains)
+      await createTables(ctx, this.client.raw(), url, resultDomains)
     })
     this._helper.domains = new Set(resultDomains as Domain[])
   }
@@ -1572,15 +1757,23 @@ class PostgresAdapter extends PostgresAdapterBase {
         const domain = this.hierarchy.getDomain(tx.objectClass)
         const converted = convertDoc(domain, doc, this.workspaceId.name, schemaFields)
         const { extractedFields } = parseUpdate(tx.attributes as Partial<Doc>, schemaFields)
-        const columns = new Set<string>()
-        for (const key in extractedFields) {
-          columns.add(key)
+
+        const params = new ValuesVariables()
+
+        const wsId = params.add(this.workspaceId.name, '::uuid')
+        const oId = params.add(tx.objectId, '::text')
+        const updates: string[] = []
+        for (const key of new Set([...Object.keys(extractedFields), ...['modifiedOn', 'modifiedBy', '%hash%']])) {
+          const val = (doc as any)[key]
+          updates.push(`"${key}" = ${params.add(val, `::${schemaFields.schema[key].type}`)}`)
         }
-        columns.add('modifiedBy')
-        columns.add('modifiedOn')
-        columns.add('data')
-        columns.add('%hash%')
-        await client`UPDATE ${client(translateDomain(domain))} SET ${client(converted, Array.from(columns))} WHERE "workspaceId" = ${this.workspaceId.name} AND _id = ${tx.objectId}`
+        updates.push(`data = ${params.add(converted.data, '::json')}`)
+        await client.execute(
+          `UPDATE ${translateDomain(domain)} 
+          SET ${updates.join(', ')}  
+          WHERE "workspaceId" = ${wsId} AND _id = ${oId}`,
+          params.getValues()
+        )
       })
     })
     return {}
@@ -1657,7 +1850,7 @@ class PostgresAdapter extends PostgresAdapterBase {
     const withoutOperator = byOperator.get(false)
 
     const result: TxResult[] = []
-
+    const tdomain = translateDomain(domain)
     for (const tx of withOperator ?? []) {
       let doc: Doc | undefined
       const ops: any = { '%hash%': this.curHash(), ...tx.operations }
@@ -1671,18 +1864,28 @@ class PostgresAdapter extends PostgresAdapterBase {
             TxProcessor.applyUpdate(doc, ops)
             ;(doc as any)['%hash%'] = this.curHash()
             const converted = convertDoc(domain, doc, this.workspaceId.name, schemaFields)
-            const columns: string[] = []
+            const updates: string[] = []
+            const params = new ValuesVariables()
+
             const { extractedFields, remainingData } = parseUpdate(ops, schemaFields)
-            for (const key in extractedFields) {
-              columns.push(key)
+
+            const wsId = params.add(this.workspaceId.name, '::uuid')
+            const oId = params.add(tx.objectId, '::text')
+
+            for (const key of new Set([...Object.keys(extractedFields), ...['modifiedOn', 'modifiedBy', '%hash%']])) {
+              const val = (doc as any)[key]
+              updates.push(`"${key}" = ${params.add(val, `::${schemaFields.schema[key].type}`)}`)
             }
             if (Object.keys(remainingData).length > 0) {
-              columns.push('data')
+              updates.push(`data = ${params.add(converted.data, '::json')}`)
             }
-            if (!columns.includes('%hash%')) {
-              columns.push('%hash%')
-            }
-            await client`UPDATE ${client(translateDomain(domain))} SET ${client(converted, columns)} WHERE "workspaceId" = ${this.workspaceId.name} AND _id = ${tx.objectId}`
+            await client.execute(
+              `UPDATE ${tdomain} 
+              SET ${updates.join(', ')}  
+              WHERE "workspaceId" = ${wsId} 
+                AND _id = ${oId}`,
+              params.getValues()
+            )
           })
           if (tx.retrieve === true && doc !== undefined) {
             return { object: doc }
@@ -1715,7 +1918,7 @@ class PostgresAdapter extends PostgresAdapterBase {
 
       for (const tx of txes) {
         const fields: string[] = ['modifiedBy', 'modifiedOn', '%hash%']
-        const updates: string[] = ['"modifiedBy" = $1', '"modifiedOn" = $2', '"%hash%" = $3']
+        const updates: string[] = ['"modifiedBy" = $2', '"modifiedOn" = $3', '"%hash%" = $4']
         const params: any[] = [tx.modifiedBy, tx.modifiedOn, null]
         let paramsIndex = params.length
         const { extractedFields, remainingData } = parseUpdate(tx.operations, schemaFields)
@@ -1750,13 +1953,14 @@ class PostgresAdapter extends PostgresAdapterBase {
       const result: TxResult[] = []
       try {
         const schema = getSchema(domain)
-        const updates = groupByArray(operations, (it) => it.fields.join(','))
-        for (const upds of updates.values()) {
-          while (upds.length > 0) {
-            const part = upds.splice(0, 200)
-            let idx = 0
+        const groupedUpdates = groupByArray(operations, (it) => it.fields.join(','))
+        for (const groupedOps of groupedUpdates.values()) {
+          for (let i = 0; i < groupedOps.length; i += 200) {
+            const part = groupedOps.slice(i, i + 200)
+            let idx = 1
             const indexes: string[] = []
             const data: any[] = []
+            data.push(this.workspaceId.name)
             for (const op of part) {
               indexes.push(
                 `($${++idx}::${schema._id.type ?? 'text'}, ${op.fields.map((it) => (it === 'data' ? `$${++idx}::jsonb` : `$${++idx}::${schema[it].type ?? 'text'}`)).join(',')})`
@@ -1766,18 +1970,14 @@ class PostgresAdapter extends PostgresAdapterBase {
             }
             const op = `UPDATE ${tdomain} SET ${part[0].fields.map((it) => (it === 'data' ? 'data = COALESCE(data || update_data._data)' : `"${it}" = update_data."_${it}"`)).join(', ')}
             FROM (values ${indexes.join(',')}) AS update_data(__id, ${part[0].fields.map((it) => `"_${it}"`).join(',')})
-            WHERE "workspaceId" = '${this.workspaceId.name}' AND "_id" = update_data.__id`
+            WHERE "workspaceId" = $1::uuid AND "_id" = update_data.__id`
 
-            await this.mgr.write(ctx.id, async (client) => {
-              await ctx.with('bulk-update', {}, () => {
-                return client.unsafe(op, data)
-              })
-            })
+            await this.mgr.retry(ctx.id, (client) => ctx.with('bulk-update', {}, () => client.execute(op, data)))
           }
         }
         const toRetrieve = operations.filter((it) => it.retrieve)
         if (toRetrieve.length > 0) {
-          await this.mgr.read(ctx.id, async (client) => {
+          await this.mgr.retry(ctx.id, async (client) => {
             for (const op of toRetrieve) {
               const object = await this.findDoc(_ctx, client, op.objectClass, op.objectId)
               result.push({ object })
@@ -1793,29 +1993,39 @@ class PostgresAdapter extends PostgresAdapterBase {
 
   private findDoc (
     ctx: MeasureContext,
-    client: postgres.ReservedSql | postgres.Sql,
+    client: DBClient,
     _class: Ref<Class<Doc>>,
     _id: Ref<Doc>,
     forUpdate: boolean = false
   ): Promise<Doc | undefined> {
     const domain = this.hierarchy.getDomain(_class)
     return ctx.with('find-doc', { _class }, async () => {
-      const res =
-        await client`SELECT * FROM ${client(translateDomain(domain))} WHERE "workspaceId" = ${this.workspaceId.name} AND _id = ${_id} ${
-          forUpdate ? client` FOR UPDATE` : client``
-        }`
-      const dbDoc = res[0] as any
+      const res = await client.execute(
+        `SELECT * FROM "${translateDomain(domain)}" WHERE "workspaceId" = $1::uuid AND _id = $2::text ${
+          forUpdate ? ' FOR UPDATE' : ''
+        }`,
+        [this.workspaceId.name, _id]
+      )
+      const dbDoc = res[0]
       return dbDoc !== undefined ? parseDoc(dbDoc, getSchema(domain)) : undefined
     })
   }
 }
 
 class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
-  async init (ctx: MeasureContext, domains?: string[], excludeDomains?: string[]): Promise<void> {
+  async init (
+    ctx: MeasureContext,
+    contextVars: Record<string, any>,
+    domains?: string[],
+    excludeDomains?: string[]
+  ): Promise<void> {
+    this.connections = contextVars.cntInfoPG ?? new Map<string, ConnectionInfo>()
+    contextVars.cntInfoPG = this.connections
+
     const resultDomains = domains ?? [DOMAIN_TX, DOMAIN_MODEL_TX]
     await initRateLimit.exec(async () => {
       const url = this.refClient.url()
-      await createTables(ctx, this.client, url, resultDomains)
+      await createTables(ctx, this.client.raw(), url, resultDomains)
     })
     this._helper.domains = new Set(resultDomains as Domain[])
   }
@@ -1847,11 +2057,15 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
   }
 
   async getModel (ctx: MeasureContext): Promise<Tx[]> {
-    const res: DBDoc[] = await this.mgr.read(
-      undefined,
-      (client) =>
-        client`SELECT * FROM ${client(translateDomain(DOMAIN_MODEL_TX))} WHERE "workspaceId" = ${this.workspaceId.name} ORDER BY _id ASC, "modifiedOn" ASC`
-    )
+    const res: DBDoc[] = await this.mgr.retry(undefined, (client) => {
+      const query = `
+        SELECT * 
+        FROM "${translateDomain(DOMAIN_MODEL_TX)}" 
+        WHERE "workspaceId" = $1::uuid 
+        ORDER BY _id::text ASC, "modifiedOn"::bigint ASC
+      `
+      return client.execute(query, [this.workspaceId.name])
+    })
 
     const model = res.map((p) => parseDoc<Tx>(p, getSchema(DOMAIN_MODEL_TX)))
     // We need to put all core.account.System transactions first
@@ -1867,29 +2081,79 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
  */
 export async function createPostgresAdapter (
   ctx: MeasureContext,
+  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId,
   modelDb: ModelDb
 ): Promise<DbAdapter> {
-  const client = getDBClient(url)
+  const client = getDBClient(contextVars, url)
   const connection = await client.getClient()
-  return new PostgresAdapter(connection, client, workspaceId, hierarchy, modelDb, 'default-' + workspaceId.name)
+  return new PostgresAdapter(
+    greenURL !== undefined ? toGreenClient(greenURL, connection) : createDBClient(connection),
+    client,
+    workspaceId,
+    hierarchy,
+    modelDb,
+    'default-' + workspaceId.name
+  )
 }
 
+function toGreenClient (url: string, connection: postgres.Sql): DBClient {
+  const originalUrl = new URL(url)
+
+  // Extract components with default values if needed
+  const token = originalUrl.searchParams.get('token') ?? 'secret'
+  const compression = originalUrl.searchParams.get('compression') ?? ''
+
+  // Manually build the new URL components
+  const newHost = originalUrl.host
+  const newPathname = originalUrl.pathname
+
+  // Construct new search parameters without previous ones
+  const newSearchParams = new URLSearchParams()
+  // Add any search parameters you need, like `token` and `compression` if desired
+  if (compression !== '') {
+    newSearchParams.set('compression', compression)
+  }
+
+  console.warn('USE GREEN', newHost, newPathname, newSearchParams.toString())
+  // Construct the new URL
+  const newUrl = `${originalUrl.protocol}//${newHost}${newPathname}${newSearchParams.size > 0 ? '?' + newSearchParams.toString() : ''}`
+  return createGreenDBClient(newUrl, token, connection, greenDecoders.get(compression))
+}
 /**
  * @public
  */
 export async function createPostgresTxAdapter (
   ctx: MeasureContext,
+  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId,
   modelDb: ModelDb
 ): Promise<TxAdapter> {
-  const client = getDBClient(url)
+  const client = getDBClient(contextVars, url)
   const connection = await client.getClient()
-  return new PostgresTxAdapter(connection, client, workspaceId, hierarchy, modelDb, 'tx' + workspaceId.name)
+
+  return new PostgresTxAdapter(
+    greenURL !== undefined ? toGreenClient(greenURL, connection) : createDBClient(connection),
+    client,
+    workspaceId,
+    hierarchy,
+    modelDb,
+    'tx' + workspaceId.name
+  )
+}
+
+const greenDecoders = new Map<string, (data: any) => Promise<any>>()
+let greenURL: string | undefined
+
+export function registerGreenDecoder (name: string, decoder: (data: any) => Promise<any>): void {
+  greenDecoders.set(name, decoder)
+}
+export function registerGreenUrl (url?: string): void {
+  greenURL = url
 }
 
 function isPersonAccount (tx: Tx): boolean {

@@ -12,54 +12,65 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import AWS from 'aws-sdk'
+import {
+  SESClient,
+  SendEmailCommand,
+  type Body,
+  type Destination,
+  type SendEmailCommandInput,
+  type Message as SesMessage
+} from '@aws-sdk/client-ses'
 import config from './config'
 import { Message, Receivers } from './types'
 
 export class SES {
-  private readonly client: AWS.SES
+  private readonly client: SESClient
 
   constructor () {
-    AWS.config.credentials = {
-      accessKeyId: config.AccessKey,
-      secretAccessKey: config.SecretKey
-    }
-    this.client = new AWS.SES({ region: config.Region })
+    this.client = new SESClient({
+      region: config.Region,
+      credentials: {
+        accessKeyId: config.AccessKey,
+        secretAccessKey: config.SecretKey
+      }
+    })
   }
 
   async sendMessage (message: Message, receivers: Receivers, from?: string): Promise<void> {
     console.log('send email to', receivers.to)
-    const params: AWS.SES.Types.SendEmailRequest = {
-      Source: config.Source,
-      Destination: {
-        ToAddresses: receivers.to
-      },
-      Message: {
-        Subject: {
-          Data: message.subject
-        },
-        Body: {
-          Text: {
-            Data: message.text
-          }
-        }
+    const destionation: Destination = {
+      ToAddresses: receivers.to
+    }
+    const body: Body = {
+      Text: {
+        Data: message.text
       }
+    }
+    const sesMessage: SesMessage = {
+      Subject: {
+        Data: message.subject
+      },
+      Body: body
+    }
+    const params: SendEmailCommandInput = {
+      Source: config.Source,
+      Destination: destionation,
+      Message: sesMessage
     }
     // if (from !== undefined) {
     //   params.Source = `${from} <` + config.Source + '>'
     // }
     if (receivers.cc !== undefined) {
-      params.Destination.CcAddresses = receivers.cc
+      destionation.CcAddresses = receivers.cc
     }
     if (receivers.bcc !== undefined) {
-      params.Destination.BccAddresses = receivers.bcc
+      destionation.BccAddresses = receivers.bcc
     }
     if (message.html !== undefined) {
-      params.Message.Body.Html = {
+      body.Html = {
         Data: message.html
       }
     }
-    await this.client.sendEmail(params).promise()
+    await this.client.send(new SendEmailCommand(params))
   }
 }

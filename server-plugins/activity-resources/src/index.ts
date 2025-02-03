@@ -141,6 +141,7 @@ export async function createReactionNotifications (tx: TxCUD<Reaction>, control:
   res = res.concat(
     await createCollabDocInfo(
       control.ctx,
+      res,
       [user] as Ref<PersonAccount>[],
       control,
       tx,

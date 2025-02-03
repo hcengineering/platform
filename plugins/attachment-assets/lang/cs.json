@@ -53,6 +53,7 @@
     "FilterAttachments": "Přílohy",
     "RemovedAttachment": "Příloha odstraněna",
     "ContentType": "Typ obsahu",
-    "OpenInWindow": "Otevřít v okně"
+    "OpenInWindow": "Otevřít v okně",
+    "Embeddings": "Vnoření"
   }
 }

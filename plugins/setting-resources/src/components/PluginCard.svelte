@@ -86,7 +86,7 @@
       <div class="fs-title overflow-label"><Label label={integrationType.label} /></div>
     </div>
   </div>
-  <div class="content">
+  <div class="content scroll-divider-color">
     {#if integration && integration.value !== ''}
       {integration.value}
     {:else if integrationType.descriptionComponent}
@@ -135,7 +135,7 @@
     border-radius: 0.75rem;
   }
   .header {
-    margin: 1.5rem 1.5rem 1rem;
+    padding: 1rem;
     min-height: fit-content;
   }
   .icon {
@@ -144,6 +144,7 @@
     min-height: 2.25rem;
   }
   .content {
+    overflow-y: auto;
     flex-grow: 1;
     margin: 0 1.5rem 0.25rem;
     color: var(--theme-caption-color);
@@ -160,9 +161,7 @@
     justify-content: start;
     align-items: center;
     column-gap: 1rem;
-    padding: 1.5rem 1.75rem 1.25rem;
-    padding-top: 0.5rem;
-    height: 5.25rem;
+    padding: 0.5rem 1rem 1rem;
     mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 1.25rem, rgba(0, 0, 0, 1) 2.5rem);
     overflow: hidden;
     border-radius: 0 0 1.25rem 1.25rem;

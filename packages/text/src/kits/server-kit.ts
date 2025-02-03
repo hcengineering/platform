@@ -33,9 +33,11 @@ import { DefaultKit, DefaultKitOptions } from './default-kit'
 import { CodeExtension, codeOptions } from '../marks/code'
 import { NoteBaseExtension } from '../marks/noteBase'
 import { CommentNode } from '../nodes/comment'
+import { MermaidExtension, mermaidOptions } from '../nodes/mermaid'
 import TextAlign from '@tiptap/extension-text-align'
 import TextStyle from '@tiptap/extension-text-style'
 import { BackgroundColor, TextColor } from '../marks/colors'
+import { InlineCommentMark } from '../marks/inlineComment'
 
 const headingLevels: Level[] = [1, 2, 3, 4, 5, 6]
 
@@ -83,8 +85,10 @@ export const ServerKit = Extension.create<ServerKitOptions>({
           levels: headingLevels
         }
       }),
+      InlineCommentMark.configure({}),
       CodeBlockExtension.configure(codeBlockOptions),
       CodeExtension.configure(codeOptions),
+      MermaidExtension.configure(mermaidOptions),
       ...tableExtensions,
       ...taskListExtensions,
       ...fileExtensions,

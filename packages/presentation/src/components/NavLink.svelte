@@ -13,7 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { closePopup, closeTooltip, navigate, parseLocation } from '@hcengineering/ui'
+  import { getMetadata } from '@hcengineering/platform'
+  import uiPlugin, { closePopup, closeTooltip, navigate, parseLocation } from '@hcengineering/ui'
 
   export let href: string | undefined
   export let disabled = false
@@ -43,11 +44,16 @@
       closeTooltip()
       try {
         const url = new URL(href)
-
         if (url.origin === window.location.origin) {
-          e.preventDefault()
-          e.stopPropagation()
-          navigate(parseLocation(url))
+          const loc = parseLocation(url)
+          const routes = getMetadata(uiPlugin.metadata.Routes)
+          const app = routes?.get(loc.path[0])
+
+          if (app !== undefined) {
+            e.preventDefault()
+            e.stopPropagation()
+            navigate(loc)
+          }
         }
       } catch {}
     }

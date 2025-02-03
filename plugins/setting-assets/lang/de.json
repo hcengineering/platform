@@ -119,6 +119,18 @@
     "DeleteSpaceTypeConfirm": "Sind Sie sicher, dass Sie diesen Bereichstyp löschen möchten?",
     "WorkspaceName": "Arbeitsbereich-Name",
     "Workspace": "Arbeitsbereich",
-    "OwnerOrMaintainerRequired": "Sie müssen Eigentümer oder Betreuer des Arbeitsbereichs sein"
+    "OwnerOrMaintainerRequired": "Sie müssen Eigentümer oder Betreuer des Arbeitsbereichs sein",
+    "Backup": "Sicherung",
+    "BackupLast": "Letzte Sicherung",
+    "BackupTotalSnapshots": "Gesamtanzahl der Schnappschüsse",
+    "BackupTotalFiles": "Dateien",
+    "BackupSize": "Sicherungsgröße",
+    "BackupLinkInfo": "Die URL eines Sicherungsverzeichnisses, das rekursiv mit Tools wie wget oder curl heruntergeladen werden kann.",
+    "BackupBearerTokenInfo": "Ein Bearer-Token ist erforderlich, um auf die Sicherung zuzugreifen.",
+    "BackupSnapshots": "Sicherungsschnappschüsse",
+    "BackupFileDownload": "Datei herunterladen",
+    "BackupFiles": "Sicherungsdateien",
+    "BackupNoBackup": "Derzeit sind keine Sicherungen verfügbar.",
+    "AddAttribute": "Attribut hinzufügen"
   }
 }

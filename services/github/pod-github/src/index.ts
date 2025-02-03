@@ -31,15 +31,23 @@ Analytics.setTag('application', 'github-service')
 
 let doOnClose: () => Promise<void> = async () => {}
 
-void start(metricsContext, loadBrandingMap(config.BrandingPath)).then((r) => {
-  doOnClose = r
-})
+void start(metricsContext, loadBrandingMap(config.BrandingPath))
+  .then((r) => {
+    doOnClose = r
+  })
+  .catch((err) => {
+    metricsContext.error('Error', { error: err })
+  })
 
 const onClose = (): void => {
   metricsContext.info('Closed')
-  void doOnClose().then((r) => {
-    process.exit(0)
-  })
+  void doOnClose()
+    .then((r) => {
+      process.exit(0)
+    })
+    .catch((err) => {
+      metricsContext.error('Error', { error: err })
+    })
 }
 
 process.on('uncaughtException', (e) => {

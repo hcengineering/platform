@@ -16,7 +16,7 @@
    * path segment in the "$schema" field for all your Rush config files.  This will ensure
    * correct error-underlining and tab-completion for editors such as VS Code.
    */
-  "rushVersion": "5.140.1",
+  "rushVersion": "5.148.0",
 
   /**
    * The next field selects which package manager should be installed and determines its version.
@@ -26,7 +26,7 @@
    * Specify one of: "pnpmVersion", "npmVersion", or "yarnVersion".  See the Rush documentation
    * for details about these alternatives.
    */
-  "pnpmVersion": "8.15.9",
+  "pnpmVersion": "9.15.3",
 
   // "npmVersion": "4.5.0",
   // "yarnVersion": "1.9.4",
@@ -473,6 +473,11 @@
     {
       "packageName": "@hcengineering/theme",
       "projectFolder": "packages/theme",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/text-core",
+      "projectFolder": "packages/text-core",
       "shouldPublish": true
     },
     {
@@ -2224,6 +2229,31 @@
     {
       "packageName": "@hcengineering/cloud-transactor",
       "projectFolder": "workers/transactor",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/card",
+      "projectFolder": "plugins/card",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-card",
+      "projectFolder": "models/card",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/card-assets",
+      "projectFolder": "plugins/card-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/card-resources",
+      "projectFolder": "plugins/card-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/green",
+      "projectFolder": "pods/green",
       "shouldPublish": false
     }
   ]

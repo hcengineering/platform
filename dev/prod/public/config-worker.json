@@ -48,5 +48,5 @@
   "UPLOAD_CONFIG": "",
   
   "UPLOAD_URL": "https://dl.hc.engineering/upload/form-data/:workspace",
-  "TRANSACTOR_OVERRIDE": "wss://cloud-transactor.andrey-47f.workers.dev"
+  "TRANSACTOR_OVERRIDE": "ws://localhost:3335"
 }

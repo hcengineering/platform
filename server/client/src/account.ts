@@ -50,7 +50,7 @@ export async function listAccountWorkspaces (token: string, region: string | nul
       },
       body: JSON.stringify({
         method: 'listWorkspaces',
-        params: [token, region]
+        params: [token, region, 'active']
       })
     })
   ).json()
@@ -109,6 +109,9 @@ export async function getTransactorEndpoint (
           })
         })
       ).json()
+      if (workspaceInfo.result === undefined) {
+        throw new Error('Workspace not found')
+      }
       return workspaceInfo.result.endpoint
     } catch (err: any) {
       if (timeout > 0 && st + timeout < Date.now()) {

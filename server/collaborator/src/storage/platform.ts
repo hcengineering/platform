@@ -14,6 +14,7 @@
 //
 
 import activity, { DocUpdateMessage } from '@hcengineering/activity'
+import { Analytics } from '@hcengineering/analytics'
 import { loadCollabJson, loadCollabYdoc, saveCollabJson, saveCollabYdoc } from '@hcengineering/collaboration'
 import { decodeDocumentId } from '@hcengineering/collaborator-client'
 import core, { AttachedData, MeasureContext, Ref, Space, TxOperations } from '@hcengineering/core'
@@ -46,7 +47,8 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       if (ydoc !== undefined) {
         return ydoc
       }
-    } catch (err) {
+    } catch (err: any) {
+      Analytics.handleError(err)
       ctx.error('failed to load document content', { documentName, error: err })
       throw err
     }
@@ -70,7 +72,8 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
 
           return ydoc
         }
-      } catch (err) {
+      } catch (err: any) {
+        Analytics.handleError(err)
         ctx.error('failed to load initial document content', { documentName, content, error: err })
         throw err
       }
@@ -93,23 +96,31 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     const { clientFactory } = context
     const { documentId } = decodeDocumentId(documentName)
 
-    const client = await ctx.with('connect', {}, () => clientFactory())
+    try {
+      ctx.info('save document ydoc content', { documentName })
+      await ctx.with('saveCollabYdoc', {}, (ctx) => {
+        return withRetry(ctx, 5, () => {
+          return saveCollabYdoc(ctx, this.storage, context.workspaceId, documentId, document)
+        })
+      })
+    } catch (err: any) {
+      Analytics.handleError(err)
+      ctx.error('failed to save document ydoc content', { documentName, error: err })
+      // raise an error if failed to save document to storage
+      // this will prevent document from being unloaded from memory
+      throw err
+    }
+
+    let client: TxOperations
+    try {
+      client = await ctx.with('connect', {}, () => clientFactory())
+    } catch (err: any) {
+      Analytics.handleError(err)
+      ctx.error('failed to connect to platform', { documentName, error: err })
+      throw err
+    }
 
     try {
-      try {
-        ctx.info('save document ydoc content', { documentName })
-        await ctx.with('saveCollabYdoc', {}, (ctx) => {
-          return withRetry(ctx, 5, () => {
-            return saveCollabYdoc(ctx, this.storage, context.workspaceId, documentId, document)
-          })
-        })
-      } catch (err) {
-        ctx.error('failed to save document ydoc content', { documentName, error: err })
-        // raise an error if failed to save document to storage
-        // this will prevent document from being unloaded from memory
-        throw err
-      }
-
       ctx.info('save document content to platform', { documentName })
       return await ctx.with('save-to-platform', {}, (ctx) => {
         return this.saveDocumentToPlatform(ctx, client, documentName, getMarkup)
@@ -217,7 +228,7 @@ async function withRetry<T> (
       return await op()
     } catch (err: any) {
       error = err
-      ctx.error('error', { err })
+      ctx.info('error', { err, retries })
       if (retries !== 0) {
         await new Promise((resolve) => setTimeout(resolve, delay))
       }

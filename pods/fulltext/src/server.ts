@@ -30,9 +30,20 @@ import {
   LowLevelMiddleware,
   ModelMiddleware
 } from '@hcengineering/middleware'
-import { createMongoAdapter, createMongoDestroyAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
+import {
+  createMongoAdapter,
+  createMongoDestroyAdapter,
+  createMongoTxAdapter,
+  shutdownMongo
+} from '@hcengineering/mongo'
 import { PlatformError, setMetadata, unknownError } from '@hcengineering/platform'
-import { createPostgreeDestroyAdapter, createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
+import {
+  createPostgreeDestroyAdapter,
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  setDBExtraOptions,
+  shutdownPostgres
+} from '@hcengineering/postgres'
 import serverClientPlugin, { getTransactorEndpoint, getWorkspaceInfo } from '@hcengineering/server-client'
 import serverCore, {
   createContentAdapter,
@@ -51,7 +62,8 @@ import {
   registerDestroyFactory,
   registerServerPlugins,
   registerStringLoaders,
-  registerTxAdapterFactory
+  registerTxAdapterFactory,
+  sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken, type Token } from '@hcengineering/server-token'
 import cors from '@koa/cors'
@@ -99,7 +111,8 @@ class WorkspaceIndexer {
       branding: null,
       modelDb,
       hierarchy,
-      storageAdapter: externalStorage
+      storageAdapter: externalStorage,
+      contextVars: {}
     }
     result.pipeline = await createPipeline(ctx, middlewares, context)
 
@@ -161,6 +174,16 @@ class WorkspaceIndexer {
     return result
   }
 
+  async reindex (onlyDrop: boolean): Promise<void> {
+    await this.fulltext.cancel()
+    await this.fulltext.clearIndex(onlyDrop)
+    if (!onlyDrop) {
+      await this.fulltext.startIndexing(() => {
+        this.lastUpdate = Date.now()
+      })
+    }
+  }
+
   async close (): Promise<void> {
     await this.fulltext.cancel()
     await this.pipeline.close()
@@ -188,6 +211,20 @@ interface Search {
   fullTextLimit: number
 }
 
+interface Reindex {
+  token: string
+  onlyDrop?: boolean
+}
+// Register close on process exit.
+process.on('exit', () => {
+  shutdownPostgres(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+  shutdownMongo(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+})
+
 export async function startIndexer (
   ctx: MeasureContext,
   opt: {
@@ -202,6 +239,12 @@ export async function startIndexer (
   }
 ): Promise<() => void> {
   const closeTimeout = 5 * 60 * 1000
+
+  const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
+
+  setDBExtraOptions({
+    prepare: usePrepare // We override defaults
+  })
 
   setMetadata(serverToken.metadata.Secret, opt.serverSecret)
   setMetadata(serverCore.metadata.ElasticIndexName, opt.elasticIndexName)
@@ -383,6 +426,26 @@ export async function startIndexer (
         await ctx.with('index-documents', {}, (ctx) => indexer.fulltext.indexDocuments(ctx, request.requests))
       }
       req.body = {}
+    } catch (err: any) {
+      Analytics.handleError(err)
+      console.error(err)
+      req.res.writeHead(404, {})
+      req.res.end()
+    }
+  })
+
+  router.put('/api/v1/reindex', async (req, res) => {
+    try {
+      const request = req.request.body as Reindex
+      const decoded = decodeToken(request.token) // Just to be safe
+      req.body = {}
+
+      ctx.info('reindex', { workspace: decoded.workspace })
+      const indexer = await getIndexer(ctx, decoded.workspace, request.token, true)
+      if (indexer !== undefined) {
+        indexer.lastUpdate = Date.now()
+        await indexer.reindex(request?.onlyDrop ?? false)
+      }
     } catch (err: any) {
       Analytics.handleError(err)
       console.error(err)

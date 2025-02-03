@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, {
+  import {
     Doc,
     FindResult,
     getObjectValue,
@@ -54,8 +54,8 @@
   const key = { key: tkey }
   const lookup = buildConfigLookup(hierarchy, filter.key._class, [tkey])
   const promise = getPresenter(client, filter.key._class, key, key, lookup)
-  filter.modes = filter.modes === undefined ? [view.filter.FilterObjectIn, view.filter.FilterObjectNin] : filter.modes
-  filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
+  filter.modes = filter.modes ?? [view.filter.FilterObjectIn, view.filter.FilterObjectNin]
+  filter.mode = filter.mode ?? filter.modes[0]
 
   let values: Array<Doc | undefined | null> = []
   let objectsPromise: Promise<FindResult<Doc>> | undefined
@@ -85,12 +85,9 @@
         ? {
             space
           }
-        : { '$lookup.space.archived': false },
+        : {},
       {
         projection: { [filter.key.key]: 1 },
-        lookup: {
-          space: core.class.Space
-        },
         limit: 1000
       }
     )
@@ -100,20 +97,13 @@
       const extraObjects = await client.findAll(
         filter.key._class,
         {
-          ...(space !== undefined
-            ? { space }
-            : {
-                '$lookup.space.archived': false
-              }),
+          ...(space !== undefined ? { space } : {}),
           [filter.key.key]: {
             $nin: ninTarget
           }
         },
         {
-          projection: { [filter.key.key]: 1 },
-          lookup: {
-            space: core.class.Space
-          }
+          projection: { [filter.key.key]: 1 }
         }
       )
       baseObjects.push(...extraObjects)
@@ -128,7 +118,7 @@
     }
 
     const resultQuery =
-      search !== '' && clazz.filteringKey
+      search !== '' && clazz.filteringKey !== undefined
         ? {
             [clazz.filteringKey]: { $like: '%' + search + '%' },
             _id: { $in: Array.from(targets.keys()) }
@@ -186,7 +176,7 @@
     updateFilter()
   }
 
-  function updateFilter () {
+  function updateFilter (): void {
     clearTimeout(filterUpdateTimeout)
 
     filterUpdateTimeout = setTimeout(() => {
@@ -197,7 +187,7 @@
   let search: string = ''
 
   const dispatch = createEventDispatcher()
-  $: if (targetClass) getValues(search)
+  $: if (targetClass !== undefined) getValues(search)
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>

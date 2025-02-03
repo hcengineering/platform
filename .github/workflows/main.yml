@@ -628,7 +628,7 @@ jobs:
           node ../common/scripts/install-run-rushx.js dist --linux --windows --x64
           node ../common/scripts/install-run-rushx.js dist-signed --macos --x64 --arm64
           ./scripts/copy-publish-artifacts.sh ${{ env.PublishTempFolder}}
-      - name: Publish distribution assets
+      - name: Publish distribution assets and version
         uses: ryand56/r2-upload-action@latest
         with:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
@@ -637,29 +637,23 @@ jobs:
           r2-bucket: desktop-distro
           source-dir: desktop-package/${{ env.PublishTempFolder}}
           destination-dir: ./
-      - name: Publish distribution version
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-        run: |
-          ./desktop-package/scripts/publish-version.sh
       - name: Upload MacOS
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Huly-MacOS-x64
           path: ./desktop-package/deploy/Huly-macos-*-x64.dmg
       - name: Upload MacOS arm64
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Huly-MacOS-arm64
           path: ./desktop-package/deploy/Huly-macos-*-arm64.dmg
       - name: Upload Windows
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Huly-Windows
           path: ./desktop-package/deploy/Huly-windows-*.zip
       - name: Upload Linux
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Huly-Linux
           path: ./desktop-package/deploy/Huly-linux-*.zip

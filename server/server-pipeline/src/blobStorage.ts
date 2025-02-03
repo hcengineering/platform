@@ -62,7 +62,15 @@ class StorageBlobAdapter implements DbAdapter {
     }
   }
 
-  init?: ((ctx: MeasureContext, domains?: string[], excludeDomains?: string[]) => Promise<void>) | undefined
+  init?:
+  | ((
+    ctx: MeasureContext,
+    contextVars: Record<string, any>,
+    domains?: string[],
+    excludeDomains?: string[]
+  ) => Promise<void>)
+  | undefined
+
   on?: ((handler: DbAdapterHandler) => void) | undefined
 
   async rawFindAll<T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
@@ -130,6 +138,7 @@ class StorageBlobAdapter implements DbAdapter {
  */
 export async function createStorageDataAdapter (
   ctx: MeasureContext,
+  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId,

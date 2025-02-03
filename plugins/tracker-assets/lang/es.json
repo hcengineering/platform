@@ -269,7 +269,8 @@
     "DefaultIssueStatus": "Estado de problema predeterminado",
     "IssueStatus": "Estado",
     "Extensions": "Extensions",
-    "RoleLabel": "Role: {role}"
+    "RoleLabel": "Role: {role}",
+    "UnsetParentIssue": "Unset parent issue"
   },
   "status": {}
 }

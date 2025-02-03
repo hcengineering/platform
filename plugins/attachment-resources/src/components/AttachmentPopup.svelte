@@ -19,7 +19,7 @@
   import { ActionIcon, IconAdd, Label, Loading } from '@hcengineering/ui'
 
   import type { Doc, WithLookup } from '@hcengineering/core'
-  import core from '@hcengineering/core'
+
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { AttachmentPresenter } from '..'
   import attachment from '../plugin'
@@ -43,6 +43,9 @@
     },
     (res) => {
       docs = res
+    },
+    {
+      showArchived: true
     }
   )
 

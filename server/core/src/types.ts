@@ -181,6 +181,8 @@ export interface PipelineContext {
   derived?: Middleware
   head?: Middleware
 
+  contextVars: Record<string, any>
+
   broadcastEvent?: (ctx: MeasureContext, tx: Tx[]) => Promise<void>
 }
 /**

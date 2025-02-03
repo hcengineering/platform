@@ -61,7 +61,8 @@ export class Refs {
     if (typeof query._id === 'string') {
       const desc = this.getHierarchy().getDescendants(_class)
       for (const des of desc) {
-        const classKey = des + ':' + JSON.stringify(options?.lookup ?? {})
+        const classKey =
+          des + ':' + JSON.stringify(options?.lookup ?? {}) + ':' + JSON.stringify(options?.associations ?? {})
         // One document query
         const doc = this.documentRefs.get(classKey)?.get(query._id)?.doc
         if (doc !== undefined) {
@@ -78,7 +79,8 @@ export class Refs {
       options?.sort === undefined &&
       options?.projection === undefined
     ) {
-      const classKey = _class + ':' + JSON.stringify(options?.lookup ?? {})
+      const classKey =
+        _class + ':' + JSON.stringify(options?.lookup ?? {}) + ':' + JSON.stringify(options?.associations ?? {})
       const docs = this.documentRefs.get(classKey)
       if (docs !== undefined) {
         const _docs = Array.from(docs.values()).map((it) => it.doc)

@@ -30,7 +30,8 @@ import core, {
 } from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
-import postgres from 'postgres'
+import postgres, { type Options, type ParameterOrJSON } from 'postgres'
+import type { DBClient } from './client'
 import {
   addSchema,
   type DataType,
@@ -43,17 +44,10 @@ import {
   translateDomain
 } from './schemas'
 
-const connections = new Map<string, PostgresClientReferenceImpl>()
-
-// Register close on process exit.
-process.on('exit', () => {
-  shutdown().catch((err) => {
-    console.error(err)
-  })
-})
-
 const clientRefs = new Map<string, ClientRef>()
 const loadedDomains = new Set<string>()
+
+let loadedTables = new Set<string>()
 
 export async function retryTxn (
   pool: postgres.Sql,
@@ -83,39 +77,54 @@ export async function createTables (
     return
   }
   const mapped = filtered.map((p) => translateDomain(p))
-  const inArr = mapped.map((it) => `'${it}'`).join(', ')
-  const tables = await ctx.with('load-table', {}, () =>
-    client.unsafe(`
+  const t = Date.now()
+  loadedTables =
+    loadedTables.size === 0
+      ? new Set(
+        (
+          await ctx.with('load-table', {}, () =>
+            client.unsafe(`
     SELECT table_name 
-    FROM information_schema.tables 
-    WHERE table_name IN (${inArr})
-  `)
-  )
+    FROM information_schema.tables
+    WHERE table_schema NOT IN ('pg_catalog', 'information_schema')
+    AND table_name NOT LIKE 'pg_%'
+    AND table_name NOT LIKE 'cluster_%'
+    AND table_name NOT LIKE 'kv_%'
+    AND table_name NOT LIKE 'node_%'`)
+          )
+        ).map((it) => it.table_name)
+      )
+      : loadedTables
+  console.log('load-table', Date.now() - t)
 
-  const exists = new Set(tables.map((it) => it.table_name))
-
-  await retryTxn(client, async (client) => {
-    const domainsToLoad = mapped.filter((it) => exists.has(it))
-    if (domainsToLoad.length > 0) {
-      await ctx.with('load-schemas', {}, () => getTableSchema(client, domainsToLoad))
-    }
-    for (const domain of mapped) {
-      if (!exists.has(domain)) {
-        await ctx.with('create-table', {}, () => createTable(client, domain))
-      }
+  const domainsToLoad = mapped.filter((it) => loadedTables.has(it))
+  if (domainsToLoad.length > 0) {
+    await ctx.with('load-schemas', {}, () => getTableSchema(client, domainsToLoad))
+  }
+  const domainsToCreate: string[] = []
+  for (const domain of mapped) {
+    if (!loadedTables.has(domain)) {
+      domainsToCreate.push(domain)
+    } else {
       loadedDomains.add(url + domain)
     }
-  })
+  }
+
+  if (domainsToCreate.length > 0) {
+    await retryTxn(client, async (client) => {
+      for (const domain of domainsToCreate) {
+        await ctx.with('create-table', {}, () => createTable(client, domain))
+        loadedDomains.add(url + domain)
+      }
+    })
+  }
 }
 
 async function getTableSchema (client: postgres.Sql, domains: string[]): Promise<void> {
-  const res = await client.unsafe(
-    `SELECT column_name, data_type, is_nullable, table_name
+  const res = await client.unsafe(`SELECT column_name::name, data_type::text, is_nullable::text, table_name::name
             FROM information_schema.columns
-            WHERE table_name = ANY($1) and table_schema = 'public' 
-            ORDER BY table_name, ordinal_position ASC;`,
-    [domains]
-  )
+            WHERE table_name IN (${domains.map((it) => `'${it}'`).join(', ')}) and table_schema = 'public'::name  
+            ORDER BY table_name::name, ordinal_position::int ASC;`)
 
   const schemas: Record<string, Schema> = {}
   for (const column of res) {
@@ -181,7 +190,12 @@ async function createTable (client: postgres.Sql, domain: string): Promise<void>
 /**
  * @public
  */
-export async function shutdown (): Promise<void> {
+export async function shutdownPostgres (contextVars: Record<string, any>): Promise<void> {
+  const connections: Map<string, PostgresClientReferenceImpl> | undefined =
+    contextVars.pgConnections ?? new Map<string, PostgresClientReferenceImpl>()
+  if (connections === undefined) {
+    return
+  }
   for (const c of connections.values()) {
     c.close(true)
   }
@@ -266,13 +280,31 @@ export class ClientRef implements PostgresClientReference {
   }
 }
 
+export let dbExtraOptions: Partial<Options<any>> = {}
+export function setDBExtraOptions (options: Partial<Options<any>>): void {
+  dbExtraOptions = options
+}
+
+export function getPrepare (): { prepare: boolean } {
+  return { prepare: dbExtraOptions.prepare ?? false }
+}
+
+export const doFetchTypes = true
+
 /**
  * Initialize a workspace connection to DB
  * @public
  */
-export function getDBClient (connectionString: string, database?: string): PostgresClientReference {
+export function getDBClient (
+  contextVars: Record<string, any>,
+  connectionString: string,
+  database?: string
+): PostgresClientReference {
   const extraOptions = JSON.parse(process.env.POSTGRES_OPTIONS ?? '{}')
   const key = `${connectionString}${extraOptions}`
+  const connections = contextVars.pgConnections ?? new Map<string, PostgresClientReferenceImpl>()
+  contextVars.pgConnections = connections
+
   let existing = connections.get(key)
 
   if (existing === undefined) {
@@ -282,10 +314,20 @@ export function getDBClient (connectionString: string, database?: string): Postg
       },
       database,
       max: 10,
+      min: 2,
+      connect_timeout: 10,
+      idle_timeout: 30,
+      max_lifetime: 300,
       transform: {
         undefined: null
       },
-      ...extraOptions
+      debug: false,
+      notice: false,
+      onnotice (notice) {},
+      onparameter (key, value) {},
+      ...dbExtraOptions,
+      ...extraOptions,
+      fetch_types: doFetchTypes
     })
 
     existing = new PostgresClientReferenceImpl(connectionString, sql, () => {
@@ -374,7 +416,7 @@ export function inferType (val: any): string {
     return '::boolean'
   }
   if (Array.isArray(val)) {
-    const type = inferType(val[0])
+    const type = inferType(val[0] ?? val[1])
     if (type !== '') {
       return type + '[]'
     }
@@ -436,7 +478,7 @@ export class DBCollectionHelper implements DomainHelperOperations {
   protected readonly workspaceId: WorkspaceId
 
   constructor (
-    protected readonly client: postgres.Sql,
+    protected readonly client: DBClient,
     protected readonly enrichedWorkspaceId: WorkspaceId
   ) {
     this.workspaceId = {
@@ -470,6 +512,50 @@ export class DBCollectionHelper implements DomainHelperOperations {
   }
 }
 
+export function decodeArray (value: string): string[] {
+  if (value === 'NULL') return []
+  // Remove first and last character (the array brackets)
+  const inner = value.substring(1, value.length - 1)
+  const items = inner.split(',')
+  return items.map((item) => {
+    // Remove quotes at start/end if they exist
+    let result = item
+    if (result.startsWith('"')) {
+      result = result.substring(1)
+    }
+    if (result.endsWith('"')) {
+      result = result.substring(0, result.length - 1)
+    }
+    // Replace escaped quotes with regular quotes
+    let final = ''
+    for (let i = 0; i < result.length; i++) {
+      if (result[i] === '\\' && result[i + 1] === '"') {
+        final += '"'
+        i++ // Skip next char
+      } else {
+        final += result[i]
+      }
+    }
+    return final
+  })
+}
+
+export function convertArrayParams (parameters?: ParameterOrJSON<any>[]): any[] | undefined {
+  if (parameters === undefined) return undefined
+  return parameters.map((param) => {
+    if (Array.isArray(param)) {
+      if (param.length === 0) return '{}'
+      const sanitized = param.map((item) => {
+        if (item === null) return 'NULL'
+        if (typeof item === 'string') return `"${item.replace(/"/g, '\\"')}"`
+        return String(item)
+      })
+      return `{${sanitized.join(',')}}`
+    }
+    return param
+  })
+}
+
 export function parseDocWithProjection<T extends Doc> (
   doc: DBDoc,
   domain: string,
@@ -487,6 +573,8 @@ export function parseDocWithProjection<T extends Doc> (
       }
     } else if (schema[key] !== undefined && schema[key].type === 'bigint') {
       ;(rest as any)[key] = Number.parseInt((rest as any)[key])
+    } else if (schema[key] !== undefined && schema[key].type === 'text[]' && typeof (rest as any)[key] === 'string') {
+      ;(rest as any)[key] = decodeArray((rest as any)[key])
     }
   }
   if (projection !== undefined) {
@@ -517,6 +605,8 @@ export function parseDoc<T extends Doc> (doc: DBDoc, schema: Schema): T {
       }
     } else if (schema[key] !== undefined && schema[key].type === 'bigint') {
       ;(rest as any)[key] = Number.parseInt((rest as any)[key])
+    } else if (schema[key] !== undefined && schema[key].type === 'text[]' && typeof (rest as any)[key] === 'string') {
+      ;(rest as any)[key] = decodeArray((rest as any)[key])
     }
   }
   const res = {

@@ -37,6 +37,7 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/notification": "^0.6.23",
@@ -47,7 +48,7 @@
     "@hcengineering/task": "^0.6.20",
     "@hcengineering/tracker": "^0.6.24",
     "@hcengineering/server-time": "^0.6.0",
-    "@hcengineering/text": "^0.6.5",
+    "@hcengineering/text-core": "^0.6.0",
     "@hcengineering/time": "^0.6.0"
   }
 }

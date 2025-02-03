@@ -30,7 +30,6 @@ import {
   type DocumentSpaceTypeDescriptor,
   type DocumentState,
   type DocumentTemplate,
-  type Sequence,
   type DocumentMeta,
   type ExternalSpace,
   type OrgSpace,
@@ -49,7 +48,6 @@ import {
   IndexKind,
   type Class,
   type MarkupBlobRef,
-  type Doc,
   type Domain,
   type Ref,
   type Timestamp,
@@ -58,7 +56,8 @@ import {
   type Role,
   type TypedSpace,
   type Account,
-  type RolesAssignment
+  type RolesAssignment,
+  type Rank
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -181,6 +180,10 @@ export class TProjectMeta extends TDoc implements ProjectMeta {
 
   @Prop(Collection(documents.class.ProjectDocument), documents.string.Documents)
     documents!: CollectionSize<ProjectDocument>
+
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    rank!: Rank
 }
 
 @Model(documents.class.ProjectDocument, core.class.AttachedDoc, DOMAIN_DOCUMENTS)
@@ -452,12 +455,6 @@ export class TDocumentComment extends TChatMessage implements DocumentComment {
 
   @Prop(TypeNumber(), documents.string.Index)
     index?: number
-}
-
-@Model(documents.class.Sequence, core.class.Doc, DOMAIN_DOCUMENTS)
-export class TSequence extends TDoc implements Sequence {
-  attachedTo!: Ref<Class<Doc>>
-  sequence!: number
 }
 
 @Model(documents.class.DocumentRequest, request.class.Request)

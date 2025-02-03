@@ -1,5 +1,5 @@
 //
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2023, 2025 Hardcore Engineering Inc.
 //
 
 import { Analytics } from '@hcengineering/analytics'
@@ -44,7 +44,9 @@ startFront(metricsContext, {
   DESKTOP_UPDATES_URL: process.env.DESKTOP_UPDATES_URL,
   DESKTOP_UPDATES_CHANNEL: process.env.DESKTOP_UPDATES_CHANNEL,
   ANALYTICS_COLLECTOR_URL: process.env.ANALYTICS_COLLECTOR_URL,
+  LINK_PREVIEW_URL: process.env.LINK_PREVIEW_URL,
   AI_URL: process.env.AI_URL,
   TELEGRAM_BOT_URL: process.env.TELEGRAM_BOT_URL,
-  STATS_URL: process.env.STATS_API ?? process.env.STATS_URL
+  STATS_URL: process.env.STATS_API ?? process.env.STATS_URL,
+  BACKUP_URL: process.env.BACKUP_URL
 })

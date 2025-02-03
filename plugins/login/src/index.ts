@@ -72,7 +72,14 @@ export default plugin(loginId, {
     LoginEndpoint: '' as Metadata<string>,
     LoginEmail: '' as Metadata<string>,
     DisableSignUp: '' as Metadata<boolean>,
-    TransactorOverride: '' as Metadata<string>
+    TransactorOverride: '' as Metadata<string>,
+    PasswordValidations: '' as Metadata<{
+      MinLength: number
+      MinSpecialChars: number
+      MinDigits: number
+      MinUpperChars: number
+      MinLowerChars: number
+    }>
   },
   component: {
     LoginApp: '' as AnyComponent,
@@ -85,7 +92,14 @@ export default plugin(loginId, {
     LinkValidHours: '' as IntlString,
     EmailMask: '' as IntlString,
     NoLimit: '' as IntlString,
-    InviteLimit: '' as IntlString
+    InviteLimit: '' as IntlString,
+    PasswordMinLength: '' as IntlString<{ count: number }>,
+    PasswordMinSpecialChars: '' as IntlString<{ count: number }>,
+    PasswordMinDigits: '' as IntlString<{ count: number }>,
+    PasswordMinUpperChars: '' as IntlString<{ count: number }>,
+    PasswordMinLowerChars: '' as IntlString<{ count: number }>,
+    WorkspaceArchived: '' as IntlString,
+    WorkspaceArchivedDesc: '' as IntlString
   },
   function: {
     SendInvite: '' as Resource<(email: string, personId?: Ref<Doc>, role?: AccountRole) => Promise<void>>,

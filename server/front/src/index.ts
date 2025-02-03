@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -25,9 +25,9 @@ import fileUpload, { UploadedFile } from 'express-fileupload'
 import expressStaticGzip from 'express-static-gzip'
 import https from 'https'
 import morgan from 'morgan'
-import { join, resolve } from 'path'
+import { join, normalize, resolve } from 'path'
 import { cwd } from 'process'
-import sharp from 'sharp'
+import sharp, { type Sharp } from 'sharp'
 import { v4 as uuid } from 'uuid'
 import { preConditions } from './utils'
 
@@ -109,6 +109,7 @@ async function getFileRange (
         )
         res.writeHead(206, {
           Connection: 'keep-alive',
+          'Keep-Alive': 'timeout=5',
           'Content-Range': `bytes ${start}-${end}/${size}`,
           'Accept-Ranges': 'bytes',
           'Content-Length': end - start + 1,
@@ -177,7 +178,8 @@ async function getFile (
       etag: stat.etag,
       'last-modified': new Date(stat.modifiedOn).toISOString(),
       'cache-control': cacheControlValue,
-      Connection: 'keep-alive'
+      Connection: 'keep-alive',
+      'Keep-Alive': 'timeout=5'
     })
     res.end()
     return
@@ -189,7 +191,8 @@ async function getFile (
       etag: stat.etag,
       'last-modified': new Date(stat.modifiedOn).toISOString(),
       'cache-control': cacheControlValue,
-      Connection: 'keep-alive'
+      Connection: 'keep-alive',
+      'Keep-Alive': 'timeout=5'
     })
     res.end()
     return
@@ -204,10 +207,12 @@ async function getFile (
         res.writeHead(200, {
           'Content-Type': stat.contentType,
           'Content-Security-Policy': "default-src 'none';",
+          'Content-Length': stat.size,
           Etag: stat.etag,
           'Last-Modified': new Date(stat.modifiedOn).toISOString(),
           'Cache-Control': cacheControlValue,
-          Connection: 'keep-alive'
+          Connection: 'keep-alive',
+          'Keep-Alive': 'timeout=5'
         })
 
         dataStream.pipe(res)
@@ -258,6 +263,7 @@ export function start (
     brandingUrl?: string
     previewConfig: string
     uploadConfig: string
+    linkPreviewUrl?: string
     pushPublicKey?: string
     disableSignUp?: string
   },
@@ -268,6 +274,24 @@ export function start (
 
   const tempFileDir = mkdtempSync(join(tmpdir(), 'front-'))
   let temoFileIndex = 0
+
+  function cleanupTempFiles (): void {
+    const maxAge = 1000 * 60 * 60 // 1 hour
+    fs.readdir(tempFileDir, (err, files) => {
+      if (err != null) return
+      files.forEach((file) => {
+        const filePath = join(tempFileDir, file)
+        fs.stat(filePath, (err, stats) => {
+          if (err != null) return
+          if (Date.now() - stats.mtime.getTime() > maxAge) {
+            fs.unlink(filePath, () => {})
+          }
+        })
+      })
+    })
+  }
+
+  setInterval(cleanupTempFiles, 1000 * 60 * 15) // Run every 15 minutes
 
   app.use(cors())
   app.use(
@@ -307,6 +331,7 @@ export function start (
       GMAIL_URL: config.gmailUrl,
       CALENDAR_URL: config.calendarUrl,
       COLLABORATOR: config.collaborator,
+      LINK_PREVIEW_URL: config.linkPreviewUrl,
       COLLABORATOR_URL: config.collaboratorUrl,
       BRANDING_URL: config.brandingUrl,
       PREVIEW_CONFIG: config.previewConfig,
@@ -318,6 +343,7 @@ export function start (
     res.status(200)
     res.set('Cache-Control', cacheControlNoCache)
     res.set('Connection', 'keep-alive')
+    res.set('Keep-Alive', 'timeout=5')
     res.json(data)
   })
 
@@ -329,6 +355,7 @@ export function start (
       res.status(200)
       res.setHeader('Content-Type', 'application/json')
       res.setHeader('Connection', 'keep-alive')
+      res.setHeader('Keep-Alive', 'timeout=5')
       res.setHeader('Cache-Control', cacheControlNoCache)
 
       const json = JSON.stringify({
@@ -376,6 +403,7 @@ export function start (
             res.setHeader('Cache-Control', cacheControlNoCache)
           }
           res.setHeader('Connection', 'keep-alive')
+          res.setHeader('Keep-Alive', 'timeout=5')
         }
       }
     })
@@ -414,6 +442,7 @@ export function start (
           if (req.method === 'HEAD') {
             res.writeHead(200, {
               'accept-ranges': 'bytes',
+              'Keep-Alive': 'timeout=5',
               'content-length': blobInfo.size,
               'content-security-policy': "default-src 'none';",
               Etag: blobInfo.etag,
@@ -603,7 +632,7 @@ export function start (
           }
           const id = uuid()
           const contentType = response.headers['content-type'] ?? 'application/octet-stream'
-          const data: Buffer[] = []
+          const data: Uint8Array[] = []
           response
             .on('data', function (chunk) {
               data.push(chunk)
@@ -681,7 +710,7 @@ export function start (
         }
         const id = uuid()
         const contentType = response.headers['content-type']
-        const data: Buffer[] = []
+        const data: Uint8Array[] = []
         response
           .on('data', function (chunk) {
             data.push(chunk)
@@ -735,6 +764,11 @@ export function start (
   ]
 
   app.get('*', (request, response) => {
+    const safePath = normalize(join(dist, request.path))
+    if (!safePath.startsWith(dist)) {
+      response.sendStatus(403)
+      return
+    }
     if (filesPatterns.some((it) => request.path.endsWith(it))) {
       response.sendStatus(404)
       return
@@ -744,7 +778,8 @@ export function start (
       lastModified: true,
       cacheControl: false,
       headers: {
-        'Cache-Control': cacheControlNoCache
+        'Cache-Control': cacheControlNoCache,
+        'Keep-Alive': 'timeout=5'
       }
     })
   })
@@ -809,13 +844,19 @@ async function getGeneratePreview (
     return d
   } else {
     const files: string[] = []
+    let pipeline: Sharp | undefined
     try {
       // Let's get data and resize it
       const fname = tempFile()
       files.push(fname)
       await writeFile(fname, await config.storageAdapter.get(ctx, payload.workspace, uuid))
 
-      let pipeline = sharp(fname)
+      pipeline = sharp(fname)
+      const md = await pipeline.metadata()
+      if (md.format === undefined) {
+        // No format detected, return blob
+        return blob
+      }
       sharp.cache(false)
 
       pipeline = pipeline.resize({
@@ -862,7 +903,7 @@ async function getGeneratePreview (
       const outFile = tempFile()
       files.push(outFile)
 
-      const dataBuff = await ctx.with('resize', { contentType }, () => pipeline.toFile(outFile))
+      const dataBuff = await ctx.with('resize', { contentType }, () => (pipeline as Sharp).toFile(outFile))
       pipeline.destroy()
 
       // Add support of avif as well.
@@ -895,6 +936,7 @@ async function getGeneratePreview (
       // Return original in case of error
       return blob
     } finally {
+      pipeline?.destroy()
       for (const f of files) {
         await rm(f)
       }

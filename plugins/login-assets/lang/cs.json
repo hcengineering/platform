@@ -57,6 +57,12 @@
     "Next": "Další",
     "Skip": "Přeskočit",
     "SignUpCompleted": "Registrace dokončena",
-    "StartUsingHuly": "Začněte používat Huly"
+    "StartUsingHuly": "Začněte používat Huly",
+    "PasswordMinLength": "{count, plural, =1 {Heslo musí být alespoň # znak dlouhé} other {Heslo musí být alespoň # znaků dlouhé}}",
+    "PasswordMinSpecialChars": "{count, plural, =1 {Heslo musí obsahovat alespoň # speciální znak} other {Heslo musí obsahovat alespoň # speciálních znaků}}",
+    "PasswordMinDigits": "{count, plural, =1 {Heslo musí obsahovat alespoň # číslo} other {Heslo musí obsahovat alespoň # čísel}}",
+    "PasswordMinUpperChars": "{count, plural, =1 {Heslo musí obsahovat alespoň # velké písmeno} other {Heslo musí obsahovat alespoň # velkých písmen}}",
+    "PasswordMinLowerChars": "{count, plural, =1 {Heslo musí obsahovat alespoň # malé písmeno} other {Heslo musí obsahovat alespoň # malých písmen}}",
+    "WorkspaceIsArchived": "Pracovní prostor je archivován kvůli nečinnosti. Kontaktujte nás prosím pro obnovení..."
   }
 }

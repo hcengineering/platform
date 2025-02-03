@@ -200,7 +200,7 @@ export async function deleteFile (id: string): Promise<void> {
     }
   })
 
-  if (resp.status !== 200) {
+  if (!resp.ok) {
     throw new Error('Failed to delete file')
   }
 }
@@ -217,7 +217,7 @@ async function uploadFileWithFormData (file: File, uuid: string, uploadUrl: stri
     body: data
   })
 
-  if (resp.status !== 200) {
+  if (!resp.ok) {
     if (resp.status === 413) {
       throw new PlatformError(new Status(Severity.ERROR, plugin.status.FileTooLarge, {}))
     } else {
@@ -282,5 +282,15 @@ async function uploadFileWithSignedUrl (file: File, uuid: string, uploadUrl: str
         Authorization: 'Bearer ' + (getMetadata(plugin.metadata.Token) as string)
       }
     })
+  }
+}
+
+export async function getJsonOrEmpty (file: string, name: string): Promise<any> {
+  try {
+    const fileUrl = getFileUrl(file, name)
+    const resp = await fetch(fileUrl)
+    return await resp.json()
+  } catch {
+    return {}
   }
 }

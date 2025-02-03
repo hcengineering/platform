@@ -76,6 +76,8 @@
     "ProvideRejectionReason": "Tapez la raison du rejet...",
     "RejectionReason": "Raison du rejet",
     "ConfirmReviewCompletion": "Confirmer l'achèvement de la révision",
+    "ConfirmApprovalSubmission": "Confirmer la soumission pour approbation",
+    "ConfirmReviewSubmission": "Confirmer la soumission pour examen",
     "AddApprovalTitle": "Envoyer votre document aux approuveurs",
     "AddApprovalDescription1": "Pour préparer votre document à l'approbation, il doit remplir quelques conditions :",
     "AddApprovalDescription2": "a le statut 'Brouillon' ou 'Révisé'",
@@ -251,7 +253,21 @@
     "DeleteDocumentCategoryPermission": "Supprimer la catégorie de document",
     "DeleteDocumentCategoryDescription": "Accorde aux utilisateurs la capacité de supprimer une catégorie de document",
     "ConfigLabel": "Documents contrôlés",
-    "ConfigDescription": "Extension pour gérer les documents contrôlés"
+    "ConfigDescription": "Extension pour gérer les documents contrôlés",
+
+    "Transfer": "Transfert",
+    "TransferWarning": "Certains membres de l'équipe peuvent perdre la possibilité de visualiser ou de modifier ce document après cette action.",
+    "TransferDocuments": "Transférer des documents contrôlés",
+    "TransferDocumentsHint": "Documents à transférer dans l'espace sélectionné:",
+
+    "CreateFolder": "Créer un nouveau dossier",
+    "RenameFolder": "Renommer le dossier",
+    "CreateChildFolder": "Créer un sous-dossier",
+
+    "Obsolete": "Obsolète",
+    "MakeDocumentObsolete": "Marquer comme obsolète",
+    "MakeDocumentObsoleteDialog": "Marquer {count, plural, one {le document comme obsolète} other {les documents comme obsolètes}}",
+    "MakeDocumentObsoleteConfirm": "Voulez-vous vraiment marquer les documents suivants comme obsolètes : {titles} ?"
   },
   "controlledDocStates": {
     "Empty": "",

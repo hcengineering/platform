@@ -54,7 +54,7 @@ import {
   TypeTimestamp,
   UX
 } from '@hcengineering/model'
-import { TAttachedDoc, TCard, TType, TTypedSpace } from '@hcengineering/model-core'
+import { TAttachedDoc, TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
@@ -84,19 +84,19 @@ export class TDefaultDriveTypeData extends TDrive implements RolesAssignment {
   [key: Ref<Role>]: Ref<Account>[]
 }
 
-@Model(drive.class.Resource, core.class.Card, DOMAIN_DRIVE)
+@Model(drive.class.Resource, core.class.Doc, DOMAIN_DRIVE)
 @UX(drive.string.Resource)
-export class TResource extends TCard implements Resource {
+export class TResource extends TDoc implements Resource {
   declare space: Ref<Drive>
 
   @Prop(TypeString(), drive.string.Name)
   @Index(IndexKind.FullText)
-  declare title: string
+    title!: string
 
   @Prop(TypeRef(drive.class.Resource), drive.string.Parent)
   @Index(IndexKind.Indexed)
   @ReadOnly()
-  declare parent: Ref<Resource>
+    parent!: Ref<Resource>
 
   @Prop(TypeRef(drive.class.Resource), drive.string.Path)
   @ReadOnly()
@@ -277,8 +277,8 @@ function defineDrive (builder: Builder): void {
             key: 'hideArchived',
             type: 'toggle',
             defaultValue: true,
-            actionTarget: 'query',
-            action: drive.function.HideArchivedDrives,
+            actionTarget: 'options',
+            action: view.function.HideArchived,
             label: view.string.HideArchived
           }
         ]

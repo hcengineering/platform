@@ -165,6 +165,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   triggerIndexing = (): void => {}
 
   async startIndexing (indexing: () => void): Promise<void> {
+    this.cancelling = false
     this.verify = this.verifyWorkspace(this.metrics, indexing)
     void this.verify.then(() => {
       this.indexing = this.doIndexing(indexing)
@@ -279,6 +280,23 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         }
       )
       await this.addMigration(ctx, docStructure)
+    }
+  }
+
+  async clearIndex (onlyDrop = false): Promise<void> {
+    if (!onlyDrop) {
+      const ctx = this.metrics
+      const migrations = await this.storage.findAll<MigrationState>(ctx, core.class.MigrationState, {
+        plugin: coreId,
+        state: {
+          $in: ['verify-indexes-v2', 'full-text-indexer-v4', 'full-text-structure-v4']
+        }
+      })
+
+      const refs = migrations.map((it) => it._id)
+      await this.storage.clean(ctx, DOMAIN_MIGRATION, refs)
+    } else {
+      await this.fulltextAdapter.clean(this.metrics, this.workspace)
     }
   }
 

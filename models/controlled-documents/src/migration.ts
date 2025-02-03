@@ -4,12 +4,12 @@
 
 import attachment, { type Attachment } from '@hcengineering/attachment'
 import {
-  YXmlElement,
-  YXmlText,
-  YAbstractType,
-  yXmlElementClone,
   loadCollabYdoc,
-  saveCollabYdoc
+  saveCollabYdoc,
+  YAbstractType,
+  YXmlElement,
+  yXmlElementClone,
+  YXmlText
 } from '@hcengineering/collaboration'
 import {
   type ChangeControl,
@@ -17,13 +17,16 @@ import {
   createChangeControl,
   createDocumentTemplate,
   type DocumentCategory,
+  type DocumentMeta,
   documentsId,
-  DocumentState
+  DocumentState,
+  type ProjectMeta
 } from '@hcengineering/controlled-documents'
 import {
   type Class,
   type Data,
   type Doc,
+  DOMAIN_SEQUENCE,
   DOMAIN_TX,
   generateId,
   makeDocCollabId,
@@ -48,6 +51,7 @@ import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import core from '@hcengineering/model-core'
 import tags from '@hcengineering/tags'
 
+import { makeRank } from '@hcengineering/rank'
 import documents, { DOMAIN_DOCUMENTS } from './index'
 
 async function createTemplatesSpace (tx: TxOperations): Promise<void> {
@@ -112,7 +116,7 @@ async function createProductChangeControlTemplate (tx: TxOperations): Promise<vo
       impactedDocuments: []
     }
 
-    const seq = await tx.findOne(documents.class.Sequence, {
+    const seq = await tx.findOne(core.class.Sequence, {
       _id: documents.sequence.Templates
     })
 
@@ -158,13 +162,13 @@ async function createProductChangeControlTemplate (tx: TxOperations): Promise<vo
 }
 
 async function createTemplateSequence (tx: TxOperations): Promise<void> {
-  const templateSeq = await tx.findOne(documents.class.Sequence, {
+  const templateSeq = await tx.findOne(core.class.Sequence, {
     _id: documents.sequence.Templates
   })
 
   if (templateSeq === undefined) {
     await tx.createDoc(
-      documents.class.Sequence,
+      core.class.Sequence,
       documents.space.Documents,
       {
         attachedTo: documents.mixin.DocumentTemplate,
@@ -364,6 +368,42 @@ async function migrateDocSections (client: MigrationClient): Promise<void> {
   }
 }
 
+async function migrateProjectMetaRank (client: MigrationClient): Promise<void> {
+  const projectMeta = await client.find<ProjectMeta>(DOMAIN_DOCUMENTS, {
+    _class: documents.class.ProjectMeta,
+    rank: { $exists: false }
+  })
+
+  const docMeta = await client.find<DocumentMeta>(DOMAIN_DOCUMENTS, {
+    _class: documents.class.ProjectDocument,
+    _id: { $in: projectMeta.map((p) => p.meta) }
+  })
+
+  const docMetaById = new Map<Ref<DocumentMeta>, DocumentMeta>()
+  for (const doc of docMeta) {
+    docMetaById.set(doc._id, doc)
+  }
+
+  projectMeta.sort((a, b) => {
+    const docA = docMetaById.get(a.meta)
+    const docB = docMetaById.get(b.meta)
+    return (docA?.title ?? '').localeCompare(docB?.title ?? '', undefined, { numeric: true })
+  })
+
+  let rank = makeRank(undefined, undefined)
+  const operations: { filter: MigrationDocumentQuery<ProjectMeta>, update: MigrateUpdate<ProjectMeta> }[] = []
+
+  for (const doc of projectMeta) {
+    operations.push({
+      filter: { _id: doc._id },
+      update: { $set: { rank } }
+    })
+    rank = makeRank(rank, undefined)
+  }
+
+  await client.bulk(DOMAIN_DOCUMENTS, operations)
+}
+
 export const documentsOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, documentsId, [
@@ -374,6 +414,21 @@ export const documentsOperation: MigrateOperation = {
       {
         state: 'migrateDocSections',
         func: migrateDocSections
+      },
+      {
+        state: 'migrateProjectMetaRank',
+        func: migrateProjectMetaRank
+      },
+      {
+        state: 'migrateSequnce',
+        func: async (client: MigrationClient) => {
+          await client.update(
+            DOMAIN_DOCUMENTS,
+            { _class: 'documents:class:Sequence' as Ref<Class<Doc>> },
+            { _class: core.class.Sequence }
+          )
+          await client.move(DOMAIN_DOCUMENTS, { _class: core.class.Sequence }, DOMAIN_SEQUENCE)
+        }
       }
     ])
   },

@@ -14,7 +14,7 @@
 //
 
 import { Class, Doc, Ref } from '@hcengineering/core'
-import { EmptyMarkup, MarkupNodeType, jsonToMarkup } from '@hcengineering/text'
+import { EmptyMarkup, MarkupNodeType, jsonToMarkup } from '@hcengineering/text-core'
 
 import { getReferencesData } from '../references'
 

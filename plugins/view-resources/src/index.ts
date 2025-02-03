@@ -129,7 +129,7 @@ import {
 } from './filter'
 
 import { AggregationMiddleware, AnalyticsMiddleware } from './middleware'
-import { showEmptyGroups } from './viewOptions'
+import { hideArchived, showEmptyGroups } from './viewOptions'
 import {
   canArchiveSpace,
   canDeleteObject,
@@ -168,6 +168,7 @@ export { default as NavLink } from './components/navigator/NavLink.svelte'
 export { default as StatusPresenter } from './components/status/StatusPresenter.svelte'
 export { default as StatusRefPresenter } from './components/status/StatusRefPresenter.svelte'
 export { default as FoldersBrowser } from './components/folders/FoldersBrowser.svelte'
+export { default as RelationsEditor } from './components/RelationsEditor.svelte'
 export { default as ListView } from './components/list/ListView.svelte'
 
 export * from './filter'
@@ -175,6 +176,7 @@ export * from './middleware'
 export * from './selection'
 export * from './status'
 export * from './utils'
+export * from './icons'
 export * from './objectIterator'
 export {
   buildModel,
@@ -320,6 +322,7 @@ export default async (): Promise<Resources> => ({
     FilterContainsResult: containsResult,
     FilterNestedMatchResult: nestedMatchResult,
     FilterNestedDontMatchResult: nestedDontMatchResult,
+    HideArchived: hideArchived,
     ShowEmptyGroups: showEmptyGroups,
     FilterDateOutdated: dateOutdated,
     FilterDateToday: dateToday,

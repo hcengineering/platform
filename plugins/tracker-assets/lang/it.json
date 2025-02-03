@@ -269,7 +269,8 @@
     "DefaultIssueStatus": "Stato predefinito della issue",
     "IssueStatus": "Stato",
     "Extensions": "Estensioni",
-    "RoleLabel": "Ruolo: {role}"
+    "RoleLabel": "Ruolo: {role}",
+    "UnsetParentIssue": "Annulla l'issue genitore"
   },
   "status": {}
 }

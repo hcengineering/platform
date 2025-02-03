@@ -2006,7 +2006,15 @@ export async function restore (
                 })
                 stream.on('end', () => {
                   const bf = Buffer.concat(chunks as any)
-                  const doc = JSON.parse(bf.toString()) as Doc
+                  let doc: Doc
+                  try {
+                    doc = JSON.parse(bf.toString()) as Doc
+                  } catch (err) {
+                    ctx.warn('failed to parse blob metadata', { name, workspace: workspaceId.name, err })
+                    next()
+                    return
+                  }
+
                   if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
                     const data = migradeBlobData(doc as Blob, changeset.get(doc._id) as string)
                     const d = blobs.get(bname) ?? (data !== '' ? Buffer.from(data, 'base64') : undefined)

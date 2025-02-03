@@ -15,7 +15,8 @@ import {
   TxCUD,
   TxMixin,
   TxProcessor,
-  TxUpdateDoc
+  TxUpdateDoc,
+  combineAttributes
 } from '@hcengineering/core'
 import core from '@hcengineering/core/src/component'
 import notification from '@hcengineering/notification'
@@ -74,16 +75,6 @@ function getModifiedAttributes (tx: TxCUD<Doc>, hierarchy: Hierarchy): Record<st
     return mixinTx.attributes as Record<string, any>
   }
   return {}
-}
-
-function combineAttributes (attributes: any[], key: string, operator: string, arrayKey: string): any[] {
-  return Array.from(
-    new Set(
-      attributes.flatMap((attr) =>
-        Array.isArray(attr[operator]?.[key]?.[arrayKey]) ? attr[operator]?.[key]?.[arrayKey] : attr[operator]?.[key]
-      )
-    )
-  ).filter((v) => v != null)
 }
 
 export function getDocUpdateAction (control: ActivityControl, tx: TxCUD<Doc>): DocUpdateAction {

@@ -51,7 +51,7 @@ import {
   toReceiverInfo,
   type NotificationProviderControl
 } from '@hcengineering/server-notification-resources'
-import { areEqualJson, extractReferences, jsonToMarkup, markupToJSON } from '@hcengineering/text'
+import { areEqualJson, extractReferences, jsonToMarkup, markupToJSON } from '@hcengineering/text-core'
 
 export function isDocMentioned (doc: Ref<Doc>, content: string): boolean {
   const references = []
@@ -151,6 +151,8 @@ export async function getPersonNotificationTxes (
     messageHtml: reference.message,
     mentionedIn: reference.attachedDocId ?? reference.srcDocId,
     mentionedInClass: reference.attachedDocClass ?? reference.srcDocClass,
+    objectId: reference.srcDocId,
+    objectClass: reference.srcDocClass,
     user: receiver[0]._id,
     isViewed: false,
     archived: false
@@ -238,9 +240,6 @@ export async function getPersonNotificationTxes (
         modifiedOn: originTx.modifiedOn,
         modifiedBy: sender._id
       }
-      const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
-        user: receiverInfo._id
-      })
 
       const msg = control.hierarchy.isDerived(data.mentionedInClass, activity.class.ActivityMessage)
         ? (await control.findAll(control.ctx, data.mentionedInClass, { _id: data.mentionedIn }))[0]
@@ -248,14 +247,11 @@ export async function getPersonNotificationTxes (
       await applyNotificationProviders(
         notificationData,
         notifyResult,
-        reference.srcDocId,
-        reference.srcDocClass,
         control,
         res,
         doc,
         receiverInfo,
         senderInfo,
-        subscriptions,
         notification.class.MentionInboxNotification,
         msg as ActivityMessage
       )

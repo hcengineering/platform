@@ -11,51 +11,53 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import core, {
-  type Class,
-  type Doc,
-  type DocumentQuery,
-  type Hierarchy,
-  type Ref,
-  type Tx,
-  type TxOperations,
-  type Space,
-  type Markup,
-  type Client,
-  type WithLookup,
-  SortingOrder,
-  getCurrentAccount,
-  checkPermission
-} from '@hcengineering/core'
-import { type IntlString, translate } from '@hcengineering/platform'
-import { getClient } from '@hcengineering/presentation'
-import { type Person, type Employee, type PersonAccount } from '@hcengineering/contact'
-import request, { RequestStatus } from '@hcengineering/request'
-import { isEmptyMarkup } from '@hcengineering/text'
-import { showPopup, getUserTimezone, type Location } from '@hcengineering/ui'
-import { type KeyFilter } from '@hcengineering/view'
 import chunter from '@hcengineering/chunter'
+import { type Employee, type Person, type PersonAccount } from '@hcengineering/contact'
 import documents, {
   type ControlledDocument,
   type Document,
-  type DocumentRequest,
-  type DocumentTemplate,
-  type DocumentSpace,
   type DocumentCategory,
-  type DocumentMeta,
   type DocumentComment,
+  type DocumentMeta,
+  type DocumentRequest,
+  type DocumentSpace,
+  type DocumentTemplate,
   type OrgSpace,
   type Project,
   type ProjectDocument,
   type ProjectMeta,
   ControlledDocumentState,
   DocumentState,
-  getDocumentName
+  getDocumentName,
+  getFirstRank
 } from '@hcengineering/controlled-documents'
-import { type Request } from '@hcengineering/request'
+import core, {
+  type Class,
+  type Client,
+  type Doc,
+  type DocumentQuery,
+  type Hierarchy,
+  type Markup,
+  type QuerySelector,
+  type Ref,
+  type Space,
+  type Tx,
+  type TxOperations,
+  type WithLookup,
+  SortingOrder,
+  checkPermission,
+  getCurrentAccount
+} from '@hcengineering/core'
+import { type IntlString, translate } from '@hcengineering/platform'
+import { getClient } from '@hcengineering/presentation'
+import request, { type Request, RequestStatus } from '@hcengineering/request'
+import { isEmptyMarkup } from '@hcengineering/text'
+import { type Location, getUserTimezone, showPopup } from '@hcengineering/ui'
+import { type KeyFilter } from '@hcengineering/view'
 
-import documentsResources from './plugin'
+import { makeRank } from '@hcengineering/rank'
 import { getProjectDocumentLink } from './navigation'
+import documentsResources from './plugin'
 import { wizardOpened } from './stores/wizards/create-document'
 
 export type TranslatedDocumentStates = Readonly<Record<DocumentState, string>>
@@ -80,7 +82,8 @@ export async function getTranslatedDocumentStates (lang: string): Promise<Transl
     [DocumentState.Draft]: await translate(documents.string.Draft, {}, lang),
     [DocumentState.Deleted]: await translate(documents.string.Deleted, {}, lang),
     [DocumentState.Effective]: await translate(documents.string.Effective, {}, lang),
-    [DocumentState.Archived]: await translate(documents.string.Archived, {}, lang)
+    [DocumentState.Archived]: await translate(documents.string.Archived, {}, lang),
+    [DocumentState.Obsolete]: await translate(documents.string.Obsolete, {}, lang)
   }
 }
 
@@ -115,6 +118,11 @@ export function isDocumentTemplate (hierarchy: Hierarchy, doc: Doc): doc is Docu
 
 export function isProjectDocument (hierarchy: Hierarchy, doc: Doc): doc is ProjectDocument {
   return hierarchy.isDerived(doc._class, documents.class.ProjectDocument)
+}
+
+export function isFolder (hierarchy: Hierarchy, doc: Doc): doc is ProjectDocument {
+  if (!isProjectDocument(hierarchy, doc)) return false
+  return doc.document === documents.ids.Folder
 }
 
 export async function getVisibleFilters (filters: KeyFilter[], space?: Ref<Space>): Promise<KeyFilter[]> {
@@ -152,6 +160,8 @@ export async function getDocumentMetaLinkFragment (document: Doc): Promise<Locat
       break
     } else if (doc.state === DocumentState.Deleted && targetDocument === undefined) {
       targetDocument = doc
+    } else if (doc.state === DocumentState.Obsolete && targetDocument === undefined) {
+      targetDocument = doc
     } else if (doc.state === DocumentState.Draft) {
       targetDocument = doc
     } else if (doc.state === DocumentState.Archived) {
@@ -185,6 +195,7 @@ export async function getDocumentMetaLinkFragment (document: Doc): Promise<Locat
 export interface TeamPopupData {
   controlledDoc: ControlledDocument
   requestClass: Ref<Class<DocumentRequest>>
+  requireSignature?: boolean
 }
 
 export async function sendReviewRequest (
@@ -355,13 +366,15 @@ export const statesTags: StatesTags = {
   [DocumentState.Draft]: 'draft',
   [DocumentState.Effective]: 'effective',
   [DocumentState.Archived]: 'obsolete',
-  [DocumentState.Deleted]: 'obsolete'
+  [DocumentState.Deleted]: 'obsolete',
+  [DocumentState.Obsolete]: 'obsolete'
 }
 
 export const documentStatesOrder = [
   DocumentState.Draft,
   DocumentState.Effective,
   DocumentState.Archived,
+  DocumentState.Obsolete,
   DocumentState.Deleted
 ]
 
@@ -456,6 +469,112 @@ export async function canCreateChildDocument (
   }
 
   return true
+}
+
+export async function canCreateChildFolder (
+  doc?: Document | Document[] | DocumentSpace | DocumentSpace[] | ProjectDocument | ProjectDocument[],
+  includeProjects = false
+): Promise<boolean> {
+  if (doc === null || doc === undefined) {
+    return false
+  }
+  if (Array.isArray(doc)) {
+    return false
+  }
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const spaceId: Ref<DocumentSpace> = isSpace(hierarchy, doc) ? doc._id : doc.space
+
+  const canCreateDocument = await checkPermission(client, documents.permission.CreateDocument, spaceId)
+  if (!canCreateDocument) {
+    return false
+  }
+
+  if (isSpace(hierarchy, doc)) {
+    const spaceType = await client.findOne(documents.class.DocumentSpaceType, { _id: doc.type })
+    return includeProjects || spaceType?.projects !== true
+  }
+
+  if (isProjectDocument(hierarchy, doc)) {
+    return await isEditableProject(doc.project)
+  }
+
+  return true
+}
+
+export async function canRenameFolder (
+  doc?: Document | Document[] | DocumentSpace | DocumentSpace[] | ProjectDocument | ProjectDocument[],
+  includeProjects = false
+): Promise<boolean> {
+  if (doc === null || doc === undefined) {
+    return false
+  }
+  if (Array.isArray(doc)) {
+    return false
+  }
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const spaceId: Ref<DocumentSpace> = isSpace(hierarchy, doc) ? doc._id : doc.space
+
+  const canCreateDocument = await checkPermission(client, documents.permission.CreateDocument, spaceId)
+  if (!canCreateDocument) {
+    return false
+  }
+
+  if (isSpace(hierarchy, doc)) {
+    const spaceType = await client.findOne(documents.class.DocumentSpaceType, { _id: doc.type })
+    return includeProjects || spaceType?.projects !== true
+  }
+
+  if (!isFolder(hierarchy, doc)) {
+    return false
+  }
+
+  return await isEditableProject(doc.project)
+}
+
+export async function canDeleteFolder (obj?: Doc | Doc[]): Promise<boolean> {
+  if (obj == null) {
+    return false
+  }
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  const objs = (Array.isArray(obj) ? obj : [obj]) as Document[]
+
+  const isFolders = objs.every((doc) => isFolder(hierarchy, doc))
+  if (!isFolders) {
+    return false
+  }
+
+  const folders = objs as unknown as ProjectDocument[]
+
+  const pjMeta = await client.findAll(documents.class.ProjectMeta, { _id: { $in: folders.map((f) => f.attachedTo) } })
+  const directChildren = await client.findAll(documents.class.ProjectMeta, {
+    parent: { $in: pjMeta.map((p) => p.meta) }
+  })
+
+  if (directChildren.length > 0) {
+    return false
+  }
+
+  const currentUser = getCurrentAccount() as PersonAccount
+  const isOwner = objs.every((doc) => doc.owner === currentUser.person)
+
+  if (isOwner) {
+    return true
+  }
+
+  const spaces = new Set(objs.map((doc) => doc.space))
+
+  return await Promise.all(
+    Array.from(spaces).map(
+      async (space) => await checkPermission(getClient(), documents.permission.ArchiveDocument, space)
+    )
+  ).then((res) => res.every((r) => r))
 }
 
 export async function canDeleteDocumentCategory (doc?: Doc | Doc[]): Promise<boolean> {
@@ -624,6 +743,54 @@ export async function createChildTemplate (doc: ProjectDocument): Promise<void> 
   showPopup(documents.component.QmsTemplateWizard, {})
 }
 
+export async function createChildFolder (doc: ProjectDocument): Promise<void> {
+  const props = {
+    space: doc.space,
+    project: doc.project,
+    parent: doc._id
+  }
+
+  showPopup(documents.component.CreateFolder, props)
+}
+
+export async function renameFolder (doc: ProjectDocument): Promise<void> {
+  const client = getClient()
+
+  const pjmeta = await client.findOne(documents.class.ProjectMeta, { _id: doc.attachedTo })
+  if (pjmeta === undefined) return
+
+  const meta = await client.findOne(documents.class.DocumentMeta, { _id: pjmeta.meta })
+  if (meta === undefined) return
+
+  const props = {
+    folder: meta,
+    name: meta.title
+  }
+
+  showPopup(documents.component.CreateFolder, props)
+}
+
+export async function deleteFolder (obj: ProjectDocument | ProjectDocument[]): Promise<void> {
+  const client = getClient()
+
+  if (!(await canDeleteFolder(obj))) {
+    return
+  }
+
+  const objs = Array.isArray(obj) ? obj : [obj]
+
+  const pjmeta = await client.findAll(documents.class.ProjectMeta, { _id: { $in: objs.map((p) => p.attachedTo) } })
+  const meta = await client.findAll(documents.class.DocumentMeta, { _id: { $in: pjmeta.map((p) => p.meta) } })
+
+  const docsToRemove = [...objs, ...pjmeta, ...meta]
+  const ops = client.apply()
+  for (const doc of docsToRemove) {
+    await ops.remove(doc)
+  }
+
+  await ops.commit()
+}
+
 export async function createDocument (space: DocumentSpace): Promise<void> {
   const project = await getLatestProjectId(space._id)
   wizardOpened({
@@ -639,6 +806,15 @@ export async function createTemplate (space: OrgSpace): Promise<void> {
   showPopup(documents.component.QmsTemplateWizard, {})
 }
 
+export async function createFolder (space: DocumentSpace): Promise<void> {
+  const project = await getLatestProjectId(space._id)
+  const props = {
+    space: space._id,
+    project: project ?? documents.ids.NoProject
+  }
+  showPopup(documents.component.CreateFolder, props)
+}
+
 export function formatSignatureDate (date: number): string {
   const timeZone: string = getUserTimezone()
 
@@ -652,4 +828,42 @@ export function formatSignatureDate (date: number): string {
     minute: 'numeric',
     second: 'numeric'
   })
+}
+
+export async function moveDocument (doc: ProjectMeta, space: Ref<Space>, target?: ProjectMeta): Promise<void> {
+  const client = getClient()
+
+  let parent = documents.ids.NoParent
+  let path: Array<Ref<DocumentMeta>> = []
+  if (target !== undefined) {
+    parent = target.meta
+    path = [target.meta, ...target.path]
+  }
+
+  const prevRank = await getFirstRank(client, space, doc.project, parent)
+  const rank = makeRank(prevRank, undefined)
+
+  await client.update(doc, { parent, path, rank })
+}
+
+export async function moveDocumentBefore (doc: ProjectMeta, before: ProjectMeta): Promise<void> {
+  const client = getClient()
+
+  const { space, parent, path } = before
+  const query = { rank: { $lt: before.rank } as unknown as QuerySelector<ProjectMeta['rank']> }
+  const lastRank = await getFirstRank(client, space, doc.project, parent, SortingOrder.Descending, query)
+  const rank = makeRank(lastRank, before.rank)
+
+  await client.update(doc, { parent, path, rank })
+}
+
+export async function moveDocumentAfter (doc: ProjectMeta, after: ProjectMeta): Promise<void> {
+  const client = getClient()
+
+  const { space, parent, path } = after
+  const query = { rank: { $gt: after.rank } as unknown as QuerySelector<ProjectMeta['rank']> }
+  const nextRank = await getFirstRank(client, space, doc.project, parent, SortingOrder.Ascending, query)
+  const rank = makeRank(after.rank, nextRank)
+
+  await client.update(doc, { parent, path, rank })
 }

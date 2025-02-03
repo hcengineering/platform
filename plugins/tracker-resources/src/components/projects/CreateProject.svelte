@@ -258,7 +258,6 @@
   }
 
   function chooseIcon (ev: MouseEvent): void {
-    const icons = [tracker.icon.Home, tracker.icon.RedCircle]
     const update = (result: any) => {
       if (result !== undefined && result !== null) {
         icon = result.icon
@@ -266,7 +265,7 @@
         isColorSelected = true
       }
     }
-    showPopup(IconPicker, { icon, color, icons }, 'top', update, update)
+    showPopup(IconPicker, { icon, color }, 'top', update, update)
   }
 
   function close (id?: Ref<Project>): void {

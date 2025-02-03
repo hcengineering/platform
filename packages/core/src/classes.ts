@@ -80,13 +80,6 @@ export interface Doc<S extends Space = Space> extends Obj {
   createdOn?: Timestamp // Marked as optional since it will be filled by platform.
 }
 
-export interface Card extends Doc {
-  title: string
-  description?: MarkupBlobRef | null
-  identifier?: string
-  parent?: Ref<Card> | null
-}
-
 /**
  * @public
  */
@@ -100,6 +93,26 @@ export interface UXObject extends Obj {
   icon?: Asset
   hidden?: boolean
   readonly?: boolean
+}
+
+/**
+ * @public
+ */
+export interface Association extends Doc {
+  classA: Ref<Class<Doc>>
+  classB: Ref<Class<Doc>>
+  nameA: string
+  nameB: string
+  type: '1:1' | '1:N' | 'N:N'
+}
+
+/**
+ * @public
+ */
+export interface Relation extends Doc {
+  docA: Ref<Doc>
+  docB: Ref<Doc>
+  association: Ref<Association>
 }
 
 /**
@@ -360,6 +373,11 @@ export const DOMAIN_TRANSIENT = 'transient' as Domain
 /**
  * @public
  */
+export const DOMAIN_RELATION = 'relation' as Domain
+
+/**
+ * @public
+ */
 export interface TransientConfiguration extends Class<Doc> {
   // If set will not store transient objects into memdb
   broadcastOnly: boolean
@@ -372,6 +390,11 @@ export interface TransientConfiguration extends Class<Doc> {
 export const DOMAIN_BLOB = 'blob' as Domain
 
 export const DOMAIN_DOC_INDEX_STATE = 'doc-index-state' as Domain
+
+/**
+ * @public
+ */
+export const DOMAIN_SEQUENCE = 'sequence' as Domain
 
 // S P A C E
 
@@ -533,6 +556,14 @@ export interface DocIndexState extends Doc {
 
 /**
  * @public
+ */
+export interface Sequence extends Doc {
+  attachedTo: Ref<Class<Doc>>
+  sequence: number
+}
+
+/**
+ * @public
  *
  * A blob document to manage blob attached documents.
  *
@@ -678,7 +709,7 @@ export function isActiveMode (mode?: WorkspaceMode): boolean {
   return mode === 'active'
 }
 export function isDeletingMode (mode: WorkspaceMode): boolean {
-  return mode === 'pending-deletion' || mode === 'deleting'
+  return mode === 'pending-deletion' || mode === 'deleting' || mode === 'deleted'
 }
 export function isArchivingMode (mode?: WorkspaceMode): boolean {
   return (
@@ -702,6 +733,10 @@ export function isRestoringMode (mode?: WorkspaceMode): boolean {
   return mode === 'restoring' || mode === 'pending-restore'
 }
 
+export function isUpgradingMode (mode?: WorkspaceMode): boolean {
+  return mode === 'upgrading'
+}
+
 export type WorkspaceUpdateEvent =
   | 'ping'
   | 'create-started'
@@ -720,6 +755,8 @@ export type WorkspaceUpdateEvent =
   | 'archiving-clean-started'
   | 'archiving-clean-done'
   | 'archiving-done'
+  | 'delete-started'
+  | 'delete-done'
 
 export interface BackupStatus {
   dataSize: number

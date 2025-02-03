@@ -1,0 +1,23 @@
+{
+  "string": {
+    "Card": "Carta",
+    "CardApplication": "Carte",
+    "Cards": "Carte",
+    "Content": "Contenuto",
+    "CreateCard": "Crea Carta",
+    "CreateMasterTag": "Crea Tag Principale",
+    "CreateTag": "Crea Tag",
+    "MasterTag": "Tag Principale",
+    "MasterTags": "Tag Principali",
+    "Parent": "Genitore",
+    "Tags": "Tag",
+    "Tag": "Tag",
+    "CardLibrary": "Libreria Carte",
+    "MinimizeAll": "Minimizza Tutto",
+    "ExpandAll": "Espandi Tutto",
+    "DeleteTag": "Elimina Tag",
+    "DeleteTagConfirm": "Sei sicuro di voler eliminare questo tag? Tutte le proprietà correlate verranno eliminate",
+    "DeleteMasterTag": "Elimina Tag Principale",
+    "DeleteMasterTagConfirm": "Sei sicuro di voler eliminare questo tag principale? Tutti gli oggetti correlati a questo tag principale verranno eliminati"
+  }
+}

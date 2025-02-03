@@ -151,8 +151,7 @@ export const PUSH_NOTIFICATION_TITLE_SIZE = 80
 export default plugin(serverNotificationId, {
   metadata: {
     SesUrl: '' as Metadata<string>,
-    PushPrivateKey: '' as Metadata<string>,
-    PushSubject: '' as Metadata<string>,
+    SesAuthToken: '' as Metadata<string>,
     InboxOnlyNotifications: '' as Metadata<boolean>
   },
   class: {
@@ -169,7 +168,8 @@ export default plugin(serverNotificationId, {
     OnAttributeUpdate: '' as Resource<TriggerFunc>,
     OnReactionChanged: '' as Resource<TriggerFunc>,
     OnDocRemove: '' as Resource<TriggerFunc>,
-    OnEmployeeDeactivate: '' as Resource<TriggerFunc>
+    OnEmployeeDeactivate: '' as Resource<TriggerFunc>,
+    PushNotificationsHandler: '' as Resource<TriggerFunc>
   },
   function: {
     IsUserInFieldValueTypeMatch: '' as TypeMatchFunc,

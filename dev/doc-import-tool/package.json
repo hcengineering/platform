@@ -63,7 +63,7 @@
     "domhandler": "^5.0.3",
     "domutils": "^3.1.0",
     "htmlparser2": "^9.0.0",
-    "mammoth": "^1.6.0",
+    "mammoth": "^1.9.0",
     "docx4js": "^3.2.20",
     "zod": "^3.22.4"
   }

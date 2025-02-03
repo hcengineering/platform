@@ -33,6 +33,7 @@ import {
   WebhookReceiver
 } from 'livekit-server-sdk'
 import config from './config'
+import { saveLiveKitEgressBilling, saveLiveKitSessionBilling } from './billing'
 import { getS3UploadParams, saveFile } from './storage'
 import { WorkspaceClient } from './workspaceClient'
 
@@ -96,6 +97,13 @@ export const main = async (): Promise<void> => {
             console.log('no data found for', res.filename)
           }
         }
+
+        await saveLiveKitEgressBilling(ctx, event.egressInfo)
+
+        res.send()
+        return
+      } else if (event.event === 'room_finished' && event.room !== undefined) {
+        await saveLiveKitSessionBilling(ctx, event.room.sid)
         res.send()
         return
       }

@@ -68,7 +68,7 @@
     "dotenv": "~16.0.0",
     "cors": "^2.8.5",
     "express": "^4.21.2",
-    "fast-equals": "^5.0.1",
+    "fast-equals": "^5.2.2",
     "file-api": "^0.10.4",
     "googleapis": "^122.0.0",
     "google-auth-library": "^8.0.2",

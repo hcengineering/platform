@@ -16,7 +16,6 @@
 import { Analytics } from '@hcengineering/analytics'
 import contact, {
   AvatarType,
-  buildGravatarId,
   checkHasGravatar,
   combineName,
   Employee,
@@ -64,6 +63,7 @@ import { connect } from '@hcengineering/server-tool'
 import { randomBytes } from 'crypto'
 import otpGenerator from 'otp-generator'
 
+import { getWorkspaceDestroyAdapter, sharedPipelineContextVars } from '@hcengineering/server-pipeline'
 import { accountPlugin } from './plugin'
 import type {
   Account,
@@ -93,8 +93,11 @@ import {
   toAccountInfo,
   verifyPassword
 } from './utils'
-import { getWorkspaceDestroyAdapter } from '@hcengineering/server-pipeline'
 
+import MD5 from 'crypto-js/md5'
+function buildGravatarId (email: string): string {
+  return MD5(email.trim().toLowerCase()).toString()
+}
 /**
  * @public
  */
@@ -504,7 +507,7 @@ export async function selectWorkspace (
       const result: WorkspaceLoginInfo = {
         endpoint: '',
         email,
-        token: '',
+        token: generateToken(email, getWorkspaceId(workspaceInfo.workspace), getExtra(accountInfo)),
         workspace: workspaceUrl,
         workspaceId: workspaceInfo.workspace,
         mode: workspaceInfo.mode,
@@ -863,7 +866,8 @@ export async function listWorkspaces (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  region?: string | null
+  region?: string | null,
+  mode?: WorkspaceMode | null
 ): Promise<WorkspaceInfo[]> {
   decodeToken(ctx, token) // Just verify token is valid
 
@@ -871,9 +875,17 @@ export async function listWorkspaces (
     region = null
   }
 
-  return (await db.workspace.find(region != null ? { region } : {}))
-    .filter((it) => it.disabled !== true)
-    .map(trimWorkspaceInfo)
+  const q: Query<Workspace> = {
+    disabled: { $ne: true }
+  }
+  if (region != null) {
+    q.region = region
+  }
+  if (mode != null) {
+    q.mode = mode
+  }
+
+  return (await db.workspace.find(q)).map(trimWorkspaceInfo)
 }
 
 /**
@@ -1259,6 +1271,14 @@ export async function updateWorkspaceInfo (
       update.mode = 'archived'
       update.progress = 100
       break
+    case 'delete-started':
+      update.mode = 'deleting'
+      update.progress = 0
+      break
+    case 'delete-done':
+      update.mode = 'deleted'
+      update.progress = 100
+      break
     case 'ping':
     default:
       break
@@ -1285,7 +1305,7 @@ export async function performWorkspaceOperation (
   branding: Branding | null,
   token: string,
   workspaceId: string | string[],
-  event: 'archive' | 'migrate-to' | 'unarchive',
+  event: 'archive' | 'migrate-to' | 'unarchive' | 'delete',
   ...params: any
 ): Promise<boolean> {
   const decodedToken = decodeToken(ctx, token)
@@ -1308,6 +1328,16 @@ export async function performWorkspaceOperation (
   for (const workspaceInfo of workspaceInfos) {
     const update: Partial<WorkspaceInfo> = {}
     switch (event) {
+      case 'delete':
+        if (workspaceInfo.mode !== 'active') {
+          throw new PlatformError(unknownError('Archive allowed only for active workspaces'))
+        }
+
+        update.mode = 'pending-deletion'
+        update.attempts = 0
+        update.progress = 0
+        update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
+        break
       case 'archive':
         if (workspaceInfo.mode !== 'active') {
           throw new PlatformError(unknownError('Archive allowed only for active workspaces'))
@@ -1698,7 +1728,8 @@ export async function getAllWorkspaces (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  token: string
+  token: string,
+  mode?: WorkspaceMode
 ): Promise<BaseWorkspaceInfo[]> {
   const { email } = decodeToken(ctx, token)
   const account = await getAccount(db, email)
@@ -2361,7 +2392,7 @@ export async function dropWorkspaceFull (
   const ws = await dropWorkspace(ctx, db, branding, workspaceId)
 
   const adapter = getWorkspaceDestroyAdapter(dbUrl)
-  await adapter.deleteWorkspace(ctx, { name: ws.workspace })
+  await adapter.deleteWorkspace(ctx, sharedPipelineContextVars, { name: ws.workspace })
 
   const wspace = getWorkspaceId(workspaceId)
   const hasBucket = await storageAdapter?.exists(ctx, wspace)
@@ -2675,7 +2706,14 @@ export async function joinWithProvider (
     }
     let account = await getAccount(db, email)
     if (account == null && extra !== undefined) {
-      account = await getAccountByQuery(db, extra)
+      // Temporary: we don't want to use githubUser to search yet
+      // but we want to save it in the account
+      const extraSearch = {
+        ...extra
+      }
+      delete extraSearch.githubUser
+
+      account = await getAccountByQuery(db, extraSearch)
     }
     if (account !== null) {
       // we should clean password if account is not confirmed
@@ -2757,7 +2795,14 @@ export async function loginWithProvider (
     }
     let account = await getAccount(db, email)
     if (account == null && extra !== undefined) {
-      account = await getAccountByQuery(db, extra)
+      // Temporary: we don't want to use githubUser to search yet
+      // but we want to save it in the account
+      const extraSearch = {
+        ...extra
+      }
+      delete extraSearch.githubUser
+
+      account = await getAccountByQuery(db, extraSearch)
     }
     if (account !== null) {
       // we should clean password if account is not confirmed

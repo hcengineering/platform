@@ -16,7 +16,15 @@
   import { WithLookup, type Doc, type Ref, type Space } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { getResource } from '@hcengineering/platform'
-  import { type Action, getPlatformColorForTextDef, themeStore, navigate, IconEdit, Label } from '@hcengineering/ui'
+  import {
+    type Action,
+    getPlatformColorForTextDef,
+    themeStore,
+    navigate,
+    IconEdit,
+    Label,
+    closeTooltip
+  } from '@hcengineering/ui'
   import { getActions as getContributedActions, TreeNode, TreeItem } from '@hcengineering/view-resources'
   import { ActionGroup } from '@hcengineering/view'
   import {
@@ -40,10 +48,18 @@
     getProjectDocsHierarchy,
     isEditableProject,
     createDocument,
-    canCreateChildDocument
+    canCreateChildDocument,
+    moveDocument,
+    moveDocumentBefore,
+    moveDocumentAfter,
+    canCreateChildFolder,
+    createFolder
   } from '../../utils'
 
   import documents from '../../plugin'
+
+  import DropArea from './DropArea.svelte'
+  import DropMarker from './DropMarker.svelte'
 
   export let space: DocumentSpace
   export let currentSpace: Ref<Space> | undefined
@@ -67,6 +83,7 @@
   let project: Ref<Project> = documents.ids.NoProject
   $: void selectProject(space)
 
+  let docsByMeta = new Map<Ref<DocumentMeta>, WithLookup<ProjectMeta>>()
   let rootDocs: Array<WithLookup<ProjectMeta>> = []
   let childrenByParent: Record<Ref<DocumentMeta>, Array<WithLookup<ProjectMeta>>> = {}
 
@@ -78,6 +95,7 @@
       project
     },
     (result) => {
+      docsByMeta = new Map(result.map((r) => [r.meta, r]))
       ;({ rootDocs, childrenByParent } = getProjectDocsHierarchy(result))
     },
     {
@@ -116,6 +134,23 @@
     selectedControlledDoc = undefined
   }
 
+  function getAllDescendants (obj: Ref<DocumentMeta>): Ref<DocumentMeta>[] {
+    const result: Ref<DocumentMeta>[] = []
+    const queue: Ref<DocumentMeta>[] = [obj]
+
+    while (queue.length > 0) {
+      const next = queue.pop()
+      if (next === undefined) break
+
+      const children = childrenByParent[next] ?? []
+      const childrenRefs = children.map((p) => p.meta)
+      result.push(...childrenRefs)
+      queue.push(...childrenRefs)
+    }
+
+    return result
+  }
+
   async function selectProject (space: DocumentSpace): Promise<void> {
     project = getCurrentProject(space._id) ?? (await getLatestProjectId(space._id, true)) ?? documents.ids.NoProject
   }
@@ -141,6 +176,21 @@
         group: 'create',
         action: async () => {
           await createDocument(space)
+        }
+      })
+    }
+
+    if (
+      spaceType?.projects === true &&
+      (await isEditableProject(project)) &&
+      (await canCreateChildFolder(space, true))
+    ) {
+      actions.push({
+        icon: documents.icon.Folder,
+        label: documents.string.CreateFolder,
+        group: 'create',
+        action: async () => {
+          await createFolder(space)
         }
       })
     }
@@ -181,75 +231,202 @@
 
     return actions
   }
+
+  let parent: HTMLElement
+  let draggedItem: Ref<DocumentMeta> | undefined = undefined
+  let draggedOver: Ref<DocumentMeta> | undefined = undefined
+  let draggedOverPos: 'before' | 'after' | undefined = undefined
+  let draggedOverTop: number = 0
+  let cannotDropTo: Ref<DocumentMeta>[] = []
+
+  function canDrop (object: Ref<DocumentMeta>, target: Ref<DocumentMeta>): boolean {
+    if (object === target) return false
+    if (cannotDropTo.includes(target)) return false
+
+    return true
+  }
+
+  function onDragStart (event: DragEvent, object: Ref<DocumentMeta>): void {
+    // no prevent default to leverage default rendering
+    // event.preventDefault()
+    if (event.dataTransfer === null || event.target === null) {
+      return
+    }
+
+    cannotDropTo = [object, ...getAllDescendants(object)]
+
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.dropEffect = 'move'
+    draggedItem = object
+
+    closeTooltip()
+  }
+
+  function getDropPosition (event: DragEvent): { pos: 'before' | 'after' | undefined, top: number } {
+    const parentRect = parent.getBoundingClientRect()
+    const targetRect = (event.target as HTMLElement).getBoundingClientRect()
+    const dropPosition = event.clientY - targetRect.top
+
+    const before = dropPosition >= 0 && dropPosition < targetRect.height / 6
+    const after = dropPosition <= targetRect.height && dropPosition > (5 * targetRect.height) / 6
+
+    const pos = before ? 'before' : after ? 'after' : undefined
+    const top = pos === 'before' ? targetRect.top - parentRect.top - 1 : targetRect.bottom - parentRect.top - 1
+
+    return { pos, top }
+  }
+
+  function onDragOver (event: DragEvent, object: Ref<DocumentMeta>): void {
+    event.preventDefault()
+    // this is an ugly solution to control drop effect
+    // we drag and drop elements that are in the depth of components hierarchy
+    // so we cannot access them directly
+    if (!(event.target as HTMLElement).draggable) return
+    if (event.dataTransfer === null || event.target === null || draggedItem === object) {
+      return
+    }
+
+    if (draggedItem !== undefined && canDrop(draggedItem, object)) {
+      event.dataTransfer.dropEffect = 'move'
+      draggedOver = object
+
+      const { pos, top } = getDropPosition(event)
+      draggedOverPos = pos
+      draggedOverTop = top
+    } else {
+      event.dataTransfer.dropEffect = 'none'
+    }
+  }
+
+  function onDragEnd (event: DragEvent): void {
+    event.preventDefault()
+    draggedItem = undefined
+    draggedOver = undefined
+    draggedOverPos = undefined
+  }
+
+  function onDrop (event: DragEvent, object: Ref<DocumentMeta>): void {
+    event.preventDefault()
+    if (event.dataTransfer === null) {
+      return
+    }
+    if (draggedItem !== undefined && canDrop(draggedItem, object)) {
+      const doc = docsByMeta.get(draggedItem)
+      const target = docsByMeta.get(object)
+
+      if (doc !== undefined && target !== undefined && doc._id !== target._id) {
+        if (object === documents.ids.NoParent) {
+          void moveDocument(doc, doc.space)
+        } else if (target !== undefined) {
+          const { pos } = getDropPosition(event)
+          if (pos === 'before') {
+            void moveDocumentBefore(doc, target)
+          } else if (pos === 'after') {
+            void moveDocumentAfter(doc, target)
+          } else if (doc.parent !== object) {
+            void moveDocument(doc, target.space, target)
+          }
+        }
+      }
+    }
+    draggedItem = undefined
+    draggedOver = undefined
+  }
 </script>
 
-<TreeNode
-  _id={space?._id}
-  folderIcon
-  iconProps={{
-    fill: getPlatformColorForTextDef(space.name, $themeStore.dark).icon
-  }}
-  title={space.name}
-  highlighted={space._id === currentSpace && currentFragment !== undefined && !deselect}
-  visible={(space._id === currentSpace && currentFragment !== undefined && !deselect) || forciblyСollapsed}
-  showMenu={pressed}
-  {forciblyСollapsed}
-  actions={() => getSpaceActions(space)}
-  type={'nested'}
->
-  <svelte:fragment slot="extra">
-    {#if spaceType?.projects === true}
-      <ProjectSelector
-        value={project}
-        space={space?._id}
-        maxWidth={'6rem'}
-        kind={'ghost'}
-        size={'x-small'}
-        showDropdownIcon
-        bind:pressed
-        on:change={(evt) => {
-          project = evt.detail
-          setCurrentProject(space._id, project)
-        }}
-      />
-    {/if}
-  </svelte:fragment>
-
-  {#if rootDocs.length > 0}
-    <DocHierarchyLevel
-      projectMeta={rootDocs}
-      {childrenByParent}
-      {selected}
-      getMoreActions={getDocumentActions}
-      on:selected={(e) => {
-        handleDocumentSelected(e.detail)
-      }}
-    />
-  {:else}
-    <div class="pseudo-element flex-row-center content-dark-color text-md nowrap">
-      <Label label={documents.string.NoDocuments} />
-    </div>
+<div bind:this={parent} class="flex-col relative">
+  {#if draggedOver === documents.ids.NoParent}
+    <DropArea />
   {/if}
 
-  <svelte:fragment slot="visible">
-    {#if (selected || forciblyСollapsed) && selectedControlledDoc}
-      {@const doc = selectedControlledDoc}
-      <TreeItem
-        _id={doc._id}
-        icon={documents.icon.Document}
-        iconProps={{
-          fill: 'currentColor'
+  {#if draggedOver && draggedOverPos}
+    <DropMarker top={draggedOverTop} />
+  {/if}
+
+  <TreeNode
+    _id={space?._id}
+    folderIcon
+    iconProps={{
+      fill: getPlatformColorForTextDef(space.name, $themeStore.dark).icon
+    }}
+    title={space.name}
+    highlighted={space._id === currentSpace && currentFragment !== undefined && !deselect}
+    visible={(space._id === currentSpace && currentFragment !== undefined && !deselect) || forciblyСollapsed}
+    showMenu={pressed}
+    {forciblyСollapsed}
+    actions={() => getSpaceActions(space)}
+    type={'nested'}
+    draggable
+    on:drop={(evt) => {
+      onDrop(evt, documents.ids.NoParent)
+    }}
+    on:dragover={(evt) => {
+      onDragOver(evt, documents.ids.NoParent)
+    }}
+    on:dragstart={(evt) => {
+      evt.preventDefault()
+    }}
+  >
+    <svelte:fragment slot="extra">
+      {#if spaceType?.projects === true}
+        <ProjectSelector
+          value={project}
+          space={space?._id}
+          maxWidth={'6rem'}
+          kind={'ghost'}
+          size={'x-small'}
+          showDropdownIcon
+          bind:pressed
+          on:change={(evt) => {
+            project = evt.detail
+            setCurrentProject(space._id, project)
+          }}
+        />
+      {/if}
+    </svelte:fragment>
+
+    {#if rootDocs.length > 0}
+      <DocHierarchyLevel
+        projectMeta={rootDocs}
+        {childrenByParent}
+        {selected}
+        getMoreActions={getDocumentActions}
+        on:selected={(e) => {
+          handleDocumentSelected(e.detail)
         }}
-        title={getDocumentName(doc)}
-        actions={() => getDocumentActions(doc)}
-        selected
-        isFold
-        empty
-        forciblyСollapsed
+        {onDragStart}
+        {onDragEnd}
+        {onDragOver}
+        {onDrop}
+        {draggedItem}
+        {draggedOver}
       />
+    {:else}
+      <div class="pseudo-element flex-row-center content-dark-color text-md nowrap">
+        <Label label={documents.string.NoDocuments} />
+      </div>
     {/if}
-  </svelte:fragment>
-</TreeNode>
+
+    <svelte:fragment slot="visible">
+      {#if (selected || forciblyСollapsed) && selectedControlledDoc}
+        {@const doc = selectedControlledDoc}
+        <TreeItem
+          _id={doc._id}
+          icon={documents.icon.Document}
+          iconProps={{
+            fill: 'currentColor'
+          }}
+          title={getDocumentName(doc)}
+          actions={() => getDocumentActions(doc)}
+          selected
+          isFold
+          empty
+          forciblyСollapsed
+        />
+      {/if}
+    </svelte:fragment>
+  </TreeNode>
+</div>
 
 <style lang="scss">
   .pseudo-element {

@@ -18,7 +18,6 @@
   import { ListSelectionProvider } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { WithLookup } from '@hcengineering/core'
-
   import { AttachmentImageSize } from '../types'
   import { getType, showAttachmentPreviewPopup } from '../utils'
   import AttachmentActions from './AttachmentActions.svelte'
@@ -107,8 +106,8 @@
   }
 
   .content {
-    max-width: 20rem;
-    max-height: 20rem;
+    max-width: 25rem;
+    max-height: 25rem;
     scroll-snap-align: start;
   }
 </style>

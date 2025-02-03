@@ -66,17 +66,19 @@ import {
   registerDestroyFactory,
   registerServerPlugins,
   registerStringLoaders,
-  registerTxAdapterFactory
+  registerTxAdapterFactory,
+  sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import { FileModelLogger, buildModel } from '@hcengineering/server-tool'
+import { buildModel, FileModelLogger } from '@hcengineering/server-tool'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 import path from 'path'
 
 import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { program, type Command } from 'commander'
+import { addControlledDocumentRank } from './qms'
 import { clearTelegramHistory } from './telegram'
-import { diffWorkspace, recreateElastic, updateField } from './workspace'
+import { diffWorkspace, updateField } from './workspace'
 
 import core, {
   AccountRole,
@@ -104,17 +106,24 @@ import {
   createMongoTxAdapter,
   getMongoClient,
   getWorkspaceMongoDB,
-  shutdown
+  shutdownMongo
 } from '@hcengineering/mongo'
 import { backupDownload } from '@hcengineering/server-backup/src/backup'
 
 import { createDatalakeClient, CONFIG_KIND as DATALAKE_CONFIG_KIND, type DatalakeConfig } from '@hcengineering/datalake'
 import { getModelVersion } from '@hcengineering/model-all'
+import {
+  createPostgreeDestroyAdapter,
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  shutdownPostgres
+} from '@hcengineering/postgres'
 import { CONFIG_KIND as S3_CONFIG_KIND, S3Service, type S3Config } from '@hcengineering/s3'
 import type { PipelineFactory, StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
 import { getAccountDBUrl, getMongoDBUrl } from './__start'
+import { fillGithubUsers, fixAccountEmails, renameAccount } from './account'
 import {
   benchmark,
   benchmarkWorker,
@@ -138,16 +147,15 @@ import {
 import { changeConfiguration } from './configuration'
 import {
   generateUuidMissingWorkspaces,
-  updateDataWorkspaceIdToUuid,
   moveAccountDbFromMongoToPG,
   moveFromMongoToPG,
-  moveWorkspaceFromMongoToPG
+  moveWorkspaceFromMongoToPG,
+  updateDataWorkspaceIdToUuid
 } from './db'
-import { restoreControlledDocContentMongo, restoreWikiContentMongo, restoreMarkupRefsMongo } from './markup'
+import { reindexWorkspace } from './fulltext'
+import { restoreControlledDocContentMongo, restoreMarkupRefsMongo, restoreWikiContentMongo } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
-import { fixAccountEmails, renameAccount } from './renameAccount'
 import { copyToDatalake, moveFiles, showLostFiles } from './storage'
-import { createPostgresTxAdapter, createPostgresAdapter, createPostgreeDestroyAdapter } from '@hcengineering/postgres'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -160,6 +168,16 @@ const colorConstants = {
   colorPencil: '\u001b[38;2;253;182;0m',
   reset: '\u001b[0m'
 }
+
+// Register close on process exit.
+process.on('exit', () => {
+  shutdownPostgres(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+  shutdownMongo(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+})
 
 /**
  * @public
@@ -182,6 +200,7 @@ export function devTool (
   registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
   registerAdapterFactory('postgresql', createPostgresAdapter, true)
   registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+
   registerServerPlugins()
   registerStringLoaders()
 
@@ -218,7 +237,7 @@ export function devTool (
     }
     closeAccountsDb()
     console.log(`closing database connection to '${uri}'...`)
-    await shutdown()
+    await shutdownMongo()
   }
 
   async function withStorage (f: (storageAdapter: StorageAdapter) => Promise<any>): Promise<void> {
@@ -646,6 +665,7 @@ export function devTool (
                   true,
                   true,
                   5000, // 5 gigabytes per blob
+                  sharedPipelineContextVars,
                   async (storage, workspaceStorage) => {
                     if (cmd.remove) {
                       await updateArchiveInfo(toolCtx, db, ws.workspace, true)
@@ -665,7 +685,7 @@ export function devTool (
 
                       const destroyer = getWorkspaceDestroyAdapter(dbUrl)
 
-                      await destroyer.deleteWorkspace(toolCtx, { name: ws.workspace })
+                      await destroyer.deleteWorkspace(toolCtx, sharedPipelineContextVars, { name: ws.workspace })
                     }
                   }
                 )
@@ -716,7 +736,8 @@ export function devTool (
                 cmd.region,
                 false,
                 false,
-                100
+                100,
+                sharedPipelineContextVars
               )
             ) {
               processed++
@@ -1193,13 +1214,17 @@ export function devTool (
 
   program
     .command('copy-s3-datalake')
-    .description('migrate files from s3 to datalake')
+    .description('copy files from s3 to datalake')
     .option('-w, --workspace <workspace>', 'Selected workspace only', '')
     .option('-c, --concurrency <concurrency>', 'Number of files being processed concurrently', '10')
-    .action(async (cmd: { workspace: string, concurrency: string }) => {
+    .option('-s, --skip <number>', 'Number of workspaces to skip', '0')
+    .option('-e, --existing', 'Copy existing blobs', false)
+    .action(async (cmd: { workspace: string, concurrency: string, existing: boolean, skip: string }) => {
       const params = {
-        concurrency: parseInt(cmd.concurrency)
+        concurrency: parseInt(cmd.concurrency),
+        existing: cmd.existing
       }
+      const skip = parseInt(cmd.skip)
 
       const storageConfig = storageConfigFromEnv(process.env.STORAGE)
 
@@ -1214,7 +1239,6 @@ export function devTool (
       }
 
       toolCtx.info('using datalake', { datalake: datalakeConfig })
-      const datalake = createDatalakeClient(datalakeConfig as DatalakeConfig)
 
       let workspaces: Workspace[] = []
       await withAccountDatabase(async (db) => {
@@ -1222,15 +1246,40 @@ export function devTool (
         workspaces = workspaces
           .filter((p) => isActiveMode(p.mode) || isArchivingMode(p.mode))
           .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
-          .sort((a, b) => b.lastVisit - a.lastVisit)
+          // .sort((a, b) => b.lastVisit - a.lastVisit)
+          .sort((a, b) => {
+            if (a.backupInfo !== undefined && b.backupInfo !== undefined) {
+              return b.backupInfo.blobsSize - a.backupInfo.blobsSize
+            } else if (b.backupInfo !== undefined) {
+              return 1
+            } else if (a.backupInfo !== undefined) {
+              return -1
+            } else {
+              return b.lastVisit - a.lastVisit
+            }
+          })
       })
 
       const count = workspaces.length
+      console.log('found workspaces', count)
+
       let index = 0
       for (const workspace of workspaces) {
         index++
-        toolCtx.info('processing workspace', { workspace: workspace.workspace, index, count })
+        if (index <= skip) {
+          toolCtx.info('processing workspace', { workspace: workspace.workspace, index, count })
+          continue
+        }
+
+        toolCtx.info('processing workspace', {
+          workspace: workspace.workspace,
+          index,
+          count,
+          blobsSize: workspace.backupInfo?.blobsSize ?? 0
+        })
         const workspaceId = getWorkspaceId(workspace.workspace)
+        const token = generateToken(systemAccountEmail, workspaceId)
+        const datalake = createDatalakeClient(datalakeConfig as DatalakeConfig, token)
 
         for (const config of storages) {
           const storage = new S3Service(config)
@@ -1897,27 +1946,43 @@ export function devTool (
     )
 
   program
-    .command('recreate-elastic-indexes-mongo <workspace>')
-    .description('reindex workspace to elastic')
+    .command('fulltext-reindex <workspace>')
+    .description('reindex workspace')
     .action(async (workspace: string) => {
-      const mongodbUri = getMongoDBUrl()
+      const fulltextUrl = process.env.FULLTEXT_URL
+      if (fulltextUrl === undefined) {
+        console.error('please provide FULLTEXT_URL')
+        process.exit(1)
+      }
+
       const wsid = getWorkspaceId(workspace)
-      await recreateElastic(mongodbUri, wsid)
+      const token = generateToken(systemAccountEmail, wsid)
+
+      console.log('reindex workspace', workspace)
+      await reindexWorkspace(toolCtx, fulltextUrl, token)
+      console.log('done', workspace)
     })
 
   program
-    .command('recreate-all-elastic-indexes-mongo')
-    .description('reindex elastic')
+    .command('fulltext-reindex-all')
+    .description('reindex workspaces')
     .action(async () => {
-      const { dbUrl } = prepareTools()
-      const mongodbUri = getMongoDBUrl()
+      const fulltextUrl = process.env.FULLTEXT_URL
+      if (fulltextUrl === undefined) {
+        console.error('please provide FULLTEXT_URL')
+        process.exit(1)
+      }
 
       await withAccountDatabase(async (db) => {
         const workspaces = await listWorkspacesRaw(db)
         workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
         for (const workspace of workspaces) {
           const wsid = getWorkspaceId(workspace.workspace)
-          await recreateElastic(mongodbUri ?? dbUrl, wsid)
+          const token = generateToken(systemAccountEmail, wsid)
+
+          console.log('reindex workspace', workspace)
+          await reindexWorkspace(toolCtx, fulltextUrl, token)
+          console.log('done', workspace)
         }
       })
     })
@@ -2078,6 +2143,65 @@ export function devTool (
         console.log('updates workspaceId in pg/cr to uuid')
         const { dbUrl } = prepareTools()
         await updateDataWorkspaceIdToUuid(toolCtx, db, dbUrl, cmd.dryrun)
+      })
+    })
+
+  program
+    .command('add-controlled-doc-rank-mongo')
+    .description('add rank to controlled documents')
+    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+    .action(async (cmd: { workspace: string }) => {
+      const { version } = prepareTools()
+
+      let workspaces: Workspace[] = []
+      await withAccountDatabase(async (db) => {
+        workspaces = await listWorkspacesPure(db)
+        workspaces = workspaces
+          .filter((p) => isActiveMode(p.mode))
+          .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
+          .sort((a, b) => b.lastVisit - a.lastVisit)
+      })
+
+      console.log('found workspaces', workspaces.length)
+
+      const mongodbUri = getMongoDBUrl()
+      const client = getMongoClient(mongodbUri)
+      const _client = await client.getClient()
+
+      try {
+        const count = workspaces.length
+        let index = 0
+        for (const workspace of workspaces) {
+          index++
+
+          toolCtx.info('processing workspace', {
+            workspace: workspace.workspace,
+            version: workspace.version,
+            index,
+            count
+          })
+
+          if (workspace.version === undefined || !deepEqual(workspace.version, version)) {
+            console.log(`upgrade to ${versionToString(version)} is required`)
+            continue
+          }
+          const workspaceId = getWorkspaceId(workspace.workspace)
+          const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
+
+          await addControlledDocumentRank(toolCtx, wsDb, workspaceId)
+        }
+      } finally {
+        client.close()
+      }
+    })
+
+  program
+    .command('fill-github-users')
+    .option('-t, --token <token>', 'Github token to increase the limit of requests to GitHub')
+    .description('adds github username info to all accounts')
+    .action(async (cmd: { token?: string }) => {
+      await withAccountDatabase(async (db) => {
+        await fillGithubUsers(toolCtx, db, cmd.token)
       })
     })
 

@@ -18,7 +18,7 @@
   import type { Contact, Employee, Person } from '@hcengineering/contact'
   import contact from '@hcengineering/contact'
   import { EmployeeBox, ExpandRightDouble, UserBox } from '@hcengineering/contact-resources'
-  import {
+  import core, {
     Account,
     AccountRole,
     Class,
@@ -119,7 +119,7 @@
     if (selectedState === undefined) {
       throw new Error(`Please select initial state:${_space}`)
     }
-    const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Applicant })
+    const sequence = await client.findOne(core.class.Sequence, { attachedTo: recruit.class.Applicant })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
     }
@@ -160,10 +160,7 @@
         status: selectedState._id,
         number,
         identifier: `APP-${number}`,
-        assignee: doc.assignee,
         rank: makeRank(lastOne?.rank, undefined),
-        startDate: null,
-        dueDate: null,
         kind
       },
       doc._id
@@ -430,7 +427,7 @@
         <InlineAttributeBar
           _class={recruit.class.Applicant}
           object={doc}
-          toClass={task.class.Task}
+          toClass={core.class.AttachedDoc}
           ignoreKeys={['assignee', 'status']}
           extraProps={{ showNavigate: false, space: vacancy._id }}
         />

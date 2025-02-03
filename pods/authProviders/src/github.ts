@@ -63,11 +63,12 @@ export function registerGithub (
     async (ctx, next) => {
       try {
         let email = ctx.state.user.emails?.[0]?.value
+        const username = ctx.state.user.username.toLowerCase()
         if (email == null || email === '') {
-          email = `github:${ctx.state.user.username}`
+          email = `github:${username}`
         }
 
-        const [first, last] = ctx.state.user.displayName?.split(' ') ?? [ctx.state.user.username, '']
+        const [first, last] = ctx.state.user.displayName?.split(' ') ?? [username, '']
         measureCtx.info('Provider auth handler', { email, type: 'github' })
         if (email !== undefined) {
           let loginInfo: LoginInfo | null
@@ -76,7 +77,8 @@ export function registerGithub (
           const db = await dbPromise
           if (state.inviteId != null && state.inviteId !== '') {
             loginInfo = await joinWithProvider(measureCtx, db, null, email, first, last, state.inviteId as any, {
-              githubId: ctx.state.user.id
+              githubId: ctx.state.user.id,
+              githubUser: username
             })
           } else {
             loginInfo = await loginWithProvider(
@@ -87,7 +89,8 @@ export function registerGithub (
               first,
               last,
               {
-                githubId: ctx.state.user.id
+                githubId: ctx.state.user.id,
+                githubUser: username
               },
               signUpDisabled
             )

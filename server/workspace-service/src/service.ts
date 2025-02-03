@@ -40,6 +40,18 @@ import { FileModelLogger, prepareTools } from '@hcengineering/server-tool'
 import path from 'path'
 
 import { Analytics } from '@hcengineering/analytics'
+import {
+  createMongoAdapter,
+  createMongoDestroyAdapter,
+  createMongoTxAdapter,
+  shutdownMongo
+} from '@hcengineering/mongo'
+import {
+  createPostgreeDestroyAdapter,
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  shutdownPostgres
+} from '@hcengineering/postgres'
 import { doBackupWorkspace, doRestoreWorkspace } from '@hcengineering/server-backup'
 import type { PipelineFactory, StorageAdapter } from '@hcengineering/server-core'
 import {
@@ -50,12 +62,11 @@ import {
   registerDestroyFactory,
   registerServerPlugins,
   registerStringLoaders,
-  registerTxAdapterFactory
+  registerTxAdapterFactory,
+  sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { createWorkspace, upgradeWorkspace } from './ws-operations'
-import { createMongoTxAdapter, createMongoAdapter, createMongoDestroyAdapter } from '@hcengineering/mongo'
-import { createPostgresTxAdapter, createPostgresAdapter, createPostgreeDestroyAdapter } from '@hcengineering/postgres'
 
 export interface WorkspaceOptions {
   errorHandler: (workspace: BaseWorkspaceInfo, error: any) => Promise<void>
@@ -72,6 +83,16 @@ export interface WorkspaceOptions {
   }
 }
 
+// Register close on process exit.
+process.on('exit', () => {
+  shutdownPostgres(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+  shutdownMongo(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+})
+
 export type WorkspaceOperation = 'create' | 'upgrade' | 'all' | 'all+backup'
 
 export class WorkspaceWorker {
@@ -85,7 +106,8 @@ export class WorkspaceWorker {
     readonly region: string,
     readonly limit: number,
     readonly operation: WorkspaceOperation,
-    readonly brandings: BrandingMap
+    readonly brandings: BrandingMap,
+    readonly fulltextUrl: string | undefined
   ) {}
 
   hasAvailableThread (): boolean {
@@ -115,7 +137,14 @@ export class WorkspaceWorker {
 
     ctx.info('Sending a handshake to the account service...')
 
-    await withRetryConnUntilSuccess(workerHandshake)(token, this.region, this.version, this.operation)
+    while (true) {
+      try {
+        await withRetryConnUntilSuccess(workerHandshake)(token, this.region, this.version, this.operation)
+        break
+      } catch (err: any) {
+        ctx.error('error', { err })
+      }
+    }
 
     ctx.info('Successfully connected to the account service')
 
@@ -150,7 +179,10 @@ export class WorkspaceWorker {
             }),
             workspace,
             opt
-          )
+          ).catch((err) => {
+            Analytics.handleError(err)
+            ctx.error('error', { err })
+          })
         })
       }
     }
@@ -335,10 +367,36 @@ export class WorkspaceWorker {
     }
   }
 
-  async doCleanup (ctx: MeasureContext, workspace: BaseWorkspaceInfo): Promise<void> {
+  /**
+   * If onlyDrop is true, will drop workspace from database, overwize remove only indexes and do full reindex.
+   */
+  async doCleanup (ctx: MeasureContext, workspace: BaseWorkspaceInfo, onlyDrop: boolean): Promise<void> {
     const { dbUrl } = prepareTools([])
     const adapter = getWorkspaceDestroyAdapter(dbUrl)
-    await adapter.deleteWorkspace(ctx, { name: workspace.workspace })
+    await adapter.deleteWorkspace(ctx, sharedPipelineContextVars, { name: workspace.workspace, uuid: workspace.uuid })
+
+    await this.doReindexFulltext(ctx, workspace, onlyDrop)
+  }
+
+  private async doReindexFulltext (ctx: MeasureContext, workspace: BaseWorkspaceInfo, onlyDrop: boolean): Promise<void> {
+    if (this.fulltextUrl !== undefined) {
+      const token = generateToken(systemAccountEmail, { name: workspace.workspace }, { service: 'workspace' })
+
+      try {
+        const res = await fetch(this.fulltextUrl + '/api/v1/reindex', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ token, onlyDrop })
+        })
+        if (!res.ok) {
+          throw new Error(`HTTP Error ${res.status} ${res.statusText}`)
+        }
+      } catch (err: any) {
+        ctx.error('failed to reset index', { err })
+      }
+    }
   }
 
   private async doWorkspaceOperation (
@@ -379,12 +437,25 @@ export class WorkspaceWorker {
         // We should remove DB, not storages.
         await sendEvent('archiving-clean-started', 0)
         try {
-          await this.doCleanup(ctx, workspace)
+          await this.doCleanup(ctx, workspace, false)
         } catch (err: any) {
           Analytics.handleError(err)
           return
         }
         await sendEvent('archiving-clean-done', 100)
+        break
+      }
+      case 'pending-deletion':
+      case 'deleting': {
+        // We should remove DB, not storages.
+        await sendEvent('delete-started', 0)
+        try {
+          await this.doCleanup(ctx, workspace, true)
+        } catch (err: any) {
+          Analytics.handleError(err)
+          return
+        }
+        await sendEvent('delete-done', 100)
         break
       }
 
@@ -400,7 +471,7 @@ export class WorkspaceWorker {
         // We should remove DB, not storages.
         await sendEvent('migrate-clean-started', 0)
         try {
-          await this.doCleanup(ctx, workspace)
+          await this.doCleanup(ctx, workspace, false)
         } catch (err: any) {
           Analytics.handleError(err)
           return
@@ -412,12 +483,10 @@ export class WorkspaceWorker {
       case 'restoring':
         await sendEvent('restore-started', 0)
         if (await this.doRestore(ctx, workspace, opt)) {
+          // We should reindex fulltext
+          await this.doReindexFulltext(ctx, workspace, false)
           await sendEvent('restore-done', 100)
         }
-        break
-      case 'deleting':
-        // Seems we failed to delete, so let's restore deletion.
-        // TODO: move from account
         break
       default:
         ctx.error('Unknown workspace mode', { workspace: workspace.workspace, mode: workspace.mode })
@@ -475,7 +544,8 @@ export class WorkspaceWorker {
           Timeout: 0,
           SkipWorkspaces: '',
           AccountsURL: '',
-          Interval: 0
+          Interval: 0,
+          Parallel: 1
         },
         pipelineFactory,
         workspaceStorageAdapter,
@@ -490,6 +560,7 @@ export class WorkspaceWorker {
         archive,
         50000,
         ['blob'],
+        sharedPipelineContextVars,
         (_p: number) => {
           if (progress !== Math.round(_p)) {
             progress = Math.round(_p)

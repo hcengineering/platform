@@ -57,6 +57,12 @@
     "Next": "Siguiente",
     "Skip": "Saltar",
     "SignUpCompleted": "Registro completado",
-    "StartUsingHuly": "Comienza a usar Huly"
+    "StartUsingHuly": "Comienza a usar Huly",
+    "PasswordMinLength": "{count, plural, =1 {La contraseña debe tener al menos # carácter} other {La contraseña debe tener al menos # caracteres}}",
+    "PasswordMinSpecialChars": "{count, plural, =1 {La contraseña debe contener al menos # carácter especial} other {La contraseña debe contener al menos # caracteres especiales}}",
+    "PasswordMinDigits": "{count, plural, =1 {La contraseña debe contener al menos # número} other {La contraseña debe contener al menos # números}}",
+    "PasswordMinUpperChars": "{count, plural, =1 {La contraseña debe contener al menos # letra mayúscula} other {La contraseña debe contener al menos # letras mayúsculas}}",
+    "PasswordMinLowerChars": "{count, plural, =1 {La contraseña debe contener al menos # letra minúscula} other {La contraseña debe contener al menos # letras minúsculas}}",
+    "WorkspaceArchivedDesc": "El espacio de trabajo está archivado por no estar en uso, por favor contáctenos para restaurarlo..."
   }
 }

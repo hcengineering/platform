@@ -14,7 +14,7 @@
 //
 
 import contact, { Channel, formatName } from '@hcengineering/contact'
-import {
+import core, {
   Account,
   Class,
   concatLink,
@@ -40,6 +40,7 @@ import serverNotification, {
 import { getContentByTemplate } from '@hcengineering/server-notification-resources'
 import { getMetadata } from '@hcengineering/platform'
 import { ActivityMessage } from '@hcengineering/activity'
+import aiBot from '@hcengineering/ai-bot'
 
 /**
  * @public
@@ -115,10 +116,13 @@ export async function sendEmailNotification (
       ctx.error('Please provide email service url to enable email notifications.')
       return
     }
+    const sesAuth: string | undefined = getMetadata(serverNotification.metadata.SesAuthToken)
     await fetch(concatLink(sesURL, '/send'), {
       method: 'post',
+      keepalive: true,
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
       },
       body: JSON.stringify({
         text,
@@ -169,7 +173,11 @@ const SendEmailNotifications: NotificationProviderFunc = async (
     return []
   }
 
-  if (!receiver.person.active) {
+  if (
+    !receiver.person.active ||
+    receiver.account._id === core.account.System ||
+    receiver.account._id === aiBot.account.AIBot
+  ) {
     return []
   }
 

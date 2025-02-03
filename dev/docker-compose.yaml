@@ -357,6 +357,21 @@ services:
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
     restart: unless-stopped
+  green:
+    image: hardcoreeng/green
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    links:
+      - cockroach
+      - stats
+    ports:
+      - 6767:6767
+    environment:
+      - PORT=6767
+      - AUTH_TOKEN=secret
+      - STATS_URL=http://host.docker.internal:4900
+      - DB_URL=postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable
+    restart: unless-stopped    
   rekoni:
     image: hardcoreeng/rekoni-service
     restart: unless-stopped
@@ -480,6 +495,7 @@ services:
       - MONGO_URL=${MONGO_URL}
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - SUPPORT_WORKSPACE=support
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FIRST_NAME=Jolie
       - LAST_NAME=AI
       - PASSWORD=password

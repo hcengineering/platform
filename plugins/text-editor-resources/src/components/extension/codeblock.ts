@@ -36,6 +36,8 @@ export const codeBlockHighlightOptions: CodeBlockLowlightOptions = {
 }
 
 export const CodeBlockHighlighExtension = CodeBlockLowlight.extend<CodeBlockLowlightOptions>({
+  marks: 'inline-comment',
+
   addCommands () {
     return {
       setCodeBlock:

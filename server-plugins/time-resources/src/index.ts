@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
 import core, {
   AttachedData,
@@ -29,7 +30,8 @@ import core, {
   TxFactory,
   TxProcessor,
   TxUpdateDoc,
-  toIdMap
+  toIdMap,
+  Space
 } from '@hcengineering/core'
 import notification, { CommonInboxNotification } from '@hcengineering/notification'
 import { getResource } from '@hcengineering/platform'
@@ -43,7 +45,7 @@ import {
 } from '@hcengineering/server-notification-resources'
 import serverTime, { OnToDo, ToDoFactory } from '@hcengineering/server-time'
 import task, { makeRank } from '@hcengineering/task'
-import { jsonToMarkup, nodeDoc, nodeParagraph, nodeText } from '@hcengineering/text'
+import { jsonToMarkup, nodeDoc, nodeParagraph, nodeText } from '@hcengineering/text-core'
 import time, { ProjectToDo, ToDo, ToDoPriority, TodoAutomationHelper, WorkSlot } from '@hcengineering/time'
 import tracker, { Issue, IssueStatus, Project, TimeSpendReport } from '@hcengineering/tracker'
 
@@ -225,6 +227,7 @@ export async function OnToDoRemove (txes: Tx[], control: TriggerControl): Promis
 
 export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
+
   for (const tx of txes) {
     const createTx = tx as TxCreateDoc<ToDo>
 
@@ -253,6 +256,25 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
 
     const object = (await control.findAll(control.ctx, todo.attachedToClass, { _id: todo.attachedTo }))[0]
     if (object === undefined) {
+      continue
+    }
+
+    const objectSpace = hierarchy.isDerived(object._class, core.class.Space)
+      ? (object as Space)
+      : (await control.findAll<Space>(control.ctx, core.class.Space, { _id: object.space }))[0]
+
+    if (objectSpace === undefined) {
+      control.ctx.error('No space found', { objectId: object._id, objectClass: object._class, space: object.space })
+      Analytics.handleError(
+        new Error(`No space found for object ${object._id} of class ${object._class} and space ${object.space}`)
+      )
+      continue
+    }
+
+    if (
+      !hierarchy.isDerived(objectSpace._class, core.class.SystemSpace) &&
+      !objectSpace.members.includes(account[0]._id)
+    ) {
       continue
     }
 

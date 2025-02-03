@@ -432,6 +432,7 @@ const pluginState = plugin(trackerId, {
     Labels: '' as Asset,
     DueDate: '' as Asset,
     Parent: '' as Asset,
+    UnsetParent: '' as Asset,
     Milestone: '' as Asset,
     IssueTemplates: '' as Asset,
     Start: '' as Asset,
@@ -495,7 +496,8 @@ const pluginState = plugin(trackerId, {
     EditProject: '' as Ref<Action>,
     SetMilestone: '' as Ref<Action<Doc, any>>,
     SetLabels: '' as Ref<Action<Doc, any>>,
-    EditRelatedTargets: '' as Ref<Action<Doc, any>>
+    EditRelatedTargets: '' as Ref<Action<Doc, any>>,
+    UnsetParent: '' as Ref<Action<Doc, any>>
   },
   project: {
     DefaultProject: '' as Ref<Project>
@@ -516,7 +518,8 @@ const pluginState = plugin(trackerId, {
     Project: '' as IntlString,
     RelatedIssues: '' as IntlString,
     Issue: '' as IntlString,
-    NewProject: '' as IntlString
+    NewProject: '' as IntlString,
+    UnsetParentIssue: '' as IntlString
   },
   extensions: {
     IssueListHeader: '' as ComponentExtensionId,

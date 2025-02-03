@@ -91,6 +91,8 @@ export default mergeIds(contactId, contact, {
     SkypePlaceholder: '' as IntlString,
     Profile: '' as IntlString,
     ProfilePlaceholder: '' as IntlString,
+    Viber: '' as IntlString,
+    ViberPlaceholder: '' as IntlString,
 
     CurrentEmployee: '' as IntlString,
 

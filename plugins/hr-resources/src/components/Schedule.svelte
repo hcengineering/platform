@@ -96,6 +96,7 @@
   function inc (val: number): void {
     switch (mode) {
       case CalendarMode.Month: {
+        currentDate.setDate(1)
         currentDate.setMonth(currentDate.getMonth() + val)
         break
       }

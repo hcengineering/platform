@@ -31,10 +31,10 @@ import { TBenchmarkDoc } from './benchmark'
 import core from './component'
 import {
   TArrOf,
+  TAssociation,
   TAttachedDoc,
   TAttribute,
   TBlob,
-  TCard,
   TClass,
   TCollection,
   TConfiguration,
@@ -52,6 +52,7 @@ import {
   TObj,
   TPluginConfiguration,
   TRefTo,
+  TRelation,
   TTransientConfiguration,
   TType,
   TTypeAny,
@@ -69,7 +70,8 @@ import {
   TTypeRelatedDocument,
   TTypeString,
   TTypeTimestamp,
-  TVersion
+  TVersion,
+  TSequence
 } from './core'
 import { definePermissions } from './permissions'
 import {
@@ -144,17 +146,19 @@ export function createModel (builder: Builder): void {
     TEnum,
     TTypeAny,
     TTypeRelatedDocument,
-    TCard,
     TDocIndexState,
     TFullTextSearchContext,
     TConfiguration,
     TConfigurationElement,
     TIndexConfiguration,
     TStatus,
+    TSequence,
     TDomainStatusPlaceholder,
     TStatusCategory,
     TMigrationState,
     TBlob,
+    TRelation,
+    TAssociation,
     TDomainIndexConfiguration,
     TBenchmarkDoc,
     TTransientConfiguration

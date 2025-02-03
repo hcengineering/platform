@@ -48,9 +48,9 @@ export class RepositorySyncMapper implements DocSyncManager {
     if (repositories !== undefined) {
       // We have a list of repositories, so we could create them if they are missing.
       // Need to find all repositories, not only active, so passed repositories are not work.
-      const allRepositories = (
-        await this.provider.liveQuery.queryFind(github.class.GithubIntegrationRepository, {})
-      ).filter((it) => it.attachedTo === integration.integration._id)
+      const allRepositories = await this.provider.liveQuery.findAll(github.class.GithubIntegrationRepository, {
+        attachedTo: integration.integration._id
+      })
 
       const allRepos: GithubIntegrationRepository[] = [...allRepositories]
       for (const repository of repositories) {
@@ -259,9 +259,9 @@ export class RepositorySyncMapper implements DocSyncManager {
     const iterable = this.app.eachRepository.iterator({ installationId: integration.installationId })
 
     // Need to find all repositories, not only active, so passed repositories are not work.
-    const allRepositories = (
-      await this.provider.liveQuery.queryFind(github.class.GithubIntegrationRepository, {})
-    ).filter((it) => it.attachedTo === integration.integration._id)
+    const allRepositories = await this.provider.liveQuery.findAll(github.class.GithubIntegrationRepository, {
+      attachedTo: integration.integration._id
+    })
 
     let allRepos: GithubIntegrationRepository[] = [...allRepositories]
 
