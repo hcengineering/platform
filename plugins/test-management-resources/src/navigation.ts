@@ -46,7 +46,7 @@ async function generateProjectLocation (
 ): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
-  const doc = await client.findOne(testManagement.class.TestProject, { _id: project })
+  const doc = await client.findOne(testManagement.class.TestProject, { _id: project }, { showArchived: true })
   if (doc === undefined) {
     accessDeniedStore.set(true)
     console.error(`Could not find test project ${project}.`)

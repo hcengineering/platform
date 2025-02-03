@@ -43,6 +43,9 @@
     },
     (res) => {
       docs = res
+    },
+    {
+      showArchived: true
     }
   )
 
