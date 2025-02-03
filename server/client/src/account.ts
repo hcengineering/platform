@@ -109,6 +109,9 @@ export async function getTransactorEndpoint (
           })
         })
       ).json()
+      if (workspaceInfo.result === undefined) {
+        throw new Error('Workspace not found')
+      }
       return workspaceInfo.result.endpoint
     } catch (err: any) {
       if (timeout > 0 && st + timeout < Date.now()) {
