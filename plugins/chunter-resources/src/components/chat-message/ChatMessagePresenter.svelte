@@ -269,7 +269,7 @@
               {#if (value.attachments ?? 0) > 0 || (value.inlineButtons ?? 0) > 0}
                 <div class="mt-2" />
               {/if}
-              <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} />
+              <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} {isOwn} />
               <InlineButtons {value} {inlineButtons} />
             </div>
           </ShowMore>
@@ -279,7 +279,7 @@
             {#if (value.attachments ?? 0) > 0 || (value.inlineButtons ?? 0) > 0}
               <div class="mt-2" />
             {/if}
-            <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} />
+            <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} {isOwn} />
             <InlineButtons {value} {inlineButtons} />
           </div>
         {/if}
