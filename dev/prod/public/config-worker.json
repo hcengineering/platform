@@ -13,7 +13,7 @@
   
   "DESKTOP_UPDATES_CHANNEL": "front",
   
-  "FILES_URL": "https://dl.hc.engineering/blob/:workspace/:blobId",
+  "FILES_URL": "https://dl.hc.engineering/blob/:workspace/:blobId/:filename",
   
   "GITHUB_APP": "huly-github-staging",
   
