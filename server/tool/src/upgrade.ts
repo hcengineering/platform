@@ -5,6 +5,7 @@ import {
   FindOptions,
   Hierarchy,
   LowLevelStorage,
+  MeasureContext,
   MeasureMetricsContext,
   ModelDb,
   Ref,
@@ -19,6 +20,7 @@ import { AccountClient } from '@hcengineering/account-client'
  */
 export class MigrateClientImpl implements MigrationClient {
   private readonly lowLevel: LowLevelStorage
+  readonly ctx: MeasureContext
   constructor (
     readonly pipeline: Pipeline,
     readonly hierarchy: Hierarchy,
@@ -32,6 +34,7 @@ export class MigrateClientImpl implements MigrationClient {
       throw new Error('lowLevelStorage is not defined')
     }
     this.lowLevel = this.pipeline.context.lowLevelStorage
+    this.ctx = new MeasureMetricsContext('migrateClient', {})
   }
 
   migrateState = new Map<string, Set<string>>()
@@ -42,6 +45,10 @@ export class MigrateClientImpl implements MigrationClient {
     options?: FindOptions<T> | undefined
   ): Promise<T[]> {
     return await this.lowLevel.rawFindAll(domain, query, options)
+  }
+
+  async groupBy<T, P extends Doc>(domain: Domain, field: string, query?: DocumentQuery<P>): Promise<Map<T, number>> {
+    return await this.lowLevel.groupBy(this.ctx, domain, field, query)
   }
 
   async traverse<T extends Doc>(
