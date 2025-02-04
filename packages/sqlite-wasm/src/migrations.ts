@@ -92,13 +92,13 @@ async function migrationV1(worker: Sqlite3Worker1Promiser, dbId: string): Promis
                 id               TEXT NOT NULL,
                 workspace_id     TEXT NOT NULL,
                 card_id          TEXT NOT NULL,
-                person_workspace TEXT NOT NULL,
+                personal_workspace TEXT NOT NULL,
                 archived_from    DATETIME,
                 last_view        DATETIME,
                 last_update      DATETIME,
 
                 PRIMARY KEY (id),
-                UNIQUE (workspace_id, card_id, person_workspace)
+                UNIQUE (workspace_id, card_id, personal_workspace)
             );
 
             CREATE TABLE IF NOT EXISTS notification

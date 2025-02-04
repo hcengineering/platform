@@ -27,12 +27,12 @@ export class NotificationsDb extends BaseDb {
         })
     }
 
-    async createContext(workspace: string, card: CardID, personWorkspace: string, lastView?: Date, lastUpdate?: Date): Promise<ContextID> {
+    async createContext(workspace: string, card: CardID, personalWorkspace: string, lastView?: Date, lastUpdate?: Date): Promise<ContextID> {
         const dbData: ContextDb = {
             id: self.crypto.randomUUID(),
             workspace_id: workspace,
             card_id: card,
-            person_workspace: personWorkspace,
+            personal_workspace: personalWorkspace,
             last_view: lastView,
             last_update: lastUpdate
         }
@@ -78,7 +78,7 @@ export class NotificationsDb extends BaseDb {
         });
     }
 
-    async findContexts(params: FindNotificationContextParams, personWorkspaces: string[], workspace?: string,): Promise<NotificationContext[]> {
+    async findContexts(params: FindNotificationContextParams, personalWorkspaces: string[], workspace?: string,): Promise<NotificationContext[]> {
         const select = `
             SELECT nc.id,
                    nc.card_id,
@@ -86,9 +86,9 @@ export class NotificationsDb extends BaseDb {
                    nc.last_view,
                    nc.last_update,
                    nc.workspace_id,
-                   nc.person_workspace
+                   nc.personal_workspace
             FROM ${TableName.NotificationContext} nc`;
-        const where = this.buildContextWhere(params, personWorkspaces, workspace);
+        const where = this.buildContextWhere(params, personalWorkspaces, workspace);
         // const orderSql = `ORDER BY nc.created ${params.sort === SortOrder.Asc ? 'ASC' : 'DESC'}`
         const limit = params.limit ? ` LIMIT ${params.limit}` : ''
         const sql = [select, where, limit].join(' ')
@@ -99,7 +99,7 @@ export class NotificationsDb extends BaseDb {
     }
 
 
-    async findNotifications(params: FindNotificationsParams, personWorkspace: string, workspace?: string): Promise<Notification[]> {
+    async findNotifications(params: FindNotificationsParams, personalWorkspace: string, workspace?: string): Promise<Notification[]> {
         //TODO: should join with attachments and reactions?
         const select = `
             SELECT n.message_id,
@@ -128,7 +128,7 @@ export class NotificationsDb extends BaseDb {
                      LEFT JOIN
                  ${TableName.Patch} p ON p.message_id = m.id
         `;
-        const where = this.buildNotificationWhere(params, personWorkspace, workspace)
+        const where = this.buildNotificationWhere(params, personalWorkspace, workspace)
         const groupBy = `GROUP BY n.message_id, n.context_id, m.id, nc.card_id, nc.archived_from, nc.last_view, nc.last_update`;
         const orderBy = `ORDER BY m.created ${params.sort === SortOrder.Asc ? 'ASC' : 'DESC'}`
         const limit = params.limit ? ` LIMIT ${params.limit}` : ''
@@ -139,14 +139,14 @@ export class NotificationsDb extends BaseDb {
         return result.map(it => this.toNotification(it));
     }
 
-    buildContextWhere(params: FindNotificationContextParams, personWorkspaces: string[], workspace?: string,): string {
+    buildContextWhere(params: FindNotificationContextParams, personalWorkspaces: string[], workspace?: string,): string {
         const where: string[] = []
 
         if (workspace != null) {
             where.push(`nc.workspace_id = '${workspace}'`)
         }
-        if (personWorkspaces.length > 0) {
-            where.push(`nc.person_workspace IN (${personWorkspaces.map(it => `'${it}'`).join(', ')})`)
+        if (personalWorkspaces.length > 0) {
+            where.push(`nc.personal_workspace IN (${personalWorkspaces.map(it => `'${it}'`).join(', ')})`)
         }
 
         if (params.card != null) {
@@ -156,8 +156,8 @@ export class NotificationsDb extends BaseDb {
         return `WHERE ${where.join(' AND ')}`
     }
 
-    buildNotificationWhere(params: FindNotificationsParams, personWorkspace: string, workspace?: string): string {
-        const where: string[] = [`nc.person_workspace = '${personWorkspace}'`]
+    buildNotificationWhere(params: FindNotificationsParams, personalWorkspace: string, workspace?: string): string {
+        const where: string[] = [`nc.personal_workspace = '${personalWorkspace}'`]
         if (workspace != null) {
             where.push(`nc.workspace_id = '${workspace}'`)
         }
@@ -193,7 +193,7 @@ export class NotificationsDb extends BaseDb {
             lastView: row.last_view ? new Date(row.last_view) : undefined,
             lastUpdate: row.last_update ? new Date(row.last_update) : undefined,
             workspace: row.workspace,
-            personWorkspace: row.person_workspace
+            personalWorkspace: row.personal_workspace
         }
     }
 

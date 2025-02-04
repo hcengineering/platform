@@ -30,7 +30,7 @@ class DbClient implements Client {
   constructor(
     private readonly db: DbAdapter,
     private readonly workspace: string,
-    private readonly personWorkspace: string
+    private readonly personalWorkspace: string
   ) {}
 
   async createMessage(thread: ThreadID, content: RichText, creator: SocialID): Promise<MessageID> {
@@ -137,7 +137,7 @@ class DbClient implements Client {
   }
 
   async createNotificationContext(card: CardID, lastView?: Date, lastUpdate?: Date): Promise<ContextID> {
-    return await this.db.createContext(this.personWorkspace, this.workspace, card, lastView, lastUpdate)
+    return await this.db.createContext(this.personalWorkspace, this.workspace, card, lastView, lastUpdate)
   }
 
   async updateNotificationContext(context: ContextID, update: NotificationContextUpdate): Promise<void> {
@@ -150,12 +150,12 @@ class DbClient implements Client {
 
   async findNotificationContexts(params: FindNotificationContextParams): Promise<NotificationContext[]> {
     //TODO: should we filter by workspace?
-    return await this.db.findContexts(params, [this.personWorkspace])
+    return await this.db.findContexts(params, [this.personalWorkspace])
   }
 
   async findNotifications(params: FindNotificationsParams): Promise<Notification[]> {
     //TODO: should we filter by workspace?
-    return await this.db.findNotifications(params, this.personWorkspace)
+    return await this.db.findNotifications(params, this.personalWorkspace)
   }
 
   async unsubscribeQuery() {
@@ -169,9 +169,9 @@ class DbClient implements Client {
 
 export async function getSqliteClient(
   workspace: string,
-  personWorkspace: string,
+  personalWorkspace: string,
   dbUrl = 'file:communication.sqlite3?vfs=opfs'
 ): Promise<Client> {
   const db = await createSqliteDbAdapter(dbUrl)
-  return new DbClient(db, workspace, personWorkspace)
+  return new DbClient(db, workspace, personalWorkspace)
 }

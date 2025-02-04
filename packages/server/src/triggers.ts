@@ -22,21 +22,24 @@ export class Triggers {
 
   private async createNotifications(event: MessageCreatedEvent, workspace: string): Promise<BroadcastEvent[]> {
     const card = event.message.thread as any as CardID
-    const subscribedPersonWorkspaces = ['cd0aba36-1c4f-4170-95f2-27a12a5415f7', 'cd0aba36-1c4f-4170-95f2-27a12a5415f8']
+    const subscribedPersonalWorkspaces = [
+      'cd0aba36-1c4f-4170-95f2-27a12a5415f7',
+      'cd0aba36-1c4f-4170-95f2-27a12a5415f8'
+    ]
 
     const res: BroadcastEvent[] = []
     const contexts = await this.db.findContexts({ card }, [], workspace)
 
     res.push(...(await this.updateNotificationContexts(event.message.created, contexts)))
 
-    for (const personWorkspace of subscribedPersonWorkspaces) {
+    for (const personalWorkspace of subscribedPersonalWorkspaces) {
       const existsContext = contexts.find(
-        (it) => it.card === card && it.personWorkspace === personWorkspace && workspace === it.workspace
+        (it) => it.card === card && it.personalWorkspace === personalWorkspace && workspace === it.workspace
       )
       const contextId = await this.getOrCreateContextId(
         workspace,
         card,
-        personWorkspace,
+        personalWorkspace,
         res,
         event.message.created,
         existsContext
@@ -46,7 +49,7 @@ export class Triggers {
 
       const resultEvent: NotificationCreatedEvent = {
         type: EventType.NotificationCreated,
-        personWorkspace,
+        personalWorkspace,
         notification: {
           context: contextId,
           message: event.message,
@@ -63,7 +66,7 @@ export class Triggers {
   private async getOrCreateContextId(
     workspace: string,
     card: CardID,
-    personWorkspace: string,
+    personalWorkspace: string,
     res: BroadcastEvent[],
     lastUpdate: Date,
     context?: NotificationContext
@@ -71,12 +74,12 @@ export class Triggers {
     if (context !== undefined) {
       return context.id
     } else {
-      const contextId = await this.db.createContext(personWorkspace, workspace, card, undefined, lastUpdate)
+      const contextId = await this.db.createContext(personalWorkspace, workspace, card, undefined, lastUpdate)
       const newContext = {
         id: contextId,
         card,
         workspace,
-        personWorkspace
+        personalWorkspace
       }
       const resultEvent: NotificationContextCreatedEvent = {
         type: EventType.NotificationContextCreated,
@@ -99,7 +102,7 @@ export class Triggers {
         await this.db.updateContext(context.id, { lastUpdate })
         res.push({
           type: EventType.NotificationContextUpdated,
-          personWorkspace: context.personWorkspace,
+          personalWorkspace: context.personalWorkspace,
           context: context.id,
           update: {
             lastUpdate

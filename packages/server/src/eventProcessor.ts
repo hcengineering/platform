@@ -39,7 +39,7 @@ export class EventProcessor {
   constructor(
     private readonly db: DbAdapter,
     private readonly workspace: string,
-    private readonly personWorkspace: string
+    private readonly personalWorkspace: string
   ) {}
 
   async process(event: Event): Promise<Result> {
@@ -215,7 +215,7 @@ export class EventProcessor {
 
     const broadcastEvent: NotificationRemovedEvent = {
       type: EventType.NotificationRemoved,
-      personWorkspace: this.personWorkspace,
+      personalWorkspace: this.personalWorkspace,
       message: event.message,
       context: event.context
     }
@@ -227,7 +227,7 @@ export class EventProcessor {
 
   private async createNotificationContext(event: CreateNotificationContextEvent): Promise<Result> {
     const id = await this.db.createContext(
-      this.personWorkspace,
+      this.personalWorkspace,
       this.workspace,
       event.card,
       event.lastView,
@@ -238,7 +238,7 @@ export class EventProcessor {
       context: {
         id,
         workspace: this.workspace,
-        personWorkspace: this.personWorkspace,
+        personalWorkspace: this.personalWorkspace,
         card: event.card,
         lastView: event.lastView,
         lastUpdate: event.lastUpdate
@@ -254,7 +254,7 @@ export class EventProcessor {
     await this.db.removeContext(event.context)
     const broadcastEvent: NotificationContextRemovedEvent = {
       type: EventType.NotificationContextRemoved,
-      personWorkspace: this.personWorkspace,
+      personalWorkspace: this.personalWorkspace,
       context: event.context
     }
     return {
@@ -268,7 +268,7 @@ export class EventProcessor {
 
     const broadcastEvent: NotificationContextUpdatedEvent = {
       type: EventType.NotificationContextUpdated,
-      personWorkspace: this.personWorkspace,
+      personalWorkspace: this.personalWorkspace,
       context: event.context,
       update: event.update
     }

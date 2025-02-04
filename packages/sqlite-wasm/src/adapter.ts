@@ -80,11 +80,11 @@ export class SqliteAdapter implements DbAdapter {
   async createContext(
     workspace: string,
     card: CardID,
-    personWorkspace: string,
+    personalWorkspace: string,
     lastView?: Date,
     lastUpdate?: Date
   ): Promise<ContextID> {
-    return await this.notification.createContext(workspace, card, personWorkspace, lastView, lastUpdate)
+    return await this.notification.createContext(workspace, card, personalWorkspace, lastView, lastUpdate)
   }
 
   async removeContext(context: ContextID): Promise<void> {
@@ -97,18 +97,18 @@ export class SqliteAdapter implements DbAdapter {
 
   async findContexts(
     params: FindNotificationContextParams,
-    personWorkspaces: string[],
+    personalWorkspaces: string[],
     workspace?: string
   ): Promise<NotificationContext[]> {
-    return await this.notification.findContexts(params, personWorkspaces, workspace)
+    return await this.notification.findContexts(params, personalWorkspaces, workspace)
   }
 
   async findNotifications(
     params: FindNotificationsParams,
-    personWorkspace: string,
+    personalWorkspace: string,
     workspace?: string
   ): Promise<Notification[]> {
-    return await this.notification.findNotifications(params, personWorkspace, workspace)
+    return await this.notification.findNotifications(params, personalWorkspace, workspace)
   }
 
   close(): void {

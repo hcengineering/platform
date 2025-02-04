@@ -137,6 +137,6 @@ async function validateToken(token: string): Promise<ConnectionInfo> {
     throw new Error('No workspace info')
   }
 
-  const personWorkspace = 'cd0aba36-1c4f-4170-95f2-27a12a5415f7'
-  return { workspace: info.workspaceId, personWorkspace, socialId: email as SocialID }
+  const personalWorkspace = 'cd0aba36-1c4f-4170-95f2-27a12a5415f7'
+  return { workspace: info.workspaceId, personalWorkspace, socialId: email as SocialID }
 }

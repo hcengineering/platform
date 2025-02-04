@@ -36,7 +36,7 @@ export interface DbAdapter {
   createNotification(message: MessageID, context: ContextID): Promise<void>
   removeNotification(message: MessageID, context: ContextID): Promise<void>
   createContext(
-    personWorkspace: string,
+    personalWorkspace: string,
     workspace: string,
     card: CardID,
     lastView?: Date,
@@ -46,12 +46,12 @@ export interface DbAdapter {
   removeContext(context: ContextID): Promise<void>
   findContexts(
     params: FindNotificationContextParams,
-    personWorkspaces: string[],
+    personalWorkspaces: string[],
     workspace?: string
   ): Promise<NotificationContext[]>
   findNotifications(
     params: FindNotificationsParams,
-    personWorkspace: string,
+    personalWorkspace: string,
     workspace?: string
   ): Promise<Notification[]>
 

@@ -209,13 +209,13 @@ export interface AttachmentRemovedEvent {
 
 export interface NotificationCreatedEvent {
   type: EventType.NotificationCreated
-  personWorkspace: string
+  personalWorkspace: string
   notification: Notification
 }
 
 export interface NotificationRemovedEvent {
   type: EventType.NotificationRemoved
-  personWorkspace: string
+  personalWorkspace: string
   message: MessageID
   context: ContextID
 }
@@ -227,13 +227,13 @@ export interface NotificationContextCreatedEvent {
 
 export interface NotificationContextRemovedEvent {
   type: EventType.NotificationContextRemoved
-  personWorkspace: string
+  personalWorkspace: string
   context: ContextID
 }
 
 export interface NotificationContextUpdatedEvent {
   type: EventType.NotificationContextUpdated
-  personWorkspace: string
+  personalWorkspace: string
   context: ContextID
   update: NotificationContextUpdate
 }

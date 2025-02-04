@@ -13,7 +13,7 @@ export interface NotificationContext {
   id: ContextID
   card: CardID
   workspace: string
-  personWorkspace: string
+  personalWorkspace: string
   archivedFrom?: Date
   lastView?: Date
   lastUpdate?: Date

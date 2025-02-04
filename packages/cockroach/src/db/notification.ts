@@ -27,11 +27,11 @@ export class NotificationsDb extends BaseDb {
         })
     }
 
-    async createContext(workspace: string, card: CardID, personWorkspace: string, lastView?: Date, lastUpdate?: Date): Promise<ContextID> {
+    async createContext(workspace: string, card: CardID, personalWorkspace: string, lastView?: Date, lastUpdate?: Date): Promise<ContextID> {
         const dbData: ContextDb = {
             workspace_id: workspace,
             card_id: card,
-            person_workspace: personWorkspace,
+            personal_workspace: personalWorkspace,
             last_view: lastView,
             last_update: lastUpdate
         }
@@ -71,11 +71,11 @@ export class NotificationsDb extends BaseDb {
         await this.client.unsafe(sql, [values, context])
     }
 
-    async findContexts(params: FindNotificationContextParams, personWorkspaces: string[], workspace?: string,): Promise<NotificationContext[]> {
+    async findContexts(params: FindNotificationContextParams, personalWorkspaces: string[], workspace?: string,): Promise<NotificationContext[]> {
         const select = `
             SELECT nc.id, nc.card_id, nc.archived_from, nc.last_view, nc.last_update
             FROM ${TableName.NotificationContext} nc`;
-        const {where, values} = this.buildContextWhere(params, personWorkspaces, workspace)
+        const {where, values} = this.buildContextWhere(params, personalWorkspaces, workspace)
         // const orderSql = `ORDER BY nc.created ${params.sort === SortOrder.Asc ? 'ASC' : 'DESC'}`
         const limit = params.limit ? ` LIMIT ${params.limit}` : ''
         const sql = [select, where, limit].join(' ')
@@ -86,7 +86,7 @@ export class NotificationsDb extends BaseDb {
     }
 
 
-    async findNotifications(params: FindNotificationsParams, personWorkspace: string, workspace?: string): Promise<Notification[]> {
+    async findNotifications(params: FindNotificationsParams, personalWorkspace: string, workspace?: string): Promise<Notification[]> {
         //TODO: experiment with select to improve performance, should join with attachments and reactions?
         const select = `
             SELECT n.message_id,
@@ -113,7 +113,7 @@ export class NotificationsDb extends BaseDb {
                      JOIN ${TableName.NotificationContext} nc ON n.context = nc.id
                      JOIN ${TableName.Message} m ON n.message_id = m.id
         `;
-        const {where, values} = this.buildNotificationWhere(params, personWorkspace, workspace)
+        const {where, values} = this.buildNotificationWhere(params, personalWorkspace, workspace)
         const orderBy = params.sort ? `ORDER BY m.created ${params.sort === SortOrder.Asc ? 'ASC' : 'DESC'}` : ''
         const limit = params.limit ? ` LIMIT ${params.limit}` : ''
         const sql = [select, where, orderBy, limit].join(' ')
@@ -123,7 +123,7 @@ export class NotificationsDb extends BaseDb {
         return result.map(this.toNotification);
     }
 
-    buildContextWhere(params: FindNotificationContextParams, personWorkspaces: string[], workspace?: string,): {
+    buildContextWhere(params: FindNotificationContextParams, personalWorkspaces: string[], workspace?: string,): {
         where: string,
         values: any[]
     } {
@@ -136,9 +136,9 @@ export class NotificationsDb extends BaseDb {
             values.push(workspace)
         }
 
-        if (personWorkspaces.length > 0) {
-            where.push(`nc.person_workspace IN (${personWorkspaces.map((it) => `$${index++}`).join(', ')})`)
-            values.push(...personWorkspaces)
+        if (personalWorkspaces.length > 0) {
+            where.push(`nc.personal_workspace IN (${personalWorkspaces.map((it) => `$${index++}`).join(', ')})`)
+            values.push(...personalWorkspaces)
         }
 
         if (params.card != null) {
@@ -149,12 +149,12 @@ export class NotificationsDb extends BaseDb {
         return {where: `WHERE ${where.join(' AND ')}`, values}
     }
 
-    buildNotificationWhere(params: FindNotificationsParams, personWorkspace: string, workspace?: string): {
+    buildNotificationWhere(params: FindNotificationsParams, personalWorkspace: string, workspace?: string): {
         where: string,
         values: any[]
     } {
-        const where: string[] = ['nc.person_workspace = $1']
-        const values: any[] = [personWorkspace]
+        const where: string[] = ['nc.personal_workspace = $1']
+        const values: any[] = [personalWorkspace]
         let index = 2
 
         if (workspace != null) {
@@ -193,7 +193,7 @@ export class NotificationsDb extends BaseDb {
             id: row.id,
             card: row.card_id,
             workspace: row.workspace_id,
-            personWorkspace: row.person_workspace,
+            personalWorkspace: row.personal_workspace,
             archivedFrom: row.archived_from ? new Date(row.archived_from) : undefined,
             lastView: row.last_view ? new Date(row.last_view) : undefined,
             lastUpdate: row.last_update ? new Date(row.last_update) : undefined

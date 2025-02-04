@@ -24,7 +24,7 @@ export class Session {
     private readonly db: DbAdapter,
     private readonly manager: Manager
   ) {
-    this.eventProcessor = new EventProcessor(db, info.workspace, info.personWorkspace)
+    this.eventProcessor = new EventProcessor(db, info.workspace, info.personalWorkspace)
   }
 
   ping(): string {
@@ -46,7 +46,7 @@ export class Session {
 
   async findNotifications(params: FindNotificationsParams, queryId?: number): Promise<Notification[]> {
     //TODO: do we need filter by workspace by default?
-    const result = await this.db.findNotifications(params, this.info.personWorkspace)
+    const result = await this.db.findNotifications(params, this.info.personalWorkspace)
     if (queryId != null) {
       this.manager.subscribeQuery(this.id, this.info.workspace, 'notification', queryId, params)
     }
@@ -58,7 +58,7 @@ export class Session {
     queryId?: number
   ): Promise<NotificationContext[]> {
     //TODO: do we need filter by workspace by default?
-    const result = await this.db.findContexts(params, [this.info.personWorkspace])
+    const result = await this.db.findContexts(params, [this.info.personalWorkspace])
     if (queryId != null) {
       this.manager.subscribeQuery(this.id, this.info.workspace, 'context', queryId, params)
     }

@@ -45,7 +45,7 @@ export interface NotificationDb {
 export interface ContextDb {
     workspace_id: string
     card_id: CardID
-    person_workspace: string
+    personal_workspace: string
 
     archived_from?: Date
     last_view?: Date

@@ -152,20 +152,20 @@ export class Manager {
         )
       case EventType.NotificationCreated:
         return (
-          info.session.info.personWorkspace === event.personWorkspace &&
+          info.session.info.personalWorkspace === event.personalWorkspace &&
           this.matchNotificationQuery(event, Array.from(info.notificationQueries.values()))
         )
       case EventType.NotificationRemoved:
-        return info.session.info.personWorkspace === event.personWorkspace && info.notificationQueries.size > 0
+        return info.session.info.personalWorkspace === event.personalWorkspace && info.notificationQueries.size > 0
       case EventType.NotificationContextCreated:
         return (
-          info.session.info.personWorkspace === event.context.personWorkspace &&
+          info.session.info.personalWorkspace === event.context.personalWorkspace &&
           this.matchContextQuery(event, Array.from(info.contextQueries.values()))
         )
       case EventType.NotificationContextRemoved:
-        return info.session.info.personWorkspace === event.personWorkspace && info.contextQueries.size > 0
+        return info.session.info.personalWorkspace === event.personalWorkspace && info.contextQueries.size > 0
       case EventType.NotificationContextUpdated:
-        return info.session.info.personWorkspace === event.personWorkspace && info.contextQueries.size > 0
+        return info.session.info.personalWorkspace === event.personalWorkspace && info.contextQueries.size > 0
     }
   }
 

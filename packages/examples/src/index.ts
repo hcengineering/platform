@@ -5,7 +5,7 @@ import { createMessagesQuery, initLiveQueries } from '@hcengineering/communicati
 
 const thread = 'cd0aba36-1c4f-4170-95f2-27a12a5415f6' as ThreadID
 const workspace = 'cd0aba36-1c4f-4170-95f2-27a12a5415f6'
-const personWorkspace = 'cd0aba36-1c4f-4170-95f2-27a12a5415f5'
+const personalWorkspace = 'cd0aba36-1c4f-4170-95f2-27a12a5415f5'
 const creator1 = 'email:vasya@huly.com' as SocialID
 
 async function getClient(type: 'ws' | 'sqlite') {
@@ -15,7 +15,7 @@ async function getClient(type: 'ws' | 'sqlite') {
     return await getWebsocketClient(platformUrl, token)
   }
 
-  return await getSqliteClient(workspace, personWorkspace)
+  return await getSqliteClient(workspace, personalWorkspace)
 }
 
 export async function example() {
