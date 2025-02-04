@@ -82,7 +82,7 @@
     "StartWithRecording": "Začít s nahráváním",
     "Language": "Jazyk",
     "Kick": "Vyhodit",
-    "WithAudio": "S audio",
-    "ShareWithAudioTooltip": "Sdílet s audio, musíte znovu sdílet pro aplikování změn"
+    "WithAudio": "Zahrnout systémový zvuk",
+    "ShareWithAudioTooltip": "Sdílejte obrazovku se systémovým zvukem. Restartujte sdílení obrazovky, aby se změny projevily."
   }
 }
