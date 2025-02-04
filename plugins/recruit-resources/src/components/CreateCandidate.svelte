@@ -68,7 +68,9 @@
     MiniToggle,
     showPopup,
     Spinner,
-    ActionIcon
+    ActionIcon,
+    addNotification,
+    NotificationSeverity
   } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import recruit from '../plugin'
@@ -76,6 +78,7 @@
   import YesNo from './YesNo.svelte'
   import IconSwitch from './icons/Switch.svelte'
   import IconShuffle from './icons/Shuffle.svelte'
+  import Notification from './Notification.svelte'
 
   export let shouldSaveDraft: boolean = true
 
@@ -299,6 +302,13 @@
     draftController.remove()
     dispatch('close', _id)
     resetObject()
+    addNotification(
+      await translate(presentation.string.Ok, {}, getCurrentLanguage()),
+      '',
+      Notification,
+      undefined,
+      NotificationSeverity.Info
+    )
   }
 
   function isUndef (value?: string): boolean {
