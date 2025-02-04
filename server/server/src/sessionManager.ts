@@ -38,7 +38,9 @@ import core, {
   buildSocialIdString,
   type PersonId,
   type WorkspaceDataId,
-  type PersonUuid
+  type PersonUuid,
+  Data,
+  Version
 } from '@hcengineering/core'
 import { getClient as getAccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { unknownError, type Status } from '@hcengineering/platform'
@@ -407,16 +409,21 @@ class TSessionManager implements SessionManager {
       return { error: new Error('Account not found or not available'), terminate: true }
     }
 
+    const wsVersion: Data<Version> = {
+      major: workspaceInfo.versionMajor,
+      minor: workspaceInfo.versionMinor,
+      patch: workspaceInfo.versionPatch
+    }
+
     if (
       this.modelVersion !== '' &&
-      workspaceInfo.version !== undefined &&
-      this.modelVersion !== versionToString(workspaceInfo.version) &&
+      this.modelVersion !== versionToString(wsVersion) &&
       token.extra?.model !== 'upgrade' &&
       token.extra?.mode !== 'backup'
     ) {
       ctx.warn('Model version mismatch', {
         version: this.modelVersion,
-        workspaceVersion: versionToString(workspaceInfo.version),
+        workspaceVersion: versionToString(wsVersion),
         workspace: workspaceInfo.uuid,
         workspaceUrl: workspaceInfo.url,
         account: token.account,

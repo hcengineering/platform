@@ -313,11 +313,16 @@ export class WorkspaceWorker {
       }
     }
 
+    const workspaceVersion = {
+      major: ws.versionMajor,
+      minor: ws.versionMinor,
+      patch: ws.versionPatch
+    }
     const logger = opt.console ? ctxModelLogger : new FileModelLogger(path.join(opt.logs, `${ws.uuid}.log`))
 
     ctx.info('---UPGRADING----', {
       workspace: ws.uuid,
-      workspaceVersion: ws.version,
+      workspaceVersion,
       requestedVersion: this.version,
       region: this.region
     })
@@ -351,7 +356,7 @@ export class WorkspaceWorker {
       )
       ctx.info('---UPGRADE-DONE---------', {
         workspace: ws.uuid,
-        oldWorkspaceVersion: ws.version,
+        oldWorkspaceVersion: workspaceVersion,
         requestedVersion: this.version,
         region: this.region,
         time: Date.now() - t
@@ -367,7 +372,7 @@ export class WorkspaceWorker {
 
       ctx.error('---UPGRADE-FAILED---------', {
         workspace: ws.uuid,
-        oldWorkspaceVersion: ws.version,
+        oldWorkspaceVersion: workspaceVersion,
         requestedVersion: this.version,
         region: this.region,
         time: Date.now() - t
