@@ -1,0 +1,73 @@
+---
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+
+concurrency:
+  group: 'main'
+  cancel-in-progress: true
+
+jobs:
+  yamllint:
+    name: yamllint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: yaml-lint
+        uses: ibiqlik/action-yamllint@v1
+        with:
+          config_file: .github/yamllint.yaml
+          strict: true
+  build-and-test:
+    strategy:
+      matrix:
+        os:
+          - ubuntu
+          - windows
+          - macos
+    runs-on: ${{ matrix.os }}-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23.5
+      - name: Build
+        run: go build -race  ./...
+      - name: Test
+        run: go test -race ./...
+  checkgomod:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.23.5
+      - run: go mod tidy
+      - name: Check for changes in go.mod or go.sum
+        run: |
+          git diff --name-only --exit-code go.mod || ( echo "Run go mod tidy" && false )
+  golangci-lint:
+    name: golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23.5
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v4
+        with:
+          version: v1.60.3
+          args: --timeout 3m --verbose
