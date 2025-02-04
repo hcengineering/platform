@@ -13,11 +13,7 @@
 // limitations under the License.
 // -->
 <script lang="ts">
-  import {
-    getJsonOrEmpty,
-    getClient,
-    type LinkPreviewDetails
-  } from '@hcengineering/presentation'
+  import { getJsonOrEmpty, getClient, type LinkPreviewDetails } from '@hcengineering/presentation'
   import { type Attachment } from '@hcengineering/attachment'
   import { type WithLookup } from '@hcengineering/core'
   import { Spinner } from '@hcengineering/ui'
@@ -46,7 +42,7 @@
   }
   const client = getClient()
 
-  async function onDelete (): void {
+  async function onDelete (): Promise<void> {
     await client.removeCollection(
       attachment._class,
       attachment.space,
