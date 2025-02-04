@@ -48,7 +48,9 @@ export function createModel (builder: Builder): void {
             componentProps: {
               _class: mail.class.MailThread,
               icon: personalBrowser.icon.Mail,
-              label: personalBrowser.string.Mail
+              label: personalBrowser.string.Mail,
+              createLabel: mail.string.CreateMail,
+              createComponent: mail.component.CreateMail
             }
           }
         ]
@@ -63,7 +65,7 @@ export function createModel (builder: Builder): void {
     {
       attachTo: mail.class.MailThread,
       descriptor: view.viewlet.Table,
-      config: ['createdBy', 'modifiedOn'],
+      config: ['createdBy', '', 'createdOn'],
       configOptions: {
         hiddenKeys: ['name', 'questions'],
         sortable: true

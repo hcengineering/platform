@@ -2,6 +2,7 @@
   "string": {
     "Subject": "Assunto",
     "From": "De",
-    "To": "Para"
+    "To": "Para",
+    "CreateMail": "Nova mensagem"
   }
 }

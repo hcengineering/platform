@@ -14,12 +14,15 @@
 //
 
 import type { Class, Ref } from '@hcengineering/core'
-import { type Plugin, plugin } from '@hcengineering/platform'
+import { IntlString, type Plugin, plugin } from '@hcengineering/platform'
 import type { ChunterSpace } from '@hcengineering/chunter'
+import type { AnyComponent } from '@hcengineering/ui'
 
 export interface MailThread extends ChunterSpace {
   subject: string
   mailThreadId: string
+  from: string
+  to: string
 }
 
 /**
@@ -30,5 +33,18 @@ export const mailId = 'mail' as Plugin
 export default plugin(mailId, {
   class: {
     MailThread: '' as Ref<Class<MailThread>>
+  },
+  component: {
+    CreateMail: '' as AnyComponent,
+    MailThreadPresenter: '' as AnyComponent,
+    MailThread: '' as AnyComponent
+  },
+  string: {
+    MailThread: '' as IntlString,
+    MailThreadId: '' as IntlString,
+    Subject: '' as IntlString,
+    To: '' as IntlString,
+    From: '' as IntlString,
+    CreateMail: '' as IntlString
   }
 })

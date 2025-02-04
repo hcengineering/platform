@@ -2,6 +2,7 @@
   "string": {
     "Subject": "主题",
     "From": "从",
-    "To": "到"
+    "To": "到",
+    "CreateMail": "新邮件"
   }
 }

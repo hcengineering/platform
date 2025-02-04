@@ -13,9 +13,15 @@
 // limitations under the License.
 //
 import { type Resources } from '@hcengineering/platform'
+import CreateMail from './components/CreateMail.svelte'
+import MailThreadPresenter from './components/MailThreadPresenter.svelte'
+import MailThread from './components/MailThread.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
+    CreateMail,
+    MailThreadPresenter,
+    MailThread
   },
   activity: {
   }

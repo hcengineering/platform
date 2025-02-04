@@ -13,14 +13,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import { type IntlString, mergeIds } from '@hcengineering/platform'
-import mail, { mailId } from '@hcengineering/mail'
-
-export default mergeIds(mailId, mail, {
-  string: {
-    Subject: '' as IntlString,
-    MailThread: '' as IntlString,
-    MailThreadId: '' as IntlString
-  }
-})
+export { default } from '@hcengineering/mail'

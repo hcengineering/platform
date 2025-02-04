@@ -18,6 +18,5 @@ import { personalBrowserId } from '@hcengineering/personal-browser'
 import personalBrowser from '@hcengineering/personal-browser-resources/src/plugin'
 
 export default mergeIds(personalBrowserId, personalBrowser, {
-  component: {
-  }
+  component: {}
 })

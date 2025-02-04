@@ -2,6 +2,7 @@
   "string": {
     "Subject": "Téma",
     "From": "Od",
-    "To": "Komu"
+    "To": "Komu",
+    "CreateMail": "Nová zpráva"
   }
 }
