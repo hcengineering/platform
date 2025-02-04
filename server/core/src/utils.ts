@@ -30,7 +30,7 @@ import core, {
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
-import { type Hash } from 'crypto'
+import { createHash, type Hash } from 'crypto'
 import fs from 'fs'
 import type { DbAdapter } from './adapter'
 import { BackupClientOps } from './storage'
@@ -296,6 +296,7 @@ export function wrapPipeline (
     getHierarchy: () => pipeline.context.hierarchy,
     getModel: () => pipeline.context.modelDb,
     loadChunk: (domain, idx) => backupOps.loadChunk(ctx, domain, idx),
+    getDomainHash: (domain) => backupOps.getDomainHash(ctx, domain),
     loadDocs: (domain, docs) => backupOps.loadDocs(ctx, domain, docs),
     upload: (domain, docs) => backupOps.upload(ctx, domain, docs),
     searchFulltext: async (query, options) => ({ docs: [], total: 0 }),
@@ -344,6 +345,10 @@ export function wrapAdapterToClient (ctx: MeasureContext, storageAdapter: DbAdap
       throw new Error('unsupported')
     }
 
+    async getDomainHash (domain: Domain): Promise<string> {
+      return await storageAdapter.getDomainHash(ctx, domain)
+    }
+
     async closeChunk (idx: number): Promise<void> {}
 
     async loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
@@ -365,4 +370,32 @@ export function wrapAdapterToClient (ctx: MeasureContext, storageAdapter: DbAdap
     async sendForceClose (): Promise<void> {}
   }
   return new TestClientConnection()
+}
+
+export async function calcHashHash (ctx: MeasureContext, domain: Domain, adapter: DbAdapter): Promise<string> {
+  const hash = createHash('sha256')
+
+  const it = adapter.find(ctx, domain)
+
+  try {
+    let count = 0
+    while (true) {
+      const part = await it.next(ctx)
+      if (part.length === 0) {
+        break
+      }
+      count += part.length
+      for (const doc of part) {
+        hash.update(doc.id)
+        hash.update(doc.hash)
+      }
+    }
+    if (count === 0) {
+      // Use empty hash for empty documents.
+      return ''
+    }
+    return hash.digest('hex')
+  } finally {
+    await it.close(ctx)
+  }
 }
