@@ -187,7 +187,7 @@ class BackupWorker {
     ctx.warn('Preparing for BACKUP', {
       total: workspaces.length,
       skipped,
-      workspaces: workspaces.map((it) => it.uuid)
+      workspaces: workspaces.map((it) => it.url)
     })
 
     const part = workspaces.slice(0, 500)
