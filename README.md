@@ -20,12 +20,14 @@ The Huly Stream high-performance HTTP-based transcoding service. Huly-stream is 
   - `webm`
 
 ### Output Options
-- **TUS Upload**: Resumable file uploads via TUS protocol.
-- **s3 Upload**: Direct upload to Amazon S3.
-- **datalake Upload**: Integration for data lake storage systems.
 - **Supported Output Formats**:
   - `aac`
   - `hls`
+
+### Upload options
+- **TUS Upload**: Resumable file uploads via TUS protocol.
+- **s3 Upload**: Direct upload to S3 storage.
+- **datalake Upload**: Upload to datalake storage.
 
 ### Key Functionalities
 - **Live transcoing with minimal upload time**: Transcoding results are going to be avaible after stream completion.
@@ -74,13 +76,13 @@ STREAM_REMOVE_CONTENT_ON_UPLOAD    True or False    true                        
 STREAM_UPLOAD_RAW_CONTENT          True or False    false                           uploads content in raw quality to the endpoint if true
 ```
 
-### Metadata:
+### Metadata
 
-**resolutions** if passed, set the resolution for the output, for example, 'resolutions: 1920:1080, 1280:720.'
+**resolutions:** if passed, set the resolution for the output, for example, 'resolutions: 1920:1080, 1280:720.'
 
-**token** must be provided to be authorized in the Huly's datalake service.
+**token:** must be provided to be authorized in the Huly's datalake service.
 
-**workspace** required for uploading content.
+**workspace:** required for uploading content to the datalake storage.
 
 
 

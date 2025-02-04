@@ -18,6 +18,7 @@ import (
 	"context"
 	"io"
 	"mime/multipart"
+	"net/url"
 	"os"
 	"path/filepath"
 
@@ -54,7 +55,7 @@ func (d *DatalakeStorage) UploadFile(ctx context.Context, fileName string) error
 		_ = file.Close()
 	}()
 
-	var _, objectKey = filepath.Split(fileName)
+	var objectKey = getObjectKey(fileName)
 	var logger = log.FromContext(ctx).With(zap.String("datalake upload", d.workspace), zap.String("fileName", fileName))
 
 	logger.Debug("start uploading")
@@ -101,7 +102,7 @@ func (d *DatalakeStorage) DeleteFile(ctx context.Context, fileName string) error
 	var logger = log.FromContext(ctx).With(zap.String("datalake delete", d.workspace), zap.String("fileName", fileName))
 	logger.Debug("start deleting")
 
-	var _, objectKey = filepath.Split(fileName)
+	var objectKey = getObjectKey(fileName)
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
@@ -121,4 +122,9 @@ func (d *DatalakeStorage) DeleteFile(ctx context.Context, fileName string) error
 	logger.Debug("file deleted")
 
 	return nil
+}
+
+func getObjectKey(s string) string {
+	var _, objectKey = filepath.Split(s)
+	return url.QueryEscape(objectKey)
 }
