@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
 export interface DrawingData {
   content?: string
 }
+
 export interface DrawingProps {
   readonly: boolean
   autoSize?: boolean
@@ -348,13 +350,16 @@ export function drawing (
   function touchToNodePoint (touch: Touch, node: HTMLElement): Point {
     const rect = node.getBoundingClientRect()
     return {
-      x: touch.clientX - rect.left,
-      y: touch.clientY - rect.top
+      x: Math.round(touch.clientX - rect.left),
+      y: Math.round(touch.clientY - rect.top)
     }
   }
 
   function pointerToNodePoint (e: PointerEvent): Point {
-    return { x: e.offsetX, y: e.offsetY }
+    return {
+      x: Math.round(e.offsetX),
+      y: Math.round(e.offsetY)
+    }
   }
 
   canvas.ontouchstart = (e) => {
@@ -846,9 +851,18 @@ export function drawing (
 
     update (props: DrawingProps) {
       let replay = false
-      if (props.offset !== undefined && (props.offset.x !== draw.offset.x || props.offset.y !== draw.offset.y)) {
-        draw.offset = props.offset
-        replay = true
+      let offsetDelta: Point | undefined
+      if (props.offset !== undefined) {
+        const deltaX = props.offset.x - draw.offset.x
+        const deltaY = props.offset.y - draw.offset.y
+        if (deltaX !== 0 || deltaY !== 0) {
+          if (Math.hypot(deltaX, deltaY) > 20) {
+            offsetDelta = { x: deltaX, y: deltaY }
+          } else {
+            draw.offset = props.offset
+          }
+          replay = true
+        }
       }
       if (commands !== props.commands) {
         commands = props.commands
@@ -905,7 +919,43 @@ export function drawing (
         updateLiveTextBox()
       }
       if (replay) {
-        replayCommands()
+        if (offsetDelta !== undefined) {
+          function easeInOutCubic (x: number): number {
+            return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2
+          }
+          const targetFps = 60
+          const frameInterval = 1000 / targetFps
+          const animDuration = 500
+          const oldOffset = draw.offset
+          let lastTime = 0
+          let startTime = 0
+          const animate = (currentTime: number): void => {
+            if (lastTime === 0) {
+              lastTime = currentTime
+              startTime = currentTime
+              requestAnimationFrame(animate)
+              return
+            }
+            const deltaTime = currentTime - lastTime
+            if (deltaTime > frameInterval) {
+              lastTime = currentTime - (deltaTime % frameInterval)
+              const fracTime = (lastTime - startTime) / animDuration
+              const fracDist = easeInOutCubic(fracTime)
+              draw.offset = {
+                x: Math.round(oldOffset.x + offsetDelta.x * fracDist),
+                y: Math.round(oldOffset.y + offsetDelta.y * fracDist)
+              }
+              replayCommands()
+              if (fracTime >= 1) {
+                return
+              }
+            }
+            requestAnimationFrame(animate)
+          }
+          requestAnimationFrame(animate)
+        } else {
+          replayCommands()
+        }
       }
     }
   }

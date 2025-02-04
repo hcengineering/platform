@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -16,14 +16,19 @@
 import { type Doc, type Ref } from '@hcengineering/core'
 import { getCurrentEmployee, type Person } from '@hcengineering/contact'
 import { type PresenceData } from '@hcengineering/presence'
-import { type Readable, derived, writable } from 'svelte/store'
+import { type Readable, derived, writable, get } from 'svelte/store'
 
-import { type PersonRoomPresence, type Room, type RoomPresence } from './types'
+import type { PersonRoomPresence, Room, RoomPresence, MyDataItem } from './types'
 
 type PersonPresenceMap = Map<Ref<Person>, RoomPresence[]>
 
 export const myPresence = writable<RoomPresence[]>([])
+export const myData = writable<Map<string, MyDataItem>>(new Map())
 export const otherPresence = writable<PersonPresenceMap>(new Map())
+export const personToFollow = writable<Ref<Person> | undefined>(undefined)
+
+const otherDataMap = new Map<Ref<Person>, Map<string, any>>()
+const otherDataHandlers = new Map<string, Set<(data: any) => void>>()
 
 export const presenceByObjectId = derived<Readable<PersonPresenceMap>, Map<Ref<Doc>, PersonRoomPresence[]>>(
   otherPresence,
@@ -75,6 +80,76 @@ export function onPersonUpdate (person: Ref<Person>, presence: RoomPresence[]): 
 export function onPersonLeave (person: Ref<Person>): void {
   otherPresence.update((map) => {
     map.delete(person)
+    personToFollow.update((p) => (p === person ? undefined : p))
+    return map
+  })
+}
+
+export function onPersonData (person: Ref<Person>, key: string, data: any): void {
+  const otherData = otherDataMap.get(person)
+  if (otherData !== undefined) {
+    otherData.set(key, data)
+  } else {
+    otherDataMap.set(person, new Map([[key, data]]))
+  }
+  if (person === get(personToFollow)) {
+    const handlers = otherDataHandlers.get(key)
+    if (handlers !== undefined) {
+      for (const handler of handlers) {
+        handler(data)
+      }
+    }
+  }
+}
+
+export function subscribeToOtherData (key: string, callback: (data: any) => void): void {
+  const handlers = otherDataHandlers.get(key)
+  if (handlers !== undefined) {
+    handlers.add(callback)
+  } else {
+    otherDataHandlers.set(key, new Set([callback]))
+  }
+  const p = get(personToFollow)
+  if (p !== undefined) {
+    const otherData = otherDataMap.get(p)
+    if (otherData !== undefined) {
+      const data = otherData.get(key)
+      if (data !== undefined) {
+        callback(data)
+      }
+    }
+  }
+}
+
+export function unsubscribeFromOtherData (key: string, callback: (data: any) => void): void {
+  const handlers = otherDataHandlers.get(key)
+  if (handlers !== undefined) {
+    handlers.delete(callback)
+  }
+}
+
+export function togglePersonFollowing (person: Ref<Person>): void {
+  personToFollow.update((p) => (p === person ? undefined : person))
+
+  const p = get(personToFollow)
+  if (p !== undefined) {
+    const otherData = otherDataMap.get(p)
+    if (otherData !== undefined) {
+      for (const [key, data] of otherData) {
+        const handlers = otherDataHandlers.get(key)
+        if (handlers !== undefined) {
+          handlers.forEach((callback) => {
+            callback(data)
+          })
+        }
+      }
+    }
+  }
+}
+
+export function sendMyData (key: string, data: any, forceSend: boolean = false): void {
+  myData.update((map) => {
+    map.set(key, { lastUpdated: Date.now(), data, forceSend })
     return map
   })
 }

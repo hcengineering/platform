@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -224,6 +224,7 @@
       bind:value={penWidth}
       on:change={updatePenWidth}
     />
+    <div class="divider buttons-divider" />
   {:else if tool === 'erase'}
     <input
       class="widthSelector"
@@ -234,6 +235,7 @@
       bind:value={eraserWidth}
       on:change={updateEraserWidth}
     />
+    <div class="divider buttons-divider" />
   {:else if tool === 'text'}
     <input
       class="widthSelector"
@@ -244,8 +246,8 @@
       bind:value={fontSize}
       on:change={updateFontSize}
     />
+    <div class="divider buttons-divider" />
   {/if}
-  <div class="divider buttons-divider" />
   {#each penColors as color}
     <Button
       kind="icon"

@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Metadata, Plugin } from '@hcengineering/platform'
+import type { Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui/src/types'
 
@@ -27,6 +27,11 @@ export const presencePlugin = plugin(presenceId, {
   component: {
     Presence: '' as AnyComponent,
     PresenceAvatars: '' as AnyComponent
+  },
+  function: {
+    SendMyData: '' as Resource<(key: string, data: any) => void>,
+    SubscribeToOtherData: '' as Resource<(key: string, callback: (data: any) => void) => void>,
+    UnsubscribeFromOtherData: '' as Resource<(key: string, callback: (data: any) => void) => void>
   }
 })
 

@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2024-2025 Anticrm Platform Contributors.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -20,7 +20,7 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { IconSize, tooltip, deviceOptionsStore as deviceInfo, checkAdaptiveMatching } from '@hcengineering/ui'
   import PresenceList from './PresenceList.svelte'
-  import { presenceByObjectId } from '../store'
+  import { presenceByObjectId, personToFollow, togglePersonFollowing } from '../store'
 
   export let object: Doc
 
@@ -54,10 +54,31 @@
   {:else}
     <div class="flex-row-center flex-gap-1">
       {#each persons as person}
-        <div use:tooltip={{ label: getEmbeddedLabel(formatName(person.name)) }}>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div
+          use:tooltip={{ label: getEmbeddedLabel(formatName(person.name)) }}
+          class="avatar-button"
+          class:followed-avatar={$personToFollow === person._id}
+          on:click={() => {
+            togglePersonFollowing(person._id)
+          }}
+        >
           <Avatar name={person.name} {size} {person} />
         </div>
       {/each}
     </div>
   {/if}
 {/if}
+
+<style lang="scss">
+  .avatar-button {
+    cursor: pointer;
+  }
+
+  .followed-avatar {
+    border-radius: 20%;
+    outline: 2px solid var(--primary-button-default);
+    outline-offset: 1px;
+  }
+</style>
