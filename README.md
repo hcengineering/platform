@@ -31,8 +31,10 @@ This project offers a convenient method to host Huly using `docker`, designed fo
   - [Table of Content](#table-of-content)
   - [Pre-requisites](#pre-requisites)
   - [Verification](#verification)
-  - [Installation](#installation)
-  - [Build and run](#build-and-run)
+  - [Basic Setup](#basic-setup)
+  - [Detailed Setup](#detailed-setup)
+    - [Installation](#installation)
+    - [Build and run](#build-and-run)
   - [Run in development mode](#run-in-development-mode)
   - [Update project structure and database](#update-project-structure-and-database)
   - [Troubleshooting](#troubleshooting)
@@ -46,9 +48,11 @@ This project offers a convenient method to host Huly using `docker`, designed fo
 ## Pre-requisites
 
 - Before proceeding, ensure that your system meets the following requirements:
-  - [Node.js](https://nodejs.org/en/download/) (v20.11.0 is required)
+  - [Node.js](https://nodejs.org/en/download/) (v20.11.0 is explicitly required. You might experience difficulties even in higher versions)
   - [Docker](https://docs.docker.com/get-docker/)
   - [Docker Compose](https://docs.docker.com/compose/install/)
+
+If you're not familiar with Docker, don't worry. This guide doesn't require any prior experience running applications on it.
 
 ## Verification
 
@@ -58,13 +62,17 @@ To verify the installation, perform the following checks in your terminal:
   ```bash
   docker --version
   docker compose version
-## Fast start
-
+## Basic Setup
+To handle all configurations needed to get Huly up and running, you can execute the following command in your root repository.
 ```bash
 sh ./scripts/fast-start.sh
 ```
+**NOTE:** If you're using Docker Desktop, ensure it's open throughout the entire process, whether it's the basic or detailed setup. Also, ensure you have created and verified your Docker account.
 
-## Installation
+## Detailed Setup
+For better troubleshooting in case you encounter any problems while running the basic setup
+
+### Installation
 
 You need Microsoft's [rush](https://rushjs.io) to install application.
 
@@ -81,7 +89,7 @@ Alternatively, you can just execute:
 sh ./scripts/presetup-rush.sh
 ```
 
-## Build and run
+### Build and run
 
 Development environment setup requires Docker to be installed on system.
 
