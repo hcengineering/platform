@@ -102,6 +102,8 @@ export interface LowLevelStorage {
     query: DocumentQuery<T>,
     options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
   ) => Promise<Iterator<T>>
+
+  getDomainHash: (ctx: MeasureContext, domain: Domain) => Promise<string>
 }
 
 export interface Iterator<T extends Doc> {

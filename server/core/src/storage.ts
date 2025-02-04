@@ -89,6 +89,10 @@ export class BackupClientOps {
     })
   }
 
+  getDomainHash (ctx: MeasureContext, domain: Domain): Promise<string> {
+    return this.storage.getDomainHash(ctx, domain)
+  }
+
   closeChunk (ctx: MeasureContext, idx: number): Promise<void> {
     return ctx.with('close-chunk', {}, async () => {
       const chunk = this.chunkInfo.get(idx)
