@@ -134,6 +134,9 @@ export interface BackupInfo {
   snapshots: BackupSnapshot[]
   snapshotsIndex?: number
   lastTxId?: string
+
+  // A hash of current domain transactions, so we could skip all other checks if same.
+  domainHashes: Record<Domain, string>
 }
 
 async function loadDigest (
@@ -143,15 +146,13 @@ async function loadDigest (
   domain: Domain,
   date?: number
 ): Promise<Map<Ref<Doc>, string>> {
-  ctx = ctx.newChild('load digest', { domain, count: snapshots.length })
-  ctx.info('loading-digest', { domain, snapshots: snapshots.length })
   const result = new Map<Ref<Doc>, string>()
   for (const s of snapshots) {
     const d = s.domains[domain]
 
     // Load old JSON snapshot
     if (d?.snapshot !== undefined) {
-      const dChanges: SnapshotV6 = JSON.parse(gunzipSync((await storage.loadFile(d.snapshot)) as any).toString())
+      const dChanges: SnapshotV6 = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(d.snapshot))).toString())
       for (const [k, v] of Object.entries(dChanges.added)) {
         result.set(k as Ref<Doc>, v)
       }
@@ -164,7 +165,7 @@ async function loadDigest (
     }
     for (const snapshot of d?.snapshots ?? []) {
       try {
-        const dataBlob = gunzipSync((await storage.loadFile(snapshot)) as any)
+        const dataBlob = gunzipSync(new Uint8Array(await storage.loadFile(snapshot)))
           .toString()
           .split('\n')
         const addedCount = parseInt(dataBlob.shift() ?? '0')
@@ -195,7 +196,6 @@ async function loadDigest (
       break
     }
   }
-  ctx.end()
   ctx.info('load-digest', { domain, snapshots: snapshots.length, documents: result.size })
   return result
 }
@@ -326,7 +326,7 @@ async function verifyDigest (
         }
         let lmodified = false
         try {
-          const dataBlob = gunzipSync(await storage.loadFile(snapshot))
+          const dataBlob = gunzipSync(new Uint8Array(await storage.loadFile(snapshot)))
             .toString()
             .split('\n')
           const addedCount = parseInt(dataBlob.shift() ?? '0')
@@ -389,7 +389,7 @@ async function write (chunk: any, stream: Writable): Promise<void> {
     })
   })
   if (needDrain) {
-    await new Promise((resolve, reject) => stream.once('drain', resolve))
+    await new Promise((resolve) => stream.once('drain', resolve))
   }
 }
 
@@ -738,7 +738,8 @@ export async function backup (
     let backupInfo: BackupInfo = {
       workspace: workspaceId,
       version: '0.6.2',
-      snapshots: []
+      snapshots: [],
+      domainHashes: {}
     }
 
     // Version 0.6.2, format of digest file is changed to
@@ -746,11 +747,16 @@ export async function backup (
     const infoFile = 'backup.json.gz'
 
     if (await storage.exists(infoFile)) {
-      backupInfo = JSON.parse(gunzipSync((await storage.loadFile(infoFile)) as any).toString())
+      backupInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(infoFile))).toString())
     }
     backupInfo.version = '0.6.2'
 
     backupInfo.workspace = workspaceId
+
+    if (backupInfo.domainHashes === undefined) {
+      // Migration
+      backupInfo.domainHashes = {}
+    }
 
     let lastTx: Tx | undefined
 
@@ -872,13 +878,6 @@ export async function backup (
       let st = Date.now()
       let changed: number = 0
       const needRetrieveChunks: Ref<Doc>[][] = []
-      // Load all digest from collection.
-      ctx.info('processed', {
-        processed,
-        digest: digest.size,
-        time: Date.now() - st,
-        workspace: workspaceId
-      })
       const oldHash = new Map<Ref<Doc>, string>()
 
       function removeFromNeedRetrieve (needRetrieve: Ref<Doc>[], id: string): void {
@@ -961,7 +960,7 @@ export async function backup (
             needRetrieve = []
           }
           if (currentChunk.finished) {
-            ctx.info('processed-end', {
+            ctx.info('processed', {
               processed,
               digest: digest.size,
               time: Date.now() - st,
@@ -1015,6 +1014,11 @@ export async function backup (
         removed: 0
       }
 
+      const dHash = await connection.getDomainHash(domain)
+      if (backupInfo.domainHashes[domain] === dHash) {
+        ctx.info('no changes in domain', { domain })
+        return
+      }
       // Cumulative digest
       const digest = await ctx.with('load-digest', {}, (ctx) => loadDigest(ctx, storage, backupInfo.snapshots, domain))
 
@@ -1034,11 +1038,6 @@ export async function backup (
       if (progress !== undefined) {
         await progress(10)
       }
-
-      if (needRetrieveChunks.length > 0) {
-        ctx.info('dumping domain...', { workspace: workspaceId, domain })
-      }
-
       const totalChunks = needRetrieveChunks.flatMap((it) => it.length).reduce((p, c) => p + c, 0)
       let processed = 0
       let blobs = 0
@@ -1058,7 +1057,7 @@ export async function backup (
         if (needRetrieve.length === 0) {
           continue
         }
-        ctx.info('Retrieve chunk', {
+        ctx.info('<<<< chunk', {
           needRetrieve: needRetrieveChunks.reduce((v, docs) => v + docs.length, 0),
           toLoad: needRetrieve.length,
           workspace: workspaceId,
@@ -1066,7 +1065,7 @@ export async function backup (
         })
         let docs: Doc[] = []
         try {
-          docs = await ctx.with('load-docs', {}, async (ctx) => await connection.loadDocs(domain, needRetrieve))
+          docs = await ctx.with('<<<< load-docs', {}, async () => await connection.loadDocs(domain, needRetrieve))
           lastSize = docs.reduce((p, it) => p + estimateDocSize(it), 0)
           if (docs.length !== needRetrieve.length) {
             const nr = new Set(docs.map((it) => it._id))
@@ -1115,7 +1114,6 @@ export async function backup (
             _pack = pack()
             stIndex++
             const storageFile = join(backupIndex, `${domain}-data-${snapshot.date}-${stIndex}.tar.gz`)
-            ctx.info('storing from domain', { domain, storageFile, workspace: workspaceId })
             domainInfo.storage = [...(domainInfo.storage ?? []), storageFile]
             const tmpFile = join(tmpRoot, basename(storageFile) + '.tmp')
             const tempFile = createWriteStream(tmpFile)
@@ -1146,7 +1144,7 @@ export async function backup (
               })
 
               // We need to upload file to storage
-              ctx.info('Upload pack file', { storageFile, size: sz, workspace: workspaceId })
+              ctx.info('>>>> upload pack', { storageFile, size: sz, workspace: wsIds.url })
               await storage.writeFile(storageFile, createReadStream(tmpFile))
               await rm(tmpFile)
 
@@ -1283,7 +1281,10 @@ export async function backup (
         changed++
       }
 
-      if (changed > 0) {
+      if (changed > 0 || backupInfo.domainHashes[domain] !== dHash) {
+        // Store domain hash, to be used on next time.
+        backupInfo.domainHashes[domain] = dHash
+
         snapshot.domains[domain] = domainInfo
         domainInfo.added += processedChanges.added.size
         domainInfo.updated += processedChanges.updated.size
@@ -1312,10 +1313,14 @@ export async function backup (
       try {
         global.gc?.()
       } catch (err) {}
-      ctx.info('memory-stats', {
+
+      const mm = {
         old: Math.round(oldUsed / (1024 * 1024)),
         current: Math.round(process.memoryUsage().heapUsed / (1024 * 1024))
-      })
+      }
+      if (mm.old > mm.current + mm.current / 10) {
+        ctx.info('memory-stats', mm)
+      }
       await ctx.with('process-domain', { domain }, async (ctx) => {
         await processDomain(
           ctx,
@@ -1338,7 +1343,7 @@ export async function backup (
     let sizeInfo: Record<string, number> = {}
 
     if (await storage.exists(sizeFile)) {
-      sizeInfo = JSON.parse(gunzipSync((await storage.loadFile(sizeFile)) as any).toString())
+      sizeInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(sizeFile))).toString())
     }
     let processed = 0
 
@@ -1436,7 +1441,7 @@ export async function backupList (storage: BackupStorage): Promise<void> {
   if (!(await storage.exists(infoFile))) {
     throw new Error(`${infoFile} should present to restore`)
   }
-  const backupInfo: BackupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+  const backupInfo: BackupInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(infoFile))).toString())
   console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
   for (const s of backupInfo.snapshots) {
     console.log('snapshot: id:', s.date, ' date:', new Date(s.date))
@@ -1452,7 +1457,7 @@ export async function backupRemoveLast (storage: BackupStorage, date: number): P
   if (!(await storage.exists(infoFile))) {
     throw new Error(`${infoFile} should present to restore`)
   }
-  const backupInfo: BackupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+  const backupInfo: BackupInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(infoFile))).toString())
   console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
   const old = backupInfo.snapshots.length
   backupInfo.snapshots = backupInfo.snapshots.filter((it) => it.date < date)
@@ -1474,7 +1479,7 @@ export async function backupSize (storage: BackupStorage): Promise<void> {
   }
   let size = 0
 
-  const backupInfo: BackupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+  const backupInfo: BackupInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(infoFile))).toString())
   console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
   const addFileSize = async (file: string | undefined | null): Promise<void> => {
     if (file != null && (await storage.exists(file))) {
@@ -1513,12 +1518,12 @@ export async function backupDownload (storage: BackupStorage, storeIn: string): 
   }
   let size = 0
 
-  const backupInfo: BackupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+  const backupInfo: BackupInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(infoFile))).toString())
   console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
 
   let sizeInfo: Record<string, number> = {}
   if (await storage.exists(sizeFile)) {
-    sizeInfo = JSON.parse(gunzipSync(await storage.loadFile(sizeFile)).toString())
+    sizeInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(sizeFile))).toString())
   }
   console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
 
@@ -1579,7 +1584,7 @@ export async function backupFind (storage: BackupStorage, id: Ref<Doc>, domain?:
   if (!(await storage.exists(infoFile))) {
     throw new Error(`${infoFile} should present to restore`)
   }
-  const backupInfo: BackupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+  const backupInfo: BackupInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(infoFile))).toString())
   console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
 
   const toolCtx = new MeasureMetricsContext('', {})
@@ -1676,7 +1681,7 @@ export async function restore (
     ctx.error('file not pressent', { file: infoFile })
     throw new Error(`${infoFile} should present to restore`)
   }
-  const backupInfo: BackupInfo = JSON.parse(gunzipSync((await storage.loadFile(infoFile)) as any).toString())
+  const backupInfo: BackupInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(infoFile))).toString())
   let snapshots = backupInfo.snapshots
   if (opt.date !== -1) {
     const bk = backupInfo.snapshots.findIndex((it) => it.date === opt.date)
@@ -1687,6 +1692,10 @@ export async function restore (
     snapshots = backupInfo.snapshots.slice(0, bk + 1)
   } else {
     opt.date = snapshots[snapshots.length - 1].date
+  }
+
+  if (backupInfo.domainHashes === undefined) {
+    backupInfo.domainHashes = {}
   }
   ctx.info('restore to ', { id: opt.date, date: new Date(opt.date).toDateString() })
   const rsnapshots = Array.from(snapshots).reverse()
@@ -1764,6 +1773,11 @@ export async function restore (
   }
 
   async function processDomain (c: Domain): Promise<void> {
+    const dHash = await connection.getDomainHash(c)
+    if (backupInfo.domainHashes[c] === dHash) {
+      ctx.info('no changes in domain', { domain: c })
+      return
+    }
     const changeset = await loadDigest(ctx, storage, snapshots, c, opt.date)
     // We need to load full changeset from server
     const serverChangeset = new Map<Ref<Doc>, string>()
@@ -1772,7 +1786,10 @@ export async function restore (
     try {
       global.gc?.()
     } catch (err) {}
-    ctx.info('memory-stats', { old: oldUsed / (1024 * 1024), current: process.memoryUsage().heapUsed / (1024 * 1024) })
+    const mm = { old: oldUsed / (1024 * 1024), current: process.memoryUsage().heapUsed / (1024 * 1024) }
+    if (mm.old > mm.current + mm.current / 10) {
+      ctx.info('memory-stats', mm)
+    }
 
     let idx: number | undefined
     let loaded = 0
@@ -2177,7 +2194,7 @@ export async function compactBackup (
     const infoFile = 'backup.json.gz'
 
     if (await storage.exists(infoFile)) {
-      backupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+      backupInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(infoFile))).toString())
     } else {
       console.log('No backup found')
       return
@@ -2514,7 +2531,7 @@ export async function checkBackupIntegrity (ctx: MeasureContext, storage: Backup
     const infoFile = 'backup.json.gz'
 
     if (await storage.exists(infoFile)) {
-      backupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+      backupInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(infoFile))).toString())
     } else {
       console.log('No backup found')
       return

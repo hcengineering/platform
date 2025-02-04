@@ -65,7 +65,8 @@ import {
   type DbAdapterHandler,
   type DomainHelperOperations,
   type ServerFindOptions,
-  type TxAdapter
+  type TxAdapter,
+  calcHashHash
 } from '@hcengineering/server-core'
 import type postgres from 'postgres'
 import { createDBClient, createGreenDBClient, type DBClient } from './client'
@@ -1437,6 +1438,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
       )
     }
     return res
+  }
+
+  @withContext('get-domain-hash')
+  async getDomainHash (ctx: MeasureContext, domain: Domain): Promise<string> {
+    return await calcHashHash(ctx, domain, this)
   }
 
   curHash (): string {

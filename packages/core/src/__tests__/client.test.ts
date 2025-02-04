@@ -24,7 +24,7 @@ import { ModelDb, TxDb } from '../memdb'
 import { TxOperations } from '../operations'
 import type { DocumentQuery, FindResult, SearchOptions, SearchQuery, SearchResult, TxResult } from '../storage'
 import { Tx, TxFactory, TxProcessor } from '../tx'
-import { fillConfiguration, pluginFilterTx } from '../utils'
+import { fillConfiguration, generateId, pluginFilterTx } from '../utils'
 import { connect } from './connection'
 import { genMinModel } from './minmodel'
 
@@ -141,6 +141,10 @@ describe('client', () => {
           docs: [],
           finished: true
         })
+
+        async getDomainHash (domain: Domain): Promise<string> {
+          return generateId()
+        }
 
         async closeChunk (idx: number): Promise<void> {}
         async loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
