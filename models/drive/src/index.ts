@@ -568,6 +568,25 @@ function defineFileVersion (builder: Builder): void {
     },
     drive.action.RestoreFileVersion
   )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.Delete,
+      visibilityTester: drive.function.CanDeleteFileVersion,
+      label: view.string.Delete,
+      icon: view.icon.Delete,
+      category: drive.category.Drive,
+      input: 'none',
+      target: drive.class.FileVersion,
+      context: {
+        mode: ['context', 'browser'],
+        application: drive.app.Drive,
+        group: 'edit'
+      }
+    },
+    drive.action.DeleteFileVersion
+  )
 }
 
 function defineFile (builder: Builder): void {

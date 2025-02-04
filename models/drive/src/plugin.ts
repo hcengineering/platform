@@ -54,7 +54,8 @@ export default mergeIds(driveId, drive, {
     FolderLinkProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     FileLinkProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     CanRenameFile: '' as Resource<ViewActionAvailabilityFunction>,
-    CanRenameFolder: '' as Resource<ViewActionAvailabilityFunction>
+    CanRenameFolder: '' as Resource<ViewActionAvailabilityFunction>,
+    CanDeleteFileVersion: '' as Resource<ViewActionAvailabilityFunction>
   },
   completion: {
     FileQuery: '' as Resource<ObjectSearchFactory>,
@@ -78,6 +79,7 @@ export default mergeIds(driveId, drive, {
     DownloadFile: '' as Ref<Action>,
     RenameFile: '' as Ref<Action>,
     RenameFolder: '' as Ref<Action>,
+    DeleteFileVersion: '' as Ref<Action>,
     RestoreFileVersion: '' as Ref<Action>
   },
   actionImpl: {
