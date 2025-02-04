@@ -13,14 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, PersonAccount } from '@hcengineering/contact'
-  import { Class, flipSet, getCurrentAccount, getObjectValue, Ref } from '@hcengineering/core'
+  import contact, { Employee, getCurrentEmployee } from '@hcengineering/contact'
+  import { Class, flipSet, getObjectValue, Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { CheckBox, createFocusManager, FocusHandler, ListView } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   import UserDetails from './UserDetails.svelte'
-  import { personByIdStore } from '../utils'
 
   export let _class: Ref<Class<Employee>> = contact.mixin.Employee
   export let searchField: string = 'name'
@@ -36,7 +35,7 @@
   const dispatch = createEventDispatcher()
   const query = createQuery()
   const focusManager = createFocusManager()
-  const currentAccount = getCurrentAccount() as PersonAccount
+  const me = getCurrentEmployee()
 
   let listSelection = 0
   let list: ListView
@@ -44,9 +43,6 @@
   $: selectedItems = new Set<Ref<Employee>>(selected)
 
   let persons: Employee[] = []
-
-  $: currentPerson = $personByIdStore.get(currentAccount.person)
-
   $: query.query(
     _class,
     {
@@ -55,7 +51,7 @@
           ? { $search: search }
           : { [searchField]: { $like: '%' + search + '%' } }
         : {}),
-      ...(skipCurrentAccount && currentPerson ? { _id: { $ne: currentPerson._id as Ref<Employee> } } : {}),
+      ...(skipCurrentAccount ? { _id: { $ne: me } } : {}),
       ...(skipInactive ? { active: true } : {})
     },
     (result) => {

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Calendar, Event, ReccuringEvent, RecurringRule, Visibility, generateEventId } from '@hcengineering/calendar'
-  import { Person, PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee, Person } from '@hcengineering/contact'
   import core, { Class, Doc, Markup, Ref, Space, generateId, getCurrentAccount } from '@hcengineering/core'
   import presentation, {
     createQuery,
@@ -30,7 +30,6 @@
     FocusHandler,
     Icon,
     IconClose,
-    IconMoreH,
     createFocusManager,
     getUserTimezone,
     showPopup,
@@ -48,14 +47,17 @@
   import ReccurancePopup from './ReccurancePopup.svelte'
   import VisibilityEditor from './VisibilityEditor.svelte'
 
-  const currentUser = getCurrentAccount() as PersonAccount
+  const acc = getCurrentAccount()
+  const currentUser = getCurrentEmployee()
+  const socialStrings = acc.socialIds
+  const myPrimaryId = acc.primarySocialId
 
   export let attachedTo: Ref<Doc> = calendar.ids.NoAttached
   export let attachedToClass: Ref<Class<Doc>> = calendar.class.Event
   export let title: string = ''
   export let date: Date | undefined = undefined
   export let withTime = false
-  export let participants: Ref<Person>[] = [currentUser.person]
+  export let participants: Ref<Person>[] = [currentUser]
 
   const now = new Date()
   const defaultDuration = 60 * 60 * 1000
@@ -75,15 +77,18 @@
 
   let description: Markup = EmptyMarkup
   let visibility: Visibility = 'private'
-  const me = getCurrentAccount()
-  let _calendar: Ref<Calendar> = `${me._id}_calendar` as Ref<Calendar>
+  let _calendar: Ref<Calendar> = `${myPrimaryId}_calendar` as Ref<Calendar>
 
   const q = createQuery()
-  q.query(calendar.class.ExternalCalendar, { default: true, createdBy: me._id, hidden: false }, (res) => {
-    if (res.length > 0) {
-      _calendar = res[0]._id
+  q.query(
+    calendar.class.ExternalCalendar,
+    { default: true, createdBy: { $in: socialStrings }, hidden: false },
+    (res) => {
+      if (res.length > 0) {
+        _calendar = res[0]._id
+      }
     }
-  })
+  )
 
   const spaceQ = createQuery()
   let space: Space | undefined = undefined

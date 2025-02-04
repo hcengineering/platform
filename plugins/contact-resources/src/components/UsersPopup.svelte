@@ -25,6 +25,16 @@
   export let options: FindOptions<Contact> | undefined = undefined
   export let selected: Ref<Person> | undefined
   export let docQuery: DocumentQuery<Contact> | undefined = undefined
+  export let multiSelect: boolean = false
+  export let allowDeselect: boolean = false
+  export let titleDeselect: IntlString | undefined = undefined
+  export let placeholder: IntlString = presentation.string.Search
+  export let selectedUsers: Ref<Person>[] = []
+  export let ignoreUsers: Ref<Person>[] = []
+  export let shadows: boolean = true
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let create: ObjectCreate | undefined = undefined
+  export let readonly = false
 
   const client = getClient()
 
@@ -42,17 +52,6 @@
     const bName = getName(hierarchy, b as Contact)
     return aName.localeCompare(bName)
   }
-
-  export let multiSelect: boolean = false
-  export let allowDeselect: boolean = false
-  export let titleDeselect: IntlString | undefined = undefined
-  export let placeholder: IntlString = presentation.string.Search
-  export let selectedUsers: Ref<Person>[] = []
-  export let ignoreUsers: Ref<Person>[] = []
-  export let shadows: boolean = true
-  export let icon: Asset | AnySvelteComponent | undefined = undefined
-  export let create: ObjectCreate | undefined = undefined
-  export let readonly = false
 
   const dispatch = createEventDispatcher()
 

@@ -15,7 +15,7 @@
 //
 import { IntlString, Plugin } from '@hcengineering/platform'
 import { ClientConnectEvent, DocChunk } from '..'
-import type { Account, Class, Data, Doc, Domain, PluginConfiguration, Ref, Timestamp } from '../classes'
+import type { Class, Data, Doc, Domain, PluginConfiguration, Ref, Timestamp } from '../classes'
 import { ClassifierKind, DOMAIN_MODEL, Space } from '../classes'
 import { ClientConnection, createClient } from '../client'
 import core from '../component'
@@ -151,10 +151,6 @@ describe('client', () => {
         async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
         async loadModel (last: Timestamp): Promise<Tx[]> {
           return txes
-        }
-
-        async getAccount (): Promise<Account> {
-          return null as unknown as Account
         }
 
         async sendForceClose (): Promise<void> {}

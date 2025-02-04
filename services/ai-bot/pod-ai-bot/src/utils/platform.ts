@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import core, { Account, Client, Ref, TxOperations } from '@hcengineering/core'
+import core, { PersonId, Client, Ref, TxOperations } from '@hcengineering/core'
 import { createClient } from '@hcengineering/server-client'
-import contact, { PersonAccount } from '@hcengineering/contact'
+import contact, { getAllSocialStringsByPersonId, Person } from '@hcengineering/contact'
 import chunter, { DirectMessage } from '@hcengineering/chunter'
-import aiBot from '@hcengineering/ai-bot'
-import { deepEqual } from 'fast-equals'
+import { aiBotEmailSocialId } from '@hcengineering/ai-bot'
 import notification from '@hcengineering/notification'
 
 export async function connectPlatform (token: string, endpoint: string): Promise<Client> {
@@ -27,23 +25,21 @@ export async function connectPlatform (token: string, endpoint: string): Promise
 
 export async function getDirect (
   client: TxOperations,
-  email: string,
-  aiAccount?: PersonAccount
+  personId: PersonId,
+  aiPerson?: Ref<Person>
 ): Promise<Ref<DirectMessage> | undefined> {
-  const personAccount = await client.getModel().findOne(contact.class.PersonAccount, { email })
+  const personIds = new Set(await getAllSocialStringsByPersonId(client, personId))
 
-  if (personAccount === undefined) {
+  if (personIds.size === 0) {
     return
   }
 
-  const allAccounts = await client.findAll(contact.class.PersonAccount, { person: personAccount.person })
-  const accIds: Ref<Account>[] = [aiBot.account.AIBot, ...allAccounts.map(({ _id }) => _id)].sort()
-  const existingDms = await client.findAll(chunter.class.DirectMessage, {})
+  const existingDm = (await client.findAll(chunter.class.DirectMessage, { members: aiBotEmailSocialId })).find((dm) =>
+    dm.members.every((m) => m === aiBotEmailSocialId || personIds.has(m))
+  )
 
-  for (const dm of existingDms) {
-    if (deepEqual(dm.members.sort(), accIds)) {
-      return dm._id
-    }
+  if (existingDm !== undefined) {
+    return existingDm._id
   }
 
   const dmId = await client.createDoc<DirectMessage>(chunter.class.DirectMessage, core.space.Space, {
@@ -51,14 +47,15 @@ export async function getDirect (
     description: '',
     private: true,
     archived: false,
-    members: accIds
+    members: [aiBotEmailSocialId, personId]
   })
 
-  if (aiAccount === undefined) return dmId
-  const space = await client.findOne(contact.class.PersonSpace, { person: aiAccount.person })
+  if (aiPerson === undefined) return dmId
+
+  const space = await client.findOne(contact.class.PersonSpace, { person: aiPerson })
   if (space === undefined) return dmId
   await client.createDoc(notification.class.DocNotifyContext, space._id, {
-    user: aiBot.account.AIBot,
+    user: aiBotEmailSocialId,
     objectId: dmId,
     objectClass: chunter.class.DirectMessage,
     objectSpace: core.space.Space,

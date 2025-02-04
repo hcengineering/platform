@@ -11,15 +11,15 @@ import type {
   SearchQuery,
   Tx,
   TxWorkspaceEvent,
-  WorkspaceId,
-  WorkspaceIdWithUrl
+  WorkspaceUuid,
+  WorkspaceIds
 } from '@hcengineering/core'
 import core, {
   DOMAIN_DOC_INDEX_STATE,
   generateId,
   Hierarchy,
   ModelDb,
-  systemAccountEmail,
+  systemAccountUuid,
   WorkspaceEvent
 } from '@hcengineering/core'
 import {
@@ -44,7 +44,7 @@ import {
   setDBExtraOptions,
   shutdownPostgres
 } from '@hcengineering/postgres'
-import serverClientPlugin, { getTransactorEndpoint, getWorkspaceInfo } from '@hcengineering/server-client'
+import serverClientPlugin, { getTransactorEndpoint, getAccountClient } from '@hcengineering/server-client'
 import serverCore, {
   createContentAdapter,
   createPipeline,
@@ -82,7 +82,7 @@ class WorkspaceIndexer {
   static async create (
     ctx: MeasureContext,
     model: Tx[],
-    workspace: WorkspaceIdWithUrl,
+    workspace: WorkspaceIds,
     dbURL: string,
     externalStorage: StorageAdapter,
     ftadapter: FullTextAdapter,
@@ -121,7 +121,7 @@ class WorkspaceIndexer {
       throw new PlatformError(unknownError('Default adapter should be set'))
     }
 
-    const token = generateToken(systemAccountEmail, workspace)
+    const token = generateToken(systemAccountUuid, workspace.uuid)
     const transactorEndpoint = (await getTransactorEndpoint(token, 'internal'))
       .replace('wss://', 'https://')
       .replace('ws://', 'http://')
@@ -152,7 +152,7 @@ class WorkspaceIndexer {
         }
         // Send tx to pipeline
         // TODO: Fix me
-        void fetch(transactorEndpoint + `/api/v1/broadcast?token=${token}&workspace=${workspace.name}`, {
+        void fetch(transactorEndpoint + `/api/v1/broadcast?token=${token}&workspace=${workspace.uuid}`, {
           method: 'PUT',
           body: JSON.stringify(tx)
         })
@@ -290,37 +290,37 @@ export async function startIndexer (
 
   async function getIndexer (
     ctx: MeasureContext,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     token: string,
     create: boolean = false
   ): Promise<WorkspaceIndexer | undefined> {
-    const workspaceInfo = await getWorkspaceInfo(token)
-    let idx = indexers.get(workspace.name)
+    const accountClient = getAccountClient(token)
+    const workspaceInfo = await accountClient.getWorkspaceInfo(false)
+    let idx = indexers.get(workspace)
     if (idx === undefined && create) {
       if (workspaceInfo === undefined) {
         ctx.error('Workspace not available for token')
         return
       }
-      ctx.warn('indexer created', { workspace: workspace.name })
+      ctx.warn('indexer created', { workspace })
       idx = WorkspaceIndexer.create(
         ctx,
         opt.model,
         {
-          ...workspace,
-          uuid: workspaceInfo.uuid,
-          workspaceName: workspaceInfo.workspaceName ?? workspaceInfo.workspace,
-          workspaceUrl: workspaceInfo.workspaceUrl ?? workspaceInfo.workspace
+          uuid: workspace,
+          dataId: workspaceInfo.dataId,
+          url: workspaceInfo.url
         },
         opt.dbURL,
         opt.externalStorage,
         fulltextAdapter,
         contentAdapter
       )
-      indexers.set(workspace.name, idx)
+      indexers.set(workspace, idx)
     }
     if (idx instanceof Promise) {
       idx = await idx
-      indexers.set(workspace.name, idx)
+      indexers.set(workspace, idx)
     }
     return idx
   }
@@ -339,7 +339,7 @@ export async function startIndexer (
 
       ctx.info('search', { classes: request._classes, query: request.query, workspace: decoded.workspace })
       await ctx.with('search', {}, async (ctx) => {
-        const docs = await ctx.with('search', { workspace: decoded.workspace.name }, (ctx) =>
+        const docs = await ctx.with('search', { workspace: decoded.workspace }, (ctx) =>
           fulltextAdapter.search(ctx, decoded.workspace, request._classes, request.query, request.fullTextLimit)
         )
         req.body = docs
@@ -398,8 +398,8 @@ export async function startIndexer (
       req.body = {}
 
       ctx.info('close', { workspace: decoded.workspace })
-      const idx = indexers.get(decoded.workspace.name)
-      indexers.delete(decoded.workspace.name)
+      const idx = indexers.get(decoded.workspace)
+      indexers.delete(decoded.workspace)
       if (idx !== undefined && idx instanceof Promise) {
         void idx.then((res) => {
           void res.close()

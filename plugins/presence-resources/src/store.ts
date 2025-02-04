@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { type Doc, type Ref, getCurrentAccount } from '@hcengineering/core'
-import { type Person, type PersonAccount } from '@hcengineering/contact'
+import { type Doc, type Ref } from '@hcengineering/core'
+import { getCurrentEmployee, type Person } from '@hcengineering/contact'
 import { type PresenceData } from '@hcengineering/presence'
 import { type Readable, derived, writable } from 'svelte/store'
 
@@ -28,10 +28,9 @@ export const otherPresence = writable<PersonPresenceMap>(new Map())
 export const presenceByObjectId = derived<Readable<PersonPresenceMap>, Map<Ref<Doc>, PersonRoomPresence[]>>(
   otherPresence,
   ($presence) => {
-    const me = getCurrentAccount() as PersonAccount
     const map = new Map<Ref<Doc>, PersonRoomPresence[]>()
     for (const [person, presences] of $presence.entries()) {
-      if (person === me.person) continue
+      if (person === getCurrentEmployee()) continue
 
       presences.forEach((presence) => {
         const values = map.get(presence.room.objectId) ?? []

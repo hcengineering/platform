@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, Severity, Status, setMetadata } from '@hcengineering/platform'
-
-  import { getCurrentLocation, setMetadataLocalStorage } from '@hcengineering/ui'
   import { onMount } from 'svelte'
+  import presentation from '@hcengineering/presentation'
+  import { OK, Severity, Status, setMetadata } from '@hcengineering/platform'
+  import { getCurrentLocation, setMetadataLocalStorage } from '@hcengineering/ui'
+
   import login from '../plugin'
   import { afterConfirm, confirm, goTo } from '../utils'
-  import presentation from '@hcengineering/presentation'
 
   export let status: Status<any> = OK
 

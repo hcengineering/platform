@@ -14,7 +14,7 @@
 //
 
 import core, {
-  Account,
+  PersonId,
   AttachedDoc,
   Attribute,
   Class,
@@ -350,7 +350,7 @@ export class Builder {
     space: Ref<Space>,
     attributes: Data<T>,
     objectId?: Ref<T>,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): T {
     const tx = txFactory.createTxCreateDoc(_class, space, attributes, objectId)
     if (modifiedBy !== undefined) {
@@ -522,4 +522,8 @@ export function TypeCollaborativeDoc (): Type<MarkupBlobRef> {
  */
 export function TypeRank (): Type<Rank> {
   return { _class: core.class.TypeRank, label: core.string.Rank, icon: core.icon.TypeRank }
+}
+
+export function TypePersonId (): Type<PersonId> {
+  return { _class: core.class.TypePersonId, label: core.string.PersonId }
 }

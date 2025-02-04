@@ -14,8 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   import { Channel, Contact } from '@hcengineering/contact'
-  import { employeeByIdStore, personAccountByIdStore } from '@hcengineering/contact-resources'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
   import { Ref, SortingOrder } from '@hcengineering/core'
   import { Message, SharedMessage } from '@hcengineering/gmail'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
@@ -75,26 +76,28 @@
   const client = getClient()
 
   async function share (): Promise<void> {
-    const selectedMessages = messages.filter((m) => selected.has(m._id as string as Ref<SharedMessage>))
-    await client.addCollection(
-      gmail.class.SharedMessages,
-      object.space,
-      object._id,
-      object._class,
-      'gmailSharedMessages',
-      {
-        messages: convertMessages(
-          object,
-          channel,
-          selectedMessages,
-          allIntegrations,
-          $personAccountByIdStore,
-          $employeeByIdStore
-        )
-      }
-    )
-    await inboxClient.readDoc(channel._id)
-    clear()
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // const selectedMessages = messages.filter((m) => selected.has(m._id as string as Ref<SharedMessage>))
+    // await client.addCollection(
+    //   gmail.class.SharedMessages,
+    //   object.space,
+    //   object._id,
+    //   object._class,
+    //   'gmailSharedMessages',
+    //   {
+    //     messages: convertMessages(
+    //       object,
+    //       channel,
+    //       selectedMessages,
+    //       allIntegrations,
+    //       $personAccountByIdStore,
+    //       $employeeByIdStore
+    //     )
+    //   }
+    // )
+    // await inboxClient.readDoc(channel._id)
+    // clear()
   }
 
   function clear (): void {
@@ -137,7 +140,8 @@
 {#if messages && messages.length > 0}
   <div class="antiVSpacer x2" />
   <Scroller padding={'.5rem 1rem'}>
-    <Messages
+    <!-- TODO: FIXME -->
+    <!-- <Messages
       messages={convertMessages(
         object,
         channel,
@@ -149,7 +153,7 @@
       {selectable}
       bind:selected
       on:select
-    />
+    /> -->
     <div class="antiVSpacer x2" />
   </Scroller>
   <div class="antiVSpacer x2" />

@@ -1,6 +1,6 @@
 import { Organization } from '@hcengineering/contact'
 import core, {
-  Account,
+  PersonId,
   Client,
   Data,
   Doc,
@@ -17,7 +17,7 @@ export async function createVacancy (
   rawClient: Client,
   name: string,
   typeId: Ref<ProjectType>,
-  account: Ref<Account>,
+  account: PersonId,
   company?: Ref<Organization>
 ): Promise<Ref<Vacancy>> {
   const client = new TxOperations(rawClient, account)

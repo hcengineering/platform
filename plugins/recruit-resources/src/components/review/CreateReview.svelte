@@ -14,19 +14,9 @@
 -->
 <script lang="ts">
   import calendar, { Calendar } from '@hcengineering/calendar'
-  import type { Contact, PersonAccount, Organization, Person } from '@hcengineering/contact'
-  import contact from '@hcengineering/contact'
-  import core, {
-    Account,
-    Class,
-    Client,
-    DateRangeMode,
-    Doc,
-    generateId,
-    getCurrentAccount,
-    Markup,
-    Ref
-  } from '@hcengineering/core'
+  import type { Organization, Person } from '@hcengineering/contact'
+  import contact, { getCurrentEmployee } from '@hcengineering/contact'
+  import core, { Class, Client, DateRangeMode, Doc, generateId, Markup, Ref } from '@hcengineering/core'
   import { getResource, OK, Resource, Severity, Status } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
   import { UserBox, UserBoxList } from '@hcengineering/contact-resources'
@@ -51,7 +41,7 @@
   const initDate =
     date === undefined ? now : withTime ? date : new Date(date.setHours(now.getHours(), now.getMinutes()))
 
-  const currentUser = getCurrentAccount() as PersonAccount
+  const currentUser = getCurrentEmployee()
 
   let status: Status = OK
 
@@ -73,7 +63,7 @@
     _id: generateId(),
     collection: 'reviews',
     modifiedOn: Date.now(),
-    modifiedBy: '' as Ref<Account>,
+    modifiedBy: '',
     date: 0,
     access: 'reader',
     allDay: false,
@@ -82,7 +72,7 @@
     company,
     verdict: '',
     title,
-    participants: [currentUser.person],
+    participants: [currentUser],
     eventId: '',
     dueDate: 0,
     calendar: '' as Ref<Calendar>
@@ -109,7 +99,7 @@
       throw new Error('contact not found')
     }
     if (!client.getHierarchy().hasMixin(candidateInstance, recruit.mixin.Candidate)) {
-      await client.createMixin<Contact, Candidate>(
+      await client.createMixin<Person, Candidate>(
         candidateInstance._id,
         candidateInstance._class,
         candidateInstance.space,

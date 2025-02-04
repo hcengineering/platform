@@ -1,8 +1,7 @@
 <script lang="ts">
   import calendarPlugin from '@hcengineering/calendar'
-  import { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import { PersonPresenter } from '@hcengineering/contact-resources'
-  import { getCurrentAccount } from '@hcengineering/core'
   import { Chevron, Label } from '@hcengineering/ui'
   import { EventPersonMapping } from '../../../types'
   import TimePresenter from '../../presenters/TimePresenter.svelte'
@@ -11,7 +10,7 @@
   import PlanItem from './PlanItem.svelte'
 
   let expanded: boolean = false
-  const mePerson = (getCurrentAccount() as PersonAccount).person
+  const mePerson = getCurrentEmployee()
 
   export let gitem: EventPersonMapping
   export let showAssignee: boolean = false

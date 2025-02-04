@@ -2,9 +2,8 @@
 // Copyright © 2023 Hardcore Engineering Inc.
 //
 import chunter, { ChatMessage } from '@hcengineering/chunter'
-import { PersonAccount } from '@hcengineering/contact'
 import core, {
-  Account,
+  PersonId,
   AttachedData,
   Doc,
   DocumentUpdate,
@@ -61,7 +60,7 @@ export class CommentSyncManager implements DocSyncManager {
     this.ctx.info('comments:handleEvent', {
       action: event.action,
       login: event.sender.login,
-      workspace: this.provider.getWorkspaceId().name
+      workspace: this.provider.getWorkspaceId()
     })
 
     if (event.sender.type === 'Bot') {
@@ -134,8 +133,8 @@ export class CommentSyncManager implements DocSyncManager {
     return true
   }
 
-  async deleteGithubDocument (container: ContainerFocus, account: Ref<Account>, id: string): Promise<void> {
-    const okit = (await this.provider.getOctokit(account as Ref<PersonAccount>)) ?? container.container.octokit
+  async deleteGithubDocument (container: ContainerFocus, account: PersonId, id: string): Promise<void> {
+    const okit = (await this.provider.getOctokit(account)) ?? container.container.octokit
 
     const q = `mutation deleteComment($commentID: ID!) {
       deleteIssueComment(
@@ -160,7 +159,7 @@ export class CommentSyncManager implements DocSyncManager {
     if (repo === undefined) {
       this.ctx.info('No project for repository', {
         repository: event.repository,
-        workspace: this.provider.getWorkspaceId().name
+        workspace: this.provider.getWorkspaceId()
       })
       return
     }
@@ -305,7 +304,7 @@ export class CommentSyncManager implements DocSyncManager {
     container: ContainerFocus,
     parent: DocSyncInfo,
     comment: CommentExternalData,
-    account: Ref<Account>
+    account: PersonId
   ): Promise<void> {
     const repository = await this.provider.getRepositoryById(info.repository)
     if (repository === undefined) {
@@ -337,8 +336,7 @@ export class CommentSyncManager implements DocSyncManager {
 
     if (Object.keys(platformUpdate).length > 0) {
       // Check and update body with external
-      const okit =
-        (await this.provider.getOctokit(existing.modifiedBy as Ref<PersonAccount>)) ?? container.container.octokit
+      const okit = (await this.provider.getOctokit(existing.modifiedBy)) ?? container.container.octokit
       await okit?.rest.issues.updateComment({
         owner: repository.owner?.login as string,
         repo: repository.name,
@@ -364,7 +362,7 @@ export class CommentSyncManager implements DocSyncManager {
     messageData: MessageData,
     parent: DocSyncInfo,
     comment: CommentExternalData,
-    account: Ref<Account>
+    account: PersonId
   ): Promise<void> {
     const _id: Ref<ChatMessage> = info._id as unknown as Ref<ChatMessage>
     const value: AttachedData<ChatMessage> = {
@@ -407,8 +405,7 @@ export class CommentSyncManager implements DocSyncManager {
       return {}
     }
     const chatMessage = existing as ChatMessage
-    const okit =
-      (await this.provider.getOctokit(chatMessage.modifiedBy as Ref<PersonAccount>)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(chatMessage.modifiedBy)) ?? container.container.octokit
 
     // No external version yet, create it.
     try {
@@ -508,7 +505,7 @@ export class CommentSyncManager implements DocSyncManager {
             comments: comments.length,
             used: data.headers['x-ratelimit-used'],
             limit: data.headers['x-ratelimit-limit'],
-            workspace: this.provider.getWorkspaceId().name
+            workspace: this.provider.getWorkspaceId()
           })
           await this.syncComments(repo, comments, derivedClient)
           this.provider.sync()

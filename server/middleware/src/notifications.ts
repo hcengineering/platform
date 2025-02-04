@@ -19,9 +19,10 @@ import core, {
   Tx,
   TxCUD,
   TxProcessor,
-  systemAccountEmail,
   type SessionData,
-  TxApplyIf
+  TxApplyIf,
+  systemAccountUuid,
+  type PersonUuid
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
@@ -55,18 +56,18 @@ export class NotificationsMiddleware extends BaseMiddleware implements Middlewar
   }
 
   processTx (ctx: MeasureContext<SessionData>, tx: Tx): void {
-    let target: string[] | undefined
+    let target: PersonUuid[] | undefined
     if (this.isTargetDomain(tx)) {
-      const account = ctx.contextData.account._id
-      if (account !== tx.modifiedBy && account !== core.account.System) {
+      const account = ctx.contextData.account
+      if (!account.socialIds.includes(tx.modifiedBy) && account.uuid !== systemAccountUuid) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
       }
-      const modifiedByAccount = ctx.contextData.getAccount(tx.modifiedBy)
-      target = [ctx.contextData.userEmail, systemAccountEmail]
-      if (modifiedByAccount !== undefined && !target.includes(modifiedByAccount.email)) {
-        target.push(modifiedByAccount.email)
+      const modifiedByAccount = ctx.contextData.socialStringsToUsers.get(tx.modifiedBy)
+      target = [account.uuid, systemAccountUuid]
+      if (modifiedByAccount !== undefined && !target.includes(modifiedByAccount)) {
+        target.push(modifiedByAccount)
       }
-      ctx.contextData.broadcast.targets['checkDomain' + account] = (tx) => {
+      ctx.contextData.broadcast.targets['checkDomain' + account.uuid] = (tx) => {
         if (this.isTargetDomain(tx)) {
           return target
         }
@@ -91,7 +92,8 @@ export class NotificationsMiddleware extends BaseMiddleware implements Middlewar
   isAvailable (ctx: MeasureContext<SessionData>, doc: Doc): boolean {
     const domain = this.context.hierarchy.getDomain(doc._class)
     if (!this.targetDomains.includes(domain)) return true
-    const account = ctx.contextData.account._id
-    return doc.createdBy === account || account === core.account.System
+    const account = ctx.contextData.account
+    const socialStrings = account.socialIds
+    return (doc.createdBy !== undefined && socialStrings.includes(doc.createdBy)) || account.uuid === systemAccountUuid
   }
 }

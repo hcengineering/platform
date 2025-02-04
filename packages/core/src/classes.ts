@@ -16,6 +16,7 @@
 
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import type { DocumentQuery } from './storage'
+import { WorkspaceDataId, WorkspaceUuid } from './utils'
 
 /**
  * @public
@@ -68,6 +69,31 @@ export interface Obj {
   _class: Ref<Class<this>>
 }
 
+export interface Account {
+  uuid: PersonUuid
+  role: AccountRole
+  primarySocialId: PersonId
+  socialIds: PersonId[]
+}
+
+/**
+ * @public
+ * Global person UUID.
+ */
+export type PersonUuid = string & { __personUuid: true }
+
+/**
+ * @public
+ * String representation of a social id linked to a global person.
+ * E.g. email:pied.piper@hcengineering.com or huly:ea3bf257-94b5-4a31-a7da-466d578d850f
+ */
+export type PersonId = string & { __personId: true }
+
+export interface BasePerson {
+  name: string
+  personUuid?: PersonUuid
+}
+
 /**
  * @public
  */
@@ -75,8 +101,8 @@ export interface Doc<S extends Space = Space> extends Obj {
   _id: Ref<this>
   space: Ref<S>
   modifiedOn: Timestamp
-  modifiedBy: Ref<Account>
-  createdBy?: Ref<Account> // Marked as optional since it will be filled by platform.
+  modifiedBy: PersonId
+  createdBy?: PersonId // Marked as optional since it will be filled by platform.
   createdOn?: Timestamp // Marked as optional since it will be filled by platform.
 }
 
@@ -405,9 +431,9 @@ export interface Space extends Doc {
   name: string
   description: string
   private: boolean
-  members: Arr<Ref<Account>>
+  members: Arr<PersonId>
   archived: boolean
-  owners?: Ref<Account>[]
+  owners?: PersonId[]
   autoJoin?: boolean
 }
 
@@ -448,7 +474,7 @@ export interface SpaceType extends Doc {
   name: string
   shortDescription?: string
   descriptor: Ref<SpaceTypeDescriptor>
-  members?: Ref<Account>[] // this members will be added automatically to new space, also change this fiield will affect existing spaces
+  members?: PersonId[] // this members will be added automatically to new space, also change this fiield will affect existing spaces
   autoJoin?: boolean // if true, all new users will be added to space automatically
   targetClass: Ref<Class<Space>> // A dynamic mixin for Spaces to hold custom attributes and roles assignment of the space type
   roles: CollectionSize<Role>
@@ -467,7 +493,7 @@ export interface Role extends AttachedDoc<SpaceType, 'roles'> {
  * @public
  * Defines assignment of employees to a role within a space
  */
-export type RolesAssignment = Record<Ref<Role>, Ref<Account>[] | undefined>
+export type RolesAssignment = Record<Ref<Role>, PersonId[] | undefined>
 
 /**
  * @public
@@ -477,16 +503,6 @@ export interface Permission extends Doc {
   label: IntlString
   description?: IntlString
   icon?: Asset
-}
-
-/**
- * @public
- */
-export interface Account extends Doc {
-  email: string
-  role: AccountRole
-
-  person?: Ref<Doc>
 }
 
 /**
@@ -504,19 +520,31 @@ export enum AccountRole {
  * @public
  */
 export const roleOrder: Record<AccountRole, number> = {
-  [AccountRole.DocGuest]: 0,
-  [AccountRole.Guest]: 1,
-  [AccountRole.User]: 2,
-  [AccountRole.Maintainer]: 3,
-  [AccountRole.Owner]: 4
+  [AccountRole.DocGuest]: 10,
+  [AccountRole.Guest]: 20,
+  [AccountRole.User]: 30,
+  [AccountRole.Maintainer]: 40,
+  [AccountRole.Owner]: 50
 }
 
 /**
  * @public
  */
+export interface Person {
+  uuid: string
+  firstName: string
+  lastName: string
+  country?: string
+  city?: string
+}
+
+/**
+ * @public
+ */
+// TODO: move to contact
 export interface UserStatus extends Doc {
   online: boolean
-  user: Ref<Account>
+  user: PersonUuid
 }
 
 /**
@@ -758,6 +786,18 @@ export type WorkspaceUpdateEvent =
   | 'delete-started'
   | 'delete-done'
 
+export interface WorkspaceInfo {
+  uuid: WorkspaceUuid
+  dataId?: WorkspaceDataId // Old workspace identifier. E.g. Database name in Mongo, bucket in R2, etc.
+  name: string
+  url: string
+  region?: string
+  branding?: string
+  createdOn: number
+  createdBy: PersonUuid
+  billingAccount: PersonUuid
+}
+
 export interface BackupStatus {
   dataSize: number
   blobsSize: number
@@ -768,26 +808,35 @@ export interface BackupStatus {
   backups: number
 }
 
-export interface BaseWorkspaceInfo {
-  workspace: string // An uniq workspace name, Database names
-  uuid?: string // An uuid for a workspace to be used already for cockroach data
-
-  disabled?: boolean
+export interface WorkspaceInfoWithStatus extends WorkspaceInfo {
+  isDisabled?: boolean
   version?: Data<Version>
-  branding?: string
-
-  workspaceUrl?: string | null // An optional url to the workspace, if not set workspace will be used
-  workspaceName?: string // An displayed workspace name
-  createdOn: number
-  lastVisit: number
-  createdBy: string
+  lastVisit?: number
   mode: WorkspaceMode
-  progress?: number // Some progress
-
-  endpoint: string
-
-  region?: string // Transactor group name
-  targetRegion?: string // Transactor region to move to
-
+  processingProgress?: number
   backupInfo?: BackupStatus
 }
+
+export interface WorkspaceMemberInfo {
+  person: string
+  role: AccountRole
+}
+
+export enum SocialIdType {
+  EMAIL = 'email',
+  GITHUB = 'github',
+  GOOGLE = 'google',
+  PHONE = 'phone',
+  OIDC = 'oidc',
+  HULY = 'huly',
+  TELEGRAM = 'telegram'
+}
+export interface SocialId {
+  id: string
+  type: SocialIdType
+  value: string
+  key: PersonId
+  verifiedOn?: number
+}
+
+export type SocialKey = Pick<SocialId, 'type' | 'value'>

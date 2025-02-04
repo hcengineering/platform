@@ -14,10 +14,9 @@
 //
 
 import core, {
-  Account,
-  AccountClient,
   BackupClient,
   Class,
+  Client,
   ClientConnectEvent,
   ClientConnection,
   Doc,
@@ -43,7 +42,7 @@ import core, {
 import { genMinModel } from './minmodel'
 
 export async function connect (handler: (tx: Tx) => void): Promise<
-AccountClient &
+Client &
 BackupClient &
 FulltextStorage & {
   isConnected: () => boolean
@@ -101,10 +100,6 @@ FulltextStorage & {
 
     getModel (): ModelDb {
       return this.model
-    }
-
-    async getAccount (): Promise<Account> {
-      return {} as unknown as any
     }
 
     async tx (tx: Tx): Promise<TxResult> {

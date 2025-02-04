@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Account, Class, Doc, Markup, Ref, Space, Timestamp } from '@hcengineering/core'
+import { Class, Doc, Markup, PersonId, Ref, Space, Timestamp, type WorkspaceUuid } from '@hcengineering/core'
 import { ChatMessage } from '@hcengineering/chunter'
 import { Room, RoomLanguage } from '@hcengineering/love'
 import { Person } from '@hcengineering/contact'
@@ -36,14 +36,14 @@ export interface AIMessageEventRequest extends AIEventRequest {
   objectId: Ref<Doc>
   objectClass: Ref<Class<Doc>>
   objectSpace: Ref<Space>
-  user: Ref<Account>
+  user: PersonId
   email: string
 }
 
 export interface AITransferEventRequest extends AIEventRequest {
-  toEmail: string
-  toWorkspace: string
-  fromWorkspace: string
+  toPersonId: PersonId
+  toWorkspace: WorkspaceUuid
+  fromWorkspace: WorkspaceUuid
   fromWorkspaceName: string
   fromWorkspaceUrl: string
   parentMessageId?: Ref<ChatMessage>

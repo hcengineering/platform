@@ -59,6 +59,7 @@
     "@hcengineering/server-storage": "^0.6.0",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/account-client": "^0.6.0",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
     "express": "^4.21.2",

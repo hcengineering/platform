@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Account, Doc, MarkupBlobRef, Rank, Ref, TypedSpace } from '@hcengineering/core'
+import { PersonId, Doc, MarkupBlobRef, Rank, Ref, TypedSpace } from '@hcengineering/core'
 import { Preference } from '@hcengineering/preference'
 import { IconProps } from '@hcengineering/view'
 
@@ -27,7 +27,7 @@ export interface Document extends Doc, IconProps {
   parent: Ref<Document>
   space: Ref<Teamspace>
 
-  lockedBy?: Ref<Account> | null
+  lockedBy?: PersonId | null
 
   snapshots?: number
   attachments?: number

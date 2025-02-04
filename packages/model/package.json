@@ -43,6 +43,7 @@
     "@hcengineering/storage": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/rank": "^0.6.4",
+    "@hcengineering/account-client": "^0.6.0",
     "toposort": "^2.0.2",
     "fast-equals": "^5.2.2"
   }

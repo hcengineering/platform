@@ -3,8 +3,7 @@ import {
   MeasureMetricsContext,
   type Metrics,
   metricsAggregate,
-  type MetricsData,
-  toWorkspaceString
+  type MetricsData
 } from '@hcengineering/core'
 import { type SessionManager } from '@hcengineering/server-core'
 import os from 'node:os'
@@ -32,7 +31,7 @@ export function getStatistics (ctx: MeasureContext, sessions: SessionManager, ad
           upgrade: v.session.isUpgradeClient()
         })),
         name: vv.workspaceName,
-        wsId: toWorkspaceString(vv.workspaceId),
+        wsId: vv.workspaceUuid,
         sessionsTotal: vv.sessions.size,
         upgrading: vv.upgrade,
         closing: vv.closing !== undefined

@@ -1,7 +1,27 @@
 //
 // Copyright © 2023-2024 Hardcore Engineering Inc.
 //
-import contact, { type Employee, type PersonAccount } from '@hcengineering/contact'
+import core, {
+  DocumentQuery,
+  Ref,
+  SortingOrder,
+  Tx,
+  TxFactory,
+  TxUpdateDoc,
+  type Timestamp,
+  type RolesAssignment,
+  AccountRole,
+  type TxCUD,
+  type Doc,
+  PersonId,
+  combineAttributes,
+  includesAny,
+  TxCreateDoc
+} from '@hcengineering/core'
+import { Person, pickPrimarySocialId, type Employee } from '@hcengineering/contact'
+import { getSocialStrings, getEmployees, getSocialStringsByPersons } from '@hcengineering/server-contact'
+import { TriggerControl } from '@hcengineering/server-core'
+
 import documents, {
   ControlledDocument,
   ControlledDocumentState,
@@ -14,24 +34,7 @@ import documents, {
   type DocumentRequest,
   type DocumentTraining
 } from '@hcengineering/controlled-documents'
-import core, {
-  AccountRole,
-  DocumentQuery,
-  Ref,
-  SortingOrder,
-  Tx,
-  TxCreateDoc,
-  TxFactory,
-  TxUpdateDoc,
-  type Account,
-  type RolesAssignment,
-  type Timestamp,
-  Doc,
-  combineAttributes,
-  TxCUD
-} from '@hcengineering/core'
 import { RequestStatus } from '@hcengineering/request'
-import { TriggerControl } from '@hcengineering/server-core'
 import training, { TrainingState, type TrainingRequest } from '@hcengineering/training'
 import { NotificationType } from '@hcengineering/notification'
 
@@ -128,12 +131,9 @@ async function createDocumentTrainingRequest (doc: ControlledDocument, control: 
   const dueDate: Timestamp | null =
     documentTraining.dueDays === null ? null : doc.effectiveDate + documentTraining.dueDays * 24 * 60 * 60 * 1000
 
+  const ownerSocialStrings = await getSocialStrings(control, doc.owner)
   // TODO: Encapsulate training request creation logic in training plugin?
-  const modifiedBy = (
-    await control.modelDb.findAll<Account>(contact.class.PersonAccount, {
-      person: doc.owner
-    })
-  ).shift()?._id
+  const modifiedBy = pickPrimarySocialId(ownerSocialStrings)
 
   let trainees: Array<Ref<Employee>> = documentTraining.trainees
   const roles = documentTraining.roles
@@ -168,19 +168,8 @@ async function createDocumentTrainingRequest (doc: ControlledDocument, control: 
     }
 
     const mixin = control.hierarchy.as(space, spaceType.targetClass) as unknown as RolesAssignment
-    const accountRefs = roles.reduce<Array<Ref<Account>>>(
-      (accountRefs, roleId) => [...accountRefs, ...(mixin[roleId] ?? [])],
-      []
-    )
-
-    const personAccounts = await control.modelDb.findAll(contact.class.PersonAccount, {
-      _id: { $in: accountRefs as Array<Ref<PersonAccount>> }
-    })
-
-    const employeeRefs = personAccounts.map((personAccount) => personAccount.person as Ref<Employee>)
-    const employees = await control.findAll(control.ctx, contact.mixin.Employee, {
-      _id: { $in: employeeRefs }
-    })
+    const personIds = roles.map((roleId) => mixin[roleId] ?? []).flat()
+    const employees = await getEmployees(control, personIds)
 
     for (const employee of employees) {
       traineesMap.set(employee._id, true)
@@ -298,6 +287,30 @@ export async function OnDocHasBecomeEffective (
   return result
 }
 
+export async function OnSocialIdentityCreate (_txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  // Fill owner of default space with the very first owner account creating a social identity
+  const account = control.ctx.contextData.account
+  if (account.role !== AccountRole.Owner) return []
+
+  const defaultSpace = (
+    await control.findAll(control.ctx, documents.class.OrgSpace, { _id: documents.space.QualityDocuments })
+  )[0]
+
+  if (defaultSpace === undefined) return []
+
+  const owners = defaultSpace.owners ?? []
+
+  if (owners.length === 0 || (owners.length === 1 && owners[0] === core.account.System)) {
+    const setOwnerTx = control.txFactory.createTxUpdateDoc(defaultSpace._class, defaultSpace.space, defaultSpace._id, {
+      owners: [account.primarySocialId]
+    })
+
+    return [setOwnerTx]
+  }
+
+  return []
+}
+
 export async function OnDocDeleted (txes: TxUpdateDoc<ControlledDocument>[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
@@ -371,80 +384,33 @@ export async function OnDocApprovalRequestApproved (
   return result
 }
 
-/**
- * @public
- */
-export async function OnWorkspaceOwnerAdded (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  const result: Tx[] = []
-  for (const tx of txes) {
-    let ownerId: Ref<PersonAccount> | undefined
-    if (control.hierarchy.isDerived(tx._class, core.class.TxCreateDoc)) {
-      const createTx = tx as TxCreateDoc<PersonAccount>
-
-      if (createTx.attributes.role === AccountRole.Owner) {
-        ownerId = createTx.objectId
-      }
-    } else if (control.hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
-      const updateTx = tx as TxUpdateDoc<PersonAccount>
-
-      if (updateTx.operations.role === AccountRole.Owner) {
-        ownerId = updateTx.objectId
-      }
-    }
-
-    if (ownerId === undefined) {
-      continue
-    }
-
-    const targetSpace = (
-      await control.findAll(control.ctx, documents.class.OrgSpace, {
-        _id: documents.space.QualityDocuments
-      })
-    )[0]
-
-    if (targetSpace === undefined) {
-      continue
-    }
-
-    if (
-      targetSpace.owners === undefined ||
-      targetSpace.owners.length === 0 ||
-      targetSpace.owners[0] === core.account.System
-    ) {
-      const updTx = control.txFactory.createTxUpdateDoc(documents.class.OrgSpace, targetSpace.space, targetSpace._id, {
-        owners: [ownerId]
-      })
-      result.push(updTx)
-    }
-  }
-
-  return result
-}
-
 export async function documentTextPresenter (doc: ControlledDocument): Promise<string> {
   return doc.title
 }
 
-function CoAuthorsTypeMatch (
+async function CoAuthorsTypeMatch (
   originTx: TxCUD<ControlledDocument>,
   _doc: Doc,
-  accounts: Ref<Account>[],
+  person: Person,
+  socialIds: PersonId[],
   _type: NotificationType,
   control: TriggerControl
-): boolean {
-  if (accounts.some((it) => originTx.modifiedBy === it)) return false
+): Promise<boolean> {
+  if (socialIds.includes(originTx.modifiedBy)) return false
   if (originTx._class === core.class.TxUpdateDoc) {
     const tx = originTx as TxUpdateDoc<ControlledDocument>
     const employees = Array.isArray(tx.operations.coAuthors)
       ? tx.operations.coAuthors ?? []
       : (combineAttributes([tx.operations], 'coAuthors', '$push', '$each') as Ref<Employee>[])
-    const employeeAccounts = employees.flatMap((it) => control.modelDb.getAccountByPersonId(it)).map((it) => it._id)
-    return accounts.some((it) => employeeAccounts.includes(it))
+    const employeeSocialStrings = Object.values(await getSocialStringsByPersons(control, employees)).flat()
+
+    return includesAny(socialIds, employeeSocialStrings)
   } else if (originTx._class === core.class.TxCreateDoc) {
     const tx = originTx as TxCreateDoc<ControlledDocument>
     const employees = tx.attributes.coAuthors
-    const coAuthorAccounts = employees.flatMap((it) => control.modelDb.getAccountByPersonId(it)).map((it) => it._id)
-    return accounts.some((it) => coAuthorAccounts.includes(it))
+    const employeeSocialStrings = Object.values(await getSocialStringsByPersons(control, employees)).flat()
+
+    return includesAny(socialIds, employeeSocialStrings)
   }
 
   return false
@@ -453,11 +419,11 @@ function CoAuthorsTypeMatch (
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
+    OnSocialIdentityCreate,
     OnDocDeleted,
     OnDocPlannedEffectiveDateChanged,
     OnDocApprovalRequestApproved,
-    OnDocHasBecomeEffective,
-    OnWorkspaceOwnerAdded
+    OnDocHasBecomeEffective
   },
   function: {
     ControlledDocumentTextPresenter: documentTextPresenter,

@@ -15,7 +15,7 @@
 
 import { Person } from '@hcengineering/contact'
 import {
-  Account,
+  PersonId,
   AttachedDoc,
   Class,
   Doc,
@@ -37,7 +37,7 @@ import type { Action } from '@hcengineering/view'
  * @public
  */
 export interface ActivityMessage extends AttachedDoc {
-  modifiedBy: Ref<Account>
+  modifiedBy: PersonId
   modifiedOn: Timestamp
 
   isPinned?: boolean
@@ -220,7 +220,7 @@ export interface Reaction extends AttachedDoc {
   attachedTo: Ref<ActivityMessage>
   attachedToClass: Ref<Class<ActivityMessage>>
   emoji: string
-  createBy: Ref<Account>
+  createBy: PersonId
 }
 
 /**

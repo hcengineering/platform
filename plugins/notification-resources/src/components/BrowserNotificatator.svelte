@@ -44,7 +44,7 @@
     query.query(
       notification.class.BrowserNotification,
       {
-        user: getCurrentAccount()._id
+        user: { $in: getCurrentAccount().socialIds }
       },
       (res) => {
         if (res.length > 0) {

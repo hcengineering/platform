@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { type Ref, concatLink, getCurrentAccount } from '@hcengineering/core'
-import { type Person, type PersonAccount } from '@hcengineering/contact'
+import { type Ref, concatLink } from '@hcengineering/core'
+import { getCurrentEmployee, type Person } from '@hcengineering/contact'
 import { getMetadata } from '@hcengineering/platform'
 import presence from '@hcengineering/presence'
 import presentation from '@hcengineering/presentation'
@@ -113,8 +113,7 @@ export class PresenceClient implements Disposable {
   }
 
   private handleConnect (): void {
-    const me = getCurrentAccount() as PersonAccount
-    this.sendPresence(me.person, this.presence)
+    this.sendPresence(getCurrentEmployee(), this.presence)
   }
 
   private handleMessage (data: string): void {
@@ -133,9 +132,8 @@ export class PresenceClient implements Disposable {
   }
 
   private handlePresenceChanged (presence: RoomPresence[]): void {
-    const me = getCurrentAccount() as PersonAccount
     this.presence = presence
-    this.sendPresence(me.person, this.presence)
+    this.sendPresence(getCurrentEmployee(), this.presence)
   }
 
   private sendPresence (person: Ref<Person>, presence: RoomPresence[]): void {
@@ -151,9 +149,9 @@ export class PresenceClient implements Disposable {
 }
 
 export function connect (): PresenceClient | undefined {
-  const workspaceId = getMetadata(presentation.metadata.WorkspaceId)
-  if (workspaceId === undefined) {
-    console.warn('Workspace ID is not defined')
+  const wsUuid = getMetadata(presentation.metadata.WorkspaceUuid)
+  if (wsUuid === undefined) {
+    console.warn('Workspace uuid is not defined')
     return undefined
   }
 
@@ -165,7 +163,7 @@ export function connect (): PresenceClient | undefined {
     return undefined
   }
 
-  const url = new URL(concatLink(presenceUrl, workspaceId))
+  const url = new URL(concatLink(presenceUrl, wsUuid))
   if (token !== undefined) {
     url.searchParams.set('token', token)
   }

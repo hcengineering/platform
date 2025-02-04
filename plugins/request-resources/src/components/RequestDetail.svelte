@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Person, PersonAccount } from '@hcengineering/contact'
-  import { personAccountByIdStore, PersonRefPresenter } from '@hcengineering/contact-resources'
+  import contact, { Person } from '@hcengineering/contact'
+  import { personRefByPersonIdStore, PersonRefPresenter } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { createQuery, MessageViewer } from '@hcengineering/presentation'
   import { Request, RequestDecisionComment } from '@hcengineering/request'
@@ -28,8 +28,8 @@
   $: query.query(request.mixin.RequestDecisionComment, { attachedTo: value._id }, (res) => {
     comments = new Map(
       res.map((r) => {
-        const personAccount = $personAccountByIdStore.get(r.modifiedBy as Ref<PersonAccount>)
-        return [personAccount?.person, r]
+        const person = $personRefByPersonIdStore.get(r.modifiedBy)
+        return [person, r]
       })
     )
   })

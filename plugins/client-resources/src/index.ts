@@ -16,13 +16,15 @@
 import clientPlugin from '@hcengineering/client'
 import type { ClientFactoryOptions } from '@hcengineering/client/src'
 import core, {
-  AccountClient,
+  Client,
   LoadModelResponse,
+  type PersonUuid,
   Tx,
   TxHandler,
   TxPersistenceStore,
   TxWorkspaceEvent,
   WorkspaceEvent,
+  type WorkspaceUuid,
   concatLink,
   createClient,
   fillConfiguration,
@@ -70,10 +72,16 @@ if (typeof localStorage !== 'undefined') {
   })
 }
 
+interface TokenPayload {
+  workspace?: WorkspaceUuid
+  account?: PersonUuid
+  extra?: any
+}
+
 /**
  * @public
  */
-function decodeTokenPayload (token: string): any {
+function decodeTokenPayload (token: string): TokenPayload {
   try {
     return JSON.parse(atob(token.split('.')[1]))
   } catch (err: any) {
@@ -86,7 +94,7 @@ function decodeTokenPayload (token: string): any {
 export default async () => {
   return {
     function: {
-      GetClient: async (token: string, endpoint: string, opt?: ClientFactoryOptions): Promise<AccountClient> => {
+      GetClient: async (token: string, endpoint: string, opt?: ClientFactoryOptions): Promise<Client> => {
         const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? 'none'
 
         const handler = async (handler: TxHandler): Promise<ClientConnection> => {
@@ -111,7 +119,10 @@ export default async () => {
             }
             handler(...txes)
           }
-          const tokenPayload: { workspace: string, email: string } = decodeTokenPayload(token)
+          const tokenPayload = decodeTokenPayload(token)
+          if (tokenPayload.workspace === undefined || tokenPayload.account === undefined) {
+            throw new Error('Workspace or account not found in token')
+          }
 
           const newOpt = { ...opt }
           const connectTimeout = opt?.connectionTimeout ?? getMetadata(clientPlugin.metadata.ConnectionTimeout)
@@ -134,7 +145,7 @@ export default async () => {
               }
             })
           }
-          const clientConnection = connect(url, upgradeHandler, tokenPayload.workspace, tokenPayload.email, newOpt)
+          const clientConnection = connect(url, upgradeHandler, tokenPayload.workspace, tokenPayload.account, newOpt)
           if (connectPromise !== undefined) {
             await connectPromise
           }

@@ -15,7 +15,7 @@
 
 import type { KeysByType } from 'simplytyped'
 import type {
-  Account,
+  PersonId,
   Arr,
   AttachedDoc,
   Class,
@@ -452,7 +452,7 @@ export abstract class TxProcessor implements WithTx {
 export class TxFactory {
   private readonly txSpace: Ref<Space>
   constructor (
-    readonly account: Ref<Account>,
+    readonly account: PersonId,
     readonly isDerived: boolean = false
   ) {
     this.txSpace = isDerived ? core.space.DerivedTx : core.space.Tx
@@ -464,7 +464,7 @@ export class TxFactory {
     attributes: Data<T>,
     objectId?: Ref<T>,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): TxCreateDoc<T> {
     return {
       _id: generateId(),
@@ -487,7 +487,7 @@ export class TxFactory {
     collection: string,
     tx: TxCUD<P>,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): TxCUD<P> {
     return {
       ...tx,
@@ -506,7 +506,7 @@ export class TxFactory {
     operations: DocumentUpdate<T>,
     retrieve?: boolean,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): TxUpdateDoc<T> {
     return {
       _id: generateId(),
@@ -527,7 +527,7 @@ export class TxFactory {
     space: Ref<Space>,
     objectId: Ref<T>,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): TxRemoveDoc<T> {
     return {
       _id: generateId(),
@@ -548,7 +548,7 @@ export class TxFactory {
     mixin: Ref<Mixin<M>>,
     attributes: MixinUpdate<D, M>,
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): TxMixin<D, M> {
     return {
       _id: generateId(),
@@ -574,7 +574,7 @@ export class TxFactory {
     notify: boolean = true,
     extraNotify: Ref<Class<Doc>>[] = [],
     modifiedOn?: Timestamp,
-    modifiedBy?: Ref<Account>
+    modifiedBy?: PersonId
   ): TxApplyIf {
     return {
       _id: generateId(),

@@ -125,7 +125,8 @@ export function serveWorkspaceAccount (
     parseInt(process.env.PARALLEL ?? '1'),
     wsOperation,
     brandings,
-    fulltextUrl
+    fulltextUrl,
+    accountUri
   )
 
   void worker

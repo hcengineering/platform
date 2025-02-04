@@ -2,7 +2,7 @@
 // Copyright © 2023 Hardcore Engineering Inc.
 //
 
-import { Branding, generateId, TxOperations, WorkspaceIdWithUrl } from '@hcengineering/core'
+import { Branding, generateUuid, PersonUuid, TxOperations, WorkspaceIds, WorkspaceUuid } from '@hcengineering/core'
 import { MarkupMarkType, MarkupNode, MarkupNodeType, traverseMarkupNode } from '@hcengineering/text'
 import { getPublicLink } from '@hcengineering/server-guest-resources'
 import { Task } from '@hcengineering/task'
@@ -49,13 +49,13 @@ export async function appendGuestLink (
   client: TxOperations,
   doc: Task,
   markdown: MarkupNode,
-  workspace: WorkspaceIdWithUrl,
+  workspace: WorkspaceIds,
   branding: Branding | null
 ): Promise<void> {
   const publicLink = await getPublicLink(doc, client, workspace, false, branding)
   await stripGuestLink(markdown)
   appendGuestLinkToModel(markdown, publicLink, doc.identifier)
-  appendGuestLinkToImage(markdown, workspace)
+  appendGuestLinkToImage(markdown, workspace.uuid)
 }
 
 export function appendGuestLinkToModel (markdown: MarkupNode, publicLink: string, identifier: string): void {
@@ -89,14 +89,14 @@ function findImageTags (node: MarkupNode): MarkupNode[] {
   return []
 }
 
-export function appendGuestLinkToImage (markdown: MarkupNode, workspace: WorkspaceIdWithUrl): void {
+export function appendGuestLinkToImage (markdown: MarkupNode, workspace: WorkspaceUuid): void {
   const imageTags: MarkupNode[] = markdown.content?.flatMap(findImageTags) ?? []
 
   if (imageTags.length === 0) {
     return
   }
 
-  const id = generateId()
+  const id = generateUuid() as PersonUuid
   const token = generateToken(id, workspace, { linkId: id, guest: 'true' })
 
   for (const imageTag of imageTags) {

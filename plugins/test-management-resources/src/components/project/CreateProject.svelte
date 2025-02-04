@@ -15,10 +15,9 @@
 <script lang="ts">
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
-  import { AccountArrayEditor } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import { Asset } from '@hcengineering/platform'
   import core, {
-    Account,
     Data,
     DocumentUpdate,
     RolesAssignment,
@@ -27,7 +26,9 @@
     SpaceType,
     generateId,
     getCurrentAccount,
-    WithLookup
+    WithLookup,
+    PersonId,
+    notEmpty
   } from '@hcengineering/core'
   import view from '@hcengineering/view'
   import testManagement, { TestProject } from '@hcengineering/test-management'
@@ -61,10 +62,11 @@
   let color = project?.color ?? getColorNumberByText(name)
   let isColorSelected = false
 
-  let members: Ref<Account>[] =
-    project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
-  let owners: Ref<Account>[] =
-    project?.owners !== undefined ? hierarchy.clone(project.owners) : [getCurrentAccount()._id]
+  let members: PersonId[] =
+    project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount().primarySocialId]
+  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter(notEmpty)
+  let owners: PersonId[] =
+    project?.owners !== undefined ? hierarchy.clone(project.owners) : [getCurrentAccount().primarySocialId]
   let rolesAssignment: RolesAssignment = {}
 
   let typeId: Ref<SpaceType> | undefined = project?.type ?? testManagementRes.spaceType.DefaultProject
@@ -214,14 +216,14 @@
 
   $: roles = (spaceType?.$lookup?.roles ?? []) as Role[]
 
-  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
+  function handleOwnersChanged (newOwners: PersonId[]): void {
     owners = newOwners
 
     const newMembersSet = new Set([...members, ...newOwners])
     members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged (newMembers: Ref<Account>[]): void {
+  function handleMembersChanged (newMembers: PersonId[]): void {
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
     const removedMembersSet = new Set(members.filter((m) => !newMembersSet.has(m)))
@@ -247,7 +249,7 @@
     showPopup(IconPicker, { icon, color, icons }, 'top', update, update)
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: PersonId[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }
@@ -375,8 +377,8 @@
           <AccountArrayEditor
             value={rolesAssignment?.[role._id] ?? []}
             label={core.string.Members}
-            includeItems={members}
-            readonly={members.length === 0}
+            includeItems={membersPersons}
+            readonly={membersPersons.length === 0}
             onChange={(refs) => {
               handleRoleAssignmentChanged(role._id, refs)
             }}

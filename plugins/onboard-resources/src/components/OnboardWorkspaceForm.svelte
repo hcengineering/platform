@@ -41,7 +41,7 @@
       const [loginStatus, result] = await createWorkspace(object.workspace)
       status = loginStatus
 
-      if (result !== undefined) {
+      if (result != null) {
         setLoginInfo(result)
         dispatch('step', result)
       }

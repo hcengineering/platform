@@ -86,7 +86,7 @@
     return true
   })
 
-  $: if ($themeStore.language !== undefined) {
+  $: if ($themeStore.language != null && $themeStore.language !== '') {
     void validate($themeStore.language)
   }
 

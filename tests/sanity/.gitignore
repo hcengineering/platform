@@ -2,3 +2,4 @@ playwright-report
 test-results/*
 allure-report
 allure-results
+.auth

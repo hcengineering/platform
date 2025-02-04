@@ -16,9 +16,9 @@
   import activity, { ActivityReference } from '@hcengineering/activity'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Action, Label, ShowMore } from '@hcengineering/ui'
-  import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { Account, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
-  import { Person, type PersonAccount } from '@hcengineering/contact'
+  import { personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { Doc } from '@hcengineering/core'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import view, { ObjectPanel } from '@hcengineering/view'
   import { DocNavLink, getDocLinkTitle } from '@hcengineering/view-resources'
 
@@ -47,7 +47,7 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const currentAccount = getCurrentAccount() as PersonAccount
+  const currentEmployee = getCurrentEmployee()
 
   const srcDocQuery = createQuery()
   const targetDocQuery = createQuery()
@@ -60,9 +60,7 @@
 
   let targetTitle: string | undefined = undefined
 
-  let person: Person | undefined = undefined
-
-  $: person = getPerson(value.createdBy ?? value.modifiedBy, $personAccountByIdStore, $personByIdStore)
+  $: person = $personByPersonIdStore.get(value.createdBy ?? value.modifiedBy)
 
   $: srcDocQuery.query(value.srcDocClass, { _id: value.srcDocId }, (result) => {
     srcDoc = result.shift()
@@ -79,20 +77,6 @@
     getDocLinkTitle(client, targetDoc._id, targetDoc._class, targetDoc).then((res) => {
       targetTitle = res
     })
-
-  function getPerson (
-    _id: Ref<Account>,
-    accountById: Map<Ref<PersonAccount>, PersonAccount>,
-    personById: Map<Ref<Person>, Person>
-  ): Person | undefined {
-    const personAccount = accountById.get(_id as Ref<PersonAccount>)
-
-    if (personAccount === undefined) {
-      return undefined
-    }
-
-    return personById.get(personAccount.person)
-  }
 </script>
 
 <ActivityMessageTemplate
@@ -122,7 +106,7 @@
       {#if !hideLink && targetDoc}
         <DocNavLink object={targetDoc} component={targetPanel?.component ?? view.component.EditDoc} shrink={0}>
           <span class="text-sm">
-            {#if currentAccount.person === targetDoc._id}
+            {#if currentEmployee === targetDoc._id}
               <Label label={activity.string.You} />
             {:else}
               {targetTitle}

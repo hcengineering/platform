@@ -56,7 +56,7 @@ export class ApiEndpoint {
   async createAccount (username: string, password: string, firstName: string, lastName: string): Promise<any> {
     const url = this.baseUrl
     const payload = {
-      method: 'createAccount',
+      method: 'signUp',
       params: [username, password, firstName, lastName]
     }
     const headers = this.getDefaultHeaders()

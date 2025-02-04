@@ -15,7 +15,7 @@
 
 import type { Employee, Organization } from '@hcengineering/contact'
 import {
-  Account,
+  PersonId,
   IndexKind,
   type Collection,
   type MarkupBlobRef,
@@ -251,7 +251,7 @@ export class TOpinion extends TAttachedDoc implements Opinion {
 @Mixin(recruit.mixin.DefaultVacancyTypeData, recruit.class.Vacancy)
 @UX(getEmbeddedLabel('Default vacancy'), recruit.icon.Vacancy)
 export class TDefaultVacancyTypeData extends TVacancy implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: PersonId[]
 }
 
 @Mixin(recruit.mixin.ApplicantTypeData, recruit.class.Applicant)
