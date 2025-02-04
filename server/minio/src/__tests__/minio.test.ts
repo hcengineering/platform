@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext, generateId } from '@hcengineering/core'
+import { MeasureMetricsContext, type WorkspaceDataId, generateId } from '@hcengineering/core'
 import { objectsToArray, type StorageConfiguration } from '@hcengineering/server-core'
 import { MinioService, processConfigFromEnv, type MinioConfig } from '..'
 
@@ -36,13 +36,13 @@ describe('minio operations', () => {
       await b.delete()
     }
 
-    const genWorkspaceId1 = generateId()
-    const genWorkspaceId2 = generateId()
+    const genWorkspaceId1 = generateId() as unknown as WorkspaceDataId
+    const genWorkspaceId2 = generateId() as unknown as WorkspaceDataId
 
     expect(genWorkspaceId1).not.toEqual(genWorkspaceId2)
 
-    const ws1 = { name: genWorkspaceId1 }
-    const ws2 = { name: genWorkspaceId2 }
+    const ws1 = genWorkspaceId1
+    const ws2 = genWorkspaceId2
     await minioService.make(toolCtx, ws1)
     await minioService.make(toolCtx, ws2)
 

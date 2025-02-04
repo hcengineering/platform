@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import core, {
   AttachedDoc,
   Class,
@@ -23,11 +23,12 @@ import core, {
   FindResult,
   LookupData,
   MeasureContext,
+  type PersonUuid,
   Ref,
   Tx,
   TxCUD,
   TxProcessor,
-  systemAccountEmail,
+  systemAccountUuid,
   type SessionData
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
@@ -63,18 +64,18 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
 
   tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
     for (const tx of txes) {
-      let target: string[] | undefined
+      let target: PersonUuid[] | undefined
       if (this.isTargetDomain(tx)) {
-        const account = ctx.contextData.account._id
-        if (account !== tx.modifiedBy && account !== core.account.System) {
+        const account = ctx.contextData.account
+        if (!account.socialIds.includes(tx.modifiedBy) && account.uuid !== systemAccountUuid) {
           throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
         }
-        const modifiedByAccount = ctx.contextData.getAccount(tx.modifiedBy)
-        target = [ctx.contextData.userEmail, systemAccountEmail]
-        if (modifiedByAccount !== undefined && !target.includes(modifiedByAccount.email)) {
-          target.push(modifiedByAccount.email)
+        const modifiedByAccount = ctx.contextData.socialStringsToUsers.get(tx.modifiedBy)
+        target = [account.uuid, systemAccountUuid]
+        if (modifiedByAccount !== undefined && !target.includes(modifiedByAccount)) {
+          target.push(modifiedByAccount)
         }
-        ctx.contextData.broadcast.targets['checkDomain' + account] = (tx) => {
+        ctx.contextData.broadcast.targets['checkDomain' + account.uuid] = (tx) => {
           if (this.isTargetDomain(tx)) {
             return target
           }
@@ -94,17 +95,19 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
     const domain = this.context.hierarchy.getDomain(_class)
     if (this.targetDomains.includes(domain)) {
       const account = ctx.contextData.account
-      if (account._id !== core.account.System) {
+      const socialStrings = account.socialIds
+      if (account.uuid !== systemAccountUuid) {
         newQuery = {
           ...query,
-          createdBy: account._id
+          createdBy: { $in: socialStrings }
         }
       }
     }
     const findResult = await this.provideFindAll(ctx, _class, newQuery, options)
     if (domain === DOMAIN_TX) {
       const account = ctx.contextData.account
-      if (account._id !== core.account.System) {
+      const socialStrings = account.socialIds
+      if (account.uuid !== systemAccountUuid) {
         const targetClasses = new Set(
           this.context.hierarchy.getDescendants(core.class.Doc).filter((p) => {
             const domain = this.context.hierarchy.findDomain(p)
@@ -115,7 +118,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
           (p) =>
             !TxProcessor.isExtendsCUD(p._class) ||
             !targetClasses.has((p as TxCUD<Doc>).objectClass) ||
-            p.createdBy === account._id
+            (p.createdBy !== undefined && socialStrings.includes(p.createdBy))
         )
       }
     }
@@ -132,8 +135,9 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
   isAvailable (ctx: MeasureContext<SessionData>, doc: Doc): boolean {
     const domain = this.context.hierarchy.getDomain(doc._class)
     if (!this.targetDomains.includes(domain)) return true
-    const account = ctx.contextData.account._id
-    return doc.createdBy === account || account === core.account.System
+    const account = ctx.contextData.account
+    const socialStrings = account.socialIds
+    return (doc.createdBy !== undefined && socialStrings.includes(doc.createdBy)) || account.uuid === systemAccountUuid
   }
 
   filterLookup<T extends Doc>(ctx: MeasureContext, lookup: LookupData<T>): void {

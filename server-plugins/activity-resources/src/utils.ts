@@ -1,6 +1,6 @@
 import { ActivityMessageControl, DocAttributeUpdates, DocUpdateAction } from '@hcengineering/activity'
 import {
-  Account,
+  PersonId,
   AttachedDoc,
   type Attribute,
   Class,
@@ -149,7 +149,7 @@ async function getCollaboratorsDiff (
   const { hierarchy } = control
   const value = hierarchy.as(doc, notification.mixin.Collaborators).collaborators ?? []
 
-  let prevValue: Ref<Account>[] = []
+  let prevValue: PersonId[] = []
 
   if (prevDoc !== undefined && hierarchy.hasMixin(prevDoc, notification.mixin.Collaborators)) {
     prevValue = hierarchy.as(prevDoc, notification.mixin.Collaborators).collaborators ?? []

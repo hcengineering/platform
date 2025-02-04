@@ -14,11 +14,12 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import contact, { Person, PersonAccount } from '@hcengineering/contact'
-  import core, { Class, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import contact, { getCurrentEmployee, Person } from '@hcengineering/contact'
+  import core, { Class, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Label, Loading, navigate, TabList, SearchEdit, getLocation } from '@hcengineering/ui'
+  import { Label, Loading, navigate, TabList, getLocation } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+
   import { dateFileBrowserFilters, FileBrowserSortMode, fileTypeFileBrowserFilters, sortModeToOptionObject } from '..'
   import attachment from '../plugin'
   import AttachmentsGalleryView from './AttachmentsGalleryView.svelte'
@@ -38,8 +39,8 @@
     navigate(loc, true)
   }
   export let requestedSpaceClasses: Ref<Class<Space>>[] = []
-  const currentUser = getCurrentAccount() as PersonAccount
-  let selectedParticipants: Ref<Person>[] = [currentUser.person]
+  const currentEmployee = getCurrentEmployee()
+  let selectedParticipants: Ref<Person>[] = [currentEmployee]
   let selectedSpaces: Ref<Space>[] = []
   export let search: string = ''
   let isLoading = false
@@ -65,8 +66,11 @@
 
     const nameQuery = searchQuery_ ? { name: { $like: '%' + searchQuery_ + '%' } } : {}
 
-    const accounts = await client.findAll(contact.class.PersonAccount, { person: { $in: selectedParticipants_ } })
-    const senderQuery = accounts.length ? { modifiedBy: { $in: accounts.map((a) => a._id) } } : {}
+    const allSocialIds = await client.findAll(contact.class.SocialIdentity, {
+      attachedTo: { $in: selectedParticipants_ },
+      attachedToClass: contact.class.Person
+    })
+    const senderQuery = allSocialIds.length !== 0 ? { modifiedBy: { $in: allSocialIds.map((si) => si.key) } } : {}
 
     let spaceQuery: { space: any }
     if (selectedSpaces_.length > 0) {
@@ -121,7 +125,6 @@
 <div class="hulyHeader-container background-comp-header-color">
   <FileBrowserFilters
     {requestedSpaceClasses}
-    {spaceId}
     bind:selectedParticipants
     bind:selectedSpaces
     bind:selectedDateId

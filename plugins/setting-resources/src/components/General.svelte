@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Ref, Blob } from '@hcengineering/core'
+  import core from '@hcengineering/core'
   import {
     Breadcrumb,
     Header,
@@ -31,24 +31,26 @@
   } from '@hcengineering/ui'
   import { loginId } from '@hcengineering/login'
   import { EditableAvatar } from '@hcengineering/contact-resources'
-
-  import setting from '../plugin'
-  import { rpcAccount } from '../utils'
-  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+  import { getClient, MessageBox } from '@hcengineering/presentation'
   import { WorkspaceSetting } from '@hcengineering/setting'
   import { AvatarType } from '@hcengineering/contact'
+
+  import setting from '../plugin'
+  import { getAccountClient } from '../utils'
 
   let loading = true
   let isEditingName = false
   let oldName: string
   let name: string = ''
 
+  const accountClient = getAccountClient()
+
   void loadWorkspaceName()
 
-  async function loadWorkspaceName () {
-    const res = await rpcAccount('getWorkspaceInfo')
+  async function loadWorkspaceName (): Promise<void> {
+    const res = await accountClient.getWorkspaceInfo()
 
-    oldName = res.result.workspaceName
+    oldName = res.name
     name = oldName
     loading = false
   }
@@ -59,7 +61,7 @@
     }
 
     if (isEditingName) {
-      await rpcAccount('updateWorkspaceName', name.trim())
+      await accountClient.updateWorkspaceName(name.trim())
     }
 
     isEditingName = !isEditingName
@@ -78,7 +80,7 @@
       message: setting.string.DeleteWorkspaceConfirm,
       dangerous: true,
       action: async () => {
-        await rpcAccount('deleteWorkspace')
+        await accountClient.deleteWorkspace()
         navigate({ path: [loginId] })
       }
     })

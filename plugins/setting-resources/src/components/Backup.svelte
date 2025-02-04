@@ -29,7 +29,8 @@
   const backupUrl = getMetadata(setting.metadata.BackupUrl) ?? ''
   const token = getMetadata(presentation.metadata.Token) ?? ''
   const owner = hasAccountRole(getCurrentAccount(), AccountRole.Owner)
-  const workspaceId = getMetadata(presentation.metadata.WorkspaceId) ?? ''
+  const workspaceUuid = getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
+  const workspaceDataId = getMetadata(presentation.metadata.WorkspaceDataId)
 
   let backupInfo:
   | {
@@ -82,7 +83,7 @@
   async function updateBackupInfo (): Promise<void> {
     if (owner && backupUrl !== '') {
       try {
-        const response = await fetch(`${backupUrl}/${workspaceId}/index.json`, {
+        const response = await fetch(`${backupUrl}/${workspaceDataId ?? workspaceUuid}/index.json`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`
@@ -117,7 +118,7 @@
     return ''
   }
   function getFileUrl (filename: string): string {
-    return `${backupUrl}/${workspaceId}/${filename}`
+    return `${backupUrl}/${workspaceUuid}/${filename}`
   }
 
   async function downloadFile (filename: string): Promise<void> {

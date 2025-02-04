@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Header, Breadcrumb } from '@hcengineering/ui'
-  import core, { Account, Ref, Role, RolesAssignment, SpaceType, TypedSpace, WithLookup } from '@hcengineering/core'
+  import core, { PersonId, Ref, Role, RolesAssignment, SpaceType, TypedSpace, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
 
@@ -69,7 +69,7 @@
     }
   }
 
-  async function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): Promise<void> {
+  async function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: PersonId[]): Promise<void> {
     await client.updateMixin(space._id, space._class, core.space.Space, spaceType.targetClass, {
       [roleId]: newMembers
     })

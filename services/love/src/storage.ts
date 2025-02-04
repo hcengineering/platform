@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Blob, MeasureContext, systemAccountEmail, toWorkspaceString, WorkspaceId } from '@hcengineering/core'
+import { Blob, MeasureContext, systemAccountUuid, type WorkspaceDataId } from '@hcengineering/core'
 import { DatalakeConfig, DatalakeService, createDatalakeClient } from '@hcengineering/datalake'
 import { S3Config, S3Service } from '@hcengineering/s3'
 import { StorageConfig } from '@hcengineering/server-core'
@@ -31,19 +31,19 @@ export interface S3UploadParams {
 
 export async function getS3UploadParams (
   ctx: MeasureContext,
-  workspaceId: WorkspaceId,
+  workspaceDataId: WorkspaceDataId,
   storageConfig: StorageConfig,
   s3StorageConfig: StorageConfig | undefined
 ): Promise<S3UploadParams> {
   if (storageConfig.kind === 's3') {
-    return await getS3UploadParamsS3(ctx, workspaceId, storageConfig as S3Config)
+    return await getS3UploadParamsS3(ctx, workspaceDataId, storageConfig as S3Config)
   } else if (storageConfig.kind === 'datalake') {
     if (s3StorageConfig === undefined || s3StorageConfig.kind !== 's3') {
       throw new Error('Please provide S3 storage config')
     }
     return await getS3UploadParamsDatalake(
       ctx,
-      workspaceId,
+      workspaceDataId,
       storageConfig as DatalakeConfig,
       s3StorageConfig as S3Config
     )
@@ -54,7 +54,7 @@ export async function getS3UploadParams (
 
 export async function saveFile (
   ctx: MeasureContext,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceDataId,
   storageConfig: StorageConfig,
   s3StorageConfig: StorageConfig | undefined,
   filename: string
@@ -79,7 +79,7 @@ export async function saveFile (
 
 async function getS3UploadParamsS3 (
   ctx: MeasureContext,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceDataId,
   storageConfig: S3Config
 ): Promise<S3UploadParams> {
   const endpoint = storageConfig.endpoint
@@ -102,11 +102,11 @@ async function getS3UploadParamsS3 (
 
 async function getS3UploadParamsDatalake (
   ctx: MeasureContext,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceDataId,
   config: DatalakeConfig,
   s3config: S3Config
 ): Promise<S3UploadParams> {
-  const token = generateToken(systemAccountEmail, workspaceId)
+  const token = generateToken(systemAccountUuid, undefined, { service: 'love' })
   const client = createDatalakeClient(config, token)
   const { bucket } = await client.getR2UploadParams(ctx, workspaceId)
 
@@ -129,7 +129,7 @@ async function getS3UploadParamsDatalake (
 
 async function saveFileToS3 (
   ctx: MeasureContext,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceDataId,
   config: S3Config,
   filename: string
 ): Promise<Blob | undefined> {
@@ -141,12 +141,12 @@ async function saveFileToS3 (
 
 async function saveFileToDatalake (
   ctx: MeasureContext,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceDataId,
   config: DatalakeConfig,
   s3config: S3Config,
   filename: string
 ): Promise<Blob | undefined> {
-  const token = generateToken(systemAccountEmail, workspaceId)
+  const token = generateToken(systemAccountUuid, undefined, { service: 'love' })
   const client = createDatalakeClient(config, token)
   const storageAdapter = new DatalakeService(config)
 
@@ -158,15 +158,15 @@ async function saveFileToDatalake (
   return await storageAdapter.stat(ctx, workspaceId, uuid)
 }
 
-function getBucket (storageConfig: S3Config, workspaceId: WorkspaceId): string {
-  return storageConfig.rootBucket ?? (storageConfig.bucketPrefix ?? '') + toWorkspaceString(workspaceId)
+function getBucket (storageConfig: S3Config, workspaceId: WorkspaceDataId): string {
+  return storageConfig.rootBucket ?? (storageConfig.bucketPrefix ?? '') + workspaceId
 }
 
-function getBucketFolder (workspaceId: WorkspaceId): string {
-  return toWorkspaceString(workspaceId)
+function getBucketFolder (workspaceId: WorkspaceDataId): string {
+  return workspaceId
 }
 
-function getDocumentKey (storageConfig: any, workspace: WorkspaceId, name: string): string {
+function getDocumentKey (storageConfig: any, workspace: WorkspaceDataId, name: string): string {
   return storageConfig.rootBucket === undefined ? name : `${getBucketFolder(workspace)}/${name}`
 }
 
@@ -177,6 +177,6 @@ function stripPrefix (prefix: string | undefined, key: string): string {
   return key
 }
 
-function rootPrefix (storageConfig: S3Config, workspaceId: WorkspaceId): string | undefined {
+function rootPrefix (storageConfig: S3Config, workspaceId: WorkspaceDataId): string | undefined {
   return storageConfig.rootBucket !== undefined ? getBucketFolder(workspaceId) + '/' : undefined
 }

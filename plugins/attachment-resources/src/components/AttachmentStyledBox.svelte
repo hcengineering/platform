@@ -15,7 +15,6 @@
 <script lang="ts">
   import { Attachment, BlobMetadata } from '@hcengineering/attachment'
   import {
-    Account,
     Class,
     Doc,
     generateId,
@@ -24,7 +23,8 @@
     Space,
     toIdMap,
     type Blob,
-    TxOperations
+    TxOperations,
+    PersonId
   } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
@@ -182,7 +182,7 @@
         _class: attachment.class.Attachment,
         collection: 'attachments',
         modifiedOn: 0,
-        modifiedBy: '' as Ref<Account>,
+        modifiedBy: '' as PersonId,
         space,
         attachedTo: objectId,
         attachedToClass: _class,

@@ -21,6 +21,7 @@ import core, {
   type Space,
   type TypedSpace
 } from '@hcengineering/core'
+import { includesAny } from '@hcengineering/contact'
 import { getClient } from '@hcengineering/presentation'
 import { get } from 'svelte/store'
 import { spaceSpace } from './utils'
@@ -57,7 +58,7 @@ export async function canEditSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const space = doc as Space
 
-  if (space.owners?.includes(getCurrentAccount()._id) ?? false) {
+  if (includesAny(space.owners ?? [], getCurrentAccount().socialIds)) {
     return true
   }
 
@@ -83,7 +84,7 @@ export async function canArchiveSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const space = doc as Space
 
-  if (space.owners?.includes(getCurrentAccount()._id) ?? false) {
+  if (includesAny(space.owners ?? [], getCurrentAccount().socialIds)) {
     return true
   }
 
@@ -109,7 +110,7 @@ export async function canDeleteSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const space = doc as Space
 
-  if (space.owners?.includes(getCurrentAccount()._id) ?? false) {
+  if (includesAny(space.owners ?? [], getCurrentAccount().socialIds)) {
     return true
   }
 
@@ -131,7 +132,7 @@ export async function canJoinSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const space = doc as Space
 
-  return !space.members?.includes(getCurrentAccount()._id)
+  return !includesAny(space.members ?? [], getCurrentAccount().socialIds)
 }
 
 export async function canLeaveSpace (doc?: Doc | Doc[]): Promise<boolean> {
@@ -141,7 +142,7 @@ export async function canLeaveSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const space = doc as Space
 
-  return space.members?.includes(getCurrentAccount()._id)
+  return includesAny(space.members ?? [], getCurrentAccount().socialIds)
 }
 
 export function isClipboardAvailable (doc?: Doc | Doc[]): boolean {

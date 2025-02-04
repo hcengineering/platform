@@ -5,6 +5,7 @@
 export interface Config {
   Port: number
   Secret: string
+  AccountsUrl: string
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -12,7 +13,8 @@ const parseNumber = (str: string | undefined): number | undefined => (str !== un
 const config: Config = (() => {
   const params: Partial<Config> = {
     Port: parseNumber(process.env.PORT) ?? 4005,
-    Secret: process.env.SECRET
+    Secret: process.env.SECRET,
+    AccountsUrl: process.env.ACCOUNTS_URL
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

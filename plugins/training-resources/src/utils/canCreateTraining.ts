@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { checkMyPermission, permissionsStore } from '@hcengineering/view-resources'
+import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
 import { get } from 'svelte/store'
 import training from '../plugin'
 

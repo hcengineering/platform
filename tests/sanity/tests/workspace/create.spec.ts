@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { LoginPage } from '../model/login-page'
 import { DefaultWorkspace, generateId, PlatformURI, PlatformUser } from '../utils'
 import { SelectWorkspacePage } from '../model/select-workspace-page'
@@ -252,6 +252,6 @@ test.describe('Workspace tests', () => {
     await userProfilePage.clickLeaveWorkspaceCancelButton()
     await userProfilePage.clickLeaveWorkspaceButton()
     await userProfilePage.clickLeaveWorkspaceConfirmButton()
-    await userProfilePage.checkIfAccountIsDisabled()
+    await expect(selectWorkspacePage.title()).toBeVisible()
   })
 })

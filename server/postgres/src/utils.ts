@@ -26,7 +26,8 @@ import core, {
   type MixinUpdate,
   type Projection,
   type Ref,
-  type WorkspaceId
+  systemAccountUuid,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
@@ -343,7 +344,7 @@ export function getDBClient (
 export function convertDoc<T extends Doc> (
   domain: string,
   doc: T,
-  workspaceId: string,
+  workspaceId: WorkspaceUuid,
   schemaAndFields?: SchemaAndFields
 ): DBDoc {
   const extractedFields: Doc & Record<string, any> = {
@@ -471,20 +472,14 @@ export function escapeBackticks (str: string): string {
 }
 
 export function isOwner (account: Account): boolean {
-  return account.role === AccountRole.Owner || account._id === core.account.System
+  return account.role === AccountRole.Owner || account.uuid === systemAccountUuid
 }
 
 export class DBCollectionHelper implements DomainHelperOperations {
-  protected readonly workspaceId: WorkspaceId
-
   constructor (
     protected readonly client: DBClient,
-    protected readonly enrichedWorkspaceId: WorkspaceId
-  ) {
-    this.workspaceId = {
-      name: enrichedWorkspaceId.uuid ?? enrichedWorkspaceId.name
-    }
-  }
+    protected readonly workspaceId: WorkspaceUuid
+  ) {}
 
   async dropIndex (domain: Domain, name: string): Promise<void> {}
 
@@ -618,7 +613,7 @@ export function parseDoc<T extends Doc> (doc: DBDoc, schema: Schema): T {
 }
 
 export interface DBDoc extends Doc {
-  workspaceId: string
+  workspaceId: WorkspaceUuid
   data: Record<string, any>
   [key: string]: any
 }

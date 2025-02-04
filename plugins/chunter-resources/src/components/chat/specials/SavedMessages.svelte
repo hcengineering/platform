@@ -15,9 +15,9 @@
 <script lang="ts">
   import { Attachment, SavedAttachments } from '@hcengineering/attachment'
   import { AttachmentPreview } from '@hcengineering/attachment-resources'
-  import { Person, PersonAccount, getName as getContactName } from '@hcengineering/contact'
-  import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { getDisplayTime, IdMap, Ref, WithLookup } from '@hcengineering/core'
+  import { Person, getName as getContactName } from '@hcengineering/contact'
+  import { personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { getDisplayTime, PersonId, Ref, WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Label, Scroller } from '@hcengineering/ui'
   import activity, { ActivityMessage, SavedMessage } from '@hcengineering/activity'
@@ -49,19 +49,14 @@
     })
   }
 
-  function getName (
-    attach: Attachment,
-    personAccountByIdStore: IdMap<PersonAccount>,
-    personByIdStore: IdMap<Person>
-  ): string | undefined {
-    const acc = personAccountByIdStore.get(attach.modifiedBy as Ref<PersonAccount>)
-    if (acc !== undefined) {
-      const emp = personByIdStore.get(acc?.person)
-      if (emp !== undefined) {
-        return getContactName(client.getHierarchy(), emp)
-      }
+  function getName (attach: Attachment, personByPersonId: Map<PersonId, Person>): string | undefined {
+    const person = personByPersonId.get(attach.modifiedBy)
+
+    if (person !== undefined) {
+      return getContactName(client.getHierarchy(), person)
     }
   }
+
   function handleMessageClicked (message?: ActivityMessage): void {
     void openMessageFromSpecial(message)
   }
@@ -97,7 +92,7 @@
             <Label
               label={chunter.string.SharedBy}
               params={{
-                name: getName(attach.$lookup.attachedTo, $personAccountByIdStore, $personByIdStore),
+                name: getName(attach.$lookup.attachedTo, $personByPersonIdStore),
                 time: getDisplayTime(attach.modifiedOn)
               }}
             />

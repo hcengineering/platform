@@ -145,6 +145,6 @@ const expose: IPCMainExposed = {
   getScreenAccess: () => ipcRenderer.invoke('get-screen-access'),
   getScreenSources: () => ipcRenderer.invoke('get-screen-sources'),
   cancelBackup: () => { ipcRenderer.send('cancel-backup') },
-  startBackup: (token, endpoint, workspace) => { ipcRenderer.send('start-backup', token, endpoint, workspace) }
+  startBackup: (token, endpoint, wsIds) => { ipcRenderer.send('start-backup', token, endpoint, wsIds) }
 }
 contextBridge.exposeInMainWorld('electron', expose)

@@ -12,28 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
-  AccountRole,
-  BaseWorkspaceInfo,
+  WorkspaceInfoWithStatus,
   isWorkspaceCreating,
   MeasureContext,
-  systemAccountEmail
+  systemAccountUuid,
+  type WorkspaceUuid,
+  AccountRole
 } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
-import { getWorkspaceInfo, assignWorkspace } from '@hcengineering/server-client'
-import aiBot, { aiBotAccountEmail } from '@hcengineering/ai-bot'
+import { getAccountClient } from '@hcengineering/server-client'
+import { aiBotAccountEmail } from '@hcengineering/ai-bot'
 
 import { wait } from './common'
 
 const ASSIGN_WORKSPACE_DELAY_MS = 5 * 1000 // 5 secs
 const MAX_ASSIGN_ATTEMPTS = 5
 
-async function tryGetWorkspaceInfo (ws: string, ctx: MeasureContext): Promise<BaseWorkspaceInfo | undefined> {
-  const systemToken = generateToken(systemAccountEmail, { name: ws })
+async function tryGetWorkspaceInfo (
+  ws: WorkspaceUuid,
+  ctx: MeasureContext
+): Promise<WorkspaceInfoWithStatus | undefined> {
+  const systemToken = generateToken(systemAccountUuid, ws, { service: 'aibot' })
+  const accountClient = getAccountClient(systemToken)
   for (let i = 0; i < 5; i++) {
     try {
-      const info = await getWorkspaceInfo(systemToken)
+      const info = await accountClient.getWorkspaceInfo()
 
       if (info == null) {
         await wait(ASSIGN_WORKSPACE_DELAY_MS)
@@ -52,7 +57,7 @@ const timeoutByWorkspace = new Map<string, NodeJS.Timeout>()
 const attemptsByWorkspace = new Map<string, number>()
 
 export async function tryAssignToWorkspace (
-  workspace: string,
+  workspace: WorkspaceUuid,
   ctx: MeasureContext,
   clearAttempts = true
 ): Promise<boolean> {
@@ -61,6 +66,8 @@ export async function tryAssignToWorkspace (
   }
   clearTimeout(timeoutByWorkspace.get(workspace))
   try {
+    const systemToken = generateToken(systemAccountUuid, undefined, { service: 'aibot' })
+    const accountClient = getAccountClient(systemToken)
     const info = await tryGetWorkspaceInfo(workspace, ctx)
 
     if (info === undefined) {
@@ -78,8 +85,7 @@ export async function tryAssignToWorkspace (
       return false
     }
 
-    const token = generateToken(systemAccountEmail, { name: '-' }, { service: 'aibot' })
-    await assignWorkspace(token, aiBotAccountEmail, workspace, AccountRole.User, undefined, false, aiBot.account.AIBot)
+    await accountClient.assignWorkspace(aiBotAccountEmail, workspace, AccountRole.User)
     ctx.info('Assigned to workspace: ', { workspace })
     return true
   } catch (e) {

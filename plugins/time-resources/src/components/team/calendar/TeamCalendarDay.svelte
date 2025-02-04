@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Calendar, Event, getAllEvents } from '@hcengineering/calendar'
+  import { Event, getAllEvents } from '@hcengineering/calendar'
   import { calendarByIdStore } from '@hcengineering/calendar-resources'
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import { IdMap, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { getCurrentEmployee, Person } from '@hcengineering/contact'
+  import { IdMap, Ref } from '@hcengineering/core'
   import { Project } from '@hcengineering/task'
   import { ToDo, WorkSlot } from '@hcengineering/time'
   import WithTeamData from '../WithTeamData.svelte'
@@ -31,10 +31,9 @@
 
   $: fromDate = new Date(currentDate).setDate(currentDate.getDate() - Math.round(maxDays / 2 + 1))
   $: toDate = new Date(currentDate).setDate(currentDate.getDate() + Math.round(maxDays / 2 + 1))
-  const me = (getCurrentAccount() as PersonAccount).person
+  const me = getCurrentEmployee()
 
   let project: Project | undefined
-  let personAccounts: PersonAccount[] = []
   let slots: WorkSlot[] = []
   let events: Event[] = []
   let todos: IdMap<ToDo> = new Map()
@@ -78,17 +77,7 @@
   }
 </script>
 
-<WithTeamData
-  {space}
-  {fromDate}
-  {toDate}
-  bind:project
-  bind:personAccounts
-  bind:todos
-  bind:slots
-  bind:events
-  bind:persons
-/>
+<WithTeamData {space} {fromDate} {toDate} bind:project bind:todos bind:slots bind:events bind:persons />
 <PersonCalendar
   {persons}
   startDate={currentDate}
@@ -134,7 +123,7 @@
     {@const dayTo = new Date(day).setHours(23, 59, 59, 999)}
     {@const totalSlots = toSlots(getAllEvents(slots, dayFrom, dayTo))}
     {@const totalEvents = getAllEvents(events, dayFrom, dayTo)}
-    {@const grouped = groupTeamData(totalSlots, todos, totalEvents, personAccounts, me, $calendarByIdStore)}
+    {@const grouped = groupTeamData(totalSlots, todos, totalEvents, me, $calendarByIdStore)}
     {@const gitem = grouped.find((it) => it.user === person)}
     {@const hourWidths = calcHourWidth([...totalSlots, ...totalEvents], width)}
     {#if gitem}

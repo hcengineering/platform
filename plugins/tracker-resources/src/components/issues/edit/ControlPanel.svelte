@@ -13,8 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
-  import { EmployeeBox, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
+  import { EmployeeBox, personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import core, { Class, ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
   import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
 
@@ -94,11 +93,7 @@
   }
 
   $: updateKeys(issue._class, ignoreKeys)
-
-  let account: PersonAccount | undefined
-
-  $: account = $personAccountByIdStore.get(issue.createdBy as Ref<PersonAccount>)
-  $: employee = account && $personByIdStore.get(account.person)
+  $: creatorPerson = issue.createdBy !== undefined ? $personRefByPersonIdStore.get(issue.createdBy) : undefined
 </script>
 
 <div class="popupPanel-body__aside-grid">
@@ -162,7 +157,7 @@
     <Label label={core.string.CreatedBy} />
   </span>
   <EmployeeBox
-    value={employee?._id}
+    value={creatorPerson}
     label={core.string.CreatedBy}
     kind={'link'}
     size={'medium'}

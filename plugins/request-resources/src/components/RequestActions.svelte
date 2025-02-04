@@ -15,8 +15,9 @@
 <script lang="ts">
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import chunter, { ChatMessage } from '@hcengineering/chunter'
-  import { PersonAccount } from '@hcengineering/contact'
-  import { AttachedData, getCurrentAccount, Markup, Ref } from '@hcengineering/core'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { mySocialStringsStore } from '@hcengineering/contact-resources'
+  import { AttachedData, Markup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Request, RequestStatus } from '@hcengineering/request'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
@@ -31,8 +32,7 @@
   export let value: Request
 
   const client = getClient()
-  const me = getCurrentAccount()._id as Ref<PersonAccount>
-  const myPerson = (getCurrentAccount() as PersonAccount).person
+  const myPerson = getCurrentEmployee()
 
   const approvable =
     value.requested.filter((a) => a === myPerson).length > value.approved.filter((a) => a === myPerson).length
@@ -130,7 +130,7 @@
 </script>
 
 {#if value.status === RequestStatus.Active}
-  {#if value.createdBy === me}
+  {#if value.createdBy !== undefined && $mySocialStringsStore.includes(value.createdBy)}
     <div class="mt-2">
       <Button label={request.string.Cancel} on:click={cancel} />
     </div>

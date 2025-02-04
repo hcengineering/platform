@@ -19,7 +19,6 @@
   import contact from '@hcengineering/contact'
   import { EmployeeBox, ExpandRightDouble, UserBox } from '@hcengineering/contact-resources'
   import core, {
-    Account,
     AccountRole,
     Class,
     Client,
@@ -99,7 +98,7 @@
     _id: generateId(),
     collection: 'applications',
     modifiedOn: Date.now(),
-    modifiedBy: '' as Ref<Account>,
+    modifiedBy: '',
     startDate: null,
     dueDate: null,
     kind: '' as Ref<TaskType>,
@@ -217,10 +216,11 @@
   const spaceQuery = createQuery()
 
   let vacancy: Vacancy | undefined
-  const me = getCurrentAccount()._id
+  const acc = getCurrentAccount()
+  const socialIds = acc.socialIds
 
   $: if (_space) {
-    spaceQuery.query(recruit.class.Vacancy, { _id: _space, members: me }, (res) => {
+    spaceQuery.query(recruit.class.Vacancy, { _id: _space, members: { $in: socialIds } }, (res) => {
       vacancy = res.shift()
     })
   }
@@ -329,7 +329,7 @@
         _class={recruit.class.Vacancy}
         spaceQuery={{
           archived: false,
-          members: me,
+          members: { $in: socialIds },
           ...($selectedTypeStore !== undefined ? { type: $selectedTypeStore } : {})
         }}
         spaceOptions={orgOptions}

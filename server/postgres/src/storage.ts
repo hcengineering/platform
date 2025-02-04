@@ -45,6 +45,7 @@ import core, {
   type SessionData,
   type SortingQuery,
   type StorageIterator,
+  systemAccountUuid,
   toFindResult,
   type Tx,
   type TxCreateDoc,
@@ -56,7 +57,8 @@ import core, {
   type TxUpdateDoc,
   withContext,
   type WithLookup,
-  type WorkspaceId
+  type WorkspaceIds,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import {
   type DbAdapter,
@@ -400,7 +402,6 @@ class ValuesVariables {
 abstract class PostgresAdapterBase implements DbAdapter {
   protected readonly _helper: DBCollectionHelper
   protected readonly tableFields = new Map<string, string[]>()
-  protected readonly workspaceId: WorkspaceId
 
   protected connections = new Map<string, ConnectionInfo>()
 
@@ -412,15 +413,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
       url: () => string
       close: () => void
     },
-    protected readonly enrichedWorkspaceId: WorkspaceId,
+    protected readonly workspaceId: WorkspaceUuid,
     protected readonly hierarchy: Hierarchy,
     protected readonly modelDb: ModelDb,
     readonly mgrId: string
   ) {
-    // Swich to use uuid already before new accounts and workspaces
-    this.workspaceId = {
-      name: enrichedWorkspaceId.uuid ?? enrichedWorkspaceId.name
-    }
     this._helper = new DBCollectionHelper(this.client, this.workspaceId)
     this.mgr = new ConnectionMgr(client, () => this.connections, mgrId)
   }
@@ -531,7 +528,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     options?: FindOptions<T>
   ): string {
     const res: string[] = []
-    res.push(`"workspaceId" = ${vars.add(this.workspaceId.name, '::uuid')}`)
+    res.push(`"workspaceId" = ${vars.add(this.workspaceId, '::uuid')}`)
     for (const key in query) {
       const value = query[key]
       const tkey = this.transformKey(domain, core.class.Doc, key, false)
@@ -570,7 +567,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           const prevAttachedTo = (doc as any).attachedTo
           TxProcessor.applyUpdate(doc, operations)
           ;(doc as any)['%hash%'] = this.curHash()
-          const converted = convertDoc(domain, doc, this.workspaceId.name, schemaFields)
+          const converted = convertDoc(domain, doc, this.workspaceId, schemaFields)
           const params = new ValuesVariables()
           const updates: string[] = []
           const { extractedFields, remainingData } = parseUpdate(operations, schemaFields)
@@ -591,7 +588,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           await client.execute(
             `UPDATE ${translateDomain(domain)} 
                     SET ${updates.join(', ')} 
-                    WHERE "workspaceId" = ${params.add(this.workspaceId.name, '::uuid')} 
+                    WHERE "workspaceId" = ${params.add(this.workspaceId, '::uuid')} 
                       AND _id = ${params.add(doc._id, '::text')}`,
             params.getValues()
           )
@@ -771,16 +768,16 @@ abstract class PostgresAdapterBase implements DbAdapter {
     if (sessionContext !== undefined && sessionContext.isTriggerCtx !== true) {
       if (sessionContext.admin !== true && sessionContext.account !== undefined) {
         const acc = sessionContext.account
-        if (acc.role === AccountRole.DocGuest || acc._id === core.account.System) {
+        if (acc.role === AccountRole.DocGuest || acc.uuid === systemAccountUuid) {
           return
         }
-        if (query.space === acc._id) return
+        if (query.space === acc.uuid) return // TODO: was it for private spaces? If so, need to fix it as they are not identified by acc.uuid now
         if (domain === DOMAIN_SPACE && isOwner(acc) && showArchived) return
         const key = domain === DOMAIN_SPACE ? '_id' : domain === DOMAIN_TX ? "data ->> 'objectSpace'" : 'space'
         const privateCheck = domain === DOMAIN_SPACE ? ' OR sec.private = false' : ''
         const archivedCheck = showArchived ? '' : ' AND sec.archived = false'
-        const q = `(sec.members @> '{"${acc._id}"}' OR sec."_class" = '${core.class.SystemSpace}'${privateCheck})${archivedCheck}`
-        return `INNER JOIN ${translateDomain(DOMAIN_SPACE)} AS sec ON sec._id = ${domain}.${key} AND sec."workspaceId" = ${vars.add(this.workspaceId.name, '::uuid')} AND ${q}`
+        const q = `(sec.members && (${vars.addArray(acc.socialIds)}) OR sec."_class" = '${core.class.SystemSpace}'${privateCheck})${archivedCheck}`
+        return `INNER JOIN ${translateDomain(DOMAIN_SPACE)} AS sec ON sec._id = ${domain}.${key} AND sec."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} AND ${q}`
       }
     }
   }
@@ -980,7 +977,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       if (val.isReverse) continue
       if (val.table === DOMAIN_MODEL) continue
       res.push(
-        `LEFT JOIN ${val.table} AS ${val.toAlias} ON ${val.fromAlias}.${val.fromField} = ${val.toAlias}."${val.toField}" AND ${val.toAlias}."workspaceId" = ${vars.add(this.workspaceId.name, '::uuid')}`
+        `LEFT JOIN ${val.table} AS ${val.toAlias} ON ${val.fromAlias}.${val.fromField} = ${val.toAlias}."${val.toField}" AND ${val.toAlias}."workspaceId" = ${vars.add(this.workspaceId, '::uuid')}`
       )
       if (val.classes !== undefined) {
         if (val.classes.length === 1) {
@@ -1110,7 +1107,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
   ): string {
     const res: string[] = []
     const query = { ..._query }
-    res.push(`${baseDomain}."workspaceId" = ${vars.add(this.workspaceId.name, '::uuid')}`)
+    res.push(`${baseDomain}."workspaceId" = ${vars.add(this.workspaceId, '::uuid')}`)
     if (options?.skipClass !== true) {
       query._class = this.fillClass(_class, query) as any
     }
@@ -1428,7 +1425,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       const _class = isReverse ? assoc.classA : assoc.classB
       const keyA = isReverse ? 'docB' : 'docA'
       const keyB = isReverse ? 'docA' : 'docB'
-      const wsId = vars.add(this.workspaceId.name, '::uuid')
+      const wsId = vars.add(this.workspaceId, '::uuid')
       res.push(
         `(SELECT jsonb_agg(assoc.*) 
           FROM ${translateDomain(this.hierarchy.getDomain(_class))} AS assoc 
@@ -1531,7 +1528,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       const sql = `
         SELECT ${projection}
         FROM ${tdomain}
-        WHERE "workspaceId" = '${workspaceId.name}'
+        WHERE "workspaceId" = '${workspaceId}'
       `
 
       return createCursorGenerator(client.raw(), sql, undefined, schema, limit)
@@ -1581,7 +1578,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           FROM ${translateDomain(domain)}
           WHERE "workspaceId" = $1::uuid 
                     AND _id = ANY($2::text[])`,
-          [this.workspaceId.name, docs]
+          [this.workspaceId, docs]
         )
         return res.map((p) => parseDocWithProjection(p, domain))
       })
@@ -1606,12 +1603,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
           const part = docs.slice(i, i + batchSize)
           const values = new ValuesVariables()
           const vars: string[] = []
-          const wsId = values.add(this.workspaceId.name, '::uuid')
+          const wsId = values.add(this.workspaceId, '::uuid')
           for (const doc of part) {
             if (!('%hash%' in doc) || doc['%hash%'] === '' || doc['%hash%'] == null) {
               ;(doc as any)['%hash%'] = this.curHash() // We need to set current hash
             }
-            const d = convertDoc(domain, doc, this.workspaceId.name, schemaFields)
+            const d = convertDoc(domain, doc, this.workspaceId, schemaFields)
             const variables = [
               wsId,
               ...schemaFields.fields.map((field) => values.add(d[field], `::${schemaFields.schema[field].type}`)),
@@ -1641,7 +1638,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     for (let i = 0; i < docs.length; i += batchSize) {
       const part = docs.slice(i, i + batchSize)
       await ctx.with('clean', {}, () => {
-        const params = [this.workspaceId.name, part]
+        const params = [this.workspaceId, part]
         return this.mgr.retry(ctx.id, (client) => client.execute(query, params))
       })
     }
@@ -1755,12 +1752,12 @@ class PostgresAdapter extends PostgresAdapterBase {
         TxProcessor.updateMixin4Doc(doc, tx)
         ;(doc as any)['%hash%'] = this.curHash()
         const domain = this.hierarchy.getDomain(tx.objectClass)
-        const converted = convertDoc(domain, doc, this.workspaceId.name, schemaFields)
+        const converted = convertDoc(domain, doc, this.workspaceId, schemaFields)
         const { extractedFields } = parseUpdate(tx.attributes as Partial<Doc>, schemaFields)
 
         const params = new ValuesVariables()
 
-        const wsId = params.add(this.workspaceId.name, '::uuid')
+        const wsId = params.add(this.workspaceId, '::uuid')
         const oId = params.add(tx.objectId, '::text')
         const updates: string[] = []
         for (const key of new Set([...Object.keys(extractedFields), ...['modifiedOn', 'modifiedBy', '%hash%']])) {
@@ -1863,13 +1860,13 @@ class PostgresAdapter extends PostgresAdapterBase {
             ops.modifiedOn = tx.modifiedOn
             TxProcessor.applyUpdate(doc, ops)
             ;(doc as any)['%hash%'] = this.curHash()
-            const converted = convertDoc(domain, doc, this.workspaceId.name, schemaFields)
+            const converted = convertDoc(domain, doc, this.workspaceId, schemaFields)
             const updates: string[] = []
             const params = new ValuesVariables()
 
             const { extractedFields, remainingData } = parseUpdate(ops, schemaFields)
 
-            const wsId = params.add(this.workspaceId.name, '::uuid')
+            const wsId = params.add(this.workspaceId, '::uuid')
             const oId = params.add(tx.objectId, '::text')
 
             for (const key of new Set([...Object.keys(extractedFields), ...['modifiedOn', 'modifiedBy', '%hash%']])) {
@@ -1960,7 +1957,7 @@ class PostgresAdapter extends PostgresAdapterBase {
             let idx = 1
             const indexes: string[] = []
             const data: any[] = []
-            data.push(this.workspaceId.name)
+            data.push(this.workspaceId)
             for (const op of part) {
               indexes.push(
                 `($${++idx}::${schema._id.type ?? 'text'}, ${op.fields.map((it) => (it === 'data' ? `$${++idx}::jsonb` : `$${++idx}::${schema[it].type ?? 'text'}`)).join(',')})`
@@ -2004,7 +2001,7 @@ class PostgresAdapter extends PostgresAdapterBase {
         `SELECT * FROM "${translateDomain(domain)}" WHERE "workspaceId" = $1::uuid AND _id = $2::text ${
           forUpdate ? ' FOR UPDATE' : ''
         }`,
-        [this.workspaceId.name, _id]
+        [this.workspaceId, _id]
       )
       const dbDoc = res[0]
       return dbDoc !== undefined ? parseDoc(dbDoc, getSchema(domain)) : undefined
@@ -2064,7 +2061,7 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
         WHERE "workspaceId" = $1::uuid 
         ORDER BY _id::text ASC, "modifiedOn"::bigint ASC
       `
-      return client.execute(query, [this.workspaceId.name])
+      return client.execute(query, [this.workspaceId])
     })
 
     const model = res.map((p) => parseDoc<Tx>(p, getSchema(DOMAIN_MODEL_TX)))
@@ -2084,7 +2081,7 @@ export async function createPostgresAdapter (
   contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceId,
+  wsIds: WorkspaceIds,
   modelDb: ModelDb
 ): Promise<DbAdapter> {
   const client = getDBClient(contextVars, url)
@@ -2092,10 +2089,10 @@ export async function createPostgresAdapter (
   return new PostgresAdapter(
     greenURL !== undefined ? toGreenClient(greenURL, connection) : createDBClient(connection),
     client,
-    workspaceId,
+    wsIds.uuid,
     hierarchy,
     modelDb,
-    'default-' + workspaceId.name
+    'default-' + wsIds.url
   )
 }
 
@@ -2130,7 +2127,7 @@ export async function createPostgresTxAdapter (
   contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceId,
+  wsIds: WorkspaceIds,
   modelDb: ModelDb
 ): Promise<TxAdapter> {
   const client = getDBClient(contextVars, url)
@@ -2139,10 +2136,10 @@ export async function createPostgresTxAdapter (
   return new PostgresTxAdapter(
     greenURL !== undefined ? toGreenClient(greenURL, connection) : createDBClient(connection),
     client,
-    workspaceId,
+    wsIds.uuid,
     hierarchy,
     modelDb,
-    'tx' + workspaceId.name
+    'tx' + wsIds.url
   )
 }
 

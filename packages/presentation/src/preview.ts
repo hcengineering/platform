@@ -133,13 +133,14 @@ export async function getVideoMeta (file: string, filename?: string): Promise<Vi
     return undefined
   }
 
+  const token = getMetadata(presentation.metadata.Token) ?? ''
   const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
   if (!url.includes('://')) {
     url = concatLink(frontUrl ?? '', url)
   }
 
   try {
-    const response = await fetch(url)
+    const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
     if (response.ok) {
       return (await response.json()) as VideoMeta
     }

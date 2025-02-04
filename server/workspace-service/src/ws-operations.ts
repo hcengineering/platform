@@ -1,17 +1,18 @@
 import core, {
   Hierarchy,
   ModelDb,
-  systemAccountEmail,
+  systemAccountUuid,
   TxOperations,
   versionToString,
-  type BaseWorkspaceInfo,
+  systemAccount,
   type Branding,
   type Client,
   type Data,
   type MeasureContext,
   type Tx,
   type Version,
-  type WorkspaceIdWithUrl
+  type WorkspaceIds,
+  type WorkspaceInfoWithStatus
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation, type ModelLogger } from '@hcengineering/model'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
@@ -20,6 +21,7 @@ import { getServerPipeline, getTxAdapterFactory, sharedPipelineContextVars } fro
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { generateToken } from '@hcengineering/server-token'
 import { initializeWorkspace, initModel, prepareTools, updateModel, upgradeModel } from '@hcengineering/server-tool'
+import { type AccountClient } from '@hcengineering/account-client'
 
 /**
  * @public
@@ -28,9 +30,10 @@ export async function createWorkspace (
   ctx: MeasureContext,
   version: Data<Version>,
   branding: Branding | null,
-  workspaceInfo: BaseWorkspaceInfo,
+  workspaceInfo: WorkspaceInfoWithStatus,
   txes: Tx[],
   migrationOperation: [string, MigrateOperation][],
+  accountClient: AccountClient,
   handleWsEvent?: (
     event: 'ping' | 'create-started' | 'progress' | 'create-done',
     version: Data<Version>,
@@ -39,7 +42,7 @@ export async function createWorkspace (
   ) => Promise<void>,
   external: boolean = false
 ): Promise<void> {
-  const childLogger = ctx.newChild('createWorkspace', {}, { workspace: workspaceInfo.workspace })
+  const childLogger = ctx.newChild('createWorkspace', {}, { workspace: workspaceInfo.uuid })
   const ctxModellogger: ModelLogger = {
     log: (msg, data) => {
       childLogger.info(msg, data)
@@ -54,17 +57,13 @@ export async function createWorkspace (
   }, 5000)
 
   try {
-    const wsUrl: WorkspaceIdWithUrl = {
-      name: workspaceInfo.workspace,
+    const wsIds: WorkspaceIds = {
       uuid: workspaceInfo.uuid,
-      workspaceName: workspaceInfo.workspaceName ?? '',
-      workspaceUrl: workspaceInfo.workspaceUrl ?? ''
+      url: workspaceInfo.url,
+      dataId: workspaceInfo.dataId
     }
 
-    const wsId = {
-      name: workspaceInfo.workspace,
-      uuid: workspaceInfo.uuid
-    }
+    const wsId = workspaceInfo.uuid
 
     await handleWsEvent?.('create-started', version, 10)
 
@@ -75,26 +74,34 @@ export async function createWorkspace (
     const storageConfig = storageConfigFromEnv()
     const storageAdapter = buildStorageFromConfig(storageConfig)
 
-    const pipeline = await getServerPipeline(ctx, txes, dbUrl, wsUrl, storageAdapter)
+    const pipeline = await getServerPipeline(ctx, txes, dbUrl, wsIds, storageAdapter)
 
     try {
-      const txFactory = getTxAdapterFactory(ctx, dbUrl, wsUrl, null, {
+      const txFactory = getTxAdapterFactory(ctx, dbUrl, wsIds, null, {
         externalStorage: storageAdapter,
         usePassedCtx: true
       })
-      const txAdapter = await txFactory(ctx, sharedPipelineContextVars, hierarchy, dbUrl, wsId, modelDb, storageAdapter)
+      const txAdapter = await txFactory(
+        ctx,
+        sharedPipelineContextVars,
+        hierarchy,
+        dbUrl,
+        wsIds,
+        modelDb,
+        storageAdapter
+      )
       await childLogger.withLog('init-workspace', {}, (ctx) =>
         initModel(ctx, wsId, txes, txAdapter, storageAdapter, ctxModellogger, async (value) => {})
       )
 
-      const client = new TxOperations(wrapPipeline(ctx, pipeline, wsUrl), core.account.ConfigUser)
+      const client = new TxOperations(wrapPipeline(ctx, pipeline, wsIds), core.account.ConfigUser)
 
       await updateModel(ctx, wsId, migrationOperation, client, pipeline, ctxModellogger, async (value) => {
         await handleWsEvent?.('progress', version, 10 + Math.round((Math.min(value, 100) / 100) * 10))
       })
 
       ctx.info('Starting init script if any')
-      await initializeWorkspace(ctx, branding, wsUrl, storageAdapter, client, ctxModellogger, async (value) => {
+      await initializeWorkspace(ctx, branding, wsIds, storageAdapter, client, ctxModellogger, async (value) => {
         ctx.info('Init script progress', { value })
         await handleWsEvent?.('progress', version, 20 + Math.round((Math.min(value, 100) / 100) * 60))
       })
@@ -108,6 +115,7 @@ export async function createWorkspace (
         pipeline,
         client,
         storageAdapter,
+        accountClient,
         ctxModellogger,
         async (event, version, value) => {
           ctx.info('upgrade workspace', { event, value })
@@ -139,7 +147,8 @@ export async function upgradeWorkspace (
   version: Data<Version>,
   txes: Tx[],
   migrationOperation: [string, MigrateOperation][],
-  ws: BaseWorkspaceInfo,
+  accountClient: AccountClient,
+  ws: WorkspaceInfoWithStatus,
   logger: ModelLogger = consoleModelLogger,
   handleWsEvent?: (
     event: 'upgrade-started' | 'progress' | 'upgrade-done' | 'ping',
@@ -162,10 +171,9 @@ export async function upgradeWorkspace (
       txes,
       dbUrl,
       {
-        name: ws.workspace,
         uuid: ws.uuid,
-        workspaceName: ws.workspaceName ?? '',
-        workspaceUrl: ws.workspaceUrl ?? ''
+        url: ws.url ?? '',
+        dataId: ws.dataId
       },
       storageAdapter
     )
@@ -173,10 +181,10 @@ export async function upgradeWorkspace (
       return
     }
 
-    const wsUrl: WorkspaceIdWithUrl = {
-      name: ws.workspace,
-      workspaceName: ws.workspaceName ?? '',
-      workspaceUrl: ws.workspaceUrl ?? ''
+    const wsUrl: WorkspaceIds = {
+      uuid: ws.uuid,
+      url: ws.url ?? '',
+      dataId: ws.dataId
     }
 
     await upgradeWorkspaceWith(
@@ -188,6 +196,7 @@ export async function upgradeWorkspace (
       pipeline,
       wrapPipeline(ctx, pipeline, wsUrl),
       storageAdapter,
+      accountClient,
       logger,
       handleWsEvent,
       forceUpdate,
@@ -208,10 +217,11 @@ export async function upgradeWorkspaceWith (
   version: Data<Version>,
   txes: Tx[],
   migrationOperation: [string, MigrateOperation][],
-  ws: BaseWorkspaceInfo,
+  ws: WorkspaceInfoWithStatus,
   pipeline: Pipeline,
   connection: Client,
   storageAdapter: StorageAdapter,
+  accountClient: AccountClient,
   logger: ModelLogger = consoleModelLogger,
   handleWsEvent?: (
     event: 'upgrade-started' | 'progress' | 'upgrade-done' | 'ping',
@@ -233,38 +243,34 @@ export async function upgradeWorkspaceWith (
     force: forceUpdate,
     currentVersion: ws?.version !== undefined ? versionToString(ws.version) : '',
     toVersion: versionStr,
-    workspace: ws.workspace
+    workspace: ws.uuid
   })
-  const wsId: WorkspaceIdWithUrl = {
-    name: ws.workspace,
-    workspaceName: ws.workspaceName ?? '',
-    workspaceUrl: ws.workspaceUrl ?? ''
+  const wsIds: WorkspaceIds = {
+    uuid: ws.uuid,
+    url: ws.url ?? '',
+    dataId: ws.dataId
   }
 
-  const token = generateToken(systemAccountEmail, wsId, { service: 'workspace' })
+  const token = generateToken(systemAccountUuid, wsIds.uuid, { service: 'workspace' })
   let progress = 0
 
   const updateProgressHandle = setInterval(() => {
     void handleWsEvent?.('progress', version, progress)
   }, 5000)
 
-  const wsUrl: WorkspaceIdWithUrl = {
-    name: ws.workspace,
-    workspaceName: ws.workspaceName ?? '',
-    workspaceUrl: ws.workspaceUrl ?? ''
-  }
   try {
     const contextData = new SessionDataImpl(
-      systemAccountEmail,
+      systemAccount,
       'backup',
       true,
       undefined,
-      wsUrl,
+      wsIds,
       null,
       true,
       undefined,
       undefined,
-      pipeline.context.modelDb
+      pipeline.context.modelDb,
+      new Map()
     )
     ctx.contextData = contextData
     await handleWsEvent?.('upgrade-started', version, 0)
@@ -272,11 +278,12 @@ export async function upgradeWorkspaceWith (
     await upgradeModel(
       ctx,
       await getTransactorEndpoint(token, external ? 'external' : 'internal'),
-      wsId,
+      wsIds,
       txes,
       pipeline,
       connection,
       storageAdapter,
+      accountClient,
       migrationOperation,
       logger,
       async (value) => {

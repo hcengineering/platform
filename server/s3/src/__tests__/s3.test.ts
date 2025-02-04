@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext, generateId } from '@hcengineering/core'
+import { MeasureMetricsContext, type WorkspaceDataId, generateId } from '@hcengineering/core'
 import { objectsToArray, type StorageConfiguration } from '@hcengineering/server-core'
 import { S3Service, processConfigFromEnv, type S3Config } from '..'
 
@@ -41,8 +41,8 @@ describe('s3 operations', () => {
 
     expect(genWorkspaceId1).not.toEqual(genWorkspaceId2)
 
-    const ws1 = { name: genWorkspaceId1 }
-    const ws2 = { name: genWorkspaceId2 }
+    const ws1 = genWorkspaceId1 as unknown as WorkspaceDataId
+    const ws2 = genWorkspaceId2 as unknown as WorkspaceDataId
     await minioService.make(toolCtx, ws1)
     await minioService.make(toolCtx, ws2)
 
@@ -62,7 +62,8 @@ describe('s3 operations', () => {
     const w1Objects2 = await objectsToArray(toolCtx, minioService, ws1)
     expect(w1Objects2.map((it) => it._id)).toEqual(['obj1.txt', 'obj2.txt'])
 
-    const data = Buffer.concat(await minioService.read(toolCtx, ws1, 'obj1.txt'))
+    const read = (await minioService.read(toolCtx, ws1, 'obj1.txt')) as unknown as Uint8Array[]
+    const data = Buffer.concat(read)
 
     expect('obj1').toEqual(data.toString())
 

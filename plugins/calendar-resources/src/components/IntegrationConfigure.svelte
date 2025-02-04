@@ -31,7 +31,7 @@
   query.query(
     calendar.class.ExternalCalendar,
     {
-      createdBy: getCurrentAccount()._id,
+      createdBy: { $in: getCurrentAccount().socialIds },
       externalUser: integration.value
     },
     (res) => {

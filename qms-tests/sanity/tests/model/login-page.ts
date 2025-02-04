@@ -8,7 +8,6 @@ export class LoginPage {
   readonly buttonLogin: Locator
   readonly buttonSignUp: Locator
   readonly loginWithPassword: Locator
-  readonly invalidPasswordMessage: Locator
   readonly accountNotFoundMessage: Locator
   constructor (page: Page) {
     this.page = page
@@ -17,8 +16,7 @@ export class LoginPage {
     this.buttonLogin = page.locator('button', { hasText: 'Log In' })
     this.buttonSignUp = page.locator('a.title', { hasText: 'Sign Up' })
     this.loginWithPassword = page.locator('a', { hasText: 'Login with password' })
-    this.invalidPasswordMessage = page.getByText('Invalid password')
-    this.accountNotFoundMessage = page.getByText('Account not found')
+    this.accountNotFoundMessage = page.getByText('Account not found or the provided credentials are incorrect')
   }
 
   async goto (): Promise<void> {
@@ -26,6 +24,7 @@ export class LoginPage {
   }
 
   async login (email: string, password: string): Promise<void> {
+    await this.loginWithPassword.click()
     await this.inputEmail.fill(email)
     await this.inputPassword.fill(password)
     expect(await this.buttonLogin.isEnabled()).toBe(true)
@@ -33,30 +32,18 @@ export class LoginPage {
   }
 
   async checkIfErrorMessageIsShown (message: string): Promise<void> {
-    if (message === 'Invalid password') {
-      await expect(this.invalidPasswordMessage).toContainText(message)
-    }
-    if (message === 'Account not found') {
+    if (message === 'Account not found or the provided credentials are incorrect') {
       await expect(this.accountNotFoundMessage).toContainText(message)
     }
   }
 
-  async clickOnLoginWithPassword (): Promise<void> {
-    await this.loginWithPassword.click()
-  }
-
   async checkIfUserIsLoggedIn (credentials: string): Promise<void> {
-    if (credentials === 'wrong-password') {
+    if (credentials === 'wrong-email' || credentials === 'wrong-password') {
       await expect(this.buttonLogin).toBeVisible()
-      await expect(this.page.getByText('Invalid password')).toBeVisible()
-    }
-
-    if (credentials === 'wrong-email') {
-      await expect(this.buttonLogin).toBeVisible()
-      await expect(this.page.getByText('Account not found')).toBeVisible()
+      await expect(this.page.getByText('Account not found or the provided credentials are incorrect')).toBeVisible()
     }
     if (credentials === 'correct-credentials') {
-      await expect(this.page.getByText('SanityTest')).toBeVisible()
+      await expect(this.page.getByText('sanity-ws')).toBeVisible()
     }
   }
 }
