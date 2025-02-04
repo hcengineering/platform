@@ -1,8 +1,8 @@
 {
   "name": "@hcengineering/communication-client-sqlite",
   "version": "0.1.0",
-  "main": "src/index.ts",
-  "module": "src/index.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "./types/index.d.ts",
   "type": "module",
   "files": [
