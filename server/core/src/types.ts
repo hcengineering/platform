@@ -572,6 +572,8 @@ export interface Session {
   searchFulltext: (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions) => Promise<void>
   tx: (ctx: ClientSessionCtx, tx: Tx) => Promise<void>
   loadChunk: (ctx: ClientSessionCtx, domain: Domain, idx?: number) => Promise<void>
+
+  getDomainHash: (ctx: ClientSessionCtx, domain: Domain) => Promise<void>
   closeChunk: (ctx: ClientSessionCtx, idx: number) => Promise<void>
   loadDocs: (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
   upload: (ctx: ClientSessionCtx, domain: Domain, docs: Doc[]) => Promise<void>

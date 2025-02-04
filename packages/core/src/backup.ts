@@ -26,5 +26,7 @@ export interface BackupClient {
   upload: (domain: Domain, docs: Doc[]) => Promise<void>
   clean: (domain: Domain, docs: Ref<Doc>[]) => Promise<void>
 
+  getDomainHash: (domain: Domain) => Promise<string>
+
   sendForceClose: () => Promise<void>
 }

@@ -22,6 +22,7 @@ import core, {
   type Class,
   type Doc,
   type DocumentQuery,
+  type Domain,
   type FindOptions,
   type FindResult,
   type Hierarchy,
@@ -88,6 +89,11 @@ class BenchmarkDbAdapter extends DummyDbAdapter {
     }
 
     return toFindResult<T>(result as T[])
+  }
+
+  getDomainHash (ctx: MeasureContext, domain: Domain): Promise<string> {
+    // Since benchmark coult not be changed.
+    return Promise.resolve('')
   }
 
   tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {

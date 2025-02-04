@@ -295,7 +295,7 @@
       "name": "Debug backup tool",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "backup-restore", "../../../hardware/dump/alex-staff-agency", "w-haiodo-alex-staff-c-673ee7ab-87df5406ea-2b8b4d", "--skip", "blob"],
+      "args": ["src/__start.ts", "backup", "../../../hardware/dump/githubcr", "w-haiodo-githubcr-67403799-de2a46aa46-beb3b2"],
       "env": {
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
@@ -305,12 +305,14 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         "TELEGRAM_DATABASE": "telegram-service"
       },
+      "smartStep": true,
+      "sourceMapRenames": true,
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/dev/tool",
       "protocol": "inspector",
       "outputCapture": "std",
-      "runtimeVersion": "20",
+      "runtimeVersion": "22",
       "showAsyncStacks": true
     },
     {
@@ -401,7 +403,7 @@
         "SECRET": "secret",
         "REGION": "cockroach",
         "BUCKET_NAME":"backups",
-        "INTERVAL":"43200"
+        "INTERVAL":"0"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "showAsyncStacks": true,

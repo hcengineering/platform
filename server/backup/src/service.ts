@@ -140,7 +140,7 @@ class BackupWorker {
       }
 
       const lastBackup = it.backupInfo?.lastBackup ?? 0
-      if ((now - lastBackup) / 1000 < this.config.Interval) {
+      if ((now - lastBackup) / 1000 < this.config.Interval && this.config.Interval !== 0) {
         // No backup required, interval not elapsed
         skipped++
         return false
@@ -187,7 +187,7 @@ class BackupWorker {
     ctx.warn('Preparing for BACKUP', {
       total: workspaces.length,
       skipped,
-      workspaces: workspaces.map((it) => it.uuid)
+      workspaces: workspaces.map((it) => it.url)
     })
 
     const part = workspaces.slice(0, 500)
@@ -222,26 +222,34 @@ class BackupWorker {
         ETA: Math.round((workspaces.length - processed) * avgTime)
       })
     }, 10000)
-    for (const ws of workspaces) {
-      await rateLimiter.add(async () => {
-        index++
-        if (this.canceled || Date.now() - startTime > recheckTimeout) {
-          return // If canceled, we should stop
-        }
-        const st = Date.now()
-        const result = await this.doBackup(ctx, ws)
-        const totalTime = Date.now() - st
-        times.push(totalTime)
-        if (!result) {
-          failedWorkspaces.push(ws)
-          return
-        }
-        processed++
-      })
-    }
 
-    await rateLimiter.waitProcessing()
-    clearInterval(infoTo)
+    try {
+      for (const ws of workspaces) {
+        await rateLimiter.add(async () => {
+          try {
+            index++
+            if (this.canceled || Date.now() - startTime > recheckTimeout) {
+              return // If canceled, we should stop
+            }
+            const st = Date.now()
+            const result = await this.doBackup(ctx, ws)
+            const totalTime = Date.now() - st
+            times.push(totalTime)
+            if (!result) {
+              failedWorkspaces.push(ws)
+              return
+            }
+            processed++
+          } catch (err: any) {
+            ctx.error('Backup failed', { err })
+          }
+        })
+      }
+
+      await rateLimiter.waitProcessing()
+    } finally {
+      clearInterval(infoTo)
+    }
     return { failedWorkspaces, processed, skipped: workspaces.length - processed }
   }
 

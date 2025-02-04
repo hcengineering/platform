@@ -33,7 +33,8 @@ import {
   type TxResult,
   type Blob,
   type WorkspaceIds,
-  type WorkspaceDataId
+  type WorkspaceDataId,
+  generateId
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import {
@@ -121,6 +122,11 @@ class StorageBlobAdapter implements DbAdapter {
       }
     }
     return blobs
+  }
+
+  getDomainHash (ctx: MeasureContext, domain: Domain): Promise<string> {
+    // TODO: Check if possible to ask storage if there any changes.
+    return Promise.resolve(generateId())
   }
 
   async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {

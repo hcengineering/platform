@@ -804,6 +804,10 @@ class Connection implements ClientConnection {
     return this.sendRequest({ method: 'loadChunk', params: [domain, idx] })
   }
 
+  async getDomainHash (domain: Domain): Promise<string> {
+    return await this.sendRequest({ method: 'getDomainHash', params: [domain] })
+  }
+
   closeChunk (idx: number): Promise<void> {
     return this.sendRequest({ method: 'closeChunk', params: [idx] })
   }
