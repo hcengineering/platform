@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,11 +15,12 @@
 <script lang="ts">
   import { DrawingCmd } from '@hcengineering/presentation'
   import textEditor from '@hcengineering/text-editor'
-  import { Dialog, FocusHandler, createFocusManager } from '@hcengineering/ui'
+  import { Dialog } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { Array as YArray, Map as YMap } from 'yjs'
   import DrawingBoardEditor from './DrawingBoardEditor.svelte'
 
+  export let boardId: string
   export let savedCmds: YArray<DrawingCmd>
   export let savedProps: YMap<any>
   export let readonly = false
@@ -42,6 +43,6 @@
       dispatch('close')
     }}
   >
-    <DrawingBoardEditor {savedCmds} {savedProps} {readonly} grabFocus />
+    <DrawingBoardEditor {boardId} {savedCmds} {savedProps} {readonly} grabFocus />
   </Dialog>
 {/if}

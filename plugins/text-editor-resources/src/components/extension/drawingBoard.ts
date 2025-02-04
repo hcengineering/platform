@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -32,11 +32,12 @@ export interface SavedBoard {
   loading: boolean
 }
 
-export function showBoardPopup (board: SavedBoard, editor: Editor): void {
+export function showBoardPopup (id: string, board: SavedBoard, editor: Editor): void {
   if (board.commands !== undefined && board.props !== undefined) {
     showPopup(
       DrawingBoardPopup,
       {
+        boardId: id,
         savedCmds: board.commands,
         savedProps: board.props,
         readonly: !editor.isEditable
@@ -105,7 +106,7 @@ export const DrawingBoardExtension = Node.create<DrawingBoardOptions>({
               if (node?.type.name === this.name) {
                 const board = this.options.getSavedBoard(node.attrs.id)
                 if (!board.loading) {
-                  showBoardPopup(board, this.editor)
+                  showBoardPopup(node.attrs.id, board, this.editor)
                 }
                 return true
               }

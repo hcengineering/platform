@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -21,10 +21,13 @@
     drawing,
     makeCommandId
   } from '@hcengineering/presentation'
+  import presence from '@hcengineering/presence'
+  import { getResource } from '@hcengineering/platform'
   import { Loading } from '@hcengineering/ui'
   import { onMount, onDestroy } from 'svelte'
   import { Array as YArray, Map as YMap } from 'yjs'
 
+  export let boardId: string
   export let savedCmds: YArray<DrawingCmd>
   export let savedProps: YMap<any>
   export let grabFocus = false
@@ -46,9 +49,12 @@
   let toolbar: HTMLDivElement
   let oldSelected = false
   let oldReadonly = false
+  let sendLiveData: ((key: string, data: any, force: boolean) => void) | undefined = undefined
+  const dataKey = 'drawing-board'
 
   $: onSelectedChanged(selected)
   $: onReadonlyChanged(readonly)
+  $: onOffsetChanged(offset)
 
   function listenSavedCommands (): void {
     commands = savedCmds.toArray()
@@ -133,16 +139,48 @@
     }
   }
 
+  function onOffsetChanged (offset: { x: number, y: number }): void {
+    if (sendLiveData !== undefined) {
+      sendLiveData(dataKey, { boardId, offset: { ...offset } }, true)
+    }
+  }
+
+  function onLiveData (data: any): void {
+    if (data.boardId === boardId) {
+      const newOffset = data.offset
+      if (newOffset !== undefined && newOffset.x !== offset.x && newOffset.y !== offset.y) {
+        offset = { ...newOffset }
+      }
+    }
+  }
+
   onMount(() => {
     commands = savedCmds.toArray()
     // offset = savedProps.get('offset')
     savedCmds.observe(listenSavedCommands)
     savedProps.observe(listenSavedProps)
+
+    getResource(presence.function.SendMyData).then((func) => {
+      sendLiveData = func
+    }).catch((err) => {
+      console.error(err)
+    })
+    getResource(presence.function.SubscribeToOtherData).then((subscribe) => {
+      subscribe(dataKey, onLiveData)
+    }).catch((err) => {
+      console.error(err)
+    })
   })
 
   onDestroy(() => {
     savedCmds.unobserve(listenSavedCommands)
     savedProps.unobserve(listenSavedProps)
+
+    getResource(presence.function.UnsubscribeFromOtherData).then((unsubscribe) => {
+      unsubscribe(dataKey, onLiveData)
+    }).catch((err) => {
+      console.error(err)
+    })
   })
 </script>
 
@@ -186,7 +224,6 @@
         cmdDeleted: deleteCommand,
         panned: (newOffset) => {
           offset = newOffset
-          // savedProps.set('offset', offset)
         },
         editorCreated: (editor) => {
           cmdEditor = editor
@@ -212,7 +249,6 @@
           on:clear={() => {
             savedCmds.delete(0, savedCmds.length)
             offset = { x: 0, y: 0 }
-            // savedProps.set('offset', { x: 0, y: 0 })
           }}
         />
       {/if}
