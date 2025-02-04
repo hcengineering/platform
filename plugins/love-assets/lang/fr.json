@@ -82,7 +82,7 @@
     "StartWithRecording": "Démarrer avec l'enregistrement",
     "Language": "Langue",
     "Kick": "Expulser",
-    "WithAudio": "Avec audio",
-    "ShareWithAudioTooltip": "Partager avec audio, vous devez partager à nouveau pour appliquer les modifications"
+    "WithAudio": "Inclure l'audio du système",
+    "ShareWithAudioTooltip": "Partagez votre écran avec l'audio du système. Redémarrez le partage d’écran pour appliquer les modifications."
   }
 }

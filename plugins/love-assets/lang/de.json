@@ -80,7 +80,7 @@
     "Finished": "Beendet",
     "StartWithRecording": "Mit Aufnahme starten",
     "Language": "Sprache",
-    "WithAudio": "Mit Audio",
-    "ShareWithAudioTooltip": "Mit Audio teilen, Sie müssen erneut teilen, um die Änderungen zu übernehmen"
+    "WithAudio": "Systemaudio einschließen",
+    "ShareWithAudioTooltip": "Teile deinen Bildschirm mit Systemaudio. Starte die Bildschirmfreigabe neu, um Änderungen anzuwenden."
   }
 }
