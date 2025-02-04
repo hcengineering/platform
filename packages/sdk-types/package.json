@@ -1,26 +1,26 @@
 {
   "name": "@hcengineering/communication-sdk-types",
-  "version": "0.1.0",
-  "main": "src/index.ts",
-  "module": "src/index.ts",
+  "version": "0.1.1",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./types/index.d.ts",
   "type": "module",
   "files": [
-    "./dist",
-    "./types"
+    "dist/index.js",
+    "types/**/*.d.ts"
   ],
   "devDependencies": {
     "@types/bun": "^1.1.14"
   },
   "dependencies": {
-    "@hcengineering/communication-types": "workspace:*"
+    "@hcengineering/communication-types": "^0.1.0"
   },
   "peerDependencies": {
     "typescript": "^5.6.3"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hcengineering/communication.git"
+    "url": "git+https://github.com/hcengineering/communication.git",
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
