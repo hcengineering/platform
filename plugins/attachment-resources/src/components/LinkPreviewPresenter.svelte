@@ -66,7 +66,7 @@
 
 <div class="content">
   {#if viewModel}
-    <div class="flex-row-center title">
+    <div class="title">
       {#if viewModel.icon !== undefined && !useDefaultIcon}
         <img
           src={viewModel.icon}
@@ -79,7 +79,7 @@
       {:else}
         <WebIcon size="small" />
       {/if}
-      <b><a target="_blank" href={viewModel.host}>{viewModel.hostname}</a></b>
+      <b><a class="link" target="_blank" href={viewModel.host}>{viewModel.hostname}</a></b>
       {#if isOwn}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <span
@@ -87,19 +87,26 @@
           tabindex="0"
           role="button"
           on:click={() => {
-            onDelete()
+            void onDelete()
           }}><TrashIcon size="small" /></span
         >
       {/if}
     </div>
-    <div class="description text-markup-view">
+    <div class="description">
       {#if viewModel.title?.toLowerCase() !== viewModel.hostname?.toLowerCase()}
-        <b><a target="_blank" href={viewModel.url}>{viewModel.title}</a></b>
+        <div>
+          <b><a class="link" target="_blank" href={viewModel.url}>{viewModel.title}</a></b>
+        </div>
       {/if}
+
       {#if viewModel.description}
-        {viewModel.description}
+        <div>
+          {viewModel.description}
+        </div>
       {/if}
-      {#if previewImageSrc}
+    </div>
+    {#if previewImageSrc}
+      <div>
         <a target="_blank" href={viewModel.url}>
           <img
             src={previewImageSrc}
@@ -110,8 +117,8 @@
             }}
           />
         </a>
-      {/if}
-    </div>
+      </div>
+    {/if}
   {:else}
     <div class="centered">
       <Spinner size="medium" />
@@ -128,22 +135,25 @@
     color: var(--theme-link-preview-description-color);
   }
   .round-image {
-    border-radius: 6px;
+    margin-top: 0.5rem;
+    border-radius: 0.375rem;
     max-width: 24.5rem;
-    max-height: 13rem;
+    max-height: 15rem;
   }
   .preview-icon {
     width: 16px;
     height: 16px;
   }
+  .link {
+    color: var(--theme-link-preview-text-color);
+  }
   .title {
-    gap: 6px;
+    gap: 0.375rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
   }
   .description {
-    flex-direction: column;
-    display: flex;
-    align-items: flex-start;
-    gap: 4 px;
     color: var(--theme-link-preview-description-color);
   }
   .content span {
@@ -153,15 +163,16 @@
     display: block;
   }
   .content {
-    display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding: 12px;
+    display: flex;
+    line-height: 150%;
+    gap: 0.188rem;
+    padding: 0.75rem;
     background-color: var(--theme-link-preview-bg-color);
-    border-radius: 12px;
+    border-radius: 0.75rem;
     scroll-snap-align: start;
     max-width: 26rem;
-    max-height: 26rem;
+    max-height: 28rem;
     font-family: var(--font-family);
   }
 </style>
