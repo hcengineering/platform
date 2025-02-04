@@ -583,7 +583,7 @@ export const notificationOperation: MigrateOperation = {
         }
       },
       {
-        state: 'migrate-duplicated-contexts-v3',
+        state: 'migrate-duplicated-contexts-v4',
         func: migrateDuplicateContexts
       },
       {
