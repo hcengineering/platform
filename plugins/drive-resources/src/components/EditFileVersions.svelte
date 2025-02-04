@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { FindOptions, SortingOrder } from '@hcengineering/core'
+  import { FindOptions, SortingOrder } from '@hcengineering/core'
   import { type File, type FileVersion } from '@hcengineering/drive'
   import { Scroller, Section } from '@hcengineering/ui'
   import { Table } from '@hcengineering/view-resources'
@@ -24,6 +24,9 @@
   export let readonly: boolean = false
 
   const options: FindOptions<FileVersion> = {
+    lookup: {
+      attachedTo: drive.class.File
+    },
     sort: { version: SortingOrder.Descending }
   }
 </script>
