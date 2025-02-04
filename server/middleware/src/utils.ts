@@ -42,12 +42,16 @@ export function filterBroadcastOnly (tx: Tx[], hierarchy: Hierarchy): Tx[] {
       if (bonly === true) {
         return false
       }
-      const objClass = hierarchy.getClass(cud.objectClass)
-      const mix = hierarchy.hasMixin(objClass, core.mixin.TransientConfiguration)
-      if (mix && hierarchy.as(objClass, core.mixin.TransientConfiguration).broadcastOnly) {
-        hierarchy.setClassifierProp(cud.objectClass, 'broadcastOnly', true)
-        // We do not need to store a broadcast only transactions into model.
-        return false
+      try {
+        const objClass = hierarchy.getClass(cud.objectClass)
+        const mix = hierarchy.hasMixin(objClass, core.mixin.TransientConfiguration)
+        if (mix && hierarchy.as(objClass, core.mixin.TransientConfiguration).broadcastOnly) {
+          hierarchy.setClassifierProp(cud.objectClass, 'broadcastOnly', true)
+          // We do not need to store a broadcast only transactions into model.
+          return false
+        }
+      } catch {
+        return true
       }
     }
     return true

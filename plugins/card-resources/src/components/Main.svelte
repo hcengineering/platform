@@ -20,6 +20,7 @@
   import card from '../plugin'
   import Navigator from './Navigator.svelte'
   import { onDestroy } from 'svelte'
+  import { IntlString } from '@hcengineering/platform'
 
   export let currentSpace: Ref<Class<Doc>> = card.class.Card
 
@@ -27,8 +28,14 @@
 
   const client = getClient()
 
-  $: clazz = client.getHierarchy().getClass(_class)
-  $: label = clazz.label
+  $: label = getLabel(_class)
+
+  function getLabel (_class: Ref<Class<Doc>> | undefined): IntlString | undefined {
+    try {
+      const clazz = _class !== undefined ? client.getHierarchy().getClass(_class) : undefined
+      return clazz?.label
+    } catch {}
+  }
 
   let replacedPanel: HTMLElement
   $: $deviceInfo.replacedPanel = replacedPanel
@@ -49,6 +56,8 @@
   {/if}
 
   <div class="hulyComponent" bind:this={replacedPanel}>
-    <SpecialView {_class} {label} icon={card.icon.Card} />
+    {#if _class !== undefined && label !== undefined}
+      <SpecialView {_class} {label} icon={card.icon.Card} />
+    {/if}
   </div>
 </div>

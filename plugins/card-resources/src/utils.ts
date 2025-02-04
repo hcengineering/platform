@@ -54,11 +54,13 @@ export async function deleteMasterTag (tag: MasterTag | undefined): Promise<void
             }
             const desc = hierarchy.getDescendants(tag._id)
             for (const obj of desc) {
+              if (obj === tag._id) continue
+              if (!hierarchy.isMixin(obj)) continue
               const desc = hierarchy.getClass(obj)
               await ops.remove(desc)
             }
-            await ops.remove(tag)
             await ops.commit()
+            await client.remove(tag)
           }
         })
       } else {
@@ -71,6 +73,7 @@ export async function deleteMasterTag (tag: MasterTag | undefined): Promise<void
             const hierarchy = client.getHierarchy()
             const desc = hierarchy.getDescendants(tag._id)
             for (const obj of desc) {
+              if (obj === tag._id) continue
               const desc = hierarchy.getClass(obj)
               await ops.remove(desc)
             }
@@ -81,12 +84,21 @@ export async function deleteMasterTag (tag: MasterTag | undefined): Promise<void
             for (const obj of cards) {
               await ops.update(obj, { $unset: update })
             }
-            await ops.remove(tag)
             await ops.commit()
+            await client.remove(tag)
           }
         })
       }
     } else {
+      const ops = client.apply(undefined, 'delete-tag')
+      const hierarchy = client.getHierarchy()
+      const desc = hierarchy.getDescendants(tag._id)
+      for (const obj of desc) {
+        if (obj === tag._id) continue
+        const desc = hierarchy.getClass(obj)
+        await ops.remove(desc)
+      }
+      await ops.commit()
       await client.remove(tag)
     }
   }
