@@ -2,8 +2,6 @@ import cors from 'cors'
 import express, { type Express } from 'express'
 import { Server } from 'http'
 
-import { ApiError } from './error'
-
 export function createServer (): Express {
     const app = express()
 

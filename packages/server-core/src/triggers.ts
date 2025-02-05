@@ -21,7 +21,7 @@ export class Triggers {
   }
 
   private async createNotifications(event: MessageCreatedEvent, workspace: string): Promise<BroadcastEvent[]> {
-    const card = event.message.thread as any as CardID
+    const card = event.message.card as any as CardID
     const subscribedPersonalWorkspaces = [
       'cd0aba36-1c4f-4170-95f2-27a12a5415f7',
       'cd0aba36-1c4f-4170-95f2-27a12a5415f8'

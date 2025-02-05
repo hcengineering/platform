@@ -1,6 +1,8 @@
-export type CardID = string & { card: true }
+import type { Card, Ref, Blob } from '@hcengineering/core'
+
+export type BlobID = Ref<Blob>
+export type CardID = Ref<Card>
 export type SocialID = string & { social: true }
-export type ThreadID = string & { thread: true }
 export type RichText = string
 
 export type ID = string
@@ -13,11 +15,19 @@ interface Object {
 
 export interface Message extends Object {
   id: MessageID
-  thread: ThreadID
+  card: CardID
   content: RichText
   edited: Date
   reactions: Reaction[]
   attachments: Attachment[]
+}
+
+export interface MessagesGroup {
+  card: CardID
+  startAt: Date
+  endAt: Date
+  blobId: Ref<Blob>
+  count: number
 }
 
 export interface Patch extends Object {

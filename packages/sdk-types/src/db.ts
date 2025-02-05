@@ -11,13 +11,13 @@ import type {
   RichText,
   SocialID,
   Notification,
-  ThreadID
+  BlobID
 } from '@hcengineering/communication-types'
 
 export interface DbAdapter {
   createMessage(
     workspace: string,
-    thread: ThreadID,
+    card: CardID,
     content: RichText,
     creator: SocialID,
     created: Date
@@ -25,11 +25,20 @@ export interface DbAdapter {
   removeMessage(id: MessageID): Promise<void>
   createPatch(message: MessageID, content: RichText, creator: SocialID, created: Date): Promise<void>
 
+  createMessagesGroup(
+    workspace: string,
+    card: CardID,
+    startAt: Date,
+    endAt: Date,
+    blobId: BlobID,
+    count: number
+  ): Promise<void>
+
   createReaction(message: MessageID, reaction: string, creator: SocialID, created: Date): Promise<void>
   removeReaction(message: MessageID, reaction: string, creator: SocialID): Promise<void>
 
-  createAttachment(message: MessageID, card: CardID, creator: SocialID, created: Date): Promise<void>
-  removeAttachment(message: MessageID, card: CardID): Promise<void>
+  createAttachment(message: MessageID, attachment: CardID, creator: SocialID, created: Date): Promise<void>
+  removeAttachment(message: MessageID, attachment: CardID): Promise<void>
 
   findMessages(workspace: string, query: FindMessagesParams): Promise<Message[]>
 

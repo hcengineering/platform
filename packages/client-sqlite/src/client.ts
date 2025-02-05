@@ -11,7 +11,6 @@ import {
   type NotificationContext,
   type FindNotificationsParams,
   type Notification,
-  type ThreadID,
   type Attachment,
   type Reaction
 } from '@hcengineering/communication-types'
@@ -33,15 +32,15 @@ class DbClient implements Client {
     private readonly personalWorkspace: string
   ) {}
 
-  async createMessage(thread: ThreadID, content: RichText, creator: SocialID): Promise<MessageID> {
+  async createMessage(card: CardID, content: RichText, creator: SocialID): Promise<MessageID> {
     const created = new Date()
-    const id = await this.db.createMessage(this.workspace, thread, content, creator, created)
+    const id = await this.db.createMessage(this.workspace, card, content, creator, created)
 
     const event: MessageCreatedEvent = {
       type: EventType.MessageCreated,
       message: {
         id,
-        thread,
+        card,
         content,
         creator,
         created,
@@ -56,37 +55,41 @@ class DbClient implements Client {
     return id
   }
 
-  async removeMessage(thread: ThreadID, message: MessageID) {
+  async removeMessage(card: CardID, message: MessageID) {
     await this.db.removeMessage(message)
-    this.onEvent({ type: EventType.MessageRemoved, message, thread })
+    this.onEvent({ type: EventType.MessageRemoved, message, card })
   }
 
-  async createPatch(thread: ThreadID, message: MessageID, content: RichText, creator: SocialID): Promise<void> {
+  async createPatch(card: CardID, message: MessageID, content: RichText, creator: SocialID): Promise<void> {
     const created = new Date()
     await this.db.createPatch(message, content, creator, created)
-    this.onEvent({ type: EventType.PatchCreated, thread, patch: { message, content, creator, created } })
+    this.onEvent({ type: EventType.PatchCreated, card, patch: { message, content, creator, created } })
   }
 
-  async createReaction(thread: ThreadID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
+  async createReaction(card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
     const created = new Date()
     await this.db.createReaction(message, reaction, creator, created)
-    this.onEvent({ type: EventType.ReactionCreated, thread, reaction: { message, reaction, creator, created } })
+    this.onEvent({ type: EventType.ReactionCreated, card, reaction: { message, reaction, creator, created } })
   }
 
-  async removeReaction(thread: ThreadID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
+  async removeReaction(card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
     await this.db.removeReaction(message, reaction, creator)
-    this.onEvent({ type: EventType.ReactionRemoved, thread, message, reaction, creator })
+    this.onEvent({ type: EventType.ReactionRemoved, card, message, reaction, creator })
   }
 
-  async createAttachment(thread: ThreadID, message: MessageID, card: CardID, creator: SocialID): Promise<void> {
+  async createAttachment(card: CardID, message: MessageID, attachment: CardID, creator: SocialID): Promise<void> {
     const created = new Date()
     await this.db.createAttachment(message, card, creator, created)
-    this.onEvent({ type: EventType.AttachmentCreated, thread, attachment: { message, card, creator, created } })
+    this.onEvent({
+      type: EventType.AttachmentCreated,
+      card,
+      attachment: { message, card: attachment, creator, created }
+    })
   }
 
-  async removeAttachment(thread: ThreadID, message: MessageID, card: CardID): Promise<void> {
+  async removeAttachment(card: CardID, message: MessageID, attachment: CardID): Promise<void> {
     await this.db.removeAttachment(message, card)
-    this.onEvent({ type: EventType.AttachmentRemoved, message, card, thread })
+    this.onEvent({ type: EventType.AttachmentRemoved, message, card, attachment })
   }
 
   async findMessages(params: FindMessagesParams): Promise<Message[]> {
@@ -101,7 +104,7 @@ class DbClient implements Client {
   toMessage(raw: any): Message {
     return {
       id: raw.id,
-      thread: raw.thread,
+      card: raw.card,
       content: raw.content,
       creator: raw.creator,
       created: new Date(raw.created),

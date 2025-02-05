@@ -72,10 +72,10 @@ export class EventProcessor {
 
   private async createMessage(_personalWorkspace: string, event: CreateMessageEvent): Promise<Result> {
     const created = new Date()
-    const id = await this.db.createMessage(this.workspace, event.thread, event.content, event.creator, created)
+    const id = await this.db.createMessage(this.workspace, event.card, event.content, event.creator, created)
     const message: Message = {
       id,
-      thread: event.thread,
+      card: event.card,
       content: event.content,
       creator: event.creator,
       created: created,
@@ -105,7 +105,7 @@ export class EventProcessor {
     }
     const broadcastEvent: PatchCreatedEvent = {
       type: EventType.PatchCreated,
-      thread: event.thread,
+      card: event.card,
       patch
     }
     return {
@@ -119,7 +119,7 @@ export class EventProcessor {
 
     const broadcastEvent: MessageRemovedEvent = {
       type: EventType.MessageRemoved,
-      thread: event.thread,
+      card: event.card,
       message: event.message
     }
 
@@ -141,7 +141,7 @@ export class EventProcessor {
     }
     const broadcastEvent: ReactionCreatedEvent = {
       type: EventType.ReactionCreated,
-      thread: event.thread,
+      card: event.card,
       reaction
     }
     return {
@@ -154,7 +154,7 @@ export class EventProcessor {
     await this.db.removeReaction(event.message, event.reaction, event.creator)
     const broadcastEvent: ReactionRemovedEvent = {
       type: EventType.ReactionRemoved,
-      thread: event.thread,
+      card: event.card,
       message: event.message,
       reaction: event.reaction,
       creator: event.creator
@@ -177,7 +177,7 @@ export class EventProcessor {
     }
     const broadcastEvent: AttachmentCreatedEvent = {
       type: EventType.AttachmentCreated,
-      thread: event.thread,
+      card: event.card,
       attachment
     }
 
@@ -191,9 +191,9 @@ export class EventProcessor {
     await this.db.removeAttachment(event.message, event.card)
     const broadcastEvent: AttachmentRemovedEvent = {
       type: EventType.AttachmentRemoved,
-      thread: event.thread,
+      card: event.card,
       message: event.message,
-      card: event.card
+      attachment: event.attachment
     }
     return {
       broadcastEvent,

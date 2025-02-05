@@ -94,66 +94,66 @@ export class Manager {
     data.contextQueries.delete(queryId)
   }
 
-  closeSession(sessionId: string): void {
-    this.dataBySessionId.delete(sessionId)
-  }
+  // closeSession(sessionId: string): void {
+  //   this.dataBySessionId.delete(sessionId)
+  // }
 
-  async next(event: BroadcastEvent, workspace: string): Promise<void> {
-    // await this.broadcast(event, workspace)
-    // const derived = await this.triggers.process(event, workspace)
-    // const derivedPromises: Promise<void>[] = []
-    // for (const d of derived) {
-    //   derivedPromises.push(this.next(d, workspace))
-    // }
-    // await Promise.all(derivedPromises)
-  }
+  // async next(event: BroadcastEvent, workspace: string): Promise<void> {
+  //   // await this.broadcast(event, workspace)
+  //   // const derived = await this.triggers.process(event, workspace)
+  //   // const derivedPromises: Promise<void>[] = []
+  //   // for (const d of derived) {
+  //   //   derivedPromises.push(this.next(d, workspace))
+  //   // }
+  //   // await Promise.all(derivedPromises)
+  // }
 
-  private async broadcast(event: BroadcastEvent, workspace: string): Promise<void> {
-    // const sessions = this.sessionsByWorkspace.get(workspace) ?? []
-    // const response: Response = { result: event }
-    // for (const session of sessions) {
-    //   const msg = serializeResponse(response, session.session.binary)
-    //   if (this.match(event, session)) {
-    //     session.ws.send(msg)
-    //   }
-    // }
-  }
+  // private async broadcast(event: BroadcastEvent, workspace: string): Promise<void> {
+  //   // const sessions = this.sessionsByWorkspace.get(workspace) ?? []
+  //   // const response: Response = { result: event }
+  //   // for (const session of sessions) {
+  //   //   const msg = serializeResponse(response, session.session.binary)
+  //   //   if (this.match(event, session)) {
+  //   //     session.ws.send(msg)
+  //   //   }
+  //   // }
+  // }
 
   private match(event: BroadcastEvent, info: SessionInfo): boolean {
     switch (event.type) {
       case EventType.MessageCreated:
         return this.matchMessagesQuery(
-          { id: event.message.id, thread: event.message.thread },
+          { id: event.message.id, card: event.message.card },
           Array.from(info.messageQueries.values())
         )
       case EventType.PatchCreated:
         return this.matchMessagesQuery(
-          { thread: event.thread, id: event.patch.message },
+          { card: event.card, id: event.patch.message },
           Array.from(info.messageQueries.values())
         )
       case EventType.MessageRemoved:
         return this.matchMessagesQuery(
-          { thread: event.thread, id: event.message },
+          { card: event.card, id: event.message },
           Array.from(info.messageQueries.values())
         )
       case EventType.ReactionCreated:
         return this.matchMessagesQuery(
-          { thread: event.thread, id: event.reaction.message },
+          { card: event.card, id: event.reaction.message },
           Array.from(info.messageQueries.values())
         )
       case EventType.ReactionRemoved:
         return this.matchMessagesQuery(
-          { thread: event.thread, id: event.message },
+          { card: event.card, id: event.message },
           Array.from(info.messageQueries.values())
         )
       case EventType.AttachmentCreated:
         return this.matchMessagesQuery(
-          { thread: event.thread, id: event.attachment.message },
+          { card: event.card, id: event.attachment.message },
           Array.from(info.messageQueries.values())
         )
       case EventType.AttachmentRemoved:
         return this.matchMessagesQuery(
-          { thread: event.thread, id: event.message },
+          { card: event.card, id: event.message },
           Array.from(info.messageQueries.values())
         )
       case EventType.NotificationCreated:
@@ -175,12 +175,12 @@ export class Manager {
     }
   }
 
-  private matchMessagesQuery(params: { id?: MessageID; thread?: string }, queries: FindMessagesParams[]): boolean {
+  private matchMessagesQuery(params: { id?: MessageID; card?: string }, queries: FindMessagesParams[]): boolean {
     if (queries.length === 0) return false
 
     for (const query of queries) {
       if (query.id != null && query.id !== params.id) continue
-      if (query.thread != null && query.thread !== params.thread) continue
+      if (query.card != null && query.card !== params.card) continue
       return true
     }
 

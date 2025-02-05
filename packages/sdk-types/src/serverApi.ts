@@ -1,4 +1,5 @@
 import type { FindMessagesParams, Message, SocialID } from '@hcengineering/communication-types'
+
 import type { BroadcastEvent, EventResult, Event } from './event'
 
 export interface ConnectionInfo {

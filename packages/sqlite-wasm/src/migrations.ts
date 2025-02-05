@@ -12,7 +12,7 @@ async function migrationV1(worker: Sqlite3Worker1Promiser, dbId: string): Promis
             (
                 id           TEXT     NOT NULL,
                 workspace_id TEXT     NOT NULL,
-                thread_id    TEXT     NOT NULL,
+                card_id    TEXT     NOT NULL,
                 content      TEXT     NOT NULL,
                 creator      TEXT     NOT NULL,
                 created      DATETIME NOT NULL,

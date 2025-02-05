@@ -112,7 +112,7 @@
     },
     "packages/sdk-types": {
       "name": "@hcengineering/communication-sdk-types",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "dependencies": {
         "@hcengineering/communication-types": "^0.1.0",
       },
@@ -125,7 +125,7 @@
     },
     "packages/server-core": {
       "name": "@hcengineering/communication-server-core",
-      "version": "0.1.0",
+      "version": "0.1.2",
       "dependencies": {
         "@hcengineering/communication-cockroach": "workspace:*",
         "@hcengineering/communication-sdk-types": "workspace:*",
@@ -185,7 +185,10 @@
     },
     "packages/types": {
       "name": "@hcengineering/communication-types",
-      "version": "0.1.0",
+      "version": "0.1.2",
+      "dependencies": {
+        "@hcengineering/core": "0.6.411",
+      },
       "devDependencies": {
         "@types/bun": "^1.1.14",
       },

@@ -12,7 +12,7 @@ export enum TableName {
 export interface MessageDb {
     id: string
     workspace_id: string,
-    thread_id: string,
+    card_id: string,
     content: RichText,
     creator: SocialID,
     created: Date,

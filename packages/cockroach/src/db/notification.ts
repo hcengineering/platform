@@ -91,7 +91,7 @@ export class NotificationsDb extends BaseDb {
         const select = `
             SELECT n.message_id,
                    n.context,
-                   m.thread_id                 AS message_thread,
+                   m.card_id                 AS message_card,
                    m.content                   AS message_content,
                    m.creator                   AS message_creator,
                    m.created                   AS message_created,
@@ -209,7 +209,7 @@ export class NotificationsDb extends BaseDb {
         return {
             message: {
                 id: row.id,
-                thread: row.message_thread,
+                card: row.message_card,
                 content: lastPatch?.content ?? row.message_content,
                 creator: row.message_creator,
                 created,

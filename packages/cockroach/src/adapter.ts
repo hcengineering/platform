@@ -12,7 +12,7 @@ import {
   type NotificationContext,
   type FindNotificationsParams,
   type Notification,
-  type ThreadID
+  type BlobID
 } from '@hcengineering/communication-types'
 import type { DbAdapter } from '@hcengineering/communication-sdk-types'
 
@@ -34,12 +34,12 @@ export class CockroachAdapter implements DbAdapter {
 
   async createMessage(
     workspace: string,
-    thread: ThreadID,
+    card: CardID,
     content: RichText,
     creator: SocialID,
     created: Date
   ): Promise<MessageID> {
-    return await this.message.createMessage(workspace, thread, content, creator, created)
+    return await this.message.createMessage(workspace, card, content, creator, created)
   }
 
   async createPatch(message: MessageID, content: RichText, creator: SocialID, created: Date): Promise<void> {
@@ -50,6 +50,17 @@ export class CockroachAdapter implements DbAdapter {
     return await this.message.removeMessage(message)
   }
 
+  async createMessagesGroup(
+    workspace: string,
+    card: CardID,
+    startAt: Date,
+    endAt: Date,
+    blobId: BlobID,
+    count: number
+  ): Promise<void> {
+    return await this.message.createMessagesGroup(workspace, card, startAt, endAt, blobId, count)
+  }
+
   async createReaction(message: MessageID, reaction: string, creator: SocialID, created: Date): Promise<void> {
     return await this.message.createReaction(message, reaction, creator, created)
   }
@@ -58,12 +69,12 @@ export class CockroachAdapter implements DbAdapter {
     return await this.message.removeReaction(message, reaction, creator)
   }
 
-  async createAttachment(message: MessageID, card: CardID, creator: SocialID, created: Date): Promise<void> {
-    return await this.message.createAttachment(message, card, creator, created)
+  async createAttachment(message: MessageID, attachment: CardID, creator: SocialID, created: Date): Promise<void> {
+    return await this.message.createAttachment(message, attachment, creator, created)
   }
 
-  async removeAttachment(message: MessageID, card: CardID): Promise<void> {
-    return await this.message.removeAttachment(message, card)
+  async removeAttachment(message: MessageID, attachment: CardID): Promise<void> {
+    return await this.message.removeAttachment(message, attachment)
   }
 
   async findMessages(workspace: string, params: FindMessagesParams): Promise<Message[]> {

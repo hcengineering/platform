@@ -12,8 +12,7 @@ import {
   type NotificationContextUpdate,
   type Reaction,
   type RichText,
-  type SocialID,
-  type ThreadID
+  type SocialID
 } from '@hcengineering/communication-types'
 import {
   type BroadcastEvent,
@@ -56,10 +55,10 @@ class WsClient implements Client {
     }
   }
 
-  async createMessage(thread: ThreadID, content: RichText, creator: SocialID): Promise<MessageID> {
+  async createMessage(card: CardID, content: RichText, creator: SocialID): Promise<MessageID> {
     const event: CreateMessageEvent = {
       type: EventType.CreateMessage,
-      thread,
+      card,
       content,
       creator
     }
@@ -67,19 +66,19 @@ class WsClient implements Client {
     return (result as CreateMessageResult).id
   }
 
-  async removeMessage(thread: ThreadID, message: MessageID): Promise<void> {
+  async removeMessage(card: CardID, message: MessageID): Promise<void> {
     const event: RemoveMessageEvent = {
       type: EventType.RemoveMessage,
-      thread,
+      card,
       message
     }
     await this.sendEvent(event)
   }
 
-  async createPatch(thread: ThreadID, message: MessageID, content: RichText, creator: SocialID): Promise<void> {
+  async createPatch(card: CardID, message: MessageID, content: RichText, creator: SocialID): Promise<void> {
     const event: CreatePatchEvent = {
       type: EventType.CreatePatch,
-      thread,
+      card,
       message,
       content,
       creator
@@ -87,10 +86,10 @@ class WsClient implements Client {
     await this.sendEvent(event)
   }
 
-  async createReaction(thread: ThreadID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
+  async createReaction(card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
     const event: CreateReactionEvent = {
       type: EventType.CreateReaction,
-      thread,
+      card,
       message,
       reaction,
       creator
@@ -98,10 +97,10 @@ class WsClient implements Client {
     await this.sendEvent(event)
   }
 
-  async removeReaction(thread: ThreadID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
+  async removeReaction(card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
     const event: RemoveReactionEvent = {
       type: EventType.RemoveReaction,
-      thread,
+      card,
       message,
       reaction,
       creator
@@ -109,23 +108,23 @@ class WsClient implements Client {
     await this.sendEvent(event)
   }
 
-  async createAttachment(thread: ThreadID, message: MessageID, card: CardID, creator: SocialID): Promise<void> {
+  async createAttachment(card: CardID, message: MessageID, attachment: CardID, creator: SocialID): Promise<void> {
     const event: CreateAttachmentEvent = {
       type: EventType.CreateAttachment,
-      thread,
-      message,
       card,
+      message,
+      attachment,
       creator
     }
     await this.sendEvent(event)
   }
 
-  async removeAttachment(thread: ThreadID, message: MessageID, card: CardID): Promise<void> {
+  async removeAttachment(card: CardID, message: MessageID, attachment: CardID): Promise<void> {
     const event: RemoveAttachmentEvent = {
       type: EventType.RemoveAttachment,
-      thread,
+      card,
       message,
-      card
+      attachment
     }
     await this.sendEvent(event)
   }
@@ -138,7 +137,7 @@ class WsClient implements Client {
   toMessage(raw: any): Message {
     return {
       id: raw.id,
-      thread: raw.thread,
+      card: raw.card,
       content: raw.content,
       creator: raw.creator,
       created: new Date(raw.created),

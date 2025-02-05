@@ -1,20 +1,30 @@
-import type {CardID, ContextID, MessageID, RichText, SocialID, ThreadID } from "@hcengineering/communication-types"
+import type {ContextID, MessageID, RichText, SocialID, CardID, BlobID } from "@hcengineering/communication-types"
 
 export enum TableName {
-    Message = 'message',
-    Patch = 'patch',
-    Attachment = 'attachment',
-    Reaction = 'reaction',
-    Notification = 'notification',
-    NotificationContext = 'notification_context'
+    Message = 'c_message',
+    MessagesGroup = 'c_messages_group',
+    Patch = 'c_patch',
+    Attachment = 'c_attachment',
+    Reaction = 'c_reaction',
+    Notification = 'c_notification',
+    NotificationContext = 'c_notification_context'
 }
 
 export interface MessageDb {
     workspace_id: string,
-    thread_id: ThreadID,
+    card_id: CardID,
     content: RichText,
     creator: SocialID,
     created: Date,
+}
+
+export interface MessagesGroupDb {
+    workspace_id: string,
+    card_id: CardID,
+    start_at: Date,
+    end_at: Date,
+    blob_id: BlobID,
+    count: number
 }
 
 export interface PatchDb {

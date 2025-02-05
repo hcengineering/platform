@@ -80,7 +80,7 @@ export class MessagesQuery extends BaseQuery<Message, FindMessagesParams> {
         if (this.params.id != null && this.params.id !== message.id) {
             return false
         }
-        if (this.params.thread != null && this.params.thread !== message.thread) {
+        if (this.params.card != null && this.params.card !== message.card) {
             return false
         }
         return true

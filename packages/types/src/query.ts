@@ -1,4 +1,4 @@
-import type { CardID, MessageID, ThreadID } from './message'
+import type { CardID, MessageID } from './message'
 import type { ContextID } from './notification'
 
 export enum SortOrder {
@@ -31,7 +31,7 @@ interface FindParams {
 
 export interface FindMessagesParams extends FindParams {
   id?: MessageID
-  thread?: ThreadID
+  card?: CardID
 }
 
 export interface FindNotificationsParams extends FindParams {
