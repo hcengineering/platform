@@ -305,6 +305,8 @@ export function wrapAdapterToClient (ctx: MeasureContext, storageAdapter: DbAdap
       return { docs: [] }
     }
 
+    async sendRequest (): Promise<any> {}
+
     async close (): Promise<void> {}
 
     async loadChunk (domain: Domain): Promise<DocChunk> {

@@ -43,6 +43,7 @@ export interface Client extends Storage, FulltextStorage {
     options?: FindOptions<T>
   ) => Promise<WithLookup<T> | undefined>
   close: () => Promise<void>
+  getConnection?: () => ClientConnection
 }
 
 /**
@@ -69,6 +70,19 @@ export enum ClientConnectEvent {
   Refresh, // In case we detect query refresh is required
   Maintenance // In case workspace are in maintenance mode
 }
+
+export interface RequestData {
+  method: string
+  params: any[]
+  // If not defined, on reconnect with timeout, will retry automatically.
+  retry?: () => Promise<boolean>
+  handleResult?: (result: any) => Promise<void>
+  once?: boolean // Require handleResult to retrieve result
+  measure?: (time: number, result: any, serverTime: number, queue: number, toRecieve: number) => void
+  allowReconnect?: boolean
+  overrideId?: number
+}
+
 /**
  * @public
  */
@@ -82,6 +96,7 @@ export interface ClientConnection extends Storage, FulltextStorage, BackupClient
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
 
   getLastHash?: (ctx: MeasureContext) => Promise<string | undefined>
+  sendRequest: (data: RequestData) => Promise<any>
 }
 
 class ClientImpl implements Client, BackupClient {
@@ -90,6 +105,10 @@ class ClientImpl implements Client, BackupClient {
   model!: ModelDb
   private readonly appliedModelTransactions = new Set<Ref<Tx>>()
   constructor (private readonly conn: ClientConnection) {}
+
+  getConnection (): ClientConnection {
+    return this.conn
+  }
 
   setModel (hierarchy: Hierarchy, model: ModelDb): void {
     this.hierarchy = hierarchy
