@@ -81,6 +81,7 @@
     "msgpackr-extract": "^3.0.3",
     "@hcengineering/postgres": "^0.6.0",
     "snappy": "^7.2.2",
-    "@hcengineering/rpc": "^0.6.5"
+    "@hcengineering/rpc": "^0.6.5",
+    "@hcengineering/communication-server-core": "0.1.4"
   }
 }
