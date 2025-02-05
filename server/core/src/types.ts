@@ -126,6 +126,8 @@ export type BroadcastFunc = (
   exclude?: string[]
 ) => void
 
+export type BroadcastSessionsFunc = (ctx: MeasureContext, sessionIds: string[], result: any) => void
+
 /**
  * @public
  */
@@ -229,7 +231,11 @@ export type PipelineFactory = (
   branding: Branding | null
 ) => Promise<Pipeline>
 
-export type CommunicationApiFactory = (ctx: MeasureContext, ws: WorkspaceIds) => Promise<CommunicationApi | undefined>
+export type CommunicationApiFactory = (
+  ctx: MeasureContext,
+  ws: WorkspaceIds,
+  broadcastSessions: BroadcastSessionsFunc
+) => Promise<CommunicationApi | undefined>
 
 /**
  * @public
