@@ -128,8 +128,13 @@ export function start (
   const sessionFactory = (token: Token, workspace: Workspace, account: Account): Session => {
     return new ClientSession(token, workspace, account, token.extra?.mode === 'backup')
   }
-  const communicationApiFactory: CommunicationApiFactory = async (ctx, workspace) => {
-    return await CommunicationApi.create(ctx.newChild('💬 communication api', {}), workspace.uuid, dbUrl)
+  const communicationApiFactory: CommunicationApiFactory = async (ctx, workspace, broadcastSessions) => {
+    return await CommunicationApi.create(
+      ctx.newChild('💬 communication api', {}),
+      workspace.uuid,
+      dbUrl,
+      broadcastSessions
+    )
   }
 
   const { shutdown: onClose, sessionManager } = startSessionManager(metrics, {

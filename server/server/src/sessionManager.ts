@@ -648,6 +648,37 @@ export class TSessionManager implements SessionManager {
     }
   }
 
+  broadcastSessions (measure: MeasureContext, workspace: Workspace, sessionIds: string[], result: any): void {
+    if (workspace.upgrade) {
+      return
+    }
+    const ctx = measure.newChild('📬 broadcast sessions', {})
+    const sessions = [...workspace.sessions.values()].filter((it) => {
+      if (it === undefined || it.session.sessionId === '') {
+        return false
+      }
+      return sessionIds.includes(it.session.sessionId)
+    })
+
+    function send (): void {
+      for (const session of sessions) {
+        try {
+          void sendResponse(ctx, session.session, session.socket, { result })
+        } catch (err: any) {
+          Analytics.handleError(err)
+          ctx.error('error during send', { error: err })
+        }
+      }
+      ctx.end()
+    }
+    if (sessions.length > 0) {
+      // We need to send broadcast after our client response so put it after all IO
+      send()
+    } else {
+      ctx.end()
+    }
+  }
+
   broadcast (
     from: Session | null,
     workspaceId: WorkspaceUuid,
@@ -718,7 +749,9 @@ export class TSessionManager implements SessionManager {
         },
         branding
       ),
-      communicationApi: communicationApiFactory(pipelineCtx, workspaceIds),
+      communicationApi: communicationApiFactory(pipelineCtx, workspaceIds, (ctx, sessionIds, result) => {
+        this.broadcastSessions(ctx, workspace, sessionIds, result)
+      }),
       sessions: new Map(),
       softShutdown: workspaceSoftShutdownTicks,
       upgrade,

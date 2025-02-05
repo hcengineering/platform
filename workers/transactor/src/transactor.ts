@@ -154,8 +154,8 @@ export class Transactor extends DurableObject<Env> {
       })
       return await pipeline(ctx, ws, upgrade, broadcast, branding)
     }
-    this.communicationApiFactory = async (ctx, ws) => {
-      return await CommunicationApi.create(ctx.newChild('💬 communication api', {}), ws.uuid, dbUrl)
+    this.communicationApiFactory = async (ctx, ws, broadcastSessions) => {
+      return await CommunicationApi.create(ctx.newChild('💬 communication api', {}), ws.uuid, dbUrl, broadcastSessions)
     }
     void this.ctx
       .blockConcurrencyWhile(async () => {

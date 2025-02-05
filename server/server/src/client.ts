@@ -351,7 +351,7 @@ export class ClientSession implements Session {
       sessionId: this.sessionId,
       personalWorkspace: '' // TODO: add personal workspace
     }
-    const { result } = await ctx.communicationApi.event(data, event)
+    const result = await ctx.communicationApi.event(data, event)
     await ctx.sendResponse(ctx.requestId, result)
   }
 

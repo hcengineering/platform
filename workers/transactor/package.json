@@ -60,7 +60,7 @@
     "@hcengineering/notification": "^0.6.23",
     "@hcengineering/server-ai-bot": "^0.6.0",
     "@hcengineering/server-telegram": "^0.6.0",
-    "@hcengineering/communication-server-core": "0.1.4",
+    "@hcengineering/communication-server-core": "0.1.6",
     "itty-router": "^5.0.18",
     "snappyjs": "^0.7.0"
   }
