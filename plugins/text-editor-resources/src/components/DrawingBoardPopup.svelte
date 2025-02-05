@@ -43,6 +43,6 @@
       dispatch('close')
     }}
   >
-    <DrawingBoardEditor {boardId} {savedCmds} {savedProps} {readonly} grabFocus />
+    <DrawingBoardEditor {boardId} {savedCmds} {savedProps} {readonly} selected={true} grabFocus />
   </Dialog>
 {/if}

@@ -144,6 +144,12 @@ export function togglePersonFollowing (person: Ref<Person>): void {
         }
       }
     }
+  } else {
+    otherDataHandlers.values().forEach((handlers) => {
+      handlers.forEach((callback) => {
+        callback(undefined)
+      })
+    })
   }
 }
 

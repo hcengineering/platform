@@ -18,6 +18,7 @@
     DrawingCmd,
     DrawingTool,
     DrawTextCmd,
+    Point,
     drawing,
     makeCommandId
   } from '@hcengineering/presentation'
@@ -46,10 +47,13 @@
   let offset: { x: number, y: number } = { x: 0, y: 0 }
   let changingCmdId: string | undefined
   let cmdEditor: HTMLDivElement | undefined
+  let personCursorPos: Point | undefined
+  let personCursorVisible = false
   let toolbar: HTMLDivElement
   let oldSelected = false
   let oldReadonly = false
   let sendLiveData: ((key: string, data: any, force: boolean) => void) | undefined = undefined
+  let panning = false
   const dataKey = 'drawing-board'
 
   $: onSelectedChanged(selected)
@@ -58,12 +62,6 @@
 
   function listenSavedCommands (): void {
     commands = savedCmds.toArray()
-  }
-
-  function listenSavedProps (): void {
-    // We have only local offset for now
-    // A global offset should be implemented as a "Follow" feature
-    // offset = savedProps.get('offset')
   }
 
   function showCommandProps (id: string): void {
@@ -139,26 +137,46 @@
     }
   }
 
-  function onOffsetChanged (offset: { x: number, y: number }): void {
+  function onOffsetChanged (offset: Point): void {
     if (sendLiveData !== undefined) {
-      sendLiveData(dataKey, { boardId, offset: { ...offset } }, true)
+      console.log('onOffsetChanged', offset)
+      sendLiveData(dataKey, {
+        boardId,
+        offset: { ...offset }
+      }, true)
+    }
+  }
+
+  function onPointerMoved (canvasPos: Point): void {
+    if (sendLiveData !== undefined && selected && !panning) {
+      sendLiveData(dataKey, {
+        boardId,
+        cursorPos: { ...canvasPos }
+      }, true)
     }
   }
 
   function onLiveData (data: any): void {
+    if (data === undefined) {
+      personCursorVisible = false
+      return
+    }
     if (data.boardId === boardId) {
       const newOffset = data.offset
       if (newOffset !== undefined && newOffset.x !== offset.x && newOffset.y !== offset.y) {
         offset = { ...newOffset }
+      }
+      const cursorPos = data.cursorPos
+      if (cursorPos !== undefined) {
+        personCursorVisible = true
+        personCursorPos = { ...cursorPos }
       }
     }
   }
 
   onMount(() => {
     commands = savedCmds.toArray()
-    // offset = savedProps.get('offset')
     savedCmds.observe(listenSavedCommands)
-    savedProps.observe(listenSavedProps)
 
     getResource(presence.function.SendMyData).then((func) => {
       sendLiveData = func
@@ -174,7 +192,6 @@
 
   onDestroy(() => {
     savedCmds.unobserve(listenSavedCommands)
-    savedProps.unobserve(listenSavedProps)
 
     getResource(presence.function.UnsubscribeFromOtherData).then((unsubscribe) => {
       unsubscribe(dataKey, onLiveData)
@@ -211,6 +228,8 @@
         penWidth,
         eraserWidth,
         fontSize,
+        personCursorPos,
+        personCursorVisible,
         changingCmdId,
         cmdAdded: (cmd) => {
           savedCmds.push([cmd])
@@ -222,11 +241,18 @@
           changingCmdId = undefined
         },
         cmdDeleted: deleteCommand,
+        panning: () => {
+          panning = true
+        },
         panned: (newOffset) => {
+          panning = false
           offset = newOffset
         },
         editorCreated: (editor) => {
           cmdEditor = editor
+        },
+        pointerMoved: (canvasPos) => {
+          onPointerMoved(canvasPos)
         }
       }}
     >
