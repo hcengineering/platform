@@ -348,6 +348,10 @@
   --theme-clockface-arrows-holder: radial-gradient(at top center, #2F2F3A, #555555);
   --theme-clockface-arrows-shadow: 0 0 1px white;
 
+  --theme-link-preview-bg-color: #2B2D41;
+  --theme-link-preview-description-color: #C1C9D6;
+  --theme-link-preview-text-color:#FFFFFF;
+
   --theme-dialog-border-color: rgba(255, 255, 255, 0.1);
   --theme-dialog-background-color: #2a2938;
   --theme-dialog-back-color: #848484;
@@ -430,6 +434,10 @@
   --theme-bg-divider-color: #E3E3E5;
   --theme-mention-bg-color: rgba(55, 122, 230, 0.1);
   --theme-mention-focused-bg-color: rgba(55, 122, 230, 0.2);
+
+  --theme-link-preview-bg-color: #E5E8F0;
+  --theme-link-preview-description-color: #5A667E;
+  --theme-link-preview-text-color:#0F121A;
 
   --theme-trans-color: rgba(0, 0, 0, .3);
   --theme-darker-color: rgba(0, 0, 0, .4);
