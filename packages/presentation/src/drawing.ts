@@ -31,12 +31,16 @@ export interface DrawingProps {
   fontSize?: number
   defaultCursor?: string
   changingCmdId?: string
+  personCursorPos?: Point
+  personCursorVisible?: boolean
   cmdAdded?: (cmd: DrawingCmd) => void
   cmdChanging?: (id: string) => void
   cmdUnchanged?: (id: string) => void
   cmdChanged?: (cmd: DrawingCmd) => void
   cmdDeleted?: (id: string) => void
   editorCreated?: (editor: HTMLDivElement) => void
+  pointerMoved?: (canvasPos: Point) => void
+  panning?: (offset: Point) => void
   panned?: (offset: Point) => void
 }
 
@@ -62,7 +66,7 @@ export interface DrawLineCmd extends DrawingCmd {
 
 export type DrawingTool = 'pen' | 'erase' | 'pan' | 'text'
 
-interface Point {
+export interface Point {
   x: number
   y: number
 }
@@ -72,9 +76,14 @@ function avgPoint (p1: Point, p2: Point): Point {
 }
 
 const maxTextLength = 500
+const personCursorWidth = 20
 
 export const makeCommandId = (): string => {
   return crypto.randomUUID().toString()
+}
+
+function easeInOutCubic (x: number): number {
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2
 }
 
 const crossSvg = `<svg height="8" width="8" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -279,16 +288,32 @@ export function drawing (
     return {}
   }
 
-  const canvasCursor = document.createElement('div')
-  canvasCursor.style.visibility = 'hidden'
-  canvasCursor.style.position = 'absolute'
-  canvasCursor.style.borderRadius = '50%'
-  canvasCursor.style.border = 'none'
-  canvasCursor.style.cursor = 'none'
-  canvasCursor.style.pointerEvents = 'none'
-  canvasCursor.style.left = '50%'
-  canvasCursor.style.top = '50%'
-  node.appendChild(canvasCursor)
+  const toolCursor = document.createElement('div')
+  toolCursor.style.visibility = 'hidden'
+  toolCursor.style.position = 'absolute'
+  toolCursor.style.borderRadius = '50%'
+  toolCursor.style.border = 'none'
+  toolCursor.style.cursor = 'none'
+  toolCursor.style.pointerEvents = 'none'
+  toolCursor.style.left = '50%'
+  toolCursor.style.top = '50%'
+  node.appendChild(toolCursor)
+
+  const personCursor = document.createElement('div')
+  personCursor.style.visibility = 'hidden'
+  personCursor.style.background = 'red'
+  personCursor.style.position = 'absolute'
+  personCursor.style.borderRadius = '50%'
+  personCursor.style.border = 'none'
+  personCursor.style.cursor = 'none'
+  personCursor.style.pointerEvents = 'none'
+  personCursor.style.left = '50%'
+  personCursor.style.top = '50%'
+  personCursor.style.width = `${personCursorWidth}px`
+  personCursor.style.height = `${personCursorWidth}px`
+  node.appendChild(personCursor)
+  let personCursorVisible = false
+  let personCursorPos: Point = { x: 0, y: 0 }
 
   let readonly = props.readonly ?? false
   let prevPos: Point = { x: 0, y: 0 }
@@ -300,8 +325,9 @@ export function drawing (
   draw.eraserWidth = props.eraserWidth ?? draw.eraserWidth
   draw.fontSize = props.fontSize ?? draw.fontSize
   draw.offset = props.offset ?? draw.offset
+  let isOffsetAnimating = false
 
-  updateCanvasCursor()
+  updateToolCursor()
   updateCanvasTouchAction()
 
   interface LiveTextBox {
@@ -427,13 +453,13 @@ export function drawing (
 
   canvas.onpointerenter = () => {
     if (!readonly && draw.isDrawingTool()) {
-      canvasCursor.style.visibility = 'visible'
+      toolCursor.style.visibility = 'visible'
     }
   }
 
   canvas.onpointerleave = () => {
     if (!readonly && draw.isDrawingTool()) {
-      canvasCursor.style.visibility = 'hidden'
+      toolCursor.style.visibility = 'hidden'
     }
   }
 
@@ -449,14 +475,13 @@ export function drawing (
   function drawContinue (p: Point): void {
     if (draw.isDrawingTool()) {
       const w = draw.cursorWidth()
-      canvasCursor.style.left = `${p.x - w / 2}px`
-      canvasCursor.style.top = `${p.y - w / 2}px`
+      toolCursor.style.left = `${p.x - w / 2}px`
+      toolCursor.style.top = `${p.y - w / 2}px`
       if (draw.on) {
-        if (Math.hypot(prevPos.x - p.x, prevPos.y - p.y) < draw.minLineLength) {
-          return
+        if (Math.hypot(prevPos.x - p.x, prevPos.y - p.y) >= draw.minLineLength) {
+          draw.drawLive(p.x, p.y)
+          prevPos = p
         }
-        draw.drawLive(p.x, p.y)
-        prevPos = p
       }
     }
 
@@ -466,11 +491,18 @@ export function drawing (
         draw.offset.y += p.y - prevPos.y
         replayCommands()
         prevPos = p
+        if (props.panning !== undefined) {
+          props.panning(draw.offset)
+        }
       })
     }
 
     if (draw.on && draw.tool === 'text') {
       prevPos = p
+    }
+
+    if (props.pointerMoved !== undefined) {
+      props.pointerMoved(draw.mouseToCanvasPoint(p))
     }
   }
 
@@ -805,30 +837,43 @@ export function drawing (
     }
   }
 
-  function updateCanvasCursor (): void {
+  function updateToolCursor (): void {
     if (readonly) {
-      canvasCursor.style.visibility = 'hidden'
+      toolCursor.style.visibility = 'hidden'
       canvas.style.cursor = props.defaultCursor ?? 'default'
     } else if (draw.isDrawingTool()) {
       canvas.style.cursor = 'none'
-      canvasCursor.style.visibility = 'visible'
+      toolCursor.style.visibility = 'visible'
       const erasing = draw.tool === 'erase'
       const w = draw.cursorWidth()
-      canvasCursor.style.background = erasing ? 'none' : draw.penColor
-      canvasCursor.style.boxShadow = erasing
+      toolCursor.style.background = erasing ? 'none' : draw.penColor
+      toolCursor.style.boxShadow = erasing
         ? '0px 0px 1px 1px white inset, 0px 0px 2px 1px black'
         : '0px 0px 3px 0px var(--theme-button-contrast-enabled)'
-      canvasCursor.style.width = `${w}px`
-      canvasCursor.style.height = `${w}px`
+      toolCursor.style.width = `${w}px`
+      toolCursor.style.height = `${w}px`
     } else if (draw.tool === 'pan') {
       canvas.style.cursor = 'move'
-      canvasCursor.style.visibility = 'hidden'
+      toolCursor.style.visibility = 'hidden'
     } else if (draw.tool === 'text') {
       canvas.style.cursor = 'text'
-      canvasCursor.style.visibility = 'hidden'
+      toolCursor.style.visibility = 'hidden'
     } else {
       canvas.style.cursor = 'default'
-      canvasCursor.style.visibility = 'hidden'
+      toolCursor.style.visibility = 'hidden'
+    }
+  }
+
+  function updatePersonCursor (): void {
+    if (personCursorVisible) {
+      const p = draw.canvasToMousePoint(personCursorPos)
+      const x = Math.max(0, Math.min(p.x, canvas.width))
+      const y = Math.max(0, Math.min(p.y, canvas.height))
+      personCursor.style.left = `${x - personCursorWidth / 2}px`
+      personCursor.style.top = `${y - personCursorWidth / 2}px`
+      personCursor.style.visibility = 'visible'
+    } else {
+      personCursor.style.visibility = 'hidden'
     }
   }
 
@@ -850,12 +895,15 @@ export function drawing (
     canvas,
 
     update (props: DrawingProps) {
-      let replay = false
       let offsetDelta: Point | undefined
+      let replay = false
+      let syncToolCursor = false
+      let syncPersonCursor = false
+      let syncLiveTextBox = false
       if (props.offset !== undefined) {
         const deltaX = props.offset.x - draw.offset.x
         const deltaY = props.offset.y - draw.offset.y
-        if (deltaX !== 0 || deltaY !== 0) {
+        if (!isOffsetAnimating && (deltaX !== 0 || deltaY !== 0)) {
           if (Math.hypot(deltaX, deltaY) > 20) {
             offsetDelta = { x: deltaX, y: deltaY }
           } else {
@@ -864,37 +912,61 @@ export function drawing (
           replay = true
         }
       }
-      if (commands !== props.commands) {
-        commands = props.commands
-        replay = true
+      if (props.commands !== undefined) {
+        if (commands !== props.commands) {
+          commands = props.commands
+          replay = true
+        }
       }
-      let updateCursor = false
-      let updateTextBox = false
-      if (draw.tool !== props.tool) {
-        draw.tool = props.tool ?? 'pen'
-        updateCursor = true
+      if (props.tool !== undefined) {
+        if (draw.tool !== props.tool) {
+          draw.tool = props.tool
+          syncToolCursor = true
+        }
       }
-      if (draw.penColor !== props.penColor) {
-        draw.penColor = props.penColor ?? 'blue'
-        updateTextBox = true
-        updateCursor = true
+      if (props.penColor !== undefined) {
+        if (draw.penColor !== props.penColor) {
+          draw.penColor = props.penColor
+          syncLiveTextBox = true
+          syncToolCursor = true
+        }
       }
-      if (draw.penWidth !== props.penWidth) {
-        draw.penWidth = props.penWidth ?? draw.penWidth
-        updateCursor = true
+      if (props.penWidth !== undefined) {
+        if (draw.penWidth !== props.penWidth) {
+          draw.penWidth = props.penWidth
+          syncToolCursor = true
+        }
       }
-      if (draw.eraserWidth !== props.eraserWidth) {
-        draw.eraserWidth = props.eraserWidth ?? draw.eraserWidth
-        updateCursor = true
+      if (props.eraserWidth !== undefined) {
+        if (draw.eraserWidth !== props.eraserWidth) {
+          draw.eraserWidth = props.eraserWidth
+          syncToolCursor = true
+        }
       }
-      if (draw.fontSize !== props.fontSize) {
-        draw.fontSize = props.fontSize ?? draw.fontSize
-        updateTextBox = true
+      if (props.fontSize !== undefined) {
+        if (draw.fontSize !== props.fontSize) {
+          draw.fontSize = props.fontSize
+          syncLiveTextBox = true
+        }
       }
-      if (props.readonly !== readonly) {
-        readonly = props.readonly ?? false
-        updateCanvasTouchAction()
-        updateCursor = true
+      if (props.readonly !== undefined) {
+        if (props.readonly !== readonly) {
+          readonly = props.readonly
+          updateCanvasTouchAction()
+          syncToolCursor = true
+        }
+      }
+      if (props.personCursorVisible !== undefined) {
+        if (props.personCursorVisible !== personCursorVisible) {
+          personCursorVisible = props.personCursorVisible
+          syncPersonCursor = true
+        }
+      }
+      if (props.personCursorPos !== undefined) {
+        if (props.personCursorPos.x !== personCursorPos.x || props.personCursorPos.y !== personCursorPos.y) {
+          personCursorPos = props.personCursorPos
+          syncPersonCursor = true
+        }
       }
       if (props.changingCmdId === undefined) {
         if (liveTextBox !== undefined) {
@@ -912,17 +984,17 @@ export function drawing (
           replay = true
         }
       }
-      if (updateCursor) {
-        updateCanvasCursor()
+      if (syncToolCursor) {
+        updateToolCursor()
       }
-      if (updateTextBox) {
+      if (syncPersonCursor) {
+        updatePersonCursor()
+      }
+      if (syncLiveTextBox) {
         updateLiveTextBox()
       }
       if (replay) {
         if (offsetDelta !== undefined) {
-          function easeInOutCubic (x: number): number {
-            return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2
-          }
           const targetFps = 60
           const frameInterval = 1000 / targetFps
           const animDuration = 500
@@ -939,19 +1011,22 @@ export function drawing (
             const deltaTime = currentTime - lastTime
             if (deltaTime > frameInterval) {
               lastTime = currentTime - (deltaTime % frameInterval)
-              const fracTime = (lastTime - startTime) / animDuration
+              const fracTime = Math.min((lastTime - startTime) / animDuration, 1)
               const fracDist = easeInOutCubic(fracTime)
               draw.offset = {
                 x: Math.round(oldOffset.x + offsetDelta.x * fracDist),
                 y: Math.round(oldOffset.y + offsetDelta.y * fracDist)
               }
               replayCommands()
+              updatePersonCursor()
               if (fracTime >= 1) {
+                isOffsetAnimating = false
                 return
               }
             }
             requestAnimationFrame(animate)
           }
+          isOffsetAnimating = true
           requestAnimationFrame(animate)
         } else {
           replayCommands()
