@@ -95,7 +95,9 @@
         case 'disabled':
           return { _id: { $nin: ignoreObjects, ..._idExtra } }
         case 'fulltext':
-          return { $search: search, _id: { $nin: ignoreObjects, ..._idExtra } }
+          return search !== ''
+            ? { $search: search, _id: { $nin: ignoreObjects, ..._idExtra } }
+            : { _id: { $nin: ignoreObjects, ..._idExtra } }
         case 'spotlight':
           return extraItems.length > 0
             ? { _id: { $in: extraItems, $nin: ignoreObjects } }
