@@ -28,6 +28,7 @@ import core, {
   FindOptions,
   FindResult,
   FulltextStorage,
+  generateId,
   Hierarchy,
   LoadModelResponse,
   ModelDb,
@@ -124,6 +125,10 @@ FulltextStorage & {
         docs: [],
         finished: true
       }
+    }
+
+    async getDomainHash (domain: Domain): Promise<string> {
+      return generateId()
     }
 
     async loadModel (lastTxTime: Timestamp): Promise<Tx[]> {

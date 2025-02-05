@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { ClientConnectEvent, DocChunk } from '..'
+import { ClientConnectEvent, DocChunk, generateId } from '..'
 import type { Account, Class, Doc, Domain, Ref, Timestamp } from '../classes'
 import { ClientConnection } from '../client'
 import core from '../component'
@@ -80,6 +80,10 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
         docs: [],
         finished: true
       }
+    }
+
+    async getDomainHash (domain: Domain): Promise<string> {
+      return generateId()
     }
 
     async closeChunk (idx: number): Promise<void> {}

@@ -37,7 +37,6 @@ import core, {
   type WorkspaceId
 } from '@hcengineering/core'
 import { type DbAdapter, type DbAdapterHandler, type DomainHelperOperations } from './adapter'
-
 /**
  * @public
  */
@@ -101,6 +100,11 @@ export class DummyDbAdapter implements DbAdapter {
   async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {}
 
   async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
+
+  getDomainHash (ctx: MeasureContext, domain: Domain): Promise<string> {
+    // Return '' for empty documents content.
+    return Promise.resolve('')
+  }
 
   async update<T extends Doc>(
     ctx: MeasureContext,

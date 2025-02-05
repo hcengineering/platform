@@ -69,7 +69,8 @@ import {
   type DomainHelperOperations,
   type ServerFindOptions,
   type StorageAdapter,
-  type TxAdapter
+  type TxAdapter,
+  calcHashHash
 } from '@hcengineering/server-core'
 import {
   type AbstractCursor,
@@ -1082,6 +1083,11 @@ abstract class MongoAdapterBase implements DbAdapter {
 
   curHash (): string {
     return Date.now().toString(16) // Current hash value
+  }
+
+  @withContext('get-domain-hash')
+  async getDomainHash (ctx: MeasureContext, domain: Domain): Promise<string> {
+    return await calcHashHash(ctx, domain, this)
   }
 
   strimSize (str?: string): string {
