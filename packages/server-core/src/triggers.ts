@@ -9,18 +9,21 @@ import {
 import type { NotificationContext, ContextID, CardID } from '@hcengineering/communication-types'
 
 export class Triggers {
-  constructor(private readonly db: DbAdapter) {}
+  constructor(
+    private readonly db: DbAdapter,
+    private readonly workspace: string
+  ) {}
 
-  async process(event: BroadcastEvent, workspace: string): Promise<BroadcastEvent[]> {
+  async process(event: BroadcastEvent): Promise<BroadcastEvent[]> {
     switch (event.type) {
       case EventType.MessageCreated:
-        return this.createNotifications(event, workspace)
+        return this.createNotifications(event)
     }
 
     return []
   }
 
-  private async createNotifications(event: MessageCreatedEvent, workspace: string): Promise<BroadcastEvent[]> {
+  private async createNotifications(event: MessageCreatedEvent): Promise<BroadcastEvent[]> {
     const card = event.message.card as any as CardID
     const subscribedPersonalWorkspaces = [
       'cd0aba36-1c4f-4170-95f2-27a12a5415f7',
@@ -28,16 +31,16 @@ export class Triggers {
     ]
 
     const res: BroadcastEvent[] = []
-    const contexts = await this.db.findContexts({ card }, [], workspace)
+    const contexts = await this.db.findContexts({ card }, [], this.workspace)
 
     res.push(...(await this.updateNotificationContexts(event.message.created, contexts)))
 
     for (const personalWorkspace of subscribedPersonalWorkspaces) {
       const existsContext = contexts.find(
-        (it) => it.card === card && it.personalWorkspace === personalWorkspace && workspace === it.workspace
+        (it) => it.card === card && it.personalWorkspace === personalWorkspace && this.workspace === it.workspace
       )
       const contextId = await this.getOrCreateContextId(
-        workspace,
+        this.workspace,
         card,
         personalWorkspace,
         res,

@@ -16,7 +16,7 @@
     },
     "packages/client-query": {
       "name": "@hcengineering/communication-client-query",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "dependencies": {
         "@hcengineering/communication-query": "workspace:*",
         "@hcengineering/communication-sdk-types": "workspace:*",
@@ -32,7 +32,7 @@
     },
     "packages/client-sqlite": {
       "name": "@hcengineering/communication-client-sqlite",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-sqlite-wasm": "workspace:*",
@@ -48,7 +48,7 @@
     },
     "packages/client-ws": {
       "name": "@hcengineering/communication-client-ws",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
@@ -63,7 +63,7 @@
     },
     "packages/cockroach": {
       "name": "@hcengineering/communication-cockroach",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
@@ -80,7 +80,7 @@
     },
     "packages/examples": {
       "name": "@hcengineering/communication-examples",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "dependencies": {
         "@hcengineering/communication-client-query": "workspace:*",
         "@hcengineering/communication-client-sqlite": "workspace:*",
@@ -96,7 +96,7 @@
     },
     "packages/query": {
       "name": "@hcengineering/communication-query",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
@@ -112,7 +112,7 @@
     },
     "packages/sdk-types": {
       "name": "@hcengineering/communication-sdk-types",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "dependencies": {
         "@hcengineering/communication-types": "^0.1.0",
       },
@@ -125,7 +125,7 @@
     },
     "packages/server-core": {
       "name": "@hcengineering/communication-server-core",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "dependencies": {
         "@hcengineering/communication-cockroach": "workspace:*",
         "@hcengineering/communication-sdk-types": "workspace:*",
@@ -144,7 +144,7 @@
     },
     "packages/server-ws": {
       "name": "@hcengineering/communication-server-ws",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "dependencies": {
         "@hcengineering/communication-cockroach": "workspace:*",
         "@hcengineering/communication-sdk-types": "workspace:*",
@@ -168,7 +168,7 @@
     },
     "packages/sqlite-wasm": {
       "name": "@hcengineering/communication-sqlite-wasm",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
@@ -185,7 +185,7 @@
     },
     "packages/types": {
       "name": "@hcengineering/communication-types",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "dependencies": {
         "@hcengineering/core": "0.6.411",
       },

@@ -1,6 +1,6 @@
 import type { FindMessagesParams, Message, SocialID } from '@hcengineering/communication-types'
 
-import type { BroadcastEvent, EventResult, Event } from './event'
+import type { EventResult, Event } from './event'
 
 export interface ConnectionInfo {
   sessionId: string
@@ -8,17 +8,13 @@ export interface ConnectionInfo {
   socialId: SocialID
 }
 
-export type Result = {
-  broadcastEvent?: BroadcastEvent
-  result: EventResult
-}
-
 export interface ServerApi {
   findMessages(info: ConnectionInfo, params: FindMessagesParams, queryId?: number): Promise<Message[]>
 
-  unsubscribeQuery(info: ConnectionInfo, id: number): Promise<void>
+  event(info: ConnectionInfo, event: Event): Promise<EventResult>
 
-  event(info: ConnectionInfo, event: Event): Promise<Result>
+  closeSession(sessionId: string): Promise<void>
+  unsubscribeQuery(info: ConnectionInfo, id: number): Promise<void>
 
   close(): Promise<void>
 }

@@ -5,7 +5,8 @@ import {
   EventType,
   type NotificationContextCreatedEvent,
   type NotificationCreatedEvent,
-  type Event
+  type Event,
+  type EventResult
 } from '@hcengineering/communication-sdk-types'
 import type {
   FindMessagesParams,
@@ -16,11 +17,13 @@ import type {
 } from '@hcengineering/communication-types'
 
 import { Triggers } from './triggers.ts'
-import { EventProcessor, type Result } from './eventProcessor.ts'
+import { EventProcessor } from './eventProcessor.ts'
 import type { MeasureContext } from '@hcengineering/core'
 
 type QueryId = number | string
 type QueryType = 'message' | 'notification' | 'context'
+
+export type BroadcastSessionsFunc = (ctx: MeasureContext, sessionIds: string[], result: any) => void
 
 type SessionInfo = {
   personalWorkspace: string
@@ -37,10 +40,11 @@ export class Manager {
   constructor(
     private readonly ctx: MeasureContext,
     private readonly db: DbAdapter,
-    private readonly workspace: string
+    private readonly workspace: string,
+    private readonly broadcast: BroadcastSessionsFunc
   ) {
     this.eventProcessor = new EventProcessor(db, this.workspace)
-    this.triggers = new Triggers(db)
+    this.triggers = new Triggers(db, this.workspace)
   }
 
   async findMessages(info: ConnectionInfo, params: FindMessagesParams, queryId?: number): Promise<Message[]> {
@@ -51,18 +55,13 @@ export class Manager {
     return result
   }
 
-  async event(info: ConnectionInfo, event: Event): Promise<Result> {
-    return await this.eventProcessor.process(info.personalWorkspace, event)
-    // const { result, broadcastEvent } = await this.eventProcessor.process(personalWorkspace, event)
-    // if (broadcastEvent !== undefined) {
-    //     void this.manager.next(broadcastEvent)
-    // }
-    // return result
+  async event(info: ConnectionInfo, event: Event): Promise<EventResult> {
+    const { result, broadcastEvent } = await this.eventProcessor.process(info.personalWorkspace, event)
+    if (broadcastEvent !== undefined) {
+      void this.next(broadcastEvent)
+    }
+    return result
   }
-  //
-  // async broadcastEvent (ctx: MeasureContext, personalWorkspace: string, event: BroadcastEvent): Promise<void> {
-  //     void this.manager.next(event, personalWorkspace)
-  // }
 
   subscribeQuery(info: ConnectionInfo, type: QueryType, queryId: number, params: Record<string, any>): void {
     const { sessionId, personalWorkspace } = info
@@ -94,30 +93,28 @@ export class Manager {
     data.contextQueries.delete(queryId)
   }
 
-  // closeSession(sessionId: string): void {
-  //   this.dataBySessionId.delete(sessionId)
-  // }
+  closeSession(sessionId: string): void {
+    this.dataBySessionId.delete(sessionId)
+  }
 
-  // async next(event: BroadcastEvent, workspace: string): Promise<void> {
-  //   // await this.broadcast(event, workspace)
-  //   // const derived = await this.triggers.process(event, workspace)
-  //   // const derivedPromises: Promise<void>[] = []
-  //   // for (const d of derived) {
-  //   //   derivedPromises.push(this.next(d, workspace))
-  //   // }
-  //   // await Promise.all(derivedPromises)
-  // }
+  async next(event: BroadcastEvent): Promise<void> {
+    await this.broadcastEvent(event)
+    const derived = await this.triggers.process(event)
+    await Promise.all(derived.map((it) => this.next(it)))
+  }
 
-  // private async broadcast(event: BroadcastEvent, workspace: string): Promise<void> {
-  //   // const sessions = this.sessionsByWorkspace.get(workspace) ?? []
-  //   // const response: Response = { result: event }
-  //   // for (const session of sessions) {
-  //   //   const msg = serializeResponse(response, session.session.binary)
-  //   //   if (this.match(event, session)) {
-  //   //     session.ws.send(msg)
-  //   //   }
-  //   // }
-  // }
+  private async broadcastEvent(event: BroadcastEvent): Promise<void> {
+    const sessionIds: string[] = []
+    for (const [sessionId, session] of this.dataBySessionId.entries()) {
+      if (this.match(event, session)) {
+        sessionIds.push(sessionId)
+      }
+    }
+
+    if (sessionIds.length > 0) {
+      this.broadcast(this.ctx, sessionIds, event)
+    }
+  }
 
   private match(event: BroadcastEvent, info: SessionInfo): boolean {
     switch (event.type) {
