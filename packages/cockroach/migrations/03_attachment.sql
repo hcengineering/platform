@@ -2,7 +2,7 @@ DROP TABLE IF EXISTS c_attachment CASCADE;
 CREATE TABLE IF NOT EXISTS c_attachment
 (
     message_id UUID         NOT NULL,
-    card_id    UUID         NOT NULL,
+    card_id    VARCHAR(255) NOT NULL,
     creator    VARCHAR(255) NOT NULL,
     created    TIMESTAMPTZ  NOT NULL DEFAULT now(),
 
