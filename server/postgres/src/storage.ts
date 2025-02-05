@@ -864,7 +864,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
             if (key === 'data') {
               obj[p] = { ...obj[p], ...row[column] }
             } else {
-              if (key === 'attachedTo' && row[column] === 'NULL') {
+              if (key === 'createdOn' || key === 'modifiedOn') {
+                const val = Number.parseInt(row[column])
+                obj[p][key] = Number.isNaN(val) ? null : val
+              } else if (key === '%hash%') {
+                continue
+              } else if (key === 'attachedTo' && row[column] === 'NULL') {
                 continue
               } else {
                 obj[p][key] = row[column] === 'NULL' ? null : row[column]
