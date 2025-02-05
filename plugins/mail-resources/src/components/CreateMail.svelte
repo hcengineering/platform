@@ -17,6 +17,7 @@
 <script lang="ts">
   import core, { Data, generateId, getCurrentAccount } from '@hcengineering/core'
   import { PersonAccount } from '@hcengineering/contact'
+  import chunter from '@hcengineering/chunter'
   import { Card, getClient } from '@hcengineering/presentation'
   import { MailThread } from '@hcengineering/mail'
   import { createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
@@ -63,7 +64,17 @@
 
     const mailThreadId = await client.createDoc(mail.class.MailThread, core.space.Space, data, id)
 
-    dispatch('close', mailThreadId)
+    const messageId: Ref<ChatMessage> = await client.addCollection<Doc, ChatMessage>(
+      chunter.class.ChatMessage,
+      mailThreadId,
+      mailThreadId,
+      mail.class.MailThread,
+      'messages',
+      { message: message.text ?? '' },
+      id
+    )
+
+    dispatch('close', messageId)
   }
 </script>
 

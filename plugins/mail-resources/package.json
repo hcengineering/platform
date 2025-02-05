@@ -45,6 +45,9 @@
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/contact": "^0.6.24",
-    "@hcengineering/panel": "^0.6.23"
+    "@hcengineering/chunter": "^0.6.20",
+    "@hcengineering/panel": "^0.6.23",
+    "@hcengineering/view": "^0.6.13",
+    "@hcengineering/view-resources": "^0.6.0"
   }
 }

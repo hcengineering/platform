@@ -18,19 +18,56 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
 
-  import { ActionContext, createQuery } from '@hcengineering/presentation'
+  import { getResource } from '@hcengineering/platform'
+  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import { type Class, type Ref } from '@hcengineering/core'
   import { MailThread } from '@hcengineering/mail'
   import { Panel } from '@hcengineering/panel'
+  import { type AnySvelteComponent, Component, Loading } from '@hcengineering/ui'
+  import chunter from '@hcengineering/chunter'
+  import view from '@hcengineering/view'
 
   export let _id: Ref<MailThread>
   export let _class: Ref<Class<MailThread>>
+
+  const messageClass = chunter.class.ChatMessage
+  let messages: Doc[] = []
+  let presenterLoading = true
+  let messagesLoading = true
 
   let object: MailThread | undefined
 
   const dispatch = createEventDispatcher()
 
   const query = createQuery()
+
+  let messagePresenter: AnySvelteComponent | undefined = undefined
+
+  findMessagePresenter()
+  findMessages()
+
+  function findMessagePresenter (): void {
+    const presenterMixin = getClient().getHierarchy().classHierarchyMixin(messageClass, view.mixin.ObjectPresenter)
+    if (presenterMixin?.presenter !== undefined) {
+      getResource(presenterMixin.presenter)
+        .then((result) => {
+          messagePresenter = result
+        })
+        .catch((err) => {
+          console.error('Failed to find presenter for class ' + messageClass, err)
+        })
+        .finally(() => {
+          presenterLoading = false
+        })
+    }
+  }
+
+  function findMessages (): void {
+    query.query(messageClass, { attachedTo: _id }, async (result) => {
+      messages = result
+      messagesLoading = false
+    })
+  }
 
   $: _id !== undefined &&
     _class !== undefined &&
@@ -52,5 +89,12 @@
     on:open
     on:close={() => dispatch('close')}
   >
+    {#if messagesLoading || presenterLoading }
+      <Loading/>
+    {:else}
+      {#each messages as message}
+        <Component is={messagePresenter} props={{ object: message }} />
+      {/each}
+    {/if}
   </Panel>
 {/if}
