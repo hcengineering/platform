@@ -132,6 +132,9 @@
     "BackupFileDownload": "Скачать файл",
     "BackupFiles": "Файлы резервной копии",
     "BackupNoBackup": "В настоящее время резервные копии недоступны.",
+    "Calendar": "Календарь",
+    "StartOfTheWeek": "Начало недели",
+    "SystemSetupString": "Системная настройка ({day})",
     "AddAttribute": "Добавить атрибут"
   }
 }

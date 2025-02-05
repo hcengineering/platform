@@ -17,7 +17,6 @@
   import { areDatesEqual, day, firstDay, getWeekDayName, isWeekend, weekday } from './internal/DateUtils'
   import { Scroller, deviceOptionsStore as deviceInfo, checkAdaptiveMatching } from '../..'
 
-  export let mondayStart = true
   export let weekFormat: 'narrow' | 'short' | 'long' | undefined = 'long'
   export let cellHeight: string | undefined = undefined
   export let selectedDate: Date = new Date()
@@ -29,9 +28,9 @@
   $: devSize = $deviceInfo.size
   $: shortName = checkAdaptiveMatching(devSize, 'lg')
 
-  $: firstDayOfCurrentMonth = firstDay(currentDate, mondayStart)
+  $: firstDayOfCurrentMonth = firstDay(currentDate, $deviceInfo.firstDayOfWeek)
 
-  function onSelect (date: Date) {
+  function onSelect (date: Date): void {
     dispatch('change', date)
   }
 
