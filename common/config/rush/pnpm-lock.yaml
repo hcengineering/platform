@@ -4849,7 +4849,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/presentation@file:projects/presentation.tgz':
-    resolution: {integrity: sha512-8PjrEJ4Myv1tw8UzIITEXnaEq6wkmHrwgVqVXUwIIfDIJHSeNxoEIZOQXddhr+eDcpn9yweksJl8cMF65qzSpw==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-BqfuMwqEIRreO5gDxv6ZyW9ZQ5uLlwo+7gYswuKiTwa4xAPkQA5pUw+2vR2QlFZA1+HqzaXeSQJlrazRACsybA==, tarball: file:projects/presentation.tgz}
     version: 0.0.0
 
   '@rush-temp/print-assets@file:projects/print-assets.tgz':
@@ -21941,6 +21941,8 @@ snapshots:
 
   '@rush-temp/presentation@file:projects/presentation.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
     dependencies:
+      '@hcengineering/communication-sdk-types': 0.1.4(typescript@5.3.3)
+      '@hcengineering/communication-types': 0.1.4(typescript@5.3.3)
       '@types/jest': 29.5.12
       '@types/png-chunks-extract': 1.0.2
       '@types/uuid': 8.3.4

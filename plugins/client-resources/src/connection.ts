@@ -27,6 +27,7 @@ import core, {
   Class,
   ClientConnectEvent,
   ClientConnection,
+  RequestData,
   Doc,
   DocChunk,
   DocumentQuery,
@@ -644,17 +645,7 @@ class Connection implements ClientConnection {
     }
   }
 
-  private sendRequest (data: {
-    method: string
-    params: any[]
-    // If not defined, on reconnect with timeout, will retry automatically.
-    retry?: () => Promise<boolean>
-    handleResult?: (result: any) => Promise<void>
-    once?: boolean // Require handleResult to retrieve result
-    measure?: (time: number, result: any, serverTime: number, queue: number, toRecieve: number) => void
-    allowReconnect?: boolean
-    overrideId?: number
-  }): Promise<any> {
+  sendRequest (data: RequestData): Promise<any> {
     return this.ctx.newChild('send-request', {}).with(data.method, {}, async (ctx) => {
       if (this.closed) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.ConnectionClosed, {}))

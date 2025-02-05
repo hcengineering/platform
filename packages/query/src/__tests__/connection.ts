@@ -48,6 +48,7 @@ BackupClient &
 FulltextStorage & {
   isConnected: () => boolean
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
+  sendRequest: () => Promise<any>
 }
 > {
   const txes = genMinModel()
@@ -86,6 +87,8 @@ FulltextStorage & {
       if (domain === DOMAIN_TX) return await this.transactions.findAll(_class, query, options)
       return await this.model.findAll(_class, query, options)
     }
+
+    async sendRequest (): Promise<any> {}
 
     async findOne<T extends Doc>(
       _class: Ref<Class<T>>,

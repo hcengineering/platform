@@ -23,6 +23,7 @@ import presentation, {
   purgeClient,
   refreshClient,
   setClient,
+  setCommunicationClient,
   setPresentationCookie,
   uiContext,
   upgradeDownloadProgress
@@ -403,6 +404,10 @@ export async function connect (title: string): Promise<Client | undefined> {
   _clientSet = true
   await ctx.with('set-client', {}, async () => {
     await setClient(newClient)
+    const connection = newClient.getConnection?.()
+    if (connection != null) {
+      await setCommunicationClient(connection)
+    }
   })
   await ctx.with('broadcast-connected', {}, async () => {
     await broadcastEvent(plugin.event.NotifyConnection, me)

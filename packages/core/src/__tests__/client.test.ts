@@ -120,6 +120,7 @@ describe('client', () => {
         }
 
         isConnected = (): boolean => true
+        sendRequest = async (): Promise<any> => {}
         findAll = findAll
 
         searchFulltext = async (query: SearchQuery, options: SearchOptions): Promise<SearchResult> => {
