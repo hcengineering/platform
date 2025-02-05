@@ -26,7 +26,8 @@ import serverCore, {
   type ConnectionSocket,
   type Pipeline,
   type PipelineFactory,
-  type SessionManager
+  type SessionManager,
+  CommunicationApiFactory
 } from '@hcengineering/server-core'
 import serverPlugin, { decodeToken, type Token } from '@hcengineering/server-token'
 import { DurableObject } from 'cloudflare:workers'
@@ -62,6 +63,7 @@ import contactPlugin from '@hcengineering/contact'
 import serverAiBot from '@hcengineering/server-ai-bot'
 import serverNotification from '@hcengineering/server-notification'
 import serverTelegram from '@hcengineering/server-telegram'
+import { Api as CommunicationApi } from '@hcengineering/communication-server-core'
 
 export const PREFERRED_SAVE_SIZE = 500
 export const PREFERRED_SAVE_INTERVAL = 30 * 1000
@@ -74,6 +76,7 @@ export class Transactor extends DurableObject<Env> {
   private readonly measureCtx: MeasureContext
 
   private readonly pipelineFactory: PipelineFactory
+  private readonly communicationApiFactory: CommunicationApiFactory
 
   private readonly accountsUrl: string
 
@@ -159,7 +162,9 @@ export class Transactor extends DurableObject<Env> {
       client.close()
       return result
     }
-
+    this.communicationApiFactory = async (ctx, ws) => {
+      return await CommunicationApi.create(ctx.newChild('💬 communication api', {}), ws.uuid, dbUrl)
+    }
     void this.ctx
       .blockConcurrencyWhile(async () => {
         this.sessionManager = createSessionManager(
@@ -297,6 +302,7 @@ export class Transactor extends DurableObject<Env> {
         token,
         rawToken,
         this.pipelineFactory,
+        this.communicationApiFactory,
         sessionId ?? undefined
       )
 
@@ -473,6 +479,7 @@ export class Transactor extends DurableObject<Env> {
       token,
       rawToken,
       this.pipelineFactory,
+      this.communicationApiFactory,
       generateId()
     )
     if ('error' in session) {
