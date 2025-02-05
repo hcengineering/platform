@@ -16,7 +16,7 @@
   import { Person, formatName } from '@hcengineering/contact'
   import { Avatar } from '@hcengineering/contact-resources'
   import { IconSize, Scroller } from '@hcengineering/ui'
-  import { personToFollow, togglePersonFollowing } from '../store'
+  import { followee, toggleFollowee } from '../store'
 
   export let persons: Person[]
   export let size: IconSize
@@ -29,10 +29,10 @@
     <div
       class="flex-row-center flex-no-shrink flex-gap-2 avatar-button"
       on:click={() => {
-        togglePersonFollowing(person._id)
+        toggleFollowee(person._id)
       }}
     >
-      <div class="min-w-6" class:followed-avatar={$personToFollow === person._id}>
+      <div class="min-w-6" class:followee-avatar={$followee === person._id}>
         <Avatar name={person.name} {size} {person} />
       </div>
       {formatName(person.name)}
@@ -45,7 +45,7 @@
     cursor: pointer;
   }
 
-  .followed-avatar {
+  .followee-avatar {
     border-radius: 20%;
     outline: 2px solid var(--primary-button-default);
     outline-offset: 1px;

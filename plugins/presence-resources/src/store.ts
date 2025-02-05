@@ -16,6 +16,7 @@
 import { type Doc, type Ref } from '@hcengineering/core'
 import { getCurrentEmployee, type Person } from '@hcengineering/contact'
 import { type PresenceData } from '@hcengineering/presence'
+import { personByIdStore } from '@hcengineering/contact-resources'
 import { type Readable, derived, writable, get } from 'svelte/store'
 
 import type { PersonRoomPresence, Room, RoomPresence, MyDataItem } from './types'
@@ -25,7 +26,7 @@ type PersonPresenceMap = Map<Ref<Person>, RoomPresence[]>
 export const myPresence = writable<RoomPresence[]>([])
 export const myData = writable<Map<string, MyDataItem>>(new Map())
 export const otherPresence = writable<PersonPresenceMap>(new Map())
-export const personToFollow = writable<Ref<Person> | undefined>(undefined)
+export const followee = writable<Ref<Person> | undefined>(undefined)
 
 const otherDataMap = new Map<Ref<Person>, Map<string, any>>()
 const otherDataHandlers = new Map<string, Set<(data: any) => void>>()
@@ -80,7 +81,7 @@ export function onPersonUpdate (person: Ref<Person>, presence: RoomPresence[]): 
 export function onPersonLeave (person: Ref<Person>): void {
   otherPresence.update((map) => {
     map.delete(person)
-    personToFollow.update((p) => (p === person ? undefined : p))
+    followee.update((p) => (p === person ? undefined : p))
     return map
   })
 }
@@ -92,7 +93,7 @@ export function onPersonData (person: Ref<Person>, key: string, data: any): void
   } else {
     otherDataMap.set(person, new Map([[key, data]]))
   }
-  if (person === get(personToFollow)) {
+  if (person === get(followee)) {
     const handlers = otherDataHandlers.get(key)
     if (handlers !== undefined) {
       for (const handler of handlers) {
@@ -109,7 +110,7 @@ export function subscribeToOtherData (key: string, callback: (data: any) => void
   } else {
     otherDataHandlers.set(key, new Set([callback]))
   }
-  const p = get(personToFollow)
+  const p = get(followee)
   if (p !== undefined) {
     const otherData = otherDataMap.get(p)
     if (otherData !== undefined) {
@@ -128,29 +129,38 @@ export function unsubscribeFromOtherData (key: string, callback: (data: any) => 
   }
 }
 
-export function togglePersonFollowing (person: Ref<Person>): void {
-  personToFollow.update((p) => (p === person ? undefined : person))
+export function toggleFollowee (person: Ref<Person>): void {
+  followee.update((p) => (p === person ? undefined : person))
 
-  const p = get(personToFollow)
+  const p = get(followee)
   if (p !== undefined) {
     const otherData = otherDataMap.get(p)
     if (otherData !== undefined) {
       for (const [key, data] of otherData) {
         const handlers = otherDataHandlers.get(key)
         if (handlers !== undefined) {
-          handlers.forEach((callback) => {
+          for (const callback of handlers) {
             callback(data)
-          })
+          }
         }
       }
     }
   } else {
-    otherDataHandlers.values().forEach((handlers) => {
-      handlers.forEach((callback) => {
+    for (const handlers of otherDataHandlers.values()) {
+      for (const callback of handlers) {
         callback(undefined)
-      })
-    })
+      }
+    }
   }
+}
+
+export function getFollowee (): Person | undefined {
+  const followeeId = get(followee)
+  if (followeeId === undefined) {
+    return undefined
+  }
+  const personMap = get(personByIdStore)
+  return personMap.get(followeeId)
 }
 
 export function sendMyData (key: string, data: any, forceSend: boolean = false): void {

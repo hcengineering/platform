@@ -40,6 +40,7 @@ export interface DrawingProps {
   cmdDeleted?: (id: string) => void
   editorCreated?: (editor: HTMLDivElement) => void
   pointerMoved?: (canvasPos: Point) => void
+  personCursorMoved?: (nodePos: Point) => void
   panning?: (offset: Point) => void
   panned?: (offset: Point) => void
 }
@@ -76,7 +77,6 @@ function avgPoint (p1: Point, p2: Point): Point {
 }
 
 const maxTextLength = 500
-const personCursorWidth = 20
 
 export const makeCommandId = (): string => {
   return crypto.randomUUID().toString()
@@ -123,15 +123,15 @@ class DrawState {
 
   mouseToCanvasPoint = (mouse: Point): Point => {
     return {
-      x: mouse.x * this.scale.x - this.offset.x - this.center.x,
-      y: mouse.y * this.scale.y - this.offset.y - this.center.y
+      x: Math.round(mouse.x * this.scale.x - this.offset.x - this.center.x),
+      y: Math.round(mouse.y * this.scale.y - this.offset.y - this.center.y)
     }
   }
 
   canvasToMousePoint = (canvas: Point): Point => {
     return {
-      x: canvas.x / this.scale.x + this.offset.x + this.center.x,
-      y: canvas.y / this.scale.y + this.offset.y + this.center.y
+      x: Math.round(canvas.x / this.scale.x + this.offset.x + this.center.x),
+      y: Math.round(canvas.y / this.scale.y + this.offset.y + this.center.y)
     }
   }
 
@@ -299,24 +299,10 @@ export function drawing (
   toolCursor.style.top = '50%'
   node.appendChild(toolCursor)
 
-  const personCursor = document.createElement('div')
-  personCursor.style.visibility = 'hidden'
-  personCursor.style.background = 'red'
-  personCursor.style.position = 'absolute'
-  personCursor.style.borderRadius = '50%'
-  personCursor.style.border = 'none'
-  personCursor.style.cursor = 'none'
-  personCursor.style.pointerEvents = 'none'
-  personCursor.style.left = '50%'
-  personCursor.style.top = '50%'
-  personCursor.style.width = `${personCursorWidth}px`
-  personCursor.style.height = `${personCursorWidth}px`
-  node.appendChild(personCursor)
-  let personCursorVisible = false
-  let personCursorPos: Point = { x: 0, y: 0 }
-
   let readonly = props.readonly ?? false
   let prevPos: Point = { x: 0, y: 0 }
+  let personCursorPos: Point = { x: 0, y: 0 }
+  let isPersonCursorAnimating = false
 
   const draw = new DrawState(ctx)
   draw.tool = props.tool ?? draw.tool
@@ -864,17 +850,79 @@ export function drawing (
     }
   }
 
-  function updatePersonCursor (): void {
-    if (personCursorVisible) {
+  let personCursorPosNext: Point | undefined
+
+  function updatePersonCursor (newPos?: Point): void {
+    if (props.personCursorMoved === undefined) {
+      return
+    }
+
+    // Repaint person cursor in the same canvas position but with different offset
+    // The happen when we receive a new offset because of panning
+    if (newPos === undefined) {
       const p = draw.canvasToMousePoint(personCursorPos)
       const x = Math.max(0, Math.min(p.x, canvas.width))
       const y = Math.max(0, Math.min(p.y, canvas.height))
-      personCursor.style.left = `${x - personCursorWidth / 2}px`
-      personCursor.style.top = `${y - personCursorWidth / 2}px`
-      personCursor.style.visibility = 'visible'
-    } else {
-      personCursor.style.visibility = 'hidden'
+      props.personCursorMoved({ x, y })
+      return
     }
+
+    if (isPersonCursorAnimating) {
+      personCursorPosNext = newPos
+      return
+    }
+
+    // This happens when we receive a new cursor position via subscription
+    // Subscription events happen happen rarely, and if we'd just update the cursor position
+    // it'd moved with big steps which looks ugly. So we smooth the movement
+    // (Ideally, it'd be cool to interpolate curved movement the same as we interpolate line drawing)
+    // Animation duration should be the same as myDataThrottleInterval in the Presence client
+    const targetFps = 60
+    const frameInterval = 1000 / targetFps
+    const animDuration = 100
+    const oldPos = personCursorPos
+    const distanceX = newPos.x - oldPos.x
+    const distanceY = newPos.y - oldPos.y
+    let lastTime = 0
+    let startTime = 0
+    const animate = (currentTime: number): void => {
+      if (lastTime === 0) {
+        lastTime = currentTime
+        startTime = currentTime
+        requestAnimationFrame(animate)
+        return
+      }
+      const deltaTime = currentTime - lastTime
+      if (deltaTime > frameInterval) {
+        lastTime = currentTime - (deltaTime % frameInterval)
+        const frac = Math.min((lastTime - startTime) / animDuration, 1)
+        personCursorPos = {
+          x: Math.round(oldPos.x + distanceX * frac),
+          y: Math.round(oldPos.y + distanceY * frac)
+        }
+        if (props.personCursorMoved !== undefined) {
+          const p = draw.canvasToMousePoint(personCursorPos)
+          const x = Math.max(0, Math.min(p.x, canvas.width))
+          const y = Math.max(0, Math.min(p.y, canvas.height))
+          props.personCursorMoved({ x, y })
+        }
+        if (frac >= 1) {
+          isPersonCursorAnimating = false
+
+          if (personCursorPosNext !== undefined) {
+            setTimeout(() => {
+              const nextPos = personCursorPosNext
+              personCursorPosNext = undefined
+              updatePersonCursor(nextPos)
+            }, 0)
+          }
+          return
+        }
+      }
+      requestAnimationFrame(animate)
+    }
+    isPersonCursorAnimating = true
+    requestAnimationFrame(animate)
   }
 
   function updateCanvasTouchAction (): void {
@@ -898,12 +946,12 @@ export function drawing (
       let offsetDelta: Point | undefined
       let replay = false
       let syncToolCursor = false
-      let syncPersonCursor = false
+      let syncPersonCursor: Point | undefined
       let syncLiveTextBox = false
-      if (props.offset !== undefined) {
+      if (props.offset !== undefined && !isOffsetAnimating) {
         const deltaX = props.offset.x - draw.offset.x
         const deltaY = props.offset.y - draw.offset.y
-        if (!isOffsetAnimating && (deltaX !== 0 || deltaY !== 0)) {
+        if (deltaX !== 0 || deltaY !== 0) {
           if (Math.hypot(deltaX, deltaY) > 20) {
             offsetDelta = { x: deltaX, y: deltaY }
           } else {
@@ -956,16 +1004,9 @@ export function drawing (
           syncToolCursor = true
         }
       }
-      if (props.personCursorVisible !== undefined) {
-        if (props.personCursorVisible !== personCursorVisible) {
-          personCursorVisible = props.personCursorVisible
-          syncPersonCursor = true
-        }
-      }
       if (props.personCursorPos !== undefined) {
         if (props.personCursorPos.x !== personCursorPos.x || props.personCursorPos.y !== personCursorPos.y) {
-          personCursorPos = props.personCursorPos
-          syncPersonCursor = true
+          syncPersonCursor = props.personCursorPos
         }
       }
       if (props.changingCmdId === undefined) {
@@ -987,14 +1028,15 @@ export function drawing (
       if (syncToolCursor) {
         updateToolCursor()
       }
-      if (syncPersonCursor) {
-        updatePersonCursor()
+      if (syncPersonCursor !== undefined) {
+        updatePersonCursor(syncPersonCursor)
       }
       if (syncLiveTextBox) {
         updateLiveTextBox()
       }
       if (replay) {
         if (offsetDelta !== undefined) {
+          const distance = offsetDelta
           const targetFps = 60
           const frameInterval = 1000 / targetFps
           const animDuration = 500
@@ -1014,8 +1056,8 @@ export function drawing (
               const fracTime = Math.min((lastTime - startTime) / animDuration, 1)
               const fracDist = easeInOutCubic(fracTime)
               draw.offset = {
-                x: Math.round(oldOffset.x + offsetDelta.x * fracDist),
-                y: Math.round(oldOffset.y + offsetDelta.y * fracDist)
+                x: Math.round(oldOffset.x + distance.x * fracDist),
+                y: Math.round(oldOffset.y + distance.y * fracDist)
               }
               replayCommands()
               updatePersonCursor()
@@ -1030,6 +1072,7 @@ export function drawing (
           requestAnimationFrame(animate)
         } else {
           replayCommands()
+          updatePersonCursor()
         }
       }
     }
