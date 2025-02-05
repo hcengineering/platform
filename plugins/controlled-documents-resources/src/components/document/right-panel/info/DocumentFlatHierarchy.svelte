@@ -14,184 +14,70 @@
 -->
 
 <script lang="ts">
-  import { type Ref, SortingOrder, getCurrentAccount } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
-  import { type PersonAccount } from '@hcengineering/contact'
-  import documents, {
-    type ControlledDocument,
-    type DocumentMeta,
+  import {
+    DocumentBundle,
+    ProjectDocumentTree,
     type HierarchyDocument,
-    type Project,
-    type ProjectMeta
+    type Project
   } from '@hcengineering/controlled-documents'
+  import { type Ref } from '@hcengineering/core'
 
-  import { compareDocs, notEmpty } from '../../../../utils'
+  import { createDocumentHierarchyQuery } from '../../../../utils'
   import DocumentFlatTreeElement from './DocumentFlatTreeElement.svelte'
 
   export let document: HierarchyDocument | undefined
   export let project: Ref<Project>
 
-  const currentUser = getCurrentAccount() as PersonAccount
-  const currentPerson = currentUser.person
+  let tree = new ProjectDocumentTree()
 
-  let meta: ProjectMeta | undefined
-  const projectMetaQuery = createQuery()
+  const query = createDocumentHierarchyQuery()
   $: if (document !== undefined && project !== undefined) {
-    projectMetaQuery.query(
-      documents.class.ProjectMeta,
-      {
-        project,
-        meta: document.attachedTo
-      },
-      (result) => {
-        ;[meta] = result
-      }
-    )
+    query.query(document.space, project, (data) => {
+      tree = data
+    })
   }
 
-  let parentMetas: ProjectMeta[] | undefined
-  const parentMetasQuery = createQuery()
-  $: if (meta !== undefined) {
-    parentMetasQuery.query(
-      documents.class.ProjectMeta,
-      {
-        meta: { $in: meta.path },
-        project: meta.project
-      },
-      (result) => {
-        parentMetas = result
-      }
-    )
-  } else {
-    parentMetasQuery.unsubscribe()
-  }
+  $: docmetaid = tree.metaOf(document?._id)
 
-  let directChildrenMetas: ProjectMeta[] | undefined
-  const childrenMetasQuery = createQuery()
-  $: if (meta !== undefined) {
-    childrenMetasQuery.query(
-      documents.class.ProjectMeta,
-      {
-        parent: meta?.meta,
-        project: meta.project
-      },
-      (result) => {
-        if (meta === undefined) {
-          return
-        }
-
-        directChildrenMetas = result
-      }
-    )
-  } else {
-    childrenMetasQuery.unsubscribe()
-  }
-
-  let docs: Record<Ref<DocumentMeta>, ControlledDocument> = {}
-  const docsQuery = createQuery()
-  $: if (parentMetas !== undefined && directChildrenMetas !== undefined) {
-    docsQuery.query(
-      documents.class.ProjectDocument,
-      {
-        attachedTo: { $in: [...parentMetas.map((p) => p._id), ...directChildrenMetas.map((p) => p._id)] }
-      },
-      (result) => {
-        docs = {}
-        let lastTemplate: string | undefined = '###'
-        let lastSeqNumber = -1
-
-        for (const prjdoc of result) {
-          const doc = prjdoc.$lookup?.document as ControlledDocument | undefined
-          if (doc === undefined) continue
-
-          // TODO add proper fix, when document with no template copied, saved value is null
-          const template = doc.template ?? undefined
-
-          if (template === lastTemplate && doc.seqNumber === lastSeqNumber) {
-            continue
-          }
-
-          if (
-            doc.owner === currentPerson ||
-            doc.coAuthors.findIndex((emp) => emp === currentPerson) >= 0 ||
-            doc.approvers.findIndex((emp) => emp === currentPerson) >= 0 ||
-            doc.reviewers.findIndex((emp) => emp === currentPerson) >= 0
-          ) {
-            docs[doc.attachedTo] = doc
-
-            lastTemplate = template
-            lastSeqNumber = doc.seqNumber
-          }
-        }
-      },
-      {
-        lookup: {
-          document: documents.class.ControlledDocument
-        },
-        sort: {
-          '$lookup.document.template': SortingOrder.Ascending,
-          '$lookup.document.seqNumber': SortingOrder.Ascending,
-          '$lookup.document.major': SortingOrder.Descending,
-          '$lookup.document.minor': SortingOrder.Descending,
-          '$lookup.document.patch': SortingOrder.Descending
-        }
-      }
-    )
-  } else {
-    docsQuery.unsubscribe()
-  }
-
-  let directChildrenDocs: ControlledDocument[] = []
-  $: if (directChildrenMetas !== undefined) {
-    directChildrenDocs = Object.values(docs).filter(
-      (d) => directChildrenMetas !== undefined && directChildrenMetas.findIndex((m) => m.meta === d.attachedTo) >= 0
-    )
-    directChildrenDocs.sort(compareDocs)
-  }
-
-  let parentDocs: ControlledDocument[] = []
-  $: if (meta !== undefined) {
-    parentDocs = [...meta.path]
-      .reverse()
-      .map((mId) => docs[mId])
-      .filter(notEmpty)
-  }
-
-  let levels: Array<[HierarchyDocument[], boolean]> = []
+  let levels: Array<[DocumentBundle[], boolean]> = []
   $: {
     levels = []
+    const parents = tree
+      .parentChainOf(docmetaid)
+      .reverse()
+      .map((ref) => tree.bundleOf(ref))
+      .filter((r) => r !== undefined)
+    const me = tree.bundleOf(docmetaid)
+    const children = tree
+      .childrenOf(docmetaid)
+      .map((ref) => tree.bundleOf(ref))
+      .filter((r) => r !== undefined)
 
-    if (parentDocs?.length > 0) {
-      levels.push([parentDocs, false])
+    if (parents.length > 0) levels.push([parents as DocumentBundle[], false])
+    if (me) {
+      levels.push([[me], true])
     }
-
-    if (document !== undefined) {
-      levels.push([[document], true])
-    }
-
-    if (directChildrenDocs?.length > 0) {
-      levels.push([directChildrenDocs, false])
-    }
+    if (children.length > 0) levels.push([children as DocumentBundle[], false])
   }
 </script>
 
 {#if levels.length > 0}
   {@const [firstDocs, firstHltd] = levels[0]}
   <div class="root">
-    {#each firstDocs as doc}
-      <DocumentFlatTreeElement {doc} {project} highlighted={firstHltd} />
+    {#each firstDocs as bundle}
+      <DocumentFlatTreeElement {bundle} {project} highlighted={firstHltd} />
     {/each}
     {#if levels.length > 1}
       {@const [secondDocs, secondHltd] = levels[1]}
       <div class="container">
-        {#each secondDocs as doc}
-          <DocumentFlatTreeElement {doc} {project} highlighted={secondHltd} />
+        {#each secondDocs as bundle}
+          <DocumentFlatTreeElement {bundle} {project} highlighted={secondHltd} />
         {/each}
         {#if levels.length > 2}
           {@const [thirdDocs, thirdHltd] = levels[2]}
           <div class="container">
-            {#each thirdDocs as doc}
-              <DocumentFlatTreeElement {doc} {project} highlighted={thirdHltd} />
+            {#each thirdDocs as bundle}
+              <DocumentFlatTreeElement {bundle} {project} highlighted={thirdHltd} />
             {/each}
           </div>
         {/if}
