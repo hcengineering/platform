@@ -326,25 +326,14 @@ async function deleteProject (project: Project | undefined): Promise<void> {
       })
     } else {
       const anyIssue = await client.findOne(tracker.class.Issue, { space: project._id })
-      if (anyIssue !== undefined) {
-        showPopup(MessageBox, {
-          label: tracker.string.ArchiveProjectName,
-          labelProps: { name: project.name },
-          message: tracker.string.ProjectHasIssues,
-          action: async () => {
-            await client.update(project, { archived: true })
-          }
-        })
-      } else {
-        showPopup(MessageBox, {
-          label: tracker.string.ArchiveProjectName,
-          labelProps: { name: project.name },
-          message: tracker.string.ArchiveProjectConfirm,
-          action: async () => {
-            await client.update(project, { archived: true })
-          }
-        })
-      }
+      showPopup(MessageBox, {
+        label: tracker.string.ArchiveProjectName,
+        labelProps: { name: project.name },
+        message: anyIssue !== undefined ? tracker.string.ProjectHasIssues : tracker.string.ArchiveProjectConfirm,
+        action: async () => {
+          await client.update(project, { archived: true })
+        }
+      })
     }
   }
 }
