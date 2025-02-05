@@ -104,6 +104,7 @@ export class MessagesDb extends BaseDb {
     async find(workspace: string, params: FindMessagesParams): Promise<Message[]> {
         //TODO: experiment with select to improve performance
         const select = `SELECT m.id,
+                               m.card_id,
                                m.content,
                                m.creator,
                                m.created,
