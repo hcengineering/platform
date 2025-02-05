@@ -664,6 +664,7 @@ export interface Workspace {
   token: string // Account workspace update token.
   pipeline: Promise<Pipeline> | Pipeline
   communicationApi: Promise<CommunicationApi> | CommunicationApi
+
   tickHash: number
 
   tickHandlers: Map<string, TickHandler>
