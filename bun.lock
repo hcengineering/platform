@@ -123,14 +123,33 @@
         "typescript": "^5.6.3",
       },
     },
-    "packages/server": {
-      "name": "@hcengineering/communication-server",
+    "packages/server-core": {
+      "name": "@hcengineering/communication-server-core",
       "version": "0.1.0",
       "dependencies": {
         "@hcengineering/communication-cockroach": "workspace:*",
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
-        "@hcengineering/server-token": "^0.6.377",
+        "@hcengineering/core": "0.6.411",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.1.14",
+        "@types/cors": "^2.8.17",
+        "@types/express": "^5.0.0",
+        "@types/ws": "^8.5.13",
+      },
+      "peerDependencies": {
+        "typescript": "^5.6.3",
+      },
+    },
+    "packages/server-ws": {
+      "name": "@hcengineering/communication-server-ws",
+      "version": "0.1.0",
+      "dependencies": {
+        "@hcengineering/communication-cockroach": "workspace:*",
+        "@hcengineering/communication-sdk-types": "workspace:*",
+        "@hcengineering/communication-types": "workspace:*",
+        "@hcengineering/server-token": "^0.6.411",
         "cors": "^2.8.5",
         "dotenv": "^16.4.7",
         "express": "^4.21.2",
@@ -218,7 +237,9 @@
 
     "@hcengineering/communication-sdk-types": ["@hcengineering/communication-sdk-types@workspace:packages/sdk-types"],
 
-    "@hcengineering/communication-server": ["@hcengineering/communication-server@workspace:packages/server"],
+    "@hcengineering/communication-server-core": ["@hcengineering/communication-server-core@workspace:packages/server-core"],
+
+    "@hcengineering/communication-server-ws": ["@hcengineering/communication-server-ws@workspace:packages/server-ws"],
 
     "@hcengineering/communication-sqlite-wasm": ["@hcengineering/communication-sqlite-wasm@workspace:packages/sqlite-wasm"],
 
