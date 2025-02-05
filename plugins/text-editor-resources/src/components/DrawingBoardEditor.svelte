@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import contact, { type Person } from '@hcengineering/contact'
   import {
     DrawingBoardToolbar,
     DrawingCmd,
@@ -24,7 +25,7 @@
   } from '@hcengineering/presentation'
   import presence from '@hcengineering/presence'
   import { getResource } from '@hcengineering/platform'
-  import { Loading } from '@hcengineering/ui'
+  import { Loading, Component } from '@hcengineering/ui'
   import { onMount, onDestroy } from 'svelte'
   import { Array as YArray, Map as YMap } from 'yjs'
 
@@ -37,6 +38,7 @@
   export let readonly = false
   export let selected = false
   export let loading = false
+  export let fullSize = false
 
   let tool: DrawingTool
   let penColor: string
@@ -47,13 +49,16 @@
   let offset: { x: number, y: number } = { x: 0, y: 0 }
   let changingCmdId: string | undefined
   let cmdEditor: HTMLDivElement | undefined
-  let personCursorPos: Point | undefined
+  let personCursorCanvasPos: Point | undefined
+  let personCursorNodePos: Point | undefined
   let personCursorVisible = false
   let toolbar: HTMLDivElement
   let oldSelected = false
   let oldReadonly = false
-  let sendLiveData: ((key: string, data: any, force: boolean) => void) | undefined = undefined
+  let sendLiveData: ((key: string, data: any, force: boolean) => void) | undefined
+  let getFollowee: (() => Person | undefined) | undefined
   let panning = false
+  let followee: Person | undefined
   const dataKey = 'drawing-board'
 
   $: onSelectedChanged(selected)
@@ -139,27 +144,24 @@
 
   function onOffsetChanged (offset: Point): void {
     if (sendLiveData !== undefined) {
-      console.log('onOffsetChanged', offset)
-      sendLiveData(dataKey, {
-        boardId,
-        offset: { ...offset }
-      }, true)
+      sendLiveData(dataKey, { boardId, offset: { ...offset } }, true)
     }
   }
 
   function onPointerMoved (canvasPos: Point): void {
     if (sendLiveData !== undefined && selected && !panning) {
-      sendLiveData(dataKey, {
-        boardId,
-        cursorPos: { ...canvasPos }
-      }, true)
+      sendLiveData(dataKey, { boardId, cursorPos: { ...canvasPos } }, false)
     }
   }
 
   function onLiveData (data: any): void {
     if (data === undefined) {
+      followee = undefined
       personCursorVisible = false
       return
+    }
+    if (followee === undefined && getFollowee !== undefined) {
+      followee = getFollowee()
     }
     if (data.boardId === boardId) {
       const newOffset = data.offset
@@ -169,7 +171,7 @@
       const cursorPos = data.cursorPos
       if (cursorPos !== undefined) {
         personCursorVisible = true
-        personCursorPos = { ...cursorPos }
+        personCursorCanvasPos = { ...cursorPos }
       }
     }
   }
@@ -178,26 +180,39 @@
     commands = savedCmds.toArray()
     savedCmds.observe(listenSavedCommands)
 
-    getResource(presence.function.SendMyData).then((func) => {
-      sendLiveData = func
-    }).catch((err) => {
-      console.error(err)
-    })
-    getResource(presence.function.SubscribeToOtherData).then((subscribe) => {
-      subscribe(dataKey, onLiveData)
-    }).catch((err) => {
-      console.error(err)
-    })
+    getResource(presence.function.SendMyData)
+      .then((func) => {
+        sendLiveData = func
+      })
+      .catch((err) => {
+        console.error('Failed to get presence.function.SendMyData', err)
+      })
+    getResource(presence.function.GetFollowee)
+      .then((func) => {
+        getFollowee = func
+      })
+      .catch((err) => {
+        console.error('Failed to get presence.function.GetFollowee', err)
+      })
+    getResource(presence.function.SubscribeToOtherData)
+      .then((subscribe) => {
+        subscribe(dataKey, onLiveData)
+      })
+      .catch((err) => {
+        console.error('Failed to get presence.function.SubscribeToOtherData', err)
+      })
   })
 
   onDestroy(() => {
     savedCmds.unobserve(listenSavedCommands)
 
-    getResource(presence.function.UnsubscribeFromOtherData).then((unsubscribe) => {
-      unsubscribe(dataKey, onLiveData)
-    }).catch((err) => {
-      console.error(err)
-    })
+    getResource(presence.function.UnsubscribeFromOtherData)
+      .then((unsubscribe) => {
+        unsubscribe(dataKey, onLiveData)
+      })
+      .catch((err) => {
+        console.error('failed to get presence.function.UnsubscribeFromOtherData', err)
+      })
   })
 </script>
 
@@ -205,7 +220,8 @@
   {#if loading}
     <div
       class="board"
-      class:selected
+      class:fullSize
+      class:selected={selected && !fullSize}
       style:flex-grow={resizeable ? undefined : '1'}
       style:height={resizeable ? `${height}px` : undefined}
     >
@@ -215,7 +231,8 @@
   {:else}
     <div
       class="board"
-      class:selected
+      class:fullSize
+      class:selected={selected && !fullSize}
       style:flex-grow={resizeable ? undefined : '1'}
       style:height={resizeable ? `${height}px` : undefined}
       use:drawing={{
@@ -228,8 +245,7 @@
         penWidth,
         eraserWidth,
         fontSize,
-        personCursorPos,
-        personCursorVisible,
+        personCursorPos: personCursorCanvasPos,
         changingCmdId,
         cmdAdded: (cmd) => {
           savedCmds.push([cmd])
@@ -253,6 +269,9 @@
         },
         pointerMoved: (canvasPos) => {
           onPointerMoved(canvasPos)
+        },
+        personCursorMoved: (nodePos) => {
+          personCursorNodePos = nodePos
         }
       }}
     >
@@ -279,6 +298,25 @@
         />
       {/if}
       <slot />
+      {#if personCursorVisible && personCursorNodePos !== undefined && followee !== undefined}
+        <div class="personCursor" style:left={`${personCursorNodePos.x}px`} style:top={`${personCursorNodePos.y}px`}>
+          <div class="personAvatar">
+            <Component
+              is={contact.component.Avatar}
+              props={{
+                size: 'small',
+                person: followee,
+                name: followee.name
+              }}
+            />
+          </div>
+          <div class="arrowFrame">
+            <svg width="40px" height="40px" viewBox="0 0 30 30" version="1.1" xmlns="http://www.w3.org/2000/svg">
+              <path class="cursorArrow" d="m1.2 1.04v13.5l3.34-1.37 2.14 5 2.61-1.12-1.99-5 3.33-1.49z" />
+            </svg>
+          </div>
+        </div>
+      {/if}
     </div>
   {/if}
 {/if}
@@ -288,11 +326,43 @@
     position: relative;
     width: 100%;
     background-color: var(--drawing-bg-color);
-    border: 1px solid var(--theme-navpanel-border);
     border-radius: var(--small-BorderRadius);
+    border: 1px solid var(--theme-navpanel-border);
+
+    &.fullSize {
+      border-radius: unset;
+      border: none;
+    }
 
     &.selected {
       border: 1px solid var(--theme-editbox-focus-border);
     }
+  }
+
+  .personCursor {
+    position: absolute;
+    z-index: 20;
+    width: 40px;
+    height: 40px;
+  }
+
+  .personAvatar {
+    position: absolute;
+    left: 7px;
+    top: 17px;
+    border-radius: 20%;
+    box-shadow: 0.05rem 0.05rem 0.3rem rgba(0, 0, 0, 0.5);
+  }
+
+  .arrowFrame {
+    position: absolute;
+  }
+
+  .cursorArrow {
+    fill: #efefef;
+    stroke: #222222;
+    stroke-width: 1.2;
+    stroke-linejoin: round;
+    filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.3));
   }
 </style>

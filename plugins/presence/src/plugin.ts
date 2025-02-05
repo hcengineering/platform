@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import type { Person } from '@hcengineering/contact'
 import type { Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui/src/types'
@@ -30,6 +31,7 @@ export const presencePlugin = plugin(presenceId, {
   },
   function: {
     SendMyData: '' as Resource<(key: string, data: any) => void>,
+    GetFollowee: '' as Resource<() => Person | undefined>,
     SubscribeToOtherData: '' as Resource<(key: string, callback: (data: any) => void) => void>,
     UnsubscribeFromOtherData: '' as Resource<(key: string, callback: (data: any) => void) => void>
   }

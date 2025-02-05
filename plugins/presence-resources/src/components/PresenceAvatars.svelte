@@ -20,7 +20,7 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { IconSize, tooltip, deviceOptionsStore as deviceInfo, checkAdaptiveMatching } from '@hcengineering/ui'
   import PresenceList from './PresenceList.svelte'
-  import { presenceByObjectId, personToFollow, togglePersonFollowing } from '../store'
+  import { presenceByObjectId, followee, toggleFollowee } from '../store'
 
   export let object: Doc
 
@@ -59,9 +59,9 @@
         <div
           use:tooltip={{ label: getEmbeddedLabel(formatName(person.name)) }}
           class="avatar-button"
-          class:followed-avatar={$personToFollow === person._id}
+          class:followee-avatar={$followee === person._id}
           on:click={() => {
-            togglePersonFollowing(person._id)
+            toggleFollowee(person._id)
           }}
         >
           <Avatar name={person.name} {size} {person} />
@@ -76,7 +76,7 @@
     cursor: pointer;
   }
 
-  .followed-avatar {
+  .followee-avatar {
     border-radius: 20%;
     outline: 2px solid var(--primary-button-default);
     outline-offset: 1px;
