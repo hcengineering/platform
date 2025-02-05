@@ -98,10 +98,48 @@ export async function OnProjectChanges (txes: Tx[], control: TriggerControl): Pr
   return result
 }
 
+/**
+ * @public
+ */
+export async function OnProjectRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const ltx of txes) {
+    if (ltx._class === core.class.TxRemoveDoc) {
+      const cud = ltx as TxCUD<Doc>
+      if (control.hierarchy.isDerived(cud.objectClass, tracker.class.Project)) {
+        const project = control.removedMap.get(cud.objectId)
+        if (project === undefined) {
+          continue
+        }
+        if (control.hierarchy.hasMixin(project, github.mixin.GithubProject)) {
+          const repos = await control.findAll(control.ctx, github.class.GithubIntegrationRepository, {
+            project: cud.objectId as Ref<GithubProject>
+          })
+          for (const repo of repos) {
+            result.push(control.txFactory.createTxRemoveDoc(repo._class, repo.space, repo._id))
+          }
+
+          const syncDocs = control.modelDb.findAllSync(github.class.DocSyncInfo, {
+            space: cud.objectId as Ref<Space>
+          })
+          for (const syncDoc of syncDocs) {
+            result.push(control.txFactory.createTxRemoveDoc(syncDoc._class, syncDoc.space, syncDoc._id))
+          }
+        }
+      }
+    }
+  }
+  if (result.length > 0) {
+    await OnGithubBroadcast(txes, control)
+  }
+  return result
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
     OnProjectChanges,
+    OnProjectRemove,
     OnGithubBroadcast
   },
   functions: {
