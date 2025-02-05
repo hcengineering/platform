@@ -1,12 +1,22 @@
 <script lang="ts">
   import core, { Association, Class, Data, Doc, Ref } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
-  import { Button, Header, Breadcrumb, Separator, defineSeparators, twoPanelsSeparators } from '@hcengineering/ui'
+  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+  import {
+    Button,
+    Header,
+    Breadcrumb,
+    Separator,
+    defineSeparators,
+    twoPanelsSeparators,
+    IconDelete,
+    showPopup
+  } from '@hcengineering/ui'
   import settings from '../plugin'
-  import view from '@hcengineering/view'
+  import view from '@hcengineering/view-resources/src/plugin'
   import AssociationEditor from './AssociationEditor.svelte'
 
   const query = createQuery()
+  const client = getClient()
 
   let selected: Association | Data<Association> | undefined
 
@@ -26,12 +36,37 @@
     }
   }
 
+  function isAssociation (data: Data<Association> | Association | undefined): data is Association {
+    return (data as Association)?._id !== undefined
+  }
+
   defineSeparators('workspaceSettings', twoPanelsSeparators)
+
+  async function remove (val: Association | Data<Association> | undefined): Promise<void> {
+    if (isAssociation(val)) {
+      showPopup(MessageBox, {
+        label: view.string.DeleteObject,
+        message: view.string.DeleteObjectConfirm,
+        params: { count: 1 },
+        dangerous: true,
+        action: async () => {
+          selected = undefined
+          await client.remove(val)
+        }
+      })
+    }
+  }
 </script>
 
 <div class="hulyComponent">
   <Header adaptive={'disabled'}>
     <Breadcrumb icon={settings.icon.Relations} label={core.string.Relations} size={'large'} isCurrent />
+
+    <svelte:fragment slot="actions">
+      {#if isAssociation(selected)}
+        <Button icon={IconDelete} label={view.string.Delete} kind={'dangerous'} on:click={() => remove(selected)} />
+      {/if}
+    </svelte:fragment>
   </Header>
 
   <div class="hulyComponent-content__container columns">

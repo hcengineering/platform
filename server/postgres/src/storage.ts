@@ -43,6 +43,7 @@ import core, {
   type Ref,
   type ReverseLookups,
   type SessionData,
+  shouldShowArchived,
   type SortingQuery,
   type StorageIterator,
   toFindResult,
@@ -665,7 +666,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
           const select = `SELECT ${this.getProjection(vars, domain, options?.projection, joins, options?.associations)} FROM ${domain}`
 
-          const showArchived = options?.showArchived ?? (query._id !== undefined && typeof query._id === 'string')
+          const showArchived = shouldShowArchived(query, options)
           const secJoin = this.addSecurity(vars, query, showArchived, domain, ctx.contextData)
           if (secJoin !== undefined) {
             sqlChunks.push(secJoin)
@@ -686,7 +687,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             let total = options?.total === true ? 0 : -1
             if (options?.total === true) {
               const pvars = new ValuesVariables()
-              const showArchived = options?.showArchived ?? (query._id !== undefined && typeof query._id === 'string')
+              const showArchived = shouldShowArchived(query, options)
               const secJoin = this.addSecurity(pvars, query, showArchived, domain, ctx.contextData)
               const totalChunks: string[] = []
               if (secJoin !== undefined) {
