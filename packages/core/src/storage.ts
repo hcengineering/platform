@@ -275,3 +275,19 @@ export interface Storage {
 export interface FulltextStorage {
   searchFulltext: (query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
 }
+
+export function shouldShowArchived<T extends Doc> (
+  query: DocumentQuery<T>,
+  options: FindOptions<T> | undefined
+): boolean {
+  if (options?.showArchived !== undefined) {
+    return options.showArchived
+  }
+  if (query._id !== undefined && typeof query._id === 'string') {
+    return true
+  }
+  if (query.space !== undefined && typeof query.space === 'string') {
+    return true
+  }
+  return false
+}
