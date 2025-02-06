@@ -64,7 +64,7 @@
     const lastOne = await client.findOne(card.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
     const title = await translate(card.string.Card, {})
 
-    const _id = await client.createDoc(card.class.Card, core.space.Workspace, {
+    const _id = await client.createDoc(_class ?? card.class.Card, core.space.Workspace, {
       title,
       rank: makeRank(lastOne?.rank, undefined),
       content: '' as MarkupBlobRef
@@ -151,11 +151,13 @@
       />
     </NavLink>
 
-    <div class="antiNav-divider line" />
+    {#if classes.length > 0}
+      <div class="antiNav-divider line" />
 
-    <Scroller shrink>
-      <TagHierarchy bind:_class {classes} {allClasses} on:select />
-    </Scroller>
+      <Scroller shrink>
+        <TagHierarchy bind:_class {classes} {allClasses} on:select />
+      </Scroller>
+    {/if}
 
     <NavFooter split />
   </div>

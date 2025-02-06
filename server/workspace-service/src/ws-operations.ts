@@ -234,14 +234,19 @@ export async function upgradeWorkspaceWith (
   external: boolean = false
 ): Promise<void> {
   const versionStr = versionToString(version)
+  const workspaceVersion = {
+    major: ws.versionMajor,
+    minor: ws.versionMinor,
+    patch: ws.versionPatch
+  }
 
-  if (ws?.version !== undefined && !forceUpdate && versionStr === versionToString(ws.version)) {
+  if (!forceUpdate && versionStr === versionToString(workspaceVersion)) {
     return
   }
 
   ctx.info('upgrading', {
     force: forceUpdate,
-    currentVersion: ws?.version !== undefined ? versionToString(ws.version) : '',
+    currentVersion: versionToString(workspaceVersion),
     toVersion: versionStr,
     workspace: ws.uuid
   })

@@ -55,7 +55,7 @@
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER":"ws",
-        "MODEL_VERSION": "0.6.421",
+        "MODEL_VERSION": "0.6.427",
         // "VERSION": "0.6.289",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
@@ -167,7 +167,7 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
-        "MODEL_VERSION": "v0.6.421",
+        "MODEL_VERSION": "v0.6.427",
         "WS_OPERATION": "all+backup",
         "BACKUP_STORAGE": "minio|minio?accessKey=minioadmin&secretKey=minioadmin",
         "BACKUP_BUCKET": "dev-backups",
@@ -200,7 +200,7 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
-        "MODEL_VERSION": "0.6.421",
+        "MODEL_VERSION": "0.6.427",
         "WS_OPERATION": "all+backup",
         "BACKUP_STORAGE": "minio|minio?accessKey=minioadmin&secretKey=minioadmin",
         "BACKUP_BUCKET": "dev-backups",
@@ -295,7 +295,7 @@
       "name": "Debug backup tool",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "backup-restore", "../../../hardware/dump/alex-staff-agency", "w-haiodo-alex-staff-c-673ee7ab-87df5406ea-2b8b4d", "--skip", "blob"],
+      "args": ["src/__start.ts", "backup", "../../../hardware/dump/githubcr", "w-haiodo-githubcr-67403799-de2a46aa46-beb3b2"],
       "env": {
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
@@ -305,12 +305,14 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         "TELEGRAM_DATABASE": "telegram-service"
       },
+      "smartStep": true,
+      "sourceMapRenames": true,
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/dev/tool",
       "protocol": "inspector",
       "outputCapture": "std",
-      "runtimeVersion": "20",
+      "runtimeVersion": "22",
       "showAsyncStacks": true
     },
     {
@@ -330,7 +332,7 @@
         "ACCOUNT_DB_URL": "mongodb://localhost:27017",
         "TELEGRAM_DATABASE": "telegram-service",
         "REKONI_URL": "http://localhost:4004",
-        "MODEL_VERSION": "0.6.421"
+        "MODEL_VERSION": "0.6.427"
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
@@ -357,7 +359,7 @@
         "MONGO_URL": "mongodb://localhost:27017",
         "TELEGRAM_DATABASE": "telegram-service",
         "REKONI_URL": "http://localhost:4004",
-        "MODEL_VERSION": "0.6.421"
+        "MODEL_VERSION": "0.6.427"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
@@ -401,7 +403,7 @@
         "SECRET": "secret",
         "REGION": "cockroach",
         "BUCKET_NAME":"backups",
-        "INTERVAL":"43200"
+        "INTERVAL":"0"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "showAsyncStacks": true,

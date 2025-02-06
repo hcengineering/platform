@@ -27,10 +27,17 @@
     IconDelete,
     Label,
     navigate,
-    showPopup
+    showPopup,
+    DropdownLabels,
+    deviceOptionsStore as deviceInfo,
+    themeStore,
+    getWeekDayNames,
+    getLocalWeekStart,
+    type DropdownTextItem
   } from '@hcengineering/ui'
   import { loginId } from '@hcengineering/login'
   import { EditableAvatar } from '@hcengineering/contact-resources'
+  import { translateCB } from '@hcengineering/platform'
   import { getClient, MessageBox } from '@hcengineering/presentation'
   import { WorkspaceSetting } from '@hcengineering/setting'
   import { AvatarType } from '@hcengineering/contact'
@@ -116,6 +123,30 @@
       icon: avatar.avatar
     })
   }
+
+  const weekInfoFirstDay: number = getLocalWeekStart()
+  const weekNames = getWeekDayNames()
+  let items: DropdownTextItem[] = []
+  let selected: string
+
+  $: translateCB(
+    setting.string.SystemSetupString,
+    { day: weekNames?.get(weekInfoFirstDay)?.toLowerCase() ?? '' },
+    $themeStore.language,
+    (r) => {
+      items = [
+        { id: 'system', label: r },
+        ...Array.from(weekNames.entries()).map((it) => ({ id: it[0].toString(), label: it[1] }))
+      ]
+      const savedFirstDayOfWeek = localStorage.getItem('firstDayOfWeek') ?? 'system'
+      selected = items[savedFirstDayOfWeek === 'system' ? 0 : $deviceInfo.firstDayOfWeek + 1].id
+    }
+  )
+  const onSelected = (e: CustomEvent<string>): void => {
+    selected = e.detail
+    localStorage.setItem('firstDayOfWeek', `${e.detail}`)
+    $deviceInfo.firstDayOfWeek = e.detail === 'system' ? weekInfoFirstDay : parseInt(e.detail, 10) ?? 1
+  }
 </script>
 
 <div class="hulyComponent">
@@ -159,9 +190,26 @@
             {#if isEditingName}
               <Button icon={IconClose} kind="ghost" size="small" on:click={handleCancelEditName} />
             {/if}
+            <Button
+              icon={IconDelete}
+              kind="dangerous"
+              on:click={handleDelete}
+              showTooltip={{ label: setting.string.DeleteWorkspace }}
+            />
           </div>
-          <div class="delete mt-6">
-            <Button icon={IconDelete} kind="dangerous" label={setting.string.DeleteWorkspace} on:click={handleDelete} />
+          <div class="flex-col flex-gap-4 mt-6">
+            <div class="title"><Label label={setting.string.Calendar} /></div>
+            <div class="flex-row-center flex-gap-4">
+              <Label label={setting.string.StartOfTheWeek} />
+              <DropdownLabels
+                {items}
+                kind={'regular'}
+                size={'medium'}
+                {selected}
+                enableSearch={false}
+                on:selected={onSelected}
+              />
+            </div>
           </div>
         </div>
       </Scroller>

@@ -32,9 +32,10 @@
     MonthCalendar,
     YearCalendar,
     areDatesEqual,
-    getMonday,
+    getWeekStart,
     showPopup,
-    AnySvelteComponent
+    AnySvelteComponent,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
 
   import { CalendarMode, DayCalendar, calendarByIdStore, hidePrivateEvents } from '../index'
@@ -61,7 +62,6 @@
   const myPrimaryId = acc.primarySocialId
   const mySocialStrings = acc.socialIds
 
-  const mondayStart = true
   let mode: CalendarMode = allowedModes.includes(CalendarMode.Days) ? CalendarMode.Days : allowedModes[0]
 
   // Current selected day
@@ -82,7 +82,7 @@
         return new Date(date).setHours(0, 0, 0, 0)
       }
       case CalendarMode.Week: {
-        return getMonday(date, mondayStart).setHours(0, 0, 0, 0)
+        return getWeekStart(date, $deviceInfo.firstDayOfWeek).getTime()
       }
       case CalendarMode.Month: {
         return new Date(new Date(date).setDate(-7)).setHours(0, 0, 0, 0)
@@ -102,8 +102,8 @@
         return new Date(date).setDate(date.getDate() + 1)
       }
       case CalendarMode.Week: {
-        const monday = getMonday(date, mondayStart)
-        return new Date(monday.setDate(monday.getDate() + 7)).setHours(0, 0, 0, 0)
+        const startDay = getWeekStart(date, $deviceInfo.firstDayOfWeek)
+        return new Date(startDay.setDate(startDay.getDate() + 7)).getTime()
       }
       case CalendarMode.Month: {
         return new Date(new Date(date).setMonth(date.getMonth() + 1, 14)).setHours(0, 0, 0, 0)
@@ -315,7 +315,7 @@
 {#if headerComponent}
   <svelte:component
     this={headerComponent}
-    {mode}
+    bind:mode
     {currentDate}
     {ddItems}
     monthName={getMonthName(currentDate)}
@@ -326,7 +326,7 @@
   />
 {:else}
   <CalendarHeader
-    {mode}
+    bind:mode
     {currentDate}
     {ddItems}
     monthName={getMonthName(currentDate)}
@@ -337,7 +337,6 @@
 {/if}
 {#if mode === CalendarMode.Year}
   <YearCalendar
-    {mondayStart}
     cellHeight={'2.5rem'}
     bind:selectedDate
     bind:currentDate
@@ -354,7 +353,7 @@
     </svelte:fragment>
   </YearCalendar>
 {:else if mode === CalendarMode.Month}
-  <MonthCalendar {mondayStart} cellHeight={'8.5rem'} bind:selectedDate bind:currentDate>
+  <MonthCalendar cellHeight={'8.5rem'} bind:selectedDate bind:currentDate>
     <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
       <Day
         events={findEvents(objects, date)}
@@ -380,7 +379,6 @@
   <DayCalendar
     bind:this={dayCalendar}
     events={objects}
-    {mondayStart}
     displayedDaysCount={7}
     {dragItemId}
     startFromWeekStart
@@ -398,7 +396,6 @@
       bind:this={dayCalendar}
       events={objects}
       {dragItemId}
-      {mondayStart}
       displayedDaysCount={mode === CalendarMode.Days ? 3 : 1}
       startFromWeekStart={false}
       bind:selectedDate

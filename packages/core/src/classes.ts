@@ -810,7 +810,9 @@ export interface BackupStatus {
 
 export interface WorkspaceInfoWithStatus extends WorkspaceInfo {
   isDisabled?: boolean
-  version?: Data<Version>
+  versionMajor: number
+  versionMinor: number
+  versionPatch: number
   lastVisit?: number
   mode: WorkspaceMode
   processingProgress?: number

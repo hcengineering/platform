@@ -250,6 +250,17 @@ export class ClientSession implements Session {
     }
   }
 
+  async getDomainHash (ctx: ClientSessionCtx, domain: Domain): Promise<void> {
+    this.lastRequest = Date.now()
+    try {
+      const result = await this.getOps(ctx.pipeline).getDomainHash(ctx.ctx, domain)
+      await ctx.sendResponse(ctx.requestId, result)
+    } catch (err: any) {
+      await ctx.sendError(ctx.requestId, 'Failed to upload', unknownError(err))
+      ctx.ctx.error('failed to getDomainHash', { domain, err })
+    }
+  }
+
   async closeChunk (ctx: ClientSessionCtx, idx: number): Promise<void> {
     this.lastRequest = Date.now()
     await this.getOps(ctx.pipeline).closeChunk(ctx.ctx, idx)

@@ -114,6 +114,7 @@
       bind:viewlet
       bind:preference
       bind:viewlets
+      ignoreFragment
       viewletQuery={{
         attachTo: _class,
         variant: { $exists: false },

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindOptions, mergeQueries, Ref, Space, WithLookup } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, mergeQueries, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Project, ProjectType, ProjectTypeDescriptor } from '@hcengineering/task'
@@ -97,6 +97,7 @@
       bind:viewlet
       bind:preference
       bind:viewlets
+      ignoreFragment
       viewletQuery={{
         attachTo: _class,
         variant: { $exists: false },

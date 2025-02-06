@@ -24,6 +24,7 @@
   export let savedAttachmentsIds: Ref<Attachment>[] = []
   export let imageSize: AttachmentImageSize = 'auto'
   export let videoPreload = true
+  export let isOwn = false
 
   let otherAttachments: WithLookup<Attachment>[]
   let linkPreviewAttachments: WithLookup<Attachment>[]
@@ -47,5 +48,5 @@
 
 <div class="gapV-2">
   <AttachmentList attachments={otherAttachments} {savedAttachmentsIds} {imageSize} {videoPreload} />
-  <LinkPreviewList attachments={linkPreviewAttachments} />
+  <LinkPreviewList attachments={linkPreviewAttachments} {isOwn} />
 </div>

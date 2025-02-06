@@ -48,12 +48,14 @@
 
   let workspaces: WorkspaceInfoWithStatus[] = []
   let status = OK
+  let accountPromise: Promise<LoginInfo | null>
   let account: LoginInfo | null | undefined = undefined
 
   let flagToUpdateWorkspaces = false
 
   async function loadAccount (): Promise<void> {
-    account = await getAccount()
+    accountPromise = getAccount()
+    account = await accountPromise
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -101,6 +103,7 @@
     try {
       const res = await getWorkspaces()
 
+      await accountPromise
       if (res.length === 0 && account?.token == null) {
         goTo('confirmationSend')
       }

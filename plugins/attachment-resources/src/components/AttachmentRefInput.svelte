@@ -128,21 +128,8 @@
     return url.protocol.startsWith('http')
   }
 
-  function longestSegment (s: string): string {
-    const segments = s.split('.')
-    let maxLen = segments[0].length
-    let result = segments[0]
-    for (const segment of segments) {
-      if (segment.length > maxLen) {
-        result = segment
-        maxLen = segment.length
-      }
-    }
-    return result
-  }
   function getUrlKey (s: string): string {
-    const url = new URL(s)
-    return longestSegment(url.host) + url.pathname
+    return s
   }
 
   $: objectId && updateAttachments(objectId)

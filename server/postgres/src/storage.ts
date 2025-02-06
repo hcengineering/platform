@@ -43,6 +43,7 @@ import core, {
   type Ref,
   type ReverseLookups,
   type SessionData,
+  shouldShowArchived,
   type SortingQuery,
   type StorageIterator,
   systemAccountUuid,
@@ -65,7 +66,8 @@ import {
   type DbAdapterHandler,
   type DomainHelperOperations,
   type ServerFindOptions,
-  type TxAdapter
+  type TxAdapter,
+  calcHashHash
 } from '@hcengineering/server-core'
 import type postgres from 'postgres'
 import { createDBClient, createGreenDBClient, type DBClient } from './client'
@@ -661,7 +663,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
           const select = `SELECT ${this.getProjection(vars, domain, options?.projection, joins, options?.associations)} FROM ${domain}`
 
-          const showArchived = options?.showArchived ?? (query._id !== undefined && typeof query._id === 'string')
+          const showArchived = shouldShowArchived(query, options)
           const secJoin = this.addSecurity(vars, query, showArchived, domain, ctx.contextData)
           if (secJoin !== undefined) {
             sqlChunks.push(secJoin)
@@ -682,7 +684,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             let total = options?.total === true ? 0 : -1
             if (options?.total === true) {
               const pvars = new ValuesVariables()
-              const showArchived = options?.showArchived ?? (query._id !== undefined && typeof query._id === 'string')
+              const showArchived = shouldShowArchived(query, options)
               const secJoin = this.addSecurity(pvars, query, showArchived, domain, ctx.contextData)
               const totalChunks: string[] = []
               if (secJoin !== undefined) {
@@ -859,7 +861,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
             if (key === 'data') {
               obj[p] = { ...obj[p], ...row[column] }
             } else {
-              if (key === 'attachedTo' && row[column] === 'NULL') {
+              if (key === 'createdOn' || key === 'modifiedOn') {
+                const val = Number.parseInt(row[column])
+                obj[p][key] = Number.isNaN(val) ? null : val
+              } else if (key === '%hash%') {
+                continue
+              } else if (key === 'attachedTo' && row[column] === 'NULL') {
                 continue
               } else {
                 obj[p][key] = row[column] === 'NULL' ? null : row[column]
@@ -1437,6 +1444,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
       )
     }
     return res
+  }
+
+  @withContext('get-domain-hash')
+  async getDomainHash (ctx: MeasureContext, domain: Domain): Promise<string> {
+    return await calcHashHash(ctx, domain, this)
   }
 
   curHash (): string {

@@ -82,7 +82,7 @@
     "StartWithRecording": "开始录制",
     "Language": "语言",
     "Kick": "踢出",
-    "WithAudio": "带音频",
-    "ShareWithAudioTooltip": "共享音频，您应重新共享以应用更改"
+    "WithAudio": "包含系统音频",
+    "ShareWithAudioTooltip": "与系统音频一起共享屏幕。重新启动屏幕共享以应用更改。"
   }
 }

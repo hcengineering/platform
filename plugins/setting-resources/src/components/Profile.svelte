@@ -64,9 +64,10 @@
         const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
         const loginInfo = await leaveWorkspace(getCurrentAccount().uuid)
 
+        const loc = getCurrentLocation()
+        clearMetadata(loc.path[1])
+
         if (loginInfo?.token != null) {
-          const loc = getCurrentLocation()
-          clearMetadata(loc.path[1])
           setMetadata(presentation.metadata.Token, loginInfo.token)
           setMetadataLocalStorage(login.metadata.LastToken, loginInfo.token)
           setMetadataLocalStorage(login.metadata.LoginAccount, loginInfo.account)

@@ -375,28 +375,40 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
     return chunks
   }
 
-  const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
-  for (const [accId, socialId] of Object.entries(socialIdByAccount)) {
-    if (accId === socialId) continue
-    operations.push({
-      filter: { createdBy: accId as any },
-      update: {
-        createdBy: socialId
-      }
-    })
-    operations.push({
-      filter: { modifiedBy: accId as any },
-      update: {
-        modifiedBy: socialId
-      }
-    })
-  }
+  for (const domain of client.hierarchy.domains()) {
+    ctx.info('processing domain ', { domain })
+    const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+    const groupByCreated = await client.groupBy<any, Doc>(domain, 'createdBy', {})
+    const groupByModified = await client.groupBy<any, Doc>(domain, 'modifiedBy', {})
 
-  if (operations.length > 0) {
-    const operationsChunks = chunkArray(operations, 40)
-    for (const domain of client.hierarchy.domains()) {
+    groupByCreated.forEach((_, accId) => {
+      const socialId = socialIdByAccount[accId]
+      if (socialId == null || accId === socialId) return
+
+      operations.push({
+        filter: { createdBy: accId },
+        update: {
+          createdBy: socialId
+        }
+      })
+    })
+
+    groupByModified.forEach((_, accId) => {
+      const socialId = socialIdByAccount[accId]
+      if (socialId == null || accId === socialId) return
+
+      operations.push({
+        filter: { modifiedBy: accId },
+        update: {
+          modifiedBy: socialId
+        }
+      })
+    })
+
+    if (operations.length > 0) {
+      const operationsChunks = chunkArray(operations, 40)
+      ctx.info('chunks to process ', { total: operationsChunks.length })
       let processed = 0
-      ctx.info('processing domain ', { domain })
       for (const operationsChunk of operationsChunks) {
         if (operationsChunk.length === 0) continue
 
@@ -406,10 +418,11 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
           ctx.info('processed chunk', { processed, of: operationsChunks.length })
         }
       }
+    } else {
+      ctx.info('no user accounts to migrate')
     }
-  } else {
-    ctx.info('no user accounts to migrate')
   }
+
   ctx.info('finished migrating createdBy and modifiedBy')
 
   const spaceTypes = client.model.findAllSync(core.class.SpaceType, {})

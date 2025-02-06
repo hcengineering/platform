@@ -18,6 +18,7 @@
   import ButtonIcon from '../ButtonIcon.svelte'
   import IconChevronLeft from '../icons/ChevronLeft.svelte'
   import IconChevronRight from '../icons/ChevronRight.svelte'
+  import { deviceOptionsStore as deviceInfo } from '../..'
   import {
     ICell,
     TCellStyle,
@@ -32,7 +33,6 @@
   } from './internal/DateUtils'
 
   export let currentDate: Date | null
-  export let mondayStart: boolean = true
   export let timeZone: string = getUserTimezone()
   export let hideNavigator: boolean = false
   export let replacementDay: boolean = false
@@ -40,16 +40,15 @@
   const dispatch = createEventDispatcher()
 
   let monthYear: string
-  const today: Date = new Date(Date.now())
+  const today: Date = new Date()
   const viewDate: Date = new Date(currentDate ?? today)
   let selectedDate: Date = new Date(currentDate ?? today)
-  $: firstDayOfCurrentMonth = firstDay(viewDate, mondayStart)
+  $: firstDayOfCurrentMonth = firstDay(viewDate, $deviceInfo.firstDayOfWeek)
   const isToday = (n: number): boolean => {
     if (areDatesEqual(today, new Date(viewDate.getFullYear(), viewDate.getMonth(), n))) return true
     return false
   }
 
-  let days: ICell[] = []
   const getDateStyle = (date: Date): TCellStyle => {
     if (selectedDate != null) {
       const zonedTime = fromCurrentToTz(selectedDate, timeZone)
@@ -59,22 +58,24 @@
     }
     return 'not-selected'
   }
-  const renderCellStyles = (): void => {
-    days = []
-    for (let i = 1; i <= daysInMonth(viewDate); i++) {
-      const tempDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), i)
-      days.push({
-        dayOfWeek: tempDate.getDay() === 0 ? 7 : tempDate.getDay(),
-        style: getDateStyle(tempDate)
+  const renderCellStyles = (date: Date, firstDay: number = 1): ICell[] => {
+    const result: ICell[] = []
+    for (let i = 1; i <= daysInMonth(date); i++) {
+      const tempDate = new Date(date.getFullYear(), date.getMonth(), i)
+      result.push({
+        dayOfWeek: (tempDate.getDay() - firstDay + 7) % 7,
+        classes: getDateStyle(tempDate)
       })
     }
-    days = days
     monthYear = capitalizeFirstLetter(getMonthName(viewDate)) + ' ' + viewDate.getFullYear()
+    return result
   }
+  $: days = renderCellStyles(viewDate, $deviceInfo.firstDayOfWeek)
 
-  afterUpdate(() => {
-    if (viewDate) renderCellStyles()
-  })
+  const changeMonth = (offset: number): void => {
+    viewDate.setMonth(viewDate.getMonth() + offset)
+    days = renderCellStyles(viewDate, $deviceInfo.firstDayOfWeek)
+  }
 </script>
 
 <div class="month-container">
@@ -91,8 +92,7 @@
             inheritColor
             on:click={() => {
               viewDate.setDate(1)
-              viewDate.setMonth(viewDate.getMonth() - 1)
-              renderCellStyles()
+              changeMonth(-1)
             }}
           />
           <ButtonIcon
@@ -102,8 +102,7 @@
             inheritColor
             on:click={() => {
               viewDate.setDate(1)
-              viewDate.setMonth(viewDate.getMonth() + 1)
-              renderCellStyles()
+              changeMonth(1)
             }}
           />
         </div>
@@ -122,14 +121,10 @@
     <div class="calendar">
       {#each days as day, i}
         <button
-          class="day ui-regular-14 {day.style}"
+          class="day ui-regular-14 {day.classes}"
           class:today={isToday(i + 1)}
           class:day-off={day.dayOfWeek > 5}
-          style="grid-column: {mondayStart ? day.dayOfWeek : day.dayOfWeek === 7 ? 1 : day.dayOfWeek + 1}/{mondayStart
-            ? day.dayOfWeek + 1
-            : day.dayOfWeek === 7
-              ? 2
-              : day.dayOfWeek + 2};"
+          style="grid-column: {day.dayOfWeek + 1}/{day.dayOfWeek + 2};"
           on:click|stopPropagation={() => {
             viewDate.setDate(i + 1)
             selectedDate = new Date(viewDate)

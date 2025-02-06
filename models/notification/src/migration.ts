@@ -294,8 +294,26 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   }
 
   const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
-  for (const [accId, socialId] of Object.entries(socialIdByAccount)) {
-    if (accId === socialId) continue
+  const groupByUser = await client.groupBy<any, Doc>(DOMAIN_NOTIFICATION, 'user', {
+    _class: {
+      $in: [
+        notification.class.DocNotifyContext,
+        notification.class.BrowserNotification,
+        notification.class.PushSubscription,
+        notification.class.InboxNotification,
+        notification.class.ActivityInboxNotification,
+        notification.class.CommonInboxNotification
+      ]
+    }
+  })
+  const groupBySenderId = await client.groupBy<any, Doc>(DOMAIN_NOTIFICATION, 'senderId', {
+    _class: notification.class.BrowserNotification
+  })
+
+  groupByUser.forEach((_, accId) => {
+    const socialId = socialIdByAccount[accId]
+    if (socialId == null || accId === socialId) return
+
     operations.push({
       filter: {
         user: accId,
@@ -314,6 +332,12 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
         user: socialId
       }
     })
+  })
+
+  groupBySenderId.forEach((_, accId) => {
+    const socialId = socialIdByAccount[accId]
+    if (socialId == null || accId === socialId) return
+
     operations.push({
       filter: {
         senderId: accId,
@@ -323,7 +347,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
         senderId: socialId
       }
     })
-  }
+  })
 
   if (operations.length > 0) {
     const operationsChunks = chunkArray(operations, 40)
@@ -583,7 +607,7 @@ export const notificationOperation: MigrateOperation = {
         }
       },
       {
-        state: 'migrate-duplicated-contexts-v3',
+        state: 'migrate-duplicated-contexts-v4',
         func: migrateDuplicateContexts
       },
       {

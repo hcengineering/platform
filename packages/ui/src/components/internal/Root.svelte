@@ -10,7 +10,8 @@
     IconArrowRight,
     checkMobile,
     deviceOptionsStore as deviceInfo,
-    checkAdaptiveMatching
+    checkAdaptiveMatching,
+    getLocalWeekStart
   } from '../../'
   import { desktopPlatform, getCurrentLocation, location, locationStorageKeyId, navigate } from '../../location'
   import uiPlugin from '../../plugin'
@@ -141,6 +142,12 @@
     $deviceInfo.isMobile &&
     (($deviceInfo.isPortrait && $deviceInfo.docWidth <= 480) ||
       (!$deviceInfo.isPortrait && $deviceInfo.docHeight <= 480))
+
+  const weekInfoFirstDay: number = getLocalWeekStart()
+  const savedFirstDayOfWeek = localStorage.getItem('firstDayOfWeek') ?? 'system'
+  $deviceInfo.firstDayOfWeek =
+    parseInt(savedFirstDayOfWeek === 'system' ? weekInfoFirstDay.toString() : savedFirstDayOfWeek, 10) ??
+    weekInfoFirstDay
 </script>
 
 <svelte:window bind:innerWidth={docWidth} bind:innerHeight={docHeight} />

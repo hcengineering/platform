@@ -75,6 +75,9 @@ export class LowLevelMiddleware extends BaseMiddleware implements Middleware {
       rawDeleteMany (domain, query) {
         return adapterManager.getAdapter(domain, true).rawDeleteMany(domain, query)
       },
+      getDomainHash (ctx: MeasureContext, domain: Domain): Promise<string> {
+        return adapterManager.getAdapter(domain, false).getDomainHash(ctx, domain)
+      },
       traverse<T extends Doc>(
         domain: Domain,
         query: DocumentQuery<T>,
