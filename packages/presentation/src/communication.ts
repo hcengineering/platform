@@ -16,7 +16,6 @@ import {
 } from '@hcengineering/communication-types'
 import {
   type BroadcastEvent,
-  type Client,
   type CreateAttachmentEvent,
   type CreateMessageEvent,
   type CreateMessageResult,
@@ -35,16 +34,20 @@ import {
   type RemoveReactionEvent,
   type UpdateNotificationContextEvent
 } from '@hcengineering/communication-sdk-types'
-import { type Client as PlatformClient, type ClientConnection as PlatformConnection } from '@hcengineering/core'
+import {
+  type Client as PlatformClient,
+  type ClientConnection as PlatformConnection,
+  getCurrentAccount
+} from '@hcengineering/core'
 import {
   initLiveQueries,
   createMessagesQuery,
   createNotificationsQuery
 } from '@hcengineering/communication-client-query'
 
-export { createMessagesQuery, createNotificationsQuery, type Client as CommunicationClient }
+export { createMessagesQuery, createNotificationsQuery }
 
-export interface RawClient extends PlatformConnection {
+interface Connection extends PlatformConnection {
   findMessages: (params: FindMessagesParams, queryId?: number) => Promise<Message[]>
   findNotificationContexts: (params: FindNotificationContextParams, queryId?: number) => Promise<NotificationContext[]>
   findNotifications: (params: FindNotificationsParams, queryId?: number) => Promise<Notification[]>
@@ -52,9 +55,11 @@ export interface RawClient extends PlatformConnection {
   unsubscribeQuery: (id: number) => Promise<void>
 }
 
-let client: Client
+let client: CommunicationClient
 
-export function getCommunicationClient (): Client {
+export type CommunicationClient = Client
+
+export function getCommunicationClient (): CommunicationClient {
   return client
 }
 
@@ -63,15 +68,15 @@ export async function setCommunicationClient (platformClient: PlatformClient): P
   if (connection === undefined) {
     return
   }
-  client = new CommunicationClient(connection as unknown as RawClient)
+  client = new Client(connection as unknown as Connection)
   initLiveQueries(client)
 }
 
-class CommunicationClient implements Client {
+class Client {
   onEvent: (event: BroadcastEvent) => void = () => {}
 
-  constructor (private readonly rawClient: RawClient) {
-    rawClient.pushHandler((...events: any[]) => {
+  constructor (private readonly connection: Connection) {
+    connection.pushHandler((...events: any[]) => {
       for (const event of events) {
         if (event != null && 'type' in event) {
           this.onEvent(event as BroadcastEvent)
@@ -80,14 +85,19 @@ class CommunicationClient implements Client {
     })
   }
 
-  async createMessage (card: CardID, content: RichText, creator: SocialID): Promise<MessageID> {
+  private getSocialId (): SocialID {
+    // TODO: get correct social id
+    return getCurrentAccount().primarySocialId
+  }
+
+  async createMessage (card: CardID, content: RichText): Promise<MessageID> {
     const event: CreateMessageEvent = {
       type: EventType.CreateMessage,
       card,
       content,
-      creator
+      creator: this.getSocialId()
     }
-    const result = await this.rawClient.sendEvent(event)
+    const result = await this.connection.sendEvent(event)
     return (result as CreateMessageResult).id
   }
 
@@ -97,51 +107,51 @@ class CommunicationClient implements Client {
       card,
       message
     }
-    await this.rawClient.sendEvent(event)
+    await this.connection.sendEvent(event)
   }
 
-  async createPatch (card: CardID, message: MessageID, content: RichText, creator: SocialID): Promise<void> {
+  async createPatch (card: CardID, message: MessageID, content: RichText): Promise<void> {
     const event: CreatePatchEvent = {
       type: EventType.CreatePatch,
       card,
       message,
       content,
-      creator
+      creator: this.getSocialId()
     }
-    await this.rawClient.sendEvent(event)
+    await this.connection.sendEvent(event)
   }
 
-  async createReaction (card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
+  async createReaction (card: CardID, message: MessageID, reaction: string): Promise<void> {
     const event: CreateReactionEvent = {
       type: EventType.CreateReaction,
       card,
       message,
       reaction,
-      creator
+      creator: this.getSocialId()
     }
-    await this.rawClient.sendEvent(event)
+    await this.connection.sendEvent(event)
   }
 
-  async removeReaction (card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
+  async removeReaction (card: CardID, message: MessageID, reaction: string): Promise<void> {
     const event: RemoveReactionEvent = {
       type: EventType.RemoveReaction,
       card,
       message,
       reaction,
-      creator
+      creator: this.getSocialId()
     }
-    await this.rawClient.sendEvent(event)
+    await this.connection.sendEvent(event)
   }
 
-  async createAttachment (card: CardID, message: MessageID, attachment: CardID, creator: SocialID): Promise<void> {
+  async createAttachment (card: CardID, message: MessageID, attachment: CardID): Promise<void> {
     const event: CreateAttachmentEvent = {
       type: EventType.CreateAttachment,
       card,
       message,
       attachment,
-      creator
+      creator: this.getSocialId()
     }
-    await this.rawClient.sendEvent(event)
+    await this.connection.sendEvent(event)
   }
 
   async removeAttachment (card: CardID, message: MessageID, attachment: CardID): Promise<void> {
@@ -151,7 +161,7 @@ class CommunicationClient implements Client {
       message,
       attachment
     }
-    await this.rawClient.sendEvent(event)
+    await this.connection.sendEvent(event)
   }
 
   async createNotification (message: MessageID, context: ContextID): Promise<void> {
@@ -160,7 +170,7 @@ class CommunicationClient implements Client {
       message,
       context
     }
-    await this.rawClient.sendEvent(event)
+    await this.connection.sendEvent(event)
   }
 
   async removeNotification (message: MessageID, context: ContextID): Promise<void> {
@@ -169,7 +179,7 @@ class CommunicationClient implements Client {
       message,
       context
     }
-    await this.rawClient.sendEvent(event)
+    await this.connection.sendEvent(event)
   }
 
   async createNotificationContext (card: CardID, lastView?: Date, lastUpdate?: Date): Promise<ContextID> {
@@ -179,7 +189,7 @@ class CommunicationClient implements Client {
       lastView,
       lastUpdate
     }
-    const result = await this.rawClient.sendEvent(event)
+    const result = await this.connection.sendEvent(event)
     return (result as CreateNotificationContextResult).id
   }
 
@@ -188,7 +198,7 @@ class CommunicationClient implements Client {
       type: EventType.RemoveNotificationContext,
       context
     }
-    await this.rawClient.sendEvent(event)
+    await this.connection.sendEvent(event)
   }
 
   async updateNotificationContext (context: ContextID, update: NotificationContextUpdate): Promise<void> {
@@ -197,11 +207,11 @@ class CommunicationClient implements Client {
       context,
       update
     }
-    await this.rawClient.sendEvent(event)
+    await this.connection.sendEvent(event)
   }
 
   async findMessages (params: FindMessagesParams, queryId?: number): Promise<Message[]> {
-    const rawMessages = await this.rawClient.findMessages(params, queryId)
+    const rawMessages = await this.connection.findMessages(params, queryId)
     return rawMessages.map((it: any) => this.toMessage(it))
   }
 
@@ -240,15 +250,15 @@ class CommunicationClient implements Client {
     params: FindNotificationContextParams,
     queryId?: number
   ): Promise<NotificationContext[]> {
-    return await this.rawClient.findNotificationContexts(params, queryId)
+    return await this.connection.findNotificationContexts(params, queryId)
   }
 
   async findNotifications (params: FindNotificationsParams, queryId?: number): Promise<Notification[]> {
-    return await this.rawClient.findNotifications(params, queryId)
+    return await this.connection.findNotifications(params, queryId)
   }
 
   async unsubscribeQuery (id: number): Promise<void> {
-    await this.rawClient.unsubscribeQuery(id)
+    await this.connection.unsubscribeQuery(id)
   }
 
   close (): void {
