@@ -162,7 +162,7 @@ function extractPresentableStateFromDocumentBundle (bundle: DocumentBundle, prjm
 
   const getSortSequence = (prjdoc: ProjectDocument): number[] => {
     const doc = documentById.get(prjdoc.document as Ref<ControlledDocument>)
-    return doc !== undefined ? [doc.seqNumber, doc.major, doc.minor] : [0, 0, 0]
+    return doc !== undefined ? [doc.seqNumber, doc.major, doc.minor, doc.createdOn ?? 0] : [0, 0, 0, 0]
   }
 
   const prjdoc = bundle.ProjectDocument.filter((prjdoc) => {
