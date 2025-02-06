@@ -16,7 +16,6 @@
 import { type ClientSocketFactory } from '@hcengineering/client'
 import {
   CollaborativeDoc,
-  type Account,
   type AttachedData,
   type AttachedDoc,
   type Class,
