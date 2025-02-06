@@ -15,14 +15,7 @@
 
 import activity from '@hcengineering/activity'
 import core, { IndexKind } from '@hcengineering/core'
-import {
-  type Builder,
-  Index,
-  Model,
-  Prop,
-  TypeString,
-  UX
-} from '@hcengineering/model'
+import { type Builder, Index, Model, Prop, TypeString, UX } from '@hcengineering/model'
 import contact from '@hcengineering/model-contact'
 import view from '@hcengineering/model-view'
 import { TChunterSpace } from '@hcengineering/model-chunter'

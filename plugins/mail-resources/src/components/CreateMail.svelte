@@ -15,13 +15,14 @@
 //
 -->
 <script lang="ts">
-  import core, { Data, generateId, getCurrentAccount } from '@hcengineering/core'
+  import core, { Data, Doc, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
   import { PersonAccount } from '@hcengineering/contact'
-  import chunter from '@hcengineering/chunter'
+  import chunter, { type ChatMessage } from '@hcengineering/chunter'
   import { Card, getClient } from '@hcengineering/presentation'
   import { MailThread } from '@hcengineering/mail'
   import { createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+
   import mail from '../plugin'
 
   const manager = createFocusManager()
@@ -70,7 +71,7 @@
       mailThreadId,
       mail.class.MailThread,
       'messages',
-      { message: message.text ?? '' },
+      { message: message ?? '' },
       id
     )
 
@@ -99,7 +100,7 @@
 
   <div class="flex-row-center pb-0-5">
     <div class="flex-grow flex-col">
-      <EditBox placeholder={mail.string.To} bind:value={to} autoFocus focusIndex={1}/>
+      <EditBox placeholder={mail.string.To} bind:value={to} autoFocus focusIndex={1} />
     </div>
   </div>
 

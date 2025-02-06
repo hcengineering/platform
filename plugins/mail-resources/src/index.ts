@@ -23,6 +23,5 @@ export default async (): Promise<Resources> => ({
     MailThreadPresenter,
     MailThread
   },
-  activity: {
-  }
+  activity: {}
 })

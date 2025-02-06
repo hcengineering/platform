@@ -3,6 +3,7 @@
     "Subject": "Téma",
     "From": "Od",
     "To": "Komu",
-    "CreateMail": "Nová zpráva"
+    "CreateMail": "Nová zpráva",
+    "MailThread": "Zpráva"
   }
 }

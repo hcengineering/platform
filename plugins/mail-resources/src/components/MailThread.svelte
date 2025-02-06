@@ -19,61 +19,65 @@
   import { createEventDispatcher, onMount } from 'svelte'
 
   import { getResource } from '@hcengineering/platform'
-  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
+  import { ActionContext, getClient } from '@hcengineering/presentation'
   import { type Class, type Ref } from '@hcengineering/core'
   import { MailThread } from '@hcengineering/mail'
   import { Panel } from '@hcengineering/panel'
   import { type AnySvelteComponent, Component, Loading } from '@hcengineering/ui'
-  import chunter from '@hcengineering/chunter'
-  import view from '@hcengineering/view'
+  import chunter, { type ChatMessage } from '@hcengineering/chunter'
+  import view, { type ObjectPresenter } from '@hcengineering/view'
 
   export let _id: Ref<MailThread>
   export let _class: Ref<Class<MailThread>>
 
   const messageClass = chunter.class.ChatMessage
-  let messages: Doc[] = []
-  let presenterLoading = true
-  let messagesLoading = true
+  let messages: ChatMessage[] = []
+  let isLoading = true
 
   let object: MailThread | undefined
 
   const dispatch = createEventDispatcher()
 
-  const query = createQuery()
+  const client = getClient()
 
   let messagePresenter: AnySvelteComponent | undefined = undefined
 
-  findMessagePresenter()
-  findMessages()
+  $: if (_id !== undefined && _class !== undefined) {
+    void load()
+  }
 
-  function findMessagePresenter (): void {
-    const presenterMixin = getClient().getHierarchy().classHierarchyMixin(messageClass, view.mixin.ObjectPresenter)
-    if (presenterMixin?.presenter !== undefined) {
-      getResource(presenterMixin.presenter)
-        .then((result) => {
-          messagePresenter = result
-        })
-        .catch((err) => {
-          console.error('Failed to find presenter for class ' + messageClass, err)
-        })
-        .finally(() => {
-          presenterLoading = false
-        })
+  async function load (): Promise<void> {
+    isLoading = true
+    try {
+      await Promise.all([findThread(), findMessages(), findMessagePresenter()])
+    } catch (err) {
+      console.error(err)
+    } finally {
+      isLoading = false
     }
   }
 
-  function findMessages (): void {
-    query.query(messageClass, { attachedTo: _id }, async (result) => {
-      messages = result
-      messagesLoading = false
-    })
+  async function findMessagePresenter (): Promise<void> {
+    const presenterMixin: ObjectPresenter | undefined = getClient()
+      .getHierarchy()
+      .classHierarchyMixin(messageClass, view.mixin.ObjectPresenter) as any
+    if (presenterMixin?.presenter !== undefined) {
+      messagePresenter = await getResource(presenterMixin.presenter)
+    }
   }
 
-  $: _id !== undefined &&
-    _class !== undefined &&
-    query.query(_class, { _id }, async (result) => {
-      ;[object] = result
-    })
+  async function findMessages (): Promise<void> {
+    const result = await client.findAll(messageClass, { attachedTo: _id })
+    if (Array.isArray(result)) {
+      messages = result
+    } else {
+      console.warn('Failed to find messages for thread', result)
+    }
+  }
+
+  async function findThread (): Promise<void> {
+    object = await client.findOne(_class, { _id })
+  }
 
   onMount(() => dispatch('open', { ignoreKeys: [] }))
 </script>
@@ -82,18 +86,20 @@
   <ActionContext context={{ mode: 'editor' }} />
   <Panel
     {object}
+    title={object.subject}
     isHeader={false}
     isAside={false}
     isSub={false}
     adaptive={'disabled'}
+    withoutActivity
     on:open
     on:close={() => dispatch('close')}
   >
-    {#if messagesLoading || presenterLoading }
-      <Loading/>
+    {#if isLoading}
+      <Loading />
     {:else}
       {#each messages as message}
-        <Component is={messagePresenter} props={{ object: message }} />
+        <Component is={messagePresenter} props={{ value: message }} />
       {/each}
     {/if}
   </Panel>

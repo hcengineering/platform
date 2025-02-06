@@ -3,6 +3,7 @@
     "Subject": "Sujet",
     "From": "De",
     "To": "À",
-    "CreateMail": "Nouveau message"
+    "CreateMail": "Nouveau message",
+    "MailThread": "Message"
   }
 }

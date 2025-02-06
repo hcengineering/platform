@@ -18,6 +18,5 @@ import { mergeIds } from '@hcengineering/platform'
 import mail, { mailId } from '@hcengineering/mail'
 
 export default mergeIds(mailId, mail, {
-  string: {
-  }
+  string: {}
 })

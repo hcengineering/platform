@@ -13,11 +13,7 @@
 // limitations under the License.
 //
 
-import {
-  type Doc,
-  type Ref,
-  type SpaceTypeDescriptor
-} from '@hcengineering/core'
+import { type Doc, type Ref, type SpaceTypeDescriptor } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 
 import { plugin } from '@hcengineering/platform'
@@ -34,8 +30,7 @@ export const personalBrowserPlugin = plugin(personalBrowserId, {
     PersonalBrowser: '' as Asset,
     Mail: '' as Asset
   },
-  class: {
-  },
+  class: {},
   descriptors: {
     ProjectType: '' as Ref<SpaceTypeDescriptor>
   },
