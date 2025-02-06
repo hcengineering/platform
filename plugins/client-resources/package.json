@@ -43,8 +43,8 @@
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/client": "^0.6.18",
     "@hcengineering/rpc": "^0.6.5",
-    "@hcengineering/communication-types": "0.1.6",
-    "@hcengineering/communication-sdk-types": "0.1.6",
+    "@hcengineering/communication-types": "0.1.7",
+    "@hcengineering/communication-sdk-types": "0.1.7",
     "snappyjs": "^0.7.0"
   },
   "repository": "https://github.com/hcengineering/platform",
