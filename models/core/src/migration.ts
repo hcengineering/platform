@@ -665,7 +665,7 @@ export const coreOperation: MigrateOperation = {
         func: migrateCollaborativeContentToStorage
       },
       {
-        state: 'fix-backups-hash-timestamp',
+        state: 'fix-backups-hash-timestamp-v2',
         func: async (client: MigrationClient): Promise<void> => {
           const now = Date.now().toString(16)
           for (const d of client.hierarchy.domains()) {

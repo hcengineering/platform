@@ -16,45 +16,18 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import accountPlugin, {
   assignWorkspace,
-  confirmEmail,
-  getAccount,
-  getWorkspaceById,
-  updateArchiveInfo,
-  signUpByEmail,
   createWorkspaceRecord,
-  updateWorkspaceInfo,
+  flattenStatus,
   getAccountDB,
   getWorkspaceInfoWithStatusById,
-  flattenStatus,
-  type WorkspaceInfoWithStatus,
-  type AccountDB,
-  type Workspace,
-  getEmailSocialId
+  signUpByEmail,
+  updateWorkspaceInfo,
+  type AccountDB
 } from '@hcengineering/account'
-import { backupWorkspace } from '@hcengineering/backup-service'
 import { setMetadata } from '@hcengineering/platform'
+import { createFileBackupStorage, createStorageBackupStorage, restore } from '@hcengineering/server-backup'
+import serverClientPlugin, { getAccountClient } from '@hcengineering/server-client'
 import {
-  backup,
-  backupFind,
-  backupList,
-  backupRemoveLast,
-  backupSize,
-  checkBackupIntegrity,
-  compactBackup,
-  createFileBackupStorage,
-  createStorageBackupStorage,
-  restore
-} from '@hcengineering/server-backup'
-import serverClientPlugin, {
-  BlobClient,
-  createClient,
-  getTransactorEndpoint,
-  getAccountClient
-} from '@hcengineering/server-client'
-import {
-  createBackupPipeline,
-  getConfig,
-  getWorkspaceDestroyAdapter,
   registerAdapterFactory,
   registerDestroyFactory,
   registerServerPlugins,
@@ -62,45 +35,31 @@ import {
   registerTxAdapterFactory,
   sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
-import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import { buildModel, FileModelLogger } from '@hcengineering/server-tool'
+import serverToken from '@hcengineering/server-token'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
-import path from 'path'
 
 import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { program, type Command } from 'commander'
-import { addControlledDocumentRank } from './qms'
-import { clearTelegramHistory } from './telegram'
-import { diffWorkspace, updateField } from './workspace'
+import { updateField } from './workspace'
 
-import core, {
+import {
   AccountRole,
-  generateId,
-  isActiveMode,
-  isArchivingMode,
   MeasureMetricsContext,
   metricsToString,
-  RateLimiter,
-  versionToString,
   type Data,
-  type Doc,
-  type Ref,
   type Tx,
-  type Version
+  type Version,
+  type WorkspaceDataId
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
-import contact from '@hcengineering/model-contact'
 import {
   createMongoAdapter,
   createMongoDestroyAdapter,
   createMongoTxAdapter,
-  getMongoClient,
-  getWorkspaceMongoDB,
   shutdownMongo
 } from '@hcengineering/mongo'
 import { backupDownload } from '@hcengineering/server-backup/src/backup'
 
-import { createDatalakeClient, CONFIG_KIND as DATALAKE_CONFIG_KIND, type DatalakeConfig } from '@hcengineering/datalake'
 import { getModelVersion } from '@hcengineering/model-all'
 import {
   createPostgreeDestroyAdapter,
@@ -108,45 +67,12 @@ import {
   createPostgresTxAdapter,
   shutdownPostgres
 } from '@hcengineering/postgres'
-import { CONFIG_KIND as S3_CONFIG_KIND, S3Service, type S3Config } from '@hcengineering/s3'
-import type { PipelineFactory, StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
-import { deepEqual } from 'fast-equals'
-import { createWriteStream, readFileSync } from 'fs'
-import { getAccountDBUrl, getMongoDBUrl } from './__start'
+import type { StorageAdapter } from '@hcengineering/server-core'
+import { getAccountDBUrl } from './__start'
 // import { fillGithubUsers, fixAccountEmails, renameAccount } from './account'
-import {
-  benchmark,
-  benchmarkWorker,
-  generateWorkspaceData,
-  stressBenchmark,
-  testFindAll,
-  type StressBenchmarkMode
-} from './benchmark'
-import {
-  cleanArchivedSpaces,
-  cleanRemovedTransactions,
-  cleanWorkspace,
-  fixCommentDoubleIdCreate,
-  fixMinioBW,
-  fixSkills,
-  optimizeModel,
-  removeDuplicateIds,
-  restoreHrTaskTypesFromUpdates,
-  restoreRecruitingTaskTypes
-} from './clean'
 import { changeConfiguration } from './configuration'
-import {
-  generateUuidMissingWorkspaces,
-  moveAccountDbFromMongoToPG,
-  moveFromMongoToPG,
-  moveWorkspaceFromMongoToPG,
-  updateDataWorkspaceIdToUuid
-} from './db'
 import { reindexWorkspace } from './fulltext'
-import { restoreControlledDocContentMongo, restoreMarkupRefsMongo, restoreWikiContentMongo } from './markup'
-import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 
-import { copyToDatalake, moveFiles, showLostFiles } from './storage'
 import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
 
 const colorConstants = {
@@ -1212,20 +1138,25 @@ export function devTool (
   //   await storageAdapter.close()
   // })
 
-  // program
-  // .command('backup-s3-download <bucketName> <dirName> <storeIn>')
-  // .description('Download a full backup from s3 to local dir')
-  // .action(async (bucketName: string, dirName: string, storeIn: string, cmd) => {
-  //   const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
-  //   const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
-  //   try {
-  //     const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
-  //     await backupDownload(storage, storeIn)
-  //   } catch (err: any) {
-  //     toolCtx.error('failed to size backup', { err })
-  //   }
-  //   await storageAdapter.close()
-  // })
+  program
+    .command('backup-s3-download <bucketName> <dirName> <storeIn>')
+    .description('Download a full backup from s3 to local dir')
+    .action(async (bucketName: string, dirName: string, storeIn: string, cmd) => {
+      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      try {
+        const storage = await createStorageBackupStorage(
+          toolCtx,
+          storageAdapter,
+          bucketName as WorkspaceDataId,
+          dirName
+        )
+        await backupDownload(storage, storeIn)
+      } catch (err: any) {
+        toolCtx.error('failed to size backup', { err })
+      }
+      await storageAdapter.close()
+    })
 
   // program
   //   .command('copy-s3-datalake')
