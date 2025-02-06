@@ -97,7 +97,7 @@
   >
     {#if isLoading}
       <Loading />
-    {:else}
+    {:else if messagePresenter !== undefined}
       {#each messages as message}
         <Component is={messagePresenter} props={{ value: message }} />
       {/each}
