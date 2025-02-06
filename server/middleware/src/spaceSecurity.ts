@@ -14,7 +14,6 @@
 //
 import core, {
   Account,
-  PersonId,
   AccountRole,
   AttachedDoc,
   Class,
@@ -26,6 +25,7 @@ import core, {
   LookupData,
   MeasureContext,
   ObjQueryType,
+  PersonId,
   Position,
   PullArray,
   Ref,
@@ -44,10 +44,9 @@ import core, {
   clone,
   generateId,
   shouldShowArchived,
-  systemAccountEmail,
   toFindResult,
-  type SessionData,
-  type PersonUuid
+  type PersonUuid,
+  type SessionData
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import {
