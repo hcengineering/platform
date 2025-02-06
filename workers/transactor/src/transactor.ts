@@ -64,7 +64,7 @@ import contactPlugin from '@hcengineering/contact'
 import serverAiBot from '@hcengineering/server-ai-bot'
 import serverNotification from '@hcengineering/server-notification'
 import serverTelegram from '@hcengineering/server-telegram'
-import { Api as CommunicationApi } from '@hcengineering/communication-server-core'
+import { Api as CommunicationApi } from '@hcengineering/communication-server'
 
 export const PREFERRED_SAVE_SIZE = 500
 export const PREFERRED_SAVE_INTERVAL = 30 * 1000
@@ -498,7 +498,11 @@ export class Transactor extends DurableObject<Env> {
     const session = await this.makeRpcSession(rawToken, cs)
     const pipeline =
       session.workspace.pipeline instanceof Promise ? await session.workspace.pipeline : session.workspace.pipeline
-    const opContext = this.sessionManager.createOpContext(this.measureCtx, pipeline, undefined, session, cs)
+    const communicationApi =
+      session.workspace.communicationApi instanceof Promise
+        ? await session.workspace.communicationApi
+        : session.workspace.communicationApi
+    const opContext = this.sessionManager.createOpContext(this.measureCtx, pipeline, communicationApi, undefined, session, cs)
     session.includeSessionContext(opContext)
     return pipeline
   }

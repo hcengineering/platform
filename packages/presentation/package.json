@@ -56,8 +56,9 @@
     "fast-equals": "^5.2.2",
     "png-chunks-extract": "^1.0.0",
     "uuid": "^8.3.2",
-    "@hcengineering/communication-types": "0.1.4",
-    "@hcengineering/communication-sdk-types": "0.1.4"
+    "@hcengineering/communication-types": "0.1.6",
+    "@hcengineering/communication-sdk-types": "0.1.6",
+    "@hcengineering/communication-client-query": "0.1.6"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

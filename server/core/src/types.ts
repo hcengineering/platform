@@ -235,7 +235,7 @@ export type CommunicationApiFactory = (
   ctx: MeasureContext,
   ws: WorkspaceIds,
   broadcastSessions: BroadcastSessionsFunc
-) => Promise<CommunicationApi | undefined>
+) => Promise<CommunicationApi>
 
 /**
  * @public
@@ -523,7 +523,7 @@ export interface ClientSessionCtx {
   ctx: MeasureContext
 
   pipeline: Pipeline
-  communicationApi: CommunicationApi | undefined
+  communicationApi: CommunicationApi
 
   socialStringsToUsers: Map<PersonId, PersonUuid>
   requestId: ReqId | undefined
@@ -646,7 +646,7 @@ export interface Workspace {
   id: string
   token: string // Account workspace update token.
   pipeline: Promise<Pipeline> | Pipeline
-  communicationApi: Promise<CommunicationApi | undefined> | CommunicationApi | undefined
+  communicationApi: Promise<CommunicationApi> | CommunicationApi
   tickHash: number
 
   tickHandlers: Map<string, TickHandler>
@@ -731,6 +731,7 @@ export interface SessionManager {
   createOpContext: (
     ctx: MeasureContext,
     pipeline: Pipeline,
+    communicationApi: CommunicationApi,
     requestId: Request<any>['id'],
     service: Session,
     ws: ConnectionSocket
