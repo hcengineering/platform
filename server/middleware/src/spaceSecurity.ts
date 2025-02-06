@@ -331,7 +331,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   private handleRemove (tx: TxCUD<Space>): void {
     const removeTx = tx as TxRemoveDoc<Space>
     if (!this.context.hierarchy.isDerived(removeTx.objectClass, core.class.Space)) return
-    if (removeTx._class !== core.class.TxCreateDoc) return
+    if (removeTx._class !== core.class.TxRemoveDoc) return
     this.removeSpace(tx.objectId)
   }
 

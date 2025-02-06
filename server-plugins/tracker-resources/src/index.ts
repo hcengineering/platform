@@ -36,7 +36,7 @@ import { getMetadata, IntlString } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
 import { stripTags } from '@hcengineering/text-core'
-import tracker, { Component, Issue, IssueParentInfo, TimeSpendReport, trackerId } from '@hcengineering/tracker'
+import tracker, { Component, Issue, IssueParentInfo, Project, TimeSpendReport, trackerId } from '@hcengineering/tracker'
 import { workbenchId } from '@hcengineering/workbench'
 
 async function updateSubIssues (
@@ -149,6 +149,28 @@ export async function getIssueNotificationContent (
     intlParams,
     intlParamsNotLocalized
   }
+}
+
+/**
+ * @public
+ */
+export async function OnProjectRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const ctx = tx as TxRemoveDoc<Project>
+    const classes = [tracker.class.Issue, tracker.class.Component, tracker.class.Milestone, tracker.class.IssueTemplate]
+    for (const cls of classes) {
+      const docs = await control.findAll(control.ctx, cls, { space: ctx.objectId })
+      for (const doc of docs) {
+        const tx = control.txFactory.createTxRemoveDoc(cls, doc.space, doc._id)
+        result.push(tx)
+      }
+    }
+  }
+  control.ctx.contextData.broadcast.targets.projectRemove = (it) => {
+    return []
+  }
+  return result
 }
 
 /**
@@ -540,6 +562,7 @@ export default async () => ({
   },
   trigger: {
     OnIssueUpdate,
+    OnProjectRemove,
     OnComponentRemove,
     OnWorkspaceOwnerAdded
   }
