@@ -49,7 +49,7 @@ export class AuthenticationExtension implements Extension {
         throw new Error('documentName must include workspace id')
       }
 
-      return buildContext(data, ids.dataId)
+      return buildContext(data, ids)
     })
   }
 }

@@ -46,8 +46,8 @@ import core, {
   Tx,
   TxCUD,
   TxOperations,
-  WorkspaceDataId,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type WorkspaceIds
 } from '@hcengineering/core'
 import { Room } from '@hcengineering/love'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
@@ -88,7 +88,7 @@ export class WorkspaceClient {
     readonly dbStorage: DbStorage,
     readonly transactorUrl: string,
     readonly token: string,
-    readonly workspace: WorkspaceUuid,
+    readonly wsIds: WorkspaceIds,
     readonly personUuid: PersonUuid,
     readonly socialIds: SocialId[],
     readonly ctx: MeasureContext,
@@ -120,19 +120,19 @@ export class WorkspaceClient {
     await this.checkEmployeeInfo(opClient)
 
     if (this.aiPerson !== undefined && config.LoveEndpoint !== '') {
-      this.love = new LoveController(this.workspace, this.ctx.newChild('love', {}), this.token, opClient, this.aiPerson)
+      this.love = new LoveController(this.wsIds.uuid, this.ctx.newChild('love', {}), this.token, opClient, this.aiPerson)
     }
 
     this.client.notify = (...txes: Tx[]) => {
       void this.txHandler(opClient, txes as TxCUD<Doc>[])
     }
-    this.ctx.info('Initialized workspace', { workspace: this.workspace })
+    this.ctx.info('Initialized workspace', { workspace: this.wsIds })
 
     return opClient
   }
 
   private async checkEmployeeInfo (client: TxOperations): Promise<void> {
-    this.ctx.info('Upload avatar file', { workspace: this.workspace })
+    this.ctx.info('Upload avatar file', { workspace: this.wsIds })
 
     try {
       const stat = fs.statSync(config.AvatarPath)
@@ -147,14 +147,14 @@ export class WorkspaceClient {
 
         await this.storage.put(
           this.ctx,
-          this.workspace as any as WorkspaceDataId,
+          this.wsIds,
           config.AvatarName,
           data,
           config.AvatarContentType,
           data.length
         )
-        await this.updateAvatarInfo(this.workspace, config.AvatarPath, lastModified)
-        this.ctx.info('Avatar file uploaded successfully', { workspace: this.workspace, path: config.AvatarPath })
+        await this.updateAvatarInfo(this.wsIds.uuid, config.AvatarPath, lastModified)
+        this.ctx.info('Avatar file uploaded successfully', { workspace: this.wsIds, path: config.AvatarPath })
       }
     } catch (e) {
       this.ctx.error('Failed to upload avatar file', { e })
@@ -163,7 +163,7 @@ export class WorkspaceClient {
     await this.checkPersonData(client)
   }
 
-  private async updateAvatarInfo (workspace: string, path: string, lastModified: number): Promise<void> {
+  private async updateAvatarInfo (workspace: WorkspaceUuid, path: string, lastModified: number): Promise<void> {
     const record = await this.dbStorage.getWorkspace(workspace)
 
     if (record === undefined) {
@@ -194,10 +194,10 @@ export class WorkspaceClient {
       return
     }
 
-    const exist = await this.storage.stat(this.ctx, this.workspace as any, config.AvatarName)
+    const exist = await this.storage.stat(this.ctx, this.wsIds, config.AvatarName)
 
     if (exist === undefined) {
-      this.ctx.error('Cannot find file', { file: config.AvatarName, workspace: this.workspace })
+      this.ctx.error('Cannot find file', { file: config.AvatarName, workspace: this.wsIds })
       return
     }
 
@@ -227,7 +227,7 @@ export class WorkspaceClient {
       return this.historyMap.get(objectId) ?? []
     }
 
-    const historyRecords = await this.dbStorage.getHistoryRecords(this.workspace, objectId)
+    const historyRecords = await this.dbStorage.getHistoryRecords(this.wsIds.uuid, objectId)
     this.historyMap.set(objectId, historyRecords)
     return historyRecords
   }
@@ -260,12 +260,12 @@ export class WorkspaceClient {
       objectId,
       objectClass,
       tokens,
-      workspace: this.workspace
+      workspace: this.wsIds.uuid
     }
 
     await this.dbStorage.addHistoryRecord(summaryRecord)
     await this.dbStorage.removeHistoryRecords(toSummarize.map(({ _id }) => _id))
-    const newHistory = await this.dbStorage.getHistoryRecords(this.workspace, objectId)
+    const newHistory = await this.dbStorage.getHistoryRecords(this.wsIds.uuid, objectId)
     this.historyMap.set(objectId, newHistory)
     this.summarizing.delete(objectId)
   }
@@ -280,7 +280,7 @@ export class WorkspaceClient {
   ): Promise<void> {
     const currentHistory = (await this.getHistory(objectId)) ?? []
     const newRecord: HistoryRecord = {
-      workspace: this.workspace,
+      workspace: this.wsIds.uuid,
       message,
       objectId,
       objectClass,
@@ -392,7 +392,7 @@ export class WorkspaceClient {
       await this.opClient.close()
     }
 
-    this.ctx.info('Closed workspace client: ', { workspace: this.workspace })
+    this.ctx.info('Closed workspace client: ', { workspace: this.wsIds })
   }
 
   private async txHandler (_: TxOperations, txes: TxCUD<Doc>[]): Promise<void> {

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { generateId, WorkspaceDataId } from '@hcengineering/core'
+import { generateId, type WorkspaceIds } from '@hcengineering/core'
 import { StorageConfiguration, initStatisticsContext } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 import { getClient as getAccountClientRaw, AccountClient, WorkspaceLoginInfo } from '@hcengineering/account-client'
@@ -94,7 +94,7 @@ const extractToken = (headers: IncomingHttpHeaders, queryParams: any): string =>
   }
 }
 
-type AsyncRequestHandler = (req: Request, res: Response, wsDataId: WorkspaceDataId, next: NextFunction) => Promise<void>
+type AsyncRequestHandler = (req: Request, res: Response, wsIds: WorkspaceIds, next: NextFunction) => Promise<void>
 
 const handleRequest = async (
   fn: AsyncRequestHandler,
@@ -104,14 +104,16 @@ const handleRequest = async (
 ): Promise<void> => {
   try {
     const token = extractToken(req.headers, req.query)
-    const loginInfo = await getAccountClient(token).getLoginInfoByToken()
-    const workspace = (loginInfo as WorkspaceLoginInfo)?.workspace
-    if (workspace === undefined) {
+    const wsLoginInfo = (await getAccountClient(token).getLoginInfoByToken()) as WorkspaceLoginInfo
+    if (wsLoginInfo?.workspace === undefined) {
       throw new ApiError(401, "Couldn't find workspace with the provided token")
     }
-    const wsDataId = (loginInfo as WorkspaceLoginInfo)?.workspaceDataId
-
-    await fn(req, res, wsDataId ?? (workspace as unknown as WorkspaceDataId), next)
+    const wsIds = {
+      uuid: wsLoginInfo.workspace,
+      dataId: wsLoginInfo.workspaceDataId,
+      url: wsLoginInfo.workspaceUrl
+    }
+    await fn(req, res, wsIds, next)
   } catch (err: unknown) {
     next(err)
   }
@@ -132,7 +134,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
 
   app.get(
     '/print',
-    wrapRequest(async (req, res, wsUuid) => {
+    wrapRequest(async (req, res, wsIds) => {
       const rawlink = req.query.link as string
       const link = decodeURIComponent(rawlink)
       const kind = req.query.kind as PrintOptions['kind']
@@ -166,7 +168,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
 
       const printId = `print-${generateId()}`
 
-      await storageAdapter.put(measureCtx, wsUuid, printId, printRes, `application/${kind}`, printRes.length)
+      await storageAdapter.put(measureCtx, wsIds, printId, printRes, `application/${kind}`, printRes.length)
 
       res.contentType('application/json')
       res.send({ id: printId })

@@ -20,8 +20,7 @@ import {
   type WorkspaceUuid,
   type MeasureContext,
   type Tx,
-  type WorkspaceIds,
-  type WorkspaceDataId
+  type WorkspaceIds
 } from '@hcengineering/core'
 import platform, { Severity, Status, UNAUTHORIZED, unknownStatus } from '@hcengineering/platform'
 import { RPCHandler, type Response } from '@hcengineering/rpc'
@@ -282,12 +281,11 @@ export function startHttpServer (
           res.end()
           return
         }
-        const dataId = wsIds.dataId ?? (wsIds.uuid as unknown as WorkspaceDataId)
         ctx
           .with(
             'storage upload',
-            { workspace: dataId },
-            (ctx) => externalStorage.put(ctx, dataId, name, req, contentType, size !== -1 ? size : undefined),
+            { workspace: wsIds.uuid },
+            (ctx) => externalStorage.put(ctx, wsIds, name, req, contentType, size !== -1 ? size : undefined),
             { file: name, contentType }
           )
           .then(() => {
@@ -327,13 +325,12 @@ export function startHttpServer (
         }
 
         const name = req.query.name as string
-        const dataId = wsIds.dataId ?? (wsIds.uuid as unknown as WorkspaceDataId)
 
         const range = req.headers.range
         if (range !== undefined) {
           ctx
             .with('file-range', { workspace: wsIds.uuid }, (ctx) =>
-              getFileRange(ctx, range, externalStorage, dataId, name, wrapRes(res))
+              getFileRange(ctx, range, externalStorage, wsIds, name, wrapRes(res))
             )
             .catch((err) => {
               Analytics.handleError(err)
@@ -342,7 +339,7 @@ export function startHttpServer (
               res.end()
             })
         } else {
-          void getFile(ctx, externalStorage, dataId, name, wrapRes(res)).catch((err) => {
+          void getFile(ctx, externalStorage, wsIds, name, wrapRes(res)).catch((err) => {
             Analytics.handleError(err)
             ctx.error('/api/v1/blob get error', { err })
             res.writeHead(404, {})

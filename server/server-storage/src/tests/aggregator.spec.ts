@@ -1,4 +1,10 @@
-import { MeasureMetricsContext, type WorkspaceDataId, type MeasureContext } from '@hcengineering/core'
+import {
+  MeasureMetricsContext,
+  type WorkspaceDataId,
+  type MeasureContext,
+  type WorkspaceUuid,
+  type WorkspaceIds
+} from '@hcengineering/core'
 import type { NamedStorageAdapter } from '@hcengineering/storage'
 import { FallbackStorageAdapter } from '../fallback'
 import { MemStorageAdapter } from './memAdapters'
@@ -9,7 +15,7 @@ describe('aggregator tests', () => {
     mem2: MemStorageAdapter
     aggr: FallbackStorageAdapter
     testCtx: MeasureContext
-    ws1: WorkspaceDataId
+    wsIds1: WorkspaceIds
   } {
     const mem1 = new MemStorageAdapter()
 
@@ -20,24 +26,28 @@ describe('aggregator tests', () => {
     const aggr = new FallbackStorageAdapter(adapters)
 
     const testCtx = new MeasureMetricsContext('test', {})
-    const ws1 = 'ws1' as WorkspaceDataId
-    return { mem1, mem2, aggr, ws1, testCtx }
+    const wsIds1 = {
+      uuid: 'ws1-uuid' as WorkspaceUuid,
+      dataId: 'ws1-dataId' as WorkspaceDataId,
+      url: 'ws1-url'
+    }
+    return { mem1, mem2, aggr, wsIds1, testCtx }
   }
 
   it('not reuse existing storage', async () => {
-    const { mem1, aggr, ws1, testCtx } = prepare1()
+    const { mem1, aggr, wsIds1, testCtx } = prepare1()
 
     // Test default provider
-    await mem1.put(testCtx, ws1, 'test', 'data', 'text/plain')
+    await mem1.put(testCtx, wsIds1, 'test', 'data', 'text/plain')
 
-    const stat = await aggr.stat(testCtx, ws1, 'test')
+    const stat = await aggr.stat(testCtx, wsIds1, 'test')
     expect(stat?.provider).toEqual('mem1')
 
-    await aggr.put(testCtx, ws1, 'test', 'data2', 'text/plain')
-    const stat2 = await aggr.stat(testCtx, ws1, 'test')
+    await aggr.put(testCtx, wsIds1, 'test', 'data2', 'text/plain')
+    const stat2 = await aggr.stat(testCtx, wsIds1, 'test')
     expect(stat2?.provider).toEqual('mem2')
 
-    const dta = Buffer.concat((await aggr.read(testCtx, ws1, 'test')) as any).toString()
+    const dta = Buffer.concat((await aggr.read(testCtx, wsIds1, 'test')) as any).toString()
     expect(dta).toEqual('data2')
   })
 })

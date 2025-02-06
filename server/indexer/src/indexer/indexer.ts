@@ -41,7 +41,6 @@ import core, {
   type WithLookup,
   coreId,
   type WorkspaceIds,
-  type WorkspaceDataId,
   docKey,
   generateId,
   getFullTextIndexableAttributes,
@@ -132,10 +131,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     readonly checkIndexes: () => Promise<void>
   ) {
     this.contexts = new Map(model.findAllSync(core.class.FullTextSearchContext, {}).map((it) => [it.toClass, it]))
-  }
-
-  get workspaceDataId (): WorkspaceDataId {
-    return this.workspace.dataId ?? (this.workspace.uuid as unknown as WorkspaceDataId)
   }
 
   async cancel (): Promise<void> {
@@ -811,7 +806,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     const value = v.value as Ref<Blob>
     if (value !== undefined && value !== '') {
       try {
-        const readable = await this.storageAdapter?.read(ctx, this.workspaceDataId, value)
+        const readable = await this.storageAdapter?.read(ctx, this.workspace, value)
         const markup = Buffer.concat(readable as any).toString()
         let textContent = markupToText(markup)
         textContent = textContent
@@ -859,7 +854,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           return
         }
       }
-      const docInfo: Blob | undefined = await this.storageAdapter.stat(ctx, this.workspaceDataId, ref)
+      const docInfo: Blob | undefined = await this.storageAdapter.stat(ctx, this.workspace, ref)
       if (docInfo !== undefined && docInfo.size < 30 * 1024 * 1024) {
         // We have blob, we need to decode it to string.
         const contentType = (docInfo.contentType ?? '').split(';')[0]
@@ -884,7 +879,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   private async handleBlob (ctx: MeasureContext<any>, docInfo: Blob | undefined, indexedDoc: IndexedDoc): Promise<void> {
     if (docInfo !== undefined) {
       const contentType = (docInfo.contentType ?? '').split(';')[0]
-      const readable = await this.storageAdapter?.get(ctx, this.workspaceDataId, docInfo._id)
+      const readable = await this.storageAdapter?.get(ctx, this.workspace, docInfo._id)
 
       if (readable !== undefined) {
         try {
@@ -913,7 +908,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   ): Promise<void> {
     if (docInfo !== undefined) {
       let textContent = Buffer.concat(
-        (await this.storageAdapter?.read(ctx, this.workspaceDataId, docInfo._id)) as any
+        (await this.storageAdapter?.read(ctx, this.workspace, docInfo._id)) as any
       ).toString()
 
       textContent = textContent

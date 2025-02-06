@@ -20,7 +20,6 @@ import core, {
   MeasureContext,
   Ref,
   TxOperations,
-  type WorkspaceDataId,
   generateId,
   makeDocCollabId,
   systemAccountUuid,
@@ -273,14 +272,12 @@ export async function processImages (
 
     // upload
     const uuid = generateId()
-    await storageAdapter.put(
-      ctx,
-      workspaceDataId ?? (workspaceId as unknown as WorkspaceDataId),
-      uuid,
-      fileContents,
-      mimeType,
-      fileSize
-    )
+    const wsIds = {
+      uuid: workspaceId,
+      dataId: workspaceDataId,
+      url: ''
+    }
+    await storageAdapter.put(ctx, wsIds, uuid, fileContents, mimeType, fileSize)
 
     // attachment
     const attachmentId: Ref<Attachment> = generateId()

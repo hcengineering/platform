@@ -19,7 +19,7 @@ import {
   decodeDocumentId
 } from '@hcengineering/collaborator-client'
 import { saveCollabJson } from '@hcengineering/collaboration'
-import { type Blob, type Ref, MeasureContext, type WorkspaceDataId } from '@hcengineering/core'
+import { type Blob, type Ref, MeasureContext } from '@hcengineering/core'
 import { Context } from '../../context'
 import { RpcMethodParams } from '../rpc'
 
@@ -37,12 +37,11 @@ export async function createContent (
     throw new Error(`Document ${documentName} already exists`)
   }
 
-  const { documentId, workspaceId } = decodeDocumentId(documentName)
+  const { documentId } = decodeDocumentId(documentName)
 
   const result: Record<string, Ref<Blob>> = {}
-  const dataId = context.workspaceDataId ?? (workspaceId as WorkspaceDataId)
   for (const [field, markup] of Object.entries(content)) {
-    const blob = await saveCollabJson(ctx, storageAdapter, dataId, documentId, markup)
+    const blob = await saveCollabJson(ctx, storageAdapter, context.wsIds, documentId, markup)
     result[field] = blob
   }
 

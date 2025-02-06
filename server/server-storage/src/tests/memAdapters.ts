@@ -1,41 +1,57 @@
-import core, { type Blob, type MeasureContext, type WorkspaceDataId } from '@hcengineering/core'
+import core, {
+  WorkspaceIds,
+  WorkspaceUuid,
+  type Blob,
+  type MeasureContext,
+  type WorkspaceDataId
+} from '@hcengineering/core'
+import { getDataId } from '@hcengineering/server-core'
 import type { BlobStorageIterator, BucketInfo, StorageAdapter, UploadedObjectInfo } from '@hcengineering/storage'
 import { Readable } from 'stream'
 
 export class MemStorageAdapter implements StorageAdapter {
   files = new Map<string, Blob & { content: Buffer, workspace: WorkspaceDataId }>()
 
-  async initialize (ctx: MeasureContext, dataId: WorkspaceDataId): Promise<void> {}
+  async initialize (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<void> {}
 
   async close (): Promise<void> {}
 
-  async exists (ctx: MeasureContext, dataId: WorkspaceDataId): Promise<boolean> {
+  async exists (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<boolean> {
     return true
   }
 
-  async make (ctx: MeasureContext, dataId: WorkspaceDataId): Promise<void> {}
+  async make (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<void> {}
 
-  async delete (ctx: MeasureContext, dataId: WorkspaceDataId): Promise<void> {}
+  async delete (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<void> {}
 
   async listBuckets (ctx: MeasureContext): Promise<BucketInfo[]> {
     const workspaces = new Set(Array.from(this.files.values()).map((it) => it.workspace))
     return Array.from(workspaces).map((it) => ({
       name: it,
       delete: async () => {
-        await this.delete(ctx, it)
+        await this.delete(ctx, {
+          uuid: it as unknown as WorkspaceUuid,
+          dataId: it,
+          url: ''
+        })
       },
-      list: () => this.listStream(ctx, it)
+      list: () =>
+        this.listStream(ctx, {
+          uuid: it as unknown as WorkspaceUuid,
+          dataId: it,
+          url: ''
+        })
     }))
   }
 
-  async remove (ctx: MeasureContext, dataId: WorkspaceDataId, objectNames: string[]): Promise<void> {
+  async remove (ctx: MeasureContext, wsIds: WorkspaceIds, objectNames: string[]): Promise<void> {
     for (const k of objectNames) {
-      this.files.delete(dataId + '/' + k)
+      this.files.delete(getDataId(wsIds) + '/' + k)
     }
   }
 
-  async listStream (ctx: MeasureContext, dataId: WorkspaceDataId): Promise<BlobStorageIterator> {
-    const files = Array.from(this.files.values()).filter((it) => it.workspace === dataId)
+  async listStream (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<BlobStorageIterator> {
+    const files = Array.from(this.files.values()).filter((it) => it.workspace === getDataId(wsIds))
     return {
       next: async () => {
         return files.splice(0, 100)
@@ -44,14 +60,14 @@ export class MemStorageAdapter implements StorageAdapter {
     }
   }
 
-  async stat (ctx: MeasureContext, dataId: WorkspaceDataId, objectName: string): Promise<Blob | undefined> {
-    return this.files.get(dataId + '/' + objectName)
+  async stat (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Blob | undefined> {
+    return this.files.get(getDataId(wsIds) + '/' + objectName)
   }
 
-  async get (ctx: MeasureContext, dataId: WorkspaceDataId, objectName: string): Promise<Readable> {
+  async get (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Readable> {
     const readable = new Readable()
     readable._read = () => {}
-    const content = this.files.get(dataId + '/' + objectName)?.content
+    const content = this.files.get(getDataId(wsIds) + '/' + objectName)?.content
     readable.push(content)
     readable.push(null)
     return readable
@@ -59,7 +75,7 @@ export class MemStorageAdapter implements StorageAdapter {
 
   async put (
     ctx: MeasureContext,
-    dataId: WorkspaceDataId,
+    wsIds: WorkspaceIds,
     objectName: string,
     stream: string | Readable | Buffer,
     contentType: string,
@@ -85,6 +101,7 @@ export class MemStorageAdapter implements StorageAdapter {
       })
     }
     const data = Buffer.concat(buffer as any)
+    const dataId = getDataId(wsIds)
     const dta = {
       _class: core.class.Blob,
       _id: objectName as any,
@@ -106,8 +123,8 @@ export class MemStorageAdapter implements StorageAdapter {
     }
   }
 
-  async read (ctx: MeasureContext, dataId: WorkspaceDataId, objectName: string): Promise<Buffer[]> {
-    const content = this.files.get(dataId + '/' + objectName)?.content
+  async read (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Buffer[]> {
+    const content = this.files.get(getDataId(wsIds) + '/' + objectName)?.content
     if (content === undefined) {
       throw new Error('NoSuchKey')
     }
@@ -116,7 +133,7 @@ export class MemStorageAdapter implements StorageAdapter {
 
   partial (
     ctx: MeasureContext,
-    dataId: WorkspaceDataId,
+    wsIds: WorkspaceIds,
     objectName: string,
     offset: number,
     length?: number | undefined
@@ -125,7 +142,7 @@ export class MemStorageAdapter implements StorageAdapter {
     throw new Error('NoSuchKey')
   }
 
-  async getUrl (ctx: MeasureContext, dataId: WorkspaceDataId, objectName: string): Promise<string> {
+  async getUrl (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<string> {
     return '/files/' + objectName
   }
 }

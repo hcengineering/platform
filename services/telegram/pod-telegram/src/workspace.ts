@@ -638,7 +638,7 @@ export class WorkspaceWorker {
     const attachments = await this.client.findAll(attachment.class.Attachment, { attachedTo: msg._id })
     const res: Buffer[] = []
     for (const attachment of attachments) {
-      const chunks = await this.storageAdapter.read(this.ctx, this.workspace, attachment.file) // TODO: FIXME
+      const chunks = await this.storageAdapter.read(this.ctx, this.workspace as any, attachment.file) // TODO: FIXME <--WorkspaceIds
       const buffer = Buffer.concat(chunks as unknown as Uint8Array[])
       if (buffer.length > 0) {
         res.push(
@@ -663,7 +663,7 @@ export class WorkspaceWorker {
       try {
         const id = uuid()
         file.size = file.size ?? file.file.length
-        await this.storageAdapter.put(this.ctx, this.workspace, id, file.file, file.type, file.size)
+        await this.storageAdapter.put(this.ctx, this.workspace as any, id, file.file, file.type, file.size) // TODO: FIXME <--WorkspaceIds
         const modifiedOn = event.msg.date * 1000
         const tx = factory.createTxCollectionCUD<TelegramMessage, Attachment>(
           msg._class,
