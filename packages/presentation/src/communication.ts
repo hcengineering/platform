@@ -35,7 +35,22 @@ import {
   type RemoveReactionEvent,
   type UpdateNotificationContextEvent
 } from '@hcengineering/communication-sdk-types'
-import { type ClientConnection } from '@hcengineering/core'
+import { type Client as PlatformClient, type ClientConnection as PlatformConnection } from '@hcengineering/core'
+import {
+  initLiveQueries,
+  createMessagesQuery,
+  createNotificationsQuery
+} from '@hcengineering/communication-client-query'
+
+export { createMessagesQuery, createNotificationsQuery, type Client as CommunicationClient }
+
+export interface RawClient extends PlatformConnection {
+  findMessages: (params: FindMessagesParams, queryId?: number) => Promise<Message[]>
+  findNotificationContexts: (params: FindNotificationContextParams, queryId?: number) => Promise<NotificationContext[]>
+  findNotifications: (params: FindNotificationsParams, queryId?: number) => Promise<Notification[]>
+  sendEvent: (event: Event) => Promise<EventResult>
+  unsubscribeQuery: (id: number) => Promise<void>
+}
 
 let client: Client
 
@@ -43,14 +58,27 @@ export function getCommunicationClient (): Client {
   return client
 }
 
-export async function setCommunicationClient (connection: ClientConnection): Promise<void> {
-  client = new CommunicationClient(connection)
+export async function setCommunicationClient (platformClient: PlatformClient): Promise<void> {
+  const connection = platformClient.getConnection?.()
+  if (connection === undefined) {
+    return
+  }
+  client = new CommunicationClient(connection as unknown as RawClient)
+  initLiveQueries(client)
 }
 
 class CommunicationClient implements Client {
   onEvent: (event: BroadcastEvent) => void = () => {}
 
-  constructor (private readonly connection: ClientConnection) {}
+  constructor (private readonly rawClient: RawClient) {
+    rawClient.pushHandler((...events: any[]) => {
+      for (const event of events) {
+        if (event != null && 'type' in event) {
+          this.onEvent(event as BroadcastEvent)
+        }
+      }
+    })
+  }
 
   async createMessage (card: CardID, content: RichText, creator: SocialID): Promise<MessageID> {
     const event: CreateMessageEvent = {
@@ -59,7 +87,7 @@ class CommunicationClient implements Client {
       content,
       creator
     }
-    const result = await this.sendEvent(event)
+    const result = await this.rawClient.sendEvent(event)
     return (result as CreateMessageResult).id
   }
 
@@ -69,7 +97,7 @@ class CommunicationClient implements Client {
       card,
       message
     }
-    await this.sendEvent(event)
+    await this.rawClient.sendEvent(event)
   }
 
   async createPatch (card: CardID, message: MessageID, content: RichText, creator: SocialID): Promise<void> {
@@ -80,7 +108,7 @@ class CommunicationClient implements Client {
       content,
       creator
     }
-    await this.sendEvent(event)
+    await this.rawClient.sendEvent(event)
   }
 
   async createReaction (card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
@@ -91,7 +119,7 @@ class CommunicationClient implements Client {
       reaction,
       creator
     }
-    await this.sendEvent(event)
+    await this.rawClient.sendEvent(event)
   }
 
   async removeReaction (card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
@@ -102,7 +130,7 @@ class CommunicationClient implements Client {
       reaction,
       creator
     }
-    await this.sendEvent(event)
+    await this.rawClient.sendEvent(event)
   }
 
   async createAttachment (card: CardID, message: MessageID, attachment: CardID, creator: SocialID): Promise<void> {
@@ -113,7 +141,7 @@ class CommunicationClient implements Client {
       attachment,
       creator
     }
-    await this.sendEvent(event)
+    await this.rawClient.sendEvent(event)
   }
 
   async removeAttachment (card: CardID, message: MessageID, attachment: CardID): Promise<void> {
@@ -123,15 +151,61 @@ class CommunicationClient implements Client {
       message,
       attachment
     }
-    await this.sendEvent(event)
+    await this.rawClient.sendEvent(event)
+  }
+
+  async createNotification (message: MessageID, context: ContextID): Promise<void> {
+    const event: CreateNotificationEvent = {
+      type: EventType.CreateNotification,
+      message,
+      context
+    }
+    await this.rawClient.sendEvent(event)
+  }
+
+  async removeNotification (message: MessageID, context: ContextID): Promise<void> {
+    const event: RemoveNotificationEvent = {
+      type: EventType.RemoveNotification,
+      message,
+      context
+    }
+    await this.rawClient.sendEvent(event)
+  }
+
+  async createNotificationContext (card: CardID, lastView?: Date, lastUpdate?: Date): Promise<ContextID> {
+    const event: CreateNotificationContextEvent = {
+      type: EventType.CreateNotificationContext,
+      card,
+      lastView,
+      lastUpdate
+    }
+    const result = await this.rawClient.sendEvent(event)
+    return (result as CreateNotificationContextResult).id
+  }
+
+  async removeNotificationContext (context: ContextID): Promise<void> {
+    const event: RemoveNotificationContextEvent = {
+      type: EventType.RemoveNotificationContext,
+      context
+    }
+    await this.rawClient.sendEvent(event)
+  }
+
+  async updateNotificationContext (context: ContextID, update: NotificationContextUpdate): Promise<void> {
+    const event: UpdateNotificationContextEvent = {
+      type: EventType.UpdateNotificationContext,
+      context,
+      update
+    }
+    await this.rawClient.sendEvent(event)
   }
 
   async findMessages (params: FindMessagesParams, queryId?: number): Promise<Message[]> {
-    const rawMessages = await this.connection.sendRequest({ method: 'findMessages', params: [params, queryId] })
+    const rawMessages = await this.rawClient.findMessages(params, queryId)
     return rawMessages.map((it: any) => this.toMessage(it))
   }
 
-  toMessage (raw: any): Message {
+  private toMessage (raw: any): Message {
     return {
       id: raw.id,
       card: raw.card,
@@ -144,7 +218,7 @@ class CommunicationClient implements Client {
     }
   }
 
-  toAttachment (raw: any): Attachment {
+  private toAttachment (raw: any): Attachment {
     return {
       message: raw.message,
       card: raw.card,
@@ -153,7 +227,7 @@ class CommunicationClient implements Client {
     }
   }
 
-  toReaction (raw: any): Reaction {
+  private toReaction (raw: any): Reaction {
     return {
       message: raw.message,
       reaction: raw.reaction,
@@ -162,69 +236,19 @@ class CommunicationClient implements Client {
     }
   }
 
-  async createNotification (message: MessageID, context: ContextID): Promise<void> {
-    const event: CreateNotificationEvent = {
-      type: EventType.CreateNotification,
-      message,
-      context
-    }
-    await this.sendEvent(event)
-  }
-
-  async removeNotification (message: MessageID, context: ContextID): Promise<void> {
-    const event: RemoveNotificationEvent = {
-      type: EventType.RemoveNotification,
-      message,
-      context
-    }
-    await this.sendEvent(event)
-  }
-
-  async createNotificationContext (card: CardID, lastView?: Date, lastUpdate?: Date): Promise<ContextID> {
-    const event: CreateNotificationContextEvent = {
-      type: EventType.CreateNotificationContext,
-      card,
-      lastView,
-      lastUpdate
-    }
-    const result = await this.sendEvent(event)
-    return (result as CreateNotificationContextResult).id
-  }
-
-  async removeNotificationContext (context: ContextID): Promise<void> {
-    const event: RemoveNotificationContextEvent = {
-      type: EventType.RemoveNotificationContext,
-      context
-    }
-    await this.sendEvent(event)
-  }
-
-  async updateNotificationContext (context: ContextID, update: NotificationContextUpdate): Promise<void> {
-    const event: UpdateNotificationContextEvent = {
-      type: EventType.UpdateNotificationContext,
-      context,
-      update
-    }
-    await this.sendEvent(event)
-  }
-
   async findNotificationContexts (
     params: FindNotificationContextParams,
     queryId?: number
   ): Promise<NotificationContext[]> {
-    return await this.connection.sendRequest({ method: 'findNotificationContexts', params: [params, queryId] })
+    return await this.rawClient.findNotificationContexts(params, queryId)
   }
 
   async findNotifications (params: FindNotificationsParams, queryId?: number): Promise<Notification[]> {
-    return await this.connection.sendRequest({ method: 'findNotifications', params: [params, queryId] })
+    return await this.rawClient.findNotifications(params, queryId)
   }
 
   async unsubscribeQuery (id: number): Promise<void> {
-    await this.connection.sendRequest({ method: 'unsubscribeQuery', params: [id] })
-  }
-
-  private async sendEvent (event: Event): Promise<EventResult> {
-    return await this.connection.sendRequest({ method: 'event', params: [event] })
+    await this.rawClient.unsubscribeQuery(id)
   }
 
   close (): void {

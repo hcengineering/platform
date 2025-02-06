@@ -50,7 +50,7 @@ import {
 } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 import { handleSend } from './utils'
-import { FindMessagesParams, SocialID } from '@hcengineering/communication-types'
+import { FindMessagesParams } from '@hcengineering/communication-types'
 import { Event as CommunicationEvent, ConnectionInfo as CommunicationCtx } from '@hcengineering/communication-sdk-types'
 
 const useReserveContext = (process.env.USE_RESERVE_CTX ?? 'true') === 'true'
@@ -315,20 +315,8 @@ export class ClientSession implements Session {
   async event (ctx: ClientSessionCtx, event: CommunicationEvent): Promise<void> {
     this.lastRequest = Date.now()
 
-    if (ctx.communicationApi == null) {
-      await ctx.sendError(
-        ctx.requestId,
-        'Communication api notfound',
-        unknownError(new Error('Communication api not found'))
-      )
-      return
-    }
-
-    // TODO: get new social id
-    const socialId = this.account.primarySocialId
-
     const data: CommunicationCtx = {
-      socialId: socialId as string as SocialID,
+      socialId: this.account.primarySocialId as any, // TOODO: adjust type,
       sessionId: this.sessionId,
       personalWorkspace: '' // TODO: add personal workspace
     }
@@ -338,20 +326,8 @@ export class ClientSession implements Session {
 
   async findMessages (ctx: ClientSessionCtx, params: FindMessagesParams, queryId?: number): Promise<void> {
     this.lastRequest = Date.now()
-    if (ctx.communicationApi == null) {
-      await ctx.sendError(
-        ctx.requestId,
-        'Communication api not found',
-        unknownError(new Error('Communication api not found'))
-      )
-      return
-    }
-
-    // TODO: get new social id
-    const socialId = this.account.primarySocialId
-
     const data: CommunicationCtx = {
-      socialId: socialId as string as SocialID,
+      socialId: this.account.primarySocialId as any, // TOODO: adjust type,
       sessionId: this.sessionId,
       personalWorkspace: '' // TODO: add personal workspace
     }

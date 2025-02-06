@@ -502,9 +502,14 @@ export class Transactor extends DurableObject<Env> {
     const session = await this.makeRpcSession(rawToken, cs)
     const pipeline =
       session.workspace.pipeline instanceof Promise ? await session.workspace.pipeline : session.workspace.pipeline
+    const communicationApi =
+      session.workspace.communicationApi instanceof Promise
+        ? await session.workspace.communicationApi
+        : session.workspace.communicationApi
     const opContext = this.sessionManager.createOpContext(
       this.measureCtx,
       pipeline,
+      communicationApi,
       { method: '', params: '' },
       session,
       cs,

@@ -71,17 +71,7 @@ export enum ClientConnectEvent {
   Maintenance // In case workspace are in maintenance mode
 }
 
-export interface RequestData {
-  method: string
-  params: any[]
-  // If not defined, on reconnect with timeout, will retry automatically.
-  retry?: () => Promise<boolean>
-  handleResult?: (result: any) => Promise<void>
-  once?: boolean // Require handleResult to retrieve result
-  measure?: (time: number, result: any, serverTime: number, queue: number, toRecieve: number) => void
-  allowReconnect?: boolean
-  overrideId?: number
-}
+export type Handler = (...result: any[]) => void
 
 /**
  * @public
@@ -96,7 +86,7 @@ export interface ClientConnection extends Storage, FulltextStorage, BackupClient
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
 
   getLastHash?: (ctx: MeasureContext) => Promise<string | undefined>
-  sendRequest: (data: RequestData) => Promise<any>
+  pushHandler: (handler: Handler) => void
 }
 
 class ClientImpl implements Client, BackupClient {

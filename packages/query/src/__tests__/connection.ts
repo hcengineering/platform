@@ -28,6 +28,7 @@ import core, {
   FindResult,
   FulltextStorage,
   generateId,
+  Handler,
   Hierarchy,
   LoadModelResponse,
   ModelDb,
@@ -48,7 +49,7 @@ BackupClient &
 FulltextStorage & {
   isConnected: () => boolean
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
-  sendRequest: () => Promise<any>
+  pushHandler: (handler: Handler) => void
 }
 > {
   const txes = genMinModel()
@@ -78,6 +79,8 @@ FulltextStorage & {
       return true
     }
 
+    pushHandler (): void {}
+
     async findAll<T extends Doc>(
       _class: Ref<Class<T>>,
       query: DocumentQuery<T>,
@@ -87,8 +90,6 @@ FulltextStorage & {
       if (domain === DOMAIN_TX) return await this.transactions.findAll(_class, query, options)
       return await this.model.findAll(_class, query, options)
     }
-
-    async sendRequest (): Promise<any> {}
 
     async findOne<T extends Doc>(
       _class: Ref<Class<T>>,

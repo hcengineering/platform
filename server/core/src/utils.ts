@@ -289,6 +289,8 @@ export function wrapAdapterToClient (ctx: MeasureContext, storageAdapter: DbAdap
       return this.handler
     }
 
+    pushHandler (): void {}
+
     async findAll<T extends Doc>(
       _class: Ref<Class<Doc>>,
       query: DocumentQuery<Doc>,
@@ -304,8 +306,6 @@ export function wrapAdapterToClient (ctx: MeasureContext, storageAdapter: DbAdap
     async searchFulltext (): Promise<SearchResult> {
       return { docs: [] }
     }
-
-    async sendRequest (): Promise<any> {}
 
     async close (): Promise<void> {}
 
