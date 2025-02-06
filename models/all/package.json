@@ -117,6 +117,7 @@
     "@hcengineering/model-presence": "^0.6.0",
     "@hcengineering/model-card": "^0.6.0",
     "@hcengineering/model-mail": "^0.6.0",
-    "@hcengineering/model-my-space": "^0.6.0"
+    "@hcengineering/model-my-space": "^0.6.0",
+    "@hcengineering/model-chat": "^0.6.0"
   }
 }
