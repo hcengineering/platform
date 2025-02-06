@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { getClient as getAccountClient } from '@hcengineering/account-client'
+import client, { clientId } from '@hcengineering/client'
 import {
   type Class,
   type Client,
@@ -24,23 +26,21 @@ import {
   type ModelDb,
   type Ref,
   type Space,
-  type WithLookup,
   type TxResult,
-  DocumentUpdate,
-  TxOperations,
-  AttachedDoc,
+  type WithLookup,
   AttachedData,
+  AttachedDoc,
+  DocumentUpdate,
   Mixin,
-  MixinUpdate,
   MixinData,
-  generateId,
+  MixinUpdate,
   PersonId,
+  TxOperations,
+  WorkspaceUuid,
   buildSocialIdString,
-  WorkspaceUuid
+  generateId
 } from '@hcengineering/core'
-import client, { clientId } from '@hcengineering/client'
 import { addLocation, getResource } from '@hcengineering/platform'
-import { getClient as getAccountClient } from '@hcengineering/account-client'
 
 import { type ServerConfig, loadServerConfig } from './config'
 import {
@@ -50,7 +50,7 @@ import {
   MarkupContent,
   createMarkupOperations
 } from './markup'
-import { type PlatformClient, type ConnectOptions, WithMarkup } from './types'
+import { type ConnectOptions, type PlatformClient, WithMarkup } from './types'
 
 /**
  * Create platform client
@@ -292,7 +292,7 @@ async function getWorkspaceToken (
   url: string,
   options: ConnectOptions,
   config?: ServerConfig
-): Promise<{ endpoint: string, token: string }> {
+): Promise<{ endpoint: string, token: string, workspaceId: string }> {
   config ??= await loadServerConfig(url)
 
   let token: string | undefined
@@ -314,5 +314,5 @@ async function getWorkspaceToken (
     throw new Error('Workspace not found')
   }
 
-  return { endpoint: ws.endpoint, token: ws.token }
+  return { endpoint: ws.endpoint, token: ws.token, workspaceId: ws.workspace }
 }
