@@ -16,6 +16,7 @@
 import { type ClientSocketFactory } from '@hcengineering/client'
 import {
   CollaborativeDoc,
+  type Account,
   type AttachedData,
   type AttachedDoc,
   type Class,
@@ -53,6 +54,8 @@ MarkupContent
  * @public
  * */
 export type PlatformClient = {
+  getAccount: () => Account
+
   getHierarchy: () => Hierarchy
 
   getModel: () => ModelDb
