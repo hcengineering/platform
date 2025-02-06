@@ -15,10 +15,9 @@
 //
 -->
 <script lang="ts">
-  import core, { Data, Doc, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { PersonAccount } from '@hcengineering/contact'
+  import core, { Data, Doc, generateId, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import chunter, { type ChatMessage } from '@hcengineering/chunter'
-  import { Card, getClient } from '@hcengineering/presentation'
+  import { Card, getClient, isSpace } from '@hcengineering/presentation'
   import { MailThread } from '@hcengineering/mail'
   import { createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -28,29 +27,23 @@
   const manager = createFocusManager()
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const account = getCurrentAccount() as PersonAccount
+  const account = getCurrentAccount()
 
   let to = ''
   let from = getEmail()
   let subject = ''
   let message = ''
 
-  const id = generateId()
-
   export function canClose (): boolean {
     return to === '' && from === '' && subject === ''
   }
 
   export function getEmail (): string {
-    const mail = account.email
-    if (mail.includes('@')) {
-      return mail
-    }
-    return `${mail}@huly.me`
+    // TODO: use email from account
+    return 'test@huly.me'
   }
 
   async function createMail (): Promise<void> {
-    const account = getCurrentAccount() as PersonAccount
     const data: Data<MailThread> = {
       mailThreadId: generateId(),
       from,
@@ -59,23 +52,31 @@
       name: subject,
       description: '',
       private: true,
-      members: [account._id],
+      members: [account.primarySocialId],
       archived: false
     }
 
-    const mailThreadId = await client.createDoc(mail.class.MailThread, core.space.Space, data, id)
+    const mailThreadId = await client.createDoc(mail.class.MailThread, core.space.Space, data)
+    const mailThread = await client.findOne(mail.class.MailThread, { _id: mailThreadId as any })
+
+    if (mailThread === undefined) {
+      throw new Error('Failed to create mail thread')
+    }
 
     const messageId: Ref<ChatMessage> = await client.addCollection<Doc, ChatMessage>(
       chunter.class.ChatMessage,
-      mailThreadId,
+      getSpace(mailThread),
       mailThreadId,
       mail.class.MailThread,
       'messages',
-      { message: message ?? '' },
-      id
+      { message: message ?? '' }
     )
 
     dispatch('close', messageId)
+  }
+
+  function getSpace (doc: Doc): Ref<Space> {
+    return isSpace(doc) ? doc._id : doc.space
   }
 </script>
 
