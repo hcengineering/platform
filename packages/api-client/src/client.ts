@@ -57,20 +57,21 @@ import { type PlatformClient, type ConnectOptions, WithMarkup } from './types'
 export async function connect (url: string, options: ConnectOptions): Promise<PlatformClient> {
   const config = await loadServerConfig(url)
 
-  const { endpoint, token } = await getWorkspaceToken(url, options, config)
-  return await createClient(url, endpoint, token, config, options)
+  const { endpoint, token, workspaceId } = await getWorkspaceToken(url, options, config)
+  return await createClient(url, endpoint, workspaceId, token, config, options)
 }
 
 async function createClient (
   url: string,
   endpoint: string,
+  workspaceId: string,
   token: string,
   config: ServerConfig,
   options: ConnectOptions
 ): Promise<PlatformClient> {
   addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@hcengineering/client-resources'))
 
-  const { workspace, socketFactory, connectionTimeout } = options
+  const { socketFactory, connectionTimeout } = options
 
   const clientFactory = await getResource(client.function.GetClient)
   const connection = await clientFactory(token, endpoint, {
@@ -79,7 +80,7 @@ async function createClient (
   })
   const account = await connection.getAccount()
 
-  return new PlatformClientImpl(url, workspace, token, config, connection, account)
+  return new PlatformClientImpl(url, workspaceId, token, config, connection, account)
 }
 
 class PlatformClientImpl implements PlatformClient {
@@ -99,6 +100,10 @@ class PlatformClientImpl implements PlatformClient {
   }
 
   // Client
+
+  getAccount (): Account {
+    return { ...this.account }
+  }
 
   getHierarchy (): Hierarchy {
     return this.client.getHierarchy()
@@ -277,7 +282,7 @@ async function getWorkspaceToken (
   url: string,
   options: ConnectOptions,
   config?: ServerConfig
-): Promise<{ endpoint: string, token: string }> {
+): Promise<{ endpoint: string, token: string, workspaceId: string }> {
   config ??= await loadServerConfig(url)
 
   let token: string
@@ -298,5 +303,5 @@ async function getWorkspaceToken (
     throw new Error('Workspace not found')
   }
 
-  return { endpoint: ws.endpoint, token: ws.token }
+  return { endpoint: ws.endpoint, token: ws.token, workspaceId: ws.workspaceId }
 }
