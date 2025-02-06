@@ -216,7 +216,7 @@ export abstract class IssueSyncManagerBase {
             const target: IssueSyncTarget | undefined =
               milestone !== undefined
                 ? {
-                    mappings: milestone.mappings,
+                    mappings: milestone.mappings ?? [],
                     project: prj,
                     target: milestone
                   }
@@ -1167,7 +1167,7 @@ export abstract class IssueSyncManagerBase {
         }
         return {
           project,
-          mappings: milestone.mappings,
+          mappings: milestone.mappings ?? [],
           target: milestone,
           prjData: external.projectItems.nodes.find((it) => it.project.id === milestone.projectNodeId)
         }
@@ -1178,7 +1178,7 @@ export abstract class IssueSyncManagerBase {
   getProjectIssueTarget (project: GithubProject, external?: IssueExternalData): IssueSyncTarget {
     return {
       project,
-      mappings: project.mappings,
+      mappings: project.mappings ?? [],
       target: project,
       prjData: external?.projectItems.nodes.find((it) => it.project.id === project.projectNodeId)
     }

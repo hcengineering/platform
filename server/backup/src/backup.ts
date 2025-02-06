@@ -758,6 +758,11 @@ export async function backup (
       backupInfo.domainHashes = {}
     }
 
+    if (backupInfo.domainHashes === undefined) {
+      // Migration
+      backupInfo.domainHashes = {}
+    }
+
     let lastTx: Tx | undefined
 
     let lastTxChecked = false

@@ -14,7 +14,6 @@
 //
 import core, {
   Account,
-  PersonId,
   AccountRole,
   AttachedDoc,
   Class,
@@ -26,6 +25,7 @@ import core, {
   LookupData,
   MeasureContext,
   ObjQueryType,
+  PersonId,
   Position,
   PullArray,
   Ref,
@@ -43,9 +43,10 @@ import core, {
   WorkspaceEvent,
   clone,
   generateId,
+  shouldShowArchived,
   toFindResult,
-  type SessionData,
-  type PersonUuid
+  type PersonUuid,
+  type SessionData
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import {
@@ -537,7 +538,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const account = ctx.contextData.account
     const isSpace = this.context.hierarchy.isDerived(_class, core.class.Space)
     const field = this.getKey(domain)
-    const showArchived: boolean = options?.showArchived ?? (query._id !== undefined && typeof query._id === 'string')
+    const showArchived: boolean = shouldShowArchived(query, options)
 
     let clientFilterSpaces: Set<Ref<Space>> | undefined
 

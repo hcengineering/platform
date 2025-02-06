@@ -280,6 +280,7 @@ export { default as CodeForm } from './components/CodeForm.svelte'
 export { default as CodeInput } from './components/CodeInput.svelte'
 export { default as TimeLeft } from './components/TimeLeft.svelte'
 export { default as SectionEmpty } from './components/SectionEmpty.svelte'
+export { default as EmbeddedPDF } from './components/EmbeddedPDF.svelte'
 
 export { default as Dock } from './components/Dock.svelte'
 
