@@ -40,6 +40,7 @@ async function toResponse (compression: string, data: any, response: http.Server
       .writeHead(200, {
         'content-type': 'application/json',
         compression: 'snappy',
+        'content-encoding': 'snappy',
         'keep-alive': 'timeout=5'
       })
       .end(await compress(JSON.stringify(data)))
@@ -80,7 +81,7 @@ async function handleSQLFind (
   const qid = ++queryId
   try {
     const lq = (json.query as string).toLowerCase()
-    if (lq.includes('begin') || lq.includes('commit') || lq.includes('rollback')) {
+    if (filterInappropriateQuries(lq)) {
       console.error('not allowed', json.query)
       response.writeHead(403).end('Not allowed')
       return
@@ -128,3 +129,7 @@ const reqHandler = (req: http.IncomingMessage, resp: http.ServerResponse): void 
 }
 
 http.createServer(reqHandler).listen(port)
+function filterInappropriateQuries (lq: string): boolean {
+  const harmfulPatterns = ['begin', 'commit', 'rollback', 'drop', 'alter', 'truncate']
+  return harmfulPatterns.some((pattern) => lq.includes(pattern))
+}

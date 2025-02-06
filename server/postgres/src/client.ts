@@ -83,8 +83,7 @@ class GreenClient implements DBClient {
   release (): void {}
 
   async reserve (): Promise<DBClient> {
-    // We do reserve of connection, if we need it.
-    return createGreenDBClient(this.url, this.token, await this.connection.reserve(), this.decoder)
+    return createDBClient(await this.connection.reserve())
   }
 
   raw (): postgres.Sql {
