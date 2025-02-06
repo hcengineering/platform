@@ -15,7 +15,7 @@
 
 import { TriggerControl } from '@hcengineering/server-core'
 import contact, { Employee, type Person } from '@hcengineering/contact'
-import { PersonId, toIdMap, parseSocialIdString, type Ref } from '@hcengineering/core'
+import { parseSocialIdString, PersonId, type Ref, toIdMap } from '@hcengineering/core'
 
 export async function getTriggerCurrentPerson (control: TriggerControl): Promise<Person | undefined> {
   const { type, value } = parseSocialIdString(control.txFactory.account)
@@ -79,9 +79,13 @@ export async function getAllSocialStringsByPersonId (
 
 export async function getPerson (control: TriggerControl, personId: PersonId): Promise<Person | undefined> {
   const socialId = (await control.findAll(control.ctx, contact.class.SocialIdentity, { key: personId }))[0]
-  const person = (await control.findAll(control.ctx, contact.class.Person, { _id: socialId.attachedTo }))[0]
 
-  return person
+  if (socialId === undefined) {
+    control.ctx.error('Cannot find social id', { key: personId })
+    return undefined
+  }
+
+  return (await control.findAll(control.ctx, contact.class.Person, { _id: socialId.attachedTo }))[0]
 }
 
 export async function getPersons (control: TriggerControl, personIds: PersonId[]): Promise<Person[]> {
