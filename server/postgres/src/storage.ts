@@ -1714,7 +1714,7 @@ interface OperationBulk {
 
 const initRateLimit = new RateLimiter(1)
 
-class PostgresAdapter extends PostgresAdapterBase {
+export class PostgresAdapter extends PostgresAdapterBase {
   async init (
     ctx: MeasureContext,
     contextVars: Record<string, any>,

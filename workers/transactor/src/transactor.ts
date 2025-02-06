@@ -219,13 +219,14 @@ export class Transactor extends DurableObject<Env> {
           const st = Date.now()
           const r = this.sessionManager.handleRequest(this.measureCtx, s.session, cs, request, this.workspace)
           void r.finally(() => {
+            const time = Date.now() - st
             console.log({
-              message: 'handle-request',
+              message: 'handle-request: ' + time,
               method: request.method,
               params: request.params,
               workspace: s.workspaceId,
               user: s.session.getUser(),
-              time: Date.now() - st
+              time
             })
           })
           this.ctx.waitUntil(r)

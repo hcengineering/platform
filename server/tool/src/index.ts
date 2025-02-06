@@ -111,7 +111,7 @@ export async function initModel (
   }
 
   try {
-    logger.log('creating database...', workspaceId)
+    logger.log('creating database...', { workspaceId })
     const firstTx: Tx = {
       _class: core.class.Tx,
       _id: 'first-tx' as Ref<Tx>,

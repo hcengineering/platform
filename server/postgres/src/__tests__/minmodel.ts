@@ -14,19 +14,20 @@
 //
 
 import core, {
-  type PersonId,
   type Arr,
   type AttachedDoc,
   type Class,
   ClassifierKind,
   type Data,
   type Doc,
+  type Domain,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MODEL,
   DOMAIN_RELATION,
   DOMAIN_TX,
   type Mixin,
   type Obj,
+  type PersonId,
   type Ref,
   type TxCreateDoc,
   type TxCUD,
@@ -72,15 +73,33 @@ export interface AttachedComment extends AttachedDoc {
   message: string
 }
 
+export interface ComplexClass extends Doc {
+  stringField: string
+  numberField: number
+  booleanField: boolean
+  arrayField: string[]
+  numberArrayField: number[]
+}
+
+export interface ComplexMixin extends Mixin<ComplexClass> {
+  stringField: string
+  numberField: number
+  booleanField: boolean
+  arrayField: string[]
+  numberArrayField: number[]
+}
+
 /**
  * @public
  */
 export const test = plugin('test' as Plugin, {
   mixin: {
-    TestMixin: '' as Ref<Mixin<TestMixin>>
+    TestMixin: '' as Ref<Mixin<TestMixin>>,
+    ComplexMixin: '' as Ref<Mixin<ComplexMixin>>
   },
   class: {
-    TestComment: '' as Ref<Class<AttachedComment>>
+    TestComment: '' as Ref<Class<AttachedComment>>,
+    ComplexClass: '' as Ref<Class<ComplexClass>>
   }
 })
 
@@ -195,6 +214,23 @@ export function genMinModel (): TxCUD<Doc>[] {
       label: 'TestComment' as IntlString,
       extends: core.class.AttachedDoc,
       kind: ClassifierKind.CLASS
+    })
+  )
+  txes.push(
+    createClass(test.class.ComplexClass, {
+      label: 'ComplexClass' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS,
+      domain: 'pg-testing' as Domain
+    })
+  )
+
+  txes.push(
+    createClass(test.mixin.ComplexMixin, {
+      label: 'ComplexMixin' as IntlString,
+      extends: test.class.ComplexClass,
+      kind: ClassifierKind.MIXIN,
+      domain: 'pg-testing' as Domain
     })
   )
 

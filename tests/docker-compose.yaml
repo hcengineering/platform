@@ -12,7 +12,6 @@ services:
     image: cockroachdb/cockroach:latest-v24.2
     ports:
       - '26258:26257'
-      - '8089:8080'
     command: start-single-node --insecure
     restart: unless-stopped
   minio:
