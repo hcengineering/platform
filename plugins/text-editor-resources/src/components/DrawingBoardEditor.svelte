@@ -55,11 +55,12 @@
   let toolbar: HTMLDivElement
   let oldSelected = false
   let oldReadonly = false
-  let sendLiveData: ((key: string, data: any, force: boolean) => void) | undefined
+  let sendLiveData: ((key: string, data: any) => void) | undefined
   let getFollowee: (() => Person | undefined) | undefined
   let panning = false
   let followee: Person | undefined
-  const dataKey = 'drawing-board'
+  const dataTopicOffset = 'drawing-board-offset'
+  const dataTopicCursor = 'drawing-board-cursor'
 
   $: onSelectedChanged(selected)
   $: onReadonlyChanged(readonly)
@@ -144,17 +145,17 @@
 
   function onOffsetChanged (offset: Point): void {
     if (sendLiveData !== undefined) {
-      sendLiveData(dataKey, { boardId, offset: { ...offset } }, true)
+      sendLiveData(dataTopicOffset, { boardId, offset: { ...offset } })
     }
   }
 
   function onPointerMoved (canvasPos: Point): void {
     if (sendLiveData !== undefined && selected && !panning) {
-      sendLiveData(dataKey, { boardId, cursorPos: { ...canvasPos } }, false)
+      sendLiveData(dataTopicCursor, { boardId, cursorPos: { ...canvasPos } })
     }
   }
 
-  function onLiveData (data: any): void {
+  function onFolloweeData (data: any): void {
     if (data === undefined) {
       followee = undefined
       personCursorVisible = false
@@ -180,12 +181,12 @@
     commands = savedCmds.toArray()
     savedCmds.observe(listenSavedCommands)
 
-    getResource(presence.function.SendMyData)
+    getResource(presence.function.PublishData)
       .then((func) => {
         sendLiveData = func
       })
       .catch((err) => {
-        console.error('Failed to get presence.function.SendMyData', err)
+        console.error('Failed to get presence.function.PublishData', err)
       })
     getResource(presence.function.GetFollowee)
       .then((func) => {
@@ -194,24 +195,26 @@
       .catch((err) => {
         console.error('Failed to get presence.function.GetFollowee', err)
       })
-    getResource(presence.function.SubscribeToOtherData)
+    getResource(presence.function.FolloweeDataSubscribe)
       .then((subscribe) => {
-        subscribe(dataKey, onLiveData)
+        subscribe(dataTopicOffset, onFolloweeData)
+        subscribe(dataTopicCursor, onFolloweeData)
       })
       .catch((err) => {
-        console.error('Failed to get presence.function.SubscribeToOtherData', err)
+        console.error('Failed to get presence.function.FolloweeDataSubscribe', err)
       })
   })
 
   onDestroy(() => {
     savedCmds.unobserve(listenSavedCommands)
 
-    getResource(presence.function.UnsubscribeFromOtherData)
+    getResource(presence.function.FolloweeDataUnsubscribe)
       .then((unsubscribe) => {
-        unsubscribe(dataKey, onLiveData)
+        unsubscribe(dataTopicOffset, onFolloweeData)
+        unsubscribe(dataTopicCursor, onFolloweeData)
       })
       .catch((err) => {
-        console.error('failed to get presence.function.UnsubscribeFromOtherData', err)
+        console.error('failed to get presence.function.FolloweeDataUnsubscribe', err)
       })
   })
 </script>

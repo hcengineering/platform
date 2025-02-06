@@ -18,7 +18,7 @@ import { type Resources } from '@hcengineering/platform'
 import Presence from './components/Presence.svelte'
 import PresenceAvatars from './components/PresenceAvatars.svelte'
 import WorkbenchExtension from './components/WorkbenchExtension.svelte'
-import { getFollowee, sendMyData, subscribeToOtherData, unsubscribeFromOtherData } from './store'
+import { getFollowee, publishData, followeeDataSubscribe, followeeDataUnsubscribe } from './store'
 
 export { Presence, PresenceAvatars }
 export { updateMyPresence, removeMyPresence, presenceByObjectId } from './store'
@@ -32,9 +32,9 @@ export default async (): Promise<Resources> => ({
     WorkbenchExtension
   },
   function: {
-    SendMyData: sendMyData,
+    PublishData: publishData,
     GetFollowee: getFollowee,
-    SubscribeToOtherData: subscribeToOtherData,
-    UnsubscribeFromOtherData: unsubscribeFromOtherData
+    FolloweeDataSubscribe: followeeDataSubscribe,
+    FolloweeDataUnsubscribe: followeeDataUnsubscribe
   }
 })

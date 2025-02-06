@@ -30,10 +30,10 @@ export const presencePlugin = plugin(presenceId, {
     PresenceAvatars: '' as AnyComponent
   },
   function: {
-    SendMyData: '' as Resource<(key: string, data: any) => void>,
+    PublishData: '' as Resource<(topic: string, data: any) => void>,
     GetFollowee: '' as Resource<() => Person | undefined>,
-    SubscribeToOtherData: '' as Resource<(key: string, callback: (data: any) => void) => void>,
-    UnsubscribeFromOtherData: '' as Resource<(key: string, callback: (data: any) => void) => void>
+    FolloweeDataSubscribe: '' as Resource<(topic: string, handler: (data: any) => void) => void>,
+    FolloweeDataUnsubscribe: '' as Resource<(topic: string, handler: (data: any) => void) => void>
   }
 })
 
