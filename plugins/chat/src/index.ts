@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { plugin, IntlString, type Plugin } from '@hcengineering/platform'
+import { plugin, IntlString, type Plugin, Asset } from '@hcengineering/platform'
 
 export * from './types'
 
@@ -26,6 +26,9 @@ const chat = plugin(chatId, {
     Threads: '' as IntlString,
     Title: '' as IntlString,
     Description: '' as IntlString
+  },
+  icon: {
+    ChatBubble: '' as Asset
   }
 })
 

@@ -31,7 +31,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: chat.string.Chat,
-      icon: workbench.icon.Search,
+      icon: chat.icon.ChatBubble,
       alias: chatId,
       accessLevel: AccountRole.User,
       hidden: false,
