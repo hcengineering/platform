@@ -28,8 +28,8 @@ export const myData = writable<Map<string, MyDataItem>>(new Map())
 export const otherPresence = writable<PersonPresenceMap>(new Map())
 export const followee = writable<Ref<Person> | undefined>(undefined)
 
-const otherDataMap = new Map<Ref<Person>, Map<string, any>>()
-const otherDataHandlers = new Map<string, Set<(data: any) => void>>()
+const personDataMap = new Map<Ref<Person>, Map<string, any>>()
+const followeeDataHandlers = new Map<string, Set<(data: any) => void>>()
 
 export const presenceByObjectId = derived<Readable<PersonPresenceMap>, Map<Ref<Doc>, PersonRoomPresence[]>>(
   otherPresence,
@@ -86,15 +86,15 @@ export function onPersonLeave (person: Ref<Person>): void {
   })
 }
 
-export function onPersonData (person: Ref<Person>, key: string, data: any): void {
-  const otherData = otherDataMap.get(person)
-  if (otherData !== undefined) {
-    otherData.set(key, data)
+export function onPersonData (person: Ref<Person>, topic: string, data: any): void {
+  const personData = personDataMap.get(person)
+  if (personData !== undefined) {
+    personData.set(topic, data)
   } else {
-    otherDataMap.set(person, new Map([[key, data]]))
+    personDataMap.set(person, new Map([[topic, data]]))
   }
   if (person === get(followee)) {
-    const handlers = otherDataHandlers.get(key)
+    const handlers = followeeDataHandlers.get(topic)
     if (handlers !== undefined) {
       for (const handler of handlers) {
         handler(data)
@@ -103,52 +103,52 @@ export function onPersonData (person: Ref<Person>, key: string, data: any): void
   }
 }
 
-export function subscribeToOtherData (key: string, callback: (data: any) => void): void {
-  const handlers = otherDataHandlers.get(key)
+export function followeeDataSubscribe (topic: string, handler: (data: any) => void): void {
+  const handlers = followeeDataHandlers.get(topic)
   if (handlers !== undefined) {
-    handlers.add(callback)
+    handlers.add(handler)
   } else {
-    otherDataHandlers.set(key, new Set([callback]))
+    followeeDataHandlers.set(topic, new Set([handler]))
   }
-  const p = get(followee)
-  if (p !== undefined) {
-    const otherData = otherDataMap.get(p)
-    if (otherData !== undefined) {
-      const data = otherData.get(key)
+  const f = get(followee)
+  if (f !== undefined) {
+    const followeeData = personDataMap.get(f)
+    if (followeeData !== undefined) {
+      const data = followeeData.get(topic)
       if (data !== undefined) {
-        callback(data)
+        handler(data)
       }
     }
   }
 }
 
-export function unsubscribeFromOtherData (key: string, callback: (data: any) => void): void {
-  const handlers = otherDataHandlers.get(key)
+export function followeeDataUnsubscribe (topic: string, handler: (data: any) => void): void {
+  const handlers = followeeDataHandlers.get(topic)
   if (handlers !== undefined) {
-    handlers.delete(callback)
+    handlers.delete(handler)
   }
 }
 
-export function toggleFollowee (person: Ref<Person>): void {
+export function toggleFollowee (person: Ref<Person> | undefined): void {
   followee.update((p) => (p === person ? undefined : person))
 
-  const p = get(followee)
-  if (p !== undefined) {
-    const otherData = otherDataMap.get(p)
+  const f = get(followee)
+  if (f !== undefined) {
+    const otherData = personDataMap.get(f)
     if (otherData !== undefined) {
-      for (const [key, data] of otherData) {
-        const handlers = otherDataHandlers.get(key)
+      for (const [topic, data] of otherData) {
+        const handlers = followeeDataHandlers.get(topic)
         if (handlers !== undefined) {
-          for (const callback of handlers) {
-            callback(data)
+          for (const handler of handlers) {
+            handler(data)
           }
         }
       }
     }
   } else {
-    for (const handlers of otherDataHandlers.values()) {
-      for (const callback of handlers) {
-        callback(undefined)
+    for (const handlers of followeeDataHandlers.values()) {
+      for (const handler of handlers) {
+        handler(undefined)
       }
     }
   }
@@ -163,9 +163,9 @@ export function getFollowee (): Person | undefined {
   return personMap.get(followeeId)
 }
 
-export function sendMyData (key: string, data: any, forceSend: boolean = false): void {
+export function publishData (topic: string, data: any): void {
   myData.update((map) => {
-    map.set(key, { lastUpdated: Date.now(), data, forceSend })
+    map.set(topic, { lastUpdated: Date.now(), data })
     return map
   })
 }

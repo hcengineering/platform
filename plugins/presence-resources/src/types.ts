@@ -44,5 +44,4 @@ export interface PersonPresence {
 export interface MyDataItem {
   data: any
   lastUpdated: number
-  forceSend: boolean
 }
