@@ -1928,7 +1928,7 @@ class PostgresAdapter extends PostgresAdapterBase {
       for (const tx of txes) {
         const fields: string[] = ['modifiedBy', 'modifiedOn', '%hash%']
         const updates: string[] = ['"modifiedBy" = $2', '"modifiedOn" = $3', '"%hash%" = $4']
-        const params: any[] = [tx.modifiedBy, tx.modifiedOn, null]
+        const params: any[] = [tx.modifiedBy, tx.modifiedOn, this.curHash()]
         let paramsIndex = params.length
         const { extractedFields, remainingData } = parseUpdate(tx.operations, schemaFields)
         const { space, attachedTo, ...ops } = tx.operations as any
