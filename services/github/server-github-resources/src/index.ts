@@ -113,10 +113,15 @@ export async function OnProjectRemove (txes: Tx[], control: TriggerControl): Pro
         }
         if (control.hierarchy.hasMixin(project, github.mixin.GithubProject)) {
           const repos = await control.findAll(control.ctx, github.class.GithubIntegrationRepository, {
-            project: cud.objectId as Ref<GithubProject>
+            githubProject: cud.objectId as Ref<GithubProject>
           })
           for (const repo of repos) {
-            result.push(control.txFactory.createTxRemoveDoc(repo._class, repo.space, repo._id))
+            result.push(
+              control.txFactory.createTxUpdateDoc(repo._class, repo.space, repo._id, {
+                enabled: false,
+                githubProject: null
+              })
+            )
           }
 
           const syncDocs = control.modelDb.findAllSync(github.class.DocSyncInfo, {
