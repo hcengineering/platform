@@ -86,7 +86,7 @@
         {/key}
       </div>
       {#each messages as m}
-        <div class="message">{m.message}</div>
+        <div class="approval-status-message">{m.message}</div>
       {/each}
     {/each}
   </div>
@@ -137,7 +137,7 @@
     flex-shrink: 0;
     border-bottom: 1px solid var(--theme-divider-color);
 
-    .message {
+    .approval-status-message {
       font-weight: 400;
       padding: 0.625rem 1rem 0 2rem;
     }
