@@ -91,6 +91,8 @@ import {
 // Move to config?
 const processingTimeoutMs = 30 * 1000
 
+const ADMIN_EMAILS = new Set(process.env.ADMIN_EMAILS?.split(',') ?? [])
+
 /* =================================== */
 /* ============OPERATIONS============= */
 /* =================================== */
@@ -126,11 +128,12 @@ export async function login (
 
     const isConfirmed = emailSocialId.verifiedOn != null
 
-    ctx.info('Login succeeded', { email, normalizedEmail, isConfirmed, emailSocialId })
+    const isAdmin: Record<string, string> = ADMIN_EMAILS.has(email.trim()) ? { admin: 'true' } : {}
+    ctx.info('Login succeeded', { email, normalizedEmail, isConfirmed, emailSocialId, ...isAdmin })
 
     return {
       account: existingAccount.uuid,
-      token: isConfirmed ? generateToken(existingAccount.uuid) : undefined
+      token: isConfirmed ? generateToken(existingAccount.uuid, undefined, isAdmin) : undefined
     }
   } catch (err: any) {
     Analytics.handleError(err)
@@ -835,7 +838,7 @@ export async function listWorkspaces (
 ): Promise<WorkspaceInfoWithStatus[]> {
   const { extra } = decodeTokenVerbose(ctx, token)
 
-  if (!['tool', 'backup', 'admin'].includes(extra?.service)) {
+  if (!['tool', 'backup', 'admin'].includes(extra?.service) && extra?.admin !== 'true') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
