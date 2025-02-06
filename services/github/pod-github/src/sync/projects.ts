@@ -610,7 +610,7 @@ export class ProjectsSyncManager implements DocSyncManager {
     okit: Octokit
   ): Promise<{ projectStructure: GithubProjectV2, wasUpdates: boolean, mappings: GithubFieldMapping[] }> {
     let projectStructure = await this.queryProjectStructure(integration, target)
-    let mappings = target.mappings
+    let mappings = target.mappings ?? []
 
     if (projectStructure === undefined) {
       if (this.client.getHierarchy().isDerived(tracker.class.Project, target._class)) {
@@ -653,7 +653,7 @@ export class ProjectsSyncManager implements DocSyncManager {
     const mHash = JSON.stringify(mappings)
     // Create any platform field into matching github field
     for (const [, f] of allFields.entries()) {
-      const existingField = (mappings ?? []).find((it) => it._id === f._id)
+      const existingField = mappings.find((it) => it._id === f._id)
       if (f.hidden === true) {
         continue
       }

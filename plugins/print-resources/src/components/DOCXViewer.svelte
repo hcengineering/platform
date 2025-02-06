@@ -7,7 +7,7 @@
   import { type Blob, type Ref } from '@hcengineering/core'
   import { getMetadata } from '@hcengineering/platform'
   import presentation, { BlobMetadata, getFileUrl } from '@hcengineering/presentation'
-  import { Spinner, themeStore } from '@hcengineering/ui'
+  import { EmbeddedPDF, Spinner, themeStore } from '@hcengineering/ui'
   import { convertToHTML } from '@hcengineering/print'
 
   export let value: Ref<Blob>
@@ -55,7 +55,6 @@
     --scrollbar-bar-color: #e0e0e0;
     --scrollbar-bar-hover: #90959d;
   `
-  let oldColors = colors
 
   $: css = `
     * {
@@ -262,29 +261,6 @@
       border-radius: 2px;
     }
   `
-
-  let frame: HTMLIFrameElement | undefined = undefined
-
-  // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-  $: if (css !== undefined && frame !== undefined && frame !== null) {
-    frame.onload = () => {
-      const head = frame?.contentDocument?.querySelector('head')
-
-      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-      if (css !== undefined && head !== undefined && head !== null) {
-        head.appendChild(document.createElement('style')).textContent = css
-        oldColors = colors
-      }
-    }
-  }
-  $: if (oldColors !== colors && css !== undefined && frame != null) {
-    const style = frame?.contentDocument?.querySelector('head style')
-
-    if (style != null) {
-      style.textContent = css
-      oldColors = colors
-    }
-  }
 </script>
 
 {#if src}
@@ -293,7 +269,7 @@
       <Spinner size="medium" />
     </div>
   {:else}
-    <iframe bind:this={frame} src={src + '#view=FitH&navpanes=0'} class="w-full h-full" title={name} />
+    <EmbeddedPDF {src} {name} {css} />
   {/if}
 {/if}
 

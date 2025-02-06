@@ -349,7 +349,7 @@ function defineResource (builder: Builder): void {
           key: '',
           presenter: drive.component.ResourcePresenter,
           label: drive.string.Name,
-          sortingKey: 'name'
+          sortingKey: 'title'
         },
         '$lookup.file.size',
         'comments',
@@ -366,7 +366,7 @@ function defineResource (builder: Builder): void {
         }
       } as FindOptions<Resource>,
       configOptions: {
-        hiddenKeys: ['name', 'parent', 'path', 'file', 'versions'],
+        hiddenKeys: ['title', 'parent', 'path', 'file', 'versions'],
         sortable: true
       }
     },
@@ -393,7 +393,7 @@ function defineResource (builder: Builder): void {
       viewOptions: {
         groupBy: [],
         orderBy: [
-          ['name', SortingOrder.Ascending],
+          ['title', SortingOrder.Ascending],
           ['$lookup.file.size', SortingOrder.Ascending],
           ['$lookup.file.modifiedOn', SortingOrder.Descending]
         ],
@@ -404,14 +404,14 @@ function defineResource (builder: Builder): void {
           key: '',
           presenter: drive.component.ResourcePresenter,
           label: drive.string.Name,
-          sortingKey: 'name'
+          sortingKey: 'title'
         },
         '$lookup.file.size',
         '$lookup.file.modifiedOn',
         'createdBy'
       ],
       configOptions: {
-        hiddenKeys: ['name', 'parent', 'path', 'file', 'versions'],
+        hiddenKeys: ['title', 'parent', 'path', 'file', 'versions'],
         sortable: true
       },
       /* eslint-disable @typescript-eslint/consistent-type-assertions */
