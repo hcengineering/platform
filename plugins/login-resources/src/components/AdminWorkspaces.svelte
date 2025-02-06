@@ -9,7 +9,7 @@
     isUpgradingMode,
     reduceCalls,
     versionToString,
-    type BaseWorkspaceInfo
+    type WorkspaceInfoWithStatus
   } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { isAdminUser, MessageBox } from '@hcengineering/presentation'
@@ -30,7 +30,8 @@
     ticker
   } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
-  import { getAllWorkspaces, getRegionInfo, performWorkspaceOperation, type RegionInfo } from '../utils'
+  import { getAllWorkspaces, getRegionInfo, performWorkspaceOperation } from '../utils'
+  import { RegionInfo } from '@hcengineering/account-client'
 
   $: now = $ticker
 
@@ -43,7 +44,7 @@
     window.open(url, '_blank')
   }
 
-  type WorkspaceInfo = BaseWorkspaceInfo & { attempts: number }
+  type WorkspaceInfo = WorkspaceInfoWithStatus & { attempts: number }
 
   let workspaces: WorkspaceInfo[] = []
 
@@ -73,9 +74,9 @@
   $: sortedWorkspaces = workspaces
     .filter(
       (it) =>
-        ((it.workspaceName?.includes(search) ?? false) ||
-          (it.workspaceUrl?.includes(search) ?? false) ||
-          it.workspace?.includes(search) ||
+        ((it.name?.includes(search) ?? false) ||
+          (it.url?.includes(search) ?? false) ||
+          it.uuid?.includes(search) ||
           it.createdBy?.includes(search)) &&
         ((showActive && isActiveMode(it.mode)) ||
           (showArchived && isArchivingMode(it.mode)) ||
@@ -92,7 +93,7 @@
         case SortingRule.LastVisit:
           return (b.lastVisit ?? 0) - (a.lastVisit ?? 0)
       }
-      return (b.workspaceUrl ?? b.workspace).localeCompare(a.workspaceUrl ?? a.workspace)
+      return (b.url ?? b.uuid).localeCompare(a.url ?? a.uuid)
     })
 
   let backupIdx = new Map<string, number>()
@@ -156,7 +157,7 @@
     backupable = mixedBackupSorting
 
     for (const [idx, it] of mixedBackupSorting.entries()) {
-      newBackupIdx.set(it.workspace, idx)
+      newBackupIdx.set(it.uuid, idx)
     }
     backupIdx = newBackupIdx
   }
@@ -184,7 +185,7 @@
   let showOther: boolean = true
 
   $: groupped = groupByArray(sortedWorkspaces, (it) => {
-    const lastUsageDays = Math.round((now - it.lastVisit) / (1000 * 3600 * 24))
+    const lastUsageDays = Math.round((now - (it.lastVisit ?? 0)) / (1000 * 3600 * 24))
     return Object.entries(dayRanges).find(([_k, v]) => lastUsageDays <= v)?.[0] ?? 'Other'
   })
 
@@ -202,10 +203,10 @@
 
   $: byVersion = groupByArray(
     workspaces.filter((it) => {
-      const lastUsed = Math.round((now - it.lastVisit) / (1000 * 3600 * 24))
+      const lastUsed = Math.round((now - (it.lastVisit ?? 0)) / (1000 * 3600 * 24))
       return isActiveMode(it.mode) && lastUsed < 1
     }),
-    (it) => versionToString(it.version ?? { major: 0, minor: 0, patch: 0 })
+    (it) => versionToString({ major: it.versionMajor, minor: it.versionMinor, patch: it.versionPatch })
   )
 
   let superAdminMode = false
@@ -334,7 +335,7 @@
                           message: getEmbeddedLabel(`Please confirm archive ${archivedV.length} workspaces`),
                           action: async () => {
                             void performWorkspaceOperation(
-                              archivedV.map((it) => it.workspace),
+                              archivedV.map((it) => it.uuid),
                               'archive'
                             )
                           }
@@ -354,7 +355,7 @@
                           message: getEmbeddedLabel(`Please confirm migrate ${archivedV.length} workspaces`),
                           action: async () => {
                             await performWorkspaceOperation(
-                              activeV.map((it) => it.workspace),
+                              activeV.map((it) => it.uuid),
                               'migrate-to',
                               selectedRegionId
                             )
@@ -365,9 +366,9 @@
                   {/if}
                 </svelte:fragment>
                 {#each v.slice(0, limit) as workspace}
-                  {@const wsName = workspace.workspaceName ?? workspace.workspace}
-                  {@const lastUsageDays = Math.round((now - workspace.lastVisit) / (1000 * 3600 * 24))}
-                  {@const bIdx = backupIdx.get(workspace.workspace)}
+                  {@const wsName = workspace.name}
+                  {@const lastUsageDays = Math.round((now - (workspace.lastVisit ?? 0)) / (1000 * 3600 * 24))}
+                  {@const bIdx = backupIdx.get(workspace.uuid)}
                   <!-- svelte-ignore a11y-click-events-have-key-events -->
                   <!-- svelte-ignore a11y-no-static-element-interactions -->
                   <div class="flex fs-title cursor-pointer focused-button bordered">
@@ -375,11 +376,7 @@
                       <span class="label overflow-label flex-row-center" style:width={'12rem'}>
                         {wsName}
                         <div class="ml-1">
-                          <Button
-                            icon={IconOpen}
-                            size={'small'}
-                            on:click={() => select(workspace.workspaceUrl ?? workspace.workspace)}
-                          />
+                          <Button icon={IconOpen} size={'small'} on:click={() => select(workspace.url)} />
                         </div>
                       </span>
                       <div class="ml-1" style:width={'12rem'}>
@@ -400,12 +397,9 @@
                         {workspace.attempts}
                       </span>
 
-                      <!-- <span class="flex flex-between select-text overflow-label" style:width={'25rem'}>
-                  {workspace.workspace}
-                </span> -->
                       <span class="flex flex-between" style:width={'5rem'}>
-                        {#if workspace.progress !== 100 && workspace.progress !== 0}
-                          ({workspace.progress}%)
+                        {#if workspace.processingProgress !== 100 && workspace.processingProgress !== 0}
+                          ({workspace.processingProgress}%)
                         {/if}
                       </span>
                       <span class="flex flex-between" style:width={'5rem'}>
@@ -447,10 +441,10 @@
                             kind={'ghost'}
                             on:click={() => {
                               showPopup(MessageBox, {
-                                label: getEmbeddedLabel(`Archive ${workspace.workspaceUrl}`),
+                                label: getEmbeddedLabel(`Archive ${workspace.url}`),
                                 message: getEmbeddedLabel('Please confirm'),
                                 action: async () => {
-                                  await performWorkspaceOperation(workspace.workspace, 'archive')
+                                  await performWorkspaceOperation(workspace.uuid, 'archive')
                                 }
                               })
                             }}
@@ -465,10 +459,10 @@
                             label={getEmbeddedLabel('Unarchive')}
                             on:click={() => {
                               showPopup(MessageBox, {
-                                label: getEmbeddedLabel(`Unarchive ${workspace.workspaceUrl}`),
+                                label: getEmbeddedLabel(`Unarchive ${workspace.url}`),
                                 message: getEmbeddedLabel('Please confirm'),
                                 action: async () => {
-                                  await performWorkspaceOperation(workspace.workspace, 'unarchive')
+                                  await performWorkspaceOperation(workspace.uuid, 'unarchive')
                                 }
                               })
                             }}
@@ -483,10 +477,10 @@
                             label={getEmbeddedLabel('Migrate ' + (selectedRegionName ?? ''))}
                             on:click={() => {
                               showPopup(MessageBox, {
-                                label: getEmbeddedLabel(`Migrate ${workspace.workspaceUrl}`),
+                                label: getEmbeddedLabel(`Migrate ${workspace.url}`),
                                 message: getEmbeddedLabel('Please confirm'),
                                 action: async () => {
-                                  await performWorkspaceOperation(workspace.workspace, 'migrate-to', selectedRegionId)
+                                  await performWorkspaceOperation(workspace.uuid, 'migrate-to', selectedRegionId)
                                 }
                               })
                             }}
@@ -501,10 +495,10 @@
                             label={getEmbeddedLabel('Delete')}
                             on:click={() => {
                               showPopup(MessageBox, {
-                                label: getEmbeddedLabel(`Delete ${workspace.workspaceUrl}`),
+                                label: getEmbeddedLabel(`Delete ${workspace.url}`),
                                 message: getEmbeddedLabel('Please confirm'),
                                 action: async () => {
-                                  await performWorkspaceOperation(workspace.workspace, 'delete')
+                                  await performWorkspaceOperation(workspace.uuid, 'delete')
                                 }
                               })
                             }}

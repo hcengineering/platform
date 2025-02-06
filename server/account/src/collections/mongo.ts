@@ -272,7 +272,10 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
   }
 
   async find (query: Query<WorkspaceStatus>, sort?: Sort<WorkspaceStatus>, limit?: number): Promise<WorkspaceStatus[]> {
-    return (await this.wsCollection.find(this.toWsQuery(query), this.toWsSort(sort), limit)).map((ws) => ws.status)
+    return (await this.wsCollection.find(this.toWsQuery(query), this.toWsSort(sort), limit)).map((ws) => ({
+      ...ws.status,
+      workspaceUuid: ws.uuid
+    }))
   }
 
   async findOne (query: Query<WorkspaceStatus>): Promise<WorkspaceStatus | null> {
