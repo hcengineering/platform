@@ -191,6 +191,75 @@ export class MeasureMetricsContext implements MeasureContext {
   }
 }
 
+export class NoMetricsContext implements MeasureContext {
+  logger: MeasureLogger
+  id?: string
+
+  contextData: object = {}
+
+  constructor (logger?: MeasureLogger) {
+    this.logger = logger ?? consoleLogger({})
+  }
+
+  measure (name: string, value: number, override?: boolean): void {}
+
+  newChild (
+    name: string,
+    params: ParamsType,
+    fullParams?: FullParamsType | (() => FullParamsType),
+    logger?: MeasureLogger
+  ): MeasureContext {
+    const result = new NoMetricsContext(logger ?? this.logger)
+    result.id = this.id
+    result.contextData = this.contextData
+    return result
+  }
+
+  with<T>(
+    name: string,
+    params: ParamsType,
+    op: (ctx: MeasureContext) => T | Promise<T>,
+    fullParams?: ParamsType | (() => FullParamsType)
+  ): Promise<T> {
+    const r = op(this.newChild(name, params, fullParams, this.logger))
+    return r instanceof Promise ? r : Promise.resolve(r)
+  }
+
+  withSync<T>(
+    name: string,
+    params: ParamsType,
+    op: (ctx: MeasureContext) => T,
+    fullParams?: ParamsType | (() => FullParamsType)
+  ): T {
+    const c = this.newChild(name, params, fullParams, this.logger)
+    return op(c)
+  }
+
+  withLog<T>(
+    name: string,
+    params: ParamsType,
+    op: (ctx: MeasureContext) => T | Promise<T>,
+    fullParams?: ParamsType
+  ): Promise<T> {
+    const r = op(this.newChild(name, params, fullParams, this.logger))
+    return r instanceof Promise ? r : Promise.resolve(r)
+  }
+
+  error (message: string, args?: Record<string, any>): void {
+    this.logger.error(message, { ...args })
+  }
+
+  info (message: string, args?: Record<string, any>): void {
+    this.logger.info(message, { ...args })
+  }
+
+  warn (message: string, args?: Record<string, any>): void {
+    this.logger.warn(message, { ...args })
+  }
+
+  end (): void {}
+}
+
 /**
  * Allow to use decorator for context enabled functions
  */

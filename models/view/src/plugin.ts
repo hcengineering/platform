@@ -89,6 +89,7 @@ export default mergeIds(viewId, view, {
     EnumPresenter: '' as AnyComponent,
     StatusPresenter: '' as AnyComponent,
     StatusRefPresenter: '' as AnyComponent,
+    PersonIdFilterValuePresenter: '' as AnyComponent,
     DateFilterPresenter: '' as AnyComponent,
     StringFilterPresenter: '' as AnyComponent,
     AudioViewer: '' as AnyComponent,

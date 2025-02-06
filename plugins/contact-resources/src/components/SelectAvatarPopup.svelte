@@ -14,9 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-
   import MD5 from 'crypto-js/md5'
-
   import { AvatarType, checkHasGravatar, type AvatarInfo } from '@hcengineering/contact'
   import type { Ref } from '@hcengineering/core'
   import { Blob as PlatformBlob } from '@hcengineering/core'

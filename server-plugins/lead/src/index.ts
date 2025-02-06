@@ -32,6 +32,6 @@ export default plugin(serverLeadId, {
     LeadTextPresenter: '' as Resource<Presenter>
   },
   trigger: {
-    OnWorkspaceOwnerAdded: '' as Resource<TriggerFunc>
+    OnSocialIdentityCreate: '' as Resource<TriggerFunc>
   }
 })

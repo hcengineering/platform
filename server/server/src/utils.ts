@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type FindResult, type MeasureContext } from '@hcengineering/core'
+import { WorkspaceUuid, type FindResult, type MeasureContext } from '@hcengineering/core'
 
 import type {
   AddSessionActive,
@@ -43,12 +43,16 @@ export function doSessionOp (
   if (data.session instanceof Promise) {
     // We need to copy since we will out of protected buffer area
     const msgCopy = Buffer.copyBytesFrom(msg)
-    void data.session.then((_session) => {
-      data.session = _session
-      if ('session' in _session) {
-        op(_session, msgCopy)
-      }
-    })
+    void data.session
+      .then((_session) => {
+        data.session = _session
+        if ('session' in _session) {
+          op(_session, msgCopy)
+        }
+      })
+      .catch((err) => {
+        console.error({ message: 'Failed to process session operation', err })
+      })
   } else {
     if (data.session !== undefined && 'session' in data.session) {
       op(data.session, msg)
@@ -60,7 +64,7 @@ export function processRequest (
   session: Session,
   cs: ConnectionSocket,
   context: MeasureContext,
-  workspaceId: string,
+  workspaceId: WorkspaceUuid,
   buff: any,
   handleRequest: HandleRequestFunction
 ): void {

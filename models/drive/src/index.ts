@@ -24,7 +24,7 @@ import core, {
   type Ref,
   type Role,
   type RolesAssignment,
-  Account,
+  PersonId,
   AccountRole,
   IndexKind,
   SortingOrder
@@ -81,7 +81,7 @@ export class TDrive extends TTypedSpace implements Drive {}
 @Mixin(drive.mixin.DefaultDriveTypeData, drive.class.Drive)
 @UX(getEmbeddedLabel('Default drive type'))
 export class TDefaultDriveTypeData extends TDrive implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: PersonId[]
 }
 
 @Model(drive.class.Resource, core.class.Doc, DOMAIN_DRIVE)
@@ -567,6 +567,25 @@ function defineFileVersion (builder: Builder): void {
       }
     },
     drive.action.RestoreFileVersion
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.Delete,
+      visibilityTester: drive.function.CanDeleteFileVersion,
+      label: view.string.Delete,
+      icon: view.icon.Delete,
+      category: drive.category.Drive,
+      input: 'none',
+      target: drive.class.FileVersion,
+      context: {
+        mode: ['context', 'browser'],
+        application: drive.app.Drive,
+        group: 'edit'
+      }
+    },
+    drive.action.DeleteFileVersion
   )
 }
 

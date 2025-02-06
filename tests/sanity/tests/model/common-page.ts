@@ -8,6 +8,7 @@ export class CommonPage {
     this.page = page
   }
 
+  appHeader = (): Locator => this.page.locator('.hulyNavPanel-header')
   selectPopupInput = (): Locator => this.page.locator('div.selectPopup input')
   selectPopupInputSearch = (): Locator => this.page.locator('div.popup input.search')
   selectPopupListItem = (name: string): Locator => this.page.locator('div.selectPopup div.list-item', { hasText: name })

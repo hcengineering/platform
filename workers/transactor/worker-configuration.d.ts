@@ -30,4 +30,6 @@ interface Env {
   AI_BOT_URL?: string
   LAST_NAME_FIRST?: string
 
+  GREEN_URL?: string
+  USE_GREEN?: string
 }

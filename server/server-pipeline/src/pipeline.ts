@@ -7,11 +7,11 @@ import {
   DOMAIN_TX,
   Hierarchy,
   ModelDb,
-  systemAccountEmail,
+  systemAccountUuid,
   type Branding,
   type MeasureContext,
   type Tx,
-  type WorkspaceIdWithUrl
+  type WorkspaceIds
 } from '@hcengineering/core'
 import {
   ApplyTxMiddleware,
@@ -61,7 +61,7 @@ import { createStorageDataAdapter } from './blobStorage'
 export function getTxAdapterFactory (
   metrics: MeasureContext,
   dbUrl: string,
-  workspace: WorkspaceIdWithUrl,
+  workspace: WorkspaceIds,
   branding: Branding | null,
   opt: {
     disableTriggers?: boolean
@@ -124,7 +124,7 @@ export function createServerPipeline (
       TxMiddleware.create, // Store tx into transaction domain
       ...(opt.disableTriggers === true ? [] : [TriggersMiddleware.create]),
       ...(opt.fulltextUrl !== undefined
-        ? [FullTextMiddleware.create(opt.fulltextUrl, generateToken(systemAccountEmail, workspace))]
+        ? [FullTextMiddleware.create(opt.fulltextUrl, generateToken(systemAccountUuid, workspace.uuid))]
         : []),
       LowLevelMiddleware.create,
       QueryJoinMiddleware.create,
@@ -202,7 +202,7 @@ export async function getServerPipeline (
   ctx: MeasureContext,
   model: Tx[],
   dbUrl: string,
-  wsUrl: WorkspaceIdWithUrl,
+  wsUrl: WorkspaceIds,
   storageAdapter: StorageAdapter,
   opt?: {
     disableTriggers?: boolean
@@ -248,7 +248,7 @@ export function registerDestroyFactory (
 
 function matchTxAdapterFactory (dbUrl: string): DbAdapterFactory {
   for (const [k, v] of Object.entries(txAdapterFactories)) {
-    if (dbUrl.startsWith(k)) {
+    if (k !== '' && dbUrl.startsWith(k)) {
       return v
     }
   }
@@ -257,7 +257,7 @@ function matchTxAdapterFactory (dbUrl: string): DbAdapterFactory {
 
 function matchAdapterFactory (dbUrl: string): DbAdapterFactory {
   for (const [k, v] of Object.entries(adapterFactories)) {
-    if (dbUrl.startsWith(k)) {
+    if (k !== '' && dbUrl.startsWith(k)) {
       return v
     }
   }

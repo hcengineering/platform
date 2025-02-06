@@ -78,8 +78,7 @@ export interface BitrixResult {
  * @public
  */
 export interface LoginInfo {
-  endpoint: string
-  email: string
+  account: string
   token: string
 }
 

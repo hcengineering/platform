@@ -13,28 +13,31 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Account, AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import { PersonId, AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Button, ButtonKind, ButtonSize } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import AccountArrayEditor from './AccountArrayEditor.svelte'
+  import { includesAny } from '@hcengineering/contact'
 
   export let label: IntlString
-  export let value: Ref<Account>[]
-  export let onChange: ((refs: Ref<Account>[]) => void) | undefined
+  export let value: PersonId[]
+  export let onChange: ((refs: PersonId[]) => void) | undefined
   export let readonly = false
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
   export let width: string | undefined = undefined
 
-  const me = getCurrentAccount()._id
+  const myPrimaryId = getCurrentAccount().primarySocialId
+  const mySocialStrings = getCurrentAccount().socialIds
 
-  $: joined = value.includes(me)
+  $: joined = includesAny(value, mySocialStrings)
 
   function join (): void {
-    if (value.includes(me)) return
+    if (includesAny(value, mySocialStrings)) return
     if (onChange === undefined) return
-    onChange([...value, me])
+
+    onChange([...value, myPrimaryId])
   }
 </script>
 

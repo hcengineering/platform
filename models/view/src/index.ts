@@ -14,7 +14,7 @@
 //
 
 import {
-  type Account,
+  type PersonId,
   type Class,
   type Client,
   DOMAIN_MODEL,
@@ -116,7 +116,7 @@ export class TFilteredView extends TDoc implements FilteredView {
   viewOptions?: ViewOptions
   filterClass?: Ref<Class<Doc>>
   viewletId?: Ref<Viewlet> | null
-  users!: Ref<Account>[]
+  users!: PersonId[]
   attachedTo!: string
   sharable?: boolean
 }
@@ -866,7 +866,7 @@ export function createModel (builder: Builder): void {
       category: view.category.GeneralNavigation,
       input: 'none',
       target: core.class.Doc,
-      allowedForEditableContent: true,
+      allowedForEditableContent: 'noSelection',
       context: {
         mode: ['workbench', 'browser', 'panel', 'editor', 'input']
       }
@@ -934,6 +934,10 @@ export function createModel (builder: Builder): void {
   builder.mixin(core.class.TypeTimestamp, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.DateFilter,
     group: 'bottom'
+  })
+
+  builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
   })
 
   builder.createDoc(
@@ -1172,6 +1176,10 @@ export function createModel (builder: Builder): void {
     presenter: view.component.StringFilterPresenter
   })
 
+  builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: view.component.StringFilterPresenter
+  })
+
   classPresenter(builder, core.class.EnumOf, view.component.EnumPresenter, view.component.EnumEditor)
 
   createAction(
@@ -1215,6 +1223,14 @@ export function createModel (builder: Builder): void {
   builder.mixin(view.class.FilteredView, core.class.Class, core.mixin.IndexConfiguration, {
     indexes: [],
     searchDisabled: true
+  })
+
+  builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: view.component.PersonIdPresenter
+  })
+
+  builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: view.component.PersonIdFilterValuePresenter
   })
 }
 

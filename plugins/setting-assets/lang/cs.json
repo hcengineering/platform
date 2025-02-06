@@ -131,6 +131,9 @@
     "BackupFileDownload": "Stáhnout soubor",
     "BackupFiles": "Soubory záloh",
     "BackupNoBackup": "V současné době nejsou k dispozici žádné zálohy.",
+    "Calendar": "Kalendář",
+    "StartOfTheWeek": "Začátek týdne",
+    "SystemSetupString": "Nastavení systému ({day})",
     "AddAttribute": "Přidat atribut"
   }
 }

@@ -1,10 +1,9 @@
 import core, {
-  AccountRole,
   ClientConnectEvent,
   WorkspaceEvent,
   generateId,
   getTypeOf,
-  systemAccountEmail,
+  type WorkspaceIds,
   type Account,
   type BackupClient,
   type Branding,
@@ -27,10 +26,12 @@ import core, {
   type Tx,
   type TxResult,
   type TxWorkspaceEvent,
-  type WorkspaceIdWithUrl
+  type PersonId,
+  systemAccount,
+  type PersonUuid
 } from '@hcengineering/core'
-import platform, { PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
-import { type Hash } from 'crypto'
+import { PlatformError, unknownError } from '@hcengineering/platform'
+import { createHash, type Hash } from 'crypto'
 import fs from 'fs'
 import type { DbAdapter } from './adapter'
 import { BackupClientOps } from './storage'
@@ -154,46 +155,23 @@ export function updateHashForDoc (hash: Hash, _obj: any): void {
   }
 }
 
-export function getUser (modelDb: ModelDb, userEmail: string | undefined, admin?: boolean): Account {
-  if (userEmail === undefined) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-  const account = modelDb.getAccountByEmail(userEmail)
-  if (account === undefined) {
-    if (userEmail === systemAccountEmail || admin === true) {
-      return {
-        _id: core.account.System,
-        _class: core.class.Account,
-        role: AccountRole.Owner,
-        email: systemAccountEmail,
-        space: core.space.Model,
-        modifiedBy: core.account.System,
-        modifiedOn: 0
-      }
-    }
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-  return account
-}
-
 export class SessionDataImpl implements SessionData {
-  _account: Account | undefined
   _removedMap: Map<Ref<Doc>, Doc> | undefined
   _contextCache: Map<string, any> | undefined
   _broadcast: SessionData['broadcast'] | undefined
 
   constructor (
-    readonly userEmail: string,
+    readonly account: Account,
     readonly sessionId: string,
     readonly admin: boolean | undefined,
     _broadcast: SessionData['broadcast'] | undefined,
-    readonly workspace: WorkspaceIdWithUrl,
+    readonly workspace: WorkspaceIds,
     readonly branding: Branding | null,
     readonly isAsyncContext: boolean,
     _removedMap: Map<Ref<Doc>, Doc> | undefined,
     _contextCache: Map<string, any> | undefined,
     readonly modelDb: ModelDb,
-    readonly rawAccount?: Account
+    readonly socialStringsToUsers: Map<PersonId, PersonUuid>
   ) {
     this._removedMap = _removedMap
     this._contextCache = _contextCache
@@ -222,15 +200,6 @@ export class SessionDataImpl implements SessionData {
       this._contextCache = new Map()
     }
     return this._contextCache
-  }
-
-  get account (): Account {
-    this._account = this.rawAccount ?? this._account ?? getUser(this.modelDb, this.userEmail, this.admin)
-    return this._account
-  }
-
-  getAccount (account: Ref<Account>): Account | undefined {
-    return this.modelDb.findObject(account)
   }
 }
 
@@ -263,22 +232,19 @@ export function loadBrandingMap (brandingPath?: string): BrandingMap {
   return brandings
 }
 
-export function wrapPipeline (
-  ctx: MeasureContext,
-  pipeline: Pipeline,
-  wsUrl: WorkspaceIdWithUrl
-): Client & BackupClient {
+export function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsIds: WorkspaceIds): Client & BackupClient {
   const contextData = new SessionDataImpl(
-    systemAccountEmail,
+    systemAccount,
     'pipeline',
     true,
     { targets: {}, txes: [] },
-    wsUrl,
+    wsIds,
     null,
     true,
     undefined,
     undefined,
-    pipeline.context.modelDb
+    pipeline.context.modelDb,
+    new Map()
   )
   ctx.contextData = contextData
   if (pipeline.context.lowLevelStorage === undefined) {
@@ -296,6 +262,7 @@ export function wrapPipeline (
     getHierarchy: () => pipeline.context.hierarchy,
     getModel: () => pipeline.context.modelDb,
     loadChunk: (domain, idx) => backupOps.loadChunk(ctx, domain, idx),
+    getDomainHash: (domain) => backupOps.getDomainHash(ctx, domain),
     loadDocs: (domain, docs) => backupOps.loadDocs(ctx, domain, docs),
     upload: (domain, docs) => backupOps.upload(ctx, domain, docs),
     searchFulltext: async (query, options) => ({ docs: [], total: 0 }),
@@ -344,6 +311,10 @@ export function wrapAdapterToClient (ctx: MeasureContext, storageAdapter: DbAdap
       throw new Error('unsupported')
     }
 
+    async getDomainHash (domain: Domain): Promise<string> {
+      return await storageAdapter.getDomainHash(ctx, domain)
+    }
+
     async closeChunk (idx: number): Promise<void> {}
 
     async loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
@@ -358,11 +329,35 @@ export function wrapAdapterToClient (ctx: MeasureContext, storageAdapter: DbAdap
       return txes
     }
 
-    async getAccount (): Promise<Account> {
-      return {} as any
-    }
-
     async sendForceClose (): Promise<void> {}
   }
   return new TestClientConnection()
+}
+
+export async function calcHashHash (ctx: MeasureContext, domain: Domain, adapter: DbAdapter): Promise<string> {
+  const hash = createHash('sha256')
+
+  const it = adapter.find(ctx, domain)
+
+  try {
+    let count = 0
+    while (true) {
+      const part = await it.next(ctx)
+      if (part.length === 0) {
+        break
+      }
+      count += part.length
+      for (const doc of part) {
+        hash.update(doc.id)
+        hash.update(doc.hash)
+      }
+    }
+    if (count === 0) {
+      // Use empty hash for empty documents.
+      return ''
+    }
+    return hash.digest('hex')
+  } finally {
+    await it.close(ctx)
+  }
 }

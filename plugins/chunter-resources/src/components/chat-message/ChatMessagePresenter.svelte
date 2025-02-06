@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Person, PersonAccount } from '@hcengineering/contact'
-  import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { Class, Doc, getCurrentAccount, Markup, Ref, Space, WithLookup } from '@hcengineering/core'
+  import contact, { getCurrentEmployee } from '@hcengineering/contact'
+  import { personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { Class, Doc, Markup, Ref, Space, WithLookup } from '@hcengineering/core'
   import { getClient, MessageViewer, pendingCreatedDocs } from '@hcengineering/presentation'
   import { AttachmentDocList, AttachmentImageSize } from '@hcengineering/attachment-resources'
   import { getDocLinkTitle } from '@hcengineering/view-resources'
@@ -60,10 +60,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const STALE_TIMEOUT_MS = 5000
-  const currentAccount = getCurrentAccount()
-
-  let account: PersonAccount | undefined = undefined
-  let person: Person | undefined = undefined
+  const me = getCurrentEmployee()
 
   let parentMessage: DisplayActivityMessage | undefined = undefined
   let object: Doc | undefined
@@ -79,9 +76,8 @@
       })
       : []
 
-  $: accountId = value?.createdBy
-  $: account = accountId !== undefined ? $personAccountByIdStore.get(accountId as Ref<PersonAccount>) : undefined
-  $: person = account?.person !== undefined ? $personByIdStore.get(account.person) : undefined
+  $: personId = value?.createdBy
+  $: person = personId !== undefined ? $personByPersonIdStore.get(personId) : undefined
 
   let originalText = value?.message
 
@@ -148,7 +144,7 @@
   let isEditing = false
   let additionalActions: Action[] = []
 
-  $: isOwn = account !== undefined && account._id === currentAccount._id
+  $: isOwn = person !== undefined && person._id === me
 
   $: additionalActions = [
     ...(isOwn
@@ -269,7 +265,7 @@
               {#if (value.attachments ?? 0) > 0 || (value.inlineButtons ?? 0) > 0}
                 <div class="mt-2" />
               {/if}
-              <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} />
+              <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} {isOwn} />
               <InlineButtons {value} {inlineButtons} />
             </div>
           </ShowMore>
@@ -279,7 +275,7 @@
             {#if (value.attachments ?? 0) > 0 || (value.inlineButtons ?? 0) > 0}
               <div class="mt-2" />
             {/if}
-            <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} />
+            <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} {isOwn} />
             <InlineButtons {value} {inlineButtons} />
           </div>
         {/if}

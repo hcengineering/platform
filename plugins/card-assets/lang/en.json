@@ -14,6 +14,10 @@
     "Tag": "Tag",
     "CardLibrary": "Card Library",
     "MinimizeAll": "Minimize All",
-    "ExpandAll": "Expand All"
+    "ExpandAll": "Expand All",
+    "DeleteTag": "Delete Tag",
+    "DeleteTagConfirm": "Are you sure you want to delete this tag? All related properties will be deleted",
+    "DeleteMasterTag": "Delete Master Tag",
+    "DeleteMasterTagConfirm": "Are you sure you want to delete this master tag? All objects related to this master tag will be deleted"
   }
 }

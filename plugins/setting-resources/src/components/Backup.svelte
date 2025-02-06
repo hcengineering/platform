@@ -29,7 +29,8 @@
   const backupUrl = getMetadata(setting.metadata.BackupUrl) ?? ''
   const token = getMetadata(presentation.metadata.Token) ?? ''
   const owner = hasAccountRole(getCurrentAccount(), AccountRole.Owner)
-  const workspaceId = getMetadata(presentation.metadata.WorkspaceId) ?? ''
+  const workspaceUuid = getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
+  const workspaceDataId = getMetadata(presentation.metadata.WorkspaceDataId)
 
   let backupInfo:
   | {
@@ -82,7 +83,7 @@
   async function updateBackupInfo (): Promise<void> {
     if (owner && backupUrl !== '') {
       try {
-        const response = await fetch(`${backupUrl}/${workspaceId}/index.json`, {
+        const response = await fetch(`${backupUrl}/${workspaceDataId ?? workspaceUuid}/index.json`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`
@@ -117,10 +118,11 @@
     return ''
   }
   function getFileUrl (filename: string): string {
-    return `${backupUrl}/${workspaceId}/${filename}`
+    return `${backupUrl}/${workspaceUuid}/${filename}`
   }
 
   async function downloadFile (filename: string): Promise<void> {
+    const a = document.createElement('a')
     try {
       const response = await fetch(getFileUrl(filename), {
         headers: {
@@ -128,18 +130,17 @@
         }
       })
       if (!response.ok) throw new Error('Download failed')
-
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
       a.href = url
       a.download = filename
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
     } catch (err) {
       console.error('Failed to download:', err)
+    } finally {
+      document.body.removeChild(a)
     }
   }
   let copied = false

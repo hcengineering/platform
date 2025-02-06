@@ -171,7 +171,7 @@
           ...extraConfig,
           'lastModified'
         ]}
-        options={{ sort: { pinned: -1 } }}
+        options={{ sort: { pinned: -1 }, showArchived: true }}
         query={{ ...query, attachedTo: objectId }}
         loadingProps={{ length: attachments ?? 0 }}
         on:content={updateContent}
@@ -193,7 +193,7 @@
         ...extraConfig,
         'lastModified'
       ]}
-      options={{ sort: { pinned: -1 } }}
+      options={{ sort: { pinned: -1 }, showArchived: true }}
       query={{ ...query, attachedTo: objectId }}
       loadingProps={{ length: attachments ?? 0 }}
       on:content={updateContent}

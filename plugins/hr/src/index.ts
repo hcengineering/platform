@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Contact, Employee, PersonAccount } from '@hcengineering/contact'
+import type { Contact, Employee } from '@hcengineering/contact'
 import type { Arr, AttachedDoc, Class, Doc, Markup, Mixin, Ref, Type } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
@@ -32,15 +32,10 @@ export interface Department extends Doc {
   attachments?: number
   comments?: number
   channels?: number
-  members: Ref<DepartmentMember>[]
+  members: Ref<Employee>[]
   subscribers?: Arr<Ref<Contact>>
   managers: Arr<Ref<Employee>>
 }
-
-/**
- * @public
- */
-export interface DepartmentMember extends PersonAccount {}
 
 /**
  * @public
@@ -114,7 +109,6 @@ const hr = plugin(hrId, {
   },
   class: {
     Department: '' as Ref<Class<Department>>,
-    DepartmentMember: '' as Ref<Class<DepartmentMember>>,
     Request: '' as Ref<Class<Request>>,
     RequestType: '' as Ref<Class<RequestType>>,
     TzDate: '' as Ref<Class<Type<TzDate>>>,

@@ -26,7 +26,7 @@ import { IndexeddbProvider } from './indexeddb'
 import { type Provider } from './types'
 
 function getDocumentId (doc: CollaborativeDoc): string {
-  const workspace = getMetadata(presentation.metadata.WorkspaceId) ?? ''
+  const workspace = getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
   return encodeDocumentId(workspace, doc)
 }
 

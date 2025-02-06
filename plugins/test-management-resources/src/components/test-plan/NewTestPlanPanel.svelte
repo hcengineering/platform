@@ -31,7 +31,7 @@
   import { EmptyMarkup } from '@hcengineering/text'
   import { IntlString } from '@hcengineering/platform'
   import { Attachment } from '@hcengineering/attachment'
-  import { Employee, PersonAccount } from '@hcengineering/contact'
+  import { Employee } from '@hcengineering/contact'
 
   import NewTestPlanAside from './NewTestPlanAside.svelte'
   import TestCaseSelector from '../test-case/TestCaseSelector.svelte'
@@ -41,7 +41,7 @@
   export let testCases: TestCase[] = []
 
   const id: Ref<TestPlan> = generateId()
-  const me = getCurrentAccount() as PersonAccount
+  const me = getCurrentAccount()
 
   const object: Data<TestPlan> = {
     name: '' as IntlString,
@@ -52,7 +52,7 @@
     _id: id,
     space,
     modifiedOn: 0,
-    modifiedBy: me._id,
+    modifiedBy: me.primarySocialId,
     _class: testManagement.class.TestPlan
   }
   let defaultAssignee: Ref<Employee> | undefined = undefined

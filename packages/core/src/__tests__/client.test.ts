@@ -15,7 +15,7 @@
 //
 import { IntlString, Plugin } from '@hcengineering/platform'
 import { ClientConnectEvent, DocChunk } from '..'
-import type { Account, Class, Data, Doc, Domain, PluginConfiguration, Ref, Timestamp } from '../classes'
+import type { Class, Data, Doc, Domain, PluginConfiguration, Ref, Timestamp } from '../classes'
 import { ClassifierKind, DOMAIN_MODEL, Space } from '../classes'
 import { ClientConnection, createClient } from '../client'
 import core from '../component'
@@ -24,7 +24,7 @@ import { ModelDb, TxDb } from '../memdb'
 import { TxOperations } from '../operations'
 import type { DocumentQuery, FindResult, SearchOptions, SearchQuery, SearchResult, TxResult } from '../storage'
 import { Tx, TxFactory, TxProcessor } from '../tx'
-import { fillConfiguration, pluginFilterTx } from '../utils'
+import { fillConfiguration, generateId, pluginFilterTx } from '../utils'
 import { connect } from './connection'
 import { genMinModel } from './minmodel'
 
@@ -142,6 +142,10 @@ describe('client', () => {
           finished: true
         })
 
+        async getDomainHash (domain: Domain): Promise<string> {
+          return generateId()
+        }
+
         async closeChunk (idx: number): Promise<void> {}
         async loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
           return []
@@ -151,10 +155,6 @@ describe('client', () => {
         async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
         async loadModel (last: Timestamp): Promise<Tx[]> {
           return txes
-        }
-
-        async getAccount (): Promise<Account> {
-          return null as unknown as Account
         }
 
         async sendForceClose (): Promise<void> {}

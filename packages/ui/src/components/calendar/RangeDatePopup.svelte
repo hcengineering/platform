@@ -26,7 +26,6 @@
   export let startDate: Date | null
   export let endDate: Date | null
   export let label: IntlString
-  export let mondayStart: boolean = true
 
   const dispatch = createEventDispatcher()
 
@@ -99,8 +98,10 @@
   }
   const navigateMonth = (result: any): void => {
     if (result) {
+      viewDate.setDate(1)
       viewDate.setMonth(viewDate.getMonth() + result)
       viewDate = viewDate
+      viewDateSec.setDate(1)
       viewDateSec.setMonth(viewDateSec.getMonth() + result)
       viewDateSec = viewDateSec
     }
@@ -144,7 +145,6 @@
         bind:currentDate={startDate}
         selectedTo={endDate}
         {viewDate}
-        {mondayStart}
         viewUpdate={false}
         hideNavigator="right"
         on:update={(result) => {
@@ -158,7 +158,6 @@
         bind:currentDate={endDate}
         selectedTo={startDate}
         viewDate={viewDateSec}
-        {mondayStart}
         viewUpdate={false}
         hideNavigator="left"
         on:update={(result) => {

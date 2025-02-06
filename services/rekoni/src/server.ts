@@ -29,6 +29,8 @@ import { parseGenericResume } from './generic'
 import { decode } from './jwt'
 import { extractDocument } from './process'
 import { type ReconiDocument } from './types'
+import serverToken from '@hcengineering/server-token'
+import { setMetadata } from '@hcengineering/platform'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 
 const extractToken = (header: IncomingHttpHeaders): any => {
@@ -42,6 +44,7 @@ const extractToken = (header: IncomingHttpHeaders): any => {
 export const startServer = async (): Promise<void> => {
   const app = express()
 
+  setMetadata(serverToken.metadata.Secret, process.env.SECRET)
   const ctx = initStatisticsContext('rekoni', {})
 
   class MyStream {

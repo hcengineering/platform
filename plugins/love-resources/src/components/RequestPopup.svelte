@@ -13,9 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount, formatName } from '@hcengineering/contact'
+  import { formatName, getCurrentEmployee } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
-  import { getCurrentAccount } from '@hcengineering/core'
   import { getClient, playSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
   import { JoinRequest, RequestStatus } from '@hcengineering/love'
@@ -34,7 +33,7 @@
   async function accept (): Promise<void> {
     await client.update(request, { status: RequestStatus.Approved })
     if (request.room === $myOffice?._id && !$isConnected) {
-      const me = (getCurrentAccount() as PersonAccount).person
+      const me = getCurrentEmployee()
       const person = $personByIdStore.get(me)
       if (person === undefined) return
       await connectRoom(0, 0, $myInfo, person, $myOffice)

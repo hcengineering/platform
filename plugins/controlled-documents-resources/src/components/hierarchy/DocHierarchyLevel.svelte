@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { type Ref, type Doc, SortingOrder, getCurrentAccount, WithLookup, toIdMap } from '@hcengineering/core'
+  import { type Ref, type Doc, SortingOrder, WithLookup, toIdMap } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import type { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import { type Action } from '@hcengineering/ui'
   import documents, {
     type ControlledDocument,
@@ -46,8 +46,7 @@
   import DropArea from './DropArea.svelte'
 
   const dispatch = createEventDispatcher()
-  const currentUser = getCurrentAccount() as PersonAccount
-  const currentPerson = currentUser.person
+  const currentPerson = getCurrentEmployee()
 
   let docs: WithLookup<ProjectDocument>[] = []
 
@@ -148,9 +147,10 @@
   {@const title = doc ? getDocumentName(doc) : meta?.title ?? ''}
   {@const docid = doc?._id ?? prjdoc._id}
   {@const isFolder = prjdoc.document === documents.ids.Folder}
+  {@const isObsolete = doc ? doc.state === DocumentState.Obsolete : false}
+  {@const children = metaid ? childrenByParent[metaid] ?? [] : []}
 
-  {#if metaid}
-    {@const children = childrenByParent[metaid] ?? []}
+  {#if metaid && (!isObsolete || children.length > 0)}
     {@const isDraggedOver = draggedOver === metaid}
     <div class="flex-col relative">
       {#if isDraggedOver}
@@ -160,12 +160,12 @@
         _id={docid}
         icon={isFolder ? documents.icon.Folder : documents.icon.Document}
         iconProps={{
-          fill: 'currentColor'
+          fill: isObsolete ? 'var(--dangerous-bg-color)' : 'currentColor'
         }}
         {title}
         selected={selected === docid || selected === prjdoc._id}
         isFold
-        empty={children.length === 0 || children === undefined}
+        empty={children.length === 0}
         actions={getMoreActions !== undefined ? () => getDocMoreActions(prjdoc) : undefined}
         {level}
         {collapsedPrefix}

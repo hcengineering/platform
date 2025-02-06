@@ -14,14 +14,14 @@
 //
 
 import type { Collection, ObjectId, WithId } from 'mongodb'
-import { MeasureContext, Ref, SortingOrder, systemAccountEmail } from '@hcengineering/core'
+import { MeasureContext, PersonId, Ref, SortingOrder, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
 import { InboxNotification } from '@hcengineering/notification'
 import { TelegramNotificationRequest } from '@hcengineering/telegram'
 import { StorageAdapter } from '@hcengineering/server-core'
 import chunter, { ChunterSpace } from '@hcengineering/chunter'
-import { formatName, PersonAccount } from '@hcengineering/contact'
+import { formatName } from '@hcengineering/contact'
 import { generateToken } from '@hcengineering/server-token'
-import { getWorkspaceInfo } from '@hcengineering/server-client'
+import { getAccountClient } from '@hcengineering/server-client'
 import { ActivityMessage } from '@hcengineering/activity'
 
 import {
@@ -92,7 +92,7 @@ export class PlatformWorker {
     }
   }
 
-  async closeWorkspaceClient (workspace: string): Promise<void> {
+  async closeWorkspaceClient (workspace: WorkspaceUuid): Promise<void> {
     const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
 
     if (timeoutId !== undefined) {
@@ -111,7 +111,7 @@ export class PlatformWorker {
   async addUser (
     id: number,
     email: string,
-    workspace: string,
+    workspace: WorkspaceUuid,
     telegramUsername?: string
   ): Promise<UserRecord | undefined> {
     const emailRes = await this.usersStorage.findOne({ email })
@@ -152,7 +152,7 @@ export class PlatformWorker {
     if (request.messageId === undefined || !request.attachments) {
       return []
     }
-    const wsClient = await this.getWorkspaceClient(request.workspace)
+    const wsClient = await this.getWorkspaceClient(request.workspace as any) // TODO: FIXME
     return await wsClient.getFiles(request.messageId)
   }
 
@@ -207,15 +207,15 @@ export class PlatformWorker {
     return (await this.usersStorage.findOne({ email })) ?? undefined
   }
 
-  async addWorkspace (email: string, workspace: string): Promise<void> {
+  async addWorkspace (email: string, workspace: WorkspaceUuid): Promise<void> {
     await this.usersStorage.updateOne({ email }, { $push: { workspaces: workspace } })
   }
 
-  async removeWorkspace (email: string, workspace: string): Promise<void> {
+  async removeWorkspace (email: string, workspace: WorkspaceUuid): Promise<void> {
     await this.usersStorage.updateOne({ email }, { $pull: { workspaces: workspace } })
   }
 
-  async getWorkspaceClient (workspace: string): Promise<WorkspaceClient> {
+  async getWorkspaceClient (workspace: WorkspaceUuid): Promise<WorkspaceClient> {
     const wsClient =
       this.workspacesClients.get(workspace) ?? (await WorkspaceClient.create(workspace, this.ctx, this.storageAdapter))
 
@@ -239,13 +239,13 @@ export class PlatformWorker {
   }
 
   async reply (messageRecord: MessageRecord, text: string, files: TelegramFileInfo[]): Promise<boolean> {
-    const client = await this.getWorkspaceClient(messageRecord.workspace)
+    const client = await this.getWorkspaceClient(messageRecord.workspace as any) // TODO: FIXME
     return await client.reply(messageRecord, text, files)
   }
 
   async getChannelName (client: WorkspaceClient, channel: ChunterSpace, email: string): Promise<string> {
     if (client.hierarchy.isDerived(channel._class, chunter.class.DirectMessage)) {
-      const persons = await client.getPersons(channel.members as Ref<PersonAccount>[], email)
+      const persons = await client.getPersons(channel.members as PersonId[], email)
       return persons
         .map(({ name }) => formatName(name))
         .sort((a, b) => a.localeCompare(b))
@@ -263,7 +263,7 @@ export class PlatformWorker {
     return (await this.usersStorage.findOne({ email }))?.workspaces ?? []
   }
 
-  async getChannels (email: string, workspace: string): Promise<WithId<ChannelRecord>[]> {
+  async getChannels (email: string, workspace: WorkspaceUuid): Promise<WithId<ChannelRecord>[]> {
     const key = `${email}:${workspace}`
 
     if (this.channelsByWorkspace.has(key)) {
@@ -301,7 +301,7 @@ export class PlatformWorker {
     text: string,
     file?: TelegramFileInfo
   ): Promise<boolean> {
-    const client = await this.getWorkspaceClient(channel.workspace)
+    const client = await this.getWorkspaceClient(channel.workspace as any) // TODO: FIXME
     const _id = await client.sendMessage(channel, text, file)
 
     await this.messagesStorage.insertOne({
@@ -314,8 +314,8 @@ export class PlatformWorker {
     return _id !== undefined
   }
 
-  async syncChannels (email: string, workspace: string, onlyStarred: boolean): Promise<void> {
-    const client = await this.getWorkspaceClient(workspace)
+  async syncChannels (email: string, workspace: WorkspaceUuid, onlyStarred: boolean): Promise<void> {
+    const client = await this.getWorkspaceClient(workspace as any) // TODO: FIXME
     const channels = await client.getChannels(email, onlyStarred)
     const existingChannels = await this.channelsStorage.find({ workspace, email }).toArray()
 
@@ -355,14 +355,15 @@ export class PlatformWorker {
     }
   }
 
-  async getWorkspaceInfo (workspaceId: string): Promise<WorkspaceInfo | undefined> {
+  async getWorkspaceInfo (workspaceId: WorkspaceUuid): Promise<WorkspaceInfo | undefined> {
     if (this.workspaceInfoById.has(workspaceId)) {
       return this.workspaceInfoById.get(workspaceId)
     }
 
     try {
-      const token = generateToken(systemAccountEmail, { name: workspaceId })
-      const result = await getWorkspaceInfo(token)
+      const token = generateToken(systemAccountUuid, workspaceId, { service: 'telegram' })
+      const accountClient = getAccountClient(token)
+      const result = await accountClient.getWorkspaceInfo(false)
 
       if (result === undefined) {
         this.ctx.error('Failed to get workspace info', { workspaceId })
@@ -370,9 +371,9 @@ export class PlatformWorker {
       }
 
       const info: WorkspaceInfo = {
-        name: result.workspaceName ?? result.workspace,
-        url: result.workspaceUrl ?? result.workspace,
-        id: workspaceId
+        url: result.url,
+        id: workspaceId,
+        name: result.name
       }
       this.workspaceInfoById.set(workspaceId, info)
       return info
@@ -381,7 +382,7 @@ export class PlatformWorker {
     }
   }
 
-  async authorizeUser (code: string, email: string, workspace: string): Promise<UserRecord | undefined> {
+  async authorizeUser (code: string, email: string, workspace: WorkspaceUuid): Promise<UserRecord | undefined> {
     const otpData = (await this.otpStorage.findOne({ code })) ?? undefined
     const isExpired = otpData !== undefined && otpData.expires < Date.now()
     const isValid = otpData !== undefined && !isExpired && code === otpData.code

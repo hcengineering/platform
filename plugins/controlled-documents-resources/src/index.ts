@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type PersonAccount } from '@hcengineering/contact'
 import {
   type Document,
   type DocumentMeta,
@@ -27,7 +26,6 @@ import {
   type Client,
   type Doc,
   type DocumentQuery,
-  getCurrentAccount,
   type Ref,
   type RelatedDocument,
   SortingOrder,
@@ -36,6 +34,7 @@ import {
 import { type Resources } from '@hcengineering/platform'
 import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
+import { getCurrentEmployee } from '@hcengineering/contact'
 
 import CreateDocument from './components/CreateDocument.svelte'
 import DeleteCategoryPopup from './components/category/popups/DeleteCategoryPopup.svelte'
@@ -182,14 +181,32 @@ async function archiveDocuments (obj: Document | Document[]): Promise<void> {
   })
 }
 
+async function makeDocumentObsolete (obj: Document | Document[]): Promise<void> {
+  const docs = Array.isArray(obj) ? obj : [obj]
+  const docNames = docs.map((d) => `${d.title} (${d.prefix}-${d.seqNumber})`).join(', ')
+
+  showPopup(MessageBox, {
+    label: documents.string.MakeDocumentObsoleteDialog,
+    labelProps: { count: docs.length },
+    message: documents.string.MakeDocumentObsoleteConfirm,
+    params: { titles: docNames },
+    action: async () => {
+      const client = getClient()
+      for (const doc of docs) {
+        await client.update(doc, { state: DocumentState.Obsolete })
+      }
+    }
+  })
+}
+
 async function canDeleteDocument (obj?: Doc | Doc[]): Promise<boolean> {
   if (obj == null) {
     return false
   }
 
   const objs = (Array.isArray(obj) ? obj : [obj]) as Document[]
-  const currentUser = getCurrentAccount() as PersonAccount
-  const isOwner = objs.every((doc) => doc.owner === currentUser.person)
+  const currentUser = getCurrentEmployee()
+  const isOwner = objs.every((doc) => doc.owner === currentUser)
 
   if (!isOwner) {
     return false
@@ -204,8 +221,30 @@ async function canArchiveDocument (obj?: Doc | Doc[]): Promise<boolean> {
   }
 
   const objs = (Array.isArray(obj) ? obj : [obj]) as Document[]
-  const currentUser = getCurrentAccount() as PersonAccount
-  const isOwner = objs.every((doc) => doc.owner === currentUser.person)
+  const currentUser = getCurrentEmployee()
+  const isOwner = objs.every((doc) => doc.owner === currentUser)
+
+  if (isOwner) {
+    return true
+  }
+
+  const spaces = new Set(objs.map((doc) => doc.space))
+
+  return await Promise.all(
+    Array.from(spaces).map(
+      async (space) => await checkPermission(getClient(), documents.permission.ArchiveDocument, space)
+    )
+  ).then((res) => res.every((r) => r))
+}
+
+async function canMakeDocumentObsolete (obj?: Doc | Doc[]): Promise<boolean> {
+  if (obj == null) {
+    return false
+  }
+
+  const objs = (Array.isArray(obj) ? obj : [obj]) as Document[]
+  const currentUser = getCurrentEmployee()
+  const isOwner = objs.every((doc) => doc.owner === currentUser)
 
   if (isOwner) {
     return true
@@ -411,6 +450,7 @@ export default async (): Promise<Resources> => ({
     GetDocumentMetaLinkFragment: getDocumentMetaLinkFragment,
     CanDeleteDocument: canDeleteDocument,
     CanArchiveDocument: canArchiveDocument,
+    CanMakeDocumentObsolete: canMakeDocumentObsolete,
     CanTransferDocument: canTransferDocument,
     CanOpenDocument: canOpenDocument,
     CanPrintDocument: canPrintDocument,
@@ -430,6 +470,7 @@ export default async (): Promise<Resources> => ({
     CreateFolder: createFolder,
     DeleteDocument: deleteDocuments,
     ArchiveDocument: archiveDocuments,
+    MakeDocumentObsolete: makeDocumentObsolete,
     TransferDocument: transferDocuments,
     EditDocSpace: editDocSpace
   },

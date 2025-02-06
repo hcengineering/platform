@@ -14,7 +14,15 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { generateId, systemAccountEmail, toWorkspaceString, type MeasureContext, type Tx } from '@hcengineering/core'
+import {
+  generateId,
+  systemAccountUuid,
+  type WorkspaceUuid,
+  type MeasureContext,
+  type Tx,
+  type WorkspaceIds,
+  type WorkspaceDataId
+} from '@hcengineering/core'
 import platform, { Severity, Status, UNAUTHORIZED, unknownStatus } from '@hcengineering/platform'
 import { RPCHandler, type Response } from '@hcengineering/rpc'
 import {
@@ -28,6 +36,11 @@ import {
   type WebsocketData
 } from '@hcengineering/server'
 import {
+  getClient as getAccountClientRaw,
+  type WorkspaceLoginInfo,
+  type AccountClient
+} from '@hcengineering/account-client'
+import {
   LOGGING_ENABLED,
   pingConst,
   pongConst,
@@ -39,7 +52,7 @@ import {
 } from '@hcengineering/server-core'
 import { decodeToken, type Token } from '@hcengineering/server-token'
 import cors from 'cors'
-import express, { type Response as ExpressResponse } from 'express'
+import express, { type NextFunction, type Request, type Response as ExpressResponse } from 'express'
 import http, { type IncomingMessage } from 'http'
 import os from 'os'
 import { WebSocketServer, type RawData, type WebSocket } from 'ws'
@@ -50,6 +63,19 @@ import 'utf-8-validate'
 
 let profiling = false
 const rpcHandler = new RPCHandler()
+
+export type RequestHandler = (req: Request, res: ExpressResponse, next?: NextFunction) => Promise<void>
+
+const catchError = (fn: RequestHandler) => (req: Request, res: ExpressResponse, next: NextFunction) => {
+  void (async () => {
+    try {
+      await fn(req, res, next)
+    } catch (err: unknown) {
+      next(err)
+    }
+  })()
+}
+
 /**
  * @public
  * @param sessionFactory -
@@ -65,6 +91,20 @@ export function startHttpServer (
   accountsUrl: string,
   externalStorage: StorageAdapter
 ): () => Promise<void> {
+  function getAccountClient (token?: string): AccountClient {
+    return getAccountClientRaw(accountsUrl, token)
+  }
+
+  async function getWorkspaceIds (token: string): Promise<WorkspaceIds> {
+    const wsLoginInfo = (await getAccountClient(token).getLoginInfoByToken()) as WorkspaceLoginInfo
+
+    return {
+      uuid: wsLoginInfo.workspace,
+      dataId: wsLoginInfo.workspaceDataId,
+      url: wsLoginInfo.workspaceUrl
+    }
+  }
+
   if (LOGGING_ENABLED) {
     ctx.info('starting server on', {
       port,
@@ -129,7 +169,7 @@ export function startHttpServer (
     try {
       const token = req.query.token as string
       const payload = decodeToken(token)
-      if (payload.extra?.admin !== 'true' && payload.email !== systemAccountEmail) {
+      if (payload.extra?.admin !== 'true' && payload.account !== systemAccountUuid) {
         console.warn('Non admin attempt to maintenance action', { payload })
         res.writeHead(404, {})
         res.end()
@@ -184,7 +224,7 @@ export function startHttpServer (
           return
         }
         case 'force-close': {
-          const wsId = req.query.wsId as string
+          const wsId = req.query.wsId as WorkspaceUuid
           void sessions.forceClose(wsId)
           res.writeHead(200)
           res.end()
@@ -205,96 +245,122 @@ export function startHttpServer (
     }
   })
 
-  app.put('/api/v1/blob', (req, res) => {
-    try {
-      const authHeader = req.headers.authorization
-      if (authHeader === undefined) {
-        res.status(403).send({ error: 'Unauthorized' })
-        return
-      }
+  app.put(
+    '/api/v1/blob',
+    catchError(async (req, res) => {
+      try {
+        const authHeader = req.headers.authorization
+        if (authHeader === undefined) {
+          res.status(403).send({ error: 'Unauthorized' })
+          return
+        }
 
-      const payload = decodeToken(authHeader.split(' ')[1])
+        const token = authHeader.split(' ')[1]
+        const wsIds = await getWorkspaceIds(token)
 
-      const name = req.query.name as string
-      const contentType = req.query.contentType as string
-      const size = parseInt((req.query.size as string) ?? '-1')
-      if (Number.isNaN(size)) {
-        ctx.error('/api/v1/blob put error', {
-          message: 'invalid NaN file size',
-          name,
-          workspace: payload.workspace.name
-        })
-        res.writeHead(404, {})
-        res.end()
-        return
-      }
-      ctx
-        .with(
-          'storage upload',
-          { workspace: payload.workspace.name },
-          (ctx) => externalStorage.put(ctx, payload.workspace, name, req, contentType, size !== -1 ? size : undefined),
-          { file: name, contentType }
-        )
-        .then(() => {
-          res.writeHead(200, { 'Cache-Control': 'no-cache' })
-          res.end()
-        })
-        .catch((err) => {
-          Analytics.handleError(err)
-          ctx.error('/api/v1/blob put error', { err })
+        if (wsIds.uuid == null) {
+          res.status(401).send({ error: 'No workspace found' })
+        }
+
+        const name = req.query.name as string
+        const contentType = req.query.contentType as string
+        const size = parseInt((req.query.size as string) ?? '-1')
+        const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB limit
+
+        if (size > MAX_FILE_SIZE) {
+          res.writeHead(413, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: 'File too large' }))
+          return
+        }
+        if (Number.isNaN(size)) {
+          ctx.error('/api/v1/blob put error', {
+            message: 'invalid NaN file size',
+            name,
+            workspace: wsIds.uuid
+          })
           res.writeHead(404, {})
           res.end()
-        })
-    } catch (err: any) {
-      Analytics.handleError(err)
-      ctx.error('/api/v1/blob put error', { err })
-      res.writeHead(404, {})
-      res.end()
-    }
-  })
-  app.get('/api/v1/blob', (req, res) => {
-    try {
-      const authHeader = req.headers.authorization
-      if (authHeader === undefined) {
-        res.status(403).send({ error: 'Unauthorized' })
-        return
-      }
-
-      const payload = decodeToken(authHeader.split(' ')[1])
-
-      const name = req.query.name as string
-
-      const range = req.headers.range
-      if (range !== undefined) {
+          return
+        }
+        const dataId = wsIds.dataId ?? (wsIds.uuid as unknown as WorkspaceDataId)
         ctx
-          .with('file-range', { workspace: payload.workspace.name }, (ctx) =>
-            getFileRange(ctx, range, externalStorage, payload.workspace, name, wrapRes(res))
+          .with(
+            'storage upload',
+            { workspace: dataId },
+            (ctx) => externalStorage.put(ctx, dataId, name, req, contentType, size !== -1 ? size : undefined),
+            { file: name, contentType }
           )
+          .then(() => {
+            res.writeHead(200, { 'Cache-Control': 'no-cache' })
+            res.end()
+          })
           .catch((err) => {
+            Analytics.handleError(err)
+            ctx.error('/api/v1/blob put error', { err })
+            res.writeHead(404, {})
+            res.end()
+          })
+      } catch (err: any) {
+        Analytics.handleError(err)
+        ctx.error('/api/v1/blob put error', { err })
+        res.writeHead(404, {})
+        res.end()
+      }
+    })
+  )
+
+  app.get(
+    '/api/v1/blob',
+    catchError(async (req, res) => {
+      try {
+        const authHeader = req.headers.authorization
+        if (authHeader === undefined) {
+          res.status(403).send({ error: 'Unauthorized' })
+          return
+        }
+
+        const token = authHeader.split(' ')[1]
+        const wsIds = await getWorkspaceIds(token)
+
+        if (wsIds.uuid == null) {
+          res.status(401).send({ error: 'No workspace found' })
+        }
+
+        const name = req.query.name as string
+        const dataId = wsIds.dataId ?? (wsIds.uuid as unknown as WorkspaceDataId)
+
+        const range = req.headers.range
+        if (range !== undefined) {
+          ctx
+            .with('file-range', { workspace: wsIds.uuid }, (ctx) =>
+              getFileRange(ctx, range, externalStorage, dataId, name, wrapRes(res))
+            )
+            .catch((err) => {
+              Analytics.handleError(err)
+              ctx.error('/api/v1/blob get error', { err })
+              res.writeHead(404, {})
+              res.end()
+            })
+        } else {
+          void getFile(ctx, externalStorage, dataId, name, wrapRes(res)).catch((err) => {
             Analytics.handleError(err)
             ctx.error('/api/v1/blob get error', { err })
             res.writeHead(404, {})
             res.end()
           })
-      } else {
-        void getFile(ctx, externalStorage, payload.workspace, name, wrapRes(res)).catch((err) => {
-          Analytics.handleError(err)
-          ctx.error('/api/v1/blob get error', { err })
-          res.writeHead(404, {})
-          res.end()
-        })
+        }
+      } catch (err: any) {
+        Analytics.handleError(err)
+        ctx.error('/api/v1/blob get error', { err })
       }
-    } catch (err: any) {
-      Analytics.handleError(err)
-      ctx.error('/api/v1/blob get error', { err })
-    }
-  })
+    })
+  )
 
   app.put('/api/v1/broadcast', (req, res) => {
     try {
       const token = req.query.token as string
       decodeToken(token)
-      const ws = sessions.workspaces.get(req.query.workspace as string)
+      const ws = sessions.workspaces.get(req.query.workspace as WorkspaceUuid)
       if (ws !== undefined) {
         // push the data to body
         const body: Buffer[] = []
@@ -304,14 +370,23 @@ export function startHttpServer (
           })
           .on('end', () => {
             // on end of data, perform necessary action
-            const data = JSON.parse(Buffer.concat(body as any).toString())
-            if (Array.isArray(data)) {
-              sessions.broadcastAll(ws, data as Tx[])
-            } else {
-              sessions.broadcastAll(ws, [data as unknown as Tx])
+            try {
+              const data = JSON.parse(Buffer.concat(body as any).toString())
+              if (Array.isArray(data)) {
+                sessions.broadcastAll(ws, data as Tx[])
+              } else {
+                sessions.broadcastAll(ws, [data as unknown as Tx])
+              }
+              res.end()
+            } catch (err: any) {
+              ctx.error('JSON parse error', { err })
+              res.writeHead(400, {})
+              res.end()
             }
-            res.end()
           })
+      } else {
+        res.writeHead(404, {})
+        res.end()
       }
     } catch (err: any) {
       Analytics.handleError(err)
@@ -341,7 +416,7 @@ export function startHttpServer (
       remoteAddress: request.socket.remoteAddress ?? '',
       userAgent: request.headers['user-agent'] ?? '',
       language: request.headers['accept-language'] ?? '',
-      email: token.email,
+      account: token.account,
       mode: token.extra?.mode,
       model: token.extra?.model
     }
@@ -364,7 +439,7 @@ export function startHttpServer (
               {
                 id: -1,
                 error: new Status(Severity.ERROR, platform.status.WorkspaceArchived, {
-                  workspace: token.workspace.name
+                  workspaceUuid: token.workspace
                 }),
                 terminate: s.terminate
               },
@@ -429,7 +504,7 @@ export function startHttpServer (
         (s) => {
           if (!(s.session.workspaceClosed ?? false)) {
             // remove session after 1seconds, give a time to reconnect.
-            void sessions.close(ctx, cs, toWorkspaceString(token.workspace))
+            void sessions.close(ctx, cs, token.workspace)
           }
         },
         Buffer.from('')
@@ -441,6 +516,10 @@ export function startHttpServer (
         webSocketData,
         (s) => {
           ctx.error('error', { err, user: s.session.getUser() })
+          if (!(s.session.workspaceClosed ?? false)) {
+            // remove session after 1seconds, give a time to reconnect.
+            void sessions.close(ctx, cs, token.workspace)
+          }
         },
         Buffer.from('')
       )
@@ -513,7 +592,7 @@ function createWebsocketClientSocket (
     remoteAddress: string
     userAgent: string
     language: string
-    email: string
+    account: string
     mode: any
     model: any
   }

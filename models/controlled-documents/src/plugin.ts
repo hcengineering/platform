@@ -68,6 +68,7 @@ export default mergeIds(documentsId, documents, {
     TransferTemplate: '' as ViewAction,
     DeleteDocument: '' as ViewAction,
     ArchiveDocument: '' as ViewAction,
+    MakeDocumentObsolete: '' as ViewAction,
     TransferDocument: '' as ViewAction,
     EditDocSpace: '' as ViewAction
   },

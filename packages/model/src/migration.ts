@@ -21,10 +21,11 @@ import core, {
   Space,
   TxOperations,
   UnsetOptions,
-  WorkspaceId,
+  WorkspaceIds,
   generateId
 } from '@hcengineering/core'
 import { makeRank } from '@hcengineering/rank'
+import { AccountClient } from '@hcengineering/account-client'
 import { StorageAdapter } from '@hcengineering/storage'
 import { ModelLogger } from './utils'
 
@@ -79,6 +80,9 @@ export interface MigrationClient {
     options?: Omit<FindOptions<T>, 'lookup'>
   ) => Promise<T[]>
 
+  // Raw group by, allow to group documents inside domain.
+  groupBy: <T, P extends Doc>(domain: Domain, field: string, query?: DocumentQuery<P>) => Promise<Map<T, number>>
+
   // Traverse documents
   traverse: <T extends Doc>(
     domain: Domain,
@@ -115,8 +119,9 @@ export interface MigrationClient {
 
   migrateState: Map<string, Set<string>>
   storageAdapter: StorageAdapter
+  accountClient: AccountClient
 
-  workspaceId: WorkspaceId
+  wsIds: WorkspaceIds
 }
 
 /**

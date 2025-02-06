@@ -54,10 +54,6 @@
         {
           id: tracker.string.NewIssue,
           label
-        },
-        {
-          id: tracker.string.Import,
-          label: tracker.string.Import
         }
       ]
     : [

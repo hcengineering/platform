@@ -15,7 +15,7 @@
 //
 
 import {
-  Account,
+  PersonId,
   AggregateValue,
   AnyAttribute,
   CategoryType,
@@ -112,8 +112,8 @@ export interface FilteredView extends Doc {
   filterClass?: Ref<Class<Doc>>
   viewletId?: Ref<Viewlet> | null
   sharable?: boolean
-  users: Ref<Account>[]
-  createdBy: Ref<Account>
+  users: PersonId[]
+  createdBy: PersonId
   attachedTo: string
 }
 
@@ -541,7 +541,7 @@ export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Do
 
   // Available only for workspace owners
   secured?: boolean
-  allowedForEditableContent?: boolean
+  allowedForEditableContent?: 'always' | 'noSelection'
 
   analyticsEvent?: string
 }

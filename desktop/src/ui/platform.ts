@@ -346,7 +346,7 @@ export async function configurePlatform (): Promise<void> {
 
   initThemeStore()
 
-  addEventListener(workbench.event.NotifyConnection, async (evt) => {
+  addEventListener(workbench.event.NotifyConnection, async () => {
     await ipcMain.setFrontCookie(
       config.FRONT_URL,
       presentation.metadata.Token.replaceAll(':', '-'),

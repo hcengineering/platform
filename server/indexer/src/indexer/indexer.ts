@@ -39,8 +39,9 @@ import core, {
   type Space,
   TxFactory,
   type WithLookup,
-  type WorkspaceIdWithUrl,
   coreId,
+  type WorkspaceIds,
+  type WorkspaceDataId,
   docKey,
   generateId,
   getFullTextIndexableAttributes,
@@ -48,9 +49,10 @@ import core, {
   isClassIndexable,
   isFullTextAttribute,
   isIndexedAttribute,
-  systemAccountEmail,
   toIdMap,
-  withContext
+  withContext,
+  systemAccount,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import drivePlugin, { type FileVersion } from '@hcengineering/drive'
 import type {
@@ -121,7 +123,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     readonly fulltextAdapter: FullTextAdapter,
     private readonly storage: DbAdapter,
     readonly hierarchy: Hierarchy,
-    readonly workspace: WorkspaceIdWithUrl,
+    readonly workspace: WorkspaceIds,
     readonly metrics: MeasureContext,
     readonly model: ModelDb,
     readonly storageAdapter: StorageAdapter,
@@ -132,12 +134,16 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     this.contexts = new Map(model.findAllSync(core.class.FullTextSearchContext, {}).map((it) => [it.toClass, it]))
   }
 
+  get workspaceDataId (): WorkspaceDataId {
+    return this.workspace.dataId ?? (this.workspace.uuid as unknown as WorkspaceDataId)
+  }
+
   async cancel (): Promise<void> {
     this.cancelling = true
     await this.verify
     this.triggerIndexing()
     await this.indexing
-    this.metrics.warn('Cancel indexing', { workspace: this.workspace.name, indexId: this.indexId })
+    this.metrics.warn('Cancel indexing', { workspace: this.workspace.uuid, indexId: this.indexId })
   }
 
   async markRemove (doc: DocIndexState): Promise<void> {
@@ -206,28 +212,31 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
     const indexes = 'verify-indexes-v2'
     if (migrations.find((it) => it.state === indexes) === undefined) {
-      ctx.warn('Rebuild DB index', { workspace: this.workspace.name })
+      ctx.warn('Rebuild DB index', { workspace: this.workspace.uuid })
       // Clean all existing docs, they will be re-created on verify stage
       await this.checkIndexes()
 
       await this.addMigration(ctx, indexes)
-      ctx.warn('Rebuild DB index complete', { workspace: this.workspace.name })
+      ctx.warn('Rebuild DB index complete', { workspace: this.workspace.uuid })
     }
 
-    const fullReindex = 'full-text-indexer-v4'
+    const fullReindex = 'full-text-indexer-v5'
     if (migrations.find((it) => it.state === fullReindex) === undefined) {
-      ctx.warn('rebuilding index to v4', { workspace: this.workspace.name })
+      ctx.warn('rebuilding index to v5', { workspace: this.workspace.uuid })
       // Clean all existing docs, they will be re-created on verify stage
       await this.storage.rawDeleteMany<DocIndexState>(DOMAIN_DOC_INDEX_STATE, {})
-      await this.fulltextAdapter.clean(ctx, this.workspace)
-      ctx.warn('rebuilding index to v3 complete', { workspace: this.workspace.name })
+      if (this.workspace.dataId != null) {
+        await this.fulltextAdapter.clean(ctx, this.workspace.dataId as unknown as WorkspaceUuid)
+      }
+      await this.fulltextAdapter.clean(ctx, this.workspace.uuid)
+      ctx.warn('rebuilding index to v5 complete', { workspace: this.workspace.uuid })
 
       await this.addMigration(ctx, fullReindex)
     }
 
-    const docStructure = 'full-text-structure-v4'
+    const docStructure = 'full-text-structure-v5'
     if (migrations.find((it) => it.state === docStructure) === undefined) {
-      ctx.warn('verify document structure', { version: docStructure, workspace: this.workspace.name })
+      ctx.warn('verify document structure', { version: docStructure, workspace: this.workspace.uuid })
 
       for (const [domain, classes] of this.byDomain.entries()) {
         await ctx.with('verify-domain', { domain }, async () => {
@@ -283,17 +292,24 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     }
   }
 
-  async clearIndex (): Promise<void> {
-    const ctx = this.metrics
-    const migrations = await this.storage.findAll<MigrationState>(ctx, core.class.MigrationState, {
-      plugin: coreId,
-      state: {
-        $in: ['verify-indexes-v2', 'full-text-indexer-v4', 'full-text-structure-v4']
-      }
-    })
+  async clearIndex (onlyDrop = false): Promise<void> {
+    if (!onlyDrop) {
+      const ctx = this.metrics
+      const migrations = await this.storage.findAll<MigrationState>(ctx, core.class.MigrationState, {
+        plugin: coreId,
+        state: {
+          $in: ['verify-indexes-v2', 'full-text-indexer-v5', 'full-text-structure-v4']
+        }
+      })
 
-    const refs = migrations.map((it) => it._id)
-    await this.storage.clean(ctx, DOMAIN_MIGRATION, refs)
+      const refs = migrations.map((it) => it._id)
+      await this.storage.clean(ctx, DOMAIN_MIGRATION, refs)
+    } else {
+      if (this.workspace.dataId != null) {
+        await this.fulltextAdapter.clean(this.metrics, this.workspace.dataId as unknown as WorkspaceUuid)
+      }
+      await this.fulltextAdapter.clean(this.metrics, this.workspace.uuid)
+    }
   }
 
   broadcastClasses = new Set<Ref<Class<Doc>>>()
@@ -319,7 +335,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
       const { classUpdate: _classes, processed } = await this.metrics.with(
         'processIndex',
-        { workspace: this.workspace.name },
+        { workspace: this.workspace.uuid },
         (ctx) => this.processIndex(ctx, indexing)
       )
 
@@ -332,7 +348,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
       if (this.triggerCounts === 0) {
         if (processed > 0) {
-          this.metrics.warn('Indexing complete', { indexId: this.indexId, workspace: this.workspace.name, processed })
+          this.metrics.warn('Indexing complete', { indexId: this.indexId, workspace: this.workspace.uuid, processed })
         }
         if (!this.cancelling) {
           // We need to send index update event
@@ -358,7 +374,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         }
       }
     }
-    this.metrics.warn('Exit indexer', { indexId: this.indexId, workspace: this.workspace.name })
+    this.metrics.warn('Exit indexer', { indexId: this.indexId, workspace: this.workspace.uuid })
   }
 
   async indexDocuments (
@@ -525,7 +541,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             st = Date.now()
             this.metrics.info('Full text: Indexing', {
               indexId: this.indexId,
-              workspace: this.workspace.name,
+              workspace: this.workspace.uuid,
               domain: domainLookup,
               processed,
               total
@@ -598,14 +614,14 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       await pushQueue.add(async () => {
         try {
           try {
-            await ctx.with('push-elastic', {}, () => this.fulltextAdapter.updateMany(ctx, this.workspace, docs))
+            await ctx.with('push-elastic', {}, () => this.fulltextAdapter.updateMany(ctx, this.workspace.uuid, docs))
           } catch (err: any) {
             Analytics.handleError(err)
             // Try to push one by one
             await ctx.with('push-elastic-by-one', {}, async () => {
               for (const d of docs) {
                 try {
-                  await this.fulltextAdapter.update(ctx, this.workspace, d.id, d)
+                  await this.fulltextAdapter.update(ctx, this.workspace.uuid, d.id, d)
                 } catch (err2: any) {
                   Analytics.handleError(err2)
                 }
@@ -752,7 +768,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               ctx.error('failed to process document', {
                 id: doc._id,
                 class: doc._class,
-                workspace: this.workspace.name
+                workspace: this.workspace.uuid
               })
               Analytics.handleError(err)
             }
@@ -770,7 +786,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   private createContextData (): SessionDataImpl {
     return new SessionDataImpl(
-      systemAccountEmail,
+      systemAccount,
       '',
       true,
       undefined,
@@ -779,7 +795,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       false,
       undefined,
       undefined,
-      this.model
+      this.model,
+      new Map()
     )
   }
 
@@ -792,7 +809,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     const value = v.value as Ref<Blob>
     if (value !== undefined && value !== '') {
       try {
-        const readable = await this.storageAdapter?.read(ctx, this.workspace, value)
+        const readable = await this.storageAdapter?.read(ctx, this.workspaceDataId, value)
         const markup = Buffer.concat(readable as any).toString()
         let textContent = markupToText(markup)
         textContent = textContent
@@ -805,7 +822,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         indexedDoc.fulltextSummary += '\n' + textContent
       } catch (err: any) {
         Analytics.handleError(err)
-        ctx.error('failed to handle blob', { _id: value, workspace: this.workspace.name })
+        ctx.error('failed to handle blob', { _id: value, workspace: this.workspace.uuid })
       }
     }
   }
@@ -840,7 +857,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           return
         }
       }
-      const docInfo: Blob | undefined = await this.storageAdapter.stat(ctx, this.workspace, ref)
+      const docInfo: Blob | undefined = await this.storageAdapter.stat(ctx, this.workspaceDataId, ref)
       if (docInfo !== undefined && docInfo.size < 30 * 1024 * 1024) {
         // We have blob, we need to decode it to string.
         const contentType = (docInfo.contentType ?? '').split(';')[0]
@@ -857,7 +874,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         _class: doc._class,
         field: v.attr.name,
         err,
-        workspace: this.workspace.name
+        workspace: this.workspace.uuid
       })
     }
   }
@@ -865,12 +882,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   private async handleBlob (ctx: MeasureContext<any>, docInfo: Blob | undefined, indexedDoc: IndexedDoc): Promise<void> {
     if (docInfo !== undefined) {
       const contentType = (docInfo.contentType ?? '').split(';')[0]
-      const readable = await this.storageAdapter?.get(ctx, this.workspace, docInfo._id)
+      const readable = await this.storageAdapter?.get(ctx, this.workspaceDataId, docInfo._id)
 
       if (readable !== undefined) {
         try {
           let textContent = await ctx.with('fetch', {}, () =>
-            this.contentAdapter.content(ctx, this.workspace, docInfo._id, contentType, readable)
+            this.contentAdapter.content(ctx, this.workspace.uuid, docInfo._id, contentType, readable)
           )
           textContent = textContent
             .split(/ +|\t+|\f+/)
@@ -894,7 +911,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   ): Promise<void> {
     if (docInfo !== undefined) {
       let textContent = Buffer.concat(
-        (await this.storageAdapter?.read(ctx, this.workspace, docInfo._id)) as any
+        (await this.storageAdapter?.read(ctx, this.workspaceDataId, docInfo._id)) as any
       ).toString()
 
       textContent = textContent
@@ -914,7 +931,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       if (toRemove.length !== 0) {
         await this.fulltextAdapter.remove(
           ctx,
-          this.workspace,
+          this.workspace.uuid,
           toRemove.map((it) => it._id)
         )
       }

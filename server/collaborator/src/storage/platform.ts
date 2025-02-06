@@ -14,6 +14,7 @@
 //
 
 import activity, { DocUpdateMessage } from '@hcengineering/activity'
+import { Analytics } from '@hcengineering/analytics'
 import { loadCollabJson, loadCollabYdoc, saveCollabJson, saveCollabYdoc } from '@hcengineering/collaboration'
 import { decodeDocumentId } from '@hcengineering/collaborator-client'
 import core, { AttachedData, MeasureContext, Ref, Space, TxOperations } from '@hcengineering/core'
@@ -23,14 +24,13 @@ import { markupToYDocNoSchema } from '@hcengineering/text-ydoc'
 import { Doc as YDoc } from 'yjs'
 
 import { Context } from '../context'
-
 import { CollabStorageAdapter } from './adapter'
 
 export class PlatformStorageAdapter implements CollabStorageAdapter {
   constructor (private readonly storage: StorageAdapter) {}
 
   async loadDocument (ctx: MeasureContext, documentName: string, context: Context): Promise<YDoc | undefined> {
-    const { content, workspaceId } = context
+    const { content, workspaceDataId } = context
     const { documentId } = decodeDocumentId(documentName)
 
     // try to load document content
@@ -39,14 +39,15 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
 
       const ydoc = await ctx.with('loadCollabYdoc', {}, (ctx) => {
         return withRetry(ctx, 5, () => {
-          return loadCollabYdoc(ctx, this.storage, context.workspaceId, documentId)
+          return loadCollabYdoc(ctx, this.storage, workspaceDataId, documentId)
         })
       })
 
       if (ydoc !== undefined) {
         return ydoc
       }
-    } catch (err) {
+    } catch (err: any) {
+      Analytics.handleError(err)
       ctx.error('failed to load document content', { documentName, error: err })
       throw err
     }
@@ -58,7 +59,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
 
         const markup = await ctx.with('loadCollabJson', {}, (ctx) => {
           return withRetry(ctx, 5, () => {
-            return loadCollabJson(ctx, this.storage, workspaceId, content)
+            return loadCollabJson(ctx, this.storage, workspaceDataId, content)
           })
         })
         if (markup !== undefined) {
@@ -66,11 +67,12 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
 
           // if document was loaded from the initial content or storage we need to save
           // it to ensure the next time we load it from the ydoc document
-          await saveCollabYdoc(ctx, this.storage, workspaceId, documentId, ydoc)
+          await saveCollabYdoc(ctx, this.storage, workspaceDataId, documentId, ydoc)
 
           return ydoc
         }
-      } catch (err) {
+      } catch (err: any) {
+        Analytics.handleError(err)
         ctx.error('failed to load initial document content', { documentName, content, error: err })
         throw err
       }
@@ -90,29 +92,37 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       curr: () => Record<string, string>
     }
   ): Promise<Record<string, string> | undefined> {
-    const { clientFactory } = context
+    const { clientFactory, workspaceDataId } = context
     const { documentId } = decodeDocumentId(documentName)
 
-    const client = await ctx.with('connect', {}, () => clientFactory())
+    try {
+      ctx.info('save document ydoc content', { documentName })
+      await ctx.with('saveCollabYdoc', {}, (ctx) => {
+        return withRetry(ctx, 5, () => {
+          return saveCollabYdoc(ctx, this.storage, workspaceDataId, documentId, document)
+        })
+      })
+    } catch (err: any) {
+      Analytics.handleError(err)
+      ctx.error('failed to save document ydoc content', { documentName, error: err })
+      // raise an error if failed to save document to storage
+      // this will prevent document from being unloaded from memory
+      throw err
+    }
+
+    let client: TxOperations
+    try {
+      client = await ctx.with('connect', {}, () => clientFactory())
+    } catch (err: any) {
+      Analytics.handleError(err)
+      ctx.error('failed to connect to platform', { documentName, error: err })
+      throw err
+    }
 
     try {
-      try {
-        ctx.info('save document ydoc content', { documentName })
-        await ctx.with('saveCollabYdoc', {}, (ctx) => {
-          return withRetry(ctx, 5, () => {
-            return saveCollabYdoc(ctx, this.storage, context.workspaceId, documentId, document)
-          })
-        })
-      } catch (err) {
-        ctx.error('failed to save document ydoc content', { documentName, error: err })
-        // raise an error if failed to save document to storage
-        // this will prevent document from being unloaded from memory
-        throw err
-      }
-
       ctx.info('save document content to platform', { documentName })
       return await ctx.with('save-to-platform', {}, (ctx) => {
-        return this.saveDocumentToPlatform(ctx, client, documentName, getMarkup)
+        return this.saveDocumentToPlatform(ctx, client, context, documentName, getMarkup)
       })
     } finally {
       await client.close()
@@ -122,13 +132,15 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
   async saveDocumentToPlatform (
     ctx: MeasureContext,
     client: Omit<TxOperations, 'close'>,
+    context: Context,
     documentName: string,
     getMarkup: {
       prev: () => Record<string, string>
       curr: () => Record<string, string>
     }
   ): Promise<Record<string, string> | undefined> {
-    const { documentId, workspaceId } = decodeDocumentId(documentName)
+    const { workspaceDataId } = context
+    const { documentId } = decodeDocumentId(documentName)
     const { objectAttr, objectClass, objectId } = documentId
 
     const attribute = client.getHierarchy().findAttribute(objectClass, objectAttr)
@@ -167,7 +179,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
 
     const blobId = await ctx.with('saveCollabJson', {}, (ctx) => {
       return withRetry(ctx, 5, () => {
-        return saveCollabJson(ctx, this.storage, { name: workspaceId }, documentId, markup.curr[objectAttr])
+        return saveCollabJson(ctx, this.storage, workspaceDataId, documentId, markup.curr[objectAttr])
       })
     })
 
@@ -217,7 +229,7 @@ async function withRetry<T> (
       return await op()
     } catch (err: any) {
       error = err
-      ctx.error('error', { err })
+      ctx.info('error', { err, retries })
       if (retries !== 0) {
         await new Promise((resolve) => setTimeout(resolve, delay))
       }

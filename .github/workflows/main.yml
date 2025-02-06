@@ -15,7 +15,7 @@ on:
       - v*
       - s*
   pull_request:
-    branches: [develop, main]
+    branches: [develop, staging, staging-new, main]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -192,7 +192,7 @@ jobs:
       - name: Testing...
         run: node common/scripts/install-run-rush.js test
         env:
-          DB_URL: 'postgresql://postgres:example@localhost:5433'
+          DB_URL: 'postgresql://root@localhost:26258/defaultdb?sslmode=disable'
           ELASTIC_URL: 'http://localhost:9201'
           MONGO_URL: 'mongodb://localhost:27018'
   uitest:

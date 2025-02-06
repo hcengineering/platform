@@ -13,26 +13,31 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
+  import { CardEvents, MasterTag } from '@hcengineering/card'
   import core, { Class, Doc, MarkupBlobRef, Ref, SortingOrder } from '@hcengineering/core'
+  import { translate } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { makeRank } from '@hcengineering/rank'
   import {
     Button,
+    ButtonWithDropdown,
     IconAdd,
-    Scroller,
+    IconDropdown,
     NavItem,
+    Scroller,
+    SelectPopupValueType,
     deviceOptionsStore as deviceInfo,
     getCurrentLocation,
-    navigate
+    navigate,
+    showPopup
   } from '@hcengineering/ui'
+  import { NavLink, showMenu } from '@hcengineering/view-resources'
   import { NavFooter, NavHeader } from '@hcengineering/workbench-resources'
-  import { showMenu, NavLink } from '@hcengineering/view-resources'
-  import { getClient, createQuery } from '@hcengineering/presentation'
-  import { CardEvents, MasterTag } from '@hcengineering/card'
   import { createEventDispatcher } from 'svelte'
   import card from '../plugin'
+  import CreateTag from './CreateTag.svelte'
   import TagHierarchy from './TagHierarchy.svelte'
-  import { Analytics } from '@hcengineering/analytics'
-  import { makeRank } from '@hcengineering/rank'
-  import { translate } from '@hcengineering/platform'
 
   export let _class: Ref<Class<Doc>>
 
@@ -42,14 +47,16 @@
 
   const dispatch = createEventDispatcher()
 
-  let classes: Ref<Class<Doc>>[] = []
+  let classes: MasterTag[] = []
+  let allClasses: MasterTag[] = []
 
   function fillClasses (tags: MasterTag[]): void {
-    classes = tags.filter((it) => it.extends === card.class.Card).map((it) => it._id)
+    classes = tags.filter((it) => it.extends === card.class.Card)
   }
 
   const query = createQuery()
-  query.query(card.class.MasterTag, {}, (res) => {
+  query.query(card.class.MasterTag, { _class: card.class.MasterTag }, (res) => {
+    allClasses = res
     fillClasses(res)
   })
 
@@ -57,7 +64,7 @@
     const lastOne = await client.findOne(card.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
     const title = await translate(card.string.Card, {})
 
-    const _id = await client.createDoc(card.class.Card, core.space.Workspace, {
+    const _id = await client.createDoc(_class ?? card.class.Card, core.space.Workspace, {
       title,
       rank: makeRank(lastOne?.rank, undefined),
       content: '' as MarkupBlobRef
@@ -70,6 +77,26 @@
     loc.path.length = 4
     navigate(loc)
   }
+
+  function createMasteTag (): void {
+    showPopup(CreateTag, {
+      parent: undefined,
+      _class: card.class.MasterTag
+    })
+  }
+
+  async function dropdownItemSelected (res?: SelectPopupValueType['id']): Promise<void> {
+    if (res === card.string.CreateCard) {
+      await createCard()
+    } else if (res === card.string.CreateMasterTag) {
+      createMasteTag()
+    }
+  }
+
+  const dropdownItems = [
+    { id: card.string.CreateCard, label: card.string.CreateCard },
+    { id: card.string.CreateMasterTag, label: card.string.CreateMasterTag }
+  ]
 </script>
 
 <div
@@ -80,22 +107,38 @@
     <NavHeader label={card.string.Cards} />
 
     <div class="antiNav-subheader">
-      <Button
-        id={'new-card'}
-        icon={IconAdd}
-        label={card.string.CreateCard}
-        justify={'left'}
-        width={'100%'}
-        kind={'primary'}
-        gap={'large'}
-        on:click={createCard}
-      />
+      {#if allClasses.length > 0}
+        <ButtonWithDropdown
+          icon={IconAdd}
+          justify={'left'}
+          kind={'primary'}
+          label={card.string.CreateCard}
+          on:click={createCard}
+          mainButtonId={'new-card'}
+          dropdownIcon={IconDropdown}
+          {dropdownItems}
+          on:dropdown-selected={(ev) => {
+            void dropdownItemSelected(ev.detail)
+          }}
+        />
+      {:else}
+        <Button
+          icon={IconAdd}
+          label={card.string.CreateMasterTag}
+          justify={'left'}
+          width={'100%'}
+          kind={'primary'}
+          gap={'large'}
+          on:click={createMasteTag}
+        />
+      {/if}
     </div>
 
     <NavLink space={card.class.Card}>
       <NavItem
         _id={card.class.Card}
         label={card.string.CardLibrary}
+        icon={card.icon.Card}
         isFold
         empty
         selected={card.class.Card === _class}
@@ -108,11 +151,13 @@
       />
     </NavLink>
 
-    <div class="antiNav-divider line" />
+    {#if classes.length > 0}
+      <div class="antiNav-divider line" />
 
-    <Scroller shrink>
-      <TagHierarchy bind:_class {classes} on:select />
-    </Scroller>
+      <Scroller shrink>
+        <TagHierarchy bind:_class {classes} {allClasses} on:select />
+      </Scroller>
+    {/if}
 
     <NavFooter split />
   </div>

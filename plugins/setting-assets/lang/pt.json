@@ -122,6 +122,9 @@
     "BackupFileDownload": "Baixar Arquivo",
     "BackupFiles": "Arquivos de Backup",
     "BackupNoBackup": "Não há backups disponíveis no momento.",
+    "Calendar": "Calendário",
+    "StartOfTheWeek": "Início da semana",
+    "SystemSetupString": "Configuração do sistema ({day})",
     "AddAttribute": "Adicionar atributo"
   }
 }

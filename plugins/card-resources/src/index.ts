@@ -17,7 +17,15 @@ import CreateTag from './components/CreateTag.svelte'
 import CardPresenter from './components/CardPresenter.svelte'
 import EditCard from './components/EditCard.svelte'
 import Main from './components/Main.svelte'
-import { getCardId, getCardTitle, resolveLocation, resolveLocationData, getCardLink, queryCard } from './utils'
+import {
+  getCardId,
+  getCardTitle,
+  resolveLocation,
+  resolveLocationData,
+  getCardLink,
+  queryCard,
+  deleteMasterTag
+} from './utils'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -33,6 +41,9 @@ export default async (): Promise<Resources> => ({
   resolver: {
     Location: resolveLocation,
     LocationData: resolveLocationData
+  },
+  actionImpl: {
+    DeleteMasterTag: deleteMasterTag
   },
   function: {
     CardTitleProvider: getCardTitle,

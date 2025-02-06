@@ -262,7 +262,12 @@
 
     "CreateFolder": "Créer un nouveau dossier",
     "RenameFolder": "Renommer le dossier",
-    "CreateChildFolder": "Créer un sous-dossier"
+    "CreateChildFolder": "Créer un sous-dossier",
+
+    "Obsolete": "Obsolète",
+    "MakeDocumentObsolete": "Marquer comme obsolète",
+    "MakeDocumentObsoleteDialog": "Marquer {count, plural, one {le document comme obsolète} other {les documents comme obsolètes}}",
+    "MakeDocumentObsoleteConfirm": "Voulez-vous vraiment marquer les documents suivants comme obsolètes : {titles} ?"
   },
   "controlledDocStates": {
     "Empty": "",

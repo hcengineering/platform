@@ -16,15 +16,14 @@
 import core, {
   type Client,
   createClient,
-  generateId,
-  getWorkspaceId,
   Hierarchy,
   MeasureMetricsContext,
   ModelDb,
   type Ref,
   SortingOrder,
   type Space,
-  TxOperations
+  TxOperations,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { type DbAdapter, wrapAdapterToClient } from '@hcengineering/server-core'
 import { createMongoAdapter, createMongoTxAdapter } from '..'
@@ -39,7 +38,7 @@ createTaskModel(txes)
 describe('mongo operations', () => {
   const mongodbUri: string = process.env.MONGO_URL ?? 'mongodb://localhost:27017'
   let mongoClient!: MongoClientReference
-  let dbId: string = generateId()
+  let dbUuid = crypto.randomUUID() as WorkspaceUuid
   let hierarchy: Hierarchy
   let model: ModelDb
   let client: Client
@@ -56,12 +55,13 @@ describe('mongo operations', () => {
   })
 
   beforeEach(async () => {
-    dbId = 'mongo-testdb-' + generateId()
+    dbUuid = crypto.randomUUID() as WorkspaceUuid
+    await initDb()
   })
 
   afterEach(async () => {
     try {
-      await (await mongoClient.getClient()).db(dbId).dropDatabase()
+      await (await mongoClient.getClient()).db(dbUuid).dropDatabase()
     } catch (eee) {}
     await serverStorage.close()
   })
@@ -83,7 +83,10 @@ describe('mongo operations', () => {
       {},
       hierarchy,
       mongodbUri,
-      getWorkspaceId(dbId),
+      {
+        uuid: dbUuid,
+        url: dbUuid
+      },
       model
     )
 
@@ -92,7 +95,10 @@ describe('mongo operations', () => {
       {},
       hierarchy,
       mongodbUri,
-      getWorkspaceId(dbId),
+      {
+        uuid: dbUuid,
+        url: dbUuid
+      },
       model
     )
 
@@ -111,10 +117,6 @@ describe('mongo operations', () => {
 
     operations = new TxOperations(client, core.account.System)
   }
-
-  beforeEach(async () => {
-    await initDb()
-  })
 
   it('check add', async () => {
     const times: number[] = []

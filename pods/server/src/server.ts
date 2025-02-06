@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
+import { type Account, type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 
 import { ClientSession, startSessionManager } from '@hcengineering/server'
@@ -36,6 +36,7 @@ import {
   registerTxAdapterFactory,
   sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
+import { uncompress } from 'snappy'
 
 import {
   createMongoAdapter,
@@ -47,6 +48,8 @@ import {
   createPostgreeDestroyAdapter,
   createPostgresAdapter,
   createPostgresTxAdapter,
+  registerGreenDecoder,
+  registerGreenUrl,
   setDBExtraOptions,
   shutdownPostgres
 } from '@hcengineering/postgres'
@@ -97,7 +100,10 @@ export function start (
   registerAdapterFactory('postgresql', createPostgresAdapter, true)
   registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
 
-  const usePrepare = process.env.DB_PREPARE === 'true'
+  const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
+
+  registerGreenDecoder('snappy', uncompress)
+  registerGreenUrl(process.env.GREEN_URL)
 
   setDBExtraOptions({
     prepare: usePrepare // We override defaults
@@ -114,8 +120,8 @@ export function start (
     { ...opt, externalStorage, adapterSecurity: dbUrl.startsWith('postgresql') },
     {}
   )
-  const sessionFactory = (token: Token, workspace: Workspace): Session => {
-    return new ClientSession(token, workspace, token.extra?.mode === 'backup')
+  const sessionFactory = (token: Token, workspace: Workspace, account: Account): Session => {
+    return new ClientSession(token, workspace, account, token.extra?.mode === 'backup')
   }
 
   const { shutdown: onClose, sessionManager } = startSessionManager(metrics, {

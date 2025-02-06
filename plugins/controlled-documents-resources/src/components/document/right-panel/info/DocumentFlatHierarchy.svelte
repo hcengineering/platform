@@ -14,9 +14,9 @@
 -->
 
 <script lang="ts">
-  import { type Ref, SortingOrder, getCurrentAccount } from '@hcengineering/core'
+  import { type Ref, SortingOrder, notEmpty } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { type PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import documents, {
     type ControlledDocument,
     type DocumentMeta,
@@ -25,14 +25,13 @@
     type ProjectMeta
   } from '@hcengineering/controlled-documents'
 
-  import { compareDocs, notEmpty } from '../../../../utils'
+  import { compareDocs } from '../../../../utils'
   import DocumentFlatTreeElement from './DocumentFlatTreeElement.svelte'
 
   export let document: HierarchyDocument | undefined
   export let project: Ref<Project>
 
-  const currentUser = getCurrentAccount() as PersonAccount
-  const currentPerson = currentUser.person
+  const currentPerson = getCurrentEmployee()
 
   let meta: ProjectMeta | undefined
   const projectMetaQuery = createQuery()

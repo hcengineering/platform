@@ -59,7 +59,7 @@ setOperationLogProfiling(process.env.OPERATION_PROFILING === 'true')
 const config = serverConfigFromEnv()
 const storageConfig: StorageConfiguration = storageConfigFromEnv()
 
-const usePrepare = process.env.DB_PREPARE === 'true'
+const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
 
 setDBExtraOptions({
   prepare: usePrepare // We override defaults
@@ -107,7 +107,7 @@ const workspaceToWorkspaceStats = (ws: Workspace): WorkspaceStatistics => {
     clientsTotal: new Set(Array.from(ws.sessions.values()).map((it) => it.session.getUser())).size,
     sessionsTotal: ws.sessions.size,
     workspaceName: ws.workspaceName,
-    wsId: ws.workspaceId.name,
+    wsId: ws.workspaceUuid,
     sessions: Array.from(ws.sessions.values()).map((it) => entryToUserStats(it.session, it.socket))
   }
 }

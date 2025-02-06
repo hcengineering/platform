@@ -16,16 +16,17 @@
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import serverNotification, { PUSH_NOTIFICATION_TITLE_SIZE } from '@hcengineering/server-notification'
 import {
-  Account,
   Class,
   concatLink,
   Data,
   Doc,
   Hierarchy,
+  PersonId,
   Ref,
   Tx,
   TxCreateDoc,
-  TxProcessor
+  TxProcessor,
+  type WorkspaceDataId
 } from '@hcengineering/core'
 import notification, {
   ActivityInboxNotification,
@@ -44,16 +45,17 @@ import contact, {
   type AvatarInfo,
   getAvatarProviderId,
   getGravatarUrl,
+  pickPrimarySocialId,
   Person,
-  PersonAccount,
   PersonSpace
 } from '@hcengineering/contact'
 import { AvailableProvidersCache, AvailableProvidersCacheKey, getTranslatedNotificationContent } from './index'
+import { getAllSocialStringsByPersonId, getPerson } from '@hcengineering/server-contact'
 
 async function createPushFromInbox (
   control: TriggerControl,
   n: InboxNotification,
-  receiver: Ref<Account>,
+  receiver: PersonId[],
   receiverSpace: Ref<PersonSpace>,
   subscriptions: PushSubscription[],
   senderPerson?: Person
@@ -86,21 +88,13 @@ async function createPushFromInbox (
     id = await encodeFn(doc, control)
   }
 
-  const path = [workbenchId, control.workspace.workspaceUrl, notificationId, encodeObjectURI(id, n.objectClass)]
-  await createPushNotification(
-    control,
-    receiver as Ref<PersonAccount>,
-    title,
-    body,
-    n._id,
-    subscriptions,
-    senderPerson,
-    path
-  )
+  const path = [workbenchId, control.workspace.url, notificationId, encodeObjectURI(id, n.objectClass)]
+  await createPushNotification(control, receiver, title, body, n._id, subscriptions, senderPerson, path)
 
   const messageInfo = getMessageInfo(n, control.hierarchy)
+  const primarySocialString = pickPrimarySocialId(receiver)
   return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, receiverSpace, {
-    user: receiver,
+    user: primarySocialString,
     title,
     body,
     senderId: n.createdBy ?? n.modifiedBy,
@@ -156,7 +150,7 @@ function getMessageInfo (
 
 export async function createPushNotification (
   control: TriggerControl,
-  target: Ref<PersonAccount>,
+  target: PersonId[],
   title: string,
   body: string,
   _id: string,
@@ -167,7 +161,7 @@ export async function createPushNotification (
   const sesURL: string | undefined = getMetadata(serverNotification.metadata.SesUrl)
   const sesAuth: string | undefined = getMetadata(serverNotification.metadata.SesAuthToken)
   if (sesURL === undefined || sesURL === '') return
-  const userSubscriptions = subscriptions.filter((it) => it.user === target)
+  const userSubscriptions = subscriptions.filter((it) => target.includes(it.user))
   const data: PushData = {
     title,
     body
@@ -176,7 +170,7 @@ export async function createPushNotification (
     data.tag = _id
   }
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const domainPath = `${workbenchId}/${control.workspace.workspaceUrl}`
+  const domainPath = `${workbenchId}/${control.workspace.url}`
   data.domain = concatLink(front, domainPath)
   if (path !== undefined) {
     data.url = concatLink(front, path.join('/'))
@@ -185,7 +179,8 @@ export async function createPushNotification (
     const provider = getAvatarProviderId(senderAvatar.avatarType)
     if (provider === contact.avatarProvider.Image) {
       if (senderAvatar.avatar != null) {
-        const url = await control.storageAdapter.getUrl(control.ctx, control.workspace, senderAvatar.avatar)
+        const dataId = control.workspace.dataId ?? (control.workspace.uuid as unknown as WorkspaceDataId)
+        const url = await control.storageAdapter.getUrl(control.ctx, dataId, senderAvatar.avatar)
         data.icon = url.includes('://') ? url : concatLink(front, url)
       }
     } else if (provider === contact.avatarProvider.Gravatar && senderAvatar.avatarProps?.url !== undefined) {
@@ -200,7 +195,7 @@ async function sendPushToSubscription (
   sesURL: string,
   sesAuth: string | undefined,
   control: TriggerControl,
-  targetUser: Ref<Account>,
+  targetUser: PersonId[],
   subscriptions: PushSubscription[],
   data: PushData
 ): Promise<void> {
@@ -209,6 +204,7 @@ async function sendPushToSubscription (
       await (
         await fetch(concatLink(sesURL, '/web-push'), {
           method: 'post',
+          keepalive: true,
           headers: {
             'Content-Type': 'application/json',
             ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
@@ -257,30 +253,20 @@ export async function PushNotificationsHandler (
     return []
   }
 
-  const senders = Array.from(new Set(all.map((it) => it.createdBy)))
-  const senderAccounts = await control.modelDb.findAll(contact.class.PersonAccount, {
-    _id: { $in: senders as Ref<PersonAccount>[] }
-  })
-  const senderPersons = await control.findAll(control.ctx, contact.class.Person, {
-    _id: { $in: Array.from(new Set(senderAccounts.map((it) => it.person))) }
-  })
-
   const res: Tx[] = []
 
   for (const inboxNotification of all) {
     const { user } = inboxNotification
-    const userSubscriptions = subscriptions.filter((it) => it.user === user)
+    const userSocialStrings = await getAllSocialStringsByPersonId(control, [user])
+    const userSubscriptions = subscriptions.filter((it) => userSocialStrings.includes(it.user))
     if (userSubscriptions.length === 0) continue
 
-    const senderAccount = senderAccounts.find(
-      (it) => it._id === (inboxNotification.createdBy ?? inboxNotification.modifiedBy)
-    )
-    const senderPerson =
-      senderAccount !== undefined ? senderPersons.find((it) => it._id === senderAccount.person) : undefined
+    const senderSocialString = inboxNotification.createdBy ?? inboxNotification.modifiedBy
+    const senderPerson = await getPerson(control, senderSocialString)
     const tx = await createPushFromInbox(
       control,
       inboxNotification,
-      user,
+      userSocialStrings,
       inboxNotification.space,
       userSubscriptions,
       senderPerson

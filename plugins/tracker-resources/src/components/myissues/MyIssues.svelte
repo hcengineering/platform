@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import { Doc, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import type { IntlString, Asset } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
@@ -28,10 +28,10 @@
   export let config: [string, IntlString, object][] = []
   export let icon: Asset | undefined = undefined
 
+  const socialIds = getCurrentAccount().socialIds
   const dispatch = createEventDispatcher()
-  const currentUser = getCurrentAccount() as PersonAccount
-  const assigned = { assignee: currentUser.person }
-  const created = { createdBy: currentUser._id }
+  const assigned = { assignee: getCurrentEmployee() }
+  const created = { createdBy: { $in: socialIds } }
   let subscribed = { _id: { $in: [] as Ref<Issue>[] } }
   let query: DocumentQuery<Issue> | undefined = undefined
   let modeSelectorProps: IModeSelector | undefined = undefined
@@ -64,7 +64,7 @@
   const subscribedQuery = createQuery()
   $: subscribedQuery.query(
     tracker.class.Issue,
-    { 'notification:mixin:Collaborators.collaborators': getCurrentAccount()._id },
+    { 'notification:mixin:Collaborators.collaborators': { $in: socialIds } },
     (result) => {
       const newSub = result.map((p) => p._id as Ref<Doc> as Ref<Issue>)
       const curSub = subscribed._id.$in

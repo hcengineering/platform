@@ -17,10 +17,12 @@ import core, {
   generateId,
   toFindResult,
   TxProcessor,
+  type WorkspaceIds,
   type BenchmarkDoc,
   type Class,
   type Doc,
   type DocumentQuery,
+  type Domain,
   type FindOptions,
   type FindResult,
   type Hierarchy,
@@ -30,8 +32,7 @@ import core, {
   type Space,
   type Tx,
   type TxCreateDoc,
-  type TxResult,
-  type WorkspaceId
+  type TxResult
 } from '@hcengineering/core'
 import type { DbAdapter } from '../adapter'
 import { DummyDbAdapter } from '../mem'
@@ -90,6 +91,11 @@ class BenchmarkDbAdapter extends DummyDbAdapter {
     return toFindResult<T>(result as T[])
   }
 
+  getDomainHash (ctx: MeasureContext, domain: Domain): Promise<string> {
+    // Since benchmark coult not be changed.
+    return Promise.resolve('')
+  }
+
   tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     if (benchData === '') {
       benchData = genData(1024 * 1024)
@@ -122,7 +128,7 @@ export async function createBenchmarkAdapter (
   contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceIds,
   modelDb: ModelDb
 ): Promise<DbAdapter> {
   return new BenchmarkDbAdapter()

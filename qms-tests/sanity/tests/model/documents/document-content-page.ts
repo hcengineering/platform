@@ -488,7 +488,8 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.page.getByRole('button', { name: 'AQ Admin Qara' }).click()
     await this.page.getByRole('button', { name: 'AJ Appleseed John' }).nth(1).click()
     await this.page.keyboard.press('Escape')
-    await this.page.getByRole('button', { name: 'Create' }).click()
+    await expect(this.page.locator('.selectPopup')).not.toBeAttached()
+    await this.page.getByRole('button', { name: 'Create' }).click({ timeout: 3000 })
   }
 
   async checkIfUserCanCreateDocument (spaceName: string): Promise<void> {

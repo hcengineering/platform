@@ -16,6 +16,7 @@
 import core, {
   Account,
   AccountRole,
+  systemAccountUuid,
   TxProcessor,
   type Doc,
   type Hierarchy,
@@ -26,11 +27,11 @@ import core, {
 } from '@hcengineering/core'
 
 export function isOwner (account: Account, ctx: MeasureContext<SessionData>): boolean {
-  return account.role === AccountRole.Owner || account._id === core.account.System || ctx.contextData.admin === true
+  return account.role === AccountRole.Owner || isSystem(account, ctx)
 }
 
 export function isSystem (account: Account, ctx: MeasureContext<SessionData>): boolean {
-  return account._id === core.account.System
+  return account.uuid === systemAccountUuid
 }
 
 export function filterBroadcastOnly (tx: Tx[], hierarchy: Hierarchy): Tx[] {
@@ -41,12 +42,16 @@ export function filterBroadcastOnly (tx: Tx[], hierarchy: Hierarchy): Tx[] {
       if (bonly === true) {
         return false
       }
-      const objClass = hierarchy.getClass(cud.objectClass)
-      const mix = hierarchy.hasMixin(objClass, core.mixin.TransientConfiguration)
-      if (mix && hierarchy.as(objClass, core.mixin.TransientConfiguration).broadcastOnly) {
-        hierarchy.setClassifierProp(cud.objectClass, 'broadcastOnly', true)
-        // We do not need to store a broadcast only transactions into model.
-        return false
+      try {
+        const objClass = hierarchy.getClass(cud.objectClass)
+        const mix = hierarchy.hasMixin(objClass, core.mixin.TransientConfiguration)
+        if (mix && hierarchy.as(objClass, core.mixin.TransientConfiguration).broadcastOnly) {
+          hierarchy.setClassifierProp(cud.objectClass, 'broadcastOnly', true)
+          // We do not need to store a broadcast only transactions into model.
+          return false
+        }
+      } catch {
+        return true
       }
     }
     return true

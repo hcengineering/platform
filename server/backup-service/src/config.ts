@@ -46,7 +46,8 @@ const envMap: { [key in keyof Config]: string } = {
   SkipWorkspaces: 'SKIP_WORKSPACES',
   Storage: 'STORAGE',
   WorkspaceStorage: 'WORKSPACE_STORAGE',
-  Region: 'REGION'
+  Region: 'REGION',
+  Parallel: 'PARALLEL'
 }
 
 const required: Array<keyof Config> = [
@@ -72,7 +73,8 @@ export const config: () => Config = () => {
     SkipWorkspaces: process.env[envMap.SkipWorkspaces] ?? '',
     WorkspaceStorage: process.env[envMap.WorkspaceStorage],
     Storage: process.env[envMap.Storage],
-    Region: process.env[envMap.Region] ?? ''
+    Region: process.env[envMap.Region] ?? '',
+    Parallel: parseInt(process.env[envMap.Parallel] ?? '1')
   }
 
   const missingEnv = required.filter((key) => params[key] === undefined).map((key) => envMap[key])

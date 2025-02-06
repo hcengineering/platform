@@ -11,7 +11,8 @@ import core, {
   Ref,
   Space,
   TxOperations,
-  WorkspaceIdWithUrl
+  type WorkspaceDataId,
+  type WorkspaceIds
 } from '@hcengineering/core'
 import { ModelLogger } from '@hcengineering/model'
 import { makeRank } from '@hcengineering/rank'
@@ -99,7 +100,7 @@ export class WorkspaceInitializer {
   constructor (
     private readonly ctx: MeasureContext,
     private readonly storageAdapter: StorageAdapter,
-    private readonly wsUrl: WorkspaceIdWithUrl,
+    private readonly wsIds: WorkspaceIds,
     private readonly client: TxOperations,
     private readonly initRepoDir: string
   ) {}
@@ -151,7 +152,9 @@ export class WorkspaceInitializer {
       const id = uuid()
       const resp = await fetch(step.fromUrl)
       const buffer = Buffer.from(await resp.arrayBuffer())
-      await this.storageAdapter.put(this.ctx, this.wsUrl, id, buffer, step.contentType, buffer.length)
+      const dataId = this.wsIds.dataId ?? (this.wsIds.uuid as unknown as WorkspaceDataId)
+
+      await this.storageAdapter.put(this.ctx, dataId, id, buffer, step.contentType, buffer.length)
       if (step.resultVariable !== undefined) {
         vars[`\${${step.resultVariable}}`] = id
         vars[`\${${step.resultVariable}_size}`] = buffer.length
@@ -164,7 +167,7 @@ export class WorkspaceInitializer {
 
   private async processImport (step: ImportStep, vars: Record<string, any>, logger: ModelLogger): Promise<void> {
     try {
-      const uploader = new StorageFileUploader(this.ctx, this.storageAdapter, this.wsUrl)
+      const uploader = new StorageFileUploader(this.ctx, this.storageAdapter, this.wsIds)
       const initPath = path.resolve(this.initRepoDir, step.path)
       const importer = new UnifiedFormatImporter(this.client, uploader, logger)
       await importer.importFolder(initPath)
@@ -297,8 +300,9 @@ export class WorkspaceInitializer {
 
     const json = parseMessageMarkdown(data ?? '', this.imageUrl)
     const markup = jsonToMarkup(json)
+    const dataId = this.wsIds.dataId ?? (this.wsIds.uuid as unknown as WorkspaceDataId)
 
-    return await saveCollabJson(this.ctx, this.storageAdapter, this.wsUrl, doc, markup)
+    return await saveCollabJson(this.ctx, this.storageAdapter, dataId, doc, markup)
   }
 
   private async fillProps<T extends Doc, P extends Partial<T> | Props<T>>(

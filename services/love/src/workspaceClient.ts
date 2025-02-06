@@ -18,8 +18,9 @@ import core, {
   Data,
   MeasureContext,
   Ref,
-  systemAccountEmail,
+  systemAccountUuid,
   TxOperations,
+  type WorkspaceUuid,
   type Blob
 } from '@hcengineering/core'
 import drive, { createFile } from '@hcengineering/drive'
@@ -31,11 +32,11 @@ export class WorkspaceClient {
   private client!: TxOperations
 
   private constructor (
-    private readonly workspace: string,
+    private readonly workspace: WorkspaceUuid,
     private readonly ctx: MeasureContext
   ) {}
 
-  static async create (workspace: string, ctx: MeasureContext): Promise<WorkspaceClient> {
+  static async create (workspace: WorkspaceUuid, ctx: MeasureContext): Promise<WorkspaceClient> {
     const instance = new WorkspaceClient(workspace, ctx)
     await instance.initClient(workspace)
     return instance
@@ -45,8 +46,8 @@ export class WorkspaceClient {
     await this.client.close()
   }
 
-  private async initClient (workspace: string): Promise<Client> {
-    const token = generateToken(systemAccountEmail, { name: workspace })
+  private async initClient (workspace: WorkspaceUuid): Promise<Client> {
+    const token = generateToken(systemAccountUuid, workspace, { service: 'love' })
     const client = await getClient(token)
     this.client = new TxOperations(client, core.account.System)
     return this.client

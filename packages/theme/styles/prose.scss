@@ -409,10 +409,10 @@ table.proseTable {
   margin: 0 1px;
   padding: 0 .25rem;
   font-family: var(--mono-font);
-  background-color: var(--theme-button-default);
-  border: 1px solid var(--theme-button-border);
+  color: var(--theme-code-color);
+  background-color: var(--theme-code-bg-color);
   border-radius: .25rem;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
 }
 
 .proseCodeBlock {

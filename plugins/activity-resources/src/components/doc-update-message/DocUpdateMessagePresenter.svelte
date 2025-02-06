@@ -21,9 +21,8 @@
     DocUpdateMessage,
     DocUpdateMessageViewlet
   } from '@hcengineering/activity'
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { Account, AttachedDoc, Class, Collection, Doc, Ref, Space } from '@hcengineering/core'
+  import { personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { AttachedDoc, Class, Collection, Doc, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Action, Component, ShowMore } from '@hcengineering/ui'
@@ -73,7 +72,6 @@
   $: objectName = (collectionAttribute?.type as Collection<AttachedDoc>)?.itemLabel ?? clazz.label
   $: collectionName = collectionAttribute?.label
 
-  let person: Person | undefined = undefined
   let viewlet: DocUpdateMessageViewlet | undefined
   let attributeModel: AttributeModel | undefined = undefined
   let parentMessage: DisplayActivityMessage | undefined = undefined
@@ -103,25 +101,7 @@
     parentMessage = res as DisplayActivityMessage
   })
 
-  $: person = getPerson(value.createdBy, $personAccountByIdStore, $personByIdStore)
-
-  function getPerson (
-    _id: Ref<Account> | undefined,
-    accountById: Map<Ref<PersonAccount>, PersonAccount>,
-    personById: Map<Ref<Person>, Person>
-  ): Person | undefined {
-    if (_id === undefined) {
-      return undefined
-    }
-
-    const personAccount = accountById.get(_id as Ref<PersonAccount>)
-
-    if (personAccount === undefined) {
-      return undefined
-    }
-
-    return personById.get(personAccount.person)
-  }
+  $: person = value.createdBy !== undefined ? $personByPersonIdStore.get(value.createdBy) : undefined
 
   $: void loadObject(value.objectId, value.objectClass, doc)
   $: void loadParentObject(value, parentMessage, doc)

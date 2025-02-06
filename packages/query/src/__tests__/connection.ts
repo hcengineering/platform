@@ -14,10 +14,9 @@
 //
 
 import core, {
-  Account,
-  AccountClient,
   BackupClient,
   Class,
+  Client,
   ClientConnectEvent,
   ClientConnection,
   Doc,
@@ -28,6 +27,7 @@ import core, {
   FindOptions,
   FindResult,
   FulltextStorage,
+  generateId,
   Hierarchy,
   LoadModelResponse,
   ModelDb,
@@ -43,7 +43,7 @@ import core, {
 import { genMinModel } from './minmodel'
 
 export async function connect (handler: (tx: Tx) => void): Promise<
-AccountClient &
+Client &
 BackupClient &
 FulltextStorage & {
   isConnected: () => boolean
@@ -103,10 +103,6 @@ FulltextStorage & {
       return this.model
     }
 
-    async getAccount (): Promise<Account> {
-      return {} as unknown as any
-    }
-
     async tx (tx: Tx): Promise<TxResult> {
       if (tx.objectSpace === core.space.Model) {
         this.hierarchy.tx(tx)
@@ -124,6 +120,10 @@ FulltextStorage & {
         docs: [],
         finished: true
       }
+    }
+
+    async getDomainHash (domain: Domain): Promise<string> {
+      return generateId()
     }
 
     async loadModel (lastTxTime: Timestamp): Promise<Tx[]> {

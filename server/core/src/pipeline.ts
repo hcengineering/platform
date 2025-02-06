@@ -83,7 +83,7 @@ class PipelineImpl implements Pipeline {
         }
         current = newCur ?? current
       } catch (err: any) {
-        ctx.error('failed to initialize pipeline', { err, workspace: context.workspace.name })
+        ctx.error('failed to initialize pipeline', { err, workspace: context.workspace })
         // We need to call close for all items.
         await this.close()
         throw err

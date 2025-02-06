@@ -63,7 +63,7 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
     super(context, next)
     const fulltextEndpoints = fulltextUrl.split(';').map((it) => it.trim())
 
-    const hash = this.hashWorkspace(context.workspace.name)
+    const hash = this.hashWorkspace(context.workspace.uuid)
     this.fulltextEndpoint = fulltextEndpoints[Math.abs(hash % fulltextEndpoints.length)]
   }
 
@@ -113,6 +113,7 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
     try {
       await fetch(this.fulltextEndpoint + '/api/v1/warmup', {
         method: 'PUT',
+        keepalive: true,
         headers: {
           'Content-Type': 'application/json'
         },
@@ -137,12 +138,13 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
       return await (
         await fetch(this.fulltextEndpoint + '/api/v1/search', {
           method: 'PUT',
+          keepalive: true,
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             token: this.token,
-            workspace: this.context.workspace,
+            workspace: this.context.workspace.uuid,
             _classes,
             query,
             fullTextLimit
@@ -360,11 +362,12 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
         return await (
           await fetch(this.fulltextEndpoint + '/api/v1/full-text-search', {
             method: 'PUT',
+            keepalive: true,
             headers: {
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              workspace: this.context.workspace,
+              workspace: this.context.workspace.uuid,
               token: this.token,
               query,
               options
@@ -390,6 +393,7 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
     try {
       await fetch(this.fulltextEndpoint + '/api/v1/close', {
         method: 'PUT',
+        keepalive: true,
         headers: {
           'Content-Type': 'application/json'
         },

@@ -22,7 +22,8 @@ import {
   type TxRemoveDoc,
   DocumentQuery,
   FindOptions,
-  FindResult
+  FindResult,
+  type WorkspaceDataId
 } from '@hcengineering/core'
 import drive, { type FileVersion, type Folder } from '@hcengineering/drive'
 import type { TriggerControl } from '@hcengineering/server-core'
@@ -44,7 +45,8 @@ export async function OnFileVersionDelete (
     }
   }
   if (toDelete.length > 0) {
-    await storageAdapter.remove(ctx, workspace, toDelete)
+    const dataId = workspace.dataId ?? (workspace.uuid as unknown as WorkspaceDataId)
+    await storageAdapter.remove(ctx, dataId, toDelete)
   }
 
   return result

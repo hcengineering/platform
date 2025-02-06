@@ -13,14 +13,7 @@
 // limitations under the License.
 //
 
-import {
-  generateId,
-  toWorkspaceString,
-  type Doc,
-  type Domain,
-  type FieldIndexConfig,
-  type WorkspaceId
-} from '@hcengineering/core'
+import { generateId, type Doc, type Domain, type FieldIndexConfig } from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
 import { MongoClient, type Collection, type Db, type Document } from 'mongodb'
@@ -148,8 +141,8 @@ export function getMongoClient (uri: string): MongoClientReference {
  *
  * Construct MongoDB table from workspace.
  */
-export function getWorkspaceMongoDB (client: MongoClient, workspaceId: WorkspaceId): Db {
-  return client.db(toWorkspaceString(workspaceId))
+export function getWorkspaceMongoDB (client: MongoClient, dbName: string): Db {
+  return client.db(dbName)
 }
 
 export class DBCollectionHelper implements DomainHelperOperations {

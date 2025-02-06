@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import activity from '@hcengineering/activity'
-import { cardId, type Card, type MasterTag, type Tag } from '@hcengineering/card'
+import { CardEvents, cardId, type Card, type MasterTag, type Tag } from '@hcengineering/card'
 import chunter from '@hcengineering/chunter'
 import core, {
   AccountRole,
@@ -207,11 +207,43 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(card.class.MasterTag, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [setting.action.CreateMixin, view.action.OpenInNewTab]
+    actions: [setting.action.CreateMixin, view.action.OpenInNewTab, view.action.Delete, setting.action.DeleteMixin]
   })
 
   builder.mixin(card.class.Tag, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [setting.action.CreateMixin, view.action.OpenInNewTab]
+    actions: [setting.action.CreateMixin, view.action.OpenInNewTab, view.action.Delete, setting.action.DeleteMixin]
+  })
+
+  createAction(
+    builder,
+    {
+      action: card.actionImpl.DeleteMasterTag,
+      label: workbench.string.Delete,
+      icon: view.icon.Delete,
+      input: 'any',
+      category: view.category.General,
+      target: card.class.MasterTag,
+      context: {
+        mode: ['context', 'browser'],
+        group: 'remove'
+      },
+      analyticsEvent: CardEvents.MasterTagRemoved
+    },
+    card.action.DeleteMasterTag
+  )
+
+  createAction(builder, {
+    action: card.actionImpl.DeleteMasterTag,
+    label: workbench.string.Delete,
+    icon: view.icon.Delete,
+    input: 'any',
+    category: view.category.General,
+    target: card.class.Tag,
+    context: {
+      mode: ['context', 'browser'],
+      group: 'remove'
+    },
+    analyticsEvent: CardEvents.MasterTagRemoved
   })
 
   createAction(builder, {

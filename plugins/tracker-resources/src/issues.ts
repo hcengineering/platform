@@ -72,7 +72,7 @@ export function generateIssueShortLink (issueId: string): string {
 
 export async function generateIssueLocation (loc: Location, issueId: string): Promise<ResolvedLocation | undefined> {
   const client = getClient()
-  const issue = await client.findOne(tracker.class.Issue, { identifier: issueId })
+  const issue = await client.findOne(tracker.class.Issue, { identifier: issueId }, { showArchived: true })
   if (issue === undefined) {
     accessDeniedStore.set(true)
     console.error(`Could not find issue ${issueId}.`)

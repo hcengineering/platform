@@ -18,7 +18,7 @@ import testManagement, {
   type TestRun,
   type TestPlan
 } from '@hcengineering/test-management'
-import { type Doc, type Ref, getCurrentAccount } from '@hcengineering/core'
+import { type Doc, type Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import {
   getCurrentResolvedLocation,
@@ -30,6 +30,7 @@ import {
 } from '@hcengineering/ui'
 import view, { type ObjectPanel } from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
+import { getCurrentEmployee } from '@hcengineering/contact'
 
 const PARENT_KEY = 'attachedTo'
 
@@ -46,7 +47,7 @@ async function generateProjectLocation (
 ): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
-  const doc = await client.findOne(testManagement.class.TestProject, { _id: project })
+  const doc = await client.findOne(testManagement.class.TestProject, { _id: project }, { showArchived: true })
   if (doc === undefined) {
     accessDeniedStore.set(true)
     console.error(`Could not find test project ${project}.`)
@@ -116,7 +117,7 @@ export function getTestRunsLink (space: Ref<TestProject>, parentDoc: Ref<Doc>): 
 export function onModeChanged (newMode: string): void {
   const loc = getCurrentResolvedLocation()
   const { assignee, ...baseQuery } = loc.query ?? {}
-  const currentUser = getCurrentAccount()?.person
+  const currentUser = getCurrentEmployee()
   if (currentUser === undefined) {
     console.error('Current user is not defined')
     return
@@ -133,7 +134,7 @@ export function onModeChanged (newMode: string): void {
 
 export function getCurrentMode (loc: Location): string {
   const { assignee } = loc.query ?? {}
-  return assignee === getCurrentAccount()?.person ? testManagement.mode.MyTests : testManagement.mode.AllTests
+  return assignee === getCurrentEmployee() ? testManagement.mode.MyTests : testManagement.mode.AllTests
 }
 
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {

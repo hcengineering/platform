@@ -47,7 +47,8 @@ export class ApplicationsPage extends CommonRecruitingPage {
       lastName: `TestLast-${generateId(2)}`
     }
 
-    await this.selectType('Default vacancy')
+    // TODO: rectify vacancy types in test workspace
+    await this.selectType('Default vacancy (custom)', true)
     await this.buttonCreateApplication().click()
     await this.buttonTalentSelector().click()
     await this.pressCreateButtonSelectPopup(this.page)
@@ -105,8 +106,8 @@ export class ApplicationsPage extends CommonRecruitingPage {
     await this.selectFromDropdown(this.page, status)
   }
 
-  async selectType (type: string): Promise<void> {
+  async selectType (type: string, fullWordFilter: boolean = false): Promise<void> {
     await this.buttonTypeSelector().click()
-    await this.selectMenuItem(this.page, type)
+    await this.selectMenuItem(this.page, type, fullWordFilter)
   }
 }

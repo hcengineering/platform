@@ -65,6 +65,7 @@
     "BlobContentType": "Тип контента",
     "Relation": "Связь",
     "Relations": "Связи",
-    "AddRelation": "Добавить связь"
+    "AddRelation": "Добавить связь",
+    "PersonId": "Персона"
   }
 }

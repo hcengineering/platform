@@ -553,7 +553,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       action: view.actionImpl.ShowPopup,
       actionProps: {
         component: tracker.component.SetDueDateActionPopup,
-        props: { mondayStart: true, withTime: false },
+        props: { withTime: false },
         element: 'top',
         fillProps: {
           _objects: 'value'

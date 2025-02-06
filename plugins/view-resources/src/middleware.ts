@@ -124,9 +124,10 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
 
   // TODO: rework notifications to avoid using Account and remove it
   private shouldAggregate (attrClass: Ref<Class<Doc>>, _class: Ref<Class<Doc>>): boolean {
-    if (attrClass !== core.class.Account) {
-      return true
-    }
+    // TODO: FIXME
+    // if (attrClass !== core.class.Account) {
+    //   return true
+    // }
 
     const h = this.client.getHierarchy()
     const skipAccountAggregation = [

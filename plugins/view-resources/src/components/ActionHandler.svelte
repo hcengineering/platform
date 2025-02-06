@@ -140,6 +140,9 @@
     let elm = evt.target as HTMLElement
     let isContentEditable = false
 
+    const selection = window.getSelection()
+    const haveRangeSelection = !(selection?.isCollapsed ?? true)
+
     while (true) {
       if (elm.isContentEditable) {
         isContentEditable = true
@@ -195,9 +198,20 @@
     let postpone = false
     let nonSequenceAction: Action | undefined
 
+    const checkIsAllowedContentMode = (mode?: 'always' | 'noSelection'): boolean => {
+      if (!isContentEditable) return true
+      switch (mode) {
+        case 'always':
+          return true
+        case 'noSelection':
+          return !haveRangeSelection
+      }
+      return false
+    }
+
     for (const a of currentActions) {
       if (a.keyBinding === undefined || a.keyBinding.length < 1) continue
-      if (isContentEditable && a.allowedForEditableContent !== true) continue
+      if (!checkIsAllowedContentMode(a.allowedForEditableContent)) continue
       const t = lastKey
       if (t !== undefined && a.keyBinding.some((it) => matchKeySequence(evt, it, t))) {
         evt.preventDefault()

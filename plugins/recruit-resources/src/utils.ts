@@ -72,7 +72,7 @@ async function generateIdLocation (loc: Location, shortLink: string): Promise<Re
     console.error(`Not found class with short label ${classLabel}`)
     return undefined
   }
-  const doc = await client.findOne(_class, { _id: _id as Ref<Doc> })
+  const doc = await client.findOne(_class, { _id: _id as Ref<Doc> }, { showArchived: true })
   if (doc === undefined) {
     accessDeniedStore.set(true)
     console.error(`Could not find ${_class} with id ${_id}.`)
@@ -160,7 +160,7 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Reso
     console.error(`Not found class with short label ${classLabel}`)
     return undefined
   }
-  const doc = await client.findOne(_class, { number })
+  const doc = await client.findOne(_class, { number }, { showArchived: true })
   if (doc === undefined) {
     accessDeniedStore.set(true)
     console.error(`Could not find ${_class} with number ${number}.`)

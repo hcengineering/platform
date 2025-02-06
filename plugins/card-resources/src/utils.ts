@@ -11,24 +11,98 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { type Card, cardId } from '@hcengineering/card'
+import { type Card, cardId, type MasterTag } from '@hcengineering/card'
 import {
-  type TxOperations,
   type Class,
+  type Client,
   type Doc,
-  type Ref,
-  type WithLookup,
   type DocumentQuery,
+  type Ref,
   type RelatedDocument,
-  type Client
+  type TxOperations,
+  type WithLookup
 } from '@hcengineering/core'
-import { getClient, type ObjectSearchResult } from '@hcengineering/presentation'
-import { type Location, type ResolvedLocation, getCurrentResolvedLocation, getPanelURI } from '@hcengineering/ui'
+import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
+import {
+  getCurrentResolvedLocation,
+  getPanelURI,
+  type Location,
+  type ResolvedLocation,
+  showPopup
+} from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
 import { type LocationData } from '@hcengineering/workbench'
 import CardSearchItem from './components/CardSearchItem.svelte'
 import card from './plugin'
+
+export async function deleteMasterTag (tag: MasterTag | undefined): Promise<void> {
+  if (tag !== undefined) {
+    const client = getClient()
+    const objects = await client.findAll(tag._id, {})
+    if (objects.length > 0) {
+      if (tag._class === card.class.MasterTag) {
+        showPopup(MessageBox, {
+          label: card.string.DeleteMasterTag,
+          message: card.string.DeleteMasterTagConfirm,
+          action: async () => {
+            const cards = await client.findAll(tag._id, {})
+            const hierarchy = client.getHierarchy()
+            const ops = client.apply(undefined, 'delete-master-tag')
+            for (const obj of cards) {
+              await ops.remove(obj)
+            }
+            const desc = hierarchy.getDescendants(tag._id)
+            for (const obj of desc) {
+              if (obj === tag._id) continue
+              if (!hierarchy.isMixin(obj)) continue
+              const desc = hierarchy.getClass(obj)
+              await ops.remove(desc)
+            }
+            await ops.commit()
+            await client.remove(tag)
+          }
+        })
+      } else {
+        showPopup(MessageBox, {
+          label: card.string.DeleteTag,
+          message: card.string.DeleteTagConfirm,
+          action: async () => {
+            const cards = await client.findAll(tag._id, {})
+            const ops = client.apply(undefined, 'delete-tag')
+            const hierarchy = client.getHierarchy()
+            const desc = hierarchy.getDescendants(tag._id)
+            for (const obj of desc) {
+              if (obj === tag._id) continue
+              const desc = hierarchy.getClass(obj)
+              await ops.remove(desc)
+            }
+            const update: Record<string, boolean> = {}
+            for (const des of desc) {
+              update[des] = true
+            }
+            for (const obj of cards) {
+              await ops.update(obj, { $unset: update })
+            }
+            await ops.commit()
+            await client.remove(tag)
+          }
+        })
+      }
+    } else {
+      const ops = client.apply(undefined, 'delete-tag')
+      const hierarchy = client.getHierarchy()
+      const desc = hierarchy.getDescendants(tag._id)
+      for (const obj of desc) {
+        if (obj === tag._id) continue
+        const desc = hierarchy.getClass(obj)
+        await ops.remove(desc)
+      }
+      await ops.commit()
+      await client.remove(tag)
+    }
+  }
+}
 
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
   if (loc.path[2] !== cardId) {

@@ -15,7 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { BackupClient, DocChunk } from './backup'
-import { Account, Class, DOMAIN_MODEL, Doc, Domain, Ref, Timestamp } from './classes'
+import { Class, DOMAIN_MODEL, Doc, Domain, Ref, Timestamp } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { MeasureContext, MeasureMetricsContext } from './measurements'
@@ -43,13 +43,6 @@ export interface Client extends Storage, FulltextStorage {
     options?: FindOptions<T>
   ) => Promise<WithLookup<T> | undefined>
   close: () => Promise<void>
-}
-
-/**
- * @public
- */
-export interface AccountClient extends Client {
-  getAccount: () => Promise<Account>
 }
 
 /**
@@ -87,12 +80,11 @@ export interface ClientConnection extends Storage, FulltextStorage, BackupClient
 
   // If hash is passed, will return LoadModelResponse
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
-  getAccount: () => Promise<Account>
 
   getLastHash?: (ctx: MeasureContext) => Promise<string | undefined>
 }
 
-class ClientImpl implements AccountClient, BackupClient {
+class ClientImpl implements Client, BackupClient {
   notify?: (...tx: Tx[]) => void
   hierarchy!: Hierarchy
   model!: ModelDb
@@ -182,6 +174,10 @@ class ClientImpl implements AccountClient, BackupClient {
     return await this.conn.loadChunk(domain, idx)
   }
 
+  async getDomainHash (domain: Domain): Promise<string> {
+    return await this.conn.getDomainHash(domain)
+  }
+
   async closeChunk (idx: number): Promise<void> {
     await this.conn.closeChunk(idx)
   }
@@ -196,10 +192,6 @@ class ClientImpl implements AccountClient, BackupClient {
 
   async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
     await this.conn.clean(domain, docs)
-  }
-
-  async getAccount (): Promise<Account> {
-    return await this.conn.getAccount()
   }
 
   async sendForceClose (): Promise<void> {
@@ -226,7 +218,7 @@ export async function createClient (
   modelFilter?: ModelFilter,
   txPersistence?: TxPersistenceStore,
   _ctx?: MeasureContext
-): Promise<AccountClient> {
+): Promise<Client> {
   const ctx = _ctx ?? new MeasureMetricsContext('createClient', {})
   let client: ClientImpl | null = null
 
@@ -337,6 +329,7 @@ export async function createClient (
 }
 
 // Ignore Employee accounts.
+// We may still have them in transactions in old workspaces even with global accounts.
 function isPersonAccount (tx: Tx): boolean {
   return (
     (tx._class === core.class.TxCreateDoc ||

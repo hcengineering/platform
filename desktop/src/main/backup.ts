@@ -1,5 +1,5 @@
 import client, { clientId } from '@hcengineering/client'
-import { getWorkspaceId, MeasureMetricsContext, type BackupClient, type Client } from '@hcengineering/core'
+import { MeasureMetricsContext, WorkspaceIds, type BackupClient, type Client } from '@hcengineering/core'
 import { addLocation, getResource, setMetadata } from '@hcengineering/platform'
 import WebSocket from 'ws'
 
@@ -31,16 +31,15 @@ export async function createClient (
   return (await clientFactory(token, transactorUrl)) as unknown as Client & BackupClient
 }
 
-async function doBackup (dirName: string, token: string, endpoint: string, workspace: string, notify: (command: string, ...args: any[]) => void, backupHugeFiles: boolean): Promise<void> {
+async function doBackup (dirName: string, token: string, endpoint: string, wsIds: WorkspaceIds, notify: (command: string, ...args: any[]) => void, backupHugeFiles: boolean): Promise<void> {
   notify('backup', 0)
   const ctx = new MeasureMetricsContext('backup', {})
 
   const storage = await createFileBackupStorage(dirName)
-  const wsid = getWorkspaceId(workspace)
   const client = await createClient(endpoint, token)
   try {
-    ctx.info('do backup', { workspace, endpoint })
-    await backup(ctx, endpoint, wsid, storage, {
+    ctx.info('do backup', { ...wsIds, endpoint })
+    await backup(ctx, endpoint, wsIds, storage, {
       force: true,
       freshBackup: false,
       clean: false,
@@ -65,7 +64,7 @@ async function doBackup (dirName: string, token: string, endpoint: string, works
   notify('backup', 100)
 }
 
-export function startBackup (window: BrowserWindow, token: string, endpoint: string, workspace: string, cmd: (command: string, ...args: any[]) => void): void {
+export function startBackup (window: BrowserWindow, token: string, endpoint: string, wsIds: WorkspaceIds, cmd: (command: string, ...args: any[]) => void): void {
   void dialog
     .showOpenDialog(window, {
       properties: ['openDirectory'],
@@ -94,7 +93,7 @@ export function startBackup (window: BrowserWindow, token: string, endpoint: str
             runningBackup = {
               notify: cmd
             }
-            void doBackup(response.filePaths[0], token, endpoint, workspace, cmd, backupKind.checkboxChecked)
+            void doBackup(response.filePaths[0], token, endpoint, wsIds, cmd, backupKind.checkboxChecked)
           })
       }
     })

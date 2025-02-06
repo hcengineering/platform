@@ -33,7 +33,6 @@
 
   export let currentDate: Date | null
   export let withTime: boolean = false
-  export let mondayStart: boolean = true
   export let label = currentDate != null ? ui.string.EditDueDate : ui.string.AddDueDate
   export let detail: IntlString | undefined = undefined
   export let noShift: boolean = false
@@ -81,6 +80,7 @@
   }
   const navigateMonth = (result: any): void => {
     if (result) {
+      viewDate.setDate(1)
       viewDate.setMonth(viewDate.getMonth() + result)
       viewDate = viewDate
     }
@@ -132,7 +132,6 @@
             bind:currentDate
             {viewDate}
             {timeZone}
-            {mondayStart}
             viewUpdate={false}
             hideNavigator={'all'}
             noPadding
@@ -145,7 +144,6 @@
             <MonthSquare
               bind:currentDate
               viewDate={viewDateSec}
-              {mondayStart}
               {timeZone}
               viewUpdate={false}
               noPadding
@@ -164,7 +162,6 @@
         <MonthSquare
           bind:currentDate
           {viewDate}
-          {mondayStart}
           {timeZone}
           viewUpdate={false}
           hideNavigator={'all'}
@@ -179,7 +176,6 @@
             bind:currentDate
             {timeZone}
             viewDate={viewDateSec}
-            {mondayStart}
             viewUpdate={false}
             noPadding
             on:update={(result) => {

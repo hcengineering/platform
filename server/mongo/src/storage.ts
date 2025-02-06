@@ -29,6 +29,7 @@ import core, {
   toFindResult,
   withContext,
   type AssociationQuery,
+  type WorkspaceIds,
   type Class,
   type Doc,
   type DocInfo,
@@ -60,8 +61,7 @@ import core, {
   type TxRemoveDoc,
   type TxResult,
   type TxUpdateDoc,
-  type WithLookup,
-  type WorkspaceId
+  type WithLookup
 } from '@hcengineering/core'
 import {
   type DbAdapter,
@@ -69,7 +69,8 @@ import {
   type DomainHelperOperations,
   type ServerFindOptions,
   type StorageAdapter,
-  type TxAdapter
+  type TxAdapter,
+  calcHashHash
 } from '@hcengineering/server-core'
 import {
   type AbstractCursor,
@@ -1084,6 +1085,11 @@ abstract class MongoAdapterBase implements DbAdapter {
     return Date.now().toString(16) // Current hash value
   }
 
+  @withContext('get-domain-hash')
+  async getDomainHash (ctx: MeasureContext, domain: Domain): Promise<string> {
+    return await calcHashHash(ctx, domain, this)
+  }
+
   strimSize (str?: string): string {
     if (str == null) {
       return ''
@@ -1673,7 +1679,7 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
     const systemTx: Tx[] = []
     const userTx: Tx[] = []
 
-    // Ignore Employee accounts.
+    // Ignore old Employee accounts.
     function isPersonAccount (tx: Tx): boolean {
       return (
         (tx._class === core.class.TxCreateDoc ||
@@ -1810,13 +1816,13 @@ export async function createMongoAdapter (
   contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceIds,
   modelDb: ModelDb,
   storage?: StorageAdapter,
   options?: DbAdapterOptions
 ): Promise<DbAdapter> {
   const client = getMongoClient(url)
-  const db = getWorkspaceMongoDB(await client.getClient(), workspaceId)
+  const db = getWorkspaceMongoDB(await client.getClient(), workspaceId.dataId ?? workspaceId.uuid)
 
   return new MongoAdapter(db, hierarchy, modelDb, client, options)
 }
@@ -1829,11 +1835,11 @@ export async function createMongoTxAdapter (
   contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceIds,
   modelDb: ModelDb
 ): Promise<TxAdapter> {
   const client = getMongoClient(url)
-  const db = getWorkspaceMongoDB(await client.getClient(), workspaceId)
+  const db = getWorkspaceMongoDB(await client.getClient(), workspaceId.dataId ?? workspaceId.uuid)
 
   return new MongoTxAdapter(db, hierarchy, modelDb, client)
 }

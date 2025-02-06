@@ -117,7 +117,7 @@ test.describe('Application tests', () => {
       vacancy: 'first',
       recruiterName: 'first'
     })
-    await applicationsPage.checkApplicationState(talentName, 'Backlog')
+    await applicationsPage.checkApplicationState(talentName, 'HR Interview')
     await applicationsPage.openApplicationByTalentName(talentName)
     await applicationsDetailsPage.changeState('Technical Interview')
     await navigationMenuPage.clickButtonApplications()

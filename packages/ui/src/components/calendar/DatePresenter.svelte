@@ -30,7 +30,6 @@
 
   export let value: number | null | undefined
   export let mode: DateRangeMode = DateRangeMode.DATE
-  export let mondayStart: boolean = true
   export let editable: boolean = false
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
   export let iconModifier: 'normal' | 'warning' | 'critical' | 'overdue' = 'normal'
@@ -105,7 +104,7 @@
       opened = true
       showPopup(
         DatePopup,
-        { currentDate, mondayStart, withTime, label, detail },
+        { currentDate, withTime, label, detail },
         'top',
         () => {
           opened = false

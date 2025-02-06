@@ -304,7 +304,12 @@
 
     "CreateFolder": "Создать новую папку",
     "RenameFolder": "Переименовать папку",
-    "CreateChildFolder": "Создать подпапку"
+    "CreateChildFolder": "Создать подпапку",
+
+    "Obsolete": "Устаревший",
+    "MakeDocumentObsolete": "Пометить как устаревшее",
+    "MakeDocumentObsoleteDialog": "Пометить {count, plural, one {документ как устаревший} other {документы как устаревшие}}",
+    "MakeDocumentObsoleteConfirm": "Вы действительно хотите пометить следующие документы как устаревшие: {titles}?"
   },
   "controlledDocStates": {
     "Empty": "",

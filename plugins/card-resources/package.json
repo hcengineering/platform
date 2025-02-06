@@ -58,10 +58,10 @@
     "@hcengineering/notification": "^0.6.23",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/workbench": "^0.6.16",
-    "@tiptap/core": "^2.6.6",
+    "@tiptap/core": "^2.11.3",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/card": "^0.6.0",
-    "fast-equals": "^5.0.1",
+    "fast-equals": "^5.2.2",
     "svelte": "^4.2.19"
   }
 }

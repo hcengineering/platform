@@ -35,6 +35,7 @@ import core, {
   FindResult,
   LoadModelResponse,
   MeasureMetricsContext,
+  type PersonUuid,
   Ref,
   SearchOptions,
   SearchQuery,
@@ -44,6 +45,7 @@ import core, {
   TxApplyIf,
   TxHandler,
   TxResult,
+  type WorkspaceUuid,
   clone,
   generateId,
   toFindResult,
@@ -125,8 +127,8 @@ class Connection implements ClientConnection {
     private readonly ctx: MeasureContext,
     private readonly url: string,
     private readonly handler: TxHandler,
-    readonly workspace: string,
-    readonly email: string,
+    readonly workspace: WorkspaceUuid,
+    readonly user: PersonUuid,
     readonly opt?: ClientFactoryOptions
   ) {
     if (typeof sessionStorage !== 'undefined') {
@@ -172,7 +174,7 @@ class Connection implements ClientConnection {
         // No ping response from server.
 
         if (this.websocket !== null) {
-          console.log('no ping response from server. Closing socket.', socketId, this.workspace, this.email)
+          console.log('no ping response from server. Closing socket.', socketId, this.workspace, this.user)
           clearInterval(this.interval)
           this.websocket.close(1000)
           return
@@ -361,7 +363,7 @@ class Connection implements ClientConnection {
       const promise = this.requests.get(resp.id)
       if (promise === undefined) {
         console.error(
-          new Error(`unknown response id: ${resp.id as string} ${this.workspace} ${this.email}`),
+          new Error(`unknown response id: ${resp.id as string} ${this.workspace} ${this.user}`),
           JSON.stringify(this.requests)
         )
         return
@@ -420,7 +422,7 @@ class Connection implements ClientConnection {
           'result: ',
           resp.result,
           this.workspace,
-          this.email
+          this.user
         )
         promise.reject(new PlatformError(resp.error))
       } else {
@@ -445,7 +447,7 @@ class Connection implements ClientConnection {
 
       for (const tx of txArr) {
         if (tx?._class === core.class.TxModelUpgrade) {
-          console.log('Processing upgrade', this.workspace, this.email)
+          console.log('Processing upgrade', this.workspace, this.user)
           this.opt?.onUpgrade?.()
           return
         }
@@ -622,7 +624,7 @@ class Connection implements ClientConnection {
         this.delay += 1
       }
       if (opened) {
-        console.error('client websocket error:', socketId, this.url, this.workspace, this.email)
+        console.error('client websocket error:', socketId, this.url, this.workspace, this.user)
       }
       void broadcastEvent(client.event.NetworkRequests, -1).catch((err) => {
         this.ctx.error('failed to broadcast', { err })
@@ -802,6 +804,10 @@ class Connection implements ClientConnection {
     return this.sendRequest({ method: 'loadChunk', params: [domain, idx] })
   }
 
+  async getDomainHash (domain: Domain): Promise<string> {
+    return await this.sendRequest({ method: 'getDomainHash', params: [domain] })
+  }
+
   closeChunk (idx: number): Promise<void> {
     return this.sendRequest({ method: 'closeChunk', params: [idx] })
   }
@@ -833,8 +839,8 @@ class Connection implements ClientConnection {
 export function connect (
   url: string,
   handler: TxHandler,
-  workspace: string,
-  user: string,
+  workspace: WorkspaceUuid,
+  user: PersonUuid,
   opt?: ClientFactoryOptions
 ): ClientConnection {
   return new Connection(
