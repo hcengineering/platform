@@ -1,5 +1,5 @@
 import { Direction, type ID, SortOrder } from '@hcengineering/communication-types'
-import { type BroadcastEvent, type QueryCallback, type Client } from '@hcengineering/communication-sdk-types'
+import { type BroadcastEvent, type QueryCallback, type QueryClient } from '@hcengineering/communication-sdk-types'
 
 import { QueryResult } from './result'
 import { defaultQueryParams, type FindParams, type Query, type QueryId } from './types'
@@ -11,7 +11,7 @@ export class BaseQuery<T, P extends FindParams> implements Query<T, P> {
   private backward: Promise<T[]> | T[] = []
 
   constructor(
-    protected readonly client: Client,
+    protected readonly client: QueryClient,
     public readonly id: QueryId,
     public readonly params: P,
     private callback?: QueryCallback<T>,

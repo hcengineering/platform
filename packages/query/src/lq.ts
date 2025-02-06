@@ -1,10 +1,10 @@
 import { type FindMessagesParams, type FindNotificationsParams } from '@hcengineering/communication-types'
 import { deepEqual } from 'fast-equals'
 import type {
-  Client,
   MessagesQueryCallback,
   NotificationsQueryCallback,
-  BroadcastEvent
+  BroadcastEvent,
+  QueryClient
 } from '@hcengineering/communication-sdk-types'
 
 import type { Query, QueryId } from './types'
@@ -18,12 +18,12 @@ interface CreateQueryResult {
 const maxQueriesCache = 10
 
 export class LiveQueries {
-  private readonly client: Client
+  private readonly client: QueryClient
   private readonly queries = new Map<QueryId, Query>()
   private readonly unsubscribed = new Set<QueryId>()
   private counter: number = 0
 
-  constructor(client: Client) {
+  constructor(client: QueryClient) {
     this.client = client
   }
 

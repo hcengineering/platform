@@ -1,8 +1,9 @@
-import type { Card, Ref, Blob } from '@hcengineering/core'
+import type { Ref, Blob } from '@hcengineering/core'
+import type { Card } from '@hcengineering/card'
 
 export type BlobID = Ref<Blob>
 export type CardID = Ref<Card>
-export type SocialID = string & { social: true }
+export type SocialID = string
 export type RichText = string
 
 export type ID = string
@@ -26,7 +27,7 @@ export interface MessagesGroup {
   card: CardID
   startAt: Date
   endAt: Date
-  blobId: Ref<Blob>
+  blobId: BlobID
   count: number
 }
 

@@ -1,5 +1,5 @@
 import { LiveQueries } from '@hcengineering/communication-query'
-import type { Client } from '@hcengineering/communication-sdk-types'
+import type { QueryClient } from '@hcengineering/communication-sdk-types'
 
 import { MessagesQuery, NotificationsQuery } from './query'
 
@@ -13,7 +13,7 @@ export function createNotificationsQuery(): NotificationsQuery {
   return new NotificationsQuery(lq)
 }
 
-export function initLiveQueries(client: Client) {
+export function initLiveQueries(client: QueryClient) {
   if (lq != null) {
     lq.close()
   }
