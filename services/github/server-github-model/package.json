@@ -34,6 +34,7 @@
     "@hcengineering/server-github": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/github": "^0.6.0",
+    "@hcengineering/tracker": "^0.6.24",
     "@hcengineering/notification": "^0.6.23",
     "@hcengineering/server-notification": "^0.6.1",
     "@hcengineering/time": "^0.6.0"
