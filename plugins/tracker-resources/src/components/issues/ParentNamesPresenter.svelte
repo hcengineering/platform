@@ -13,7 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { NavLink } from '@hcengineering/presentation'
+  import { concatLink } from '@hcengineering/core'
+  import { getMetadata } from '@hcengineering/platform'
+  import presentation, { NavLink } from '@hcengineering/presentation'
   import { trackerId, type Issue, type IssueParentInfo } from '@hcengineering/tracker'
   import { getCurrentLocation, locationToUrl } from '@hcengineering/ui'
 
@@ -26,7 +28,8 @@
     loc.path[2] = trackerId
     loc.path[3] = parentInfo.identifier
     loc.path.length = 4
-    return `${window.location.origin}${locationToUrl(loc)}`
+    const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
+    return concatLink(frontUrl, locationToUrl(loc))
   }
 </script>
 

@@ -16,10 +16,11 @@
 import chunter, { ChatMessage } from '@hcengineering/chunter'
 import { Person } from '@hcengineering/contact'
 import core, {
-  PersonId,
+  AccountRole,
   concatLink,
   Doc,
   DocumentUpdate,
+  PersonId,
   Ref,
   Space,
   Tx,
@@ -28,16 +29,15 @@ import core, {
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc,
-  WithLookup,
-  AccountRole
+  WithLookup
 } from '@hcengineering/core'
 import { NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString } from '@hcengineering/platform'
+import { getSocialStrings } from '@hcengineering/server-contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
-import { getSocialStrings } from '@hcengineering/server-contact'
 import { stripTags } from '@hcengineering/text'
-import tracker, { Component, Issue, IssueParentInfo, TimeSpendReport, trackerId } from '@hcengineering/tracker'
+import tracker, { Component, Issue, IssueParentInfo, TimeSpendReport, trackerId, type Project } from '@hcengineering/tracker'
 import { workbenchId } from '@hcengineering/workbench'
 
 async function updateSubIssues (
@@ -174,6 +174,28 @@ export async function OnSocialIdentityCreate (_txes: Tx[], control: TriggerContr
   }
 
   return []
+}
+
+/**
+ * @public
+ */
+export async function OnProjectRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const ctx = tx as TxRemoveDoc<Project>
+    const classes = [tracker.class.Issue, tracker.class.Component, tracker.class.Milestone, tracker.class.IssueTemplate]
+    for (const cls of classes) {
+      const docs = await control.findAll(control.ctx, cls, { space: ctx.objectId })
+      for (const doc of docs) {
+        const tx = control.txFactory.createTxRemoveDoc(cls, doc.space, doc._id)
+        result.push(tx)
+      }
+    }
+  }
+  control.ctx.contextData.broadcast.targets.projectRemove = (it) => {
+    return []
+  }
+  return result
 }
 
 /**
@@ -516,6 +538,7 @@ export default async () => ({
   trigger: {
     OnSocialIdentityCreate,
     OnIssueUpdate,
-    OnComponentRemove
+    OnComponentRemove,
+    OnProjectRemove
   }
 })
