@@ -15,7 +15,6 @@
 
 import core, {
   type Class,
-  type Data,
   type Doc,
   type DocumentQuery,
   type DocumentUpdate,
@@ -105,12 +104,6 @@ export class DummyDbAdapter implements DbAdapter {
     // Return '' for empty documents content.
     return Promise.resolve('')
   }
-
-  async update<T extends Doc>(
-    ctx: MeasureContext,
-    domain: Domain,
-    operations: Map<Ref<Doc>, Partial<Data<T>>>
-  ): Promise<void> {}
 
   async groupBy<T, P extends Doc>(
     ctx: MeasureContext,

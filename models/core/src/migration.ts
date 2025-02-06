@@ -113,10 +113,8 @@ async function migrateAllSpaceToTyped (client: MigrationClient): Promise<void> {
       _class: core.class.Space
     },
     {
-      $set: {
-        _class: core.class.TypedSpace,
-        type: core.spaceType.SpacesType
-      }
+      _class: core.class.TypedSpace,
+      type: core.spaceType.SpacesType
     }
   )
 }
@@ -135,9 +133,7 @@ async function migrateSpacesOwner (client: MigrationClient): Promise<void> {
         _id: space._id
       },
       {
-        $set: {
-          owners: [space.createdBy]
-        }
+        owners: [space.createdBy]
       }
     )
   }
@@ -669,7 +665,7 @@ export const coreOperation: MigrateOperation = {
         func: async (client: MigrationClient): Promise<void> => {
           const now = Date.now().toString(16)
           for (const d of client.hierarchy.domains()) {
-            await client.update(d, { '%hash%': { $in: [null, ''] } }, { $set: { '%hash%': now } })
+            await client.update(d, { '%hash%': { $in: [null, ''] } }, { '%hash%': now })
           }
         }
       },

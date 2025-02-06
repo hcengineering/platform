@@ -16,7 +16,6 @@
 import {
   type WorkspaceIds,
   type Class,
-  type Data,
   type Doc,
   type DocumentQuery,
   type Domain,
@@ -85,13 +84,6 @@ export interface DbAdapter extends LowLevelStorage {
   ) => Promise<FindResult<T>>
 
   tx: (ctx: MeasureContext, ...tx: Tx[]) => Promise<TxResult[]>
-
-  // Bulk update operations
-  update: <T extends Doc>(
-    ctx: MeasureContext,
-    domain: Domain,
-    operations: Map<Ref<Doc>, Partial<Data<T>>>
-  ) => Promise<void>
 
   // Allow to register a handler to listen for domain operations
   on?: (handler: DbAdapterHandler) => void
