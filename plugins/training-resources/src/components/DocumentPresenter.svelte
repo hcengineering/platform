@@ -16,16 +16,20 @@
 -->
 
 <script lang="ts">
-  import { NavLink } from '@hcengineering/presentation'
+  import presentation, { NavLink } from '@hcengineering/presentation'
   import { locationToUrl } from '@hcengineering/ui'
   import { Document } from '@hcengineering/controlled-documents'
   import { documentRoute } from '../routing/routes/documentRoute'
+  import { getMetadata } from '@hcengineering/platform'
+  import { concatLink } from '@hcengineering/core'
 
   export let value: Document
 
+  const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
+
   let href: string | undefined
   $: {
-    href = `${window.location.origin}${locationToUrl(documentRoute.build({ id: value._id }))}`
+    href = concatLink(frontUrl, locationToUrl(documentRoute.build({ id: value._id })))
   }
 </script>
 
