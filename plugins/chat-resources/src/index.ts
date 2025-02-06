@@ -22,8 +22,5 @@ export default async (): Promise<Resources> => ({
   component: {
     ChatApplication,
     ChatWidget
-  },
-  function: {
-    CloseChatWidgetTab: () => {}
   }
 })

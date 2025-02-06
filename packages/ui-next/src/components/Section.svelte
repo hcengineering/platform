@@ -15,11 +15,11 @@
 
 <script lang="ts">
   import { IntlString } from '@hcengineering/platform'
+  import { createEventDispatcher } from 'svelte'
 
   import Label from './Label.svelte'
   import IconArrowChevronRight from './icons/IconArrowChevronRight.svelte'
   import IconArrowChevronDown from './icons/IconArrowChevronDown.svelte'
-  import { createEventDispatcher } from 'svelte'
   import Divider from './Divider.svelte'
 
   export let id: string

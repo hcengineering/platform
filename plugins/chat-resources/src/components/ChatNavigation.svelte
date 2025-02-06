@@ -19,9 +19,9 @@
   import { createEventDispatcher } from 'svelte'
   import { NavigationList, NavigationSection } from '@hcengineering/ui-next'
   import { languageStore, Scroller } from '@hcengineering/ui'
+  import { Ref } from '@hcengineering/core'
 
   import { cardsToChatSections, NavigatorState, navigatorStateStore, toggleSection } from '../navigator'
-  import { Ref } from '@hcengineering/core'
 
   export let card: Card | undefined = undefined
 

@@ -2392,6 +2392,26 @@
       "packageName": "@hcengineering/pod-hook",
       "projectFolder": "services/hook/pod-hook",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/chat",
+      "projectFolder": "plugins/chat",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/chat-assets",
+      "projectFolder": "plugins/chat-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/chat-resources",
+      "projectFolder": "plugins/chat-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-chat",
+      "projectFolder": "models/chat",
+      "shouldPublish": false
     }
   ]
 }
