@@ -1,99 +1,34 @@
 <script lang="ts">
-  import { slide } from 'svelte/transition'
-  import documents, { DocumentRequest } from '@hcengineering/controlled-documents'
-  import chunter from '@hcengineering/chunter'
-  import { PersonAccount, type Person } from '@hcengineering/contact'
-  import { PersonRefPresenter, personAccountByIdStore } from '@hcengineering/contact-resources'
-  import { Ref } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { PersonRefPresenter } from '@hcengineering/contact-resources'
+  import { DocumentValidationState } from '@hcengineering/controlled-documents'
   import { Chevron, Label, tooltip } from '@hcengineering/ui'
+  import { slide } from 'svelte/transition'
 
-  import { $documentSnapshots as documentSnapshots } from '../../../stores/editors/document'
   import documentsRes from '../../../plugin'
   import ApprovedIcon from '../../icons/Approved.svelte'
-  import RejectedIcon from '../../icons/Rejected.svelte'
   import CancelledIcon from '../../icons/Cancelled.svelte'
+  import RejectedIcon from '../../icons/Rejected.svelte'
   import WaitingIcon from '../../icons/Waiting.svelte'
-  import InfoIcon from '../../icons/Info.svelte'
   import SignatureInfo from './SignatureInfo.svelte'
 
-  export let request: DocumentRequest
+  export let state: DocumentValidationState
   export let initiallyExpanded: boolean = false
 
-  interface PersonalApproval {
-    person?: Ref<Person>
-    approved: 'approved' | 'rejected' | 'cancelled' | 'waiting'
-    timestamp?: number
-  }
-
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
   let expanded: boolean = initiallyExpanded
-
-  let rejectingMessage: string | undefined
-  let approvals: PersonalApproval[] = []
-
-  $: creator = request?.createdBy ? $personAccountByIdStore.get(request.createdBy as Ref<PersonAccount>) : undefined
-
-  $: void getRequestData(request)
-
-  $: type = hierarchy.isDerived(request._class, documents.class.DocumentApprovalRequest)
-    ? documents.string.Approval
-    : documents.string.Review
-
-  async function getRequestData (req: DocumentRequest): Promise<void> {
-    if (req == null) {
-      return
-    }
-
-    approvals = await getApprovals(req, $personAccountByIdStore)
-    const rejectingComment = await client.findOne(chunter.class.ChatMessage, {
-      attachedTo: req?._id,
-      attachedToClass: req?._class
-    })
-    rejectingMessage = rejectingComment?.message
-  }
-
-  async function getApprovals (
-    req: DocumentRequest,
-    accountById: typeof $personAccountByIdStore
-  ): Promise<PersonalApproval[]> {
-    const rejectedBy: PersonalApproval[] =
-      req.rejected !== undefined
-        ? [
-            {
-              person: req.rejected,
-              approved: 'rejected',
-              timestamp: req.modifiedOn
-            }
-          ]
-        : []
-    const approvedBy: PersonalApproval[] = req.approved.map((id, idx) => ({
-      person: id,
-      approved: 'approved',
-      timestamp: req.approvedDates?.[idx] ?? req.modifiedOn
-    }))
-    const ignoredBy = req.requested
-      .filter((p) => p !== req?.rejected)
-      .filter((p) => !(req?.approved as string[]).includes(p))
-      .map(
-        (id): PersonalApproval => ({
-          person: id,
-          approved: req?.rejected !== undefined ? 'cancelled' : 'waiting'
-        })
-      )
-    return [...approvedBy, ...rejectedBy, ...ignoredBy]
-  }
-
-  $: snapshot = $documentSnapshots
-    .toReversed()
-    .find((s) => s.createdOn !== undefined && request.createdOn !== undefined && s.createdOn > request.createdOn)
 
   const dtf = new Intl.DateTimeFormat('default', {
     day: 'numeric',
     month: 'short'
   })
+
+  $: snapshot = state?.snapshot
+  $: approvals = state?.approvals ?? []
+
+  const roleString = {
+    author: documentsRes.string.Author,
+    reviewer: documentsRes.string.Reviewer,
+    approver: documentsRes.string.Approver
+  }
 </script>
 
 <button
@@ -112,9 +47,7 @@
       {/if}
     </span>
     <span>•</span>
-    <span><Label label={type} /></span>
-    <span>•</span>
-    <span class="date">{dtf.format(request?.modifiedOn)}</span>
+    <span class="date">{dtf.format(state?.modifiedOn)}</span>
     <div class="chevron" class:visible={expanded}>
       <Chevron outline {expanded} size={'small'} />
     </div>
@@ -122,59 +55,39 @@
 </button>
 {#if expanded}
   <div class="section" transition:slide|local>
-    {#if creator}
-      <div class="creator">
-        <PersonRefPresenter value={creator.person} avatarSize="x-small" />
-        {#key request.createdOn}
+    {#each approvals as approval}
+      {@const messages = approval.messages ?? []}
+      <div class="approver">
+        <PersonRefPresenter value={approval.person} avatarSize="x-small" />
+        {#key approval.timestamp}
           <span
             class="flex gap-1"
-            use:tooltip={request.createdOn !== undefined
+            use:tooltip={approval.timestamp !== undefined
               ? {
                   component: SignatureInfo,
                   props: {
-                    id: creator.person,
-                    timestamp: request.createdOn
+                    id: approval.person,
+                    timestamp: approval.timestamp
                   }
                 }
               : undefined}
           >
-            <span><Label label={documents.string.Author} /></span>
-            <InfoIcon size="medium" />
-          </span>
-        {/key}
-      </div>
-    {/if}
-    {#each approvals as approver}
-      <div class="approver">
-        <PersonRefPresenter value={approver.person} avatarSize="x-small" />
-        {#key approver.timestamp}
-          <!-- For some reason tooltip is not interactive w/o remount -->
-          <span
-            use:tooltip={approver.timestamp !== undefined
-              ? {
-                  component: SignatureInfo,
-                  props: {
-                    id: approver.person,
-                    timestamp: approver.timestamp
-                  }
-                }
-              : undefined}
-          >
-            {#if approver.approved === 'approved'}
+            <span><Label label={roleString[approval.role]} /></span>
+            {#if approval.state === 'approved'}
               <ApprovedIcon size="medium" fill={'var(--theme-docs-accepted-color)'} />
-            {:else if approver.approved === 'rejected'}
+            {:else if approval.state === 'rejected'}
               <RejectedIcon size="medium" fill={'var(--negative-button-default)'} />
-            {:else if approver.approved === 'cancelled'}
+            {:else if approval.state === 'cancelled'}
               <CancelledIcon size="medium" />
-            {:else if approver.approved === 'waiting'}
+            {:else if approval.state === 'waiting'}
               <WaitingIcon size="medium" />
             {/if}
           </span>
         {/key}
       </div>
-      {#if rejectingMessage !== undefined && approver.approved === 'rejected'}
-        <div class="reject-message">{rejectingMessage}</div>
-      {/if}
+      {#each messages as m}
+        <div class="message">{m.message}</div>
+      {/each}
     {/each}
   </div>
 {/if}
@@ -224,14 +137,13 @@
     flex-shrink: 0;
     border-bottom: 1px solid var(--theme-divider-color);
 
-    .reject-message {
+    .message {
       font-weight: 400;
       padding: 0.625rem 1rem 0 2rem;
     }
   }
 
-  .approver,
-  .creator {
+  .approver {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -239,9 +151,5 @@
     &:not(:first-child) {
       margin-top: 1rem;
     }
-  }
-
-  .creator {
-    opacity: 0.4;
   }
 </style>
