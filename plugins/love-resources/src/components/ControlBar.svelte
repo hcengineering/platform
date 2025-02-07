@@ -38,9 +38,11 @@
   import love from '../plugin'
   import { currentRoom, myInfo, myOffice } from '../stores'
   import {
+    isCamAllowed,
     isCameraEnabled,
     isConnected,
     isFullScreen,
+    isMicAllowed,
     isMicEnabled,
     isRecording,
     isRecordingAvailable,
@@ -64,6 +66,7 @@
   import RoomLanguageSelector from './RoomLanguageSelector.svelte'
   import RoomModal from './RoomModal.svelte'
   import ShareSettingPopup from './ShareSettingPopup.svelte'
+  import { Room as LKRoom } from 'livekit-client'
 
   export let room: Room
   export let canMaximize: boolean = true
@@ -201,8 +204,12 @@
       <SplitButton
         size={'large'}
         icon={$isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
-        showTooltip={{ label: $isMicEnabled ? love.string.Mute : love.string.UnMute, keys: micKeys }}
+        showTooltip={{
+          label: !$isMicAllowed ? love.string.MicPermission : $isMicEnabled ? love.string.Mute : love.string.UnMute,
+          keys: micKeys
+        }}
         action={changeMute}
+        disabled={!$isMicAllowed}
         secondIcon={IconUpOutline}
         secondAction={micSettings}
         separate
@@ -211,8 +218,15 @@
         <SplitButton
           size={'large'}
           icon={$isCameraEnabled ? love.icon.CamEnabled : love.icon.CamDisabled}
-          showTooltip={{ label: $isCameraEnabled ? love.string.StopVideo : love.string.StartVideo, keys: camKeys }}
-          disabled={!$isConnected}
+          showTooltip={{
+            label: !$isCamAllowed
+              ? love.string.CamPermission
+              : $isCameraEnabled
+                ? love.string.StopVideo
+                : love.string.StartVideo,
+            keys: camKeys
+          }}
+          disabled={!$isCamAllowed}
           action={changeCam}
           secondIcon={IconUpOutline}
           secondAction={camSettings}

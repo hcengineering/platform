@@ -97,6 +97,8 @@ export default mergeIds(loveId, love, {
     MoreOptions: '' as IntlString,
     Language: '' as IntlString,
     WithAudio: '' as IntlString,
-    ShareWithAudioTooltip: '' as IntlString
+    ShareWithAudioTooltip: '' as IntlString,
+    CamPermission: '' as IntlString,
+    MicPermission: '' as IntlString
   }
 })
