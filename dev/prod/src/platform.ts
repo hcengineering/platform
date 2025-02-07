@@ -176,6 +176,7 @@ export interface Config {
   BACKUP_URL?: string
   STREAM_URL?: string
   PUBLIC_SCHEDULE_URL?: string
+  EXPORT_URL?: string
 }
 
 export interface Branding {
@@ -560,6 +561,7 @@ export async function configurePlatform() {
   setMetadata(workbench.metadata.DefaultSpecial, myBranding.defaultSpecial ?? 'issues')
 
   setMetadata(setting.metadata.BackupUrl, config.BACKUP_URL ?? '')
+  setMetadata(setting.metadata.ExportUrl, config.EXPORT_URL ?? '')
 
   initThemeStore()
 }

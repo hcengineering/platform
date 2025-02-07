@@ -2134,6 +2134,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-export",
+      "projectFolder": "services/export/pod-export",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/pod-sign",
       "projectFolder": "services/sign/pod-sign",
       "shouldPublish": false

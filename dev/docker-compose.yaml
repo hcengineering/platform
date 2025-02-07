@@ -439,6 +439,24 @@ services:
 #      - ACCOUNTS_URL=http://huly.local:3000
 #      - SERVICE_ID=telegram-bot-service
 #      - STATS_URL=http://huly.local:4900
+  export:
+    image: hardcoreeng/export
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    links:
+      - mongodb
+      - minio
+      - stats
+    ports:
+      - 4009:4009
+    environment:
+      - PORT=4009
+      - SECRET=secret
+      - SERVICE_ID=export-service
+      - DB_URL=${MONGO_URL}
+      - STATS_URL=http://huly.local:4900
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - ACCOUNTS_URL=http://huly.local:3000
 volumes:
   db:
   dbpg:

@@ -19,7 +19,7 @@ import core, {
 } from '@hcengineering/core'
 import { ModelLogger } from '@hcengineering/model'
 import { makeRank } from '@hcengineering/rank'
-import { StorageFileUploader, UnifiedFormatImporter } from '@hcengineering/importer'
+import { HulyFormatImporter, StorageFileUploader } from '@hcengineering/importer'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { jsonToMarkup } from '@hcengineering/text'
 import { markdownToMarkup } from '@hcengineering/text-markdown'
@@ -192,7 +192,7 @@ export class WorkspaceInitializer {
       const initPath = path.resolve(this.initRepoDir, step.path)
       // eslint-disable-next-line no-template-curly-in-string
       const initPerson = vars[`\${${this.creatorPersonVar}}`]
-      const importer = new UnifiedFormatImporter(this.client, uploader, logger, this.socialKey, initPerson)
+      const importer = new HulyFormatImporter(this.client, uploader, logger, this.socialKey, initPerson)
       await importer.importFolder(initPath)
     } catch (error) {
       logger.error('Import failed', error)
