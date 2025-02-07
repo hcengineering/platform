@@ -17,11 +17,11 @@ import {
   ClickupImporter,
   defaultDocumentPreprocessors,
   DocumentConverter,
-  FrontFileUploader,
-  importNotion,
-  UnifiedFormatImporter,
   type DocumentConverterOptions,
   type FileUploader,
+  FrontFileUploader,
+  HulyFormatImporter,
+  importNotion,
   type Logger
 } from '@hcengineering/importer'
 import { setMetadata } from '@hcengineering/platform'
@@ -167,7 +167,7 @@ export function importTool (): void {
     .action(async (dir: string, cmd) => {
       const { workspace, user, password } = cmd
       await authorize(user, password, workspace, async (client, uploader) => {
-        const importer = new UnifiedFormatImporter(client, uploader, new ConsoleLogger())
+        const importer = new HulyFormatImporter(client, uploader, new ConsoleLogger())
         await importer.importFolder(dir)
       })
     })

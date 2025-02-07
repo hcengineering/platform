@@ -15,7 +15,7 @@ import core, {
 } from '@hcengineering/core'
 import { ModelLogger } from '@hcengineering/model'
 import { makeRank } from '@hcengineering/rank'
-import { StorageFileUploader, UnifiedFormatImporter } from '@hcengineering/importer'
+import { HulyFormatImporter, StorageFileUploader } from '@hcengineering/importer'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { jsonToMarkup, parseMessageMarkdown } from '@hcengineering/text'
 import { v4 as uuid } from 'uuid'
@@ -166,7 +166,7 @@ export class WorkspaceInitializer {
     try {
       const uploader = new StorageFileUploader(this.ctx, this.storageAdapter, this.wsUrl)
       const initPath = path.resolve(this.initRepoDir, step.path)
-      const importer = new UnifiedFormatImporter(this.client, uploader, logger)
+      const importer = new HulyFormatImporter(this.client, uploader, logger)
       await importer.importFolder(initPath)
     } catch (error) {
       logger.error('Import failed', error)

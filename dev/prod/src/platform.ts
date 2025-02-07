@@ -169,6 +169,7 @@ export interface Config {
   USE_BINARY_PROTOCOL?: boolean
   TRANSACTOR_OVERRIDE?: string
   BACKUP_URL?: string
+  EXPORT_URL?: string
 }
 
 export interface Branding {
@@ -534,6 +535,7 @@ export async function configurePlatform() {
   setMetadata(workbench.metadata.DefaultSpecial, myBranding.defaultSpecial ?? 'issues')
 
   setMetadata(setting.metadata.BackupUrl, config.BACKUP_URL ?? '')
+  setMetadata(setting.metadata.ExportUrl, config.EXPORT_URL ?? '')
 
   initThemeStore()
 }
