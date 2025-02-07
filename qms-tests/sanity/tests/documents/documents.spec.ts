@@ -950,7 +950,7 @@ test.describe('QMS. Documents tests', () => {
 
     await test.step('9. Send for Approval', async () => {
       await documentContentPage.buttonSendForApproval.click()
-      await documentContentPage.fillSelectApproversForm([reviewer])
+      await documentContentPage.fillSelectApproversForm([reviewer], true)
       await documentContentPage.checkDocumentStatus(DocumentStatus.IN_APPROVAL)
       await documentContentPage.checkDocument({
         ...documentDetails,
