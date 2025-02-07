@@ -134,6 +134,7 @@
     "Calendar": "Kalendář",
     "StartOfTheWeek": "Začátek týdne",
     "SystemSetupString": "Nastavení systému ({day})",
+    "DefaultString": "Výchozí ({day})",
     "AddAttribute": "Přidat atribut"
   }
 }
