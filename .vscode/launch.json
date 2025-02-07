@@ -675,5 +675,19 @@
       "outputCapture": "std",
       "cwd": "${workspaceRoot}/dev/import-tool"
     },
+    {
+      "name": "Debug Huly Export",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts", "export", "/home/anna/work/export", "-u", "user1", "-pw", "1234", "-ws", "ws1"],
+      "env": {
+        "FRONT_URL": "http://localhost:8087"
+      },
+      "runtimeVersion": "20",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/dev/import-tool"
+    },
   ]
 }
