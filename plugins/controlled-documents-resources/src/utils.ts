@@ -27,9 +27,12 @@ import documents, {
   type ProjectDocument,
   type ProjectMeta,
   ControlledDocumentState,
+  type DocumentBundle,
   DocumentState,
+  emptyBundle,
   getDocumentName,
-  getFirstRank
+  getFirstRank,
+  ProjectDocumentTree
 } from '@hcengineering/controlled-documents'
 import core, {
   type Class,
@@ -49,7 +52,7 @@ import core, {
   getCurrentAccount
 } from '@hcengineering/core'
 import { type IntlString, translate } from '@hcengineering/platform'
-import { getClient } from '@hcengineering/presentation'
+import { createQuery, getClient } from '@hcengineering/presentation'
 import request, { type Request, RequestStatus } from '@hcengineering/request'
 import { isEmptyMarkup } from '@hcengineering/text'
 import { type Location, getUserTimezone, showPopup } from '@hcengineering/ui'
@@ -866,4 +869,54 @@ export async function moveDocumentAfter (doc: ProjectMeta, after: ProjectMeta): 
   const rank = makeRank(after.rank, nextRank)
 
   await client.update(doc, { parent, path, rank })
+}
+
+export class DocumentHiearchyQuery {
+  queries = {
+    prjMeta: createQuery(),
+    prjDoc: createQuery()
+  }
+
+  bundle: DocumentBundle = { ...emptyBundle() }
+
+  handleUpdate (data: Partial<DocumentBundle>, callback: (tree: ProjectDocumentTree) => void): void {
+    this.bundle = { ...this.bundle, ...data }
+    callback(new ProjectDocumentTree(this.bundle))
+  }
+
+  query (
+    space: Ref<DocumentSpace>,
+    project: Ref<Project<DocumentSpace>>,
+    callback: (tree: ProjectDocumentTree) => void
+  ): void {
+    project = project ?? documents.ids.NoProject
+
+    this.queries.prjMeta.query(
+      documents.class.ProjectMeta,
+      { space, project },
+      (ProjectMeta) => {
+        const DocumentMeta = ProjectMeta.map((e) => e.$lookup?.meta).filter((e) => e !== undefined) as DocumentMeta[]
+        const patch: Partial<DocumentBundle> = { ProjectMeta, DocumentMeta }
+        this.handleUpdate(patch, callback)
+      },
+      { lookup: { meta: documents.class.DocumentMeta } }
+    )
+
+    this.queries.prjDoc.query(
+      documents.class.ProjectDocument,
+      { space, project },
+      (ProjectDocument) => {
+        const ControlledDocument = ProjectDocument.map((e) => e.$lookup?.document as ControlledDocument).filter(
+          (e) => e !== undefined
+        )
+        const patch: Partial<DocumentBundle> = { ProjectDocument, ControlledDocument }
+        this.handleUpdate(patch, callback)
+      },
+      { lookup: { document: documents.class.ControlledDocument } }
+    )
+  }
+}
+
+export function createDocumentHierarchyQuery (): DocumentHiearchyQuery {
+  return new DocumentHiearchyQuery()
 }
