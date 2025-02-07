@@ -873,8 +873,8 @@ export async function moveDocumentAfter (doc: ProjectMeta, after: ProjectMeta): 
 
 export class DocumentHiearchyQuery {
   queries = {
-    ProjectMeta: createQuery(),
-    ProjectDoc: createQuery()
+    prjMeta: createQuery(),
+    prjDoc: createQuery()
   }
 
   bundle: DocumentBundle = { ...emptyBundle() }
@@ -891,7 +891,7 @@ export class DocumentHiearchyQuery {
   ): void {
     project = project ?? documents.ids.NoProject
 
-    this.queries.ProjectMeta.query(
+    this.queries.prjMeta.query(
       documents.class.ProjectMeta,
       { space, project },
       (ProjectMeta) => {
@@ -902,7 +902,7 @@ export class DocumentHiearchyQuery {
       { lookup: { meta: documents.class.DocumentMeta } }
     )
 
-    this.queries.ProjectDoc.query(
+    this.queries.prjDoc.query(
       documents.class.ProjectDocument,
       { space, project },
       (ProjectDocument) => {
