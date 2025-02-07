@@ -114,7 +114,6 @@ export async function GetCurrentEmployeeTG (
   context: Record<string, Doc>
 ): Promise<string | undefined> {
   // TODO: FIXME
-  throw new Error('Not implemented')
   // const account = await control.modelDb.findOne(contact.class.PersonAccount, {
   //   _id: control.txFactory.account as PersonId
   // })
@@ -125,6 +124,8 @@ export async function GetCurrentEmployeeTG (
   // if (employee !== undefined) {
   //   return await getContactChannel(control, employee, contact.channelProvider.Telegram)
   // }
+
+  return undefined
 }
 
 export async function GetIntegrationOwnerTG (
@@ -132,7 +133,6 @@ export async function GetIntegrationOwnerTG (
   context: Record<string, Doc>
 ): Promise<string | undefined> {
   // TODO: FIXME
-  throw new Error('Not implemented')
   // const value = context[setting.class.Integration] as Integration
   // if (value === undefined) return
   // const account = await control.modelDb.findOne(contact.class.PersonAccount, {
@@ -145,6 +145,8 @@ export async function GetIntegrationOwnerTG (
   // if (employee !== undefined) {
   //   return await getContactChannel(control, employee, contact.channelProvider.Telegram)
   // }
+
+  return undefined
 }
 
 async function getContactChannel (
@@ -261,7 +263,6 @@ const SendTelegramNotifications: NotificationProviderFunc = async (
   message?: ActivityMessage
 ): Promise<Tx[]> => {
   // TODO: FIXME
-  throw new Error('Not implemented')
   // if (types.length === 0) {
   //   return []
   // }
@@ -312,7 +313,7 @@ const SendTelegramNotifications: NotificationProviderFunc = async (
   //   })
   // }
 
-  // return []
+  return []
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

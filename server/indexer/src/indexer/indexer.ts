@@ -781,7 +781,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     await pushToIndex()
     await pushQueue.waitProcessing()
 
-    await ctx.with('update-index-state', {}, (ctx) => this.storage.update(ctx, DOMAIN_DOC_INDEX_STATE, docUpdates))
+    await ctx.with('update-index-state', {}, (ctx) =>
+      this.storage.rawUpdate(DOMAIN_DOC_INDEX_STATE, DOMAIN_DOC_INDEX_STATE, docUpdates)
+    )
   }
 
   private createContextData (): SessionDataImpl {

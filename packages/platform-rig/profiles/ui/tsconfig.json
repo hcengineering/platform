@@ -17,7 +17,12 @@
       "dom"
     ],
     "incremental": true,
-    "types": ["jest"],
+    "types": [
+      "jest"
+    ],
     "isolatedModules": true
-  }
+  },
+  "exclude": [
+    "node_modules/**"
+  ]
 }

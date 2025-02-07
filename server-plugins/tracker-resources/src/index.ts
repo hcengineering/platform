@@ -37,7 +37,14 @@ import { getSocialStrings } from '@hcengineering/server-contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
 import { stripTags } from '@hcengineering/text'
-import tracker, { Component, Issue, IssueParentInfo, TimeSpendReport, trackerId, type Project } from '@hcengineering/tracker'
+import tracker, {
+  Component,
+  Issue,
+  IssueParentInfo,
+  TimeSpendReport,
+  trackerId,
+  type Project
+} from '@hcengineering/tracker'
 import { workbenchId } from '@hcengineering/workbench'
 
 async function updateSubIssues (

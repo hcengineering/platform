@@ -13,10 +13,8 @@
 // limitations under the License.
 //
 
-import aiBot from '@hcengineering/ai-bot'
-import analyticsCollector from '@hcengineering/analytics-collector'
-import chunter, { ChatMessage, ThreadMessage } from '@hcengineering/chunter'
-import core, { AttachedDoc, Tx, TxCreateDoc, TxCUD, TxProcessor } from '@hcengineering/core'
+import { ChatMessage } from '@hcengineering/chunter'
+import { AttachedDoc, Tx, TxCreateDoc, TxCUD } from '@hcengineering/core'
 import { ActivityInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
 import { TriggerControl } from '@hcengineering/server-core'
 
@@ -133,78 +131,61 @@ import { TriggerControl } from '@hcengineering/server-core'
 //   }
 // }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function onBotDirectMessageSend (control: TriggerControl, message: ChatMessage): Promise<void> {
   // TODO: FIXME
-  throw new Error('Not implemented')
   // const account = control.modelDb.findAllSync(contact.class.PersonAccount, {
   //   _id: (message.createdBy ?? message.modifiedBy) as PersonId
   // })[0]
-
   // if (account === undefined) {
   //   return
   // }
-
   // const direct = (await getMessageDoc(message, control)) as DirectMessage
-
   // if (direct === undefined) {
   //   return
   // }
-
   // const isAvailable = await isDirectAvailable(direct, control)
-
   // if (!isAvailable) {
   //   return
   // }
-
   // let messageEvent: AIMessageEventRequest
-
   // if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
   //   messageEvent = getThreadMessageData(message as ThreadMessage, account.email)
   // } else {
   //   messageEvent = getMessageData(direct, message, account.email)
   // }
-
   // const transferEvent = await createTransferEvent(control, message, account, messageEvent)
   // const events = transferEvent !== undefined ? [messageEvent, transferEvent] : [messageEvent]
-
   // await sendAIEvents(events, control.workspace.uuid, control.ctx)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function onSupportWorkspaceMessage (control: TriggerControl, message: ChatMessage): Promise<void> {
   // TODO: FIXME
-  throw new Error('Not implemented')
   // const supportWorkspaceId = getSupportWorkspaceId()
-
   // if (supportWorkspaceId === undefined) {
   //   return
   // }
-
   // if (control.workspace.uuid !== supportWorkspaceId) {
   //   return
   // }
-
   // if (!control.hierarchy.isDerived(message.attachedToClass, analyticsCollector.class.OnboardingChannel)) {
   //   return
   // }
-
   // const channel = (await getMessageDoc(message, control)) as OnboardingChannel
-
   // if (channel === undefined) {
   //   return
   // }
-
   // const { workspaceId, email } = channel
   // const account = control.modelDb.findAllSync(contact.class.PersonAccount, {
   //   _id: (message.createdBy ?? message.modifiedBy) as PersonId
   // })[0]
-
   // let data: AIMessageEventRequest
   // if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
   //   data = getThreadMessageData(message as ThreadMessage, account.email)
   // } else {
   //   data = getMessageData(channel, message, account.email)
   // }
-
   // const transferEvent: AITransferEventRequest = {
   //   type: AIEventType.Transfer,
   //   createdOn: data.createdOn,
@@ -219,39 +200,39 @@ async function onSupportWorkspaceMessage (control: TriggerControl, message: Chat
   //   messageId: message._id,
   //   parentMessageId: await getThreadParent(control, message)
   // }
-
   // await sendAIEvents([transferEvent], control.workspace.uuid, control.ctx)
 }
 
 export async function OnMessageSend (originTxs: TxCUD<AttachedDoc>[], control: TriggerControl): Promise<Tx[]> {
-  const { hierarchy } = control
-  const txes = originTxs.filter(
-    (it) =>
-      it._class === core.class.TxCreateDoc &&
-      hierarchy.isDerived(it.objectClass, chunter.class.ChatMessage) &&
-      !(it.modifiedBy === aiBot.account.AIBot || it.modifiedBy === core.account.System)
-  )
-  if (txes.length === 0) {
-    return []
-  }
-  for (const tx of txes) {
-    const isThread = hierarchy.isDerived(tx.objectClass, chunter.class.ThreadMessage)
-    const message = TxProcessor.createDoc2Doc(tx as TxCreateDoc<ChatMessage>)
-
-    const docClass = isThread ? (message as ThreadMessage).objectClass : message.attachedToClass
-
-    if (!hierarchy.isDerived(docClass, chunter.class.ChunterSpace)) {
-      continue
-    }
-
-    if (docClass === chunter.class.DirectMessage) {
-      await onBotDirectMessageSend(control, message)
-    }
-
-    if (docClass === analyticsCollector.class.OnboardingChannel) {
-      await onSupportWorkspaceMessage(control, message)
-    }
-  }
+  // TODO: FIXME
+  // const { hierarchy } = control
+  // const txes = originTxs.filter(
+  //   (it) =>
+  //     it._class === core.class.TxCreateDoc &&
+  //     hierarchy.isDerived(it.objectClass, chunter.class.ChatMessage) &&
+  //     !(it.modifiedBy === aiBot.account.AIBot || it.modifiedBy === core.account.System)
+  // )
+  // if (txes.length === 0) {
+  //   return []
+  // }
+  // for (const tx of txes) {
+  //   const isThread = hierarchy.isDerived(tx.objectClass, chunter.class.ThreadMessage)
+  //   const message = TxProcessor.createDoc2Doc(tx as TxCreateDoc<ChatMessage>)
+  //
+  //   const docClass = isThread ? (message as ThreadMessage).objectClass : message.attachedToClass
+  //
+  //   if (!hierarchy.isDerived(docClass, chunter.class.ChunterSpace)) {
+  //     continue
+  //   }
+  //
+  //   if (docClass === chunter.class.DirectMessage) {
+  //     await onBotDirectMessageSend(control, message)
+  //   }
+  //
+  //   if (docClass === analyticsCollector.class.OnboardingChannel) {
+  //     await onSupportWorkspaceMessage(control, message)
+  //   }
+  // }
 
   return []
 }

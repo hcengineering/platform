@@ -1163,61 +1163,6 @@ abstract class MongoAdapterBase implements DbAdapter {
     })
   }
 
-  update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, Partial<Doc>>): Promise<void> {
-    return ctx.with('update', { domain }, async () => {
-      const coll = this.collection(domain)
-
-      // remove old and insert new ones
-      const ops = Array.from(operations.entries())
-      let skip = 500
-      while (ops.length > 0) {
-        const part = ops.splice(0, skip)
-        try {
-          await ctx.with(
-            'bulk-update',
-            {},
-            () => {
-              return coll.bulkWrite(
-                part.map((it) => {
-                  const { $unset, ...set } = it[1] as any
-                  if ($unset !== undefined) {
-                    for (const k of Object.keys(set)) {
-                      if ($unset[k] === '') {
-                        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                        delete $unset[k]
-                      }
-                    }
-                  }
-                  return {
-                    updateOne: {
-                      filter: { _id: it[0] },
-                      update: {
-                        $set: { ...set, '%hash%': this.curHash() },
-                        ...($unset !== undefined ? { $unset } : {})
-                      }
-                    }
-                  }
-                }),
-                {
-                  ordered: false
-                }
-              )
-            },
-            {
-              updates: part.length
-            }
-          )
-        } catch (err: any) {
-          ctx.error('failed on bulk write', { error: err, skip })
-          if (skip !== 1) {
-            ops.push(...part)
-            skip = 1 // Let's update one by one, to loose only one failed variant.
-          }
-        }
-      }
-    })
-  }
-
   clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
     return ctx.with('clean', {}, async () => {
       if (docs.length > 0) {

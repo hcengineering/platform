@@ -147,16 +147,12 @@ async function notifyByEmail (
   message?: ActivityMessage
 ): Promise<void> {
   // TODO: FIXME
-  throw new Error('Not implemented')
   // const account = receiver.account
-
   // if (account === undefined) {
   //   return
   // }
-
   // const senderPerson = sender.person
   // const senderName = senderPerson !== undefined ? formatName(senderPerson.name, control.branding?.lastNameFirst) : ''
-
   // const content = await getContentByTemplate(doc, senderName, type, control, '', data, message)
   // if (content !== undefined) {
   //   await sendEmailNotification(control.ctx, content.text, content.html, content.subject, account.email)
@@ -173,7 +169,6 @@ const SendEmailNotifications: NotificationProviderFunc = async (
   message?: ActivityMessage
 ): Promise<Tx[]> => {
   // TODO: FIXME
-  throw new Error('Not implemented')
   // if (types.length === 0) {
   //   return []
   // }
@@ -190,7 +185,7 @@ const SendEmailNotifications: NotificationProviderFunc = async (
   //   await notifyByEmail(control, type._id, object, sender, receiver, data, message)
   // }
 
-  // return []
+  return []
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

@@ -270,9 +270,7 @@ async function migrateSpaceTypes (client: MigrationClient): Promise<void> {
       'attributes.descriptor': documents.descriptor.DocumentSpaceType
     },
     {
-      $set: {
-        objectClass: documents.class.DocumentSpaceType
-      }
+      objectClass: documents.class.DocumentSpaceType
     }
   )
 }
@@ -398,7 +396,7 @@ async function migrateProjectMetaRank (client: MigrationClient): Promise<void> {
   for (const doc of projectMeta) {
     operations.push({
       filter: { _id: doc._id },
-      update: { $set: { rank } }
+      update: { rank }
     })
     rank = makeRank(rank, undefined)
   }

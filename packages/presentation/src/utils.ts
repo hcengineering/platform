@@ -745,9 +745,9 @@ export function decodeTokenPayload (token: string): any {
 }
 
 export function isAdminUser (): boolean {
-  // TODO: fixme
-  return false
-  // return decodeTokenPayload(getMetadata(plugin.metadata.Token) ?? '').admin === 'true'
+  const decodedToken = decodeTokenPayload(getMetadata(plugin.metadata.Token) ?? '')
+  console.log('decodedToken', decodedToken)
+  return decodedToken.extra?.admin === 'true'
 }
 
 export function isSpace (space: Doc): space is Space {
