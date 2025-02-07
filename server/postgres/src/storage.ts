@@ -1684,18 +1684,6 @@ abstract class PostgresAdapterBase implements DbAdapter {
     })
   }
 
-  async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, Partial<Doc>>): Promise<void> {
-    const ids = [...operations.entries()]
-    const groups = groupByArray(ids, (it) => JSON.stringify(it[1]))
-    for (const [, values] of groups.entries()) {
-      const ids = values.map((it) => it[0])
-      while (ids.length > 0) {
-        const part = ids.splice(0, 200)
-        await this.rawUpdate(domain, { _id: { $in: part } }, values[0][1])
-      }
-    }
-  }
-
   @withContext('insert')
   async insert (ctx: MeasureContext, domain: string, docs: Doc[]): Promise<TxResult> {
     await this.upload(ctx, domain as Domain, docs, false)
@@ -1819,7 +1807,7 @@ export class PostgresAdapter extends PostgresAdapterBase {
           result.push(res)
         }
       }
-      // TODO: Optimize updates
+
       if (ops.updates.length > 0) {
         const res = await this.txUpdateDoc(ctx, domain, ops.updates, domainFields)
         for (const r of res) {

@@ -77,9 +77,7 @@ async function migrateTeamspaces (client: MigrationClient): Promise<void> {
       type: { $exists: false }
     },
     {
-      $set: {
-        type: document.spaceType.DefaultTeamspaceType
-      }
+      type: document.spaceType.DefaultTeamspaceType
     }
   )
 }
@@ -95,9 +93,7 @@ async function migrateTeamspacesMixins (client: MigrationClient): Promise<void> 
       'attributes.attributeOf': oldSpaceTypeMixin
     },
     {
-      $set: {
-        'attributes.attributeOf': newSpaceTypeMixin
-      }
+      'attributes.attributeOf': newSpaceTypeMixin
     }
   )
 
@@ -131,7 +127,7 @@ async function migrateRank (client: MigrationClient): Promise<void> {
   for (const doc of documents) {
     operations.push({
       filter: { _id: doc._id },
-      update: { $set: { rank } }
+      update: { rank }
     })
     rank = makeRank(rank, undefined)
   }

@@ -138,9 +138,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
             DOMAIN_MODEL_TX,
             { _id: defaultTaskType._id },
             {
-              $set: {
-                modifiedBy: core.account.System
-              }
+              modifiedBy: core.account.System
             }
           )
 
@@ -148,9 +146,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
             DOMAIN_MODEL_TX,
             { _id: defaultType._id },
             {
-              $set: {
-                modifiedBy: core.account.System
-              }
+              modifiedBy: core.account.System
             }
           )
         } else if (defaultTaskType?.modifiedBy !== core.account.System) {
@@ -178,10 +174,8 @@ export async function migrateDefaultStatusesBase<T extends Task> (
         DOMAIN_MODEL_TX,
         { _id: defaultType._id },
         {
-          $set: {
-            'attributes.name': defaultType.attributes.name + ' (custom)',
-            objectId: newId
-          }
+          'attributes.name': defaultType.attributes.name + ' (custom)',
+          objectId: newId
         }
       )
       await client.update(
@@ -191,9 +185,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
           objectSpace: core.space.Model
         },
         {
-          $set: {
-            objectId: newId
-          }
+          objectId: newId
         }
       )
       await client.update(
@@ -204,9 +196,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
           'attributes.parent': defaultTypeId
         },
         {
-          $set: {
-            'attributes.parent': newId
-          }
+          'attributes.parent': newId
         }
       )
       await client.update(
@@ -216,7 +206,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
           type: defaultTypeId
         },
         {
-          $set: { type: newId }
+          type: newId
         }
       )
     }
@@ -315,7 +305,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     }
 
     counter++
-    await client.update(DOMAIN_MODEL_TX, { _id: ptsCreate._id }, { $set: { 'attributes.statuses': newUpdateStatuses } })
+    await client.update(DOMAIN_MODEL_TX, { _id: ptsCreate._id }, { 'attributes.statuses': newUpdateStatuses })
   }
   logger.log('projectTypeStatusesCreates updated: ', counter)
 
@@ -337,7 +327,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     }
 
     counter++
-    await client.update(DOMAIN_MODEL_TX, { _id: ptsUpdate._id }, { $set: { 'operations.statuses': newUpdateStatuses } })
+    await client.update(DOMAIN_MODEL_TX, { _id: ptsUpdate._id }, { 'operations.statuses': newUpdateStatuses })
   }
   logger.log('projectTypeStatusesUpdates updated: ', counter)
 
@@ -365,11 +355,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     }
 
     counter++
-    await client.update(
-      DOMAIN_MODEL_TX,
-      { _id: ptsUpdate._id },
-      { $set: { 'operations.$push.statuses': newPushStatus } }
-    )
+    await client.update(DOMAIN_MODEL_TX, { _id: ptsUpdate._id }, { 'operations.$push.statuses': newPushStatus })
   }
   logger.log('projectTypeStatusesPushes updated: ', counter)
 
@@ -394,11 +380,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     }
 
     counter++
-    await client.update(
-      DOMAIN_MODEL_TX,
-      { _id: taskType._id },
-      { $set: { 'attributes.statuses': newTaskTypeStatuses } }
-    )
+    await client.update(DOMAIN_MODEL_TX, { _id: taskType._id }, { 'attributes.statuses': newTaskTypeStatuses })
   }
   logger.log('allTaskTypes updated: ', counter)
 
@@ -423,11 +405,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     }
 
     counter++
-    await client.update(
-      DOMAIN_MODEL_TX,
-      { _id: ttsUpdate._id },
-      { $set: { 'operations.statuses': newTaskTypeUpdateStatuses } }
-    )
+    await client.update(DOMAIN_MODEL_TX, { _id: ttsUpdate._id }, { 'operations.statuses': newTaskTypeUpdateStatuses })
   }
   logger.log('allTaskTypeStatusesUpdates updated: ', counter)
 
@@ -452,7 +430,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
 
     if (newStatus !== baseTask.status) {
       counter++
-      await client.update(DOMAIN_TASK, { _id: baseTask._id }, { $set: { status: newStatus } })
+      await client.update(DOMAIN_TASK, { _id: baseTask._id }, { status: newStatus })
     }
   }
   logger.log('affectedBaseTasks updated: ', counter)
@@ -474,11 +452,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
 
     if (statusSet !== newStatusSet) {
       counter++
-      await client.update(
-        DOMAIN_ACTIVITY,
-        { _id: updateMessage._id },
-        { $set: { 'attributeUpdates.set.0': newStatusSet } }
-      )
+      await client.update(DOMAIN_ACTIVITY, { _id: updateMessage._id }, { 'attributeUpdates.set.0': newStatusSet })
     }
   }
   logger.log('Base task update messages updated: ', counter)
@@ -490,7 +464,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
 
     logger.log('Updating status from ' + statusIdBeingMigrated + ' to ' + newStatus, '')
 
-    await client.update(DOMAIN_STATUS, { _id: statusIdBeingMigrated }, { $set: { __superseded: true } })
+    await client.update(DOMAIN_STATUS, { _id: statusIdBeingMigrated }, { __superseded: true })
 
     if (!createdStatuses.has(newStatus)) {
       const oldStatus = oldStatuses.find((s) => s._id === statusIdBeingMigrated)
@@ -554,12 +528,12 @@ export const taskOperation: MigrateOperation = {
             await client.update(
               DOMAIN_TX,
               { objectId: { $in: missing }, objectSpace: 'task:space:Statuses' },
-              { $set: { objectSpace: core.space.Model } }
+              { objectSpace: core.space.Model }
             )
             await client.update(
               DOMAIN_MODEL_TX,
               { objectId: { $in: missing }, objectSpace: 'task:space:Statuses' },
-              { $set: { objectSpace: core.space.Model } }
+              { objectSpace: core.space.Model }
             )
             await client.move(DOMAIN_TX, { objectId: { $in: missing }, objectSpace: core.space.Model }, DOMAIN_MODEL_TX)
           }
