@@ -101,5 +101,8 @@
     padding: 0 1rem;
     border-left: 2px solid var(--theme-navpanel-border);
     gap: 0.25rem;
+
+    padding-left: 0.25rem;
+    margin-left: 0.75rem;
   }
 </style>
