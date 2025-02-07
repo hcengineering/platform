@@ -1,0 +1,160 @@
+---
+run:
+  go: "1.23"
+  timeout: 2m
+  issues-exit-code: 1
+  tests: true
+linters-settings:
+  goheader:
+    template: |-
+      Copyright © {{ mod-year-range }} Hardcore Engineering Inc.
+
+      Licensed under the Eclipse Public License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License. You may
+      obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
+      See the License for the specific language governing permissions and
+      limitations under the License.
+  errcheck:
+    check-type-assertions: false
+    check-blank: false
+  govet:
+    enable:
+      - shadow
+    settings:
+      printf:
+        funcs:
+          - (github.com/sirupsen/logrus.FieldLogger).Infof
+          - (github.com/sirupsen/logrus.FieldLogger).Warnf
+          - (github.com/sirupsen/logrus.FieldLogger).Errorf
+          - (github.com/sirupsen/logrus.FieldLogger).Fatalf
+  revive:
+    confidence: 0.8
+    rules:
+      - name: exported
+      - name: blank-imports
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+      - name: increment-decrement
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+      - name: indent-error-flow
+      - name: errorf
+      - name: superfluous-else
+      - name: unreachable-code
+  goimports:
+    local-prefixes: github.com/networkservicemesh/sdk
+  gocyclo:
+    min-complexity: 15
+  dupl:
+    threshold: 150
+  funlen:
+    lines: 120
+    statements: 60
+  goconst:
+    min-len: 2
+    min-occurrences: 2
+  depguard:
+    rules:
+      main:
+        deny:
+          - pkg: "errors"
+            desc: "Please use \"github.com/pkg/errors\" instead of \"errors\" in go imports"
+  misspell:
+    locale: US
+  unparam:
+    check-exported: false
+  nakedret:
+    max-func-lines: 30
+  prealloc:
+    simple: true
+    range-loops: true
+    for-loops: false
+  gosec:
+    excludes:
+      - G115
+      - G204
+      - G301
+      - G302
+      - G306
+  gocritic:
+    enabled-checks:
+      - appendCombine
+      - boolExprSimplify
+      - builtinShadow
+      - commentedOutCode
+      - commentedOutImport
+      - docStub
+      - dupImport
+      - emptyFallthrough
+      - emptyStringTest
+      - equalFold
+      - evalOrder
+      - hexLiteral
+      - importShadow
+      - indexAlloc
+      - initClause
+      - methodExprCall
+      - nestingReduce
+      - nilValReturn
+      - octalLiteral
+      - paramTypeCombine
+      - rangeExprCopy
+      - rangeValCopy
+      - regexpPattern
+      - sloppyReassign
+      - stringXbytes
+      - typeAssertChain
+      - typeUnparen
+      - unlabelStmt
+      - unnamedResult
+      - unnecessaryBlock
+      - weakCond
+      - yodaStyleExpr
+linters:
+  disable-all: true
+  enable:
+    - goheader
+    - bodyclose
+    - unused
+    - depguard
+    - dogsled
+    - dupl
+    - errcheck
+    - funlen
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - goimports
+    - revive
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - nakedret
+    - copyloopvar
+    - staticcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - whitespace
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
