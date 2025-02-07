@@ -155,6 +155,7 @@
     "@hcengineering/telegram": "^0.6.21",
     "@hcengineering/tracker": "^0.6.24",
     "@hcengineering/collaboration": "^0.6.0",
+    "@hcengineering/importer": "^0.6.1",
     "@hcengineering/datalake": "^0.6.0",
     "@hcengineering/s3": "^0.6.0",
     "commander": "^8.1.0",
@@ -169,6 +170,7 @@
     "bufferutil": "^4.0.8",
     "utf-8-validate": "^6.0.4",
     "msgpackr": "^1.11.2",
-    "msgpackr-extract": "^3.0.3"
+    "msgpackr-extract": "^3.0.3",
+    "@hcengineering/pod-export": "^0.1.0"
   }
 }

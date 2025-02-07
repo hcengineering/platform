@@ -519,6 +519,24 @@ services:
 #      - ACCOUNTS_URL=http://host.docker.internal:3000
 #      - SERVICE_ID=telegram-bot-service
 #      - STATS_URL=http://host.docker.internal:4900
+  export:
+    image: hardcoreeng/export
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    links:
+      - mongodb
+      - minio
+      - stats # todo: remove?
+    ports:
+      - 4009:4009
+    environment:
+      - PORT=4009
+      - SECRET=secret # todo: remove ?
+      - SERVICE_ID=export-service # todo: remove ?
+      - DB_URL=${MONGO_URL}
+      - STATS_URL=http://host.docker.internal:4900
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - ACCOUNTS_URL=http://host.docker.internal:3000
 volumes:
   db:
   dbpg:

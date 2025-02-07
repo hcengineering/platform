@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,13 +13,11 @@
 // limitations under the License.
 //
 
-export * from './huly/huly'
-export * from './clickup/clickup'
-export * from './notion/notion'
-export * from './docx/docx'
-export * from './docx/preprocessors'
+import { config } from 'dotenv'
+import { main } from './main'
 
-export * from './importer/uploader'
-export * from './importer/storageUploader'
-export * from './importer/frontUploader'
-export * from './importer/logger'
+export * from './types'
+export * from './exporter'
+
+config()
+void main()

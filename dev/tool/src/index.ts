@@ -80,6 +80,8 @@ import { addControlledDocumentRank } from './qms'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, updateField } from './workspace'
 
+import { ExportType, WorkspaceExporter } from '@hcengineering/pod-export'
+
 import core, {
   AccountRole,
   generateId,
@@ -91,9 +93,11 @@ import core, {
   RateLimiter,
   systemAccountEmail,
   versionToString,
+  type Class,
   type Data,
   type Doc,
   type Ref,
+  type Space,
   type Tx,
   type Version,
   type WorkspaceId
@@ -2202,6 +2206,47 @@ export function devTool (
     .action(async (cmd: { token?: string }) => {
       await withAccountDatabase(async (db) => {
         await fillGithubUsers(toolCtx, db, cmd.token)
+      })
+    })
+
+  program
+    .command('export <dir>')
+    .description('export issues in JSON format')
+    .requiredOption('-ws, --workspace <workspace>', 'workspace url where the documents should be imported to')
+    .action(async (dir: string, cmd) => {
+      const { workspace } = cmd
+      await withAccountDatabase(async (db) => {
+        await withStorage(async (storageAdapter) => {
+          const ws = await getWorkspaceById(db, workspace)
+          if (ws === null) {
+            console.error(`Workspace ${workspace} not found`)
+            return
+          }
+
+          const token = generateToken(systemAccountEmail, { name: ws.workspace })
+          const endpoint = await getTransactorEndpoint(token, 'external')
+          const client = await createClient(endpoint, token)
+
+          try {
+            const exporter = new WorkspaceExporter(toolCtx, client, storageAdapter, { name: ws.workspace })
+
+            // await exporter.exportDocuments('document:class:Document' as Ref<Class<Space>>, ExportType.UNIFIED, dir)
+            // await exporter.exportDocuments('document:class:Document' as Ref<Class<Space>>, ExportType.JSON, dir)
+            // await exporter.exportDocuments('document:class:Document' as Ref<Class<Space>>, ExportType.CSV, dir)
+
+            // await exporter.export('tracker:class:Issue' as Ref<Class<Space>>, dir, ExportType.UNIFIED, true)
+            // await exporter.exportDocuments('tracker:class:Issue' as Ref<Class<Space>>, ExportType.JSON, dir)
+            // await exporter.exportDocuments('tracker:class:Issue' as Ref<Class<Space>>, ExportType.CSV, dir)
+
+            // await exporter.export('testManagement:class:TestPlan' as Ref<Class<Space>>, dir, ExportType.JSON, true)
+            // await exporter.export('testManagement:class:TestRun' as Ref<Class<Space>>, dir, ExportType.JSON, true)
+            await exporter.export('testManagement:class:TestCase' as Ref<Class<Space>>, dir, ExportType.JSON, true)
+          } catch (err) {
+            console.error('Failed to fetch issues:', err)
+          } finally {
+            await client.close()
+          }
+        })
       })
     })
 

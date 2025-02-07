@@ -131,6 +131,26 @@
     "BackupFileDownload": "Scarica file",
     "BackupFiles": "File di backup",
     "BackupNoBackup": "Non sono attualmente disponibili backup.",
-    "AddAttribute": "Aggiungi attributo"
+    "AddAttribute": "Aggiungi attributo",
+    "Export": "Esporta",
+    "DataToExport": "Dati da esportare",
+    "ExportDocuments": "Documenti",
+    "ExportIssues": "Problemi",
+    "ExportTestCases": "Casi di test",
+    "ExportTestRuns": "Esecuzioni di test",
+    "ExportTestPlans": "Piani di test",
+    "ExportFormat": "Formato di esportazione",
+    "ExportJSON": "JSON",
+    "ExportCSV": "CSV",
+    "ExportUnifiedFormat": "Formato Unificato Huly",
+    "ExportIncludeContent": "Includi contenuto",
+    "ExportEverything": "Tutto",
+    "ExportAttributesOnly": "Solo attributi",
+    "ExportRequestSuccess": "Esportazione avviata.",
+    "ExportRequestSuccessMessage": "Esportazione avviata. Riceverai una notifica nella tua casella quando sarà completata.",
+    "ExportRequestFailed": "Impossibile inviare l'esportazione.",
+    "ExportRequestFailedMessage": "Si è verificato un errore durante l'invio dell'esportazione. Riprova più tardi.",
+    "ExportCompleted": "Esportazione completata. I tuoi file sono pronti. Puoi scaricarli dal drive.",
+    "ExportFailed": "Impossibile esportare i dati. Riprova più tardi."
   }
 }

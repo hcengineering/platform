@@ -1882,6 +1882,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/export",
+      "projectFolder": "plugins/export",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/sign",
       "projectFolder": "plugins/sign",
       "shouldPublish": false
@@ -2084,6 +2089,11 @@
     {
       "packageName": "@hcengineering/pod-print",
       "projectFolder": "services/print/pod-print",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-export",
+      "projectFolder": "services/export/pod-export",
       "shouldPublish": false
     },
     {

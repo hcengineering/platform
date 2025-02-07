@@ -351,6 +351,7 @@ export async function configurePlatform (): Promise<void> {
   configureNotifications()
 
   setMetadata(setting.metadata.BackupUrl, config.BACKUP_URL ?? '')
+  setMetadata(setting.metadata.ExportUrl, config.EXPORT_URL ?? '')
 
   if (config.INITIAL_URL !== '') {
     setLocationStorageKey('uberflow_child')

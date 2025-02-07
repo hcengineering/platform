@@ -3,5 +3,5 @@ WORKDIR /usr/src/app
 
 COPY bundle/bundle.js ./
 
-EXPOSE 4007
+EXPOSE 4009
 CMD [ "node", "bundle.js" ]
