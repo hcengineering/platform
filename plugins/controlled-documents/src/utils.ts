@@ -21,11 +21,13 @@ import {
   DocumentQuery,
   DocumentUpdate,
   Hierarchy,
+  getCurrentAccount,
   Rank,
   Ref,
   SortingOrder,
   Space,
   Timestamp,
+  toIdMap,
   TxOperations
 } from '@hcengineering/core'
 import { LexoDecimal, LexoNumeralSystem36, LexoRank } from 'lexorank'
@@ -35,7 +37,7 @@ import documents from './plugin'
 
 import attachment, { Attachment } from '@hcengineering/attachment'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
-import { Person, PersonAccount } from '@hcengineering/contact'
+import { Person, PersonAccount, Employee } from '@hcengineering/contact'
 import { makeRank } from '@hcengineering/rank'
 import tags, { TagReference } from '@hcengineering/tags'
 import {
@@ -141,30 +143,152 @@ export async function deleteProjectDrafts (client: ApplyOperations, source: Ref<
   }
 }
 
-class ProjectDocumentTree {
-  rootDocs: ProjectMeta[]
-  childrenByParent: Map<Ref<DocumentMeta>, ProjectMeta[]>
+export function isCollaborator (doc: ControlledDocument, person: Ref<Employee>): boolean {
+  return (
+    doc.owner === person ||
+    doc.coAuthors.includes(person) ||
+    doc.approvers.includes(person) ||
+    doc.reviewers.includes(person)
+  )
+}
 
-  constructor (pjMeta: ProjectMeta[]) {
-    this.rootDocs = []
-    this.childrenByParent = new Map<Ref<DocumentMeta>, Array<ProjectMeta>>()
+export function isFolder (doc: ProjectDocument | undefined): boolean {
+  return doc !== undefined && doc.document === documents.ids.Folder
+}
 
-    for (const meta of pjMeta) {
-      const parentId = meta.path[0] ?? documents.ids.NoParent
+function extractPresentableStateFromDocumentBundle (bundle: DocumentBundle, prjmeta: ProjectMeta): DocumentBundle {
+  bundle = { ...bundle }
 
-      if (!this.childrenByParent.has(parentId)) {
-        this.childrenByParent.set(parentId, [])
+  const person = getCurrentAccount().person as Ref<Employee>
+  const documentById = toIdMap(bundle.ControlledDocument)
+
+  const getSortSequence = (prjdoc: ProjectDocument): number[] => {
+    const doc = documentById.get(prjdoc.document as Ref<ControlledDocument>)
+    return doc !== undefined ? [doc.seqNumber, doc.major, doc.minor, doc.createdOn ?? 0] : [0, 0, 0, 0]
+  }
+
+  const prjdoc = bundle.ProjectDocument.filter((prjdoc) => {
+    if (prjdoc.attachedTo !== prjmeta._id) return false
+    if (isFolder(prjdoc)) return true
+    const doc = documentById.get(prjdoc.document as Ref<ControlledDocument>)
+    const isPublicState = doc?.state === DocumentState.Effective || doc?.state === DocumentState.Archived
+    return doc !== undefined && (isPublicState || isCollaborator(doc, person))
+  }).sort((a, b) => {
+    const s0 = getSortSequence(a)
+    const s1 = getSortSequence(b)
+    return s0.reduce((r, v, i) => (r !== 0 ? r : s1[i] - v), 0)
+  })[0]
+
+  const doc = prjdoc !== undefined ? documentById.get(prjdoc.document as Ref<ControlledDocument>) : undefined
+
+  bundle.ProjectMeta = [prjmeta]
+  bundle.ProjectDocument = prjdoc !== undefined ? [prjdoc] : []
+  bundle.ControlledDocument = doc !== undefined ? [doc] : []
+
+  return bundle
+}
+
+export class ProjectDocumentTree {
+  parents: Map<Ref<DocumentMeta>, Ref<DocumentMeta>>
+  nodesChildren: Map<Ref<DocumentMeta>, DocumentBundle[]>
+  nodes: Map<Ref<DocumentMeta>, DocumentBundle>
+  links: Map<Ref<Doc>, Ref<DocumentMeta>>
+
+  constructor (bundle?: DocumentBundle) {
+    bundle = { ...emptyBundle(), ...bundle }
+    const { bundles, links } = compileBundles(bundle)
+    this.links = links
+    this.nodes = new Map()
+    this.nodesChildren = new Map()
+    this.parents = new Map()
+
+    bundles.sort((a, b) => {
+      const rankA = a.ProjectMeta[0]?.rank ?? ''
+      const rankB = b.ProjectMeta[0]?.rank ?? ''
+      return rankA.localeCompare(rankB)
+    })
+
+    for (const bundle of bundles) {
+      const prjmeta = bundle.ProjectMeta[0]
+      if (prjmeta === undefined) continue
+
+      const presentable = extractPresentableStateFromDocumentBundle(bundle, prjmeta)
+      this.nodes.set(prjmeta.meta, presentable)
+
+      const parent = prjmeta.path[0] ?? documents.ids.NoParent
+      this.parents.set(prjmeta.meta, parent)
+
+      if (!this.nodesChildren.has(parent)) {
+        this.nodesChildren.set(parent, [])
       }
+      this.nodesChildren.get(parent)?.push(bundle)
+    }
 
-      this.childrenByParent.get(parentId)?.push(meta)
+    const nodesForRemoval = new Set<Ref<DocumentMeta>>()
+    for (const [id, node] of this.nodes) {
+      const state = node.ControlledDocument[0]?.state
+      const isRemoved = state === DocumentState.Obsolete || state === DocumentState.Deleted
+      if (isRemoved) nodesForRemoval.add(id)
+    }
 
-      if (parentId === documents.ids.NoParent) {
-        this.rootDocs.push(meta)
-      }
+    for (const id of this.nodes.keys()) {
+      if (!nodesForRemoval.has(id)) continue
+
+      const blocked = this.descendantsOf(id).some((node) => !nodesForRemoval.has(node))
+      if (blocked) nodesForRemoval.delete(id)
+    }
+
+    for (const id of nodesForRemoval) {
+      this.nodes.delete(id)
+      this.parents.delete(id)
+      this.nodesChildren.delete(id)
+    }
+
+    for (const [id, children] of this.nodesChildren) {
+      this.nodesChildren.set(
+        id,
+        children.filter((c) => !nodesForRemoval.has(c.ProjectMeta[0].meta))
+      )
     }
   }
 
-  getDescendants (parent: Ref<DocumentMeta>): Ref<DocumentMeta>[] {
+  metaOf (ref: Ref<Doc> | undefined): Ref<DocumentMeta> | undefined {
+    if (ref === undefined) return
+    return this.links.get(ref)
+  }
+
+  parentChainOf (ref: Ref<DocumentMeta> | undefined): Ref<DocumentMeta>[] {
+    if (ref === undefined) return []
+    // Found a bug that can cause path field to contain invalid state,
+    // until we fix it with migration and a separate fix it's better to use parent.
+    //
+    // return this.bundleOf(ref)?.ProjectMeta[0]?.path ?? []
+    const parents: Ref<DocumentMeta>[] = []
+    while (this.parentOf(ref) !== documents.ids.NoParent) {
+      ref = this.parentOf(ref)
+      parents.push(ref)
+    }
+    return parents
+  }
+
+  parentOf (ref: Ref<DocumentMeta> | undefined): Ref<DocumentMeta> {
+    if (ref === undefined) {
+      return documents.ids.NoParent
+    }
+    return this.parents.get(ref) ?? documents.ids.NoParent
+  }
+
+  bundleOf (ref: Ref<DocumentMeta> | undefined): DocumentBundle | undefined {
+    if (ref === undefined) return
+    return this.nodes.get(ref)
+  }
+
+  childrenOf (ref: Ref<DocumentMeta> | undefined): Ref<DocumentMeta>[] {
+    if (ref === undefined) return []
+    return this.nodesChildren.get(ref)?.map((p) => p.ProjectMeta[0].meta) ?? []
+  }
+
+  descendantsOf (parent: Ref<DocumentMeta>): Ref<DocumentMeta>[] {
     const result: Ref<DocumentMeta>[] = []
     const queue: Ref<DocumentMeta>[] = [parent]
 
@@ -172,8 +296,8 @@ class ProjectDocumentTree {
       const next = queue.pop()
       if (next === undefined) break
 
-      const children = this.childrenByParent.get(next) ?? []
-      const childrenRefs = children.map((p) => p.meta)
+      const children = this.nodesChildren.get(next) ?? []
+      const childrenRefs = children.map((p) => p.ProjectMeta[0].meta)
       result.push(...childrenRefs)
       queue.push(...childrenRefs)
     }
@@ -187,8 +311,8 @@ export async function findProjectDocsHierarchy (
   space: Ref<DocumentSpace>,
   project?: Ref<Project<DocumentSpace>>
 ): Promise<ProjectDocumentTree> {
-  const pjMeta = await client.findAll(documents.class.ProjectMeta, { space, project })
-  return new ProjectDocumentTree(pjMeta)
+  const ProjectMeta = await client.findAll(documents.class.ProjectMeta, { space, project })
+  return new ProjectDocumentTree({ ...emptyBundle(), ProjectMeta })
 }
 
 export interface DocumentBundle {
@@ -217,6 +341,46 @@ export function emptyBundle (): DocumentBundle {
     TagReference: [],
     Attachment: []
   }
+}
+
+export function compileBundles (all: DocumentBundle): {
+  bundles: DocumentBundle[]
+  links: Map<Ref<Doc>, Ref<DocumentMeta>>
+} {
+  const bundles = new Map<Ref<DocumentMeta>, DocumentBundle>(all.DocumentMeta.map((m) => [m._id, { ...emptyBundle() }]))
+  const links = new Map<Ref<Doc>, Ref<DocumentMeta>>()
+
+  const link = (ref: Ref<Doc>, lookup: Ref<Doc>): void => {
+    const meta = links.get(lookup)
+    if (meta !== undefined) links.set(ref, meta)
+  }
+
+  const relink = (ref: Ref<Doc>, prop: keyof DocumentBundle, obj: DocumentBundle[typeof prop][0]): void => {
+    const meta = links.get(ref)
+    if (meta !== undefined) bundles.get(meta)?.[prop].push(obj as any)
+  }
+
+  for (const m of all.DocumentMeta) links.set(m._id, m._id) // DocumentMeta -> DocumentMeta
+  for (const m of all.ProjectMeta) links.set(m._id, m.meta) // ProjectMeta -> DocumentMeta
+  for (const m of all.ProjectDocument) {
+    link(m._id, m.attachedTo) // ProjectDocument -> ProjectMeta
+    link(m.document, m.attachedTo) // ControlledDocument -> ProjectMeta
+  }
+  for (const m of all.ControlledDocument) link(m.changeControl, m.attachedTo) // ChangeControl -> ControlledDocument
+  for (const m of all.DocumentRequest) link(m._id, m.attachedTo) // DocumentRequest -> ControlledDocument
+  for (const m of all.DocumentSnapshot) link(m._id, m.attachedTo) // DocumentSnapshot -> ControlledDocument
+  for (const m of all.ChatMessage) link(m._id, m.attachedTo) // ChatMessage -> (ControlledDocument | ChatMessage)
+  for (const m of all.TagReference) link(m._id, m.attachedTo) // TagReference -> ControlledDocument
+  for (const m of all.Attachment) link(m._id, m.attachedTo) // Attachment -> (ControlledDocument | ChatMessage)
+
+  let key: keyof DocumentBundle
+  for (key in all) {
+    all[key].forEach((value) => {
+      relink(value._id, key, value)
+    })
+  }
+
+  return { bundles: Array.from(bundles.values()), links }
 }
 
 export async function findAllDocumentBundles (
@@ -296,40 +460,7 @@ export async function findAllDocumentBundles (
     ...all.ControlledDocument.map((p) => p._id)
   ])
 
-  const bundles = new Map<Ref<DocumentMeta>, DocumentBundle>(all.DocumentMeta.map((m) => [m._id, { ...emptyBundle() }]))
-  const links = new Map<Ref<Doc>, Ref<DocumentMeta>>()
-
-  const link = (ref: Ref<Doc>, lookup: Ref<Doc>): void => {
-    const meta = links.get(lookup)
-    if (meta !== undefined) links.set(ref, meta)
-  }
-
-  const relink = (ref: Ref<Doc>, prop: keyof DocumentBundle, obj: DocumentBundle[typeof prop][0]): void => {
-    const meta = links.get(ref)
-    if (meta !== undefined) bundles.get(meta)?.[prop].push(obj as any)
-  }
-
-  for (const m of all.DocumentMeta) links.set(m._id, m._id) // DocumentMeta -> DocumentMeta
-  for (const m of all.ProjectMeta) links.set(m._id, m.meta) // ProjectMeta -> DocumentMeta
-  for (const m of all.ProjectDocument) {
-    link(m._id, m.attachedTo) // ProjectDocument -> ProjectMeta
-    link(m.document, m.attachedTo) // ControlledDocument -> ProjectMeta
-  }
-  for (const m of all.ControlledDocument) link(m.changeControl, m.attachedTo) // ChangeControl -> ControlledDocument
-  for (const m of all.DocumentRequest) link(m._id, m.attachedTo) // DocumentRequest -> ControlledDocument
-  for (const m of all.DocumentSnapshot) link(m._id, m.attachedTo) // DocumentSnapshot -> ControlledDocument
-  for (const m of all.ChatMessage) link(m._id, m.attachedTo) // ChatMessage -> (ControlledDocument | ChatMessage)
-  for (const m of all.TagReference) link(m._id, m.attachedTo) // TagReference -> ControlledDocument
-  for (const m of all.Attachment) link(m._id, m.attachedTo) // Attachment -> (ControlledDocument | ChatMessage)
-
-  let key: keyof DocumentBundle
-  for (key in all) {
-    all[key].forEach((value) => {
-      relink(value._id, key, value)
-    })
-  }
-
-  return Array.from(bundles.values())
+  return compileBundles(all).bundles
 }
 
 export async function findOneDocumentBundle (
@@ -372,7 +503,7 @@ async function _buildDocumentTransferContext (
 
   const docIds = new Set<Ref<DocumentMeta>>(request.sourceDocumentIds)
   for (const id of request.sourceDocumentIds) {
-    sourceTree.getDescendants(id).forEach((d) => docIds.add(d))
+    sourceTree.descendantsOf(id).forEach((d) => docIds.add(d))
   }
 
   const bundles = await findAllDocumentBundles(client, Array.from(docIds))
