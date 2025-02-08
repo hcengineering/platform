@@ -33,6 +33,7 @@
     themeStore,
     getWeekDayNames,
     getLocalWeekStart,
+    hasLocalWeekStart,
     type DropdownTextItem
   } from '@hcengineering/ui'
   import { loginId } from '@hcengineering/login'
@@ -125,12 +126,13 @@
   }
 
   const weekInfoFirstDay: number = getLocalWeekStart()
+  const hasWeekInfo: boolean = hasLocalWeekStart()
   const weekNames = getWeekDayNames()
   let items: DropdownTextItem[] = []
   let selected: string
 
   $: translateCB(
-    setting.string.SystemSetupString,
+    hasWeekInfo ? setting.string.SystemSetupString : setting.string.DefaultString,
     { day: weekNames?.get(weekInfoFirstDay)?.toLowerCase() ?? '' },
     $themeStore.language,
     (r) => {

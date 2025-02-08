@@ -125,6 +125,7 @@
     "Calendar": "Calendario",
     "StartOfTheWeek": "Inicio de la semana",
     "SystemSetupString": "Configuración del sistema ({day})",
+    "DefaultString": "Predeterminado ({day})",
     "AddAttribute": "Añadir atributo"
   }
 }
