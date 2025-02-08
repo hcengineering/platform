@@ -21,7 +21,7 @@
     "Major": "Hauptversion",
     "Minor": "Nebenversion",
     "Patch": "Patch",
-    "DocumentApprovals": "Prüfungen und Genehmigungen",
+    "ValidationWorkflow": "Validierungsworkflow",
     "ChangeOwner": "Dokumentenbesitzer ändern",
     "ChangeOwnerHintBeginning": "Übertragen Sie den Besitz des",
     "ChangeOwnerHintEnd": "an eine andere Person.",

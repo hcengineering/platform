@@ -401,6 +401,10 @@ export const documentOperation: MigrateOperation = {
       {
         state: 'accounts-to-social-ids',
         func: migrateAccountsToSocialIds
+      },
+      {
+        state: 'migrateEmbeddingsRefs',
+        func: migrateEmbeddingsRefs
       }
     ])
   },
@@ -415,4 +419,14 @@ async function migrateEmbeddings (client: MigrationClient): Promise<void> {
     { _class: attachment.class.Embedding }
   )
   await client.move(DOMAIN_DOCUMENT, { _class: attachment.class.Embedding }, DOMAIN_ATTACHMENT)
+}
+
+async function migrateEmbeddingsRefs (client: MigrationClient): Promise<void> {
+  const _class = 'document:class:DocumentEmbedding'
+
+  await client.update(DOMAIN_ACTIVITY, { attachedToClass: _class }, { attachedToClass: attachment.class.Embedding })
+  await client.update(DOMAIN_ACTIVITY, { objectClass: _class }, { objectClass: attachment.class.Embedding })
+  await client.update(DOMAIN_NOTIFICATION, { attachedToClass: _class }, { attachedToClass: attachment.class.Embedding })
+  await client.update(DOMAIN_TX, { objectClass: _class }, { objectClass: attachment.class.Embedding })
+  await client.update(DOMAIN_TX, { 'tx.objectClass': _class }, { 'tx.objectClass': attachment.class.Embedding })
 }

@@ -83,6 +83,8 @@
     "Language": "Language",
     "Kick": "Kick",
     "WithAudio": "Include system audio",
-    "ShareWithAudioTooltip": "Share your screen with system audio. Restart screen share to apply changes."
+    "ShareWithAudioTooltip": "Share your screen with system audio. Restart screen share to apply changes.",
+    "MicPermission": "Microphone not found, check browser permissions",
+    "CamPermission": "Camera not found, check browser permissions"
   }
 }
