@@ -81,13 +81,13 @@ jobs:
         run: node common/scripts/install-run-rush.js model-version
 
       - name: Building...
-        run: node common/scripts/install-run-rush.js build -p 20
+        run: node common/scripts/install-run-rush.js build -p max
 
       - name: Bundle...
-        run: node common/scripts/install-run-rush.js bundle -p 20
+        run: node common/scripts/install-run-rush.js bundle -p max
 
       - name: Validate...
-        run: node common/scripts/install-run-rush.js validate -p 20
+        run: node common/scripts/install-run-rush.js validate -p max
 
       - name: Cache build results
         uses: actions/cache@v4
@@ -223,7 +223,7 @@ jobs:
         run: node common/scripts/install-run-rush.js install
 
       - name: Docker Build
-        run: node common/scripts/install-run-rush.js docker:build  -p 20
+        run: node common/scripts/install-run-rush.js docker:build  -p max
         env:
           DOCKER_CLI_HINTS: false
       - name: Prepare server
@@ -340,7 +340,7 @@ jobs:
         run: node common/scripts/install-run-rush.js install
 
       - name: Docker Build
-        run: node common/scripts/install-run-rush.js docker:build  -p 20
+        run: node common/scripts/install-run-rush.js docker:build  -p max
         env:
           DOCKER_CLI_HINTS: false
       - name: Prepare server
@@ -405,7 +405,7 @@ jobs:
         run: node common/scripts/install-run-rush.js install
 
       - name: Docker Build
-        run: node common/scripts/install-run-rush.js docker:build  -p 20
+        run: node common/scripts/install-run-rush.js docker:build  -p max
         env:
           DOCKER_CLI_HINTS: false
       - name: Configure /etc/hosts
@@ -590,7 +590,7 @@ jobs:
       - name: Model version from git tags
         run: node common/scripts/install-run-rush.js model-version
       - name: Package
-        run: node common/scripts/install-run-rush.js package --to desktop  -p 20 -v
+        run: node common/scripts/install-run-rush.js package --to desktop  -p max -v
       - name: Package JSON
         run: |
           cd desktop-package
