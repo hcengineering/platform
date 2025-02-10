@@ -68,12 +68,13 @@ import {
   shutdownPostgres
 } from '@hcengineering/postgres'
 import type { StorageAdapter } from '@hcengineering/server-core'
-import { getAccountDBUrl } from './__start'
+import { getAccountDBUrl, getMongoDBUrl } from './__start'
 // import { fillGithubUsers, fixAccountEmails, renameAccount } from './account'
 import { changeConfiguration } from './configuration'
 import { reindexWorkspace } from './fulltext'
 
 import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
+import { moveAccountDbFromMongoToPG } from './db'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -2094,20 +2095,20 @@ export function devTool (
   //   }
   // )
 
-  // program.command('move-account-db-to-pg').action(async () => {
-  // const { dbUrl } = prepareTools()
-  // const mongodbUri = getMongoDBUrl()
+  program.command('move-account-db-to-pg').action(async () => {
+    const { dbUrl } = prepareTools()
+    const mongodbUri = getMongoDBUrl()
 
-  // if (mongodbUri === dbUrl) {
-  //   throw new Error('MONGO_URL and DB_URL are the same')
-  // }
+    if (mongodbUri === dbUrl) {
+      throw new Error('MONGO_URL and DB_URL are the same')
+    }
 
-  // await withAccountDatabase(async (pgDb) => {
-  //   await withAccountDatabase(async (mongoDb) => {
-  //     await moveAccountDbFromMongoToPG(toolCtx, mongoDb, pgDb)
-  //   }, mongodbUri)
-  // }, dbUrl)
-  // })
+    await withAccountDatabase(async (pgDb) => {
+      await withAccountDatabase(async (mongoDb) => {
+        await moveAccountDbFromMongoToPG(toolCtx, mongoDb, pgDb)
+      }, mongodbUri)
+    }, dbUrl)
+  })
 
   // program
   // .command('perfomance')
@@ -2163,29 +2164,6 @@ export function devTool (
   //     })
 
   //     console.log('Attempts counter for workspace', workspace, 'has been reset')
-  //   })
-  // })
-
-  // program
-  // .command('generate-uuid-workspaces')
-  // .description('generate uuids for all workspaces which are missing it')
-  // .option('-d, --dryrun', 'Dry run', false)
-  // .action(async (cmd: { dryrun: boolean }) => {
-  //   await withAccountDatabase(async (db) => {
-  //     console.log('generate uuids for all workspaces which are missing it')
-  //     await generateUuidMissingWorkspaces(toolCtx, db, cmd.dryrun)
-  //   })
-  // })
-
-  // program
-  // .command('update-data-wsid-to-uuid')
-  // .description('updates workspaceId in pg/cr to uuid')
-  // .option('-d, --dryrun', 'Dry run', false)
-  // .action(async (cmd: { dryrun: boolean }) => {
-  //   await withAccountDatabase(async (db) => {
-  //     console.log('updates workspaceId in pg/cr to uuid')
-  //     const { dbUrl } = prepareTools()
-  //     await updateDataWorkspaceIdToUuid(toolCtx, db, dbUrl, cmd.dryrun)
   //   })
   // })
 

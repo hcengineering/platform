@@ -612,7 +612,7 @@ export class PostgresAccountDB implements AccountDB {
 
   async setPassword (accountUuid: PersonUuid, hash: Buffer, salt: Buffer): Promise<void> {
     await this
-      .client`UPSERT INTO ${this.client(this.account.getPasswordsTableName())} (account_uuid, hash, salt) VALUES (${accountUuid}, ${hash as unknown as Uint8Array}, ${salt as unknown as Uint8Array})`
+      .client`UPSERT INTO ${this.client(this.account.getPasswordsTableName())} (account_uuid, hash, salt) VALUES (${accountUuid}, ${hash.buffer as any}::bytea, ${salt.buffer as any}::bytea)`
   }
 
   async resetPassword (accountUuid: PersonUuid): Promise<void> {
@@ -639,9 +639,9 @@ export class PostgresAccountDB implements AccountDB {
       $$ LANGUAGE SQL;
 
       /* ======= T Y P E S ======= */
-      CREATE TYPE global_account.social_id_type AS ENUM ('email', 'github', 'google', 'phone', 'oidc', 'huly', 'telegram');
-      CREATE TYPE global_account.location AS ENUM ('kv', 'weur', 'eeur', 'wnam', 'enam', 'apac');
-      CREATE TYPE global_account.workspace_role AS ENUM ('OWNER', 'MAINTAINER', 'USER', 'GUEST', 'DOCGUEST');
+      CREATE TYPE IF NOT EXISTS global_account.social_id_type AS ENUM ('email', 'github', 'google', 'phone', 'oidc', 'huly', 'telegram');
+      CREATE TYPE IF NOT EXISTS global_account.location AS ENUM ('kv', 'weur', 'eeur', 'wnam', 'enam', 'apac');
+      CREATE TYPE IF NOT EXISTS global_account.workspace_role AS ENUM ('OWNER', 'MAINTAINER', 'USER', 'GUEST', 'DOCGUEST');
 
       /* ======= P E R S O N ======= */
       CREATE TABLE IF NOT EXISTS global_account.person (
@@ -702,9 +702,9 @@ export class PostgresAccountDB implements AccountDB {
           branding STRING,
           location global_account.location,
           region STRING,
-          created_by UUID NOT NULL, -- account uuid
+          created_by UUID, -- account uuid
           created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
-          billing_account UUID NOT NULL,
+          billing_account UUID,
           CONSTRAINT workspace_pk PRIMARY KEY (uuid),
           CONSTRAINT workspace_url_unique UNIQUE (url),
           CONSTRAINT workspace_created_by_fk FOREIGN KEY (created_by) REFERENCES global_account.account(uuid),
@@ -759,8 +759,10 @@ export class PostgresAccountDB implements AccountDB {
           email_pattern STRING,
           remaining_uses INT2,
           role global_account.workspace_role NOT NULL DEFAULT 'USER',
+          migrated_from STRING,
           CONSTRAINT invite_pk PRIMARY KEY (id),
           INDEX workspace_invite_idx (workspace_uuid),
+          INDEX migrated_from_idx (migrated_from),
           CONSTRAINT invite_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES global_account.workspace(uuid)
       );
     `
