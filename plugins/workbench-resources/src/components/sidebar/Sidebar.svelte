@@ -13,16 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { addTxListener, createQuery, getClient, removeTxListener } from '@hcengineering/presentation'
-  import { WidgetPreference, SidebarEvent, TxSidebarEvent, OpenSidebarWidgetParams } from '@hcengineering/workbench'
   import { Tx } from '@hcengineering/core'
+  import { addTxListener, createQuery, getClient, removeTxListener } from '@hcengineering/presentation'
+  import { panelstore } from '@hcengineering/ui'
+  import { OpenSidebarWidgetParams, SidebarEvent, TxSidebarEvent, WidgetPreference } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
-  import { panelstore, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   import workbench from '../../plugin'
   import { createWidgetTab, openWidget, sidebarStore, SidebarVariant } from '../../sidebar'
-  import SidebarMini from './SidebarMini.svelte'
   import SidebarExpanded from './SidebarExpanded.svelte'
+  import SidebarMini from './SidebarMini.svelte'
 
   const client = getClient()
 
@@ -37,18 +37,18 @@
   $: mini = $sidebarStore.variant === SidebarVariant.MINI
   $: if ((!mini || mini) && $panelstore.panel?.refit !== undefined) $panelstore.panel.refit()
 
-  function txListener (tx: Tx): void {
-    if (tx._class === workbench.class.TxSidebarEvent) {
-      const evt = tx as TxSidebarEvent
-      if (evt.event === SidebarEvent.OpenWidget) {
-        const params = evt.params as OpenSidebarWidgetParams
-        const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: params.widget })[0]
-        if (widget === undefined) return
-        if (params.tab !== undefined) {
-          createWidgetTab(widget, params.tab)
-        } else {
-          openWidget(widget)
-        }
+  function txListener (txes: Tx[]): void {
+    const evt = txes.findLast(
+      (it) => it._class === workbench.class.TxSidebarEvent && evt.event === SidebarEvent.OpenWidget
+    ) as TxSidebarEvent
+    if (evt !== undefined) {
+      const params = evt.params as OpenSidebarWidgetParams
+      const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: params.widget })[0]
+      if (widget === undefined) return
+      if (params.tab !== undefined) {
+        createWidgetTab(widget, params.tab)
+      } else {
+        openWidget(widget)
       }
     }
   }
