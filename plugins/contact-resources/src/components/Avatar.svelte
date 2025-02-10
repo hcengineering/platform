@@ -57,6 +57,7 @@
   export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
   export let borderColor: number | undefined = undefined
   export let showStatus: boolean = false
+  export let adaptiveName: boolean = false
 
   export function pulse (): void {
     avatarInst.pulse()
@@ -143,6 +144,7 @@
       {bColor}
       bind:element
       withStatus
+      {adaptiveName}
     />
     <div class="hulyAvatar-statusMarker {size}" class:online={isOnline} class:offline={!isOnline} />
   </div>
@@ -158,5 +160,6 @@
     {color}
     {bColor}
     bind:element
+    {adaptiveName}
   />
 {/if}
