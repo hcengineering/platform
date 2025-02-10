@@ -51,10 +51,10 @@ importers:
         version: 5.0.0
       '@livekit/krisp-noise-filter':
         specifier: ^0.2.16
-        version: 0.2.16(livekit-client@2.8.1)
+        version: 0.2.16(livekit-client@2.9.0)
       '@livekit/track-processors':
         specifier: ^0.3.3
-        version: 0.3.3(livekit-client@2.8.1)
+        version: 0.3.3(livekit-client@2.9.0)
       '@octokit/types':
         specifier: ^12.0.0
         version: 12.6.0
@@ -1733,8 +1733,8 @@ importers:
         specifier: ^1.9.46
         version: 1.10.56
       livekit-client:
-        specifier: ^2.8.1
-        version: 2.8.1
+        specifier: ^2.9.0
+        version: 2.9.0
       livekit-server-sdk:
         specifier: ^2.0.10
         version: 2.6.0
@@ -3273,8 +3273,8 @@ packages:
   '@livekit/protocol@1.19.1':
     resolution: {integrity: sha512-PQYIuqRv++fRik9tKulJ0C0tT5O4cNviBA7OxwLTCBFDxJpve8ua8/JZ+nK+7r4j2KbLfVjsJYop9wcTCgRn7Q==}
 
-  '@livekit/protocol@1.30.0':
-    resolution: {integrity: sha512-SDI9ShVKj8N3oOSinr8inaxD3FXgmgoJlqN35uU/Yx1sdoDeQbzAuBFox7bYjM+VhnZ1V22ivIDjAsKr00H+XQ==}
+  '@livekit/protocol@1.33.0':
+    resolution: {integrity: sha512-361mBlFgI3nvn8oSQIL38gDUBGbOSwsEOqPgX0c1Jwz75/sD/TTvPeAM4zAz6OrV5Q4vI4Ruswecnyv5SG4oig==}
 
   '@livekit/track-processors@0.3.3':
     resolution: {integrity: sha512-C5mBWe34ie0pfhCf9zAD65D26ZytzW/xGrj8Zc1BGh5kLISFDVQlefO78LZWw9K5saTamk60O4fzSCKqWMPMLA==}
@@ -4009,7 +4009,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop@file:projects/desktop.tgz':
-    resolution: {integrity: sha512-VwFxHKKqrH1hk0cB0uv02hYLr4JVbOXHSD6EZlU5As2Xu2FhCHbzj/1t8u5rFCumYM/q77ZDWSVfowoWcPdvJA==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-8we0EU2OgAaGXO+0DTj+BXro2vDokwXNGpKcVrzj9BbIvn6+3+BoRJJ1QcWwFa36XKnGuIKkkWMgMRdB6Quv9A==, tarball: file:projects/desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/devmodel-resources@file:projects/devmodel-resources.tgz':
@@ -4181,7 +4181,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/love-resources@file:projects/love-resources.tgz':
-    resolution: {integrity: sha512-ctWHaA5PFXbMrLSakcpvUMDSk+62l7i+y19Cf6+Qg8jUfjo6fxRY+Onjz+Ml0vRiLMSuZq2WLu9MR4S6sTyJkw==, tarball: file:projects/love-resources.tgz}
+    resolution: {integrity: sha512-mNrDaH4UuKvs9Qk030LXdpFGVk6u9PQaXSwnbMT7JihP2pdoMwG116biNgqzvr0jXQ9f12Gp4Q6Y7wj5oM9jvg==, tarball: file:projects/love-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/love@file:projects/love.tgz':
@@ -4865,7 +4865,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-github-model@file:projects/server-github-model.tgz':
-    resolution: {integrity: sha512-1qQ8IXhyHSiV5P+M7sGq0QHkkAG2n2DK3knDQJv/xzOQamJ6kcr2nlaqtAD48LfO1wVTtUkjwYwE9RbAEgpl5w==, tarball: file:projects/server-github-model.tgz}
+    resolution: {integrity: sha512-U7kynRwConx+S1nLfFluVkWJtFKCEMJRIHx/oN1OFy2zmIGSw1o7z1NIgEYAiYogj8zP1SPYoVKPQTSkSosKqw==, tarball: file:projects/server-github-model.tgz}
     version: 0.0.0
 
   '@rush-temp/server-github-resources@file:projects/server-github-resources.tgz':
@@ -10164,8 +10164,8 @@ packages:
   linkifyjs@4.2.0:
     resolution: {integrity: sha512-pCj3PrQyATaoTYKHrgWRF3SJwsm61udVh+vuls/Rl6SptiDhgE7ziUIudAedRY9QEfynmM7/RmLEfPUyw1HPCw==}
 
-  livekit-client@2.8.1:
-    resolution: {integrity: sha512-HPv9iHNrnBANI9ucK7CKZspx0sBZK3hjR2EbwaV08+J3RM9+tNGL2ob2n76nxJLEZG7LzdWlLZdbr4fQBP6Hkg==}
+  livekit-client@2.9.0:
+    resolution: {integrity: sha512-7YwDXKb1aA/W1fedghc6Vn/ykHdoVHFr5ujOIja+YR4dsqjpWHNjQzZNbrMFu37R5cBiJ/7zK/Zs7r/amHjBMA==}
 
   livekit-server-sdk@2.6.0:
     resolution: {integrity: sha512-lt9VZN8vTPG/P5tj4ofwLj/HTbt343AThbAWFk70OYbQucAOdv+8w00Wv9RjMndSkHaXheXOQHg8fhGOlYXmug==}
@@ -15098,9 +15098,9 @@ snapshots:
 
   '@lifeomic/attempt@3.0.3': {}
 
-  '@livekit/krisp-noise-filter@0.2.16(livekit-client@2.8.1)':
+  '@livekit/krisp-noise-filter@0.2.16(livekit-client@2.9.0)':
     dependencies:
-      livekit-client: 2.8.1
+      livekit-client: 2.9.0
 
   '@livekit/mutex@1.1.1': {}
 
@@ -15108,15 +15108,15 @@ snapshots:
     dependencies:
       '@bufbuild/protobuf': 1.10.0
 
-  '@livekit/protocol@1.30.0':
+  '@livekit/protocol@1.33.0':
     dependencies:
       '@bufbuild/protobuf': 1.10.0
 
-  '@livekit/track-processors@0.3.3(livekit-client@2.8.1)':
+  '@livekit/track-processors@0.3.3(livekit-client@2.9.0)':
     dependencies:
       '@mediapipe/holistic': 0.5.1675471629
       '@mediapipe/tasks-vision': 0.10.9
-      livekit-client: 2.8.1
+      livekit-client: 2.9.0
 
   '@malept/cross-spawn-promise@2.0.0':
     dependencies:
@@ -17380,7 +17380,7 @@ snapshots:
       file-loader: 6.2.0(webpack@5.97.1)
       fork-ts-checker-webpack-plugin: 9.0.2(typescript@5.3.3)(webpack@5.97.1)
       html-webpack-plugin: 5.6.0(webpack@5.97.1)
-      livekit-client: 2.8.1
+      livekit-client: 2.9.0
       mini-css-extract-plugin: 2.8.0(webpack@5.97.1)
       node-loader: 2.0.0(webpack@5.97.1)
       postcss: 8.4.35
@@ -18747,8 +18747,8 @@ snapshots:
 
   '@rush-temp/love-resources@file:projects/love-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
     dependencies:
-      '@livekit/krisp-noise-filter': 0.2.16(livekit-client@2.8.1)
-      '@livekit/track-processors': 0.3.3(livekit-client@2.8.1)
+      '@livekit/krisp-noise-filter': 0.2.16(livekit-client@2.9.0)
+      '@livekit/track-processors': 0.3.3(livekit-client@2.9.0)
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
@@ -18759,7 +18759,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      livekit-client: 2.8.1
+      livekit-client: 2.9.0
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
       sass: 1.71.1
@@ -32168,10 +32168,10 @@ snapshots:
 
   linkifyjs@4.2.0: {}
 
-  livekit-client@2.8.1:
+  livekit-client@2.9.0:
     dependencies:
       '@livekit/mutex': 1.1.1
-      '@livekit/protocol': 1.30.0
+      '@livekit/protocol': 1.33.0
       events: 3.3.0
       loglevel: 1.9.1
       sdp-transform: 2.14.2
