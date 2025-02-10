@@ -41,7 +41,15 @@ export class ApiEndpoint {
     return token
   }
 
-  async createWorkspaceWithLogin (workspaceName: string, username: string, password: string): Promise<any> {
+  async createWorkspaceWithLogin (
+    workspaceName: string,
+    username: string,
+    password: string
+  ): Promise<{
+      workspace: string
+      workspaceId: string
+      workspaceName: string
+    }> {
     const token = await this.loginAndGetToken(username, password)
     const url = this.baseUrl
     const payload = {
@@ -50,7 +58,7 @@ export class ApiEndpoint {
     }
     const headers = this.getDefaultHeaders(token)
     const response = await this.request.post(url, { data: payload, headers })
-    return await response.json()
+    return (await response.json()).result
   }
 
   async createAccount (username: string, password: string, firstName: string, lastName: string): Promise<any> {

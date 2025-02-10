@@ -24,13 +24,14 @@ const mode = process.env.NODE_ENV || 'development'
 const prod = mode === 'production'
 const clientType = process.env.CLIENT_TYPE ?? ''
 const devServer = clientType === 'dev-server'
+const devServerTest = clientType === 'dev-server-test'
 const devServerWorker = clientType === 'dev-worker'
 const devServerWorkerLocal = clientType === 'dev-worker-local'
 const devProduction = clientType === 'dev-production'
 const devProductionHuly = clientType === 'dev-huly'
 const devProductionBold = clientType === 'dev-bold'
 const dev =
-  (process.env.CLIENT_TYPE ?? '') === 'dev' || devServer || devProduction || devProductionHuly || devProductionBold || devServerWorker || devServerWorkerLocal
+  (process.env.CLIENT_TYPE ?? '') === 'dev' || devServer || devProduction || devProductionHuly || devProductionBold || devServerWorker || devServerWorkerLocal || devServerTest
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 
 const { EsbuildPlugin } = require('esbuild-loader')
@@ -60,6 +61,36 @@ const devProxy = {
   },
   '/import': {
     target: 'http://localhost:8087',
+    changeOrigin: true,
+    logLevel: 'debug'
+  },
+  '/rekoni/recognize': {
+    target: 'http://localhost:4004',
+    changeOrigin: true,
+    pathRewrite: { '^/rekoni/recognize': '/recognize' },
+    logLevel: 'debug'
+  }
+}
+
+const devProxyTest = {
+  '/account': {
+    target: 'http://localhost:3003',
+    changeOrigin: true,
+    pathRewrite: { '^/account': '' },
+    logLevel: 'debug'
+  },
+  '/files': {
+    target: 'http://localhost:8083',
+    changeOrigin: true,
+    logLevel: 'debug'
+  },
+  '/api/v1': {
+    target: 'http://localhost:8083',
+    changeOrigin: true,
+    logLevel: 'debug'
+  },
+  '/import': {
+    target: 'http://localhost:8083',
     changeOrigin: true,
     logLevel: 'debug'
   },
@@ -148,6 +179,7 @@ const proxy = {
   'dev-worker': devProxy,
   'dev-worker-local': devProxy,
   'dev-server': devProxy,
+  'dev-server-test': devProxyTest,
   'dev-production': devFrontProxy,
   'dev-bold': devBoldProxy,
   'dev-huly': devHulyProxy

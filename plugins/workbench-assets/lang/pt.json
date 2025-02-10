@@ -36,6 +36,7 @@
     "OpenInSidebarNewTab": "Abrir em uma nova aba da barra lateral",
     "ConfigureWidgets": "Configurar widgets",
     "Tab": "Aba",
-    "WorkspaceIsArchived": "O espaço de trabalho está arquivado por estar inativo, por favor, entre em contato conosco para restaurá-lo..."
+    "WorkspaceIsArchived": "O espaço de trabalho está arquivado por estar inativo, por favor, entre em contato conosco para restaurá-lo...",
+    "WorkspaceIsMigrating": "O espaço de trabalho está sendo atualizado. Por favor, aguarde..."
   }
 }

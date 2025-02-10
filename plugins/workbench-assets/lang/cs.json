@@ -36,6 +36,7 @@
     "OpenInSidebarNewTab": "Otevřít v postranním panelu na nové kartě",
     "ConfigureWidgets": "Nastavit widgety",
     "Tab": "Karta",
-    "WorkspaceIsArchived": "Pracovní prostor je archivován kvůli nečinnosti. Kontaktujte nás prosím pro obnovení..."
+    "WorkspaceIsArchived": "Pracovní prostor je archivován kvůli nečinnosti. Kontaktujte nás prosím pro obnovení...",
+    "WorkspaceIsMigrating": "Pracovní prostor je aktualizován. Prosím čekejte..."
   }
 }

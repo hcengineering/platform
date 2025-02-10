@@ -19,6 +19,7 @@ import {
   type MeasureContext,
   type Tx,
   type Version,
+  type WorkspaceId,
   type WorkspaceUpdateEvent,
   getBranding,
   getWorkspaceId,
@@ -30,6 +31,7 @@ import {
 import { type MigrateOperation, type ModelLogger } from '@hcengineering/model'
 import {
   getPendingWorkspace,
+  getTransactorEndpoint,
   updateWorkspaceInfo,
   withRetryConnUntilSuccess,
   withRetryConnUntilTimeout,
@@ -399,6 +401,20 @@ export class WorkspaceWorker {
     }
   }
 
+  async sendTransactorMaitenance (token: string, ws: WorkspaceId): Promise<void> {
+    try {
+      let serverEndpoint = await getTransactorEndpoint(token)
+      serverEndpoint = serverEndpoint.replaceAll('wss://', 'https://').replace('ws://', 'http://')
+      console.log('sending event', serverEndpoint, ws.name)
+      await fetch(serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close`, {
+        method: 'PUT'
+      })
+    } catch (err: any) {
+      console.log(err)
+      // Ignore
+    }
+  }
+
   private async doWorkspaceOperation (
     ctx: MeasureContext,
     workspace: BaseWorkspaceInfo,
@@ -427,6 +443,8 @@ export class WorkspaceWorker {
       case 'archiving-pending-backup':
       case 'archiving-backup': {
         await sendEvent('archiving-backup-started', 0)
+
+        await this.sendTransactorMaitenance(token, { name: workspace.workspace })
         if (await this.doBackup(ctx, workspace, opt, true)) {
           await sendEvent('archiving-backup-done', 100)
         }
@@ -449,6 +467,7 @@ export class WorkspaceWorker {
       case 'deleting': {
         // We should remove DB, not storages.
         await sendEvent('delete-started', 0)
+        await this.sendTransactorMaitenance(token, { name: workspace.workspace })
         try {
           await this.doCleanup(ctx, workspace, true)
         } catch (err: any) {
@@ -462,6 +481,7 @@ export class WorkspaceWorker {
       case 'migration-pending-backup':
       case 'migration-backup':
         await sendEvent('migrate-backup-started', 0)
+        await this.sendTransactorMaitenance(token, { name: workspace.workspace })
         if (await this.doBackup(ctx, workspace, opt, false)) {
           await sendEvent('migrate-backup-done', 100)
         }
@@ -470,6 +490,7 @@ export class WorkspaceWorker {
       case 'migration-clean': {
         // We should remove DB, not storages.
         await sendEvent('migrate-clean-started', 0)
+        await this.sendTransactorMaitenance(token, { name: workspace.workspace })
         try {
           await this.doCleanup(ctx, workspace, false)
         } catch (err: any) {
@@ -556,8 +577,6 @@ export class WorkspaceWorker {
           })
         },
         this.region,
-        archive,
-        archive,
         50000,
         ['blob'],
         sharedPipelineContextVars,
@@ -570,7 +589,7 @@ export class WorkspaceWorker {
         }
       )
       if (result) {
-        console.log('backup completed')
+        ctx.info('backup completed')
         return true
       }
     } finally {
@@ -633,7 +652,7 @@ export class WorkspaceWorker {
         }
       )
       if (result) {
-        console.log('backup completed')
+        ctx.info('restore completed')
         return true
       }
     } finally {

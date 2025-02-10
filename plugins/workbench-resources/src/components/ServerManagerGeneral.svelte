@@ -213,9 +213,9 @@
       <div class="p-3">2.</div>
       <Button
         icon={IconArrowRight}
-        label={getEmbeddedLabel('Reboot server')}
+        label={getEmbeddedLabel('Reboot workspace')}
         on:click={() => {
-          void fetch(endpoint + `/api/v1/manage?token=${token}&operation=reboot`, {
+          void fetch(endpoint + `/api/v1/manage?token=${token}&operation=force-close`, {
             method: 'PUT'
           })
         }}
