@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import core, { Doc, Hierarchy, Ref, Space, TxRemoveDoc } from '@hcengineering/core'
+  import core, { Doc, Hierarchy, Ref, Space, TxRemoveDoc, type Tx } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { addTxListener, contextStore, getClient, reduceCalls } from '@hcengineering/presentation'
   import { AnyComponent, Component } from '@hcengineering/ui'
@@ -28,8 +28,8 @@
 
   const client = getClient()
 
-  addTxListener((tx) => {
-    if (tx._class === core.class.TxRemoveDoc) {
+  addTxListener((txes: Tx[]) => {
+    for (const tx of txes.filter((it) => it._class === core.class.TxRemoveDoc)) {
       const docId = (tx as TxRemoveDoc<Doc>).objectId
       const provider = ListSelectionProvider.Find(docId)
       if (provider !== undefined) {

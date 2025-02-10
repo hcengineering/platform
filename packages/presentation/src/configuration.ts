@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { SortingOrder, type PluginConfiguration, type TxUpdateDoc } from '@hcengineering/core'
+import core, { SortingOrder, type PluginConfiguration, type Tx, type TxUpdateDoc } from '@hcengineering/core'
 import { getResourcePlugin, type Plugin, type Resource } from '@hcengineering/platform'
 import { writable } from 'svelte/store'
 import { addTxListener, createQuery } from '.'
@@ -46,13 +46,15 @@ export const configurationStore = writable<ConfigurationManager>(configuration)
 
 const configQuery = createQuery(true)
 
-addTxListener((tx) => {
-  if (tx._class === core.class.TxUpdateDoc) {
-    const cud = tx as TxUpdateDoc<PluginConfiguration>
-    if (cud.objectClass === core.class.PluginConfiguration) {
-      if (cud.operations.enabled !== undefined) {
-        // Plugin enabled/disabled we need to refresh
-        location.reload()
+addTxListener((txes: Tx[]) => {
+  for (const tx of txes) {
+    if (tx._class === core.class.TxUpdateDoc) {
+      const cud = tx as TxUpdateDoc<PluginConfiguration>
+      if (cud.objectClass === core.class.PluginConfiguration) {
+        if (cud.operations.enabled !== undefined) {
+          // Plugin enabled/disabled we need to refresh
+          location.reload()
+        }
       }
     }
   }
