@@ -9,7 +9,8 @@ import {
   generateId,
   type Ref,
   type Space,
-  TxOperations
+  TxOperations,
+  groupByArray
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -27,6 +28,8 @@ import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_VIEW } from '@hcengineering/model-view'
 
 import contact, { contactId, DOMAIN_CONTACT } from './index'
+import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION } from '@hcengineering/notification'
+import { DOMAIN_CHUNTER } from '@hcengineering/model-chunter'
 
 async function createEmployeeEmail (client: TxOperations): Promise<void> {
   const employees = await client.findAll(contact.mixin.Employee, {})
@@ -154,6 +157,31 @@ async function createPersonSpaces (client: MigrationClient): Promise<void> {
   }
 
   await client.create(DOMAIN_SPACE, Array.from(newSpaces.values()))
+}
+
+async function mergePersonSpaces (client: MigrationClient): Promise<void> {
+  const spaces = await client.find<PersonSpace>(DOMAIN_SPACE, { _class: contact.class.PersonSpace })
+  const spacesByPerson = groupByArray(spaces, (it) => it.person)
+
+  for (const [person, spaces] of spacesByPerson) {
+    const resultSpace = spaces[0]
+    const deletedSpaces = spaces.slice(1)
+
+    if (resultSpace == null || deletedSpaces.length === 0) {
+      continue
+    }
+
+    const deletedIds = deletedSpaces.map((it) => it._id)
+    const accounts = await client.model.findAll(contact.class.PersonAccount, { person })
+    const accountIds = accounts.map((it) => it._id)
+
+    await client.update(DOMAIN_DOC_NOTIFY, { space: { $in: deletedIds } }, { space: resultSpace._id })
+    await client.update(DOMAIN_NOTIFICATION, { space: { $in: deletedIds } }, { space: resultSpace._id })
+    await client.update(DOMAIN_CHUNTER, { space: { $in: deletedIds } }, { space: resultSpace._id })
+
+    await client.update(DOMAIN_SPACE, { _id: resultSpace._id }, { members: accountIds })
+    await client.deleteMany(DOMAIN_SPACE, { _id: { $in: deletedIds } })
+  }
 }
 
 export const contactOperation: MigrateOperation = {
@@ -300,6 +328,10 @@ export const contactOperation: MigrateOperation = {
       {
         state: 'create-person-spaces-v1',
         func: createPersonSpaces
+      },
+      {
+        state: 'merge-person-spaces-v1',
+        func: mergePersonSpaces
       }
     ])
   },
