@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Employee, Person, formatName } from '@hcengineering/contact'
-  import { employeeByIdStore, personIdByAccountId } from '@hcengineering/contact-resources'
+  import { employeeByIdStore, personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import documents, {
     DocumentRequest,
     emptyBundle,
@@ -53,7 +53,7 @@
       DocumentRequest: requests,
       DocumentSnapshot: $documentSnapshots
     },
-    (ref) => $personIdByAccountId.get(ref)
+    (ref) => $personRefByPersonIdStore.get(ref)
   )
 
   $: state = (doc ? workflow?.get(doc._id) ?? [] : [])[0]
