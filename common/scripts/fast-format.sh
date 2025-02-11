@@ -1,3 +1,4 @@
+#!/bin/bash
 echo $@
 BASE_BRANCH=${1:-develop}
 while [[ "$#" -gt 0 ]]; do
