@@ -47,6 +47,7 @@ import { type AnyComponent } from '@hcengineering/ui/src/types'
 import card from './plugin'
 
 export { cardId } from '@hcengineering/card'
+export * from './utils'
 
 const DOMAIN_CARD = 'card' as Domain
 

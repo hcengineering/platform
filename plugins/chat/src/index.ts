@@ -13,7 +13,10 @@
 // limitations under the License.
 //
 
+import { Ref } from '@hcengineering/core'
 import { plugin, IntlString, type Plugin, Asset } from '@hcengineering/platform'
+
+import { Channel, Thread } from './types'
 
 export * from './types'
 
@@ -21,14 +24,22 @@ export const chatId = 'chat' as Plugin
 
 const chat = plugin(chatId, {
   string: {
+    Channel: '' as IntlString,
+    Channels: '' as IntlString,
     Chat: '' as IntlString,
+    Description: '' as IntlString,
     Thread: '' as IntlString,
     Threads: '' as IntlString,
-    Title: '' as IntlString,
-    Description: '' as IntlString
+    Title: '' as IntlString
   },
   icon: {
-    ChatBubble: '' as Asset
+    ChatBubble: '' as Asset,
+    Thread: '' as Asset,
+    Channel: '' as Asset
+  },
+  masterTag: {
+    Channel: '' as Ref<Channel>,
+    Thread: '' as Ref<Thread>
   }
 })
 

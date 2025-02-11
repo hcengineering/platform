@@ -13,11 +13,14 @@
 // limitations under the License.
 //
 
-import { AccountRole } from '@hcengineering/core'
+import { AccountRole, ClassifierKind } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import workbench from '@hcengineering/model-workbench'
 import { chatId } from '@hcengineering/chat'
+import card from '@hcengineering/card'
+import setting from '@hcengineering/setting'
+import { createCardTableViewlet } from '@hcengineering/model-card'
 
 import chat from './plugin'
 
@@ -39,4 +42,41 @@ export function createModel (builder: Builder): void {
     },
     chat.app.Chat
   )
+
+  builder.createDoc(
+    card.class.MasterTag,
+    core.space.Model,
+    {
+      extends: card.class.Card,
+      label: chat.string.Thread,
+      kind: ClassifierKind.CLASS,
+      icon: chat.icon.Thread,
+      pluralLabel: chat.string.Threads
+    },
+    chat.masterTag.Thread
+  )
+
+  builder.createDoc(
+    card.class.MasterTag,
+    core.space.Model,
+    {
+      extends: card.class.Card,
+      label: chat.string.Channel,
+      kind: ClassifierKind.CLASS,
+      icon: chat.icon.Channel,
+      pluralLabel: chat.string.Channels
+    },
+    chat.masterTag.Channel
+  )
+
+  builder.mixin(chat.masterTag.Thread, core.class.Class, setting.mixin.Editable, {
+    value: true
+  })
+
+  builder.mixin(chat.masterTag.Channel, core.class.Class, setting.mixin.Editable, {
+    value: true
+  })
+
+  createCardTableViewlet(builder, chat.masterTag.Thread)
+  createCardTableViewlet(builder, chat.masterTag.Channel)
 }

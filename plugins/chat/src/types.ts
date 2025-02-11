@@ -13,5 +13,7 @@
 // limitations under the License.
 //
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Thread {}
+import { MasterTag } from '@hcengineering/card'
+
+export interface Thread extends MasterTag {}
+export interface Channel extends MasterTag {}

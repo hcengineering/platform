@@ -18,5 +18,7 @@ import chat from '@hcengineering/chat'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(chat.icon, {
-  ChatBubble: `${icons}#chat-bubble`
+  Channel: `${icons}#grid`,
+  ChatBubble: `${icons}#chat-bubble`,
+  Thread: `${icons}#message-multiple`
 })

@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
+    "@hcengineering/card": "^0.6.0",
     "@hcengineering/platform": "^0.6.11"
   },
   "repository": "https://github.com/hcengineering/platform",

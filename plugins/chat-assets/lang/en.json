@@ -1,9 +1,11 @@
 {
   "string": {
+    "Channel": "Channel",
+    "Channels": "Channels",
     "Chat": "Chat",
+    "Description": "Description",
     "Thread": "Thread",
     "Threads": "Threads",
-    "Title": "Title",
-    "Description": "Description"
+    "Title": "Title"
   }
 }
