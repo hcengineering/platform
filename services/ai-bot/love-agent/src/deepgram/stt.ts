@@ -30,7 +30,7 @@ import config from '../config.js'
 const KEEP_ALIVE_INTERVAL = 10 * 1000
 
 const dgSchema: LiveSchema = {
-  model: 'nova-2-general',
+  model: config.DeepgramModel,
   encoding: 'linear16',
   smart_format: true,
   endpointing: 500,
@@ -90,18 +90,22 @@ export class STT implements Stt {
   }
 
   subscribe (track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant): void {
-    if (this.trackBySid.has(publication.sid)) return
-    this.trackBySid.set(publication.sid, track)
-    this.participantBySid.set(publication.sid, participant)
+    const sid = publication.sid
+    if (sid === undefined) return
+    if (this.trackBySid.has(sid)) return
+    this.trackBySid.set(sid, track)
+    this.participantBySid.set(sid, participant)
     if (this.isInProgress) {
-      this.processTrack(publication.sid)
+      this.processTrack(sid)
     }
   }
 
   unsubscribe (_: RemoteTrack | undefined, publication: RemoteTrackPublication, participant: RemoteParticipant): void {
-    this.trackBySid.delete(publication.sid)
-    this.participantBySid.delete(participant.sid)
-    this.stopDeepgram(publication.sid)
+    const sid = publication.sid
+    if (sid === undefined) return
+    this.trackBySid.delete(sid)
+    this.participantBySid.delete(sid)
+    this.stopDeepgram(sid)
   }
 
   stopDeepgram (sid: string): void {
@@ -145,8 +149,8 @@ export class STT implements Stt {
     }, KEEP_ALIVE_INTERVAL)
 
     this.streamBySid.set(sid, stream)
-    this.dgConnectionBySid.set(track.sid, dgConnection)
-    this.intervalBySid.set(track.sid, interval)
+    this.dgConnectionBySid.set(sid, dgConnection)
+    this.intervalBySid.set(sid, interval)
 
     dgConnection.on(LiveTranscriptionEvents.Open, () => {
       dgConnection.on(LiveTranscriptionEvents.Transcript, (data: LiveTranscriptionEvent) => {
@@ -165,8 +169,7 @@ export class STT implements Stt {
       })
 
       dgConnection.on(LiveTranscriptionEvents.Close, (d) => {
-        console.log('Connection closed.', d, track.sid)
-        this.stopDeepgram(track.sid)
+        this.stopDeepgram(sid)
       })
 
       dgConnection.on(LiveTranscriptionEvents.Error, (err) => {

@@ -31,7 +31,6 @@ import activity, { type ActivityMessage, type ActivityReference } from '@hcengin
 import attachment from '@hcengineering/attachment'
 import { combineActivityMessages, sortActivityMessages } from '@hcengineering/activity-resources'
 import notification, { type DocNotifyContext } from '@hcengineering/notification'
-import chunter from '@hcengineering/chunter'
 
 export type LoadMode = 'forward' | 'backward'
 
@@ -309,7 +308,6 @@ export class ChannelDataProvider implements IChannelDataProvider {
     return {
       _id: {
         attachments: attachment.class.Attachment,
-        inlineButtons: chunter.class.InlineButton,
         reactions: activity.class.Reaction
       }
     }

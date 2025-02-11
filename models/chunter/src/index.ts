@@ -32,13 +32,10 @@ import {
   TChatMessage,
   TChatMessageViewlet,
   TChatSyncInfo,
-  TChunterExtension,
   TChunterSpace,
   TDirectMessage,
-  TInlineButton,
   TObjectChatPanel,
-  TThreadMessage,
-  TTypingInfo
+  TThreadMessage
 } from './types'
 
 export { chunterId } from '@hcengineering/chunter'
@@ -54,10 +51,7 @@ export function createModel (builder: Builder): void {
     TThreadMessage,
     TChatMessageViewlet,
     TObjectChatPanel,
-    TChatSyncInfo,
-    TInlineButton,
-    TTypingInfo,
-    TChunterExtension
+    TChatSyncInfo
   )
 
   builder.createDoc(
@@ -159,10 +153,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(chunter.class.ThreadMessage, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: chunter.component.ThreadMessagePresenter
-  })
-
-  builder.mixin(chunter.class.TypingInfo, core.class.Class, core.mixin.TransientConfiguration, {
-    broadcastOnly: true
   })
 
   builder.createDoc(
@@ -314,11 +304,6 @@ export function createModel (builder: Builder): void {
 
   defineActions(builder)
   defineNotifications(builder)
-
-  builder.mixin(chunter.class.InlineButton, core.class.Class, core.mixin.IndexConfiguration, {
-    indexes: [],
-    searchDisabled: true
-  })
 
   builder.mixin(chunter.class.ChatSyncInfo, core.class.Class, core.mixin.IndexConfiguration, {
     indexes: [],

@@ -15,10 +15,5 @@
 
 import { mergeIds } from '@hcengineering/platform'
 import aiBot, { aiBotId } from '@hcengineering/ai-bot'
-import type { AnyComponent } from '@hcengineering/ui/src/types'
 
-export default mergeIds(aiBotId, aiBot, {
-  component: {
-    OnboardingChannelPanelExtension: '' as AnyComponent
-  }
-})
+export default mergeIds(aiBotId, aiBot, {})

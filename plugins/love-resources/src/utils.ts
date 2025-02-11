@@ -113,10 +113,13 @@ export async function getToken (
 }
 
 function getTokenRoomName (roomName: string, roomId: Ref<Room>): string {
-  const loc = getCurrentLocation()
   const currentWorkspace = get(currentWorkspaceStore)
 
-  return `${currentWorkspace?.url ?? loc.path[1]}_${roomName}_${roomId}`
+  if (currentWorkspace == null) {
+    throw new Error('Current workspace not found')
+  }
+
+  return `${currentWorkspace.uuid}_${roomName}_${roomId}`
 }
 
 export const lk: LKRoom = new LKRoom({

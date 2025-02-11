@@ -14,10 +14,5 @@
 //
 
 import { type Resources } from '@hcengineering/platform'
-import { AnalyticsCollectorInlineAction } from './utils'
 
-export default async (): Promise<Resources> => ({
-  function: {
-    AnalyticsCollectorInlineAction
-  }
-})
+export default async (): Promise<Resources> => ({})

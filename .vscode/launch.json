@@ -566,7 +566,6 @@
         "MINIO_SECRET_KEY": "minioadmin",
         "SERVER_SECRET": "secret",
         "SERVICE_ID": "analytics-collector",
-        "SUPPORT_WORKSPACE": "09b65664-b3c3-4ea8-b9a1-c9688bde17f0",
         "ACCOUNTS_URL": "http://localhost:3000"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
@@ -586,7 +585,6 @@
         "MONGO_URL": "mongodb://localhost:27017",
         "PORT": "4010",
         "SERVER_SECRET": "secret",
-        "SUPPORT_WORKSPACE": "09b65664-b3c3-4ea8-b9a1-c9688bde17f0",
         "FIRST_NAME": "Jolie",
         "LAST_NAME": "AI",
         "PASSWORD": "password",

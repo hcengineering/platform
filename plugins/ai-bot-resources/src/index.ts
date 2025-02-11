@@ -14,12 +14,7 @@
 //
 
 import { type Resources } from '@hcengineering/platform'
-import OnboardingChannelPanelExtension from './components/OnboardingChannelAsideExtension.svelte'
 
 export * from './requests'
 
-export default async (): Promise<Resources> => ({
-  component: {
-    OnboardingChannelPanelExtension
-  }
-})
+export default async (): Promise<Resources> => ({})

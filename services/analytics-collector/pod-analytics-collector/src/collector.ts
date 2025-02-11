@@ -22,7 +22,7 @@ import { Db, Collection } from 'mongodb'
 import { WorkspaceClient } from './workspaceClient'
 import config from './config'
 import { SupportWsClient } from './supportWsClient'
-import { Action, OnboardingMessage } from './types'
+import { OnboardingMessage } from './types'
 
 const closeWorkspaceTimeout = 10 * 60 * 1000 // 10 minutes
 
@@ -192,24 +192,6 @@ export class Collector {
     const client = this.getSupportWorkspaceClient()
 
     await client.pushEvents(events, token.workspace, person, this.onboardingMessagesCollection)
-  }
-
-  async processAction (action: Action, token: Token): Promise<void> {
-    const ws = token.workspace
-
-    if (ws !== config.SupportWorkspace) {
-      return
-    }
-
-    const person = await this.getPerson(token.account, token.workspace)
-
-    if (person === undefined) {
-      return
-    }
-
-    const client = this.getSupportWorkspaceClient()
-
-    await client.processAction(action, person, this.onboardingMessagesCollection)
   }
 
   async close (): Promise<void> {

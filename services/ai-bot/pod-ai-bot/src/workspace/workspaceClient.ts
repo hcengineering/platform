@@ -12,82 +12,70 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import aiBot, {
-  aiBotAccount,
-  AIMessageEventRequest,
-  AITransferEventRequest,
+import {
+  aiBotEmailSocialId,
+  AIEventRequest,
   ConnectMeetingRequest,
   DisconnectMeetingRequest,
   IdentityResponse
 } from '@hcengineering/ai-bot'
-import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-collector'
 import attachment, { Attachment } from '@hcengineering/attachment'
-import chunter, {
-  ChatMessage,
-  type ChatWidgetTab,
-  DirectMessage,
-  ThreadMessage,
-  TypingInfo
-} from '@hcengineering/chunter'
-import contact, { AvatarType, combineName, getFirstName, getLastName, getName, Person } from '@hcengineering/contact'
+import chunter, { ChatMessage, ThreadMessage } from '@hcengineering/chunter'
+import contact, {
+  AvatarType,
+  combineName,
+  ensureEmployee,
+  getFirstName,
+  getLastName,
+  Person
+} from '@hcengineering/contact'
 import core, {
-  PersonId,
+  type Account,
+  AccountRole,
   Blob,
   Class,
   Client,
-  Data,
   Doc,
-  generateId,
   MeasureContext,
+  PersonId,
+  PersonUuid,
   RateLimiter,
   Ref,
+  SocialId,
   Space,
   Tx,
   TxCUD,
   TxOperations,
-  TxRemoveDoc,
-  type WorkspaceUuid,
-  type WorkspaceDataId
+  WorkspaceDataId,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { Room } from '@hcengineering/love'
-import { countTokens } from '@hcengineering/openai'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
-import { getOrCreateOnboardingChannel } from '@hcengineering/server-analytics-collector-resources'
-import { getAccountClient } from '@hcengineering/server-client'
-import { generateToken } from '@hcengineering/server-token'
-import { jsonToMarkup, MarkdownParser, markupToText } from '@hcengineering/text'
-import workbench, { SidebarEvent, TxSidebarEvent } from '@hcengineering/workbench'
 import fs from 'fs'
 import { WithId } from 'mongodb'
 import OpenAI from 'openai'
+import { Tiktoken } from 'js-tiktoken'
 
 import { StorageAdapter } from '@hcengineering/server-core'
 import config from '../config'
-import { AIControl } from '../controller'
 import { HistoryRecord } from '../types'
 import { createChatCompletionWithTools, requestSummary } from '../utils/openai'
-import { connectPlatform, getDirect } from '../utils/platform'
+import { connectPlatform } from '../utils/platform'
 import { LoveController } from './love'
-
-const MAX_LOGIN_DELAY_MS = 15 * 1000 // 15 ses
-const UPDATE_TYPING_TIMEOUT_MS = 1000
+import { DbStorage } from '../storage'
+import { jsonToMarkup, MarkdownParser, markupToText } from '@hcengineering/text'
+import { countTokens } from '@hcengineering/openai'
+import { getAccountClient } from '@hcengineering/server-client'
+import { getGlobalPerson } from '../utils/account'
 
 export class WorkspaceClient {
   client: Client | undefined
   opClient: Promise<TxOperations> | TxOperations
 
-  loginTimeout: NodeJS.Timeout | undefined
-  loginDelayMs = 2 * 1000
-
-  channelByKey = new Map<string, Ref<OnboardingChannel>>()
   rate = new RateLimiter(1)
 
   aiPerson: Person | undefined
-
-  typingMap: Map<Ref<Doc>, TypingInfo> = new Map<Ref<Doc>, TypingInfo>()
-  typingTimeoutsMap: Map<Ref<Doc>, NodeJS.Timeout> = new Map<Ref<Doc>, NodeJS.Timeout>()
-  directByPersonId = new Map<PersonId, Ref<DirectMessage>>()
+  personUuidBySocialId = new Map<PersonId, PersonUuid>()
 
   historyMap = new Map<Ref<Doc>, WithId<HistoryRecord>[]>()
 
@@ -97,12 +85,15 @@ export class WorkspaceClient {
 
   constructor (
     readonly storage: StorageAdapter,
+    readonly dbStorage: DbStorage,
     readonly transactorUrl: string,
     readonly token: string,
     readonly workspace: WorkspaceUuid,
-    readonly workspaceDataId: WorkspaceDataId | undefined,
-    readonly controller: AIControl,
+    readonly personUuid: PersonUuid,
+    readonly socialIds: SocialId[],
     readonly ctx: MeasureContext,
+    readonly openai: OpenAI | undefined,
+    readonly openaiEncoding: Tiktoken,
     readonly info: WorkspaceInfoRecord | undefined
   ) {
     this.opClient = this.initClient()
@@ -111,25 +102,27 @@ export class WorkspaceClient {
     })
   }
 
-  get wsDataId (): WorkspaceDataId {
-    return this.workspaceDataId ?? (this.workspace as unknown as WorkspaceDataId)
+  private async ensureEmployee (client: Client): Promise<void> {
+    const me: Account = {
+      uuid: this.personUuid,
+      role: AccountRole.User,
+      primarySocialId: aiBotEmailSocialId,
+      socialIds: this.socialIds.map((it) => it.key)
+    }
+    await ensureEmployee(this.ctx, me, client, this.socialIds, async () => await getGlobalPerson(this.token))
   }
 
-  protected async initClient (): Promise<TxOperations> {
-    await this.tryLogin()
-
+  private async initClient (): Promise<TxOperations> {
     this.client = await connectPlatform(this.token, this.transactorUrl)
-    const opClient = new TxOperations(this.client, aiBot.account.AIBot)
+    const opClient = new TxOperations(this.client, aiBotEmailSocialId)
 
-    await this.uploadAvatarFile(opClient)
+    await this.ensureEmployee(this.client)
+    await this.checkEmployeeInfo(opClient)
 
     if (this.aiPerson !== undefined && config.LoveEndpoint !== '') {
-      const token = generateToken(aiBotAccount, this.workspace)
-      this.love = new LoveController(this.workspace, this.ctx.newChild('love', {}), token, opClient, this.aiPerson)
+      this.love = new LoveController(this.workspace, this.ctx.newChild('love', {}), this.token, opClient, this.aiPerson)
     }
 
-    const typing = await opClient.findAll(chunter.class.TypingInfo, { user: aiBot.account.AIBot })
-    this.typingMap = new Map(typing.map((t) => [t.objectId, t]))
     this.client.notify = (...txes: Tx[]) => {
       void this.txHandler(opClient, txes as TxCUD<Doc>[])
     }
@@ -138,7 +131,7 @@ export class WorkspaceClient {
     return opClient
   }
 
-  private async uploadAvatarFile (client: TxOperations): Promise<void> {
+  private async checkEmployeeInfo (client: TxOperations): Promise<void> {
     this.ctx.info('Upload avatar file', { workspace: this.workspace })
 
     try {
@@ -152,8 +145,15 @@ export class WorkspaceClient {
       if (!isAlreadyUploaded) {
         const data = fs.readFileSync(config.AvatarPath)
 
-        await this.storage.put(this.ctx, this.wsDataId, config.AvatarName, data, config.AvatarContentType, data.length)
-        await this.controller.updateAvatarInfo(this.workspace, config.AvatarPath, lastModified)
+        await this.storage.put(
+          this.ctx,
+          this.workspace as any as WorkspaceDataId,
+          config.AvatarName,
+          data,
+          config.AvatarContentType,
+          data.length
+        )
+        await this.updateAvatarInfo(this.workspace, config.AvatarPath, lastModified)
         this.ctx.info('Avatar file uploaded successfully', { workspace: this.workspace, path: config.AvatarPath })
       }
     } catch (e) {
@@ -163,29 +163,21 @@ export class WorkspaceClient {
     await this.checkPersonData(client)
   }
 
-  private async tryLogin (): Promise<void> {
-    this.ctx.info('Logging in: ', { workspace: this.workspace })
-    const accountClient = getAccountClient()
-    const token = await accountClient.login(aiBotAccount, config.Password)
+  private async updateAvatarInfo (workspace: string, path: string, lastModified: number): Promise<void> {
+    const record = await this.dbStorage.getWorkspace(workspace)
 
-    clearTimeout(this.loginTimeout)
-
-    if (token === undefined) {
-      this.loginTimeout = setTimeout(() => {
-        if (this.loginDelayMs < MAX_LOGIN_DELAY_MS) {
-          this.loginDelayMs += 1000
-        }
-        this.ctx.info(`login delay ${this.loginDelayMs} millisecond`)
-        void this.tryLogin()
-      }, this.loginDelayMs)
+    if (record === undefined) {
+      await this.dbStorage.addWorkspace({ workspace, avatarPath: path, avatarLastModified: lastModified })
+    } else {
+      await this.dbStorage.updateWorkspace(workspace, { $set: { avatarPath: path, avatarLastModified: lastModified } })
     }
   }
 
   private async checkPersonData (client: TxOperations): Promise<void> {
-    this.aiPerson = await client.findOne(contact.class.Person, { personUuid: aiBotAccount })
+    this.aiPerson = this.aiPerson ?? (await client.findOne(contact.class.Person, { personUuid: this.personUuid }))
 
     if (this.aiPerson === undefined) {
-      this.ctx.error('Cannot find AI Person ', { personUuid: aiBotAccount })
+      this.ctx.error('Cannot find AI Person ', { personUuid: this.personUuid })
       return
     }
 
@@ -202,7 +194,7 @@ export class WorkspaceClient {
       return
     }
 
-    const exist = await this.storage.stat(this.ctx, this.wsDataId, config.AvatarName)
+    const exist = await this.storage.stat(this.ctx, this.workspace as any, config.AvatarName)
 
     if (exist === undefined) {
       this.ctx.error('Cannot find file', { file: config.AvatarName, workspace: this.workspace })
@@ -212,148 +204,8 @@ export class WorkspaceClient {
     await client.diffUpdate(this.aiPerson, { avatar: config.AvatarName as Ref<Blob>, avatarType: AvatarType.IMAGE })
   }
 
-  async getThreadParent (
-    client: TxOperations,
-    parentMessageId: Ref<ChatMessage>,
-    _id: Ref<Doc>,
-    _class: Ref<Class<Doc>>
-  ): Promise<ChatMessage | undefined> {
-    const parent = await client.findOne(chunter.class.ChatMessage, {
-      attachedTo: _id,
-      attachedToClass: _class,
-      [aiBot.mixin.TransferredMessage]: {
-        messageId: parentMessageId,
-        parentMessageId: undefined
-      }
-    })
-
-    if (parent !== undefined) {
-      return parent
-    }
-
-    return await client.findOne(chunter.class.ChatMessage, {
-      _id: parentMessageId
-    })
-  }
-
-  async createTransferMessage (
-    client: TxOperations,
-    event: AITransferEventRequest,
-    _id: Ref<Doc>,
-    _class: Ref<Class<Doc>>,
-    space: Ref<Space>,
-    message: string
-  ): Promise<void> {
-    const op = client.apply(undefined, 'AITransferEventRequest')
-    if (event.messageClass === chunter.class.ChatMessage) {
-      await this.startTyping(client, space, _id, _class)
-      const ref = await op.addCollection<Doc, ChatMessage>(
-        chunter.class.ChatMessage,
-        space,
-        _id,
-        _class,
-        event.collection,
-        { message },
-        undefined,
-        event.createdOn
-      )
-      await op.createMixin(ref, chunter.class.ChatMessage, space, aiBot.mixin.TransferredMessage, {
-        messageId: event.messageId,
-        parentMessageId: event.parentMessageId
-      })
-
-      await this.finishTyping(client, _id)
-    } else if (event.messageClass === chunter.class.ThreadMessage && event.parentMessageId !== undefined) {
-      const parent = await this.getThreadParent(client, event.parentMessageId, _id, _class)
-      if (parent !== undefined) {
-        await this.startTyping(client, space, parent._id, parent._class)
-        const ref = await op.addCollection<Doc, ThreadMessage>(
-          chunter.class.ThreadMessage,
-          parent.space,
-          parent._id,
-          parent._class,
-          event.collection,
-          { message, objectId: parent.attachedTo, objectClass: parent.attachedToClass },
-          undefined,
-          event.createdOn
-        )
-        await op.createMixin(
-          ref,
-          chunter.class.ThreadMessage as Ref<Class<ChatMessage>>,
-          space,
-          aiBot.mixin.TransferredMessage,
-          {
-            messageId: event.messageId,
-            parentMessageId: event.parentMessageId
-          }
-        )
-        await this.finishTyping(client, parent._id)
-      }
-    }
-
-    await op.commit()
-  }
-
-  clearTypingTimeout (objectId: Ref<Doc>): void {
-    const currentTimeout = this.typingTimeoutsMap.get(objectId)
-
-    if (currentTimeout !== undefined) {
-      clearTimeout(currentTimeout)
-      this.typingTimeoutsMap.delete(objectId)
-    }
-  }
-
-  async startTyping (
-    client: TxOperations,
-    space: Ref<Space>,
-    objectId: Ref<Doc>,
-    objectClass: Ref<Class<Doc>>
-  ): Promise<void> {
-    if (this.aiPerson === undefined) {
-      return
-    }
-
-    this.clearTypingTimeout(objectId)
-    const typingInfo = this.typingMap.get(objectId)
-
-    if (typingInfo === undefined) {
-      const data: Data<TypingInfo> = {
-        objectId,
-        objectClass,
-        person: this.aiPerson._id,
-        lastTyping: Date.now()
-      }
-      const _id = await client.createDoc(chunter.class.TypingInfo, space, data)
-      this.typingMap.set(objectId, {
-        ...data,
-        _id,
-        _class: chunter.class.TypingInfo,
-        space,
-        modifiedOn: Date.now(),
-        modifiedBy: aiBot.account.AIBot
-      })
-    } else {
-      await client.update(typingInfo, { lastTyping: Date.now() })
-    }
-
-    const timeout = setTimeout(() => {
-      void this.startTyping(client, space, objectId, objectClass)
-    }, UPDATE_TYPING_TIMEOUT_MS)
-    this.typingTimeoutsMap.set(objectId, timeout)
-  }
-
-  async finishTyping (client: TxOperations, objectId: Ref<Doc>): Promise<void> {
-    this.clearTypingTimeout(objectId)
-    const typingInfo = this.typingMap.get(objectId)
-
-    if (typingInfo !== undefined) {
-      await client.remove(typingInfo)
-      this.typingMap.delete(objectId)
-    }
-  }
-
   // TODO: In feature we also should use embeddings
-  toOpenAiHistory (history: HistoryRecord[], promptTokens: number): any[] {
+  private toOpenAiHistory (history: HistoryRecord[], promptTokens: number): any[] {
     const result: OpenAI.ChatCompletionMessageParam[] = []
     let totalTokens = promptTokens
 
@@ -370,29 +222,29 @@ export class WorkspaceClient {
     return result
   }
 
-  async getHistory (objectId: Ref<Doc>): Promise<WithId<HistoryRecord>[]> {
+  private async getHistory (objectId: Ref<Doc>): Promise<WithId<HistoryRecord>[]> {
     if (this.historyMap.has(objectId)) {
       return this.historyMap.get(objectId) ?? []
     }
 
-    const historyRecords = await this.controller.storage.getHistoryRecords(this.workspace, objectId)
+    const historyRecords = await this.dbStorage.getHistoryRecords(this.workspace, objectId)
     this.historyMap.set(objectId, historyRecords)
     return historyRecords
   }
 
-  async summarizeHistory (
+  private async summarizeHistory (
     toSummarize: WithId<HistoryRecord>[],
-    user: PersonId,
+    user: PersonUuid,
     objectId: Ref<Doc>,
     objectClass: Ref<Class<Doc>>
   ): Promise<void> {
-    if (this.controller.aiClient === undefined) return
+    if (this.openai === undefined) return
     if (this.summarizing.has(objectId)) {
       return
     }
 
     this.summarizing.add(objectId)
-    const { summary, tokens } = await requestSummary(this.controller.aiClient, this.controller.encoding, toSummarize)
+    const { summary, tokens } = await requestSummary(this.openai, this.openaiEncoding, toSummarize)
 
     if (summary === undefined) {
       this.ctx.error('Failed to summarize history', { objectId, objectClass, user })
@@ -411,18 +263,18 @@ export class WorkspaceClient {
       workspace: this.workspace
     }
 
-    await this.controller.storage.addHistoryRecord(summaryRecord)
-    await this.controller.storage.removeHistoryRecords(toSummarize.map(({ _id }) => _id))
-    const newHistory = await this.controller.storage.getHistoryRecords(this.workspace, objectId)
+    await this.dbStorage.addHistoryRecord(summaryRecord)
+    await this.dbStorage.removeHistoryRecords(toSummarize.map(({ _id }) => _id))
+    const newHistory = await this.dbStorage.getHistoryRecords(this.workspace, objectId)
     this.historyMap.set(objectId, newHistory)
     this.summarizing.delete(objectId)
   }
 
-  async pushHistory (
+  private async pushHistory (
     message: string,
     role: 'user' | 'assistant',
     tokens: number,
-    user: PersonId,
+    user: PersonUuid,
     objectId: Ref<Doc>,
     objectClass: Ref<Class<Doc>>
   ): Promise<void> {
@@ -437,20 +289,29 @@ export class WorkspaceClient {
       tokens,
       timestamp: Date.now()
     }
-    const _id = await this.controller.storage.addHistoryRecord(newRecord)
+    const _id = await this.dbStorage.addHistoryRecord(newRecord)
     currentHistory.push({ ...newRecord, _id })
     this.historyMap.set(objectId, currentHistory)
   }
 
-  async getAttachments (client: TxOperations, objectId: Ref<Doc>): Promise<Attachment[]> {
+  private async getAttachments (client: TxOperations, objectId: Ref<Doc>): Promise<Attachment[]> {
     return await client.findAll(attachment.class.Attachment, { attachedTo: objectId })
   }
 
-  async processMessageEvent (event: AIMessageEventRequest): Promise<void> {
-    if (this.controller.aiClient === undefined) return
+  async processMessageEvent (event: AIEventRequest): Promise<void> {
+    if (this.openai === undefined) return
 
     const { user, objectId, objectClass, messageClass } = event
     const client = await this.opClient
+    const accountClient = getAccountClient(this.token)
+    const personUuid = this.personUuidBySocialId.get(user) ?? (await accountClient.findPerson(user))
+
+    if (personUuid === undefined) {
+      return
+    }
+
+    this.personUuidBySocialId.set(user, personUuid)
+
     let promptText = markupToText(event.message)
     const files = await this.getAttachments(client, event.messageId)
     if (files.length > 0) {
@@ -460,40 +321,32 @@ export class WorkspaceClient {
       }
     }
     const prompt: OpenAI.ChatCompletionMessageParam = { content: promptText, role: 'user' }
-    const promptTokens = countTokens([prompt], this.controller.encoding)
-
-    if (!this.controller.allowAiReplies(this.workspace, event.email)) {
-      void this.pushHistory(promptText, 'user', promptTokens, user, objectId, objectClass)
-      return
-    }
+    const promptTokens = countTokens([prompt], this.openaiEncoding)
 
     const op = client.apply(undefined, 'AIMessageRequestEvent')
     const hierarchy = client.getHierarchy()
 
     const space = hierarchy.isDerived(objectClass, core.class.Space) ? (objectId as Ref<Space>) : event.objectSpace
 
-    await this.startTyping(client, space, objectId, objectClass)
-
     const rawHistory = await this.getHistory(objectId)
     const history = this.toOpenAiHistory(rawHistory, promptTokens)
 
     if (history.length < rawHistory.length || history.length > config.MaxHistoryRecords) {
-      void this.summarizeHistory(rawHistory, user, objectId, objectClass)
+      void this.summarizeHistory(rawHistory, personUuid, objectId, objectClass)
     }
 
-    void this.pushHistory(promptText, prompt.role, promptTokens, user, objectId, objectClass)
+    void this.pushHistory(promptText, prompt.role, promptTokens, personUuid, objectId, objectClass)
 
-    const chatCompletion = await createChatCompletionWithTools(this, this.controller.aiClient, prompt, user, history)
+    const chatCompletion = await createChatCompletionWithTools(this, this.openai, prompt, user, history)
     const response = chatCompletion?.completion
 
     if (response == null) {
-      await this.finishTyping(client, objectId)
       return
     }
     const responseTokens =
-      chatCompletion?.usage ?? countTokens([{ content: response, role: 'assistant' }], this.controller.encoding)
+      chatCompletion?.usage ?? countTokens([{ content: response, role: 'assistant' }], this.openaiEncoding)
 
-    void this.pushHistory(response, 'assistant', responseTokens, user, objectId, objectClass)
+    void this.pushHistory(response, 'assistant', responseTokens, personUuid, objectId, objectClass)
 
     const parser = new MarkdownParser([], '', '')
     const parseResponse = jsonToMarkup(parser.parse(response))
@@ -523,101 +376,10 @@ export class WorkspaceClient {
         )
       }
     }
-
-    await this.finishTyping(op, event.objectId)
     await op.commit()
-    await this.controller.transferAIReplyToSupport(parseResponse, {
-      messageClass,
-      email: event.email,
-      fromWorkspace: this.workspace,
-      originalMessageId: event.messageId,
-      originalParent: hierarchy.isDerived(event.objectClass, chunter.class.ChatMessage)
-        ? (event.objectId as Ref<ChatMessage>)
-        : undefined
-    })
-  }
-
-  async transferToSupport (event: AITransferEventRequest, channelRef?: Ref<OnboardingChannel>): Promise<void> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const client = await this.opClient
-    // const key = `${event.toEmail}-${event.fromWorkspace}`
-    // const channel =
-    //   channelRef ??
-    //   this.channelByKey.get(key) ??
-    //   (
-    //     await getOrCreateOnboardingChannel(this.ctx, client, event.toEmail, {
-    //       workspaceId: event.fromWorkspace,
-    //       workspaceName: event.fromWorkspaceName,
-    //       workspaceUrl: event.fromWorkspaceUrl
-    //     })
-    //   )[0]
-
-    // if (channel === undefined) {
-    //   return
-    // }
-
-    // this.channelByKey.set(key, channel)
-
-    // await this.createTransferMessage(
-    //   client,
-    //   event,
-    //   channel,
-    //   analyticsCollector.class.OnboardingChannel,
-    //   channel,
-    //   event.message
-    // )
-  }
-
-  async transferToUserDirect (event: AITransferEventRequest): Promise<void> {
-    const client = await this.opClient
-    const direct =
-      this.directByPersonId.get(event.toPersonId) ?? (await getDirect(client, event.toPersonId, this.aiPerson?._id))
-
-    if (direct === undefined) {
-      return
-    }
-
-    this.directByPersonId.set(event.toPersonId, direct)
-
-    await this.createTransferMessage(client, event, direct, chunter.class.DirectMessage, direct, event.message)
-  }
-
-  getChannelRef (email: string, workspace: string): Ref<OnboardingChannel> | undefined {
-    const key = `${email}-${workspace}`
-
-    return this.channelByKey.get(key)
-  }
-
-  async transfer (event: AITransferEventRequest): Promise<void> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // if (event.toWorkspace === config.SupportWorkspace) {
-    //   const channel = this.getChannelRef(event.toEmail, event.fromWorkspace)
-
-    //   if (channel !== undefined) {
-    //     await this.transferToSupport(event, channel)
-    //   } else {
-    //     // If we dont have OnboardingChannel we should call it sync to prevent multiple channel for the same user and workspace
-    //     await this.rate.add(async () => {
-    //       await this.transferToSupport(event)
-    //     })
-    //   }
-    // } else {
-    //   if (this.directByPersonId.has(event.toPersonId)) {
-    //     await this.transferToUserDirect(event)
-    //   } else {
-    //     // If we dont have Direct with user we should call it sync to prevent multiple directs for the same user
-    //     await this.rate.add(async () => {
-    //       await this.transferToUserDirect(event)
-    //     })
-    //   }
-    // }
   }
 
   async close (): Promise<void> {
-    clearTimeout(this.loginTimeout)
-
     if (this.client !== undefined) {
       await this.client.close()
     }
@@ -633,73 +395,16 @@ export class WorkspaceClient {
     this.ctx.info('Closed workspace client: ', { workspace: this.workspace })
   }
 
-  private async handleRemoveTx (tx: TxRemoveDoc<Doc>): Promise<void> {
-    if (tx.objectClass === chunter.class.TypingInfo && this.typingMap.has(tx.objectId)) {
-      this.typingMap.delete(tx.objectId)
-    }
-  }
-
-  protected async txHandler (_: TxOperations, txes: TxCUD<Doc>[]): Promise<void> {
+  private async txHandler (_: TxOperations, txes: TxCUD<Doc>[]): Promise<void> {
     if (this.love !== undefined) {
       this.love.txHandler(txes)
     }
-
-    for (const tx of txes) {
-      if (tx._class === core.class.TxRemoveDoc) {
-        await this.handleRemoveTx(tx as TxRemoveDoc<Doc>)
-      }
-    }
-  }
-
-  async openAIChatInSidebar (personId: PersonId): Promise<void> {
-    const client = await this.opClient
-    const direct = this.directByPersonId.get(personId) ?? (await getDirect(client, personId, this.aiPerson?._id))
-
-    if (direct === undefined || this.aiPerson === undefined) {
-      return
-    }
-
-    this.directByPersonId.set(personId, direct)
-
-    const hierarchy = client.getHierarchy()
-    const name = getName(hierarchy, this.aiPerson)
-
-    const tab: ChatWidgetTab = {
-      id: `chunter_${direct}`,
-      name,
-      iconComponent: chunter.component.DirectIcon,
-      iconProps: {
-        _id: direct,
-        size: 'tiny'
-      },
-      data: {
-        _id: direct,
-        _class: chunter.class.DirectMessage,
-        channelName: name
-      }
-    }
-
-    const tx: TxSidebarEvent = {
-      _id: generateId(),
-      _class: workbench.class.TxSidebarEvent,
-      objectSpace: core.space.DerivedTx,
-      space: core.space.DerivedTx,
-      event: SidebarEvent.OpenWidget,
-      params: {
-        widget: chunter.ids.ChatWidget,
-        tab
-      },
-      modifiedOn: Date.now(),
-      modifiedBy: aiBot.account.AIBot
-    }
-
-    await client.tx(tx)
   }
 
   async loveConnect (request: ConnectMeetingRequest): Promise<void> {
     await this.opClient
     if (this.love === undefined) {
-      console.error('Love is not initialized')
+      this.ctx.error('Love controller is not initialized')
       return
     }
     await this.love.connect(request)
