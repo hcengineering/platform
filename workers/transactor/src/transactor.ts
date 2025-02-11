@@ -24,6 +24,7 @@ import serverCore, {
   Session,
   Workspace,
   type ConnectionSocket,
+  type Pipeline,
   type PipelineFactory,
   type SessionManager
 } from '@hcengineering/server-core'
@@ -471,6 +472,22 @@ export class Transactor extends DurableObject<Env> {
     return session.session
   }
 
+  private async getRpcPipeline (rawToken: string, cs: ConnectionSocket): Promise<Pipeline> {
+    const session = await this.makeRpcSession(rawToken, cs)
+    const pipeline =
+      session.workspace.pipeline instanceof Promise ? await session.workspace.pipeline : session.workspace.pipeline
+    const opContext = this.sessionManager.createOpContext(
+      this.measureCtx,
+      pipeline,
+      { method: '', params: '' },
+      session,
+      cs,
+      this.workspace
+    )
+    session.includeSessionContext(opContext)
+    return pipeline
+  }
+
   async findAll (
     rawToken: string,
     workspaceId: string,
@@ -481,12 +498,10 @@ export class Transactor extends DurableObject<Env> {
     let result
     const cs = this.createDummyClientSocket()
     try {
-      const session = await this.makeRpcSession(rawToken, cs)
-      const pipeline =
-        session.workspace.pipeline instanceof Promise ? await session.workspace.pipeline : session.workspace.pipeline
-      ;(session as any).includeSessionContext(this.measureCtx, pipeline)
+      const pipeline = await this.getRpcPipeline(rawToken, cs)
       result = await pipeline.findAll(this.measureCtx, _class, query ?? {}, options ?? {})
     } catch (error: any) {
+      console.error(error)
       result = { error: `${error}` }
     } finally {
       await this.sessionManager.close(this.measureCtx, cs, this.workspace)
@@ -498,12 +513,10 @@ export class Transactor extends DurableObject<Env> {
     let result
     const cs = this.createDummyClientSocket()
     try {
-      const session = await this.makeRpcSession(rawToken, cs)
-      const pipeline =
-        session.workspace.pipeline instanceof Promise ? await session.workspace.pipeline : session.workspace.pipeline
-      ;(session as any).includeSessionContext(this.measureCtx, pipeline)
+      const pipeline = await this.getRpcPipeline(rawToken, cs)
       result = await pipeline.tx(this.measureCtx, [tx])
     } catch (error: any) {
+      console.error(error)
       result = { error: `${error}` }
     } finally {
       await this.sessionManager.close(this.measureCtx, cs, this.workspace)
@@ -515,10 +528,7 @@ export class Transactor extends DurableObject<Env> {
     let result: Tx[] = []
     const cs = this.createDummyClientSocket()
     try {
-      const session = await this.makeRpcSession(rawToken, cs)
-      const pipeline =
-        session.workspace.pipeline instanceof Promise ? await session.workspace.pipeline : session.workspace.pipeline
-      ;(session as any).includeSessionContext(this.measureCtx, pipeline)
+      const pipeline = await this.getRpcPipeline(rawToken, cs)
       const ret = await pipeline.loadModel(this.measureCtx, 0)
       if (Array.isArray(ret)) {
         result = ret
@@ -526,6 +536,7 @@ export class Transactor extends DurableObject<Env> {
         result = ret.transactions
       }
     } catch (error: any) {
+      console.error(error)
       return { error: `${error}` }
     } finally {
       await this.sessionManager.close(this.measureCtx, cs, this.workspace)
@@ -542,8 +553,6 @@ export class Transactor extends DurableObject<Env> {
     const cs = this.createDummyClientSocket()
     try {
       const session = await this.makeRpcSession(rawToken, cs)
-      // const pipeline =
-      //   session.workspace.pipeline instanceof Promise ? await session.workspace.pipeline : session.workspace.pipeline
       return session.getRawAccount()
     } catch (error: any) {
       return { error: `${error}` }
