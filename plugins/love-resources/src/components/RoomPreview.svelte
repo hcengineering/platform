@@ -141,6 +141,7 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="floorGrid-room"
   class:preview
@@ -183,9 +184,9 @@
         }}
       >
         {#if personInfo}
-          <Avatar name={person?.name ?? personInfo.name} {person} size={'full'} showStatus={false} />
+          <Avatar name={person?.name ?? personInfo.name} {person} size={'large'} showStatus={false} adaptiveName />
         {:else if hoveredRoomX === x && hoveredRoomY === y}
-          <Avatar name={meName} person={meAvatar} size={'full'} showStatus={false} />
+          <Avatar name={meName} person={meAvatar} size={'large'} showStatus={false} adaptiveName />
         {/if}
       </div>
     {/each}
