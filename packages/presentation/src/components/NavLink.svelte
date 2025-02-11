@@ -15,6 +15,7 @@
 <script lang="ts">
   import { getMetadata } from '@hcengineering/platform'
   import uiPlugin, { closePopup, closeTooltip, navigate, parseLocation } from '@hcengineering/ui'
+  import presentation from '../plugin'
 
   export let href: string | undefined
   export let disabled = false
@@ -44,7 +45,7 @@
       closeTooltip()
       try {
         const url = new URL(href)
-        const frontUrl = getMetadata(uiPlugin.metadata.FrontUrl) ?? window.location.origin
+        const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
         if (url.origin === frontUrl) {
           const loc = parseLocation(url)
           const routes = getMetadata(uiPlugin.metadata.Routes)
