@@ -37,7 +37,7 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
-  export let emptyLabel: IntlString = plugin.string.Members
+  export let emptyLabel: IntlString = label ?? plugin.string.Members
   export let readonly: boolean = false
   export let create: ObjectCreate | undefined = undefined
 

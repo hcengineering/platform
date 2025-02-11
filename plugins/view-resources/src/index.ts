@@ -96,6 +96,7 @@ import TreeItem from './components/navigator/TreeItem.svelte'
 import TreeNode from './components/navigator/TreeNode.svelte'
 import StatusPresenter from './components/status/StatusPresenter.svelte'
 import StatusRefPresenter from './components/status/StatusRefPresenter.svelte'
+import PersonArrayEditor from './components/PersonArrayEditor.svelte'
 import PersonIdPresenter from './components/PersonIdPresenter.svelte'
 import PersonIdFilterValuePresenter from './components/filter/PersonIdFilterValuePresenter.svelte'
 import AudioViewer from './components/viewer/AudioViewer.svelte'
@@ -299,6 +300,7 @@ export default async (): Promise<Resources> => ({
     FileSizePresenter,
     StatusPresenter,
     StatusRefPresenter,
+    PersonArrayEditor,
     PersonIdPresenter,
     PersonIdFilterValuePresenter,
     DateFilterPresenter,
