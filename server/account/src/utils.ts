@@ -1088,3 +1088,36 @@ export function flattenStatus (ws: WorkspaceInfoWithStatus): WorkspaceInfoWithSt
 export async function cleanExpiredOtp (db: AccountDB): Promise<void> {
   await db.otp.deleteMany({ expiresOn: { $lte: Date.now() } })
 }
+
+export async function getWorkspaces (
+  db: AccountDB,
+  isDisabled?: boolean | null,
+  region?: string | null,
+  mode?: WorkspaceMode | null
+): Promise<WorkspaceInfoWithStatus[]> {
+  const statuses = await db.workspaceStatus.find({})
+  const statusesMap = statuses.reduce<Record<string, WorkspaceStatus>>((sm, s) => {
+    sm[s.workspaceUuid] = s
+    return sm
+  }, {})
+
+  const workspaces = (await db.workspace.find(region != null ? { region } : {})).filter((it) => {
+    const status = statusesMap[it.uuid]
+    if (isDisabled === true) {
+      return status.isDisabled
+    } else if (isDisabled === false) {
+      return !status.isDisabled
+    }
+
+    if (mode != null) {
+      return status.mode === mode
+    }
+
+    return true
+  })
+
+  return workspaces.map((it) => ({
+    ...it,
+    status: statusesMap[it.uuid]
+  }))
+}
