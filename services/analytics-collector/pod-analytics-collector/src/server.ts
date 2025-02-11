@@ -22,7 +22,6 @@ import { extractToken } from '@hcengineering/server-client'
 
 import { ApiError } from './error'
 import { Collector } from './collector'
-import { Action } from './types'
 
 type AsyncRequestHandler = (req: Request, res: Response, token: Token, next: NextFunction) => Promise<void>
 
@@ -84,35 +83,6 @@ export function createServer (collector: Collector): Express {
       const events: AnalyticEvent[] = req.body
 
       collector.collect(events, token)
-
-      res.status(200)
-      res.json({})
-    })
-  )
-
-  app.post(
-    '/action',
-    wrapRequest(async (req, res, token) => {
-      if (req.body == null || Array.isArray(req.body)) {
-        throw new ApiError(400)
-      }
-
-      const name = req.body.name
-      const messageId = req.body.messageId
-      const channelId = req.body.channelId
-      const _id = req.body._id
-
-      if (name == null || messageId == null || channelId == null || _id == null) {
-        throw new ApiError(400)
-      }
-
-      const action: Action = {
-        _id,
-        name,
-        messageId,
-        channelId
-      }
-      await collector.processAction(action, token)
 
       res.status(200)
       res.json({})

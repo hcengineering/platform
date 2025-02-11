@@ -24,28 +24,22 @@ import {
   TypeString,
   UX
 } from '@hcengineering/model'
-import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@hcengineering/model-core'
+import core, { TClass, TDoc, TSpace } from '@hcengineering/model-core'
 import type {
   Channel,
   ChatMessage,
   ChatMessageViewlet,
   ChatSyncInfo,
-  ChunterExtension,
   ChunterSpace,
   DirectMessage,
-  InlineButton,
-  InlineButtonAction,
   ObjectChatPanel,
-  ThreadMessage,
-  TypingInfo,
-  ChunterExtensionPoint
+  ThreadMessage
 } from '@hcengineering/chunter'
 import {
   type Class,
   type Doc,
   type Domain,
   DOMAIN_MODEL,
-  DOMAIN_TRANSIENT,
   IndexKind,
   type Ref,
   type Timestamp
@@ -54,11 +48,10 @@ import contact, { type ChannelProvider as SocialChannelProvider, type Person } f
 import activity, { type ActivityMessage } from '@hcengineering/activity'
 import { TActivityMessage } from '@hcengineering/model-activity'
 import attachment from '@hcengineering/model-attachment'
-import type { IntlString, Resource } from '@hcengineering/platform'
+import type { IntlString } from '@hcengineering/platform'
 import type { DocNotifyContext } from '@hcengineering/notification'
 
 import chunter from './plugin'
-import type { AnyComponent } from '@hcengineering/ui'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
 
@@ -94,9 +87,6 @@ export class TChatMessage extends TActivityMessage implements ChatMessage {
 
   @Prop(TypeRef(contact.class.ChannelProvider), core.string.Object)
     provider?: Ref<SocialChannelProvider>
-
-  @Prop(PropCollection(chunter.class.InlineButton), core.string.Object)
-    inlineButtons?: number
 }
 
 @Model(chunter.class.ThreadMessage, chunter.class.ChatMessage)
@@ -144,27 +134,4 @@ export class TChatSyncInfo extends TDoc implements ChatSyncInfo {
   user!: Ref<Person>
   hidden!: Ref<DocNotifyContext>[]
   timestamp!: Timestamp
-}
-
-@Model(chunter.class.InlineButton, core.class.Doc, DOMAIN_CHUNTER)
-export class TInlineButton extends TAttachedDoc implements InlineButton {
-  name!: string
-  titleIntl?: IntlString
-  title?: string
-  action!: Resource<InlineButtonAction>
-}
-
-@Model(chunter.class.TypingInfo, core.class.Doc, DOMAIN_TRANSIENT)
-export class TTypingInfo extends TDoc implements TypingInfo {
-  objectId!: Ref<Doc>
-  objectClass!: Ref<Class<Doc>>
-  person!: Ref<Person>
-  lastTyping!: Timestamp
-}
-
-@Model(chunter.class.ChunterExtension, core.class.Doc, DOMAIN_MODEL)
-export class TChunterExtension extends TDoc implements ChunterExtension {
-  ofClass!: Ref<Class<Doc>>
-  point!: ChunterExtensionPoint
-  component!: AnyComponent
 }

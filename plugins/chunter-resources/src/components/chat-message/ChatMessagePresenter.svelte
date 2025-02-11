@@ -23,13 +23,12 @@
   import view from '@hcengineering/view'
   import activity, { ActivityMessage, ActivityMessageViewType, DisplayActivityMessage } from '@hcengineering/activity'
   import { ActivityDocLink, ActivityMessageTemplate, MessageInlineAction } from '@hcengineering/activity-resources'
-  import chunter, { ChatMessage, ChatMessageViewlet, InlineButton } from '@hcengineering/chunter'
+  import chunter, { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
   import { Attachment } from '@hcengineering/attachment'
   import { EmptyMarkup } from '@hcengineering/text'
 
   import ChatMessageHeader from './ChatMessageHeader.svelte'
   import ChatMessageInput from './ChatMessageInput.svelte'
-  import InlineButtons from '../InlineButtons.svelte'
   import { translatedMessagesStore, translatingMessagesStore, shownTranslatedMessagesStore } from '../../stores'
 
   export let value: WithLookup<ChatMessage> | undefined
@@ -162,8 +161,6 @@
 
   let attachments: Attachment[] | undefined = undefined
   $: attachments = value?.$lookup?.attachments as Attachment[] | undefined
-  let inlineButtons: InlineButton[] = []
-  $: inlineButtons = (value?.$lookup?.inlineButtons ?? []) as InlineButton[]
 
   let inlineActions: MessageInlineAction[] = []
 
@@ -262,21 +259,19 @@
           <ShowMore limit={compact ? 80 : undefined}>
             <div class="clear-mins">
               <MessageViewer message={displayText} />
-              {#if (value.attachments ?? 0) > 0 || (value.inlineButtons ?? 0) > 0}
+              {#if (value.attachments ?? 0) > 0}
                 <div class="mt-2" />
               {/if}
               <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} {isOwn} />
-              <InlineButtons {value} {inlineButtons} />
             </div>
           </ShowMore>
         {:else}
           <div class="clear-mins">
             <MessageViewer message={displayText} />
-            {#if (value.attachments ?? 0) > 0 || (value.inlineButtons ?? 0) > 0}
+            {#if (value.attachments ?? 0) > 0}
               <div class="mt-2" />
             {/if}
             <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} {isOwn} />
-            <InlineButtons {value} {inlineButtons} />
           </div>
         {/if}
       {:else if object}

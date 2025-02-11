@@ -201,7 +201,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   const socialIdByAccount = await getSocialIdByOldAccount(client)
 
   ctx.info('processing activity reactions ', {})
-  const iterator = await client.traverse(DOMAIN_ACTIVITY, { _class: activity.class.Reaction })
+  const iterator = await client.traverse(DOMAIN_REACTION, { _class: activity.class.Reaction })
 
   try {
     let processed = 0
@@ -228,7 +228,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
       }
 
       if (operations.length > 0) {
-        await client.bulk(DOMAIN_ACTIVITY, operations)
+        await client.bulk(DOMAIN_REACTION, operations)
       }
 
       processed += docs.length
@@ -249,9 +249,9 @@ async function migrateAccountsInDocUpdates (client: MigrationClient): Promise<vo
     au: DocAttributeUpdates,
     update: MigrateUpdate<DocUpdateMessage>['attributeUpdates'],
     field: P
-  ): boolean {
+  ): void {
     const oldValue = au?.[field]
-    if (oldValue == null) return false
+    if (oldValue == null) return
 
     let changed = false
     let newValue: any
@@ -275,8 +275,6 @@ async function migrateAccountsInDocUpdates (client: MigrationClient): Promise<vo
 
       update[field] = newValue
     }
-
-    return changed
   }
 
   const iterator = await client.traverse(DOMAIN_ACTIVITY, {
@@ -301,15 +299,14 @@ async function migrateAccountsInDocUpdates (client: MigrationClient): Promise<vo
       for (const doc of docs) {
         const dum = doc as DocUpdateMessage
         if (dum.attributeUpdates == null) continue
-        let changed = false
         const update: any = { attributeUpdates: { ...dum.attributeUpdates } }
 
-        changed = migrateField(dum.attributeUpdates, update.attributeUpdates, 'added') || changed
-        changed = migrateField(dum.attributeUpdates, update.attributeUpdates, 'prevValue') || changed
-        changed = migrateField(dum.attributeUpdates, update.attributeUpdates, 'removed') || changed
-        changed = migrateField(dum.attributeUpdates, update.attributeUpdates, 'set') || changed
+        migrateField(dum.attributeUpdates, update.attributeUpdates, 'added')
+        migrateField(dum.attributeUpdates, update.attributeUpdates, 'prevValue')
+        migrateField(dum.attributeUpdates, update.attributeUpdates, 'removed')
+        migrateField(dum.attributeUpdates, update.attributeUpdates, 'set')
 
-        if (!changed) continue
+        update.attributeUpdates.attrClass = core.class.TypePersonId
 
         operations.push({
           filter: { _id: dum._id },
@@ -375,11 +372,11 @@ export const activityOperation: MigrateOperation = {
         }
       },
       {
-        state: 'accounts-to-social-ids',
+        state: 'accounts-to-social-ids-v2',
         func: migrateAccountsToSocialIds
       },
       {
-        state: 'accounts-in-doc-updates',
+        state: 'accounts-in-doc-updates-v2',
         func: migrateAccountsInDocUpdates
       }
     ])

@@ -12,17 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Token } from '@hcengineering/server-token'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { type Server } from 'http'
 import {
   TranslateRequest,
-  OnboardingEventRequest,
-  AIEventRequest,
   ConnectMeetingRequest,
   DisconnectMeetingRequest,
+  AIEventRequest,
   PostTranscriptRequest
 } from '@hcengineering/ai-bot'
 import { extractToken } from '@hcengineering/server-client'
@@ -102,20 +100,18 @@ export function createServer (controller: AIControl, ctx: MeasureContext): Expre
   app.post(
     '/love/transcript',
     wrapRequest(async (req, res, token) => {
-      // TODO: FIXME
-      throw new Error('Not implemented')
-      // if (req.body == null || Array.isArray(req.body) || typeof req.body !== 'object') {
-      //   throw new ApiError(400)
-      // }
+      if (req.body == null || Array.isArray(req.body) || typeof req.body !== 'object') {
+        throw new ApiError(400)
+      }
 
-      // if (token.email !== aiBotAccountEmail) {
-      //   throw new ApiError(401)
-      // }
+      if (token.account !== controller.personUuid) {
+        throw new ApiError(401)
+      }
 
-      // await controller.processLoveTranscript(req.body as PostTranscriptRequest)
+      await controller.processLoveTranscript(req.body as PostTranscriptRequest)
 
-      // res.status(200)
-      // res.json({})
+      res.status(200)
+      res.json({})
     })
   )
 
@@ -152,35 +148,19 @@ export function createServer (controller: AIControl, ctx: MeasureContext): Expre
   app.get(
     '/love/:roomName/identity',
     wrapRequest(async (req, res, token) => {
-      // TODO: FIXME
-      throw new Error('Not implemented')
-      // if (token.email !== aiBotAccountEmail) {
-      //   throw new ApiError(401)
-      // }
-
-      // const roomName = req.params.roomName
-      // const resp = await controller.getLoveIdentity(roomName)
-
-      // if (resp === undefined) {
-      //   throw new ApiError(404)
-      // }
-
-      // res.status(200)
-      // res.json(resp)
-    })
-  )
-
-  app.post(
-    '/onboarding',
-    wrapRequest(async (req, res) => {
-      if (req.body == null || Array.isArray(req.body) || typeof req.body !== 'object') {
-        throw new ApiError(400)
+      if (token.account !== controller.personUuid) {
+        throw new ApiError(401)
       }
 
-      await controller.processOnboardingEvent(req.body as OnboardingEventRequest)
+      const roomName = req.params.roomName
+      const resp = await controller.getLoveIdentity(roomName)
+
+      if (resp === undefined) {
+        throw new ApiError(404)
+      }
 
       res.status(200)
-      res.json({})
+      res.json(resp)
     })
   )
 

@@ -181,23 +181,22 @@ services:
       resources:
         limits:
           memory: 300M
-  analytics:
-    image: hardcoreeng/analytics-collector
-    restart: unless-stopped
-    ports:
-      - 4007:4007
-    environment:
-      - SECRET=secret
-      - PORT=4007
-      - MONGO_URL=mongodb://host.docker.internal:27017
-      - 'MONGO_OPTIONS={"appName":"analytics","maxPoolSize":1}'
-      - SERVICE_ID=analytics-collector-service
-      - ACCOUNTS_URL=http://account:3000
-      - SUPPORT_WORKSPACE=09b65664-b3c3-4ea8-b9a1-c9688bde17f0
-    deploy:
-      resources:
-        limits:
-          memory: 300M
+#  analytics:
+#    image: hardcoreeng/analytics-collector
+#    restart: unless-stopped
+#    ports:
+#      - 4007:4007
+#    environment:
+#      - SECRET=secret
+#      - PORT=4007
+#      - MONGO_URL=mongodb://host.docker.internal:27017
+#      - 'MONGO_OPTIONS={"appName":"analytics","maxPoolSize":1}'
+#      - SERVICE_ID=analytics-collector-service
+#      - ACCOUNTS_URL=http://account:3000
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 300M
   aiBot:
     image: hardcoreeng/ai-bot
     restart: unless-stopped
@@ -205,7 +204,6 @@ services:
       - SERVER_SECRET=secret
       - MONGO_URL=mongodb://host.docker.internal:27017
       - ACCOUNTS_URL=http://account:3000
-      - SUPPORT_WORKSPACE=09b65664-b3c3-4ea8-b9a1-c9688bde17f0
       - FIRST_NAME=Jolie
       - LAST_NAME=AI
       - PASSWORD=password

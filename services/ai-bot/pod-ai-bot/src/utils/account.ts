@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,63 +12,86 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import {
   WorkspaceInfoWithStatus,
   isWorkspaceCreating,
-  MeasureContext,
-  systemAccountUuid,
   type WorkspaceUuid,
-  AccountRole
+  AccountRole,
+  Person as GlobalPerson
 } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
-import { getAccountClient } from '@hcengineering/server-client'
-import { aiBotAccountEmail } from '@hcengineering/ai-bot'
+import { getAccountClient, withRetry } from '@hcengineering/server-client'
+import { aiBotAccountEmail, aiBotEmailSocialId } from '@hcengineering/ai-bot'
+import { MeasureContext, PersonUuid, systemAccountUuid } from '@hcengineering/core'
 
+import config from '../config'
 import { wait } from './common'
 
-const ASSIGN_WORKSPACE_DELAY_MS = 5 * 1000 // 5 secs
-const MAX_ASSIGN_ATTEMPTS = 5
+const ASSIGN_WORKSPACE_DELAY = 5 * 1000
+const ASSIGN_WORKSPACE_ATTEMPTS = 5
 
-async function tryGetWorkspaceInfo (
-  ws: WorkspaceUuid,
-  ctx: MeasureContext
-): Promise<WorkspaceInfoWithStatus | undefined> {
+const GET_WORKSPACE_DELAY = 3 * 1000
+const GET_WORKSPACE_ATTEMPTS = 3
+
+const WAIT_WORKSPACE_CREATION_STEP = 5 * 1000
+const MAX_WAIT_WORKSPACE_CREATION_TIME = 20 * 60 * 1000
+
+async function getWorkspaceInfo (ws: WorkspaceUuid, ctx: MeasureContext): Promise<WorkspaceInfoWithStatus | undefined> {
   const systemToken = generateToken(systemAccountUuid, ws, { service: 'aibot' })
   const accountClient = getAccountClient(systemToken)
-  for (let i = 0; i < 5; i++) {
-    try {
-      const info = await accountClient.getWorkspaceInfo()
+  return await withRetry(
+    async () => await accountClient.getWorkspaceInfo(),
+    (_, attempt) => attempt >= GET_WORKSPACE_ATTEMPTS,
+    GET_WORKSPACE_DELAY
+  )()
+}
 
-      if (info == null) {
-        await wait(ASSIGN_WORKSPACE_DELAY_MS)
-        continue
+async function waitWorkspaceCreation (
+  workspace: WorkspaceUuid,
+  ctx: MeasureContext
+): Promise<WorkspaceInfoWithStatus | undefined> {
+  let waitedTime = 0
+  let attempt = 0
+  while (waitedTime < MAX_WAIT_WORKSPACE_CREATION_TIME) {
+    attempt++
+    const info = await getWorkspaceInfo(workspace, ctx)
+
+    if (info === undefined) {
+      ctx.error('Workspace not found', { workspace })
+      return undefined
+    }
+
+    if (isWorkspaceCreating(info?.mode)) {
+      await waitWorkspaceCreation(workspace, ctx)
+      const delay = WAIT_WORKSPACE_CREATION_STEP * attempt
+      waitedTime += delay
+      if (waitedTime > MAX_WAIT_WORKSPACE_CREATION_TIME) {
+        ctx.error('Workspace creation timeout', { workspace })
+        return undefined
       }
-
+      await wait(delay)
+    } else {
       return info
-    } catch (e) {
-      ctx.error('Error during get workspace info:', { e })
-      await wait(ASSIGN_WORKSPACE_DELAY_MS)
     }
   }
 }
 
-const timeoutByWorkspace = new Map<string, NodeJS.Timeout>()
-const attemptsByWorkspace = new Map<string, number>()
-
-export async function tryAssignToWorkspace (
-  workspace: WorkspaceUuid,
-  ctx: MeasureContext,
-  clearAttempts = true
-): Promise<boolean> {
-  if (clearAttempts) {
-    attemptsByWorkspace.delete(workspace)
+export async function getGlobalPerson (token: string): Promise<GlobalPerson | undefined> {
+  try {
+    const accountClient = getAccountClient(token)
+    return await accountClient.getPerson()
+  } catch (err) {
+    console.error('Error getting global person', err)
+    return undefined
   }
-  clearTimeout(timeoutByWorkspace.get(workspace))
+}
+
+export async function tryAssignToWorkspace (workspace: WorkspaceUuid, ctx: MeasureContext): Promise<boolean> {
   try {
     const systemToken = generateToken(systemAccountUuid, undefined, { service: 'aibot' })
     const accountClient = getAccountClient(systemToken)
-    const info = await tryGetWorkspaceInfo(workspace, ctx)
+    const info = await getWorkspaceInfo(workspace, ctx)
 
     if (info === undefined) {
       ctx.error('Workspace not found', { workspace })
@@ -76,29 +99,52 @@ export async function tryAssignToWorkspace (
     }
 
     if (isWorkspaceCreating(info?.mode)) {
-      const t = setTimeout(() => {
-        void tryAssignToWorkspace(workspace, ctx, false)
-      }, ASSIGN_WORKSPACE_DELAY_MS)
-
-      timeoutByWorkspace.set(workspace, t)
-
-      return false
+      await waitWorkspaceCreation(workspace, ctx)
     }
 
-    await accountClient.assignWorkspace(aiBotAccountEmail, workspace, AccountRole.User)
+    await withRetry(
+      async () => {
+        await accountClient.assignWorkspace(aiBotAccountEmail, workspace, AccountRole.User)
+      },
+      (_, attempt) => attempt >= ASSIGN_WORKSPACE_ATTEMPTS,
+      ASSIGN_WORKSPACE_DELAY
+    )()
+
     ctx.info('Assigned to workspace: ', { workspace })
     return true
   } catch (e) {
-    ctx.error('Error during assign workspace:', { e })
-    const attempts = attemptsByWorkspace.get(workspace) ?? 0
-    if (attempts < MAX_ASSIGN_ATTEMPTS) {
-      attemptsByWorkspace.set(workspace, attempts + 1)
-      const t = setTimeout(() => {
-        void tryAssignToWorkspace(workspace, ctx, false)
-      }, ASSIGN_WORKSPACE_DELAY_MS)
-      timeoutByWorkspace.set(workspace, t)
-    }
+    ctx.error('Error during assign workspace:', { workspace, e })
   }
 
   return false
+}
+
+async function confirmAccount (uuid: PersonUuid): Promise<void> {
+  const token = generateToken(uuid, undefined, { service: 'aibot', confirmEmail: aiBotAccountEmail })
+  const client = getAccountClient(token)
+  try {
+    await client.confirm()
+  } catch (error: any) {
+    // ignore
+  }
+}
+
+export async function getPersonUuid (ctx: MeasureContext): Promise<PersonUuid | undefined> {
+  const token = generateToken(systemAccountUuid, undefined, { service: 'aibot', confirmEmail: aiBotAccountEmail })
+  const accountClient = getAccountClient(token)
+  const personUuid = await accountClient.findPerson(aiBotEmailSocialId)
+
+  if (personUuid !== undefined) {
+    await confirmAccount(personUuid)
+    return personUuid
+  }
+
+  const result = await accountClient.signUp(aiBotEmailSocialId, config.Password, config.FirstName, config.LastName)
+
+  if (result !== undefined) {
+    await confirmAccount(result.account)
+    return result.account
+  }
+
+  return undefined
 }

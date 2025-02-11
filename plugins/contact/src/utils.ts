@@ -14,15 +14,22 @@
 //
 
 import {
+  Account,
+  AccountRole,
   AttachedData,
   buildSocialIdString,
   Class,
   Client,
   Doc,
   FindResult,
+  generateId,
   Hierarchy,
+  MeasureContext,
   PersonId,
-  Ref
+  Ref,
+  SocialId,
+  TxFactory,
+  Person as GlobalPerson
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { ColorDefinition } from '@hcengineering/ui'
@@ -369,4 +376,128 @@ export async function getAllEmployeesPrimarySocialStrings (client: Client): Prom
   const socialStringsByPerson = getSocialStringsByEmployee(client)
 
   return Object.values(socialStringsByPerson).map((it) => pickPrimarySocialId(it))
+}
+
+export async function ensureEmployee (
+  ctx: MeasureContext,
+  me: Account,
+  client: Client,
+  socialIds: SocialId[],
+  getGlobalPerson: () => Promise<GlobalPerson | undefined>
+): Promise<Ref<Employee> | null> {
+  const txFactory = new TxFactory(me.primarySocialId)
+  const personByUuid = await client.findOne(contact.class.Person, { personUuid: me.uuid })
+  let personRef: Ref<Person> | undefined = personByUuid?._id
+  if (personRef === undefined) {
+    const socialIdentity = await client.findOne(contact.class.SocialIdentity, { key: { $in: me.socialIds } })
+
+    if (socialIdentity !== undefined && !socialIdentity.confirmed) {
+      const updateSocialIdentityTx = txFactory.createTxUpdateDoc(
+        contact.class.SocialIdentity,
+        contact.space.Contacts,
+        socialIdentity._id,
+        {
+          confirmed: true
+        }
+      )
+
+      await client.tx(updateSocialIdentityTx)
+    }
+
+    personRef = socialIdentity?.attachedTo
+  }
+
+  if (personRef === undefined) {
+    await ctx.with('create-person', {}, async () => {
+      const globalPerson = await getGlobalPerson()
+
+      if (globalPerson === undefined) {
+        console.error('Cannot get global person')
+        return null
+      }
+
+      const data = {
+        personUuid: me.uuid,
+        name: combineName(globalPerson.firstName, globalPerson.lastName),
+        city: globalPerson.city,
+        avatarType: AvatarType.COLOR
+      }
+      personRef = generateId()
+
+      const createPersonTx = txFactory.createTxCreateDoc(contact.class.Person, contact.space.Contacts, data, personRef)
+
+      await client.tx(createPersonTx)
+    })
+  } else if (personByUuid === undefined) {
+    const updatePersonTx = txFactory.createTxUpdateDoc(contact.class.Person, contact.space.Contacts, personRef, {
+      personUuid: me.uuid
+    })
+
+    await client.tx(updatePersonTx)
+  }
+
+  if (me.role !== AccountRole.Guest) {
+    const employee = await client.findOne(contact.mixin.Employee, { _id: personRef as Ref<Employee> })
+
+    if (employee === undefined || !client.getHierarchy().hasMixin(employee, contact.mixin.Employee)) {
+      await ctx.with('create-employee', {}, async () => {
+        if (personRef === undefined) {
+          // something went wrong
+          console.error('Person not found')
+          return null
+        }
+
+        const createEmployeeTx = txFactory.createTxMixin(
+          personRef,
+          contact.class.Person,
+          contact.space.Contacts,
+          contact.mixin.Employee,
+          {
+            active: true
+          }
+        )
+
+        await client.tx(createEmployeeTx)
+      })
+    }
+  }
+
+  const existingIdentifiers = await client.findAll(contact.class.SocialIdentity, {
+    attachedTo: personRef,
+    attachedToClass: contact.class.Person
+  })
+
+  for (const socialId of socialIds) {
+    const existing = existingIdentifiers.find((it) => it.type === socialId.type && it.value === socialId.value)
+    if (existing === undefined) {
+      await ctx.with('create-social-identity', {}, async () => {
+        if (personRef === undefined) {
+          // something went wrong
+          console.error('Person not found')
+          return null
+        }
+
+        const createSocialIdTx = txFactory.createTxCollectionCUD(
+          contact.class.Person,
+          personRef,
+          contact.space.Contacts,
+          'socialIds',
+          txFactory.createTxCreateDoc(contact.class.SocialIdentity, contact.space.Contacts, {
+            attachedTo: personRef,
+            attachedToClass: contact.class.Person,
+            collection: 'socialIds',
+            type: socialId.type,
+            value: socialId.value,
+            key: buildSocialIdString(socialId), // TODO: fill it in trigger or on DB level as stored calculated column or smth?
+            confirmed: socialId.verifiedOn !== undefined && socialId.verifiedOn > 0
+          })
+        )
+
+        await client.tx(createSocialIdTx)
+      })
+    }
+  }
+
+  // TODO: check for merged persons with this one and do the merge
+  return personRef as Ref<Employee>
 }

@@ -1,4 +1,4 @@
-import { MarkupBlobRef, PersonId, Ref } from '@hcengineering/core'
+import { MarkupBlobRef, PersonId, Ref, WorkspaceDataId } from '@hcengineering/core'
 import document, { Document, getFirstRank, Teamspace } from '@hcengineering/document'
 import { makeRank } from '@hcengineering/rank'
 import { parseMessageMarkdown } from '@hcengineering/text'
@@ -37,12 +37,13 @@ async function pdfToMarkdown (
   name: string | undefined
 ): Promise<string | undefined> {
   if (config.DataLabApiKey !== '') {
+    const dataId = workspaceClient.workspace as any as WorkspaceDataId
     try {
-      const stat = await workspaceClient.storage.stat(workspaceClient.ctx, workspaceClient.wsDataId, fileId)
+      const stat = await workspaceClient.storage.stat(workspaceClient.ctx, dataId, fileId)
       if (stat?.contentType !== 'application/pdf') {
         return
       }
-      const file = await workspaceClient.storage.get(workspaceClient.ctx, workspaceClient.wsDataId, fileId)
+      const file = await workspaceClient.storage.get(workspaceClient.ctx, dataId, fileId)
       const buffer = await stream2buffer(file)
 
       const url = 'https://www.datalab.to/api/v1/marker'
@@ -64,7 +65,7 @@ async function pdfToMarkdown (
       })
 
       const data = await response.json()
-      console.log('data', data)
+
       if (data.request_check_url !== undefined) {
         for (let attempt = 0; attempt < 10; attempt++) {
           const resp = await fetch(data.request_check_url, { headers })
@@ -95,13 +96,8 @@ async function saveFile (
 
   const client = await workspaceClient.opClient
   const fileId = uuid()
-  await workspaceClient.storage.put(
-    workspaceClient.ctx,
-    workspaceClient.wsDataId,
-    fileId,
-    converted,
-    'application/json'
-  )
+  const dataId = workspaceClient.workspace as any as WorkspaceDataId
+  await workspaceClient.storage.put(workspaceClient.ctx, dataId, fileId, converted, 'application/json')
 
   const teamspaces = await client.findAll(document.class.Teamspace, {})
   const parent = await client.findOne(document.class.Document, { _id: args.parent as Ref<Document> })

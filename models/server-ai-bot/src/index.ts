@@ -13,54 +13,28 @@
 // limitations under the License.
 //
 
-import { type Builder, Mixin } from '@hcengineering/model'
-import core, { type Domain, type Ref } from '@hcengineering/core'
+import { type Builder } from '@hcengineering/model'
+import core from '@hcengineering/core'
 import serverCore from '@hcengineering/server-core'
 import serverAiBot from '@hcengineering/server-ai-bot'
-import aiBot, { type TransferredMessage } from '@hcengineering/ai-bot'
-import chunter, { type ChatMessage } from '@hcengineering/chunter'
-import notification from '@hcengineering/notification'
-import { TChatMessage } from '@hcengineering/model-chunter'
+import chunter from '@hcengineering/chunter'
 
 export { serverAiBotId } from '@hcengineering/server-ai-bot'
 
-export const DOMAIN_AI_BOT = 'ai_bot' as Domain
-@Mixin(aiBot.mixin.TransferredMessage, chunter.class.ChatMessage)
-export class TTransferredMessage extends TChatMessage implements TransferredMessage {
-  messageId!: Ref<ChatMessage>
-  parentMessageId?: Ref<ChatMessage>
-}
-
 export function createModel (builder: Builder): void {
-  builder.createModel(TTransferredMessage)
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverAiBot.trigger.OnMessageSend,
-    isAsync: true
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverAiBot.trigger.OnMention,
-    txMatch: {
-      _class: core.class.TxCreateDoc,
-      objectClass: notification.class.MentionInboxNotification
-    },
-    isAsync: true
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverAiBot.trigger.OnMessageNotified,
-    txMatch: {
-      _class: core.class.TxCreateDoc,
-      objectClass: notification.class.ActivityInboxNotification
-    },
-    isAsync: true
-  })
-
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverAiBot.trigger.OnUserStatus,
     txMatch: {
       objectClass: core.class.UserStatus
+    },
+    isAsync: true
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverAiBot.trigger.OnMessageSend,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: chunter.class.ChatMessage
     },
     isAsync: true
   })

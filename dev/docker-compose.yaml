@@ -246,7 +246,6 @@ services:
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
-      - SUPPORT_WORKSPACE=09b65664-b3c3-4ea8-b9a1-c9688bde17f0
       - AI_BOT_URL=http://host.docker.internal:4010
     restart: unless-stopped
   transactor_cockroach:
@@ -282,6 +281,7 @@ services:
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
+      - AI_BOT_URL=http://host.docker.internal:4010
     restart: unless-stopped
   green:
     image: hardcoreeng/green
@@ -374,22 +374,21 @@ services:
       - SERVICE_ID=sign-service
       - BRANDING_PATH=/var/cfg/branding.json
       - STATS_URL=http://host.docker.internal:4900
-  analytics:
-    image: hardcoreeng/analytics-collector
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
-    restart: unless-stopped
-    ports:
-      - 4017:4017
-    environment:
-      - SECRET=secret
-      - PORT=4017
-      - MONGO_URL=${MONGO_URL}
-      - 'MONGO_OPTIONS={"appName":"analytics","maxPoolSize":1}'
-      - SERVICE_ID=analytics-collector-service
-      - ACCOUNTS_URL=http://host.docker.internal:3000
-      - SUPPORT_WORKSPACE=09b65664-b3c3-4ea8-b9a1-c9688bde17f0
-      - STATS_URL=http://host.docker.internal:4900
+#  analytics:
+#    image: hardcoreeng/analytics-collector
+#    extra_hosts:
+#      - 'host.docker.internal:host-gateway'
+#    restart: unless-stopped
+#    ports:
+#      - 4017:4017
+#    environment:
+#      - SECRET=secret
+#      - PORT=4017
+#      - MONGO_URL=${MONGO_URL}
+#      - 'MONGO_OPTIONS={"appName":"analytics","maxPoolSize":1}'
+#      - SERVICE_ID=analytics-collector-service
+#      - ACCOUNTS_URL=http://host.docker.internal:3000
+#      - STATS_URL=http://host.docker.internal:4900
   aiBot:
     image: hardcoreeng/ai-bot
     ports:
@@ -401,7 +400,6 @@ services:
       - SERVER_SECRET=secret
       - MONGO_URL=${MONGO_URL}
       - ACCOUNTS_URL=http://host.docker.internal:3000
-      - SUPPORT_WORKSPACE=09b65664-b3c3-4ea8-b9a1-c9688bde17f0
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FIRST_NAME=Jolie
       - LAST_NAME=AI
