@@ -201,7 +201,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   const socialIdByAccount = await getSocialIdByOldAccount(client)
 
   ctx.info('processing activity reactions ', {})
-  const iterator = await client.traverse(DOMAIN_ACTIVITY, { _class: activity.class.Reaction })
+  const iterator = await client.traverse(DOMAIN_REACTION, { _class: activity.class.Reaction })
 
   try {
     let processed = 0
@@ -228,7 +228,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
       }
 
       if (operations.length > 0) {
-        await client.bulk(DOMAIN_ACTIVITY, operations)
+        await client.bulk(DOMAIN_REACTION, operations)
       }
 
       processed += docs.length
@@ -372,7 +372,7 @@ export const activityOperation: MigrateOperation = {
         }
       },
       {
-        state: 'accounts-to-social-ids',
+        state: 'accounts-to-social-ids-v2',
         func: migrateAccountsToSocialIds
       },
       {
