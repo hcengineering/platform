@@ -21,7 +21,7 @@
     "Major": "Major",
     "Minor": "Minor",
     "Patch": "Patch",
-    "DocumentApprovals": "Reviews and Approvals",
+    "ValidationWorkflow": "Validation workflow",
     "ChangeOwner": "Change document owner",
     "ChangeOwnerHintBeginning": "Transfer ownership of the",
     "ChangeOwnerHintEnd": "to another person.",

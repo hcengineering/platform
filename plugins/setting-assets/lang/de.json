@@ -134,6 +134,7 @@
     "Calendar": "Kalender",
     "StartOfTheWeek": "Wochenstart",
     "SystemSetupString": "Systemkonfiguration ({day})",
+    "DefaultString": "Stillschweigend ({day})",
     "AddAttribute": "Attribut hinzufügen"
   }
 }

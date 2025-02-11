@@ -21,7 +21,7 @@
     "Major": "主要",
     "Minor": "次要",
     "Patch": "补丁",
-    "DocumentApprovals": "审查和批准",
+    "ValidationWorkflow": "验证工作流程",
     "ChangeOwner": "更改文档所有者",
     "ChangeOwnerHintBeginning": "转移所有权",
     "ChangeOwnerHintEnd": "给其他人。",

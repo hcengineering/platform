@@ -21,7 +21,7 @@
     "Major": "Maggiore",
     "Minor": "Minore",
     "Patch": "Patch",
-    "DocumentApprovals": "Revisioni e Approvazioni",
+    "ValidationWorkflow": "Flusso di convalida",
     "ChangeOwner": "Cambia proprietario del documento",
     "ChangeOwnerHintBeginning": "Trasferisci la proprietà del",
     "ChangeOwnerHintEnd": "a un'altra persona.",

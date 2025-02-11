@@ -176,6 +176,8 @@ export const isCameraEnabled = writable<boolean>(false)
 export const isSharingEnabled = writable<boolean>(false)
 export const isFullScreen = writable<boolean>(false)
 export const isShareWithSound = writable<boolean>(false)
+export const isMicAllowed = writable<boolean>(false)
+export const isCamAllowed = writable<boolean>(false)
 
 function handleTrackSubscribed (
   track: RemoteTrack,
@@ -539,8 +541,9 @@ export async function setCam (value: boolean): Promise<void> {
     try {
       const opt: VideoCaptureOptions = {}
       const selectedDevice = localStorage.getItem(selectedCamId)
+      const devices = await LKRoom.getLocalDevices('videoinput')
+      isCamAllowed.set(devices.length > 0)
       if (selectedDevice !== null) {
-        const devices = await LKRoom.getLocalDevices('videoinput')
         const available = devices.find((p) => p.deviceId === selectedDevice)
         if (available !== undefined) {
           opt.deviceId = available.deviceId
@@ -549,6 +552,7 @@ export async function setCam (value: boolean): Promise<void> {
       await lk.localParticipant.setCameraEnabled(value, opt)
     } catch (err) {
       console.error(err)
+      isCamAllowed.set(false)
     }
   } else {
     sendMessage({ type: 'set_cam', value })
@@ -572,8 +576,9 @@ export async function setMic (value: boolean): Promise<void> {
     try {
       const opt: AudioCaptureOptions = {}
       const selectedDevice = localStorage.getItem(selectedMicId)
+      const devices = await LKRoom.getLocalDevices('audioinput')
+      isMicAllowed.set(devices.length > 0)
       if (selectedDevice !== null) {
-        const devices = await LKRoom.getLocalDevices('audioinput')
         const available = devices.find((p) => p.deviceId === selectedDevice)
         if (available !== undefined) {
           opt.deviceId = available.deviceId
@@ -582,6 +587,7 @@ export async function setMic (value: boolean): Promise<void> {
       await lk.localParticipant.setMicrophoneEnabled(value, opt)
     } catch (err) {
       console.error(err)
+      isMicAllowed.set(false)
     }
   } else {
     sendMessage({ type: 'set_mic', value })

@@ -13,20 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup, type Doc, type Ref, type Space } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { getResource } from '@hcengineering/platform'
-  import {
-    type Action,
-    getPlatformColorForTextDef,
-    themeStore,
-    navigate,
-    IconEdit,
-    Label,
-    closeTooltip
-  } from '@hcengineering/ui'
-  import { getActions as getContributedActions, TreeNode, TreeItem } from '@hcengineering/view-resources'
-  import { ActionGroup } from '@hcengineering/view'
   import {
     type ControlledDocument,
     type DocumentMeta,
@@ -34,27 +20,41 @@
     type DocumentSpaceType,
     type Project,
     type ProjectDocument,
-    type ProjectMeta,
+    ProjectDocumentTree,
     getDocumentName
   } from '@hcengineering/controlled-documents'
+  import { type Doc, type Ref, type Space, WithLookup } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import {
+    type Action,
+    IconEdit,
+    Label,
+    closeTooltip,
+    getPlatformColorForTextDef,
+    navigate,
+    themeStore
+  } from '@hcengineering/ui'
+  import { ActionGroup } from '@hcengineering/view'
+  import { TreeItem, TreeNode, getActions as getContributedActions } from '@hcengineering/view-resources'
 
-  import ProjectSelector from '../project/ProjectSelector.svelte'
-  import DocHierarchyLevel from './DocHierarchyLevel.svelte'
   import { getDocumentIdFromFragment, getProjectDocumentLink } from '../../navigation'
   import {
+    canCreateChildDocument,
+    canCreateChildFolder,
+    createDocument,
+    createDocumentHierarchyQuery,
+    createFolder,
     getCurrentProject,
     getLatestProjectId,
-    setCurrentProject,
-    getProjectDocsHierarchy,
     isEditableProject,
-    createDocument,
-    canCreateChildDocument,
     moveDocument,
-    moveDocumentBefore,
     moveDocumentAfter,
-    canCreateChildFolder,
-    createFolder
+    moveDocumentBefore,
+    setCurrentProject
   } from '../../utils'
+  import ProjectSelector from '../project/ProjectSelector.svelte'
+  import DocHierarchyLevel from './DocHierarchyLevel.svelte'
 
   import documents from '../../plugin'
 
@@ -83,27 +83,14 @@
   let project: Ref<Project> = documents.ids.NoProject
   $: void selectProject(space)
 
-  let docsByMeta = new Map<Ref<DocumentMeta>, WithLookup<ProjectMeta>>()
-  let rootDocs: Array<WithLookup<ProjectMeta>> = []
-  let childrenByParent: Record<Ref<DocumentMeta>, Array<WithLookup<ProjectMeta>>> = {}
+  let tree = new ProjectDocumentTree()
 
-  const projectMetaQ = createQuery()
-  $: projectMetaQ.query(
-    documents.class.ProjectMeta,
-    {
-      space: space._id,
-      project
-    },
-    (result) => {
-      docsByMeta = new Map(result.map((r) => [r.meta, r]))
-      ;({ rootDocs, childrenByParent } = getProjectDocsHierarchy(result))
-    },
-    {
-      lookup: {
-        meta: documents.class.DocumentMeta
-      }
-    }
-  )
+  const query = createDocumentHierarchyQuery()
+  $: if (document !== undefined && project !== undefined) {
+    query.query(space._id, project, (data) => {
+      tree = data
+    })
+  }
 
   let selectedControlledDoc: ControlledDocument | undefined = undefined
 
@@ -132,23 +119,6 @@
       })
   } else {
     selectedControlledDoc = undefined
-  }
-
-  function getAllDescendants (obj: Ref<DocumentMeta>): Ref<DocumentMeta>[] {
-    const result: Ref<DocumentMeta>[] = []
-    const queue: Ref<DocumentMeta>[] = [obj]
-
-    while (queue.length > 0) {
-      const next = queue.pop()
-      if (next === undefined) break
-
-      const children = childrenByParent[next] ?? []
-      const childrenRefs = children.map((p) => p.meta)
-      result.push(...childrenRefs)
-      queue.push(...childrenRefs)
-    }
-
-    return result
   }
 
   async function selectProject (space: DocumentSpace): Promise<void> {
@@ -253,7 +223,7 @@
       return
     }
 
-    cannotDropTo = [object, ...getAllDescendants(object)]
+    cannotDropTo = [object, ...tree.descendantsOf(object)]
 
     event.dataTransfer.effectAllowed = 'move'
     event.dataTransfer.dropEffect = 'move'
@@ -311,8 +281,8 @@
       return
     }
     if (draggedItem !== undefined && canDrop(draggedItem, object)) {
-      const doc = docsByMeta.get(draggedItem)
-      const target = docsByMeta.get(object)
+      const doc = tree.bundleOf(draggedItem)?.ProjectMeta[0]
+      const target = tree.bundleOf(object)?.ProjectMeta[0]
 
       if (doc !== undefined && target !== undefined && doc._id !== target._id) {
         if (object === documents.ids.NoParent) {
@@ -385,10 +355,11 @@
       {/if}
     </svelte:fragment>
 
-    {#if rootDocs.length > 0}
+    {@const root = tree.childrenOf(documents.ids.NoParent)}
+    {#if root.length > 0}
       <DocHierarchyLevel
-        projectMeta={rootDocs}
-        {childrenByParent}
+        {tree}
+        documentIds={root}
         {selected}
         getMoreActions={getDocumentActions}
         on:selected={(e) => {

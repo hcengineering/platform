@@ -36,6 +36,7 @@
     ControlledDocument,
     ControlledDocumentState,
     DocumentRequest,
+    DocumentState,
     Project
   } from '@hcengineering/controlled-documents'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
@@ -163,10 +164,15 @@
       return
     }
 
+    const hierarchy = client.getHierarchy()
+
+    const isReviewed = $controlledDocument.controlledState === ControlledDocumentState.Reviewed
+    const isApprovalRequest = hierarchy.isDerived(requestClass, documents.class.DocumentApprovalRequest)
+
     const teamPopupData: TeamPopupData = {
       controlledDoc: $controlledDocument,
       requestClass,
-      requireSignature: true
+      requireSignature: !(isReviewed && isApprovalRequest)
     }
 
     showPopup(TeamPopup, teamPopupData, 'center')

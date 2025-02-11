@@ -135,6 +135,7 @@
     "Calendar": "Календарь",
     "StartOfTheWeek": "Начало недели",
     "SystemSetupString": "Системная настройка ({day})",
+    "DefaultString": "По умолчанию ({day})",
     "AddAttribute": "Добавить атрибут"
   }
 }

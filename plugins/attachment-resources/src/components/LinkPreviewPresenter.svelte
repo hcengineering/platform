@@ -155,6 +155,7 @@
   }
   .description {
     color: var(--theme-link-preview-description-color);
+    overflow: hidden;
   }
   .content span {
     display: none;

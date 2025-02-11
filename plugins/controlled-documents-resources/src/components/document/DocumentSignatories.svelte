@@ -13,121 +13,68 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder } from '@hcengineering/core'
-  import { Label, Scroller } from '@hcengineering/ui'
-  import { createQuery } from '@hcengineering/presentation'
-  import documents, { DocumentApprovalRequest, DocumentReviewRequest } from '@hcengineering/controlled-documents'
-  import { employeeByIdStore } from '@hcengineering/contact-resources'
   import { Employee, Person, formatName } from '@hcengineering/contact'
+  import { employeeByIdStore, personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import documents, {
+    DocumentRequest,
+    emptyBundle,
+    extractValidationWorkflow
+  } from '@hcengineering/controlled-documents'
+  import { Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import { Label, Scroller } from '@hcengineering/ui'
 
   import documentsRes from '../../plugin'
-  import { $controlledDocument as controlledDocument } from '../../stores/editors/document/editor'
+  import {
+    $controlledDocument as controlledDocument,
+    $documentSnapshots as documentSnapshots
+  } from '../../stores/editors/document/editor'
   import { formatSignatureDate } from '../../utils'
 
-  interface Signer {
-    id?: Ref<Person>
-    role: 'author' | 'reviewer' | 'approver'
-    name: string
-    date: string
+  let requests: DocumentRequest[] = []
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  $: doc = $controlledDocument
+
+  $: if (doc) {
+    void client.findAll(documents.class.DocumentRequest, { attachedTo: doc._id }).then((r) => {
+      requests = r
+    })
   }
 
-  let signers: Signer[] = []
+  $: workflow = extractValidationWorkflow(
+    hierarchy,
+    {
+      ...emptyBundle(),
+      ControlledDocument: doc ? [doc] : [],
+      DocumentRequest: requests,
+      DocumentSnapshot: $documentSnapshots
+    },
+    (ref) => $personRefByPersonIdStore.get(ref)
+  )
 
-  let reviewRequest: DocumentReviewRequest
-  let approvalRequest: DocumentApprovalRequest
-
-  const reviewQuery = createQuery()
-  const approvalQuery = createQuery()
-
-  $: if ($controlledDocument !== undefined) {
-    reviewQuery.query(
-      documents.class.DocumentReviewRequest,
-      {
-        attachedTo: $controlledDocument?._id,
-        attachedToClass: $controlledDocument?._class
-      },
-      (res) => {
-        reviewRequest = res[0]
-      },
-      {
-        sort: { createdOn: SortingOrder.Descending },
-        limit: 1
+  $: state = (doc ? workflow?.get(doc._id) ?? [] : [])[0]
+  $: signers = (state?.approvals ?? [])
+    .filter((a) => a.state === 'approved')
+    .map((a) => {
+      return {
+        person: a.person,
+        role: a.role,
+        name: getNameByEmployeeId(a.person),
+        date: a.timestamp ? formatSignatureDate(a.timestamp) : ''
       }
-    )
+    })
 
-    approvalQuery.query(
-      documents.class.DocumentApprovalRequest,
-      {
-        attachedTo: $controlledDocument?._id,
-        attachedToClass: $controlledDocument?._class
-      },
-      (res) => {
-        approvalRequest = res[0]
-      },
-      {
-        sort: { createdOn: SortingOrder.Descending },
-        limit: 1
-      }
-    )
-  } else {
-    reviewQuery.unsubscribe()
-    approvalQuery.unsubscribe()
-  }
+  function getNameByEmployeeId (id: Ref<Person> | undefined): string {
+    if (id === undefined) return ''
 
-  $: if ($controlledDocument !== null) {
-    const getNameByEmployeeId = (id: Ref<Person> | undefined): string => {
-      if (id === undefined) {
-        return ''
-      }
+    const employee = $employeeByIdStore.get(id as Ref<Employee>)
+    const rawName = employee?.name
 
-      const employee = $employeeByIdStore.get(id as Ref<Employee>)
-      const rawName = employee?.name
-
-      return rawName !== undefined ? formatName(rawName) : ''
-    }
-
-    const authorSignDate =
-      reviewRequest !== undefined
-        ? reviewRequest.createdOn
-        : approvalRequest !== undefined
-          ? approvalRequest.createdOn
-          : $controlledDocument.createdOn
-
-    signers = [
-      {
-        id: $controlledDocument.author,
-        role: 'author',
-        name: getNameByEmployeeId($controlledDocument.author),
-        date: authorSignDate !== undefined ? formatSignatureDate(authorSignDate) : ''
-      }
-    ]
-
-    if (reviewRequest !== undefined) {
-      reviewRequest.approved.forEach((reviewer, idx) => {
-        const date = reviewRequest.approvedDates?.[idx]
-
-        signers.push({
-          id: reviewer,
-          role: 'reviewer',
-          name: getNameByEmployeeId(reviewer),
-          date: formatSignatureDate(date ?? reviewRequest.modifiedOn)
-        })
-      })
-    }
-
-    if (approvalRequest !== undefined) {
-      approvalRequest.approved.forEach((approver, idx) => {
-        const date = approvalRequest.approvedDates?.[idx]
-
-        signers.push({
-          id: approver,
-          role: 'approver',
-          name: getNameByEmployeeId(approver),
-          date: formatSignatureDate(date ?? approvalRequest.modifiedOn)
-        })
-      })
-    }
+    return rawName !== undefined ? formatName(rawName) : ''
   }
 
   function getSignerLabel (role: 'author' | 'reviewer' | 'approver'): IntlString {
@@ -161,7 +108,7 @@
               {signer.name}
             </div>
             <div class="code">
-              {signer.id}
+              {signer.person}
             </div>
           </div>
         </div>
