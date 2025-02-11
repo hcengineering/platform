@@ -13,25 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, generateId, getCurrentAccount, Ref, Space, Timestamp, Tx, TxCUD } from '@hcengineering/core'
   import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { ModernButton, Scroller } from '@hcengineering/ui'
-  import { addTxListener, getClient, removeTxListener } from '@hcengineering/presentation'
   import { ActivityMessagePresenter, canGroupMessages, messageInFocus } from '@hcengineering/activity-resources'
-  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-  import { afterUpdate, onDestroy, onMount, tick } from 'svelte'
+  import core, { Doc, generateId, getCurrentAccount, Ref, Space, Timestamp, Tx, TxCUD } from '@hcengineering/core'
   import { DocNotifyContext } from '@hcengineering/notification'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+  import { addTxListener, getClient, removeTxListener } from '@hcengineering/presentation'
+  import { ModernButton, Scroller } from '@hcengineering/ui'
+  import { afterUpdate, onDestroy, onMount, tick } from 'svelte'
 
-  import HistoryLoading from './LoadingHistory.svelte'
-  import { chatReadMessagesStore, recheckNotifications } from '../utils'
-  import { getScrollToDateOffset, getSelectedDate, jumpToDate, readViewportMessages } from '../scroll'
+  import { ChannelDataProvider, MessageMetadata } from '../channelDataProvider'
   import chunter from '../plugin'
+  import { getScrollToDateOffset, getSelectedDate, jumpToDate, readViewportMessages } from '../scroll'
+  import { chatReadMessagesStore, recheckNotifications } from '../utils'
+  import BaseChatScroller from './BaseChatScroller.svelte'
   import BlankView from './BlankView.svelte'
+  import ChannelInput from './ChannelInput.svelte'
   import ActivityMessagesSeparator from './ChannelMessagesSeparator.svelte'
   import JumpToDateSelector from './JumpToDateSelector.svelte'
-  import BaseChatScroller from './BaseChatScroller.svelte'
-  import { ChannelDataProvider, MessageMetadata } from '../channelDataProvider'
-  import ChannelInput from './ChannelInput.svelte'
+  import HistoryLoading from './LoadingHistory.svelte'
 
   export let provider: ChannelDataProvider
   export let object: Doc
@@ -537,11 +537,12 @@
     loadMore()
   }
 
-  const newMessageTxListener = (tx: Tx): void => {
-    const ctx = tx as TxCUD<ActivityMessage>
-    if (ctx.attachedTo !== doc._id) return
-    if (ctx._class !== core.class.TxCreateDoc) return
-    if (shouldScrollToNew) {
+  const newMessageTxListener = (txes: Tx[]): void => {
+    const ctx = txes
+      .map((it) => it as TxCUD<ActivityMessage>)
+      .filter((it) => it.attachedTo === doc._id && it._class === core.class.TxCreateDoc)
+
+    if (ctx.length > 0 && shouldScrollToNew) {
       void wait().then(scrollToNewMessages)
     }
   }
