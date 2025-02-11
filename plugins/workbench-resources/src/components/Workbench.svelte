@@ -190,7 +190,7 @@
   const query = createQuery()
   $: query.query(
     workbench.class.WorkbenchTab,
-    { attachedTo: me },
+    { attachedTo: { $in: account.socialIds } },
     (res) => {
       tabs = res
       tabsStore.set(tabs)
@@ -240,7 +240,7 @@
         } else {
           console.log('Creating new tab on init')
           const _id = await client.createDoc(workbench.class.WorkbenchTab, core.space.Workspace, {
-            attachedTo: me,
+            attachedTo: account.primarySocialId,
             location: url,
             isPinned: false
           })
