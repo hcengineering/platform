@@ -44,7 +44,8 @@
       closeTooltip()
       try {
         const url = new URL(href)
-        if (url.origin === window.location.origin) {
+        const frontUrl = getMetadata(uiPlugin.metadata.FrontUrl) ?? window.location.origin
+        if (url.origin === frontUrl) {
           const loc = parseLocation(url)
           const routes = getMetadata(uiPlugin.metadata.Routes)
           const app = routes?.get(loc.path[0])
