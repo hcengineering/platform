@@ -1226,7 +1226,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: view.component.PersonIdPresenter
+    presenter: view.component.PersonIdPresenter,
+    arrayPresenter: view.component.PersonArrayEditor
   })
 
   builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributeFilterPresenter, {
