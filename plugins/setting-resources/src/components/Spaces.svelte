@@ -88,7 +88,7 @@
         </div>
         <AccountArrayEditor
           value={rolesAssignment?.[role._id] ?? []}
-          label={setting.string.Assignees}
+          label={core.string.Members}
           onChange={(refs) => {
             handleRoleAssignmentChanged(role._id, refs)
           }}
