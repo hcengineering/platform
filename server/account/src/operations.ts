@@ -2713,7 +2713,7 @@ export async function joinWithProvider (
       const token = generateToken(email, getWorkspaceId(''), getExtra(account))
       const ws = await getWorkspaceById(db, workspace.name)
 
-      if (ws?.accounts.includes(account._id)) {
+      if ((ws?.accounts ?? []).includes(account._id)) {
         const result = {
           endpoint: getEndpoint(ctx, ws, EndpointKind.External),
           email,
