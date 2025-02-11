@@ -134,7 +134,8 @@ export default plugin(settingId, {
     WorkspaceSetting: '' as Ref<Doc>,
     ManageSpaces: '' as Ref<Doc>,
     Spaces: '' as Ref<Doc>,
-    Backup: '' as Ref<Doc>
+    Backup: '' as Ref<Doc>,
+    Export: '' as Ref<Doc>
   },
   mixin: {
     Editable: '' as Ref<Mixin<Editable>>,
@@ -169,7 +170,8 @@ export default plugin(settingId, {
     RoleAssignmentEditor: '' as AnyComponent,
     RelationSetting: '' as AnyComponent,
     Backup: '' as AnyComponent,
-    CreateAttributePopup: '' as AnyComponent
+    CreateAttributePopup: '' as AnyComponent,
+    Export: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,

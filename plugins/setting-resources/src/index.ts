@@ -65,6 +65,7 @@ import ClassHierarchy from './components/ClassHierarchy.svelte'
 import CreateAttributePopup from './components/CreateAttributePopup.svelte'
 import setting from './plugin'
 import { filterDescendants, getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue } from './utils'
+import Export from './components/Export.svelte'
 
 export * from './store'
 export {
@@ -137,7 +138,8 @@ export default async (): Promise<Resources> => ({
     RoleEditor,
     RoleAssignmentEditor,
     SettingsWidget,
-    CreateAttributePopup
+    CreateAttributePopup,
+    Export
   },
   actionImpl: {
     DeleteMixin

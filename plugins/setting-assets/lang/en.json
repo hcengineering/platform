@@ -131,6 +131,7 @@
     "BackupFileDownload": "Download File",
     "BackupFiles": "Backup Files",
     "BackupNoBackup": "No backups are currently available.",
-    "AddAttribute": "Add attribute"
+    "AddAttribute": "Add attribute",
+    "Export": "Export"
   }
 }

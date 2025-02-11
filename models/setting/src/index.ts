@@ -336,6 +336,20 @@ export function createModel (builder: Builder): void {
     },
     setting.ids.InviteSettings
   )
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
+      name: 'export',
+      label: setting.string.Export,
+      icon: setting.icon.InviteSettings,
+      component: setting.component.Export,
+      group: 'settings-editor',
+      role: AccountRole.User,
+      order: 4800
+    },
+    setting.ids.Export
+  )
   // Currently remove Support item from settings
   // builder.createDoc(
   //   setting.class.SettingsCategory,
