@@ -18,6 +18,7 @@ import { SttProvider } from './type.js'
 interface Config {
   DeepgramApiKey: string
   DeepgramModel: string
+  DeepgramEnModel: string
   OpenAiModel: string
   OpenaiApiKey: string
   OpenaiBaseUrl: string
@@ -29,7 +30,8 @@ interface Config {
 const config: Config = (() => {
   const params: Partial<Config> = {
     DeepgramApiKey: process.env.DEEPGRAM_API_KEY ?? '',
-    DeepgramModel: process.env.DEEPGRAM_MODEL ?? 'nova-3-general',
+    DeepgramModel: process.env.DEEPGRAM_MODEL ?? 'nova-2-general',
+    DeepgramEnModel: process.env.DEEPGRAM_EN_MODEL ?? 'nova-3-general',
     OpenAiModel: process.env.OPENAI_MODEL ?? 'gpt-4o-realtime-preview-2024-12-17',
     OpenaiApiKey: process.env.OPENAI_API_KEY ?? '',
     OpenaiBaseUrl: process.env.OPENAI_BASE_URL ?? '',

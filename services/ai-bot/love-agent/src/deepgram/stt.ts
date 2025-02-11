@@ -136,11 +136,13 @@ export class STT implements Stt {
     if (this.dgConnectionBySid.has(sid)) return
 
     const stream = new AudioStream(track)
+    const language = this.language ?? 'en'
     const dgConnection = this.deepgram.listen.live({
       ...dgSchema,
       channels: stream.numChannels,
       sample_rate: stream.sampleRate,
-      language: this.language ?? 'en'
+      language,
+      model: language === 'en' ? config.DeepgramEnModel : config.DeepgramEnModel
     })
     console.log('Starting deepgram for track', this.room.name, sid)
 
