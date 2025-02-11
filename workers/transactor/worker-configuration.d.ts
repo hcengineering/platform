@@ -25,7 +25,6 @@ interface Env {
 
   SES_URL?: string
   SES_AUTH_TOKEN?: string
-  SUPPORT_WORKSPACE?: string
   TELEGRAM_BOT_URL: string
   AI_BOT_URL?: string
   LAST_NAME_FIRST?: string

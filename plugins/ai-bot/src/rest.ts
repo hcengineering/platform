@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,40 +13,21 @@
 // limitations under the License.
 //
 
-import { Class, Doc, Markup, PersonId, Ref, Space, Timestamp, type WorkspaceUuid } from '@hcengineering/core'
-import { ChatMessage } from '@hcengineering/chunter'
+import { Class, Doc, Markup, PersonId, Ref, Space, Timestamp } from '@hcengineering/core'
 import { Room, RoomLanguage } from '@hcengineering/love'
 import { Person } from '@hcengineering/contact'
-
-export enum AIEventType {
-  Message = 'message',
-  Transfer = 'transfer'
-}
+import { ChatMessage } from '@hcengineering/chunter'
 
 export interface AIEventRequest {
-  type: AIEventType
-  collection: string
+  message: string
   messageClass: Ref<Class<ChatMessage>>
   messageId: Ref<ChatMessage>
-  message: string
-  createdOn: Timestamp
-}
-
-export interface AIMessageEventRequest extends AIEventRequest {
-  objectId: Ref<Doc>
   objectClass: Ref<Class<Doc>>
+  objectId: Ref<Doc>
   objectSpace: Ref<Space>
   user: PersonId
-  email: string
-}
-
-export interface AITransferEventRequest extends AIEventRequest {
-  toPersonId: PersonId
-  toWorkspace: WorkspaceUuid
-  fromWorkspace: WorkspaceUuid
-  fromWorkspaceName: string
-  fromWorkspaceUrl: string
-  parentMessageId?: Ref<ChatMessage>
+  collection: string
+  createdOn: Timestamp
 }
 
 export interface TranslateRequest {

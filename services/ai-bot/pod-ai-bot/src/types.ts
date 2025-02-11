@@ -14,8 +14,7 @@
 //
 
 import { ObjectId } from 'mongodb'
-import { PersonId, Class, Doc, Ref } from '@hcengineering/core'
-import { ChatMessage } from '@hcengineering/chunter'
+import { Class, Doc, Ref, PersonUuid } from '@hcengineering/core'
 
 export interface HistoryRecord {
   _id?: ObjectId
@@ -24,15 +23,7 @@ export interface HistoryRecord {
   objectId: Ref<Doc>
   objectClass: Ref<Class<Doc>>
   role: string
-  user: PersonId
+  user: PersonUuid
   tokens: number
   timestamp: number
-}
-
-export interface AIReplyTransferData {
-  messageClass: Ref<Class<ChatMessage>>
-  email: string
-  fromWorkspace: string
-  originalMessageId: Ref<ChatMessage>
-  originalParent?: Ref<ChatMessage>
 }

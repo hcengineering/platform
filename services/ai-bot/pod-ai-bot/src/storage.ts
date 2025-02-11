@@ -24,7 +24,7 @@ import { HistoryRecord } from './types'
 const clientRef: MongoClientReference = getMongoClient(config.MongoURL)
 let client: MongoClient | undefined
 
-export const getDB = (() => {
+const connectDB = (() => {
   return async () => {
     if (client === undefined) {
       client = await clientRef.getClient()
@@ -34,8 +34,9 @@ export const getDB = (() => {
   }
 })()
 
-export const closeDB: () => Promise<void> = async () => {
-  clientRef.close()
+export async function getDbStorage (): Promise<DbStorage> {
+  const db = await connectDB()
+  return new DbStorage(db)
 }
 
 export class DbStorage {
@@ -71,5 +72,9 @@ export class DbStorage {
 
   async updateWorkspace (workspace: string, update: UpdateFilter<WorkspaceInfoRecord>): Promise<void> {
     await this.workspacesInfoCollection.updateOne({ workspace }, update)
+  }
+
+  close (): void {
+    clientRef.close()
   }
 }

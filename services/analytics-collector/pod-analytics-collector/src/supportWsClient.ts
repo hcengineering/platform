@@ -15,7 +15,7 @@
 
 import analyticsCollector, { AnalyticEvent, OnboardingChannel } from '@hcengineering/analytics-collector'
 import chunter, { Channel, ChatMessage } from '@hcengineering/chunter'
-import { includesAny, getAllSocialStringsByPersonId, getPrimarySocialId, type Person } from '@hcengineering/contact'
+import { getPrimarySocialId, type Person } from '@hcengineering/contact'
 import core, {
   Doc,
   generateId,
@@ -39,7 +39,7 @@ import { generateToken } from '@hcengineering/server-token'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { Collection } from 'mongodb'
 import { eventToMarkup, getOnboardingMessage } from './format'
-import { Action, MessageActions, OnboardingMessage } from './types'
+import { OnboardingMessage } from './types'
 import config from './config'
 import { WorkspaceClient } from './workspaceClient'
 
@@ -142,71 +142,6 @@ export class SupportWsClient extends WorkspaceClient {
     }
   }
 
-  async handleAcceptAction (
-    action: Action,
-    personId: PersonId,
-    onboardingMessages: Collection<OnboardingMessage>
-  ): Promise<void> {
-    if (action.channelId !== analyticsCollector.space.GeneralOnboardingChannel) {
-      return
-    }
-
-    const client = await this.opClient
-    const personIds = await getAllSocialStringsByPersonId(client, personId)
-
-    if (personIds.length === 0) {
-      return
-    }
-
-    if (this.generalChannel === undefined) {
-      return
-    }
-
-    if (!includesAny(this.generalChannel.members, personIds)) {
-      return
-    }
-
-    const message = (await onboardingMessages.findOne({ messageId: action.messageId })) ?? undefined
-
-    if (message === undefined) {
-      return
-    }
-
-    await client.updateDoc(analyticsCollector.class.OnboardingChannel, core.space.Space, message.channelId, {
-      $push: { members: personId }
-    })
-
-    await onboardingMessages.deleteOne({ messageId: action.messageId })
-    await client.removeCollection(
-      chunter.class.InlineButton,
-      analyticsCollector.space.GeneralOnboardingChannel,
-      action._id,
-      action.messageId,
-      chunter.class.ChatMessage,
-      'inlineButtons'
-    )
-  }
-
-  async processAction (
-    action: Action,
-    person: Person,
-    onboardingMessages: Collection<OnboardingMessage>
-  ): Promise<void> {
-    switch (action.name) {
-      case MessageActions.Accept: {
-        const personId = await this.getPersonId(person._id)
-
-        if (personId === undefined) {
-          return
-        }
-
-        await this.handleAcceptAction(action, personId, onboardingMessages)
-        break
-      }
-      default:
-    }
-  }
-
   async getPersonId (person: Ref<Person>): Promise<PersonId | undefined> {
     const cachedPersonId = this.personIdByPerson.get(person)
     const personId = cachedPersonId ?? (await getPrimarySocialId(await this.opClient, person))
@@ -258,19 +193,6 @@ export class SupportWsClient extends WorkspaceClient {
         'messages',
         { message: getOnboardingMessage(personId, workspaceInfo?.url ?? wsString, person.name) },
         messageId
-      )
-
-      await op.addCollection(
-        chunter.class.InlineButton,
-        analyticsCollector.space.GeneralOnboardingChannel,
-        messageId,
-        chunter.class.ChatMessage,
-        'inlineButtons',
-        {
-          name: MessageActions.Accept,
-          title: 'Accept',
-          action: analyticsCollector.function.AnalyticsCollectorInlineAction
-        }
       )
 
       await onboardingMessages.insertOne({ messageId, channelId })
