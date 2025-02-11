@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-FILES=$(git diff origin/develop --name-only --diff-filter=ACMR | sed 's| |\\ |g')
+branch=${BASE_BRANCH:-develop}
+
+FILES=$(git diff origin/$branch --name-only --diff-filter=ACMR | sed 's| |\\ |g')
 [ -z "$FILES" ] && exit 0
 
 roots=$(rush list -p --json | grep "path" | cut -f 2 -d ':' | cut -f 2 -d '"')

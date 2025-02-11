@@ -156,7 +156,7 @@ jobs:
           [ -z "$(git diff --name-only '*.js' '*.ts' '*.svelte' '*.json' '*.yaml' | cat)" ]
           echo '================================================================'
       - name: Formatting...
-        run: node common/scripts/install-run-rush.js fast-format
+        run: node common/scripts/install-run-rush.js fast-format --branch ${{ github.base_ref }}
       - name: Check files formatting
         run: |
           echo '================================================================'
@@ -262,10 +262,8 @@ jobs:
         run: |
           cd ./tests/sanity
           mkdir logs
-          docker logs $(docker ps | grep transactor | cut -f 1 -d ' ') > logs/transactor.log
-          docker logs $(docker ps | grep account | cut -f 1 -d ' ') > logs/account.log
-          docker logs $(docker ps | grep front | cut -f 1 -d ' ') > logs/front.log
-          docker logs $(docker ps | grep collaborator | cut -f 1 -d ' ') > logs/collaborator.log
+          cd logs
+          docker ps -a --format '{{.Names}}' | xargs -I {} sh -c 'docker logs {} > {}_logs.log 2>&1'
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -363,9 +361,8 @@ jobs:
         run: |
           cd ./tests/sanity
           mkdir logs
-          docker logs $(docker ps | grep transactor | cut -f 1 -d ' ') > logs/transactor.log
-          docker logs $(docker ps | grep account | cut -f 1 -d ' ') > logs/account.log
-          docker logs $(docker ps | grep front | cut -f 1 -d ' ') > logs/front.log
+          cd logs
+          docker ps -a --format '{{.Names}}' | xargs -I {} sh -c 'docker logs {} > {}_logs.log 2>&1'
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -431,9 +428,8 @@ jobs:
         run: |
           cd ./qms-tests/sanity
           mkdir logs
-          docker logs $(docker ps | grep transactor | cut -f 1 -d ' ') > logs/transactor.log
-          docker logs $(docker ps | grep account | cut -f 1 -d ' ') > logs/account.log
-          docker logs $(docker ps | grep front | cut -f 1 -d ' ') > logs/front.log
+          cd logs
+          docker ps -a --format '{{.Names}}' | xargs -I {} sh -c 'docker logs {} > {}_logs.log 2>&1'
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -502,9 +498,8 @@ jobs:
         run: |
           cd ./ws-tests/sanity
           mkdir logs
-          docker logs $(docker ps | grep transactor | cut -f 1 -d ' ') > logs/transactor.log
-          docker logs $(docker ps | grep account | cut -f 1 -d ' ') > logs/account.log
-          docker logs $(docker ps | grep front | cut -f 1 -d ' ') > logs/front.log
+          cd logs
+          docker ps -a --format '{{.Names}}' | xargs -I {} sh -c 'docker logs {} > {}_logs.log 2>&1'
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
