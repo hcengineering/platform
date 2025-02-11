@@ -85,7 +85,8 @@ import {
   selectWorkspace,
   doJoinByInvite,
   getWorkspacesInfoWithStatusByIds,
-  getSocialIdByKey
+  getSocialIdByKey,
+  getWorkspaces
 } from './utils'
 
 // Move to config?
@@ -842,29 +843,7 @@ export async function listWorkspaces (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
-  const statuses = await db.workspaceStatus.find({})
-  const statusesMap = statuses.reduce<Record<string, WorkspaceStatus>>((sm, s) => {
-    sm[s.workspaceUuid] = s
-    return sm
-  }, {})
-
-  const workspaces = (await db.workspace.find(region != null ? { region } : {})).filter((it) => {
-    const status = statusesMap[it.uuid]
-    if (status.isDisabled) {
-      return false
-    }
-
-    if (mode != null) {
-      return status.mode === mode
-    }
-
-    return true
-  })
-
-  return workspaces.map((it) => ({
-    ...it,
-    status: statusesMap[it.uuid]
-  }))
+  return await getWorkspaces(db, false, region, mode)
 }
 
 export async function performWorkspaceOperation (

@@ -97,8 +97,8 @@ export interface Workspace {
   branding?: string
   location?: Location
   region?: string
-  createdBy: PersonUuid
-  billingAccount: PersonUuid
+  createdBy?: PersonUuid
+  billingAccount?: PersonUuid
   createdOn?: Timestamp
 }
 
