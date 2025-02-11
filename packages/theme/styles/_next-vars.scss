@@ -1,0 +1,76 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+* {
+  /** Space & Dimensions **/
+
+  --spacing-0_25: 0.125rem;
+  --spacing-0_5: 0.25rem;
+  --spacing-0_75: 0.375rem;
+  --spacing-1: 0.5rem;
+  --spacing-1_25: 0.625rem;
+  --spacing-1_5: 0.75rem;
+  --spacing-1_75: 0.875rem;
+  --spacing-2: 1rem;
+  --spacing-2_25: 1.125rem;
+  --spacing-2_5: 1.25rem;
+  --spacing-2_75: 1.375rem;
+  --spacing-3: 1.5rem;
+  --spacing-3_25: 1.625rem;
+  --spacing-3_5: 1.75rem;
+  --spacing-4: 2rem;
+  --spacing-4_5: 2.25rem;
+  --spacing-5: 2.5rem;
+  --spacing-5_5: 2.75rem;
+  --spacing-6: 3rem;
+  --spacing-6_5: 3.5rem;
+  --spacing-7: 4rem;
+  --spacing-8: 5rem;
+  --spacing-9: 6rem;
+  --spacing-10: 7.5rem;
+
+  /** UI Elements Size **/
+
+  --global-min-Size: 1rem;
+  --global-extra-small-Size: 1.5rem;
+  --global-small-Size: 2rem;
+  --global-medium-Size: 2.5rem;
+  --global-large-Size: 3rem;
+  --global-extra-large-Size: 3.5rem;
+  --global-max-Size: 4rem;
+
+  /** Border Radius **/
+
+  --min-BorderRadius: 0.125rem;
+  --extra-small-BorderRadius: 0.25rem;
+  --extra-small-focus-BorderRadius: 0.375rem;
+  --small-BorderRadius: 0.375rem;
+  --small-focus-BorderRadius: 0.5rem;
+  --medium-BorderRadius: 0.5rem;
+  --medium-focus-BorderRadius: 0.625rem;
+  --large-BorderRadius: 1rem;
+  --large-focus-BorderRadius: 1.125rem;
+
+  /** Shadow Properties **/
+
+  --global-popover-ShadowBlur: 0.75rem;
+  --global-popover-ShadowSpread: 0;
+  --global-popover-ShadowX: 0;
+  --global-popover-ShadowY: 0.5rem;
+  --global-modal-ShadowBlur: 1.5rem;
+  --global-modal-ShadowSpread: 0.25rem;
+  --global-modal-ShadowX: 0;
+  --global-modal-ShadowY: 1.5rem;
+}
