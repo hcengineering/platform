@@ -12,20 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Class, Doc, Ref, concatLink, TxOperations } from '@hcengineering/core'
+import { concatLink, TxOperations } from '@hcengineering/core'
 import {
   ClickupImporter,
   defaultDocumentPreprocessors,
   DocumentConverter,
-  FrontFileUploader,
-  importNotion,
-  UnifiedFormatImporter,
   type DocumentConverterOptions,
   type FileUploader,
-  type Logger
+  FrontFileUploader,
+  importNotion,
+  type Logger,
+  UnifiedFormatImporter
 } from '@hcengineering/importer'
 import { setMetadata } from '@hcengineering/platform'
-import { WorkspaceExporter, ExportType } from '@hcengineering/importer'
 import serverClientPlugin, {
   createClient,
   getUserWorkspaces,
@@ -170,20 +169,6 @@ export function importTool (): void {
       await authorize(user, password, workspace, async (client, uploader) => {
         const importer = new UnifiedFormatImporter(client, uploader, new ConsoleLogger())
         await importer.importFolder(dir)
-      })
-    })
-
-  program
-    .command('export <dir>')
-    .description('export issues in Unified Huly Format')
-    .requiredOption('-u, --user <user>', 'user')
-    .requiredOption('-pw, --password <password>', 'password')
-    .requiredOption('-ws, --workspace <workspace>', 'workspace url where the documents should be imported to')
-    .action(async (dir: string, cmd) => {
-      const { workspace, user, password } = cmd
-      await authorize(user, password, workspace, async (client, uploader) => {
-        const exporter = new WorkspaceExporter(client, new ConsoleLogger())
-        await exporter.exportDocuments('document:class:Document' as Ref<Class<Doc>>, ExportType.UNIFIED, dir)
       })
     })
 

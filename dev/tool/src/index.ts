@@ -80,6 +80,8 @@ import { addControlledDocumentRank } from './qms'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, updateField } from './workspace'
 
+import { ExportType, WorkspaceExporter, type Logger } from '@hcengineering/importer'
+
 import core, {
   AccountRole,
   generateId,
@@ -91,9 +93,11 @@ import core, {
   RateLimiter,
   systemAccountEmail,
   versionToString,
+  type Class,
   type Data,
   type Doc,
   type Ref,
+  type Space,
   type Tx,
   type Version,
   type WorkspaceId
@@ -2202,6 +2206,50 @@ export function devTool (
     .action(async (cmd: { token?: string }) => {
       await withAccountDatabase(async (db) => {
         await fillGithubUsers(toolCtx, db, cmd.token)
+      })
+    })
+
+  class ConsoleLogger implements Logger {
+    log (msg: string, data?: any): void {
+      console.log(msg, data)
+    }
+
+    warn (msg: string, data?: any): void {
+      console.warn(msg, data)
+    }
+
+    error (msg: string, data?: any): void {
+      console.error(msg, data)
+    }
+  }
+
+  program
+    .command('export <dir>')
+    .description('export issues in JSON format')
+    .requiredOption('-ws, --workspace <workspace>', 'workspace url where the documents should be imported to')
+    .action(async (dir: string, cmd) => {
+      const { workspace } = cmd
+      await withAccountDatabase(async (db) => {
+        await withStorage(async (storageAdapter) => {
+          const ws = await getWorkspaceById(db, workspace)
+          if (ws === null) {
+            console.error(`Workspace ${workspace} not found`)
+            return
+          }
+
+          const token = generateToken(systemAccountEmail, { name: ws.workspace })
+          const endpoint = await getTransactorEndpoint(token, 'external')
+          const client = await createClient(endpoint, token)
+
+          try {
+            const exporter = new WorkspaceExporter(toolCtx, client, storageAdapter, new ConsoleLogger(), { name: ws.workspace })
+            await exporter.exportDocuments('tracker:class:Issue' as Ref<Class<Space>>, ExportType.UNIFIED, dir)
+          } catch (err) {
+            console.error('Failed to fetch issues:', err)
+          } finally {
+            await client.close()
+          }
+        })
       })
     })
 

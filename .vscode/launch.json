@@ -676,18 +676,32 @@
       "cwd": "${workspaceRoot}/dev/import-tool"
     },
     {
-      "name": "Debug Huly Export",
+      "name": "Debug export tool",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "export", "/home/anna/work/export", "-u", "user1", "-pw", "1234", "-ws", "ws1"],
+      "args": ["src/__start.ts", "export", "/home/anna/work/export", "-ws", "w-user1-ws1-67a46c6d-03502613ab-f4b8f7"],
       "env": {
-        "FRONT_URL": "http://localhost:8087"
+        "SERVER_SECRET": "secret",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "MINIO_ENDPOINT": "localhost",
+        "TRANSACTOR_URL": "ws://localhost:3333",
+        "MONGO_URL": "mongodb://localhost:27017",
+        "DB_URL": "postgresql://postgres:example@localhost:5432",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "ACCOUNT_DB_URL": "mongodb://localhost:27017",
+        "TELEGRAM_DATABASE": "telegram-service",
+        "REKONI_URL": "http://localhost:4004"
       },
-      "runtimeVersion": "20",
+      "smartStep": true,
+      "sourceMapRenames": true,
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
+      "cwd": "${workspaceRoot}/dev/tool",
+      // "protocol": "inspector",
       "outputCapture": "std",
-      "cwd": "${workspaceRoot}/dev/import-tool"
+      "runtimeVersion": "20",
+      "showAsyncStacks": true
     },
   ]
 }
