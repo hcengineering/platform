@@ -496,6 +496,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/ui-next",
+      "projectFolder": "packages/ui-next",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/uploader",
       "projectFolder": "plugins/uploader",
       "shouldPublish": false
