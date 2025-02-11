@@ -33,6 +33,6 @@
     "@hcengineering/model": "^0.6.11",
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/ui": "^0.6.11"
+    "@hcengineering/ui": "^0.6.15"
   }
 }
