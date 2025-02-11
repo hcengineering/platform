@@ -142,7 +142,7 @@ export class STT implements Stt {
       channels: stream.numChannels,
       sample_rate: stream.sampleRate,
       language,
-      model: language === 'en' ? config.DeepgramEnModel : config.DeepgramEnModel
+      model: language === 'en' || language === 'en-US' ? config.DeepgramEnModel : config.DeepgramModel
     })
     console.log('Starting deepgram for track', this.room.name, sid)
 
