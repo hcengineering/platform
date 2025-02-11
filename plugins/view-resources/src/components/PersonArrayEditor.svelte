@@ -15,7 +15,8 @@
 <script lang="ts">
   import { PersonId } from '@hcengineering/core'
   import contact from '@hcengineering/contact'
-  import { Component } from '@hcengineering/ui'
+  import { IntlString } from '@hcengineering/platform'
+  import { ButtonKind, ButtonSize, Component } from '@hcengineering/ui'
 
   export let label: IntlString
   export let value: PersonId[]
