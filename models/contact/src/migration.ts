@@ -1,6 +1,6 @@
 //
 
-import { AvatarType, type SocialIdentity, type Contact } from '@hcengineering/contact'
+import { AvatarType, type Contact, type SocialIdentity } from '@hcengineering/contact'
 import {
   type AccountRole,
   buildSocialIdString,

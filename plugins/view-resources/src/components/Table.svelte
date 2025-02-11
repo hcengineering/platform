@@ -452,6 +452,7 @@
                       this={attribute.presenter}
                       value={getValue(attribute, object)}
                       onChange={getOnChange(object, attribute)}
+                      label={attribute.label}
                       {...joinProps(attribute, object, readonly || $restrictionStore.readonly)}
                     />
                   </div>

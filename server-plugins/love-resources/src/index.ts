@@ -219,7 +219,7 @@ async function setDefaultRoomAccess (info: ParticipantInfo, control: TriggerCont
   const roomInfos = await control.queryFind(control.ctx, love.class.RoomInfo, {})
   const oldRoomInfo = roomInfos.find((ri) => ri.persons.includes(info.person))
   if (oldRoomInfo !== undefined) {
-    if (oldRoomInfo.persons.length === 0) {
+    if (oldRoomInfo.persons.length === 1 && oldRoomInfo.persons[0] === info.person) {
       res.push(control.txFactory.createTxRemoveDoc(oldRoomInfo._class, oldRoomInfo.space, oldRoomInfo._id))
 
       const resetAccessTx = control.txFactory.createTxUpdateDoc(

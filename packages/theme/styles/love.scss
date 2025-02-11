@@ -88,6 +88,10 @@
   &.disabled .floorGrid-room__header > span { color: var(--theme-trans-color); }
 }
 
+// Fix Avatars
+.floorGrid-room .floorGrid-room__field .hulyAvatar-container.hulyAvatarSize-large,
+.floorGrid-room .floorGrid-room__field .hulyAvatar-container.hulyAvatarSize-large img { width: 100%; }
+
 .floorGrid-configureRoom {
   &__header {
     top: calc(100% / var(--huly-floor-roomHeight) / 3 * -1.6 + .75rem - 1px);

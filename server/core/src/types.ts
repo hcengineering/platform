@@ -578,6 +578,8 @@ export interface Session {
   loadDocs: (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
   upload: (ctx: ClientSessionCtx, domain: Domain, docs: Doc[]) => Promise<void>
   clean: (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
+
+  includeSessionContext: (ctx: ClientSessionCtx) => void
 }
 
 /**
@@ -700,6 +702,15 @@ export interface SessionManager {
     request: Request<any>,
     workspace: WorkspaceUuid
   ) => Promise<void>
+
+  createOpContext: (
+    ctx: MeasureContext,
+    pipeline: Pipeline,
+    request: Request<any>,
+    service: Session,
+    ws: ConnectionSocket,
+    workspace: WorkspaceUuid
+  ) => ClientSessionCtx
 }
 
 /**

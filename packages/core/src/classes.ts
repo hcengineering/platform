@@ -794,8 +794,8 @@ export interface WorkspaceInfo {
   region?: string
   branding?: string
   createdOn: number
-  createdBy: PersonUuid
-  billingAccount: PersonUuid
+  createdBy?: PersonUuid // Should always be set for NEW workspaces
+  billingAccount?: PersonUuid // Should always be set for NEW workspaces
 }
 
 export interface BackupStatus {
@@ -820,7 +820,7 @@ export interface WorkspaceInfoWithStatus extends WorkspaceInfo {
 }
 
 export interface WorkspaceMemberInfo {
-  person: string
+  person: PersonUuid
   role: AccountRole
 }
 

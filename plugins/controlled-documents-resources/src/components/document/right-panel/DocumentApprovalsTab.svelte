@@ -6,12 +6,12 @@
     emptyBundle,
     extractValidationWorkflow
   } from '@hcengineering/controlled-documents'
-  import { SortingOrder } from '@hcengineering/core'
 
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label, Scroller } from '@hcengineering/ui'
 
-  import { personIdByAccountId } from '@hcengineering/contact-resources'
+  import chunter, { ChatMessage } from '@hcengineering/chunter'
+  import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import documentsRes from '../../../plugin'
   import {
     $controlledDocument as controlledDocument,
@@ -20,7 +20,6 @@
   import DocumentApprovalGuideItem from './DocumentApprovalGuideItem.svelte'
   import DocumentApprovalItem from './DocumentApprovalItem.svelte'
   import RightPanelTabHeader from './RightPanelTabHeader.svelte'
-  import chunter, { ChatMessage } from '@hcengineering/chunter'
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -52,7 +51,7 @@
       DocumentSnapshot: $documentSnapshots,
       ChatMessage: messages
     },
-    (ref) => $personIdByAccountId.get(ref)
+    (ref) => $personRefByPersonIdStore.get(ref)
   )
 
   $: validationStates = ((doc ? workflow.get(doc._id) : []) ?? []).slice()

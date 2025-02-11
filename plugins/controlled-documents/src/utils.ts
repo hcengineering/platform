@@ -21,7 +21,6 @@ import {
   DocumentQuery,
   DocumentUpdate,
   Hierarchy,
-  getCurrentAccount,
   Rank,
   Ref,
   SortingOrder,
@@ -29,7 +28,6 @@ import {
   Timestamp,
   toIdMap,
   TxOperations,
-  type SocialId,
   type PersonId
 } from '@hcengineering/core'
 import { LexoDecimal, LexoNumeralSystem36, LexoRank } from 'lexorank'
@@ -39,7 +37,7 @@ import documents from './plugin'
 
 import attachment, { Attachment } from '@hcengineering/attachment'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
-import { Person, Employee, getCurrentEmployee } from '@hcengineering/contact'
+import { Employee, getCurrentEmployee, Person } from '@hcengineering/contact'
 import { makeRank } from '@hcengineering/rank'
 import tags, { TagReference } from '@hcengineering/tags'
 import {
@@ -738,9 +736,7 @@ export function extractValidationWorkflow (
 
       const anchor = review ?? approval
       const author =
-        anchor?.createdBy !== undefined
-          ? accountIdToPerson?.(anchor.createdBy) ?? document.author
-          : document.author
+        anchor?.createdBy !== undefined ? accountIdToPerson?.(anchor.createdBy) ?? document.author : document.author
 
       state.approvals = [
         {

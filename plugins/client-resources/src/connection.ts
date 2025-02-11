@@ -35,7 +35,6 @@ import core, {
   FindResult,
   LoadModelResponse,
   MeasureMetricsContext,
-  type PersonUuid,
   Ref,
   SearchOptions,
   SearchQuery,
@@ -45,11 +44,12 @@ import core, {
   TxApplyIf,
   TxHandler,
   TxResult,
-  type WorkspaceUuid,
   clone,
   generateId,
   toFindResult,
-  type MeasureContext
+  type MeasureContext,
+  type PersonUuid,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import platform, {
   PlatformError,
@@ -467,6 +467,23 @@ class Connection implements ClientConnection {
     }
   }
 
+  checkArrayBufferPing (data: ArrayBuffer): boolean {
+    if (data.byteLength === pingConst.length || data.byteLength === pongConst.length) {
+      const text = new TextDecoder().decode(data)
+      if (text === pingConst) {
+        void this.sendRequest({ method: pingConst, params: [] }).catch((err) => {
+          this.ctx.error('failed to send ping', { err })
+        })
+        return true
+      }
+      if (text === pongConst) {
+        this.pingResponse = Date.now()
+        return true
+      }
+    }
+    return false
+  }
+
   private openConnection (ctx: MeasureContext, socketId: number): void {
     this.binaryMode = false
     this.helloReceived = false
@@ -523,25 +540,17 @@ class Connection implements ClientConnection {
         })
         return
       }
-      if (
-        event.data instanceof ArrayBuffer &&
-        (event.data.byteLength === pingConst.length || event.data.byteLength === pongConst.length)
-      ) {
-        const text = new TextDecoder().decode(event.data)
-        if (text === pingConst) {
-          void this.sendRequest({ method: pingConst, params: [] }).catch((err) => {
-            this.ctx.error('failed to send ping', { err })
-          })
-        }
-        if (text === pongConst) {
-          this.pingResponse = Date.now()
-        }
+      if (event.data instanceof ArrayBuffer && this.checkArrayBufferPing(event.data)) {
         return
       }
       if (event.data instanceof Blob) {
         void event.data
           .arrayBuffer()
           .then((data) => {
+            if (this.checkArrayBufferPing(data)) {
+              // Support ping/pong
+              return
+            }
             if (this.compressionMode && this.helloReceived) {
               try {
                 data = uncompress(data)

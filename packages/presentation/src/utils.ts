@@ -68,12 +68,13 @@ let rawLiveQuery: LQ
 let client: TxOperations & Client
 let pipeline: PresentationPipeline
 
-const txListeners: Array<(...tx: Tx[]) => void> = []
+export type TxListener = (tx: Tx[]) => void
+const txListeners: TxListener[] = []
 
 /**
  * @public
  */
-export function addTxListener (l: (tx: Tx) => void): void {
+export function addTxListener (l: TxListener): void {
   txListeners.push(l)
 }
 
@@ -84,7 +85,7 @@ export function getRawLiveQuery (): LQ {
 /**
  * @public
  */
-export function removeTxListener (l: (tx: Tx) => void): void {
+export function removeTxListener (l: TxListener): void {
   const pos = txListeners.findIndex((it) => it === l)
   if (pos !== -1) {
     txListeners.splice(pos, 1)
@@ -142,7 +143,7 @@ class UIClient extends TxOperations implements Client {
       await rawLiveQuery.tx(...tx)
 
       txListeners.forEach((it) => {
-        it(...tx)
+        it(tx)
       })
     } catch (err: any) {
       Analytics.handleError(err)

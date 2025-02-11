@@ -19,13 +19,28 @@ import {
   tryMigrate
 } from '@hcengineering/model'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
-import workbench from '@hcengineering/workbench'
-import core, { DOMAIN_TX } from '@hcengineering/core'
+import workbench, { type WorkbenchTab } from '@hcengineering/workbench'
+import core, { DOMAIN_TX, MeasureMetricsContext } from '@hcengineering/core'
+import { getSocialIdByOldAccount } from '@hcengineering/model-core'
 
 import { workbenchId } from '.'
 
 async function removeTabs (client: MigrationClient): Promise<void> {
   await client.deleteMany(DOMAIN_PREFERENCE, { _class: workbench.class.WorkbenchTab })
+}
+
+async function migrateTabsToSocialIds (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('workbench migrateTabsToSocialIds', {})
+  ctx.info('migrating workbench tabs to social ids...')
+  const socialIdByAccount = await getSocialIdByOldAccount(client)
+  const tabs = await client.find<WorkbenchTab>(DOMAIN_PREFERENCE, { _class: workbench.class.WorkbenchTab })
+  for (const tab of tabs) {
+    const newAttachedTo = socialIdByAccount[tab.attachedTo]
+    if (newAttachedTo != null && newAttachedTo !== tab.attachedTo) {
+      await client.update(DOMAIN_PREFERENCE, { _id: tab._id }, { attachedTo: newAttachedTo })
+    }
+  }
+  ctx.info('migrating workbench tabs to social ids completed...')
 }
 
 export const workbenchOperation: MigrateOperation = {
@@ -43,6 +58,10 @@ export const workbenchOperation: MigrateOperation = {
             _class: core.class.TxUpdateDoc
           })
         }
+      },
+      {
+        state: 'tabs-accounts-to-social-ids',
+        func: migrateTabsToSocialIds
       }
     ])
   },

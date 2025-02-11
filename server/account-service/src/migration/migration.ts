@@ -45,45 +45,53 @@ export async function migrateFromOldAccounts (oldAccsUrl: string, accountDB: Acc
     console.log('Migrating accounts database from old accounts')
     let accountsProcessed = 0
     const accountsCursor = oldAccountDb.account.findCursor({})
-    while (await accountsCursor.hasNext()) {
-      const account = await accountsCursor.next()
-      if (account == null) {
-        break
-      }
+    try {
+      while (await accountsCursor.hasNext()) {
+        const account = await accountsCursor.next()
+        if (account == null) {
+          break
+        }
 
-      const accountUuid = await migrateAccount(account, accountDB)
-      if (accountUuid == null) {
-        console.log('Account not migrated', account)
-        continue
-      }
-      accountsIdToUuid[account._id.toString()] = accountUuid
-      accountsEmailToUuid[account.email] = accountUuid
+        const accountUuid = await migrateAccount(account, accountDB)
+        if (accountUuid == null) {
+          console.log('Account not migrated', account)
+          continue
+        }
+        accountsIdToUuid[account._id.toString()] = accountUuid
+        accountsEmailToUuid[account.email] = accountUuid
 
-      accountsProcessed++
-      if (accountsProcessed % 100 === 0) {
-        console.log('Processed accounts:', accountsProcessed)
+        accountsProcessed++
+        if (accountsProcessed % 100 === 0) {
+          console.log('Processed accounts:', accountsProcessed)
+        }
       }
+    } finally {
+      await accountsCursor.close()
     }
 
     console.log('Total accounts processed:', accountsProcessed)
 
     let processedWorkspaces = 0
     const workspacesCursor = oldAccountDb.workspace.findCursor({})
-    while (await workspacesCursor.hasNext()) {
-      const workspace = await workspacesCursor.next()
-      if (workspace == null) {
-        break
-      }
+    try {
+      while (await workspacesCursor.hasNext()) {
+        const workspace = await workspacesCursor.next()
+        if (workspace == null) {
+          break
+        }
 
-      const workspaceUuid = await migrateWorkspace(workspace, accountDB, accountsIdToUuid, accountsEmailToUuid)
+        const workspaceUuid = await migrateWorkspace(workspace, accountDB, accountsIdToUuid, accountsEmailToUuid)
 
-      if (workspaceUuid !== undefined) {
-        workspacesIdToUuid[workspace.workspace] = workspaceUuid
+        if (workspaceUuid !== undefined) {
+          workspacesIdToUuid[workspace.workspace] = workspaceUuid
+        }
+        processedWorkspaces++
+        if (processedWorkspaces % 100 === 0) {
+          console.log('Processed workspaces:', processedWorkspaces)
+        }
       }
-      processedWorkspaces++
-      if (processedWorkspaces % 100 === 0) {
-        console.log('Processed workspaces:', processedWorkspaces)
-      }
+    } finally {
+      await workspacesCursor.close()
     }
 
     console.log('Total workspaces processed:', processedWorkspaces)
@@ -91,32 +99,37 @@ export async function migrateFromOldAccounts (oldAccsUrl: string, accountDB: Acc
 
     let invitesProcessed = 0
     const invitesCursor = oldAccountDb.invite.findCursor({})
-    while (await invitesCursor.hasNext()) {
-      const invite = await invitesCursor.next()
-      if (invite == null) {
-        break
-      }
+    try {
+      while (await invitesCursor.hasNext()) {
+        const invite = await invitesCursor.next()
+        if (invite == null) {
+          break
+        }
 
-      const workspaceUuid = workspacesIdToUuid[invite.workspace.name]
-      if (workspaceUuid === undefined) {
-        console.log('No workspace with id', invite.workspace.name, 'found for invite', invite._id)
-        continue
-      }
+        const workspaceUuid = workspacesIdToUuid[invite.workspace.name]
+        if (workspaceUuid === undefined) {
+          console.log('No workspace with id', invite.workspace.name, 'found for invite', invite._id)
+          continue
+        }
 
-      await accountDB.invite.insertOne({
-        migratedFrom: invite._id.toString(),
-        workspaceUuid,
-        expiresOn: invite.exp,
-        emailPattern: invite.emailMask,
-        remainingUses: invite.limit,
-        role: invite.role ?? AccountRole.User
-      })
+        await accountDB.invite.insertOne({
+          migratedFrom: invite._id.toString(),
+          workspaceUuid,
+          expiresOn: invite.exp,
+          emailPattern: invite.emailMask,
+          remainingUses: invite.limit,
+          role: invite.role ?? AccountRole.User
+        })
 
-      invitesProcessed++
-      if (invitesProcessed % 100 === 0) {
-        console.log('Processed invites:', invitesProcessed)
+        invitesProcessed++
+        if (invitesProcessed % 100 === 0) {
+          console.log('Processed invites:', invitesProcessed)
+        }
       }
+    } finally {
+      await invitesCursor.close()
     }
+
     console.log('Total invites processed:', invitesProcessed)
     await oldAccountDb.migration.insertOne({ key: migrationKey, completed: true })
     console.log('Migration of accounts database from old accounts COMPLETED')
