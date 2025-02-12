@@ -15,6 +15,7 @@
 
 import {
   type Account,
+  type BaseWorkspaceInfo,
   type Branding,
   type Class,
   type Doc,
@@ -647,6 +648,17 @@ export interface AddSessionActive {
   context: MeasureContext
   workspaceId: WorkspaceUuid
 }
+
+export interface WorkspaceLoginInfo extends Omit<BaseWorkspaceInfo, 'workspace'> {
+  upgrade?: {
+    toProcess: number
+    total: number
+    elapsed: number
+    eta: number
+  }
+  workspaceId: string
+}
+
 export type AddSessionResponse =
   | AddSessionActive
   | { upgrade: true, progress?: number }

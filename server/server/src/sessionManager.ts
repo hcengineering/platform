@@ -58,7 +58,8 @@ import {
   type ClientSessionCtx,
   type ConnectionSocket,
   type Session,
-  type Workspace
+  type Workspace,
+  type WorkspaceLoginInfo
 } from '@hcengineering/server-core'
 import { generateToken, type Token } from '@hcengineering/server-token'
 

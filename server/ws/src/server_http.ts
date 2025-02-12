@@ -459,6 +459,19 @@ export function startHttpServer (
               false,
               false
             )
+          } else if (s.specialError === 'migration') {
+            cs.send(
+              ctx,
+              {
+                id: -1,
+                error: new Status(Severity.ERROR, platform.status.WorkspaceMigration, {
+                  workspace: token.workspace.name
+                }),
+                terminate: s.terminate
+              },
+              false,
+              false
+            )
           } else {
             cs.send(
               ctx,
