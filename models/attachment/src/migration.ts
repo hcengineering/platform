@@ -31,9 +31,7 @@ export const attachmentOperation: MigrateOperation = {
             DOMAIN_ATTACHMENT,
             { _class: attachment.class.Attachment, attachedToClass: 'chunter:class:Comment' },
             {
-              $set: {
-                attachedToClass: 'chunter:class:ChatMessage'
-              }
+              attachedToClass: 'chunter:class:ChatMessage'
             }
           )
         }

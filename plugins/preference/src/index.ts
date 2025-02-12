@@ -21,7 +21,7 @@ import { plugin } from '@hcengineering/platform'
  * @public
  */
 export interface Preference extends Doc {
-  attachedTo: Ref<Doc>
+  attachedTo: string
 }
 
 /**

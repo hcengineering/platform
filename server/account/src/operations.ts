@@ -85,11 +85,14 @@ import {
   selectWorkspace,
   doJoinByInvite,
   getWorkspacesInfoWithStatusByIds,
-  getSocialIdByKey
+  getSocialIdByKey,
+  getWorkspaces
 } from './utils'
 
 // Move to config?
 const processingTimeoutMs = 30 * 1000
+
+const ADMIN_EMAILS = new Set(process.env.ADMIN_EMAILS?.split(',') ?? [])
 
 /* =================================== */
 /* ============OPERATIONS============= */
@@ -126,11 +129,12 @@ export async function login (
 
     const isConfirmed = emailSocialId.verifiedOn != null
 
-    ctx.info('Login succeeded', { email, normalizedEmail, isConfirmed, emailSocialId })
+    const isAdmin: Record<string, string> = ADMIN_EMAILS.has(email.trim()) ? { admin: 'true' } : {}
+    ctx.info('Login succeeded', { email, normalizedEmail, isConfirmed, emailSocialId, ...isAdmin })
 
     return {
       account: existingAccount.uuid,
-      token: isConfirmed ? generateToken(existingAccount.uuid) : undefined
+      token: isConfirmed ? generateToken(existingAccount.uuid, undefined, isAdmin) : undefined
     }
   } catch (err: any) {
     Analytics.handleError(err)
@@ -835,33 +839,11 @@ export async function listWorkspaces (
 ): Promise<WorkspaceInfoWithStatus[]> {
   const { extra } = decodeTokenVerbose(ctx, token)
 
-  if (!['tool', 'backup', 'admin'].includes(extra?.service)) {
+  if (!['tool', 'backup', 'admin'].includes(extra?.service) && extra?.admin !== 'true') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
-  const statuses = await db.workspaceStatus.find({})
-  const statusesMap = statuses.reduce<Record<string, WorkspaceStatus>>((sm, s) => {
-    sm[s.workspaceUuid] = s
-    return sm
-  }, {})
-
-  const workspaces = (await db.workspace.find(region != null ? { region } : {})).filter((it) => {
-    const status = statusesMap[it.uuid]
-    if (status.isDisabled) {
-      return false
-    }
-
-    if (mode != null) {
-      return status.mode === mode
-    }
-
-    return true
-  })
-
-  return workspaces.map((it) => ({
-    ...it,
-    status: statusesMap[it.uuid]
-  }))
+  return await getWorkspaces(db, false, region, mode)
 }
 
 export async function performWorkspaceOperation (

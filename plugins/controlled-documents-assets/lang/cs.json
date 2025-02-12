@@ -21,7 +21,7 @@
     "Major": "Hlavní",
     "Minor": "Vedlejší",
     "Patch": "Oprava",
-    "DocumentApprovals": "Revize a schválení",
+    "ValidationWorkflow": "Ověřovací pracovní postup",
     "ChangeOwner": "Změnit vlastníka dokumentu",
     "ChangeOwnerHintBeginning": "Převést vlastnictví",
     "ChangeOwnerHintEnd": "na jinou osobu.",

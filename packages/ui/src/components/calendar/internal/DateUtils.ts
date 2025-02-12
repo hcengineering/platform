@@ -108,7 +108,14 @@ export interface ICell {
 
 export function getLocalWeekStart (): number {
   const locale = new Intl.Locale(navigator.language)
-  return (locale as any)?.getWeekInfo()?.firstDay ?? 1
+  return typeof (locale as any)?.getWeekInfo === 'function'
+    ? (locale as any)?.getWeekInfo()?.firstDay
+    : (locale as any).weekInfo?.firstDay ?? 1
+}
+
+export function hasLocalWeekStart (): boolean {
+  const locale = new Intl.Locale(navigator.language)
+  return typeof (locale as any)?.getWeekInfo === 'function' || (locale as any).weekInfo?.firstDay !== undefined
 }
 
 export function getWeekStart (date: Date = new Date(), firstDay: number = 1): Date {

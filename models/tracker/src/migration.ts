@@ -152,7 +152,7 @@ async function passIdentifierToParentInfo (client: MigrationClient): Promise<voi
       if (p === undefined) continue
       parent.identifier = p.identifier
     }
-    await client.update(DOMAIN_TASK, { _id: issue._id }, { $set: { parents: issue.parents } })
+    await client.update(DOMAIN_TASK, { _id: issue._id }, { parents: issue.parents })
   }
 }
 
@@ -166,7 +166,7 @@ async function migrateIdentifiers (client: MigrationClient): Promise<void> {
     const project = projectsMap.get(issue.space)
     if (project === undefined) continue
     const identifier = project.identifier + '-' + issue.number
-    await client.update(DOMAIN_TASK, { _id: issue._id }, { $set: { identifier } })
+    await client.update(DOMAIN_TASK, { _id: issue._id }, { identifier })
   }
 }
 
@@ -203,7 +203,7 @@ async function migrateDefaultStatuses (client: MigrationClient, logger: ModelLog
       const newDefaultIssueStatus = getNewStatus(project.defaultIssueStatus)
 
       if (project.defaultIssueStatus !== newDefaultIssueStatus) {
-        await client.update(DOMAIN_SPACE, { _id: project._id }, { $set: { defaultIssueStatus: newDefaultIssueStatus } })
+        await client.update(DOMAIN_SPACE, { _id: project._id }, { defaultIssueStatus: newDefaultIssueStatus })
       }
 
       const projectUpdateMessages = await client.find<DocUpdateMessage>(DOMAIN_ACTIVITY, {
@@ -218,11 +218,7 @@ async function migrateDefaultStatuses (client: MigrationClient, logger: ModelLog
         const newStatusSet = statusSet != null ? getNewStatus(statusSet as Ref<Status>) : statusSet
 
         if (statusSet !== newStatusSet) {
-          await client.update(
-            DOMAIN_ACTIVITY,
-            { _id: updateMessage._id },
-            { $set: { 'attributeUpdates.set.0': newStatusSet } }
-          )
+          await client.update(DOMAIN_ACTIVITY, { _id: updateMessage._id }, { 'attributeUpdates.set.0': newStatusSet })
         }
       }
     }
@@ -300,9 +296,7 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
       'attributes.attributeOf': oldSpaceTypeMixin
     },
     {
-      $set: {
-        'attributes.attributeOf': newSpaceTypeMixin
-      }
+      'attributes.attributeOf': newSpaceTypeMixin
     }
   )
 
@@ -342,9 +336,7 @@ async function migrateIssueStatuses (client: MigrationClient): Promise<void> {
       'attributes.statusClass': core.class.Status
     },
     {
-      $set: {
-        'attributes.statusClass': tracker.class.IssueStatus
-      }
+      'attributes.statusClass': tracker.class.IssueStatus
     }
   )
   await client.update(
@@ -354,9 +346,7 @@ async function migrateIssueStatuses (client: MigrationClient): Promise<void> {
       'attributes.ofAttribute': tracker.attribute.IssueStatus
     },
     {
-      $set: {
-        objectClass: tracker.class.IssueStatus
-      }
+      objectClass: tracker.class.IssueStatus
     }
   )
 
@@ -367,9 +357,7 @@ async function migrateIssueStatuses (client: MigrationClient): Promise<void> {
       ofAttribute: tracker.attribute.IssueStatus
     },
     {
-      $set: {
-        _class: tracker.class.IssueStatus
-      }
+      _class: tracker.class.IssueStatus
     }
   )
 }

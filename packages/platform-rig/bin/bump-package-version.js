@@ -13,7 +13,7 @@ child_process.exec('git describe --tags --abbrev=0', (err, stdout, stderr) => {
     console.log('Error', err)
     process.exit(1)
   }
-  const rawVersion = stdout.trim().replace('v', '').replace('u', '').split('.')
+  const rawVersion = stdout.trim().replace('v', '').replace('u', '').replace('s', '').split('.')
   if (rawVersion.length === 3) {
     const version = {
       major: parseInt(rawVersion[0]),

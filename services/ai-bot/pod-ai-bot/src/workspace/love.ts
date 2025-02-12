@@ -12,23 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ConnectMeetingRequest } from '@hcengineering/ai-bot'
-import chunter from '@hcengineering/chunter'
 import core, {
-  Ref,
-  TxOperations,
   concatLink,
-  TxProcessor,
-  TxCUD,
   Doc,
-  TxCreateDoc,
-  TxUpdateDoc,
-  MeasureContext,
   Markup,
+  MeasureContext,
+  PersonId,
+  Ref,
+  SocialIdType,
+  TxCreateDoc,
+  TxCUD,
+  TxOperations,
+  TxProcessor,
+  TxUpdateDoc,
   WorkspaceUuid
 } from '@hcengineering/core'
-import { Person } from '@hcengineering/contact'
+import contact, { Person } from '@hcengineering/contact'
 import love, {
   getFreeRoomPlace,
   MeetingMinutes,
@@ -39,6 +39,7 @@ import love, {
   TranscriptionStatus
 } from '@hcengineering/love'
 import { jsonToMarkup, MarkupNodeType } from '@hcengineering/text'
+import chunter from '@hcengineering/chunter'
 
 import config from '../config'
 
@@ -47,6 +48,7 @@ export class LoveController {
 
   private participantsInfo: ParticipantInfo[] = []
   private rooms: Room[] = []
+  private readonly socialIdByPerson = new Map<Ref<Person>, PersonId>()
   private readonly meetingMinutes: MeetingMinutes[] = []
 
   constructor (
@@ -171,36 +173,56 @@ export class LoveController {
     this.connectedRooms.delete(roomId)
   }
 
+  async getSocialId (person: Ref<Person>): Promise<PersonId | undefined> {
+    const socialId =
+      this.socialIdByPerson.get(person) ??
+      (
+        await this.client.findOne(contact.class.SocialIdentity, {
+          attachedTo: person,
+          attachedToClass: contact.class.Person,
+          type: SocialIdType.HULY
+        })
+      )?.key
+
+    if (socialId === undefined) {
+      return
+    }
+
+    this.socialIdByPerson.set(person, socialId)
+
+    return socialId
+  }
+
   async processTranscript (text: string, person: Ref<Person>, roomId: Ref<Room>): Promise<void> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const room = await this.getRoom(roomId)
-    // const participant = await this.getRoomParticipant(roomId, person)
+    const room = await this.getRoom(roomId)
+    const participant = await this.getRoomParticipant(roomId, person)
 
-    // if (room === undefined || participant === undefined) {
-    //   return
-    // }
+    if (room === undefined || participant === undefined) {
+      return
+    }
 
-    // const personAccount = this.client.getModel().getAccountByPersonId(participant.person)[0]
-    // const doc = await this.getMeetingMinutes(room)
+    const socialId = await this.getSocialId(person)
+    if (socialId === undefined) return
 
-    // if (doc === undefined) return
-    // const op = this.client.apply(undefined, undefined, true)
+    const doc = await this.getMeetingMinutes(room)
+    if (doc === undefined) return
 
-    // await op.addCollection(
-    //   chunter.class.ChatMessage,
-    //   core.space.Workspace,
-    //   doc._id,
-    //   doc._class,
-    //   'transcription',
-    //   {
-    //     message: this.transcriptToMarkup(text)
-    //   },
-    //   undefined,
-    //   undefined,
-    //   personAccount._id
-    // )
-    // await op.commit()
+    const op = this.client.apply(undefined, undefined, true)
+
+    await op.addCollection(
+      chunter.class.ChatMessage,
+      core.space.Workspace,
+      doc._id,
+      doc._class,
+      'transcription',
+      {
+        message: this.transcriptToMarkup(text)
+      },
+      undefined,
+      undefined,
+      socialId
+    )
+    await op.commit()
   }
 
   hasActiveConnections (): boolean {
@@ -269,7 +291,7 @@ export class LoveController {
   }
 }
 
-function getTokenRoomName (workspace: string, roomName: string, roomId: Ref<Room>): string {
+function getTokenRoomName (workspace: WorkspaceUuid, roomName: string, roomId: Ref<Room>): string {
   return `${workspace}_${roomName}_${roomId}`
 }
 

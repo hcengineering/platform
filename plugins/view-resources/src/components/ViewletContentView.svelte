@@ -92,8 +92,6 @@
 
 {#if viewlet?.$lookup?.descriptor?.component}
   {#if loading}
-    {configurationsLoading}
-    {preferencesLoading}
     <Loading />
   {:else}
     <Component

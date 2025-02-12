@@ -1,3 +1,4 @@
+import { AccountClient } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import core, {
   Class,
@@ -10,11 +11,9 @@ import core, {
   Domain,
   FindOptions,
   Hierarchy,
-  IncOptions,
   MigrationState,
   ModelDb,
   ObjQueryType,
-  PushOptions,
   Rank,
   Ref,
   SortingOrder,
@@ -25,18 +24,13 @@ import core, {
   generateId
 } from '@hcengineering/core'
 import { makeRank } from '@hcengineering/rank'
-import { AccountClient } from '@hcengineering/account-client'
 import { StorageAdapter } from '@hcengineering/storage'
 import { ModelLogger } from './utils'
 
 /**
  * @public
  */
-export type MigrateUpdate<T extends Doc> = Partial<T> &
-PushOptions<T> &
-IncOptions<T> &
-UnsetOptions &
-Record<string, any>
+export type MigrateUpdate<T extends Doc> = Partial<T> & UnsetOptions & Record<string, any>
 
 /**
  * @public

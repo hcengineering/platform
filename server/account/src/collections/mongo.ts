@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 import { UUID } from 'mongodb'
-import type { Collection, CreateIndexesOptions, Db, Filter, OptionalUnlessRequiredId, Sort as RawSort } from 'mongodb'
+import type {
+  Collection,
+  CreateIndexesOptions,
+  Db,
+  Filter,
+  FindCursor,
+  OptionalUnlessRequiredId,
+  Sort as RawSort
+} from 'mongodb'
 import {
   type Person,
   type WorkspaceMemberInfo,
@@ -111,6 +119,10 @@ implements DbCollection<T> {
   }
 
   async find (query: Query<T>, sort?: Sort<T>, limit?: number): Promise<T[]> {
+    return await this.findCursor(query, sort, limit).toArray()
+  }
+
+  findCursor (query: Query<T>, sort?: Sort<T>, limit?: number): FindCursor<T> {
     const cursor = this.collection.find<T>(query as Filter<T>)
 
     if (sort !== undefined) {
@@ -121,7 +133,11 @@ implements DbCollection<T> {
       cursor.limit(limit)
     }
 
-    return await cursor.toArray()
+    return cursor.map((doc) => {
+      delete doc._id
+
+      return doc
+    })
   }
 
   async findOne (query: Query<T>): Promise<T | null> {
@@ -272,7 +288,10 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
   }
 
   async find (query: Query<WorkspaceStatus>, sort?: Sort<WorkspaceStatus>, limit?: number): Promise<WorkspaceStatus[]> {
-    return (await this.wsCollection.find(this.toWsQuery(query), this.toWsSort(sort), limit)).map((ws) => ws.status)
+    return (await this.wsCollection.find(this.toWsQuery(query), this.toWsSort(sort), limit)).map((ws) => ({
+      ...ws.status,
+      workspaceUuid: ws.uuid
+    }))
   }
 
   async findOne (query: Query<WorkspaceStatus>): Promise<WorkspaceStatus | null> {

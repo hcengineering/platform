@@ -287,7 +287,20 @@
       "description": "Clean typescript incremental cache",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "find .|grep tsBuildInfoFile.info | xargs rm | pwd && rush dorevalidate"
-    },    
+    },
+    {
+      "commandKind": "bulk",
+      "name": "remove-ts-types",
+      "summary": "Clean validate types",
+      "description": "Clean validate types",
+      "shellCommand": "rm -rf ./types",
+      "enableParallelism": true,
+      "incremental": false,
+      "ignoreDependencyOrder": true,
+      "ignoreMissingScript": true,
+      "disableBuildCache": true,
+      "allowWarningsInSuccessfulBuild": true
+    },  
     {
       "commandKind": "global",
       "name": "model-version",

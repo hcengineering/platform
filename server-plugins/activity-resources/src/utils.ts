@@ -16,7 +16,8 @@ import {
   TxMixin,
   TxProcessor,
   TxUpdateDoc,
-  combineAttributes
+  combineAttributes,
+  ArrOf
 } from '@hcengineering/core'
 import core from '@hcengineering/core/src/component'
 import notification from '@hcengineering/notification'
@@ -267,6 +268,8 @@ export async function getTxAttributesUpdates (
 
     if (clazz !== undefined && 'to' in clazz.type) {
       attrClass = clazz.type.to as Ref<Class<Doc>>
+    } else if (clazz !== undefined && hierarchy.isDerived(clazz.type._class, core.class.ArrOf)) {
+      attrClass = (clazz.type as ArrOf<Doc>).of._class
     } else if (clazz !== undefined && 'of' in clazz?.type) {
       attrClass = (clazz.type.of as RefTo<Doc>).to
     }

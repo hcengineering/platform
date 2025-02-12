@@ -37,6 +37,7 @@ export default plugin(serverTrackerId, {
   trigger: {
     OnSocialIdentityCreate: '' as Resource<TriggerFunc>,
     OnIssueUpdate: '' as Resource<TriggerFunc>,
-    OnComponentRemove: '' as Resource<TriggerFunc>
+    OnComponentRemove: '' as Resource<TriggerFunc>,
+    OnProjectRemove: '' as Resource<TriggerFunc>
   }
 })

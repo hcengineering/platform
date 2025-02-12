@@ -7,7 +7,7 @@ import {
   navigate,
   languageStore
 } from '@hcengineering/ui'
-import { type Ref, type Doc, type Class, generateId } from '@hcengineering/core'
+import { type Ref, type Doc, type Class, generateId, concatLink } from '@hcengineering/core'
 import activity, { type ActivityMessage } from '@hcengineering/activity'
 import {
   type Channel,
@@ -19,10 +19,10 @@ import {
 import { type DocNotifyContext, notificationId } from '@hcengineering/notification'
 import workbench, { type Widget, workbenchId, type LocationData } from '@hcengineering/workbench'
 import { classIcon, getObjectLinkId, parseLinkId } from '@hcengineering/view-resources'
-import { getClient } from '@hcengineering/presentation'
+import presentation, { getClient } from '@hcengineering/presentation'
 import view, { encodeObjectURI, decodeObjectURI } from '@hcengineering/view'
 import { createWidgetTab, isElementFromSidebar, sidebarStore } from '@hcengineering/workbench-resources'
-import { type Asset, type IntlString, translate } from '@hcengineering/platform'
+import { type Asset, getMetadata, type IntlString, translate } from '@hcengineering/platform'
 import contact from '@hcengineering/contact'
 import { get } from 'svelte/store'
 
@@ -113,8 +113,10 @@ export async function getMessageLink (message: ActivityMessage): Promise<string>
   }
 
   const id = encodeURIComponent(encodeObjectURI(_id, _class))
-
-  return `${window.location.protocol}//${window.location.host}/${workbenchId}/${location.path[1]}/${chunterId}/${id}${threadParent}?message=${message._id}`
+  const frontUrl = getMetadata(presentation.metadata.FrontUrl)
+  const protocolAndHost = frontUrl ?? `${window.location.protocol}//${window.location.host}`
+  const path = `${workbenchId}/${location.path[1]}/${chunterId}/${id}${threadParent}?message=${message._id}`
+  return concatLink(protocolAndHost, path)
 }
 
 export async function chunterSpaceLinkFragmentProvider (doc: ChunterSpace): Promise<Location> {

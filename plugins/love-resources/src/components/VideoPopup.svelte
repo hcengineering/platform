@@ -37,8 +37,10 @@
   import { currentRoom, infos, myInfo, myOffice } from '../stores'
   import {
     awaitConnect,
+    isCamAllowed,
     isCameraEnabled,
     isConnected,
+    isMicAllowed,
     isMicEnabled,
     isShareWithSound,
     isSharingEnabled,
@@ -316,17 +318,21 @@
     <div class="flex-row-center flex-gap-2">
       <ActionIcon
         icon={!$isConnected ? love.icon.Mic : $isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
-        label={$isMicEnabled ? love.string.Mute : love.string.UnMute}
+        label={!$isMicAllowed ? love.string.MicPermission : $isMicEnabled ? love.string.Mute : love.string.UnMute}
         size={'small'}
         action={changeMute}
-        disabled={!$isConnected}
+        disabled={!$isConnected || !$isMicAllowed}
       />
       <ActionIcon
         icon={!$isConnected ? love.icon.Cam : $isCameraEnabled ? love.icon.CamEnabled : love.icon.CamDisabled}
-        label={$isCameraEnabled ? love.string.StopVideo : love.string.StartVideo}
+        label={!$isCamAllowed
+          ? love.string.CamPermission
+          : $isCameraEnabled
+            ? love.string.StopVideo
+            : love.string.StartVideo}
         size={'small'}
         action={changeCam}
-        disabled={!$isConnected || !allowCam}
+        disabled={!$isConnected || !allowCam || !$isCamAllowed}
       />
       {#if $isConnected}
         <ActionIcon

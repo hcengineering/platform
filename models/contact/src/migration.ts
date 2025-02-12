@@ -1,6 +1,6 @@
 //
 
-import { AvatarType, type SocialIdentity, type Contact } from '@hcengineering/contact'
+import { AvatarType, type Contact, type SocialIdentity } from '@hcengineering/contact'
 import {
   type AccountRole,
   buildSocialIdString,
@@ -168,7 +168,7 @@ export const contactOperation: MigrateOperation = {
               objectClass: 'contact:class:Employee'
             },
             {
-              $set: { objectClass: contact.mixin.Employee }
+              objectClass: contact.mixin.Employee
             }
           )
 
@@ -178,7 +178,7 @@ export const contactOperation: MigrateOperation = {
               'tx.attributes.srcDocClass': 'contact:class:Employee'
             },
             {
-              $set: { 'tx.attributes.srcDocClass': contact.mixin.Employee }
+              'tx.attributes.srcDocClass': contact.mixin.Employee
             }
           )
 
@@ -188,7 +188,7 @@ export const contactOperation: MigrateOperation = {
               'tx.attributes.srcDocClass': 'contact:class:Employee'
             },
             {
-              $set: { 'tx.attributes.srcDocClass': contact.mixin.Employee }
+              'tx.attributes.srcDocClass': contact.mixin.Employee
             }
           )
 
@@ -199,7 +199,7 @@ export const contactOperation: MigrateOperation = {
               'attributes.type.to': 'contact:class:Employee'
             },
             {
-              $set: { 'attributes.type.to': contact.mixin.Employee }
+              'attributes.type.to': contact.mixin.Employee
             }
           )
           await client.update(
@@ -209,7 +209,7 @@ export const contactOperation: MigrateOperation = {
               'operations.type.to': 'contact:class:Employee'
             },
             {
-              $set: { 'operations.type.to': contact.mixin.Employee }
+              'operations.type.to': contact.mixin.Employee
             }
           )
 
@@ -219,7 +219,7 @@ export const contactOperation: MigrateOperation = {
               'attributes.extends': 'contact:class:Employee'
             },
             {
-              $set: { 'attributes.extends': contact.mixin.Employee }
+              'attributes.extends': contact.mixin.Employee
             }
           )
 
@@ -227,7 +227,7 @@ export const contactOperation: MigrateOperation = {
             await client.update(
               d,
               { attachedToClass: 'contact:class:Employee' },
-              { $set: { attachedToClass: contact.mixin.Employee } }
+              { attachedToClass: contact.mixin.Employee }
             )
           }
           await client.update(
@@ -236,17 +236,17 @@ export const contactOperation: MigrateOperation = {
               _class: activity.class.ActivityReference,
               srcDocClass: 'contact:class:Employee'
             },
-            { $set: { srcDocClass: contact.mixin.Employee } }
+            { srcDocClass: contact.mixin.Employee }
           )
           await client.update(
             'tags' as Domain,
             { targetClass: 'contact:class:Employee' },
-            { $set: { targetClass: contact.mixin.Employee } }
+            { targetClass: contact.mixin.Employee }
           )
           await client.update(
             DOMAIN_VIEW,
             { filterClass: 'contact:class:Employee' },
-            { $set: { filterClass: contact.mixin.Employee } }
+            { filterClass: contact.mixin.Employee }
           )
           await client.update(
             DOMAIN_CONTACT,
@@ -260,9 +260,7 @@ export const contactOperation: MigrateOperation = {
                 displayName: `${contact.mixin.Employee as string}.displayName`,
                 position: `${contact.mixin.Employee as string}.position`
               },
-              $set: {
-                _class: contact.class.Person
-              }
+              _class: contact.class.Person
             }
           )
         }

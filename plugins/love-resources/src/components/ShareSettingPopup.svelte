@@ -6,7 +6,6 @@
 
 <div class="antiPopup p-4 grid">
   <Label label={love.string.WithAudio} />
-  {$isShareWithSound}
   <Toggle
     showTooltip={{ label: love.string.ShareWithAudioTooltip }}
     on={$isShareWithSound}
