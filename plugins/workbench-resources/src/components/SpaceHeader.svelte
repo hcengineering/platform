@@ -95,7 +95,7 @@
 {#if space}
   <Header hideActions={createItemDialog === undefined}>
     <svelte:fragment slot="beforeTitle">
-      <ViewletSelector {viewletQuery} bind:viewlet bind:viewlets />
+      <ViewletSelector {viewletQuery} ignoreFragment bind:viewlet bind:viewlets />
       <ViewletSettingButton bind:viewOptions bind:viewlet />
     </svelte:fragment>
 

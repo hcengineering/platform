@@ -54,7 +54,7 @@ export class PresentationClientHook implements ClientHook {
   constructor () {
     this.notifyEnabled = (localStorage.getItem('#platform.notification.logging') ?? 'true') === 'true'
 
-    addTxListener((...tx) => {
+    addTxListener((tx) => {
       if (this.notifyEnabled) {
         const rtx = tx.filter((tx) => (tx as any).objectClass !== core.class.BenchmarkDoc)
         if (rtx.length > 0) {

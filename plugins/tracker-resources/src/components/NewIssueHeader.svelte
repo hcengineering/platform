@@ -15,9 +15,9 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import { AccountRole, Ref, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import { MultipleDraftController, getClient } from '@hcengineering/presentation'
+  import { MultipleDraftController, createQuery, getClient } from '@hcengineering/presentation'
   import { TrackerEvents } from '@hcengineering/tracker'
-  import { ButtonWithDropdown, IconAdd, IconDropdown, SelectPopupValueType, showPopup } from '@hcengineering/ui'
+  import { Button, ButtonWithDropdown, IconAdd, IconDropdown, SelectPopupValueType, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
   import { onDestroy } from 'svelte'
@@ -43,6 +43,14 @@
       closed = true
     })
   }
+
+  const query = createQuery()
+
+  let projectExists = false
+
+  query.query(tracker.class.Project, {}, (res) => {
+    projectExists = res.length > 0
+  })
 
   $: label = draftExists || !closed ? tracker.string.ResumeDraft : tracker.string.NewIssue
   $: dropdownItems = hasAccountRole(getCurrentAccount(), AccountRole.User)
@@ -86,30 +94,45 @@
 </script>
 
 <div class="antiNav-subheader">
-  <ButtonWithDropdown
-    icon={IconAdd}
-    justify={'left'}
-    kind={'primary'}
-    {label}
-    on:click={newIssue}
-    {dropdownItems}
-    dropdownIcon={IconDropdown}
-    on:dropdown-selected={(ev) => {
-      dropdownItemSelected(ev.detail)
-    }}
-    mainButtonId={'new-issue'}
-    showTooltipMain={{
-      direction: 'bottom',
-      label,
-      keys
-    }}
-  >
-    <div slot="content" class="draft-circle-container">
-      {#if draftExists}
-        <div class="draft-circle" />
-      {/if}
-    </div>
-  </ButtonWithDropdown>
+  {#if projectExists}
+    <ButtonWithDropdown
+      icon={IconAdd}
+      justify={'left'}
+      kind={'primary'}
+      {label}
+      on:click={newIssue}
+      {dropdownItems}
+      dropdownIcon={IconDropdown}
+      on:dropdown-selected={(ev) => {
+        dropdownItemSelected(ev.detail)
+      }}
+      mainButtonId={'new-issue'}
+      showTooltipMain={{
+        direction: 'bottom',
+        label,
+        keys
+      }}
+    >
+      <div slot="content" class="draft-circle-container">
+        {#if draftExists}
+          <div class="draft-circle" />
+        {/if}
+      </div>
+    </ButtonWithDropdown>
+  {:else}
+    <Button
+      icon={IconAdd}
+      justify="left"
+      kind="primary"
+      label={tracker.string.CreateProject}
+      width="100%"
+      on:click={() => {
+        showPopup(tracker.component.CreateProject, {}, 'top', () => {
+          closed = true
+        })
+      }}
+    />
+  {/if}
 </div>
 
 <style lang="scss">

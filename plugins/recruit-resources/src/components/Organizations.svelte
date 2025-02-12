@@ -198,6 +198,7 @@
       bind:loading
       bind:viewlet
       bind:preference
+      ignoreFragment
       viewletQuery={{
         attachTo: recruit.mixin.VacancyList,
         descriptor: { $in: [view.viewlet.Table, view.viewlet.List] }

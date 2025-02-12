@@ -42,11 +42,12 @@
       (res) => {
         configurationRaw = res
         configurationsLoading = false
+        loading = configurationsLoading || preferencesLoading
       }
     )
   }
 
-  function fetchPreferences (viewlet: Viewlet): void {
+  function fetchPreferences (configurationRaw: Viewlet[]): void {
     preferencesLoading = preferenceQuery.query(
       view.class.ViewletPreference,
       {
@@ -56,6 +57,7 @@
       (res) => {
         preference = res
         preferencesLoading = false
+        loading = configurationsLoading || preferencesLoading
       }
     )
   }
@@ -81,7 +83,7 @@
   }
 
   $: fetchConfigurations(viewlet)
-  $: fetchPreferences(viewlet)
+  $: fetchPreferences(configurationRaw)
 
   $: updateConfiguration(configurationRaw, preference)
 

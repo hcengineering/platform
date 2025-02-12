@@ -181,7 +181,7 @@
         if (res.length > 0) {
           return res
         }
-        clazz = hierarchy.getClass(_class).extends
+        clazz = hierarchy.getClass(clazz).extends
       }
     } catch (e) {
       console.error(e)

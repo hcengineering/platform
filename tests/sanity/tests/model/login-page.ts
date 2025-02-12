@@ -29,6 +29,11 @@ export class LoginPage {
     await (await this.page.goto(`${PlatformURI}/login/login`))?.finished()
   }
 
+  // ACTIONS
+  async gotoAdmin (): Promise<void> {
+    await (await this.page.goto(`${PlatformURI}/login/admin`))?.finished()
+  }
+
   async clickSignUp (): Promise<void> {
     await this.linkSignUp().click()
   }

@@ -35,6 +35,7 @@
     _class={recruit.class.Applicant}
     config={['', '$lookup.space.name', '$lookup.space.company', 'status']}
     query={{ attachedTo: value._id }}
+    options={{ showArchived: true }}
     loadingProps={{ length: value.applications ?? 0 }}
   />
 </div>

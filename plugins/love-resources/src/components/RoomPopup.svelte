@@ -49,8 +49,10 @@
   import {
     endMeeting,
     getRoomName,
+    isCamAllowed,
     isCameraEnabled,
     isConnected,
+    isMicAllowed,
     isMicEnabled,
     isShareWithSound,
     isSharingEnabled,
@@ -195,7 +197,10 @@
         size={'large'}
         icon={$isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
         label={$isMicEnabled ? love.string.Mute : love.string.UnMute}
-        showTooltip={{ label: $isMicEnabled ? love.string.Mute : love.string.UnMute }}
+        showTooltip={{
+          label: !$isMicAllowed ? love.string.MicPermission : $isMicEnabled ? love.string.Mute : love.string.UnMute
+        }}
+        disabled={!$isMicAllowed}
         action={changeMute}
         secondIcon={IconUpOutline}
         secondAction={micSettings}
@@ -206,8 +211,14 @@
           size={'large'}
           icon={$isCameraEnabled ? love.icon.CamEnabled : love.icon.CamDisabled}
           label={$isCameraEnabled ? love.string.StopVideo : love.string.StartVideo}
-          showTooltip={{ label: $isCameraEnabled ? love.string.StopVideo : love.string.StartVideo }}
-          disabled={!$isConnected}
+          showTooltip={{
+            label: !$isCamAllowed
+              ? love.string.CamPermission
+              : $isCameraEnabled
+                ? love.string.StopVideo
+                : love.string.StartVideo
+          }}
+          disabled={!$isCamAllowed}
           action={changeCam}
           secondIcon={IconUpOutline}
           secondAction={camSettings}

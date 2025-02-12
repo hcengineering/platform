@@ -366,7 +366,7 @@ export const $availableRightPanelTabs = combine($canViewDocumentComments, (canVi
   tabs.push({
     id: RightPanelTab.APPROVALS,
     icon: plugin.icon.Approvals,
-    showTooltip: { label: plugin.string.DocumentApprovals }
+    showTooltip: { label: plugin.string.ValidationWorkflow }
   })
 
   return tabs

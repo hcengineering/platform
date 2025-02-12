@@ -58,6 +58,7 @@
         <Table
           _class={recruit.class.Applicant}
           config={preference?.config ?? viewlet.config}
+          options={{ showArchived: true }}
           query={{ attachedTo: objectId, ...(viewlet?.baseQuery ?? {}) }}
           loadingProps={{ length: applications }}
           {readonly}

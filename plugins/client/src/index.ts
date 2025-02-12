@@ -62,6 +62,7 @@ export interface ClientFactoryOptions {
   onUpgrade?: () => void
   onUnauthorized?: () => void
   onArchived?: () => void
+  onMigration?: () => void
   onConnect?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
   ctx?: MeasureContext
   onDialTimeout?: () => void | Promise<void>

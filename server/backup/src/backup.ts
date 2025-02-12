@@ -33,7 +33,6 @@ import core, {
   SortingOrder,
   systemAccountEmail,
   toIdMap,
-  toWorkspaceString,
   TxProcessor,
   WorkspaceId,
   type BackupStatus,
@@ -671,8 +670,6 @@ export async function backup (
     include?: Set<string>
     skipDomains: string[]
     force: boolean
-    freshBackup: boolean // If passed as true, will download all documents except blobs as new backup
-    clean: boolean // If set will perform a clena of old backup files
     timeout: number
     connectTimeout: number
     skipBlobContentTypes: string[]
@@ -686,8 +683,6 @@ export async function backup (
     token?: string
   } = {
     force: false,
-    freshBackup: false,
-    clean: false,
     timeout: 0,
     skipDomains: [],
     connectTimeout: 30000,
@@ -704,7 +699,6 @@ export async function backup (
   ctx = ctx.newChild('backup', {
     workspaceId: workspaceId.name,
     force: options.force,
-    recheck: options.freshBackup,
     timeout: options.timeout
   })
 
@@ -760,7 +754,7 @@ export async function backup (
 
     let lastTxChecked = false
     // Skip backup if there is no transaction changes.
-    if (options.getLastTx !== undefined && !options.freshBackup) {
+    if (options.getLastTx !== undefined) {
       lastTx = await options.getLastTx()
       if (lastTx !== undefined) {
         if (lastTx._id === backupInfo.lastTxId && !options.force) {
@@ -785,7 +779,7 @@ export async function backup (
         ? await options.getConnection()
         : ((await createClient(transactorUrl, token, undefined, options.connectTimeout)) as CoreClient & BackupClient)
 
-    if (!lastTxChecked && !options.freshBackup) {
+    if (!lastTxChecked) {
       lastTx = await connection.findOne(
         core.class.Tx,
         { objectSpace: { $ne: core.space.Model } },
@@ -924,7 +918,7 @@ export async function backup (
               if (digest.delete(id as Ref<Doc>)) {
                 oldHash.set(id as Ref<Doc>, currentHash)
               }
-              if (currentHash !== serverDocHash || (options.freshBackup && domain !== DOMAIN_BLOB)) {
+              if (currentHash !== serverDocHash) {
                 if (changes.updated.has(id as Ref<Doc>)) {
                   removeFromNeedRetrieve(needRetrieve, id as Ref<Doc>)
                 }
@@ -1347,36 +1341,6 @@ export async function backup (
     if (!canceled()) {
       backupInfo.lastTxId = lastTx?._id ?? '0' // We could store last tx, since full backup is complete
       await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
-
-      if (options.freshBackup && options.clean) {
-        // Preparing a list of files to clean
-
-        ctx.info('Cleaning old backup files...')
-        for (const sn of backupInfo.snapshots.slice(0, backupInfo.snapshots.length - 1)) {
-          const filesToDelete: string[] = []
-          for (const [domain, dsn] of [...Object.entries(sn.domains)]) {
-            if (domain === DOMAIN_BLOB) {
-              continue
-            }
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-            delete (sn.domains as any)[domain]
-
-            filesToDelete.push(...(dsn.snapshots ?? []))
-            filesToDelete.push(...(dsn.storage ?? []))
-            if (dsn.snapshot !== undefined) {
-              filesToDelete.push(dsn.snapshot)
-            }
-          }
-          for (const file of filesToDelete) {
-            ctx.info('Removing file...', { file })
-            await storage.delete(file)
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-            delete sizeInfo[file]
-          }
-        }
-        ctx.info('Cleaning complete...')
-        await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
-      }
     }
 
     const addFileSize = async (file: string | undefined | null): Promise<void> => {
@@ -1726,12 +1690,9 @@ export async function restore (
     try {
       let serverEndpoint = await getTransactorEndpoint(token, 'external')
       serverEndpoint = serverEndpoint.replaceAll('wss://', 'https://').replace('ws://', 'http://')
-      await fetch(
-        serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close&wsId=${toWorkspaceString(workspaceId)}`,
-        {
-          method: 'PUT'
-        }
-      )
+      await fetch(serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close`, {
+        method: 'PUT'
+      })
     } catch (err: any) {
       // Ignore
     }
