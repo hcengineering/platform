@@ -156,7 +156,7 @@ jobs:
           [ -z "$(git diff --name-only '*.js' '*.ts' '*.svelte' '*.json' '*.yaml' | cat)" ]
           echo '================================================================'
       - name: Formatting...
-        run: node common/scripts/install-run-rush.js fast-format --branch ${{ github.base_ref }}
+        run: node common/scripts/install-run-rush.js fast-format --branch ${{ github.base_ref || 'develop' }}
       - name: Check files formatting
         run: |
           echo '================================================================'
