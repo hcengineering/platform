@@ -36,7 +36,7 @@ import { getMetadata, IntlString } from '@hcengineering/platform'
 import { getSocialStrings } from '@hcengineering/server-contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
-import { stripTags } from '@hcengineering/text'
+import { stripTags } from '@hcengineering/text-core'
 import tracker, {
   Component,
   Issue,

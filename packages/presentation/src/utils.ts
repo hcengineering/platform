@@ -747,7 +747,6 @@ export function decodeTokenPayload (token: string): any {
 
 export function isAdminUser (): boolean {
   const decodedToken = decodeTokenPayload(getMetadata(plugin.metadata.Token) ?? '')
-  console.log('decodedToken', decodedToken)
   return decodedToken.extra?.admin === 'true'
 }
 
