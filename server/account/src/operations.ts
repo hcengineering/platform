@@ -1317,7 +1317,7 @@ export async function performWorkspaceOperation (
     switch (event) {
       case 'delete':
         if (workspaceInfo.mode !== 'active') {
-          throw new PlatformError(unknownError('Archive allowed only for active workspaces'))
+          throw new PlatformError(unknownError('Delete allowed only for active workspaces'))
         }
 
         update.mode = 'pending-deletion'
