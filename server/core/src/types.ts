@@ -647,6 +647,7 @@ export interface AddSessionActive {
   context: MeasureContext
   workspaceId: WorkspaceUuid
 }
+
 export type AddSessionResponse =
   | AddSessionActive
   | { upgrade: true, progress?: number }

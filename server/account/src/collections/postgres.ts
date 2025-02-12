@@ -560,7 +560,7 @@ export class PostgresAccountDB implements AccountDB {
         operationSql = `(${pendingCreationSql} OR ${pendingUpgradeSql})`
         break
       case 'all+backup':
-        operationSql = `(${pendingCreationSql} OR ${pendingUpgradeSql} OR ${migrationSql} OR ${archivingSql} OR ${restoringSql}) OR ${deletingSql}`
+        operationSql = `(${pendingCreationSql} OR ${pendingUpgradeSql} OR ${migrationSql} OR ${archivingSql} OR ${restoringSql} OR ${deletingSql})`
         break
     }
 
