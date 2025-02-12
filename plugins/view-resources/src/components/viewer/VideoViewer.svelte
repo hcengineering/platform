@@ -31,10 +31,16 @@
     const meta = await getVideoMeta(value, name)
     if (meta != null && meta.status === 'ready' && HLS.isSupported()) {
       hls?.destroy()
-      hls = new HLS()
+      hls = new HLS({ autoStartLoad: false })
       hls.loadSource(meta.hls)
       hls.attachMedia(video)
+
       video.poster = meta.thumbnail
+      video.onplay = () => {
+        // autoStartLoad disables autoplay, so we need to enable it manually
+        video.onplay = null
+        hls.startLoad()
+      }
     } else {
       video.src = src
     }
@@ -64,3 +70,13 @@
 >
   <track kind="captions" label={name} />
 </video>
+
+<style lang="scss">
+  video::-webkit-media-controls {
+    visibility: hidden;
+  }
+
+  video::-webkit-media-controls-enclosure {
+    visibility: visible;
+  }
+</style>
