@@ -711,7 +711,7 @@ describe('MongoAccountDB', () => {
   })
 
   describe('init', () => {
-    it.skip('should create required indices', async () => {
+    it('should create required indices', async () => {
       await accountDb.init()
 
       // Verify account indices
