@@ -1,0 +1,264 @@
+services:
+  mongodb:
+    image: 'mongo:7-jammy'
+    command: mongod --port 27018
+    environment:
+      - PUID=1000
+      - PGID=1000
+    ports:
+      - 27018:27018
+    restart: unless-stopped
+  cockroach:
+    image: cockroachdb/cockroach:latest-v24.2
+    ports:
+      - '26258:26257'
+    command: start-single-node --insecure
+    restart: unless-stopped
+  minio:
+    image: 'minio/minio'
+    command: server /data --address ":9000" --console-address ":9001"
+    expose:
+      - 9000
+      - 9001
+    ports:
+      - 9002:9000
+      - 9003:9001
+  elastic:
+    image: 'elasticsearch:7.14.2'
+    expose:
+      - 9200
+    ports:
+      - 9201:9200
+    environment:
+      - ELASTICSEARCH_PORT_NUMBER=9200
+      - BITNAMI_DEBUG=true
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
+    healthcheck:
+      interval: 20s
+      retries: 10
+      test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
+  account:
+    image: hardcoreeng/account
+    pull_policy: never
+    links:
+      - mongodb
+      - minio
+      - cockroach
+    ports:
+      - 3003:3003
+    volumes:
+      - ./branding-test.json:/var/cfg/branding.json
+    environment:
+      - REGION_INFO=|America;europe| # Europe without name will not be available for creation of new workspaces.
+      # - REGION_INFO=|America;europe|Europe
+      - ADMIN_EMAILS=admin
+      - ACCOUNT_PORT=3003
+      - SERVER_SECRET=secret
+      - DB_URL=mongodb://mongodb:27018
+      - TRANSACTOR_URL=ws://transactor:3334;ws://localhost:3334,ws://transactor-europe:3335;ws://localhost:3335;europe,
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - MODEL_ENABLED=*
+      - BRANDING_PATH=/var/cfg/branding.json
+      - STATS_URL=http://stats:4901
+  workspace:
+    image: hardcoreeng/workspace
+    links:
+      - mongodb
+      - minio
+    volumes:
+      - ./branding-test.json:/var/cfg/branding.json
+    environment:
+      - WS_OPERATION=all+backup
+      - SERVER_SECRET=secret
+      - DB_URL=${DB_URL}
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - MODEL_ENABLED=*
+      - REGION=
+      - ACCOUNTS_URL=http://account:3003
+      - BRANDING_PATH=/var/cfg/branding.json
+      - STATS_URL=http://stats:4901
+      - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
+      - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
+    restart: unless-stopped
+  workspace_europe:
+    image: hardcoreeng/workspace
+    links:
+      - cockroach
+      - minio
+    volumes:
+      - ./branding-test.json:/var/cfg/branding.json
+    environment:
+      - WS_OPERATION=all+backup
+      - REGION=europe
+      - SERVER_SECRET=secret
+      - DB_URL=${DB_EU_URL}
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - MODEL_ENABLED=*
+      - ACCOUNTS_URL=http://account:3003
+      - BRANDING_PATH=/var/cfg/branding.json
+      - STATS_URL=http://stats:4901
+      - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
+      - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
+    restart: unless-stopped    
+  front:
+    image: hardcoreeng/front
+    pull_policy: never
+    links:
+      - account
+      - mongodb
+      - minio
+      - elastic
+      - collaborator
+      - transactor
+    ports:
+      - 8083:8083
+    volumes:
+      - ./branding-test.json:/app/dist/branding-test.json
+    environment:
+      - SERVER_PORT=8083
+      - SERVER_SECRET=secret
+      - ACCOUNTS_URL_INTERNAL=http://account:3003
+      - ACCOUNTS_URL=http://localhost:3003
+      - UPLOAD_URL=/files
+      - ELASTIC_URL=http://elastic:9200
+      - GMAIL_URL=http://localhost:8088
+      - CALENDAR_URL=http://localhost:8095
+      - REKONI_URL=http://rekoni:4007
+      - TELEGRAM_URL=http://localhost:8086
+      - COLLABORATOR_URL=ws://localhost:3079
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - BRANDING_URL=http://localhost:8083/branding-test.json
+      - STATS_URL=http://stats:4901
+      - STATS_API=http://localhost:4901
+  transactor:
+    image: hardcoreeng/transactor
+    pull_policy: never
+    links:
+      - mongodb
+      - elastic
+      - minio
+      - rekoni
+      - account
+    ports:
+      - 3334:3334
+    volumes:
+      - ./branding-test.json:/var/cfg/branding.json
+    environment:
+      - REGION=
+      - SERVER_PORT=3334
+      - SERVER_SECRET=secret      
+      - DB_URL=${DB_URL}
+      - METRICS_CONSOLE=false
+      - METRICS_FILE=metrics.txt
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - FRONT_URL=http://localhost:8083
+      - ACCOUNTS_URL=http://account:3003
+      - COLLABORATOR_URL=http://collaborator:3079
+      - LAST_NAME_FIRST=true
+      - BRANDING_PATH=/var/cfg/branding.json
+      - FULLTEXT_URL=http://fulltext:4710
+      - STATS_URL=http://stats:4901
+      - ENABLE_COMPRESSION=true
+  transactor-europe:
+    image: hardcoreeng/transactor
+    pull_policy: never
+    links:
+      - elastic
+      - minio
+      - rekoni
+      - cockroach
+      - account
+    ports:
+      - 3335:3335
+    volumes:
+      - ./branding-test.json:/var/cfg/branding.json
+    environment:
+      - SERVER_PORT=3335
+      - REGION=europe
+      - SERVER_SECRET=secret      
+      - DB_URL=${DB_EU_URL}
+      - METRICS_CONSOLE=false
+      - METRICS_FILE=metrics.txt
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - FRONT_URL=http://localhost:8083
+      - ACCOUNTS_URL=http://account:3003
+      - COLLABORATOR_URL=http://collaborator:3079
+      - LAST_NAME_FIRST=true
+      - BRANDING_PATH=/var/cfg/branding.json
+      - FULLTEXT_URL=http://fulltext:4710
+      - STATS_URL=http://stats:4901
+      - ENABLE_COMPRESSION=true      
+  collaborator:
+    image: hardcoreeng/collaborator
+    links:
+      - mongodb
+      - minio
+      - transactor
+    ports:
+      - 3079:3079
+    environment:
+      - COLLABORATOR_PORT=3079
+      - SECRET=secret
+      - ACCOUNTS_URL=http://account:3003
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - FULLTEXT_URL=http://fulltext:4710
+      - STATS_URL=http://stats:4901
+    restart: unless-stopped
+  rekoni:
+    image: hardcoreeng/rekoni-service
+    restart: on-failure
+    ports:
+      - 4007:4004
+    environment:
+      - STATS_URL=http://stats:4901
+    
+  fulltext:
+    image: hardcoreeng/fulltext
+    restart: unless-stopped
+    links:
+      - elastic
+      - mongodb
+      - cockroach
+      - rekoni
+    ports:
+      - 4710:4710
+    environment:
+      - PORT=4710
+      - SERVER_SECRET=secret
+      - DB_URL=${DB_URL}
+      - FULLTEXT_DB_URL=http://elastic:9200
+      - ELASTIC_INDEX_NAME=local_storage_index
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - REKONI_URL=http://rekoni:4007
+      - ACCOUNTS_URL=http://account:3003
+      - STATS_URL=http://stats:4901
+  fulltext-europe:
+    image: hardcoreeng/fulltext
+    restart: unless-stopped
+    links:
+      - elastic
+      - mongodb
+      - cockroach
+      - rekoni
+    ports:
+      - 4711:4711
+    environment:
+      - PORT=4711
+      - REGION=europe
+      - SERVER_SECRET=secret
+      - DB_URL=${DB_EU_URL}
+      - FULLTEXT_DB_URL=http://elastic:9200
+      - ELASTIC_INDEX_NAME=local_eu_storage_index # Use different one to be able to check migration is working
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - REKONI_URL=http://rekoni:4007
+      - ACCOUNTS_URL=http://account:3003
+      - STATS_URL=http://stats:4901      
+  stats:
+    image: hardcoreeng/stats
+    ports:
+      - 4901:4901
+    environment:
+      - PORT=4901
+      - SERVER_SECRET=secret
+    restart: unless-stopped      

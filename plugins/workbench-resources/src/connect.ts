@@ -243,6 +243,17 @@ export async function connect (title: string): Promise<Client | undefined> {
         onArchived: () => {
           translateCB(plugin.string.WorkspaceIsArchived, {}, get(themeStore).language, (r) => {
             versionError.set(r)
+            setTimeout(() => {
+              location.reload()
+            }, 5000)
+          })
+        },
+        onMigration: () => {
+          translateCB(plugin.string.WorkspaceIsMigrating, {}, get(themeStore).language, (r) => {
+            versionError.set(r)
+            setTimeout(() => {
+              location.reload()
+            }, 5000)
           })
         },
         // We need to refresh all active live queries and clear old queries.
