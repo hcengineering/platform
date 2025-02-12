@@ -275,7 +275,7 @@ export async function generateDocUpdateMessages (
   if (controlRules.length > 0) {
     for (const r of controlRules) {
       for (const s of r.skip) {
-        if (matchQuery([tx], s, r.objectClass, hierarchy).length > 0) {
+        if (matchQuery([tx], s, core.class.TxCUD, hierarchy).length > 0) {
           // Match found, we need to skip
           return res
         }
