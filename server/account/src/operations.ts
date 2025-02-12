@@ -15,22 +15,22 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import {
+  AccountRole,
   concatLink,
   Data,
+  isActiveMode,
   isWorkspaceCreating,
   MeasureContext,
+  SocialIdType,
   systemAccountUuid,
   Version,
-  SocialIdType,
   type BackupStatus,
   type Branding,
-  AccountRole,
   type Person,
-  type WorkspaceMemberInfo,
   type PersonUuid,
-  isActiveMode,
-  type WorkspaceUuid,
-  type WorkspaceMode
+  type WorkspaceMemberInfo,
+  type WorkspaceMode,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import platform, {
   getMetadata,
@@ -45,48 +45,48 @@ import { decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 import { accountPlugin } from './plugin'
 import type {
   AccountDB,
+  AccountMethodHandler,
   LoginInfo,
   OtpInfo,
   RegionInfo,
-  WorkspaceEvent,
-  WorkspaceOperation,
-  AccountMethodHandler,
-  WorkspaceLoginInfo,
-  WorkspaceInfoWithStatus,
-  WorkspaceStatus,
   SocialId,
-  Workspace
+  Workspace,
+  WorkspaceEvent,
+  WorkspaceInfoWithStatus,
+  WorkspaceLoginInfo,
+  WorkspaceOperation,
+  WorkspaceStatus
 } from './types'
 import {
+  checkInvite,
   cleanEmail,
-  EndpointKind,
-  getEndpoint,
-  getRegions,
-  verifyPassword,
-  isOtpValid,
+  confirmEmail,
   createAccount,
+  createWorkspaceRecord,
+  doJoinByInvite,
+  EndpointKind,
+  getAccount,
+  getEmailSocialId,
+  getEndpoint,
+  getFrontUrl,
+  getRegions,
+  getRolePower,
+  getSesUrl,
+  getSocialIdByKey,
+  getWorkspaceById,
+  getWorkspaceInfoWithStatusById,
+  getWorkspaceInvite,
+  getWorkspaces,
+  getWorkspacesInfoWithStatusByIds,
+  GUEST_ACCOUNT,
+  isOtpValid,
+  selectWorkspace,
+  sendEmailConfirmation,
   sendOtp,
   setPassword,
-  wrap,
-  createWorkspaceRecord,
-  checkInvite,
-  GUEST_ACCOUNT,
-  getWorkspaceById,
-  getWorkspaceInvite,
-  getRolePower,
-  sendEmailConfirmation,
-  getEmailSocialId,
-  confirmEmail,
-  getAccount,
-  getSesUrl,
-  getFrontUrl,
-  getWorkspaceInfoWithStatusById,
   signUpByEmail,
-  selectWorkspace,
-  doJoinByInvite,
-  getWorkspacesInfoWithStatusByIds,
-  getSocialIdByKey,
-  getWorkspaces
+  verifyPassword,
+  wrap
 } from './utils'
 
 // Move to config?
@@ -857,7 +857,7 @@ export async function performWorkspaceOperation (
 ): Promise<boolean> {
   const { extra } = decodeTokenVerbose(ctx, token)
 
-  if (extra?.service !== 'admin') {
+  if (extra?.admin !== 'true') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
@@ -874,7 +874,7 @@ export async function performWorkspaceOperation (
     switch (event) {
       case 'delete':
         if (workspace.status.mode !== 'active') {
-          throw new PlatformError(unknownError('Archive allowed only for active workspaces'))
+          throw new PlatformError(unknownError('Delete allowed only for active workspaces'))
         }
 
         update.mode = 'pending-deletion'
@@ -883,7 +883,7 @@ export async function performWorkspaceOperation (
         update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
         break
       case 'archive':
-        if (isActiveMode(workspace.status.mode)) {
+        if (!isActiveMode(workspace.status.mode)) {
           throw new PlatformError(unknownError('Archiving allowed only for active workspaces'))
         }
 
@@ -921,7 +921,7 @@ export async function performWorkspaceOperation (
 
         update.mode = 'migration-pending-backup'
         // NOTE: will only work for Mongo accounts
-        ;(update as any).targetRegion = params[0]
+        update.targetRegion = params[0]
         update.processingAttempts = 0
         update.processingProgress = 0
         update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
@@ -1278,7 +1278,7 @@ export async function updateWorkspaceInfo (
       update.processingProgress = progress
       break
     case 'migrate-clean-done':
-      wsUpdate.region = (workspace as any).targetRegion ?? ''
+      wsUpdate.region = workspace.status.targetRegion ?? ''
       update.mode = 'pending-restore'
       update.processingProgress = progress
       update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
@@ -1323,8 +1323,8 @@ export async function updateWorkspaceInfo (
   await db.workspaceStatus.updateOne(
     { workspaceUuid: workspace.uuid },
     {
-      ...update,
-      lastProcessingTime: Date.now()
+      lastProcessingTime: Date.now(), // Some operations override it.
+      ...update
     }
   )
 

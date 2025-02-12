@@ -87,6 +87,8 @@ export interface WorkspaceStatus {
   processingAttempts?: number
   processingMessage?: string
   backupInfo?: BackupStatus
+
+  targetRegion?: string
 }
 
 export interface Workspace {

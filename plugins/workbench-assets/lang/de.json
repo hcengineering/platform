@@ -36,6 +36,7 @@
     "OpenInSidebarNewTab": "In neuer Seitenleiste öffnen",
     "ConfigureWidgets": "Widgets konfigurieren",
     "Tab": "Tab",
-    "WorkspaceIsArchived": "Workspace wurde wegen Inaktivität archiviert. Bitte kontaktieren Sie uns zur Wiederherstellung..."
+    "WorkspaceIsArchived": "Workspace wurde wegen Inaktivität archiviert. Bitte kontaktieren Sie uns zur Wiederherstellung...",
+    "WorkspaceIsMigrating": "Workspace wird aktualisiert. Bitte warten..."
   }
 }

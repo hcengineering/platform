@@ -9,7 +9,7 @@ temp/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-tests/sanity/screenshots
+*tests/sanity/screenshots
 
 # Runtime data
 *.pid

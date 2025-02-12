@@ -92,8 +92,6 @@ export async function backupWorkspace (
     externalStorage: StorageAdapter
   ) => DbConfiguration,
   region: string,
-  freshBackup: boolean = false,
-  clean: boolean = false,
   downloadLimit: number,
   contextVars: Record<string, any>,
 
@@ -129,8 +127,6 @@ export async function backupWorkspace (
         return getConfig(ctx, mainDbUrl, workspace, branding, externalStorage)
       },
       region,
-      freshBackup,
-      clean,
       downloadLimit,
       [],
       contextVars

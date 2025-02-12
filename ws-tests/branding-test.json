@@ -1,0 +1,33 @@
+{
+  "localhost:8083": {
+    "key": "huly",
+    "title": "Platform",
+    "protocol": "http",
+    "languages": "en,ru,pt,es,zh,fr",
+    "defaultLanguage": "en",
+    "defaultApplication": "tracker",
+    "defaultSpace": "tracker:project:DefaultProject",
+    "defaultSpecial": "issues",
+    "lastNameFirst": "true",
+    "links": [
+      {
+        "rel": "manifest",
+        "href": "/platform/site.webmanifest"
+      },
+      {
+        "rel": "icon",
+        "href": "/platform/favicon.svg",
+        "type": "image/svg+xml"
+      },
+      {
+        "rel": "shortcut icon",
+        "href": "/platform/favicon.ico",
+        "sizes": "any"
+      },
+      {
+        "rel": "apple-touch-icon",
+        "href": "/platform/icon-192.png"
+      }
+    ]
+  }
+}

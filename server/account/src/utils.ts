@@ -27,8 +27,6 @@ import {
   systemAccountUuid,
   type WorkspaceInfoWithStatus as WorkspaceInfoWithStatusCore,
   isActiveMode,
-  isArchivingMode,
-  isMigrationMode,
   type PersonUuid
 } from '@hcengineering/core'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
@@ -559,19 +557,6 @@ export async function selectWorkspace (
       ctx.error('Selecting a disabled workspace', { workspaceUrl, accountUuid })
 
       throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUrl }))
-    }
-
-    if (isArchivingMode(wsStatus.mode) || isMigrationMode(wsStatus.mode)) {
-      const result: WorkspaceLoginInfo = {
-        account: accountUuid,
-        endpoint: '',
-        token: generateToken(accountUuid, workspace.uuid),
-        workspace: workspace.uuid,
-        workspaceUrl: workspace.url,
-        workspaceDataId: workspace.dataId,
-        role
-      }
-      return result
     }
   }
 

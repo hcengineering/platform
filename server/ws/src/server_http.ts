@@ -225,7 +225,7 @@ export function startHttpServer (
         }
         case 'force-close': {
           const wsId = req.query.wsId as WorkspaceUuid
-          void sessions.forceClose(wsId)
+          void sessions.forceClose(wsId ?? payload.workspace)
           res.writeHead(200)
           res.end()
           return
@@ -433,12 +433,25 @@ export function startHttpServer (
     if (webSocketData.session instanceof Promise) {
       void webSocketData.session.then((s) => {
         if ('error' in s) {
-          if (s.archived === true) {
+          if (s.specialError === 'archived') {
             cs.send(
               ctx,
               {
                 id: -1,
                 error: new Status(Severity.ERROR, platform.status.WorkspaceArchived, {
+                  workspaceUuid: token.workspace
+                }),
+                terminate: s.terminate
+              },
+              false,
+              false
+            )
+          } else if (s.specialError === 'migration') {
+            cs.send(
+              ctx,
+              {
+                id: -1,
+                error: new Status(Severity.ERROR, platform.status.WorkspaceMigration, {
                   workspaceUuid: token.workspace
                 }),
                 terminate: s.terminate
