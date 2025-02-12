@@ -235,17 +235,15 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
 
     for (const key of Object.keys(query)) {
       const qVal = (query as any)[key]
-      const operator = typeof qVal === 'object' ? Object.keys(qVal)[0] : ''
-      const targetVal = operator !== '' ? { [operator]: qVal } : qVal
 
       if (key === 'workspaceUuid') {
-        res.uuid = targetVal
+        res.uuid = qVal
       } else {
         if (res.status === undefined) {
           res.status = {}
         }
 
-        ;(res.status as any)[key] = targetVal
+        ;(res.status as any)[key] = qVal
       }
     }
 
@@ -274,10 +272,14 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
     for (const key of Object.keys(ops)) {
       const op = (ops as any)[key]
 
-      if (['$inc', '$set'].includes(key)) {
+      if (key === '$inc') {
         res[key] = {}
-        for (const incKey of Object.keys(op)) {
-          res[key][`status.${incKey}`] = op[incKey]
+        for (const opKey of Object.keys(op)) {
+          res[key][`status.${opKey}`] = op[opKey]
+        }
+      } else if (key === '$set') {
+        for (const opKey of Object.keys(op)) {
+          res[`status.${opKey}`] = op[opKey]
         }
       } else {
         res[`status.${key}`] = op
