@@ -54,6 +54,7 @@ import {
   SessionManager,
   StorageAdapter,
   type SessionFactory,
+  type AddSessionResponse,
   type ClientSessionCtx,
   type ConnectionSocket,
   type Session,
@@ -355,11 +356,7 @@ class TSessionManager implements SessionManager {
     rawToken: string,
     pipelineFactory: PipelineFactory,
     sessionId: string | undefined
-  ): Promise<
-    | { session: Session, context: MeasureContext, workspaceId: WorkspaceUuid }
-    | { upgrade: true, progress?: number }
-    | { error: any, terminate?: boolean, archived?: boolean }
-    > {
+  ): Promise<AddSessionResponse> {
     const { workspace: workspaceUuid } = token
 
     let workspaceInfo: WorkspaceInfoWithStatus | undefined
@@ -376,15 +373,15 @@ class TSessionManager implements SessionManager {
 
     if (isArchivingMode(workspaceInfo.mode)) {
       // No access to disabled workspaces for regular users
-      return { error: new Error('Workspace is archived'), terminate: true, archived: true }
+      return { error: new Error('Workspace is archived'), terminate: true, specialError: 'archived' }
     }
     if (isMigrationMode(workspaceInfo.mode)) {
       // No access to disabled workspaces for regular users
-      return { error: new Error('Workspace is in region migration'), terminate: true, archived: false }
+      return { error: new Error('Workspace is in region migration'), terminate: true, specialError: 'migration' }
     }
     if (isRestoringMode(workspaceInfo.mode)) {
       // No access to disabled workspaces for regular users
-      return { error: new Error('Workspace is in backup restore'), terminate: true, archived: false }
+      return { error: new Error('Workspace is in backup restore'), terminate: true, specialError: 'migration' }
     }
 
     if (workspaceInfo.isDisabled === true && token.account !== systemAccountUuid && token.extra?.admin !== 'true') {
@@ -836,11 +833,14 @@ class TSessionManager implements SessionManager {
   async forceClose (wsId: WorkspaceUuid, ignoreSocket?: ConnectionSocket): Promise<void> {
     const ws = this.workspaces.get(wsId)
     if (ws !== undefined) {
+      this.ctx.warn('force-close', { name: ws.workspaceName })
       ws.upgrade = true // We need to similare upgrade to refresh all clients.
       ws.closing = this.closeAll(wsId, ws, 99, 'force-close', ignoreSocket)
       this.workspaces.delete(wsId)
       await ws.closing
       ws.closing = undefined
+    } else {
+      this.ctx.warn('force-close-unknown', { wsId })
     }
   }
 

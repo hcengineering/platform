@@ -283,6 +283,9 @@ class Connection implements ClientConnection {
         if (resp.error?.code === platform.status.WorkspaceArchived) {
           this.opt?.onArchived?.()
         }
+        if (resp.error?.code === platform.status.WorkspaceMigration) {
+          this.opt?.onMigration?.()
+        }
       }
 
       if (resp.id !== undefined) {

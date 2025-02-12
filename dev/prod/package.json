@@ -10,6 +10,7 @@
     "analyze": "rm -rf ./dist && cross-env NODE_ENV=production webpack --profile --json > stats.json",
     "show": "webpack-bundle-analyzer stats.json dist",
     "dev-server": "cross-env USE_CACHE=false CLIENT_TYPE=dev-server webpack serve",
+    "dev-server-test": "cross-env USE_CACHE=false CLIENT_TYPE=dev-server-test webpack serve",
     "dev-worker": "cross-env USE_CACHE=false CLIENT_TYPE=dev-worker webpack serve",
     "dev-worker-local": "cross-env USE_CACHE=false CLIENT_TYPE=dev-worker-local webpack serve",
     "dev-server-cache": "cross-env USE_CACHE=true CLIENT_TYPE=dev-server webpack serve",

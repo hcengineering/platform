@@ -1141,6 +1141,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/tests-ws-sanity",
+      "projectFolder": "ws-tests/sanity",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/qms-tests-sanity",
       "projectFolder": "qms-tests/sanity",
       "shouldPublish": false

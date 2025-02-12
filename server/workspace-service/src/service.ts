@@ -12,23 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { getClient as getAccountClient } from '@hcengineering/account-client'
 import {
+  getBranding,
+  isArchivingMode,
+  isMigrationMode,
+  isRestoringMode,
+  systemAccountUuid,
   type BrandingMap,
   type Data,
   type MeasureContext,
   type Tx,
   type Version,
-  type WorkspaceUpdateEvent,
-  isArchivingMode,
-  isMigrationMode,
-  isRestoringMode,
   type WorkspaceInfoWithStatus,
-  getBranding,
-  systemAccountUuid
+  type WorkspaceUpdateEvent,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { type MigrateOperation, type ModelLogger } from '@hcengineering/model'
-import { getClient as getAccountClient } from '@hcengineering/account-client'
-import { withRetryConnUntilSuccess, withRetryConnUntilTimeout } from '@hcengineering/server-client'
+import {
+  getTransactorEndpoint,
+  withRetryConnUntilSuccess,
+  withRetryConnUntilTimeout
+} from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { FileModelLogger, prepareTools } from '@hcengineering/server-tool'
 import path from 'path'
@@ -420,6 +425,20 @@ export class WorkspaceWorker {
     }
   }
 
+  async sendTransactorMaitenance (token: string, ws: WorkspaceUuid): Promise<void> {
+    try {
+      let serverEndpoint = await getTransactorEndpoint(token)
+      serverEndpoint = serverEndpoint.replaceAll('wss://', 'https://').replace('ws://', 'http://')
+      console.log('sending event', serverEndpoint, ws)
+      await fetch(serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close`, {
+        method: 'PUT'
+      })
+    } catch (err: any) {
+      console.log(err)
+      // Ignore
+    }
+  }
+
   private async doWorkspaceOperation (
     ctx: MeasureContext,
     workspace: WorkspaceInfoWithStatus,
@@ -454,6 +473,8 @@ export class WorkspaceWorker {
       case 'archiving-pending-backup':
       case 'archiving-backup': {
         await sendEvent('archiving-backup-started', 0)
+
+        await this.sendTransactorMaitenance(token, workspace.uuid)
         if (await this.doBackup(ctx, workspace, opt, true)) {
           await sendEvent('archiving-backup-done', 100)
         }
@@ -476,6 +497,7 @@ export class WorkspaceWorker {
       case 'deleting': {
         // We should remove DB, not storages.
         await sendEvent('delete-started', 0)
+        await this.sendTransactorMaitenance(token, workspace.uuid)
         try {
           await this.doCleanup(ctx, workspace, true)
         } catch (err: any) {
@@ -489,6 +511,7 @@ export class WorkspaceWorker {
       case 'migration-pending-backup':
       case 'migration-backup':
         await sendEvent('migrate-backup-started', 0)
+        await this.sendTransactorMaitenance(token, workspace.uuid)
         if (await this.doBackup(ctx, workspace, opt, false)) {
           await sendEvent('migrate-backup-done', 100)
         }
@@ -497,6 +520,7 @@ export class WorkspaceWorker {
       case 'migration-clean': {
         // We should remove DB, not storages.
         await sendEvent('migrate-clean-started', 0)
+        await this.sendTransactorMaitenance(token, workspace.uuid)
         try {
           await this.doCleanup(ctx, workspace, false)
         } catch (err: any) {
@@ -590,8 +614,6 @@ export class WorkspaceWorker {
           })
         },
         this.region,
-        archive,
-        archive,
         50000,
         ['blob'],
         sharedPipelineContextVars,
@@ -604,7 +626,7 @@ export class WorkspaceWorker {
         }
       )
       if (result) {
-        console.log('backup completed')
+        ctx.info('backup completed')
         return true
       }
     } finally {
@@ -681,7 +703,7 @@ export class WorkspaceWorker {
         }
       )
       if (result) {
-        console.log('backup completed')
+        ctx.info('restore completed')
         return true
       }
     } finally {

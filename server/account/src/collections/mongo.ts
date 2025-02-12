@@ -241,7 +241,6 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
 
     for (const key of Object.keys(query)) {
       const qVal = (query as any)[key]
-
       if (key === 'workspaceUuid') {
         res.uuid = qVal
       } else {

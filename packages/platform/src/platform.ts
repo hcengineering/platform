@@ -150,6 +150,7 @@ export default plugin(platformId, {
     AccountNotConfirmed: '' as StatusCode,
     WorkspaceNotFound: '' as StatusCode<{ workspaceUuid?: string, workspaceName?: string, workspaceUrl?: string }>,
     WorkspaceArchived: '' as StatusCode<{ workspaceUuid: string }>,
+    WorkspaceMigration: '' as StatusCode<{ workspaceUuid: string }>,
     SocialIdNotFound: '' as StatusCode<{ socialId: string, type: string }>,
     SocialIdNotConfirmed: '' as StatusCode<{ socialId: string, type: string }>,
     SocialIdAlreadyConfirmed: '' as StatusCode<{ socialId: string, type: string }>,

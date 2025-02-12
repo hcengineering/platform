@@ -73,8 +73,6 @@ class BackupWorker {
     ) => DbConfiguration,
     readonly region: string,
     readonly contextVars: Record<string, any>,
-    readonly freshWorkspace: boolean = false,
-    readonly clean: boolean = false,
     readonly skipDomains: string[] = []
   ) {}
 
@@ -282,8 +280,6 @@ class BackupWorker {
         backup(ctx, '', wsIds, storage, {
           skipDomains: this.skipDomains,
           force: true,
-          freshBackup: this.freshWorkspace,
-          clean: this.clean,
           timeout: this.config.Timeout * 1000,
           connectTimeout: 5 * 60 * 1000, // 5 minutes to,
           blobDownloadLimit: this.downloadLimit,
@@ -408,8 +404,6 @@ export async function doBackupWorkspace (
     externalStorage: StorageAdapter
   ) => DbConfiguration,
   region: string,
-  freshWorkspace: boolean,
-  clean: boolean,
   downloadLimit: number,
   skipDomains: string[],
   contextVars: Record<string, any>,
@@ -423,8 +417,6 @@ export async function doBackupWorkspace (
     getConfig,
     region,
     contextVars,
-    freshWorkspace,
-    clean,
     skipDomains
   )
   backupWorker.downloadLimit = downloadLimit
