@@ -14,10 +14,11 @@
 -->
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
-  import { getBlobRef, sizeToWidth } from '@hcengineering/presentation'
-  import { IconSize } from '@hcengineering/ui'
-
   import type { WithLookup } from '@hcengineering/core'
+  import { getBlobRef, sizeToWidth } from '@hcengineering/presentation'
+  import { IconSize, Loading } from '@hcengineering/ui'
+
+  import BrokenImage from './icons/BrokenImage.svelte'
   import { AttachmentImageSize } from '../types'
 
   export let value: WithLookup<Attachment>
@@ -105,17 +106,48 @@
   function toStyle (size: 'auto' | number): string {
     return size === 'auto' ? 'auto' : `${size}px`
   }
+
+  let loading = false
+  let error = false
+
+  $: if (value !== undefined) {
+    loading = true
+  }
+
+  function handleLoad (): void {
+    loading = false
+  }
+
+  function handleError (): void {
+    loading = false
+    error = true
+  }
 </script>
 
-<div class="container" style="width:{toStyle(dimensions.width)}; height:{toStyle(dimensions.height)}">
+<div class="container" class:loading style="width:{toStyle(dimensions.width)}; height:{toStyle(dimensions.height)}">
+  {#if loading}
+    <div class="image-overlay">
+      <Loading />
+    </div>
+  {/if}
+
+  {#if error}
+    <div class="image-overlay">
+      <BrokenImage size={'x-large'} />
+    </div>
+  {/if}
+
   {#await getBlobRef(value.file, value.name, sizeToWidth(urlSize)) then blobSrc}
     <img
       src={blobSrc.src}
       style:object-fit={dimensions.fit}
+      style:visibility={error ? 'hidden' : 'visible'}
       width="100%"
       height="100%"
       srcset={blobSrc.srcset}
       alt={value.name}
+      on:load={handleLoad}
+      on:error={handleError}
     />
   {/await}
 </div>
@@ -127,9 +159,24 @@
     border-radius: 0.75rem;
     min-height: 4rem;
     min-width: 4rem;
+
+    background-color: var(--theme-link-preview-bg-color);
   }
 
   .container {
     display: inline-flex;
+    background-color: var(--theme-link-preview-bg-color);
+    border-radius: 0.75rem;
+
+    .image-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
   }
 </style>
