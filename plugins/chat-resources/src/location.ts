@@ -14,7 +14,27 @@
 //
 
 import { type Card } from '@hcengineering/card'
+import type { Ref } from '@hcengineering/core'
+import { navigate, type Location, getCurrentResolvedLocation } from '@hcengineering/ui'
+import { chatId } from '@hcengineering/chat'
 
-export async function navigateToCard (card: Card): Promise<void> {
-  // TODO: navigate to card
+// Url: /chat/{cardId}/{threadId}?message={messageId}
+
+export function getCardIdFromLocation (loc: Location): Ref<Card> | undefined {
+  if (loc.path[2] !== chatId) {
+    return undefined
+  }
+  return loc.path[3] as Ref<Card>
+}
+
+export function navigateToCard (_id: Ref<Card>): void {
+  const loc = getCurrentResolvedLocation()
+
+  loc.path[2] = chatId
+  loc.path[3] = _id
+  loc.path[4] = ''
+  loc.path.length = 4
+  delete loc.query?.message
+
+  navigate(loc)
 }

@@ -4,8 +4,45 @@ import { groupByArray, type Hierarchy, type Ref } from '@hcengineering/core'
 import chat, { type Channel, type Thread } from '@hcengineering/chat'
 import { translate } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
+import { get, writable } from 'svelte/store'
 
-export async function cardsToChatSections (cards: Card[]): Promise<NavigationSection[]> {
+const navigatorStateStorageKey = 'chat.navigatorState'
+
+export interface NavigatorState {
+  collapsedSections: string[]
+}
+
+export const navigatorStateStore = writable<NavigatorState>(restoreNavigatorState())
+
+function restoreNavigatorState (): NavigatorState {
+  const raw = localStorage.getItem(navigatorStateStorageKey)
+
+  if (raw == null) return { collapsedSections: [] }
+
+  try {
+    const parsed = JSON.parse(raw)
+    return {
+      collapsedSections: parsed.collapsedSections ?? []
+    }
+  } catch (e) {
+    return { collapsedSections: [] }
+  }
+}
+
+export function toggleSection (id: string): void {
+  const state = get(navigatorStateStore)
+  const result: NavigatorState = state.collapsedSections.includes(id)
+    ? {
+        ...state,
+        collapsedSections: state.collapsedSections.filter((it) => it !== id)
+      }
+    : { ...state, collapsedSections: [...state.collapsedSections, id] }
+
+  localStorage.setItem(navigatorStateStorageKey, JSON.stringify(result))
+  navigatorStateStore.set(result)
+}
+
+export async function cardsToChatSections (cards: Card[], state: NavigatorState): Promise<NavigationSection[]> {
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const { threads, channels, other } = splitCards(cards, hierarchy)
@@ -14,16 +51,16 @@ export async function cardsToChatSections (cards: Card[]): Promise<NavigationSec
   const result: NavigationSection[] = []
 
   if (threads.length > 0) {
-    result.push(getSection(chat.masterTag.Thread, threads, hierarchy))
+    result.push(getSection(chat.masterTag.Thread, threads, state, hierarchy))
   }
 
   if (channels.length > 0) {
-    result.push(getSection(chat.masterTag.Channel, channels, hierarchy))
+    result.push(getSection(chat.masterTag.Channel, channels, state, hierarchy))
   }
 
   const cardSessions: Array<[string, NavigationSection]> = []
   for (const [_class, cards] of cardByClass.entries()) {
-    const section = getSection(_class, cards, hierarchy)
+    const section = getSection(_class, cards, state, hierarchy)
     const label = await translate(section.title, {})
     cardSessions.push([label, section])
   }
@@ -35,12 +72,18 @@ export async function cardsToChatSections (cards: Card[]): Promise<NavigationSec
   return result
 }
 
-function getSection (_class: Ref<MasterTag>, cards: Card[], hierarchy: Hierarchy): NavigationSection {
+function getSection (
+  _class: Ref<MasterTag>,
+  cards: Card[],
+  state: NavigatorState,
+  hierarchy: Hierarchy
+): NavigationSection {
   const clazz = hierarchy.getClass(_class)
 
   return {
     id: _class,
     title: clazz.pluralLabel ?? clazz.label,
+    expanded: !state.collapsedSections.includes(_class),
     items: cards
       .map((card) => ({
         id: card._id,

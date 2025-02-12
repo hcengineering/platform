@@ -19,14 +19,19 @@
   import Label from './Label.svelte'
   import ArrowChevronRight from './icons/ArrowChevronRight.svelte'
   import ArrowChevronDown from './icons/ArrowChevronDown.svelte'
+  import { createEventDispatcher } from 'svelte'
 
+  export let id: string
   export let title: IntlString
   export let expanded = true
+
+  const dispatch = createEventDispatcher()
 
   let _expanded = expanded
 
   function toggleExpanded (): void {
     _expanded = !_expanded
+    dispatch('toggle', id)
   }
 </script>
 

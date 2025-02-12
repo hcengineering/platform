@@ -19,6 +19,7 @@ import { type ComponentType } from 'svelte'
 export interface NavigationSection {
   id: string
   title: IntlString
+  expanded: boolean
   items: NavigationSectionItem[]
 }
 

@@ -14,22 +14,62 @@
 -->
 
 <script lang="ts">
-  import { Card } from '@hcengineering/card'
-  import { defineSeparators, Separator, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import cardPlugin, { Card } from '@hcengineering/card'
+  import {
+    defineSeparators,
+    Separator,
+    deviceOptionsStore as deviceInfo,
+    resolvedLocationStore,
+    Location,
+    restoreLocation
+  } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
+  import { getClient } from '@hcengineering/presentation'
+  import { chatId } from '@hcengineering/chat'
 
   import ChatPanel from './ChatPanel.svelte'
   import ChatNavigation from './ChatNavigation.svelte'
-  import { navigateToCard } from '../navigation'
+  import { navigateToCard, getCardIdFromLocation } from '../location'
+
+  const client = getClient()
 
   let replacedPanelElement: HTMLElement
-
   let card: Card | undefined = undefined
+  let needRestoreLoc = true
 
-  async function selectCard (event: CustomEvent<Card>): Promise<void> {
-    card = event.detail
-    await navigateToCard(card)
+  async function syncLocation (loc: Location): Promise<void> {
+    if (loc.path[2] !== chatId) {
+      return
+    }
+
+    const cardId = getCardIdFromLocation(loc)
+
+    if (cardId == null || cardId === '') {
+      card = undefined
+      if (needRestoreLoc) {
+        needRestoreLoc = false
+        restoreLocation(loc, chatId)
+      }
+      return
+    }
+
+    needRestoreLoc = false
+
+    if (cardId !== card?._id) {
+      card = await client.findOne(cardPlugin.class.Card, { _id: cardId })
+    }
   }
+
+  function selectCard (event: CustomEvent<Card>): void {
+    card = event.detail
+    navigateToCard(card._id)
+  }
+
+  onDestroy(
+    resolvedLocationStore.subscribe((loc) => {
+      void syncLocation(loc)
+    })
+  )
 
   defineSeparators('new-chat', [
     { minSize: 10, maxSize: 60, size: 30, float: 'navigator' },

@@ -18,9 +18,9 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
   import { NavigationList, NavigationSection } from '@hcengineering/ui-next'
-  import { languageStore } from '@hcengineering/ui'
+  import { languageStore, Scroller } from '@hcengineering/ui'
 
-  import { cardsToChatSections } from '../utils'
+  import { cardsToChatSections, navigatorStateStore, toggleSection } from '../navigator'
 
   export let card: Card | undefined = undefined
 
@@ -37,15 +37,35 @@
     cards = res
   })
 
-  $: void updateSections(cards, $languageStore)
-  async function updateSections (cards: Card[], _lang: string): Promise<void> {
-    sections = await cardsToChatSections(cards)
+  $: void updateSections(cards, $languageStore, $navigatorStateStore)
+  async function updateSections (cards: Card[], _lang: string, state: NavigatorState): Promise<void> {
+    sections = await cardsToChatSections(cards, state)
+  }
+
+  function handleSectionToggle (event: CustomEvent<string>): void {
+    toggleSection(event.detail)
+  }
+
+  function handleClick (event: CustomEvent<Ref<Card>>): void {
+    const cardId = event.detail
+
+    if (card != null && cardId === card._id) {
+      return
+    }
+
+    const newCard = cards.find((it) => it._id === cardId)
+
+    if (newCard !== undefined) {
+      dispatch('select', newCard)
+    }
   }
 </script>
 
-<div class="chat-navigation">
-  <NavigationList {sections} />
-</div>
+<Scroller shrink>
+  <div class="chat-navigation">
+    <NavigationList {sections} selected={card?._id} on:toggle={handleSectionToggle} on:click={handleClick} />
+  </div>
+</Scroller>
 
 <style lang="scss">
   .chat-navigation {

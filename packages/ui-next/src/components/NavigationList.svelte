@@ -17,16 +17,26 @@
   import { NavigationSection } from '../types'
   import { Section } from '../index'
   import NavItem from './NavItem.svelte'
+  import { createEventDispatcher } from 'svelte'
 
   export let sections: NavigationSection[] = []
   export let selected: string | undefined = undefined
+
+  const dispatch = createEventDispatcher()
 </script>
 
 <div class="navigation-list">
   {#each sections as section (section.id)}
-    <Section title={section.title}>
+    <Section id={section.id} title={section.title} expanded={section.expanded} on:toggle>
       {#each section.items as item (item.id)}
-        <NavItem label={item.label} icon={item.icon} selected={selected === item.id} />
+        <NavItem
+          label={item.label}
+          icon={item.icon}
+          selected={selected === item.id}
+          on:click={() => {
+            dispatch('click', item.id)
+          }}
+        />
       {/each}
     </Section>
   {/each}
