@@ -20,10 +20,5 @@ fi
 
 # Create user record in accounts
 ./tool.sh create-account admin -f Super -l Admin -p 1234
-./tool.sh set-user-admin admin true
-
 ./tool.sh create-account user1 -f John -l Appleseed -p 1234
 ./tool.sh create-account user2 -f Kainin -l Dirak -p 1234
-
-./tool.sh confirm-email user1
-./tool.sh confirm-email user2
