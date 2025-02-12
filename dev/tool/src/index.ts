@@ -662,8 +662,6 @@ export function devTool (
                     })
                   },
                   cmd.region,
-                  true,
-                  true,
                   5000, // 5 gigabytes per blob
                   sharedPipelineContextVars,
                   async (storage, workspaceStorage) => {
@@ -734,8 +732,6 @@ export function devTool (
                   })
                 },
                 cmd.region,
-                false,
-                false,
                 100,
                 sharedPipelineContextVars
               )
@@ -932,8 +928,6 @@ export function devTool (
     )
     .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 15mb)', '15')
     .option('-f, --force', 'Force backup', false)
-    .option('-f, --fresh', 'Force fresh backup', false)
-    .option('-c, --clean', 'Force clean of old backup files, only with fresh backup option', false)
     .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
     .action(
       async (
@@ -942,8 +936,6 @@ export function devTool (
         cmd: {
           skip: string
           force: boolean
-          fresh: boolean
-          clean: boolean
           timeout: string
           include: string
           blobLimit: string
@@ -955,8 +947,6 @@ export function devTool (
         const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
         await backup(toolCtx, endpoint, wsid, storage, {
           force: cmd.force,
-          freshBackup: cmd.fresh,
-          clean: cmd.clean,
           include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
           skipDomains: (cmd.skip ?? '').split(';').map((it) => it.trim()),
           timeout: 0,

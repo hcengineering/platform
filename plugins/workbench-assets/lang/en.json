@@ -36,6 +36,7 @@
     "OpenInSidebarNewTab": "Open in sidebar new tab",
     "ConfigureWidgets": "Configure widgets",
     "Tab": "Tab",
-    "WorkspaceIsArchived": "Workspace is archived because of being unused, Please contact us to restore..."
+    "WorkspaceIsArchived": "Workspace is archived because of being unused, Please contact us to restore...",
+    "WorkspaceIsMigrating": "Workspace is being updated. Please wait..."
   }
 }

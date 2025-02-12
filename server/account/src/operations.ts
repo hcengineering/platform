@@ -32,7 +32,6 @@ import core, {
   getWorkspaceId,
   isActiveMode,
   isArchivingMode,
-  isMigrationMode,
   isWorkspaceCreating,
   MeasureContext,
   RateLimiter,
@@ -503,18 +502,6 @@ export async function selectWorkspace (
   }
 
   if (workspaceInfo !== null) {
-    if (isArchivingMode(workspaceInfo.mode) || isMigrationMode(workspaceInfo.mode)) {
-      const result: WorkspaceLoginInfo = {
-        endpoint: '',
-        email,
-        token: generateToken(email, getWorkspaceId(workspaceInfo.workspace), getExtra(accountInfo)),
-        workspace: workspaceUrl,
-        workspaceId: workspaceInfo.workspace,
-        mode: workspaceInfo.mode,
-        progress: workspaceInfo.progress
-      }
-      return result
-    }
     if (workspaceInfo.disabled === true && isActiveMode(workspaceInfo.mode)) {
       ctx.error('workspace disabled', { workspaceUrl, email })
       throw new PlatformError(
@@ -1594,7 +1581,9 @@ export async function createUserWorkspace (
     endpoint: getEndpoint(ctx, workspaceInfo, EndpointKind.External),
     email,
     token: generateToken(email, getWorkspaceId(workspaceInfo.workspace), getExtra(userAccount)),
-    workspace: workspaceInfo.workspaceUrl
+    workspace: workspaceInfo.workspaceUrl,
+    workspaceId: workspaceInfo.workspace,
+    workspaceName: workspaceInfo.workspaceName
   }
   ctx.info('Creating user side done', { workspaceName, email })
   return result
@@ -2723,8 +2712,12 @@ export async function joinWithProvider (
 
       const token = generateToken(email, getWorkspaceId(''), getExtra(account))
       const ws = await getWorkspaceById(db, workspace.name)
-
-      if (ws != null && ws.accounts.includes(account._id)) {
+      if (ws == null) {
+        throw new PlatformError(
+          new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspace.name })
+        )
+      }
+      if (ws.accounts.includes(account._id)) {
         const result = {
           endpoint: getEndpoint(ctx, ws, EndpointKind.External),
           email,

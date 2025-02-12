@@ -255,7 +255,8 @@ export default plugin(workbenchId, {
     OpenInSidebar: '' as IntlString,
     OpenInSidebarNewTab: '' as IntlString,
     ConfigureWidgets: '' as IntlString,
-    WorkspaceIsArchived: '' as IntlString
+    WorkspaceIsArchived: '' as IntlString,
+    WorkspaceIsMigrating: '' as IntlString
   },
   icon: {
     Search: '' as Asset

@@ -1084,6 +1084,9 @@ importers:
       '@rush-temp/tests-sanity':
         specifier: file:./projects/tests-sanity.tgz
         version: file:projects/tests-sanity.tgz
+      '@rush-temp/tests-ws-sanity':
+        specifier: file:./projects/tests-ws-sanity.tgz
+        version: file:projects/tests-ws-sanity.tgz
       '@rush-temp/text':
         specifier: file:./projects/text.tgz
         version: file:projects/text.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(esbuild@0.24.2)(prosemirror-inputrules@1.4.0)(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))(utf-8-validate@6.0.4)
@@ -5154,6 +5157,10 @@ packages:
 
   '@rush-temp/tests-sanity@file:projects/tests-sanity.tgz':
     resolution: {integrity: sha512-noV3nlBP0OvM6i4C5YUevkhltHxG/2bct4pusP3O3AEQ7Za+A4qwzpsE08pHfA9f9pedEG677GE4EmG9x61rVQ==, tarball: file:projects/tests-sanity.tgz}
+    version: 0.0.0
+
+  '@rush-temp/tests-ws-sanity@file:projects/tests-ws-sanity.tgz':
+    resolution: {integrity: sha512-2y+gKxse3ozzKeoi1TF7Qfv7Y1fWy9Z6HiqSsEeQgGPpv396cH7ZfpSJ/qwsxO66c6iq8LUuBtzZ4AlquHfG3w==, tarball: file:projects/tests-ws-sanity.tgz}
     version: 0.0.0
 
   '@rush-temp/text-core@file:projects/text-core.tgz':
@@ -24841,6 +24848,28 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       typescript: 5.3.3
+    transitivePeerDependencies:
+      - supports-color
+
+  '@rush-temp/tests-ws-sanity@file:projects/tests-ws-sanity.tgz':
+    dependencies:
+      '@faker-js/faker': 8.4.1
+      '@playwright/test': 1.49.1
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
+      allure-js-commons: 3.0.7(allure-playwright@3.0.7(@playwright/test@1.49.1))
+      allure-playwright: 3.0.7(@playwright/test@1.49.1)
+      cross-env: 7.0.3
+      dotenv: 16.0.3
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      prettier: 3.2.5
+      typescript: 5.7.3
     transitivePeerDependencies:
       - supports-color
 

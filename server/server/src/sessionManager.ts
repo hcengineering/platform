@@ -27,7 +27,6 @@ import core, {
   versionToString,
   withContext,
   WorkspaceEvent,
-  type BaseWorkspaceInfo,
   type Branding,
   type BrandingMap,
   type MeasureContext,
@@ -45,10 +44,12 @@ import {
   ServerFactory,
   SessionManager,
   StorageAdapter,
+  type AddSessionResponse,
   type ClientSessionCtx,
   type ConnectionSocket,
   type Session,
-  type Workspace
+  type Workspace,
+  type WorkspaceLoginInfo
 } from '@hcengineering/server-core'
 import { generateToken, type Token } from '@hcengineering/server-token'
 
@@ -56,16 +57,6 @@ import { sendResponse } from './utils'
 
 const ticksPerSecond = 20
 const workspaceSoftShutdownTicks = 15 * ticksPerSecond
-
-interface WorkspaceLoginInfo extends Omit<BaseWorkspaceInfo, 'workspace'> {
-  upgrade?: {
-    toProcess: number
-    total: number
-    elapsed: number
-    eta: number
-  }
-  workspaceId: string
-}
 
 function timeoutPromise (time: number): { promise: Promise<void>, cancelHandle: () => void } {
   let timer: any
@@ -330,11 +321,7 @@ class TSessionManager implements SessionManager {
     rawToken: string,
     pipelineFactory: PipelineFactory,
     sessionId: string | undefined
-  ): Promise<
-    | { session: Session, context: MeasureContext, workspaceId: string }
-    | { upgrade: true, upgradeInfo?: WorkspaceLoginInfo['upgrade'] }
-    | { error: any, terminate?: boolean, archived?: boolean }
-    > {
+  ): Promise<AddSessionResponse> {
     const wsString = toWorkspaceString(token.workspace)
 
     let workspaceInfo: WorkspaceLoginInfo | undefined
@@ -352,15 +339,15 @@ class TSessionManager implements SessionManager {
 
     if (isArchivingMode(workspaceInfo.mode)) {
       // No access to disabled workspaces for regular users
-      return { error: new Error('Workspace is archived'), terminate: true, archived: true }
+      return { error: new Error('Workspace is archived'), terminate: true, specialError: 'archived' }
     }
     if (isMigrationMode(workspaceInfo.mode)) {
       // No access to disabled workspaces for regular users
-      return { error: new Error('Workspace is in region migration'), terminate: true, archived: false }
+      return { error: new Error('Workspace is in region migration'), terminate: true, specialError: 'migration' }
     }
     if (isRestoringMode(workspaceInfo.mode)) {
       // No access to disabled workspaces for regular users
-      return { error: new Error('Workspace is in backup restore'), terminate: true, archived: false }
+      return { error: new Error('Workspace is in backup restore'), terminate: true, specialError: 'migration' }
     }
 
     if (workspaceInfo.disabled === true && token.email !== systemAccountEmail && token.extra?.admin !== 'true') {
@@ -806,11 +793,14 @@ class TSessionManager implements SessionManager {
   async forceClose (wsId: string, ignoreSocket?: ConnectionSocket): Promise<void> {
     const ws = this.workspaces.get(wsId)
     if (ws !== undefined) {
+      this.ctx.warn('force-close', { name: ws.workspaceName })
       ws.upgrade = true // We need to similare upgrade to refresh all clients.
       ws.closing = this.closeAll(wsId, ws, 99, 'force-close', ignoreSocket)
       this.workspaces.delete(wsId)
       await ws.closing
       ws.closing = undefined
+    } else {
+      this.ctx.warn('force-close-unknown', { wsId })
     }
   }
 

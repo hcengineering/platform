@@ -27,7 +27,6 @@ import core, {
   MigrationState,
   ModelDb,
   systemAccountEmail,
-  toWorkspaceString,
   Tx,
   TxOperations,
   WorkspaceId,
@@ -357,12 +356,9 @@ export async function upgradeModel (
   const serverEndpoint = transactorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://')
   const token = generateToken(systemAccountEmail, workspaceId, { admin: 'true' })
   try {
-    await fetch(
-      serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close&wsId=${toWorkspaceString(workspaceId)}`,
-      {
-        method: 'PUT'
-      }
-    )
+    await fetch(serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close`, {
+      method: 'PUT'
+    })
   } catch (err: any) {
     // Ignore error if transactor is not yet ready
   }
