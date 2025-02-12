@@ -141,7 +141,13 @@ implements DbCollection<T> {
   }
 
   async findOne (query: Query<T>): Promise<T | null> {
-    return await this.collection.findOne<T>(query as Filter<T>)
+    const doc = await this.collection.findOne<T>(query as Filter<T>)
+    if (doc === null) {
+      return null
+    }
+
+    delete doc._id
+    return doc
   }
 
   async insertOne (data: Partial<T>): Promise<K extends keyof T ? T[K] : undefined> {
@@ -189,7 +195,7 @@ export class AccountMongoDbCollection extends MongoDbCollection<Account, 'uuid'>
     super('account', db, 'uuid')
   }
 
-  convertToObj (acc: Account): Account {
+  private convertToObj (acc: Account): Account {
     return {
       ...acc,
       hash: acc.hash != null ? Buffer.from(acc.hash.buffer) : acc.hash,
