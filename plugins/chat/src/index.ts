@@ -15,8 +15,7 @@
 
 import { Ref } from '@hcengineering/core'
 import { plugin, IntlString, type Plugin, Asset } from '@hcengineering/platform'
-
-import { Channel, Thread } from './types'
+import { MasterTag } from '@hcengineering/card'
 
 export * from './types'
 
@@ -38,8 +37,8 @@ const chat = plugin(chatId, {
     Channel: '' as Asset
   },
   masterTag: {
-    Channel: '' as Ref<Channel>,
-    Thread: '' as Ref<Thread>
+    Channel: '' as Ref<MasterTag>,
+    Thread: '' as Ref<MasterTag>
   }
 })
 

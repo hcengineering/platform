@@ -12,3 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+import { type Asset, type IntlString } from '@hcengineering/platform'
+import { type ComponentType } from 'svelte'
+
+export interface NavigationSection {
+  id: string
+  title: IntlString
+  items: NavigationSectionItem[]
+}
+
+export interface NavigationSectionItem {
+  id: string
+  label: string
+  icon: IconComponent
+}
+
+export type IconSize = 'x-small' | 'small' | 'medium' | 'large'
+export type IconComponent = Asset | ComponentType

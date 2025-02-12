@@ -19,6 +19,6 @@ import type { AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(chatId, chat, {
   component: {
-    Chat: '' as AnyComponent
+    ChatApplication: '' as AnyComponent
   }
 })

@@ -15,10 +15,10 @@
 
 import { type Resources } from '@hcengineering/platform'
 
-import Chat from './components/Chat.svelte'
+import ChatApplication from './components/ChatApplication.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
-    Chat
+    ChatApplication
   }
 })

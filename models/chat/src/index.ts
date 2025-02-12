@@ -38,7 +38,7 @@ export function createModel (builder: Builder): void {
       alias: chatId,
       accessLevel: AccountRole.User,
       hidden: false,
-      component: chat.component.Chat
+      component: chat.component.ChatApplication
     },
     chat.app.Chat
   )

@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,16 +11,29 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
 
-import uiNext from './plugin'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { type SvelteComponent } from 'svelte'
+<script lang="ts">
+  import type { IntlString } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
+  import { themeStore } from '@hcengineering/theme'
 
-export * from './types'
+  export let label: IntlString
+  export let params: Record<string, any> = {}
 
-export { default as NavItem } from './components/NavItem.svelte'
-export { default as Section } from './components/Section.svelte'
-export { default as NavigationList } from './components/NavigationList.svelte'
+  let _value: string | undefined
 
-export default uiNext
+  $: if (label !== undefined) {
+    translateCB(label, params ?? {}, $themeStore.language, (r) => {
+      _value = r
+    })
+  } else {
+    _value = label
+  }
+</script>
+
+{#if _value !== undefined}
+  {_value}
+{:else}
+  {label}
+{/if}

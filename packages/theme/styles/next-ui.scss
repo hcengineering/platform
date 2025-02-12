@@ -1,0 +1,33 @@
+.next-svg__xx-small {
+  width: .75rem;
+  height: .75rem;
+}
+
+.next-svg__x-small {
+  width: .875rem;
+  height: .875rem;
+}
+
+.next-svg__small {
+  width: 1rem;
+  height: 1rem;
+}
+
+.next-svg__medium {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.next-svg__large {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+
+.next-label-overflow {
+  white-space: nowrap;
+  word-break: break-all;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  min-width: 0;
+}

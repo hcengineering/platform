@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import { Card } from '@hcengineering/card'
+import { type Card } from '@hcengineering/card'
 
-export interface Thread extends Card {}
-export interface Channel extends Card {}
+export async function navigateToCard (card: Card): Promise<void> {
+  // TODO: navigate to card
+}

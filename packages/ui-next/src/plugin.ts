@@ -19,9 +19,7 @@ import { plugin } from '@hcengineering/platform'
 export const uiNextId = 'ui-next' as Plugin
 
 export const uiNext = plugin(uiNextId, {
-  string: {
-
-  }
+  string: {}
 })
 
 export default uiNext
