@@ -120,7 +120,13 @@ export class WorkspaceClient {
     await this.checkEmployeeInfo(opClient)
 
     if (this.aiPerson !== undefined && config.LoveEndpoint !== '') {
-      this.love = new LoveController(this.wsIds.uuid, this.ctx.newChild('love', {}), this.token, opClient, this.aiPerson)
+      this.love = new LoveController(
+        this.wsIds.uuid,
+        this.ctx.newChild('love', {}),
+        this.token,
+        opClient,
+        this.aiPerson
+      )
     }
 
     this.client.notify = (...txes: Tx[]) => {
@@ -145,14 +151,7 @@ export class WorkspaceClient {
       if (!isAlreadyUploaded) {
         const data = fs.readFileSync(config.AvatarPath)
 
-        await this.storage.put(
-          this.ctx,
-          this.wsIds,
-          config.AvatarName,
-          data,
-          config.AvatarContentType,
-          data.length
-        )
+        await this.storage.put(this.ctx, this.wsIds, config.AvatarName, data, config.AvatarContentType, data.length)
         await this.updateAvatarInfo(this.wsIds.uuid, config.AvatarPath, lastModified)
         this.ctx.info('Avatar file uploaded successfully', { workspace: this.wsIds, path: config.AvatarPath })
       }
