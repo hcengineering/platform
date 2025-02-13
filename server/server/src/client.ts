@@ -224,7 +224,9 @@ export class ClientSession implements Session {
         this.useCompression
       )
     } else {
-      void handleSend(ctx, socket, { result: tx }, 1024 * 1024, this.binaryMode, this.useCompression)
+      void handleSend(ctx, socket, { result: tx }, 1024 * 1024, this.binaryMode, this.useCompression).catch((err) => {
+        ctx.error('failed to broadcast', err)
+      })
     }
   }
 
