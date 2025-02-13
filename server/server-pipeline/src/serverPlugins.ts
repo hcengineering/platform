@@ -1,6 +1,7 @@
 import { addLocation } from '@hcengineering/platform'
 import { serverActivityId } from '@hcengineering/server-activity'
 import { serverAttachmentId } from '@hcengineering/server-attachment'
+import { serverCardId } from '@hcengineering/server-card'
 import { serverCalendarId } from '@hcengineering/server-calendar'
 import { serverChunterId } from '@hcengineering/server-chunter'
 import { serverCollaborationId } from '@hcengineering/server-collaboration'
@@ -43,6 +44,7 @@ export function registerServerPlugins (): void {
   addLocation(serverTaskId, () => import('@hcengineering/server-task-resources'))
   addLocation(serverTrackerId, () => import('@hcengineering/server-tracker-resources'))
   addLocation(serverTagsId, () => import('@hcengineering/server-tags-resources'))
+  addLocation(serverCardId, () => import('@hcengineering/server-card-resources'))
   addLocation(serverCalendarId, () => import('@hcengineering/server-calendar-resources'))
   addLocation(serverGmailId, () => import('@hcengineering/server-gmail-resources'))
   addLocation(serverTelegramId, () => import('@hcengineering/server-telegram-resources'))

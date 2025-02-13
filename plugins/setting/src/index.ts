@@ -169,7 +169,9 @@ export default plugin(settingId, {
     RoleAssignmentEditor: '' as AnyComponent,
     RelationSetting: '' as AnyComponent,
     Backup: '' as AnyComponent,
-    CreateAttributePopup: '' as AnyComponent
+    CreateAttributePopup: '' as AnyComponent,
+    CreateRelation: '' as AnyComponent,
+    EditRelation: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,

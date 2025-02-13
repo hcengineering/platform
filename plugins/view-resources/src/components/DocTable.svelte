@@ -35,6 +35,8 @@
 
   export let selection: number | undefined = undefined
 
+  export let onContextMenu: ((ev: MouseEvent, object: Doc) => void) | undefined
+
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -62,8 +64,13 @@
 
   const showContextMenu = async (ev: MouseEvent, object: Doc, row: number): Promise<void> => {
     selection = row
-    const items = object
-    showMenu(ev, { object: items, baseMenuClass })
+    ev.stopPropagation()
+    ev.preventDefault()
+    if (onContextMenu !== undefined) {
+      onContextMenu(ev, object)
+    } else {
+      showMenu(ev, { object, baseMenuClass })
+    }
   }
 
   function onRow (object: Doc): void {

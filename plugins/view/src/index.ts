@@ -214,7 +214,9 @@ const view = plugin(viewId, {
     Leave: '' as IntlString,
     Copied: '' as IntlString,
     And: '' as IntlString,
-    Title: '' as IntlString
+    Title: '' as IntlString,
+    DeleteObject: '' as IntlString,
+    DeleteObjectConfirm: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

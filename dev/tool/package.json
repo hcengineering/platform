@@ -101,6 +101,8 @@
     "@hcengineering/server-storage": "^0.6.0",
     "@hcengineering/server-calendar": "^0.6.0",
     "@hcengineering/server-calendar-resources": "^0.6.0",
+    "@hcengineering/server-card": "^0.6.0",
+    "@hcengineering/server-card-resources": "^0.6.0",
     "@hcengineering/server-chunter": "^0.6.0",
     "@hcengineering/server-chunter-resources": "^0.6.0",
     "@hcengineering/server-contact": "^0.6.1",

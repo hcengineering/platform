@@ -138,7 +138,6 @@
         />
         <ModernEditbox bind:value={name} label={core.string.Name} size={'large'} kind={'ghost'} autoFocus />
       </div>
-      <ModernEditbox bind:value={name} label={core.string.Name} size={'large'} kind={'ghost'} autoFocus />
     </div>
     <div class="hulyModal-content__settingsSet">
       <div class="hulyModal-content__settingsSet-line">

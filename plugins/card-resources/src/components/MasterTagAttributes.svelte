@@ -74,10 +74,9 @@
         ev.stopPropagation()
         const loc = getCurrentResolvedLocation()
         loc.path[2] = settingId
-        loc.path[3] = 'setting'
-        loc.path[4] = 'masterTags'
+        loc.path[3] = 'masterTags'
+        loc.path[4] = value._class
         loc.path.length = 5
-        loc.query = { _class: value._class }
         loc.fragment = undefined
         navigate(loc)
       }}

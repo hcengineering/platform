@@ -5,10 +5,10 @@
     "Cards": "Carte",
     "Content": "Contenuto",
     "CreateCard": "Crea Carta",
-    "CreateMasterTag": "Crea Tag Principale",
+    "CreateMasterTag": "Crea Tipo",
     "CreateTag": "Crea Tag",
-    "MasterTag": "Tag Principale",
-    "MasterTags": "Tag Principali",
+    "MasterTag": "Tipo",
+    "MasterTags": "Tipi",
     "Parent": "Genitore",
     "Tags": "Tag",
     "Tag": "Tag",
@@ -16,8 +16,9 @@
     "MinimizeAll": "Minimizza Tutto",
     "ExpandAll": "Espandi Tutto",
     "DeleteTag": "Elimina Tag",
+    "TagRelations": "Relazioni Tag",
     "DeleteTagConfirm": "Sei sicuro di voler eliminare questo tag? Tutte le proprietà correlate verranno eliminate",
-    "DeleteMasterTag": "Elimina Tag Principale",
-    "DeleteMasterTagConfirm": "Sei sicuro di voler eliminare questo tag principale? Tutti gli oggetti correlati a questo tag principale verranno eliminati"
+    "DeleteMasterTag": "Elimina Tipo",
+    "DeleteMasterTagConfirm": "Sei sicuro di voler eliminare questo tipo? Tutti gli oggetti correlati a questo tipo verranno eliminati"
   }
 }

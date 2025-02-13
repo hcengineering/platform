@@ -2260,6 +2260,21 @@
       "packageName": "@hcengineering/green",
       "projectFolder": "pods/green",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-card",
+      "projectFolder": "server-plugins/card",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-card-resources",
+      "projectFolder": "server-plugins/card-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-card",
+      "projectFolder": "models/server-card",
+      "shouldPublish": false
     }
   ]
 }

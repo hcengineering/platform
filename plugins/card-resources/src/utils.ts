@@ -57,8 +57,8 @@ export async function deleteMasterTag (tag: MasterTag | undefined): Promise<void
               const desc = hierarchy.getClass(obj)
               await ops.remove(desc)
             }
-            await ops.remove(tag)
             await ops.commit()
+            await client.remove(tag)
           }
         })
       } else {
@@ -81,12 +81,20 @@ export async function deleteMasterTag (tag: MasterTag | undefined): Promise<void
             for (const obj of cards) {
               await ops.update(obj, { $unset: update })
             }
-            await ops.remove(tag)
             await ops.commit()
+            await client.remove(tag)
           }
         })
       }
     } else {
+      const ops = client.apply(undefined, 'delete-tag')
+      const hierarchy = client.getHierarchy()
+      const desc = hierarchy.getDescendants(tag._id)
+      for (const obj of desc) {
+        const desc = hierarchy.getClass(obj)
+        await ops.remove(desc)
+      }
+      await ops.commit()
       await client.remove(tag)
     }
   }
@@ -112,7 +120,7 @@ async function generateLocation (loc: Location, id: string): Promise<ResolvedLoc
   }
   const appComponent = loc.path[0] ?? ''
   const workspace = loc.path[1] ?? ''
-  const special = card.class.Card
+  const special = doc._class
 
   const objectPanel = client.getHierarchy().classHierarchyMixin(doc._class as Ref<Class<Doc>>, view.mixin.ObjectPanel)
   const component = objectPanel?.component ?? view.component.EditDoc

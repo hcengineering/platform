@@ -24,6 +24,7 @@
   export let classes: MasterTag[] = []
   export let allClasses: MasterTag[] = []
   export let _class: Ref<Class<Doc>> | undefined
+  export let deselect: boolean = false
   export let level: number = 0
 
   const client = getClient()
@@ -58,10 +59,11 @@
     <NavItem
       _id={clazz._id}
       label={clazz.label}
+      icon={clazz.icon}
       isFold
       empty
       {level}
-      selected={clazz._id === _class}
+      selected={!deselect && clazz._id === _class}
       on:click={() => {
         dispatch('select', clazz._id)
       }}
