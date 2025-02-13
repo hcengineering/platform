@@ -13,18 +13,24 @@
 // limitations under the License.
 //
 
-import { generateId } from '@hcengineering/core'
+import client, { ClientSocket } from '@hcengineering/client'
+import { Class, Client, Doc, Ref, Space } from '@hcengineering/core'
+import { ExportType, WorkspaceExporter } from '@hcengineering/importer'
+import { setMetadata } from '@hcengineering/platform'
+import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { StorageConfiguration, initStatisticsContext } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
-import { Token, decodeToken } from '@hcengineering/server-token'
+import { decodeToken } from '@hcengineering/server-token'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
+import fs, { rm } from 'fs/promises'
 import { IncomingHttpHeaders, type Server } from 'http'
-
+import { tmpdir } from 'os'
+import { join } from 'path'
+import WebSocket from 'ws'
 import { ApiError } from './error'
-import { ExportType } from '@hcengineering/importer'
 
-const extractCookieToken = (cookie?: string): Token | null => {
+const extractCookieToken = (cookie?: string): string | null => {
   if (cookie === undefined || cookie === null) {
     return null
   }
@@ -40,10 +46,10 @@ const extractCookieToken = (cookie?: string): Token | null => {
     return null
   }
 
-  return decodeToken(encodedToken)
+  return encodedToken
 }
 
-const extractAuthorizationToken = (authorization?: string): Token | null => {
+const extractAuthorizationToken = (authorization?: string): string | null => {
   if (authorization === undefined || authorization === null) {
     return null
   }
@@ -53,10 +59,10 @@ const extractAuthorizationToken = (authorization?: string): Token | null => {
     return null
   }
 
-  return decodeToken(encodedToken)
+  return encodedToken
 }
 
-const extractQueryToken = (queryParams: any): Token | null => {
+const extractQueryToken = (queryParams: any): string | null => {
   if (queryParams == null) {
     return null
   }
@@ -67,27 +73,27 @@ const extractQueryToken = (queryParams: any): Token | null => {
     return null
   }
 
-  return decodeToken(encodedToken)
+  return encodedToken
 }
 
-const extractToken = (headers: IncomingHttpHeaders, queryParams: any): Token => {
+const retrieveToken = (headers: IncomingHttpHeaders, queryParams: any): string => {
   try {
-    const token =
+    const encodedToken =
       extractCookieToken(headers.cookie) ??
       extractAuthorizationToken(headers.authorization) ??
       extractQueryToken(queryParams)
 
-    if (token === null) {
+    if (encodedToken === null) {
       throw new ApiError(401)
     }
 
-    return token
+    return encodedToken
   } catch {
     throw new ApiError(401)
   }
 }
 
-type AsyncRequestHandler = (req: Request, res: Response, token: Token, next: NextFunction) => Promise<void>
+type AsyncRequestHandler = (req: Request, res: Response, token: string, next: NextFunction) => Promise<void>
 
 const handleRequest = async (
   fn: AsyncRequestHandler,
@@ -96,8 +102,8 @@ const handleRequest = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const token = extractToken(req.headers, req.query)
-    await fn(req, res, token, next)
+    const encodedToken = retrieveToken(req.headers, req.query)
+    await fn(req, res, encodedToken, next)
   } catch (err: unknown) {
     next(err)
   }
@@ -110,7 +116,7 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
 
 export function createServer (storageConfig: StorageConfiguration): { app: Express, close: () => void } {
   const storageAdapter = buildStorageFromConfig(storageConfig)
-  const measureCtx = initStatisticsContext('print', {})
+  const measureCtx = initStatisticsContext('export', {})
 
   const app = express()
   app.use(cors())
@@ -119,13 +125,51 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
   app.get(
     '/export',
     wrapRequest(async (req, res, token) => {
-        const classId = req.query.class as string
-        const exportType = req.query.type as ExportType
-  
-        if (classId == null || exportType == null) {
-          throw new ApiError(400, 'Missing required parameters')
+      const classId = req.query.class as Ref<Class<Doc<Space>>>
+      const exportType = req.query.type as ExportType
+      const { workspace } = decodeToken(token)
+
+      if (classId == null || exportType == null) {
+        throw new ApiError(400, 'Missing required parameters')
+      }
+
+      const tempDir = await fs.mkdtemp(join(tmpdir(), 'export-'))
+
+      try {
+        const client = await createPlatformClient(token)
+
+        const exporter = new WorkspaceExporter(
+          measureCtx,
+          client,
+          storageAdapter,
+          {
+            log: (msg: string) => { measureCtx.info('export', { msg }) },
+            error: (msg: string, err?: any) => { measureCtx.error('export-error', { msg, err }) }
+          },
+          workspace
+        )
+
+        await exporter.exportDocuments(classId, exportType, tempDir)
+
+        const files = await fs.readdir(tempDir)
+        if (files.length === 0) {
+          throw new ApiError(400, 'No files were exported')
         }
-        res.send({ message: 'Export called' })
+
+        const filePath = join(tempDir, files[0])
+
+        res.download(filePath, `export-${Date.now()}.json`, (err) => {
+          void (async () => {
+            await rm(tempDir, { recursive: true, force: true })
+            if (err != null) {
+              measureCtx.error('export-download-error', { error: err })
+            }
+          })()
+        })
+      } catch (err: unknown) {
+        await fs.rmdir(tempDir, { recursive: true })
+        throw err
+      }
     })
   )
 
@@ -147,14 +191,25 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
   }
 }
 
+export async function createPlatformClient (token: string): Promise<Client> {
+  setMetadata(client.metadata.ClientSocketFactory, (url) => {
+    return new WebSocket(url, {
+      headers: {
+        'User-Agent': process.env.SERVICE_ID
+      }
+    }) as never as ClientSocket
+  })
+
+  const endpoint = await getTransactorEndpoint(token)
+  const connection = await createClient(endpoint, token)
+
+  return connection
+}
+
 export function listen (e: Express, port: number, host?: string): Server {
   const cb = (): void => {
     console.log(`Export service has been started at ${host ?? '*'}:${port}`)
   }
 
   return host !== undefined ? e.listen(port, host, cb) : e.listen(port, cb)
-}
-
-function getConvertId (file: string, etag: string): string {
-  return `${file}@${etag}`
 }

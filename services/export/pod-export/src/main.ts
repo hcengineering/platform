@@ -14,6 +14,7 @@
 //
 
 import { setMetadata } from '@hcengineering/platform'
+import serverClient from '@hcengineering/server-client'
 import serverToken from '@hcengineering/server-token'
 import { storageConfigFromEnv } from '@hcengineering/server-storage'
 import config from './config'
@@ -21,6 +22,8 @@ import { createServer, listen } from './server'
 
 const setupMetadata = (): void => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
+  setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
 }
 
 export const main = async (): Promise<void> => {
@@ -43,4 +46,4 @@ export const main = async (): Promise<void> => {
   process.on('unhandledRejection', (e) => {
     console.error(e)
   })
-} 
+}

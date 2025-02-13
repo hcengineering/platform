@@ -12,21 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
- 
+
 export interface Config {
   Port: number
   Secret: string
   AccountsUrl: string
+  ServiceID: string
 }
 
-const parseNumber = (str: string | undefined): number | undefined => 
+const parseNumber = (str: string | undefined): number | undefined =>
   (str !== undefined ? Number(str) : undefined)
 
 const config: Config = (() => {
   const params: Partial<Config> = {
     Port: parseNumber(process.env.PORT) ?? 4006,
     Secret: process.env.SECRET,
-    AccountsUrl: process.env.ACCOUNTS_URL
+    AccountsUrl: process.env.ACCOUNTS_URL,
+    ServiceID: process.env.SERVICE_ID
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)
@@ -38,4 +40,4 @@ const config: Config = (() => {
   return params as Config
 })()
 
-export default config 
+export default config

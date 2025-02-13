@@ -714,7 +714,9 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         "MINIO_ENDPOINT": "localhost",
         "MINIO_ACCESS_KEY": "minioadmin",
-        "MINIO_SECRET_KEY": "minioadmin"
+        "MINIO_SECRET_KEY": "minioadmin",
+        "TRANSACTOR_URL": "ws://localhost:3333",
+        "SERVICE_ID": "export-service"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
