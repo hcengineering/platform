@@ -65,6 +65,8 @@
     "@hcengineering/server-tracker-resources": "^0.6.0",
     "@hcengineering/server-tags": "^0.6.0",
     "@hcengineering/server-tags-resources": "^0.6.0",
+    "@hcengineering/server-card": "^0.6.0",
+    "@hcengineering/server-card-resources": "^0.6.0",
     "@hcengineering/server-calendar": "^0.6.0",
     "@hcengineering/server-calendar-resources": "^0.6.0",
     "@hcengineering/server-github": "^0.6.0",

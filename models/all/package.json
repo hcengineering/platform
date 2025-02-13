@@ -87,6 +87,7 @@
     "@hcengineering/model-bitrix": "^0.6.0",
     "@hcengineering/model-request": "^0.6.0",
     "@hcengineering/model-support": "^0.6.0",
+    "@hcengineering/model-server-card": "^0.6.0",
     "@hcengineering/model-server-request": "^0.6.0",
     "@hcengineering/model-server-view": "^0.6.0",
     "@hcengineering/model-server-activity": "^0.6.0",

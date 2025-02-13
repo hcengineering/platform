@@ -50,6 +50,7 @@
     "@hcengineering/panel": "^0.6.23",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/view-resources": "^0.6.0",
+    "@hcengineering/card": "^0.6.0",
     "@hcengineering/task": "^0.6.20",
     "@hcengineering/contact-resources": "^0.6.0",
     "@hcengineering/login": "^0.6.12",

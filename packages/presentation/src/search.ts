@@ -32,18 +32,6 @@ export interface SearchItem {
   category: ObjectSearchCategory
 }
 
-function findCategoryByClass (
-  categories: ObjectSearchCategory[],
-  _class: Ref<Class<Doc>>
-): ObjectSearchCategory | undefined {
-  for (const category of categories) {
-    if (category.classToSearch === _class) {
-      return category
-    }
-  }
-  return undefined
-}
-
 function packSearchResultsForListView (sections: SearchSection[]): SearchItem[] {
   let results: SearchItem[] = []
   for (const section of sections) {
@@ -63,35 +51,37 @@ function packSearchResultsForListView (sections: SearchSection[]): SearchItem[] 
 
 async function searchCategory (
   client: TxOperations,
-  cl: Ref<Class<Doc>>,
+  category: ObjectSearchCategory,
   query: string,
-  categories: ObjectSearchCategory[],
   limit?: number
 ): Promise<SearchSection | undefined> {
+  if (category.classToSearch === undefined) return
+  const classes =
+    category.includeChilds === true
+      ? client.getHierarchy().getDescendants(category.classToSearch)
+      : [category.classToSearch]
   const r = await client.searchFulltext(
     {
       query: `${query}*`,
-      classes: [cl]
+      classes
     },
     {
       limit: limit ?? 5
     }
   )
-  const category = findCategoryByClass(categories, cl)
-  return category !== undefined ? { category, items: r.docs } : undefined
+  return { category, items: r.docs }
 }
 
 async function doFulltextSearch (
   client: TxOperations,
-  classes: Array<Ref<Class<Doc>>>,
-  query: string,
   categories: ObjectSearchCategory[],
+  query: string,
   limit?: number
 ): Promise<SearchSection[]> {
   const sections: SearchSection[] = []
   const promises: Array<Promise<SearchSection | undefined>> = []
-  for (const cl of classes) {
-    promises.push(searchCategory(client, cl, query, categories, limit))
+  for (const cat of categories) {
+    promises.push(searchCategory(client, cat, query, limit))
   }
 
   const resolvedSections = await Promise.all(promises)
@@ -140,6 +130,6 @@ export async function searchFor (
     }
   }
 
-  const sections = await doFulltextSearch(client, classesToSearch, query, categories, limit)
+  const sections = await doFulltextSearch(client, cats, query, limit)
   return { items: packSearchResultsForListView(sections), query }
 }

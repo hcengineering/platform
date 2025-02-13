@@ -67,3 +67,24 @@
     </span>
   {/if}
 {/if}
+
+<style lang="scss">
+  .issuePresenterRoot {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+
+    &:not(.list) {
+      color: var(--theme-content-color);
+    }
+
+    &.list {
+      color: var(--theme-halfcontent-color);
+    }
+
+    .icon {
+      margin-right: 0.5rem;
+      color: var(--theme-dark-color);
+    }
+  }
+</style>

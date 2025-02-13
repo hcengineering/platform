@@ -21,11 +21,19 @@ import { type Viewlet } from '@hcengineering/view'
 
 export default mergeIds(cardId, card, {
   component: {
+    ManageMasterTags: '' as AnyComponent,
+    ManageMasterTagsContent: '' as AnyComponent,
+    ManageMasterTagsTools: '' as AnyComponent,
     MasterTags: '' as AnyComponent,
     CreateTag: '' as AnyComponent,
     CardPresenter: '' as AnyComponent,
     EditCard: '' as AnyComponent,
-    Main: '' as AnyComponent
+    Main: '' as AnyComponent,
+    GeneralSection: '' as AnyComponent,
+    ProperitiesSection: '' as AnyComponent,
+    TagsSection: '' as AnyComponent,
+    ChildsSection: '' as AnyComponent,
+    RelationsSection: '' as AnyComponent
   },
   viewlet: {
     CardTable: '' as Ref<Viewlet>
@@ -44,6 +52,7 @@ export default mergeIds(cardId, card, {
     DeleteTag: '' as IntlString,
     DeleteTagConfirm: '' as IntlString,
     DeleteMasterTag: '' as IntlString,
-    DeleteMasterTagConfirm: '' as IntlString
+    DeleteMasterTagConfirm: '' as IntlString,
+    TagRelations: '' as IntlString
   }
 })

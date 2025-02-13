@@ -19,12 +19,9 @@ import plugin, {
 } from '@hcengineering/server-core'
 
 export function findSearchPresenter (hierarchy: Hierarchy, _class: Ref<Class<Doc>>): SearchPresenter | undefined {
-  const ancestors = hierarchy.getAncestors(_class).reverse()
-  for (const _class of ancestors) {
-    const searchMixin = hierarchy.classHierarchyMixin(_class, plugin.mixin.SearchPresenter)
-    if (searchMixin !== undefined) {
-      return searchMixin
-    }
+  const searchMixin = hierarchy.classHierarchyMixin(_class, plugin.mixin.SearchPresenter)
+  if (searchMixin !== undefined) {
+    return searchMixin
   }
   return undefined
 }

@@ -34,7 +34,9 @@ export default mergeIds(cardId, card, {
     DeleteMasterTag: '' as Ref<Action>
   },
   ids: {
-    MasterTags: '' as Ref<Doc>
+    MasterTags: '' as Ref<Doc>,
+    ManageMasterTags: '' as Ref<Doc>,
+    TagRelations: '' as Ref<Doc>
   },
   completion: {
     CardQuery: '' as Resource<ObjectSearchFactory>,
