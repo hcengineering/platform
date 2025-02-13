@@ -15,7 +15,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { MeasureContext, Blob as PlatformBlob, WorkspaceId, metricsAggregate, Class, Doc, type Ref, Space } from '@hcengineering/core'
+import { MeasureContext, Blob as PlatformBlob, WorkspaceId, metricsAggregate, type Ref } from '@hcengineering/core'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { StorageAdapter } from '@hcengineering/storage'
 import bp from 'body-parser'
@@ -32,10 +32,8 @@ import { v4 as uuid } from 'uuid'
 import { preConditions } from './utils'
 
 import fs, { createReadStream, mkdtempSync } from 'fs'
-import { rm, writeFile, mkdtemp } from 'fs/promises'
+import { rm, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
-import { ExportType, WorkspaceExporter } from '@hcengineering/importer'
-import { createClient } from '@hcengineering/server-client'
 
 const cacheControlValue = 'public, no-cache, must-revalidate, max-age=365d'
 const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
@@ -746,75 +744,6 @@ export function start (
       ctx.error('error', { error })
       res.status(500).send()
     }
-  })
-
-  app.get('/api/v1/export', (req, res) => {
-    void ctx.with('handle-export', {}, async (ctx) => {
-      try {
-        const token = req.query.token as string
-        if (token === undefined) {
-          res.status(401).send()
-          return
-        }
-
-        const payload = decodeToken(token)
-        const classId = req.query.class as string
-        const exportType = req.query.type as ExportType
-
-        if (classId == null || exportType == null) {
-          res.status(400).send('Missing required parameters')
-          return
-        }
-
-        // Создаем временную директорию
-        const tempDir = await mkdtemp(join(tmpdir(), 'export-'))
-
-        try {
-          // Создаем клиент для работы с transactor
-          const transactorClient = await createClient(config.accountsUrl, token) // todo: transactorUrl!
-
-          // Создаем экземпляр WorkspaceExporter с клиентом
-          const exporter = new WorkspaceExporter(
-            ctx,
-            transactorClient, // Используем созданный клиент
-            config.storageAdapter,
-            {
-              log: (msg: string) => { ctx.info('export', { msg }) },
-              error: (msg: string, err?: any) => { ctx.error('export-error', { msg, err }) }
-            },
-            payload.workspace
-          )
-
-          // Выполняем экспорт
-          await exporter.exportDocuments(classId as Ref<Class<Doc>>, exportType, tempDir)
-
-          // Находим созданный файл
-          const files = await fs.promises.readdir(tempDir)
-          if (files.length === 0) {
-            throw new Error('No files were exported')
-          }
-
-          const filePath = join(tempDir, files[0])
-
-          // Отправляем файл
-          res.download(filePath, `export-${Date.now()}.json`, (err) => {
-            void (async () => {
-              await rm(tempDir, { recursive: true, force: true })
-              if (err != null) {
-                ctx.error('export-download-error', { error: err })
-              }
-            })()
-          })
-        } catch (error) {
-          // Очищаем временную директорию в случае ошибки
-          await rm(tempDir, { recursive: true, force: true })
-          throw error
-        }
-      } catch (error: any) {
-        ctx.error('export-error', { error })
-        res.status(500).send(error.message)
-      }
-    })
   })
 
   const filesPatterns = [
