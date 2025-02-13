@@ -25,4 +25,4 @@
   }
 </script>
 
-<ButtonIcon id={'new-space-type'} icon={IconAdd} kind={'tertiary'} size={'extra-small'} on:click={handleAdd} />
+<ButtonIcon id={'new-master-tag'} icon={IconAdd} kind={'tertiary'} size={'extra-small'} on:click={handleAdd} />
