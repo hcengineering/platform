@@ -88,6 +88,7 @@
     "@hcengineering/theme": "^0.6.5",
     "tippy.js": "~6.3.7",
     "@hcengineering/chunter": "^0.6.20",
-    "@tiptap/extension-text-align": "~2.11.0"
+    "@tiptap/extension-text-align": "~2.11.0",
+    "@hcengineering/workbench": "^0.6.16"
   }
 }
