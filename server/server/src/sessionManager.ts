@@ -800,26 +800,28 @@ class TSessionManager implements SessionManager {
         workspace.sessions.delete(sessionRef.session.sessionId)
         const pipeline = workspace.pipeline instanceof Promise ? await workspace.pipeline : workspace.pipeline
 
-        workspace.tickHandlers.set(sessionRef.session.sessionId, {
-          ticks: this.timeouts.reconnectTimeout * ticksPerSecond,
-          operation: () => {
-            this.reconnectIds.delete(sessionRef.session.sessionId)
+        if (this.doHandleTick) {
+          workspace.tickHandlers.set(sessionRef.session.sessionId, {
+            ticks: this.timeouts.reconnectTimeout * ticksPerSecond,
+            operation: () => {
+              this.reconnectIds.delete(sessionRef.session.sessionId)
 
-            const user = sessionRef.session.getUser()
-            if (workspace !== undefined) {
-              const another = Array.from(workspace.sessions.values()).findIndex((p) => p.session.getUser() === user)
-              if (another === -1 && !workspace.upgrade) {
-                void this.trySetStatus(
-                  workspace.context,
-                  pipeline,
-                  sessionRef.session,
-                  false,
-                  workspace.workspaceUuid
-                ).catch(() => {})
+              const user = sessionRef.session.getUser()
+              if (workspace !== undefined) {
+                const another = Array.from(workspace.sessions.values()).findIndex((p) => p.session.getUser() === user)
+                if (another === -1 && !workspace.upgrade) {
+                  void this.trySetStatus(
+                    workspace.context,
+                    pipeline,
+                    sessionRef.session,
+                    false,
+                    workspace.workspaceUuid
+                  ).catch(() => {})
+                }
               }
             }
-          }
-        })
+          })
+        }
         this.reconnectIds.add(sessionRef.session.sessionId)
       }
       try {

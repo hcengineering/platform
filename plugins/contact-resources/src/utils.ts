@@ -421,10 +421,15 @@ onClient(() => {
     channelProviders.set(res)
   })
 
-  personsQuery.query(contact.class.Person, {}, (res) => {
-    personsStore.set(res)
-    personByIdStore.set(toIdMap(res))
-  })
+  personsQuery.query(
+    contact.class.Person,
+    {},
+    (res) => {
+      personsStore.set(res)
+      personByIdStore.set(toIdMap(res))
+    },
+    { limit: 500 }
+  )
 
   employeesQuery.query(contact.mixin.Employee, { active: { $in: [true, false] } }, (res) => {
     employeesStore.set(res)
