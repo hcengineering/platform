@@ -41,8 +41,6 @@ async function doBackup (dirName: string, token: string, endpoint: string, wsIds
     ctx.info('do backup', { ...wsIds, endpoint })
     await backup(ctx, endpoint, wsIds, storage, {
       force: true,
-      freshBackup: false,
-      clean: false,
       skipDomains: [],
       timeout: 0,
       connectTimeout: 60 * 1000,

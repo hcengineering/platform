@@ -141,7 +141,13 @@ implements DbCollection<T> {
   }
 
   async findOne (query: Query<T>): Promise<T | null> {
-    return await this.collection.findOne<T>(query as Filter<T>)
+    const doc = await this.collection.findOne<T>(query as Filter<T>)
+    if (doc === null) {
+      return null
+    }
+
+    delete doc._id
+    return doc
   }
 
   async insertOne (data: Partial<T>): Promise<K extends keyof T ? T[K] : undefined> {
@@ -189,7 +195,7 @@ export class AccountMongoDbCollection extends MongoDbCollection<Account, 'uuid'>
     super('account', db, 'uuid')
   }
 
-  convertToObj (acc: Account): Account {
+  private convertToObj (acc: Account): Account {
     return {
       ...acc,
       hash: acc.hash != null ? Buffer.from(acc.hash.buffer) : acc.hash,
@@ -235,17 +241,14 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
 
     for (const key of Object.keys(query)) {
       const qVal = (query as any)[key]
-      const operator = typeof qVal === 'object' ? Object.keys(qVal)[0] : ''
-      const targetVal = operator !== '' ? { [operator]: qVal } : qVal
-
       if (key === 'workspaceUuid') {
-        res.uuid = targetVal
+        res.uuid = qVal
       } else {
         if (res.status === undefined) {
           res.status = {}
         }
 
-        ;(res.status as any)[key] = targetVal
+        ;(res.status as any)[key] = qVal
       }
     }
 
@@ -274,10 +277,14 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
     for (const key of Object.keys(ops)) {
       const op = (ops as any)[key]
 
-      if (['$inc', '$set'].includes(key)) {
+      if (key === '$inc') {
         res[key] = {}
-        for (const incKey of Object.keys(op)) {
-          res[key][`status.${incKey}`] = op[incKey]
+        for (const opKey of Object.keys(op)) {
+          res[key][`status.${opKey}`] = op[opKey]
+        }
+      } else if (key === '$set') {
+        for (const opKey of Object.keys(op)) {
+          res[`status.${opKey}`] = op[opKey]
         }
       } else {
         res[`status.${key}`] = op

@@ -331,7 +331,7 @@
       "summary": "Format changed projects",
       "description": "Format and autofix linting issues in changed projects",
       "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "./common/scripts/each-diff.sh rushx format --force"
+      "shellCommand": "./common/scripts/fast-format.sh"
     },
     {
       "commandKind": "global",
@@ -367,6 +367,16 @@
       "shortName": "-f",
       "description": "Force formatting",
       "associatedCommands": ["format"]
+    },
+    {
+      "parameterKind": "string",   
+      "argumentName": "BRANCH",
+      "required": false,
+      "associatedPhases": [],
+      "shortName": "-b",
+      "longName": "--branch",
+      "description": "Force formatting of branch",
+      "associatedCommands": ["fast-format"]
     }
     // {
     //   /**

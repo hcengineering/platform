@@ -15,7 +15,6 @@
 
 import {
   type Account,
-  type PersonId,
   type Branding,
   type Class,
   type Doc,
@@ -29,6 +28,8 @@ import {
   type MeasureContext,
   type ModelDb,
   type Obj,
+  type PersonId,
+  type PersonUuid,
   type Ref,
   type SearchOptions,
   type SearchQuery,
@@ -39,10 +40,9 @@ import {
   type Tx,
   type TxFactory,
   type TxResult,
-  type WorkspaceUuid,
-  type WorkspaceIds,
   type WorkspaceDataId,
-  type PersonUuid
+  type WorkspaceIds,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import type { Asset, Resource } from '@hcengineering/platform'
 import type { LiveQuery } from '@hcengineering/query'
@@ -647,10 +647,11 @@ export interface AddSessionActive {
   context: MeasureContext
   workspaceId: WorkspaceUuid
 }
+
 export type AddSessionResponse =
   | AddSessionActive
-  | { upgrade: true }
-  | { error: any, terminate?: boolean, archived?: boolean }
+  | { upgrade: true, progress?: number }
+  | { error: any, terminate?: boolean, specialError?: 'archived' | 'migration' }
 
 export type SessionFactory = (token: Token, workspace: Workspace, account: Account) => Session
 

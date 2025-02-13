@@ -298,13 +298,11 @@ export const chunterOperation: MigrateOperation = {
         }
       },
       {
-        state: 'remove-direct-members-messages',
+        state: 'remove-direct-doc-update-messages',
         func: async (client) => {
           await client.deleteMany<DocUpdateMessage>(DOMAIN_ACTIVITY, {
             _class: activity.class.DocUpdateMessage,
-            attachedToClass: chunter.class.DirectMessage,
-            action: 'update',
-            'attributeUpdates.attrKey': 'members'
+            attachedToClass: chunter.class.DirectMessage
           })
         }
       }

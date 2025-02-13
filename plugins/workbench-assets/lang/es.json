@@ -36,6 +36,7 @@
     "OpenInSidebarNewTab": "Abrir en una nueva pestaña de la barra lateral",
     "ConfigureWidgets": "Configurar widgets",
     "Tab": "Pestaña",
-    "WorkspaceIsArchived": "El espacio de trabajo está archivado por no estar en uso, por favor contáctenos para restaurarlo..."
+    "WorkspaceIsArchived": "El espacio de trabajo está archivado por no estar en uso, por favor contáctenos para restaurarlo...",
+    "WorkspaceIsMigrating": "El espacio de trabajo se está actualizando. Por favor, espere..."
   }
 }
