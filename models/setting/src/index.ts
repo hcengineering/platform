@@ -342,7 +342,7 @@ export function createModel (builder: Builder): void {
     {
       name: 'export',
       label: setting.string.Export,
-      icon: setting.icon.InviteSettings,
+      icon: setting.icon.InviteSettings, // TODO: find and update icon
       component: setting.component.Export,
       group: 'settings-editor',
       role: AccountRole.User,

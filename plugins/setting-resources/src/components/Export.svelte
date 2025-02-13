@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { getMetadata } from '@hcengineering/platform'
   import { Class, Doc, Ref } from '@hcengineering/core'
+  import presentation from '@hcengineering/presentation'
   import { Button, DropdownLabelsIntl, Header, Breadcrumb, Scroller } from '@hcengineering/ui'
   import setting from '../plugin'
 
@@ -17,8 +19,16 @@
   let selectedType: string = 'JSON'
 
   async function exportData (): Promise<void> {
-    // Export logic will be here
-    console.log('Exporting', selectedClass, selectedType)
+    // const url = getMetadata(aiBot.metadata.EndpointURL) ?? ''
+    const token = getMetadata(presentation.metadata.Token) ?? ''
+    const res = await fetch(`http://localhost:4007/export?class=${selectedClass}&type=${selectedType}`, {
+      method: 'GET',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      }
+    })
+    console.log(res)
   }
 </script>
 

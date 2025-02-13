@@ -703,5 +703,22 @@
       "runtimeVersion": "20",
       "showAsyncStacks": true
     },
+    {
+      "name": "Debug Export service",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "PORT": "4007",
+        "SECRET": "secret",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "MINIO_ENDPOINT": "localhost",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/services/export/pod-export"
+    }
   ]
 }
