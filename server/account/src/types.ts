@@ -26,7 +26,8 @@ import {
   BackupStatus,
   type PersonUuid,
   type WorkspaceUuid,
-  type WorkspaceDataId
+  type WorkspaceDataId,
+  type PersonId
 } from '@hcengineering/core'
 
 /* ========= D A T A B A S E  E N T I T I E S ========= */
@@ -43,7 +44,7 @@ export enum Location {
 export interface SocialId {
   type: SocialIdType
   value: string
-  key: string // Calculated from type and value
+  key: PersonId // Calculated from type and value
   personUuid: PersonUuid
   createdOn?: Timestamp
   verifiedOn?: Timestamp

@@ -334,7 +334,7 @@ export async function moveAccountDbFromMongoToPG (
       }
 
       if (workspacesCount % 100 === 0) {
-        ctx.info(`Migrated ${workspacesCount} invites...`)
+        ctx.info(`Migrated ${workspacesCount} workspaces...`)
       }
     }
     ctx.info(`Migrated ${workspacesCount} workspaces with ${membersCount} member assignments`)

@@ -17,7 +17,8 @@ import {
   BackupStatus,
   Data,
   type Person,
-  PersonUuid,
+  type PersonUuid,
+  type PersonInfo,
   SocialId,
   Version,
   type WorkspaceInfoWithStatus,
@@ -73,6 +74,7 @@ export interface AccountClient {
   signUp: (email: string, password: string, first: string, last: string) => Promise<LoginInfo>
   login: (email: string, password: string) => Promise<LoginInfo>
   getPerson: () => Promise<Person>
+  getPersonInfo: (account: PersonUuid) => Promise<PersonInfo>
   getSocialIds: () => Promise<SocialId[]>
   getWorkspaceMembers: () => Promise<WorkspaceMemberInfo[]>
   updateWorkspaceRole: (account: string, role: AccountRole) => Promise<void>
@@ -394,6 +396,15 @@ class AccountClientImpl implements AccountClient {
     const request = {
       method: 'getPerson' as const,
       params: []
+    }
+
+    return await this.rpc(request)
+  }
+
+  async getPersonInfo (account: PersonUuid): Promise<PersonInfo> {
+    const request = {
+      method: 'getPersonInfo' as const,
+      params: [account]
     }
 
     return await this.rpc(request)
