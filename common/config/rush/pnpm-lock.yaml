@@ -262,6 +262,9 @@ importers:
       '@rush-temp/elastic':
         specifier: file:./projects/elastic.tgz
         version: file:projects/elastic.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)
+      '@rush-temp/export':
+        specifier: file:./projects/export.tgz
+        version: file:projects/export.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       '@rush-temp/front':
         specifier: file:./projects/front.tgz
         version: file:projects/front.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)
@@ -4063,6 +4066,10 @@ packages:
     resolution: {integrity: sha512-WGiDJdr4on2TaKPfaKntlenxzUJ5uuxtibsd/ZkppUh0BghpFSH37C8WGps7kQRS4oqpb+mB3QhxVhxIz2IvGg==, tarball: file:projects/elastic.tgz}
     version: 0.0.0
 
+  '@rush-temp/export@file:projects/export.tgz':
+    resolution: {integrity: sha512-rhjCH4icaXGwjz0dcBnZqUGMmMS2T7e1snjlIrEjw00MBIVvaBvaKVjleHQo5I2/LTGxxKO93jYWpPtfrePElQ==, tarball: file:projects/export.tgz}
+    version: 0.0.0
+
   '@rush-temp/front@file:projects/front.tgz':
     resolution: {integrity: sha512-dohiQMA5N6BQ+LJRe15hzxZOdP3edinNbP2id3xuoM/Xgq/Irs0EfczCo7zy3YcQocIDFMR71AYWGdXgilJbBw==, tarball: file:projects/front.tgz}
     version: 0.0.0
@@ -4584,7 +4591,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-export@file:projects/pod-export.tgz':
-    resolution: {integrity: sha512-eAg+48TuN43wh7UkMvxCfe8dsKdtemmCgkc/4/FDJb3OmiA0DabL91kX4bz1tUwyQKUHiZyTnYHa5/rY7oUdbQ==, tarball: file:projects/pod-export.tgz}
+    resolution: {integrity: sha512-E4uZFOirgkembEoAvet5L7mitoTw7/6i6KkQYESf3jCEcUeh39altyJgnyLJlw8hnd6bKC3+veiJMVIDFqMzpA==, tarball: file:projects/pod-export.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-front@file:projects/pod-front.tgz':
@@ -17801,6 +17808,31 @@ snapshots:
       - esbuild
       - node-notifier
       - supports-color
+
+  '@rush-temp/export@file:projects/export.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
+      typescript: 5.7.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
 
   '@rush-temp/front@file:projects/front.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)':
     dependencies:

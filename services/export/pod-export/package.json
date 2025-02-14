@@ -65,6 +65,7 @@
     "express": "^4.21.2",
     "ws": "^8.18.0",
     "@hcengineering/drive": "^0.6.0",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "@hcengineering/export": "^0.6.0"
   }
 } 
