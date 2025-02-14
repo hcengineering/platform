@@ -286,6 +286,10 @@ export class DocumentContentPage extends CommonPage {
     await expect(this.page.locator('a', { hasText: text })).toHaveAttribute('href', link)
   }
 
+  async checkReferenceInTheText (label: string): Promise<void> {
+    await expect(this.page.locator('span', { hasText: '@' + label })).toHaveAttribute('data-type', 'reference')
+  }
+
   async executeMoreAction (action: string): Promise<void> {
     await this.buttonMoreActions().click()
     await this.selectFromDropdown(this.page, action)
