@@ -14,12 +14,10 @@
 //
 
 import client, { ClientSocket } from '@hcengineering/client'
-import contact from '@hcengineering/contact'
-import core, { Account, Blob, Class, Client, Doc, generateId, Ref, Space, TxOperations } from '@hcengineering/core'
+import core, { Blob, Class, Client, Doc, generateId, Ref, Space, TxOperations } from '@hcengineering/core'
 import drive, { createFile, Drive } from '@hcengineering/drive'
 import { ExportType, WorkspaceExporter } from '@hcengineering/importer'
-import notification from '@hcengineering/notification'
-import { IntlString, setMetadata } from '@hcengineering/platform'
+import { setMetadata } from '@hcengineering/platform'
 import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { initStatisticsContext, StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
@@ -36,6 +34,7 @@ import { v4 as uuid } from 'uuid'
 import WebSocket from 'ws'
 import { createGzip } from 'zlib'
 import { ApiError } from './error'
+
 const extractCookieToken = (cookie?: string): string | null => {
   if (cookie === undefined || cookie === null) {
     return null
@@ -143,7 +142,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
 
       try {
         const client = await createPlatformClient(token)
-        const txOp = new TxOperations(client, core.account.System)
+        const systemClient = new TxOperations(client, core.account.System)
 
         const exporter = new WorkspaceExporter(
           measureCtx,
@@ -175,7 +174,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
         await saveToArchive(join(tempDir, files[0]), archivePath)
 
         // Сохраняем в Drive
-        const exportDrive = await ensureExportDrive(txOp)
+        const exportDrive = await ensureExportDrive(systemClient)
 
         // Читаем содержимое архива
         const fileContent = await fs.readFile(archivePath)
@@ -192,39 +191,12 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
         )
 
         // Создаем файл в Drive с ссылкой на сохраненный blob
-        await createFile(txOp, exportDrive, drive.ids.Root, {
+        await createFile(systemClient, exportDrive, drive.ids.Root, {
           title: archiveName,
           file: blobId,
           size: fileContent.length,
           type: 'application/gzip',
           lastModified: Date.now()
-        })
-
-        // Создаем нотификацию о завершении экспорта
-        const account = await getAccountRefFromToken(token, txOp)
-        const docNotifyContextId = await txOp.createDoc(notification.class.DocNotifyContext, core.space.Space, {
-          objectId: exportDrive,
-          objectClass: drive.class.Drive,
-          objectSpace: core.space.Space,
-          user: account,
-          isPinned: false,
-          hidden: false
-        })
-
-        await txOp.createDoc(notification.class.CommonInboxNotification, core.space.Space, {
-          user: account,
-          objectId: exportDrive,
-          objectClass: drive.class.Drive,
-          icon: drive.icon.Drive,
-          message: 'Export completed' as IntlString,
-          props: {
-            className,
-            exportType,
-            fileName: archiveName
-          },
-          isViewed: false,
-          archived: false,
-          docNotifyContext: docNotifyContextId
         })
 
         // Отправляем архив клиенту
@@ -320,13 +292,4 @@ async function saveToArchive (inputDir: string, outputPath: string): Promise<voi
   const destination = createWriteStream(outputPath)
 
   await pipeline(source, gzip, destination)
-}
-
-async function getAccountRefFromToken(token: string, client: Client): Promise<Ref<Account>> {
-  const { email } = decodeToken(token)
-  const account = await client.findOne(contact.class.PersonAccount, { email })
-  if (account === undefined) {
-    throw new Error('Account not found')
-  }
-  return account._id as Ref<Account>
 }
