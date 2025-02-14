@@ -23,17 +23,22 @@
   export let width: number
   export let height: number
   export let responsive: boolean = false
+
+  let blobSrc: BlobSrc | undefined
+
+  $: void getBlobRef(blob, alt, width, height).then((val) => {
+    blobSrc = val
+  })
 </script>
 
-{#await getBlobRef(blob, alt, width, height) then blobSrc}
-  <Image
-    src={blobSrc.src}
-    srcset={blobSrc.srcset}
-    {alt}
-    width={responsive ? '100%' : width}
-    height={responsive ? '100%' : height}
-    {fit}
-    on:load
-    on:error
-  />
-{/await}
+<Image
+  src={blobSrc?.src}
+  srcset={blobSrc?.srcset}
+  {alt}
+  width={responsive ? '100%' : width}
+  height={responsive ? '100%' : height}
+  {fit}
+  on:load
+  on:error
+  on:loadstart
+/>
