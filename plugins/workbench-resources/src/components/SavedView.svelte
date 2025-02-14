@@ -48,8 +48,8 @@
   let myFilteredViews: FilteredView[] = []
   $: if (alias !== undefined) {
     filteredViewsQuery.query<FilteredView>(view.class.FilteredView, { attachedTo: alias }, (result) => {
-      myFilteredViews = result.filter((p) => p.users.includes(me))
-      availableFilteredViews = result.filter((p) => p.sharable && !p.users.includes(me))
+      myFilteredViews = result.filter((p) => includesAny(p.users, myAcc.socialIds))
+      availableFilteredViews = result.filter((p) => p.sharable && !includesAny(p.users, myAcc.socialIds))
 
       const location = getLocation()
       if (location.query?.filterViewId) {
