@@ -63,26 +63,32 @@ export function getPreviewConfig (): PreviewConfig {
 export async function getBlobRef (
   file: Ref<Blob>,
   name?: string,
-  width?: number
+  width?: number,
+  height?: number
 ): Promise<{
     src: string
     srcset: string
   }> {
   return {
     src: getFileUrl(file, name),
-    srcset: getSrcSet(file, width)
+    srcset: getSrcSet(file, width, height)
   }
 }
 
-export async function getBlobSrcSet (file: Ref<Blob>, width?: number): Promise<string> {
-  return getSrcSet(file, width)
+export async function getBlobSrcSet (file: Ref<Blob>, width?: number, height?: number): Promise<string> {
+  return getSrcSet(file, width, height)
 }
 
-export function getSrcSet (_blob: Ref<Blob>, width?: number): string {
-  return blobToSrcSet(getPreviewConfig(), _blob, width)
+export function getSrcSet (_blob: Ref<Blob>, width?: number, height?: number): string {
+  return blobToSrcSet(getPreviewConfig(), _blob, width, height)
 }
 
-function blobToSrcSet (cfg: PreviewConfig, blob: Ref<Blob>, width: number | undefined): string {
+function blobToSrcSet (
+  cfg: PreviewConfig,
+  blob: Ref<Blob>,
+  width: number | undefined,
+  height: number | undefined
+): string {
   if (blob.includes('://')) {
     return ''
   }
@@ -98,25 +104,32 @@ function blobToSrcSet (cfg: PreviewConfig, blob: Ref<Blob>, width: number | unde
   url = url.replaceAll(':blobId', encodeURIComponent(blob))
 
   let result = ''
-  const fu = url
   if (width !== undefined) {
     result +=
-      fu.replaceAll(':size', `${width}`) +
+      formatImageSize(url, width, height ?? width, 1) +
       ' 1x , ' +
-      fu.replaceAll(':size', `${width * 2}`) +
+      formatImageSize(url, width, height ?? width, 2) +
       ' 2x, ' +
-      fu.replaceAll(':size', `${width * 3}`) +
+      formatImageSize(url, width, height ?? width, 3) +
       ' 3x'
   }
 
   return result
 }
 
+function formatImageSize (url: string, width: number, height: number, dpr: number): string {
+  return url
+    .replaceAll(':size', `${width * dpr}`)
+    .replaceAll(':width', `${width}`)
+    .replaceAll(':height', `${height}`)
+    .replaceAll(':dpr', `${dpr}`)
+}
+
 /***
  * @deprecated, please use Blob direct operations.
  */
-export function getFileSrcSet (_blob: Ref<Blob>, width?: number): string {
-  return blobToSrcSet(getPreviewConfig(), _blob, width)
+export function getFileSrcSet (_blob: Ref<Blob>, width?: number, height?: number): string {
+  return blobToSrcSet(getPreviewConfig(), _blob, width, height)
 }
 
 /**

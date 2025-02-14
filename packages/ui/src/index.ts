@@ -285,6 +285,7 @@ export { default as NestedMenu } from './components/NestedMenu.svelte'
 export { default as NestedDropdown } from './components/NestedDropdown.svelte'
 
 export { default as Dock } from './components/Dock.svelte'
+export { default as Image } from './components/Image.svelte'
 
 export * from './types'
 export * from './location'

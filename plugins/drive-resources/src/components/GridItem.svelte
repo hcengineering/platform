@@ -66,7 +66,7 @@
     }}
   >
     <div class="card-content">
-      <Thumbnail {object} size={'x-large'} />
+      <Thumbnail {object} />
     </div>
 
     <div class="header flex-col p-2 pt-1">
