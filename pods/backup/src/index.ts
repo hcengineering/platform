@@ -24,6 +24,7 @@ import {
   registerAdapterFactory,
   registerDestroyFactory,
   registerTxAdapterFactory,
+  setAdapterSecurity,
   sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
 import { join } from 'path'
@@ -86,6 +87,7 @@ registerDestroyFactory('mongodb', createMongoDestroyAdapter)
 registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
 registerAdapterFactory('postgresql', createPostgresAdapter, true)
 registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+setAdapterSecurity('postgresql', true)
 
 startBackup(
   metricsContext,

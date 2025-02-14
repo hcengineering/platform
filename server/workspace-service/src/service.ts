@@ -62,6 +62,7 @@ import {
   registerServerPlugins,
   registerStringLoaders,
   registerTxAdapterFactory,
+  setAdapterSecurity,
   sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
@@ -160,6 +161,8 @@ export class WorkspaceWorker {
     registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
     registerAdapterFactory('postgresql', createPostgresAdapter, true)
     registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+    setAdapterSecurity('postgresql', true)
+
     registerServerPlugins()
     registerStringLoaders()
 

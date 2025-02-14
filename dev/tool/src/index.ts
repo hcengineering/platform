@@ -33,6 +33,7 @@ import {
   registerServerPlugins,
   registerStringLoaders,
   registerTxAdapterFactory,
+  setAdapterSecurity,
   sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
 import serverToken from '@hcengineering/server-token'
@@ -121,6 +122,7 @@ export function devTool (
   registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
   registerAdapterFactory('postgresql', createPostgresAdapter, true)
   registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+  setAdapterSecurity('postgresql', true)
 
   registerServerPlugins()
   registerStringLoaders()
