@@ -521,6 +521,47 @@ describe('PostgresAccountDB', () => {
         jest.restoreAllMocks()
       })
 
+      it('should get pending creation workspace', async () => {
+        await accountDb.getPendingWorkspace('', version, 'create', processingTimeoutMs)
+
+        expect(mockClient.unsafe.mock.calls[0][0].replace(/\s+/g, ' ')).toEqual(
+          `SELECT
+              w.uuid,
+              w.name,
+              w.url,
+              w.branding,
+              w.location,
+              w.region,
+              w.created_by,
+              w.created_on,
+              w.billing_account,
+              json_build_object(
+                'mode', s.mode,
+                'processing_progress', s.processing_progress,
+                'version_major', s.version_major,
+                'version_minor', s.version_minor,
+                'version_patch', s.version_patch,
+                'last_processing_time', s.last_processing_time,
+                'last_visit', s.last_visit,
+                'is_disabled', s.is_disabled,
+                'processing_attempts', s.processing_attempts,
+                'processing_message', s.processing_message,
+                'backup_info', s.backup_info
+              ) status
+               FROM global_account.workspace as w
+               INNER JOIN global_account.workspace_status as s ON s.workspace_uuid = w.uuid
+               WHERE s.mode IN ('pending-creation', 'creating')
+               AND s.mode <> 'manual-creation'
+               AND (s.processing_attempts IS NULL OR s.processing_attempts <= 3)
+               AND (s.last_processing_time IS NULL OR s.last_processing_time < $1)
+               AND (w.region IS NULL OR w.region = '')
+               ORDER BY s.last_visit DESC
+               LIMIT 1
+               FOR UPDATE SKIP LOCKED`.replace(/\s+/g, ' ')
+        )
+        expect(mockClient.unsafe.mock.calls[0][1]).toEqual([NOW - processingTimeoutMs])
+      })
+
       it('should get workspace pending upgrade', async () => {
         await accountDb.getPendingWorkspace('', version, 'upgrade', processingTimeoutMs, wsLivenessMs)
 
