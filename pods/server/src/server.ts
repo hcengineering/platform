@@ -29,11 +29,13 @@ import { type Token } from '@hcengineering/server-token'
 
 import {
   createServerPipeline,
+  isAdapterSecurity,
   registerAdapterFactory,
   registerDestroyFactory,
   registerServerPlugins,
   registerStringLoaders,
   registerTxAdapterFactory,
+  setAdapterSecurity,
   sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
 import { uncompress } from 'snappy'
@@ -99,6 +101,7 @@ export function start (
   registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
   registerAdapterFactory('postgresql', createPostgresAdapter, true)
   registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+  setAdapterSecurity('postgresql', true)
 
   const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
 
@@ -117,7 +120,7 @@ export function start (
     metrics,
     dbUrl,
     model,
-    { ...opt, externalStorage, adapterSecurity: dbUrl.startsWith('postgresql') },
+    { ...opt, externalStorage, adapterSecurity: isAdapterSecurity(dbUrl) },
     {}
   )
   const sessionFactory = (token: Token, workspace: Workspace): Session => {

@@ -63,6 +63,7 @@ import {
   registerServerPlugins,
   registerStringLoaders,
   registerTxAdapterFactory,
+  setAdapterSecurity,
   sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken, type Token } from '@hcengineering/server-token'
@@ -257,6 +258,7 @@ export async function startIndexer (
   registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
   registerAdapterFactory('postgresql', createPostgresAdapter, true)
   registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+  setAdapterSecurity('postgresql', true)
 
   registerServerPlugins()
   registerStringLoaders()

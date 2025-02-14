@@ -211,7 +211,8 @@ export async function getServerPipeline (
   const pipelineFactory = createServerPipeline(ctx, dbUrl, model, {
     externalStorage: storageAdapter,
     usePassedCtx: true,
-    disableTriggers: opt?.disableTriggers ?? false
+    disableTriggers: opt?.disableTriggers ?? false,
+    adapterSecurity: isAdapterSecurity(dbUrl)
   })
 
   return await pipelineFactory(ctx, wsUrl, true, () => {}, null)
@@ -220,6 +221,23 @@ export async function getServerPipeline (
 const txAdapterFactories: Record<string, DbAdapterFactory> = {}
 const adapterFactories: Record<string, DbAdapterFactory> = {}
 const destroyFactories: Record<string, (url: string) => WorkspaceDestroyAdapter> = {}
+const adapterSecurityState = new Set<string>()
+
+export function isAdapterSecurity (name: string): boolean {
+  for (const it of adapterSecurityState) {
+    if (name.startsWith(it)) {
+      return true
+    }
+  }
+  return false
+}
+export function setAdapterSecurity (name: string, state: boolean): void {
+  if (state) {
+    adapterSecurityState.add(name)
+  } else {
+    adapterSecurityState.delete(name)
+  }
+}
 
 export function registerTxAdapterFactory (name: string, factory: DbAdapterFactory, useAsDefault: boolean = true): void {
   txAdapterFactories[name] = factory
