@@ -14,8 +14,9 @@
 -->
 <script lang="ts">
   import { Card, MasterTag } from '@hcengineering/card'
+  import { fillDefaults } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { DropdownLabelsIntl, Icon, Label } from '@hcengineering/ui'
+  import { DropdownLabelsIntl, Label } from '@hcengineering/ui'
   import card from '../plugin'
 
   export let value: Card
@@ -38,17 +39,18 @@
   })
 
   async function select (event: CustomEvent): Promise<void> {
-    const update = { _class: event.detail } as any
+    const _class = event.detail
+    const update = { _class } as any
     selected = event.detail
     await client.update(value, update)
+    const updated = fillDefaults(hierarchy, hierarchy.clone(value), _class)
+    await client.diffUpdate(value, updated)
   }
 
   $: label = hierarchy.getClass(selected).label
 </script>
 
 <div class="flex flex-gap-2 items-center item caption-color">
-  <Icon icon={card.icon.MasterTag} size="large" />
-  <Label label={card.string.MasterTag} />
   {#if value._class === card.class.Card}
     <DropdownLabelsIntl
       {items}

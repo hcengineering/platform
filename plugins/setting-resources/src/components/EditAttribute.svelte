@@ -29,10 +29,10 @@
     showPopup,
     themeStore
   } from '@hcengineering/ui'
+  import { IconPicker } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
   import setting from '../plugin'
   import { clearSettingsStore } from '../store'
-  import { IconPicker, iconsLibrary } from '@hcengineering/view-resources'
 
   export let attribute: AnyAttribute
   export let exist: boolean
@@ -166,11 +166,6 @@
     {/if}
   </svelte:fragment>
   <div class="hulyModal-content__titleGroup">
-    {#if attribute.isCustom}
-      <div class="hulyChip-item font-medium-12">
-        <Label label={setting.string.Custom} />
-      </div>
-    {/if}
     <div class="flex items-center">
       <ButtonIcon
         icon={icon ?? setting.icon.Enums}

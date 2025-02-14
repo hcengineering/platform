@@ -13,6 +13,7 @@
 
 import { Class, Mixin, Doc, Ref, MarkupBlobRef, Rank } from '@hcengineering/core'
 import { Asset, IntlString, plugin, Plugin } from '@hcengineering/platform'
+import type { AnyComponent } from '@hcengineering/ui'
 
 export * from './analytics'
 
@@ -29,6 +30,13 @@ export interface Card extends Doc {
   rank: Rank
 }
 
+export interface MasterTagEditorSection extends Doc {
+  id: string
+  label: IntlString
+  component: AnyComponent
+  masterOnly?: boolean
+}
+
 /**
  * @public
  */
@@ -41,7 +49,8 @@ const cardPlugin = plugin(cardId, {
   class: {
     Card: '' as Ref<Class<Card>>,
     MasterTag: '' as Ref<Class<MasterTag>>,
-    Tag: '' as Ref<Class<Tag>>
+    Tag: '' as Ref<Class<Tag>>,
+    MasterTagEditorSection: '' as Ref<Class<MasterTagEditorSection>>
   },
   icon: {
     MasterTags: '' as Asset,

@@ -15,6 +15,7 @@
     "CardLibrary": "Kartenbibliothek",
     "MinimizeAll": "Alle minimieren",
     "ExpandAll": "Alle erweitern",
+    "TagRelations": "Tag-Beziehungen",
     "DeleteTag": "Tag löschen",
     "DeleteTagConfirm": "Möchten Sie diesen Tag wirklich löschen? Alle zugehörigen Eigenschaften werden gelöscht",
     "DeleteMasterTag": "Master-Tag löschen",
