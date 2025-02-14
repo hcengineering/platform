@@ -46,7 +46,7 @@ import { MermaidExtension, type MermaidOptions, mermaidOptions } from '../compon
 import { DrawingBoardExtension, type DrawingBoardOptions } from '../components/extension/drawingBoard'
 import { type IndendOptions, IndentExtension, indentExtensionOptions } from '../components/extension/indent'
 import TextAlign, { type TextAlignOptions } from '@tiptap/extension-text-align'
-import { LinkShortcutsExtension } from '../components/extension/link'
+import { LinkUtilsExtension } from '../components/extension/link'
 
 export interface EditorKitOptions extends DefaultKitOptions {
   history?: false
@@ -316,7 +316,7 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                 ])
               }
 
-              staticKitExtensions.push([950, LinkShortcutsExtension.configure({})])
+              staticKitExtensions.push([950, LinkUtilsExtension.configure({})])
 
               if (mode !== 'compact' && this.options.note !== false) {
                 staticKitExtensions.push([1000, NoteExtension.configure(this.options.note ?? {})])
