@@ -21,7 +21,8 @@ import {
   type Doc,
   type Ref,
   type WorkspaceInfoWithStatus,
-  type WorkspaceUserOperation
+  type WorkspaceUserOperation,
+  parseSocialIdString
 } from '@hcengineering/core'
 import type { LoginInfo, OtpInfo, WorkspaceLoginInfo, AccountClient, RegionInfo } from '@hcengineering/account-client'
 import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
@@ -899,4 +900,21 @@ export async function doLoginNavigate (
 
 export function isWorkspaceLoginInfo (info: WorkspaceLoginInfo | LoginInfo | null): info is WorkspaceLoginInfo {
   return (info as any)?.workspace !== undefined
+}
+
+export function getAccountDisplayName (loginInfo: LoginInfo | null): string {
+  if (loginInfo == null) {
+    return ''
+  }
+
+  if (loginInfo.name != null) {
+    return loginInfo.name
+  }
+
+  if (loginInfo.socialId != null) {
+    const { value } = parseSocialIdString(loginInfo.socialId)
+    return value
+  }
+
+  return loginInfo.account
 }

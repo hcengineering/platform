@@ -40,7 +40,8 @@
     getWorkspaces,
     goTo,
     navigateToWorkspace,
-    selectWorkspace
+    selectWorkspace,
+    getAccountDisplayName
   } from '../utils'
   import StatusControl from './StatusControl.svelte'
 
@@ -130,7 +131,7 @@
   <div class="grow-separator" />
   <div class="fs-title">
     {#if account != null}
-      {account.name ?? account.socialId ?? account.account}
+      {getAccountDisplayName(account)}
     {:else}
       <Label label={login.string.LoadingAccount} />
     {/if}

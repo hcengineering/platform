@@ -20,7 +20,15 @@
   import { workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
   import login from '../plugin'
-  import { createWorkspace, getAccount, getRegionInfo, goTo, setLoginInfo, type RegionInfo } from '../utils'
+  import {
+    createWorkspace,
+    getAccount,
+    getRegionInfo,
+    goTo,
+    setLoginInfo,
+    getAccountDisplayName,
+    type RegionInfo
+  } from '../utils'
   import Form from './Form.svelte'
 
   const fields = [
@@ -77,7 +85,7 @@
   {fields}
   {object}
   {action}
-  subtitle={loginInfo?.account}
+  subtitle={getAccountDisplayName(loginInfo)}
   bottomActions={[
     {
       caption: login.string.HaveWorkspace,
