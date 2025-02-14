@@ -21,9 +21,9 @@
   import { getResource } from '@hcengineering/platform'
   import { ActionContext, getClient } from '@hcengineering/presentation'
   import { type Class, type Ref } from '@hcengineering/core'
-  import { MailThread } from '@hcengineering/mail'
+  import mail, { MailThread } from '@hcengineering/mail'
   import { Panel } from '@hcengineering/panel'
-  import { type AnySvelteComponent, Component, Loading } from '@hcengineering/ui'
+  import { type AnySvelteComponent, Button, Component, Loading } from '@hcengineering/ui'
   import chunter, { type ChatMessage } from '@hcengineering/chunter'
   import view, { type ObjectPresenter } from '@hcengineering/view'
 
@@ -79,6 +79,10 @@
     object = await client.findOne(_class, { _id })
   }
 
+  async function reply (): Promise<void> {
+
+  }
+
   onMount(() => dispatch('open', { ignoreKeys: [] }))
 </script>
 
@@ -95,11 +99,19 @@
     on:open
     on:close={() => dispatch('close')}
   >
+    <svelte:fragment slot="utils">
+      <Button
+        disabled={isLoading}
+        label={mail.string.Reply}
+        kind={'primary'}
+        on:click={reply}
+      />
+    </svelte:fragment>
     {#if isLoading}
       <Loading />
     {:else if messagePresenter !== undefined}
       {#each messages as message}
-        <Component is={messagePresenter} props={{ value: message }} />
+        <Component is={messagePresenter} props={{ value: message, readonly: true }} />
       {/each}
     {/if}
   </Panel>

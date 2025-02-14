@@ -4,6 +4,7 @@
     "From": "Von",
     "To": "An",
     "CreateMail": "Neue Nachricht",
-    "MailThread": "Nachricht"
+    "MailThread": "Nachricht",
+    "Reply": "Antworten"
   }
 }

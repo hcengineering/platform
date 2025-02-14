@@ -23,6 +23,7 @@
   import { createEventDispatcher } from 'svelte'
 
   import mail from '../plugin'
+  import { isValidEmail } from '../messageUtils'
 
   const manager = createFocusManager()
   const dispatch = createEventDispatcher()
@@ -90,7 +91,7 @@
 <Card
   label={mail.string.CreateMail}
   okAction={createMail}
-  canSave={to.trim().length > 0}
+  canSave={to.trim().length > 0 && isValidEmail(to)}
   on:close={() => {
     dispatch('close')
   }}

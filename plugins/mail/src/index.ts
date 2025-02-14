@@ -47,6 +47,7 @@ export default plugin(mailId, {
     Subject: '' as IntlString,
     To: '' as IntlString,
     From: '' as IntlString,
-    CreateMail: '' as IntlString
+    CreateMail: '' as IntlString,
+    Reply: '' as IntlString
   }
 })

@@ -81,3 +81,8 @@ function getMessagePreview (message: string): string {
 function getSpace (doc: Doc): Ref<Space> {
   return isSpace(doc) ? doc._id : doc.space
 }
+
+export function isValidEmail (email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}
