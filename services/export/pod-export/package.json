@@ -46,6 +46,7 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
+    "@types/uuid": "^8.3.1",
     "prettier": "^3.1.0",
     "ts-node": "^10.8.0",
     "typescript": "^5.3.3"
@@ -62,6 +63,8 @@
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
     "express": "^4.21.2",
-    "ws": "^8.18.0"
+    "ws": "^8.18.0",
+    "@hcengineering/drive": "^0.6.0",
+    "uuid": "^8.3.2"
   }
 } 
