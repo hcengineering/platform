@@ -1,10 +1,9 @@
-import core, { MeasureContext, Ref, TxOperations } from '@hcengineering/core'
+import core, { Ref, TxOperations } from '@hcengineering/core'
 import exportPlugin, { ExportTask, ExportTaskStatus } from '@hcengineering/export'
 
 export class ExportTaskQueue {
   constructor (
-    private readonly client: TxOperations,
-    private readonly context: MeasureContext
+    private readonly client: TxOperations
   ) {}
 
   /**

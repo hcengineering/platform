@@ -14,9 +14,8 @@
 //
 
 import client, { ClientSocket } from '@hcengineering/client'
-import core, { Blob, Class, Client, Doc, generateId, Ref, Space, TxOperations } from '@hcengineering/core'
-import drive, { createFile, Drive } from '@hcengineering/drive'
-import { ExportType, WorkspaceExporter } from '@hcengineering/importer'
+import core, { Class, Client, Doc, Ref, Space, TxOperations } from '@hcengineering/core'
+import { ExportType } from '@hcengineering/importer'
 import { setMetadata } from '@hcengineering/platform'
 import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { initStatisticsContext, StorageConfiguration } from '@hcengineering/server-core'
@@ -24,16 +23,13 @@ import { buildStorageFromConfig } from '@hcengineering/server-storage'
 import { decodeToken } from '@hcengineering/server-token'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
-import { createReadStream, createWriteStream } from 'fs'
 import fs, { rm } from 'fs/promises'
 import { IncomingHttpHeaders, type Server } from 'http'
 import { tmpdir } from 'os'
 import { join } from 'path'
-import { pipeline } from 'stream/promises'
-import { v4 as uuid } from 'uuid'
 import WebSocket from 'ws'
-import { createGzip } from 'zlib'
 import { ApiError } from './error'
+import { ExportTaskQueue } from './queue'
 
 const extractCookieToken = (cookie?: string): string | null => {
   if (cookie === undefined || cookie === null) {
@@ -119,7 +115,9 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
   handleRequest(fn, req, res, next)
 }
 
-export function createServer (storageConfig: StorageConfiguration): { app: Express, close: () => void } {
+export function createServer (storageConfig: StorageConfiguration, parallelLimit: number): { app: Express, close: () => void } {
+  // создать очереь и воркер один на всех. Нужно пр думать общий txOp - может каак в тулз, или проуидывать текущий в методы каждый раз
+  const queue = new ExportTaskQueue()
   const storageAdapter = buildStorageFromConfig(storageConfig)
   const measureCtx = initStatisticsContext('export', {})
 
@@ -127,77 +125,23 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
   app.use(cors())
   app.use(express.json())
 
-  app.get(
+  app.get( // todo: post?
     '/export',
     wrapRequest(async (req, res, token) => {
       const classId = req.query.class as Ref<Class<Doc<Space>>>
       const exportType = req.query.type as ExportType
-      const { workspace } = decodeToken(token)
 
       if (classId == null || exportType == null) {
         throw new ApiError(400, 'Missing required parameters')
       }
 
+      const { workspace } = decodeToken(token)
+
       const tempDir = await fs.mkdtemp(join(tmpdir(), 'export-'))
 
       try {
         const client = await createPlatformClient(token)
-        const systemClient = new TxOperations(client, core.account.System)
-
-        const exporter = new WorkspaceExporter(
-          measureCtx,
-          client,
-          storageAdapter,
-          {
-            log: (msg: string) => { measureCtx.info('export', { msg }) },
-            error: (msg: string, err?: any) => { measureCtx.error('export-error', { msg, err }) }
-          },
-          workspace
-        )
-
-        await exporter.exportDocuments(classId, exportType, tempDir)
-
-        // Получаем имя класса
-        const hierarchy = client.getHierarchy()
-        const className = hierarchy.getClass(classId).label
-
-        // Создаем уникальное имя архива
-        const archiveName = `export-${workspace.name}-${className}-${exportType}-${Date.now()}.gz`
-        const archivePath = join(tempDir, archiveName)
-
-        // Архивируем результаты
-        const files = await fs.readdir(tempDir)
-        if (files.length === 0) {
-          throw new ApiError(400, 'No files were exported')
-        }
-
-        await saveToArchive(join(tempDir, files[0]), archivePath)
-
-        // Сохраняем в Drive
-        const exportDrive = await ensureExportDrive(systemClient)
-
-        // Читаем содержимое архива
-        const fileContent = await fs.readFile(archivePath)
-
-        // Сохраняем файл в storage
-        const blobId = uuid() as Ref<Blob>
-        await storageAdapter.put(
-          measureCtx,
-          workspace,
-          blobId,
-          fileContent,
-          'application/gzip',
-          fileContent.length
-        )
-
-        // Создаем файл в Drive с ссылкой на сохраненный blob
-        await createFile(systemClient, exportDrive, drive.ids.Root, {
-          title: archiveName,
-          file: blobId,
-          size: fileContent.length,
-          type: 'application/gzip',
-          lastModified: Date.now()
-        })
+        const txOperations = new TxOperations(client, core.account.System)
 
         // Отправляем архив клиенту
         res.download(archivePath, archiveName, (err) => {
@@ -254,42 +198,4 @@ export function listen (e: Express, port: number, host?: string): Server {
   }
 
   return host !== undefined ? e.listen(port, host, cb) : e.listen(port, cb)
-}
-
-async function ensureExportDrive (client: TxOperations): Promise<Ref<Drive>> {
-  // Проверяем существование папки Export
-  const exportDrive = await client.findOne(drive.class.Drive, {
-    name: 'Export'
-  })
-
-  if (exportDrive !== undefined) {
-    return exportDrive._id
-  }
-
-  // Создаем drive если не существует
-  const driveId = generateId<Drive>()
-  await client.createDoc(
-    drive.class.Drive,
-    core.space.Space,
-    {
-      name: 'Export',
-      description: 'Drive for exported files',
-      private: false,
-      archived: false,
-      members: [],
-      type: drive.spaceType.DefaultDrive,
-      autoJoin: true
-    },
-    driveId
-  )
-
-  return driveId
-}
-
-async function saveToArchive (inputDir: string, outputPath: string): Promise<void> {
-  const gzip = createGzip()
-  const source = createReadStream(inputDir)
-  const destination = createWriteStream(outputPath)
-
-  await pipeline(source, gzip, destination)
 }
