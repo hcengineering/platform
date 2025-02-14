@@ -72,10 +72,10 @@
 
       await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
       await client.createMixin(id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
-        active: true
+        active: false
       })
 
-      const mail = email.trim()
+      const mail = email.trim().toLowerCase()
 
       await client.createDoc(contact.class.PersonAccount, core.space.Model, {
         email: mail,
@@ -84,7 +84,7 @@
       })
 
       const sendInvite = await getResource(login.function.SendInvite)
-      await sendInvite(email.trim(), id, AccountRole.User)
+      await sendInvite(mail, id, AccountRole.User)
 
       for (const channel of channels) {
         await client.addCollection(
@@ -116,7 +116,7 @@
   $: query.query(
     contact.class.PersonAccount,
     {
-      email: email.trim()
+      email: email.trim().toLowerCase()
     },
     (p) => {
       exists = p[0]
@@ -128,7 +128,7 @@
   function changeEmail () {
     const index = channels.findIndex((p) => p.provider === contact.channelProvider.Email)
     if (index !== -1) {
-      channels[index].value = email.trim()
+      channels[index].value = email.trim().toLowerCase()
     } else {
       channels.push({
         provider: contact.channelProvider.Email,
