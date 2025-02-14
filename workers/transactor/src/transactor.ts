@@ -46,11 +46,13 @@ import {
 } from '@hcengineering/postgres'
 import {
   createServerPipeline,
+  isAdapterSecurity,
   registerAdapterFactory,
   registerDestroyFactory,
   registerServerPlugins,
   registerStringLoaders,
-  registerTxAdapterFactory
+  registerTxAdapterFactory,
+  setAdapterSecurity
 } from '@hcengineering/server-pipeline'
 import { CloudFlareLogger } from './logger'
 import model from './model.json'
@@ -109,6 +111,7 @@ export class Transactor extends DurableObject<Env> {
     registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
     registerAdapterFactory('postgresql', createPostgresAdapter, true)
     registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+    setAdapterSecurity('postgresql', true)
 
     if (env.USE_GREEN === 'true') {
       registerGreenUrl(env.GREEN_URL)
@@ -140,7 +143,7 @@ export class Transactor extends DurableObject<Env> {
     this.pipelineFactory = async (ctx, ws, upgrade, broadcast, branding) => {
       const pipeline = createServerPipeline(this.measureCtx, dbUrl, model, {
         externalStorage: storage,
-        adapterSecurity: false,
+        adapterSecurity: isAdapterSecurity(dbUrl),
         disableTriggers: false,
         fulltextUrl: env.FULLTEXT_URL,
         extraLogging: true,

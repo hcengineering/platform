@@ -506,6 +506,11 @@ export function getCurrentWorkspaceUrl (): string {
   return wsId
 }
 
+export function remToPx (rem: number): number {
+  const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
+  return rem * fontSize
+}
+
 export function sizeToWidth (size: string): number | undefined {
   let width: number | undefined
   switch (size) {
@@ -515,22 +520,22 @@ export function sizeToWidth (size: string): number | undefined {
     case 'x-small':
     case 'smaller':
     case 'small':
-      width = 32
+      width = 2
       break
     case 'medium':
-      width = 64
+      width = 2.5
       break
     case 'large':
-      width = 256
+      width = 4.5
       break
     case 'x-large':
-      width = 512
+      width = 7.5
       break
     case '2x-large':
-      width = 1024
+      width = 10
       break
   }
-  return width
+  return width !== undefined ? remToPx(width) : undefined
 }
 
 /**

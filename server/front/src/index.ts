@@ -15,7 +15,14 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { MeasureContext, Blob as PlatformBlob, WorkspaceDataId, metricsAggregate, type Ref } from '@hcengineering/core'
+import {
+  MeasureContext,
+  Blob as PlatformBlob,
+  WorkspaceDataId,
+  WorkspaceIds,
+  metricsAggregate,
+  type Ref
+} from '@hcengineering/core'
 import { decodeToken } from '@hcengineering/server-token'
 import { StorageAdapter } from '@hcengineering/storage'
 import bp from 'body-parser'
@@ -42,15 +49,15 @@ const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-ag
 async function storageUpload (
   ctx: MeasureContext,
   storageAdapter: StorageAdapter,
-  workspace: WorkspaceDataId,
+  wsIds: WorkspaceIds,
   file: UploadedFile
 ): Promise<string> {
   const uuid = file.name
   const data = file.tempFilePath !== undefined ? fs.createReadStream(file.tempFilePath) : file.data
   const resp = await ctx.with(
     'storage upload',
-    { workspace },
-    (ctx) => storageAdapter.put(ctx, workspace, uuid, data, file.mimetype, file.size),
+    { workspace: wsIds.uuid },
+    (ctx) => storageAdapter.put(ctx, wsIds, uuid, data, file.mimetype, file.size),
     { file: file.name, contentType: file.mimetype }
   )
 
@@ -81,7 +88,7 @@ async function getFileRange (
   stat: PlatformBlob,
   range: string,
   client: StorageAdapter,
-  workspace: WorkspaceDataId,
+  wsIds: WorkspaceIds,
   res: Response
 ): Promise<void> {
   const uuid = stat._id
@@ -105,7 +112,7 @@ async function getFileRange (
         const dataStream = await ctx.with(
           'partial',
           {},
-          (ctx) => client.partial(ctx, workspace, stat._id, start, end - start + 1),
+          (ctx) => client.partial(ctx, wsIds, stat._id, start, end - start + 1),
           {}
         )
         res.writeHead(206, {
@@ -129,7 +136,7 @@ async function getFileRange (
             resolve()
           })
           dataStream.on('error', (err) => {
-            ctx.error('error receive stream', { workspace, uuid, error: err })
+            ctx.error('error receive stream', { workspace: wsIds.uuid, uuid, error: err })
             Analytics.handleError(err)
 
             res.end()
@@ -144,7 +151,7 @@ async function getFileRange (
           err?.message === 'No such key' ||
           err?.Code === 'NoSuchKey'
         ) {
-          ctx.info('No such key', { workspace, uuid })
+          ctx.info('No such key', { workspace: wsIds.uuid, uuid })
           res.status(404).send()
           return
         } else {
@@ -162,7 +169,7 @@ async function getFile (
   ctx: MeasureContext,
   stat: PlatformBlob,
   client: StorageAdapter,
-  workspace: WorkspaceDataId,
+  wsIds: WorkspaceIds,
   req: Request,
   res: Response
 ): Promise<void> {
@@ -204,7 +211,7 @@ async function getFile (
     { contentType: stat.contentType },
     async (ctx) => {
       try {
-        const dataStream = await ctx.with('readable', {}, (ctx) => client.get(ctx, workspace, stat._id))
+        const dataStream = await ctx.with('readable', {}, (ctx) => client.get(ctx, wsIds, stat._id))
         res.writeHead(200, {
           'Content-Type': stat.contentType,
           'Content-Security-Policy': "default-src 'none';",
@@ -233,7 +240,7 @@ async function getFile (
           })
         })
       } catch (err: any) {
-        ctx.error('get-file-error', { workspace, err })
+        ctx.error('get-file-error', { workspace: wsIds.uuid, err })
         Analytics.handleError(err)
         res.status(500).send()
       }
@@ -411,16 +418,17 @@ export function start (
     })
   )
 
-  const getWorkspaceDataId = async (
-    ctx: MeasureContext,
-    token: string,
-    path?: string
-  ): Promise<WorkspaceDataId | null> => {
+  const getWorkspaceIds = async (ctx: MeasureContext, token: string, path?: string): Promise<WorkspaceIds | null> => {
     const accountClient = getAccountClient(config.accountsUrlInternal ?? config.accountsUrl, token)
     const workspaceInfo = await accountClient.getWorkspaceInfo()
+    const wsIds = {
+      uuid: workspaceInfo.uuid,
+      dataId: workspaceInfo.dataId,
+      url: workspaceInfo.url
+    }
     const actualDataId = workspaceInfo.dataId ?? (workspaceInfo.uuid as unknown as WorkspaceDataId)
     if (path === undefined) {
-      return actualDataId
+      return wsIds
     }
 
     const expectedDataId = path.split('/')[2]
@@ -435,7 +443,7 @@ export function start (
       return null
     }
 
-    return actualDataId
+    return wsIds
   }
 
   const filesHandler = async (req: Request<any>, res: Response<any>): Promise<void> => {
@@ -450,8 +458,8 @@ export function start (
             cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1] ??
             (req.query.token as string | undefined) ??
             ''
-          const workspaceDataId = await getWorkspaceDataId(ctx, token, req.path)
-          if (workspaceDataId === null) {
+          const wsIds = await getWorkspaceIds(ctx, token, req.path)
+          if (wsIds === null) {
             res.status(403).send()
             return
           }
@@ -462,12 +470,12 @@ export function start (
             return
           }
 
-          let blobInfo = await ctx.with('stat', { workspace: workspaceDataId }, (ctx) =>
-            config.storageAdapter.stat(ctx, workspaceDataId, uuid)
+          let blobInfo = await ctx.with('stat', { workspace: wsIds.uuid }, (ctx) =>
+            config.storageAdapter.stat(ctx, wsIds, uuid)
           )
 
           if (blobInfo === undefined) {
-            ctx.error('No such key', { file: uuid, workspace: workspaceDataId })
+            ctx.error('No such key', { file: uuid, workspace: wsIds.uuid })
             res.status(404).send()
             return
           }
@@ -494,7 +502,7 @@ export function start (
           const accept = req.headers.accept
           if (accept !== undefined && isImage && blobInfo.contentType !== 'image/gif' && size !== undefined) {
             blobInfo = await ctx.with('resize', {}, (ctx) =>
-              getGeneratePreview(ctx, blobInfo as PlatformBlob, size, uuid, config, workspaceDataId, accept, () =>
+              getGeneratePreview(ctx, blobInfo as PlatformBlob, size, uuid, config, wsIds, accept, () =>
                 join(tempFileDir, `${++temoFileIndex}`)
               )
             )
@@ -502,14 +510,14 @@ export function start (
 
           const range = req.headers.range
           if (range !== undefined) {
-            await ctx.with('file-range', { workspace: workspaceDataId }, (ctx) =>
-              getFileRange(ctx, blobInfo as PlatformBlob, range, config.storageAdapter, workspaceDataId, res)
+            await ctx.with('file-range', { workspace: wsIds.uuid }, (ctx) =>
+              getFileRange(ctx, blobInfo as PlatformBlob, range, config.storageAdapter, wsIds, res)
             )
           } else {
             await ctx.with(
               'file',
-              { workspace: workspaceDataId },
-              (ctx) => getFile(ctx, blobInfo as PlatformBlob, config.storageAdapter, workspaceDataId, req, res),
+              { workspace: wsIds.uuid },
+              (ctx) => getFile(ctx, blobInfo as PlatformBlob, config.storageAdapter, wsIds, req, res),
               { uuid }
             )
           }
@@ -575,7 +583,7 @@ export function start (
 
         try {
           const token = authHeader.split(' ')[1]
-          const workspaceDataId = await getWorkspaceDataId(ctx, token, req.path)
+          const workspaceDataId = await getWorkspaceIds(ctx, token, req.path)
           if (workspaceDataId === null) {
             res.status(403).send()
             return
@@ -606,7 +614,7 @@ export function start (
       }
 
       const token = authHeader.split(' ')[1]
-      const workspaceDataId = await getWorkspaceDataId(ctx, token, req.path)
+      const workspaceDataId = await getWorkspaceIds(ctx, token, req.path)
       if (workspaceDataId === null) {
         res.status(403).send()
         return
@@ -636,7 +644,7 @@ export function start (
         return
       }
       const token = authHeader.split(' ')[1]
-      const workspaceDataId = await getWorkspaceDataId(ctx, token)
+      const workspaceDataId = await getWorkspaceIds(ctx, token)
       if (workspaceDataId === null) {
         res.status(403).send()
         return
@@ -720,7 +728,7 @@ export function start (
         return
       }
       const token = authHeader.split(' ')[1]
-      const workspaceDataId = await getWorkspaceDataId(ctx, token)
+      const workspaceDataId = await getWorkspaceIds(ctx, token)
       if (workspaceDataId === null) {
         res.status(403).send()
         return
@@ -858,7 +866,7 @@ async function getGeneratePreview (
   size: number | undefined,
   uuid: string,
   config: { storageAdapter: StorageAdapter },
-  wsDataId: WorkspaceDataId,
+  wsIds: WorkspaceIds,
   accept: string,
   tempFile: () => string
 ): Promise<PlatformBlob> {
@@ -893,7 +901,7 @@ async function getGeneratePreview (
 
   const sizeId = uuid + `%preview%${size}${format !== 'jpeg' ? format : ''}`
 
-  const d = await config.storageAdapter.stat(ctx, wsDataId, sizeId)
+  const d = await config.storageAdapter.stat(ctx, wsIds, sizeId)
   const hasSmall = d !== undefined && d.size > 0
 
   if (hasSmall) {
@@ -906,7 +914,7 @@ async function getGeneratePreview (
       // Let's get data and resize it
       const fname = tempFile()
       files.push(fname)
-      await writeFile(fname, await config.storageAdapter.get(ctx, wsDataId, uuid))
+      await writeFile(fname, await config.storageAdapter.get(ctx, wsIds, uuid))
 
       pipeline = sharp(fname)
       const md = await pipeline.metadata()
@@ -966,7 +974,7 @@ async function getGeneratePreview (
       // Add support of avif as well.
       const upload = await config.storageAdapter.put(
         ctx,
-        wsDataId,
+        wsIds,
         sizeId,
         createReadStream(outFile),
         contentType,

@@ -33,7 +33,6 @@ import {
   type TxResult,
   type Blob,
   type WorkspaceIds,
-  type WorkspaceDataId,
   generateId
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
@@ -46,7 +45,7 @@ import {
 
 class StorageBlobAdapter implements DbAdapter {
   constructor (
-    readonly storageId: WorkspaceDataId,
+    readonly storageIds: WorkspaceIds,
     readonly client: StorageAdapterEx, // Should not be closed
     readonly ctx: MeasureContext
   ) {}
@@ -110,13 +109,13 @@ class StorageBlobAdapter implements DbAdapter {
   async close (): Promise<void> {}
 
   find (ctx: MeasureContext, domain: Domain): StorageIterator {
-    return this.client.find(ctx, this.storageId)
+    return this.client.find(ctx, this.storageIds)
   }
 
   async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     const blobs: Blob[] = []
     for (const d of docs) {
-      const bb = await this.client.stat(ctx, this.storageId, d)
+      const bb = await this.client.stat(ctx, this.storageIds, d)
       if (bb !== undefined) {
         blobs.push(bb)
       }
@@ -134,7 +133,7 @@ class StorageBlobAdapter implements DbAdapter {
   }
 
   async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    await this.client.remove(this.ctx, this.storageId, docs)
+    await this.client.remove(this.ctx, this.storageIds, docs)
   }
 
   async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {}
@@ -148,17 +147,16 @@ export async function createStorageDataAdapter (
   contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceIds,
+  wsIds: WorkspaceIds,
   modelDb: ModelDb,
   storage?: StorageAdapter
 ): Promise<DbAdapter> {
   if (storage === undefined) {
     throw new Error('Storage adapter required')
   }
-  const storageId = workspaceId.dataId ?? (workspaceId.uuid as unknown as WorkspaceDataId)
   // We need to create bucket if it doesn't exist
-  if (!(await storage.exists(ctx, storageId))) {
-    await storage.make(ctx, storageId)
+  if (!(await storage.exists(ctx, wsIds))) {
+    await storage.make(ctx, wsIds)
   }
-  return new StorageBlobAdapter(storageId, storage as StorageAdapterEx, ctx)
+  return new StorageBlobAdapter(wsIds, storage as StorageAdapterEx, ctx)
 }

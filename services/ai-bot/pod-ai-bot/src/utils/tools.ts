@@ -1,4 +1,4 @@
-import { MarkupBlobRef, PersonId, Ref, WorkspaceDataId } from '@hcengineering/core'
+import { MarkupBlobRef, PersonId, Ref } from '@hcengineering/core'
 import document, { Document, getFirstRank, Teamspace } from '@hcengineering/document'
 import { makeRank } from '@hcengineering/rank'
 import { parseMessageMarkdown } from '@hcengineering/text'
@@ -37,13 +37,12 @@ async function pdfToMarkdown (
   name: string | undefined
 ): Promise<string | undefined> {
   if (config.DataLabApiKey !== '') {
-    const dataId = workspaceClient.workspace as any as WorkspaceDataId
     try {
-      const stat = await workspaceClient.storage.stat(workspaceClient.ctx, dataId, fileId)
+      const stat = await workspaceClient.storage.stat(workspaceClient.ctx, workspaceClient.wsIds, fileId)
       if (stat?.contentType !== 'application/pdf') {
         return
       }
-      const file = await workspaceClient.storage.get(workspaceClient.ctx, dataId, fileId)
+      const file = await workspaceClient.storage.get(workspaceClient.ctx, workspaceClient.wsIds, fileId)
       const buffer = await stream2buffer(file)
 
       const url = 'https://www.datalab.to/api/v1/marker'
@@ -96,8 +95,7 @@ async function saveFile (
 
   const client = await workspaceClient.opClient
   const fileId = uuid()
-  const dataId = workspaceClient.workspace as any as WorkspaceDataId
-  await workspaceClient.storage.put(workspaceClient.ctx, dataId, fileId, converted, 'application/json')
+  await workspaceClient.storage.put(workspaceClient.ctx, workspaceClient.wsIds, fileId, converted, 'application/json')
 
   const teamspaces = await client.findAll(document.class.Teamspace, {})
   const parent = await client.findOne(document.class.Document, { _id: args.parent as Ref<Document> })

@@ -1,4 +1,4 @@
-import { MeasureMetricsContext, type WorkspaceDataId, generateId } from '@hcengineering/core'
+import { MeasureMetricsContext, type WorkspaceDataId, type WorkspaceUuid, generateId } from '@hcengineering/core'
 import type { StorageConfiguration } from '@hcengineering/server-core'
 import { DatalakeService, processConfigFromEnv, type DatalakeConfig } from '.'
 
@@ -17,8 +17,12 @@ const storageService = new DatalakeService({ ...(config.storages[0] as DatalakeC
 async function doTest (): Promise<void> {
   const genWorkspaceId1 = generateId() as unknown as WorkspaceDataId
 
-  const ws1 = genWorkspaceId1
-  await storageService.make(toolCtx, ws1)
+  const wsIds1 = {
+    uuid: genWorkspaceId1 as unknown as WorkspaceUuid,
+    dataId: genWorkspaceId1,
+    url: ''
+  }
+  await storageService.make(toolCtx, wsIds1)
 
   /// /////// Uploads
   console.log('upload 1mb test')
@@ -28,7 +32,7 @@ async function doTest (): Promise<void> {
   for (let i = 0; i < 10; i++) {
     // We need 1Mb random file to check upload speed.
     const st = Date.now()
-    await storageService.put(toolCtx, ws1, `testObject.${i}`, stream, 'application/octet-stream', stream.length)
+    await storageService.put(toolCtx, wsIds1, `testObject.${i}`, stream, 'application/octet-stream', stream.length)
     console.log('upload time', Date.now() - st)
   }
   let now = Date.now()
@@ -40,7 +44,7 @@ async function doTest (): Promise<void> {
   for (let i = 0; i < 10; i++) {
     // We need 1Mb random file to check upload speed.
     const st = Date.now()
-    await storageService.read(toolCtx, ws1, `testObject.${i}`)
+    await storageService.read(toolCtx, wsIds1, `testObject.${i}`)
     console.log('download time', Date.now() - st)
   }
 
@@ -52,7 +56,7 @@ async function doTest (): Promise<void> {
   for (let i = 0; i < 10; i++) {
     // We need 1Mb random file to check upload speed.
     const st = Date.now()
-    const readable = await storageService.get(toolCtx, ws1, `testObject.${i}`)
+    const readable = await storageService.get(toolCtx, wsIds1, `testObject.${i}`)
     const chunks: Buffer[] = []
     readable.on('data', (chunk) => {
       chunks.push(chunk)
@@ -76,7 +80,7 @@ async function doTest (): Promise<void> {
     // We need 1Mb random file to check upload speed.
     const st = Date.now()
     for (let i = 0; i < sz; i++) {
-      const readable = await storageService.partial(toolCtx, ws1, `testObject.${i}`, i * MB, MB)
+      const readable = await storageService.partial(toolCtx, wsIds1, `testObject.${i}`, i * MB, MB)
       const chunks: Buffer[] = []
       readable.on('data', (chunk) => {
         chunks.push(chunk)

@@ -50,6 +50,7 @@ export { default as DownloadFileButton } from './components/DownloadFileButton.s
 export { default as FileTypeIcon } from './components/FileTypeIcon.svelte'
 export { default as DrawingBoard } from './components/DrawingBoard.svelte'
 export { default as DrawingBoardToolbar } from './components/DrawingBoardToolbar.svelte'
+export { default as Image } from './components/Image.svelte'
 export { default } from './plugin'
 export * from './types'
 export * from './utils'

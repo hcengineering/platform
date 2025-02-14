@@ -20,7 +20,8 @@ import {
   type Ref,
   concatLink,
   RateLimiter,
-  type WorkspaceDataId
+  type WorkspaceIds,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { type DatalakeClient } from '@hcengineering/datalake'
 import { type UploadObjectParams } from '@hcengineering/datalake/types/client'
@@ -42,7 +43,7 @@ export interface MoveFilesParams {
 
 export async function moveFiles (
   ctx: MeasureContext,
-  workspaceId: WorkspaceDataId,
+  wsIds: WorkspaceIds,
   exAdapter: StorageAdapterEx,
   params: MoveFilesParams
 ): Promise<void> {
@@ -52,7 +53,7 @@ export async function moveFiles (
   if (target === undefined) return
 
   // We assume that the adapter moves all new files to the default adapter
-  await target.make(ctx, workspaceId)
+  await target.make(ctx, wsIds)
 
   for (const { name, adapter } of exAdapter.adapters.slice(1).reverse()) {
     console.log('moving from', name, 'limit', 'concurrency', params.concurrency)
@@ -60,14 +61,14 @@ export async function moveFiles (
     // we attempt retry the whole process in case of failure
     // files that were already moved will be skipped
     await retryOnFailure(ctx, 5, async () => {
-      await processAdapter(ctx, exAdapter, adapter, target, workspaceId, params)
+      await processAdapter(ctx, exAdapter, adapter, target, wsIds, params)
     })
   }
 }
 
 export async function showLostFiles (
   ctx: MeasureContext,
-  workspaceId: WorkspaceDataId,
+  wsIds: WorkspaceIds,
   db: Db,
   storageAdapter: StorageAdapter,
   { showAll }: { showAll: boolean }
@@ -81,7 +82,7 @@ export async function showLostFiles (
     const { _id, _class, file, name, modifiedOn } = attachment
     const date = new Date(modifiedOn).toISOString()
 
-    const stat = await storageAdapter.stat(ctx, workspaceId, file)
+    const stat = await storageAdapter.stat(ctx, wsIds, file)
     if (stat === undefined) {
       console.warn('-', date, _class, _id, file, name)
     } else if (showAll) {
@@ -95,7 +96,7 @@ async function processAdapter (
   exAdapter: StorageAdapterEx,
   source: StorageAdapter,
   target: StorageAdapter,
-  workspaceId: WorkspaceDataId,
+  wsIds: WorkspaceIds,
   params: MoveFilesParams
 ): Promise<void> {
   if (source === target) {
@@ -128,9 +129,9 @@ async function processAdapter (
 
   const rateLimiter = new RateLimiter(params.concurrency)
 
-  const iterator = await source.listStream(ctx, workspaceId)
+  const iterator = await source.listStream(ctx, wsIds)
 
-  const targetIterator = await target.listStream(ctx, workspaceId)
+  const targetIterator = await target.listStream(ctx, wsIds)
 
   const targetBlobs = new Map<Ref<Blob>, ListBlobResult>()
 
@@ -165,7 +166,7 @@ async function processAdapter (
         }
 
         if (targetBlob === undefined) {
-          const sourceBlob = await source.stat(ctx, workspaceId, data._id)
+          const sourceBlob = await source.stat(ctx, wsIds, data._id)
 
           if (sourceBlob === undefined) {
             console.error('blob not found', data._id)
@@ -177,7 +178,7 @@ async function processAdapter (
                 ctx,
                 5,
                 async () => {
-                  return await processFile(ctx, source, target, workspaceId, sourceBlob)
+                  return await processFile(ctx, source, target, wsIds, sourceBlob)
                 },
                 50
               )
@@ -209,7 +210,7 @@ async function processAdapter (
     if (toRemove.length > 0 && params.move) {
       while (toRemove.length > 0) {
         const part = toRemove.splice(0, 500)
-        await source.remove(ctx, workspaceId, part)
+        await source.remove(ctx, wsIds, part)
       }
     }
     printStats()
@@ -222,16 +223,16 @@ async function processFile (
   ctx: MeasureContext,
   source: Pick<StorageAdapter, 'get'>,
   target: Pick<StorageAdapter, 'put'>,
-  workspaceId: WorkspaceDataId,
+  wsIds: WorkspaceIds,
   blob: Blob
 ): Promise<UploadedObjectInfo> {
-  const readable = await source.get(ctx, workspaceId, blob._id)
+  const readable = await source.get(ctx, wsIds, blob._id)
   try {
     readable.on('end', () => {
       readable.destroy()
     })
     const stream = readable.pipe(new PassThrough())
-    return await target.put(ctx, workspaceId, blob._id, stream, blob.contentType, blob.size)
+    return await target.put(ctx, wsIds, blob._id, stream, blob.contentType, blob.size)
   } finally {
     readable.destroy()
   }
@@ -267,7 +268,7 @@ export interface CopyDatalakeParams {
 
 export async function copyToDatalake (
   ctx: MeasureContext,
-  workspaceId: WorkspaceDataId,
+  wsIds: WorkspaceIds,
   config: S3Config,
   adapter: S3Service,
   datalake: DatalakeClient,
@@ -275,7 +276,7 @@ export async function copyToDatalake (
 ): Promise<void> {
   console.log('copying from', config.name, 'concurrency:', params.concurrency)
 
-  const exists = await adapter.exists(ctx, workspaceId)
+  const exists = await adapter.exists(ctx, wsIds)
   if (!exists) {
     console.log('no files to copy')
     return
@@ -311,7 +312,7 @@ export async function copyToDatalake (
   let cursor: string | undefined = ''
   let hasMore = true
   while (hasMore) {
-    const res = await datalake.listObjects(ctx, workspaceId, cursor, 1000)
+    const res = await datalake.listObjects(ctx, wsIds.uuid, cursor, 1000)
     cursor = res.cursor
     hasMore = res.cursor !== undefined
     for (const blob of res.blobs) {
@@ -323,7 +324,7 @@ export async function copyToDatalake (
 
   const rateLimiter = new RateLimiter(params.concurrency)
 
-  const iterator = await adapter.listStream(ctx, workspaceId)
+  const iterator = await adapter.listStream(ctx, wsIds)
 
   try {
     while (true) {
@@ -349,7 +350,7 @@ export async function copyToDatalake (
               ctx,
               5,
               async () => {
-                await copyBlobToDatalake(ctx, workspaceId, blob, config, adapter, datalake)
+                await copyBlobToDatalake(ctx, wsIds, blob, config, adapter, datalake)
                 processedCnt += 1
                 processedSize += blob.size
               },
@@ -374,7 +375,7 @@ export async function copyToDatalake (
 
 export async function copyBlobToDatalake (
   ctx: MeasureContext,
-  workspaceId: WorkspaceDataId,
+  wsIds: WorkspaceIds,
   blob: ListBlobResult,
   config: S3Config,
   adapter: S3Service,
@@ -385,15 +386,15 @@ export async function copyBlobToDatalake (
     // Handle small file
     const { endpoint, accessKey: accessKeyId, secretKey: secretAccessKey, region } = config
 
-    const bucketId = adapter.getBucketId(workspaceId)
-    const objectId = adapter.getDocumentKey(workspaceId, encodeURIComponent(objectName))
+    const bucketId = adapter.getBucketId(wsIds)
+    const objectId = adapter.getDocumentKey(wsIds, encodeURIComponent(objectName))
     const url = concatLink(endpoint, `${bucketId}/${objectId}`)
 
     const params = { url, accessKeyId, secretAccessKey, region }
-    await datalake.uploadFromS3(ctx, workspaceId, objectName, params)
+    await datalake.uploadFromS3(ctx, wsIds.uuid, objectName, params)
   } else {
     // Handle huge file
-    const stat = await adapter.stat(ctx, workspaceId, objectName)
+    const stat = await adapter.stat(ctx, wsIds, objectName)
     if (stat !== undefined) {
       const metadata = {
         lastModified: stat.modifiedOn,
@@ -402,10 +403,10 @@ export async function copyBlobToDatalake (
         size: stat.size
       }
 
-      const readable = await adapter.get(ctx, workspaceId, objectName)
+      const readable = await adapter.get(ctx, wsIds, objectName)
       try {
         console.log('uploading huge blob', objectName, Math.round(stat.size / 1024 / 1024), 'MB')
-        await uploadMultipart(ctx, datalake, workspaceId, objectName, readable, metadata)
+        await uploadMultipart(ctx, datalake, wsIds.uuid, objectName, readable, metadata)
         console.log('done', objectName)
       } finally {
         readable.destroy()
@@ -417,7 +418,7 @@ export async function copyBlobToDatalake (
 function uploadMultipart (
   ctx: MeasureContext,
   datalake: DatalakeClient,
-  workspaceId: WorkspaceDataId,
+  workspaceId: WorkspaceUuid,
   objectName: string,
   stream: Readable,
   metadata: UploadObjectParams

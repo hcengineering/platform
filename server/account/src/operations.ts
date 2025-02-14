@@ -91,11 +91,10 @@ import {
   wrap,
   verifyAllowedServices
 } from './utils'
+import { isAdminEmail } from './admin'
 
 // Move to config?
 const processingTimeoutMs = 30 * 1000
-
-const ADMIN_EMAILS = new Set(process.env.ADMIN_EMAILS?.split(',') ?? [])
 
 /* =================================== */
 /* ============OPERATIONS============= */
@@ -132,12 +131,12 @@ export async function login (
 
     const isConfirmed = emailSocialId.verifiedOn != null
 
-    const isAdmin: Record<string, string> = ADMIN_EMAILS.has(email.trim()) ? { admin: 'true' } : {}
-    ctx.info('Login succeeded', { email, normalizedEmail, isConfirmed, emailSocialId, ...isAdmin })
+    const extraToken: Record<string, string> = isAdminEmail(email) ? { admin: 'true' } : {}
+    ctx.info('Login succeeded', { email, normalizedEmail, isConfirmed, emailSocialId, ...extraToken })
 
     return {
       account: existingAccount.uuid,
-      token: isConfirmed ? generateToken(existingAccount.uuid, undefined, isAdmin) : undefined
+      token: isConfirmed ? generateToken(existingAccount.uuid, undefined, extraToken) : undefined
     }
   } catch (err: any) {
     Analytics.handleError(err)

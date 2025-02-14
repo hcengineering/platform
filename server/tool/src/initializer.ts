@@ -15,7 +15,6 @@ import core, {
   SocialIdType,
   Space,
   TxOperations,
-  type WorkspaceDataId,
   type WorkspaceIds
 } from '@hcengineering/core'
 import { ModelLogger } from '@hcengineering/model'
@@ -174,9 +173,8 @@ export class WorkspaceInitializer {
       const id = uuid()
       const resp = await fetch(step.fromUrl)
       const buffer = Buffer.from(await resp.arrayBuffer())
-      const dataId = this.wsIds.dataId ?? (this.wsIds.uuid as unknown as WorkspaceDataId)
 
-      await this.storageAdapter.put(this.ctx, dataId, id, buffer, step.contentType, buffer.length)
+      await this.storageAdapter.put(this.ctx, this.wsIds, id, buffer, step.contentType, buffer.length)
       if (step.resultVariable !== undefined) {
         vars[`\${${step.resultVariable}}`] = id
         vars[`\${${step.resultVariable}_size}`] = buffer.length
@@ -324,9 +322,8 @@ export class WorkspaceInitializer {
 
     const json = parseMessageMarkdown(data ?? '', this.imageUrl)
     const markup = jsonToMarkup(json)
-    const dataId = this.wsIds.dataId ?? (this.wsIds.uuid as unknown as WorkspaceDataId)
 
-    return await saveCollabJson(this.ctx, this.storageAdapter, dataId, doc, markup)
+    return await saveCollabJson(this.ctx, this.storageAdapter, this.wsIds, doc, markup)
   }
 
   private async fillProps<T extends Doc, P extends Partial<T> | Props<T>>(

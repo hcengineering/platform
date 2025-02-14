@@ -22,12 +22,13 @@ import {
   TranslateRequest,
   TranslateResponse
 } from '@hcengineering/ai-bot'
-import { MeasureContext, PersonUuid, Ref, SocialId, type WorkspaceUuid } from '@hcengineering/core'
+import { MeasureContext, PersonUuid, Ref, SocialId, type WorkspaceIds, type WorkspaceUuid } from '@hcengineering/core'
 import { Room } from '@hcengineering/love'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
-import { getTransactorEndpoint } from '@hcengineering/server-client'
+import { getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { htmlToMarkup, markupToHTML } from '@hcengineering/text'
+import { isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { encodingForModel } from 'js-tiktoken'
 import OpenAI from 'openai'
 
@@ -112,16 +113,27 @@ export class AIControl {
     }
 
     const token = generateToken(this.personUuid, workspace, { service: 'aibot' })
-    const endpoint = await getTransactorEndpoint(token)
+    const wsLoginInfo = await getAccountClient(token).getLoginInfoByToken()
+
+    if (!isWorkspaceLoginInfo(wsLoginInfo)) {
+      this.ctx.error('Invalid workspace login info', { workspace, wsLoginInfo })
+      return
+    }
+
+    const wsIds: WorkspaceIds = {
+      uuid: wsLoginInfo.workspace,
+      url: wsLoginInfo.workspaceUrl,
+      dataId: wsLoginInfo.workspaceDataId
+    }
 
     this.ctx.info('Listen workspace: ', { workspace })
 
     return new WorkspaceClient(
       this.storageAdapter,
       this.storage,
-      endpoint,
+      wsLoginInfo.endpoint,
       token,
-      workspace,
+      wsIds,
       this.personUuid,
       this.socialIds,
       this.ctx.newChild(workspace, {}),

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TX, type WorkspaceDataId, type MeasureContext, type Ref } from '@hcengineering/core'
+import { DOMAIN_TX, type WorkspaceDataId, type MeasureContext, type Ref, type WorkspaceIds } from '@hcengineering/core'
 import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import contact, { DOMAIN_CHANNEL } from '@hcengineering/model-contact'
 import { DOMAIN_TELEGRAM } from '@hcengineering/model-telegram'
@@ -31,14 +31,15 @@ const LastMessages = 'last-msgs'
 export async function clearTelegramHistory (
   ctx: MeasureContext,
   mongoUrl: string,
-  workspaceId: WorkspaceDataId,
+  wsIds: WorkspaceIds,
   tgDb: string,
   storageAdapter: StorageAdapter
 ): Promise<void> {
   const client = getMongoClient(mongoUrl)
   try {
     const _client = await client.getClient()
-    const workspaceDB = getWorkspaceMongoDB(_client, workspaceId)
+    const dataId = wsIds.dataId ?? (wsIds.uuid as unknown as WorkspaceDataId)
+    const workspaceDB = getWorkspaceMongoDB(_client, dataId)
     const telegramDB = _client.db(tgDb)
 
     const sharedMessages = await workspaceDB
@@ -91,12 +92,12 @@ export async function clearTelegramHistory (
       workspaceDB.collection(DOMAIN_ATTACHMENT).deleteMany({
         attachedToClass: telegram.class.Message
       }),
-      storageAdapter.remove(ctx, workspaceId, Array.from(attachments))
+      storageAdapter.remove(ctx, wsIds, Array.from(attachments))
     ])
 
     console.log('clearing telegram service data...')
     await telegramDB.collection(LastMessages).deleteMany({
-      workspace: workspaceId
+      workspace: wsIds.uuid
     })
   } finally {
     client.close()

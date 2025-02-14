@@ -103,7 +103,15 @@
       "ignoreMissingScript": true,
       "safeForSimultaneousRushProcesses": true,
       "disableBuildCache": true
-    },   
+    },
+    {
+      "commandKind": "global",
+      "name": "doformat",
+      "summary": "Do a format and show errors after it",
+      "description": "Do a format and show errors after it",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "rush format && ./common/scripts/format-show.sh"
+    },        
     {
       "commandKind": "phased",
       "name": "build:watch",

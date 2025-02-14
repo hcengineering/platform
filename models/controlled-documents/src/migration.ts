@@ -34,8 +34,7 @@ import {
   type Ref,
   SortingOrder,
   toIdMap,
-  TxOperations,
-  type WorkspaceDataId
+  TxOperations
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -299,8 +298,7 @@ async function migrateDocSections (client: MigrationClient): Promise<void> {
     // Migrate sections headers + content
     try {
       const collabId = makeDocCollabId(document, 'content')
-      const dataId = client.wsIds.dataId ?? (client.wsIds.uuid as unknown as WorkspaceDataId)
-      const ydoc = await loadCollabYdoc(ctx, storage, dataId, collabId)
+      const ydoc = await loadCollabYdoc(ctx, storage, client.wsIds, collabId)
       if (ydoc === undefined) {
         // no content, ignore
         continue
@@ -346,7 +344,7 @@ async function migrateDocSections (client: MigrationClient): Promise<void> {
         }
       })
 
-      await saveCollabYdoc(ctx, storage, dataId, collabId, ydoc)
+      await saveCollabYdoc(ctx, storage, client.wsIds, collabId, ydoc)
     } catch (err) {
       ctx.error('error collaborative document content migration', { error: err, document: document.title })
     }
