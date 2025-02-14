@@ -12,7 +12,7 @@
 
     if (result != null) {
       if (isWorkspaceLoginInfo(result)) {
-        navigateToWorkspace(result.workspace, result, undefined, true)
+        navigateToWorkspace(result.workspaceUrl, result, undefined, true)
         return
       }
 
