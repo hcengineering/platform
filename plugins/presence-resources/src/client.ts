@@ -20,7 +20,7 @@ import presence from '@hcengineering/presence'
 import presentation from '@hcengineering/presentation'
 import { type Unsubscriber, get } from 'svelte/store'
 
-import { myPresence, myData, onPersonUpdate, onPersonLeave, onPersonData, followee, toggleFollowee } from './store'
+import { myPresence, myData, isAnybodyInMyRoom, onPersonUpdate, onPersonLeave, onPersonData } from './store'
 import type { RoomPresence, MyDataItem } from './types'
 
 interface PresenceMessage {
@@ -37,24 +37,7 @@ interface DataMessage {
   data: any
 }
 
-interface FollowMessage {
-  type: 'follow'
-  follower: Ref<Person>
-  followee: Ref<Person>
-}
-
-interface UnfollowMessage {
-  type: 'unfollow'
-  follower: Ref<Person>
-}
-
-interface FollowedMessage {
-  type: 'followed'
-  follower: Ref<Person>
-  active: boolean
-}
-
-type IncomingMessage = PresenceMessage | DataMessage | FollowedMessage | UnfollowMessage
+type IncomingMessage = PresenceMessage | DataMessage
 
 export class PresenceClient implements Disposable {
   private ws: WebSocket | null = null
@@ -71,8 +54,6 @@ export class PresenceClient implements Disposable {
   private readonly myDataTimestamps = new Map<string, number>()
   private readonly myPresenceUnsub: Unsubscriber
   private readonly myDataUnsub: Unsubscriber
-  private readonly followeeUnsub: Unsubscriber
-  private readonly followers = new Set<Ref<Person>>()
 
   constructor (private readonly url: string | URL) {
     this.presence = get(myPresence)
@@ -81,9 +62,6 @@ export class PresenceClient implements Disposable {
     })
     this.myDataUnsub = myData.subscribe((data) => {
       this.handleMyDataChanged(data, false)
-    })
-    this.followeeUnsub = followee.subscribe((followee) => {
-      this.handleFolloweeChanged(followee)
     })
 
     this.connect()
@@ -96,7 +74,6 @@ export class PresenceClient implements Disposable {
 
     this.myPresenceUnsub()
     this.myDataUnsub()
-    this.followeeUnsub()
 
     if (this.ws !== null) {
       this.ws.close()
@@ -185,13 +162,7 @@ export class PresenceClient implements Disposable {
   private handleConnect (): void {
     this.sendPresence(getCurrentEmployee(), this.presence)
     this.startPing()
-
     this.handleMyDataChanged(get(myData), true)
-
-    const f = get(followee)
-    if (f !== undefined) {
-      this.handleFolloweeChanged(f)
-    }
   }
 
   private handleMessage (data: string): void {
@@ -203,10 +174,6 @@ export class PresenceClient implements Disposable {
         onPersonLeave(message.id)
       } else if (message.type === 'data') {
         onPersonData(message.sender, message.topic, message.data)
-      } else if (message.type === 'followed') {
-        this.onFollowed(message.follower, message.active)
-      } else if (message.type === 'unfollow') {
-        toggleFollowee(undefined)
       } else {
         console.warn('Unknown message type', message)
       }
@@ -218,6 +185,7 @@ export class PresenceClient implements Disposable {
   private handlePresenceChanged (presence: RoomPresence[]): void {
     this.presence = presence
     this.sendPresence(getCurrentEmployee(), this.presence)
+    this.handleMyDataChanged(get(myData), true)
   }
 
   private sendPresence (person: Ref<Person>, presence: RoomPresence[]): void {
@@ -228,7 +196,7 @@ export class PresenceClient implements Disposable {
   }
 
   private handleMyDataChanged (data: Map<string, MyDataItem>, forceSend: boolean): void {
-    if (this.followers.size === 0) {
+    if (!isAnybodyInMyRoom()) {
       return
     }
     if (!this.closed && this.ws !== null && this.ws.readyState === WebSocket.OPEN) {
@@ -245,34 +213,6 @@ export class PresenceClient implements Disposable {
           this.ws.send(JSON.stringify(message))
         }
       }
-    }
-  }
-
-  private handleFolloweeChanged (followee: Ref<Person> | undefined): void {
-    if (!this.closed && this.ws !== null && this.ws.readyState === WebSocket.OPEN) {
-      if (followee !== undefined) {
-        const message: FollowMessage = {
-          type: 'follow',
-          follower: getCurrentEmployee(),
-          followee
-        }
-        this.ws.send(JSON.stringify(message))
-      } else {
-        const message: UnfollowMessage = {
-          type: 'unfollow',
-          follower: getCurrentEmployee()
-        }
-        this.ws.send(JSON.stringify(message))
-      }
-    }
-  }
-
-  private onFollowed (follower: Ref<Person>, active: boolean): void {
-    if (active) {
-      this.followers.add(follower)
-      this.handleMyDataChanged(get(myData), true)
-    } else {
-      this.followers.delete(follower)
     }
   }
 
