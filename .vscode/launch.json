@@ -138,11 +138,10 @@
       "env": {
         "MONGO_URL": "mongodb://localhost:27017",
         "DB_URL": "mongodb://localhost:27017",
-        // "DB_URL": "postgresql://postgres:example@localhost:5432",
         // "DB_URL": "postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable",
         "SERVER_SECRET": "secret",
-        "REGION_INFO":"|Mongo;pg|Postgres;cockroach|CockroachDB",
-        "TRANSACTOR_URL": "ws://host.docker.internal:3333,ws://host.docker.internal:3331;;pg,ws://host.docker.internal:3332;;cockroach",
+        "REGION_INFO":"|Mongo;cockroach|CockroachDB",
+        "TRANSACTOR_URL": "ws://host.docker.internal:3333,ws://host.docker.internal:3332;;cockroach",
         "ACCOUNTS_URL": "http://localhost:3000",
         "ACCOUNT_PORT": "3000",
         "FRONT_URL": "http://localhost:8080",
@@ -154,8 +153,6 @@
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost"
         // "DISABLE_SIGNUP": "true",
-        // "INIT_SCRIPT_URL": "https://raw.githubusercontent.com/hcengineering/init/main/script.yaml",
-        // "INIT_WORKSPACE": "onboarding",
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
@@ -187,8 +184,6 @@
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost"
         // "DISABLE_SIGNUP": "true",
-        // "INIT_SCRIPT_URL": "https://raw.githubusercontent.com/hcengineering/init/main/script.yaml",
-        // "INIT_WORKSPACE": "onboarding",
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
@@ -236,8 +231,8 @@
         "WS_OPERATION": "all+backup",
         "BACKUP_STORAGE": "minio|minio?accessKey=minioadmin&secretKey=minioadmin",
         "BACKUP_BUCKET": "dev-backups",
-        // "INIT_SCRIPT_URL": "https://raw.githubusercontent.com/hcengineering/init/main/script.yaml",
-        // "INIT_WORKSPACE": "onboarding",
+        // "INIT_REPO_DIR": "${workspaceRoot}/pods/workspace/init",
+        // "INIT_WORKSPACE": "staging-dev"
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
@@ -269,8 +264,8 @@
         "WS_OPERATION": "all+backup",
         "BACKUP_STORAGE": "minio|minio?accessKey=minioadmin&secretKey=minioadmin",
         "BACKUP_BUCKET": "dev-backups",
-        // "INIT_SCRIPT_URL": "https://raw.githubusercontent.com/hcengineering/init/main/script.yaml",
-        // "INIT_WORKSPACE": "onboarding",
+        // "INIT_REPO_DIR": "${workspaceRoot}/pods/workspace/init",
+        // "INIT_WORKSPACE": "staging-dev"
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],

@@ -46,6 +46,7 @@ import {
   AccountRole,
   MeasureMetricsContext,
   metricsToString,
+  type PersonId,
   type Data,
   type Tx,
   type Version,
@@ -304,7 +305,7 @@ export function devTool (
         const measureCtx = new MeasureMetricsContext('create-workspace', {})
         const brandingObj =
           cmd.branding !== undefined || cmd.init !== undefined ? { key: cmd.branding, initWorkspace: cmd.init } : null
-        const socialId = await db.socialId.findOne({ key: socialString })
+        const socialId = await db.socialId.findOne({ key: socialString as PersonId })
         if (socialId == null) {
           throw new Error(`Social id ${socialString} not found`)
         }

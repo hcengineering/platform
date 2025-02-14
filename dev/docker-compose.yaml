@@ -80,7 +80,7 @@ services:
       # Pass only one region to disallow selection for new workspaces.Ø
       - REGION_INFO=|Mongo;cockroach|CockroachDB
       # - REGION_INFO=cockroach|CockroachDB
-      - TRANSACTOR_URL=ws://host.docker.internal:3333,ws://host.docker.internal:3331;;pg,ws://host.docker.internal:3332;;cockroach,
+      - TRANSACTOR_URL=ws://host.docker.internal:3333,ws://host.docker.internal:3332;;cockroach,
       - SES_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://host.docker.internal:8087
@@ -91,8 +91,6 @@ services:
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
       # - DISABLE_SIGNUP=true
-      # - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
-      # - INIT_WORKSPACE=onboarding
     restart: unless-stopped
   stats:
     image: hardcoreeng/stats
@@ -126,9 +124,9 @@ services:
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
       # - PARALLEL=2
-      - INIT_WORKSPACE=test
       - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
       - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
+      # - INIT_WORKSPACE=staging-dev
     restart: unless-stopped
   workspace_cockroach:
     image: hardcoreeng/workspace
@@ -153,9 +151,9 @@ services:
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
       # - PARALLEL=2
-      # - INIT_WORKSPACE=onboarding
       - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
       - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
+      # - INIT_WORKSPACE=staging-dev
     restart: unless-stopped
   collaborator:
     image: hardcoreeng/collaborator

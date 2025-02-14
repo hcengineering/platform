@@ -538,6 +538,10 @@ export interface Person {
   city?: string
 }
 
+export interface PersonInfo extends BasePerson {
+  socialIds: PersonId[]
+}
+
 /**
  * @public
  */

@@ -27,7 +27,8 @@ import {
   systemAccountUuid,
   type WorkspaceInfoWithStatus as WorkspaceInfoWithStatusCore,
   isActiveMode,
-  type PersonUuid
+  type PersonUuid,
+  type PersonId
 } from '@hcengineering/core'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
@@ -854,7 +855,7 @@ export async function getWorkspaceInvite (db: AccountDB, id: string): Promise<Wo
   return await db.invite.findOne({ migratedFrom: id })
 }
 
-export async function getSocialIdByKey (db: AccountDB, socialKey: string): Promise<SocialId | null> {
+export async function getSocialIdByKey (db: AccountDB, socialKey: PersonId): Promise<SocialId | null> {
   return await db.socialId.findOne({ key: socialKey })
 }
 
@@ -1105,4 +1106,10 @@ export async function getWorkspaces (
     ...it,
     status: statusesMap[it.uuid]
   }))
+}
+
+export function verifyAllowedServices (services: string[], extra: any): void {
+  if (!services.includes(extra?.service) && extra?.admin !== 'true') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
 }
