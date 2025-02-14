@@ -147,7 +147,7 @@ import {
 } from './utils'
 
 export * from './utils'
-export { employeeByIdStore, employeesStore } from './utils'
+export { employeeByIdStore } from './utils'
 export * from './assignee'
 export {
   AccountArrayEditor,
