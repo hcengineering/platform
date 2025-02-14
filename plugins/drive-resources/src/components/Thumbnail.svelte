@@ -22,6 +22,7 @@
 
   export let object: WithLookup<Resource>
 
+  const size = remToPx(20)
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -46,7 +47,8 @@
   <Image
     blob={previewRef}
     alt={object.title}
-    width={remToPx(20)}
+    width={size}
+    height={size}
     responsive
     fit={'cover'}
     on:error={() => {

@@ -35,7 +35,7 @@
     dispatch('load')
   }
 
-  function handleError (event): void {
+  function handleError (event: any): void {
     if (retry > 3) {
       event.target.src = undefined
     } else if (retry > 0) {

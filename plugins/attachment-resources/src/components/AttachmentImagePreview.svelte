@@ -16,7 +16,7 @@
   import type { Attachment } from '@hcengineering/attachment'
   import type { WithLookup } from '@hcengineering/core'
   import { Image } from '@hcengineering/presentation'
-  import { IconSize, Loading } from '@hcengineering/ui'
+  import { Loading } from '@hcengineering/ui'
 
   import BrokenImage from './icons/BrokenImage.svelte'
   import { AttachmentImageSize } from '../types'
@@ -93,14 +93,6 @@
     }
   }
 
-  function getUrlSize (size: AttachmentImageSize): IconSize {
-    if (size === 'auto') {
-      return 'large'
-    }
-
-    return 'x-large'
-  }
-
   function toStyle (size: 'auto' | number): string {
     return size === 'auto' ? 'auto' : `${size}px`
   }
@@ -131,7 +123,7 @@
 
   {#if error}
     <div class="image-overlay">
-      <BrokenImage size={'x-large'} />
+      <BrokenImage size={'large'} />
     </div>
   {/if}
 
