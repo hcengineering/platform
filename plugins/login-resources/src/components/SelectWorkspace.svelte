@@ -129,8 +129,8 @@
 <form class="container" style:padding={$deviceInfo.docWidth <= 480 ? '1.25rem' : '5rem'}>
   <div class="grow-separator" />
   <div class="fs-title">
-    {#if account?.account}
-      {account.account}
+    {#if account != null}
+      {account.name ?? account.socialId ?? account.account}
     {:else}
       <Label label={login.string.LoadingAccount} />
     {/if}

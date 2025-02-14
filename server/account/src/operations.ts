@@ -32,7 +32,8 @@ import {
   type WorkspaceMemberInfo,
   type WorkspaceMode,
   type WorkspaceUuid,
-  type PersonId
+  type PersonId,
+  buildSocialIdString
 } from '@hcengineering/core'
 import platform, {
   getMetadata,
@@ -89,7 +90,8 @@ import {
   signUpByEmail,
   verifyPassword,
   wrap,
-  verifyAllowedServices
+  verifyAllowedServices,
+  getPersonName
 } from './utils'
 import { isAdminEmail } from './admin'
 
@@ -125,6 +127,11 @@ export async function login (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
     }
 
+    const person = await db.person.findOne({ uuid: emailSocialId.personUuid })
+    if (person == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+    }
+
     if (!verifyPassword(password, existingAccount.hash, existingAccount.salt)) {
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
     }
@@ -136,7 +143,9 @@ export async function login (
 
     return {
       account: existingAccount.uuid,
-      token: isConfirmed ? generateToken(existingAccount.uuid, undefined, extraToken) : undefined
+      token: isConfirmed ? generateToken(existingAccount.uuid, undefined, extraToken) : undefined,
+      name: getPersonName(person),
+      socialId: emailSocialId.key
     }
   } catch (err: any) {
     Analytics.handleError(err)
@@ -185,6 +194,10 @@ export async function signUp (
   lastName: string
 ): Promise<LoginInfo> {
   const account = await signUpByEmail(ctx, db, branding, email, password, firstName, lastName)
+  const person = await db.person.findOne({ uuid: account })
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+  }
 
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   const forceConfirmation = sesURL !== undefined && sesURL !== ''
@@ -199,6 +212,8 @@ export async function signUp (
 
   return {
     account,
+    name: getPersonName(person),
+    socialId: buildSocialIdString({ type: SocialIdType.EMAIL, value: email }),
     token: !forceConfirmation ? generateToken(account) : undefined
   }
 }
@@ -277,8 +292,15 @@ export async function validateOtp (
     ctx.info('OTP login success', emailSocialId)
   }
 
+  const person = await db.person.findOne({ uuid: emailSocialId.personUuid })
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+  }
+
   return {
     account: emailSocialId.personUuid,
+    name: getPersonName(person),
+    socialId: emailSocialId.key,
     token: generateToken(emailSocialId.personUuid)
   }
 }
@@ -308,8 +330,15 @@ export async function createWorkspace (
 
   ctx.info('Creating workspace record done', { workspaceName, region, account: socialId.personUuid })
 
+  const person = await db.person.findOne({ uuid: socialId.personUuid })
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+  }
+
   return {
     account,
+    socialId: socialId.key,
+    name: getPersonName(person),
     token: generateToken(account, workspaceUuid),
     endpoint: getEndpoint(ctx, workspaceUuid, region, EndpointKind.External),
     workspace: workspaceUuid,
@@ -534,8 +563,15 @@ export async function confirm (
 
   await confirmEmail(ctx, db, account, email)
 
+  const person = await db.person.findOne({ uuid: account })
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+  }
+
   const result = {
     account,
+    name: getPersonName(person),
+    socialId: buildSocialIdString({ type: SocialIdType.EMAIL, value: email }),
     token: generateToken(account)
   }
 
@@ -694,8 +730,14 @@ export async function leaveWorkspace (
   ctx.info('Account removed from workspace', { targetAccount, workspace })
 
   if (account === targetAccount) {
+    const person = await db.person.findOne({ uuid: account })
+    if (person == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+    }
+
     return {
       account,
+      name: getPersonName(person),
       token: generateToken(account, undefined)
     }
   }
@@ -971,11 +1013,11 @@ export async function getLoginInfoByToken (
 
   const isDocGuest = accountUuid === GUEST_ACCOUNT && extra?.guest === 'true'
   const isSystem = accountUuid === systemAccountUuid
+  let socialId: SocialId | null = null
 
   if (!isDocGuest && !isSystem) {
     // Any confirmed social ID will do
-    const socialId = await db.socialId.findOne({ personUuid: accountUuid, verifiedOn: { $gt: 0 } })
-
+    socialId = await db.socialId.findOne({ personUuid: accountUuid, verifiedOn: { $gt: 0 } })
     if (socialId == null) {
       return {
         account: accountUuid
@@ -983,8 +1025,15 @@ export async function getLoginInfoByToken (
     }
   }
 
+  const person = await db.person.findOne({ uuid: accountUuid })
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+  }
+
   const loginInfo = {
     account: accountUuid,
+    name: getPersonName(person),
+    socialId: socialId?.key,
     token
   }
 
@@ -1078,7 +1127,7 @@ export async function getPersonInfo (
 
   return {
     personUuid: account,
-    name: `${person?.firstName} ${person?.lastName}`, // Should we control the order by config?
+    name: getPersonName(person),
     socialIds: verifiedSocialIds.map((it) => it.key)
   }
 }
