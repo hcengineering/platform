@@ -76,12 +76,15 @@ export function onPersonUpdate (person: Ref<Person>, presence: RoomPresence[]): 
     map.set(person, [...presence])
     return map
   })
+  if (person === get(followee) && !isAnybodyInMyRoom()) {
+    toggleFollowee(undefined)
+  }
 }
 
 export function onPersonLeave (person: Ref<Person>): void {
   otherPresence.update((map) => {
     map.delete(person)
-    followee.update((p) => (p === person ? undefined : p))
+    toggleFollowee(person)
     return map
   })
 }
@@ -130,6 +133,7 @@ export function followeeDataUnsubscribe (topic: string, handler: (data: any) => 
 }
 
 export function toggleFollowee (person: Ref<Person> | undefined): void {
+  console.log('toggle followee', person)
   followee.update((p) => (p === person ? undefined : person))
 
   const f = get(followee)
@@ -146,6 +150,7 @@ export function toggleFollowee (person: Ref<Person> | undefined): void {
       }
     }
   } else {
+    console.log('no followee')
     for (const handlers of followeeDataHandlers.values()) {
       for (const handler of handlers) {
         handler(undefined)
@@ -168,4 +173,19 @@ export function publishData (topic: string, data: any): void {
     map.set(topic, { lastUpdated: Date.now(), data })
     return map
   })
+}
+
+export function isAnybodyInMyRoom (): boolean {
+  for (const my of get(myPresence)) {
+    for (const others of get(otherPresence).values()) {
+      if (
+        others.find(
+          (other) => other.room.objectId === my.room.objectId && other.room.objectClass === my.room.objectClass
+        ) !== undefined
+      ) {
+        return true
+      }
+    }
+  }
+  return false
 }
