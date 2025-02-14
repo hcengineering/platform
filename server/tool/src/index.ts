@@ -34,7 +34,8 @@ import core, {
   type Client,
   type Ref,
   type WithLookup,
-  type WorkspaceDataId
+  type WorkspaceDataId,
+  type PersonInfo
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger, tryMigrate } from '@hcengineering/model'
 import { DomainIndexHelperImpl, Pipeline, StorageAdapter, type DbAdapter } from '@hcengineering/server-core'
@@ -187,6 +188,7 @@ export async function initializeWorkspace (
   ctx: MeasureContext,
   branding: Branding | null,
   wsIds: WorkspaceIds,
+  personInfo: PersonInfo,
   storageAdapter: StorageAdapter,
   client: TxOperations,
   logger: ModelLogger = consoleModelLogger,
@@ -218,7 +220,7 @@ export async function initializeWorkspace (
       return
     }
 
-    const initializer = new WorkspaceInitializer(ctx, storageAdapter, wsIds, client, initRepoDir)
+    const initializer = new WorkspaceInitializer(ctx, storageAdapter, wsIds, client, initRepoDir, personInfo)
     await initializer.processScript(script, logger, progress)
   } catch (err: any) {
     ctx.error('Failed to initialize workspace', { error: err })

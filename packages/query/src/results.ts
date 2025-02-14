@@ -1,5 +1,6 @@
 import {
   resultSort,
+  WithLookup,
   type Class,
   type Doc,
   type Hierarchy,
@@ -9,9 +10,9 @@ import {
 } from '@hcengineering/core'
 
 export class ResultArray {
-  private docs: Map<Ref<Doc>, Doc>
+  private docs: Map<Ref<Doc>, WithLookup<Doc>>
 
-  private readonly clones = new Map<string, Map<Ref<Doc>, Doc>>()
+  private readonly clones = new Map<string, Map<Ref<Doc>, WithLookup<Doc>>>()
 
   get length (): number {
     return this.docs.size
@@ -28,11 +29,11 @@ export class ResultArray {
     this.clones.clear()
   }
 
-  getDocs (): Doc[] {
+  getDocs (): WithLookup<Doc>[] {
     return Array.from(this.docs.values())
   }
 
-  findDoc (_id: Ref<Doc>): Doc | undefined {
+  findDoc (_id: Ref<Doc>): WithLookup<Doc> | undefined {
     return this.docs.get(_id)
   }
 
@@ -61,14 +62,14 @@ export class ResultArray {
     return doc
   }
 
-  updateDoc (doc: Doc, mainClone = true): void {
+  updateDoc (doc: WithLookup<Doc>, mainClone = true): void {
     this.docs.set(doc._id, mainClone ? this.hierarchy.clone(doc) : doc)
     for (const [, v] of this.clones.entries()) {
       v.set(doc._id, this.hierarchy.clone(doc))
     }
   }
 
-  push (doc: Doc): void {
+  push (doc: WithLookup<Doc>): void {
     this.docs.set(doc._id, this.hierarchy.clone(doc))
     for (const [, v] of this.clones.entries()) {
       v.set(doc._id, this.hierarchy.clone(doc))
@@ -76,7 +77,7 @@ export class ResultArray {
     // this.changes.add(doc._id)
   }
 
-  pop (): Doc | undefined {
+  pop (): WithLookup<Doc> | undefined {
     const lastElement = Array.from(this.docs)[this.docs.size - 1]
     if (lastElement !== undefined) {
       this.docs.delete(lastElement[0])

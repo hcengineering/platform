@@ -30,6 +30,7 @@
     ScrollerBar
   } from '@hcengineering/ui'
   import MasterTagSelector from './MasterTagSelector.svelte'
+  import { fillDefaults } from '@hcengineering/core'
 
   export let doc: Card
 
@@ -65,6 +66,8 @@
       async (res) => {
         if (res !== undefined) {
           await client.createMixin(doc._id, doc._class, doc.space, res, {})
+          const updated = fillDefaults(hierarchy, hierarchy.clone(doc), res)
+          await client.diffUpdate(doc, updated)
         }
       }
     )
@@ -75,20 +78,22 @@
 
 <div class="container py-4 gap-2">
   <MasterTagSelector value={doc} />
-  <div class="divider" />
-  <ScrollerBar gap={'none'} bind:scroller={divScroll}>
-    <div class="tags gap-2">
-      {#each activeTags as mixin}
-        <div class="tag no-word-wrap">
-          <Label label={mixin.label} />
-          <ButtonIcon icon={IconClose} size="extra-small" kind="tertiary" on:click={() => removeTag(mixin._id)} />
-        </div>
-      {/each}
-      {#if dropdownItems.length > 0}
-        <CircleButton icon={IconAdd} size="small" ghost on:click={add} />
-      {/if}
-    </div>
-  </ScrollerBar>
+  {#if activeTags.length > 0 || dropdownItems.length > 0}
+    <div class="divider" />
+    <ScrollerBar gap={'none'} bind:scroller={divScroll}>
+      <div class="tags gap-2">
+        {#each activeTags as mixin}
+          <div class="tag no-word-wrap">
+            <Label label={mixin.label} />
+            <ButtonIcon icon={IconClose} size="extra-small" kind="tertiary" on:click={() => removeTag(mixin._id)} />
+          </div>
+        {/each}
+        {#if dropdownItems.length > 0}
+          <CircleButton icon={IconAdd} size="small" ghost on:click={add} />
+        {/if}
+      </div>
+    </ScrollerBar>
+  {/if}
 </div>
 
 <style lang="scss">

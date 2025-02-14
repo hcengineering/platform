@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, ComponentType } from 'svelte'
-  import type { Asset, IntlString } from '@hcengineering/platform'
-  import { AnySvelteComponent, BreadcrumbItem } from '../types'
+  import type { IntlString } from '@hcengineering/platform'
+  import { createEventDispatcher } from 'svelte'
+  import { BreadcrumbItem } from '../types'
+  import Breadcrumb from './Breadcrumb.svelte'
   import ChevronRight from './icons/ChevronRight.svelte'
   import Label from './Label.svelte'
-  import Breadcrumb from './Breadcrumb.svelte'
 
   export let items: BreadcrumbItem[]
   export let afterLabel: IntlString | undefined = undefined

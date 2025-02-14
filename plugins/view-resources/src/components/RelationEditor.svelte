@@ -3,6 +3,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, IconAdd, Label, Section, showPopup } from '@hcengineering/ui'
+  import { showMenu } from '../actions'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import DocTable from './DocTable.svelte'
   import ObjectBoxPopup from './ObjectBoxPopup.svelte'
@@ -13,6 +14,8 @@
   export let association: Association
   export let readonly: boolean = false
   export let direction: 'A' | 'B'
+
+  const client = getClient()
 
   $: _class = direction === 'B' ? association.classB : association.classA
 
@@ -76,6 +79,17 @@
   }
 
   $: config = preference?.config ?? viewlet?.config
+
+  async function onContextMenu (ev: MouseEvent, doc: Doc): Promise<void> {
+    const q =
+      direction === 'A'
+        ? { docA: object._id, docB: doc._id, association: association._id }
+        : { docA: doc._id, docB: object._id, association: association._id }
+    const relation = await client.findOne(core.class.Relation, q)
+    if (relation !== undefined) {
+      showMenu(ev, { object: relation, includedActions: [view.action.Delete] })
+    }
+  }
 </script>
 
 <Section {label}>
@@ -90,9 +104,7 @@
   <svelte:fragment slot="content">
     <div class="antiSection-empty solid flex-col mt-3">
       {#if docs?.length > 0 && config != null}
-        <div class="self-start flex-col flex-gap-2">
-          <DocTable objects={docs} {_class} {config} />
-        </div>
+        <DocTable objects={docs} {_class} {config} {onContextMenu} />
       {:else if !readonly}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->

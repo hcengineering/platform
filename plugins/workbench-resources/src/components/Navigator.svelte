@@ -146,7 +146,6 @@
     return special.checkIsDisabled && (await (await getResource(special.checkIsDisabled))())
   }
 
-  let savedMenu: boolean = false
   let menuSelection: boolean = false
 </script>
 
@@ -173,11 +172,7 @@
     {/if}
     <div class="min-h-3 flex-no-shrink" />
 
-    <SavedView
-      {currentApplication}
-      on:shown={(res) => (savedMenu = res.detail)}
-      on:select={(res) => (menuSelection = res.detail)}
-    />
+    <SavedView alias={currentApplication?.alias} on:select={(res) => (menuSelection = res.detail)} />
     {#if starred.length}
       <StarredNav
         label={preference.string.Starred}

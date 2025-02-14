@@ -101,10 +101,31 @@ export async function createWorkspace (
       })
 
       ctx.info('Starting init script if any')
-      await initializeWorkspace(ctx, branding, wsIds, storageAdapter, client, ctxModellogger, async (value) => {
-        ctx.info('Init script progress', { value })
-        await handleWsEvent?.('progress', version, 20 + Math.round((Math.min(value, 100) / 100) * 60))
-      })
+      const creatorUuid = workspaceInfo.createdBy
+
+      if (creatorUuid != null) {
+        const personInfo = await accountClient.getPersonInfo(creatorUuid)
+
+        if (personInfo?.socialIds.length > 0) {
+          await initializeWorkspace(
+            ctx,
+            branding,
+            wsIds,
+            personInfo,
+            storageAdapter,
+            client,
+            ctxModellogger,
+            async (value) => {
+              ctx.info('Init script progress', { value })
+              await handleWsEvent?.('progress', version, 20 + Math.round((Math.min(value, 100) / 100) * 60))
+            }
+          )
+        } else {
+          ctx.warn('No person info or verified social ids found for workspace creator. Skipping init script.')
+        }
+      } else {
+        ctx.warn('No workspace creator found. Skipping init script.')
+      }
 
       await upgradeWorkspaceWith(
         ctx,

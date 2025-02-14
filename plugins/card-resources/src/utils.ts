@@ -124,7 +124,7 @@ async function generateLocation (loc: Location, id: string): Promise<ResolvedLoc
   }
   const appComponent = loc.path[0] ?? ''
   const workspace = loc.path[1] ?? ''
-  const special = card.class.Card
+  const special = doc._class
 
   const objectPanel = client.getHierarchy().classHierarchyMixin(doc._class as Ref<Class<Doc>>, view.mixin.ObjectPanel)
   const component = objectPanel?.component ?? view.component.EditDoc

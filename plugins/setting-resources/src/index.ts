@@ -63,6 +63,8 @@ import WorkspaceSettings from './components/WorkspaceSettings.svelte'
 import SettingsWidget from './components/SettingsWidget.svelte'
 import ClassHierarchy from './components/ClassHierarchy.svelte'
 import CreateAttributePopup from './components/CreateAttributePopup.svelte'
+import CreateRelation from './components/CreateRelation.svelte'
+import EditRelation from './components/EditRelation.svelte'
 import setting from './plugin'
 import { filterDescendants, getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue } from './utils'
 
@@ -137,7 +139,9 @@ export default async (): Promise<Resources> => ({
     RoleEditor,
     RoleAssignmentEditor,
     SettingsWidget,
-    CreateAttributePopup
+    CreateAttributePopup,
+    CreateRelation,
+    EditRelation
   },
   actionImpl: {
     DeleteMixin
